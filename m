@@ -1,15 +1,16 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [RFC][PATCH 3/4] PCI / ACPI PM: Platform support for
-	PCI PME	wake-up (rev. 2)
-Date: Fri, 9 Oct 2009 12:23:20 +0100
-Message-ID: <20091009112320.GA23990@srcf.ucam.org>
-References: <200910090051.50932.rjw@sisk.pl> <200910090054.18693.rjw@sisk.pl>
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Subject: Re: [PATCH] MIPS: add IRQF_TIMER flag for Timer
+	Interrupts
+Date: Fri, 09 Oct 2009 23:45:49 +0800
+Message-ID: <1255103149.3658.112.camel__11843.887953046$1255103242$gmane$org@falcon>
+References: <1255007874-19574-1-git-send-email-wuzhangjin@gmail.com>
+	<20091010.001754.229727131.anemo@mba.ocn.ne.jp>
+Reply-To: wuzhangjin@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200910090054.18693.rjw@sisk.pl>
+In-Reply-To: <20091010.001754.229727131.anemo@mba.ocn.ne.jp>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,48 +20,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, ralf@linux-mips.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, yuasa@linux-mips.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Oct 09, 2009 at 12:54:18AM +0200, Rafael J. Wysocki wrote:
+On Sat, 2009-10-10 at 00:17 +0900, Atsushi Nemoto wrote:
+> On Thu,  8 Oct 2009 21:17:54 +0800, Wu Zhangjin <wuzhangjin@gmail.com> wrote:
+> > This patch add IRQF_TIMER flag for all Timer interrupts in linux-MIPS,
+> > which will help to not disable the Timer IRQ when suspending to ensure
+> > resuming normally(d6c585a4342a2ff627a29f9aea77c5ed4cd76023) and not
+> > thread them when enabled PREEMPT_RT.
+> > 
+> > Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
+> > ---
+> >  arch/mips/jazz/irq.c                |    2 +-
+> >  arch/mips/kernel/cevt-gt641xx.c     |    2 +-
+> >  arch/mips/kernel/cevt-r4k.c         |    2 +-
+> >  arch/mips/kernel/i8253.c            |    2 +-
+> >  arch/mips/nxp/pnx8550/common/time.c |    2 +-
+> >  arch/mips/sgi-ip27/ip27-timer.c     |    2 +-
+> >  arch/mips/sni/time.c                |    2 +-
+> >  7 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> Maybe cevt-bcm1480.c, cevt-ds1287.c, cevt-sb1250.c, cevt-txx9.c and
+> i8253.c need same fix?
+> 
 
-> Unfortunately, the subset of PCI devices that have GPEs associated
-> with them is quite limited and the other devices have to rely on
-> the GPEs associated with their upstream bridges and, possibly, the
-> root bridge to generate ACPI wake-up events in response to PMEs from
-> them.  Moreover, ACPI devices tend to share wake-up GPEs, in which
-> cases it makes sense to install an ACPI notify handler for only one
-> of them and "bind" the other devices to it.  Furthermore, ACPI-based
-> PCI hotplug also uses ACPI notify handlers that in general may
-> conflict with the PM notify handlers, unless this issue is
-> specifically taken care of.
+I got them via "grep timer -ur arch/mips | grep name", so, perhaps there
+are also some other timer interrupts missing here.
 
-I'm not sure this approach is correct - for instance, from a Dell 
-system:
+just get more via "grep Timer -ur arch/mips | grep name", "grep IRQF_
+-ur arch/mips/ | grep -v TIMER | grep =", a new patch will be sent out
+in the next E-mail.
 
-        Method (_L0D, 0, NotSerialized)
-        {
-            Store (SMI (0xC6, 0x00), Local0)
-            If (And (Local0, 0x01))
-            {
-                Notify (\_SB.PCI0.AZAL, 0x02)
-            }
-
-            If (And (Local0, 0x02))
-            {
-                Notify (\_SB.PCI0.EHCI, 0x02)
-            }
-
-            If (And (Local0, 0x04))
-            {
-                Notify (\_SB.PCI0.EHC2, 0x02)
-            }
-        }
-
-All these devices share a GPE, but registering only one notify handler 
-would result in us missing the notification in some cases. I also 
-suspect that this should wait until the GPE rework is done.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Regards,
+	Wu Zhangjin
