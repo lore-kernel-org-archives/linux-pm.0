@@ -1,13 +1,12 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: ext4 filesystem corruption
-Date: Sat, 10 Oct 2009 05:26:18 +0200
-Message-ID: <1255145178.3542.9.camel@maxim-laptop>
-References: <1254863215.11577.23.camel@maxim-laptop>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/1] PM / Hibernate: fix error handling in
+	save_image
+Date: Sat, 10 Oct 2009 13:51:45 +0200
+Message-ID: <1255175505-7756-1-git-send-email-jirislaby@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1254863215.11577.23.camel@maxim-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,44 +16,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>
+To: rjw@sisk.pl
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-I have more information on that issue.
+There are too many retval variables in save_image. Thus error return
+value from snapshot_read_next may be ignored and only part of the
+snapshot (successfully) written.
 
-First of all this isn't related to s2ram/disk.
-Second, this happened here again 3 times.
+Remove 'error' variable, invert the condition in the do-while loop
+and convert the loop to use only 'ret' variable.
 
-Now kernel complains loudly about access to freed inode.
+Switch the rest of the function to consider only 'ret'.
 
-After a reboot fsck tells the following:
+Also make sure we end printed line by \n if an error occurs.
 
-- Some directory entries point to freed inodes,
-   Which means these files are gone, but I never deleted some of them
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ kernel/power/swap.c |   32 ++++++++++++++++----------------
+ 1 files changed, 16 insertions(+), 16 deletions(-)
 
-- Some inodes have shared blocks
-
-- Some orpahaned inodes found
-
-- Free block counts/bitmaps corrupted.
-
-That all happens without any s2ram/disk cycle.
-
-However, yet an unusual situation did happen today.
-I had installed an update to mountall ubuntu package, and it hosed all
-boot process.
-I had to  reboot many times, and once did hold the power button for 4
-seconds.
-
-I also used often the SYSRQ+U/SYSRQ+B tool.
-
-On the contrary, I did several s2disk cycles, and one did fail, but
-there was no corruption.
-
-I must say that until now, I had never seen any ext3/ext4 corruption,
-even though there were many many crashes, power failures, forced
-reboots, etc...
-
-Best regards,
-Maxim Levitsky
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 89e958e..47586d9 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -415,7 +415,6 @@ static int save_image(struct swap_map_handle *handle,
+ {
+ 	unsigned int m;
+ 	int ret;
+-	int error = 0;
+ 	int nr_pages;
+ 	int err2;
+ 	struct bio *bio;
+@@ -430,26 +429,27 @@ static int save_image(struct swap_map_handle *handle,
+ 	nr_pages = 0;
+ 	bio = NULL;
+ 	do_gettimeofday(&start);
+-	do {
++	while (1) {
+ 		ret = snapshot_read_next(snapshot, PAGE_SIZE);
+-		if (ret > 0) {
+-			error = swap_write_page(handle, data_of(*snapshot),
+-						&bio);
+-			if (error)
+-				break;
+-			if (!(nr_pages % m))
+-				printk("\b\b\b\b%3d%%", nr_pages / m);
+-			nr_pages++;
+-		}
+-	} while (ret > 0);
++		if (ret <= 0)
++			break;
++		ret = swap_write_page(handle, data_of(*snapshot), &bio);
++		if (ret)
++			break;
++		if (!(nr_pages % m))
++			printk("\b\b\b\b%3d%%", nr_pages / m);
++		nr_pages++;
++	}
+ 	err2 = wait_on_bio_chain(&bio);
+ 	do_gettimeofday(&stop);
+-	if (!error)
+-		error = err2;
+-	if (!error)
++	if (!ret)
++		ret = err2;
++	if (!ret)
+ 		printk("\b\b\b\bdone\n");
++	else
++		printk("\n");
+ 	swsusp_show_speed(&start, &stop, nr_to_write, "Wrote");
+-	return error;
++	return ret;
+ }
+ 
+ /**
+-- 
+1.6.4.2
