@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Suspend to RAM on MSI PR200YA - do not recover,
-	system immediately turns down
-Date: Sat, 10 Oct 2009 23:34:42 +0200
-Message-ID: <200910102334.42399.rjw__4822.03599899567$1255210614$gmane$org@sisk.pl>
-References: <37b436160910101054t7765c253ta98b983f226b57c3@mail.gmail.com>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: Very strange issues with ethernet wake on lan
+Date: Sat, 10 Oct 2009 23:37:19 +0200
+Message-ID: <1255210639.4199.0.camel@maxim-laptop>
+References: <1250394174.32268.13.camel@localhost.localdomain>
+	<200909292228.18200.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <37b436160910101054t7765c253ta98b983f226b57c3@mail.gmail.com>
+In-Reply-To: <200909292228.18200.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,51 +18,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ondrej Hujnak <hujnak.ondrej@gmail.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, mschmidt@redhat.com, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 10 October 2009, Ondrej Hujnak wrote:
-> Hello,
+On Tue, 2009-09-29 at 22:28 +0200, Rafael J. Wysocki wrote: 
+> On Sunday 16 August 2009, Maxim Levitsky wrote:
+> > Hi,
+> > 
+> > I have recently put back the davicom dm9009 ethernet card into my
+> > computer.
+> > 
+> > Some long time ago, I have written its suspend/resume routines.
+> > Now I see that few things have changed, like I need to enable wake in
+> > sysfs or better patch the code to do so, some nice helpers like
+> > pci_prepare_to_sleep have arrived, etc.
+> > 
+> > 
+> > I narrowed the strange issue down to following situation:
+> > 
+> > I reload dmfe.ko (and networkmanager is disabled)
+> > I don't ifup the device, thus pretty much no hardware initialization
+> > takes place (but this appears not to matter anyway)
+> > 
+> > I then suspend the system, and WOL doesn't work (I have patched the
+> > driver to enable WOL automaticly)
+> > 
+> > I then, suspend again. WOL works, and continues to work as long as I
+> > don't reload the driver. If I do, same situation repeats.
+> > 
+> > Also, after a boot, WOL works, so a reload cycle triggers that issue.
+> > 
+> > And most importantly, if I don't do a
+> > 
+> > pci_set_power_state(pci_dev, pci_choose_state (pci_dev, state));
+> > 
+> > in .suspend, then WOL always works.
+> > 
+> > and I have even tried to set state manually to PCI_D3hot or PCI_D3cold, 
+> > 
+> > I also tried to use pci_save_state
+> > 
+> > 
+> > I also have 2 copies of this card, and both have this issue.
+> > I also tried 2 pci slots.
+> > 
+> > Kernel is vanilla 2.6.31-rc5
 > 
-> I am trying to make work "Suspend to RAM".
-> My laptop is MSI PR200YA, linux
-> kernel 2.6.30.8-64.fc11.i586 (fedora 11, 32bit),
-> the same is with 2.6.31.1-56.fc12.i686.
-> Motherboard - MSI 1221, graphics:
-> Mobile GM965/GL960 Integrated Graphics Controller
-> 
-> When I do suspend to RAM it seem to work ok, it sleeps.
-> But when I want to wake it, it only switches off (the power
-> LED stops blinking).  If I'm having my notebook connected
-> to electricity, after start it don't  start screen and keyboard.
-> Notebook is running, but there is no HDD activity according
-> to the LED indicator. When it is on battery, it normally starts,
-> as if I had switched it normally off. Every time after trying to
-> suspend it to RAM, on the next start I have
-> "last write to superblock in future".
-> 
-> I tried:
->  - suspend from "single" mode
->  - suspend from "single" mode with as many modules as possible rmmod'ed
->  - using "nomodeset"
->  - early suspend-to-RAM at boot test with "test_suspend=mem"
-> All with the same result.
-> 
-> I also tried using pm_trace, but this gave no useful results in dmesg
-> in the next boot. The clock was not changed by it (the documentation
-> said it would be).
-> 
-> I have attached printout of "lspci -vv" and "dmesg" after switching
-> pm_trace on.
-> 
-> I'd welcome any ideas how to debug this further.
-> I'm looking forward to your reply.
+> Please check if this still happens with 2.6.32-rc1.
 
-Does the pm_test 'core' test work (please see
-Documentation/power/basic-pm-debugging.txt)?
+It doesn't! (-git as of today tested)
 
-Rafael
-
+Thanks,
+Best regards,
+Maxim Levitsky
 
 > 
+> Best,
+> Rafael
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
