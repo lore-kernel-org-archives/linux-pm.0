@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Very strange issues with ethernet wake on lan
-Date: Sat, 10 Oct 2009 23:45:26 +0200
-Message-ID: <200910102345.26961.rjw@sisk.pl>
-References: <1250394174.32268.13.camel@localhost.localdomain>
-	<200909292228.18200.rjw@sisk.pl>
-	<1255210639.4199.0.camel@maxim-laptop>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH 15/21] kernel/power/: use pr_<level> and add
+	pr_fmt(fmt)
+Date: Sat, 10 Oct 2009 18:49:35 -0700
+Message-ID: <1255225776.16347.352.camel@Joe-Laptop.home>
+References: <cover.1254701151.git.joe@perches.com>
+	<200910060037.57546.rjw@sisk.pl>
+	<1255060436.16347.36.camel@Joe-Laptop.home>
+	<200910102328.37108.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1255210639.4199.0.camel@maxim-laptop>
+In-Reply-To: <200910102328.37108.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,59 +21,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 10 October 2009, Maxim Levitsky wrote:
-> On Tue, 2009-09-29 at 22:28 +0200, Rafael J. Wysocki wrote: 
-> > On Sunday 16 August 2009, Maxim Levitsky wrote:
-> > > Hi,
-> > > 
-> > > I have recently put back the davicom dm9009 ethernet card into my
-> > > computer.
-> > > 
-> > > Some long time ago, I have written its suspend/resume routines.
-> > > Now I see that few things have changed, like I need to enable wake in
-> > > sysfs or better patch the code to do so, some nice helpers like
-> > > pci_prepare_to_sleep have arrived, etc.
-> > > 
-> > > 
-> > > I narrowed the strange issue down to following situation:
-> > > 
-> > > I reload dmfe.ko (and networkmanager is disabled)
-> > > I don't ifup the device, thus pretty much no hardware initialization
-> > > takes place (but this appears not to matter anyway)
-> > > 
-> > > I then suspend the system, and WOL doesn't work (I have patched the
-> > > driver to enable WOL automaticly)
-> > > 
-> > > I then, suspend again. WOL works, and continues to work as long as I
-> > > don't reload the driver. If I do, same situation repeats.
-> > > 
-> > > Also, after a boot, WOL works, so a reload cycle triggers that issue.
-> > > 
-> > > And most importantly, if I don't do a
-> > > 
-> > > pci_set_power_state(pci_dev, pci_choose_state (pci_dev, state));
-> > > 
-> > > in .suspend, then WOL always works.
-> > > 
-> > > and I have even tried to set state manually to PCI_D3hot or PCI_D3cold, 
-> > > 
-> > > I also tried to use pci_save_state
-> > > 
-> > > 
-> > > I also have 2 copies of this card, and both have this issue.
-> > > I also tried 2 pci slots.
-> > > 
-> > > Kernel is vanilla 2.6.31-rc5
-> > 
-> > Please check if this still happens with 2.6.32-rc1.
-> 
-> It doesn't! (-git as of today tested)
+On Sat, 2009-10-10 at 23:28 +0200, Rafael J. Wysocki wrote:
+> On Friday 09 October 2009, Joe Perches wrote:
+> > Added #define pr_fmt(fmt) "PM: " fmt
+> > Converted printk(KERN_<level> to pr_<level>(
+> > Converted printks without KERN_ to pr_info or pr_cont
+> > Removed hard coded "PM: " prefix from message strings
+> > Added pr_fmt() to __initdata strings
+> > Integrated multiple line strings
+> > All logging messages are now output prefixed with "PM: "
+> Does this patch depend on any other patch that haven't been merged yet?
 
-Great, thanks for verifying.
+No.  I think it's OK to merge.
 
-Best,
-Rafael
+The idea is to eventually have smaller objects without
+prefixes, just a single stored prefix string that printk
+would insert and a bit more consistent output.
+
+cheers,  Joe
