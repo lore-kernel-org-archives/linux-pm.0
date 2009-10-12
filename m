@@ -1,15 +1,13 @@
-From: Ondrej Hujnak <hujnak.ondrej@gmail.com>
-Subject: Re: Suspend to RAM on MSI PR200YA - do not recover,
-	system 	immediately turns down
-Date: Mon, 12 Oct 2009 17:49:03 +0200
-Message-ID: <37b436160910120849o6aae596w50e450b4838ed233__46521.5212003843$1255371586$gmane$org@mail.gmail.com>
-References: <37b436160910101054t7765c253ta98b983f226b57c3@mail.gmail.com>
-	<200910102334.42399.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Hibernation out-of-memory problem.
+Date: Mon, 12 Oct 2009 23:17:59 +0200
+Message-ID: <200910122317.59973.rjw@sisk.pl>
+References: <4AD0F4D0.2090809@vmware.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200910102334.42399.rjw@sisk.pl>
+In-Reply-To: <4AD0F4D0.2090809@vmware.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,58 +17,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, mschmidt@redhat.com, linux-kernel@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
+Cc: dri-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-2009/10/10 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Saturday 10 October 2009, Ondrej Hujnak wrote:
->> Hello,
->>
->> I am trying to make work "Suspend to RAM".
->> My laptop is MSI PR200YA, linux
->> kernel 2.6.30.8-64.fc11.i586 (fedora 11, 32bit),
->> the same is with 2.6.31.1-56.fc12.i686.
->> Motherboard - MSI 1221, graphics:
->> Mobile GM965/GL960 Integrated Graphics Controller
->>
->> When I do suspend to RAM it seem to work ok, it sleeps.
->> But when I want to wake it, it only switches off (the power
->> LED stops blinking). =A0If I'm having my notebook connected
->> to electricity, after start it don't =A0start screen and keyboard.
->> Notebook is running, but there is no HDD activity according
->> to the LED indicator. When it is on battery, it normally starts,
->> as if I had switched it normally off. Every time after trying to
->> suspend it to RAM, on the next start I have
->> "last write to superblock in future".
->>
->> I tried:
->> =A0- suspend from "single" mode
->> =A0- suspend from "single" mode with as many modules as possible rmmod'ed
->> =A0- using "nomodeset"
->> =A0- early suspend-to-RAM at boot test with "test_suspend=3Dmem"
->> All with the same result.
->>
->> I also tried using pm_trace, but this gave no useful results in dmesg
->> in the next boot. The clock was not changed by it (the documentation
->> said it would be).
->>
->> I have attached printout of "lspci -vv" and "dmesg" after switching
->> pm_trace on.
->>
->> I'd welcome any ideas how to debug this further.
->> I'm looking forward to your reply.
->
-> Does the pm_test 'core' test work (please see
-> Documentation/power/basic-pm-debugging.txt)?
->
-> Rafael
->
+On Saturday 10 October 2009, Thomas Hellstrom wrote:
+> Hi!
+> 
+> I'm trying to port a graphics DRM device driver over to the new power 
+> management hooks in
+> 
+> struct dev_pm_ops.
+> 
+> During the "prepare" call, Video RAM contents may be copied either to 
+> shmem objects or pages allocated using alloc_page().
+> Unfortunately, this seems to lead to the hibernation process running out 
+> of free pages.
+> 
+> One possible cause is that the function swsusp_shrink_memory() is called 
+> before the prepare() call, and therefore doesn't free up enough memory.
+> 
+> What would be the correct way around this? Should swsusp_shrink_memory() 
+> be moved to after prepare(), or is it possible to get some kind of 
+> notification after user space processes is stopped, but before 
+> swsusp_shrink_memory()?
 
-Ok, i tried all kinds of pm_test including core several times
-and everything seemed ok. I got no error, failure..
+There are suspend/hibernation notifiers that can be used for this purpose.
 
-And i tried all possibilities of /sys/power/disk under
- "init=3D/bin/bash" and same result as above.
-
-Ondrej
+Thanks,
+Rafael
