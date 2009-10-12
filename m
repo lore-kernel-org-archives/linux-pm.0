@@ -1,11 +1,13 @@
-From: miniBill <cmt.minibill@gmail.com>
-Subject: Suspend to ram not working
-Date: Mon, 12 Oct 2009 21:28:34 +0200
-Message-ID: <ef885c730910121228s4dc8a65ak5f0d5fafdc1bd497@mail.gmail.com>
+From: Andrew Patterson <andrew.patterson@hp.com>
+Subject: Re: 2.6.32-rc4: Reported regressions 2.6.30 -> 2.6.31
+Date: Mon, 12 Oct 2009 13:58:48 -0600
+Message-ID: <1255377529.9544.63.camel__45652.2165135995$1255382321$gmane$org@bluto.andrew>
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,111 +17,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.osdl.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Here I paste the discussion I had on the "wrong" mailing list.
-The problem is the same with s2ram and pm-suspend
-Below you'll find details on the problem and on the computer hw
+On Mon, 2009-10-12 at 00:41 +0200, Rafael J. Wysocki wrote:
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14309
+> Subject		: MCA on hp rx8640
+> Submitter	: Andrew Patterson <andrew.patterson@hp.com>
+> Date		: 2009-09-29 17:20 (13 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=db8be50c4307dac2b37305fc59c8dc0f978d09ea
+> References	: http://www.spinics.net/lists/linux-usb/msg22799.html
+> 
 
-2009/10/12 Pavel Machek <pavel@ucw.cz>:
-> On Mon 2009-10-12 19:33:00, miniBill wrote:
->> 2009/10/12 Pavel Machek <pavel@ucw.cz>:
->> > On Sun 2009-10-11 12:36:06, miniBill wrote:
->> >> 2009/10/10 Pavel Machek <pavel@ucw.cz>:
->> >> > On Thu 2009-10-01 23:26:25, miniBill wrote:
->> >> >> s2ram is not working for me: computer keeps resuming just after standby.
->> >> >> when i use hibernate/turn it off I can then put it into standby once,
->> >> >> then it start auto-resuming
->> >> >> it resumes and doesn't hang so it only takes me a couple of seconds to
->> >> >> test something, and I can do it with jabber working
->> >> >
->> >> > Which kernel/what hardware? Can you report on linux-pm?
->> >> >
->> >> leonardo@debian:~$ uname -a
->> >> Linux debian 2.6.30-choam #1 SMP PREEMPT Mon Sep 28 21:18:24 CEST 2009
->> >> i686 GNU/Linux
->> >> leonardo@debian:~$ lsusb
->> >> Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
->> >> Bus 003 Device 003: ID 093a:2510 Pixart Imaging, Inc. Hama Optical Mouse
->> >> Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
->> >> Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
->> >> Bus 001 Device 003: ID 04f2:b071 Chicony Electronics Co., Ltd 2.0M UVC
->> >> Webcam / CNF7129
->> >> Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
->> >> debian:/home/leonardo# lspci
->> >> 00:00.0 Host bridge: nVidia Corporation MCP79 Host Bridge (rev b1)
->> >> 00:00.1 RAM memory: nVidia Corporation MCP79 Memory Controller (rev b1)
->> >> 00:03.0 ISA bridge: nVidia Corporation MCP79 LPC Bridge (rev b2)
->> >> 00:03.1 RAM memory: nVidia Corporation MCP79 Memory Controller (rev b1)
->> >> 00:03.2 SMBus: nVidia Corporation MCP79 SMBus (rev b1)
->> >> 00:03.3 RAM memory: nVidia Corporation MCP79 Memory Controller (rev b1)
->> >> 00:03.5 Co-processor: nVidia Corporation MCP79 Co-processor (rev b1)
->> >> 00:04.0 USB Controller: nVidia Corporation MCP79 OHCI USB 1.1
->> >> Controller (rev b1)
->> >> 00:04.1 USB Controller: nVidia Corporation MCP79 EHCI USB 2.0
->> >> Controller (rev b1)
->> >> 00:06.0 USB Controller: nVidia Corporation MCP79 OHCI USB 1.1
->> >> Controller (rev b1)
->> >> 00:06.1 USB Controller: nVidia Corporation MCP79 EHCI USB 2.0
->> >> Controller (rev b1)
->> >> 00:08.0 Audio device: nVidia Corporation MCP79 High Definition Audio (rev b1)
->> >> 00:09.0 PCI bridge: nVidia Corporation MCP79 PCI Bridge (rev b1)
->> >> 00:0b.0 SATA controller: nVidia Corporation MCP79 AHCI Controller (rev b1)
->> >> 00:0c.0 PCI bridge: nVidia Corporation MCP79 PCI Express Bridge (rev b1)
->> >> 00:15.0 PCI bridge: nVidia Corporation MCP79 PCI Express Bridge (rev b1)
->> >> 00:16.0 PCI bridge: nVidia Corporation MCP79 PCI Express Bridge (rev b1)
->> >> 02:00.0 VGA compatible controller: nVidia Corporation G96M [GeForce GT
->> >> 120M] (rev a1)
->> >> 03:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
->> >> RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 01)
->> >> 04:00.0 Network controller: Atheros Communications Inc. AR9285
->> >> Wireless Network Adapter (PCI-Express) (rev 01)
->> >> debian:/home/leonardo# pm-is-supported --suspend && echo "tau"
->> >> tau
->> >> debian:/home/leonardo# dpkg-query  -s pm-utils
->> >> Package: pm-utils
->> >> Status: install ok installed
->> >> ...
->> >> Architecture: all
->> >> Version: 1.2.5-4
->> >> ...
->> >> debian:/home/leonardo# dpkg-query  -s uswsusp
->> >> Package: uswsusp
->> >> Status: install ok installed
->> >> ...
->> >> Architecture: i386
->> >> Source: uswsusp (0.8-1.1)
->> >> Version: 0.8-1.1+b1
->> >> ...
->> >> debian:/home/leonardo# s2ram -n
->> >> Machine unknown
->> >> This machine can be identified by:
->> >>     sys_vendor   = "ASUSTeK Computer Inc. "
->> >>     sys_product  = "K70IO               "
->> >>     sys_version  = "1.0       "
->> >>     bios_version = "209    "
->> >> See http://suspend.sf.net/s2ram-support.html for details.
->> >>
->> >> If you report a problem, please include the complete output above.
->> >>
->> >> Here you are. Need more info?
->> >
->> > Any proprietary modules?
->> >
->> > Good report, try sending it to linux-pm ...
->> >
->> I'm only using nvidia module, version 185.18.36, downloaded from the
->> official website.
->> what's the address of the linux-pm list?
->
-> Linux-pm mailing list <linux-pm@lists.osdl.org>
->
-> ...but you really need to reproduce w/o nvidia module, first.
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->
-w/o nvidia module the screen doesn't power on resume, backlight stays down
-anyway, I'm gonna copy this to linux-pm list
+Linus fixed this one with d93a8f829fe1d2f3002f2c6ddb553d12db420412.  It
+also looks like a duplicate of
+http://bugzilla.kernel.org/show_bug.cgi?id=14374
+
+Thanks,
+
+Andrew
+-- 
+Andrew Patterson
+Hewlett-Packard
