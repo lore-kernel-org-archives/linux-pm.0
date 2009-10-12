@@ -1,13 +1,14 @@
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] of/platform: Implement support for dev_pm_ops
-Date: Mon, 12 Oct 2009 15:09:53 -0700
-Message-ID: <fa686aa40910121509n1b7dba87nbe9ddf34f0b4d7c__22256.2215094969$1255387834$gmane$org@mail.gmail.com>
-References: <20091012155041.GA1071@oksana.dev.rtsoft.ru>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] ACPI / PCI: Fix NULL pointer dereference in
+	acpi_get_pci_dev() (rev. 2)
+Date: Tue, 13 Oct 2009 01:01:57 +0200
+Message-ID: <200910130101.57595.rjw@sisk.pl>
+References: <200910060130.43246.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091012155041.GA1071@oksana.dev.rtsoft.ru>
+In-Reply-To: <200910060130.43246.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,410 +18,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: linux-pm@lists.linux-foundation.org, David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org
+To: Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: chepioq@gmail.com, Alex Chiang <achiang@hp.com>, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Danny Feng <dfeng@redhat.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 8:50 AM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> Linux power management subsystem supports vast amount of new PM
-> callbacks that are crucial for proper suspend and hibernation support
-> in drivers.
->
-> This patch implements support for dev_pm_ops, preserving support
-> for legacy callbacks.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Hmmm...  I'm not very familiar with the PM callbacks, but change
-doesn't look right to me.  In particular, a lot of these new hooks
-don't do anything remotely of_platform bus specific.  For example,
-of_platform_pm_prepare() checks if there is drv, drv->pm, and
-drv->pm->prepare.  If all are true, then it calls drv->pm->prepare().
-I see that the platform bus platform_pm_prepare() function is
-absolutely identical.  I haven't looked, but I wouldn't be surprised
-if other busses do the same.
+acpi_get_pci_dev() may be called for a non-PCI device, in which case
+it should return NULL.  However, it assumes that every handle it
+finds in the ACPI CA name space, between given device handle and the
+PCI root bridge handle, corresponds to a PCI-to-PCI bridge with an
+existing secondary bus.  For this reason, when it finds a struct
+pci_dev object corresponding to one of them, it doesn't check if
+its 'subordinate' field is a valid pointer.  This obviously leads to
+a NULL pointer dereference if acpi_get_pci_dev() is called for a
+non-PCI device with a PCI parent which is not a bridge.
 
-I think these simple pm ops should be made library functions that
-platform, of_platform and other simple busses can just populate their
-pm ops structure with.
+To fix this issue make acpi_get_pci_dev() check if pdev->subordinate
+is not NULL for every device it finds on the path between the root
+bridge and the device it's supposed to get to and return NULL if the
+"target" device cannot be found.
 
-g.
+Fixes http://bugzilla.kernel.org/show_bug.cgi?id=14129, which is a
+regression from 2.6.30.
 
-> ---
-> =A0drivers/of/platform.c | =A0305 +++++++++++++++++++++++++++++++++++++++=
-+++++++---
-> =A01 files changed, 290 insertions(+), 15 deletions(-)
->
-> diff --git a/drivers/of/platform.c b/drivers/of/platform.c
-> index 298de0f..d58ade1 100644
-> --- a/drivers/of/platform.c
-> +++ b/drivers/of/platform.c
-> @@ -65,47 +65,322 @@ static int of_platform_device_remove(struct device *=
-dev)
-> =A0 =A0 =A0 =A0return 0;
-> =A0}
->
-> -static int of_platform_device_suspend(struct device *dev, pm_message_t s=
-tate)
-> +static void of_platform_device_shutdown(struct device *dev)
-> =A0{
-> =A0 =A0 =A0 =A0struct of_device *of_dev =3D to_of_device(dev);
-> =A0 =A0 =A0 =A0struct of_platform_driver *drv =3D to_of_platform_driver(d=
-ev->driver);
-> - =A0 =A0 =A0 int error =3D 0;
->
-> - =A0 =A0 =A0 if (dev->driver && drv->suspend)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 error =3D drv->suspend(of_dev, state);
-> - =A0 =A0 =A0 return error;
-> + =A0 =A0 =A0 if (dev->driver && drv->shutdown)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 drv->shutdown(of_dev);
-> =A0}
->
-> -static int of_platform_device_resume(struct device * dev)
-> +#ifdef CONFIG_PM_SLEEP
-> +
-> +static int of_platform_legacy_suspend(struct device *dev, pm_message_t m=
-esg)
-> =A0{
-> =A0 =A0 =A0 =A0struct of_device *of_dev =3D to_of_device(dev);
-> =A0 =A0 =A0 =A0struct of_platform_driver *drv =3D to_of_platform_driver(d=
-ev->driver);
-> - =A0 =A0 =A0 int error =3D 0;
-> + =A0 =A0 =A0 int ret =3D 0;
->
-> - =A0 =A0 =A0 if (dev->driver && drv->resume)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 error =3D drv->resume(of_dev);
-> - =A0 =A0 =A0 return error;
-> + =A0 =A0 =A0 if (dev->driver && drv->suspend)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->suspend(of_dev, mesg);
-> + =A0 =A0 =A0 return ret;
-> =A0}
->
-> -static void of_platform_device_shutdown(struct device *dev)
-> +static int of_platform_legacy_resume(struct device *dev)
-> =A0{
-> =A0 =A0 =A0 =A0struct of_device *of_dev =3D to_of_device(dev);
-> =A0 =A0 =A0 =A0struct of_platform_driver *drv =3D to_of_platform_driver(d=
-ev->driver);
-> + =A0 =A0 =A0 int ret =3D 0;
->
-> - =A0 =A0 =A0 if (dev->driver && drv->shutdown)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 drv->shutdown(of_dev);
-> + =A0 =A0 =A0 if (dev->driver && drv->resume)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->resume(of_dev);
-> + =A0 =A0 =A0 return ret;
-> +}
-> +
-> +static int of_platform_pm_prepare(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
-> + =A0 =A0 =A0 int ret =3D 0;
-> +
-> + =A0 =A0 =A0 if (drv && drv->pm && drv->pm->prepare)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->prepare(dev);
-> +
-> + =A0 =A0 =A0 return ret;
-> +}
-> +
-> +static void of_platform_pm_complete(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
-> +
-> + =A0 =A0 =A0 if (drv && drv->pm && drv->pm->complete)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 drv->pm->complete(dev);
-> +}
-> +
-> +#ifdef CONFIG_SUSPEND
-> +
-> +static int of_platform_pm_suspend(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
-> + =A0 =A0 =A0 int ret =3D 0;
-> +
-> + =A0 =A0 =A0 if (!drv)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> +
-> + =A0 =A0 =A0 if (drv->pm) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->suspend)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->suspend(de=
-v);
-> + =A0 =A0 =A0 } else {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D of_platform_legacy_suspend(dev, PMS=
-G_SUSPEND);
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 return ret;
-> =A0}
->
-> +static int of_platform_pm_suspend_noirq(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
-> + =A0 =A0 =A0 int ret =3D 0;
-> +
-> + =A0 =A0 =A0 if (!drv)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> +
-> + =A0 =A0 =A0 if (drv->pm) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->suspend_noirq)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->suspend_no=
-irq(dev);
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 return ret;
-> +}
-> +
-> +static int of_platform_pm_resume(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
-> + =A0 =A0 =A0 int ret =3D 0;
-> +
-> + =A0 =A0 =A0 if (!drv)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> +
-> + =A0 =A0 =A0 if (drv->pm) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->resume)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->resume(dev=
-);
-> + =A0 =A0 =A0 } else {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D of_platform_legacy_resume(dev);
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 return ret;
-> +}
-> +
-> +static int of_platform_pm_resume_noirq(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
-> + =A0 =A0 =A0 int ret =3D 0;
-> +
-> + =A0 =A0 =A0 if (!drv)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> +
-> + =A0 =A0 =A0 if (drv->pm) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->resume_noirq)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->resume_noi=
-rq(dev);
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 return ret;
-> +}
-> +
-> +#else /* !CONFIG_SUSPEND */
-> +
-> +#define of_platform_pm_suspend =A0 =A0 =A0 =A0 NULL
-> +#define of_platform_pm_resume =A0 =A0 =A0 =A0 =A0NULL
-> +#define of_platform_pm_suspend_noirq =A0 NULL
-> +#define of_platform_pm_resume_noirq =A0 =A0NULL
-> +
-> +#endif /* !CONFIG_SUSPEND */
-> +
-> +#ifdef CONFIG_HIBERNATION
-> +
-> +static int of_platform_pm_freeze(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
-> + =A0 =A0 =A0 int ret =3D 0;
-> +
-> + =A0 =A0 =A0 if (!drv)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> +
-> + =A0 =A0 =A0 if (drv->pm) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->freeze)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->freeze(dev=
-);
-> + =A0 =A0 =A0 } else {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D of_platform_legacy_suspend(dev, PMS=
-G_FREEZE);
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 return ret;
-> +}
-> +
-> +static int of_platform_pm_freeze_noirq(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
-> + =A0 =A0 =A0 int ret =3D 0;
-> +
-> + =A0 =A0 =A0 if (!drv)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> +
-> + =A0 =A0 =A0 if (drv->pm) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->freeze_noirq)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->freeze_noi=
-rq(dev);
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 return ret;
-> +}
-> +
-> +static int of_platform_pm_thaw(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
-> + =A0 =A0 =A0 int ret =3D 0;
-> +
-> + =A0 =A0 =A0 if (!drv)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> +
-> + =A0 =A0 =A0 if (drv->pm) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->thaw)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->thaw(dev);
-> + =A0 =A0 =A0 } else {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D of_platform_legacy_resume(dev);
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 return ret;
-> +}
-> +
-> +static int of_platform_pm_thaw_noirq(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
-> + =A0 =A0 =A0 int ret =3D 0;
-> +
-> + =A0 =A0 =A0 if (!drv)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> +
-> + =A0 =A0 =A0 if (drv->pm) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->thaw_noirq)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->thaw_noirq=
-(dev);
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 return ret;
-> +}
-> +
-> +static int of_platform_pm_poweroff(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
-> + =A0 =A0 =A0 int ret =3D 0;
-> +
-> + =A0 =A0 =A0 if (!drv)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> +
-> + =A0 =A0 =A0 if (drv->pm) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->poweroff)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->poweroff(d=
-ev);
-> + =A0 =A0 =A0 } else {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D of_platform_legacy_suspend(dev, PMS=
-G_HIBERNATE);
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 return ret;
-> +}
-> +
-> +static int of_platform_pm_poweroff_noirq(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
-> + =A0 =A0 =A0 int ret =3D 0;
-> +
-> + =A0 =A0 =A0 if (!drv)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> +
-> + =A0 =A0 =A0 if (drv->pm) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->poweroff_noirq)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->poweroff_n=
-oirq(dev);
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 return ret;
-> +}
-> +
-> +static int of_platform_pm_restore(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
-> + =A0 =A0 =A0 int ret =3D 0;
-> +
-> + =A0 =A0 =A0 if (!drv)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> +
-> + =A0 =A0 =A0 if (drv->pm) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->restore)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->restore(de=
-v);
-> + =A0 =A0 =A0 } else {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D of_platform_legacy_resume(dev);
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 return ret;
-> +}
-> +
-> +static int of_platform_pm_restore_noirq(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
-> + =A0 =A0 =A0 int ret =3D 0;
-> +
-> + =A0 =A0 =A0 if (!drv)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> +
-> + =A0 =A0 =A0 if (drv->pm) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (drv->pm->restore_noirq)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D drv->pm->restore_no=
-irq(dev);
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 return ret;
-> +}
-> +
-> +#else /* !CONFIG_HIBERNATION */
-> +
-> +#define of_platform_pm_freeze =A0 =A0 =A0 =A0 =A0NULL
-> +#define of_platform_pm_thaw =A0 =A0 =A0 =A0 =A0 =A0NULL
-> +#define of_platform_pm_poweroff =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0NULL
-> +#define of_platform_pm_restore =A0 =A0 =A0 =A0 NULL
-> +#define of_platform_pm_freeze_noirq =A0 =A0NULL
-> +#define of_platform_pm_thaw_noirq =A0 =A0 =A0 =A0 =A0 =A0 =A0NULL
-> +#define of_platform_pm_poweroff_noirq =A0NULL
-> +#define of_platform_pm_restore_noirq =A0 NULL
-> +
-> +#endif /* !CONFIG_HIBERNATION */
-> +
-> +static struct dev_pm_ops of_platform_dev_pm_ops =3D {
-> + =A0 =A0 =A0 .prepare =3D of_platform_pm_prepare,
-> + =A0 =A0 =A0 .complete =3D of_platform_pm_complete,
-> + =A0 =A0 =A0 .suspend =3D of_platform_pm_suspend,
-> + =A0 =A0 =A0 .resume =3D of_platform_pm_resume,
-> + =A0 =A0 =A0 .freeze =3D of_platform_pm_freeze,
-> + =A0 =A0 =A0 .thaw =3D of_platform_pm_thaw,
-> + =A0 =A0 =A0 .poweroff =3D of_platform_pm_poweroff,
-> + =A0 =A0 =A0 .restore =3D of_platform_pm_restore,
-> + =A0 =A0 =A0 .suspend_noirq =3D of_platform_pm_suspend_noirq,
-> + =A0 =A0 =A0 .resume_noirq =3D of_platform_pm_resume_noirq,
-> + =A0 =A0 =A0 .freeze_noirq =3D of_platform_pm_freeze_noirq,
-> + =A0 =A0 =A0 .thaw_noirq =3D of_platform_pm_thaw_noirq,
-> + =A0 =A0 =A0 .poweroff_noirq =3D of_platform_pm_poweroff_noirq,
-> + =A0 =A0 =A0 .restore_noirq =3D of_platform_pm_restore_noirq,
-> +};
-> +
-> +#define OF_PLATFORM_PM_OPS_PTR (&of_platform_dev_pm_ops)
-> +
-> +#else /* !CONFIG_PM_SLEEP */
-> +
-> +#define OF_PLATFORM_PM_OPS_PTR NULL
-> +
-> +#endif /* !CONFIG_PM_SLEEP */
-> +
-> =A0int of_bus_type_init(struct bus_type *bus, const char *name)
-> =A0{
-> =A0 =A0 =A0 =A0bus->name =3D name;
-> =A0 =A0 =A0 =A0bus->match =3D of_platform_bus_match;
-> =A0 =A0 =A0 =A0bus->probe =3D of_platform_device_probe;
-> =A0 =A0 =A0 =A0bus->remove =3D of_platform_device_remove;
-> - =A0 =A0 =A0 bus->suspend =3D of_platform_device_suspend;
-> - =A0 =A0 =A0 bus->resume =3D of_platform_device_resume;
-> =A0 =A0 =A0 =A0bus->shutdown =3D of_platform_device_shutdown;
-> =A0 =A0 =A0 =A0bus->dev_attrs =3D of_platform_device_attrs;
-> + =A0 =A0 =A0 bus->pm =3D OF_PLATFORM_PM_OPS_PTR;
-> =A0 =A0 =A0 =A0return bus_register(bus);
-> =A0}
->
-> --
-> 1.6.3.3
->
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
 
+Jesse, Len,
 
+This is a replacement for the original $subject patch (now in the Len's tree
+as commit 5988eaded02e3cca2702f46efc255143468255bd).
 
--- =
+The code was correct, but the comment and the changelog were not.  Please
+use the one below instead.
 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Thanks,
+Rafael
+
+---
+ drivers/acpi/pci_root.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+Index: linux-2.6/drivers/acpi/pci_root.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/pci_root.c
++++ linux-2.6/drivers/acpi/pci_root.c
+@@ -389,6 +389,17 @@ struct pci_dev *acpi_get_pci_dev(acpi_ha
+ 
+ 		pbus = pdev->subordinate;
+ 		pci_dev_put(pdev);
++
++		/*
++		 * This function may be called for a non-PCI device that has a
++		 * PCI parent (eg. a disk under a PCI SATA controller).  In that
++		 * case pdev->subordinate will be NULL for the parent.
++		 */
++		if (!pbus) {
++			dev_dbg(&pdev->dev, "Not a PCI-to-PCI bridge\n");
++			pdev = NULL;
++			break;
++		}
+ 	}
+ out:
+ 	list_for_each_entry_safe(node, tmp, &device_list, node)
