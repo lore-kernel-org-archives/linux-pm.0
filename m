@@ -1,14 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.32-rc4: Reported regressions 2.6.30 -> 2.6.31
-Date: Mon, 12 Oct 2009 23:48:33 +0200
-Message-ID: <200910122348.33588.rjw__28221.1470803761$1255384910$gmane$org@sisk.pl>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
-	<1255377529.9544.63.camel@bluto.andrew>
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH] of/platform: Implement support for dev_pm_ops
+Date: Tue, 13 Oct 2009 02:44:10 +0400
+Message-ID: <20091012224410.GA18923__38606.651305645$1255387580$gmane$org@oksana.dev.rtsoft.ru>
+References: <20091012155041.GA1071@oksana.dev.rtsoft.ru>
+	<fa686aa40910121509n1b7dba87nbe9ddf34f0b4d7c@mail.gmail.com>
+Reply-To: avorontsov@ru.mvista.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1255377529.9544.63.camel@bluto.andrew>
+Content-Disposition: inline
+In-Reply-To: <fa686aa40910121509n1b7dba87nbe9ddf34f0b4d7c@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,27 +20,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Patterson <andrew.patterson@hp.com>
-Cc: DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linux-pm@lists.linux-foundation.org, David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 12 October 2009, Andrew Patterson wrote:
-> On Mon, 2009-10-12 at 00:41 +0200, Rafael J. Wysocki wrote:
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14309
-> > Subject		: MCA on hp rx8640
-> > Submitter	: Andrew Patterson <andrew.patterson@hp.com>
-> > Date		: 2009-09-29 17:20 (13 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=db8be50c4307dac2b37305fc59c8dc0f978d09ea
-> > References	: http://www.spinics.net/lists/linux-usb/msg22799.html
-> > 
+On Mon, Oct 12, 2009 at 03:09:53PM -0700, Grant Likely wrote:
+> On Mon, Oct 12, 2009 at 8:50 AM, Anton Vorontsov
+> <avorontsov@ru.mvista.com> wrote:
+> > Linux power management subsystem supports vast amount of new PM
+> > callbacks that are crucial for proper suspend and hibernation support
+> > in drivers.
+> >
+> > This patch implements support for dev_pm_ops, preserving support
+> > for legacy callbacks.
+> >
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > 
-> Linus fixed this one with d93a8f829fe1d2f3002f2c6ddb553d12db420412.  It
-> also looks like a duplicate of
-> http://bugzilla.kernel.org/show_bug.cgi?id=14374
+> Hmmm...  I'm not very familiar with the PM callbacks, but change
+> doesn't look right to me.  In particular, a lot of these new hooks
+> don't do anything remotely of_platform bus specific.  For example,
+> of_platform_pm_prepare() checks if there is drv, drv->pm, and
+> drv->pm->prepare.  If all are true, then it calls drv->pm->prepare().
+> I see that the platform bus platform_pm_prepare() function is
+> absolutely identical.  I haven't looked, but I wouldn't be surprised
+> if other busses do the same.
+> 
+> I think these simple pm ops should be made library functions that
+> platform, of_platform and other simple busses can just populate their
+> pm ops structure with.
 
-Thanks, I closed #14309 as a duplicate of #14374 that's already closed.
+Some hooks can be made as library functions, but some can't (for
+example that do of_plaform_driver->suspend(), as opposite to
+of_platform_driver->driver.suspend(), i.e. the legacy hooks).
+Also, if you look into PCI bus hooks, you'll see that these hooks
+aren't pure proxies for drivers, they do real work, so they won't
+like to reuse or share anything.
 
-Best,
-Rafael
+For OF platfrom bus, we can share these functions with platform:
+
+of_platform_pm_suspend_noirq
+of_platform_pm_resume_noirq
+of_platform_pm_freeze_noirq
+of_platform_pm_thaw_noirq
+of_platform_pm_poweroff_noirq
+of_platform_pm_restore_noirq
+
+These we cannot share:
+
+of_platform_pm_suspend
+of_platform_pm_resume
+of_platform_pm_freeze
+of_platform_pm_thaw
+of_platform_pm_poweroff
+of_platform_pm_restore
+
+I agree that there is some room for improvements in general (e.g.
+merging platform and of_platform devices/drivers), but it's not as
+easy as you would like to think. Let's make it in a separate step
+that don't stop real features from being implemented (e.g.
+hibernate).
+
+For the six functions that we can reuse I can prepare a cleanup
+patch that we can merge via -mm, or it can just sit and collect
+needed acks and can be merged via any tree. But please, no
+cross-tree dependencies for the cruicial features.
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
