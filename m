@@ -1,14 +1,13 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/1] PM / Hibernate: add \n to load_image fail
-	path
-Date: Mon, 12 Oct 2009 23:38:50 +0200
-Message-ID: <1255383530-6778-1-git-send-email-jirislaby@gmail.com>
-References: <4AD39FBA.6000509@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.32-rc4: Reported regressions 2.6.30 -> 2.6.31
+Date: Mon, 12 Oct 2009 23:43:48 +0200
+Message-ID: <200910122343.48373.rjw__22805.6233878762$1255383870$gmane$org@sisk.pl>
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <4AD26926.9030306@lwfinger.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4AD39FBA.6000509@gmail.com>
+In-Reply-To: <4AD26926.9030306@lwfinger.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,30 +17,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Finish a line by \n when load_image fails in the middle of loading.
+On Monday 12 October 2009, Larry Finger wrote:
+> On 10/11/2009 05:41 PM, Rafael J. Wysocki wrote:
+> > [Note:
+> >   10 new reports in the last 10 days, but fortunately we're fixing them faster
+> >   than they're being reported.]
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14181
+> > Subject		: b43 causes panic at ifconfig down / shutdown
+> > Submitter	: Jeremy Huddleston <jeremyhu@freedesktop.org>
+> > Date		: 2009-09-15 18:34 (27 days old)
+> 
+> A patch to fix this one is in the hands of the OP. It should be tested
+> within the next couple of days.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- kernel/power/swap.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Great, thanks for the update.
 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 893f522..4bb5c3b 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -537,7 +537,8 @@ static int load_image(struct swap_map_handle *handle,
- 		snapshot_write_finalize(snapshot);
- 		if (!snapshot_image_loaded(snapshot))
- 			error = -ENODATA;
--	}
-+	} else
-+		printk("\n");
- 	swsusp_show_speed(&start, &stop, nr_to_read, "Read");
- 	return error;
- }
--- 
-1.6.4.2
+Rafael
