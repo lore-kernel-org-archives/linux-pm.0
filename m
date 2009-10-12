@@ -1,14 +1,14 @@
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Subject: Re: [PATCH -v1] MIPS: add IRQF_TIMER flag for Timer
-	Interrupts
-Date: Mon, 12 Oct 2009 01:59:39 +0900 (JST)
-Message-ID: <20091012.015939.165860325.anemo__10066.7169005193$1255371391$gmane$org@mba.ocn.ne.jp>
-References: <1255103450-12537-1-git-send-email-wuzhangjin@gmail.com>
+From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+Subject: Re: 2.6.32-rc4: Reported regressions 2.6.30 -> 2.6.31
+Date: Mon, 12 Oct 2009 12:22:01 +0000
+Message-ID: <20091012122201.GA31282__49561.8114051924$1255371483$gmane$org@gambetta>
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1255103450-12537-1-git-send-email-wuzhangjin@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,43 +18,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: wuzhangjin@gmail.com
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, ralf@linux-mips.org, linux-pm@lists.linux-foundation.org, yuasa@linux-mips.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri,  9 Oct 2009 23:50:50 +0800, Wu Zhangjin <wuzhangjin@gmail.com> wrote:
-> This patch add IRQF_TIMER flag for all Timer interrupts in linux-MIPS,
-> which will help to not disable the Timer IRQ when suspending to ensure
-> resuming normally(d6c585a4342a2ff627a29f9aea77c5ed4cd76023) and not
-> thread them when enabled PREEMPT_RT.
-> 
-> NOTE: Perhaps there are also some board-specific Timer interrupts
-> missing here!
-> 
-> (This -v1 version Incorporated the feedback from Atsushi Nemoto
->  <anemo@mba.ocn.ne.jp>.)
-> 
-> Acked-by: Thomas Gleixner <tglx@linutronix.de>
-> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
-> ---
->  arch/mips/jazz/irq.c                |    2 +-
->  arch/mips/kernel/cevt-bcm1480.c     |    2 +-
->  arch/mips/kernel/cevt-ds1287.c      |    2 +-
->  arch/mips/kernel/cevt-gt641xx.c     |    2 +-
->  arch/mips/kernel/cevt-r4k.c         |    2 +-
->  arch/mips/kernel/cevt-sb1250.c      |    2 +-
->  arch/mips/kernel/cevt-txx9.c        |    2 +-
->  arch/mips/kernel/i8253.c            |    2 +-
->  arch/mips/nxp/pnx8550/common/int.c  |    2 +-
->  arch/mips/nxp/pnx8550/common/time.c |    4 ++--
->  arch/mips/sgi-ip27/ip27-timer.c     |    2 +-
->  arch/mips/sni/time.c                |    2 +-
->  12 files changed, 13 insertions(+), 13 deletions(-)
+Hi Rafael,
 
-Thank you.
+On Mon, Oct 12, 2009 at 12:41:30AM +0200, Rafael J. Wysocki wrote:
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14185
+> Subject		: Oops in driversbasefirmware_class
+> Submitter	:  <lars_ericsson@telia.com>
+> Date		: 2009-09-17 05:09 (25 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=6e03a201bbe8137487f340d26aa662110e324b20
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14253
+> Subject		: Oops in driversbasefirmware_class
+> Submitter	: Lars Ericsson <Lars_Ericsson@telia.com>
+> Date		: 2009-09-16 20:44 (26 days old)
+> References	: http://lkml.org/lkml/2009/9/16/461
+> Handled-By	: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+> Patch		: http://patchwork.kernel.org/patch/49914/
+> 
+Those two are refering to the same bug.
 
-Acked-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-
----
-Atsushi Nemoto
+Regards,
+Frederik
