@@ -1,17 +1,15 @@
-From: Ondrej Hujnak <hujnak.ondrej@gmail.com>
-Subject: Re: Suspend to RAM on MSI PR200YA - do not recover,
-	system 	immediately turns down
-Date: Wed, 14 Oct 2009 22:10:00 +0200
-Message-ID: <37b436160910141310yc13f9ewa1def04c2e8e3101@mail.gmail.com>
-References: <37b436160910101054t7765c253ta98b983f226b57c3@mail.gmail.com>
-	<200910102334.42399.rjw@sisk.pl>
-	<37b436160910120849o6aae596w50e450b4838ed233@mail.gmail.com>
-	<200910122320.10059.rjw@sisk.pl>
+From: Alex Chiang <achiang@hp.com>
+Subject: Re: [PATCH] ACPI / PCI: Fix NULL pointer dereference
+	in	acpi_get_pci_dev() (rev. 2)
+Date: Wed, 14 Oct 2009 16:41:06 -0600
+Message-ID: <20091014224106.GF22797@ldl.fc.hp.com>
+References: <200910060130.43246.rjw@sisk.pl> <200910130101.57595.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200910122320.10059.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <200910130101.57595.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,73 +20,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, mschmidt@redhat.com, linux-kernel@vger.kernel.org
+Cc: chepioq@gmail.com, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Danny Feng <dfeng@redhat.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Dne 12.10.2009 23:20, Rafael J. Wysocki napsal(a):
-> On Monday 12 October 2009, Ondrej Hujnak wrote:
->
->> 2009/10/10 Rafael J. Wysocki<rjw@sisk.pl>:
->>
->>> On Saturday 10 October 2009, Ondrej Hujnak wrote:
->>>
->>>> Hello,
->>>>
->>>> I am trying to make work "Suspend to RAM".
->>>> My laptop is MSI PR200YA, linux
->>>> kernel 2.6.30.8-64.fc11.i586 (fedora 11, 32bit),
->>>> the same is with 2.6.31.1-56.fc12.i686.
->>>> Motherboard - MSI 1221, graphics:
->>>> Mobile GM965/GL960 Integrated Graphics Controller
->>>>
->>>> When I do suspend to RAM it seem to work ok, it sleeps.
->>>> But when I want to wake it, it only switches off (the power
->>>> LED stops blinking).  If I'm having my notebook connected
->>>> to electricity, after start it don't  start screen and keyboard.
->>>> Notebook is running, but there is no HDD activity according
->>>> to the LED indicator. When it is on battery, it normally starts,
->>>> as if I had switched it normally off. Every time after trying to
->>>> suspend it to RAM, on the next start I have
->>>> "last write to superblock in future".
->>>>
->>>> I tried:
->>>>   - suspend from "single" mode
->>>>   - suspend from "single" mode with as many modules as possible rmmod'ed
->>>>   - using "nomodeset"
->>>>   - early suspend-to-RAM at boot test with "test_suspend=mem"
->>>> All with the same result.
->>>>
->>>> I also tried using pm_trace, but this gave no useful results in dmesg
->>>> in the next boot. The clock was not changed by it (the documentation
->>>> said it would be).
->>>>
->>>> I have attached printout of "lspci -vv" and "dmesg" after switching
->>>> pm_trace on.
->>>>
->>>> I'd welcome any ideas how to debug this further.
->>>> I'm looking forward to your reply.
->>>>
->>> Does the pm_test 'core' test work (please see
->>> Documentation/power/basic-pm-debugging.txt)?
->>>
->>> Rafael
->>>
->>>
->> Ok, i tried all kinds of pm_test including core several times
->> and everything seemed ok. I got no error, failure..
->>
->> And i tried all possibilities of /sys/power/disk under
->>   "init=/bin/bash" and same result as above.
->>
-> That seems to indicate some kind of a BIOS issue.  However, several suspend
-> bugs are going to be fixes in 2.6.32, so perhaps you can try -rc6 or later,
-> when they are out.
->
+* Rafael J. Wysocki <rjw@sisk.pl>:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> acpi_get_pci_dev() may be called for a non-PCI device, in which case
+> it should return NULL.  However, it assumes that every handle it
+> finds in the ACPI CA name space, between given device handle and the
+> PCI root bridge handle, corresponds to a PCI-to-PCI bridge with an
+> existing secondary bus.  For this reason, when it finds a struct
+> pci_dev object corresponding to one of them, it doesn't check if
+> its 'subordinate' field is a valid pointer.  This obviously leads to
+> a NULL pointer dereference if acpi_get_pci_dev() is called for a
+> non-PCI device with a PCI parent which is not a bridge.
+> 
+> To fix this issue make acpi_get_pci_dev() check if pdev->subordinate
+> is not NULL for every device it finds on the path between the root
+> bridge and the device it's supposed to get to and return NULL if the
+> "target" device cannot be found.
+> 
+> Fixes http://bugzilla.kernel.org/show_bug.cgi?id=14129, which is a
+> regression from 2.6.30.
+ 
+Acked-by: Alex Chiang <achiang@hp.com>
+
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+> 
+> Jesse, Len,
+> 
+> This is a replacement for the original $subject patch (now in the Len's tree
+> as commit 5988eaded02e3cca2702f46efc255143468255bd).
+> 
+> The code was correct, but the comment and the changelog were not.  Please
+> use the one below instead.
+> 
 > Thanks,
 > Rafael
->
-I tried to flash BIOS, so I have it up to date now. And it didn't help at all.
-Being too eager to wait for -rc6 i tried v2.6.32-rc4-94-g80f5069, and it didn't
-help as well.
-
-Ondrej
+> 
