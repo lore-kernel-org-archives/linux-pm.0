@@ -1,15 +1,12 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] of/platform: Implement support for dev_pm_ops
-Date: Wed, 14 Oct 2009 15:55:40 +1100
-Message-ID: <1255496140.2347.36.camel__23215.9979561859$1255496220$gmane$org@pasglop>
-References: <20091012155041.GA1071@oksana.dev.rtsoft.ru>
-	<fa686aa40910121509n1b7dba87nbe9ddf34f0b4d7c@mail.gmail.com>
-	<20091012224410.GA18923@oksana.dev.rtsoft.ru>
+From: "Ai Li" <aili@codeaurora.org>
+Subject: adding handles to pm_qos?
+Date: Wed, 14 Oct 2009 11:24:19 -0600
+Message-ID: <000001ca4cf3$2a2da9c0$7e88fd40$@org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091012224410.GA18923@oksana.dev.rtsoft.ru>
+Content-Language: en-us
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,39 +16,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: avorontsov@ru.mvista.com
-Cc: Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, David Miller <davem@davemloft.net>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2009-10-13 at 02:44 +0400, Anton Vorontsov wrote:
+We are calling pm_qos from some of our drivers.  One concern is that
+each call of pm_qos_update_requirement() iterates through the client
+list and strcmp the client names.  It could be slow.  A proposal is
+that pm_qos provides handles that can be used on
+pm_qos_update_requirement().
 
-> I agree that there is some room for improvements in general (e.g.
-> merging platform and of_platform devices/drivers), but it's not as
-> easy as you would like to think. Let's make it in a separate step
-> that don't stop real features from being implemented (e.g.
-> hibernate).
-> 
-> For the six functions that we can reuse I can prepare a cleanup
-> patch that we can merge via -mm, or it can just sit and collect
-> needed acks and can be merged via any tree. But please, no
-> cross-tree dependencies for the cruicial features.
+For measurement purposes, I added get/put interfaces to
+acquire/release the handles and a new pm_qos_update_requirement
+function that bypasses the iteration and strcmp.  Here are some
+collected data:
 
-I agree. I'll take the patch for now.
+How many clock cycles does pm_qos_update_requirement take?
+when there is one client on this qos_class:
+    using handle        using name      using handle/using name
+avg 252.4               400.4           63%
 
-In the long run, I'm all for killing of_platform if we can find
-a "proper" way to replace it with platform.
+when there are 5 clients on this qos_class:
+    using handle        using name      using handle/using name
+avg 407.6               644.8           63%
 
-IE. With dev_archdata, any device carries the of device node, so
-of_platform doesn't really buy us much anymore.
+when there are 10 clients on this qos_class:
+    using handle        using name      using handle/using name
+avg 582.4               938.4           62%
 
-We could even "default" by populating platform device resources
-with standard-parsing of "reg" properties etc...
+Given the time differences, it seems worthwhile to add handles.
 
-So for devices who don't actually need anything more, we may get
-away re-using platform devices as-is, all we would need is some
-kind of conversion table or such to map OF match to platform dev names,
-or maybe a secondary match table in the drivers themselves.
-
-Anyway, that's an old discussion, something we still need to sort out...
-
-Ben.
+~Ai
