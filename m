@@ -1,14 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Hibernation out-of-memory problem.
-Date: Tue, 13 Oct 2009 22:35:55 +0200
-Message-ID: <200910132235.55703.rjw__12729.0802695372$1255466239$gmane$org@sisk.pl>
-References: <4AD0F4D0.2090809@vmware.com> <200910122317.59973.rjw@sisk.pl>
-	<4AD4D419.9000302@vmware.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] of/platform: Implement support for dev_pm_ops
+Date: Wed, 14 Oct 2009 15:55:40 +1100
+Message-ID: <1255496140.2347.36.camel__23215.9979561859$1255496220$gmane$org@pasglop>
+References: <20091012155041.GA1071@oksana.dev.rtsoft.ru>
+	<fa686aa40910121509n1b7dba87nbe9ddf34f0b4d7c@mail.gmail.com>
+	<20091012224410.GA18923@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4AD4D419.9000302@vmware.com>
+In-Reply-To: <20091012224410.GA18923@oksana.dev.rtsoft.ru>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,48 +19,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Hellstrom <thellstrom@vmware.com>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>
+To: avorontsov@ru.mvista.com
+Cc: Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, David Miller <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 13 October 2009, Thomas Hellstrom wrote:
-> Rafael J. Wysocki wrote:
-> > On Saturday 10 October 2009, Thomas Hellstrom wrote:
-> >   
-> >> Hi!
-> >>
-> >> I'm trying to port a graphics DRM device driver over to the new power 
-> >> management hooks in
-> >>
-> >> struct dev_pm_ops.
-> >>
-> >> During the "prepare" call, Video RAM contents may be copied either to 
-> >> shmem objects or pages allocated using alloc_page().
-> >> Unfortunately, this seems to lead to the hibernation process running out 
-> >> of free pages.
-> >>
-> >> One possible cause is that the function swsusp_shrink_memory() is called 
-> >> before the prepare() call, and therefore doesn't free up enough memory.
-> >>
-> >> What would be the correct way around this? Should swsusp_shrink_memory() 
-> >> be moved to after prepare(), or is it possible to get some kind of 
-> >> notification after user space processes is stopped, but before 
-> >> swsusp_shrink_memory()?
-> >>     
-> >
-> > There are suspend/hibernation notifiers that can be used for this purpose.
-> >
-> > Thanks,
-> > Rafael
-> >   
-> Thanks, Rafael. I tried that and it works fine.
+On Tue, 2009-10-13 at 02:44 +0400, Anton Vorontsov wrote:
+
+> I agree that there is some room for improvements in general (e.g.
+> merging platform and of_platform devices/drivers), but it's not as
+> easy as you would like to think. Let's make it in a separate step
+> that don't stop real features from being implemented (e.g.
+> hibernate).
 > 
-> Now, it may be that others will hit this problem as well, as the 
-> documentation in <linux/pm.h> states that it is safe to make
-> GFP_KERNEL allocations from within a prepare() callback. Such 
-> allocations executed in the prepare() preceeding a freeze() will 
-> probably make the amount of previously freed memory insufficient.
+> For the six functions that we can reuse I can prepare a cleanup
+> patch that we can merge via -mm, or it can just sit and collect
+> needed acks and can be merged via any tree. But please, no
+> cross-tree dependencies for the cruicial features.
 
-Could you please prepare a patch fixing that comment?
+I agree. I'll take the patch for now.
 
-Rafael
+In the long run, I'm all for killing of_platform if we can find
+a "proper" way to replace it with platform.
+
+IE. With dev_archdata, any device carries the of device node, so
+of_platform doesn't really buy us much anymore.
+
+We could even "default" by populating platform device resources
+with standard-parsing of "reg" properties etc...
+
+So for devices who don't actually need anything more, we may get
+away re-using platform devices as-is, all we would need is some
+kind of conversion table or such to map OF match to platform dev names,
+or maybe a secondary match table in the drivers themselves.
+
+Anyway, that's an old discussion, something we still need to sort out...
+
+Ben.
