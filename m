@@ -1,14 +1,17 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: Freeze the FUSE on Wubi
-Date: Fri, 16 Oct 2009 22:27:05 +1100
-Message-ID: <4AD85889.9010206@crca.org.au>
-References: <814979.58291.qm@web112806.mail.gq1.yahoo.com>
-	<20091016115854.1e476da8@strolchi.home.s3e.de>
+From: Martin Michlmayr <tbm@cyrius.com>
+Subject: Re: [PATCH] CPUidle: always return with interrupts
+	enabled
+Date: Fri, 16 Oct 2009 17:25:04 +0100
+Message-ID: <20091016162504.GC1391__12394.1174861558$1255715523$gmane$org@deprecation.cyrius.com>
+References: <1254332153-23493-1-git-send-email-khilman@deeprootsystems.com>
+	<200909302321.33088.rjw@sisk.pl>
+	<20091006133456.5177a32a.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091016115854.1e476da8@strolchi.home.s3e.de>
+Content-Disposition: inline
+In-Reply-To: <20091006133456.5177a32a.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,34 +21,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stefan Seyfried <stefan.seyfried@googlemail.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+* Andrew Morton <akpm@linux-foundation.org> [2009-10-06 13:34]:
+> Rigor mortis is setting in on this one.
 
-Stefan Seyfried wrote:
-> On Fri, 16 Oct 2009 01:54:10 -0700 (PDT)
-> Nick Davies <nickavies@yahoo.com> wrote:
-> 
->> Dear all,
->>
->>    I am trying to debug the suspend/hibernate on Wubi(The Ubuntu
->> installer for Windows) these day. Since Ubuntu sits on top of NTFS
->> partition with the help of ntfs-3g via FUSE, I think it should not
->> pass the file system freezing stage, but in fact, the suspend works
->> well on my machine. So  I am curious that how can they achieve that?
->> Just keep the FUSE alive to the end of the suspend? Any ideas are
->> welcome.
-> 
-> (Disclaimer: all below is AFAIK and it might be slightly wrong)
-> On swapon(), a block map of the file / partition is made by the kernel
-> and later I/O to the swap area are not going through the filesystem
-> layer. So FUSE is not involved in the suspend process at the stage of
-> image writing.
+> The patch seems correct to me.
 
-It's exactly right.
+Can someone put this patch in now?  The problem has also been reported
+on Marvell's Kirkwood platform (ARM) by a number of users and the
+patch fixes it.
 
-Regards,
+Tested-by: Martin Michlmayr <tbm@cyrius.com>
 
-Nigel
+Please CC stable when you commit the patch since it also needs to go
+in for 2.6.31.
+
+Reference with the patch: http://patchwork.kernel.org/patch/50728/
+-- 
+Martin Michlmayr
+http://www.cyrius.com/
