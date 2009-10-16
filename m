@@ -1,17 +1,10 @@
-From: Martin Michlmayr <tbm@cyrius.com>
-Subject: Re: [PATCH] CPUidle: always return with interrupts
-	enabled
-Date: Fri, 16 Oct 2009 17:25:04 +0100
-Message-ID: <20091016162504.GC1391__12394.1174861558$1255715523$gmane$org@deprecation.cyrius.com>
-References: <1254332153-23493-1-git-send-email-khilman@deeprootsystems.com>
-	<200909302321.33088.rjw@sisk.pl>
-	<20091006133456.5177a32a.akpm@linux-foundation.org>
+From: Priya Sehgal <priya.sehgal@gmail.com>
+Subject: how can we modify voltage on DVFS through Linux
+Date: Fri, 16 Oct 2009 15:27:59 -0400
+Message-ID: <9c3f89cc0910161227l599965c9me23d563642592cfc@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============3045458791587545050=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20091006133456.5177a32a.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,27 +12,57 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-* Andrew Morton <akpm@linux-foundation.org> [2009-10-06 13:34]:
-> Rigor mortis is setting in on this one.
+--===============3045458791587545050==
+Content-Type: multipart/alternative; boundary=000325557516c89edd04761264f7
 
-> The patch seems correct to me.
+--000325557516c89edd04761264f7
+Content-Type: text/plain; charset=ISO-8859-1
 
-Can someone put this patch in now?  The problem has also been reported
-on Marvell's Kirkwood platform (ARM) by a number of users and the
-patch fixes it.
+Hello,
+I am working on DVFS capable CPU - Nehalem quad core and I need to modify
+the
+CPU speed and voltage. I disabled cpuspeed service on my machine and
+modified
+some piece of cpuspeed code, to change the frequency of all the CPUs the way
+I want.
 
-Tested-by: Martin Michlmayr <tbm@cyrius.com>
+I am curious whether the voltage gets increased and decreased in proportion
+to the
+frequency, or can we control the voltage separately. I could not locate any
+/sys entries for voltage
+only for frequency.
 
-Please CC stable when you commit the patch since it also needs to go
-in for 2.6.31.
-
-Reference with the patch: http://patchwork.kernel.org/patch/50728/
 -- 
-Martin Michlmayr
-http://www.cyrius.com/
+Regards,
+Priya
+
+--000325557516c89edd04761264f7
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hello,<br>I am working on DVFS capable CPU - Nehalem quad core and I need t=
+o modify the<br>CPU speed and voltage. I disabled cpuspeed service on my ma=
+chine and modified <br>some piece of cpuspeed code, to change the frequency=
+ of all the CPUs the way I want.<br>
+<br>I am curious whether the voltage gets increased and decreased in propor=
+tion to the <br>frequency, or can we control the voltage separately. I coul=
+d not locate any /sys entries for voltage<br>only for frequency.<br clear=
+=3D"all">
+<br>-- <br>Regards,<br>Priya<br>
+
+--000325557516c89edd04761264f7--
+
+--===============3045458791587545050==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============3045458791587545050==--
