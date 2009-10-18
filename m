@@ -1,14 +1,12 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: Freeze the FUSE on Wubi
-Date: Sun, 18 Oct 2009 08:02:49 +1100
-Message-ID: <4ADA30F9.2060400@crca.org.au>
-References: <814979.58291.qm@web112806.mail.gq1.yahoo.com>	<20091016115854.1e476da8@strolchi.home.s3e.de>	<4AD85889.9010206@crca.org.au>	<493410.12916.qm@web112815.mail.gq1.yahoo.com>	<4AD99794.2090507@crca.org.au>
-	<588347.1826.qm@web112813.mail.gq1.yahoo.com>
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: acpi battery: crash after inserting battery at wrong
+ time during hibernation
+Date: Sun, 18 Oct 2009 15:41:38 +0100
+Message-ID: <4ADB2922.9060008__23541.1919690252$1255876869$gmane$org@tuffmail.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <588347.1826.qm@web112813.mail.gq1.yahoo.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,78 +16,103 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nick Davies <nickavies@yahoo.com>
-Cc: linux-pm@lists.linux-foundation.org, Stefan Seyfried <stefan.seyfried@googlemail.com>
+To: Alexey Starikovskiy <aystarik@gmail.com>, linux acpi <linux-acpi@vger.kernel.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Hi
 
-Nick Davies wrote:
->> Nick Davies wrote:
->>>> Stefan Seyfried wrote:
->>>>> On Fri, 16 Oct 2009 01:54:10 -0700 (PDT)
->>>>> Nick Davies wrote:
->>>>>
->>>>>> Dear all,
->>>>>>
->>>>>>    I am trying to debug the suspend/hibernate on Wubi(The Ubuntu
->>>>>> installer for Windows) these day. Since Ubuntu sits on top of NTFS
->>>>>> partition with the help of ntfs-3g via FUSE, I think it should not
->>>>>> pass the file system freezing stage, but in fact, the suspend works
->>>>>> well on my machine. So  I am curious that how can they achieve that?
->>>>>> Just keep the FUSE alive to the end of the suspend? Any ideas are
->>>>>> welcome.
->>>>> (Disclaimer: all below is AFAIK and it might be slightly wrong)
->>>>> On swapon(), a block map of the file / partition is made by the kernel
->>>>> and later I/O to the swap area are not going through the filesystem
->>>>> layer. So FUSE is not involved in the suspend process at the stage of
->>>>> image writing.
->>>> It's exactly right.
->>> Hi,
->>>
->>>   Thanks for all your quick response. That is to say, the suspend itself has 
->> no conflict with the FUSE when do the freezing?
->>>  
->>> To Nigel,
->>>   I've tried the TuxOnIce project, unfortunately I can't do suspend now. 
->> According to the dmesg log, it hangs at the freezing file system. 
->>>   I check some codes of your patch. You've patched freeze_filesystems() to the 
->> fs/buffer.c file, so I guess there may be something wrong with the freeze order 
->> in that subroutine with my situation(OS sits on top of NTFS using ntfs-3g via 
->> FUSE). How your opinions?
->>
->> Hmm. That's interesting - I'd expect things to be the other way around.
->>
->> Can you provide the dmesg?
-> 
-> Actually, my test machine hangs, I just write down some debug info on screen by hands:
-> "...
->  ...
->  [  364.413692] Considering devpts.: (root f6c03750, bdev 0)<6>Nope.
->  [  364.413700] Considering inotifyfs.: (root f6c04900, bdev 0)<6>Nope.
->  [  364.413707] Considering tmpfs.: (root f6c04240, bdev 0)<6>Nope.
->  [  364.413714] Considering anon_inodefs.: (root f6c03090, bdev 0)<6>Nope.
->  [  364.413722] Considering pipefs.: (root f6c03000, bdev 0)<6>Nope.
->  [  364.413729] Considering debugfs.: (root f6c02480, bdev 0)<6>Nope.
->  [  364.413737] Considering sockfs.: (root f6c02360, bdev 0)<6>Nope.
-> "
->  So I guess the freezing filesystem has met some troubles.
-> 
->  If you want me to do more tests, please let me know.
+This crash happened with 2.6.32-rc4+, but I suspect it's not a 
+regression, just a rare race condition.  As normal, I initiated 
+hibernation, plugged in my battery, and removed the mains power.  I did 
+more or less the reverse on resume.
 
-TuxOnIce definitely doesn't support hibernating to a fuse filesystem,
-and I don't believe swsusp does either.
 
-When you say "I can't do suspend now", do you mean suspend to RAM?
+[87672.698198] HDA Intel 0000:00:1b.0: PCI INT A disabled
+[87672.711285] pci 0000:00:02.0: PCI INT A disabled
+[87672.712076] ACPI: Preparing to enter system sleep state S4
+[87672.732153] PM: Saving platform NVS memory
+[87672.734911] power_supply BAT0: parent PNP0C0A:00 should not be sleeping
 
-For suspend to RAM, I'd expect it to fail and back out nicely in the
-worst case. From what you write, it sounds like that's not happening. If
-I'm right in thinking that you're talking about suspend to ram and this
-is what is happening, would you be able to get more lines of dmesg than
-the above? (Something like vga=2 on the boot commandline IIRC)? Don't
-worry about writing down timings - just the stuff after "Considering..."
-would do - or a digital camera picture if it's clear enough.
+This first error message is from device_pm_add() in 
+drivers/base/power/main.c.  It's clear what this means; BAT0 was created 
+when the battery was inserted, even though it's parent device was 
+supposed to be suspended.  In general this sounds pretty bad - I guess 
+it means we will suspend the system without suspending the new child 
+device.  I'm not sure why it would cause the specific backtrace below 
+though.
 
-Thanks!
+[87672.763640] PM: Creating hibernation image:
+[87672.764573] PM: Need to copy 56490 pages
+[87672.764573] PM: Restoring platform NVS memory
+[87672.764573] ACPI: Waking up from system sleep state S4
 
-Nigel
+On resume, the battery was removed again, and this happens
+(extracted from messages.log, which seems to miss certain standard 
+BUG/OOPS lines).
+
+[87673.506817] *pdpt = 00000000173b9001 *pde = 0000000000000000
+[87673.507175] Modules linked in: eeepc_laptop pci_hotplug af_packet 
+i915 drm_kms_helper drm i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect 
+ipv6 loop joydev snd_hda_codec_realtek snd_hda_intel snd_hda_codec 
+snd_hwdep ath5k snd_pcm_oss mac80211 uvcvideo snd_mixer_oss ath videodev 
+snd_pcm v4l1_compat i2c_i801 cfg80211 snd_timer psmouse snd pcspkr 
+i2c_core serio_raw rfkill snd_page_alloc battery ac processor evdev 
+intel_agp video agpgart backlight output button thermal fan [last 
+unloaded: pci_hotplug]
+[87673.508520]
+[87673.508520] Pid: 98, comm: kacpi_notify Not tainted 
+(2.6.32-rc4eeepc-test #16) 701
+[87673.508520] EIP: 0060:[<c02e5f4e>] EFLAGS: 00010246 CPU: 0
+[87673.508520] EIP is at led_trigger_unregister+0x18/0x8a
+[87673.508520] EAX: 00200200 EBX: dbec24a0 ECX: 00000000 EDX: 00100100
+[87673.508520] ESI: dbec24a0 EDI: d7587a00 EBP: df12def4 ESP: df12dee8
+[87673.508520] DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+[87673.508520] dbec24a0 00000000 d7587a00 df12df00 c02e5fcf d7587a0c 
+df12df0c c02e168c
+[87673.508520] <0> d7587a0c df12df18 c02e10bb d7587a00 df12df24 e008d04d 
+d7587a00 df12df44
+[87673.508520] <0> e008d2bd 000026c0 df12df54 c0198903 c0249319 00000081 
+df148800 df12df58
+[87673.508520] [<c02e5fcf>] ? led_trigger_unregister_simple+0xf/0x19
+[87673.508520] [<c02e168c>] ? power_supply_remove_triggers+0x14/0x4c
+[87673.508520] [<c02e10bb>] ? power_supply_unregister+0x12/0x24
+[87673.508520] [<e008d04d>] ? sysfs_remove_battery+0x1f/0x29 [battery]
+[87673.508520] [<e008d2bd>] ? acpi_battery_update+0x3d/0x1e4 [battery]
+[87673.508520] [<c0198903>] ? kmem_cache_free+0x7a/0xb1
+[87673.508520] [<c0249319>] ? acpi_os_release_object+0x8/0xc
+[87673.508520] [<e008d995>] ? acpi_battery_notify+0x1e/0x72 [battery]
+[87673.508520] [<c024b4d2>] ? acpi_device_notify+0x12/0x15
+[87673.508520] [<c0256142>] ? acpi_ev_notify_dispatch+0x4c/0x57
+[87673.508520] [<c0249400>] ? acpi_os_execute_deferred+0x1d/0x28
+[87673.508520] [<c013ca1a>] ? worker_thread+0x111/0x184
+[87673.508520] [<c02493e3>] ? acpi_os_execute_deferred+0x0/0x28
+[87673.508520] [<c013f601>] ? autoremove_wake_function+0x0/0x30
+[87673.508520] [<c013c909>] ? worker_thread+0x0/0x184
+[87673.508520] [<c013f472>] ? kthread+0x60/0x66
+[87673.508520] [<c013f412>] ? kthread+0x0/0x66
+[87673.508520] [<c0107aab>] ? kernel_thread_helper+0x7/0x10
+[87673.517367] ---[ end trace a56e8fbd666eda59 ]---
+
+My system was then rendered unusable by a storm of segfaults.
+
+[87673.528512] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+...
+[87674.680592] Restarting tasks ... done.
+[87674.758624] console-kit-dae[1757]: segfault at ac7dfff4 ip b76ff668 
+sp b74802c0 error 4 in libglib-2.0.so.0.2200.0[b769b000+b6000]
+...
+[87675.035585] in libglib-2.0.so.0.2200.0[b769b000+b6000]
+[87696.282399] __ratelimit: 13 callbacks suppressed
+...
+
+
+
+So at minimum, we want to avoid the initial error message.  We could 
+easily stop the ACPI battery driver from doing anything if it's 
+suspended (it will re-read the updated state on resume anyway).  But 
+perhaps the real problem is that the ACPI core calls notify() between 
+suspend() and resume()?  Should we fix that instead?
+
+Regards
+Alan
