@@ -1,19 +1,12 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [PATCH/RFC] Runtime PM: ARM: subarch-specific
-	extensions of pdev_archdata
-Date: Mon, 26 Oct 2009 16:13:35 -0700
-Message-ID: <87k4yhagv4.fsf__47401.7953304157$1256598924$gmane$org@deeprootsystems.com>
-References: <1253670648-28610-1-git-send-email-khilman@deeprootsystems.com>
-	<f17812d70909222153y4a0e4fc2n496ea2e6caaac847@mail.gmail.com>
-	<19129.63264.653666.70492@pilspetsen.it.uu.se>
-	<4ABAAF1D.6090907@deeprootsystems.com>
-	<f17812d70909231630i20f64328k8d604c3436094b85@mail.gmail.com>
+From: "Dasgupta, Romit" <romit@ti.com>
+Subject: [PATCH] PM: Fixes warning on suspend errors
+Date: Tue, 27 Oct 2009 17:31:30 +0530
+Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301DE0DC96A__13961.7575485774$1256645012$gmane$org@dbde02.ent.ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <f17812d70909231630i20f64328k8d604c3436094b85@mail.gmail.com>
-	(Eric Miao's message of "Thu\, 24 Sep 2009 07\:30\:40 +0800")
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,45 +16,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, Mikael Pettersson <mikpe@it.uu.se>, linux-arm-kernel@lists.infradead.org
+To: "Hilman, Kevin" <khilman@ti.com>, "rjw@sisk.pl" <rjw@sisk.pl>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Eric Miao <eric.y.miao@gmail.com> writes:
+Hi,
+     I get the following errors when I choose devices in /sys/power/pm_test. It also shows that if 'dpm_suspend_start' fails somewhere down the line then the kernel does not reset the 'transition_started' variable and we can get warning similar to below. IMHO 'dpm_resume_noirq' is not the right place for setting this variable. Please see the patch below which fixes the issue.
 
-> On Thu, Sep 24, 2009 at 7:28 AM, Kevin Hilman
-> <khilman@deeprootsystems.com> wrote:
->> Mikael Pettersson wrote:
->>>
->>> Eric Miao writes:
->>> =A0> On Wed, Sep 23, 2009 at 9:50 AM, Kevin Hilman
->>> =A0> <khilman@deeprootsystems.com> wrote:
->>> =A0> > On ARM platforms, power management can be very platform specific.
->>> =A0> > This patch allows ARM subarches to extend the platform_device
->>> =A0> > pdev_archdata for each subarch by creating a new struct pdev_mac=
-hdata
->>> =A0> > and allowing each subarch to customize it as needed.
->>> =A0> >
->>> =A0> > As a starting point, each subarch's <mach/device.h> creates an e=
-mpty
->>> =A0> > struct pdev_machdata.
->>> =A0> >
->>> =A0> =A0> Shouldn't that pdev_archdata and pdev_machdata be pointer or
->>> something
->>> =A0> so that multiple platform_device can share something in common?
->>>
->>> Forcing it to be a pointer has allocation and lifetime implications.
->>> Making it a struct allows the subarch to duplicate or share
->>> (via a private pointer) data as it sees fit.
->>
->> Yes, the allocation/lifetime issues were why a struct was chosen.
->>
->
-> Mmm... this makes sense to me. I'm ok with this patch - just wondering
-> for the moment what to put for the pxa architecture - I'll see what davin=
-ci
-> will do first, of course :)
+Thanks,
+-Romit
 
-OK, after no further comments, sending this patch to the patch system.
 
-Kevin
+# [  113.713958] mmcblk0: mmc1:0001 STM16G 14.8 GiB
+[  113.718902]  mmcblk0: unknown partition table
+[  113.745574] ------------[ cut here ]------------
+[  113.751525] WARNING: at drivers/base/power/main.c:98 device_pm_add+0x94/0xdc()
+[  113.758819] Device: bdi
+[  113.758819] Parentless device registered during a PM transaction
+[  113.773071] Modules linked in:
+[  113.776214] [<c002b87c>] (unwind_backtrace+0x0/0xdc) from [<c004ff58>] (warn_slowpath_common+0x48/0x60)
+[  113.785705] [<c004ff58>] (warn_slowpath_common+0x48/0x60) from [<c004ffa8>] (warn_slowpath_fmt+0x24/0x30)
+[  113.799896] [<c004ffa8>] (warn_slowpath_fmt+0x24/0x30) from [<c01b36b8>] (device_pm_add+0x94/0xdc)
+[  113.808990] [<c01b36b8>] (device_pm_add+0x94/0xdc) from [<c01ad9bc>] (device_add+0x3a8/0x534)
+[  113.817565] [<c01ad9bc>] (device_add+0x3a8/0x534) from [<c01adbd8>] (device_create_vargs+0x78/0xa8)
+[  113.829650] [<c01adbd8>] (device_create_vargs+0x78/0xa8) from [<c0090a9c>] (bdi_register+0x3c/0x154)
+[  113.839263] [<c0090a9c>] (bdi_register+0x3c/0x154) from [<c0090bd4>] (bdi_register_dev+0x20/0x28)
+[  113.851348] [<c0090bd4>] (bdi_register_dev+0x20/0x28) from [<c0173b98>] (add_disk+0xe4/0x124)
+[  113.859954] [<c0173b98>] (add_disk+0xe4/0x124) from [<c01e6b54>] (mmc_blk_probe+0x250/0x288)
+[  113.870513] [<c01e6b54>] (mmc_blk_probe+0x250/0x288) from [<c01e14d4>] (mmc_bus_probe+0x18/0x1c)
+[  113.879394] [<c01e14d4>] (mmc_bus_probe+0x18/0x1c) from [<c01af97c>] (driver_probe_device+0xa0/0x14c)
+[  113.893890] [<c01af97c>] (driver_probe_device+0xa0/0x14c) from [<c01aef44>] (bus_for_each_drv+0x44/0x80)
+[  113.905609] [<c01aef44>] (bus_for_each_drv+0x44/0x80) from [<c01afb60>] (device_attach+0x50/0x68)
+[  113.914550] [<c01afb60>] (device_attach+0x50/0x68) from [<c01aed94>] (bus_probe_device+0x24/0x40)
+[  113.925170] [<c01aed94>] (bus_probe_device+0x24/0x40) from [<c01ad9f0>] (device_add+0x3dc/0x534)
+[  113.934082] [<c01ad9f0>] (device_add+0x3dc/0x534) from [<c01e1688>] (mmc_add_card+0xcc/0x118)
+[  113.945251] [<c01e1688>] (mmc_add_card+0xcc/0x118) from [<c01e2408>] (mmc_attach_mmc+0xdc/0x13c)
+[  113.954132] [<c01e2408>] (mmc_attach_mmc+0xdc/0x13c) from [<c01e12f0>] (mmc_rescan+0x2b0/0x2e8)
+[  113.964874] [<c01e12f0>] (mmc_rescan+0x2b0/0x2e8) from [<c0060840>] (worker_thread+0x16c/0x218)
+[  113.973693] [<c0060840>] (worker_thread+0x16c/0x218) from [<c0063d88>] (kthread+0x7c/0x84)
+[  113.986694] [<c0063d88>] (kthread+0x7c/0x84) from [<c0026ea0>] (kernel_thread_exit+0x0/0x8)
+[  113.995147] ---[ end trace aaa7bf5becc572f5 ]---
+
+
+
+
+Fixes the location where we decide that our power transition is complete.
+Signed-off-by: Romit Dasgupta <romit@ti.com>
+---
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index e0dc407..6b9e991 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -365,7 +365,6 @@ void dpm_resume_noirq(pm_message_t state)
+ 	struct device *dev;
+ 
+ 	mutex_lock(&dpm_list_mtx);
+-	transition_started = false;
+ 	list_for_each_entry(dev, &dpm_list, power.entry)
+ 		if (dev->power.status > DPM_OFF) {
+ 			int error;
+@@ -529,6 +528,7 @@ static void dpm_complete(pm_message_t state)
+ 		put_device(dev);
+ 	}
+ 	list_splice(&list, &dpm_list);
++	transition_started = false;
+ 	mutex_unlock(&dpm_list_mtx);
+ }
