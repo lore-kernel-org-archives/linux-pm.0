@@ -1,15 +1,15 @@
-From: "Dasgupta, Romit" <romit@ti.com>
-Subject: Re: [PATCH] PM: Fixes warning on suspend errors
-Date: Tue, 27 Oct 2009 20:00:51 +0530
-Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301DE0DCA79__23798.3188745149$1256654032$gmane$org@dbde02.ent.ti.com>
-References: <B85A65D85D7EB246BE421B3FB0FBB59301DE0DC96A@dbde02.ent.ti.com>
-	<Pine.LNX.4.44L0.0910270936450.2882-100000@iolanthe.rowland.org>
+From: "Ai Li" <aili@codeaurora.org>
+Subject: Re: adding handles to pm_qos?
+Date: Tue, 27 Oct 2009 18:37:58 -0600
+Message-ID: <000301ca5766$e671f870$b355e950$@org>
+References: <000001ca4cf3$2a2da9c0$7e88fd40$@org>
+	<20091023225304.GA32562@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0910270936450.2882-100000@iolanthe.rowland.org>
-Content-Language: en-US
+In-Reply-To: <20091023225304.GA32562@linux.intel.com>
+Content-Language: en-us
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,84 +19,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Hilman, Kevin" <khilman@ti.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: mgross@linux.intel.com
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Ok. Then the following is the refined and probably more appropriate one.
-
-
-
-This fixes the point where we need to complete the power transition when 
-device suspend fails.
-
-Signed-off-by: Romit Dasgupta <romit@ti.com>
----
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index e0dc407..3d0b26a 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -444,6 +444,7 @@ static void dpm_resume(pm_message_t state)
- 
- 	INIT_LIST_HEAD(&list);
- 	mutex_lock(&dpm_list_mtx);
-+	transition_started = false;
- 	while (!list_empty(&dpm_list)) {
- 		struct device *dev = to_device(dpm_list.next);
-
-
-
-
-
-> -----Original Message-----
-> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
-> owner@vger.kernel.org] On Behalf Of Alan Stern
-> Sent: Tuesday, October 27, 2009 7:08 PM
-> To: Dasgupta, Romit
-> Cc: Hilman, Kevin; rjw@sisk.pl; linux-pm@lists.linux-foundation.org; linux-
-> omap@vger.kernel.org; linux-kernel@vger.kernel.org
-> Subject: Re: [linux-pm] [PATCH] PM: Fixes warning on suspend errors
+> How often are you calling pm_qos_update_requirement?
 > 
-> On Tue, 27 Oct 2009, Dasgupta, Romit wrote:
+> I think calling pm_qos_ interfaces too often makes me wonder
+> about my
+> assumptions and your sanity.
 > 
-> > Hi,
-> >      I get the following errors when I choose devices in /sys/power/pm_test. It
-> also shows that if 'dpm_suspend_start' fails somewhere down the line then
-> the kernel does not reset the 'transition_started' variable and we can get
-> warning similar to below. IMHO 'dpm_resume_noirq' is not the right place for
-> setting this variable. Please see the patch below which fixes the issue.
+> Can you explain why the pm_qos_update_requirement is getting hit
+> often
+> enough to bother with this change?
 > 
-> > Fixes the location where we decide that our power transition is complete.
-> > Signed-off-by: Romit Dasgupta <romit@ti.com>
-> > ---
-> > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> > index e0dc407..6b9e991 100644
-> > --- a/drivers/base/power/main.c
-> > +++ b/drivers/base/power/main.c
-> > @@ -365,7 +365,6 @@ void dpm_resume_noirq(pm_message_t state)
-> >  	struct device *dev;
-> >
-> >  	mutex_lock(&dpm_list_mtx);
-> > -	transition_started = false;
-> >  	list_for_each_entry(dev, &dpm_list, power.entry)
-> >  		if (dev->power.status > DPM_OFF) {
-> >  			int error;
-> > @@ -529,6 +528,7 @@ static void dpm_complete(pm_message_t state)
-> >  		put_device(dev);
-> >  	}
-> >  	list_splice(&list, &dpm_list);
-> > +	transition_started = false;
-> >  	mutex_unlock(&dpm_list_mtx);
-> >  }
+> Other than that I don't have a problem with moving to handles,
+> if its a
+> practical change made for reasons other than making api abuse
+> less
+> painful.
 > 
-> The second hunk is okay, but the first hunk isn't.  We want to set
-> transition_started to false as soon as devices start resuming, because
-> once a resume has begun it's okay to add new devices.
+> Further, If the implicit assumption that pmqos calls are on cold
+> paths
+> is wrong, then perhaps more thought is needed than just changing
+> things
+> to handle based searches.
 > 
-> Alan Stern
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+Our embedded platforms support different low power modes.  With the
+modes, the deeper the sleep, the more the power savings, and the
+larger the interrupt latency coming out of the low power mode.
+
+To help the platform achieving greatest power savings, some of our
+device drivers set lateny qos only when there is a service request to
+the driver or a device transaction.  When the transaction or request
+is done, the drivers cancel the QoS with
+pm_qos_update_requirement(PM_QOS_DEFAULT_VALUE), allowing the
+platform to reach a deeper sleep.  
+
+The approach gives us good power savings.  However when there are
+lots of transactions, pm_qos_update_requirement() gets called a lot
+of times.
+
+~Ai
