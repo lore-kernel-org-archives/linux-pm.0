@@ -1,15 +1,12 @@
-From: "Ai Li" <aili@codeaurora.org>
-Subject: Re: adding handles to pm_qos?
-Date: Tue, 27 Oct 2009 18:37:58 -0600
-Message-ID: <000301ca5766$e671f870$b355e950$@org>
-References: <000001ca4cf3$2a2da9c0$7e88fd40$@org>
-	<20091023225304.GA32562@linux.intel.com>
+From: Ferenc Wagner <wferi@niif.hu>
+Subject: Re: intermittent suspend problem again
+Date: Wed, 28 Oct 2009 12:43:29 +0100
+Message-ID: <87fx93pwv2.fsf@tac.ki.iif.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091023225304.GA32562@linux.intel.com>
-Content-Language: en-us
+In-Reply-To: Ferenc Wagner's message of "Thu, 30 Jul 2009 13:29:46 +0200"
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,46 +16,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: mgross@linux.intel.com
-Cc: linux-pm@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-> How often are you calling pm_qos_update_requirement?
-> 
-> I think calling pm_qos_ interfaces too often makes me wonder
-> about my
-> assumptions and your sanity.
-> 
-> Can you explain why the pm_qos_update_requirement is getting hit
-> often
-> enough to bother with this change?
-> 
-> Other than that I don't have a problem with moving to handles,
-> if its a
-> practical change made for reasons other than making api abuse
-> less
-> painful.
-> 
-> Further, If the implicit assumption that pmqos calls are on cold
-> paths
-> is wrong, then perhaps more thought is needed than just changing
-> things
-> to handle based searches.
-> 
+Hi,
 
-Our embedded platforms support different low power modes.  With the
-modes, the deeper the sleep, the more the power savings, and the
-larger the interrupt latency coming out of the low power mode.
-
-To help the platform achieving greatest power savings, some of our
-device drivers set lateny qos only when there is a service request to
-the driver or a device transaction.  When the transaction or request
-is done, the drivers cancel the QoS with
-pm_qos_update_requirement(PM_QOS_DEFAULT_VALUE), allowing the
-platform to reach a deeper sleep.  
-
-The approach gives us good power savings.  However when there are
-lots of transactions, pm_qos_update_requirement() gets called a lot
-of times.
-
-~Ai
+Something similar to http://bugzilla.kernel.org/show_bug.cgi?id=13894
+raised its ugly head again, please see my last comments on that bug.
+2.6.32-rc5 feels particularly bad, with frequent failures to switch
+off the machine after "S|" or freezes after "Snapshotting system".
+The former does not cause much trouble in itself, as the machine can
+be switched off and resumed all right, but the latter is nasty.
+Suspend to RAM works all the time.  The issue is not reproducible,
+unfortunately, and the kernel change happened almost together with a
+BIOS upgrade.  Yesterday I switched back to 2.6.31 to see whether it
+still works stably with the new BIOS.  I'll report back my findings in
+a couple of days.
+-- 
+Regards,
+Feri.
