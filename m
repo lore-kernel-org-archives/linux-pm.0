@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: intermittent suspend problem again
-Date: Wed, 28 Oct 2009 19:56:44 +0100
-Message-ID: <200910281956.44791.rjw@sisk.pl>
-References: <87fx93pwv2.fsf@tac.ki.iif.hu>
+Subject: Re: [PATCH] PM: Fixes warning on suspend errors
+Date: Wed, 28 Oct 2009 23:06:34 +0100
+Message-ID: <200910282306.34431.rjw__40009.7168436789$1256767661$gmane$org@sisk.pl>
+References: <B85A65D85D7EB246BE421B3FB0FBB59301DE0DC96A@dbde02.ent.ti.com>
+	<Pine.LNX.4.44L0.0910270936450.2882-100000@iolanthe.rowland.org>
+	<B85A65D85D7EB246BE421B3FB0FBB59301DE0DCA79@dbde02.ent.ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87fx93pwv2.fsf@tac.ki.iif.hu>
+In-Reply-To: <B85A65D85D7EB246BE421B3FB0FBB59301DE0DCA79@dbde02.ent.ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,33 +19,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Dasgupta, Romit" <romit@ti.com>
+Cc: "Hilman, Kevin" <khilman@ti.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 28 October 2009, Ferenc Wagner wrote:
-> Hi,
+On Tuesday 27 October 2009, Dasgupta, Romit wrote:
+> Ok. Then the following is the refined and probably more appropriate one.
 > 
-> Something similar to http://bugzilla.kernel.org/show_bug.cgi?id=13894
-> raised its ugly head again, please see my last comments on that bug.
+> 
+> 
+> This fixes the point where we need to complete the power transition when 
+> device suspend fails.
+> 
+> Signed-off-by: Romit Dasgupta <romit@ti.com>
+> ---
+> 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index e0dc407..3d0b26a 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -444,6 +444,7 @@ static void dpm_resume(pm_message_t state)
+>  
+>  	INIT_LIST_HEAD(&list);
+>  	mutex_lock(&dpm_list_mtx);
+> +	transition_started = false;
+>  	while (!list_empty(&dpm_list)) {
+>  		struct device *dev = to_device(dpm_list.next);
+> 
 
-This very well may be a separete bug, so please file a new bugzilla report
-on this and mark it as a regression.
+Applied to suspend-2.6/linux-next.
 
-> 2.6.32-rc5 feels particularly bad, with frequent failures to switch
-> off the machine after "S|" or freezes after "Snapshotting system".
-> The former does not cause much trouble in itself, as the machine can
-> be switched off and resumed all right, but the latter is nasty.
-> Suspend to RAM works all the time.  The issue is not reproducible,
-> unfortunately, and the kernel change happened almost together with a
-> BIOS upgrade.  Yesterday I switched back to 2.6.31 to see whether it
-> still works stably with the new BIOS.  I'll report back my findings in
-> a couple of days.
-
-OK, thanks.
-
-Still, I'm really afraid we won't be able to debug it any further without a
-reproducible test case.
-
-Best,
+Thanks,
 Rafael
