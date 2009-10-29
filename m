@@ -1,13 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/1] PM / Hibernate: swap, use KERN_CONT
-Date: Wed, 28 Oct 2009 23:08:52 +0100
-Message-ID: <200910282308.52955.rjw__14804.4687383392$1256768036$gmane$org@sisk.pl>
-References: <1255176024-12420-1-git-send-email-jirislaby@gmail.com>
+From: Ferenc Wagner <wferi@niif.hu>
+Subject: Re: intermittent suspend problem again
+Date: Thu, 29 Oct 2009 01:11:54 +0100
+Message-ID: <87d447m52t.fsf@tac.ki.iif.hu>
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200910281956.44791.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1255176024-12420-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <200910281956.44791.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Wed, 28 Oct 2009 19:56:44 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,49 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 10 October 2009, Jiri Slaby wrote:
-> Use KERN_CONT in save_image for printks. So that anybody won't
-> try to add a loglevel.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+
+> On Wednesday 28 October 2009, Ferenc Wagner wrote:
 > 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+>> Something similar to http://bugzilla.kernel.org/show_bug.cgi?id=13894
+>> raised its ugly head again, please see my last comments on that bug.
+>
+> This very well may be a separete bug, so please file a new bugzilla report
+> on this and mark it as a regression.
 
-Applied to suspend-2.6/linux-next.
+Done.
 
-Thanks,
-Rafael
+>> 2.6.32-rc5 feels particularly bad, with frequent failures to switch
+>> off the machine after "S|" or freezes after "Snapshotting system".
+>> The former does not cause much trouble in itself, as the machine can
+>> be switched off and resumed all right, but the latter is nasty.
+>> Suspend to RAM works all the time.  The issue is not reproducible,
+>> unfortunately, and the kernel change happened almost together with a
+>> BIOS upgrade.  Yesterday I switched back to 2.6.31 to see whether it
+>> still works stably with the new BIOS.  I'll report back my findings in
+>> a couple of days.
+>
+> OK, thanks.
+>
+> Still, I'm really afraid we won't be able to debug it any further without a
+> reproducible test case.
 
-
-> ---
->  kernel/power/swap.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-> index 47586d9..4c0f80b 100644
-> --- a/kernel/power/swap.c
-> +++ b/kernel/power/swap.c
-> @@ -437,7 +437,7 @@ static int save_image(struct swap_map_handle *handle,
->  		if (ret)
->  			break;
->  		if (!(nr_pages % m))
-> -			printk("\b\b\b\b%3d%%", nr_pages / m);
-> +			printk(KERN_CONT "\b\b\b\b%3d%%", nr_pages / m);
->  		nr_pages++;
->  	}
->  	err2 = wait_on_bio_chain(&bio);
-> @@ -445,9 +445,9 @@ static int save_image(struct swap_map_handle *handle,
->  	if (!ret)
->  		ret = err2;
->  	if (!ret)
-> -		printk("\b\b\b\bdone\n");
-> +		printk(KERN_CONT "\b\b\b\bdone\n");
->  	else
-> -		printk("\n");
-> +		printk(KERN_CONT "\n");
->  	swsusp_show_speed(&start, &stop, nr_to_write, "Wrote");
->  	return ret;
->  }
-> 
+I've got another, fully reproducible but nevertheless neglected ACPI
+problem, already mentioned in #13894:
+https://bugs.freedesktop.org/show_bug.cgi?id=22126.  Well, it's
+probably far-fetched, but maybe the two are somehow related...  Can't
+you perhaps suggest a way forward there?  Or some tricks to create a
+reproducible test case here?  Btw. my gut feeling is that hibernation
+is getting slower with each kernel release.  I didn't measure it, and
+didn't even care about comparable initial states... But could anything
+explain this, or is it sheer impatience?
+-- 
+Regards,
+Feri.
