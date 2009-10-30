@@ -1,15 +1,17 @@
-From: Ferenc Wagner <wferi@niif.hu>
-Subject: Re: intermittent suspend problem again
-Date: Thu, 29 Oct 2009 23:31:51 +0100
-Message-ID: <87fx91q1bc.fsf__6770.6118956723$1256855869$gmane$org@tac.ki.iif.hu>
-References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200910281956.44791.rjw@sisk.pl>
-	<87d447m52t.fsf@tac.ki.iif.hu> <200910291936.14082.rjw@sisk.pl>
+From: mgross <mgross@linux.intel.com>
+Subject: Re: adding handles to pm_qos?
+Date: Fri, 30 Oct 2009 07:56:09 -0700
+Message-ID: <20091030145609.GA21256@linux.intel.com>
+References: <000001ca4cf3$2a2da9c0$7e88fd40$@org>
+	<20091023225304.GA32562@linux.intel.com>
+	<000301ca5766$e671f870$b355e950$@org>
+Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200910291936.14082.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Thu, 29 Oct 2009 19:36:14 +0100")
+Content-Disposition: inline
+In-Reply-To: <000301ca5766$e671f870$b355e950$@org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,87 +21,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, yakui.zhao@intel.com, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: Ai Li <aili@codeaurora.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Tue, Oct 27, 2009 at 06:37:58PM -0600, Ai Li wrote:
+> > How often are you calling pm_qos_update_requirement?
+> > 
+> > I think calling pm_qos_ interfaces too often makes me wonder
+> > about my
+> > assumptions and your sanity.
+> > 
+> > Can you explain why the pm_qos_update_requirement is getting hit
+> > often
+> > enough to bother with this change?
+> > 
+> > Other than that I don't have a problem with moving to handles,
+> > if its a
+> > practical change made for reasons other than making api abuse
+> > less
+> > painful.
+> > 
+> > Further, If the implicit assumption that pmqos calls are on cold
+> > paths
+> > is wrong, then perhaps more thought is needed than just changing
+> > things
+> > to handle based searches.
+> > 
+> 
+> Our embedded platforms support different low power modes.  With the
+> modes, the deeper the sleep, the more the power savings, and the
+> larger the interrupt latency coming out of the low power mode.
+> 
+> To help the platform achieving greatest power savings, some of our
+> device drivers set lateny qos only when there is a service request to
+> the driver or a device transaction.  When the transaction or request
+> is done, the drivers cancel the QoS with
+> pm_qos_update_requirement(PM_QOS_DEFAULT_VALUE), allowing the
+> platform to reach a deeper sleep.  
+> 
+> The approach gives us good power savings.  However when there are
+> lots of transactions, pm_qos_update_requirement() gets called a lot
+> of times.
 
-> On Thursday 29 October 2009, Ferenc Wagner wrote:
->> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->> 
->>> On Wednesday 28 October 2009, Ferenc Wagner wrote:
->>> 
->>>> Something similar to http://bugzilla.kernel.org/show_bug.cgi?id=13894
->>>> raised its ugly head again, please see my last comments on that bug.
->>>
->>> This very well may be a separete bug, so please file a new bugzilla report
->>> on this and mark it as a regression.
->> 
->> Done.
->
-> Which number is this?
+Oh. 
 
-http://bugzilla.kernel.org/show_bug.cgi?id=14504
-Submitted containing the following paragraph only:
+This will not scale with the aggregation logic very well at all if
+pm_qos update requirement gets hit per transaction through a driver code
+path, then I think some thought on the scalability is needed and perhaps
+a change to the aggregation design for such uses.
 
->>>> 2.6.32-rc5 feels particularly bad, with frequent failures to switch
->>>> off the machine after "S|" or freezes after "Snapshotting system".
->>>> The former does not cause much trouble in itself, as the machine can
->>>> be switched off and resumed all right, but the latter is nasty.
->>>> Suspend to RAM works all the time.  The issue is not reproducible,
->>>> unfortunately, and the kernel change happened almost together with a
->>>> BIOS upgrade.  Yesterday I switched back to 2.6.31 to see whether it
->>>> still works stably with the new BIOS.  I'll report back my findings in
->>>> a couple of days.
->>>
->>> OK, thanks.
->>>
->>> Still, I'm really afraid we won't be able to debug it any further without a
->>> reproducible test case.
->> 
->> I've got another, fully reproducible but nevertheless neglected ACPI
->> problem, already mentioned in #13894:
->> https://bugs.freedesktop.org/show_bug.cgi?id=22126.
->
-> A side note: I'm totally unhappy with _kernel_ bugs being handled at
-> bugs.freedesktop.org without a notice anywhere else.  Even though they are
-> related to the graphics, the kernel developers in general at least deserve the
-> information that the bugs have been reported.
->
-> In this particulare case, the bug is clearly related to ACPI and linux-acpi
-> should have received a notification about it.
+Do you have a patch for the handle implementation I could look at?
 
-When the ACPI relation became clear to me, I notified linux-acpi, see
-http://thread.gmane.org/gmane.linux.acpi.devel/42172/focus=42230
+--mgross
 
->> Well, it's probably far-fetched, but maybe the two are somehow related...
->
-> Very well may be.
->
->> Can't you perhaps suggest a way forward there?  Or some tricks to create a
->> reproducible test case here?
->
-> Well, you can test if the problem is reproducible in the "shutdown" mode of
-> hibernation.
 
-Ok, I'll go back to 2.6.32-rc5 for testing that.  Does that make any
-difference in the "Snapshotting system" phase?  Freezes happen that
-time, too, before writing out the image.
+.  
 
->> Btw. my gut feeling is that hibernation is getting slower with each
->> kernel release.  I didn't measure it, and didn't even care about
->> comparable initial states... But could anything explain this, or is
->> it sheer impatience?
->
-> Which part of it is getting slower?  Saving the image, suspending
-> devices or the entire hibernation overall?
-
-"Snapshotting system" before saving the image and saving the image as
-well.  If s2disk didn't report funny huge negative ratios all the
-time, I'd probably have tried to correlate this with the number of
-saved pages or similar...  But anyway, this is a minor nit, it's still
-far from being unbearable.  If only it worked all the time!
--- 
-Thanks,
-Feri.
+> 
+> ~Ai
+> 
