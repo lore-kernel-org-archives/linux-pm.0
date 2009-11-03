@@ -1,19 +1,15 @@
-From: mgross <mgross@linux.intel.com>
-Subject: Re: adding handles to pm_qos?
-Date: Tue, 3 Nov 2009 12:29:54 -0800
-Message-ID: <20091103202954.GA25275@linux.intel.com>
-References: <000001ca4cf3$2a2da9c0$7e88fd40$@org>
-	<20091023225304.GA32562@linux.intel.com>
-	<000301ca5766$e671f870$b355e950$@org>
-	<20091030145609.GA21256@linux.intel.com>
-	<000001ca59cc$fc6999e0$f53ccda0$@org>
-Reply-To: mgross@linux.intel.com
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/1] PM: Making bdi threads non-freezable
+Date: Tue, 3 Nov 2009 22:03:57 +0100
+Message-ID: <200911032203.57757.rjw__23265.0712984197$1257282207$gmane$org@sisk.pl>
+References: <B85A65D85D7EB246BE421B3FB0FBB59301DE1EBC66@dbde02.ent.ti.com>
+	<200911021943.49943.rjw@sisk.pl>
+	<B85A65D85D7EB246BE421B3FB0FBB59301DE1EC179@dbde02.ent.ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <000001ca59cc$fc6999e0$f53ccda0$@org>
+In-Reply-To: <B85A65D85D7EB246BE421B3FB0FBB59301DE1EC179@dbde02.ent.ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,243 +19,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ai Li <aili@codeaurora.org>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Dasgupta, Romit" <romit@ti.com>
+Cc: "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Thanks, I'll look at it over the next few days.
-
---mgross
-
-On Fri, Oct 30, 2009 at 07:53:42PM -0600, Ai Li wrote:
-> > Oh.
+On Tuesday 03 November 2009, Dasgupta, Romit wrote:
+> 
+> > Subject: Re: [PATCH 1/1] PM: Making bdi threads non-freezable
 > > 
-> > This will not scale with the aggregation logic very well at all
-> > if
-> > pm_qos update requirement gets hit per transaction through a
-> > driver code
-> > path, then I think some thought on the scalability is needed and
-> > perhaps
-> > a change to the aggregation design for such uses.
+> > On Monday 02 November 2009, Dasgupta, Romit wrote:
+> > > Fixes the case when bdi threads are in the refrigerator but file system sync
+> > > can happen after this. This is possible in MMC when
+> > CONFIG_MMC_UNSAFE_RESUME is
+> > > not set.
 > > 
-> > Do you have a patch for the handle implementation I could look
-> > at?
-> 
-> Here is the patch that I use with the test code.  There are three new
-> functions:
-> 
-> void *pm_qos_get(int qos, char *name);
-> int pm_qos_put(void *handle);
-> int pm_qos_update_requirement_direct(void *handle, s32 new_value);
-> 
-> In the test, I wanted to keep the existing interface intact so I
-> could compare them at the same time.  For the formal code submission,
-> a different approach may work better.
-> 
-> 
-> --- include/linux/pm_qos_params.h.orig
-> +++ include/linux/pm_qos_params.h
-> @@ -16,7 +16,11 @@
->  
->  int pm_qos_add_requirement(int qos, char *name, s32 value);
->  int pm_qos_update_requirement(int qos, char *name, s32 new_value);
-> -void pm_qos_remove_requirement(int qos, char *name);
-> +int pm_qos_remove_requirement(int qos, char *name);
-> +
-> +void *pm_qos_get(int qos, char *name);
-> +int pm_qos_put(void *handle);
-> +int pm_qos_update_requirement_direct(void *handle, s32 new_value);
->  
->  int pm_qos_requirement(int qos);
->  
-> --- kernel/pm_qos_params.c.orig
-> +++ kernel/pm_qos_params.c
-> @@ -55,6 +55,8 @@ struct requirement_list {
->  		s32 kbps;
->  	};
->  	char *name;
-> +	int pm_qos_class;
-> +	int handle_count;
->  };
->  
->  static s32 max_compare(s32 v1, s32 v2);
-> @@ -210,7 +212,9 @@ EXPORT_SYMBOL_GPL(pm_qos_requirement);
->  int pm_qos_add_requirement(int pm_qos_class, char *name, s32 value)
->  {
->  	struct requirement_list *dep;
-> +	struct requirement_list *node;
->  	unsigned long flags;
-> +	int retval;
->  
->  	dep = kzalloc(sizeof(struct requirement_list), GFP_KERNEL);
->  	if (dep) {
-> @@ -219,10 +223,25 @@ int pm_qos_add_requirement(int pm_qos_class,
-> char *name, s32 value)
->  		else
->  			dep->value = value;
->  		dep->name = kstrdup(name, GFP_KERNEL);
-> -		if (!dep->name)
-> +		if (!dep->name) {
-> +			retval = -ENOMEM;
->  			goto cleanup;
-> +		}
-> +		dep->pm_qos_class = pm_qos_class;
->  
->  		spin_lock_irqsave(&pm_qos_lock, flags);
-> +		/* make sure the new name is unique */
-> +		list_for_each_entry(node,
-> +
-> &pm_qos_array[pm_qos_class]->requirements.list, list) {
-> +			if (strcmp(node->name, name) == 0) {
-> +				spin_unlock_irqrestore(&pm_qos_lock,
-> flags);
-> +
-> +				kfree(dep->name);
-> +				retval = -EINVAL;
-> +				goto cleanup;
-> +			}
-> +		}
-> +
->  		list_add(&dep->list,
->  
-> &pm_qos_array[pm_qos_class]->requirements.list);
->  		spin_unlock_irqrestore(&pm_qos_lock, flags);
-> @@ -231,9 +250,11 @@ int pm_qos_add_requirement(int pm_qos_class,
-> char *name, s32 value)
->  		return 0;
->  	}
->  
-> +	retval = -ENOMEM;
-> +
->  cleanup:
->  	kfree(dep);
-> -	return -ENOMEM;
-> +	return retval;
->  }
->  EXPORT_SYMBOL_GPL(pm_qos_add_requirement);
->  
-> @@ -282,8 +303,10 @@ EXPORT_SYMBOL_GPL(pm_qos_update_requirement);
->   *
->   * Will remove named qos request from pm_qos_class list of
-> parameters and
->   * recompute the current target value for the pm_qos_class.
-> + *
-> + * If there are outstanding handles to the request, -EBUSY is
-> returned.
->   */
-> -void pm_qos_remove_requirement(int pm_qos_class, char *name)
-> +int pm_qos_remove_requirement(int pm_qos_class, char *name)
->  {
->  	unsigned long flags;
->  	struct requirement_list *node;
-> @@ -293,6 +316,11 @@ void pm_qos_remove_requirement(int pm_qos_class,
-> char *name)
->  	list_for_each_entry(node,
->  		&pm_qos_array[pm_qos_class]->requirements.list, list)
-> {
->  		if (strcmp(node->name, name) == 0) {
-> +			if (node->handle_count > 0) {
-> +				spin_unlock_irqrestore(&pm_qos_lock,
-> flags);
-> +				return -EBUSY;
-> +			}
-> +
->  			kfree(node->name);
->  			list_del(&node->list);
->  			kfree(node);
-> @@ -303,9 +331,83 @@ void pm_qos_remove_requirement(int pm_qos_class,
-> char *name)
->  	spin_unlock_irqrestore(&pm_qos_lock, flags);
->  	if (pending_update)
->  		update_target(pm_qos_class);
-> +
-> +	return 0;
->  }
->  EXPORT_SYMBOL_GPL(pm_qos_remove_requirement);
->  
-> +/* pm_qos_get - returns an opaque handle to the existing qos request
-> + * @pm_qos_class: identifies which list of qos request to us
-> + * @name: identifies the request
-> + *
-> + * Will increment the reference count as well.
-> + *
-> + * If the named request isn't in the list then NULL is returned.
-> + */
-> +void *pm_qos_get(int pm_qos_class, char *name)
-> +{
-> +	unsigned long flags;
-> +	struct requirement_list *node;
-> +	struct requirement_list *handle = NULL;
-> +
-> +	spin_lock_irqsave(&pm_qos_lock, flags);
-> +	list_for_each_entry(node,
-> +		&pm_qos_array[pm_qos_class]->requirements.list, list)
-> {
-> +		if (strcmp(node->name, name) == 0) {
-> +			node->handle_count++;
-> +			handle = node;
-> +			break;
-> +		}
-> +	}
-> +	spin_unlock_irqrestore(&pm_qos_lock, flags);
-> +	return handle;
-> +}
-> +EXPORT_SYMBOL_GPL(pm_qos_get);
-> +
-> +/* pm_qos_put - release the handle of the existing qos request
-> + * @handle: previously acquired through pm_qos_get
-> + *
-> + * Will decrement the reference count as well. Caller should no
-> + * longer use the handle after this call.
-> + */
-> +int pm_qos_put(void *handle)
-> +{
-> +	unsigned long flags;
-> +	struct requirement_list *node =	(struct requirement_list *)
-> handle;
-> +
-> +	spin_lock_irqsave(&pm_qos_lock, flags);
-> +	BUG_ON(node->handle_count == 0);
-> +	node->handle_count--;
-> +	spin_unlock_irqrestore(&pm_qos_lock, flags);
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(pm_qos_put);
-> +
-> +/* pm_qos_update_requirement_direct - modifies an existing qos
-> request
-> + * @handle: previously acquired through pm_qos_get
-> + * @value: defines the qos request
-> + *
-> + * Updates an existing qos requirement for the pm_qos_class of
-> parameters along
-> + * with updating the target pm_qos_class value.
-> + */
-> +int pm_qos_update_requirement_direct(void *handle, s32 new_value)
-> +{
-> +	unsigned long flags;
-> +	struct requirement_list *node = (struct requirement_list *)
-> handle;
-> +
-> +	spin_lock_irqsave(&pm_qos_lock, flags);
-> +	if (new_value == PM_QOS_DEFAULT_VALUE)
-> +		node->value =
-> pm_qos_array[node->pm_qos_class]->default_value;
-> +	else
-> +		node->value = new_value;
-> +	spin_unlock_irqrestore(&pm_qos_lock, flags);
-> +	update_target(node->pm_qos_class);
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(pm_qos_update_requirement_direct);
-> +
->  /**
->   * pm_qos_add_notifier - sets notification entry for changes to
-> target value
->   * @pm_qos_class: identifies which qos target changes should be
-> notified.
-> 
-> 
-> ~Ai
+> > What's going to happen if we attemt to suspend the underlying block device(s)
+> > when the bdi thread are doing their job?  Is there any synchronisation
+> > mechanism for that?
+> > 
+> There is no explicit synchronization AFAICT. However, it looks like the call
+> to 'del_gendisk' would invoke 'sync_filesystem' down the line.
+> 'sync_filesystem' would end with synchronous writes of inodes followed by a
+> call to '__sync_blockddev'.
+
+However, that runs concurrently with respect to the suspend thread, AFAICS, so
+I wonder if there's anything to make the suspend thread wait for these
+operations to complete.  If there's nothing like that, we can't really allow
+the bdi threads to run in parallel with the suspend thread.
+
+Thanks,
+Rafael
