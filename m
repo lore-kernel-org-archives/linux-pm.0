@@ -1,8 +1,8 @@
 From: "Dasgupta, Romit" <romit@ti.com>
 Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be exited
  kernel threads
-Date: Sun, 8 Nov 2009 16:30:40 +0530
-Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301DE31FD0F__25469.3982461051$1257678227$gmane$org@dbde02.ent.ti.com>
+Date: Sun, 8 Nov 2009 16:40:07 +0530
+Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301DE31FD10__47715.0542814799$1257678743$gmane$org@dbde02.ent.ti.com>
 References: <B85A65D85D7EB246BE421B3FB0FBB59301DE31F934@dbde02.ent.ti.com>
 	<20091107165421.GA1630@ucw.cz>
 	<B85A65D85D7EB246BE421B3FB0FBB59301DE31FCF1@dbde02.ent.ti.com>
@@ -26,23 +26,26 @@ To: Pavel Machek <pavel@ucw.cz>
 Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
+(Resending with 80 column restriction) 
 
 > -----Original Message-----
-> From: Pavel Machek [mailto:pavel@ucw.cz]
+> From: Pavel Machek [mailto:pavel@ucw.cz] 
 > Sent: Sunday, November 08, 2009 1:57 PM
 > To: Dasgupta, Romit
-> Cc: Rafael J. Wysocki; linux-omap@vger.kernel.org; linux-kernel@vger.kernel.org;
-> linux-pm@lists.linux-foundation.org
-> Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be exited kernel threads
+> Cc: Rafael J. Wysocki; linux-omap@vger.kernel.org; 
+> linux-kernel@vger.kernel.org; linux-pm@lists.linux-foundation.org
+> Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be 
+> exited kernel threads
 > 
 > On Sun 2009-11-08 09:52:52, Dasgupta, Romit wrote:
-> > > Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be exited kernel
+> > > Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be 
+> exited kernel
 > > > threads
-> > >
+> > > 
 > > > Hi!
-> > >
-> > > > Kicks out a frozen thread from the refrigerator when an active thread has
+> > > 
+> > > > Kicks out a frozen thread from the refrigerator when an 
+> active thread has
 > > > > invoked kthread_stop on the frozen thread.
 > ...
 > > > > @@ -49,7 +50,7 @@ void refrigerator(void)
@@ -50,19 +53,21 @@ List-Id: linux-pm@vger.kernel.org
 > > > >  	for (;;) {
 > > > >  		set_current_state(TASK_UNINTERRUPTIBLE);
 > > > > -		if (!frozen(current))
-> > > > +		if (!frozen(current) || (!current->mm &&
-> kthread_should_stop()))
+> > > > +		if (!frozen(current) || (!current->mm 
+> && kthread_should_stop()))
 > > > >  			break;
 > > > >  		schedule();
-> > >
-> > > Well, what if the thread does some processing before stopping? That
+> > > 
+> > > Well, what if the thread does some processing before 
+> stopping? That
 > > > would break refrigerator assumptions...
-> >
-> > The suspend thread will block until the 'to be stopped' thread clears up. That is
-> what any call to kthread_stop would boil down to. The target thread would
-> anyway be out of the refrigerator so I am not sure what assumption you mean
-> here. Eventually, the target thread would clear up and wake up the suspend
-> thread and then things would go on as usual.
+> > 
+> > The suspend thread will block until the 'to be stopped' 
+> thread clears up. That is what any call to kthread_stop would 
+> boil down to. The target thread would anyway be out of the 
+> refrigerator so I am not sure what assumption you mean here. 
+> Eventually, the target thread would clear up and wake up the 
+> suspend thread and then things would go on as usual.
 > 
 > (Please format to 80 columns).
 > 
@@ -82,5 +87,10 @@ List-Id: linux-pm@vger.kernel.org
 > then stop.
 > 
 > That's bad, right?
-
-evil_data_writer will enter refrigerator after invoking 'try_to_freeze'. This should be followed by a call to kthread_should_stop. There it decides if it needs to exit the thread (after cleanups if necessary) or not. I have seen that the bdi_writeback_task function is like that. It does not care if there is pending data to be written if it detects that someone have invoked a 'kthread_stop' on it. It simply exits. I have seen some other kernel threads that do not follow this and I think that probably is not right. 
+evil_data_writer will enter refrigerator after invoking 'try_to_freeze'. This 
+should be followed by a call to kthread_should_stop. There it decides if it 
+needs to exit the thread (after cleanups if necessary) or not. I have seen that
+the bdi_writeback_task function is like that. It does not care if there is 
+pending data to be written if it detects that someone have invoked a 
+'kthread_stop' on it. It simply exits. I have seen some other kernel threads 
+that do not follow this and I think that probably is not right. 
