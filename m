@@ -1,18 +1,18 @@
-From: "Dasgupta, Romit" <romit@ti.com>
-Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be exited
- kernel threads
-Date: Sun, 8 Nov 2009 16:40:07 +0530
-Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301DE31FD10__47715.0542814799$1257678743$gmane$org@dbde02.ent.ti.com>
-References: <B85A65D85D7EB246BE421B3FB0FBB59301DE31F934@dbde02.ent.ti.com>
-	<20091107165421.GA1630@ucw.cz>
-	<B85A65D85D7EB246BE421B3FB0FBB59301DE31FCF1@dbde02.ent.ti.com>
-	<20091108082727.GC16482@elf.ucw.cz>
+From: Christoph Hellwig <hch@infradead.org>
+Subject: Re: Massive ext4 filesystem corruption after a
+	failed	s2disk/ram cycle
+Date: Sun, 8 Nov 2009 11:49:13 -0500
+Message-ID: <20091108164913.GA12053__43875.4636132673$1257699041$gmane$org@infradead.org>
+References: <87vdisq7bh.fsf@rimspace.net>
+	<20091007161604.GA28849@infradead.org>
+	<20091104111125.54C3.A69D9226@jp.fujitsu.com>
+	<20091108082905.GA25494@discord.disaster>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091108082727.GC16482@elf.ucw.cz>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20091108082905.GA25494@discord.disaster>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,75 +22,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Daniel Pittman <daniel@rimspace.net>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-kernel <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-(Resending with 80 column restriction) 
+On Sun, Nov 08, 2009 at 07:29:05PM +1100, Dave Chinner wrote:
+> We already have an ioctl that does what you want: FIFREEZE.
 
-> -----Original Message-----
-> From: Pavel Machek [mailto:pavel@ucw.cz] 
-> Sent: Sunday, November 08, 2009 1:57 PM
-> To: Dasgupta, Romit
-> Cc: Rafael J. Wysocki; linux-omap@vger.kernel.org; 
-> linux-kernel@vger.kernel.org; linux-pm@lists.linux-foundation.org
-> Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be 
-> exited kernel threads
-> 
-> On Sun 2009-11-08 09:52:52, Dasgupta, Romit wrote:
-> > > Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be 
-> exited kernel
-> > > threads
-> > > 
-> > > Hi!
-> > > 
-> > > > Kicks out a frozen thread from the refrigerator when an 
-> active thread has
-> > > > invoked kthread_stop on the frozen thread.
-> ...
-> > > > @@ -49,7 +50,7 @@ void refrigerator(void)
-> > > >
-> > > >  	for (;;) {
-> > > >  		set_current_state(TASK_UNINTERRUPTIBLE);
-> > > > -		if (!frozen(current))
-> > > > +		if (!frozen(current) || (!current->mm 
-> && kthread_should_stop()))
-> > > >  			break;
-> > > >  		schedule();
-> > > 
-> > > Well, what if the thread does some processing before 
-> stopping? That
-> > > would break refrigerator assumptions...
-> > 
-> > The suspend thread will block until the 'to be stopped' 
-> thread clears up. That is what any call to kthread_stop would 
-> boil down to. The target thread would anyway be out of the 
-> refrigerator so I am not sure what assumption you mean here. 
-> Eventually, the target thread would clear up and wake up the 
-> suspend thread and then things would go on as usual.
-> 
-> (Please format to 80 columns).
-> 
-> No, I do not get it.
-> 
-> Lets say we have
-> 
-> evil_data_writer thread that needs to be stopped becuase it writes to
-> filesystem
-> 
-> nofreeze random_stopper thread
-> 
-> now we create the suspend image, and start writing it out. But that's
-> okay, evil_data_writer is stopped so it can't do no harm. But now
-> random_stopper decides to thread_stop() the evil_data_writer, and this
-> new code allows it to exit the refrigerator, *do some writing*, and
-> then stop.
-> 
-> That's bad, right?
-evil_data_writer will enter refrigerator after invoking 'try_to_freeze'. This 
-should be followed by a call to kthread_should_stop. There it decides if it 
-needs to exit the thread (after cleanups if necessary) or not. I have seen that
-the bdi_writeback_task function is like that. It does not care if there is 
-pending data to be written if it detects that someone have invoked a 
-'kthread_stop' on it. It simply exits. I have seen some other kernel threads 
-that do not follow this and I think that probably is not right. 
+Doesn't really help as there is not guarentee important metadata is
+modified again before the bootloader accesses it, but that's a fate
+share with any other kind of super sync.  The only way to really fix
+the problem is to implement proper (in-memory) log recovery in the
+bootloader, especially as it doesn't only have to deal with the
+relatively easy case of clean shutdowns but also needs to deal with the
+case of an unclean shutdown with major amounts of updates to the lookup
+and allocation data structures in the log.
+
+IMHO the best option is to have a separate partition for /boot with a
+very simple filesystem that we can expect boot loader developers to
+implement fully and correctly.
