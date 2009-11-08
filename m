@@ -1,16 +1,17 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Help needed: Resume problems in 2.6.32-rc,
- perhaps related to preempt_count leakage in keventd
-Date: Mon, 9 Nov 2009 07:57:35 -0800 (PST)
-Message-ID: <alpine.LFD.2.01.0911090733150.31845__35436.7520114922$1257782352$gmane$org@localhost.localdomain>
-References: <200911091250.31626.rjw@sisk.pl> <20091109120217.GB18399@elte.hu>
-	<200911091324.37955.rjw@sisk.pl> <20091109124937.GA21114@elte.hu>
-	<alpine.LFD.2.00.0911091452300.2725@localhost.localdomain>
+From: Dave Chinner <david@fromorbit.com>
+Subject: Re: Massive ext4 filesystem corruption after a
+	failed	s2disk/ram cycle
+Date: Sun, 8 Nov 2009 19:29:05 +1100
+Message-ID: <20091108082905.GA25494__48438.9616446153$1257783272$gmane$org@discord.disaster>
+References: <87vdisq7bh.fsf@rimspace.net>
+	<20091007161604.GA28849@infradead.org>
+	<20091104111125.54C3.A69D9226@jp.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0911091452300.2725@localhost.localdomain>
+Content-Disposition: inline
+In-Reply-To: <20091104111125.54C3.A69D9226@jp.fujitsu.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,31 +21,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Daniel Pittman <daniel@rimspace.net>, linux-kernel <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Mon, 9 Nov 2009, Thomas Gleixner wrote:
+On Wed, Nov 04, 2009 at 11:18:05AM +0900, KOSAKI Motohiro wrote:
+> > On Wed, Oct 07, 2009 at 01:14:10PM +1100, Daniel Pittman wrote:
+> > > For what it is worth, I would also be quite interested to know
+> > > /why/ XFS is bad in this regard.  Is it just the previously
+> > > stated "XFS writes to disk despite freezing kernel threads"
+> > > issue, or something deeper?
+> > 
+> > sync pushes out all data to disk, but in a journaling filesystem
+> > that might just but the log not the "normal" place on disk.  For
+> > a boot loader to deal with it properly it actually needs to do
+> > an replay of the log.  Grub does so for reiserfs but not for XFS
+> > for some reason.  I don't know why problems don't trigger more
+> > often with ext3, though.
 > 
-> I think it _IS_ releated because the worker_thread is CPU affine and
-> the debug_smp_processor_id() check does:
+> I'm sorry for the long delayed and offtopic responce. I discussed
+> this issue with okuji-san (GRUB2 maintainer) at several month ago.
+> He really wish linux implement real sync.
+> 
+> A bootloader has much constraint than OS (mainly caused by size
+> constraint).  it can't implemnt jornal log replay logic for _all_
+> filesystem.  Why can't we implement storong sync syscall? I don't
+> think this is PM nor bootloader fault.
 
-Hmm. We do know CPU affinity is destroyed by CPU hotplug. People have 
-complained about that before (for user-space processes that get moved 
-around due to hot-unplug/plug).
+We already have an ioctl that does what you want: FIFREEZE.
 
-And the suspend/resume process does CPU hotplug to take down all but one 
-CPU. The workqueues should act on those events already, but maybe there's 
-a bug somewhere. None of that is new to 32-rc, though - is it?
+Cheers,
 
-And workqueue_cpu_callback() seems buggy. It loops over the 'workqueues' 
-list with no protection. Yes, we do 'stop_machine' for CPU hotplug events, 
-but only for the very internal one (CPU_DYING) will the CPU notifiers be 
-called with the machine stopped).
-
-Hmm. I don't see any changes in kernel/cpu.c or kernel/workqueue.c that 
-look at all relevant. But scheduler changes could certainly matter.
-
-			Linus
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
