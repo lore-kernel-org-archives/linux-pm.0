@@ -1,16 +1,16 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: Help needed: Resume problems in 2.6.32-rc,
- perhaps related to preempt_count leakage in keventd
-Date: Mon, 9 Nov 2009 13:49:37 +0100
-Message-ID: <20091109124937.GA21114@elte.hu>
-References: <200911091250.31626.rjw@sisk.pl> <20091109120217.GB18399@elte.hu>
-	<200911091324.37955.rjw@sisk.pl>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [alsa-devel] [PATCH 1/2 v2] ASoC: sh: fsi: Add
+	runtime PM	support
+Date: Mon, 9 Nov 2009 13:31:36 +0000
+Message-ID: <20091109133136.GC1245__2616.79335167191$1257773663$gmane$org@sirena.org.uk>
+References: <ud43sjtaf.wl%morimoto.kuninori@renesas.com>
+	<20091109105858.GB1245@sirena.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200911091324.37955.rjw@sisk.pl>
+In-Reply-To: <20091109105858.GB1245@sirena.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,49 +20,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Kuninori Morimoto <morimoto.kuninori@renesas.com>
+Cc: alsa-devel@alsa-project.org, linux-pm@lists.linux-foundation.org, Magnus Damm <damm@opensource.se>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, Nov 09, 2009 at 10:58:58AM +0000, Mark Brown wrote:
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+Adding in an address for Magnus which hopefully won't bounce and also
+the linux-pm list which get_maintainers didn't find.
 
-> On Monday 09 November 2009, Ingo Molnar wrote:
-> > 
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > 
-> > > [ 2016.865041] BUG: using smp_processor_id() in preemptible [00000000] code: events/1/29920                                                                                         
-> > > [ 2016.865344] caller is vmstat_update+0x13/0x48                                          
-> > > [ 2016.865522] Pid: 29920, comm: events/1 Not tainted 2.6.31-tst #158                     
-> > > [ 2016.865700] Call Trace:                                                                
-> > > [ 2016.865877]  [<ffffffff811608e8>] debug_smp_processor_id+0xc4/0xd4                     
-> > > [ 2016.866052]  [<ffffffff810a9ae1>] vmstat_update+0x13/0x48                              
-> > > [ 2016.866232]  [<ffffffff81051ee6>] worker_thread+0x18b/0x22a                            
-> > > [ 2016.866409]  [<ffffffff810a9ace>] ? vmstat_update+0x0/0x48                             
-> > > [ 2016.866578]  [<ffffffff810556a5>] ? autoremove_wake_function+0x0/0x38                  
-> > > [ 2016.866749]  [<ffffffff81288803>] ? _spin_unlock_irqrestore+0x35/0x37                  
-> > > [ 2016.866935]  [<ffffffff81051d5b>] ? worker_thread+0x0/0x22a                            
-> > > [ 2016.867113]  [<ffffffff8105547d>] kthread+0x69/0x71                                    
-> > > [ 2016.867278]  [<ffffffff8100c1aa>] child_rip+0xa/0x20                                   
-> > > [ 2016.867450]  [<ffffffff81055414>] ? kthread+0x0/0x71                                   
-> > > [ 2016.867618]  [<ffffffff8100c1a0>] ? child_rip+0x0/0x20                                 
-> > 
-> > a bug producing similar looking messages was fixed by:
-> > 
-> >   fd21073: sched: Fix affinity logic in select_task_rq_fair()
-> > 
-> > but that bug was introduced by:
-> > 
-> >   a1f84a3: sched: Check for an idle shared cache in select_task_rq_fair()
+> On Mon, Nov 09, 2009 at 11:54:47AM +0900, Kuninori Morimoto wrote:
+> > This patch add support runtime PM.
+> > Driver callbacks for Runtime PM are empty because
+> > the device registers are always re-initialized after
+> > pm_runtime_get_sync(). The Runtime PM functions replaces the
+> > clock framework module stop bit handling in this driver.
 > 
-> I guess these are tip commits?
-
-yep, tip:sched/core ones.
-
-> > Which is for v2.6.33, not v2.6.32.
+> > Signed-off-by: Kuninori Morimoto <morimoto.kuninori@renesas.com>
 > 
-> The one I saw was in the Linus' tree, quite obviously.
+> Hrm.  I'll have to see how this plays with ASoC core pm_runtime support
+> when that appears.  It should be OK as-is, I think.
+> 
+> > +	pm_suspend_ignore_children(&pdev->dev, true);
+> > +	pm_runtime_enable(&pdev->dev);
+> > +	pm_runtime_resume(&pdev->dev);
+> 
+> Why pm_suspend_ignore_all_children()?  I'd not expect the device to have
+> any children and if it did it doesn't seem like an entirely safe
+> assumption.
+> 
+> > +static int fsi_runtime_nop(struct device *dev)
+> > +{
+> > +	/* Runtime PM callback shared between ->runtime_suspend()
+> > +	 * and ->runtime_resume(). Simply returns success.
+> > +	 *
+> > +	 * This driver re-initializes all registers after
+> > +	 * pm_runtime_get_sync() anyway so there is no need
+> > +	 * to save and restore registers here.
+> > +	 */
+> > +	return 0;
+> > +}
+> 
+> This sets off alarm bells but it's perfectly reasonable, especially with
+> platforms able to put things into a low power state with no explicit
+> driver code now they can do power domain style things like SH.  I've
+> CCed in the PM folks since this seems like a perfectly reasonable use
+> case which ought to be handled more nicely.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-ok, then my observation should not apply.
-
-	Ingo
+-- 
+"You grabbed my hand and we fell into it, like a daydream - or a fever."
