@@ -1,13 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC PATCH] x86: make sure wakeup code is below 1M
-Date: Mon, 9 Nov 2009 13:15:13 +0100
-Message-ID: <200911091315.13151.rjw__9332.83568961105$1257768841$gmane$org@sisk.pl>
-References: <4AF7D820.5040503@kernel.org>
+Subject: Re: Help needed: Resume problems in 2.6.32-rc,
+	perhaps related to preempt_count leakage in keventd
+Date: Mon, 9 Nov 2009 13:24:37 +0100
+Message-ID: <200911091324.37955.rjw__4134.2856282883$1257769500$gmane$org@sisk.pl>
+References: <200911091250.31626.rjw@sisk.pl> <20091109120217.GB18399@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4AF7D820.5040503@kernel.org>
+In-Reply-To: <20091109120217.GB18399@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,88 +18,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 09 November 2009, Yinghai Lu wrote:
+On Monday 09 November 2009, Ingo Molnar wrote:
 > 
-> try to find_e820_area/reserve_early, and call acpi_reserve_memory early
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> to get area is below 1M
+> > [ 2016.865041] BUG: using smp_processor_id() in preemptible [00000000] code: events/1/29920                                                                                         
+> > [ 2016.865344] caller is vmstat_update+0x13/0x48                                          
+> > [ 2016.865522] Pid: 29920, comm: events/1 Not tainted 2.6.31-tst #158                     
+> > [ 2016.865700] Call Trace:                                                                
+> > [ 2016.865877]  [<ffffffff811608e8>] debug_smp_processor_id+0xc4/0xd4                     
+> > [ 2016.866052]  [<ffffffff810a9ae1>] vmstat_update+0x13/0x48                              
+> > [ 2016.866232]  [<ffffffff81051ee6>] worker_thread+0x18b/0x22a                            
+> > [ 2016.866409]  [<ffffffff810a9ace>] ? vmstat_update+0x0/0x48                             
+> > [ 2016.866578]  [<ffffffff810556a5>] ? autoremove_wake_function+0x0/0x38                  
+> > [ 2016.866749]  [<ffffffff81288803>] ? _spin_unlock_irqrestore+0x35/0x37                  
+> > [ 2016.866935]  [<ffffffff81051d5b>] ? worker_thread+0x0/0x22a                            
+> > [ 2016.867113]  [<ffffffff8105547d>] kthread+0x69/0x71                                    
+> > [ 2016.867278]  [<ffffffff8100c1aa>] child_rip+0xa/0x20                                   
+> > [ 2016.867450]  [<ffffffff81055414>] ? kthread+0x0/0x71                                   
+> > [ 2016.867618]  [<ffffffff8100c1a0>] ? child_rip+0x0/0x20                                 
 > 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
-I generally like it, two comments below.
-
-> ---
->  arch/x86/include/asm/acpi.h  |    2 +-
->  arch/x86/kernel/acpi/sleep.c |   15 +++++++++------
->  arch/x86/kernel/setup.c      |   13 +++++++------
->  3 files changed, 17 insertions(+), 13 deletions(-)
+> a bug producing similar looking messages was fixed by:
 > 
-> Index: linux-2.6/arch/x86/include/asm/acpi.h
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/include/asm/acpi.h
-> +++ linux-2.6/arch/x86/include/asm/acpi.h
-> @@ -118,7 +118,7 @@ extern void acpi_restore_state_mem(void)
->  extern unsigned long acpi_wakeup_address;
->  
->  /* early initialization routine */
-> -extern void acpi_reserve_bootmem(void);
-> +extern void acpi_reserve_memory(void);
+>   fd21073: sched: Fix affinity logic in select_task_rq_fair()
+> 
+> but that bug was introduced by:
+> 
+>   a1f84a3: sched: Check for an idle shared cache in select_task_rq_fair()
 
-If you change the name of the function, IMO it would be better to call it
-something like acpi_reserve_wakeup_memory().  This way it would be clear what
-the memory is reserved for.
-  
->  /*
->   * Check if the CPU can handle C2 and deeper
-> Index: linux-2.6/arch/x86/kernel/acpi/sleep.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/acpi/sleep.c
-> +++ linux-2.6/arch/x86/kernel/acpi/sleep.c
-> @@ -119,29 +119,32 @@ void acpi_restore_state_mem(void)
->  
->  
->  /**
-> - * acpi_reserve_bootmem - do _very_ early ACPI initialisation
-> + * acpi_reserve_memory - do _very_ early ACPI initialisation
->   *
->   * We allocate a page from the first 1MB of memory for the wakeup
->   * routine for when we come back from a sleep state. The
->   * runtime allocator allows specification of <16MB pages, but not
->   * <1MB pages.
->   */
-> -void __init acpi_reserve_bootmem(void)
-> +void __init acpi_reserve_memory(void)
->  {
-> +	unsigned long mem;
-> +
->  	if ((&wakeup_code_end - &wakeup_code_start) > WAKEUP_SIZE) {
->  		printk(KERN_ERR
->  		       "ACPI: Wakeup code way too big, S3 disabled.\n");
->  		return;
->  	}
->  
-> -	acpi_realmode = (unsigned long)alloc_bootmem_low(WAKEUP_SIZE);
-> +	mem = find_e820_area(0, 1<<20, WAKEUP_SIZE, PAGE_SIZE);
->  
-> -	if (!acpi_realmode) {
-> +	if (mem == -1L) {
+I guess these are tip commits?
 
-Could we change the condition to avoid the "-1L" here?  It doesn't look very
-nice.
+> Which is for v2.6.33, not v2.6.32.
 
->  		printk(KERN_ERR "ACPI: Cannot allocate lowmem, S3 disabled.\n");
->  		return;
->  	}
-> -
-> -	acpi_wakeup_address = virt_to_phys((void *)acpi_realmode);
-> +	acpi_realmode = (unsigned long) phys_to_virt(mem);
-> +	acpi_wakeup_address = mem;
-> +	reserve_early(mem, mem + WAKEUP_SIZE, "WAKEUP");
->  }
+The one I saw was in the Linus' tree, quite obviously.
+
+Also, I should have noted that the problem is not really easy to trigger.
+Usually, it involves 20-25 suspend-resume cycles to reproduce it.  For this
+reason the kernels that I mark as "good" may still be affected, although in
+such a way that the problem is much harder to reproduce with them.
 
 Thanks,
 Rafael
