@@ -1,17 +1,16 @@
-From: Dave Chinner <david@fromorbit.com>
-Subject: Re: Massive ext4 filesystem corruption after a
-	failed	s2disk/ram cycle
-Date: Sun, 8 Nov 2009 19:29:05 +1100
-Message-ID: <20091108082905.GA25494__48438.9616446153$1257783272$gmane$org@discord.disaster>
-References: <87vdisq7bh.fsf@rimspace.net>
-	<20091007161604.GA28849@infradead.org>
-	<20091104111125.54C3.A69D9226@jp.fujitsu.com>
+From: Mike Galbraith <efault@gmx.de>
+Subject: Re: Help needed: Resume problems in 2.6.32-rc,
+ perhaps related to preempt_count leakage in keventd
+Date: Mon, 09 Nov 2009 17:19:13 +0100
+Message-ID: <1257783553.6408.6.camel__23257.5731272393$1257783685$gmane$org@marge.simson.net>
+References: <200911091250.31626.rjw@sisk.pl> <200911091527.12249.rjw@sisk.pl>
+	<1257777040.6365.15.camel@marge.simson.net>
+	<200911091647.54171.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20091104111125.54C3.A69D9226@jp.fujitsu.com>
+In-Reply-To: <200911091647.54171.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,38 +20,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Daniel Pittman <daniel@rimspace.net>, linux-kernel <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 04, 2009 at 11:18:05AM +0900, KOSAKI Motohiro wrote:
-> > On Wed, Oct 07, 2009 at 01:14:10PM +1100, Daniel Pittman wrote:
-> > > For what it is worth, I would also be quite interested to know
-> > > /why/ XFS is bad in this regard.  Is it just the previously
-> > > stated "XFS writes to disk despite freezing kernel threads"
-> > > issue, or something deeper?
+On Mon, 2009-11-09 at 16:47 +0100, Rafael J. Wysocki wrote:
+> On Monday 09 November 2009, Mike Galbraith wrote:
+
+> > > Very likely.  What did you do to fix it?
 > > 
-> > sync pushes out all data to disk, but in a journaling filesystem
-> > that might just but the log not the "normal" place on disk.  For
-> > a boot loader to deal with it properly it actually needs to do
-> > an replay of the log.  Grub does so for reiserfs but not for XFS
-> > for some reason.  I don't know why problems don't trigger more
-> > often with ext3, though.
+> > You don't really wanna know.  In 31 with newidle enabled, the below
+> > fixed it.  It won't fix 32, though it might cure the resume problem.
 > 
-> I'm sorry for the long delayed and offtopic responce. I discussed
-> this issue with okuji-san (GRUB2 maintainer) at several month ago.
-> He really wish linux implement real sync.
-> 
-> A bootloader has much constraint than OS (mainly caused by size
-> constraint).  it can't implemnt jornal log replay logic for _all_
-> filesystem.  Why can't we implement storong sync syscall? I don't
-> think this is PM nor bootloader fault.
+> OK, I'll give it a try.
 
-We already have an ioctl that does what you want: FIFREEZE.
+I just tried to trigger badness via high speed online/offline combined
+with taskset with CONFIG_PREEMPT enabled, and couldn't make it explode.
 
-Cheers,
+(damn, wish i could s2ram this box)
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+	-Mike
