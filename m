@@ -1,17 +1,16 @@
 From: Mike Galbraith <efault@gmx.de>
 Subject: Re: Help needed: Resume problems in 2.6.32-rc,
  perhaps related to preempt_count leakage in keventd
-Date: Mon, 09 Nov 2009 15:30:40 +0100
-Message-ID: <1257777040.6365.15.camel__45164.0053572648$1257777077$gmane$org@marge.simson.net>
-References: <200911091250.31626.rjw@sisk.pl>
+Date: Mon, 09 Nov 2009 15:44:56 +0100
+Message-ID: <1257777896.6365.21.camel__32778.2435146675$1257777993$gmane$org@marge.simson.net>
+References: <200911091250.31626.rjw@sisk.pl> <20091109124937.GA21114@elte.hu>
 	<alpine.LFD.2.00.0911091452300.2725@localhost.localdomain>
-	<1257776176.6365.8.camel@marge.simson.net>
-	<200911091527.12249.rjw@sisk.pl>
+	<200911091526.02147.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200911091527.12249.rjw@sisk.pl>
+In-Reply-To: <200911091526.02147.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,57 +24,22 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2009-11-09 at 15:27 +0100, Rafael J. Wysocki wrote:
-> On Monday 09 November 2009, Mike Galbraith wrote:
-> > On Mon, 2009-11-09 at 15:02 +0100, Thomas Gleixner wrote:
-> > > On Mon, 9 Nov 2009, Ingo Molnar wrote:
-> > > > 
-> > 
-> > > > ok, then my observation should not apply.
-> > > 
-> > > I think it _IS_ releated because the worker_thread is CPU affine and
-> > > the debug_smp_processor_id() check does:
-> > > 
-> > >     if (cpumask_equal(&current->cpus_allowed, cpumask_of(this_cpu)))
-> > > 
-> > > which prevents that usage of smp_processor_id() in ksoftirqd and
-> > > keventd in preempt enabled regions is warned on.
-> > > 
-> > > We saw exaclty the same back trace with fd21073 (sched: Fix affinity
-> > > logic in select_task_rq_fair()).
-> > > 
-> > > Rafael, can you please add a printk to debug_smp_processor_id() so we
-> > > can see on which CPU we are running ? I suspect we are on the wrong
-> > > one.
-> > 
-> > I wonder if that's not intimately related to the problem I had, namely
-> > newidle balancing offline CPUs as they're coming up, making a mess of
-> > cpu enumeration.
+On Mon, 2009-11-09 at 15:26 +0100, Rafael J. Wysocki wrote:
+
+> Well, I can add the printk(), but I can't guarantee that I will get the call
+> trace once again.  So far I've seen it only once after 20-25 consecutive
+> suspend-resume cycles, so ...  you get the idea.
 > 
-> Very likely.  What did you do to fix it?
+> However, running on a wrong CPU would very nicely explain all of the observed
+> symptoms, so I guess we can try a House M.D.-alike approach and assume that the
+> answer is "yes, we're running on the wrong CPU".  What would we do next if that
+> was the case?
 
-You don't really wanna know.  In 31 with newidle enabled, the below
-fixed it.  It won't fix 32, though it might cure the resume problem.
+If you're interested in trying a patch, I have a couple that fix things
+up here.  My "get a bigger hammer" patch would be best if it's what I
+think it is.  If it only fails once in a blue moon though, maybe not
+worth even trying.  If I could suspend/resume, I'd try it myself, but I
+have (steenking) nvidia card.  No eyecandy or resume for me, though I
+can suspend... once.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 1b59e26..6e71932 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4032,7 +4049,7 @@ static int load_balance(int this_cpu, struct rq *this_rq,
- 	unsigned long flags;
- 	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
- 
--	cpumask_setall(cpus);
-+	cpumask_copy(cpus, cpu_online_mask);
- 
- 	/*
- 	 * When power savings policy is enabled for the parent domain, idle
-@@ -4195,7 +4212,7 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd)
- 	int all_pinned = 0;
- 	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
- 
--	cpumask_setall(cpus);
-+	cpumask_copy(cpus, cpu_online_mask);
- 
- 	/*
- 	 * When power savings policy is enabled for the parent domain, idle
+	-Mike
