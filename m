@@ -1,8 +1,8 @@
 From: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: Help needed: Resume problems in 2.6.32-rc,
  perhaps related to preempt_count leakage in keventd
-Date: Mon, 9 Nov 2009 19:50:17 +0100 (CET)
-Message-ID: <alpine.LFD.2.00.0911091949500.2725__24573.6029268757$1257792717$gmane$org@localhost.localdomain>
+Date: Mon, 9 Nov 2009 20:13:51 +0100 (CET)
+Message-ID: <alpine.LFD.2.00.0911092012340.2725__4698.86787836931$1257794222$gmane$org@localhost.localdomain>
 References: <200911091250.31626.rjw@sisk.pl> <200911091647.54171.rjw@sisk.pl>
 	<1257783553.6408.6.camel@marge.simson.net>
 	<200911091836.30349.rjw@sisk.pl>
@@ -25,7 +25,6 @@ Cc: Mike Galbraith <efault@gmx.de>, Greg KH <gregkh@suse.de>, LKML <linux-kernel
 List-Id: linux-pm@vger.kernel.org
 
 On Mon, 9 Nov 2009, Rafael J. Wysocki wrote:
-
 > On Monday 09 November 2009, Mike Galbraith wrote:
 > > On Mon, 2009-11-09 at 16:47 +0100, Rafael J. Wysocki wrote:
 > > > On Monday 09 November 2009, Mike Galbraith wrote:
@@ -60,7 +59,9 @@ On Mon, 9 Nov 2009, Rafael J. Wysocki wrote:
 > Which is kind of strange, given the !list_empty(&cwq->worklist) test right
 > before it.
 
-Does that happen before or after the secondary CPU has been brought up ?
+Hmm, no. list_empty() just tells you whether the list is empty or
+not. It does not care whether the list is corrupted or not. Have you
+tried to run with list debugging enabled ?
 
 Thanks,
 
