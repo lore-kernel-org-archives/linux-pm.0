@@ -1,20 +1,19 @@
-From: "Dasgupta, Romit" <romit@ti.com>
-Subject: Re: [PATCH 1/1] PM: Thaws refrigerated and to be exited
- kernel threads
-Date: Mon, 9 Nov 2009 14:48:09 +0530
-Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301DE3B67A0@dbde02.ent.ti.com>
-References: <B85A65D85D7EB246BE421B3FB0FBB59301DE31F934@dbde02.ent.ti.com>
-	<20091107165421.GA1630@ucw.cz>
-	<B85A65D85D7EB246BE421B3FB0FBB59301DE31FCF1@dbde02.ent.ti.com>
-	<20091108082727.GC16482@elf.ucw.cz>
-	<B85A65D85D7EB246BE421B3FB0FBB59301DE31FD10@dbde02.ent.ti.com>
-	<20091109083133.GB4818@elf.ucw.cz>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: Massive ext4 filesystem corruption after a failed
+ s2disk/ram cycle
+Date: Mon, 9 Nov 2009 07:42:03 -0200
+Message-ID: <20091109094203.GA10007__22963.0375667059$1257759857$gmane$org@khazad-dum.debian.net>
+References: <87vdisq7bh.fsf@rimspace.net>
+	<20091007161604.GA28849@infradead.org>
+	<20091104111125.54C3.A69D9226@jp.fujitsu.com>
+	<20091108082905.GA25494@discord.disaster>
+	<20091108164913.GA12053@infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091109083133.GB4818@elf.ucw.cz>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20091108164913.GA12053@infradead.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,23 +23,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Daniel Pittman <daniel@rimspace.net>, Dave Chinner <david@fromorbit.com>, linux-kernel <linux-kernel@vger.kernel.org>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-> Really? I believe the "ktrhead_should_stop" is new rule, and code does
-> not seem to follow it. Actually, for example audit does not seem to
-> use kthread_should_stop() at all...
-> 
-> ./kernel/rtmutex-tester.c-
-> ./kernel/rtmutex-tester.c-		/* Wait for the next 
-> command to be executed */
-> ./kernel/rtmutex-tester.c-		schedule();
-> ./kernel/rtmutex-tester.c:		try_to_freeze();
-> ./kernel/rtmutex-tester.c-
-> ./kernel/rtmutex-tester.c-		if (signal_pending(current))
-> ./kernel/rtmutex-tester.c-			flush_signals(current);
-> --
-Not a new rule. For these threads you listed no one stops them by sending 
-'kthread_stop' so the problem does not arise! But for the threads that are 
-stopped by invoking kthread_stop they do check kthread_should_stop. 
+On Sun, 08 Nov 2009, Christoph Hellwig wrote:
+> IMHO the best option is to have a separate partition for /boot with a
+> very simple filesystem that we can expect boot loader developers to
+> implement fully and correctly.
+
+Agreed.  And one that is not all but abandoned kernel-side, or you will risk
+bugs there.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
