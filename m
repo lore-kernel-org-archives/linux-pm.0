@@ -1,18 +1,15 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: GPF in
- run_workqueue()/list_del_init(cwq->worklist.next) on resume (was: Re: Help
- needed: Resume problems in 2.6.32-rc,
- perhaps related to preempt_count leakage in keventd)
-Date: Wed, 11 Nov 2009 11:52:04 -0800 (PST)
-Message-ID: <alpine.LFD.2.01.0911111142340.31845@localhost.localdomain>
-References: <200911091250.31626.rjw@sisk.pl> <200911100119.38019.rjw@sisk.pl>
-	<alpine.LFD.2.01.0911101343590.31845@localhost.localdomain>
-	<200911111252.48214.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] pci: Updates to Rafael's runtime PCI PM
+	patch set
+Date: Wed, 11 Nov 2009 20:58:20 +0100
+Message-ID: <200911112058.20331.rjw__20035.7963833541$1257969497$gmane$org@sisk.pl>
+References: <200910090051.50932.rjw@sisk.pl>
+	<1257806529-6535-1-git-send-email-mjg@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200911111252.48214.rjw@sisk.pl>
+In-Reply-To: <1257806529-6535-1-git-send-email-mjg@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,57 +19,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Mike Galbraith <efault@gmx.de>, Marcel Holtmann <marcel@holtmann.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, linux-bluetooth@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, pm list <linux-pm@lists.linux-foundation.org>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Monday 09 November 2009, Matthew Garrett wrote:
+> There's a few quirks with Rafael's PCI runtime PM code - this modifies
+> them a little. The body of it is just porting it to my GPE rewrite, but
+> it also moves the PCI binding earlier (otherwise acpi_pci_bind bails, since
+> it's primarily intended for bridges), and also ensures that the pme bit
+> gets set properly on hardware that requires it.
 
+Well, I thought more changes would be necessary. :-)
 
-On Wed, 11 Nov 2009, Rafael J. Wysocki wrote:
+Looking good, a few comments below.
+
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> ---
+>  drivers/acpi/pci_bind.c  |   12 ++++++------
+>  drivers/acpi/wakeup.c    |   36 ------------------------------------
+>  drivers/pci/pci-acpi.c   |   43 ++++++++++++++++---------------------------
+>  drivers/pci/pci-driver.c |    6 ++++++
+>  include/acpi/acpi_bus.h  |    6 ------
+>  5 files changed, 28 insertions(+), 75 deletions(-)
 > 
-> I thought that the problem was somehow related to user space, because it only
-> happens after we've thawed tasks.  At least, all of the call traces I was able
-> to collect indicated so.
-> 
-> Moreover, in a few cases I got
-> 
-> kernel: PM: Finishing wakeup.
-> kernel: Restarting tasks ...
-> kernel: usb 5-2: USB disconnect, address 2
-> kernel: done.
-> bluetoothd[3445]: HCI dev 0 unregistered
-> bluetoothd[3445]: Unregister path: /org/bluez/3445/hci0
-> bluetoothd[3445]: Unregistered interface org.bluez.NetworkPeer on path /org/bluez/3445/hci0
-> bluetoothd[3445]: Unregistered interface org.bluez.NetworkHub on path /org/bluez/3445/hci0
-> bluetoothd[3445]: Unregistered interface org.bluez.NetworkRouter on path /org/bluez/3445/hci0
-> kernel: Slab corruption: size-512 start=ffff88007f1182b0, len=512
-> 
-> and so on (of course, the bluetoothd PID was different each time), so I thought
-> that the problem might be related to Bluetooth.
+...
+> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+> index eb4f26a..d644db6 100644
+> --- a/drivers/pci/pci-driver.c
+> +++ b/drivers/pci/pci-driver.c
+> @@ -967,6 +967,9 @@ static int pci_pm_runtime_suspend(struct device *dev)
+>  			pci_prepare_to_sleep(pci_dev);
+>  	}
+>  
+> +	if (pci_pme_capable(pci_dev, pci_target_state(pci_dev)))
+> +		pci_pme_active(pci_dev, true);
+> +
 
-Hmm. Sounds reasonable. It's still that 'size-512', but if the sound 
-subsystem and the bluetooth code both happen to use that size, that would 
-explain why there was sound data in the slab.
+The PME was supposed to be turned on by pci_prepare_to_sleep().
+I guess it wasn't in practice?
 
-> So, I've disabled the Bluetooth subsystem in the kernel config and I'm not able
-> to reproduce the problem any more (at least not within 50 consecutive
-> suspend-resume and hibernate-resume cycles).  Thus Bluetooth seems to be
-> at least necessary to reproduce the issue and perhaps it's also the cause of
-> it.
+>  	pci_platform_run_wake(pci_dev, true);
+>  
+>  	return 0;
+> @@ -980,6 +983,9 @@ static int pci_pm_runtime_resume(struct device *dev)
+>  	if (!pm || !pm->runtime_resume)
+>  		return -ENOSYS;
+>  
+> +	if (pci_pme_capable(pci_dev, pci_target_state(pci_dev)))
+> +		pci_pme_active(pci_dev, false);
+> +
 
-Which BT driver are you using? Maybe it's specific to the low-level 
-driver?
+Same here, pci_pm_default_resume_early() should cleare the PME theoretically,
+although not for bridges.
 
-For example, I could imagine that (say) a USB bluetooth dongle (I think 
-they are common for for mice, and are sometimes built-in on the 
-motherboard) could get the USB "disconnect" event, and get freed while 
-some work from the resume is still pending.
+>  	pci_platform_run_wake(pci_dev, false);
+>  	pci_pm_default_resume_early(pci_dev);
+>  	pci_pm_default_resume(pci_dev);
+> diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+> index 935036e..9541588 100644
 
-I'm looking at btusb_disconnect(), for example. It's one of the few BT 
-drivers that seem to use workqueues, and I'm not seeing a 
-cancel_work_sync() in the disconnect routine - but maybe the btusb_close() 
-routine is called indirectly some way that I just don't see.
+Generally, some parts of it belong to the
+"PCI PM: Run-time callbacks for PCI bus type" patch and the others belong
+to "PCI / ACPI PM: Platform support for PCI PME wake-up" patch.  Should I fold
+the changes into them?
 
-Marcel?
-
-			Linus
+Rafael
