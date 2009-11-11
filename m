@@ -1,19 +1,15 @@
-From: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: GPF in
-	run_workqueue()/list_del_init(cwq->worklist.next) on	resume
-Date: Wed, 11 Nov 2009 19:13:49 +0100
-Message-ID: <20091111181349.GA30638__19328.8687420592$1257963779$gmane$org@redhat.com>
-References: <200911091250.31626.rjw@sisk.pl> <200911092145.27485.rjw@sisk.pl>
-	<alpine.LFD.2.01.0911091339290.31845@localhost.localdomain>
-	<200911100119.38019.rjw@sisk.pl>
-	<alpine.LFD.2.01.0911101343590.31845@localhost.localdomain>
-	<4AFA70FB.60706@kernel.org>
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] x86: make sure wakeup code is below 1M -v2
+Date: Wed, 11 Nov 2009 11:05:38 -0800
+Message-ID: <4AFB0B02.4050306__33549.5101441213$1257966474$gmane$org@kernel.org>
+References: <4AF7D820.5040503@kernel.org> <200911091315.13151.rjw@sisk.pl>	
+	<4AFA210B.3020207@kernel.org>
+	<1257930767.31183.113.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4AFA70FB.60706@kernel.org>
+In-Reply-To: <1257930767.31183.113.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,89 +19,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
-Cc: Greg KH <gregkh@suse.de>, Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: ykzhao <yakui.zhao@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On 11/11, Tejun Heo wrote:
->
-> One thing that I can think of which might cause this early release is
-> self-requeueing works which assume that only one instance of the
-> function will be executed at any given time.  While preparing to bring
-> down a cpu, worker threads are unbound from the cpu.  After cpu is
-> brought down, the workqueue for that cpu is flushed.  This means that
-> any work which was running or on queue at the time of cpu down will
-> run on a different cpu.  So, let's assume there's a work function
-> which looks like the following,
->
-> void my_work_fn(struct work_struct *work)
-> {
-> 	struct my_struct *me = container_of(work, something...);
->
-> 	DO SOMETHING;
->
-> 	if (--me->todo)
-> 		schedule_work(work);
-> 	else
-> 		free(me);
-> }
->
-> Which will work perfectly as long as all cpus stay alive as the work
-> will be pinned on a single cpu and cwq guarantees that a single work
-> is never executed in parallel.  However, if a cpu is brought down
-> while my_work_fn() was doing SOMETHING and me->todo was above 1,
-> schedule_work() will schedule itself to a different cpu which will
-> happily execute the work in parallel.
->
-> As worker threads become unbound, they may bounce among different cpus
-> while executing and create more than two instances
+ykzhao wrote:
+> On Wed, 2009-11-11 at 10:27 +0800, Yinghai Lu wrote:
+>> try to find_e820_area/reserve_early, and call acpi_reserve_memory early
+>>
+>> to get area is below 1M
+>>
+>> -v2: change function name to acpi_reserve_wakeup_memory according to Rafael
+> It seems that the function of find_e820_area is called in several
+> places.
+>    >Initmem_init: bootmap = find_e820_area(0, end_pfn<<PAGE_SHIFT,
+> bootmap_size, PAGE_SIZE);
+>    
+> If we also call it in the acpi_reserve_wakeup_memory, do we get the same
+> base address as that obtained in initmem_init?
 
-Well, "more than two instances" is not possible in this particular
-case.
+no. find_e820_area will check the reserve res array that could be updated by reserve_early.
 
-But in general I agree. If a self-requeueing work assumes it stays on
-the same CPU or it assumes it can never race with itself, it should hook
-CPU_DOWN_PREPARE and cancel the work. Like slab.c does with reap_work.
-
-This is even documented, the comment above queue_work() says:
-
-	* We queue the work to the CPU on which it was submitted, but if the CPU dies
-	* it can be processed by another CPU.
-
-We can improve things, see http://marc.info/?l=linux-kernel&m=125562105103769
-
-But then we should also change workqueue_cpu_callback(CPU_POST_DEAD).
-Instead of flushing, we should carefully move the pending works to
-another CPU, otherwise the self-requeueing work can block cpu_down().
-
-> Another related issue is the behavior flush_work() when a work ends up
-> scheduled on a different cpu.  flush_work() will only look at a single
-> cpu workqueue on each flush attempt and if the work is not on the cpu
-> or there but also running on other cpus, it won't do nothing about it.
-> So, it's not too difficult to write code where the caller incorrectly
-> assumes the work is done after flush_work() is finished while the work
-> actually ended up being scheduled on a different cpu.
-
-Yes, flush_work() is not even supposed to work "correctly" in this case.
-Please note the changelog for db700897224b5ebdf852f2d38920ce428940d059
-In particular:
-
-	More precisely, it "flushes" the result of of the last
-	queue_work() which is visible to the caller.
-
-but we can add flush_work_sync().
-
-But flush_work() do not have too much callers. Instead people often
-use flush_workqueue() which just can't help if the work_struct is
-self-requeueing or if it is delayed_work.
-
-> One way to debug I can think of is to record work pointer -> function
-> mapping in a percpu ring buffer
-
-We can record work->func in work->entry.prev, which is either another
-work or cwq. Please see the debugging patch I sent.
-
-Not sure this patch will help, but I bet that the actual reason for
-this bug is much simpler than the subtle races above ;)
-
-Oleg.
+YH
