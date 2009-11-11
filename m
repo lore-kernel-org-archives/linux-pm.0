@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/1]: Thaws refrigerated bdi flusher threads
-	before invoking kthread_stop on them
-Date: Wed, 11 Nov 2009 12:59:04 +0100
-Message-ID: <200911111259.04481.rjw__30107.3253773668$1257940848$gmane$org@sisk.pl>
-References: <1257928216.15415.57.camel@boson> <200911111230.58479.rjw@sisk.pl>
-	<1257940231.28810.2.camel@boson>
+From: Ferenc Wagner <wferi@niif.hu>
+Subject: Re: intermittent suspend problem again
+Date: Wed, 11 Nov 2009 14:29:10 +0100
+Message-ID: <87pr7pi40p.fsf__20978.6123050892$1257946346$gmane$org@tac.ki.iif.hu>
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200910291936.14082.rjw@sisk.pl>
+	<87my2tnvtu.fsf@tac.ki.iif.hu> <200911111238.22696.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1257940231.28810.2.camel@boson>
+In-Reply-To: <200911111238.22696.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Wed, 11 Nov 2009 12:38:22 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,52 +19,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: romit@ti.com, "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, yakui.zhao@intel.com, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 11 November 2009, Romit Dasgupta wrote:
-> Hello Rafael, 
->               As suggested I have added the relevant information in the
-> changelog. The patch is below:
-> > For completness, below is the information from the Romit's introductory message
-> > (Romit, I really think that should go into the chagelog):
-> 
-> Kicks out frozen bdi flusher task out of the refrigerator when the said task
-> needs to exit.
-> Steps to reproduce this.
-> 1) Mount a file system from MMC/SD card.
-> 2) Unmount the file system. This creates a flusher task.
-> 3) Attempt suspend to RAM. System is unresponsive.
-> 
-> This is because the bdi flusher thread is already in the refrigerator and will
-> remain so until it is thawed. The MMC driver suspend routine ultimately will
-> issue a 'kthread_stop' on the bdi flusher thread and will block until the
-> flusher thread is exited. Since the bdi flusher thread is in the refrigerator
-> it never cleans up until thawed.
-> 
-> Signed-off-by: Romit Dasgupta <romit@ti.com>
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-Thanks!  I'd still like to know that this change is fine with Jens, though.
+> On Wednesday 11 November 2009, Ferenc Wagner wrote:
+>
+>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>> 
+>>> On Thursday 29 October 2009, Ferenc Wagner wrote:
+>>>
+>>>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>>>> 
+>>>>> On Wednesday 28 October 2009, Ferenc Wagner wrote:
+>>>>> 
+>>>>>> 2.6.32-rc5 feels particularly bad, with frequent failures to switch
+>>>>>> off the machine after "S|" or freezes after "Snapshotting system".
+>>>>>> The former does not cause much trouble in itself, as the machine can
+>>>>>> be switched off and resumed all right, but the latter is nasty.
+>>>>>> Suspend to RAM works all the time.  The issue is not reproducible,
+>>>>>> unfortunately, and the kernel change happened almost together with a
+>>>>>> BIOS upgrade.  Yesterday I switched back to 2.6.31 to see whether it
+>>>>>> still works stably with the new BIOS.  I'll report back my findings in
+>>>>>> a couple of days.
+>>>>>
+>>>>> OK, thanks.
+>>>>>
+>>>>> Still, I'm really afraid we won't be able to debug it any further without a
+>>>>> reproducible test case.
+>>>>
+>>>> Can't you perhaps suggest a way forward there?  Or some tricks to create a
+>>>> reproducible test case here?
+>>>
+>>> Well, you can test if the problem is reproducible in the "shutdown" mode of
+>>> hibernation.
+>> 
+>> Well, both failure modes happen with "shutdown" mode as well (the S|
+>> freeze with yesterday's git, too), but still not reproducibly.  When
+>> s2disk is stuck in "Snapshotting system", the system is not completely
+>> dead, it echoes line feeds and Ctrl-C at least (as added to #14504).
+>> 
+>> I wonder what you did if the issue was reproducible...  Is that totally
+>> unapplicable if the problem happens with 10% probability only?  Slow,
+>> sure, but until I manage to set up an automated testing bench...
+>
+> I would try to identify the commit that made the problem appear using git
+> bisection.  However, this is really difficult with problems that are not
+> reliably reproducible.
 
-Rafael
+Indeed.  I'm thinking about setting up a script, which does nothing but
+hibernates the laptop in a loop, and get my router provide a constant
+stream of WOL packets to restart it.  If it always freezes in bounded
+time that will make bisecting possible, if slow.
 
+> Failing that, I would add some instrumentation to the code to identify the
+> exact place where it hangs.
 
-> ---
-> diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-> index 5a37e20..c757b05 100644
-> --- a/mm/backing-dev.c
-> +++ b/mm/backing-dev.c
-> @@ -606,8 +606,11 @@ static void bdi_wb_shutdown(struct backing_dev_info *bdi)
->  	 * Finally, kill the kernel threads. We don't need to be RCU
->  	 * safe anymore, since the bdi is gone from visibility.
->  	 */
-> -	list_for_each_entry(wb, &bdi->wb_list, list)
-> +	list_for_each_entry(wb, &bdi->wb_list, list) {
-> +		if (unlikely(frozen(wb->task)))
-> +			wb->task->flags &= ~PF_FROZEN;
->  		kthread_stop(wb->task);
-> +	}
->  }
->  
->  void bdi_unregister(struct backing_dev_info *bdi)
+I managed to achieve this with my STR problem, see
+http://bugs.freedesktop.org/show_bug.cgi?id=22126#c17, but maybe that
+status = acpi_evaluate_object(NULL, METHOD_NAME__PTS, &arg_list, NULL);
+wasn't deep enough, as it got no followup.  How deep should one go to be
+useful?
+
+I can probably do so again, if slower; but this case may also be easier
+if I can depend on working console output.  Which are the interesting
+parts for instrumentation?  Can those parts produce console output to
+VGA or netconsole?  Wouldn't switching on ACPI debugging before invoking
+s2disk be useful?  Which parts of it (to avoid it spitting out MBs of
+useless characters)?
+
+> BTW, did you carry out the /sys/power/pm_test "core" test on the box?
+
+I'm not clear on how to do that with user space suspend.  Simply set it
+to "cores" before invoking s2disk?  I already did the test for STR (see
+http://bugs.freedesktop.org/show_bug.cgi?id=22126#c3), but will redo
+with the current kernel tonight.
+-- 
+Thanks,
+Feri.
