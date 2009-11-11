@@ -1,15 +1,17 @@
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] x86: make sure wakeup code is below 1M -v2
-Date: Wed, 11 Nov 2009 11:05:38 -0800
-Message-ID: <4AFB0B02.4050306__33549.5101441213$1257966474$gmane$org@kernel.org>
-References: <4AF7D820.5040503@kernel.org> <200911091315.13151.rjw@sisk.pl>	
-	<4AFA210B.3020207@kernel.org>
-	<1257930767.31183.113.camel@localhost.localdomain>
+From: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 1/1]: Thaws refrigerated bdi flusher threads
+	before	invoking kthread_stop on them
+Date: Wed, 11 Nov 2009 20:37:20 +0100
+Message-ID: <20091111193719.GR8742__46382.9217631885$1257968309$gmane$org@kernel.dk>
+References: <1257928216.15415.57.camel@boson>
+	<20091111103444.GD26423@elf.ucw.cz>
+	<200911111230.58479.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1257930767.31183.113.camel@localhost.localdomain>
+Content-Disposition: inline
+In-Reply-To: <200911111230.58479.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,25 +21,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ykzhao <yakui.zhao@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-ykzhao wrote:
-> On Wed, 2009-11-11 at 10:27 +0800, Yinghai Lu wrote:
->> try to find_e820_area/reserve_early, and call acpi_reserve_memory early
->>
->> to get area is below 1M
->>
->> -v2: change function name to acpi_reserve_wakeup_memory according to Rafael
-> It seems that the function of find_e820_area is called in several
-> places.
->    >Initmem_init: bootmap = find_e820_area(0, end_pfn<<PAGE_SHIFT,
-> bootmap_size, PAGE_SIZE);
->    
-> If we also call it in the acpi_reserve_wakeup_memory, do we get the same
-> base address as that obtained in initmem_init?
+On Wed, Nov 11 2009, Rafael J. Wysocki wrote:
+> On Wednesday 11 November 2009, Pavel Machek wrote:
+> > On Wed 2009-11-11 14:00:16, Romit Dasgupta wrote:
+> > > Kicks out frozen bdi flusher task out of the refrigerator when the flusher task
+> > > needs to exit.
+> > 
+> > 
+> > > Signed-off-by: Romit Dasgupta <romit@ti.com>
+> > 
+> > Ok, its slightly "interesting", but better than modifying common
+> > code. Looks ok to me.
+> > 
+> > ACK.
+> 
+> Agreed.
+> 
+> Jens, any objections?
 
-no. find_e820_area will check the reserve res array that could be updated by reserve_early.
+Nope, looks fine to me. Though I'd probably prefer just doing an
+unconditional PF_FROZEN clear.
 
-YH
+/*
+ * Force unfreeze of the bdi threads before stopping it, since otherwise
+ * it would never exit if it is stuck in the refrigerator.
+ */
+list_for_each_entry(wb, &bdi->wb_list, list) {
+	wb->task->flags &= ~PF_FROZEN;
+	kthread_stop(wb->task);
+}
+
+And the comment too, it's not enough to stuff this into the commit.
+
+-- 
+Jens Axboe
