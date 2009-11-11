@@ -1,17 +1,13 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: GPF in
-	run_workqueue()/list_del_init(cwq->worklist.next) on resume
-Date: Wed, 11 Nov 2009 17:08:27 +0900
-Message-ID: <4AFA70FB.60706__14709.073972381$1257927022$gmane$org@kernel.org>
-References: <200911091250.31626.rjw@sisk.pl> <200911092145.27485.rjw@sisk.pl>
-	<alpine.LFD.2.01.0911091339290.31845@localhost.localdomain>
-	<200911100119.38019.rjw@sisk.pl>
-	<alpine.LFD.2.01.0911101343590.31845@localhost.localdomain>
+From: Romit Dasgupta <romit@ti.com>
+Subject: [PATCH 0/1]: Thaws refrigerated bdi flusher threads
+ before invoking kthread_stop on them
+Date: Wed, 11 Nov 2009 13:52:44 +0530
+Message-ID: <1257927764.15415.49.camel__24030.9357097887$1257927837$gmane$org@boson>
+Reply-To: romit@ti.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.01.0911101343590.31845@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,83 +17,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Greg KH <gregkh@suse.de>, Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, pm list <linux-pm@lists.linux-foundation.org>
+To: jens.axboe@oracle.com, rjw@sisk.pl, pavel@ucw.cz
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+Hi,
+    Few days back I started facing problems during system suspend with
+MMC, SD card installed. I will restate how to reproduce the problem:
 
-Linus Torvalds wrote:
-> On Tue, 10 Nov 2009, Rafael J. Wysocki wrote:
-> And the code really is pretty subtle. queue_delayed_work_on(), for 
-> example, uses raw_smp_processor_id() to basically pick a target CPU for 
-> the work ("whatever the CPU happens to be now"). But does that have to 
-> match the CPU that the timeout will trigger on? I dunno.
+1) Mount a file system from MMC/SD card.
+2) Unmount the file system. This creates a flusher task.
+3) Attempt suspend to RAM. System is unresponsive.
 
-It will queue on the cpu the timer callback runs, so delayed work will
-follow timer which can be a little bit surprising at times, I suppose.
+This is because the bdi flusher thread is already in the refrigerator
+and will remain so until it is thawed. The MMC driver suspend routine
+ultimately will issue a 'kthread_stop' on the bdi flusher thread and
+will block until the flusher thread is exited. Since the bdi flusher
+thread is in the refrigerator it never cleans up until thawed.
 
-> I've walked through the code many times, but every time I end up
-> forgetting all the subtleties a few days later.
+Enabling khungtaskd gave the following dump: (the dump wraps beyond 80
+cols).
 
-A lot of those subtleties come from the fact struct work is not around
-once the work function is invoked, so after that the workqueue code
-doesn't have much to work with but the pointer value itself.
+INFO: task sh:387 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+sh            D c027e86c     0   387      1 0x00000000
+[<c027e86c>] (schedule+0x2e0/0x36c) from [<c027ee78>] (schedule_timeout+0x18/0x1ec)
+[<c027ee78>] (schedule_timeout+0x18/0x1ec) from [<c027ed10>] (wait_for_common+0xe0/0x198)
+[<c027ed10>] (wait_for_common+0xe0/0x198) from [<c0063dd4>] (kthread_stop+0x44/0x78)
+[<c0063dd4>] (kthread_stop+0x44/0x78) from [<c0090938>] (bdi_unregister+0x64/0xa4)
+[<c0090938>] (bdi_unregister+0x64/0xa4) from [<c0173958>] (unlink_gendisk+0x20/0x3c)
+[<c0173958>] (unlink_gendisk+0x20/0x3c) from [<c00f2338>] (del_gendisk+0x84/0xb4)
+[<c00f2338>] (del_gendisk+0x84/0xb4) from [<c01e6840>] (mmc_blk_remove+0x24/0x44)
+[<c01e6840>] (mmc_blk_remove+0x24/0x44) from [<c01e14f0>] (mmc_bus_remove+0x18/0x20)
+[<c01e14f0>] (mmc_bus_remove+0x18/0x20) from [<c01af6ac>] (__device_release_driver+0x64/0xa4)
+[<c01af6ac>] (__device_release_driver+0x64/0xa4) from [<c01af7e4>] (device_release_driver+0x1c/0x28)
+[<c01af7e4>] (device_release_driver+0x1c/0x28) from [<c01aed5c>] (bus_remove_device+0x7c/0x90)
+[<c01aed5c>] (bus_remove_device+0x7c/0x90) from [<c01ad538>] (device_del+0x110/0x160)
+[<c01ad538>] (device_del+0x110/0x160) from [<c01e15a8>] (mmc_remove_card+0x50/0x64)
+[<c01e15a8>] (mmc_remove_card+0x50/0x64) from [<c01e2ea4>] (mmc_sd_remove+0x24/0x30)
+[<c01e2ea4>] (mmc_sd_remove+0x24/0x30) from [<c01e0dcc>] (mmc_suspend_host+0x110/0x1a8)
+[<c01e0dcc>] (mmc_suspend_host+0x110/0x1a8) from [<c01e7d04>] (omap_hsmmc_suspend+0x74/0x104)
+[<c01e7d04>] (omap_hsmmc_suspend+0x74/0x104) from [<c01b08e8>] (platform_pm_suspend+0x50/0x5c)
+[<c01b08e8>] (platform_pm_suspend+0x50/0x5c) from [<c01b27f0>] (pm_op+0x30/0x74)
+[<c01b27f0>] (pm_op+0x30/0x74) from [<c01b2ec8>] (dpm_suspend_start+0x3b4/0x518)
+[<c01b2ec8>] (dpm_suspend_start+0x3b4/0x518) from [<c0078b20>] (suspend_devices_and_enter+0x3c/0x1c4)
+[<c0078b20>] (suspend_devices_and_enter+0x3c/0x1c4) from [<c0078d88>] (enter_state+0xe0/0x138)
+[<c0078d88>] (enter_state+0xe0/0x138) from [<c0078444>] (state_store+0x94/0xbc)
+[<c0078444>] (state_store+0x94/0xbc) from [<c017e124>] (kobj_attr_store+0x18/0x1c)
+[<c017e124>] (kobj_attr_store+0x18/0x1c) from [<c00f3a08>] (sysfs_write_file+0x108/0x13c)
+[<c00f3a08>] (sysfs_write_file+0x108/0x13c) from [<c00a76b8>] (vfs_write+0xac/0x154)
+[<c00a76b8>] (vfs_write+0xac/0x154) from [<c00a780c>] (sys_write+0x3c/0x68)
+[<c00a780c>] (sys_write+0x3c/0x68) from [<c0025e60>] (ret_fast_syscall+0x0/0x2c)
 
-> The workqueue code is very fragile in many ways. I'm adding Oleg and Tejun 
-> to the Cc, because Oleg is definitely one of the workqueue locking 
-> masters, and Tejun has worked on it to make it way more robust, so they 
-> may have ideas.
 
-One thing that I can think of which might cause this early release is
-self-requeueing works which assume that only one instance of the
-function will be executed at any given time.  While preparing to bring
-down a cpu, worker threads are unbound from the cpu.  After cpu is
-brought down, the workqueue for that cpu is flushed.  This means that
-any work which was running or on queue at the time of cpu down will
-run on a different cpu.  So, let's assume there's a work function
-which looks like the following,
+Earlier I had sent a patch to thaw any refrigerated kernel thread when
+some active thread has invoked 'kthread_stop' on it. This was done with
+the assumption that all such kernel threads should invoke
+'kthread_should_stop' after 'try_to_freeze' and exit if necessary. It
+looks there are some kernel threads which do not follow this. With that
+in mind I am sending a different patch to fix the above issue (in the
+next mail).
 
-void my_work_fn(struct work_struct *work)
-{
-	struct my_struct *me = container_of(work, something...);
-
-	DO SOMETHING;
-
-	if (--me->todo)
-		schedule_work(work);
-	else
-		free(me);
-}
-
-Which will work perfectly as long as all cpus stay alive as the work
-will be pinned on a single cpu and cwq guarantees that a single work
-is never executed in parallel.  However, if a cpu is brought down
-while my_work_fn() was doing SOMETHING and me->todo was above 1,
-schedule_work() will schedule itself to a different cpu which will
-happily execute the work in parallel.
-
-As worker threads become unbound, they may bounce among different cpus
-while executing and create more than two instances of parallel
-execution of the work which can lead to freeings work which is still
-on workqueue list with the above code but with different code just two
-parallel executions should be able to achieve it.
-
-Another related issue is the behavior flush_work() when a work ends up
-scheduled on a different cpu.  flush_work() will only look at a single
-cpu workqueue on each flush attempt and if the work is not on the cpu
-or there but also running on other cpus, it won't do nothing about it.
-So, it's not too difficult to write code where the caller incorrectly
-assumes the work is done after flush_work() is finished while the work
-actually ended up being scheduled on a different cpu.
-
-One way to debug I can think of is to record work pointer -> function
-mapping in a percpu ring buffer and when the bug occurs (can be
-detected by matching the 6b poison pattern before dereferencing next
-pointer) print out function pointer for the matching work pointer.
-The async nature makes the problem very difficult to track down.  :-(
-
-Thanks.
-
--- 
-tejun
+Regards,
+-Romit
