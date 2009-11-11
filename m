@@ -1,14 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: intermittent suspend problem again
-Date: Wed, 11 Nov 2009 12:38:22 +0100
-Message-ID: <200911111238.22696.rjw__13317.2863432721$1257939654$gmane$org@sisk.pl>
-References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200910291936.14082.rjw@sisk.pl>
-	<87my2tnvtu.fsf@tac.ki.iif.hu>
+From: Romit Dasgupta <romit@ti.com>
+Subject: Re: [PATCH 1/1]: Thaws refrigerated bdi flusher threads
+ before invoking kthread_stop on them
+Date: Wed, 11 Nov 2009 17:20:31 +0530
+Message-ID: <1257940231.28810.2.camel__25542.9428806112$1257940305$gmane$org@boson>
+References: <1257928216.15415.57.camel@boson>
+	<20091111103444.GD26423@elf.ucw.cz>  <200911111230.58479.rjw@sisk.pl>
+Reply-To: romit@ti.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87my2tnvtu.fsf@tac.ki.iif.hu>
+In-Reply-To: <200911111230.58479.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,56 +20,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, yakui.zhao@intel.com, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "jens.axboe@oracle.com" <jens.axboe@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 11 November 2009, Ferenc Wagner wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > On Thursday 29 October 2009, Ferenc Wagner wrote:
-> >
-> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >> 
-> >>> On Wednesday 28 October 2009, Ferenc Wagner wrote:
-> >>> 
-> >>>> 2.6.32-rc5 feels particularly bad, with frequent failures to switch
-> >>>> off the machine after "S|" or freezes after "Snapshotting system".
-> >>>> The former does not cause much trouble in itself, as the machine can
-> >>>> be switched off and resumed all right, but the latter is nasty.
-> >>>> Suspend to RAM works all the time.  The issue is not reproducible,
-> >>>> unfortunately, and the kernel change happened almost together with a
-> >>>> BIOS upgrade.  Yesterday I switched back to 2.6.31 to see whether it
-> >>>> still works stably with the new BIOS.  I'll report back my findings in
-> >>>> a couple of days.
-> >>>
-> >>> OK, thanks.
-> >>>
-> >>> Still, I'm really afraid we won't be able to debug it any further without a
-> >>> reproducible test case.
-> >>
-> >> Can't you perhaps suggest a way forward there?  Or some tricks to create a
-> >> reproducible test case here?
-> >
-> > Well, you can test if the problem is reproducible in the "shutdown" mode of
-> > hibernation.
-> 
-> Well, both failure modes happen with "shutdown" mode as well (the S|
-> freeze with yesterday's git, too), but still not reproducibly.  When
-> s2disk is stuck in "Snapshotting system", the system is not completely
-> dead, it echoes line feeds and Ctrl-C at least (as added to #14504).
-> 
-> I wonder what you did if the issue was reproducible...  Is that totally
-> unapplicable if the problem happens with 10% probability only?  Slow,
-> sure, but until I manage to set up an automated testing bench...
+Hello Rafael, 
+              As suggested I have added the relevant information in the
+changelog. The patch is below:
+> For completness, below is the information from the Romit's introductory message
+> (Romit, I really think that should go into the chagelog):
 
-I would try to identify the commit that made the problem appear using git
-bisection.  However, this is really difficult with problems that are not
-reliably reproducible.
+Kicks out frozen bdi flusher task out of the refrigerator when the said task
+needs to exit.
+Steps to reproduce this.
+1) Mount a file system from MMC/SD card.
+2) Unmount the file system. This creates a flusher task.
+3) Attempt suspend to RAM. System is unresponsive.
 
-Failing that, I would add some instrumentation to the code to identify the
-exact place where it hangs.
+This is because the bdi flusher thread is already in the refrigerator and will
+remain so until it is thawed. The MMC driver suspend routine ultimately will
+issue a 'kthread_stop' on the bdi flusher thread and will block until the
+flusher thread is exited. Since the bdi flusher thread is in the refrigerator
+it never cleans up until thawed.
 
-BTW, did you carry out the /sys/power/pm_test "core" test on the box?
-
-Rafael
+Signed-off-by: Romit Dasgupta <romit@ti.com>
+---
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index 5a37e20..c757b05 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -606,8 +606,11 @@ static void bdi_wb_shutdown(struct backing_dev_info *bdi)
+ 	 * Finally, kill the kernel threads. We don't need to be RCU
+ 	 * safe anymore, since the bdi is gone from visibility.
+ 	 */
+-	list_for_each_entry(wb, &bdi->wb_list, list)
++	list_for_each_entry(wb, &bdi->wb_list, list) {
++		if (unlikely(frozen(wb->task)))
++			wb->task->flags &= ~PF_FROZEN;
+ 		kthread_stop(wb->task);
++	}
+ }
+ 
+ void bdi_unregister(struct backing_dev_info *bdi)
