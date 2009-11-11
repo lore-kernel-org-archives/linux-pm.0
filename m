@@ -1,14 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: intermittent suspend problem again
-Date: Wed, 11 Nov 2009 15:47:21 +0100
-Message-ID: <200911111547.21149.rjw__46043.2934378788$1257950874$gmane$org@sisk.pl>
-References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911111238.22696.rjw@sisk.pl>
-	<87pr7pi40p.fsf@tac.ki.iif.hu>
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Subject: Re: [PATCH -queue 1/2] [loongson] 2f: add suspend
+	support framework
+Date: Wed, 11 Nov 2009 23:32:56 +0800
+Message-ID: <1257953576.7308.27.camel__35131.2869847336$1257953766$gmane$org@falcon.domain.org>
+References: <cover.1257922151.git.wuzhangjin@gmail.com>
+	<1257922625.2922.97.camel@falcon.domain.org>
+	<20091111103304.GB26423@elf.ucw.cz>
+Reply-To: wuzhangjin@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87pr7pi40p.fsf@tac.ki.iif.hu>
+In-Reply-To: <20091111103304.GB26423@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,97 +21,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, yakui.zhao@intel.com, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-mips@linux-mips.org, Len Brown <len.brown@intel.com>, yanh@lemote.com, Ralf Baechle <ralf@linux-mips.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 11 November 2009, Ferenc Wagner wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+Hi,
+
+On Wed, 2009-11-11 at 11:33 +0100, Pavel Machek wrote:
+> On Wed 2009-11-11 14:57:05, Wu Zhangjin wrote:
+> > (Add CC to Rafael J. Wysocki, Len Brown and Pavel Machek)
+> > 
+> > This patch add basic suspend support for loongson2f family machines,
+> > loongson2f have a specific feature: when we set it's frequency to ZERO,
+> > it will go into a wait mode, and then can be waked up by the external
+> > interrupt. so, if we setup suitable interrupts before putting it into
+> > wait mode, we will be able wake it up whenever we want via sending the
+> > relative interrupts to it.
+> > 
+> > These interrupts are board-specific, Yeeloong2F use the keyboard
+> > interrupt and SCI interrupt, but LingLoong and Fuloong2F use the
+> > interrupts connected to the processors directly. and BTW: some old
+> > LingLoong and FuLoong2F have no such interrupts connected, so, there is
+> > no way to wake them up from suspend mode. and therefore, please do not
+> > enable the kernel support for them.
+> > 
+> > The board-specific support will be added in the coming patches.
+> > 
+> > Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
 > 
-> > On Wednesday 11 November 2009, Ferenc Wagner wrote:
-> >
-> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >> 
-> >>> On Thursday 29 October 2009, Ferenc Wagner wrote:
-> >>>
-> >>>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >>>> 
-> >>>>> On Wednesday 28 October 2009, Ferenc Wagner wrote:
-> >>>>> 
-> >>>>>> 2.6.32-rc5 feels particularly bad, with frequent failures to switch
-> >>>>>> off the machine after "S|" or freezes after "Snapshotting system".
-> >>>>>> The former does not cause much trouble in itself, as the machine can
-> >>>>>> be switched off and resumed all right, but the latter is nasty.
-> >>>>>> Suspend to RAM works all the time.  The issue is not reproducible,
-> >>>>>> unfortunately, and the kernel change happened almost together with a
-> >>>>>> BIOS upgrade.  Yesterday I switched back to 2.6.31 to see whether it
-> >>>>>> still works stably with the new BIOS.  I'll report back my findings in
-> >>>>>> a couple of days.
-> >>>>>
-> >>>>> OK, thanks.
-> >>>>>
-> >>>>> Still, I'm really afraid we won't be able to debug it any further without a
-> >>>>> reproducible test case.
-> >>>>
-> >>>> Can't you perhaps suggest a way forward there?  Or some tricks to create a
-> >>>> reproducible test case here?
-> >>>
-> >>> Well, you can test if the problem is reproducible in the "shutdown" mode of
-> >>> hibernation.
-> >> 
-> >> Well, both failure modes happen with "shutdown" mode as well (the S|
-> >> freeze with yesterday's git, too), but still not reproducibly.  When
-> >> s2disk is stuck in "Snapshotting system", the system is not completely
-> >> dead, it echoes line feeds and Ctrl-C at least (as added to #14504).
-> >> 
-> >> I wonder what you did if the issue was reproducible...  Is that totally
-> >> unapplicable if the problem happens with 10% probability only?  Slow,
-> >> sure, but until I manage to set up an automated testing bench...
-> >
-> > I would try to identify the commit that made the problem appear using git
-> > bisection.  However, this is really difficult with problems that are not
-> > reliably reproducible.
+> Comments are slighlty "interesting", but otherwise it looks ok.
 > 
-> Indeed.  I'm thinking about setting up a script, which does nothing but
-> hibernates the laptop in a loop, and get my router provide a constant
-> stream of WOL packets to restart it.  If it always freezes in bounded
-> time that will make bisecting possible, if slow.
-
-Alternatively, you can use the RTC alarm to wake up the machine.
-
-> > Failing that, I would add some instrumentation to the code to identify the
-> > exact place where it hangs.
+> > +	/* stop all perf counters */
+> > +	stop_perf_counters();
 > 
-> I managed to achieve this with my STR problem, see
-> http://bugs.freedesktop.org/show_bug.cgi?id=22126#c17, but maybe that
-> status = acpi_evaluate_object(NULL, METHOD_NAME__PTS, &arg_list, NULL);
-> wasn't deep enough, as it got no followup.  How deep should one go to be
-> useful?
-
-No, this is deep enough and indicates a BIOS issue.
-
-> I can probably do so again, if slower; but this case may also be easier
-> if I can depend on working console output.  Which are the interesting
-> parts for instrumentation?  Can those parts produce console output to
-> VGA or netconsole?  Wouldn't switching on ACPI debugging before invoking
-> s2disk be useful?  Which parts of it (to avoid it spitting out MBs of
-> useless characters)?
-
-I usually don't do that and if the issue is reproducible in the "shutdown"
-mode, ACPI is most probably not involved.
-
-> > BTW, did you carry out the /sys/power/pm_test "core" test on the box?
+> This is not exactly useful comment, right?
 > 
-> I'm not clear on how to do that with user space suspend.  Simply set it
-> to "cores" before invoking s2disk?
+ 
+Will remove it later ;) the same to the following two.
 
-Yes, echo "core" to /sys/power/pm_test before executing s2disk.
+> > +	/* mach specific suspend */
+> > +	mach_suspend();
+> ...
+> > +	/* mach specific resume */
+> > +	mach_resume();
+> 
+> 
+> It is probably ok, but you may want to avoid them in future.
+> 
+> ACK.
+> 									Pavel
+> 
 
-> I already did the test for STR (see
-> http://bugs.freedesktop.org/show_bug.cgi?id=22126#c3), but will redo
-> with the current kernel tonight.
-
-OK, thanks.
-
-Best,
-Rafael
+Thanks!
+	Wu Zhangjin
