@@ -1,19 +1,15 @@
-From: tip-bot for Yinghai Lu <yinghai@kernel.org>
-Subject: [tip:x86/mm] x86: Make sure wakeup trampoline code is
-	below 1MB
-Date: Wed, 11 Nov 2009 20:30:55 GMT
-Message-ID: <tip-196cf0d67acad70ebb2572da489d5cc7066cdd05__31903.6752138802$1257971739$gmane$org@git.kernel.org>
-References: <4AFA210B.3020207@kernel.org>
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-pm@lists.linux-foundation.org,
-        linux-kernel@vger.kernel.org, lenb@kernel.org, yinghai@kernel.org,
-        torvalds@linux-foundation.org, tglx@linutronix.de, rjw@sisk.pl,
-        mingo@elte.hu
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/1]: Thaws refrigerated bdi flusher threads
+	before invoking kthread_stop on them
+Date: Wed, 11 Nov 2009 21:41:12 +0100
+Message-ID: <200911112141.12437.rjw__3222.82982892848$1257972053$gmane$org@sisk.pl>
+References: <1257928216.15415.57.camel@boson> <200911111230.58479.rjw@sisk.pl>
+	<20091111193719.GR8742@kernel.dk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4AFA210B.3020207@kernel.org>
-Content-Disposition: inline
+In-Reply-To: <20091111193719.GR8742@kernel.dk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,127 +19,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-tip-commits@vger.kernel.org
-Cc: yinghai@kernel.org, mingo@elte.hu, linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com, linux-pm@lists.linux-foundation.org, torvalds@linux-foundation.org, tglx@linutronix.de
+To: Jens Axboe <jens.axboe@oracle.com>, Romit Dasgupta <romit@ti.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Commit-ID:  196cf0d67acad70ebb2572da489d5cc7066cdd05
-Gitweb:     http://git.kernel.org/tip/196cf0d67acad70ebb2572da489d5cc7066cdd05
-Author:     Yinghai Lu <yinghai@kernel.org>
-AuthorDate: Tue, 10 Nov 2009 18:27:23 -0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 11 Nov 2009 20:14:32 +0100
+On Wednesday 11 November 2009, Jens Axboe wrote:
+> On Wed, Nov 11 2009, Rafael J. Wysocki wrote:
+> > On Wednesday 11 November 2009, Pavel Machek wrote:
+> > > On Wed 2009-11-11 14:00:16, Romit Dasgupta wrote:
+> > > > Kicks out frozen bdi flusher task out of the refrigerator when the flusher task
+> > > > needs to exit.
+> > > 
+> > > 
+> > > > Signed-off-by: Romit Dasgupta <romit@ti.com>
+> > > 
+> > > Ok, its slightly "interesting", but better than modifying common
+> > > code. Looks ok to me.
+> > > 
+> > > ACK.
+> > 
+> > Agreed.
+> > 
+> > Jens, any objections?
+> 
+> Nope, looks fine to me. Though I'd probably prefer just doing an
+> unconditional PF_FROZEN clear.
+> 
+> /*
+>  * Force unfreeze of the bdi threads before stopping it, since otherwise
+>  * it would never exit if it is stuck in the refrigerator.
+>  */
+> list_for_each_entry(wb, &bdi->wb_list, list) {
+> 	wb->task->flags &= ~PF_FROZEN;
+> 	kthread_stop(wb->task);
+> }
+> 
+> And the comment too, it's not enough to stuff this into the commit.
 
-x86: Make sure wakeup trampoline code is below 1MB
+The last version had the changelog fixed.
 
-Instead of using bootmem, try find_e820_area()/reserve_early(),
-and call acpi_reserve_memory() early, to allocate the wakeup
-trampoline code area below 1M.
+Romit, please rework as suggested by Jens and resubmit.
 
-This is more reliable, and it also removes a dependency on
-bootmem.
-
--v2: change function name to acpi_reserve_wakeup_memory(),
-     as suggested by Rafael.
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Acked-by: H. Peter Anvin <hpa@zytor.com>
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>
-Cc: Len Brown <lenb@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <4AFA210B.3020207@kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/include/asm/acpi.h  |    2 +-
- arch/x86/kernel/acpi/sleep.c |   15 +++++++++------
- arch/x86/kernel/setup.c      |   13 +++++++------
- 3 files changed, 17 insertions(+), 13 deletions(-)
-
-diff --git a/arch/x86/include/asm/acpi.h b/arch/x86/include/asm/acpi.h
-index e3d4a0d..60d2b2d 100644
---- a/arch/x86/include/asm/acpi.h
-+++ b/arch/x86/include/asm/acpi.h
-@@ -118,7 +118,7 @@ extern void acpi_restore_state_mem(void);
- extern unsigned long acpi_wakeup_address;
- 
- /* early initialization routine */
--extern void acpi_reserve_bootmem(void);
-+extern void acpi_reserve_wakeup_memory(void);
- 
- /*
-  * Check if the CPU can handle C2 and deeper
-diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
-index ca93638..4a41145 100644
---- a/arch/x86/kernel/acpi/sleep.c
-+++ b/arch/x86/kernel/acpi/sleep.c
-@@ -119,29 +119,32 @@ void acpi_restore_state_mem(void)
- 
- 
- /**
-- * acpi_reserve_bootmem - do _very_ early ACPI initialisation
-+ * acpi_reserve_wakeup_memory - do _very_ early ACPI initialisation
-  *
-  * We allocate a page from the first 1MB of memory for the wakeup
-  * routine for when we come back from a sleep state. The
-  * runtime allocator allows specification of <16MB pages, but not
-  * <1MB pages.
-  */
--void __init acpi_reserve_bootmem(void)
-+void __init acpi_reserve_wakeup_memory(void)
- {
-+	unsigned long mem;
-+
- 	if ((&wakeup_code_end - &wakeup_code_start) > WAKEUP_SIZE) {
- 		printk(KERN_ERR
- 		       "ACPI: Wakeup code way too big, S3 disabled.\n");
- 		return;
- 	}
- 
--	acpi_realmode = (unsigned long)alloc_bootmem_low(WAKEUP_SIZE);
-+	mem = find_e820_area(0, 1<<20, WAKEUP_SIZE, PAGE_SIZE);
- 
--	if (!acpi_realmode) {
-+	if (mem == -1L) {
- 		printk(KERN_ERR "ACPI: Cannot allocate lowmem, S3 disabled.\n");
- 		return;
- 	}
--
--	acpi_wakeup_address = virt_to_phys((void *)acpi_realmode);
-+	acpi_realmode = (unsigned long) phys_to_virt(mem);
-+	acpi_wakeup_address = mem;
-+	reserve_early(mem, mem + WAKEUP_SIZE, "ACPI WAKEUP");
- }
- 
- 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index f891419..0a6e94a 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -897,6 +897,13 @@ void __init setup_arch(char **cmdline_p)
- 
- 	reserve_brk();
- 
-+#ifdef CONFIG_ACPI_SLEEP
-+	/*
-+	 * Reserve low memory region for sleep support.
-+	 * even before init_memory_mapping
-+	 */
-+	acpi_reserve_wakeup_memory();
-+#endif
- 	init_gbpages();
- 
- 	/* max_pfn_mapped is updated here */
-@@ -948,12 +955,6 @@ void __init setup_arch(char **cmdline_p)
- 
- 	initmem_init(0, max_pfn, acpi, k8);
- 
--#ifdef CONFIG_ACPI_SLEEP
--	/*
--	 * Reserve low memory region for sleep support.
--	 */
--	acpi_reserve_bootmem();
--#endif
- 	/*
- 	 * Find and reserve possible boot-time SMP configuration:
- 	 */
+Thanks,
+Rafael
