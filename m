@@ -1,17 +1,18 @@
-From: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 1/1]: Thaws refrigerated bdi flusher threads
-	before	invoking kthread_stop on them
-Date: Wed, 11 Nov 2009 20:37:20 +0100
-Message-ID: <20091111193719.GR8742__46382.9217631885$1257968309$gmane$org@kernel.dk>
-References: <1257928216.15415.57.camel@boson>
-	<20091111103444.GD26423@elf.ucw.cz>
-	<200911111230.58479.rjw@sisk.pl>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: GPF in
+ run_workqueue()/list_del_init(cwq->worklist.next) on resume (was: Re: Help
+ needed: Resume problems in 2.6.32-rc,
+ perhaps related to preempt_count leakage in keventd)
+Date: Wed, 11 Nov 2009 11:52:04 -0800 (PST)
+Message-ID: <alpine.LFD.2.01.0911111142340.31845@localhost.localdomain>
+References: <200911091250.31626.rjw@sisk.pl> <200911100119.38019.rjw@sisk.pl>
+	<alpine.LFD.2.01.0911101343590.31845@localhost.localdomain>
+	<200911111252.48214.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200911111230.58479.rjw@sisk.pl>
+In-Reply-To: <200911111252.48214.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,40 +23,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: Mike Galbraith <efault@gmx.de>, Marcel Holtmann <marcel@holtmann.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, linux-bluetooth@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 11 2009, Rafael J. Wysocki wrote:
-> On Wednesday 11 November 2009, Pavel Machek wrote:
-> > On Wed 2009-11-11 14:00:16, Romit Dasgupta wrote:
-> > > Kicks out frozen bdi flusher task out of the refrigerator when the flusher task
-> > > needs to exit.
-> > 
-> > 
-> > > Signed-off-by: Romit Dasgupta <romit@ti.com>
-> > 
-> > Ok, its slightly "interesting", but better than modifying common
-> > code. Looks ok to me.
-> > 
-> > ACK.
+
+
+On Wed, 11 Nov 2009, Rafael J. Wysocki wrote:
 > 
-> Agreed.
+> I thought that the problem was somehow related to user space, because it only
+> happens after we've thawed tasks.  At least, all of the call traces I was able
+> to collect indicated so.
 > 
-> Jens, any objections?
+> Moreover, in a few cases I got
+> 
+> kernel: PM: Finishing wakeup.
+> kernel: Restarting tasks ...
+> kernel: usb 5-2: USB disconnect, address 2
+> kernel: done.
+> bluetoothd[3445]: HCI dev 0 unregistered
+> bluetoothd[3445]: Unregister path: /org/bluez/3445/hci0
+> bluetoothd[3445]: Unregistered interface org.bluez.NetworkPeer on path /org/bluez/3445/hci0
+> bluetoothd[3445]: Unregistered interface org.bluez.NetworkHub on path /org/bluez/3445/hci0
+> bluetoothd[3445]: Unregistered interface org.bluez.NetworkRouter on path /org/bluez/3445/hci0
+> kernel: Slab corruption: size-512 start=ffff88007f1182b0, len=512
+> 
+> and so on (of course, the bluetoothd PID was different each time), so I thought
+> that the problem might be related to Bluetooth.
 
-Nope, looks fine to me. Though I'd probably prefer just doing an
-unconditional PF_FROZEN clear.
+Hmm. Sounds reasonable. It's still that 'size-512', but if the sound 
+subsystem and the bluetooth code both happen to use that size, that would 
+explain why there was sound data in the slab.
 
-/*
- * Force unfreeze of the bdi threads before stopping it, since otherwise
- * it would never exit if it is stuck in the refrigerator.
- */
-list_for_each_entry(wb, &bdi->wb_list, list) {
-	wb->task->flags &= ~PF_FROZEN;
-	kthread_stop(wb->task);
-}
+> So, I've disabled the Bluetooth subsystem in the kernel config and I'm not able
+> to reproduce the problem any more (at least not within 50 consecutive
+> suspend-resume and hibernate-resume cycles).  Thus Bluetooth seems to be
+> at least necessary to reproduce the issue and perhaps it's also the cause of
+> it.
 
-And the comment too, it's not enough to stuff this into the commit.
+Which BT driver are you using? Maybe it's specific to the low-level 
+driver?
 
--- 
-Jens Axboe
+For example, I could imagine that (say) a USB bluetooth dongle (I think 
+they are common for for mice, and are sometimes built-in on the 
+motherboard) could get the USB "disconnect" event, and get freed while 
+some work from the resume is still pending.
+
+I'm looking at btusb_disconnect(), for example. It's one of the few BT 
+drivers that seem to use workqueues, and I'm not seeing a 
+cancel_work_sync() in the disconnect routine - but maybe the btusb_close() 
+routine is called indirectly some way that I just don't see.
+
+Marcel?
+
+			Linus
