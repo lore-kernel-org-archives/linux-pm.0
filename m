@@ -1,18 +1,19 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: GPF in
-	run_workqueue()/list_del_init(cwq->worklist.next) on	resume
-Date: Thu, 12 Nov 2009 13:56:53 +0900
-Message-ID: <4AFB9595.1030002__32073.101172182$1258001910$gmane$org@kernel.org>
-References: <200911091250.31626.rjw@sisk.pl> <200911092145.27485.rjw@sisk.pl>
-	<alpine.LFD.2.01.0911091339290.31845@localhost.localdomain>
-	<200911100119.38019.rjw@sisk.pl>
-	<alpine.LFD.2.01.0911101343590.31845@localhost.localdomain>
-	<4AFA70FB.60706@kernel.org> <20091111181349.GA30638@redhat.com>
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] x86: make sure wakeup code is below 1M -v2
+Date: Wed, 11 Nov 2009 21:21:36 -0800
+Message-ID: <4AFB9B60.7010009__17309.4809674241$1258003433$gmane$org@kernel.org>
+References: <4AF7D820.5040503@kernel.org> <200911091315.13151.rjw@sisk.pl>	
+	<4AFA210B.3020207@kernel.org>	
+	<1257930767.31183.113.camel@localhost.localdomain>	
+	<4AFB0B02.4050306@kernel.org>	
+	<1257988632.31183.134.camel@localhost.localdomain>	
+	<4AFB7D21.6050004@kernel.org>
+	<1257997072.3888.4.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091111181349.GA30638@redhat.com>
+In-Reply-To: <1257997072.3888.4.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,85 +23,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Greg KH <gregkh@suse.de>, Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: ykzhao <yakui.zhao@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+ykzhao wrote:
+> On Thu, 2009-11-12 at 11:12 +0800, Yinghai Lu wrote:
+>> ykzhao wrote:
+>>> On Thu, 2009-11-12 at 03:05 +0800, Yinghai Lu wrote:
+>>>> ykzhao wrote:
+>>>>> On Wed, 2009-11-11 at 10:27 +0800, Yinghai Lu wrote:
+>>>>>> try to find_e820_area/reserve_early, and call acpi_reserve_memory early
+>>>>>>
+>>>>>> to get area is below 1M
+>>>>>>
+>>>>>> -v2: change function name to acpi_reserve_wakeup_memory according to Rafael
+>>>>> It seems that the function of find_e820_area is called in several
+>>>>> places.
+>>>>>    >Initmem_init: bootmap = find_e820_area(0, end_pfn<<PAGE_SHIFT,
+>>>>> bootmap_size, PAGE_SIZE);
+>>>>>    
+>>>>> If we also call it in the acpi_reserve_wakeup_memory, do we get the same
+>>>>> base address as that obtained in initmem_init?
+>>>> no. find_e820_area will check the reserve res array that could be updated by reserve_early.
+>>> It will check the reserved region array when calling the function of
+>>> find_e820_area. 
+>>> But it seems that the array is not updated when the find_e820_area is
+>>> called in the function of initmem_init.
+>> right after that will use reserve_bootmem for those range in initmem_init.
+> Yes. The reserve_bootmem is called for the range in initmem_init.
+> But the reserved_early array is not updated.
 
-Oleg Nesterov wrote:
-> Well, "more than two instances" is not possible in this particular
-> case.
+it is not needed anymore because bootmem for that node is ready at that point, could use 
+reserve_bootmem_node directly. and before that early_res_to_bootmem will convert that early resource that 
+fall into that node range to bootmem reserved too.
 
-Right, the second one won't leave the cpu and cpu downs don't overlap.
+please check code setup_node_bootmem/early_node_mem/early_res_to_bootmem ...and reserve_bootmem_node...
 
-> But in general I agree. If a self-requeueing work assumes it stays on
-> the same CPU or it assumes it can never race with itself, it should hook
-> CPU_DOWN_PREPARE and cancel the work. Like slab.c does with reap_work.
-> 
-> This is even documented, the comment above queue_work() says:
-> 
-> 	* We queue the work to the CPU on which it was submitted, but if the CPU dies
-> 	* it can be processed by another CPU.
-> 
-> We can improve things, see http://marc.info/?l=linux-kernel&m=125562105103769
-> 
-> But then we should also change workqueue_cpu_callback(CPU_POST_DEAD).
-> Instead of flushing, we should carefully move the pending works to
-> another CPU, otherwise the self-requeueing work can block cpu_down().
-
-That looks like an excellent idea and I don't think it will add
-noticeable overhead even done by default and it will magically make
-the "how to implement single-threaded wq semantics in conccurrency
-managed wq" problem go away.  I'll work on it.
-
->> Another related issue is the behavior flush_work() when a work ends up
->> scheduled on a different cpu.  flush_work() will only look at a single
->> cpu workqueue on each flush attempt and if the work is not on the cpu
->> or there but also running on other cpus, it won't do nothing about it.
->> So, it's not too difficult to write code where the caller incorrectly
->> assumes the work is done after flush_work() is finished while the work
->> actually ended up being scheduled on a different cpu.
-> 
-> Yes, flush_work() is not even supposed to work "correctly" in this case.
-> Please note the changelog for db700897224b5ebdf852f2d38920ce428940d059
-> In particular:
-> 
-> 	More precisely, it "flushes" the result of of the last
-> 	queue_work() which is visible to the caller.
-> 
-> but we can add flush_work_sync().
-> 
-> But flush_work() do not have too much callers. Instead people often
-> use flush_workqueue() which just can't help if the work_struct is
-> self-requeueing or if it is delayed_work.
-
-If you look at the workqueue code itself very closely, all subtleties
-are properly defined and described.  The problem is that it's not very
-clear and way too subtle when seen from outside and workqueue is
-something used very widely.  I think if we enforce global single
-threadedness with the above change, making flush_work() behave as
-flush_work_sync() by default should be doable without too much
-overhead.  I'll give it a shot.
-
->> One way to debug I can think of is to record work pointer -> function
->> mapping in a percpu ring buffer
-> 
-> We can record work->func in work->entry.prev, which is either another
-> work or cwq. Please see the debugging patch I sent.
-
-That's much better.  It would be nice to have such debug code in
-upstream dependent on a debug config.
-
-> Not sure this patch will help, but I bet that the actual reason for
-> this bug is much simpler than the subtle races above ;)
-
-And yes it was but still I'm fairly sure unexpected races described
-above are happening.  They would probably be quite infrequent and the
-outcome in many cases not bad enough to be noticed.  I think we really
-need to plug the hole.  It's scary.
-
-Thanks.
-
--- 
-tejun
+YH
