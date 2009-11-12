@@ -1,19 +1,14 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: GPF in
-	run_workqueue()/list_del_init(cwq->worklist.next) on resume
-Date: Fri, 13 Nov 2009 04:17:02 +0900
-Message-ID: <4AFC5F2E.9040709__966.450878377323$1258053878$gmane$org@kernel.org>
-References: <200911091250.31626.rjw@sisk.pl> <200911092145.27485.rjw@sisk.pl>
-	<alpine.LFD.2.01.0911091339290.31845@localhost.localdomain>
-	<200911100119.38019.rjw@sisk.pl>
-	<alpine.LFD.2.01.0911101343590.31845@localhost.localdomain>
-	<20091111171703.GA28506@redhat.com>
-	<alpine.LFD.2.00.0911121821370.24119@localhost.localdomain>
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] x86: make sure wakeup code is below 1M -v2
+Date: Thu, 12 Nov 2009 11:25:49 -0800
+Message-ID: <4AFC613D.2060808__16716.2325968549$1258054110$gmane$org@kernel.org>
+References: <4AF7D820.5040503@kernel.org> <200911091315.13151.rjw@sisk.pl>
+	<4AFA210B.3020207@kernel.org> <20091112073616.GA11365@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0911121821370.24119@localhost.localdomain>
+In-Reply-To: <20091112073616.GA11365@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,24 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Greg KH <gregkh@suse.de>, Mike Galbraith <efault@gmx.de>, Oleg Nesterov <oleg@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-11/13/2009 02:33 AM, Thomas Gleixner wrote:
-> Subject: workqueue: Add debugobjects support
-> From: Thomas Gleixner <tglx@linutronix.de>
-> Date: Thu, 12 Nov 2009 16:25:34 +0100
+Pavel Machek wrote:
+> On Tue 2009-11-10 18:27:23, Yinghai Lu wrote:
+>> try to find_e820_area/reserve_early, and call acpi_reserve_memory early
+>>
+>> to get area is below 1M
 > 
-> Add debugobject support to track the life time of work_structs.
+>> -	acpi_realmode = (unsigned long)alloc_bootmem_low(WAKEUP_SIZE);
+>> +	mem = find_e820_area(0, 1<<20, WAKEUP_SIZE, PAGE_SIZE);
+>>  
+>> -	if (!acpi_realmode) {
+>> +	if (mem == -1L) {
+>>  		printk(KERN_ERR "ACPI: Cannot allocate lowmem, S3 disabled.\n");
+>>  		return;
+>>  	}
 > 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> How is it better then old code?
 
-This looks great.  I'm about to create a wq tree for concurrency
-managed workqueue patches.  Do you mind if I route this patch through
-there?
+could get range below 1M.
 
-Thanks.
+alloc_bootmem_low can not make sure get that below 1M.
 
--- 
-tejun
+init_memory_mapping could use below 1M as page table...
+
+so need to get some buffer for acpi wakeup realmode code.
+
+YH
