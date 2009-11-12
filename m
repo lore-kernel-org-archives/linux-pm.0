@@ -1,15 +1,18 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: Memory consumption difference between in-kernel and
- userspace hibernation
-Date: Thu, 12 Nov 2009 22:12:23 +0100
-Message-ID: <20091112221223.3459b8cc@surf>
-References: <20091112210155.0f9bbe5d@surf>
-	<200911122152.02671.rjw@sisk.pl>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: GPF in
+ run_workqueue()/list_del_init(cwq->worklist.next) on resume (was: Re: Help
+ needed: Resume problems in 2.6.32-rc,
+ perhaps related to preempt_count leakage in keventd)
+Date: Fri, 13 Nov 2009 00:08:32 +0100 (CET)
+Message-ID: <alpine.LFD.2.00.0911130004110.24119__931.807075585489$1258067434$gmane$org@localhost.localdomain>
+References: <200911091250.31626.rjw@sisk.pl> <200911122153.12419.rjw@sisk.pl>
+	<alpine.LFD.2.00.0911122153320.24119@localhost.localdomain>
+	<200911122355.11675.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200911122152.02671.rjw@sisk.pl>
+In-Reply-To: <200911122355.11675.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,62 +23,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+Cc: Greg KH <gregkh@suse.de>, Mike Galbraith <efault@gmx.de>, Oleg Nesterov <oleg@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGVsbG8sCgpUaGFua3MgZm9yIHlvdXIgZmVlZGJhY2suCgpMZSBUaHUsIDEyIE5vdiAyMDA5IDIx
-OjUyOjAyICswMTAwLAoiUmFmYWVsIEouIFd5c29ja2kiIDxyandAc2lzay5wbD4gYSDDqWNyaXQg
-OgoKPiBUaGUgdXNlcnNwYWNlIGludGVyZmFjZSBkb2Vzbid0IHJlYWxseSBhbGxvdyB5b3UgdG8g
-d3JpdGUgdG8gYSBmaWxlLgo+IFlvdSBjYW4gd3JpdGUgaW50byB0aGUgYXJlYSB0aGUgZmlsZSBv
-Y2N1cGllcyBvbiB0aGUgcGFydGl0aW9uLCBidXQKPiB5b3UgY2FuJ3QgdXNlIHRoZSBmaWxlc3lz
-dGVtIGNvZGUgZm9yIHRoZSBhY3R1YWwgd3JpdGluZy4gIEF0IGxlYXN0Cj4geW91IHNob3VsZG4n
-dCBkbyB0aGF0LgoKQWguIEJ1dCBpdCBzZWVtcyB0byB3b3JrIGZhaXJseSBuaWNlbHkuIFdoeSBj
-YW4ndCB0aGUgZmlsZXN5c3RlbSBjb2RlCmNvdWxkIGJlIHVzZWQgdG8gc3RvcmUgdGhlIHJlc3Vt
-ZSBpbWFnZSA/IE5vdGUgdGhhdCBteSBmaWxlIGlzIHN0b3JlZAppbiBhIHNlcGFyYXRlIHBhcnRp
-dGlvbiwgZnVsbHkgZGVkaWNhdGVkIHRvIHN0b3JpbmcgdGhlIHJlc3VtZSBmaWxlIGFuZAptb3Vu
-dGVkIG9ubHkgYXQgdmVyeSBzcGVjaWZpYyBwb2ludHMgaW4gdGhlIHN5c3RlbSBsaWZldGltZS4K
-CkknbSBkb2luZyB0aGUgZm9sbG93aW5nIHRoaW5ncyB1cG9uIHN1c3BlbmQgOgoKICogU05BUFNI
-T1RfRlJFRVpFCgogKiBTTkFQU0hPVF9BVE9NSUNfU05BUFNIT1QsIHdoaWNoIGFjY29yZGluZyB0
-byBteSB1bmRlcnN0YW5kaW5nIGlzCiAgIG1ha2luZyBhIHNuYXBzaG90IG9mIHRoZSBtZW1vcnkg
-aW5zaWRlIGEgY29weSwgc28gdGhhdCBvbmNlIHRoZQogICBzbmFwc2hvdCBpcyBtYWRlLCB0aGUg
-a2VybmVsIGNhbiBiZSB1c2VkIGFzIHVzdWFsLgoKICogU05BUFNIT1RfVU5GUkVFWkUKCiAqIE1v
-dW50IG15IFlBRkZTMiBmaWxlc3lzdGVtIHRoYXQgd2lsbCBjb250YWluIHRoZSByZXN1bWUgaW1h
-Z2UKCiAqIFJlYWQgL2Rldi9zbmFwc2hvdCBhbmQgd3JpdGUgdGhlIHJlc3VsdCB0byBhIGZpbGUg
-aW4gdGhlIFlBRkZTMgogICBmaWxlc3lzdGVtCgogKiBVbm1vdW50IHRoZSBZQUZGUzIgZmlsZXN5
-c3RlbQoKICogU2h1dGRvd24KCk9uIHJlc3VtZSwgSSdtIGRvaW5nIHRoZSBmb2xsb3dpbmcgb3Bl
-cmF0aW9ucyBpbiBhIC9pbml0IGFwcGxpY2F0aW9uIGluCnRoZSBrZXJuZWwgaW5pdHJhbWZzIDoK
-CiAqIE1vdW50IHRoZSBZQUZGUzIgZmlsZXN5c3RlbQoKICogT3BlbiB0aGUgcmVzdW1lIGltYWdl
-IGFuZCB0aGUgL2Rldi9zbmFwc2hvdCBkZXZpY2UKCiAqIFJlYWQgdGhlIGltYWdlIGZyb20gdGhl
-IGZpbGUgYW5kIHdyaXRlIGl0IHRvIC9kZXYvc25hcHNob3QKCiAqIFVubW91bnQgdGhlIFlBRkZT
-MiBmaWxlc3lzdGVtCgogKiBTTkFQU0hPVF9GUkVFWkUKCiAqIFNOQVBTSE9UX0FUT01JQ19SRVNU
-T1JFCgpBbmQgZG9uZS4gU28gbXkgWUFGRlMyIGZpbGVzeXN0ZW0gaXMgKm5ldmVyKiBtb3VudGVk
-IGJlZm9yZSB0YWtpbmcgdGhlCnNuYXBzaG90IG9yIGJlZm9yZSBiZWdpbm5pbmcgdG8gcmVzdG9y
-ZSB0aGUgc25hcHNob3QuCgpJc24ndCB0aGlzIHNhZmUgPwoKPiBzd3N1c3Bfc2hyaW5rX21lbW9y
-eSgpIGlzIHVzZWQgYnkgYm90aCB0aGUgaW4ta2VybmVsIGNvZGUgYW5kIHRoZQo+IHVzZXJzcGFj
-ZSBjb2RlIG1vcmUtb3ItbGVzcyBpbiB0aGUgc2FtZSB3YXksIHNvIGl0IGxvb2tzIHN0cmFuZ2Uu
-Cj4gSG93IG11Y2ggbWVtb3J5IGlzIHRoZXJlIGluIHRoZSBzeXN0ZW0/CgpOb3QgdGhhdCBtdWNo
-OgoKIyBmcmVlCiAgICAgICAgICAgICAgdG90YWwgICAgICAgICB1c2VkICAgICAgICAgZnJlZSAg
-ICAgICBzaGFyZWQgICAgICBidWZmZXJzCiAgTWVtOiAgICAgICAgMjYxMTYgICAgICAgIDExMjY0
-ICAgICAgICAxNDg1MiAgICAgICAgICAgIDAgICAgICAgICAgICAwCiBTd2FwOiAgICAgICAgICAg
-IDAgICAgICAgICAgICAwICAgICAgICAgICAgMApUb3RhbDogICAgICAgIDI2MTE2ICAgICAgICAx
-MTI2NCAgICAgICAgMTQ4NTIKCihUaGlzIGlzIHRoZSBmaWd1cmUgd2l0aG91dCB0aGUgaGVhdnkg
-YXBwbGljYXRpb25zIGxvYWRlZCkKCj4gczJkaXNrIGFsbG9jYXRlcyBhIGZldyBidWZmZXJzIGZv
-ciBpdHNlbGYsIGJ1dCBJJ20gbm90IHN1cmUgaWYgdGhhdAo+IG1hdHRlcnMgYXQgYWxsLgo+IAo+
-IFdoaWNoIHZlcnNpb24gb2YgczJkaXNrIGRvIHlvdSB1c2UsIGRvIHlvdSBoYXZlIGVuY3J5cHRp
-b24gZW5hYmxlZCBpbgo+IHMyZGlzaz8KCkknbSBub3QgdXNpbmcgczJkaXNrIGF0IGFsbCwgc28g
-bm8gZW5jcnlwdGlvbiwgbm90aGluZy4gSSBpbXBsZW1lbnRlZCBteQpvd24gc3VzcGVuZC9yZXN1
-bWUgYXBwbGljYXRpb25zIChJIGNhbiBzaG93IHRoZSBzb3VyY2UgY29kZSBpZiBuZWVkZWQsCmV2
-ZW4gdGhvdWdoIHRoZSBjb2RlIGlzIHByZXR0eSB1Z2x5KS4KCkJUVywgSSd2ZSBkb25lIGEgbGl0
-dGxlIHRlc3Q6IGNvbXByZXNzIHdpdGggTFpPIGVhY2ggcGFnZSB0aGF0IG5lZWRzIHRvCmJlIHNh
-dmVkIGFzIHBhcnQgb2YgdGhlIHNuYXBzaG90LiBJbnN0ZWFkIG9mIDExNDE5NjQ4IGJ5dGVzIGlu
-IG15IGNhc2UsCm9ubHkgNTcyNTk1MSBieXRlcyAoaGFsZiEpIHdvdWxkIGJlIG5lZWRlZCB0byBz
-dG9yZSB0aGUgc25hcHNob3QgaW4KbWVtb3J5LCByZWR1Y2luZyBzaWduaWZpY2FudGx5IHRoZSBt
-ZW1vcnkgcHJlc3N1cmUgY2F1c2VkIGJ5IHRoZQphbGxvY2F0aW9uIG9mIHRoZSBwYWdlcyBuZWVk
-ZWQgdG8gc3RvcmUgdGhlIHNuYXBzaG90LiBIYXMgdGhpcyBhbHJlYWR5CmJlZW4gY29uc2lkZXJl
-ZCA/CgpUaGFua3MgYWdhaW4gZm9yIHRoZSBmZWVkYmFjaywKClRob21hcwotLSAKVGhvbWFzIFBl
-dGF6em9uaSwgRnJlZSBFbGVjdHJvbnMKS2VybmVsLCBkcml2ZXJzIGFuZCBlbWJlZGRlZCBMaW51
-eCBkZXZlbG9wbWVudCwKY29uc3VsdGluZywgdHJhaW5pbmcgYW5kIHN1cHBvcnQuCmh0dHA6Ly9m
-cmVlLWVsZWN0cm9ucy5jb20KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5k
-YXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0
-aW5mby9saW51eC1wbQ==
+On Thu, 12 Nov 2009, Rafael J. Wysocki wrote:
+> > debugobjects should catch the attempt to free the memory which holds
+> > the work_struct, cancel it and print a backtrace where this happened.
+> 
+> I got the appended trace, so I guess it works.
+
+Yup. I assume the box survived otherwise you wouldnt have retrieved
+the backtrace.
+
+> [   93.028997] ODEBUG: free active object type: work_struct
+
+Active work_struct is freed
+
+> [   93.039180]  [<ffffffff810c8d7c>] kfree+0x71/0x88
+> [   93.039282]  [<ffffffffa03d36f1>] btusb_destruct+0x10/0x12 [btusb]
+
+Here is the offending code and it's call chain.
+
+> [   93.039282]  [<ffffffffa03d36d0>] btusb_disconnect+0x81/0x92 [btusb]
+> [   93.039282]  [<ffffffffa00c6612>] usb_unbind_interface+0x5e/0xe1 [usbcore]
+> [   93.039282]  [<ffffffff811ebead>] __device_release_driver+0x70/0xbe
+> [   93.039282]  [<ffffffff811ebfc6>] device_release_driver+0x1e/0x2b
+> [   93.040317]  [<ffffffff811ebb46>] bus_remove_device+0x83/0x92
+> [   93.040317]  [<ffffffff811e9940>] device_del+0x12e/0x170
+> [   93.040317]  [<ffffffffa00c3adf>] usb_disable_device+0x76/0xf5 [usbcore]
+> [   93.040317]  [<ffffffffa00becfb>] usb_disconnect+0x96/0xfa [usbcore]
+> [   93.040317]  [<ffffffffa00bf927>] hub_thread+0x493/0xe2c [usbcore]
+> [   93.040317]  [<ffffffff81058465>] ? autoremove_wake_function+0x0/0x38
+> [   93.040317]  [<ffffffff81293de6>] ? preempt_schedule+0x3b/0x41
+> [   93.040317]  [<ffffffffa00bf494>] ? hub_thread+0x0/0xe2c [usbcore]
+> [   93.040317]  [<ffffffff8105823e>] kthread+0x69/0x71
+> [   93.040317]  [<ffffffff8100c16a>] child_rip+0xa/0x20
+> [   93.042128]  [<ffffffff810581d5>] ? kthread+0x0/0x71
+> [   93.042393]  [<ffffffff8100c160>] ? child_rip+0x0/0x20
+> [   93.042478] ---[ end trace 6915b286c29296ce ]---
+
+That does not necessary tell you which of the work_structs in the
+bluetooth code it is, but it limits the search of culprits
+significantly.
+
+Thanks for testing and confirming.
+
+       tglx
