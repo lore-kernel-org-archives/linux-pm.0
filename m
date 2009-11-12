@@ -1,19 +1,15 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: GPF in
- run_workqueue()/list_del_init(cwq->worklist.next) on resume (was: Re: Help
- needed: Resume problems in 2.6.32-rc,
- perhaps related to preempt_count leakage in keventd)
-Date: Thu, 12 Nov 2009 21:55:50 +0100 (CET)
-Message-ID: <alpine.LFD.2.00.0911122153320.24119__13432.3392798708$1258059529$gmane$org@localhost.localdomain>
-References: <200911091250.31626.rjw@sisk.pl>
-	<20091111171703.GA28506@redhat.com>
-	<alpine.LFD.2.00.0911121821370.24119@localhost.localdomain>
-	<200911122153.12419.rjw@sisk.pl>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: Memory consumption difference between in-kernel and
+ userspace hibernation
+Date: Thu, 12 Nov 2009 22:12:23 +0100
+Message-ID: <20091112221223.3459b8cc@surf>
+References: <20091112210155.0f9bbe5d@surf>
+	<200911122152.02671.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200911122153.12419.rjw@sisk.pl>
+In-Reply-To: <200911122152.02671.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,29 +20,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, Mike Galbraith <efault@gmx.de>, Oleg Nesterov <oleg@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 12 Nov 2009, Rafael J. Wysocki wrote:
-
-> On Thursday 12 November 2009, Thomas Gleixner wrote:
-> > On Wed, 11 Nov 2009, Oleg Nesterov wrote:
-> > > Well, yes. Because any buggy user can easily kill the system, and we
-> > > constantly have the bugs like this one.
-> > > 
-> > > I think we should teach workqueue.c to use debugobjects.c at least.
-> > 
-> > Here you go. Would be interesting to know whether it catches the
-> > problem at hand.
-> 
-> How would I tell if it did?
-
-Apply the patch, enable debugobjects and try to reproduce the failure
-- w/o the fix patch of course :)
-
-debugobjects should catch the attempt to free the memory which holds
-the work_struct, cancel it and print a backtrace where this happened.
-
-Thanks,
-
-	tglx
+SGVsbG8sCgpUaGFua3MgZm9yIHlvdXIgZmVlZGJhY2suCgpMZSBUaHUsIDEyIE5vdiAyMDA5IDIx
+OjUyOjAyICswMTAwLAoiUmFmYWVsIEouIFd5c29ja2kiIDxyandAc2lzay5wbD4gYSDDqWNyaXQg
+OgoKPiBUaGUgdXNlcnNwYWNlIGludGVyZmFjZSBkb2Vzbid0IHJlYWxseSBhbGxvdyB5b3UgdG8g
+d3JpdGUgdG8gYSBmaWxlLgo+IFlvdSBjYW4gd3JpdGUgaW50byB0aGUgYXJlYSB0aGUgZmlsZSBv
+Y2N1cGllcyBvbiB0aGUgcGFydGl0aW9uLCBidXQKPiB5b3UgY2FuJ3QgdXNlIHRoZSBmaWxlc3lz
+dGVtIGNvZGUgZm9yIHRoZSBhY3R1YWwgd3JpdGluZy4gIEF0IGxlYXN0Cj4geW91IHNob3VsZG4n
+dCBkbyB0aGF0LgoKQWguIEJ1dCBpdCBzZWVtcyB0byB3b3JrIGZhaXJseSBuaWNlbHkuIFdoeSBj
+YW4ndCB0aGUgZmlsZXN5c3RlbSBjb2RlCmNvdWxkIGJlIHVzZWQgdG8gc3RvcmUgdGhlIHJlc3Vt
+ZSBpbWFnZSA/IE5vdGUgdGhhdCBteSBmaWxlIGlzIHN0b3JlZAppbiBhIHNlcGFyYXRlIHBhcnRp
+dGlvbiwgZnVsbHkgZGVkaWNhdGVkIHRvIHN0b3JpbmcgdGhlIHJlc3VtZSBmaWxlIGFuZAptb3Vu
+dGVkIG9ubHkgYXQgdmVyeSBzcGVjaWZpYyBwb2ludHMgaW4gdGhlIHN5c3RlbSBsaWZldGltZS4K
+CkknbSBkb2luZyB0aGUgZm9sbG93aW5nIHRoaW5ncyB1cG9uIHN1c3BlbmQgOgoKICogU05BUFNI
+T1RfRlJFRVpFCgogKiBTTkFQU0hPVF9BVE9NSUNfU05BUFNIT1QsIHdoaWNoIGFjY29yZGluZyB0
+byBteSB1bmRlcnN0YW5kaW5nIGlzCiAgIG1ha2luZyBhIHNuYXBzaG90IG9mIHRoZSBtZW1vcnkg
+aW5zaWRlIGEgY29weSwgc28gdGhhdCBvbmNlIHRoZQogICBzbmFwc2hvdCBpcyBtYWRlLCB0aGUg
+a2VybmVsIGNhbiBiZSB1c2VkIGFzIHVzdWFsLgoKICogU05BUFNIT1RfVU5GUkVFWkUKCiAqIE1v
+dW50IG15IFlBRkZTMiBmaWxlc3lzdGVtIHRoYXQgd2lsbCBjb250YWluIHRoZSByZXN1bWUgaW1h
+Z2UKCiAqIFJlYWQgL2Rldi9zbmFwc2hvdCBhbmQgd3JpdGUgdGhlIHJlc3VsdCB0byBhIGZpbGUg
+aW4gdGhlIFlBRkZTMgogICBmaWxlc3lzdGVtCgogKiBVbm1vdW50IHRoZSBZQUZGUzIgZmlsZXN5
+c3RlbQoKICogU2h1dGRvd24KCk9uIHJlc3VtZSwgSSdtIGRvaW5nIHRoZSBmb2xsb3dpbmcgb3Bl
+cmF0aW9ucyBpbiBhIC9pbml0IGFwcGxpY2F0aW9uIGluCnRoZSBrZXJuZWwgaW5pdHJhbWZzIDoK
+CiAqIE1vdW50IHRoZSBZQUZGUzIgZmlsZXN5c3RlbQoKICogT3BlbiB0aGUgcmVzdW1lIGltYWdl
+IGFuZCB0aGUgL2Rldi9zbmFwc2hvdCBkZXZpY2UKCiAqIFJlYWQgdGhlIGltYWdlIGZyb20gdGhl
+IGZpbGUgYW5kIHdyaXRlIGl0IHRvIC9kZXYvc25hcHNob3QKCiAqIFVubW91bnQgdGhlIFlBRkZT
+MiBmaWxlc3lzdGVtCgogKiBTTkFQU0hPVF9GUkVFWkUKCiAqIFNOQVBTSE9UX0FUT01JQ19SRVNU
+T1JFCgpBbmQgZG9uZS4gU28gbXkgWUFGRlMyIGZpbGVzeXN0ZW0gaXMgKm5ldmVyKiBtb3VudGVk
+IGJlZm9yZSB0YWtpbmcgdGhlCnNuYXBzaG90IG9yIGJlZm9yZSBiZWdpbm5pbmcgdG8gcmVzdG9y
+ZSB0aGUgc25hcHNob3QuCgpJc24ndCB0aGlzIHNhZmUgPwoKPiBzd3N1c3Bfc2hyaW5rX21lbW9y
+eSgpIGlzIHVzZWQgYnkgYm90aCB0aGUgaW4ta2VybmVsIGNvZGUgYW5kIHRoZQo+IHVzZXJzcGFj
+ZSBjb2RlIG1vcmUtb3ItbGVzcyBpbiB0aGUgc2FtZSB3YXksIHNvIGl0IGxvb2tzIHN0cmFuZ2Uu
+Cj4gSG93IG11Y2ggbWVtb3J5IGlzIHRoZXJlIGluIHRoZSBzeXN0ZW0/CgpOb3QgdGhhdCBtdWNo
+OgoKIyBmcmVlCiAgICAgICAgICAgICAgdG90YWwgICAgICAgICB1c2VkICAgICAgICAgZnJlZSAg
+ICAgICBzaGFyZWQgICAgICBidWZmZXJzCiAgTWVtOiAgICAgICAgMjYxMTYgICAgICAgIDExMjY0
+ICAgICAgICAxNDg1MiAgICAgICAgICAgIDAgICAgICAgICAgICAwCiBTd2FwOiAgICAgICAgICAg
+IDAgICAgICAgICAgICAwICAgICAgICAgICAgMApUb3RhbDogICAgICAgIDI2MTE2ICAgICAgICAx
+MTI2NCAgICAgICAgMTQ4NTIKCihUaGlzIGlzIHRoZSBmaWd1cmUgd2l0aG91dCB0aGUgaGVhdnkg
+YXBwbGljYXRpb25zIGxvYWRlZCkKCj4gczJkaXNrIGFsbG9jYXRlcyBhIGZldyBidWZmZXJzIGZv
+ciBpdHNlbGYsIGJ1dCBJJ20gbm90IHN1cmUgaWYgdGhhdAo+IG1hdHRlcnMgYXQgYWxsLgo+IAo+
+IFdoaWNoIHZlcnNpb24gb2YgczJkaXNrIGRvIHlvdSB1c2UsIGRvIHlvdSBoYXZlIGVuY3J5cHRp
+b24gZW5hYmxlZCBpbgo+IHMyZGlzaz8KCkknbSBub3QgdXNpbmcgczJkaXNrIGF0IGFsbCwgc28g
+bm8gZW5jcnlwdGlvbiwgbm90aGluZy4gSSBpbXBsZW1lbnRlZCBteQpvd24gc3VzcGVuZC9yZXN1
+bWUgYXBwbGljYXRpb25zIChJIGNhbiBzaG93IHRoZSBzb3VyY2UgY29kZSBpZiBuZWVkZWQsCmV2
+ZW4gdGhvdWdoIHRoZSBjb2RlIGlzIHByZXR0eSB1Z2x5KS4KCkJUVywgSSd2ZSBkb25lIGEgbGl0
+dGxlIHRlc3Q6IGNvbXByZXNzIHdpdGggTFpPIGVhY2ggcGFnZSB0aGF0IG5lZWRzIHRvCmJlIHNh
+dmVkIGFzIHBhcnQgb2YgdGhlIHNuYXBzaG90LiBJbnN0ZWFkIG9mIDExNDE5NjQ4IGJ5dGVzIGlu
+IG15IGNhc2UsCm9ubHkgNTcyNTk1MSBieXRlcyAoaGFsZiEpIHdvdWxkIGJlIG5lZWRlZCB0byBz
+dG9yZSB0aGUgc25hcHNob3QgaW4KbWVtb3J5LCByZWR1Y2luZyBzaWduaWZpY2FudGx5IHRoZSBt
+ZW1vcnkgcHJlc3N1cmUgY2F1c2VkIGJ5IHRoZQphbGxvY2F0aW9uIG9mIHRoZSBwYWdlcyBuZWVk
+ZWQgdG8gc3RvcmUgdGhlIHNuYXBzaG90LiBIYXMgdGhpcyBhbHJlYWR5CmJlZW4gY29uc2lkZXJl
+ZCA/CgpUaGFua3MgYWdhaW4gZm9yIHRoZSBmZWVkYmFjaywKClRob21hcwotLSAKVGhvbWFzIFBl
+dGF6em9uaSwgRnJlZSBFbGVjdHJvbnMKS2VybmVsLCBkcml2ZXJzIGFuZCBlbWJlZGRlZCBMaW51
+eCBkZXZlbG9wbWVudCwKY29uc3VsdGluZywgdHJhaW5pbmcgYW5kIHN1cHBvcnQuCmh0dHA6Ly9m
+cmVlLWVsZWN0cm9ucy5jb20KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5k
+YXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0
+aW5mby9saW51eC1wbQ==
