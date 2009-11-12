@@ -1,14 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] x86: make sure wakeup code is below 1M -v2
-Date: Thu, 12 Nov 2009 20:32:46 +0100
-Message-ID: <200911122032.46872.rjw__36784.2017476962$1258054468$gmane$org@sisk.pl>
-References: <4AF7D820.5040503@kernel.org> <4AFA210B.3020207@kernel.org>
-	<20091112073616.GA11365@elf.ucw.cz>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Memory consumption difference between in-kernel and
+ userspace hibernation
+Date: Thu, 12 Nov 2009 21:01:55 +0100
+Message-ID: <20091112210155.0f9bbe5d@surf>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091112073616.GA11365@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,23 +16,116 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 12 November 2009, Pavel Machek wrote:
-> On Tue 2009-11-10 18:27:23, Yinghai Lu wrote:
-> > 
-> > try to find_e820_area/reserve_early, and call acpi_reserve_memory early
-> > 
-> > to get area is below 1M
-> 
-> Does it fix anything? I can't tell from the changelog...
+Hi,
 
-Yes, it does.  If the area is above 1M, we can't run real mode code from it.
+Let me first introduce my question, and then give details about the
+context.
 
-This matters for NUMA machines supporting S3 (yes, there are a few models
-out there).
+Question: is there any difference in terms of memory requirements for
+the in-kernel hibernation (echo disk > /sys/power/state) and the
+userspace hibernation interface (through /dev/snapshot) ? With exactly
+the same userspace workload and applications running, the in-kernel
+hibernation works, but the hibernating using the userspace hibernation
+interface fails because not enough memory can be freed.
 
-Thanks,
-Rafael
+Now, the context.
+
+I'm implementing hibernation on an embedded device, which has no swap
+since the only storage available is NAND flash.
+
+I started by using the in-kernel hibernation mechanism, which saved the
+resume image directly into an MTD partition, declared as a swap just
+before starting the hibernation process (swapon /dev/mtdblockX; echo
+disk > /sys/power/state). This worked like a charm.
+
+But writing the resume image directly to the MTD partition is not
+satisfying since it doesn't handle bad erase blocks and wear leveling.
+Therefore, I wanted to save the resume image into a file, inside a
+JFFS2 or YAFFS2 filesystem. For this, I used the /dev/snapshot
+userspace interface to swsusp. With a light workload, it works
+perfectly (both suspend and resume). But with a similar workload than
+the one tested with the in-kernel hibernation, things fail at the
+SNAPSHOT_ATOMIC_SNAPSHOT ioctl() step, which returns ENOMEM.
+
+To get some details about the issue, I've added a few printk()s in
+swsusp_shrink_memory(). Here is the patch:
+
+==================================================================
+--- foo.orig/kernel/power/swsusp.c
++++ foo/kernel/power/swsusp.c
+@@ -226,15 +226,20 @@
+                highmem_size = count_highmem_pages();
+                size = count_data_pages() + PAGES_FOR_IO;
+                tmp = size;
++               printk("size=%d\n", size);
+                size += highmem_size;
+                for_each_zone (zone)
+                        if (populated_zone(zone)) {
+                                if (is_highmem(zone)) {
+                                        highmem_size -= zone->free_pages;
+                                } else {
++                                       printk("1 tmp=%d\n", tmp);
+                                        tmp -= zone->free_pages;
++                                       printk("2 tmp=%d\n", tmp);
+                                        tmp += zone->lowmem_reserve[ZONE_NORMAL];
++                                       printk("3 tmp=%d\n", tmp);
+                                        tmp += snapshot_additional_pages(zone);
++                                       printk("4 tmp=%d\n", tmp);
+                                }
+                        }
+ 
+@@ -243,9 +248,12 @@
+ 
+                tmp += highmem_size;
+                if (tmp > 0) {
++                       printk("trying to free %d pages\n", tmp);
+                        tmp = __shrink_memory(tmp);
+-                       if (!tmp)
++                       if (!tmp) {
++                               printk("\bfailed, ENOMEM\n");
+                                return -ENOMEM;
++                       }
+                        pages += tmp;
+                } else if (size > image_size / PAGE_SIZE) {
+                        tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
+==================================================================
+
+I get the following output:
+
+==================================================================
+Stopping tasks ... done.
+Shrinking memory...  size=6967
+1 tmp=6967
+2 tmp=6639
+3 tmp=6639
+4 tmp=6643
+trying to free 6643 pages
+-size=4036
+1 tmp=4036
+2 tmp=777
+3 tmp=777
+4 tmp=781
+trying to free 781 pages
+failed, ENOMEM
+Restarting tasks ... done.
+==================================================================
+
+Note 1: I've already reduced PAGES_FOR_IO from 1024 to 128.
+
+Note 2: As usual in the embedded space, I'm stuck with an old 2.6.25
+        kernel.
+
+Any idea on why it works with the in-kernel solution and not the
+userspace one ?
+
+Thanks a lot for your inputs,
+
+Thomas
+-- 
+Thomas Petazzoni, Free Electrons
+Kernel, drivers and embedded Linux development,
+consulting, training and support.
+http://free-electrons.com
