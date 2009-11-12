@@ -1,15 +1,20 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] x86: make sure wakeup code is below 1M -v2
-Date: Thu, 12 Nov 2009 08:36:17 +0100
-Message-ID: <20091112073616.GA11365@elf.ucw.cz>
-References: <4AF7D820.5040503@kernel.org> <200911091315.13151.rjw@sisk.pl>
-	<4AFA210B.3020207@kernel.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: GPF in
+ run_workqueue()/list_del_init(cwq->worklist.next) on resume (was: Re: Help
+ needed: Resume problems in 2.6.32-rc,
+ perhaps related to preempt_count leakage in keventd)
+Date: Thu, 12 Nov 2009 18:33:00 +0100 (CET)
+Message-ID: <alpine.LFD.2.00.0911121821370.24119__49597.8909930729$1258047316$gmane$org@localhost.localdomain>
+References: <200911091250.31626.rjw@sisk.pl> <200911092145.27485.rjw@sisk.pl>
+	<alpine.LFD.2.01.0911091339290.31845@localhost.localdomain>
+	<200911100119.38019.rjw@sisk.pl>
+	<alpine.LFD.2.01.0911101343590.31845@localhost.localdomain>
+	<20091111171703.GA28506@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4AFA210B.3020207@kernel.org>
+In-Reply-To: <20091111171703.GA28506@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,62 +24,387 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Greg KH <gregkh@suse.de>, Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2009-11-10 18:27:23, Yinghai Lu wrote:
+On Wed, 11 Nov 2009, Oleg Nesterov wrote:
+> Well, yes. Because any buggy user can easily kill the system, and we
+> constantly have the bugs like this one.
 > 
-> try to find_e820_area/reserve_early, and call acpi_reserve_memory early
-> 
-> to get area is below 1M
+> I think we should teach workqueue.c to use debugobjects.c at least.
 
-Does it fix anything? I can't tell from the changelog...
+Here you go. Would be interesting to know whether it catches the
+problem at hand.
 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Thanks,
 
-Please CC me on suspend patches.
->  /*
->   * Check if the CPU can handle C2 and deeper
-> Index: linux-2.6/arch/x86/kernel/acpi/sleep.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/acpi/sleep.c
-> +++ linux-2.6/arch/x86/kernel/acpi/sleep.c
-> @@ -119,29 +119,32 @@ void acpi_restore_state_mem(void)
->  
->  
->  /**
-> - * acpi_reserve_bootmem - do _very_ early ACPI initialisation
-> + * acpi_reserve_wakeup_memory - do _very_ early ACPI initialisation
->   *
->   * We allocate a page from the first 1MB of memory for the wakeup
->   * routine for when we come back from a sleep state. The
->   * runtime allocator allows specification of <16MB pages, but not
->   * <1MB pages.
->   */
-> -void __init acpi_reserve_bootmem(void)
-> +void __init acpi_reserve_wakeup_memory(void)
->  {
-> +	unsigned long mem;
-> +
->  	if ((&wakeup_code_end - &wakeup_code_start) > WAKEUP_SIZE) {
->  		printk(KERN_ERR
->  		       "ACPI: Wakeup code way too big, S3 disabled.\n");
->  		return;
->  	}
->  
-> -	acpi_realmode = (unsigned long)alloc_bootmem_low(WAKEUP_SIZE);
-> +	mem = find_e820_area(0, 1<<20, WAKEUP_SIZE, PAGE_SIZE);
->  
-> -	if (!acpi_realmode) {
-> +	if (mem == -1L) {
->  		printk(KERN_ERR "ACPI: Cannot allocate lowmem, S3 disabled.\n");
->  		return;
->  	}
+	tglx
+----
+Subject: workqueue: Add debugobjects support
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Thu, 12 Nov 2009 16:25:34 +0100
 
-How is it better then old code?
+Add debugobject support to track the life time of work_structs.
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ arch/x86/kernel/smpboot.c |    4 +
+ include/linux/workqueue.h |   38 +++++++++----
+ kernel/workqueue.c        |  131 ++++++++++++++++++++++++++++++++++++++++++++--
+ lib/Kconfig.debug         |    8 ++
+ 4 files changed, 166 insertions(+), 15 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/smpboot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/smpboot.c
++++ linux-2.6/arch/x86/kernel/smpboot.c
+@@ -687,7 +687,7 @@ static int __cpuinit do_boot_cpu(int api
+ 		.done	= COMPLETION_INITIALIZER_ONSTACK(c_idle.done),
+ 	};
+ 
+-	INIT_WORK(&c_idle.work, do_fork_idle);
++	INIT_WORK_ON_STACK(&c_idle.work, do_fork_idle);
+ 
+ 	alternatives_smp_switch(1);
+ 
+@@ -713,6 +713,7 @@ static int __cpuinit do_boot_cpu(int api
+ 
+ 	if (IS_ERR(c_idle.idle)) {
+ 		printk("failed fork for CPU %d\n", cpu);
++		destroy_work_on_stack(&c_idle.work);
+ 		return PTR_ERR(c_idle.idle);
+ 	}
+ 
+@@ -831,6 +832,7 @@ do_rest:
+ 		smpboot_restore_warm_reset_vector();
+ 	}
+ 
++	destroy_work_on_stack(&c_idle.work);
+ 	return boot_error;
+ }
+ 
+Index: linux-2.6/include/linux/workqueue.h
+===================================================================
+--- linux-2.6.orig/include/linux/workqueue.h
++++ linux-2.6/include/linux/workqueue.h
+@@ -25,6 +25,7 @@ typedef void (*work_func_t)(struct work_
+ struct work_struct {
+ 	atomic_long_t data;
+ #define WORK_STRUCT_PENDING 0		/* T if work item pending execution */
++#define WORK_STRUCT_STATIC  1		/* static initializer (debugobjects) */
+ #define WORK_STRUCT_FLAG_MASK (3UL)
+ #define WORK_STRUCT_WQ_DATA_MASK (~WORK_STRUCT_FLAG_MASK)
+ 	struct list_head entry;
+@@ -35,6 +36,7 @@ struct work_struct {
+ };
+ 
+ #define WORK_DATA_INIT()	ATOMIC_LONG_INIT(0)
++#define WORK_DATA_STATIC_INIT()	ATOMIC_LONG_INIT(2)
+ 
+ struct delayed_work {
+ 	struct work_struct work;
+@@ -63,7 +65,7 @@ struct execute_work {
+ #endif
+ 
+ #define __WORK_INITIALIZER(n, f) {				\
+-	.data = WORK_DATA_INIT(),				\
++	.data = WORK_DATA_STATIC_INIT(),			\
+ 	.entry	= { &(n).entry, &(n).entry },			\
+ 	.func = (f),						\
+ 	__WORK_INIT_LOCKDEP_MAP(#n, &(n))			\
+@@ -91,6 +93,14 @@ struct execute_work {
+ #define PREPARE_DELAYED_WORK(_work, _func)			\
+ 	PREPARE_WORK(&(_work)->work, (_func))
+ 
++#ifdef CONFIG_DEBUG_OBJECTS_WORK
++extern void __init_work(struct work_struct *work, int onstack);
++extern void destroy_work_on_stack(struct work_struct *work);
++#else
++static inline void __init_work(struct work_struct *work, int onstack) { }
++static inline void destroy_work_on_stack(struct work_struct *work) { }
++#endif
++
+ /*
+  * initialize all of a work item in one go
+  *
+@@ -99,24 +109,36 @@ struct execute_work {
+  * to generate better code.
+  */
+ #ifdef CONFIG_LOCKDEP
+-#define INIT_WORK(_work, _func)						\
++#define __INIT_WORK(_work, _func, _onstack)				\
+ 	do {								\
+ 		static struct lock_class_key __key;			\
+ 									\
++		__init_work((_work), _onstack);				\
+ 		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
+ 		lockdep_init_map(&(_work)->lockdep_map, #_work, &__key, 0);\
+ 		INIT_LIST_HEAD(&(_work)->entry);			\
+ 		PREPARE_WORK((_work), (_func));				\
+ 	} while (0)
+ #else
+-#define INIT_WORK(_work, _func)						\
++#define __INIT_WORK(_work, _func, _onstack)				\
+ 	do {								\
++		__init_work((_work), _onstack);				\
+ 		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
+ 		INIT_LIST_HEAD(&(_work)->entry);			\
+ 		PREPARE_WORK((_work), (_func));				\
+ 	} while (0)
+ #endif
+ 
++#define INIT_WORK(_work, _func)					\
++	do {							\
++		__INIT_WORK((_work), (_func), 0);		\
++	} while (0)
++
++#define INIT_WORK_ON_STACK(_work, _func)			\
++	do {							\
++		__INIT_WORK((_work), (_func), 1);		\
++	} while (0)
++
+ #define INIT_DELAYED_WORK(_work, _func)				\
+ 	do {							\
+ 		INIT_WORK(&(_work)->work, (_func));		\
+@@ -125,22 +147,16 @@ struct execute_work {
+ 
+ #define INIT_DELAYED_WORK_ON_STACK(_work, _func)		\
+ 	do {							\
+-		INIT_WORK(&(_work)->work, (_func));		\
++		INIT_WORK_ON_STACK(&(_work)->work, (_func));	\
+ 		init_timer_on_stack(&(_work)->timer);		\
+ 	} while (0)
+ 
+-#define INIT_DELAYED_WORK_DEFERRABLE(_work, _func)			\
++#define INIT_DELAYED_WORK_DEFERRABLE(_work, _func)		\
+ 	do {							\
+ 		INIT_WORK(&(_work)->work, (_func));		\
+ 		init_timer_deferrable(&(_work)->timer);		\
+ 	} while (0)
+ 
+-#define INIT_DELAYED_WORK_ON_STACK(_work, _func)		\
+-	do {							\
+-		INIT_WORK(&(_work)->work, (_func));		\
+-		init_timer_on_stack(&(_work)->timer);		\
+-	} while (0)
+-
+ /**
+  * work_pending - Find out whether a work item is currently pending
+  * @work: The work item in question
+Index: linux-2.6/kernel/workqueue.c
+===================================================================
+--- linux-2.6.orig/kernel/workqueue.c
++++ linux-2.6/kernel/workqueue.c
+@@ -68,6 +68,116 @@ struct workqueue_struct {
+ #endif
+ };
+ 
++#ifdef CONFIG_DEBUG_OBJECTS_WORK
++
++static struct debug_obj_descr work_debug_descr;
++
++/*
++ * fixup_init is called when:
++ * - an active object is initialized
++ */
++static int work_fixup_init(void *addr, enum debug_obj_state state)
++{
++	struct work_struct *work = addr;
++
++	switch (state) {
++	case ODEBUG_STATE_ACTIVE:
++		cancel_work_sync(work);
++		debug_object_init(work, &work_debug_descr);
++		return 1;
++	default:
++		return 0;
++	}
++}
++
++/*
++ * fixup_activate is called when:
++ * - an active object is activated
++ * - an unknown object is activated (might be a statically initialized object)
++ */
++static int work_fixup_activate(void *addr, enum debug_obj_state state)
++{
++	struct work_struct *work = addr;
++
++	switch (state) {
++
++	case ODEBUG_STATE_NOTAVAILABLE:
++		/*
++		 * This is not really a fixup. The work struct was
++		 * statically initialized. We just make sure that it
++		 * is tracked in the object tracker.
++		 */
++		if (test_bit(WORK_STRUCT_STATIC, work_data_bits(work))) {
++			debug_object_init(work, &work_debug_descr);
++			debug_object_activate(work, &work_debug_descr);
++			return 0;
++		}
++		WARN_ON_ONCE(1);
++		return 0;
++
++	case ODEBUG_STATE_ACTIVE:
++		WARN_ON(1);
++
++	default:
++		return 0;
++	}
++}
++
++/*
++ * fixup_free is called when:
++ * - an active object is freed
++ */
++static int work_fixup_free(void *addr, enum debug_obj_state state)
++{
++	struct work_struct *work = addr;
++
++	switch (state) {
++	case ODEBUG_STATE_ACTIVE:
++		cancel_work_sync(work);
++		debug_object_free(work, &work_debug_descr);
++		return 1;
++	default:
++		return 0;
++	}
++}
++
++static struct debug_obj_descr work_debug_descr = {
++	.name		= "work_struct",
++	.fixup_init	= work_fixup_init,
++	.fixup_activate	= work_fixup_activate,
++	.fixup_free	= work_fixup_free,
++};
++
++static inline void debug_work_activate(struct work_struct *work)
++{
++	debug_object_activate(work, &work_debug_descr);
++}
++
++static inline void debug_work_deactivate(struct work_struct *work)
++{
++	debug_object_deactivate(work, &work_debug_descr);
++}
++
++void __init_work(struct work_struct *work, int onstack)
++{
++	if (onstack)
++		debug_object_init_on_stack(work, &work_debug_descr);
++	else
++		debug_object_init(work, &work_debug_descr);
++}
++EXPORT_SYMBOL_GPL(__init_work);
++
++void destroy_work_on_stack(struct work_struct *work)
++{
++	debug_object_free(work, &work_debug_descr);
++}
++EXPORT_SYMBOL_GPL(destroy_work_on_stack);
++
++#else
++static inline void debug_work_activate(struct work_struct *work) { }
++static inline void debug_work_deactivate(struct work_struct *work) { }
++#endif
++
+ /* Serializes the accesses to the list of workqueues. */
+ static DEFINE_SPINLOCK(workqueue_lock);
+ static LIST_HEAD(workqueues);
+@@ -145,6 +255,7 @@ static void __queue_work(struct cpu_work
+ {
+ 	unsigned long flags;
+ 
++	debug_work_activate(work);
+ 	spin_lock_irqsave(&cwq->lock, flags);
+ 	insert_work(cwq, work, &cwq->worklist);
+ 	spin_unlock_irqrestore(&cwq->lock, flags);
+@@ -280,6 +391,7 @@ static void run_workqueue(struct cpu_wor
+ 		struct lockdep_map lockdep_map = work->lockdep_map;
+ #endif
+ 		trace_workqueue_execution(cwq->thread, work);
++		debug_work_deactivate(work);
+ 		cwq->current_work = work;
+ 		list_del_init(cwq->worklist.next);
+ 		spin_unlock_irq(&cwq->lock);
+@@ -350,11 +462,18 @@ static void wq_barrier_func(struct work_
+ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
+ 			struct wq_barrier *barr, struct list_head *head)
+ {
+-	INIT_WORK(&barr->work, wq_barrier_func);
++	/*
++	 * debugobject calls are safe here even with cwq->lock locked
++	 * as we know for sure that this will not trigger any of the
++	 * checks and call back into the fixup functions where we
++	 * might deadlock.
++	 */
++	INIT_WORK_ON_STACK(&barr->work, wq_barrier_func);
+ 	__set_bit(WORK_STRUCT_PENDING, work_data_bits(&barr->work));
+ 
+ 	init_completion(&barr->done);
+ 
++	debug_work_activate(&barr->work);
+ 	insert_work(cwq, &barr->work, head);
+ }
+ 
+@@ -372,8 +491,10 @@ static int flush_cpu_workqueue(struct cp
+ 	}
+ 	spin_unlock_irq(&cwq->lock);
+ 
+-	if (active)
++	if (active) {
+ 		wait_for_completion(&barr.done);
++		destroy_work_on_stack(&barr.work);
++	}
+ 
+ 	return active;
+ }
+@@ -451,6 +572,7 @@ out:
+ 		return 0;
+ 
+ 	wait_for_completion(&barr.done);
++	destroy_work_on_stack(&barr.work);
+ 	return 1;
+ }
+ EXPORT_SYMBOL_GPL(flush_work);
+@@ -485,6 +607,7 @@ static int try_to_grab_pending(struct wo
+ 		 */
+ 		smp_rmb();
+ 		if (cwq == get_wq_data(work)) {
++			debug_work_deactivate(work);
+ 			list_del_init(&work->entry);
+ 			ret = 1;
+ 		}
+@@ -507,8 +630,10 @@ static void wait_on_cpu_work(struct cpu_
+ 	}
+ 	spin_unlock_irq(&cwq->lock);
+ 
+-	if (unlikely(running))
++	if (unlikely(running)) {
+ 		wait_for_completion(&barr.done);
++		destroy_work_on_stack(&barr.work);
++	}
+ }
+ 
+ static void wait_on_work(struct work_struct *work)
+Index: linux-2.6/lib/Kconfig.debug
+===================================================================
+--- linux-2.6.orig/lib/Kconfig.debug
++++ linux-2.6/lib/Kconfig.debug
+@@ -298,6 +298,14 @@ config DEBUG_OBJECTS_TIMERS
+ 	  timer routines to track the life time of timer objects and
+ 	  validate the timer operations.
+ 
++config DEBUG_OBJECTS_WORK
++	bool "Debug work objects"
++	depends on DEBUG_OBJECTS
++	help
++	  If you say Y here, additional code will be inserted into the
++	  work queue routines to track the life time of work objects and
++	  validate the work operations.
++
+ config DEBUG_OBJECTS_ENABLE_DEFAULT
+ 	int "debug_objects bootup default value (0-1)"
+         range 0 1
