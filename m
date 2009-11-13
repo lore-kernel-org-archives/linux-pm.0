@@ -1,17 +1,14 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: make sure wakeup code is below 1M -v2
-Date: Fri, 13 Nov 2009 09:12:05 +0100
-Message-ID: <20091113081205.GC18054__16976.4715400108$1258100005$gmane$org@elte.hu>
-References: <4AF7D820.5040503@kernel.org> <4AFA210B.3020207@kernel.org>
-	<20091112073616.GA11365@elf.ucw.cz>
-	<200911122032.46872.rjw@sisk.pl> <20091113073608.GB26127@elte.hu>
-	<4AFD12F2.2090103@zytor.com>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: Memory consumption difference between in-kernel and
+ userspace hibernation
+Date: Fri, 13 Nov 2009 10:52:34 +0100
+Message-ID: <20091113105234.58f8856e@surf>
+References: <20091112210155.0f9bbe5d@surf>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4AFD12F2.2090103@zytor.com>
+In-Reply-To: <20091112210155.0f9bbe5d@surf>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,24 +18,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-
-* H. Peter Anvin <hpa@zytor.com> wrote:
-
-> On 11/12/2009 11:36 PM, Ingo Molnar wrote:
-> > 
-> > Physical constraints to allocations (which this is) should be expressed 
-> > early and with high priority, to make sure they can be met.
-> > 
-> 
-> Indeed, and in this case this means before bootmem allocator initialization.
-
-The other advantage of Yinghai's patch is that it removes a bootmem 
-usage from x86, which moves us a bit forward on the road to remove the 
-bootmem allocator altogether and go from early allocators to slab 
-straight away.
-
-	Ingo
+SGVsbG8sCgpMZSBUaHUsIDEyIE5vdiAyMDA5IDIxOjAxOjU1ICswMTAwLApUaG9tYXMgUGV0YXp6
+b25pIDx0aG9tYXMucGV0YXp6b25pQGZyZWUtZWxlY3Ryb25zLmNvbT4gYSDDqWNyaXQgOgoKPiBR
+dWVzdGlvbjogaXMgdGhlcmUgYW55IGRpZmZlcmVuY2UgaW4gdGVybXMgb2YgbWVtb3J5IHJlcXVp
+cmVtZW50cyBmb3IKPiB0aGUgaW4ta2VybmVsIGhpYmVybmF0aW9uIChlY2hvIGRpc2sgPiAvc3lz
+L3Bvd2VyL3N0YXRlKSBhbmQgdGhlCj4gdXNlcnNwYWNlIGhpYmVybmF0aW9uIGludGVyZmFjZSAo
+dGhyb3VnaCAvZGV2L3NuYXBzaG90KSA/IFdpdGggZXhhY3RseQo+IHRoZSBzYW1lIHVzZXJzcGFj
+ZSB3b3JrbG9hZCBhbmQgYXBwbGljYXRpb25zIHJ1bm5pbmcsIHRoZSBpbi1rZXJuZWwKPiBoaWJl
+cm5hdGlvbiB3b3JrcywgYnV0IHRoZSBoaWJlcm5hdGluZyB1c2luZyB0aGUgdXNlcnNwYWNlIGhp
+YmVybmF0aW9uCj4gaW50ZXJmYWNlIGZhaWxzIGJlY2F1c2Ugbm90IGVub3VnaCBtZW1vcnkgY2Fu
+IGJlIGZyZWVkLgoKVGhlIGRpZmZlcmVuY2UgaXMgdGhhdCB3aGVuIHVzaW5nIHRoZSBpbi1rZXJu
+ZWwgc29sdXRpb24sIGEgc3dhcCBpcwplbmFibGVkLCBhbmQgaXQgc2VlbXMgdGhhdCBpdCBhbGxv
+d3MgdGhlIGtlcm5lbCB0byBmcmVlIHNvbWUgbWVtb3J5IGluCm9yZGVyIHRvIGNyZWF0ZSB0aGUg
+c25hcHNob3QuCgpCdXQgSSBkb24ndCB1bmRlcnN0YW5kIHdoeSA6IHdvbid0IHRoZSBzd2FwIGNv
+bnRlbnRzIGJlIGNvbXBsZXRlbHkKZXJhc2VkIHdoZW4gdGhlIHJlc3VtZSBpbWFnZSB3aWxsIGJl
+IHdyaXR0ZW4gdG8gaXQsIGFuZCB0aGVyZWZvcmUgYWxsCnRoZSB0aGluZ3MgbWlncmF0ZWQgdG8g
+dGhlIHN3YXAgd2hlbiBmcmVpbmcgdGhlIG1lbW9yeSB3b3VsZCBiZSBsb3N0ID8KClRoYW5rcyBm
+b3IgeW91ciBpbnB1dCwKClRob21hcwotLSAKVGhvbWFzIFBldGF6em9uaSwgRnJlZSBFbGVjdHJv
+bnMKS2VybmVsLCBkcml2ZXJzIGFuZCBlbWJlZGRlZCBMaW51eCBkZXZlbG9wbWVudCwKY29uc3Vs
+dGluZywgdHJhaW5pbmcgYW5kIHN1cHBvcnQuCmh0dHA6Ly9mcmVlLWVsZWN0cm9ucy5jb20KX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFp
+bGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlz
+dHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
