@@ -1,11 +1,14 @@
-From: Radu Pop <radu.pop@gmail.com>
-Subject: suspend to ram + ac adapter
-Date: Fri, 13 Nov 2009 16:43:29 +0200
-Message-ID: <4AFD7091.2030506@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Memory consumption difference between in-kernel and
+	userspace hibernation
+Date: Fri, 13 Nov 2009 17:28:32 +0100
+Message-ID: <200911131728.33001.rjw@sisk.pl>
+References: <20091112210155.0f9bbe5d@surf> <20091113105234.58f8856e@surf>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20091113105234.58f8856e@surf>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,25 +21,28 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
-
-The following issue arises on a hp 6715b noteboook running slackware 13:
-
-1. I suspend to ram from xfce, with the notebook connected to ac power.
-2. Suspend works fine, once suspended, I pull out the ac power cord.
-3. I briefly press the power button in order to resume from suspend to ram.
-4. I get a blank screen and an unresponsive system to the point I have 
-to power down by pressing and keeping pressed the power button for a few 
-seconds (a hard shutdown). Of course, if I didn't remove the ac cord 
-before resuming from suspend to ram, this wouldn't happen.
-
-Now, I have tried to find some debugging data that could possibly help 
-me on this, but everything is plain dead after my resume attempt, 
-neither hal, udev or varios acpi and kernel debugging setups log 
-anything to /var/log/messages.
-
-In the hope that anyone can shed some light on this, I would like to 
-thank you in anticipation.
-
-Kind regards,
-Radu
+T24gRnJpZGF5IDEzIE5vdmVtYmVyIDIwMDksIFRob21hcyBQZXRhenpvbmkgd3JvdGU6Cj4gSGVs
+bG8sCj4gCj4gTGUgVGh1LCAxMiBOb3YgMjAwOSAyMTowMTo1NSArMDEwMCwKPiBUaG9tYXMgUGV0
+YXp6b25pIDx0aG9tYXMucGV0YXp6b25pQGZyZWUtZWxlY3Ryb25zLmNvbT4gYSDDqWNyaXQgOgo+
+IAo+ID4gUXVlc3Rpb246IGlzIHRoZXJlIGFueSBkaWZmZXJlbmNlIGluIHRlcm1zIG9mIG1lbW9y
+eSByZXF1aXJlbWVudHMgZm9yCj4gPiB0aGUgaW4ta2VybmVsIGhpYmVybmF0aW9uIChlY2hvIGRp
+c2sgPiAvc3lzL3Bvd2VyL3N0YXRlKSBhbmQgdGhlCj4gPiB1c2Vyc3BhY2UgaGliZXJuYXRpb24g
+aW50ZXJmYWNlICh0aHJvdWdoIC9kZXYvc25hcHNob3QpID8gV2l0aCBleGFjdGx5Cj4gPiB0aGUg
+c2FtZSB1c2Vyc3BhY2Ugd29ya2xvYWQgYW5kIGFwcGxpY2F0aW9ucyBydW5uaW5nLCB0aGUgaW4t
+a2VybmVsCj4gPiBoaWJlcm5hdGlvbiB3b3JrcywgYnV0IHRoZSBoaWJlcm5hdGluZyB1c2luZyB0
+aGUgdXNlcnNwYWNlIGhpYmVybmF0aW9uCj4gPiBpbnRlcmZhY2UgZmFpbHMgYmVjYXVzZSBub3Qg
+ZW5vdWdoIG1lbW9yeSBjYW4gYmUgZnJlZWQuCj4gCj4gVGhlIGRpZmZlcmVuY2UgaXMgdGhhdCB3
+aGVuIHVzaW5nIHRoZSBpbi1rZXJuZWwgc29sdXRpb24sIGEgc3dhcCBpcwo+IGVuYWJsZWQsIGFu
+ZCBpdCBzZWVtcyB0aGF0IGl0IGFsbG93cyB0aGUga2VybmVsIHRvIGZyZWUgc29tZSBtZW1vcnkg
+aW4KPiBvcmRlciB0byBjcmVhdGUgdGhlIHNuYXBzaG90LgoKWWVzLCBpdCBkb2VzLgoKPiBCdXQg
+SSBkb24ndCB1bmRlcnN0YW5kIHdoeSA6IHdvbid0IHRoZSBzd2FwIGNvbnRlbnRzIGJlIGNvbXBs
+ZXRlbHkKPiBlcmFzZWQgd2hlbiB0aGUgcmVzdW1lIGltYWdlIHdpbGwgYmUgd3JpdHRlbiB0byBp
+dCwgYW5kIHRoZXJlZm9yZSBhbGwKPiB0aGUgdGhpbmdzIG1pZ3JhdGVkIHRvIHRoZSBzd2FwIHdo
+ZW4gZnJlaW5nIHRoZSBtZW1vcnkgd291bGQgYmUgbG9zdCA/CgpObywgdGhlIGtlcm5lbCBkb2Vz
+bid0IHVzZSB0aGUgc3dhcCBzcGFjZSBhbHJlYWR5IGluIHVzZSBmb3Igc2F2aW5nIHRoZQppbWFn
+ZS4gIEFsc28sIHMyZGlzayB1c2VzIHRoZSBrZXJuZWwgZm9yIGFsbG9jYXRpbmcgc3dhcCBzcGFj
+ZSBpbiB3aGljaCB0bwpzYXZlIHRoZSBpbWFnZSwgc28gaXQgYXZvaWRzIG92ZXJ3cml0aW5nIHRo
+ZSBzd2FwIHNwYWNlIGluIHVzZSB0b28uCgpUaGFua3MsClJhZmFlbApfX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGlu
+dXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3Vu
+ZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
