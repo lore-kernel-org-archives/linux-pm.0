@@ -1,14 +1,11 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: Memory consumption difference between in-kernel and
- userspace hibernation
-Date: Fri, 13 Nov 2009 10:52:34 +0100
-Message-ID: <20091113105234.58f8856e@surf>
-References: <20091112210155.0f9bbe5d@surf>
+From: Radu Pop <radu.pop@gmail.com>
+Subject: suspend to ram + ac adapter
+Date: Fri, 13 Nov 2009 16:43:29 +0200
+Message-ID: <4AFD7091.2030506@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091112210155.0f9bbe5d@surf>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,25 +18,25 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-SGVsbG8sCgpMZSBUaHUsIDEyIE5vdiAyMDA5IDIxOjAxOjU1ICswMTAwLApUaG9tYXMgUGV0YXp6
-b25pIDx0aG9tYXMucGV0YXp6b25pQGZyZWUtZWxlY3Ryb25zLmNvbT4gYSDDqWNyaXQgOgoKPiBR
-dWVzdGlvbjogaXMgdGhlcmUgYW55IGRpZmZlcmVuY2UgaW4gdGVybXMgb2YgbWVtb3J5IHJlcXVp
-cmVtZW50cyBmb3IKPiB0aGUgaW4ta2VybmVsIGhpYmVybmF0aW9uIChlY2hvIGRpc2sgPiAvc3lz
-L3Bvd2VyL3N0YXRlKSBhbmQgdGhlCj4gdXNlcnNwYWNlIGhpYmVybmF0aW9uIGludGVyZmFjZSAo
-dGhyb3VnaCAvZGV2L3NuYXBzaG90KSA/IFdpdGggZXhhY3RseQo+IHRoZSBzYW1lIHVzZXJzcGFj
-ZSB3b3JrbG9hZCBhbmQgYXBwbGljYXRpb25zIHJ1bm5pbmcsIHRoZSBpbi1rZXJuZWwKPiBoaWJl
-cm5hdGlvbiB3b3JrcywgYnV0IHRoZSBoaWJlcm5hdGluZyB1c2luZyB0aGUgdXNlcnNwYWNlIGhp
-YmVybmF0aW9uCj4gaW50ZXJmYWNlIGZhaWxzIGJlY2F1c2Ugbm90IGVub3VnaCBtZW1vcnkgY2Fu
-IGJlIGZyZWVkLgoKVGhlIGRpZmZlcmVuY2UgaXMgdGhhdCB3aGVuIHVzaW5nIHRoZSBpbi1rZXJu
-ZWwgc29sdXRpb24sIGEgc3dhcCBpcwplbmFibGVkLCBhbmQgaXQgc2VlbXMgdGhhdCBpdCBhbGxv
-d3MgdGhlIGtlcm5lbCB0byBmcmVlIHNvbWUgbWVtb3J5IGluCm9yZGVyIHRvIGNyZWF0ZSB0aGUg
-c25hcHNob3QuCgpCdXQgSSBkb24ndCB1bmRlcnN0YW5kIHdoeSA6IHdvbid0IHRoZSBzd2FwIGNv
-bnRlbnRzIGJlIGNvbXBsZXRlbHkKZXJhc2VkIHdoZW4gdGhlIHJlc3VtZSBpbWFnZSB3aWxsIGJl
-IHdyaXR0ZW4gdG8gaXQsIGFuZCB0aGVyZWZvcmUgYWxsCnRoZSB0aGluZ3MgbWlncmF0ZWQgdG8g
-dGhlIHN3YXAgd2hlbiBmcmVpbmcgdGhlIG1lbW9yeSB3b3VsZCBiZSBsb3N0ID8KClRoYW5rcyBm
-b3IgeW91ciBpbnB1dCwKClRob21hcwotLSAKVGhvbWFzIFBldGF6em9uaSwgRnJlZSBFbGVjdHJv
-bnMKS2VybmVsLCBkcml2ZXJzIGFuZCBlbWJlZGRlZCBMaW51eCBkZXZlbG9wbWVudCwKY29uc3Vs
-dGluZywgdHJhaW5pbmcgYW5kIHN1cHBvcnQuCmh0dHA6Ly9mcmVlLWVsZWN0cm9ucy5jb20KX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFp
-bGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlz
-dHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+Hello,
+
+The following issue arises on a hp 6715b noteboook running slackware 13:
+
+1. I suspend to ram from xfce, with the notebook connected to ac power.
+2. Suspend works fine, once suspended, I pull out the ac power cord.
+3. I briefly press the power button in order to resume from suspend to ram.
+4. I get a blank screen and an unresponsive system to the point I have 
+to power down by pressing and keeping pressed the power button for a few 
+seconds (a hard shutdown). Of course, if I didn't remove the ac cord 
+before resuming from suspend to ram, this wouldn't happen.
+
+Now, I have tried to find some debugging data that could possibly help 
+me on this, but everything is plain dead after my resume attempt, 
+neither hal, udev or varios acpi and kernel debugging setups log 
+anything to /var/log/messages.
+
+In the hope that anyone can shed some light on this, I would like to 
+thank you in anticipation.
+
+Kind regards,
+Radu
