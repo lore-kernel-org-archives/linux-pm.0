@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Memory consumption difference between in-kernel and
-	userspace hibernation
-Date: Fri, 13 Nov 2009 21:05:07 +0100
-Message-ID: <200911132105.07812.rjw@sisk.pl>
-References: <20091112210155.0f9bbe5d@surf> <200911122152.02671.rjw@sisk.pl>
-	<20091112221223.3459b8cc@surf>
+From: Ferenc Wagner <wferi@niif.hu>
+Subject: Re: intermittent suspend problem again
+Date: Sat, 14 Nov 2009 02:50:36 +0100
+Message-ID: <874ooxho2b.fsf__35600.6442140371$1258163523$gmane$org@tac.ki.iif.hu>
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911111547.21149.rjw@sisk.pl>
+	<87my2qwff8.fsf@tac.ki.iif.hu> <200911132059.46377.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091112221223.3459b8cc@surf>
+In-Reply-To: <200911132059.46377.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Fri, 13 Nov 2009 20:59:46 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,33 +19,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, yakui.zhao@intel.com, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1cnNkYXkgMTIgTm92ZW1iZXIgMjAwOSwgVGhvbWFzIFBldGF6em9uaSB3cm90ZToKPiBI
-ZWxsbywKPiAKPiBUaGFua3MgZm9yIHlvdXIgZmVlZGJhY2suCj4gCj4gTGUgVGh1LCAxMiBOb3Yg
-MjAwOSAyMTo1MjowMiArMDEwMCwKPiAiUmFmYWVsIEouIFd5c29ja2kiIDxyandAc2lzay5wbD4g
-YSDDqWNyaXQgOgo+IAo+ID4gVGhlIHVzZXJzcGFjZSBpbnRlcmZhY2UgZG9lc24ndCByZWFsbHkg
-YWxsb3cgeW91IHRvIHdyaXRlIHRvIGEgZmlsZS4KPiA+IFlvdSBjYW4gd3JpdGUgaW50byB0aGUg
-YXJlYSB0aGUgZmlsZSBvY2N1cGllcyBvbiB0aGUgcGFydGl0aW9uLCBidXQKPiA+IHlvdSBjYW4n
-dCB1c2UgdGhlIGZpbGVzeXN0ZW0gY29kZSBmb3IgdGhlIGFjdHVhbCB3cml0aW5nLiAgQXQgbGVh
-c3QKPiA+IHlvdSBzaG91bGRuJ3QgZG8gdGhhdC4KPiAKPiBBaC4gQnV0IGl0IHNlZW1zIHRvIHdv
-cmsgZmFpcmx5IG5pY2VseS4gV2h5IGNhbid0IHRoZSBmaWxlc3lzdGVtIGNvZGUKPiBjb3VsZCBi
-ZSB1c2VkIHRvIHN0b3JlIHRoZSByZXN1bWUgaW1hZ2UgPyBOb3RlIHRoYXQgbXkgZmlsZSBpcyBz
-dG9yZWQKPiBpbiBhIHNlcGFyYXRlIHBhcnRpdGlvbiwgZnVsbHkgZGVkaWNhdGVkIHRvIHN0b3Jp
-bmcgdGhlIHJlc3VtZSBmaWxlIGFuZAo+IG1vdW50ZWQgb25seSBhdCB2ZXJ5IHNwZWNpZmljIHBv
-aW50cyBpbiB0aGUgc3lzdGVtIGxpZmV0aW1lLgoKVGhhdCBkb2Vzbid0IHJlYWxseSBtYXR0ZXIu
-CgpUaGUgcHJvYmxlbSBpcyB0aGF0IHRoZSBpbWFnZSBpcyBsaWtlbHkgdG8gY29udGFpbiBmaWxl
-c3lzdGVtIGRhdGEgKGVnLgpzdXBlcmJsb2NrcyBldGMuKSB0aGF0IGNvcnJlc3BvbmQgdG8gdGhl
-IHN0YXRlIGJlZm9yZSB0aGUgaW1hZ2UgaGFzIGJlZW4KY3JlYXRlZC4gIE5vdywgeW91ciB1c2lu
-ZyB0aGUgZmlsZXN5c3RlbSBjb2RlIGZvciB3cml0aW5nIHRoZSBpbWFnZSBtb2RpZmllcwp0aGUg
-b24tZGlzayBtZXRhZGF0YSB3aGljaCBiZWNvbWUgaW5jb25zaXN0ZW50IHdpdGggdGhlIGZpbGVz
-eXN0ZW0gZGF0YSBpbgp0aGUgaW1hZ2UuICBUaGlzIGluY29uc2lzdGVuY2llcyBtYXkgdmVyeSB3
-ZWxsIHJlc3VsdCBpbiBhbiB1bmZpeGFibGUKY29ycnVwdGlvbiBvZiB0aGUgZmlsZSBzeXN0ZW0g
-YWZ0ZXIgdGhlIHJlc3VtZSAodGhhdCBhY3R1YWxseSBoYXBwZW5lZCB0bwphIG51bWJlciBvZiBw
-ZW9wbGUsIHNvIGl0J3Mgbm90IGp1c3QgcHVyZSB0aGVvcnkpLgoKVGhhdCByZWFsbHkgZGVwZW5k
-cyBvbiB0aGUgZmlsZXlzdGVtIHVzZWQsIHRob3VnaC4KClRoYW5rcywKUmFmYWVsCl9fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcg
-bGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxp
-bnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+
+> On Friday 13 November 2009, Ferenc Wagner wrote:
+>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>> 
+>>> Yes, echo "core" to /sys/power/pm_test before executing s2disk.
+>> 
+>> It snapshots the system and returns, producing the same console output
+>> as s2ram (is this the expected behaviour?)  I ran this several times in
+>> a loop, and experienced no problems at all.  Maybe it depends on the
+>> amount of memory used...  I saw a freeze saying "99% done" (ie. not
+>> 100%), btw.
+>
+> The number is not always accurate because of rounding errors.  I think we can
+> safely assume that it always happens after the entire image has been written.
+
+Probably, "done" isn't output otherwise.
+
+>> Are other pm_test values meaningful with s2disk?  Is this
+>> handled explicitly in s2disk, or does simply the kernel act as if it was
+>> resumed instead of providing the system image after SNAPSHOT_CREATE_IMAGE?
+>
+> The latter.
+
+Ok, I found the code.  Are other pm_test values meaningful, or possibly
+harmful?  I think I tried freezer, which resulted in a seemingly perfect
+suspend, but the machine didn't try to resume afterwards, but booted
+normally instead...
+
+>>> On Wednesday 11 November 2009, Ferenc Wagner wrote:
+>>>
+>>>> I already did the test for STR (see
+>>>> http://bugs.freedesktop.org/show_bug.cgi?id=22126#c3), but will redo
+>>>> with the current kernel tonight.
+>>>
+>>> OK, thanks.
+>> 
+>> No change on this front, FWIW.  But rc7 is out now, I'll test again.
+>
+> Not sure if that's going to work, but yes please test it.
+
+The KMS related STR freeze (evaluating the _PTS method) is still there.
+I'm continuing testing s2disk with the platform method under rc7 (with
+some instrumentation added).
+
+Btw, s2ram -f works fine otherwise (no KMS), and my machine is not in
+the whitelist.  I'm not sure whether the KMS problem disqualifies it
+(shall I report it to suspend-devel?), but it can be identified by:
+    sys_vendor   = "IBM"
+    sys_product  = "1834S5G"
+    sys_version  = "ThinkPad R50e"
+    bios_version = "1WET90WW (2.10 )"
+-- 
+Thanks,
+Feri.
