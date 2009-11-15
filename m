@@ -1,14 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: intermittent suspend problem again
-Date: Sat, 14 Nov 2009 19:52:49 +0100
-Message-ID: <200911141952.50030.rjw__46546.1947642781$1258224761$gmane$org@sisk.pl>
-References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911132059.46377.rjw@sisk.pl>
-	<874ooxho2b.fsf@tac.ki.iif.hu>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: resume crashes in intel_init_thermal [was: mmotm
+ 2009-11-13-19-59 uploaded]
+Date: Sun, 15 Nov 2009 09:07:18 +0100
+Message-ID: <20091115080718.GB15432__36608.631295576$1258272640$gmane$org@elte.hu>
+References: <200911140403.nAE43CN1016851@imap1.linux-foundation.org>
+	<4AFEB060.80007@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <874ooxho2b.fsf@tac.ki.iif.hu>
+Content-Disposition: inline
+In-Reply-To: <4AFEB060.80007@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,76 +20,82 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, yakui.zhao@intel.com, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: "Brown, Len" <len.brown@intel.com>, mm-commits@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 14 November 2009, Ferenc Wagner wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+
+* Jiri Slaby <jirislaby@gmail.com> wrote:
+
+> On 11/14/2009 05:03 AM, akpm@linux-foundation.org wrote:
+> > The mm-of-the-moment snapshot 2009-11-13-19-59 has been uploaded to
 > 
-> > On Friday 13 November 2009, Ferenc Wagner wrote:
-> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >> 
-> >>> Yes, echo "core" to /sys/power/pm_test before executing s2disk.
-> >> 
-> >> It snapshots the system and returns, producing the same console output
-> >> as s2ram (is this the expected behaviour?)  I ran this several times in
-> >> a loop, and experienced no problems at all.  Maybe it depends on the
-> >> amount of memory used...  I saw a freeze saying "99% done" (ie. not
-> >> 100%), btw.
-> >
-> > The number is not always accurate because of rounding errors.  I think we can
-> > safely assume that it always happens after the entire image has been written.
+> Hi, resume from ram dies in intel_init_thermal in that kernel:
+> http://www.fi.muni.cz/~xslaby/sklad/mce_oops.png
 > 
-> Probably, "done" isn't output otherwise.
+> The code is cc cc cc cc ... KGDB and KPROBES are off, I don't know where
+> the pattern may come from.
 > 
-> >> Are other pm_test values meaningful with s2disk?  Is this
-> >> handled explicitly in s2disk, or does simply the kernel act as if it was
-> >> resumed instead of providing the system image after SNAPSHOT_CREATE_IMAGE?
-> >
-> > The latter.
-> 
-> Ok, I found the code.  Are other pm_test values meaningful, or possibly
-> harmful?
+> Does it ring a bell? Any ideas? mmotm 2009-11-01-10-01 was OK.
 
-They are supposed to work as for suspend.
+This is a known bug - see the fix below.
 
-> I think I tried freezer, which resulted in a seemingly perfect
-> suspend, but the machine didn't try to resume afterwards, but booted
-> normally instead...
+	Ingo
 
-So this sounds like there's a bug (will check).
+-------------->
+>From cffd377e5879ea58522224a785a083f201afd80e Mon Sep 17 00:00:00 2001
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Date: Thu, 12 Nov 2009 15:52:40 +0900
+Subject: [PATCH] x86, mce: Fix __init annotations
 
-> >>> On Wednesday 11 November 2009, Ferenc Wagner wrote:
-> >>>
-> >>>> I already did the test for STR (see
-> >>>> http://bugs.freedesktop.org/show_bug.cgi?id=22126#c3), but will redo
-> >>>> with the current kernel tonight.
-> >>>
-> >>> OK, thanks.
-> >> 
-> >> No change on this front, FWIW.  But rc7 is out now, I'll test again.
-> >
-> > Not sure if that's going to work, but yes please test it.
-> 
-> The KMS related STR freeze (evaluating the _PTS method) is still there.
-> I'm continuing testing s2disk with the platform method under rc7 (with
-> some instrumentation added).
-> 
-> Btw, s2ram -f works fine otherwise (no KMS), and my machine is not in
-> the whitelist.  I'm not sure whether the KMS problem disqualifies it
+The intel_init_thermal() is called from resume path, so it
+cannot be marked as __init.
 
-No, it doesn't.
+OTOH mce_banks_init() is only called from
+__mcheck_cpu_cap_init() which is marked as __cpuinit, so it can
+be also marked as __cpuinit.
 
-> (shall I report it to suspend-devel?),
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Acked-by: Yong Wang <yong.y.wang@linux.intel.com>
+LKML-Reference: <4AFBB0B8.2070501@jp.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/cpu/mcheck/mce.c         |    4 ++--
+ arch/x86/kernel/cpu/mcheck/therm_throt.c |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-Yes, please.
-
-> but it can be identified by:
->     sys_vendor   = "IBM"
->     sys_product  = "1834S5G"
->     sys_version  = "ThinkPad R50e"
->     bios_version = "1WET90WW (2.10 )"
-
-Thanks,
-Rafael
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index 0d41020..5f277ca 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -1201,7 +1201,7 @@ int mce_notify_irq(void)
+ }
+ EXPORT_SYMBOL_GPL(mce_notify_irq);
+ 
+-static int mce_banks_init(void)
++static int __cpuinit __mcheck_cpu_mce_banks_init(void)
+ {
+ 	int i;
+ 
+@@ -1242,7 +1242,7 @@ static int __cpuinit __mcheck_cpu_cap_init(void)
+ 	WARN_ON(banks != 0 && b != banks);
+ 	banks = b;
+ 	if (!mce_banks) {
+-		int err = mce_banks_init();
++		int err = __mcheck_cpu_mce_banks_init();
+ 
+ 		if (err)
+ 			return err;
+diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+index 8a73d5c..4fef985 100644
+--- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
++++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+@@ -268,7 +268,7 @@ void __init mcheck_intel_therm_init(void)
+ 		lvtthmr_init = apic_read(APIC_LVTTHMR);
+ }
+ 
+-void __init intel_init_thermal(struct cpuinfo_x86 *c)
++void intel_init_thermal(struct cpuinfo_x86 *c)
+ {
+ 	unsigned int cpu = smp_processor_id();
+ 	int tm2 = 0;
