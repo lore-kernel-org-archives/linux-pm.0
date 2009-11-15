@@ -1,13 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Question on USB re-enumeration
-Date: Sun, 15 Nov 2009 14:11:50 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0911151407380.6654-100000@netrider.rowland.org>
-References: <8bf247760911150100i15434810r7be8e1c03f78c7f7@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH 0/10] PCI run-time PM support
+Date: Mon, 16 Nov 2009 00:47:46 +0100
+Message-ID: <200911160047.46299.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <8bf247760911150100i15434810r7be8e1c03f78c7f7@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,59 +15,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Sriram V <vshrirama@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 15 Nov 2009, Sriram V wrote:
+Hi,
 
-> Hi,
-> 
-> I have a couple of questions of re-enumeration of usb devices on
-> suspend-resume
-> 
-> I have a USB Device permanently connected to the host controller.
-> 
-> Upon resume - Should i usb device get re-enumerated?
+The following series of patches provides run-time power management support
+through ACPI and the native PCIe PME.
 
-If the host controller lost power was reinitialized during the suspend 
-then yes.  Otherwise no.  In particular, devices should always get 
-re-enumerated when resuming from hibernation.  But when resuming from 
-suspend-to-RAM, it depends on the motherboard.
+[1/10] - Add flag for marking devices capable of generating wake-up events at run time
 
-> If so, does Linux choose a different address for accessing it?
+[2/10] - Add function for checking PME status of devices
 
-If the device's firmware hasn't changed then the address remains the 
-same.  Otherwise a different address is used.
+[3/10] - Modify wake-up enable propagation so that it's done for PCIe devices too
 
-Read Documentation/usb/persist.txt.
+[4/10] - PCIe PME root port service driver
 
-> If i have a USB harddisk, I am accessing it using a device node say
-> /dev/sdb1
-> The harddisk is mounted as /dev/sdb1.
-> 
-> Now, i go into suspend and then resume - If i need to re-enumerate the
-> devices
-> It could be detected as /dev/sdc1... or something.
-> 
-> If that is the case i cannot access my harddisk - since im assuming
-> /dev/sdb1.
-> 
-> What im seeing here is - My usb device is permanently connected to the usb
-> host via an external phy.
-> 
->  When i suspend - i turn off the clocks and upon resume - turn on the clocks
-> and reset the phy.
-> 
->  For some time - i am able to access the device, What happens is - The
-> device gets re-enumerated to some other device node.
-> 
-> I am not sure if this is a device issue or a resume function issue.
-> 
-> 
-> Please advice.
+[5/10] - ACPI GPE refcounting from Matthew
 
-Enable CONFIG_USB_DEBUG in your kernel and post the dmesg log showing
-what happens during suspend and resume.
+[6/10] - ACPI drivers support for GPE refcounting from Matthew
 
-Alan Stern
+[7/10] - ACPI removal of the old GPE API from Matthew
+
+[8/10] - ACPI add fields for handling run-wake devices
+
+[9/10] - PCI ACPI platform support for run-time power management
+
+[10/10] - Runtime PM callbacks for the PCI bus type
+
+Comments welcome.
+
+Best,
+Rafael
