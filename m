@@ -1,16 +1,10 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: resume crashes in intel_init_thermal [was: mmotm
- 2009-11-13-19-59 uploaded]
-Date: Sun, 15 Nov 2009 09:07:18 +0100
-Message-ID: <20091115080718.GB15432__36608.631295576$1258272640$gmane$org@elte.hu>
-References: <200911140403.nAE43CN1016851@imap1.linux-foundation.org>
-	<4AFEB060.80007@gmail.com>
+From: Sriram V <vshrirama@gmail.com>
+Subject: Question on USB re-enumeration
+Date: Sun, 15 Nov 2009 14:30:07 +0530
+Message-ID: <8bf247760911150100i15434810r7be8e1c03f78c7f7@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0643424857160034671=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4AFEB060.80007@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,84 +12,88 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: "Brown, Len" <len.brown@intel.com>, mm-commits@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+--===============0643424857160034671==
+Content-Type: multipart/alternative; boundary=000e0cd32f549aad9a0478651e7d
 
-* Jiri Slaby <jirislaby@gmail.com> wrote:
+--000e0cd32f549aad9a0478651e7d
+Content-Type: text/plain; charset=ISO-8859-1
 
-> On 11/14/2009 05:03 AM, akpm@linux-foundation.org wrote:
-> > The mm-of-the-moment snapshot 2009-11-13-19-59 has been uploaded to
-> 
-> Hi, resume from ram dies in intel_init_thermal in that kernel:
-> http://www.fi.muni.cz/~xslaby/sklad/mce_oops.png
-> 
-> The code is cc cc cc cc ... KGDB and KPROBES are off, I don't know where
-> the pattern may come from.
-> 
-> Does it ring a bell? Any ideas? mmotm 2009-11-01-10-01 was OK.
+Hi,
 
-This is a known bug - see the fix below.
+I have a couple of questions of re-enumeration of usb devices on
+suspend-resume
 
-	Ingo
+I have a USB Device permanently connected to the host controller.
 
--------------->
->From cffd377e5879ea58522224a785a083f201afd80e Mon Sep 17 00:00:00 2001
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Date: Thu, 12 Nov 2009 15:52:40 +0900
-Subject: [PATCH] x86, mce: Fix __init annotations
+Upon resume - Should i usb device get re-enumerated?
+If so, does Linux choose a different address for accessing it?
 
-The intel_init_thermal() is called from resume path, so it
-cannot be marked as __init.
+If i have a USB harddisk, I am accessing it using a device node say
+/dev/sdb1
+The harddisk is mounted as /dev/sdb1.
 
-OTOH mce_banks_init() is only called from
-__mcheck_cpu_cap_init() which is marked as __cpuinit, so it can
-be also marked as __cpuinit.
+Now, i go into suspend and then resume - If i need to re-enumerate the
+devices
+It could be detected as /dev/sdc1... or something.
 
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Acked-by: Yong Wang <yong.y.wang@linux.intel.com>
-LKML-Reference: <4AFBB0B8.2070501@jp.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/cpu/mcheck/mce.c         |    4 ++--
- arch/x86/kernel/cpu/mcheck/therm_throt.c |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+If that is the case i cannot access my harddisk - since im assuming
+/dev/sdb1.
 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index 0d41020..5f277ca 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -1201,7 +1201,7 @@ int mce_notify_irq(void)
- }
- EXPORT_SYMBOL_GPL(mce_notify_irq);
- 
--static int mce_banks_init(void)
-+static int __cpuinit __mcheck_cpu_mce_banks_init(void)
- {
- 	int i;
- 
-@@ -1242,7 +1242,7 @@ static int __cpuinit __mcheck_cpu_cap_init(void)
- 	WARN_ON(banks != 0 && b != banks);
- 	banks = b;
- 	if (!mce_banks) {
--		int err = mce_banks_init();
-+		int err = __mcheck_cpu_mce_banks_init();
- 
- 		if (err)
- 			return err;
-diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-index 8a73d5c..4fef985 100644
---- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -268,7 +268,7 @@ void __init mcheck_intel_therm_init(void)
- 		lvtthmr_init = apic_read(APIC_LVTTHMR);
- }
- 
--void __init intel_init_thermal(struct cpuinfo_x86 *c)
-+void intel_init_thermal(struct cpuinfo_x86 *c)
- {
- 	unsigned int cpu = smp_processor_id();
- 	int tm2 = 0;
+What im seeing here is - My usb device is permanently connected to the usb
+host via an external phy.
+
+ When i suspend - i turn off the clocks and upon resume - turn on the clocks
+and reset the phy.
+
+ For some time - i am able to access the device, What happens is - The
+device gets re-enumerated to some other device node.
+
+I am not sure if this is a device issue or a resume function issue.
+
+
+Please advice.
+
+
+Regards,
+sriram
+
+--000e0cd32f549aad9a0478651e7d
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi,<br><br>I have a couple of questions of re-enumeration of usb devices on=
+ suspend-resume<br><br>I have a USB Device permanently connected to the hos=
+t controller.<br><br>Upon resume - Should i usb device get re-enumerated?<b=
+r>
+If so, does Linux choose a different address for accessing it?<br><br>If i =
+have a USB harddisk, I am accessing it using a device node say /dev/sdb1<br=
+>The harddisk is mounted as /dev/sdb1.<br><br>Now, i go into suspend and th=
+en resume - If i need to re-enumerate the devices<br>
+It could be detected as /dev/sdc1... or something.<br><br>If that is the ca=
+se i cannot access my harddisk - since im assuming /dev/sdb1.<br><br>What i=
+m seeing here is - My usb device is permanently connected to the usb host v=
+ia an external phy.<br>
+=A0<br>=A0When i suspend - i turn off the clocks and upon resume - turn on =
+the clocks and reset the phy.<br><br>=A0For some time - i am able to access=
+ the device, What happens is - The device gets re-enumerated to some other =
+device node.<br>
+<br>I am not sure if this is a device issue or a resume function issue.<br>=
+<br><br>Please advice.<br><br><br>Regards,<br>sriram<br><br><br><br><br><br=
+><br><br><br><br><br>
+
+--000e0cd32f549aad9a0478651e7d--
+
+--===============0643424857160034671==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============0643424857160034671==--
