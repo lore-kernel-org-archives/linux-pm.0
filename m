@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Null suspend/resume functions
-Date: Mon, 16 Nov 2009 20:07:11 +0100
-Message-ID: <200911162007.11963.rjw__28182.7937964865$1258398400$gmane$org@sisk.pl>
-References: <ud43sjtaf.wl%morimoto.kuninori@renesas.com>
-	<20091109133136.GC1245@sirena.org.uk>
-	<20091116153000.GB29479@sirena.org.uk>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 1/10] PM: Add flag for devices capable
+ of generating run-time wake-up events
+Date: Mon, 16 Nov 2009 14:39:03 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0911161436560.2971-100000__36714.1355913647$1258400408$gmane$org@iolanthe.rowland.org>
+References: <200911160049.22717.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091116153000.GB29479@sirena.org.uk>
+In-Reply-To: <200911160049.22717.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,36 +18,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Kuninori Morimoto <morimoto.kuninori@renesas.com>, alsa-devel@alsa-project.org, Magnus Damm <damm@opensource.se>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 16 November 2009, Mark Brown wrote:
-> On Mon, Nov 09, 2009 at 01:31:36PM +0000, Mark Brown wrote:
-> > On Mon, Nov 09, 2009 at 10:58:58AM +0000, Mark Brown wrote:
-> > > On Mon, Nov 09, 2009 at 11:54:47AM +0900, Kuninori Morimoto wrote:
+On Mon, 16 Nov 2009, Rafael J. Wysocki wrote:
+
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Any chance someone from the PM side could comment on the issue below?
+> Apparently, there are devices that can wake up the system from sleep
+> states and yet are incapable of generating wake-up events at run
+> time.  Thus, introduce a flag indicating if given device is capable
+> of generating run-time wake-up events.
 
-There is.  I haven't had a chance to look at it yet, will do shortly.
+This raises the question: Who is responsible for setting the new 
+flag?  The code that registers the device?
 
-> > > > +static int fsi_runtime_nop(struct device *dev)
-> > > > +{
-> > > > +	/* Runtime PM callback shared between ->runtime_suspend()
-> > > > +	 * and ->runtime_resume(). Simply returns success.
-> > > > +	 *
-> > > > +	 * This driver re-initializes all registers after
-> > > > +	 * pm_runtime_get_sync() anyway so there is no need
-> > > > +	 * to save and restore registers here.
-> > > > +	 */
-> > > > +	return 0;
-> > > > +}
-> > > 
-> > > This sets off alarm bells but it's perfectly reasonable, especially with
-> > > platforms able to put things into a low power state with no explicit
-> > > driver code now they can do power domain style things like SH.  I've
-> > > CCed in the PM folks since this seems like a perfectly reasonable use
-> > > case which ought to be handled more nicely.
+What if the kernel can't tell whether or not the device can generate 
+runtime wake-up events?
 
-Thanks,
-Rafael
+What if the user wants to override the kernel's setting?  Should there 
+be a sysfs attribute controlling the flag?
+
+Alan Stern
