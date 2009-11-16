@@ -1,15 +1,13 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+From: Oliver Neukum <oliver@neukum.org>
 Subject: Re: [RFC][PATCH 1/10] PM: Add flag for devices capable
-	of	generating run-time wake-up events
-Date: Mon, 16 Nov 2009 21:05:45 +0000
-Message-ID: <20091116210545.GA29696__33361.201969865$1258405635$gmane$org@srcf.ucam.org>
-References: <200911162152.38333.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.0911161557130.2971-100000@iolanthe.rowland.org>
+	of generating run-time wake-up events
+Date: Mon, 16 Nov 2009 22:23:15 +0100
+Message-ID: <200911162223.15897.oliver__31973.3176417232$1258406797$gmane$org@neukum.org>
+References: <Pine.LNX.4.44L0.0911161557130.2971-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.44L0.0911161557130.2971-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -24,25 +22,20 @@ To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Nov 16, 2009 at 04:00:49PM -0500, Alan Stern wrote:
-> On Mon, 16 Nov 2009, Rafael J. Wysocki wrote:
-> > Yes, in general.  The platform.
-> 
-> And for non-platform devices (hot-pluggable, for example)?  Presumably 
-> you would want the driver that detects and registers the device to set 
-> this flag.
-
-Are there any cases where the bus code won't know this?
-
-> > > What if the kernel can't tell whether or not the device can generate 
-> > > runtime wake-up events?
+Am Montag, 16. November 2009 22:00:49 schrieb Alan Stern:
+> > > What if the user wants to override the kernel's setting?  Should there 
+> > > be a sysfs attribute controlling the flag?
+> >
 > > 
-> > Do you have any specific examples in mind?
+> > I have no plans for adding anything like that.
 > 
-> What about Matthew's example of an ACPI GPE which might or might not 
-> cause a runtime wake-up event, depending on the AML code in the BIOS?
+> So if the kernel makes a mistake here, the user won't be able to 
+> correct it.
 
-The platform knows whether or not that's the case.
+If the kernel cannot tell whether a device can generate a request for
+remote wakeup, how would it know the enable such requests?
+Now we might come to a device that has a flatly wrong firmware,
+but has that really been encountered in the wild?
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+	Regards
+		Oliver
