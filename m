@@ -1,14 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.32-rc7-git1: Reported regressions 2.6.30 ->
-	2.6.31
-Date: Tue, 17 Nov 2009 00:35:11 +0100
-Message-ID: <200911170035.11575.rjw__30307.4564472356$1258414720$gmane$org@sisk.pl>
-References: <ipicVA1QUFF.A.zWB.1mdALB@chimera> <4B01E09D.3020608@lwfinger.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Null suspend/resume functions
+Date: Tue, 17 Nov 2009 12:52:36 +0100
+Message-ID: <20091117115236.GB1376__17551.9014279873$1258458839$gmane$org@ucw.cz>
+References: <ud43sjtaf.wl%morimoto.kuninori@renesas.com>
+	<20091109105858.GB1245@sirena.org.uk>
+	<20091109133136.GC1245@sirena.org.uk>
+	<20091116153000.GB29479@sirena.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4B01E09D.3020608@lwfinger.net>
+Content-Disposition: inline
+In-Reply-To: <20091116153000.GB29479@sirena.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,24 +21,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Kuninori Morimoto <morimoto.kuninori@renesas.com>, linux-kernel@vger.kernel.org, Magnus Damm <damm@opensource.se>, alsa-devel@alsa-project.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 17 November 2009, Larry Finger wrote:
-> On 11/16/2009 04:58 PM, Rafael J. Wysocki wrote:
-> > This message contains a list of some regressions introduced between 2.6.30 and
-> > 2.6.31, for which there are no fixes in the mainline I know of.  If any of them
-> > have been fixed already, please let me know.
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14181
-> > Subject		: b43 causes panic at ifconfig down / shutdown
-> > Submitter	: Jeremy Huddleston <jeremyhu@freedesktop.org>
-> > Date		: 2009-09-15 18:34 (63 days old)
+On Mon 2009-11-16 15:30:00, Mark Brown wrote:
+> On Mon, Nov 09, 2009 at 01:31:36PM +0000, Mark Brown wrote:
+> > On Mon, Nov 09, 2009 at 10:58:58AM +0000, Mark Brown wrote:
+> > > On Mon, Nov 09, 2009 at 11:54:47AM +0900, Kuninori Morimoto wrote:
 > 
-> This one is fixed by commit d50bae33d1358b909ade05ae121d83d3a60ab63f in
-> mainline. The patch was also sent to stable.
+> Any chance someone from the PM side could comment on the issue below?
+> 
+> > > > +static int fsi_runtime_nop(struct device *dev)
+> > > > +{
+> > > > +	/* Runtime PM callback shared between ->runtime_suspend()
+> > > > +	 * and ->runtime_resume(). Simply returns success.
+> > > > +	 *
+> > > > +	 * This driver re-initializes all registers after
+> > > > +	 * pm_runtime_get_sync() anyway so there is no need
+> > > > +	 * to save and restore registers here.
+> > > > +	 */
+> > > > +	return 0;
+> > > > +}
+> > > 
+> > > This sets off alarm bells but it's perfectly reasonable, especially with
+> > > platforms able to put things into a low power state with no explicit
+> > > driver code now they can do power domain style things like SH.  I've
+> > > CCed in the PM folks since this seems like a perfectly reasonable use
+> > > case which ought to be handled more nicely.
 
-Thanks, closed.
-
-Rafael
+I believe that having few nop functions around the tree should not be
+huge problem. If it is, you can introduce one shared top function into
+the core...
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
