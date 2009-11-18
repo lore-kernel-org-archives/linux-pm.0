@@ -1,19 +1,14 @@
-From: "Ai Li" <aili@codeaurora.org>
-Subject: Re: adding handles to pm_qos?
-Date: Tue, 17 Nov 2009 18:06:56 -0700
-Message-ID: <000001ca67eb$6cfee4e0$46fcaea0$@org>
-References: <000001ca4cf3$2a2da9c0$7e88fd40$@org>
-	<20091023225304.GA32562@linux.intel.com>
-	<000301ca5766$e671f870$b355e950$@org>
-	<20091030145609.GA21256@linux.intel.com>
-	<000001ca59cc$fc6999e0$f53ccda0$@org>
-	<20091103202954.GA25275@linux.intel.com>
+From: Ferenc Wagner <wferi@niif.hu>
+Subject: Re: intermittent suspend problem again
+Date: Wed, 18 Nov 2009 02:12:17 +0100
+Message-ID: <876398tz4e.fsf__19552.0665999085$1258506893$gmane$org@tac.ki.iif.hu>
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911132059.46377.rjw@sisk.pl>
+	<874ooxho2b.fsf@tac.ki.iif.hu> <200911141952.50030.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="=-=-="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091103202954.GA25275@linux.intel.com>
-Content-Language: en-us
+In-Reply-To: <200911141952.50030.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Sat, 14 Nov 2009 19:52:49 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,284 +18,395 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: mgross@linux.intel.com
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, yakui.zhao@intel.com, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> Thanks, I'll look at it over the next few days.
-> 
-> --mgross
-> 
-> > Here is the patch that I use with the test code.  There are
-> three new
-> > functions:
-> >
-> > void *pm_qos_get(int qos, char *name);
-> > int pm_qos_put(void *handle);
-> > int pm_qos_update_requirement_direct(void *handle, s32
-> new_value);
-> >
-> > In the test, I wanted to keep the existing interface intact so
-> I
-> > could compare them at the same time.  For the formal code
-> submission,
-> > a different approach may work better.
+--=-=-=
+
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+
+> On Saturday 14 November 2009, Ferenc Wagner wrote:
+>
+>> Are other pm_test values meaningful, or possibly harmful?
+>
+> They are supposed to work as for suspend.
+>
+>> I think I tried freezer, which resulted in a seemingly perfect
+>> suspend, but the machine didn't try to resume afterwards, but booted
+>> normally instead...
+>
+> So this sounds like there's a bug (will check).
+
+I rechecked this: the freezer "test" goes on to suspend the machine;
+generally it's even possible to resume from the image, but this still
+should be a bug.  Can you reproduce it?
+
+Meanwhile I managed to freeze the machine in the "Snapshotting system"
+phase (that is, in the SNAPSHOT_CREATE_IMAGE ioctl) again.  SysRq
+reacted, but didn't produce any output besides the name of the invoked
+function or the help text.  It couldn't power off the machine, but it
+was able to reboot it.
+
+Since I've instrumented s2disk and the hibernation path, no freeze
+happened during hibernating the machine.  However, it instead froze once
+rebooting, when I wanted to replace the kernel.  It was the usual stuff:
+everything smooth until the last step, then the final syscall with the
+magic constants, then silence... It's starting to look like this bug has
+nothing to do with hibernation after all, it's just the shutdown method
+I use most often, so it surfaced with that.
+
+I tried various things after starting with init=/bin/bash, but I wasn't
+able to cancel the suspend then, so I introduced the "always cancel"
+parameter (please find my current patch queue attached).  With that, I'm
+able to freeze the machine in 2-5 tries: after a couple of perfect runs,
+s2disk -P"always cancel=y" returns normally to the starting screen, but
+I'm left with a totally unresponsive machine.  If I didn't botch my
+patches, this may be a trace to follow: still not 100% reproducible, but
+almost.
+
+Btw. no matter I tried setting suspend loglevel to 1 or 2, usual
+unqualified printks didn't make it to the console s2disk uses (not even
+ones from before suspend_console() in hibernation_platform_enter, or
+even simple ioctl traces for /dev/snapshot).  Would it be possible to
+work around this by skipping prepare_console or similar?
+
+And a last thing: when I set resume device to /root/strace (yes, that
+binary), s2disk gave a rater strange report:
+s2disk: Invalid resume device. Reason: Success.
+-- 
+Regards,
+Feri.
 
 
-Here is an alternate way of adding handles to pm_qos_params that I
-was alluding to.  This approach may be more preferable because it
-does not bloat the API and the handles become an integral part of
-pm_qos_params.  In my previous patch, handles are kind of bolted onto
-pm_qos_params and it needs separate calls (pm_qos_get, pm_qos_put) to
-acquire and release the handle.  In this patch,
-pm_qos_add_requirement and pm_qos_remove_requirement automatically
-take care of the handles.
+--=-=-=
+Content-Type: text/x-diff
+Content-Disposition: inline;
+ filename=0001-Set-config-file-location-to-etc-uswsusp.conf-the-D.patch
 
+>From 9df438995d040c8d4e46f3d79d0aabcd5092ee6b Mon Sep 17 00:00:00 2001
+From: Ferenc Wagner <wferi@niif.hu>
+Date: Tue, 10 Nov 2009 01:15:59 +0100
+Subject: [PATCH] Set config file location to /etc/uswsusp.conf (the Debian default)
 
---- include/linux/pm_qos_params.h.orig
-+++ include/linux/pm_qos_params.h
-@@ -14,9 +14,11 @@
- #define PM_QOS_NUM_CLASSES 4
- #define PM_QOS_DEFAULT_VALUE -1
+---
+ config_parser.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/config_parser.h b/config_parser.h
+index b1adb7f..3a85793 100644
+--- a/config_parser.h
++++ b/config_parser.h
+@@ -27,4 +27,4 @@ int parse(char *my_name, char *file_name, struct config_par *parv);
+ void usage(char *my_name, struct option options[], const char *short_options);
+ void version(char *my_name, char *extra_version);
  
--int pm_qos_add_requirement(int qos, char *name, s32 value);
--int pm_qos_update_requirement(int qos, char *name, s32 new_value);
--void pm_qos_remove_requirement(int qos, char *name);
-+struct requirement_list;
-+
-+struct requirement_list *pm_qos_add_requirement(int qos, char *name,
-s32 value);
-+int pm_qos_update_requirement(struct requirement_list *qos, s32
-new_value);
-+void pm_qos_remove_requirement(struct requirement_list *qos);
+-#define CONFIG_FILE	"/etc/suspend.conf"
++#define CONFIG_FILE	"/etc/uswsusp.conf"
+-- 
+1.5.6.5
+
+
+--=-=-=
+Content-Type: text/x-diff
+Content-Disposition: inline; filename=0002-Add-some-debugging-output.patch
+
+>From 26f25561e1608984faac83b7df1e9d4030be1c83 Mon Sep 17 00:00:00 2001
+From: Ferenc Wagner <wferi@niif.hu>
+Date: Tue, 10 Nov 2009 01:16:20 +0100
+Subject: [PATCH] Add some debugging output
+
+---
+ config_parser.c |    2 ++
+ suspend.c       |    2 +-
+ 2 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/config_parser.c b/config_parser.c
+index d017ccd..91cc4fc 100644
+--- a/config_parser.c
++++ b/config_parser.c
+@@ -66,6 +66,8 @@ int parse_line(char *str, struct config_par *parv)
+ 					if (sscanf(str, fmt, parv[i].ptr) <= 0)
+ 						error = -EINVAL;
+ 				}
++				if (!error)
++					fprintf (stderr, "Parsed %s=%s\n", parv[i].name, str);
+ 				break;
+ 			}
+ 		}
+diff --git a/suspend.c b/suspend.c
+index 51cab6f..5248dba 100644
+--- a/suspend.c
++++ b/suspend.c
+@@ -2421,7 +2421,7 @@ int main(int argc, char *argv[])
  
- int pm_qos_requirement(int qos);
- 
---- kernel/pm_qos_params.c.orig
-+++ kernel/pm_qos_params.c
-@@ -49,6 +49,7 @@
-  */
- struct requirement_list {
- 	struct list_head list;
-+	int pm_qos_class;
- 	union {
- 		s32 value;
- 		s32 usec;
-@@ -207,13 +208,16 @@ EXPORT_SYMBOL_GPL(pm_qos_requirement);
-  * performance characteristics.  It recomputes the aggregate QoS
-expectations
-  * for the pm_qos_class of parameters.
-  */
--int pm_qos_add_requirement(int pm_qos_class, char *name, s32 value)
-+struct requirement_list *pm_qos_add_requirement(int pm_qos_class,
-char *name,
-+		s32 value)
+ 	ret = 0;
+ 	if (stat(resume_dev_name, &stat_buf)) {
+-		suspend_error("Could not stat the resume device file.");
++		suspend_error("Could not stat the resume device file '%s'.", resume_dev_name);
+ 		ret = ENODEV;
+ 		goto Umount;
+ 	}
+-- 
+1.5.6.5
+
+
+--=-=-=
+Content-Type: text/x-diff
+Content-Disposition: inline;
+ filename=0003-Add-debugging-around-syscalls-and-ioctls.patch
+
+>From f3472f84e44ccf41010aecc3971801c8825ae045 Mon Sep 17 00:00:00 2001
+From: Ferenc Wagner <wferi@niif.hu>
+Date: Sat, 14 Nov 2009 01:25:05 +0100
+Subject: [PATCH] Add debugging around syscalls and ioctls
+
+---
+ suspend.c |   22 +++++++++++++++++++---
+ swsusp.h  |   29 ++++++++++++++++++++++++++---
+ 2 files changed, 45 insertions(+), 6 deletions(-)
+
+diff --git a/suspend.c b/suspend.c
+index 5248dba..6a7dbb4 100644
+--- a/suspend.c
++++ b/suspend.c
+@@ -295,17 +295,26 @@ static int atomic_snapshot(int dev, int *in_suspend)
  {
- 	struct requirement_list *dep;
- 	unsigned long flags;
+ 	int error;
  
- 	dep = kzalloc(sizeof(struct requirement_list), GFP_KERNEL);
- 	if (dep) {
-+		dep->pm_qos_class = pm_qos_class;
++	fprintf (stderr, "SNAPSHOT_CREATE_IMAGE...\n");
+ 	error = ioctl(dev, SNAPSHOT_CREATE_IMAGE, in_suspend);
++	fprintf (stderr, "SNAPSHOT_CREATE_IMAGE: %d\n", error);
+ 	if (error && errno == ENOTTY) {
+ 		report_unsupported_ioctl("SNAPSHOT_CREATE_IMAGE");
++		fprintf (stderr, "SNAPSHOT_ATOMIC_SNAPSHOT...\n");
+ 		error = ioctl(dev, SNAPSHOT_ATOMIC_SNAPSHOT, in_suspend);
++		fprintf (stderr, "SNAPSHOT_ATOMIC_SNAPSHOT: %d\n", error);
+ 	}
+ 	return error;
+ }
+ 
+ static inline int free_snapshot(int dev)
+ {
+-	return ioctl(dev, SNAPSHOT_FREE, 0);
++	int error;
 +
- 		if (value == PM_QOS_DEFAULT_VALUE)
- 			dep->value =
-pm_qos_array[pm_qos_class]->default_value;
- 		else
-@@ -228,48 +232,37 @@ int pm_qos_add_requirement(int pm_qos_class,
-char *name, s32 value)
- 		spin_unlock_irqrestore(&pm_qos_lock, flags);
- 		update_target(pm_qos_class);
++	fprintf (stderr, "SNAPSHOT_FREE...\n");
++	error = ioctl(dev, SNAPSHOT_FREE, 0);
++	fprintf (stderr, "SNAPSHOT_FREE: %d\n", error);
++	return error;
+ }
  
--		return 0;
-+		return dep;
+ static int set_image_size(int dev, unsigned int size)
+@@ -329,10 +338,14 @@ static int platform_enter(int dev)
+ {
+ 	int error;
+ 
++	fprintf (stderr, "SNAPSHOT_POWER_OFF...\n");
+ 	error = ioctl(dev, SNAPSHOT_POWER_OFF, 0);
++	fprintf (stderr, "SNAPSHOT_POWER_OFF: %d\n", error);
+ 	if (error  && errno == ENOTTY) {
+ 		report_unsupported_ioctl("SNAPSHOT_POWER_OFF");
++		fprintf (stderr, "SNAPSHOT_PMOPS(PMOPS_ENTER)...\n");
+ 		error = ioctl(dev, SNAPSHOT_PMOPS, PMOPS_ENTER);
++		fprintf (stderr, "SNAPSHOT_PMOPS(PMOPS_ENTER): %d\n", error);
+ 	}
+ 	return error;
+ }
+@@ -1258,7 +1271,7 @@ static int flush_buffer(struct swap_writer *handle)
+  */
+ static int save_image(struct swap_writer *handle, unsigned int nr_pages)
+ {
+-	unsigned int m, writeout_rate;
++	unsigned int m, writeout_rate, expected_nr_pages = nr_pages;
+ 	ssize_t ret;
+ 	struct termios newtrm, savedtrm;
+ 	int abort_possible, key, error = 0;
+@@ -1350,7 +1363,7 @@ static int save_image(struct swap_writer *handle, unsigned int nr_pages)
+ 		if (!error)
+ 			error = save_extents(handle, 1);
+ 		if (!error)
+-			printf(" done (%u pages)\n", nr_pages);
++			printf(" done (%u pages of expected %u)\n", nr_pages, expected_nr_pages);
  	}
  
- cleanup:
- 	kfree(dep);
--	return -ENOMEM;
-+	return ERR_PTR(-ENOMEM);
- }
- EXPORT_SYMBOL_GPL(pm_qos_add_requirement);
+  Exit:
+@@ -1670,12 +1683,15 @@ static void suspend_shutdown(int snapshot_fd)
+ 	splash.set_caption("Done.");
  
- /**
-  * pm_qos_update_requirement - modifies an existing qos request
-- * @pm_qos_class: identifies which list of qos request to us
-- * @name: identifies the request
-+ * @qos: identifies the qos request to us
-  * @value: defines the qos request
-  *
-- * Updates an existing qos requirement for the pm_qos_class of
-parameters along
-+ * Updates an existing qos requirement along
-  * with updating the target pm_qos_class value.
-- *
-- * If the named request isn't in the list then no change is made.
-  */
--int pm_qos_update_requirement(int pm_qos_class, char *name, s32
-new_value)
-+int pm_qos_update_requirement(struct requirement_list *qos, s32
-new_value)
- {
- 	unsigned long flags;
--	struct requirement_list *node;
- 	int pending_update = 0;
- 
- 	spin_lock_irqsave(&pm_qos_lock, flags);
--	list_for_each_entry(node,
--		&pm_qos_array[pm_qos_class]->requirements.list, list)
-{
--		if (strcmp(node->name, name) == 0) {
--			if (new_value == PM_QOS_DEFAULT_VALUE)
--				node->value =
--
-pm_qos_array[pm_qos_class]->default_value;
--			else
--				node->value = new_value;
--			pending_update = 1;
--			break;
--		}
--	}
-+	if (new_value == PM_QOS_DEFAULT_VALUE)
-+		qos->value =
-pm_qos_array[qos->pm_qos_class]->default_value;
-+	else
-+		qos->value = new_value;
-+	pending_update = 1;
- 	spin_unlock_irqrestore(&pm_qos_lock, flags);
- 	if (pending_update)
--		update_target(pm_qos_class);
-+		update_target(qos->pm_qos_class);
- 
- 	return 0;
- }
-@@ -277,32 +270,26 @@ EXPORT_SYMBOL_GPL(pm_qos_update_requirement);
- 
- /**
-  * pm_qos_remove_requirement - modifies an existing qos request
-- * @pm_qos_class: identifies which list of qos request to us
-+ * @qos: identifies the qos request to us
-  * @name: identifies the request
-  *
-- * Will remove named qos request from pm_qos_class list of
-parameters and
-+ * Will remove qos request from pm_qos_class list and
-  * recompute the current target value for the pm_qos_class.
-  */
--void pm_qos_remove_requirement(int pm_qos_class, char *name)
-+void pm_qos_remove_requirement(struct requirement_list *qos)
- {
- 	unsigned long flags;
--	struct requirement_list *node;
- 	int pending_update = 0;
- 
- 	spin_lock_irqsave(&pm_qos_lock, flags);
--	list_for_each_entry(node,
--		&pm_qos_array[pm_qos_class]->requirements.list, list)
-{
--		if (strcmp(node->name, name) == 0) {
--			kfree(node->name);
--			list_del(&node->list);
--			kfree(node);
--			pending_update = 1;
--			break;
--		}
--	}
-+	list_del(&qos->list);
-+	pending_update = 1;
- 	spin_unlock_irqrestore(&pm_qos_lock, flags);
- 	if (pending_update)
--		update_target(pm_qos_class);
-+		update_target(qos->pm_qos_class);
-+
-+	kfree(qos->name);
-+	kfree(qos);
- }
- EXPORT_SYMBOL_GPL(pm_qos_remove_requirement);
- 
-@@ -345,37 +332,42 @@ int pm_qos_remove_notifier(int pm_qos_class,
-struct notifier_block *notifier)
- EXPORT_SYMBOL_GPL(pm_qos_remove_notifier);
- 
- #define PID_NAME_LEN sizeof("process_1234567890")
--static char name[PID_NAME_LEN];
- 
- static int pm_qos_power_open(struct inode *inode, struct file *filp)
- {
- 	int ret;
- 	long pm_qos_class;
-+	char name[PID_NAME_LEN];
-+	struct requirement_list *qos;
- 
- 	lock_kernel();
- 	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
--	if (pm_qos_class >= 0) {
--		filp->private_data = (void *)pm_qos_class;
--		sprintf(name, "process_%d", current->pid);
--		ret = pm_qos_add_requirement(pm_qos_class, name,
--					PM_QOS_DEFAULT_VALUE);
--		if (ret >= 0) {
--			unlock_kernel();
--			return 0;
--		}
-+	if (pm_qos_class < 0) {
-+		ret = -EPERM;
-+		goto power_open_exit;
+ 	if (shutdown_method == SHUTDOWN_METHOD_REBOOT) {
++		fprintf (stderr, "Shutdown method was REBOOT, so rebooting...\n");
+ 		reboot();
+ 	} else if (shutdown_method == SHUTDOWN_METHOD_PLATFORM) {
++		fprintf (stderr, "Shutdown method was PLATFORM, so entering...\n");
+ 		if (platform_enter(snapshot_fd))
+ 			suspend_error("Could not enter the hibernation state, "
+ 					"calling power_off.");
  	}
--	unlock_kernel();
++	fprintf (stderr, "Shutdown method was SHUTDOWN or something went wrong, so powering off...\n");
+ 	power_off();
+ 	/* Signature is on disk, it is very dangerous to continue now.
+ 	 * We'd do resume with stale caches on next boot. */
+diff --git a/swsusp.h b/swsusp.h
+index e6abc83..fe47702 100644
+--- a/swsusp.h
++++ b/swsusp.h
+@@ -90,41 +90,64 @@ static inline void report_unsupported_ioctl(char *name)
  
--	return -EPERM;
-+	sprintf(name, "process_%d", current->pid);
-+	qos = pm_qos_add_requirement(pm_qos_class, name,
-PM_QOS_DEFAULT_VALUE);
-+	if (IS_ERR(qos)) {
-+		ret = PTR_ERR(qos);
-+		goto power_open_exit;
-+	}
-+
-+	filp->private_data = qos;
-+	ret = 0;
-+
-+power_open_exit:
-+	unlock_kernel();
-+	return ret;
- }
- 
- static int pm_qos_power_release(struct inode *inode, struct file
-*filp)
+ static inline int freeze(int dev)
  {
--	int pm_qos_class;
-+	struct requirement_list *qos;
- 
--	pm_qos_class = (long)filp->private_data;
--	sprintf(name, "process_%d", current->pid);
--	pm_qos_remove_requirement(pm_qos_class, name);
-+	qos = (struct requirement_list *)filp->private_data;
-+	pm_qos_remove_requirement(qos);
- 
- 	return 0;
- }
-@@ -384,15 +376,15 @@ static ssize_t pm_qos_power_write(struct file
-*filp, const char __user *buf,
- 		size_t count, loff_t *f_pos)
- {
- 	s32 value;
--	int pm_qos_class;
-+	struct requirement_list *qos;
- 
--	pm_qos_class = (long)filp->private_data;
- 	if (count != sizeof(s32))
- 		return -EINVAL;
- 	if (copy_from_user(&value, buf, sizeof(s32)))
- 		return -EFAULT;
--	sprintf(name, "process_%d", current->pid);
--	pm_qos_update_requirement(pm_qos_class, name, value);
+-	return ioctl(dev, SNAPSHOT_FREEZE, 0);
++	int error;
 +
-+	qos = (struct requirement_list *)filp->private_data;
-+	pm_qos_update_requirement(qos, value);
- 
- 	return  sizeof(s32);
++	fprintf (stderr, "SNAPSHOT_FREEZE...\n");
++	error = ioctl(dev, SNAPSHOT_FREEZE, 0);
++	fprintf (stderr, "SNAPSHOT_FREEZE: %d\n", error);
++	return error;
  }
+ 
+ static inline int unfreeze(int dev)
+ {
+-	return ioctl(dev, SNAPSHOT_UNFREEZE, 0);
++	int error;
++
++	fprintf (stderr, "SNAPSHOT_UNFREEZE...\n");
++	error = ioctl(dev, SNAPSHOT_UNFREEZE, 0);
++	fprintf (stderr, "SNAPSHOT_UNFREEZE: %d\n", error);
++	return error;
+ }
+ 
+ static inline int platform_prepare(int dev)
+ {
+ 	int error;
+ 
++	fprintf (stderr, "SNAPSHOT_PLATFORM_SUPPORT(1)...\n");
+ 	error = ioctl(dev, SNAPSHOT_PLATFORM_SUPPORT, 1);
++	fprintf (stderr, "SNAPSHOT_PLATFORM_SUPPORT(1): %d\n", error);
+ 	if (error && errno == ENOTTY) {
+ 		report_unsupported_ioctl("SNAPSHOT_PLATFORM_SUPPORT");
++		fprintf (stderr, "SNAPSHOT_PMOPS(PMOPS_PREPARE)...\n");
+ 		error = ioctl(dev, SNAPSHOT_PMOPS, PMOPS_PREPARE);
++		fprintf (stderr, "SNAPSHOT_PMOPS(PMOPS_PREPARE): %d\n", error);
+ 	}
+ 	return error;
+ }
+ 
+ static inline int platform_finish(int dev)
+ {
+-	return ioctl(dev, SNAPSHOT_PMOPS, PMOPS_FINISH);
++	int error;
++
++	fprintf (stderr, "SNAPSHOT_PMOPS(PMOPS_FINISH)...\n");
++	error = ioctl(dev, SNAPSHOT_PMOPS, PMOPS_FINISH);
++	fprintf (stderr, "SNAPSHOT_PMOPS(PMOPS_FINISH): %d\n", error);
++	return error;
+ }
+ 
+ static inline void reboot(void)
+ {
++	fprintf (stderr, "reboot syscall...\n");
+ 	syscall(SYS_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2,
+ 		LINUX_REBOOT_CMD_RESTART, 0);
++	fprintf (stderr, "reboot syscall failed!\n");
+ }
+ 
+ static inline void power_off(void)
+ {
++	fprintf (stderr, "power off syscall...\n");
+ 	syscall(SYS_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2,
+ 		LINUX_REBOOT_CMD_POWER_OFF, 0);
++	fprintf (stderr, "power off syscall failed!\n");
+ }
+ 
+ #ifndef SYS_sync_file_range
+-- 
+1.5.6.5
 
 
-~Ai
+--=-=-=
+Content-Type: text/x-diff
+Content-Disposition: inline;
+ filename=0004-Add-the-always-cancel-parameter.patch
+
+>From 9b04b5ab4d4e963aef630fa96f84e1c433c49476 Mon Sep 17 00:00:00 2001
+From: Ferenc Wagner <wferi@niif.hu>
+Date: Tue, 17 Nov 2009 23:37:02 +0100
+Subject: [PATCH] Add the 'always cancel' parameter
+
+---
+ resume.c  |    5 +++++
+ suspend.c |   12 ++++++++++++
+ 2 files changed, 17 insertions(+), 0 deletions(-)
+
+diff --git a/resume.c b/resume.c
+index 50ea2c8..4b70fe4 100644
+--- a/resume.c
++++ b/resume.c
+@@ -148,6 +148,11 @@ static struct config_par parameters[] = {
+ 		.fmt = "%c",
+ 		.ptr = NULL,
+ 	},
++	{
++		.name = "always cancel",
++		.fmt = "%c",
++		.ptr = NULL,
++	},
+ #ifdef CONFIG_THREADS
+ 	{
+ 		.name = "threads",
+diff --git a/suspend.c b/suspend.c
+index 6a7dbb4..2dc1311 100644
+--- a/suspend.c
++++ b/suspend.c
+@@ -96,6 +96,7 @@ static enum {
+ } shutdown_method = SHUTDOWN_METHOD_PLATFORM;
+ static int resume_pause;
+ static char verify_image;
++static char always_cancel;
+ #ifdef CONFIG_THREADS
+ static char use_threads;
+ #else
+@@ -204,6 +205,11 @@ static struct config_par parameters[] = {
+ 		.fmt = "%c",
+ 		.ptr = &verify_image,
+ 	},
++	{
++		.name = "always cancel",
++		.fmt = "%c",
++		.ptr = &always_cancel,
++	},
+ #ifdef CONFIG_THREADS
+ 	{
+ 		.name = "threads",
+@@ -1373,6 +1379,9 @@ static int save_image(struct swap_writer *handle, unsigned int nr_pages)
+ 	if (abort_possible)
+ 		splash.restore_abort(&savedtrm);
+ 
++	if (always_cancel)
++		error = -EINTR;
++
+ 	return error;
+ }
+ 
+@@ -2339,6 +2348,9 @@ int main(int argc, char *argv[])
+ 	if (verify_image != 'y' && verify_image != 'Y')
+ 		verify_image = 0;
+ 
++	if (always_cancel != 'y' && always_cancel != 'Y')
++		always_cancel = 0;
++
+ #ifdef CONFIG_THREADS
+ 	if (use_threads != 'y' && use_threads != 'Y')
+ 		use_threads = 0;
+-- 
+1.5.6.5
+
+
+--=-=-=
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--=-=-=--
