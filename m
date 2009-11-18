@@ -1,18 +1,14 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: Null suspend/resume functions
-Date: Wed, 18 Nov 2009 19:09:14 +0900
-Message-ID: <aec7e5c30911180209x1981978es80db2dadf7dd8ef4__36282.2868781679$1258539145$gmane$org@mail.gmail.com>
-References: <ud43sjtaf.wl%morimoto.kuninori@renesas.com>
-	<20091109105858.GB1245@sirena.org.uk>
-	<20091109133136.GC1245@sirena.org.uk>
-	<20091116153000.GB29479@sirena.org.uk>
-	<aec7e5c30911170446n71031671i48aca11f5276405d@mail.gmail.com>
-	<20091117125901.GF823@rakim.wolfsonmicro.main>
+From: Ferenc Wagner <wferi@niif.hu>
+Subject: Re: intermittent suspend problem again
+Date: Wed, 18 Nov 2009 15:05:47 +0100
+Message-ID: <87r5rwrkqs.fsf__10006.8546635613$1258553214$gmane$org@tac.ki.iif.hu>
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911132059.46377.rjw@sisk.pl>
+	<874ooxho2b.fsf@tac.ki.iif.hu> <200911141952.50030.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091117125901.GF823@rakim.wolfsonmicro.main>
+In-Reply-To: Ferenc Wagner's message of "Wed\, 18 Nov 2009 02\:12\:32 +0100"
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,54 +18,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Kuninori Morimoto <morimoto.kuninori@renesas.com>, alsa-devel@alsa-project.org, Magnus Damm <damm@opensource.se>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, yakui.zhao@intel.com, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 9:59 PM, Mark Brown
-<broonie@opensource.wolfsonmicro.com> wrote:
-> On Tue, Nov 17, 2009 at 09:46:35PM +0900, Magnus Damm wrote:
->
->> On SuperH we have Runtime PM enabled on a few platforms together with
->> a few updated drivers. The latest driver to become more power aware is
->> this FSI driver.
->
-> I understand exactly what the runtime PM stuff and the driver are doing
-> here, the issue is the mandatory suspend and resume functions.
+Ferenc Wagner <wferi@niif.hu> writes:
 
-Cool, but don't you think it makes sense to see how other
-architectures will deal with this first?
+> Since I've instrumented s2disk and the hibernation path, no freeze
+> happened during hibernating the machine.
 
->> At this point the SuperH specific platform bus code requires the
->> callbacks ->runtime_suspend() and ->runtime_resume() to be present. It
->> may be a good idea to allow them to be NULL in the future or maybe
->> having some shared functions, but before starting to break out stuff
->> I'd like to see how other Runtime PM implementations deal with this.
->> So unless people object I prefer to keep it as-is for now.
->
-> What is the reason for requiring that the driver provide stub functions?
-> For me the issue is that if it's mandatory for the driver to provide the
-> functions then having stub functions in there makes the driver look like
-> it is abusing the API by not implementing mandatory functionality.
+Not until I removed the delays from hibernation_platform_enter(), which
+were put there previously to get step-by-step feedback.  Removing them
+again resulted in a freeze in short course, maybe just two hibernations
+later.  The instrumentation shows it stuck in dpm_suspend_start(PMSG_HIBERNATE).
+Does it mean that some device driver is at fault?  I'll check if it
+always fails at the same point (although tracing into dpm_suspend_start
+isn't pure fun because of the multitude of devices it loops over).  Is
+there any way to get printk output from that phase?
 
-I see your point, but there is another side to it as well. Having the
-stubs there is a way of showing that these functions may be called as
-part of the Runtime PM management. Not having them would confuse
-people even more IMO.
-
-> Given that the arch is now dealing with clocking and power for the
-> device using the runtime PM system it seems fairly clear that there are
-> going to be drivers like this one that can at least skip the suspend
-> part and may not need to do anything at resume time either.
-
-Right. We just need to figure out what the arch-independent solution
-would be, and we're unfortunately not there yet.
-
-I can spend some time on updating the drivers and removing the
-nop-stubs if you'd like, but I'd rather not since I suspect that I'll
-have to update things again when we get Runtime PM for ARM or other
-non-sh architectures.
-
-Let me know what you think!
-
-/ magnus
+Side question: If I run s2disk from the init=/bin/bash prompt, the
+instrumentation in acpi_enter_sleep_state_prep in drivers/acpi/acpica/hwsleep.c
+fires before the "Snapshotting system" phase, but it does not fire if I
+hibernate from the full running desktop.  (That instrumentation was put
+there to investigate the KMS-triggered STR freeze.)  What could explain
+this?
+-- 
+Thanks,
+Feri.
