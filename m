@@ -1,9 +1,9 @@
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 Subject: ACPI/ACPICA: resume hang (battery related)
-Date: Thu, 19 Nov 2009 22:58:47 +0200
-Message-ID: <1258664327.3611.7.camel__2378.78202829069$1258664570$gmane$org@maxim-laptop>
+Date: Thu, 19 Nov 2009 22:59:54 +0200
+Message-ID: <1258664394.3611.8.camel__23556.7700154663$1258664753$gmane$org@maxim-laptop>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-bwZ4kasiWD+TNImrIEe+"
+Content-Type: multipart/mixed; boundary="=-klOXyKIZHd9BJKEcVdJF"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,7 +19,7 @@ Cc: linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---=-bwZ4kasiWD+TNImrIEe+
+--=-klOXyKIZHd9BJKEcVdJF
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 
@@ -109,7 +109,8 @@ and acpidump output.
 
 
 
---=-bwZ4kasiWD+TNImrIEe+
+
+--=-klOXyKIZHd9BJKEcVdJF
 Content-Type: application/x-bzip-compressed-tar; name="dump.txt.tar.bz2"
 Content-Disposition: attachment; filename="dump.txt.tar.bz2"
 Content-Transfer-Encoding: base64
@@ -873,7 +874,7 @@ PL3oHF1ZLR1UhifFpVA8iRDwDSuvSkCCX4/DD2u9GxXjaQJVSCh9Ba6Cv2V7vwX2sGU/RPQ+CfYS
 5duILP5/8NAxCfaSh5Ngj/+LuSKcKEhJzdwAAI==
 
 
---=-bwZ4kasiWD+TNImrIEe+
+--=-klOXyKIZHd9BJKEcVdJF
 Content-Type: application/x-bzip-compressed-tar; name="dmesg.txt.tar.bz2"
 Content-Disposition: attachment; filename="dmesg.txt.tar.bz2"
 Content-Transfer-Encoding: base64
@@ -1159,11 +1160,11 @@ oiloZS1r4vTC1CVYvRMUpiAnR6y4+xsJYIK60iIZFPKmkwzrDg4YP2gm4E9IAf/F3JFOFCQ8fW+z
 wA==
 
 
---=-bwZ4kasiWD+TNImrIEe+
+--=-klOXyKIZHd9BJKEcVdJF
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---=-bwZ4kasiWD+TNImrIEe+--
+--=-klOXyKIZHd9BJKEcVdJF--
