@@ -1,43 +1,55 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] Null suspend/resume functions
-Date: Sun, 22 Nov 2009 00:45:10 +0100
-Message-ID: <20091121234509.GC1411@ucw.cz>
-References: <ud43sjtaf.wl%morimoto.kuninori@renesas.com> <20091109105858.GB1245@sirena.org.uk> <20091109133136.GC1245@sirena.org.uk> <20091116153000.GB29479@sirena.org.uk> <20091117115236.GB1376@ucw.cz> <20091117124125.GD823@rakim.wolfsonmicro.main> <20091118160908.GD20887@elf.ucw.cz> <20091119112102.GF9763@rakim.wolfsonmicro.main>
+Subject: Re: New whitelist.c and more stuff
+Date: Sun, 22 Nov 2009 00:45:41 +0100
+Message-ID: <20091121234541.GE1411@ucw.cz>
+References: <3096bd910911191606r1843a5a2l497a9aab7b8b52ba@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754150AbZKVORr@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20091119112102.GF9763@rakim.wolfsonmicro.main>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <3096bd910911191606r1843a5a2l497a9aab7b8b52ba@mail.gmail.com>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rodolfo (kix)" <kix@kix.es>
+Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2009-11-19 11:21:03, Mark Brown wrote:
-> On Wed, Nov 18, 2009 at 05:09:08PM +0100, Pavel Machek wrote:
-> > On Tue 2009-11-17 12:41:25, Mark Brown wrote:
-> 
-> > > The problem I have with that is that for most APIs noop functions are a
-> > > big fat warning sign that something is going wrong and the API is being
-> > > abused.  This then creates noise and code review problems in the driver
-> > > code since you've got something that normally suggests a problem.
-> 
-> > That still sounds like poor reason to add tests to core. But return 0
-> > function for that purpose should be ok (and should make code easy to
-> > review, too).
-> 
-> What makes you believe that this is a poor reason?  The issue isn't that
-> the driver code is complex, the issue is that it's noise in the driver
-> which suggests that the driver isn't doing something it's supposed to
-> do.
+Hi!
 
-So you place a comment there; it should be there anyway. Having nop
-during suspend/resume *is* unusual, and it should raise red flags.
+> this is an email-pack with many things:
+> 
+> A new database file: whitelist_2009111900.{c|csv} This file includes
+> de updates from 3/aug to now. One change and some new machines.
+> 
+> I include too a new database file: whitelist_nodup.c, is the old
+> (original, actual in git) whitelist.c file (without the new machines)
+> and without duplicates.
+> 
+> I add a new version of the dbcheck tool and the new perl scripts to
+> the database management:
+> 
+> wlc2csv.pl:   C -> CSV
+> wlcsv2c.pl    CSV -> C
+> 
+> Please, send me your comments about this files and the other three
+> patchs. Include the new database in the git.
+> Sorry for the email size.
 
-Plus, if we allowed NULLs there, we'd not know if the driver does not
-implement it because it is not neccessary, or because they don't care.
+Looks ok to me. Rafael now has git tree, so he's the only one who can
+apply it.
+
+...and... perhaps we should delete email address from the sources, and
+replace it with pointer to web page?
  
-								Pavel
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
