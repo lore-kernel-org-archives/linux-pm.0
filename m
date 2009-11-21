@@ -1,9 +1,11 @@
-From: Sriram V <vshrirama@gmail.com>
-Subject: wakeup wakelock issues
-Date: Sat, 21 Nov 2009 22:07:34 +0530
-Message-ID: <8bf247760911210837y3f089eaegd57fcec21d93681b__34193.0345901803$1258821525$gmane$org@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [Resend][PATCH] Wireless / ath5k: Simplify suspend and
+	resume callbacks
+Date: Sat, 21 Nov 2009 23:44:24 +0100
+Message-ID: <200911212344.24170.rjw__37822.0000690364$1258843628$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6816040633430029451=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -12,106 +14,95 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: android-porting@googlegroups.com
-Cc: linux-pm@lists.linux-foundation.org
+To: ath5k-devel@venema.h4ckr.net
+Cc: linux-wireless@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@gmail.com>, netdev@vger.kernel.org, Bob Copeland <me@bobcopeland.com>, "John W. Linville" <linville@tuxdriver.com>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============6816040633430029451==
-Content-Type: multipart/alternative; boundary=00504502cc9f9a47bf0478e4351a
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: Wireless / ath5k: Simplify suspend and resume callbacks
 
---00504502cc9f9a47bf0478e4351a
-Content-Type: text/plain; charset=ISO-8859-1
+Simplify the suspend and resume callbacks of ath5k by converting the
+driver to struct dev_pm_ops and allowing the PCI PM core to do the
+PCI-specific suspend/resume handling.
 
-Hi,
-  I am trying to test pm on a custom board with android.
+Tested with Atheros Communications Inc. AR2413 802.11bg NIC (rev 01)
+D-Link CardBus.adapter.
 
-  Whats happening:
-   1) Android is putting the system to sleep - calling system wide suspend
-   2) During suspend, kernel resume immediately - I get "wakeup wake lock:
-omap-8250-serial". and again puts it back to suspend.*
-   *3) This keeps happening, There is no serial activity except for printing
-the messages (transmission from the board) - No serial inputs from the host
-pc.
-   4) Is there any way to disable this?
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/net/wireless/ath/ath5k/base.c |   35 ++++++++++------------------------
+ 1 file changed, 11 insertions(+), 24 deletions(-)
 
-
-Regards,
-sriram
-
-
-
-# PM: Syncing filesystems ... done.
-Freezing user space processes ... (elapsed 0.01 seconds) done.
-Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-Suspending console(s) (use no_console_suspend to debug)
-Powerdomain (iva2_pwrdm) didn't enter target state 1
-Powerdomain (core_pwrdm) didn't enter target state 1
-Could not enter target state in pm_suspend
-*wakeup wake lock: omap-8250-serial*
-usb 1-2: reset high speed USB device using ehci-omap and address 2
-Restarting tasks ... <7>hub 1-0:1.0: state 7 ports 3 chg 0004 evt 0000
-done.
-suspend: exit suspend, ret = 0 (2000-01-01 03:42:06.047454761 UTC)
-PM: Syncing filesystems ... done.
-Freezing user space processes ... (elapsed 0.00 seconds) done.
-Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-Suspending console(s) (use no_console_suspend to debug)
-Powerdomain (iva2_pwrdm) didn't enter target state 1
-Powerdomain (core_pwrdm) didn't enter target state 1
-Could not enter target state in pm_suspend
-wakeup wake lock: omap-8250-serial
-usb 1-2: reset high speed USB device using ehci-omap and address 2
-Restarting tasks ... <7>hub 1-0:1.0: state 7 ports 3 chg 0004 evt 0000
-done.
-suspend: exit suspend, ret = 0 (2000-01-01 03:42:16.157318042 UTC)
-PM: Syncing filesystems ... done.
-
---00504502cc9f9a47bf0478e4351a
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi,<br>=A0 I am trying to test pm on a custom board with android.<br><br>=
-=A0 Whats happening:<br>=A0=A0 1) Android is putting the system to sleep - =
-calling system wide suspend<br>=A0=A0 2) During suspend, kernel resume imme=
-diately - I get &quot;wakeup wake lock: omap-8250-serial&quot;. and again p=
-uts it back to suspend.<b><br>
-=A0=A0 </b>3) This keeps happening, There is no serial activity except for =
-printing the messages (transmission from the board) - No serial inputs from=
- the host pc.<br>=A0=A0 4) Is there any way to disable this?<br>=A0=A0 <br>=
-<br>Regards,<br>
-sriram<br><br><br><br># PM: Syncing filesystems ... done.<br>Freezing user =
-space processes ... (elapsed 0.01 seconds) done.<br>Freezing remaining free=
-zable tasks ... (elapsed 0.00 seconds) done.<br>Suspending console(s) (use =
-no_console_suspend to debug)<br>
-Powerdomain (iva2_pwrdm) didn&#39;t enter target state 1<br>Powerdomain (co=
-re_pwrdm) didn&#39;t enter target state 1<br>Could not enter target state i=
-n pm_suspend<br><b>wakeup wake lock: omap-8250-serial</b><br>usb 1-2: reset=
- high speed USB device using ehci-omap and address 2<br>
-Restarting tasks ... &lt;7&gt;hub 1-0:1.0: state 7 ports 3 chg 0004 evt 000=
-0<br>done.<br>suspend: exit suspend, ret =3D 0 (2000-01-01 03:42:06.0474547=
-61 UTC)<br>PM: Syncing filesystems ... done.<br>Freezing user space process=
-es ... (elapsed 0.00 seconds) done.<br>
-Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.<br>Susp=
-ending console(s) (use no_console_suspend to debug)<br>Powerdomain (iva2_pw=
-rdm) didn&#39;t enter target state 1<br>Powerdomain (core_pwrdm) didn&#39;t=
- enter target state 1<br>
-Could not enter target state in pm_suspend<br>wakeup wake lock: omap-8250-s=
-erial<br>usb 1-2: reset high speed USB device using ehci-omap and address 2=
-<br>Restarting tasks ... &lt;7&gt;hub 1-0:1.0: state 7 ports 3 chg 0004 evt=
- 0000<br>
-done.<br>suspend: exit suspend, ret =3D 0 (2000-01-01 03:42:16.157318042 UT=
-C)<br>PM: Syncing filesystems ... done.<br><br>
-
---00504502cc9f9a47bf0478e4351a--
-
---===============6816040633430029451==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============6816040633430029451==--
+Index: linux-2.6/drivers/net/wireless/ath/ath5k/base.c
+===================================================================
+--- linux-2.6.orig/drivers/net/wireless/ath/ath5k/base.c
++++ linux-2.6/drivers/net/wireless/ath/ath5k/base.c
+@@ -195,12 +195,13 @@ static int __devinit	ath5k_pci_probe(str
+ 				const struct pci_device_id *id);
+ static void __devexit	ath5k_pci_remove(struct pci_dev *pdev);
+ #ifdef CONFIG_PM
+-static int		ath5k_pci_suspend(struct pci_dev *pdev,
+-					pm_message_t state);
+-static int		ath5k_pci_resume(struct pci_dev *pdev);
++static int		ath5k_pci_suspend(struct device *dev);
++static int		ath5k_pci_resume(struct device *dev);
++
++SIMPLE_DEV_PM_OPS(ath5k_pm_ops, ath5k_pci_suspend, ath5k_pci_resume);
++#define ATH5K_PM_OPS	(&ath5k_pm_ops)
+ #else
+-#define ath5k_pci_suspend NULL
+-#define ath5k_pci_resume NULL
++#define ATH5K_PM_OPS	NULL
+ #endif /* CONFIG_PM */
+ 
+ static struct pci_driver ath5k_pci_driver = {
+@@ -208,8 +209,7 @@ static struct pci_driver ath5k_pci_drive
+ 	.id_table	= ath5k_pci_id_table,
+ 	.probe		= ath5k_pci_probe,
+ 	.remove		= __devexit_p(ath5k_pci_remove),
+-	.suspend	= ath5k_pci_suspend,
+-	.resume		= ath5k_pci_resume,
++	.driver.pm	= ATH5K_PM_OPS,
+ };
+ 
+ 
+@@ -669,33 +669,20 @@ ath5k_pci_remove(struct pci_dev *pdev)
+ }
+ 
+ #ifdef CONFIG_PM
+-static int
+-ath5k_pci_suspend(struct pci_dev *pdev, pm_message_t state)
++static int ath5k_pci_suspend(struct device *dev)
+ {
+-	struct ieee80211_hw *hw = pci_get_drvdata(pdev);
++	struct ieee80211_hw *hw = pci_get_drvdata(to_pci_dev(dev));
+ 	struct ath5k_softc *sc = hw->priv;
+ 
+ 	ath5k_led_off(sc);
+-
+-	pci_save_state(pdev);
+-	pci_disable_device(pdev);
+-	pci_set_power_state(pdev, PCI_D3hot);
+-
+ 	return 0;
+ }
+ 
+-static int
+-ath5k_pci_resume(struct pci_dev *pdev)
++static int ath5k_pci_resume(struct device *dev)
+ {
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct ieee80211_hw *hw = pci_get_drvdata(pdev);
+ 	struct ath5k_softc *sc = hw->priv;
+-	int err;
+-
+-	pci_restore_state(pdev);
+-
+-	err = pci_enable_device(pdev);
+-	if (err)
+-		return err;
+ 
+ 	/*
+ 	 * Suspend/Resume resets the PCI configuration space, so we have to
