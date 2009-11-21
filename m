@@ -1,13 +1,14 @@
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: Re: Weird suspend/resume problem on HP nx6325 w/
- openSUSE 11.2 w/ -rc8
-Date: Sat, 21 Nov 2009 15:21:32 -0800
-Message-ID: <4B0875FC.80705@gmail.com>
-References: <200911220015.30912.rjw@sisk.pl>
+From: Ferenc Wagner <wferi@niif.hu>
+Subject: Re: intermittent suspend problem again
+Date: Sun, 22 Nov 2009 00:59:46 +0100
+Message-ID: <87skc7mnt9.fsf__48521.9757924371$1258848065$gmane$org@tac.ki.iif.hu>
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911141952.50030.rjw@sisk.pl>
+	<87r5rwrkqs.fsf@tac.ki.iif.hu> <200911182313.14092.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7039876176008940593=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200911220015.30912.rjw@sisk.pl>
+In-Reply-To: Ferenc Wagner's message of "Wed\, 18 Nov 2009 23\:55\:01 +0100"
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,139 +16,90 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, DRI <dri-devel@lists.sourceforge.net>, Dave Airlie <airlied@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, yakui.zhao@intel.com, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
---===============7039876176008940593==
-Content-Type: multipart/alternative;
- boundary="------------050505040100020106000207"
+Ferenc Wagner <wferi@niif.hu> writes:
 
-This is a multi-part message in MIME format.
---------------050505040100020106000207
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-On 11/21/09 15:15, Rafael J. Wysocki wrote:
-> Hi,
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 >
-> I'm not really sure where this should be reported, but here it goes.
+>> On Wednesday 18 November 2009, Ferenc Wagner wrote:
+>>
+>>> Ferenc Wagner <wferi@niif.hu> writes:
+>>> 
+>>>> Since I've instrumented s2disk and the hibernation path, no freeze
+>>>> happened during hibernating the machine.
+>>> 
+>>> Not until I removed the delays from hibernation_platform_enter(), which
+>>> were put there previously to get step-by-step feedback.  Removing them
+>>> again resulted in a freeze in short course, maybe just two hibernations
+>>> later.  The instrumentation shows it stuck in dpm_suspend_start(PMSG_HIBERNATE).
+>>> Does it mean that some device driver is at fault?
+>>
+>> A driver or one of the platform hooks.
+
+This result (the freeze happens in dpm_suspend_start) may not stand
+anymore: the parport_pc module was loaded and this falsified my results.
+That is, after suspending that device, the parport feedback ceased
+working, outbs becoming ineffective.
+
+>>> I'll check if it always fails at the same point (although tracing into
+>>> dpm_suspend_start isn't pure fun because of the multitude of devices it
+>>> loops over).  Is there any way to get printk output from that phase?
+>>
+>> Compile with CONFIG_PM_VERBOSE (it does mean exactly that).
 >
-> After installing openSUSE 11.2 on my testbed nx6325 I noticed that resume
-> (from suspend to RAM) stopped working on it.  Apparently, it hanged while
-> switching from the console back to X and the box remained completely
-> unresponsive after that (it didn't even react to the magic sysrq).  However,
-> it used to work just fine with -rc7 and openSUSE 11.1, so I figured the problem
-> was related to the new X driver, which is radeon module version 6.12.4 (xorg
-> server 1.6.5).
+> I've been running with CONFIG_PM_VERBOSE=y for a good while, but that
+> didn't help getting for example the result of the following printks to
+> the VGA console (0x3bc is the parallel port):
 >
-> So, I started to investigate and found that after a suspend from a framebuffer
-> console, the resume had always worked.  However, when I switched from X to the
-> framebuffer console, suspended, resumed and switched back to X, the box hanged
-> immediately just like during resume after a suspend from under X.  [There also
-> were some problems when switching from X to the framebuffer console and back
-> which seemd to be independent of suspend/resume (in short, the screen stays
-> black after a switch from the framebuffer console to X and you need to kill X
-> to fix this).]
+> @@ -445,34 +446,66 @@ int hibernation_platform_enter(void)
+>          * hibernation_ops->finish() before saving the image, so we should let
+>          * the firmware know that we're going to enter the sleep state after all
+>          */
+> +       printk ("hibernation_ops->begin()...\n");
+> +       outb(16, 0x3bc);
+>         error = hibernation_ops->begin();
+> +       outb(17, 0x3bc);
+> +       printk ("hibernation_ops->begin(): %d\n", error);
+>         if (error)
+>                 goto Close;
+
+The problem was the very low (1) default suspend loglevel.  After
+raising it, the incriminated messages (and lots of other stuff)
+appeared.
+
+> However, my dmesg is full of lines like
 >
-> Later, however, I discovered that if the box was booted into runlevel 3, then
-> suspended to RAM and resumed, and then switched to runlevel 5, I could log
-> into X and suspend/resume without any problems for many times.  OTOH, after
-> booting directly into X, the first attempt to resume always resulted in a black
-> screen and a hard hang.
+> agpgart-intel 0000:00:00.0: preparing freeze
+> pci 0000:00:00.1: preparing freeze
+> pci 0000:00:00.3: preparing freeze
 >
-> I wonder what's up in there.
+> etc., I'll check it they are the same all the time.  Anyway, the above
+> printk strings aren't present in dmesg after a successful resume even,
+> so I must be doing something wrong...
+
+These printks of mine are clearly out of scope of dmesg, because they
+don't happen in the context of the resumed system.  I think I'm starting
+to understand...
+
+>>> Side question: If I run s2disk from the init=/bin/bash prompt, the
+>>> instrumentation in acpi_enter_sleep_state_prep in drivers/acpi/acpica/hwsleep.c
+>>> fires before the "Snapshotting system" phase, but it does not fire if I
+>>> hibernate from the full running desktop.  (That instrumentation was put
+>>> there to investigate the KMS-triggered STR freeze.)  What could explain
+>>> this?
+>>
+>> It looks like it uses the "shutdown" method when run with init=/bin/bash, but
+>> I don't know why exactly.
 >
-> [Hibernation/resume works 100% of the time AFAICS.]
->
-> Thanks,
-> Rafael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->    
-I just noticed today that on my macbook(radeon) using
-s2ram works, but I get a long pause(black screen) before
-the screen shows up.(latest stable release works fine).
+> Thanks for the tip, I'll check this too.
 
-Justin P. Mattock
-
---------------050505040100020106000207
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html; charset=ISO-8859-1"
- http-equiv="Content-Type">
-</head>
-<body text="#000000" bgcolor="#ffffff">
-On 11/21/09 15:15, Rafael J. Wysocki wrote:
-<blockquote cite="mid:200911220015.30912.rjw@sisk.pl" type="cite">
-  <pre wrap="">Hi,
-
-I'm not really sure where this should be reported, but here it goes.
-
-After installing openSUSE 11.2 on my testbed nx6325 I noticed that resume
-(from suspend to RAM) stopped working on it.  Apparently, it hanged while
-switching from the console back to X and the box remained completely
-unresponsive after that (it didn't even react to the magic sysrq).  However,
-it used to work just fine with -rc7 and openSUSE 11.1, so I figured the problem
-was related to the new X driver, which is radeon module version 6.12.4 (xorg
-server 1.6.5).
-
-So, I started to investigate and found that after a suspend from a framebuffer
-console, the resume had always worked.  However, when I switched from X to the
-framebuffer console, suspended, resumed and switched back to X, the box hanged
-immediately just like during resume after a suspend from under X.  [There also
-were some problems when switching from X to the framebuffer console and back
-which seemd to be independent of suspend/resume (in short, the screen stays
-black after a switch from the framebuffer console to X and you need to kill X
-to fix this).]
-
-Later, however, I discovered that if the box was booted into runlevel 3, then
-suspended to RAM and resumed, and then switched to runlevel 5, I could log
-into X and suspend/resume without any problems for many times.  OTOH, after
-booting directly into X, the first attempt to resume always resulted in a black
-screen and a hard hang.
-
-I wonder what's up in there.
-
-[Hibernation/resume works 100% of the time AFAICS.]
-
-Thanks,
-Rafael
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to <a class="moz-txt-link-abbreviated" href="mailto:majordomo@vger.kernel.org">majordomo@vger.kernel.org</a>
-More majordomo info at  <a class="moz-txt-link-freetext" href="http://vger.kernel.org/majordomo-info.html">http://vger.kernel.org/majordomo-info.html</a>
-Please read the FAQ at  <a class="moz-txt-link-freetext" href="http://www.tux.org/lkml/">http://www.tux.org/lkml/</a>
-
-  </pre>
-</blockquote>
-<small>I just noticed today that on my macbook(radeon) using<br>
-s2ram works, but I get a long pause(black screen) before<br>
-the screen shows up.(latest stable release works fine).<br>
-<br>
-Justin P. Mattock</small><br>
-</body>
-</html>
-
---------------050505040100020106000207--
-
---===============7039876176008940593==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============7039876176008940593==--
+Looks like this was the effect of portport_pc being loaded when I run
+s2disk from the desktop, but not when I started it after init=/bin/bash.
+-- 
+Regards,
+Feri.
