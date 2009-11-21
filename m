@@ -1,17 +1,16 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: Null suspend/resume functions
-Date: Wed, 18 Nov 2009 13:41:12 +0000
-Message-ID: <20091118134112.GF6592__45896.5869890109$1258743824$gmane$org@rakim.wolfsonmicro.main>
-References: <ud43sjtaf.wl%morimoto.kuninori@renesas.com>
-	<aec7e5c30911170446n71031671i48aca11f5276405d@mail.gmail.com>
-	<20091117125901.GF823@rakim.wolfsonmicro.main>
-	<200911172314.04396.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Memory consumption difference between in-kernel
+	and	userspace hibernation
+Date: Sat, 21 Nov 2009 10:29:12 +0100
+Message-ID: <20091121092911.GA1932@ucw.cz>
+References: <20091112210155.0f9bbe5d@surf> <200911122152.02671.rjw@sisk.pl>
+	<20091112221223.3459b8cc@surf> <200911132105.07812.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <200911172314.04396.rjw@sisk.pl>
+In-Reply-To: <200911132105.07812.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,16 +21,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, Magnus Damm <damm@opensource.se>, Kuninori Morimoto <morimoto.kuninori@renesas.com>, linux-pm@lists.linux-foundation.org
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 17, 2009 at 11:14:04PM +0100, Rafael J. Wysocki wrote:
+On Fri 2009-11-13 21:05:07, Rafael J. Wysocki wrote:
+> On Thursday 12 November 2009, Thomas Petazzoni wrote:
+> > Hello,
+> > 
+> > Thanks for your feedback.
+> > 
+> > Le Thu, 12 Nov 2009 21:52:02 +0100,
+> > "Rafael J. Wysocki" <rjw@sisk.pl> a ??crit :
+> > 
+> > > The userspace interface doesn't really allow you to write to a file.
+> > > You can write into the area the file occupies on the partition, but
+> > > you can't use the filesystem code for the actual writing.  At least
+> > > you shouldn't do that.
+> > 
+> > Ah. But it seems to work fairly nicely. Why can't the filesystem code
+> > could be used to store the resume image ? Note that my file is stored
+> > in a separate partition, fully dedicated to storing the resume file and
+> > mounted only at very specific points in the system lifetime.
+> 
+> That doesn't really matter.
+> 
+> The problem is that the image is likely to contain filesystem data (eg.
+> superblocks etc.) that correspond to the state before the image has been
+> created.  Now, your using the filesystem code for writing the image modifies
+> the on-disk metadata which become inconsistent with the filesystem data in
+> the image.  This inconsistencies may very well result in an unfixable
+> corruption of the file system after the resume (that actually happened to
+> a number of people, so it's not just pure theory).
+> 
+> That really depends on the fileystem used, though.
 
-> In fact, it's not mandatory for bus types, not for drivers.  IMO bus types
-> really have to know how to suspend a device and how to resume it,
-> otherwise the core framework won't be useful anyway.  What the bus type does
-> about drivers not implementing ->runtime_suspend() or ->runtime_resume(), it's
-> up to the bus type.  That's even documented IIRC.
-
-OK, thanks - I hadn't realised that these were being called directly
-from the bus type code rather than by the core.
+But based on  his description... if fs is only mounted after atomic
+snapshot... it actually should be safe.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
