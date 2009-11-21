@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Resend][PATCH] Wireless / ath5k: Simplify suspend and
-	resume callbacks
-Date: Sat, 21 Nov 2009 23:44:24 +0100
-Message-ID: <200911212344.24170.rjw__37822.0000690364$1258843628$gmane$org@sisk.pl>
+Subject: Weird suspend/resume problem on HP nx6325 w/ openSUSE
+	11.2 w/ -rc8
+Date: Sun, 22 Nov 2009 00:15:30 +0100
+Message-ID: <200911220015.30912.rjw__40136.2116136172$1258845357$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,93 +16,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ath5k-devel@venema.h4ckr.net
-Cc: linux-wireless@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@gmail.com>, netdev@vger.kernel.org, Bob Copeland <me@bobcopeland.com>, "John W. Linville" <linville@tuxdriver.com>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, DRI <dri-devel@lists.sourceforge.net>, Dave Airlie <airlied@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: Wireless / ath5k: Simplify suspend and resume callbacks
+Hi,
 
-Simplify the suspend and resume callbacks of ath5k by converting the
-driver to struct dev_pm_ops and allowing the PCI PM core to do the
-PCI-specific suspend/resume handling.
+I'm not really sure where this should be reported, but here it goes.
 
-Tested with Atheros Communications Inc. AR2413 802.11bg NIC (rev 01)
-D-Link CardBus.adapter.
+After installing openSUSE 11.2 on my testbed nx6325 I noticed that resume
+(from suspend to RAM) stopped working on it.  Apparently, it hanged while
+switching from the console back to X and the box remained completely
+unresponsive after that (it didn't even react to the magic sysrq).  However,
+it used to work just fine with -rc7 and openSUSE 11.1, so I figured the problem
+was related to the new X driver, which is radeon module version 6.12.4 (xorg
+server 1.6.5).
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/net/wireless/ath/ath5k/base.c |   35 ++++++++++------------------------
- 1 file changed, 11 insertions(+), 24 deletions(-)
+So, I started to investigate and found that after a suspend from a framebuffer
+console, the resume had always worked.  However, when I switched from X to the
+framebuffer console, suspended, resumed and switched back to X, the box hanged
+immediately just like during resume after a suspend from under X.  [There also
+were some problems when switching from X to the framebuffer console and back
+which seemd to be independent of suspend/resume (in short, the screen stays
+black after a switch from the framebuffer console to X and you need to kill X
+to fix this).]
 
-Index: linux-2.6/drivers/net/wireless/ath/ath5k/base.c
-===================================================================
---- linux-2.6.orig/drivers/net/wireless/ath/ath5k/base.c
-+++ linux-2.6/drivers/net/wireless/ath/ath5k/base.c
-@@ -195,12 +195,13 @@ static int __devinit	ath5k_pci_probe(str
- 				const struct pci_device_id *id);
- static void __devexit	ath5k_pci_remove(struct pci_dev *pdev);
- #ifdef CONFIG_PM
--static int		ath5k_pci_suspend(struct pci_dev *pdev,
--					pm_message_t state);
--static int		ath5k_pci_resume(struct pci_dev *pdev);
-+static int		ath5k_pci_suspend(struct device *dev);
-+static int		ath5k_pci_resume(struct device *dev);
-+
-+SIMPLE_DEV_PM_OPS(ath5k_pm_ops, ath5k_pci_suspend, ath5k_pci_resume);
-+#define ATH5K_PM_OPS	(&ath5k_pm_ops)
- #else
--#define ath5k_pci_suspend NULL
--#define ath5k_pci_resume NULL
-+#define ATH5K_PM_OPS	NULL
- #endif /* CONFIG_PM */
- 
- static struct pci_driver ath5k_pci_driver = {
-@@ -208,8 +209,7 @@ static struct pci_driver ath5k_pci_drive
- 	.id_table	= ath5k_pci_id_table,
- 	.probe		= ath5k_pci_probe,
- 	.remove		= __devexit_p(ath5k_pci_remove),
--	.suspend	= ath5k_pci_suspend,
--	.resume		= ath5k_pci_resume,
-+	.driver.pm	= ATH5K_PM_OPS,
- };
- 
- 
-@@ -669,33 +669,20 @@ ath5k_pci_remove(struct pci_dev *pdev)
- }
- 
- #ifdef CONFIG_PM
--static int
--ath5k_pci_suspend(struct pci_dev *pdev, pm_message_t state)
-+static int ath5k_pci_suspend(struct device *dev)
- {
--	struct ieee80211_hw *hw = pci_get_drvdata(pdev);
-+	struct ieee80211_hw *hw = pci_get_drvdata(to_pci_dev(dev));
- 	struct ath5k_softc *sc = hw->priv;
- 
- 	ath5k_led_off(sc);
--
--	pci_save_state(pdev);
--	pci_disable_device(pdev);
--	pci_set_power_state(pdev, PCI_D3hot);
--
- 	return 0;
- }
- 
--static int
--ath5k_pci_resume(struct pci_dev *pdev)
-+static int ath5k_pci_resume(struct device *dev)
- {
-+	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct ieee80211_hw *hw = pci_get_drvdata(pdev);
- 	struct ath5k_softc *sc = hw->priv;
--	int err;
--
--	pci_restore_state(pdev);
--
--	err = pci_enable_device(pdev);
--	if (err)
--		return err;
- 
- 	/*
- 	 * Suspend/Resume resets the PCI configuration space, so we have to
+Later, however, I discovered that if the box was booted into runlevel 3, then
+suspended to RAM and resumed, and then switched to runlevel 5, I could log
+into X and suspend/resume without any problems for many times.  OTOH, after
+booting directly into X, the first attempt to resume always resulted in a black
+screen and a hard hang.
+
+I wonder what's up in there.
+
+[Hibernation/resume works 100% of the time AFAICS.]
+
+Thanks,
+Rafael
