@@ -1,14 +1,14 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: New whitelist.c and more stuff
-Date: Sun, 22 Nov 2009 00:45:41 +0100
-Message-ID: <20091121234541.GE1411@ucw.cz>
-References: <3096bd910911191606r1843a5a2l497a9aab7b8b52ba@mail.gmail.com>
+Subject: Re: [PATCH] PM: Fix kernel-doc notation
+Date: Sun, 22 Nov 2009 18:52:56 +0100
+Message-ID: <20091122175256.GA28466__34878.0139036991$1258912459$gmane$org@elf.ucw.cz>
+References: <1258877637.4495.45.camel@ht.satnam>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <3096bd910911191606r1843a5a2l497a9aab7b8b52ba@mail.gmail.com>
+In-Reply-To: <1258877637.4495.45.camel@ht.satnam>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,38 +18,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rodolfo (kix)" <kix@kix.es>
-Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, pm list <linux-pm@lists.linux-foundation.org>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Sun 2009-11-22 13:43:57, Jaswinder Singh Rajput wrote:
+> 
+> Fix the following htmldocs warnings:
+> 
+>   Warning(drivers/base/power/main.c:249): No description found for parameter 'master'
+>   Warning(drivers/base/power/main.c:249): Excess function parameter 'slave' description in 'device_pm_wait_for_slaves'
+>   Warning(drivers/base/power/main.c:292): No description found for parameter 'master'
+>   Warning(drivers/base/power/main.c:292): Excess function parameter 'slave' description in 'device_pm_check_slaves'
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
 
-> this is an email-pack with many things:
-> 
-> A new database file: whitelist_2009111900.{c|csv} This file includes
-> de updates from 3/aug to now. One change and some new machines.
-> 
-> I include too a new database file: whitelist_nodup.c, is the old
-> (original, actual in git) whitelist.c file (without the new machines)
-> and without duplicates.
-> 
-> I add a new version of the dbcheck tool and the new perl scripts to
-> the database management:
-> 
-> wlc2csv.pl:   C -> CSV
-> wlcsv2c.pl    CSV -> C
-> 
-> Please, send me your comments about this files and the other three
-> patchs. Include the new database in the git.
-> Sorry for the email size.
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Looks ok to me. Rafael now has git tree, so he's the only one who can
-apply it.
-
-...and... perhaps we should delete email address from the sources, and
-replace it with pointer to web page?
- 
-									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
