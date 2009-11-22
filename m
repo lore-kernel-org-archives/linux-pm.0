@@ -1,15 +1,11 @@
-From: Bob Copeland <me@bobcopeland.com>
-Subject: Re: [Resend][PATCH] Wireless / ath5k: Simplify suspend
-	and resume	callbacks
-Date: Sat, 21 Nov 2009 22:18:46 -0500
-Message-ID: <20091122031846.GA6215__19490.72776265$1258860082$gmane$org@hash.localnet>
-References: <200911212344.24170.rjw@sisk.pl>
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Subject: [PATCH] PM: Fix kernel-doc notation
+Date: Sun, 22 Nov 2009 13:43:57 +0530
+Message-ID: <1258877637.4495.45.camel__20463.4833186448$1258877888$gmane$org@ht.satnam>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200911212344.24170.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,26 +15,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "John W. Linville" <linville@tuxdriver.com>, ath5k-devel@venema.h4ckr.net, pm list <linux-pm@lists.linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Nov 21, 2009 at 11:44:24PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: Wireless / ath5k: Simplify suspend and resume callbacks
-> 
-> Simplify the suspend and resume callbacks of ath5k by converting the
-> driver to struct dev_pm_ops and allowing the PCI PM core to do the
-> PCI-specific suspend/resume handling.
-> 
-> Tested with Atheros Communications Inc. AR2413 802.11bg NIC (rev 01)
-> D-Link CardBus.adapter.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Acked-by: Bob Copeland <me@bobcopeland.com>
+Fix the following htmldocs warnings:
 
-Thanks for the resend, sorry it got lost in the shuffle.
+  Warning(drivers/base/power/main.c:249): No description found for parameter 'master'
+  Warning(drivers/base/power/main.c:249): Excess function parameter 'slave' description in 'device_pm_wait_for_slaves'
+  Warning(drivers/base/power/main.c:292): No description found for parameter 'master'
+  Warning(drivers/base/power/main.c:292): Excess function parameter 'slave' description in 'device_pm_check_slaves'
 
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/base/power/main.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index e8d1ea6..5f13084 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -243,7 +243,7 @@ static void device_pm_wait_for_masters(struct device *slave)
+ 
+ /**
+  * device_pm_wait_for_slaves - Wait for all slaves of given device.
+- * @slave: Device to wait for the slaves of.
++ * @master: Device to wait for the slaves of.
+  */
+ static void device_pm_wait_for_slaves(struct device *master)
+ {
+@@ -286,7 +286,7 @@ static int device_pm_check_masters(struct device *slave)
+ 
+ /**
+  * device_pm_check_slaves - Check power.op_complete for slaves of a device.
+- * @slave: Device to check the slaves of.
++ * @master: Device to check the slaves of.
+  */
+ static int device_pm_check_slaves(struct device *master)
+ {
 -- 
-Bob Copeland %% www.bobcopeland.com
+1.6.5.3
