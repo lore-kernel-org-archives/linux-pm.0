@@ -1,30 +1,44 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] Null suspend/resume functions
-Date: Tue, 24 Nov 2009 12:57:33 +0100
-Message-ID: <20091124115733.GB1397@ucw.cz>
-References: <ud43sjtaf.wl%morimoto.kuninori@renesas.com> <20091109105858.GB1245@sirena.org.uk> <20091109133136.GC1245@sirena.org.uk> <20091116153000.GB29479@sirena.org.uk> <20091117115236.GB1376@ucw.cz> <20091117124125.GD823@rakim.wolfsonmicro.main> <20091118160908.GD20887@elf.ucw.cz> <20091119112102.GF9763@rakim.wolfsonmicro.main> <20091121234509.GC1411@ucw.cz> <20091123110236.GB24326@rakim.wolfsonmicro.main>
+From: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [Resend][PATCH] Wireless / ath5k: Simplify suspend
+	and resume	callbacks
+Date: Mon, 23 Nov 2009 16:33:54 -0500
+Message-ID: <20091123213353.GA9045__48151.9061643214$1259078766$gmane$org@tuxdriver.com>
+References: <200911212344.24170.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932388AbZKXMQk@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20091123110236.GB24326@rakim.wolfsonmicro.main>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <200911212344.24170.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-wireless@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@gmail.com>, netdev@vger.kernel.org, Bob Copeland <me@bobcopeland.com>, LKML <linux-kernel@vger.kernel.org>, ath5k-devel@venema.h4ckr.net, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > So you place a comment there; it should be there anyway. Having nop
-> > during suspend/resume *is* unusual, and it should raise red flags.
+On Sat, Nov 21, 2009 at 11:44:24PM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: Wireless / ath5k: Simplify suspend and resume callbacks
 > 
-> This isn't a good assumption here.  Remember that this is for runtime PM
-> so if we're getting as far as these calls then the driver has already
-> told the core that it is idle, which probably means that the hardware is
-> already quieseced.  For a lot of hardware that will mean that the
+> Simplify the suspend and resume callbacks of ath5k by converting the
+> driver to struct dev_pm_ops and allowing the PCI PM core to do the
+> PCI-specific suspend/resume handling.
+> 
+> Tested with Atheros Communications Inc. AR2413 802.11bg NIC (rev 01)
+> D-Link CardBus.adapter.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Ok, I did not realize we were talking runtime pm here.
-								Pavel
+This is already queued for -next.
+
+John
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
