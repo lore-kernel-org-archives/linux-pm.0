@@ -1,10 +1,10 @@
 From: "edwin.rong" <edwin.rong@infomax.com.tw>
 Subject: =?gb2312?b?tPC4tDogIHdha2V1cCB3YWtlbG9jayBpc3N1ZXM=?=
-Date: Mon, 23 Nov 2009 09:20:15 +0800
-Message-ID: <13522.5356709727$1258939220@news.gmane.org>
+Date: Mon, 23 Nov 2009 09:25:03 +0800
+Message-ID: <22390.2850797915$1258939472@news.gmane.org>
 References: <8bf247760911210837y3f089eaegd57fcec21d93681b@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3151860810424766536=="
+Content-Type: multipart/mixed; boundary="===============7939807734117544547=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <8bf247760911210837y3f089eaegd57fcec21d93681b@mail.gmail.com>
 Content-Language: zh-cn
@@ -24,14 +24,14 @@ List-Id: linux-pm@vger.kernel.org
 
 UbJGR;7b MIME 8qJ=5D6`2?7VSJ<~!#
 
---===============3151860810424766536==
+--===============7939807734117544547==
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0022_01CA6C1E.3BF4FB50"
+	boundary="----=_NextPart_000_0027_01CA6C1E.D9A15C90"
 Content-Language: zh-cn
 
 UbJGR;7b MIME 8qJ=5D6`2?7VSJ<~!#
 
-------=_NextPart_000_0022_01CA6C1E.3BF4FB50
+------=_NextPart_000_0027_01CA6C1E.D9A15C90
 Content-Type: text/plain;
 	charset="gb2312"
 Content-Transfer-Encoding: quoted-printable
@@ -88,14 +88,6 @@ t
 BRs
 
 Edwin
-
-=20
-
-=20
-
-=20
-
-=20
 
 =20
 
@@ -182,33 +174,34 @@ dangerous content by MailScanner, and is
 believed to be clean.
 
 
-------=_NextPart_000_0022_01CA6C1E.3BF4FB50
+------=_NextPart_000_0027_01CA6C1E.D9A15C90
 Content-Type: text/html;
 	charset="gb2312"
 Content-Transfer-Encoding: quoted-printable
 
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=3Dgb2312">
 <html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
 osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
 xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns=3D"http:=
 //www.w3.org/TR/REC-html40">
 
 <head>
-<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dgb2312">
+
 <meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
 <style>
 <!--
  /* Font Definitions */
  @font-face
-	{font-family:=CB=CE=CC=E5;
+	{font-family:SimSun;
 	panose-1:2 1 6 0 3 1 1 1 1 1;}
 @font-face
-	{font-family:=CB=CE=CC=E5;
+	{font-family:SimSun;
 	panose-1:2 1 6 0 3 1 1 1 1 1;}
 @font-face
 	{font-family:Calibri;
 	panose-1:2 15 5 2 2 2 4 3 2 4;}
 @font-face
-	{font-family:"\@=CB=CE=CC=E5";
+	{font-family:SimSun;
 	panose-1:2 1 6 0 3 1 1 1 1 1;}
  /* Style Definitions */
  p.MsoNormal, li.MsoNormal, div.MsoNormal
@@ -271,8 +264,8 @@ e, <o:p></o:p></span></p>
 <p class=3DMsoNormal><span lang=3DEN-US>Maybe <b>iva2_pwrdm</b> and <b>core=
 _pwrdm</b>
 drivers reject to =A1=B0sleep=A1=B1, also adding =A1=B0no_console_suspend=
-=A1=B1 option in bootargs may
-make the console print more message.<o:p></o:p></span></p>
+=A1=B1 option in bootargs
+may make the console print more message.<o:p></o:p></span></p>
 
 <p class=3DMsoNormal><span lang=3DEN-US>To check whether your drivers are
 implemented properly for PM, you can try following commands in order:<o:p><=
@@ -325,14 +318,6 @@ ugging.txt">http://lxr.linux.no/#linux+v2.6.31/Documentation/power/basic-pm=
 
 <p class=3DMsoNormal><span lang=3DEN-US>Edwin<o:p></o:p></span></p>
 
-<p class=3DMsoNormal><span lang=3DEN-US><o:p>&nbsp;</o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US><o:p>&nbsp;</o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US><o:p>&nbsp;</o:p></span></p>
-
-<p class=3DMsoNormal><span lang=3DEN-US><o:p>&nbsp;</o:p></span></p>
-
 <p class=3DMsoNormal><span lang=3DEN-US style=3D'font-size:10.5pt;font-fami=
 ly:"Calibri","sans-serif";
 color:#1F497D'><o:p>&nbsp;</o:p></span></p>
@@ -344,30 +329,29 @@ color:#1F497D'><o:p>&nbsp;</o:p></span></p>
 <div style=3D'border:none;border-top:solid #B5C4DF 1.0pt;padding:3.0pt 0cm =
 0cm 0cm'>
 
-<p class=3DMsoNormal><b><span style=3D'font-size:10.0pt;font-family:=CB=CE=
-=CC=E5'>=B7=A2=BC=FE=C8=CB<span
+<p class=3DMsoNormal><b><span style=3D'font-size:10.0pt;font-family:SimSun'=
+>=B7=A2=BC=FE=C8=CB<span
 lang=3DEN-US>:</span></span></b><span lang=3DEN-US style=3D'font-size:10.0p=
 t;
-font-family:=CB=CE=CC=E5'> linux-pm-bounces@lists.linux-foundation.org
+font-family:SimSun'> linux-pm-bounces@lists.linux-foundation.org
 [mailto:linux-pm-bounces@lists.linux-foundation.org] </span><b><span
-style=3D'font-size:10.0pt;font-family:=CB=CE=CC=E5'>=B4=FA=B1=ED </span></b=
-><span lang=3DEN-US
-style=3D'font-size:10.0pt;font-family:=CB=CE=CC=E5'>Sriram V<br>
-</span><b><span style=3D'font-size:10.0pt;font-family:=CB=CE=CC=E5'>=B7=A2=
-=CB=CD=CA=B1=BC=E4<span lang=3DEN-US>:</span></span></b><span
-lang=3DEN-US style=3D'font-size:10.0pt;font-family:=CB=CE=CC=E5'> 2009</spa=
-n><span
-style=3D'font-size:10.0pt;font-family:=CB=CE=CC=E5'>=C4=EA<span lang=3DEN-U=
-S>11</span>=D4=C2<span
-lang=3DEN-US>22</span>=C8=D5<span lang=3DEN-US> 0:38<br>
-</span><b>=CA=D5=BC=FE=C8=CB<span lang=3DEN-US>:</span></b><span lang=3DEN-=
-US>
-android-porting@googlegroups.com<br>
+style=3D'font-size:10.0pt;font-family:SimSun'>=B4=FA=B1=ED </span></b><span
+lang=3DEN-US style=3D'font-size:10.0pt;font-family:SimSun'>Sriram V<br>
+</span><b><span style=3D'font-size:10.0pt;font-family:SimSun'>=B7=A2=CB=CD=
+=CA=B1=BC=E4<span
+lang=3DEN-US>:</span></span></b><span lang=3DEN-US style=3D'font-size:10.0p=
+t;
+font-family:SimSun'> 2009</span><span style=3D'font-size:10.0pt;font-family=
+:SimSun'>=C4=EA<span
+lang=3DEN-US>11</span>=D4=C2<span lang=3DEN-US>22</span>=C8=D5<span lang=3D=
+EN-US>
+0:38<br>
+</span><b>=CA=D5=BC=FE=C8=CB<span lang=3DEN-US>:</span></b><span
+lang=3DEN-US> android-porting@googlegroups.com<br>
 </span><b>=B3=AD=CB=CD<span lang=3DEN-US>:</span></b><span lang=3DEN-US>
 linux-pm@lists.linux-foundation.org<br>
-</span><b>=D6=F7=CC=E2<span lang=3DEN-US>:</span></b><span lang=3DEN-US> [l=
-inux-pm] wakeup
-wakelock issues<o:p></o:p></span></span></p>
+</span><b>=D6=F7=CC=E2<span lang=3DEN-US>:</span></b><span lang=3DEN-US>
+[linux-pm] wakeup wakelock issues<o:p></o:p></span></span></p>
 
 </div>
 
@@ -423,9 +407,9 @@ done.<br>
 suspend: exit suspend, ret =3D 0 (2000-01-01 03:42:16.157318042 UTC)<br>
 PM: Syncing filesystems ... done.<o:p></o:p></span></p>
 
-<p><span lang=3DEN-US style=3D'font-size:10.0pt;font-family:=CB=CE=CC=E5'>N=
-o virus found in
-this incoming message.<br>
+<p><span lang=3DEN-US style=3D'font-size:10.0pt;font-family:SimSun'>No viru=
+s found
+in this incoming message.<br>
 Checked by AVG - www.avg.com<br>
 Version: 8.5.425 / Virus Database: 270.14.77/2520 - Release Date: 11/22/09
 19:40:00</span><span lang=3DEN-US><o:p></o:p></span></p>
@@ -462,14 +446,14 @@ nk you
 <br />believed to be clean.
 </html>
 
-------=_NextPart_000_0022_01CA6C1E.3BF4FB50--
+------=_NextPart_000_0027_01CA6C1E.D9A15C90--
 
 
---===============3151860810424766536==
+--===============7939807734117544547==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============3151860810424766536==--
+--===============7939807734117544547==--
