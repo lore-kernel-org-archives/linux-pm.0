@@ -1,65 +1,49 @@
-From: Aneesh Bhasin <contact.aneesh@gmail.com>
-Subject: Re: [android-porting] wakeup wakelock issues
-Date: Mon, 23 Nov 2009 10:24:25 +0530
-Message-ID: <f662f0210911222054u12496269u846b169dff2a730f@mail.gmail.com>
-References: <8bf247760911210837y3f089eaegd57fcec21d93681b@mail.gmail.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [linux-pm] Null suspend/resume functions
+Date: Mon, 23 Nov 2009 11:02:36 +0000
+Message-ID: <20091123110236.GB24326@rakim.wolfsonmicro.main>
+References: <ud43sjtaf.wl%morimoto.kuninori@renesas.com>
+ <20091109105858.GB1245@sirena.org.uk>
+ <20091109133136.GC1245@sirena.org.uk>
+ <20091116153000.GB29479@sirena.org.uk>
+ <20091117115236.GB1376@ucw.cz>
+ <20091117124125.GD823@rakim.wolfsonmicro.main>
+ <20091118160908.GD20887@elf.ucw.cz>
+ <20091119112102.GF9763@rakim.wolfsonmicro.main>
+ <20091121234509.GC1411@ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <8bf247760911210837y3f089eaegd57fcec21d93681b@mail.gmail.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: android-porting@googlegroups.com
-Cc: linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757178AbZKWLCd@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20091121234509.GC1411@ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Sriram
+On Sun, Nov 22, 2009 at 12:45:10AM +0100, Pavel Machek wrote:
 
-<reposting - forgot to add linux-pm to senders' list>
+> So you place a comment there; it should be there anyway. Having nop
+> during suspend/resume *is* unusual, and it should raise red flags.
 
-On Sat, Nov 21, 2009 at 10:07 PM, Sriram V <vshrirama@gmail.com> wrote:
-> Hi,
-> =A0 I am trying to test pm on a custom board with android.
+This isn't a good assumption here.  Remember that this is for runtime PM
+so if we're getting as far as these calls then the driver has already
+told the core that it is idle, which probably means that the hardware is
+already quieseced.  For a lot of hardware that will mean that the only
+thing left to do in order to suspend is to (possibly) remove power and
+in many cases (as with SH) that's going to be done by the bus rather
+than the device.  It's a bit more likely that some activity will be
+needed on resume but in many cases the device gets fully reprogrammed on
+when it becomes active anyway.
 
-What android version are you usnig ?
+Looking at it another way a key goal of runtime PM is to get the bus
+involved in the process - if we can do things at device level to reduce
+power consumption then there's no need to go through runtime PM to do
+them.
 
+> Plus, if we allowed NULLs there, we'd not know if the driver does not
+> implement it because it is not neccessary, or because they don't care.
 
-> =A0 Whats happening:
-> =A0=A0 1) Android is putting the system to sleep - calling system wide su=
-spend
-> =A0=A0 2) During suspend, kernel resume immediately - I get "wakeup wake =
-lock:
-> omap-8250-serial". and again puts it back to suspend.
-> =A0=A0 3) This keeps happening, There is no serial activity except for pr=
-inting
-> the messages (transmission from the board) - No serial inputs from the ho=
-st
-> pc.
-> =A0=A0 4) Is there any way to disable this?
->
-
-We encountered a similar problem while booting android on one of our
-board. One way is to acquire a partial wake lock (or just a wakelock
-in the newer versions of android)  as soon as you boot up the board.
-In older android version, the way was :
-echo wakelock1 > /sys/android_power/acquire_partial_wake_lock
-or on newer versions :
-echo wakelock1 > /sys/power/wake_lock
-Please check the path as I do not have access to the board right now.
-
-Acquiring the wake lock will prevent your system from going into
-sleep. However, this is a temporary solution as you still need to
-figure out why is your device not able to go to sleep.
-
-Hope that helps...
-
-Regards,
-Aneesh
+Again, in order to use runtime PM the driver must already be doing
+explicit calls so it should be fairly clear that the driver is trying to
+support suspend.
