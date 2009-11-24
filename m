@@ -1,15 +1,11 @@
-From: "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [Resend][PATCH] Wireless / ath5k: Simplify suspend
-	and resume	callbacks
-Date: Mon, 23 Nov 2009 16:33:54 -0500
-Message-ID: <20091123213353.GA9045__48151.9061643214$1259078766$gmane$org@tuxdriver.com>
-References: <200911212344.24170.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH] PM: fix irq enable/disable in runtime PM code
+Date: Tue, 24 Nov 2009 15:22:07 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0911241520190.2881-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200911212344.24170.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,25 +16,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-wireless@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@gmail.com>, netdev@vger.kernel.org, Bob Copeland <me@bobcopeland.com>, LKML <linux-kernel@vger.kernel.org>, ath5k-devel@venema.h4ckr.net, pm list <linux-pm@lists.linux-foundation.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Nov 21, 2009 at 11:44:24PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: Wireless / ath5k: Simplify suspend and resume callbacks
-> 
-> Simplify the suspend and resume callbacks of ath5k by converting the
-> driver to struct dev_pm_ops and allowing the PCI PM core to do the
-> PCI-specific suspend/resume handling.
-> 
-> Tested with Atheros Communications Inc. AR2413 802.11bg NIC (rev 01)
-> D-Link CardBus.adapter.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+This patch (as1305) fixes a bug in the irq-enable settings and removes
+some related overhead in the runtime PM code.
 
-This is already queued for -next.
+	In __pm_runtime_resume(), within the scope of the original
+	spin_lock_irq(), we know that irqs are disabled.  There's no
+	reason to go through a pair of enable/disable cycles when
+	acquiring and releasing the parent's lock.
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+	In __pm_runtime_set_status(), irqs are already disabled when
+	the parent's lock is acquired, and they must remain disabled
+	when it is released.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+
+---
+
+Index: usb-2.6/drivers/base/power/runtime.c
+===================================================================
+--- usb-2.6.orig/drivers/base/power/runtime.c
++++ usb-2.6/drivers/base/power/runtime.c
+@@ -332,11 +332,11 @@ int __pm_runtime_resume(struct device *d
+ 		 * necessary.
+ 		 */
+ 		parent = dev->parent;
+-		spin_unlock_irq(&dev->power.lock);
++		spin_unlock(&dev->power.lock);
+ 
+ 		pm_runtime_get_noresume(parent);
+ 
+-		spin_lock_irq(&parent->power.lock);
++		spin_lock(&parent->power.lock);
+ 		/*
+ 		 * We can resume if the parent's run-time PM is disabled or it
+ 		 * is set to ignore children.
+@@ -347,9 +347,9 @@ int __pm_runtime_resume(struct device *d
+ 			if (parent->power.runtime_status != RPM_ACTIVE)
+ 				retval = -EBUSY;
+ 		}
+-		spin_unlock_irq(&parent->power.lock);
++		spin_unlock(&parent->power.lock);
+ 
+-		spin_lock_irq(&dev->power.lock);
++		spin_lock(&dev->power.lock);
+ 		if (retval)
+ 			goto out;
+ 		goto repeat;
+@@ -781,7 +781,7 @@ int __pm_runtime_set_status(struct devic
+ 	}
+ 
+ 	if (parent) {
+-		spin_lock_irq(&parent->power.lock);
++		spin_lock(&parent->power.lock);
+ 
+ 		/*
+ 		 * It is invalid to put an active child under a parent that is
+@@ -797,7 +797,7 @@ int __pm_runtime_set_status(struct devic
+ 				atomic_inc(&parent->power.child_count);
+ 		}
+ 
+-		spin_unlock_irq(&parent->power.lock);
++		spin_unlock(&parent->power.lock);
+ 
+ 		if (error)
+ 			goto out;
