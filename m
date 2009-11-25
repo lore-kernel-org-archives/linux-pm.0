@@ -1,7 +1,8 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Failure of device_add() and parent's child_count
-Date: Wed, 25 Nov 2009 17:04:41 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0911251646140.2812-100000@iolanthe.rowland.org>
+Subject: Adding pm_schedule_idle(),
+	maybe removing pm_schedule_suspend()
+Date: Wed, 25 Nov 2009 17:32:39 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0911251704580.2812-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,42 +22,25 @@ List-Id: linux-pm@vger.kernel.org
 
 Rafael:
 
-The Runtime PM interface is a little awkward concerning failure of 
-device_add().  Let's consider the normal case where a newly-discovered 
-device is being registered, and it is initially powered on.  Assuming 
-that we want the PM core to know the device's true state while it is 
-being probed, the registration code will have to look like this:
+It turns out that I need a pm_schedule_idle() routine.  
+pm_schedule_suspend() just doesn't do what I want -- I need the 
+runtime_idle() callback to be invoked when the timer expires, not 
+runtime_suspend().
 
-	...
-	dev->parent = ...
-	...
-	pm_runtime_set_active(dev);
-	pm_runtime_enable(dev);
-	...
-	rc = device_add(dev);
+Adding the routine itself is easy enough, but the obvious way to
+implement it is to use dev->power.request to tell the timer function
+whether it should queue an idle or a suspend.  This leads to a problem:
+It becomes impossible to queue an idle request if there's a scheduled
+suspend.  The reason is that power.request has to remain set to
+indicate that a suspend should be queued when the timer expires, so it
+can't be changed to RPM_REQ_IDLE.
 
-The assignment to dev->parent has to come first, so that 
-pm_runtime_set_active() will increment the parent's child_count.  The 
-child_count gets decremented again when device_del() calls 
-device_pm_remove().
+One possible way around this would be to have pm_schedule_idle() 
+completely replace pm_schedule_suspend().  This seems like a reasonable 
+approach -- at the time of the function call we don't know what 
+conditions will be like in the future, so when the timer expires we 
+should check again to see if a suspend is appropriate.
 
-This means that following a failure of device_add(), the caller has to
-be responsible for making sure the parent's child_count is correct.  So 
-after calling device_add(), we need to do:
-
-	if (rc < 0) {
-		dev_warn(dev, ...);
-		pm_runtime_disable(dev);
-		pm_runtime_set_suspended(dev);
-		put_device(dev);
-	}
-
-I doubt that people using the Runtime PM interface are aware of this.  
-Did you do it in your new PCI runtime-PM code?
-
-It would be good to remove this awkwardness, but I don't know what is
-the best way to do it.  Perhaps __pm_runtime_set_status() shouldn't
-adjust the parent's child_count unless the device is registered.  Then
-device_pm_add() could adjust the child_count as needed.
+What do you think?
 
 Alan Stern
