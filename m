@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] PM: fix irq enable/disable in runtime PM code
-Date: Tue, 24 Nov 2009 23:30:41 +0100
-Message-ID: <200911242330.41735.rjw@sisk.pl>
+Date: Wed, 25 Nov 2009 01:18:08 +0100
+Message-ID: <200911250118.08918.rjw@sisk.pl>
 References: <Pine.LNX.4.44L0.0911241520190.2881-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -36,6 +36,9 @@ On Tuesday 24 November 2009, Alan Stern wrote:
 > 
 > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-Thanks for the patch, I'll apply it shortly.
+Applied to suspend-2.6/linux-next.
 
+I'll try to push it to Linus before 2.6.32.
+
+Thanks,
 Rafael
