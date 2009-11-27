@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Failure of device_add() and parent's child_count
-Date: Fri, 27 Nov 2009 01:57:57 +0100
-Message-ID: <200911270157.57141.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0911251646140.2812-100000@iolanthe.rowland.org>
+Subject: Re: Weird suspend/resume problem on HP nx6325 w/
+	openSUSE 11.2 w/ -rc8
+Date: Fri, 27 Nov 2009 02:04:15 +0100
+Message-ID: <200911270204.15100.rjw__14734.544469002$1259283888$gmane$org@sisk.pl>
+References: <200911220015.30912.rjw@sisk.pl>
+	<21d7e9970911211955i69c12969n3085b6fc2c4a95f9@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0911251646140.2812-100000@iolanthe.rowland.org>
+In-Reply-To: <21d7e9970911211955i69c12969n3085b6fc2c4a95f9@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,58 +19,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Dave Airlie <airlied@gmail.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, DRI <dri-devel@lists.sourceforge.net>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 25 November 2009, Alan Stern wrote:
-> Rafael:
+On Sunday 22 November 2009, Dave Airlie wrote:
+> On Sun, Nov 22, 2009 at 9:15 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > Hi,
+> >
+> > I'm not really sure where this should be reported, but here it goes.
+> >
+> > After installing openSUSE 11.2 on my testbed nx6325 I noticed that resume
+> > (from suspend to RAM) stopped working on it.  Apparently, it hanged while
+> > switching from the console back to X and the box remained completely
+> > unresponsive after that (it didn't even react to the magic sysrq).  However,
+> > it used to work just fine with -rc7 and openSUSE 11.1, so I figured the problem
+> > was related to the new X driver, which is radeon module version 6.12.4 (xorg
+> > server 1.6.5).
+> >
+> > So, I started to investigate and found that after a suspend from a framebuffer
+> > console, the resume had always worked.  However, when I switched from X to the
+> > framebuffer console, suspended, resumed and switched back to X, the box hanged
+> > immediately just like during resume after a suspend from under X.  [There also
+> > were some problems when switching from X to the framebuffer console and back
+> > which seemd to be independent of suspend/resume (in short, the screen stays
+> > black after a switch from the framebuffer console to X and you need to kill X
+> > to fix this).]
 > 
-> The Runtime PM interface is a little awkward concerning failure of 
-> device_add().  Let's consider the normal case where a newly-discovered 
-> device is being registered, and it is initially powered on.  Assuming 
-> that we want the PM core to know the device's true state while it is 
-> being probed, the registration code will have to look like this:
-> 
-> 	...
-> 	dev->parent = ...
-> 	...
-> 	pm_runtime_set_active(dev);
-> 	pm_runtime_enable(dev);
-> 	...
-> 	rc = device_add(dev);
-> 
-> The assignment to dev->parent has to come first, so that 
-> pm_runtime_set_active() will increment the parent's child_count.  The 
-> child_count gets decremented again when device_del() calls 
-> device_pm_remove().
-> 
-> This means that following a failure of device_add(), the caller has to
-> be responsible for making sure the parent's child_count is correct.  So 
-> after calling device_add(), we need to do:
-> 
-> 	if (rc < 0) {
-> 		dev_warn(dev, ...);
-> 		pm_runtime_disable(dev);
-> 		pm_runtime_set_suspended(dev);
-> 		put_device(dev);
-> 	}
-> 
-> I doubt that people using the Runtime PM interface are aware of this.  
+> You are using radeonfb on it? or vesafb?
 
-I'm quite sure they aren't.
+vesafb
 
-> Did you do it in your new PCI runtime-PM code?
+> first test is to try without either of those installed.
 
-No, I don't.  In the case of a network adapter I've been working on recently,
-it's sufficient to enable/disable the runtime PM in _open()/_close().
+That doesn't change the behavior AFAICS.
 
-> It would be good to remove this awkwardness, but I don't know what is
-> the best way to do it.  Perhaps __pm_runtime_set_status() shouldn't
-> adjust the parent's child_count unless the device is registered.  Then
-> device_pm_add() could adjust the child_count as needed.
+> From memory though that machines an Xpress 200M
 
-It seems fine at first sight, but I need to think a bit more about that.
+Yes, it has this one.
 
-Thanks,
+> which is the the worst graphics card for use with open drivers and has
+> always caused no-end of pain.
+
+Too bad. :-(
+
+> Its also mostly undocumented when it comes to errata and workarounds.
+
+Well, so I guess this is a hardware errata.
+
+Still, it worked with the older X, so I wonder if I can make the new X work
+like the old one?
+
+Best,
 Rafael
