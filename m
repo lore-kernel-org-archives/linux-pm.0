@@ -1,14 +1,13 @@
-From: Sriram V <vshrirama@gmail.com>
-Subject: Re: Question on USB re-enumeration
-Date: Sat, 28 Nov 2009 12:07:49 +0530
-Message-ID: <8bf247760911272237l13cb6d4pc6636a20a90c8d3a@mail.gmail.com>
-References: <8bf247760911150100i15434810r7be8e1c03f78c7f7@mail.gmail.com>
-	<Pine.LNX.4.44L0.0911151407380.6654-100000@netrider.rowland.org>
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Subject: [PATCH v5 7/8] Loongson: YeeLoong: add suspend driver
+Date: Sat, 28 Nov 2009 21:42:39 +0800
+Message-ID: <f758058af5e45ec98bdc849e7762f32d795177e1.1259414649.git.wuzhangjin__19345.2184008949$1259415856$gmane$org@gmail.com>
+References: <cover.1259414649.git.wuzhangjin@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0911151407380.6654-100000@netrider.rowland.org>
+In-Reply-To: <cover.1259414649.git.wuzhangjin@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,170 +17,196 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mips@linux-mips.org, yanh@lemote.com, Dmitry Torokhov <dmitry.torokhov@gmail.com>, zhangfx@lemote.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alan,
-  We have a USB GSM externally powered connected through a external
-transceiver phy. Normal suspend-resume works.
-  When we make a call to the GSM chip while in suspend. The resume
-fails and it returns -19.
+From: Wu Zhangjin <wuzhangjin@gmail.com>
 
-  This is coming from file : drivers/usb/core/driver.c - external usb
-resume function.
+This patch adds Suspend Driver, which will suspend the YeeLoong Platform
+specific devices.
 
+Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
+---
+ .../loongson/lemote-2f/yeeloong_laptop/Kconfig     |    9 ++
+ .../loongson/lemote-2f/yeeloong_laptop/Makefile    |    1 +
+ .../loongson/lemote-2f/yeeloong_laptop/suspend.c   |  141 ++++++++++++++++++++
+ 3 files changed, 151 insertions(+), 0 deletions(-)
+ create mode 100644 arch/mips/loongson/lemote-2f/yeeloong_laptop/suspend.c
 
-Regards,
-sriram
-
-
-
-I am appending the log im seeing here:
-
-Sucessful Resume:
-----------------------------
-
-<6>PM: Syncing filesystems ... done.
-<7>PM: Preparing system for mem sleep
-<4>Freezing user space processes ... (elapsed 0.00 seconds) done.
-<4>Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-<7>PM: Entering mem sleep
-<4>Suspending console(s) (use no_console_suspend to debug)
-<7>hub 1-0:1.0: hub_suspend
-<7>usb usb1: bus suspend
-<7>ehci-omap ehci-omap.0: suspend root hub
-<6>Powerdomain (core_pwrdm) didn't enter target state 1
-<3>Could not enter target state in pm_suspend
-<7>usb usb1: usb resume
-<7>ehci-omap ehci-omap.0: resume root hub
-<7>hub 1-0:1.0: hub_resume
-<7>ehci-omap ehci-omap.0: GetStatus port 2 status 001803 POWER sig=3Dj CSC =
-CONNECT
-<7>hub 1-0:1.0: port 2: status 0501 change 0001
-<7>usb 1-2: reset-resume
-<7>ehci-omap ehci-omap.0: port 2 high speed
-<7>ehci-omap ehci-omap.0: GetStatus port 2 status 001005 POWER sig=3Dse0
-PE CONNECT
-<6>usb 1-2: reset high speed USB device using ehci-omap and address 2
-<7>ehci-omap ehci-omap.0: port 2 high speed
-<7>ehci-omap ehci-omap.0: GetStatus port 2 status 001005 POWER sig=3Dse0
-PE CONNECT
-<7>PM: Finishing wakeup.
-<4>Restarting tasks ... <6>
-<7>hub 1-0:1.0: state 7 ports 3 chg 0004 evt 0000
-<7>hub 1-0:1.0: port 2, status 0503, change 0000, 480 Mb/s
-<4>done.
-
-
-Unsuccessful Resume:
-----------------------------------
-<6>PM: Syncing filesystems ... done.
-<7>PM: Preparing system for mem sleep
-<4>Freezing user space processes ... (elapsed 0.00 seconds) done.
-<4>Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-<7>PM: Entering mem sleep
-<4>Suspending console(s) (use no_console_suspend to debug)
-<7>hub 1-0:1.0: hub_suspend
-<7>usb usb1: bus suspend
-<7>ehci-omap ehci-omap.0: suspend root hub
-<6>Powerdomain (core_pwrdm) didn't enter target state 1
-<3>Could not enter target state in pm_suspend
-<<7>usb usb1: usb resume
-<7>ehci-omap ehci-omap.0: resume root hub
-<7>hub 1-0:1.0: hub_resume
-<7>ehci-omap ehci-omap.0: GetStatus port 2 status 001803 POWER sig=3Dj CSC =
-CONNECT
-<7>hub 1-0:1.0: port 2: status 0501 change 0001
-<7>usb 1-2: reset-resume
-<7>ehci-omap ehci-omap.0: port 2 high speed
-<7>ehci-omap ehci-omap.0: GetStatus port 2 status 001005 POWER sig=3Dse0
-PE CONNECT
-<6>usb 1-2: reset high speed USB device using ehci-omap and address 2
-<7>ehci-omap ehci-omap.0: devpath 2 ep0in 3strikes
-<7>ehci-omap ehci-omap.0: devpath 2 ep0in 3strikes
-<7>ehci-omap ehci-omap.0: devpath 2 ep0in 3strikes
-<7>ehci-omap ehci-omap.0: GetStatus port 2 status 001002 POWER sig=3Dse0 CSC
-<7>hub 1-0:1.0: logical disconnect on port 2
-<3>pm_op(): usb_dev_resume+0x0/0x18 returns -19
-<3>PM: Device 1-2 failed to resume: error -19
-<7>PM: Finishing wakeup.
-<4>Restarting tasks ... <7>hub 1-0:1.0: state 7 ports 3 chg 0004 evt 0004
-<7>hub 1-0:1.0: port 2, status 0100, change 0000, 12 Mb/s
-<6>usb 1-2: USB disconnect, address 2
-<7>usb 1-2: unregistering device
-<7>usb 1-2: usb_disable_device nuking all URBs
-<7>usb 1-2: unregistering interface 1-2:1.0
-<7>usb 1-2:1.0: uevent
-<7>usb 1-2: unregistering interface 1-2:1.1
-<7>usb 1-2:1.1: uevent
-<7>usb 1-2: unregistering interface 1-2:1.2
-<7>usb 1-2:1.2: uevent
-<7>usb 1-2: unregistering interface 1-2:1.3
-<4>done.
-<6>suspend: exit suspend, ret =3D 0
-<7>usb 1-2:1.3: uevent
-<7>usb 1-2: unregistering interface 1-2:1.4
-<7>usb 1-2:1.4: uevent
-<7>usb 1-2: uevent
-
-
-
-On Mon, Nov 16, 2009 at 12:41 AM, Alan Stern <stern@rowland.harvard.edu> wr=
-ote:
-> On Sun, 15 Nov 2009, Sriram V wrote:
->
->> Hi,
->>
->> I have a couple of questions of re-enumeration of usb devices on
->> suspend-resume
->>
->> I have a USB Device permanently connected to the host controller.
->>
->> Upon resume - Should i usb device get re-enumerated?
->
-> If the host controller lost power was reinitialized during the suspend
-> then yes. =A0Otherwise no. =A0In particular, devices should always get
-> re-enumerated when resuming from hibernation. =A0But when resuming from
-> suspend-to-RAM, it depends on the motherboard.
->
->> If so, does Linux choose a different address for accessing it?
->
-> If the device's firmware hasn't changed then the address remains the
-> same. =A0Otherwise a different address is used.
->
-> Read Documentation/usb/persist.txt.
->
->> If i have a USB harddisk, I am accessing it using a device node say
->> /dev/sdb1
->> The harddisk is mounted as /dev/sdb1.
->>
->> Now, i go into suspend and then resume - If i need to re-enumerate the
->> devices
->> It could be detected as /dev/sdc1... or something.
->>
->> If that is the case i cannot access my harddisk - since im assuming
->> /dev/sdb1.
->>
->> What im seeing here is - My usb device is permanently connected to the u=
-sb
->> host via an external phy.
->>
->> =A0When i suspend - i turn off the clocks and upon resume - turn on the =
-clocks
->> and reset the phy.
->>
->> =A0For some time - i am able to access the device, What happens is - The
->> device gets re-enumerated to some other device node.
->>
->> I am not sure if this is a device issue or a resume function issue.
->>
->>
->> Please advice.
->
-> Enable CONFIG_USB_DEBUG in your kernel and post the dmesg log showing
-> what happens during suspend and resume.
->
-> Alan Stern
->
->
+diff --git a/arch/mips/loongson/lemote-2f/yeeloong_laptop/Kconfig b/arch/mips/loongson/lemote-2f/yeeloong_laptop/Kconfig
+index c4398ff..49d63c5 100644
+--- a/arch/mips/loongson/lemote-2f/yeeloong_laptop/Kconfig
++++ b/arch/mips/loongson/lemote-2f/yeeloong_laptop/Kconfig
+@@ -45,4 +45,13 @@ config YEELOONG_VO
+ 	  This option adds Video Output Driver, which provides standard
+ 	  interface to turn on/off the video output of LCD, CRT.
+ 
++config YEELOONG_SUSPEND
++	tristate "Suspend Driver"
++	depends on YEELOONG_HWMON && YEELOONG_VO
++	select SUSPEND
++	default y
++	help
++	  This option adds Suspend Driver, which will suspend the YeeLoong
++	  Platform specific devices.
++
+ endif
+diff --git a/arch/mips/loongson/lemote-2f/yeeloong_laptop/Makefile b/arch/mips/loongson/lemote-2f/yeeloong_laptop/Makefile
+index 104670f..cfe736f 100644
+--- a/arch/mips/loongson/lemote-2f/yeeloong_laptop/Makefile
++++ b/arch/mips/loongson/lemote-2f/yeeloong_laptop/Makefile
+@@ -6,3 +6,4 @@ obj-$(CONFIG_YEELOONG_BACKLIGHT) += backlight.o
+ obj-$(CONFIG_YEELOONG_BATTERY) += battery.o
+ obj-$(CONFIG_YEELOONG_HWMON) += hwmon.o
+ obj-$(CONFIG_YEELOONG_VO) += video_output.o
++obj-$(CONFIG_YEELOONG_SUSPEND) += suspend.o
+diff --git a/arch/mips/loongson/lemote-2f/yeeloong_laptop/suspend.c b/arch/mips/loongson/lemote-2f/yeeloong_laptop/suspend.c
+new file mode 100644
+index 0000000..8202971
+--- /dev/null
++++ b/arch/mips/loongson/lemote-2f/yeeloong_laptop/suspend.c
+@@ -0,0 +1,141 @@
++/*
++ * YeeLoong Platform Specific Suspend Driver
++ *
++ *  Copyright (C) 2009 Lemote Inc.
++ *  Author: Wu Zhangjin <wuzj@lemote.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2 as
++ *  published by the Free Software Foundation.
++ */
++
++#include <linux/err.h>
++#include <linux/platform_device.h>
++
++#include <asm/bootinfo.h>
++
++#include "ec_kb3310b.h"
++
++MODULE_AUTHOR("Wu Zhangjin <wuzj@lemote.com>");
++MODULE_DESCRIPTION("YeeLoong laptop suspend driver");
++MODULE_LICENSE("GPL");
++
++static struct platform_device *yeeloong_pdev;
++
++static void usb_ports_set(int status)
++{
++	status = !!status;
++
++	ec_write(REG_USB0_FLAG, status);
++	ec_write(REG_USB1_FLAG, status);
++	ec_write(REG_USB2_FLAG, status);
++}
++
++static int yeeloong_suspend(struct platform_device *pdev,
++		pm_message_t state)
++{
++	pr_info("yeeloong specific suspend\n");
++
++	/* Turn off LCD */
++	lcd_vo_set(BIT_DISPLAY_LCD_OFF);
++	/* Turn off CRT */
++	crt_vo_set(BIT_CRT_DETECT_UNPLUG);
++	/* Poweroff three usb ports */
++	usb_ports_set(BIT_USB_FLAG_OFF);
++	/* Minimize the speed of FAN */
++	set_fan_pwm_enable(BIT_FAN_MANUAL);
++	set_fan_pwm(1);
++
++	return 0;
++}
++
++static int yeeloong_resume(struct platform_device *pdev)
++{
++	pr_info("yeeloong specific resume\n");
++
++	/* Resume the status of lcd & crt */
++	lcd_vo_set(BIT_DISPLAY_LCD_ON);
++	crt_vo_set(BIT_CRT_DETECT_PLUG);
++
++	/* Poweron three usb ports */
++	usb_ports_set(BIT_USB_FLAG_ON);
++
++	/* Resume fan to auto mode */
++	set_fan_pwm_enable(BIT_FAN_AUTO);
++
++	return 0;
++}
++
++static struct platform_driver platform_driver = {
++	.driver = {
++		   .name = "yeeloong-laptop",
++		   .owner = THIS_MODULE,
++		   },
++	.suspend = yeeloong_suspend,
++	.resume = yeeloong_resume,
++};
++
++static ssize_t yeeloong_pdev_name_show(struct device *dev,
++				       struct device_attribute *attr, char *buf)
++{
++	return sprintf(buf, "yeeloong laptop\n");
++}
++
++static struct device_attribute dev_attr_yeeloong_pdev_name =
++__ATTR(name, S_IRUGO, yeeloong_pdev_name_show, NULL);
++
++static int __init yeeloong_suspend_init(void)
++{
++	int ret;
++
++	if (mips_machtype != MACH_LEMOTE_YL2F89) {
++		pr_err("This Driver is only for YeeLoong laptop\n");
++		return -EFAULT;
++	}
++
++	/* Register platform stuff */
++	ret = platform_driver_register(&platform_driver);
++	if (ret)
++		return ret;
++
++	yeeloong_pdev = platform_device_alloc("yeeloong-laptop", -1);
++	if (!yeeloong_pdev) {
++		ret = -ENOMEM;
++		platform_driver_unregister(&platform_driver);
++		return ret;
++	}
++
++	ret = platform_device_add(yeeloong_pdev);
++	if (ret) {
++		platform_device_put(yeeloong_pdev);
++		return ret;
++	}
++
++	if (IS_ERR(yeeloong_pdev)) {
++		ret = PTR_ERR(yeeloong_pdev);
++		yeeloong_pdev = NULL;
++		pr_err("Fail to register platform device\n");
++		return ret;
++	}
++
++	ret = device_create_file(&yeeloong_pdev->dev,
++				 &dev_attr_yeeloong_pdev_name);
++	if (ret) {
++		pr_err("Fail to create sysfs device attributes\n");
++		return ret;
++	}
++
++	return 0;
++}
++
++static void __exit yeeloong_suspend_exit(void)
++{
++	if (yeeloong_pdev) {
++		platform_device_unregister(yeeloong_pdev);
++		yeeloong_pdev = NULL;
++		platform_driver_unregister(&platform_driver);
++	}
++}
++
++module_init(yeeloong_suspend_init);
++module_exit(yeeloong_suspend_exit);
+-- 
+1.6.2.1
