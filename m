@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Question on USB re-enumeration
-Date: Sat, 28 Nov 2009 11:38:16 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0911281128430.12776-100000@netrider.rowland.org>
-References: <8bf247760911272237l13cb6d4pc6636a20a90c8d3a@mail.gmail.com>
+From: Ferenc Wagner <wferi@niif.hu>
+Subject: Re: intermittent suspend problem again
+Date: Sat, 28 Nov 2009 20:01:08 +0100
+Message-ID: <87d4324gp7.fsf__30962.984977714$1259434953$gmane$org@tac.ki.iif.hu>
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911141952.50030.rjw@sisk.pl>
+	<87r5rwrkqs.fsf@tac.ki.iif.hu> <200911182313.14092.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <8bf247760911272237l13cb6d4pc6636a20a90c8d3a@mail.gmail.com>
+In-Reply-To: <200911182313.14092.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Wed, 18 Nov 2009 23:13:14 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,56 +19,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Sriram V <vshrirama@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, yakui.zhao@intel.com, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 28 Nov 2009, Sriram V wrote:
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> Hi Alan,
->   We have a USB GSM externally powered connected through a external
-> transceiver phy. Normal suspend-resume works.
->   When we make a call to the GSM chip while in suspend. The resume
-> fails and it returns -19.
-> 
->   This is coming from file : drivers/usb/core/driver.c - external usb
-> resume function.
+> On Wednesday 18 November 2009, Ferenc Wagner wrote:
+>
+>> Ferenc Wagner <wferi@niif.hu> writes:
+>> 
+>>> Since I've instrumented s2disk and the hibernation path, no freeze
+>>> happened during hibernating the machine.
+>> 
+>> Not until I removed the delays from hibernation_platform_enter(), which
+>> were put there previously to get step-by-step feedback.  Removing them
+>> again resulted in a freeze in short course, maybe just two hibernations
+>> later.  The instrumentation shows it stuck in dpm_suspend_start(PMSG_HIBERNATE).
+>> Does it mean that some device driver is at fault?
+>
+> A driver or one of the platform hooks.
+>
+>> I'll check if it always fails at the same point (although tracing into
+>> dpm_suspend_start isn't pure fun because of the multitude of devices it
+>> loops over).  Is there any way to get printk output from that phase?
+>
+> Compile with CONFIG_PM_VERBOSE (it does mean exactly that).
 
-Here's the important part of the logs, starting just before the
-successful and unsuccessful logs differ:
+The last message now was:
 
-> <7>ehci-omap ehci-omap.0: GetStatus port 2 status 001803 POWER sig=j CSC CONNECT
-> <7>hub 1-0:1.0: port 2: status 0501 change 0001
-> <7>usb 1-2: reset-resume
-> <7>ehci-omap ehci-omap.0: port 2 high speed
-> <7>ehci-omap ehci-omap.0: GetStatus port 2 status 001005 POWER sig=se0
-> PE CONNECT
-> <6>usb 1-2: reset high speed USB device using ehci-omap and address 2
-> <7>ehci-omap ehci-omap.0: port 2 high speed
-> <7>ehci-omap ehci-omap.0: GetStatus port 2 status 001005 POWER sig=se0
-> PE CONNECT
+e100: 0000:02:08.0: hibernate, may wakeup
 
-> <7>ehci-omap ehci-omap.0: GetStatus port 2 status 001803 POWER sig=j CSC CONNECT
-> <7>hub 1-0:1.0: port 2: status 0501 change 0001
-> <7>usb 1-2: reset-resume
-> <7>ehci-omap ehci-omap.0: port 2 high speed
-> <7>ehci-omap ehci-omap.0: GetStatus port 2 status 001005 POWER sig=se0
-> PE CONNECT
-> <6>usb 1-2: reset high speed USB device using ehci-omap and address 2
-> <7>ehci-omap ehci-omap.0: devpath 2 ep0in 3strikes
-> <7>ehci-omap ehci-omap.0: devpath 2 ep0in 3strikes
-> <7>ehci-omap ehci-omap.0: devpath 2 ep0in 3strikes
-> <7>ehci-omap ehci-omap.0: GetStatus port 2 status 001002 POWER sig=se0 CSC
-> <7>hub 1-0:1.0: logical disconnect on port 2
-
-The reason for this difference is that in the unsuccessful case, the
-GSM chip could be not reset correctly.  It failed to respond to a
-standard USB request.  Maybe it doesn't like to be reset when an
-incoming call arrives.
-
-The logs show that the chip appears to get disconnected from the USB
-bus at some point during the suspend or resume.  There's no way to know
-why this happens, but that is the reason for the reset.  Maybe there's
-a bug in your EHCI controller or maybe there's a bug in the GSM chip.
-
-Alan Stern
+Looks like hibernating the e100 driver is unstable.
+-- 
+Regards,
+Feri.
