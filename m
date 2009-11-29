@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 7/12] ACPI: Add support for new refcounted
-	GPE API to drivers
-Date: Sun, 29 Nov 2009 16:39:41 +0100
-Message-ID: <200911291639.41586.rjw__33579.0574354634$1259510286$gmane$org@sisk.pl>
+Subject: [RFC][PATCH 11/12] PCI PM: Run-time callbacks for PCI
+	bus type (rev. 2)
+Date: Sun, 29 Nov 2009 16:43:15 +0100
+Message-ID: <200911291643.15603.rjw__35594.2317437895$1259510306$gmane$org@sisk.pl>
 References: <200911160047.46299.rjw@sisk.pl> <200911291632.44763.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,108 +22,334 @@ To: pm list <linux-pm@lists.linux-foundation.org>
 Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Francois Romieu <romieu@fr.zoreil.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Matthew Garrett <mjg@redhat.com>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Add GPE refcounting support to ACPI drivers that need it. This will
-currently do little until the core is changed over to use the new
-behaviour.
+Introduce run-time PM callbacks for the PCI bus type.  Make the new
+callbacks work in analogy with the existing system sleep PM
+callbacks, so that the drivers already converted to struct dev_pm_ops
+can use their suspend and resume routines for run-time PM without
+modifications.
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
-Signed-off-by; Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
-drivers/acpi/button.c |   12 ++++++++++++
- drivers/acpi/button.c |   12 ++++++++++++
- drivers/acpi/ec.c     |    4 +++-
- drivers/acpi/wakeup.c |    6 ++++++
- 3 files changed, 21 insertions(+), 1 deletion(-)
+ drivers/pci/pci-driver.c |  105 ++++++++++++++++++++++++++++++++++++++++++++---
+ drivers/pci/pci.c        |   43 ++++++++++++++++---
+ drivers/pci/pci.h        |    1 
+ include/linux/pci.h      |    9 +++-
+ kernel/power/Kconfig     |    5 ++
+ 5 files changed, 151 insertions(+), 12 deletions(-)
 
-Index: linux-2.6/drivers/acpi/button.c
+Index: linux-2.6/kernel/power/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/acpi/button.c
-+++ linux-2.6/drivers/acpi/button.c
-@@ -420,6 +420,10 @@ static int acpi_button_add(struct acpi_d
- 				  ACPI_GPE_TYPE_WAKE_RUN);
- 		acpi_enable_gpe(device->wakeup.gpe_device,
- 				device->wakeup.gpe_number);
-+		acpi_ref_runtime_gpe(device->wakeup.gpe_device,
-+				     device->wakeup.gpe_number);
-+		acpi_ref_wakeup_gpe(device->wakeup.gpe_device,
-+				    device->wakeup.gpe_number);
- 		device->wakeup.state.enabled = 1;
- 	}
+--- linux-2.6.orig/kernel/power/Kconfig
++++ linux-2.6/kernel/power/Kconfig
+@@ -241,3 +241,8 @@ config PM_WAKEUP
+ 	bool
+ 	depends on SUSPEND || HIBERNATION || PM_RUNTIME
+ 	default y
++
++config PM_OPS
++	bool
++	depends on PM_SLEEP || PM_RUNTIME
++	default y
+Index: linux-2.6/drivers/pci/pci-driver.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci-driver.c
++++ linux-2.6/drivers/pci/pci-driver.c
+@@ -17,6 +17,7 @@
+ #include <linux/slab.h>
+ #include <linux/sched.h>
+ #include <linux/cpu.h>
++#include <linux/pm_runtime.h>
+ #include "pci.h"
  
-@@ -439,6 +443,14 @@ static int acpi_button_remove(struct acp
+ struct pci_dynid {
+@@ -537,7 +538,7 @@ static int pci_restore_standard_config(s
+ 	return pci_restore_state(pci_dev);
+ }
+ 
+-static void pci_pm_default_resume_noirq(struct pci_dev *pci_dev)
++static void pci_pm_default_resume_early(struct pci_dev *pci_dev)
  {
- 	struct acpi_button *button = acpi_driver_data(device);
+ 	pci_restore_standard_config(pci_dev);
+ 	pci_fixup_device(pci_fixup_resume_early, pci_dev);
+@@ -581,6 +582,17 @@ static int pci_pm_prepare(struct device 
+ 	struct device_driver *drv = dev->driver;
+ 	int error = 0;
  
-+	if (device->wakeup.flags.valid) {
-+		acpi_unref_runtime_gpe(device->wakeup.gpe_device,
-+			     device->wakeup.gpe_number);
-+		acpi_unref_wakeup_gpe(device->wakeup.gpe_device,
-+				      device->wakeup.gpe_number);
-+		device->wakeup.state.enabled = 0;
++	/*
++	 * PCI devices suspended at run time need to be resumed at this
++	 * point, because in general it is necessary to reconfigure them for
++	 * system suspend.  Namely, if the device is supposed to wake up the
++	 * system from the sleep state, we may need to reconfigure it for this
++	 * purpose.  In turn, if the device is not supposed to wake up the
++	 * system from the sleep state, we'll have to prevent it from signaling
++	 * wake-up.
++	 */
++	pm_runtime_resume(dev);
++
+ 	if (drv && drv->pm && drv->pm->prepare)
+ 		error = drv->pm->prepare(dev);
+ 
+@@ -681,7 +693,7 @@ static int pci_pm_resume_noirq(struct de
+ 	struct device_driver *drv = dev->driver;
+ 	int error = 0;
+ 
+-	pci_pm_default_resume_noirq(pci_dev);
++	pci_pm_default_resume_early(pci_dev);
+ 
+ 	if (pci_has_legacy_pm_support(pci_dev))
+ 		return pci_legacy_resume_early(dev);
+@@ -879,7 +891,7 @@ static int pci_pm_restore_noirq(struct d
+ 	struct device_driver *drv = dev->driver;
+ 	int error = 0;
+ 
+-	pci_pm_default_resume_noirq(pci_dev);
++	pci_pm_default_resume_early(pci_dev);
+ 
+ 	if (pci_has_legacy_pm_support(pci_dev))
+ 		return pci_legacy_resume_early(dev);
+@@ -931,6 +943,86 @@ static int pci_pm_restore(struct device 
+ 
+ #endif /* !CONFIG_HIBERNATION */
+ 
++#endif /* !CONFIG_PM_SLEEP */
++
++#ifdef CONFIG_PM_RUNTIME
++
++static int pci_pm_runtime_suspend(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
++	pci_power_t prev = pci_dev->current_state;
++	int error;
++
++	if (!pm || !pm->runtime_suspend)
++		return -ENOSYS;
++
++	error = pm->runtime_suspend(dev);
++	suspend_report_result(pm->runtime_suspend, error);
++	if (error)
++		return error;
++
++	pci_fixup_device(pci_fixup_suspend, pci_dev);
++
++	if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
++	    && pci_dev->current_state != PCI_UNKNOWN) {
++		WARN_ONCE(pci_dev->current_state != prev,
++			"PCI PM: State of device not saved by %pF\n",
++			pm->runtime_suspend);
++		return 0;
 +	}
 +
- 	acpi_button_remove_fs(device);
- 	input_unregister_device(button->input);
- 	kfree(button);
-Index: linux-2.6/drivers/acpi/ec.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/ec.c
-+++ linux-2.6/drivers/acpi/ec.c
-@@ -755,7 +755,7 @@ static int ec_install_handlers(struct ac
- 	if (ACPI_FAILURE(status))
- 		return -ENODEV;
- 	acpi_set_gpe_type(NULL, ec->gpe, ACPI_GPE_TYPE_RUNTIME);
--	acpi_enable_gpe(NULL, ec->gpe);
-+	acpi_ref_runtime_gpe(NULL, ec->gpe);
- 	status = acpi_install_address_space_handler(ec->handle,
- 						    ACPI_ADR_SPACE_EC,
- 						    &acpi_ec_space_handler,
-@@ -772,6 +772,7 @@ static int ec_install_handlers(struct ac
- 		} else {
- 			acpi_remove_gpe_handler(NULL, ec->gpe,
- 				&acpi_ec_gpe_handler);
-+                        acpi_unref_runtime_gpe(NULL, ec->gpe);
- 			return -ENODEV;
- 		}
- 	}
-@@ -782,6 +783,7 @@ static int ec_install_handlers(struct ac
++	if (!pci_dev->state_saved)
++		pci_save_state(pci_dev);
++
++	pci_finish_runtime_suspend(pci_dev);
++
++	return 0;
++}
++
++static int pci_pm_runtime_resume(struct device *dev)
++{
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
++
++	if (!pm || !pm->runtime_resume)
++		return -ENOSYS;
++
++	pci_pm_default_resume_early(pci_dev);
++	__pci_enable_wake(pci_dev, PCI_D0, true, false);
++	pci_fixup_device(pci_fixup_resume, pci_dev);
++
++	return pm->runtime_resume(dev);
++}
++
++static int pci_pm_runtime_idle(struct device *dev)
++{
++	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
++
++	if (!pm)
++		return -ENOSYS;
++
++	if (pm->runtime_idle) {
++		int ret = pm->runtime_idle(dev);
++		if (ret)
++			return ret;
++	}
++
++	pm_runtime_suspend(dev);
++
++	return 0;
++}
++
++#else /* !CONFIG_PM_RUNTIME */
++
++#define pci_pm_runtime_suspend	NULL
++#define pci_pm_runtime_resume	NULL
++#define pci_pm_runtime_idle	NULL
++
++#endif /* !CONFIG_PM_RUNTIME */
++
++#ifdef CONFIG_PM_OPS
++
+ const struct dev_pm_ops pci_dev_pm_ops = {
+ 	.prepare = pci_pm_prepare,
+ 	.complete = pci_pm_complete,
+@@ -946,15 +1038,18 @@ const struct dev_pm_ops pci_dev_pm_ops =
+ 	.thaw_noirq = pci_pm_thaw_noirq,
+ 	.poweroff_noirq = pci_pm_poweroff_noirq,
+ 	.restore_noirq = pci_pm_restore_noirq,
++	.runtime_suspend = pci_pm_runtime_suspend,
++	.runtime_resume = pci_pm_runtime_resume,
++	.runtime_idle = pci_pm_runtime_idle,
+ };
  
- static void ec_remove_handlers(struct acpi_ec *ec)
+ #define PCI_PM_OPS_PTR	(&pci_dev_pm_ops)
+ 
+-#else /* !CONFIG_PM_SLEEP */
++#else /* !COMFIG_PM_OPS */
+ 
+ #define PCI_PM_OPS_PTR	NULL
+ 
+-#endif /* !CONFIG_PM_SLEEP */
++#endif /* !COMFIG_PM_OPS */
+ 
+ /**
+  * __pci_register_driver - register a new pci driver
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1274,9 +1274,10 @@ void pci_pme_active(struct pci_dev *dev,
+ }
+ 
+ /**
+- * pci_enable_wake - enable PCI device as wakeup event source
++ * __pci_enable_wake - enable PCI device as wakeup event source
+  * @dev: PCI device affected
+  * @state: PCI state from which device will issue wakeup events
++ * @runtime: True if the events are to be generated at run time
+  * @enable: True to enable event generation; false to disable
+  *
+  * This enables the device as a wakeup event source, or disables it.
+@@ -1292,11 +1293,12 @@ void pci_pme_active(struct pci_dev *dev,
+  * Error code depending on the platform is returned if both the platform and
+  * the native mechanism fail to enable the generation of wake-up events
+  */
+-int pci_enable_wake(struct pci_dev *dev, pci_power_t state, bool enable)
++int __pci_enable_wake(struct pci_dev *dev, pci_power_t state,
++		      bool runtime, bool enable)
  {
-+	acpi_unref_runtime_gpe(NULL, ec->gpe);
- 	if (ACPI_FAILURE(acpi_remove_address_space_handler(ec->handle,
- 				ACPI_ADR_SPACE_EC, &acpi_ec_space_handler)))
- 		pr_err(PREFIX "failed to remove space handler\n");
-Index: linux-2.6/drivers/acpi/wakeup.c
+ 	int ret = 0;
+ 
+-	if (enable && !device_may_wakeup(&dev->dev))
++	if (enable && runtime && !device_may_wakeup(&dev->dev))
+ 		return -EINVAL;
+ 
+ 	/* Don't do the same thing twice in a row for one device. */
+@@ -1316,19 +1318,24 @@ int pci_enable_wake(struct pci_dev *dev,
+ 			pci_pme_active(dev, true);
+ 		else
+ 			ret = 1;
+-		error = platform_pci_sleep_wake(dev, true);
++		error = runtime ? platform_pci_run_wake(dev, true) :
++					platform_pci_sleep_wake(dev, true);
+ 		if (ret)
+ 			ret = error;
+ 		if (!ret)
+ 			dev->wakeup_prepared = true;
+ 	} else {
+-		platform_pci_sleep_wake(dev, false);
++		if (runtime)
++			platform_pci_run_wake(dev, false);
++		else
++			platform_pci_sleep_wake(dev, false);
+ 		pci_pme_active(dev, false);
+ 		dev->wakeup_prepared = false;
+ 	}
+ 
+ 	return ret;
+ }
++EXPORT_SYMBOL(__pci_enable_wake);
+ 
+ /**
+  * pci_wake_from_d3 - enable/disable device to wake up from D3_hot or D3_cold
+@@ -1438,6 +1445,31 @@ int pci_back_from_sleep(struct pci_dev *
+ }
+ 
+ /**
++ * pci_finish_runtime_suspend - Carry out PCI-specific part of runtime suspend.
++ * @dev: PCI device being suspended.
++ *
++ * Prepare @dev to generate wake-up events at run time and put it into a low
++ * power state.
++ */
++int pci_finish_runtime_suspend(struct pci_dev *dev)
++{
++	pci_power_t target_state = pci_target_state(dev);
++	int error;
++
++	if (target_state == PCI_POWER_ERROR)
++		return -EIO;
++
++	__pci_enable_wake(dev, target_state, true, pci_dev_run_wake(dev));
++
++	error = pci_set_power_state(dev, target_state);
++
++	if (error)
++		__pci_enable_wake(dev, target_state, true, false);
++
++	return error;
++}
++
++/**
+  * pci_dev_run_wake - Check if device can generate run-time wake-up events.
+  * @dev: Device to check.
+  *
+@@ -2898,7 +2930,6 @@ EXPORT_SYMBOL(pci_save_state);
+ EXPORT_SYMBOL(pci_restore_state);
+ EXPORT_SYMBOL(pci_pme_capable);
+ EXPORT_SYMBOL(pci_pme_active);
+-EXPORT_SYMBOL(pci_enable_wake);
+ EXPORT_SYMBOL(pci_wake_from_d3);
+ EXPORT_SYMBOL(pci_target_state);
+ EXPORT_SYMBOL(pci_prepare_to_sleep);
+Index: linux-2.6/include/linux/pci.h
 ===================================================================
---- linux-2.6.orig/drivers/acpi/wakeup.c
-+++ linux-2.6/drivers/acpi/wakeup.c
-@@ -81,6 +81,8 @@ void acpi_enable_wakeup_device(u8 sleep_
- 		if (!dev->wakeup.flags.run_wake)
- 			acpi_enable_gpe(dev->wakeup.gpe_device,
- 					dev->wakeup.gpe_number);
-+		acpi_ref_wakeup_gpe(dev->wakeup.gpe_device,
-+				    dev->wakeup.gpe_number);
- 	}
- }
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -738,13 +738,20 @@ int pci_set_power_state(struct pci_dev *
+ pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state);
+ bool pci_pme_capable(struct pci_dev *dev, pci_power_t state);
+ void pci_pme_active(struct pci_dev *dev, bool enable);
+-int pci_enable_wake(struct pci_dev *dev, pci_power_t state, bool enable);
++int __pci_enable_wake(struct pci_dev *dev, pci_power_t state,
++		      bool runtime, bool enable);
+ int pci_wake_from_d3(struct pci_dev *dev, bool enable);
+ pci_power_t pci_target_state(struct pci_dev *dev);
+ int pci_prepare_to_sleep(struct pci_dev *dev);
+ int pci_back_from_sleep(struct pci_dev *dev);
+ bool pci_dev_run_wake(struct pci_dev *dev);
  
-@@ -121,6 +123,8 @@ void acpi_disable_wakeup_device(u8 sleep
- 			acpi_clear_gpe(dev->wakeup.gpe_device,
- 				       dev->wakeup.gpe_number, ACPI_NOT_ISR);
- 		}
-+		acpi_unref_wakeup_gpe(dev->wakeup.gpe_device,
-+				    dev->wakeup.gpe_number);
- 	}
- }
- 
-@@ -141,6 +145,8 @@ int __init acpi_wakeup_device_init(void)
- 				  ACPI_GPE_TYPE_WAKE_RUN);
- 		acpi_enable_gpe(dev->wakeup.gpe_device,
- 				dev->wakeup.gpe_number);
-+		acpi_ref_wakeup_gpe(dev->wakeup.gpe_device,
-+				    dev->wakeup.gpe_number);
- 		dev->wakeup.state.enabled = 1;
- 	}
- 	mutex_unlock(&acpi_device_lock);
++static inline int pci_enable_wake(struct pci_dev *dev, pci_power_t state,
++				  bool enable)
++{
++	return __pci_enable_wake(dev, state, false, enable);
++}
++
+ /* Functions for PCI Hotplug drivers to use */
+ int pci_bus_find_capability(struct pci_bus *bus, unsigned int devfn, int cap);
+ #ifdef CONFIG_HOTPLUG
+Index: linux-2.6/drivers/pci/pci.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -55,6 +55,7 @@ extern int pci_set_platform_pm(struct pc
+ extern void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
+ extern void pci_disable_enabled_device(struct pci_dev *dev);
+ extern bool pci_check_pme_status(struct pci_dev *dev);
++extern int pci_finish_runtime_suspend(struct pci_dev *dev);
+ extern int __pci_pme_wakeup(struct pci_dev *dev, void *ign);
+ extern void pci_pme_wakeup_bus(struct pci_bus *bus);
+ extern void pci_pm_init(struct pci_dev *dev);
