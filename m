@@ -1,25 +1,14 @@
-From: Ferenc Wagner <wferi@niif.hu>
-Subject: Re: [PATCH v2 1/2] Input: gpio-keys - allow platform to
-	specify exact irq flags
-Date: Sun, 29 Nov 2009 13:26:17 +0100
-Message-ID: <87skbx34ba.fsf__33923.8777444281$1259497649$gmane$org@tac.ki.iif.hu>
-References: <87y6lxchwf.fsf@tac.ki.iif.hu>
-	<20091123172451.GD17813@core.coreip.homeip.net>
-	<87tywlcbyr.fsf@tac.ki.iif.hu>
-	<20091124063711.GL17675@esdhcp04058.research.nokia.com>
-	<87my2cp4h6.fsf@tac.ki.iif.hu>
-	<20091124170249.GQ17675@esdhcp04058.research.nokia.com>
-	<87k4xfojhb.fsf@tac.ki.iif.hu>
-	<20091126063506.GM23244@core.coreip.homeip.net>
-	<20091127105408.GV17675@esdhcp04058.research.nokia.com>
-	<87tywe4zf3.fsf@tac.ki.iif.hu>
-	<20091128132742.GC27249@gw.healthdatacare.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: intermittent suspend problem again
+Date: Sun, 29 Nov 2009 16:07:05 +0100
+Message-ID: <200911291607.05348.rjw__13395.7612015822$1259507278$gmane$org@sisk.pl>
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911290129.25505.rjw@sisk.pl>
+	<873a3x4p36.fsf@tac.ki.iif.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091128132742.GC27249@gw.healthdatacare.com> (Mika Westerberg's
-	message of "Sat, 28 Nov 2009 15:27:42 +0200")
+In-Reply-To: <873a3x4p36.fsf@tac.ki.iif.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,69 +18,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Mika Westerberg <mika.westerberg@iki.fi>, ext Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+To: Ferenc Wagner <wferi@niif.hu>
+Cc: linux-pm@lists.linux-foundation.org, linux-netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Mika Westerberg <mika.westerberg@iki.fi> writes:
+On Sunday 29 November 2009, Ferenc Wagner wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> 
+> > On Saturday 28 November 2009, Ferenc Wagner wrote:
+> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> >> 
+> >>> On Wednesday 18 November 2009, Ferenc Wagner wrote:
+> >>>
+> >>>> Ferenc Wagner <wferi@niif.hu> writes:
+> >>>> 
+> >>>>> Since I've instrumented s2disk and the hibernation path, no freeze
+> >>>>> happened during hibernating the machine.
+> >>>> 
+> >>>> Not until I removed the delays from hibernation_platform_enter(), which
+> >>>> were put there previously to get step-by-step feedback.  Removing them
+> >>>> again resulted in a freeze in short course, maybe just two hibernations
+> >>>> later.  The instrumentation shows it stuck in dpm_suspend_start(PMSG_HIBERNATE).
+> >>>> Does it mean that some device driver is at fault?
+> >>>
+> >>> A driver or one of the platform hooks.
+> >>>
+> >>>> I'll check if it always fails at the same point (although tracing into
+> >>>> dpm_suspend_start isn't pure fun because of the multitude of devices it
+> >>>> loops over).  Is there any way to get printk output from that phase?
+> >>>
+> >>> Compile with CONFIG_PM_VERBOSE (it does mean exactly that).
+> >> 
+> >> The last message now was:
+> >> 
+> >> e100: 0000:02:08.0: hibernate, may wakeup
+> >> 
+> >> Looks like hibernating the e100 driver is unstable.
+> >
+> > Can you verify that by trying to hibernate without the e100 driver?
+> 
+> Not really, as I still can't reliable reproduce the issue.  Since I'm
+> running with suspend loglevel = 8, it's happened only twice (in a row),
+> with seemingly exact same console output.  Some earlier freezes also
+> happened in dpm_suspend_start, at least.  However, I can certainly add
+> e100 to SUSPEND_MODULES under /etc/pm/config.d, and continue running
+> with that.
 
-> On Sat, Nov 28, 2009 at 01:16:48PM +0100, Ferenc Wagner wrote:
->
->> Mika Westerberg <ext-mika.1.westerberg@nokia.com> writes:
->> 
->>> How about if we just add one field to struct gpio_keys_button?
->>> 	...
->>> 	bool can_disable;
->>>
->>> Then gpio_keys uses this field when it decides what irqflags it
->>> is going to pass to request_irq() (we don't allow platform data
->>> to pass exact flags). So in case of can_disable is set, we don't
->>> pass IRQF_SHARED to request_irq().
->>>
->>> When support for sharing single IRQ between multiple buttons arrives
->>> this field is still valid and we just need to take care of disable IRQ
->>> line only when all buttons that share it, are disabled.
->>>
->>> This won't break existing users of gpio_keys and allows future
->>> extension to support case of multiple buttons sharing single
->>> IRQ line, right?
->> 
->> Please don't shoot me, but I've got a different idea: what if we leave
->> this whole business to the generic kernel interrupt handling routines?
->> It would be as easy as requesting the IRQ on device open (I guess the
->> input layer can relay the open event down here) and freeing it on close.
->> The IRQ could stat shared all the time, and the kernel would
->> automatically disable it when all handlers are unregistered.  All this
->> means no need to extend the platform data, no need for a separate sysfs
->> interface, and still the application would have complete control of its
->> wakeup sources by opening/closing them as needed.  What do you think?
->
-> Yeah, that would be nice. But it won't work for us :(
->
-> This is because the actual input device might be open for several
-> applications. Then we have single process which controls state of
-> the device. Now if, for example the device is locked by user, this
-> process just disables those buttons which are not allowed to wake
-> up the device and blanks the screen.
->
-> So the input device is still open but we just prevent GPIO lines
-> from generating any interrupts while the device is locked. There
-> are other use-cases also where different buttons are
-> disabled/enabled.
+That's what I'd do.  In addition to that, you can run multiple
+hibernation/resume cycles in a tight loop using the RTC wakealarm.
 
-Hi,
-
-I thought we'd better ask our friends over at linux-pm, if they've got
-some interface for this task.  To summarize: an embedded application
-wants to go into a "locked" state, where some input devices (gpio keys
-in this case) are "muted", ie. they don't even generate interrupts to
-minimize power consumption.  This could be solved by adding a new
-interface to gpio-keys, but the problem seems more general, so I wonder
-if something like the USB selective runtime suspend is already available
-(or preferable to develop) for such tasks.
-
-(I hope I got the summary right; Mika will provide the missing bits if I
-didn't.) 
--- 
 Thanks,
-Feri.
+Rafael
