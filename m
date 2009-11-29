@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: intermittent suspend problem again
-Date: Sun, 29 Nov 2009 16:07:05 +0100
-Message-ID: <200911291607.05348.rjw__13395.7612015822$1259507278$gmane$org@sisk.pl>
-References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911290129.25505.rjw@sisk.pl>
-	<873a3x4p36.fsf@tac.ki.iif.hu>
+Subject: [RFC][PATCH 3/12] PCI / PM: Propagate wake-up enable for
+	PCIe devices too
+Date: Sun, 29 Nov 2009 16:35:54 +0100
+Message-ID: <200911291635.54352.rjw@sisk.pl>
+References: <200911160047.46299.rjw@sisk.pl> <200911291632.44763.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <873a3x4p36.fsf@tac.ki.iif.hu>
+In-Reply-To: <200911291632.44763.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,54 +18,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: linux-pm@lists.linux-foundation.org, linux-netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Francois Romieu <romieu@fr.zoreil.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 29 November 2009, Ferenc Wagner wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > On Saturday 28 November 2009, Ferenc Wagner wrote:
-> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >> 
-> >>> On Wednesday 18 November 2009, Ferenc Wagner wrote:
-> >>>
-> >>>> Ferenc Wagner <wferi@niif.hu> writes:
-> >>>> 
-> >>>>> Since I've instrumented s2disk and the hibernation path, no freeze
-> >>>>> happened during hibernating the machine.
-> >>>> 
-> >>>> Not until I removed the delays from hibernation_platform_enter(), which
-> >>>> were put there previously to get step-by-step feedback.  Removing them
-> >>>> again resulted in a freeze in short course, maybe just two hibernations
-> >>>> later.  The instrumentation shows it stuck in dpm_suspend_start(PMSG_HIBERNATE).
-> >>>> Does it mean that some device driver is at fault?
-> >>>
-> >>> A driver or one of the platform hooks.
-> >>>
-> >>>> I'll check if it always fails at the same point (although tracing into
-> >>>> dpm_suspend_start isn't pure fun because of the multitude of devices it
-> >>>> loops over).  Is there any way to get printk output from that phase?
-> >>>
-> >>> Compile with CONFIG_PM_VERBOSE (it does mean exactly that).
-> >> 
-> >> The last message now was:
-> >> 
-> >> e100: 0000:02:08.0: hibernate, may wakeup
-> >> 
-> >> Looks like hibernating the e100 driver is unstable.
-> >
-> > Can you verify that by trying to hibernate without the e100 driver?
-> 
-> Not really, as I still can't reliable reproduce the issue.  Since I'm
-> running with suspend loglevel = 8, it's happened only twice (in a row),
-> with seemingly exact same console output.  Some earlier freezes also
-> happened in dpm_suspend_start, at least.  However, I can certainly add
-> e100 to SUSPEND_MODULES under /etc/pm/config.d, and continue running
-> with that.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-That's what I'd do.  In addition to that, you can run multiple
-hibernation/resume cycles in a tight loop using the RTC wakealarm.
+Having read the PM part of the PCIe 2.0 specification more carefully
+I think that it was a mistake to restrict the wake-up enable
+propagation to non-PCIe devices, because if we do not request
+control of the root ports' PME registers via OSC, PCIe PME is
+supposed to be handled by the platform, just like the non-PCIe PME.
+Even if we do that, the wake-up propagation is done to allow the
+devices to wake up the system from sleep states which involves the
+platform anyway, so it won't hurt.
 
-Thanks,
-Rafael
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/pci-acpi.c |   10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
+
+Index: linux-2.6/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci-acpi.c
++++ linux-2.6/drivers/pci/pci-acpi.c
+@@ -112,11 +112,7 @@ static bool acpi_pci_can_wakeup(struct p
+ static void acpi_pci_propagate_wakeup_enable(struct pci_bus *bus, bool enable)
+ {
+ 	while (bus->parent) {
+-		struct pci_dev *bridge = bus->self;
+-		int ret;
+-
+-		ret = acpi_pm_device_sleep_wake(&bridge->dev, enable);
+-		if (!ret || bridge->is_pcie)
++		if (!acpi_pm_device_sleep_wake(&bus->self->dev, enable))
+ 			return;
+ 		bus = bus->parent;
+ 	}
+@@ -131,9 +127,7 @@ static int acpi_pci_sleep_wake(struct pc
+ 	if (acpi_pci_can_wakeup(dev))
+ 		return acpi_pm_device_sleep_wake(&dev->dev, enable);
+ 
+-	if (!dev->is_pcie)
+-		acpi_pci_propagate_wakeup_enable(dev->bus, enable);
+-
++	acpi_pci_propagate_wakeup_enable(dev->bus, enable);
+ 	return 0;
+ }
+ 
