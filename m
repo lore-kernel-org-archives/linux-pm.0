@@ -1,13 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 0/12] PCI run-time PM support (updated)
-Date: Sun, 29 Nov 2009 16:32:44 +0100
-Message-ID: <200911291632.44763.rjw__29297.0915245407$1259509644$gmane$org@sisk.pl>
-References: <200911160047.46299.rjw@sisk.pl>
+Subject: [RFC][PATCH 2/12] PCI PM: Add function for checking PME
+	status of devices
+Date: Sun, 29 Nov 2009 16:34:47 +0100
+Message-ID: <200911291634.47631.rjw__2447.64532330937$1259509728$gmane$org@sisk.pl>
+References: <200911160047.46299.rjw@sisk.pl> <200911291632.44763.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200911160047.46299.rjw@sisk.pl>
+In-Reply-To: <200911291632.44763.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,42 +22,75 @@ To: pm list <linux-pm@lists.linux-foundation.org>
 Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Francois Romieu <romieu@fr.zoreil.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
- 
-The following (updated) series of patches provides preliminary run-time power
-management support for PCI devices through ACPI and/or the native PCIe PME.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Some patches have been modified since the previous iteration and two new
-patches have been added.  Also, I've tested this patchset with the native PCIe
-PME mechanism using the r8169 driver on the MSI Wind U-100 (see the last patch
-for details).
+Add function pci_check_pme_status() that will check the PME status
+bit of given device and clear it along with the PME enable bit.  It
+will be necessary for PCI run-time power management.
 
-[1/12] - Add flag for marking devices capable of generating wake-up events at run time
- 
-[2/12] - Add function for checking PME status of devices
- 
-[3/12] - Modify wake-up enable propagation so that it's done for PCIe devices too
- 
-[4/12] - PCIe PME root port service driver
+Based on a patch from Shaohua Li <shaohua.li@intel.com>
 
-[5/12][New] - "Don't use MSIs for PME signaling" switch for PCIe
- 
-[6/12] - ACPI GPE refcounting, from Matthew
- 
-[7/12] - ACPI drivers support for GPE refcounting, from Matthew
- 
-[8/12] - ACPI removal of the old GPE API, from Matthew
- 
-[9/12] - ACPI add fields for handling run-wake devices
- 
-[10/12] - PCI ACPI platform support for run-time power management
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/pci.c |   35 +++++++++++++++++++++++++++++++++++
+ drivers/pci/pci.h |    1 +
+ 2 files changed, 36 insertions(+)
 
-[11/12] - Runtime PM callbacks for the PCI bus type
-
-[12/12] - Runtime PM support for r8169 (experimental)
-
-If there are no objections, I think the patches [1-11/12] are ready for merging
-at this point.
-
-Thanks,
-Rafael
+Index: linux-2.6/drivers/pci/pci.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -49,6 +49,7 @@ struct pci_platform_pm_ops {
+ extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+ extern void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
+ extern void pci_disable_enabled_device(struct pci_dev *dev);
++extern bool pci_check_pme_status(struct pci_dev *dev);
+ extern void pci_pm_init(struct pci_dev *dev);
+ extern void platform_pci_wakeup_init(struct pci_dev *dev);
+ extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1167,6 +1167,41 @@ int pci_set_pcie_reset_state(struct pci_
+ }
+ 
+ /**
++ * pci_check_pme_status - Check if given device has generated PME.
++ * @dev: Device to check.
++ *
++ * Check the PME status of the device and if set, clear it and clear PME enable
++ * (if set).  Return 'true' if PME status and PME enable were both set or
++ * 'false' otherwise.
++ */
++bool pci_check_pme_status(struct pci_dev *dev)
++{
++	int pmcsr_pos;
++	u16 pmcsr;
++	bool ret = false;
++
++	if (!dev->pm_cap)
++		return false;
++
++	pmcsr_pos = dev->pm_cap + PCI_PM_CTRL;
++	pci_read_config_word(dev, pmcsr_pos, &pmcsr);
++	if (!(pmcsr & PCI_PM_CTRL_PME_STATUS))
++		return false;
++
++	/* Clear PME status. */
++	pmcsr |= PCI_PM_CTRL_PME_STATUS;
++	if (pmcsr & PCI_PM_CTRL_PME_ENABLE) {
++		/* Disable PME to avoid interrupt flood. */
++		pmcsr &= ~PCI_PM_CTRL_PME_ENABLE;
++		ret = true;
++	}
++
++	pci_write_config_word(dev, pmcsr_pos, pmcsr);
++
++	return ret;
++}
++
++/**
+  * pci_pme_capable - check the capability of PCI device to generate PME#
+  * @dev: PCI device to handle.
+  * @state: PCI state from which device will issue PME#.
