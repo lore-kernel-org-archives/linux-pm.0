@@ -1,14 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v2 1/2] Input: gpio-keys - allow platform to
- specify exact irq flags
-Date: Sun, 29 Nov 2009 11:04:57 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0911291103070.3165-100000__25711.7762965665$1259511661$gmane$org@netrider.rowland.org>
-References: <87skbx34ba.fsf@tac.ki.iif.hu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [GIT PULL] PM fix for 2.6.32
+Date: Sun, 29 Nov 2009 19:49:49 +0100
+Message-ID: <200911291949.49250.rjw__42916.8759649203$1259520659$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87skbx34ba.fsf@tac.ki.iif.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,27 +15,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: linux-pm@lists.linux-foundation.org, ext Dmitry Torokhov <dmitry.torokhov@gmail.com>, Mika Westerberg <mika.westerberg@iki.fi>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 29 Nov 2009, Ferenc Wagner wrote:
+Hi Linus,
 
-> Hi,
-> 
-> I thought we'd better ask our friends over at linux-pm, if they've got
-> some interface for this task.  To summarize: an embedded application
-> wants to go into a "locked" state, where some input devices (gpio keys
-> in this case) are "muted", ie. they don't even generate interrupts to
-> minimize power consumption.  This could be solved by adding a new
-> interface to gpio-keys, but the problem seems more general, so I wonder
-> if something like the USB selective runtime suspend is already available
-> (or preferable to develop) for such tasks.
-> 
-> (I hope I got the summary right; Mika will provide the missing bits if I
-> didn't.) 
+Please pull a power management fix for 2.6.32 from:
 
-See Documentation/power/runtime_pm.txt.  I don't know to what extent 
-the input layer has implemented any runtime PM.
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git pm-fixes
 
-Alan Stern
+This includes one change fixing irq enable/disable in runtime PM code.
+
+
+ drivers/base/power/runtime.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
+
+---------------
+
+Alan Stern (1):
+      PM: fix irq enable/disable in runtime PM code
