@@ -1,15 +1,14 @@
-From: Ferenc Wagner <wferi@niif.hu>
-Subject: Re: [PATCH v2 1/2] Input: gpio-keys - allow platform to
-	specify exact irq flags
-Date: Mon, 30 Nov 2009 21:51:02 +0100
-Message-ID: <87aay3losp.fsf__5181.55740942365$1259614337$gmane$org@tac.ki.iif.hu>
-References: <Pine.LNX.4.44L0.0911301424511.4478-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM: allow for usage_count > 0 in
+	pm_runtime_get()
+Date: Mon, 30 Nov 2009 22:06:27 +0100
+Message-ID: <200911302206.27960.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0911301132520.4478-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0911301424511.4478-100000@iolanthe.rowland.org>
-	(Alan Stern's message of "Mon, 30 Nov 2009 14:30:22 -0500 (EST)")
+In-Reply-To: <Pine.LNX.4.44L0.0911301132520.4478-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,94 +19,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Mika Westerberg <mika.westerberg@iki.fi>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+On Monday 30 November 2009, Alan Stern wrote:
+> This patch (as1308) fixes __pm_runtime_get().  Currently the routine
+> will resume a device if the prior usage count was 0.  But this isn't
+> right; thanks to pm_runtime_get_noresume() the usage count can be
+> positive even while the device is suspended.
+> 
+> Now the routine always tries to carry out a resume when called
+> synchronously.  When called asynchronously, it avoids the overhead of
+> an unnecessary spinlock acquisition by doing the resume only if the
+> device's state was SUSPENDING or SUSPENDED.
+> 
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-> On Mon, 30 Nov 2009, Ferenc Wagner wrote:
->
->>>> Also, it is not really runtime PM but rather user-initiated action of
->>>> putting device into lower power state we are talking about here.
->>>
->>> This is in fact the definition of runtime PM -- except for the
->>> "user-initiated" restriction (runtime PM can be initiated by anything
->>> or anybody).  So it really _is_ runtime PM.
->> 
->> But runtime-pm.txt says for example:
->> 
->>     Generally, remote wake-up should be enabled for all input devices
->>     put into a low power state at run time.
->> 
->> But in this case the requirement is to suppress input events from a
->> given device, effectively muting and putting it into low power state,
->> even though it's still open by some other parties.  Runtime PM, on the
->> other hand tries not to interfere with the normal usage of the device.
->
-> That's why the text says "Generally".  You're free to do it a different 
-> way if you want.
->
->> Later:
->> 
->> (3) ->runtime_idle() and ->runtime_suspend() can only be executed for a
->>     device the usage counter of which is equal to zero _and_ [...]
->> 
->> which underlines the difference again: the usage counter (defined by
->> common sense) won't be zero in our case, because the device is
->> constantly kept open, while we want to mute it, putting it into a low
->> power state.  Probably, the rules could be bent so that the platform
->> bus could suspend these devices and achieve our aim, but I'd consider
->> that an abuse of the runtime PM infrastructure.  Wouldn't you?
->
-> The usage counter can be set whenever you want; it doesn't have to be
-> incremented during open and decremented during close.  You could leave
-> it equal to 0 permanently.  Or you could make it nonzero precisely
-> during the times when you don't want the input to be muted.
+All three patches applied to suspend-2.6/linux-next.  Do you want me to push
+them to Linus before 2.6.32, or perhaps the $subject one only?
 
-And what would be the user space interface for controlling the power
-state of the device?  The documentation doesn't talk about this, and if
-we need to make up new ioctls or sysfs files, what do we gain by using
-the runtime PM framework?  Especially if there's no uniform (bus- and
-system-wide) semantics?
+Rafael
 
->> Actually, this could be implemented by the various users cooperating
->> in closing the device, letting it go to sleep automatically.  But
->> this requires strictly cooperating parties and is more complicated
->> that flipping some master switch of the device.  We're looking for
->> this master switch, before needlessly building our own.
->
-> Just out of curiosity, how do you decide when the input should be 
-> muted and unmuted?
 
-That's application logic.  For example, the user touches the "Lock"
-button, then slips the gadget into his pocket.  Then most other buttons
-(like volume control) are muted until the device is unlocked again by
-some very specific action.  My mobile phone doesn't work like this, it
-reacts to each button even when it's locked (though of course does
-nothing but says how to unlock it).
-
->>> But if you prefer to implement it without using the runtime PM 
->>> framework, that's fine.
->> 
->> We're also looking for a framework to implement it in.  Now I feel like
->> the runtime PM framework is not a good fit for what we want, but it's
->> the first time I'm reading its documentation, so please correct my
->> misunderstandings.  That's why I cross posted linux-pm, after all. :)
->
-> The framework was intended to be pretty flexible.  You should think it 
-> over a little more before deciding against it.
-
-Well, I thought runtime PM is intended to have some "common sense"
-semantics, so it can be automatic.  After all, it's perfectly reasonable
-for somebody else to want the "normal" runtime PM for gpio-keys: to
-autosuspend when not in use.  If we stole the callbacks for our purpose,
-the "expected" behaviour couldn't be implemented later.  In other words,
-the wanted behaviour is not device specific, but usage specific.  And
-the runtime suspend behaviour of a device can't be usage specific, it
-should match common expectations (to the extent it's possible to talk
-about common expectations wrt. runtime PM -- but you may still want to
-build one up).  Are these fears unfounded?  Is runtime PM not what I
-think it is?
--- 
-Thanks,
-Feri.
+> ---
+> 
+> Index: usb-2.6/drivers/base/power/runtime.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/base/power/runtime.c
+> +++ usb-2.6/drivers/base/power/runtime.c
+> @@ -703,16 +703,22 @@ EXPORT_SYMBOL_GPL(pm_request_resume);
+>   * @dev: Device to handle.
+>   * @sync: If set and the device is suspended, resume it synchronously.
+>   *
+> - * Increment the usage count of the device and if it was zero previously,
+> - * resume it or submit a resume request for it, depending on the value of @sync.
+> + * Increment the usage count of the device.  If @sync is set, resume the device
+> + * and wait for the resume to complete.  Otherwise if the device is currently
+> + * suspending or suspended, submit a resume request.
+> + *
+> + * If @sync is clear, the caller is responsible for synchronization.
+>   */
+>  int __pm_runtime_get(struct device *dev, bool sync)
+>  {
+> -	int retval = 1;
+> -
+> -	if (atomic_add_return(1, &dev->power.usage_count) == 1)
+> -		retval = sync ? pm_runtime_resume(dev) : pm_request_resume(dev);
+> +	int retval = 0;
+>  
+> +	atomic_inc(&dev->power.usage_count);
+> +	if (sync)
+> +		retval = pm_runtime_resume(dev);
+> +	else if (dev->power.runtime_status == RPM_SUSPENDING ||
+> +	    dev->power.runtime_status == RPM_SUSPENDED)
+> +		retval = pm_request_resume(dev);
+>  	return retval;
+>  }
+>  EXPORT_SYMBOL_GPL(__pm_runtime_get);
+> Index: usb-2.6/Documentation/power/runtime_pm.txt
+> ===================================================================
+> --- usb-2.6.orig/Documentation/power/runtime_pm.txt
+> +++ usb-2.6/Documentation/power/runtime_pm.txt
+> @@ -276,8 +276,9 @@ drivers/base/power/runtime.c and include
+>      - increment the device's usage counter
+>  
+>    int pm_runtime_get(struct device *dev);
+> -    - increment the device's usage counter, run pm_request_resume(dev) and
+> -      return its result
+> +    - increment the device's usage counter; if the device is currently
+> +      suspending or suspended then run pm_request_resume(dev) and return its
+> +      result
+>  
+>    int pm_runtime_get_sync(struct device *dev);
+>      - increment the device's usage counter, run pm_runtime_resume(dev) and
