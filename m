@@ -1,14 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v2 1/2] Input: gpio-keys - allow platform to
- specify exact irq flags
-Date: Mon, 30 Nov 2009 16:59:41 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0911301658240.4478-100000__30064.142184756$1259618507$gmane$org@iolanthe.rowland.org>
-References: <87aay3losp.fsf@tac.ki.iif.hu>
+Subject: Re: [PATCH] PM: allow for usage_count > 0 in
+	pm_runtime_get()
+Date: Mon, 30 Nov 2009 17:03:00 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0911301659460.4478-100000@iolanthe.rowland.org>
+References: <200911302206.27960.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87aay3losp.fsf@tac.ki.iif.hu>
+In-Reply-To: <200911302206.27960.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,36 +18,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: linux-pm@lists.linux-foundation.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Mika Westerberg <mika.westerberg@iki.fi>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 30 Nov 2009, Ferenc Wagner wrote:
+On Mon, 30 Nov 2009, Rafael J. Wysocki wrote:
 
-> > Just out of curiosity, how do you decide when the input should be 
-> > muted and unmuted?
+> On Monday 30 November 2009, Alan Stern wrote:
+> > This patch (as1308) fixes __pm_runtime_get().  Currently the routine
+> > will resume a device if the prior usage count was 0.  But this isn't
+> > right; thanks to pm_runtime_get_noresume() the usage count can be
+> > positive even while the device is suspended.
+> > 
+> > Now the routine always tries to carry out a resume when called
+> > synchronously.  When called asynchronously, it avoids the overhead of
+> > an unnecessary spinlock acquisition by doing the resume only if the
+> > device's state was SUSPENDING or SUSPENDED.
+> > 
+> > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 > 
-> That's application logic.  For example, the user touches the "Lock"
-> button, then slips the gadget into his pocket.  Then most other buttons
-> (like volume control) are muted until the device is unlocked again by
-> some very specific action.  My mobile phone doesn't work like this, it
-> reacts to each button even when it's locked (though of course does
-> nothing but says how to unlock it).
+> All three patches applied to suspend-2.6/linux-next.  Do you want me to push
+> them to Linus before 2.6.32, or perhaps the $subject one only?
 
-Okay.  This wasn't clear to me before.
+Thanks.  The patches are not urgently needed; they can wait until the 
+merge window.
 
-> Well, I thought runtime PM is intended to have some "common sense"
-> semantics, so it can be automatic.  After all, it's perfectly reasonable
-> for somebody else to want the "normal" runtime PM for gpio-keys: to
-> autosuspend when not in use.  If we stole the callbacks for our purpose,
-> the "expected" behaviour couldn't be implemented later.  In other words,
-> the wanted behaviour is not device specific, but usage specific.  And
-> the runtime suspend behaviour of a device can't be usage specific, it
-> should match common expectations (to the extent it's possible to talk
-> about common expectations wrt. runtime PM -- but you may still want to
-> build one up).  Are these fears unfounded?  Is runtime PM not what I
-> think it is?
-
-No, you are right.  Runtime PM is not well suited for this purpose.
+BTW, I just noticed that the runtime_idle method is documented as 
+returning void but defined in pm.h as returning int.  Obviously the 
+definition is wrong, since no return value is ever used.  Would you 
+like to fix it?
 
 Alan Stern
