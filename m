@@ -1,7 +1,7 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH] PM: use deferred_resume flag in pm_request_resume
-Date: Mon, 30 Nov 2009 11:32:51 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0911301131510.4478-100000@iolanthe.rowland.org>
+Subject: [PATCH] PM: allow for usage_count > 0 in pm_runtime_get()
+Date: Mon, 30 Nov 2009 11:35:03 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0911301132520.4478-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,15 +19,15 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch (as1307) adds a small optimization to
-__pm_request_resume().  If the device is currently being suspended,
-there's no need to queue a work routine to resume it.  Setting the
-deferred_resume flag will suffice.  (There's also a minor improvement
-to the function's code layout: An unnecessary "else" is removed.)
+This patch (as1308) fixes __pm_runtime_get().  Currently the routine
+will resume a device if the prior usage count was 0.  But this isn't
+right; thanks to pm_runtime_get_noresume() the usage count can be
+positive even while the device is suspended.
 
-Also, the patch clarifies the usage of the deferred_resume flag.  It
-is meaningful only while a suspend is in progress, so it should be
-cleared just before a suspend starts, not just after one ends.
+Now the routine always tries to carry out a resume when called
+synchronously.  When called asynchronously, it avoids the overhead of
+an unnecessary spinlock acquisition by doing the resume only if the
+device's state was SUSPENDING or SUSPENDED.
 
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
@@ -37,47 +37,48 @@ Index: usb-2.6/drivers/base/power/runtime.c
 ===================================================================
 --- usb-2.6.orig/drivers/base/power/runtime.c
 +++ usb-2.6/drivers/base/power/runtime.c
-@@ -189,6 +189,7 @@ int __pm_runtime_suspend(struct device *
- 	}
+@@ -703,16 +703,22 @@ EXPORT_SYMBOL_GPL(pm_request_resume);
+  * @dev: Device to handle.
+  * @sync: If set and the device is suspended, resume it synchronously.
+  *
+- * Increment the usage count of the device and if it was zero previously,
+- * resume it or submit a resume request for it, depending on the value of @sync.
++ * Increment the usage count of the device.  If @sync is set, resume the device
++ * and wait for the resume to complete.  Otherwise if the device is currently
++ * suspending or suspended, submit a resume request.
++ *
++ * If @sync is clear, the caller is responsible for synchronization.
+  */
+ int __pm_runtime_get(struct device *dev, bool sync)
+ {
+-	int retval = 1;
+-
+-	if (atomic_add_return(1, &dev->power.usage_count) == 1)
+-		retval = sync ? pm_runtime_resume(dev) : pm_request_resume(dev);
++	int retval = 0;
  
- 	dev->power.runtime_status = RPM_SUSPENDING;
-+	dev->power.deferred_resume = false;
++	atomic_inc(&dev->power.usage_count);
++	if (sync)
++		retval = pm_runtime_resume(dev);
++	else if (dev->power.runtime_status == RPM_SUSPENDING ||
++	    dev->power.runtime_status == RPM_SUSPENDED)
++		retval = pm_request_resume(dev);
+ 	return retval;
+ }
+ EXPORT_SYMBOL_GPL(__pm_runtime_get);
+Index: usb-2.6/Documentation/power/runtime_pm.txt
+===================================================================
+--- usb-2.6.orig/Documentation/power/runtime_pm.txt
++++ usb-2.6/Documentation/power/runtime_pm.txt
+@@ -276,8 +276,9 @@ drivers/base/power/runtime.c and include
+     - increment the device's usage counter
  
- 	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend) {
- 		spin_unlock_irq(&dev->power.lock);
-@@ -204,7 +205,6 @@ int __pm_runtime_suspend(struct device *
- 	if (retval) {
- 		dev->power.runtime_status = RPM_ACTIVE;
- 		pm_runtime_cancel_pending(dev);
--		dev->power.deferred_resume = false;
+   int pm_runtime_get(struct device *dev);
+-    - increment the device's usage counter, run pm_request_resume(dev) and
+-      return its result
++    - increment the device's usage counter; if the device is currently
++      suspending or suspended then run pm_request_resume(dev) and return its
++      result
  
- 		if (retval == -EAGAIN || retval == -EBUSY) {
- 			notify = true;
-@@ -221,7 +221,6 @@ int __pm_runtime_suspend(struct device *
- 	wake_up_all(&dev->power.wait_queue);
- 
- 	if (dev->power.deferred_resume) {
--		dev->power.deferred_resume = false;
- 		__pm_runtime_resume(dev, false);
- 		retval = -EAGAIN;
- 		goto out;
-@@ -663,13 +662,17 @@ static int __pm_request_resume(struct de
- 
- 	pm_runtime_deactivate_timer(dev);
- 
-+	if (dev->power.runtime_status == RPM_SUSPENDING) {
-+		dev->power.deferred_resume = true;
-+		return retval;
-+	}
- 	if (dev->power.request_pending) {
- 		/* If non-resume request is pending, we can overtake it. */
- 		dev->power.request = retval ? RPM_REQ_NONE : RPM_REQ_RESUME;
- 		return retval;
--	} else if (retval) {
--		return retval;
- 	}
-+	if (retval)
-+		return retval;
- 
- 	dev->power.request = RPM_REQ_RESUME;
- 	dev->power.request_pending = true;
+   int pm_runtime_get_sync(struct device *dev);
+     - increment the device's usage counter, run pm_runtime_resume(dev) and
