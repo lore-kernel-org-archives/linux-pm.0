@@ -1,15 +1,14 @@
-From: Ferenc Wagner <wferi@niif.hu>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH v2 1/2] Input: gpio-keys - allow platform to
-	specify exact irq flags
-Date: Mon, 30 Nov 2009 20:05:12 +0100
-Message-ID: <87einfltp3.fsf__40718.3003066622$1259608117$gmane$org@tac.ki.iif.hu>
-References: <Pine.LNX.4.44L0.0911300956400.4478-100000@iolanthe.rowland.org>
+ specify exact irq flags
+Date: Mon, 30 Nov 2009 14:30:22 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0911301424511.4478-100000__40878.5942629494$1259609492$gmane$org@iolanthe.rowland.org>
+References: <87einfltp3.fsf@tac.ki.iif.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0911300956400.4478-100000@iolanthe.rowland.org>
-	(Alan Stern's message of "Mon, 30 Nov 2009 10:00:19 -0500 (EST)")
+In-Reply-To: <87einfltp3.fsf@tac.ki.iif.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,76 +18,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Ferenc Wagner <wferi@niif.hu>
 Cc: linux-pm@lists.linux-foundation.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Mika Westerberg <mika.westerberg@iki.fi>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+On Mon, 30 Nov 2009, Ferenc Wagner wrote:
 
-> On Mon, 30 Nov 2009, Dmitry Torokhov wrote:
->
->> On Sun, Nov 29, 2009 at 11:04:57AM -0500, Alan Stern wrote:
->>
->>> On Sun, 29 Nov 2009, Ferenc Wagner wrote:
->>> 
->>>> I thought we'd better ask our friends over at linux-pm, if they've got
->>>> some interface for this task.  To summarize: an embedded application
->>>> wants to go into a "locked" state, where some input devices (gpio keys
->>>> in this case) are "muted", ie. they don't even generate interrupts to
->>>> minimize power consumption.  This could be solved by adding a new
->>>> interface to gpio-keys, but the problem seems more general, so I wonder
->>>> if something like the USB selective runtime suspend is already available
->>>> (or preferable to develop) for such tasks.
->>> 
->>> See Documentation/power/runtime_pm.txt.  I don't know to what extent 
->>> the input layer has implemented any runtime PM.
->> 
->> Input layer is not implementing any PM since it consists of virtual, not
->> physical devices, and leaves PM for the appropriate bus drivers (USB,
->> serio, platform, etc.).
->> 
->> Also, it is not really runtime PM but rather user-initiated action of
->> putting device into lower power state we are talking about here.
->
-> This is in fact the definition of runtime PM -- except for the
-> "user-initiated" restriction (runtime PM can be initiated by anything
-> or anybody).  So it really _is_ runtime PM.
+> >> Also, it is not really runtime PM but rather user-initiated action of
+> >> putting device into lower power state we are talking about here.
+> >
+> > This is in fact the definition of runtime PM -- except for the
+> > "user-initiated" restriction (runtime PM can be initiated by anything
+> > or anybody).  So it really _is_ runtime PM.
+> 
+> But runtime-pm.txt says for example:
+> 
+>     Generally, remote wake-up should be enabled for all input devices
+>     put into a low power state at run time.
+> 
+> But in this case the requirement is to suppress input events from a
+> given device, effectively muting and putting it into low power state,
+> even though it's still open by some other parties.  Runtime PM, on the
+> other hand tries not to interfere with the normal usage of the device.
 
-But runtime-pm.txt says for example:
+That's why the text says "Generally".  You're free to do it a different 
+way if you want.
 
-    Generally, remote wake-up should be enabled for all input devices
-    put into a low power state at run time.
+> Later:
+> 
+> (3) ->runtime_idle() and ->runtime_suspend() can only be executed for a
+>     device the usage counter of which is equal to zero _and_ [...]
+> 
+> which underlines the difference again: the usage counter (defined by
+> common sense) won't be zero in our case, because the device is
+> constantly kept open, while we want to mute it, putting it into a low
+> power state.  Probably, the rules could be bent so that the platform bus
+> could suspend these devices and achieve our aim, but I'd consider that
+> an abuse of the runtime PM infrastructure.  Don't you?
 
-But in this case the requirement is to suppress input events from a
-given device, effectively muting and putting it into low power state,
-even though it's still open by some other parties.  Runtime PM, on the
-other hand tries not to interfere with the normal usage of the device.
+The usage counter can be set whenever you want; it doesn't have to be 
+incremented during open and decremented during close.  You could leave 
+it equal to 0 permanently.  Or you could make it nonzero precisely 
+during the times when you don't want the input to be muted.
 
-Later:
+> Actually, this could be implemented by the various users cooperating in
+> closing the device, letting it go to sleep automatically.  But this
+> requires strictly cooperating parties and is more complicated that
+> flipping some master switch of the device.  We're looking for this
+> master switch, before needlessly building our own.
 
-(3) ->runtime_idle() and ->runtime_suspend() can only be executed for a
-    device the usage counter of which is equal to zero _and_ [...]
+Just out of curiosity, how do you decide when the input should be 
+muted and unmuted?
 
-which underlines the difference again: the usage counter (defined by
-common sense) won't be zero in our case, because the device is
-constantly kept open, while we want to mute it, putting it into a low
-power state.  Probably, the rules could be bent so that the platform bus
-could suspend these devices and achieve our aim, but I'd consider that
-an abuse of the runtime PM infrastructure.  Don't you?
+> > But if you prefer to implement it without using the runtime PM 
+> > framework, that's fine.
+> 
+> We're also looking for a framework to implement it in.  Now I feel like
+> the runtime PM framework is not a good fit for what we want, but it's
+> the first time I'm reading its documentation, so please correct my
+> misunderstandings.  That's why I cross posted linux-pm, after all. :)
 
-Actually, this could be implemented by the various users cooperating in
-closing the device, letting it go to sleep automatically.  But this
-requires strictly cooperating parties and is more complicated that
-flipping some master switch of the device.  We're looking for this
-master switch, before needlessly building our own.
+The framework was intended to be pretty flexible.  You should think it 
+over a little more before deciding against it.
 
-> But if you prefer to implement it without using the runtime PM 
-> framework, that's fine.
-
-We're also looking for a framework to implement it in.  Now I feel like
-the runtime PM framework is not a good fit for what we want, but it's
-the first time I'm reading its documentation, so please correct my
-misunderstandings.  That's why I cross posted linux-pm, after all. :)
--- 
-Thanks,
-Feri.
+Alan Stern
