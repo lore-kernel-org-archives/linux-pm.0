@@ -1,15 +1,15 @@
 From: Ferenc Wagner <wferi@niif.hu>
-Subject: Re: [PATCH v2 1/2] Input: gpio-keys - allow platform to
-	specify exact irq flags
-Date: Tue, 01 Dec 2009 11:08:04 +0100
-Message-ID: <873a3v2eij.fsf__13306.2973655344$1259662201$gmane$org@tac.ki.iif.hu>
-References: <Pine.LNX.4.44L0.0911301658240.4478-100000@iolanthe.rowland.org>
+Subject: Re: intermittent suspend problem again
+Date: Tue, 01 Dec 2009 11:29:54 +0100
+Message-ID: <87y6ln0yxp.fsf__29108.0191419043$1259663560$gmane$org@tac.ki.iif.hu>
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911290129.25505.rjw@sisk.pl>
+	<873a3x4p36.fsf@tac.ki.iif.hu> <200911291607.05348.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0911301658240.4478-100000@iolanthe.rowland.org>
-	(Alan Stern's message of "Mon, 30 Nov 2009 16:59:41 -0500 (EST)")
+In-Reply-To: <200911291607.05348.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Sun, 29 Nov 2009 16:07:05 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,16 +19,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Mika Westerberg <mika.westerberg@iki.fi>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, linux-netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> Runtime PM is not well suited for this purpose.
+> On Sunday 29 November 2009, Ferenc Wagner wrote:
+>
+>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>> 
+>>> On Saturday 28 November 2009, Ferenc Wagner wrote:
+>>>
+>>>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>>>> 
+>>>>> Compile with CONFIG_PM_VERBOSE (it does mean exactly that).
+>>>> 
+>>>> The last message now was:
+>>>> 
+>>>> e100: 0000:02:08.0: hibernate, may wakeup
+>>>> 
+>>>> Looks like hibernating the e100 driver is unstable.
+>>>
+>>> Can you verify that by trying to hibernate without the e100 driver?
+>> 
+>> Not really, as I still can't reliable reproduce the issue.  Since I'm
+>> running with suspend loglevel = 8, it's happened only twice (in a row),
+>> with seemingly exact same console output.  Some earlier freezes also
+>> happened in dpm_suspend_start, at least.  However, I can certainly add
+>> e100 to SUSPEND_MODULES under /etc/pm/config.d, and continue running
+>> with that.
+>
+> That's what I'd do.
 
-So the question is: is there some other PM framework which would be a
-good fit for this "forced manual selective suspend" use case?
+That worked out mosty OK (no freeze in quite some hibernation cycles),
+but I'm continuing testing it.
+
+On the other hand, I reverted 8fbd962e3, recompiled and replaced the
+module, and got the freeze during hibernation.  And that was the bulk of
+the changes since 2.6.31...  I'll revert the rest and test again, but
+that seems purely cosmetic, so no high hopes.
+
+> In addition to that, you can run multiple hibernation/resume cycles in
+> a tight loop using the RTC wakealarm.
+
+I'll do so, as soon as I find a way to automatically supply the dm-crypt
+passphrase... or even better, learn to hibernate to ramdisk from the
+initramfs. :)
 -- 
-Thanks,
+Cheers,
 Feri.
