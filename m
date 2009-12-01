@@ -1,14 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: intermittent suspend problem again
-Date: Tue, 1 Dec 2009 13:28:15 +0100
-Message-ID: <200912011328.15551.rjw__14421.1079030812$1259670513$gmane$org@sisk.pl>
-References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200911291607.05348.rjw@sisk.pl>
-	<87y6ln0yxp.fsf@tac.ki.iif.hu>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: [PATCH] clocksource: Add suspend callback
+Date: Tue, 01 Dec 2009 23:36:39 +0900
+Message-ID: <20091201143639.15075.36789.sendpatchset__10268.4793797836$1259678709$gmane$org@rxone.opensource.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87y6ln0yxp.fsf@tac.ki.iif.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,58 +15,89 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: linux-pm@lists.linux-foundation.org, linux-netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: johnstul@us.ibm.com, tglx@linutronix.de, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 01 December 2009, Ferenc Wagner wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > On Sunday 29 November 2009, Ferenc Wagner wrote:
-> >
-> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >> 
-> >>> On Saturday 28 November 2009, Ferenc Wagner wrote:
-> >>>
-> >>>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >>>> 
-> >>>>> Compile with CONFIG_PM_VERBOSE (it does mean exactly that).
-> >>>> 
-> >>>> The last message now was:
-> >>>> 
-> >>>> e100: 0000:02:08.0: hibernate, may wakeup
-> >>>> 
-> >>>> Looks like hibernating the e100 driver is unstable.
-> >>>
-> >>> Can you verify that by trying to hibernate without the e100 driver?
-> >> 
-> >> Not really, as I still can't reliable reproduce the issue.  Since I'm
-> >> running with suspend loglevel = 8, it's happened only twice (in a row),
-> >> with seemingly exact same console output.  Some earlier freezes also
-> >> happened in dpm_suspend_start, at least.  However, I can certainly add
-> >> e100 to SUSPEND_MODULES under /etc/pm/config.d, and continue running
-> >> with that.
-> >
-> > That's what I'd do.
-> 
-> That worked out mosty OK (no freeze in quite some hibernation cycles),
-> but I'm continuing testing it.
+From: Magnus Damm <damm@opensource.se>
 
-Great, please let me know how it works out.
+Add a clocksource suspend callback. This callback can
+be used by the clocksource driver to shutdown and perform
+any kind of late suspend activities even though the
+clocksource driver itself is a non-sysdev driver.
 
-> On the other hand, I reverted 8fbd962e3, recompiled and replaced the
-> module, and got the freeze during hibernation.  And that was the bulk of
-> the changes since 2.6.31...  I'll revert the rest and test again, but
-> that seems purely cosmetic, so no high hopes.
-> 
-> > In addition to that, you can run multiple hibernation/resume cycles in
-> > a tight loop using the RTC wakealarm.
-> 
-> I'll do so, as soon as I find a way to automatically supply the dm-crypt
-> passphrase... or even better, learn to hibernate to ramdisk from the
-> initramfs. :)
+One example where this is useful is to fix the sh_cmt.c
+platform driver that today suspends using the platform bus
+and shuts down the clocksource too early.
 
-Well, you don't need to use swap encryptuon for _testing_. :-)
+With this callback in place the sh_cmt driver will suspend
+using the clocksource and clockevent hooks and leave the
+platform device pm callbacks unused.
 
-Thanks,
-Rafael
+Signed-off-by: Magnus Damm <damm@opensource.se>
+---
+
+ Applies to linux-next
+
+ include/linux/clocksource.h |    3 +++
+ kernel/time/clocksource.c   |   12 ++++++++++++
+ kernel/time/timekeeping.c   |    1 +
+ 3 files changed, 16 insertions(+)
+
+--- 0002/include/linux/clocksource.h
++++ work/include/linux/clocksource.h	2009-11-30 13:31:40.000000000 +0900
+@@ -154,6 +154,7 @@ extern u64 timecounter_cyc2time(struct t
+  * @max_idle_ns:	max idle time permitted by the clocksource (nsecs)
+  * @flags:		flags describing special properties
+  * @vread:		vsyscall based read
++ * @suspend:		suspend function for the clocksource, if necessary
+  * @resume:		resume function for the clocksource, if necessary
+  */
+ struct clocksource {
+@@ -172,6 +173,7 @@ struct clocksource {
+ 	u64 max_idle_ns;
+ 	unsigned long flags;
+ 	cycle_t (*vread)(void);
++	void (*suspend)(struct clocksource *cs);
+ 	void (*resume)(struct clocksource *cs);
+ #ifdef CONFIG_IA64
+ 	void *fsys_mmio;        /* used by fsyscall asm code */
+@@ -277,6 +279,7 @@ extern void clocksource_unregister(struc
+ extern void clocksource_touch_watchdog(void);
+ extern struct clocksource* clocksource_get_next(void);
+ extern void clocksource_change_rating(struct clocksource *cs, int rating);
++extern void clocksource_suspend(void);
+ extern void clocksource_resume(void);
+ extern struct clocksource * __init __weak clocksource_default_clock(void);
+ 
+--- 0002/kernel/time/clocksource.c
++++ work/kernel/time/clocksource.c	2009-11-30 13:30:52.000000000 +0900
+@@ -441,6 +441,18 @@ static inline int clocksource_watchdog_k
+ #endif /* CONFIG_CLOCKSOURCE_WATCHDOG */
+ 
+ /**
++ * clocksource_suspend - suspend the clocksource(s)
++ */
++void clocksource_suspend(void)
++{
++	struct clocksource *cs;
++
++	list_for_each_entry_reverse(cs, &clocksource_list, list)
++		if (cs->suspend)
++			cs->suspend(cs);
++}
++
++/**
+  * clocksource_resume - resume the clocksource(s)
+  */
+ void clocksource_resume(void)
+--- 0001/kernel/time/timekeeping.c
++++ work/kernel/time/timekeeping.c	2009-11-30 13:42:56.000000000 +0900
+@@ -611,6 +611,7 @@ static int timekeeping_suspend(struct sy
+ 	write_sequnlock_irqrestore(&xtime_lock, flags);
+ 
+ 	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
++	clocksource_suspend();
+ 
+ 	return 0;
+ }
