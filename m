@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: allow for usage_count > 0 in
-	pm_runtime_get()
-Date: Mon, 30 Nov 2009 23:17:39 +0100
-Message-ID: <200911302317.39241.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0911301659460.4478-100000@iolanthe.rowland.org>
+From: "Rodolfo (kix)" <kix@kix.es>
+Subject: Re: New Database File
+Date: Tue, 1 Dec 2009 08:54:46 +0100
+Message-ID: <3096bd910911302354va464c88w214c0b0f920ff0af__12968.7560293407$1259654179$gmane$org@mail.gmail.com>
+References: <3096bd910911230306r36b3bba1jc7916c2416b5df4d@mail.gmail.com>
+	<20091123203833.GC16489@elf.ucw.cz> <200911300016.40349.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0911301659460.4478-100000@iolanthe.rowland.org>
+In-Reply-To: <200911300016.40349.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,38 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, Jamalulkhair Khairedin <jalut78@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 30 November 2009, Alan Stern wrote:
-> On Mon, 30 Nov 2009, Rafael J. Wysocki wrote:
-> 
-> > On Monday 30 November 2009, Alan Stern wrote:
-> > > This patch (as1308) fixes __pm_runtime_get().  Currently the routine
-> > > will resume a device if the prior usage count was 0.  But this isn't
-> > > right; thanks to pm_runtime_get_noresume() the usage count can be
-> > > positive even while the device is suspended.
-> > > 
-> > > Now the routine always tries to carry out a resume when called
-> > > synchronously.  When called asynchronously, it avoids the overhead of
-> > > an unnecessary spinlock acquisition by doing the resume only if the
-> > > device's state was SUSPENDING or SUSPENDED.
-> > > 
-> > > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> > 
-> > All three patches applied to suspend-2.6/linux-next.  Do you want me to push
-> > them to Linus before 2.6.32, or perhaps the $subject one only?
-> 
-> Thanks.  The patches are not urgently needed; they can wait until the 
-> merge window.
-> 
-> BTW, I just noticed that the runtime_idle method is documented as 
-> returning void but defined in pm.h as returning int.  Obviously the 
-> definition is wrong, since no return value is ever used.  Would you 
-> like to fix it?
+Thanks.
 
-Yes, I'll fix it, thanks for chatching this!
+On Mon, Nov 30, 2009 at 12:16 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Monday 23 November 2009, Pavel Machek wrote:
+>> On Mon 2009-11-23 12:06:32, Rodolfo (kix) wrote:
+>> > Hi,
+>> >
+>> > new database file:
+>> > * Deleted duplicated entries
+>> > * New Machine - HP Compaq 6520s
+>> > * Sort
+>>
+>> Looks ok to me.
+>
+> Applied.
+>
+> Thanks,
+> Rafael
+>
 
-Best,
-Rafael
+
+
+-- =
+
+Rodolfo Garc=EDa "kix"
+EA4ERH - IN80ER
