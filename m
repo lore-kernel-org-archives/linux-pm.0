@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v2 1/2] Input: gpio-keys - allow platform to
- specify exact irq flags
-Date: Tue, 1 Dec 2009 10:11:50 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912011011390.2983-100000__35866.5614425719$1259680386$gmane$org@iolanthe.rowland.org>
-References: <873a3v2eij.fsf@tac.ki.iif.hu>
+From: Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH v6 7/8] Loongson: YeeLoong: add suspend driver
+Date: Tue, 1 Dec 2009 15:18:05 +0000
+Message-ID: <20091201151805.GA23019__36814.0858052813$1259680748$gmane$org@linux-mips.org>
+References: <cover.1259660040.git.wuzhangjin@gmail.com>
+	<2574dde59f2e54ef9fa80423a7f02ed32eab7ab4.1259664573.git.wuzhangjin@gmail.com>
+	<200912011324.29486.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <873a3v2eij.fsf@tac.ki.iif.hu>
+Content-Disposition: inline
+In-Reply-To: <200912011324.29486.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,19 +20,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: linux-pm@lists.linux-foundation.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Mika Westerberg <mika.westerberg@iki.fi>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-mips@linux-mips.org, linux-pm@lists.linux-foundation.org, zhangfx@lemote.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 1 Dec 2009, Ferenc Wagner wrote:
+On Tue, Dec 01, 2009 at 01:24:29PM +0100, Rafael J. Wysocki wrote:
 
-> Alan Stern <stern@rowland.harvard.edu> writes:
+> On Tuesday 01 December 2009, Wu Zhangin wrote:
+> > From: Wu Zhangjin <wuzhangjin@gmail.com>
+> > 
+> > This patch adds Suspend Driver, which will suspend the YeeLoong Platform
+> > specific devices.
+> > 
+> > Acked-by: Pavel Machek <pavel@ucw.cz>
+> > Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
 > 
-> > Runtime PM is not well suited for this purpose.
-> 
-> So the question is: is there some other PM framework which would be a
-> good fit for this "forced manual selective suspend" use case?
+> I'm still not sure how useful it is to build it as a module, but otherwise
 
-None that I know of.
+I think I agree with that.  Maybe even one step further and just build
+this code depending on CONFIG_PM or similar?
 
-Alan Stern
+  Ralf
