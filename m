@@ -1,15 +1,13 @@
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: Re: Bisected: s2disk (uswsusp only) hangs just before
-	poweroff
-Date: Tue, 01 Dec 2009 13:14:22 -0800
-Message-ID: <4B15872E.2070707__850.364709231322$1259702147$gmane$org@gmail.com>
-References: <4B1575AC.6080904@tuffmail.co.uk> <4B157B81.9050703@gmail.com>
-	<4B157C29.6090805@tuffmail.co.uk>
+From: mark gross <mgross@linux.intel.com>
+Subject: [PATCH]PM_QOS-to-use-handle-based-requests-API-change 1/5
+Date: Tue, 1 Dec 2009 13:29:02 -0800
+Message-ID: <20091201212902.GA19688__37095.4978898682$1259703015$gmane$org@linux.intel.com>
+Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4B157C29.6090805@tuffmail.co.uk>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,111 +17,456 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: Mel Gorman <mel@csn.ul.ie>, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: linux-pm <linux-pm@lists.linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12/01/09 12:27, Alan Jenkins wrote:
-> Justin P. Mattock wrote:
->> On 12/01/09 11:59, Alan Jenkins wrote:
->>> Hi
->>>
->>> Suspend to disk is (sometimes) hanging for me in 2.6.32-rc. I finally
->>> got around to bisecting it, which blamed the following commit by Mel:
->>>
->>> 5f8dcc2 "page-allocator: split per-cpu list into
->>> one-list-per-migrate-type"
->>>
->>> I was able to confirm this by reverting the commit, which fixed the
->>> hang. I had to revert one other commit first to avoid a conflict:
->>>
->>> a6f9edd "page-allocator: maintain rolling count of pages to free from
->>> the PCP"
->>>
->>> -- detail --
->>>
->>> When I suspend my EeePc 701 to disk, it sometimes hangs after writing
->>> out the hibernation image. The system is still able to resume from this
->>> image (after working around the hang by pressing the power button).
->>> This is specific to s2disk from the uswsusp package (which is now
->>> installed by default on debian unstable). It doesn't happen if I
->>> uninstall uswsusp and use the in-kernel suspend instead.
->>>
->>> The hang doesn't happen if I boot with "init=/bin/bash" and run s2disk.
->>> Nor does it happen if I boot normally, then switch to single user mode
->>> ("telinit 12").
->>>
->>> It only happens if I've logged in to KDE. In the past, this has
->>> indicated a problem in a network driver, since NetworkManager only made
->>> a connection once I logged in. But it still hangs if I remove both ath5k
->>> and atl2 before I log into KDE. (I actually tried removing as many
->>> modules as possible: atl2, ath5k, usbcore, snd-hda-intel, psmouse,
->>> pcspkr, battery, ac, themal, fan, and eeepc-laptop). Perhaps it's
->>> something to do with the size of the hibernation image.
->>>
->>> -- confidence in the bisection result --
->>>
->>> The randomness was a bit annoying, but it's not too bad. The hang would
->>> normally show up in the first 3 hibernation cycles; I don't remember
->>> having to wait more than 6.
->>>
->>> I wrote a script to do s2disk + rtcwake so I could leave it testing
->>> without constantly hitting the power button. This let me test 2.6.32-rc8
->>> with the reverts for at least 20 hibernation cycles.
->>>
->>> Regards
->>> Alan
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe
->>> linux-kernel" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at http://vger.kernel.org/majordomo-info.html
->>> Please read the FAQ at http://www.tux.org/lkml/
->>>
->>
->> hmm.. maybe this is what I'm seeing over here
->> i.g. on my macbook(ati gpu) the first s2ram will
->> lagg for about 30/40 secs before waking up
->> then every other cycle afterwards reacts as it should.
->> Threw in kernels 2.6.30,31 before doing anything
->> but showed the same results, leading me to beleive maybe
->> I have some userspace issue(libx86)going on.
->>
->> I'll try reverting that commit to see.
->>
->> Thanks
->>
->> Justin P. Mattock
->
-> I don't expect so. My problem doesn't affect s2ram. And as far as I can
-> tell, my hang is forever... it's more than just 40 seconds.
->
-> Regards
-> Alan
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at http://www.tux.org/lkml/
->
+This is the first in a 5 part series that attempts to update PM_QOS to
+use handles instead of named strings in its kernel api.  It seams that
+some folks are using pm_qos on hot paths and the overhead of the list
+walks and string compares is a problem.
 
-then weve two totally different issues.
+Most of the changes came from aili@codeaurora.org, and I spent some time
+cleaning up the API.
 
-looking more into it, I think my problem
-is somewhere in udev i.e.
-I get stuckage during boot becuase of some
-rule in rules.d for about the same time
-as what I see with s2ram.
+Also, I couldn't resist myself in renaming the API's a bit give the fact
+that the signatures changed enough that I had to touch all the pm_qos
+users anyway.  I changed *requirement* to *request* in keeping with the
+way PM_QOS really only does best effort.  I've felt "requirement" is too
+strong a word for the way it works.
 
-my guess udev is sitting with some command
-in *.rules in of which doesn't
-know what to do(reason for 30 secs)before
-going onto the next task.
-(but could be wrong).
+If folks would rather me do the function re-naming in a separate patch
+set we can do that too.
 
-interesting thing is my other machine
-all though different, is running the same
-udev and rules with no problem.
+diffstat for the series:
+ drivers/acpi/processor_idle.c          |    2 
+ drivers/cpuidle/governors/ladder.c     |    2 
+ drivers/cpuidle/governors/menu.c       |    2 
+ drivers/net/e1000e/netdev.c            |   13 +-
+ drivers/net/igbvf/netdev.c             |    5 
+ drivers/net/wireless/ipw2x00/ipw2100.c |   11 +
+ include/linux/pm_qos_params.h          |   14 +-
+ include/sound/pcm.h                    |    3 
+ kernel/pm_qos_params.c                 |  183
+++++++++++++++-------------------
+ net/mac80211/mlme.c                    |    2 
+ sound/core/pcm.c                       |    3 
+ sound/core/pcm_native.c                |   14 +-
+ 12 files changed, 116 insertions(+), 138 deletions(-)
+
+--mgross
+
+Signed-off-by: mark gross <mgross@linux.intel.com>
 
 
-Justin P. Mattock
+>From ac8cba64efd086720ce949e46e0839115520be2e Mon Sep 17 00:00:00 2001
+From: mark gross <mgross@mgross-hp8510w.(none)>
+Date: Tue, 1 Dec 2009 12:57:52 -0800
+Subject: [PATCH 1/5] PM_QOS to use handle based requests API change
+
+---
+ include/linux/pm_qos_params.h |   14 ++--
+ kernel/pm_qos_params.c        |  183 ++++++++++++++++++-----------------------
+ 2 files changed, 87 insertions(+), 110 deletions(-)
+
+diff --git a/include/linux/pm_qos_params.h b/include/linux/pm_qos_params.h
+index d74f75e..8ba440e 100644
+--- a/include/linux/pm_qos_params.h
++++ b/include/linux/pm_qos_params.h
+@@ -14,12 +14,14 @@
+ #define PM_QOS_NUM_CLASSES 4
+ #define PM_QOS_DEFAULT_VALUE -1
+ 
+-int pm_qos_add_requirement(int qos, char *name, s32 value);
+-int pm_qos_update_requirement(int qos, char *name, s32 new_value);
+-void pm_qos_remove_requirement(int qos, char *name);
++struct pm_qos_request_list;
+ 
+-int pm_qos_requirement(int qos);
++struct pm_qos_request_list *pm_qos_add_request(int pm_qos_class, s32 value);
++void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
++		s32 new_value);
++void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req);
+ 
+-int pm_qos_add_notifier(int qos, struct notifier_block *notifier);
+-int pm_qos_remove_notifier(int qos, struct notifier_block *notifier);
++int pm_qos_request(int pm_qos_class);
++int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
++int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
+ 
+diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+index dfdec52..a327e95 100644
+--- a/kernel/pm_qos_params.c
++++ b/kernel/pm_qos_params.c
+@@ -2,7 +2,7 @@
+  * This module exposes the interface to kernel space for specifying
+  * QoS dependencies.  It provides infrastructure for registration of:
+  *
+- * Dependents on a QoS value : register requirements
++ * Dependents on a QoS value : register requests
+  * Watchers of QoS value : get notified when target QoS value changes
+  *
+  * This QoS design is best effort based.  Dependents register their QoS needs.
+@@ -14,14 +14,14 @@
+  * timeout: usec <-- currently not used.
+  * throughput: kbs (kilo byte / sec)
+  *
+- * There are lists of pm_qos_objects each one wrapping requirements, notifiers
++ * There are lists of pm_qos_objects each one wrapping requests, notifiers
+  *
+- * User mode requirements on a QOS parameter register themselves to the
++ * User mode requests on a QOS parameter register themselves to the
+  * subsystem by opening the device node /dev/... and writing there request to
+  * the node.  As long as the process holds a file handle open to the node the
+  * client continues to be accounted for.  Upon file release the usermode
+- * requirement is removed and a new qos target is computed.  This way when the
+- * requirement that the application has is cleaned up when closes the file
++ * request is removed and a new qos target is computed.  This way when the
++ * request that the application has is cleaned up when closes the file
+  * pointer or exits the pm_qos_object will get an opportunity to clean up.
+  *
+  * Mark Gross <mgross@linux.intel.com>
+@@ -43,25 +43,25 @@
+ #include <linux/uaccess.h>
+ 
+ /*
+- * locking rule: all changes to requirements or notifiers lists
++ * locking rule: all changes to requests or notifiers lists
+  * or pm_qos_object list and pm_qos_objects need to happen with pm_qos_lock
+  * held, taken with _irqsave.  One lock to rule them all
+  */
+-struct requirement_list {
++struct pm_qos_request_list {
+ 	struct list_head list;
+ 	union {
+ 		s32 value;
+ 		s32 usec;
+ 		s32 kbps;
+ 	};
+-	char *name;
++	int pm_qos_class;
+ };
+ 
+ static s32 max_compare(s32 v1, s32 v2);
+ static s32 min_compare(s32 v1, s32 v2);
+ 
+ struct pm_qos_object {
+-	struct requirement_list requirements;
++	struct pm_qos_request_list requests;
+ 	struct blocking_notifier_head *notifiers;
+ 	struct miscdevice pm_qos_power_miscdev;
+ 	char *name;
+@@ -73,7 +73,7 @@ struct pm_qos_object {
+ static struct pm_qos_object null_pm_qos;
+ static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
+ static struct pm_qos_object cpu_dma_pm_qos = {
+-	.requirements = {LIST_HEAD_INIT(cpu_dma_pm_qos.requirements.list)},
++	.requests = {LIST_HEAD_INIT(cpu_dma_pm_qos.requests.list)},
+ 	.notifiers = &cpu_dma_lat_notifier,
+ 	.name = "cpu_dma_latency",
+ 	.default_value = 2000 * USEC_PER_SEC,
+@@ -83,7 +83,7 @@ static struct pm_qos_object cpu_dma_pm_qos = {
+ 
+ static BLOCKING_NOTIFIER_HEAD(network_lat_notifier);
+ static struct pm_qos_object network_lat_pm_qos = {
+-	.requirements = {LIST_HEAD_INIT(network_lat_pm_qos.requirements.list)},
++	.requests = {LIST_HEAD_INIT(network_lat_pm_qos.requests.list)},
+ 	.notifiers = &network_lat_notifier,
+ 	.name = "network_latency",
+ 	.default_value = 2000 * USEC_PER_SEC,
+@@ -94,8 +94,7 @@ static struct pm_qos_object network_lat_pm_qos = {
+ 
+ static BLOCKING_NOTIFIER_HEAD(network_throughput_notifier);
+ static struct pm_qos_object network_throughput_pm_qos = {
+-	.requirements =
+-		{LIST_HEAD_INIT(network_throughput_pm_qos.requirements.list)},
++	.requests = {LIST_HEAD_INIT(network_throughput_pm_qos.requests.list)},
+ 	.notifiers = &network_throughput_notifier,
+ 	.name = "network_throughput",
+ 	.default_value = 0,
+@@ -136,31 +135,34 @@ static s32 min_compare(s32 v1, s32 v2)
+ }
+ 
+ 
+-static void update_target(int target)
++static void update_target(int pm_qos_class)
+ {
+ 	s32 extreme_value;
+-	struct requirement_list *node;
++	struct pm_qos_request_list *node;
+ 	unsigned long flags;
+ 	int call_notifier = 0;
+ 
+ 	spin_lock_irqsave(&pm_qos_lock, flags);
+-	extreme_value = pm_qos_array[target]->default_value;
++	extreme_value = pm_qos_array[pm_qos_class]->default_value;
+ 	list_for_each_entry(node,
+-			&pm_qos_array[target]->requirements.list, list) {
+-		extreme_value = pm_qos_array[target]->comparitor(
++			&pm_qos_array[pm_qos_class]->requests.list, list) {
++		extreme_value = pm_qos_array[pm_qos_class]->comparitor(
+ 				extreme_value, node->value);
+ 	}
+-	if (atomic_read(&pm_qos_array[target]->target_value) != extreme_value) {
++	if (atomic_read(&pm_qos_array[pm_qos_class]->target_value) !=
++			extreme_value) {
+ 		call_notifier = 1;
+-		atomic_set(&pm_qos_array[target]->target_value, extreme_value);
+-		pr_debug(KERN_ERR "new target for qos %d is %d\n", target,
+-			atomic_read(&pm_qos_array[target]->target_value));
++		atomic_set(&pm_qos_array[pm_qos_class]->target_value,
++				extreme_value);
++		pr_debug(KERN_ERR "new target for qos %d is %d\n", pm_qos_class,
++			atomic_read(&pm_qos_array[pm_qos_class]->target_value));
+ 	}
+ 	spin_unlock_irqrestore(&pm_qos_lock, flags);
+ 
+ 	if (call_notifier)
+-		blocking_notifier_call_chain(pm_qos_array[target]->notifiers,
+-			(unsigned long) extreme_value, NULL);
++		blocking_notifier_call_chain(
++				pm_qos_array[pm_qos_class]->notifiers,
++					(unsigned long) extreme_value, NULL);
+ }
+ 
+ static int register_pm_qos_misc(struct pm_qos_object *qos)
+@@ -186,125 +188,105 @@ static int find_pm_qos_object_by_minor(int minor)
+ }
+ 
+ /**
+- * pm_qos_requirement - returns current system wide qos expectation
++ * pm_qos_request - returns current system wide qos expectation
+  * @pm_qos_class: identification of which qos value is requested
+  *
+  * This function returns the current target value in an atomic manner.
+  */
+-int pm_qos_requirement(int pm_qos_class)
++int pm_qos_request(int pm_qos_class)
+ {
+ 	return atomic_read(&pm_qos_array[pm_qos_class]->target_value);
+ }
+-EXPORT_SYMBOL_GPL(pm_qos_requirement);
++EXPORT_SYMBOL_GPL(pm_qos_request);
+ 
+ /**
+- * pm_qos_add_requirement - inserts new qos request into the list
++ * pm_qos_add_request - inserts new qos request into the list
+  * @pm_qos_class: identifies which list of qos request to us
+- * @name: identifies the request
+  * @value: defines the qos request
+  *
+  * This function inserts a new entry in the pm_qos_class list of requested qos
+  * performance characteristics.  It recomputes the aggregate QoS expectations
+- * for the pm_qos_class of parameters.
++ * for the pm_qos_class of parameters, and returns the pm_qos_request list
++ * element as a handle for use in updating and removal.  Call needs to save
++ * this handle for later use.
+  */
+-int pm_qos_add_requirement(int pm_qos_class, char *name, s32 value)
++struct pm_qos_request_list *pm_qos_add_request(int pm_qos_class, s32 value)
+ {
+-	struct requirement_list *dep;
++	struct pm_qos_request_list *dep;
+ 	unsigned long flags;
+ 
+-	dep = kzalloc(sizeof(struct requirement_list), GFP_KERNEL);
++	dep = kzalloc(sizeof(struct pm_qos_request_list), GFP_KERNEL);
+ 	if (dep) {
+ 		if (value == PM_QOS_DEFAULT_VALUE)
+ 			dep->value = pm_qos_array[pm_qos_class]->default_value;
+ 		else
+ 			dep->value = value;
+-		dep->name = kstrdup(name, GFP_KERNEL);
+-		if (!dep->name)
+-			goto cleanup;
++		dep->pm_qos_class = pm_qos_class;
+ 
+ 		spin_lock_irqsave(&pm_qos_lock, flags);
+ 		list_add(&dep->list,
+-			&pm_qos_array[pm_qos_class]->requirements.list);
++			&pm_qos_array[pm_qos_class]->requests.list);
+ 		spin_unlock_irqrestore(&pm_qos_lock, flags);
+ 		update_target(pm_qos_class);
+-
+-		return 0;
+ 	}
+ 
+-cleanup:
+-	kfree(dep);
+-	return -ENOMEM;
++	return dep;
+ }
+-EXPORT_SYMBOL_GPL(pm_qos_add_requirement);
++EXPORT_SYMBOL_GPL(pm_qos_add_request);
+ 
+ /**
+- * pm_qos_update_requirement - modifies an existing qos request
+- * @pm_qos_class: identifies which list of qos request to us
+- * @name: identifies the request
++ * pm_qos_update_request - modifies an existing qos request
++ * @pm_qos_req : handle to list element holding a pm_qos request to use
+  * @value: defines the qos request
+  *
+- * Updates an existing qos requirement for the pm_qos_class of parameters along
++ * Updates an existing qos request for the pm_qos_class of parameters along
+  * with updating the target pm_qos_class value.
+  *
+- * If the named request isn't in the list then no change is made.
++ * Attempts are made to make this code callable on hot code paths.
+  */
+-int pm_qos_update_requirement(int pm_qos_class, char *name, s32 new_value)
++void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
++		s32 new_value)
+ {
+ 	unsigned long flags;
+-	struct requirement_list *node;
+ 	int pending_update = 0;
++	s32 temp;
+ 
+ 	spin_lock_irqsave(&pm_qos_lock, flags);
+-	list_for_each_entry(node,
+-		&pm_qos_array[pm_qos_class]->requirements.list, list) {
+-		if (strcmp(node->name, name) == 0) {
+-			if (new_value == PM_QOS_DEFAULT_VALUE)
+-				node->value =
+-				pm_qos_array[pm_qos_class]->default_value;
+-			else
+-				node->value = new_value;
+-			pending_update = 1;
+-			break;
+-		}
++	if (new_value == PM_QOS_DEFAULT_VALUE)
++		temp = pm_qos_array[pm_qos_req->pm_qos_class]->default_value;
++	else
++		temp = new_value;
++
++	pm_qos_req->value = temp;
++	if (temp != pm_qos_req->value) {
++		pending_update = 1;
+ 	}
+ 	spin_unlock_irqrestore(&pm_qos_lock, flags);
+ 	if (pending_update)
+-		update_target(pm_qos_class);
+-
+-	return 0;
++		update_target(pm_qos_req->pm_qos_class);
+ }
+-EXPORT_SYMBOL_GPL(pm_qos_update_requirement);
++EXPORT_SYMBOL_GPL(pm_qos_update_request);
+ 
+ /**
+- * pm_qos_remove_requirement - modifies an existing qos request
+- * @pm_qos_class: identifies which list of qos request to us
+- * @name: identifies the request
++ * pm_qos_remove_request - modifies an existing qos request
++ * @pm_qos_req: handle to request list element
+  *
+- * Will remove named qos request from pm_qos_class list of parameters and
+- * recompute the current target value for the pm_qos_class.
++ * Will remove pm qos request from the list of requests and
++ * recompute the current target value for the pm_qos_class.  Call this
++ * on slow code paths.
+  */
+-void pm_qos_remove_requirement(int pm_qos_class, char *name)
++void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req)
+ {
+ 	unsigned long flags;
+-	struct requirement_list *node;
+-	int pending_update = 0;
++	int qos_class = pm_qos_req->pm_qos_class;
+ 
+ 	spin_lock_irqsave(&pm_qos_lock, flags);
+-	list_for_each_entry(node,
+-		&pm_qos_array[pm_qos_class]->requirements.list, list) {
+-		if (strcmp(node->name, name) == 0) {
+-			kfree(node->name);
+-			list_del(&node->list);
+-			kfree(node);
+-			pending_update = 1;
+-			break;
+-		}
+-	}
++	list_del(&pm_qos_req->list);
++	kfree(pm_qos_req);
+ 	spin_unlock_irqrestore(&pm_qos_lock, flags);
+-	if (pending_update)
+-		update_target(pm_qos_class);
++	update_target(qos_class);
+ }
+-EXPORT_SYMBOL_GPL(pm_qos_remove_requirement);
++EXPORT_SYMBOL_GPL(pm_qos_remove_request);
+ 
+ /**
+  * pm_qos_add_notifier - sets notification entry for changes to target value
+@@ -314,7 +296,7 @@ EXPORT_SYMBOL_GPL(pm_qos_remove_requirement);
+  * will register the notifier into a notification chain that gets called
+  * upon changes to the pm_qos_class target value.
+  */
+- int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
++int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
+ {
+ 	int retval;
+ 
+@@ -344,22 +326,17 @@ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
+ }
+ EXPORT_SYMBOL_GPL(pm_qos_remove_notifier);
+ 
+-#define PID_NAME_LEN sizeof("process_1234567890")
+-static char name[PID_NAME_LEN];
+-
+ static int pm_qos_power_open(struct inode *inode, struct file *filp)
+ {
+-	int ret;
+ 	long pm_qos_class;
+ 
+ 	lock_kernel();
+ 	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
++
+ 	if (pm_qos_class >= 0) {
+-		filp->private_data = (void *)pm_qos_class;
+-		sprintf(name, "process_%d", current->pid);
+-		ret = pm_qos_add_requirement(pm_qos_class, name,
+-					PM_QOS_DEFAULT_VALUE);
+-		if (ret >= 0) {
++		filp->private_data = (void *) pm_qos_add_request(pm_qos_class,
++				PM_QOS_DEFAULT_VALUE);
++		if (filp->private_data) {
+ 			unlock_kernel();
+ 			return 0;
+ 		}
+@@ -371,11 +348,10 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
+ 
+ static int pm_qos_power_release(struct inode *inode, struct file *filp)
+ {
+-	int pm_qos_class;
++	struct pm_qos_request_list *req;
+ 
+-	pm_qos_class = (long)filp->private_data;
+-	sprintf(name, "process_%d", current->pid);
+-	pm_qos_remove_requirement(pm_qos_class, name);
++	req = (struct pm_qos_request_list *)filp->private_data;
++	pm_qos_remove_request(req);
+ 
+ 	return 0;
+ }
+@@ -384,15 +360,14 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+ 		size_t count, loff_t *f_pos)
+ {
+ 	s32 value;
+-	int pm_qos_class;
++	struct pm_qos_request_list *pm_qos_req;
+ 
+-	pm_qos_class = (long)filp->private_data;
+ 	if (count != sizeof(s32))
+ 		return -EINVAL;
+ 	if (copy_from_user(&value, buf, sizeof(s32)))
+ 		return -EFAULT;
+-	sprintf(name, "process_%d", current->pid);
+-	pm_qos_update_requirement(pm_qos_class, name, value);
++	pm_qos_req = (struct pm_qos_request_list *)filp->private_data;
++	pm_qos_update_request(pm_qos_req, value);
+ 
+ 	return  sizeof(s32);
+ }
+-- 
+1.6.3.3
