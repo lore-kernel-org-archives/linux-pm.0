@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] PM: allow for usage_count > 0 in
 	pm_runtime_get()
-Date: Wed, 2 Dec 2009 00:01:28 +0100
-Message-ID: <200912020001.28666.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0912011110210.2983-100000@iolanthe.rowland.org>
+Date: Wed, 2 Dec 2009 00:09:57 +0100
+Message-ID: <200912020009.57496.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0911301659460.4478-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912011110210.2983-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0911301659460.4478-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,36 +22,39 @@ To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 01 December 2009, Alan Stern wrote:
-> Rafael:
+On Monday 30 November 2009, Alan Stern wrote:
+> On Mon, 30 Nov 2009, Rafael J. Wysocki wrote:
+> 
+> > On Monday 30 November 2009, Alan Stern wrote:
+> > > This patch (as1308) fixes __pm_runtime_get().  Currently the routine
+> > > will resume a device if the prior usage count was 0.  But this isn't
+> > > right; thanks to pm_runtime_get_noresume() the usage count can be
+> > > positive even while the device is suspended.
+> > > 
+> > > Now the routine always tries to carry out a resume when called
+> > > synchronously.  When called asynchronously, it avoids the overhead of
+> > > an unnecessary spinlock acquisition by doing the resume only if the
+> > > device's state was SUSPENDING or SUSPENDED.
+> > > 
+> > > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> > 
+> > All three patches applied to suspend-2.6/linux-next.  Do you want me to push
+> > them to Linus before 2.6.32, or perhaps the $subject one only?
+> 
+> Thanks.  The patches are not urgently needed; they can wait until the 
+> merge window.
+> 
+> BTW, I just noticed that the runtime_idle method is documented as 
+> returning void but defined in pm.h as returning int.  Obviously the 
+> definition is wrong, since no return value is ever used.  Would you 
+> like to fix it?
 
-Hi,
+In fact it's been changed to return int at the Matthew's request, because
+bus type code might use the return value from a driver's callback.  In fact
+the PCI runtime PM framework being worked on at the moment uses
+the return value of a driver's runtime_idle(), if implemented.
 
-> One other thing I just noticed.  The power.timer_expires field is 
-> supposed to be nonzero when the timer is scheduled.  But the code at 
-> the end of pm_schedule_suspend() doesn't check for the possibility that 
-> the expiration time might just happen to be 0.  If it is, the 
-> timer_expires value should be bumped up to 1 before the mod_timer() 
-> call.
+So, the documentation has to be changed rather than the definition.
 
-Do you mean something like the patch below?
-
+Thanks,
 Rafael
-
----
- drivers/base/power/runtime.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: linux-2.6/drivers/base/power/runtime.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/runtime.c
-+++ linux-2.6/drivers/base/power/runtime.c
-@@ -625,6 +625,8 @@ int pm_schedule_suspend(struct device *d
- 		goto out;
- 
- 	dev->power.timer_expires = jiffies + msecs_to_jiffies(delay);
-+	if (!dev->power.timer_expires)
-+		dev->power.timer_expires = 1;
- 	mod_timer(&dev->power.suspend_timer, dev->power.timer_expires);
- 
-  out:
