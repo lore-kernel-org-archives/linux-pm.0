@@ -1,14 +1,15 @@
-From: "Rodolfo (kix)" <kix@kix.es>
-Subject: Re: New Database File
-Date: Tue, 1 Dec 2009 08:54:46 +0100
-Message-ID: <3096bd910911302354va464c88w214c0b0f920ff0af__12968.7560293407$1259654179$gmane$org@mail.gmail.com>
-References: <3096bd910911230306r36b3bba1jc7916c2416b5df4d@mail.gmail.com>
-	<20091123203833.GC16489@elf.ucw.cz> <200911300016.40349.rjw@sisk.pl>
+From: Ferenc Wagner <wferi@niif.hu>
+Subject: Re: [PATCH v2 1/2] Input: gpio-keys - allow platform to
+	specify exact irq flags
+Date: Tue, 01 Dec 2009 11:08:04 +0100
+Message-ID: <873a3v2eij.fsf__13306.2973655344$1259662201$gmane$org@tac.ki.iif.hu>
+References: <Pine.LNX.4.44L0.0911301658240.4478-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200911300016.40349.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0911301658240.4478-100000@iolanthe.rowland.org>
+	(Alan Stern's message of "Mon, 30 Nov 2009 16:59:41 -0500 (EST)")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,33 +19,16 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: suspend-devel List <suspend-devel@lists.sourceforge.net>, Jamalulkhair Khairedin <jalut78@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Mika Westerberg <mika.westerberg@iki.fi>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Thanks.
+Alan Stern <stern@rowland.harvard.edu> writes:
 
-On Mon, Nov 30, 2009 at 12:16 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday 23 November 2009, Pavel Machek wrote:
->> On Mon 2009-11-23 12:06:32, Rodolfo (kix) wrote:
->> > Hi,
->> >
->> > new database file:
->> > * Deleted duplicated entries
->> > * New Machine - HP Compaq 6520s
->> > * Sort
->>
->> Looks ok to me.
->
-> Applied.
->
-> Thanks,
-> Rafael
->
+> Runtime PM is not well suited for this purpose.
 
-
-
--- =
-
-Rodolfo Garc=EDa "kix"
-EA4ERH - IN80ER
+So the question is: is there some other PM framework which would be a
+good fit for this "forced manual selective suspend" use case?
+-- 
+Thanks,
+Feri.
