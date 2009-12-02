@@ -1,13 +1,12 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Runtime PM: Check for dev->parent PM support
-Date: Wed, 2 Dec 2009 10:20:10 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912021016170.11361-100000@iolanthe.rowland.org>
-References: <175E0F9A9EFCEA46A65F5552BB057298C5C4E603@bgsmsx502.gar.corp.intel.com>
+Subject: [PATCH ver. 2] PM: allow for usage_count > 0 in
+	pm_runtime_get()
+Date: Wed, 2 Dec 2009 11:13:59 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912021110310.11361-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <175E0F9A9EFCEA46A65F5552BB057298C5C4E603@bgsmsx502.gar.corp.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,27 +16,82 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Mahalingam, Nithish" <nithish.mahalingam@intel.com>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2 Dec 2009, Mahalingam, Nithish wrote:
+This patch (as1308b) fixes __pm_runtime_get().  Currently the routine
+will resume a device if the prior usage count was 0.  But this isn't
+right; thanks to pm_runtime_get_noresume() the usage count can be
+positive even while the device is suspended.
 
-> Hi Rafael,
-> 
-> I see that in most of the internal runtime functions
-> (__pm_runtime_suspend, __pm_runtime_resume, __pm_runtime_set_status
-> etc.) without any explicit check to see if the dev->parent supports
-> runtime PM there is access to its runtime PM fields. I guess there
-> can be a use case where a device supports runtime PM but its parent
-> does not. Am I missing something here?
+Now the routine always tries to carry out a resume when called
+synchronously.  When called asynchronously, it avoids the overhead of
+an unnecessary spinlock acquisition by doing the resume only if the
+device's state was SUSPENDING or SUSPENDED.  Since the access to the
+state is unprotected, be careful to read the value only once.
 
-That's right.  For example, in theory there could be a situation where
-the PCI subsystem didn't include runtime PM support but the SCSI
-subsystem did.  Then you could have a SCSI target device (with support) 
-whose parent was a PCI SCSI host adapter (without support).
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-(Actually that example couldn't happen, because PCI is one of the first 
-subsystems to support runtime PM.  But you get the idea.)
+---
 
-Alan Stern
+Although this probably isn't an important issue, it's a good idea to 
+avoid doing a double read of a value that might change while we're 
+looking at it.
+
+I trust there is no problem in replacing the previous version of the 
+patch with this version.
+
+
+
+Index: usb-2.6/drivers/base/power/runtime.c
+===================================================================
+--- usb-2.6.orig/drivers/base/power/runtime.c
++++ usb-2.6/drivers/base/power/runtime.c
+@@ -703,16 +703,25 @@ EXPORT_SYMBOL_GPL(pm_request_resume);
+  * @dev: Device to handle.
+  * @sync: If set and the device is suspended, resume it synchronously.
+  *
+- * Increment the usage count of the device and if it was zero previously,
+- * resume it or submit a resume request for it, depending on the value of @sync.
++ * Increment the usage count of the device.  If @sync is set, resume the device
++ * and wait for the resume to complete.  Otherwise if the device is currently
++ * suspending or suspended, submit a resume request.
++ *
++ * If @sync is clear, the caller is responsible for synchronization.
+  */
+ int __pm_runtime_get(struct device *dev, bool sync)
+ {
+-	int retval = 1;
++	int retval = 0;
+ 
+-	if (atomic_add_return(1, &dev->power.usage_count) == 1)
+-		retval = sync ? pm_runtime_resume(dev) : pm_request_resume(dev);
++	atomic_inc(&dev->power.usage_count);
++	if (sync) {
++		retval = pm_runtime_resume(dev);
++	} else {
++		enum rpm_status s = ACCESS_ONCE(dev->power.runtime_status);
+ 
++		if (s == RPM_SUSPENDING || s == RPM_SUSPENDED)
++			retval = pm_request_resume(dev);
++	}
+ 	return retval;
+ }
+ EXPORT_SYMBOL_GPL(__pm_runtime_get);
+Index: usb-2.6/Documentation/power/runtime_pm.txt
+===================================================================
+--- usb-2.6.orig/Documentation/power/runtime_pm.txt
++++ usb-2.6/Documentation/power/runtime_pm.txt
+@@ -276,8 +276,9 @@ drivers/base/power/runtime.c and include
+     - increment the device's usage counter
+ 
+   int pm_runtime_get(struct device *dev);
+-    - increment the device's usage counter, run pm_request_resume(dev) and
+-      return its result
++    - increment the device's usage counter; if the device is currently
++      suspending or suspended then run pm_request_resume(dev) and return its
++      result
+ 
+   int pm_runtime_get_sync(struct device *dev);
+     - increment the device's usage counter, run pm_runtime_resume(dev) and
