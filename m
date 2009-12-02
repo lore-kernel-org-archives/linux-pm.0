@@ -1,8 +1,7 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH ver. 2] PM: allow for usage_count > 0 in
-	pm_runtime_get()
-Date: Wed, 2 Dec 2009 11:13:59 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912021110310.11361-100000@iolanthe.rowland.org>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Maybe we can make no_console_suspend fine grained?
+Date: Wed, 02 Dec 2009 19:34:26 +0200
+Message-ID: <1259775266.4314.10.camel__6802.535421639$1259775450$gmane$org@maxim-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,82 +15,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch (as1308b) fixes __pm_runtime_get().  Currently the routine
-will resume a device if the prior usage count was 0.  But this isn't
-right; thanks to pm_runtime_get_noresume() the usage count can be
-positive even while the device is suspended.
+Currently, if the no_console_suspend isn't set, as soon as system begins
+the suspend, at core printk level output is suppressed.
 
-Now the routine always tries to carry out a resume when called
-synchronously.  When called asynchronously, it avoids the overhead of
-an unnecessary spinlock acquisition by doing the resume only if the
-device's state was SUSPENDING or SUSPENDED.  Since the access to the
-state is unprotected, be careful to read the value only once.
+However, I want to have a simple and clean way to have all console
+messages in the memory, because on my laptop memory isn't cleared on
+reboots.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+My first approach was just to put printk buffer at predefined address.
+This wasn't favored by kernel developers, and even I myself found this
+to be not such great solution.
 
----
+Other approach is to create a console driver, however it won't be used
+by printk ether during suspend and resume.
 
-Although this probably isn't an important issue, it's a good idea to 
-avoid doing a double read of a value that might change while we're 
-looking at it.
+So, maybe we can add a flag that console should always be used,
+regardless of no_console_suspend?
+(This is the particular console is safe for that purpose)
 
-I trust there is no problem in replacing the previous version of the 
-patch with this version.
+I can even make the new console pm aware, thus make is possible to avoid
+collisions between  every stage of the hibernation.
+( Which happen today because resume kernel overwrites the printk
+predefined buffer, and that is annoying because my system works just
+fine now, but I want to keep that feature on)
 
-
-
-Index: usb-2.6/drivers/base/power/runtime.c
-===================================================================
---- usb-2.6.orig/drivers/base/power/runtime.c
-+++ usb-2.6/drivers/base/power/runtime.c
-@@ -703,16 +703,25 @@ EXPORT_SYMBOL_GPL(pm_request_resume);
-  * @dev: Device to handle.
-  * @sync: If set and the device is suspended, resume it synchronously.
-  *
-- * Increment the usage count of the device and if it was zero previously,
-- * resume it or submit a resume request for it, depending on the value of @sync.
-+ * Increment the usage count of the device.  If @sync is set, resume the device
-+ * and wait for the resume to complete.  Otherwise if the device is currently
-+ * suspending or suspended, submit a resume request.
-+ *
-+ * If @sync is clear, the caller is responsible for synchronization.
-  */
- int __pm_runtime_get(struct device *dev, bool sync)
- {
--	int retval = 1;
-+	int retval = 0;
- 
--	if (atomic_add_return(1, &dev->power.usage_count) == 1)
--		retval = sync ? pm_runtime_resume(dev) : pm_request_resume(dev);
-+	atomic_inc(&dev->power.usage_count);
-+	if (sync) {
-+		retval = pm_runtime_resume(dev);
-+	} else {
-+		enum rpm_status s = ACCESS_ONCE(dev->power.runtime_status);
- 
-+		if (s == RPM_SUSPENDING || s == RPM_SUSPENDED)
-+			retval = pm_request_resume(dev);
-+	}
- 	return retval;
- }
- EXPORT_SYMBOL_GPL(__pm_runtime_get);
-Index: usb-2.6/Documentation/power/runtime_pm.txt
-===================================================================
---- usb-2.6.orig/Documentation/power/runtime_pm.txt
-+++ usb-2.6/Documentation/power/runtime_pm.txt
-@@ -276,8 +276,9 @@ drivers/base/power/runtime.c and include
-     - increment the device's usage counter
- 
-   int pm_runtime_get(struct device *dev);
--    - increment the device's usage counter, run pm_request_resume(dev) and
--      return its result
-+    - increment the device's usage counter; if the device is currently
-+      suspending or suspended then run pm_request_resume(dev) and return its
-+      result
- 
-   int pm_runtime_get_sync(struct device *dev);
-     - increment the device's usage counter, run pm_runtime_resume(dev) and
+Best regards,
+Maxim Levitsky
