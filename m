@@ -1,13 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: fix a lockdep warning in runtime.c
-Date: Wed, 2 Dec 2009 22:15:29 +0100
-Message-ID: <200912022215.29098.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0912021553010.3041-100000@iolanthe.rowland.org>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: System sleep vs. runtime PM
+Date: Wed, 2 Dec 2009 22:16:18 +0100
+Message-ID: <200912022216.18620.oliver@neukum.org>
+References: <Pine.LNX.4.44L0.0912021143250.2668-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912021553010.3041-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912021143250.2668-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,76 +21,73 @@ To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 02 December 2009, Alan Stern wrote:
-> This patch (as1309) fixes a lockdep warning in
-> __pm_runtime_set_status().  This is the one place where the runtime PM
-> framework acquires a nested power.lock, and the nesting is never more
-> than one deep.
+Am Mittwoch, 2. Dezember 2009 19:35:34 schrieb Alan Stern:
+> Rafael and Oliver:
 > 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-
-I have a very simila patch queued up already.  The only difference is that it
-uses SINGLE_DEPTH_NESTING instead of the new symbol.  My version is appended
-below.
-
+> I'm in the midst of converting USB over to the runtime PM framework,
+> and I'm getting stuck on the interaction between system sleep and
+> runtime PM.  In fact, I'm so confused about it that it's hard to
+> formulate a coherent set of questions.  So bear with me...
 > 
-> ---
+> If a driver gets an output request and its device is runtime-suspended,
+> then the driver should do a runtime-resume before sending the output to
+> the device.  If the output request arrives during a system sleep
+> transition then the output should be refused or left to sit in a queue
+> (presumably this won't happen, but it might).
+
+How can it happen? As the freezer has run before drivers learn
+about a sleep transition, the request would come from a kernel thread.
+
+> However this requires the driver to know when a system sleep is in
+> progress -- it's not enough merely to know whether the device is
+> suspended.  We could make things easier for the driver by failing
+> runtime-resume requests when the device's power.status isn't DPM_ON or
+> DPM_RESUMING.  Does that make sense?
+
+That is not a good idea as it needs error handling in all drivers
+for a rare corner case. That's bound to cause many bugs.
+
+> But then what about remote wakeup?  The arrival of a remote-wakeup
+> request during a sleep transition has always been problematic.  Should
+> the request be allowed to abort the sleep transition?  (Once the kernel
+> is aware of the request, it is probably no longer stored in the
+> hardware so it won't wake the system back up as soon as we go to
+> sleep.)
+
+It should abort the sleep if the device would wake the system from sleep.
+
+> What if the device is enabled for runtime remote wakeup and not for
+> wakeup from system sleep?  There will be a window during which the
+> wakeup settings are wrong.  Should a wakeup request from such a device
+> be allowed to abort a sleep transition?
+
+The core should prevent that window. If necessary devices with
+different wakeup settings should be resumed before starting system sleep.
+ 
+> If a remote-wakeup request should abort the system sleep, how do we
+> make this happen?
+
+Good question. I have no answer.
+
+> If a remote-wakeup request doesn't abort the system sleep, then what
+> happens to it?  Obviously it should get serviced when the system wakes
+> up again.  But what if the device was runtime-suspended when the sleep
+> began?  How do we make sure it gets runtime-resumed when the sleep
+> ends?
 > 
-> If anybody is using the runtime PM framework in 2.6.32 then this 
-> should be pushed before the final release.
+> I can see two possibilities here.  One is that the remote-wakeup
+> request triggered an asynchronous pm_request_wakeup().  In this case
+> the request is sitting on the PM workqueue and it will automatically be
 
-I'll push it to Linus, then, if there still is time.  Would you mind if I used
-my version?
+That sounds very reasonable.
 
-Thanks,
-Rafael
+> satisfied after the system wakes back up.  The other possibility is
+> that the request triggered a synchronous pm_runtime_resume().  If this
+> fails because a sleep transition is in progress, the request will get
+> lost.  (The same sort of thing happens when output requests get stuck
+> in a queue and the runtime-resume fails.)
 
- 
-> Index: usb-2.6/drivers/base/power/runtime.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/base/power/runtime.c
-> +++ usb-2.6/drivers/base/power/runtime.c
-> @@ -10,6 +10,8 @@
->  #include <linux/pm_runtime.h>
->  #include <linux/jiffies.h>
->  
-> +#define	RPM_LOCK_PARENT		1
-> +
->  static int __pm_runtime_resume(struct device *dev, bool from_wq);
->  static int __pm_request_idle(struct device *dev);
->  static int __pm_request_resume(struct device *dev);
-> @@ -793,7 +795,7 @@ int __pm_runtime_set_status(struct devic
->  	}
->  
->  	if (parent) {
-> -		spin_lock(&parent->power.lock);
-> +		spin_lock_nested(&parent->power.lock, RPM_LOCK_PARENT);
->  
->  		/*
->  		 * It is invalid to put an active child under a parent that is
+That must not happen.
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM / Runtime: Fix lockdep warning in __pm_runtime_set_status()
-
-Lockdep complains about taking the parent lock in
-__pm_runtime_set_status(), so mark it as nested.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/power/runtime.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/base/power/runtime.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/runtime.c
-+++ linux-2.6/drivers/base/power/runtime.c
-@@ -777,7 +777,7 @@ int __pm_runtime_set_status(struct devic
- 	}
- 
- 	if (parent) {
--		spin_lock(&parent->power.lock);
-+		spin_lock_nested(&parent->power.lock, SINGLE_DEPTH_NESTING);
- 
- 		/*
- 		 * It is invalid to put an active child under a parent that is
+	Regards
+		Oliver
