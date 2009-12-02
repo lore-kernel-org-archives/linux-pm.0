@@ -1,17 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] uswsusp: automatically free the in-memory
- image once s2disk has finished with it
-Date: Wed, 2 Dec 2009 22:11:07 +0100
-Message-ID: <20091202211107.GA20830__23513.3923277774$1259788449$gmane$org@elf.ucw.cz>
-References: <4B1575AC.6080904@tuffmail.co.uk> <20091201214529.GA1457@csn.ul.ie>
-	<200912012253.08522.rjw@sisk.pl> <4B16545B.3090703@tuffmail.co.uk>
-	<20091202122019.GD1457@csn.ul.ie> <4B16797C.3010304@tuffmail.co.uk>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM: fix a lockdep warning in runtime.c
+Date: Wed, 2 Dec 2009 22:15:29 +0100
+Message-ID: <200912022215.29098.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0912021553010.3041-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4B16797C.3010304@tuffmail.co.uk>
+In-Reply-To: <Pine.LNX.4.44L0.0912021553010.3041-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,48 +17,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: Mel Gorman <mel@csn.ul.ie>, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2009-12-02 14:28:12, Alan Jenkins wrote:
-> The original in-kernel suspend (swsusp) frees the in-memory hibernation
-> image before powering off the machine.  s2disk doesn't, so there is
-> _much_ less free memory when it tries to power off.
+On Wednesday 02 December 2009, Alan Stern wrote:
+> This patch (as1309) fixes a lockdep warning in
+> __pm_runtime_set_status().  This is the one place where the runtime PM
+> framework acquires a nested power.lock, and the nesting is never more
+> than one deep.
 > 
-> This is a gratuitous difference.  The userspace suspend interface
-> /dev/snapshot only allows the hibernation image to be read once.
-> Once the s2disk program has read the last page, we can free the entire
-> image.
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+
+I have a very simila patch queued up already.  The only difference is that it
+uses SINGLE_DEPTH_NESTING instead of the new symbol.  My version is appended
+below.
+
 > 
-> This avoids a hang after writing the hibernation image which was
-> triggered by commit 5f8dcc21211a3d4e3a7a5ca366b469fb88117f61
-> "page-allocator: split per-cpu list into one-list-per-migrate-type":
-
-Yes, you work around page-allocator hang. But is it right thing to do?
-
-I mean... Power down should not be too memory-critical. Why can't new
-page allocator handle that?
-
-(And yes, when page allocator is fixed we may want to do something
-like that, but...)
-
-								Pavel
-
-> --- a/kernel/power/user.c
-> +++ b/kernel/power/user.c
-> @@ -165,6 +165,10 @@ static ssize_t snapshot_read(struct file *filp, char __user *buf,
-> 			res = -EFAULT;
-> 		else
-> 			*offp = data->handle.offset;
-> +	} else {
-> +		swsusp_free();
-> +		memset(&data->handle, 0, sizeof(struct snapshot_handle));
-> +		data->ready = 0;
-> 	}
+> ---
 > 
->  Unlock:
+> If anybody is using the runtime PM framework in 2.6.32 then this 
+> should be pushed before the final release.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I'll push it to Linus, then, if there still is time.  Would you mind if I used
+my version?
+
+Thanks,
+Rafael
+
+ 
+> Index: usb-2.6/drivers/base/power/runtime.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/base/power/runtime.c
+> +++ usb-2.6/drivers/base/power/runtime.c
+> @@ -10,6 +10,8 @@
+>  #include <linux/pm_runtime.h>
+>  #include <linux/jiffies.h>
+>  
+> +#define	RPM_LOCK_PARENT		1
+> +
+>  static int __pm_runtime_resume(struct device *dev, bool from_wq);
+>  static int __pm_request_idle(struct device *dev);
+>  static int __pm_request_resume(struct device *dev);
+> @@ -793,7 +795,7 @@ int __pm_runtime_set_status(struct devic
+>  	}
+>  
+>  	if (parent) {
+> -		spin_lock(&parent->power.lock);
+> +		spin_lock_nested(&parent->power.lock, RPM_LOCK_PARENT);
+>  
+>  		/*
+>  		 * It is invalid to put an active child under a parent that is
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM / Runtime: Fix lockdep warning in __pm_runtime_set_status()
+
+Lockdep complains about taking the parent lock in
+__pm_runtime_set_status(), so mark it as nested.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/runtime.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/base/power/runtime.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/runtime.c
++++ linux-2.6/drivers/base/power/runtime.c
+@@ -777,7 +777,7 @@ int __pm_runtime_set_status(struct devic
+ 	}
+ 
+ 	if (parent) {
+-		spin_lock(&parent->power.lock);
++		spin_lock_nested(&parent->power.lock, SINGLE_DEPTH_NESTING);
+ 
+ 		/*
+ 		 * It is invalid to put an active child under a parent that is
