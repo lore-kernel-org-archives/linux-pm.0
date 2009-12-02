@@ -1,16 +1,14 @@
-From: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: Bisected: s2disk (uswsusp only) hangs just before
-	poweroff
-Date: Wed, 2 Dec 2009 12:20:19 +0000
-Message-ID: <20091202122019.GD1457__21681.8308028907$1259869667$gmane$org@csn.ul.ie>
-References: <4B1575AC.6080904@tuffmail.co.uk> <20091201214529.GA1457@csn.ul.ie>
-	<200912012253.08522.rjw@sisk.pl> <4B16545B.3090703@tuffmail.co.uk>
+From: Mikael Abrahamsson <swmike@swm.pp.se>
+Subject: Re: intermittent suspend problem again
+Date: Wed, 2 Dec 2009 22:41:05 +0100 (CET)
+Message-ID: <alpine.DEB.1.10.0912022238100.23464__32173.9226034426$1259869677$gmane$org@uplift.swm.pp.se>
+References: <87fx93pwv2.fsf@tac.ki.iif.hu> <87638qw2zy.fsf@tac.ki.iif.hu>
+	<87skbtve5w.fsf@tac.ki.iif.hu> <200912022233.16138.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4B16545B.3090703@tuffmail.co.uk>
+In-Reply-To: <200912022233.16138.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,116 +18,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Ferenc Wagner <wferi@niif.hu>, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 11:49:47AM +0000, Alan Jenkins wrote:
-> Rafael J. Wysocki wrote:
->> On Tuesday 01 December 2009, Mel Gorman wrote:
->>   
->>> On Tue, Dec 01, 2009 at 07:59:40PM +0000, Alan Jenkins wrote:
->>>     
->>>> Hi
->>>>
->>>> Suspend to disk is (sometimes) hanging for me in 2.6.32-rc.  I 
->>>> finally  got around to bisecting it, which blamed the following 
->>>> commit by Mel:
->>>>
->>>> 5f8dcc2 "page-allocator: split per-cpu list into one-list-per-migrate-type"
->>>>
->>>> I was able to confirm this by reverting the commit, which fixed the 
->>>>  hang.  I had to revert one other commit first to avoid a conflict:
->>>>
->>>> a6f9edd "page-allocator: maintain rolling count of pages to free 
->>>> from  the PCP"
->>>>
->>>>       
->>> Which RC kernel? Specifically, are the commits
->>>
->>> cc4a6851466039a8a688c843962a05689059ff3b always wake kswapd when restarting an allocation attempt
->>> 9d0ed60fe9cd1fbf57f755cd27a23ae9114d7210 Do not allow interrupts to use ALLOC_HARDER
->>>
->>> applied?
->>>
->>> The latter one in particular might make a difference if s2disk is
->>> pushing the system far below the watermarks. I don't suppose you know
->>> where it's hanging? i.e. is it hanging in the allocator itself?
->>>
->>> If those patches are applied, then one difference that 5f8dcc2 makes is
->>> that pages on the PCP lists but not of the right migratetype are not
->>> used. Prior to that commit, an allocation might succeed even if the
->>> buddy lists were empty because one of the other PCP page types would be
->>> used.
->>>
->>>     
->>>> -- detail --
->>>>
->>>> When I suspend my EeePc 701 to disk, it sometimes hangs after 
->>>> writing  out the hibernation image.  The system is still able to 
->>>> resume from this  image (after working around the hang by pressing 
->>>> the power button). 
->>>>
->>>> This is specific to s2disk from the uswsusp package (which is now   
->>>> installed by default on debian unstable).  It doesn't happen if I   
->>>> uninstall uswsusp and use the in-kernel suspend instead.
->>>>
->>>>       
->>> This leads me to believe that uswsusp is able to push available pages
->>> far below what is expected. It's a total guess though, I have no idea
->>> how uswsusp is implemented or how it differs from what is in kernel.
->>>     
->>
->> It doesn't differ at all in that respect.  Actually, it uses the same code, but
->> the distro configuration may be such that it leaves fewer available pages
->> than the default in-kernel hibernation.
->>
->> Thanks,
->> Rafael
->>   
->
-> It seems unintuitive that lack of memory is a problem _after we've  
-> written out the hibernation image_.  The backtrace I captured shows the  
-> hang happens within hibernation_platform_enter()...
->
+On Wed, 2 Dec 2009, Rafael J. Wysocki wrote:
 
-I think the backtrace is also showing that it's trying to create a kernel
-thread. For this to be getting locked up, memory must be exceptionally
-tight. One thing that the patch changes is that in certain circumstances,
-an additional 128K of memory per-CPU could be on each the PCP lists.
+> Then I guess we do something that confuses your machine's BIOS or it's a 
+> timing-related issue (ie. there has to be a substantial delay between 
+> the hibernation and restore to trigger the problem).  Or both.
 
-Ordinarily it doesn't matter because reclaim would resolve the situation
-or the PCP lists would be drained very shortly after. However, if the
-CPUs were no longer being used but still have pages pinned, it could be
-causing a problem.
+I don't know if it's related, but on 2.6.31.something (ubuntu 9.10 stock 
+kernel) I have intermittent suspend/resume problems on my Thinkpad X200, 
+and I get the problems much more frequent when running on batteries than 
+when I'm running with the power cable plugged in. Just saying that this 
+might be something to test as well.
 
-> Hmm.  Doesn't the in-kernel suspend free the in-memory image before  
-> powering off?
->
-> int hibernate(void)
-> ...
->        pr_debug("PM: writing image.\n");
->        error = swsusp_write(flags);
->        swsusp_free();
->        if (!error)
->            power_down();
->
->
->
-> Would that explain why only uswsusp is affected?  Do we want to fix  
-> snapshot_read() in user.c, so that it calls swsusp_free() once all the  
-> data has been read?
->
+Link to "my" bug on launchpad:
 
-Could you try it please?
-
-Another possibility would be to call drain_all_pages() before powering
-off. If that makes a difference, it would confirm that pages are pinned
-on PCP lists of inactive processors.
-
-Thanks
+<https://bugs.launchpad.net/ubuntu/+source/linux/+bug/473876>
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Mikael Abrahamsson    email: swmike@swm.pp.se
