@@ -1,13 +1,16 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: System sleep vs. runtime PM
-Date: Thu, 3 Dec 2009 00:02:46 +0100
-Message-ID: <200912030002.46692.oliver@neukum.org>
-References: <Pine.LNX.4.44L0.0912021638020.3041-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] uswsusp: automatically free the in-memory
+	image once s2disk has finished with it
+Date: Thu, 3 Dec 2009 00:22:53 +0100
+Message-ID: <200912030022.54027.rjw__42920.3773885549$1259796206$gmane$org@sisk.pl>
+References: <4B1575AC.6080904@tuffmail.co.uk>
+	<20091202221524.GB20830@elf.ucw.cz>
+	<20091202222516.GD26702@csn.ul.ie>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912021638020.3041-100000@iolanthe.rowland.org>
+In-Reply-To: <20091202222516.GD26702@csn.ul.ie>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,128 +20,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Mittwoch, 2. Dezember 2009 23:20:24 schrieb Alan Stern:
-> On Wed, 2 Dec 2009, Oliver Neukum wrote:
-> > Am Mittwoch, 2. Dezember 2009 19:35:34 schrieb Alan Stern:
-> > > Rafael and Oliver:
-> > >
-> > > I'm in the midst of converting USB over to the runtime PM framework,
-> > > and I'm getting stuck on the interaction between system sleep and
-> > > runtime PM.  In fact, I'm so confused about it that it's hard to
-> > > formulate a coherent set of questions.  So bear with me...
-> > >
-> > > If a driver gets an output request and its device is runtime-suspended,
-> > > then the driver should do a runtime-resume before sending the output to
-> > > the device.  If the output request arrives during a system sleep
-> > > transition then the output should be refused or left to sit in a queue
-> > > (presumably this won't happen, but it might).
-> >
-> > How can it happen? As the freezer has run before drivers learn
-> > about a sleep transition, the request would come from a kernel thread.
+On Wednesday 02 December 2009, Mel Gorman wrote:
+> On Wed, Dec 02, 2009 at 11:15:24PM +0100, Pavel Machek wrote:
+> > On Wed 2009-12-02 22:07:18, Mel Gorman wrote:
+> > > On Wed, Dec 02, 2009 at 10:11:07PM +0100, Pavel Machek wrote:
+> > > > On Wed 2009-12-02 14:28:12, Alan Jenkins wrote:
+> > > > > The original in-kernel suspend (swsusp) frees the in-memory hibernation
+> > > > > image before powering off the machine.  s2disk doesn't, so there is
+> > > > > _much_ less free memory when it tries to power off.
+> > > > > 
+> > > > > This is a gratuitous difference.  The userspace suspend interface
+> > > > > /dev/snapshot only allows the hibernation image to be read once.
+> > > > > Once the s2disk program has read the last page, we can free the entire
+> > > > > image.
+> > > > > 
+> > > > > This avoids a hang after writing the hibernation image which was
+> > > > > triggered by commit 5f8dcc21211a3d4e3a7a5ca366b469fb88117f61
+> > > > > "page-allocator: split per-cpu list into one-list-per-migrate-type":
+> > > > 
+> > > > Yes, you work around page-allocator hang. But is it right thing to do?
+> > > > 
+> > > 
+> > > What's wrong with it? The hang is likely because the allocator has no
+> > > memory to work with. The patch in question makes small changes to the
+> > > amount of available memory but it shouldn't matter on uni-core. Some
+> > > structures are slightly larger but it's extremely borderline. I'm at a
+> > > loss to explain actually why it makes a difference untill things were
+> > > extremely borderline to begin with.
+> > 
+> > We reserve 4MB, for such purposes, and we already wrote image to disk
+> > with such constrains, so memory should not be _too_ tight.
+> > 
+> > Can you try increasing PAGES_FOR_IO to 8MB or something like that?
+> > 
 > 
-> Exactly.  Or a timer routine, or an interrupt handler, ...
+> What's wrong with just freeing the memory that is no longer required?
 
-Yes, but in these cases you cannot sleep anyway and must use an
-asynchronous resume. These cases are rare. HID mainly. Generally
-the freezer is your guarantee.
+Nothing, and the Alan's patch is going to Linus.
 
-If you must use an asynchronous resumption request, the problem
-becomes moot. You queue IO in all cases and the resumption will
-be deferred until after the system will have woken up as the work
-queue is frozen.
-
-> > > However this requires the driver to know when a system sleep is in
-> > > progress -- it's not enough merely to know whether the device is
-> > > suspended.  We could make things easier for the driver by failing
-> > > runtime-resume requests when the device's power.status isn't DPM_ON or
-> > > DPM_RESUMING.  Does that make sense?
-> >
-> > That is not a good idea as it needs error handling in all drivers
-> > for a rare corner case. That's bound to cause many bugs.
-> 
-> Drivers are likely to need error handling for failed resumes
-> regardless, rare though they are.  Besides, the alternative is for
-
-But then they just return -EIO. That's simple. Queuing data isn't.
-
-> drivers to be aware of the distinction between runtime-suspended and
-> waiting-for-system-sleep, which is also a rare corner case.
-> 
-> How would you solve this problem?
-
-I just love the freezer.
-
-> In other words, if the device is enabled for remote wakeup during
-> system sleep (which is -- or soon will be -- different from supporting
-> remote wakeup during runtime suspend).
-
-Yes.
-
-> > > What if the device is enabled for runtime remote wakeup and not for
-> > > wakeup from system sleep?  There will be a window during which the
-> > > wakeup settings are wrong.  Should a wakeup request from such a device
-> > > be allowed to abort a sleep transition?
-> >
-> > The core should prevent that window. If necessary devices with
-> > different wakeup settings should be resumed before starting system sleep.
-> 
-> This is a little difficult.  Only the bus subsystem or the driver --
-> not the PM core -- knows if the extra wakeup is needed, and the core
-> doesn't send out a general announcement prior to starting the sleep.
-> The closest we come is the "prepare" stage.
-> 
-> I suppose during "prepare", the PM core could runtime-resume any device
-> with differing wakeup settings, even the ones that don't need it.
-
-This is necessary.
-
-> > > If a remote-wakeup request should abort the system sleep, how do we
-> > > make this happen?
-> >
-> > Good question. I have no answer.
-> 
-> Clearly it will depend on how the request is handled.  No doubt a
-> common approach will be to submit a runtime-resume request.  (That's
-> not what USB will do though; it will queue its own work item on the
-> runtime PM workqueue).  We could detect at such points whether a sleep
-> transition has started and set a flag to abort it.  The PM core could
-> even export a routine for drivers to call when they want to abort a
-> system sleep.
-
-Yes, I have no thoughts on that.
-
-> > > If a remote-wakeup request doesn't abort the system sleep, then what
-> > > happens to it?  Obviously it should get serviced when the system wakes
-> > > up again.  But what if the device was runtime-suspended when the sleep
-> > > began?  How do we make sure it gets runtime-resumed when the sleep
-> > > ends?
-> > >
-> > > I can see two possibilities here.  One is that the remote-wakeup
-> > > request triggered an asynchronous pm_request_wakeup().  In this case
-> > > the request is sitting on the PM workqueue and it will automatically be
-> >
-> > That sounds very reasonable.
-> 
-> Actually this question no longer applies.  We have agreed that a
-> remote-wakeup request received during a sleep transition should always
-> abort the sleep, because otherwise the device wouldn't be enabled for
-> remote wakeup.
-
-An evil thought, do we have devices that will always request remote wakeup,
-without an option to switch it off? What about OTG?
-
-> There's yet another issue to discuss.  Suppose a device is
-> runtime-suspended when a system sleep starts.  When the system wakes
-> up, should the device be runtime-resumed?  (Assume that the wakeup
-> settings don't differ; otherwise it has to be.)
-
-That depends on how sure we are to never drop a remote wakeup,
-not even if requests race or for any other reason. And we must always
-know what woke us up.
-
-	Regards
-		Oliver
+Thanks,
+Rafael
