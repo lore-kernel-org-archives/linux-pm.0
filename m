@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: intermittent suspend problem again
-Date: Wed, 2 Dec 2009 22:33:16 +0100
-Message-ID: <200912022233.16138.rjw__42641.2872890525$1259789775$gmane$org@sisk.pl>
-References: <87fx93pwv2.fsf@tac.ki.iif.hu> <87638qw2zy.fsf@tac.ki.iif.hu>
-	<87skbtve5w.fsf@tac.ki.iif.hu>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: fix a lockdep warning in runtime.c
+Date: Wed, 2 Dec 2009 16:36:44 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912021635070.3041-100000@iolanthe.rowland.org>
+References: <200912022215.29098.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87skbtve5w.fsf@tac.ki.iif.hu>
+In-Reply-To: <200912022215.29098.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,52 +17,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 02 December 2009, Ferenc Wagner wrote:
-> Ferenc Wagner <wferi@niif.hu> writes:
-> 
-> > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >
-> >> On Tuesday 01 December 2009, Ferenc Wagner wrote:
-> >>
-> >>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >>> 
-> >>>> On Tuesday 01 December 2009, Ferenc Wagner wrote:
-> >>>>
-> >>>>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >>>>>
-> >>>>>> In addition to that, you can run multiple hibernation/resume cycles in
-> >>>>>> a tight loop using the RTC wakealarm.
-> >>>>> 
-> >>>>> I'll do so, as soon as I find a way to automatically supply the dm-crypt
-> >>>>> passphrase... or even better, learn to hibernate to ramdisk from the
-> >>>>> initramfs. :)
-> >>>>
-> >>>> Well, you don't need to use swap encryption for _testing_. :-)
-> >>> 
-> >>> I use partition encryption, everything except for /boot is encrypted.
-> >>
-> >> If /boot is big enough, you could use a swap file in /boot for the testing.
-> >
-> > Ramdisk worked good.  Maybe too good, because I left the machine doing
-> > s2disks while I was having dinner, and it achieved some 120 suspends
-> > without a freeze.  Only the e100 and the mii modules were loaded.
-> >
-> > After some script munging I got the machine automatically boot with an
-> > alternate passphrase, so in vivo testing is possible now.  I mean,
-> > tomorrow.
-> 
-> After almost 100 hibernate/resume cycles, I have to say that this issue
-> can't be reproduced by suspending in a tight loop.  I tried that while
-> flood pinging my gateway and also with no network activity.  The rc8
-> e100 module was loaded all the time.
+On Wed, 2 Dec 2009, Rafael J. Wysocki wrote:
 
-Then I guess we do something that confuses your machine's BIOS or it's a
-timing-related issue (ie. there has to be a substantial delay between the
-hibernation and restore to trigger the problem).  Or both.
+> On Wednesday 02 December 2009, Alan Stern wrote:
+> > This patch (as1309) fixes a lockdep warning in
+> > __pm_runtime_set_status().  This is the one place where the runtime PM
+> > framework acquires a nested power.lock, and the nesting is never more
+> > than one deep.
+> > 
+> > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> 
+> I have a very simila patch queued up already.  The only difference is that it
+> uses SINGLE_DEPTH_NESTING instead of the new symbol.  My version is appended
+> below.
+> 
+> > 
+> > ---
+> > 
+> > If anybody is using the runtime PM framework in 2.6.32 then this 
+> > should be pushed before the final release.
+> 
+> I'll push it to Linus, then, if there still is time.  Would you mind if I used
+> my version?
 
-Thanks,
-Rafael
+That's fine.  I would have used SINGLE_DEPTH_NESTING if I had seen its 
+definition.
+
+Alan Stern
