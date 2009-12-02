@@ -1,13 +1,18 @@
-From: Lior Dotan <liodot@gmail.com>
-Subject: Re: Linux 2.6.32-rc8 - T500 fails to suspend to RAM
-Date: Wed, 02 Dec 2009 14:40:18 +0200
-Message-ID: <4B166032.8050005__39597.4924242639$1259869677$gmane$org@gmail.com>
-References: <4B151FE2.3090807@gmail.com> <200912012246.58383.rjw@sisk.pl>
+From: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH] uswsusp: automatically free the in-memory
+	image once	s2disk has finished with it
+Date: Wed, 2 Dec 2009 22:07:18 +0000
+Message-ID: <20091202220718.GI1457__888.484568759118$1259869703$gmane$org@csn.ul.ie>
+References: <4B1575AC.6080904@tuffmail.co.uk> <20091201214529.GA1457@csn.ul.ie>
+	<200912012253.08522.rjw@sisk.pl> <4B16545B.3090703@tuffmail.co.uk>
+	<20091202122019.GD1457@csn.ul.ie> <4B16797C.3010304@tuffmail.co.uk>
+	<20091202211107.GA20830@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912012246.58383.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <20091202211107.GA20830@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,55 +22,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Tuesday 01 December 2009, Lior Dotan wrote:
->   
->> Hi,
->>
->> Ever since I've upgraded to rc8, my T500 fails to suspend to RAM for the
->> second time. Suspending for the first time works ok but when I resume and
->> later try to suspend again the screen gets blank and the moon LED blinks
->> forever. rc6 & rc7 as well as 2.6.31 worked great with out a problem.
->>     
->
-> Well, I don't see any particular change that might cause the symptoms you
-> describe between -rc7 and -rc8.  If this is 100% reproducible, I guess
-> bisecting is the only option at the moment.
->   
-I tried bisecting it, not sure if it's any good but this is what I got:
+On Wed, Dec 02, 2009 at 10:11:07PM +0100, Pavel Machek wrote:
+> On Wed 2009-12-02 14:28:12, Alan Jenkins wrote:
+> > The original in-kernel suspend (swsusp) frees the in-memory hibernation
+> > image before powering off the machine.  s2disk doesn't, so there is
+> > _much_ less free memory when it tries to power off.
+> > 
+> > This is a gratuitous difference.  The userspace suspend interface
+> > /dev/snapshot only allows the hibernation image to be read once.
+> > Once the s2disk program has read the last page, we can free the entire
+> > image.
+> > 
+> > This avoids a hang after writing the hibernation image which was
+> > triggered by commit 5f8dcc21211a3d4e3a7a5ca366b469fb88117f61
+> > "page-allocator: split per-cpu list into one-list-per-migrate-type":
+> 
+> Yes, you work around page-allocator hang. But is it right thing to do?
+> 
 
-ldot@topaz ~/linux/linux-2.6 $ git bisect bad
-Bisecting: 0 revisions left to test after this (roughly 0 steps)
-[1456edbb1476db735715ddcc7ac306de587024eb] kconfig: Make zconf.y work 
-with current bison
-ldot@topaz ~/linux/linux-2.6 $ git bisect log
-git bisect start
-# bad: [648f4e3e50c4793d9dbf9a09afa193631f76fa26] Linux 2.6.32-rc8
-git bisect bad 648f4e3e50c4793d9dbf9a09afa193631f76fa26
-# good: [156171c71a0dc4bce12b4408bb1591f8fe32dc1a] Linux 2.6.32-rc7
-git bisect good 156171c71a0dc4bce12b4408bb1591f8fe32dc1a
-# bad: [b6b24c73d56a166a829318a1f06803ff9b54857b] spi: error status 
-should be negative
-git bisect bad b6b24c73d56a166a829318a1f06803ff9b54857b
-# bad: [82abc2a97a4a3c7635c40e6dff571816062ec506] Merge branch 
-'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/ryusuke/nilfs2
-git bisect bad 82abc2a97a4a3c7635c40e6dff571816062ec506
-# good: [24dfb2b5867df24ba03b6c4418312e23b1300aa8] Merge branch 
-'upstream' of git://ftp.linux-mips.org/pub/scm/upstream-linus
-git bisect good 24dfb2b5867df24ba03b6c4418312e23b1300aa8
-# bad: [e8e63cbf9a339c972eeb5ccf8777c8067bdfd869] oss: Mark loadhex 
-static in hex2hex.c
-git bisect bad e8e63cbf9a339c972eeb5ccf8777c8067bdfd869
-# bad: [ad0cd62ab632afe9b562b5f09343c21e1521505d] 
-arch/alpha/boot/tools/objstrip.c: Mark "usage" static
-git bisect bad ad0cd62ab632afe9b562b5f09343c21e1521505d
-# bad: [65166571800af0f63f21e5576d7db12d2bf73790] kconfig: Mark various 
-internal functions static
-git bisect bad 65166571800af0f63f21e5576d7db12d2bf73790
+What's wrong with it? The hang is likely because the allocator has no
+memory to work with. The patch in question makes small changes to the
+amount of available memory but it shouldn't matter on uni-core. Some
+structures are slightly larger but it's extremely borderline. I'm at a
+loss to explain actually why it makes a difference untill things were
+extremely borderline to begin with.
 
-Cheers,
-Lior
+> I mean... Power down should not be too memory-critical. Why can't new
+> page allocator handle that?
+> 
+
+The allocator isn't new. I wouldn't have expected power-down to make any
+allocation at all but clearly it is.
+
+> (And yes, when page allocator is fixed we may want to do something
+> like that, but...)
+> 
+
+At the moment, I'm not sure what needs fixing in there. There is no
+memory and it gets stuck in a loop. I better stand up if I'm going to
+pull something out of my ass :/
+
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
