@@ -1,7 +1,7 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Maybe we can make no_console_suspend fine grained?
-Date: Wed, 02 Dec 2009 19:34:26 +0200
-Message-ID: <1259775266.4314.10.camel__6802.535421639$1259775450$gmane$org@maxim-laptop>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: System sleep vs. runtime PM
+Date: Wed, 2 Dec 2009 13:35:34 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912021143250.2668-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,33 +15,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Oliver Neukum <oliver@neukum.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Currently, if the no_console_suspend isn't set, as soon as system begins
-the suspend, at core printk level output is suppressed.
+Rafael and Oliver:
 
-However, I want to have a simple and clean way to have all console
-messages in the memory, because on my laptop memory isn't cleared on
-reboots.
+I'm in the midst of converting USB over to the runtime PM framework,
+and I'm getting stuck on the interaction between system sleep and
+runtime PM.  In fact, I'm so confused about it that it's hard to
+formulate a coherent set of questions.  So bear with me...
 
-My first approach was just to put printk buffer at predefined address.
-This wasn't favored by kernel developers, and even I myself found this
-to be not such great solution.
+If a driver gets an output request and its device is runtime-suspended,
+then the driver should do a runtime-resume before sending the output to
+the device.  If the output request arrives during a system sleep
+transition then the output should be refused or left to sit in a queue
+(presumably this won't happen, but it might).
 
-Other approach is to create a console driver, however it won't be used
-by printk ether during suspend and resume.
+However this requires the driver to know when a system sleep is in
+progress -- it's not enough merely to know whether the device is
+suspended.  We could make things easier for the driver by failing
+runtime-resume requests when the device's power.status isn't DPM_ON or
+DPM_RESUMING.  Does that make sense?
 
-So, maybe we can add a flag that console should always be used,
-regardless of no_console_suspend?
-(This is the particular console is safe for that purpose)
+But then what about remote wakeup?  The arrival of a remote-wakeup
+request during a sleep transition has always been problematic.  Should
+the request be allowed to abort the sleep transition?  (Once the kernel
+is aware of the request, it is probably no longer stored in the
+hardware so it won't wake the system back up as soon as we go to
+sleep.)
 
-I can even make the new console pm aware, thus make is possible to avoid
-collisions between  every stage of the hibernation.
-( Which happen today because resume kernel overwrites the printk
-predefined buffer, and that is annoying because my system works just
-fine now, but I want to keep that feature on)
+What if the device is enabled for runtime remote wakeup and not for
+wakeup from system sleep?  There will be a window during which the
+wakeup settings are wrong.  Should a wakeup request from such a device
+be allowed to abort a sleep transition?
 
-Best regards,
-Maxim Levitsky
+If a remote-wakeup request should abort the system sleep, how do we
+make this happen?
+
+If a remote-wakeup request doesn't abort the system sleep, then what 
+happens to it?  Obviously it should get serviced when the system wakes 
+up again.  But what if the device was runtime-suspended when the sleep 
+began?  How do we make sure it gets runtime-resumed when the sleep 
+ends?
+
+I can see two possibilities here.  One is that the remote-wakeup
+request triggered an asynchronous pm_request_wakeup().  In this case
+the request is sitting on the PM workqueue and it will automatically be
+satisfied after the system wakes back up.  The other possibility is
+that the request triggered a synchronous pm_runtime_resume().  If this
+fails because a sleep transition is in progress, the request will get
+lost.  (The same sort of thing happens when output requests get stuck
+in a queue and the runtime-resume fails.)
+
+This suggests that the safest course is for dpm_resume() to
+automatically do a pm_runtime_resume() on every device.  Is this
+drastic overkill?  Should we keep a record when we fail a
+runtime-resume during a sleep transition and then runtime-resume only
+those devices?
+
+Then there's the whole sticky question about how to handle devices
+whose runtime-wakeup and system-sleep-wakeup settings need to be
+different.  In many cases the setting can't be changed unless the
+device is at full power.  Such devices would always need to be
+runtime-resumed both before and after every system sleep (during 
+the prepare and complete phases).  Should the bus subsystem be 
+responsible for this?  (Don't forget that during the prepare phase, the 
+device's state will be DPM_PREPARING and so the bus subsystem won't be 
+allowed to do a runtime resume.)
+
+There's probably a good deal more to discuss, but this is all I can 
+think of at the moment.
+
+Alan Stern
