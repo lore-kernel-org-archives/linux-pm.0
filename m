@@ -1,17 +1,19 @@
-From: mark gross <mgross@linux.intel.com>
-Subject: Re:
-	[PATCH]PM_QOS-to-use-handle-based-requests-pcm-update 5/5
-Date: Wed, 2 Dec 2009 13:50:08 -0800
-Message-ID: <20091202215008.GA6340__15842.5562004142$1259791337$gmane$org@linux.intel.com>
-References: <20091201213840.GE19688@linux.intel.com>
-	<s5hiqcpy5b4.wl%tiwai@suse.de>
-Reply-To: mgross@linux.intel.com
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] uswsusp: automatically free the in-memory
+ image once s2disk has finished with it
+Date: Wed, 2 Dec 2009 23:15:24 +0100
+Message-ID: <20091202221524.GB20830__44094.9616757736$1259792193$gmane$org@elf.ucw.cz>
+References: <4B1575AC.6080904@tuffmail.co.uk> <20091201214529.GA1457@csn.ul.ie>
+	<200912012253.08522.rjw@sisk.pl> <4B16545B.3090703@tuffmail.co.uk>
+	<20091202122019.GD1457@csn.ul.ie> <4B16797C.3010304@tuffmail.co.uk>
+	<20091202211107.GA20830@elf.ucw.cz>
+	<20091202220718.GI1457@csn.ul.ie>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <s5hiqcpy5b4.wl%tiwai@suse.de>
+In-Reply-To: <20091202220718.GI1457@csn.ul.ie>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,47 +23,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>, alsa-devel@alsa-project.org, perex@perex.cz
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 02, 2009 at 12:38:07PM +0100, Takashi Iwai wrote:
-> At Tue, 1 Dec 2009 13:38:40 -0800,
-> mark gross wrote:
+On Wed 2009-12-02 22:07:18, Mel Gorman wrote:
+> On Wed, Dec 02, 2009 at 10:11:07PM +0100, Pavel Machek wrote:
+> > On Wed 2009-12-02 14:28:12, Alan Jenkins wrote:
+> > > The original in-kernel suspend (swsusp) frees the in-memory hibernation
+> > > image before powering off the machine.  s2disk doesn't, so there is
+> > > _much_ less free memory when it tries to power off.
+> > > 
+> > > This is a gratuitous difference.  The userspace suspend interface
+> > > /dev/snapshot only allows the hibernation image to be read once.
+> > > Once the s2disk program has read the last page, we can free the entire
+> > > image.
+> > > 
+> > > This avoids a hang after writing the hibernation image which was
+> > > triggered by commit 5f8dcc21211a3d4e3a7a5ca366b469fb88117f61
+> > > "page-allocator: split per-cpu list into one-list-per-migrate-type":
 > > 
-> > --- a/sound/core/pcm_native.c
-> > +++ b/sound/core/pcm_native.c
-> (snip)
-> > @@ -506,8 +508,8 @@ static int snd_pcm_hw_free(struct snd_pcm_substream *substream)
-> >  	if (substream->ops->hw_free)
-> >  		result = substream->ops->hw_free(substream);
-> >  	runtime->status->state = SNDRV_PCM_STATE_OPEN;
-> > -	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY,
-> > -		substream->latency_id);
-> > +	pm_qos_remove_request(substream->latency_pm_qos_req);
+> > Yes, you work around page-allocator hang. But is it right thing to do?
+> > 
 > 
-> The NULL check seems needed in the caller side because
-> pm_qos_remove_request() doesn't do it.
+> What's wrong with it? The hang is likely because the allocator has no
+> memory to work with. The patch in question makes small changes to the
+> amount of available memory but it shouldn't matter on uni-core. Some
+> structures are slightly larger but it's extremely borderline. I'm at a
+> loss to explain actually why it makes a difference untill things were
+> extremely borderline to begin with.
 
-ouch.  Thanks for noticing this.
+We reserve 4MB, for such purposes, and we already wrote image to disk
+with such constrains, so memory should not be _too_ tight.
 
-> 
-> Or, would you add a NULL check in pm_qos_remove_request()?
-> It'd be more handy.
+Can you try increasing PAGES_FOR_IO to 8MB or something like that?
 
-I can make the pm_qos_remove_request null pointer safe, its assumed to
-be a slow path so it would be a good thing to do.
-
-
-I'll add this to the next patch set that the e1000e guys are making me
-do against linux-next.
-
-Thanks!
-
---mgross
-
-> 
-> 
-> thanks,
-> 
-> Takashi
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
