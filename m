@@ -1,16 +1,16 @@
-From: "Allan, Bruce W" <bruce.w.allan@intel.com>
-Subject: Re:
-	[E1000-devel]	[PATCH]PM_QOS-to-use-handle-based-requests-network-update
-	3/5
-Date: Tue, 1 Dec 2009 15:58:26 -0800
-Message-ID: <8DD2590731AB5D4C9DBF71A877482A903E41FB46__47777.8785200373$1259869662$gmane$org@orsmsx509.amr.corp.intel.com>
-References: <20091201213328.GC19688@linux.intel.com>
+From: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: Bisected: s2disk (uswsusp only) hangs just before
+	poweroff
+Date: Wed, 2 Dec 2009 10:35:38 +0000
+Message-ID: <20091202103538.GB1457__36080.7348312393$1259869664$gmane$org@csn.ul.ie>
+References: <4B1575AC.6080904@tuffmail.co.uk> <20091201214529.GA1457@csn.ul.ie>
+	<4B162BE1.7070709@tuffmail.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091201213328.GC19688@linux.intel.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <4B162BE1.7070709@tuffmail.co.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,129 +20,101 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "mgross@linux.intel.com" <mgross@linux.intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>
-Cc: "e1000-devel@lists.sourceforge.net" <e1000-devel@lists.sourceforge.net>, lkml <linux-kernel@vger.kernel.org>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Thanks for doing this, but I have to NAK the e1000e changes as-is.  Please resubmit against net-next-2.6 as there is already a commit in that tree which conflicts with this patch.
+On Wed, Dec 02, 2009 at 08:57:05AM +0000, Alan Jenkins wrote:
+> Mel Gorman wrote:
+>> On Tue, Dec 01, 2009 at 07:59:40PM +0000, Alan Jenkins wrote:
+>>   
+>>> Hi
+>>>
+>>> Suspend to disk is (sometimes) hanging for me in 2.6.32-rc.  I 
+>>> finally  got around to bisecting it, which blamed the following 
+>>> commit by Mel:
+>>>
+>>> 5f8dcc2 "page-allocator: split per-cpu list into one-list-per-migrate-type"
+>>>
+>>> I was able to confirm this by reverting the commit, which fixed the   
+>>> hang.  I had to revert one other commit first to avoid a conflict:
+>>>
+>>> a6f9edd "page-allocator: maintain rolling count of pages to free from 
+>>>  the PCP"
+>>>
+>>>     
+>>
+>> Which RC kernel? Specifically, are the commits
+>>
+>> cc4a6851466039a8a688c843962a05689059ff3b always wake kswapd when restarting an allocation attempt
+>> 9d0ed60fe9cd1fbf57f755cd27a23ae9114d7210 Do not allow interrupts to use ALLOC_HARDER
+>>
+>> applied?
+>>
+>> The latter one in particular might make a difference if s2disk is
+>> pushing the system far below the watermarks. I don't suppose you know
+>> where it's hanging? i.e. is it hanging in the allocator itself?
+>>
+>> If those patches are applied, then one difference that 5f8dcc2 makes is
+>> that pages on the PCP lists but not of the right migratetype are not
+>> used. Prior to that commit, an allocation might succeed even if the
+>> buddy lists were empty because one of the other PCP page types would be
+>> used.
+>>
+>>   
+>>> -- detail --
+>>>
+>>> When I suspend my EeePc 701 to disk, it sometimes hangs after writing 
+>>>  out the hibernation image.  The system is still able to resume from 
+>>> this  image (after working around the hang by pressing the power 
+>>> button). 
+>>>
+>>> This is specific to s2disk from the uswsusp package (which is now   
+>>> installed by default on debian unstable).  It doesn't happen if I   
+>>> uninstall uswsusp and use the in-kernel suspend instead.
+>>>
+>>>     
+>>
+>> This leads me to believe that uswsusp is able to push available pages
+>> far below what is expected. It's a total guess though, I have no idea
+>> how uswsusp is implemented or how it differs from what is in kernel.
+>>
+>>   
+>>> The hang doesn't happen if I boot with "init=/bin/bash" and run 
+>>> s2disk.   Nor does it happen if I boot normally, then switch to 
+>>> single user mode  ("telinit 12").
+>>>
+>>> It only happens if I've logged in to KDE.  In the past, this has   
+>>> indicated a problem in a network driver, since NetworkManager only 
+>>> made  a connection once I logged in.  But it still hangs if I remove 
+>>> both  ath5k and atl2 before I log into KDE.  (I actually tried 
+>>> removing as  many modules as possible: atl2, ath5k, usbcore, 
+>>> snd-hda-intel, psmouse,  pcspkr, battery, ac, themal, fan, and 
+>>> eeepc-laptop).  Perhaps it's  something to do with the size of the 
+>>> hibernation image.
+>>>
+>>>     
+>>
+>> I believe you are correct in that it's something to do with the size of
+>> the hibernation image and how close to the edge the kernel gets pushed
+>> as a result.
+>>
+>> Please confirm first that the two commits I mentioned above are in your
+>> kernel. If not, would you mind trying the following patch?
+>> Unfortunately, it's totally untested. The intention of the patch is to
+>> use other PCP lists if the desired one cannot be refilled.
+>>
+>> Thanks.
+>>   
+>
+> The hang happens on 2.6.32-rc8, which includes the two commits above.
+>
 
->-----Original Message-----
->From: mark gross [mailto:mgross@linux.intel.com]
->Sent: Tuesday, December 01, 2009 1:33 PM
->To: linux-pm
->Cc: e1000-devel@lists.sourceforge.net; lkml
->Subject: [E1000-devel] [PATCH]PM_QOS-to-use-handle-based-requests-network-
->update 3/5
->
->update to Ethernet driver dependencies on pm_qos WRT api change to use
->handles instead of name strings.
->
->--mgross
->
->Signed-off-by: mark gross <mgross@linux.intel.com>
->
->
->>From a72be3a717e474632cbb4281c5f3a433dfa2b0f8 Mon Sep 17 00:00:00 2001
->From: mark gross <mgross@mgross-hp8510w.(none)>
->Date: Tue, 1 Dec 2009 12:59:52 -0800
->Subject: [PATCH 3/5] PM_QOS to use handle based requests network update
->
->---
-> drivers/net/e1000e/netdev.c |   13 ++++++-------
-> drivers/net/igbvf/netdev.c  |    5 +++--
-> 2 files changed, 9 insertions(+), 9 deletions(-)
->
->diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
->index fad8f9e..755c884 100644
->--- a/drivers/net/e1000e/netdev.c
->+++ b/drivers/net/e1000e/netdev.c
->@@ -51,6 +51,7 @@
-> #define DRV_VERSION "1.0.2-k2"
-> char e1000e_driver_name[] = "e1000e";
-> const char e1000e_driver_version[] = DRV_VERSION;
->+struct pm_qos_request_list *e1000e_driver_pm_qos_req;
->
-> static const struct e1000_info *e1000_info_tbl[] = {
-> 	[board_82571]		= &e1000_82571_info,
->@@ -2516,11 +2517,9 @@ static void e1000_configure_rx(struct e1000_adapter
->*adapter)
-> 		 * With jumbo frames and early-receive enabled, excessive
-> 		 * C4->C2 latencies result in dropped transactions.
-> 		 */
->-		pm_qos_update_requirement(PM_QOS_CPU_DMA_LATENCY,
->-					  e1000e_driver_name, 55);
->+		pm_qos_update_request(e1000e_driver_pm_qos_req, 55);
-> 	} else {
->-		pm_qos_update_requirement(PM_QOS_CPU_DMA_LATENCY,
->-					  e1000e_driver_name,
->+		pm_qos_update_request(e1000e_driver_pm_qos_req,
-> 					  PM_QOS_DEFAULT_VALUE);
-> 	}
->
->@@ -5417,8 +5416,8 @@ static int __init e1000_init_module(void)
-> 	printk(KERN_INFO "%s: Copyright (c) 1999-2008 Intel Corporation.\n",
-> 	       e1000e_driver_name);
-> 	ret = pci_register_driver(&e1000_driver);
->-	pm_qos_add_requirement(PM_QOS_CPU_DMA_LATENCY, e1000e_driver_name,
->-			       PM_QOS_DEFAULT_VALUE);
->+	e1000e_driver_pm_qos_req = pm_qos_add_request(
->+			PM_QOS_CPU_DMA_LATENCY, PM_QOS_DEFAULT_VALUE);
->
-> 	return ret;
-> }
->@@ -5433,7 +5432,7 @@ module_init(e1000_init_module);
-> static void __exit e1000_exit_module(void)
-> {
-> 	pci_unregister_driver(&e1000_driver);
->-	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY,
->e1000e_driver_name);
->+	pm_qos_remove_request(e1000e_driver_pm_qos_req);
-> }
-> module_exit(e1000_exit_module);
->
->diff --git a/drivers/net/igbvf/netdev.c b/drivers/net/igbvf/netdev.c
->index 91024a3..0ba48d1 100644
->--- a/drivers/net/igbvf/netdev.c
->+++ b/drivers/net/igbvf/netdev.c
->@@ -47,6 +47,7 @@
-> #define DRV_VERSION "1.0.0-k0"
-> char igbvf_driver_name[] = "igbvf";
-> const char igbvf_driver_version[] = DRV_VERSION;
->+struct pm_qos_request_list *igbvf_driver_pm_qos_req;
-> static const char igbvf_driver_string[] =
-> 				"Intel(R) Virtual Function Network Driver";
-> static const char igbvf_copyright[] = "Copyright (c) 2009 Intel
->Corporation.";
->@@ -2881,7 +2882,7 @@ static int __init igbvf_init_module(void)
-> 	printk(KERN_INFO "%s\n", igbvf_copyright);
->
-> 	ret = pci_register_driver(&igbvf_driver);
->-	pm_qos_add_requirement(PM_QOS_CPU_DMA_LATENCY, igbvf_driver_name,
->+	igbvf_driver_pm_qos_req = pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
-> 	                       PM_QOS_DEFAULT_VALUE);
->
-> 	return ret;
->@@ -2897,7 +2898,7 @@ module_init(igbvf_init_module);
-> static void __exit igbvf_exit_module(void)
-> {
-> 	pci_unregister_driver(&igbvf_driver);
->-	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY,
->igbvf_driver_name);
->+	pm_qos_remove_request(igbvf_driver_pm_qos_req);
-> }
-> module_exit(igbvf_exit_module);
->
->--
->1.6.3.3
->
->
->--------------------------------------------------------------------------
->----
->Join us December 9, 2009 for the Red Hat Virtual Experience,
->a free event focused on virtualization and cloud computing.
->Attend in-depth sessions from your desk. Your couch. Anywhere.
->http://p.sf.net/sfu/redhat-sfdev2dev
->_______________________________________________
->E1000-devel mailing list
->E1000-devel@lists.sourceforge.net
->https://lists.sourceforge.net/lists/listinfo/e1000-devel
+Ok, that was somewhat expected as they only had an impact if there was a
+storm of interrupts which was unlikely in this case. How about the
+additional patch?
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
