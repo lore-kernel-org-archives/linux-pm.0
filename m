@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Linux 2.6.32-rc8 - T500 fails to suspend to RAM
-Date: Wed, 2 Dec 2009 22:39:05 +0100
-Message-ID: <200912022239.05528.rjw__21278.5901771442$1259790299$gmane$org@sisk.pl>
-References: <4B151FE2.3090807@gmail.com> <200912012246.58383.rjw@sisk.pl>
-	<4B166032.8050005@gmail.com>
+Subject: Re: [PATCH] uswsusp: automatically free the in-memory
+	image once s2disk has finished with it
+Date: Wed, 2 Dec 2009 22:47:24 +0100
+Message-ID: <200912022247.24705.rjw__44335.0531430498$1259790550$gmane$org@sisk.pl>
+References: <4B1575AC.6080904@tuffmail.co.uk> <20091202122019.GD1457@csn.ul.ie>
+	<4B16797C.3010304@tuffmail.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4B166032.8050005@gmail.com>
+In-Reply-To: <4B16797C.3010304@tuffmail.co.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,62 +19,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Lior Dotan <liodot@gmail.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: Mel Gorman <mel@csn.ul.ie>, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 02 December 2009, Lior Dotan wrote:
-> Rafael J. Wysocki wrote:
-> > On Tuesday 01 December 2009, Lior Dotan wrote:
-> >   
-> >> Hi,
-> >>
-> >> Ever since I've upgraded to rc8, my T500 fails to suspend to RAM for the
-> >> second time. Suspending for the first time works ok but when I resume and
-> >> later try to suspend again the screen gets blank and the moon LED blinks
-> >> forever. rc6 & rc7 as well as 2.6.31 worked great with out a problem.
-> >>     
-> >
-> > Well, I don't see any particular change that might cause the symptoms you
-> > describe between -rc7 and -rc8.  If this is 100% reproducible, I guess
-> > bisecting is the only option at the moment.
-> >   
-> I tried bisecting it, not sure if it's any good but this is what I got:
+On Wednesday 02 December 2009, Alan Jenkins wrote:
+> The original in-kernel suspend (swsusp) frees the in-memory hibernation
+> image before powering off the machine.  s2disk doesn't, so there is
+> _much_ less free memory when it tries to power off.
+> 
+> This is a gratuitous difference.  The userspace suspend interface
+> /dev/snapshot only allows the hibernation image to be read once.
+> Once the s2disk program has read the last page, we can free the entire
+> image.
+> 
+> This avoids a hang after writing the hibernation image which was
+> triggered by commit 5f8dcc21211a3d4e3a7a5ca366b469fb88117f61
+> "page-allocator: split per-cpu list into one-list-per-migrate-type":
+> 
+>     [top of trace lost due to screen height]
+>     ? shrink_zone
+>     ? try_to_free_pages
+>     ? isolate_pages_global
+>     ? __alloc_pages_nodemask
+>     ? kthread
+>     ? __get_free_pages
+>     ? copy_process
+>     ? kthread
+>     ? do_fork
+>     ...
+> 
+>     INFO: task s2disk:2036 blocked for more than 120 seconds
+>     ...
+>     Call Trace:
+>     ...
+>     ? wait_for_common
+>     ? default_wake_function
+>     ? kthread_create
+>     ? worker_thread
+>     ? create_workqueue_thread
+>     ? worker_thread
+>     ? __create_workqueue_key
+>     ? stop_machine_create
+>     ? disable_nonboot_cpus
+>     ? hibernation_platform_enter
+>     ? snapshot_ioctl
+>     ...
+>     ? sys_ioctl
+>     ...
+> 
+> Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
 
-Thanks for the effort.
+Thanks for tracking this, great job!
 
-> ldot@topaz ~/linux/linux-2.6 $ git bisect bad
-> Bisecting: 0 revisions left to test after this (roughly 0 steps)
-> [1456edbb1476db735715ddcc7ac306de587024eb] kconfig: Make zconf.y work 
-> with current bison
-> ldot@topaz ~/linux/linux-2.6 $ git bisect log
-> git bisect start
-> # bad: [648f4e3e50c4793d9dbf9a09afa193631f76fa26] Linux 2.6.32-rc8
-> git bisect bad 648f4e3e50c4793d9dbf9a09afa193631f76fa26
-> # good: [156171c71a0dc4bce12b4408bb1591f8fe32dc1a] Linux 2.6.32-rc7
-> git bisect good 156171c71a0dc4bce12b4408bb1591f8fe32dc1a
-> # bad: [b6b24c73d56a166a829318a1f06803ff9b54857b] spi: error status 
-> should be negative
-> git bisect bad b6b24c73d56a166a829318a1f06803ff9b54857b
-> # bad: [82abc2a97a4a3c7635c40e6dff571816062ec506] Merge branch 
-> 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/ryusuke/nilfs2
-> git bisect bad 82abc2a97a4a3c7635c40e6dff571816062ec506
-> # good: [24dfb2b5867df24ba03b6c4418312e23b1300aa8] Merge branch 
-> 'upstream' of git://ftp.linux-mips.org/pub/scm/upstream-linus
-> git bisect good 24dfb2b5867df24ba03b6c4418312e23b1300aa8
-> # bad: [e8e63cbf9a339c972eeb5ccf8777c8067bdfd869] oss: Mark loadhex 
-> static in hex2hex.c
-> git bisect bad e8e63cbf9a339c972eeb5ccf8777c8067bdfd869
-> # bad: [ad0cd62ab632afe9b562b5f09343c21e1521505d] 
-> arch/alpha/boot/tools/objstrip.c: Mark "usage" static
-> git bisect bad ad0cd62ab632afe9b562b5f09343c21e1521505d
-> # bad: [65166571800af0f63f21e5576d7db12d2bf73790] kconfig: Mark various 
-> internal functions static
-> git bisect bad 65166571800af0f63f21e5576d7db12d2bf73790
-
-This commit is not very likely to be the source of the issue.
-
-Perhaps one of the commits you marked as 'good' was in fact a bad one.
+I'm going to push this patch to Linus in the next batch (before 2.6.32 if I
+manage to).
 
 Best,
 Rafael
+
+
+> ---
+>  kernel/power/user.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/power/user.c b/kernel/power/user.c
+> index bf0014d..94d0210 100644
+> --- a/kernel/power/user.c
+> +++ b/kernel/power/user.c
+> @@ -165,6 +165,10 @@ static ssize_t snapshot_read(struct file *filp, char __user *buf,
+>  			res = -EFAULT;
+>  		else
+>  			*offp = data->handle.offset;
+> +	} else {
+> +		swsusp_free();
+> +		memset(&data->handle, 0, sizeof(struct snapshot_handle));
+> +		data->ready = 0;
+>  	}
+>  
+>   Unlock:
+> 
