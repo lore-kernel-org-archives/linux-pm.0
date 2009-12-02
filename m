@@ -1,16 +1,14 @@
-From: Ferenc Wagner <wferi@niif.hu>
-Subject: Re: intermittent suspend problem again
-Date: Wed, 02 Dec 2009 11:55:07 +0100
-Message-ID: <87skbtve5w.fsf__13170.3178667978$1259751447$gmane$org@tac.ki.iif.hu>
-References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200912011328.15551.rjw@sisk.pl>
-	<877ht68u4h.fsf@tac.ki.iif.hu> <200912012232.50951.rjw@sisk.pl>
-	<87638qw2zy.fsf@tac.ki.iif.hu>
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: Bisected: s2disk (uswsusp only) hangs just before
+	poweroff
+Date: Wed, 02 Dec 2009 11:11:13 +0000
+Message-ID: <4B164B51.6040203__26027.3080006757$1259752332$gmane$org@tuffmail.co.uk>
+References: <4B1575AC.6080904@tuffmail.co.uk> <20091201214529.GA1457@csn.ul.ie>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87638qw2zy.fsf@tac.ki.iif.hu> (Ferenc Wagner's message of "Wed,
-	02 Dec 2009 02:58:41 +0100")
+In-Reply-To: <20091201214529.GA1457@csn.ul.ie>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,54 +18,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Mel Gorman <mel@csn.ul.ie>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Ferenc Wagner <wferi@niif.hu> writes:
-
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->
->> On Tuesday 01 December 2009, Ferenc Wagner wrote:
+Mel Gorman wrote:
+> On Tue, Dec 01, 2009 at 07:59:40PM +0000, Alan Jenkins wrote:
+>   
+>> Hi
 >>
->>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->>> 
->>>> On Tuesday 01 December 2009, Ferenc Wagner wrote:
->>>>
->>>>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->>>>>
->>>>>> In addition to that, you can run multiple hibernation/resume cycles in
->>>>>> a tight loop using the RTC wakealarm.
->>>>> 
->>>>> I'll do so, as soon as I find a way to automatically supply the dm-crypt
->>>>> passphrase... or even better, learn to hibernate to ramdisk from the
->>>>> initramfs. :)
->>>>
->>>> Well, you don't need to use swap encryption for _testing_. :-)
->>> 
->>> I use partition encryption, everything except for /boot is encrypted.
+>> Suspend to disk is (sometimes) hanging for me in 2.6.32-rc.  I finally  
+>> got around to bisecting it, which blamed the following commit by Mel:
 >>
->> If /boot is big enough, you could use a swap file in /boot for the testing.
+>> 5f8dcc2 "page-allocator: split per-cpu list into one-list-per-migrate-type"
+>>
+>> I was able to confirm this by reverting the commit, which fixed the  
+>> hang.  I had to revert one other commit first to avoid a conflict:
+>>
+>> a6f9edd "page-allocator: maintain rolling count of pages to free from  
+>> the PCP"
+>>
+>>     
 >
-> Ramdisk worked good.  Maybe too good, because I left the machine doing
-> s2disks while I was having dinner, and it achieved some 120 suspends
-> without a freeze.  Only the e100 and the mii modules were loaded.
+> Which RC kernel? Specifically, are the commits
 >
-> After some script munging I got the machine automatically boot with an
-> alternate passphrase, so in vivo testing is possible now.  I mean,
-> tomorrow.
+> cc4a6851466039a8a688c843962a05689059ff3b always wake kswapd when restarting an allocation attempt
+> 9d0ed60fe9cd1fbf57f755cd27a23ae9114d7210 Do not allow interrupts to use ALLOC_HARDER
+>
+> applied?
+>
+> The latter one in particular might make a difference if s2disk is
+> pushing the system far below the watermarks. I don't suppose you know
+> where it's hanging? i.e. is it hanging in the allocator itself?
+>   
 
-After almost 100 hibernate/resume cycles, I have to say that this issue
-can't be reproduced by suspending in a tight loop.  I tried that while
-flood pinging my gateway and also with no network activity.  The rc8
-e100 module was loaded all the time.
+After enabling "suspend loglevel = 8" in uswsusp.conf (grr), I saw a 
+pair of hung task backtraces.
 
-> Btw. s2disk has a strange effect of simulating enters during suspend.
-> [...]
-> Can you also see this?
+<http://picasaweb.google.com/Alan.Christopher.Jenkins/Screenshots#5410594126006567282>
 
-It can't be seen from the "sleep 1; s2disk" command, so it's probably an
-artifact from X, when s2disk starts before Enter is released.
--- 
-Regards,
-Feri.
+
+> would you mind trying the following patch?
+> Unfortunately, it's totally untested. The intention of the patch is to
+> use other PCP lists if the desired one cannot be refilled.
+>
+> Thanks.
+>   
+
+Sure, will do.
+
+Thanks
+Alan
