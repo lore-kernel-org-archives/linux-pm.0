@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH ver. 2] PM: allow for usage_count > 0 in
-	pm_runtime_get()
-Date: Thu, 3 Dec 2009 21:03:34 +0100
-Message-ID: <200912032103.34989.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0912031235560.4795-100000@iolanthe.rowland.org>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: System sleep vs. runtime PM
+Date: Thu, 3 Dec 2009 21:11:30 +0100
+Message-ID: <200912032111.30921.oliver@neukum.org>
+References: <Pine.LNX.4.44L0.0912031444300.4795-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912031235560.4795-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912031444300.4795-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,73 +21,30 @@ To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 03 December 2009, Alan Stern wrote:
-> On Wed, 2 Dec 2009, Alan Stern wrote:
-> 
-> > This patch (as1308b) fixes __pm_runtime_get().  Currently the routine
-> > will resume a device if the prior usage count was 0.  But this isn't
-> > right; thanks to pm_runtime_get_noresume() the usage count can be
-> > positive even while the device is suspended.
-> > 
-> > Now the routine always tries to carry out a resume when called
-> > synchronously.  When called asynchronously, it avoids the overhead of
-> > an unnecessary spinlock acquisition by doing the resume only if the
-> > device's state was SUSPENDING or SUSPENDED.  Since the access to the
-> > state is unprotected, be careful to read the value only once.
-> 
-> ...
-> 
-> >  int __pm_runtime_get(struct device *dev, bool sync)
-> >  {
-> > -	int retval = 1;
-> > +	int retval = 0;
-> >  
-> > -	if (atomic_add_return(1, &dev->power.usage_count) == 1)
-> > -		retval = sync ? pm_runtime_resume(dev) : pm_request_resume(dev);
-> > +	atomic_inc(&dev->power.usage_count);
-> > +	if (sync) {
-> > +		retval = pm_runtime_resume(dev);
-> > +	} else {
-> > +		enum rpm_status s = ACCESS_ONCE(dev->power.runtime_status);
-> >  
-> > +		if (s == RPM_SUSPENDING || s == RPM_SUSPENDED)
-> > +			retval = pm_request_resume(dev);
-> > +	}
-> >  	return retval;
-> >  }
-> 
-> I wonder whether this is really a good thing to do.  It changes the
-> semantics in the async case where the device is already active.  The
-> old code would cancel a pending or scheduled suspend request, whereas
-> the new code will leave it alone.
+Am Donnerstag, 3. Dezember 2009 20:52:15 schrieb Alan Stern:
 
-I prefer the old behavior in that respect.
+> That's not necessarily so.  If remote wakeup is disabled at a device
+> between the CPU and the source device, then wakeup events are indeed
+> allowed to get lost.  For example, even though a USB hub may be enabled
+> for remote wakeup, if its host controller isn't then a wakeup event
+> won't generate an IRQ and so won't awaken the system.  And in fact this
+> behavior may be desired by the user.  After all, who would want their
+> laptop to wake up merely because a USB mouse was unplugged?
 
-> My feeling was that an atomic routine would most likely do its work and
-> then schedule a new suspend request before the old one expired, so it
-> wouldn't matter if the old request wasn't cancelled.  Still, some
-> drivers might have their own preferences.
+That is no problem while the system is asleep. It is no good once the system
+wakes up.
+
+> >  But the core doesn't
+> > know specifics. Unless you really want to overengineer this and compute
+> > the reliability of each path, resuming only those whose drivers have
+> > requested that remote wakeup be enabled is the best you can do.
 > 
-> Of course, this is just a convenient utility routine.  Anybody can 
-> simply do
-> 
-> 	pm_runtime_get_noresume(dev);
-> 	switch (ACCESS_ONCE(dev->power.runtime_status)) {
-> 	case RPM_SUSPENDING:
-> 	case RPM_SUSPENDED:
-> 		pm_request_resume(dev);
-> 	default:
-> 	}
-> 
-> and obtain the same effect.  So I don't know...  Should
-> pm_runtime_get() call pm_request_resume() always, or only when the
-> state is SUSPENDING or SUSPENDED?  Should we offer two routines and let
-> people choose which they want?
+> Isn't that what I agreed drivers should do?
 
-I'd prefer to keep the current semantics, ie. drop the patch, at least for now.
+If the algorithm is clear and based only on remote wakeup, why
+would you want to involve drivers?
 
-I think it's reasonable to expect the users of pm_runtime_get_noresume() to
-pay attention. ;-)
+I am afraid we are having a misunderstanding. Could you elaborate?
 
-Thanks,
-Rafael
+	Regards
+		Oliver
