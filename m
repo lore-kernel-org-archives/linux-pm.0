@@ -1,21 +1,13 @@
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: [PATCH] uswsusp: automatically free the in-memory
- image once s2disk has finished with it
-Date: Thu, 03 Dec 2009 12:57:28 +0000
-Message-ID: <4B17B5B8.1060105@tuffmail.co.uk>
-References: <4B1575AC.6080904@tuffmail.co.uk> <20091201214529.GA1457@csn.ul.ie>
-	<200912012253.08522.rjw@sisk.pl> <4B16545B.3090703@tuffmail.co.uk>
-	<20091202122019.GD1457@csn.ul.ie> <4B16797C.3010304@tuffmail.co.uk>
-	<20091202211107.GA20830@elf.ucw.cz>
-	<20091202220718.GI1457@csn.ul.ie>
-	<20091202221524.GB20830@elf.ucw.cz>
-	<20091202222516.GD26702@csn.ul.ie>
-	<20091203075301.GA29440@elf.ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: System sleep vs. runtime PM
+Date: Thu, 3 Dec 2009 10:25:30 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912031020140.4795-100000@iolanthe.rowland.org>
+References: <200912030002.46692.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091203075301.GA29440@elf.ucw.cz>
+In-Reply-To: <200912030002.46692.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,96 +17,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Mel Gorman <mel@csn.ul.ie>, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Pavel Machek wrote:
-> On Wed 2009-12-02 22:25:16, Mel Gorman wrote:
->   
->> On Wed, Dec 02, 2009 at 11:15:24PM +0100, Pavel Machek wrote:
->>     
->>> On Wed 2009-12-02 22:07:18, Mel Gorman wrote:
->>>       
->>>> On Wed, Dec 02, 2009 at 10:11:07PM +0100, Pavel Machek wrote:
->>>>         
->>>>> On Wed 2009-12-02 14:28:12, Alan Jenkins wrote:
->>>>>           
->>>>>> The original in-kernel suspend (swsusp) frees the in-memory hibernation
->>>>>> image before powering off the machine.  s2disk doesn't, so there is
->>>>>> _much_ less free memory when it tries to power off.
->>>>>>
->>>>>> This is a gratuitous difference.  The userspace suspend interface
->>>>>> /dev/snapshot only allows the hibernation image to be read once.
->>>>>> Once the s2disk program has read the last page, we can free the entire
->>>>>> image.
->>>>>>
->>>>>> This avoids a hang after writing the hibernation image which was
->>>>>> triggered by commit 5f8dcc21211a3d4e3a7a5ca366b469fb88117f61
->>>>>> "page-allocator: split per-cpu list into one-list-per-migrate-type":
->>>>>>             
->>>>> Yes, you work around page-allocator hang. But is it right thing to do?
->>>>>
->>>>>           
->>>> What's wrong with it? The hang is likely because the allocator has no
->>>> memory to work with. The patch in question makes small changes to the
->>>> amount of available memory but it shouldn't matter on uni-core. Some
->>>> structures are slightly larger but it's extremely borderline. I'm at a
->>>> loss to explain actually why it makes a difference untill things were
->>>> extremely borderline to begin with.
->>>>         
->>> We reserve 4MB, for such purposes, and we already wrote image to disk
->>> with such constrains, so memory should not be _too_ tight.
->>>
->>> Can you try increasing PAGES_FOR_IO to 8MB or something like that?
->>>
->>>       
->> What's wrong with just freeing the memory that is no longer required?
->>     
->
-> Nothing. But 4MB was enough to power down before, it is not enough
-> now, and I'd like to understand why.
-> 									Pavel
->   
+On Thu, 3 Dec 2009, Oliver Neukum wrote:
 
-Here's a new datum:
+> An evil thought, do we have devices that will always request remote wakeup,
+> without an option to switch it off? What about OTG?
 
-Applying this patch has left a less frequent hang.  So far it has 
-happened twice.  (Once playing last night, and once today testing 
-hibernation with KMS enabled).
+I don't know of any such devices.  USB OTG will depend on the 
+controller design, but I would be surprised to find a controller that 
+didn't let you turn off wakeup-IRQ generation.
 
-This hang happens at a different point.  It happens _before_ writing out 
-the hibernation image.  That is, I don't see the textual progress bar, 
-and if I force a power-cycle then it doesn't resume (and complains about 
-uncleanly unmounted filesystems).
+> > There's yet another issue to discuss.  Suppose a device is
+> > runtime-suspended when a system sleep starts.  When the system wakes
+> > up, should the device be runtime-resumed?  (Assume that the wakeup
+> > settings don't differ; otherwise it has to be.)
+> 
+> That depends on how sure we are to never drop a remote wakeup,
+> not even if requests race or for any other reason. And we must always
+> know what woke us up.
 
-Here is the backtrace:
+This is a complicated question and I will discuss it at greater length 
+in another email.
 
-[top of screen]
-s2disk D c1c05580 0 5988 5809 0x00000000
-...
-Call Trace:
-...
-? wait_for_common
-? default_wake_function
-? kthread_create
-? worker_thread
-? create_workqueue_thread
-? worker_thread
-? __create_workqueue_thread
-? stop_machine_create
-? disable_nonboot_cpus
-? hibernation_snapshot
-? snapshot_ioctl
-...
-? sys_ioctl
+However, I don't see any reason to know what woke us up.  All we really 
+need to know is what devices have wakeup requests outstanding when the 
+system resume is finished.  It doesn't matter which request came first 
+(presumably that was the one which woke us up).
 
-
-It looks like hibernation_snapshot() calls disable_nonboot_cpus() 
-_before_ we allocate the hibernation image.  (I.e. before 
-swsusp_arch_suspend(), which calls swsusp_save()).
-
-So I think Pavel's right, we still need to work out what's happening here.
-
-Regards
-Alan
+Alan Stern
