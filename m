@@ -1,17 +1,11 @@
-From: mark gross <mgross@linux.intel.com>
-Subject: Re: [E1000-devel]
- [PATCH]PM_QOS-to-use-handle-based-requests-network-update 3/5
-Date: Thu, 3 Dec 2009 13:02:59 -0800
-Message-ID: <20091203210259.GA29251__35640.3262274854$1259874391$gmane$org@linux.intel.com>
-References: <20091201213328.GC19688@linux.intel.com>
-	<8DD2590731AB5D4C9DBF71A877482A903E41FB46@orsmsx509.amr.corp.intel.com>
-Reply-To: mgross@linux.intel.com
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: What's in suspend-2.6.git
+Date: Thu, 3 Dec 2009 22:31:56 +0100
+Message-ID: <200912032231.57072.rjw__15281.8117560402$1259876301$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <8DD2590731AB5D4C9DBF71A877482A903E41FB46@orsmsx509.amr.corp.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,135 +15,85 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Allan, Bruce W" <bruce.w.allan@intel.com>
-Cc: "e1000-devel@lists.sourceforge.net" <e1000-devel@lists.sourceforge.net>, linux-pm <linux-pm@lists.linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-will do.
+Hi,
 
---mgross
+This is a summary of the changes queued on the #linux-next branch
+of git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git
+
+They are going to be pushed to Linus in the next couple of days.
+
+PM developers, please speak up if there's anything obviously wrong or missing.
 
 
-On Tue, Dec 01, 2009 at 03:58:26PM -0800, Allan, Bruce W wrote:
-> Thanks for doing this, but I have to NAK the e1000e changes as-is.  Please resubmit against net-next-2.6 as there is already a commit in that tree which conflicts with this patch.
-> 
-> >-----Original Message-----
-> >From: mark gross [mailto:mgross@linux.intel.com]
-> >Sent: Tuesday, December 01, 2009 1:33 PM
-> >To: linux-pm
-> >Cc: e1000-devel@lists.sourceforge.net; lkml
-> >Subject: [E1000-devel] [PATCH]PM_QOS-to-use-handle-based-requests-network-
-> >update 3/5
-> >
-> >update to Ethernet driver dependencies on pm_qos WRT api change to use
-> >handles instead of name strings.
-> >
-> >--mgross
-> >
-> >Signed-off-by: mark gross <mgross@linux.intel.com>
-> >
-> >
-> >>From a72be3a717e474632cbb4281c5f3a433dfa2b0f8 Mon Sep 17 00:00:00 2001
-> >From: mark gross <mgross@mgross-hp8510w.(none)>
-> >Date: Tue, 1 Dec 2009 12:59:52 -0800
-> >Subject: [PATCH 3/5] PM_QOS to use handle based requests network update
-> >
-> >---
-> > drivers/net/e1000e/netdev.c |   13 ++++++-------
-> > drivers/net/igbvf/netdev.c  |    5 +++--
-> > 2 files changed, 9 insertions(+), 9 deletions(-)
-> >
-> >diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-> >index fad8f9e..755c884 100644
-> >--- a/drivers/net/e1000e/netdev.c
-> >+++ b/drivers/net/e1000e/netdev.c
-> >@@ -51,6 +51,7 @@
-> > #define DRV_VERSION "1.0.2-k2"
-> > char e1000e_driver_name[] = "e1000e";
-> > const char e1000e_driver_version[] = DRV_VERSION;
-> >+struct pm_qos_request_list *e1000e_driver_pm_qos_req;
-> >
-> > static const struct e1000_info *e1000_info_tbl[] = {
-> > 	[board_82571]		= &e1000_82571_info,
-> >@@ -2516,11 +2517,9 @@ static void e1000_configure_rx(struct e1000_adapter
-> >*adapter)
-> > 		 * With jumbo frames and early-receive enabled, excessive
-> > 		 * C4->C2 latencies result in dropped transactions.
-> > 		 */
-> >-		pm_qos_update_requirement(PM_QOS_CPU_DMA_LATENCY,
-> >-					  e1000e_driver_name, 55);
-> >+		pm_qos_update_request(e1000e_driver_pm_qos_req, 55);
-> > 	} else {
-> >-		pm_qos_update_requirement(PM_QOS_CPU_DMA_LATENCY,
-> >-					  e1000e_driver_name,
-> >+		pm_qos_update_request(e1000e_driver_pm_qos_req,
-> > 					  PM_QOS_DEFAULT_VALUE);
-> > 	}
-> >
-> >@@ -5417,8 +5416,8 @@ static int __init e1000_init_module(void)
-> > 	printk(KERN_INFO "%s: Copyright (c) 1999-2008 Intel Corporation.\n",
-> > 	       e1000e_driver_name);
-> > 	ret = pci_register_driver(&e1000_driver);
-> >-	pm_qos_add_requirement(PM_QOS_CPU_DMA_LATENCY, e1000e_driver_name,
-> >-			       PM_QOS_DEFAULT_VALUE);
-> >+	e1000e_driver_pm_qos_req = pm_qos_add_request(
-> >+			PM_QOS_CPU_DMA_LATENCY, PM_QOS_DEFAULT_VALUE);
-> >
-> > 	return ret;
-> > }
-> >@@ -5433,7 +5432,7 @@ module_init(e1000_init_module);
-> > static void __exit e1000_exit_module(void)
-> > {
-> > 	pci_unregister_driver(&e1000_driver);
-> >-	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY,
-> >e1000e_driver_name);
-> >+	pm_qos_remove_request(e1000e_driver_pm_qos_req);
-> > }
-> > module_exit(e1000_exit_module);
-> >
-> >diff --git a/drivers/net/igbvf/netdev.c b/drivers/net/igbvf/netdev.c
-> >index 91024a3..0ba48d1 100644
-> >--- a/drivers/net/igbvf/netdev.c
-> >+++ b/drivers/net/igbvf/netdev.c
-> >@@ -47,6 +47,7 @@
-> > #define DRV_VERSION "1.0.0-k0"
-> > char igbvf_driver_name[] = "igbvf";
-> > const char igbvf_driver_version[] = DRV_VERSION;
-> >+struct pm_qos_request_list *igbvf_driver_pm_qos_req;
-> > static const char igbvf_driver_string[] =
-> > 				"Intel(R) Virtual Function Network Driver";
-> > static const char igbvf_copyright[] = "Copyright (c) 2009 Intel
-> >Corporation.";
-> >@@ -2881,7 +2882,7 @@ static int __init igbvf_init_module(void)
-> > 	printk(KERN_INFO "%s\n", igbvf_copyright);
-> >
-> > 	ret = pci_register_driver(&igbvf_driver);
-> >-	pm_qos_add_requirement(PM_QOS_CPU_DMA_LATENCY, igbvf_driver_name,
-> >+	igbvf_driver_pm_qos_req = pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
-> > 	                       PM_QOS_DEFAULT_VALUE);
-> >
-> > 	return ret;
-> >@@ -2897,7 +2898,7 @@ module_init(igbvf_init_module);
-> > static void __exit igbvf_exit_module(void)
-> > {
-> > 	pci_unregister_driver(&igbvf_driver);
-> >-	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY,
-> >igbvf_driver_name);
-> >+	pm_qos_remove_request(igbvf_driver_pm_qos_req);
-> > }
-> > module_exit(igbvf_exit_module);
-> >
-> >--
-> >1.6.3.3
-> >
-> >
-> >--------------------------------------------------------------------------
-> >----
-> >Join us December 9, 2009 for the Red Hat Virtual Experience,
-> >a free event focused on virtualization and cloud computing.
-> >Attend in-depth sessions from your desk. Your couch. Anywhere.
-> >http://p.sf.net/sfu/redhat-sfdev2dev
-> >_______________________________________________
-> >E1000-devel mailing list
-> >E1000-devel@lists.sourceforge.net
-> >https://lists.sourceforge.net/lists/listinfo/e1000-devel
+Alan Stern (2):
+      PM / Runtime: Export the PM runtime workqueue
+      PM / Runtime: Use deferred_resume flag in pm_request_resume
+
+Jaswinder Singh Rajput (1):
+      PM: Fix kernel-doc notation
+
+Jiri Slaby (1):
+      PM / Hibernate: Swap, use KERN_CONT
+
+Nigel Cunningham (2):
+      PM / Hibernate: Move swap functions to kernel/power/swap.c.
+      PM / Hibernate: Shift remaining code from swsusp.c to hibernate.c
+
+Rafael J. Wysocki (15):
+      PM: Introduce PM links framework
+      PM: Asynchronous resume of devices
+      PM: Asynchronous suspend of devices
+      PM: Allow PCI devices to suspend/resume asynchronously
+      PM: Allow ACPI devices to suspend/resume asynchronously
+      PM: Add a switch for disabling/enabling asynchronous suspend/resume
+      PM: Measure device suspend and resume times
+      PM: Add facility for advanced testing of async suspend/resume
+      PM: Measure suspend and resume times for individual devices
+      PM: Allow serio input devices to suspend/resume asynchronously
+      PM / Runtime: Fix lockdep warning in __pm_runtime_set_status()
+      PM / Runtime: Ensure timer_expires is nonzero in pm_schedule_suspend()
+      PM / Runtime: Make documentation of runtime_idle() agree with the code
+      PM / Runtime: Remove unnecessary braces in __pm_runtime_set_status()
+      PM: Add flag for devices capable of generating run-time wake-up events
+
+Stephen Rothwell (1):
+      PM / Suspend: Using TASK_ macros requires sched.h
+
+Tejun Heo (1):
+      PM / freezer: Don't get over-anxious while waiting
+
+---------------
+
+ Documentation/power/runtime_pm.txt |   12 +-
+ drivers/acpi/glue.c                |    3 +
+ drivers/acpi/scan.c                |    1 +
+ drivers/base/core.c                |    4 +
+ drivers/base/power/Makefile        |    2 +-
+ drivers/base/power/common.c        |  283 +++++++++++++++
+ drivers/base/power/main.c          |  677 +++++++++++++++++++++++++++++++++---
+ drivers/base/power/power.h         |   42 ++-
+ drivers/base/power/runtime.c       |   27 +-
+ drivers/base/power/sysfs.c         |   47 +++
+ drivers/input/serio/serio.c        |    1 +
+ drivers/pci/pci.c                  |    1 +
+ drivers/pci/pcie/portdrv_core.c    |    1 +
+ include/linux/device.h             |   11 +
+ include/linux/pm.h                 |   21 +-
+ include/linux/pm_link.h            |   30 ++
+ include/linux/pm_runtime.h         |   12 +
+ include/linux/resume-trace.h       |    7 +
+ kernel/power/Kconfig               |   14 +
+ kernel/power/Makefile              |    2 +-
+ kernel/power/hibernate.c           |   26 ++
+ kernel/power/main.c                |   32 ++-
+ kernel/power/process.c             |   14 +-
+ kernel/power/swap.c                |  107 ++++++-
+ kernel/power/swsusp.c              |  188 ----------
+ 25 files changed, 1281 insertions(+), 284 deletions(-)
+
+Thanks,
+Rafael
