@@ -1,16 +1,14 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [RFC][PATCH 10/12] PCI / ACPI PM: Platform support
-	for PCI PME	wake-up (rev. 4)
-Date: Fri, 4 Dec 2009 16:21:07 +0000
-Message-ID: <20091204162107.GA13371__13102.1029352725$1259943753$gmane$org@srcf.ucam.org>
-References: <200911160047.46299.rjw@sisk.pl> <200911291632.44763.rjw@sisk.pl>
-	<200911291642.20172.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] Runtime PM: Adding explicit check to make
+ sure dev->parent supports runtime PM before accessing its PM fields.
+Date: Fri, 4 Dec 2009 11:47:59 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912041130571.3070-100000@iolanthe.rowland.org>
+References: <175E0F9A9EFCEA46A65F5552BB057298C5C4F11C@bgsmsx502.gar.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200911291642.20172.rjw@sisk.pl>
+In-Reply-To: <175E0F9A9EFCEA46A65F5552BB057298C5C4F11C@bgsmsx502.gar.corp.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,31 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Francois Romieu <romieu@fr.zoreil.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Mahalingam, Nithish" <nithish.mahalingam@intel.com>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Nov 29, 2009 at 04:42:20PM +0100, Rafael J. Wysocki wrote:
+Can you please tell your email client to wrap lines after 72 columns or 
+so?
 
-> +	if (event == ACPI_NOTIFY_DEVICE_WAKE) {
-> +		if (nb->dev->wakeup.run_wake_count > 0) {
-> +			if (nb->pci_bus)
-> +				pci_pme_wakeup_bus(nb->pci_bus);
-> +			if (nb->pci_dev)
-> +				pci_pme_wakeup(nb->pci_dev);
+On Fri, 4 Dec 2009, Mahalingam, Nithish wrote:
 
-We may receive wakeup events on devices that aren't PME capable, which 
-is the case for uhci on my test box. In that case we probably want to 
-wake them up unconditionally.
+> >> The below patch makes sure that dev->parent supports runtime PM before accessing its PM fields. Though the code does this check at a later point in time, doing it earlier > can optimize the code flow.
+> 
+> > This is not a good idea.  Those fields should be set correctly even if 
+> > the parent's disable_depth is positive.  What would happen if the 
+> > fields were wrong and then somebody called pm_runtime_enable(parent)?
+> 
+> Yes Alan, those fields do get set but if you look at __pm_runtime_set_status function -
+> 
+> 	if (status == RPM_SUSPENDED) {
+> 		/* It always is possible to set the status to 'suspended'. */
+> 		if (parent) {
+> 			atomic_add_unless(&parent->power.child_count, -1, 0);
+> 			notify_parent = !parent->power.ignore_children;
+> 		}
+> 		goto out_set;
+> 	}
+> 
+> This code gets executed without doing any check to see if the parent supports runtime PM. Doing explicit check before can avoid executing these code at runtime.
 
-+                       if (nb->pci_dev) {
-+                               if (nb->pci_dev->pm_cap)
-+                                       pci_pme_wakeup(nb->pci_dev);
-+                               else
-+                                       pm_request_resume(&nb->pci_dev->dev);
+And that would be a mistake.  If the code wasn't executed then
+parent->power.child_count would contain an incorrect value.  However, I
+agree that it might make sense to avoid setting notify_parent if the
+parent is disabled.
 
-seems to work, though possibly we should assume that the firmware knows 
-best and always schedule a wake in respose to a resume request?
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Alan Stern
