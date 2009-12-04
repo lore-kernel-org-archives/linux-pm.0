@@ -1,8 +1,8 @@
-From: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] intel_txt: add s3 userspace memory integrity
-	verification
-Date: Fri, 4 Dec 2009 12:05:22 +0100
-Message-ID: <20091204110522.GR18989__42128.0687711716$1259924877$gmane$org@one.firstfloor.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] intel_txt: add s3 userspace memory
+	integrity	verification
+Date: Fri, 4 Dec 2009 09:29:27 +0100
+Message-ID: <20091204082927.GF1540__45181.942129466$1259939600$gmane$org@ucw.cz>
 References: <4B18D26B.4040500@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,200 +23,44 @@ To: Shane Wang <shane.wang@intel.com>
 Cc: len.brown@intel.com, "Cihula, Joseph" <joseph.cihula@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "jbeulich@novell.com" <jbeulich@novell.com>, "jmorris@namei.org" <jmorris@namei.org>, "chrisw@sous-sol.org" <chrisw@sous-sol.org>, "peterm@redhat.com" <peterm@redhat.com>, Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, "arjan@linux.intel.com" <arjan@linux.intel.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 04, 2009 at 05:12:11PM +0800, Shane Wang wrote:
-> diff -r c878d454dc8b arch/x86/kernel/entry_64.S
-> --- a/arch/x86/kernel/entry_64.S	Wed Dec 02 01:06:32 2009 -0800
-> +++ b/arch/x86/kernel/entry_64.S	Thu Dec 03 07:22:17 2009 -0800
-> @@ -1275,6 +1275,26 @@ ENTRY(call_softirq)
->  	CFI_ENDPROC
->  END(call_softirq)
-> 
-> +#ifdef CONFIG_INTEL_TXT
-> +/* void tboot_switch_stack_call(void (*target_func)(void), u64 new_rsp) */
-> +ENTRY(tboot_switch_stack_call)
 
-I would drop the tboot_ prefix, stack switching can be useful for other
-things too.
 
-> +	CFI_STARTPROC
-> +	push %rbp
-> +	CFI_ADJUST_CFA_OFFSET	8
-> +	CFI_REL_OFFSET	rbp,0
-> +	mov %rsp, %rbp
-> +	CFI_DEF_CFA_REGISTER	rbp
+> This patch added verification for userspace memory integrity after
+>  S3 resume.
 
-Did you verify that the dwarf2 really works and gdb can backtrace through
-it?
+It does not work.
 
+> Integrity verification for other memory (say kernel itself) has been done by tboot.
+>
+
+Not true. Kernel  uses memory above 4G on x86-64. Including... say
+console writing functions.
+
+You can patch holes, but without description 'what does this protect
+against' it is almost impossible to evaluate.
+
+
+> +void tboot_do_suspend_lowlevel(void)
 > +{
-> +	BUG_ON((new_stack != NULL) || (new_stack_ptr != NULL));
+> +	int ret = -1;
 > +
-> +	/*
-> +	 * as long as thread info is above 4G, then switch stack,
-> +	 * since tboot can't access >4G stack for MACing
-> +	 */
-> +	if (!((PFN_PHYS(PFN_DOWN(virt_to_phys(current_thread_info())))
-> +		+ (PFN_UP(THREAD_SIZE) << PAGE_SHIFT))
-> +		& 0xffffffff00000000UL))
-> +		return -1;
-
-All the PFN_*s seem somewhat redundant, it would be easier to keep
-everything shifted up in the first place.
-
-> +
-> +	new_stack = (char *)__get_free_pages(GFP_DMA32, IRQ_STACK_ORDER);
-> +
-> +	BUG_ON(new_stack == NULL);
-
-GFP_REPEAT at least? BUG_ON is a nasty way to handle out of memory
-
-> +	memset(new_stack, 0, IRQ_STACK_SIZE);
-
-GFP_ZERO
-> +	new_stack_ptr = new_stack + IRQ_STACK_SIZE - 64;
-
-Why - 64?
-
-> +
-> +	return 0;
-> +}
-> +
-> +static void tboot_post_stack_switch(void)
-> +{
-> +	BUG_ON((new_stack == NULL) || (new_stack_ptr == NULL));
-> +
-> +	free_pages((unsigned long)new_stack, IRQ_STACK_ORDER);
-> +	new_stack = NULL;
-> +	new_stack_ptr = NULL;
-> +}
-> +
-> +extern void tboot_switch_stack_call(void (*target_func)(void), u64 
-> new_rsp);
-
-Typically those should be in some header.
-
-> +	struct page *page;
-> +	uint64_t paddr, rstart, rend;
-> +	unsigned long pfn;
-> +	uint8_t zeroed_key[VMAC_KEY_LEN];
-> +
-> +	if (!tfm)
-> +		tfm = crypto_alloc_hash("vmac(aes)", 0, CRYPTO_ALG_ASYNC);
-> +
-> +	if (IS_ERR(tfm)) {
-> +		tfm = NULL;
-> +		return -ENOMEM;
+> +	if (!tboot_enabled()) {
+> +		do_suspend_lowlevel();
+> +		return;
 > +	}
 > +
-> +	desc.tfm = tfm;
-> +	desc.flags = 0;
-> +
-> +	sg_init_table(sg, 1);
-> +
-> +	ret = crypto_hash_init(&desc);
-> +	if (ret)
-> +		return ret;
-> +	ret = crypto_hash_setkey(desc.tfm, key, VMAC_KEY_LEN);
-> +	if (ret)
-> +		return ret;
-> +
-> +	for_each_online_pgdat(pgdat) {
+> +	ret = tboot_pre_stack_switch();
+> +	if (!ret) {
+> +		tboot_switch_stack_call(tboot_do_suspend_lowlevel_call,
+> +					(u64)new_stack_ptr);
 
-No locking against memory hotplug? Even if user space is still down
-doing that would be safer
+...and here you add requirements to suspend_lowlevel that were not
+there before. ("May not act on unchecksummed memory"), without
+documenting them.
 
-> +		unsigned long flags;
-> +
-> +		pgdat_resize_lock(pgdat, &flags);
-> +		for (i = 0, pfn = pgdat->node_start_pfn;
-> +			i < pgdat->node_spanned_pages;
-> +			i++, pfn = pgdat->node_start_pfn + i) {
-> +
-> +			if (!pfn_valid(pfn) || !page_is_ram(pfn))
-> +				continue;
+NAK.
+									Pavel
 
-You probably should consider a faster way to skip holes, doing
-them piece by piece might well be a performance problem on very
-holey systems. Especially page_is_ram() is quite slow.
-
-> +					|| (rend <= paddr))
-> +					continue;
-> +				break;
-> +			}
-> +
-> +			if (j == tboot->num_mac_regions) {
-> +				sg_set_page(sg, page, PAGE_SIZE, 0);
-> +#ifdef CONFIG_DEBUG_PAGEALLOC
-> +			/*
-> +			 * check if the page we are going to MAC is marked as
-> +			 * present in the kernel page tables.
-> +			 */
-> +			if (!kernel_page_present(page)) {
-> +				kernel_map_pages(page, 1, 1);
-> +				ret = crypto_hash_update(&desc, sg, 
-> PAGE_SIZE);
-> +				kernel_map_pages(page, 1, 0);
-
-Nasty, might be racy -- better use a separate mapping in this case.
-
-> +#ifdef CONFIG_X86_64
-> +	/*
-> +	 * for stack > 4G, we should MAC the stack in the kernel after 
-> switch,
-> +	 * for stack < 4G, the stack is MACed by tboot
-> +	 */
-
-This special case seems quite ugly, with all its ifdefs and lots
-of special code. 
-Can't you just MAC the stack always? Shouldn't be that expensive. 
-
-> +	else
-> +#endif
-> +		add_mac_region(virt_to_phys(current_thread_info()),
-> +				THREAD_SIZE); /* < 4G */
-> +
-> +	/* MAC userspace memory not handled by tboot */
-> +	get_random_bytes(tboot->s3_key, sizeof(tboot->s3_key));
-
-That's early in boot isn't it? It's quite doubtful you'll get
-anything even vaguely random out of get_random_bytes at this point, may be not
-even the time.
-
->  	}
-> 
->  	tboot_shutdown(acpi_shutdown_map[sleep_state]);
-> +}
-> +
-> +static void tboot_sx_resume(void)
-> +{
-> +	vmac_t mac;
-> +
-> +	if (tboot_gen_mem_integrity(tboot->s3_key, &mac))
-> +		panic("tboot: vmac generation failed\n");
-> +	else if (mac != mem_mac)
-> +#ifdef CONFIG_DEBUG_KERNEL
-> +		pr_debug("tboot: memory integrity %llx -> %llx\n",
-> +				mem_mac, mac);
-> +#else
-> +		panic("tboot: memory integrity was lost on resume\n");
-> +#endif
-
-I don't think DEBUG_KERNEL is supposed to be used like this, better
-probably a separate option if it makes sense.
-
-Typical problem with panics at this point: is anything even visible
-on the screen?
-
->  
-> +#ifdef CONFIG_INTEL_TXT
-> +/* void tboot_switch_stack_call(void (*target_func)(void), u64 new_rsp) */
-> +ENTRY(tboot_switch_stack_call)
-
-Hmm, I thought i had seen that earlier already? Is it a copy?
-
-BTW there's no reason all of this has to be in entry*.S, that
-file is already quite crowded.
-
-The patch is duplicated here?
-
--Andi
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
