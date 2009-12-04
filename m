@@ -1,15 +1,15 @@
-From: "Cihula, Joseph" <joseph.cihula@intel.com>
-Subject: Re: [PATCH] intel_txt: add s3 userspace memory
-	integrity	verification
-Date: Fri, 4 Dec 2009 08:52:12 -0800
-Message-ID: <4F65016F6CB04E49BFFA15D4F7B798D9AEDDD4DC__12656.6728031777$1259960443$gmane$org@orsmsx506.amr.corp.intel.com>
-References: <4B18D26B.4040500@intel.com> <20091204082927.GF1540@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 10/12] PCI / ACPI PM: Platform support
+	for PCI PME wake-up (rev. 4)
+Date: Fri, 4 Dec 2009 22:15:03 +0100
+Message-ID: <200912042215.03776.rjw__28996.1608396426$1259961344$gmane$org@sisk.pl>
+References: <200911160047.46299.rjw@sisk.pl> <200911291642.20172.rjw@sisk.pl>
+	<20091204162107.GA13371@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091204082927.GF1540@ucw.cz>
-Content-Language: en-US
+In-Reply-To: <20091204162107.GA13371@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,54 +19,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>, "Wang, Shane" <shane.wang@intel.com>
-Cc: "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "jbeulich@novell.com" <jbeulich@novell.com>, "jmorris@namei.org" <jmorris@namei.org>, "chrisw@sous-sol.org" <chrisw@sous-sol.org>, "peterm@redhat.com" <peterm@redhat.com>, Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, "arjan@linux.intel.com" <arjan@linux.intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Francois Romieu <romieu@fr.zoreil.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> From: Pavel Machek [mailto:pavel@ucw.cz]
-> Sent: Friday, December 04, 2009 12:29 AM
->
-> > This patch added verification for userspace memory integrity after
-> >  S3 resume.
->
-> It does not work.
->
-> > Integrity verification for other memory (say kernel itself) has been done by tboot.
-> >
->
-> Not true. Kernel  uses memory above 4G on x86-64. Including... say
-> console writing functions.
+On Friday 04 December 2009, Matthew Garrett wrote:
+> On Sun, Nov 29, 2009 at 04:42:20PM +0100, Rafael J. Wysocki wrote:
+> 
+> > +	if (event == ACPI_NOTIFY_DEVICE_WAKE) {
+> > +		if (nb->dev->wakeup.run_wake_count > 0) {
+> > +			if (nb->pci_bus)
+> > +				pci_pme_wakeup_bus(nb->pci_bus);
+> > +			if (nb->pci_dev)
+> > +				pci_pme_wakeup(nb->pci_dev);
+> 
+> We may receive wakeup events on devices that aren't PME capable, which 
+> is the case for uhci on my test box. In that case we probably want to 
+> wake them up unconditionally.
+> 
+> +                       if (nb->pci_dev) {
+> +                               if (nb->pci_dev->pm_cap)
+> +                                       pci_pme_wakeup(nb->pci_dev);
+> +                               else
+> +                                       pm_request_resume(&nb->pci_dev->dev);
+> 
+> seems to work, though possibly we should assume that the firmware knows 
+> best and always schedule a wake in respose to a resume request?
 
-I've responded to that in your previous email thread, so let's keep the technical discussion of what is MAC'ed to just that one thread.
+I  think we can simply do:
 
-> You can patch holes, but without description 'what does this protect
-> against' it is almost impossible to evaluate.
->
->
-> > +void tboot_do_suspend_lowlevel(void)
-> > +{
-> > +   int ret = -1;
-> > +
-> > +   if (!tboot_enabled()) {
-> > +           do_suspend_lowlevel();
-> > +           return;
-> > +   }
-> > +
-> > +   ret = tboot_pre_stack_switch();
-> > +   if (!ret) {
-> > +           tboot_switch_stack_call(tboot_do_suspend_lowlevel_call,
-> > +                                   (u64)new_stack_ptr);
->
-> ...and here you add requirements to suspend_lowlevel that were not
-> there before. ("May not act on unchecksummed memory"), without
-> documenting them.
++        if (nb->pci_dev) {
++                pci_pme_wakeup(nb->pci_dev);
++                pm_request_resume(&nb->pci_dev->dev);
++        }
 
-Really the only requirement is (as discussed in the previous thread) that it only use code and data within [_text, _end - _text]--do you think that this really needs to be called out?  do_suspend_lowlevel() is a very simple function that has just the one (resume path) call to another simple function--it doesn't seem likely that it would violate this.
+If the pci_pme_wakeup() spawns a resume request, the other call will just
+return.
 
->
-> NAK.
->                                                                       Pavel
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks,
+Rafael
