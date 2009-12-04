@@ -1,10 +1,16 @@
-From: Pierre Ossman <pierre@ossman.eu>
-Subject: Resume hanging on MSI motherboard
-Date: Thu, 3 Dec 2009 21:46:22 +0100
-Message-ID: <20091203214622.0cf1716d@mjolnir.ossman.eu>
+From: "Mahalingam, Nithish" <nithish.mahalingam@intel.com>
+Subject: Re: [PATCH] Runtime PM: Adding explicit check to make
+ sure dev->parent supports runtime PM before accessing its PM fields.
+Date: Fri, 4 Dec 2009 21:43:21 +0530
+Message-ID: <175E0F9A9EFCEA46A65F5552BB057298C5C4F11C@bgsmsx502.gar.corp.intel.com>
+References: <175E0F9A9EFCEA46A65F5552BB057298C5C4EDD5@bgsmsx502.gar.corp.intel.com>
+	<Pine.LNX.4.44L0.0912041021140.3070-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4555957689360948393=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912041021140.3070-100000@iolanthe.rowland.org>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,76 +18,38 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+>> The below patch makes sure that dev->parent supports runtime PM before accessing its PM fields. Though the code does this check at a later point in time, doing it earlier > can optimize the code flow.
 
---===============4555957689360948393==
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-3370-1259873190-0001-2"
+> This is not a good idea.  Those fields should be set correctly even if 
+> the parent's disable_depth is positive.  What would happen if the 
+> fields were wrong and then somebody called pm_runtime_enable(parent)?
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Yes Alan, those fields do get set but if you look at __pm_runtime_set_status function -
 
---=_freyr.ossman.eu-3370-1259873190-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+	if (status == RPM_SUSPENDED) {
+		/* It always is possible to set the status to 'suspended'. */
+		if (parent) {
+			atomic_add_unless(&parent->power.child_count, -1, 0);
+			notify_parent = !parent->power.ignore_children;
+		}
+		goto out_set;
+	}
 
-I have a MSI Neo2-Digital board that I'm trying to get suspend working
-on. I'm not having much luck though, so I need some pointers on how to
-debug this.
+This code gets executed without doing any check to see if the parent supports runtime PM. Doing explicit check before can avoid executing these code at runtime.
 
-The symptoms are that the machine shuts down when suspend is triggered
-and wakes up when the power button is pressed or an usb device pokes
-it. Unfortunately it never gets back to a running state. It rattles a
-bit on the disk, powers up the fans and turns on the LEDs, but that's
-it.
+> Whether this change optimizes the code flow is not entirely clear.  
+> Sure, it speeds things up a little in the case where the parent is
+> disabled.  But it also slows things down in the case where the parent
+> is enabled.
 
-Doing a suspend in Windows has entirely different behaviour. There it
-keeps all fans running, and doesn't do much in the way of saving power.
-It goes from 90 W to 67 W from idle to "standby". The [broken] state
-Linux puts the system in OTOH runs at 13 W ("off" is 10 W).
-
-I've been trying to use pm_trace to debug where things lock up, but I'm
-not able to get it to work. I do "echo 1 > /sys/power/pm_trace" and
-then suspend the machine. But at the next boot, the clock is still sane
-so it seems like the PM code never stores anything.
-
-Help :/
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by FRA, a
-  Swedish intelligence agency. Make sure your server uses
-  encryption for SMTP traffic and consider using PGP for
-  end-to-end encryption.
-
---=_freyr.ossman.eu-3370-1259873190-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.13 (GNU/Linux)
-
-iEYEARECAAYFAksYI6EACgkQ7b8eESbyJLh2OACg6FgTgaRw1TiluYluBPSdt6Qk
-0vYAmwWY5hPkEAdKp1HD9wVBKbaFw6LE
-=hQB3
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-3370-1259873190-0001-2--
-
---===============4555957689360948393==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+As I mentioned the checks do happen in the code at a later point in time so these are not extra checks which will slow things when parent is enabled. But pulling this check up will avoid lot many other PM fields (like lock etc) access when runtime is not enabled, which I think is optimization.
 
 
---===============4555957689360948393==--
+Regards,	
+Nithish Mahalingam
