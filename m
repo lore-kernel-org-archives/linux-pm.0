@@ -1,14 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] Runtime PM: Adding explicit check to make
- sure dev->parent supports runtime PM before accessing its PM fields.
-Date: Fri, 4 Dec 2009 21:43:20 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912042139000.7227-100000@netrider.rowland.org>
-References: <175E0F9A9EFCEA46A65F5552BB057298C5C4F193@bgsmsx502.gar.corp.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [GIT PULL] PM updates for 2.6.33
+Date: Sat, 5 Dec 2009 22:16:19 +0100
+Message-ID: <200912052216.19540.rjw__13155.5638894953$1260047862$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <175E0F9A9EFCEA46A65F5552BB057298C5C4F193@bgsmsx502.gar.corp.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,28 +15,90 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Mahalingam, Nithish" <nithish.mahalingam@intel.com>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 5 Dec 2009, Mahalingam, Nithish wrote:
+Hi Linus,
 
-> > The most troublesome case arises when you have a parent which is 
-> > disabled for runtime PM and later on becomes enabled.  This may not 
-> > happen very often -- it may not happen at all.  I would expect that if 
-> > a device changes from disabled to enabled, it probably does so before 
-> > acquiring any children.  But we can't be certain of this.
-> 
-> OK, get what you are saying. I was thinking of a particular use case and 
-> before I talk about that let me prototype and see if I hit this 
-> particular case.
+Please pull power management updates for 2.6.33 from:
 
-All right.  If it does turn out that devices _never_ change from 
-disabled to enabled while they have children (we could add a check for 
-this!) then you are right -- it's not necessary to update 
-parent->power.child_count if the parent is disabled.
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
 
-But the only way to be sure it will never happen is to forbid it
-explicitly in the documentation.
+They include:
 
-Alan Stern
+* Asynchronous suspend and resume infrastructure.  For now, PCI, ACPI and
+  serio devices are enabled to suspend and resume asynchronously.
+
+* Fixes for the runtime PM framework.
+
+* Hibernate cleanups from Nigel and Jiri Slaby.
+
+* Freezer optimisation from Tejun.
+
+
+ Documentation/power/runtime_pm.txt |   12 +-
+ drivers/acpi/glue.c                |    3 +
+ drivers/acpi/scan.c                |    1 +
+ drivers/base/core.c                |    4 +
+ drivers/base/power/Makefile        |    2 +-
+ drivers/base/power/common.c        |  283 +++++++++++++++
+ drivers/base/power/main.c          |  677 +++++++++++++++++++++++++++++++++---
+ drivers/base/power/power.h         |   42 ++-
+ drivers/base/power/runtime.c       |   27 +-
+ drivers/base/power/sysfs.c         |   47 +++
+ drivers/input/serio/serio.c        |    1 +
+ drivers/pci/pci.c                  |    1 +
+ drivers/pci/pcie/portdrv_core.c    |    1 +
+ include/linux/device.h             |   11 +
+ include/linux/pm.h                 |   21 +-
+ include/linux/pm_link.h            |   30 ++
+ include/linux/pm_runtime.h         |   12 +
+ include/linux/resume-trace.h       |    7 +
+ kernel/power/Kconfig               |   14 +
+ kernel/power/Makefile              |    2 +-
+ kernel/power/hibernate.c           |   26 ++
+ kernel/power/main.c                |   32 ++-
+ kernel/power/process.c             |   14 +-
+ kernel/power/swap.c                |  107 ++++++-
+ kernel/power/swsusp.c              |  188 ----------
+ 25 files changed, 1281 insertions(+), 284 deletions(-)
+
+---------------
+
+Alan Stern (2):
+      PM / Runtime: Export the PM runtime workqueue
+      PM / Runtime: Use deferred_resume flag in pm_request_resume
+
+Jaswinder Singh Rajput (1):
+      PM: Fix kernel-doc notation
+
+Jiri Slaby (1):
+      PM / Hibernate: Swap, use KERN_CONT
+
+Nigel Cunningham (2):
+      PM / Hibernate: Move swap functions to kernel/power/swap.c.
+      PM / Hibernate: Shift remaining code from swsusp.c to hibernate.c
+
+Rafael J. Wysocki (15):
+      PM: Introduce PM links framework
+      PM: Asynchronous resume of devices
+      PM: Asynchronous suspend of devices
+      PM: Allow PCI devices to suspend/resume asynchronously
+      PM: Allow ACPI devices to suspend/resume asynchronously
+      PM: Add a switch for disabling/enabling asynchronous suspend/resume
+      PM: Measure device suspend and resume times
+      PM: Add facility for advanced testing of async suspend/resume
+      PM: Measure suspend and resume times for individual devices
+      PM: Allow serio input devices to suspend/resume asynchronously
+      PM / Runtime: Fix lockdep warning in __pm_runtime_set_status()
+      PM / Runtime: Ensure timer_expires is nonzero in pm_schedule_suspend()
+      PM / Runtime: Make documentation of runtime_idle() agree with the code
+      PM / Runtime: Remove unnecessary braces in __pm_runtime_set_status()
+      PM: Add flag for devices capable of generating run-time wake-up events
+
+Stephen Rothwell (1):
+      PM / Suspend: Using TASK_ macros requires sched.h
+
+Tejun Heo (1):
+      PM / freezer: Don't get over-anxious while waiting
