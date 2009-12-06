@@ -1,16 +1,12 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2 1/2] Input: gpio-keys - allow platform
-	to	specify exact irq flags
-Date: Sun, 6 Dec 2009 09:47:04 +0100
-Message-ID: <20091206084704.GC2766__9568.5861226686$1260131242$gmane$org@ucw.cz>
-References: <Pine.LNX.4.44L0.0911300956400.4478-100000@iolanthe.rowland.org>
-	<87einfltp3.fsf@tac.ki.iif.hu>
+From: Arjan van de Ven <arjan@infradead.org>
+Subject: [PATCH] suspend: add initcall_debug style timing for
+	suspend/resume
+Date: Sun, 6 Dec 2009 12:35:52 -0800
+Message-ID: <20091206123552.7be316b2__38430.3478910171$1260131711$gmane$org@infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <87einfltp3.fsf@tac.ki.iif.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,46 +16,117 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: linux-pm@lists.linux-foundation.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Mika Westerberg <mika.westerberg@iki.fi>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
 
+>From fcd52b97aa02f19baa570e4a62dfdfab0faed976 Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Sun, 6 Dec 2009 12:32:28 -0800
+Subject: [PATCH] suspend: add initcall_debug style timing for suspend/resume
 
-> But runtime-pm.txt says for example:
-> 
->     Generally, remote wake-up should be enabled for all input devices
->     put into a low power state at run time.
-> 
-> But in this case the requirement is to suppress input events from a
-> given device, effectively muting and putting it into low power state,
-> even though it's still open by some other parties.  Runtime PM, on the
-> other hand tries not to interfere with the normal usage of the device.
-> 
-> Later:
-> 
-> (3) ->runtime_idle() and ->runtime_suspend() can only be executed for a
->     device the usage counter of which is equal to zero _and_ [...]
-> 
-> which underlines the difference again: the usage counter (defined by
-> common sense) won't be zero in our case, because the device is
-> constantly kept open, while we want to mute it, putting it into a low
-> power state. 
-...
-> Actually, this could be implemented by the various users cooperating in
-> closing the device, letting it go to sleep automatically.  But this
-> requires strictly cooperating parties and is more complicated that
-> flipping some master switch of the device.  We're looking for this
-> master switch, before needlessly building our own.
+In order to diagnose overall suspend/resume times, we need
+basic instrumentation to break down the total time into per
+device timing, similar to initcall_debug.
 
-Please just close the device properly. I do not think we want 100
-different 'please mute keys A and G', 'please mute middle mouse button',
-... interfaces anywhere near mainline.
+This patch adds the basic timing instrumentation, needed
+for a scritps/bootgraph.pl equivalent or humans.
+The bootgraph.pl program is still a work in progress, but
+is far enough along to know that this patch is sufficient.
 
-Or just do it as local patch.
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ drivers/base/power/main.c |   29 +++++++++++++++++++++++++++++
+ include/linux/init.h      |    2 ++
+ 2 files changed, 31 insertions(+), 0 deletions(-)
 
-									Pavel
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 8aa2443..2ad345c 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -25,6 +25,7 @@
+ #include <linux/resume-trace.h>
+ #include <linux/rwsem.h>
+ #include <linux/interrupt.h>
++#include <linux/sched.h>
+ 
+ #include "../base.h"
+ #include "power.h"
+@@ -172,6 +173,12 @@ static int pm_op(struct device *dev,
+ 		 pm_message_t state)
+ {
+ 	int error = 0;
++	ktime_t calltime, delta, rettime;
++
++	if (initcall_debug) {
++		printk("calling  %s+ @ %i\n", dev_name(dev), task_pid_nr(current));
++		calltime = ktime_get();
++	}
+ 
+ 	switch (state.event) {
+ #ifdef CONFIG_SUSPEND
+@@ -219,6 +226,14 @@ static int pm_op(struct device *dev,
+ 	default:
+ 		error = -EINVAL;
+ 	}
++
++	if (initcall_debug) {
++		rettime = ktime_get();
++		delta = ktime_sub(rettime, calltime);
++		printk("initcall %s+ returned %d after %Ld usecs\n", dev_name(dev),
++			error, (unsigned long long) ktime_to_ns(delta) >> 10);
++	}
++
+ 	return error;
+ }
+ 
+@@ -236,6 +251,12 @@ static int pm_noirq_op(struct device *dev,
+ 			pm_message_t state)
+ {
+ 	int error = 0;
++	ktime_t calltime, delta, rettime;
++
++	if (initcall_debug) {
++		printk("calling  %s_i+ @ %i\n", dev_name(dev), task_pid_nr(current));
++		calltime = ktime_get();
++	}
+ 
+ 	switch (state.event) {
+ #ifdef CONFIG_SUSPEND
+@@ -283,6 +304,14 @@ static int pm_noirq_op(struct device *dev,
+ 	default:
+ 		error = -EINVAL;
+ 	}
++
++	if (initcall_debug) {
++		rettime = ktime_get();
++		delta = ktime_sub(rettime, calltime);
++		printk("initcall %s_i+ returned %d after %Ld usecs\n", dev_name(dev),
++			error, (unsigned long long) ktime_to_ns(delta) >> 10);
++	}
++
+ 	return error;
+ }
+ 
+diff --git a/include/linux/init.h b/include/linux/init.h
+index ff8bde5..ab1d31f 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -149,6 +149,8 @@ void prepare_namespace(void);
+ 
+ extern void (*late_time_init)(void);
+ 
++extern int initcall_debug;
++
+ #endif
+   
+ #ifndef MODULE
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.6.2.5
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
