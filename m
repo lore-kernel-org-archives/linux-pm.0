@@ -1,14 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Ingo Molnar <mingo@elte.hu>
 Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Sun, 6 Dec 2009 03:36:23 +0100
-Message-ID: <200912060336.24029.rjw__16656.3842715279$1260067027$gmane$org@sisk.pl>
-References: <200912052216.19540.rjw@sisk.pl> <200912060254.10081.rjw@sisk.pl>
-	<alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
+Date: Sun, 6 Dec 2009 09:39:41 +0100
+Message-ID: <20091206083941.GA2881__15695.3868842267$1260088874$gmane$org@elte.hu>
+References: <200912052216.19540.rjw@sisk.pl> <200912060055.36130.rjw@sisk.pl>
+	<20091205164541.5e0f209a@infradead.org>
+	<200912060226.06217.rjw@sisk.pl>
+	<20091205175852.2500cdad@infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
+Content-Disposition: inline
+In-Reply-To: <20091205175852.2500cdad@infradead.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,71 +21,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 06 December 2009, Linus Torvalds wrote:
+
+* Arjan van de Ven <arjan@infradead.org> wrote:
+
+> On Sun, 6 Dec 2009 02:26:06 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> On Sun, 6 Dec 2009, Rafael J. Wysocki wrote:
+> > On Sunday 06 December 2009, Arjan van de Ven wrote:
+> > > On Sun, 6 Dec 2009 00:55:36 +0100
+> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > 
+> > > > 
+> > > > Disk spinup/spindown takes time, but also some ACPI devices resume
+> > > > slowly, serio devices do that too and there are surprisingly many
+> > > > drivers that wait (using msleep() during suspend and resume).
+> > > > Apart from this, every PCI device going from D0 to D3 during
+> > > > suspend and from D3 to D0 during resume requires us to sleep for
+> > > > 10 ms (the sleeping is done by the PCI core, so the drivers don't
+> > > > even realize its there).
+> > > 
+> > > maybe a good step is to make a scripts/bootgraph.pl equivalent for
+> > > suspend/resume (or make a debug mode that outputs in a compatible
+> > > format so that the script can be used as is.. I don't mind either
+> > > way, and consider this my offer to help with such a script as long
+> > > as there's sufficient logging in dmesg ;-)
 > > 
-> > While the current settings are probably unsafe (like enabling PCI devices
-> > to be suspended asynchronously by default if there are not any direct
-> > dependences between them), there are provisions to make eveything safe, if
-> > we have enough information (which also is needed to put the required logic into
-> > the drivers).
+> > OK, so what kind of logging is needed?
 > 
-> I disagree.
+> basically the equivalent of the two initcall_debug paths in
 > 
-> Think of a situation that we already handle pretty poorly: USB mass 
-> storage devices over a suspend/resume.
+> init/main.c:do_one_initcall()
 > 
-> > The device tree represents a good deal of the dependences
-> > between devices and the other dependences may be represented as PM links
-> > enforcing specific ordering of the PM callbacks.
+> which prints a start time and an end time (and a pid) for each init 
+> function; if we have the same for suspend calls (and resume)... we can 
+> make the tool graph it.
+>
+> Would be nice to get markers for start and end of the whole suspend 
+> sequence as well as for the resume sequence; those make it easier to 
+> know when the end is (so that the axis can be drawn etc)
 > 
-> The device tree means nothing at all, because it may need to be entirely 
-> rebuilt at resume time. 
+> shouldn't be too hard to implement...
 
-With that assumption we have no choice but to leave the async stuff to the
-drivers, which generally I'm fine with, although I really don't expect to see
-it done.
+I think an even better option would be to extend 'perf timechart' to be 
+suspend/resume aware: add a few tracepoint events and teach 'perf 
+timechart' to draw them. (We should be able to do perf timechart record 
+across suspend/resume cycles just fine.)
 
-> Optimally, what we _should_ be doing (and aren't) for suspend/resume of 
-> USB is to just tear down the whole topology and rebuild it and re-connect 
-> the things like mass storage devices. IOW, there would be no device tree 
-> to describe the topology, because we're finding it anew. And it's one of 
-> the things we _would_ want to do asynchronously with other things.
-
-I think you should tell that to the USB people, because they don't seem to
-think this way.
-
-[Side note, I do think that at least some information in the device tree will
-remain valid over suspend/resume, but this is a different matter.]
-
-> We don't want to build up some irrelevant PM links and callbacks. We don't 
-> want to have some completely made-up new infrastructure for something that 
-> we _already_ want to handle totally differently for init time.
-> 
-> IOW, I argue very strongly against making up something PM-specific, when 
-> there really doesn't seem to be much of an advantage. We're much better 
-> off trying to share the init code than making up something new.
-> 
-> > I'd say if there's a worry that the same register may be accessed concurrently
-> > from two different code paths, there should be some locking in place.
-> 
-> Yeah. And I wish ACPI didn't exist at all. We don't know.
-> 
-> And we want to _limit_ our exposure to these things.
-
-Don't worry, I'm not going to touch async suspend/resume again, unless
-somebody makes me do it.
-
-BTW, you seem to have some quite strong opinions about power management that
-you only share with people when somebody sends you patches you don't like.  I
-guess it will be much more productive if we know your thoughts about it in
-advance, so I hope you won't mind being sent CCs of core PM patches posted to
-linux-pm for discussions.
+( Doing that would also improve the tracing facilities within 
+  suspend/resume quite significantly. It wouldnt just be a 
+  single-purpose thing for graphing, but perf trace and perf stat would 
+  work equally well. )
 
 Thanks,
-Rafael
+
+	Ingo
