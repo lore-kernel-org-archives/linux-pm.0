@@ -1,11 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] PM updates for 2.6.33 (updated)
-Date: Sun, 6 Dec 2009 16:47:38 +0100
-Message-ID: <200912061647.38169.rjw__17914.6158778623$1260114492$gmane$org@sisk.pl>
+From: Victor Lowther <victor.lowther@gmail.com>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+Date: Sun, 06 Dec 2009 13:04:36 -0600
+Message-ID: <1260126276.13057.13.camel__9578.01699773899$1260126446$gmane$org@studio>
+References: <Pine.LNX.4.44L0.0912060953190.4442-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912060953190.4442-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,56 +17,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Sun, 2009-12-06 at 10:23 -0500, Alan Stern wrote:
+> On Sat, 5 Dec 2009, Linus Torvalds wrote:
+> That's ridiculous.  Having gone to all the trouble of building a device
+> tree, one which is presumably still almost entirely correct, why go to
+> all the trouble of tearing it down only to rebuild it again?  (Note:
+> I'm talking about resume-from-RAM here, not resume-from-hibernation.)
 
-Please pull power management updates for 2.6.33 from:
+There should be nothing special or privileged at all about the device
+tree that gets built at boot time.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
+Consider the scenario of the laptop user with a docking station.
+Adding, removing, and rewriting vast swaths of the device tree across
+suspend/resume and hibernate/thaw is very easy to do when you are
+plugging a laptop into one or more docking stations.
 
-They include:
+> Instead what we do is verify that the devices we remember from before
+> the suspend are still there, and then asynchronously handle new devices
+> which have been plugged in during the meantime.  Doing this involves
+> relatively little extra or new code; most of the routines are shared
+> with the runtime PM and device reset paths.
 
-* Fixes for the runtime PM framework from Alan Stern and me.
+Devices can vanish across suspend to RAM just as easily as they can be
+added.
 
-* Hibernate cleanups from Nigel and Jiri Slaby.
-
-* Freezer optimisation from Tejun.
-
-
- Documentation/power/runtime_pm.txt |   12 ++-
- drivers/base/power/runtime.c       |   23 ++++---
- include/linux/pm.h                 |    8 ++-
- include/linux/pm_runtime.h         |   12 +++
- kernel/power/Makefile              |    2 +-
- kernel/power/hibernate.c           |   30 ++++++++
- kernel/power/main.c                |    1 +
- kernel/power/process.c             |   14 +++-
- kernel/power/swap.c                |  107 ++++++++++++++++++++++++++++-
- kernel/power/swsusp.c              |  130 ------------------------------------
- 10 files changed, 184 insertions(+), 155 deletions(-)
-
----------------
-
-Alan Stern (2):
-      PM / Runtime: Export the PM runtime workqueue
-      PM / Runtime: Use deferred_resume flag in pm_request_resume
-
-Jiri Slaby (1):
-      PM / Hibernate: Swap, use KERN_CONT
-
-Nigel Cunningham (2):
-      PM / Hibernate: Move swap functions to kernel/power/swap.c.
-      PM / Hibernate: Shift remaining code from swsusp.c to hibernate.c
-
-Rafael J. Wysocki (5):
-      PM / Runtime: Fix lockdep warning in __pm_runtime_set_status()
-      PM / Runtime: Ensure timer_expires is nonzero in pm_schedule_suspend()
-      PM / Runtime: Make documentation of runtime_idle() agree with the code
-      PM / Runtime: Remove unnecessary braces in __pm_runtime_set_status()
-      PM: Add flag for devices capable of generating run-time wake-up events
-
-Tejun Heo (1):
-      PM / freezer: Don't get over-anxious while waiting
+> 
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
