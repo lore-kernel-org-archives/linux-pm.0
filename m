@@ -1,8 +1,8 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Sun, 6 Dec 2009 02:57:44 +0100
-Message-ID: <200912060257.45067.rjw__34724.7512349442$1260064675$gmane$org@sisk.pl>
-References: <200912052216.19540.rjw@sisk.pl>
+Date: Sat, 5 Dec 2009 18:05:14 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0912051758190.3560__41322.032994549$1260065171$gmane$org@localhost.localdomain>
+References: <200912052216.19540.rjw@sisk.pl> <200912060055.36130.rjw@sisk.pl>
 	<alpine.LFD.2.00.0912051635330.3560@localhost.localdomain>
 	<200912060254.10081.rjw@sisk.pl>
 Mime-Version: 1.0
@@ -19,75 +19,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 06 December 2009, Rafael J. Wysocki wrote:
-> On Sunday 06 December 2009, Linus Torvalds wrote:
-> > 
-> > On Sun, 6 Dec 2009, Rafael J. Wysocki wrote:
-> > > 
-> > > The approach you're suggesting would require modifying individual drivers which
-> > > I just wanted to avoid.
-> > 
-> > In the init path, we had the reverse worry - not wanting to make 
-> > everything (where "everything" can be some subsystem like just the set of 
-> > PCI drivers, of course - not really "everything" in an absolute sense) 
-> > async, and then having to try to work out with the random driver that 
-> > couldn't handle it.
-> > 
-> > And there were _lots_ of drivers that couldn't handle it, because they 
-> > knew they got woken up serially. The ATA layer needed to know about 
-> > asynchronous things, because sometimes those independent devices aren't so 
-> > independent at all. Which is why I don't think your approach is safe.
+
+
+On Sun, 6 Dec 2009, Rafael J. Wysocki wrote:
 > 
 > While the current settings are probably unsafe (like enabling PCI devices
 > to be suspended asynchronously by default if there are not any direct
 > dependences between them), there are provisions to make eveything safe, if
 > we have enough information (which also is needed to put the required logic into
-> the drivers).  The device tree represents a good deal of the dependences
+> the drivers).
+
+I disagree.
+
+Think of a situation that we already handle pretty poorly: USB mass 
+storage devices over a suspend/resume.
+
+> The device tree represents a good deal of the dependences
 > between devices and the other dependences may be represented as PM links
 > enforcing specific ordering of the PM callbacks.
-> 
-> > Just to take an example of the whole "independent devices are not 
-> > necessarily independent" thing - things like multi-port PCMCIA controllers 
-> > generally show up as multiple PCI devices. But they are _not_ independent, 
-> > and they actually share some registers. Resuming them asynchronously might 
-> > well be ok, but maybe it's not. Who knows?
-> 
+
+The device tree means nothing at all, because it may need to be entirely 
+rebuilt at resume time. 
+
+Optimally, what we _should_ be doing (and aren't) for suspend/resume of 
+USB is to just tear down the whole topology and rebuild it and re-connect 
+the things like mass storage devices. IOW, there would be no device tree 
+to describe the topology, because we're finding it anew. And it's one of 
+the things we _would_ want to do asynchronously with other things.
+
+We don't want to build up some irrelevant PM links and callbacks. We don't 
+want to have some completely made-up new infrastructure for something that 
+we _already_ want to handle totally differently for init time.
+
+IOW, I argue very strongly against making up something PM-specific, when 
+there really doesn't seem to be much of an advantage. We're much better 
+off trying to share the init code than making up something new.
+
 > I'd say if there's a worry that the same register may be accessed concurrently
 > from two different code paths, there should be some locking in place.
-> 
-> > In contrast, a device driver can generally know that certain _parts_ of 
-> > the initialization is safe. As an example of that, I think the libata 
-> > layer does all the port enumeration synchronously, but then once the ports 
-> > have been identified, it does the rest async. 
-> > 
-> > That's the kind of decision we can sanely make when we do the async part 
-> > as a "drivers may choose to do certain parts asynchronously". Doing it at 
-> > a higher level sounds like a problem to me.
-> 
-> The difference between suspend and initialization is that during suspend we
-> have already enumerated all devices and we should know how they depend on
-> each other (and we really should know that if we are to actually understand how
-> things work), so we can represent that information somehow and use it to do
-> things at the higher level.
-> 
-> How to represent it is a different matter, but in principle it should be
-> possible.
-> 
-> > > If you don't like that, we'll have to take the longer route, although 
-> > > I'm afraid that will take lots of time and we won't be able to exploit 
-> > > the entire possible parallelism this way.
-> > 
-> > Sure. But I'd rather do the safe thing. Especially since there are likely 
-> > just a few cases that really take a long time.
-> 
-> And there are lots of small sleeps here and there that accumulate and are
-> entirely avoidable.
 
-I mean, it is avoidable to do all these sleeps sequentially.
+Yeah. And I wish ACPI didn't exist at all. We don't know.
 
-Thanks,
-Rafael
+And we want to _limit_ our exposure to these things.
+
+			Linus
