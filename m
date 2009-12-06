@@ -1,13 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Sun, 6 Dec 2009 10:23:49 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912060953190.4442-100000__35867.1875590973$1260113157$gmane$org@netrider.rowland.org>
-References: <alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [GIT PULL] PM updates for 2.6.33 (updated)
+Date: Sun, 6 Dec 2009 16:47:38 +0100
+Message-ID: <200912061647.38169.rjw__17914.6158778623$1260114492$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,91 +16,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 5 Dec 2009, Linus Torvalds wrote:
+Hi Linus,
 
-> Think of a situation that we already handle pretty poorly: USB mass 
-> storage devices over a suspend/resume.
-> 
-> > The device tree represents a good deal of the dependences
-> > between devices and the other dependences may be represented as PM links
-> > enforcing specific ordering of the PM callbacks.
-> 
-> The device tree means nothing at all, because it may need to be entirely 
-> rebuilt at resume time. 
+Please pull power management updates for 2.6.33 from:
 
-Nonsense.
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
 
-> Optimally, what we _should_ be doing (and aren't) for suspend/resume of 
-> USB is to just tear down the whole topology and rebuild it and re-connect 
-> the things like mass storage devices. IOW, there would be no device tree 
-> to describe the topology, because we're finding it anew. And it's one of 
-> the things we _would_ want to do asynchronously with other things.
+They include:
 
-That's ridiculous.  Having gone to all the trouble of building a device
-tree, one which is presumably still almost entirely correct, why go to
-all the trouble of tearing it down only to rebuild it again?  (Note:
-I'm talking about resume-from-RAM here, not resume-from-hibernation.)
+* Fixes for the runtime PM framework from Alan Stern and me.
 
-Instead what we do is verify that the devices we remember from before
-the suspend are still there, and then asynchronously handle new devices
-which have been plugged in during the meantime.  Doing this involves
-relatively little extra or new code; most of the routines are shared
-with the runtime PM and device reset paths.
+* Hibernate cleanups from Nigel and Jiri Slaby.
 
-As for asynchronicity...  At init time, USB device discovery truly is 
-asynchronous.  It can happen long after you log in (especially if you 
-don't plug in the device until after you log in!).  But at resume time 
-we are more highly constrained.  User processes cannot be unfrozen 
-until all the devices have been resumed; otherwise they would encounter 
-errors when trying to do I/O to a suspended device.  (With the runtime 
-PM framework this is much less of a problem, but plenty of drivers 
-don't support runtime PM yet.)
+* Freezer optimisation from Tejun.
 
 
-> We don't want to build up some irrelevant PM links and callbacks. We don't 
-> want to have some completely made-up new infrastructure for something that 
-> we _already_ want to handle totally differently for init time.
-> 
-> IOW, I argue very strongly against making up something PM-specific, when 
-> there really doesn't seem to be much of an advantage. We're much better 
-> off trying to share the init code than making up something new.
+ Documentation/power/runtime_pm.txt |   12 ++-
+ drivers/base/power/runtime.c       |   23 ++++---
+ include/linux/pm.h                 |    8 ++-
+ include/linux/pm_runtime.h         |   12 +++
+ kernel/power/Makefile              |    2 +-
+ kernel/power/hibernate.c           |   30 ++++++++
+ kernel/power/main.c                |    1 +
+ kernel/power/process.c             |   14 +++-
+ kernel/power/swap.c                |  107 ++++++++++++++++++++++++++++-
+ kernel/power/swsusp.c              |  130 ------------------------------------
+ 10 files changed, 184 insertions(+), 155 deletions(-)
 
-If I understand correctly, what you're suggesting is impractical.  You
-would have each driver responsible for resuming the devices it
-registers.  If it registered some children synchronously (during the
-parent's probe) then it would resume them synchronously (during the
-parent's resume); if it registered them asynchronously then it would
-resume them asynchronously.  In essence, every single device_add() or
-device_register() call would have to be paired with a resume call.
+---------------
 
-To make such significant changes in every driver would be prohibitively
-difficult.  What we need is a compromise which gives drivers control
-over the resume process without making them responsible for actually
-carrying it out.
+Alan Stern (2):
+      PM / Runtime: Export the PM runtime workqueue
+      PM / Runtime: Use deferred_resume flag in pm_request_resume
 
-So consider this suggestion: Let's define PM groups.  Each device
-belongs to a group, and each group (except group 0, the initial group)  
-has an owner device.  By default a device is added to its parent's
-group during registration, but the driver can request that it be
-assigned to a different group, which must be owned by that parent.
+Jiri Slaby (1):
+      PM / Hibernate: Swap, use KERN_CONT
 
-During resume, each PM group would correspond to an async task.  The 
-devices in each group would be resumed sequentially, in order of 
-registration, but asynchronously with respect to other groups.  The 
-async thread to resume a group would be launched after the group's 
-owner device was resumed.
+Nigel Cunningham (2):
+      PM / Hibernate: Move swap functions to kernel/power/swap.c.
+      PM / Hibernate: Shift remaining code from swsusp.c to hibernate.c
 
-So for example, the sibling functions on a PCI card could all be
-assigned to the same group, but different cards could belong to
-different groups.  Likewise for ATA and PCMCIA controllers.  Extra
-cross-group constraints could be added if needed, but there should be
-relatively few of them.
+Rafael J. Wysocki (5):
+      PM / Runtime: Fix lockdep warning in __pm_runtime_set_status()
+      PM / Runtime: Ensure timer_expires is nonzero in pm_schedule_suspend()
+      PM / Runtime: Make documentation of runtime_idle() agree with the code
+      PM / Runtime: Remove unnecessary braces in __pm_runtime_set_status()
+      PM: Add flag for devices capable of generating run-time wake-up events
 
-This way drivers can decide which of their devices will be resumed in 
-sequence or concurrently, but they won't have to do any of the 
-necessary work.
-
-Alan Stern
+Tejun Heo (1):
+      PM / freezer: Don't get over-anxious while waiting
