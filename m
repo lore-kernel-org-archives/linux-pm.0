@@ -1,12 +1,19 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH ver. 3] PM: allow for usage_count > 0 in
-	pm_runtime_get()
-Date: Mon, 7 Dec 2009 10:51:21 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912071049040.3064-100000@iolanthe.rowland.org>
+From: Philippe De Muyter <phdm@macqel.be>
+Subject: apm/pm bug [was Re: tulip : kernel BUG in
+	tulip_up/tulip_resume]
+Date: Sun, 6 Dec 2009 18:10:57 +0100
+Message-ID: <20091206171057.GA4363__30443.0366996259$1260202962$gmane$org@frolo.macqel>
+References: <20091108223305.GA21072@frolo.macqel>
+	<20091129001710.GA4055@ami.dom.local>
+	<20091129113659.GA2971@ami.dom.local>
+	<20091202.222526.237239384.davem@davemloft.net>
+	<20091203084742.GA23867@frolo.macqel>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <20091203084742.GA23867@frolo.macqel>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,51 +23,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: kyle@mcmartin.ca, linux-pm@lists.linux-foundation.org, linux-laptop@vger.kernel.org, grundler@parisc-linux.org, jarkao2@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-This patch (as1308c) fixes __pm_runtime_get().  Currently the routine
-will resume a device if the prior usage count was 0.  But this isn't
-right; thanks to pm_runtime_get_noresume() the usage count can be
-positive even while the device is suspended.
+[CCing linux-laptop@vger.kernel.org and linux-pm@lists.linux-foundation.org]
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+On Thu, Dec 03, 2009 at 09:47:42AM +0100, Philippe De Muyter wrote:
+> Hi Jarek and David,
+> On Wed, Dec 02, 2009 at 10:25:26PM -0800, David Miller wrote:
+> > From: Jarek Poplawski <jarkao2@gmail.com>
+> > Date: Sun, 29 Nov 2009 12:36:59 +0100
+> > 
+> > > On Sun, Nov 29, 2009 at 01:17:10AM +0100, Jarek Poplawski wrote:
+> > >> Philippe De Muyter wrote, On 11/08/2009 11:33 PM:
+> > >> > Does someone know what could be wrong and have a fix or should I look myself ?
+> > >> 
+> > >> Don't know, guess only...
+> > > 
+> > > ...And maybe a second guess btw. (to try together or separate).
+> > 
+> > Philippe please test Jarek's patches.
+> 
+> Busy doing that. I had some problems trying to activate apm's debug.
+> Will report later.
 
----
+The problem seems not to be in tulip driver, but in apm or power management.
+I see, with some debugging added by me :
 
-Rafael:
+[  488.585707] eth0: Digital DS21142/43 Tulip rev 17 at Port 0xec00, 00:00:f8:02:cf:08, IRQ 11.
+[  508.888374] eth0: 21143 10baseT link beat good.
+[  530.754453] apm: BIOS version 1.1 Flags 0x03 (Driver version 1.16ac)
+[  530.754723] apm: entry f690:7ca cseg16 f690 dseg 40 cseg len ffff, dseg len ffff
+[  531.016684] apm: Connection version 1.1
+[  531.018853] apm: AC on line, battery status unknown, battery life unknown
+[  531.028277] apm: battery flag 0x80, battery life unknown
+[  864.060751] apm: received system standby notify
+[  864.063111] check_events : calling standby()
+[ 1141.088550] apm: received system standby resume notify
+[ 1141.090195] check_events : calling dpm_resume_end(PMSG_RESUME)
+[ 1141.096173] tulip_resume
 
-This patch contains the most important part of the patch you rejected
-last week, leaving out the semantic changes you didn't like.  It really
-does fix a bug, and it should be sent to Linus before the merge window
-closes.
+I do not see there a call to tulip_suspend after the call to standby(),
+but I think there should be one.
 
-Alan Stern
-
-
-Index: usb-2.6/drivers/base/power/runtime.c
-===================================================================
---- usb-2.6.orig/drivers/base/power/runtime.c
-+++ usb-2.6/drivers/base/power/runtime.c
-@@ -699,15 +699,15 @@ EXPORT_SYMBOL_GPL(pm_request_resume);
-  * @dev: Device to handle.
-  * @sync: If set and the device is suspended, resume it synchronously.
-  *
-- * Increment the usage count of the device and if it was zero previously,
-- * resume it or submit a resume request for it, depending on the value of @sync.
-+ * Increment the usage count of the device and resume it or submit a resume
-+ * request for it, depending on the value of @sync.
-  */
- int __pm_runtime_get(struct device *dev, bool sync)
- {
--	int retval = 1;
-+	int retval;
- 
--	if (atomic_add_return(1, &dev->power.usage_count) == 1)
--		retval = sync ? pm_runtime_resume(dev) : pm_request_resume(dev);
-+	atomic_inc(&dev->power.usage_count);
-+	retval = sync ? pm_runtime_resume(dev) : pm_request_resume(dev);
- 
- 	return retval;
- }
+Philippe
