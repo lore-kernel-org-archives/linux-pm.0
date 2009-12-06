@@ -1,17 +1,13 @@
-From: Ingo Molnar <mingo@elte.hu>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Sun, 6 Dec 2009 09:39:41 +0100
-Message-ID: <20091206083941.GA2881__15695.3868842267$1260088874$gmane$org@elte.hu>
-References: <200912052216.19540.rjw@sisk.pl> <200912060055.36130.rjw@sisk.pl>
-	<20091205164541.5e0f209a@infradead.org>
-	<200912060226.06217.rjw@sisk.pl>
-	<20091205175852.2500cdad@infradead.org>
+Date: Sun, 6 Dec 2009 10:23:49 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912060953190.4442-100000__35867.1875590973$1260113157$gmane$org@netrider.rowland.org>
+References: <alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20091205175852.2500cdad@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,61 +17,92 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Sat, 5 Dec 2009, Linus Torvalds wrote:
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
-
-> On Sun, 6 Dec 2009 02:26:06 +0100
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> Think of a situation that we already handle pretty poorly: USB mass 
+> storage devices over a suspend/resume.
 > 
-> > On Sunday 06 December 2009, Arjan van de Ven wrote:
-> > > On Sun, 6 Dec 2009 00:55:36 +0100
-> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > 
-> > > > 
-> > > > Disk spinup/spindown takes time, but also some ACPI devices resume
-> > > > slowly, serio devices do that too and there are surprisingly many
-> > > > drivers that wait (using msleep() during suspend and resume).
-> > > > Apart from this, every PCI device going from D0 to D3 during
-> > > > suspend and from D3 to D0 during resume requires us to sleep for
-> > > > 10 ms (the sleeping is done by the PCI core, so the drivers don't
-> > > > even realize its there).
-> > > 
-> > > maybe a good step is to make a scripts/bootgraph.pl equivalent for
-> > > suspend/resume (or make a debug mode that outputs in a compatible
-> > > format so that the script can be used as is.. I don't mind either
-> > > way, and consider this my offer to help with such a script as long
-> > > as there's sufficient logging in dmesg ;-)
-> > 
-> > OK, so what kind of logging is needed?
+> > The device tree represents a good deal of the dependences
+> > between devices and the other dependences may be represented as PM links
+> > enforcing specific ordering of the PM callbacks.
 > 
-> basically the equivalent of the two initcall_debug paths in
+> The device tree means nothing at all, because it may need to be entirely 
+> rebuilt at resume time. 
+
+Nonsense.
+
+> Optimally, what we _should_ be doing (and aren't) for suspend/resume of 
+> USB is to just tear down the whole topology and rebuild it and re-connect 
+> the things like mass storage devices. IOW, there would be no device tree 
+> to describe the topology, because we're finding it anew. And it's one of 
+> the things we _would_ want to do asynchronously with other things.
+
+That's ridiculous.  Having gone to all the trouble of building a device
+tree, one which is presumably still almost entirely correct, why go to
+all the trouble of tearing it down only to rebuild it again?  (Note:
+I'm talking about resume-from-RAM here, not resume-from-hibernation.)
+
+Instead what we do is verify that the devices we remember from before
+the suspend are still there, and then asynchronously handle new devices
+which have been plugged in during the meantime.  Doing this involves
+relatively little extra or new code; most of the routines are shared
+with the runtime PM and device reset paths.
+
+As for asynchronicity...  At init time, USB device discovery truly is 
+asynchronous.  It can happen long after you log in (especially if you 
+don't plug in the device until after you log in!).  But at resume time 
+we are more highly constrained.  User processes cannot be unfrozen 
+until all the devices have been resumed; otherwise they would encounter 
+errors when trying to do I/O to a suspended device.  (With the runtime 
+PM framework this is much less of a problem, but plenty of drivers 
+don't support runtime PM yet.)
+
+
+> We don't want to build up some irrelevant PM links and callbacks. We don't 
+> want to have some completely made-up new infrastructure for something that 
+> we _already_ want to handle totally differently for init time.
 > 
-> init/main.c:do_one_initcall()
-> 
-> which prints a start time and an end time (and a pid) for each init 
-> function; if we have the same for suspend calls (and resume)... we can 
-> make the tool graph it.
->
-> Would be nice to get markers for start and end of the whole suspend 
-> sequence as well as for the resume sequence; those make it easier to 
-> know when the end is (so that the axis can be drawn etc)
-> 
-> shouldn't be too hard to implement...
+> IOW, I argue very strongly against making up something PM-specific, when 
+> there really doesn't seem to be much of an advantage. We're much better 
+> off trying to share the init code than making up something new.
 
-I think an even better option would be to extend 'perf timechart' to be 
-suspend/resume aware: add a few tracepoint events and teach 'perf 
-timechart' to draw them. (We should be able to do perf timechart record 
-across suspend/resume cycles just fine.)
+If I understand correctly, what you're suggesting is impractical.  You
+would have each driver responsible for resuming the devices it
+registers.  If it registered some children synchronously (during the
+parent's probe) then it would resume them synchronously (during the
+parent's resume); if it registered them asynchronously then it would
+resume them asynchronously.  In essence, every single device_add() or
+device_register() call would have to be paired with a resume call.
 
-( Doing that would also improve the tracing facilities within 
-  suspend/resume quite significantly. It wouldnt just be a 
-  single-purpose thing for graphing, but perf trace and perf stat would 
-  work equally well. )
+To make such significant changes in every driver would be prohibitively
+difficult.  What we need is a compromise which gives drivers control
+over the resume process without making them responsible for actually
+carrying it out.
 
-Thanks,
+So consider this suggestion: Let's define PM groups.  Each device
+belongs to a group, and each group (except group 0, the initial group)  
+has an owner device.  By default a device is added to its parent's
+group during registration, but the driver can request that it be
+assigned to a different group, which must be owned by that parent.
 
-	Ingo
+During resume, each PM group would correspond to an async task.  The 
+devices in each group would be resumed sequentially, in order of 
+registration, but asynchronously with respect to other groups.  The 
+async thread to resume a group would be launched after the group's 
+owner device was resumed.
+
+So for example, the sibling functions on a PCI card could all be
+assigned to the same group, but different cards could belong to
+different groups.  Likewise for ATA and PCMCIA controllers.  Extra
+cross-group constraints could be added if needed, but there should be
+relatively few of them.
+
+This way drivers can decide which of their devices will be resumed in 
+sequence or concurrently, but they won't have to do any of the 
+necessary work.
+
+Alan Stern
