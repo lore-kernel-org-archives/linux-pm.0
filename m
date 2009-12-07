@@ -1,23 +1,15 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+From: Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Sun, 6 Dec 2009 22:32:37 -0800
-Message-ID: <20091207063236.GF21451__15168.2879812599$1260167620$gmane$org@core.coreip.homeip.net>
-References: <alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
-	<20091206113555.5a646713@infradead.org>
-	<alpine.LFD.2.00.0912061144100.3560@localhost.localdomain>
-	<20091206121803.70385c33@infradead.org>
-	<7AB497C7-8495-4535-9E83-81307E008BF4@gmail.com>
-	<20091206171856.394ce6d8@infradead.org>
-	<20091207022706.GA20770@core.coreip.homeip.net>
-	<20091206213112.568c602b@infradead.org>
-	<20091207061548.GB21451@core.coreip.homeip.net>
-	<20091206223112.77433d13@infradead.org>
+Date: Sun, 6 Dec 2009 22:37:20 -0800
+Message-ID: <20091206223720.77cc8d80__43392.7666781985$1260167776$gmane$org@infradead.org>
+References: <Pine.LNX.4.44L0.0912060953190.4442-100000@netrider.rowland.org>
+	<1260158279.27069.181.camel@rzhang1-desktop>
+	<alpine.LFD.2.00.0912062122460.3560@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20091206223112.77433d13@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.0912062122460.3560@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,33 +19,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Dec 06, 2009 at 10:31:12PM -0800, Arjan van de Ven wrote:
-> On Sun, 6 Dec 2009 22:15:49 -0800
-> Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> 
-> > And the bad thing is that violates multiple layers in the kernel.
-> > Atkbd driver does not have to be using i8042; neither does psmouse.
-> > Althtough they do in 99% of the cases there are other controllers
-> > providing the i8042-style ports. Just grep for SERIO_8042 in
-> > drivers/input/serio.
-> > 
-> > I do not want to hard-code the i8042-psmouse-atkbd dependency.
-> 
-> it's not a specific dependency.
-> 
-> it's a "I know I'm critical, so everything before me needs to be done".
-> 
-> that doesn't encode an actual relationship, it encodes a potential
-> relationship... with a worst case behavior of ... what we do right
-> now ;_)
+On Sun, 6 Dec 2009 21:57:55 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-This is the case with every parent device, isn't it? It is important for
-its children. And wasn't Rafael patchset trying to address exactkly
-this?
+> 
+> Now, the problem remains that when you walk the device tree starting
+> off all these potentially asynchronous events, you don't want to do
+> that serialization part (the "parent suspend") as you walk the tree -
+> because then you would only ever do one single level asynchronously.
+> Which is why I suggested splitting the suspend into a "pre-suspend"
+> phase (and a "post-resume" one). Because then the tree walk goes from
 
+> I dunno. Maybe I'm overlooking something, but the above is much
+> closer to what I think would be worth doing.
+
+with what you're describing I suspect the current async function calls
+could be used;
+in the first tree walk, the drivers do an async_schedule() of the
+things they want done asynchronous;
+all the core then needs to do is a full synchronization step between the
+two tree walks... and we get pretty much all the benefits without
+needing the read-then-write-lock primitive for synchronization.
+
+alternative would be to do the synchronization in the part where we
+know there's a dependency (like your lock is doing); 
+but instead of a lock we could store the async cookie there; and just
+wait on that in the 2nd phase....  this would be more finegrained, and
+an optimization from the "global synchronize"... but I'm not sure it'll
+be worth it in practice; it will if there's significant cost in various
+parts of the tree AND in the 2nd run; if the 2nd run is cheap in
+general, you're not going to get real extra parallelism at the price of
+more complexity.
 -- 
-Dmitry
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
