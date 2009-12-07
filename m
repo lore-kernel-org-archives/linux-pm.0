@@ -1,7 +1,7 @@
 From: Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Sun, 6 Dec 2009 16:55:51 -0800
-Message-ID: <20091206165551.2529075f__33927.1270939664$1260148658$gmane$org@infradead.org>
+Date: Sun, 6 Dec 2009 17:18:56 -0800
+Message-ID: <20091206171856.394ce6d8__28260.3127103814$1260148666$gmane$org@infradead.org>
 References: <200912052216.19540.rjw@sisk.pl> <200912060055.36130.rjw@sisk.pl>
 	<alpine.LFD.2.00.0912051635330.3560@localhost.localdomain>
 	<200912060254.10081.rjw@sisk.pl>
@@ -31,16 +31,13 @@ List-Id: linux-pm@vger.kernel.org
 On Sun, 6 Dec 2009 14:54:48 -0800
 Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 
-> > isn't serio the PS/2 stuff?
-> 
 > Yes, that's your PS/2 mouse (rather touchpad) and the delay comes
 > from device reset (needed by some keyboard controllers - I remember
 > HP -or it and keyboard will be dead at resume).
+> 
 
-and I have a HP laptop... so this makes perfect sense.
-Thanks for the explenation!
-
-Now, the good news is that serio is near invisible on resume...
+btw could we do this reset in an async function call (as long as we
+wait for it to complete before we pull the plug finally) ?
 
 
 -- 
