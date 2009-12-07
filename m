@@ -1,13 +1,15 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Mon, 7 Dec 2009 10:05:56 -0800 (PST)
-Message-ID: <alpine.LFD.2.00.0912070956350.3560__46622.3116186031$1260209223$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912071217220.2644-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug 14730] sky2 won't work after suspend/resume
+	cycle
+Date: Mon, 7 Dec 2009 21:23:32 +0100
+Message-ID: <200912072123.32354.rjw__41863.7458737523$1260217488$gmane$org@sisk.pl>
+References: <bug-14730-10028@http.bugzilla.kernel.org/>
+	<200912071951.nB7JpW10003364@demeter.kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912071217220.2644-100000@iolanthe.rowland.org>
+In-Reply-To: <200912071951.nB7JpW10003364@demeter.kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,52 +19,81 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: bugzilla-daemon@bugzilla.kernel.org
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Linux PCI <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Mon, 7 Dec 2009, Alan Stern wrote:
+On Monday 07 December 2009, bugzilla-daemon@bugzilla.kernel.org wrote:
+> http://bugzilla.kernel.org/show_bug.cgi?id=14730
 > 
-> Okay, I think I've got it.  But you're wrong about one thing: Resume
-> isn't _exactly_ the reverse of suspend.
+> 
+> 
+> 
+> 
+> --- Comment #7 from Andrew Morton <akpm@linux-foundation.org>  2009-12-07 19:51:32 ---
+> (switched to email.  Please respond via emailed reply-to-all, not via the
+> bugzilla web interface).
+> 
+> On Fri, 4 Dec 2009 09:02:21 GMT
+> bugzilla-daemon@bugzilla.kernel.org wrote:
+> 
+> > http://bugzilla.kernel.org/show_bug.cgi?id=14730
+> > 
+> >            Summary: sky2 won't work after suspend/resume cycle
+> >            Product: Power Management
+> >            Version: 2.5
+> >           Platform: All
+> >         OS/Version: Linux
+> >               Tree: Mainline
+> >             Status: NEW
+> >           Severity: high
+> >           Priority: P1
+> >          Component: Hibernation/Suspend
+> >         AssignedTo: power-management_other@kernel-bugs.osdl.org
+> >         ReportedBy: mat@esi.com.pl
+> >         Regression: Yes
+> > 
+> > 
+> > I use sky2 network adapter in my Fujitsu Siemens Esprimo Mobile U9200. It
+> > worked fine up until 2.6.31-rc3 (or at least that's the last one I tried it
+> > works for me) and in all versions after that I tried it stops working after
+> > suspend/resume cycle (I use powersave daemon, but I also tried without it -
+> > effect is the same). 
+> > 
+> > After resume what I see in dmesg is this:
+> > 
+> > sky2 driver version 1.23
+> > sky2 0000:04:00.0: enabling device (0000 -> 0003)
+> > sky2 0000:04:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+> > sky2 0000:04:00.0: setting latency timer to 64
+> > sky2 0000:04:00.0: unsupported chip type 0xff
+> 
+> It looks like reads from the device are returning all-ones.  
+> 
+> > sky2 0000:04:00.0: PCI INT A disabled
+> > sky2: probe of 0000:04:00.0 failed with error -95
+> > 
+> > So it looks like something is probably not restored correctly after resume or
+> > some initializations are not executed.
+> > 
+> > I use Gentoo sources, but I also tried it on vanilla kernels - 2.6.31 and
+> > 2.6.32-rc8 and it doesn't work in any version past 2.6.31-rc3.
+> > 
+> 
+> Help.  Do we think this regression is likely to be a sky2 thing, an
+> ACPI thing, an x86 arch thing or...?
 
-Yeah, no. But I think I made it much closer by getting rid of pre-suspend 
-and post-resume (my next email to the one you quoted).
+Quite frankly, I have no idea.
 
-And yeah, I started thinking along those lines exactly because it wasn't 
-as clean a mirror image as I thought it should be able to be.
+In principle that may be a result of a PCI PM core change, but nothing
+comes to mind immediately.
 
-> A non-async driver (i.e., most of them) would ignore the pre- pass
-> entirely and do all its work in the second pass.
+It may be worth trying to revert 
 
-See my second email, where I think I can get rid of the whole second pass 
-thing. I think you'll agree that it's an even nicer mirror image.
+commit 4b77b0a2ba27d64f58f16d8d4d48d8319dda36ff
+Author: Rafael J. Wysocki <rjw@sisk.pl>
+Date:   Wed Sep 9 23:49:59 2009 +0200
 
-> There's some question about what to do if a suspend or resume fails.  A
-> bunch of async threads will have been launched for other devices, but
-> now there won't be anything to wait for them.  It's not clear how this
-> should be handled.
+    PCI: Clear saved_state after the state has been restored
 
-I think the rule for "suspend fails" is very simple: you can't fail in the 
-async codepath. There's no sane way to return errors, and trying to would 
-be too complex anyway. What would you do? 
-
-In fact, even though we _can_ fail in the synchronous path, I personally 
-consider a device driver that ever fails its suspend to be terminally 
-broken. We're practically always better off suspending and simply turning 
-off the power than saying "uh, I failed the suspend".
-
-I've occasionally hit a few drivers that caused suspend failures, and each 
-and every time it was a driver bug, and the right thing to do was to just 
-ignore the error and suspend anyway - returning an error code and trying 
-to undo the suspend is not what anybody ever really wants, even if our 
-model _allows_ for it.
-
-(And the rule for "resume fails" is even simpler: there's nothing we can 
-really do if something fails to resume - and that's true whether the 
-failure is synchronous or asynchronous. The device is dead. Try to reset 
-it, or remove it from the device tree. Tough).
-
-				Linus
+and retesting.
