@@ -1,22 +1,13 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
 Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Sun, 6 Dec 2009 18:27:56 -0800
-Message-ID: <20091207022756.GB20770__32716.5557806895$1260152940$gmane$org@core.coreip.homeip.net>
-References: <200912052216.19540.rjw@sisk.pl> <200912060055.36130.rjw@sisk.pl>
-	<alpine.LFD.2.00.0912051635330.3560@localhost.localdomain>
-	<200912060254.10081.rjw@sisk.pl>
-	<alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
-	<20091206113555.5a646713@infradead.org>
-	<alpine.LFD.2.00.0912061144100.3560@localhost.localdomain>
-	<20091206121803.70385c33@infradead.org>
-	<7AB497C7-8495-4535-9E83-81307E008BF4@gmail.com>
-	<20091206165551.2529075f@infradead.org>
+Date: Mon, 07 Dec 2009 11:57:59 +0800
+Message-ID: <1260158279.27069.181.camel__6537.86987900293$1260158383$gmane$org@rzhang1-desktop>
+References: <Pine.LNX.4.44L0.0912060953190.4442-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20091206165551.2529075f@infradead.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912060953190.4442-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,31 +17,116 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Dec 06, 2009 at 04:55:51PM -0800, Arjan van de Ven wrote:
-> On Sun, 6 Dec 2009 14:54:48 -0800
-> Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+On Sun, 2009-12-06 at 23:23 +0800, Alan Stern wrote:
+> On Sat, 5 Dec 2009, Linus Torvalds wrote:
 > 
-> > > isn't serio the PS/2 stuff?
+> > Think of a situation that we already handle pretty poorly: USB mass 
+> > storage devices over a suspend/resume.
 > > 
-> > Yes, that's your PS/2 mouse (rather touchpad) and the delay comes
-> > from device reset (needed by some keyboard controllers - I remember
-> > HP -or it and keyboard will be dead at resume).
+> > > The device tree represents a good deal of the dependences
+> > > between devices and the other dependences may be represented as PM links
+> > > enforcing specific ordering of the PM callbacks.
+> > 
+> > The device tree means nothing at all, because it may need to be entirely 
+> > rebuilt at resume time. 
 > 
-> and I have a HP laptop... so this makes perfect sense.
-> Thanks for the explenation!
+> Nonsense.
+> 
+> > Optimally, what we _should_ be doing (and aren't) for suspend/resume of 
+> > USB is to just tear down the whole topology and rebuild it and re-connect 
+> > the things like mass storage devices. IOW, there would be no device tree 
+> > to describe the topology, because we're finding it anew. And it's one of 
+> > the things we _would_ want to do asynchronously with other things.
+> 
+> That's ridiculous.  Having gone to all the trouble of building a device
+> tree, one which is presumably still almost entirely correct, why go to
+> all the trouble of tearing it down only to rebuild it again?  (Note:
+> I'm talking about resume-from-RAM here, not resume-from-hibernation.)
+> 
+> Instead what we do is verify that the devices we remember from before
+> the suspend are still there, and then asynchronously handle new devices
+> which have been plugged in during the meantime.  Doing this involves
+> relatively little extra or new code; most of the routines are shared
+> with the runtime PM and device reset paths.
+> 
+> As for asynchronicity...  At init time, USB device discovery truly is 
+> asynchronous.  It can happen long after you log in (especially if you 
+> don't plug in the device until after you log in!).  But at resume time 
+> we are more highly constrained.  User processes cannot be unfrozen 
+> until all the devices have been resumed; otherwise they would encounter 
+> errors when trying to do I/O to a suspended device.  (With the runtime 
+> PM framework this is much less of a problem, but plenty of drivers 
+> don't support runtime PM yet.)
+> 
+> 
+> > We don't want to build up some irrelevant PM links and callbacks. We don't 
+> > want to have some completely made-up new infrastructure for something that 
+> > we _already_ want to handle totally differently for init time.
+> > 
+> > IOW, I argue very strongly against making up something PM-specific, when 
+> > there really doesn't seem to be much of an advantage. We're much better 
+> > off trying to share the init code than making up something new.
+> 
+> If I understand correctly, what you're suggesting is impractical.  You
+> would have each driver responsible for resuming the devices it
+> registers.  If it registered some children synchronously (during the
+> parent's probe) then it would resume them synchronously (during the
+> parent's resume); if it registered them asynchronously then it would
+> resume them asynchronously.  In essence, every single device_add() or
+> device_register() call would have to be paired with a resume call.
+> 
+> To make such significant changes in every driver would be prohibitively
+> difficult.  What we need is a compromise which gives drivers control
+> over the resume process without making them responsible for actually
+> carrying it out.
+> 
+> So consider this suggestion: Let's define PM groups.  Each device
+> belongs to a group, and each group (except group 0, the initial group)  
+> has an owner device.  By default a device is added to its parent's
+> group during registration, but the driver can request that it be
+> assigned to a different group, which must be owned by that parent.
+> 
+> During resume, each PM group would correspond to an async task.  The 
+> devices in each group would be resumed sequentially, in order of 
+> registration, but asynchronously with respect to other groups.  The 
+> async thread to resume a group would be launched after the group's 
+> owner device was resumed.
+> 
+yes, we've talked about something similar to this before. :)
+
+Hi, Linus,
+can you please look at this patch set and see if the idea is right?
+http://marc.info/?l=linux-kernel&m=124840449826386&w=2
+http://marc.info/?l=linux-acpi&m=124840456826456&w=2
+http://marc.info/?l=linux-acpi&m=124840456926459&w=2
+http://marc.info/?l=linux-acpi&m=124840457026468&w=2
+http://marc.info/?l=linux-acpi&m=124840457126471&w=2
+
+If yes, I'll pick them up again and rework a patch set, including some
+good thoughts from Rafael.
+
+thanks,
+rui
+
+> So for example, the sibling functions on a PCI card could all be
+> assigned to the same group, but different cards could belong to
+> different groups.  Likewise for ATA and PCMCIA controllers.  Extra
+> cross-group constraints could be added if needed, but there should be
+> relatively few of them.
+> 
+> This way drivers can decide which of their devices will be resumed in 
+> sequence or concurrently, but they won't have to do any of the 
+> necessary work.
 > 
 
-Well, we do it for everyone, it's just a particular series of HPs forced
-us to add it.
 
-> Now, the good news is that serio is near invisible on resume...
+> Alan Stern
 > 
-
-Resume is fully offloaded to kseriod.
-
--- 
-Dmitry
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
