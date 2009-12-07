@@ -1,13 +1,16 @@
 From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Mon, 7 Dec 2009 12:48:19 -0800 (PST)
-Message-ID: <alpine.LFD.2.00.0912071239270.3560__45258.452211465$1260219086$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912071449470.15701-100000@iolanthe.rowland.org>
+Date: Mon, 7 Dec 2009 12:56:00 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0912071249390.3560__42815.8744973645$1260219674$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912060953190.4442-100000@netrider.rowland.org>
+	<200912071615.34788.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912070832330.3560@localhost.localdomain>
+	<200912072147.13851.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912071449470.15701-100000@iolanthe.rowland.org>
+In-Reply-To: <200912072147.13851.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,58 +20,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 
 
-On Mon, 7 Dec 2009, Alan Stern wrote:
+On Mon, 7 Dec 2009, Rafael J. Wysocki wrote:
 > 
-> Yes, I like this approach better and better.
-> 
-> There is still a problem.  In your code outlines, you have presented a
-> classic depth-first (suspend) or depth-last (resume) tree algorithm. 
+> So I guess the only thing we need at the core level is to call
+> async_synchronize_full() after every stage of suspend/resume, right?
 
-Yes, I did that because that clarifies the locking rules (ie "we traverse 
-parents nodes last/first"), not because it was actually relevant to 
-anything else.
+Yes and no.
 
-And the whole pre-order vs post-order is important, and really only shows 
-up when you show the pseudo-code as a tree walk. 
+Yes in the sense that _if_ everybody always uses "async_schedule()" (or 
+whatever the call is named - I've really only written pseudo-code and 
+haven't even tried to look up the details), then the only thing you need 
+to do is async_synchronize_full().
 
-> But that's not how the PM core works.  Instead it maintains dpm_list, a
-> list of all devices in order of registration.
+But one of the nice things about using just the trivial rwlock model and 
+letting any async users just depend on that is that we could easily just 
+depend entirely on those device locks, and allow drivers to do async 
+shutdowns other ways too.
 
-Right. I did mention that in a couple of the asides, I'm well aware that 
-we don't actually traverse the tree as a tree.
+For example, I could imagine some driver just doing an async suspend (or 
+resume) that gets completed in an interrupt context, rather than being 
+done by 'async_schedule()' at all. 
 
-But the "traverse list forward" is logically the same thing as doing 
-a pre-order DFS, while going backwards is equivalent to doing a post-order 
-DFS, since all we really care about is the whole "parent first" or 
-"children first" part of the ordering.
+So in many ways it's nicer to serialize by just doing
 
-So I wanted to show the logic in pseudo-code using the tree walk (because 
-that explains the logic _conceptually_ much better), but the actual code 
-would just do the list traversal.
+	serialize_all_PM_events()
+	{
+		for_each_device() {
+			down_write(dev->lock);
+			up_write(dev->lock);
+		}
+	}
 
-> The consequence is that there's no way to hand off an entire subtree to 
-> an async thread.  And as a result, your single-pass algorithm runs into 
-> the kind of "stall" problem I described before.
+rather than depend on something like async_synchronize_full() that 
+obviously waits for all async events, but doesn't have the capability to 
+wait for any other event that some random driver might be using.
 
-No, look again. There's no stall in the thing, because all it really 
-depends on is (for the suspend path) is that it sees all children before 
-the parent (because the child will do a "down_read()" on the parent node 
-and that should not stall), and for the resume path it depends on seeing 
-the parent node before any children (because the parent node does that 
-"down_write()" on its own node).
+[ That "down+up" is kind of stupid, but I don't think we have a "wait for 
+  unlocked" rwsem operation. We could add one, and it would be cheaper for 
+  the case where the device never did anything async at all, and didn't 
+  really need to dirty that cacheline by doing that write lock/unlock 
+  pair. ]
 
-Everything else is _entirely_ asynchronous, including all the other locks 
-it takes. So there are no stalls (except, of course, if we then hit limits 
-on numbers of outstanding async work and refuse to create too many 
-outstanding async things, but that's a separate issue, and intentional, of 
-course).
+But that really isn't a big deal. I think it would be perfectly ok to also 
+just say "if you do any async PM, you need to use 'async_schedule()' 
+because that's all we're going to wait for". It's probably perfectly fine.
 
-You're right that my first one (two-phase suspend) had a stall situation.
-
-		Linus
+			Linus
