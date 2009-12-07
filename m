@@ -1,15 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Mon, 7 Dec 2009 16:17:51 +0100
-Message-ID: <200912071617.51262.rjw__41850.2402179458$1260199208$gmane$org@sisk.pl>
-References: <alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
-	<20091206223112.77433d13@infradead.org>
-	<20091207063236.GF21451@core.coreip.homeip.net>
+Date: Mon, 7 Dec 2009 10:42:26 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912071029260.3064-100000__29363.3071393289$1260200616$gmane$org@iolanthe.rowland.org>
+References: <alpine.LFD.2.00.0912062110240.3560@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091207063236.GF21451@core.coreip.homeip.net>
+In-Reply-To: <alpine.LFD.2.00.0912062110240.3560@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,36 +17,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 07 December 2009, Dmitry Torokhov wrote:
-> On Sun, Dec 06, 2009 at 10:31:12PM -0800, Arjan van de Ven wrote:
-> > On Sun, 6 Dec 2009 22:15:49 -0800
-> > Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> > 
-> > > And the bad thing is that violates multiple layers in the kernel.
-> > > Atkbd driver does not have to be using i8042; neither does psmouse.
-> > > Althtough they do in 99% of the cases there are other controllers
-> > > providing the i8042-style ports. Just grep for SERIO_8042 in
-> > > drivers/input/serio.
-> > > 
-> > > I do not want to hard-code the i8042-psmouse-atkbd dependency.
-> > 
-> > it's not a specific dependency.
-> > 
-> > it's a "I know I'm critical, so everything before me needs to be done".
-> > 
-> > that doesn't encode an actual relationship, it encodes a potential
-> > relationship... with a worst case behavior of ... what we do right
-> > now ;_)
+On Sun, 6 Dec 2009, Linus Torvalds wrote:
+
+> I can imagine that doing USB resume specially is worth it, since USB is 
+> fundamentally a pretty slow bus. But USB is also a fairly clear hierarchy, 
+> so there is no point in PM groups or any other information outside of the 
+> pure topology.
 > 
-> This is the case with every parent device, isn't it? It is important for
-> its children. And wasn't Rafael patchset trying to address exactkly
-> this?
+> But there is absolutely zero point in doing that for devices in general. 
+> PCI drivers simply do not want concurrent initialization. The upsides are 
+> basically zero (win a few msecs?) and the downsides are the pointless 
+> complexity. We don't do PCI discovery asyncronously either - for all the 
+> same reasons.
+> 
+> Now, a PCI driver may then implement a bus that is slow (ie SCSI, ATA, 
+> USB), and that bus may itself then want to do something else. If it really 
+> is a good idea to add the whole hierarchical model to USB suspend/resume, 
+> I can live with that, but that is absolutely no excuse for then doing it 
+> for cases where the hierarchy is (a) known to be broken (ie the whole PCI 
+> multifunction thing, but also things like motherboard power management 
+> devices) and (b) don't have the same kind of slow bus issues.
 
-Yes, it was.
+Okay.  I can understand not wanting to burden everybody else with USB's 
+weaknesses.
 
-Thanks,
-Rafael
+Simply doing an async suspend & resume of each USB root hub might be
+enough to give a significant advantage.  For the most part these root
+hubs tend to be registered sequentially with few or no other devices in
+between.[*]  Hence the "stalls" that would occur when suspending a
+parent or resuming a child wouldn't slow things down very much.  We
+would not always reap the maximum advantage of a fully-asyncronous
+approach but there would be some improvement.
+
+This is sort of what Arjan suggested yesterday.  Its benefit is that 
+nothing outside usbcore has to change.
+
+Alan Stern
+
+[*] In fact this is true only on systems where the USB host controller 
+drivers are built as modules.  If everything is compiled into the 
+kernel then the devices are registered in the worst possible order:
+controller 1, root hub 1, controller 2, root hub 2, ...
+
+I suppose the root hubs could be registered in a delayed work routine.  
+It would be a little awkward but it would solve this issue.
