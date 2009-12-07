@@ -1,13 +1,13 @@
-From: mark gross <mgross@linux.intel.com>
-Subject: [PATCH]PM_QOS-to-use-handle-based-requests-pcm-update 5/5
-Date: Mon, 7 Dec 2009 09:06:36 -0800
-Message-ID: <20091207170636.GF5463@linux.intel.com>
-Reply-To: mgross@linux.intel.com
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+Date: Mon, 7 Dec 2009 12:52:36 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912071217220.2644-100000__44159.3890231617$1260208423$gmane$org@iolanthe.rowland.org>
+References: <alpine.LFD.2.00.0912070737150.3560@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0912070737150.3560@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,85 +17,104 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm <linux-pm@lists.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, 7 Dec 2009, Linus Torvalds wrote:
+
+> No, I haven't overlooked resume at all. I just assumed that it was 
+> obvious. It's the exact same thing, except in reverse (the locking ends 
+> up being slightly different, but the changes are actually fairly 
+> straightforward).
+> 
+> And by reverse, I mean that you walk the tree in the reverse order too, 
+> exactly like we already do - on suspend we walk it children-first, on 
+> resume we walk it parents-first (small detail: we actually just walk a 
+> simple linked list, but the list is topologically ordered, so walking it 
+> forwards/backwards is topologically the same thing as doing that 
+> depth-first search).
+
+> Notice? It's _exactly_ the same thing as suspend - except all turned 
+> around. We do the nodes before the children ("walk the list backwards"), 
+> and we also do the locking the other way around (ie on suspend we'd lock 
+> the _parent_ if we wanted to do async stuff - to keep it around - but on 
+> resume we lock _ourselves_, so that the children can have something to 
+> wait on. Also note how we take a _write_ lock rather than a read lock).
+
+Okay, I think I've got it.  But you're wrong about one thing: Resume
+isn't _exactly_ the reverse of suspend.  For both of them we have to
+start the async thread in the first pass.  So instead of
+resume/post_resume we would have pre_resume/resume, just like
+pre_suspend/suspend.
+
+During the pre- pass, the driver launches an async thread and takes the
+appropriate locks.  The thread does its work as appropriate (with
+locking to insure that it first waits for children or parents), and
+then in the second pass the driver waits for the async thread to 
+finish.
+
+A non-async driver (i.e., most of them) would ignore the pre- pass
+entirely and do all its work in the second pass.
+
+An async-aware driver would look like this:
+
+	pre_suspend(dev)
+	{
+		/* Prevent parent from suspending until we are ready */
+		down_read(dev->parent->lock);
+		dev->pm_cookie = async_schedule(async_suspend, dev);
+	}
+
+	async_suspend(dev)
+	{
+		/* Wait until all children are fully suspended */
+		down_write(dev->lock);
+		Suspend dev, taking as much time as needed
+		up_write(dev->lock);
+
+		/* Allow parent to suspend */
+		up_read(dev->parent->lock);
+	}
+
+	suspend(dev)
+	{
+		/* Wait until the suspend is complete */
+		async_synchronize_cookie(dev->pm_cookie);
+	}
 
 
-Signed-off-by: mark gross <mgross@linux.intel.com>
----
- include/sound/pcm.h     |    3 ++-
- sound/core/pcm.c        |    3 ---
- sound/core/pcm_native.c |   14 ++++++++------
- 3 files changed, 10 insertions(+), 10 deletions(-)
+	pre_resume(dev)
+	{
+		/* Prevent children from resuming */
+		down_write(dev->lock);
+		dev->pm_cookie = async_schedule(async_resume, dev);
+	}
 
-diff --git a/include/sound/pcm.h b/include/sound/pcm.h
-index c83a4a7..fbd61ea 100644
---- a/include/sound/pcm.h
-+++ b/include/sound/pcm.h
-@@ -29,6 +29,7 @@
- #include <linux/poll.h>
- #include <linux/mm.h>
- #include <linux/bitops.h>
-+#include <linux/pm_qos_params.h>
- 
- #define snd_pcm_substream_chip(substream) ((substream)->private_data)
- #define snd_pcm_chip(pcm) ((pcm)->private_data)
-@@ -357,7 +358,7 @@ struct snd_pcm_substream {
- 	int number;
- 	char name[32];			/* substream name */
- 	int stream;			/* stream (direction) */
--	char latency_id[20];		/* latency identifier */
-+	struct pm_qos_request_list *latency_pm_qos_req; /* pm_qos request */
- 	size_t buffer_bytes_max;	/* limit ring buffer size */
- 	struct snd_dma_buffer dma_buffer;
- 	unsigned int dma_buf_id;
-diff --git a/sound/core/pcm.c b/sound/core/pcm.c
-index 6884ae0..504eef6 100644
---- a/sound/core/pcm.c
-+++ b/sound/core/pcm.c
-@@ -648,9 +648,6 @@ int snd_pcm_new_stream(struct snd_pcm *pcm, int stream, int substream_count)
- 		substream->number = idx;
- 		substream->stream = stream;
- 		sprintf(substream->name, "subdevice #%i", idx);
--		snprintf(substream->latency_id, sizeof(substream->latency_id),
--			 "ALSA-PCM%d-%d%c%d", pcm->card->number, pcm->device,
--			 (stream ? 'c' : 'p'), idx);
- 		substream->buffer_bytes_max = UINT_MAX;
- 		if (prev == NULL)
- 			pstr->substream = substream;
-diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
-index 29ab46a..e55c63f 100644
---- a/sound/core/pcm_native.c
-+++ b/sound/core/pcm_native.c
-@@ -448,11 +448,13 @@ static int snd_pcm_hw_params(struct snd_pcm_substream *substream,
- 	snd_pcm_timer_resolution_change(substream);
- 	runtime->status->state = SNDRV_PCM_STATE_SETUP;
- 
--	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY,
--				substream->latency_id);
-+	if (substream->latency_pm_qos_req) {
-+		pm_qos_remove_request(substream->latency_pm_qos_req);
-+		substream->latency_pm_qos_req = NULL;
-+	}
- 	if ((usecs = period_to_usecs(runtime)) >= 0)
--		pm_qos_add_requirement(PM_QOS_CPU_DMA_LATENCY,
--					substream->latency_id, usecs);
-+		substream->latency_pm_qos_req = pm_qos_add_request(
-+					PM_QOS_CPU_DMA_LATENCY, usecs);
- 	return 0;
-  _error:
- 	/* hardware might be unuseable from this time,
-@@ -507,8 +509,8 @@ static int snd_pcm_hw_free(struct snd_pcm_substream *substream)
- 	if (substream->ops->hw_free)
- 		result = substream->ops->hw_free(substream);
- 	runtime->status->state = SNDRV_PCM_STATE_OPEN;
--	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY,
--		substream->latency_id);
-+	pm_qos_remove_request(substream->latency_pm_qos_req);
-+	substream->latency_pm_qos_req = NULL;
- 	return result;
- }
- 
--- 
-1.6.3.3
+	async_resume(dev)
+	{
+		/* Wait until parent is fully resumed */
+		down_read(dev->parent->lock);
+		Resume dev, taking as much time as needed
+		up_read(dev->parent->lock);
+
+		/* Allow children to resume */
+		up_write(dev->lock);
+	}
+
+	resume(dev)
+	{
+		/* Wait until resume is complete */
+		async_synchronize_cookie(dev->pm_cookie);
+	}
+
+So there's some time symmetry here, but it isn't perfect.  This is 
+probably what you had in mind all along, but I needed to get it 
+straight.
+
+There's some question about what to do if a suspend or resume fails.  A
+bunch of async threads will have been launched for other devices, but
+now there won't be anything to wait for them.  It's not clear how this
+should be handled.
+
+Alan Stern
