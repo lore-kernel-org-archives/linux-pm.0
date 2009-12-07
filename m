@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug 14730] sky2 won't work after suspend/resume
-	cycle
-Date: Mon, 7 Dec 2009 21:23:32 +0100
-Message-ID: <200912072123.32354.rjw__41863.7458737523$1260217488$gmane$org@sisk.pl>
-References: <bug-14730-10028@http.bugzilla.kernel.org/>
-	<200912071951.nB7JpW10003364@demeter.kernel.org>
+Subject: Re: [PATCH ver. 3] PM: allow for usage_count > 0 in
+	pm_runtime_get()
+Date: Mon, 7 Dec 2009 21:26:49 +0100
+Message-ID: <200912072126.49282.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0912071049040.3064-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912071951.nB7JpW10003364@demeter.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912071049040.3064-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,81 +18,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: bugzilla-daemon@bugzilla.kernel.org
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Linux PCI <linux-pci@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 07 December 2009, bugzilla-daemon@bugzilla.kernel.org wrote:
-> http://bugzilla.kernel.org/show_bug.cgi?id=14730
+On Monday 07 December 2009, Alan Stern wrote:
+> This patch (as1308c) fixes __pm_runtime_get().  Currently the routine
+> will resume a device if the prior usage count was 0.  But this isn't
+> right; thanks to pm_runtime_get_noresume() the usage count can be
+> positive even while the device is suspended.
 > 
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 > 
+> ---
 > 
+> Rafael:
 > 
-> 
-> --- Comment #7 from Andrew Morton <akpm@linux-foundation.org>  2009-12-07 19:51:32 ---
-> (switched to email.  Please respond via emailed reply-to-all, not via the
-> bugzilla web interface).
-> 
-> On Fri, 4 Dec 2009 09:02:21 GMT
-> bugzilla-daemon@bugzilla.kernel.org wrote:
-> 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=14730
-> > 
-> >            Summary: sky2 won't work after suspend/resume cycle
-> >            Product: Power Management
-> >            Version: 2.5
-> >           Platform: All
-> >         OS/Version: Linux
-> >               Tree: Mainline
-> >             Status: NEW
-> >           Severity: high
-> >           Priority: P1
-> >          Component: Hibernation/Suspend
-> >         AssignedTo: power-management_other@kernel-bugs.osdl.org
-> >         ReportedBy: mat@esi.com.pl
-> >         Regression: Yes
-> > 
-> > 
-> > I use sky2 network adapter in my Fujitsu Siemens Esprimo Mobile U9200. It
-> > worked fine up until 2.6.31-rc3 (or at least that's the last one I tried it
-> > works for me) and in all versions after that I tried it stops working after
-> > suspend/resume cycle (I use powersave daemon, but I also tried without it -
-> > effect is the same). 
-> > 
-> > After resume what I see in dmesg is this:
-> > 
-> > sky2 driver version 1.23
-> > sky2 0000:04:00.0: enabling device (0000 -> 0003)
-> > sky2 0000:04:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-> > sky2 0000:04:00.0: setting latency timer to 64
-> > sky2 0000:04:00.0: unsupported chip type 0xff
-> 
-> It looks like reads from the device are returning all-ones.  
-> 
-> > sky2 0000:04:00.0: PCI INT A disabled
-> > sky2: probe of 0000:04:00.0 failed with error -95
-> > 
-> > So it looks like something is probably not restored correctly after resume or
-> > some initializations are not executed.
-> > 
-> > I use Gentoo sources, but I also tried it on vanilla kernels - 2.6.31 and
-> > 2.6.32-rc8 and it doesn't work in any version past 2.6.31-rc3.
-> > 
-> 
-> Help.  Do we think this regression is likely to be a sky2 thing, an
-> ACPI thing, an x86 arch thing or...?
+> This patch contains the most important part of the patch you rejected
+> last week, leaving out the semantic changes you didn't like.  It really
+> does fix a bug, and it should be sent to Linus before the merge window
+> closes.
 
-Quite frankly, I have no idea.
+Thanks, I'll include it into the next pull request.
 
-In principle that may be a result of a PCI PM core change, but nothing
-comes to mind immediately.
+Rafael
 
-It may be worth trying to revert 
 
-commit 4b77b0a2ba27d64f58f16d8d4d48d8319dda36ff
-Author: Rafael J. Wysocki <rjw@sisk.pl>
-Date:   Wed Sep 9 23:49:59 2009 +0200
-
-    PCI: Clear saved_state after the state has been restored
-
-and retesting.
+> Index: usb-2.6/drivers/base/power/runtime.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/base/power/runtime.c
+> +++ usb-2.6/drivers/base/power/runtime.c
+> @@ -699,15 +699,15 @@ EXPORT_SYMBOL_GPL(pm_request_resume);
+>   * @dev: Device to handle.
+>   * @sync: If set and the device is suspended, resume it synchronously.
+>   *
+> - * Increment the usage count of the device and if it was zero previously,
+> - * resume it or submit a resume request for it, depending on the value of @sync.
+> + * Increment the usage count of the device and resume it or submit a resume
+> + * request for it, depending on the value of @sync.
+>   */
+>  int __pm_runtime_get(struct device *dev, bool sync)
+>  {
+> -	int retval = 1;
+> +	int retval;
+>  
+> -	if (atomic_add_return(1, &dev->power.usage_count) == 1)
+> -		retval = sync ? pm_runtime_resume(dev) : pm_request_resume(dev);
+> +	atomic_inc(&dev->power.usage_count);
+> +	retval = sync ? pm_runtime_resume(dev) : pm_request_resume(dev);
+>  
+>  	return retval;
+>  }
+> 
+> 
+> 
