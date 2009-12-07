@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Mon, 7 Dec 2009 23:02:57 +0100
-Message-ID: <200912072302.57318.rjw__12475.9785518565$1260223394$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0912071610520.15701-100000@iolanthe.rowland.org>
-	<alpine.LFD.2.00.0912071337020.3560@localhost.localdomain>
+Date: Mon, 7 Dec 2009 14:06:59 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0912071403520.3560__4598.44431975416$1260223677$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912071652040.15701-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912071337020.3560@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.44L0.0912071652040.15701-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,37 +17,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 07 December 2009, Linus Torvalds wrote:
-> 
-> On Mon, 7 Dec 2009, Alan Stern wrote:
+
+
+On Mon, 7 Dec 2009, Alan Stern wrote:
 > > 
-> > It only seems that way because you didn't take into account devices 
-> > that suspend synchronously but whose children suspend asynchronously.
+> > Make the USB host controller do its suspend asynchronously. We don't 
+> > suspend PCI bridges anyway, iirc (but I didn't actually check). And at 
+> > worst, we can make the PCI _bridges_ know about async suspends, and solve 
+> > it that way - without actually making any normal PCI drivers do it.
 > 
-> But why would I care? If somebody suspends synchronously, then that's what 
-> he wants.
-> 
-> > A synchronous suspend routine for a device with async child suspends
-> > would have to look just like your usb_node_suspend():
-> 
-> Sure. But that sounds like a "Doctor, it hurts when I do this" situation. 
-> Don't do that.
-> 
-> Make the USB host controller do its suspend asynchronously. We don't 
-> suspend PCI bridges anyway, iirc (but I didn't actually check). And at 
-> worst, we can make the PCI _bridges_ know about async suspends, and solve 
-> it that way - without actually making any normal PCI drivers do it.
+> This sounds suspiciously like pushing the problem up a level and 
+> hoping it will go away.  (Sometimes that even works.)
 
-BTW, I still don't quite understand why not to put the parent's down_write
-operation into the core.  It's not going to hurt for the "synchronous" devices
-and the "asynchronous" ones will need to do it anyway.
+The "we don't suspend bridges anyway" is definitely a "hoping it will go 
+away" issue. I think we did suspend bridges for a short while during the 
+PM switch-over some time ago, and it worked most of the time, and then on 
+some machines it just didn't work at all. Probably because ACPI ends up 
+touching registers behind bridges that we closed down etc.
 
-Also it looks like that's something to do unconditionally for all nodes
-having children, because the parent need not know if the children do async
-operations.
+So PCI bridges are kind of special. Right now we don't touch them, and if 
+we ever do, that will be another issue.
 
-Rafael
+> In the end it isn't a very big issue.  Using one vs. two passes in 
+> dpm_suspend() is pretty unimportant.
+
+I also suspect that even if you do the USB host controller suspend 
+synchronously, doing the actual USB devices asynchronously would still 
+help - even if it's only "asynchronously per bus" thing. 
+
+So in fact, it's probably a good first step to start off doing only the 
+USB devices, not the controller.
+
+		Linus
