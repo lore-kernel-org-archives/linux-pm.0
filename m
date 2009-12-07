@@ -1,13 +1,22 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Sun, 6 Dec 2009 21:20:32 -0800 (PST)
-Message-ID: <alpine.LFD.2.00.0912062110240.3560__10745.1393305839$1260163297$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912060953190.4442-100000@netrider.rowland.org>
+Date: Sun, 6 Dec 2009 21:26:00 -0800
+Message-ID: <20091206212600.44806308__41433.948899112$1260163499$gmane$org@infradead.org>
+References: <200912052216.19540.rjw@sisk.pl> <200912060055.36130.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912051635330.3560@localhost.localdomain>
+	<200912060254.10081.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912051758190.3560@localhost.localdomain>
+	<20091206113555.5a646713@infradead.org>
+	<alpine.LFD.2.00.0912061144100.3560@localhost.localdomain>
+	<20091206121803.70385c33@infradead.org>
+	<7AB497C7-8495-4535-9E83-81307E008BF4@gmail.com>
+	<20091206165551.2529075f@infradead.org>
+	<20091207022756.GB20770@core.coreip.homeip.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912060953190.4442-100000@netrider.rowland.org>
+In-Reply-To: <20091207022756.GB20770@core.coreip.homeip.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,64 +26,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Sun, 6 Dec 2009 18:27:56 -0800
+Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 
-
-On Sun, 6 Dec 2009, Alan Stern wrote:
+> On Sun, Dec 06, 2009 at 04:55:51PM -0800, Arjan van de Ven wrote:
+> > On Sun, 6 Dec 2009 14:54:48 -0800
+> > Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > 
+> > > > isn't serio the PS/2 stuff?
+> > > 
+> > > Yes, that's your PS/2 mouse (rather touchpad) and the delay comes
+> > > from device reset (needed by some keyboard controllers - I
+> > > remember HP -or it and keyboard will be dead at resume).
+> > 
+> > and I have a HP laptop... so this makes perfect sense.
+> > Thanks for the explenation!
+> > 
 > 
-> That's ridiculous.  Having gone to all the trouble of building a device
-> tree, one which is presumably still almost entirely correct, why go to
-> all the trouble of tearing it down only to rebuild it again?  (Note:
-> I'm talking about resume-from-RAM here, not resume-from-hibernation.)
+> Well, we do it for everyone, it's just a particular series of HPs
+> forced us to add it.
+> 
+wonder if it should be a DMI based quirk instead...
 
-Hey, I can believe that it's worth keeping the USB device tree, and just 
-validating it instead. However:
 
-> If I understand correctly, what you're suggesting is impractical.  You
-> would have each driver responsible for resuming the devices it
-> registers.
-
-The thing is, for 99% of all devices, we really _really_ don't care. 
-Especially PCI devices. 
-
-Your average laptop will have something like ten PCI devices on it, and 
-99% of those have no delays at all outside of the millisecond-level ones 
-that it takes for power management register writes etc to take place.
-
-So what I'm suggesting is to NOT DO ANY ASYNC RESUME AT ALL by default. 
-Because async device management is _hard_, and results in various nasty 
-ordering problems that are timing-dependent etc. And it's totally 
-pointless for almost all cases.
-
-This is why I think it is so crazy to try to create those idiotic "this 
-device depends on that other" lists etc - it's adding serious conceptual 
-complexity for something that nobody cares about, and that just allows for 
-non-deterministic behavior that we don't even want.
-
-> So consider this suggestion: Let's define PM groups.
-
-Let's not.
-
-I can imagine that doing USB resume specially is worth it, since USB is 
-fundamentally a pretty slow bus. But USB is also a fairly clear hierarchy, 
-so there is no point in PM groups or any other information outside of the 
-pure topology.
-
-But there is absolutely zero point in doing that for devices in general. 
-PCI drivers simply do not want concurrent initialization. The upsides are 
-basically zero (win a few msecs?) and the downsides are the pointless 
-complexity. We don't do PCI discovery asyncronously either - for all the 
-same reasons.
-
-Now, a PCI driver may then implement a bus that is slow (ie SCSI, ATA, 
-USB), and that bus may itself then want to do something else. If it really 
-is a good idea to add the whole hierarchical model to USB suspend/resume, 
-I can live with that, but that is absolutely no excuse for then doing it 
-for cases where the hierarchy is (a) known to be broken (ie the whole PCI 
-multifunction thing, but also things like motherboard power management 
-devices) and (b) don't have the same kind of slow bus issues.
-
-				Linus
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
