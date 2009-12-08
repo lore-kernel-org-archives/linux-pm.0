@@ -1,14 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates
-	for 2.6.33)
-Date: Tue, 8 Dec 2009 10:55:10 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912081049010.3046-100000__8935.87438990853$1260287767$gmane$org@iolanthe.rowland.org>
-References: <alpine.LFD.2.00.0912080728590.3560@localhost.localdomain>
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Subject: Re: [PATCH v2 1/2] Input: gpio-keys - allow platform to
+ specify exact irq flags
+Date: Tue, 08 Dec 2009 15:03:30 +0200
+Message-ID: <1260277410.19669.84.camel__12239.4863669344$1260288812$gmane$org@localhost>
+References: <Pine.LNX.4.44L0.0911300956400.4478-100000@iolanthe.rowland.org>
+	<87einfltp3.fsf@tac.ki.iif.hu> <20091206084704.GC2766@ucw.cz>
+	<20091208042251.GB11147@core.coreip.homeip.net>
+Reply-To: dedekind1@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912080728590.3560@localhost.localdomain>
+In-Reply-To: <20091208042251.GB11147@core.coreip.homeip.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,34 +21,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Mika Westerberg <mika.westerberg@iki.fi>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Ferenc Wagner <wferi@niif.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 8 Dec 2009, Linus Torvalds wrote:
-
-> Please just use the lock. Don't make up your own locking crap. Really. 
-> 
-> Your patch is horrible. Exactly because your locking is horribly 
-> mis-designed. You can't say things are complete from an interrupt, for 
-> example, since you made it some random bitfield, which has unknown 
-> characteristics (ie non-atomic read-modify-write etc).
-> 
-> The fact is, any time anybody makes up a new locking mechanism, THEY 
-> ALWAYS GET IT WRONG. Don't do it.
-> 
-> I suggested using the rwsem locking for a good reason. It made sense. It 
-> was simpler. Just do it that way, stop making up crap.
-
-The semantics needed for this kind of lock aren't really the same as
-for an rwsem (although obviously an rwsem will do the job).  Basically
-it needs to have the capability for multiple users to lock it (no
-blocking when acquiring a lock) and the capability for a user to wait
-until it is totally unlocked.  It could be implemented trivially using
-an atomic_t counter and a waitqueue head.
-
-Is this a standard sort of lock?  It's a lot simpler than most others.  
-I don't recall seeing anything quite like it anywhere; the closest 
-thing might be some kind of barrier.
-
-Alan Stern
+T24gTW9uLCAyMDA5LTEyLTA3IGF0IDIwOjIyIC0wODAwLCBEbWl0cnkgVG9yb2tob3Ygd3JvdGU6
+Cj4gT24gU3VuLCBEZWMgMDYsIDIwMDkgYXQgMDk6NDc6MDRBTSArMDEwMCwgUGF2ZWwgTWFjaGVr
+IHdyb3RlOgo+ID4gSGkhCj4gPiAKPiA+IAo+ID4gPiBCdXQgcnVudGltZS1wbS50eHQgc2F5cyBm
+b3IgZXhhbXBsZToKPiA+ID4gCj4gPiA+ICAgICBHZW5lcmFsbHksIHJlbW90ZSB3YWtlLXVwIHNo
+b3VsZCBiZSBlbmFibGVkIGZvciBhbGwgaW5wdXQgZGV2aWNlcwo+ID4gPiAgICAgcHV0IGludG8g
+YSBsb3cgcG93ZXIgc3RhdGUgYXQgcnVuIHRpbWUuCj4gPiA+IAo+ID4gPiBCdXQgaW4gdGhpcyBj
+YXNlIHRoZSByZXF1aXJlbWVudCBpcyB0byBzdXBwcmVzcyBpbnB1dCBldmVudHMgZnJvbSBhCj4g
+PiA+IGdpdmVuIGRldmljZSwgZWZmZWN0aXZlbHkgbXV0aW5nIGFuZCBwdXR0aW5nIGl0IGludG8g
+bG93IHBvd2VyIHN0YXRlLAo+ID4gPiBldmVuIHRob3VnaCBpdCdzIHN0aWxsIG9wZW4gYnkgc29t
+ZSBvdGhlciBwYXJ0aWVzLiAgUnVudGltZSBQTSwgb24gdGhlCj4gPiA+IG90aGVyIGhhbmQgdHJp
+ZXMgbm90IHRvIGludGVyZmVyZSB3aXRoIHRoZSBub3JtYWwgdXNhZ2Ugb2YgdGhlIGRldmljZS4K
+PiA+ID4gCj4gPiA+IExhdGVyOgo+ID4gPiAKPiA+ID4gKDMpIC0+cnVudGltZV9pZGxlKCkgYW5k
+IC0+cnVudGltZV9zdXNwZW5kKCkgY2FuIG9ubHkgYmUgZXhlY3V0ZWQgZm9yIGEKPiA+ID4gICAg
+IGRldmljZSB0aGUgdXNhZ2UgY291bnRlciBvZiB3aGljaCBpcyBlcXVhbCB0byB6ZXJvIF9hbmRf
+IFsuLi5dCj4gPiA+IAo+ID4gPiB3aGljaCB1bmRlcmxpbmVzIHRoZSBkaWZmZXJlbmNlIGFnYWlu
+OiB0aGUgdXNhZ2UgY291bnRlciAoZGVmaW5lZCBieQo+ID4gPiBjb21tb24gc2Vuc2UpIHdvbid0
+IGJlIHplcm8gaW4gb3VyIGNhc2UsIGJlY2F1c2UgdGhlIGRldmljZSBpcwo+ID4gPiBjb25zdGFu
+dGx5IGtlcHQgb3Blbiwgd2hpbGUgd2Ugd2FudCB0byBtdXRlIGl0LCBwdXR0aW5nIGl0IGludG8g
+YSBsb3cKPiA+ID4gcG93ZXIgc3RhdGUuIAo+ID4gLi4uCj4gPiA+IEFjdHVhbGx5LCB0aGlzIGNv
+dWxkIGJlIGltcGxlbWVudGVkIGJ5IHRoZSB2YXJpb3VzIHVzZXJzIGNvb3BlcmF0aW5nIGluCj4g
+PiA+IGNsb3NpbmcgdGhlIGRldmljZSwgbGV0dGluZyBpdCBnbyB0byBzbGVlcCBhdXRvbWF0aWNh
+bGx5LiAgQnV0IHRoaXMKPiA+ID4gcmVxdWlyZXMgc3RyaWN0bHkgY29vcGVyYXRpbmcgcGFydGll
+cyBhbmQgaXMgbW9yZSBjb21wbGljYXRlZCB0aGF0Cj4gPiA+IGZsaXBwaW5nIHNvbWUgbWFzdGVy
+IHN3aXRjaCBvZiB0aGUgZGV2aWNlLiAgV2UncmUgbG9va2luZyBmb3IgdGhpcwo+ID4gPiBtYXN0
+ZXIgc3dpdGNoLCBiZWZvcmUgbmVlZGxlc3NseSBidWlsZGluZyBvdXIgb3duLgo+ID4gCj4gPiBQ
+bGVhc2UganVzdCBjbG9zZSB0aGUgZGV2aWNlIHByb3Blcmx5LiBJIGRvIG5vdCB0aGluayB3ZSB3
+YW50IDEwMAo+ID4gZGlmZmVyZW50ICdwbGVhc2UgbXV0ZSBrZXlzIEEgYW5kIEcnLCAncGxlYXNl
+IG11dGUgbWlkZGxlIG1vdXNlIGJ1dHRvbicsCj4gPiAuLi4gaW50ZXJmYWNlcyBhbnl3aGVyZSBu
+ZWFyIG1haW5saW5lLgo+ID4gCj4gCj4gSSBkbyBub3QgdGhpbmsgaXQgaXMgcHJhY3RpY2FsIHRv
+IHNpbXBseSBjbG9zZSB0aGUgZGV2aWNlLCBnaXZlbiB0aGF0Cj4gdGhlcmUgbWF5IGJlIHNldmVy
+YWwgYXBwbGljYXRpb25zIHRoYXQgaGF2ZSBpdCBvcGVuLiBJIGNvbnN0YW50bHkgc2VlCj4gZW1i
+ZWRkZWQgZ3V5cyBhZGRpbmcgY3VzdG9tIGtub2JzIHRvIHRoZSBkZXZpY2VzIGFsbG93aW5nIHRo
+ZW0gdG8gc2h1dAo+IG9mZiB0aGUgZGV2aWNlIHdoZW4gbm90IGluIHVzZS4gS2luZCBvZiBydW50
+YW1lIFBNIGJ1dCB1c2VyLWluaXRpYXRlZC4KPiAKPiBJIHdvdWxkIHJlYWxseSBsb3ZlIHRvIGhh
+dmUgaXQgaW1wbGVtZW50ZWQgaW4gdGhlIGRyaXZlciBjb3JlIHNvIHRoZQo+IGludGVyZmFjZSBp
+cyB0aGUgc2FtZSBmb3IgYWxsIGRyaXZlcnMgKHRoYXQgc3VwcG9ydCB0aGlzIGZ1dHVyZSkuCj4g
+Cj4gPiBPciBqdXN0IGRvIGl0IGFzIGxvY2FsIHBhdGNoLgo+IAo+IEkgYWxzbyBzZWUgdGhhdCBn
+cGlvLWtleXMgaXMgcXVpdGUgZGlmZmVyZW50IGluIHRoZSBzZW5jZSB0aGF0IGl0IGNhbgo+IHNo
+dXQgb2ZmIGJ1dHRvbnMgc2VsZWN0aXZlbHkuIEkgZmFjdCwgYXQgdGhlIG1vbWVudCBldmVyeSBi
+dXR0b24gY2FuIGJlCj4gY29uc2lkZXJlZCBhIHNlcGFyYXRlIGRldmljZS4uLiBCdXQgdGhhdCB3
+b3VsZCBiZSB0b28gbXVjaCBvdmVyaGVhZC4KPiAKPiBUaGV5IGNvdWxkIHByb2JhYmx5IHNwbGl0
+IHRoZSBrZXlzIGludG8gMiBncm91cHMgKGNyaXRpY2FsIHRoYXQgc2hvdWxkCj4gYmUgYWx3YXlz
+IGFjdGl2ZSkgYW5kIG5vdCBjcml0aWNhbCwgdGhhdCBjb3VsZCBiZSBzaHV0IG9mZiwgYnV0IEkg
+dGhpbmsKPiB0aGV5IHdhbnQgdGVoIGZsZXhpYmlsaXR5IG9mIGNvbnRyb2xsaW5nIHRoaXMgYXQg
+cnVudGltZSBpbnN0ZWFkIG9mCj4gZG9pbmcgaXQgaW4gYm9hcmQgZGF0YS4KCkkgc3VnZ2VzdGVk
+IGluY2x1ZGluZyB0aGlzIGludG8gdGhlICJhYnN0cmFjdCBpbnB1dCBkZXZpY2UiIG1vZGVsLCBi
+dXQKeW91IHJlZnVzZSB0aGlzLiBCdXQgSSBzdGlsbCB0aGluayBpdCBpcyBhIGdvb2QgaWRlYS4K
+CkluZGVlZCwgaWYgd2UgbG9vayBhdCBhbiBpbnB1dCBkZXZpY2UgYXMgYXQgc29tZXRoaW5nIGFi
+c3RyYWN0IHdoaWNoIGhhcwptYW55IGtleXMsIHdoeSB3ZSBjYW5ub3QgYXNzdW1lIHRoYXQgc2Vw
+YXJhdGUga2V5cyBjYW4gYmUKZW5hYmxlZC9kaXNhYmxlZD8gSnVzdCBpbWFnaW5lIHlvdSBoYXZl
+IGEgdmVyeSBhZHZhbmNlZCBrZXlib3JkIDotKSBBbmQKd2Ugc2ltcGx5IGltcGxlbWVudCBhbiBp
+b2N0bCB3aGljaCBlbmFibGVzL2Rpc2FibGVzIGEgc3BlY2lmaWMga2V5LiBUaGUKZ2VuZXJpYyBs
+YXllcnMganVzdCBwYXNzIHRoaXMgaW9jdGwgZG93biB0byB0aGUgbG93ZXIgbGV2ZXIgZHJpdmVy
+cy4gSWYKdGhlIHNwZWNpZmljIGlucHV0IGRldmljZSBvciBkcml2ZXIgc3VwcG9ydCBpdCAtIGZp
+bmUsIGlmIG5vdCAtIGl0CnJldHVybnMgLUVJTlZBTCBvciBzb21ldGhpbmcgbGlrZSB0aGF0LgoK
+LS0gCkJlc3QgUmVnYXJkcywKQXJ0ZW0gQml0eXV0c2tpeSAo0JDRgNGC0ZHQvCDQkdC40YLRjtGG
+0LrQuNC5KQoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+bGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3Jn
+Cmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51
+eC1wbQ==
