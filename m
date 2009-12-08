@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates
 	for 2.6.33)
-Date: Tue, 8 Dec 2009 14:34:22 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912081431490.3046-100000__11001.2205121622$1260301046$gmane$org@iolanthe.rowland.org>
-References: <alpine.LFD.2.00.0912081043280.3560@localhost.localdomain>
+Date: Tue, 8 Dec 2009 20:44:52 +0100
+Message-ID: <200912082044.52098.rjw__33755.8095496663$1260301549$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0912072225390.4179-100000@netrider.rowland.org>
+	<200912081323.50606.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912080728590.3560@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912081043280.3560@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912080728590.3560@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,30 +24,40 @@ To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 8 Dec 2009, Linus Torvalds wrote:
-
-> Side note: if this was a real lock, you'd also needed an smp_wmb() in the 
-> 'wait_lock()' path after the atomic_inc(), to make sure that others see 
-> the atomic lock was seen by other people before the suspend started. 
+On Tuesday 08 December 2009, Linus Torvalds wrote:
 > 
-> In your usage scenario, I don't think it would ever be noticeable, since 
-> the other users are always going to start running from the same thread 
-> that did the wait_lock(), so even if they run on other CPU's, we'll have 
-> scheduled _to_ those other CPU's and done enough memory ordering to 
-> guarantee that they will see the thing.
+> On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
+> > 
+> > The wait queue plus the op_complete flag combo plays the role of the locking
+> > in the Linus' picture
 > 
-> So it would be ok in this situation, simply because it acts as an 
-> initializer and never sees any real SMP issues.
+> Please just use the lock. Don't make up your own locking crap. Really. 
+> 
+> Your patch is horrible. Exactly because your locking is horribly 
+> mis-designed. You can't say things are complete from an interrupt, for 
+> example, since you made it some random bitfield, which has unknown 
+> characteristics (ie non-atomic read-modify-write etc).
 
-Yes.  I would have brought this up, but you made the point for me.
+I didn't assume anyone would check it from an interrupt, because I didn't see
+a point.  In fact I didn't assume anyone except for the PM core would check it.
+In case this assumption is wrong, it can be easily put under the dev->sem
+that we take anyway before calling the bus type (etc.) callbacks.
 
-> But it's an example of how you now don't just depend on the locking 
-> primitives themselves doing the right thing, you end up depending very 
-> subtly on exactly how the lock is used.  The standard locks do have the 
-> same kind of issue for initializers, but we avoid it elsewhere because 
-> it's so risky.
+Anyway, if we use an rwsem, it won't be checkable from interrupt context just
+as well.
 
-No doubt there are other reasons why the "wait-lock" pattern doesn't 
-get used enough to be noticed.
+> The fact is, any time anybody makes up a new locking mechanism, THEY 
+> ALWAYS GET IT WRONG. Don't do it.
+>
+> I suggested using the rwsem locking for a good reason. It made sense. It 
+> was simpler. Just do it that way, stop making up crap.
 
-Alan Stern
+Suppose we use rwsem and during suspend each child uses a down_read() on a
+parent and then the parent uses down_write() on itself.  What if, whatever the
+reason, the parent is a bit early and does the down_write() before one of the
+children has a chance to do the down_read()?  Aren't we toast?
+
+Do we need any direct protection against that or does it just work itself out
+in a way I just don't see right now?
+
+Rafael
