@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates
 	for 2.6.33)
-Date: Tue, 8 Dec 2009 17:07:32 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912081643290.3046-100000__4295.00996037877$1260310231$gmane$org@iolanthe.rowland.org>
-References: <alpine.LFD.2.00.0912081304070.3560@localhost.localdomain>
+Date: Tue, 8 Dec 2009 14:16:12 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0912081339040.3560__45173.290585126$1260310714$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912081626400.3046-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912081304070.3560@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.44L0.0912081626400.3046-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,100 +18,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 8 Dec 2009, Linus Torvalds wrote:
 
-> On Tue, 8 Dec 2009, Alan Stern wrote:
+
+On Tue, 8 Dec 2009, Alan Stern wrote:
 > > 
-> > That's not the way it should be done.  Linus had children taking their
-> > parents' locks during suspend, which is simple but leads to
-> > difficulties.
+> > Sure they can. Control dependencies are trivial - it's called "branch 
+> > prediction", and everybody does it, and data dependencies don't exist on 
+> > many CPU architectures (even to the point of reading through a pointer 
+> > that you loaded).
 > 
-> No it doesn't. Name them.
-
-Well, one difficulty.  It arises only because we are contemplating
-having the PM core fire up the async tasks, rather than having the
-drivers' suspend routines launch them (the way your original proposal
-did -- the difficulty does not arise there).
-
-Suppose A and B are unrelated devices and we need to impose the
-off-tree constraint that A suspends after B.  With children taking
-their parent's lock, the way to prevent A from suspending too soon is
-by having B's suspend routine acquire A's lock.
-
-But B's suspend routine runs entirely in an async task, because that
-task is started by the PM core and it does the method call.  Hence by
-the time B's suspend routine is called, A may already have begun
-suspending -- it's too late to take A's lock.  To make the locking
-work, B would have to acquire A's lock _before_ B's async task starts.  
-Since the PM core is unaware of the off-tree dependency, there's no
-simple way to make it work.
-
-> > Instead, the PM core should do a down_write() on each device before
-> > starting the device's async suspend routine, and an up_write() when the
-> > routine finishes.
+> Wait a second.  Are you saying that with code like this:
 > 
-> No you should NOT do that. If you do that, you serialize the suspend 
-> incorrectly and much too early. IOW, think a topology like this:
+> 	if (x == 1)
+> 		y = 5;
 > 
-> 	a -> b -> c
-> 	  \
-> 	   > d -> e
-> 
-> where you'd want to suspend 'c' and 'e' asynchronously.  If we do a 
-> 'down-write()' on b, then we'll delay until 'c' has suspended, an if we 
-> have ordered the nodes in the obvious depth-first order, we'll walk the PM 
-> device list in the order:
-> 
-> 	c b e d a
-> 
-> and now we'll serialize on 'b', waiting for 'c' to suspend. Which we do 
-> _not_ want to do, because the whole point was to suspend 'c' and 'e' 
-> together.
+> the CPU may write to y before it has finished reading the value of x?  
 
-You misunderstand.  The suspend algorithm will look like this:
+Well, in a way.  The branch may have been predicted, and the CPU can 
+_internally_ have done the 'y=5' thing into a write buffer before it even 
+did the read.
 
-	dpm_suspend()
-	{
-		list_for_each_entry_reverse(dpm_list, dev) {
-			down_write(dev->lock);
-			async_schedule(device_suspend, dev);
-		}
-	}
+Some time later it will have to _verify_ the prediction and then perhaps 
+kill the write before it makes it to a data structure that is visible to 
+others, but internally from the CPU standpoint, yes, the write could have 
+happened before the read.
 
-	device_suspend(dev)
-	{
-		device_for_each_child(dev, child) {
-			down_read(child->lock);
-			up_read(child->lock);
-		}
-		dev->suspend(dev);	/* May do off-tree down+up pairs */
-		up_write(dev->lock);
-	}
+Now, whether that write is "before" or "after" the read is debatable. But 
+one way of looking at it is certainly that the write took place earlier, 
+and the read might have just caused it to be undone.
 
-With completions instead of rwsems, the down_write() changes to
-init_completion(), the up_write() changes to complete_all(), and the
-down_read()+up_read() pairs change to wait_for_completion().
+And there are real effects of this - looking at the bus, you might have a 
+bus transaction to get the cacheline that contains 'y' for exclusive 
+access happen _before_ the bus transaction that reads in the value of 'x' 
+(but you'd never see the writeout of that '5' before).
 
-So 'b' will wait for 'c' to suspend, as it must, but 'e' won't wait for 
-anything.
+> And this write is visible to other CPUs, so that if x was initially 0
+> and a second CPU sets x to 1, the second CPU may see y == 5 before it
+> executes the write to x (whatever that may mean)?
 
-> > Parents should, at the start of their async routine,
-> > do down_read() on each of their children plus whatever other devices
-> > they need to wait for.  The core can do the waiting for children part 
-> > and the driver's suspend routine can handle any other waiting.
-> 
-> Why?
-> 
-> That just complicates things. Compare to my simple locking scheme I've 
-> quoted several times. 
+Well, yes and no. CPU1 above won't release the '5' until it has confirmed 
+the '1' (even if it does so by reading it late). but assuming the other 
+CPU also does speculation, then yes, the situation you describe could 
+happen. If the other CPU does
 
-It is a little more complicated in that it involves explicitly 
-iterating over children.  But it is simpler in that it can use 
-completions instead of rwsems and it avoids the off-tree dependency 
-problem described above.
+		z = y;
+		x = 1;
 
-Alan Stern
+then it's certainly possible that 'z' contains 5 at the end (even if both 
+x and y started out zero). Because now the read of 'y' on that other CPU 
+might be delayed, and the write of 'x' goes ahead, CPU1 sees the 1, and 
+commits its write of 5, sp when CPU2 gets the cacheline, z will now 
+contain 5.
+
+Is it likely? No. CPU microarchitectures aim to do reads early, and writes 
+late. Reads are on the critical path, writes can be buffered. But you can 
+basically get into "impossible" situations where a write that was _later_ 
+in the instruction stream than a read (on CPU2, the 'store 1 to x' would 
+be after the load of 'y' from memory) could show up in the other order on 
+another CPU.
+
+
+			Linus
