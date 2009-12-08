@@ -1,12 +1,15 @@
-From: Pierre Ossman <pierre-list@ossman.eu>
-Subject: Re: Resume hanging on MSI motherboard
-Date: Tue, 8 Dec 2009 09:03:27 +0100
-Message-ID: <20091208090327.3ac443e9@mjolnir.ossman.eu>
-References: <20091204081739.575b29d5@mjolnir.ossman.eu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates
+	for 2.6.33)
+Date: Tue, 8 Dec 2009 13:35:01 +0100
+Message-ID: <200912081335.01969.rjw__13279.4827492491$1260275748$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0912072225390.4179-100000@netrider.rowland.org>
+	<200912081323.50606.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4791821868352183404=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091204081739.575b29d5@mjolnir.ossman.eu>
+In-Reply-To: <200912081323.50606.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,83 +17,256 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Tuesday 08 December 2009, Rafael J. Wysocki wrote:
+> On Tuesday 08 December 2009, Alan Stern wrote:
+> > On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
+> > 
+> > > However, the parent can be on a different bus type than the children, so it
+> > > looks like we can only start the asynchronous path at the core level.
+> > 
+> > Agreed.
+> > 
+> > > > Unless you want to do _all_ of the async logic in generic code and 
+> > > > re-introduce the "dev->async_suspend" flag.
+> > > 
+> > > Quite frankly, I would like to.
+> > > 
+> > > > I would be ok with that now that the infrastructure seems so simple.
+> > > 
+> > > Well, perhaps I should dig out my original async suspend/resume patches
+> > > that didn't contain all of the non-essential stuff and post them here for
+> > > discussion, after all ...
+> > 
+> > That seems like a very good idea.  IIRC they were quite similar to what 
+> > we have been discussing.
+> 
+> There you go.
 
---===============4791821868352183404==
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-31490-1260259413-0001-2"
+Below is the suspend part.  It contains some extra code for rolling back the
+suspend if one of the asynchronous callbacks returns error code, but apart
+from this it's completely analogous to the resume part.
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+[This patch has only been slightly tested.]
 
---=_freyr.ossman.eu-31490-1260259413-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+---
+ drivers/base/power/main.c |  113 ++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 104 insertions(+), 9 deletions(-)
 
-Anyone?
-
-On Fri, 4 Dec 2009 08:17:39 +0100
-Pierre Ossman <pierre-list@ossman.eu> wrote:
-
-> I have a MSI Neo2-Digital board that I'm trying to get suspend working
-> on. I'm not having much luck though, so I need some pointers on how to
-> debug this.
->=20
-> The symptoms are that the machine shuts down when suspend is triggered
-> and wakes up when the power button is pressed or an usb device pokes
-> it. Unfortunately it never gets back to a running state. It rattles a
-> bit on the disk, powers up the fans and turns on the LEDs, but that's
-> it.
->=20
-> Doing a suspend in Windows has entirely different behaviour. There it
-> keeps all fans running, and doesn't do much in the way of saving power.
-> It goes from 90 W to 67 W from idle to "standby". The [broken] state
-> Linux puts the system in OTOH runs at 13 W ("off" is 10 W).
->=20
-> I've been trying to use pm_trace to debug where things lock up, but I'm
-> not able to get it to work. I do "echo 1 > /sys/power/pm_trace" and
-> then suspend the machine. But at the next boot, the clock is still sane
-> so it seems like the PM code never stores anything.
->=20
-> Help :/
->=20
-> Rgds
-
-
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by FRA, a
-  Swedish intelligence agency. Make sure your server uses
-  encryption for SMTP traffic and consider using PGP for
-  end-to-end encryption.
-
---=_freyr.ossman.eu-31490-1260259413-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.13 (GNU/Linux)
-
-iEYEARECAAYFAkseCFEACgkQ7b8eESbyJLhjsgCggPpefD7Gfg92V6Ia3O2qOQ0X
-iLEAoMNnE3+OIyQQMPwxZhmlwz7q/TUG
-=HOSy
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-31490-1260259413-0001-2--
-
---===============4791821868352183404==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============4791821868352183404==--
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -202,6 +202,17 @@ static void dpm_wait(struct device *dev,
+                wait_event(dev->power.wait_queue, !!dev->power.op_complete);
+ }
+ 
++static int device_pm_wait_fn(struct device *dev, void *async_ptr)
++{
++	dpm_wait(dev, *((bool *)async_ptr));
++	return 0;
++}
++
++static void dpm_wait_for_children(struct device *dev, bool async)
++{
++	device_for_each_child(dev, &async, device_pm_wait_fn);
++}
++
+ /**
+  * dpm_synchronize - Wait for PM callbacks of all devices to complete.
+  */
+@@ -638,6 +649,8 @@ static void dpm_complete(pm_message_t st
+ 	mutex_unlock(&dpm_list_mtx);
+ }
+ 
++static int async_error;
++
+ /**
+  * dpm_resume_end - Execute "resume" callbacks and complete system transition.
+  * @state: PM transition of the system being carried out.
+@@ -685,20 +698,52 @@ static pm_message_t resume_event(pm_mess
+  * The driver of @dev will not receive interrupts while this function is being
+  * executed.
+  */
+-static int device_suspend_noirq(struct device *dev, pm_message_t state)
++static int __device_suspend_noirq(struct device *dev, pm_message_t state)
+ {
+ 	int error = 0;
+ 
+-	if (!dev->bus)
+-		return 0;
+-
+-	if (dev->bus->pm) {
++	if (dev->bus && dev->bus->pm) {
+ 		pm_dev_dbg(dev, state, "LATE ");
+ 		error = pm_noirq_op(dev, dev->bus->pm, state);
+ 	}
++
++	dpm_finish(dev);
++
+ 	return error;
+ }
+ 
++static void async_suspend_noirq(void *data, async_cookie_t cookie)
++{
++	struct device *dev = (struct device *)data;
++	int error = async_error;
++
++	if (error)
++		return;
++
++	dpm_wait_for_children(dev, true);
++	error = __device_suspend_noirq(dev, pm_transition);
++	if (error) {
++		pm_dev_err(dev, pm_transition, " async LATE", error);
++		dev->power.status = DPM_OFF;
++	}
++	put_device(dev);
++
++	if (error && !async_error)
++		async_error = error;
++}
++
++static int device_suspend_noirq(struct device *dev)
++{
++	if (dev->power.async_suspend) {
++		get_device(dev);
++		async_schedule(async_suspend_noirq, dev);
++		return 0;
++	}
++
++	dpm_wait_for_children(dev, false);
++	return __device_suspend_noirq(dev, pm_transition);
++}
++
+ /**
+  * dpm_suspend_noirq - Execute "late suspend" callbacks for non-sysdev devices.
+  * @state: PM transition of the system being carried out.
+@@ -713,14 +758,21 @@ int dpm_suspend_noirq(pm_message_t state
+ 
+ 	suspend_device_irqs();
+ 	mutex_lock(&dpm_list_mtx);
++	pm_transition = state;
+ 	list_for_each_entry_reverse(dev, &dpm_list, power.entry) {
+-		error = device_suspend_noirq(dev, state);
++		dev->power.status = DPM_OFF_IRQ;
++		error = device_suspend_noirq(dev);
+ 		if (error) {
+ 			pm_dev_err(dev, state, " late", error);
++			dev->power.status = DPM_OFF;
++			break;
++		}
++		if (async_error) {
++			error = async_error;
+ 			break;
+ 		}
+-		dev->power.status = DPM_OFF_IRQ;
+ 	}
++	dpm_synchronize();
+ 	mutex_unlock(&dpm_list_mtx);
+ 	if (error)
+ 		dpm_resume_noirq(resume_event(state));
+@@ -733,7 +785,7 @@ EXPORT_SYMBOL_GPL(dpm_suspend_noirq);
+  * @dev: Device to handle.
+  * @state: PM transition of the system being carried out.
+  */
+-static int device_suspend(struct device *dev, pm_message_t state)
++static int __device_suspend(struct device *dev, pm_message_t state)
+ {
+ 	int error = 0;
+ 
+@@ -773,10 +825,45 @@ static int device_suspend(struct device 
+ 	}
+  End:
+ 	up(&dev->sem);
++	dpm_finish(dev);
+ 
+ 	return error;
+ }
+ 
++static void async_suspend(void *data, async_cookie_t cookie)
++{
++	struct device *dev = (struct device *)data;
++	int error = async_error;
++
++	if (error)
++		goto End;
++
++	dpm_wait_for_children(dev, true);
++	error = __device_suspend(dev, pm_transition);
++	if (error) {
++		pm_dev_err(dev, pm_transition, " async", error);
++
++		dev->power.status = DPM_SUSPENDING;
++		if (!async_error)
++			async_error = error;
++	}
++
++ End:
++	put_device(dev);
++}
++
++static int device_suspend(struct device *dev, pm_message_t state)
++{
++	if (dev->power.async_suspend) {
++		get_device(dev);
++		async_schedule(async_suspend, dev);
++		return 0;
++	}
++
++	dpm_wait_for_children(dev, false);
++	return __device_suspend(dev, pm_transition);
++}
++
+ /**
+  * dpm_suspend - Execute "suspend" callbacks for all non-sysdev devices.
+  * @state: PM transition of the system being carried out.
+@@ -788,10 +875,12 @@ static int dpm_suspend(pm_message_t stat
+ 
+ 	INIT_LIST_HEAD(&list);
+ 	mutex_lock(&dpm_list_mtx);
++	pm_transition = state;
+ 	while (!list_empty(&dpm_list)) {
+ 		struct device *dev = to_device(dpm_list.prev);
+ 
+ 		get_device(dev);
++		dev->power.status = DPM_OFF;
+ 		mutex_unlock(&dpm_list_mtx);
+ 
+ 		error = device_suspend(dev, state);
+@@ -799,16 +888,21 @@ static int dpm_suspend(pm_message_t stat
+ 		mutex_lock(&dpm_list_mtx);
+ 		if (error) {
+ 			pm_dev_err(dev, state, "", error);
++			dev->power.status = DPM_SUSPENDING;
+ 			put_device(dev);
+ 			break;
+ 		}
+-		dev->power.status = DPM_OFF;
+ 		if (!list_empty(&dev->power.entry))
+ 			list_move(&dev->power.entry, &list);
+ 		put_device(dev);
++		if (async_error)
++			break;
+ 	}
+ 	list_splice(&list, dpm_list.prev);
++	dpm_synchronize();
+ 	mutex_unlock(&dpm_list_mtx);
++	if (!error)
++		error = async_error;
+ 	return error;
+ }
+ 
+@@ -867,6 +961,7 @@ static int dpm_prepare(pm_message_t stat
+ 	INIT_LIST_HEAD(&list);
+ 	mutex_lock(&dpm_list_mtx);
+ 	transition_started = true;
++	async_error = 0;
+ 	while (!list_empty(&dpm_list)) {
+ 		struct device *dev = to_device(dpm_list.next);
+ 
