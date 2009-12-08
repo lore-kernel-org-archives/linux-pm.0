@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates
 	for 2.6.33)
-Date: Tue, 8 Dec 2009 23:03:12 +0100
-Message-ID: <200912082303.12758.rjw__23471.8968546533$1260310095$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0912072225390.4179-100000@netrider.rowland.org>
-	<alpine.LFD.2.00.0912081256310.3560@localhost.localdomain>
-	<200912082240.42773.rjw@sisk.pl>
+Date: Tue, 8 Dec 2009 17:07:32 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912081643290.3046-100000__4295.00996037877$1260310231$gmane$org@iolanthe.rowland.org>
+References: <alpine.LFD.2.00.0912081304070.3560@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912082240.42773.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.2.00.0912081304070.3560@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,58 +22,96 @@ To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 08 December 2009, Rafael J. Wysocki wrote:
-> On Tuesday 08 December 2009, Linus Torvalds wrote:
-> > 
-> > On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
-> > > 
-> > > Anyway, if we use an rwsem, it won't be checkable from interrupt context just
-> > > as well.
-> > 
-> > You can't do a lock() from an interrupt, but the unlocks should be 
-> > irq-safe. 
-> > 
-> > > Suppose we use rwsem and during suspend each child uses a down_read() on a
-> > > parent and then the parent uses down_write() on itself.  What if, whatever the
-> > > reason, the parent is a bit early and does the down_write() before one of the
-> > > children has a chance to do the down_read()?  Aren't we toast?
-> > 
-> > We're toast, but we're toast for a totally unrealted reason: it means that 
-> > you tried to resume a child before a parent, which would be a major bug to 
-> > begin with.
-> > 
-> > Look, I even wrote out the comments, so let me repeat the code one more 
-> > time.
-> > 
-> >  - suspend time calling:
-> >         // This won't block, because we suspend nodes before parents
-> >         down_read(node->parent->lock);
-> >         // Do the part that may block asynchronously
-> >         async_schedule(do_usb_node_suspend, node);
-> > 
-> >  - resume time calling:
-> >         // This won't block, because we resume parents before children,
-> >         // and the children will take the read lock. 
-> >         down_write(leaf->lock);
-> >         // Do the blocking part asynchronously
-> >         async_schedule(usb_node_resume, leaf);
-> > 
-> > See? So when we take the parent lock for suspend, we are guaranteed to do 
-> > so _before_ the parent node itself suspends. And conversely, when we take 
-> > the parent lock (asynchronously) for resume, we're guaranteed to do that 
-> > _after_ the parent node has done its own down_write.
-> > 
-> > And that all depends on just one trivial thing; that the suspend and 
-> > resume is called in the right order (children first vs parent first 
-> > respectively). And that is such a _major_ correctness issue that if that 
-> > isn't correct, your suspend isn't going to work _anyway_.
-> 
-> Understood (I think).
-> 
-> Let's try it, then.  Below is the resume patch based on my previous one in this
-> thread (I have only verified that it builds).
+On Tue, 8 Dec 2009, Linus Torvalds wrote:
 
-Ah, I need to check if dev->parent is not NULL before trying to lock it, but
-apart from this it doesn't break things at least.
+> On Tue, 8 Dec 2009, Alan Stern wrote:
+> > 
+> > That's not the way it should be done.  Linus had children taking their
+> > parents' locks during suspend, which is simple but leads to
+> > difficulties.
+> 
+> No it doesn't. Name them.
 
-Rafael
+Well, one difficulty.  It arises only because we are contemplating
+having the PM core fire up the async tasks, rather than having the
+drivers' suspend routines launch them (the way your original proposal
+did -- the difficulty does not arise there).
+
+Suppose A and B are unrelated devices and we need to impose the
+off-tree constraint that A suspends after B.  With children taking
+their parent's lock, the way to prevent A from suspending too soon is
+by having B's suspend routine acquire A's lock.
+
+But B's suspend routine runs entirely in an async task, because that
+task is started by the PM core and it does the method call.  Hence by
+the time B's suspend routine is called, A may already have begun
+suspending -- it's too late to take A's lock.  To make the locking
+work, B would have to acquire A's lock _before_ B's async task starts.  
+Since the PM core is unaware of the off-tree dependency, there's no
+simple way to make it work.
+
+> > Instead, the PM core should do a down_write() on each device before
+> > starting the device's async suspend routine, and an up_write() when the
+> > routine finishes.
+> 
+> No you should NOT do that. If you do that, you serialize the suspend 
+> incorrectly and much too early. IOW, think a topology like this:
+> 
+> 	a -> b -> c
+> 	  \
+> 	   > d -> e
+> 
+> where you'd want to suspend 'c' and 'e' asynchronously.  If we do a 
+> 'down-write()' on b, then we'll delay until 'c' has suspended, an if we 
+> have ordered the nodes in the obvious depth-first order, we'll walk the PM 
+> device list in the order:
+> 
+> 	c b e d a
+> 
+> and now we'll serialize on 'b', waiting for 'c' to suspend. Which we do 
+> _not_ want to do, because the whole point was to suspend 'c' and 'e' 
+> together.
+
+You misunderstand.  The suspend algorithm will look like this:
+
+	dpm_suspend()
+	{
+		list_for_each_entry_reverse(dpm_list, dev) {
+			down_write(dev->lock);
+			async_schedule(device_suspend, dev);
+		}
+	}
+
+	device_suspend(dev)
+	{
+		device_for_each_child(dev, child) {
+			down_read(child->lock);
+			up_read(child->lock);
+		}
+		dev->suspend(dev);	/* May do off-tree down+up pairs */
+		up_write(dev->lock);
+	}
+
+With completions instead of rwsems, the down_write() changes to
+init_completion(), the up_write() changes to complete_all(), and the
+down_read()+up_read() pairs change to wait_for_completion().
+
+So 'b' will wait for 'c' to suspend, as it must, but 'e' won't wait for 
+anything.
+
+> > Parents should, at the start of their async routine,
+> > do down_read() on each of their children plus whatever other devices
+> > they need to wait for.  The core can do the waiting for children part 
+> > and the driver's suspend routine can handle any other waiting.
+> 
+> Why?
+> 
+> That just complicates things. Compare to my simple locking scheme I've 
+> quoted several times. 
+
+It is a little more complicated in that it involves explicitly 
+iterating over children.  But it is simpler in that it can use 
+completions instead of rwsems and it avoids the off-tree dependency 
+problem described above.
+
+Alan Stern
