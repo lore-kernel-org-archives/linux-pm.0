@@ -1,14 +1,14 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates
-	for 2.6.33)
-Date: Tue, 8 Dec 2009 14:32:40 -0800 (PST)
-Message-ID: <alpine.LFD.2.00.0912081420220.3560__39904.2306970388$1260311615$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912081643290.3046-100000@iolanthe.rowland.org>
+From: Pierre Ossman <pierre-list@ossman.eu>
+Subject: Re: Resume hanging on MSI motherboard
+Date: Tue, 8 Dec 2009 23:35:53 +0100
+Message-ID: <20091208233553.498e1442@mjolnir.ossman.eu>
+References: <20091204081739.575b29d5@mjolnir.ossman.eu>
+	<20091208090327.3ac443e9@mjolnir.ossman.eu>
+	<200912081338.56941.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============9210575759348925145=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912081643290.3046-100000@iolanthe.rowland.org>
+In-Reply-To: <200912081338.56941.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,60 +16,74 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
+
+--===============9210575759348925145==
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-5656-1260311759-0001-2"
+
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
+
+--=_freyr.ossman.eu-5656-1260311759-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 8 Dec 2009 13:38:56 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> On Tuesday 08 December 2009, Pierre Ossman wrote:
+> > Anyone?
+>=20
+> Sorry, it's just difficult to advise something in this case.
+>=20
+> You can try to use the /sys/power/pm_test tests to see if the problem is
+> related to the drivers (it is described in
+> Documentation/power/basic-pm-debugging.txt), but I bet it's not.
+>=20
+
+Yeah, that test went through just fine.
+
+Any ideas as to why pm_trace isn't working though?
+
+And any common incantations that appease buggy ACPI implementations?
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by FRA, a
+  Swedish intelligence agency. Make sure your server uses
+  encryption for SMTP traffic and consider using PGP for
+  end-to-end encryption.
+
+--=_freyr.ossman.eu-5656-1260311759-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.13 (GNU/Linux)
+
+iEYEARECAAYFAkse1MsACgkQ7b8eESbyJLhcAwCfeI7qAdMCZ2gxJdkZbo7GNK5T
+1YYAn3L00aTqZvPuBsJqLs4RukS4Raeu
+=6frg
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-5656-1260311759-0001-2--
+
+--===============9210575759348925145==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 
-On Tue, 8 Dec 2009, Alan Stern wrote:
-> 
-> Suppose A and B are unrelated devices and we need to impose the
-> off-tree constraint that A suspends after B.
-
-Ah. Ok, I can imagine the off-tree constraints, but part of my "keep it 
-simple" was to simply not do them. If there are constraints that aren't 
-in the topology of the tree, then I simply don't think that async is worth 
-it in the first place.
-
-> You misunderstand.  The suspend algorithm will look like this:
-> 
-> 	dpm_suspend()
-> 	{
-> 		list_for_each_entry_reverse(dpm_list, dev) {
-> 			down_write(dev->lock);
-> 			async_schedule(device_suspend, dev);
-> 		}
-> 	}
-> 
-> 	device_suspend(dev)
-> 	{
-> 		device_for_each_child(dev, child) {
-> 			down_read(child->lock);
-> 			up_read(child->lock);
-> 		}
-> 		dev->suspend(dev);	/* May do off-tree down+up pairs */
-> 		up_write(dev->lock);
-> 	}
-
-Ok, so the above I think work (and see my previous email: I think 
-completions would be workable there too).
-
-It's just that I think the "looping over children" is ugly, when I think 
-that by doing it the other way around you can make the code simpler and 
-only depend on the PM device list and a simple parent pointer access.
-
-I also think that you are wrong that the above somehow protects against 
-non-topological dependencies. If the device you want to keep delay 
-yourself suspending for is after you in the list, the down_read() on that 
-may succeed simply because it hasn't even done its down_write() yet and 
-you got scheduled early.
-
-But I guess you could do that by walking the list twice (first to lock 
-them all, then to actually call the suspend function). That whole 
-two-phase thing, except the first phase _only_ locks, and doesn't do any 
-callbacks.
-
-			Linus
+--===============9210575759348925145==--
