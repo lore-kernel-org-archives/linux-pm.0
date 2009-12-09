@@ -1,20 +1,16 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH v2 1/2] Input: gpio-keys - allow platform
-	to	specify exact irq flags
-Date: Wed, 9 Dec 2009 10:03:45 -0800
-Message-ID: <20091209180345.GE4456__25504.4335303412$1260381936$gmane$org@core.coreip.homeip.net>
-References: <Pine.LNX.4.44L0.0911300956400.4478-100000@iolanthe.rowland.org>
-	<87einfltp3.fsf@tac.ki.iif.hu> <20091206084704.GC2766@ucw.cz>
-	<20091208042251.GB11147@core.coreip.homeip.net>
-	<1260277410.19669.84.camel@localhost>
-	<20091208174218.GB14271@core.coreip.homeip.net>
-	<1260343860.19669.1189.camel@localhost>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates
+	for 2.6.33)
+Date: Wed, 9 Dec 2009 18:08:39 +0000
+Message-ID: <20091209180839.GK9018__3335.94679036668$1260382193$gmane$org@sirena.org.uk>
+References: <20091209164653.GI9018@sirena.org.uk>
+	<Pine.LNX.4.44L0.0912091204550.4120-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1260343860.19669.1189.camel@localhost>
+In-Reply-To: <Pine.LNX.4.44L0.0912091204550.4120-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,53 +20,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: Mika Westerberg <mika.westerberg@iki.fi>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Ferenc Wagner <wferi@niif.hu>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 09, 2009 at 09:31:00AM +0200, Artem Bityutskiy wrote:
-> On Tue, 2009-12-08 at 09:42 -0800, Dmitry Torokhov wrote:
-> > > > I also see that gpio-keys is quite different in the sence that it can
-> > > > shut off buttons selectively. I fact, at the moment every button can be
-> > > > considered a separate device... But that would be too much overhead.
-> > > > 
-> > > > They could probably split the keys into 2 groups (critical that should
-> > > > be always active) and not critical, that could be shut off, but I think
-> > > > they want teh flexibility of controlling this at runtime instead of
-> > > > doing it in board data.
-> > > 
-> > > I suggested including this into the "abstract input device" model, but
-> > > you refuse this. But I still think it is a good idea.
-> > > 
-> > > Indeed, if we look at an input device as at something abstract which has
-> > > many keys, why we cannot assume that separate keys can be
-> > > enabled/disabled? Just imagine you have a very advanced keybord :-) And
-> > > we simply implement an ioctl which enables/disables a specific key. The
-> > > generic layers just pass this ioctl down to the lower lever drivers. If
-> > > the specific input device or driver support it - fine, if not - it
-> > > returns -EINVAL or something like that.
-> > 
-> > I refuse it because it will be supported by exactly 1 driver in the
-> > kernel - gpio-keys. It is the only driver that allows shut half of the
-> > "device" (because in reality it is a group of disjoint devices). It is
-> > the only case when "muting" a button means that IRQ is shut off abnd
-> > thus CPU can continue to sleep if that button is pressed. For all other
-> > devices that have 1 inettrupt per device, you still have to wake up,
-> > because you don't know whether the button that generated event is
-> > "important" or not.
-> 
-> Fair enough.
-> 
-> > Now, there is a issue of waking up userspace task, additional scheduling
-> > and keeping CPU running longer than necessary for "uninteresting" keys.
-> > This can be solved by implementing a subscription model which allows
-> > filtering uninteresing events on a per-client basis at evdev level.
-> 
-> Right. And for gpio_keys, this would be dine on the driver level.
+On Wed, Dec 09, 2009 at 12:10:03PM -0500, Alan Stern wrote:
+> On Wed, 9 Dec 2009, Mark Brown wrote:
 
-But the semantics are different - if done on driver level you'd be
-affecting _all_  consumers of the device; what I want to be done only
-affects owner of the file descriptor.
+> > Worst case is about a second for both resume and suspend which means two
+> > seconds total but it's very hardware dependant.  
 
--- 
-Dmitry
+> A second seems awfully long.  What happens if audio isn't being played
+> when the suspend occurs?  Can't you shorten things with no artifacts in
+> that case?
+
+For the affected hardware the problem is basically the same with or
+without audio being played.  As I said in my reply to Linus this is
+delays caused by ramping reference voltages.  These delays are
+sufficiently long that the reference voltages have to be maintained all
+the time so that they don't delay the start of audio streams which means
+that having or not having an audio stream at suspend time doesn't affect
+the reference voltage ramps since we don't turn them off when not in
+use.  There is a win from other stuff having been shut off already, but
+it's already being exploited.
+
+On suspend the problem is the same as for resume - we need to ramp the
+voltages quietly, this time down to zero.  We want to make sure they're
+actually at zero to ensure that the ramp at resume time starts from a
+known hardware state.
