@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates
 	for 2.6.33)
-Date: Tue, 8 Dec 2009 21:35:59 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912082125410.26994-100000__35193.671208299$1260326299$gmane$org@netrider.rowland.org>
-References: <alpine.LFD.2.00.0912081420220.3560@localhost.localdomain>
+Date: Tue, 8 Dec 2009 18:54:43 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0912081852320.3560__29074.468863155$1260327343$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912082125410.26994-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912081420220.3560@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.44L0.0912082125410.26994-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,39 +18,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 8 Dec 2009, Linus Torvalds wrote:
 
-> It's just that I think the "looping over children" is ugly, when I think 
-> that by doing it the other way around you can make the code simpler and 
-> only depend on the PM device list and a simple parent pointer access.
 
-I agree that it is uglier.  The only advantage is in handling
-asynchronous non-tree suspend dependencies, of which we probably won't
-have very many.  In fact, I don't know of _any_ offhand.
+On Tue, 8 Dec 2009, Alan Stern wrote:
+> 
+> You mean, if A comes before B in the list and A must suspend after B?  
 
-Interestingly, this non-tree dependency problem does not affect resume.
+But if they are not topologically ordered, then A wouldn't necessarily be 
+before B on the list in the first place.
 
-> I also think that you are wrong that the above somehow protects against 
-> non-topological dependencies. If the device you want to keep delay 
-> yourself suspending for is after you in the list, the down_read() on that 
-> may succeed simply because it hasn't even done its down_write() yet and 
-> you got scheduled early.
+Of course, if we've mucked with the list by hand and made sure the 
+ordering is ok, then that's a different issue. But your whole point seemed 
+to be that the device could impose its own ordering in its suspend 
+callback, which is not true on its own without external ordering.
 
-You mean, if A comes before B in the list and A must suspend after B?  
-Then A's down_read() on B _can't_ occur before B's down_write() on
-itself.  The down_write() on B happens before the
-list_for_each_entry_reverse() iteration reaches A; it even happens
-before B's async task is launched.
-
-> But I guess you could do that by walking the list twice (first to lock 
-> them all, then to actually call the suspend function). That whole 
-> two-phase thing, except the first phase _only_ locks, and doesn't do any 
-> callbacks.
-
-Not necessary.
-
-Alan Stern
+		Linus
