@@ -1,14 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates
 	for 2.6.33)
-Date: Tue, 8 Dec 2009 21:23:41 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912082111360.26994-100000__11121.3587843396$1260325483$gmane$org@netrider.rowland.org>
-References: <200912082330.24843.rjw@sisk.pl>
+Date: Tue, 8 Dec 2009 21:35:59 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912082125410.26994-100000__35193.671208299$1260326299$gmane$org@netrider.rowland.org>
+References: <alpine.LFD.2.00.0912081420220.3560@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912082330.24843.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.2.00.0912081420220.3560@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,48 +18,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
+On Tue, 8 Dec 2009, Linus Torvalds wrote:
 
-> > Well, one difficulty.  It arises only because we are contemplating
-> > having the PM core fire up the async tasks, rather than having the
-> > drivers' suspend routines launch them (the way your original proposal
-> > did -- the difficulty does not arise there).
-> > 
-> > Suppose A and B are unrelated devices and we need to impose the
-> > off-tree constraint that A suspends after B.  With children taking
-> > their parent's lock, the way to prevent A from suspending too soon is
-> > by having B's suspend routine acquire A's lock.
-> > 
-> > But B's suspend routine runs entirely in an async task, because that
-> > task is started by the PM core and it does the method call.  Hence by
-> > the time B's suspend routine is called, A may already have begun
-> > suspending -- it's too late to take A's lock.  To make the locking
-> > work, B would have to acquire A's lock _before_ B's async task starts.  
-> > Since the PM core is unaware of the off-tree dependency, there's no
-> > simple way to make it work.
-> 
-> Do not set async_suspend for B and instead start your own async thread
-> from its suspend callback.  The parent-children synchronization is done by the
-> core anyway (at least I'd do it that way), so the only thing you need to worry
-> about is the extra dependency.
+> It's just that I think the "looping over children" is ugly, when I think 
+> that by doing it the other way around you can make the code simpler and 
+> only depend on the PM device list and a simple parent pointer access.
 
-I don't like that because it introduces "artificial" dependencies: It 
-makes B depend on all the preceding synchronous suspends, even totally 
-unrelated ones.  But yes, it would work.
+I agree that it is uglier.  The only advantage is in handling
+asynchronous non-tree suspend dependencies, of which we probably won't
+have very many.  In fact, I don't know of _any_ offhand.
 
-> I would be slightly more comfortable using completions, but the rwsem-based
-> approach is fine with me as well.
+Interestingly, this non-tree dependency problem does not affect resume.
 
-On the principle of making things as easy and foolproof as possible for 
-driver authors, I also favor completions since it makes dealing with 
-non-tree dependencies easier.
+> I also think that you are wrong that the above somehow protects against 
+> non-topological dependencies. If the device you want to keep delay 
+> yourself suspending for is after you in the list, the down_read() on that 
+> may succeed simply because it hasn't even done its down_write() yet and 
+> you got scheduled early.
 
-However either way would be okay.  I do have to handle some non-tree
-dependencies in USB, but oddly enough they affect only resume, not
-suspend.  So this "who starts the async task" issue doesn't apply.
+You mean, if A comes before B in the list and A must suspend after B?  
+Then A's down_read() on B _can't_ occur before B's down_write() on
+itself.  The down_write() on B happens before the
+list_for_each_entry_reverse() iteration reaches A; it even happens
+before B's async task is launched.
+
+> But I guess you could do that by walking the list twice (first to lock 
+> them all, then to actually call the suspend function). That whole 
+> two-phase thing, except the first phase _only_ locks, and doesn't do any 
+> callbacks.
+
+Not necessary.
 
 Alan Stern
