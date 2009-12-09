@@ -1,14 +1,14 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates
 	for 2.6.33)
-Date: Wed, 9 Dec 2009 07:38:36 -0800 (PST)
-Message-ID: <alpine.LFD.2.00.0912090728200.3560__47961.7866142236$1260373172$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912090959230.4120-100000@iolanthe.rowland.org>
+Date: Wed, 9 Dec 2009 10:49:56 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912091044340.4120-100000__38192.858748562$1260373941$gmane$org@iolanthe.rowland.org>
+References: <20091209133829.GF9018@sirena.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912090959230.4120-100000@iolanthe.rowland.org>
+In-Reply-To: <20091209133829.GF9018@sirena.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,61 +18,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, 9 Dec 2009, Mark Brown wrote:
 
-
-On Wed, 9 Dec 2009, Alan Stern wrote:
+> On Tue, Dec 08, 2009 at 09:35:59PM -0500, Alan Stern wrote:
+> > On Tue, 8 Dec 2009, Linus Torvalds wrote:
 > 
-> In fact these considerations already affect the USB resume operations, 
-> even without asynchronous resume.  The code relies on the fact that the 
-> PCI layer registers sibling devices on a slot in order of increasing 
-> function number.  There's no guarantee this will remain true in the 
-> future (it may already be wrong AFAIK), so putting in some explicit 
-> list manipulation is the prudent thing to do.
+> > > It's just that I think the "looping over children" is ugly, when I think 
+> > > that by doing it the other way around you can make the code simpler and 
+> > > only depend on the PM device list and a simple parent pointer access.
+> 
+> > I agree that it is uglier.  The only advantage is in handling
+> > asynchronous non-tree suspend dependencies, of which we probably won't
+> > have very many.  In fact, I don't know of _any_ offhand.
+> 
+> There's some potential for this in embedded audio - it wants to bring
+> down the entire embedded audio subsystem at once before the individual
+> devices (and their parents) get suspended since bringing them down out
+> of sync can result in audible artifacts.  Depending on the system the
+> suspend may take a noticable amount of time so it'd be nice to be able
+> to run it asynchronously, though we don't currently do so.
 
-I do think we want to keep the slot ordering.
+For something like bringing down the entire embedded audio subsystem, 
+which isn't directly tied to a single device, you would probably be 
+better off doing it when the PM core broadcasts a suspend notification
+(see register_pm_notifier() in include/linux/suspend.h).  This occurs 
+before any devices are suspended, so synchronization isn't an issue.
 
-One of the silent issues that the device management code has always had is 
-the whole notion of naming stability. Now, udev and various fancy naming 
-schemes solve that at a higher level, but it is still the case that we 
-_really_ want basic things like your PCI controllers to show up in stable 
-order.
+> At the minute we get away with this mostly through not being able to
+> represent the cases that are likely to actually trip up over it.
+> 
+> > Interestingly, this non-tree dependency problem does not affect resume.
+> 
+> Embedded audio does potentially - the resume needs all the individual
+> devices in the subsystem and can take a substantial proportion of the
+> overall resume time.  Currently we get away with a combination of
+> assuming that all the drivers are live when we decide to start resuming
+> them and using the ALSA userspace API to deal with bringing the resume
+> out of line, but it's not ideal.
 
-For example, it is _very_ inconvenient if things like PCI probing ends up 
-allocating different bus numbers (or resource allocations) across reboots 
-even if the hardware hasn't been changed. Just from a debuggability 
-standpoint, that just ends up being a total disaster.
+You can do the same thing with the resume notifier.
 
-For example, we continually hit odd special cases where PCI resource 
-allocation has some unexplained problem because there is some motherboard 
-resource that is hidden and invisible to our allocator. They are rare in 
-the sense that it's usually just a couple of odd laptops or something, but 
-they are not rare in the sense that pretty much _every_ single time we 
-change some resource allocation logic, we find one or two machines that 
-have some issue.
-
-Things like that would be total disasters if the core device layer then 
-ended up also not having well-defined ordering. This is why I don't want 
-to do asynchronous PCI device probing, for example (ie we probe the 
-hardware synchronously, the PCI driver sets it all up synchronously, and 
-the asynchronous portion is the non-PCI part if any - things like PHY 
-detection, disk spinup etc).
-
-So async things are fine, but they have _huge_ disadvantages, and I'll 
-personally take reliability and a stable serial algorithm over an async 
-one as far as possible. 
-
-That's partly why I realy did suggest that we do the async stuff purely in 
-the USB layer, rather than try to put it deeper in the device layer. And 
-if we do support it "natively" in the device layer like Rafael's latest 
-patch, I still think we should be very very nervous about making devices 
-async unless there is a measured - and very noticeable - advantage.
-
-So I really don't want to push things any further than absolutely 
-necessary. I do not think that something like "embedded audio" is a reason 
-for async, for example. 
-
-				Linus
+Alan Stern
