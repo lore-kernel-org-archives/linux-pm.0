@@ -1,14 +1,19 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates
-	for 2.6.33)
-Date: Tue, 8 Dec 2009 18:54:43 -0800 (PST)
-Message-ID: <alpine.LFD.2.00.0912081852320.3560__29074.468863155$1260327343$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912082125410.26994-100000@netrider.rowland.org>
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Subject: Re: [PATCH v2 1/2] Input: gpio-keys - allow platform to
+ specify exact irq flags
+Date: Wed, 09 Dec 2009 09:31:00 +0200
+Message-ID: <1260343860.19669.1189.camel__5152.08422807536$1260343949$gmane$org@localhost>
+References: <Pine.LNX.4.44L0.0911300956400.4478-100000@iolanthe.rowland.org>
+	<87einfltp3.fsf@tac.ki.iif.hu> <20091206084704.GC2766@ucw.cz>
+	<20091208042251.GB11147@core.coreip.homeip.net>
+	<1260277410.19669.84.camel@localhost>
+	<20091208174218.GB14271@core.coreip.homeip.net>
+Reply-To: dedekind1@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912082125410.26994-100000@netrider.rowland.org>
+In-Reply-To: <20091208174218.GB14271@core.coreip.homeip.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,22 +23,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Mika Westerberg <mika.westerberg@iki.fi>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Ferenc Wagner <wferi@niif.hu>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Tue, 8 Dec 2009, Alan Stern wrote:
-> 
-> You mean, if A comes before B in the list and A must suspend after B?  
-
-But if they are not topologically ordered, then A wouldn't necessarily be 
-before B on the list in the first place.
-
-Of course, if we've mucked with the list by hand and made sure the 
-ordering is ok, then that's a different issue. But your whole point seemed 
-to be that the device could impose its own ordering in its suspend 
-callback, which is not true on its own without external ordering.
-
-		Linus
+T24gVHVlLCAyMDA5LTEyLTA4IGF0IDA5OjQyIC0wODAwLCBEbWl0cnkgVG9yb2tob3Ygd3JvdGU6
+Cj4gPiA+IEkgYWxzbyBzZWUgdGhhdCBncGlvLWtleXMgaXMgcXVpdGUgZGlmZmVyZW50IGluIHRo
+ZSBzZW5jZSB0aGF0IGl0IGNhbgo+ID4gPiBzaHV0IG9mZiBidXR0b25zIHNlbGVjdGl2ZWx5LiBJ
+IGZhY3QsIGF0IHRoZSBtb21lbnQgZXZlcnkgYnV0dG9uIGNhbiBiZQo+ID4gPiBjb25zaWRlcmVk
+IGEgc2VwYXJhdGUgZGV2aWNlLi4uIEJ1dCB0aGF0IHdvdWxkIGJlIHRvbyBtdWNoIG92ZXJoZWFk
+Lgo+ID4gPiAKPiA+ID4gVGhleSBjb3VsZCBwcm9iYWJseSBzcGxpdCB0aGUga2V5cyBpbnRvIDIg
+Z3JvdXBzIChjcml0aWNhbCB0aGF0IHNob3VsZAo+ID4gPiBiZSBhbHdheXMgYWN0aXZlKSBhbmQg
+bm90IGNyaXRpY2FsLCB0aGF0IGNvdWxkIGJlIHNodXQgb2ZmLCBidXQgSSB0aGluawo+ID4gPiB0
+aGV5IHdhbnQgdGVoIGZsZXhpYmlsaXR5IG9mIGNvbnRyb2xsaW5nIHRoaXMgYXQgcnVudGltZSBp
+bnN0ZWFkIG9mCj4gPiA+IGRvaW5nIGl0IGluIGJvYXJkIGRhdGEuCj4gPiAKPiA+IEkgc3VnZ2Vz
+dGVkIGluY2x1ZGluZyB0aGlzIGludG8gdGhlICJhYnN0cmFjdCBpbnB1dCBkZXZpY2UiIG1vZGVs
+LCBidXQKPiA+IHlvdSByZWZ1c2UgdGhpcy4gQnV0IEkgc3RpbGwgdGhpbmsgaXQgaXMgYSBnb29k
+IGlkZWEuCj4gPiAKPiA+IEluZGVlZCwgaWYgd2UgbG9vayBhdCBhbiBpbnB1dCBkZXZpY2UgYXMg
+YXQgc29tZXRoaW5nIGFic3RyYWN0IHdoaWNoIGhhcwo+ID4gbWFueSBrZXlzLCB3aHkgd2UgY2Fu
+bm90IGFzc3VtZSB0aGF0IHNlcGFyYXRlIGtleXMgY2FuIGJlCj4gPiBlbmFibGVkL2Rpc2FibGVk
+PyBKdXN0IGltYWdpbmUgeW91IGhhdmUgYSB2ZXJ5IGFkdmFuY2VkIGtleWJvcmQgOi0pIEFuZAo+
+ID4gd2Ugc2ltcGx5IGltcGxlbWVudCBhbiBpb2N0bCB3aGljaCBlbmFibGVzL2Rpc2FibGVzIGEg
+c3BlY2lmaWMga2V5LiBUaGUKPiA+IGdlbmVyaWMgbGF5ZXJzIGp1c3QgcGFzcyB0aGlzIGlvY3Rs
+IGRvd24gdG8gdGhlIGxvd2VyIGxldmVyIGRyaXZlcnMuIElmCj4gPiB0aGUgc3BlY2lmaWMgaW5w
+dXQgZGV2aWNlIG9yIGRyaXZlciBzdXBwb3J0IGl0IC0gZmluZSwgaWYgbm90IC0gaXQKPiA+IHJl
+dHVybnMgLUVJTlZBTCBvciBzb21ldGhpbmcgbGlrZSB0aGF0Lgo+IAo+IEkgcmVmdXNlIGl0IGJl
+Y2F1c2UgaXQgd2lsbCBiZSBzdXBwb3J0ZWQgYnkgZXhhY3RseSAxIGRyaXZlciBpbiB0aGUKPiBr
+ZXJuZWwgLSBncGlvLWtleXMuIEl0IGlzIHRoZSBvbmx5IGRyaXZlciB0aGF0IGFsbG93cyBzaHV0
+IGhhbGYgb2YgdGhlCj4gImRldmljZSIgKGJlY2F1c2UgaW4gcmVhbGl0eSBpdCBpcyBhIGdyb3Vw
+IG9mIGRpc2pvaW50IGRldmljZXMpLiBJdCBpcwo+IHRoZSBvbmx5IGNhc2Ugd2hlbiAibXV0aW5n
+IiBhIGJ1dHRvbiBtZWFucyB0aGF0IElSUSBpcyBzaHV0IG9mZiBhYm5kCj4gdGh1cyBDUFUgY2Fu
+IGNvbnRpbnVlIHRvIHNsZWVwIGlmIHRoYXQgYnV0dG9uIGlzIHByZXNzZWQuIEZvciBhbGwgb3Ro
+ZXIKPiBkZXZpY2VzIHRoYXQgaGF2ZSAxIGluZXR0cnVwdCBwZXIgZGV2aWNlLCB5b3Ugc3RpbGwg
+aGF2ZSB0byB3YWtlIHVwLAo+IGJlY2F1c2UgeW91IGRvbid0IGtub3cgd2hldGhlciB0aGUgYnV0
+dG9uIHRoYXQgZ2VuZXJhdGVkIGV2ZW50IGlzCj4gImltcG9ydGFudCIgb3Igbm90LgoKRmFpciBl
+bm91Z2guCgo+IE5vdywgdGhlcmUgaXMgYSBpc3N1ZSBvZiB3YWtpbmcgdXAgdXNlcnNwYWNlIHRh
+c2ssIGFkZGl0aW9uYWwgc2NoZWR1bGluZwo+IGFuZCBrZWVwaW5nIENQVSBydW5uaW5nIGxvbmdl
+ciB0aGFuIG5lY2Vzc2FyeSBmb3IgInVuaW50ZXJlc3RpbmciIGtleXMuCj4gVGhpcyBjYW4gYmUg
+c29sdmVkIGJ5IGltcGxlbWVudGluZyBhIHN1YnNjcmlwdGlvbiBtb2RlbCB3aGljaCBhbGxvd3MK
+PiBmaWx0ZXJpbmcgdW5pbnRlcmVzaW5nIGV2ZW50cyBvbiBhIHBlci1jbGllbnQgYmFzaXMgYXQg
+ZXZkZXYgbGV2ZWwuCgpSaWdodC4gQW5kIGZvciBncGlvX2tleXMsIHRoaXMgd291bGQgYmUgZGlu
+ZSBvbiB0aGUgZHJpdmVyIGxldmVsLgoKPiBUaGlzLCBpZiBpbXBsZW1lbnRlZCBwcm9wZXJseSwg
+d291bGQgd29yayBmb3IgX2FsbF8gaW5wdXQgZGV2aWNlcyBvdXQKPiB0aGVyZS4gWW91IHdlcmUg
+bm90IGludGVyZXN0ZWQgaW50byBsb29raW5nIGludG8gaXQgKGJlY2F1c2UgZm9yIHlvdXIKPiBw
+YXJ0aWN1bGFyIGFuZCBvbmx5IGRldmljZSB0aGUgb3RlaHIgYXBwcm9hY2ggcHJvbWlzZXMgYmln
+Z2VyIHNhdmluZ3MpCj4gYnV0IEkgdGhpbmsgd2UnbGwgZ2V0IHRoZXJlIGV2ZW50dWFsbHkuCgpX
+ZWxsLCB3ZSBjYW4gKGFuZCBoYXZlIHRvLCBpZiB0aGlzIGFwcHJvYWNoIGlzIHRha2VuKSBsb29r
+IGludG8gdGhpcyBpbgphIHNlbnNlIG9mIGltcGxlbWVudGluZyBvdXIgcGFydGljdWxhciB0YXNr
+IGluIGEgd2F5IHRoYXQgaXQgY291bGQgYmUKZXh0ZW5kZWQgd2l0aCB0aGlzIGdlbmVyaWMgc3R1
+ZmYuIFdlIG1pZ2h0IGFzIHdlbGwgaW1wbGVtZW50IHNvbWV0aGluZwpnZW5lcmljLCBidXQgbWF5
+IGJlIG5vdCB0b28gY29tcHJlaGVuc2l2ZSwgZmVhdHVyZS1mdWxsLCBhbmQgd2VsbC10ZXN0ZWQK
+KHNpbXBseSBiZWNhdXNlIHdlIGRvIG5vdCBuZWVkIGl0LCBzbyBjYW5ub3QgcHJvdmUgdXNlZnVs
+bmVzcyBvbiByZWFsCmFwcGxpY2F0aW9ucykuCgo+IEFuZCB0aGUgdGhpcmQgdG9waWMgLSBzaHV0
+dGluZyAob3IgcHV0dGluZyBpbnRvIGxvdyBwb3dlcikgZW50aXJlIGRldmljZQo+IHVwb24gcmVx
+dWVzdCBmcm9tIHVzZXJzcGFjZS4gVGhpcyBhZ2FpbiBoYXMgbXVjaCB3aWRlciBhdWRpdG9yeSB0
+aGFuCj4gZ3Bpby1rZXlzLCBvciBpbnB1dCBkZXZpY2VzIGxheWVyIGZvciB0aGF0IG1hdHRlci4g
+V2UgbWF5IHdhbnQgdG8gZG8gc28KPiBmb3Igb3RoZXIgdHlwZXMgb2YgZGV2aWNlcyBhcyB3ZWxs
+LiBUaGF0IGlzIHdoeSB0aGUgcXVlc3Rpb24gd2hlbiB0bwo+IGdlbmVyYWwgUE0gbGlzdC4KClll
+YWguCgotLSAKQmVzdCBSZWdhcmRzLApBcnRlbSBCaXR5dXRza2l5ICjQkNGA0YLRkdC8INCR0LjR
+gtGO0YbQutC40LkpCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlv
+bi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZv
+L2xpbnV4LXBt
