@@ -1,19 +1,16 @@
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Subject: Re: [PATCH v2 1/2] Input: gpio-keys - allow platform to
- specify exact irq flags
-Date: Wed, 09 Dec 2009 09:31:00 +0200
-Message-ID: <1260343860.19669.1189.camel__5152.08422807536$1260343949$gmane$org@localhost>
-References: <Pine.LNX.4.44L0.0911300956400.4478-100000@iolanthe.rowland.org>
-	<87einfltp3.fsf@tac.ki.iif.hu> <20091206084704.GC2766@ucw.cz>
-	<20091208042251.GB11147@core.coreip.homeip.net>
-	<1260277410.19669.84.camel@localhost>
-	<20091208174218.GB14271@core.coreip.homeip.net>
-Reply-To: dedekind1@gmail.com
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: spinlock in completion_done() (was: Re: Async resume
+ patch (was: Re: [GIT PULL] PM updates for 2.6.33))
+Date: Wed, 9 Dec 2009 10:29:22 +0100
+Message-ID: <20091209092922.GC28428__27263.5079258636$1260351102$gmane$org@elte.hu>
+References: <Pine.LNX.4.44L0.0912081633540.3046-100000@iolanthe.rowland.org>
+	<200912082248.14138.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091208174218.GB14271@core.coreip.homeip.net>
+Content-Disposition: inline
+In-Reply-To: <200912082248.14138.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,65 +20,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Mika Westerberg <mika.westerberg@iki.fi>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Ferenc Wagner <wferi@niif.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, David Chinner <david@fromorbit.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Lachlan McIlroy <lachlan@sgi.com>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCAyMDA5LTEyLTA4IGF0IDA5OjQyIC0wODAwLCBEbWl0cnkgVG9yb2tob3Ygd3JvdGU6
-Cj4gPiA+IEkgYWxzbyBzZWUgdGhhdCBncGlvLWtleXMgaXMgcXVpdGUgZGlmZmVyZW50IGluIHRo
-ZSBzZW5jZSB0aGF0IGl0IGNhbgo+ID4gPiBzaHV0IG9mZiBidXR0b25zIHNlbGVjdGl2ZWx5LiBJ
-IGZhY3QsIGF0IHRoZSBtb21lbnQgZXZlcnkgYnV0dG9uIGNhbiBiZQo+ID4gPiBjb25zaWRlcmVk
-IGEgc2VwYXJhdGUgZGV2aWNlLi4uIEJ1dCB0aGF0IHdvdWxkIGJlIHRvbyBtdWNoIG92ZXJoZWFk
-Lgo+ID4gPiAKPiA+ID4gVGhleSBjb3VsZCBwcm9iYWJseSBzcGxpdCB0aGUga2V5cyBpbnRvIDIg
-Z3JvdXBzIChjcml0aWNhbCB0aGF0IHNob3VsZAo+ID4gPiBiZSBhbHdheXMgYWN0aXZlKSBhbmQg
-bm90IGNyaXRpY2FsLCB0aGF0IGNvdWxkIGJlIHNodXQgb2ZmLCBidXQgSSB0aGluawo+ID4gPiB0
-aGV5IHdhbnQgdGVoIGZsZXhpYmlsaXR5IG9mIGNvbnRyb2xsaW5nIHRoaXMgYXQgcnVudGltZSBp
-bnN0ZWFkIG9mCj4gPiA+IGRvaW5nIGl0IGluIGJvYXJkIGRhdGEuCj4gPiAKPiA+IEkgc3VnZ2Vz
-dGVkIGluY2x1ZGluZyB0aGlzIGludG8gdGhlICJhYnN0cmFjdCBpbnB1dCBkZXZpY2UiIG1vZGVs
-LCBidXQKPiA+IHlvdSByZWZ1c2UgdGhpcy4gQnV0IEkgc3RpbGwgdGhpbmsgaXQgaXMgYSBnb29k
-IGlkZWEuCj4gPiAKPiA+IEluZGVlZCwgaWYgd2UgbG9vayBhdCBhbiBpbnB1dCBkZXZpY2UgYXMg
-YXQgc29tZXRoaW5nIGFic3RyYWN0IHdoaWNoIGhhcwo+ID4gbWFueSBrZXlzLCB3aHkgd2UgY2Fu
-bm90IGFzc3VtZSB0aGF0IHNlcGFyYXRlIGtleXMgY2FuIGJlCj4gPiBlbmFibGVkL2Rpc2FibGVk
-PyBKdXN0IGltYWdpbmUgeW91IGhhdmUgYSB2ZXJ5IGFkdmFuY2VkIGtleWJvcmQgOi0pIEFuZAo+
-ID4gd2Ugc2ltcGx5IGltcGxlbWVudCBhbiBpb2N0bCB3aGljaCBlbmFibGVzL2Rpc2FibGVzIGEg
-c3BlY2lmaWMga2V5LiBUaGUKPiA+IGdlbmVyaWMgbGF5ZXJzIGp1c3QgcGFzcyB0aGlzIGlvY3Rs
-IGRvd24gdG8gdGhlIGxvd2VyIGxldmVyIGRyaXZlcnMuIElmCj4gPiB0aGUgc3BlY2lmaWMgaW5w
-dXQgZGV2aWNlIG9yIGRyaXZlciBzdXBwb3J0IGl0IC0gZmluZSwgaWYgbm90IC0gaXQKPiA+IHJl
-dHVybnMgLUVJTlZBTCBvciBzb21ldGhpbmcgbGlrZSB0aGF0Lgo+IAo+IEkgcmVmdXNlIGl0IGJl
-Y2F1c2UgaXQgd2lsbCBiZSBzdXBwb3J0ZWQgYnkgZXhhY3RseSAxIGRyaXZlciBpbiB0aGUKPiBr
-ZXJuZWwgLSBncGlvLWtleXMuIEl0IGlzIHRoZSBvbmx5IGRyaXZlciB0aGF0IGFsbG93cyBzaHV0
-IGhhbGYgb2YgdGhlCj4gImRldmljZSIgKGJlY2F1c2UgaW4gcmVhbGl0eSBpdCBpcyBhIGdyb3Vw
-IG9mIGRpc2pvaW50IGRldmljZXMpLiBJdCBpcwo+IHRoZSBvbmx5IGNhc2Ugd2hlbiAibXV0aW5n
-IiBhIGJ1dHRvbiBtZWFucyB0aGF0IElSUSBpcyBzaHV0IG9mZiBhYm5kCj4gdGh1cyBDUFUgY2Fu
-IGNvbnRpbnVlIHRvIHNsZWVwIGlmIHRoYXQgYnV0dG9uIGlzIHByZXNzZWQuIEZvciBhbGwgb3Ro
-ZXIKPiBkZXZpY2VzIHRoYXQgaGF2ZSAxIGluZXR0cnVwdCBwZXIgZGV2aWNlLCB5b3Ugc3RpbGwg
-aGF2ZSB0byB3YWtlIHVwLAo+IGJlY2F1c2UgeW91IGRvbid0IGtub3cgd2hldGhlciB0aGUgYnV0
-dG9uIHRoYXQgZ2VuZXJhdGVkIGV2ZW50IGlzCj4gImltcG9ydGFudCIgb3Igbm90LgoKRmFpciBl
-bm91Z2guCgo+IE5vdywgdGhlcmUgaXMgYSBpc3N1ZSBvZiB3YWtpbmcgdXAgdXNlcnNwYWNlIHRh
-c2ssIGFkZGl0aW9uYWwgc2NoZWR1bGluZwo+IGFuZCBrZWVwaW5nIENQVSBydW5uaW5nIGxvbmdl
-ciB0aGFuIG5lY2Vzc2FyeSBmb3IgInVuaW50ZXJlc3RpbmciIGtleXMuCj4gVGhpcyBjYW4gYmUg
-c29sdmVkIGJ5IGltcGxlbWVudGluZyBhIHN1YnNjcmlwdGlvbiBtb2RlbCB3aGljaCBhbGxvd3MK
-PiBmaWx0ZXJpbmcgdW5pbnRlcmVzaW5nIGV2ZW50cyBvbiBhIHBlci1jbGllbnQgYmFzaXMgYXQg
-ZXZkZXYgbGV2ZWwuCgpSaWdodC4gQW5kIGZvciBncGlvX2tleXMsIHRoaXMgd291bGQgYmUgZGlu
-ZSBvbiB0aGUgZHJpdmVyIGxldmVsLgoKPiBUaGlzLCBpZiBpbXBsZW1lbnRlZCBwcm9wZXJseSwg
-d291bGQgd29yayBmb3IgX2FsbF8gaW5wdXQgZGV2aWNlcyBvdXQKPiB0aGVyZS4gWW91IHdlcmUg
-bm90IGludGVyZXN0ZWQgaW50byBsb29raW5nIGludG8gaXQgKGJlY2F1c2UgZm9yIHlvdXIKPiBw
-YXJ0aWN1bGFyIGFuZCBvbmx5IGRldmljZSB0aGUgb3RlaHIgYXBwcm9hY2ggcHJvbWlzZXMgYmln
-Z2VyIHNhdmluZ3MpCj4gYnV0IEkgdGhpbmsgd2UnbGwgZ2V0IHRoZXJlIGV2ZW50dWFsbHkuCgpX
-ZWxsLCB3ZSBjYW4gKGFuZCBoYXZlIHRvLCBpZiB0aGlzIGFwcHJvYWNoIGlzIHRha2VuKSBsb29r
-IGludG8gdGhpcyBpbgphIHNlbnNlIG9mIGltcGxlbWVudGluZyBvdXIgcGFydGljdWxhciB0YXNr
-IGluIGEgd2F5IHRoYXQgaXQgY291bGQgYmUKZXh0ZW5kZWQgd2l0aCB0aGlzIGdlbmVyaWMgc3R1
-ZmYuIFdlIG1pZ2h0IGFzIHdlbGwgaW1wbGVtZW50IHNvbWV0aGluZwpnZW5lcmljLCBidXQgbWF5
-IGJlIG5vdCB0b28gY29tcHJlaGVuc2l2ZSwgZmVhdHVyZS1mdWxsLCBhbmQgd2VsbC10ZXN0ZWQK
-KHNpbXBseSBiZWNhdXNlIHdlIGRvIG5vdCBuZWVkIGl0LCBzbyBjYW5ub3QgcHJvdmUgdXNlZnVs
-bmVzcyBvbiByZWFsCmFwcGxpY2F0aW9ucykuCgo+IEFuZCB0aGUgdGhpcmQgdG9waWMgLSBzaHV0
-dGluZyAob3IgcHV0dGluZyBpbnRvIGxvdyBwb3dlcikgZW50aXJlIGRldmljZQo+IHVwb24gcmVx
-dWVzdCBmcm9tIHVzZXJzcGFjZS4gVGhpcyBhZ2FpbiBoYXMgbXVjaCB3aWRlciBhdWRpdG9yeSB0
-aGFuCj4gZ3Bpby1rZXlzLCBvciBpbnB1dCBkZXZpY2VzIGxheWVyIGZvciB0aGF0IG1hdHRlci4g
-V2UgbWF5IHdhbnQgdG8gZG8gc28KPiBmb3Igb3RoZXIgdHlwZXMgb2YgZGV2aWNlcyBhcyB3ZWxs
-LiBUaGF0IGlzIHdoeSB0aGUgcXVlc3Rpb24gd2hlbiB0bwo+IGdlbmVyYWwgUE0gbGlzdC4KClll
-YWguCgotLSAKQmVzdCBSZWdhcmRzLApBcnRlbSBCaXR5dXRza2l5ICjQkNGA0YLRkdC8INCR0LjR
-gtGO0YbQutC40LkpCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlv
-bi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZv
-L2xpbnV4LXBt
+
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+
+> On Tuesday 08 December 2009, Alan Stern wrote:
+> > On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
+> > 
+> > > BTW, is there a good reason why completion_done() doesn't use spin_lock_irqsave
+> > > and spin_unlock_irqrestore?  complete() and complete_all() use them, so why not
+> > > here?
+> > 
+> > And likewise in try_wait_for_completion().  It looks like a bug.  Maybe 
+> > these routines were not intended to be called with interrupts disabled, 
+> > but that requirement doesn't seem to be documented.  And it isn't a 
+> > natural requirement anyway.
+> 
+> OK, let's ask Ingo about that.
+> 
+> Ingo, is there any particular reason why completion_done() and
+> try_wait_for_completion() don't use spin_lock_irqsave() and
+> spin_unlock_irqrestore()?
+
+that's a bug that should be fixed - all the wakeup side (and atomic) 
+variants of completetion API should be irq safe.
+
+It appears that these new completion APIs were added via the XFS tree 
+about a year ago:
+
+  39d2f1a: [XFS] extend completions to provide XFS object flush requirements
+
+Please Cc: scheduler folks to all scheduler patches.
+
+	Ingo
