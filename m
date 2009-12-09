@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates
-	for 2.6.33)
-Date: Wed, 9 Dec 2009 17:27:13 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912091722310.2672-100000__9944.62536550618$1260397690$gmane$org@iolanthe.rowland.org>
-References: <200912092256.45872.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: spinlock in completion_done() (was: Re: Async resume
+	patch (was: Re: [GIT PULL] PM updates for 2.6.33))
+Date: Wed, 9 Dec 2009 23:37:52 +0100
+Message-ID: <200912092337.52492.rjw__1237.6076462262$1260398288$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0912081633540.3046-100000@iolanthe.rowland.org>
+	<200912082248.14138.rjw@sisk.pl> <20091209092922.GC28428@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912092256.45872.rjw@sisk.pl>
+In-Reply-To: <20091209092922.GC28428@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,30 +19,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, David Chinner <david@fromorbit.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Lachlan McIlroy <lachlan@sgi.com>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 9 Dec 2009, Rafael J. Wysocki wrote:
-
-> > I don't like that because it introduces "artificial" dependencies: It 
-> > makes B depend on all the preceding synchronous suspends, even totally 
-> > unrelated ones.  But yes, it would work.
+On Wednesday 09 December 2009, Ingo Molnar wrote:
 > 
-> Well, unfortunately, it wouldn't, because (at least in the context of my last
-> patch) the core would release the rwsems as soon as your suspend had
-> returned.  So you'd have to make your suspend wait for the async thread and
-> that would make it pointless.  So scratch that, it wasn't a good idea at all.
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> This leaves us with basically two options, where the first one is to use
-> rwsems in a way that you've proposed (with iterating over children), and the
-> second one is to use completions.  In my opinion rwsems don't give us any
-> advantage in this case, so I'd very much prefer to use completions.
+> > On Tuesday 08 December 2009, Alan Stern wrote:
+> > > On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
+> > > 
+> > > > BTW, is there a good reason why completion_done() doesn't use spin_lock_irqsave
+> > > > and spin_unlock_irqrestore?  complete() and complete_all() use them, so why not
+> > > > here?
+> > > 
+> > > And likewise in try_wait_for_completion().  It looks like a bug.  Maybe 
+> > > these routines were not intended to be called with interrupts disabled, 
+> > > but that requirement doesn't seem to be documented.  And it isn't a 
+> > > natural requirement anyway.
+> > 
+> > OK, let's ask Ingo about that.
+> > 
+> > Ingo, is there any particular reason why completion_done() and
+> > try_wait_for_completion() don't use spin_lock_irqsave() and
+> > spin_unlock_irqrestore()?
+> 
+> that's a bug that should be fixed - all the wakeup side (and atomic) 
+> variants of completetion API should be irq safe.
+> 
+> It appears that these new completion APIs were added via the XFS tree 
+> about a year ago:
+> 
+>   39d2f1a: [XFS] extend completions to provide XFS object flush requirements
+> 
+> Please Cc: scheduler folks to all scheduler patches.
 
-If you really want to add support for async suspend constraints, then 
-completions are clearer than rwsems.  If you don't care (and it's 
-unlikely that anyone will need them in the near future) then you might 
-as well stick with the current rwsem implementation and avoid iterating 
-over children.
+If you haven't fixed it locally yet, would you mind me posting a fix?
 
-Alan Stern
+Rafael
