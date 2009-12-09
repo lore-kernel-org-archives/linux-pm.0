@@ -1,16 +1,14 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates
 	for 2.6.33)
-Date: Wed, 9 Dec 2009 13:38:30 +0000
-Message-ID: <20091209133829.GF9018__15436.7532501512$1260365991$gmane$org@sirena.org.uk>
-References: <alpine.LFD.2.00.0912081420220.3560@localhost.localdomain>
-	<Pine.LNX.4.44L0.0912082125410.26994-100000@netrider.rowland.org>
+Date: Wed, 9 Dec 2009 10:24:04 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912090959230.4120-100000__14280.8450189934$1260372338$gmane$org@iolanthe.rowland.org>
+References: <alpine.LFD.2.00.0912081852320.3560@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0912082125410.26994-100000@netrider.rowland.org>
+In-Reply-To: <alpine.LFD.2.00.0912081852320.3560@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,36 +18,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 08, 2009 at 09:35:59PM -0500, Alan Stern wrote:
-> On Tue, 8 Dec 2009, Linus Torvalds wrote:
+On Tue, 8 Dec 2009, Linus Torvalds wrote:
 
-> > It's just that I think the "looping over children" is ugly, when I think 
-> > that by doing it the other way around you can make the code simpler and 
-> > only depend on the PM device list and a simple parent pointer access.
+> On Tue, 8 Dec 2009, Alan Stern wrote:
+> > 
+> > You mean, if A comes before B in the list and A must suspend after B?  
+> 
+> But if they are not topologically ordered, then A wouldn't necessarily be 
+> before B on the list in the first place.
 
-> I agree that it is uglier.  The only advantage is in handling
-> asynchronous non-tree suspend dependencies, of which we probably won't
-> have very many.  In fact, I don't know of _any_ offhand.
+Okay, I see what you're getting at.  Yes, this is quite true -- if A
+doesn't precede B in dpm_list then A can't safely wait for B to
+suspend.  To put it another way, only list-compatible constraints are
+feasible.
 
-There's some potential for this in embedded audio - it wants to bring
-down the entire embedded audio subsystem at once before the individual
-devices (and their parents) get suspended since bringing them down out
-of sync can result in audible artifacts.  Depending on the system the
-suspend may take a noticable amount of time so it'd be nice to be able
-to run it asynchronously, though we don't currently do so.
+This shouldn't be a problem.  If it were we'd be seeing it right now, 
+because A would _always_ suspend before B.
 
-At the minute we get away with this mostly through not being able to
-represent the cases that are likely to actually trip up over it.
+> Of course, if we've mucked with the list by hand and made sure the 
+> ordering is ok, then that's a different issue. But your whole point seemed 
+> to be that the device could impose its own ordering in its suspend 
+> callback, which is not true on its own without external ordering.
 
-> Interestingly, this non-tree dependency problem does not affect resume.
+No, sorry for not making it clearer.  I was assuming all long that the 
+non-tree constraints were compatible with the list ordering.
 
-Embedded audio does potentially - the resume needs all the individual
-devices in the subsystem and can take a substantial proportion of the
-overall resume time.  Currently we get away with a combination of
-assuming that all the drivers are live when we decide to start resuming
-them and using the ALSA userspace API to deal with bringing the resume
-out of line, but it's not ideal.
+In fact these considerations already affect the USB resume operations, 
+even without asynchronous resume.  The code relies on the fact that the 
+PCI layer registers sibling devices on a slot in order of increasing 
+function number.  There's no guarantee this will remain true in the 
+future (it may already be wrong AFAIK), so putting in some explicit 
+list manipulation is the prudent thing to do.
+
+Alan Stern
