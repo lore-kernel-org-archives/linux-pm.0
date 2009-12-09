@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates
-	for 2.6.33)
-Date: Wed, 9 Dec 2009 22:56:45 +0100
-Message-ID: <200912092256.45872.rjw__7711.74811893633$1260395883$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0912082111360.26994-100000@netrider.rowland.org>
+Subject: Re: Async suspend-resume patch w/ rwsems (was: Re: [GIT
+	PULL] PM updates for 2.6.33)
+Date: Wed, 9 Dec 2009 23:18:24 +0100
+Message-ID: <200912092318.24475.rjw__35993.8030517243$1260397139$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0912091451250.4120-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912082111360.26994-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0912091451250.4120-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,41 +25,137 @@ List-Id: linux-pm@vger.kernel.org
 On Wednesday 09 December 2009, Alan Stern wrote:
 > On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
 > 
-> > > Well, one difficulty.  It arises only because we are contemplating
-> > > having the PM core fire up the async tasks, rather than having the
-> > > drivers' suspend routines launch them (the way your original proposal
-> > > did -- the difficulty does not arise there).
-> > > 
-> > > Suppose A and B are unrelated devices and we need to impose the
-> > > off-tree constraint that A suspends after B.  With children taking
-> > > their parent's lock, the way to prevent A from suspending too soon is
-> > > by having B's suspend routine acquire A's lock.
-> > > 
-> > > But B's suspend routine runs entirely in an async task, because that
-> > > task is started by the PM core and it does the method call.  Hence by
-> > > the time B's suspend routine is called, A may already have begun
-> > > suspending -- it's too late to take A's lock.  To make the locking
-> > > work, B would have to acquire A's lock _before_ B's async task starts.  
-> > > Since the PM core is unaware of the off-tree dependency, there's no
-> > > simple way to make it work.
+> > For completness, below is the full async suspend/resume patch with rwlocks,
+> > that has been (very slightly) tested and doesn't seem to break things.
 > > 
-> > Do not set async_suspend for B and instead start your own async thread
-> > from its suspend callback.  The parent-children synchronization is done by the
-> > core anyway (at least I'd do it that way), so the only thing you need to worry
-> > about is the extra dependency.
+> > [Note to Alan: lockdep doesn't seem to complain about the not annotated nested
+> > locks.]
 > 
-> I don't like that because it introduces "artificial" dependencies: It 
-> makes B depend on all the preceding synchronous suspends, even totally 
-> unrelated ones.  But yes, it would work.
+> I can't imagine why not.  And wouldn't lockdep get confused by the fact
+> that in the async case, the rwsems are released by a different process
+> from the one that acquired them?
 
-Well, unfortunately, it wouldn't, because (at least in the context of my last
-patch) the core would release the rwsems as soon as your suspend had
-returned.  So you'd have to make your suspend wait for the async thread and
-that would make it pointless.  So scratch that, it wasn't a good idea at all.
+/me looks at the .config
 
-This leaves us with basically two options, where the first one is to use
-rwsems in a way that you've proposed (with iterating over children), and the
-second one is to use completions.  In my opinion rwsems don't give us any
-advantage in this case, so I'd very much prefer to use completions.
+I have CONFIG_LOCKDEP_SUPPORT set, is there anything else I need to set
+in .config?
+
+> > Index: linux-2.6/drivers/base/power/main.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/base/power/main.c
+> > +++ linux-2.6/drivers/base/power/main.c
+> 
+> Should we have an attribute under /sys/power to disable async
+> suspend/resume?  It would make testing easier and give people a way to
+> work around problems.
+
+I have a separate patch adding that, but I'd prefer to focus on the core
+feature first, if possible.
+
+> > @@ -334,25 +337,53 @@ static void pm_dev_err(struct device *de
+> >   * The driver of @dev will not receive interrupts while this function is being
+> >   * executed.
+> >   */
+> > -static int device_resume_noirq(struct device *dev, pm_message_t state)
+> > +static int __device_resume_noirq(struct device *dev, pm_message_t state)
+> >  {
+> 
+> Do you want to use async tasks in the late-suspend/early-resume stages?  
+> I know that USB won't use it, not even for the PCI host controllers --
+> not unless the PCI core specifically wants it.  Doing just the regular
+> suspend/resume stages may be enough.
+
+I guess so.  It's a leftover from the time I thought PCI might use async
+suspend, but it didn't really speed up things at all AFAICS.
+
+I think I'll remove it for now and it's going to be trivial to add it back if
+desired.
+
+> > +static int device_resume_noirq(struct device *dev)
+> > +{
+> > +	down_write(&dev->power.rwsem);
+> > +
+> > +	if (dev->power.async_suspend && !pm_trace_is_enabled()) {
+> 
+> If the sysfs attribute exists, then maybe we _should_ allow async with 
+> PM tracing enabled.  I don't know; it's your decision.
+
+I don't think it would be reliable in that case, because the RTC might be
+written to by two concurrent threads at the same time.
+
+> 			atomic_set(&async_error, error);
+> 	}
+> 
+> 
+> > @@ -683,10 +835,12 @@ static int dpm_suspend(pm_message_t stat
+> >  
+> >  	INIT_LIST_HEAD(&list);
+> >  	mutex_lock(&dpm_list_mtx);
+> > +	pm_transition = state;
+> >  	while (!list_empty(&dpm_list)) {
+> >  		struct device *dev = to_device(dpm_list.prev);
+> >  
+> >  		get_device(dev);
+> > +		dev->power.status = DPM_OFF;
+> 
+> What's that for?  dev->power.status is supposed to be DPM_SUSPENDING 
+> until the suspend method is successfully completed.
+
+If the suspend is run asynchronoysly, the main thread will always get a
+"success" from device_suspend(), so it can't change power.status on this
+basis.  I thought we could set power.status to DPM_OFF upfront and change
+it back when error is returned.
+
+The alternative would be to move the modification of power.status to
+device_suspend() and async_suspend().  Well, maybe that's better.
+
+> >  		mutex_unlock(&dpm_list_mtx);
+> >  
+> >  		error = device_suspend(dev, state);
+> > @@ -694,16 +848,22 @@ static int dpm_suspend(pm_message_t stat
+> >  		mutex_lock(&dpm_list_mtx);
+> >  		if (error) {
+> >  			pm_dev_err(dev, state, "", error);
+> > +			dev->power.status = DPM_SUSPENDING;
+> 
+> And then this isn't needed.
+> 
+> >  			put_device(dev);
+> >  			break;
+> >  		}
+> > -		dev->power.status = DPM_OFF;
+> 
+> This line has to be moved into __device_suspend(), even though it won't 
+> be protected by dpm_list_mtx.  The same sort of thing applies to 
+> dpm_suspend_noirq() (although nothing needs to be moved if you don't 
+> make it async).
+> 
+> The rest looks okay.
+
+Still, I think I'd rework it to use completions for the reason described in the
+message I've just sent (in short, because of the off-tree dependencies
+problem).
+
+> How about exporting a wait_for_device_to_resume() routine?  Drivers
+> could call it for non-tree resume constraints:
+> 
+> 	void wait_for_device_to_resume(struct device *other)
+> 	{
+> 		down_read(&other->power.rwsem);
+> 		up_read(&other->power.rwsem);
+> 	}
+> 
+> Unfortunately there is no equivalent for non-tree suspend constraints.
+
+If we use completions, it will be possible to just export something like
+
+dpm_wait(dev)
+{
+        if (dev)
+                wait_for_completion(dev->power.completion);
+}
+
+I think.  It appears that will also work for suspend, unless I'm missing
+something.
 
 Rafael
