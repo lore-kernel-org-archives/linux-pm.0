@@ -1,22 +1,14 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH v2 1/2] Input: gpio-keys - allow platform
-	to	specify exact irq flags
-Date: Wed, 9 Dec 2009 13:48:42 -0800
-Message-ID: <20091209214841.GE10138__22428.7749654197$1260395588$gmane$org@core.coreip.homeip.net>
-References: <Pine.LNX.4.44L0.0911300956400.4478-100000@iolanthe.rowland.org>
-	<87einfltp3.fsf@tac.ki.iif.hu> <20091206084704.GC2766@ucw.cz>
-	<20091208042251.GB11147@core.coreip.homeip.net>
-	<1260277410.19669.84.camel@localhost>
-	<20091208174218.GB14271@core.coreip.homeip.net>
-	<1260343860.19669.1189.camel@localhost>
-	<20091209180345.GE4456@core.coreip.homeip.net>
-	<20091209210816.GD3480@elf.ucw.cz>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates
+	for 2.6.33)
+Date: Wed, 9 Dec 2009 13:52:44 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0912091317330.3560__32735.9936935411$1260395755$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912091356200.4120-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20091209210816.GD3480@elf.ucw.cz>
+In-Reply-To: <Pine.LNX.4.44L0.0912091356200.4120-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,48 +18,115 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Artem Bityutskiy <dedekind1@gmail.com>, Mika Westerberg <mika.westerberg@iki.fi>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Ferenc Wagner <wferi@niif.hu>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 09, 2009 at 10:08:16PM +0100, Pavel Machek wrote:
-> > > > I refuse it because it will be supported by exactly 1 driver in the
-> > > > kernel - gpio-keys. It is the only driver that allows shut half of the
-> > > > "device" (because in reality it is a group of disjoint devices). It is
-> > > > the only case when "muting" a button means that IRQ is shut off abnd
-> > > > thus CPU can continue to sleep if that button is pressed. For all other
-> > > > devices that have 1 inettrupt per device, you still have to wake up,
-> > > > because you don't know whether the button that generated event is
-> > > > "important" or not.
-> > > 
-> > > Fair enough.
-> > > 
-> > > > Now, there is a issue of waking up userspace task, additional scheduling
-> > > > and keeping CPU running longer than necessary for "uninteresting" keys.
-> > > > This can be solved by implementing a subscription model which allows
-> > > > filtering uninteresing events on a per-client basis at evdev level.
-> > > 
-> > > Right. And for gpio_keys, this would be dine on the driver level.
-> > 
-> > But the semantics are different - if done on driver level you'd be
-> > affecting _all_  consumers of the device; what I want to be done only
-> > affects owner of the file descriptor.
+
+
+On Wed, 9 Dec 2009, Alan Stern wrote:
 > 
-> Well, if _all_ consumers decide to ignore some key, we should be able
-> to ignore it at driver level.
-
-The intesection of drivers allowing shut off individual buttons with
-all consumers agreeing on not using a key would be pretty miniscule.
-
+> That could be attributed to reordering on CPU2, so let's take CPU2's
+> peculiarities out of the picture (initially everything is set to 0):
 > 
-> And actually it may make some sense -- I do not think disabling irq
-> during runtime is worth the effort, but disabling wakeup source and
-> getting rid of unneccessary wakeup when system is suspended is
-> probably worth it.
+> 	CPU1			CPU2
+> 	----			----
+> 	if (x == 1)		z = y;
+> 		y = 5;		mb();
+> 				x = 1;
 > 
+> This gets at the heart of the question: Can a write move up past a
+> control dependency?
+>  [ .. ]
+> Can z end up equal to 5 in any of these examples?
 
-I don't believe Mika's patches touched wakeup in any way. So it has
-been strictly about wakig up processor to service that interrupt so far.
+In any _practical_ microarchitecture I know of, the above will never 
+result in 'z' being 5, even though CPU1 doesn't really have a memory 
+barrier. But if I read the alpha memory ordering guarantees rigth, then at 
+least in theory you really can end up with z=5.
 
--- 
-Dmitry
+Let me write that as five events (with the things in brackets being what 
+the alpha memory ordering manual calls them):
+
+ - A is "read of x returns 1" on CPU1   [ P1:R(x,1) ]
+ - B is "write of value 5 to y" on CPU1 [ P1:W(y,5) ]
+ - C is "read of y returns 5" on CPU2   [ P2:R(y,5) ]
+ - D is "write of value 1 to x" on CPU2 [ P2:W(x,1) ]
+ - 'MB' is the mb() on CPU2             [ P2:MB ]
+
+(The write of 'z' is irrelevant, we can think of it as a register, the end 
+result is the same).
+
+And yes, if I read the alpha memory ordering rules correctly, you really 
+can end up with z=5, although I don't think you will ever find an alpha 
+_implementation_ that does it.
+
+Why?
+
+The alpha memory ordering literally defines ordering in two ways:
+
+ - "location access order". But that is _only_ defined per actual 
+   location, so while 'x' can have a location access order specified by 
+   seeing certain values, there is no "location access order" for two 
+   different memory locations (x and y).
+
+   The alpha architecture manual uses "A << B" to say "event A" is before 
+   "event B" when there is a defined ordering.
+
+   So in the example above, there is a location access ordering between 
+
+	P2:W(x,1) << P1:R(x, 1)
+
+   and
+
+	P2:R(y,5) << P1:W(y,5)
+
+   ie you have D << A and B << C.
+
+   Good so far, but that doesn't define anything else: there's only 
+   ordering between the pairs (D,A) and (B,C), nothing between them.
+
+ - "Processor issue order" for two instruction is _only_ defined by either 
+   (a) memory barriers or (b) accesses to the _same_ locations. The alpha 
+   architecture manual uses "A < B" to say that "event A" is before "event 
+   B" in processor issue order.
+
+   So there is a "Processor issue order" on CPU2 due to the memory 
+   barrier: P2:R(y,5) < P2:MB < P2:W(x,1), or put another way C < MB < D: 
+   C < D.
+
+Now, the question is, can we actually get the behaviour of reading 5 on 
+CPU2 (ie P2:R(y,5)), and that is only possible if we can find an ordering 
+that satisfies all the constraints. We have
+
+	D << A
+	B << C
+	C < D
+
+and it seems to be that it is a possible situation: "B C D A" 
+really does satisfy all the constraints afaik.
+
+So yes, according to the actual alpha architecture memory ordering rules, 
+you can see '5' from that first read of 'y'. DESPITE having a mb() on 
+CPU2.
+
+In order to not see 5, you need to also specify "A < B", and the _only_ 
+way to do that processor issue order specification is with a memory 
+barrier (or if the locations are the same, which they aren't).
+
+"Causality" simply is nowhere in the officially defined alpha memory 
+ordering. The fact that we test 'x == 1' and conditionally do the write 
+simply doesn't enter the picture. I suspect you'd have a really hard time 
+not having causality in practice, but there _are_ things that can break 
+causality (value prediction etc), so it's not like you'd have to actually 
+violate physics of reality to do it.
+
+IOW, you could at least in theory implement a CPU that does every 
+instruction speculatively in parallel, and then validates the end result 
+afterwards according to the architecture rules. And that CPU would require 
+the memory barrier on alpha.
+
+(On x86, 'causality' is defined to be part of the memory ordering rules, 
+so on x86, you _do_ have a 'A < B' relationship. But not on alpha).
+
+				Linus
