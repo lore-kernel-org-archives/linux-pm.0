@@ -1,14 +1,15 @@
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: Re: Async resume patch (was: Re: [GIT PULL] PM updates
-	for 2.6.33)
-Date: Tue, 8 Dec 2009 22:52:51 +0100
-Message-ID: <200912082252.51916.borntraeger__12453.3775415786$1260402717$gmane$org@de.ibm.com>
-References: <Pine.LNX.4.44L0.0912081626400.3046-100000@iolanthe.rowland.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re:
+ Async suspend-resume patch w/ rwsems)
+Date: Wed, 9 Dec 2009 18:51:50 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0912091835280.3560__21260.2292340764$1260413668$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
+	<200912100018.19723.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912081626400.3046-100000@iolanthe.rowland.org>
+In-Reply-To: <200912100018.19723.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,35 +19,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> > Sure they can. Control dependencies are trivial - it's called "branch 
-> > prediction", and everybody does it, and data dependencies don't exist on 
-> > many CPU architectures (even to the point of reading through a pointer 
-> > that you loaded).
+
+
+On Thu, 10 Dec 2009, Rafael J. Wysocki wrote:
 > 
-> Wait a second.  Are you saying that with code like this:
-> 
-> 	if (x == 1)
-> 		y = 5;
-> 
-> the CPU may write to y before it has finished reading the value of x?  
-> And this write is visible to other CPUs, so that if x was initially 0
-> and a second CPU sets x to 1, the second CPU may see y == 5 before it
-> executes the write to x (whatever that may mean)?
+> Completions it is, then.
 
-No, the write really depends on x being 1 at any time before the comparison.
-On the other hand x being != 0 during the comparison does not prevent the 
-write without proper locking or barriers.
+What was so hard with the "Try the simple one first" to understand? You 
+had a simpler working patch, why are you making this more complex one 
+without ever having had any problems with the simpler one?
+
+Btw, your 'atomic_set()' with errors is pure voodoo programming. That's 
+not how atomics work. They do SMP-atomic addition etc, the 'atomic_set()' 
+and 'atomic_read()' things are not in any way more atomic than any other 
+access.
+
+They are meant for racy reads (atomic_read()) and for initializations 
+(atomic_set()), and the way you use them that 'atomic' part is entirely 
+pointless, because it really isn't anything different from an 'int', 
+except that it may be very very expensive on some architectures due to 
+hashed spinlocks etc.
+
+So stop this overdesign thing. Start simple. If you _ever_ see real 
+problems, that's when you add stuff. As it is, any time you add 
+complexity, you just add bugs.
 
 
-Have a look at
 
-http://www.linuxjournal.com/article/8211
-http://www.linuxjournal.com/article/8212
+> +/**
+> + * dpm_synchronize - Wait for PM callbacks of all devices to complete.
+> + */
+> +static void dpm_synchronize(void)
+> +{
+> +	struct device *dev;
+> +
+> +	async_synchronize_full();
+> +
+> +	mutex_lock(&dpm_list_mtx);
+> +	list_for_each_entry(dev, &dpm_list, power.entry)
+> +		INIT_COMPLETION(dev->power.completion);
+> +	mutex_unlock(&dpm_list_mtx);
+> +}
 
-especially at the alpha part what can happen when dealing with pointer accesses.
+And this, for example, is pretty disgusting. Not only is that 
+INIT_COMPLETION purely brought on by the whole problem with completions 
+(they are fundamentally one-shot, but you want to use them over and over 
+so you need to re-initialize them: a nice lock wouldn't have that problem 
+to begin with), but the comment isn't even accurate. Sure, it waits for 
+any async jobs, but that's the _least_ of what the function actually does, 
+so the comment is actively misleading, isn't it?
 
-Christian
+		Linus
