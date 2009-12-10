@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug 14730] sky2 won't work after suspend/resume
-	cycle
-Date: Thu, 10 Dec 2009 22:23:33 +0100
-Message-ID: <200912102223.33184.rjw__31319.7863907137$1260480224$gmane$org@sisk.pl>
-References: <bug-14730-10028@http.bugzilla.kernel.org/>
-	<200912102140.26491.rjw@sisk.pl>
-	<200912102200.29219.mat@esi.com.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re:
+ Async suspend-resume patch w/ rwsems)
+Date: Thu, 10 Dec 2009 17:17:00 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912101653120.2680-100000__40320.730143185$1260483546$gmane$org@iolanthe.rowland.org>
+References: <200912102214.40310.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912102200.29219.mat@esi.com.pl>
+In-Reply-To: <200912102214.40310.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,34 +18,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Maciej J. Woloszyk" <mat@esi.com.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, akpm@linux-foundation.org, bugzilla-daemon@bugzilla.kernel.org, shemminger@linux-foundation.org, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 10 December 2009, Maciej J. Woloszyk wrote:
-...
-> > Can you please use 2.6.32 for further testing and do the following:
-> > 
-> 
-> Ok.
-> 
-> > # echo code > /sys/power/pm_test
-> 
-> I hope you ment it to  be "echo core" because if it actualy supposed to be 
-> "code" - it didn't worked ;)
+On Thu, 10 Dec 2009, Rafael J. Wysocki wrote:
 
-Yes, that should have been 'core', sorry for the mistake.
-
-> > # echo mem > /sys/power/state
-> > 
-> > wait until it gets back to the command prompt and see if your sky2 works
-> > after that?
-> > 
+> > You should see how badly lockdep complains about the rwsems.  If it 
+> > really doesn't like them then using completions makes sense.
 > 
-> Yes - after the second echo it did kind of suspend/resume cycle and after that 
-> sky2 still worked.
+> It does complain about them, but when the nested _down operations are marked
+> as nested, it stops complaining (that's in the version where there's no async
+> in the _noirq phases).
 
-OK, thanks.
+Did you set the async_suspend flag for any devices during the test?  
+And did you run more than one suspend/resume cycle?
 
-Please attach the full output of 'lspci -vv' (including all devices) before and
-after a suspend-resume cycle failing to restore the sky2 functionality.
+> +extern int __dpm_wait(struct device *dev, void *ign);
+> +
+> +static inline void dpm_wait(struct device *dev)
+> +{
+> +	__dpm_wait(dev, NULL);
+> +}
+
+Sorry, I intended to mention this before but forgot.  This design is
+inelegant.  You shouldn't have inlines calling functions with extra
+unused arguments; they just waste code space.  Make dpm_wait() be a
+real routine and add a shim to the device_for_each_child() loop.
+
+> @@ -366,7 +388,7 @@ void dpm_resume_noirq(pm_message_t state
+>  
+>  	mutex_lock(&dpm_list_mtx);
+>  	transition_started = false;
+> -	list_for_each_entry(dev, &dpm_list, power.entry)
+> +	list_for_each_entry(dev, &dpm_list, power.entry) {
+>  		if (dev->power.status > DPM_OFF) {
+>  			int error;
+>  
+> @@ -375,23 +397,27 @@ void dpm_resume_noirq(pm_message_t state
+>  			if (error)
+>  				pm_dev_err(dev, state, " early", error);
+>  		}
+> +		/* Needed by the subsequent dpm_resume(). */
+> +		INIT_COMPLETION(dev->power.completion);
+
+You're still doing it.  Don't initialize the completions in a totally
+different phase!  Initialize them directly before they are used.  
+Namely, at the start of device_resume() and device_suspend().
+
+One more thing.  A logical time to check for errors is just after
+waiting for the children in __device_suspend(), instead of beforehand 
+in async_suspend().  After all, if an error occurs then it's likely to 
+happen while we are waiting.
+
+Alan Stern
