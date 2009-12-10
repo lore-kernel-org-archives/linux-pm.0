@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re:
- Async suspend-resume patch w/ rwsems)
-Date: Thu, 10 Dec 2009 13:37:12 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912101321020.2680-100000__21190.2429852218$1260470306$gmane$org@iolanthe.rowland.org>
-References: <alpine.LFD.2.00.0912100739260.3560@localhost.localdomain>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug 14730] sky2 won't work after suspend/resume
+	cycle
+Date: Thu, 10 Dec 2009 20:13:49 +0100
+Message-ID: <200912102013.49467.rjw__13990.5993165032$1260472473$gmane$org@sisk.pl>
+References: <bug-14730-10028@http.bugzilla.kernel.org/>
+	<200912101036.nBAAacka024465@demeter.kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912100739260.3560@localhost.localdomain>
+In-Reply-To: <200912101036.nBAAacka024465@demeter.kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,86 +19,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: bugzilla-daemon@bugzilla.kernel.org
+Cc: Linux PCI <linux-pci@vger.kernel.org>, akpm@linux-foundation.org, shemminger@linux-foundation.org, pm list <linux-pm@lists.linux-foundation.org>, mat@esi.com.pl
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 10 Dec 2009, Linus Torvalds wrote:
-
+On Thursday 10 December 2009, bugzilla-daemon@bugzilla.kernel.org wrote:
+> http://bugzilla.kernel.org/show_bug.cgi?id=14730
 > 
-> 
-> On Thu, 10 Dec 2009, Alan Stern wrote:
+> --- Comment #11 from Ilya Hegai <vyacheslavovich@gmail.com>  2009-12-10 10:36:36 ---
+> (In reply to comment #9)
+> > On Monday 07 December 2009, bugzilla-daemon@bugzilla.kernel.org wrote:
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=14730
+...
+> > It may be worth trying to revert 
 > > 
-> > In device_pm_remove():
+> > commit 4b77b0a2ba27d64f58f16d8d4d48d8319dda36ff
+> > Author: Rafael J. Wysocki <rjw@sisk.pl>
+> > Date:   Wed Sep 9 23:49:59 2009 +0200
 > > 
-> > 	mutex_lock(&dpm_list_mtx);
-> > 	if (dev == dpm_next)
-> > 		dpm_next = to_device(dpm_iterate_forward ?
-> > 			dev->power.entry.next : dev->power.entry.prev);
-> > 	list_del_init(&dev->power.entry);
-> > 	mutex_unlock(&dpm_list_mtx);
+> >     PCI: Clear saved_state after the state has been restored
+> > 
+> > and retesting.
 > 
-> I'm really not seeing the point - it's much better to hardcode the 
-> ordering in the place you use it (where it is static and the compiler can 
-> generate bette code) than to do some dynamic choice that depends on some 
-> fake flag - especially a global one.
+> I'm not familiar with git, but I haven't found traces of that commit in
+> 2.6.31.7 that I'm using (gentoo-sources) (and the problem exists there)
+> but after I applied it (got it from git) - sky2 errors after hibernation/resume
+> dissapeared
+> And as I can see this patch has applied against 2.6.32, so I guess TS person is
+> considered to upgrade to the latest kernel
 
-You probably didn't look closely at the original code in dpm_suspend()  
-and dpm_resume().  It's very awkward; each device is removed from
-dpm_list, operated on, and then added on to a new local list.  At the
-end the new list is spliced back into dpm_list.
+Hmm.  The original report is against 2.6.32-rc8.
 
-This approach is better because it doesn't involve changing any list 
-pointers while the sleep transition is in progress.  At any rate, I 
-don't recommend doing it in the same patch as the async stuff; it 
-should be done separately.  Either before or after -- the two are 
-independent.
+So you're saying that the commit above, when applied against 2.6.31.7,
+actually fixes a sky2 resume problem for you?
 
-> Also, quite frankly, error handling needs to be separated out of the whole 
-> async patch, and needs to be thought about a lot more. And I would 
-> seriously argue that if you have any async suspends, then those async 
-> suspends are _not_ allowed to fail. At least not initially 
-> 
-> Having async failures and trying to fix them up is just a disaster. Which 
-> ones actually failed, and which ones were aborted before they even really 
-> got to their suspend routines? Which ones do you try to resume?
-
-We record the status of each device; dev->power.status stores different
-values depending on whether the device suspend succeeded or failed.  
-The value will be correct and up-to-date after async_synchronize_full()
-returns.  The value is used in dpm_resume() to decide which devices
-need their resume methods called.  I don't see any problems there.
-
-> IOW, it needs way more thought than what has clearly happened so far. And 
-> once more, I will refuse to merge anything that is complicated for no 
-> actual reason (where reason is "real life, and tested to make a big 
-> difference", not some hand-waving)
-
-I don't think the error handling requires more than minimal changes.
-
-The whole atomic_t thing was overkill.  It probably stemmed from a
-discussion some time back with Pavel Machek about concurrent writes to
-a single variable.  I claimed that concurrent writes to a properly
-aligned pointer, int, or long would never create a "mash-up"; that is,
-readers would see either the original value or one of the new values
-but never some weird combination of bits.
-
-Alan Cox pointed out that while this was technically correct, there's
-nothing to prevent the compiler from translating
-
-	a = b + c;
-
-into something like:
-
-	load b, R1
-	store R1, a
-	load c, R1
-	add R1, a
-
-in which case readers might see the intermediate value.  (Okay, the
-compiler would have to be pretty stupid to do this with such a simple
-expression, but it could happen with more complicated expressions.)  
-Pavel favored always using atomic types when there could be concurrent
-writes, and apparently Rafael was following his advice.
-
-Alan Stern
+Maciej, can you please check if 2.6.31.7 with the above commit applied works
+for you?
