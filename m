@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re:
-	Async suspend-resume patch w/ rwsems)
-Date: Thu, 10 Dec 2009 20:40:10 +0100
-Message-ID: <200912102040.11063.rjw__32173.7874568955$1260474060$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
-	<200912100018.19723.rjw@sisk.pl>
-	<alpine.LFD.2.00.0912091835280.3560@localhost.localdomain>
+Subject: Re: [Bug 14730] sky2 won't work after suspend/resume
+	cycle
+Date: Thu, 10 Dec 2009 21:40:26 +0100
+Message-ID: <200912102140.26491.rjw__8284.29680918834$1260477673$gmane$org@sisk.pl>
+References: <bug-14730-10028@http.bugzilla.kernel.org/>
+	<200912102013.49467.rjw@sisk.pl>
+	<200912102115.17228.mat@esi.com.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912091835280.3560@localhost.localdomain>
+In-Reply-To: <200912102115.17228.mat@esi.com.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,63 +20,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Maciej J. Woloszyk" <mat@esi.com.pl>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, akpm@linux-foundation.org, bugzilla-daemon@bugzilla.kernel.org, shemminger@linux-foundation.org, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 10 December 2009, Linus Torvalds wrote:
-> 
-> On Thu, 10 Dec 2009, Rafael J. Wysocki wrote:
-> > 
-> > Completions it is, then.
-> 
-> What was so hard with the "Try the simple one first" to understand? You 
-> had a simpler working patch, why are you making this more complex one 
-> without ever having had any problems with the simpler one?
-
-OK, why don't you just say you won't merge anything that doesn't use rwsems
-(although you said before that completions would be fine with you)?  That would
-make things clear, but also it would mean we gave up handling the off-tree
-dependencies in general.
-
-> Btw, your 'atomic_set()' with errors is pure voodoo programming. That's 
-> not how atomics work. They do SMP-atomic addition etc, the 'atomic_set()' 
-> and 'atomic_read()' things are not in any way more atomic than any other 
-> access.
->
-> They are meant for racy reads (atomic_read()) and for initializations 
-> (atomic_set()), and the way you use them that 'atomic' part is entirely 
-> pointless, because it really isn't anything different from an 'int', 
-> except that it may be very very expensive on some architectures due to 
-> hashed spinlocks etc.
-> 
-> So stop this overdesign thing. Start simple. If you _ever_ see real 
-> problems, that's when you add stuff. As it is, any time you add 
-> complexity, you just add bugs.
-
-OK, so that need not be atomic.
- 
-> > +/**
-> > + * dpm_synchronize - Wait for PM callbacks of all devices to complete.
-> > + */
-> > +static void dpm_synchronize(void)
-> > +{
-> > +	struct device *dev;
-> > +
-> > +	async_synchronize_full();
-> > +
-> > +	mutex_lock(&dpm_list_mtx);
-> > +	list_for_each_entry(dev, &dpm_list, power.entry)
-> > +		INIT_COMPLETION(dev->power.completion);
-> > +	mutex_unlock(&dpm_list_mtx);
-> > +}
-> 
-> And this, for example, is pretty disgusting. Not only is that 
-> INIT_COMPLETION purely brought on by the whole problem with completions 
-> (they are fundamentally one-shot, but you want to use them over and over
-
-Actually, twice.  However, since I don't want to do any async handling in the
-_noirq phases any more, I can get rid of this whole function.  Thanks for
-pointing that out to me.
-
-Rafael
+T24gVGh1cnNkYXkgMTAgRGVjZW1iZXIgMjAwOSwgTWFjaWVqIEouIFdvbG9zenlrIHdyb3RlOgo+
+IE9uIGN6d2FydGVrIDEwIGdydWR6aWXFhCAyMDA5LCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToK
+PiA+IE9uIFRodXJzZGF5IDEwIERlY2VtYmVyIDIwMDksIGJ1Z3ppbGxhLWRhZW1vbkBidWd6aWxs
+YS5rZXJuZWwub3JnIHdyb3RlOgo+ID4gPiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93
+X2J1Zy5jZ2k/aWQ9MTQ3MzAKPiA+ID4KPiA+ID4gLS0tIENvbW1lbnQgIzExIGZyb20gSWx5YSBI
+ZWdhaSA8dnlhY2hlc2xhdm92aWNoQGdtYWlsLmNvbT4gIDIwMDktMTItMTAKPiA+ID4gMTA6MzY6
+MzYgLS0tIChJbiByZXBseSB0byBjb21tZW50ICM5KQo+ID4gPgo+ID4gPiA+IE9uIE1vbmRheSAw
+NyBEZWNlbWJlciAyMDA5LCBidWd6aWxsYS1kYWVtb25AYnVnemlsbGEua2VybmVsLm9yZyB3cm90
+ZToKPiA+ID4gPiA+IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0x
+NDczMAo+ID4gCj4gPiAuLi4KPiA+IAo+ID4gPiA+IEl0IG1heSBiZSB3b3J0aCB0cnlpbmcgdG8g
+cmV2ZXJ0Cj4gPiA+ID4KPiA+ID4gPiBjb21taXQgNGI3N2IwYTJiYTI3ZDY0ZjU4ZjE2ZDhkNGQ0
+OGQ4MzE5ZGRhMzZmZgo+ID4gPiA+IEF1dGhvcjogUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNr
+LnBsPgo+ID4gPiA+IERhdGU6ICAgV2VkIFNlcCA5IDIzOjQ5OjU5IDIwMDkgKzAyMDAKPiA+ID4g
+Pgo+ID4gPiA+ICAgICBQQ0k6IENsZWFyIHNhdmVkX3N0YXRlIGFmdGVyIHRoZSBzdGF0ZSBoYXMg
+YmVlbiByZXN0b3JlZAo+ID4gPiA+Cj4gPiA+ID4gYW5kIHJldGVzdGluZy4KPiA+ID4KPiA+ID4g
+SSdtIG5vdCBmYW1pbGlhciB3aXRoIGdpdCwgYnV0IEkgaGF2ZW4ndCBmb3VuZCB0cmFjZXMgb2Yg
+dGhhdCBjb21taXQgaW4KPiA+ID4gMi42LjMxLjcgdGhhdCBJJ20gdXNpbmcgKGdlbnRvby1zb3Vy
+Y2VzKSAoYW5kIHRoZSBwcm9ibGVtIGV4aXN0cyB0aGVyZSkKPiA+ID4gYnV0IGFmdGVyIEkgYXBw
+bGllZCBpdCAoZ290IGl0IGZyb20gZ2l0KSAtIHNreTIgZXJyb3JzIGFmdGVyCj4gPiA+IGhpYmVy
+bmF0aW9uL3Jlc3VtZSBkaXNzYXBlYXJlZAo+ID4gPiBBbmQgYXMgSSBjYW4gc2VlIHRoaXMgcGF0
+Y2ggaGFzIGFwcGxpZWQgYWdhaW5zdCAyLjYuMzIsIHNvIEkgZ3Vlc3MgVFMKPiA+ID4gcGVyc29u
+IGlzIGNvbnNpZGVyZWQgdG8gdXBncmFkZSB0byB0aGUgbGF0ZXN0IGtlcm5lbAo+ID4gCj4gPiBI
+bW0uICBUaGUgb3JpZ2luYWwgcmVwb3J0IGlzIGFnYWluc3QgMi42LjMyLXJjOC4KPiA+IAo+ID4g
+U28geW91J3JlIHNheWluZyB0aGF0IHRoZSBjb21taXQgYWJvdmUsIHdoZW4gYXBwbGllZCBhZ2Fp
+bnN0IDIuNi4zMS43LAo+ID4gYWN0dWFsbHkgZml4ZXMgYSBza3kyIHJlc3VtZSBwcm9ibGVtIGZv
+ciB5b3U/Cj4gPiAKPiA+IE1hY2llaiwgY2FuIHlvdSBwbGVhc2UgY2hlY2sgaWYgMi42LjMxLjcg
+d2l0aCB0aGUgYWJvdmUgY29tbWl0IGFwcGxpZWQKPiA+ICB3b3JrcyBmb3IgeW91Pwo+ID4gCj4g
+Cj4gT2suIEkndmUganVzdCB0cmllZCAyLjYuMzEuNyB3aXRoIHRoZSBwYXRjaCBhcHBsaWVkIC0g
+aXQgZGlkbid0IHdvcmtlZC4gc2t5MiAKPiBzdGlsbCBkb2VzJ250IHdvcmsgYWZ0ZXIgcmVzdW1l
+LgoKU28gdGhlIHByb2JsZW0gaXMgY2xlYXJseSBkaWZmZXJlbnQgZm9yIHlvdS4gIEl0IGFsc28g
+bWVhbnMgaXQncyBub3QgdW5pdmVyc2FsCmZvciBhbGwgc2t5MnMsIHNvIGl0IG1heSBkZXBlbmQg
+b24gd2hldGhlciB0aGUgYWRhcHRlciBpcyBQQ0llIG9yIHNvbWV0aGluZy4KCkNhbiB5b3UgcGxl
+YXNlIHVzZSAyLjYuMzIgZm9yIGZ1cnRoZXIgdGVzdGluZyBhbmQgZG8gdGhlIGZvbGxvd2luZzoK
+CiMgZWNobyBjb2RlID4gL3N5cy9wb3dlci9wbV90ZXN0CiMgZWNobyBtZW0gPiAvc3lzL3Bvd2Vy
+L3N0YXRlCgp3YWl0IHVudGlsIGl0IGdldHMgYmFjayB0byB0aGUgY29tbWFuZCBwcm9tcHQgYW5k
+IHNlZSBpZiB5b3VyIHNreTIgd29ya3MKYWZ0ZXIgdGhhdD8KX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBt
+QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlv
+bi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
