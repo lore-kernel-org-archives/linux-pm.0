@@ -1,21 +1,13 @@
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Subject: Re: [PATCH v2 1/2] Input: gpio-keys - allow platform to
- specify exact irq flags
-Date: Thu, 10 Dec 2009 11:19:19 +0200
-Message-ID: <1260436759.12346.44.camel__26485.2800792598$1260436861$gmane$org@localhost>
-References: <Pine.LNX.4.44L0.0911300956400.4478-100000@iolanthe.rowland.org>
-	<87einfltp3.fsf@tac.ki.iif.hu> <20091206084704.GC2766@ucw.cz>
-	<20091208042251.GB11147@core.coreip.homeip.net>
-	<1260277410.19669.84.camel@localhost>
-	<20091208174218.GB14271@core.coreip.homeip.net>
-	<1260343860.19669.1189.camel@localhost>
-	<20091209180345.GE4456@core.coreip.homeip.net>
-Reply-To: dedekind1@gmail.com
+From: "Mahalingam, Nithish" <nithish.mahalingam@intel.com>
+Subject: Runtime PM: Not updating parent's usage in
+	->pm_runtime_suspend?
+Date: Thu, 10 Dec 2009 16:08:14 +0530
+Message-ID: <175E0F9A9EFCEA46A65F5552BB057298C5F198E6@bgsmsx502.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091209180345.GE4456@core.coreip.homeip.net>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,57 +17,15 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Mika Westerberg <mika.westerberg@iki.fi>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Ferenc Wagner <wferi@niif.hu>
+To: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyMDA5LTEyLTA5IGF0IDEwOjAzIC0wODAwLCBEbWl0cnkgVG9yb2tob3Ygd3JvdGU6
-Cj4gT24gV2VkLCBEZWMgMDksIDIwMDkgYXQgMDk6MzE6MDBBTSArMDIwMCwgQXJ0ZW0gQml0eXV0
-c2tpeSB3cm90ZToKPiA+IE9uIFR1ZSwgMjAwOS0xMi0wOCBhdCAwOTo0MiAtMDgwMCwgRG1pdHJ5
-IFRvcm9raG92IHdyb3RlOgo+ID4gPiA+ID4gSSBhbHNvIHNlZSB0aGF0IGdwaW8ta2V5cyBpcyBx
-dWl0ZSBkaWZmZXJlbnQgaW4gdGhlIHNlbmNlIHRoYXQgaXQgY2FuCj4gPiA+ID4gPiBzaHV0IG9m
-ZiBidXR0b25zIHNlbGVjdGl2ZWx5LiBJIGZhY3QsIGF0IHRoZSBtb21lbnQgZXZlcnkgYnV0dG9u
-IGNhbiBiZQo+ID4gPiA+ID4gY29uc2lkZXJlZCBhIHNlcGFyYXRlIGRldmljZS4uLiBCdXQgdGhh
-dCB3b3VsZCBiZSB0b28gbXVjaCBvdmVyaGVhZC4KPiA+ID4gPiA+IAo+ID4gPiA+ID4gVGhleSBj
-b3VsZCBwcm9iYWJseSBzcGxpdCB0aGUga2V5cyBpbnRvIDIgZ3JvdXBzIChjcml0aWNhbCB0aGF0
-IHNob3VsZAo+ID4gPiA+ID4gYmUgYWx3YXlzIGFjdGl2ZSkgYW5kIG5vdCBjcml0aWNhbCwgdGhh
-dCBjb3VsZCBiZSBzaHV0IG9mZiwgYnV0IEkgdGhpbmsKPiA+ID4gPiA+IHRoZXkgd2FudCB0ZWgg
-ZmxleGliaWxpdHkgb2YgY29udHJvbGxpbmcgdGhpcyBhdCBydW50aW1lIGluc3RlYWQgb2YKPiA+
-ID4gPiA+IGRvaW5nIGl0IGluIGJvYXJkIGRhdGEuCj4gPiA+ID4gCj4gPiA+ID4gSSBzdWdnZXN0
-ZWQgaW5jbHVkaW5nIHRoaXMgaW50byB0aGUgImFic3RyYWN0IGlucHV0IGRldmljZSIgbW9kZWws
-IGJ1dAo+ID4gPiA+IHlvdSByZWZ1c2UgdGhpcy4gQnV0IEkgc3RpbGwgdGhpbmsgaXQgaXMgYSBn
-b29kIGlkZWEuCj4gPiA+ID4gCj4gPiA+ID4gSW5kZWVkLCBpZiB3ZSBsb29rIGF0IGFuIGlucHV0
-IGRldmljZSBhcyBhdCBzb21ldGhpbmcgYWJzdHJhY3Qgd2hpY2ggaGFzCj4gPiA+ID4gbWFueSBr
-ZXlzLCB3aHkgd2UgY2Fubm90IGFzc3VtZSB0aGF0IHNlcGFyYXRlIGtleXMgY2FuIGJlCj4gPiA+
-ID4gZW5hYmxlZC9kaXNhYmxlZD8gSnVzdCBpbWFnaW5lIHlvdSBoYXZlIGEgdmVyeSBhZHZhbmNl
-ZCBrZXlib3JkIDotKSBBbmQKPiA+ID4gPiB3ZSBzaW1wbHkgaW1wbGVtZW50IGFuIGlvY3RsIHdo
-aWNoIGVuYWJsZXMvZGlzYWJsZXMgYSBzcGVjaWZpYyBrZXkuIFRoZQo+ID4gPiA+IGdlbmVyaWMg
-bGF5ZXJzIGp1c3QgcGFzcyB0aGlzIGlvY3RsIGRvd24gdG8gdGhlIGxvd2VyIGxldmVyIGRyaXZl
-cnMuIElmCj4gPiA+ID4gdGhlIHNwZWNpZmljIGlucHV0IGRldmljZSBvciBkcml2ZXIgc3VwcG9y
-dCBpdCAtIGZpbmUsIGlmIG5vdCAtIGl0Cj4gPiA+ID4gcmV0dXJucyAtRUlOVkFMIG9yIHNvbWV0
-aGluZyBsaWtlIHRoYXQuCj4gPiA+IAo+ID4gPiBJIHJlZnVzZSBpdCBiZWNhdXNlIGl0IHdpbGwg
-YmUgc3VwcG9ydGVkIGJ5IGV4YWN0bHkgMSBkcml2ZXIgaW4gdGhlCj4gPiA+IGtlcm5lbCAtIGdw
-aW8ta2V5cy4gSXQgaXMgdGhlIG9ubHkgZHJpdmVyIHRoYXQgYWxsb3dzIHNodXQgaGFsZiBvZiB0
-aGUKPiA+ID4gImRldmljZSIgKGJlY2F1c2UgaW4gcmVhbGl0eSBpdCBpcyBhIGdyb3VwIG9mIGRp
-c2pvaW50IGRldmljZXMpLiBJdCBpcwo+ID4gPiB0aGUgb25seSBjYXNlIHdoZW4gIm11dGluZyIg
-YSBidXR0b24gbWVhbnMgdGhhdCBJUlEgaXMgc2h1dCBvZmYgYWJuZAo+ID4gPiB0aHVzIENQVSBj
-YW4gY29udGludWUgdG8gc2xlZXAgaWYgdGhhdCBidXR0b24gaXMgcHJlc3NlZC4gRm9yIGFsbCBv
-dGhlcgo+ID4gPiBkZXZpY2VzIHRoYXQgaGF2ZSAxIGluZXR0cnVwdCBwZXIgZGV2aWNlLCB5b3Ug
-c3RpbGwgaGF2ZSB0byB3YWtlIHVwLAo+ID4gPiBiZWNhdXNlIHlvdSBkb24ndCBrbm93IHdoZXRo
-ZXIgdGhlIGJ1dHRvbiB0aGF0IGdlbmVyYXRlZCBldmVudCBpcwo+ID4gPiAiaW1wb3J0YW50IiBv
-ciBub3QuCj4gPiAKPiA+IEZhaXIgZW5vdWdoLgo+ID4gCj4gPiA+IE5vdywgdGhlcmUgaXMgYSBp
-c3N1ZSBvZiB3YWtpbmcgdXAgdXNlcnNwYWNlIHRhc2ssIGFkZGl0aW9uYWwgc2NoZWR1bGluZwo+
-ID4gPiBhbmQga2VlcGluZyBDUFUgcnVubmluZyBsb25nZXIgdGhhbiBuZWNlc3NhcnkgZm9yICJ1
-bmludGVyZXN0aW5nIiBrZXlzLgo+ID4gPiBUaGlzIGNhbiBiZSBzb2x2ZWQgYnkgaW1wbGVtZW50
-aW5nIGEgc3Vic2NyaXB0aW9uIG1vZGVsIHdoaWNoIGFsbG93cwo+ID4gPiBmaWx0ZXJpbmcgdW5p
-bnRlcmVzaW5nIGV2ZW50cyBvbiBhIHBlci1jbGllbnQgYmFzaXMgYXQgZXZkZXYgbGV2ZWwuCj4g
-PiAKPiA+IFJpZ2h0LiBBbmQgZm9yIGdwaW9fa2V5cywgdGhpcyB3b3VsZCBiZSBkaW5lIG9uIHRo
-ZSBkcml2ZXIgbGV2ZWwuCj4gCj4gQnV0IHRoZSBzZW1hbnRpY3MgYXJlIGRpZmZlcmVudCAtIGlm
-IGRvbmUgb24gZHJpdmVyIGxldmVsIHlvdSdkIGJlCj4gYWZmZWN0aW5nIF9hbGxfICBjb25zdW1l
-cnMgb2YgdGhlIGRldmljZTsgd2hhdCBJIHdhbnQgdG8gYmUgZG9uZSBvbmx5Cj4gYWZmZWN0cyBv
-d25lciBvZiB0aGUgZmlsZSBkZXNjcmlwdG9yLgoKT0ssIG1ha2VzIHNlbnNlLiBJJ20gY29udmlu
-Y2VkLCB0aGFua3MhCgotLSAKQmVzdCBSZWdhcmRzLApBcnRlbSBCaXR5dXRza2l5ICjQkNGA0YLR
-kdC8INCR0LjRgtGO0YbQutC40LkpCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgt
-Zm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFu
-L2xpc3RpbmZvL2xpbnV4LXBt
+Hi,
+
+While going through the code I found that the parent's usage count (usage_count) 
+gets incremented when a device's pm_runtime_resume is called but does not get 
+decremented when the device's pm_runtime_suspend is called. Am I missing 
+something in the flow?
+
+Regards,	
+Nithish Mahalingam
