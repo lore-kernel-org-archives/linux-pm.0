@@ -1,17 +1,21 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: spinlock in completion_done() (was: Re: Async resume
- patch (was: Re: [GIT PULL] PM updates for 2.6.33))
-Date: Thu, 10 Dec 2009 08:59:47 +0100
-Message-ID: <20091210075947.GD25549__1847.75449238277$1260432072$gmane$org@elte.hu>
-References: <Pine.LNX.4.44L0.0912081633540.3046-100000@iolanthe.rowland.org>
-	<200912082248.14138.rjw@sisk.pl> <20091209092922.GC28428@elte.hu>
-	<200912092337.52492.rjw@sisk.pl>
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Subject: Re: [PATCH v2 1/2] Input: gpio-keys - allow platform to
+ specify exact irq flags
+Date: Thu, 10 Dec 2009 11:19:19 +0200
+Message-ID: <1260436759.12346.44.camel__26485.2800792598$1260436861$gmane$org@localhost>
+References: <Pine.LNX.4.44L0.0911300956400.4478-100000@iolanthe.rowland.org>
+	<87einfltp3.fsf@tac.ki.iif.hu> <20091206084704.GC2766@ucw.cz>
+	<20091208042251.GB11147@core.coreip.homeip.net>
+	<1260277410.19669.84.camel@localhost>
+	<20091208174218.GB14271@core.coreip.homeip.net>
+	<1260343860.19669.1189.camel@localhost>
+	<20091209180345.GE4456@core.coreip.homeip.net>
+Reply-To: dedekind1@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <200912092337.52492.rjw@sisk.pl>
+In-Reply-To: <20091209180345.GE4456@core.coreip.homeip.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,49 +25,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, David Chinner <david@fromorbit.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Lachlan McIlroy <lachlan@sgi.com>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Mika Westerberg <mika.westerberg@iki.fi>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Ferenc Wagner <wferi@niif.hu>
 List-Id: linux-pm@vger.kernel.org
 
-
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> On Wednesday 09 December 2009, Ingo Molnar wrote:
-> > 
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > 
-> > > On Tuesday 08 December 2009, Alan Stern wrote:
-> > > > On Tue, 8 Dec 2009, Rafael J. Wysocki wrote:
-> > > > 
-> > > > > BTW, is there a good reason why completion_done() doesn't use spin_lock_irqsave
-> > > > > and spin_unlock_irqrestore?  complete() and complete_all() use them, so why not
-> > > > > here?
-> > > > 
-> > > > And likewise in try_wait_for_completion().  It looks like a bug.  Maybe 
-> > > > these routines were not intended to be called with interrupts disabled, 
-> > > > but that requirement doesn't seem to be documented.  And it isn't a 
-> > > > natural requirement anyway.
-> > > 
-> > > OK, let's ask Ingo about that.
-> > > 
-> > > Ingo, is there any particular reason why completion_done() and
-> > > try_wait_for_completion() don't use spin_lock_irqsave() and
-> > > spin_unlock_irqrestore()?
-> > 
-> > that's a bug that should be fixed - all the wakeup side (and atomic) 
-> > variants of completetion API should be irq safe.
-> > 
-> > It appears that these new completion APIs were added via the XFS tree 
-> > about a year ago:
-> > 
-> >   39d2f1a: [XFS] extend completions to provide XFS object flush requirements
-> > 
-> > Please Cc: scheduler folks to all scheduler patches.
-> 
-> If you haven't fixed it locally yet, would you mind me posting a fix?
-
-I wouldnt mind it at all.
-
-Thanks,
-
-	Ingo
+T24gV2VkLCAyMDA5LTEyLTA5IGF0IDEwOjAzIC0wODAwLCBEbWl0cnkgVG9yb2tob3Ygd3JvdGU6
+Cj4gT24gV2VkLCBEZWMgMDksIDIwMDkgYXQgMDk6MzE6MDBBTSArMDIwMCwgQXJ0ZW0gQml0eXV0
+c2tpeSB3cm90ZToKPiA+IE9uIFR1ZSwgMjAwOS0xMi0wOCBhdCAwOTo0MiAtMDgwMCwgRG1pdHJ5
+IFRvcm9raG92IHdyb3RlOgo+ID4gPiA+ID4gSSBhbHNvIHNlZSB0aGF0IGdwaW8ta2V5cyBpcyBx
+dWl0ZSBkaWZmZXJlbnQgaW4gdGhlIHNlbmNlIHRoYXQgaXQgY2FuCj4gPiA+ID4gPiBzaHV0IG9m
+ZiBidXR0b25zIHNlbGVjdGl2ZWx5LiBJIGZhY3QsIGF0IHRoZSBtb21lbnQgZXZlcnkgYnV0dG9u
+IGNhbiBiZQo+ID4gPiA+ID4gY29uc2lkZXJlZCBhIHNlcGFyYXRlIGRldmljZS4uLiBCdXQgdGhh
+dCB3b3VsZCBiZSB0b28gbXVjaCBvdmVyaGVhZC4KPiA+ID4gPiA+IAo+ID4gPiA+ID4gVGhleSBj
+b3VsZCBwcm9iYWJseSBzcGxpdCB0aGUga2V5cyBpbnRvIDIgZ3JvdXBzIChjcml0aWNhbCB0aGF0
+IHNob3VsZAo+ID4gPiA+ID4gYmUgYWx3YXlzIGFjdGl2ZSkgYW5kIG5vdCBjcml0aWNhbCwgdGhh
+dCBjb3VsZCBiZSBzaHV0IG9mZiwgYnV0IEkgdGhpbmsKPiA+ID4gPiA+IHRoZXkgd2FudCB0ZWgg
+ZmxleGliaWxpdHkgb2YgY29udHJvbGxpbmcgdGhpcyBhdCBydW50aW1lIGluc3RlYWQgb2YKPiA+
+ID4gPiA+IGRvaW5nIGl0IGluIGJvYXJkIGRhdGEuCj4gPiA+ID4gCj4gPiA+ID4gSSBzdWdnZXN0
+ZWQgaW5jbHVkaW5nIHRoaXMgaW50byB0aGUgImFic3RyYWN0IGlucHV0IGRldmljZSIgbW9kZWws
+IGJ1dAo+ID4gPiA+IHlvdSByZWZ1c2UgdGhpcy4gQnV0IEkgc3RpbGwgdGhpbmsgaXQgaXMgYSBn
+b29kIGlkZWEuCj4gPiA+ID4gCj4gPiA+ID4gSW5kZWVkLCBpZiB3ZSBsb29rIGF0IGFuIGlucHV0
+IGRldmljZSBhcyBhdCBzb21ldGhpbmcgYWJzdHJhY3Qgd2hpY2ggaGFzCj4gPiA+ID4gbWFueSBr
+ZXlzLCB3aHkgd2UgY2Fubm90IGFzc3VtZSB0aGF0IHNlcGFyYXRlIGtleXMgY2FuIGJlCj4gPiA+
+ID4gZW5hYmxlZC9kaXNhYmxlZD8gSnVzdCBpbWFnaW5lIHlvdSBoYXZlIGEgdmVyeSBhZHZhbmNl
+ZCBrZXlib3JkIDotKSBBbmQKPiA+ID4gPiB3ZSBzaW1wbHkgaW1wbGVtZW50IGFuIGlvY3RsIHdo
+aWNoIGVuYWJsZXMvZGlzYWJsZXMgYSBzcGVjaWZpYyBrZXkuIFRoZQo+ID4gPiA+IGdlbmVyaWMg
+bGF5ZXJzIGp1c3QgcGFzcyB0aGlzIGlvY3RsIGRvd24gdG8gdGhlIGxvd2VyIGxldmVyIGRyaXZl
+cnMuIElmCj4gPiA+ID4gdGhlIHNwZWNpZmljIGlucHV0IGRldmljZSBvciBkcml2ZXIgc3VwcG9y
+dCBpdCAtIGZpbmUsIGlmIG5vdCAtIGl0Cj4gPiA+ID4gcmV0dXJucyAtRUlOVkFMIG9yIHNvbWV0
+aGluZyBsaWtlIHRoYXQuCj4gPiA+IAo+ID4gPiBJIHJlZnVzZSBpdCBiZWNhdXNlIGl0IHdpbGwg
+YmUgc3VwcG9ydGVkIGJ5IGV4YWN0bHkgMSBkcml2ZXIgaW4gdGhlCj4gPiA+IGtlcm5lbCAtIGdw
+aW8ta2V5cy4gSXQgaXMgdGhlIG9ubHkgZHJpdmVyIHRoYXQgYWxsb3dzIHNodXQgaGFsZiBvZiB0
+aGUKPiA+ID4gImRldmljZSIgKGJlY2F1c2UgaW4gcmVhbGl0eSBpdCBpcyBhIGdyb3VwIG9mIGRp
+c2pvaW50IGRldmljZXMpLiBJdCBpcwo+ID4gPiB0aGUgb25seSBjYXNlIHdoZW4gIm11dGluZyIg
+YSBidXR0b24gbWVhbnMgdGhhdCBJUlEgaXMgc2h1dCBvZmYgYWJuZAo+ID4gPiB0aHVzIENQVSBj
+YW4gY29udGludWUgdG8gc2xlZXAgaWYgdGhhdCBidXR0b24gaXMgcHJlc3NlZC4gRm9yIGFsbCBv
+dGhlcgo+ID4gPiBkZXZpY2VzIHRoYXQgaGF2ZSAxIGluZXR0cnVwdCBwZXIgZGV2aWNlLCB5b3Ug
+c3RpbGwgaGF2ZSB0byB3YWtlIHVwLAo+ID4gPiBiZWNhdXNlIHlvdSBkb24ndCBrbm93IHdoZXRo
+ZXIgdGhlIGJ1dHRvbiB0aGF0IGdlbmVyYXRlZCBldmVudCBpcwo+ID4gPiAiaW1wb3J0YW50IiBv
+ciBub3QuCj4gPiAKPiA+IEZhaXIgZW5vdWdoLgo+ID4gCj4gPiA+IE5vdywgdGhlcmUgaXMgYSBp
+c3N1ZSBvZiB3YWtpbmcgdXAgdXNlcnNwYWNlIHRhc2ssIGFkZGl0aW9uYWwgc2NoZWR1bGluZwo+
+ID4gPiBhbmQga2VlcGluZyBDUFUgcnVubmluZyBsb25nZXIgdGhhbiBuZWNlc3NhcnkgZm9yICJ1
+bmludGVyZXN0aW5nIiBrZXlzLgo+ID4gPiBUaGlzIGNhbiBiZSBzb2x2ZWQgYnkgaW1wbGVtZW50
+aW5nIGEgc3Vic2NyaXB0aW9uIG1vZGVsIHdoaWNoIGFsbG93cwo+ID4gPiBmaWx0ZXJpbmcgdW5p
+bnRlcmVzaW5nIGV2ZW50cyBvbiBhIHBlci1jbGllbnQgYmFzaXMgYXQgZXZkZXYgbGV2ZWwuCj4g
+PiAKPiA+IFJpZ2h0LiBBbmQgZm9yIGdwaW9fa2V5cywgdGhpcyB3b3VsZCBiZSBkaW5lIG9uIHRo
+ZSBkcml2ZXIgbGV2ZWwuCj4gCj4gQnV0IHRoZSBzZW1hbnRpY3MgYXJlIGRpZmZlcmVudCAtIGlm
+IGRvbmUgb24gZHJpdmVyIGxldmVsIHlvdSdkIGJlCj4gYWZmZWN0aW5nIF9hbGxfICBjb25zdW1l
+cnMgb2YgdGhlIGRldmljZTsgd2hhdCBJIHdhbnQgdG8gYmUgZG9uZSBvbmx5Cj4gYWZmZWN0cyBv
+d25lciBvZiB0aGUgZmlsZSBkZXNjcmlwdG9yLgoKT0ssIG1ha2VzIHNlbnNlLiBJJ20gY29udmlu
+Y2VkLCB0aGFua3MhCgotLSAKQmVzdCBSZWdhcmRzLApBcnRlbSBCaXR5dXRza2l5ICjQkNGA0YLR
+kdC8INCR0LjRgtGO0YbQutC40LkpCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgt
+Zm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFu
+L2xpc3RpbmZvL2xpbnV4LXBt
