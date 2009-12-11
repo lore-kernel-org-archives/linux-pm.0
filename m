@@ -1,16 +1,13 @@
-From: "Maciej J. Woloszyk" <mat@esi.com.pl>
-Subject: Re: [Bug 14730] sky2 won't work after suspend/resume
-	cycle
-Date: Thu, 10 Dec 2009 21:15:16 +0100
-Message-ID: <200912102115.17228.mat__39793.9475872137$1260547282$gmane$org@esi.com.pl>
-References: <bug-14730-10028@http.bugzilla.kernel.org/>
-	<200912101036.nBAAacka024465@demeter.kernel.org>
-	<200912102013.49467.rjw@sisk.pl>
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] PM: Fix kernel-doc notation
+Date: Fri, 11 Dec 2009 12:02:59 -0800
+Message-ID: <20091211120259.82de239d.randy.dunlap__12312.7513252713$1260561953$gmane$org@oracle.com>
+References: <1258877637.4495.45.camel@ht.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912102013.49467.rjw@sisk.pl>
+In-Reply-To: <1258877637.4495.45.camel@ht.satnam>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,41 +17,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, akpm@linux-foundation.org, bugzilla-daemon@bugzilla.kernel.org, shemminger@linux-foundation.org, pm list <linux-pm@lists.linux-foundation.org>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gY3p3YXJ0ZWsgMTAgZ3J1ZHppZcWEIDIwMDksIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+
-IE9uIFRodXJzZGF5IDEwIERlY2VtYmVyIDIwMDksIGJ1Z3ppbGxhLWRhZW1vbkBidWd6aWxsYS5r
-ZXJuZWwub3JnIHdyb3RlOgo+ID4gaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcu
-Y2dpP2lkPTE0NzMwCj4gPgo+ID4gLS0tIENvbW1lbnQgIzExIGZyb20gSWx5YSBIZWdhaSA8dnlh
-Y2hlc2xhdm92aWNoQGdtYWlsLmNvbT4gIDIwMDktMTItMTAKPiA+IDEwOjM2OjM2IC0tLSAoSW4g
-cmVwbHkgdG8gY29tbWVudCAjOSkKPiA+Cj4gPiA+IE9uIE1vbmRheSAwNyBEZWNlbWJlciAyMDA5
-LCBidWd6aWxsYS1kYWVtb25AYnVnemlsbGEua2VybmVsLm9yZyB3cm90ZToKPiA+ID4gPiBodHRw
-Oi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTQ3MzAKPiAKPiAuLi4KPiAK
-PiA+ID4gSXQgbWF5IGJlIHdvcnRoIHRyeWluZyB0byByZXZlcnQKPiA+ID4KPiA+ID4gY29tbWl0
-IDRiNzdiMGEyYmEyN2Q2NGY1OGYxNmQ4ZDRkNDhkODMxOWRkYTM2ZmYKPiA+ID4gQXV0aG9yOiBS
-YWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+Cj4gPiA+IERhdGU6ICAgV2VkIFNlcCA5IDIz
-OjQ5OjU5IDIwMDkgKzAyMDAKPiA+ID4KPiA+ID4gICAgIFBDSTogQ2xlYXIgc2F2ZWRfc3RhdGUg
-YWZ0ZXIgdGhlIHN0YXRlIGhhcyBiZWVuIHJlc3RvcmVkCj4gPiA+Cj4gPiA+IGFuZCByZXRlc3Rp
-bmcuCj4gPgo+ID4gSSdtIG5vdCBmYW1pbGlhciB3aXRoIGdpdCwgYnV0IEkgaGF2ZW4ndCBmb3Vu
-ZCB0cmFjZXMgb2YgdGhhdCBjb21taXQgaW4KPiA+IDIuNi4zMS43IHRoYXQgSSdtIHVzaW5nIChn
-ZW50b28tc291cmNlcykgKGFuZCB0aGUgcHJvYmxlbSBleGlzdHMgdGhlcmUpCj4gPiBidXQgYWZ0
-ZXIgSSBhcHBsaWVkIGl0IChnb3QgaXQgZnJvbSBnaXQpIC0gc2t5MiBlcnJvcnMgYWZ0ZXIKPiA+
-IGhpYmVybmF0aW9uL3Jlc3VtZSBkaXNzYXBlYXJlZAo+ID4gQW5kIGFzIEkgY2FuIHNlZSB0aGlz
-IHBhdGNoIGhhcyBhcHBsaWVkIGFnYWluc3QgMi42LjMyLCBzbyBJIGd1ZXNzIFRTCj4gPiBwZXJz
-b24gaXMgY29uc2lkZXJlZCB0byB1cGdyYWRlIHRvIHRoZSBsYXRlc3Qga2VybmVsCj4gCj4gSG1t
-LiAgVGhlIG9yaWdpbmFsIHJlcG9ydCBpcyBhZ2FpbnN0IDIuNi4zMi1yYzguCj4gCj4gU28geW91
-J3JlIHNheWluZyB0aGF0IHRoZSBjb21taXQgYWJvdmUsIHdoZW4gYXBwbGllZCBhZ2FpbnN0IDIu
-Ni4zMS43LAo+IGFjdHVhbGx5IGZpeGVzIGEgc2t5MiByZXN1bWUgcHJvYmxlbSBmb3IgeW91Pwo+
-IAo+IE1hY2llaiwgY2FuIHlvdSBwbGVhc2UgY2hlY2sgaWYgMi42LjMxLjcgd2l0aCB0aGUgYWJv
-dmUgY29tbWl0IGFwcGxpZWQKPiAgd29ya3MgZm9yIHlvdT8KPiAKCk9rLiBJJ3ZlIGp1c3QgdHJp
-ZWQgMi42LjMxLjcgd2l0aCB0aGUgcGF0Y2ggYXBwbGllZCAtIGl0IGRpZG4ndCB3b3JrZWQuIHNr
-eTIgCnN0aWxsIGRvZXMnbnQgd29yayBhZnRlciByZXN1bWUuCgptLgoKCi0tIApNYWNpZWogSi4g
-V29sb3N6eWssIDxtYXRAZXNpLmNvbS5wbD4gICAgICAgICAiUmVqb2ljZS4gRm9yIFZlcnkgQmFk
-CnRlbC4gKzQ4IDUwMSAwMzMgNDEwICAgICAgICAgICAgICAgICAgICBUaGluZ3MgYXJlIGFib3V0
-IHRvIGhhcHBlbi4iCkpJRDptYXRAZXNpLmNvbS5wbCAgICAgICAgICAgICAgICAgUmljaGFyZC9M
-b29raW5nIEZvciBHcm91cApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRh
-dGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3Rp
-bmZvL2xpbnV4LXBt
+On Sun, 22 Nov 2009 13:43:57 +0530 Jaswinder Singh Rajput wrote:
+
+> 
+> Fix the following htmldocs warnings:
+> 
+>   Warning(drivers/base/power/main.c:249): No description found for parameter 'master'
+>   Warning(drivers/base/power/main.c:249): Excess function parameter 'slave' description in 'device_pm_wait_for_slaves'
+>   Warning(drivers/base/power/main.c:292): No description found for parameter 'master'
+>   Warning(drivers/base/power/main.c:292): Excess function parameter 'slave' description in 'device_pm_check_slaves'
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+
+What tree was this for?
+I guess it's not needed now, I can't find these functions..
+
+Thanks.
+
+> ---
+>  drivers/base/power/main.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index e8d1ea6..5f13084 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -243,7 +243,7 @@ static void device_pm_wait_for_masters(struct device *slave)
+>  
+>  /**
+>   * device_pm_wait_for_slaves - Wait for all slaves of given device.
+> - * @slave: Device to wait for the slaves of.
+> + * @master: Device to wait for the slaves of.
+>   */
+>  static void device_pm_wait_for_slaves(struct device *master)
+>  {
+> @@ -286,7 +286,7 @@ static int device_pm_check_masters(struct device *slave)
+>  
+>  /**
+>   * device_pm_check_slaves - Check power.op_complete for slaves of a device.
+> - * @slave: Device to check the slaves of.
+> + * @master: Device to check the slaves of.
+>   */
+>  static int device_pm_check_slaves(struct device *master)
+>  {
+> -- 
+
+---
+~Randy
