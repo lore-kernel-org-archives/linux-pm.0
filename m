@@ -1,16 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: Async suspend-resume patch w/ completions (was: Re:
-	Async suspend-resume patch w/ rwsems)
-Date: Fri, 11 Dec 2009 02:02:28 +0100
-Message-ID: <200912110202.28536.rjw__19478.3293562525$1260493397$gmane$org@sisk.pl>
+ Async suspend-resume patch w/ rwsems)
+Date: Thu, 10 Dec 2009 17:25:46 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0912101713440.3560__39062.6866756522$1260494805$gmane$org@localhost.localdomain>
 References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
 	<200912102040.11063.rjw@sisk.pl>
 	<alpine.LFD.2.00.0912101507550.3560@localhost.localdomain>
+	<200912110202.28536.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912101507550.3560@localhost.localdomain>
+In-Reply-To: <200912110202.28536.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,101 +21,88 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 11 December 2009, Linus Torvalds wrote:
-> 
-> On Thu, 10 Dec 2009, Rafael J. Wysocki wrote:
-...
-> 
-> IOW, I'll happily take the completions version, but dammit, I refuse to 
-> take it when there is a simpler approach that does NOT need to iterate, 
-> and does NOT need to re-initialize the data structures each round etc.
 
-I don't think it really is that simple.  For example, the fact that the outer
-lock has to be taken by one thread and released by another is not exactly
-straightforward.  [One might ask what's the critical section in this case.]
 
-Besides, suppose a device driver wants some off-tree constraints to be
-satisfied.  What's the driver writer supposed to do?  He only can lock the
-other device, but that will cause lockdep to complain, because this lock
-is going to be nested.  Moreover, it's already too late, because his async
-thread has started and there's no guarantee that the other device hasn't
-acquired its rwsem yet.
-
-With completions, the driver doesn't have to take any action to prevent another
-one from suspending too early.  Instead, the other one has to wait for its
-suspend to complete, and for me personally this is a much more natural thing
-to do.  IOW, if I were a driver writed, I'd probably prefer to wait on a
-completion than to use a lock in a tricky manner.
-
-> That's what I've been arguing against the whole time. It started as 
-> arguing against complex and unnecessary infrastructure, and trying to show 
-> that it _can_ be done so much simpler using existing basic locking.
+On Fri, 11 Dec 2009, Rafael J. Wysocki wrote:
 > 
-> And I get annoyed when you guys continually seem to want to make it more 
-> complex than it needs to be. 
-> 
-> > > And this, for example, is pretty disgusting. Not only is that 
-> > > INIT_COMPLETION purely brought on by the whole problem with completions 
-> > > (they are fundamentally one-shot, but you want to use them over and over
+> I don't think it really is that simple.  For example, the fact that the outer
+> lock has to be taken by one thread and released by another is not exactly
+> straightforward.  [One might ask what's the critical section in this case.]
+
+Why is that any different from initializing the completion in one thread, 
+and completing it in another?
+
+It's exactly equivalent.
+
+Completions really are "locks that were initialized to locked". That is, 
+in fact, how completions came to be: we literally used to use semaphores 
+for them, and the reason for completions is literally the magic lifetime 
+rules they have.
+
+So when you do
+
+	INIT_COMPLETION(dev->power.completion);
+
+that really is historically, logically, and conceptually exactly the same 
+thing as initializing a lock to the locked state. We literally used to do 
+it with the equivalent of
+
+	init_MUTEX_LOCKED()
+
+way back when (well, except we didn't have mutexes back then, we had only 
+counting semaphores) and instead of "complete()", we had "up()" on the 
+semaphore to complete it.
+
+> Besides, suppose a device driver wants some off-tree constraints to be
+> satisfied.
+
+.. and I've told you several times that we should simply not do such 
+devices asynchronously. At least not unless there is some _overriding_ 
+reason to. And so far, nobody has suggested anything even remotely 
+likely for that.
+
+Again - KISS: Keep It Simple, Stupid!
+
+Don't try to make up problems. The _only_ subsystem we know wants this is 
+USB, and we know USB is purely a tree.
+
+> > 	INIT_COMPLETION(dev->power.completion);
 > > 
-> > Actually, twice.  However, since I don't want to do any async handling in the
-> > _noirq phases any more, I can get rid of this whole function.  Thanks for
-> > pointing that out to me.
+> > thing each suspend and each resume. Exactly because completions are 
+> > designed to be "onw-way" things, so you end up having to reset them each 
+> > cycle (you just reset them even _more_ than you needed).
 > 
-> Well, my point was that you'll need to do that
-> 
-> 	INIT_COMPLETION(dev->power.completion);
-> 
-> thing each suspend and each resume. Exactly because completions are 
-> designed to be "onw-way" things, so you end up having to reset them each 
-> cycle (you just reset them even _more_ than you needed).
+> Well, why actually do we need to preserve the state of the data structure from
+> one cycle to another?  There's no need whatsoever.
 
-Well, why actually do we need to preserve the state of the data structure from
-one cycle to another?  There's no need whatsoever.
+My point is, with locks, none of that is necessary. Because they 
+automatically do the right thing.
 
-> Again, my point was that using locks is actually a very _natural_ thing to 
-> do. I really don't understand what problems you and Alan have with just 
-> using locks - we have way more locks in the kernel than we have 
-> completions, so they are the "default" thing to do, and they really are 
-> very natural to use.
-> 
-> [ Ok, so admittedly the actual use of 'struct rw_semaphore' is pretty 
->   unusual, but my point is that people are used to locking semantics in 
->   general, more so than the semantics of completions ]
+By picking the right concept, you don't have any of those "oh, we need to 
+re-initialize things" issues. They just work.
 
-I still don't think there are many places where locks are used in a way you're
-suggesting.  I would even say it's quite unusual to use locks this way.
+> I still don't think there are many places where locks are used in a way you're
+> suggesting.  I would even say it's quite unusual to use locks this way.
 
-> Completions were literally designed to be used for one-off things - one of 
-> the most common uses is that the 'struct completion' is on the _stack_. It 
-> doesn't get much more one-off than that - and the completions are really 
-> very explicitly designed so that you can do a 'complete()' on something 
-> that will literally disappear from under you as you do it (because the 
-> struct completion might be on the stack of the thing that is waiting for 
-> it, and gets de-allocated when the waiter goes ahead).
+See above. It's what completions _are_.
 
-We could literally throw away a completion after all of the potentially waiting
-threads have finished their operations and then allocate it back again when
-necessary.  We only need the synchronization in this particular phase of
-suspend or resume and it doesn't need to extend to the other phases or other
-cycles, because all of the concurrent threads we need to synchronize will
-only live during this one particular phase of suspend or resume.  They will
-all exit when it's finished anyway.
+> Well, I guess your point is that the implementation of completions is much
+> more complicated that we really need, but I'm not sure if that really hurts.
 
-> That is why 'wait_for_completion()' always has to take the spinlock, for 
-> example - there is no fastpath for completion, because the races for the 
-> waiter releasing things too early are too nasty.
-> 
-> So completions are actually very subtle things - and you don't need any of 
-> that subtlety. I realize that from a user perspective, completions look 
-> very simple, but in many ways they actually have subtler semantics than a 
-> regular lock has.
+No. The implementation of completions is actually pretty simple, exactly 
+because they have that spinlock that is required to protect them. 
 
-Well, I guess your point is that the implementation of completions is much
-more complicated that we really need, but I'm not sure if that really hurts.
+That wasn't the point. The point was that locks are actually the "normal" 
+thing to use. 
 
-Rafael
+You are arguing as if completions are somehow the simpler model. That's 
+simply not true. Completions are just a _special_case_of_locking_.
+
+So why not just use regular locks instead, when it's actually the natural 
+way to do it, and results in simpler code?
+
+		Linus
