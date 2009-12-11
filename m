@@ -1,14 +1,16 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Async suspend-resume patch w/ completions (was: Re:
- Async suspend-resume patch w/ rwsems)
-Date: Thu, 10 Dec 2009 15:51:15 -0800 (PST)
-Message-ID: <alpine.LFD.2.00.0912101538250.3560__38663.8335920454$1260489135$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912101321020.2680-100000@iolanthe.rowland.org>
+	Async suspend-resume patch w/ rwsems)
+Date: Fri, 11 Dec 2009 02:02:28 +0100
+Message-ID: <200912110202.28536.rjw__19478.3293562525$1260493397$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
+	<200912102040.11063.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912101507550.3560@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912101321020.2680-100000@iolanthe.rowland.org>
+In-Reply-To: <alpine.LFD.2.00.0912101507550.3560@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,74 +20,101 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Thu, 10 Dec 2009, Alan Stern wrote:
+On Friday 11 December 2009, Linus Torvalds wrote:
 > 
-> You probably didn't look closely at the original code in dpm_suspend()  
-> and dpm_resume().  It's very awkward; each device is removed from
-> dpm_list, operated on, and then added on to a new local list.  At the
-> end the new list is spliced back into dpm_list.
+> On Thu, 10 Dec 2009, Rafael J. Wysocki wrote:
+...
 > 
-> This approach is better because it doesn't involve changing any list 
-> pointers while the sleep transition is in progress.  At any rate, I 
-> don't recommend doing it in the same patch as the async stuff; it 
-> should be done separately.  Either before or after -- the two are 
-> independent.
+> IOW, I'll happily take the completions version, but dammit, I refuse to 
+> take it when there is a simpler approach that does NOT need to iterate, 
+> and does NOT need to re-initialize the data structures each round etc.
 
-I do agree with the "independent" part. But I don't agree about the 
-awkwardness per se.
+I don't think it really is that simple.  For example, the fact that the outer
+lock has to be taken by one thread and released by another is not exactly
+straightforward.  [One might ask what's the critical section in this case.]
 
-Sure, it moves things back and forth and has private lists, but that's 
-actually a fairly standard thing to do in those kinds of situations where 
-you're taking something off a list, operating on it, and may need to put 
-it back on the same list eventually. The VM layer does similar things.
+Besides, suppose a device driver wants some off-tree constraints to be
+satisfied.  What's the driver writer supposed to do?  He only can lock the
+other device, but that will cause lockdep to complain, because this lock
+is going to be nested.  Moreover, it's already too late, because his async
+thread has started and there's no guarantee that the other device hasn't
+acquired its rwsem yet.
 
-So that's why I think your version was actually odder - the existing list 
-manipulation isn't all that odd. It has that strange "did we get removed 
-while we dropped the lock and tried to suspend the device" thing, of 
-course, but that's not entirely unheard of either.
+With completions, the driver doesn't have to take any action to prevent another
+one from suspending too early.  Instead, the other one has to wait for its
+suspend to complete, and for me personally this is a much more natural thing
+to do.  IOW, if I were a driver writed, I'd probably prefer to wait on a
+completion than to use a lock in a tricky manner.
 
-Could it be done more cleanly? I think so, but I agree with you that it's 
-likely a separate issue.
+> That's what I've been arguing against the whole time. It started as 
+> arguing against complex and unnecessary infrastructure, and trying to show 
+> that it _can_ be done so much simpler using existing basic locking.
+> 
+> And I get annoyed when you guys continually seem to want to make it more 
+> complex than it needs to be. 
+> 
+> > > And this, for example, is pretty disgusting. Not only is that 
+> > > INIT_COMPLETION purely brought on by the whole problem with completions 
+> > > (they are fundamentally one-shot, but you want to use them over and over
+> > 
+> > Actually, twice.  However, since I don't want to do any async handling in the
+> > _noirq phases any more, I can get rid of this whole function.  Thanks for
+> > pointing that out to me.
+> 
+> Well, my point was that you'll need to do that
+> 
+> 	INIT_COMPLETION(dev->power.completion);
+> 
+> thing each suspend and each resume. Exactly because completions are 
+> designed to be "onw-way" things, so you end up having to reset them each 
+> cycle (you just reset them even _more_ than you needed).
 
-I _suspect_, for example, that we could just do something like, the 
-appended to avoid _some_ of the subtlety. IOW, just move the device to the 
-local list early - and if it gets removed while being suspended, it will 
-automatically get removed from the local list (the remover doesn't care 
-_what_ list it is on whe it does a 'list_del(power.entr)').
+Well, why actually do we need to preserve the state of the data structure from
+one cycle to another?  There's no need whatsoever.
 
-UNTESTED PATCH! This may be total crap, of course. But it _looks_ like an 
-"ObviousCleanup(tm)" - famous last words.
+> Again, my point was that using locks is actually a very _natural_ thing to 
+> do. I really don't understand what problems you and Alan have with just 
+> using locks - we have way more locks in the kernel than we have 
+> completions, so they are the "default" thing to do, and they really are 
+> very natural to use.
+> 
+> [ Ok, so admittedly the actual use of 'struct rw_semaphore' is pretty 
+>   unusual, but my point is that people are used to locking semantics in 
+>   general, more so than the semantics of completions ]
 
-		Linus
+I still don't think there are many places where locks are used in a way you're
+suggesting.  I would even say it's quite unusual to use locks this way.
 
----
- drivers/base/power/main.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+> Completions were literally designed to be used for one-off things - one of 
+> the most common uses is that the 'struct completion' is on the _stack_. It 
+> doesn't get much more one-off than that - and the completions are really 
+> very explicitly designed so that you can do a 'complete()' on something 
+> that will literally disappear from under you as you do it (because the 
+> struct completion might be on the stack of the thing that is waiting for 
+> it, and gets de-allocated when the waiter goes ahead).
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 8aa2443..f2bb493 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -687,6 +687,7 @@ static int dpm_suspend(pm_message_t state)
- 		struct device *dev = to_device(dpm_list.prev);
- 
- 		get_device(dev);
-+		list_move(&dev->power.entry, &list);
- 		mutex_unlock(&dpm_list_mtx);
- 
- 		error = device_suspend(dev, state);
-@@ -698,8 +699,6 @@ static int dpm_suspend(pm_message_t state)
- 			break;
- 		}
- 		dev->power.status = DPM_OFF;
--		if (!list_empty(&dev->power.entry))
--			list_move(&dev->power.entry, &list);
- 		put_device(dev);
- 	}
- 	list_splice(&list, dpm_list.prev);
+We could literally throw away a completion after all of the potentially waiting
+threads have finished their operations and then allocate it back again when
+necessary.  We only need the synchronization in this particular phase of
+suspend or resume and it doesn't need to extend to the other phases or other
+cycles, because all of the concurrent threads we need to synchronize will
+only live during this one particular phase of suspend or resume.  They will
+all exit when it's finished anyway.
+
+> That is why 'wait_for_completion()' always has to take the spinlock, for 
+> example - there is no fastpath for completion, because the races for the 
+> waiter releasing things too early are too nasty.
+> 
+> So completions are actually very subtle things - and you don't need any of 
+> that subtlety. I realize that from a user perspective, completions look 
+> very simple, but in many ways they actually have subtler semantics than a 
+> regular lock has.
+
+Well, I guess your point is that the implementation of completions is much
+more complicated that we really need, but I'm not sure if that really hurts.
+
+Rafael
