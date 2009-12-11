@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Async suspend-resume patch w/ completions (was: Re:
 	Async suspend-resume patch w/ rwsems)
-Date: Fri, 11 Dec 2009 23:11:08 +0100
-Message-ID: <200912112311.08548.rjw__30290.2896226898$1260569585$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
-	<200912110202.28536.rjw@sisk.pl>
-	<alpine.LFD.2.00.0912101713440.3560@localhost.localdomain>
+Date: Fri, 11 Dec 2009 23:17:31 +0100
+Message-ID: <200912112317.31668.rjw__28576.0554289029$1260569970$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0912102155390.12136-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912101713440.3560@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.44L0.0912102155390.12136-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,118 +18,142 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 11 December 2009, Linus Torvalds wrote:
+On Friday 11 December 2009, Alan Stern wrote:
+> Up front: This is my personal view of the matter.  Which probably isn't
+> of much interest to anybody, so I won't bother to defend these views or
+> comment any further on them.  The decision about what version to use is
+> up to the two of you.  The fact is, either implementation would get the 
+> job done.
 > 
-> On Fri, 11 Dec 2009, Rafael J. Wysocki wrote:
+> On Thu, 10 Dec 2009, Linus Torvalds wrote:
+> 
+> > Completions really are "locks that were initialized to locked". That is, 
+> > in fact, how completions came to be: we literally used to use semaphores 
+> > for them, and the reason for completions is literally the magic lifetime 
+> > rules they have.
 > > 
-> > I don't think it really is that simple.  For example, the fact that the outer
-> > lock has to be taken by one thread and released by another is not exactly
-> > straightforward.  [One might ask what's the critical section in this case.]
+> > So when you do
+> > 
+> > 	INIT_COMPLETION(dev->power.completion);
+> > 
+> > that really is historically, logically, and conceptually exactly the same 
+> > thing as initializing a lock to the locked state. We literally used to do 
+> > it with the equivalent of
+> > 
+> > 	init_MUTEX_LOCKED()
+> > 
+> > way back when (well, except we didn't have mutexes back then, we had only 
+> > counting semaphores) and instead of "complete()", we had "up()" on the 
+> > semaphore to complete it.
 > 
-> Why is that any different from initializing the completion in one thread, 
-> and completing it in another?
+> You think of it that way because you have been closely involved in the
+> development of the various kinds of locks.  Speaking as an outsider who
+> has relatively little interest in the internal details, completions
+> appear simpler than rwsems.  Mostly because they have a smaller API:  
+> complete() (or complete_all()) and wait_for_completion() as opposed to
+> down_read(), up_read(), down_write(), and up_write().
+
+Agreed.
+
+> > > Besides, suppose a device driver wants some off-tree constraints to be
+> > > satisfied.
+> > 
+> > .. and I've told you several times that we should simply not do such 
+> > devices asynchronously. At least not unless there is some _overriding_ 
+> > reason to. And so far, nobody has suggested anything even remotely 
+> > likely for that.
 > 
-> It's exactly equivalent.
+> Agreed.  The fact that async non-tree suspend constraints are difficult 
+> with rwsems isn't a drawback if nobody needs to use them.
+
+Well, see my reply to Linus.  The only thing that bothers me is that if we use
+rwsems, there's no way to handle that even if it turns out that someone
+needs them after all.
+
+> > > Well, why actually do we need to preserve the state of the data structure from
+> > > one cycle to another?  There's no need whatsoever.
+> > 
+> > My point is, with locks, none of that is necessary. Because they 
+> > automatically do the right thing.
+> > 
+> > By picking the right concept, you don't have any of those "oh, we need to 
+> > re-initialize things" issues. They just work.
 > 
-> Completions really are "locks that were initialized to locked". That is, 
-> in fact, how completions came to be: we literally used to use semaphores 
-> for them, and the reason for completions is literally the magic lifetime 
-> rules they have.
-
-I don't know how they emerged historically and that's why I look a them in a
-different way than you do, probably.
-
-But fine, say we use the approach based on rwsems and consider suspend and
-the inner lock.  We acquire it using down_write(), because we want to wait for
-multiple other dirvers.  Now, in fact we could do literally
-
-down_write(dev->power.rwsem);
-up_write(dev->power.rwsem);
-
-because the lock doesn't really protect anything from anyone.  What it does is
-to prevent _us_ from doing something too early.  To me, personally, it's not a
-usual use of locks.
-
-Moreover, if you think completions should be treated like locks, the up_write()
-above plays the role of the INIT_COMPLETION() in my last patch (or vice versa),
-so we reinitialize the data structure to the previous state in this case too,
-only earlier (and we could do that later just as well).
-
-The only real drawback of using completions I can see is that we have to
-iterate over the children during suspend, but if async suspend is going to save
-us any time at all, we can easily afford it (resume with completions is
-actually simpler than with rwsems, because we only have to wait for one device
-each time).
-
-> > Besides, suppose a device driver wants some off-tree constraints to be
-> > satisfied.
+> That's true, but it's not entirely clear.  There are subtle questions
+> about what happens if you stop in the middle or a device gets
+> unregistered or registered in the middle.  They require careful thought
+> in both approaches.
 > 
-> .. and I've told you several times that we should simply not do such 
-> devices asynchronously. At least not unless there is some _overriding_ 
-> reason to. And so far, nobody has suggested anything even remotely 
-> likely for that.
+> Having to reinitialize a completion each time doesn't bother me.  It's 
+> merely an indication that each suspend & resume is independent of all 
+> the others.
+
+YES!
+
+> > > I still don't think there are many places where locks are used in a way you're
+> > > suggesting.  I would even say it's quite unusual to use locks this way.
+> > 
+> > See above. It's what completions _are_.
 > 
-> Again - KISS: Keep It Simple, Stupid!
+> This is almost a philosophical issue.  If each A_i must wait for some
+> B_j's, is the onus on each A_i to test the B_j's it's interested in?  
+> Or is the onus on each B_j to tell the A_i's waiting for it that they
+> may proceed?  As Humpty-Dumpty said, "The question is which is to be
+> master -- that's all".
+
+Agreed.
+
+> > > Well, I guess your point is that the implementation of completions is much
+> > > more complicated that we really need, but I'm not sure if that really hurts.
+> > 
+> > No. The implementation of completions is actually pretty simple, exactly 
+> > because they have that spinlock that is required to protect them. 
+> > 
+> > That wasn't the point. The point was that locks are actually the "normal" 
+> > thing to use. 
+> > 
+> > You are arguing as if completions are somehow the simpler model. That's 
+> > simply not true. Completions are just a _special_case_of_locking_.
 > 
-> Don't try to make up problems. The _only_ subsystem we know wants this is 
-> USB, and we know USB is purely a tree.
+> Doesn't that make them simpler by definition?  Special cases always 
+> have less to worry about than the general case.
 
-Not really.
+Heh, good point.
 
-I've already said it once, but let me repeat.  Some device objects have those
-ACPI "shadow" device objects that represent the ACPI view of given "physical"
-device and have their own suspend and resume routines.  It turns out that
-these ACPI "shadow" devices have to be suspended after their "physical"
-counterparts and resumed before them, or else things beak really badly.
-I don't know the reason for that, I only verified it experimentally (I also
-don't like that design, but I didn't invent it and I have to live with it at
-least for now).  So if we don't enforce these constraints doing async
-suspend and resume, we won't be able to handle _any_ devices with those
-ACPI "shadow" things asynchronously.  Ever.  [That includes the majority
-PCI devices, at least the "planar" ones (which is unfortunate, but that's how
-it goes).]
-
-If we had a clean way of representing off-tree constraints during asynchronous
-suspend and resume, we'd be able to handle this issue at the bus type level.
-
-And even if we don't anticipate it right now, I think the iteration over
-children during suspend is a fair price for a clean interface that bus types or
-drivers can use in future.  YMMV.
-
-> > Well, I guess your point is that the implementation of completions is much
-> > more complicated that we really need, but I'm not sure if that really hurts.
+> > So why not just use regular locks instead, when it's actually the natural 
+> > way to do it, and results in simpler code?
 > 
-> No. The implementation of completions is actually pretty simple, exactly 
-> because they have that spinlock that is required to protect them. 
+> Simpler but also more subtle, IMO.  If you didn't already know how the
+> algorithm worked, figuring it out from the code would be harder with
+> rwsems than with completions.
+
+Indeed.
+
+> Partly because of the way readers and
+> writers exchange roles in suspend vs. resume, and partly because
+> sometimes devices lock themselves and sometimes they lock other
+> devices.  With completions each device has its own, and each device
+> waits for other devices' completions -- easier to keep track of 
+> mentally.
+
+Agreed again.
+
+> (I still think this whole readers vs. writers thing is a red herring.  
+> The essential property is that there are two opposing classes of lock
+> holders.  The fact that multiple writers can't hold the lock at the
+> same time whereas multiple readers can is of no importance; the
+> algorithm would work just as well if multiple writers _could_ hold the
+> lock simultaneously.)
 > 
-> That wasn't the point. The point was that locks are actually the "normal" 
-> thing to use. 
-> 
-> You are arguing as if completions are somehow the simpler model.
+> Balancing the additional conceptual complexity of the rwsem approach is 
+> the conceptual simplicity afforded by not needing to check all the 
+> children.  To me this makes it pretty much a toss-up.
 
-That's because I think so.
+Yup.
 
-> That's simply not true. Completions are just a _special_case_of_locking_.
-
-Which doesn't necessarily prevent them from being conceptually simpler
-that the locking scheme based on rwsems.
-
-> So why not just use regular locks instead, when it's actually the natural 
-> way to do it, and results in simpler code?
-
-Well, to me, it's way not natural and, quite frankly, in my not so humble
-opinion, it's a matter of personal preference.
-
-But, since your personal preference is what matters in this case, I'm not
-going to argue any more, because that just plain doesn't make sense.
-
-So, if you're not fine with the last patch I sent
-(http://patchwork.kernel.org/patch/66375/), I'll send one using rwsems instead
-of completions just to make _you_ happy, not because I think that's what we
-should do objectively.
-
+Thanks!
 Rafael
