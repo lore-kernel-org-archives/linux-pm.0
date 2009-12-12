@@ -1,16 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: intermittent suspend problem again
-Date: Sat, 12 Dec 2009 20:31:17 +0100
-Message-ID: <20091212192727.GC1308@ucw.cz>
-References: <87fx93pwv2.fsf@tac.ki.iif.hu> <200912011328.15551.rjw@sisk.pl>
-	<877ht68u4h.fsf@tac.ki.iif.hu> <200912012232.50951.rjw@sisk.pl>
-	<87638qw2zy.fsf@tac.ki.iif.hu> <87skbtve5w.fsf@tac.ki.iif.hu>
+From: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] suspend: add initcall_debug style timing for
+ suspend/resume
+Date: Sat, 12 Dec 2009 13:47:25 -0800
+Message-ID: <20091212134725.6549ac2e@infradead.org>
+References: <20091206123552.7be316b2@infradead.org>
+	<200912121927.55186.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <87skbtve5w.fsf@tac.ki.iif.hu>
+In-Reply-To: <200912121927.55186.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,24 +19,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Sat, 12 Dec 2009 19:27:55 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> I've changed that "initcall" to "call".  Hopefully that won't break
+> your scripts. ;-)
 
-> > Btw. s2disk has a strange effect of simulating enters during suspend.
-> > [...]
-> > Can you also see this?
-> 
-> It can't be seen from the "sleep 1; s2disk" command, so it's probably an
-> artifact from X, when s2disk starts before Enter is released.
+it will, but I can adjust them no big deal
 
-Yes, I see that, too, and believe it is X artifact.
 
-(X keyboard handling is really broken: it does its own
-autorepeat. That does not really work when big latencies are around.)
-								Pavel 
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
