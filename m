@@ -1,16 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re:
-	Async suspend-resume patch w/ rwsems)
-Date: Sat, 12 Dec 2009 23:40:24 +0100
-Message-ID: <200912122340.24749.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
-	<alpine.LFD.2.00.0912121049390.3526@localhost.localdomain>
-	<200912122334.08367.rjw@sisk.pl>
+Subject: Re: System sleep vs. runtime PM
+Date: Sat, 12 Dec 2009 23:45:35 +0100
+Message-ID: <200912122345.35288.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0912121411230.12891-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912122334.08367.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0912121411230.12891-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,34 +17,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 12 December 2009, Rafael J. Wysocki wrote:
-> On Saturday 12 December 2009, Linus Torvalds wrote:
+On Saturday 12 December 2009, Alan Stern wrote:
+> On Sat, 12 Dec 2009, Rafael J. Wysocki wrote:
+> 
+> > > Also, when the system resume is finished, drivers need a chance to 
+> > > runtime-suspend again.  Hence the pm_runtime_put_noidle() call in 
+> > > dpm_complete() should be changed to pm_runtime_put_sync().
 > > 
-> > On Sat, 12 Dec 2009, Rafael J. Wysocki wrote:
-> > > 
-...
+> > OK
+> > 
+> > Are you going to send a patch or do you want me to prepare one?
 > 
-> > And no, making _everything_ be async is _not_ the answer.
-> 
-> I'm not sure what you mean, really.
-> 
-> Speaking of PCI bridges, even though they don't "suspend" in the sense of
-> being put into low power states or something, we still need to save their
-> registers on suspend and restore them on resume, and that restore has to
-> be done before we start to access devices below the bridge.
+> We're talking about mostly documentation changes, right?  I can write 
+> them.
 
-Of course we restore them at the early stage now so the above remark does't
-apply to the patch in question, sorry.
+OK
 
-But the one below does.
+> But the code changes will present a small problem.  I'll need them for
+> the USB development.  Will it be okay to ask Greg KH to put them in his
+> tree after you have accepted them into yours?  That will avoid
+> cross-subsystem build errors.  (We just got through one of them 
+> involving David Miller and I'd rather avoid any more.)
 
-> Even if we move that all to drivers, the constraints won't go away and someone
-> will have to take care of them.  Now, since _we_ have problems with reaching
-> an agreement about how to do it, the driver writers will be even less likely to
-> figure that out.
+I'm fine with that.
+
+> There's one other thing (should have brought it up earlier): Do you
+> mind having the runtime-PM callbacks invoke the bus type or the bus
+
+I guess you mean device type and device class?
+
+> class methods instead of the bus methods, if they are defined?  That
+> is, do them in the same way the system-PM callbacks work.  The USB code
+> will definitely want different methods for the different types.  In 
+> fact, I've already written a version that tests the bus type within the 
+> callback routines.
+
+That's a good question.  I didn't anticipate that, so it's hard to tell right
+now.  I don't really see any fundamental obstacles now, though.
 
 Rafael
