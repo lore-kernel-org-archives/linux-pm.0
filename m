@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 4/5] PM: Add a switch for disabling/enabling
-	asynchronous suspend/resume
-Date: Sun, 13 Dec 2009 23:41:44 +0100
-Message-ID: <200912132341.44506.rjw__17490.8446650536$1260744350$gmane$org@sisk.pl>
+Subject: [PATCH 2/5] PM: Measure device suspend and resume times
+Date: Sun, 13 Dec 2009 23:40:13 +0100
+Message-ID: <200912132340.13764.rjw__37810.2748575204$1260744472$gmane$org@sisk.pl>
 References: <200912132338.30921.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,114 +23,100 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Add sysfs attribute kernel/power/pm_async allowing the user space to
-disable and enable async suspend/resume of devices.
+Measure and print the time of suspending and resuming all devices.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/main.c  |    7 ++++---
- drivers/base/power/power.h |    6 +++---
- kernel/power/main.c        |   31 ++++++++++++++++++++++++++++++-
- 3 files changed, 37 insertions(+), 7 deletions(-)
+ drivers/base/power/main.c |   23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-Index: linux-2.6/kernel/power/main.c
-===================================================================
---- linux-2.6.orig/kernel/power/main.c
-+++ linux-2.6/kernel/power/main.c
-@@ -44,6 +44,32 @@ int pm_notifier_call_chain(unsigned long
- 			== NOTIFY_BAD) ? -EINVAL : 0;
- }
- 
-+/* If set, devices may be suspended and resumed asynchronously. */
-+int pm_async_enabled = 1;
-+
-+static ssize_t pm_async_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			     char *buf)
-+{
-+	return sprintf(buf, "%d\n", pm_async_enabled);
-+}
-+
-+static ssize_t pm_async_store(struct kobject *kobj, struct kobj_attribute *attr,
-+			      const char *buf, size_t n)
-+{
-+	unsigned long val;
-+
-+	if (strict_strtoul(buf, 10, &val))
-+		return -EINVAL;
-+
-+	if (val > 1)
-+		return -EINVAL;
-+
-+	pm_async_enabled = val;
-+	return n;
-+}
-+
-+power_attr(pm_async);
-+
- #ifdef CONFIG_PM_DEBUG
- int pm_test_level = TEST_NONE;
- 
-@@ -208,9 +234,12 @@ static struct attribute * g[] = {
- #ifdef CONFIG_PM_TRACE
- 	&pm_trace_attr.attr,
- #endif
--#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PM_DEBUG)
-+#ifdef CONFIG_PM_SLEEP
-+	&pm_async_attr.attr,
-+#ifdef CONFIG_PM_DEBUG
- 	&pm_test_attr.attr,
- #endif
-+#endif
- 	NULL,
- };
- 
-Index: linux-2.6/drivers/base/power/power.h
-===================================================================
---- linux-2.6.orig/drivers/base/power/power.h
-+++ linux-2.6/drivers/base/power/power.h
-@@ -12,10 +12,10 @@ static inline void pm_runtime_remove(str
- 
- #ifdef CONFIG_PM_SLEEP
- 
--/*
-- * main.c
-- */
-+/* kernel/power/main.c */
-+extern int pm_async_enabled;
- 
-+/* drivers/base/power/main.c */
- extern struct list_head dpm_list;	/* The active device list */
- 
- static inline struct device *to_device(struct list_head *entry)
 Index: linux-2.6/drivers/base/power/main.c
 ===================================================================
 --- linux-2.6.orig/drivers/base/power/main.c
 +++ linux-2.6/drivers/base/power/main.c
-@@ -175,7 +175,7 @@ static void dpm_wait(struct device *dev,
- 	if (!dev)
- 		return;
- 
--	if (async || dev->power.async_suspend)
-+	if (async || (pm_async_enabled && dev->power.async_suspend))
- 		wait_for_completion(&dev->power.completion);
+@@ -383,6 +383,19 @@ static void pm_dev_err(struct device *de
+ 		kobject_name(&dev->kobj), pm_verb(state.event), info, error);
  }
  
-@@ -521,7 +521,8 @@ static int device_resume(struct device *
- {
- 	INIT_COMPLETION(dev->power.completion);
++static void dpm_show_time(ktime_t starttime, pm_message_t state, char *info)
++{
++	ktime_t calltime, delta;
++	unsigned long long usecs;
++
++	calltime = ktime_get();
++	delta = ktime_sub(calltime, starttime);
++	usecs = (unsigned long long)ktime_to_ns(delta) >> 10;
++	pr_info("PM: %s%s%s of devices complete after %Lu.%03Lu msecs\n",
++		info ?: "", info ? " " : "", pm_verb(state.event),
++		usecs / USEC_PER_MSEC, usecs % USEC_PER_MSEC);
++}
++
+ /*------------------------- Resume routines -------------------------*/
  
--	if (dev->power.async_suspend && !pm_trace_is_enabled()) {
-+	if (pm_async_enabled && dev->power.async_suspend
-+	    && !pm_trace_is_enabled()) {
- 		get_device(dev);
- 		async_schedule(async_resume, dev);
- 		return 0;
-@@ -806,7 +807,7 @@ static int device_suspend(struct device 
+ /**
+@@ -419,6 +432,7 @@ static int device_resume_noirq(struct de
+ void dpm_resume_noirq(pm_message_t state)
  {
- 	INIT_COMPLETION(dev->power.completion);
+ 	struct device *dev;
++	ktime_t starttime = ktime_get();
  
--	if (dev->power.async_suspend) {
-+	if (pm_async_enabled && dev->power.async_suspend) {
- 		get_device(dev);
- 		async_schedule(async_suspend, dev);
- 		return 0;
+ 	mutex_lock(&dpm_list_mtx);
+ 	transition_started = false;
+@@ -432,6 +446,7 @@ void dpm_resume_noirq(pm_message_t state
+ 				pm_dev_err(dev, state, " early", error);
+ 		}
+ 	mutex_unlock(&dpm_list_mtx);
++	dpm_show_time(starttime, state, "early");
+ 	resume_device_irqs();
+ }
+ EXPORT_SYMBOL_GPL(dpm_resume_noirq);
+@@ -524,6 +539,7 @@ static int device_resume(struct device *
+ static void dpm_resume(pm_message_t state)
+ {
+ 	struct list_head list;
++	ktime_t starttime = ktime_get();
+ 
+ 	INIT_LIST_HEAD(&list);
+ 	mutex_lock(&dpm_list_mtx);
+@@ -554,6 +570,7 @@ static void dpm_resume(pm_message_t stat
+ 	list_splice(&list, &dpm_list);
+ 	mutex_unlock(&dpm_list_mtx);
+ 	async_synchronize_full();
++	dpm_show_time(starttime, state, NULL);
+ }
+ 
+ /**
+@@ -686,6 +703,7 @@ static int device_suspend_noirq(struct d
+ int dpm_suspend_noirq(pm_message_t state)
+ {
+ 	struct device *dev;
++	ktime_t starttime = ktime_get();
+ 	int error = 0;
+ 
+ 	suspend_device_irqs();
+@@ -701,6 +719,8 @@ int dpm_suspend_noirq(pm_message_t state
+ 	mutex_unlock(&dpm_list_mtx);
+ 	if (error)
+ 		dpm_resume_noirq(resume_event(state));
++	else
++		dpm_show_time(starttime, state, "late");
+ 	return error;
+ }
+ EXPORT_SYMBOL_GPL(dpm_suspend_noirq);
+@@ -800,6 +820,7 @@ static int device_suspend(struct device 
+ static int dpm_suspend(pm_message_t state)
+ {
+ 	struct list_head list;
++	ktime_t starttime = ktime_get();
+ 	int error = 0;
+ 
+ 	INIT_LIST_HEAD(&list);
+@@ -831,6 +852,8 @@ static int dpm_suspend(pm_message_t stat
+ 	async_synchronize_full();
+ 	if (!error)
+ 		error = async_error;
++	if (!error)
++		dpm_show_time(starttime, state, NULL);
+ 	return error;
+ }
+ 
