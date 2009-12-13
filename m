@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/2] PM: rwsem.h need not be included into main.c
-Date: Sun, 13 Dec 2009 23:09:32 +0100
-Message-ID: <200912132309.33054.rjw__7094.70943916148$1260742230$gmane$org@sisk.pl>
+Subject: [PATCH 1/2] PM: Remove unnecessary goto from
+	device_resume_noirq()
+Date: Sun, 13 Dec 2009 23:08:36 +0100
+Message-ID: <200912132308.36538.rjw__12818.3432425887$1260742242$gmane$org@sisk.pl>
 References: <200912132306.57741.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,23 +24,46 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-It is not necessary to include <linux/rwsem.h> into
-drivers/base/power/main.c, so don't do that.
+In device_resume_noirq() there is the 'End' label and the associated
+goto statement that aren't strictly necessary, so rework the code to
+get rid of them.  Also modify device_suspend_noirq() so that it looks
+completely analogous to device_resume_noirq().
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/main.c |    1 -
- 1 file changed, 1 deletion(-)
+ drivers/base/power/main.c |   12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
 Index: linux-2.6/drivers/base/power/main.c
 ===================================================================
 --- linux-2.6.orig/drivers/base/power/main.c
 +++ linux-2.6/drivers/base/power/main.c
-@@ -23,7 +23,6 @@
- #include <linux/pm.h>
- #include <linux/pm_runtime.h>
- #include <linux/resume-trace.h>
--#include <linux/rwsem.h>
- #include <linux/interrupt.h>
- #include <linux/sched.h>
+@@ -372,14 +372,11 @@ static int device_resume_noirq(struct de
+ 	TRACE_DEVICE(dev);
+ 	TRACE_RESUME(0);
  
+-	if (!dev->bus)
+-		goto End;
+-
+-	if (dev->bus->pm) {
++	if (dev->bus && dev->bus->pm) {
+ 		pm_dev_dbg(dev, state, "EARLY ");
+ 		error = pm_noirq_op(dev, dev->bus->pm, state);
+ 	}
+- End:
++
+ 	TRACE_RESUME(error);
+ 	return error;
+ }
+@@ -615,10 +612,7 @@ static int device_suspend_noirq(struct d
+ {
+ 	int error = 0;
+ 
+-	if (!dev->bus)
+-		return 0;
+-
+-	if (dev->bus->pm) {
++	if (dev->bus && dev->bus->pm) {
+ 		pm_dev_dbg(dev, state, "LATE ");
+ 		error = pm_noirq_op(dev, dev->bus->pm, state);
+ 	}
