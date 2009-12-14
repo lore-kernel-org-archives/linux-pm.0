@@ -1,13 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Runtime PM: Calling Device runtime PM callbacks?
-Date: Mon, 14 Dec 2009 22:58:26 +0100
-Message-ID: <200912142258.26145.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0912132337470.9109-100000@netrider.rowland.org>
+Date: Mon, 14 Dec 2009 17:08:28 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912141703330.2690-100000@iolanthe.rowland.org>
+References: <200912142257.40100.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912132337470.9109-100000@netrider.rowland.org>
+In-Reply-To: <200912142257.40100.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,44 +17,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 14 December 2009, Alan Stern wrote:
-> On Mon, 14 Dec 2009, Mahalingam, Nithish wrote:
-> 
-> > I had one more question -
-> > 
-> > +The ->runtime_suspend() callback is executed by the PM core for the bus type,
-> > +device type and device class of the device being suspended.  The bus type,
-> > +device type and device class callbacks are then _entirely_ _responsible_ for
-> > +handling the device as appropriate, which may, but need not include executing
-> > +the device driver's own ->runtime_suspend() callback (from the PM core's point
-> > +of view it is not necessary to implement a ->runtime_suspend() callback in a
-> > +device driver as long as the bus type, device type and device class
-> > +->runtime_suspend() know what to do to handle the device).
-> > 
-> > Any specific reason why from PM core we should not call the device driver's 
-> > ->runtime_suspend() or ->runtime_resume()? I know one of either the bus/
-> > class/type should implement device suspend but what if (worst case) none of 
-> > them are doing it? Is it OK in that case (alone) to call device driver's 
-> > runtime PM directly (if it is implemented) from the runtime PM core?
-> 
-> The system PM driver_suspend() and driver_resume() routines don't do 
-> that.  For consistency, the runtime PM routines should behave the same 
-> way.
-> 
-> Alan Stern
-> 
-> P.S.: Rafael, I just realized that your documentation changes could be
-> reduced considerably.  All you have to do is explain once how whenever
-> a method call occurs, the PM core will search for a callback pointer in
-> the following locations: ...  Then in all those places where you list
-> all the callback possibilities, just say "the callback routine" or
-> something like that.
+On Mon, 14 Dec 2009, Rafael J. Wysocki wrote:
 
-Yeah.  It was late yesterday when I was preparing the patch and I just didn't
-think about that.
+> On Monday 14 December 2009, Alan Stern wrote:
+> > On Mon, 14 Dec 2009, Rafael J. Wysocki wrote:
+> > 
+> > > There you go (untested for now).
+> > > 
+> > > ->runtime_idle() is still only called for the device's bus type, because
+> > > otherwise it will be hard to determine the right ordering of the bus type,
+> > > device type and device class callbacks.
+> > 
+> > Shouldn't it be the same as runtime_suspend and runtime_resume?
+> 
+> Well, the ordering is different in each of them ...
 
-Rafael
+Why not just copy the order used by device_suspend(): class, then type,
+then bus?
+
+Actually, I don't know of any cases where the order matters.  But there 
+may be some, for system suspend.  Runtime suspend is new enough that 
+people will adapt.
+
+> > What's the reason for error_ptr here?  Its value will always be the
+> > same as the return value except in the case where none of the callbacks
+> > are defined.  Why not just use -ENOSYS in that case and eliminate
+> > error_ptr?
+> 
+> To preserve the existing logic.
+> 
+> Namely, without the patch dev->power.runtime error is not updated in the
+> -ENOSYS case and that actually is for a reason (we don't want runtime_error to
+> be set merely because there's no callbacks to execute).  I could check the
+> return value, but what if one of the callbacks returns -ENOSYS?
+
+Don't worry about it.  -ENOSYS means the operation isn't implemented.  
+So if somebody's method implementation tells you that the method isn't 
+implemented, they'll get what they deserve.  :-)
+
+Alan Stern
