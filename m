@@ -1,16 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re:
-	Async suspend-resume patch w/ rwsems)
-Date: Tue, 15 Dec 2009 00:18:11 +0100
-Message-ID: <200912150018.11837.rjw__22413.6019046002$1260832701$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
-	<200912142311.31658.rjw@sisk.pl>
-	<alpine.LFD.2.00.0912141416040.26135@localhost.localdomain>
+From: Andi Kleen <andi@firstfloor.org>
+Subject: Re: RFC: A proposal for power capping through forced
+	idle in the Linux Kernel
+Date: Tue, 15 Dec 2009 00:21:07 +0100
+Message-ID: <876389xhuk.fsf__42024.8076822192$1260833235$gmane$org@basil.nowhere.org>
+References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912141416040.26135@localhost.localdomain>
+In-Reply-To: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
+	(Salman Qazi's message of "Mon, 14 Dec 2009 15:11:47 -0800")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,45 +19,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Salman Qazi <sqazi@google.com>
+Cc: Michael Rubin <mrubin@google.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Taliver Heath <taliver@google.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 14 December 2009, Linus Torvalds wrote:
-> 
-> On Mon, 14 Dec 2009, Rafael J. Wysocki wrote:
-> >
-> > OK, what about a two-pass approach in which the first pass only inits the
-> > completions and starts async threads for leaf "async" devices?  I think leaf
-> > devices are most likely to take much time to suspend, so this will give us
-> > a chance to save quite some time.
-> 
-> Why?
-> 
-> Really.
+Salman Qazi <sqazi@google.com> writes:
+>
+> We'd like to get as much of our stuff upstream as we can.  Given that
+> this is a somewhat sizable chunk of work, it would be impolite of me
+> to just send out a bunch of patches without hearing the concerns of
+> the community.  What are your thoughts on our design and what do we
+> need to change to get this to be more acceptable to the community?  I
+> also would like to know if there are any existing pieces of
+> infrastructure that this can utilize.
 
-Because the PCI bridges are not the only case where it matters (I'd say they
-are really a corner case).  Basically, any two async devices separeted by a
-series of sync ones are likely not to be suspended (or resumed) in parallel
-with each other, because the parent is usually next to its children in dpm_list.
-So, if the first device suspends, its "synchronous" parent waits for it and the
-suspend of the second async device won't be started until the first one's
-suspend has returned.  And it doesn't matter at what level we do the async
-thing, because dpm_list is there anyway.
+There were a lot of discussions on this a few months ago in context
+of the ACPI 4 "power aggregator" which is a similar (perhaps
+slightly less sophisticated) concept. 
 
-As Alan said, the real problem is that we generally can't change the ordering
-of dpm_list arbitrarily, because we don't know what's going to happen as a
-result.  The async_suspend flag tells us, basically, what devices can be safely
-moved to different positions in dpm_list without breaking things, as long as
-they are not moved behind their parents or in front of their children.
+While there was a lot of talk about teaching the scheduler about this 
+the end result was just a driver which just starts real time threads
+and then idles in them. This is in current mainline.
 
-Starting the async suspends upfront would effectively work in the same way as
-moving those devices to the beginning of dpm_list without breaking the
-parent-child chains, which in turn is likely to allow us to save some extra
-time.
+It might be a good idea to review these discussions in the archives.
 
-That's not only about the PCI bridges, it's more general.  As far as your
-one-liner is concerned, I'm going to test it, because I think we could use it
-anyway.
+-Andi
 
-Rafael
+-- 
+ak@linux.intel.com -- Speaking for myself only.
