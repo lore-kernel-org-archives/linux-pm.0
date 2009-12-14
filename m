@@ -1,13 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Runtime PM: Calling Device runtime PM callbacks?
-Date: Tue, 15 Dec 2009 00:26:43 +0100
-Message-ID: <200912150026.43688.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0912141805170.2690-100000@iolanthe.rowland.org>
+From: tytso@mit.edu
+Subject: Re: RFC: A proposal for power capping through forced
+ idle in the Linux Kernel
+Date: Mon, 14 Dec 2009 18:51:51 -0500
+Message-ID: <20091214235151.GG4867__17693.1586735465$1260834796$gmane$org@thunk.org>
+References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
+	<876389xhuk.fsf@basil.nowhere.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912141805170.2690-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <876389xhuk.fsf@basil.nowhere.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,43 +20,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Salman Qazi <sqazi@google.com>, Michael Rubin <mrubin@google.com>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Taliver Heath <taliver@google.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 15 December 2009, Alan Stern wrote:
-> On Mon, 14 Dec 2009, Rafael J. Wysocki wrote:
+On Tue, Dec 15, 2009 at 12:21:07AM +0100, Andi Kleen wrote:
+> Salman Qazi <sqazi@google.com> writes:
+> >
+> > We'd like to get as much of our stuff upstream as we can.  Given that
+> > this is a somewhat sizable chunk of work, it would be impolite of me
+> > to just send out a bunch of patches without hearing the concerns of
+> > the community.  What are your thoughts on our design and what do we
+> > need to change to get this to be more acceptable to the community?  I
+> > also would like to know if there are any existing pieces of
+> > infrastructure that this can utilize.
 > 
-> > > > > > ->runtime_idle() is still only called for the device's bus type, because
-> > > > > > otherwise it will be hard to determine the right ordering of the bus type,
-> > > > > > device type and device class callbacks.
-> > > > > 
-> > > > > Shouldn't it be the same as runtime_suspend and runtime_resume?
-> > > > 
-> > > > Well, the ordering is different in each of them ...
-> > > 
-> > > Why not just copy the order used by device_suspend(): class, then type,
-> > > then bus?
-> > 
-> > Do you mean in _idle?
+> There were a lot of discussions on this a few months ago in context
+> of the ACPI 4 "power aggregator" which is a similar (perhaps
+> slightly less sophisticated) concept. 
 > 
-> Idle is very similar to suspend.  They should use the same order.
+> While there was a lot of talk about teaching the scheduler about this 
+> the end result was just a driver which just starts real time threads
+> and then idles in them. This is in current mainline.
 > 
-> I guess there's one extra thing to look out for: If one of the idle
-> callbacks does pm_runtime_suspend() then there's no point invoking the
-> later callbacks.
+> It might be a good idea to review these discussions in the archives.
 
-But how do we know that?
+It should be noted that most of the heat from those discussions was
+over adding the ACPI 4 mechanism to accept requests from the hardware
+platform to add idle cycles in the case of thermal/power emergencies,
+before we had the scheduler improvements to be able to do so in the
+most efficient way possible.  See the description of commit 8e0af5141:
 
-I'm still not sure what actually the point executing _idle for device types and
-device classes is.  The only situation I can aticipate if when there's a device
-without a bus type.
+   ACPI 4.0 created the logical "processor aggregator device" as a
+   mechinism for platforms to ask the OS to force otherwise busy
+   processors to enter (power saving) idle.
 
-Hmm.  Actually, are we ever going to call two or more suspend callbacks (ie.
-bus type one and device type one or device type one and device class one)
-for the same device?  If not, we'll be able to simplify things significantly
-by making them mutually exclusive (ie. if there's bus type, call bus type,
-or else if there's device type, call device type, or else if there's device
-class, call device class).
+   The intent is to lower power consumption to ride-out transient
+   electrical and thermal emergencies, rather than powering off the
+   server....
 
-Rafael
+   Vaidyanathan Srinivasan has proposed scheduler enhancements to
+   allow injecting idle time into the system. This driver doesn't
+   depend on those enhancements, but could cut over to them when they
+   are available.
+
+   Peter Z. does not favor upstreaming this driver until the those
+   scheduler enhancements are in place. However, we favor upstreaming
+   this driver now because it is useful now, and can be enhanced over
+   time.
+
+It looks to me that scheme that Salman has proposed for adding idle
+cycles is quite sophisticated, probably more than Vaidyanathan's, and
+the main difference is that Google wants the ability to be able to
+control the system's power/thermal envelope from userspace, as opposed
+to letting the hardware request in an emergency situation.  This makes
+sense, if you are trying to balance the power/thermal requirements
+across a large number of systems, as opposed to responding to a local
+power/thermal emergency signalled from the platform's firmware.
+
+So it would seem to me that Salman's suggestions are very similar to
+what Peter requested before this commit went in (over his objections).
+
+Regards,
+
+     	   	     	    	 	     	- Ted
