@@ -1,13 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Runtime PM: Calling Device runtime PM callbacks?
-Date: Mon, 14 Dec 2009 23:28:15 +0100
-Message-ID: <200912142328.15796.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0912141703330.2690-100000@iolanthe.rowland.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re:
+ Async suspend-resume patch w/ rwsems)
+Date: Mon, 14 Dec 2009 14:41:41 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0912141416040.26135__41954.3201024227$1260830637$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
+	<200912122334.08367.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912141015240.26135@localhost.localdomain>
+	<200912142311.31658.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912141703330.2690-100000@iolanthe.rowland.org>
+In-Reply-To: <200912142311.31658.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,53 +21,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 14 December 2009, Alan Stern wrote:
-> On Mon, 14 Dec 2009, Rafael J. Wysocki wrote:
-> 
-> > On Monday 14 December 2009, Alan Stern wrote:
-> > > On Mon, 14 Dec 2009, Rafael J. Wysocki wrote:
-> > > 
-> > > > There you go (untested for now).
-> > > > 
-> > > > ->runtime_idle() is still only called for the device's bus type, because
-> > > > otherwise it will be hard to determine the right ordering of the bus type,
-> > > > device type and device class callbacks.
-> > > 
-> > > Shouldn't it be the same as runtime_suspend and runtime_resume?
-> > 
-> > Well, the ordering is different in each of them ...
-> 
-> Why not just copy the order used by device_suspend(): class, then type,
-> then bus?
 
-Do you mean in _idle?
 
-> Actually, I don't know of any cases where the order matters.  But there 
-> may be some, for system suspend.  Runtime suspend is new enough that 
-> people will adapt.
+On Mon, 14 Dec 2009, Rafael J. Wysocki wrote:
+>
+> OK, what about a two-pass approach in which the first pass only inits the
+> completions and starts async threads for leaf "async" devices?  I think leaf
+> devices are most likely to take much time to suspend, so this will give us
+> a chance to save quite some time.
 
-Still, calling them in the reverse order in resume is kind of logical ...
+Why?
 
-> > > What's the reason for error_ptr here?  Its value will always be the
-> > > same as the return value except in the case where none of the callbacks
-> > > are defined.  Why not just use -ENOSYS in that case and eliminate
-> > > error_ptr?
-> > 
-> > To preserve the existing logic.
-> > 
-> > Namely, without the patch dev->power.runtime error is not updated in the
-> > -ENOSYS case and that actually is for a reason (we don't want runtime_error to
-> > be set merely because there's no callbacks to execute).  I could check the
-> > return value, but what if one of the callbacks returns -ENOSYS?
-> 
-> Don't worry about it.  -ENOSYS means the operation isn't implemented.  
-> So if somebody's method implementation tells you that the method isn't 
-> implemented, they'll get what they deserve.  :-)
+Really.
 
-OK
+Again, stop making it harder than it needs to be.
 
-Rafael
+Why do you make up these crazy schemes that are way more complex than they 
+need to be?
+
+Here's an untested one-liner that has a 10-line comment.
+
+I agree it is ugly, but it is ugly exactly because the generic device 
+layer _forces_ us to wait for children even when we don't want to. With 
+this, that unnecessary wait is now done asynchronously.
+
+I'd rather do it some other way - perhaps having an explicit flag that 
+says "don't wait for children because I'm not going to suspend myself 
+until 'suspend_late' _anyway_". But at least this is _simple_.
+
+		Linus
+
+---
+ drivers/pci/probe.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 98ffb2d..4e0ad7b 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -437,6 +437,17 @@ static struct pci_bus *pci_alloc_child_bus(struct pci_bus *parent,
+ 	}
+ 	bridge->subordinate = child;
+ 
++	/*
++	 * We don't really suspend PCI buses asyncronously.
++	 *
++	 * However, since we don't actually suspend them at all until
++	 * the late phase, we might as well lie to the device layer
++	 * and it to do our no-op not-suspend asynchronously, so that
++	 * we end up not synchronizing with any of our child devices
++	 * that might want to be asynchronous.
++	 */
++	bridge->dev.power.async_suspend = 1;
++
+ 	return child;
+ }
+ 
