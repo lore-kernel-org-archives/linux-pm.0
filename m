@@ -1,13 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Runtime PM: Calling Device runtime PM callbacks?
-Date: Mon, 14 Dec 2009 18:09:01 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912141805170.2690-100000@iolanthe.rowland.org>
-References: <200912142328.15796.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re:
+	Async suspend-resume patch w/ rwsems)
+Date: Tue, 15 Dec 2009 00:18:11 +0100
+Message-ID: <200912150018.11837.rjw__22413.6019046002$1260832701$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
+	<200912142311.31658.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912141416040.26135@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912142328.15796.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.2.00.0912141416040.26135@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,37 +20,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 14 Dec 2009, Rafael J. Wysocki wrote:
-
-> > > > > ->runtime_idle() is still only called for the device's bus type, because
-> > > > > otherwise it will be hard to determine the right ordering of the bus type,
-> > > > > device type and device class callbacks.
-> > > > 
-> > > > Shouldn't it be the same as runtime_suspend and runtime_resume?
-> > > 
-> > > Well, the ordering is different in each of them ...
-> > 
-> > Why not just copy the order used by device_suspend(): class, then type,
-> > then bus?
+On Monday 14 December 2009, Linus Torvalds wrote:
 > 
-> Do you mean in _idle?
-
-Idle is very similar to suspend.  They should use the same order.
-
-I guess there's one extra thing to look out for: If one of the idle
-callbacks does pm_runtime_suspend() then there's no point invoking the
-later callbacks.
-
-> > Actually, I don't know of any cases where the order matters.  But there 
-> > may be some, for system suspend.  Runtime suspend is new enough that 
-> > people will adapt.
+> On Mon, 14 Dec 2009, Rafael J. Wysocki wrote:
+> >
+> > OK, what about a two-pass approach in which the first pass only inits the
+> > completions and starts async threads for leaf "async" devices?  I think leaf
+> > devices are most likely to take much time to suspend, so this will give us
+> > a chance to save quite some time.
 > 
-> Still, calling them in the reverse order in resume is kind of logical ...
+> Why?
+> 
+> Really.
 
-Yes.
+Because the PCI bridges are not the only case where it matters (I'd say they
+are really a corner case).  Basically, any two async devices separeted by a
+series of sync ones are likely not to be suspended (or resumed) in parallel
+with each other, because the parent is usually next to its children in dpm_list.
+So, if the first device suspends, its "synchronous" parent waits for it and the
+suspend of the second async device won't be started until the first one's
+suspend has returned.  And it doesn't matter at what level we do the async
+thing, because dpm_list is there anyway.
 
-Alan Stern
+As Alan said, the real problem is that we generally can't change the ordering
+of dpm_list arbitrarily, because we don't know what's going to happen as a
+result.  The async_suspend flag tells us, basically, what devices can be safely
+moved to different positions in dpm_list without breaking things, as long as
+they are not moved behind their parents or in front of their children.
+
+Starting the async suspends upfront would effectively work in the same way as
+moving those devices to the beginning of dpm_list without breaking the
+parent-child chains, which in turn is likely to allow us to save some extra
+time.
+
+That's not only about the PCI bridges, it's more general.  As far as your
+one-liner is concerned, I'm going to test it, because I think we could use it
+anyway.
+
+Rafael
