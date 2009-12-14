@@ -1,17 +1,13 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re:
- Async suspend-resume patch w/ rwsems)
-Date: Mon, 14 Dec 2009 10:21:38 -0800 (PST)
-Message-ID: <alpine.LFD.2.00.0912141015240.26135__49758.1916781657$1260815054$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
-	<200912121848.33062.rjw@sisk.pl>
-	<alpine.LFD.2.00.0912121049390.3526@localhost.localdomain>
-	<200912122334.08367.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Runtime PM: Calling Device runtime PM callbacks?
+Date: Mon, 14 Dec 2009 22:57:40 +0100
+Message-ID: <200912142257.40100.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0912132331420.9109-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912122334.08367.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0912132331420.9109-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,39 +17,82 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Sat, 12 Dec 2009, Rafael J. Wysocki wrote:
+On Monday 14 December 2009, Alan Stern wrote:
+> On Mon, 14 Dec 2009, Rafael J. Wysocki wrote:
 > 
-> One solution that we have discussed on linux-pm is to start a bunch of async
-> threads searching for async devices that can be suspended and suspending
-> them (assuming suspend is considered) out of order with respect to dpm_list.
+> > There you go (untested for now).
+> > 
+> > ->runtime_idle() is still only called for the device's bus type, because
+> > otherwise it will be hard to determine the right ordering of the bus type,
+> > device type and device class callbacks.
+> 
+> Shouldn't it be the same as runtime_suspend and runtime_resume?
 
-Ok, guys, stop the crazy.
+Well, the ordering is different in each of them ...
 
-That's another of those "ok, that's just ttoally stupid and clearly too 
-complex" ideas that I would never pull.
+> >  drivers/base/power/runtime.c       |  110 ++++++++++++++++---
+> >  2 files changed, 201 insertions(+), 113 deletions(-)
+> > 
+> > Index: linux-2.6/drivers/base/power/runtime.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/base/power/runtime.c
+> > +++ linux-2.6/drivers/base/power/runtime.c
+> > @@ -111,6 +111,45 @@ int pm_runtime_idle(struct device *dev)
+> >  EXPORT_SYMBOL_GPL(pm_runtime_idle);
+> >  
+> >  /**
+> > + * device_runtime_suspend - Execute "runtime suspend" callbacks for a device.
+> > + * @dev: Device to handle.
+> > + * @error_ptr: Place to store error values returned by the callbacks.
+> > + */
+> > +static int device_runtime_suspend(struct device *dev, int *error_ptr)
+> > +{
+> > +	int error = -ENOSYS;
+> > +
+> > +	down(&dev->sem);
+> > +
+> > +	if (dev->class && dev->class->pm && dev->class->pm->runtime_suspend) {
+> > +		error = dev->class->pm->runtime_suspend(dev);
+> > +		suspend_report_result(dev->class->pm->runtime_suspend, error);
+> > +		*error_ptr = error;
+> > +		if (error)
+> > +			goto out;
+> > +	}
+> > +
+> > +	if (dev->type && dev->type->pm && dev->type->pm->runtime_suspend) {
+> > +		error = dev->type->pm->runtime_suspend(dev);
+> > +		suspend_report_result(dev->type->pm->runtime_suspend, error);
+> > +		*error_ptr = error;
+> > +		if (error)
+> > +			goto out;
+> > +	}
+> > +
+> > +	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend) {
+> > +		error = dev->bus->pm->runtime_suspend(dev);
+> > +		suspend_report_result(dev->bus->pm->runtime_suspend, error);
+> > +		*error_ptr = error;
+> > +	}
+> > +
+> > + out:
+> > +	up(&dev->sem);
+> > +
+> > +	return error;
+> > +}
+> 
+> What's the reason for error_ptr here?  Its value will always be the
+> same as the return value except in the case where none of the callbacks
+> are defined.  Why not just use -ENOSYS in that case and eliminate
+> error_ptr?
 
-I should seriously suggest that people just stop discussing architectural 
-details on the pm list if they all end up being this level of crazy.
+To preserve the existing logic.
 
-The sane thing to do is to just totally ignore the async layer on PCI 
-bridges and other things that only have a late-suspend/early-resume thing. 
-No need for the above kind of obviously idiotic crap.
+Namely, without the patch dev->power.runtime error is not updated in the
+-ENOSYS case and that actually is for a reason (we don't want runtime_error to
+be set merely because there's no callbacks to execute).  I could check the
+return value, but what if one of the callbacks returns -ENOSYS?
 
-However, my point was really that we wouldn't even have _needed_ that kind 
-of special case if we had just decided to let the subsystems do it. But 
-whatever. At worst, the PCI layer can even just mark such devices with 
-just late/early suspend/resume as being asynchronous, even though that 
-ends up resulting in some totally pointless async work that doesn't do 
-anything.
-
-But please guys - reign in the crazy ideas on the pm list. It's not like 
-our suspend/resume has gotten so stable as to be boring, and we want it to 
-become unreliable again.
-
-			Linus
+Rafael
