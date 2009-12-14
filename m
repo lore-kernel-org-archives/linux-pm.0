@@ -1,15 +1,13 @@
-From: Andi Kleen <andi@firstfloor.org>
-Subject: Re: RFC: A proposal for power capping through forced
-	idle in the Linux Kernel
-Date: Tue, 15 Dec 2009 00:21:07 +0100
-Message-ID: <876389xhuk.fsf__42024.8076822192$1260833235$gmane$org@basil.nowhere.org>
-References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Runtime PM: Calling Device runtime PM callbacks?
+Date: Tue, 15 Dec 2009 00:26:43 +0100
+Message-ID: <200912150026.43688.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0912141805170.2690-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
-	(Salman Qazi's message of "Mon, 14 Dec 2009 15:11:47 -0800")
+In-Reply-To: <Pine.LNX.4.44L0.0912141805170.2690-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,31 +17,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Salman Qazi <sqazi@google.com>
-Cc: Michael Rubin <mrubin@google.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Taliver Heath <taliver@google.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Salman Qazi <sqazi@google.com> writes:
->
-> We'd like to get as much of our stuff upstream as we can.  Given that
-> this is a somewhat sizable chunk of work, it would be impolite of me
-> to just send out a bunch of patches without hearing the concerns of
-> the community.  What are your thoughts on our design and what do we
-> need to change to get this to be more acceptable to the community?  I
-> also would like to know if there are any existing pieces of
-> infrastructure that this can utilize.
+On Tuesday 15 December 2009, Alan Stern wrote:
+> On Mon, 14 Dec 2009, Rafael J. Wysocki wrote:
+> 
+> > > > > > ->runtime_idle() is still only called for the device's bus type, because
+> > > > > > otherwise it will be hard to determine the right ordering of the bus type,
+> > > > > > device type and device class callbacks.
+> > > > > 
+> > > > > Shouldn't it be the same as runtime_suspend and runtime_resume?
+> > > > 
+> > > > Well, the ordering is different in each of them ...
+> > > 
+> > > Why not just copy the order used by device_suspend(): class, then type,
+> > > then bus?
+> > 
+> > Do you mean in _idle?
+> 
+> Idle is very similar to suspend.  They should use the same order.
+> 
+> I guess there's one extra thing to look out for: If one of the idle
+> callbacks does pm_runtime_suspend() then there's no point invoking the
+> later callbacks.
 
-There were a lot of discussions on this a few months ago in context
-of the ACPI 4 "power aggregator" which is a similar (perhaps
-slightly less sophisticated) concept. 
+But how do we know that?
 
-While there was a lot of talk about teaching the scheduler about this 
-the end result was just a driver which just starts real time threads
-and then idles in them. This is in current mainline.
+I'm still not sure what actually the point executing _idle for device types and
+device classes is.  The only situation I can aticipate if when there's a device
+without a bus type.
 
-It might be a good idea to review these discussions in the archives.
+Hmm.  Actually, are we ever going to call two or more suspend callbacks (ie.
+bus type one and device type one or device type one and device class one)
+for the same device?  If not, we'll be able to simplify things significantly
+by making them mutually exclusive (ie. if there's bus type, call bus type,
+or else if there's device type, call device type, or else if there's device
+class, call device class).
 
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Rafael
