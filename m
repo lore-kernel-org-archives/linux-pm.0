@@ -1,15 +1,12 @@
 From: Salman Qazi <sqazi@google.com>
-Subject: Re: RFC: A proposal for power capping through forced
-	idle in the Linux Kernel
-Date: Mon, 14 Dec 2009 16:42:30 -0800
-Message-ID: <4352991a0912141642o75c67d5aja8351989b1743ee6__40732.8703361147$1260893064$gmane$org@mail.gmail.com>
-References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
-	<876389xhuk.fsf@basil.nowhere.org> <20091214235151.GG4867@thunk.org>
+Subject: RFC: A proposal for power capping through forced idle in
+	the Linux Kernel
+Date: Mon, 14 Dec 2009 15:11:47 -0800
+Message-ID: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b__35546.9880429611$1260893064$gmane$org@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091214235151.GG4867@thunk.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,80 +16,152 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: tytso@mit.edu, Andi Kleen <andi@firstfloor.org>, Salman Qazi <sqazi@google.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew
+To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, Taliver Heath <taliver@google.com>, Michael Rubin <mrubin@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Dec 14, 2009 at 3:51 PM,  <tytso@mit.edu> wrote:
-> On Tue, Dec 15, 2009 at 12:21:07AM +0100, Andi Kleen wrote:
->> Salman Qazi <sqazi@google.com> writes:
->> >
->> > We'd like to get as much of our stuff upstream as we can. =A0Given that
->> > this is a somewhat sizable chunk of work, it would be impolite of me
->> > to just send out a bunch of patches without hearing the concerns of
->> > the community. =A0What are your thoughts on our design and what do we
->> > need to change to get this to be more acceptable to the community? =A0I
->> > also would like to know if there are any existing pieces of
->> > infrastructure that this can utilize.
->>
->> There were a lot of discussions on this a few months ago in context
->> of the ACPI 4 "power aggregator" which is a similar (perhaps
->> slightly less sophisticated) concept.
->>
->> While there was a lot of talk about teaching the scheduler about this
->> the end result was just a driver which just starts real time threads
->> and then idles in them. This is in current mainline.
->>
->> It might be a good idea to review these discussions in the archives.
->
-> It should be noted that most of the heat from those discussions was
-> over adding the ACPI 4 mechanism to accept requests from the hardware
-> platform to add idle cycles in the case of thermal/power emergencies,
-> before we had the scheduler improvements to be able to do so in the
-> most efficient way possible. =A0See the description of commit 8e0af5141:
->
-> =A0 ACPI 4.0 created the logical "processor aggregator device" as a
-> =A0 mechinism for platforms to ask the OS to force otherwise busy
-> =A0 processors to enter (power saving) idle.
->
-> =A0 The intent is to lower power consumption to ride-out transient
-> =A0 electrical and thermal emergencies, rather than powering off the
-> =A0 server....
->
-> =A0 Vaidyanathan Srinivasan has proposed scheduler enhancements to
-> =A0 allow injecting idle time into the system. This driver doesn't
-> =A0 depend on those enhancements, but could cut over to them when they
-> =A0 are available.
->
-> =A0 Peter Z. does not favor upstreaming this driver until the those
-> =A0 scheduler enhancements are in place. However, we favor upstreaming
-> =A0 this driver now because it is useful now, and can be enhanced over
-> =A0 time.
->
-> It looks to me that scheme that Salman has proposed for adding idle
-> cycles is quite sophisticated, probably more than Vaidyanathan's, and
-> the main difference is that Google wants the ability to be able to
-> control the system's power/thermal envelope from userspace, as opposed
-> to letting the hardware request in an emergency situation. =A0This makes
-> sense, if you are trying to balance the power/thermal requirements
-> across a large number of systems, as opposed to responding to a local
-> power/thermal emergency signalled from the platform's firmware.
->
+Greetings,
 
-This is correct.  The source of our signal is user space software on
-remote machines ("hierarchical regulators") that have information
-about power usage across multiple machines at various levels of power
-hierarchy.  This is ultimately delivered to a local daemon, which
-communicates it to the kernel.
+Google is implementing power capping, a technology that improves the
+power efficiency of data centers. There are also some interesting
+applications of this technology for laptops and cell phones.  Google
+aims to send most of its Linux technology upstream. So, how can we get
+this feature into the mainline kernel?
 
-As we are not using this as an emergency measure, we are very
-concerned about the performance implications.
+Overview:
 
-> So it would seem to me that Salman's suggestions are very similar to
-> what Peter requested before this commit went in (over his objections).
->
-> Regards,
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0- Ted
->
->
+Data centers are typically statically and pessimistically populated
+based on the limitations of the power infrastructure in them.  Peak
+power consumption of machines is determined, and based on this, the
+number of machines and their placement in the hierarchy is limited to
+not exceed the available power in the worst case.  Google is looking
+at moving away from this static allocation of power to machines, to a
+more dynamic model.  A key component of this model is power capping
+done in software.
+
+The idea is to place more machines in the data center than there is
+power available to support (when all machines are operating at peak)
+and then running the machines with a power cap.  The aim of the
+project is to utilize more of the available power in the data center
+than possible with static provisioning.  As the amount of work
+available changes through the day, the power caps on various machines
+are changed as well, while staying within the infrastructure
+constraints.  Power can be moved from the more idle parts of the data
+center to the busier ones.
+
+Since not all of our existing hardware is able to provide good power
+measurements to the software running on it, we have decided to model
+power in terms of CPU usage [0].
+
+Current Interface used by Google:
+
+The component of the kernel that we have built to implement software
+power capping is called the "Idle Cycle Injector".
+
+It has the following inputs, provided through procfs:
+
+Forced Idle Percentage: This is the minimum percentage of time the CPU
+is promised to be idle over the enforcement interval.
+
+Enforcement interval: This is the length of time over which the power
+cap is promised.
+
+Aside from this, every cgroup has a new quantity added to the CPU
+component called "Power Capping Priority".  This quantity indicates
+the order in which the scheduler attributes the time spent injecting
+idle cycles to specific processes.  This allows us to discriminate
+among processes when it comes to accounting for the injected idle
+time.  There is also an indication of interactivity versus batch for
+the cgroup provided in the CPU component of the cgroup.
+
+Basic Algorithm:
+
+Rather than blindly blasting the machine with the minimum required
+idle cycles, our implementation keeps track of naturally occurring
+idle cycles as follows:
+
+0.  Set a timer (hrtimer API is used) for the earliest of: the end of
+the enforcement interval (clock time constraint) and the expected time
+when we run out of allowed busy cycles if the CPU was entirely busy
+from now on (cpu time constraint).
+1.  When this timer expires, determine which constraint has been reached.
+          a) If it is the clock time constraint, then we must start
+with a new interval and go back to step 0.
+          b) If it is the CPU time constraint, then rest of the
+enforcement interval must be spent idling.
+              Continue to step 2.
+2.  Set up a timer for the end of the enforcement interval and start
+calling the idle function in a loop.   In our current implementation
+we wake up a real time kernel thread to do this.  Once finished,
+account any injected idle time in the vruntime of processes taken in
+the order of power capping priority.  Finally, go back to step 0 and
+start a new interval.
+
+Eager Injection:
+
+An interactive task may be prevented from running sufficiently early
+by presence of a batch task and end up wanting to run in the capped
+portion of the interval.  But, since it cannot run in the capped
+portion, it sees a severe latency hiccup.  To counter this, we
+discriminate between the two classes through the concept of eager
+injection.  The idea is that while we are below our desired minimum
+idle quota, we do not let batch tasks run, but instead idle the CPU.
+However, during this time, we let interactive tasks run (should it
+happen to be runnable).  Once we are past the minimum idle quota,
+everyone is free to run.  If the interactive tasks are abusive and
+exhaust the CPU time, then idle cycles have to be injected to avoid
+exceeding the quota.
+
+Known Limitations of Current Implementation:
+
+0.  The major limitation of injecting in the thread context is that we
+cannot prevent soft IRQ handlers from running and using up power.
+
+1.  Sufficiently high forced idle percentages, the Idle Cycle Injector
+starts working against itself.  In such cases, it is better to use
+other means to make the CPU idle.
+
+2.  Needs some work for SMT support.
+
+
+Why not use voltage and frequency scaling?
+
+Forced Idle Injection is more effective[1] and more widely available.
+Even with voltage and frequency scaling, interpolation is needed
+between the available settings.  So, if we did use voltage and
+frequency scaling, we would still have to use a timer to take
+measurements every so often and adjust the settings.  It would save us
+on having to take over the CPU and actively inject though.
+
+Application to Laptops and Cellphones:
+
+Imagine being in a tent in Death Valley with a laptop.  You are bored,
+and you want to watch a movie.  However, you also want to do your best
+to make the battery last and watch as much of the movie as possible.
+Forced idle power capping is a solution.  If your machine has a knob
+that allows you to control the available power, you can turn that knob
+until your video starts getting choppy.  And then, turn the knob back
+a little bit.  Now, you have your video playing just as you like it,
+with the minimal amount of power available to the machine.  With eager
+injection and the power capping priority, your machine should spend
+power on work that you care about, rather than background processes.
+
+What does this have to do with mainline Linux?
+
+We'd like to get as much of our stuff upstream as we can.  Given that
+this is a somewhat sizable chunk of work, it would be impolite of me
+to just send out a bunch of patches without hearing the concerns of
+the community.  What are your thoughts on our design and what do we
+need to change to get this to be more acceptable to the community?  I
+also would like to know if there are any existing pieces of
+infrastructure that this can utilize.
+
+Relevant papers:
+
+[0]. http://research.google.com/pubs/pub32980.html
+[1]. http://www.cs.cmu.edu/~anshulg/weed2009.pdf
+[2]. http://www.springerlink.com/index/D6287205272LK822.pdf
+
+Regards,
+
+Salman Qazi.
