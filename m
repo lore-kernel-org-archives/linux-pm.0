@@ -1,16 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re:
-	Async suspend-resume patch w/ rwsems)
-Date: Mon, 14 Dec 2009 23:11:31 +0100
-Message-ID: <200912142311.31658.rjw__11667.9548671984$1260830130$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
-	<200912122334.08367.rjw@sisk.pl>
-	<alpine.LFD.2.00.0912141015240.26135@localhost.localdomain>
+Subject: Re: Runtime PM: Calling Device runtime PM callbacks?
+Date: Mon, 14 Dec 2009 23:28:15 +0100
+Message-ID: <200912142328.15796.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0912141703330.2690-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912141015240.26135@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.44L0.0912141703330.2690-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,51 +17,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 14 December 2009, Linus Torvalds wrote:
+On Monday 14 December 2009, Alan Stern wrote:
+> On Mon, 14 Dec 2009, Rafael J. Wysocki wrote:
 > 
-> On Sat, 12 Dec 2009, Rafael J. Wysocki wrote:
+> > On Monday 14 December 2009, Alan Stern wrote:
+> > > On Mon, 14 Dec 2009, Rafael J. Wysocki wrote:
+> > > 
+> > > > There you go (untested for now).
+> > > > 
+> > > > ->runtime_idle() is still only called for the device's bus type, because
+> > > > otherwise it will be hard to determine the right ordering of the bus type,
+> > > > device type and device class callbacks.
+> > > 
+> > > Shouldn't it be the same as runtime_suspend and runtime_resume?
 > > 
-> > One solution that we have discussed on linux-pm is to start a bunch of async
-> > threads searching for async devices that can be suspended and suspending
-> > them (assuming suspend is considered) out of order with respect to dpm_list.
+> > Well, the ordering is different in each of them ...
 > 
-> Ok, guys, stop the crazy.
-> 
-> That's another of those "ok, that's just ttoally stupid and clearly too 
-> complex" ideas that I would never pull.
-> 
-> I should seriously suggest that people just stop discussing architectural 
-> details on the pm list if they all end up being this level of crazy.
-> 
-> The sane thing to do is to just totally ignore the async layer on PCI 
-> bridges and other things that only have a late-suspend/early-resume thing. 
-> No need for the above kind of obviously idiotic crap.
-> 
-> However, my point was really that we wouldn't even have _needed_ that kind 
-> of special case if we had just decided to let the subsystems do it. But 
-> whatever. At worst, the PCI layer can even just mark such devices with 
-> just late/early suspend/resume as being asynchronous, even though that 
-> ends up resulting in some totally pointless async work that doesn't do 
-> anything.
-> 
-> But please guys - reign in the crazy ideas on the pm list. It's not like 
-> our suspend/resume has gotten so stable as to be boring, and we want it to 
-> become unreliable again.
+> Why not just copy the order used by device_suspend(): class, then type,
+> then bus?
 
-Indeed.
+Do you mean in _idle?
 
-OK, what about a two-pass approach in which the first pass only inits the
-completions and starts async threads for leaf "async" devices?  I think leaf
-devices are most likely to take much time to suspend, so this will give us
-a chance to save quite some time.
+> Actually, I don't know of any cases where the order matters.  But there 
+> may be some, for system suspend.  Runtime suspend is new enough that 
+> people will adapt.
 
-A more aggressive version of this might start the async threads for all async
-devices in the first pass and then only handle the sychronous ones in the
-second pass - as long as there are only a few async devices that should be
-quite efficient.
+Still, calling them in the reverse order in resume is kind of logical ...
+
+> > > What's the reason for error_ptr here?  Its value will always be the
+> > > same as the return value except in the case where none of the callbacks
+> > > are defined.  Why not just use -ENOSYS in that case and eliminate
+> > > error_ptr?
+> > 
+> > To preserve the existing logic.
+> > 
+> > Namely, without the patch dev->power.runtime error is not updated in the
+> > -ENOSYS case and that actually is for a reason (we don't want runtime_error to
+> > be set merely because there's no callbacks to execute).  I could check the
+> > return value, but what if one of the callbacks returns -ENOSYS?
+> 
+> Don't worry about it.  -ENOSYS means the operation isn't implemented.  
+> So if somebody's method implementation tells you that the method isn't 
+> implemented, they'll get what they deserve.  :-)
+
+OK
 
 Rafael
