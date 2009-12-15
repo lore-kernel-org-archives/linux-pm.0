@@ -1,18 +1,16 @@
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: RFC: A proposal for power capping through forced
- idle in the Linux Kernel
-Date: Tue, 15 Dec 2009 15:59:09 +0530
-Message-ID: <20091215102909.GA878__6101.27441254935$1260873095$gmane$org@dirshya.in.ibm.com>
-References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
-	<20091214161922.6f252492@infradead.org>
-	<4352991a0912141636t35a96c14o5fd4b9e152e6e681@mail.gmail.com>
-Reply-To: svaidy@linux.vnet.ibm.com
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re:
+	Async suspend-resume patch w/ rwsems)
+Date: Tue, 15 Dec 2009 12:03:22 +0100
+Message-ID: <200912151203.22916.rjw__684.09782038561$1260875024$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
+	<200912150018.11837.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912141609020.14385@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4352991a0912141636t35a96c14o5fd4b9e152e6e681@mail.gmail.com>
+In-Reply-To: <alpine.LFD.2.00.0912141609020.14385@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,88 +20,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Salman Qazi <sqazi@google.com>
-Cc: Michael Rubin <mrubin@google.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Taliver Heath <taliver@google.com>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-* Salman Qazi <sqazi@google.com> [2009-12-14 16:36:20]:
-
-> On Mon, Dec 14, 2009 at 4:19 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> > On Mon, 14 Dec 2009 15:11:47 -0800
-> > Salman Qazi <sqazi@google.com> wrote:
-> >
-> >
-> > I like the general idea, I have one request (that I didn't see quite in
-> > your explanation): Please make sure that all cpus in the system do
-> > their idle injection at the same time, so that memory can go into power
-> > saving mode as well during this time etc etc...
-> >
-
-The value of the overall idea is well understood but the
-implementation and benefits in terms of power savings was the major
-point of discussion earlier. 
- 
-> With the current interface, the forced idle percentages on the CPUs
-> are controlled independently.  There's a trade-off here.  If we inject
-> idle cycles on all the CPU at the same time, our machine
-> responsiveness also degrades: essentially every CPU becomes equally
-> bad for an interactive task to run on.  Our aim at the moment is to
-> try to concentrate the idle cycles on a small set of CPUs, to strive
-> to leave some CPUs where interactive tasks can run unhindered.  But,
-> given a different workload and goals the correct policy may be
-> different.
+On Tuesday 15 December 2009, Linus Torvalds wrote:
 > 
-> Simultaneously idling multiple "cores" becomes necessary in the SMT
-> case: as there is no point in idling a single thread, while the other
-> thread is running full tilt.  So, in such a case it is necessary to
-> idle all the threads making up the physical core.  This feature has
-> not been implemented yet.
+> On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
+> > 
+> > Because the PCI bridges are not the only case where it matters (I'd say they
+> > are really a corner case).  Basically, any two async devices separeted by a
+> > series of sync ones are likely not to be suspended (or resumed) in parallel
+> > with each other, because the parent is usually next to its children in dpm_list.
 > 
-> I think the best approach may be to provide a way to specify the
-> policy from the user space.  Basically let the user decide at what
-> level of CPU hierarchy the forced idle percentages are specified.
-> Then, in the levels below, we simply inject at the same time.
+> Give a real example that matters.
 
-Synchronising the idle times across multiple cores and also selecting
-sibling threads belonging to the same core is important.  The current
-ACPI forced idle driver can inject idle time but not synchronized
-across multiple cores.
+I'll try.  Let -> denote child-parent relationships and assume dpm_list looks
+like this:
 
-Allowing the scheduler load balancer to avoid using a part of the
-sched domain tree will allow easy grouping of sibling threads and
-sibling cores if that saves more power.
+..., A->B->C, D, E->F->G, ...
 
-However as Arjan mentioned, new architectures have significant power
-savings at full system idle where memory power is reduced.  Injecting
-idle time in any of the core will actually increase the utilisation on
-the other cores (unless the system is full loaded) and reduce the full
-system idle time opportunity.  Basically injecting idle time on some
-of the cores in the system goes against the race-to-idle policy
-thereby decreasing overall system operating efficiency.
+where A, B, E, F are all async and C, D, G are sync (E, F, G may be USB and
+A, B, C may be serio input devices and D is a device that just happens to be in
+dpm_list between them).  Say A and C take the majority of the total suspend
+time and assume we traverse the dpm_list from left to right.
 
-Can you please clarify the following questions:
+Now, during suspend, C waits for B that waits for A and G waits for F that
+waits for E.  Moreover, since C is sync, the PM core won't start the suspend
+of D until the suspend of C has returned.  In turn, since D is sync, the
+suspend of E won't be started until the suspend of D has returned.  So in
+this situation the gain from the async suspends of A, B, E, F is zero.
 
-* What is the typical duration of idle time injected?
-        - 10s of milli seconds?  CPUs are expected to goto lowest
-          power idle state within this time?
+However, it won't be zero if we start the async suspends of A, B, E, F
+upfront.
 
-* You mentioned that natural idle time in the system is taken into
-  account before injecting forced idle time, which is a good feature
-  to have.
-        - In most workloads, as the utilisation drops, all the cpus
-          have similar idle times.  This is favourable for exploiting
-          memory power saving.  
-        - Now when more idle time need to be inserted, is it
-          uniformly spread across all CPUs?
+I'm not sure if this is sufficiently "real life" for you, but this is how
+dpm_list looks on one of my test boxes, more or less.
 
-Suggestions:
+> Really. 
+> 
+> How hard can it be to understand: KISS. Keep It Simple, Stupid.
+> 
+> I get really tired of this whole stupid async discussion, because you're 
+> overdesigning it.
+> 
+> To a first approximation, THE ONLY THING THAT MATTERS IS USB.
 
-* Can cgroup hardlimits help here to inject idle times
-  http://lkml.org/lkml/2009/11/17/191
+If this applies to _resume_ only, then I agree, but the Arjan's data clearly
+show that serio devices take much more time to suspend than USB.
 
-  The problem of distributing idle time equally across CPUs and
-  relating sibling threads is still and issue, but can be worked out.
-  As of now hardlimits can distribute idle time across CPUs thereby
-  enabling full system idle.
+But if we only talk about resume, the PCI bridges don't really matter,
+because they are resumed before all devices that depend on them, so they don't
+really need to wait for anyone anyway.
 
---Vaidy
+Rafael
