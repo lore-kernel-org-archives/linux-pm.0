@@ -1,13 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Runtime PM: Calling Device runtime PM callbacks?
-Date: Tue, 15 Dec 2009 09:40:24 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912150933460.3566-100000@iolanthe.rowland.org>
-References: <200912150026.43688.rjw@sisk.pl>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re:
+ Async suspend-resume patch w/ rwsems)
+Date: Tue, 15 Dec 2009 07:26:41 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0912150722310.14385__33143.7960071073$1260890973$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
+	<200912150018.11837.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912141609020.14385@localhost.localdomain>
+	<200912151203.22916.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912150026.43688.rjw@sisk.pl>
+In-Reply-To: <200912151203.22916.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,49 +22,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+
+
 On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
-
-> > Idle is very similar to suspend.  They should use the same order.
 > > 
-> > I guess there's one extra thing to look out for: If one of the idle
-> > callbacks does pm_runtime_suspend() then there's no point invoking the
-> > later callbacks.
+> > Give a real example that matters.
 > 
-> But how do we know that?
+> I'll try.  Let -> denote child-parent relationships and assume dpm_list looks
+> like this:
 
-How do we know whether the callback does pm_runtime_suspend()?  Because 
-dev->runtime_status changes to RPM_SUSPENDED.
+No. 
 
-How do we know there's no point invoking the later callbacks?  Because 
-an idle callback is merely supposed to decide whether or not to suspend 
-the device.  If the device is already suspended then the callback's job 
-is already done.
+I mean something real - something like
 
-> I'm still not sure what actually the point executing _idle for device types and
-> device classes is.  The only situation I can aticipate if when there's a device
-> without a bus type.
+ - if you run on a non-PC with two USB buses behind non-PCI controllers.
 
-In the USB stack we have "devices" and "interfaces", two different
-device types (both belonging to the USB bus type).  They need to have
-separate callbacks.  The device idle callback will do a bunch of
-testing, whereas the interface idle callback will always invoke
-pm_runtime_suspend() immediately.
+ - device xyz.
 
-> Hmm.  Actually, are we ever going to call two or more suspend callbacks (ie.
-> bus type one and device type one or device type one and device class one)
-> for the same device?  If not, we'll be able to simplify things significantly
-> by making them mutually exclusive (ie. if there's bus type, call bus type,
-> or else if there's device type, call device type, or else if there's device
-> class, call device class).
+> If this applies to _resume_ only, then I agree, but the Arjan's data clearly
+> show that serio devices take much more time to suspend than USB.
 
-I don't plan ever to have more than one callback.  But I can't speak 
-for other parts of the kernel.
+I mean in general - something where you actually have hard data that some 
+device really needs anythign more than my one-liner, and really _needs_ 
+some complex infrastructure.
 
-The situation should be very much the same as with the DPM callbacks.  
-They could make the same assumption.  Or neither should make it -- as
-the case may be.
+Not "let's imagine a case like xyz".
 
-Alan Stern
+> But if we only talk about resume, the PCI bridges don't really matter,
+> because they are resumed before all devices that depend on them, so they don't
+> really need to wait for anyone anyway.
+
+But that's my _point_. That's the whole point of the one-liner patch. Read 
+the comment above that one-liner.
+
+My whole point was that by doing the whole "wait for children" in generic 
+code, you also made devices - such as PCI bridges - have to wait for 
+children, even though they don't need to, and don't want to.
+
+So I suggested an admittedly ugly hack to take care of it - rather than 
+some complex infrastructure.
+
+		Linus
