@@ -1,15 +1,15 @@
-From: "Mahalingam, Nithish" <nithish.mahalingam@intel.com>
-Subject: Re: Runtime PM: Calling Device runtime PM callbacks?
-Date: Tue, 15 Dec 2009 08:41:52 +0530
-Message-ID: <175E0F9A9EFCEA46A65F5552BB057298D7D7EB96@bgsmsx502.gar.corp.intel.com>
-References: <Pine.LNX.4.44L0.0912141805170.2690-100000@iolanthe.rowland.org>
-	<200912150026.43688.rjw@sisk.pl>
+From: Stefan Seyfried <stefan.seyfried@googlemail.com>
+Subject: Re: [PATCH 1/1] Add /sys/power/last_state support
+Date: Tue, 15 Dec 2009 09:19:45 +0100
+Message-ID: <20091215091945.66b245ed@strolchi.home.s3e.de>
+References: <3c192bd846cc4337d9999c6cd66b649232d9561c.1260074113.git.victor.lowther@gmail.com>
+	<200912072241.28017.rjw@sisk.pl>
+	<7E0E364A-4AC2-4D3B-B7A0-61DC970C9254@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912150026.43688.rjw@sisk.pl>
-Content-Language: en-US
+In-Reply-To: <7E0E364A-4AC2-4D3B-B7A0-61DC970C9254@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,19 +19,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Victor Lowther <victor.lowther@gmail.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> Hmm.  Actually, are we ever going to call two or more suspend callbacks (ie.
-> bus type one and device type one or device type one and device class one)
-> for the same device?  If not, we'll be able to simplify things significantly
-> by making them mutually exclusive (ie. if there's bus type, call bus type,
-> or else if there's device type, call device type, or else if there's device
-> class, call device class).
+On Mon, 7 Dec 2009 18:17:36 -0600
+Victor Lowther <victor.lowther@gmail.com> wrote:
+> On Dec 7, 2009, at 3:41 PM, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > Can't you just use the error code returned by "echo mem > /sys/power/ 
+> > state"?
+> 
+> I can, now that I know about it - I did not see anything about error  
+> codes when scanning the documentation.
 
-Was about to ask this question. What is the advantage of calling all of the 
-device's bus type, device type and device class runtime suspend callbacks?
+Note that "echo" only will return 0 or 1, not a real error code. You'll
+need a 5-line C program to get the errno that's returned from the
+kernel.
+It might be interesting to know *why* it failed (e.g. no swap
+partition or not enough space in there).
+-- 
+Stefan Seyfried
 
-Regards,
-Nithish Mahalingam
+"Any ideas, John?"
+"Well, surrounding them's out."
