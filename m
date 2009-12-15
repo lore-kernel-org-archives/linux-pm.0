@@ -1,16 +1,17 @@
-From: tytso@mit.edu
-Subject: Re: RFC: A proposal for power capping through forced
- idle in the Linux Kernel
-Date: Mon, 14 Dec 2009 18:51:51 -0500
-Message-ID: <20091214235151.GG4867__17693.1586735465$1260834796$gmane$org@thunk.org>
-References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
-	<876389xhuk.fsf@basil.nowhere.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re:
+ Async suspend-resume patch w/ rwsems)
+Date: Mon, 14 Dec 2009 16:10:11 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0912141609020.14385__22693.3323815048$1260835870$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
+	<200912142311.31658.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912141416040.26135@localhost.localdomain>
+	<200912150018.11837.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <876389xhuk.fsf@basil.nowhere.org>
+In-Reply-To: <200912150018.11837.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,67 +21,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Salman Qazi <sqazi@google.com>, Michael Rubin <mrubin@google.com>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Taliver Heath <taliver@google.com>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 15, 2009 at 12:21:07AM +0100, Andi Kleen wrote:
-> Salman Qazi <sqazi@google.com> writes:
-> >
-> > We'd like to get as much of our stuff upstream as we can.  Given that
-> > this is a somewhat sizable chunk of work, it would be impolite of me
-> > to just send out a bunch of patches without hearing the concerns of
-> > the community.  What are your thoughts on our design and what do we
-> > need to change to get this to be more acceptable to the community?  I
-> > also would like to know if there are any existing pieces of
-> > infrastructure that this can utilize.
+
+
+On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
 > 
-> There were a lot of discussions on this a few months ago in context
-> of the ACPI 4 "power aggregator" which is a similar (perhaps
-> slightly less sophisticated) concept. 
-> 
-> While there was a lot of talk about teaching the scheduler about this 
-> the end result was just a driver which just starts real time threads
-> and then idles in them. This is in current mainline.
-> 
-> It might be a good idea to review these discussions in the archives.
+> Because the PCI bridges are not the only case where it matters (I'd say they
+> are really a corner case).  Basically, any two async devices separeted by a
+> series of sync ones are likely not to be suspended (or resumed) in parallel
+> with each other, because the parent is usually next to its children in dpm_list.
 
-It should be noted that most of the heat from those discussions was
-over adding the ACPI 4 mechanism to accept requests from the hardware
-platform to add idle cycles in the case of thermal/power emergencies,
-before we had the scheduler improvements to be able to do so in the
-most efficient way possible.  See the description of commit 8e0af5141:
+Give a real example that matters.
 
-   ACPI 4.0 created the logical "processor aggregator device" as a
-   mechinism for platforms to ask the OS to force otherwise busy
-   processors to enter (power saving) idle.
+Really. 
 
-   The intent is to lower power consumption to ride-out transient
-   electrical and thermal emergencies, rather than powering off the
-   server....
+How hard can it be to understand: KISS. Keep It Simple, Stupid.
 
-   Vaidyanathan Srinivasan has proposed scheduler enhancements to
-   allow injecting idle time into the system. This driver doesn't
-   depend on those enhancements, but could cut over to them when they
-   are available.
+I get really tired of this whole stupid async discussion, because you're 
+overdesigning it.
 
-   Peter Z. does not favor upstreaming this driver until the those
-   scheduler enhancements are in place. However, we favor upstreaming
-   this driver now because it is useful now, and can be enhanced over
-   time.
+To a first approximation, THE ONLY THING THAT MATTERS IS USB.
 
-It looks to me that scheme that Salman has proposed for adding idle
-cycles is quite sophisticated, probably more than Vaidyanathan's, and
-the main difference is that Google wants the ability to be able to
-control the system's power/thermal envelope from userspace, as opposed
-to letting the hardware request in an emergency situation.  This makes
-sense, if you are trying to balance the power/thermal requirements
-across a large number of systems, as opposed to responding to a local
-power/thermal emergency signalled from the platform's firmware.
-
-So it would seem to me that Salman's suggestions are very similar to
-what Peter requested before this commit went in (over his objections).
-
-Regards,
-
-     	   	     	    	 	     	- Ted
+		Linus
