@@ -1,14 +1,11 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re:
- Async suspend-resume patch w/ rwsems)
-Date: Tue, 15 Dec 2009 17:01:18 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912151653140.2643-100000__36867.9687417627$1260914691$gmane$org@iolanthe.rowland.org>
-References: <200912152226.22578.rjw@sisk.pl>
+Subject: [PATCH] PM: use pm_runtime_put_sync in system resume
+Date: Tue, 15 Dec 2009 17:10:25 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912151708530.2643-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912152226.22578.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,46 +16,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
+This patch (as1317) fixes a bug in the PM core.  When a device is
+resumed following a system sleep, the core decrements the device's
+runtime PM usage counter but doesn't issue an idle notification if the
+counter reaches 0.  This could prevent an otherwise unused device from
+being runtime-suspended again after the system sleep.
 
-> > Ideally we would figure out how to do the slow devices in parallel
-> > without interference from fast devices having unknown dependencies.  
-> > Unfortunately this may not be possible.
-> 
-> I really expect to see those "unknown dependencies" in the _noirq
-> suspend/resume phases and above.  [The very fact they exist is worrisome,
-> because that's why we don't know why things work on one system and don't
-> work on another, although they appear to be very similar.]
+The fix is to call pm_runtime_put_sync() instead of
+pm_runtime_put_noidle().
 
-This is a good reason for keeping the _noirq phases synchronous.  AFAIK 
-they don't take long enough to be worth converting, so there's no loss.
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-> > The real issue is "blockage": synchronous devices preventing 
-> > possible concurrency among async devices.  That's what you thought 
-> > making PCI bridges async would help.
-> > 
-> > In general, blockage arises in suspend when you have an async child
-> > with a synchronous parent.  The parent has to wait for the child, which
-> > might take a long time, thereby delaying other unrelated devices.
-> 
-> Exactly, but the Linus' point seems to be that's going to be rare and we
-> should be able to special case all of the interesting cases.
+---
 
-Maybe that's true.  Without seeing some examples of actual dpm_list
-contents, we can't tell.  Can you post the interesting parts of the
-lists from some of your test machines?  Maybe with a USB device or two
-plugged in?  (The device names together with the names of their parents
-should be enough.)
-
-> > (This explains why you wanted to make PCI bridges async -- they are the
-> > parents of USB controllers.)  For resume it's the opposite: an async
-> > parent with synchronous children.
-> 
-> Is that really going to happen in practice?  I mean, what would be the point?
-
-I don't know.  It's all speculation until we see some actual lists.
-
-Alan Stern
+Index: usb-2.6/drivers/base/power/main.c
+===================================================================
+--- usb-2.6.orig/drivers/base/power/main.c
++++ usb-2.6/drivers/base/power/main.c
+@@ -521,7 +521,7 @@ static void dpm_complete(pm_message_t st
+ 			mutex_unlock(&dpm_list_mtx);
+ 
+ 			device_complete(dev, state);
+-			pm_runtime_put_noidle(dev);
++			pm_runtime_put_sync(dev);
+ 
+ 			mutex_lock(&dpm_list_mtx);
+ 		}
+@@ -772,7 +772,7 @@ static int dpm_prepare(pm_message_t stat
+ 		pm_runtime_get_noresume(dev);
+ 		if (pm_runtime_barrier(dev) && device_may_wakeup(dev)) {
+ 			/* Wake-up requested during system sleep transition. */
+-			pm_runtime_put_noidle(dev);
++			pm_runtime_put_sync(dev);
+ 			error = -EBUSY;
+ 		} else {
+ 			error = device_prepare(dev, state);
