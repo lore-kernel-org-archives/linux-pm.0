@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re:
-	Async suspend-resume patch w/ rwsems)
-Date: Tue, 15 Dec 2009 12:14:10 +0100
-Message-ID: <200912151214.10980.rjw__26513.8549767018$1260876008$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
-	<alpine.LFD.2.00.0912141609020.14385@localhost.localdomain>
-	<alpine.LFD.2.00.0912141610460.14385@localhost.localdomain>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH 12/12] PM / r8169: Add simplified
+	run-time PM	support
+Date: Tue, 15 Dec 2009 12:49:56 +0100
+Message-ID: <20091215114956.GA1415__941.371583803807$1260877898$gmane$org@ucw.cz>
+References: <200911160047.46299.rjw@sisk.pl> <200911291632.44763.rjw@sisk.pl>
+	<200911291644.27288.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912141610460.14385@localhost.localdomain>
+Content-Disposition: inline
+In-Reply-To: <200911291644.27288.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,34 +20,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Francois Romieu <romieu@fr.zoreil.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 15 December 2009, Linus Torvalds wrote:
-> 
-> On Mon, 14 Dec 2009, Linus Torvalds wrote:
-> > 
-> > I get really tired of this whole stupid async discussion, because you're 
-> > overdesigning it.
-> 
-> Btw, this is important. I'm not going to pull even your _current_ async 
-> stuff if you can't show that you fundamentally UNDERSTAND this fact.
+Hi!
 
-What fact?  The only thing that matters is USB?  For resume, it is.  For
-suspend, it clearly isn't.
+> Use the PCI run-time power management framework to add simplified
+> run-time PM support to the r8169 driver.  Namely, make the driver
+> suspend the device when the link is off and set it up for generating
+> wake-up event after the link has been detected again.
 
-> Stop making up idiotic complex interfaces. Look at my one-liner patch, and 
-> realize that it gets you 99% there - the 99% that matters.
+Nice!
 
-I said I was going to use it, but I don't think that's going to be sufficient.
+Do you have any idea how much power it saves?
+								Pavel
 
-[BTW, I'm not sure what you want to achieve by insulting me.  Either you may
-want to scare me, but I'm not scared, or you may want to try to make me so
-disgusted that I'll just give up and back off, but this is not going to happen
-either.]
-
-Insults aside, I'm going to make some measurements to see how much time we can
-save.
-
-Rafael
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
