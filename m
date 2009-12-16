@@ -1,15 +1,15 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [PATCH] OMAP: omap3_pm_get_suspend_state() error
-	ignored in pwrdm_suspend_get()
-Date: Wed, 16 Dec 2009 09:23:59 -0800
-Message-ID: <87hbrqbzo0.fsf__16602.4271552034$1260984413$gmane$org@deeprootsystems.com>
-References: <4B29092C.4040600@gmail.com>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [RFC][PATCH 3/12] PCI / PM: Propagate wake-up enable
+ for PCIe devices too
+Date: Wed, 16 Dec 2009 11:19:39 -0800
+Message-ID: <20091216111939.1a756377__3492.5359920182$1260991288$gmane$org@jbarnes-piketon>
+References: <200911160047.46299.rjw@sisk.pl> <200911291632.44763.rjw@sisk.pl>
+	<200911291635.54352.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4B29092C.4040600@gmail.com> (Roel Kluin's message of "Wed\,
-	16 Dec 2009 17\:22\:04 +0100")
+In-Reply-To: <200911291635.54352.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,43 +19,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Oliver@smtp1.linux-foundation.org, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Len@smtp1.linux-foundation.org, Devel Maling List <linux-acpi@vger.kernel.org>, Bjorn@smtp1.linux-foundation.org, Francois Romieu <romieu@fr.zoreil.com>, pm list <linux-pm@lists.linux-foundation.org>, ACPI@smtp1.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Roel Kluin <roel.kluin@gmail.com> writes:
+On Sun, 29 Nov 2009 16:35:54 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> val is an u64 pointer, we need an int to check the error.
->
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-
-Thanks, will queue this in my PM fixes queue for .33-rc series.
-
-Kevin
-
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Having read the PM part of the PCIe 2.0 specification more carefully
+> I think that it was a mistake to restrict the wake-up enable
+> propagation to non-PCIe devices, because if we do not request
+> control of the root ports' PME registers via OSC, PCIe PME is
+> supposed to be handled by the platform, just like the non-PCIe PME.
+> Even if we do that, the wake-up propagation is done to allow the
+> devices to wake up the system from sleep states which involves the
+> platform anyway, so it won't hurt.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 > ---
-> Found using coccinelle: http://coccinelle.lip6.fr/
->
-> diff --git a/arch/arm/mach-omap2/pm-debug.c b/arch/arm/mach-omap2/pm-debug.c
-> index 860b755..081ca85 100644
-> --- a/arch/arm/mach-omap2/pm-debug.c
-> +++ b/arch/arm/mach-omap2/pm-debug.c
-> @@ -488,9 +488,11 @@ int pm_dbg_regset_init(int reg_set)
->  
->  static int pwrdm_suspend_get(void *data, u64 *val)
->  {
-> -	*val = omap3_pm_get_suspend_state((struct powerdomain *)data);
-> +	int ret;
-> +	ret = omap3_pm_get_suspend_state((struct powerdomain *)data);
-> +	*val = ret;
->  
-> -	if (*val >= 0)
-> +	if (ret >= 0)
->  		return 0;
->  	return *val;
->  }
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>  drivers/pci/pci-acpi.c |   10 ++--------
+>  1 file changed, 2 insertions(+), 8 deletions(-)
+
+Applied after fixing up conflicts related to dev->is_pcie.
+
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
