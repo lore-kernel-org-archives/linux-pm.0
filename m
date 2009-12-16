@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Async suspend-resume patch w/ completions (was: Re:
- Async suspend-resume patch w/ rwsems)
-Date: Tue, 15 Dec 2009 17:27:58 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912151719300.4055-100000__33175.6815351129$1260916226$gmane$org@iolanthe.rowland.org>
-References: <alpine.LFD.2.00.0912151337350.14385@localhost.localdomain>
+	Async suspend-resume patch w/ rwsems)
+Date: Wed, 16 Dec 2009 03:11:05 +0100
+Message-ID: <200912160311.05915.rjw__18040.6608888463$1260929513$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
+	<200912151203.22916.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912150722310.14385@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912151337350.14385@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912150722310.14385@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,71 +24,200 @@ To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 15 Dec 2009, Linus Torvalds wrote:
-
-> On Tue, 15 Dec 2009, Alan Stern wrote:
+On Tuesday 15 December 2009, Linus Torvalds wrote:
+> 
+> On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
+> > > 
+> > > Give a real example that matters.
 > > 
-> > Okay.  This obviously implies that if/when cardbus bridges are
-> > converted to async suspend/resume, the driver should make sure that the
-> > lower-numbered devices wait for their sibling higher-numbered devices
-> > to suspend (and vice versa for resume).  Awkward though it may be.
+> > I'll try.  Let -> denote child-parent relationships and assume dpm_list looks
+> > like this:
 > 
-> Yes. However, this is an excellent case where the whole "the device layer 
-> does things asynchronously" is really rather awkward.
+> No. 
 > 
-> For cardbus, the nicest model really would be for the _driver_ to decide 
-> to do some things asynchronously, after having done some other things 
-> synchronously (to make sure of ordering).
-
-Have you considered the possibility of augmenting the design to allow 
-this?  Perhaps reserve a particular return code from the suspend 
-routine to mean that asynchronous operations are still underway, so the 
-PM core shouldn't automatically do the complete_all().
-
-> So I suspect that we _can_ just do cardbus bridges asynchronously too, but 
-> it really needs some care. I suspect to a first approximation we would 
-> want to do the easy cases first, and ignore cardbus as being "known to 
-> possibly have issues".
-
-Certainly.  Start with the easy things and leave harder devices like 
-cardbus bridges for later.
-
-> > > Subtle? Hell yes.
-> > 
-> > I don't disagree.  However the subtlety lies mainly in the matter of
-> > non-obvious dependencies.
+> I mean something real - something like
 > 
-> Yes. But we don't necessarily even _know_ those dependencies.
-
-Yep.  Both non-obvious and non-known.
-
-> The Cardbus ones I know about, but really only because I wrote much of 
-> that code initially when converting cardbus to look like the PCI bridge it 
-> largely is. But how many other cases like that do we have that we have 
-> perhaps never even hit, because we've never done anything out of order.
+>  - if you run on a non-PC with two USB buses behind non-PCI controllers.
 > 
-> > The ACPI relations are definitely something to worry about.  It would
-> > be a good idea, at an early stage, to add those dependencies
-> > explicitly.  I don't know enough about them to say more; perhaps Rafael 
-> > does.
+>  - device xyz.
 > 
-> Quite frankly, I would really not want to do ACPI first at all.
-
-Dear me, no!  I wasn't saying ACPI should be made async; I was saying
-that ACPI "shadow" devices should be made to wait for their async PCI
-counterparts.
-
-> > Indeed.  Perhaps you were too hasty in suggesting that PCI bridges 
-> > should be async.
+> > If this applies to _resume_ only, then I agree, but the Arjan's data clearly
+> > show that serio devices take much more time to suspend than USB.
 > 
-> Oh, yes. I would suggest that first we do _nothing_ async except for 
-> within just a single USB tree, and perhaps some individual drivers like 
-> the PS/2 keyboard controller (and do even that perhaps only for the PC 
-> version, which we know is on the southbridge and not anywhere else).
+> I mean in general - something where you actually have hard data that some 
+> device really needs anythign more than my one-liner, and really _needs_ 
+> some complex infrastructure.
 > 
-> If that ends up meaning that we block due to PCI bridges, so be it. I 
-> really would prefer baby steps over anything more complete.
+> Not "let's imagine a case like xyz".
 
-Agreed.  I'm not in any hurry.
+As I said I would, I made some measurements.
 
-Alan Stern
+I measured the total time of suspending and resuming devices as shown by the
+code added by this patch:
+http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=commitdiff_plain;h=c1b8fc0a8bff7707c10f31f3d26bfa88e18ccd94;hp=087dbf5f079f1b55cbd3964c9ce71268473d5b67
+on two boxes, HP nx6325 and MSI Wind U100 (hardware-wise they are quite
+different and the HP was running 64-bit kernel and user space).
+
+I took four cases into consideration:
+(1) synchronous suspend and resume (/sys/power/pm_async = 0)
+(2) asynchronous suspend and resume as introduced by the async branch at:
+    http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=shortlog;h=refs/heads/async
+(3) asynchronous suspend and resume like in (2), but with your one-liner setting
+    the power.async_suspend flag for PCI bridges on top
+(4) asynchronous suspend and resume like in (2), but with an extra patch that
+    is appended on top
+
+For those tests I set power.async_suspend for all USB devices, all serio input
+devices, the ACPI battery and the USB PCI controllers (to see the impact of the
+one-liner, if any).
+
+I carried out 5 consecutive suspend-resume cycles (started from under X) on
+each box in each case, and the raw data are here (all times in milliseconds):
+http://www.sisk.pl/kernel/data/async-suspend.pdf
+
+The summarized data are below (the "big" numbers are averages and the +/-
+numbers are standard deviations, all in milliseconds):
+
+			HP nx6325		MSI Wind U100
+
+sync suspend		1482 (+/- 40)	1180 (+/- 24)
+sync resume		2955 (+/- 2)	3597 (+/- 25)
+
+async suspend		1553 (+/- 49)	1177 (+/- 32)
+async resume		2692 (+/- 326)	3556  (+/- 33)
+
+async+one-liner suspend	1600 (+/- 39)	1212 (+/- 41)
+async+one-liner resume	2692 (+/- 324)	3579 (+/- 24)
+
+async+extra suspend	1496 (+/- 37)	1217 (+/- 38)
+async+extra resume	1859 (+/- 114)	1923 (+/- 35)
+
+So, in my opinion, with the above set of "async" devices, it doesn't
+make sense to do async suspend at all, because the sync suspend is actually
+the fastest on both machines.
+
+However, it surely is worth doing async _resume_ with the extra patch appended
+below, because that allows us to save 1 second or more on both machines with
+respect to the sync case.  The other variants of async resume also produce some
+time savings, but (on the nx6325) at the expense of huge fluctuations from one
+cycle to another (so they can actually be slower than the sync resume).  Only
+the async resume with the extra patch is consistently better than the sync one.
+The impact of the one-liner is either negligible or slightly negative.
+
+Now, what does the extra patch do?  Exactly the thing I was talking about, it
+starts all async suspends and resumes upfront.
+
+So, it looks like we both were wrong.  I was wrong, because I thought the
+extra patch would help suspend, but not resume, while in fact it appears to
+help resume big time.  You were wrong, because you thought that the one-liner
+would have positive impact, while in fact it doesn't.
+
+Concluding, at this point I'd opt for implementing asynchronous resume alone,
+_without_ asynchronous suspend, which is more complicated and doesn't really
+give us any time savings.  At the same time, I'd implement the asynchronous
+resume in such a way that all of the async resume threads would be started
+before the synchronous suspend thread, because that would give us the best
+results.
+
+Rafael
+
+---
+ drivers/base/power/main.c |   48 +++++++++++++++++++++++++++++-----------------
+ 1 file changed, 31 insertions(+), 17 deletions(-)
+
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -523,14 +523,9 @@ static void async_resume(void *data, asy
+ 
+ static int device_resume(struct device *dev)
+ {
+-	INIT_COMPLETION(dev->power.completion);
+-
+-	if (pm_async_enabled && dev->power.async_suspend
+-	    && !pm_trace_is_enabled()) {
+-		get_device(dev);
+-		async_schedule(async_resume, dev);
++	if (dev->power.async_suspend && pm_async_enabled
++	    && !pm_trace_is_enabled())
+ 		return 0;
+-	}
+ 
+ 	return __device_resume(dev, pm_transition, false);
+ }
+@@ -545,14 +540,28 @@ static int device_resume(struct device *
+ static void dpm_resume(pm_message_t state)
+ {
+ 	struct list_head list;
++	struct device *dev;
+ 	ktime_t starttime = ktime_get();
+ 
+ 	INIT_LIST_HEAD(&list);
+ 	mutex_lock(&dpm_list_mtx);
+ 	pm_transition = state;
+-	while (!list_empty(&dpm_list)) {
+-		struct device *dev = to_device(dpm_list.next);
+ 
++	list_for_each_entry(dev, &dpm_list, power.entry) {
++		if (dev->power.status < DPM_OFF)
++			continue;
++
++		INIT_COMPLETION(dev->power.completion);
++
++		if (dev->power.async_suspend && pm_async_enabled
++		    && !pm_trace_is_enabled()) {
++			get_device(dev);
++			async_schedule(async_resume, dev);
++		}
++	}
++
++	while (!list_empty(&dpm_list)) {
++		dev = to_device(dpm_list.next);
+ 		get_device(dev);
+ 		if (dev->power.status >= DPM_OFF) {
+ 			int error;
+@@ -809,13 +818,8 @@ static void async_suspend(void *data, as
+ 
+ static int device_suspend(struct device *dev)
+ {
+-	INIT_COMPLETION(dev->power.completion);
+-
+-	if (pm_async_enabled && dev->power.async_suspend) {
+-		get_device(dev);
+-		async_schedule(async_suspend, dev);
++	if (pm_async_enabled && dev->power.async_suspend)
+ 		return 0;
+-	}
+ 
+ 	return __device_suspend(dev, pm_transition, false);
+ }
+@@ -827,6 +831,7 @@ static int device_suspend(struct device 
+ static int dpm_suspend(pm_message_t state)
+ {
+ 	struct list_head list;
++	struct device *dev;
+ 	ktime_t starttime = ktime_get();
+ 	int error = 0;
+ 
+@@ -834,9 +839,18 @@ static int dpm_suspend(pm_message_t stat
+ 	mutex_lock(&dpm_list_mtx);
+ 	pm_transition = state;
+ 	async_error = 0;
+-	while (!list_empty(&dpm_list)) {
+-		struct device *dev = to_device(dpm_list.prev);
+ 
++	list_for_each_entry_reverse(dev, &dpm_list, power.entry) {
++		INIT_COMPLETION(dev->power.completion);
++
++		if (pm_async_enabled && dev->power.async_suspend) {
++			get_device(dev);
++			async_schedule(async_suspend, dev);
++		}
++	}
++
++	while (!list_empty(&dpm_list)) {
++		dev = to_device(dpm_list.prev);
+ 		get_device(dev);
+ 		mutex_unlock(&dpm_list_mtx);
+ 
