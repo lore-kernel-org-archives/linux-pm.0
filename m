@@ -1,14 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Async suspend-resume patch w/ completions (was: Re:
 	Async suspend-resume patch w/ rwsems)
-Date: Wed, 16 Dec 2009 20:26:00 +0100
-Message-ID: <200912162026.00991.rjw__26449.1248447031$1260991590$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0912161018100.2909-100000@iolanthe.rowland.org>
+Date: Wed, 16 Dec 2009 20:27:16 +0100
+Message-ID: <200912162027.16574.rjw__34698.2241761454$1260991639$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
+	<200912160311.05915.rjw@sisk.pl>
+	<alpine.LFD.2.00.0912160737350.7454@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912161018100.2909-100000@iolanthe.rowland.org>
+In-Reply-To: <alpine.LFD.2.00.0912160737350.7454@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,30 +20,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 16 December 2009, Alan Stern wrote:
+On Wednesday 16 December 2009, Linus Torvalds wrote:
+> 
 > On Wed, 16 Dec 2009, Rafael J. Wysocki wrote:
+> > 
+> > The summarized data are below (the "big" numbers are averages and the +/-
+> > numbers are standard deviations, all in milliseconds):
+> > 
+> > 			HP nx6325		MSI Wind U100
+> > 
+> > sync suspend		1482 (+/- 40)	1180 (+/- 24)
+> > sync resume		2955 (+/- 2)	3597 (+/- 25)
+> > 
+> > async suspend		1553 (+/- 49)	1177 (+/- 32)
+> > async resume		2692 (+/- 326)	3556  (+/- 33)
+> > 
+> > async+one-liner suspend	1600 (+/- 39)	1212 (+/- 41)
+> > async+one-liner resume	2692 (+/- 324)	3579 (+/- 24)
+> > 
+> > async+extra suspend	1496 (+/- 37)	1217 (+/- 38)
+> > async+extra resume	1859 (+/- 114)	1923 (+/- 35)
+> > 
+> > So, in my opinion, with the above set of "async" devices, it doesn't
+> > make sense to do async suspend at all, because the sync suspend is actually
+> > the fastest on both machines.
 > 
-> > I measured the total time of suspending and resuming devices as shown by the
-> > code added by this patch:
-> > http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=commitdiff_plain;h=c1b8fc0a8bff7707c10f31f3d26bfa88e18ccd94;hp=087dbf5f079f1b55cbd3964c9ce71268473d5b67
-> > on two boxes, HP nx6325 and MSI Wind U100 (hardware-wise they are quite
-> > different and the HP was running 64-bit kernel and user space).
+> Hmm. I certainly agree - your numbers do not seem to support any async at 
+> all.
 > 
-> > I carried out 5 consecutive suspend-resume cycles (started from under X) on
-> > each box in each case, and the raw data are here (all times in milliseconds):
-> > http://www.sisk.pl/kernel/data/async-suspend.pdf
+> However, I do note that for the "extra patch" makes a big difference at 
+> resume time. That implies that the resume serializes on some slow device 
+> that wasn't marked async - and starting the async ones early avoids that. 
 > 
-> I'd like to see much more detailed data.  For each device, let's get 
-> the device name, the parent's name, and the start time, end time, and 
-> duration for suspend or resume.  The start time should be measured when 
-> you have finished waiting for the children.  The end time should be 
-> measured just before the complete_all().
+> But without the per-device timings, it's hard to even guess what device 
+> that was.
+> 
+> But even that doesn't really help the suspend cases, only resume.
+> 
+> Do you have any sample timing output with devices listed?
 
-I'm going to use the Arjan's patch + script to chart the suspend/resume times
-for individual devices.  I can send you the raw data, though.
+I'm going to generate one shortly.
 
 Rafael
