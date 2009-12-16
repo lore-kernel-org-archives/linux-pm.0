@@ -1,17 +1,13 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re:
- Async suspend-resume patch w/ rwsems)
-Date: Wed, 16 Dec 2009 14:11:09 -0800 (PST)
-Message-ID: <alpine.LFD.2.00.0912161410120.3556__5272.61498286879$1261001630$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
-	<200912162027.16574.rjw@sisk.pl>
-	<alpine.LFD.2.00.0912161255080.3556@localhost.localdomain>
-	<200912162257.00771.rjw@sisk.pl>
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [PATCH -next] power: fix printk formats
+Date: Wed, 16 Dec 2009 14:26:06 -0800
+Message-ID: <20091216142606.1a9f3817.randy.dunlap@oracle.com>
+References: <20091216183212.118c5e14.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912162257.00771.rjw@sisk.pl>
+In-Reply-To: <20091216183212.118c5e14.sfr@canb.auug.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,16 +17,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
+Fix printk format warnings:
 
-Btw, what are the timings if you just force everything async? I think that 
-worked on yur laptops, no?
+drivers/base/power/main.c:398:warning: format '%Lu' expects type 'long long unsigned int', but argument 5 has type 'long int'
+drivers/base/power/main.c:398:warning: format '%03Lu' expects type 'long long unsigned int', but argument 6 has type 'long int'
 
-It would be interestign to know - if only to see what the asymptotic upper 
-bound is for all of this is..
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/base/power/main.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-		Linus
+--- linux-next-20091216.orig/drivers/base/power/main.c
++++ linux-next-20091216/drivers/base/power/main.c
+@@ -395,7 +395,7 @@ static void dpm_show_time(ktime_t startt
+ 	usecs = usecs64;
+ 	if (usecs == 0)
+ 		usecs = 1;
+-	pr_info("PM: %s%s%s of devices complete after %Lu.%03Lu msecs\n",
++	pr_info("PM: %s%s%s of devices complete after %lu.%03lu msecs\n",
+ 		info ?: "", info ? " " : "", pm_verb(state.event),
+ 		usecs / USEC_PER_MSEC, usecs % USEC_PER_MSEC);
+ }
