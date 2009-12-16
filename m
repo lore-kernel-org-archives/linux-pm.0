@@ -1,7 +1,8 @@
-From: Willi Mann <foss-ml@wm1.at>
-Subject: kernel 2.6.32 much slower than 2.6.31 on s2disk
-Date: Wed, 16 Dec 2009 17:10:46 +0100
-Message-ID: <hgb0q7$u8a$1@ger.gmane.org>
+From: Roel Kluin <roel.kluin@gmail.com>
+Subject: [PATCH] OMAP: omap3_pm_get_suspend_state() error ignored
+	in pwrdm_suspend_get()
+Date: Wed, 16 Dec 2009 17:22:04 +0100
+Message-ID: <4B29092C.4040600__1465.13539734787$1260980469$gmane$org@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,19 +16,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.osdl.org
+To: linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, And
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+val is an u64 pointer, we need an int to check the error.
 
-It seems to me that kernel 2.6.32 takes much longer to restore the system 
-into a really responsive state, despite the fact that s2disk seems to finish 
-much faster. 
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Found using coccinelle: http://coccinelle.lip6.fr/
 
-I don't know to how to do a reliable benchmark on this problem, espially as 
-the required time probably very much depends on the exact state of the 
-frozen system. Is there any change in 2.6.32 that might cause less memory to 
-be stored on the suspend device, and thus require more random disk access 
-after the restore?
-
-WM
+diff --git a/arch/arm/mach-omap2/pm-debug.c b/arch/arm/mach-omap2/pm-debug.c
+index 860b755..081ca85 100644
+--- a/arch/arm/mach-omap2/pm-debug.c
++++ b/arch/arm/mach-omap2/pm-debug.c
+@@ -488,9 +488,11 @@ int pm_dbg_regset_init(int reg_set)
+ 
+ static int pwrdm_suspend_get(void *data, u64 *val)
+ {
+-	*val = omap3_pm_get_suspend_state((struct powerdomain *)data);
++	int ret;
++	ret = omap3_pm_get_suspend_state((struct powerdomain *)data);
++	*val = ret;
+ 
+-	if (*val >= 0)
++	if (ret >= 0)
+ 		return 0;
+ 	return *val;
+ }
