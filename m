@@ -1,14 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Hibernate lost directories ?
-Date: Wed, 16 Dec 2009 11:33:17 +0100
-Message-ID: <20091216103316.GD1377@ucw.cz>
-References: <20091214075814.220479bf@Laputa.local>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re:
+ Async suspend-resume patch w/ rwsems)
+Date: Wed, 16 Dec 2009 10:22:55 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912161018100.2909-100000__36863.5486149744$1260977145$gmane$org@iolanthe.rowland.org>
+References: <200912160311.05915.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20091214075814.220479bf@Laputa.local>
+In-Reply-To: <200912160311.05915.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,29 +18,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ghost <root_rtfm@yahoo.fr>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2009-12-14 07:58:14, ghost wrote:
-> Hello,
-> 
-> I use Slackware 13.0.0.0 (full x64)  on 6530B laptop, with kernel
-> 2.6.31.1, 2.6.31.5 and 2.6.32.
-> With kernel 2.6.31.5 and 2.6.32, after pm-hibernate, when my laptop
-> resumed, I observe lost directory. The first time with 2.6.31.5,
-> it was /etc and the second time with 2.6.32 it was /lib64
-> But, I have no problem with kernel 2.6.31.1 (I downgrade my kernel
-> configuration after this 2 problems).
-> I don't know if more people have see this problem, I've found nothing
-> on the web about this.
-> 
-> I'm sorry, but I've not trace for this problem.
+On Wed, 16 Dec 2009, Rafael J. Wysocki wrote:
 
-Force fsck as soon as practical. If you are willing to repeat it, we
-may be able to debug it, otherwise...
-									Pavel
+> I measured the total time of suspending and resuming devices as shown by the
+> code added by this patch:
+> http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=commitdiff_plain;h=c1b8fc0a8bff7707c10f31f3d26bfa88e18ccd94;hp=087dbf5f079f1b55cbd3964c9ce71268473d5b67
+> on two boxes, HP nx6325 and MSI Wind U100 (hardware-wise they are quite
+> different and the HP was running 64-bit kernel and user space).
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> I carried out 5 consecutive suspend-resume cycles (started from under X) on
+> each box in each case, and the raw data are here (all times in milliseconds):
+> http://www.sisk.pl/kernel/data/async-suspend.pdf
+
+I'd like to see much more detailed data.  For each device, let's get 
+the device name, the parent's name, and the start time, end time, and 
+duration for suspend or resume.  The start time should be measured when 
+you have finished waiting for the children.  The end time should be 
+measured just before the complete_all().
+
+Alan Stern
