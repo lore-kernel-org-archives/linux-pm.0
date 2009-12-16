@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH -next] power: fix printk formats
-Date: Wed, 16 Dec 2009 23:35:31 +0100
-Message-ID: <200912162335.31395.rjw__8613.56438040293$1261003088$gmane$org@sisk.pl>
-References: <20091216183212.118c5e14.sfr@canb.auug.org.au>
-	<20091216142606.1a9f3817.randy.dunlap@oracle.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re:
+ Async suspend-resume patch w/ rwsems)
+Date: Wed, 16 Dec 2009 18:04:08 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912161753540.2643-100000__31882.9913776883$1261005011$gmane$org@iolanthe.rowland.org>
+References: <200912162257.00771.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091216142606.1a9f3817.randy.dunlap@oracle.com>
+In-Reply-To: <200912162257.00771.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,39 +18,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-pm@lists.linux-foundation.org, linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 16 December 2009, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Fix printk format warnings:
-> 
-> drivers/base/power/main.c:398:warning: format '%Lu' expects type 'long long unsigned int', but argument 5 has type 'long int'
-> drivers/base/power/main.c:398:warning: format '%03Lu' expects type 'long long unsigned int', but argument 6 has type 'long int'
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+On Wed, 16 Dec 2009, Rafael J. Wysocki wrote:
 
-Already fixed in my tree.
-
-Rafael
-
-
-> ---
->  drivers/base/power/main.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> I've just put the first set of data, for the HP nx6325 at:
+> http://www.sisk.pl/kernel/data/nx6325/
+>  
+> The *-dmesg.log files contain full dmesg outputs starting from a cold boot and
+> including one suspend-resume cycle in each case, with debug_initcall enabled.
 > 
-> --- linux-next-20091216.orig/drivers/base/power/main.c
-> +++ linux-next-20091216/drivers/base/power/main.c
-> @@ -395,7 +395,7 @@ static void dpm_show_time(ktime_t startt
->  	usecs = usecs64;
->  	if (usecs == 0)
->  		usecs = 1;
-> -	pr_info("PM: %s%s%s of devices complete after %Lu.%03Lu msecs\n",
-> +	pr_info("PM: %s%s%s of devices complete after %lu.%03lu msecs\n",
->  		info ?: "", info ? " " : "", pm_verb(state.event),
->  		usecs / USEC_PER_MSEC, usecs % USEC_PER_MSEC);
->  }
-> 
-> 
+> The *-suspend.log files are excerpts from the *-dmesg.log files containing
+> the suspend messages only, and analogously for *-resume.log.
+
+I've just started looking at the sync-suspend.log file.  What are all 
+the '+' characters and " @ 3368" strings after the device names?
+
+You didn't print out the parent name for each device, so the tree 
+structure has been lost.
+
+Why do those "sd 0:0:0:0 [sda]" messages appear in between two 
+callbacks?  The cache-synchronization and the spin-down commands are
+not executed asynchronously.
+
+Alan Stern
