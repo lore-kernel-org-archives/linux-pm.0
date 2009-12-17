@@ -1,14 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re:
-	Async suspend-resume patch w/ rwsems)
-Date: Thu, 17 Dec 2009 21:36:36 +0100
-Message-ID: <200912172136.36277.rjw__30153.4131904647$1261082225$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0912171444040.2645-100000@iolanthe.rowland.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [GIT PULL] PM updates for 2.6.33
+Date: Fri, 18 Dec 2009 10:28:19 +1100
+Message-ID: <1261092499.6682.44.camel__20696.9837229282$1261092784$gmane$org@pasglop>
+References: <Pine.LNX.4.44L0.0912060953190.4442-100000@netrider.rowland.org>
+	<1260158279.27069.181.camel@rzhang1-desktop>
+	<alpine.LFD.2.00.0912062122460.3560@localhost.localdomain>
+	<alpine.LFD.2.00.0912062204431.3560@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912171444040.2645-100000@iolanthe.rowland.org>
+In-Reply-To: <alpine.LFD.2.00.0912062204431.3560@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,48 +20,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 17 December 2009, Alan Stern wrote:
-> On Thu, 17 Dec 2009, Rafael J. Wysocki wrote:
+On Sun, 2009-12-06 at 22:15 -0800, Linus Torvalds wrote:
 > 
-> > That actually is correct.  On the nx6325 suspend is totally dominated by disk
-> > spindown, almost everything else is negligible compared to it (well, except for
-> > the audio), so we can't go down below 1 s during suspend on this box.
-> > 
-> > On the Wind, disk spindown time is comparable with serio suspend time,
-> > so at least in principle we should be able to get .5 s suspend on this box - 
-> > if the disk spindown in async.
-> > 
-> > In turn, the resume on the Wind is dominated by disk spinup, so we can't
-> > go below 1.5 s on this box during resume (notice that the "async+extra"
-> > approach brings us close to this limit, although we could save .5 s more in
-> > principle by making more devices async).
-> > 
-> > Resume on the nx6325 is a different story, though, as it is dominated by USB
-> > and PCI devices, so marking those as async would probably bring us close to
-> > the limit.
-> 
-> The implications seem pretty clear.  If the following sorts of devices
-> were async:
-> 
-> 	USB (devices and interfaces), PCI, serio, SCSI (hosts, targets,
-> 	devices)
+> The same is true of the prepare_suspend/suspend split I'm proposing:
+> I 
+> suspect that for something like USB, it would make most sense to just
+> do 
+> normal node suspend in prepare_suspend, which would do everything 
+> asynchronously. Only USB hub devices would get involved at the later 
+> 'suspend()' phase.
 
-Plus ACPI battery.
+Wasn't part of the goal with prepare_suspend() vs. suspend() to handle
+the problem of backing store vs the VM ?
 
-> then we would reap close to the maximum benefit -- providing:
-> 
-> 	async threads are started in a first pass without waiting
-> 	for synchronous devices, and
+IE. Once any device potentially in the VM path is suspended, things like
+kmalloc() or gfp() can potentially stall until resume or did we address
+that recently ?
 
-Agreed.
- 
-> It's not clear that making all these types of devices async will really 
-> work, but it's worth testing.
+Iirc, part of the idea behind prepare_* is that it's safe vs. the above.
+Now if you start suspending USB devices at prepare() then you break that
+assumption since those could be mass storage with dirty mmap'ed pages on
+them.
 
-I'm working on it.
+Now, I'm all for fixing it at the VM/allocator level (if we didn't
+already) turning pretty much everything into NO_IO once we start
+suspending devices but that's a whole different matter :-)
 
-Rafael
+Cheers,
+Ben.
