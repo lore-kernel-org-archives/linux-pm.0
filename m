@@ -1,16 +1,15 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [GIT PULL] PM updates for 2.6.33
-Date: Fri, 18 Dec 2009 10:28:19 +1100
-Message-ID: <1261092499.6682.44.camel__20696.9837229282$1261092784$gmane$org@pasglop>
-References: <Pine.LNX.4.44L0.0912060953190.4442-100000@netrider.rowland.org>
-	<1260158279.27069.181.camel@rzhang1-desktop>
-	<alpine.LFD.2.00.0912062122460.3560@localhost.localdomain>
-	<alpine.LFD.2.00.0912062204431.3560@localhost.localdomain>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re:
+	Async suspend-resume patch w/ rwsems)
+Date: Fri, 18 Dec 2009 02:51:22 +0100
+Message-ID: <200912180251.22655.rjw__34121.6679350056$1261101138$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
+	<200912162257.00771.rjw@sisk.pl> <200912170249.00676.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912062204431.3560@localhost.localdomain>
+In-Reply-To: <200912170249.00676.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,34 +20,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2009-12-06 at 22:15 -0800, Linus Torvalds wrote:
-> 
-> The same is true of the prepare_suspend/suspend split I'm proposing:
-> I 
-> suspect that for something like USB, it would make most sense to just
-> do 
-> normal node suspend in prepare_suspend, which would do everything 
-> asynchronously. Only USB hub devices would get involved at the later 
-> 'suspend()' phase.
+On Thursday 17 December 2009, Rafael J. Wysocki wrote:
+...
+> Tomorrow I'll try to mark as many devices as reasonably possible as async
+> and see how the total suspend-resume times change.
 
-Wasn't part of the goal with prepare_suspend() vs. suspend() to handle
-the problem of backing store vs the VM ?
+I didn't manage to do that, but I was able to mark sd and i8042 as async and
+see the impact of this.
 
-IE. Once any device potentially in the VM path is suspended, things like
-kmalloc() or gfp() can potentially stall until resume or did we address
-that recently ?
+The raw data are in the usual place:
 
-Iirc, part of the idea behind prepare_* is that it's safe vs. the above.
-Now if you start suspending USB devices at prepare() then you break that
-assumption since those could be mass storage with dirty mmap'ed pages on
-them.
+http://www.sisk.pl/kernel/data/async-suspend-resume.pdf
 
-Now, I'm all for fixing it at the VM/allocator level (if we didn't
-already) turning pretty much everything into NO_IO once we start
-suspending devices but that's a whole different matter :-)
+and the individual device timings and logs are in:
 
-Cheers,
-Ben.
+http://www.sisk.pl/kernel/data/nx6325/
+http://www.sisk.pl/kernel/data/wind/
+
+This is the summary (previous results are inculded for easier reference):
+
+			HP nx6325	MSI Wind U100
+
+sync suspend		1482 (+/- 40)	1180 (+/- 24)
+sync resume		2955 (+/- 2)	3597 (+/- 25)
+
+async suspend		1553 (+/- 49)	1177 (+/- 32)
+async resume		2692 (+/- 326)	3556 (+/- 33)
+
+async+one-liner suspend	1600 (+/- 39)	1212 (+/- 41)
+async+one-liner resume	2692 (+/- 324)	3579 (+/- 24)
+
+async+extra suspend	1496 (+/- 37)	1217 (+/- 38)
+async+extra resume	1859 (+/- 114)	1923 (+/- 35)
+
+with "async" i8042 and sd:
+
+async suspend		1319 (+/- 51)	1045 (+/- 41)
+async resume		2929 (+/- 3)	3546 (+/- 27)
+
+async+extra suspend	1327 (+/- 36)	(didn't work)
+async+extra resume	1742 (+/- 164)	1896 (+/- 28)
+
+(the summary is also available at: http://www.sisk.pl/kernel/data/results.txt).
+
+So, it actually makes the case for async suspend!  Although it's not very
+strong, with these two additional devices marked as "async" we get noticeable
+suspend time improvement.
+
+Still, the "extra" patch doesn't help on suspend at all and on the Wind the
+suspend part of it didn't even work (I'm yet to figure out which of the two
+devices crashed the suspend).  Nevertheless the resume part of the "extra"
+patch worked in both cases and worked better than without the two additional
+"async" devices.
+
+To me, this means that the suspend part of the "extra" patch is not really
+useful.  However, the resume part of it is _very_ useful, so I'd like to add
+that part only to the async patchset.  The explanation why it helps so much
+is also straightforward to me.  Namely, if slow async devices are last to
+resume, then without the "extra" patch they need to wait for all of the
+preceding sync devices and the speedup from executing their resume routines
+asynchronously is very limited.  Now, with the "extra" patch their resume
+routines start as soon as their parents complete resuming and that may be
+early enough for the speedup to be significant.
+
+Rafael
