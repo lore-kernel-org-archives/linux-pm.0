@@ -1,12 +1,15 @@
-From: "Mahalingam, Nithish" <nithish.mahalingam@intel.com>
-Subject: Runtime PM: Idle notification
-Date: Fri, 18 Dec 2009 20:52:27 +0530
-Message-ID: <175E0F9A9EFCEA46A65F5552BB057298D7FBD7B0@bgsmsx502.gar.corp.intel.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: RFC: A proposal for power capping through forced
+	idle in the	Linux Kernel
+Date: Fri, 18 Dec 2009 18:04:07 +0100
+Message-ID: <20091218170407.GA1396__6625.27825120396$1261156016$gmane$org@ucw.cz>
+References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,56 +19,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Salman Qazi <sqazi@google.com>
+Cc: linux-pm@lists.linux-foundation.org, Taliver Heath <taliver@google.com>, Michael Rubin <mrubin@google.com>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Resending as my previous mail never made it to the PM mailing list.
-
--------------------
+Hi
 
 
-Hi Rafael,
+> Why not use voltage and frequency scaling?
+> 
+> Forced Idle Injection is more effective[1] and more widely available.
+> Even with voltage and frequency scaling, interpolation is needed
+> between the available settings.  So, if we did use voltage and
 
-I had a question on Idle notification in the runtime PM core.
+It is only more efficient on new hardware.
 
-Is this function comment accurate -
+You should also explain 'why not throttling' because that is actually
+designed for power capping. 
 
-+/**
-+ * __pm_runtime_idle - Notify device bus type if the device can be suspended.
-+ * @dev: Device to notify the bus type about.
-+ *
-+ * This function must be called under dev->power.lock with interrupts disabled.
-+ */
-+static int __pm_runtime_idle(struct device *dev)
+> Application to Laptops and Cellphones:
+> 
+> Imagine being in a tent in Death Valley with a laptop.  You are bored,
+> and you want to watch a movie.  However, you also want to do your best
+> to make the battery last and watch as much of the movie as possible.
+> Forced idle power capping is a solution.  If your machine has a knob
+> that allows you to control the available power, you can turn that knob
+> until your video starts getting choppy.  And then, turn the knob back
 
+That's bad example. Video player should already sleep between frames.
 
-I also do see that the in the pm_runtime.txt there is a mention -
+Better example would be 'make video so choppy that expected battery
+time rises over length ov movie.
 
-+The action performed by a bus type's ->runtime_idle() callback is totally
-+dependent on the bus type in question, but the expected and recommended action
-+is to check if the device can be suspended (i.e. if all of the conditions
-+necessary for suspending the device are satisfied) and to queue up a suspend
-+request for the device in that case.
-
-If this is the case, are the below checks in __pm_runtime_idle and 
-__pm_request_idle suggested?
-In __pm_runtime_idle
-+	    || dev->power.runtime_status != RPM_ACTIVE)
-+		retval = -EAGAIN;
-In __pm_request_idle
-+	    || dev->power.runtime_status == RPM_SUSPENDED
-+		retval = -EAGAIN;
+(And yes, this would have been useful for me on notebook with failed
+fan and ineffective throttling).
 
 
-Shouldn't we just return success if power.runtime_status == RPM_SUSPENDED? I 
-know it does not make a difference in the runtime PM core as return value for 
-the idle callbacks are never checked. But what if someone wants to use idle 
-callback API explicitly?
-
-Note: I am not very sure if returning success is also a clean solution, I am 
-just trying to understand what might be the right thing to in this scenario.
-
-
-
-Regards,	
-Nithish Mahalingam
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
