@@ -1,15 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: RFC: A proposal for power capping through forced
-	idle in the	Linux Kernel
-Date: Fri, 18 Dec 2009 18:04:07 +0100
-Message-ID: <20091218170407.GA1396__6625.27825120396$1261156016$gmane$org@ucw.cz>
-References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re:
+ Async suspend-resume patch w/ rwsems)
+Date: Fri, 18 Dec 2009 12:26:44 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912181205290.2987-100000__33340.6579368331$1261157547$gmane$org@iolanthe.rowland.org>
+References: <200912180251.22655.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
+In-Reply-To: <200912180251.22655.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,43 +18,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Salman Qazi <sqazi@google.com>
-Cc: linux-pm@lists.linux-foundation.org, Taliver Heath <taliver@google.com>, Michael Rubin <mrubin@google.com>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi
+On Fri, 18 Dec 2009, Rafael J. Wysocki wrote:
 
+> I didn't manage to do that, but I was able to mark sd and i8042 as async and
+> see the impact of this.
 
-> Why not use voltage and frequency scaling?
-> 
-> Forced Idle Injection is more effective[1] and more widely available.
-> Even with voltage and frequency scaling, interpolation is needed
-> between the available settings.  So, if we did use voltage and
+Apparently this didn't do what you wanted.  In the nx6325
+sd+i8042+async+extra log, the 0:0:0:0 device (which is a SCSI disk) was
+suspended by the main thread instead of an async thread.
 
-It is only more efficient on new hardware.
+There's an important point I neglected to mention before.  Your logs 
+don't show anything for devices with no suspend callbacks at all.  
+Nevertheless, these devices sit on the device list and prevent other
+devices from suspending or resuming as soon as they could.
 
-You should also explain 'why not throttling' because that is actually
-designed for power capping. 
+For example, the fingerprint sensor (3-1) took the most time to resume.  
+But other devices were delayed until after it finished because it had
+children with no callbacks, and they delayed the devices following
+them in the list.
 
-> Application to Laptops and Cellphones:
-> 
-> Imagine being in a tent in Death Valley with a laptop.  You are bored,
-> and you want to watch a movie.  However, you also want to do your best
-> to make the battery last and watch as much of the movie as possible.
-> Forced idle power capping is a solution.  If your machine has a knob
-> that allows you to control the available power, you can turn that knob
-> until your video starts getting choppy.  And then, turn the knob back
+What would happen if you completed these devices immediately, as part 
+of the first pass?
 
-That's bad example. Video player should already sleep between frames.
-
-Better example would be 'make video so choppy that expected battery
-time rises over length ov movie.
-
-(And yes, this would have been useful for me on notebook with failed
-fan and ineffective throttling).
-
-
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Alan Stern
