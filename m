@@ -1,15 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re:
-	Async suspend-resume patch w/ rwsems)
-Date: Fri, 18 Dec 2009 02:51:22 +0100
-Message-ID: <200912180251.22655.rjw__34121.6679350056$1261101138$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
-	<200912162257.00771.rjw@sisk.pl> <200912170249.00676.rjw@sisk.pl>
+From: "Mahalingam, Nithish" <nithish.mahalingam@intel.com>
+Subject: Runtime PM: Idle notification
+Date: Fri, 18 Dec 2009 20:52:27 +0530
+Message-ID: <175E0F9A9EFCEA46A65F5552BB057298D7FBD7B0@bgsmsx502.gar.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912170249.00676.rjw@sisk.pl>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,71 +16,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 17 December 2009, Rafael J. Wysocki wrote:
-...
-> Tomorrow I'll try to mark as many devices as reasonably possible as async
-> and see how the total suspend-resume times change.
+Resending as my previous mail never made it to the PM mailing list.
 
-I didn't manage to do that, but I was able to mark sd and i8042 as async and
-see the impact of this.
+-------------------
 
-The raw data are in the usual place:
 
-http://www.sisk.pl/kernel/data/async-suspend-resume.pdf
+Hi Rafael,
 
-and the individual device timings and logs are in:
+I had a question on Idle notification in the runtime PM core.
 
-http://www.sisk.pl/kernel/data/nx6325/
-http://www.sisk.pl/kernel/data/wind/
+Is this function comment accurate -
 
-This is the summary (previous results are inculded for easier reference):
++/**
++ * __pm_runtime_idle - Notify device bus type if the device can be suspended.
++ * @dev: Device to notify the bus type about.
++ *
++ * This function must be called under dev->power.lock with interrupts disabled.
++ */
++static int __pm_runtime_idle(struct device *dev)
 
-			HP nx6325	MSI Wind U100
 
-sync suspend		1482 (+/- 40)	1180 (+/- 24)
-sync resume		2955 (+/- 2)	3597 (+/- 25)
+I also do see that the in the pm_runtime.txt there is a mention -
 
-async suspend		1553 (+/- 49)	1177 (+/- 32)
-async resume		2692 (+/- 326)	3556 (+/- 33)
++The action performed by a bus type's ->runtime_idle() callback is totally
++dependent on the bus type in question, but the expected and recommended action
++is to check if the device can be suspended (i.e. if all of the conditions
++necessary for suspending the device are satisfied) and to queue up a suspend
++request for the device in that case.
 
-async+one-liner suspend	1600 (+/- 39)	1212 (+/- 41)
-async+one-liner resume	2692 (+/- 324)	3579 (+/- 24)
+If this is the case, are the below checks in __pm_runtime_idle and 
+__pm_request_idle suggested?
+In __pm_runtime_idle
++	    || dev->power.runtime_status != RPM_ACTIVE)
++		retval = -EAGAIN;
+In __pm_request_idle
++	    || dev->power.runtime_status == RPM_SUSPENDED
++		retval = -EAGAIN;
 
-async+extra suspend	1496 (+/- 37)	1217 (+/- 38)
-async+extra resume	1859 (+/- 114)	1923 (+/- 35)
 
-with "async" i8042 and sd:
+Shouldn't we just return success if power.runtime_status == RPM_SUSPENDED? I 
+know it does not make a difference in the runtime PM core as return value for 
+the idle callbacks are never checked. But what if someone wants to use idle 
+callback API explicitly?
 
-async suspend		1319 (+/- 51)	1045 (+/- 41)
-async resume		2929 (+/- 3)	3546 (+/- 27)
+Note: I am not very sure if returning success is also a clean solution, I am 
+just trying to understand what might be the right thing to in this scenario.
 
-async+extra suspend	1327 (+/- 36)	(didn't work)
-async+extra resume	1742 (+/- 164)	1896 (+/- 28)
 
-(the summary is also available at: http://www.sisk.pl/kernel/data/results.txt).
 
-So, it actually makes the case for async suspend!  Although it's not very
-strong, with these two additional devices marked as "async" we get noticeable
-suspend time improvement.
-
-Still, the "extra" patch doesn't help on suspend at all and on the Wind the
-suspend part of it didn't even work (I'm yet to figure out which of the two
-devices crashed the suspend).  Nevertheless the resume part of the "extra"
-patch worked in both cases and worked better than without the two additional
-"async" devices.
-
-To me, this means that the suspend part of the "extra" patch is not really
-useful.  However, the resume part of it is _very_ useful, so I'd like to add
-that part only to the async patchset.  The explanation why it helps so much
-is also straightforward to me.  Namely, if slow async devices are last to
-resume, then without the "extra" patch they need to wait for all of the
-preceding sync devices and the speedup from executing their resume routines
-asynchronously is very limited.  Now, with the "extra" patch their resume
-routines start as soon as their parents complete resuming and that may be
-early enough for the speedup to be significant.
-
-Rafael
+Regards,	
+Nithish Mahalingam
