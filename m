@@ -1,13 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Runtime PM: Idle notification
-Date: Fri, 18 Dec 2009 23:54:11 +0100
-Message-ID: <200912182354.12021.rjw@sisk.pl>
-References: <175E0F9A9EFCEA46A65F5552BB057298D7D7F223@bgsmsx502.gar.corp.intel.com>
+Subject: Re: [PATCH] PM: use pm_runtime_put_sync in system resume
+Date: Sat, 19 Dec 2009 00:20:27 +0100
+Message-ID: <200912190020.27974.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0912151708530.2643-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <175E0F9A9EFCEA46A65F5552BB057298D7D7F223@bgsmsx502.gar.corp.intel.com>
+In-Reply-To: <Pine.LNX.4.44L0.0912151708530.2643-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,25 +17,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Mahalingam, Nithish" <nithish.mahalingam@intel.com>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Sorry for the delay.
+On Tuesday 15 December 2009, Alan Stern wrote:
+> This patch (as1317) fixes a bug in the PM core.  When a device is
+> resumed following a system sleep, the core decrements the device's
+> runtime PM usage counter but doesn't issue an idle notification if the
+> counter reaches 0.  This could prevent an otherwise unused device from
+> being runtime-suspended again after the system sleep.
+> 
+> The fix is to call pm_runtime_put_sync() instead of
+> pm_runtime_put_noidle().
+> 
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-On Wednesday 16 December 2009, Mahalingam, Nithish wrote:
-> > Shouldn't we just return success if power.runtime_status == RPM_SUSPENDED? I 
-> > know it does not make a difference in the runtime PM core as return value for 
-> > the idle callbacks are never checked. But what if someone wants to use idle 
-> > callback API explicitly?
-
-In that case the return value of your _idle will depend on the caller who
-actually uses the return value.  The PM core doesn't care.
-
-> Also I do understand returning success is not a clean solution, I am just 
-> trying to understand what might be the right thing to in this scenario.
-
-That really depends on your bus type/ device type/ device class and the
-driver in question.
+Applied to suspend-2.6/linux-next, will be pushed to Linus before -rc2.
 
 Rafael
+
+
+> ---
+> 
+> Index: usb-2.6/drivers/base/power/main.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/base/power/main.c
+> +++ usb-2.6/drivers/base/power/main.c
+> @@ -521,7 +521,7 @@ static void dpm_complete(pm_message_t st
+>  			mutex_unlock(&dpm_list_mtx);
+>  
+>  			device_complete(dev, state);
+> -			pm_runtime_put_noidle(dev);
+> +			pm_runtime_put_sync(dev);
+>  
+>  			mutex_lock(&dpm_list_mtx);
+>  		}
+> @@ -772,7 +772,7 @@ static int dpm_prepare(pm_message_t stat
+>  		pm_runtime_get_noresume(dev);
+>  		if (pm_runtime_barrier(dev) && device_may_wakeup(dev)) {
+>  			/* Wake-up requested during system sleep transition. */
+> -			pm_runtime_put_noidle(dev);
+> +			pm_runtime_put_sync(dev);
+>  			error = -EBUSY;
+>  		} else {
+>  			error = device_prepare(dev, state);
