@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Async suspend-resume patch w/ completions (was: Re:
 	Async suspend-resume patch w/ rwsems)
-Date: Sat, 19 Dec 2009 22:33:44 +0100
-Message-ID: <200912192233.44575.rjw__32890.1461944499$1261258422$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
-	<200912182343.29190.rjw@sisk.pl>
-	<20091219195935.GB4073@core.coreip.homeip.net>
+Date: Sat, 19 Dec 2009 22:41:03 +0100
+Message-ID: <200912192241.03991.rjw__2251.08084637231$1261258946$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0912181205290.2987-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091219195935.GB4073@core.coreip.homeip.net>
+In-Reply-To: <Pine.LNX.4.44L0.0912181205290.2987-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,105 +18,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 19 December 2009, Dmitry Torokhov wrote:
-> On Fri, Dec 18, 2009 at 11:43:29PM +0100, Rafael J. Wysocki wrote:
-> > On Wednesday 16 December 2009, Dmitry Torokhov wrote:
-> > > On Wed, Dec 16, 2009 at 03:11:05AM +0100, Rafael J. Wysocki wrote:
-> > > > On Tuesday 15 December 2009, Linus Torvalds wrote:
-> > > > > 
-> > > > > On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
-> > > > > > > 
-> > > > > > > Give a real example that matters.
-> > > > > > 
-> > > > > > I'll try.  Let -> denote child-parent relationships and assume dpm_list looks
-> > > > > > like this:
-> > > > > 
-> > > > > No. 
-> > > > > 
-> > > > > I mean something real - something like
-> > > > > 
-> > > > >  - if you run on a non-PC with two USB buses behind non-PCI controllers.
-> > > > > 
-> > > > >  - device xyz.
-> > > > > 
-> > > > > > If this applies to _resume_ only, then I agree, but the Arjan's data clearly
-> > > > > > show that serio devices take much more time to suspend than USB.
-> > > > > 
-> > > > > I mean in general - something where you actually have hard data that some 
-> > > > > device really needs anythign more than my one-liner, and really _needs_ 
-> > > > > some complex infrastructure.
-> > > > > 
-> > > > > Not "let's imagine a case like xyz".
-> > > > 
-> > > > As I said I would, I made some measurements.
-> > > > 
-> > > > I measured the total time of suspending and resuming devices as shown by the
-> > > > code added by this patch:
-> > > > http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=commitdiff_plain;h=c1b8fc0a8bff7707c10f31f3d26bfa88e18ccd94;hp=087dbf5f079f1b55cbd3964c9ce71268473d5b67
-> > > > on two boxes, HP nx6325 and MSI Wind U100 (hardware-wise they are quite
-> > > > different and the HP was running 64-bit kernel and user space).
-> > > > 
-> > > > I took four cases into consideration:
-> > > > (1) synchronous suspend and resume (/sys/power/pm_async = 0)
-> > > > (2) asynchronous suspend and resume as introduced by the async branch at:
-> > > >     http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=shortlog;h=refs/heads/async
-> > > > (3) asynchronous suspend and resume like in (2), but with your one-liner setting
-> > > >     the power.async_suspend flag for PCI bridges on top
-> > > > (4) asynchronous suspend and resume like in (2), but with an extra patch that
-> > > >     is appended on top
-> > > > 
-> > > > For those tests I set power.async_suspend for all USB devices, all serio input
-> > > > devices, the ACPI battery and the USB PCI controllers (to see the impact of the
-> > > > one-liner, if any).
-> > > > 
-> > > > I carried out 5 consecutive suspend-resume cycles (started from under X) on
-> > > > each box in each case, and the raw data are here (all times in milliseconds):
-> > > > http://www.sisk.pl/kernel/data/async-suspend.pdf
-> > > > 
-> > > > The summarized data are below (the "big" numbers are averages and the +/-
-> > > > numbers are standard deviations, all in milliseconds):
-> > > > 
-> > > > 			HP nx6325		MSI Wind U100
-> > > > 
-> > > > sync suspend		1482 (+/- 40)	1180 (+/- 24)
-> > > > sync resume		2955 (+/- 2)	3597 (+/- 25)
-> > > > 
-> > > > async suspend		1553 (+/- 49)	1177 (+/- 32)
-> > > > async resume		2692 (+/- 326)	3556  (+/- 33)
-> > > > 
-> > > > async+one-liner suspend	1600 (+/- 39)	1212 (+/- 41)
-> > > > async+one-liner resume	2692 (+/- 324)	3579 (+/- 24)
-> > > > 
-> > > > async+extra suspend	1496 (+/- 37)	1217 (+/- 38)
-> > > > async+extra resume	1859 (+/- 114)	1923 (+/- 35)
-> > > > 
-> > > > So, in my opinion, with the above set of "async" devices, it doesn't
-> > > > make sense to do async suspend at all, because the sync suspend is actually
-> > > > the fastest on both machines.
-> > > 
-> > > I think the async suspend is not asynchronous enough then - what kind of
-> > > time do you get if you simply comment out call to psmouse_reset() in
-> > > drivers/input/mouse/psmouse-base.c:psmouse_cleanup()?  (Just for testing
-> > > purposes only, I don't think we want to do that by default.)
-> > 
-> > The problem apparently is that the i8042 suspend/resume is synchronous.
-> > 
-> > Do you think it's safe to mark it as asynchronous?
-> > 
+On Friday 18 December 2009, Alan Stern wrote:
+> On Fri, 18 Dec 2009, Rafael J. Wysocki wrote:
 > 
-> Umm.. there lie dragons. There is an implicit relationship between i8042
-> and PNP/ACPI devices representing keyboard and mouse ports, and I am not
-> sure how happy i8042 (and most importantly the BIOS) will be if they get
-> shut down before i8042. Also there is EC which is in theory independent
-> but in practice not so much.
+> > I didn't manage to do that, but I was able to mark sd and i8042 as async and
+> > see the impact of this.
+> 
+> Apparently this didn't do what you wanted.  In the nx6325
+> sd+i8042+async+extra log, the 0:0:0:0 device (which is a SCSI disk) was
+> suspended by the main thread instead of an async thread.
 
-I see.
+Hm, that's odd, because there's a noticeable time difference between the
+two cases in which the sd is sync and async.  I'll look into it further.
 
-Is this possible to identify ACPI devices that should wait for the i8042
-suspend and that should be waited for by it on resume?
+> There's an important point I neglected to mention before.  Your logs 
+> don't show anything for devices with no suspend callbacks at all.  
+> Nevertheless, these devices sit on the device list and prevent other
+> devices from suspending or resuming as soon as they could.
+
+Unless they are async, that is.
+
+> For example, the fingerprint sensor (3-1) took the most time to resume.  
+> But other devices were delayed until after it finished because it had
+> children with no callbacks, and they delayed the devices following
+> them in the list.
+> 
+> What would happen if you completed these devices immediately, as part 
+> of the first pass?
+
+OK.  How do the PM core is supposed to check if a device has null suspend
+and resume?  Check all of the function pointers in the first pass?
 
 Rafael
