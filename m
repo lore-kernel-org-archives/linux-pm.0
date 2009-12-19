@@ -1,15 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re:
-	Async suspend-resume patch w/ rwsems)
-Date: Sat, 19 Dec 2009 00:42:28 +0100
-Message-ID: <200912190042.28884.rjw__2172.60476570136$1261238180$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
-	<200912170249.00676.rjw@sisk.pl> <200912180251.22655.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Runtime PM: Calling Device runtime PM callbacks?
+Date: Sat, 19 Dec 2009 11:46:00 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912191138410.29317-100000@netrider.rowland.org>
+References: <200912191613.34549.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912180251.22655.rjw@sisk.pl>
+In-Reply-To: <200912191613.34549.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,84 +17,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 18 December 2009, Rafael J. Wysocki wrote:
-> On Thursday 17 December 2009, Rafael J. Wysocki wrote:
+On Sat, 19 Dec 2009, Rafael J. Wysocki wrote:
+
+> On Tuesday 15 December 2009, Rafael J. Wysocki wrote:
+> > On Tuesday 15 December 2009, Alan Stern wrote:
+> > > On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
 > ...
-> > Tomorrow I'll try to mark as many devices as reasonably possible as async
-> > and see how the total suspend-resume times change.
+> > 
+> > > > Now, if we agree that only one callback will be called for given device
+> > > > (either bus type, or device type, or device class), the code may be simpler
+> > > > and there won't be an issue with the ordering in _idle.
+> > > 
+> > > That would be perfectly fine with me.
+> > 
+> > OK
 > 
-> I didn't manage to do that, but I was able to mark sd and i8042 as async and
-> see the impact of this.
-> 
-> The raw data are in the usual place:
-> 
-> http://www.sisk.pl/kernel/data/async-suspend-resume.pdf
-> 
-> and the individual device timings and logs are in:
-> 
-> http://www.sisk.pl/kernel/data/nx6325/
-> http://www.sisk.pl/kernel/data/wind/
-> 
-> This is the summary (previous results are inculded for easier reference):
-> 
-> 			HP nx6325	MSI Wind U100
-> 
-> sync suspend		1482 (+/- 40)	1180 (+/- 24)
-> sync resume		2955 (+/- 2)	3597 (+/- 25)
-> 
-> async suspend		1553 (+/- 49)	1177 (+/- 32)
-> async resume		2692 (+/- 326)	3556 (+/- 33)
-> 
-> async+one-liner suspend	1600 (+/- 39)	1212 (+/- 41)
-> async+one-liner resume	2692 (+/- 324)	3579 (+/- 24)
-> 
-> async+extra suspend	1496 (+/- 37)	1217 (+/- 38)
-> async+extra resume	1859 (+/- 114)	1923 (+/- 35)
-> 
-> with "async" i8042 and sd:
-> 
-> async suspend		1319 (+/- 51)	1045 (+/- 41)
-> async resume		2929 (+/- 3)	3546 (+/- 27)
-> 
-> async+extra suspend	1327 (+/- 36)	(didn't work)
-> async+extra resume	1742 (+/- 164)	1896 (+/- 28)
-> 
-> (the summary is also available at: http://www.sisk.pl/kernel/data/results.txt).
-> 
-> So, it actually makes the case for async suspend!  Although it's not very
-> strong, with these two additional devices marked as "async" we get noticeable
-> suspend time improvement.
-> 
-> Still, the "extra" patch doesn't help on suspend at all and on the Wind the
-> suspend part of it didn't even work (I'm yet to figure out which of the two
-> devices crashed the suspend).
+> Updated patch is appended, please tell me what you think.
 
-Small update.  I've just verified that sd was the failing device, although I'm
-not sure about the reason.
+Yes, this is the sort of thing I had in mind.  Although it might be
+nice to avoid all the repeated code.  For example, you might add a
+helper routine:
 
-Apart from this, I ran some tests on the Wind with i8042 marked as "async"
-and sd marked as "sync".  In that case all of the tests succeeded and I got
-the following numbers:
+	static int invoke_callback(struct device *dev,
+			int (*func)(struct device *))
+	{
+		int retval;
 
-suspend (i8042 async, full extra patch applied): 1070 (+/- 40)
-resume (i8042 async, full extra patch applied): 1915,84 (+/- 27)
-suspend (i8042 async, resume part of extra patch applied): 1050 (+/- 34)
+		spin_unlock_irq(&dev->power.lock);
+		retval = func(dev);
+		spin_lock_irq(&dev->power.lock);
+		return retval;
+	}
 
-First, It looks like the suspend speedup was related to marking i8042 as
-"async".  Since the serio devices, which are the i8042's children, were also
-"async" (just like in all of the tests before), this means that the speedup
-resulted from removing a suspend stall caused by a sync parent of async
-children (i8042 and serio, respectively, in this case).
-
-However, the suspend part of the extra patch doesn't help really.  In fact it
-even makes things worse.
-
-So, I still think the resume part of the extra patch is definitely useful, but
-the suspend part of it is not.  IOW, it's worth running async resumes upfront,
-but it's not worth running async suspends upfront.
-
-Rafael
+Alan Stern
