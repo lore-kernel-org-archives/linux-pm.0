@@ -1,14 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: runtime PM documentation update
-Date: Sat, 19 Dec 2009 22:47:17 +0100
-Message-ID: <200912192247.17120.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0912151710260.2643-100000@iolanthe.rowland.org>
-	<200912182356.47978.rjw@sisk.pl>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re:
+	Async suspend-resume patch w/ rwsems)
+Date: Sat, 19 Dec 2009 23:29:03 +0100
+Message-ID: <200912192329.03251.rjw__7665.30216574228$1261261832$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
+	<20091219195935.GB4073@core.coreip.homeip.net>
+	<200912192233.44575.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912182356.47978.rjw@sisk.pl>
+In-Reply-To: <200912192233.44575.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,98 +20,118 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 18 December 2009, Rafael J. Wysocki wrote:
-> On Tuesday 15 December 2009, Alan Stern wrote:
-> > This patch (as1318) updates the runtime PM documentation, adding a
-> > section discussing the interaction between runtime PM and system sleep.
+On Saturday 19 December 2009, Rafael J. Wysocki wrote:
+> On Saturday 19 December 2009, Dmitry Torokhov wrote:
+> > On Fri, Dec 18, 2009 at 11:43:29PM +0100, Rafael J. Wysocki wrote:
+> > > On Wednesday 16 December 2009, Dmitry Torokhov wrote:
+> > > > On Wed, Dec 16, 2009 at 03:11:05AM +0100, Rafael J. Wysocki wrote:
+> > > > > On Tuesday 15 December 2009, Linus Torvalds wrote:
+> > > > > > 
+> > > > > > On Tue, 15 Dec 2009, Rafael J. Wysocki wrote:
+> > > > > > > > 
+> > > > > > > > Give a real example that matters.
+> > > > > > > 
+> > > > > > > I'll try.  Let -> denote child-parent relationships and assume dpm_list looks
+> > > > > > > like this:
+> > > > > > 
+> > > > > > No. 
+> > > > > > 
+> > > > > > I mean something real - something like
+> > > > > > 
+> > > > > >  - if you run on a non-PC with two USB buses behind non-PCI controllers.
+> > > > > > 
+> > > > > >  - device xyz.
+> > > > > > 
+> > > > > > > If this applies to _resume_ only, then I agree, but the Arjan's data clearly
+> > > > > > > show that serio devices take much more time to suspend than USB.
+> > > > > > 
+> > > > > > I mean in general - something where you actually have hard data that some 
+> > > > > > device really needs anythign more than my one-liner, and really _needs_ 
+> > > > > > some complex infrastructure.
+> > > > > > 
+> > > > > > Not "let's imagine a case like xyz".
+> > > > > 
+> > > > > As I said I would, I made some measurements.
+> > > > > 
+> > > > > I measured the total time of suspending and resuming devices as shown by the
+> > > > > code added by this patch:
+> > > > > http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=commitdiff_plain;h=c1b8fc0a8bff7707c10f31f3d26bfa88e18ccd94;hp=087dbf5f079f1b55cbd3964c9ce71268473d5b67
+> > > > > on two boxes, HP nx6325 and MSI Wind U100 (hardware-wise they are quite
+> > > > > different and the HP was running 64-bit kernel and user space).
+> > > > > 
+> > > > > I took four cases into consideration:
+> > > > > (1) synchronous suspend and resume (/sys/power/pm_async = 0)
+> > > > > (2) asynchronous suspend and resume as introduced by the async branch at:
+> > > > >     http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=shortlog;h=refs/heads/async
+> > > > > (3) asynchronous suspend and resume like in (2), but with your one-liner setting
+> > > > >     the power.async_suspend flag for PCI bridges on top
+> > > > > (4) asynchronous suspend and resume like in (2), but with an extra patch that
+> > > > >     is appended on top
+> > > > > 
+> > > > > For those tests I set power.async_suspend for all USB devices, all serio input
+> > > > > devices, the ACPI battery and the USB PCI controllers (to see the impact of the
+> > > > > one-liner, if any).
+> > > > > 
+> > > > > I carried out 5 consecutive suspend-resume cycles (started from under X) on
+> > > > > each box in each case, and the raw data are here (all times in milliseconds):
+> > > > > http://www.sisk.pl/kernel/data/async-suspend.pdf
+> > > > > 
+> > > > > The summarized data are below (the "big" numbers are averages and the +/-
+> > > > > numbers are standard deviations, all in milliseconds):
+> > > > > 
+> > > > > 			HP nx6325		MSI Wind U100
+> > > > > 
+> > > > > sync suspend		1482 (+/- 40)	1180 (+/- 24)
+> > > > > sync resume		2955 (+/- 2)	3597 (+/- 25)
+> > > > > 
+> > > > > async suspend		1553 (+/- 49)	1177 (+/- 32)
+> > > > > async resume		2692 (+/- 326)	3556  (+/- 33)
+> > > > > 
+> > > > > async+one-liner suspend	1600 (+/- 39)	1212 (+/- 41)
+> > > > > async+one-liner resume	2692 (+/- 324)	3579 (+/- 24)
+> > > > > 
+> > > > > async+extra suspend	1496 (+/- 37)	1217 (+/- 38)
+> > > > > async+extra resume	1859 (+/- 114)	1923 (+/- 35)
+> > > > > 
+> > > > > So, in my opinion, with the above set of "async" devices, it doesn't
+> > > > > make sense to do async suspend at all, because the sync suspend is actually
+> > > > > the fastest on both machines.
+> > > > 
+> > > > I think the async suspend is not asynchronous enough then - what kind of
+> > > > time do you get if you simply comment out call to psmouse_reset() in
+> > > > drivers/input/mouse/psmouse-base.c:psmouse_cleanup()?  (Just for testing
+> > > > purposes only, I don't think we want to do that by default.)
+> > > 
+> > > The problem apparently is that the i8042 suspend/resume is synchronous.
+> > > 
+> > > Do you think it's safe to mark it as asynchronous?
+> > > 
 > > 
-> > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> > 
-> > ---
-> > 
-> > Rafael, if you want to edit or rephrase some of this, go right ahead.
+> > Umm.. there lie dragons. There is an implicit relationship between i8042
+> > and PNP/ACPI devices representing keyboard and mouse ports, and I am not
+> > sure how happy i8042 (and most importantly the BIOS) will be if they get
+> > shut down before i8042. Also there is EC which is in theory independent
+> > but in practice not so much.
 > 
-> OK, I'll send you back the edited version when it's ready.
+> I see.
+> 
+> Is this possible to identify ACPI devices that should wait for the i8042
+> suspend and that should be waited for by it on resume?
 
-It's appended, rebased on the patch sent here:
-https://lists.linux-foundation.org/pipermail/linux-pm/2009-December/023712.html
+Wait, if you look at the logs at
+
+http://www.sisk.pl/kernel/data/nx6325/
+http://www.sisk.pl/kernel/data/wind/
+
+you'll see that the i8042 suspend is called before any ACPI devices are
+suspended anyway.  In fact, it is suspended right after its serio children
+which is very early in the suspend sequence.
+
+So, it seems, if there were any problems with i8042 vs ACPI, we'd experience
+them anyway.
 
 Rafael
-
-__
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: PM: Runtime PM documentation update
-
-This patch (as1318) updates the runtime PM documentation, adding a
-section discussing the interaction between runtime PM and system sleep.
-
-[rjw: Rebased and modified to reflect the changes allowing device types and
- device classes to provide runtime PM callbacks.]
-
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- Documentation/power/runtime_pm.txt |   50 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 50 insertions(+)
-
-Index: linux-2.6/Documentation/power/runtime_pm.txt
-===================================================================
---- linux-2.6.orig/Documentation/power/runtime_pm.txt
-+++ linux-2.6/Documentation/power/runtime_pm.txt
-@@ -381,3 +381,53 @@ incremented by the core before executing
- may be desirable to suspend the device as soon as ->probe() or ->remove() has
- finished, so the PM core uses pm_runtime_idle_sync() to invoke the
- subsystem-level idle callback for the device at that time.
-+
-+6. Run-time PM and System Sleep
-+
-+Run-time PM and system sleep (i.e., system suspend and hibernation, also known
-+as suspend-to-RAM and suspend-to-disk) interact with each other in a couple of
-+ways.  If a device is active when a system sleep starts, everything is
-+straightforward.  But what should happen if the device is already suspended?
-+
-+The device may have different wake-up settings for run-time PM and system sleep.
-+For example, remote wake-up may be enabled for run-time suspend but disallowed
-+for system sleep (device_may_wakeup(dev) returns 'false').  When this happens,
-+the subsystem-level system suspend callback is responsible for changing the
-+device's wake-up setting (it may leave that to the device driver's system
-+suspend routine).  It may be necessary to resume the device and suspend it again
-+in order to do so.  The same is true if the driver uses different power levels
-+or other settings for run-time suspend and system sleep.
-+
-+During system resume, devices generally should be brought back to full power,
-+even if they were suspended before the system sleep began.  There are several
-+reasons for this, including:
-+
-+  * The device might need to switch power levels, wake-up settings, etc.
-+
-+  * Remote wake-up events might have been lost by the firmware.
-+
-+  * The device's children may need the device to be at full power in order
-+    to resume themselves.
-+
-+  * The driver's idea of the device state may not agree with the device's
-+    physical state.  This can happen during resume from hibernation.
-+
-+  * The device might need to be reset.
-+
-+  * Even though the device was suspended, if its usage counter was > 0 then most
-+    likely it would need a run-time resume in the near future anyway.
-+
-+  * Always going back to full power is simplest.
-+
-+If the device was suspended before the sleep began, then its run-time PM status
-+will have to be updated to reflect the actual post-system sleep status.  The way
-+to do this is:
-+
-+	pm_runtime_disable(dev);
-+	pm_runtime_set_active(dev);
-+	pm_runtime_enable(dev);
-+
-+The PM core always increments the run-time usage counter before calling the
-+->prepare() callback and decrements it after calling the ->complete() callback.
-+Hence disabling run-time PM temporarily like this will not cause any run-time
-+suspend callbacks to be lost.
