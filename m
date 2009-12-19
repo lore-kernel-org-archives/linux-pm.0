@@ -1,14 +1,12 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Async suspend-resume patch w/ completions (was: Re:
- Async suspend-resume patch w/ rwsems)
-Date: Fri, 18 Dec 2009 12:26:44 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912181205290.2987-100000__33340.6579368331$1261157547$gmane$org@iolanthe.rowland.org>
-References: <200912180251.22655.rjw@sisk.pl>
+From: "Ai Li" <aili@codeaurora.org>
+Subject: platform specific pm_qos parameters
+Date: Fri, 18 Dec 2009 18:51:38 -0700
+Message-ID: <000601ca804d$ce010190$6a0304b0$@org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912180251.22655.rjw@sisk.pl>
+Content-Language: en-us
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,30 +16,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: mgross@linux.intel.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 18 Dec 2009, Rafael J. Wysocki wrote:
+Hi,
 
-> I didn't manage to do that, but I was able to mark sd and i8042 as async and
-> see the impact of this.
+We are interested in using pm_qos_params to reduce power consumption
+on our embedded devices while maintaining satisfactory performance.
+One example of the QoS parameters is bus bandwidth.  We want to slow
+down the buses dynamically to a lower level and yet provide enough
+bandwidth to the system.
 
-Apparently this didn't do what you wanted.  In the nx6325
-sd+i8042+async+extra log, the 0:0:0:0 device (which is a SCSI disk) was
-suspended by the main thread instead of an async thread.
+On our devices, different product families can have different type of
+buses and different number of buses.  I remember that folks were
+asking about platform specific pm_qos parameters some time ago.  It
+seems a natural fit for us to create a different set of bandwidth QoS
+for each platform.
 
-There's an important point I neglected to mention before.  Your logs 
-don't show anything for devices with no suspend callbacks at all.  
-Nevertheless, these devices sit on the device list and prevent other
-devices from suspending or resuming as soon as they could.
+I haven't seen much discussion recently on platform specific
+pm_qos_params.  Are people still open to the idea?  I also would like
+to help working on it.
 
-For example, the fingerprint sensor (3-1) took the most time to resume.  
-But other devices were delayed until after it finished because it had
-children with no callbacks, and they delayed the devices following
-them in the list.
-
-What would happen if you completed these devices immediately, as part 
-of the first pass?
-
-Alan Stern
+~Ai
