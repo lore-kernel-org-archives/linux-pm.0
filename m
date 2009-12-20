@@ -1,13 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: runtime PM documentation update
-Date: Sat, 19 Dec 2009 22:49:12 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912192248500.6618-100000@netrider.rowland.org>
-References: <200912192247.17120.rjw@sisk.pl>
+Subject: Re: Async suspend-resume patch w/ completions (was: Re:
+ Async suspend-resume patch w/ rwsems)
+Date: Sat, 19 Dec 2009 22:59:06 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.0912192253200.6618-100000__22662.270817864$1261281666$gmane$org@netrider.rowland.org>
+References: <200912200040.18944.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912192247.17120.rjw@sisk.pl>
+In-Reply-To: <200912200040.18944.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,27 +19,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 19 Dec 2009, Rafael J. Wysocki wrote:
+On Sun, 20 Dec 2009, Rafael J. Wysocki wrote:
 
-> On Friday 18 December 2009, Rafael J. Wysocki wrote:
-> > On Tuesday 15 December 2009, Alan Stern wrote:
-> > > This patch (as1318) updates the runtime PM documentation, adding a
-> > > section discussing the interaction between runtime PM and system sleep.
-> > > 
-> > > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> > > 
-> > > ---
-> > > 
-> > > Rafael, if you want to edit or rephrase some of this, go right ahead.
-> > 
-> > OK, I'll send you back the edited version when it's ready.
+> So, seriously, do you think it makes sense to do asynchronous suspend at all?
+> I'm asking, because we're likely to get into troubles like this during suspend
+> for other kinds of devices too and without resolving them we won't get any
+> significant speedup from asynchronous suspend.
 > 
-> It's appended, rebased on the patch sent here:
-> https://lists.linux-foundation.org/pipermail/linux-pm/2009-December/023712.html
+> That said, to me it's definitely worth doing asynchronous resume with the
+> "start asynch threads upfront" modification, as the results of the tests show
+> that quite clearly.  I hope you agree.
 
-It looks good.
+It's too early to come to this sort of conclusion (i.e., that suspend
+and resume react very differently to an asynchronous approach).  Unless
+you have some definite _reason_ for thinking that resume will benefit
+more than suspend, you shouldn't try to generalize so much from tests
+on only two systems.
 
 Alan Stern
