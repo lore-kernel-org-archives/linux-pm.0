@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/5] PM: Make the initcall_debug style timing for
-	suspend/resume complete
-Date: Mon, 21 Dec 2009 22:03:15 +0100
-Message-ID: <200912212203.15198.rjw__16522.1298965209$1261430015$gmane$org@sisk.pl>
+Subject: [PATCH 2/5] PM: Measure device suspend and resume times
+Date: Mon, 21 Dec 2009 22:04:12 +0100
+Message-ID: <200912212204.12679.rjw__47247.6384057247$1261430128$gmane$org@sisk.pl>
 References: <200912212201.47920.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,195 +23,104 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Commit f2511774863487e61b56a97da07ebf8dd61d7836
-(PM: Add initcall_debug style timing for suspend/resume) introduced
-basic timing instrumentation, needed for a scritps/bootgraph.pl
-equivalent or humans, but it missed the fact that bus types and
-device classes which haven't been switched to using struct dev_pm_ops
-objects yet need special handling.  As a result, the suspend/resume
-timing information is only available for devices whose bus types or
-device classes use struct dev_pm_ops objects, so the majority of
-devices is not covered.
-
-Fix this by adding basic suspend/resume timing instrumentation for
-devices whose bus types and device classes still don't use struct
-dev_pm_ops objects for power management.  To reduce code duplication
-move the timing code to helper functions.
+Measure and print the time of suspending and resuming all devices.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/main.c |   97 ++++++++++++++++++++++++++++++++++++----------
- 1 file changed, 77 insertions(+), 20 deletions(-)
+ drivers/base/power/main.c |   27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
 Index: linux-2.6/drivers/base/power/main.c
 ===================================================================
 --- linux-2.6.orig/drivers/base/power/main.c
 +++ linux-2.6/drivers/base/power/main.c
-@@ -161,6 +161,32 @@ void device_pm_move_last(struct device *
- 	list_move_tail(&dev->power.entry, &dpm_list);
+@@ -372,6 +372,23 @@ static void pm_dev_err(struct device *de
+ 		kobject_name(&dev->kobj), pm_verb(state.event), info, error);
  }
  
-+static ktime_t initcall_debug_start(struct device *dev)
++static void dpm_show_time(ktime_t starttime, pm_message_t state, char *info)
 +{
-+	ktime_t calltime = ktime_set(0, 0);
++	ktime_t calltime;
++	s64 usecs64;
++	int usecs;
 +
-+	if (initcall_debug) {
-+		pr_info("calling  %s+ @ %i\n",
-+				dev_name(dev), task_pid_nr(current));
-+		calltime = ktime_get();
-+	}
-+
-+	return calltime;
++	calltime = ktime_get();
++	usecs64 = ktime_to_ns(ktime_sub(calltime, starttime));
++	do_div(usecs64, NSEC_PER_USEC);
++	usecs = usecs64;
++	if (usecs == 0)
++		usecs = 1;
++	pr_info("PM: %s%s%s of devices complete after %ld.%03ld msecs\n",
++		info ?: "", info ? " " : "", pm_verb(state.event),
++		usecs / USEC_PER_MSEC, usecs % USEC_PER_MSEC);
 +}
 +
-+static void initcall_debug_report(struct device *dev, ktime_t calltime,
-+				  int error)
-+{
-+	ktime_t delta, rettime;
-+
-+	if (initcall_debug) {
-+		rettime = ktime_get();
-+		delta = ktime_sub(rettime, calltime);
-+		pr_info("call %s+ returned %d after %Ld usecs\n", dev_name(dev),
-+			error, (unsigned long long)ktime_to_ns(delta) >> 10);
-+	}
-+}
-+
+ /*------------------------- Resume routines -------------------------*/
+ 
  /**
-  * pm_op - Execute the PM operation appropriate for given PM event.
-  * @dev: Device to handle.
-@@ -172,13 +198,9 @@ static int pm_op(struct device *dev,
- 		 pm_message_t state)
+@@ -408,6 +425,7 @@ static int device_resume_noirq(struct de
+ void dpm_resume_noirq(pm_message_t state)
  {
- 	int error = 0;
--	ktime_t calltime, delta, rettime;
-+	ktime_t calltime;
+ 	struct device *dev;
++	ktime_t starttime = ktime_get();
  
--	if (initcall_debug) {
--		pr_info("calling  %s+ @ %i\n",
--				dev_name(dev), task_pid_nr(current));
--		calltime = ktime_get();
--	}
-+	calltime = initcall_debug_start(dev);
+ 	mutex_lock(&dpm_list_mtx);
+ 	transition_started = false;
+@@ -421,6 +439,7 @@ void dpm_resume_noirq(pm_message_t state
+ 				pm_dev_err(dev, state, " early", error);
+ 		}
+ 	mutex_unlock(&dpm_list_mtx);
++	dpm_show_time(starttime, state, "early");
+ 	resume_device_irqs();
+ }
+ EXPORT_SYMBOL_GPL(dpm_resume_noirq);
+@@ -506,6 +525,7 @@ static int device_resume(struct device *
+ static void dpm_resume(pm_message_t state)
+ {
+ 	struct list_head list;
++	ktime_t starttime = ktime_get();
  
- 	switch (state.event) {
- #ifdef CONFIG_SUSPEND
-@@ -227,12 +249,7 @@ static int pm_op(struct device *dev,
- 		error = -EINVAL;
+ 	INIT_LIST_HEAD(&list);
+ 	mutex_lock(&dpm_list_mtx);
+@@ -534,6 +554,7 @@ static void dpm_resume(pm_message_t stat
  	}
+ 	list_splice(&list, &dpm_list);
+ 	mutex_unlock(&dpm_list_mtx);
++	dpm_show_time(starttime, state, NULL);
+ }
  
--	if (initcall_debug) {
--		rettime = ktime_get();
--		delta = ktime_sub(rettime, calltime);
--		pr_info("call %s+ returned %d after %Ld usecs\n", dev_name(dev),
--			error, (unsigned long long)ktime_to_ns(delta) >> 10);
--	}
-+	initcall_debug_report(dev, calltime, error);
+ /**
+@@ -666,6 +687,7 @@ static int device_suspend_noirq(struct d
+ int dpm_suspend_noirq(pm_message_t state)
+ {
+ 	struct device *dev;
++	ktime_t starttime = ktime_get();
+ 	int error = 0;
  
+ 	suspend_device_irqs();
+@@ -681,6 +703,8 @@ int dpm_suspend_noirq(pm_message_t state
+ 	mutex_unlock(&dpm_list_mtx);
+ 	if (error)
+ 		dpm_resume_noirq(resume_event(state));
++	else
++		dpm_show_time(starttime, state, "late");
  	return error;
  }
-@@ -309,8 +326,9 @@ static int pm_noirq_op(struct device *de
- 	if (initcall_debug) {
- 		rettime = ktime_get();
- 		delta = ktime_sub(rettime, calltime);
--		printk("initcall %s_i+ returned %d after %Ld usecs\n", dev_name(dev),
--			error, (unsigned long long)ktime_to_ns(delta) >> 10);
-+		printk("initcall %s_i+ returned %d after %Ld usecs\n",
-+			dev_name(dev), error,
-+			(unsigned long long)ktime_to_ns(delta) >> 10);
- 	}
- 
- 	return error;
-@@ -408,6 +426,26 @@ void dpm_resume_noirq(pm_message_t state
- EXPORT_SYMBOL_GPL(dpm_resume_noirq);
- 
- /**
-+ * legacy_resume - Execute a legacy (bus or class) resume callback for device.
-+ * dev: Device to resume.
-+ * cb: Resume callback to execute.
-+ */
-+static int legacy_resume(struct device *dev, int (*cb)(struct device *dev))
-+{
-+	int error;
-+	ktime_t calltime;
-+
-+	calltime = initcall_debug_start(dev);
-+
-+	error = cb(dev);
-+	suspend_report_result(cb, error);
-+
-+	initcall_debug_report(dev, calltime, error);
-+
-+	return error;
-+}
-+
-+/**
-  * device_resume - Execute "resume" callbacks for given device.
-  * @dev: Device to handle.
-  * @state: PM transition of the system being carried out.
-@@ -427,7 +465,7 @@ static int device_resume(struct device *
- 			error = pm_op(dev, dev->bus->pm, state);
- 		} else if (dev->bus->resume) {
- 			pm_dev_dbg(dev, state, "legacy ");
--			error = dev->bus->resume(dev);
-+			error = legacy_resume(dev, dev->bus->resume);
- 		}
- 		if (error)
- 			goto End;
-@@ -448,7 +486,7 @@ static int device_resume(struct device *
- 			error = pm_op(dev, dev->class->pm, state);
- 		} else if (dev->class->resume) {
- 			pm_dev_dbg(dev, state, "legacy class ");
--			error = dev->class->resume(dev);
-+			error = legacy_resume(dev, dev->class->resume);
- 		}
- 	}
-  End:
-@@ -648,6 +686,27 @@ int dpm_suspend_noirq(pm_message_t state
  EXPORT_SYMBOL_GPL(dpm_suspend_noirq);
+@@ -760,6 +784,7 @@ static int device_suspend(struct device 
+ static int dpm_suspend(pm_message_t state)
+ {
+ 	struct list_head list;
++	ktime_t starttime = ktime_get();
+ 	int error = 0;
  
- /**
-+ * legacy_suspend - Execute a legacy (bus or class) suspend callback for device.
-+ * dev: Device to suspend.
-+ * cb: Suspend callback to execute.
-+ */
-+static int legacy_suspend(struct device *dev, pm_message_t state,
-+			  int (*cb)(struct device *dev, pm_message_t state))
-+{
-+	int error;
-+	ktime_t calltime;
-+
-+	calltime = initcall_debug_start(dev);
-+
-+	error = cb(dev, state);
-+	suspend_report_result(cb, error);
-+
-+	initcall_debug_report(dev, calltime, error);
-+
-+	return error;
-+}
-+
-+/**
-  * device_suspend - Execute "suspend" callbacks for given device.
-  * @dev: Device to handle.
-  * @state: PM transition of the system being carried out.
-@@ -664,8 +723,7 @@ static int device_suspend(struct device 
- 			error = pm_op(dev, dev->class->pm, state);
- 		} else if (dev->class->suspend) {
- 			pm_dev_dbg(dev, state, "legacy class ");
--			error = dev->class->suspend(dev, state);
--			suspend_report_result(dev->class->suspend, error);
-+			error = legacy_suspend(dev, state, dev->class->suspend);
- 		}
- 		if (error)
- 			goto End;
-@@ -686,8 +744,7 @@ static int device_suspend(struct device 
- 			error = pm_op(dev, dev->bus->pm, state);
- 		} else if (dev->bus->suspend) {
- 			pm_dev_dbg(dev, state, "legacy ");
--			error = dev->bus->suspend(dev, state);
--			suspend_report_result(dev->bus->suspend, error);
-+			error = legacy_suspend(dev, state, dev->bus->suspend);
- 		}
+ 	INIT_LIST_HEAD(&list);
+@@ -785,6 +810,8 @@ static int dpm_suspend(pm_message_t stat
  	}
-  End:
+ 	list_splice(&list, dpm_list.prev);
+ 	mutex_unlock(&dpm_list_mtx);
++	if (!error)
++		dpm_show_time(starttime, state, NULL);
+ 	return error;
+ }
+ 
