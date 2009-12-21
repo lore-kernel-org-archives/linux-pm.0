@@ -1,13 +1,13 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: [RFT] Input: speed up suspend/shutdown for PS/2 mice and
-	keyboards
-Date: Sun, 20 Dec 2009 23:09:52 -0800
-Message-ID: <20091221070951.GA4170__40104.7409548939$1261379474$gmane$org@core.coreip.homeip.net>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [RFC] Asynchronous suspend/resume - test results
+Date: Mon, 21 Dec 2009 18:25:35 +1100
+Message-ID: <4B2F22EF.6040500__27195.1823532165$1261380452$gmane$org@crca.org.au>
+References: <200912210140.19713.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <200912210140.19713.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,72 +17,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux Input <linux-input@vger.kernel.org>
-Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi.
 
-I am asking everyone to give this patch a try. It is reported to speed
-up suspend process, however there is a risk that there are boxes out
-there that do require full reset and I would prefer to know that sooner
-than later.
+Rafael J. Wysocki wrote:
+> I'm not sure what the next step should be at this point.  To me, the picture is
+> quite clear now, but perhaps we ought to run more tests on some other machines
+> or something.  Please let me know what you think.
 
-Thanks!
+Looks great. If you do decide you want other machines tested, I'll
+happily try the machines around here:
 
--- 
-Dmitry
+- Dell M1530
+- Omnibook XE3-GF.
+- Via LN10000 based Mythtv Box
+- Desktop machine - Some Intel-based mobo I've forgotten the name of.
 
+I've been quietly following the thread, but have lost track of what
+iteration of the patch you're on, so if you'd give me a pointer to it,
+I'd be grateful.
 
-Input: speed up suspend/shutdown for PS/2 mice and keyboards
+By the way, I haven't forgotten about sending some real patches for
+swsusp (ie more than just cleanups). I'm just busy with other things and
+also thinking carefully about what order to do things in.
 
-Instead of doing full-blown reset while suspending or shutting down
-the box use lighter form of reset that should take less time.
+Regards,
 
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
-
- drivers/input/keyboard/atkbd.c     |    5 +++--
- drivers/input/mouse/psmouse-base.c |    5 ++++-
- 2 files changed, 7 insertions(+), 3 deletions(-)
-
-
-diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
-index a357357..1f5e2ce 100644
---- a/drivers/input/keyboard/atkbd.c
-+++ b/drivers/input/keyboard/atkbd.c
-@@ -134,7 +134,8 @@ static const unsigned short atkbd_unxlate_table[128] = {
- #define ATKBD_CMD_GETID		0x02f2
- #define ATKBD_CMD_SETREP	0x10f3
- #define ATKBD_CMD_ENABLE	0x00f4
--#define ATKBD_CMD_RESET_DIS	0x00f5
-+#define ATKBD_CMD_RESET_DIS	0x00f5	/* Reset to defaults and disable */
-+#define ATKBD_CMD_RESET_DEF	0x00f6	/* Reset to defaults */
- #define ATKBD_CMD_SETALL_MBR	0x00fa
- #define ATKBD_CMD_RESET_BAT	0x02ff
- #define ATKBD_CMD_RESEND	0x00fe
-@@ -836,7 +837,7 @@ static void atkbd_cleanup(struct serio *serio)
- 	struct atkbd *atkbd = serio_get_drvdata(serio);
- 
- 	atkbd_disable(atkbd);
--	ps2_command(&atkbd->ps2dev, NULL, ATKBD_CMD_RESET_BAT);
-+	ps2_command(&atkbd->ps2dev, NULL, ATKBD_CMD_RESET_DEF);
- }
- 
- 
-diff --git a/drivers/input/mouse/psmouse-base.c b/drivers/input/mouse/psmouse-base.c
-index fd0bc09..401ac6b 100644
---- a/drivers/input/mouse/psmouse-base.c
-+++ b/drivers/input/mouse/psmouse-base.c
-@@ -1137,7 +1137,10 @@ static void psmouse_cleanup(struct serio *serio)
- 	if (psmouse->cleanup)
- 		psmouse->cleanup(psmouse);
- 
--	psmouse_reset(psmouse);
-+/*
-+ * Reset the mouse to defaults (bare PS/2 protocol).
-+ */
-+	ps2_command(&psmouse->ps2dev, NULL, PSMOUSE_CMD_RESET_DIS);
- 
- /*
-  * Some boxes, such as HP nx7400, get terribly confused if mouse
+Nigel
