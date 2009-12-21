@@ -1,13 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] Asynchronous suspend/resume - test results
-Date: Mon, 21 Dec 2009 15:54:36 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.0912211551580.2643-100000__46319.5224911489$1261429030$gmane$org@iolanthe.rowland.org>
-References: <200912212136.12665.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 0/5] PM patches for the next pull request
+Date: Mon, 21 Dec 2009 22:01:47 +0100
+Message-ID: <200912212201.47920.rjw__4162.98153945736$1261429771$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912212136.12665.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,19 +15,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 21 Dec 2009, Rafael J. Wysocki wrote:
+Hi,
 
-> Do you think it's a good idea to mark all SCSI devices as async?  Well, for
-> testing it probably is, but I doubt in general.
+I'd like to include the following 5 patches into the next pull request
+(shortly).
 
-That would be a good question to post on Linux-SCSI.
+Two of them are evident fixes, the other three are simple enhancements and/or
+documentation updates.
 
-In most respects it's probably okay.  But some people with large disk
-farms might not like it if their drives should suddenly start to spin
-up (with a correspondingly large power draw) all at the same time.
+Please let me know if there's anything wrong with them.
 
-Alan Stern
+Rafael
