@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/5] PM: Make the initcall_debug style timing
-	for suspend/resume complete
-Date: Mon, 21 Dec 2009 23:40:16 +0100
-Message-ID: <200912212340.16279.rjw__46190.82672657$1261435427$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0912211612340.3328-100000@iolanthe.rowland.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC] Asynchronous suspend/resume - test results
+Date: Mon, 21 Dec 2009 15:00:56 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.0912211456320.21722__36249.7623813853$1261436520$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0912211200200.2979-100000@iolanthe.rowland.org>
+	<200912212136.12665.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0912211612340.3328-100000@iolanthe.rowland.org>
+In-Reply-To: <200912212136.12665.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,60 +18,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 21 December 2009, Alan Stern wrote:
-> On Mon, 21 Dec 2009, Rafael J. Wysocki wrote:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Commit f2511774863487e61b56a97da07ebf8dd61d7836
-> > (PM: Add initcall_debug style timing for suspend/resume) introduced
-> > basic timing instrumentation, needed for a scritps/bootgraph.pl
-> > equivalent or humans, but it missed the fact that bus types and
-> > device classes which haven't been switched to using struct dev_pm_ops
-> > objects yet need special handling.  As a result, the suspend/resume
-> > timing information is only available for devices whose bus types or
-> > device classes use struct dev_pm_ops objects, so the majority of
-> > devices is not covered.
-> > 
-> > Fix this by adding basic suspend/resume timing instrumentation for
-> > devices whose bus types and device classes still don't use struct
-> > dev_pm_ops objects for power management.  To reduce code duplication
-> > move the timing code to helper functions.
-> 
-> A minor complaint...
-> 
-> > +/**
-> >   * device_resume - Execute "resume" callbacks for given device.
-> >   * @dev: Device to handle.
-> >   * @state: PM transition of the system being carried out.
-> > @@ -427,7 +465,7 @@ static int device_resume(struct device *
-> >  			error = pm_op(dev, dev->bus->pm, state);
-> >  		} else if (dev->bus->resume) {
-> >  			pm_dev_dbg(dev, state, "legacy ");
-> > -			error = dev->bus->resume(dev);
-> > +			error = legacy_resume(dev, dev->bus->resume);
-> >  		}
-> >  		if (error)
-> >  			goto End;
-> > @@ -448,7 +486,7 @@ static int device_resume(struct device *
-> >  			error = pm_op(dev, dev->class->pm, state);
-> >  		} else if (dev->class->resume) {
-> >  			pm_dev_dbg(dev, state, "legacy class ");
-> > -			error = dev->class->resume(dev);
-> > +			error = legacy_resume(dev, dev->class->resume);
-> >  		}
-> >  	}
-> 
-> If none of the method callbacks are non-NULL, this won't print 
-> anything.  The same is true for device_suspend().
-> 
-> Now maybe you don't _want_ to print anything in that case, but for
-> debugging purposes it could be useful.
 
-I'm going to add that in a separate patch.
 
-Rafael
+On Mon, 21 Dec 2009, Rafael J. Wysocki wrote:
+> 
+> Do you think it's a good idea to mark all SCSI devices as async?  Well, for
+> testing it probably is, but I doubt in general.
+
+As long as things aren't multi-path, or multi-lun, it's probably fine.
+
+With multi-path (ie same disk reachable multiple ways), it's probably fine 
+too, but let's face it, who the hell knows? But it's not going to be an 
+issue for laptops and normal desktops.
+
+For multi-lun, I suspect the luns are related, and there might be some 
+ordering issues. But it's _likely_ all fine there too.
+
+The nice thing about systems with wires (ie USB, SCSI, SATA) is that it's 
+really hard to make different devices have odd dependencies on each other. 
+The wires tend to _be_ the topology.
+
+			Linus
