@@ -1,10 +1,19 @@
-From: 640E9920 <640e9920@gmail.com>
-Subject: PM-QOS hot path discussion.
-Date: Wed, 23 Dec 2009 09:27:18 -0800
-Message-ID: <20091223172718.GB16543@mgross-laptop>
+From: Vojtech Pavlik <vojtech@suse.cz>
+Subject: Re: Async suspend-resume patch w/ completions (was:
+	Re:	Async?suspend-resume patch w/ rwsems)
+Date: Mon, 21 Dec 2009 12:20:42 +0100
+Message-ID: <20091221112042.GA12133__16693.3023058393$1261590067$gmane$org@suse.cz>
+References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
+	<alpine.LFD.2.00.0912191557320.3712@localhost.localdomain>
+	<20091220024142.GC4073@core.coreip.homeip.net>
+	<200912202025.25618.rjw@sisk.pl>
+	<20091221073915.GC3234@core.coreip.homeip.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1901729201695267041=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <20091221073915.GC3234@core.coreip.homeip.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,99 +21,35 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Sun, Dec 20, 2009 at 11:39:15PM -0800, Dmitry Torokhov wrote:
 
---===============1901729201695267041==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="LpQ9ahxlCli8rRTG"
-Content-Disposition: inline
+> > On the nx6325 that appears to reduce the suspend time as much so the effect
+> > of async is not visible any more.  On the Wind it decreases the total suspend
+> > time almost by half!
+> > 
+> > Please push this patch to Linus. :-)
+> > 
+> 
+> Let's see if I manage to solicit some testers first. FWIW it seems to be
+> working on my boxes.
+> 
+> But if this works then I am not sure we even want to bother with async
+> suspend of i8042 and serios. And serio already does resume
+> asynchronously through kseriod.
 
+I'm kind of wondering where this will break, but I don't remember why
+the RESET_BAT was put in exactly - the point of making sure the BIOS
+doesn't get confused by the advanced modes is correct, and is required
+at least when a keyboard is set to "Set 3", but RESET_BAT is a too heavy
+hammer anyway - we could just make sure to switch the kbd/mouse to
+'default' modes instead of doing a full reset.
 
---LpQ9ahxlCli8rRTG
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-This is a bit of a rant and call for better collaboration on pm-qos
-applications.
-
-Recently I've had done some work to modify PM-QOS to implement a handle
-based interface to avoid some performance issues identified by others
-indirectly and directly regarding the list and string compares baked
-into the initial pm-qos implementation.
-
-BTW I'm still disappointed in the folks that indirectly raised
-pm-qos performance issues.  Perhaps better collaboration could be had in
-the future.
-
-Anyway, at the time of the latest direct collaboration about the
-performance the problem of hitting the request API from a driver hot
-path I worried that making the API handle based will still not address
-the scaling issue when there are more than a few pm-qos requests that
-need to get aggregated on every parameter change.  i.e. making the API
-handle based may not be enough.
-
-I did the patch anyway, but as I feared this scaling issue came up.  I
-don't have specifics other than an email saying I was correct to worry.
-Ok, so now what do we do, and why?
-
-Now what seems to be asked for is that something akin to the android
-WAKE_LOCK_IDLE "thing".
-
-Last night I gave some thought to this.  One could put a boolean or bit
-mask flag into the aggregated value that when polled the poller could
-know to not go to any lower performing state or kick the system into
-higher performance states.  Setting the flag would only happen from
-kernel API's and no notification trees would be called as it gets
-toggled.  (that would kill fast path performance)
-
-But as I thought about it it became clear the correct behavior is really
-a function of the parameter class.  If the parameter is cpu_dma_latency
-then the flag would be used to simply disable CPUIDLE from doing any
-high latency idle states.  However; such a flag for network bandwidth (a
-flag hit in some fast code path) shouldn't be telling the NIC to kick up
-=66rom 100Mbs to 1000Mbs or go back.
-
-So what would a fast path pm-qos parameter look like and how would it be
-used, outside of CPUIDLE?
-
-Is this fast path problem even worth solving?  Looking at the andorid
-kernel for clients of the WAKE_LOCK_IDLE makes me think, perhaps not.
-If there are users of this thing then, they are not public and I don't
-think I should care about them unless they are collaborating well.
-
-For the more shy folks on the list, this is an invitation to collaborate
-on some evolutionary changes to pm-qos by identifying problems and
-applications you have that need help.
-
---mgross
-
-
---LpQ9ahxlCli8rRTG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAksyUvYACgkQhK5OsmQOmSAaNQCeP/FelzcoJohaIF8rcLqwkjJF
-VQkAnRcWBUkxWaJdw85+Ime0xzQs6a2Y
-=hblT
------END PGP SIGNATURE-----
-
---LpQ9ahxlCli8rRTG--
-
---===============1901729201695267041==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============1901729201695267041==--
+-- 
+Vojtech Pavlik
+Director SuSE Labs
