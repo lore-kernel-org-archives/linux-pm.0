@@ -1,11 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] PM fixes and updates for 2.6.33
-Date: Tue, 22 Dec 2009 23:03:05 +0100
-Message-ID: <200912222303.05698.rjw__24505.035315133$1261519512$gmane$org@sisk.pl>
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+Subject: [PATCH 1/3] phylib: Fix deadlock on resume
+Date: Wed, 23 Dec 2009 01:14:47 +0300
+Message-ID: <20091222221447.GA9268__8071.1001567126$1261520302$gmane$org@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,45 +16,107 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Arjan van de Ven <arjan@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, Li Yang <leoli@freescale.com>, Andy Fleming <afleming@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+Sometimes kernel hangs on resume with the following trace:
 
-Please pull power management fixes and updates for 2.6.33 from:
+ ucc_geth e0102000.ucc: resume
+ INFO: task bash:1764 blocked for more than 120 seconds.
+ "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+ bash          D 0fecf43c     0  1764   1763 0x00000000
+ Call Trace:
+ [cf9a7c10] [c0012868] ret_from_except+0x0/0x14 (unreliable)
+ --- Exception: cf9a7ce0 at __switch_to+0x4c/0x6c
+     LR = 0xcf9a7cc0
+ [cf9a7cd0] [c0008c14] __switch_to+0x4c/0x6c (unreliable)
+ [cf9a7ce0] [c028bcfc] schedule+0x158/0x260
+ [cf9a7d10] [c028c720] __mutex_lock_slowpath+0x80/0xd8
+ [cf9a7d40] [c01cf388] phy_stop+0x20/0x70
+ [cf9a7d50] [c01d514c] ugeth_resume+0x6c/0x13c
+ [...]
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
+Here is why.
 
-They include:
+On suspend:
 
-* Fix for commit f2511774863487e61b56a97da07ebf8dd61d7836
-  (PM: Add initcall_debug style timing for suspend/resume)
-  adding the timing instrumentation for devices that haven't been switched
-  to struct dev_pm_ops yet.
+- PM core starts suspending devices, ucc_geth_suspend gets called;
 
-* Total device suspend and resume time reporting.
+- ucc_geth calls phy_stop() on suspend. Note that phy_stop() is
+  mostly asynchronous so it doesn't block ucc_geth's suspend routine,
+  it just sets PHY_HALTED state and disables PHY's interrupts;
 
-* Runtime PM core fix from Alan Stern.
+- Suddenly the state machine gets scheduled, it grabs the phydev->lock
+  mutex and tries to process the PHY_HALTED state, so it calls
+  phydev->adjust_link(phydev->attached_dev). In ucc_geth case
+  adjust_link() calls msleep(), which reschedules the code flow back to
+  PM core, which now finishes suspend and so we end up sleeping with
+  phydev->lock mutex held.
 
-* Runtime PM enhancement allowing the core to call device type or device
-  class callbacks if bus type callbacks are not defined.
+On resume:
 
-* Runtime PM documentation update from Alan Stern.
+- PM core starts resuming devices (notice that nobody rescheduled
+  the state machine yet, so the mutex is still held), the core calls
+  ucc_geth's resume routine;
 
+- ucc_geth_resume restarts the PHY with phy_stop()/phy_start()
+  sequence, and the phy_*() calls are trying to grab the phydev->lock
+  mutex. Here comes the deadlock.
 
- Documentation/power/runtime_pm.txt |  223 ++++++++++++++++++++++--------------
- drivers/base/power/main.c          |  128 +++++++++++++++++----
- drivers/base/power/runtime.c       |   45 +++++++
- 3 files changed, 288 insertions(+), 108 deletions(-)
+This patch fixes the issue by stopping the state machine on suspend
+and starting it again on resume.
 
----------------
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/net/phy/mdio_bus.c |   24 ++++++++++++++++++++++--
+ 1 files changed, 22 insertions(+), 2 deletions(-)
 
-Alan Stern (2):
-      PM: Use pm_runtime_put_sync in system resume
-      PM: Runtime PM documentation update
-
-Rafael J. Wysocki (3):
-      PM: Make the initcall_debug style timing for suspend/resume complete
-      PM: Measure device suspend and resume times
-      PM / Runtime: Use device type and device class callbacks
+diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
+index bd4e8d7..49252d3 100644
+--- a/drivers/net/phy/mdio_bus.c
++++ b/drivers/net/phy/mdio_bus.c
+@@ -303,8 +303,18 @@ static int mdio_bus_suspend(struct device * dev, pm_message_t state)
+ 	struct phy_driver *phydrv = to_phy_driver(dev->driver);
+ 	struct phy_device *phydev = to_phy_device(dev);
+ 
++	/*
++	 * We must stop the state machine manually, otherwise it stops out of
++	 * control, possibly with the phydev->lock held. Upon resume, netdev
++	 * may call phy routines that try to grab the same lock, and that may
++	 * lead to a deadlock.
++	 */
++	if (phydev->attached_dev)
++		phy_stop_machine(phydev);
++
+ 	if (!mdio_bus_phy_may_suspend(phydev))
+ 		return 0;
++
+ 	return phydrv->suspend(phydev);
+ }
+ 
+@@ -312,10 +322,20 @@ static int mdio_bus_resume(struct device * dev)
+ {
+ 	struct phy_driver *phydrv = to_phy_driver(dev->driver);
+ 	struct phy_device *phydev = to_phy_device(dev);
++	int ret;
+ 
+ 	if (!mdio_bus_phy_may_suspend(phydev))
+-		return 0;
+-	return phydrv->resume(phydev);
++		goto no_resume;
++
++	ret = phydrv->resume(phydev);
++	if (ret < 0)
++		return ret;
++
++no_resume:
++	if (phydev->attached_dev)
++		phy_start_machine(phydev, NULL);
++
++	return 0;
+ }
+ 
+ struct bus_type mdio_bus_type = {
+-- 
+1.6.3.3
