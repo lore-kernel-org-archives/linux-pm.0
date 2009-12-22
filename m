@@ -1,15 +1,15 @@
 From: Salman Qazi <sqazi@google.com>
 Subject: Re: RFC: A proposal for power capping through forced
 	idle in the Linux Kernel
-Date: Tue, 22 Dec 2009 13:10:36 -0800
-Message-ID: <4352991a0912221310k40f42498nba2081011398c7e__4510.02266859195$1261516528$gmane$org@mail.gmail.com>
+Date: Tue, 22 Dec 2009 13:15:21 -0800
+Message-ID: <4352991a0912221315y5ba409cbh26baa5937cdf2f76__38206.417943775$1261516648$gmane$org@mail.gmail.com>
 References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
-	<20091218170407.GA1396@ucw.cz>
+	<20091221085713.GA1622@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091218170407.GA1396@ucw.cz>
+In-Reply-To: <20091221085713.GA1622@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,48 +23,57 @@ To: Pavel Machek <pavel@ucw.cz>
 Cc: linux-pm@lists.linux-foundation.org, Taliver Heath <taliver@google.com>, Michael Rubin <mrubin@google.com>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 18, 2009 at 9:04 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi
+On Mon, Dec 21, 2009 at 12:57 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
 >
->
->> Why not use voltage and frequency scaling?
+>> Google is implementing power capping, a technology that improves the
+>> power efficiency of data centers. There are also some interesting
+>> applications of this technology for laptops and cell phones.  Google
+>> aims to send most of its Linux technology upstream. So, how can we get
+>> this feature into the mainline kernel?
+> ...
+>> Aside from this, every cgroup has a new quantity added to the CPU
+>> component called "Power Capping Priority".  This quantity indicates
+>> the order in which the scheduler attributes the time spent injecting
+>> idle cycles to specific processes.  This allows us to discriminate
+>> among processes when it comes to accounting for the injected idle
+>> time.  There is also an indication of interactivity versus batch for
+>> the cgroup provided in the CPU component of the cgroup.
 >>
->> Forced Idle Injection is more effective[1] and more widely available.
->> Even with voltage and frequency scaling, interpolation is needed
->> between the available settings.  So, if we did use voltage and
->
-> It is only more efficient on new hardware.
->
-> You should also explain 'why not throttling' because that is actually
-> designed for power capping.
-
-Do you mean t-states?
-
->
->> Application to Laptops and Cellphones:
+>> Basic Algorithm:
 >>
->> Imagine being in a tent in Death Valley with a laptop.  You are bored,
->> and you want to watch a movie.  However, you also want to do your best
->> to make the battery last and watch as much of the movie as possible.
->> Forced idle power capping is a solution.  If your machine has a knob
->> that allows you to control the available power, you can turn that knob
->> until your video starts getting choppy.  And then, turn the knob back
+>> Rather than blindly blasting the machine with the minimum required
+>> idle cycles, our implementation keeps track of naturally occurring
+>> idle cycles as follows:
 >
-> That's bad example. Video player should already sleep between frames.
+> (Rather complex algorithm snipped)
+>
+> Well.. having all this complexity just for forcing idle... And it
+> still will not work, right? Linux kernel is not real time, so you
+> can't guarantee anything.
 
-Yes, the video player should sleep.  However, there will be other
-things running.  And certainly, it is possible to cap the power and
-discriminate so that those things are prevented from running while the
-video player is allowed to run with minimal latency impact.
+The purpose of all the "complexity" is to avoid injecting idle cycles
+when the machine is already sufficiently idle.  That is, to lower the
+impact when the feature is not needed.  And you are right, there are
+no hard guarantees.  A lot of the practical use will rest on empirical
+data.
 
 >
-> Better example would be 'make video so choppy that expected battery
-> time rises over length ov movie.
+> OTOH realtime people already have tools you could make good use of:
+> your power capping approach looks like 'high priority idle task that
+> needs to run for 2 seconds every 5 seconds' or something...
 >
-> (And yes, this would have been useful for me on notebook with failed
-> fan and ineffective throttling).
->
->
+> Talk to rt people?
+
+At the core of it, you are correct.  However, in our implementation it
+also avoids running when the system is already idle and operates at
+much finer granularities than seconds.
+
+Which specific tools are you referring to?  Real-time Linux as a whole
+is a trade off:  one gets predictable latency in exchange for some
+performance.  Any specific contacts that I should direct my inquiries
+to?
+
 >                                                                Pavel
 > --
 > (english) http://www.livejournal.com/~pavelmachek
