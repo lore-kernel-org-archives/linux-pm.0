@@ -1,15 +1,11 @@
-From: Salman Qazi <sqazi@google.com>
-Subject: Re: RFC: A proposal for power capping through forced
-	idle in the Linux Kernel
-Date: Tue, 22 Dec 2009 13:15:21 -0800
-Message-ID: <4352991a0912221315y5ba409cbh26baa5937cdf2f76__38206.417943775$1261516648$gmane$org@mail.gmail.com>
-References: <4352991a0912141511k7f9b8b79y767c693a4ff3bc2b@mail.gmail.com>
-	<20091221085713.GA1622@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [GIT PULL] PM fixes and updates for 2.6.33
+Date: Tue, 22 Dec 2009 23:03:05 +0100
+Message-ID: <200912222303.05698.rjw__24505.035315133$1261519512$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091221085713.GA1622@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,63 +15,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org, Taliver Heath <taliver@google.com>, Michael Rubin <mrubin@google.com>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Dec 21, 2009 at 12:57 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
->> Google is implementing power capping, a technology that improves the
->> power efficiency of data centers. There are also some interesting
->> applications of this technology for laptops and cell phones.  Google
->> aims to send most of its Linux technology upstream. So, how can we get
->> this feature into the mainline kernel?
-> ...
->> Aside from this, every cgroup has a new quantity added to the CPU
->> component called "Power Capping Priority".  This quantity indicates
->> the order in which the scheduler attributes the time spent injecting
->> idle cycles to specific processes.  This allows us to discriminate
->> among processes when it comes to accounting for the injected idle
->> time.  There is also an indication of interactivity versus batch for
->> the cgroup provided in the CPU component of the cgroup.
->>
->> Basic Algorithm:
->>
->> Rather than blindly blasting the machine with the minimum required
->> idle cycles, our implementation keeps track of naturally occurring
->> idle cycles as follows:
->
-> (Rather complex algorithm snipped)
->
-> Well.. having all this complexity just for forcing idle... And it
-> still will not work, right? Linux kernel is not real time, so you
-> can't guarantee anything.
+Hi Linus,
 
-The purpose of all the "complexity" is to avoid injecting idle cycles
-when the machine is already sufficiently idle.  That is, to lower the
-impact when the feature is not needed.  And you are right, there are
-no hard guarantees.  A lot of the practical use will rest on empirical
-data.
+Please pull power management fixes and updates for 2.6.33 from:
 
->
-> OTOH realtime people already have tools you could make good use of:
-> your power capping approach looks like 'high priority idle task that
-> needs to run for 2 seconds every 5 seconds' or something...
->
-> Talk to rt people?
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
 
-At the core of it, you are correct.  However, in our implementation it
-also avoids running when the system is already idle and operates at
-much finer granularities than seconds.
+They include:
 
-Which specific tools are you referring to?  Real-time Linux as a whole
-is a trade off:  one gets predictable latency in exchange for some
-performance.  Any specific contacts that I should direct my inquiries
-to?
+* Fix for commit f2511774863487e61b56a97da07ebf8dd61d7836
+  (PM: Add initcall_debug style timing for suspend/resume)
+  adding the timing instrumentation for devices that haven't been switched
+  to struct dev_pm_ops yet.
 
->                                                                Pavel
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->
+* Total device suspend and resume time reporting.
+
+* Runtime PM core fix from Alan Stern.
+
+* Runtime PM enhancement allowing the core to call device type or device
+  class callbacks if bus type callbacks are not defined.
+
+* Runtime PM documentation update from Alan Stern.
+
+
+ Documentation/power/runtime_pm.txt |  223 ++++++++++++++++++++++--------------
+ drivers/base/power/main.c          |  128 +++++++++++++++++----
+ drivers/base/power/runtime.c       |   45 +++++++
+ 3 files changed, 288 insertions(+), 108 deletions(-)
+
+---------------
+
+Alan Stern (2):
+      PM: Use pm_runtime_put_sync in system resume
+      PM: Runtime PM documentation update
+
+Rafael J. Wysocki (3):
+      PM: Make the initcall_debug style timing for suspend/resume complete
+      PM: Measure device suspend and resume times
+      PM / Runtime: Use device type and device class callbacks
