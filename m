@@ -1,19 +1,14 @@
-From: Vojtech Pavlik <vojtech@suse.cz>
-Subject: Re: Async suspend-resume patch w/ completions (was:
-	Re:	Async?suspend-resume patch w/ rwsems)
-Date: Mon, 21 Dec 2009 12:20:42 +0100
-Message-ID: <20091221112042.GA12133__16693.3023058393$1261590067$gmane$org@suse.cz>
-References: <Pine.LNX.4.44L0.0912091729530.2672-100000@iolanthe.rowland.org>
-	<alpine.LFD.2.00.0912191557320.3712@localhost.localdomain>
-	<20091220024142.GC4073@core.coreip.homeip.net>
-	<200912202025.25618.rjw@sisk.pl>
-	<20091221073915.GC3234@core.coreip.homeip.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC] Asynchronous suspend/resume - test results
+Date: Wed, 23 Dec 2009 21:35:24 +0100
+Message-ID: <200912232135.25041.rjw__35047.4336687059$1261600652$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.0912211200200.2979-100000@iolanthe.rowland.org>
+	<200912212136.12665.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20091221073915.GC3234@core.coreip.homeip.net>
+In-Reply-To: <200912212136.12665.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,33 +18,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Dec 20, 2009 at 11:39:15PM -0800, Dmitry Torokhov wrote:
-
-> > On the nx6325 that appears to reduce the suspend time as much so the effect
-> > of async is not visible any more.  On the Wind it decreases the total suspend
-> > time almost by half!
-> > 
-> > Please push this patch to Linus. :-)
-> > 
+On Monday 21 December 2009, Rafael J. Wysocki wrote:
+> On Monday 21 December 2009, Alan Stern wrote:
+> > On Mon, 21 Dec 2009, Rafael J. Wysocki wrote:
+...
+> > You should also make SCSI targets and hosts async.  Hosts are added in
+> > drivers/scsi/hosts.c:scsi_add_host_with_dma() (in 2.6.32 this was
+> > named scsi_add_host()).  Targets are added in
+> > drivers/scsi/scsi_sysfs.c:scsi_target_add().  And for thoroughness,
+> > SCSI devices are added in scsi_sysfs_add_sdev() in the same file.
 > 
-> Let's see if I manage to solicit some testers first. FWIW it seems to be
-> working on my boxes.
+> Thanks a lot for the pointers.
+
+I put device_enable_async_suspend() in all of these places and that resulted in
+major reduction of suspend time without starting the async threads upfront.
+Now, however, starting them upfront helps only a little, within the standard
+deviation from the "non-upfront" case.
+
+In turn, resume _without_ starting the async threads upfront makes a little
+sense on my test boxes.  In fact, it only helped on the nx6325 and made things
+worse on the other two (I added the results from Toshiba Portege R500, but it
+has the same chipset as the Wind U100, ie. ICH7).
+
+The results are as follows:
+
+			HP nx6325	MSI Wind U100	Toshiba Portege R500
+
+sync suspend		1357 (+/- 35)	 656 (+/- 50)	 889 (+/- 29)
+sync resume		3027 (+/- 6)	3372 (+/- 30)	4552 (+/- 35)
+
+async suspend		1053 (+/- 50)	 490 (+/- 42)	 620 (+/- 52)
+async resume		2291 (+/- 7)	3406 (+/- 52)	4557 (+/- 26)
+
+async "upfront" suspend	1040 (+/- 35)	 476 (+/- 9)	 585 (+/- 29)
+async "upfront" resume	1787 (+/- 7)	1724 (+/- 48)	1990 (+/- 25)
+
+The raw data are at
+http://www.sisk.pl/kernel/data/async-suspend-updated.pdf
+http://www.sisk.pl/kernel/data/r500/
+http://www.sisk.pl/kernel/data/nx6325/
+http://www.sisk.pl/kernel/data/wind/
+
+and the previous results were moved into
+http://www.sisk.pl/kernel/data/091220/
+
+The patches used in the testing are in my async branch at
+http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=shortlog;h=refs/heads/async
+The patches in this branch are not for upstream, but it's on top of the 
+linux-next branch containing patches for the 2.6.34 merge window.
+
+...
+> > Although USB host controllers aren't the longest-running devices to
+> > resume, they do tend to be on the longest paths.  Speeding them up
+> > would help.  One change you could try is in the patch below.  
+> > Currently when a controller has to be reset, the root hub beneath it is
+> > also reset and then re-suspended.  However there's no reason to suspend
+> > it if the PM core is only going to resume it a little bit later.  The
+> > patch gets rid of the unnecessary suspend.  Note: I haven't tested it.
 > 
-> But if this works then I am not sure we even want to bother with async
-> suspend of i8042 and serios. And serio already does resume
-> asynchronously through kseriod.
+> OK, I'll try it.
 
-I'm kind of wondering where this will break, but I don't remember why
-the RESET_BAT was put in exactly - the point of making sure the BIOS
-doesn't get confused by the advanced modes is correct, and is required
-at least when a keyboard is set to "Set 3", but RESET_BAT is a too heavy
-hammer anyway - we could just make sure to switch the kbd/mouse to
-'default' modes instead of doing a full reset.
+Unfortunately it breaks the second suspend (suspend process returns error code
+and says that the controller was not suspended, more or less).
 
--- 
-Vojtech Pavlik
-Director SuSE Labs
+Rafael
