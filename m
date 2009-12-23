@@ -1,12 +1,10 @@
 From: 640E9920 <640e9920@gmail.com>
-Subject: Re: platform specific pm_qos parameters
-Date: Wed, 23 Dec 2009 08:23:48 -0800
-Message-ID: <20091223162348.GA16543@mgross-laptop>
-References: <000601ca804d$ce010190$6a0304b0$@org>
+Subject: PM-QOS hot path discussion.
+Date: Wed, 23 Dec 2009 09:27:18 -0800
+Message-ID: <20091223172718.GB16543@mgross-laptop>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1540457481949346728=="
+Content-Type: multipart/mixed; boundary="===============1901729201695267041=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <000601ca804d$ce010190$6a0304b0$@org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,104 +15,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ai Li <aili@codeaurora.org>
-Cc: linux-pm@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 
---===============1540457481949346728==
+--===============1901729201695267041==
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="2oS5YaxWCcQjTEyO"
+	protocol="application/pgp-signature"; boundary="LpQ9ahxlCli8rRTG"
 Content-Disposition: inline
 
 
---2oS5YaxWCcQjTEyO
+--LpQ9ahxlCli8rRTG
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Dec 18, 2009 at 06:51:38PM -0700, Ai Li wrote:
-> Subject: [linux-pm] platform specific pm_qos parameters
-> From: Ai Li <aili@codeaurora.org>
-> To: mgross@linux.intel.com, linux-pm@lists.linux-foundation.org
-> Date: Fri, 18 Dec 2009 18:51:38 -0700
->=20
-> Hi,
->=20
-> We are interested in using pm_qos_params to reduce power consumption
-> on our embedded devices while maintaining satisfactory performance.
-> One example of the QoS parameters is bus bandwidth.  We want to slow
-> down the buses dynamically to a lower level and yet provide enough
-> bandwidth to the system.
->=20
-> On our devices, different product families can have different type of
-> buses and different number of buses.  I remember that folks were
-> asking about platform specific pm_qos parameters some time ago.  It
-> seems a natural fit for us to create a different set of bandwidth QoS
-> for each platform.
+This is a bit of a rant and call for better collaboration on pm-qos
+applications.
 
-My initial reaction is why can't we come up with a good abstraction that
-would work for the product families?  I think its ok for a pm-qos option
-to exist but not be used on every architecture.
+Recently I've had done some work to modify PM-QOS to implement a handle
+based interface to avoid some performance issues identified by others
+indirectly and directly regarding the list and string compares baked
+into the initial pm-qos implementation.
 
->=20
-> I haven't seen much discussion recently on platform specific
-> pm_qos_params.  Are people still open to the idea?  I also would like
-> to help working on it.
+BTW I'm still disappointed in the folks that indirectly raised
+pm-qos performance issues.  Perhaps better collaboration could be had in
+the future.
 
-I worry that this is the road to hell.
+Anyway, at the time of the latest direct collaboration about the
+performance the problem of hitting the request API from a driver hot
+path I worried that making the API handle based will still not address
+the scaling issue when there are more than a few pm-qos requests that
+need to get aggregated on every parameter change.  i.e. making the API
+handle based may not be enough.
 
-If the platform specific pm-qos parameter is accessed by any platform
-independent driver code then its a big failure and leads to code that
-will give me a rash to look at.
+I did the patch anyway, but as I feared this scaling issue came up.  I
+don't have specifics other than an email saying I was correct to worry.
+Ok, so now what do we do, and why?
 
-So one requirement for platform specific pm-qos parameters I have is
-that such parameters shall only be accessible from platform specific
-code and not from any platform independent stuff.  (I don't think this
-is possible in C, so I'll need more convincing to not block this idea.)
+Now what seems to be asked for is that something akin to the android
+WAKE_LOCK_IDLE "thing".
 
-I welcome help coming up with good pm-qos abstractions for the multiple
-bus bandwidth problem above.  Having a nice discussion about the problem
-space would be good start, then we can propose some possible
-abstractions and prototype some implementations.
+Last night I gave some thought to this.  One could put a boolean or bit
+mask flag into the aggregated value that when polled the poller could
+know to not go to any lower performing state or kick the system into
+higher performance states.  Setting the flag would only happen from
+kernel API's and no notification trees would be called as it gets
+toggled.  (that would kill fast path performance)
 
-It also is important to provide some application specific motivation as
-to why the buses you are calling out can not self throttle without
-causing issues.  I once had a graphics bus example in mind but I've been
-told that graphics drivers have the data needed to do effective
-throttling and they already do so.  Therefore I shouldn't bother with
-such parameters.
+But as I thought about it it became clear the correct behavior is really
+a function of the parameter class.  If the parameter is cpu_dma_latency
+then the flag would be used to simply disable CPUIDLE from doing any
+high latency idle states.  However; such a flag for network bandwidth (a
+flag hit in some fast code path) shouldn't be telling the NIC to kick up
+=66rom 100Mbs to 1000Mbs or go back.
 
-I don't know if I believe that but I don't feel like arguing with
-graphics experts too much on the matter without a specific application
-where the need for such a parameter could be used.  i.e. I need a
-graphics driver author or graphics Si vendor to step up and tell us they
-could do a lot better with power if a pm-qos parameter for graphics bus
-bandwidth existed.
+So what would a fast path pm-qos parameter look like and how would it be
+used, outside of CPUIDLE?
 
-So do you see my issue?
+Is this fast path problem even worth solving?  Looking at the andorid
+kernel for clients of the WAKE_LOCK_IDLE makes me think, perhaps not.
+If there are users of this thing then, they are not public and I don't
+think I should care about them unless they are collaborating well.
 
-I hope I'm not scaring you off.  I want to do more with pm-qos but it
-takes collaboration to make it happen.  Today, I feel adding platform
-specific PM-QOS would put off solving the problems by enabling device
-specific parameters that would be forever out of tree and delay the
-collaboration needed to move forward.
+For the more shy folks on the list, this is an invitation to collaborate
+on some evolutionary changes to pm-qos by identifying problems and
+applications you have that need help.
 
 --mgross
 
-ps, sorry for using my wonky email address, I'm away form the
-linux.intel.com server until Jan.
 
->=20
-> ~Ai
->=20
->=20
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
-
---2oS5YaxWCcQjTEyO
+--LpQ9ahxlCli8rRTG
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -122,18 +93,18 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAksyRBQACgkQhK5OsmQOmSB66gCfaireeilU1BZtwRw0LC0EcmO2
-ZycAnjIQH8enWQ4mTTb86wLxiXEeCfZH
-=f266
+iEYEARECAAYFAksyUvYACgkQhK5OsmQOmSAaNQCeP/FelzcoJohaIF8rcLqwkjJF
+VQkAnRcWBUkxWaJdw85+Ime0xzQs6a2Y
+=hblT
 -----END PGP SIGNATURE-----
 
---2oS5YaxWCcQjTEyO--
+--LpQ9ahxlCli8rRTG--
 
---===============1540457481949346728==
+--===============1901729201695267041==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============1540457481949346728==--
+--===============1901729201695267041==--
