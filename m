@@ -1,13 +1,13 @@
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-Subject: [PATCH 3/3] ucc_geth: Fix netdev watchdog triggering on
-	suspend
-Date: Wed, 23 Dec 2009 01:15:04 +0300
-Message-ID: <20091222221504.GC9268__16567.0397495434$1261520681$gmane$org@oksana.dev.rtsoft.ru>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [Regression,
+	2.6.32->33-rc1] Commit 9f15226e755 breaks resume on Toshiba Portege
+	R500
+Date: Wed, 23 Dec 2009 01:58:42 +0100
+Message-ID: <200912230158.42161.rjw__28054.1022694253$1261529976$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,55 +17,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, Li Yang <leoli@freescale.com>, Andy Fleming <afleming@freescale.com>, linuxppc-dev@ozlabs.org
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Sometimes ucc_geth fails to suspend with the following trace:
+Hi Andreas,
 
- ucc_geth e0103000.ucc: suspend
- ucc_geth e0102000.ucc: suspend
- NETDEV WATCHDOG: eth0 (ucc_geth): transmit queue 0 timed out
- ------------[ cut here ]------------
- Badness at net/sched/sch_generic.c:255
- NIP: c021cb5c LR: c021cb5c CTR: c01ab4b4
- [...]
- NIP [c021cb5c] dev_watchdog+0x298/0x2a8
- LR [c021cb5c] dev_watchdog+0x298/0x2a8
- Call Trace:
- [c0389da0] [c021cb5c] dev_watchdog+0x298/0x2a8 (unreliable)
- [c0389e00] [c0031ed8] run_timer_softirq+0x16c/0x1dc
- [c0389e50] [c002c638] __do_softirq+0xa4/0x11c
- [...]
+Unfortunately your commit 9f15226e75583547aaf542c6be4bdac1060dd425
+(x86, ucode-amd: Ensure ucode update on suspend/resume after CPU off/online
+cycle) breaks resume from suspend to RAM on my Toshiba Portege R500 (an attempt
+to resume causes a hard hang with 100% CPU load, reproducible 100% of the
+time).  This has been found by bisection and confirmed by reverting this commit
+on top of 2.6.33-rc1.
 
-This patch fixes the issue by properly detaching the device on
-suspend, and attaching it back on resume.
+Strangely enough, the box doesn't even have an AMD CPU, there's an Intel Core2
+Duo in it, so I suspect some missing check somewhere.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/net/ucc_geth.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+If I have the time, I'll look deeper into this tomorrow.
 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index afaf088..7225d5d 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -3601,6 +3601,7 @@ static int ucc_geth_suspend(struct of_device *ofdev, pm_message_t state)
- 	if (!netif_running(ndev))
- 		return 0;
- 
-+	netif_device_detach(ndev);
- 	napi_disable(&ugeth->napi);
- 
- 	/*
-@@ -3659,7 +3660,7 @@ static int ucc_geth_resume(struct of_device *ofdev)
- 	phy_start(ugeth->phydev);
- 
- 	napi_enable(&ugeth->napi);
--	netif_start_queue(ndev);
-+	netif_device_attach(ndev);
- 
- 	return 0;
- }
--- 
-1.6.3.3
+[BTW, I can't recall seeing this patch before.  That very well may be my fault,
+but please make sure that CCs of suspend-related patches are sent to me in
+future.]
+
+Rafael
