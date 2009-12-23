@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC] Asynchronous suspend/resume - test results
-Date: Wed, 23 Dec 2009 21:35:24 +0100
-Message-ID: <200912232135.25041.rjw__35047.4336687059$1261600652$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0912211200200.2979-100000@iolanthe.rowland.org>
-	<200912212136.12665.rjw@sisk.pl>
+Date: Wed, 23 Dec 2009 21:46:29 +0100
+Message-ID: <200912232146.29339.rjw__38063.9401999817$1261601309$gmane$org@sisk.pl>
+References: <200912210140.19713.rjw@sisk.pl> <4B2F22EF.6040500@crca.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912212136.12665.rjw@sisk.pl>
+In-Reply-To: <4B2F22EF.6040500@crca.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,71 +17,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: Jiri Slaby <jslaby@suse.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 21 December 2009, Rafael J. Wysocki wrote:
-> On Monday 21 December 2009, Alan Stern wrote:
-> > On Mon, 21 Dec 2009, Rafael J. Wysocki wrote:
-...
-> > You should also make SCSI targets and hosts async.  Hosts are added in
-> > drivers/scsi/hosts.c:scsi_add_host_with_dma() (in 2.6.32 this was
-> > named scsi_add_host()).  Targets are added in
-> > drivers/scsi/scsi_sysfs.c:scsi_target_add().  And for thoroughness,
-> > SCSI devices are added in scsi_sysfs_add_sdev() in the same file.
+On Monday 21 December 2009, Nigel Cunningham wrote:
+> Hi.
 > 
-> Thanks a lot for the pointers.
-
-I put device_enable_async_suspend() in all of these places and that resulted in
-major reduction of suspend time without starting the async threads upfront.
-Now, however, starting them upfront helps only a little, within the standard
-deviation from the "non-upfront" case.
-
-In turn, resume _without_ starting the async threads upfront makes a little
-sense on my test boxes.  In fact, it only helped on the nx6325 and made things
-worse on the other two (I added the results from Toshiba Portege R500, but it
-has the same chipset as the Wind U100, ie. ICH7).
-
-The results are as follows:
-
-			HP nx6325	MSI Wind U100	Toshiba Portege R500
-
-sync suspend		1357 (+/- 35)	 656 (+/- 50)	 889 (+/- 29)
-sync resume		3027 (+/- 6)	3372 (+/- 30)	4552 (+/- 35)
-
-async suspend		1053 (+/- 50)	 490 (+/- 42)	 620 (+/- 52)
-async resume		2291 (+/- 7)	3406 (+/- 52)	4557 (+/- 26)
-
-async "upfront" suspend	1040 (+/- 35)	 476 (+/- 9)	 585 (+/- 29)
-async "upfront" resume	1787 (+/- 7)	1724 (+/- 48)	1990 (+/- 25)
-
-The raw data are at
-http://www.sisk.pl/kernel/data/async-suspend-updated.pdf
-http://www.sisk.pl/kernel/data/r500/
-http://www.sisk.pl/kernel/data/nx6325/
-http://www.sisk.pl/kernel/data/wind/
-
-and the previous results were moved into
-http://www.sisk.pl/kernel/data/091220/
-
-The patches used in the testing are in my async branch at
-http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=shortlog;h=refs/heads/async
-The patches in this branch are not for upstream, but it's on top of the 
-linux-next branch containing patches for the 2.6.34 merge window.
-
-...
-> > Although USB host controllers aren't the longest-running devices to
-> > resume, they do tend to be on the longest paths.  Speeding them up
-> > would help.  One change you could try is in the patch below.  
-> > Currently when a controller has to be reset, the root hub beneath it is
-> > also reset and then re-suspended.  However there's no reason to suspend
-> > it if the PM core is only going to resume it a little bit later.  The
-> > patch gets rid of the unnecessary suspend.  Note: I haven't tested it.
+> Rafael J. Wysocki wrote:
+> > I'm not sure what the next step should be at this point.  To me, the picture is
+> > quite clear now, but perhaps we ought to run more tests on some other machines
+> > or something.  Please let me know what you think.
 > 
-> OK, I'll try it.
+> Looks great. If you do decide you want other machines tested, I'll
+> happily try the machines around here:
+> 
+> - Dell M1530
+> - Omnibook XE3-GF.
+> - Via LN10000 based Mythtv Box
+> - Desktop machine - Some Intel-based mobo I've forgotten the name of.
 
-Unfortunately it breaks the second suspend (suspend process returns error code
-and says that the controller was not suspended, more or less).
+Yes, that would be useful.  If the results are in agreement with my data at
+http://www.sisk.pl/kernel/data/, we will have a strong support for starting the
+async threads upfront during resume. 
+
+The patches I used for testing are in the async branch in my tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git
+The first of them is
+http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=commit;h=91bbe0161cab7efcda5de3dfdf6a93f07314ed58
+and the others are on top of this one (but it will apply on top of the current
+mainline, so I'd suggest to pull the latest Linus' tree and then rebase the
+commits from my async branch on top of it).
+
+The "upfront * async" results were obtained with the full patchset applied.
+The "sync" results where with /sys/power/pm_async = 0 and the "bare async"
+results were with the last two commits reverted.
+ 
+> By the way, I haven't forgotten about sending some real patches for
+> swsusp (ie more than just cleanups). I'm just busy with other things and
+> also thinking carefully about what order to do things in.
+
+Great, I hope you're in contact with Jiri Slaby, as he's also been working on
+this.
 
 Rafael
