@@ -1,15 +1,14 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC] Asynchronous suspend/resume - test results
-Date: Sat, 26 Dec 2009 07:57:17 +1100
-Message-ID: <4B35272D.7040207__23705.4039411762$1261774697$gmane$org@crca.org.au>
-References: <200912210140.19713.rjw@sisk.pl>
-	<200912232146.29339.rjw@sisk.pl>	<4B32D2D6.3030707@crca.org.au>
-	<200912242310.42615.rjw@sisk.pl>
+Date: Sat, 26 Dec 2009 22:33:45 +0100
+Message-ID: <200912262233.45626.rjw__31132.7618117959$1261863361$gmane$org@sisk.pl>
+References: <200912210140.19713.rjw@sisk.pl> <200912242310.42615.rjw@sisk.pl>
+	<4B35272D.7040207@crca.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912242310.42615.rjw@sisk.pl>
+In-Reply-To: <4B35272D.7040207@crca.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,42 +18,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Nigel Cunningham <ncunningham@crca.org.au>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Thursday 24 December 2009, Nigel Cunningham wrote:
->> Hi.
+On Friday 25 December 2009, Nigel Cunningham wrote:
+> Rafael J. Wysocki wrote:
+> > On Thursday 24 December 2009, Nigel Cunningham wrote:
+> >> Hi.
+> > 
+> > Hi, 
+> > 
+> >> I built the async branch of your tree and tested it, also running
+> >> 2.6.33-rc1 + TuxOnIce for comparison. Dmesg for both are attached. Is
+> >> there anything I can/should be doing for you on top of this?
+> > 
+> > No, thanks a lot.
+> > 
+> >> I'll try Dmitry's patch on top of this a little later - other things to do first.
+> > 
+> > No need for that, the patchset contains an equivalent of the Dmitry's patch.
+> > 
+> >> I noticed that you were doing standard deviations in your stats - how
+> >> many runs were you basing them on?
+> > 
+> > I usually run 10 iterations of suspend-resume for each configuration.
+> > The raw data are at http://www.sisk.pl/kernel/data/async-suspend-updated.pdf
+> > if you're interested.
+> > 
+> >> Not sure that I can be bothered to do too many - too much else to do!
+> > 
+> > Sure, thanks a lot anyway.  Your data confirn that there's a measurable gain
+> > from suspending and resuming devices asynchronously.
 > 
-> Hi, 
-> 
->> I built the async branch of your tree and tested it, also running
->> 2.6.33-rc1 + TuxOnIce for comparison. Dmesg for both are attached. Is
->> there anything I can/should be doing for you on top of this?
-> 
-> No, thanks a lot.
-> 
->> I'll try Dmitry's patch on top of this a little later - other things to do first.
-> 
-> No need for that, the patchset contains an equivalent of the Dmitry's patch.
-> 
->> I noticed that you were doing standard deviations in your stats - how
->> many runs were you basing them on?
-> 
-> I usually run 10 iterations of suspend-resume for each configuration.
-> The raw data are at http://www.sisk.pl/kernel/data/async-suspend-updated.pdf
-> if you're interested.
-> 
->> Not sure that I can be bothered to do too many - too much else to do!
-> 
-> Sure, thanks a lot anyway.  Your data confirn that there's a measurable gain
-> from suspending and resuming devices asynchronously.
+> It did? I thought it showed no difference at all!
 
-It did? I thought it showed no difference at all!
+Yes, it did.  Please compare these lines:
 
-I'll see if I can find the time to do the other computers, then. We're
-going away for a couple of weeks on Monday, though, so I'm not sure that
-I'll get the time beforehand.
+(from the "sync" dmesg):
+[   31.640676] PM: freeze of devices complete after 709.277 msecs
+[   37.087548] PM: restore of devices complete after 4973.508 msecs
 
-Nigel
+(from the "async" dmesg):
+[   25.600067] PM: freeze of devices complete after 620.429 msecs
+[   29.195366] PM: restore of devices complete after 3057.982 msecs
+
+So clearly, there's a difference. :-)
+
+Of course, in terms of total hibernate/restore time this is only a little
+improvement, but if that was suspend to RAM and resume, the reduction of
+the device resume time by almost 2 s would be a big deal.
+
+> I'll see if I can find the time to do the other computers, then.
+
+I'd appreciate that very much.
+
+> We're going away for a couple of weeks on Monday, though, so I'm not sure
+> that I'll get the time beforehand.
+
+OK
+
+Rafael
