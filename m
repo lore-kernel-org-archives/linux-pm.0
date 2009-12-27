@@ -1,13 +1,14 @@
-From: Willi Mann <foss-ml@wm1.at>
-Subject: Re: kernel 2.6.32 much slower than 2.6.31 on s2disk
-Date: Mon, 28 Dec 2009 09:25:45 +0100
-Message-ID: <4B386B89.6000506@wm1.at>
-References: <hgb0q7$u8a$1@ger.gmane.org> <200912272156.27174.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Resume hanging on MSI motherboard
+Date: Sun, 27 Dec 2009 11:20:53 +0100
+Message-ID: <20091227102053.GD1478@ucw.cz>
+References: <20091204081739.575b29d5@mjolnir.ossman.eu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912272156.27174.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <20091204081739.575b29d5@mjolnir.ossman.eu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,39 +18,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, linux-pm@lists.osdl.org
+To: Pierre Ossman <pierre-list@ossman.eu>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-
->> I don't know to how to do a reliable benchmark on this problem, espially as 
->> the required time probably very much depends on the exact state of the 
->> frozen system. Is there any change in 2.6.32 that might cause less memory to 
->> be stored on the suspend device, and thus require more random disk access 
->> after the restore?
+On Fri 2009-12-04 08:17:39, Pierre Ossman wrote:
+> I have a MSI Neo2-Digital board that I'm trying to get suspend working
+> on. I'm not having much luck though, so I need some pointers on how to
+> debug this.
 > 
-> Actaully, yes, there is.
+> The symptoms are that the machine shuts down when suspend is triggered
+> and wakes up when the power button is pressed or an usb device pokes
+> it. Unfortunately it never gets back to a running state. It rattles a
+> bit on the disk, powers up the fans and turns on the LEDs, but that's
+> it.
 > 
-> Please try to increase the value in /sys/power/image_size to approximately
-> 1/2 of your RAM and report back (the number is in bytes).
+> Doing a suspend in Windows has entirely different behaviour. There it
+> keeps all fans running, and doesn't do much in the way of saving power.
+> It goes from 90 W to 67 W from idle to "standby". The [broken] state
+> Linux puts the system in OTOH runs at 13 W ("off" is 10 W).
 
-Without changing the image_size, it especially got much better when I
-downgraded QT 4.6 to QT 4.5 which does not work well with KDE 4.3 (seems
-to cause memleaks).
+Well, if suspend (S3) does not even work on windows.....?
 
-However, image_size is already set to your recommended value (well,
-approximately):
+Try S1 in linux (echo 1 > proc/acpi/sleep), also try swsusp.
 
-# cat /sys/power/image_size
-951431086
-
-My RAM size is 2 GB (however, I have intel graohics with shared mem, so
-some part is reserved), my swap size is a little bit more than 2 GB.
-
-I don't know what value image_size was set to when I tried first.
-
-Note that when I reported the issue first I used Debian kernel 2.6.32-1,
-(probably plain 2.6.32), while I'm now using Debian kernel 2.6.32-2
-(according to the changelog 2.6.32.1)
-
-WM
+dmesg and askfor help on linux-acpi...?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
