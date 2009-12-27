@@ -1,13 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: kernel 2.6.32 much slower than 2.6.31 on s2disk
-Date: Sun, 27 Dec 2009 21:56:27 +0100
-Message-ID: <200912272156.27174.rjw@sisk.pl>
-References: <hgb0q7$u8a$1@ger.gmane.org>
+Subject: Re: [2.6.33-rc1 regression] suspend doesn't work on X200s
+Date: Sun, 27 Dec 2009 22:02:50 +0100
+Message-ID: <200912272202.50897.rjw__1987.13494833118$1261947866$gmane$org@sisk.pl>
+References: <cb0375e10912211645w1fecfafcj8f1c0ab9ce23b077@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <hgb0q7$u8a$1@ger.gmane.org>
+In-Reply-To: <cb0375e10912211645w1fecfafcj8f1c0ab9ce23b077@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,26 +17,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Willi Mann <foss-ml@wm1.at>, linux-pm@lists.osdl.org
+To: Andrew Lutomirski <luto@mit.edu>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 16 December 2009, Willi Mann wrote:
-> Hi!
+On Tuesday 22 December 2009, Andrew Lutomirski wrote:
+> Hi all-
 > 
-> It seems to me that kernel 2.6.32 takes much longer to restore the system 
-> into a really responsive state, despite the fact that s2disk seems to finish 
-> much faster. 
+> On Linus's tree from yesterday (2.6.33-rc1 plus a bit, I think) with
+> drm-next patched in, I can't suspend.  My sleep light starts blinking
+> (userspace does that, I think) and the screen goes blank, then the
+> caps lock and num lock lights blink once (this is supposed to happen
+> when suspending), and then the system freezes hard with the fan and
+> backlight still on and the suspend light still blinking.
 > 
-> I don't know to how to do a reliable benchmark on this problem, espially as 
-> the required time probably very much depends on the exact state of the 
-> frozen system. Is there any change in 2.6.32 that might cause less memory to 
-> be stored on the suspend device, and thus require more random disk access 
-> after the restore?
+> I'm pretty sure this has nothing to do with drm changes, since I can
+> suspend fine on 2.6.32.1 with include/drm and drivers/drm copied from
+> the broken 2.6.33-rc1 + drm-next tree.
 
-Actaully, yes, there is.
+I've created a Bugzilla entry for your report at
+http://bugzilla.kernel.org/show_bug.cgi?id=14887
 
-Please try to increase the value in /sys/power/image_size to approximately
-1/2 of your RAM and report back (the number is in bytes).
+Please put your hardware information in there.
 
 Rafael
