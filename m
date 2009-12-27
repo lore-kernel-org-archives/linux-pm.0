@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 7/12] ACPI: Remove old GPE API and transition
-	code entirely to new one
-Date: Sun, 27 Dec 2009 21:04:39 +0100
-Message-ID: <200912272104.40186.rjw__18760.0094629035$1261945138$gmane$org@sisk.pl>
+Subject: [PATCH 12/12] PM / r8169: Add simplified run-time PM
+	support
+Date: Sun, 27 Dec 2009 21:11:41 +0100
+Message-ID: <200912272111.41728.rjw__47308.7360071533$1261945217$gmane$org@sisk.pl>
 References: <200912272057.10443.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,646 +22,292 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>
 Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Francois Romieu <romieu@fr.zoreil.com>, pm list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Matthew Garrett <mjg@redhat.com>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Remove the old GPE type handling entirely, which gets rid of various quirks
-like the implicit disabling with GPE type setting. This requires a small
-amount of rework in order to ensure that non-wake GPEs are enabled by
-default to preserve existing behaviour.
+Use the PCI run-time power management framework to add simplified
+run-time PM support to the r8169 driver.  Namely, make the driver
+suspend the device when the link is off and set it up for generating
+wake-up event after the link has been detected again.
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
-drivers/acpi/acpica/acevents.h |    6 +--
- drivers/acpi/acpica/acevents.h |    6 -
- drivers/acpi/acpica/evgpe.c    |  147 +++--------------------------------------
- drivers/acpi/acpica/evgpeblk.c |   69 ++++++-------------
- drivers/acpi/acpica/evxface.c  |   14 ---
- drivers/acpi/acpica/evxfevnt.c |   48 -------------
- drivers/acpi/button.c          |    5 -
- drivers/acpi/ec.c              |    2 
- drivers/acpi/wakeup.c          |   55 ++-------------
- include/acpi/actypes.h         |   32 ++------
- 9 files changed, 59 insertions(+), 319 deletions(-)
+The patch is still missing an important part, which is that the driver should
+turn the power management on as soon as it's probed, not only after someone
+calls open() on it.  Nevertheless, the patch is fully functional in this form.
 
-Index: linux-2.6/drivers/acpi/acpica/acevents.h
+Rafael
+---
+ drivers/net/r8169.c |  135 +++++++++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 108 insertions(+), 27 deletions(-)
+
+Index: linux-2.6/drivers/net/r8169.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/acevents.h
-+++ linux-2.6/drivers/acpi/acpica/acevents.h
-@@ -76,8 +76,7 @@ acpi_ev_queue_notify_request(struct acpi
-  * evgpe - GPE handling and dispatch
-  */
- acpi_status
--acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info,
--				u8 type);
-+acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info);
+--- linux-2.6.orig/drivers/net/r8169.c
++++ linux-2.6/drivers/net/r8169.c
+@@ -23,6 +23,7 @@
+ #include <linux/tcp.h>
+ #include <linux/init.h>
+ #include <linux/dma-mapping.h>
++#include <linux/pm_runtime.h>
  
- acpi_status
- acpi_ev_enable_gpe(struct acpi_gpe_event_info *gpe_event_info,
-@@ -122,9 +121,6 @@ acpi_ev_gpe_dispatch(struct acpi_gpe_eve
- u32 acpi_ev_gpe_detect(struct acpi_gpe_xrupt_info *gpe_xrupt_list);
+ #include <asm/system.h>
+ #include <asm/io.h>
+@@ -504,6 +505,8 @@ struct rtl8169_private {
  
- acpi_status
--acpi_ev_set_gpe_type(struct acpi_gpe_event_info *gpe_event_info, u8 type);
--
--acpi_status
- acpi_ev_check_for_wake_only_gpe(struct acpi_gpe_event_info *gpe_event_info);
+ 	struct mii_if_info mii;
+ 	struct rtl8169_counters counters;
++	u32 saved_wolopts;
++	bool exiting;
+ };
  
- acpi_status acpi_ev_gpe_initialize(void);
-Index: linux-2.6/drivers/acpi/acpica/evgpe.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/evgpe.c
-+++ linux-2.6/drivers/acpi/acpica/evgpe.c
-@@ -54,54 +54,9 @@ static void ACPI_SYSTEM_XFACE acpi_ev_as
+ MODULE_AUTHOR("Realtek and the Linux r8169 crew <netdev@vger.kernel.org>");
+@@ -743,6 +746,8 @@ static void rtl8169_check_link_status(st
  
- /*******************************************************************************
-  *
-- * FUNCTION:    acpi_ev_set_gpe_type
-- *
-- * PARAMETERS:  gpe_event_info          - GPE to set
-- *              Type                    - New type
-- *
-- * RETURN:      Status
-- *
-- * DESCRIPTION: Sets the new type for the GPE (wake, run, or wake/run)
-- *
-- ******************************************************************************/
--
--acpi_status
--acpi_ev_set_gpe_type(struct acpi_gpe_event_info *gpe_event_info, u8 type)
--{
--	acpi_status status;
--
--	ACPI_FUNCTION_TRACE(ev_set_gpe_type);
--
--	/* Validate type and update register enable masks */
--
--	switch (type) {
--	case ACPI_GPE_TYPE_WAKE:
--	case ACPI_GPE_TYPE_RUNTIME:
--	case ACPI_GPE_TYPE_WAKE_RUN:
--		break;
--
--	default:
--		return_ACPI_STATUS(AE_BAD_PARAMETER);
--	}
--
--	/* Disable the GPE if currently enabled */
--
--	status = acpi_ev_disable_gpe(gpe_event_info);
--
--	/* Clear the type bits and insert the new Type */
--
--	gpe_event_info->flags &= ~ACPI_GPE_TYPE_MASK;
--	gpe_event_info->flags |= type;
--	return_ACPI_STATUS(status);
--}
--
--/*******************************************************************************
-- *
-  * FUNCTION:    acpi_ev_update_gpe_enable_masks
-  *
-  * PARAMETERS:  gpe_event_info          - GPE to update
-- *              Type                    - What to do: ACPI_GPE_DISABLE or
-- *                                        ACPI_GPE_ENABLE
-  *
-  * RETURN:      Status
-  *
-@@ -110,8 +65,7 @@ acpi_ev_set_gpe_type(struct acpi_gpe_eve
-  ******************************************************************************/
+ 	spin_lock_irqsave(&tp->lock, flags);
+ 	if (tp->link_ok(ioaddr)) {
++		/* This is to cancel a scheduled suspend if there's one. */
++		pm_request_resume(&tp->pci_dev->dev);
+ 		netif_carrier_on(dev);
+ 		if (netif_msg_ifup(tp))
+ 			printk(KERN_INFO PFX "%s: link up\n", dev->name);
+@@ -750,48 +755,54 @@ static void rtl8169_check_link_status(st
+ 		if (netif_msg_ifdown(tp))
+ 			printk(KERN_INFO PFX "%s: link down\n", dev->name);
+ 		netif_carrier_off(dev);
++		pm_schedule_suspend(&tp->pci_dev->dev, 100);
+ 	}
+ 	spin_unlock_irqrestore(&tp->lock, flags);
+ }
  
- acpi_status
--acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info,
--				u8 type)
-+acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info)
+-static void rtl8169_get_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
++#define WAKE_ANY (WAKE_PHY | WAKE_MAGIC | WAKE_UCAST | WAKE_BCAST | WAKE_MCAST)
++
++static u32 __rtl8169_get_wol(struct rtl8169_private *tp)
  {
- 	struct acpi_gpe_register_info *gpe_register_info;
- 	u8 register_bit;
-@@ -127,37 +81,13 @@ acpi_ev_update_gpe_enable_masks(struct a
- 	    (1 <<
- 	     (gpe_event_info->gpe_number - gpe_register_info->base_gpe_number));
+-	struct rtl8169_private *tp = netdev_priv(dev);
+ 	void __iomem *ioaddr = tp->mmio_addr;
+ 	u8 options;
+-
+-	wol->wolopts = 0;
+-
+-#define WAKE_ANY (WAKE_PHY | WAKE_MAGIC | WAKE_UCAST | WAKE_BCAST | WAKE_MCAST)
+-	wol->supported = WAKE_ANY;
+-
+-	spin_lock_irq(&tp->lock);
++	u32 wolopts = 0;
  
--	/* 1) Disable case. Simply clear all enable bits */
--
--	if (type == ACPI_GPE_DISABLE) {
--		ACPI_CLEAR_BIT(gpe_register_info->enable_for_wake,
--			       register_bit);
--		ACPI_CLEAR_BIT(gpe_register_info->enable_for_run, register_bit);
--		return_ACPI_STATUS(AE_OK);
--	}
--
--	/* 2) Enable case. Set/Clear the appropriate enable bits */
--
--	switch (gpe_event_info->flags & ACPI_GPE_TYPE_MASK) {
--	case ACPI_GPE_TYPE_WAKE:
--		ACPI_SET_BIT(gpe_register_info->enable_for_wake, register_bit);
--		ACPI_CLEAR_BIT(gpe_register_info->enable_for_run, register_bit);
--		break;
-+	ACPI_CLEAR_BIT(gpe_register_info->enable_for_wake, register_bit);
-+	ACPI_CLEAR_BIT(gpe_register_info->enable_for_run, register_bit);
+ 	options = RTL_R8(Config1);
+ 	if (!(options & PMEnable))
+-		goto out_unlock;
++		return 0;
  
--	case ACPI_GPE_TYPE_RUNTIME:
--		ACPI_CLEAR_BIT(gpe_register_info->enable_for_wake,
--			       register_bit);
-+	if (gpe_event_info->runtime_count)
- 		ACPI_SET_BIT(gpe_register_info->enable_for_run, register_bit);
--		break;
--
--	case ACPI_GPE_TYPE_WAKE_RUN:
-+	if (gpe_event_info->wakeup_count)
- 		ACPI_SET_BIT(gpe_register_info->enable_for_wake, register_bit);
--		ACPI_SET_BIT(gpe_register_info->enable_for_run, register_bit);
--		break;
--
--	default:
--		return_ACPI_STATUS(AE_BAD_PARAMETER);
--	}
+ 	options = RTL_R8(Config3);
+ 	if (options & LinkUp)
+-		wol->wolopts |= WAKE_PHY;
++		wolopts |= WAKE_PHY;
+ 	if (options & MagicPacket)
+-		wol->wolopts |= WAKE_MAGIC;
++		wolopts |= WAKE_MAGIC;
  
- 	return_ACPI_STATUS(AE_OK);
+ 	options = RTL_R8(Config5);
+ 	if (options & UWF)
+-		wol->wolopts |= WAKE_UCAST;
++		wolopts |= WAKE_UCAST;
+ 	if (options & BWF)
+-		wol->wolopts |= WAKE_BCAST;
++		wolopts |= WAKE_BCAST;
+ 	if (options & MWF)
+-		wol->wolopts |= WAKE_MCAST;
++		wolopts |= WAKE_MCAST;
+ 
+-out_unlock:
+-	spin_unlock_irq(&tp->lock);
++	return wolopts;
  }
-@@ -186,47 +116,21 @@ acpi_ev_enable_gpe(struct acpi_gpe_event
  
- 	/* Make sure HW enable masks are updated */
- 
--	status =
--	    acpi_ev_update_gpe_enable_masks(gpe_event_info, ACPI_GPE_ENABLE);
-+	status = acpi_ev_update_gpe_enable_masks(gpe_event_info);
- 	if (ACPI_FAILURE(status)) {
- 		return_ACPI_STATUS(status);
- 	}
- 
- 	/* Mark wake-enabled or HW enable, or both */
- 
--	switch (gpe_event_info->flags & ACPI_GPE_TYPE_MASK) {
--	case ACPI_GPE_TYPE_WAKE:
--
--		ACPI_SET_BIT(gpe_event_info->flags, ACPI_GPE_WAKE_ENABLED);
--		break;
--
--	case ACPI_GPE_TYPE_WAKE_RUN:
--
--		ACPI_SET_BIT(gpe_event_info->flags, ACPI_GPE_WAKE_ENABLED);
--
--		/*lint -fallthrough */
--
--	case ACPI_GPE_TYPE_RUNTIME:
--
--		ACPI_SET_BIT(gpe_event_info->flags, ACPI_GPE_RUN_ENABLED);
--
--		if (write_to_hardware) {
--
--			/* Clear the GPE (of stale events), then enable it */
--
--			status = acpi_hw_clear_gpe(gpe_event_info);
--			if (ACPI_FAILURE(status)) {
--				return_ACPI_STATUS(status);
--			}
--
--			/* Enable the requested runtime GPE */
--
--			status = acpi_hw_write_gpe_enable_reg(gpe_event_info);
--		}
--		break;
-+	if (gpe_event_info->runtime_count && write_to_hardware) {
-+		/* Clear the GPE (of stale events), then enable it */
-+		status = acpi_hw_clear_gpe(gpe_event_info);
-+		if (ACPI_FAILURE(status))
-+			return_ACPI_STATUS(status);
- 
--	default:
--		return_ACPI_STATUS(AE_BAD_PARAMETER);
-+		/* Enable the requested runtime GPE */
-+		status = acpi_hw_write_gpe_enable_reg(gpe_event_info);
- 	}
- 
- 	return_ACPI_STATUS(AE_OK);
-@@ -253,34 +157,11 @@ acpi_status acpi_ev_disable_gpe(struct a
- 	/* Make sure HW enable masks are updated */
- 
- 	status =
--	    acpi_ev_update_gpe_enable_masks(gpe_event_info, ACPI_GPE_DISABLE);
-+	    acpi_ev_update_gpe_enable_masks(gpe_event_info);
- 	if (ACPI_FAILURE(status)) {
- 		return_ACPI_STATUS(status);
- 	}
- 
--	/* Clear the appropriate enabled flags for this GPE */
--
--	switch (gpe_event_info->flags & ACPI_GPE_TYPE_MASK) {
--	case ACPI_GPE_TYPE_WAKE:
--		ACPI_CLEAR_BIT(gpe_event_info->flags, ACPI_GPE_WAKE_ENABLED);
--		break;
--
--	case ACPI_GPE_TYPE_WAKE_RUN:
--		ACPI_CLEAR_BIT(gpe_event_info->flags, ACPI_GPE_WAKE_ENABLED);
--
--		/* fallthrough */
--
--	case ACPI_GPE_TYPE_RUNTIME:
--
--		/* Disable the requested runtime GPE */
--
--		ACPI_CLEAR_BIT(gpe_event_info->flags, ACPI_GPE_RUN_ENABLED);
--		break;
--
--	default:
--		break;
--	}
--
- 	/*
- 	 * Even if we don't know the GPE type, make sure that we always
- 	 * disable it. low_disable_gpe will just clear the enable bit for this
-Index: linux-2.6/drivers/acpi/acpica/evgpeblk.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/evgpeblk.c
-+++ linux-2.6/drivers/acpi/acpica/evgpeblk.c
-@@ -325,22 +325,16 @@ acpi_ev_save_method_info(acpi_handle obj
- 
- 	/*
- 	 * Now we can add this information to the gpe_event_info block for use
--	 * during dispatch of this GPE. Default type is RUNTIME, although this may
--	 * change when the _PRW methods are executed later.
-+	 * during dispatch of this GPE.
- 	 */
- 	gpe_event_info =
- 	    &gpe_block->event_info[gpe_number - gpe_block->block_base_number];
- 
--	gpe_event_info->flags = (u8)
--	    (type | ACPI_GPE_DISPATCH_METHOD | ACPI_GPE_TYPE_RUNTIME);
-+	gpe_event_info->flags = (u8) (type | ACPI_GPE_DISPATCH_METHOD);
- 
- 	gpe_event_info->dispatch.method_node =
- 	    (struct acpi_namespace_node *)obj_handle;
- 
--	/* Update enable mask, but don't enable the HW GPE as of yet */
--
--	status = acpi_ev_enable_gpe(gpe_event_info, FALSE);
--
- 	ACPI_DEBUG_PRINT((ACPI_DB_LOAD,
- 			  "Registered GPE method %s as GPE number 0x%.2X\n",
- 			  name, gpe_number));
-@@ -454,20 +448,7 @@ acpi_ev_match_prw_and_gpe(acpi_handle ob
- 							gpe_block->
- 							block_base_number];
- 
--		/* Mark GPE for WAKE-ONLY but WAKE_DISABLED */
--
--		gpe_event_info->flags &=
--		    ~(ACPI_GPE_WAKE_ENABLED | ACPI_GPE_RUN_ENABLED);
--
--		status =
--		    acpi_ev_set_gpe_type(gpe_event_info, ACPI_GPE_TYPE_WAKE);
--		if (ACPI_FAILURE(status)) {
--			goto cleanup;
--		}
--
--		status =
--		    acpi_ev_update_gpe_enable_masks(gpe_event_info,
--						    ACPI_GPE_DISABLE);
-+		gpe_event_info->flags |= ACPI_GPE_CAN_WAKE;
- 	}
- 
-       cleanup:
-@@ -1027,33 +1008,35 @@ acpi_ev_initialize_gpe_block(struct acpi
- 	}
- 
- 	/*
--	 * Enable all GPEs in this block that have these attributes:
--	 * 1) are "runtime" or "run/wake" GPEs, and
--	 * 2) have a corresponding _Lxx or _Exx method
--	 *
--	 * Any other GPEs within this block must be enabled via the
--	 * acpi_enable_gpe() external interface.
-+	 * Enable all GPEs that have a corresponding method and aren't
-+	 * capable of generating wakeups. Any other GPEs within this block
-+	 * must be enabled via the acpi_ref_runtime_gpe interface.
- 	 */
- 	wake_gpe_count = 0;
- 	gpe_enabled_count = 0;
- 
- 	for (i = 0; i < gpe_block->register_count; i++) {
- 		for (j = 0; j < 8; j++) {
-+			int gpe_number = i * ACPI_GPE_REGISTER_WIDTH + j;
- 
- 			/* Get the info block for this particular GPE */
- 
--			gpe_event_info = &gpe_block->event_info[((acpi_size) i *
--								 ACPI_GPE_REGISTER_WIDTH)
--								+ j];
--
--			if (((gpe_event_info->flags & ACPI_GPE_DISPATCH_MASK) ==
--			     ACPI_GPE_DISPATCH_METHOD) &&
--			    (gpe_event_info->flags & ACPI_GPE_TYPE_RUNTIME)) {
--				gpe_enabled_count++;
--			}
-+			gpe_event_info = &gpe_block->event_info[(acpi_size)
-+								gpe_number];
- 
--			if (gpe_event_info->flags & ACPI_GPE_TYPE_WAKE) {
-+			if (gpe_event_info->flags & ACPI_GPE_CAN_WAKE) {
- 				wake_gpe_count++;
-+				continue;
-+			}
+-static int rtl8169_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
++static void rtl8169_get_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
+ {
+ 	struct rtl8169_private *tp = netdev_priv(dev);
 +
-+			if (gpe_event_info->flags & ACPI_GPE_DISPATCH_METHOD) {
-+				gpe_enabled_count++;
-+				if (gpe_device == acpi_gbl_fadt_gpe_device)
-+					status = acpi_ref_runtime_gpe(NULL,
-+								      gpe_number);
-+				else
-+					status = acpi_ref_runtime_gpe(gpe_device,
-+								      gpe_number);
- 			}
- 		}
- 	}
-@@ -1062,15 +1045,7 @@ acpi_ev_initialize_gpe_block(struct acpi
- 			  "Found %u Wake, Enabled %u Runtime GPEs in this block\n",
- 			  wake_gpe_count, gpe_enabled_count));
- 
--	/* Enable all valid runtime GPEs found above */
--
--	status = acpi_hw_enable_runtime_gpe_block(NULL, gpe_block, NULL);
--	if (ACPI_FAILURE(status)) {
--		ACPI_ERROR((AE_INFO, "Could not enable GPEs in GpeBlock %p",
--			    gpe_block));
--	}
--
--	return_ACPI_STATUS(status);
-+	return_ACPI_STATUS(AE_OK);
- }
- 
- /*******************************************************************************
-Index: linux-2.6/drivers/acpi/acpica/evxface.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/evxface.c
-+++ linux-2.6/drivers/acpi/acpica/evxface.c
-@@ -617,13 +617,6 @@ acpi_install_gpe_handler(acpi_handle gpe
- 	handler->context = context;
- 	handler->method_node = gpe_event_info->dispatch.method_node;
- 
--	/* Disable the GPE before installing the handler */
--
--	status = acpi_ev_disable_gpe(gpe_event_info);
--	if (ACPI_FAILURE(status)) {
--		goto unlock_and_exit;
--	}
--
- 	/* Install the handler */
- 
- 	flags = acpi_os_acquire_lock(acpi_gbl_gpe_lock);
-@@ -707,13 +700,6 @@ acpi_remove_gpe_handler(acpi_handle gpe_
- 		goto unlock_and_exit;
- 	}
- 
--	/* Disable the GPE before removing the handler */
--
--	status = acpi_ev_disable_gpe(gpe_event_info);
--	if (ACPI_FAILURE(status)) {
--		goto unlock_and_exit;
--	}
--
- 	/* Make sure all deferred tasks are completed */
- 
- 	(void)acpi_ut_release_mutex(ACPI_MTX_EVENTS);
-Index: linux-2.6/drivers/acpi/acpica/evxfevnt.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/evxfevnt.c
-+++ linux-2.6/drivers/acpi/acpica/evxfevnt.c
-@@ -311,8 +311,7 @@ acpi_status acpi_ref_wakeup_gpe(acpi_han
- 	}
- 
- 	if (++gpe_event_info->wakeup_count == 1)
--		acpi_ev_update_gpe_enable_masks(gpe_event_info,
--						ACPI_GPE_ENABLE);
-+		acpi_ev_update_gpe_enable_masks(gpe_event_info);
- 
- unlock_and_exit:
- 	acpi_os_release_lock(acpi_gbl_gpe_lock, flags);
-@@ -351,8 +350,7 @@ acpi_status acpi_unref_wakeup_gpe(acpi_h
- 	}
- 
- 	if (--gpe_event_info->wakeup_count == 0)
--		acpi_ev_update_gpe_enable_masks(gpe_event_info,
--			ACPI_GPE_DISABLE);
-+		acpi_ev_update_gpe_enable_masks(gpe_event_info);
- 
- unlock_and_exit:
- 	acpi_os_release_lock(acpi_gbl_gpe_lock, flags);
-@@ -362,48 +360,6 @@ ACPI_EXPORT_SYMBOL(acpi_unref_wakeup_gpe
- 
- /*******************************************************************************
-  *
-- * FUNCTION:    acpi_set_gpe_type
-- *
-- * PARAMETERS:  gpe_device      - Parent GPE Device
-- *              gpe_number      - GPE level within the GPE block
-- *              Type            - New GPE type
-- *
-- * RETURN:      Status
-- *
-- * DESCRIPTION: Set the type of an individual GPE
-- *
-- ******************************************************************************/
--acpi_status acpi_set_gpe_type(acpi_handle gpe_device, u32 gpe_number, u8 type)
--{
--	acpi_status status = AE_OK;
--	struct acpi_gpe_event_info *gpe_event_info;
--
--	ACPI_FUNCTION_TRACE(acpi_set_gpe_type);
--
--	/* Ensure that we have a valid GPE number */
--
--	gpe_event_info = acpi_ev_get_gpe_event_info(gpe_device, gpe_number);
--	if (!gpe_event_info) {
--		status = AE_BAD_PARAMETER;
--		goto unlock_and_exit;
--	}
--
--	if ((gpe_event_info->flags & ACPI_GPE_TYPE_MASK) == type) {
--		return_ACPI_STATUS(AE_OK);
--	}
--
--	/* Set the new type (will disable GPE if currently enabled) */
--
--	status = acpi_ev_set_gpe_type(gpe_event_info, type);
--
--      unlock_and_exit:
--	return_ACPI_STATUS(status);
--}
--
--ACPI_EXPORT_SYMBOL(acpi_set_gpe_type)
--
--/*******************************************************************************
-- *
-  * FUNCTION:    acpi_enable_gpe
-  *
-  * PARAMETERS:  gpe_device      - Parent GPE Device
-Index: linux-2.6/drivers/acpi/button.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/button.c
-+++ linux-2.6/drivers/acpi/button.c
-@@ -422,11 +422,6 @@ static int acpi_button_add(struct acpi_d
- 
- 	if (device->wakeup.flags.valid) {
- 		/* Button's GPE is run-wake GPE */
--		acpi_set_gpe_type(device->wakeup.gpe_device,
--				  device->wakeup.gpe_number,
--				  ACPI_GPE_TYPE_WAKE_RUN);
--		acpi_enable_gpe(device->wakeup.gpe_device,
--				device->wakeup.gpe_number);
- 		acpi_ref_runtime_gpe(device->wakeup.gpe_device,
- 				     device->wakeup.gpe_number);
- 		acpi_ref_wakeup_gpe(device->wakeup.gpe_device,
-Index: linux-2.6/drivers/acpi/ec.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/ec.c
-+++ linux-2.6/drivers/acpi/ec.c
-@@ -754,7 +754,7 @@ static int ec_install_handlers(struct ac
- 				  &acpi_ec_gpe_handler, ec);
- 	if (ACPI_FAILURE(status))
- 		return -ENODEV;
--	acpi_set_gpe_type(NULL, ec->gpe, ACPI_GPE_TYPE_RUNTIME);
++	spin_lock_irq(&tp->lock);
 +
- 	acpi_ref_runtime_gpe(NULL, ec->gpe);
- 	status = acpi_install_address_space_handler(ec->handle,
- 						    ACPI_ADR_SPACE_EC,
-Index: linux-2.6/drivers/acpi/wakeup.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/wakeup.c
-+++ linux-2.6/drivers/acpi/wakeup.c
-@@ -62,25 +62,12 @@ void acpi_enable_wakeup_device(u8 sleep_
- 		struct acpi_device *dev =
- 			container_of(node, struct acpi_device, wakeup_list);
++	wol->supported = WAKE_ANY;
++	wol->wolopts = __rtl8169_get_wol(tp);
++
++	spin_unlock_irq(&tp->lock);
++}
++
++static void __rtl8169_set_wol(struct rtl8169_private *tp, u32 wolopts)
++{
+ 	void __iomem *ioaddr = tp->mmio_addr;
+ 	unsigned int i;
+ 	static const struct {
+@@ -808,23 +819,29 @@ static int rtl8169_set_wol(struct net_de
+ 		{ WAKE_ANY,   Config5, LanWake }
+ 	};
  
--		if (!dev->wakeup.flags.valid)
-+		if (!dev->wakeup.flags.valid ||
-+		    !dev->wakeup.prepare_count ||
-+		    !dev->wakeup.state.enabled ||
-+		    (sleep_state > (u32) dev->wakeup.sleep_state))
- 			continue;
- 
--		/* If users want to disable run-wake GPE,
--		 * we only disable it for wake and leave it for runtime
--		 */
--		if ((!dev->wakeup.state.enabled && !dev->wakeup.prepare_count)
--		    || sleep_state > (u32) dev->wakeup.sleep_state) {
--			if (dev->wakeup.flags.run_wake) {
--				/* set_gpe_type will disable GPE, leave it like that */
--				acpi_set_gpe_type(dev->wakeup.gpe_device,
--						  dev->wakeup.gpe_number,
--						  ACPI_GPE_TYPE_RUNTIME);
--			}
--			continue;
--		}
--		if (!dev->wakeup.flags.run_wake)
--			acpi_enable_gpe(dev->wakeup.gpe_device,
--					dev->wakeup.gpe_number);
- 		acpi_ref_wakeup_gpe(dev->wakeup.gpe_device,
- 				    dev->wakeup.gpe_number);
- 	}
-@@ -99,32 +86,13 @@ void acpi_disable_wakeup_device(u8 sleep
- 		struct acpi_device *dev =
- 			container_of(node, struct acpi_device, wakeup_list);
- 
--		if (!dev->wakeup.flags.valid)
--			continue;
+-	spin_lock_irq(&tp->lock);
 -
--		if ((!dev->wakeup.state.enabled && !dev->wakeup.prepare_count)
--		    || sleep_state > (u32) dev->wakeup.sleep_state) {
--			if (dev->wakeup.flags.run_wake) {
--				acpi_set_gpe_type(dev->wakeup.gpe_device,
--						  dev->wakeup.gpe_number,
--						  ACPI_GPE_TYPE_WAKE_RUN);
--				/* Re-enable it, since set_gpe_type will disable it */
--				acpi_enable_gpe(dev->wakeup.gpe_device,
--						dev->wakeup.gpe_number);
--			}
--			continue;
--		}
-+		if (dev->wakeup.state.enabled &&
-+		    dev->wakeup.prepare_count &&
-+		    sleep_state <= (u32) dev->wakeup.sleep_state)
-+			acpi_unref_wakeup_gpe(dev->wakeup.gpe_device,
-+					    dev->wakeup.gpe_number);
+ 	RTL_W8(Cfg9346, Cfg9346_Unlock);
  
- 		acpi_disable_wakeup_device_power(dev);
--		/* Never disable run-wake GPE */
--		if (!dev->wakeup.flags.run_wake) {
--			acpi_disable_gpe(dev->wakeup.gpe_device,
--					 dev->wakeup.gpe_number);
--			acpi_clear_gpe(dev->wakeup.gpe_device,
--				       dev->wakeup.gpe_number, ACPI_NOT_ISR);
--		}
--		acpi_unref_wakeup_gpe(dev->wakeup.gpe_device,
--				    dev->wakeup.gpe_number);
+ 	for (i = 0; i < ARRAY_SIZE(cfg); i++) {
+ 		u8 options = RTL_R8(cfg[i].reg) & ~cfg[i].mask;
+-		if (wol->wolopts & cfg[i].opt)
++		if (wolopts & cfg[i].opt)
+ 			options |= cfg[i].mask;
+ 		RTL_W8(cfg[i].reg, options);
  	}
+ 
+ 	RTL_W8(Cfg9346, Cfg9346_Lock);
++}
++
++static int rtl8169_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
++{
++	struct rtl8169_private *tp = netdev_priv(dev);
++
++	spin_lock_irq(&tp->lock);
+ 
+ 	if (wol->wolopts)
+ 		tp->features |= RTL_FEATURE_WOL;
+ 	else
+ 		tp->features &= ~RTL_FEATURE_WOL;
++	__rtl8169_set_wol(tp, wol->wolopts);
+ 	device_set_wakeup_enable(&tp->pci_dev->dev, wol->wolopts);
+ 
+ 	spin_unlock_irq(&tp->lock);
+@@ -3000,6 +3017,7 @@ rtl8169_init_one(struct pci_dev *pdev, c
+ 	tp->dev = dev;
+ 	tp->pci_dev = pdev;
+ 	tp->msg_enable = netif_msg_init(debug.msg_enable, R8169_MSG_DEFAULT);
++	tp->exiting = false;
+ 
+ 	mii = &tp->mii;
+ 	mii->dev = dev;
+@@ -3232,6 +3250,8 @@ static void __devexit rtl8169_remove_one
+ 	struct net_device *dev = pci_get_drvdata(pdev);
+ 	struct rtl8169_private *tp = netdev_priv(dev);
+ 
++	tp->exiting = true;
++
+ 	flush_scheduled_work();
+ 
+ 	unregister_netdev(dev);
+@@ -3258,7 +3278,6 @@ static int rtl8169_open(struct net_devic
+ 	struct pci_dev *pdev = tp->pci_dev;
+ 	int retval = -ENOMEM;
+ 
+-
+ 	rtl8169_set_rxbufsize(tp, dev);
+ 
+ 	/*
+@@ -3295,6 +3314,13 @@ static int rtl8169_open(struct net_devic
+ 
+ 	rtl8169_request_timer(dev);
+ 
++	tp->saved_wolopts = 0;
++
++	if (pci_dev_run_wake(pdev)) {
++		pm_runtime_set_active(&pdev->dev);
++		pm_runtime_enable(&pdev->dev);
++	}
++
+ 	rtl8169_check_link_status(dev, tp, tp->mmio_addr);
+ out:
+ 	return retval;
+@@ -4727,6 +4753,14 @@ static int rtl8169_close(struct net_devi
+ 	struct rtl8169_private *tp = netdev_priv(dev);
+ 	struct pci_dev *pdev = tp->pci_dev;
+ 
++	if (pci_dev_run_wake(pdev)) {
++		pm_runtime_get_noresume(&pdev->dev);
++		pm_runtime_resume(&pdev->dev);
++		pm_runtime_disable(&pdev->dev);
++		pm_runtime_set_suspended(&pdev->dev);
++		pm_runtime_put_noidle(&pdev->dev);
++	}
++
+ 	/* update counters before going down */
+ 	rtl8169_update_counters(dev);
+ 
+@@ -4844,21 +4878,65 @@ static int rtl8169_suspend(struct device
+ 	return 0;
  }
  
-@@ -140,11 +108,6 @@ int __init acpi_wakeup_device_init(void)
- 		/* In case user doesn't load button driver */
- 		if (!dev->wakeup.flags.run_wake || dev->wakeup.state.enabled)
- 			continue;
--		acpi_set_gpe_type(dev->wakeup.gpe_device,
--				  dev->wakeup.gpe_number,
--				  ACPI_GPE_TYPE_WAKE_RUN);
--		acpi_enable_gpe(dev->wakeup.gpe_device,
--				dev->wakeup.gpe_number);
- 		acpi_ref_wakeup_gpe(dev->wakeup.gpe_device,
- 				    dev->wakeup.gpe_number);
- 		dev->wakeup.state.enabled = 1;
-Index: linux-2.6/include/acpi/actypes.h
-===================================================================
---- linux-2.6.orig/include/acpi/actypes.h
-+++ linux-2.6/include/acpi/actypes.h
-@@ -668,41 +668,29 @@ typedef u32 acpi_event_status;
++static void __rtl8169_resume(struct net_device *dev)
++{
++	netif_device_attach(dev);
++	rtl8169_schedule_work(dev, rtl8169_reset_task);
++}
++
+ static int rtl8169_resume(struct device *device)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(device);
+ 	struct net_device *dev = pci_get_drvdata(pdev);
  
- /*
-  * GPE info flags - Per GPE
-- * +-+-+-+---+---+-+
-- * |7|6|5|4:3|2:1|0|
-- * +-+-+-+---+---+-+
-- *  | | |  |   |  |
-- *  | | |  |   |  +--- Interrupt type: Edge or Level Triggered
-- *  | | |  |   +--- Type: Wake-only, Runtime-only, or wake/runtime
-+ * +-+-+-+---+-+-+-+
-+ * |7|6|5|4:3|2|1|0|
-+ * +-+-+-+---+-+-+-+
-+ *  | | |  |  | | |
-+ *  | | |  |  | | +--- Interrupt type: Edge or Level Triggered
-+ *  | | |  |  | +--- GPE can wake the system
-+ *  | | |  |  +--- Unused 
-  *  | | |  +--- Type of dispatch -- to method, handler, or none
-- *  | | +--- Enabled for runtime?
-- *  | +--- Enabled for wake?
-+ *  | | +--- Unused
-+ *  | +--- Unused
-  *  +--- Unused
-  */
- #define ACPI_GPE_XRUPT_TYPE_MASK        (u8) 0x01
- #define ACPI_GPE_LEVEL_TRIGGERED        (u8) 0x01
- #define ACPI_GPE_EDGE_TRIGGERED         (u8) 0x00
+-	if (!netif_running(dev))
+-		goto out;
++	if (netif_running(dev))
++		__rtl8169_resume(dev);
  
--#define ACPI_GPE_TYPE_MASK              (u8) 0x06
--#define ACPI_GPE_TYPE_WAKE_RUN          (u8) 0x06
--#define ACPI_GPE_TYPE_WAKE              (u8) 0x02
--#define ACPI_GPE_TYPE_RUNTIME           (u8) 0x04	/* Default */
-+#define ACPI_GPE_CAN_WAKE		(u8) 0x02
+-	netif_device_attach(dev);
++	return 0;
++}
++
++static int rtl8169_runtime_suspend(struct device *device)
++{
++	struct pci_dev *pdev = to_pci_dev(device);
++	struct net_device *dev = pci_get_drvdata(pdev);
++	struct rtl8169_private *tp = netdev_priv(dev);
++
++	dev_dbg(&pdev->dev, "suspending\n");
++
++	spin_lock_irq(&tp->lock);
++	tp->saved_wolopts = __rtl8169_get_wol(tp);
++	__rtl8169_set_wol(tp, WAKE_ANY);
++	spin_unlock_irq(&tp->lock);
++
++	rtl8169_net_suspend(dev);
++
++	return 0;
++}
++
++static int rtl8169_runtime_resume(struct device *device)
++{
++	struct pci_dev *pdev = to_pci_dev(device);
++	struct net_device *dev = pci_get_drvdata(pdev);
++	struct rtl8169_private *tp = netdev_priv(dev);
++
++	dev_dbg(&pdev->dev, "resuming\n");
++
++	spin_lock_irq(&tp->lock);
++	__rtl8169_set_wol(tp, tp->saved_wolopts);
++	tp->saved_wolopts = 0;
++	spin_unlock_irq(&tp->lock);
++
++	if (!tp->exiting)
++		__rtl8169_resume(dev);
  
- #define ACPI_GPE_DISPATCH_MASK          (u8) 0x18
- #define ACPI_GPE_DISPATCH_HANDLER       (u8) 0x08
- #define ACPI_GPE_DISPATCH_METHOD        (u8) 0x10
- #define ACPI_GPE_DISPATCH_NOT_USED      (u8) 0x00	/* Default */
+-	rtl8169_schedule_work(dev, rtl8169_reset_task);
+-out:
+ 	return 0;
+ }
  
--#define ACPI_GPE_RUN_ENABLE_MASK        (u8) 0x20
--#define ACPI_GPE_RUN_ENABLED            (u8) 0x20
--#define ACPI_GPE_RUN_DISABLED           (u8) 0x00	/* Default */
--
--#define ACPI_GPE_WAKE_ENABLE_MASK       (u8) 0x40
--#define ACPI_GPE_WAKE_ENABLED           (u8) 0x40
--#define ACPI_GPE_WAKE_DISABLED          (u8) 0x00	/* Default */
--
--#define ACPI_GPE_ENABLE_MASK            (u8) 0x60	/* Both run/wake */
--
- /*
-  * Flags for GPE and Lock interfaces
-  */
++static int rtl8169_runtime_idle(struct device *device)
++{
++	return -EBUSY;
++}
++
+ static const struct dev_pm_ops rtl8169_pm_ops = {
+ 	.suspend = rtl8169_suspend,
+ 	.resume = rtl8169_resume,
+@@ -4866,6 +4944,9 @@ static const struct dev_pm_ops rtl8169_p
+ 	.thaw = rtl8169_resume,
+ 	.poweroff = rtl8169_suspend,
+ 	.restore = rtl8169_resume,
++	.runtime_suspend = rtl8169_runtime_suspend,
++	.runtime_resume = rtl8169_runtime_resume,
++	.runtime_idle = rtl8169_runtime_idle,
+ };
+ 
+ #define RTL8169_PM_OPS	(&rtl8169_pm_ops)
