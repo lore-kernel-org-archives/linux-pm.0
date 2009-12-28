@@ -1,15 +1,13 @@
-From: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 2/3] phylib: Properly reinitialize PHYs after
- hibernation
-Date: Sun, 27 Dec 2009 21:57:36 -0800 (PST)
-Message-ID: <20091227.215736.189694536.davem__29085.4498082355$1261979912$gmane$org@davemloft.net>
-References: <20091222221451.GB9268@oksana.dev.rtsoft.ru>
-	<20091227.215504.71112983.davem@davemloft.net>
+From: Willi Mann <foss-ml@wm1.at>
+Subject: Re: kernel 2.6.32 much slower than 2.6.31 on s2disk
+Date: Mon, 28 Dec 2009 09:25:45 +0100
+Message-ID: <4B386B89.6000506@wm1.at>
+References: <hgb0q7$u8a$1@ger.gmane.org> <200912272156.27174.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-7"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091227.215504.71112983.davem@davemloft.net>
+In-Reply-To: <200912272156.27174.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,14 +17,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: cbouatmailru@gmail.com
-Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, leoli@freescale.com, afleming@freescale.com, linuxppc-dev@ozlabs.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-DQpBY3R1YWxseSBJJ20gcmV2ZXJ0aW5nIGJvdGggcGF0Y2hlczoNCg0KZHJpdmVycy9uZXQvcGh5
-L21kaW9fYnVzLmM6MjY4OiB3YXJuaW5nOiChbWRpb19idXNfcGh5X21heV9zdXNwZW5koiBkZWZp
-bmVkIGJ1dCBub3QgdXNlZA0KDQpQbGVhc2UgcmVzdWJtaXQgdGhlc2UgdHdvIHBhdGNoZXMgd2l0
-aCB0aGlzIHdhcm5pbmcgZml4ZWQuDQoNCkNPTkZJR19QTSBpcyBub3QgYWx3YXlzIGVuYWJsZWQg
-Oi0pDQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51
-eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0
-cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+
+>> I don't know to how to do a reliable benchmark on this problem, espially as 
+>> the required time probably very much depends on the exact state of the 
+>> frozen system. Is there any change in 2.6.32 that might cause less memory to 
+>> be stored on the suspend device, and thus require more random disk access 
+>> after the restore?
+> 
+> Actaully, yes, there is.
+> 
+> Please try to increase the value in /sys/power/image_size to approximately
+> 1/2 of your RAM and report back (the number is in bytes).
+
+Without changing the image_size, it especially got much better when I
+downgraded QT 4.6 to QT 4.5 which does not work well with KDE 4.3 (seems
+to cause memleaks).
+
+However, image_size is already set to your recommended value (well,
+approximately):
+
+# cat /sys/power/image_size
+951431086
+
+My RAM size is 2 GB (however, I have intel graohics with shared mem, so
+some part is reserved), my swap size is a little bit more than 2 GB.
+
+I don't know what value image_size was set to when I tried first.
+
+Note that when I reported the issue first I used Debian kernel 2.6.32-1,
+(probably plain 2.6.32), while I'm now using Debian kernel 2.6.32-2
+(according to the changelog 2.6.32.1)
+
+WM
