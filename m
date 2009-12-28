@@ -1,13 +1,14 @@
 From: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 1/3] phylib: Fix deadlock on resume
-Date: Sun, 27 Dec 2009 21:54:54 -0800 (PST)
-Message-ID: <20091227.215454.226776048.davem__43843.4485615746$1261979766$gmane$org@davemloft.net>
-References: <20091222221447.GA9268@oksana.dev.rtsoft.ru>
+Subject: Re: [PATCH 2/3] phylib: Properly reinitialize PHYs after
+ hibernation
+Date: Sun, 27 Dec 2009 21:55:04 -0800 (PST)
+Message-ID: <20091227.215504.71112983.davem__25345.8866769963$1261979789$gmane$org@davemloft.net>
+References: <20091222221451.GB9268@oksana.dev.rtsoft.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20091222221447.GA9268@oksana.dev.rtsoft.ru>
+In-Reply-To: <20091222221451.GB9268@oksana.dev.rtsoft.ru>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,12 +23,14 @@ Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, leoli@freescale
 List-Id: linux-pm@vger.kernel.org
 
 From: Anton Vorontsov <cbouatmailru@gmail.com>
-Date: Wed, 23 Dec 2009 01:14:47 +0300
+Date: Wed, 23 Dec 2009 01:14:51 +0300
 
-> Sometimes kernel hangs on resume with the following trace:
- ...
-> This patch fixes the issue by stopping the state machine on suspend
-> and starting it again on resume.
+> Since hibernation assumes power loss, we should fully reinitialize
+> PHYs (including platform fixups), as if PHYs were just attached.
+> 
+> This patch factors phy_init_hw() out of phy_attach_direct(), then
+> converts mdio_bus to dev_pm_ops and adds an appropriate restore()
+> callback.
 > 
 > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
