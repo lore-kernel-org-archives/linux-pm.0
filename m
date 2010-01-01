@@ -1,13 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PCI / PM: Use per-device D3 delays
-Date: Fri, 1 Jan 2010 19:55:27 +0100
-Message-ID: <201001011955.27407.rjw__16935.1670578637$1262372171$gmane$org@sisk.pl>
-References: <20100101170729.GA22252@rhlx01.hs-esslingen.de>
+Subject: [PATCH][RFC] e1000e: Add basic runtime PM support (rev.
+	2) (was: [PATCH 0/12] PCI run-time PM support (rev. 2))
+Date: Fri, 1 Jan 2010 20:03:07 +0100
+Message-ID: <201001012003.07722.rjw__25110.8021861457$1262372616$gmane$org@sisk.pl>
+References: <200912272057.10443.rjw@sisk.pl> <201001010229.24061.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100101170729.GA22252@rhlx01.hs-esslingen.de>
+In-Reply-To: <201001010229.24061.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,30 +18,332 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andreas Mohr <andi@lisas.de>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, Stephen Hemminger <shemminger@linux-foundation.org>, "Maciej J. Woloszyk" <mat@esi.com.pl>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: e1000-devel@lists.sourceforge.net, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jeff Kirsher <jeffrey.t.kirsher@intel.com>, Francois Romieu <romieu@fr.zoreil.com>, pm list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 01 January 2010, Andreas Mohr wrote:
-> Hi,
+On Friday 01 January 2010, Rafael J. Wysocki wrote:
+> On Sunday 27 December 2009, Rafael J. Wysocki wrote:
+> > Hi,
+> > 
+> > The following (updated) series of patches provides preliminary run-time power
+> > management support for PCI devices through ACPI and/or the native PCIe PME.
+> > 
+> > Some patches have been modified since the previous iteration, one patch has
+> > been merged and there's one more.
+> > 
+> > I've tested this patchset with the native PCIe PME mechanism using the r8169
+> > driver on the MSI Wind U-100 (see the last patch for details) and with the ACPI
+> > mechanism using the e1000e driver on the Toshiba Portege R500 (the patch still
+> > requires some work to be shown in public ;-)).
 > 
-> While the bug report mentions "So it's just quirky hardware.",
-> the implementation of your patch makes it seem like this delay attribute is
-> totally "norm"al behaviour - I'm missing some more aggressive wording.
+> The e1000e patch is now in a better shape IMO, at least it worked for me in all
+> conditions I tested it, so it is appended below.
 
-That's because it works both ways (please look at the changelog).
+This one was actually buggy, as it triggered a netdevice.h BUG_ON() during
+resume from suspend to RAM with network cable attached.
 
-I know of a few devices that don't need the PCI-prescribed 10 ms wait when
-going from D3 to D0 and their drivers may use the d3_delay field to actually
-set a _shorter_ delay.
-
-> Perhaps rename d3_delay to d3_delay__quirk or add something to the
-> comment, like "D3->D0 transition time in ms (out-of-spec PCI device quirk)"?
-> Or maybe something like
-> "custom D3->D0 transition time in ms (for quirky hardware violating the PCI spec's <= 100ms)".
-> 
-> Thanks for your ongoing great PCI efforts,
-
-You're welcome.
+Appended is a new version that doesn't have this problem and enables runtime PM
+in _probe(), so the device can be put into the low power state if _open()
+hasn't been called yet (or after _close()).
 
 Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PCI / PM / e1000e: Add basic runtime PM support (rev. 2)
+
+Use the PCI run-time power management framework to add simplified
+run-time PM support to the e1000e driver.  Namely, make the driver
+suspend the device when the link is off and set it up for generating
+wake-up event after the link has been detected again.
+
+Based on a patch from Matthew Garrett.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/net/e1000e/netdev.c |  130 +++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 106 insertions(+), 24 deletions(-)
+
+Index: linux-2.6/drivers/net/e1000e/netdev.c
+===================================================================
+--- linux-2.6.orig/drivers/net/e1000e/netdev.c
++++ linux-2.6/drivers/net/e1000e/netdev.c
+@@ -44,6 +44,7 @@
+ #include <linux/cpu.h>
+ #include <linux/smp.h>
+ #include <linux/pm_qos_params.h>
++#include <linux/pm_runtime.h>
+ #include <linux/aer.h>
+ 
+ #include "e1000.h"
+@@ -3093,12 +3094,15 @@ static int e1000_open(struct net_device 
+ {
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_hw *hw = &adapter->hw;
++	struct pci_dev *pdev = adapter->pdev;
+ 	int err;
+ 
+ 	/* disallow open during test */
+ 	if (test_bit(__E1000_TESTING, &adapter->state))
+ 		return -EBUSY;
+ 
++	pm_runtime_get_sync(&pdev->dev);
++
+ 	netif_carrier_off(netdev);
+ 
+ 	/* allocate transmit descriptors */
+@@ -3162,6 +3166,8 @@ static int e1000_open(struct net_device 
+ 	/* fire a link status change interrupt to start the watchdog */
+ 	ew32(ICS, E1000_ICS_LSC);
+ 
++	pm_runtime_put_noidle(&pdev->dev);
++
+ 	return 0;
+ 
+ err_req_irq:
+@@ -3172,6 +3178,7 @@ err_setup_rx:
+ 	e1000e_free_tx_resources(adapter);
+ err_setup_tx:
+ 	e1000e_reset(adapter);
++	pm_runtime_put_noidle(&pdev->dev);
+ 
+ 	return err;
+ }
+@@ -3190,9 +3197,15 @@ err_setup_tx:
+ static int e1000_close(struct net_device *netdev)
+ {
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
++	struct pci_dev *pdev = adapter->pdev;
+ 
+ 	WARN_ON(test_bit(__E1000_RESETTING, &adapter->state));
+-	e1000e_down(adapter);
++
++	pm_runtime_get_sync(&pdev->dev);
++
++	if (!test_bit(__E1000_DOWN, &adapter->state))
++		e1000e_down(adapter);
++
+ 	e1000_power_down_phy(adapter);
+ 	e1000_free_irq(adapter);
+ 
+@@ -3216,6 +3229,8 @@ static int e1000_close(struct net_device
+ 	if (adapter->flags & FLAG_HAS_AMT)
+ 		e1000_release_hw_control(adapter);
+ 
++	pm_runtime_put_noidle(&pdev->dev);
++
+ 	return 0;
+ }
+ /**
+@@ -3571,6 +3586,10 @@ static void e1000_watchdog_task(struct w
+ 	if (link) {
+ 		if (!netif_carrier_ok(netdev)) {
+ 			bool txb2b = 1;
++
++			/* This is to cancel scheduled suspend requests. */
++			pm_runtime_resume(netdev->dev.parent);
++
+ 			/* update snapshot of PHY registers on LSC */
+ 			e1000_phy_read_status(adapter);
+ 			mac->ops.get_link_up_info(&adapter->hw,
+@@ -3686,6 +3705,8 @@ static void e1000_watchdog_task(struct w
+ 
+ 			if (adapter->flags & FLAG_RX_NEEDS_RESTART)
+ 				schedule_work(&adapter->reset_task);
++			else
++				pm_schedule_suspend(netdev->dev.parent, 100);
+ 		}
+ 	}
+ 
+@@ -4489,13 +4510,15 @@ out:
+ 	return retval;
+ }
+ 
+-static int __e1000_shutdown(struct pci_dev *pdev, bool *enable_wake)
++static int __e1000_shutdown(struct pci_dev *pdev, bool *enable_wake,
++			    bool runtime)
+ {
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	u32 ctrl, ctrl_ext, rctl, status;
+-	u32 wufc = adapter->wol;
++	/* Runtime suspend should only enable wakeup for link changes */
++	u32 wufc = runtime ? E1000_WUFC_LNKC : adapter->wol;
+ 	int retval = 0;
+ 
+ 	netif_device_detach(netdev);
+@@ -4653,40 +4676,59 @@ static void e1000e_disable_l1aspm(struct
+ }
+ 
+ #ifdef CONFIG_PM
+-static int e1000_suspend(struct pci_dev *pdev, pm_message_t state)
++static bool e1000e_pm_ready(struct e1000_adapter *adapter)
++{
++	return !!adapter->tx_ring->buffer_info;
++}
++
++static int e1000_idle(struct device *dev)
+ {
++	struct pci_dev *pdev = to_pci_dev(dev);
++	struct net_device *netdev = pci_get_drvdata(pdev);
++	struct e1000_adapter *adapter = netdev_priv(netdev);
++
++	/*  If we're active, prevent the driver core from changing our state */
++	if (e1000e_pm_ready(adapter))
++		return -EBUSY;
++
++	pm_schedule_suspend(dev, MSEC_PER_SEC);
++	return 0;
++}
++
++static int e1000_suspend(struct device *dev)
++{
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 	int retval;
+ 	bool wake;
+ 
+-	retval = __e1000_shutdown(pdev, &wake);
++	retval = __e1000_shutdown(pdev, &wake, false);
+ 	if (!retval)
+ 		e1000_complete_shutdown(pdev, true, wake);
+ 
+ 	return retval;
+ }
+ 
+-static int e1000_resume(struct pci_dev *pdev)
++static int e1000_runtime_suspend(struct device *dev)
+ {
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+-	struct e1000_hw *hw = &adapter->hw;
+-	u32 err;
++	bool wake;
+ 
+-	pci_set_power_state(pdev, PCI_D0);
+-	pci_restore_state(pdev);
+-	e1000e_disable_l1aspm(pdev);
++	if (e1000e_pm_ready(adapter))
++		return __e1000_shutdown(pdev, &wake, true);
+ 
+-	err = pci_enable_device_mem(pdev);
+-	if (err) {
+-		dev_err(&pdev->dev,
+-			"Cannot enable PCI device from suspend\n");
+-		return err;
+-	}
++	return 0;
++}
+ 
+-	pci_set_master(pdev);
++static int __e1000_resume(struct pci_dev *pdev)
++{
++	struct net_device *netdev = pci_get_drvdata(pdev);
++	struct e1000_adapter *adapter = netdev_priv(netdev);
++	struct e1000_hw *hw = &adapter->hw;
++	u32 err;
+ 
+-	pci_enable_wake(pdev, PCI_D3hot, 0);
+-	pci_enable_wake(pdev, PCI_D3cold, 0);
++	e1000e_disable_l1aspm(pdev);
+ 
+ 	e1000e_set_interrupt_capability(adapter);
+ 	if (netif_running(netdev)) {
+@@ -4745,13 +4787,30 @@ static int e1000_resume(struct pci_dev *
+ 
+ 	return 0;
+ }
++
++static int e1000_resume(struct device *dev)
++{
++	return __e1000_resume(to_pci_dev(dev));
++}
++
++static int e1000_runtime_resume(struct device *dev)
++{
++	struct pci_dev *pdev = to_pci_dev(dev);
++	struct net_device *netdev = pci_get_drvdata(pdev);
++	struct e1000_adapter *adapter = netdev_priv(netdev);
++
++	if (e1000e_pm_ready(adapter))
++		return __e1000_resume(pdev);
++
++	return 0;
++}
+ #endif
+ 
+ static void e1000_shutdown(struct pci_dev *pdev)
+ {
+ 	bool wake = false;
+ 
+-	__e1000_shutdown(pdev, &wake);
++	__e1000_shutdown(pdev, &wake, false);
+ 
+ 	if (system_state == SYSTEM_POWER_OFF)
+ 		e1000_complete_shutdown(pdev, false, wake);
+@@ -5231,6 +5290,11 @@ static int __devinit e1000_probe(struct 
+ 
+ 	e1000_print_device_info(adapter);
+ 
++	if (pci_dev_run_wake(pdev)) {
++		pm_runtime_set_active(&pdev->dev);
++		pm_runtime_enable(&pdev->dev);
++	}
++
+ 	return 0;
+ 
+ err_register:
+@@ -5274,6 +5338,8 @@ static void __devexit e1000_remove(struc
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 
++	pm_runtime_get_sync(&pdev->dev);
++
+ 	/*
+ 	 * flush_scheduled work may reschedule our watchdog task, so
+ 	 * explicitly disable watchdog tasks from being rescheduled
+@@ -5294,6 +5360,12 @@ static void __devexit e1000_remove(struc
+ 
+ 	unregister_netdev(netdev);
+ 
++	if (pci_dev_run_wake(pdev)) {
++		pm_runtime_disable(&pdev->dev);
++		pm_runtime_set_suspended(&pdev->dev);
++	}
++	pm_runtime_put_noidle(&pdev->dev);
++
+ 	/*
+ 	 * Release control of h/w to f/w.  If f/w is AMT enabled, this
+ 	 * would have already happened in close and is redundant.
+@@ -5393,6 +5465,18 @@ static struct pci_device_id e1000_pci_tb
+ };
+ MODULE_DEVICE_TABLE(pci, e1000_pci_tbl);
+ 
++static const struct dev_pm_ops e1000_pm_ops = {
++	.suspend  = e1000_suspend,
++	.resume   = e1000_resume,
++	.freeze = e1000_suspend,
++	.thaw = e1000_resume,
++	.poweroff = e1000_suspend,
++	.restore = e1000_resume,
++	.runtime_suspend = e1000_runtime_suspend,
++	.runtime_resume = e1000_runtime_resume,
++	.runtime_idle = e1000_idle,
++};
++
+ /* PCI Device API Driver */
+ static struct pci_driver e1000_driver = {
+ 	.name     = e1000e_driver_name,
+@@ -5400,9 +5484,7 @@ static struct pci_driver e1000_driver = 
+ 	.probe    = e1000_probe,
+ 	.remove   = __devexit_p(e1000_remove),
+ #ifdef CONFIG_PM
+-	/* Power Management Hooks */
+-	.suspend  = e1000_suspend,
+-	.resume   = e1000_resume,
++	.driver.pm = &e1000_pm_ops,
+ #endif
+ 	.shutdown = e1000_shutdown,
+ 	.err_handler = &e1000_err_handler
