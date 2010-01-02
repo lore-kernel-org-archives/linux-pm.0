@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Update] Re: [RFC] Asynchronous suspend/resume - test
-	results
-Date: Sat, 2 Jan 2010 22:28:31 +0100
-Message-ID: <201001022228.31436.rjw__35245.6970992081$1262467739$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.0912211200200.2979-100000@iolanthe.rowland.org>
-	<200912212136.12665.rjw@sisk.pl> <200912232135.25041.rjw@sisk.pl>
+Subject: Re: [suspend/resume] Re: userspace notification from
+	module
+Date: Sun, 3 Jan 2010 00:29:22 +0100
+Message-ID: <201001030029.22449.rjw@sisk.pl>
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
+	<201001022201.04281.rjw@sisk.pl>
+	<7cf4f51f.5fc2a5cd.4b3fc3ad.c849c@o2.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912232135.25041.rjw@sisk.pl>
+In-Reply-To: <7cf4f51f.5fc2a5cd.4b3fc3ad.c849c@o2.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,92 +20,85 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pm list <linux-pm@lists.linux-foundation.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>
+To: =?utf-8?q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
+Cc: Andy Walls <awalls@radix.net>, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, Daniel Borkmann <danborkmann@googlemail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 23 December 2009, Rafael J. Wysocki wrote:
-> On Monday 21 December 2009, Rafael J. Wysocki wrote:
-> > On Monday 21 December 2009, Alan Stern wrote:
-> > > On Mon, 21 Dec 2009, Rafael J. Wysocki wrote:
-> ...
-> > > You should also make SCSI targets and hosts async.  Hosts are added in
-> > > drivers/scsi/hosts.c:scsi_add_host_with_dma() (in 2.6.32 this was
-> > > named scsi_add_host()).  Targets are added in
-> > > drivers/scsi/scsi_sysfs.c:scsi_target_add().  And for thoroughness,
-> > > SCSI devices are added in scsi_sysfs_add_sdev() in the same file.
-> > 
-> > Thanks a lot for the pointers.
-> 
-> I put device_enable_async_suspend() in all of these places and that resulted in
-> major reduction of suspend time without starting the async threads upfront.
-> Now, however, starting them upfront helps only a little, within the standard
-> deviation from the "non-upfront" case.
-> 
-> In turn, resume _without_ starting the async threads upfront makes a little
-> sense on my test boxes.  In fact, it only helped on the nx6325 and made things
-> worse on the other two (I added the results from Toshiba Portege R500, but it
-> has the same chipset as the Wind U100, ie. ICH7).
-> 
-> The results are as follows:
-> 
-> 			HP nx6325	MSI Wind U100	Toshiba Portege R500
-> 
-> sync suspend		1357 (+/- 35)	 656 (+/- 50)	 889 (+/- 29)
-> sync resume		3027 (+/- 6)	3372 (+/- 30)	4552 (+/- 35)
-> 
-> async suspend		1053 (+/- 50)	 490 (+/- 42)	 620 (+/- 52)
-> async resume		2291 (+/- 7)	3406 (+/- 52)	4557 (+/- 26)
-> 
-> async "upfront" suspend	1040 (+/- 35)	 476 (+/- 9)	 585 (+/- 29)
-> async "upfront" resume	1787 (+/- 7)	1724 (+/- 48)	1990 (+/- 25)
-> 
-> The raw data are at
-> http://www.sisk.pl/kernel/data/async-suspend-updated.pdf
-> http://www.sisk.pl/kernel/data/r500/
-> http://www.sisk.pl/kernel/data/nx6325/
-> http://www.sisk.pl/kernel/data/wind/
-> 
-> and the previous results were moved into
-> http://www.sisk.pl/kernel/data/091220/
-> 
-> The patches used in the testing are in my async branch at
-> http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=shortlog;h=refs/heads/async
-> The patches in this branch are not for upstream, but it's on top of the 
-> linux-next branch containing patches for the 2.6.34 merge window.
-
-Here's a small update to this I thought might be interesting to someone.
-
-Namely, I replaced the rotational disk in the Toshiba Portege R500 with an SSD
-and ran a few suspend/resume speed tests with the KMS on (the previous results
-for the R500 are with the userspace modesetting).  The results are here:
-
-http://www.sisk.pl/kernel/data/r500-ssd/
-
-As you can see here:
-
-http://www.sisk.pl/kernel/data/r500/times-r500-async-resume.txt
-http://www.sisk.pl/kernel/data/r500-ssd/times-r500-async-resume.txt
-
-the resume times changed quite a bit.  First, the device 0:0:0:0+ (the SSD) now
-takes about 0.33 s to resume (the rotational disk took about 1.7 s), pretty
-much as expected.  Second, the slowest resuming device is now the graphics
-(1.1 s), while without the KMS it resumed in no time.
-
-The device suspend times also changed:
-
-http://www.sisk.pl/kernel/data/r500/times-r500-async-suspend.txt
-http://www.sisk.pl/kernel/data/r500-ssd/times-r500-async-suspend.txt
-
-but 0:0:0:0+ is still the slowest suspending device, although it takes 200 ms
-less to suspend than the rotational disk.
-
-Overall, synchronous suspend of devices takes about 600 - 700 ms and
-synchronous resume takes about 4 s.  At the same time, asynchronous suspend of
-devices takes about 300 - 350 ms and asynchronous resume takes about
-1.1 - 1.2 s (that is with the async resume threads started upfront).  So, with
-the asynchronous suspend/resume the total times are roughly equal to the
-suspend/resume time of the slowest device and the resume speedup is
-more than 70%..
-
-Rafael
+T24gU2F0dXJkYXkgMDIgSmFudWFyeSAyMDEwLCBCYXJ0xYJvbWllaiBaaW1vxYQgd3JvdGU6Cj4g
+Cj4gRG5pYSAyIHN0eWN6bmlhIDIwMTAgMjI6MDEgIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHNp
+c2sucGw+IG5hcGlzYcWCKGEpOgo+IAo+ID4gT24gU2F0dXJkYXkgMDIgSmFudWFyeSAyMDEwLCBC
+YXJ0xYJvbWllaiBaaW1vxYQgd3JvdGU6Cj4gPiA+IERuaWEgMiBzdHljem5pYSAyMDEwIDE2OjU2
+IAlEYW5pZWwgQm9ya21hbm4gPGRhbmJvcmttYW5uQGdvb2dsZW1haWwuY29tPiBuYXBpc2HFgihh
+KToKPiA+ID4gPiBIaSBBbmR5LAo+ID4gPiA+IAo+ID4gPiA+IDIwMTAvMS8yIEFuZHkgV2FsbHMg
+PGF3YWxsc0ByYWRpeC5uZXQ+Ogo+ID4gPiA+ID4gV2h5IG5vdDoKPiA+ID4gPiA+Cj4gPiA+ID4g
+PiBhLiB3cml0ZSBhIG1vZHVsZSB0aGF0IGltcGxlbWVudHMgYSBkZXZpY2Ugbm9kZSB0aGF0IHN1
+cHBvcnRzIHBvbGwoKSwKPiA+ID4gPiA+IGFuZAo+ID4gPiA+ID4KPiA+ID4gPiA+IGIuIGhhdmUg
+YSB1c2VyIHNwYWNlIHByb2Nlc3Mgc2VsZWN0KCkgb24gdGhlIGZkIGZvciByZWFkIG9yIGV4Y2Vw
+dGlvbgo+ID4gPiA+ID4gbm90aWZpY2F0aW9uCj4gPiA+ID4gPgo+ID4gPiA+ID4gPwo+ID4gPiA+
+IAo+ID4gPiA+IFRoaXMgaXMsIG9mIGNvdXJzZSwgYW5vdGhlciBwb3NzaWJsZSBzb2x1dGlvbiB0
+aGF0IGlzIG1vcmUgImNsZWFuZXIiCj4gPiA+ID4gdGhhbiB0aGUgb25lIHdpdGggdGhlIHNpZ25h
+bHMuCj4gPiA+ID4gVGhlbiwgeW91ciB1c2Vyc3BhY2UgcHJvZ3JhbSB3b3VsZCBoYXZlIGFub3Ro
+ZXIgdGhyZWFkIHBvbGxpbmcgZm9yIHRoZQo+ID4gPiA+IGRldmljZSBub2RlLiBRdWVzdGlvbiBp
+cyB3aGljaCB0aW1lb3V0IHdvdWxkIGJlIGFwcHJvcHJpYXRlIHRvIGJlICJDUFUKPiA+ID4gPiBm
+cmllbmRseSIgYW5kIHRvIGtlZXAgbm90aWZpY2F0aW9uIGxhdGVuY3kgc2hvcnQ/Cj4gPiA+ID4g
+Cj4gPiA+IAo+ID4gPiBKdXN0IG5lZWQgYXMgZmFzdCBhcyBwb3NzaWJsZSBzb2x1dGlvbiBhbmQg
+b24gdGhlIG90aGVyIGhhbmQgYWNjZXB0YWJsZSBmb3Iga2VybmVsIHNvdXJjZXMuCj4gPiA+IFVz
+dWFsbHkgcHJvZ3JhbXMgbmVlZHMganVzdCB0byBkaXNjb25uZWN0IHNvbWV0aGluZyBvciBzZXQg
+b25lIGZsYWcuCj4gPiA+IEV2ZW4gaWYgcHJvZ3JhbSB3aWxsIGhhdmUgbm8gdGltZSBmb3IgdGhp
+cyBpdCBjb3VsZCBiZSBlbm91Z2gganVzdCB0byBzZW5kIHRoaXMgcHJlY2lvdXMgaW5mby4KPiA+
+IAo+ID4gUGVyaGFwcyBJIGRvbid0IHVuZGVyc3RhbmQgY29ycmVjdGx5IHdoYXQgeW91J3JlIHRy
+eWluZyB0byBhY2hpZXZlLCBidXQgYXQgdGhlCj4gPiBtb21lbnQgc3VzcGVuZCBpcyBhbHdheXMg
+c3RhcnRlZCBmcm9tIHVzZXIgc3BhY2UsIHRoaXMgd2F5IG9yIGFub3RoZXIsIGFuZCBvbgo+ID4g
+dGhlIG1ham9yaXR5IChhbGw/KSBvZiB0aGUgbW9kZXJuIGRpc3Ryb3MgcG0tdXRpbHMgaXMgaW52
+b2x2ZWQgaW4gdGhhdC4KPiA+IFNvLCB3aHkgZG9uJ3QgeW91IHByb3ZpZGUgYSBwbS11dGlscyBo
+b29rIGZvciB5b3VyIHByb2Nlc3MgKGxpa2UsIGZvciBleGFtcGxlLAo+ID4gTmV0d29ya01hbmFn
+ZXIpPwo+ID4gCj4gCj4gVGhhbmtzIGZvciBZb3VyIGFuc3dhcmUuCj4gU29tZSBwb2ludHMgb2Yg
+bXkgaWRlYToKPiAtIGRvbid0IHRoaW5rIGV2ZXJ5b25lIHdhbnQgdG8gdXNlIHBtLXV0aWxzIChk
+aWRuJ3Qgc2F5IGl0IGlzIGJhZCkKClRoYXQgY2VydGFpbmx5IGlzIHRydWUsIGJ1dCBJIHRoaW5r
+IHRoZXNlIHBlb3BsZSB3b24ndCBoYXZlIGEgcHJvYmxlbSBzZXR0aW5nCnVwIHRoZWlyIHN1c3Bl
+bmQgc2NyaXB0cyB0byB0cmlnZ2VyIHRoZSBub3RpZmljYXRpb24gYW55d2F5LiA6LSkKClBvaW50
+IGlzLCBzdXNwZW5kIGhvb2tzIGFyZSB1c2VkIGFueXdheSBieSBhbG1vc3QgZXZlcnlvbmUgKGR1
+ZSB0byBncmFwaGljcywKbmV0d29ya2luZywgZmF1bHR5IGRyaXZlcnMpLCBzbyBJIHRoaW5rIHlv
+dSBjb3VsZCBqdXN0IHVzZSB0aGlzIG1lY2hhbmlzbSwgYmUgaXQKcG0tdXRpbHMgb3Igc29tZXRo
+aW5nIGVsc2UuCgpUbyBwdXQgaXQgaW4gYSBkaWZmZXJlbnQgd2F5LCB5b3UgYXBwYXJlbnRseSB3
+YW50IHRoZSBrZXJuZWwgdG8gbm90aWZ5IHRoZSB1c2VyCnNwYWNlIG9mIGFuIGV2ZW50IG9yaWdp
+bmF0aW5nIGZyb20gdGhlIHVzZXIgc3BhY2UgYW5kIG15IHF1ZXN0aW9uIGlzIHdoeSBub3QKdG8g
+c2V0IHVwIHRoZSB1c2VyIHNwYWNlIHRvIGdlbmVyYXRlIHRoZSBub3RpZmljYXRpb24gd2l0aG91
+dCByZWx5aW5nIG9uIHRoZQprZXJuZWwgdG8gZG8gdGhhdC4KCj4gLSB0aGlzIGNvZGUgaXMgc3Rh
+bmRhcmQgZm9yIGFsbCBpbXBsZW1lbnRhdGlvbiBvZiBzdXNwZW5kL2hpYmVybmF0ZS9yZXN1bWUK
+CkkgZ3Vlc3MgeW91IG1lYW4gdGhlIGV4aXN0aW5nIGtlcm5lbC1zaWRlIHN1c3BlbmQvaGliZXJu
+YXRlIGNvZGUuCgpTdXJlLCBpdCBpcywgYnV0IHlvdXIgbW9kdWxlIGlzIGdvaW5nIHRvIGV4cG9y
+dCB0aGUga2VybmVsJ3MgaW50ZXJuYWwgaW50ZXJmYWNlCm91dHNpZGUgdGhlIGtlcm5lbCwgdHVy
+bmluZyBpdCBpbnRvIGEgcmVhbCBBUEkgYW5kIHRoYXQgaXMgYSBfYmlnXyBfZGVhbF8uICBUaGUK
+cmVhc29uIHdoeSBpdCBpcyBhIGJpZyBkZWFsIGlzIHRoYXQgd2hpbGUgd2Ugb2Z0ZW4gY2hhbmdl
+IHRoZSBrZXJuZWwncyBpbnRlcm5hbAppbnRlcmZhY2VzLCB3ZSBkb24ndCBjaGFuZ2UgQVBJcy4g
+IE9uY2UgY3JlYXRlZCwgYW4gQVBJIChJIG1lYW4gYSByZWFsCnVzZXJsYW5kLWtlcm5lbCBpbnRl
+cmZhY2UpIGlzIHZlcnkgZGlmZmljdWx0IHRvIGNoYW5nZSwgYmVjYXVzZSB0aGF0IG1vc3Qgb2Z0
+ZW4KbGVhZHMgdG8gcmVncmVzc2lvbnMgd2hpY2ggYXJlIHF1aXRlIG5hc3R5IGZyb20gdGhlIHVz
+ZXIncyBwb2ludCBvZiB2aWV3LgoKU28sIGJhc2ljYWxseSwgeW91IHdhbnQgdXMgdG8gZGVjbGFy
+ZSB0aGF0IHRoZSBrZXJuZWwncyBpbnRlcm5hbApzdXNwZW5kL2hpYmVybmF0ZSBub3RpZmljYXRp
+b24gbWVjaGFuaXNtIHdvbid0IGNoYW5nZSBpbiB0aGUgZnV0dXJlLCB3aGljaCBpcwpub3Qgc29t
+ZXRoaW5nIEknbSBnb2luZyB0byBkbyBhdCB0aGlzIHBvaW50LiAgTW9yZW92ZXIsIGl0IGhhc24n
+dCBiZWVuIGRlc2lnbmVkCmFzIGFuIEFQSSBhbmQgSSBkb24ndCB0aGluayBpdCdzIHJlYWxseSBz
+dWl0YWJsZSBmb3IgdGhpcyBwdXJwb3NlLgoKQXQgbGVhc3QsIHRoYXQgcmVxdWlyZXMgc29tZSBt
+b3JlIGRpc2N1c3Npb24sIHNvIHBsZWFzZSB0ZWxsIHVzIHdoeSB5b3UgbmVlZAp0aGUga2VybmVs
+IHRvIG5vdGlmeSB0aGUgdXNlciBzcGFjZSBhYm91dCBzdXNwZW5kL2hpYmVybmF0aW9uLiAgSU9X
+LCB3aGF0J3MgdGhlCmZpbmFsIHB1cnBvc2Ugb2YgdGhpcz8gIFtBZGRlZCBzb21lIENDcy5dCgo+
+IC0gaXQgaXMgc21hbGwKPiAtIGl0IGhhdmUgbGVzcyBvdmVyaGVhZCwgZG9udCBuZWVkIGRidXMg
+YW5kIGFsbCByZXN0IHNlcnZpY2VzLgoKVGhhdCBjb3VsZCBoYXZlIGJlZW4gYSBnb29kIGFyZ3Vt
+ZW50IGlmIHRob3NlIHNlcnZpY2VzIGhhZCBub3QgYmVlbiB1c2VkCmFscmVhZHksIGJ1dCB0aGF0
+J3Mgbm90IHRoZSBjYXNlLgoKPiAtIGNvdWxkIGJlIGV2ZW4gdXNlZCBwYXJ0aWFseSBieSBwbS11
+dGlscwo+IC0gaXQgaXMgcGVyZmVjdCBqdXN0IHRvIG5vdGlmeSBhYm91dCBldmVudAoKT0ssIGJ1
+dCB3aHkgZXhhY3RseSBkbyBfeW91XyBuZWVkIHRoYXQgdG8gaGFwcGVuPwoKVGhlcmUncyBvbmUg
+aW1wb3J0YW50IGRyYXdiYWNrIG9mIG1ha2luZyB0aGUga2VybmVsIGdlbmVyYXRlIHRoZSBub3Rp
+ZmljYXRpb24uCk5hbWVseSwgZXZlbiBpZiB5b3VyIHVzZXJzcGFjZSB0YXNrIGlzIG5vdGlmaWVk
+IGJ5IHRoZSBrZXJuZWwgb2YgYSBQTSBldmVudCwKdGhhdCBkb2Vzbid0IG1lYW4gaXQnbGwgaGF2
+ZSB0aGUgdGltZSB0byBhY3QgdXBvbiB0aGF0LCBiZWNhdXNlIHRoZSBrZXJuZWwgd2lsbAphdHRl
+bXB0IHRvIGZyZWV6ZSBpdCByaWdodCBhZnRlciB0aGUgbm90aWZpY2F0aW9uIGhhcyBiZWVuIHNl
+bnQuICBUaGlzIG1lYW5zCnlvdSdkIG5lZWQgYSB3YXkgdG8gbWFrZSB0aGUga2VybmVsIHdhaXQg
+Zm9yIHlvdXIgdXNlciBzcGFjZSBwcm9jZXNzIHRvIGZpbmlzaAppdCdzIGpvYiBiZWZvcmUgY29u
+dGludWluZyB0aGUgc3VzcGVuZC9oaWJlcm5hdGUgcHJvY2Vzcy4gIE90aGVyd2lzZSBpdCdzIG5v
+dApnb2luZyB0byBiZSB2ZXJ5IHVzZWZ1bC4KClJhZmFlbApfX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1A
+bGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9u
+Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
