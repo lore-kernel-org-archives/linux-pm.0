@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: s2disk hang update
-Date: Sat, 2 Jan 2010 21:38:42 +0100
-Message-ID: <201001022138.42575.rjw__16543.0772504353$1262464791$gmane$org@sisk.pl>
-References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
+Subject: Re: [RFC][PATCH 12/12] PM / r8169: Add simplified
+	run-time PM support
+Date: Sat, 2 Jan 2010 21:49:05 +0100
+Message-ID: <201001022149.05553.rjw__21554.0152778432$1262465375$gmane$org@sisk.pl>
+References: <200911160047.46299.rjw@sisk.pl> <200912272048.37332.rjw@sisk.pl>
+	<20091227200147.GJ11737@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
+In-Reply-To: <20091227200147.GJ11737@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,62 +19,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>, hugh.dickins@tiscali.co.uk, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Francois Romieu <romieu@fr.zoreil.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 02 January 2010, Alan Jenkins wrote:
-> Hi,
+On Sunday 27 December 2009, Pavel Machek wrote:
+> On Sun 2009-12-27 20:48:37, Rafael J. Wysocki wrote:
+> > On Tuesday 15 December 2009, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > > Use the PCI run-time power management framework to add simplified
+> > > > run-time PM support to the r8169 driver.  Namely, make the driver
+> > > > suspend the device when the link is off and set it up for generating
+> > > > wake-up event after the link has been detected again.
+> > > 
+> > > Nice!
+> > > 
+> > > Do you have any idea how much power it saves?
+> > 
+> > No, but there should be a power meter somewhere here ...
+> > 
+> > I'll let you know if I can find it.
 
-Hi,
+Well, I found it, but it has a watt resolution and measures energy in kWh,
+so it's not very useful in this case (the box draws 14 - 20 W total at full
+power).
 
-> I've been suffering from s2disk hangs again.  This time, the hangs
-> were always before the hibernation image was written out.
+> On notebooks, you can often use
 > 
-> They're still frustratingly random.  I just started trying to work out
-> whether doubling PAGES_FOR_IO makes them go away, but they went away
-> on their own again.
+> pavel@amd:/data/l/linux-msm/arch/arm/mach-msm$ cat
+> /proc/acpi/battery/BAT0/state 
+> present:                 yes
+> capacity state:          ok
+> charging state:          charged
+> present rate:            0 mW
+> remaining capacity:      71830 mWh
+> present voltage:         16277 mV
 > 
-> I did manage to capture a backtrace with debug info though.  Here it
-> is for 2.6.33-rc2.  (It has also happened on rc1).  I was able to get
-> the line numbers (using gdb, e.g.  "info line
-> *stop_machine_create+0x27"), having built the kernel with debug info.
-> 
-> [top of trace lost due to screen height]
-> ? sync_page	(filemap.c:183)
-> ? wait_on_page_bit	(filemap.c:506)
-> ? wake_bit_function	(wait.c:174)
-> ? shrink_page_list	(vmscan.c:696)
-> ? __delayacct_blkio_end	(delayacct.c:94)
-> ? finish_wait	(list.h:142)
-> ? congestion_wait	(backing-dev.c:761)
-> ? shrink_inactive_list	(vmscan.c:1193)
-> ? scsi_request_fn	(spinlock.h:306)
-> ? blk_run_queue	(blk-core.c:434)
-> ? shrink_zone	(vmscan.c:1484)
-> ? do_try_to_free_pages	(vmscan.c:1684)
-> ? try_to_free_pages	(vmscan.c:1848)
-> ? isolate_pages_global	(vmscan.c:980)
-> ? __alloc_pages_nodemask	(page_alloc.c:1702)
-> ? __get_free_pages	(page_alloc.c:1990)
-> ? copy_process	(fork.c:237)
-> ? do_fork	(fork.c:1443)
-> ? rb_erase
-> ? __switch_to
-> ? kthread
-> ? kernel_thread
-> ? kthread
-> ? kernel_thread_helper
-> ? kthreadd
-> ? kthreadd
-> ? kernel_thread_helper
-> 
-> INFO: task s2disk:2174 blocked for more than 120 seconds
+> ...present rate is often usable-enough.
 
-This looks like we have run out of memory while creating a new kernel thread
-and we have blocked on I/O while trying to free some space (quite obviously,
-because the I/O doesn't work at this point).
+Using /proc/acpi/battery/BAT1/state I measured the energy drawn in 10 minutes
+both with the network adapter in D0 and D3hot.  The results were that with the
+network adapter in D0 the box drew 2476 mWh, while with the network adapter in
+D3hot it drew 2361 mWh.  The difference is 115 mWh, or about 5% on this
+particular box.
 
-I think it should help if you increase PAGES_FOR_IO, then.
+This means about 0.1 Wh in 10 minutes, so we can save about 0.6 Wh per hour.
 
 Rafael
