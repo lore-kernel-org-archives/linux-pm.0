@@ -2,12 +2,17 @@ From: =?UTF-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
 Subject: Re:
 	=?utf-8?q?=5Bsuspend/resume=5D_Re=3A_userspace_notific?=
 	=?utf-8?q?ation_from_module?=
-Date: Mon, 04 Jan 2010 00:17:58 +0100
-Message-ID: <2d484a86.2379951a.4b4125a6.e3e58__42711.1724661247$1262619349$gmane$org@o2.pl>
+Date: Sun, 03 Jan 2010 23:53:49 +0100
+Message-ID: <24fb84fa.38887c91.4b411ffd.e7f1f@o2.pl>
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
+	<201001030029.22449.rjw@sisk.pl>
+	<65e5aef6.33251eb4.4b3fecf4.a2f99@o2.pl>
+	<201001032229.53221.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201001032229.53221.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,7 +23,7 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@lists.linux-foundation.org
+Cc: =?UTF-8?Q?Andy_Walls?= <awalls@radix.net>, linux-pm@lists.linux-foundation.org, =?UTF-8?Q?Daniel_Borkmann?= <danborkmann@googlemail.com>
 List-Id: linux-pm@vger.kernel.org
 
 RG5pYSAzIHN0eWN6bmlhIDIwMTAgMjI6MjkgIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHNpc2su
@@ -40,21 +45,16 @@ IGtlcm5lbAo+IAo+IC4uLiAKClBsZWFzZSBmb3JnZXQgZm9yIGEgbW9tZW50IGFib3V0IHBtLXV0
 aWxzLgoKSSB3YXMgdGhpbmtpbmcgYWJvdXQgc2YgbGlrZSB0aGlzOgpwbS1ub3RpZnkgaXMgcmVn
 aXN0ZXJlZCBpbiBwbV9ub3RpZmllcl9jaGFpbiBvciBjYWxsZWQgYmVmb3JlIHBtX25vdGlmaWVy
 c19jaGFpbgpwbS1ub3RpZnkgLT4gKHN1c3BlbmRpbmcpIGFsbCByZWdpc3RlcmQgcHJvY2Vzc2Vz
-CnNvbWUgcHJvY2Vzc2VzIC0+KGFjaykgcG0tbm90aWZ5CnRvIGNvbnNpZGVyIC0gYWZ0ZXIgdGlt
-ZW91dCAoIDFzLiBjb3VsZCBiZSBvaykgcG0tbm90aWZ5IHdpbGwgc2VuZCBOT1RJRllfT0ssIGtl
-cm5lbCB3aWxsIGNvbnQuIHN1c3BlbmRpbmcKCkl0IGNvdWxkIGJlIGV2ZW4gVUlPIG1vZHVsZSBi
-dXQgdGhlcmUgYXJlIG5vIHBtIGV2ZW50cyByZWFjaGFibGUgdGhlcmU/CgpJIGNhbnQgdW5kZXJz
-dGFuZCB3aHkga2VybmVsIGNhbnQgYmUgc2ltcGxlIHBvd2VyIG1hbmFnZXIuCgpDb25zaWRlciB0
-aGlzOiBhZGQgb25lIG1vcmUgc2lnbmFsIChTSUdQUkVGUkVFWiwgU0lHUE9TVEZSRUVaKSBhbmQg
-c2VuZCB0aGlzIGJlZm9yZS9hZnRlciBzdXNwZW5kIHRvIHByb2Nlc3Nlcy4KSXQgY291bGQgYmUg
-c2ltcGxlc3Qgd2F5IGFuZCB3ZSBoYXZlIG5vdGlmaWVkIHByb2Nlc3Nlcy4KCklmIHBtLW5vdGlm
-eSBpZGVhIGlzIG5vdCBjbGVhbiwgd2UgbXVzdCBleHRlbmQgcG0tdXRpbHMgb3Igd3JpdGUgc29t
-ZXRoaW5nIG5ldwood2l0aCBiYWNrZW5kcyBkYnVzLCBpcGMsIHNjcmlwdHMsIC4uLikKQnV0IFlv
-dSBzZWU/IFdlIHN0aWxsIGhhdmUgbm8gaW5mb3JtYXRpb24gZnJvbSBrZXJuZWwgYWJvdXQgZXZl
-bnRzIAooZXNwZWNpYWx5IHJlc3VtZSkgb3IgbWF5YmUgaSBkb250IHNlZSB0aGlzIDsvCgpUaGFu
-a3MgZm9yIHlvdXIgdW5kZXJzdGFuZGluZyBSYWZhZWwgOikKCkJlc3QgcmVnYXJkcy4KQmFydMWC
-b21pZWogWmltb8WEClBMRCBMaW51eCwgS2FkdSBUZWFtLCBGcmVlUnVubmVyIHVzZXIKaHR0cDov
-L2thZHUtaW0uYmxvZ3Nwb3QuY29tLwoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51
-eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxt
-YW4vbGlzdGluZm8vbGludXgtcG0=
+CnNvbWUgcHJvY2Vzc2VzIC0+KGFjaykgcG0tbm90aWZ5CmFmdGVyIHRpbWVvdXQgKCAxcy4gY291
+bGQgYmUgb2spIHBtLW5vdGlmeSB3aWxsIHNlbmQgTk9USUZZX09LIGFuZCBrZXJuZWwgd2lsbCBj
+b250LiBzdXNwZW5kaW5nCgpJdCBjb3VsZCBiZSBldmVuIFVJTyBtb2R1bGUgYnV0IHRoZXJlIGFy
+ZSBubyBwbSBldmVudHMgcmVhY2hhYmxlIHRoZXJlPwoKSWYgaXQgaXMgbm90IGNsZWFuLCB3ZSBt
+dXN0IGV4dGVuZCBwbS11dGlscyBvciB3cml0ZSBzb21ldGhpbmcgbmV3Cih3aXRoIGJhY2tlbmRz
+IGRidXMsIGlwYywgc2NyaXB0cywgLi4uKQpCdXQgWW91IHNlZT8gV2Ugc3RpbGwgaGF2ZSBubyBp
+bmZvcm1hdGlvbiBmcm9tIGtlcm5lbCBhYm91dCBldmVudHMgCihlc3BlY2lhbHkgcmVzdW1lKSBv
+ciBtYXliZSBpIGRvbnQgc2VlIHRoaXMgOy8KClRoYW5rcyBmb3IgeW91ciB1bmRlcnN0YW5kaW5n
+IFJhZmFlbCA6KQoKQmVzdCByZWdhcmRzLgpCYXJ0xYJvbWllaiBaaW1vxYQKUExEIExpbnV4LCBL
+YWR1IFRlYW0sIEZyZWVSdW5uZXIgdXNlcgpodHRwOi8va2FkdS1pbS5ibG9nc3BvdC5jb20vCgpf
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBt
+YWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9s
+aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
