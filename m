@@ -1,17 +1,18 @@
-From: Daniel Borkmann <danborkmann@googlemail.com>
-Subject: Re: [suspend/resume] Re: userspace notification from
-	module
-Date: Sun, 03 Jan 2010 10:30:19 +0100
-Message-ID: <4B4063AB.7080401__25138.5260293775$1262619346$gmane$org@gmail.com>
+From: =?UTF-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
+Subject: Re:
+	=?utf-8?q?=5Bsuspend/resume=5D_Re=3A_userspace_notific?=
+	=?utf-8?q?ation_from_module?=
+Date: Mon, 04 Jan 2010 00:35:31 +0100
+Message-ID: <54ac764e.502c1a33.4b4129c3.9dc1b__41501.1712153957$1262619349$gmane$org@o2.pl>
 References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
-	<201001022201.04281.rjw@sisk.pl>
-	<7cf4f51f.5fc2a5cd.4b3fc3ad.c849c@o2.pl>
-	<201001030029.22449.rjw@sisk.pl>
-	<65e5aef6.33251eb4.4b3fecf4.a2f99@o2.pl>
+	<201001032229.53221.rjw@sisk.pl>
+	<24fb84fa.38887c91.4b411ffd.e7f1f@o2.pl>
+	<201001040030.01256.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5864581087423634562=="
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <65e5aef6.33251eb4.4b3fecf4.a2f99@o2.pl>
+In-Reply-To: <201001040030.01256.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,110 +20,41 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?UTF-8?B?QmFydMWCb21pZWogWmltb8WE?= <uzi18@o2.pl>
-Cc: Andy Walls <awalls@radix.net>, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+Cc: awalls@radix.net, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, danborkmann@googlemail.com
 List-Id: linux-pm@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---===============5864581087423634562==
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig6BF2C4CEF03E3F232970A04E"
-
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig6BF2C4CEF03E3F232970A04E
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Bart=C5=82omiej Zimo=C5=84 wrote:
-> Dnia 3 stycznia 2010 0:29 "Rafael J. Wysocki" <rjw@sisk.pl> napisa=C5=82=
-(a):
->>> Thanks for Your answare.
->>> Some points of my idea:
->>> - don't think everyone want to use pm-utils (didn't say it is bad)
->> That certainly is true, but I think these people won't have a problem =
-setting
->> up their suspend scripts to trigger the notification anyway. :-)
->>
->=20
-> But it means almoust always create dbus interface and send message by s=
-cript.
-> For what? only to know if system going resume or suspend?
-
-Hmm.. dbus looks like a bit too much overhead for me, just to bring this
-information to your process, there should be an easier way to do this.
-
-> Abosulutly no!
-> It's so primitive module and even with different api it could be easy t=
-o adept.
-> Next if it can't be in kernel source tree for someone could be very use=
-full.
->=20
-> This module could only sends bool/ioctl - system resumed.
->=20
->> At least, that requires some more discussion, so please tell us why yo=
-u need
->> the kernel to notify the user space about suspend/hibernation.  IOW, w=
-hat's the
->> final purpose of this?  [Added some CCs.]
->=20
-> Yes, it is only first step.
-> Have created different point of view, not all linux boxes are desktops/=
-laptops.
-> What about embedeed solutions?
-> Why app must implement all other to know about resume/suspend?
-> Why not open file and know this easily?
-
-I actually don't like the idea to put such information into a file
-either. Anyways, if you'd have a thread polling for these file contents,
-I think a thread that does netlink comunication (from the userspace
-side) would be the better soultion. Then, your module takes care to
-broadcast the message to the registered clients.
-
-Have a look at:
-
-http://www.linuxjournal.com/article/7356
-
-> What about this discusion:
-> http://lists.freedesktop.org/archives/devkit-devel/2009-December/000617=
-=2Ehtml
->=20
-> I will perform some tests to know what amount of time is usualy needed =
-to disconnect
-> nicely client or something.
-
-Actually I think this is what signals are there for and bringing this
-information via signals would have least overhead, problem is that this
-is not POSIX compliant, but may be you could have a try at this?!
-
-Regards,
-Daniel
-
-
---------------enig6BF2C4CEF03E3F232970A04E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAktAY6sACgkQ5AxJm1m3CC8LqgCghUm4z5R70BmvlVBDXeMl6h/r
-HzUAoIIj09mSDBBklpgRKUd4w8U6DNbx
-=ne8m
------END PGP SIGNATURE-----
-
---------------enig6BF2C4CEF03E3F232970A04E--
-
---===============5864581087423634562==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============5864581087423634562==--
+RG5pYSA0IHN0eWN6bmlhIDIwMTAgMDozMCAiUmFmYWVsIEouIFd5c29ja2kiIDxyandAc2lzay5w
+bD4gbmFwaXNhxYIoYSk6Cgo+IE9uIFN1bmRheSAwMyBKYW51YXJ5IDIwMTAsIEJhcnTFgm9taWVq
+IFppbW/FhCB3cm90ZToKPiA+IERuaWEgMyBzdHljem5pYSAyMDEwIDIyOjI5ICJSYWZhZWwgSi4g
+V3lzb2NraSIgPHJqd0BzaXNrLnBsPiBuYXBpc2HFgihhKToKPiAuLi4KPiA+IAo+ID4gSXQgY291
+bGQgYmUgZXZlbiBVSU8gbW9kdWxlIGJ1dCB0aGVyZSBhcmUgbm8gcG0gZXZlbnRzIHJlYWNoYWJs
+ZSB0aGVyZT8KPiA+IAo+ID4gSWYgaXQgaXMgbm90IGNsZWFuLCB3ZSBtdXN0IGV4dGVuZCBwbS11
+dGlscyBvciB3cml0ZSBzb21ldGhpbmcgbmV3Cj4gPiAod2l0aCBiYWNrZW5kcyBkYnVzLCBpcGMs
+IHNjcmlwdHMsIC4uLikKPiA+IEJ1dCBZb3Ugc2VlPyBXZSBzdGlsbCBoYXZlIG5vIGluZm9ybWF0
+aW9uIGZyb20ga2VybmVsIGFib3V0IGV2ZW50cyAKPiA+IChlc3BlY2lhbHkgcmVzdW1lKSBvciBt
+YXliZSBpIGRvbnQgc2VlIHRoaXMgOy8KPiAKPiBUaGV5IGFyZSBhdmFpbGFibGUgdG8gdGhlIHBy
+b2Nlc3MgdGhhdCB0ZWxscyB0aGUga2VybmVsIHRvIHN1c3BlbmQuCj4gCj4gTmFtZWx5LCB0byB0
+ZWxsIHRoZSBrZXJuZWwgdG8gc3VzcGVuZCB0byBSQU0sIHRoZSBwcm9jZXNzIChjYWxsIGl0IGEg
+cG93ZXIKPiBtYW5hZ2VyKSBuZWVkcyB0byAoZm9yIGV4YW1wbGUpIGZwcmludGYoKSAibWVtIiB0
+byAvc3lzL3Bvd2VyL3N0YXRlLiAgQXMgc29vbgo+IGFzIHRoaXMgaGFwcGVucywgdGhlIGtlcm5l
+bCB3aWxsIHN0YXJ0IHRvIGZyZWV6ZSBwcm9jZXNzZXMgKGV4Y2VwdCBmb3IgdGhlCj4gcG93ZXIg
+bWFuYWdlciBpdHNlbGYpLCBzbyB0aGUgcG93ZXIgbWFuYWdlciBrbm93cyB0aGF0IGV2ZXJ5dGhp
+bmcgc2hvdWxkIGJlCj4gcmVhZHkgZm9yIHRoZSBzdXNwZW5kIGJlZm9yZSBpdCB3cml0ZXMgdG8g
+L3N5cy9wb3dlci9zdGF0ZS4gIEl0IGRvZXNuJ3QgbmVlZAo+IHRoZSBrZXJuZWwgdG8gdGVsbCBp
+dCB3aGVuIHRoZSBzdXNwZW5kIGlzIGdvaW5nIHRvIHN0YXJ0LCBiZWNhdXNlIGl0IF9rbm93c18K
+PiB0aGF0IGluIGFkdmFuY2UuCj4gCj4gTm93LCB0aGUgZnByaW50ZigpIHVzZWQgdG8gdHJpZ2dl
+ciB0aGUgc3VzcGVuZCB3aWxsIG5vdCByZXR1cm4gdW50aWwgdGhlIHJlc3VtZQo+IGlzIGNvbXBs
+ZXRlLiAgU28sIGFnYWluLCB3aGVuIHRoZSBmcHJpbnRmKCkgcmV0dXJucywgdGhlIHBvd2VyIG1h
+bmFnZXIgd2lsbCBrbm93Cj4gdGhhdCB0aGUgcmVzdW1lIGhhcyBqdXN0IGZpbmlzaGVkIChtb3Jl
+IHByZWNpc2VseSwgdGhlIGtlcm5lbCBzaWRlIG9mIGl0IGhhcwo+IGp1c3QgZmluaXNoZWQpLgo+
+IAo+IFRoZXJlIHNpbXBseSBpcyBubyBuZWVkIGZvciBhbnkgc3BlY2lhbCBjb21tdW5pY2F0aW9u
+IGJldHdlZW4gdGhlIGtlcm5lbCBhbmQKPiB0aGUgcG93ZXIgbWFuYWdlci4KPiAKClRoeCBSYWZh
+ZWwgLSBub3cgaXQgY2xlYXIgdG8gbWUuCkFuZCB3aGF0IGRvIFlvdSB0aGluayBhYm91dCBzZW5k
+aW5nIGV4dHJhIHNpZ25hbHMgdG8gcHJvY2Vzc2VzPwoKQmVzdCByZWdhcmRzLgpCYXJ0xYJvbWll
+aiBaaW1vxYQKUExEIExpbnV4LCBLYWR1IFRlYW0sIEZyZWVSdW5uZXIgdXNlcgpodHRwOi8va2Fk
+dS1pbS5ibG9nc3BvdC5jb20vCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91
+bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xp
+c3RpbmZvL2xpbnV4LXBt
