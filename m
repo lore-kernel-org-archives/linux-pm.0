@@ -1,15 +1,17 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFC][PATCH 12/12] PM / r8169: Add simplified
-	run-time PM support
-Date: Mon, 4 Jan 2010 10:53:52 +0100
-Message-ID: <201001041053.52099.oliver__9634.67974584109$1262598903$gmane$org@neukum.org>
-References: <200911160047.46299.rjw@sisk.pl> <201001032201.14087.rjw@sisk.pl>
-	<20100104083108.GD1372@ucw.cz>
+From: Stefan Seyfried <stefan.seyfried@googlemail.com>
+Subject: Re: [suspend/resume] Re: userspace notification from
+	module
+Date: Mon, 4 Jan 2010 14:38:23 +0100
+Message-ID: <20100104143823.1464643d__25548.4676956714$1262612398$gmane$org@strolchi.home.s3e.de>
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
+	<4B406C14.2070907@gmail.com>
+	<43bd3f9d.71702a8b.4b407900.b542@o2.pl>
+	<201001032249.11510.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100104083108.GD1372@ucw.cz>
+In-Reply-To: <201001032249.11510.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,21 +21,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Francois Romieu <romieu@fr.zoreil.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: =?UTF-8?B?QmFydMWCb21pZWogWmltb8WE?= <uzi18@o2.pl>, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, Andy Walls <awalls@radix.net>
 List-Id: linux-pm@vger.kernel.org
 
-Am Montag, 4. Januar 2010 09:31:08 schrieb Pavel Machek:
-> > You can't save power, you can only save energy.  Wh is just an energy unit.
-> 
-> Of course we can save power, you just did :-).
-> 
-> (And in some cases -- data centers, limited cooling -- you are limited
-> by power, not energy. You are right that on notebooks, energy is more
-> important.)
-
-If possible less power is better on a laptop, fans are loud and take
-energy to run.
-
-	Regards
-		Oliver
+SGksCgpPbiBTdW4sIDMgSmFuIDIwMTAgMjI6NDk6MTEgKzAxMDAKIlJhZmFlbCBKLiBXeXNvY2tp
+IiA8cmp3QHNpc2sucGw+IHdyb3RlOgoKPiBPbiBTdW5kYXkgMDMgSmFudWFyeSAyMDEwLCBCYXJ0
+xYJvbWllaiBaaW1vxYQgd3JvdGU6Cj4gPiBtaG0sIHdoeSBub3QgdG8gY3JlYXRlIGtlcm5lbCBi
+YXNlZCBwbSBldmVudCBtZXNzYWdpbmcgZm9yIHByb2Nlc3Nlcz8KCkkgZG9uJ3QgdGhpbmsgeW91
+IG5lZWQgdGhlIGtlcm5lbCBmb3IgdGhhdC4KCj4gPiBIb3cgaXQgaXMgaW1wbGVtZW50ZWQgb24g
+b3RoZXIgcGxhdGZvcm1zPwo+ID4gQmVjYXVzZSBvbiBNYWNPc1ggbG9va3MgbGlrZSBwcm9ncmFt
+IHJlZ2lzdGVycyBjYWxsYmFjayBmb3Igc3VjaCBldmVudC4KPiA+IAo+ID4gSSBkb250IGtub3cg
+aWYgZXZlcnkgcG1fbm90aWZpZXIgYmxvY2tzIHN1c3BlbmQgdW50aWwgcmV0dXJuIGZyb20gY2Fs
+bGJhY2suCj4gPiAKPiA+IElmIHdlIGNhbnQgZG8gaXQgc2ltcGxlIHdlIGNhbiBkbyBpdCBiZXR0
+ZXIuCj4gPiBSYWZhZWwgd2hhdCBkbyBZb3UgdGhpbmsgYWJvdXQgaXQ/CgpCYXNpY2FsbHksIG1v
+ZGVybiBkZXNrdG9wcyBkbyBpdCBleGFjdGx5IHRoaXMgd2F5LiBUaGV5IGhhdmUgb25lICJwb3dl
+cgptYW5hZ2VyIiAoYmUgaXQgZ25vbWUtcG93ZXItbWFuYWdlciBvciBLREUncyBzb2xpZCkgYW5k
+IHRoZQphcHBsaWNhdGlvbnMgYXJlIG5vdGlmaWVkIGJ5IGl0IGlmIGEgc3VzcGVuZCBpcyBnb2lu
+ZyB0byBoYXBwZW4uCgpFLmcuIHRoZSBwb3dlciBtYW5hZ2VyIHdpbGwgdGVsbCB0aGUgdm9sdW1l
+IG1hbmFnZXIgKHRoZSB0aGluZyB0aGF0Cm1vdW50ZWQgdGhlIFVTQiBzdGljaykgIndlIHdpbGwg
+c3VzcGVuZCwgcGxlYXNlIHVubW91bnQgZXZlcnl0aGluZyIuCk90aGVyIGRlc2t0b3AgY29tcG9u
+ZW50cyB3aWxsIGFsc28gYmUgbm90aWZpZWQuCgpTb21lIHByb2Nlc3NlcyBtaWdodCBhbHNvIHdp
+c2ggdG8gaW5oaWJpdCB0aGUgc3VzcGVuZCAoZS5nLiBhIENECmJ1cm5pbmcgYXBwbGljYXRpb24g
+d2hpbGUgaXQgaXMgYnVybmluZykuCgpUaGUgcG93ZXIgbWFuYWdlciBpcyB0aGUgInNpbmdsZSBw
+b2ludCBvZiBkZWNpc2lvbiIuIEl0IG1pZ2h0IGRlY2lkZSB0bwppZ25vcmUgdGhlIENEIGJ1cm5p
+bmcgYXBwbGljYXRpb24sIGlmIHRoZSBwb3dlciBpcyBjcml0aWNhbGx5IGxvdwooYmV0dGVyIGEg
+cnVpbmVkIENEIHRoYW4gZGF0YSBsb3NzIGJ5IGhhcmQgcG93ZXJvZmYpLCBidXQgaG9ub3IgaXQK
+b3RoZXJ3aXNlLiBJdCBtaWdodCBkZWNpZGUgdG8gYXNrIHRoZSB1c2VyIChhbmQgaXQgaGFzIGFu
+IGVhc3kgd2F5IHRvCmRvIHNvLCBzaW5jZSBpdCBpcyBydW5uaW5nIGluIHRoZSB1c2VycyBzZXNz
+aW9uIGFuZCB0aHVzIGhhcyBhY2Nlc3MgdG8KdGhlIFggZGlzcGxheSksIGJ1dCBwcm9jZWVkIGFm
+dGVyIGEgdGltZW91dCBldGMuLi4KCkFsbCB0aGlzIGlzIGFscmVhZHkgcG9zc2libGUgYW5kIGRv
+ZXMgbm90IG5lZWQgYW55IGtlcm5lbCBjaGFuZ2VzIGF0CmFsbC4KCj4gSSd2ZSBqdXN0IHNhaWQs
+IHJvdWdobHksIGluIGEgbWVzc2FnZSBJIHNlbnQgdG8geW91IGEgd2hpbGUgYmFjay4KPiAKPiBZ
+b3UgbmVlZCBhIHBvd2VyIG1hbmFnZXIsIGJ1dCBub3QgbmVjZXNzYXJpbHkgaW4gdGhlIGtlcm5l
+bC4gIFRoZSByb2xlIG9mIHRoZQo+IHBvd2VyIG1hbmFnZXIgd291bGQgYmUgdG86Cj4gKDEpIHBh
+c3Mgc3VzcGVuZCByZXF1ZXN0cyBmcm9tIGRpZmZlcmVudCBzb3VyY2VzIGluIHRoZSB1c2VyIHNw
+YWNlIChhIEdVSSBmb3IKPiAgICAgb25lIGV4YW1wbGUpIHRvIHRoZSBrZXJuZWwsCj4gKDIpIG5v
+dGlmeSBwcm9jZXNzZXMgd2hpY2ggcmVnaXN0ZXJlZCBmb3IgdGhhdCB3aGVuIGl0J3MgZ29pbmcg
+dG8gcGFzcyBhCj4gICAgIHN1c3BlbmQgKG9yIGhpYmVybmF0ZSkgcmVxdWVzdCB0byB0aGUga2Vy
+bmVsLAo+ICgzKSB3YWl0IGZvciB0aGUgbm90aWZpZWQgcHJvY2Vzc2VzIHRvIGNvbXBsZXRlIHRo
+ZSBwcmUtc3VzcGVuZCBwcmVwYXJhdGlvbnMKPiAgICAgdGhleSByZXF1aXJlLgoKRXhhY3RseS4K
+Cj4gVGhlcmUgYXJlIGEgZmV3IG1vcmUgdGhpbmdzIHRvIGNvbnNpZGVyIGhlcmUuICBGb3IgZXhh
+bXBsZSwgd2hhdCBpZiBvbmUgb2YgdGhlCj4gcmVnaXN0ZXJlZCBwcm9jZXNzZXMgYmVjb21lcyB1
+bnJlc3BvbnNpdmU/ICBBcmUgd2UgZ29pbmcgdG8gc3VzcGVuZCBhbnl3YXkKPiBvciBub3RpZnkg
+dGhlIHVzZXIgYW5kIHdhaXQgZm9yIGhpbSB0byByZXNvbHZlIHRoZSBwcm9ibGVtPyAgSW4gdGhl
+IGxhdHRlcgo+IGNhc2UsIHdoYXQgdG8gZG8gaWYgdGhhdCBpcywgZm9yIGV4YW1wbGUsIGFuIGVt
+ZXJnZW5jeSBoaWJlcm5hdGlvbiBzdGFydGVkCj4gYmVjYXVzZSB3ZSdyZSBydW5uaW5nIG91dCBv
+ZiBiYXR0ZXJ5IHBvd2VyPyAgRXRjLgo+IAo+IFNvbWUgdGltZSBhZ28gb3BlblNVU0UgaGFkIGEg
+ZGFlbW9uIGNhbGxlZCBwb3dlcnNhdmVkIHVzZWQgZm9yIHRoaXMgcHVycG9zZSwKPiBidXQgdGhl
+biBpdCB3YXMgcmVwbGFjZWQgYnkgcG0tdXRpbHMsIGFwcGFyZW50bHkgYmVjYXVzZSBldmVyeWJv
+ZHkgZWxzZSB3YXMKPiB1c2luZyBwbS11dGlscyBhbmQgaXQganVzdCB3YXNuJ3Qgd29ydGggbWFp
+bnRhaW5pbmcgYSBkaWZmZXJlbnQgc29sdXRpb24gZm9yCj4gb25lIGRpc3RybyBvbmx5LiAgTWF5
+YmUgaXQncyB0aW1lIHRvIHJldGhpbmsgdGhpcyBpZGVhPwoKTm8uIEJlY2F1c2Ugd2hhdCBwb3dl
+cnNhdmVkIGRpZCB3YXMgbm90IGZ1bmRhbWVudGFsbHkgZGlmZmVyZW50IGZyb20Kd2hhdCBnbm9t
+ZS1wb3dlci1tYW5hZ2VyIC8gcG0tdXRpbHMgZG9lcyBub3cuIFRoZSBkaWZmZXJlbmNlIHdhcywg
+dGhhdAppdCB3YXMgYSBkYWVtb24gcnVubmluZyBhcyByb290LiBXaGljaCBicm91Z2h0IGEgZmV3
+IHByb2JsZW1zIG9mIGl0cwpvd246CiAqIGNvbW11bmljYXRpb24gd2l0aCB0aGUgdXNlciB3YXMg
+bm90IGVhc2lseSBwb3NzaWJsZQogKiBpdCBtaXhlZCB1cCBwb2xpY3kgYW5kIG1lY2hhbmlzbSAo
+cG93ZXJzYXZlZCBkZWNpZGVkIHdoYXQgdG8gZG8gaWYKICAgeW91IHByZXNzIHRoZSBwb3dlciBv
+ciBzbGVlcCBidXR0b24sIGFuZCB5b3UgbmVlZGVkIHJvb3QgdG8gY29uZmlndXJlCiAgIHRoYXQg
+YmVoYXZpb3VyKS4KCkFuZCBiZWZvcmUgc29tZWJvZHkgY29tZXMgYWxvbmcgd2l0aCBhcmd1bWVu
+dHMgbGlrZSAiYnV0IHdoYXQgYWJvdXQgbXkKbWFudWFsbHkgbW91bnRlZCBORlMgc2hhcmUgLSB3
+aG8gd2lsbCB1bm1vdW50IHRoYXQ/IiwgSSBjYW4gb25seSB0ZWxsCnlvdTogImdvIGF3YXkiLiBU
+aGVyZSBpcyBubyB3YXkgdG8gaW1sZW1lbnQgYSBzYW5lIHNvbHV0aW9uIHRoYXQgd2lsbAp0YWtl
+IGNhcmUgb2YgYWxsIHRoZSBjcmF6eSBtYW51YWwgY29uZmlndXJhdGlvbnMgcGVvcGxlIGNhbiBk
+cmVhbSBvZiwKc28geW91IGNhbiBvbmx5IHRlbGwgdGhlbSAieW91IG1vdW50ZWQgaXQgbWFudWFs
+bHkgLSBzbyB1bm1vdW50IGl0Cm1hbnVhbGx5Ii4KCkFuZCB5b3UgY2FuIGdpdmUgdGhlbSBwbS11
+dGlscyBob29rcyB0aGF0IGdpdmUgdGhlbSBhIG1lY2hhbmlzbSB0byBkbwp0aGVpciBtYW51YWwg
+c3R1ZmYgc2VtaS1hdXRvbWF0aWNhbGx5IGR1cmluZyBzdXNwZW5kIC8gcmVzdW1lLgoKSGF2ZSBm
+dW4gOi0pCgoJc2VpZmUKLS0gClN0ZWZhbiBTZXlmcmllZAoKIkFueSBpZGVhcywgSm9obj8iCiJX
+ZWxsLCBzdXJyb3VuZGluZyB0aGVtJ3Mgb3V0LiIKX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3Rz
+LmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcv
+bWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
