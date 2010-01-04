@@ -1,16 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [suspend/resume] Re: userspace notification from
-	module
-Date: Mon, 4 Jan 2010 00:45:39 +0100
-Message-ID: <201001040045.39517.rjw__39945.3558297411$1262562368$gmane$org@sisk.pl>
-References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
-	<201001040030.01256.rjw@sisk.pl>
-	<54ac764e.502c1a33.4b4129c3.9dc1b@o2.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH 12/12] PM / r8169: Add simplified
+	run-time PM	support
+Date: Mon, 4 Jan 2010 09:31:08 +0100
+Message-ID: <20100104083108.GD1372__16123.1566257358$1262593997$gmane$org@ucw.cz>
+References: <200911160047.46299.rjw@sisk.pl> <201001022149.05553.rjw@sisk.pl>
+	<20100103195544.GC11928@elf.ucw.cz>
+	<201001032201.14087.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <54ac764e.502c1a33.4b4129c3.9dc1b@o2.pl>
+Content-Disposition: inline
+In-Reply-To: <201001032201.14087.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,49 +21,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?utf-8?q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
-Cc: awalls@radix.net, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, danborkmann@googlemail.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Francois Romieu <romieu@fr.zoreil.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uZGF5IDA0IEphbnVhcnkgMjAxMCwgQmFydMWCb21pZWogWmltb8WEIHdyb3RlOgo+IERu
-aWEgNCBzdHljem5pYSAyMDEwIDA6MzAgIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHNpc2sucGw+
-IG5hcGlzYcWCKGEpOgo+IAo+ID4gT24gU3VuZGF5IDAzIEphbnVhcnkgMjAxMCwgQmFydMWCb21p
-ZWogWmltb8WEIHdyb3RlOgo+ID4gPiBEbmlhIDMgc3R5Y3puaWEgMjAxMCAyMjoyOSAiUmFmYWVs
-IEouIFd5c29ja2kiIDxyandAc2lzay5wbD4gbmFwaXNhxYIoYSk6Cj4gPiAuLi4KPiA+ID4gCj4g
-PiA+IEl0IGNvdWxkIGJlIGV2ZW4gVUlPIG1vZHVsZSBidXQgdGhlcmUgYXJlIG5vIHBtIGV2ZW50
-cyByZWFjaGFibGUgdGhlcmU/Cj4gPiA+IAo+ID4gPiBJZiBpdCBpcyBub3QgY2xlYW4sIHdlIG11
-c3QgZXh0ZW5kIHBtLXV0aWxzIG9yIHdyaXRlIHNvbWV0aGluZyBuZXcKPiA+ID4gKHdpdGggYmFj
-a2VuZHMgZGJ1cywgaXBjLCBzY3JpcHRzLCAuLi4pCj4gPiA+IEJ1dCBZb3Ugc2VlPyBXZSBzdGls
-bCBoYXZlIG5vIGluZm9ybWF0aW9uIGZyb20ga2VybmVsIGFib3V0IGV2ZW50cyAKPiA+ID4gKGVz
-cGVjaWFseSByZXN1bWUpIG9yIG1heWJlIGkgZG9udCBzZWUgdGhpcyA7Lwo+ID4gCj4gPiBUaGV5
-IGFyZSBhdmFpbGFibGUgdG8gdGhlIHByb2Nlc3MgdGhhdCB0ZWxscyB0aGUga2VybmVsIHRvIHN1
-c3BlbmQuCj4gPiAKPiA+IE5hbWVseSwgdG8gdGVsbCB0aGUga2VybmVsIHRvIHN1c3BlbmQgdG8g
-UkFNLCB0aGUgcHJvY2VzcyAoY2FsbCBpdCBhIHBvd2VyCj4gPiBtYW5hZ2VyKSBuZWVkcyB0byAo
-Zm9yIGV4YW1wbGUpIGZwcmludGYoKSAibWVtIiB0byAvc3lzL3Bvd2VyL3N0YXRlLiAgQXMgc29v
-bgo+ID4gYXMgdGhpcyBoYXBwZW5zLCB0aGUga2VybmVsIHdpbGwgc3RhcnQgdG8gZnJlZXplIHBy
-b2Nlc3NlcyAoZXhjZXB0IGZvciB0aGUKPiA+IHBvd2VyIG1hbmFnZXIgaXRzZWxmKSwgc28gdGhl
-IHBvd2VyIG1hbmFnZXIga25vd3MgdGhhdCBldmVyeXRoaW5nIHNob3VsZCBiZQo+ID4gcmVhZHkg
-Zm9yIHRoZSBzdXNwZW5kIGJlZm9yZSBpdCB3cml0ZXMgdG8gL3N5cy9wb3dlci9zdGF0ZS4gIEl0
-IGRvZXNuJ3QgbmVlZAo+ID4gdGhlIGtlcm5lbCB0byB0ZWxsIGl0IHdoZW4gdGhlIHN1c3BlbmQg
-aXMgZ29pbmcgdG8gc3RhcnQsIGJlY2F1c2UgaXQgX2tub3dzXwo+ID4gdGhhdCBpbiBhZHZhbmNl
-Lgo+ID4gCj4gPiBOb3csIHRoZSBmcHJpbnRmKCkgdXNlZCB0byB0cmlnZ2VyIHRoZSBzdXNwZW5k
-IHdpbGwgbm90IHJldHVybiB1bnRpbCB0aGUgcmVzdW1lCj4gPiBpcyBjb21wbGV0ZS4gIFNvLCBh
-Z2Fpbiwgd2hlbiB0aGUgZnByaW50ZigpIHJldHVybnMsIHRoZSBwb3dlciBtYW5hZ2VyIHdpbGwg
-a25vdwo+ID4gdGhhdCB0aGUgcmVzdW1lIGhhcyBqdXN0IGZpbmlzaGVkIChtb3JlIHByZWNpc2Vs
-eSwgdGhlIGtlcm5lbCBzaWRlIG9mIGl0IGhhcwo+ID4ganVzdCBmaW5pc2hlZCkuCj4gPiAKPiA+
-IFRoZXJlIHNpbXBseSBpcyBubyBuZWVkIGZvciBhbnkgc3BlY2lhbCBjb21tdW5pY2F0aW9uIGJl
-dHdlZW4gdGhlIGtlcm5lbCBhbmQKPiA+IHRoZSBwb3dlciBtYW5hZ2VyLgo+ID4gCj4gCj4gVGh4
-IFJhZmFlbCAtIG5vdyBpdCBjbGVhciB0byBtZS4KPiBBbmQgd2hhdCBkbyBZb3UgdGhpbmsgYWJv
-dXQgc2VuZGluZyBleHRyYSBzaWduYWxzIHRvIHByb2Nlc3Nlcz8KCkkgZG9uJ3Qgc2VlIGEgcHJv
-YmxlbSB3aXRoIHRoaXMgaW4gcHJpbmNpcGxlLCBhbHRob3VnaCBJIGRvbid0IHRoaW5rIHNpZ25h
-bHMKYXJlIHZlcnkgc3VpdGFibGUgZm9yIHRoaXMgcGFydGljdWxhciBwdXJwb3NlLCBiZWNhdXNl
-IHlvdSBuZWVkIHR3by13YXkKY29tbXVuaWNhdGlvbiBiZXR3ZWVuIHRoZSBwb3dlciBtYW5hZ2Vy
-IGFuZCB0aGUgcHJvY2Vzc2VzIGl0J3MgZ29pbmcgdG8Kbm90aWZ5IChiZWNhdXNlIGl0IGhhcyB0
-byB3YWl0IGZvciB0aGUgcHJvY2Vzc2VzIHRvIGZpbmlzaCB0aGVpciBwcmVwYXJhdGlvbnMKYW5k
-IHRvIHRlbGwgaXQgdGhhdCB0aGV5IGFyZSByZWFkeSkuCgpGb3IgdGhpcyBwdXJwb3NlIGl0J3Mg
-YmV0dGVyIHRvIGhhdmUgYSBmaWxlIGRlc2NyaXB0b3IgeW91IGNhbiBibG9jayBvbiAobGlrZSBh
-CnNvY2tldCBvciBhIHBpcGUpIHdoaWxlIHRoZSBvdGhlciBzaWRlIGlzIGRvaW5nIGl0J3Mgam9i
-LgoKUmFmYWVsCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-CmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
-ZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGlu
-dXgtcG0=
+
+> > > Using /proc/acpi/battery/BAT1/state I measured the energy drawn in 10 minutes
+> > > both with the network adapter in D0 and D3hot.  The results were that with the
+> > > network adapter in D0 the box drew 2476 mWh, while with the network adapter in
+> > > D3hot it drew 2361 mWh.  The difference is 115 mWh, or about 5% on this
+> > > particular box.
+> > > 
+> > > This means about 0.1 Wh in 10 minutes, so we can save about 0.6 Wh per hour.
+> > 
+> > Which means it saves 0.6W :-). Measuring power in Wh/h is "interesting".
+> 
+> You can't save power, you can only save energy.  Wh is just an energy unit.
+
+Of course we can save power, you just did :-).
+
+(And in some cases -- data centers, limited cooling -- you are limited
+by power, not energy. You are right that on notebooks, energy is more
+important.)
+
+
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
