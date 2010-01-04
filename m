@@ -1,16 +1,16 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [Update] Re: [RFC] Asynchronous suspend/resume -
-	test results
-Date: Mon, 4 Jan 2010 09:17:12 -0800
-Message-ID: <20100104091712.5f2521a4__35235.7368836694$1262625515$gmane$org@jbarnes-piketon>
-References: <Pine.LNX.4.44L0.0912211200200.2979-100000@iolanthe.rowland.org>
-	<200912212136.12665.rjw@sisk.pl> <200912232135.25041.rjw@sisk.pl>
-	<201001022228.31436.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [suspend/resume] Re: userspace notification from
+	module
+Date: Mon, 4 Jan 2010 20:43:26 +0100
+Message-ID: <201001042043.27037.rjw__38352.2454686046$1262634257$gmane$org@sisk.pl>
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
+	<201001040045.39517.rjw@sisk.pl>
+	<a522f3c.3bab16d1.4b413b9c.ec43@o2.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201001022228.31436.rjw@sisk.pl>
+In-Reply-To: <a522f3c.3bab16d1.4b413b9c.ec43@o2.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,98 +20,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus@smtp1.linux-foundation.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Torvalds <torvalds@linux-foundation.org>
+To: =?utf-8?q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
+Cc: awalls@radix.net, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, danborkmann@googlemail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2 Jan 2010 22:28:31 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> On Wednesday 23 December 2009, Rafael J. Wysocki wrote:
-> > On Monday 21 December 2009, Rafael J. Wysocki wrote:
-> > > On Monday 21 December 2009, Alan Stern wrote:
-> > > > On Mon, 21 Dec 2009, Rafael J. Wysocki wrote:
-> > ...
-> > > > You should also make SCSI targets and hosts async.  Hosts are
-> > > > added in drivers/scsi/hosts.c:scsi_add_host_with_dma() (in
-> > > > 2.6.32 this was named scsi_add_host()).  Targets are added in
-> > > > drivers/scsi/scsi_sysfs.c:scsi_target_add().  And for
-> > > > thoroughness, SCSI devices are added in scsi_sysfs_add_sdev()
-> > > > in the same file.
-> > > 
-> > > Thanks a lot for the pointers.
-> > 
-> > I put device_enable_async_suspend() in all of these places and that
-> > resulted in major reduction of suspend time without starting the
-> > async threads upfront. Now, however, starting them upfront helps
-> > only a little, within the standard deviation from the "non-upfront"
-> > case.
-> > 
-> > In turn, resume _without_ starting the async threads upfront makes
-> > a little sense on my test boxes.  In fact, it only helped on the
-> > nx6325 and made things worse on the other two (I added the results
-> > from Toshiba Portege R500, but it has the same chipset as the Wind
-> > U100, ie. ICH7).
-> > 
-> > The results are as follows:
-> > 
-> > 			HP nx6325	MSI Wind U100
-> > Toshiba Portege R500
-> > 
-> > sync suspend		1357 (+/- 35)	 656 (+/-
-> > 50)	 889 (+/- 29) sync resume		3027 (+/-
-> > 6)	3372 (+/- 30)	4552 (+/- 35)
-> > 
-> > async suspend		1053 (+/- 50)	 490 (+/-
-> > 42)	 620 (+/- 52) async resume		2291 (+/-
-> > 7)	3406 (+/- 52)	4557 (+/- 26)
-> > 
-> > async "upfront" suspend	1040 (+/- 35)	 476 (+/-
-> > 9)	 585 (+/- 29) async "upfront" resume	1787 (+/-
-> > 7)	1724 (+/- 48)	1990 (+/- 25)
-> > 
-> > The raw data are at
-> > http://www.sisk.pl/kernel/data/async-suspend-updated.pdf
-> > http://www.sisk.pl/kernel/data/r500/
-> > http://www.sisk.pl/kernel/data/nx6325/
-> > http://www.sisk.pl/kernel/data/wind/
-> > 
-> > and the previous results were moved into
-> > http://www.sisk.pl/kernel/data/091220/
-> > 
-> > The patches used in the testing are in my async branch at
-> > http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=shortlog;h=refs/heads/async
-> > The patches in this branch are not for upstream, but it's on top of
-> > the linux-next branch containing patches for the 2.6.34 merge
-> > window.
-> 
-> Here's a small update to this I thought might be interesting to
-> someone.
-> 
-> Namely, I replaced the rotational disk in the Toshiba Portege R500
-> with an SSD and ran a few suspend/resume speed tests with the KMS on
-> (the previous results for the R500 are with the userspace
-> modesetting).  The results are here:
-> 
-> http://www.sisk.pl/kernel/data/r500-ssd/
-> 
-> As you can see here:
-> 
-> http://www.sisk.pl/kernel/data/r500/times-r500-async-resume.txt
-> http://www.sisk.pl/kernel/data/r500-ssd/times-r500-async-resume.txt
-> 
-> the resume times changed quite a bit.  First, the device 0:0:0:0+
-> (the SSD) now takes about 0.33 s to resume (the rotational disk took
-> about 1.7 s), pretty much as expected.  Second, the slowest resuming
-> device is now the graphics (1.1 s), while without the KMS it resumed
-> in no time.
-
-Yeah, we've pushed all the work into the kernel, so any needed delays
-for i2c or clock settling will be felt by the kernel on resume or mode
-set time.
-
-Making the KMS code async was one of the wins for the fast boot stuff
-Arjan worked on.
-
--- 
-Jesse Barnes, Intel Open Source Technology Center
+T24gTW9uZGF5IDA0IEphbnVhcnkgMjAxMCwgQmFydMWCb21pZWogWmltb8WEIHdyb3RlOgo+IERu
+aWEgNCBzdHljem5pYSAyMDEwIDA6NDUgIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHNpc2sucGw+
+IG5hcGlzYcWCKGEpOgo+ID4gT24gTW9uZGF5IDA0IEphbnVhcnkgMjAxMCwgQmFydMWCb21pZWog
+Wmltb8WEIHdyb3RlOgo+ID4gPiBUaHggUmFmYWVsIC0gbm93IGl0IGNsZWFyIHRvIG1lLgo+ID4g
+PiBBbmQgd2hhdCBkbyBZb3UgdGhpbmsgYWJvdXQgc2VuZGluZyBleHRyYSBzaWduYWxzIHRvIHBy
+b2Nlc3Nlcz8KPiA+IAo+ID4gSSBkb24ndCBzZWUgYSBwcm9ibGVtIHdpdGggdGhpcyBpbiBwcmlu
+Y2lwbGUsIGFsdGhvdWdoIEkgZG9uJ3QgdGhpbmsgc2lnbmFscwo+ID4gYXJlIHZlcnkgc3VpdGFi
+bGUgZm9yIHRoaXMgcGFydGljdWxhciBwdXJwb3NlLCBiZWNhdXNlIHlvdSBuZWVkIHR3by13YXkK
+PiA+IGNvbW11bmljYXRpb24gYmV0d2VlbiB0aGUgcG93ZXIgbWFuYWdlciBhbmQgdGhlIHByb2Nl
+c3NlcyBpdCdzIGdvaW5nIHRvCj4gPiBub3RpZnkgKGJlY2F1c2UgaXQgaGFzIHRvIHdhaXQgZm9y
+IHRoZSBwcm9jZXNzZXMgdG8gZmluaXNoIHRoZWlyIHByZXBhcmF0aW9ucwo+ID4gYW5kIHRvIHRl
+bGwgaXQgdGhhdCB0aGV5IGFyZSByZWFkeSkuCj4gPiAKPiA+IEZvciB0aGlzIHB1cnBvc2UgaXQn
+cyBiZXR0ZXIgdG8gaGF2ZSBhIGZpbGUgZGVzY3JpcHRvciB5b3UgY2FuIGJsb2NrIG9uIChsaWtl
+IGEKPiA+IHNvY2tldCBvciBhIHBpcGUpIHdoaWxlIHRoZSBvdGhlciBzaWRlIGlzIGRvaW5nIGl0
+J3Mgam9iLgo+ID4gCj4gCj4gU28gbGV0J3MgY3JlYXRlIG9uZSBpbiBwb3dlci91c2VyLmMgb3Ig
+dXNlIC9zeXMvcG93ZXIvc3RhdGUgZm9yIHRoaXMgOikKCkkgZG9uJ3Qgc2VlIGEgZ29vZCByZWFz
+b24sIHJlYWxseS4KClJhZmFlbApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91
+bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xp
+c3RpbmZvL2xpbnV4LXBt
