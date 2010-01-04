@@ -1,16 +1,14 @@
-From: =?UTF-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
-Subject: Re:
-	=?utf-8?q?=5Bsuspend/resume=5D_Re=3A_userspace_notific?=
-	=?utf-8?q?ation_from_module?=
-Date: Mon, 04 Jan 2010 01:51:40 +0100
-Message-ID: <a522f3c.3bab16d1.4b413b9c.ec43__16590.8377072357$1262619350$gmane$org@o2.pl>
+From: Daniel Borkmann <danborkmann@googlemail.com>
+Subject: Re: [suspend/resume] Re: userspace notification from
+	module
+Date: Mon, 04 Jan 2010 13:46:16 +0100
+Message-ID: <4B41E318.4050809__2356.9353660152$1262619355$gmane$org@gmail.com>
 References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
 	<201001040030.01256.rjw@sisk.pl>
 	<54ac764e.502c1a33.4b4129c3.9dc1b@o2.pl>
 	<201001040045.39517.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="===============6787042852405135384=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <201001040045.39517.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -20,28 +18,73 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: awalls@radix.net, linux-pm@lists.linux-foundation.org, danborkmann@googlemail.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: awalls@radix.net, linux-kernel@vger.kernel.org, =?UTF-8?B?QmFydMWCb21pZWogWmltb8WE?= <uzi18@o2.pl>, linux-pm@lists.linux-foundation.org, danborkmann@googlemail.com
 List-Id: linux-pm@vger.kernel.org
 
-RG5pYSA0IHN0eWN6bmlhIDIwMTAgMDo0NSAiUmFmYWVsIEouIFd5c29ja2kiIDxyandAc2lzay5w
-bD4gbmFwaXNhxYIoYSk6Cj4gT24gTW9uZGF5IDA0IEphbnVhcnkgMjAxMCwgQmFydMWCb21pZWog
-Wmltb8WEIHdyb3RlOgo+ID4gVGh4IFJhZmFlbCAtIG5vdyBpdCBjbGVhciB0byBtZS4KPiA+IEFu
-ZCB3aGF0IGRvIFlvdSB0aGluayBhYm91dCBzZW5kaW5nIGV4dHJhIHNpZ25hbHMgdG8gcHJvY2Vz
-c2VzPwo+IAo+IEkgZG9uJ3Qgc2VlIGEgcHJvYmxlbSB3aXRoIHRoaXMgaW4gcHJpbmNpcGxlLCBh
-bHRob3VnaCBJIGRvbid0IHRoaW5rIHNpZ25hbHMKPiBhcmUgdmVyeSBzdWl0YWJsZSBmb3IgdGhp
-cyBwYXJ0aWN1bGFyIHB1cnBvc2UsIGJlY2F1c2UgeW91IG5lZWQgdHdvLXdheQo+IGNvbW11bmlj
-YXRpb24gYmV0d2VlbiB0aGUgcG93ZXIgbWFuYWdlciBhbmQgdGhlIHByb2Nlc3NlcyBpdCdzIGdv
-aW5nIHRvCj4gbm90aWZ5IChiZWNhdXNlIGl0IGhhcyB0byB3YWl0IGZvciB0aGUgcHJvY2Vzc2Vz
-IHRvIGZpbmlzaCB0aGVpciBwcmVwYXJhdGlvbnMKPiBhbmQgdG8gdGVsbCBpdCB0aGF0IHRoZXkg
-YXJlIHJlYWR5KS4KPiAKPiBGb3IgdGhpcyBwdXJwb3NlIGl0J3MgYmV0dGVyIHRvIGhhdmUgYSBm
-aWxlIGRlc2NyaXB0b3IgeW91IGNhbiBibG9jayBvbiAobGlrZSBhCj4gc29ja2V0IG9yIGEgcGlw
-ZSkgd2hpbGUgdGhlIG90aGVyIHNpZGUgaXMgZG9pbmcgaXQncyBqb2IuCj4gCgpTbyBsZXQncyBj
-cmVhdGUgb25lIGluIHBvd2VyL3VzZXIuYyBvciB1c2UgL3N5cy9wb3dlci9zdGF0ZSBmb3IgdGhp
-cyA6KQoKQmVzdCByZWdhcmRzLgpCYXJ0xYJvbWllaiBaaW1vxYQKUExEIExpbnV4LCBLYWR1IFRl
-YW0sIEZyZWVSdW5uZXIgdXNlcgpodHRwOi8va2FkdS1pbS5ibG9nc3BvdC5jb20vCgpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5n
-IGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--===============6787042852405135384==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig617ACEB1397EFE08C9EE3CDF"
+
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig617ACEB1397EFE08C9EE3CDF
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Rafael J. Wysocki wrote:
+> On Monday 04 January 2010, Bart=C5=82omiej Zimo=C5=84 wrote:
+>> And what do You think about sending extra signals to processes?
+>=20
+> I don't see a problem with this in principle, although I don't think si=
+gnals
+> are very suitable for this particular purpose, because you need two-way=
+
+> communication between the power manager and the processes it's going to=
+
+> notify (because it has to wait for the processes to finish their prepar=
+ations
+> and to tell it that they are ready).
+
+Again, just to abandon some thoughts... do you really need that "two-way
+communication"? I mean if the kernel delivers that specific signal to
+the process/task_struct [do_signal():handle_signal()] it has to save the
+original execution context that will later on be restored after the
+non-default signal handling function returns. This is our ACK /
+notification for the successful return of the programs "suspend
+handler". The kernel module (if such exists) could be notified about
+that for instance by a simple notifier hook within kernelspace. I mean
+if I see this right, the "two-way" is just for the ACK isn't it?
+
+Best regards,
+Daniel
+
+
+--------------enig617ACEB1397EFE08C9EE3CDF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAktB4xgACgkQ5AxJm1m3CC9vxQCfWdKkD2G/vFXqz3D3R3U0nsgD
+PasAn2JqmawTG+k8NBjbddSFCxOggi+B
+=8/RW
+-----END PGP SIGNATURE-----
+
+--------------enig617ACEB1397EFE08C9EE3CDF--
+
+--===============6787042852405135384==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============6787042852405135384==--
