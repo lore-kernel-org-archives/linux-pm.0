@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [suspend/resume] Re: userspace notification from
-	module
-Date: Mon, 4 Jan 2010 20:45:44 +0100
-Message-ID: <201001042045.44372.rjw__1228.68075636706$1262634376$gmane$org@sisk.pl>
-References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
-	<201001040045.39517.rjw@sisk.pl> <4B41E318.4050809@gmail.com>
+Subject: Re: [RFC][PATCH 12/12] PM / r8169: Add simplified
+	run-time PM support
+Date: Mon, 4 Jan 2010 20:51:08 +0100
+Message-ID: <201001042051.08692.rjw__24490.0282392793$1262634698$gmane$org@sisk.pl>
+References: <200911160047.46299.rjw@sisk.pl> <201001032201.14087.rjw@sisk.pl>
+	<20100104083108.GD1372@ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4B41E318.4050809@gmail.com>
+In-Reply-To: <20100104083108.GD1372@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,39 +19,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Borkmann <danborkmann@googlemail.com>
-Cc: =?iso-8859-2?q?Bart=B3omiej_Zimo=F1?= <uzi18@o2.pl>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, awalls@radix.net
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Francois Romieu <romieu@fr.zoreil.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 04 January 2010, Daniel Borkmann wrote:
-> Rafael J. Wysocki wrote:
-> > On Monday 04 January 2010, Bart=B3omiej Zimo=F1 wrote:
-> >> And what do You think about sending extra signals to processes?
-> > =
+On Monday 04 January 2010, Pavel Machek wrote:
+> 
+> > > > Using /proc/acpi/battery/BAT1/state I measured the energy drawn in 10 minutes
+> > > > both with the network adapter in D0 and D3hot.  The results were that with the
+> > > > network adapter in D0 the box drew 2476 mWh, while with the network adapter in
+> > > > D3hot it drew 2361 mWh.  The difference is 115 mWh, or about 5% on this
+> > > > particular box.
+> > > > 
+> > > > This means about 0.1 Wh in 10 minutes, so we can save about 0.6 Wh per hour.
+> > > 
+> > > Which means it saves 0.6W :-). Measuring power in Wh/h is "interesting".
+> > 
+> > You can't save power, you can only save energy.  Wh is just an energy unit.
+> 
+> Of course we can save power, you just did :-).
+> 
+> (And in some cases -- data centers, limited cooling -- you are limited
+> by power, not energy.
 
-> > I don't see a problem with this in principle, although I don't think si=
-gnals
-> > are very suitable for this particular purpose, because you need two-way
-> > communication between the power manager and the processes it's going to
-> > notify (because it has to wait for the processes to finish their prepar=
-ations
-> > and to tell it that they are ready).
-> =
+But still energy is what you pay for, isn't it?
 
-> Again, just to abandon some thoughts... do you really need that "two-way
-> communication"? I mean if the kernel delivers that specific signal to
-> the process/task_struct [do_signal():handle_signal()] it has to save the
-> original execution context that will later on be restored after the
-> non-default signal handling function returns. This is our ACK /
-> notification for the successful return of the programs "suspend
-> handler". The kernel module (if such exists) could be notified about
-> that for instance by a simple notifier hook within kernelspace. I mean
-> if I see this right, the "two-way" is just for the ACK isn't it?
+> You are right that on notebooks, energy is more important.)
 
-_If_ the kernel sends the signals, which is not I think should be done.
-
-Please keep that in the user space.  Really.
-
-I don't see _any_ good reason for putting such things into the kernel.
+You may require less power to run, so if that's what you mean by "saving", then
+I agree. :-)
 
 Rafael
