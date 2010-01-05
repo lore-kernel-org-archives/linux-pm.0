@@ -1,16 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [suspend/resume] Re: userspace notification from
-	module
-Date: Wed, 6 Jan 2010 00:05:17 +0100
-Message-ID: <201001060005.17246.rjw__26292.0142188252$1262732735$gmane$org@sisk.pl>
+From: =?UTF-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
+Subject: Re:
+	=?utf-8?q?=5Bsuspend/resume=5D_Re=3A_userspace_notific?=
+	=?utf-8?q?ation_from_module?=
+Date: Wed, 06 Jan 2010 00:37:41 +0100
+Message-ID: <1ab86ec9.7bc73105.4b43cd45.c2747@o2.pl>
 References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
-	<20100105222657.27218c4c@strolchi.home.s3e.de>
-	<11f818a7.4b53f68a.4b43bb9b.b3a7f@o2.pl>
+	<201001052223.21964.rjw@sisk.pl>
+	<16a1b165.2fdc37c6.4b43b943.c6733@o2.pl>
+	<201001060003.23419.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <11f818a7.4b53f68a.4b43bb9b.b3a7f@o2.pl>
+In-Reply-To: <201001060003.23419.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,45 +22,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?utf-8?q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
-Cc: awalls@radix.net, Anders Eriksson <aeriksson@fastmail.fm>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, danborkmann@googlemail.com, Stefan Seyfried <stefan.seyfried@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Cc: awalls@radix.net, linux-pm@lists.linux-foundation.org, =?UTF-8?Q?Anders_Eriksson?= <aeriksson@fastmail.fm>, danborkmann@googlemail.com
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlc2RheSAwNSBKYW51YXJ5IDIwMTAsIEJhcnTFgm9taWVqIFppbW/FhCB3cm90ZToKPiBE
-bmlhIDUgc3R5Y3puaWEgMjAxMCAyMjoyNiAJU3RlZmFuIFNleWZyaWVkIDxzdGVmYW4uc2V5ZnJp
-ZWRAZ29vZ2xlbWFpbC5jb20+IG5hcGlzYcWCKGEpOgo+ID4gT24gVHVlLCAwNSBKYW4gMjAxMCAx
-MDowNzowNiArMDEwMAo+ID4gQW5kZXJzIEVyaWtzc29uIDxhZXJpa3Nzb25AZmFzdG1haWwuZm0+
-IHdyb3RlOgo+ID4gCj4gPiA+IAo+ID4gPiByandAc2lzay5wbCBzYWlkOgo+ID4gPiA+PiA+IEkg
-ZG9uJ3Qgc2VlIGEgcHJvYmxlbSB3aXRoIHRoaXMgaW4gcHJpbmNpcGxlLCBhbHRob3VnaCBJIGRv
-bid0IHRoaW5rIHNpZ25hbHMKPiA+ID4gPj4gPiBhcmUgdmVyeSBzdWl0YWJsZSBmb3IgdGhpcyBw
-YXJ0aWN1bGFyIHB1cnBvc2UsIGJlY2F1c2UgeW91IG5lZWQgdHdvLXdheQo+ID4gPiA+PiA+IGNv
-bW11bmljYXRpb24gYmV0d2VlbiB0aGUgcG93ZXIgbWFuYWdlciBhbmQgdGhlIHByb2Nlc3NlcyBp
-dCdzIGdvaW5nIHRvCj4gPiA+ID4+ID4gbm90aWZ5IChiZWNhdXNlIGl0IGhhcyB0byB3YWl0IGZv
-ciB0aGUgcHJvY2Vzc2VzIHRvIGZpbmlzaCB0aGVpciBwcmVwYXJhdGlvbnMKPiA+ID4gPj4gPiBh
-bmQgdG8gdGVsbCBpdCB0aGF0IHRoZXkgYXJlIHJlYWR5KS4gCj4gPiA+IAo+ID4gPiBXb3VsZG4n
-dCB0aGVyZSBuZWVkIHRvIGJlIGRlcGVuZGVjeSB0cmFja2luZyBmb3IgdGhlIHVzZXJzcGFjZSBw
-cm9jZXNzZXM/IEEgCj4gPiA+IHByb2Nlc3MgY291bGRuJ3Qgc2lnbmFsICJkb25lIiB1bnRpbCBp
-dCBrbm93IHRoZXJlJ3Mgbm8gbW9yZSB3b3JrIHRvIGRvLCB3aGljaCAKPiA+ID4gcmVxdWlyZXMg
-YWxsIG90aGVyIHByb2Nlc3NlcyB0byBmaW5pc2ggdXAgZmlyc3QuCj4gPiAKPiA+IE5vLiA5OSUg
-b2YgdGhlIHByb2Nlc3NlcyBkb24ndCBjYXJlIGFib3V0IHN1c3BlbmQuIFRoZXkgZG9uJ3QgbmVl
-ZAo+ID4gbm90aWZpY2F0aW9ucyBvciBhbnl0aGluZy4KPiA+IFRoZSBmZXcgdGhhdCBkbyBjYXJl
-LCByZWdpc3RlciB0aGVtc2VsdmVzIHdpdGggdGhlIHBvd2VyIG1hbmFnZXIuIFRoZXkKPiA+IGdl
-dCBub3RpZmllZCBiZWZvcmUgc3VzcGVuZCBhbmQgdGhlIHBvd2VyIG1hbmFnZXIgbWlnaHQgd2Fp
-dCB1bnRpbCB0aGV5Cj4gPiB0ZWxsIGhpbSB0aGF0IHRoZXkgYXJlIHJlYWR5Lgo+ID4gQSBzcGVj
-aWFsIGNhc2UgYXJlIHByb2Nlc3NlcyB0aGF0IG9ubHkgd2FudCB0byBpbmhpYml0IHN1c3BlbmQg
-LSB0aGUgQ0QKPiA+IGJ1cm5pbmcgYXBwbGljYXRpb24gY2FzZSAtIHRoZXkganVzdCB0ZWxsIHRo
-ZSBwb3dlciBtYW5hZ2VyICJJIGFtCj4gPiBpbXBvcnRhbnQgYW5kIHlvdSBtdXN0IG5vdCBzdXNw
-ZW5kIG5vdyIuIFRoZXkgZG8gdGhpcyBldmVuIGlmIHRoZXJlIGlzCj4gPiBubyBzdXNwZW5kIG5v
-dGlmaWNhdGlvbiwgYW5kIG9uY2UgdGhleSBhcmUgZG9uZSB3aXRoIHRoZSBjcml0aWNhbCBwYXJ0
-Cj4gPiBvZiB0aGVpciB3b3JrLCB0aGV5IHJlbW92ZSB0aGVpciAiaW5oaWJpdCBmbGFnIi4KPiA+
-IAo+ID4gVGhpcyBhbGwgd29ya3MgcHJldHR5IHdlbGwgYWxyZWFkeSwgYW5kIGlzIHJlYWxseSBu
-b3QgdmVyeSBjb21wbGljYXRlZC4KPiAKPiBTbyBwbSBjb3VsZCBiZSB2ZXJ5IHNpbXBsZSwgYW5k
-IGkgdGhpbmsgd2UgZG9uJ3QgbmVlZCBtb3JlLgo+IEkgd2FudCBhc2sgWW91IGhvdyB1c3VhbHkg
-c3VjaCB1c2VyIChub3Qgcm9vdCkgcHJvY2VzcyBub3RpZmljYXRpb24gaXMgZG9uZSwKPiBZb3Ug
-YXJlIHRhbGtpbmcgYWJvdXQgcG0tdXRpbHMgcmlnaHQ/CgpXZWxsLCBJIHRoaW5rIHlvdSBoYXZl
-IHNvbWUgc3BlY2lmaWMgaXNzdWUgd2l0aCBwbS11dGlscywgYnV0IHlvdSdyZSBub3QKdGVsbGlu
-ZyB1cyB3aGF0IGl0IGlzLiAgU28sIHdoeSBleGFjdGx5IGlzIHBtLXV0aWxzIG5vdCBzdWl0YWJs
-ZSBmb3IgeW91cgpuZWVkcz8KClJhZmFlbApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGlu
-dXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWls
-bWFuL2xpc3RpbmZvL2xpbnV4LXBt
+RG5pYSA2IHN0eWN6bmlhIDIwMTAgMDowMyAiUmFmYWVsIEouIFd5c29ja2kiIDxyandAc2lzay5w
+bD4gbmFwaXNhxYIoYSk6Cj4gWW91J3JlIHN0aWxsIG5vdCBzYXlpbmcgd2hhdCB5b3UgcmVhbGx5
+IG5lZWQuICBTbywgd2hhdCdzIHRoZSBhcHBsaWNhdGlvbiB5b3UKPiBoYXZlIGluIG1pbmQgdGhh
+dCBuZWVkcyBhIG5vdGlmaWNhdGlvbiBmcm9tIHRoZSBfa2VybmVsXyBzbyBiYWRseT8KPiAKClVt
+bW0gc29ycnksIGl0J3MgSU0gQXBwLCB0byBiZSByZWFsaWJsZSBmb3Igc3VjaCBhcHAgaXQncyBu
+ZWVkZWQgdG8gY2xvc2UgY29ubgpiZWZvcmUgc3VzcGVuZCwgYmVjYXVzZSBhZnRlciByZXN1bWUg
+dGNwIGNvbm5lY3Rpb25zIHdpbGwgd2FpdCAoZXNwZWNpYWx5IG9uIGxpbnV4KQpxdWlldCBhIGxv
+dCBvZiB0aW1lIHRvIGJyb2tlIGFuZCByZWNvbm5lY3QuCgpUeXBpY2FseSBuZWVkIGluZm8gImFi
+b3V0IHRvIHJlc3VtZSIsImFib3V0IHRvIHN1c3BuZWQiIG9yIHNvbWV0aGluZyBsaWtlIHRoYXQu
+CgpJZiBpdCBpcyBub3QgYSBwcm9ibGVtIHNvIGhvdyB0byBzZW5kIG1lc3NhZ2UgZnJvbSBwbS11
+dGlscyBzbGVlcC5kIHdpdGggZGJ1cy1zZW5kIAp0byBhcHAgbGF1bmNoZWQgYnkgdXNlcj8KCkJl
+c3QgcmVnYXJkcy4KQmFydMWCb21pZWogWmltb8WEClBMRCBMaW51eCwgS2FkdSBUZWFtLCBGcmVl
+UnVubmVyIHVzZXIKaHR0cDovL2thZHUtaW0uYmxvZ3Nwb3QuY29tLwoKX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0Cmxp
+bnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91
+bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
