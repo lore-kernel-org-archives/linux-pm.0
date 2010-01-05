@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [suspend/resume] Re: userspace notification from
-	module
-Date: Tue, 5 Jan 2010 22:23:21 +0100
-Message-ID: <201001052223.21964.rjw__34934.329117141$1262726736$gmane$org@sisk.pl>
-References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
-	<20100105090706.751D233C4B0@tippex.mynet.homeunix.org>
-	<7e89c5d.77f82021.4b43a8d7.127e1@o2.pl>
+Subject: Re: [PATCH 2/12] PCI / PM: Propagate wake-up enable for
+	PCIe devices too
+Date: Tue, 5 Jan 2010 22:27:18 +0100
+Message-ID: <201001052227.18130.rjw__1005.54121095247$1262726918$gmane$org@sisk.pl>
+References: <200912272057.10443.rjw@sisk.pl> <200912272100.33117.rjw@sisk.pl>
+	<20100104154038.76a9eedf@jbarnes-piketon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <7e89c5d.77f82021.4b43a8d7.127e1@o2.pl>
+In-Reply-To: <20100104154038.76a9eedf@jbarnes-piketon>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,30 +19,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?utf-8?q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
-Cc: awalls@radix.net, linux-pm@lists.linux-foundation.org, Anders Eriksson <aeriksson@fastmail.fm>, linux-kernel@vger.kernel.org, danborkmann@googlemail.com
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Francois Romieu <romieu@fr.zoreil.com>, pm list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlc2RheSAwNSBKYW51YXJ5IDIwMTAsIEJhcnTFgm9taWVqIFppbW/FhCB3cm90ZToKPiBE
-bmlhIDUgc3R5Y3puaWEgMjAxMCAxMDowNyAJQW5kZXJzIEVyaWtzc29uIDxhZXJpa3Nzb25AZmFz
-dG1haWwuZm0+IG5hcGlzYcWCKGEpOgo+ID4gCj4gPiByandAc2lzay5wbCBzYWlkOgo+ID4gPj4g
-PiBJIGRvbid0IHNlZSBhIHByb2JsZW0gd2l0aCB0aGlzIGluIHByaW5jaXBsZSwgYWx0aG91Z2gg
-SSBkb24ndCB0aGluayBzaWduYWxzCj4gPiA+PiA+IGFyZSB2ZXJ5IHN1aXRhYmxlIGZvciB0aGlz
-IHBhcnRpY3VsYXIgcHVycG9zZSwgYmVjYXVzZSB5b3UgbmVlZCB0d28td2F5Cj4gPiA+PiA+IGNv
-bW11bmljYXRpb24gYmV0d2VlbiB0aGUgcG93ZXIgbWFuYWdlciBhbmQgdGhlIHByb2Nlc3NlcyBp
-dCdzIGdvaW5nIHRvCj4gPiA+PiA+IG5vdGlmeSAoYmVjYXVzZSBpdCBoYXMgdG8gd2FpdCBmb3Ig
-dGhlIHByb2Nlc3NlcyB0byBmaW5pc2ggdGhlaXIgcHJlcGFyYXRpb25zCj4gPiA+PiA+IGFuZCB0
-byB0ZWxsIGl0IHRoYXQgdGhleSBhcmUgcmVhZHkpLiAKPiA+IAo+ID4gV291bGRuJ3QgdGhlcmUg
-bmVlZCB0byBiZSBkZXBlbmRlY3kgdHJhY2tpbmcgZm9yIHRoZSB1c2Vyc3BhY2UgcHJvY2Vzc2Vz
-PyBBIAo+ID4gcHJvY2VzcyBjb3VsZG4ndCBzaWduYWwgImRvbmUiIHVudGlsIGl0IGtub3cgdGhl
-cmUncyBubyBtb3JlIHdvcmsgdG8gZG8sIHdoaWNoIAo+ID4gcmVxdWlyZXMgYWxsIG90aGVyIHBy
-b2Nlc3NlcyB0byBmaW5pc2ggdXAgZmlyc3QuCj4gPiAKPiAKPiBOb3QgYWxsIHByb2Nlc3NlcyB3
-aWxsIG5lZWQgcG0gbm90aWZpY2F0aW9uLgo+IAo+IEp1c3QgaW4gY2FzZSwgY291bGQgdGhpcyAi
-cG93ZXIgbWFuYWdlciIgYmUgcHJvdmlkZWQgYXMgdXNlcnNwYWNlCj4gZHJpdmVyIGZvciBrZXJu
-ZWwgKGZvciBleGFtcGxlIGNvbXBpbGVkIGFzIFVJTyk/CgpJIGRvbid0IHJlYWxseSB1bmRlcnN0
-YW5kIHdoeSB5b3Ugd2FudCB0byBkbyB0aGF0IGluIHRoZSBrZXJuZWwuICBJcyB0aGVyZQphbnkg
-cGFydGljdWxhciByZWFzb24gd2h5IHRoaXMgY2Fubm90IGJlIGRvbmUgaW4gdGhlIHVzZXIgc3Bh
-Y2U/CgpSYWZhZWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24u
-b3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9s
-aW51eC1wbQ==
+On Tuesday 05 January 2010, Jesse Barnes wrote:
+> On Sun, 27 Dec 2009 21:00:33 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Having read the PM part of the PCIe 2.0 specification more carefully
+> > I think that it was a mistake to restrict the wake-up enable
+> > propagation to non-PCIe devices, because if we do not request
+> > control of the root ports' PME registers via OSC, PCIe PME is
+> > supposed to be handled by the platform, just like the non-PCIe PME.
+> > Even if we do that, the wake-up propagation is done to allow the
+> > devices to wake up the system from sleep states which involves the
+> > platform anyway, so it won't hurt.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  drivers/pci/pci-acpi.c |   10 ++--------
+> >  1 file changed, 2 insertions(+), 8 deletions(-)
+> > 
+> > Index: linux-2.6/drivers/pci/pci-acpi.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/pci/pci-acpi.c
+> > +++ linux-2.6/drivers/pci/pci-acpi.c
+> > @@ -112,11 +112,7 @@ static bool acpi_pci_can_wakeup(struct p
+> >  static void acpi_pci_propagate_wakeup_enable(struct pci_bus *bus,
+> > bool enable) {
+> >  	while (bus->parent) {
+> > -		struct pci_dev *bridge = bus->self;
+> > -		int ret;
+> > -
+> > -		ret = acpi_pm_device_sleep_wake(&bridge->dev,
+> > enable);
+> > -		if (!ret || pci_is_pcie(bridge))
+> > +		if (!acpi_pm_device_sleep_wake(&bus->self->dev,
+> > enable)) return;
+> >  		bus = bus->parent;
+> >  	}
+> > @@ -131,9 +127,7 @@ static int acpi_pci_sleep_wake(struct pc
+> >  	if (acpi_pci_can_wakeup(dev))
+> >  		return acpi_pm_device_sleep_wake(&dev->dev, enable);
+> >  
+> > -	if (!pci_is_pcie(dev))
+> > -		acpi_pci_propagate_wakeup_enable(dev->bus, enable);
+> > -
+> > +	acpi_pci_propagate_wakeup_enable(dev->bus, enable);
+> >  	return 0;
+> >  }
+> 
+> Seems ok to try it out, but as usual with this sort of thing, the real
+> question is, "What does Windows do?", since wakeup enable ACPI support
+> for PCIe devices is likely broken unless Windows uses it.
+
+Well, that's in the Linus' tree already, so I guess we're going to learn. ;-)
+
+Seriously, I think that Windows actually uses ACPI wake-up support for PCIe
+devices.  On my Toshiba Portege R500 the BIOS doesn't even allow us to use
+the native PCIe PME mechanism directly, so the patch is correct IMO.
+
+Rafael
