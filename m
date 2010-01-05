@@ -1,13 +1,17 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] PCI / PM: Use per-device D3 delays
-Date: Mon, 4 Jan 2010 15:48:07 -0800
-Message-ID: <20100104154807.295bee59__22958.8717026219$1262649036$gmane$org@jbarnes-piketon>
-References: <200912311215.54412.rjw@sisk.pl>
+From: Anders Eriksson <aeriksson@fastmail.fm>
+Subject: Re: [suspend/resume] Re: userspace notification from
+	module
+Date: Tue, 05 Jan 2010 10:07:06 +0100
+Message-ID: <20100105090706.751D233C4B0__12597.5022129298$1262712692$gmane$org@tippex.mynet.homeunix.org>
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
+	<201001040045.39517.rjw@sisk.pl>
+	<a522f3c.3bab16d1.4b413b9c.ec43@o2.pl>
+	<201001042043.27037.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <200912311215.54412.rjw@sisk.pl>
+In-reply-to: <201001042043.27037.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,36 +22,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Stephen Hemminger <shemminger@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, "Maciej J. Woloszyk" <mat@esi.com.pl>
+Cc: =?utf-8?q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, danborkmann@googlemail.com, awalls@radix.net
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 31 Dec 2009 12:15:54 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> It turns out that some PCI devices require extra delays when changing
-> power state from D3 to D0 (and the other way around).  Although this
-> is against the PCI specification, we can handle it quite easily by
-> allowing drivers to define arbitrary D3 delays for devices known to
-> require extra time for switching power states.
-> 
-> Introduce additional field d3_delay in struct pci_dev and use it to
-> store the value of the device's D0->D3 delay, in miliseconds.  Make
-> the PCI PM core code use the per-device d3_delay unless
-> pci_pm_d3_delay is greater (in which case the latter is used).
-> [This also allows the driver to specify d3_delay shorter than the
->  10 ms required by the PCI standard if the device is known to be able
->  to handle that.]
-> 
-> Make the sky2 driver set d3_delay to 150 for devices handled by it.
-> 
-> Fixes http://bugzilla.kernel.org/show_bug.cgi?id=14730 which is a
-> listed regression from 2.6.30.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+rjw@sisk.pl said:
+>> > I don't see a problem with this in principle, although I don't think signals
+>> > are very suitable for this particular purpose, because you need two-way
+>> > communication between the power manager and the processes it's going to
+>> > notify (because it has to wait for the processes to finish their preparations
+>> > and to tell it that they are ready). 
 
-Applied to my for-linus branch, thanks.
-
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Wouldn't there need to be dependecy tracking for the userspace processes? A 
+process couldn't signal "done" until it know there's no more work to do, which 
+requires all other processes to finish up first.
