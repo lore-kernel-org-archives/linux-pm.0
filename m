@@ -1,18 +1,18 @@
-From: Stefan Seyfried <stefan.seyfried@googlemail.com>
-Subject: Re: [suspend/resume] Re: userspace notification from
- module
-Date: Tue, 5 Jan 2010 22:26:57 +0100
-Message-ID: <20100105222657.27218c4c__31327.6107692674$1262726941$gmane$org@strolchi.home.s3e.de>
+From: =?UTF-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
+Subject: Re:
+	=?utf-8?q?=5Bsuspend/resume=5D_Re=3A_userspace_notific?=
+	=?utf-8?q?ation_from_module?=
+Date: Tue, 05 Jan 2010 23:12:19 +0100
+Message-ID: <16a1b165.2fdc37c6.4b43b943.c6733__40454.5886944563$1262729601$gmane$org@o2.pl>
 References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
-	<201001040045.39517.rjw@sisk.pl>
-	<a522f3c.3bab16d1.4b413b9c.ec43@o2.pl>
-	<201001042043.27037.rjw@sisk.pl>
 	<20100105090706.751D233C4B0@tippex.mynet.homeunix.org>
+	<7e89c5d.77f82021.4b43a8d7.127e1@o2.pl>
+	<201001052223.21964.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100105090706.751D233C4B0@tippex.mynet.homeunix.org>
+In-Reply-To: <201001052223.21964.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,39 +22,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Anders Eriksson <aeriksson@fastmail.fm>
-Cc: awalls@radix.net, linux-kernel@vger.kernel.org, =?UTF-8?B?QmFydMWCb21pZWogWmltb8WE?= <uzi18@o2.pl>, linux-pm@lists.linux-foundation.org, danborkmann@googlemail.com
+To: linux-kernel@vger.kernel.org
+Cc: awalls@radix.net, =?UTF-8?Q?Anders_Eriksson?= <aeriksson@fastmail.fm>, uzi18@o2.pl, linux-pm@lists.linux-foundation.org, danborkmann@googlemail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 05 Jan 2010 10:07:06 +0100
-Anders Eriksson <aeriksson@fastmail.fm> wrote:
-
-> 
-> rjw@sisk.pl said:
-> >> > I don't see a problem with this in principle, although I don't think signals
-> >> > are very suitable for this particular purpose, because you need two-way
-> >> > communication between the power manager and the processes it's going to
-> >> > notify (because it has to wait for the processes to finish their preparations
-> >> > and to tell it that they are ready). 
-> 
-> Wouldn't there need to be dependecy tracking for the userspace processes? A 
-> process couldn't signal "done" until it know there's no more work to do, which 
-> requires all other processes to finish up first.
-
-No. 99% of the processes don't care about suspend. They don't need
-notifications or anything.
-The few that do care, register themselves with the power manager. They
-get notified before suspend and the power manager might wait until they
-tell him that they are ready.
-A special case are processes that only want to inhibit suspend - the CD
-burning application case - they just tell the power manager "I am
-important and you must not suspend now". They do this even if there is
-no suspend notification, and once they are done with the critical part
-of their work, they remove their "inhibit flag".
-
-This all works pretty well already, and is really not very complicated.
--- 
-Stefan Seyfried
-
-"Any ideas, John?"
-"Well, surrounding them's out."
+RG5pYSA1IHN0eWN6bmlhIDIwMTAgMjI6MjMgCSJSYWZhZWwgSi4gV3lzb2NraSIgPHJqd0BzaXNr
+LnBsPiBuYXBpc2HFgihhKToKPiBPbiBUdWVzZGF5IDA1IEphbnVhcnkgMjAxMCwgQmFydMWCb21p
+ZWogWmltb8WEIHdyb3RlOgo+ID4gRG5pYSA1IHN0eWN6bmlhIDIwMTAgMTA6MDcgCUFuZGVycyBF
+cmlrc3NvbiA8YWVyaWtzc29uQGZhc3RtYWlsLmZtPiBuYXBpc2HFgihhKToKPiA+ID4gCj4gPiA+
+IHJqd0BzaXNrLnBsIHNhaWQ6Cj4gPiA+ID4+ID4gSSBkb24ndCBzZWUgYSBwcm9ibGVtIHdpdGgg
+dGhpcyBpbiBwcmluY2lwbGUsIGFsdGhvdWdoIEkgZG9uJ3QgdGhpbmsgc2lnbmFscwo+ID4gPiA+
+PiA+IGFyZSB2ZXJ5IHN1aXRhYmxlIGZvciB0aGlzIHBhcnRpY3VsYXIgcHVycG9zZSwgYmVjYXVz
+ZSB5b3UgbmVlZCB0d28td2F5Cj4gPiA+ID4+ID4gY29tbXVuaWNhdGlvbiBiZXR3ZWVuIHRoZSBw
+b3dlciBtYW5hZ2VyIGFuZCB0aGUgcHJvY2Vzc2VzIGl0J3MgZ29pbmcgdG8KPiA+ID4gPj4gPiBu
+b3RpZnkgKGJlY2F1c2UgaXQgaGFzIHRvIHdhaXQgZm9yIHRoZSBwcm9jZXNzZXMgdG8gZmluaXNo
+IHRoZWlyIHByZXBhcmF0aW9ucwo+ID4gPiA+PiA+IGFuZCB0byB0ZWxsIGl0IHRoYXQgdGhleSBh
+cmUgcmVhZHkpLiAKPiA+ID4gCj4gPiA+IFdvdWxkbid0IHRoZXJlIG5lZWQgdG8gYmUgZGVwZW5k
+ZWN5IHRyYWNraW5nIGZvciB0aGUgdXNlcnNwYWNlIHByb2Nlc3Nlcz8gQSAKPiA+ID4gcHJvY2Vz
+cyBjb3VsZG4ndCBzaWduYWwgImRvbmUiIHVudGlsIGl0IGtub3cgdGhlcmUncyBubyBtb3JlIHdv
+cmsgdG8gZG8sIHdoaWNoIAo+ID4gPiByZXF1aXJlcyBhbGwgb3RoZXIgcHJvY2Vzc2VzIHRvIGZp
+bmlzaCB1cCBmaXJzdC4KPiA+ID4gCj4gPiAKPiA+IE5vdCBhbGwgcHJvY2Vzc2VzIHdpbGwgbmVl
+ZCBwbSBub3RpZmljYXRpb24uCj4gPiAKPiA+IEp1c3QgaW4gY2FzZSwgY291bGQgdGhpcyAicG93
+ZXIgbWFuYWdlciIgYmUgcHJvdmlkZWQgYXMgdXNlcnNwYWNlCj4gPiBkcml2ZXIgZm9yIGtlcm5l
+bCAoZm9yIGV4YW1wbGUgY29tcGlsZWQgYXMgVUlPKT8KPiAKPiBJIGRvbid0IHJlYWxseSB1bmRl
+cnN0YW5kIHdoeSB5b3Ugd2FudCB0byBkbyB0aGF0IGluIHRoZSBrZXJuZWwuICBJcyB0aGVyZQo+
+IGFueSBwYXJ0aWN1bGFyIHJlYXNvbiB3aHkgdGhpcyBjYW5ub3QgYmUgZG9uZSBpbiB0aGUgdXNl
+ciBzcGFjZT8KPiAKClByb2JsZW0gaXMgd2l0aCBub3RpZmljYXRpb24gZnJvbSBwbS11dGlscy4g
+RGJ1cyBmb3Igc2Vzc2lvbiBpcyBvbmx5IAp1c2VyIHNlc3Npb24gd2FpZCBhbmQgaXQgaXMgYWxt
+b3N0IGltcG9zaWJsZSB0byBzZW5kIHNvbWV0aGluZyAKZnJvbSBzeXN0ZW1idXMgb3IgaXQgbmVl
+ZHMgbG90cyBvZiBtYWdpYy4KCkV2ZW4gaWYgaSdsbCB1c2UgcG0tdXRpbHMsIG11c3QgcHJvdmlk
+ZSB3YXkgdG8gbm90aWZ5IG15IGFwcC4KTG9va3MgbGlrZSBubyBzdGFuZGFyZCB3YXkgaGVyZSwg
+dGhhdCdzIGJhZCwgZXZlcnkgYXBwIGhhcyBpdCdzIG93bj8KCkkgdGhpbmsgdGhpcyB3YXkgLSBp
+ZiBrZXJuZWwgaXMgcHJvY2Vzc2VzIG1hbmFnZXIgYW5kIGlmIGl0IHNlbmRzCiJzb21lIHVua25v
+d24iIHNpZ25hbCB0byBldmVyeSBwcm9jZXNzIGJlZm9yZSBrZXJuZWwgc3VzcGVuZCBzbyB3aHkK
+bm90IHNlbmQgc2VwY2lmaWMgYW5kIGtub3duIHNpZ25hbCBpbnN0cmVhZC4KCkJ1dCBub3cgd2Ug
+aGF2ZSBEZXZpY2VLaXQtcG93ZXIvdXBvd2VyIHdoYXRldmVyIGJ1dCBpdCBkb2Vzbid0IHByb3Zp
+ZGUKdGhpcyBmZWF0dXJlIG9yIHNvbWV0aGluZyBzaW1taWxhciB0byByZWxheSBvbi4KCkJlc3Qg
+cmVnYXJkcy4KQmFydMWCb21pZWogWmltb8WEClBMRCBMaW51eCwgS2FkdSBUZWFtLCBGcmVlUnVu
+bmVyIHVzZXIKaHR0cDovL2thZHUtaW0uYmxvZ3Nwb3QuY29tLwoKX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4
+LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRh
+dGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
