@@ -1,17 +1,18 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/1] Add /sys/power/last_state support
-Date: Wed, 6 Jan 2010 08:01:07 +0100
-Message-ID: <20100106070107.GB1382@ucw.cz>
-References: <3c192bd846cc4337d9999c6cd66b649232d9561c.1260074113.git.victor.lowther@gmail.com>
-	<200912072241.28017.rjw@sisk.pl>
-	<7E0E364A-4AC2-4D3B-B7A0-61DC970C9254@gmail.com>
-	<20091215091945.66b245ed@strolchi.home.s3e.de>
+From: Stefan Seyfried <stefan.seyfried@googlemail.com>
+Subject: Re: [suspend/resume] Re: userspace notification from
+ module
+Date: Wed, 6 Jan 2010 11:10:02 +0100
+Message-ID: <20100106111002.74376445@strolchi.home.s3e.de>
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
+	<201001042043.27037.rjw@sisk.pl>
+	<20100105090706.751D233C4B0@tippex.mynet.homeunix.org>
+	<20100105222657.27218c4c@strolchi.home.s3e.de>
+	<11f818a7.4b53f68a.4b43bb9b.b3a7f@o2.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20091215091945.66b245ed@strolchi.home.s3e.de>
+In-Reply-To: <11f818a7.4b53f68a.4b43bb9b.b3a7f@o2.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,29 +22,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stefan Seyfried <stefan.seyfried@googlemail.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>
+To: =?UTF-8?B?QmFydMWCb21pZWogWmltb8WE?= <uzi18@o2.pl>
+Cc: awalls@radix.net, Anders Eriksson <aeriksson@fastmail.fm>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, danborkmann@googlemail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2009-12-15 09:19:45, Stefan Seyfried wrote:
-> On Mon, 7 Dec 2009 18:17:36 -0600
-> Victor Lowther <victor.lowther@gmail.com> wrote:
-> > On Dec 7, 2009, at 3:41 PM, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > Can't you just use the error code returned by "echo mem > /sys/power/ 
-> > > state"?
-> > 
-> > I can, now that I know about it - I did not see anything about error  
-> > codes when scanning the documentation.
-> 
-> Note that "echo" only will return 0 or 1, not a real error code. You'll
-> need a 5-line C program to get the errno that's returned from the
-> kernel.
-> It might be interesting to know *why* it failed (e.g. no swap
-> partition or not enough space in there).
-
-...and if the error codes are not unique enough, I guess we can just
-improve them.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+SGksCgpPbiBUdWUsIDA1IEphbiAyMDEwIDIzOjIyOjE5ICswMTAwCkJhcnTFgm9taWVqIFppbW/F
+hCA8dXppMThAbzIucGw+IHdyb3RlOgoKPiBTbyBwbSBjb3VsZCBiZSB2ZXJ5IHNpbXBsZSwgYW5k
+IGkgdGhpbmsgd2UgZG9uJ3QgbmVlZCBtb3JlLgo+IEkgd2FudCBhc2sgWW91IGhvdyB1c3VhbHkg
+c3VjaCB1c2VyIChub3Qgcm9vdCkgcHJvY2VzcyBub3RpZmljYXRpb24gaXMgZG9uZSwKPiBZb3Ug
+YXJlIHRhbGtpbmcgYWJvdXQgcG0tdXRpbHMgcmlnaHQ/CgpObywgbm90IGF0IGFsbC4KT25jZSB5
+b3UgYXJlIGF0IGEgbGV2ZWwgd2hlcmUgcG0tdXRpbHMgZG9lcyBpdHMgam9iLCB0aGUgTmV0d29y
+ayBpcwpob3BlZnVsbHkgYWxyZWFkeSBkaXNjb25uZWN0ZWQgYW5kIHRoZSBleHRlcm5hbCBzdG9y
+YWdlIHVtb3VudGVkIGV0Yy4uCgpTbyB5b3UgZG8gbm90IHNlbmQgdGhlIG1lc3NhZ2UgZnJvbSBw
+bS11dGlscywgYnV0IGZyb20gdGhlIHBvd2VyCm1hbmFnZXIgYXBwLiBPbmNlIHlvdSBhcmUgZG9u
+ZSB3aXRoIHByZXBhcmluZyB0aGUgc3VzcGVuZCBpbiB0aGUgdXNlcnMKc2Vzc2lvbiAodGVsbGlu
+ZyB5b3VyIGVtYWlsIGFuZCBJTSBhcHAgdG8gZ28gb2ZmbGluZSBldGMpLCB0aGVuIHlvdQpjYWxs
+IEhBTCdzIHN1c3BlbmQgbWV0aG9kIChvciB3aG9ldmVyIGlzIGluIGNoYXJnZSBvZiB0aGF0IG5v
+dywKRGV2S2l0PykuCgpJbXBsZW1lbnRhdGlvbiBkZXRhaWw6IHByb2JhYmx5IHRoZSBwb3dlciBt
+YW5hZ2VyIGFwcCBqdXN0IHRlbGxzIHRoZQpuZXR3b3JrIG1hbmFnZXIgYXBwIHRvIHNodXQgZG93
+biB0aGUgbmV0d29yayB3aGVuIGdvaW5nIHRvIHN1c3BlbmQsIGFuZAp0aGUgbmV0d29yayBtYW5h
+Z2VyIGFwcCB0ZWxscyB0aGUgZW1haWwgYW5kIGltIGFwcCB0byBnbyBvZmZsaW5lLCB0aGlzCndv
+dWxkIGF0IGxlYXN0IG1ha2UgbXVjaCBtb3JlIHNlbnNlIHRvIG1lIDspCgpJIHNlZSB3aHkgeW91
+IGFyZSB0ZW1wdGVkIHRvIHB1dCB0aGlzIGludG8gdGhlIGtlcm5lbC4gSG93ZXZlciwgdGhpcyBp
+cwpJTUhPIG5vdCB0aGUgYmVzdCB3YXksIGJlY2F1c2UgeW91IG1pZ2h0IG5lZWQgdG8gaW50ZXJh
+Y3Qgd2l0aCB0aGUgdXNlcgpsaWtlICJJIGNvdWxkIG5vdCB1bW91bnQgdGhlIFVTQiBzdGljaywg
+Y29udGludWUgc3VzcGVuZD8iICh3aXRoIGEKdGltZW91dCBvZiAxMCBzZWNvbmRzIGFuZCBkZWZh
+dWx0ICJvaywgZG9uJ3QgY2FyZSBhYm91dCB0aGUgRlMgYW5kCmNvbnRpbnVlIikgYW5kIHRoYXQg
+aXMgcHJldHR5IGNvbXBsaWNhdGVkIHRvIGRvIGZyb20gb3V0c2lkZSB0aGUKZGVza3RvcCBzZXNz
+aW9uLgoKKE5vdGUgdGhhdCBJIGFtIGluIG5vIHdheSB0b3RhbGx5IHVwLXRvLWRhdGUgaG93IHRo
+aXMgaXMgaW1wbGVtZW50ZWQKIG5vd2FkYXlzIGFuZCBpdCB3b3VsZCBiZSBkZWZpbml0ZWx5IGEg
+Z29vZCBpZGVhIHRvIHRhbGsgdG8gdGhlIHBtLXV0aWxzCiBhbmQgdGhlIGRlc2t0b3AgZGV2ZWxv
+cGVycywgZS5nLiB0aGUgZ25vbWUtcG93ZXItbWFuYWdlciBndXlzIGFib3V0CiB0aG9zZSBpc3N1
+ZXMpLgoKSGF2ZSBmdW4sCgoJU3RlZmFuCgotLSAKU3RlZmFuIFNleWZyaWVkCgoiQW55IGlkZWFz
+LCBKb2huPyIKIldlbGwsIHN1cnJvdW5kaW5nIHRoZW0ncyBvdXQuIgpfX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGlu
+dXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3Vu
+ZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
