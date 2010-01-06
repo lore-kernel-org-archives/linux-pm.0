@@ -1,13 +1,17 @@
-From: =?UTF-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
-Subject: Re:
-	=?utf-8?q?=5Bsuspend/resume=5D_Re=3A_userspace_notific?=
-	=?utf-8?q?ation=09_from_module?=
-Date: Wed, 06 Jan 2010 02:05:38 +0100
-Message-ID: <1df13dac.5ba05e5c.4b43e1e2.120e__25115.8114210286$1262739996$gmane$org@o2.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/1] Add /sys/power/last_state support
+Date: Wed, 6 Jan 2010 08:01:07 +0100
+Message-ID: <20100106070107.GB1382@ucw.cz>
+References: <3c192bd846cc4337d9999c6cd66b649232d9561c.1260074113.git.victor.lowther@gmail.com>
+	<200912072241.28017.rjw@sisk.pl>
+	<7E0E364A-4AC2-4D3B-B7A0-61DC970C9254@gmail.com>
+	<20091215091945.66b245ed@strolchi.home.s3e.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <20091215091945.66b245ed@strolchi.home.s3e.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,24 +21,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: awalls@radix.net, aeriksson@fastmail.fm, linux-pm@lists.linux-foundation.org, danborkmann@googlemail.com, stefan.seyfried@googlemail.com
+To: Stefan Seyfried <stefan.seyfried@googlemail.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-RG5pYSA2IHN0eWN6bmlhIDIwMTAgMDowNSAJIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHNpc2su
-cGw+IG5hcGlzYcWCKGEpOgo+IFdlbGwsIEkgdGhpbmsgeW91IGhhdmUgc29tZSBzcGVjaWZpYyBp
-c3N1ZSB3aXRoIHBtLXV0aWxzLCBidXQgeW91J3JlIG5vdAo+IHRlbGxpbmcgdXMgd2hhdCBpdCBp
-cy4gIFNvLCB3aHkgZXhhY3RseSBpcyBwbS11dGlscyBub3Qgc3VpdGFibGUgZm9yIHlvdXIKPiBu
-ZWVkcz8KPiAKClJhZmFlbCB0byBiZSBob25lc3QgaXQncyBtb3JlIGRidXMgc3BlY2lmaWMuIEkn
-bSB0YWxraW5nIGFib3V0IApkYnVzIGFzIGl0IGlzIHN0YW5kYXJkIGZvciBzeXN0ZW08LT5hcHBz
-IGNvbW11bmljYXRpb24uCgpCdXQgcGxlYXNlIHVuZGVyc3RhbmQgaWYgd2UnbGwgY3JlYXRlIGtl
-cm5lbCBkZXZpY2Ugd2l0aCBzaW1wbGUgcG0gbm90aWZpY2F0aW9uCkl0IGNvdWxkIGJlIGhvb2tl
-ZCBieSB1ZGV2IGFuZCBuZXh0IC4uLiBieSBEZXZpY2VLaXQtcG93ZXIvdXBvd2VyIGFuZCBhZnRl
-ciB0aGF0CndlIGhhdmUgcmVhbCBzdGFuZGFyZC4gQnV0IHRvIGhhdmUgdGhpcyB3ZSBtdXN0IGV4
-cG9ydCAicG93ZXIiIGRldmljZSAtIHNvbWV0aGluZyAKbGlrZSBteSBwcm9vZi1vZi1jb25jZXB0
-IG1vZHVsZS4gVGhpcyBjb3VsZCBiZSByZWFseSBnb29kIHN0YXJ0LgoKQmVzdCByZWdhcmRzLgpC
-YXJ0xYJvbWllaiBaaW1vxYQKUExEIExpbnV4LCBLYWR1IFRlYW0sIEZyZWVSdW5uZXIgdXNlcgpo
-dHRwOi8va2FkdS1pbS5ibG9nc3BvdC5jb20vCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3Rz
-LmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcv
-bWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Tue 2009-12-15 09:19:45, Stefan Seyfried wrote:
+> On Mon, 7 Dec 2009 18:17:36 -0600
+> Victor Lowther <victor.lowther@gmail.com> wrote:
+> > On Dec 7, 2009, at 3:41 PM, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > Can't you just use the error code returned by "echo mem > /sys/power/ 
+> > > state"?
+> > 
+> > I can, now that I know about it - I did not see anything about error  
+> > codes when scanning the documentation.
+> 
+> Note that "echo" only will return 0 or 1, not a real error code. You'll
+> need a 5-line C program to get the errno that's returned from the
+> kernel.
+> It might be interesting to know *why* it failed (e.g. no swap
+> partition or not enough space in there).
+
+...and if the error codes are not unique enough, I guess we can just
+improve them.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
