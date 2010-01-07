@@ -1,18 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC] PM_QOS api update to use handles 1/5
-Date: Thu, 7 Jan 2010 21:58:38 +0100
-Message-ID: <20100107205838.GA23120__21956.204789649$1262898092$gmane$org@elf.ucw.cz>
-References: <20091130010953.GA4732@mgross-laptop>
-	<20100104083127.GA1450@ucw.cz>
-	<20100106191132.GD21316@linux.intel.com>
-	<20100106191831.GA3045@elf.ucw.cz>
-	<20100107205558.GB5703@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 9/12] ACPI / PM: Introduce
+	acpi_pm_wakeup_power()
+Date: Thu, 7 Jan 2010 22:11:50 +0100
+Message-ID: <201001072211.50224.rjw__2438.65477755225$1262898832$gmane$org@sisk.pl>
+References: <200912272057.10443.rjw@sisk.pl>
+	<20100106140035.6f622acf@jbarnes-piketon>
+	<201001070011.49755.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100107205558.GB5703@linux.intel.com>
+In-Reply-To: <201001070011.49755.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,36 +20,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: mark gross <mgross@linux.intel.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, 640E9920 <640e9920@gmail.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Francois Romieu <romieu@fr.zoreil.com>, pm list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2010-01-07 12:55:58, mark gross wrote:
-> On Wed, Jan 06, 2010 at 08:18:31PM +0100, Pavel Machek wrote:
-> > Hi!
+On Thursday 07 January 2010, Rafael J. Wysocki wrote:
+> On Wednesday 06 January 2010, Jesse Barnes wrote:
+> > On Sun, 27 Dec 2009 21:06:26 +0100
+> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > >  /**
+> > > + * acpi_pm_wakeup_power - Enable/disable device wake-up power.
+> > > + * @dev: ACPI device to handle.
+> > > + * @enable: Whether to enable or disable the wake-up power of the
+> > > device.
+> > > + */
+> > > +int acpi_pm_wakeup_power(struct acpi_device *dev, bool enable)
+> > > +{
 > > 
-> > > > Umm.. passing binary numbers like that... is not exactly good
-> > > > interface. Think endianness issues  when writing to it from high-level
-> > > > language.
-> > > 
-> > > yeah.  At the moment I can't recall why I went binary for the ABI, 
-> > > we can revisit this, but its been in the wild for a few years now :(
-> > > 
-> > > I guess I can do some tricks to see if its a hex string representation
-> > > of a number and parse that as well as supporting the s32.  i.e. accept
-> > > strings "0x0000000" ... "0xFFFFFFFF" and return -EINVAL for anything
-> > > else.
+> > I know we've got these all over now, but functions that just take a
+> > bool are generally hard to read when you just look at the call site.
+> > If it was called "acpi_pm_set_wakeup_power" and then took an on/off
+> > enum it would be really easy to see, from the callsite, what was going
+> > on.
 > > 
-> > Maybe you could use length for detection? If they are writing 4 bytes,
-> > it is s32, 10 bytes means ascii?
+> > It's a fairly minor complaint, but it's something that's always bugged
+> > me about the PCI PM code in particular.
 > 
-> That is what I was thinking + making sure the chars in the string where
-> valid hex digits ;)  It would be easy to do.  Let me know if you think I
-> should attempt to roll that into the kernel ABI exposed by this thing.
+> Well, in this particular case acpi_pm_wakeup_power() uses a bool, because
+> acpi_pm_device_sleep_wake() (which is a caller of it) does.  IMO it won't
+> be logical to use something else just here.
+> 
+> Also, as you noticed above, this follows a convention used not only in the
+> PCI PM, but generally in the core PM code.  Although we could change this
+> convention, I'm not really sure that would be worth the effort.
 
-I think that would be nice, yes.
-									Pavel
+That said, it looks like we can drop this (ie. [9/12]) patch altogether if the
+next one is changed slightly.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I'll post the modified [10/12] shortly.
+
+Rafael
