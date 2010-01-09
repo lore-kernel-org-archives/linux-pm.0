@@ -1,16 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] i915: Always register as a PCI driver (was: Re:
-	[PATCH] DRM / i915: Fix resume regression on MSI Wind U100 w/o KMS)
-Date: Sat, 9 Jan 2010 14:35:56 +0100
-Message-ID: <201001091435.56157.rjw__15221.7029979967$1263044301$gmane$org@sisk.pl>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] DRM / i915: Fix resume regression on MSI
+ Wind U100 w/o KMS
+Date: Sat, 9 Jan 2010 10:17:19 -0800 (PST)
+Message-ID: <alpine.LFD.2.00.1001091012080.7821@localhost.localdomain>
 References: <201001090045.33784.rjw@sisk.pl>
-	<alpine.LFD.2.00.1001081648490.7821@localhost.localdomain>
-	<20100108171311.128c43d0@jbarnes-piketon>
+	<alpine.LFD.2.00.1001081548320.7821@localhost.localdomain>
+	<alpine.DEB.2.00.1001090214220.21286@skynet.skynet.ie>
+	<20100108185041.7aae6c01@jbarnes-piketon>
+	<20100109120141.GA4319@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100108171311.128c43d0@jbarnes-piketon>
+In-Reply-To: <20100109120141.GA4319@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,154 +22,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>
-Cc: Eric Anholt <eric@anholt.net>, dri-devel@lists.sourceforge.net, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Zhenyu Wang <zhenyuw@linux.intel.com>
+To: Jerome Glisse <glisse@freedesktop.org>
+Cc: Dave Airlie <airlied@linux.ie>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 09 January 2010, Jesse Barnes wrote:
-> On Fri, 8 Jan 2010 16:50:57 -0800 (PST)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
+
+
+On Sat, 9 Jan 2010, Jerome Glisse wrote:
+
+> On Fri, Jan 08, 2010 at 06:50:41PM -0800, Jesse Barnes wrote:
 > > 
+> > Linus, can we ever drop those old paths?  Maybe after the new bits have
+> > been around for awhile?  Users of really old userspace stacks would
+> > lose 3D support, but they'd still have 2D, so it wouldn't be a complete
+> > break.  The non-KMS paths sometimes break like this anyway without us
+> > noticing (especially some of the weirder 3D paths)...
 > > 
-> > On Sat, 9 Jan 2010, Rafael J. Wysocki wrote:
-> > > 
-> > > Which is functionally equivalent to my patch, because
-> > > i915_suspend/resume() won't be called by drm_class_suspend/resume()
-> > > in the KMS case anyway.
-> > 
-> > Ahh, right you are - that class suspend function does a check for 
-> > DRIVER_MODESET, and only does the suspend/resume if it's not a
-> > MODESET driver.
-> > 
-> > Ok, so I withdraw my objections to your original patch - it's
-> > confusing, but that's just because DRM is such a horrible mess with
-> > subtle things.
+> > Just thinking out loud, we could really kill a lot of really bad code...
 > 
-> Yeah the non-KMS paths just suck.
-> 
-> Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-> 
-> Though hopefully you can get the PCI driver registration working w/o
-> too much trouble; that would be even better.
+> I among those who would love such things to happen :)
 
-Actually, I have a working patch, with one tiny detail I'm not sure of.
+I don't want to drop it _yet_, but "ever"? Sure. When people are sure that 
+KMS actually handles all the cases that old X does (maybe that's true 
+now), and we've had more than just a couple of kernel releases of _stable_ 
+Intel KMS, I suspect we can start thinking about "ok, nobody seriously 
+uses 3D on Intel integrated graphics _and_ updates the kernel".
 
-Namely, I need to call pci_set_drvdata(pdev, dev) unconditionally in drm_stub.c
-for the things to work, but I _think_ it won't hurt even if we're not going to
-use the pdev's private data.
+The fact that they'd still have a working X setup would make it generally 
+much more palatable, I think. 
 
-The benefit of this is having just one code path for suspend/resume instead of
-two different code paths depending on whether the driver is using the KMS or
-not, which is well worth it IMO.
+But we definitely need more than just a couple of kernel releases. So 
+we're talking timescales of "more than a year of stable code". Whether 
+that is "six months from now" or "two years from now", I can't judge. 
 
-The patch is appended.
+And people can try to convince me to be more or less aggressive about it, 
+so take the above as a more of a personal opinion that is open to 
+change than anything definite and final.
 
-Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: DRM / i915: Always register as a PCI driver
-
-Commit cbda12d77ea590082edb6d30bd342a67ebc459e0 (drm/i915: implement
-new pm ops for i915), among other things, removed the .suspend and
-.resume pointers from the struct drm_driver object in i915_drv.c,
-which broke resume without KMS on my MSI Wind U100.
-
-The reason of the breakage is that in the non-KMS case i915 is
-not registered as a PCI driver and uses device class suspend and
-resume callbacks that, in turn, execute the callbacks defined in the
-struct drm_driver object.  Consequently, after commit cbda12d77ea59,
-the driver's suspend and resume callbacks are not executed at all in
-the non-KMS case.
-
-To prevent this from happening, set DRIVER_MODESET unconditinally
-in driver.driver_features before calling drm_init(), so that it
-always registeres us as a PCI driver, and make i915_pci_probe()
-reset DRIVER_MODESET in the non-KMS case.  This way the driver's PCI
-suspend and resume callbacks will always be used and the problem
-will be avoided.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/gpu/drm/drm_stub.c      |    3 +-
- drivers/gpu/drm/i915/i915_drv.c |   44 +++++++++++++++++++++-------------------
- 2 files changed, 26 insertions(+), 21 deletions(-)
-
-Index: linux-2.6/drivers/gpu/drm/i915/i915_drv.c
-===================================================================
---- linux-2.6.orig/drivers/gpu/drm/i915/i915_drv.c
-+++ linux-2.6/drivers/gpu/drm/i915/i915_drv.c
-@@ -372,6 +372,28 @@ int i965_reset(struct drm_device *dev, u
- static int __devinit
- i915_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- {
-+	/*
-+	 * If CONFIG_DRM_I915_KMS is set, default to KMS unless
-+	 * explicitly disabled with the module pararmeter.
-+	 *
-+	 * Otherwise, just follow the parameter (defaulting to off).
-+	 *
-+	 * Allow optional vga_text_mode_force boot option to override
-+	 * the default behavior.
-+	 */
-+	if (i915_modeset == 0)
-+		driver.driver_features &= ~DRIVER_MODESET;
-+
-+#ifndef CONFIG_DRM_I915_KMS
-+	if (i915_modeset != 1)
-+		driver.driver_features &= ~DRIVER_MODESET;
-+#endif
-+
-+#ifdef CONFIG_VGA_CONSOLE
-+	if (vgacon_text_force() && i915_modeset == -1)
-+		driver.driver_features &= ~DRIVER_MODESET;
-+#endif
-+
- 	return drm_get_dev(pdev, ent, &driver);
- }
- 
-@@ -520,26 +542,8 @@ static int __init i915_init(void)
- 
- 	i915_gem_shrinker_init();
- 
--	/*
--	 * If CONFIG_DRM_I915_KMS is set, default to KMS unless
--	 * explicitly disabled with the module pararmeter.
--	 *
--	 * Otherwise, just follow the parameter (defaulting to off).
--	 *
--	 * Allow optional vga_text_mode_force boot option to override
--	 * the default behavior.
--	 */
--#if defined(CONFIG_DRM_I915_KMS)
--	if (i915_modeset != 0)
--		driver.driver_features |= DRIVER_MODESET;
--#endif
--	if (i915_modeset == 1)
--		driver.driver_features |= DRIVER_MODESET;
--
--#ifdef CONFIG_VGA_CONSOLE
--	if (vgacon_text_force() && i915_modeset == -1)
--		driver.driver_features &= ~DRIVER_MODESET;
--#endif
-+	/* Make drm_init() always register us as a PCI driver. */
-+	driver.driver_features |= DRIVER_MODESET;
- 
- 	return drm_init(&driver);
- }
-Index: linux-2.6/drivers/gpu/drm/drm_stub.c
-===================================================================
---- linux-2.6.orig/drivers/gpu/drm/drm_stub.c
-+++ linux-2.6/drivers/gpu/drm/drm_stub.c
-@@ -419,8 +419,9 @@ int drm_get_dev(struct pci_dev *pdev, co
- 		goto err_g2;
- 	}
- 
-+	pci_set_drvdata(pdev, dev);
-+
- 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
--		pci_set_drvdata(pdev, dev);
- 		ret = drm_get_minor(dev, &dev->control, DRM_MINOR_CONTROL);
- 		if (ret)
- 			goto err_g2;
+		Linus
