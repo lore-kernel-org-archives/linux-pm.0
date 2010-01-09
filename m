@@ -1,19 +1,18 @@
 From: Dave Airlie <airlied@gmail.com>
-Subject: Re: [PATCH] DRM / i915: Fix resume regression on MSI
-	Wind U100 w/o KMS
-Date: Sun, 10 Jan 2010 07:32:30 +1000
-Message-ID: <21d7e9971001091332v23ac0e28m1b1890cd667aacb8__43319.4385179833$1263072830$gmane$org@mail.gmail.com>
+Subject: Re: [PATCH] i915: Always register as a PCI driver (was:
+	Re: [PATCH] DRM / i915: Fix resume regression on MSI Wind
+	U100 w/o KMS)
+Date: Sun, 10 Jan 2010 07:41:00 +1000
+Message-ID: <21d7e9971001091341j313e6274vd883c0d5301b2586__17658.1125976101$1263073354$gmane$org@mail.gmail.com>
 References: <201001090045.33784.rjw@sisk.pl>
-	<alpine.LFD.2.00.1001081548320.7821@localhost.localdomain>
-	<alpine.DEB.2.00.1001090214220.21286@skynet.skynet.ie>
-	<20100108185041.7aae6c01@jbarnes-piketon>
-	<20100109120141.GA4319@localhost.localdomain>
-	<alpine.LFD.2.00.1001091012080.7821@localhost.localdomain>
+	<alpine.LFD.2.00.1001081648490.7821@localhost.localdomain>
+	<20100108171311.128c43d0@jbarnes-piketon>
+	<201001091435.56157.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1001091012080.7821@localhost.localdomain>
+In-Reply-To: <201001091435.56157.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,67 +22,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Dave Airlie <airlied@linux.ie>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Jerome Glisse <glisse@freedesktop.org>, pm list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Zhenyu Wang <zhenyuw@linux.intel.com>, Eric Anholt <eric@anholt.net>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jan 10, 2010 at 4:17 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Sat, 9 Jan 2010, Jerome Glisse wrote:
->
->> On Fri, Jan 08, 2010 at 06:50:41PM -0800, Jesse Barnes wrote:
->> >
->> > Linus, can we ever drop those old paths? =A0Maybe after the new bits h=
-ave
->> > been around for awhile? =A0Users of really old userspace stacks would
->> > lose 3D support, but they'd still have 2D, so it wouldn't be a complete
->> > break. =A0The non-KMS paths sometimes break like this anyway without us
->> > noticing (especially some of the weirder 3D paths)...
->> >
->> > Just thinking out loud, we could really kill a lot of really bad code.=
-..
+On Sat, Jan 9, 2010 at 11:35 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Saturday 09 January 2010, Jesse Barnes wrote:
+>> On Fri, 8 Jan 2010 16:50:57 -0800 (PST)
+>> Linus Torvalds <torvalds@linux-foundation.org> wrote:
 >>
->> I among those who would love such things to happen :)
+>> >
+>> >
+>> > On Sat, 9 Jan 2010, Rafael J. Wysocki wrote:
+>> > >
+>> > > Which is functionally equivalent to my patch, because
+>> > > i915_suspend/resume() won't be called by drm_class_suspend/resume()
+>> > > in the KMS case anyway.
+>> >
+>> > Ahh, right you are - that class suspend function does a check for
+>> > DRIVER_MODESET, and only does the suspend/resume if it's not a
+>> > MODESET driver.
+>> >
+>> > Ok, so I withdraw my objections to your original patch - it's
+>> > confusing, but that's just because DRM is such a horrible mess with
+>> > subtle things.
+>>
+>> Yeah the non-KMS paths just suck.
+>>
+>> Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+>>
+>> Though hopefully you can get the PCI driver registration working w/o
+>> too much trouble; that would be even better.
 >
-> I don't want to drop it _yet_, but "ever"? Sure. When people are sure that
-> KMS actually handles all the cases that old X does (maybe that's true
-> now), and we've had more than just a couple of kernel releases of _stable_
-> Intel KMS, I suspect we can start thinking about "ok, nobody seriously
-> uses 3D on Intel integrated graphics _and_ updates the kernel".
+> Actually, I have a working patch, with one tiny detail I'm not sure of.
 >
-> The fact that they'd still have a working X setup would make it generally
-> much more palatable, I think.
+> Namely, I need to call pci_set_drvdata(pdev, dev) unconditionally in drm_stub.c
+> for the things to work, but I _think_ it won't hurt even if we're not going to
+> use the pdev's private data.
 >
-> But we definitely need more than just a couple of kernel releases. So
-> we're talking timescales of "more than a year of stable code". Whether
-> that is "six months from now" or "two years from now", I can't judge.
+> The benefit of this is having just one code path for suspend/resume instead of
+> two different code paths depending on whether the driver is using the KMS or
+> not, which is well worth it IMO.
 >
-> And people can try to convince me to be more or less aggressive about it,
-> so take the above as a more of a personal opinion that is open to
-> change than anything definite and final.
+> The patch is appended.
 
-I'm in the 2-3 years at a minimum, with at least one kernel with no serious
-regressions in Intel KMS, which we haven't gotten close to yet. I'm not even
-sure the Intel guys are taking stable seriously enough yet. So far I don't =
-think
-there is one kernel release (even stable) that works on all Intel
-chipsets without
-backporting patches. 2.6.32 needs the changes to remove the messed up
-render clock hacks which should really have been reverted a lot earlier sin=
-ce
-we had a lot of regression reports. The number of users using powersave=3D0
-to get anything approaching useable is growing etc.
+NAK
 
-We do have ppl who run latest kernels on RHEL5 userspace and I'd rather
-not have that break badly, I'm guessing more than 3D will break if we remove
-this, since we need the DRM to allocate memory for 2D stuff, and will proba=
-bly
-find the fallback to AGP is broken. Again Intel ppl would have to do a lot
-of testing on the fallback before removing anything, which is time I don't =
-see
-anyone willing to spend.
+for the reasons I explained in the previous email. This conflicts with systems
+where intelfb and intel drm are used together, this is something that ppl do use
+prior to KMS happening.
 
-Dave.
+We just need to document in the headers why the hooks are needed,
+and maybe a bit of patch review to make sure nobody removes them again.
+
 Dave.
