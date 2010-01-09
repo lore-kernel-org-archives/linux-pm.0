@@ -1,13 +1,15 @@
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Subject: Re: 2.6.33-rc3-git3: Reported regressions from 2.6.32
-Date: Mon, 11 Jan 2010 08:00:37 -0800
-Message-ID: <43e72e891001110800h283b534aj1d60f83266fa215a__8755.48225963048$1263225808$gmane$org@mail.gmail.com>
-References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
+From: Dave Airlie <airlied@linux.ie>
+Subject: Re: [PATCH] DRM / i915: Fix resume regression on MSI
+ Wind U100 w/o KMS
+Date: Sat, 9 Jan 2010 02:15:41 +0000 (GMT)
+Message-ID: <alpine.DEB.2.00.1001090214220.21286__11002.1277367652$1263227168$gmane$org@skynet.skynet.ie>
+References: <201001090045.33784.rjw@sisk.pl>
+	<alpine.LFD.2.00.1001081548320.7821@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
+In-Reply-To: <alpine.LFD.2.00.1001081548320.7821@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,31 +19,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuLCBKYW4gMTAsIDIwMTAgYXQgMjoyNyBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0Bz
-aXNrLnBsPiB3cm90ZToKPiBUaGlzIG1lc3NhZ2UgY29udGFpbnMgYSBsaXN0IG9mIHNvbWUgcmVn
-cmVzc2lvbnMgZnJvbSAyLjYuMzIsIGZvciB3aGljaCB0aGVyZQo+IGFyZSBubyBmaXhlcyBpbiB0
-aGUgbWFpbmxpbmUgSSBrbm93IG9mLiDCoElmIGFueSBvZiB0aGVtIGhhdmUgYmVlbiBmaXhlZCBh
-bHJlYWR5LAo+IHBsZWFzZSBsZXQgbWUga25vdy4KPgo+IElmIHlvdSBrbm93IG9mIGFueSBvdGhl
-ciB1bnJlc29sdmVkIHJlZ3Jlc3Npb25zIGZyb20gMi42LjMyLCBwbGVhc2UgbGV0IG1lIGtub3cK
-PiBlaXRoZXIgYW5kIEknbGwgYWRkIHRoZW0gdG8gdGhlIGxpc3QuIMKgQWxzbywgcGxlYXNlIGxl
-dCBtZSBrbm93IGlmIGFueSBvZiB0aGUKPiBlbnRyaWVzIGJlbG93IGFyZSBpbnZhbGlkLgo+Cj4g
-RWFjaCBlbnRyeSBmcm9tIHRoZSBsaXN0IHdpbGwgYmUgc2VudCBhZGRpdGlvbmFsbHkgaW4gYW4g
-YXV0b21hdGljIHJlcGx5IHRvCj4gdGhpcyBtZXNzYWdlIHdpdGggQ0NzIHRvIHRoZSBwZW9wbGUg
-aW52b2x2ZWQgaW4gcmVwb3J0aW5nIGFuZCBoYW5kbGluZyB0aGUKPiBpc3N1ZS4KPgoKT2YgdGhl
-c2Ugb25seSB0aGUgb25lIGJlbG93IHdhcyB3aXJlbGVzcywgd2hpY2ggaXMgYWN0dWFsbHkgZml4
-ZWQgbm93LgpOb3QgYmFkLCByYzMgYW5kIG5vIHdpcmVsZXNzIHJlZ3Jlc3Npb25zIHlldC4KCj4g
-QnVnLUVudHJ5IMKgIMKgIMKgIDogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcu
-Y2dpP2lkPTE0ODc0Cj4gU3ViamVjdCDCoCDCoCDCoCDCoCA6IEF0aDVrIHJlZ3Jlc3Npb24gd2l0
-aCBjb21taXQgOGJmM2Q3OWJjNDAxY2E0MTdjY2Y5ZmMwNzZkMzI5NWQxYTcxZGJmNQo+IFN1Ym1p
-dHRlciDCoCDCoCDCoCA6IEpvc2h1YSBDb3Zpbmd0b24gPGpvc2h1YWNvdkBnb29nbGVtYWlsLmNv
-bT4KPiBEYXRlIMKgIMKgIMKgIMKgIMKgIMKgOiAyMDA5LTEyLTI1IDAwOjQ5ICgxNyBkYXlzIG9s
-ZCkKPiBIYW5kbGVkLUJ5IMKgIMKgIMKgOiBMdWlzIFIuIFJvZHJpZ3VleiA8bWNncm9mQGdtYWls
-LmNvbT4KPiBQYXRjaCDCoCDCoCDCoCDCoCDCoCA6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3Jn
-L2F0dGFjaG1lbnQuY2dpP2lkPTI0MzM1CgogIEx1aXMKX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxp
-c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5v
-cmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Commit cbda12d77ea590082edb6d30bd342a67ebc459e0 (drm/i915: implement
+> > new pm ops for i915), among other things, removed the .suspend and
+> > .resume pointers from the struct drm_driver object in i915_drv.c,
+> > which broke resume without KMS on my MSI Wind U100.
+> > 
+> > Fix this by reverting that part of commit cbda12d77ea59.
+> 
+> Hmm. I get the feeling that perhaps the of the drm_driver callbacks was 
+> very muchintentional, and that the code presumably wants to be called 
+> purely through the PCI layer, and not through the "drm class" logic at 
+> all?
+> 
+> Your patch seems like it would always execute the silly class suspend even 
+> though we explicitly don't want to. And a much nicer fix would seem to 
+> register the thing properly as a PCI driver even if you don't then use 
+> KMS.
+> 
+> So it looks to me like the problem is that drm_init() will register the 
+> driver as a real PCI driver only if
+> 
+> 	driver->driver_features & DRIVER_MODESET
+> 
+> and otherwise it does that very odd "stealth mode manual scanning" thing 
+> which doesn't register it as a proper PCI driver.
+> 
+> So could we instead make that "disable KSM" _just_ disable the mode 
+> setting part, not disable the "I'm a real driver" part?
+> 
+
+This was mainly due to pre-existing fb drivers binding to the device, and 
+the drm drivers having to work around that, with KMS since we have fb in 
+the drm driver its correct to bind, pre-kms its just a mess I'd rather 
+stay away from.
+
+Dave.
