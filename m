@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 6/9] ACPI: Remove old GPE API and transition code
-	entirely to new one
-Date: Sun, 10 Jan 2010 14:40:02 +0100
-Message-ID: <201001101440.02423.rjw__49460.3701438338$1263132981$gmane$org@sisk.pl>
+Subject: [PATCH 2/9] PCI PM: PCIe PME root port service driver
+	(rev. 5)
+Date: Sun, 10 Jan 2010 14:36:14 +0100
+Message-ID: <201001101436.14509.rjw__31229.5981719673$1263132992$gmane$org@sisk.pl>
 References: <201001101431.38630.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,646 +22,692 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>
 Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Moore, Robert" <robert.moore@intel.com>, pm list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Matthew Garrett <mjg@redhat.com>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Remove the old GPE type handling entirely, which gets rid of various quirks
-like the implicit disabling with GPE type setting. This requires a small
-amount of rework in order to ensure that non-wake GPEs are enabled by
-default to preserve existing behaviour.
+PCIe native PME detection mechanism is based on interrupts generated
+by root ports or event collectors every time a PCIe device sends a
+PME message upstream.
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+Once a PME message has been sent by an endpoint device and received
+by its root port (or event collector in the case of root complex
+integrated endpoints), the Requester ID from the message header is
+registered in the root port's Root Status register.  At the same
+time, the PME Status bit of the Root Status register is set to
+indicate that there's a PME to handle.  If PCIe PME interrupt is
+enabled for the root port, it generates an interrupt once the PME
+Status has been set.  After receiving the interrupt, the kernel can
+identify the PCIe device that generated the PME using the Requester
+ID from the root port's Root Status register. [For details, see PCI
+Express Base Specification, Rev. 2.0.]
+
+Implement a driver for the PCIe PME root port service working in
+accordance with the above description.
+
+Based on a patch from Shaohua Li <shaohua.li@intel.com>.
+
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
-drivers/acpi/acpica/acevents.h |    6 +--
- drivers/acpi/acpica/acevents.h |    6 -
- drivers/acpi/acpica/evgpe.c    |  147 +++--------------------------------------
- drivers/acpi/acpica/evgpeblk.c |   69 ++++++-------------
- drivers/acpi/acpica/evxface.c  |   14 ---
- drivers/acpi/acpica/evxfevnt.c |   48 -------------
- drivers/acpi/button.c          |    5 -
- drivers/acpi/ec.c              |    2 
- drivers/acpi/wakeup.c          |   55 ++-------------
- include/acpi/actypes.h         |   32 ++------
- 9 files changed, 59 insertions(+), 319 deletions(-)
+ Documentation/kernel-parameters.txt  |    6 
+ drivers/pci/pcie/Kconfig             |    4 
+ drivers/pci/pcie/Makefile            |    2 
+ drivers/pci/pcie/pme/Makefile        |    8 
+ drivers/pci/pcie/pme/pcie_pme.c      |  493 +++++++++++++++++++++++++++++++++++
+ drivers/pci/pcie/pme/pcie_pme.h      |   28 +
+ drivers/pci/pcie/pme/pcie_pme_acpi.c |   54 +++
+ include/linux/pci.h                  |    1 
+ 8 files changed, 596 insertions(+)
 
-Index: linux-2.6/drivers/acpi/acpica/acevents.h
+Index: linux-2.6/drivers/pci/pcie/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/acevents.h
-+++ linux-2.6/drivers/acpi/acpica/acevents.h
-@@ -76,8 +76,7 @@ acpi_ev_queue_notify_request(struct acpi
-  * evgpe - GPE handling and dispatch
-  */
- acpi_status
--acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info,
--				u8 type);
-+acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info);
- 
- acpi_status
- acpi_ev_enable_gpe(struct acpi_gpe_event_info *gpe_event_info,
-@@ -122,9 +121,6 @@ acpi_ev_gpe_dispatch(struct acpi_gpe_eve
- u32 acpi_ev_gpe_detect(struct acpi_gpe_xrupt_info *gpe_xrupt_list);
- 
- acpi_status
--acpi_ev_set_gpe_type(struct acpi_gpe_event_info *gpe_event_info, u8 type);
--
--acpi_status
- acpi_ev_check_for_wake_only_gpe(struct acpi_gpe_event_info *gpe_event_info);
- 
- acpi_status acpi_ev_gpe_initialize(void);
-Index: linux-2.6/drivers/acpi/acpica/evgpe.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/evgpe.c
-+++ linux-2.6/drivers/acpi/acpica/evgpe.c
-@@ -54,54 +54,9 @@ static void ACPI_SYSTEM_XFACE acpi_ev_as
- 
- /*******************************************************************************
-  *
-- * FUNCTION:    acpi_ev_set_gpe_type
-- *
-- * PARAMETERS:  gpe_event_info          - GPE to set
-- *              Type                    - New type
-- *
-- * RETURN:      Status
-- *
-- * DESCRIPTION: Sets the new type for the GPE (wake, run, or wake/run)
-- *
-- ******************************************************************************/
--
--acpi_status
--acpi_ev_set_gpe_type(struct acpi_gpe_event_info *gpe_event_info, u8 type)
--{
--	acpi_status status;
--
--	ACPI_FUNCTION_TRACE(ev_set_gpe_type);
--
--	/* Validate type and update register enable masks */
--
--	switch (type) {
--	case ACPI_GPE_TYPE_WAKE:
--	case ACPI_GPE_TYPE_RUNTIME:
--	case ACPI_GPE_TYPE_WAKE_RUN:
--		break;
--
--	default:
--		return_ACPI_STATUS(AE_BAD_PARAMETER);
--	}
--
--	/* Disable the GPE if currently enabled */
--
--	status = acpi_ev_disable_gpe(gpe_event_info);
--
--	/* Clear the type bits and insert the new Type */
--
--	gpe_event_info->flags &= ~ACPI_GPE_TYPE_MASK;
--	gpe_event_info->flags |= type;
--	return_ACPI_STATUS(status);
--}
--
--/*******************************************************************************
-- *
-  * FUNCTION:    acpi_ev_update_gpe_enable_masks
-  *
-  * PARAMETERS:  gpe_event_info          - GPE to update
-- *              Type                    - What to do: ACPI_GPE_DISABLE or
-- *                                        ACPI_GPE_ENABLE
-  *
-  * RETURN:      Status
-  *
-@@ -110,8 +65,7 @@ acpi_ev_set_gpe_type(struct acpi_gpe_eve
-  ******************************************************************************/
- 
- acpi_status
--acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info,
--				u8 type)
-+acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info)
- {
- 	struct acpi_gpe_register_info *gpe_register_info;
- 	u8 register_bit;
-@@ -127,37 +81,13 @@ acpi_ev_update_gpe_enable_masks(struct a
- 	    (1 <<
- 	     (gpe_event_info->gpe_number - gpe_register_info->base_gpe_number));
- 
--	/* 1) Disable case. Simply clear all enable bits */
--
--	if (type == ACPI_GPE_DISABLE) {
--		ACPI_CLEAR_BIT(gpe_register_info->enable_for_wake,
--			       register_bit);
--		ACPI_CLEAR_BIT(gpe_register_info->enable_for_run, register_bit);
--		return_ACPI_STATUS(AE_OK);
--	}
--
--	/* 2) Enable case. Set/Clear the appropriate enable bits */
--
--	switch (gpe_event_info->flags & ACPI_GPE_TYPE_MASK) {
--	case ACPI_GPE_TYPE_WAKE:
--		ACPI_SET_BIT(gpe_register_info->enable_for_wake, register_bit);
--		ACPI_CLEAR_BIT(gpe_register_info->enable_for_run, register_bit);
--		break;
-+	ACPI_CLEAR_BIT(gpe_register_info->enable_for_wake, register_bit);
-+	ACPI_CLEAR_BIT(gpe_register_info->enable_for_run, register_bit);
- 
--	case ACPI_GPE_TYPE_RUNTIME:
--		ACPI_CLEAR_BIT(gpe_register_info->enable_for_wake,
--			       register_bit);
-+	if (gpe_event_info->runtime_count)
- 		ACPI_SET_BIT(gpe_register_info->enable_for_run, register_bit);
--		break;
--
--	case ACPI_GPE_TYPE_WAKE_RUN:
-+	if (gpe_event_info->wakeup_count)
- 		ACPI_SET_BIT(gpe_register_info->enable_for_wake, register_bit);
--		ACPI_SET_BIT(gpe_register_info->enable_for_run, register_bit);
--		break;
--
--	default:
--		return_ACPI_STATUS(AE_BAD_PARAMETER);
--	}
- 
- 	return_ACPI_STATUS(AE_OK);
- }
-@@ -186,47 +116,21 @@ acpi_ev_enable_gpe(struct acpi_gpe_event
- 
- 	/* Make sure HW enable masks are updated */
- 
--	status =
--	    acpi_ev_update_gpe_enable_masks(gpe_event_info, ACPI_GPE_ENABLE);
-+	status = acpi_ev_update_gpe_enable_masks(gpe_event_info);
- 	if (ACPI_FAILURE(status)) {
- 		return_ACPI_STATUS(status);
- 	}
- 
- 	/* Mark wake-enabled or HW enable, or both */
- 
--	switch (gpe_event_info->flags & ACPI_GPE_TYPE_MASK) {
--	case ACPI_GPE_TYPE_WAKE:
--
--		ACPI_SET_BIT(gpe_event_info->flags, ACPI_GPE_WAKE_ENABLED);
--		break;
--
--	case ACPI_GPE_TYPE_WAKE_RUN:
--
--		ACPI_SET_BIT(gpe_event_info->flags, ACPI_GPE_WAKE_ENABLED);
--
--		/*lint -fallthrough */
--
--	case ACPI_GPE_TYPE_RUNTIME:
--
--		ACPI_SET_BIT(gpe_event_info->flags, ACPI_GPE_RUN_ENABLED);
--
--		if (write_to_hardware) {
--
--			/* Clear the GPE (of stale events), then enable it */
--
--			status = acpi_hw_clear_gpe(gpe_event_info);
--			if (ACPI_FAILURE(status)) {
--				return_ACPI_STATUS(status);
--			}
--
--			/* Enable the requested runtime GPE */
--
--			status = acpi_hw_write_gpe_enable_reg(gpe_event_info);
--		}
--		break;
-+	if (gpe_event_info->runtime_count && write_to_hardware) {
-+		/* Clear the GPE (of stale events), then enable it */
-+		status = acpi_hw_clear_gpe(gpe_event_info);
-+		if (ACPI_FAILURE(status))
-+			return_ACPI_STATUS(status);
- 
--	default:
--		return_ACPI_STATUS(AE_BAD_PARAMETER);
-+		/* Enable the requested runtime GPE */
-+		status = acpi_hw_write_gpe_enable_reg(gpe_event_info);
- 	}
- 
- 	return_ACPI_STATUS(AE_OK);
-@@ -253,34 +157,11 @@ acpi_status acpi_ev_disable_gpe(struct a
- 	/* Make sure HW enable masks are updated */
- 
- 	status =
--	    acpi_ev_update_gpe_enable_masks(gpe_event_info, ACPI_GPE_DISABLE);
-+	    acpi_ev_update_gpe_enable_masks(gpe_event_info);
- 	if (ACPI_FAILURE(status)) {
- 		return_ACPI_STATUS(status);
- 	}
- 
--	/* Clear the appropriate enabled flags for this GPE */
--
--	switch (gpe_event_info->flags & ACPI_GPE_TYPE_MASK) {
--	case ACPI_GPE_TYPE_WAKE:
--		ACPI_CLEAR_BIT(gpe_event_info->flags, ACPI_GPE_WAKE_ENABLED);
--		break;
--
--	case ACPI_GPE_TYPE_WAKE_RUN:
--		ACPI_CLEAR_BIT(gpe_event_info->flags, ACPI_GPE_WAKE_ENABLED);
--
--		/* fallthrough */
--
--	case ACPI_GPE_TYPE_RUNTIME:
--
--		/* Disable the requested runtime GPE */
--
--		ACPI_CLEAR_BIT(gpe_event_info->flags, ACPI_GPE_RUN_ENABLED);
--		break;
--
--	default:
--		break;
--	}
--
- 	/*
- 	 * Even if we don't know the GPE type, make sure that we always
- 	 * disable it. low_disable_gpe will just clear the enable bit for this
-Index: linux-2.6/drivers/acpi/acpica/evgpeblk.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/evgpeblk.c
-+++ linux-2.6/drivers/acpi/acpica/evgpeblk.c
-@@ -325,22 +325,16 @@ acpi_ev_save_method_info(acpi_handle obj
- 
- 	/*
- 	 * Now we can add this information to the gpe_event_info block for use
--	 * during dispatch of this GPE. Default type is RUNTIME, although this may
--	 * change when the _PRW methods are executed later.
-+	 * during dispatch of this GPE.
- 	 */
- 	gpe_event_info =
- 	    &gpe_block->event_info[gpe_number - gpe_block->block_base_number];
- 
--	gpe_event_info->flags = (u8)
--	    (type | ACPI_GPE_DISPATCH_METHOD | ACPI_GPE_TYPE_RUNTIME);
-+	gpe_event_info->flags = (u8) (type | ACPI_GPE_DISPATCH_METHOD);
- 
- 	gpe_event_info->dispatch.method_node =
- 	    (struct acpi_namespace_node *)obj_handle;
- 
--	/* Update enable mask, but don't enable the HW GPE as of yet */
--
--	status = acpi_ev_enable_gpe(gpe_event_info, FALSE);
--
- 	ACPI_DEBUG_PRINT((ACPI_DB_LOAD,
- 			  "Registered GPE method %s as GPE number 0x%.2X\n",
- 			  name, gpe_number));
-@@ -454,20 +448,7 @@ acpi_ev_match_prw_and_gpe(acpi_handle ob
- 							gpe_block->
- 							block_base_number];
- 
--		/* Mark GPE for WAKE-ONLY but WAKE_DISABLED */
--
--		gpe_event_info->flags &=
--		    ~(ACPI_GPE_WAKE_ENABLED | ACPI_GPE_RUN_ENABLED);
--
--		status =
--		    acpi_ev_set_gpe_type(gpe_event_info, ACPI_GPE_TYPE_WAKE);
--		if (ACPI_FAILURE(status)) {
--			goto cleanup;
--		}
--
--		status =
--		    acpi_ev_update_gpe_enable_masks(gpe_event_info,
--						    ACPI_GPE_DISABLE);
-+		gpe_event_info->flags |= ACPI_GPE_CAN_WAKE;
- 	}
- 
-       cleanup:
-@@ -1027,33 +1008,35 @@ acpi_ev_initialize_gpe_block(struct acpi
- 	}
- 
- 	/*
--	 * Enable all GPEs in this block that have these attributes:
--	 * 1) are "runtime" or "run/wake" GPEs, and
--	 * 2) have a corresponding _Lxx or _Exx method
--	 *
--	 * Any other GPEs within this block must be enabled via the
--	 * acpi_enable_gpe() external interface.
-+	 * Enable all GPEs that have a corresponding method and aren't
-+	 * capable of generating wakeups. Any other GPEs within this block
-+	 * must be enabled via the acpi_ref_runtime_gpe interface.
- 	 */
- 	wake_gpe_count = 0;
- 	gpe_enabled_count = 0;
- 
- 	for (i = 0; i < gpe_block->register_count; i++) {
- 		for (j = 0; j < 8; j++) {
-+			int gpe_number = i * ACPI_GPE_REGISTER_WIDTH + j;
- 
- 			/* Get the info block for this particular GPE */
- 
--			gpe_event_info = &gpe_block->event_info[((acpi_size) i *
--								 ACPI_GPE_REGISTER_WIDTH)
--								+ j];
--
--			if (((gpe_event_info->flags & ACPI_GPE_DISPATCH_MASK) ==
--			     ACPI_GPE_DISPATCH_METHOD) &&
--			    (gpe_event_info->flags & ACPI_GPE_TYPE_RUNTIME)) {
--				gpe_enabled_count++;
--			}
-+			gpe_event_info = &gpe_block->event_info[(acpi_size)
-+								gpe_number];
- 
--			if (gpe_event_info->flags & ACPI_GPE_TYPE_WAKE) {
-+			if (gpe_event_info->flags & ACPI_GPE_CAN_WAKE) {
- 				wake_gpe_count++;
-+				continue;
-+			}
+--- linux-2.6.orig/drivers/pci/pcie/Kconfig
++++ linux-2.6/drivers/pci/pcie/Kconfig
+@@ -46,3 +46,7 @@ config PCIEASPM_DEBUG
+ 	help
+ 	  This enables PCI Express ASPM debug support. It will add per-device
+ 	  interface to control ASPM.
 +
-+			if (gpe_event_info->flags & ACPI_GPE_DISPATCH_METHOD) {
-+				gpe_enabled_count++;
-+				if (gpe_device == acpi_gbl_fadt_gpe_device)
-+					status = acpi_ref_runtime_gpe(NULL,
-+								      gpe_number);
-+				else
-+					status = acpi_ref_runtime_gpe(gpe_device,
-+								      gpe_number);
- 			}
- 		}
- 	}
-@@ -1062,15 +1045,7 @@ acpi_ev_initialize_gpe_block(struct acpi
- 			  "Found %u Wake, Enabled %u Runtime GPEs in this block\n",
- 			  wake_gpe_count, gpe_enabled_count));
- 
--	/* Enable all valid runtime GPEs found above */
--
--	status = acpi_hw_enable_runtime_gpe_block(NULL, gpe_block, NULL);
--	if (ACPI_FAILURE(status)) {
--		ACPI_ERROR((AE_INFO, "Could not enable GPEs in GpeBlock %p",
--			    gpe_block));
--	}
--
--	return_ACPI_STATUS(status);
-+	return_ACPI_STATUS(AE_OK);
- }
- 
- /*******************************************************************************
-Index: linux-2.6/drivers/acpi/acpica/evxface.c
++config PCIE_PME
++	def_bool y
++	depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL
+Index: linux-2.6/drivers/pci/pcie/Makefile
 ===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/evxface.c
-+++ linux-2.6/drivers/acpi/acpica/evxface.c
-@@ -617,13 +617,6 @@ acpi_install_gpe_handler(acpi_handle gpe
- 	handler->context = context;
- 	handler->method_node = gpe_event_info->dispatch.method_node;
+--- linux-2.6.orig/drivers/pci/pcie/Makefile
++++ linux-2.6/drivers/pci/pcie/Makefile
+@@ -11,3 +11,5 @@ obj-$(CONFIG_PCIEPORTBUS)	+= pcieportdrv
  
--	/* Disable the GPE before installing the handler */
--
--	status = acpi_ev_disable_gpe(gpe_event_info);
--	if (ACPI_FAILURE(status)) {
--		goto unlock_and_exit;
--	}
--
- 	/* Install the handler */
- 
- 	flags = acpi_os_acquire_lock(acpi_gbl_gpe_lock);
-@@ -707,13 +700,6 @@ acpi_remove_gpe_handler(acpi_handle gpe_
- 		goto unlock_and_exit;
- 	}
- 
--	/* Disable the GPE before removing the handler */
--
--	status = acpi_ev_disable_gpe(gpe_event_info);
--	if (ACPI_FAILURE(status)) {
--		goto unlock_and_exit;
--	}
--
- 	/* Make sure all deferred tasks are completed */
- 
- 	(void)acpi_ut_release_mutex(ACPI_MTX_EVENTS);
-Index: linux-2.6/drivers/acpi/acpica/evxfevnt.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/evxfevnt.c
-+++ linux-2.6/drivers/acpi/acpica/evxfevnt.c
-@@ -311,8 +311,7 @@ acpi_status acpi_ref_wakeup_gpe(acpi_han
- 	}
- 
- 	if (++gpe_event_info->wakeup_count == 1)
--		acpi_ev_update_gpe_enable_masks(gpe_event_info,
--						ACPI_GPE_ENABLE);
-+		acpi_ev_update_gpe_enable_masks(gpe_event_info);
- 
- unlock_and_exit:
- 	acpi_os_release_lock(acpi_gbl_gpe_lock, flags);
-@@ -351,8 +350,7 @@ acpi_status acpi_unref_wakeup_gpe(acpi_h
- 	}
- 
- 	if (--gpe_event_info->wakeup_count == 0)
--		acpi_ev_update_gpe_enable_masks(gpe_event_info,
--			ACPI_GPE_DISABLE);
-+		acpi_ev_update_gpe_enable_masks(gpe_event_info);
- 
- unlock_and_exit:
- 	acpi_os_release_lock(acpi_gbl_gpe_lock, flags);
-@@ -362,48 +360,6 @@ ACPI_EXPORT_SYMBOL(acpi_unref_wakeup_gpe
- 
- /*******************************************************************************
-  *
-- * FUNCTION:    acpi_set_gpe_type
-- *
-- * PARAMETERS:  gpe_device      - Parent GPE Device
-- *              gpe_number      - GPE level within the GPE block
-- *              Type            - New GPE type
-- *
-- * RETURN:      Status
-- *
-- * DESCRIPTION: Set the type of an individual GPE
-- *
-- ******************************************************************************/
--acpi_status acpi_set_gpe_type(acpi_handle gpe_device, u32 gpe_number, u8 type)
--{
--	acpi_status status = AE_OK;
--	struct acpi_gpe_event_info *gpe_event_info;
--
--	ACPI_FUNCTION_TRACE(acpi_set_gpe_type);
--
--	/* Ensure that we have a valid GPE number */
--
--	gpe_event_info = acpi_ev_get_gpe_event_info(gpe_device, gpe_number);
--	if (!gpe_event_info) {
--		status = AE_BAD_PARAMETER;
--		goto unlock_and_exit;
--	}
--
--	if ((gpe_event_info->flags & ACPI_GPE_TYPE_MASK) == type) {
--		return_ACPI_STATUS(AE_OK);
--	}
--
--	/* Set the new type (will disable GPE if currently enabled) */
--
--	status = acpi_ev_set_gpe_type(gpe_event_info, type);
--
--      unlock_and_exit:
--	return_ACPI_STATUS(status);
--}
--
--ACPI_EXPORT_SYMBOL(acpi_set_gpe_type)
--
--/*******************************************************************************
-- *
-  * FUNCTION:    acpi_enable_gpe
-  *
-  * PARAMETERS:  gpe_device      - Parent GPE Device
-Index: linux-2.6/drivers/acpi/button.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/button.c
-+++ linux-2.6/drivers/acpi/button.c
-@@ -422,11 +422,6 @@ static int acpi_button_add(struct acpi_d
- 
- 	if (device->wakeup.flags.valid) {
- 		/* Button's GPE is run-wake GPE */
--		acpi_set_gpe_type(device->wakeup.gpe_device,
--				  device->wakeup.gpe_number,
--				  ACPI_GPE_TYPE_WAKE_RUN);
--		acpi_enable_gpe(device->wakeup.gpe_device,
--				device->wakeup.gpe_number);
- 		acpi_ref_runtime_gpe(device->wakeup.gpe_device,
- 				     device->wakeup.gpe_number);
- 		acpi_ref_wakeup_gpe(device->wakeup.gpe_device,
-Index: linux-2.6/drivers/acpi/ec.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/ec.c
-+++ linux-2.6/drivers/acpi/ec.c
-@@ -754,7 +754,7 @@ static int ec_install_handlers(struct ac
- 				  &acpi_ec_gpe_handler, ec);
- 	if (ACPI_FAILURE(status))
- 		return -ENODEV;
--	acpi_set_gpe_type(NULL, ec->gpe, ACPI_GPE_TYPE_RUNTIME);
+ # Build PCI Express AER if needed
+ obj-$(CONFIG_PCIEAER)		+= aer/
 +
- 	acpi_ref_runtime_gpe(NULL, ec->gpe);
- 	status = acpi_install_address_space_handler(ec->handle,
- 						    ACPI_ADR_SPACE_EC,
-Index: linux-2.6/drivers/acpi/wakeup.c
++obj-$(CONFIG_PCIE_PME) += pme/
+Index: linux-2.6/drivers/pci/pcie/pme/pcie_pme.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/wakeup.c
-+++ linux-2.6/drivers/acpi/wakeup.c
-@@ -62,25 +62,12 @@ void acpi_enable_wakeup_device(u8 sleep_
- 		struct acpi_device *dev =
- 			container_of(node, struct acpi_device, wakeup_list);
- 
--		if (!dev->wakeup.flags.valid)
-+		if (!dev->wakeup.flags.valid ||
-+		    !dev->wakeup.prepare_count ||
-+		    !dev->wakeup.state.enabled ||
-+		    (sleep_state > (u32) dev->wakeup.sleep_state))
- 			continue;
- 
--		/* If users want to disable run-wake GPE,
--		 * we only disable it for wake and leave it for runtime
--		 */
--		if ((!dev->wakeup.state.enabled && !dev->wakeup.prepare_count)
--		    || sleep_state > (u32) dev->wakeup.sleep_state) {
--			if (dev->wakeup.flags.run_wake) {
--				/* set_gpe_type will disable GPE, leave it like that */
--				acpi_set_gpe_type(dev->wakeup.gpe_device,
--						  dev->wakeup.gpe_number,
--						  ACPI_GPE_TYPE_RUNTIME);
--			}
--			continue;
--		}
--		if (!dev->wakeup.flags.run_wake)
--			acpi_enable_gpe(dev->wakeup.gpe_device,
--					dev->wakeup.gpe_number);
- 		acpi_ref_wakeup_gpe(dev->wakeup.gpe_device,
- 				    dev->wakeup.gpe_number);
- 	}
-@@ -99,32 +86,13 @@ void acpi_disable_wakeup_device(u8 sleep
- 		struct acpi_device *dev =
- 			container_of(node, struct acpi_device, wakeup_list);
- 
--		if (!dev->wakeup.flags.valid)
--			continue;
--
--		if ((!dev->wakeup.state.enabled && !dev->wakeup.prepare_count)
--		    || sleep_state > (u32) dev->wakeup.sleep_state) {
--			if (dev->wakeup.flags.run_wake) {
--				acpi_set_gpe_type(dev->wakeup.gpe_device,
--						  dev->wakeup.gpe_number,
--						  ACPI_GPE_TYPE_WAKE_RUN);
--				/* Re-enable it, since set_gpe_type will disable it */
--				acpi_enable_gpe(dev->wakeup.gpe_device,
--						dev->wakeup.gpe_number);
--			}
--			continue;
--		}
-+		if (dev->wakeup.state.enabled &&
-+		    dev->wakeup.prepare_count &&
-+		    sleep_state <= (u32) dev->wakeup.sleep_state)
-+			acpi_unref_wakeup_gpe(dev->wakeup.gpe_device,
-+					    dev->wakeup.gpe_number);
- 
- 		acpi_disable_wakeup_device_power(dev);
--		/* Never disable run-wake GPE */
--		if (!dev->wakeup.flags.run_wake) {
--			acpi_disable_gpe(dev->wakeup.gpe_device,
--					 dev->wakeup.gpe_number);
--			acpi_clear_gpe(dev->wakeup.gpe_device,
--				       dev->wakeup.gpe_number, ACPI_NOT_ISR);
--		}
--		acpi_unref_wakeup_gpe(dev->wakeup.gpe_device,
--				    dev->wakeup.gpe_number);
- 	}
- }
- 
-@@ -140,11 +108,6 @@ int __init acpi_wakeup_device_init(void)
- 		/* In case user doesn't load button driver */
- 		if (!dev->wakeup.flags.run_wake || dev->wakeup.state.enabled)
- 			continue;
--		acpi_set_gpe_type(dev->wakeup.gpe_device,
--				  dev->wakeup.gpe_number,
--				  ACPI_GPE_TYPE_WAKE_RUN);
--		acpi_enable_gpe(dev->wakeup.gpe_device,
--				dev->wakeup.gpe_number);
- 		acpi_ref_wakeup_gpe(dev->wakeup.gpe_device,
- 				    dev->wakeup.gpe_number);
- 		dev->wakeup.state.enabled = 1;
-Index: linux-2.6/include/acpi/actypes.h
+--- /dev/null
++++ linux-2.6/drivers/pci/pcie/pme/pcie_pme.c
+@@ -0,0 +1,493 @@
++/*
++ * PCIe Native PME support
++ *
++ * Copyright (C) 2007 - 2009 Intel Corp
++ * Copyright (C) 2007 - 2009 Shaohua Li <shaohua.li@intel.com>
++ * Copyright (C) 2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License V2.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/device.h>
++#include <linux/pcieport_if.h>
++#include <linux/acpi.h>
++#include <linux/pci-acpi.h>
++#include <linux/pm_runtime.h>
++
++#include "../../pci.h"
++#include "pcie_pme.h"
++
++#define PCI_EXP_RTSTA_PME	0x10000 /* PME status */
++#define PCI_EXP_RTSTA_PENDING	0x20000 /* PME pending */
++
++/*
++ * If set, this switch will prevent the PCIe root port PME service driver from
++ * being registered.  Consequently, the interrupt-based PCIe PME signaling will
++ * not be used by any PCIe root ports in that case.
++ */
++static bool pcie_pme_disabled;
++
++/*
++ * The PCI Express Base Specification 2.0, Section 6.1.8, states the following:
++ * "In order to maintain compatibility with non-PCI Express-aware system
++ * software, system power management logic must be configured by firmware to use
++ * the legacy mechanism of signaling PME by default.  PCI Express-aware system
++ * software must notify the firmware prior to enabling native, interrupt-based
++ * PME signaling."  However, if the platform doesn't provide us with a suitable
++ * notification mechanism or the notification fails, it is not clear whether or
++ * not we are supposed to use the interrupt-based PCIe PME signaling.  The
++ * switch below can be used to indicate the desired behaviour.  When set, it
++ * will make the kernel use the interrupt-based PCIe PME signaling regardless of
++ * the platform notification status, although the kernel will attempt to notify
++ * the platform anyway.  When unset, it will prevent the kernel from using the
++ * the interrupt-based PCIe PME signaling if the platform notification fails,
++ * which is the default.
++ */
++static bool pcie_pme_force_enable;
++
++static int __init pcie_pme_setup(char *str)
++{
++	if (!strcmp(str, "off"))
++		pcie_pme_disabled = true;
++	else if (!strcmp(str, "force"))
++		pcie_pme_force_enable = true;
++	return 1;
++}
++__setup("pcie_pme=", pcie_pme_setup);
++
++/**
++ * pcie_pme_platform_setup - Ensure that the kernel controls the PCIe PME.
++ * @srv: PCIe PME root port service to use for carrying out the check.
++ *
++ * Notify the platform that the native PCIe PME is going to be used and return
++ * 'true' if the control of the PCIe PME registers has been acquired from the
++ * platform.
++ */
++static bool pcie_pme_platform_setup(struct pcie_device *srv)
++{
++	return !pcie_pme_platform_notify(srv) || pcie_pme_force_enable;
++}
++
++struct pcie_pme_service_data {
++	spinlock_t lock;
++	struct pcie_device *srv;
++	struct work_struct work;
++	bool noirq; /* Don't enable the PME interrupt used by this service. */
++};
++
++/**
++ * pcie_pme_interrupt_enable - Enable/disable PCIe PME interrupt generation.
++ * @dev: PCIe root port or event collector.
++ * @enable: Enable or disable the interrupt.
++ */
++static void pcie_pme_interrupt_enable(struct pci_dev *dev, bool enable)
++{
++	int rtctl_pos;
++	u16 rtctl;
++
++	rtctl_pos = pci_find_capability(dev, PCI_CAP_ID_EXP) + PCI_EXP_RTCTL;
++
++	pci_read_config_word(dev, rtctl_pos, &rtctl);
++	if (enable)
++		rtctl |= PCI_EXP_RTCTL_PMEIE;
++	else
++		rtctl &= ~PCI_EXP_RTCTL_PMEIE;
++	pci_write_config_word(dev, rtctl_pos, rtctl);
++}
++
++/**
++ * pcie_pme_clear_status - Clear root port PME interrupt status.
++ * @dev: PCIe root port or event collector.
++ */
++static void pcie_pme_clear_status(struct pci_dev *dev)
++{
++	int rtsta_pos;
++	u32 rtsta;
++
++	rtsta_pos = pci_find_capability(dev, PCI_CAP_ID_EXP) + PCI_EXP_RTSTA;
++
++	pci_read_config_dword(dev, rtsta_pos, &rtsta);
++	rtsta |= PCI_EXP_RTSTA_PME;
++	pci_write_config_dword(dev, rtsta_pos, rtsta);
++}
++
++/**
++ * pcie_pme_walk_bus - Scan a PCI bus for devices asserting PME#.
++ * @bus: PCI bus to scan.
++ *
++ * Scan given PCI bus and all buses under it for devices asserting PME#.
++ */
++static bool pcie_pme_walk_bus(struct pci_bus *bus)
++{
++	struct pci_dev *dev;
++	bool ret = false;
++
++	list_for_each_entry(dev, &bus->devices, bus_list) {
++		/* Skip PCIe devices in case we started from a root port. */
++		if (!dev->is_pcie && pci_check_pme_status(dev)) {
++			pm_request_resume(&dev->dev);
++			ret = true;
++		}
++
++		if (dev->subordinate && pcie_pme_walk_bus(dev->subordinate))
++			ret = true;
++	}
++
++	return ret;
++}
++
++/**
++ * pcie_pme_from_pci_bridge - Check if PCIe-PCI bridge generated a PME.
++ * @bus: Secondary bus of the bridge.
++ * @devfn: Device/function number to check.
++ *
++ * PME from PCI devices under a PCIe-PCI bridge may be converted to an in-band
++ * PCIe PME message.  In such that case the bridge should use the Requester ID
++ * of device/function number 0 on its secondary bus.
++ */
++static bool pcie_pme_from_pci_bridge(struct pci_bus *bus, u8 devfn)
++{
++	struct pci_dev *dev;
++	bool found = false;
++
++	if (devfn)
++		return false;
++
++	dev = pci_dev_get(bus->self);
++	if (!dev)
++		return false;
++
++	if (dev->is_pcie && dev->pcie_type == PCI_EXP_TYPE_PCI_BRIDGE) {
++		down_read(&pci_bus_sem);
++		if (pcie_pme_walk_bus(bus))
++			found = true;
++		up_read(&pci_bus_sem);
++	}
++
++	pci_dev_put(dev);
++	return found;
++}
++
++/**
++ * pcie_pme_handle_request - Find device that generated PME and handle it.
++ * @port: Root port or event collector that generated the PME interrupt.
++ * @req_id: PCIe Requester ID of the device that generated the PME.
++ */
++static void pcie_pme_handle_request(struct pci_dev *port, u16 req_id)
++{
++	u8 busnr = req_id >> 8, devfn = req_id & 0xff;
++	struct pci_bus *bus;
++	struct pci_dev *dev;
++	bool found = false;
++
++	/* First, check if the PME is from the root port itself. */
++	if (port->devfn == devfn && port->bus->number == busnr) {
++		if (pci_check_pme_status(port)) {
++			pm_request_resume(&port->dev);
++			found = true;
++		} else {
++			/*
++			 * Apparently, the root port generated the PME on behalf
++			 * of a non-PCIe device downstream.  If this is done by
++			 * a root port, the Requester ID field in its status
++			 * register may contain either the root port's, or the
++			 * source device's information (PCI Express Base
++			 * Specification, Rev. 2.0, Section 6.1.9).
++			 */
++			down_read(&pci_bus_sem);
++			found = pcie_pme_walk_bus(port->subordinate);
++			up_read(&pci_bus_sem);
++		}
++		goto out;
++	}
++
++	/* Second, find the bus the source device is on. */
++	bus = pci_find_bus(pci_domain_nr(port->bus), busnr);
++	if (!bus)
++		goto out;
++
++	/* Next, check if the PME is from a PCIe-PCI bridge. */
++	found = pcie_pme_from_pci_bridge(bus, devfn);
++	if (found)
++		goto out;
++
++	/* Finally, try to find the PME source on the bus. */
++	down_read(&pci_bus_sem);
++	list_for_each_entry(dev, &bus->devices, bus_list) {
++		pci_dev_get(dev);
++		if (dev->devfn == devfn) {
++			found = true;
++			break;
++		}
++		pci_dev_put(dev);
++	}
++	up_read(&pci_bus_sem);
++
++	if (found) {
++		/* The device is there, but we have to check its PME status. */
++		found = pci_check_pme_status(dev);
++		if (found)
++			pm_request_resume(&dev->dev);
++		pci_dev_put(dev);
++	} else if (devfn) {
++		/*
++		 * The device is not there, but we can still try to recover by
++		 * assuming that the PME was reported by a PCIe-PCI bridge that
++		 * used devfn different from zero.
++		 */
++		dev_dbg(&port->dev, "PME interrupt generated for "
++			"non-existent device %02x:%02x.%d\n",
++			busnr, PCI_SLOT(devfn), PCI_FUNC(devfn));
++		found = pcie_pme_from_pci_bridge(bus, 0);
++	}
++
++ out:
++	if (!found)
++		dev_dbg(&port->dev, "Spurious native PME interrupt!\n");
++}
++
++/**
++ * pcie_pme_work_fn - Work handler for PCIe PME interrupt.
++ * @work: Work structure giving access to service data.
++ */
++static void pcie_pme_work_fn(struct work_struct *work)
++{
++	struct pcie_pme_service_data *data =
++			container_of(work, struct pcie_pme_service_data, work);
++	struct pci_dev *port = data->srv->port;
++	int rtsta_pos;
++	u32 rtsta;
++
++	rtsta_pos = pci_find_capability(port, PCI_CAP_ID_EXP) + PCI_EXP_RTSTA;
++
++	spin_lock_irq(&data->lock);
++
++	for (;;) {
++		if (data->noirq)
++			break;
++
++		pci_read_config_dword(port, rtsta_pos, &rtsta);
++		if (rtsta & PCI_EXP_RTSTA_PME) {
++			/*
++			 * Clear PME status of the port.  If there are other
++			 * pending PMEs, the status will be set again.
++			 */
++			pcie_pme_clear_status(port);
++
++			spin_unlock_irq(&data->lock);
++			pcie_pme_handle_request(port, rtsta & 0xffff);
++			spin_lock_irq(&data->lock);
++
++			continue;
++		}
++
++		/* No need to loop if there are no more PMEs pending. */
++		if (!(rtsta & PCI_EXP_RTSTA_PENDING))
++			break;
++
++		spin_unlock_irq(&data->lock);
++		cpu_relax();
++		spin_lock_irq(&data->lock);
++	}
++
++	if (!data->noirq)
++		pcie_pme_interrupt_enable(port, true);
++
++	spin_unlock_irq(&data->lock);
++}
++
++/**
++ * pcie_pme_irq - Interrupt handler for PCIe root port PME interrupt.
++ * @irq: Interrupt vector.
++ * @context: Interrupt context pointer.
++ */
++static irqreturn_t pcie_pme_irq(int irq, void *context)
++{
++	struct pci_dev *port;
++	struct pcie_pme_service_data *data;
++	int rtsta_pos;
++	u32 rtsta;
++	unsigned long flags;
++
++	port = ((struct pcie_device *)context)->port;
++	data = get_service_data((struct pcie_device *)context);
++
++	rtsta_pos = pci_find_capability(port, PCI_CAP_ID_EXP) + PCI_EXP_RTSTA;
++
++	spin_lock_irqsave(&data->lock, flags);
++	pci_read_config_dword(port, rtsta_pos, &rtsta);
++
++	if (!(rtsta & PCI_EXP_RTSTA_PME)) {
++		spin_unlock_irqrestore(&data->lock, flags);
++		return IRQ_NONE;
++	}
++
++	pcie_pme_interrupt_enable(port, false);
++	spin_unlock_irqrestore(&data->lock, flags);
++
++	/* We don't use pm_wq, because it's freezable. */
++	schedule_work(&data->work);
++
++	return IRQ_HANDLED;
++}
++
++/**
++ * pcie_pme_set_native - Set the PME interrupt flag for given device.
++ * @dev: PCI device to handle.
++ * @ign: Ignored.
++ */
++static int pcie_pme_set_native(struct pci_dev *dev, void *ign)
++{
++	dev_info(&dev->dev, "Signaling PME through PCIe PME interrupt\n");
++
++	device_set_run_wake(&dev->dev, true);
++	dev->pme_interrupt = true;
++	return 0;
++}
++
++/**
++ * pcie_pme_mark_devices - Set the PME interrupt flag for devices below a port.
++ * @port: PCIe root port or event collector to handle.
++ *
++ * For each device below given root port, including the port itself (or for each
++ * root complex integrated endpoint if @port is a root complex event collector)
++ * set the flag indicating that it can signal run-time wake-up events via PCIe
++ * PME interrupts.
++ */
++static void pcie_pme_mark_devices(struct pci_dev *port)
++{
++	pcie_pme_set_native(port, NULL);
++	if (port->subordinate) {
++		pci_walk_bus(port->subordinate, pcie_pme_set_native, NULL);
++	} else {
++		struct pci_bus *bus = port->bus;
++		struct pci_dev *dev;
++
++		/* Check if this is a root port event collector. */
++		if (port->pcie_type != PCI_EXP_TYPE_RC_EC || !bus)
++			return;
++
++		down_read(&pci_bus_sem);
++		list_for_each_entry(dev, &bus->devices, bus_list)
++			if (dev->is_pcie
++			    && dev->pcie_type == PCI_EXP_TYPE_RC_END)
++				pcie_pme_set_native(dev, NULL);
++		up_read(&pci_bus_sem);
++	}
++}
++
++/**
++ * pcie_pme_probe - Initialize PCIe PME service for given root port.
++ * @srv: PCIe service to initialize.
++ */
++static int pcie_pme_probe(struct pcie_device *srv)
++{
++	struct pci_dev *port;
++	struct pcie_pme_service_data *data;
++	int ret;
++
++	if (!pcie_pme_platform_setup(srv))
++		return -EACCES;
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	spin_lock_init(&data->lock);
++	INIT_WORK(&data->work, pcie_pme_work_fn);
++	data->srv = srv;
++	set_service_data(srv, data);
++
++	port = srv->port;
++	pcie_pme_interrupt_enable(port, false);
++	pcie_pme_clear_status(port);
++
++	ret = request_irq(srv->irq, pcie_pme_irq, IRQF_SHARED, "PCIe PME", srv);
++	if (ret) {
++		kfree(data);
++	} else {
++		pcie_pme_mark_devices(port);
++		pcie_pme_interrupt_enable(port, true);
++	}
++
++	return ret;
++}
++
++/**
++ * pcie_pme_suspend - Suspend PCIe PME service device.
++ * @srv: PCIe service device to suspend.
++ */
++static int pcie_pme_suspend(struct pcie_device *srv)
++{
++	struct pcie_pme_service_data *data = get_service_data(srv);
++	struct pci_dev *port = srv->port;
++
++	spin_lock_irq(&data->lock);
++	pcie_pme_interrupt_enable(port, false);
++	pcie_pme_clear_status(port);
++	data->noirq = true;
++	spin_unlock_irq(&data->lock);
++
++	synchronize_irq(srv->irq);
++
++	return 0;
++}
++
++/**
++ * pcie_pme_resume - Resume PCIe PME service device.
++ * @srv - PCIe service device to resume.
++ */
++static int pcie_pme_resume(struct pcie_device *srv)
++{
++	struct pcie_pme_service_data *data = get_service_data(srv);
++	struct pci_dev *port = srv->port;
++
++	spin_lock_irq(&data->lock);
++	data->noirq = false;
++	pcie_pme_clear_status(port);
++	pcie_pme_interrupt_enable(port, true);
++	spin_unlock_irq(&data->lock);
++
++	return 0;
++}
++
++/**
++ * pcie_pme_remove - Prepare PCIe PME service device for removal.
++ * @srv - PCIe service device to resume.
++ */
++static void pcie_pme_remove(struct pcie_device *srv)
++{
++	pcie_pme_suspend(srv);
++	free_irq(srv->irq, srv);
++	kfree(get_service_data(srv));
++}
++
++static struct pcie_port_service_driver pcie_pme_driver = {
++	.name		= "pcie_pme",
++	.port_type 	= PCI_EXP_TYPE_ROOT_PORT,
++	.service 	= PCIE_PORT_SERVICE_PME,
++
++	.probe		= pcie_pme_probe,
++	.suspend	= pcie_pme_suspend,
++	.resume		= pcie_pme_resume,
++	.remove		= pcie_pme_remove,
++};
++
++/**
++ * pcie_pme_service_init - Register the PCIe PME service driver.
++ */
++static int __init pcie_pme_service_init(void)
++{
++	return pcie_pme_disabled ?
++		-ENODEV : pcie_port_service_register(&pcie_pme_driver);
++}
++
++module_init(pcie_pme_service_init);
+Index: linux-2.6/drivers/pci/pcie/pme/pcie_pme_acpi.c
 ===================================================================
---- linux-2.6.orig/include/acpi/actypes.h
-+++ linux-2.6/include/acpi/actypes.h
-@@ -668,41 +668,29 @@ typedef u32 acpi_event_status;
+--- /dev/null
++++ linux-2.6/drivers/pci/pcie/pme/pcie_pme_acpi.c
+@@ -0,0 +1,54 @@
++/*
++ * PCIe Native PME support, ACPI-related part
++ *
++ * Copyright (C) 2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License V2.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#include <linux/pci.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/acpi.h>
++#include <linux/pci-acpi.h>
++#include <linux/pcieport_if.h>
++
++/**
++ * pcie_pme_acpi_setup - Request the ACPI BIOS to release control over PCIe PME.
++ * @srv - PCIe PME service for a root port or event collector.
++ *
++ * Invoked when the PCIe bus type loads PCIe PME service driver.  To avoid
++ * conflict with the BIOS PCIe support requires the BIOS to yield PCIe PME
++ * control to the kernel.
++ */
++int pcie_pme_acpi_setup(struct pcie_device *srv)
++{
++	acpi_status status = AE_NOT_FOUND;
++	struct pci_dev *port = srv->port;
++	acpi_handle handle;
++	int error = 0;
++
++	if (acpi_pci_disabled)
++		return -ENOSYS;
++
++	dev_info(&port->dev, "Requesting control of PCIe PME from ACPI BIOS\n");
++
++	handle = acpi_find_root_bridge_handle(port);
++	if (!handle)
++		return -EINVAL;
++
++	status = acpi_pci_osc_control_set(handle,
++			OSC_PCI_EXPRESS_PME_CONTROL |
++			OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL);
++	if (ACPI_FAILURE(status)) {
++		dev_info(&port->dev,
++			"Failed to receive control of PCIe PME service: %s\n",
++			(status == AE_SUPPORT || status == AE_NOT_FOUND) ?
++			"no _OSC support" : "ACPI _OSC failed");
++		error = -ENODEV;
++	}
++
++	return error;
++}
+Index: linux-2.6/drivers/pci/pcie/pme/Makefile
+===================================================================
+--- /dev/null
++++ linux-2.6/drivers/pci/pcie/pme/Makefile
+@@ -0,0 +1,8 @@
++#
++# Makefile for PCI-Express Root Port PME signaling driver
++#
++
++obj-$(CONFIG_PCIE_PME) += pmedriver.o
++
++pmedriver-objs := pcie_pme.o
++pmedriver-$(CONFIG_ACPI) += pcie_pme_acpi.o
+Index: linux-2.6/drivers/pci/pcie/pme/pcie_pme.h
+===================================================================
+--- /dev/null
++++ linux-2.6/drivers/pci/pcie/pme/pcie_pme.h
+@@ -0,0 +1,28 @@
++/*
++ * drivers/pci/pcie/pme/pcie_pme.h
++ *
++ * PCI Express Root Port PME signaling support
++ *
++ * Copyright (C) 2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
++ */
++
++#ifndef _PCIE_PME_H_
++#define _PCIE_PME_H_
++
++struct pcie_device;
++
++#ifdef CONFIG_ACPI
++extern int pcie_pme_acpi_setup(struct pcie_device *srv);
++
++static inline int pcie_pme_platform_notify(struct pcie_device *srv)
++{
++	return pcie_pme_acpi_setup(srv);
++}
++#else /* !CONFIG_ACPI */
++static inline int pcie_pme_platform_notify(struct pcie_device *srv)
++{
++	return 0;
++}
++#endif /* !CONFIG_ACPI */
++
++#endif
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -239,6 +239,7 @@ struct pci_dev {
+ 					   configuration space */
+ 	unsigned int	pme_support:5;	/* Bitmask of states from which PME#
+ 					   can be generated */
++	unsigned int	pme_interrupt:1;
+ 	unsigned int	d1_support:1;	/* Low power state D1 is supported */
+ 	unsigned int	d2_support:1;	/* Low power state D2 is supported */
+ 	unsigned int	no_d1d2:1;	/* Only allow D0 and D3 */
+Index: linux-2.6/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.orig/Documentation/kernel-parameters.txt
++++ linux-2.6/Documentation/kernel-parameters.txt
+@@ -1989,6 +1989,12 @@ and is between 256 and 4096 characters. 
+ 		force	Enable ASPM even on devices that claim not to support it.
+ 			WARNING: Forcing ASPM on may cause system lockups.
  
- /*
-  * GPE info flags - Per GPE
-- * +-+-+-+---+---+-+
-- * |7|6|5|4:3|2:1|0|
-- * +-+-+-+---+---+-+
-- *  | | |  |   |  |
-- *  | | |  |   |  +--- Interrupt type: Edge or Level Triggered
-- *  | | |  |   +--- Type: Wake-only, Runtime-only, or wake/runtime
-+ * +-+-+-+---+-+-+-+
-+ * |7|6|5|4:3|2|1|0|
-+ * +-+-+-+---+-+-+-+
-+ *  | | |  |  | | |
-+ *  | | |  |  | | +--- Interrupt type: Edge or Level Triggered
-+ *  | | |  |  | +--- GPE can wake the system
-+ *  | | |  |  +--- Unused 
-  *  | | |  +--- Type of dispatch -- to method, handler, or none
-- *  | | +--- Enabled for runtime?
-- *  | +--- Enabled for wake?
-+ *  | | +--- Unused
-+ *  | +--- Unused
-  *  +--- Unused
-  */
- #define ACPI_GPE_XRUPT_TYPE_MASK        (u8) 0x01
- #define ACPI_GPE_LEVEL_TRIGGERED        (u8) 0x01
- #define ACPI_GPE_EDGE_TRIGGERED         (u8) 0x00
++	pcie_pme=	[PCIE,PM] Native PCIe PME signaling options:
++		off	Do not use native PCIe PME signaling.
++		force	Use native PCIe PME signaling even if the BIOS refuses
++			to allow the kernel to control the relevant PCIe config
++			registers.
++
+ 	pcmv=		[HW,PCMCIA] BadgePAD 4
  
--#define ACPI_GPE_TYPE_MASK              (u8) 0x06
--#define ACPI_GPE_TYPE_WAKE_RUN          (u8) 0x06
--#define ACPI_GPE_TYPE_WAKE              (u8) 0x02
--#define ACPI_GPE_TYPE_RUNTIME           (u8) 0x04	/* Default */
-+#define ACPI_GPE_CAN_WAKE		(u8) 0x02
- 
- #define ACPI_GPE_DISPATCH_MASK          (u8) 0x18
- #define ACPI_GPE_DISPATCH_HANDLER       (u8) 0x08
- #define ACPI_GPE_DISPATCH_METHOD        (u8) 0x10
- #define ACPI_GPE_DISPATCH_NOT_USED      (u8) 0x00	/* Default */
- 
--#define ACPI_GPE_RUN_ENABLE_MASK        (u8) 0x20
--#define ACPI_GPE_RUN_ENABLED            (u8) 0x20
--#define ACPI_GPE_RUN_DISABLED           (u8) 0x00	/* Default */
--
--#define ACPI_GPE_WAKE_ENABLE_MASK       (u8) 0x40
--#define ACPI_GPE_WAKE_ENABLED           (u8) 0x40
--#define ACPI_GPE_WAKE_DISABLED          (u8) 0x00	/* Default */
--
--#define ACPI_GPE_ENABLE_MASK            (u8) 0x60	/* Both run/wake */
--
- /*
-  * Flags for GPE and Lock interfaces
-  */
+ 	pd.		[PARIDE]
