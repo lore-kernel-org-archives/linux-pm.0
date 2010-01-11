@@ -1,8 +1,8 @@
-From: Dave Airlie <airlied@gmail.com>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
 Subject: Re: [PATCH] DRM / i915: Fix resume regression on MSI
-	Wind U100 w/o KMS
-Date: Tue, 12 Jan 2010 06:12:37 +1000
-Message-ID: <21d7e9971001111212h1ded5292l94d514c6f5a47cd4__32087.5384648845$1263240903$gmane$org@mail.gmail.com>
+ Wind U100 w/o KMS
+Date: Mon, 11 Jan 2010 12:22:01 -0800
+Message-ID: <20100111122201.153352d6__23594.8438210928$1263241535$gmane$org@jbarnes-piketon>
 References: <201001090045.33784.rjw@sisk.pl>
 	<alpine.LFD.2.00.1001081548320.7821@localhost.localdomain>
 	<alpine.DEB.2.00.1001090214220.21286@skynet.skynet.ie>
@@ -11,11 +11,12 @@ References: <201001090045.33784.rjw@sisk.pl>
 	<alpine.LFD.2.00.1001091012080.7821@localhost.localdomain>
 	<21d7e9971001091332v23ac0e28m1b1890cd667aacb8@mail.gmail.com>
 	<20100111083825.4c2bb7b3@jbarnes-piketon>
+	<21d7e9971001111212h1ded5292l94d514c6f5a47cd4@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100111083825.4c2bb7b3@jbarnes-piketon>
+In-Reply-To: <21d7e9971001111212h1ded5292l94d514c6f5a47cd4@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,51 +26,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Dave Airlie <airlied@gmail.com>
 Cc: Dave Airlie <airlied@linux.ie>, LKML <linux-kernel@vger.kernel.org>, Jerome Glisse <glisse@freedesktop.org>, pm list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 12, 2010 at 2:38 AM, Jesse Barnes <jbarnes@virtuousgeek.org> wr=
-ote:
-> On Sun, 10 Jan 2010 07:32:30 +1000
-> Dave Airlie <airlied@gmail.com> wrote:
->> I'm in the 2-3 years at a minimum, with at least one kernel with no
->> serious regressions in Intel KMS, which we haven't gotten close to
->> yet. I'm not even sure the Intel guys are taking stable seriously
->> enough yet. So far I don't think there is one kernel release (even
->> stable) that works on all Intel chipsets without
->> backporting patches. 2.6.32 needs the changes to remove the messed up
->> render clock hacks which should really have been reverted a lot
->> earlier since we had a lot of regression reports. The number of users
->> using powersave=3D0 to get anything approaching useable is growing etc.
->
-> But you could apply that argument to the existing DRM code (not just
-> Intel) as well; lots of things are broken or unimplemented and never
-> get fixed. =A0I'd say the right metric isn't whether regressions are
-> introduced (usually due to new features) but whether the driver is
-> better than the old userspace code. =A0For Intel at least, I think we're
-> already there. =A0The quality of the kernel driver is higher and it has
-> many more features than the userspace implementation ever did. =A0That's
-> just my subjective opinion, but I've done a *lot* of work on our bugs
-> both in userspace and in the kernel, so I think it's an accurate
-> statement.
-
-The problem is at any single point in time I'm not sure a kms kernel
-exists that works across all the Intel hw, which from a distro POV is a real
-pain in the ass, a regression gets fixed on one piece of hw just as
-another on a different piece gets introduced.
-
-I'd really like if Intel devs could either slow it down and do more testing
-before pushing to Linus, or be a lot quicker with the reverts when stuff
-is identified. The main thing is the render reclocking lately, thats been a
-nightmare and as far as I can see 2.6.32.3 still has all the issues,
-
->
-> It doesn't have to happen anytime soon, I was just thinking that
-> removing the old, pre-KMS code would make it easier to avoid
-> introducing regressions since we'd have one less config (a bit one
-> atthat) to worry about.
-
-Maybe in 3-4 years.
-
-Dave.
+T24gVHVlLCAxMiBKYW4gMjAxMCAwNjoxMjozNyArMTAwMApEYXZlIEFpcmxpZSA8YWlybGllZEBn
+bWFpbC5jb20+IHdyb3RlOgoKPiBPbiBUdWUsIEphbiAxMiwgMjAxMCBhdCAyOjM4IEFNLCBKZXNz
+ZSBCYXJuZXMKPiA8amJhcm5lc0B2aXJ0dW91c2dlZWsub3JnPiB3cm90ZToKPiA+IE9uIFN1biwg
+MTAgSmFuIDIwMTAgMDc6MzI6MzAgKzEwMDAKPiA+IERhdmUgQWlybGllIDxhaXJsaWVkQGdtYWls
+LmNvbT4gd3JvdGU6Cj4gPj4gSSdtIGluIHRoZSAyLTMgeWVhcnMgYXQgYSBtaW5pbXVtLCB3aXRo
+IGF0IGxlYXN0IG9uZSBrZXJuZWwgd2l0aCBubwo+ID4+IHNlcmlvdXMgcmVncmVzc2lvbnMgaW4g
+SW50ZWwgS01TLCB3aGljaCB3ZSBoYXZlbid0IGdvdHRlbiBjbG9zZSB0bwo+ID4+IHlldC4gSSdt
+IG5vdCBldmVuIHN1cmUgdGhlIEludGVsIGd1eXMgYXJlIHRha2luZyBzdGFibGUgc2VyaW91c2x5
+Cj4gPj4gZW5vdWdoIHlldC4gU28gZmFyIEkgZG9uJ3QgdGhpbmsgdGhlcmUgaXMgb25lIGtlcm5l
+bCByZWxlYXNlIChldmVuCj4gPj4gc3RhYmxlKSB0aGF0IHdvcmtzIG9uIGFsbCBJbnRlbCBjaGlw
+c2V0cyB3aXRob3V0Cj4gPj4gYmFja3BvcnRpbmcgcGF0Y2hlcy4gMi42LjMyIG5lZWRzIHRoZSBj
+aGFuZ2VzIHRvIHJlbW92ZSB0aGUgbWVzc2VkCj4gPj4gdXAgcmVuZGVyIGNsb2NrIGhhY2tzIHdo
+aWNoIHNob3VsZCByZWFsbHkgaGF2ZSBiZWVuIHJldmVydGVkIGEgbG90Cj4gPj4gZWFybGllciBz
+aW5jZSB3ZSBoYWQgYSBsb3Qgb2YgcmVncmVzc2lvbiByZXBvcnRzLiBUaGUgbnVtYmVyIG9mCj4g
+Pj4gdXNlcnMgdXNpbmcgcG93ZXJzYXZlPTAgdG8gZ2V0IGFueXRoaW5nIGFwcHJvYWNoaW5nIHVz
+ZWFibGUgaXMKPiA+PiBncm93aW5nIGV0Yy4KPiA+Cj4gPiBCdXQgeW91IGNvdWxkIGFwcGx5IHRo
+YXQgYXJndW1lbnQgdG8gdGhlIGV4aXN0aW5nIERSTSBjb2RlIChub3QganVzdAo+ID4gSW50ZWwp
+IGFzIHdlbGw7IGxvdHMgb2YgdGhpbmdzIGFyZSBicm9rZW4gb3IgdW5pbXBsZW1lbnRlZCBhbmQg
+bmV2ZXIKPiA+IGdldCBmaXhlZC4gwqBJJ2Qgc2F5IHRoZSByaWdodCBtZXRyaWMgaXNuJ3Qgd2hl
+dGhlciByZWdyZXNzaW9ucyBhcmUKPiA+IGludHJvZHVjZWQgKHVzdWFsbHkgZHVlIHRvIG5ldyBm
+ZWF0dXJlcykgYnV0IHdoZXRoZXIgdGhlIGRyaXZlciBpcwo+ID4gYmV0dGVyIHRoYW4gdGhlIG9s
+ZCB1c2Vyc3BhY2UgY29kZS4gwqBGb3IgSW50ZWwgYXQgbGVhc3QsIEkgdGhpbmsKPiA+IHdlJ3Jl
+IGFscmVhZHkgdGhlcmUuIMKgVGhlIHF1YWxpdHkgb2YgdGhlIGtlcm5lbCBkcml2ZXIgaXMgaGln
+aGVyCj4gPiBhbmQgaXQgaGFzIG1hbnkgbW9yZSBmZWF0dXJlcyB0aGFuIHRoZSB1c2Vyc3BhY2Ug
+aW1wbGVtZW50YXRpb24KPiA+IGV2ZXIgZGlkLiDCoFRoYXQncyBqdXN0IG15IHN1YmplY3RpdmUg
+b3BpbmlvbiwgYnV0IEkndmUgZG9uZSBhICpsb3QqCj4gPiBvZiB3b3JrIG9uIG91ciBidWdzIGJv
+dGggaW4gdXNlcnNwYWNlIGFuZCBpbiB0aGUga2VybmVsLCBzbyBJIHRoaW5rCj4gPiBpdCdzIGFu
+IGFjY3VyYXRlIHN0YXRlbWVudC4KPiAKPiBUaGUgcHJvYmxlbSBpcyBhdCBhbnkgc2luZ2xlIHBv
+aW50IGluIHRpbWUgSSdtIG5vdCBzdXJlIGEga21zIGtlcm5lbAo+IGV4aXN0cyB0aGF0IHdvcmtz
+IGFjcm9zcyBhbGwgdGhlIEludGVsIGh3LCB3aGljaCBmcm9tIGEgZGlzdHJvIFBPViBpcwo+IGEg
+cmVhbCBwYWluIGluIHRoZSBhc3MsIGEgcmVncmVzc2lvbiBnZXRzIGZpeGVkIG9uIG9uZSBwaWVj
+ZSBvZiBodwo+IGp1c3QgYXMgYW5vdGhlciBvbiBhIGRpZmZlcmVudCBwaWVjZSBnZXRzIGludHJv
+ZHVjZWQuCj4gCj4gSSdkIHJlYWxseSBsaWtlIGlmIEludGVsIGRldnMgY291bGQgZWl0aGVyIHNs
+b3cgaXQgZG93biBhbmQgZG8gbW9yZQo+IHRlc3RpbmcgYmVmb3JlIHB1c2hpbmcgdG8gTGludXMs
+IG9yIGJlIGEgbG90IHF1aWNrZXIgd2l0aCB0aGUgcmV2ZXJ0cwo+IHdoZW4gc3R1ZmYgaXMgaWRl
+bnRpZmllZC4gVGhlIG1haW4gdGhpbmcgaXMgdGhlIHJlbmRlciByZWNsb2NraW5nCj4gbGF0ZWx5
+LCB0aGF0cyBiZWVuIGEgbmlnaHRtYXJlIGFuZCBhcyBmYXIgYXMgSSBjYW4gc2VlIDIuNi4zMi4z
+IHN0aWxsCj4gaGFzIGFsbCB0aGUgaXNzdWVzLAoKWWVhaCwgaXQgbWF5IGhhdmUgYmVlbiBiZXR0
+ZXIgdG8ganVzdCByZXZlcnQgdGhhdCBlYXJseSBvbiwgYnV0IHNvbWUKdXNlcnMgcmVhbGx5IHdh
+bnRlZCB0aGUgcG93ZXIgc2F2aW5nIGZlYXR1cmVzIHRvbywgc28gaXQgd2Fzbid0IHRvdGFsbHkK
+Y2xlYXIgY3V0IChidHcgc3RhYmxlIGhhcyBhIHJldmVydCBwYXRjaCBxdWV1ZWQgdXAgbm93IHRo
+YXQgZml4ZXMgdGhpbmdzCmZvciBzZXZlcmFsIHBlb3BsZSkuCgo+ID4gSXQgZG9lc24ndCBoYXZl
+IHRvIGhhcHBlbiBhbnl0aW1lIHNvb24sIEkgd2FzIGp1c3QgdGhpbmtpbmcgdGhhdAo+ID4gcmVt
+b3ZpbmcgdGhlIG9sZCwgcHJlLUtNUyBjb2RlIHdvdWxkIG1ha2UgaXQgZWFzaWVyIHRvIGF2b2lk
+Cj4gPiBpbnRyb2R1Y2luZyByZWdyZXNzaW9ucyBzaW5jZSB3ZSdkIGhhdmUgb25lIGxlc3MgY29u
+ZmlnIChhIGJpdCBvbmUKPiA+IGF0dGhhdCkgdG8gd29ycnkgYWJvdXQuCj4gCj4gTWF5YmUgaW4g
+My00IHllYXJzLgoKT3VjaCwgaXQganVzdCB3ZW50IGZyb20gMi0zIHRvIDMtNC4gIEJ1dCByZWFs
+bHkgdGhlIG90aGVyIGRybSBkcml2ZXJzCmhhdmUgdG8gZ2V0IGNvbnZlcnRlZCBhbnl3YXkgYmVm
+b3JlIHdlIGNhbiByZWFsbHkgc3RhcnQga2lsbGluZyBjb2RlLgoKLS0gCkplc3NlIEJhcm5lcywg
+SW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIKX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBt
+QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlv
+bi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
