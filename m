@@ -1,18 +1,14 @@
-From: Julien Cristau <jcristau@debian.org>
-Subject: Re: [PATCH] DRM / i915: Fix resume regression on MSI
- Wind U100 w/o KMS
-Date: Mon, 11 Jan 2010 21:43:55 +0000
-Message-ID: <20100111214355.GA11456__8235.2809644819$1263263946$gmane$org@radis.liafa.jussieu.fr>
-References: <201001090045.33784.rjw@sisk.pl>
-	<20100111083825.4c2bb7b3@jbarnes-piketon>
-	<21d7e9971001111212h1ded5292l94d514c6f5a47cd4@mail.gmail.com>
-	<201001112204.36724.rjw@sisk.pl>
+From: Nick Bowler <nbowler@elliptictech.com>
+Subject: Re: 2.6.33-rc3-git3: Reported regressions from 2.6.32
+Date: Mon, 11 Jan 2010 16:47:10 -0500
+Message-ID: <20100111214603.GA4335__18611.7535261021$1263263956$gmane$org@emergent.ellipticsemi.com>
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201001112204.36724.rjw@sisk.pl>
+In-Reply-To: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,18 +19,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Dave Airlie <airlied@linux.ie>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net, Dave Airlie <airlied@gmail.com>
+Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 11, 2010 at 22:04:36 +0100, Rafael J. Wysocki wrote:
-
-> Hmm, are you trying to say radeon is better at that?
+On 23:27 Sun 10 Jan     , Rafael J. Wysocki wrote:
+> This message contains a list of some regressions from 2.6.32, for which there
+> are no fixes in the mainline I know of.  If any of them have been fixed already,
+> please let me know.
 > 
-> My experience is quite the opposite to be honest.
-> 
-radeon kms is in staging, doesn't pretend to be stable and force all
-users to the experimental paths.  So yes, I would say radeon is better
-at that.
+> If you know of any other unresolved regressions from 2.6.32, please let me know
+> either and I'll add them to the list.  Also, please let me know if any of the
+> entries below are invalid.
 
-Cheers,
-Julien
+Here are two that I don't see in the list:
+
+ * LVDS downclocking breaks on G45/thinkpad T500
+
+     LKML: http://lkml.org/lkml/2009/12/26/40
+     FDO:  http://bugs.freedesktop.org/show_bug.cgi?id=25809
+ 
+ * Receive failure in et131x (Alan Cox sent me a patch for this but
+                              it's not in mainline yet)
+
+     LKML: http://lkml.org/lkml/2009/12/29/210
+
+-- 
+Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
