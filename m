@@ -1,14 +1,13 @@
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-Subject: Re: 2.6.33-rc3-git3: Reported regressions 2.6.31 ->
-	2.6.32
-Date: Mon, 11 Jan 2010 13:49:54 +0100
-Message-ID: <b170af451001110449w134af1f9we804205a5febcaca__5909.27045927874$1263214405$gmane$org@mail.gmail.com>
-References: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Subject: Re: 2.6.33-rc3-git3: Reported regressions from 2.6.32
+Date: Mon, 11 Jan 2010 08:00:37 -0800
+Message-ID: <43e72e891001110800h283b534aj1d60f83266fa215a__8755.48225963048$1263225808$gmane$org@mail.gmail.com>
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
+In-Reply-To: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,16 +18,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-MjAxMC8xLzEwIFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD46Cj4gQnVnLUVudHJ5IMKg
-IMKgIMKgIDogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTE0NzQ3
-Cj4gU3ViamVjdCDCoCDCoCDCoCDCoCA6IGJpc2VjdGVkIDIuNi4zMiByZWdyZXNzaW9uOiBzeW5h
-cHRpY3MgdG91Y2hwYWQgZG9lc24ndCB3b3JrCj4gU3VibWl0dGVyIMKgIMKgIMKgIDogRnJhbsOn
-b2lzIFZhbGVuZHVjIDxmcmFuY29pcy52YWxlbmR1Y0B0dmNhYmxlbmV0LmJlPgo+IERhdGUgwqAg
-wqAgwqAgwqAgwqAgwqA6IDIwMDktMTItMDYgMTE6MTYgKDM2IGRheXMgb2xkKQoKTm90IHN1cmUg
-aWYgdGhpcyBpcyBoYWNraXNoIG9yIG5vdCwgYnV0IHNvbWUgcGF0Y2ggZXhpc3RzLgoKLS0gClJh
-ZmHFggpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51
-eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0
-cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+T24gU3VuLCBKYW4gMTAsIDIwMTAgYXQgMjoyNyBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0Bz
+aXNrLnBsPiB3cm90ZToKPiBUaGlzIG1lc3NhZ2UgY29udGFpbnMgYSBsaXN0IG9mIHNvbWUgcmVn
+cmVzc2lvbnMgZnJvbSAyLjYuMzIsIGZvciB3aGljaCB0aGVyZQo+IGFyZSBubyBmaXhlcyBpbiB0
+aGUgbWFpbmxpbmUgSSBrbm93IG9mLiDCoElmIGFueSBvZiB0aGVtIGhhdmUgYmVlbiBmaXhlZCBh
+bHJlYWR5LAo+IHBsZWFzZSBsZXQgbWUga25vdy4KPgo+IElmIHlvdSBrbm93IG9mIGFueSBvdGhl
+ciB1bnJlc29sdmVkIHJlZ3Jlc3Npb25zIGZyb20gMi42LjMyLCBwbGVhc2UgbGV0IG1lIGtub3cK
+PiBlaXRoZXIgYW5kIEknbGwgYWRkIHRoZW0gdG8gdGhlIGxpc3QuIMKgQWxzbywgcGxlYXNlIGxl
+dCBtZSBrbm93IGlmIGFueSBvZiB0aGUKPiBlbnRyaWVzIGJlbG93IGFyZSBpbnZhbGlkLgo+Cj4g
+RWFjaCBlbnRyeSBmcm9tIHRoZSBsaXN0IHdpbGwgYmUgc2VudCBhZGRpdGlvbmFsbHkgaW4gYW4g
+YXV0b21hdGljIHJlcGx5IHRvCj4gdGhpcyBtZXNzYWdlIHdpdGggQ0NzIHRvIHRoZSBwZW9wbGUg
+aW52b2x2ZWQgaW4gcmVwb3J0aW5nIGFuZCBoYW5kbGluZyB0aGUKPiBpc3N1ZS4KPgoKT2YgdGhl
+c2Ugb25seSB0aGUgb25lIGJlbG93IHdhcyB3aXJlbGVzcywgd2hpY2ggaXMgYWN0dWFsbHkgZml4
+ZWQgbm93LgpOb3QgYmFkLCByYzMgYW5kIG5vIHdpcmVsZXNzIHJlZ3Jlc3Npb25zIHlldC4KCj4g
+QnVnLUVudHJ5IMKgIMKgIMKgIDogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcu
+Y2dpP2lkPTE0ODc0Cj4gU3ViamVjdCDCoCDCoCDCoCDCoCA6IEF0aDVrIHJlZ3Jlc3Npb24gd2l0
+aCBjb21taXQgOGJmM2Q3OWJjNDAxY2E0MTdjY2Y5ZmMwNzZkMzI5NWQxYTcxZGJmNQo+IFN1Ym1p
+dHRlciDCoCDCoCDCoCA6IEpvc2h1YSBDb3Zpbmd0b24gPGpvc2h1YWNvdkBnb29nbGVtYWlsLmNv
+bT4KPiBEYXRlIMKgIMKgIMKgIMKgIMKgIMKgOiAyMDA5LTEyLTI1IDAwOjQ5ICgxNyBkYXlzIG9s
+ZCkKPiBIYW5kbGVkLUJ5IMKgIMKgIMKgOiBMdWlzIFIuIFJvZHJpZ3VleiA8bWNncm9mQGdtYWls
+LmNvbT4KPiBQYXRjaCDCoCDCoCDCoCDCoCDCoCA6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3Jn
+L2F0dGFjaG1lbnQuY2dpP2lkPTI0MzM1CgogIEx1aXMKX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxp
+c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5v
+cmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
