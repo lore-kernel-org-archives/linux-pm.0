@@ -1,14 +1,10 @@
-From: Nick Bowler <nbowler@elliptictech.com>
-Subject: Re: 2.6.33-rc3-git3: Reported regressions from 2.6.32
-Date: Mon, 11 Jan 2010 16:47:10 -0500
-Message-ID: <20100111214603.GA4335__18611.7535261021$1263263956$gmane$org@emergent.ellipticsemi.com>
-References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
+From: Deepak Sikri <deepak.sikri79@gmail.com>
+Subject: Query: CPU Freq Framework
+Date: Tue, 12 Jan 2010 12:14:29 +0530
+Message-ID: <9841a0471001112244g24d732f7t73ec1a25d59bf430@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============6417686411875600154=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,32 +12,53 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@kernel.org>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Natalie Protasevich <protasnb@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: armando.visconti@st.com, shiraz.hashim@st.com
 List-Id: linux-pm@vger.kernel.org
 
-On 23:27 Sun 10 Jan     , Rafael J. Wysocki wrote:
-> This message contains a list of some regressions from 2.6.32, for which there
-> are no fixes in the mainline I know of.  If any of them have been fixed already,
-> please let me know.
-> 
-> If you know of any other unresolved regressions from 2.6.32, please let me know
-> either and I'll add them to the list.  Also, please let me know if any of the
-> entries below are invalid.
+--===============6417686411875600154==
+Content-Type: multipart/alternative; boundary=00504502c13b59700b047cf1fc79
 
-Here are two that I don't see in the list:
+--00504502c13b59700b047cf1fc79
+Content-Type: text/plain; charset=ISO-8859-1
 
- * LVDS downclocking breaks on G45/thinkpad T500
+Hi,
+The System timer (Clock Source & ClockEvent) for our board is sharing the
+clock with CPU.On changing the CPU frequency using the CPU freq governors,
+we are changing the clock being fed to CPU and timers. This is affecting the
+kernel time keeping as the timer frequecy has been changed. What is the
+mechanism for managing this through the CPU freq/some other Linux Framework
+?
 
-     LKML: http://lkml.org/lkml/2009/12/26/40
-     FDO:  http://bugs.freedesktop.org/show_bug.cgi?id=25809
- 
- * Receive failure in et131x (Alan Cox sent me a patch for this but
-                              it's not in mainline yet)
+Regards
+Deepak
 
-     LKML: http://lkml.org/lkml/2009/12/29/210
+--00504502c13b59700b047cf1fc79
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
+<div>Hi,</div>
+<div>The System timer (Clock Source &amp; ClockEvent) for our board is shar=
+ing the clock with CPU.On changing the CPU frequency using the CPU freq gov=
+ernors, we are changing the clock being fed to CPU and timers. This is affe=
+cting the kernel time keeping as the timer frequecy has been changed. What =
+is the mechanism for managing this through the CPU freq/some other Linux Fr=
+amework ?</div>
+
+<div>=A0</div>
+<div>Regards</div>
+<div>Deepak</div>
+
+--00504502c13b59700b047cf1fc79--
+
+--===============6417686411875600154==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============6417686411875600154==--
