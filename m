@@ -1,14 +1,14 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: Query: CPU Freq Framework
-Date: Tue, 12 Jan 2010 19:50:37 +0100
-Message-ID: <20100112185037.GA5000@comet.dominikbrodowski.net>
-References: <9841a0471001112244g24d732f7t73ec1a25d59bf430@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] DRM / i915: Fix resume regression on MSI
+	Wind U100 w/o KMS
+Date: Tue, 12 Jan 2010 23:48:58 +0100
+Message-ID: <201001122348.58306.rjw__9000.12305141917$1263336583$gmane$org@sisk.pl>
+References: <201001090045.33784.rjw@sisk.pl> <878wc3j6mm.fsf@pollan.anholt.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <9841a0471001112244g24d732f7t73ec1a25d59bf430@mail.gmail.com>
+In-Reply-To: <878wc3j6mm.fsf@pollan.anholt.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,51 +18,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Deepak Sikri <deepak.sikri79@gmail.com>
-Cc: armando.visconti@st.com, shiraz.hashim@st.com, linux-pm@lists.linux-foundation.org
+To: Eric Anholt <eric@anholt.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Zhenyu Wang <zhenyuw@linux.intel.com>, pm list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hey,
+On Tuesday 12 January 2010, Eric Anholt wrote:
+> On Sat, 9 Jan 2010 00:45:33 +0100, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Commit cbda12d77ea590082edb6d30bd342a67ebc459e0 (drm/i915: implement
+> > new pm ops for i915), among other things, removed the .suspend and
+> > .resume pointers from the struct drm_driver object in i915_drv.c,
+> > which broke resume without KMS on my MSI Wind U100.
+> > 
+> > Fix this by reverting that part of commit cbda12d77ea59.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Applied, with a little comment for the next poor person having to figure
+> out the difference between these two suspend/resume paths.
 
-On Tue, Jan 12, 2010 at 12:14:29PM +0530, Deepak Sikri wrote:
-> The System timer (Clock Source & ClockEvent) for our board is sharing the
-> clock with CPU.On changing the CPU frequency using the CPU freq governors,
-> we are changing the clock being fed to CPU and timers. This is affecting the
-> kernel time keeping as the timer frequecy has been changed. What is the
-> mechanism for managing this through the CPU freq/some other Linux Framework
-> ?
+Linus has applied this one already.
 
-The CPUfreq framework offers CPU transition notifiers for exactly this
-purpose. See e.g. this snippet from arch/x86/kernel/tsc.c:
-
-	...
-        cpufreq_register_notifier(&time_cpufreq_notifier_block,
-                                CPUFREQ_TRANSITION_NOTIFIER);
-	...
-
-static struct notifier_block time_cpufreq_notifier_block = {
-        .notifier_call  = time_cpufreq_notifier
-};
-
-	...
-
-static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
-                                void *data)
-{
-	...
-
-        if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
-                        (val == CPUFREQ_POSTCHANGE && freq->old > freq->new) ||
-                        (val == CPUFREQ_RESUMECHANGE)) {
-                *lpj = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
-
-                tsc_khz = cpufreq_scale(tsc_khz_ref, ref_freq, freq->new);
-		...
-        }
-	...
-}
-
-Hope this helps.
-
-Best,
-	Dominik
+Rafael
