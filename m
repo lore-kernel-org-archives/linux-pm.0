@@ -1,16 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] [RFC] firewire: Add ohci1394 PCI runtime
-	power management support
-Date: Wed, 13 Jan 2010 22:29:57 +0100
-Message-ID: <201001132229.57231.rjw__32398.5976669521$1263418295$gmane$org@sisk.pl>
-References: <1263336982-15424-1-git-send-email-mjg@redhat.com>
-	<4B4D1A2F.4020103@s5r6.in-berlin.de>
-	<20100113143312.GA21292@srcf.ucam.org>
+From: Jakob Lell <jakob@cs.tu-berlin.de>
+Subject: Re: [Suspend-devel] Serious bug in s2disk may cause
+ filesystem corruption when suspending to swap file
+Date: Thu, 14 Jan 2010 00:27:01 +0100
+Message-ID: <4B4E56C5.20507__47219.8232230314$1263425314$gmane$org@cs.tu-berlin.de>
+References: <4B4D1DBA.6020402@cs.tu-berlin.de> <201001132224.35173.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="------------010000010404080202030504"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100113143312.GA21292@srcf.ucam.org>
+In-Reply-To: <201001132224.35173.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,48 +17,81 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux1394-devel@lists.sourceforge.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: suspend-devel@lists.sourceforge.net, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 13 January 2010, Matthew Garrett wrote:
-> On Wed, Jan 13, 2010 at 01:56:15AM +0100, Stefan Richter wrote:
-> > Matthew Garrett wrote:
-> > > For sanity purposes, the code ensures that the phy is recent enough to
-> > > implement the required functionality. It also ensures that all ports have
-> > > the interrupt enabled - a VIA chip I've tested appears to only allow
-> > > int_enable to be set on one port at a time, which is inadequate for the
-> > > purposes of this code.
-> > 
-> > This adds more extensive use of the link--PHY interface than we ever
-> > had, and FireWire stacks in other popular OSs may not have used these
-> > features yet too.  We will most certainly discover further errata
-> > besides the one that you already found.
-> 
-> I don't doubt it. There's almost certainly serious dragons here on some 
-> hardware.
-> 
-> > > This depends on the PCI runtime PM code, which is not yet upstream. I'm
-> > > sending this out now for sanity checking.
-> > 
-> > Is there a convenient source where I can get the infrastructure, so that
-> > I could start testing with the few cards that I have?
-> 
-> Rafael posted the latest set to linux-acpi on the 27th of December. I 
-> don't think there's a set online yet.
+This is a multi-part message in MIME format.
+--------------010000010404080202030504
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 
-In fact, I posted an update last Sunday (Jan 10), that should be included into
-the PCI linux-next branch shortly.
+Hi Rafael!
 
-The latest patches are here:
-http://patchwork.kernel.org/patch/72020/
-http://patchwork.kernel.org/patch/72026/
-http://patchwork.kernel.org/patch/72019/
-http://patchwork.kernel.org/patch/72015/
-http://patchwork.kernel.org/patch/72030/
-http://patchwork.kernel.org/patch/72021/
-http://patchwork.kernel.org/patch/72029/
-http://patchwork.kernel.org/patch/72028/
-http://patchwork.kernel.org/patch/72027/
+Rafael J. Wysocki wrote:
+> The most recent version of the suspend package, located at:
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-utils.git
+>
+> has all of these problems fixed.
+>   
+I've taken a short look at this code and it isn't completely fixed. The 
+value shift in the functions reset_signature(), mark_signature(), 
+open_resume_dev() and read_image() is still only calculated as a 32 bit 
+value:
 
-Rafael
+off64_t shift = (resume_offset + 1) * page_size - size;
+
+Since resume_offset and page_size are both 32 bit values, the c compiler 
+will do the multiplication as a 32 bit value and in the end convert the 
+result to 64 bit. To solve the problem, one of the values must be 
+converted to 64 bit before the multiplication. I'd suggest using this:
+
+off64_t shift = ( (off64_t) resume_offset + 1) * page_size - size;
+
+I've attached a test program which calculates the value in both ways and 
+prints the result. Here is the output it generates:
+> SHIFT=1578110966
+> SHIFT=409600004086
+
+I'd really appreciate if you could release a new version of the package. 
+Most users and linux distributors prefer to get the latest stable 
+version of software instead of downloading a (possibly unstable) 
+development version from a repository. The latest released version (0.8) 
+is two years old now and it probably contains many more bugs which have 
+been fixed since then.
+
+Regards
+Jakob
+
+
+--------------010000010404080202030504
+Content-Type: text/x-csrc;
+ name="test.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="test.c"
+
+#define _LARGEFILE64_SOURCE
+#include <sys/types.h>
+#include <unistd.h>
+
+
+int main(){
+  int resume_offset = 100000000;
+  int page_size = 4096;
+  int size = 10;
+  off64_t shift = (resume_offset + 1) * page_size - size;
+  printf("SHIFT=%lld\n",shift);
+  shift = ( (off64_t) resume_offset + 1) * page_size - size;
+  printf("SHIFT=%lld\n",shift);
+}
+
+--------------010000010404080202030504
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--------------010000010404080202030504--
