@@ -1,17 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during
-	suspend/resume (was: Re: Memory allocations in .suspend
-	became very unreliable)
-Date: Mon, 18 Jan 2010 01:25:59 +0100
-Message-ID: <201001180125.59413.rjw__21293.8225864947$1263774407$gmane$org@sisk.pl>
-References: <1263549544.3112.10.camel@maxim-laptop>
-	<201001171455.55909.rjw@sisk.pl>
-	<1263745267.2162.42.camel@barrios-desktop>
+Subject: [RFC][PATCH] PM / Runtime: Add sysfs switch for
+	disabling device run-time PM
+Date: Mon, 18 Jan 2010 01:29:55 +0100
+Message-ID: <201001180129.55219.rjw__30473.9886465997$1263774644$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1263745267.2162.42.camel@barrios-desktop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,313 +16,326 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: linux-mm <linux-mm@kvack.org>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 17 January 2010, Minchan Kim wrote:
-> Hi, Rafael.
-> 
-> On Sun, 2010-01-17 at 14:55 +0100, Rafael J. Wysocki wrote:
-> > On Sunday 17 January 2010, Rafael J. Wysocki wrote:
-> > > Hi,
-> > > 
-> > > I thing the snippet below is a good summary of what this is about.
-> > > 
-> > > On Saturday 16 January 2010, Rafael J. Wysocki wrote:
-> > > > On Saturday 16 January 2010, Maxim Levitsky wrote:
-> > > > > On Sat, 2010-01-16 at 01:57 +0100, Rafael J. Wysocki wrote: 
-> > > > > > On Saturday 16 January 2010, Maxim Levitsky wrote:
-> > > > > > > On Fri, 2010-01-15 at 23:03 +0100, Rafael J. Wysocki wrote: 
-> > > > > > > > On Friday 15 January 2010, Maxim Levitsky wrote:
-> > > > > > > > > Hi,
-> > > > > > > > 
-> > > > > > > > Hi,
-> > > > > > > > 
-> > > > > > > > > I know that this is very controversial, because here I want to describe
-> > > > > > > > > a problem in a proprietary driver that happens now in 2.6.33-rc3
-> > > > > > > > > I am taking about nvidia driver.
-> > > > > > > > > 
-> > > > > > > > > Some time ago I did very long hibernate test and found no errors after
-> > > > > > > > > more that 200 cycles.
-> > > > > > > > > 
-> > > > > > > > > Now I update to 2.6.33 and notice that system will hand when nvidia
-> > > > > > > > > driver allocates memory is their .suspend functions. 
-> > > > > > > > 
-> > > > > > > > They shouldn't do that, there's no guarantee that's going to work at all.
-> > > > > > > > 
-> > > > > > > > > This could fail in 2.6.32 if I would run many memory hungry
-> > > > > > > > > applications, but now this happens with most of memory free.
-> > > > > > > > 
-> > > > > > > > This sounds a little strange.  What's the requested size of the image?
-> > > > > > > Don't know, but system has to be very tight on memory.
-> > > > > > 
-> > > > > > Can you send full dmesg, please?
-> > > > > 
-> > > > > I deleted it, but for this case I think that hang was somewhere else.
-> > > > > This task was hand on doing forking, which probably happened even before
-> > > > > the freezer.
-> > > > > 
-> > > > > Anyway, the problem is clear. Now __get_free_pages blocks more often,
-> > > > > and can block in .suspend even if there is plenty of memory free.
-> > > 
-> > > This is suspicious, but I leave it to the MM people for consideration.
-> > > 
-> > > > > I now patched nvidia to use GFP_ATOMIC _always_, and problem disappear.
-> > > > > It isn't such great solution when memory is tight though....
-> > > > > 
-> > > > > This is going to hit hard all nvidia users...
-> > > > 
-> > > > Well, generally speaking, no driver should ever allocate memory using
-> > > > GFP_KERNEL in its .suspend() routine, because that's not going to work, as you
-> > > > can readily see.  So this is a NVidia bug, hands down.
-> > > > 
-> > > > Now having said that, we've been considering a change that will turn all
-> > > > GFP_KERNEL allocations into GFP_NOIO during suspend/resume, so perhaps I'll
-> > > > prepare a patch to do that and let's see what people think.
-> > > 
-> > > If I didn't confuse anything (which is likely, because it's a bit late here
-> > > now), the patch below should do the trick.  I have only checked that it doesn't
-> > > break compilation, so please take it with a grain of salt.
-> > 
-> > Appended is another version that attempts to remove some possible races.
-> > It's been tested a little too.
-...
-> > -	if (unlikely(!page))
-> > +	if (unlikely(!page)) {
-> > +		down_read(&gfp_allowed_mask_sem);
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM / Runtime: Add sysfs switch for disabling device run-time PM
 
-This obviously is going too far, because it would change atomic allocations
-into non-atomic in general (kinda embarassing ...).
+Add new device sysfs attribute, power/runtime, allowing the user
+space to block the run-time power management of the device.  If this
+attribute is set to "disabled", the driver of the device won't be
+able to enable run-time power management for it (without breaking the
+rules).
 
-However, I think it would be sufficient to acquire the lock only in the
-(__GFP_IO | __GFP_FS) case.  Appended is an updated patch doing this.
-
-> >  		page = __alloc_pages_slowpath(gfp_mask, order,
-> >  				zonelist, high_zoneidx, nodemask,
-> >  				preferred_zone, migratetype);
-> > +		up_read(&gfp_allowed_mask_sem);
-> > +	}
-...
-> 
-> I think we can use lockdep annotation, too. but it's overkill. 
-> That's because suspend/resume is rare event so that I want to add
-> the cost in lockdep. so I like this idea. But, I have a concern. 
-> You are adding a little bit cost in alloc path although it's slow one.
-> 
-> Really really do we need this?
-
-Without it, we would have to duplicate every piece of code that normally uses
-GFP_KERNEL allocations and that may be called during suspend/resume.  I don't
-really think that would be practical.
-
-> Can't we remove the wrong usage in review or test process before merge?
-
-That's not so simple.  The Ben's message in this thread described the possible
-issues quite well (http://lkml.org/lkml/2010/1/17/120).
-
-I think the suspend process should wait for all the already started allocations
-using I/O, because otherwise it might disturb them.  So this also is a matter
-of correctness in general.
-
-> I don't have many experience at suspend/resume.
-> I depends on your experience about this patch's value. :)
-
-OK :-)
-
-Rafael
-
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/hibernate.c |    6 +++++
- kernel/power/power.h     |    3 ++
- kernel/power/suspend.c   |    2 +
- mm/Makefile              |    1 
- mm/internal.h            |    3 ++
- mm/page_alloc.c          |    5 +++-
- mm/pm.c                  |   56 +++++++++++++++++++++++++++++++++++++++++++++++
- 7 files changed, 75 insertions(+), 1 deletion(-)
+ drivers/base/power/power.h   |    4 +
+ drivers/base/power/runtime.c |  107 +++++++++++++++++++++++++++++++++----------
+ drivers/base/power/sysfs.c   |   46 ++++++++++++++++++
+ include/linux/pm.h           |    1 
+ include/linux/pm_runtime.h   |   11 +---
+ 5 files changed, 139 insertions(+), 30 deletions(-)
 
-Index: linux-2.6/kernel/power/hibernate.c
+Index: linux-2.6/drivers/base/power/power.h
 ===================================================================
---- linux-2.6.orig/kernel/power/hibernate.c
-+++ linux-2.6/kernel/power/hibernate.c
-@@ -334,6 +334,7 @@ int hibernation_snapshot(int platform_mo
- 		goto Close;
+--- linux-2.6.orig/drivers/base/power/power.h
++++ linux-2.6/drivers/base/power/power.h
+@@ -2,11 +2,15 @@
  
- 	suspend_console();
-+	mm_force_noio_allocations();
- 	error = dpm_suspend_start(PMSG_FREEZE);
- 	if (error)
- 		goto Recover_platform;
-@@ -351,6 +352,7 @@ int hibernation_snapshot(int platform_mo
+ extern void pm_runtime_init(struct device *dev);
+ extern void pm_runtime_remove(struct device *dev);
++extern void pm_runtime_allow(struct device *dev);
++extern void pm_runtime_forbid(struct device *dev);
  
- 	dpm_resume_end(in_suspend ?
- 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
-+	mm_allow_io_allocations();
- 	resume_console();
-  Close:
- 	platform_end(platform_mode);
-@@ -448,11 +450,13 @@ int hibernation_restore(int platform_mod
+ #else /* !CONFIG_PM_RUNTIME */
  
- 	pm_prepare_console();
- 	suspend_console();
-+	mm_force_noio_allocations();
- 	error = dpm_suspend_start(PMSG_QUIESCE);
- 	if (!error) {
- 		error = resume_target_kernel(platform_mode);
- 		dpm_resume_end(PMSG_RECOVER);
+ static inline void pm_runtime_init(struct device *dev) {}
+ static inline void pm_runtime_remove(struct device *dev) {}
++static inline void pm_runtime_allow(struct device *dev) {}
++static inline void pm_runtime_forbid(struct device *dev) {}
+ 
+ #endif /* !CONFIG_PM_RUNTIME */
+ 
+Index: linux-2.6/drivers/base/power/sysfs.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/sysfs.c
++++ linux-2.6/drivers/base/power/sysfs.c
+@@ -7,6 +7,20 @@
+ #include "power.h"
+ 
+ /*
++ *	runtime - Report/change current runtime PM setting of the device
++ *
++ *	Runtime power management of a device can be disabled with the help of
++ *	this attribute.  All devices have one of the following two values for
++ *	the power/runtime file:
++ *
++ *	 + "enabled\n" to allow the device to be power managed at run time;
++ *	 + "disabled\n" to disable this feature for the device;
++ *
++ *	The default for all devices is "enabled\n", but the runtime power
++ *	management of the device has to be enabled by its driver to be actually
++ *	used.  Changing this attribute to "disabled\n" while the device is
++ *	suspended causes it to be woken up.
++ *
+  *	wakeup - Report/change current wakeup option for device
+  *
+  *	Some devices support "wakeup" events, which are hardware signals
+@@ -59,6 +73,35 @@
+ static const char enabled[] = "enabled";
+ static const char disabled[] = "disabled";
+ 
++#ifdef CONFIG_PM_RUNTIME
++static ssize_t runtime_show(struct device *dev, struct device_attribute *attr,
++			    char *buf)
++{
++	return sprintf(buf, "%s\n",
++			dev->power.runtime_forbidden ? disabled : enabled);
++}
++
++static ssize_t runtime_store(struct device * dev, struct device_attribute *attr,
++			     const char * buf, size_t n)
++{
++	char *cp;
++	int len = n;
++
++	cp = memchr(buf, '\n', n);
++	if (cp)
++		len = cp - buf;
++	if (len == sizeof enabled - 1 && strncmp(buf, enabled, len) == 0)
++		pm_runtime_allow(dev);
++	else if (len == sizeof disabled - 1 && strncmp(buf, disabled, len) == 0)
++		pm_runtime_forbid(dev);
++	else
++		return -EINVAL;
++	return n;
++}
++
++static DEVICE_ATTR(runtime, 0644, runtime_show, runtime_store);
++#endif
++
+ static ssize_t
+ wake_show(struct device * dev, struct device_attribute *attr, char * buf)
+ {
+@@ -123,6 +166,9 @@ static DEVICE_ATTR(async, 0644, async_sh
+ #endif /* CONFIG_PM_SLEEP_ADVANCED_DEBUG */
+ 
+ static struct attribute * power_attrs[] = {
++#ifdef CONFIG_PM_RUNTIME
++	&dev_attr_runtime.attr,
++#endif
+ 	&dev_attr_wakeup.attr,
+ #ifdef CONFIG_PM_SLEEP_ADVANCED_DEBUG
+ 	&dev_attr_async.attr,
+Index: linux-2.6/include/linux/pm.h
+===================================================================
+--- linux-2.6.orig/include/linux/pm.h
++++ linux-2.6/include/linux/pm.h
+@@ -433,6 +433,7 @@ struct dev_pm_info {
+ 	unsigned int		request_pending:1;
+ 	unsigned int		deferred_resume:1;
+ 	unsigned int		run_wake:1;
++	unsigned int		runtime_forbidden:1;
+ 	enum rpm_request	request;
+ 	enum rpm_status		runtime_status;
+ 	int			runtime_error;
+Index: linux-2.6/drivers/base/power/runtime.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/runtime.c
++++ linux-2.6/drivers/base/power/runtime.c
+@@ -943,35 +943,26 @@ int pm_runtime_barrier(struct device *de
+ EXPORT_SYMBOL_GPL(pm_runtime_barrier);
+ 
+ /**
+- * __pm_runtime_disable - Disable run-time PM of a device.
++ * __pm_runtime_disable - Disable run-time PM of a device, no locking.
+  * @dev: Device to handle.
+- * @check_resume: If set, check if there's a resume request for the device.
++ * @resume: If set, resume the device before disabling its run-time PM.
+  *
+  * Increment power.disable_depth for the device and if was zero previously,
+  * cancel all pending run-time PM requests for the device and wait for all
+  * operations in progress to complete.  The device can be either active or
+  * suspended after its run-time PM has been disabled.
+  *
+- * If @check_resume is set and there's a resume request pending when
+- * __pm_runtime_disable() is called and power.disable_depth is zero, the
+- * function will wake up the device before disabling its run-time PM.
++ * If @resume is set, the function will wake up the device before disabling its
++ * run-time PM.
+  */
+-void __pm_runtime_disable(struct device *dev, bool check_resume)
++static void __pm_runtime_disable(struct device *dev, bool resume)
+ {
+-	spin_lock_irq(&dev->power.lock);
+-
+ 	if (dev->power.disable_depth > 0) {
+ 		dev->power.disable_depth++;
+-		goto out;
++		return;
  	}
-+	mm_allow_io_allocations();
- 	resume_console();
- 	pm_restore_console();
- 	return error;
-@@ -481,6 +485,7 @@ int hibernation_platform_enter(void)
  
- 	entering_platform_hibernation = true;
- 	suspend_console();
-+	mm_force_noio_allocations();
- 	error = dpm_suspend_start(PMSG_HIBERNATE);
- 	if (error) {
- 		if (hibernation_ops->recover)
-@@ -518,6 +523,7 @@ int hibernation_platform_enter(void)
-  Resume_devices:
- 	entering_platform_hibernation = false;
- 	dpm_resume_end(PMSG_RESTORE);
-+	mm_allow_io_allocations();
- 	resume_console();
+-	/*
+-	 * Wake up the device if there's a resume request pending, because that
+-	 * means there probably is some I/O to process and disabling run-time PM
+-	 * shouldn't prevent the device from processing the I/O.
+-	 */
+-	if (check_resume && dev->power.request_pending
+-	    && dev->power.request == RPM_REQ_RESUME) {
++	if (resume) {
+ 		/*
+ 		 * Prevent suspends and idle notifications from being carried
+ 		 * out after we have woken up the device.
+@@ -985,32 +976,101 @@ void __pm_runtime_disable(struct device 
  
-  Close:
-Index: linux-2.6/kernel/power/power.h
-===================================================================
---- linux-2.6.orig/kernel/power/power.h
-+++ linux-2.6/kernel/power/power.h
-@@ -187,6 +187,9 @@ static inline void suspend_test_finish(c
- #ifdef CONFIG_PM_SLEEP
- /* kernel/power/main.c */
- extern int pm_notifier_call_chain(unsigned long val);
-+/* mm/pm.c */
-+extern void mm_force_noio_allocations(void);
-+extern void mm_allow_io_allocations(void);
- #endif
+ 	if (!dev->power.disable_depth++)
+ 		__pm_runtime_barrier(dev);
++}
  
- #ifdef CONFIG_HIGHMEM
-Index: linux-2.6/kernel/power/suspend.c
-===================================================================
---- linux-2.6.orig/kernel/power/suspend.c
-+++ linux-2.6/kernel/power/suspend.c
-@@ -208,6 +208,7 @@ int suspend_devices_and_enter(suspend_st
- 			goto Close;
- 	}
- 	suspend_console();
-+	mm_force_noio_allocations();
- 	suspend_test_start();
- 	error = dpm_suspend_start(PMSG_SUSPEND);
- 	if (error) {
-@@ -224,6 +225,7 @@ int suspend_devices_and_enter(suspend_st
- 	suspend_test_start();
- 	dpm_resume_end(PMSG_RESUME);
- 	suspend_test_finish("resume devices");
-+	mm_allow_io_allocations();
- 	resume_console();
-  Close:
- 	if (suspend_ops->end)
-Index: linux-2.6/mm/page_alloc.c
-===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -1963,10 +1963,13 @@ __alloc_pages_nodemask(gfp_t gfp_mask, u
- 	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask, order,
- 			zonelist, high_zoneidx, ALLOC_WMARK_LOW|ALLOC_CPUSET,
- 			preferred_zone, migratetype);
--	if (unlikely(!page))
-+	if (unlikely(!page)) {
-+		mm_lock_suspend(gfp_mask);
- 		page = __alloc_pages_slowpath(gfp_mask, order,
- 				zonelist, high_zoneidx, nodemask,
- 				preferred_zone, migratetype);
-+		mm_unlock_suspend(gfp_mask);
+- out:
++/**
++ * pm_runtime_disable_resume - Disable run-time PM of a device and resume it.
++ * @dev: Device to handle.
++ *
++ * Execute __pm_raw_runtime_disable() for the device in such a way that the
++ * device will be woken up if there's a resume request pending for it.
++ */
++void pm_runtime_disable_resume(struct device *dev)
++{
++	spin_lock_irq(&dev->power.lock);
++	/*
++	 * Wake up the device if there's a resume request pending, because that
++	 * means there probably is some I/O to process and disabling run-time PM
++	 * shouldn't prevent the device from processing the I/O.
++	 */
++	__pm_runtime_disable(dev, dev->power.request_pending
++				&& dev->power.request == RPM_REQ_RESUME);
+ 	spin_unlock_irq(&dev->power.lock);
+ }
+-EXPORT_SYMBOL_GPL(__pm_runtime_disable);
++EXPORT_SYMBOL_GPL(pm_runtime_disable_resume);
+ 
+ /**
+- * pm_runtime_enable - Enable run-time PM of a device.
++ * pm_runtime_disable - Disable run-time PM of a device.
+  * @dev: Device to handle.
+  */
+-void pm_runtime_enable(struct device *dev)
++void pm_runtime_disable(struct device *dev)
+ {
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&dev->power.lock, flags);
++	spin_lock_irq(&dev->power.lock);
++	__pm_runtime_disable(dev, false);
++	spin_unlock_irq(&dev->power.lock);
++}
++EXPORT_SYMBOL_GPL(pm_runtime_disable);
+ 
++/**
++ * __pm_runtime_enable - Enable run-time PM of a device, no locking.
++ * @dev: Device to handle.
++ */
++static void __pm_runtime_enable(struct device *dev)
++{
+ 	if (dev->power.disable_depth > 0)
+ 		dev->power.disable_depth--;
+ 	else
+ 		dev_warn(dev, "Unbalanced %s!\n", __func__);
++}
++
++/**
++ * pm_runtime_enable - Enable run-time PM of a device.
++ * @dev: Device to handle.
++ */
++void pm_runtime_enable(struct device *dev)
++{
++	unsigned long flags;
+ 
++	spin_lock_irqsave(&dev->power.lock, flags);
++	__pm_runtime_enable(dev);
+ 	spin_unlock_irqrestore(&dev->power.lock, flags);
+ }
+ EXPORT_SYMBOL_GPL(pm_runtime_enable);
+ 
+ /**
++ * pm_runtime_forbid - Block run-time PM of a device.
++ * @dev: Device to handle.
++ *
++ * Increase the device's disable count and set its power.runtime_forbidden flag,
++ * so that it's not enabled until pm_runtime_allow() is called for @dev.
++ */
++void pm_runtime_forbid(struct device *dev)
++{
++	spin_lock_irq(&dev->power.lock);
++	if (!dev->power.runtime_forbidden) {
++		dev->power.runtime_forbidden = true;
++		__pm_runtime_disable(dev, true);
 +	}
++	spin_unlock_irq(&dev->power.lock);
++}
++
++/**
++ * pm_runtime_allow - Unblock run-time PM of a device.
++ * @dev: Device to handle.
++ *
++ * Decrease the device's disable count and set its power.runtime_forbidden flag.
++ */
++void pm_runtime_allow(struct device *dev)
++{
++	spin_lock_irq(&dev->power.lock);
++	if (dev->power.runtime_forbidden) {
++		dev->power.runtime_forbidden = false;
++		__pm_runtime_enable(dev);
++	}
++	spin_unlock_irq(&dev->power.lock);
++}
++
++/**
+  * pm_runtime_init - Initialize run-time PM fields in given device object.
+  * @dev: Device object to initialize.
+  */
+@@ -1023,6 +1083,7 @@ void pm_runtime_init(struct device *dev)
  
- 	trace_mm_page_alloc(page, order, gfp_mask, migratetype);
- 	return page;
-Index: linux-2.6/mm/Makefile
+ 	dev->power.disable_depth = 1;
+ 	atomic_set(&dev->power.usage_count, 0);
++	dev->power.runtime_forbidden = false;
+ 
+ 	dev->power.runtime_error = 0;
+ 
+Index: linux-2.6/include/linux/pm_runtime.h
 ===================================================================
---- linux-2.6.orig/mm/Makefile
-+++ linux-2.6/mm/Makefile
-@@ -40,3 +40,4 @@ obj-$(CONFIG_MEMORY_FAILURE) += memory-f
- obj-$(CONFIG_HWPOISON_INJECT) += hwpoison-inject.o
- obj-$(CONFIG_DEBUG_KMEMLEAK) += kmemleak.o
- obj-$(CONFIG_DEBUG_KMEMLEAK_TEST) += kmemleak-test.o
-+obj-$(CONFIG_PM_SLEEP) += pm.o
-Index: linux-2.6/mm/pm.c
-===================================================================
---- /dev/null
-+++ linux-2.6/mm/pm.c
-@@ -0,0 +1,56 @@
-+#include <linux/gfp.h>
-+#include <linux/rwsem.h>
-+
-+static DECLARE_RWSEM(gfp_suspend_sem);
-+static gfp_t saved_gfp_allowed_mask;
-+
-+#define GFP_IOFS (__GFP_IO | __GFP_FS)
-+
-+/**
-+ * mm_lock_suspend - Acquire GFP suspend semaphore.
-+ * @gfp_mask: GFP mask used to determine whether to acquire the semaphore.
-+ */
-+void mm_lock_suspend(gfp_t gfp_mask)
-+{
-+	if (gfp_mask & GFP_IOFS)
-+		down_read(&gfp_suspend_sem);
-+}
-+
-+/**
-+ * mm_unlock_suspend - Release GFP suspend semaphore.
-+ * @gfp_mask: GFP mask used to determine whether to release the semaphore.
-+ */
-+void mm_unlock_suspend(gfp_t gfp_mask)
-+{
-+	if (gfp_mask & GFP_IOFS)
-+		up_read(&gfp_suspend_sem);
-+}
-+
-+/**
-+ * mm_force_noio_allocations - Modify gfp_allowed_mask to disable IO allocations
-+ *
-+ * Change gfp_allowed_mask by unsetting __GFP_IO and __GFP_FS in it and save the
-+ * old value.
-+ */
-+void mm_force_noio_allocations(void)
-+{
-+	/* Wait for all slowpath allocations using the old mask to complete */
-+	down_write(&gfp_suspend_sem);
-+	saved_gfp_allowed_mask = gfp_allowed_mask;
-+	gfp_allowed_mask &= ~GFP_IOFS;
-+	up_write(&gfp_suspend_sem);
-+}
-+
-+/**
-+ * mm_allow_io_allocations - Modify gfp_allowed_mask to allow IO allocations
-+ *
-+ * If the saved value of gfp_allowed_mask has __GFP_IO set, modify the current
-+ * gfp_allowed_mask by setting this bit and anlogously for __GFP_FS.
-+ */
-+void mm_allow_io_allocations(void)
-+{
-+	/* Wait for all slowpath allocations using the old mask to complete */
-+	down_write(&gfp_suspend_sem);
-+	gfp_allowed_mask |= saved_gfp_allowed_mask & GFP_IOFS;
-+	up_write(&gfp_suspend_sem);
-+}
-Index: linux-2.6/mm/internal.h
-===================================================================
---- linux-2.6.orig/mm/internal.h
-+++ linux-2.6/mm/internal.h
-@@ -259,3 +259,6 @@ extern u64 hwpoison_filter_flags_mask;
- extern u64 hwpoison_filter_flags_value;
- extern u64 hwpoison_filter_memcg;
- extern u32 hwpoison_filter_enable;
-+
-+extern void mm_lock_suspend(gfp_t gfp_mask);
-+extern void mm_unlock_suspend(gfp_t gfp_mask);
+--- linux-2.6.orig/include/linux/pm_runtime.h
++++ linux-2.6/include/linux/pm_runtime.h
+@@ -27,7 +27,8 @@ extern int __pm_runtime_put(struct devic
+ extern int __pm_runtime_set_status(struct device *dev, unsigned int status);
+ extern int pm_runtime_barrier(struct device *dev);
+ extern void pm_runtime_enable(struct device *dev);
+-extern void __pm_runtime_disable(struct device *dev, bool check_resume);
++extern void pm_runtime_disable_resume(struct device *dev);
++extern void pm_runtime_disable(struct device *dev);
+ 
+ static inline bool pm_children_suspended(struct device *dev)
+ {
+@@ -77,7 +78,8 @@ static inline int __pm_runtime_set_statu
+ 					    unsigned int status) { return 0; }
+ static inline int pm_runtime_barrier(struct device *dev) { return 0; }
+ static inline void pm_runtime_enable(struct device *dev) {}
+-static inline void __pm_runtime_disable(struct device *dev, bool c) {}
++static inline void pm_runtime_disable_resume(struct device *dev) {}
++static inline void pm_runtime_disable(struct device *dev) {}
+ 
+ static inline bool pm_children_suspended(struct device *dev) { return false; }
+ static inline void pm_suspend_ignore_children(struct device *dev, bool en) {}
+@@ -118,9 +120,4 @@ static inline void pm_runtime_set_suspen
+ 	__pm_runtime_set_status(dev, RPM_SUSPENDED);
+ }
+ 
+-static inline void pm_runtime_disable(struct device *dev)
+-{
+-	__pm_runtime_disable(dev, true);
+-}
+-
+ #endif
