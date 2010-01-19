@@ -1,14 +1,19 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Boston Linux Power Management Mini-summit - August
-	9th, 2010
-Date: Tue, 19 Jan 2010 22:13:39 +0100
-Message-ID: <201001192213.39747.rjw__22913.5009031326$1263936115$gmane$org@sisk.pl>
-References: <alpine.LFD.2.00.1001181311040.4030@localhost.localdomain>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during
+ suspend/resume (was: Re: Memory allocations in .suspend became very
+ unreliable)
+Date: Wed, 20 Jan 2010 10:17:51 +1100
+Message-ID: <1263943071.724.540.camel__9045.51124335757$1263943196$gmane$org@pasglop>
+References: <20100118110324.AE30.A69D9226@jp.fujitsu.com>
+	<201001182155.09727.rjw@sisk.pl>
+	<20100119101101.5F2E.A69D9226@jp.fujitsu.com>
+	<1263871194.724.520.camel@pasglop>
+	<195c7a901001190104x164381f9v4a58d1fce70b17b6@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1001181311040.4030@localhost.localdomain>
+In-Reply-To: <195c7a901001190104x164381f9v4a58d1fce70b17b6@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,26 +23,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>
+To: Bastien ROUCARIES <roucaries.bastien@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 19 January 2010, Len Brown wrote:
-> We will hold a Linux Power Management Mini-Summit in Boston
-> on Monday, August 9th, 2010 -- the day before sessions
-> at the Linux Foundation's "LinuxCon Boston 2010".
+On Tue, 2010-01-19 at 10:04 +0100, Bastien ROUCARIES wrote:
+> Instead of masking bit could we only check if incompatible flags are
+> used during suspend, and warm deeply. Call stack will be therefore
+> identified, and we could have some metrics about such problem.
 > 
-> http://events.linuxfoundation.org/
-> 
-> This is an opportunity for members of the Linux Power Management
-> development community to meet face-to-face to discuss the future.
-> 
-> Suggestions for agenda topics should be sent to: 
-> linux-pm@lists.linux-foundation.org
+> It will be a debug option like lockdep but pretty low cost.
 
-I'd like to discuss all PM-related things done since the last year's PM
-mini-summit, like we did last year.  I think it was a good idea to do that.
+I still believe it would just be a giant can of worms to require every
+call site of memory allocators to "know" whether suspend has been
+started or not.... Along the same reasons why we added that stuff for
+boot time allocs.
 
-Apart from this, I'd like to talk about run-time PM, in the PCI context.
-
-Rafael
+Cheers,
+Ben.
