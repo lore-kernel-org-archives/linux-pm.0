@@ -1,57 +1,46 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during
- suspend/resume (was: Re: Memory allocations in .suspend became very
- unreliable)
-Date: Tue, 19 Jan 2010 14:19:54 +1100
-Message-ID: <1263871194.724.520.camel__22237.9008810551$1263871291$gmane$org@pasglop>
-References: <20100118110324.AE30.A69D9226@jp.fujitsu.com>
-	<201001182155.09727.rjw@sisk.pl>
-	<20100119101101.5F2E.A69D9226@jp.fujitsu.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Boston Linux Power Management Mini-summit - August 9th, 2010
+Date: Tue, 19 Jan 2010 01:01:36 -0500 (EST)
+Message-ID: <alpine.LFD.2.00.1001181311040.4030@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100119101101.5F2E.A69D9226@jp.fujitsu.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linux Power Management List <linux-pm@lists.osdl.org>, linux-acpi@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2010-01-19 at 10:19 +0900, KOSAKI Motohiro wrote:
-> I think the race happen itself is bad. memory and I/O subsystem can't solve such race
-> elegantly. These doesn't know enough suspend state knowlege. I think the practical 
-> solution is that higher level design prevent the race happen.
-> 
-> 
-> > My patch attempts to avoid these two problems as well as the problem with
-> > drivers using GFP_KERNEL allocations during suspend which I admit might be
-> > solved by reworking the drivers.
-> 
-> Agreed. In this case, only drivers change can solve the issue. 
+We will hold a Linux Power Management Mini-Summit in Boston
+on Monday, August 9th, 2010 -- the day before sessions
+at the Linux Foundation's "LinuxCon Boston 2010".
 
-As I explained earlier, this is near to impossible since the allocations
-are too often burried deep down the call stack or simply because the
-driver doesn't know that we started suspending -another- driver...
+http://events.linuxfoundation.org/
 
-I don't think trying to solve those problems at the driver level is
-realistic to be honest. This is one of those things where we really just
-need to make allocators 'just work' from a driver perspective.
+This is an opportunity for members of the Linux Power Management
+development community to meet face-to-face to discuss the future.
 
-It can't be perfect of course, as mentioned earlier, there will be a
-problem if too little free memory is really available due to lots of
-dirty pages around, but most of this can be somewhat alleviated in
-practice, for example by pushing things out a bit at suspend time,
-making some more memory free etc... But yeah, nothing replaces proper
-error handling in drivers for allocation failures even with
-GFP_KERNEL :-)
+Suggestions for agenda topics should be sent to: 
+linux-pm@lists.linux-foundation.org
 
-Cheers,
-Ben.
+The final agenda will be formed by consensus of the attendees.
+
+We try to cap attendance at about 20 to support a single 
+discussion, though depending on the room, we may be able to
+accomodate additional attendees.
+
+Requests to attend should be sent to: lenb@kernel.org
+cc: linux-pm@lists.linux-foundation.org -- please summarize
+what you'll bring to the meeting, and what you'd like to discuss.
+
+Presentations are allowed to guide discussion, but not required.
+There will be no recording or audio bridge, however written minutes will 
+be published as in previous years:
+
+2009: http://lwn.net/Articles/345007/
+2008: http://lwn.net/Articles/292447
+2007: http://lwn.net/Articles/249019
+
+If you have feedback on last year's meeting that
+we can use to improve this year's, please let me know.
+
+thanks,
+Len Brown, Intel Open Source Technology Center
