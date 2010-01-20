@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Update][RFC][PATCH] PM / Runtime: Add sysfs switch
- for disabling device run-time PM
-Date: Wed, 20 Jan 2010 10:09:03 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1001201005380.1672-100000__34076.5411653139$1264000238$gmane$org@iolanthe.rowland.org>
-References: <201001192132.26765.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] PM / Runtime: Add sysfs switch for
+	disabling device run-time PM
+Date: Wed, 20 Jan 2010 21:55:36 +0100
+Message-ID: <201001202155.37062.rjw__34987.2077037164$1264021099$gmane$org@sisk.pl>
+References: <201001180129.55219.rjw@sisk.pl> <20100120025147.GA20979@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201001192132.26765.rjw@sisk.pl>
+In-Reply-To: <20100120025147.GA20979@kroah.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,21 +18,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <greg@kroah.com>
 Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 19 Jan 2010, Rafael J. Wysocki wrote:
-
-> > Why change the name from "level" to "runtime"?
+On Wednesday 20 January 2010, Greg KH wrote:
+> On Mon, Jan 18, 2010 at 01:29:55AM +0100, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > Subject: PM / Runtime: Add sysfs switch for disabling device run-time PM
+> > 
+> > Add new device sysfs attribute, power/runtime, allowing the user
+> > space to block the run-time power management of the device.  If this
+> > attribute is set to "disabled", the driver of the device won't be
+> > able to enable run-time power management for it (without breaking the
+> > rules).
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  drivers/base/power/power.h   |    4 +
+> >  drivers/base/power/runtime.c |  107 +++++++++++++++++++++++++++++++++----------
+> >  drivers/base/power/sysfs.c   |   46 ++++++++++++++++++
+> >  include/linux/pm.h           |    1 
+> >  include/linux/pm_runtime.h   |   11 +---
+> >  5 files changed, 139 insertions(+), 30 deletions(-)
 > 
-> Because it wouldn't be really obvious what "level" applied to.  For example,
-> some people might expect the values of "level" to correspond to PCI power
-> states for PCI devices and so on, so it might turn out to be confusing. 
+> You forgot to also add an entry into Documentation/ABI/ for when you
+> add/change a sysfs file :)
 
-But is the name "runtime" any clearer?  Especially to people who have 
-never come across the phrase "runtime power management"?
+There's no description for /sys/devices/.../power/wakeup in there too and
+that one has been present for quite some time already.
 
-Does anybody have a suggestion for a better attribute name?
+I'd prefer adding them both in a separate patch if you don't mind.
 
-Alan Stern
+Rafael
