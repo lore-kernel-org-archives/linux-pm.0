@@ -3,7 +3,7 @@ Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during
 	suspend/resume (was: Re: Memory allocations in .suspend
 	became very unreliable)
 Date: Wed, 20 Jan 2010 22:21:34 +0100
-Message-ID: <201001202221.34804.rjw__36785.9876751483$1264022583$gmane$org@sisk.pl>
+Message-ID: <201001202221.34804.rjw__1677.75127706609$1264022613$gmane$org@sisk.pl>
 References: <1263871194.724.520.camel@pasglop> <201001192147.58185.rjw@sisk.pl>
 	<20100120085053.405A.A69D9226@jp.fujitsu.com>
 Mime-Version: 1.0
