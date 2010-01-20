@@ -1,11 +1,10 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during
- suspend/resume (was: Re: Memory allocations in .suspend became very
- unreliable)
-Date: Thu, 21 Jan 2010 08:11:04 +1100
-Message-ID: <1264021864.724.552.camel__30978.4572142691$1264021986$gmane$org@pasglop>
+	suspend/resume (was: Re: Memory allocations in .suspend
+	became very unreliable)
+Date: Wed, 20 Jan 2010 22:12:49 +0100
+Message-ID: <201001202212.49925.rjw__15298.8701047891$1264022065$gmane$org@sisk.pl>
 References: <20100118110324.AE30.A69D9226@jp.fujitsu.com>
-	<195c7a901001190104x164381f9v4a58d1fce70b17b6@mail.gmail.com>
 	<1263943071.724.540.camel@pasglop>
 	<201001201231.17540.oliver@neukum.org>
 Mime-Version: 1.0
@@ -26,48 +25,33 @@ To: Oliver Neukum <oliver@neukum.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Bastien ROUCARIES <roucaries.bastien@gmail.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2010-01-20 at 12:31 +0100, Oliver Neukum wrote:
+On Wednesday 20 January 2010, Oliver Neukum wrote:
+> Am Mittwoch, 20. Januar 2010 00:17:51 schrieb Benjamin Herrenschmidt:
+> > On Tue, 2010-01-19 at 10:04 +0100, Bastien ROUCARIES wrote:
+> > > Instead of masking bit could we only check if incompatible flags are
+> > > used during suspend, and warm deeply. Call stack will be therefore
+> > > identified, and we could have some metrics about such problem.
+> > > 
+> > > It will be a debug option like lockdep but pretty low cost.
+> > 
+> > I still believe it would just be a giant can of worms to require every
+> > call site of memory allocators to "know" whether suspend has been
+> > started or not.... Along the same reasons why we added that stuff for
+> > boot time allocs.
 > 
 > But we have the freezer. So generally we don't require that knowledge.
 > We can expect no normal IO to happen.
-
-That came before and it's just not a safe assumption :-) The freezer to
-some extent protects drivers against ioctl's and that sort of stuff but
-really that's about it. There's plenty of things in the kernel that can
-kick IOs on their own for a reason or another, or do memory allocations
-which in turn will try to push something out and do IOs etc... even when
-"frozen".
-
 > The question is in the suspend paths. We never may use anything
 > but GFP_NOIO (and GFP_ATOMIC) in the suspend() path. We can
-> take care of that requirement in the allocator only if the whole
-> system
+> take care of that requirement in the allocator only if the whole system
 > is suspended. As soon as a driver does runtime power management,
-> it is on its own. 
+> it is on its own.
 
-I'm not sure I understand what you are trying to say here :-)
+If you start new kernel threads using the async framework, for example,
+GFP_KERNEL allocations are going to be used.
 
-First of all, the problem goes beyond what a driver does in its own
-suspend() path. If it was just that, we might be able to some extent to
-push enough stuff up for the driver to specify the right GFP flags
-(though even that could be nasty).
+As I said before, IMnshO , duplicating every piece of code that allocates
+memory and can be run during suspend/resume as well as in other circumstances
+doesn't make sense.
 
-The problem with system suspend also happens when your driver has not
-been suspended yet, but another one, which happens to be a block device
-with dirty pages for example, has.
-
-Your not-yet-suspended driver might well be blocked somewhere in an
-allocation or about to make one with some kind of internal mutex held,
-that sort of thing, as part of it's normal operations, and -that- can
-hang, causing problems when subsequently that same driver suspend() gets
-called and tries to synchronize with the driver operations, for example
-by trying to acquire that same mutex.
-
-There's more of similarily nasty scenario. The fact is that it's going
-to hit rarely, probably without a bakctrace or a crash, and so will
-basically cause one of those rare "my laptop didn't suspend" cases that
-may not even be reported, and just contribute to the general
-unreliability of suspend/resume.
-
-Cheers,
-Ben.
+Rafael
