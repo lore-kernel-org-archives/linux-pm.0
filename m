@@ -1,15 +1,17 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [RFC][PATCH] PM / Runtime: Add sysfs switch for
-	disabling	device run-time PM
-Date: Tue, 19 Jan 2010 18:51:47 -0800
-Message-ID: <20100120025147.GA20979__47067.9994825788$1263957565$gmane$org@kroah.com>
-References: <201001180129.55219.rjw@sisk.pl>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during
+	suspend/resume (was: Re: Memory allocations in .suspend
+	became very unreliable)
+Date: Wed, 20 Jan 2010 12:31:17 +0100
+Message-ID: <201001201231.17540.oliver__4468.47369098595$1263989932$gmane$org@neukum.org>
+References: <20100118110324.AE30.A69D9226@jp.fujitsu.com>
+	<195c7a901001190104x164381f9v4a58d1fce70b17b6@mail.gmail.com>
+	<1263943071.724.540.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201001180129.55219.rjw@sisk.pl>
+In-Reply-To: <1263943071.724.540.camel@pasglop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,32 +21,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Bastien ROUCARIES <roucaries.bastien@gmail.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 18, 2010 at 01:29:55AM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: PM / Runtime: Add sysfs switch for disabling device run-time PM
+Am Mittwoch, 20. Januar 2010 00:17:51 schrieb Benjamin Herrenschmidt:
+> On Tue, 2010-01-19 at 10:04 +0100, Bastien ROUCARIES wrote:
+> > Instead of masking bit could we only check if incompatible flags are
+> > used during suspend, and warm deeply. Call stack will be therefore
+> > identified, and we could have some metrics about such problem.
+> > 
+> > It will be a debug option like lockdep but pretty low cost.
 > 
-> Add new device sysfs attribute, power/runtime, allowing the user
-> space to block the run-time power management of the device.  If this
-> attribute is set to "disabled", the driver of the device won't be
-> able to enable run-time power management for it (without breaking the
-> rules).
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/base/power/power.h   |    4 +
->  drivers/base/power/runtime.c |  107 +++++++++++++++++++++++++++++++++----------
->  drivers/base/power/sysfs.c   |   46 ++++++++++++++++++
->  include/linux/pm.h           |    1 
->  include/linux/pm_runtime.h   |   11 +---
->  5 files changed, 139 insertions(+), 30 deletions(-)
+> I still believe it would just be a giant can of worms to require every
+> call site of memory allocators to "know" whether suspend has been
+> started or not.... Along the same reasons why we added that stuff for
+> boot time allocs.
 
-You forgot to also add an entry into Documentation/ABI/ for when you
-add/change a sysfs file :)
+But we have the freezer. So generally we don't require that knowledge.
+We can expect no normal IO to happen.
+The question is in the suspend paths. We never may use anything
+but GFP_NOIO (and GFP_ATOMIC) in the suspend() path. We can
+take care of that requirement in the allocator only if the whole system
+is suspended. As soon as a driver does runtime power management,
+it is on its own.
 
-thanks,
-
-greg k-h
+	Regards
+		Oliver
