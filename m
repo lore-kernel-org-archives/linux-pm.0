@@ -1,16 +1,16 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [RFC][PATCH] PM / Runtime: Add sysfs switch for
- disabling device run-time PM
-Date: Wed, 20 Jan 2010 14:50:27 -0800
-Message-ID: <20100120225027.GB31280__28424.1479741924$1264028333$gmane$org@kroah.com>
-References: <201001180129.55219.rjw@sisk.pl> <20100120025147.GA20979@kroah.com>
-	<201001202155.37062.rjw@sisk.pl>
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during
+	suspend/resume (was: Re: Memory allocations in .suspend
+	became very unreliable)
+Date: Thu, 21 Jan 2010 09:47:14 +0900 (JST)
+Message-ID: <20100121091023.3775.A69D9226__14617.962195962$1264035001$gmane$org@jp.fujitsu.com>
+References: <20100120085053.405A.A69D9226@jp.fujitsu.com>
+	<201001202221.34804.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201001202155.37062.rjw@sisk.pl>
+In-Reply-To: <201001202221.34804.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,40 +21,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>, kosaki.motohiro@jp.fujitsu.com, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 20, 2010 at 09:55:36PM +0100, Rafael J. Wysocki wrote:
-> On Wednesday 20 January 2010, Greg KH wrote:
-> > On Mon, Jan 18, 2010 at 01:29:55AM +0100, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > Subject: PM / Runtime: Add sysfs switch for disabling device run-time PM
-> > > 
-> > > Add new device sysfs attribute, power/runtime, allowing the user
-> > > space to block the run-time power management of the device.  If this
-> > > attribute is set to "disabled", the driver of the device won't be
-> > > able to enable run-time power management for it (without breaking the
-> > > rules).
-> > > 
-> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > ---
-> > >  drivers/base/power/power.h   |    4 +
-> > >  drivers/base/power/runtime.c |  107 +++++++++++++++++++++++++++++++++----------
-> > >  drivers/base/power/sysfs.c   |   46 ++++++++++++++++++
-> > >  include/linux/pm.h           |    1 
-> > >  include/linux/pm_runtime.h   |   11 +---
-> > >  5 files changed, 139 insertions(+), 30 deletions(-)
+> > Hi Rafael,
 > > 
-> > You forgot to also add an entry into Documentation/ABI/ for when you
-> > add/change a sysfs file :)
+> > Do you mean this is the unrelated issue of nVidia bug?
 > 
-> There's no description for /sys/devices/.../power/wakeup in there too and
-> that one has been present for quite some time already.
+> The nvidia driver _is_ buggy, but Maxim said he couldn't reproduce the
+> problem if all the allocations made by the nvidia driver during suspend
+> were changed to GFP_ATOMIC.
 > 
-> I'd prefer adding them both in a separate patch if you don't mind.
+> > Probably I haven't catch your point. I don't find Maxim's original bug
+> > report. Can we share the test-case and your analysis detail?
+> 
+> The Maxim's original report is here:
+> https://lists.linux-foundation.org/pipermail/linux-pm/2010-January/023982.html
+> 
+> and the message I'm referring to is at:
+> https://lists.linux-foundation.org/pipermail/linux-pm/2010-January/023990.html
 
-That's fine with me, as long as you add them :)
+Hmmm...
 
-thanks,
+Usually, Increasing I/O isn't caused MM change. either subsystem change
+memory alloc/free pattern and another subsystem receive such effect ;)
+I don't think this message indicate MM fault.
 
-greg k-h
+And, 2.6.33 MM change is not much. if the fault is in MM change
+(note: my guess is no), The most doubtful patch is my "killing shrink_all_zones"
+patch. If old shrink_all_zones reclaimed memory much rather than required. 
+The patch fixed it. IOW, the patch can reduce available free memory to be used
+buggy .suspend of the driver. but I don't think it is MM fault.
+
+As I said, drivers can't use memory freely as their demand in suspend method.
+It's obvious. They should stop such unrealistic assumption. but How should we fix
+this?
+ - Gurantee suspend I/O device at last?
+ - Make much much free memory before calling .suspend method? even though
+   typical drivers don't need.
+ - Ask all drivers how much they require memory before starting suspend and
+   Make enough free memory at first?
+ - Or, do we have an alternative way?
+
+
+Probably we have multiple option. but I don't think GFP_NOIO is good
+option. It assume the system have lots non-dirty cache memory and it isn't
+guranteed.
