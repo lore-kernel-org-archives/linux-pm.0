@@ -2,7 +2,7 @@ From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before
 	suspending devices
 Date: Fri, 22 Jan 2010 22:24:37 +0100
-Message-ID: <201001222224.37748.rjw__18953.3243691132$1264195749$gmane$org@sisk.pl>
+Message-ID: <201001222224.37748.rjw__45199.6476077058$1264195824$gmane$org@sisk.pl>
 References: <alpine.LFD.2.00.1001221841490.2266@localhost>
 	<201001222148.23945.rjw@sisk.pl>
 Mime-Version: 1.0
