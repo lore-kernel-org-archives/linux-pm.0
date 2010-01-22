@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before
-	suspending devices
-Date: Fri, 22 Jan 2010 21:48:23 +0100
-Message-ID: <201001222148.23945.rjw__32220.7293975682$1264193357$gmane$org@sisk.pl>
-References: <alpine.LFD.2.00.1001221841490.2266@localhost>
+Subject: Re: syncing the disks when entering sleep
+Date: Fri, 22 Jan 2010 21:49:46 +0100
+Message-ID: <201001222149.46839.rjw@sisk.pl>
+References: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1001221841490.2266@localhost>
+In-Reply-To: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,57 +17,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Sebastian Ott <sebott@linux.vnet.ibm.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Leisner, Martin" <Martin.Leisner@xerox.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 22 January 2010, Sebastian Ott wrote:
-> hi Rafael,
+On Friday 22 January 2010, Leisner, Martin wrote:
+> I noticed when we enter sleep states, it seems there's always a
+> sys_sync given.
 > 
-> on s390 we have a reproduceable testcase where, after all devices were
-> suspended, a memory allocation results in disk IO. I know that this is
-> similar to the current discussion about magically changing the gpf mask,
-> but in our case the related allocation is triggered not by a device driver
-> but directly by hibernation_snapshot. The call chain looks like this:
+> When having an embedded system doing WOL (already in laptop mode to
+> cache
+> all the writes), it reasonable to wake up dozens of times of day and
+> quickly go back to sleep.  If the disk is not spun up,
+> and there's some work to be done, won't the sys_sync spin up the disk
+> before going to sleep?
 > 
-> STACK:
->  0 schedule+1796 [0x5a7af0]
->  1 io_schedule+98 [0x5a82ce]
->  2 sync_page_killable+4 [0x1ec424]
->  3 __wait_on_bit+204 [0x5a8bc4]
->  4 add_to_page_cache_locked+2 [0x1ec766]
->  5 shrink_page_list+2372 [0x1fc5b0]
->  6 shrink_list+2496 [0x1fd02c]
->  7 shrink_zone+932 [0x1fd3e0]
->  8 try_to_free_pages+668 [0x1fe4bc]
->  9 __alloc_pages_nodemask+1346 [0x1f5056]
-> 10 __get_free_pages+76 [0x1f52dc]
-> 11 __build_sched_domains+60 [0x144f98]
-> 12 partition_sched_domains+696 [0x145dcc]
-> 13 update_sched_domains+100 [0x146104]
-> 14 notifier_call_chain+166 [0x5ae112]
-> 15 raw_notifier_call_chain+44 [0x1800c4]
-> 16 _cpu_down+586 [0x59f212]
-> 17 disable_nonboot_cpus+354 [0x155ad2]
-> 18 hibernation_snapshot+324 [0x1a7938]
-> 19 hibernate+304 [0x1a7bcc]
-> 20 state_store+130 [0x1a645e]
-> 21 sysfs_write_file+264 [0x2b551c]
-> 22 vfs_write+190 [0x23f98a]
-> 23 sys_write+100 [0x23fb50]
-> 24 sysc_noemu+16 [0x118ff6]
+> It would be good to have a knob (in /sys) you can tweak from usespace to
 > 
-> a possible fix would be to call disable_nonboot_cpus before suspending the
-> devices..
+> configure the behavior of whether you want to do a sync when entering
+> sleep.
+> 
+> The ideal behavior would be:
+> 
+>     if(disk is spun up)
+>         then let the sync happen
 
-This is going against the changes attempting to speed-up suspend and resume,
-such as the asynchronous suspend/resume patchset, so I don't agree with it.
-
-The real solution would be to remove the memory allocations from the
-_cpu_down() call path.
-
-BTW, this is one of the cases I and Ben are talking about where it's not
-practical to rework the code just to avoid memory allocation problems during
-suspend/resume.
+I'm not against that.  Patch welcome. :-)
 
 Rafael
