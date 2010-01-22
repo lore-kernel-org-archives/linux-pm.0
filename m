@@ -1,14 +1,17 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/2] PM / Runtime: Add sysfs switch for
-	disabling device run-time PM (rev. 2)
-Date: Fri, 22 Jan 2010 21:56:25 +0100
-Message-ID: <201001222156.25529.rjw__19945.899063214$1264193792$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1001212157500.29627-100000@netrider.rowland.org>
+Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during
+	suspend/resume (was: Re: Memory allocations in .suspend
+	became very unreliable)
+Date: Fri, 22 Jan 2010 21:58:46 +0100
+Message-ID: <201001222158.46337.rjw__33082.960433285$1264193935$gmane$org@sisk.pl>
+References: <20100121091023.3775.A69D9226@jp.fujitsu.com>
+	<201001212121.50272.rjw@sisk.pl>
+	<20100122100155.6C03.A69D9226@jp.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1001212157500.29627-100000@netrider.rowland.org>
+In-Reply-To: <20100122100155.6C03.A69D9226@jp.fujitsu.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,50 +21,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Greg KH <greg@kroah.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 22 January 2010, Alan Stern wrote:
-> On Thu, 21 Jan 2010, Rafael J. Wysocki wrote:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+On Friday 22 January 2010, KOSAKI Motohiro wrote:
+> > > Probably we have multiple option. but I don't think GFP_NOIO is good
+> > > option. It assume the system have lots non-dirty cache memory and it isn't
+> > > guranteed.
 > > 
-> > Add new device sysfs attribute, power/control, allowing the user
-> > space to block the run-time power management of devices.  If this
-> > attribute is set to "on", the driver of the device won't be able to power
-> > manage it at run time (without breaking the rules) and the device will
-> > always be in the full power state (except when the entire system goes
-> > into a sleep state).
+> > Basically nothing is guaranteed in this case.  However, does it actually make
+> > things _worse_?  
 > 
-> ...
+> Hmm..
+> Do you mean we don't need to prevent accidental suspend failure?
+> Perhaps, I did misunderstand your intention. If you think your patch solve
+> this this issue, I still disagree.
+
+No, I don't.
+
+> but If you think your patch mitigate the pain of this issue, I agree it.
+
+That's what I wanted to say really.
+
+> I don't have any reason to oppose your first patch.
+
+Great!
+
+> > What _exactly_ does happen without the $subject patch if the
+> > system doesn't have non-dirty cache memory and someone makes a GFP_KERNEL
+> > allocation during suspend?
 > 
-> > --- linux-2.6.orig/drivers/base/power/power.h
-> > +++ linux-2.6/drivers/base/power/power.h
-> > @@ -2,11 +2,15 @@
-> >  
-> >  extern void pm_runtime_init(struct device *dev);
-> >  extern void pm_runtime_remove(struct device *dev);
-> > +extern void pm_runtime_allow(struct device *dev);
-> > +extern void pm_runtime_forbid(struct device *dev);
+> Page allocator prefer to spent lots time for reclaimable memory searching than
+> returning NULL. IOW, it can spent time few second if it doesn't have
+> reclaimable memory.
+> In typical case, OOM killer forcely make enough free memory if the system
+> don't have any memory. But under suspending time, oom killer is disabled.
+> So, if the caller (probably drivers) call alloc >1000times, the system
+> spent lots seconds.
 > 
-> Can you write a follow-up patch that moves these declarations to a
-> public header file like include/linux/pm_runtime.h and EXPORTs the two
-> new routines?  It is sometimes useful for drivers to be able to call
-> the routines directly.
+> In this case, GFP_NOIO doesn't help. slowness behavior is caused by
+> freeable memory search, not slow i/o.
+> 
+> However, if strange i/o device makes any i/o slowness, GFP_NOIO might help.
+> In this case, please don't ask me about i/o thing. I don't know ;)
 
-I can put them in there in this patch just as well, but I'm not sure it's the
-right thing to do.
-
-> For example, we disable runtime PM for most USB devices by default.  
-> But a few drivers may know that their devices are able to handle it, so 
-> they want to change the default setting when they are bound.
-
-Runtime PM is disabled for all devices by default unless the driver enables
-it.  The setting in power/control is to override the driver's choice, so that
-it can be disabled even if the driver tries to enable it.
-
-IOW, the user space is the owner of the power.runtime_auto flag and I don't
-think we should allow drivers to modify it.
+OK, thanks for the explanation.
 
 Rafael
