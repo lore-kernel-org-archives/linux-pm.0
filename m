@@ -1,18 +1,14 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: syncing the disks when entering sleep
-Date: Sat, 23 Jan 2010 09:06:50 +1100
-Message-ID: <4B5A217A.4090107@crca.org.au>
-References: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>
-	<4B5A1942.2050003@crca.org.au>
-	<76FA3B279DD9DA48896E2B404944957204E0B68C@USA7061MS02.na.xerox.net>
-	<201001222238.13926.rjw@sisk.pl>
-	<76FA3B279DD9DA48896E2B404944957204E0B6AE@USA7061MS02.na.xerox.net>
-	<4B5A1EE1.5040005@crca.org.au>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/2] PM / Runtime: Add sysfs switch for
+ disabling device run-time PM (rev. 2)
+Date: Fri, 22 Jan 2010 17:45:51 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1001221740270.20253-100000__47592.8713255145$1264200409$gmane$org@netrider.rowland.org>
+References: <201001222156.25529.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4B5A1EE1.5040005@crca.org.au>
+In-Reply-To: <201001222156.25529.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,72 +18,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Leisner, Martin" <Martin.Leisner@xerox.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Greg KH <greg@kroah.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi again.
+On Fri, 22 Jan 2010, Rafael J. Wysocki wrote:
 
-Nigel Cunningham wrote:
-> Hi.
+> > For example, we disable runtime PM for most USB devices by default.  
+> > But a few drivers may know that their devices are able to handle it, so 
+> > they want to change the default setting when they are bound.
 > 
-> Leisner, Martin wrote:
->>>   -----Original Message-----
->>>   From: Rafael J. Wysocki [mailto:rjw@sisk.pl]
->>>   Sent: Friday, January 22, 2010 4:38 PM
->>>   To: Leisner, Martin
->>>   Cc: Nigel Cunningham; linux-pm@lists.linux-foundation.org
->>>   Subject: Re: [linux-pm] syncing the disks when entering sleep
->>>   
->>>   On Friday 22 January 2010, Leisner, Martin wrote:
->>>   > To clarify what I proposed:
->>>   >
->>>   > if(user sets knobs)
->>>   >     if(disk is spun up)
->>>   >          sync
->>>   >
->>>   > currently the algorithm is
->>>   >
->>>   >     sync
->>>   
->>>   Yes, but Nigel said it should be
->>>   
->>>   if(user knob is unset)
->>>             sync
->>>   
->>>   which I agree with.
->>>   
->>>   [BTW, please don't top-post in future.]
->>>   
->>>   Rafael
->> if(knob is set) {
->>     if(disk is spun up)
->>        sync
->> } else sync
->>
->> The spinup of the disk can have a very noticeable amount of time...if the user doesn't care about syncing, then the top is preferred...
+> Runtime PM is disabled for all devices by default unless the driver enables
+> it.  The setting in power/control is to override the driver's choice, so that
+> it can be disabled even if the driver tries to enable it.
+> 
+> IOW, the user space is the owner of the power.runtime_auto flag and I don't
+> think we should allow drivers to modify it.
 
-Sorry to reply to myself but...
+Okay, I understand your point of view.  It means I'll have to make some 
+changes to the USB code.  No problem.
 
-> That sounds much better; thanks.
-
-I shouldn't have said that - as Rafael said
-
-if (knob is unset)
-  sync
-
-provides much more predictable behaviour. I know you want the code to
-look at whether the disk is spun up, but that makes things more
-unpredictable. Imagine a situation where you get some error in which
-whether we synced or not is important - reproducing, diagnosing and
-fixing the issue gets more complicated if we go your way.
-
-The other issue would be detecting whether disks (there might be more
-than one!) are spun up. That, in itself, would probably require a lot of
-extra code to get the info from the drivers.
-
-An explicit and unconditional disabling of syncing is simpler.
-
-Regards,
-
-Nigel
+Alan Stern
