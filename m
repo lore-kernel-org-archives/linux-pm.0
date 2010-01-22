@@ -1,13 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: syncing the disks when entering sleep
-Date: Fri, 22 Jan 2010 21:49:46 +0100
-Message-ID: <201001222149.46839.rjw@sisk.pl>
-References: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>
+Subject: Re: [PATCH 1/2] PM / Runtime: Add sysfs switch for
+	disabling device run-time PM (rev. 2)
+Date: Fri, 22 Jan 2010 21:56:25 +0100
+Message-ID: <201001222156.25529.rjw__19945.899063214$1264193792$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1001212157500.29627-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>
+In-Reply-To: <Pine.LNX.4.44L0.1001212157500.29627-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,31 +18,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Leisner, Martin" <Martin.Leisner@xerox.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Greg KH <greg@kroah.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 22 January 2010, Leisner, Martin wrote:
-> I noticed when we enter sleep states, it seems there's always a
-> sys_sync given.
+On Friday 22 January 2010, Alan Stern wrote:
+> On Thu, 21 Jan 2010, Rafael J. Wysocki wrote:
 > 
-> When having an embedded system doing WOL (already in laptop mode to
-> cache
-> all the writes), it reasonable to wake up dozens of times of day and
-> quickly go back to sleep.  If the disk is not spun up,
-> and there's some work to be done, won't the sys_sync spin up the disk
-> before going to sleep?
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Add new device sysfs attribute, power/control, allowing the user
+> > space to block the run-time power management of devices.  If this
+> > attribute is set to "on", the driver of the device won't be able to power
+> > manage it at run time (without breaking the rules) and the device will
+> > always be in the full power state (except when the entire system goes
+> > into a sleep state).
 > 
-> It would be good to have a knob (in /sys) you can tweak from usespace to
+> ...
 > 
-> configure the behavior of whether you want to do a sync when entering
-> sleep.
+> > --- linux-2.6.orig/drivers/base/power/power.h
+> > +++ linux-2.6/drivers/base/power/power.h
+> > @@ -2,11 +2,15 @@
+> >  
+> >  extern void pm_runtime_init(struct device *dev);
+> >  extern void pm_runtime_remove(struct device *dev);
+> > +extern void pm_runtime_allow(struct device *dev);
+> > +extern void pm_runtime_forbid(struct device *dev);
 > 
-> The ideal behavior would be:
-> 
->     if(disk is spun up)
->         then let the sync happen
+> Can you write a follow-up patch that moves these declarations to a
+> public header file like include/linux/pm_runtime.h and EXPORTs the two
+> new routines?  It is sometimes useful for drivers to be able to call
+> the routines directly.
 
-I'm not against that.  Patch welcome. :-)
+I can put them in there in this patch just as well, but I'm not sure it's the
+right thing to do.
+
+> For example, we disable runtime PM for most USB devices by default.  
+> But a few drivers may know that their devices are able to handle it, so 
+> they want to change the default setting when they are bound.
+
+Runtime PM is disabled for all devices by default unless the driver enables
+it.  The setting in power/control is to override the driver's choice, so that
+it can be disabled even if the driver tries to enable it.
+
+IOW, the user space is the owner of the power.runtime_auto flag and I don't
+think we should allow drivers to modify it.
 
 Rafael
