@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/2] PM / Runtime: Add sysfs switch for
-	disabling device run-time PM (rev. 2)
-Date: Sat, 23 Jan 2010 21:08:07 +0100
-Message-ID: <201001232108.07693.rjw__790.208477019583$1264277326$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1001231018510.32358-100000@netrider.rowland.org>
+Subject: [PATCH 1/8] PM: Add parent information to timing messages
+Date: Sun, 24 Jan 2010 00:34:36 +0100
+Message-ID: <201001240034.36423.rjw@sisk.pl>
+References: <201001240033.34253.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1001231018510.32358-100000@netrider.rowland.org>
+In-Reply-To: <201001240033.34253.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,29 +17,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Greg KH <greg@kroah.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, Greg KH <gregkh@suse.de>, Linux SCSI <linux-scsi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, James Bottomley <James.Bottomley@suse.de>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 23 January 2010, Alan Stern wrote:
-> On Sat, 23 Jan 2010, Rafael J. Wysocki wrote:
-> 
-> > Hmm, OK.
-> > 
-> > Of course, if the driver decides to leave disable_depth > 0, the user still
-> > won't be able to do anything about that, but if I understand correctly, you
-> > want drivers to have the option to use pm_runtime_forbid() initially, right
-> > after pm_runtime_enable(), so that the user space can turn the runtime PM
-> > on if desired via sysfs.
-> > 
-> > That makes sense.  I have a usage case for that myself. :-)
-> > 
-> > Updated patch is appended.
-> 
-> It looks good.
-> 
-> Acked-by: Alan Stern <stern@rowland.harvard.edu>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Thanks!
+Add parent information to the messages printed by the suspend/resume
+core when initcall_debug is set.
 
-Rafael
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/main.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -271,8 +271,9 @@ static int pm_noirq_op(struct device *de
+ 	ktime_t calltime, delta, rettime;
+ 
+ 	if (initcall_debug) {
+-		pr_info("calling  %s_i+ @ %i\n",
+-				dev_name(dev), task_pid_nr(current));
++		pr_info("calling  %s+ @ %i, parent: %s\n",
++				dev_name(dev), task_pid_nr(current),
++				dev->parent ? dev_name(dev->parent) : "none");
+ 		calltime = ktime_get();
+ 	}
+ 
