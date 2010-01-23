@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 6/8] PM: Allow PCI devices to suspend/resume
+Subject: [PATCH 8/8] PM: Allow SCSI devices to suspend/resume
 	asynchronously
-Date: Sun, 24 Jan 2010 00:39:40 +0100
-Message-ID: <201001240039.40419.rjw__19612.1434601539$1264291088$gmane$org@sisk.pl>
+Date: Sun, 24 Jan 2010 00:41:30 +0100
+Message-ID: <201001240041.30899.rjw__7009.29202507741$1264291231$gmane$org@sisk.pl>
 References: <201001240033.34253.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,56 +24,71 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Set power.async_suspend for all PCI devices and PCIe port services,
-so that they can be suspended and resumed in parallel with other
-devices they don't depend on in a known way (i.e. devices which are
-not their parents or children).
+Set power.async_suspend for all SCSI devices, targets and hosts, so
+that they can be suspended and resumed in parallel with the main
+suspend/resume thread and possibly with other devices they don't
+depend on in a known way (i.e. devices which are not their parents or
+children).
 
-This only affects the "regular" suspend and resume stages, which
-means in particular that the restoration of the PCI devices' standard
-configuration registers during resume will still be carried out
-synchronously (at the "early" resume stage).
+The power.async_suspend flag is also set for devices that don't have
+suspend or resume callbacks, because otherwise they would make the
+main suspend/resume thread wait for their "asynchronous" children
+(during suspend) or parents (during resume), effectively negating the
+possible gains from executing these devices' suspend and resume
+callbacks asynchronously.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci.c               |    1 +
- drivers/pci/pcie/portdrv_core.c |    1 +
- drivers/pci/probe.c             |    1 +
- 3 files changed, 3 insertions(+)
+ drivers/scsi/hosts.c      |    4 ++++
+ drivers/scsi/scsi_sysfs.c |    4 ++++
+ 2 files changed, 8 insertions(+)
 
-Index: linux-2.6/drivers/pci/pci.c
+Index: linux-2.6/drivers/scsi/hosts.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -1541,6 +1541,7 @@ void pci_pm_init(struct pci_dev *dev)
- 	int pm;
- 	u16 pmc;
+--- linux-2.6.orig/drivers/scsi/hosts.c
++++ linux-2.6/drivers/scsi/hosts.c
+@@ -215,6 +215,8 @@ int scsi_add_host_with_dma(struct Scsi_H
+ 		shost->shost_gendev.parent = dev ? dev : &platform_bus;
+ 	shost->dma_dev = dma_dev;
  
-+	device_enable_async_suspend(&dev->dev);
- 	dev->wakeup_prepared = false;
- 	dev->pm_cap = 0;
- 
-Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
-+++ linux-2.6/drivers/pci/pcie/portdrv_core.c
-@@ -285,6 +285,7 @@ static int pcie_device_init(struct pci_d
- 		     pci_name(pdev),
- 		     get_descriptor_id(pdev->pcie_type, service));
- 	device->parent = &pdev->dev;
-+	device_enable_async_suspend(device);
- 
- 	retval = device_register(device);
- 	if (retval)
-Index: linux-2.6/drivers/pci/probe.c
-===================================================================
---- linux-2.6.orig/drivers/pci/probe.c
-+++ linux-2.6/drivers/pci/probe.c
-@@ -1200,6 +1200,7 @@ struct pci_bus * pci_create_bus(struct d
++	device_enable_async_suspend(&shost->shost_gendev);
++
+ 	error = device_add(&shost->shost_gendev);
  	if (error)
- 		goto dev_reg_err;
- 	b->bridge = get_device(dev);
-+	device_enable_async_suspend(b->bridge);
+ 		goto out;
+@@ -222,6 +224,8 @@ int scsi_add_host_with_dma(struct Scsi_H
+ 	scsi_host_set_state(shost, SHOST_RUNNING);
+ 	get_device(shost->shost_gendev.parent);
  
- 	if (!parent)
- 		set_dev_node(b->bridge, pcibus_to_node(b));
++	device_enable_async_suspend(&shost->shost_dev);
++
+ 	error = device_add(&shost->shost_dev);
+ 	if (error)
+ 		goto out_del_gendev;
+Index: linux-2.6/drivers/scsi/scsi_sysfs.c
+===================================================================
+--- linux-2.6.orig/drivers/scsi/scsi_sysfs.c
++++ linux-2.6/drivers/scsi/scsi_sysfs.c
+@@ -847,6 +847,8 @@ static int scsi_target_add(struct scsi_t
+ 	if (starget->state != STARGET_CREATED)
+ 		return 0;
+ 
++	device_enable_async_suspend(&starget->dev);
++
+ 	error = device_add(&starget->dev);
+ 	if (error) {
+ 		dev_err(&starget->dev, "target device_add failed, error %d\n", error);
+@@ -886,11 +888,13 @@ int scsi_sysfs_add_sdev(struct scsi_devi
+ 		return error;
+ 
+ 	transport_configure_device(&starget->dev);
++	device_enable_async_suspend(&sdev->sdev_gendev);
+ 	error = device_add(&sdev->sdev_gendev);
+ 	if (error) {
+ 		printk(KERN_INFO "error 1\n");
+ 		goto out_remove;
+ 	}
++	device_enable_async_suspend(&sdev->sdev_dev);
+ 	error = device_add(&sdev->sdev_dev);
+ 	if (error) {
+ 		printk(KERN_INFO "error 2\n");
