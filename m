@@ -1,16 +1,15 @@
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: [Update][PATCH] MM / PM: Force GFP_NOIO during
- suspend/hibernation and resume
-Date: Tue, 26 Jan 2010 00:52:01 +0300
-Message-ID: <4B5E1281.7090700__37974.0163604312$1264456451$gmane$org@suse.de>
-References: <201001212121.50272.rjw@sisk.pl> <201001222219.15958.rjw@sisk.pl>
-	<1264238962.16031.4.camel@maxim-laptop>
-	<201001252249.18690.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM / i915: Skip kernel VT switch during
+	suspend/resume if KMS is used
+Date: Mon, 25 Jan 2010 22:54:37 +0100
+Message-ID: <201001252254.37635.rjw__33585.3025237613$1264456598$gmane$org@sisk.pl>
+References: <201001240055.59479.rjw@sisk.pl> <201001252217.39778.rjw@sisk.pl>
+	<20100125212720.7d3af280@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201001252249.18690.rjw@sisk.pl>
+In-Reply-To: <20100125212720.7d3af280@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,46 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: airlied@linux.ie, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>, pm list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-UmFmYWVsIEouIFd5c29ja2kg0L/QuNGI0LXRgjoKPiBPbiBTYXR1cmRheSAyMyBKYW51YXJ5IDIw
-MTAsIE1heGltIExldml0c2t5IHdyb3RlOgo+PiBPbiBGcmksIDIwMTAtMDEtMjIgYXQgMjI6MTkg
-KzAxMDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOiAKPj4+IE9uIEZyaWRheSAyMiBKYW51YXJ5
-IDIwMTAsIE1heGltIExldml0c2t5IHdyb3RlOgo+Pj4+IE9uIEZyaSwgMjAxMC0wMS0yMiBhdCAx
-MDo0MiArMDkwMCwgS09TQUtJIE1vdG9oaXJvIHdyb3RlOiAKPj4+Pj4+Pj4gUHJvYmFibHkgd2Ug
-aGF2ZSBtdWx0aXBsZSBvcHRpb24uIGJ1dCBJIGRvbid0IHRoaW5rIEdGUF9OT0lPIGlzIGdvb2QK
-Pj4+Pj4+Pj4gb3B0aW9uLiBJdCBhc3N1bWUgdGhlIHN5c3RlbSBoYXZlIGxvdHMgbm9uLWRpcnR5
-IGNhY2hlIG1lbW9yeSBhbmQgaXQgaXNuJ3QKPj4+Pj4+Pj4gZ3VyYW50ZWVkLgo+Pj4+Pj4+IEJh
-c2ljYWxseSBub3RoaW5nIGlzIGd1YXJhbnRlZWQgaW4gdGhpcyBjYXNlLiAgSG93ZXZlciwgZG9l
-cyBpdCBhY3R1YWxseSBtYWtlCj4+Pj4+Pj4gdGhpbmdzIF93b3JzZV8/ICAKPj4+Pj4+IEhtbS4u
-Cj4+Pj4+PiBEbyB5b3UgbWVhbiB3ZSBkb24ndCBuZWVkIHRvIHByZXZlbnQgYWNjaWRlbnRhbCBz
-dXNwZW5kIGZhaWx1cmU/Cj4+Pj4+PiBQZXJoYXBzLCBJIGRpZCBtaXN1bmRlcnN0YW5kIHlvdXIg
-aW50ZW50aW9uLiBJZiB5b3UgdGhpbmsgeW91ciBwYXRjaCBzb2x2ZQo+Pj4+Pj4gdGhpcyB0aGlz
-IGlzc3VlLCBJIHN0aWxsIGRpc2FncmVlLiBidXQgSWYgeW91IHRoaW5rIHlvdXIgcGF0Y2ggbWl0
-aWdhdGUKPj4+Pj4+IHRoZSBwYWluIG9mIHRoaXMgaXNzdWUsIEkgYWdyZWUgaXQuIEkgZG9uJ3Qg
-aGF2ZSBhbnkgcmVhc29uIHRvIG9wcG9zZSB5b3VyCj4+Pj4+PiBmaXJzdCBwYXRjaC4KPj4+Pj4g
-T25lIHF1ZXN0aW9uLiBIYXZlIGFueW9uZSB0ZXN0ZWQgUmFmYWVsJ3MgJHN1YmplY3QgcGF0Y2g/
-IAo+Pj4+PiBQbGVhc2UgcG9zdCB0ZXN0IHJlc3VsdC4gaWYgdGhlIGlzc3VlIGRpc2FwcGVyIGJ5
-IHRoZSBwYXRjaCwgd2UgY2FuCj4+Pj4+IHN1cHBvc2UgdGhlIHNsb3duZXNzIGlzIGNhdXNlZCBi
-eSBpL28gbGF5ZXIuCj4+Pj4gSSBkaWQuCj4+Pj4KPj4+PiBBcyBmYXIgYXMgSSBjb3VsZCBzZWUs
-IHBhdGNoIGRvZXMgc29sdmUgdGhlIHByb2JsZW0gSSBkZXNjcmliZWQuCj4+Pj4KPj4+PiBEb2Vz
-IGl0IGFmZmVjdCBzcGVlZCBvZiBzdXNwZW5kPyBJIGNhbid0IHNheSBmb3Igc3VyZS4gSXQgc2Vl
-bXMgdG8gYmUKPj4+PiB0aGUgc2FtZS4KPj4+IFRoYW5rcyBmb3IgdGVzdGluZy4KPj4gSSdsbCB0
-ZXN0IHRoYXQgdG9vLCBzb29uLgo+PiBKdXN0IHRvIG5vdGUgdGhhdCBJIGxlZnQgbXkgaGliZXJu
-YXRlIGxvb3AgcnVuIG92ZXJuaWdodCwgYW5kIG5vdyBJIGFtCj4+IHBvc3RpbmcgZnJvbSBteSBu
-b3RlYm9vayBhZnRlciBpdCBkaWQgNTkwIGhpYmVybmF0ZSBjeWNsZXMuCj4gCj4gRGlkIHlvdSBo
-YXZlIGEgY2hhbmNlIHRvIHRlc3QgaXQ/Cj4gCj4+IE9mZnRvcGljLCBidXQgTm90ZSB0aGF0IHRv
-IGFjaGlldmUgdGhhdCBJIGhhZCB0byBzdG9wIHVzaW5nIGdsb2JhbCBhY3BpCj4+IGhhcmR3YXJl
-IGxvY2suIEkgdHJpZWQgYWxsIGtpbmRzIG9mIHRoaW5ncywgYnV0IGZvciBub3cgaXQganVzdCBo
-YW5kcwo+PiBmcm9tIHRpbWUgdG8gdGltZS4KPj4gU2VlIGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwu
-b3JnL3Nob3dfYnVnLmNnaT9pZD0xNDY2OAo+IAo+IEknbSBnb2luZyB0byBsb29rIGF0IHRoYXQg
-bGF0ZXIgdGhpcyB3ZWVrLCBhbHRob3VnaCBJJ20gbm90IHN1cmUgSSBjYW4gZG8gbW9yZQo+IHRo
-YW4gQWxleCBhYm91dCB0aGF0Lgo+IAo+IFJhZmFlbApSYWZhZWwsCklmIHlvdSBjYW4gcG9pbnQg
-dG8gd2hlcmUgb25lIG1heSBpbnNlcnQgY2FsbGJhY2sgdG8gYmUgY2FsbGVkIGp1c3QgYmVmb3Jl
-IGhhbmRpbmcgY29udHJvbCB0byByZXN1bWUga2VybmVsLAppdCBtYXkgaGVscC4uLgoKUmVnYXJk
-cywKQWxleC4KCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24u
-b3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9s
-aW51eC1wbQ==
+On Monday 25 January 2010, Alan Cox wrote:
+> > > But in that case we should be able to disable the VT switch disable
+> > > path; we just have to check each driver as it's loaded.
+> > 
+> > OK, what the right sequence of checks would be in that case and where to place
+> > them?
+> 
+> Why are we even driving a vt switch direct from the suspend/resume
+> logic ? The problem starts there. If it was being handled off the device
+> suspend/resume method then there wouldn't be a mess to start with ?
+> 
+> Start at the beginning
+> 
+> - Why do we switch to arbitarily chosen 'last vt'
+> - Why isn't vt related suspend/resume handled by the device
+
+Well, that was added long ago as a workaround for some problems people
+reported (presumably).  I've never looked at that before, so I can't really
+tell why someone did it this particular way.
+
+Obviously I'd like to clean it up, though.
+
+So, what device should handle this in your opinion?
+
+Rafael
