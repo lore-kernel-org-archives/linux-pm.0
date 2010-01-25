@@ -1,13 +1,16 @@
-From: Eric Anholt <eric@anholt.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] PM / i915: Skip kernel VT switch during
- suspend/resume if KMS is used
-Date: Mon, 25 Jan 2010 09:22:11 -0800
-Message-ID: <87k4v63xrw.fsf__40541.397201787$1264447322$gmane$org@pollan.anholt.net>
+	suspend/resume if KMS is used
+Date: Mon, 25 Jan 2010 22:17:39 +0100
+Message-ID: <201001252217.39778.rjw__36077.0145467997$1264454318$gmane$org@sisk.pl>
 References: <201001240055.59479.rjw@sisk.pl>
+	<20100125184350.0fbad233@lxorguk.ukuu.org.uk>
+	<20100125104938.6b34d61c@jbarnes-piketon>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5282237686177891695=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201001240055.59479.rjw@sisk.pl>
+In-Reply-To: <20100125104938.6b34d61c@jbarnes-piketon>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,64 +18,30 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: airlied@linux.ie, LKML <linux-kernel@vger.kernel.org>, Eric Anholt <eric@anholt.net>, pm list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
---===============5282237686177891695==
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
+On Monday 25 January 2010, Jesse Barnes wrote:
+> On Mon, 25 Jan 2010 18:43:50 +0000
+> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+> > > This probably belongs in the core DRM KMS code instead of the
+> > > driver. I can imagine that there may be some X driver code that
+> > > still needs to be executed on suspend/resume for some drivers, so
+> > > this may introduce bugs, but it's definitely the right way to go.
+> > 
+> > You can have a mix of KMS and non KMS consoles active on different
+> > cards. So I don't think that is the case.
+> 
+> I pity users with that configuration.
+> 
+> But in that case we should be able to disable the VT switch disable
+> path; we just have to check each driver as it's loaded.
 
---=-=-=
-Content-Transfer-Encoding: quoted-printable
+OK, what the right sequence of checks would be in that case and where to place
+them?
 
-On Sun, 24 Jan 2010 00:55:59 +0100, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
->=20
-> If a non-KMS graphics driver is used, the kernel carries out a VT
-> switch during suspend/resume to avoid possible problems with freezing
-> X at a wrong time and to cause X to repaint everything after resume.
->=20
-> This is not necessary any more if the KMS is used, so skip the kernel
-> VT switch during suspend/resume for i915 in the KMS mode.
->=20
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->=20
-> Hi,
->=20
-> I've been testing this patch for over a week and haven't seen a single pr=
-oblem
-> related to it during this time.
->=20
-> Are there any objections to it?
->=20
-> Rafael
-
-Love it!
-
-Acked-by: Eric Anholt <eric@anholt.net>
-
---=-=-=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktd00MACgkQHUdvYGzw6vdJxgCeLFdnO9dl9KMH8Lh+3k3ti8iq
-shgAn0mj5xFmLxtaXnYFyHpDoH67cDAa
-=DG7D
------END PGP SIGNATURE-----
---=-=-=--
-
---===============5282237686177891695==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============5282237686177891695==--
+Rafael
