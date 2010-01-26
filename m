@@ -1,16 +1,15 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] PM / i915: Skip kernel VT switch during
- suspend/resume if KMS is used
-Date: Mon, 25 Jan 2010 22:23:00 +0000
-Message-ID: <20100125222300.62ddc4d2__4339.61128951541$1264458208$gmane$org@lxorguk.ukuu.org.uk>
-References: <201001240055.59479.rjw@sisk.pl> <201001252217.39778.rjw@sisk.pl>
-	<20100125212720.7d3af280@lxorguk.ukuu.org.uk>
-	<201001252254.37635.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: syncing the disks when entering sleep
+Date: Tue, 26 Jan 2010 14:59:43 +0100
+Message-ID: <20100126135942.GD1764@ucw.cz>
+References: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>
+	<201001222149.46839.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201001252254.37635.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <201001222149.46839.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,17 +20,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: airlied@linux.ie, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>, pm list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net
+Cc: linux-pm@lists.linux-foundation.org, "Leisner,
+	Martin" <Martin.Leisner@xerox.com>
 List-Id: linux-pm@vger.kernel.org
 
-> Obviously I'd like to clean it up, though.
+Hi!
+
+> > I noticed when we enter sleep states, it seems there's always a
+> > sys_sync given.
+> > 
+> > When having an embedded system doing WOL (already in laptop mode to
+> > cache
+> > all the writes), it reasonable to wake up dozens of times of day and
+> > quickly go back to sleep.  If the disk is not spun up,
+> > and there's some work to be done, won't the sys_sync spin up the disk
+> > before going to sleep?
+> > 
+> > It would be good to have a knob (in /sys) you can tweak from usespace to
+> > 
+> > configure the behavior of whether you want to do a sync when entering
+> > sleep.
+> > 
+> > The ideal behavior would be:
+> > 
+> >     if(disk is spun up)
+> >         then let the sync happen
 > 
-> So, what device should handle this in your opinion?
+> I'm not against that.  Patch welcome. :-)
 
-My guess would be the relevant device driver for the hardware layer
-
-So fbcon would probably not switch because it can put video modes back,
-KMS obvious likewise. The text console might do something as part of its
-suspend/resume path IFF the vt in question is in graphics mode.
-
-Alan
+I'd say such knob would be ugly. But maybe acceptable way would be
+echo mem-nosync > power, or maybe it can already be done using s2disk
+ioctl interface...?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
