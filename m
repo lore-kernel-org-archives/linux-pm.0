@@ -1,17 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / i915: Skip kernel VT switch during
-	suspend/resume	if KMS is used
-Date: Tue, 26 Jan 2010 15:17:27 +0100
-Message-ID: <20100126141726.GA1437__506.602010182355$1264516177$gmane$org@ucw.cz>
-References: <201001240055.59479.rjw@sisk.pl> <201001252217.39778.rjw@sisk.pl>
-	<20100125212720.7d3af280@lxorguk.ukuu.org.uk>
-	<201001252254.37635.rjw@sisk.pl>
+From: "Ai Li" <aili@codeaurora.org>
+Subject: Re: PM-QOS hot path discussion.
+Date: Tue, 26 Jan 2010 10:36:48 -0700
+Message-ID: <001501ca9eae$23c101b0$6b430510$@org>
+References: <20091223172718.GB16543@mgross-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201001252254.37635.rjw@sisk.pl>
+In-Reply-To: <20091223172718.GB16543@mgross-laptop>
+Content-Language: en-us
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,39 +18,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: airlied@linux.ie, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>, pm list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: '640E9920' <640e9920@gmail.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2010-01-25 22:54:37, Rafael J. Wysocki wrote:
-> On Monday 25 January 2010, Alan Cox wrote:
-> > > > But in that case we should be able to disable the VT switch disable
-> > > > path; we just have to check each driver as it's loaded.
-> > > 
-> > > OK, what the right sequence of checks would be in that case and where to place
-> > > them?
-> > 
-> > Why are we even driving a vt switch direct from the suspend/resume
-> > logic ? The problem starts there. If it was being handled off the device
-> > suspend/resume method then there wouldn't be a mess to start with ?
-> > 
-> > Start at the beginning
-> > 
-> > - Why do we switch to arbitarily chosen 'last vt'
-> > - Why isn't vt related suspend/resume handled by the device
+> Now what seems to be asked for is that something akin to the
+> android WAKE_LOCK_IDLE "thing".
 > 
-> Well, that was added long ago as a workaround for some problems people
-> reported (presumably).  I've never looked at that before, so I can't really
-> tell why someone did it this particular way.
+> Last night I gave some thought to this.  One could put a boolean
+> or bit mask flag into the aggregated value that when polled the
+> poller could know to not go to any lower performing state or
+> kick the system into higher performance states.  Setting the
+> flag would only happen from kernel API's and no notification
+> trees would be called as it gets toggled.  (that would kill fast
+> path performance)
 
-As X drives hardware, it is/was neccessary to get control out of X and
-console switch was convenient.
+Android WAKE_LOCK_IDLE is a very coarse setting.  It does not take
+advantage of the multiple performance states with their corresponding
+latency values.  WAKE_LOCK_IDLE potentially disallows some low
+performance states when their latencies may be quite acceptable.  In
+contrast, an integer setting would allow a better match between the
+requested latency value and the appropriate low power states.  pm_qos
+already provides the integer setting.  IMO, the question is how to
+enable hot-path flow through pm_qos...
 
-Note that it needs to happen with userland still active -- before
-freezer.
 
-And yes, it should be per-driver these days.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> But as I thought about it it became clear the correct behavior
+> is really a function of the parameter class.  If the parameter
+> is cpu_dma_latency then the flag would be used to simply disable
+> CPUIDLE from doing any high latency idle states.  However; such
+> a flag for network bandwidth (a flag hit in some fast code path)
+> shouldn't be telling the NIC to kick up from 100Mbs to 1000Mbs
+> or go back.
+> 
+> So what would a fast path pm-qos parameter look like and how
+> would it be used, outside of CPUIDLE?
+> 
+
+Stating it in another way: the correct hot path behavior for each
+parameter class is dependent on what the parameter class is.  To
+accommodate this, we could add a hot_path_fn in struct pm_qos_object.
+It specifies the hot path behavior for the parameter class.  In the
+hot path flow, update_target() will call
+pm_qos_array[pm_qos_class]->hot_path_fn() instead of the notifier
+chain.
+
+With regards to NIC cards, I'm not sure what hot_path_fn() would
+perform.  Maybe the default hot_path_fn for PM_QOS_NETWORK_THROUGHPUT
+does nothing; the platform code or NIC card code can register a
+different hot_path_fn.
+
+~Ai
