@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: syncing the disks when entering sleep
-Date: Wed, 27 Jan 2010 01:51:03 +0100
-Message-ID: <201001270151.03241.rjw@sisk.pl>
-References: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>
-	<201001261917.37194.rjw@sisk.pl> <20100126145113.GA11130@ucw.cz>
+From: Mike Chan <mike@android.com>
+Subject: Re: PM-QOS hot path discussion.
+Date: Tue, 26 Jan 2010 18:00:22 -0800
+Message-ID: <8bb80c381001261800x48f33759h966a6231e7854d0e@mail.gmail.com>
+References: <20091223172718.GB16543@mgross-laptop>
+	<001501ca9eae$23c101b0$6b430510$@org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100126145113.GA11130@ucw.cz>
+In-Reply-To: <001501ca9eae$23c101b0$6b430510$@org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,44 +18,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org, "Leisner,
-	Martin" <Martin.Leisner@xerox.com>
+To: Ai Li <aili@codeaurora.org>
+Cc: linux-pm@lists.linux-foundation.org, 640E9920 <640e9920@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 26 January 2010, Pavel Machek wrote:
-> 
-> > > > > The ideal behavior would be:
-> > > > > 
-> > > > >     if(disk is spun up)
-> > > > >         then let the sync happen
-> > > > 
-> > > > I'm not against that.  Patch welcome. :-)
-> > > 
-> > > I'd say such knob would be ugly.
-> > 
-> > Define "ugly", please.
-> 
-> Per-system property, which should better be
-> per-program-that-requires-suspend. You request suspend without syncing
-> (you want it quick, battery is 90%), then the battery runs low, and
-> system daeomn requests s2ram, not realizing that someone disabled sync
-> from under him.
+On Tue, Jan 26, 2010 at 9:36 AM, Ai Li <aili@codeaurora.org> wrote:
+>> Now what seems to be asked for is that something akin to the
+>> android WAKE_LOCK_IDLE "thing".
+>>
+>> Last night I gave some thought to this. =A0One could put a boolean
+>> or bit mask flag into the aggregated value that when polled the
+>> poller could know to not go to any lower performing state or
+>> kick the system into higher performance states. =A0Setting the
+>> flag would only happen from kernel API's and no notification
+>> trees would be called as it gets toggled. =A0(that would kill fast
+>> path performance)
+>
+> Android WAKE_LOCK_IDLE is a very coarse setting. =A0It does not take
+> advantage of the multiple performance states with their corresponding
+> latency values. =A0WAKE_LOCK_IDLE potentially disallows some low
+> performance states when their latencies may be quite acceptable. =A0In
+> contrast, an integer setting would allow a better match between the
+> requested latency value and the appropriate low power states. =A0pm_qos
+> already provides the integer setting. =A0IMO, the question is how to
+> enable hot-path flow through pm_qos...
+>
+There are a few lower power states on msm that we don't differentiate
+between when taking an idle lock.
 
-I really prefer a per-system setting.  The program that wants to sync anyway
-can easily do that by itself.
+We don't use idle locks on omap. The resource framework in the omap
+tree is sufficient with the latency requirement calls in
+resource34xx.c/h
 
-> > > But maybe acceptable way would be echo mem-nosync > power, or maybe it can
-> > > already be done using s2disk ioctl interface...?
-> > 
-> > Nope.
-> 
-> Nope what?
-> 
-> AFAICT no new interface is needed. Just do SNAPSHOT_FREEZE, then
-> _S2RAM then _UNFREEZE.
+I might be wrong here but it sounds like you're trying to solve a
+similar problem but working it into the pm-qos framework? Or am I
+confused on what the subject of this thread is?
 
-That's not quite straightforward and I wouldn't seriously suggest that to
-anyone.
+-- Mike
 
-Rafael
+>
+>> But as I thought about it it became clear the correct behavior
+>> is really a function of the parameter class. =A0If the parameter
+>> is cpu_dma_latency then the flag would be used to simply disable
+>> CPUIDLE from doing any high latency idle states. =A0However; such
+>> a flag for network bandwidth (a flag hit in some fast code path)
+>> shouldn't be telling the NIC to kick up from 100Mbs to 1000Mbs
+>> or go back.
+>>
+>> So what would a fast path pm-qos parameter look like and how
+>> would it be used, outside of CPUIDLE?
+>>
+>
+> Stating it in another way: the correct hot path behavior for each
+> parameter class is dependent on what the parameter class is. =A0To
+> accommodate this, we could add a hot_path_fn in struct pm_qos_object.
+> It specifies the hot path behavior for the parameter class. =A0In the
+> hot path flow, update_target() will call
+> pm_qos_array[pm_qos_class]->hot_path_fn() instead of the notifier
+> chain.
+>
+> With regards to NIC cards, I'm not sure what hot_path_fn() would
+> perform. =A0Maybe the default hot_path_fn for PM_QOS_NETWORK_THROUGHPUT
+> does nothing; the platform code or NIC card code can register a
+> different hot_path_fn.
+>
+> ~Ai
+>
+>
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+>
