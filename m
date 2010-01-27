@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/2] PM / Runtime: Clean up pm_runtime_disable()
-Date: Thu, 28 Jan 2010 00:11:05 +0100
-Message-ID: <201001280011.06055.rjw__30824.4103602648$1264633934$gmane$org@sisk.pl>
+Subject: [PATCH 2/2] PM / Runtime: Document power.runtime_auto
+	and related functions
+Date: Thu, 28 Jan 2010 00:11:59 +0100
+Message-ID: <201001280011.59609.rjw__32369.6190528155$1264633940$gmane$org@sisk.pl>
 References: <201001280009.44589.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,116 +24,66 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Remove the second argument of __pm_runtime_disable(), which is not
-necessary any more, and rename this funtion to pm_runtime_disable().
-Accordingly, drop the static inline definition of
-pm_runtime_disable() using __pm_runtime_disable() and export
-pm_runtime_disable() as appropriate.
+The power.runtime_auto device flag and the helper functions
+pm_runtime_allow() and pm_runtime_forbid() used to modify it are a
+part of the run-time power management framework and therefore they
+should be described in Documentation/power/runtime_pm.txt.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/runtime.c |   31 ++++---------------------------
- include/linux/pm_runtime.h   |    9 ++-------
- 2 files changed, 6 insertions(+), 34 deletions(-)
+ Documentation/power/runtime_pm.txt |   28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
-Index: linux-2.6/drivers/base/power/runtime.c
+Index: linux-2.6/Documentation/power/runtime_pm.txt
 ===================================================================
---- linux-2.6.orig/drivers/base/power/runtime.c
-+++ linux-2.6/drivers/base/power/runtime.c
-@@ -943,20 +943,15 @@ int pm_runtime_barrier(struct device *de
- EXPORT_SYMBOL_GPL(pm_runtime_barrier);
+--- linux-2.6.orig/Documentation/power/runtime_pm.txt
++++ linux-2.6/Documentation/power/runtime_pm.txt
+@@ -224,6 +224,12 @@ defined in include/linux/pm.h:
+       RPM_SUSPENDED, which means that each device is initially regarded by the
+       PM core as 'suspended', regardless of its real hardware status
  
- /**
-- * __pm_runtime_disable - Disable run-time PM of a device.
-+ * pm_runtime_disable - Disable run-time PM of a device.
-  * @dev: Device to handle.
-- * @check_resume: If set, check if there's a resume request for the device.
-  *
-  * Increment power.disable_depth for the device and if was zero previously,
-  * cancel all pending run-time PM requests for the device and wait for all
-  * operations in progress to complete.  The device can be either active or
-  * suspended after its run-time PM has been disabled.
-- *
-- * If @check_resume is set and there's a resume request pending when
-- * __pm_runtime_disable() is called and power.disable_depth is zero, the
-- * function will wake up the device before disabling its run-time PM.
-  */
--void __pm_runtime_disable(struct device *dev, bool check_resume)
-+void pm_runtime_disable(struct device *dev)
- {
- 	spin_lock_irq(&dev->power.lock);
++  unsigned int runtime_auto;
++    - if set, indicates that the user space has allowed the device driver to
++      power manage the device at run time via the /sys/devices/.../power/control
++      interface; it may only be modified with the help of the pm_runtime_allow()
++      and pm_runtime_forbid() helper functions
++
+ All of the above fields are members of the 'power' member of 'struct device'.
  
-@@ -965,31 +960,13 @@ void __pm_runtime_disable(struct device 
- 		goto out;
- 	}
+ 4. Run-time PM Device Helper Functions
+@@ -329,6 +335,16 @@ drivers/base/power/runtime.c and include
+       'power.runtime_error' is set or 'power.disable_depth' is greater than
+       zero)
  
--	/*
--	 * Wake up the device if there's a resume request pending, because that
--	 * means there probably is some I/O to process and disabling run-time PM
--	 * shouldn't prevent the device from processing the I/O.
--	 */
--	if (check_resume && dev->power.request_pending
--	    && dev->power.request == RPM_REQ_RESUME) {
--		/*
--		 * Prevent suspends and idle notifications from being carried
--		 * out after we have woken up the device.
--		 */
--		pm_runtime_get_noresume(dev);
--
--		__pm_runtime_resume(dev, false);
--
--		pm_runtime_put_noidle(dev);
--	}
--
- 	if (!dev->power.disable_depth++)
- 		__pm_runtime_barrier(dev);
++  void pm_runtime_allow(struct device *dev);
++    - set the power.runtime_auto flag for the device and decrease its usage
++      counter (used by the /sys/devices/.../power/control interface to
++      effectively allow the device to be power managed at run time)
++
++  void pm_runtime_forbid(struct device *dev);
++    - unset the power.runtime_auto flag for the device and increase its usage
++      counter (used by the /sys/devices/.../power/control interface to
++      effectively prevent the device from being power managed at run time)
++
+ It is safe to execute the following helper functions from interrupt context:
  
-  out:
- 	spin_unlock_irq(&dev->power.lock);
- }
--EXPORT_SYMBOL_GPL(__pm_runtime_disable);
-+EXPORT_SYMBOL_GPL(pm_runtime_disable);
+ pm_request_idle()
+@@ -382,6 +398,18 @@ may be desirable to suspend the device a
+ finished, so the PM core uses pm_runtime_idle_sync() to invoke the
+ subsystem-level idle callback for the device at that time.
  
- /**
-  * pm_runtime_enable - Enable run-time PM of a device.
-@@ -1092,7 +1069,7 @@ void pm_runtime_init(struct device *dev)
-  */
- void pm_runtime_remove(struct device *dev)
- {
--	__pm_runtime_disable(dev, false);
-+	pm_runtime_disable(dev);
++The user space can effectively disallow the driver of the device to power manage
++it at run time by changing the value of its /sys/devices/.../power/control
++attribute to "on", which causes pm_runtime_forbid() to be called.  In principle,
++this mechanism may also be used by the driver to effectively turn off the
++run-time power management of the device until the user space turns it on.
++Namely, during the initialization the driver can make sure that the run-time PM
++status of the device is 'active' and call pm_runtime_forbid().  It should be
++noted, however, that if the user space has already intentionally changed the
++value of /sys/devices/.../power/control to "auto" to allow the driver to power
++manage the device at run time, the driver may confuse it by using
++pm_runtime_forbid() this way.
++
+ 6. Run-time PM and System Sleep
  
- 	/* Change the status back to 'suspended' to match the initial status. */
- 	if (dev->power.runtime_status == RPM_ACTIVE)
-Index: linux-2.6/include/linux/pm_runtime.h
-===================================================================
---- linux-2.6.orig/include/linux/pm_runtime.h
-+++ linux-2.6/include/linux/pm_runtime.h
-@@ -27,7 +27,7 @@ extern int __pm_runtime_put(struct devic
- extern int __pm_runtime_set_status(struct device *dev, unsigned int status);
- extern int pm_runtime_barrier(struct device *dev);
- extern void pm_runtime_enable(struct device *dev);
--extern void __pm_runtime_disable(struct device *dev, bool check_resume);
-+extern void pm_runtime_disable(struct device *dev);
- extern void pm_runtime_allow(struct device *dev);
- extern void pm_runtime_forbid(struct device *dev);
- 
-@@ -79,7 +79,7 @@ static inline int __pm_runtime_set_statu
- 					    unsigned int status) { return 0; }
- static inline int pm_runtime_barrier(struct device *dev) { return 0; }
- static inline void pm_runtime_enable(struct device *dev) {}
--static inline void __pm_runtime_disable(struct device *dev, bool c) {}
-+static inline void pm_runtime_disable(struct device *dev) {}
- static inline void pm_runtime_allow(struct device *dev) {}
- static inline void pm_runtime_forbid(struct device *dev) {}
- 
-@@ -122,9 +122,4 @@ static inline void pm_runtime_set_suspen
- 	__pm_runtime_set_status(dev, RPM_SUSPENDED);
- }
- 
--static inline void pm_runtime_disable(struct device *dev)
--{
--	__pm_runtime_disable(dev, true);
--}
--
- #endif
+ Run-time PM and system sleep (i.e., system suspend and hibernation, also known
