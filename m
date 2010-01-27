@@ -1,16 +1,15 @@
-From: "Ai Li" <aili@codeaurora.org>
-Subject: Re: PM-QOS hot path discussion.
-Date: Wed, 27 Jan 2010 12:08:22 -0700
-Message-ID: <002401ca9f84$18cbcf70$4a636e50$@org>
-References: <20091223172718.GB16543@mgross-laptop>	
-	<001501ca9eae$23c101b0$6b430510$@org>
-	<8bb80c381001261800x48f33759h966a6231e7854d0e@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/2] PM: really deprecate deprecated user
+	ioctls
+Date: Wed, 27 Jan 2010 20:48:11 +0100
+Message-ID: <20100127194811.GB4626__31806.1324804605$1264621760$gmane$org@elf.ucw.cz>
+References: <1264610778-13242-1-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <8bb80c381001261800x48f33759h966a6231e7854d0e@mail.gmail.com>
-Content-Language: en-us
+Content-Disposition: inline
+In-Reply-To: <1264610778-13242-1-git-send-email-jslaby@suse.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,38 +19,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: 'Mike Chan' <mike@android.com>
-Cc: linux-pm@lists.linux-foundation.org, '640E9920' <640e9920@gmail.com>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> There are a few lower power states on msm that we don't
-> differentiate
-> between when taking an idle lock.
+On Wed 2010-01-27 17:46:17, Jiri Slaby wrote:
+> They were deprecated and removed from exported headers more than 2
+> years ago. Inform users about their removal in the future now.
 > 
-> We don't use idle locks on omap. The resource framework in the
-> omap
-> tree is sufficient with the latency requirement calls in
-> resource34xx.c/h
+> (Switch cases needed to be reorderded for an easy fall through.)
 > 
-> I might be wrong here but it sounds like you're trying to solve
-> a
-> similar problem but working it into the pm-qos framework? Or am
-> I
-> confused on what the subject of this thread is?
+> And add an entry to feature-removal-schedule.
+> 
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Pavel Machek <pavel@ucw.cz>
 
-pm_qos framework handles latency requirements already and can be used
-on all platforms.  Our code at codeaurora.org for MSM chips uses
-pm_qos for latency.  This thread discusses improving efficient
-execution of pm_qos in hot-path, i.e. when pm_qos is called very
-frequently.  The improvement would apply to all pm_qos parameters,
-not just latency.  The latency implementations in pm_qos and in
-android's WAKE_LOCK_IDLE are references as to what have been done
-already.
+ACK.
+								Pavel
 
-There is a related discussion in the thread "[linux-pm] platform
-specific pm_qos parameters".  That thread focuses on how to add
-platform-specifc parameters to pm_qos, i.e. creating a mechanism so
-that each platform (i.e. x86, OMAP, MSM) can append its own set of
-pm_qos parameters and associated behavior.
-
-~Ai
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
