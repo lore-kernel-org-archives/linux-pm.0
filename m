@@ -1,15 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/2] PM: really deprecate deprecated user
-	ioctls
-Date: Wed, 27 Jan 2010 20:48:11 +0100
-Message-ID: <20100127194811.GB4626__31806.1324804605$1264621760$gmane$org@elf.ucw.cz>
-References: <1264610778-13242-1-git-send-email-jslaby@suse.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: syncing the disks when entering sleep
+Date: Wed, 27 Jan 2010 21:46:43 +0100
+Message-ID: <201001272146.43660.rjw@sisk.pl>
+References: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>
+	<201001270151.03241.rjw@sisk.pl>
+	<20100127095532.GA12752@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1264610778-13242-1-git-send-email-jslaby@suse.cz>
+In-Reply-To: <20100127095532.GA12752@atrey.karlin.mff.cuni.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,25 +19,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org, "Leisner,
+	Martin" <Martin.Leisner@xerox.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2010-01-27 17:46:17, Jiri Slaby wrote:
-> They were deprecated and removed from exported headers more than 2
-> years ago. Inform users about their removal in the future now.
+On Wednesday 27 January 2010, Pavel Machek wrote:
 > 
-> (Switch cases needed to be reorderded for an easy fall through.)
+> > > Per-system property, which should better be
+> > > per-program-that-requires-suspend. You request suspend without syncing
+> > > (you want it quick, battery is 90%), then the battery runs low, and
+> > > system daeomn requests s2ram, not realizing that someone disabled sync
+> > > from under him.
+> > 
+> > I really prefer a per-system setting.  The program that wants to sync anyway
+> > can easily do that by itself.
 > 
-> And add an entry to feature-removal-schedule.
-> 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Pavel Machek <pavel@ucw.cz>
+> Yes, but existing apps do not know they have to sync. You are
+> essentially adding "break back compatibility" system wide option, when
+> better alternative exists... See above for concrete example where it
+> may hurt.
 
-ACK.
-								Pavel
+I don't get what the problem is, really.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+There's _nothing_ here that breaks the existing behavior.  If the user doesn't
+set the switch, everything works as usual.  If he does, breaking the "back
+compatibility" is _his_ problem.
+
+Rafael
