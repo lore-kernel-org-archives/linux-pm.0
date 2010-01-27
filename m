@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] PM / Hibernate: swap,
-	remove useless check from swsusp_read
-Date: Thu, 28 Jan 2010 00:06:07 +0100
-Message-ID: <201001280006.07796.rjw__25930.2756320269$1264633630$gmane$org@sisk.pl>
-References: <1264610778-13242-1-git-send-email-jslaby@suse.cz>
-	<1264610778-13242-2-git-send-email-jslaby@suse.cz>
+From: Stefan Seyfried <stefan.seyfried@googlemail.com>
+Subject: Re: [PATCH] PM / i915: Skip kernel VT switch during
+ suspend/resume	if KMS is used
+Date: Thu, 28 Jan 2010 00:07:51 +0100
+Message-ID: <20100128000751.099630ed__18250.0726580203$1264633749$gmane$org@strolchi>
+References: <201001240055.59479.rjw@sisk.pl> <201001252254.37635.rjw@sisk.pl>
+	<20100126141726.GA1437@ucw.cz> <201001261947.46015.rjw@sisk.pl>
+	<20100126145842.GA11295@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1264610778-13242-2-git-send-email-jslaby@suse.cz>
+In-Reply-To: <20100126145842.GA11295@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +20,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: airlied@linux.ie, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>, pm list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 27 January 2010, Jiri Slaby wrote:
-> It will never reach here if the sws_resume_bdev is erratic.
-> swsusp_read is called only from software_resume, but after
-> swsusp_check which would catch the error state.
-> 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Pavel Machek <pavel@ucw.cz>
+Hi,
 
-Applied.
+On Tue, 26 Jan 2010 15:58:43 +0100 Pavel Machek <pavel@ucw.cz> wrote:
+> We need vt switch when display is controlled by userland app directly
+> accessing hw. It may or may not be X (svgalib anyone?,
+> gtk-on-framebuffer? qtopia?).
 
-> ---
->  kernel/power/swap.c |    4 ----
->  1 files changed, 0 insertions(+), 4 deletions(-)
-> 
-> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-> index 09b2b0a..1d57573 100644
-> --- a/kernel/power/swap.c
-> +++ b/kernel/power/swap.c
-> @@ -657,10 +657,6 @@ int swsusp_read(unsigned int *flags_p)
->  	struct swsusp_info *header;
->  
->  	*flags_p = swsusp_header->flags;
-> -	if (IS_ERR(resume_bdev)) {
-> -		pr_debug("PM: Image device not initialised\n");
-> -		return PTR_ERR(resume_bdev);
-> -	}
->  
->  	memset(&snapshot, 0, sizeof(struct snapshot_handle));
->  	error = snapshot_write_next(&snapshot, PAGE_SIZE);
-> 
+anything-on-framebuffer should not be different from plain framebuffer
+console, or am I missing something?
 
-Rafael
+> Ideally, userspace should explicitely tell us. KD_KERNEL_GRAPHICS
+> console mode?
+> 
+> Plus the switch is needed for any graphics app using fbcon -- I do not
+> think we actually save the framebuffer over suspend. (This one should
+> probably be fixed).
+
+Framebuffer should be easy to fix - it works pretty well already
+because apparently the fbcon code needs to "shadow buffer" all VT
+"windows" anyway - so maybe it's just the issue of doing an additional
+"redraw()" somewhere appropriate.
+
+The VGA consoles loses their content, because AFAICT they are in the
+graphics card memory, which is not saved and restored.
+
+	seife
+-- 
+Stefan Seyfried
+
+"Any ideas, John?"
+"Well, surrounding them's out."
