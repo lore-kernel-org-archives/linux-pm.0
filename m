@@ -1,14 +1,14 @@
 From: Mike Chan <mike@android.com>
-Subject: Re: PM-QOS hot path discussion.
-Date: Tue, 26 Jan 2010 18:00:22 -0800
-Message-ID: <8bb80c381001261800x48f33759h966a6231e7854d0e@mail.gmail.com>
-References: <20091223172718.GB16543@mgross-laptop>
-	<001501ca9eae$23c101b0$6b430510$@org>
+Subject: Re: [android-porting] wakeup wakelock issues
+Date: Tue, 26 Jan 2010 18:21:39 -0800
+Message-ID: <8bb80c381001261821tc445577jd9f4f6580070aa3a@mail.gmail.com>
+References: <8bf247760911210837y3f089eaegd57fcec21d93681b@mail.gmail.com>
+	<f662f0210911222054u12496269u846b169dff2a730f@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <001501ca9eae$23c101b0$6b430510$@org>
+In-Reply-To: <f662f0210911222054u12496269u846b169dff2a730f@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,73 +18,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ai Li <aili@codeaurora.org>
-Cc: linux-pm@lists.linux-foundation.org, 640E9920 <640e9920@gmail.com>
+To: vshrirama@gmail.com
+Cc: linux-pm@lists.linux-foundation.org, android-porting@googlegroups.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 26, 2010 at 9:36 AM, Ai Li <aili@codeaurora.org> wrote:
->> Now what seems to be asked for is that something akin to the
->> android WAKE_LOCK_IDLE "thing".
+On Sun, Nov 22, 2009 at 8:54 PM, Aneesh Bhasin <contact.aneesh@gmail.com> w=
+rote:
+> Hi Sriram
+>
+> <reposting - forgot to add linux-pm to senders' list>
+>
+> On Sat, Nov 21, 2009 at 10:07 PM, Sriram V <vshrirama@gmail.com> wrote:
+>> Hi,
+>> =A0 I am trying to test pm on a custom board with android.
+>
+> What android version are you usnig ?
+>
+>
+>> =A0 Whats happening:
+>> =A0=A0 1) Android is putting the system to sleep - calling system wide s=
+uspend
+>> =A0=A0 2) During suspend, kernel resume immediately - I get "wakeup wake=
+ lock:
+>> omap-8250-serial". and again puts it back to suspend.
+>> =A0=A0 3) This keeps happening, There is no serial activity except for p=
+rinting
+>> the messages (transmission from the board) - No serial inputs from the h=
+ost
+>> pc.
+>> =A0=A0 4) Is there any way to disable this?
 >>
->> Last night I gave some thought to this. =A0One could put a boolean
->> or bit mask flag into the aggregated value that when polled the
->> poller could know to not go to any lower performing state or
->> kick the system into higher performance states. =A0Setting the
->> flag would only happen from kernel API's and no notification
->> trees would be called as it gets toggled. =A0(that would kill fast
->> path performance)
 >
-> Android WAKE_LOCK_IDLE is a very coarse setting. =A0It does not take
-> advantage of the multiple performance states with their corresponding
-> latency values. =A0WAKE_LOCK_IDLE potentially disallows some low
-> performance states when their latencies may be quite acceptable. =A0In
-> contrast, an integer setting would allow a better match between the
-> requested latency value and the appropriate low power states. =A0pm_qos
-> already provides the integer setting. =A0IMO, the question is how to
-> enable hot-path flow through pm_qos...
+> We encountered a similar problem while booting android on one of our
+> board. One way is to acquire a partial wake lock (or just a wakelock
+> in the newer versions of android) =A0as soon as you boot up the board.
+> In older android version, the way was :
+> echo wakelock1 > /sys/android_power/acquire_partial_wake_lock
+> or on newer versions :
+> echo wakelock1 > /sys/power/wake_lock
+> Please check the path as I do not have access to the board right now.
 >
-There are a few lower power states on msm that we don't differentiate
-between when taking an idle lock.
+> Acquiring the wake lock will prevent your system from going into
+> sleep. However, this is a temporary solution as you still need to
+> figure out why is your device not able to go to sleep.
+>
+> Hope that helps...
 
-We don't use idle locks on omap. The resource framework in the omap
-tree is sufficient with the latency requirement calls in
-resource34xx.c/h
+Not sure if you solved your problems, but as most people have
+mentioned you should be releasing that wakelock.
+Also you should look at your clock management. You are probably
+keeping a fclk on in a driver somewhere, where you should disable it
+in the suspend hook, or even better when idle.
 
-I might be wrong here but it sounds like you're trying to solve a
-similar problem but working it into the pm-qos framework? Or am I
-confused on what the subject of this thread is?
+If you have debugfs and pm_debug you can cat this file:
+debugfs/pm_debug/registers/1
+
+this is a snapshot of the last time the device tried to enter suspend,
+you can cross reference the powerdomains with the omap TRM to find out
+which clocks you're leaking
 
 -- Mike
 
 >
->> But as I thought about it it became clear the correct behavior
->> is really a function of the parameter class. =A0If the parameter
->> is cpu_dma_latency then the flag would be used to simply disable
->> CPUIDLE from doing any high latency idle states. =A0However; such
->> a flag for network bandwidth (a flag hit in some fast code path)
->> shouldn't be telling the NIC to kick up from 100Mbs to 1000Mbs
->> or go back.
->>
->> So what would a fast path pm-qos parameter look like and how
->> would it be used, outside of CPUIDLE?
->>
->
-> Stating it in another way: the correct hot path behavior for each
-> parameter class is dependent on what the parameter class is. =A0To
-> accommodate this, we could add a hot_path_fn in struct pm_qos_object.
-> It specifies the hot path behavior for the parameter class. =A0In the
-> hot path flow, update_target() will call
-> pm_qos_array[pm_qos_class]->hot_path_fn() instead of the notifier
-> chain.
->
-> With regards to NIC cards, I'm not sure what hot_path_fn() would
-> perform. =A0Maybe the default hot_path_fn for PM_QOS_NETWORK_THROUGHPUT
-> does nothing; the platform code or NIC card code can register a
-> different hot_path_fn.
->
-> ~Ai
->
->
+> Regards,
+> Aneesh
 > _______________________________________________
 > linux-pm mailing list
 > linux-pm@lists.linux-foundation.org
