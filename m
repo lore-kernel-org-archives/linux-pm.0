@@ -1,15 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Update][PATCH] MM / PM: Force GFP_NOIO during
-	suspend/hibernation and resume
-Date: Sat, 30 Jan 2010 21:53:52 +0100
-Message-ID: <201001302153.53016.rjw__3655.70829385451$1264884974$gmane$org@sisk.pl>
-References: <201001212121.50272.rjw@sisk.pl> <201001301956.41372.rjw@sisk.pl>
-	<1264884140.13861.7.camel@maxim-laptop>
+Subject: [RFC][RFT][PATCH] ACPI: Protection from suspending in
+	the middle of EC transaction
+Date: Sun, 31 Jan 2010 00:29:48 +0100
+Message-ID: <201001310029.48717.rjw__38310.8962131248$1264894219$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1264884140.13861.7.camel@maxim-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,70 +16,96 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org, Alexey Starikovskiy <astarikovskiy@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU2F0dXJkYXkgMzAgSmFudWFyeSAyMDEwLCBNYXhpbSBMZXZpdHNreSB3cm90ZToKPiBPbiBT
-YXQsIDIwMTAtMDEtMzAgYXQgMTk6NTYgKzAxMDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOiAK
-PiA+IE9uIE1vbmRheSAyNSBKYW51YXJ5IDIwMTAsIEFsZXhleSBTdGFyaWtvdnNraXkgd3JvdGU6
-Cj4gPiA+IFJhZmFlbCBKLiBXeXNvY2tpINC/0LjRiNC10YI6Cj4gPiA+ID4gT24gU2F0dXJkYXkg
-MjMgSmFudWFyeSAyMDEwLCBNYXhpbSBMZXZpdHNreSB3cm90ZToKPiA+ID4gPj4gT24gRnJpLCAy
-MDEwLTAxLTIyIGF0IDIyOjE5ICswMTAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZTogCj4gPiA+
-ID4+PiBPbiBGcmlkYXkgMjIgSmFudWFyeSAyMDEwLCBNYXhpbSBMZXZpdHNreSB3cm90ZToKPiA+
-ID4gPj4+PiBPbiBGcmksIDIwMTAtMDEtMjIgYXQgMTA6NDIgKzA5MDAsIEtPU0FLSSBNb3RvaGly
-byB3cm90ZTogCj4gPiA+ID4+Pj4+Pj4+IFByb2JhYmx5IHdlIGhhdmUgbXVsdGlwbGUgb3B0aW9u
-LiBidXQgSSBkb24ndCB0aGluayBHRlBfTk9JTyBpcyBnb29kCj4gPiA+ID4+Pj4+Pj4+IG9wdGlv
-bi4gSXQgYXNzdW1lIHRoZSBzeXN0ZW0gaGF2ZSBsb3RzIG5vbi1kaXJ0eSBjYWNoZSBtZW1vcnkg
-YW5kIGl0IGlzbid0Cj4gPiA+ID4+Pj4+Pj4+IGd1cmFudGVlZC4KPiA+ID4gPj4+Pj4+PiBCYXNp
-Y2FsbHkgbm90aGluZyBpcyBndWFyYW50ZWVkIGluIHRoaXMgY2FzZS4gIEhvd2V2ZXIsIGRvZXMg
-aXQgYWN0dWFsbHkgbWFrZQo+ID4gPiA+Pj4+Pj4+IHRoaW5ncyBfd29yc2VfPyAgCj4gPiA+ID4+
-Pj4+PiBIbW0uLgo+ID4gPiA+Pj4+Pj4gRG8geW91IG1lYW4gd2UgZG9uJ3QgbmVlZCB0byBwcmV2
-ZW50IGFjY2lkZW50YWwgc3VzcGVuZCBmYWlsdXJlPwo+ID4gPiA+Pj4+Pj4gUGVyaGFwcywgSSBk
-aWQgbWlzdW5kZXJzdGFuZCB5b3VyIGludGVudGlvbi4gSWYgeW91IHRoaW5rIHlvdXIgcGF0Y2gg
-c29sdmUKPiA+ID4gPj4+Pj4+IHRoaXMgdGhpcyBpc3N1ZSwgSSBzdGlsbCBkaXNhZ3JlZS4gYnV0
-IElmIHlvdSB0aGluayB5b3VyIHBhdGNoIG1pdGlnYXRlCj4gPiA+ID4+Pj4+PiB0aGUgcGFpbiBv
-ZiB0aGlzIGlzc3VlLCBJIGFncmVlIGl0LiBJIGRvbid0IGhhdmUgYW55IHJlYXNvbiB0byBvcHBv
-c2UgeW91cgo+ID4gPiA+Pj4+Pj4gZmlyc3QgcGF0Y2guCj4gPiA+ID4+Pj4+IE9uZSBxdWVzdGlv
-bi4gSGF2ZSBhbnlvbmUgdGVzdGVkIFJhZmFlbCdzICRzdWJqZWN0IHBhdGNoPyAKPiA+ID4gPj4+
-Pj4gUGxlYXNlIHBvc3QgdGVzdCByZXN1bHQuIGlmIHRoZSBpc3N1ZSBkaXNhcHBlciBieSB0aGUg
-cGF0Y2gsIHdlIGNhbgo+ID4gPiA+Pj4+PiBzdXBwb3NlIHRoZSBzbG93bmVzcyBpcyBjYXVzZWQg
-YnkgaS9vIGxheWVyLgo+ID4gPiA+Pj4+IEkgZGlkLgo+ID4gPiA+Pj4+Cj4gPiA+ID4+Pj4gQXMg
-ZmFyIGFzIEkgY291bGQgc2VlLCBwYXRjaCBkb2VzIHNvbHZlIHRoZSBwcm9ibGVtIEkgZGVzY3Jp
-YmVkLgo+ID4gPiA+Pj4+Cj4gPiA+ID4+Pj4gRG9lcyBpdCBhZmZlY3Qgc3BlZWQgb2Ygc3VzcGVu
-ZD8gSSBjYW4ndCBzYXkgZm9yIHN1cmUuIEl0IHNlZW1zIHRvIGJlCj4gPiA+ID4+Pj4gdGhlIHNh
-bWUuCj4gPiA+ID4+PiBUaGFua3MgZm9yIHRlc3RpbmcuCj4gPiA+ID4+IEknbGwgdGVzdCB0aGF0
-IHRvbywgc29vbi4KPiA+ID4gPj4gSnVzdCB0byBub3RlIHRoYXQgSSBsZWZ0IG15IGhpYmVybmF0
-ZSBsb29wIHJ1biBvdmVybmlnaHQsIGFuZCBub3cgSSBhbQo+ID4gPiA+PiBwb3N0aW5nIGZyb20g
-bXkgbm90ZWJvb2sgYWZ0ZXIgaXQgZGlkIDU5MCBoaWJlcm5hdGUgY3ljbGVzLgo+ID4gPiA+IAo+
-ID4gPiA+IERpZCB5b3UgaGF2ZSBhIGNoYW5jZSB0byB0ZXN0IGl0Pwo+ID4gPiA+IAo+ID4gPiA+
-PiBPZmZ0b3BpYywgYnV0IE5vdGUgdGhhdCB0byBhY2hpZXZlIHRoYXQgSSBoYWQgdG8gc3RvcCB1
-c2luZyBnbG9iYWwgYWNwaQo+ID4gPiA+PiBoYXJkd2FyZSBsb2NrLiBJIHRyaWVkIGFsbCBraW5k
-cyBvZiB0aGluZ3MsIGJ1dCBmb3Igbm93IGl0IGp1c3QgaGFuZHMKPiA+ID4gPj4gZnJvbSB0aW1l
-IHRvIHRpbWUuCj4gPiA+ID4+IFNlZSBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1
-Zy5jZ2k/aWQ9MTQ2NjgKPiA+ID4gPiAKPiA+ID4gPiBJJ20gZ29pbmcgdG8gbG9vayBhdCB0aGF0
-IGxhdGVyIHRoaXMgd2VlaywgYWx0aG91Z2ggSSdtIG5vdCBzdXJlIEkgY2FuIGRvIG1vcmUKPiA+
-ID4gPiB0aGFuIEFsZXggYWJvdXQgdGhhdC4KPiA+ID4gPiAKPiA+ID4gPiBSYWZhZWwKPiA+ID4g
-UmFmYWVsLAo+ID4gPiBJZiB5b3UgY2FuIHBvaW50IHRvIHdoZXJlIG9uZSBtYXkgaW5zZXJ0IGNh
-bGxiYWNrIHRvIGJlIGNhbGxlZCBqdXN0IGJlZm9yZSBoYW5kaW5nIGNvbnRyb2wgdG8gcmVzdW1l
-IGtlcm5lbCwKPiA+ID4gaXQgbWF5IGhlbHAuLi4KPiA+IAo+ID4gR2VuZXJhbGx5IHNwZWFraW5n
-LCBJJ2QgZG8gdGhhdCBpbiBhIC5zdXNwZW5kKCkgY2FsbGJhY2sgb2Ygb25lIG9mIGRldmljZXMu
-Cj4gPiAKPiA+IElmIHRoYXQncyBpbmNvbnZlbmllbnQsIHlvdSBjYW4gYWxzbyBwbGFjZSBpdCBp
-biB0aGUgLnByZV9yZXN0b3JlKCkgcGxhdGZvcm0KPiA+IGhpYmVybmF0ZSBjYWxsYmFjayAoZHJp
-dmVycy9hY3BpL3NsZWVwLmMpLiAgSXQgb25seSBkaXNhYmxlcyBHUEVzIHJpZ2h0IG5vdywKPiA+
-IGl0IG1pZ2h0IHJlbGVhc2UgdGhlIGdsb2JhbCBsb2NrIGFzIHdlbGwuCj4gPiAKPiA+IFRoZSAu
-cHJlX3Jlc3RvcmUoKSBjYWxsYmFjayBpcyBleGVjdXRlZCBhZnRlciBhbGwgZGV2aWNlcyBoYXZl
-IGJlZW4gc3VzcGVuZGVkLAo+ID4gc28gdGhlcmUncyBubyBkYW5nZXIgYW55IGRyaXZlciB3b3Vs
-ZCByZS1hY3F1aXJlIHRoZSBnbG9iYWwgbG9jayBhZnRlciB0aGF0Lgo+IAo+IAo+IFdlbGwsIEkg
-ZGlkIHRoYXQgdmVyeSBsYXRlLCB2ZXJ5IGNsb3NlIHRvIGltYWdlIHJlc3RvcmUuCj4gU3RpbGws
-IGl0IGRpZG4ndCB3b3JrIChJdCBodW5nIGFmdGVyIHRoZSByZXN1bWUsIGluIHRoZSBrZXJuZWwg
-dGhhdCB3YXMKPiBqdXN0IHJlc3RvcmVkLCBvbiBhY2Nlc3MgdG8gdGhlIGhhcmR3YXJlIGxvY2ss
-IG9yIGluIG90aGVyIHdvcmRzIGluIHNhbWUKPiB3YXkpCj4gCj4gSGVyZSBpcyB3aGF0IEkgZGlk
-OgoKSSBzYXcgdGhlIHBhdGNoIGluIHRoZSBidWcgZW50cnkKKGh0dHA6Ly9idWd6aWxsYS5rZXJu
-ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNDY2OCkuClBsZWFzZSBzZWUgdGhlIGNvbW1lbnRzIGlu
-IHRoZXJlLgoKUGxlYXNlIGFsc28gdGVzdCB0aGUgcGF0Y2ggSSBhdHRhY2hlZCBhbmQgbGV0J3Mg
-dXNlIHRoZSBidWcgZW50cnkgZm9yIHRoZQp0cmFja2luZyBvZiB0aGlzIGlzc3VlIGZyb20gbm93
-IG9uLgoKUmFmYWVsCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9u
-Lm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8v
-bGludXgtcG0=
+Hi,
+
+While Maxim is testing if the patch below helps with
+http://bugzilla.kernel.org/show_bug.cgi?id=14668
+I think it's necessary anyway.
+
+The problem is that currently there's nothing to prevent us from suspending in
+the middle of an EC transaction in progress, at least as far as I can see.
+As a result, we can suspend with the ACPI global lock held or something like
+this, which leads to problems especially for hibernation (if the resume kernel
+passes control to the image kernel in the middle of an EC transaction, things
+aren't nice).  For this reason I think we should wait until there are no EC
+transactions in progress before we suspend and we should prevent any new
+EC transactions from starting after that point.  The patch below does that.
+
+However, it does that in the EC's suspend callback, which may be too early,
+because there still is _PTS to run, so it might be necessary to do that later.
+On the other hand, the mechanics behind the ACPI global lock, which is
+acquired in acpi_ec_transaction(), requires that interrupts work, because
+otherwise there may be a problem if the global lock is not actually acquired
+after ACPI_ACQUIRE_GLOBAL_LOCK(), so the last place in which to
+wait for EC transactions to complete seems to be the platform suspend
+.prepare() callback.  Unfortunately, it's not implemented at the moment for
+ACPI and it doesn't have a hibernate counterpart and that's why I'd rather use
+the patch below, unless it's known to break things for someone.  So, if you
+can, please test it and tell me if you have any problems with it.
+
+Of course, comments are welcome as well.
+
+Thanks,
+Rafael
+
+---
+ drivers/acpi/ec.c |   17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/acpi/ec.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/ec.c
++++ linux-2.6/drivers/acpi/ec.c
+@@ -76,8 +76,9 @@ enum ec_command {
+ enum {
+ 	EC_FLAGS_QUERY_PENDING,		/* Query is pending */
+ 	EC_FLAGS_GPE_STORM,		/* GPE storm detected */
+-	EC_FLAGS_HANDLERS_INSTALLED	/* Handlers for GPE and
++	EC_FLAGS_HANDLERS_INSTALLED,	/* Handlers for GPE and
+ 					 * OpReg are installed */
++	EC_FLAGS_SUSPENDED,		/* Driver is suspended */
+ };
+ 
+ /* If we find an EC via the ECDT, we need to keep a ptr to its context */
+@@ -291,6 +292,10 @@ static int acpi_ec_transaction(struct ac
+ 	if (t->rdata)
+ 		memset(t->rdata, 0, t->rlen);
+ 	mutex_lock(&ec->lock);
++	if (test_bit(EC_FLAGS_SUSPENDED, &ec->flags)) {
++		status = -EBUSY;
++		goto unlock;
++	}
+ 	if (ec->global_lock) {
+ 		status = acpi_acquire_global_lock(ACPI_EC_UDELAY_GLK, &glk);
+ 		if (ACPI_FAILURE(status)) {
+@@ -1059,16 +1064,26 @@ error:
+ static int acpi_ec_suspend(struct acpi_device *device, pm_message_t state)
+ {
+ 	struct acpi_ec *ec = acpi_driver_data(device);
++
++	mutex_lock(&ec->lock);
++	/* Prevent transactions from happening while suspended */
++	set_bit(EC_FLAGS_SUSPENDED, &ec->flags);
+ 	/* Stop using GPE */
+ 	acpi_disable_gpe(NULL, ec->gpe);
++	mutex_unlock(&ec->lock);
+ 	return 0;
+ }
+ 
+ static int acpi_ec_resume(struct acpi_device *device)
+ {
+ 	struct acpi_ec *ec = acpi_driver_data(device);
++
++	mutex_lock(&ec->lock);
+ 	/* Enable use of GPE back */
+ 	acpi_enable_gpe(NULL, ec->gpe);
++	/* Allow transactions to happen again */
++	set_bit(EC_FLAGS_SUSPENDED, &ec->flags);
++	mutex_unlock(&ec->lock);
+ 	return 0;
+ }
+ 
