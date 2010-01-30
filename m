@@ -1,17 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during
-	suspend/resume (was: Re: Memory allocations in .suspend
-	became very unreliable)
-Date: Sat, 30 Jan 2010 19:47:10 +0100
-Message-ID: <201001301947.10453.rjw__30537.6860349954$1264877255$gmane$org@sisk.pl>
-References: <1263549544.3112.10.camel@maxim-laptop>
-	<201001170138.37283.rjw@sisk.pl>
-	<1264866419.27933.0.camel@maxim-laptop>
+Subject: Re: [Update][PATCH] MM / PM: Force GFP_NOIO during
+	suspend/hibernation and resume
+Date: Sat, 30 Jan 2010 19:56:41 +0100
+Message-ID: <201001301956.41372.rjw__33764.2121631235$1264877866$gmane$org@sisk.pl>
+References: <201001212121.50272.rjw@sisk.pl> <201001252249.18690.rjw@sisk.pl>
+	<4B5E1281.7090700@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1264866419.27933.0.camel@maxim-laptop>
+In-Reply-To: <4B5E1281.7090700@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,172 +19,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-mm <linux-mm@kvack.org>, linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 30 January 2010, Maxim Levitsky wrote:
-> On Sun, 2010-01-17 at 01:38 +0100, Rafael J. Wysocki wrote: 
-> > Hi,
-> > 
-> > I thing the snippet below is a good summary of what this is about.
-> 
-> Any progress on that?
-
-Well, I'm waiting for you to report back:
-http://patchwork.kernel.org/patch/74740/
-
-The patch is appended once again for convenience.
-
-Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: MM / PM: Force GFP_NOIO during suspend/hibernation and resume
-
-There are quite a few GFP_KERNEL memory allocations made during
-suspend/hibernation and resume that may cause the system to hang,
-because the I/O operations they depend on cannot be completed due to
-the underlying devices being suspended.
-
-Avoid this problem by clearing the __GFP_IO and __GFP_FS bits in
-gfp_allowed_mask before suspend/hibernation and restoring the
-original values of these bits in gfp_allowed_mask durig the
-subsequent resume.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-by: Maxim Levitsky <maximlevitsky@gmail.com>
----
- kernel/power/hibernate.c |    6 ++++++
- kernel/power/power.h     |    3 +++
- kernel/power/suspend.c   |    2 ++
- mm/Makefile              |    1 +
- mm/pm.c                  |   28 ++++++++++++++++++++++++++++
- 5 files changed, 40 insertions(+)
-
-Index: linux-2.6/kernel/power/hibernate.c
-===================================================================
---- linux-2.6.orig/kernel/power/hibernate.c
-+++ linux-2.6/kernel/power/hibernate.c
-@@ -334,6 +334,7 @@ int hibernation_snapshot(int platform_mo
- 		goto Close;
- 
- 	suspend_console();
-+	mm_force_noio_allocations();
- 	error = dpm_suspend_start(PMSG_FREEZE);
- 	if (error)
- 		goto Recover_platform;
-@@ -351,6 +352,7 @@ int hibernation_snapshot(int platform_mo
- 
- 	dpm_resume_end(in_suspend ?
- 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
-+	mm_allow_io_allocations();
- 	resume_console();
-  Close:
- 	platform_end(platform_mode);
-@@ -448,11 +450,13 @@ int hibernation_restore(int platform_mod
- 
- 	pm_prepare_console();
- 	suspend_console();
-+	mm_force_noio_allocations();
- 	error = dpm_suspend_start(PMSG_QUIESCE);
- 	if (!error) {
- 		error = resume_target_kernel(platform_mode);
- 		dpm_resume_end(PMSG_RECOVER);
- 	}
-+	mm_allow_io_allocations();
- 	resume_console();
- 	pm_restore_console();
- 	return error;
-@@ -481,6 +485,7 @@ int hibernation_platform_enter(void)
- 
- 	entering_platform_hibernation = true;
- 	suspend_console();
-+	mm_force_noio_allocations();
- 	error = dpm_suspend_start(PMSG_HIBERNATE);
- 	if (error) {
- 		if (hibernation_ops->recover)
-@@ -518,6 +523,7 @@ int hibernation_platform_enter(void)
-  Resume_devices:
- 	entering_platform_hibernation = false;
- 	dpm_resume_end(PMSG_RESTORE);
-+	mm_allow_io_allocations();
- 	resume_console();
- 
-  Close:
-Index: linux-2.6/kernel/power/power.h
-===================================================================
---- linux-2.6.orig/kernel/power/power.h
-+++ linux-2.6/kernel/power/power.h
-@@ -187,6 +187,9 @@ static inline void suspend_test_finish(c
- #ifdef CONFIG_PM_SLEEP
- /* kernel/power/main.c */
- extern int pm_notifier_call_chain(unsigned long val);
-+/* mm/pm.c */
-+extern void mm_force_noio_allocations(void);
-+extern void mm_allow_io_allocations(void);
- #endif
- 
- #ifdef CONFIG_HIGHMEM
-Index: linux-2.6/kernel/power/suspend.c
-===================================================================
---- linux-2.6.orig/kernel/power/suspend.c
-+++ linux-2.6/kernel/power/suspend.c
-@@ -208,6 +208,7 @@ int suspend_devices_and_enter(suspend_st
- 			goto Close;
- 	}
- 	suspend_console();
-+	mm_force_noio_allocations();
- 	suspend_test_start();
- 	error = dpm_suspend_start(PMSG_SUSPEND);
- 	if (error) {
-@@ -224,6 +225,7 @@ int suspend_devices_and_enter(suspend_st
- 	suspend_test_start();
- 	dpm_resume_end(PMSG_RESUME);
- 	suspend_test_finish("resume devices");
-+	mm_allow_io_allocations();
- 	resume_console();
-  Close:
- 	if (suspend_ops->end)
-Index: linux-2.6/mm/Makefile
-===================================================================
---- linux-2.6.orig/mm/Makefile
-+++ linux-2.6/mm/Makefile
-@@ -40,3 +40,4 @@ obj-$(CONFIG_MEMORY_FAILURE) += memory-f
- obj-$(CONFIG_HWPOISON_INJECT) += hwpoison-inject.o
- obj-$(CONFIG_DEBUG_KMEMLEAK) += kmemleak.o
- obj-$(CONFIG_DEBUG_KMEMLEAK_TEST) += kmemleak-test.o
-+obj-$(CONFIG_PM_SLEEP) += pm.o
-Index: linux-2.6/mm/pm.c
-===================================================================
---- /dev/null
-+++ linux-2.6/mm/pm.c
-@@ -0,0 +1,28 @@
-+#include <linux/gfp.h>
-+
-+static gfp_t saved_gfp_allowed_mask;
-+
-+#define GFP_IOFS (__GFP_IO | __GFP_FS)
-+
-+/**
-+ * mm_force_noio_allocations - Modify gfp_allowed_mask to disable IO allocations
-+ *
-+ * Change gfp_allowed_mask by unsetting __GFP_IO and __GFP_FS in it and save the
-+ * old value.
-+ */
-+void mm_force_noio_allocations(void)
-+{
-+	saved_gfp_allowed_mask = gfp_allowed_mask;
-+	gfp_allowed_mask &= ~GFP_IOFS;
-+}
-+
-+/**
-+ * mm_allow_io_allocations - Modify gfp_allowed_mask to allow IO allocations
-+ *
-+ * If the saved value of gfp_allowed_mask has __GFP_IO set, modify the current
-+ * gfp_allowed_mask by setting this bit and anlogously for __GFP_FS.
-+ */
-+void mm_allow_io_allocations(void)
-+{
-+	gfp_allowed_mask |= saved_gfp_allowed_mask & GFP_IOFS;
-+}
+T24gTW9uZGF5IDI1IEphbnVhcnkgMjAxMCwgQWxleGV5IFN0YXJpa292c2tpeSB3cm90ZToKPiBS
+YWZhZWwgSi4gV3lzb2NraSDQv9C40YjQtdGCOgo+ID4gT24gU2F0dXJkYXkgMjMgSmFudWFyeSAy
+MDEwLCBNYXhpbSBMZXZpdHNreSB3cm90ZToKPiA+PiBPbiBGcmksIDIwMTAtMDEtMjIgYXQgMjI6
+MTkgKzAxMDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOiAKPiA+Pj4gT24gRnJpZGF5IDIyIEph
+bnVhcnkgMjAxMCwgTWF4aW0gTGV2aXRza3kgd3JvdGU6Cj4gPj4+PiBPbiBGcmksIDIwMTAtMDEt
+MjIgYXQgMTA6NDIgKzA5MDAsIEtPU0FLSSBNb3RvaGlybyB3cm90ZTogCj4gPj4+Pj4+Pj4gUHJv
+YmFibHkgd2UgaGF2ZSBtdWx0aXBsZSBvcHRpb24uIGJ1dCBJIGRvbid0IHRoaW5rIEdGUF9OT0lP
+IGlzIGdvb2QKPiA+Pj4+Pj4+PiBvcHRpb24uIEl0IGFzc3VtZSB0aGUgc3lzdGVtIGhhdmUgbG90
+cyBub24tZGlydHkgY2FjaGUgbWVtb3J5IGFuZCBpdCBpc24ndAo+ID4+Pj4+Pj4+IGd1cmFudGVl
+ZC4KPiA+Pj4+Pj4+IEJhc2ljYWxseSBub3RoaW5nIGlzIGd1YXJhbnRlZWQgaW4gdGhpcyBjYXNl
+LiAgSG93ZXZlciwgZG9lcyBpdCBhY3R1YWxseSBtYWtlCj4gPj4+Pj4+PiB0aGluZ3MgX3dvcnNl
+Xz8gIAo+ID4+Pj4+PiBIbW0uLgo+ID4+Pj4+PiBEbyB5b3UgbWVhbiB3ZSBkb24ndCBuZWVkIHRv
+IHByZXZlbnQgYWNjaWRlbnRhbCBzdXNwZW5kIGZhaWx1cmU/Cj4gPj4+Pj4+IFBlcmhhcHMsIEkg
+ZGlkIG1pc3VuZGVyc3RhbmQgeW91ciBpbnRlbnRpb24uIElmIHlvdSB0aGluayB5b3VyIHBhdGNo
+IHNvbHZlCj4gPj4+Pj4+IHRoaXMgdGhpcyBpc3N1ZSwgSSBzdGlsbCBkaXNhZ3JlZS4gYnV0IElm
+IHlvdSB0aGluayB5b3VyIHBhdGNoIG1pdGlnYXRlCj4gPj4+Pj4+IHRoZSBwYWluIG9mIHRoaXMg
+aXNzdWUsIEkgYWdyZWUgaXQuIEkgZG9uJ3QgaGF2ZSBhbnkgcmVhc29uIHRvIG9wcG9zZSB5b3Vy
+Cj4gPj4+Pj4+IGZpcnN0IHBhdGNoLgo+ID4+Pj4+IE9uZSBxdWVzdGlvbi4gSGF2ZSBhbnlvbmUg
+dGVzdGVkIFJhZmFlbCdzICRzdWJqZWN0IHBhdGNoPyAKPiA+Pj4+PiBQbGVhc2UgcG9zdCB0ZXN0
+IHJlc3VsdC4gaWYgdGhlIGlzc3VlIGRpc2FwcGVyIGJ5IHRoZSBwYXRjaCwgd2UgY2FuCj4gPj4+
+Pj4gc3VwcG9zZSB0aGUgc2xvd25lc3MgaXMgY2F1c2VkIGJ5IGkvbyBsYXllci4KPiA+Pj4+IEkg
+ZGlkLgo+ID4+Pj4KPiA+Pj4+IEFzIGZhciBhcyBJIGNvdWxkIHNlZSwgcGF0Y2ggZG9lcyBzb2x2
+ZSB0aGUgcHJvYmxlbSBJIGRlc2NyaWJlZC4KPiA+Pj4+Cj4gPj4+PiBEb2VzIGl0IGFmZmVjdCBz
+cGVlZCBvZiBzdXNwZW5kPyBJIGNhbid0IHNheSBmb3Igc3VyZS4gSXQgc2VlbXMgdG8gYmUKPiA+
+Pj4+IHRoZSBzYW1lLgo+ID4+PiBUaGFua3MgZm9yIHRlc3RpbmcuCj4gPj4gSSdsbCB0ZXN0IHRo
+YXQgdG9vLCBzb29uLgo+ID4+IEp1c3QgdG8gbm90ZSB0aGF0IEkgbGVmdCBteSBoaWJlcm5hdGUg
+bG9vcCBydW4gb3Zlcm5pZ2h0LCBhbmQgbm93IEkgYW0KPiA+PiBwb3N0aW5nIGZyb20gbXkgbm90
+ZWJvb2sgYWZ0ZXIgaXQgZGlkIDU5MCBoaWJlcm5hdGUgY3ljbGVzLgo+ID4gCj4gPiBEaWQgeW91
+IGhhdmUgYSBjaGFuY2UgdG8gdGVzdCBpdD8KPiA+IAo+ID4+IE9mZnRvcGljLCBidXQgTm90ZSB0
+aGF0IHRvIGFjaGlldmUgdGhhdCBJIGhhZCB0byBzdG9wIHVzaW5nIGdsb2JhbCBhY3BpCj4gPj4g
+aGFyZHdhcmUgbG9jay4gSSB0cmllZCBhbGwga2luZHMgb2YgdGhpbmdzLCBidXQgZm9yIG5vdyBp
+dCBqdXN0IGhhbmRzCj4gPj4gZnJvbSB0aW1lIHRvIHRpbWUuCj4gPj4gU2VlIGh0dHA6Ly9idWd6
+aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNDY2OAo+ID4gCj4gPiBJJ20gZ29pbmcg
+dG8gbG9vayBhdCB0aGF0IGxhdGVyIHRoaXMgd2VlaywgYWx0aG91Z2ggSSdtIG5vdCBzdXJlIEkg
+Y2FuIGRvIG1vcmUKPiA+IHRoYW4gQWxleCBhYm91dCB0aGF0Lgo+ID4gCj4gPiBSYWZhZWwKPiBS
+YWZhZWwsCj4gSWYgeW91IGNhbiBwb2ludCB0byB3aGVyZSBvbmUgbWF5IGluc2VydCBjYWxsYmFj
+ayB0byBiZSBjYWxsZWQganVzdCBiZWZvcmUgaGFuZGluZyBjb250cm9sIHRvIHJlc3VtZSBrZXJu
+ZWwsCj4gaXQgbWF5IGhlbHAuLi4KCkdlbmVyYWxseSBzcGVha2luZywgSSdkIGRvIHRoYXQgaW4g
+YSAuc3VzcGVuZCgpIGNhbGxiYWNrIG9mIG9uZSBvZiBkZXZpY2VzLgoKSWYgdGhhdCdzIGluY29u
+dmVuaWVudCwgeW91IGNhbiBhbHNvIHBsYWNlIGl0IGluIHRoZSAucHJlX3Jlc3RvcmUoKSBwbGF0
+Zm9ybQpoaWJlcm5hdGUgY2FsbGJhY2sgKGRyaXZlcnMvYWNwaS9zbGVlcC5jKS4gIEl0IG9ubHkg
+ZGlzYWJsZXMgR1BFcyByaWdodCBub3csCml0IG1pZ2h0IHJlbGVhc2UgdGhlIGdsb2JhbCBsb2Nr
+IGFzIHdlbGwuCgpUaGUgLnByZV9yZXN0b3JlKCkgY2FsbGJhY2sgaXMgZXhlY3V0ZWQgYWZ0ZXIg
+YWxsIGRldmljZXMgaGF2ZSBiZWVuIHN1c3BlbmRlZCwKc28gdGhlcmUncyBubyBkYW5nZXIgYW55
+IGRyaXZlciB3b3VsZCByZS1hY3F1aXJlIHRoZSBnbG9iYWwgbG9jayBhZnRlciB0aGF0LgoKUmFm
+YWVsCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4
+LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRw
+czovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
