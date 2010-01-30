@@ -1,15 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Update][PATCH] MM / PM: Force GFP_NOIO during
-	suspend/hibernation and resume
-Date: Sat, 30 Jan 2010 19:56:41 +0100
-Message-ID: <201001301956.41372.rjw__33764.2121631235$1264877866$gmane$org@sisk.pl>
-References: <201001212121.50272.rjw@sisk.pl> <201001252249.18690.rjw@sisk.pl>
-	<4B5E1281.7090700@suse.de>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during
+ suspend/resume (was: Re: Memory allocations in .suspend became very
+ unreliable)
+Date: Sat, 30 Jan 2010 22:37:43 +0200
+Message-ID: <1264883863.13861.3.camel__2208.50099945$1264884058$gmane$org@maxim-laptop>
+References: <1263549544.3112.10.camel@maxim-laptop>
+	<201001170138.37283.rjw@sisk.pl>
+	<1264866419.27933.0.camel@maxim-laptop>
+	<201001301947.10453.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4B5E1281.7090700@suse.de>
+In-Reply-To: <201001301947.10453.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,55 +22,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uZGF5IDI1IEphbnVhcnkgMjAxMCwgQWxleGV5IFN0YXJpa292c2tpeSB3cm90ZToKPiBS
-YWZhZWwgSi4gV3lzb2NraSDQv9C40YjQtdGCOgo+ID4gT24gU2F0dXJkYXkgMjMgSmFudWFyeSAy
-MDEwLCBNYXhpbSBMZXZpdHNreSB3cm90ZToKPiA+PiBPbiBGcmksIDIwMTAtMDEtMjIgYXQgMjI6
-MTkgKzAxMDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOiAKPiA+Pj4gT24gRnJpZGF5IDIyIEph
-bnVhcnkgMjAxMCwgTWF4aW0gTGV2aXRza3kgd3JvdGU6Cj4gPj4+PiBPbiBGcmksIDIwMTAtMDEt
-MjIgYXQgMTA6NDIgKzA5MDAsIEtPU0FLSSBNb3RvaGlybyB3cm90ZTogCj4gPj4+Pj4+Pj4gUHJv
-YmFibHkgd2UgaGF2ZSBtdWx0aXBsZSBvcHRpb24uIGJ1dCBJIGRvbid0IHRoaW5rIEdGUF9OT0lP
-IGlzIGdvb2QKPiA+Pj4+Pj4+PiBvcHRpb24uIEl0IGFzc3VtZSB0aGUgc3lzdGVtIGhhdmUgbG90
-cyBub24tZGlydHkgY2FjaGUgbWVtb3J5IGFuZCBpdCBpc24ndAo+ID4+Pj4+Pj4+IGd1cmFudGVl
-ZC4KPiA+Pj4+Pj4+IEJhc2ljYWxseSBub3RoaW5nIGlzIGd1YXJhbnRlZWQgaW4gdGhpcyBjYXNl
-LiAgSG93ZXZlciwgZG9lcyBpdCBhY3R1YWxseSBtYWtlCj4gPj4+Pj4+PiB0aGluZ3MgX3dvcnNl
-Xz8gIAo+ID4+Pj4+PiBIbW0uLgo+ID4+Pj4+PiBEbyB5b3UgbWVhbiB3ZSBkb24ndCBuZWVkIHRv
-IHByZXZlbnQgYWNjaWRlbnRhbCBzdXNwZW5kIGZhaWx1cmU/Cj4gPj4+Pj4+IFBlcmhhcHMsIEkg
-ZGlkIG1pc3VuZGVyc3RhbmQgeW91ciBpbnRlbnRpb24uIElmIHlvdSB0aGluayB5b3VyIHBhdGNo
-IHNvbHZlCj4gPj4+Pj4+IHRoaXMgdGhpcyBpc3N1ZSwgSSBzdGlsbCBkaXNhZ3JlZS4gYnV0IElm
-IHlvdSB0aGluayB5b3VyIHBhdGNoIG1pdGlnYXRlCj4gPj4+Pj4+IHRoZSBwYWluIG9mIHRoaXMg
-aXNzdWUsIEkgYWdyZWUgaXQuIEkgZG9uJ3QgaGF2ZSBhbnkgcmVhc29uIHRvIG9wcG9zZSB5b3Vy
-Cj4gPj4+Pj4+IGZpcnN0IHBhdGNoLgo+ID4+Pj4+IE9uZSBxdWVzdGlvbi4gSGF2ZSBhbnlvbmUg
-dGVzdGVkIFJhZmFlbCdzICRzdWJqZWN0IHBhdGNoPyAKPiA+Pj4+PiBQbGVhc2UgcG9zdCB0ZXN0
-IHJlc3VsdC4gaWYgdGhlIGlzc3VlIGRpc2FwcGVyIGJ5IHRoZSBwYXRjaCwgd2UgY2FuCj4gPj4+
-Pj4gc3VwcG9zZSB0aGUgc2xvd25lc3MgaXMgY2F1c2VkIGJ5IGkvbyBsYXllci4KPiA+Pj4+IEkg
-ZGlkLgo+ID4+Pj4KPiA+Pj4+IEFzIGZhciBhcyBJIGNvdWxkIHNlZSwgcGF0Y2ggZG9lcyBzb2x2
-ZSB0aGUgcHJvYmxlbSBJIGRlc2NyaWJlZC4KPiA+Pj4+Cj4gPj4+PiBEb2VzIGl0IGFmZmVjdCBz
-cGVlZCBvZiBzdXNwZW5kPyBJIGNhbid0IHNheSBmb3Igc3VyZS4gSXQgc2VlbXMgdG8gYmUKPiA+
-Pj4+IHRoZSBzYW1lLgo+ID4+PiBUaGFua3MgZm9yIHRlc3RpbmcuCj4gPj4gSSdsbCB0ZXN0IHRo
-YXQgdG9vLCBzb29uLgo+ID4+IEp1c3QgdG8gbm90ZSB0aGF0IEkgbGVmdCBteSBoaWJlcm5hdGUg
-bG9vcCBydW4gb3Zlcm5pZ2h0LCBhbmQgbm93IEkgYW0KPiA+PiBwb3N0aW5nIGZyb20gbXkgbm90
-ZWJvb2sgYWZ0ZXIgaXQgZGlkIDU5MCBoaWJlcm5hdGUgY3ljbGVzLgo+ID4gCj4gPiBEaWQgeW91
-IGhhdmUgYSBjaGFuY2UgdG8gdGVzdCBpdD8KPiA+IAo+ID4+IE9mZnRvcGljLCBidXQgTm90ZSB0
-aGF0IHRvIGFjaGlldmUgdGhhdCBJIGhhZCB0byBzdG9wIHVzaW5nIGdsb2JhbCBhY3BpCj4gPj4g
-aGFyZHdhcmUgbG9jay4gSSB0cmllZCBhbGwga2luZHMgb2YgdGhpbmdzLCBidXQgZm9yIG5vdyBp
-dCBqdXN0IGhhbmRzCj4gPj4gZnJvbSB0aW1lIHRvIHRpbWUuCj4gPj4gU2VlIGh0dHA6Ly9idWd6
-aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNDY2OAo+ID4gCj4gPiBJJ20gZ29pbmcg
-dG8gbG9vayBhdCB0aGF0IGxhdGVyIHRoaXMgd2VlaywgYWx0aG91Z2ggSSdtIG5vdCBzdXJlIEkg
-Y2FuIGRvIG1vcmUKPiA+IHRoYW4gQWxleCBhYm91dCB0aGF0Lgo+ID4gCj4gPiBSYWZhZWwKPiBS
-YWZhZWwsCj4gSWYgeW91IGNhbiBwb2ludCB0byB3aGVyZSBvbmUgbWF5IGluc2VydCBjYWxsYmFj
-ayB0byBiZSBjYWxsZWQganVzdCBiZWZvcmUgaGFuZGluZyBjb250cm9sIHRvIHJlc3VtZSBrZXJu
-ZWwsCj4gaXQgbWF5IGhlbHAuLi4KCkdlbmVyYWxseSBzcGVha2luZywgSSdkIGRvIHRoYXQgaW4g
-YSAuc3VzcGVuZCgpIGNhbGxiYWNrIG9mIG9uZSBvZiBkZXZpY2VzLgoKSWYgdGhhdCdzIGluY29u
-dmVuaWVudCwgeW91IGNhbiBhbHNvIHBsYWNlIGl0IGluIHRoZSAucHJlX3Jlc3RvcmUoKSBwbGF0
-Zm9ybQpoaWJlcm5hdGUgY2FsbGJhY2sgKGRyaXZlcnMvYWNwaS9zbGVlcC5jKS4gIEl0IG9ubHkg
-ZGlzYWJsZXMgR1BFcyByaWdodCBub3csCml0IG1pZ2h0IHJlbGVhc2UgdGhlIGdsb2JhbCBsb2Nr
-IGFzIHdlbGwuCgpUaGUgLnByZV9yZXN0b3JlKCkgY2FsbGJhY2sgaXMgZXhlY3V0ZWQgYWZ0ZXIg
-YWxsIGRldmljZXMgaGF2ZSBiZWVuIHN1c3BlbmRlZCwKc28gdGhlcmUncyBubyBkYW5nZXIgYW55
-IGRyaXZlciB3b3VsZCByZS1hY3F1aXJlIHRoZSBnbG9iYWwgbG9jayBhZnRlciB0aGF0LgoKUmFm
-YWVsCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4
-LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRw
-czovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Sat, 2010-01-30 at 19:47 +0100, Rafael J. Wysocki wrote: 
+> On Saturday 30 January 2010, Maxim Levitsky wrote:
+> > On Sun, 2010-01-17 at 01:38 +0100, Rafael J. Wysocki wrote: 
+> > > Hi,
+> > > 
+> > > I thing the snippet below is a good summary of what this is about.
+> > 
+> > Any progress on that?
+> 
+> Well, I'm waiting for you to report back:
+> http://patchwork.kernel.org/patch/74740/
+> 
+> The patch is appended once again for convenience.
+
+Ah, sorry!
+
+I used the second version (with the locks) and it works for sure (~500
+cycles)
+
+However, as I discovered today, it takes the lock also for GFP_ATOMIC,
+and thats why I see several backtraces in the kernel log. Anyway this
+isn't important.
+
+I forgot all about this patch, and I am compiling the kernel right away.
+Will put the kernel through the hibernate loop tonight.
+
+Best regards,
+Maxim Levitsky
