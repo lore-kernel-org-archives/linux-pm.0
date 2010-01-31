@@ -1,12 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][RFT][PATCH] ACPI: Protection from suspending in
-	the middle of EC transaction
-Date: Sun, 31 Jan 2010 00:29:48 +0100
-Message-ID: <201001310029.48717.rjw__38310.8962131248$1264894219$gmane$org@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: syncing the disks when entering sleep
+Date: Sun, 31 Jan 2010 09:52:10 +0100
+Message-ID: <20100131085210.GH2238@elf.ucw.cz>
+References: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>
+	<201001270151.03241.rjw@sisk.pl>
+	<20100127095532.GA12752@atrey.karlin.mff.cuni.cz>
+	<201001272146.43660.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <201001272146.43660.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,96 +21,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, "Leisner,
+	Martin" <Martin.Leisner@xerox.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Wed 2010-01-27 21:46:43, Rafael J. Wysocki wrote:
+> On Wednesday 27 January 2010, Pavel Machek wrote:
+> > 
+> > > > Per-system property, which should better be
+> > > > per-program-that-requires-suspend. You request suspend without syncing
+> > > > (you want it quick, battery is 90%), then the battery runs low, and
+> > > > system daeomn requests s2ram, not realizing that someone disabled sync
+> > > > from under him.
+> > > 
+> > > I really prefer a per-system setting.  The program that wants to sync anyway
+> > > can easily do that by itself.
+> > 
+> > Yes, but existing apps do not know they have to sync. You are
+> > essentially adding "break back compatibility" system wide option, when
+> > better alternative exists... See above for concrete example where it
+> > may hurt.
+> 
+> I don't get what the problem is, really.
+> 
+> There's _nothing_ here that breaks the existing behavior.  If the user doesn't
+> set the switch, everything works as usual.  If he does, breaking the "back
+> compatibility" is _his_ problem.
 
-While Maxim is testing if the patch below helps with
-http://bugzilla.kernel.org/show_bug.cgi?id=14668
-I think it's necessary anyway.
+So... you give them option to break back compatibility then blame it
+on them.... Yes, we could do it, but it is not good.
 
-The problem is that currently there's nothing to prevent us from suspending in
-the middle of an EC transaction in progress, at least as far as I can see.
-As a result, we can suspend with the ACPI global lock held or something like
-this, which leads to problems especially for hibernation (if the resume kernel
-passes control to the image kernel in the middle of an EC transaction, things
-aren't nice).  For this reason I think we should wait until there are no EC
-transactions in progress before we suspend and we should prevent any new
-EC transactions from starting after that point.  The patch below does that.
-
-However, it does that in the EC's suspend callback, which may be too early,
-because there still is _PTS to run, so it might be necessary to do that later.
-On the other hand, the mechanics behind the ACPI global lock, which is
-acquired in acpi_ec_transaction(), requires that interrupts work, because
-otherwise there may be a problem if the global lock is not actually acquired
-after ACPI_ACQUIRE_GLOBAL_LOCK(), so the last place in which to
-wait for EC transactions to complete seems to be the platform suspend
-.prepare() callback.  Unfortunately, it's not implemented at the moment for
-ACPI and it doesn't have a hibernate counterpart and that's why I'd rather use
-the patch below, unless it's known to break things for someone.  So, if you
-can, please test it and tell me if you have any problems with it.
-
-Of course, comments are welcome as well.
-
-Thanks,
-Rafael
-
----
- drivers/acpi/ec.c |   17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/acpi/ec.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/ec.c
-+++ linux-2.6/drivers/acpi/ec.c
-@@ -76,8 +76,9 @@ enum ec_command {
- enum {
- 	EC_FLAGS_QUERY_PENDING,		/* Query is pending */
- 	EC_FLAGS_GPE_STORM,		/* GPE storm detected */
--	EC_FLAGS_HANDLERS_INSTALLED	/* Handlers for GPE and
-+	EC_FLAGS_HANDLERS_INSTALLED,	/* Handlers for GPE and
- 					 * OpReg are installed */
-+	EC_FLAGS_SUSPENDED,		/* Driver is suspended */
- };
- 
- /* If we find an EC via the ECDT, we need to keep a ptr to its context */
-@@ -291,6 +292,10 @@ static int acpi_ec_transaction(struct ac
- 	if (t->rdata)
- 		memset(t->rdata, 0, t->rlen);
- 	mutex_lock(&ec->lock);
-+	if (test_bit(EC_FLAGS_SUSPENDED, &ec->flags)) {
-+		status = -EBUSY;
-+		goto unlock;
-+	}
- 	if (ec->global_lock) {
- 		status = acpi_acquire_global_lock(ACPI_EC_UDELAY_GLK, &glk);
- 		if (ACPI_FAILURE(status)) {
-@@ -1059,16 +1064,26 @@ error:
- static int acpi_ec_suspend(struct acpi_device *device, pm_message_t state)
- {
- 	struct acpi_ec *ec = acpi_driver_data(device);
-+
-+	mutex_lock(&ec->lock);
-+	/* Prevent transactions from happening while suspended */
-+	set_bit(EC_FLAGS_SUSPENDED, &ec->flags);
- 	/* Stop using GPE */
- 	acpi_disable_gpe(NULL, ec->gpe);
-+	mutex_unlock(&ec->lock);
- 	return 0;
- }
- 
- static int acpi_ec_resume(struct acpi_device *device)
- {
- 	struct acpi_ec *ec = acpi_driver_data(device);
-+
-+	mutex_lock(&ec->lock);
- 	/* Enable use of GPE back */
- 	acpi_enable_gpe(NULL, ec->gpe);
-+	/* Allow transactions to happen again */
-+	set_bit(EC_FLAGS_SUSPENDED, &ec->flags);
-+	mutex_unlock(&ec->lock);
- 	return 0;
- }
- 
+And better alternative exists, where you make the option per-suspend
+so it does not have chance to break compatibility later.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
