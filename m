@@ -1,19 +1,15 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [RFC][PATCH] PM: Force GFP_NOIO during
- suspend/resume (was: Re: Memory allocations in .suspend became very
- unreliable)
-Date: Mon, 01 Feb 2010 21:51:56 +0200
-Message-ID: <1265053916.26421.1.camel__30333.0373172232$1265054140$gmane$org@maxim-laptop>
-References: <1263549544.3112.10.camel@maxim-laptop>
-	<201001170138.37283.rjw@sisk.pl>
-	<1264866419.27933.0.camel@maxim-laptop>
-	<201001301947.10453.rjw@sisk.pl>
-	<1264883863.13861.3.camel@maxim-laptop>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: syncing the disks when entering sleep
+Date: Tue, 02 Feb 2010 07:55:04 +1100
+Message-ID: <4B673FA8.4050603@crca.org.au>
+References: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>	<201001272146.43660.rjw@sisk.pl>
+	<20100131085210.GH2238@elf.ucw.cz>	<201001311333.37620.rjw@sisk.pl>
+	<20100201104922.GC5809@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1264883863.13861.3.camel@maxim-laptop>
+In-Reply-To: <20100201104922.GC5809@atrey.karlin.mff.cuni.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,39 +19,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org, "Leisner,
+	Martin" <Martin.Leisner@xerox.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2010-01-30 at 22:37 +0200, Maxim Levitsky wrote: 
-> On Sat, 2010-01-30 at 19:47 +0100, Rafael J. Wysocki wrote: 
-> > On Saturday 30 January 2010, Maxim Levitsky wrote:
-> > > On Sun, 2010-01-17 at 01:38 +0100, Rafael J. Wysocki wrote: 
-> > > > Hi,
-> > > > 
-> > > > I thing the snippet below is a good summary of what this is about.
-> > > 
-> > > Any progress on that?
-> > 
-> > Well, I'm waiting for you to report back:
-> > http://patchwork.kernel.org/patch/74740/
-> > 
-> > The patch is appended once again for convenience.
-> 
-> Ah, sorry!
-> 
-> I used the second version (with the locks) and it works for sure (~500
-> cycles)
-> 
-> However, as I discovered today, it takes the lock also for GFP_ATOMIC,
-> and thats why I see several backtraces in the kernel log. Anyway this
-> isn't important.
-> 
-> I forgot all about this patch, and I am compiling the kernel right away.
-> Will put the kernel through the hibernate loop tonight.
+Hi.
 
-I did 123 hibernate cycles on my notebook. Everything is fine.
-This patch very very likely is working.
+Pavel Machek wrote:
+>> On Sunday 31 January 2010, Pavel Machek wrote:
+>>> On Wed 2010-01-27 21:46:43, Rafael J. Wysocki wrote:
+>>>> On Wednesday 27 January 2010, Pavel Machek wrote:
+>>>>>>> Per-system property, which should better be
+>>>>>>> per-program-that-requires-suspend. You request suspend without syncing
+>>>>>>> (you want it quick, battery is 90%), then the battery runs low, and
+>>>>>>> system daeomn requests s2ram, not realizing that someone disabled sync
+>>>>>>> from under him.
+>>>>>> I really prefer a per-system setting.  The program that wants to sync anyway
+>>>>>> can easily do that by itself.
+>>>>> Yes, but existing apps do not know they have to sync. You are
+>>>>> essentially adding "break back compatibility" system wide option, when
+>>>>> better alternative exists... See above for concrete example where it
+>>>>> may hurt.
+>>>> I don't get what the problem is, really.
+>>>>
+>>>> There's _nothing_ here that breaks the existing behavior.  If the user doesn't
+>>>> set the switch, everything works as usual.  If he does, breaking the "back
+>>>> compatibility" is _his_ problem.
+>>> So... you give them option to break back compatibility then blame it
+>>> on them.... Yes, we could do it, but it is not good.
+>>>
+>>> And better alternative exists, where you make the option per-suspend
+>>> so it does not have chance to break compatibility later.
+>> I'm not sure what you mean.  Would you like it to reset itself during resume
+>> or something like this?
+> 
+> Yes, that or something similar would certainly help.
 
-Best regards,
-Maxim Levitsky
+No, that would only make things more confusing. What other kernel knob
+turns itself off like that? Even drop caches, which might be reasonably
+expected to do so, doesn't.
+
+Regards,
+
+Nigel
