@@ -1,16 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: syncing the disks when entering sleep
-Date: Mon, 1 Feb 2010 11:49:22 +0100
-Message-ID: <20100201104922.GC5809@atrey.karlin.mff.cuni.cz>
-References: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>
-	<201001272146.43660.rjw@sisk.pl> <20100131085210.GH2238@elf.ucw.cz>
-	<201001311333.37620.rjw@sisk.pl>
+From: Sebastian Ott <sebott@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before
+ suspending devices
+Date: Mon, 1 Feb 2010 15:41:49 +0100 (CET)
+Message-ID: <alpine.LFD.2.00.1002011527580.5334__21966.4815850139$1265035417$gmane$org@localhost>
+References: <alpine.LFD.2.00.1001221841490.2266@localhost>
+	<201001222148.23945.rjw@sisk.pl>
+	<alpine.LFD.2.00.1001251601440.2100@localhost>
+	<201001252237.42545.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201001311333.37620.rjw@sisk.pl>
+In-Reply-To: <201001252237.42545.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,45 +22,15 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, "Leisner,
-	Martin" <Martin.Leisner@xerox.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> On Sunday 31 January 2010, Pavel Machek wrote:
-> > On Wed 2010-01-27 21:46:43, Rafael J. Wysocki wrote:
-> > > On Wednesday 27 January 2010, Pavel Machek wrote:
-> > > > 
-> > > > > > Per-system property, which should better be
-> > > > > > per-program-that-requires-suspend. You request suspend without syncing
-> > > > > > (you want it quick, battery is 90%), then the battery runs low, and
-> > > > > > system daeomn requests s2ram, not realizing that someone disabled sync
-> > > > > > from under him.
-> > > > > 
-> > > > > I really prefer a per-system setting.  The program that wants to sync anyway
-> > > > > can easily do that by itself.
-> > > > 
-> > > > Yes, but existing apps do not know they have to sync. You are
-> > > > essentially adding "break back compatibility" system wide option, when
-> > > > better alternative exists... See above for concrete example where it
-> > > > may hurt.
-> > > 
-> > > I don't get what the problem is, really.
-> > > 
-> > > There's _nothing_ here that breaks the existing behavior.  If the user doesn't
-> > > set the switch, everything works as usual.  If he does, breaking the "back
-> > > compatibility" is _his_ problem.
-> > 
-> > So... you give them option to break back compatibility then blame it
-> > on them.... Yes, we could do it, but it is not good.
-> > 
-> > And better alternative exists, where you make the option per-suspend
-> > so it does not have chance to break compatibility later.
-> 
-> I'm not sure what you mean.  Would you like it to reset itself during resume
-> or something like this?
+Hi Rafael,
 
-Yes, that or something similar would certainly help.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+since you didn't like the idea of calling the driver callbacks with just
+one cpu enabled, we gave your patch: "MM / PM: Force GFP_NOIO during
+suspend/hibernation and resume" a try and i can confirm that this
+fixes the issue on s390. Will this go in 2.6.33/stable?
+
+greetings,
+Sebastian
