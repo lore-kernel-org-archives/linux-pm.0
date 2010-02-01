@@ -1,17 +1,17 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before
-	suspending devices
-Date: Mon, 1 Feb 2010 07:57:06 -0800
-Message-ID: <20100201075706.69b1d2c0.akpm__19428.0315343805$1265039982$gmane$org@linux-foundation.org>
-References: <alpine.LFD.2.00.1001221841490.2266@localhost>
-	<201001252237.42545.rjw@sisk.pl>
-	<alpine.LFD.2.00.1002011527580.5334@localhost>
-	<201002011630.04281.rjw@sisk.pl>
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+Subject: Re: syncing the disks when entering sleep
+Date: Mon, 1 Feb 2010 09:13:25 -0800
+Message-ID: <76FA3B279DD9DA48896E2B404944957204F88D87@USA7061MS02.na.xerox.net>
+References: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>
+	<201001272146.43660.rjw@sisk.pl> <20100131085210.GH2238@elf.ucw.cz>
+	<201001311333.37620.rjw@sisk.pl>
+	<20100201104922.GC5809@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201002011630.04281.rjw@sisk.pl>
+Content-class: urn:content-classes:message
+In-Reply-To: <20100201104922.GC5809@atrey.karlin.mff.cuni.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,49 +21,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Benjamin@smtp1.linux-foundation.org, linux-kernel@vger.kernel.org, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 1 Feb 2010 16:30:04 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> On Monday 01 February 2010, Sebastian Ott wrote:
-> > Hi Rafael,
-> > 
-> > since you didn't like the idea of calling the driver callbacks with just
-> > one cpu enabled, we gave your patch: "MM / PM: Force GFP_NOIO during
-> > suspend/hibernation and resume" a try and i can confirm that this
-> > fixes the issue on s390.
-> 
-> Great, thanks for testing!
-> 
-> > Will this go in 2.6.33/stable?
-> 
-> That depends on Andrew, actually.
-> 
-> Andrew, what do you think of the patch at:
-> http://patchwork.kernel.org/patch/74740/mbox/ ?
-> 
-> It helps people and I don't see any major drawbacks of it.
-> 
 
-Seems sane.  A couple of minor things:
+>   -----Original Message-----
+>   From: Pavel Machek [mailto:pavel@ucw.cz]
+>   Sent: Monday, February 01, 2010 5:49 AM
+>   To: Rafael J. Wysocki
+>   Cc: Leisner, Martin; linux-pm@lists.linux-foundation.org
+>   Subject: Re: [linux-pm] syncing the disks when entering sleep
+>   
+>   > On Sunday 31 January 2010, Pavel Machek wrote:
+>   > > On Wed 2010-01-27 21:46:43, Rafael J. Wysocki wrote:
+>   > > > On Wednesday 27 January 2010, Pavel Machek wrote:
+>   > > > >
+>   > > > > > > Per-system property, which should better be
+>   > > > > > > per-program-that-requires-suspend. You request suspend
+>   without syncing
+>   > > > > > > (you want it quick, battery is 90%), then the battery runs
+>   low, and
+>   > > > > > > system daeomn requests s2ram, not realizing that someone
+>   disabled sync
+>   > > > > > > from under him.
+>   > > > > >
+>   > > > > > I really prefer a per-system setting.  The program that wants
+>   to sync anyway
+>   > > > > > can easily do that by itself.
+>   > > > >
+>   > > > > Yes, but existing apps do not know they have to sync. You are
+>   > > > > essentially adding "break back compatibility" system wide
+>   option, when
+>   > > > > better alternative exists... See above for concrete example
+>   where it
+>   > > > > may hurt.
+>   > > >
+>   > > > I don't get what the problem is, really.
+>   > > >
+>   > > > There's _nothing_ here that breaks the existing behavior.  If the
+>   user doesn't
+>   > > > set the switch, everything works as usual.  If he does, breaking
+>   the "back
+>   > > > compatibility" is _his_ problem.
+>   > >
+>   > > So... you give them option to break back compatibility then blame it
+>   > > on them.... Yes, we could do it, but it is not good.
+>   > >
+>   > > And better alternative exists, where you make the option per-suspend
+>   > > so it does not have chance to break compatibility later.
+>   >
+>   > I'm not sure what you mean.  Would you like it to reset itself during
+>   resume
+>   > or something like this?
+>   
+>   Yes, that or something similar would certainly help.
+>   									Pavel
+>   --
 
-- the names mm_force_noio_allocations() and mm_allow_io_allocations()
-  are a bit sucky.  Asymmetrical.
+So you're asking to give this knob "one shot behavior"
+(i.e. "then next sleep won't sync")?
 
-- the functions don't nest: if someone calls
-  mm_force_noio_allocations() twice in succession then the kernel is
-  all mucked up.  Why not:
+But I'm primarily interested in the behavior on embedded systems (where you control all the processes running -- there's no "user" involved.
 
-gfp_t mm_set_gfp_mask(gfp_t mask)
-{
-	gfp_t ret = gfp_allowed_mask;
+If a user starts messing with default settings, any unwanted behavior is the users problem (besides, this should only be writable as root).
 
-	gfp_allowed_mask = mask;
-	return ret;
-}
-
-which is of course racy :)  Could add a local spinlock if really worried.
-
-All your current callers can easily save the old value in a local.
+marty
