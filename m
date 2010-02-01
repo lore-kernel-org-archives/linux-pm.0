@@ -1,17 +1,16 @@
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: [RFC][RFT][PATCH] ACPI: Protection from suspending
- in the middle of EC transaction
-Date: Mon, 01 Feb 2010 13:22:55 +0300
-Message-ID: <4B66AB7F.7050908__19972.5528750152$1265019828$gmane$org@suse.de>
-References: <201001310029.48717.rjw@sisk.pl>
-	<9b2b86521001310611m339862afw73410dc7eb5692c8@mail.gmail.com>
-	<1264957760.7264.3.camel@maxim-laptop>
-	<20100201094643.GB8740@khazad-dum.debian.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: syncing the disks when entering sleep
+Date: Mon, 1 Feb 2010 11:49:22 +0100
+Message-ID: <20100201104922.GC5809@atrey.karlin.mff.cuni.cz>
+References: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>
+	<201001272146.43660.rjw@sisk.pl> <20100131085210.GH2238@elf.ucw.cz>
+	<201001311333.37620.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100201094643.GB8740@khazad-dum.debian.net>
+Content-Disposition: inline
+In-Reply-To: <201001311333.37620.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,33 +20,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, "Leisner,
+	Martin" <Martin.Leisner@xerox.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGVucmlxdWUgZGUgTW9yYWVzIEhvbHNjaHVoINC/0LjRiNC10YI6Cj4gT24gU3VuLCAzMSBKYW4g
-MjAxMCwgTWF4aW0gTGV2aXRza3kgd3JvdGU6Cj4+IFVuZm9ydHVuYXRlbHksIHRoaXMgcGF0Y2gg
-ZXZlbiBjYXVzZXMgcmVncmVzc2lvbnMgb24gbXkgbm90ZWJvb2sgKGl0Cj4+IHN1cnZpdmUgNjMg
-aGliZXJuYXRlIGN5Y2xlcyksIGJ1dCBub3cgSSBiYXR0ZXJ5IGRyaXZlciByZXBvcnRzICdiYXR0
-ZXJ5Cj4+IGFic2VudCcsIGJhY2tsaWdodCBkcml2ZXIgcmVwb3J0cyAwIGJyaWdodG5lc3MsIGJ1
-dCByZWxvYWQgaGVscGVkLgo+IAo+IC4uLgo+IAo+PiBJIHRoaW5rIHRoYXQgbm90IG9ubHkgX1BU
-UyBhbnMgX1dBSyBhcmUgcHJvYmxlbWF0aWMuIFdoYXQgYWJvdXQgb3RoZXIKPj4gQUNQSSBkcml2
-ZXJzIHRoYXQgc3RhcnQgYWNjZXNzaW5nIHRoZSBFQyBiZWZvcmUgaXQgaXMgcmVzdW1lZD8KPj4g
-SSB0aGluayB0aGF0IHRoZXNlIGNhdXNlIHRoZSBwcm9ibGVtcyBJIG9ic2VydmUuCj4gCj4gQUNQ
-SSBkcml2ZXJzIG1pZ2h0IGFjY2VzcyB0aGUgRUMgKGV2ZW4gaW5kaXJlY3RseSwgdGhyb3VnaCB0
-aGUgRFNEVCkuICBBbmQKPiBwbGF0Zm9ybSBkcml2ZXJzIGRvIG9mdGVuIGFjY2VzcyB0aGUgRUMg
-Ym90aCBhdCBzdXNwZW5kIGFuZCByZXN1bWUgdGltZS4KQWN0dWFsbHksIG9ubHkgU0JTIGFuZCB0
-aGlua3BhZC1hY3BpIGFjY2VzcyBFQyBkaXJlY3RseS4gQWxsIG90aGVycyBnbyB0aHJvdWdoCkRT
-RFQgZm9yIGFjY2Vzcy4gU3RpbGwsIHN0b3BwaW5nIEVDIGluIC5zdXNwZW5kIGlzIHRvbyBlYXJs
-eSwgSU1ITy4uLgo+IAo+IFRoaXMgbmVlZHMgc29tZSBzb3J0IG9mIHN0cm9uZyBvcmRlcmluZywg
-dGhlIEVDIG11c3Qgc3VzcGVuZCBsYXN0LCBhbmQKPiByZXN1bWUgZmlyc3QgKGFzIHNlZW4gYnkg
-YW55IEFDUEkgYW5kIEFDUEktYXdhcmUgZHJpdmVycyBzdWNoIGFzIGxpYmF0YSwKPiBzb21lIHBs
-YXRmb3JtIGRyaXZlcnMsIGV0YykuICBJZiBFQyBpbnRlcnJ1cHRzIGFyZSBhIHByb2JsZW0sIG1h
-eWJlIGl0IGNhbgo+IGJlIGtpY2tlZCB0byBwb2xsIG1vZGUgZm9yIHRoZSBzdXNwZW5kL3Jlc3Vt
-ZSB0cmFuc2l0aW9uPwpJdCdzIHRoaXMgd2F5IGFscmVhZHkgZm9yIGFib3V0IGEgeWVhciBub3cu
-Li4gVGhlIHByb2JsZW0gaXMgdGhhdCBFQyBkcml2ZXIgbWlnaHQgYmUgCnN0b3BwZWQgaW4gbWlk
-ZGxlIG9mIHRoZSB0cmFuc2FjdGlvbiwgdGh1cyBsZWF2aW5nIEVDIGluIHVua25vd24gc3RhdGUg
-Zm9yIEJJT1Mgb3IgCnN3aXRjaC1vdmVyIGtlcm5lbC4KCl9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBs
-aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24u
-b3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+> On Sunday 31 January 2010, Pavel Machek wrote:
+> > On Wed 2010-01-27 21:46:43, Rafael J. Wysocki wrote:
+> > > On Wednesday 27 January 2010, Pavel Machek wrote:
+> > > > 
+> > > > > > Per-system property, which should better be
+> > > > > > per-program-that-requires-suspend. You request suspend without syncing
+> > > > > > (you want it quick, battery is 90%), then the battery runs low, and
+> > > > > > system daeomn requests s2ram, not realizing that someone disabled sync
+> > > > > > from under him.
+> > > > > 
+> > > > > I really prefer a per-system setting.  The program that wants to sync anyway
+> > > > > can easily do that by itself.
+> > > > 
+> > > > Yes, but existing apps do not know they have to sync. You are
+> > > > essentially adding "break back compatibility" system wide option, when
+> > > > better alternative exists... See above for concrete example where it
+> > > > may hurt.
+> > > 
+> > > I don't get what the problem is, really.
+> > > 
+> > > There's _nothing_ here that breaks the existing behavior.  If the user doesn't
+> > > set the switch, everything works as usual.  If he does, breaking the "back
+> > > compatibility" is _his_ problem.
+> > 
+> > So... you give them option to break back compatibility then blame it
+> > on them.... Yes, we could do it, but it is not good.
+> > 
+> > And better alternative exists, where you make the option per-suspend
+> > so it does not have chance to break compatibility later.
+> 
+> I'm not sure what you mean.  Would you like it to reset itself during resume
+> or something like this?
+
+Yes, that or something similar would certainly help.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
