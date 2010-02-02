@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ACPI / EC: Remover race between EC driver and
-	suspend process (was: Re: [RFC][RFT][PATCH] ACPI: Protection
-	from suspending in the middle of EC transaction)
-Date: Tue, 2 Feb 2010 21:23:33 +0100
-Message-ID: <201002022123.34061.rjw__46642.7630898126$1265142252$gmane$org@sisk.pl>
-References: <201001310029.48717.rjw@sisk.pl> <4B66AB7F.7050908@suse.de>
-	<201002012342.50074.rjw@sisk.pl>
+Subject: Re: s2disk hang update
+Date: Tue, 2 Feb 2010 21:34:20 +0100
+Message-ID: <201002022134.20366.rjw__27620.4685717405$1265142878$gmane$org@sisk.pl>
+References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
+	<201001022138.42575.rjw@sisk.pl>
+	<9b2b86521002020621n7c6a0582n66688d4e6810ca97@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201002012342.50074.rjw@sisk.pl>
+In-Reply-To: <9b2b86521002020621n7c6a0582n66688d4e6810ca97@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,168 +19,215 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, pm list <linux-pm@lists.linux-foundation.org>, Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>, hugh.dickins@tiscali.co.uk, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uZGF5IDAxIEZlYnJ1YXJ5IDIwMTAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+IE9u
-IE1vbmRheSAwMSBGZWJydWFyeSAyMDEwLCBBbGV4ZXkgU3Rhcmlrb3Zza2l5IHdyb3RlOgo+ID4g
-SGVucmlxdWUgZGUgTW9yYWVzIEhvbHNjaHVoINC/0LjRiNC10YI6Cj4gPiA+IE9uIFN1biwgMzEg
-SmFuIDIwMTAsIE1heGltIExldml0c2t5IHdyb3RlOgo+ID4gPj4gVW5mb3J0dW5hdGVseSwgdGhp
-cyBwYXRjaCBldmVuIGNhdXNlcyByZWdyZXNzaW9ucyBvbiBteSBub3RlYm9vayAoaXQKPiA+ID4+
-IHN1cnZpdmUgNjMgaGliZXJuYXRlIGN5Y2xlcyksIGJ1dCBub3cgSSBiYXR0ZXJ5IGRyaXZlciBy
-ZXBvcnRzICdiYXR0ZXJ5Cj4gPiA+PiBhYnNlbnQnLCBiYWNrbGlnaHQgZHJpdmVyIHJlcG9ydHMg
-MCBicmlnaHRuZXNzLCBidXQgcmVsb2FkIGhlbHBlZC4KPiA+ID4gCj4gPiA+IC4uLgo+ID4gPiAK
-PiA+ID4+IEkgdGhpbmsgdGhhdCBub3Qgb25seSBfUFRTIGFucyBfV0FLIGFyZSBwcm9ibGVtYXRp
-Yy4gV2hhdCBhYm91dCBvdGhlcgo+ID4gPj4gQUNQSSBkcml2ZXJzIHRoYXQgc3RhcnQgYWNjZXNz
-aW5nIHRoZSBFQyBiZWZvcmUgaXQgaXMgcmVzdW1lZD8KPiA+ID4+IEkgdGhpbmsgdGhhdCB0aGVz
-ZSBjYXVzZSB0aGUgcHJvYmxlbXMgSSBvYnNlcnZlLgo+ID4gPiAKPiA+ID4gQUNQSSBkcml2ZXJz
-IG1pZ2h0IGFjY2VzcyB0aGUgRUMgKGV2ZW4gaW5kaXJlY3RseSwgdGhyb3VnaCB0aGUgRFNEVCku
-ICBBbmQKPiA+ID4gcGxhdGZvcm0gZHJpdmVycyBkbyBvZnRlbiBhY2Nlc3MgdGhlIEVDIGJvdGgg
-YXQgc3VzcGVuZCBhbmQgcmVzdW1lIHRpbWUuCj4gPiBBY3R1YWxseSwgb25seSBTQlMgYW5kIHRo
-aW5rcGFkLWFjcGkgYWNjZXNzIEVDIGRpcmVjdGx5LiBBbGwgb3RoZXJzIGdvIHRocm91Z2gKPiA+
-IERTRFQgZm9yIGFjY2Vzcy4gU3RpbGwsIHN0b3BwaW5nIEVDIGluIC5zdXNwZW5kIGlzIHRvbyBl
-YXJseSwgSU1ITy4uLgo+IAo+IFRoYXQncyB2ZXJ5IGxpa2VseSB0aGUgY2FzZSwgYWx0aG91Z2gg
-dGhhdCdzIGtpbmQgb2YgdGhlIGxhdGVzdCB3ZSBjYW4gZG8gdGhhdAo+IHdpdGhvdXQgbWFqb3Ig
-bW9kaWZpY2F0aW9ucy4KPiAKPiBJcyB0aGVyZSBhIHBvc3NpYmlsaXR5IHRvIGhhdmUgbW9yZSB0
-aGFuIG9uZSBFQyBpbiBhIHN5c3RlbSBpbiBwcmFjdGljZT8KPiAKPiA+ID4gVGhpcyBuZWVkcyBz
-b21lIHNvcnQgb2Ygc3Ryb25nIG9yZGVyaW5nLCB0aGUgRUMgbXVzdCBzdXNwZW5kIGxhc3QsIGFu
-ZAo+ID4gPiByZXN1bWUgZmlyc3QgKGFzIHNlZW4gYnkgYW55IEFDUEkgYW5kIEFDUEktYXdhcmUg
-ZHJpdmVycyBzdWNoIGFzIGxpYmF0YSwKPiA+ID4gc29tZSBwbGF0Zm9ybSBkcml2ZXJzLCBldGMp
-LiAgSWYgRUMgaW50ZXJydXB0cyBhcmUgYSBwcm9ibGVtLCBtYXliZSBpdCBjYW4KPiA+ID4gYmUg
-a2lja2VkIHRvIHBvbGwgbW9kZSBmb3IgdGhlIHN1c3BlbmQvcmVzdW1lIHRyYW5zaXRpb24/Cj4g
-PiBJdCdzIHRoaXMgd2F5IGFscmVhZHkgZm9yIGFib3V0IGEgeWVhciBub3cuLi4gVGhlIHByb2Js
-ZW0gaXMgdGhhdCBFQyBkcml2ZXIgbWlnaHQgYmUgCj4gPiBzdG9wcGVkIGluIG1pZGRsZSBvZiB0
-aGUgdHJhbnNhY3Rpb24sIHRodXMgbGVhdmluZyBFQyBpbiB1bmtub3duIHN0YXRlIGZvciBCSU9T
-IG9yIAo+ID4gc3dpdGNoLW92ZXIga2VybmVsLgo+IAo+IEV4YWN0bHkuCj4gCj4gSW4gdGhlb3J5
-IEkgY2FuIHRyeSB0byBkaXNhYmxlIEVDIHRyYW5zYWN0aW9ucyBmcm9tIHRoZSBBQ1BJIHBsYXRm
-b3JtCj4gc3VzcGVuZC9yZXN1bWUgY2FsbGJhY2tzLCBidXQgdGhlbiB0aGVyZSBzdGlsbCBpcyBh
-IHByb2JsZW0gd2l0aCB0aGUgZ2xvYmFsCj4gbG9jaywgc2luY2Ugd2Ugc2hvdWxkbid0IHRyeSB0
-byBhY3F1aXJlIGl0IGFmdGVyIGRpc2FibGluZyBkZXZpY2UgaW50ZXJydXB0cywKPiBiZWNhdXNl
-IGFuIFNDSSBpcyB3YWl0ZWQgZm9yIGluIGNhc2Ugd2UgZG9uJ3QgYWNxdWlyZSBpdCBpbW1lZGlh
-dGVseS4KPiAKPiBTbywgcGVyaGFwcyBpbnN0ZWFkIHdlIHNob3VsZCBkaXNhYmxlIHRoZSBHUEVz
-IGFuZCBjYWxsIF9QVFMgYmVmb3JlIHRoZSBsYXRlCj4gc3VzcGVuZCBwaGFzZSAoYW5kIGFuYWxv
-Z291c2x5LCBleGVjdXRlIF9XQUsgYWZ0ZXIgdGhlIGVhcmx5IHJlc3VtZSBwaGFzZSkKPiBhbmQg
-ZGlzYWJsZSB0aGUgRUMgdHJhbnNhY2F0aW9ucyByaWdodCBhZnRlciB0aGF0Pwo+IAo+IFRoaXMg
-bGVhdmVzIHRoZSBwcm9ibGVtIHdpdGggUENJIGRldmljZXMgdGhhdCBtYXkgcmVxdWlyZSBBQ1BJ
-IHN1cHBvcnQgZHVyaW5nCj4gbGF0ZSBzdXNwZW5kL2Vhcmx5IHJlc3VtZSwgYnV0IHdlbGwuCgpJ
-J20gZ29pbmcgdG8gc2VuZCBhIG1vcmUgaW4tZGVwdGggYW5hbHlzaXMgb2YgdGhlIEFDUEkgdnMg
-c3VzcGVuZCBwcm9ibGVtcyBJCnNlZSBpbiBvdXIgY3VycmVudCBjb2RlIGxhdGVyLiAgRm9yIG5v
-dywgYXBwZW5kZWQgaXMgYW4gYWx0ZXJuYXRpdmUgdG8gdGhlCiRzdWJqZWN0IHBhdGNoIHRoYXQg
-dHVybnMgb2ZmIHRoZSBFQyB0cmFuc2FjdGlvbnMgYWZ0ZXIgZXhlY3V0aW5nIF9QVFMsIGJ1dAph
-c3N1bWVzIHRoYXQgdGhlcmUncyBvbmx5IG9uZSBFQyBpbiB0aGUgc3lzdGVtLgoKUmFmYWVsCgot
-LS0KRnJvbTogUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPgpTdWJqZWN0OiBBQ1BJIC8g
-RUM6IFJlbW92ZXIgcmFjZSBiZXR3ZWVuIEVDIGRyaXZlciBhbmQgc3VzcGVuZCBwcm9jZXNzCgpU
-aGVyZSBpcyBhIHJhY2UgYmV0d2VlbiB0aGUgc3VzcGVuZCBwcm9jZXNzIGFuZCB0aGUgRUMgZHJp
-dmVyIHRoYXQKbWF5IHJlc3VsdCBpbiBzdXNwZW5kaW5nIGluIHRoZSBtaWRkbGUgb2YgYW4gRUMg
-dHJhbnNhY3Rpb24gaW4KcHJvZ3Jlc3MsIHdoaWNoIG1heSBsZWFkIHRvIHVucHJlZGljdGFibGUg
-YmVoYXZpb3Igb2YgdGhlIHBsYXRmb3JtLgoKVG8gcmVtb3ZlIHRoYXQgcmFjZSBjb25kaXRpb24s
-IGFkZCBmdW5jdGlvbnMgZm9yIHN1c3BlbmRpbmcgYW5kCnJlc3VtaW5nIHRoZSBFQyB0cmFuc2Fj
-dGlvbnMgaW4gYSBzYWZlIHdheSB0byBiZSBleGVjdXRlZCBieSB0aGUgCkFDUEkgcGxhdGZvcm0g
-c3VzcGVuZC9yZXN1bWUgY2FsbGJhY2tzLiAgTW9kaWZ5IHRoZXNlIGNhbGxiYWNrcyBzbwp0aGF0
-IHRoZSBFQyB0cmFuc2FjdGlvbnMgYXJlIHN1c3BlbmRlZCByaWdodCBhZnRlciBleGVjdXRpbmcg
-dGhlIF9QVFMKZ2xvYmFsIGNvbnRyb2wgbWV0aG9kIGFuZCByZXN1bWVkIHJpZ2h0IGJlZm9yZSBl
-eGVjdXRpbmcgdGhlIF9XQUsKZ2xvYmFsIGNvbnRyb2wgbWV0aG9kLgoKU2lnbmVkLW9mZi1ieTog
-UmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPgotLS0KIGRyaXZlcnMvYWNwaS9lYy5jICAg
-ICAgIHwgICAzMyArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0KIGRyaXZlcnMvYWNw
-aS9pbnRlcm5hbC5oIHwgICAgMiArKwogZHJpdmVycy9hY3BpL3NsZWVwLmMgICAgfCAgIDQxICsr
-KysrKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tLS0tLS0tLS0tCiAzIGZpbGVzIGNoYW5nZWQs
-IDU4IGluc2VydGlvbnMoKyksIDE4IGRlbGV0aW9ucygtKQoKSW5kZXg6IGxpbnV4LTIuNi9kcml2
-ZXJzL2FjcGkvZWMuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9kcml2ZXJzL2FjcGkv
-ZWMuYworKysgbGludXgtMi42L2RyaXZlcnMvYWNwaS9lYy5jCkBAIC03Niw4ICs3Niw5IEBAIGVu
-dW0gZWNfY29tbWFuZCB7CiBlbnVtIHsKIAlFQ19GTEFHU19RVUVSWV9QRU5ESU5HLAkJLyogUXVl
-cnkgaXMgcGVuZGluZyAqLwogCUVDX0ZMQUdTX0dQRV9TVE9STSwJCS8qIEdQRSBzdG9ybSBkZXRl
-Y3RlZCAqLwotCUVDX0ZMQUdTX0hBTkRMRVJTX0lOU1RBTExFRAkvKiBIYW5kbGVycyBmb3IgR1BF
-IGFuZAorCUVDX0ZMQUdTX0hBTkRMRVJTX0lOU1RBTExFRCwJLyogSGFuZGxlcnMgZm9yIEdQRSBh
-bmQKIAkJCQkJICogT3BSZWcgYXJlIGluc3RhbGxlZCAqLworCUVDX0ZMQUdTX1NVU1BFTkRFRCwJ
-CS8qIERyaXZlciBpcyBzdXNwZW5kZWQgKi8KIH07CiAKIC8qIElmIHdlIGZpbmQgYW4gRUMgdmlh
-IHRoZSBFQ0RULCB3ZSBuZWVkIHRvIGtlZXAgYSBwdHIgdG8gaXRzIGNvbnRleHQgKi8KQEAgLTI5
-MSw2ICsyOTIsMTAgQEAgc3RhdGljIGludCBhY3BpX2VjX3RyYW5zYWN0aW9uKHN0cnVjdCBhYwog
-CWlmICh0LT5yZGF0YSkKIAkJbWVtc2V0KHQtPnJkYXRhLCAwLCB0LT5ybGVuKTsKIAltdXRleF9s
-b2NrKCZlYy0+bG9jayk7CisJaWYgKHRlc3RfYml0KEVDX0ZMQUdTX1NVU1BFTkRFRCwgJmVjLT5m
-bGFncykpIHsKKwkJc3RhdHVzID0gLUVCVVNZOworCQlnb3RvIHVubG9jazsKKwl9CiAJaWYgKGVj
-LT5nbG9iYWxfbG9jaykgewogCQlzdGF0dXMgPSBhY3BpX2FjcXVpcmVfZ2xvYmFsX2xvY2soQUNQ
-SV9FQ19VREVMQVlfR0xLLCAmZ2xrKTsKIAkJaWYgKEFDUElfRkFJTFVSRShzdGF0dXMpKSB7CkBA
-IC00NDUsNiArNDUwLDMyIEBAIGludCBlY190cmFuc2FjdGlvbih1OCBjb21tYW5kLAogCiBFWFBP
-UlRfU1lNQk9MKGVjX3RyYW5zYWN0aW9uKTsKIAordm9pZCBhY3BpX2VjX3N1c3BlbmRfdHJhbnNh
-Y3Rpb25zKHZvaWQpCit7CisJc3RydWN0IGFjcGlfZWMgKmVjID0gZmlyc3RfZWM7CisKKwlpZiAo
-IWVjKQorCQlyZXR1cm47CisKKwltdXRleF9sb2NrKCZlYy0+bG9jayk7CisJLyogUHJldmVudCB0
-cmFuc2FjdGlvbnMgZnJvbSBoYXBwZW5pbmcgd2hpbGUgc3VzcGVuZGVkICovCisJc2V0X2JpdChF
-Q19GTEFHU19TVVNQRU5ERUQsICZlYy0+ZmxhZ3MpOworCW11dGV4X3VubG9jaygmZWMtPmxvY2sp
-OworfQorCit2b2lkIGFjcGlfZWNfcmVzdW1lX3RyYW5zYWN0aW9ucyh2b2lkKQoreworCXN0cnVj
-dCBhY3BpX2VjICplYyA9IGZpcnN0X2VjOworCisJaWYgKCFlYykKKwkJcmV0dXJuOworCisJbXV0
-ZXhfbG9jaygmZWMtPmxvY2spOworCS8qIEFsbG93IHRyYW5zYWN0aW9ucyB0byBoYXBwZW4gYWdh
-aW4gKi8KKwljbGVhcl9iaXQoRUNfRkxBR1NfU1VTUEVOREVELCAmZWMtPmZsYWdzKTsKKwltdXRl
-eF91bmxvY2soJmVjLT5sb2NrKTsKK30KKwogc3RhdGljIGludCBhY3BpX2VjX3F1ZXJ5X3VubG9j
-a2VkKHN0cnVjdCBhY3BpX2VjICplYywgdTggKiBkYXRhKQogewogCWludCByZXN1bHQ7CkluZGV4
-OiBsaW51eC0yLjYvZHJpdmVycy9hY3BpL2ludGVybmFsLmgKPT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgt
-Mi42Lm9yaWcvZHJpdmVycy9hY3BpL2ludGVybmFsLmgKKysrIGxpbnV4LTIuNi9kcml2ZXJzL2Fj
-cGkvaW50ZXJuYWwuaApAQCAtNDksNiArNDksOCBAQCB2b2lkIGFjcGlfZWFybHlfcHJvY2Vzc29y
-X3NldF9wZGModm9pZCk7CiBpbnQgYWNwaV9lY19pbml0KHZvaWQpOwogaW50IGFjcGlfZWNfZWNk
-dF9wcm9iZSh2b2lkKTsKIGludCBhY3BpX2Jvb3RfZWNfZW5hYmxlKHZvaWQpOwordm9pZCBhY3Bp
-X2VjX3N1c3BlbmRfdHJhbnNhY3Rpb25zKHZvaWQpOwordm9pZCBhY3BpX2VjX3Jlc3VtZV90cmFu
-c2FjdGlvbnModm9pZCk7CiAKIC8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICBTdXNwZW5kL1Jlc3VtZQpJbmRleDogbGludXgtMi42L2RyaXZlcnMv
-YWNwaS9zbGVlcC5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2RyaXZlcnMvYWNwaS9z
-bGVlcC5jCisrKyBsaW51eC0yLjYvZHJpdmVycy9hY3BpL3NsZWVwLmMKQEAgLTExMiw5ICsxMTIs
-MTAgQEAgdm9pZCBfX2luaXQgYWNwaV9vbGRfc3VzcGVuZF9vcmRlcmluZyh2bwogLyoqCiAgKglh
-Y3BpX3BtX2Rpc2FibGVfZ3BlcyAtIERpc2FibGUgdGhlIEdQRXMuCiAgKi8KLXN0YXRpYyBpbnQg
-YWNwaV9wbV9kaXNhYmxlX2dwZXModm9pZCkKK3N0YXRpYyBpbnQgYWNwaV9wbV9kaXNhYmxlX2dw
-ZXNfYW5kX2VjKHZvaWQpCiB7CiAJYWNwaV9kaXNhYmxlX2FsbF9ncGVzKCk7CisJYWNwaV9lY19z
-dXNwZW5kX3RyYW5zYWN0aW9ucygpOwogCXJldHVybiAwOwogfQogCkBAIC0xNDIsNyArMTQzLDgg
-QEAgc3RhdGljIGludCBhY3BpX3BtX3ByZXBhcmUodm9pZCkKIAlpbnQgZXJyb3IgPSBfX2FjcGlf
-cG1fcHJlcGFyZSgpOwogCiAJaWYgKCFlcnJvcikKLQkJYWNwaV9kaXNhYmxlX2FsbF9ncGVzKCk7
-CisJCWFjcGlfcG1fZGlzYWJsZV9ncGVzX2FuZF9lYygpOworCiAJcmV0dXJuIGVycm9yOwogfQog
-CkBAIC0yODYsNiArMjg4LDEyIEBAIHN0YXRpYyBpbnQgYWNwaV9zdXNwZW5kX2VudGVyKHN1c3Bl
-bmRfc3QKIAlyZXR1cm4gQUNQSV9TVUNDRVNTKHN0YXR1cykgPyAwIDogLUVGQVVMVDsKIH0KIAor
-c3RhdGljIHZvaWQgYWNwaV9zdXNwZW5kX2ZpbmlzaCh2b2lkKQoreworCWFjcGlfZWNfcmVzdW1l
-X3RyYW5zYWN0aW9ucygpOworCWFjcGlfcG1fZmluaXNoKCk7Cit9CisKIHN0YXRpYyBpbnQgYWNw
-aV9zdXNwZW5kX3N0YXRlX3ZhbGlkKHN1c3BlbmRfc3RhdGVfdCBwbV9zdGF0ZSkKIHsKIAl1MzIg
-YWNwaV9zdGF0ZTsKQEAgLTMwNyw3ICszMTUsNyBAQCBzdGF0aWMgc3RydWN0IHBsYXRmb3JtX3N1
-c3BlbmRfb3BzIGFjcGlfCiAJLmJlZ2luID0gYWNwaV9zdXNwZW5kX2JlZ2luLAogCS5wcmVwYXJl
-X2xhdGUgPSBhY3BpX3BtX3ByZXBhcmUsCiAJLmVudGVyID0gYWNwaV9zdXNwZW5kX2VudGVyLAot
-CS53YWtlID0gYWNwaV9wbV9maW5pc2gsCisJLndha2UgPSBhY3BpX3N1c3BlbmRfZmluaXNoLAog
-CS5lbmQgPSBhY3BpX3BtX2VuZCwKIH07CiAKQEAgLTMzMyw5ICszNDEsOSBAQCBzdGF0aWMgaW50
-IGFjcGlfc3VzcGVuZF9iZWdpbl9vbGQoc3VzcGVuCiBzdGF0aWMgc3RydWN0IHBsYXRmb3JtX3N1
-c3BlbmRfb3BzIGFjcGlfc3VzcGVuZF9vcHNfb2xkID0gewogCS52YWxpZCA9IGFjcGlfc3VzcGVu
-ZF9zdGF0ZV92YWxpZCwKIAkuYmVnaW4gPSBhY3BpX3N1c3BlbmRfYmVnaW5fb2xkLAotCS5wcmVw
-YXJlX2xhdGUgPSBhY3BpX3BtX2Rpc2FibGVfZ3BlcywKKwkucHJlcGFyZV9sYXRlID0gYWNwaV9w
-bV9kaXNhYmxlX2dwZXNfYW5kX2VjLAogCS5lbnRlciA9IGFjcGlfc3VzcGVuZF9lbnRlciwKLQku
-d2FrZSA9IGFjcGlfcG1fZmluaXNoLAorCS53YWtlID0gYWNwaV9zdXNwZW5kX2ZpbmlzaCwKIAku
-ZW5kID0gYWNwaV9wbV9lbmQsCiAJLnJlY292ZXIgPSBhY3BpX3BtX2ZpbmlzaCwKIH07CkBAIC01
-MzAsNiArNTM4LDcgQEAgc3RhdGljIGludCBhY3BpX2hpYmVybmF0aW9uX2VudGVyKHZvaWQpCiBz
-dGF0aWMgdm9pZCBhY3BpX2hpYmVybmF0aW9uX2ZpbmlzaCh2b2lkKQogewogCWhpYmVybmF0ZV9u
-dnNfZnJlZSgpOworCWFjcGlfZWNfcmVzdW1lX3RyYW5zYWN0aW9ucygpOwogCWFjcGlfcG1fZmlu
-aXNoKCk7CiB9CiAKQEAgLTU1Miw4ICs1NjEsOSBAQCBzdGF0aWMgdm9pZCBhY3BpX2hpYmVybmF0
-aW9uX2xlYXZlKHZvaWQpCiAJaGliZXJuYXRlX252c19yZXN0b3JlKCk7CiB9CiAKLXN0YXRpYyB2
-b2lkIGFjcGlfcG1fZW5hYmxlX2dwZXModm9pZCkKK3N0YXRpYyB2b2lkIGFjcGlfcG1fZW5hYmxl
-X2dwZXNfYW5kX2VjKHZvaWQpCiB7CisJYWNwaV9lY19yZXN1bWVfdHJhbnNhY3Rpb25zKCk7CiAJ
-YWNwaV9lbmFibGVfYWxsX3J1bnRpbWVfZ3BlcygpOwogfQogCkBAIC01NjUsOCArNTc1LDggQEAg
-c3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9oaWJlcm5hdGlvbl9vcHMgYQogCS5wcmVwYXJlID0gYWNw
-aV9wbV9wcmVwYXJlLAogCS5lbnRlciA9IGFjcGlfaGliZXJuYXRpb25fZW50ZXIsCiAJLmxlYXZl
-ID0gYWNwaV9oaWJlcm5hdGlvbl9sZWF2ZSwKLQkucHJlX3Jlc3RvcmUgPSBhY3BpX3BtX2Rpc2Fi
-bGVfZ3BlcywKLQkucmVzdG9yZV9jbGVhbnVwID0gYWNwaV9wbV9lbmFibGVfZ3BlcywKKwkucHJl
-X3Jlc3RvcmUgPSBhY3BpX3BtX2Rpc2FibGVfZ3Blc19hbmRfZWMsCisJLnJlc3RvcmVfY2xlYW51
-cCA9IGFjcGlfcG1fZW5hYmxlX2dwZXNfYW5kX2VjLAogfTsKIAogLyoqCkBAIC01OTgsMTIgKzYw
-OCw5IEBAIHN0YXRpYyBpbnQgYWNwaV9oaWJlcm5hdGlvbl9iZWdpbl9vbGQodm8KIAogc3RhdGlj
-IGludCBhY3BpX2hpYmVybmF0aW9uX3ByZV9zbmFwc2hvdF9vbGQodm9pZCkKIHsKLQlpbnQgZXJy
-b3IgPSBhY3BpX3BtX2Rpc2FibGVfZ3BlcygpOwotCi0JaWYgKCFlcnJvcikKLQkJaGliZXJuYXRl
-X252c19zYXZlKCk7Ci0KLQlyZXR1cm4gZXJyb3I7CisJYWNwaV9wbV9kaXNhYmxlX2dwZXNfYW5k
-X2VjKCk7CisJaGliZXJuYXRlX252c19zYXZlKCk7CisJcmV0dXJuIDA7CiB9CiAKIC8qCkBAIC02
-MTUsMTEgKzYyMiwxMSBAQCBzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2hpYmVybmF0aW9uX29wcyBh
-CiAJLmVuZCA9IGFjcGlfcG1fZW5kLAogCS5wcmVfc25hcHNob3QgPSBhY3BpX2hpYmVybmF0aW9u
-X3ByZV9zbmFwc2hvdF9vbGQsCiAJLmZpbmlzaCA9IGFjcGlfaGliZXJuYXRpb25fZmluaXNoLAot
-CS5wcmVwYXJlID0gYWNwaV9wbV9kaXNhYmxlX2dwZXMsCisJLnByZXBhcmUgPSBhY3BpX3BtX2Rp
-c2FibGVfZ3Blc19hbmRfZWMsCiAJLmVudGVyID0gYWNwaV9oaWJlcm5hdGlvbl9lbnRlciwKIAku
-bGVhdmUgPSBhY3BpX2hpYmVybmF0aW9uX2xlYXZlLAotCS5wcmVfcmVzdG9yZSA9IGFjcGlfcG1f
-ZGlzYWJsZV9ncGVzLAotCS5yZXN0b3JlX2NsZWFudXAgPSBhY3BpX3BtX2VuYWJsZV9ncGVzLAor
-CS5wcmVfcmVzdG9yZSA9IGFjcGlfcG1fZGlzYWJsZV9ncGVzX2FuZF9lYywKKwkucmVzdG9yZV9j
-bGVhbnVwID0gYWNwaV9wbV9lbmFibGVfZ3Blc19hbmRfZWMsCiAJLnJlY292ZXIgPSBhY3BpX3Bt
-X2ZpbmlzaCwKIH07CiAjZW5kaWYgLyogQ09ORklHX0hJQkVSTkFUSU9OICovCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlz
-dApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4
-LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Tuesday 02 February 2010, Alan Jenkins wrote:
+> On 1/2/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Saturday 02 January 2010, Alan Jenkins wrote:
+> > Hi,
+> >
+> >> I've been suffering from s2disk hangs again.  This time, the hangs
+> >> were always before the hibernation image was written out.
+> >>
+> >> They're still frustratingly random.  I just started trying to work out
+> >> whether doubling PAGES_FOR_IO makes them go away, but they went away
+> >> on their own again.
+> >>
+> >> I did manage to capture a backtrace with debug info though.  Here it
+> >> is for 2.6.33-rc2.  (It has also happened on rc1).  I was able to get
+> >> the line numbers (using gdb, e.g.  "info line
+> >> *stop_machine_create+0x27"), having built the kernel with debug info.
+> >>
+> >> [top of trace lost due to screen height]
+> >> ? sync_page	(filemap.c:183)
+> >> ? wait_on_page_bit	(filemap.c:506)
+> >> ? wake_bit_function	(wait.c:174)
+> >> ? shrink_page_list	(vmscan.c:696)
+> >> ? __delayacct_blkio_end	(delayacct.c:94)
+> >> ? finish_wait	(list.h:142)
+> >> ? congestion_wait	(backing-dev.c:761)
+> >> ? shrink_inactive_list	(vmscan.c:1193)
+> >> ? scsi_request_fn	(spinlock.h:306)
+> >> ? blk_run_queue	(blk-core.c:434)
+> >> ? shrink_zone	(vmscan.c:1484)
+> >> ? do_try_to_free_pages	(vmscan.c:1684)
+> >> ? try_to_free_pages	(vmscan.c:1848)
+> >> ? isolate_pages_global	(vmscan.c:980)
+> >> ? __alloc_pages_nodemask	(page_alloc.c:1702)
+> >> ? __get_free_pages	(page_alloc.c:1990)
+> >> ? copy_process	(fork.c:237)
+> >> ? do_fork	(fork.c:1443)
+> >> ? rb_erase
+> >> ? __switch_to
+> >> ? kthread
+> >> ? kernel_thread
+> >> ? kthread
+> >> ? kernel_thread_helper
+> >> ? kthreadd
+> >> ? kthreadd
+> >> ? kernel_thread_helper
+> >>
+> >> INFO: task s2disk:2174 blocked for more than 120 seconds
+> >
+> > This looks like we have run out of memory while creating a new kernel thread
+> > and we have blocked on I/O while trying to free some space (quite obviously,
+> > because the I/O doesn't work at this point).
+> 
+> For context, the kernel thread being created here is the stop_machine
+> thread.  It is created by disable_nonboot_cpus(), called from
+> hibernation_snapshot().  See e.g. this hung task backtrace -
+> 
+> http://picasaweb.google.com/lh/photo/BkKUwZCrQ2ceBIM9ZOh7Ow?feat=directlink
+> 
+> > I think it should help if you increase PAGES_FOR_IO, then.
+> 
+> Ok, it's been happening again on 2.6.33-rc6.  Unfortunately increasing
+> PAGES_FOR_IO doesn't help.
+> 
+> I've been using a test patch to make PAGES_FOR_IO tunable at run time.
+>  I get the same hang if I increase it by a factor of 10, to 10240:
+> 
+> # cd /sys/module/kernel/parameters/
+> # ls
+> consoleblank  initcall_debug  PAGES_FOR_IO  panic  pause_on_oops  SPARE_PAGES
+> # echo 10240 > PAGES_FOR_IO
+> # echo 2560 > SPARE_PAGES
+> # cat SPARE_PAGES
+> 2560
+> # cat PAGES_FOR_IO
+> 10240
+> 
+> I also added a debug patch to try and understand the calculations with
+> PAGES_FOR_IO in hibernate_preallocate_memory().  I still don't really
+> understand them and there could easily be errors in my debug patch,
+> but the output is interesting.
+> 
+> Increasing PAGES_FOR_IO by almost 10000 has the expected effect of
+> decreasing "max_size" by the same amount.  However it doesn't appear
+> to increase the number of free pages at the critical moment.
+> 
+> PAGES_FOR_IO = 1024:
+> http://picasaweb.google.com/lh/photo/DYQGvB_4hvCvVuxZf2ibxg?feat=directlink
+> 
+> PAGES_FOR_IO = 10240:
+> http://picasaweb.google.com/lh/photo/AIkV_ZBwt22nzN-JdOJCWA?feat=directlink
+> 
+> 
+> You may remember that I was originally able to avoid the hang by
+> reverting commit 5f8dcc2.  It doesn't revert cleanly any more.
+> However, I tried applying my test&debug patches on top of 5f8dcc2~1
+> (just before the commit that triggered the hang).  That kernel
+> apparently left ~5000 pages free at hibernation time, v.s. ~1200 when
+> testing the same scenario on 2.6.33-rc6.  (As before, the number of
+> free pages remained the same if I increased PAGES_FOR_IO to 10240).
+
+I think the hang may be avoided by using this patch
+http://patchwork.kernel.org/patch/74740/
+but the hibernation will fail instead.
+
+Can you please repeat your experiments with the patch below applied and
+report back?
+
+Rafael
+
+---
+ kernel/power/snapshot.c |   41 +++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 39 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/kernel/power/snapshot.c
+===================================================================
+--- linux-2.6.orig/kernel/power/snapshot.c
++++ linux-2.6/kernel/power/snapshot.c
+@@ -1179,6 +1179,10 @@ static void free_unnecessary_pages(void)
+ 		to_free_normal -= save_highmem - alloc_highmem;
+ 	}
+ 
++	printk(KERN_CONT
++		"Freeing %lu normal and %lu highmem preallocated pages\n",
++		to_free_normal, to_free_highmem);
++
+ 	memory_bm_position_reset(&copy_bm);
+ 
+ 	while (to_free_normal > 0 && to_free_highmem > 0) {
+@@ -1300,8 +1304,16 @@ int hibernate_preallocate_memory(void)
+ 	/* Compute the maximum number of saveable pages to leave in memory. */
+ 	max_size = (count - (size + PAGES_FOR_IO)) / 2 - 2 * SPARE_PAGES;
+ 	size = DIV_ROUND_UP(image_size, PAGE_SIZE);
++
++	printk(KERN_CONT "Requested image size: %lu pages\n", size);
++
+ 	if (size > max_size)
+ 		size = max_size;
++
++	printk(KERN_CONT
++		"count = %lu, highmem = %lu, max_size = %lu, saveable = %lu\n",
++		count, highmem, max_size, saveable);
++
+ 	/*
+ 	 * If the maximum is not less than the current number of saveable pages
+ 	 * in memory, allocate page frames for the image and we're done.
+@@ -1312,10 +1324,14 @@ int hibernate_preallocate_memory(void)
+ 		goto out;
+ 	}
+ 
++	printk(KERN_CONT "Target image size: %lu pages\n", size);
++
+ 	/* Estimate the minimum size of the image. */
+ 	pages = minimum_image_size(saveable);
+-	if (size < pages)
+-		size = min_t(unsigned long, pages, max_size);
++	/* if (size < pages)
++		size = min_t(unsigned long, pages, max_size); */
++
++	printk(KERN_CONT "Minimum image size: %lu pages\n", pages);
+ 
+ 	/*
+ 	 * Let the memory management subsystem know that we're going to need a
+@@ -1325,6 +1341,9 @@ int hibernate_preallocate_memory(void)
+ 	 */
+ 	shrink_all_memory(saveable - size);
+ 
++	pages = minimum_image_size(count_data_pages() + count_highmem_pages());
++	printk(KERN_CONT "Minimum image size: %lu pages\n", pages);
++
+ 	/*
+ 	 * The number of saveable pages in memory was too high, so apply some
+ 	 * pressure to decrease it.  First, make room for the largest possible
+@@ -1334,17 +1353,35 @@ int hibernate_preallocate_memory(void)
+ 	 */
+ 	pages_highmem = preallocate_image_highmem(highmem / 2);
+ 	alloc = (count - max_size) - pages_highmem;
++
++	printk(KERN_CONT "pages_highmem = %lu, alloc = %lu\n",
++		pages_highmem, alloc);
++
+ 	pages = preallocate_image_memory(alloc);
+ 	if (pages < alloc)
+ 		goto err_out;
++
++	printk(KERN_CONT "pages = %lu\n", pages);
++
+ 	size = max_size - size;
+ 	alloc = size;
++
+ 	size = preallocate_highmem_fraction(size, highmem, count);
++
++	printk(KERN_CONT "alloc_highmem = %lu, alloc = %lu\n", size, alloc);
++
+ 	pages_highmem += size;
+ 	alloc -= size;
+ 	pages += preallocate_image_memory(alloc);
++
++	printk(KERN_CONT "pages = %lu\n", pages);
++
+ 	pages += pages_highmem;
+ 
++	printk(KERN_CONT
++		"pages = %lu, pages_highmem = %lu, count - pages = %lu\n",
++		pages, pages_highmem, count - pages);
++
+ 	/*
+ 	 * We only need as many page frames for the image as there are saveable
+ 	 * pages in memory, but we have allocated more.  Release the excessive
