@@ -1,16 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][RFT][PATCH] ACPI: Protection from suspending
-	in the middle of EC transaction
-Date: Mon, 1 Feb 2010 23:42:49 +0100
-Message-ID: <201002012342.50074.rjw__8632.64744771204$1265064277$gmane$org@sisk.pl>
-References: <201001310029.48717.rjw@sisk.pl>
-	<20100201094643.GB8740@khazad-dum.debian.net>
-	<4B66AB7F.7050908@suse.de>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: syncing the disks when entering sleep
+Date: Tue, 02 Feb 2010 15:13:23 +1100
+Message-ID: <4B67A663.6080008@crca.org.au>
+References: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>	<201001272146.43660.rjw@sisk.pl>
+	<20100131085210.GH2238@elf.ucw.cz>	<201001311333.37620.rjw@sisk.pl>	<20100201104922.GC5809@atrey.karlin.mff.cuni.cz>	<76FA3B279DD9DA48896E2B404944957204F88D87@USA7061MS02.na.xerox.net>
+	<20100201210921.GB13638@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4B66AB7F.7050908@suse.de>
+In-Reply-To: <20100201210921.GB13638@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,49 +19,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, pm list <linux-pm@lists.linux-foundation.org>, Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org, "Leisner,
+	Martin" <Martin.Leisner@xerox.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uZGF5IDAxIEZlYnJ1YXJ5IDIwMTAsIEFsZXhleSBTdGFyaWtvdnNraXkgd3JvdGU6Cj4g
-SGVucmlxdWUgZGUgTW9yYWVzIEhvbHNjaHVoINC/0LjRiNC10YI6Cj4gPiBPbiBTdW4sIDMxIEph
-biAyMDEwLCBNYXhpbSBMZXZpdHNreSB3cm90ZToKPiA+PiBVbmZvcnR1bmF0ZWx5LCB0aGlzIHBh
-dGNoIGV2ZW4gY2F1c2VzIHJlZ3Jlc3Npb25zIG9uIG15IG5vdGVib29rIChpdAo+ID4+IHN1cnZp
-dmUgNjMgaGliZXJuYXRlIGN5Y2xlcyksIGJ1dCBub3cgSSBiYXR0ZXJ5IGRyaXZlciByZXBvcnRz
-ICdiYXR0ZXJ5Cj4gPj4gYWJzZW50JywgYmFja2xpZ2h0IGRyaXZlciByZXBvcnRzIDAgYnJpZ2h0
-bmVzcywgYnV0IHJlbG9hZCBoZWxwZWQuCj4gPiAKPiA+IC4uLgo+ID4gCj4gPj4gSSB0aGluayB0
-aGF0IG5vdCBvbmx5IF9QVFMgYW5zIF9XQUsgYXJlIHByb2JsZW1hdGljLiBXaGF0IGFib3V0IG90
-aGVyCj4gPj4gQUNQSSBkcml2ZXJzIHRoYXQgc3RhcnQgYWNjZXNzaW5nIHRoZSBFQyBiZWZvcmUg
-aXQgaXMgcmVzdW1lZD8KPiA+PiBJIHRoaW5rIHRoYXQgdGhlc2UgY2F1c2UgdGhlIHByb2JsZW1z
-IEkgb2JzZXJ2ZS4KPiA+IAo+ID4gQUNQSSBkcml2ZXJzIG1pZ2h0IGFjY2VzcyB0aGUgRUMgKGV2
-ZW4gaW5kaXJlY3RseSwgdGhyb3VnaCB0aGUgRFNEVCkuICBBbmQKPiA+IHBsYXRmb3JtIGRyaXZl
-cnMgZG8gb2Z0ZW4gYWNjZXNzIHRoZSBFQyBib3RoIGF0IHN1c3BlbmQgYW5kIHJlc3VtZSB0aW1l
-Lgo+IEFjdHVhbGx5LCBvbmx5IFNCUyBhbmQgdGhpbmtwYWQtYWNwaSBhY2Nlc3MgRUMgZGlyZWN0
-bHkuIEFsbCBvdGhlcnMgZ28gdGhyb3VnaAo+IERTRFQgZm9yIGFjY2Vzcy4gU3RpbGwsIHN0b3Bw
-aW5nIEVDIGluIC5zdXNwZW5kIGlzIHRvbyBlYXJseSwgSU1ITy4uLgoKVGhhdCdzIHZlcnkgbGlr
-ZWx5IHRoZSBjYXNlLCBhbHRob3VnaCB0aGF0J3Mga2luZCBvZiB0aGUgbGF0ZXN0IHdlIGNhbiBk
-byB0aGF0CndpdGhvdXQgbWFqb3IgbW9kaWZpY2F0aW9ucy4KCklzIHRoZXJlIGEgcG9zc2liaWxp
-dHkgdG8gaGF2ZSBtb3JlIHRoYW4gb25lIEVDIGluIGEgc3lzdGVtIGluIHByYWN0aWNlPwoKPiA+
-IFRoaXMgbmVlZHMgc29tZSBzb3J0IG9mIHN0cm9uZyBvcmRlcmluZywgdGhlIEVDIG11c3Qgc3Vz
-cGVuZCBsYXN0LCBhbmQKPiA+IHJlc3VtZSBmaXJzdCAoYXMgc2VlbiBieSBhbnkgQUNQSSBhbmQg
-QUNQSS1hd2FyZSBkcml2ZXJzIHN1Y2ggYXMgbGliYXRhLAo+ID4gc29tZSBwbGF0Zm9ybSBkcml2
-ZXJzLCBldGMpLiAgSWYgRUMgaW50ZXJydXB0cyBhcmUgYSBwcm9ibGVtLCBtYXliZSBpdCBjYW4K
-PiA+IGJlIGtpY2tlZCB0byBwb2xsIG1vZGUgZm9yIHRoZSBzdXNwZW5kL3Jlc3VtZSB0cmFuc2l0
-aW9uPwo+IEl0J3MgdGhpcyB3YXkgYWxyZWFkeSBmb3IgYWJvdXQgYSB5ZWFyIG5vdy4uLiBUaGUg
-cHJvYmxlbSBpcyB0aGF0IEVDIGRyaXZlciBtaWdodCBiZSAKPiBzdG9wcGVkIGluIG1pZGRsZSBv
-ZiB0aGUgdHJhbnNhY3Rpb24sIHRodXMgbGVhdmluZyBFQyBpbiB1bmtub3duIHN0YXRlIGZvciBC
-SU9TIG9yIAo+IHN3aXRjaC1vdmVyIGtlcm5lbC4KCkV4YWN0bHkuCgpJbiB0aGVvcnkgSSBjYW4g
-dHJ5IHRvIGRpc2FibGUgRUMgdHJhbnNhY3Rpb25zIGZyb20gdGhlIEFDUEkgcGxhdGZvcm0Kc3Vz
-cGVuZC9yZXN1bWUgY2FsbGJhY2tzLCBidXQgdGhlbiB0aGVyZSBzdGlsbCBpcyBhIHByb2JsZW0g
-d2l0aCB0aGUgZ2xvYmFsCmxvY2ssIHNpbmNlIHdlIHNob3VsZG4ndCB0cnkgdG8gYWNxdWlyZSBp
-dCBhZnRlciBkaXNhYmxpbmcgZGV2aWNlIGludGVycnVwdHMsCmJlY2F1c2UgYW4gU0NJIGlzIHdh
-aXRlZCBmb3IgaW4gY2FzZSB3ZSBkb24ndCBhY3F1aXJlIGl0IGltbWVkaWF0ZWx5LgoKU28sIHBl
-cmhhcHMgaW5zdGVhZCB3ZSBzaG91bGQgZGlzYWJsZSB0aGUgR1BFcyBhbmQgY2FsbCBfUFRTIGJl
-Zm9yZSB0aGUgbGF0ZQpzdXNwZW5kIHBoYXNlIChhbmQgYW5hbG9nb3VzbHksIGV4ZWN1dGUgX1dB
-SyBhZnRlciB0aGUgZWFybHkgcmVzdW1lIHBoYXNlKQphbmQgZGlzYWJsZSB0aGUgRUMgdHJhbnNh
-Y2F0aW9ucyByaWdodCBhZnRlciB0aGF0PwoKVGhpcyBsZWF2ZXMgdGhlIHByb2JsZW0gd2l0aCBQ
-Q0kgZGV2aWNlcyB0aGF0IG1heSByZXF1aXJlIEFDUEkgc3VwcG9ydCBkdXJpbmcKbGF0ZSBzdXNw
-ZW5kL2Vhcmx5IHJlc3VtZSwgYnV0IHdlbGwuCgpSYWZhZWwKX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBt
-QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlv
-bi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+Hi.
+
+Pavel Machek wrote:
+>> So you're asking to give this knob "one shot behavior" (i.e. "then
+>> next sleep won't sync")?
+> 
+> Yes.
+> 
+>> But I'm primarily interested in the behavior on embedded systems
+>> (where you control all the processes running -- there's no "user"
+>> involved.
+>> 
+> 
+> Well, then "one shot behaviour" does not hurt you, right?
+> 
+>> If a user starts messing with default settings, any unwanted
+>> behavior is the users problem (besides, this should only be
+>> writable as root).
+>> 
+> 
+> I'd rather not add traps for the user unless absolutely neccessary.
+> Not even for root user. Pavel
+
+But that's precisely what you're doing. You're advocating making the
+behaviour inconsistent. If what you're suggesting is done, you won't be
+able to simply cat the sysfs entry to know whether sys_syncing is going
+to be done on the next cycle. You'll also have to have knowledge of
+whether a cycle has been done since the last time the value is set. The
+end result will be someone getting trapped and caught out because they
+think '1' in /sys/power/dont_sync (or whatever it's called) means what
+it says.
+
+Regards,
+
+Nigel
