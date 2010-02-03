@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: s2disk hang update
-Date: Tue, 2 Feb 2010 21:34:20 +0100
-Message-ID: <201002022134.20366.rjw__27620.4685717405$1265142878$gmane$org@sisk.pl>
-References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
-	<201001022138.42575.rjw@sisk.pl>
-	<9b2b86521002020621n7c6a0582n66688d4e6810ca97@mail.gmail.com>
+Subject: [PATCH] ACPI / EC: Remove race between EC driver and
+	suspend process (rev. 2) (was: Re: [RFC][RFT][PATCH] ACPI:
+	Protection from suspending in the middle of EC transaction)
+Date: Wed, 3 Feb 2010 01:32:21 +0100
+Message-ID: <201002030132.21406.rjw__9180.23069757528$1265157177$gmane$org@sisk.pl>
+References: <201001310029.48717.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <9b2b86521002020621n7c6a0582n66688d4e6810ca97@mail.gmail.com>
+In-Reply-To: <201001310029.48717.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,215 +19,226 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>, hugh.dickins@tiscali.co.uk, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 02 February 2010, Alan Jenkins wrote:
-> On 1/2/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Saturday 02 January 2010, Alan Jenkins wrote:
-> > Hi,
-> >
-> >> I've been suffering from s2disk hangs again.  This time, the hangs
-> >> were always before the hibernation image was written out.
-> >>
-> >> They're still frustratingly random.  I just started trying to work out
-> >> whether doubling PAGES_FOR_IO makes them go away, but they went away
-> >> on their own again.
-> >>
-> >> I did manage to capture a backtrace with debug info though.  Here it
-> >> is for 2.6.33-rc2.  (It has also happened on rc1).  I was able to get
-> >> the line numbers (using gdb, e.g.  "info line
-> >> *stop_machine_create+0x27"), having built the kernel with debug info.
-> >>
-> >> [top of trace lost due to screen height]
-> >> ? sync_page	(filemap.c:183)
-> >> ? wait_on_page_bit	(filemap.c:506)
-> >> ? wake_bit_function	(wait.c:174)
-> >> ? shrink_page_list	(vmscan.c:696)
-> >> ? __delayacct_blkio_end	(delayacct.c:94)
-> >> ? finish_wait	(list.h:142)
-> >> ? congestion_wait	(backing-dev.c:761)
-> >> ? shrink_inactive_list	(vmscan.c:1193)
-> >> ? scsi_request_fn	(spinlock.h:306)
-> >> ? blk_run_queue	(blk-core.c:434)
-> >> ? shrink_zone	(vmscan.c:1484)
-> >> ? do_try_to_free_pages	(vmscan.c:1684)
-> >> ? try_to_free_pages	(vmscan.c:1848)
-> >> ? isolate_pages_global	(vmscan.c:980)
-> >> ? __alloc_pages_nodemask	(page_alloc.c:1702)
-> >> ? __get_free_pages	(page_alloc.c:1990)
-> >> ? copy_process	(fork.c:237)
-> >> ? do_fork	(fork.c:1443)
-> >> ? rb_erase
-> >> ? __switch_to
-> >> ? kthread
-> >> ? kernel_thread
-> >> ? kthread
-> >> ? kernel_thread_helper
-> >> ? kthreadd
-> >> ? kthreadd
-> >> ? kernel_thread_helper
-> >>
-> >> INFO: task s2disk:2174 blocked for more than 120 seconds
-> >
-> > This looks like we have run out of memory while creating a new kernel thread
-> > and we have blocked on I/O while trying to free some space (quite obviously,
-> > because the I/O doesn't work at this point).
+On Sunday 31 January 2010, Rafael J. Wysocki wrote:
+> Hi,
 > 
-> For context, the kernel thread being created here is the stop_machine
-> thread.  It is created by disable_nonboot_cpus(), called from
-> hibernation_snapshot().  See e.g. this hung task backtrace -
+> While Maxim is testing if the patch below helps with
+> http://bugzilla.kernel.org/show_bug.cgi?id=14668
+> I think it's necessary anyway.
 > 
-> http://picasaweb.google.com/lh/photo/BkKUwZCrQ2ceBIM9ZOh7Ow?feat=directlink
-> 
-> > I think it should help if you increase PAGES_FOR_IO, then.
-> 
-> Ok, it's been happening again on 2.6.33-rc6.  Unfortunately increasing
-> PAGES_FOR_IO doesn't help.
-> 
-> I've been using a test patch to make PAGES_FOR_IO tunable at run time.
->  I get the same hang if I increase it by a factor of 10, to 10240:
-> 
-> # cd /sys/module/kernel/parameters/
-> # ls
-> consoleblank  initcall_debug  PAGES_FOR_IO  panic  pause_on_oops  SPARE_PAGES
-> # echo 10240 > PAGES_FOR_IO
-> # echo 2560 > SPARE_PAGES
-> # cat SPARE_PAGES
-> 2560
-> # cat PAGES_FOR_IO
-> 10240
-> 
-> I also added a debug patch to try and understand the calculations with
-> PAGES_FOR_IO in hibernate_preallocate_memory().  I still don't really
-> understand them and there could easily be errors in my debug patch,
-> but the output is interesting.
-> 
-> Increasing PAGES_FOR_IO by almost 10000 has the expected effect of
-> decreasing "max_size" by the same amount.  However it doesn't appear
-> to increase the number of free pages at the critical moment.
-> 
-> PAGES_FOR_IO = 1024:
-> http://picasaweb.google.com/lh/photo/DYQGvB_4hvCvVuxZf2ibxg?feat=directlink
-> 
-> PAGES_FOR_IO = 10240:
-> http://picasaweb.google.com/lh/photo/AIkV_ZBwt22nzN-JdOJCWA?feat=directlink
-> 
-> 
-> You may remember that I was originally able to avoid the hang by
-> reverting commit 5f8dcc2.  It doesn't revert cleanly any more.
-> However, I tried applying my test&debug patches on top of 5f8dcc2~1
-> (just before the commit that triggered the hang).  That kernel
-> apparently left ~5000 pages free at hibernation time, v.s. ~1200 when
-> testing the same scenario on 2.6.33-rc6.  (As before, the number of
-> free pages remained the same if I increased PAGES_FOR_IO to 10240).
+> The problem is that currently there's nothing to prevent us from suspending in
+> the middle of an EC transaction in progress, at least as far as I can see.
+> As a result, we can suspend with the ACPI global lock held or something like
+> this, which leads to problems especially for hibernation (if the resume kernel
+> passes control to the image kernel in the middle of an EC transaction, things
+> aren't nice).  For this reason I think we should wait until there are no EC
+> transactions in progress before we suspend and we should prevent any new
+> EC transactions from starting after that point.  The patch below does that.
 
-I think the hang may be avoided by using this patch
-http://patchwork.kernel.org/patch/74740/
-but the hibernation will fail instead.
-
-Can you please repeat your experiments with the patch below applied and
-report back?
+After discussing the patch with Alex I have a new version which is appended
+below.  This one causes EC transactions to be discarded after we've executed
+_PTS (which is reasonable IMO) and allows them to happen again very early
+during wake-up, so effectively the resume behavior should be unchanged.
 
 Rafael
 
 ---
- kernel/power/snapshot.c |   41 +++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 39 insertions(+), 2 deletions(-)
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: ACPI / EC: Remove race between EC driver and suspend process (rev. 2)
 
-Index: linux-2.6/kernel/power/snapshot.c
+There is a race between the suspend process and the EC driver that
+may result in suspending in the middle of an EC transaction in
+progress, which in turn may lead to unpredictable behavior of the
+platform.
+
+To remove that race condition, add a helper for suspending EC
+transactions in a safe way to be executed by the ACPI platform
+suspend/hibernate callbacks.  Modify these callbacks so that the EC
+transactions are suspended right after executing the _PTS global
+control method and are allowed to happen right after the low-level
+wake-up.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-by: Maxim Levitsky <maximlevitsky@gmail.com>
+---
+ drivers/acpi/ec.c       |   32 +++++++++++++++++++++++++++++++-
+ drivers/acpi/internal.h |    2 ++
+ drivers/acpi/sleep.c    |   29 ++++++++++++++++-------------
+ 3 files changed, 49 insertions(+), 14 deletions(-)
+
+Index: linux-2.6/drivers/acpi/ec.c
 ===================================================================
---- linux-2.6.orig/kernel/power/snapshot.c
-+++ linux-2.6/kernel/power/snapshot.c
-@@ -1179,6 +1179,10 @@ static void free_unnecessary_pages(void)
- 		to_free_normal -= save_highmem - alloc_highmem;
- 	}
+--- linux-2.6.orig/drivers/acpi/ec.c
++++ linux-2.6/drivers/acpi/ec.c
+@@ -76,8 +76,9 @@ enum ec_command {
+ enum {
+ 	EC_FLAGS_QUERY_PENDING,		/* Query is pending */
+ 	EC_FLAGS_GPE_STORM,		/* GPE storm detected */
+-	EC_FLAGS_HANDLERS_INSTALLED	/* Handlers for GPE and
++	EC_FLAGS_HANDLERS_INSTALLED,	/* Handlers for GPE and
+ 					 * OpReg are installed */
++	EC_FLAGS_SUSPENDED,		/* Driver is suspended */
+ };
  
-+	printk(KERN_CONT
-+		"Freeing %lu normal and %lu highmem preallocated pages\n",
-+		to_free_normal, to_free_highmem);
-+
- 	memory_bm_position_reset(&copy_bm);
+ /* If we find an EC via the ECDT, we need to keep a ptr to its context */
+@@ -291,6 +292,12 @@ static int acpi_ec_transaction(struct ac
+ 	if (t->rdata)
+ 		memset(t->rdata, 0, t->rlen);
+ 	mutex_lock(&ec->lock);
++	if (test_bit(EC_FLAGS_SUSPENDED, &ec->flags)) {
++		pr_err(PREFIX
++			"EC transaction discarded due to power transition\n");
++		status = -EINVAL;
++		goto unlock;
++	}
+ 	if (ec->global_lock) {
+ 		status = acpi_acquire_global_lock(ACPI_EC_UDELAY_GLK, &glk);
+ 		if (ACPI_FAILURE(status)) {
+@@ -445,6 +452,29 @@ int ec_transaction(u8 command,
  
- 	while (to_free_normal > 0 && to_free_highmem > 0) {
-@@ -1300,8 +1304,16 @@ int hibernate_preallocate_memory(void)
- 	/* Compute the maximum number of saveable pages to leave in memory. */
- 	max_size = (count - (size + PAGES_FOR_IO)) / 2 - 2 * SPARE_PAGES;
- 	size = DIV_ROUND_UP(image_size, PAGE_SIZE);
-+
-+	printk(KERN_CONT "Requested image size: %lu pages\n", size);
-+
- 	if (size > max_size)
- 		size = max_size;
-+
-+	printk(KERN_CONT
-+		"count = %lu, highmem = %lu, max_size = %lu, saveable = %lu\n",
-+		count, highmem, max_size, saveable);
-+
- 	/*
- 	 * If the maximum is not less than the current number of saveable pages
- 	 * in memory, allocate page frames for the image and we're done.
-@@ -1312,10 +1324,14 @@ int hibernate_preallocate_memory(void)
- 		goto out;
- 	}
+ EXPORT_SYMBOL(ec_transaction);
  
-+	printk(KERN_CONT "Target image size: %lu pages\n", size);
++void acpi_ec_suspend_transactions(void)
++{
++	struct acpi_ec *ec = first_ec;
 +
- 	/* Estimate the minimum size of the image. */
- 	pages = minimum_image_size(saveable);
--	if (size < pages)
--		size = min_t(unsigned long, pages, max_size);
-+	/* if (size < pages)
-+		size = min_t(unsigned long, pages, max_size); */
++	if (!ec)
++		return;
 +
-+	printk(KERN_CONT "Minimum image size: %lu pages\n", pages);
++	mutex_lock(&ec->lock);
++	/* Prevent transactions from happening while suspended */
++	set_bit(EC_FLAGS_SUSPENDED, &ec->flags);
++	mutex_unlock(&ec->lock);
++}
++
++void acpi_ec_resume_transactions(void)
++{
++	/*
++	 * Allow transactions to happen again (this function is called from
++	 * atomic context during wake-up, so we don't need to acquire the mutex)
++	 */
++	if (first_ec)
++		clear_bit(EC_FLAGS_SUSPENDED, &first_ec->flags);
++}
++
+ static int acpi_ec_query_unlocked(struct acpi_ec *ec, u8 * data)
+ {
+ 	int result;
+Index: linux-2.6/drivers/acpi/internal.h
+===================================================================
+--- linux-2.6.orig/drivers/acpi/internal.h
++++ linux-2.6/drivers/acpi/internal.h
+@@ -49,6 +49,8 @@ void acpi_early_processor_set_pdc(void);
+ int acpi_ec_init(void);
+ int acpi_ec_ecdt_probe(void);
+ int acpi_boot_ec_enable(void);
++void acpi_ec_suspend_transactions(void);
++void acpi_ec_resume_transactions(void);
  
- 	/*
- 	 * Let the memory management subsystem know that we're going to need a
-@@ -1325,6 +1341,9 @@ int hibernate_preallocate_memory(void)
+ /*--------------------------------------------------------------------------
+                                   Suspend/Resume
+Index: linux-2.6/drivers/acpi/sleep.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep.c
++++ linux-2.6/drivers/acpi/sleep.c
+@@ -110,11 +110,12 @@ void __init acpi_old_suspend_ordering(vo
+ }
+ 
+ /**
+- *	acpi_pm_disable_gpes - Disable the GPEs.
++ *	acpi_pm_freeze - Disable the GPEs and suspend EC transactions.
+  */
+-static int acpi_pm_disable_gpes(void)
++static int acpi_pm_freeze(void)
+ {
+ 	acpi_disable_all_gpes();
++	acpi_ec_suspend_transactions();
+ 	return 0;
+ }
+ 
+@@ -142,7 +143,8 @@ static int acpi_pm_prepare(void)
+ 	int error = __acpi_pm_prepare();
+ 
+ 	if (!error)
+-		acpi_disable_all_gpes();
++		acpi_pm_freeze();
++
+ 	return error;
+ }
+ 
+@@ -276,6 +278,8 @@ static int acpi_suspend_enter(suspend_st
  	 */
- 	shrink_all_memory(saveable - size);
+ 	acpi_disable_all_gpes();
  
-+	pages = minimum_image_size(count_data_pages() + count_highmem_pages());
-+	printk(KERN_CONT "Minimum image size: %lu pages\n", pages);
++	acpi_ec_resume_transactions();
 +
- 	/*
- 	 * The number of saveable pages in memory was too high, so apply some
- 	 * pressure to decrease it.  First, make room for the largest possible
-@@ -1334,17 +1353,35 @@ int hibernate_preallocate_memory(void)
- 	 */
- 	pages_highmem = preallocate_image_highmem(highmem / 2);
- 	alloc = (count - max_size) - pages_highmem;
-+
-+	printk(KERN_CONT "pages_highmem = %lu, alloc = %lu\n",
-+		pages_highmem, alloc);
-+
- 	pages = preallocate_image_memory(alloc);
- 	if (pages < alloc)
- 		goto err_out;
-+
-+	printk(KERN_CONT "pages = %lu\n", pages);
-+
- 	size = max_size - size;
- 	alloc = size;
-+
- 	size = preallocate_highmem_fraction(size, highmem, count);
-+
-+	printk(KERN_CONT "alloc_highmem = %lu, alloc = %lu\n", size, alloc);
-+
- 	pages_highmem += size;
- 	alloc -= size;
- 	pages += preallocate_image_memory(alloc);
-+
-+	printk(KERN_CONT "pages = %lu\n", pages);
-+
- 	pages += pages_highmem;
+ 	local_irq_restore(flags);
+ 	printk(KERN_DEBUG "Back to C!\n");
  
-+	printk(KERN_CONT
-+		"pages = %lu, pages_highmem = %lu, count - pages = %lu\n",
-+		pages, pages_highmem, count - pages);
-+
- 	/*
- 	 * We only need as many page frames for the image as there are saveable
- 	 * pages in memory, but we have allocated more.  Release the excessive
+@@ -333,7 +337,7 @@ static int acpi_suspend_begin_old(suspen
+ static struct platform_suspend_ops acpi_suspend_ops_old = {
+ 	.valid = acpi_suspend_state_valid,
+ 	.begin = acpi_suspend_begin_old,
+-	.prepare_late = acpi_pm_disable_gpes,
++	.prepare_late = acpi_pm_freeze,
+ 	.enter = acpi_suspend_enter,
+ 	.wake = acpi_pm_finish,
+ 	.end = acpi_pm_end,
+@@ -522,6 +526,7 @@ static int acpi_hibernation_enter(void)
+ 	status = acpi_enter_sleep_state(ACPI_STATE_S4);
+ 	/* Reprogram control registers and execute _BFS */
+ 	acpi_leave_sleep_state_prep(ACPI_STATE_S4);
++	acpi_ec_resume_transactions();
+ 	local_irq_restore(flags);
+ 
+ 	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
+@@ -550,6 +555,7 @@ static void acpi_hibernation_leave(void)
+ 	}
+ 	/* Restore the NVS memory area */
+ 	hibernate_nvs_restore();
++	acpi_ec_resume_transactions();
+ }
+ 
+ static void acpi_pm_enable_gpes(void)
+@@ -565,7 +571,7 @@ static struct platform_hibernation_ops a
+ 	.prepare = acpi_pm_prepare,
+ 	.enter = acpi_hibernation_enter,
+ 	.leave = acpi_hibernation_leave,
+-	.pre_restore = acpi_pm_disable_gpes,
++	.pre_restore = acpi_pm_freeze,
+ 	.restore_cleanup = acpi_pm_enable_gpes,
+ };
+ 
+@@ -598,12 +604,9 @@ static int acpi_hibernation_begin_old(vo
+ 
+ static int acpi_hibernation_pre_snapshot_old(void)
+ {
+-	int error = acpi_pm_disable_gpes();
+-
+-	if (!error)
+-		hibernate_nvs_save();
+-
+-	return error;
++	acpi_pm_freeze();
++	hibernate_nvs_save();
++	return 0;
+ }
+ 
+ /*
+@@ -615,10 +618,10 @@ static struct platform_hibernation_ops a
+ 	.end = acpi_pm_end,
+ 	.pre_snapshot = acpi_hibernation_pre_snapshot_old,
+ 	.finish = acpi_hibernation_finish,
+-	.prepare = acpi_pm_disable_gpes,
++	.prepare = acpi_pm_freeze,
+ 	.enter = acpi_hibernation_enter,
+ 	.leave = acpi_hibernation_leave,
+-	.pre_restore = acpi_pm_disable_gpes,
++	.pre_restore = acpi_pm_freeze,
+ 	.restore_cleanup = acpi_pm_enable_gpes,
+ 	.recover = acpi_pm_finish,
+ };
