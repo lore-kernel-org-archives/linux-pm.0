@@ -1,14 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [regression] "drm/i915: implement new pm ops"
-	disables irq on aborted s2disk
-Date: Wed, 3 Feb 2010 23:44:41 +0100
-Message-ID: <201002032344.41915.rjw__41199.4434231476$1265237235$gmane$org@sisk.pl>
-References: <4B695BA0.4000007@tuffmail.co.uk>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before
+	suspending devices
+Date: Wed, 3 Feb 2010 15:08:03 -0800
+Message-ID: <20100203150803.5a4b37fe.akpm__25087.6573300504$1265238624$gmane$org@linux-foundation.org>
+References: <alpine.LFD.2.00.1001221841490.2266@localhost>
+	<201002030244.23989.rjw@sisk.pl>
+	<20100202174853.67eeccdd.akpm@linux-foundation.org>
+	<201002032334.37198.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4B695BA0.4000007@tuffmail.co.uk>
+In-Reply-To: <201002032334.37198.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,32 +21,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Eric Anholt <eric@anholt.net>, dri-devel@lists.sourceforge.net, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, Kernel Testers List <kernel-testers@vger.kernel.org>, Zhenyu Wang <zhenyuw@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Benjamin@smtp1.linux-foundation.org, linux-kernel@vger.kernel.org, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 03 February 2010, Alan Jenkins wrote:
-> Hi
+On Wed, 3 Feb 2010 23:34:37 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> On Wednesday 03 February 2010, Andrew Morton wrote:
+> > On Wed, 3 Feb 2010 02:44:23 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > 
+> > > +static inline gfp_t clear_gfp_allowed_mask(gfp_t mask)
+> > > +{
+> > > +	gfp_t ret = gfp_allowed_mask;
+> > > +	gfp_allowed_mask &= ~mask;
+> > > +	return ret;
+> > > +}
+> > 
+> > Fair enuf.
+> > 
+> > Of course, this is all horridly racy/buggy without locking.  Would I be
+> > correct in hoping that all the callers happen when the system is in
+> > everyone-is-frozen mode?
 > 
-> I found this regression on my EeePC 701 with modesetting enabled.  When 
-> I hibernate using s2disk, I can abort the hibernation by pressing the 
-> backspace key.  Doing so breaks X on 2.6.32-rc6 (but not 2.6.32).
+> As far as I can tell, gfp_allowed_mask is only touched during init apart from
+> this.
 
-Yeah.
+Well yes - the new interfaces are the problem - they're racy!
 
-To be honest, I knew that's going to happen, but didn't have the time to take
-care of it.
+> > Perhaps we should add some documentation (or even an assertion) to
+> > prevent someone from using these interfaces from within normal code.
+> 
+> I thought about that, but didn't invent anything smart enough.
+> 
+> Well, maybe except for a comment like "this must be called with pm_mutex held",
+> because that's the only case when it would be really safe.
 
-The problem is that i915 does literally _nothing_ in its .thaw() callback,
-although it should at least reverse whatever .freeze() did to the hardware
-(and memory allocations and so on), so that the adapter is functional
-after creating the image.
+Is that the locking rule?  My above guess was incorrect?
 
-Fixing this requires some thought, though, because at the moment .freeze()
-thinks it's .suspend(), which is not the case as this report clearly shows.
-So, in fact i915_pci_suspend() has to be split into the .freeze() part and
-the poweroff part cleanly and that's not  so simple (at least to me).
+Maybe slip a
 
-Hopefully I'll have some time to work on this during the weekend.
+	BUG_ON(!mutex_is_locked(&pm_mutex));
 
-Rafael
+in there?
