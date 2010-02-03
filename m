@@ -1,17 +1,11 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before
-	suspending devices
-Date: Wed, 3 Feb 2010 15:08:03 -0800
-Message-ID: <20100203150803.5a4b37fe.akpm__25087.6573300504$1265238624$gmane$org@linux-foundation.org>
-References: <alpine.LFD.2.00.1001221841490.2266@localhost>
-	<201002030244.23989.rjw@sisk.pl>
-	<20100202174853.67eeccdd.akpm@linux-foundation.org>
-	<201002032334.37198.rjw@sisk.pl>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: runtime PM: common hooks for static and runtime PM
+Date: Wed, 03 Feb 2010 15:30:21 -0800
+Message-ID: <877hqt7v8y.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201002032334.37198.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,46 +15,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Benjamin@smtp1.linux-foundation.org, linux-kernel@vger.kernel.org, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 3 Feb 2010 23:34:37 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Hello,
 
-> On Wednesday 03 February 2010, Andrew Morton wrote:
-> > On Wed, 3 Feb 2010 02:44:23 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > +static inline gfp_t clear_gfp_allowed_mask(gfp_t mask)
-> > > +{
-> > > +	gfp_t ret = gfp_allowed_mask;
-> > > +	gfp_allowed_mask &= ~mask;
-> > > +	return ret;
-> > > +}
-> > 
-> > Fair enuf.
-> > 
-> > Of course, this is all horridly racy/buggy without locking.  Would I be
-> > correct in hoping that all the callers happen when the system is in
-> > everyone-is-frozen mode?
-> 
-> As far as I can tell, gfp_allowed_mask is only touched during init apart from
-> this.
+I'm implementing runtime PM for the TI OMAP SoCs by overriding the
+platform_bus hooks.  All is working well for runtime PM, but it's 
+brought up a couple snags for static PM.
 
-Well yes - the new interfaces are the problem - they're racy!
+Most of our drivers don't really need to distinguish between runtime
+PM and static PM as we can hit the same power states when idle as we
+can in suspend.  Before switching to runtime PM we've been using the
+clock framework to do both runtime PM and static PM.  The driver would
+disable its clocks & HW when idle and when going into suspend,
+typically using a common 'disable' function.
 
-> > Perhaps we should add some documentation (or even an assertion) to
-> > prevent someone from using these interfaces from within normal code.
-> 
-> I thought about that, but didn't invent anything smart enough.
-> 
-> Well, maybe except for a comment like "this must be called with pm_mutex held",
-> because that's the only case when it would be really safe.
+In converting a test driver to runtime PM, I just converted this
+common disable function from a clock disable to a
+pm_runtime_put_sync() and the common enable function to do a
+pm_runtime_get_sync().  This all worked well for runtime PM, resulting
+in my platform_pm_runtime_* hooks being called where I can then
+disable/re-enable the clocks/HW etc.  So far so good.
 
-Is that the locking rule?  My above guess was incorrect?
+However, I'm not able to use the common function in the static suspend
+path because dpm_prepare() does a pm_runtime_get_no_resume() which
+prevents any runtime PM transitions during suspend.
 
-Maybe slip a
+I understand the motivation for this is probably to prevent runtime PM
+transitions during static suspend, and that makes sense.  However, I'm
+wondering if there's some other way to handle my problem without
+having to have the driver have different paths for static and runtime
+PM.
 
-	BUG_ON(!mutex_is_locked(&pm_mutex));
+My current hack is to add an "extra" pm_runtime_put_sync() to the
+driver's static suspend hook (and 'get' in the resume hook) to
+essentially cancel out the 'get' held by dpm_prepare(), but I'm pretty
+sure this is not an acceptable long-term solution.
 
-in there?
+Any other ideas?  Or maybe I've misunderstood something more basic.
+Any pointers would be appreciated.
+
+Thanks,
+
+Kevin
