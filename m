@@ -1,13 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] i2c: Hook up runtime PM support
-Date: Thu, 4 Feb 2010 22:57:27 +0100
-Message-ID: <201002042257.27145.rjw__41483.1708920703$1265325742$gmane$org@sisk.pl>
-References: <1265203367-21344-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Subject: [RFC] Possible suspend/resume problems with ACPI
+Date: Fri, 5 Feb 2010 00:02:30 +0100
+Message-ID: <201002050002.30647.rjw__1897.70129877633$1265325746$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1265203367-21344-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,94 +15,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Jean Delvare <khali@linux-fr.org>, pm list <linux-pm@lists.linux-foundation.org>, linux-i2c@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 03 February 2010, Mark Brown wrote:
-> Allow I2C drivers to make use of the runtime PM framework by adding
-> bus implementations of the runtime PM operations. These simply
-> immediately suspend when the device is idle.
+Hi,
 
-Perhaps it would be a good idea to give the driver a chance to veto
-the suspend by calling its _idle callback?  We do that for PCI and turns out to
-be quite useful.
+After I'd noticed the race between EC transactions and the suspend thread that
+the patch at http://patchwork.kernel.org/patch/76871/ is supposed to fix, I
+started to think about what ACPI does in the platform suspend/resume callbacks
+and I found a few potential issues.
 
-> The runtime PM framework provides drivers with off the shelf refcounts for
-> enables and sysfs control for managing runtime suspend from userspace so is
-> useful even without meaningful input from the bus.
-> 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
->  drivers/i2c/i2c-core.c |   41 +++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 41 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> index 10be7b5..985eaac 100644
-> --- a/drivers/i2c/i2c-core.c
-> +++ b/drivers/i2c/i2c-core.c
-> @@ -34,6 +34,7 @@
->  #include <linux/hardirq.h>
->  #include <linux/irqflags.h>
->  #include <linux/rwsem.h>
-> +#include <linux/pm_runtime.h>
->  #include <asm/uaccess.h>
->  
->  #include "i2c-core.h"
-> @@ -184,6 +185,43 @@ static int i2c_device_pm_resume(struct device *dev)
->  #define i2c_device_pm_resume	NULL
->  #endif
->  
-> +#ifdef CONFIG_PM_RUNTIME
-> +static int i2c_device_runtime_suspend(struct device *dev)
-> +{
-> +	const struct dev_pm_ops *pm;
-> +
-> +	if (!dev->driver)
-> +		return 0;
-> +	pm = dev->driver->pm;
-> +	if (!pm || !pm->runtime_suspend)
-> +		return 0;
-> +	return pm->runtime_suspend(dev);
-> +}
-> +
-> +static int i2c_device_runtime_resume(struct device *dev)
-> +{
-> +	const struct dev_pm_ops *pm;
-> +
-> +	if (!dev->driver)
-> +		return 0;
-> +	pm = dev->driver->pm;
-> +	if (!pm || !pm->runtime_resume)
-> +		return 0;
-> +	return pm->runtime_resume(dev);
-> +}
-> +
-> +static int i2c_device_runtime_idle(struct device *dev)
-> +{
-> +	/* I2C devices are very independent of each other so we
-> +	 * suspend them immediately. */
-> +	return pm_runtime_suspend(dev);
-> +}
-> +#else
-> +#define i2c_device_runtime_suspend	NULL
-> +#define i2c_device_runtime_resume	NULL
-> +#define i2c_device_runtime_idle		NULL
-> +#endif
-> +
->  static int i2c_device_suspend(struct device *dev, pm_message_t mesg)
->  {
->  	struct i2c_client *client = i2c_verify_client(dev);
-> @@ -251,6 +289,9 @@ static const struct attribute_group *i2c_dev_attr_groups[] = {
->  static const struct dev_pm_ops i2c_device_pm_ops = {
->  	.suspend = i2c_device_pm_suspend,
->  	.resume = i2c_device_pm_resume,
-> +	.runtime_suspend = i2c_device_runtime_suspend,
-> +	.runtime_resume = i2c_device_runtime_resume,
-> +	.runtime_idle = i2c_device_runtime_idle,
->  };
->  
->  struct bus_type i2c_bus_type = {
-> 
+First off, there's the issue addressed by http://patchwork.kernel.org/patch/76871/.
+I must admit I was afraid that CPU hotunplug might cause an EC transaction to
+happen on some systems, but I don't think that's the case any more.  At least,
+I didn't find any reason for that in the code, so I think the patch is correct.
+If you know of anything related to the CPU hotunplug that might result in
+triggering an EC transaction, please let me know.
+
+Second, in the resume code path we execute _WAK after enabling the nonboot
+CPUs (we can't do that earlier, because the CPU hotplug uses _INI on some
+platforms and that crashes systems if executed after _WAK).  However, before
+executing _WAK we enable runtime GPEs, apparently because they might be needed
+to handle things possibly triggered by _WAK.  At lease there's a comment in
+acpi_leave_sleep_state() suggesting that.  The problem is, though, that at the
+point we execute _WAK the SCI is effectively inactive due to
+disable_device_irqs() called during suspend.
+
+Now, that wouldn't be a problem if the interrupt was disabled at the hardware
+level, but it's not.  It only is marked as disabled, so if it triggers, we lose
+it.  Thus, although we enable the GPEs before executing _WAK, we won't get
+any notification from them because the SCI is not functional at this point.
+This seems to be wrong and IMO it should be addressed somehow.
+
+One possible solution may be to move the enabling of runtime GPEs and the
+execution of _WAK to the point where interrupts have been enabled by
+resume_device_irqs().  In that case, however, the powering off of PCI devices
+and the restoration of their standard config registers would happen before
+executing _WAK.  That doesn't seem to break my test boxes, but I'm not sure if
+it's going to work universally.
+
+Similarly, it looks like during suspend we should disable runtime GPEs before
+suspend_device_irqs() is called, because it doesn't really make sense to keep
+them enabled after that point.  This, of course, would mean putting PCI devices
+into low power states with runtime GPEs disabled, but I don't think it would
+be a problem.  Still, though, I'm not sure if it makes sense to execute _PTS
+while runtime GPEs are disabled, so perhaps we'd also need to execute _PTS
+before suspend_device_irqs().
+
+Please tell me what you think.
 
 Rafael
