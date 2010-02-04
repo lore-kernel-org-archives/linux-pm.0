@@ -1,13 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: runtime PM: common hooks for static and runtime PM
-Date: Thu, 4 Feb 2010 10:24:48 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1002041022140.2470-100000@iolanthe.rowland.org>
-References: <877hqt7v8y.fsf@deeprootsystems.com>
+From: Chase Douglas <chase.douglas@canonical.com>
+Subject: Macbook 5,1 Ubuntu Lucid resume issue
+Date: Thu, 04 Feb 2010 10:04:35 -0800
+Message-ID: <1265306675.1951.14.camel@cndougla-ubuntu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <877hqt7v8y.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,48 +15,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 3 Feb 2010, Kevin Hilman wrote:
+Hello all,
 
-> Hello,
-> 
-> I'm implementing runtime PM for the TI OMAP SoCs by overriding the
-> platform_bus hooks.  All is working well for runtime PM, but it's 
-> brought up a couple snags for static PM.
-> 
-> Most of our drivers don't really need to distinguish between runtime
-> PM and static PM as we can hit the same power states when idle as we
-> can in suspend.  Before switching to runtime PM we've been using the
-> clock framework to do both runtime PM and static PM.  The driver would
-> disable its clocks & HW when idle and when going into suspend,
-> typically using a common 'disable' function.
-> 
-> In converting a test driver to runtime PM, I just converted this
-> common disable function from a clock disable to a
-> pm_runtime_put_sync() and the common enable function to do a
-> pm_runtime_get_sync().  This all worked well for runtime PM, resulting
-> in my platform_pm_runtime_* hooks being called where I can then
-> disable/re-enable the clocks/HW etc.  So far so good.
-> 
-> However, I'm not able to use the common function in the static suspend
-> path because dpm_prepare() does a pm_runtime_get_no_resume() which
-> prevents any runtime PM transitions during suspend.
-> 
-> I understand the motivation for this is probably to prevent runtime PM
-> transitions during static suspend, and that makes sense.  However, I'm
-> wondering if there's some other way to handle my problem without
-> having to have the driver have different paths for static and runtime
-> PM.
+I'm testing resume from s3 suspend on Ubuntu Lucid on my macbook
+(version 5,1; nvidia MCP 79 internals). On Ubuntu Karmic, resume
+(usually) works without a hitch. However, on Lucid when I resume the
+disk resumes and the system is partly running, but the display
+(backlight and LCD I think) and ethernet networking do not come back up.
+This occurs when resuming back to X or to a virtual terminal without X
+started. It occurs whether the nvidia or nv kernel modules are loaded or
+unloaded.
 
-The system PM methods could directly call the runtime_suspend and
-runtime_resume methods (which presumably is where you actually disable
-or enable the clocks etc.), instead of going indirectly through
-pm_runtime_put_sync() and pm_runtime_get_sync().
+What is most interesting is the dependent variable in all of this is not
+the kernel but the user-space. If I run Karmic with the Lucid kernel it
+resumes correctly. If I run Lucid with the Karmic kernel it does not
+resume correctly. I have run a script which essentially does:
 
-Or alternatively, both sets of PM methods could call a single pair of
-routines to handle the clocks etc.
+1. suspend (using pm-suspend)
+2. wait 60 seconds (during which time I resume the machine)
+3. save dmesg output to the hard disk
 
-Alan Stern
+I have pored over the dmesg logs from good and bad resumes, but I
+haven't found anything to suggest what the real issue may be. Right now
+I am at a loss as to what I should try next. Does anyone have any
+thoughts as to what I can try to debug this?
+
+Thanks,
+Chase
