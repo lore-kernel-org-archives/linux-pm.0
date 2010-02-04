@@ -1,14 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ACPI / EC: Remove race between EC driver and
-	suspend process (rev. 3)
-Date: Thu, 4 Feb 2010 01:33:22 +0100
-Message-ID: <201002040133.22604.rjw__12208.7906035178$1265243766$gmane$org@sisk.pl>
-References: <201001310029.48717.rjw@sisk.pl> <201002030132.21406.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before
+	suspending devices
+Date: Thu, 4 Feb 2010 01:50:26 +0100
+Message-ID: <201002040150.26503.rjw__9882.08346902884$1265244716$gmane$org@sisk.pl>
+References: <alpine.LFD.2.00.1001221841490.2266@localhost>
+	<201002032334.37198.rjw@sisk.pl>
+	<20100203150803.5a4b37fe.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201002030132.21406.rjw@sisk.pl>
+In-Reply-To: <20100203150803.5a4b37fe.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,35 +20,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 03 February 2010, Rafael J. Wysocki wrote:
-> On Sunday 31 January 2010, Rafael J. Wysocki wrote:
-> > Hi,
-> > 
-> > While Maxim is testing if the patch below helps with
-> > http://bugzilla.kernel.org/show_bug.cgi?id=14668
-> > I think it's necessary anyway.
-> > 
-> > The problem is that currently there's nothing to prevent us from suspending in
-> > the middle of an EC transaction in progress, at least as far as I can see.
-> > As a result, we can suspend with the ACPI global lock held or something like
-> > this, which leads to problems especially for hibernation (if the resume kernel
-> > passes control to the image kernel in the middle of an EC transaction, things
-> > aren't nice).  For this reason I think we should wait until there are no EC
-> > transactions in progress before we suspend and we should prevent any new
-> > EC transactions from starting after that point.  The patch below does that.
+On Thursday 04 February 2010, Andrew Morton wrote:
+> On Wed, 3 Feb 2010 23:34:37 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> After discussing the patch with Alex I have a new version which is appended
-> below.  This one causes EC transactions to be discarded after we've executed
-> _PTS (which is reasonable IMO) and allows them to happen again very early
-> during wake-up, so effectively the resume behavior should be unchanged.
+> > On Wednesday 03 February 2010, Andrew Morton wrote:
+> > > On Wed, 3 Feb 2010 02:44:23 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > 
+> > > > +static inline gfp_t clear_gfp_allowed_mask(gfp_t mask)
+> > > > +{
+> > > > +	gfp_t ret = gfp_allowed_mask;
+> > > > +	gfp_allowed_mask &= ~mask;
+> > > > +	return ret;
+> > > > +}
+> > > 
+> > > Fair enuf.
+> > > 
+> > > Of course, this is all horridly racy/buggy without locking.  Would I be
+> > > correct in hoping that all the callers happen when the system is in
+> > > everyone-is-frozen mode?
+> > 
+> > As far as I can tell, gfp_allowed_mask is only touched during init apart from
+> > this.
+> 
+> Well yes - the new interfaces are the problem - they're racy!
+> 
+> > > Perhaps we should add some documentation (or even an assertion) to
+> > > prevent someone from using these interfaces from within normal code.
+> > 
+> > I thought about that, but didn't invent anything smart enough.
+> > 
+> > Well, maybe except for a comment like "this must be called with pm_mutex held",
+> > because that's the only case when it would be really safe.
+> 
+> Is that the locking rule?  My above guess was incorrect?
+> 
+> Maybe slip a
+> 
+> 	BUG_ON(!mutex_is_locked(&pm_mutex));
+> 
+> in there?
 
-Unfortunately I overlooked the fact that this patch would break the error paths
-and test modes where we also have to allow EC transactions to happen again
-after they've been "suspended".  Sorry about that.
+That actually is a good idea, although I prefer WARN_ON (BUG_ON would be
+rather blunt, so to speak, as it could kill setups not using suspend/hibernate
+at all).
 
 Updated patch follows.
 
@@ -54,254 +75,195 @@ Rafael
 
 ---
 From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: ACPI / EC: Remove race between EC driver and suspend process (rev. 3)
+Subject: MM / PM: Force GFP_NOIO during suspend/hibernation and resume (rev. 3)
 
-There is a race between the suspend process and the EC driver that
-may result in suspending in the middle of an EC transaction in
-progress, which in turn may lead to unpredictable behavior of the
-platform.
+There are quite a few GFP_KERNEL memory allocations made during
+suspend/hibernation and resume that may cause the system to hang,
+because the I/O operations they depend on cannot be completed due to
+the underlying devices being suspended.
 
-To remove that race condition, add a helpers for suspending and
-resuming EC transactions in a safe way to be executed by the ACPI
-platform suspend/hibernate callbacks.  Modify these callbacks so
-that the EC transactions are suspended right after executing the
-_PTS global control method and are allowed to happen right after
-the low-level wake-up.
+Mitigate this problem by clearing the __GFP_IO and __GFP_FS bits in
+gfp_allowed_mask before suspend/hibernation and restoring the
+original values of these bits in gfp_allowed_mask durig the
+subsequent resume.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Reported-by: Maxim Levitsky <maximlevitsky@gmail.com>
 ---
- drivers/acpi/ec.c       |   45 ++++++++++++++++++++++++++++++++++++++++++++-
- drivers/acpi/internal.h |    3 +++
- drivers/acpi/sleep.c    |   47 +++++++++++++++++++++++++++++------------------
- 3 files changed, 76 insertions(+), 19 deletions(-)
+ include/linux/gfp.h      |    7 +++----
+ init/main.c              |    2 +-
+ kernel/power/hibernate.c |    9 +++++++++
+ kernel/power/suspend.c   |    3 +++
+ mm/page_alloc.c          |   24 ++++++++++++++++++++++++
+ 5 files changed, 40 insertions(+), 5 deletions(-)
 
-Index: linux-2.6/drivers/acpi/ec.c
+Index: linux-2.6/include/linux/gfp.h
 ===================================================================
---- linux-2.6.orig/drivers/acpi/ec.c
-+++ linux-2.6/drivers/acpi/ec.c
-@@ -76,8 +76,9 @@ enum ec_command {
- enum {
- 	EC_FLAGS_QUERY_PENDING,		/* Query is pending */
- 	EC_FLAGS_GPE_STORM,		/* GPE storm detected */
--	EC_FLAGS_HANDLERS_INSTALLED	/* Handlers for GPE and
-+	EC_FLAGS_HANDLERS_INSTALLED,	/* Handlers for GPE and
- 					 * OpReg are installed */
-+	EC_FLAGS_SUSPENDED,		/* Driver is suspended */
- };
+--- linux-2.6.orig/include/linux/gfp.h
++++ linux-2.6/include/linux/gfp.h
+@@ -83,6 +83,7 @@ struct vm_area_struct;
+ #define GFP_HIGHUSER_MOVABLE	(__GFP_WAIT | __GFP_IO | __GFP_FS | \
+ 				 __GFP_HARDWALL | __GFP_HIGHMEM | \
+ 				 __GFP_MOVABLE)
++#define GFP_IOFS	(__GFP_IO | __GFP_FS)
  
- /* If we find an EC via the ECDT, we need to keep a ptr to its context */
-@@ -291,6 +292,12 @@ static int acpi_ec_transaction(struct ac
- 	if (t->rdata)
- 		memset(t->rdata, 0, t->rlen);
- 	mutex_lock(&ec->lock);
-+	if (test_bit(EC_FLAGS_SUSPENDED, &ec->flags)) {
-+		pr_err(PREFIX
-+			"transaction discarded due to power transition\n");
-+		status = -EINVAL;
-+		goto unlock;
-+	}
- 	if (ec->global_lock) {
- 		status = acpi_acquire_global_lock(ACPI_EC_UDELAY_GLK, &glk);
- 		if (ACPI_FAILURE(status)) {
-@@ -445,6 +452,42 @@ int ec_transaction(u8 command,
+ #ifdef CONFIG_NUMA
+ #define GFP_THISNODE	(__GFP_THISNODE | __GFP_NOWARN | __GFP_NORETRY)
+@@ -337,9 +338,7 @@ void drain_local_pages(void *dummy);
  
- EXPORT_SYMBOL(ec_transaction);
+ extern gfp_t gfp_allowed_mask;
  
-+void acpi_ec_suspend_transactions(void)
-+{
-+	struct acpi_ec *ec = first_ec;
-+
-+	if (!ec)
-+		return;
-+
-+	mutex_lock(&ec->lock);
-+	/* Prevent transactions from happening while suspended */
-+	set_bit(EC_FLAGS_SUSPENDED, &ec->flags);
-+	mutex_unlock(&ec->lock);
-+}
-+
-+void acpi_ec_resume_transactions(void)
-+{
-+	struct acpi_ec *ec = first_ec;
-+
-+	if (!ec)
-+		return;
-+
-+	mutex_lock(&ec->lock);
-+	/* Allow transactions to happen again */
-+	clear_bit(EC_FLAGS_SUSPENDED, &ec->flags);
-+	mutex_unlock(&ec->lock);
-+}
-+
-+void acpi_ec_resume_transactions_noirq(void)
-+{
-+	/*
-+	 * Allow transactions to happen again (this function is called from
-+	 * atomic context during wake-up, so we don't need to acquire the mutex)
-+	 */
-+	if (first_ec)
-+		clear_bit(EC_FLAGS_SUSPENDED, &first_ec->flags);
-+}
-+
- static int acpi_ec_query_unlocked(struct acpi_ec *ec, u8 * data)
- {
- 	int result;
-Index: linux-2.6/drivers/acpi/internal.h
+-static inline void set_gfp_allowed_mask(gfp_t mask)
+-{
+-	gfp_allowed_mask = mask;
+-}
++extern void set_gfp_allowed_mask(gfp_t mask);
++extern gfp_t clear_gfp_allowed_mask(gfp_t mask);
+ 
+ #endif /* __LINUX_GFP_H */
+Index: linux-2.6/init/main.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/internal.h
-+++ linux-2.6/drivers/acpi/internal.h
-@@ -49,6 +49,9 @@ void acpi_early_processor_set_pdc(void);
- int acpi_ec_init(void);
- int acpi_ec_ecdt_probe(void);
- int acpi_boot_ec_enable(void);
-+void acpi_ec_suspend_transactions(void);
-+void acpi_ec_resume_transactions(void);
-+void acpi_ec_resume_transactions_noirq(void);
+--- linux-2.6.orig/init/main.c
++++ linux-2.6/init/main.c
+@@ -601,7 +601,7 @@ asmlinkage void __init start_kernel(void
+ 	local_irq_enable();
  
- /*--------------------------------------------------------------------------
-                                   Suspend/Resume
-Index: linux-2.6/drivers/acpi/sleep.c
+ 	/* Interrupts are enabled now so all GFP allocations are safe. */
+-	set_gfp_allowed_mask(__GFP_BITS_MASK);
++	gfp_allowed_mask = __GFP_BITS_MASK;
+ 
+ 	kmem_cache_init_late();
+ 
+Index: linux-2.6/mm/page_alloc.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/sleep.c
-+++ linux-2.6/drivers/acpi/sleep.c
-@@ -110,11 +110,12 @@ void __init acpi_old_suspend_ordering(vo
- }
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -76,6 +76,30 @@ unsigned long totalreserve_pages __read_
+ int percpu_pagelist_fraction;
+ gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
  
- /**
-- *	acpi_pm_disable_gpes - Disable the GPEs.
-+ *	acpi_pm_freeze - Disable the GPEs and suspend EC transactions.
-  */
--static int acpi_pm_disable_gpes(void)
-+static int acpi_pm_freeze(void)
- {
- 	acpi_disable_all_gpes();
-+	acpi_ec_suspend_transactions();
- 	return 0;
- }
- 
-@@ -142,7 +143,8 @@ static int acpi_pm_prepare(void)
- 	int error = __acpi_pm_prepare();
- 
- 	if (!error)
--		acpi_disable_all_gpes();
-+		acpi_pm_freeze();
++/*
++ * The following functions are used by the suspend/hibernate code to temporarily
++ * change gfp_allowed_mask in order to avoid using I/O during memory allocations
++ * while devices are suspended.  To avoid races with the suspend/hibernate code,
++ * they should always be called with pm_mutex held (gfp_allowed_mask also should
++ * only be modified with pm_mutex held, unless the suspend/hibernate code is
++ * guaranteed not to run in parallel with that modification).
++ */
 +
- 	return error;
- }
- 
-@@ -276,6 +278,8 @@ static int acpi_suspend_enter(suspend_st
- 	 */
- 	acpi_disable_all_gpes();
- 
-+	acpi_ec_resume_transactions_noirq();
-+
- 	local_irq_restore(flags);
- 	printk(KERN_DEBUG "Back to C!\n");
- 
-@@ -286,6 +290,12 @@ static int acpi_suspend_enter(suspend_st
- 	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
- }
- 
-+static void acpi_suspend_finish(void)
++void set_gfp_allowed_mask(gfp_t mask)
 +{
-+	acpi_ec_resume_transactions();
-+	acpi_pm_finish();
++	WARN_ON(!mutex_is_locked(&pm_mutex));
++	gfp_allowed_mask = mask;
 +}
 +
- static int acpi_suspend_state_valid(suspend_state_t pm_state)
++gfp_t clear_gfp_allowed_mask(gfp_t mask)
++{
++	gfp_t ret = gfp_allowed_mask;
++
++	WARN_ON(!mutex_is_locked(&pm_mutex));
++	gfp_allowed_mask &= ~mask;
++	return ret;
++}
++
+ #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
+ int pageblock_order __read_mostly;
+ #endif
+Index: linux-2.6/kernel/power/hibernate.c
+===================================================================
+--- linux-2.6.orig/kernel/power/hibernate.c
++++ linux-2.6/kernel/power/hibernate.c
+@@ -323,6 +323,7 @@ static int create_image(int platform_mod
+ int hibernation_snapshot(int platform_mode)
  {
- 	u32 acpi_state;
-@@ -307,7 +317,7 @@ static struct platform_suspend_ops acpi_
- 	.begin = acpi_suspend_begin,
- 	.prepare_late = acpi_pm_prepare,
- 	.enter = acpi_suspend_enter,
--	.wake = acpi_pm_finish,
-+	.wake = acpi_suspend_finish,
- 	.end = acpi_pm_end,
- };
+ 	int error;
++	gfp_t saved_mask;
  
-@@ -333,9 +343,9 @@ static int acpi_suspend_begin_old(suspen
- static struct platform_suspend_ops acpi_suspend_ops_old = {
- 	.valid = acpi_suspend_state_valid,
- 	.begin = acpi_suspend_begin_old,
--	.prepare_late = acpi_pm_disable_gpes,
-+	.prepare_late = acpi_pm_freeze,
- 	.enter = acpi_suspend_enter,
--	.wake = acpi_pm_finish,
-+	.wake = acpi_suspend_finish,
- 	.end = acpi_pm_end,
- 	.recover = acpi_pm_finish,
- };
-@@ -522,6 +532,7 @@ static int acpi_hibernation_enter(void)
- 	status = acpi_enter_sleep_state(ACPI_STATE_S4);
- 	/* Reprogram control registers and execute _BFS */
- 	acpi_leave_sleep_state_prep(ACPI_STATE_S4);
-+	acpi_ec_resume_transactions_noirq();
- 	local_irq_restore(flags);
+ 	error = platform_begin(platform_mode);
+ 	if (error)
+@@ -334,6 +335,7 @@ int hibernation_snapshot(int platform_mo
+ 		goto Close;
  
- 	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
-@@ -530,6 +541,7 @@ static int acpi_hibernation_enter(void)
- static void acpi_hibernation_finish(void)
+ 	suspend_console();
++	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
+ 	error = dpm_suspend_start(PMSG_FREEZE);
+ 	if (error)
+ 		goto Recover_platform;
+@@ -351,6 +353,7 @@ int hibernation_snapshot(int platform_mo
+ 
+ 	dpm_resume_end(in_suspend ?
+ 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
++	set_gfp_allowed_mask(saved_mask);
+ 	resume_console();
+  Close:
+ 	platform_end(platform_mode);
+@@ -445,14 +448,17 @@ static int resume_target_kernel(bool pla
+ int hibernation_restore(int platform_mode)
  {
- 	hibernate_nvs_free();
-+	acpi_ec_resume_transactions();
- 	acpi_pm_finish();
- }
+ 	int error;
++	gfp_t saved_mask;
  
-@@ -550,10 +562,12 @@ static void acpi_hibernation_leave(void)
+ 	pm_prepare_console();
+ 	suspend_console();
++	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
+ 	error = dpm_suspend_start(PMSG_QUIESCE);
+ 	if (!error) {
+ 		error = resume_target_kernel(platform_mode);
+ 		dpm_resume_end(PMSG_RECOVER);
  	}
- 	/* Restore the NVS memory area */
- 	hibernate_nvs_restore();
-+	acpi_ec_resume_transactions_noirq();
- }
- 
--static void acpi_pm_enable_gpes(void)
-+static void acpi_pm_thaw(void)
++	set_gfp_allowed_mask(saved_mask);
+ 	resume_console();
+ 	pm_restore_console();
+ 	return error;
+@@ -466,6 +472,7 @@ int hibernation_restore(int platform_mod
+ int hibernation_platform_enter(void)
  {
-+	acpi_ec_resume_transactions();
- 	acpi_enable_all_runtime_gpes();
- }
+ 	int error;
++	gfp_t saved_mask;
  
-@@ -565,8 +579,8 @@ static struct platform_hibernation_ops a
- 	.prepare = acpi_pm_prepare,
- 	.enter = acpi_hibernation_enter,
- 	.leave = acpi_hibernation_leave,
--	.pre_restore = acpi_pm_disable_gpes,
--	.restore_cleanup = acpi_pm_enable_gpes,
-+	.pre_restore = acpi_pm_freeze,
-+	.restore_cleanup = acpi_pm_thaw,
- };
+ 	if (!hibernation_ops)
+ 		return -ENOSYS;
+@@ -481,6 +488,7 @@ int hibernation_platform_enter(void)
  
- /**
-@@ -598,12 +612,9 @@ static int acpi_hibernation_begin_old(vo
+ 	entering_platform_hibernation = true;
+ 	suspend_console();
++	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
+ 	error = dpm_suspend_start(PMSG_HIBERNATE);
+ 	if (error) {
+ 		if (hibernation_ops->recover)
+@@ -518,6 +526,7 @@ int hibernation_platform_enter(void)
+  Resume_devices:
+ 	entering_platform_hibernation = false;
+ 	dpm_resume_end(PMSG_RESTORE);
++	set_gfp_allowed_mask(saved_mask);
+ 	resume_console();
  
- static int acpi_hibernation_pre_snapshot_old(void)
+  Close:
+Index: linux-2.6/kernel/power/suspend.c
+===================================================================
+--- linux-2.6.orig/kernel/power/suspend.c
++++ linux-2.6/kernel/power/suspend.c
+@@ -198,6 +198,7 @@ static int suspend_enter(suspend_state_t
+ int suspend_devices_and_enter(suspend_state_t state)
  {
--	int error = acpi_pm_disable_gpes();
--
--	if (!error)
--		hibernate_nvs_save();
--
--	return error;
-+	acpi_pm_freeze();
-+	hibernate_nvs_save();
-+	return 0;
- }
+ 	int error;
++	gfp_t saved_mask;
  
- /*
-@@ -615,11 +626,11 @@ static struct platform_hibernation_ops a
- 	.end = acpi_pm_end,
- 	.pre_snapshot = acpi_hibernation_pre_snapshot_old,
- 	.finish = acpi_hibernation_finish,
--	.prepare = acpi_pm_disable_gpes,
-+	.prepare = acpi_pm_freeze,
- 	.enter = acpi_hibernation_enter,
- 	.leave = acpi_hibernation_leave,
--	.pre_restore = acpi_pm_disable_gpes,
--	.restore_cleanup = acpi_pm_enable_gpes,
-+	.pre_restore = acpi_pm_freeze,
-+	.restore_cleanup = acpi_pm_thaw,
- 	.recover = acpi_pm_finish,
- };
- #endif /* CONFIG_HIBERNATION */
+ 	if (!suspend_ops)
+ 		return -ENOSYS;
+@@ -208,6 +209,7 @@ int suspend_devices_and_enter(suspend_st
+ 			goto Close;
+ 	}
+ 	suspend_console();
++	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
+ 	suspend_test_start();
+ 	error = dpm_suspend_start(PMSG_SUSPEND);
+ 	if (error) {
+@@ -224,6 +226,7 @@ int suspend_devices_and_enter(suspend_st
+ 	suspend_test_start();
+ 	dpm_resume_end(PMSG_RESUME);
+ 	suspend_test_finish("resume devices");
++	set_gfp_allowed_mask(saved_mask);
+ 	resume_console();
+  Close:
+ 	if (suspend_ops->end)
