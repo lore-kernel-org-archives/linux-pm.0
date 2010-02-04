@@ -1,17 +1,14 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before
-	suspending devices
-Date: Wed, 3 Feb 2010 17:21:47 -0800
-Message-ID: <20100203172147.2411966d.akpm__44252.5788363584$1265246562$gmane$org@linux-foundation.org>
-References: <alpine.LFD.2.00.1001221841490.2266@localhost>
-	<201002032334.37198.rjw@sisk.pl>
-	<20100203150803.5a4b37fe.akpm@linux-foundation.org>
-	<201002040150.26503.rjw@sisk.pl>
+From: Zhenyu Wang <zhenyuw@linux.intel.com>
+Subject: Re: [regression] "drm/i915: implement new pm ops"
+ disables irq on aborted s2disk
+Date: Thu, 4 Feb 2010 09:31:57 +0800
+Message-ID: <20100204013157.GA30011__31427.3223201328$1265247186$gmane$org@zhen-devel.sh.intel.com>
+References: <4B695BA0.4000007@tuffmail.co.uk> <201002032344.41915.rjw@sisk.pl>
+Reply-To: Zhenyu Wang <zhenyuw@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============3140207615180455253=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201002040150.26503.rjw@sisk.pl>
+In-Reply-To: <201002032344.41915.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,43 +16,86 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Benjamin@smtp1.linux-foundation.org, linux-kernel@vger.kernel.org, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
+Cc: Eric Anholt <eric@anholt.net>, linux-pm@lists.linux-foundation.org, dri-devel@lists.sourceforge.net, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, Kernel Testers List <kernel-testers@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 4 Feb 2010 01:50:26 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> --- linux-2.6.orig/mm/page_alloc.c
-> +++ linux-2.6/mm/page_alloc.c
-> @@ -76,6 +76,30 @@ unsigned long totalreserve_pages __read_
->  int percpu_pagelist_fraction;
->  gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
->  
-> +/*
-> + * The following functions are used by the suspend/hibernate code to temporarily
-> + * change gfp_allowed_mask in order to avoid using I/O during memory allocations
-> + * while devices are suspended.  To avoid races with the suspend/hibernate code,
-> + * they should always be called with pm_mutex held (gfp_allowed_mask also should
-> + * only be modified with pm_mutex held, unless the suspend/hibernate code is
-> + * guaranteed not to run in parallel with that modification).
-> + */
-> +
-> +void set_gfp_allowed_mask(gfp_t mask)
-> +{
-> +	WARN_ON(!mutex_is_locked(&pm_mutex));
-> +	gfp_allowed_mask = mask;
-> +}
-> +
-> +gfp_t clear_gfp_allowed_mask(gfp_t mask)
-> +{
-> +	gfp_t ret = gfp_allowed_mask;
-> +
-> +	WARN_ON(!mutex_is_locked(&pm_mutex));
-> +	gfp_allowed_mask &= ~mask;
-> +	return ret;
-> +}
+--===============3140207615180455253==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="MGYHOYXEY6WxJCY8"
+Content-Disposition: inline
 
-Maybe put an ifdef CONFIG_foo around these so they don't get included
-when they're unneeded?
+
+--MGYHOYXEY6WxJCY8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On 2010.02.03 23:44:41 +0100, Rafael J. Wysocki wrote:
+> On Wednesday 03 February 2010, Alan Jenkins wrote:
+> > Hi
+> >=20
+> > I found this regression on my EeePC 701 with modesetting enabled.  When=
+=20
+> > I hibernate using s2disk, I can abort the hibernation by pressing the=
+=20
+> > backspace key.  Doing so breaks X on 2.6.32-rc6 (but not 2.6.32).
+>=20
+> Yeah.
+>=20
+> To be honest, I knew that's going to happen, but didn't have the time to =
+take
+> care of it.
+>=20
+> The problem is that i915 does literally _nothing_ in its .thaw() callback,
+> although it should at least reverse whatever .freeze() did to the hardware
+> (and memory allocations and so on), so that the adapter is functional
+> after creating the image.
+>=20
+> Fixing this requires some thought, though, because at the moment .freeze()
+> thinks it's .suspend(), which is not the case as this report clearly show=
+s.
+> So, in fact i915_pci_suspend() has to be split into the .freeze() part and
+> the poweroff part cleanly and that's not  so simple (at least to me).
+>=20
+
+Right, I think that'll be more clean, stuff in i915_save/restore_state() ne=
+ed
+to be splited too, especially isolate stuff for mode setting and other devi=
+ce
+state, as what my original purpose for this is to remove extra mode setting=
+=20
+cycle in old behavior so not waste time for hibernate.
+
+--=20
+Open Source Technology Center, Intel ltd.
+
+$gpg --keyserver wwwkeys.pgp.net --recv-keys 4D781827
+
+--MGYHOYXEY6WxJCY8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktqI40ACgkQsQQaM014GCepcwCfU4d/sVAWUPcNxuQenKxxyJy/
+UywAnilCQmiBzAA2YS1VVrjk5Ov1pZcm
+=knOz
+-----END PGP SIGNATURE-----
+
+--MGYHOYXEY6WxJCY8--
+
+--===============3140207615180455253==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============3140207615180455253==--
