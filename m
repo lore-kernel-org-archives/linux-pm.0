@@ -1,15 +1,15 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH] i2c: Hook up runtime PM support
-Date: Fri, 5 Feb 2010 10:39:15 +0000
-Message-ID: <20100205103915.GA2600__34549.1939377554$1265366533$gmane$org@sirena.org.uk>
-References: <1265203367-21344-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<201002042257.27145.rjw@sisk.pl>
+From: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: runtime PM: common hooks for static and runtime PM
+Date: Fri, 5 Feb 2010 10:43:56 +0000
+Message-ID: <20100205104356.GB2600@sirena.org.uk>
+References: <877hqt7v8y.fsf@deeprootsystems.com>
+	<Pine.LNX.4.44L0.1002041022140.2470-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201002042257.27145.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1002041022140.2470-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,22 +19,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jean Delvare <khali@linux-fr.org>, pm list <linux-pm@lists.linux-foundation.org>, linux-i2c@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 04, 2010 at 10:57:27PM +0100, Rafael J. Wysocki wrote:
-> On Wednesday 03 February 2010, Mark Brown wrote:
-> > Allow I2C drivers to make use of the runtime PM framework by adding
-> > bus implementations of the runtime PM operations. These simply
-> > immediately suspend when the device is idle.
+On Thu, Feb 04, 2010 at 10:24:48AM -0500, Alan Stern wrote:
+> On Wed, 3 Feb 2010, Kevin Hilman wrote:
 
-> Perhaps it would be a good idea to give the driver a chance to veto
-> the suspend by calling its _idle callback?  We do that for PCI and turns out to
-> be quite useful.
+> > I understand the motivation for this is probably to prevent runtime PM
+> > transitions during static suspend, and that makes sense.  However, I'm
+> > wondering if there's some other way to handle my problem without
+> > having to have the driver have different paths for static and runtime
+> > PM.
 
-Hrm, I guess.  It seems an odd thing to want to use - for a bus like I2C
-there's nothing other than the driver involved so the request that is
-being vetoed will have been initiated by the driver which seems wrong.
-Out of interest do you have any pointers to drivers using this (my greps
-aren't turning anything up in -next)?
+> The system PM methods could directly call the runtime_suspend and
+> runtime_resume methods (which presumably is where you actually disable
+> or enable the clocks etc.), instead of going indirectly through
+> pm_runtime_put_sync() and pm_runtime_get_sync().
+
+> Or alternatively, both sets of PM methods could call a single pair of
+> routines to handle the clocks etc.
+
+One issue with avoiding the indirection is that they'll need to remember
+if the device is already suspended in order to avoid doing things like
+double disabling of clocks or regulators.  Using the runtime PM calls
+would mean that the core would keep track of that for the driver.
