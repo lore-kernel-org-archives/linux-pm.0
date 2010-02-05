@@ -1,15 +1,17 @@
-From: Mark Brown <broonie@sirena.org.uk>
-Subject: Re: runtime PM: common hooks for static and runtime PM
-Date: Fri, 5 Feb 2010 22:44:22 +0000
-Message-ID: <20100205224421.GA5466@sirena.org.uk>
-References: <20100205161122.GE2600@sirena.org.uk>
-	<Pine.LNX.4.44L0.1002051630340.784-100000@netrider.rowland.org>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH] i2c: Hook up runtime PM support
+Date: Fri, 5 Feb 2010 23:17:26 +0000
+Message-ID: <20100205231726.GB5466__27374.7269915932$1265411998$gmane$org@sirena.org.uk>
+References: <1265203367-21344-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<201002042257.27145.rjw@sisk.pl>
+	<20100205103915.GA2600@sirena.org.uk>
+	<201002052309.13966.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1002051630340.784-100000@netrider.rowland.org>
+In-Reply-To: <201002052309.13966.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,33 +21,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jean Delvare <khali@linux-fr.org>, pm list <linux-pm@lists.linux-foundation.org>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 05, 2010 at 04:40:11PM -0500, Alan Stern wrote:
-> On Fri, 5 Feb 2010, Mark Brown wrote:
+On Fri, Feb 05, 2010 at 11:09:13PM +0100, Rafael J. Wysocki wrote:
+> On Friday 05 February 2010, you wrote:
 
-> > I wonder if it's worth the PM core providing an off the shelf suspend
-> > and resume via runtime PM implementation so drivers only need to assign
-> > function pointers?  As Kevin says this is going to be *very* common for
-> > embedded drivers.
+> > Hrm, I guess.  It seems an odd thing to want to use - for a bus like I2C
+> > there's nothing other than the driver involved so the request that is
+> > being vetoed will have been initiated by the driver which seems wrong.
 
-> What's so hard about doing this?
-> 
-> 	int my_suspend(struct device *dev)
-> 	{
-> 		if (dev->power.runtime_status == RPM_SUSPENDED)
-> 			return 0;
-> 		return my_runtime_suspend(dev);
-> 	}
+> Not really.  _idle is also called automatically by the runtime PM core after
+> _resume in case the device may be suspended again.  Your _idle has to handle
+> this case as well and that's when the driver may want to veto the suspend.
 
-> Or if you prefer, stick the "if" statement at the beginning of your 
-> suspend method and then set both function pointers to the same method.
+I was viewing that as being part of the same case, going on the basis
+that the driver would have marked the device as active already if
+something had changed over the suspend.  The use cases that jumped out
+at me for the veto were for buses or classes rather than for individual
+devices.
 
-It's not that it's hard per se, it's that it feels like it's peering
-inside the implementation of the API.  Having the PM core provide
-something would make it clear that this is the expected approach and
-ensure that there aren't any silly mistakes, in much the same way that
-having SIMPLE_DEV_PM_OPS makes the handling of drivers that use the same
-suspend path for both suspend to disk and suspend to RAM clear.
+> > Out of interest do you have any pointers to drivers using this (my greps
+> > aren't turning anything up in -next)?
+
+> There aren't any in -next, because I'm waiting for the base PCI runtime PM
+> code to settle down.  I have two in my private queue at the moment , for r8169
+> and e1000e (I posted some older versions of them some time ago, but they
+> wouldn't fit the current framework too well, which is the basic reason I'm
+> sitting on them, so that I don't have to post too many updates :-)).
+
+> I can send them to you privately, if needed.
+
+No, that's OK - like I say, it was just out of interest.
