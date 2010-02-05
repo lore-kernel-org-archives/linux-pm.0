@@ -1,16 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/2] PM / Runtime: Add sysfs switch for
-	disabling	device run-time PM (rev. 2)
-Date: Fri, 5 Feb 2010 07:27:19 +0100
-Message-ID: <20100205062718.GA1384__43094.5739652545$1265364500$gmane$org@ucw.cz>
-References: <201001180129.55219.rjw@sisk.pl> <201001212359.38886.rjw@sisk.pl>
-	<20100204224623.GB1436@ucw.cz> <201002050008.52699.rjw@sisk.pl>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH] i2c: Hook up runtime PM support
+Date: Fri, 5 Feb 2010 10:39:15 +0000
+Message-ID: <20100205103915.GA2600__34549.1939377554$1265366533$gmane$org@sirena.org.uk>
+References: <1265203367-21344-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<201002042257.27145.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201002050008.52699.rjw@sisk.pl>
+In-Reply-To: <201002042257.27145.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,44 +20,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: Jean Delvare <khali@linux-fr.org>, pm list <linux-pm@lists.linux-foundation.org>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, Feb 04, 2010 at 10:57:27PM +0100, Rafael J. Wysocki wrote:
+> On Wednesday 03 February 2010, Mark Brown wrote:
+> > Allow I2C drivers to make use of the runtime PM framework by adding
+> > bus implementations of the runtime PM operations. These simply
+> > immediately suspend when the device is idle.
 
-> > > + *	The default for all devices is "auto", which means that devices may be
-> > > + *	subject to automatic power management, depending on their drivers.
-> > 
-> > Is it wise to specify 'auto' default value for devices without runtime
-> > pm?
-> 
-> Yes, it is.  It means the user space doesn't care whether or not the device is
-> power managed at run-time.
+> Perhaps it would be a good idea to give the driver a chance to veto
+> the suspend by calling its _idle callback?  We do that for PCI and turns out to
+> be quite useful.
 
-Well, defaulting to 'on' for drivers when runtime pm is experimental
-seems logical. and there will be such drivers...
-
-> > > +		len = cp - buf;
-> > > +	if (len == sizeof ctrl_auto - 1 && strncmp(buf, ctrl_auto, len) == 0)
-> > > +		pm_runtime_allow(dev);
-> > 
-> > parenthesis after sizeof?
-> 
-> This notation is used throughout this file too.
-
-...but is inconsistent with rest of kernel.
-
-> > Do I read it correctly that all of
-> > 
-> > "auto"
-> > "auto\n"
-> > "auto\non\nIm confused"
-> > 
-> > will switch to auto?
-> 
-> Perhaps it would, but what exactly is the problem with that?
-
-That apps will start depending on such broken behaviour?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Hrm, I guess.  It seems an odd thing to want to use - for a bus like I2C
+there's nothing other than the driver involved so the request that is
+being vetoed will have been initiated by the driver which seems wrong.
+Out of interest do you have any pointers to drivers using this (my greps
+aren't turning anything up in -next)?
