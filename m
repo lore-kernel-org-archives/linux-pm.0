@@ -1,11 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC] Possible suspend/resume problems with ACPI
-Date: Fri, 5 Feb 2010 00:02:30 +0100
-Message-ID: <201002050002.30647.rjw__1897.70129877633$1265325746$gmane$org@sisk.pl>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [PATCH] MMC: fix hang if card was removed during
+ suspend and unsafe resume was enabled
+Date: Fri, 05 Feb 2010 10:31:42 +0200
+Message-ID: <1265358702.3424.8.camel@maxim-laptop>
+References: <1265219241.12549.8.camel@maxim-laptop>
+	<1265325495-4220-1-git-send-email-maximlevitsky@gmail.com>
+	<20100204160957.1c51cc1b.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20100204160957.1c51cc1b.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,54 +20,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jorg Schummer <ext-jorg.2.schummer@nokia.com>, linux-mmc@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Philip Langdale <philipl@overt.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thu, 2010-02-04 at 16:09 -0800, Andrew Morton wrote: 
+> On Fri,  5 Feb 2010 01:18:15 +0200 Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+> 
+> > Currently removal of the card leads to del_disk called indirectly by mmc core.
+> > This function expects userspace to be running, which isn't when .resume is called
+> > 
+> > Fix that by removing the code that did that in mmc_resume_host. It is possible
+> > because card detection logic will kick it later and remove the card.
+> 
+> I don't really understand.  The above implies that to trigger this bug,
+> one needs to physically remove the card during a resume operation.  ie:
+> a human-vs-computer race.  Sounds unlikely?
+> 
+> So...  exactly what steps does the user need to take to trigger this
 
-After I'd noticed the race between EC transactions and the suspend thread that
-the patch at http://patchwork.kernel.org/patch/76871/ is supposed to fix, I
-started to think about what ACPI does in the platform suspend/resume callbacks
-and I found a few potential issues.
+Sorry for describing this poorly.
+The steps are:
 
-First off, there's the issue addressed by http://patchwork.kernel.org/patch/76871/.
-I must admit I was afraid that CPU hotunplug might cause an EC transaction to
-happen on some systems, but I don't think that's the case any more.  At least,
-I didn't find any reason for that in the code, so I think the patch is correct.
-If you know of anything related to the CPU hotunplug that might result in
-triggering an EC transaction, please let me know.
+-> Have a kernel with CONFIG_MMC_UNSAFE_RESUME
+-> Insert MMC/SD card
+-> Suspend/hibernate the system
+-> While system is hibernated/suspended pull the card off
+-> Resume the system
+-> Hang
 
-Second, in the resume code path we execute _WAK after enabling the nonboot
-CPUs (we can't do that earlier, because the CPU hotplug uses _INI on some
-platforms and that crashes systems if executed after _WAK).  However, before
-executing _WAK we enable runtime GPEs, apparently because they might be needed
-to handle things possibly triggered by _WAK.  At lease there's a comment in
-acpi_leave_sleep_state() suggesting that.  The problem is, though, that at the
-point we execute _WAK the SCI is effectively inactive due to
-disable_device_irqs() called during suspend.
 
-Now, that wouldn't be a problem if the interrupt was disabled at the hardware
-level, but it's not.  It only is marked as disabled, so if it triggers, we lose
-it.  Thus, although we enable the GPEs before executing _WAK, we won't get
-any notification from them because the SCI is not functional at this point.
-This seems to be wrong and IMO it should be addressed somehow.
+if CONFIG_MMC_UNSAFE_RESUME is set, mmc core allows the user to
+suspend/resume the card normally assuming he won't change the card or
+modify it in another system. The former case is actually handled quite
+well.
 
-One possible solution may be to move the enabling of runtime GPEs and the
-execution of _WAK to the point where interrupts have been enabled by
-resume_device_irqs().  In that case, however, the powering off of PCI devices
-and the restoration of their standard config registers would happen before
-executing _WAK.  That doesn't seem to break my test boxes, but I'm not sure if
-it's going to work universally.
+if CONFIG_MMC_UNSAFE_RESUME isn't set, it removes the card during
+suspend, and I now think (and will test) that this will still hang the
+system this time on suspend.
 
-Similarly, it looks like during suspend we should disable runtime GPEs before
-suspend_device_irqs() is called, because it doesn't really make sense to keep
-them enabled after that point.  This, of course, would mean putting PCI devices
-into low power states with runtime GPEs disabled, but I don't think it would
-be a problem.  Still, though, I'm not sure if it makes sense to execute _PTS
-while runtime GPEs are disabled, so perhaps we'd also need to execute _PTS
-before suspend_device_irqs().
+Maybe we can make del_disk behave well if called with userspace frozen?
+After all if user calls it, very likely that hardware is absent thus
+there is no point in syncing (which I think triggers the hang)....
 
-Please tell me what you think.
-
-Rafael
+Best regards,
+Maxim Levitsky
