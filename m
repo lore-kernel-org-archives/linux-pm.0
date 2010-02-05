@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] i2c: Hook up runtime PM support
-Date: Fri, 5 Feb 2010 23:09:13 +0100
-Message-ID: <201002052309.13966.rjw__3676.66286551884$1265407794$gmane$org@sisk.pl>
-References: <1265203367-21344-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<201002042257.27145.rjw@sisk.pl>
-	<20100205103915.GA2600@sirena.org.uk>
+Subject: Re: Macbook 5,1 Ubuntu Lucid resume issue
+Date: Fri, 5 Feb 2010 23:10:13 +0100
+Message-ID: <201002052310.14021.rjw@sisk.pl>
+References: <1265306675.1951.14.camel@cndougla-ubuntu>
+	<201002042305.16871.rjw@sisk.pl>
+	<1265324443.1951.19.camel@cndougla-ubuntu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100205103915.GA2600@sirena.org.uk>
+In-Reply-To: <1265324443.1951.19.camel@cndougla-ubuntu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,38 +19,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Jean Delvare <khali@linux-fr.org>, pm list <linux-pm@lists.linux-foundation.org>, linux-i2c@vger.kernel.org
+To: Chase Douglas <chase.douglas@canonical.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 05 February 2010, you wrote:
-> On Thu, Feb 04, 2010 at 10:57:27PM +0100, Rafael J. Wysocki wrote:
-> > On Wednesday 03 February 2010, Mark Brown wrote:
-> > > Allow I2C drivers to make use of the runtime PM framework by adding
-> > > bus implementations of the runtime PM operations. These simply
-> > > immediately suspend when the device is idle.
+On Friday 05 February 2010, Chase Douglas wrote:
+> On Thu, 2010-02-04 at 23:05 +0100, Rafael J. Wysocki wrote:
+> > On Thursday 04 February 2010, Chase Douglas wrote:
+> > > Hello all,
+> > > 
+> > > I'm testing resume from s3 suspend on Ubuntu Lucid on my macbook
+> > > (version 5,1; nvidia MCP 79 internals). On Ubuntu Karmic, resume
+> > > (usually) works without a hitch. However, on Lucid when I resume the
+> > > disk resumes and the system is partly running, but the display
+> > > (backlight and LCD I think) and ethernet networking do not come back up.
+> > > This occurs when resuming back to X or to a virtual terminal without X
+> > > started. It occurs whether the nvidia or nv kernel modules are loaded or
+> > > unloaded.
+> > > 
+> > > What is most interesting is the dependent variable in all of this is not
+> > > the kernel but the user-space. If I run Karmic with the Lucid kernel it
+> > > resumes correctly. If I run Lucid with the Karmic kernel it does not
+> > > resume correctly. I have run a script which essentially does:
+> > > 
+> > > 1. suspend (using pm-suspend)
+> > > 2. wait 60 seconds (during which time I resume the machine)
+> > > 3. save dmesg output to the hard disk
+> > > 
+> > > I have pored over the dmesg logs from good and bad resumes, but I
+> > > haven't found anything to suggest what the real issue may be. Right now
+> > > I am at a loss as to what I should try next. Does anyone have any
+> > > thoughts as to what I can try to debug this?
+> > 
+> > It sounds like the distro is using a specific user-space quirk to handle your
+> > machine.
+> > 
+> > Please try if the machine can be suspended by "echo mem > /sys/power/state"
+> > and resumed correctly.
 > 
-> > Perhaps it would be a good idea to give the driver a chance to veto
-> > the suspend by calling its _idle callback?  We do that for PCI and turns out to
-> > be quite useful.
-> 
-> Hrm, I guess.  It seems an odd thing to want to use - for a bus like I2C
-> there's nothing other than the driver involved so the request that is
-> being vetoed will have been initiated by the driver which seems wrong.
+> I have, but the results are the same.
 
-Not really.  _idle is also called automatically by the runtime PM core after
-_resume in case the device may be suspended again.  Your _idle has to handle
-this case as well and that's when the driver may want to veto the suspend.
-
-> Out of interest do you have any pointers to drivers using this (my greps
-> aren't turning anything up in -next)?
-
-There aren't any in -next, because I'm waiting for the base PCI runtime PM
-code to settle down.  I have two in my private queue at the moment , for r8169
-and e1000e (I posted some older versions of them some time ago, but they
-wouldn't fit the current framework too well, which is the basic reason I'm
-sitting on them, so that I don't have to post too many updates :-)).
-
-I can send them to you privately, if needed.
+Do you use s2disk for hibernation?
 
 Rafael
