@@ -1,15 +1,17 @@
-From: Mark Brown <broonie@sirena.org.uk>
-Subject: Re: runtime PM: common hooks for static and runtime PM
-Date: Fri, 5 Feb 2010 10:43:56 +0000
-Message-ID: <20100205104356.GB2600@sirena.org.uk>
-References: <877hqt7v8y.fsf@deeprootsystems.com>
-	<Pine.LNX.4.44L0.1002041022140.2470-100000@iolanthe.rowland.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] MMC: fix hang if card was removed during
+ suspend and unsafe resume was enabled
+Date: Fri, 5 Feb 2010 06:13:35 -0800
+Message-ID: <20100205061335.b664aa20.akpm__6258.84409896589$1265379352$gmane$org@linux-foundation.org>
+References: <1265219241.12549.8.camel@maxim-laptop>
+	<1265325495-4220-1-git-send-email-maximlevitsky@gmail.com>
+	<20100204160957.1c51cc1b.akpm@linux-foundation.org>
+	<1265358702.3424.8.camel@maxim-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1002041022140.2470-100000@iolanthe.rowland.org>
+In-Reply-To: <1265358702.3424.8.camel@maxim-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,28 +21,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Jorg Schummer <ext-jorg.2.schummer@nokia.com>, linux-mmc@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Philip Langdale <philipl@overt.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 04, 2010 at 10:24:48AM -0500, Alan Stern wrote:
-> On Wed, 3 Feb 2010, Kevin Hilman wrote:
+On Fri, 05 Feb 2010 10:31:42 +0200 Maxim Levitsky <maximlevitsky@gmail.com> wrote:
 
-> > I understand the motivation for this is probably to prevent runtime PM
-> > transitions during static suspend, and that makes sense.  However, I'm
-> > wondering if there's some other way to handle my problem without
-> > having to have the driver have different paths for static and runtime
-> > PM.
+> On Thu, 2010-02-04 at 16:09 -0800, Andrew Morton wrote: 
+> > On Fri,  5 Feb 2010 01:18:15 +0200 Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+> > 
+> > > Currently removal of the card leads to del_disk called indirectly by mmc core.
+> > > This function expects userspace to be running, which isn't when .resume is called
+> > > 
+> > > Fix that by removing the code that did that in mmc_resume_host. It is possible
+> > > because card detection logic will kick it later and remove the card.
+> > 
+> > I don't really understand.  The above implies that to trigger this bug,
+> > one needs to physically remove the card during a resume operation.  ie:
+> > a human-vs-computer race.  Sounds unlikely?
+> > 
+> > So...  exactly what steps does the user need to take to trigger this
+> 
+> Sorry for describing this poorly.
+> The steps are:
+> 
+> -> Have a kernel with CONFIG_MMC_UNSAFE_RESUME
+> -> Insert MMC/SD card
+> -> Suspend/hibernate the system
+> -> While system is hibernated/suspended pull the card off
+> -> Resume the system
+> -> Hang
+> 
+> 
+> if CONFIG_MMC_UNSAFE_RESUME is set, mmc core allows the user to
+> suspend/resume the card normally assuming he won't change the card or
+> modify it in another system. The former case is actually handled quite
+> well.
+> 
+> if CONFIG_MMC_UNSAFE_RESUME isn't set, it removes the card during
+> suspend, and I now think (and will test) that this will still hang the
+> system this time on suspend.
+> 
+> Maybe we can make del_disk behave well if called with userspace frozen?
+> After all if user calls it, very likely that hardware is absent thus
+> there is no point in syncing (which I think triggers the hang)....
+> 
 
-> The system PM methods could directly call the runtime_suspend and
-> runtime_resume methods (which presumably is where you actually disable
-> or enable the clocks etc.), instead of going indirectly through
-> pm_runtime_put_sync() and pm_runtime_get_sync().
+There is no del_disk in the kernel.  Let's be more specific (and
+accurate!) about the hang.  I assume it's
+mmc_remove_card->device_del->kobject_uevent?
 
-> Or alternatively, both sets of PM methods could call a single pair of
-> routines to handle the clocks etc.
-
-One issue with avoiding the indirection is that they'll need to remember
-if the device is already suspended in order to avoid doing things like
-double disabling of clocks or regulators.  Using the runtime PM calls
-would mean that the core would keep track of that for the driver.
+Yes, I'd have thought that it would be a good idea for the
+kobject_uevent code (or lower, in call_usermodehelper) to take avoiding
+action if userspace is frozen.  However such action would probably
+involve doing a WARN_ON() too, so we'd still need MMC changes to avoid
+that.
