@@ -1,16 +1,15 @@
-From: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH] USB: implement non-tree resume ordering
-	constraints	for PCI host controllers
-Date: Sat, 6 Feb 2010 00:58:27 -0800
-Message-ID: <20100206085827.GA4807__44504.7943540432$1265446928$gmane$org@suse.de>
-References: <Pine.LNX.4.44L0.1002011531490.1368-100000@iolanthe.rowland.org>
-	<201002042316.37532.rjw@sisk.pl>
+From: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: runtime PM: common hooks for static and runtime PM
+Date: Sat, 6 Feb 2010 15:46:33 +0000
+Message-ID: <20100206154632.GA3664@sirena.org.uk>
+References: <20100205224421.GA5466@sirena.org.uk>
+	<Pine.LNX.4.44L0.1002052148340.6076-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201002042316.37532.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1002052148340.6076-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,46 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 04, 2010 at 11:16:37PM +0100, Rafael J. Wysocki wrote:
-> On Monday 01 February 2010, Alan Stern wrote:
-> > On Mon, 25 Jan 2010, Rafael J. Wysocki wrote:
-> > 
-> > > On Monday 25 January 2010, Alan Stern wrote:
-> > > > On Mon, 25 Jan 2010, Rafael J. Wysocki wrote:
-> > > > 
-> > > > > > I intend to write this code, but merging it will be a little tricky.  
-> > > > > > You'll have to coordinate with Greg KH.
-> > > > > 
-> > > > > OK, I don't think that's a big deal.  I can defer patch 7/8 until that code has
-> > > > > been merged.
-> > > > 
-> > > > You may have to delay 6/8 as well, since the controllers are PCI
-> > > > devices.  Writing the new code shouldn't take too long, though.
-> > > 
-> > > No problem with that.
-> > > 
-> > > Alternatively, if Greg agrees, I can add your patches modifying this into this
-> > > series.  Greg?
-> > 
-> > The patch is below.  It does indeed prevent unwanted disconnects during 
-> > system resume.  However I don't know whether it will apply cleanly to 
-> > anybody's tree but my own.  :-)
-> 
-> It applies to my tree and even builds without errors. :-)
-> 
-> Greg, I'd like to add this patch to the async suspend patchset and put it into
-> my tree if you don't mind, since otherwise the merging of it would be quite
-> problematic.
-> 
-> Do you agree or do you want to handle that in a different way?
+On Fri, Feb 05, 2010 at 09:57:46PM -0500, Alan Stern wrote:
+> On Fri, 5 Feb 2010, Mark Brown wrote:
 
-I agree, please merge it through your tree, I have no objection to that
-at all.
+> > It's not that it's hard per se, it's that it feels like it's peering
+> > inside the implementation of the API.  Having the PM core provide
 
-thanks,
+> You mean like providing an is_runtime_suspended() test?  Then you could 
+> write:
 
-greg k-h
+> 	int my_suspend(struct device *dev)
+> 	{
+> 		if (is_runtime_suspended(dev))
+> 			return 0;
+> 		return my_runtime_suspend(dev);
+> 	}
+
+> Or maybe you'd prefer to see a convenient pm_use_runtime_suspend() 
+> function that you could use for your dev_pm_ops.suspend pointer, which 
+> would do essentially the same as the above?  (Along with a 
+> corresponding pm_use_runtime_resume() function, of course.)
+
+Either (or both, of course - implementing the second would probably
+imply the former).  The ops that can be assigned would be the clearest
+option but the accessor function should be enough to make it clear that
+this is something drivers are supposed to be doing.
