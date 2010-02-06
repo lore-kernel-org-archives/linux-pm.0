@@ -1,15 +1,13 @@
-From: Mark Brown <broonie@sirena.org.uk>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: runtime PM: common hooks for static and runtime PM
-Date: Sat, 6 Feb 2010 15:46:33 +0000
-Message-ID: <20100206154632.GA3664@sirena.org.uk>
-References: <20100205224421.GA5466@sirena.org.uk>
-	<Pine.LNX.4.44L0.1002052148340.6076-100000@netrider.rowland.org>
+Date: Sat, 6 Feb 2010 11:18:52 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1002061110560.15298-100000@netrider.rowland.org>
+References: <20100206154632.GA3664@sirena.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1002052148340.6076-100000@netrider.rowland.org>
+In-Reply-To: <20100206154632.GA3664@sirena.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,32 +17,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Mark Brown <broonie@sirena.org.uk>
 Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 05, 2010 at 09:57:46PM -0500, Alan Stern wrote:
-> On Fri, 5 Feb 2010, Mark Brown wrote:
+On Sat, 6 Feb 2010, Mark Brown wrote:
 
-> > It's not that it's hard per se, it's that it feels like it's peering
-> > inside the implementation of the API.  Having the PM core provide
+> On Fri, Feb 05, 2010 at 09:57:46PM -0500, Alan Stern wrote:
+> > On Fri, 5 Feb 2010, Mark Brown wrote:
+> 
+> > > It's not that it's hard per se, it's that it feels like it's peering
+> > > inside the implementation of the API.  Having the PM core provide
+> 
+> > You mean like providing an is_runtime_suspended() test?  Then you could 
+> > write:
+> 
+> > 	int my_suspend(struct device *dev)
+> > 	{
+> > 		if (is_runtime_suspended(dev))
+> > 			return 0;
+> > 		return my_runtime_suspend(dev);
+> > 	}
+> 
+> > Or maybe you'd prefer to see a convenient pm_use_runtime_suspend() 
+> > function that you could use for your dev_pm_ops.suspend pointer, which 
+> > would do essentially the same as the above?  (Along with a 
+> > corresponding pm_use_runtime_resume() function, of course.)
+> 
+> Either (or both, of course - implementing the second would probably
+> imply the former).  The ops that can be assigned would be the clearest
+> option but the accessor function should be enough to make it clear that
+> this is something drivers are supposed to be doing.
 
-> You mean like providing an is_runtime_suspended() test?  Then you could 
-> write:
+Providing the new ops would be a little awkward because 
+CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME are independent: Either can be 
+enabled without the other.  This means the code to call the 
+runtime_suspend and runtime_resume methods would have to be split out 
+into a separate source file that would get built whenever either config 
+option is enabled.  It's doable, just somewhat awkward.
 
-> 	int my_suspend(struct device *dev)
-> 	{
-> 		if (is_runtime_suspended(dev))
-> 			return 0;
-> 		return my_runtime_suspend(dev);
-> 	}
+I'll give it a try and we'll see how it turns out...
 
-> Or maybe you'd prefer to see a convenient pm_use_runtime_suspend() 
-> function that you could use for your dev_pm_ops.suspend pointer, which 
-> would do essentially the same as the above?  (Along with a 
-> corresponding pm_use_runtime_resume() function, of course.)
-
-Either (or both, of course - implementing the second would probably
-imply the former).  The ops that can be assigned would be the clearest
-option but the accessor function should be enough to make it clear that
-this is something drivers are supposed to be doing.
+Alan Stern
