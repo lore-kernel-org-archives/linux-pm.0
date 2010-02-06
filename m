@@ -1,13 +1,12 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: runtime PM: common hooks for static and runtime PM
-Date: Sat, 6 Feb 2010 11:18:52 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1002061110560.15298-100000@netrider.rowland.org>
-References: <20100206154632.GA3664@sirena.org.uk>
+From: Frans Pop <elendil@planet.nl>
+Subject: [PATCH 00/16] remove trailing spaces in messages
+Date: Sat, 6 Feb 2010 18:44:36 +0100
+Message-ID: <201002061844.45212.elendil__4067.47303572974$1265478455$gmane$org@planet.nl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100206154632.GA3664@sirena.org.uk>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,45 +16,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@sirena.org.uk>
-Cc: linux-pm@lists.linux-foundation.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org, linux-ia64@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>, linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org, linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Helge Deller <deller@gmx.de>, x86@kernel.org, Ingo Molnar <mingo@elte.hu>, Fenghua Yu <fenghua.yu@intel.com>, Mike Frysinger <vapier@gentoo.org>, user-mode-linux-devel@lists.sourceforge.net, microblaze-uclinux@itee.uq.edu.au, Jeff Dike <jdike@addtoit.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>, Jiri Kosina <trivial@kernel.org>, linux-cris-kernel@axis.com, linux-parisc@vger.kernel.org, Ralf Baechle <ralf@linux-m>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 6 Feb 2010, Mark Brown wrote:
+This is a first series of patches to remove trailing spaces in messages. 
+Patches cover arch-specific code plus one fix for PM and one in 
+Documentation. Depending on how this series is received I'll continue
+with other parts of the kernel.
 
-> On Fri, Feb 05, 2010 at 09:57:46PM -0500, Alan Stern wrote:
-> > On Fri, 5 Feb 2010, Mark Brown wrote:
-> 
-> > > It's not that it's hard per se, it's that it feels like it's peering
-> > > inside the implementation of the API.  Having the PM core provide
-> 
-> > You mean like providing an is_runtime_suspended() test?  Then you could 
-> > write:
-> 
-> > 	int my_suspend(struct device *dev)
-> > 	{
-> > 		if (is_runtime_suspended(dev))
-> > 			return 0;
-> > 		return my_runtime_suspend(dev);
-> > 	}
-> 
-> > Or maybe you'd prefer to see a convenient pm_use_runtime_suspend() 
-> > function that you could use for your dev_pm_ops.suspend pointer, which 
-> > would do essentially the same as the above?  (Along with a 
-> > corresponding pm_use_runtime_resume() function, of course.)
-> 
-> Either (or both, of course - implementing the second would probably
-> imply the former).  The ops that can be assigned would be the clearest
-> option but the accessor function should be enough to make it clear that
-> this is something drivers are supposed to be doing.
+Benefits are:
+- general cleanup and consistency
+- minor reduction in kernel size and user's log file size
+- reduced annoyance for people writing logcheck rules
 
-Providing the new ops would be a little awkward because 
-CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME are independent: Either can be 
-enabled without the other.  This means the code to call the 
-runtime_suspend and runtime_resume methods would have to be split out 
-into a separate source file that would get built whenever either config 
-option is enabled.  It's doable, just somewhat awkward.
+The patch for m68k has been rebased against linux-next; all other
+patches apply against both mainline and -next (as of 5-2).
 
-I'll give it a try and we'll see how it turns out...
+Shortstat:
+ 74 files changed, 135 insertions(+), 136 deletions(-)
 
-Alan Stern
+Frans Pop (16):
+      alpha: remove trailing spaces in messages
+      arm: remove trailing spaces in messages
+      ia64: remove trailing space in messages
+      m68k: remove trailing space in messages
+      microblaze: remove trailing space in messages
+      mips: remove trailing space in messages
+      parisc: remove trailing space in messages
+      s390: remove trailing space in messages
+      sparc: remove trailing space in messages
+      x86: remove trailing space in messages
+      blackfin: remove trailing space in messages
+      cris/trivial: remove trailing space in message
+      powerpc: remove trailing space in messages
+      um: remove trailing space in messages
+      PM: remove trailing space in message
+      trivial: remove trailing space in spidev test program
