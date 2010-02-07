@@ -1,16 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] i915 / PM: Fix crash while aborting hibernation
-	(Re: [regression] "drm/i915: implement new pm ops" disables
-	irq on aborted s2disk)
-Date: Sun, 7 Feb 2010 21:48:24 +0100
-Message-ID: <201002072148.24588.rjw__21763.8289476328$1265575749$gmane$org@sisk.pl>
-References: <4B695BA0.4000007@tuffmail.co.uk> <201002032344.41915.rjw@sisk.pl>
-	<20100204013157.GA30011@zhen-devel.sh.intel.com>
+Subject: 2.6.33-rc7: Reported regressions from 2.6.32
+Date: Sun,  7 Feb 2010 23:16:11 +0100 (CET)
+Message-ID: <4Ht3jFrT7uE.A.JI.-nzbLB__38523.5886359171$1265582022$gmane$org@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100204013157.GA30011@zhen-devel.sh.intel.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,326 +16,189 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhenyu Wang <zhenyuw@linux.intel.com>, Alan Jenkins <alan-jenkins@tuffmail.co.uk>, Eric Anholt <eric@anholt.net>
-Cc: linux-pm@lists.linux-foundation.org, dri-devel@lists.sourceforge.net, Kernel Testers List <kernel-testers@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, LKML <linux-kernel@vger.kernel.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpmuinux-foundation.org@ogre.sisk.pl>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 04 February 2010, Zhenyu Wang wrote:
-> On 2010.02.03 23:44:41 +0100, Rafael J. Wysocki wrote:
-> > On Wednesday 03 February 2010, Alan Jenkins wrote:
-> > > Hi
-> > > 
-> > > I found this regression on my EeePC 701 with modesetting enabled.  When 
-> > > I hibernate using s2disk, I can abort the hibernation by pressing the 
-> > > backspace key.  Doing so breaks X on 2.6.32-rc6 (but not 2.6.32).
-> > 
-> > Yeah.
-> > 
-> > To be honest, I knew that's going to happen, but didn't have the time to take
-> > care of it.
-> > 
-> > The problem is that i915 does literally _nothing_ in its .thaw() callback,
-> > although it should at least reverse whatever .freeze() did to the hardware
-> > (and memory allocations and so on), so that the adapter is functional
-> > after creating the image.
-> > 
-> > Fixing this requires some thought, though, because at the moment .freeze()
-> > thinks it's .suspend(), which is not the case as this report clearly shows.
-> > So, in fact i915_pci_suspend() has to be split into the .freeze() part and
-> > the poweroff part cleanly and that's not  so simple (at least to me).
-> > 
-> 
-> Right, I think that'll be more clean, stuff in i915_save/restore_state() need
-> to be splited too, especially isolate stuff for mode setting and other device
-> state, as what my original purpose for this is to remove extra mode setting 
-> cycle in old behavior so not waste time for hibernate.
-
-We can't really do that, because we'll need to restore the saved state at the
-resume-from-hibernation stage.
-
-The appended patch fixes the issue for me, although it's been only tested
-a little.  It sort of defeats the purpose of commit
-cbda12d77ea590082edb6d30bd342a67ebc459e0, but I don't see any less invasive
-way to fix this except maybe for reverting that commit entirely.
-
-Note that the drm_irq_[un]install() thing may be unnecessary, but I wasn't sure
-about that and surely wouldn't suggest doing that for 2.6.33.  Also it looks like
-some things from the freeze and thaw parts may be moved to the "low-level"
-suspend and resume parts, respectively, but that would require some
-i915_gem_* surgery I was too scared to do.
-
-Alan, please test, i915 guys, please review.
-
-Rafael
-
----
-Subject: i915 / PM: Fix crash while aborting hibernation
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-Commit cbda12d77ea590082edb6d30bd342a67ebc459e0 (drm/i915: implement
-new pm ops for i915) introduced the problem that if s2disk
-hibernation is aborted, the system will crash, because
-i915_pm_freeze() does nothing, while it should at least reverse some
-operations carried out by i915_suspend().
-
-Fix this issue by splitting the i915 suspend into a freeze part a
-suspend part, where the latter is not executed before creating a
-hibernation image, and the i915 resume into a "low-level" resume
-part and a thaw part, where the former is not executed after the
-image has been created.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/gpu/drm/i915/i915_drv.c |  168 ++++++++++++++++++++++++----------------
- 1 file changed, 101 insertions(+), 67 deletions(-)
-
-Index: linux-2.6/drivers/gpu/drm/i915/i915_drv.c
-===================================================================
---- linux-2.6.orig/drivers/gpu/drm/i915/i915_drv.c
-+++ linux-2.6/drivers/gpu/drm/i915/i915_drv.c
-@@ -175,78 +175,100 @@ const static struct pci_device_id pciidl
- MODULE_DEVICE_TABLE(pci, pciidlist);
- #endif
- 
--static int i915_suspend(struct drm_device *dev, pm_message_t state)
-+static int i915_drm_freeze(struct drm_device *dev)
- {
--	struct drm_i915_private *dev_priv = dev->dev_private;
--
--	if (!dev || !dev_priv) {
--		DRM_ERROR("dev: %p, dev_priv: %p\n", dev, dev_priv);
--		DRM_ERROR("DRM not initialized, aborting suspend.\n");
--		return -ENODEV;
--	}
--
--	if (state.event == PM_EVENT_PRETHAW)
--		return 0;
--
- 	pci_save_state(dev->pdev);
- 
- 	/* If KMS is active, we do the leavevt stuff here */
- 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
--		if (i915_gem_idle(dev))
-+		int error = i915_gem_idle(dev);
-+		if (error) {
- 			dev_err(&dev->pdev->dev,
--				"GEM idle failed, resume may fail\n");
-+				"GEM idle failed, resume might fail\n");
-+			return error;
-+		}
- 		drm_irq_uninstall(dev);
- 	}
- 
- 	i915_save_state(dev);
- 
-+	return 0;
-+}
-+
-+static void i915_drm_suspend(struct drm_device *dev)
-+{
-+	struct drm_i915_private *dev_priv = dev->dev_private;
-+
- 	intel_opregion_free(dev, 1);
- 
-+	/* Modeset on resume, not lid events */
-+	dev_priv->modeset_on_lid = 0;
-+}
-+
-+static int i915_suspend(struct drm_device *dev, pm_message_t state)
-+{
-+	int error;
-+
-+	if (!dev || !dev->dev_private) {
-+		DRM_ERROR("dev: %p\n", dev);
-+		DRM_ERROR("DRM not initialized, aborting suspend.\n");
-+		return -ENODEV;
-+	}
-+
-+	if (state.event == PM_EVENT_PRETHAW)
-+		return 0;
-+
-+	error = i915_drm_freeze(dev);
-+	if (error)
-+		return error;
-+
-+	i915_drm_suspend(dev);
-+
- 	if (state.event == PM_EVENT_SUSPEND) {
- 		/* Shut down the device */
- 		pci_disable_device(dev->pdev);
- 		pci_set_power_state(dev->pdev, PCI_D3hot);
- 	}
- 
--	/* Modeset on resume, not lid events */
--	dev_priv->modeset_on_lid = 0;
--
- 	return 0;
- }
- 
--static int i915_resume(struct drm_device *dev)
-+static int i915_drm_thaw(struct drm_device *dev)
- {
- 	struct drm_i915_private *dev_priv = dev->dev_private;
--	int ret = 0;
--
--	if (pci_enable_device(dev->pdev))
--		return -1;
--	pci_set_master(dev->pdev);
--
--	i915_restore_state(dev);
--
--	intel_opregion_init(dev, 1);
-+	int error = 0;
- 
- 	/* KMS EnterVT equivalent */
- 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
- 		mutex_lock(&dev->struct_mutex);
- 		dev_priv->mm.suspended = 0;
- 
--		ret = i915_gem_init_ringbuffer(dev);
--		if (ret != 0)
--			ret = -1;
-+		error = i915_gem_init_ringbuffer(dev);
- 		mutex_unlock(&dev->struct_mutex);
- 
- 		drm_irq_install(dev);
--	}
--	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
-+
- 		/* Resume the modeset for every activated CRTC */
- 		drm_helper_resume_force_mode(dev);
- 	}
- 
- 	dev_priv->modeset_on_lid = 0;
- 
--	return ret;
-+	return error;
-+}
-+
-+static int i915_resume(struct drm_device *dev)
-+{
-+	if (pci_enable_device(dev->pdev))
-+		return -EIO;
-+
-+	pci_set_master(dev->pdev);
-+
-+	i915_restore_state(dev);
-+
-+	intel_opregion_init(dev, 1);
-+
-+	return i915_drm_thaw(dev);
- }
- 
- /**
-@@ -387,57 +409,69 @@ i915_pci_remove(struct pci_dev *pdev)
- 	drm_put_dev(dev);
- }
- 
--static int
--i915_pci_suspend(struct pci_dev *pdev, pm_message_t state)
-+static int i915_pm_suspend(struct device *dev)
- {
--	struct drm_device *dev = pci_get_drvdata(pdev);
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct drm_device *drm_dev = pci_get_drvdata(pdev);
-+	int error;
- 
--	return i915_suspend(dev, state);
--}
-+	if (!drm_dev || !drm_dev->dev_private) {
-+		dev_err(dev, "DRM not initialized, aborting suspend.\n");
-+		return -ENODEV;
-+	}
- 
--static int
--i915_pci_resume(struct pci_dev *pdev)
--{
--	struct drm_device *dev = pci_get_drvdata(pdev);
-+	error = i915_drm_freeze(drm_dev);
-+	if (error)
-+		return error;
- 
--	return i915_resume(dev);
--}
-+	i915_drm_suspend(drm_dev);
- 
--static int
--i915_pm_suspend(struct device *dev)
--{
--	return i915_pci_suspend(to_pci_dev(dev), PMSG_SUSPEND);
--}
-+	pci_disable_device(pdev);
-+	pci_set_power_state(pdev, PCI_D3hot);
- 
--static int
--i915_pm_resume(struct device *dev)
--{
--	return i915_pci_resume(to_pci_dev(dev));
-+	return 0;
- }
- 
--static int
--i915_pm_freeze(struct device *dev)
-+static int i915_pm_resume(struct device *dev)
- {
--	return i915_pci_suspend(to_pci_dev(dev), PMSG_FREEZE);
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct drm_device *drm_dev = pci_get_drvdata(pdev);
-+
-+	return i915_resume(drm_dev);
- }
- 
--static int
--i915_pm_thaw(struct device *dev)
-+static int i915_pm_freeze(struct device *dev)
- {
--	/* thaw during hibernate, do nothing! */
--	return 0;
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct drm_device *drm_dev = pci_get_drvdata(pdev);
-+
-+	if (!drm_dev || !drm_dev->dev_private) {
-+		dev_err(dev, "DRM not initialized, aborting suspend.\n");
-+		return -ENODEV;
-+	}
-+
-+	return i915_drm_freeze(drm_dev);
- }
- 
--static int
--i915_pm_poweroff(struct device *dev)
-+static int i915_pm_thaw(struct device *dev)
- {
--	return i915_pci_suspend(to_pci_dev(dev), PMSG_HIBERNATE);
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct drm_device *drm_dev = pci_get_drvdata(pdev);
-+
-+	return i915_drm_thaw(drm_dev);
- }
- 
--static int
--i915_pm_restore(struct device *dev)
-+static int i915_pm_poweroff(struct device *dev)
- {
--	return i915_pci_resume(to_pci_dev(dev));
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct drm_device *drm_dev = pci_get_drvdata(pdev);
-+	int error;
-+
-+	error = i915_drm_freeze(drm_dev);
-+	if (!error)
-+		i915_drm_suspend(drm_dev);
-+
-+	return error;
- }
- 
- const struct dev_pm_ops i915_pm_ops = {
-@@ -446,7 +480,7 @@ const struct dev_pm_ops i915_pm_ops = {
-      .freeze = i915_pm_freeze,
-      .thaw = i915_pm_thaw,
-      .poweroff = i915_pm_poweroff,
--     .restore = i915_pm_restore,
-+     .restore = i915_pm_resume,
- };
- 
- static struct vm_operations_struct i915_gem_vm_ops = {
+W0FOTk9VTkNFTUVOVDoKIE1hY2llaiBSdXRlY2tpIGhhcyBnZW5lcm91c2x5IHZvbHVudGVlcmVk
+IHRvIHdvcmsgb24gdGhlIHRyYWNraW5nIG9mIGtlcm5lbAogcmVncmVzc2lvbnMgd2l0aCBtZSwg
+c28gbm93IHRoZXJlIGFyZSB0d28gcGVvcGxlIGRvaW5nIHRoaXMgYW5kIEknbSBnb2luZwogdG8g
+Y2FsbCB1cyAidGhlIHRyYWNraW5nIHRlYW0iLiAgUGxlYXNlIGJlIGZyaWVuZGx5IHRvIE1hY2ll
+aiwgaGUncyBkb2luZyBoaXMKIGJlc3QgdG8gaGVscC4gIElmIHlvdSBoYXZlIGFueSBpbmZvcm1h
+dGlvbiBhYm91dCBrZXJuZWwgcmVncmVzc2lvbnMgeW91IHdhbnQKIHRvIHNoYXJlIHdpdGggdXMs
+IHBsZWFzZSBmZWVsIGZyZWUgdG8gY29udGFjdCBNYWNpZWogYXMgd2VsbCBhcyBtZS5dCgpUaGlz
+IG1lc3NhZ2UgY29udGFpbnMgYSBsaXN0IG9mIHNvbWUgcmVncmVzc2lvbnMgZnJvbSAyLjYuMzIs
+CmZvciB3aGljaCB0aGVyZSBhcmUgbm8gZml4ZXMgaW4gdGhlIG1haW5saW5lIGtub3duIHRvIHRo
+ZSB0cmFja2luZyB0ZWFtLgpJZiBhbnkgb2YgdGhlbSBoYXZlIGJlZW4gZml4ZWQgYWxyZWFkeSwg
+cGxlYXNlIGxldCB1cyBrbm93LgoKSWYgeW91IGtub3cgb2YgYW55IG90aGVyIHVucmVzb2x2ZWQg
+cmVncmVzc2lvbnMgZnJvbSAyLjYuMzIsIHBsZWFzZSBsZXQgdXMKa25vdyBlaXRoZXIgYW5kIHdl
+J2xsIGFkZCB0aGVtIHRvIHRoZSBsaXN0LiAgQWxzbywgcGxlYXNlIGxldCB1cyBrbm93CmlmIGFu
+eSBvZiB0aGUgZW50cmllcyBiZWxvdyBhcmUgaW52YWxpZC4KCkVhY2ggZW50cnkgZnJvbSB0aGUg
+bGlzdCB3aWxsIGJlIHNlbnQgYWRkaXRpb25hbGx5IGluIGFuIGF1dG9tYXRpYyByZXBseQp0byB0
+aGlzIG1lc3NhZ2Ugd2l0aCBDQ3MgdG8gdGhlIHBlb3BsZSBpbnZvbHZlZCBpbiByZXBvcnRpbmcg
+YW5kIGhhbmRsaW5nCnRoZSBpc3N1ZS4KCgpMaXN0ZWQgcmVncmVzc2lvbnMgc3RhdGlzdGljczoK
+CiAgRGF0ZSAgICAgICAgICBUb3RhbCAgUGVuZGluZyAgVW5yZXNvbHZlZAogIC0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KICAyMDEwLTAyLTA3ICAgICAgIDk3ICAgICAg
+IDI3ICAgICAgICAgIDIwCiAgMjAxMC0wMi0wMSAgICAgICA4NSAgICAgICAyNiAgICAgICAgICAy
+MQogIDIwMTAtMDEtMjQgICAgICAgNzUgICAgICAgMjkgICAgICAgICAgMjMKICAyMDEwLTAxLTEw
+ICAgICAgIDU1ICAgICAgIDMzICAgICAgICAgIDIxCiAgMjAwOS0xMi0yOSAgICAgICAzNiAgICAg
+ICAzNCAgICAgICAgICAyNwoKClVucmVzb2x2ZWQgcmVncmVzc2lvbnMKLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLQoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcu
+Y2dpP2lkPTE1MjQ2ClN1YmplY3QJCTogQlVHOiBCYWQgcGFnZSBzdGF0ZSBpbiBwcm9jZXNzIHBv
+cnRhZ2VxClN1Ym1pdHRlcgk6IEpvaGFubmVzIEhpcnRlIDxqb2hhbm5lcy5oaXJ0ZUBmZW0udHUt
+aWxtZW5hdS5kZT4KRGF0ZQkJOiAyMDEwLTAyLTA3IDA6NDUgKDEgZGF5cyBvbGQpClJlZmVyZW5j
+ZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyNjU1MDM1NjUxNTg4NyZ3
+PTIKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/
+aWQ9MTUyNDUKU3ViamVjdAkJOiBbMi42LjMzLXJjNiBmYzc2YmU0IHcvIGRybS1yYWRvbi10ZXN0
+aW5nIGFuZCBLTVMgZW5hYmxlZF0gV2VpcmQgSkNQVSB0aW1lcz8KU3VibWl0dGVyCTogU2hhd24g
+U3RhcnIgPHNoYXduLnN0YXJyQHJvZ2Vycy5jb20+CkRhdGUJCTogMjAxMC0wMi0wNiA3OjI0ICgy
+IGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwm
+bT0xMjY1NDQxMDc4MTY4ODkmdz0yCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5l
+bC5vcmcvc2hvd19idWcuY2dpP2lkPTE1MjA3ClN1YmplY3QJCTogUGluZXZpZXcgLSBvbmx5IGN1
+cnNvciBvbiBibGFjayBzY3JlZW4gdmlzaWJsZSwgIkdQVSBodW5nIiBpbiBkbWVzZwpTdWJtaXR0
+ZXIJOiBDaHJpc3RpYW4gRnJpZWRlbWFubiA8ZGF3bjJrQGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDEw
+LTAyLTAxIDIwOjE1ICg3IGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5r
+ZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNTIwMgpTdWJqZWN0CQk6IGxvY2tkZXAgd2Fybmlu
+ZyBkdXJpbmcgZWxldmF0b3Jfc3dpdGNoClN1Ym1pdHRlcgk6IEh1Z2ggRGlja2lucyA8aHVnaC5k
+aWNraW5zQHRpc2NhbGkuY28udWs+CkRhdGUJCTogMjAxMC0wMS0zMSAyMzo1NSAoOCBkYXlzIG9s
+ZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI2NDk4
+MjEyNjEzMDUxJnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3No
+b3dfYnVnLmNnaT9pZD0xNTIwMApTdWJqZWN0CQk6IE5GUyBwcm9ibGVtcyBpbiAyLjYuMzMtcmM2
+OiBVbmtub3duIGVycm9yIDUyNgpTdWJtaXR0ZXIJOiBKLkEuIE1hZ2FsbMOzbiA8amFtYWdhbGxv
+bkBvbm8uY29tPgpEYXRlCQk6IDIwMTAtMDEtMzEgMjI6NDYgKDggZGF5cyBvbGQpClJlZmVyZW5j
+ZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyNjQ5NzgwMDQwODkyOCZ3
+PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/
+aWQ9MTUxOTkKU3ViamVjdAkJOiBzYXRhX252IGFuZCBubyAvZGV2IGZpbGVzClN1Ym1pdHRlcgk6
+IEJhcnTFgm9taWVqIFppbW/FhCA8dXppMThAbzIucGw+CkRhdGUJCTogMjAxMC0wMS0zMSAyMzo0
+NSAoOCBkYXlzIG9sZCkKTWVzc2FnZS1JRAk6IDwxZjliYWMwOC4xYTUyNjZkNi40YjY2MDEyYS41
+YTExYUBvMi5wbD4KUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVs
+Jm09MTI2NDk4MTUzMTEyNDg4Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJu
+ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNTE5MgpTdWJqZWN0CQk6IG5ldHBlcmYgfjUwJSByZWdy
+ZXNzaW9uIHdpdGggMi42LjMzLXJjMSwgYmlzZWN0IHRvIDFiOTUwOGYKU3VibWl0dGVyCTogTGlu
+IE1pbmcgPG1pbmcubS5saW5AaW50ZWwuY29tPgpEYXRlCQk6IDIwMTAtMDEtMjUgMTA6MDMgKDE0
+IGRheXMgb2xkKQpGaXJzdC1CYWQtQ29tbWl0OiBodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvZ2l0L2xp
+bnVzLzFiOTUwOGY2ODMxZTEwZDUzMjU2ODI1ZGU4OTA0Y2FhMjJkMWNhMmMKUmVmZXJlbmNlcwk6
+IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI2NDQxNDgxNDI3MzMxJnc9NApI
+YW5kbGVkLUJ5CTogTWlrZSBHYWxicmFpdGggPGVmYXVsdEBnbXguZGU+CgkJICBQZXRlciBaaWps
+c3RyYSA8cGV0ZXJ6QGluZnJhZGVhZC5vcmc+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxh
+Lmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTE1MTc3ClN1YmplY3QJCTogQXN5bmNocm9ub3Vz
+IHdyaXRlcyB1cCB0byAzMCUgc2xvd2VyIHRoYW4gaW4gcHJldmlvdXMga2VybmVsIHZlcnNpb25z
+ClN1Ym1pdHRlcgk6IEJhcnQgVmFuIEFzc2NoZSA8YmFydC52YW5hc3NjaGVAZ21haWwuY29tPgpE
+YXRlCQk6IDIwMTAtMDEtMzAgMTY6MzggKDkgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDov
+L2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTE1MTQyClN1YmplY3QJCTogc3lz
+ZnMtcmVsYXRlZCBsb2NrZGVwIHdhcm5pbmcgaW4gX19ibGtkZXZfZ2V0ClN1Ym1pdHRlcgk6IE1h
+dHRpIEFhcm5pbyA8bWF0dGkuYWFybmlvLS1rZXJuZWwtYnVnemlsbGFAem1haWxlci5vcmc+CkRh
+dGUJCTogMjAxMC0wMS0yNSAxMzozOCAoMTQgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDov
+L2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTE1MTM5ClN1YmplY3QJCTogZTEw
+MDA6IHRyYW5zbWl0IHF1ZXVlIDAgdGltZWQgb3V0ClN1Ym1pdHRlcgk6IEFsZXhhbmRlciBCZXJl
+Z2Fsb3YgPGEuYmVyZWdhbG92QGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDEwLTAxLTIzIDE1OjM3ICgx
+NiBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgtbmV0ZGV2
+Jm09MTI2NDI2MTQ5MzA2MDgzJnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJu
+ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNTExNApTdWJqZWN0CQk6IFgub3JnIGhhbmcgd2l0aCBb
+ZHJtOmk5MTVfZ2VtX2RvX2V4ZWNidWZmZXJdICpFUlJPUiogaW4gZG1lc2cKU3VibWl0dGVyCTog
+TWF0ZWogTGFpdGwgPHN0cm9oZWxAZ21haWwuY29tPgpEYXRlCQk6IDIwMTAtMDEtMjMgMTk6NTQg
+KDE2IGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3No
+b3dfYnVnLmNnaT9pZD0xNTA3NgpTdWJqZWN0CQk6IFN5c3RlbSBwYW5pYyB1bmRlciBsb2FkIHdp
+dGggY2xvY2tldmVudHNfcHJvZ3JhbV9ldmVudApTdWJtaXR0ZXIJOiBva2lhcyA8ZC5va2lhc0Bn
+bWFpbC5jb20+CkRhdGUJCTogMjAxMC0wMS0xNyAxMzowMyAoMjIgZGF5cyBvbGQpCgoKQnVnLUVu
+dHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTE1MDQ0ClN1
+YmplY3QJCTogTXVjaCBoaWdoZXIgd2FrZXVwcyBmb3IgIjxrZXJuZWwgSVBJPiA6IFJlc2NoZWR1
+bGluZyBpbnRlcnJ1cHRzIiBzaW5jZSAyLjYuMzIuMgpTdWJtaXR0ZXIJOiBSb21hbiBNYW1lZG92
+IDxyb21hbkBybS5wcC5ydT4KRGF0ZQkJOiAyMDEwLTAxLTExIDAyOjU4ICgyOCBkYXlzIG9sZCkK
+CgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9
+MTUwNDMKU3ViamVjdAkJOiBEaXNwbGF5IGdvZXMgb2ZmIHdpdGggaTkxNS5wb3dlcnNhdmU9MSBh
+ZnRlciBzdXNwZW5kLXJlc3VtZQpTdWJtaXR0ZXIJOiBTb2VyZW4gU29ubmVuYnVyZyA8c29ubmVA
+ZGViaWFuLm9yZz4KRGF0ZQkJOiAyMDEwLTAxLTEwIDIwOjA5ICgyOSBkYXlzIG9sZCkKUmVmZXJl
+bmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI2MzE1NDU3NTE5NTA1
+Jnc9NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNn
+aT9pZD0xNTAzNgpTdWJqZWN0CQk6IHNvZnQgbG9ja3VwIGluIGRtZXNnIGFmdGVyIHN1c3BlbmQv
+cmVzdW1lClN1Ym1pdHRlcgk6IHlremhhbyA8eWFrdWkuemhhb0BpbnRlbC5jb20+CkRhdGUJCTog
+MjAxMC0wMS0wNCA1OjM2ICgzNSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmlu
+Zm8vP2w9bGludXgta2VybmVsJm09MTI2MjU4MzU2MjAyNzIyJnc9NAoKCkJ1Zy1FbnRyeQk6IGh0
+dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNTAyNQpTdWJqZWN0CQk6
+IE9vcHMgaW4gZXh0NCBkcml2ZXIKU3VibWl0dGVyCTogU3RlaW5hciBILiBHdW5kZXJzb24gPHNn
+dW5kZXJzb25AYmlnZm9vdC5jb20+CkRhdGUJCTogMjAxMC0wMS0xMCAxMzowOSAoMjkgZGF5cyBv
+bGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dp
+P2lkPTE0OTk5ClN1YmplY3QJCTogcG9zc2libGUgY2lyY3VsYXIgbG9ja2luZyBkZXBlbmRlbmN5
+IGRldGVjdGVkIGluIHJma2lsbCBhdCBzdXNwZW5kClN1Ym1pdHRlcgk6IENocmlzdGlhbiBDYXN0
+ZXlkZSA8Y2FzdGV5ZGUuY2hyaXN0aWFuQGZyZWUuZnI+CkRhdGUJCTogMjAxMC0wMS0wNiAyMTo1
+MiAoMzMgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcv
+c2hvd19idWcuY2dpP2lkPTE0OTUwClN1YmplY3QJCTogdGJlbmNoIHJlZ3Jlc3Npb24gd2l0aCAy
+LjYuMzMtcmMxClN1Ym1pdHRlcgk6IExpbiBNaW5nIDxtaW5nLm0ubGluQGludGVsLmNvbT4KRGF0
+ZQkJOiAyMDA5LTEyLTI1IDExOjExICg0NSBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9t
+YXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI2MTc0MDQ0MjEzMTcyJnc9NAoKCkJ1Zy1FbnRy
+eQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNDkzNwpTdWJq
+ZWN0CQk6IFdBUk5JTkc6IGF0IGtlcm5lbC9sb2NrZGVwLmM6MjgzMApTdWJtaXR0ZXIJOiBHcmFu
+dCBXaWxzb24gPGdyYW50LndpbHNvbkB6ZW4uY28udWs+CkRhdGUJCTogMjAwOS0xMi0yNyAxMzoz
+NSAoNDMgZGF5cyBvbGQpClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtl
+cm5lbCZtPTEyNjE5MjIyMDQwNDgyOSZ3PTQKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEu
+a2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTQ3OTIKU3ViamVjdAkJOiBNaXNkZXRlY3Rpb24g
+b2YgdGhlIFRWIG91dHB1dApTdWJtaXR0ZXIJOiBTYW50aSA8c2FudGlAYWdvbGluYS5uZXQ+CkRh
+dGUJCTogMjAwOS0xMi0xMiAxMzoyOCAoNTggZGF5cyBvbGQpCkZpcnN0LUJhZC1Db21taXQ6IGh0
+dHA6Ly9naXQua2VybmVsLm9yZy9naXQvbGludXMvMjdkZmFmNGY1ODI1YTExOTMwNWRiMWJjNjNi
+ZWYzMGVkNDAwZTM3NgpIYW5kbGVkLUJ5CTogWmhhbyBZYWt1aSA8eWFrdWkuemhhb0BpbnRlbC5j
+b20+CgoKUmVncmVzc2lvbnMgd2l0aCBwYXRjaGVzCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoK
+QnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTE1
+MjUxClN1YmplY3QJCTogaW9jdGwzMihtZGFkbToyMjQzKTogVW5rbm93biBjbWQgZmQoMykgY21k
+KDgwMGMwOTEwKXt0OjA5O3N6OjEyfSBhcmcoZmZiN2Y5YzQpClN1Ym1pdHRlcgk6IE1pY2hhZWwg
+Uy4gVHNpcmtpbiA8bS5zLnRzaXJraW5AZ21haWwuY29tPgpEYXRlCQk6IDIwMTAtMDEtMzAgMjI6
+MDIgKDkgZGF5cyBvbGQpCk1lc3NhZ2UtSUQJOiA8MjAxMDAxMzAyMzAyLjEwNTc0LmFybmRAYXJu
+ZGIuZGU+ClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEy
+NjQ4OTAzODcwOTU1MyZ3PTQKSGFuZGxlZC1CeQk6IEFybmQgQmVyZ21hbm4gPGFybmRAYXJuZGIu
+ZGU+ClBhdGNoCQk6IGh0dHA6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC83NTkzMS8KCgpC
+dWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTUy
+NTAKU3ViamVjdAkJOiAiZHJtL2k5MTU6IGltcGxlbWVudCBuZXcgcG0gb3BzIiBkaXNhYmxlcyBp
+cnEgb24gYWJvcnRlZCBzMmRpc2sKU3VibWl0dGVyCTogQWxhbiBKZW5raW5zIDxhbGFuLWplbmtp
+bnNAdHVmZm1haWwuY28udWs+CkRhdGUJCTogMjAxMC0wMi0wMyAwMzoxOCAoNSBkYXlzIG9sZCkK
+Rmlyc3QtQmFkLUNvbW1pdDogaHR0cDovL2dpdC5rZXJuZWwub3JnL2dpdC9saW51cy9jYmRhMTJk
+NzdlYTU5MDA4MmVkYjZkMzBiZDM0MmE2N2ViYzQ1OWUwCk1lc3NhZ2UtSUQJOiA8NEI2OTVCQTAu
+NDAwMDAwN0B0dWZmbWFpbC5jby51az4KUmVmZXJlbmNlcwk6IGh0dHBzOi8vbGlzdHMubGludXgt
+Zm91bmRhdGlvbi5vcmcvcGlwZXJtYWlsL2xpbnV4LXBtLzIwMTAtRmVicnVhcnkvMDI0MjAwLmh0
+bWwKSGFuZGxlZC1CeQk6IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD4KUGF0Y2gJCTog
+aHR0cDovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzc3NjQwLwoKCkJ1Zy1FbnRyeQk6IGh0
+dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNTI0NApTdWJqZWN0CQk6
+IFBST0JMRU06IGhkYS1pbnRlbCBkaXZpZGUgYnkgemVybyBrZXJuZWwgY3Jhc2ggaW4gYXp4X3Bv
+c2l0aW9uX29rKCkKU3VibWl0dGVyCTogSm9keSBCcnVjaG9uIDxqb2R5QG5jdHJpdGVjaC5jb20+
+CkRhdGUJCTogMjAxMC0wMi0wNiAwOjMyICgyIGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDov
+L21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjY1NDEyNzYwMjgxNzMmdz0yCkhhbmRsZWQt
+QnkJOiBUYWthc2hpIEl3YWkgPHRpd2FpQHN1c2UuZGU+CgkJICBKb2R5IEJydWNob24gPGpvZHlA
+bmN0cml0ZWNoLmNvbT4KUGF0Y2gJCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwm
+bT0xMjY1NDcxNDU2MTQwNzAmdz0yCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5l
+bC5vcmcvc2hvd19idWcuY2dpP2lkPTE1MTk2ClN1YmplY3QJCToga21lbV9jYWNoZV9jcmVhdGU6
+IGR1cGxpY2F0ZSBjYWNoZSBjY2lkMl9oClN1Ym1pdHRlcgk6IEhlaW56IERpZWhsIDxodGRAZmFu
+Y3ktcG91bHRyeS5vcmc+CkRhdGUJCTogMjAxMC0wMS0zMCAxODozMyAoOSBkYXlzIG9sZCkKUmVm
+ZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI2NDg3NjQwMzI0
+OTQyJnc9NApIYW5kbGVkLUJ5CTogWGlhb3RpYW4gRmVuZyA8eHRmZW5nQGdtYWlsLmNvbT4KUGF0
+Y2gJCTogaHR0cDovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzc3NjAxLwoKCkJ1Zy1FbnRy
+eQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNTE5NQpTdWJq
+ZWN0CQk6IGtlcm5lbCBCVUcgYXQgaW5jbHVkZS9uZXQvbmV0bnMvZ2VuZXJpYy5oOjQxLCBwZmtl
+eV9jcmVhdGUrMHgzNi8weDE4YiBbYWZfa2V5XQpTdWJtaXR0ZXIJOiBMdWNhIFRldHRhbWFudGkg
+PGtyb25vcy5pdEBnbWFpbC5jb20+CkRhdGUJCTogMjAxMC0wMS0zMCAxMzoyMyAoOSBkYXlzIG9s
+ZCkKUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgtbmV0ZGV2Jm09MTI2NDg1
+Nzg1MDA0Nzc1Jnc9NApIYW5kbGVkLUJ5CTogQWxleGV5IERvYnJpeWFuIDxhZG9icml5YW5AZ21h
+aWwuY29tPgpQYXRjaAkJOiBodHRwOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvNzU4OTEv
+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lk
+PTE1MDM5ClN1YmplY3QJCTogbGVkc19hbGl4MjogY2FuJ3QgYWxsb2NhdGUgSS9PIGZvciBHUElP
+ClN1Ym1pdHRlcgk6IEFybmQgSGFubmVtYW5uIDxoYW5uZW1hbm5AbmV0cy5yd3RoLWFhY2hlbi5k
+ZT4KRGF0ZQkJOiAyMDEwLTAxLTA3IDEwOjI2ICgzMiBkYXlzIG9sZCkKUmVmZXJlbmNlcwk6IGh0
+dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI2Mjg2MDAxMTA2MjU3Jnc9NApIYW5k
+bGVkLUJ5CTogRGFuaWVsIE1hY2sgPGRhbmllbEBjYWlhcS5kZT4KUGF0Y2gJCTogaHR0cDovL3Bh
+dGNod29yay5rZXJuZWwub3JnL3BhdGNoLzcyMDA2LwoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6
+aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNDk0OQpTdWJqZWN0CQk6IGRybV92bS5j
+OmRybV9tbWFwOiBwb3NzaWJsZSBjaXJjdWxhciBsb2NraW5nIGRlcGVuZGVuY3kgZGV0ZWN0ZWQK
+U3VibWl0dGVyCTogQm9yaXNsYXYgUGV0a292IDxwZXRrb3ZiYkBnb29nbGVtYWlsLmNvbT4KRGF0
+ZQkJOiAyMDA5LTEyLTI2IDk6NDUgKDQ0IGRheXMgb2xkKQpSZWZlcmVuY2VzCTogaHR0cDovL21h
+cmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjYxODIwNzM2MTYyNzkmdz00CkhhbmRsZWQtQnkJ
+OiBFcmljIFcuIEJpZWRlcm1hbiA8ZWJpZWRlcm1AYXJpc3RhbmV0d29ya3MuY29tPgpQYXRjaAkJ
+OiBodHRwOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvNzA0NjEvCgoKRm9yIGRldGFpbHMs
+IHBsZWFzZSB2aXNpdCB0aGUgYnVnIGVudHJpZXMgYW5kIGZvbGxvdyB0aGUgbGlua3MgZ2l2ZW4g
+aW4KcmVmZXJlbmNlcy4KCkFzIHlvdSBjYW4gc2VlLCB0aGVyZSBpcyBhIEJ1Z3ppbGxhIGVudHJ5
+IGZvciBlYWNoIG9mIHRoZSBsaXN0ZWQgcmVncmVzc2lvbnMuClRoZXJlIGFsc28gaXMgYSBCdWd6
+aWxsYSBlbnRyeSB1c2VkIGZvciB0cmFja2luZyB0aGUgcmVncmVzc2lvbnMgZnJvbSAyLjYuMzIs
+CnVucmVzb2x2ZWQgYXMgd2VsbCBhcyByZXNvbHZlZCwgYXQ6CgpodHRwOi8vYnVnemlsbGEua2Vy
+bmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTQ4ODUKClBsZWFzZSBsZXQgdGhlIHRyYWNraW5nIHRl
+YW0ga25vdyBpZiB0aGVyZSBhcmUgYW55IEJ1Z3ppbGxhIGVudHJpZXMgdGhhdApzaG91bGQgYmUg
+YWRkZWQgdG8gdGhlIGxpc3QgaW4gdGhlcmUuCgpUaGFua3MhCgpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgt
+cG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0
+aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
