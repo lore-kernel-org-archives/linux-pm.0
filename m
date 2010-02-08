@@ -1,15 +1,14 @@
-From: Gary Hade <garyhade@us.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for
-	PCI PME	wake-up (rev. 7)
-Date: Mon, 8 Feb 2010 13:12:25 -0800
-Message-ID: <20100208211225.GA10429__21841.2641007037$1265663869$gmane$org@us.ibm.com>
-References: <201001101431.38630.rjw@sisk.pl> <201002062111.56512.rjw@sisk.pl>
-	<20100208175333.GA9334@us.ibm.com> <201002082017.14631.rjw@sisk.pl>
+	PCI PME wake-up (rev. 7)
+Date: Mon, 8 Feb 2010 22:30:30 +0100
+Message-ID: <201002082230.30497.rjw__6832.25031612$1265664657$gmane$org@sisk.pl>
+References: <201001101431.38630.rjw@sisk.pl> <20100208175333.GA9334@us.ibm.com>
+	<201002082017.14631.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <201002082017.14631.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,12 +19,12 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, "Moore,
-	Robert" <robert.moore@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg@redhat.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Moore,
+	Robert" <robert.moore@intel.com>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 08, 2010 at 08:17:14PM +0100, Rafael J. Wysocki wrote:
+On Monday 08 February 2010, Rafael J. Wysocki wrote:
 > On Monday 08 February 2010, Gary Hade wrote:
 > > On Sat, Feb 06, 2010 at 09:11:56PM +0100, Rafael J. Wysocki wrote:
 > > > On Saturday 06 February 2010, Bjorn Helgaas wrote:
@@ -67,82 +66,68 @@ On Mon, Feb 08, 2010 at 08:17:14PM +0100, Rafael J. Wysocki wrote:
 > Thanks!
 > 
 > Well, that means there's no struct acpi_device object associated with handle.
-
-Yes, I also added code to pci_acpi_add_hp_notifier() that
-confirms the -ENODEV return from acpi_bus_get_device() for
-non-populated slots.
-
-I thought it was kind of curious that Bjorn's message seemed
-to indicate that acpiphp actually loaded on his system when
-it did not load on mine.  It turns out that the load failure
-on my system was apparently due to all of the hotpluggable
-slots being non-populated.  After booting with a card
-present in slot 3, register_slot() got some AE_OK returns
-from pci_acpi_add_hp_notifier() _and_ the acpiphp load 
-succeeded.  See below.
-
 > 
 > I must admit I didn't take that into consideration, but it should be easily
 > fixable.  I'll send a patch for that later today.
 
-Thanks.  I'll give it a test drive when I see it.
+Patch appended.
 
-Gary
+If the theory is correct, it should fix the issue.  Please test.
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+Rafael
 
-[  120.320794] pci_hotplug: PCI Hot Plug PCI Core version: 0.5
-[  120.341939] acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
-[  120.341960] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.342027] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.342043] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.342073] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.342105] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.342151] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.342191] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.342232] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.342440] acpiphp: Slot [1] registered
-[  120.342445] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=-19
-[  120.342448] register_slot: status=0x5
-[  120.342450] acpiphp_glue: failed to register interrupt notify handler
-[  120.342576] acpiphp: Slot [2] registered
-[  120.342580] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=-19
-[  120.342582] register_slot: status=0x5
-[  120.342584] acpiphp_glue: failed to register interrupt notify handler
-[  120.342744] acpiphp: Slot [3] registered
-[  120.342748] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.342751] register_slot: status=0x0
-[  120.342886] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.342889] register_slot: status=0x0
-[  120.342966] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.342973] register_slot: status=0x0
-[  120.343049] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.343054] register_slot: status=0x0
-[  120.343128] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.343133] register_slot: status=0x0
-[  120.343209] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.343215] register_slot: status=0x0
-[  120.343290] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.343295] register_slot: status=0x0
-[  120.343368] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.343374] register_slot: status=0x0
-[  120.343378] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=0
-[  120.343381] init_bridge_misc: status=0x0
-[  120.343640] acpiphp: Slot [4] registered
-[  120.343645] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=-19
-[  120.343647] register_slot: status=0x5
-[  120.343649] acpiphp_glue: failed to register interrupt notify handler
-[  120.343881] acpiphp: Slot [5] registered
-[  120.343885] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=-19
-[  120.343887] register_slot: status=0x5
-[  120.343889] acpiphp_glue: failed to register interrupt notify handler
-[  120.344225] acpiphp: Slot [6] registered
-[  120.344234] pci_acpi_add_hp_notifier: acpi_bus_get_device_ret=-19
-[  120.344242] register_slot: status=0x5
-[  120.344249] acpiphp_glue: failed to register interrupt notify handler
+
+---
+ drivers/pci/pci-acpi.c |   30 ++++++++++++++++++++++++------
+ 1 file changed, 24 insertions(+), 6 deletions(-)
+
+Index: linux-2.6/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci-acpi.c
++++ linux-2.6/drivers/pci/pci-acpi.c
+@@ -116,10 +116,19 @@ acpi_status pci_acpi_add_hp_notifier(acp
+ {
+ 	struct pci_acpi_notify_data *nd;
+ 	struct acpi_device *dev;
+-	acpi_status status = AE_OK;
++	acpi_status status;
++
++	if (!handle)
++		return AE_BAD_PARAMETER;
+ 
+-	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &dev)))
+-		return AE_NOT_FOUND;
++	status = acpi_bus_get_device(handle, &dev);
++	/*
++	 * If there's no struct acpi_device for given handle, try to install the
++	 * handler directly.
++	 */
++	if (ACPI_FAILURE(status))
++		return acpi_install_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
++							handler, context);
+ 
+ 	mutex_lock(&pci_acpi_notifier_mtx);
+ 
+@@ -170,10 +179,19 @@ acpi_status pci_acpi_remove_hp_notifier(
+ {
+ 	struct pci_acpi_notify_data *nd;
+ 	struct acpi_device *dev;
+-	acpi_status status = AE_NOT_FOUND;
++	acpi_status status;
++
++	if (!handle)
++		return AE_BAD_PARAMETER;
+ 
+-	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &dev)))
+-		return AE_NOT_FOUND;
++	status = acpi_bus_get_device(handle, &dev);
++	/*
++	 * If there's no struct acpi_device for given handle, try to remove the
++	 * handler directly.
++	 */
++	if (ACPI_FAILURE(status))
++		return acpi_remove_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
++							handler);
+ 
+ 	mutex_lock(&pci_acpi_notifier_mtx);
+ 
