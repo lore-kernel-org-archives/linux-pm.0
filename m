@@ -1,17 +1,12 @@
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: [PATCH] i915 / PM: Fix crash while aborting
- hibernation (Re: [regression] "drm/i915: implement new pm ops" disables irq
- on aborted s2disk)
-Date: Mon, 08 Feb 2010 09:49:08 +0000
-Message-ID: <4B6FDE14.8070406__10245.1786086478$1265622622$gmane$org@tuffmail.co.uk>
-References: <4B695BA0.4000007@tuffmail.co.uk> <201002032344.41915.rjw@sisk.pl>
-	<20100204013157.GA30011@zhen-devel.sh.intel.com>
-	<201002072148.24588.rjw@sisk.pl>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: [PATCH/RESEND] soc-camera: add runtime pm support for
+	subdevices
+Date: Mon, 8 Feb 2010 10:50:02 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.1002081044150.4936__18588.6256084361$1265622646$gmane$org@axis700.grange>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201002072148.24588.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,68 +16,109 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>, Zhenyu Wang <zhenyuw@linux.intel.com>, linux-pm@lists.linux-foundation.org, dri-devel@lists.sourceforge.net
+To: linux-pm@lists.linux-foundation.org
+Cc: Linux Media Mailing List <linux-media@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Thursday 04 February 2010, Zhenyu Wang wrote:
->   
->> On 2010.02.03 23:44:41 +0100, Rafael J. Wysocki wrote:
->>     
->>> On Wednesday 03 February 2010, Alan Jenkins wrote:
->>>       
->>>> Hi
->>>>
->>>> I found this regression on my EeePC 701 with modesetting enabled.  When 
->>>> I hibernate using s2disk, I can abort the hibernation by pressing the 
->>>> backspace key.  Doing so breaks X on 2.6.32-rc6 (but not 2.6.32).
->>>>         
->>> Yeah.
->>>
->>> To be honest, I knew that's going to happen, but didn't have the time to take
->>> care of it.
->>>
->>> The problem is that i915 does literally _nothing_ in its .thaw() callback,
->>> although it should at least reverse whatever .freeze() did to the hardware
->>> (and memory allocations and so on), so that the adapter is functional
->>> after creating the image.
->>>
->>> Fixing this requires some thought, though, because at the moment .freeze()
->>> thinks it's .suspend(), which is not the case as this report clearly shows.
->>> So, in fact i915_pci_suspend() has to be split into the .freeze() part and
->>> the poweroff part cleanly and that's not  so simple (at least to me).
->>>
->>>       
->> Right, I think that'll be more clean, stuff in i915_save/restore_state() need
->> to be splited too, especially isolate stuff for mode setting and other device
->> state, as what my original purpose for this is to remove extra mode setting 
->> cycle in old behavior so not waste time for hibernate.
->>     
->
-> We can't really do that, because we'll need to restore the saved state at the
-> resume-from-hibernation stage.
->
-> The appended patch fixes the issue for me, although it's been only tested
-> a little.  It sort of defeats the purpose of commit
-> cbda12d77ea590082edb6d30bd342a67ebc459e0, but I don't see any less invasive
-> way to fix this except maybe for reverting that commit entirely.
->
-> Note that the drm_irq_[un]install() thing may be unnecessary, but I wasn't sure
-> about that and surely wouldn't suggest doing that for 2.6.33.  Also it looks like
-> some things from the freeze and thaw parts may be moved to the "low-level"
-> suspend and resume parts, respectively, but that would require some
-> i915_gem_* surgery I was too scared to do.
->
-> Alan, please test, i915 guys, please review.
->
-> Rafael
->   
+To save power soc-camera powers subdevices down, when they are not in use, 
+if this is supported by the platform. However, the V4L standard dictates, 
+that video nodes shall preserve configuration between uses. This requires 
+runtime power management, which is implemented by this patch. It allows 
+subdevice drivers to specify their runtime power-management methods, by 
+assigning a type to the video device.
 
-The patch works very nicely on my eeepc.
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
 
-Thanks
-(and thanks again for all your hard work this cycle, and specifically 
-for pointing me to the s2disk hang-fix)
+I've posted this patch to linux-media earlier, but I'd also like to get 
+comments on linux-pm, sorry to linux-media falks for a duplicate. To 
+explain a bit - soc_camera.c is a management module, that binds video 
+interfaces on SoCs and sensor drivers. The calls, that I am adding to 
+soc_camera.c shall save and restore sensor registers before they are 
+powered down and after they are powered up.
 
-Alan
+diff --git a/drivers/media/video/soc_camera.c b/drivers/media/video/soc_camera.c
+index 6b3fbcc..53201f3 100644
+--- a/drivers/media/video/soc_camera.c
++++ b/drivers/media/video/soc_camera.c
+@@ -24,6 +24,7 @@
+ #include <linux/mutex.h>
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
++#include <linux/pm_runtime.h>
+ #include <linux/vmalloc.h>
+ 
+ #include <media/soc_camera.h>
+@@ -387,6 +388,11 @@ static int soc_camera_open(struct file *file)
+ 			goto eiciadd;
+ 		}
+ 
++		pm_runtime_enable(&icd->vdev->dev);
++		ret = pm_runtime_resume(&icd->vdev->dev);
++		if (ret < 0 && ret != -ENOSYS)
++			goto eresume;
++
+ 		/*
+ 		 * Try to configure with default parameters. Notice: this is the
+ 		 * very first open, so, we cannot race against other calls,
+@@ -408,10 +414,12 @@ static int soc_camera_open(struct file *file)
+ 	return 0;
+ 
+ 	/*
+-	 * First five errors are entered with the .video_lock held
++	 * First four errors are entered with the .video_lock held
+ 	 * and use_count == 1
+ 	 */
+ esfmt:
++	pm_runtime_disable(&icd->vdev->dev);
++eresume:
+ 	ici->ops->remove(icd);
+ eiciadd:
+ 	if (icl->power)
+@@ -436,7 +444,11 @@ static int soc_camera_close(struct file *file)
+ 	if (!icd->use_count) {
+ 		struct soc_camera_link *icl = to_soc_camera_link(icd);
+ 
++		pm_runtime_suspend(&icd->vdev->dev);
++		pm_runtime_disable(&icd->vdev->dev);
++
+ 		ici->ops->remove(icd);
++
+ 		if (icl->power)
+ 			icl->power(icd->pdev, 0);
+ 	}
+@@ -1294,6 +1306,7 @@ static int video_dev_create(struct soc_camera_device *icd)
+  */
+ static int soc_camera_video_start(struct soc_camera_device *icd)
+ {
++	struct device_type *type = icd->vdev->dev.type;
+ 	int ret;
+ 
+ 	if (!icd->dev.parent)
+@@ -1310,6 +1323,9 @@ static int soc_camera_video_start(struct soc_camera_device *icd)
+ 		return ret;
+ 	}
+ 
++	/* Restore device type, possibly set by the subdevice driver */
++	icd->vdev->dev.type = type;
++
+ 	return 0;
+ }
+ 
+diff --git a/include/media/soc_camera.h b/include/media/soc_camera.h
+index dcc5b86..58b39a9 100644
+--- a/include/media/soc_camera.h
++++ b/include/media/soc_camera.h
+@@ -282,4 +282,12 @@ static inline void soc_camera_limit_side(unsigned int *start,
+ extern unsigned long soc_camera_apply_sensor_flags(struct soc_camera_link *icl,
+ 						   unsigned long flags);
+ 
++/* This is only temporary here - until v4l2-subdev begins to link to video_device */
++#include <linux/i2c.h>
++static inline struct video_device *soc_camera_i2c_to_vdev(struct i2c_client *client)
++{
++	struct soc_camera_device *icd = client->dev.platform_data;
++	return icd->vdev;
++}
++
+ #endif
