@@ -1,17 +1,18 @@
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: s2disk hang update
-Date: Tue, 09 Feb 2010 16:36:33 +0000
-Message-ID: <4B718F11.2010402__17213.3508175195$1265733615$gmane$org@tuffmail.co.uk>
-References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>	
-	<201001022138.42575.rjw@sisk.pl>	
-	<9b2b86521002020621n7c6a0582n66688d4e6810ca97@mail.gmail.com>	
-	<201002022134.20366.rjw@sisk.pl>
-	<9b2b86521002030314s6f84b482v8cd680be556f8a4d@mail.gmail.com>
+From: Gary Hade <garyhade@us.ibm.com>
+Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support
+	for	PCI PME wake-up (rev. 7)
+Date: Tue, 9 Feb 2010 08:41:16 -0800
+Message-ID: <20100209164116.GA7289__17937.9714224071$1265733754$gmane$org@us.ibm.com>
+References: <201001101431.38630.rjw@sisk.pl>
+	<20100208233708.GB10429@us.ibm.com>
+	<20100209005324.GB17124@us.ibm.com>
+	<201002091348.20245.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <9b2b86521002030314s6f84b482v8cd680be556f8a4d@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <201002091348.20245.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,140 +22,125 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>, hugh.dickins@tiscali.co.uk, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Moore,
+	Robert" <robert.moore@intel.com>, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Alan Jenkins wrote:
-> On 2/2/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->   
->> On Tuesday 02 February 2010, Alan Jenkins wrote:
->>     
->>> On 1/2/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->>>       
->>>> On Saturday 02 January 2010, Alan Jenkins wrote:
->>>> Hi,
->>>>
->>>>         
->>>>> I've been suffering from s2disk hangs again.  This time, the hangs
->>>>> were always before the hibernation image was written out.
->>>>>
->>>>> They're still frustratingly random.  I just started trying to work out
->>>>> whether doubling PAGES_FOR_IO makes them go away, but they went away
->>>>> on their own again.
->>>>>
->>>>> I did manage to capture a backtrace with debug info though.  Here it
->>>>> is for 2.6.33-rc2.  (It has also happened on rc1).  I was able to get
->>>>> the line numbers (using gdb, e.g.  "info line
->>>>> *stop_machine_create+0x27"), having built the kernel with debug info.
->>>>>
->>>>> [top of trace lost due to screen height]
->>>>> ? sync_page	(filemap.c:183)
->>>>> ? wait_on_page_bit	(filemap.c:506)
->>>>> ? wake_bit_function	(wait.c:174)
->>>>> ? shrink_page_list	(vmscan.c:696)
->>>>> ? __delayacct_blkio_end	(delayacct.c:94)
->>>>> ? finish_wait	(list.h:142)
->>>>> ? congestion_wait	(backing-dev.c:761)
->>>>> ? shrink_inactive_list	(vmscan.c:1193)
->>>>> ? scsi_request_fn	(spinlock.h:306)
->>>>> ? blk_run_queue	(blk-core.c:434)
->>>>> ? shrink_zone	(vmscan.c:1484)
->>>>> ? do_try_to_free_pages	(vmscan.c:1684)
->>>>> ? try_to_free_pages	(vmscan.c:1848)
->>>>> ? isolate_pages_global	(vmscan.c:980)
->>>>> ? __alloc_pages_nodemask	(page_alloc.c:1702)
->>>>> ? __get_free_pages	(page_alloc.c:1990)
->>>>> ? copy_process	(fork.c:237)
->>>>> ? do_fork	(fork.c:1443)
->>>>> ? rb_erase
->>>>> ? __switch_to
->>>>> ? kthread
->>>>> ? kernel_thread
->>>>> ? kthread
->>>>> ? kernel_thread_helper
->>>>> ? kthreadd
->>>>> ? kthreadd
->>>>> ? kernel_thread_helper
->>>>>
->>>>> INFO: task s2disk:2174 blocked for more than 120 seconds
->>>>>           
->>>> This looks like we have run out of memory while creating a new kernel
->>>> thread
->>>> and we have blocked on I/O while trying to free some space (quite
->>>> obviously,
->>>> because the I/O doesn't work at this point).
->>>>         
->>> For context, the kernel thread being created here is the stop_machine
->>> thread.  It is created by disable_nonboot_cpus(), called from
->>> hibernation_snapshot().  See e.g. this hung task backtrace -
->>>
->>> http://picasaweb.google.com/lh/photo/BkKUwZCrQ2ceBIM9ZOh7Ow?feat=directlink
->>>
->>>       
->>>> I think it should help if you increase PAGES_FOR_IO, then.
->>>>         
->>> Ok, it's been happening again on 2.6.33-rc6.  Unfortunately increasing
->>> PAGES_FOR_IO doesn't help.
->>>
->>> I've been using a test patch to make PAGES_FOR_IO tunable at run time.
->>>  I get the same hang if I increase it by a factor of 10, to 10240:
->>>
->>> # cd /sys/module/kernel/parameters/
->>> # ls
->>> consoleblank  initcall_debug  PAGES_FOR_IO  panic  pause_on_oops
->>> SPARE_PAGES
->>> # echo 10240 > PAGES_FOR_IO
->>> # echo 2560 > SPARE_PAGES
->>> # cat SPARE_PAGES
->>> 2560
->>> # cat PAGES_FOR_IO
->>> 10240
->>>
->>> I also added a debug patch to try and understand the calculations with
->>> PAGES_FOR_IO in hibernate_preallocate_memory().  I still don't really
->>> understand them and there could easily be errors in my debug patch,
->>> but the output is interesting.
->>>
->>> Increasing PAGES_FOR_IO by almost 10000 has the expected effect of
->>> decreasing "max_size" by the same amount.  However it doesn't appear
->>> to increase the number of free pages at the critical moment.
->>>
->>> PAGES_FOR_IO = 1024:
->>> http://picasaweb.google.com/lh/photo/DYQGvB_4hvCvVuxZf2ibxg?feat=directlink
->>>
->>> PAGES_FOR_IO = 10240:
->>> http://picasaweb.google.com/lh/photo/AIkV_ZBwt22nzN-JdOJCWA?feat=directlink
->>>
->>>
->>> You may remember that I was originally able to avoid the hang by
->>> reverting commit 5f8dcc2.  It doesn't revert cleanly any more.
->>> However, I tried applying my test&debug patches on top of 5f8dcc2~1
->>> (just before the commit that triggered the hang).  That kernel
->>> apparently left ~5000 pages free at hibernation time, v.s. ~1200 when
->>> testing the same scenario on 2.6.33-rc6.  (As before, the number of
->>> free pages remained the same if I increased PAGES_FOR_IO to 10240).
->>>       
->> I think the hang may be avoided by using this patch
->> http://patchwork.kernel.org/patch/74740/
->> but the hibernation will fail instead.
->>
->> Can you please repeat your experiments with the patch below applied and
->> report back?
->>
->> Rafael
->>     
->
-> It causes hibernation to succeed <grin>.
->   
+On Tue, Feb 09, 2010 at 01:48:20PM +0100, Rafael J. Wysocki wrote:
+> On Tuesday 09 February 2010, Gary Hade wrote:
+> > On Mon, Feb 08, 2010 at 03:37:08PM -0800, Gary Hade wrote:
+> > > On Mon, Feb 08, 2010 at 10:30:30PM +0100, Rafael J. Wysocki wrote:
+> > > > On Monday 08 February 2010, Rafael J. Wysocki wrote:
+> > > > > On Monday 08 February 2010, Gary Hade wrote:
+> > > > > > On Sat, Feb 06, 2010 at 09:11:56PM +0100, Rafael J. Wysocki wrote:
+> > > > > > > On Saturday 06 February 2010, Bjorn Helgaas wrote:
+> > > > > > > > On Sunday 10 January 2010 07:01:03 am Rafael J. Wysocki wrote:
+> > > > > > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > > > > > 
+> > > > > > > > > Although the majority of PCI devices can generate PMEs that in
+> > > > > > > > > principle may be used to wake up devices suspended at run time,
+> > > > > > > > > platform support is generally necessary to convert PMEs into wake-up
+> > > > > > > > > events that can be delivered to the kernel.  If ACPI is used for this
+> > > > > > > > > purpose, a PME generated by a PCI device will trigger the ACPI GPE
+> > > > > > > > > associated with the device to generate an ACPI wake-up event that we
+> > > > > > > > > can set up a handler for, provided that everything is configured
+> > > > > > > > > correctly.
+> > > > > > > > 
+> > > > > > > > I think acpiphp needs a little attention after this patch.  Gary
+> > > > > > > > Hade noticed while testing Jesse's linux-next branch that acpiphp
+> > > > > > > > complains like this:
+> > > > > > > > 
+> > > > > > > >   acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+> > > > > > > >   acpiphp: Slot [9] registered
+> > > > > > > >   acpiphp: Slot [10] registered
+> > > > > > > >   acpiphp_glue: failed to register interrupt notify handler
+> > > > > > > >   acpiphp: Slot [6] registered
+> > > > > > > >   acpiphp_glue: failed to register interrupt notify handler
+> > > > > > > > 
+> > > > > > > > I reproduced this on an HP rx3600 (ia64), and found that acpiphp
+> > > > > > > > doesn't complain on commit 82533a617f453, but it *does* complain
+> > > > > > > > on commit fb3383bb4ac6e, which seems to be this patch.
+> > > > > > > 
+> > > > > > > I can't see the possible reason looking at the code alone.
+> > > > > > > 
+> > > > > > > Could you add a debug printk() printing the error code returned by
+> > > > > > > pci_acpi_add_hp_notifier() in acpiphp_glue.c:register_slot(), please?
+> > > > > > 
+> > > > > > Rafael, On the system where I ran into the problem it returns
+> > > > > > AE_NOT_FOUND.  See below.
+> > > > > 
+> > > > > Thanks!
+> > > > > 
+> > > > > Well, that means there's no struct acpi_device object associated with handle.
+> > > > > 
+> > > > > I must admit I didn't take that into consideration, but it should be easily
+> > > > > fixable.  I'll send a patch for that later today.
+> > > > 
+> > > > Patch appended.
+> > > > 
+> > > > If the theory is correct, it should fix the issue.  Please test.
+> > > 
+> > > Well, acpiphp now loads OK with no disturbing messages:
+> > > [  247.360878] pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+> > > [  247.385048] acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+> > > [  247.385459] acpiphp_glue: found PCI host-bus bridge with hot-pluggable slots
+> > > [  247.385486] acpiphp_glue: found ACPI PCI Hotplug slot 1 at PCI 0000:02:01
+> > > [  247.385519] acpiphp: Slot [1] registered
+> > > [  247.386167] acpiphp_glue: found PCI host-bus bridge with hot-pluggable slots
+> > > [  247.386196] acpiphp_glue: found ACPI PCI Hotplug slot 2 at PCI 0000:06:01
+> > > [  247.386225] acpiphp: Slot [2] registered
+> > > [  247.386828] acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:0a:00.0
+> > > [  247.386861] acpiphp_glue: found ACPI PCI Hotplug slot 3 at PCI 0000:0b:00
+> > > [  247.386902] acpiphp: Slot [3] registered
+> > > [  247.387564] acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:0f:00.0
+> > > [  247.387597] acpiphp_glue: found ACPI PCI Hotplug slot 4 at PCI 0000:10:00
+> > > [  247.387620] acpiphp: Slot [4] registered
+> > > [  247.388293] acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:14:00.0
+> > > [  247.388324] acpiphp_glue: found ACPI PCI Hotplug slot 5 at PCI 0000:15:00
+> > > [  247.388347] acpiphp: Slot [5] registered
+> > > [  247.389041] acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:19:00.0
+> > > [  247.389077] acpiphp_glue: found ACPI PCI Hotplug slot 6 at PCI 0000:1a:00
+> > > [  247.389114] acpiphp: Slot [6] registered
+> > > [  247.389736] acpiphp_glue: Bus 0000:1a has 1 slot
+> > > [  247.389739] acpiphp_glue: Bus 0000:15 has 1 slot
+> > > [  247.389742] acpiphp_glue: Bus 0000:10 has 1 slot
+> > > [  247.389746] acpiphp_glue: Bus 0000:0b has 1 slot
+> > > [  247.389748] acpiphp_glue: Bus 0000:06 has 1 slot
+> > > [  247.389751] acpiphp_glue: Bus 0000:02 has 1 slot
+> > > [  247.389753] acpiphp_glue: Total 6 slots
+> > > 
+> > > However, I didn't have a chance to confirm that hot-add of a
+> > > PCI card works correctly before someone else swiped the system
+> > > from me for a while.  I will verify this when I get it back,
+> > > hopefully later today.
+> > 
+> > I got the system back but unfortunately have some bad news.
+> > The system has 2 hotpluggable PCI-X slots and 4 hotpluggable
+> > PCIe slots.  I tried hot-adding both a PCI-X card and a PCIe
+> > card but acpiphp did not seem to see the hot-add event for
+> > either card.  acpiphp was loaded with debug=1 and issued no
+> > messages when I added the cards.
+> 
+> I gather it works without the $subject patch?
 
-Perhaps I spoke too soon.  I see the same hang if I run too many 
-applications.  The first hibernation fails with "not enough swap" as 
-expected, but the second or third attempt hangs (with the same backtrace 
-as before).
+I don't know for sure.  Late Friday after running into the handler
+registration issue I reverted 8/9 which required hand fixup for
+one hunk failure.  I then got some compile errors which I assumed
+may be related to my non-removal of some of the other patches in the
+series.  I started reverting the entire series but got a failure right
+away with 9/9 but didn't take the time to try to resolve it.
 
-The patch definitely helps though.  Without the patch, I see a hang the 
-first time I try to hibernate with too many applications running.
+Since it sounds like you are doubtful that your changes are
+responsible for this new issue I will try to make time to fuss
+with this more today.
 
-Regards
-Alan
+Gary
+
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
