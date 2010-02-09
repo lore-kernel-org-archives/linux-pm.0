@@ -1,15 +1,17 @@
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 Subject: Re: [PATCH/RESEND] soc-camera: add runtime pm support
- for subdevices
-Date: Tue, 9 Feb 2010 09:12:30 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.1002090901550.4585__30609.8854206086$1265703186$gmane$org@axis700.grange>
+	for subdevices
+Date: Tue, 9 Feb 2010 11:27:20 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.1002091053470.4585__46623.8609551967$1265711336$gmane$org@axis700.grange>
 References: <Pine.LNX.4.64.1002081044150.4936@axis700.grange>
-	<201002082310.08079.rjw@sisk.pl>
+	<4B7012D1.40605@redhat.com>
+	<Pine.LNX.4.64.1002081447020.4936@axis700.grange>
+	<4B705216.7040907@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201002082310.08079.rjw@sisk.pl>
+In-Reply-To: <4B705216.7040907@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,28 +21,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Mauro Carvalho Chehab <mchehab@redhat.com>, Linux Media Mailing List <linux-media@vger.kernel.org>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: linux-pm@lists.linux-foundation.org, Valentin Longchamp <valentin.longchamp@epfl.ch>, Linux Media Mailing List <linux-media@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 8 Feb 2010, Rafael J. Wysocki wrote:
+On Mon, 8 Feb 2010, Mauro Carvalho Chehab wrote:
 
-> On Monday 08 February 2010, Guennadi Liakhovetski wrote:
-> > To save power soc-camera powers subdevices down, when they are not in use, 
-> > if this is supported by the platform. However, the V4L standard dictates, 
-> > that video nodes shall preserve configuration between uses. This requires 
-> > runtime power management, which is implemented by this patch. It allows 
-> > subdevice drivers to specify their runtime power-management methods, by 
-> > assigning a type to the video device.
+> In fact, on all drivers, there are devices that needs to be turn on only when
+> streaming is happening: sensors, analog TV/audio demods, digital demods. Also,
+> a few devices (for example: TV tuners) could eventually be on power off when
+> no device is opened.
 > 
-> You need a support for that at the bus type/device type/device class level,
-> because the core doesn't execute the driver callbacks directly.
+> As the V4L core knows when this is happening (due to
+> open/close/poll/streamon/reqbuf/qbuf/dqbuf hooks, I think the runtime management 
+> can happen at V4L core level.
 
-That's exactly what this patch is doing - adding a device type with pm 
-callbacks. What I wasn't sure about - and why I posted here - is whether 
-that's a proper way to use pm_runtime_resume() and pm_runtime_suspend() 
-calls - from a central module, targeting underlying devices, before 
-powering them down and after powering them up?
+Well, we can move it up to v4l core. Should it get any more complicated 
+than adding
+
+	ret = pm_runtime_resume(&vdev->dev);
+	if (ret < 0 && ret != -ENOSYS)
+		return ret;
+
+to v4l2_open() and
+
+	pm_runtime_suspend(&vdev->dev);
+
+to v4l2_release()? And to agree, that video drivers may set a device type 
+to implement runtime PM, and that the v4l core shouldn't touch it? Then, 
+for example, a bridge driver could implement such a device type instance 
+and suspend or resume all related components?
 
 Thanks
 Guennadi
