@@ -1,23 +1,14 @@
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH/RESEND] soc-camera: add runtime pm support
-	for subdevices
-Date: Tue, 09 Feb 2010 13:10:11 -0200
-Message-ID: <4B717AD3.4050500__16554.9398785972$1265728343$gmane$org@redhat.com>
+ for subdevices
+Date: Tue, 9 Feb 2010 10:18:15 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1002091016060.1665-100000__23835.2481196218$1265728753$gmane$org@iolanthe.rowland.org>
 References: <Pine.LNX.4.64.1002081044150.4936@axis700.grange>
-	<4B7012D1.40605@redhat.com>
-	<Pine.LNX.4.64.1002081447020.4936@axis700.grange>
-	<4B705216.7040907@redhat.com>
-	<Pine.LNX.4.64.1002091053470.4585@axis700.grange>
-	<26fe28e3dda70da4d133a9dbc3f2bc74.squirrel@webmail.xs4all.nl>
-	<Pine.LNX.4.64.1002091252530.4585@axis700.grange>
-	<2aa8130b9fd7fe9f9fb2cf626ff58831.squirrel@webmail.xs4all.nl>
-	<4B715CEB.1070602@redhat.com>
-	<0c196b926b744e04a94850d4d3b1e029.squirrel@webmail.xs4all.nl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <0c196b926b744e04a94850d4d3b1e029.squirrel@webmail.xs4all.nl>
+In-Reply-To: <Pine.LNX.4.64.1002081044150.4936@axis700.grange>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,80 +18,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: linux-pm@lists.linux-foundation.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Valentin Longchamp <valentin.longchamp@epfl.ch>, Linux Media Mailing List <linux-media@vger.kernel.org>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-pm@lists.linux-foundation.org, Linux Media Mailing List <linux-media@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hans Verkuil wrote:
->> Hans Verkuil wrote:
+On Mon, 8 Feb 2010, Guennadi Liakhovetski wrote:
 
->>> But if you have ideas to improve the core to make it easier to add pm
->>> support to the drivers that need it, then I am all for it.
->> IMO, the runtime pm should be supported at V4L core, but some callbacks
->> are
->> needed. Also, I can see some classes of PM at the core:
->>
->> 	TV standard demod and sensors only need to be powerup when streaming.
+> To save power soc-camera powers subdevices down, when they are not in use, 
+> if this is supported by the platform. However, the V4L standard dictates, 
+> that video nodes shall preserve configuration between uses. This requires 
+> runtime power management, which is implemented by this patch. It allows 
+> subdevice drivers to specify their runtime power-management methods, by 
+> assigning a type to the video device.
 > 
-> Definitely not the demod: that's generally used to detect whether there is
-> a TV signal and what audio format is used. You want that also when not
-> streaming. I guess it can be powered down though when no files are open.
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> ---
+> 
+> I've posted this patch to linux-media earlier, but I'd also like to get 
+> comments on linux-pm, sorry to linux-media falks for a duplicate. To 
+> explain a bit - soc_camera.c is a management module, that binds video 
+> interfaces on SoCs and sensor drivers. The calls, that I am adding to 
+> soc_camera.c shall save and restore sensor registers before they are 
+> powered down and after they are powered up.
 
-This is device-specific: on some devices, the tuner provides the info (and
-even decode the audio carrier). Also, on some modes (e. g. radio), the demod 
-may be turned off.
+This patch is not correct as it stands.  If you use runtime PM then the 
+system PM resume method has to be changed.  See the discussion in 
+section 6 of Documentation/power/runtime_pm.txt.
 
->> So, I think that we'll need some callbacks to the drivers, in order to do
->> the
->> power management on the applicable components. The final action should be
->> at
->> the driver level, but supported by the core.
-> 
-> I guess the essential information is:
-> 
-> 1) is someone using the driver (i.e. is a device node open, which is not
-> necessarily limited to v4l2-type device nodes)?
-> 2) are we actively streaming from or to some particular input or output?
-> 
-> And we probably need some easy way to detect and set the powersaving state
-> for each component (subdev or the main v4l2_device).
-
-krefs can be a good alternative to check device usage and enable powersaving,
-but we'll need some callbacks to save/restore chip register values per dev/subdev.
-> 
-> I really need to research the pm stuff...
-> 
-> Regards,
-> 
->          Hans
-> 
->>> Regards,
->>>
->>>         Hans
->>>
->>>> Thanks
->>>> Guennadi
->>>> ---
->>>> Guennadi Liakhovetski, Ph.D.
->>>> Freelance Open-Source Software Developer
->>>> http://www.open-technology.de/
->>>>
->>>
->>
->> --
->>
->> Cheers,
->> Mauro
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-media" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
-> 
-> 
-
-
--- 
-
-Cheers,
-Mauro
+Alan Stern
