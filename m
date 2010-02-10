@@ -1,17 +1,17 @@
-From: Gary Hade <garyhade@us.ibm.com>
-Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for
-	PCI PME	wake-up (rev. 7)
-Date: Wed, 10 Feb 2010 12:38:52 -0800
-Message-ID: <20100210203852.GA17115__33969.2230023958$1265834968$gmane$org@us.ibm.com>
-References: <201001101431.38630.rjw@sisk.pl> <201002100212.29904.rjw@sisk.pl>
-	<20100210174826.GB10093@us.ibm.com>
-	<201002101900.54478.rjw@sisk.pl>
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+Subject: Re: syncing the disks when entering sleep
+Date: Wed, 10 Feb 2010 12:58:54 -0800
+Message-ID: <76FA3B279DD9DA48896E2B4049449572051378CE@USA7061MS02.na.xerox.net>
+References: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>
+	<4B67A663.6080008@crca.org.au>
+	<20100210081354.GA20950@atrey.karlin.mff.cuni.cz>
+	<201002101134.23851.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201002101900.54478.rjw@sisk.pl>
+Content-class: urn:content-classes:message
+In-Reply-To: <201002101134.23851.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,76 +21,95 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Moore,
-	Robert" <robert.moore@intel.com>, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org
+Cc: Nigel Cunningham <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 10, 2010 at 07:00:54PM +0100, Rafael J. Wysocki wrote:
-> On Wednesday 10 February 2010, Gary Hade wrote:
-> > On Wed, Feb 10, 2010 at 02:12:29AM +0100, Rafael J. Wysocki wrote:
-> > > On Wednesday 10 February 2010, Rafael J. Wysocki wrote:
-> > > > On Wednesday 10 February 2010, Gary Hade wrote:
-> > > > > On Tue, Feb 09, 2010 at 12:58:39PM -0800, Gary Hade wrote:
-> > > > ...
-> > > > > > OK.  I already confirmed that the problem reproduces with your
-> > > > > > patches applied.  I am now in the process of trying vanilla
-> > > > > > 2.6.33-rc7.  If hot-add works with 2.6.33-rc7 I will give
-> > > > > > your patch a try.
-> > > > > 
-> > > > > The hot-add worked fine with an unpatched 2.6.33-rc7.
-> > > > 
-> > > > Good.
-> > > > 
-> > > > > The new patch when added to the 2.6.33-rc7 tree that
-> > > > > included the original patchset unfortunately did not
-> > > > > correct the problem.
-> > > > 
-> > > > Bad.
-> > > > 
-> > > > Well, fortunately I have another one, but I haven't tested it myself yet except
-> > > > for checking that it builds.  Hopefully it won't break things more.
-> > > > 
-> > > > The patch below applies on top of 2.6.33-rc7 with my PCI runtime PM patchset
-> > > > applied.  Please test it and let me know the results.
-> > > 
-> > > Sorry, I sent a wrong version of the patch by mistake, it doesn't even build.
-> > > The correct one is appended.
-> > 
-> > No problem.  I received this message before doing anything with
-> > the previous one.
-> > 
-> > Sorry, both hot-add and hot-remove behaviors appear unchanged
-> > with this patch.
-> 
-> Hmm, that's kind of strange.  I'm getting suspicious.
-> 
-> > I would like to dig into the code and help with the debugging
-> > but I am swamped with other things right now.  However, feel 
-> > free to continue using me for testing if you have other ideas
-> > you want me to try.
-> 
-> Thanks, of course I have some ideas. :-)
-> 
-> First, please try to test 2.6.33-rc7 with patches [1/9] - [7/9] applied
-> (ie. without the $subject patch and [9/9]).  Let's make sure we're debugging
-> the right patch.
 
-It does look like both the hot-add and hot-remove issues were
-introduced by something in 1/9 through 7/9.  I started with a
-clean 2.6.33-rc7 tree and applied only 1/9 through 7/9.  I still
-see that lingering blinking amber LED with hot-remove and no
-response from the driver during hot-add.
 
-Now I suppose you want me to start reverting 1/9 through 7/9
-in reverse order to find the culprit. :)
+>   -----Original Message-----
+>   From: Rafael J. Wysocki [mailto:rjw@sisk.pl]
+>   Sent: Wednesday, February 10, 2010 5:34 AM
+>   To: linux-pm@lists.linux-foundation.org
+>   Cc: Pavel Machek; Nigel Cunningham; Leisner, Martin
+>   Subject: Re: [linux-pm] syncing the disks when entering sleep
+>   
+>   On Wednesday 10 February 2010, Pavel Machek wrote:
+>   > > Hi.
+>   > >
+>   > > Pavel Machek wrote:
+>   > > >> So you're asking to give this knob "one shot behavior" (i.e.
+>   "then
+>   > > >> next sleep won't sync")?
+>   > > >
+>   > > > Yes.
+>   > > >
+>   > > >> But I'm primarily interested in the behavior on embedded systems
+>   > > >> (where you control all the processes running -- there's no "user"
+>   > > >> involved.
+>   > > >>
+>   > > >
+>   > > > Well, then "one shot behaviour" does not hurt you, right?
+>   > > >
+>   > > >> If a user starts messing with default settings, any unwanted
+>   > > >> behavior is the users problem (besides, this should only be
+>   > > >> writable as root).
+>   > > >>
+>   > > >
+>   > > > I'd rather not add traps for the user unless absolutely
+>   neccessary.
+>   > > > Not even for root user. Pavel
+>   > >
+>   > > But that's precisely what you're doing. You're advocating making the
+>   > > behaviour inconsistent. If what you're suggesting is done, you won't
+>   be
+>   > > able to simply cat the sysfs entry to know whether sys_syncing is
+>   going
+>   > > to be done on the next cycle. You'll also have to have knowledge of
+>   > > whether a cycle has been done since the last time the value is set.
+>   The
+>   > > end result will be someone getting trapped and caught out because
+>   they
+>   > > think '1' in /sys/power/dont_sync (or whatever it's called) means
+>   what
+>   > > it says.
+>   >
+>   > I'm simply advocating that setting from one suspend should not change
+>   > other suspends ... because you have multiple different programs
+>   > wanting to suspend the system, all independend.
+>   
+>   Which is wrong.  There should be one power manager everybody else calls
+>   to
+>   suspend the system.  Yes, even if the battery is running critical.
+>   
+>   And I guess on the embedded systems in question the situation is exactly
+>   like
+>   that.
+>   
+>   > See the example about system running low on battery earlier in the
+>   thread.
+>   
+>   Which is irrelevant here.
+>   
+>   Actually, doing the sync() in the kernel is a hack that we decided not
+>   to
+>   remove just because the users space didin't do the right thing on some
+>   systems.
+>   If the user space always synced disks before suspending, we wouldn't
+>   have to
+>   do that in the kernel.
+>   
+>   Same goes for the kernel VT switch, BTW.
+>   
+>   So really, I don't see anything wrong with a knob that will turn the
+>   kernel
+>   sync off entirely, because that basically means "my user space is not
+>   broken".
+>   
+>   Rafael
 
-Gary
+This is interesting.   When I saw the sync's I said to myself "WTF?"
+It definitely should be a knob because it implements policy behavior -- 
+which is often detrimental to power saving efforts.
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+marty
