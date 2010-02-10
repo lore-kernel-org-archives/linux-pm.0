@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for
 	PCI PME wake-up (rev. 7)
-Date: Wed, 10 Feb 2010 02:07:51 +0100
-Message-ID: <201002100207.51180.rjw__11863.313910044$1265764079$gmane$org@sisk.pl>
+Date: Wed, 10 Feb 2010 02:12:29 +0100
+Message-ID: <201002100212.29904.rjw__8089.11369317702$1265764356$gmane$org@sisk.pl>
 References: <201001101431.38630.rjw@sisk.pl>
-	<20100209205839.GA12564@us.ibm.com>
 	<20100209233154.GC12564@us.ibm.com>
+	<201002100207.51180.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100209233154.GC12564@us.ibm.com>
+In-Reply-To: <201002100207.51180.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,29 +25,33 @@ Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, 
 	Robert" <robert.moore@intel.com>, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 10 February 2010, Gary Hade wrote:
-> On Tue, Feb 09, 2010 at 12:58:39PM -0800, Gary Hade wrote:
-...
-> > OK.  I already confirmed that the problem reproduces with your
-> > patches applied.  I am now in the process of trying vanilla
-> > 2.6.33-rc7.  If hot-add works with 2.6.33-rc7 I will give
-> > your patch a try.
+On Wednesday 10 February 2010, Rafael J. Wysocki wrote:
+> On Wednesday 10 February 2010, Gary Hade wrote:
+> > On Tue, Feb 09, 2010 at 12:58:39PM -0800, Gary Hade wrote:
+> ...
+> > > OK.  I already confirmed that the problem reproduces with your
+> > > patches applied.  I am now in the process of trying vanilla
+> > > 2.6.33-rc7.  If hot-add works with 2.6.33-rc7 I will give
+> > > your patch a try.
+> > 
+> > The hot-add worked fine with an unpatched 2.6.33-rc7.
 > 
-> The hot-add worked fine with an unpatched 2.6.33-rc7.
+> Good.
+> 
+> > The new patch when added to the 2.6.33-rc7 tree that
+> > included the original patchset unfortunately did not
+> > correct the problem.
+> 
+> Bad.
+> 
+> Well, fortunately I have another one, but I haven't tested it myself yet except
+> for checking that it builds.  Hopefully it won't break things more.
+> 
+> The patch below applies on top of 2.6.33-rc7 with my PCI runtime PM patchset
+> applied.  Please test it and let me know the results.
 
-Good.
-
-> The new patch when added to the 2.6.33-rc7 tree that
-> included the original patchset unfortunately did not
-> correct the problem.
-
-Bad.
-
-Well, fortunately I have another one, but I haven't tested it myself yet except
-for checking that it builds.  Hopefully it won't break things more.
-
-The patch below applies on top of 2.6.33-rc7 with my PCI runtime PM patchset
-applied.  Please test it and let me know the results.
+Sorry, I sent a wrong version of the patch by mistake, it doesn't even build.
+The correct one is appended.
 
 Rafael
 
@@ -355,7 +359,7 @@ Index: linux-2.6/drivers/pci/pci-acpi.c
 +			if (notify_obj->pci_dev || notify_obj->pci_bus) {
 +				status = AE_ALREADY_EXISTS;
 +				goto out;
-+			} else
++			} else {
 +				goto add;
 +			}
 +		}
