@@ -1,15 +1,15 @@
-From: Oliver Neukum <oliver@neukum.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: syncing the disks when entering sleep
-Date: Wed, 10 Feb 2010 11:38:47 +0100
-Message-ID: <201002101138.47072.oliver@neukum.org>
+Date: Wed, 10 Feb 2010 11:58:22 +0100
+Message-ID: <201002101158.22606.rjw@sisk.pl>
 References: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>
-	<20100210081354.GA20950@atrey.karlin.mff.cuni.cz>
 	<201002101134.23851.rjw@sisk.pl>
+	<201002101138.47072.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201002101134.23851.rjw@sisk.pl>
+In-Reply-To: <201002101138.47072.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,18 +19,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Nigel Cunningham <ncunningham@crca.org.au>, "Leisner,
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>, "Leisner,
 	Martin" <Martin.Leisner@xerox.com>
 List-Id: linux-pm@vger.kernel.org
 
-Am Mittwoch, 10. Februar 2010 11:34:23 schrieb Rafael J. Wysocki:
-> Actually, doing the sync() in the kernel is a hack that we decided not to
-> remove just because the users space didin't do the right thing on some systems.
-> If the user space always synced disks before suspending, we wouldn't have to
-> do that in the kernel.
+On Wednesday 10 February 2010, Oliver Neukum wrote:
+> Am Mittwoch, 10. Februar 2010 11:34:23 schrieb Rafael J. Wysocki:
+> > Actually, doing the sync() in the kernel is a hack that we decided not to
+> > remove just because the users space didin't do the right thing on some systems.
+> > If the user space always synced disks before suspending, we wouldn't have to
+> > do that in the kernel.
+> 
+> If you sync in user space will you not have an inevitable race condition?
 
-If you sync in user space will you not have an inevitable race condition?
+Do you mean the race with applications that write to disks while the sustem is
+suspending?
 
-	Regards
-		Oliver
+Rafael
