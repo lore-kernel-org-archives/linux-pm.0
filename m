@@ -1,14 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: syncing the disks when entering sleep
-Date: Thu, 11 Feb 2010 18:28:18 +0100
-Message-ID: <201002111828.18861.rjw@sisk.pl>
-References: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>
-	<201002102019.26518.rjw@sisk.pl> <20100211150049.GB1434@ucw.cz>
+From: Gary Hade <garyhade@us.ibm.com>
+Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for
+	PCI PME	wake-up (rev. 7)
+Date: Thu, 11 Feb 2010 10:29:10 -0800
+Message-ID: <20100211182910.GA9766__17314.120863057$1265913044$gmane$org@us.ibm.com>
+References: <201001101431.38630.rjw@sisk.pl> <201002110156.54617.rjw@sisk.pl>
+	<20100211020706.GA28372@us.ibm.com>
+	<201002111427.17275.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100211150049.GB1434@ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <201002111427.17275.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,65 +21,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>, "Leisner,
-	Martin" <Martin.Leisner@xerox.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Moore,
+	Robert" <robert.moore@intel.com>, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 11 February 2010, Pavel Machek wrote:
-> 
-> > > Really? If so then it is misdesigned.
+On Thu, Feb 11, 2010 at 02:27:17PM +0100, Rafael J. Wysocki wrote:
+> On Thursday 11 February 2010, Gary Hade wrote:
+> > On Thu, Feb 11, 2010 at 01:56:54AM +0100, Rafael J. Wysocki wrote:
+> > > On Thursday 11 February 2010, Rafael J. Wysocki wrote:
+> > > > On Thursday 11 February 2010, Gary Hade wrote:
+> > > > > On Wed, Feb 10, 2010 at 11:58:00PM +0100, Rafael J. Wysocki wrote:
+> > > > > > On Wednesday 10 February 2010, Gary Hade wrote:
+> > > > ...
+> > > > > > > Yes, 6/9 also appeared to be the most likely suspect to me and
+> > > > > > > I was already doing what you asked except in the opposite order.
+> > > > > > > With 1/9 through 6/9 both the hot-add and hot-remove issues still
+> > > > > > > reproduced.  After removing 6/9 both issues disappeared.
+> > > > > > 
+> > > > > > Thanks for verifying, I've already started to look for bugs in it.
+> > > > > 
+> > > > > Thanks!
+> > > > > 
+> > > > > > 
+> > > > > > What's your kernel command line, BTW?
+> > > > > 
+> > > > > root=/dev/disk/by-id/scsi-35000c5000036ffcb-part7 ip=9.47.66.9:9.47.67.50:9.47.66.1:255.255.254.0 resume=/dev/disk/by-id/scsi-35000c50000370247-part3 crashkernel=256M-:128M console=tty0 console=ttyS0,115200 pci=use_crs pci=norom
+> > > > 
+> > > > Thanks.  We found a bug in the patch, but it would require you to use a
+> > > > specific command line switch to trigger, which you don't use.
+> > > > 
+> > > > I'll let you know if I have anything to test.
 > > > 
-> > > Before the "don't sync" proposal, it was okay to have multiple
-> > > power managers.
-> > > 
-> > > Actually I have three on zaurus. There's in-kernel suspend on battery
-> > > critical, then there's somehing userspace in desktop environment, and
-> > > then I'm triggering suspends by hand using echo.
+> > > OK, please try the patch below on top of [1-6/9].
 > > 
-> > To be precise, 1 and 3 are things that override the power manager.
-> > 
-> > And if you override the power manager, you're supposed to know what you're
-> > doing, aren't you?
+> > Sorry, it didn't help.  The hot-add and hot-remove behaviors
+> > still look the same.
 > 
-> I know what I'm doing, but I'd prefer traps not being set for me.
-
-What are you talking about?  Either you set the knob or you don't.  If you
-don't, nothing changes.
-
-> > > > So really, I don't see anything wrong with a knob that will turn the kernel
-> > > > sync off entirely, because that basically means "my user space is
-> > > > not broken".
-> > > 
-> > > Because, very easily, parts of my users space may be broken.
-> > 
-> > How exactly would they be broken?
+> Thanks for testing.
 > 
-> I have 3 power managers.
-
-You don't.
-
-> You called that broken before.
-
-Because it is so.  Think about user space suspend hooks, for example, like
-s2ram.  Surely your kernel emergency suspend can't use anything like this?
-
-> How is power manager expected to work on zaurus, which suspends from
-> kernel on battery critical? echo no > sync; sync; echo mem > state;
-> echo yes > sync?
+> Well, this time I found another real bug, which is that we should add
+> gpe_block->block_base_number to the GPE index within the block in order to
+> compute the GPE number.  If there are GPE devices other than the FADT ones in
+> your system, that may explain the symptoms.
 > 
-> Its still racy..
+> Please try the patch below (on top of [1-6/9]).  In case it doesn't help, please
+> look for "Failed to ebable GPE" messages in dmesg and let me know if there are
+> any.
 
-Please refer to my reply to Oliver.
+That one worked!  It corrected both the blinking amber LED
+after hot-remove and acpiphp's failure to see the hot-add event.
 
-> > Why don't we just assume that the user who sets the knob knows what he's doing?
-> >
-> 
-> Because better alternatives exist. Like 'echo mem:nosync > state'.
+Now when you have patch(es) ready for Jesse's linux-next branch
+I can get back to my original mission of checking out Bjorn's
+_CRS enablement changes.
 
-That is a sledgehammer.
+Gary
 
-I really don't understand your objections here and none of the "alternatives"
-you've been talking about so far would be acceptable to me.
-
-Rafael
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
