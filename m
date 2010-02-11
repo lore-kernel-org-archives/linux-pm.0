@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for
-	PCI PME wake-up (rev. 7)
-Date: Thu, 11 Feb 2010 23:21:13 +0100
-Message-ID: <201002112321.13922.rjw__41490.4677113101$1265926987$gmane$org@sisk.pl>
-References: <201001101431.38630.rjw@sisk.pl> <201002112132.02255.rjw@sisk.pl>
-	<20100211215604.GA10298@us.ibm.com>
+Subject: [PATCH] ACPI: Use GPE reference counting to support
+	shared GPEs (was: Re: Recent GPE patches - some questions.)
+Date: Thu, 11 Feb 2010 23:51:42 +0100
+Message-ID: <201002112351.42172.rjw__15806.9068719216$1265928825$gmane$org@sisk.pl>
+References: <4911F71203A09E4D9981D27F9D83085855AF782E@orsmsx503.amr.corp.intel.com>
+	<201002070031.54680.rjw@sisk.pl>
+	<4911F71203A09E4D9981D27F9D83085855DD7F24@orsmsx503.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100211215604.GA10298@us.ibm.com>
+In-Reply-To: <4911F71203A09E4D9981D27F9D83085855DD7F24@orsmsx503.amr.corp.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,858 +20,1082 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Moore,
-	Robert" <robert.moore@intel.com>, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
+To: "Moore, Robert" <robert.moore@intel.com>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 11 February 2010, Gary Hade wrote:
-> On Thu, Feb 11, 2010 at 09:32:02PM +0100, Rafael J. Wysocki wrote:
-> > On Thursday 11 February 2010, Gary Hade wrote:
-> > > On Thu, Feb 11, 2010 at 02:27:17PM +0100, Rafael J. Wysocki wrote:
-> > > > On Thursday 11 February 2010, Gary Hade wrote:
-> > > > > On Thu, Feb 11, 2010 at 01:56:54AM +0100, Rafael J. Wysocki wrote:
-> > > > > > On Thursday 11 February 2010, Rafael J. Wysocki wrote:
-> > > > > > > On Thursday 11 February 2010, Gary Hade wrote:
-> > > > > > > > On Wed, Feb 10, 2010 at 11:58:00PM +0100, Rafael J. Wysocki wrote:
-> > > > > > > > > On Wednesday 10 February 2010, Gary Hade wrote:
-> > > > > > > ...
-> > > > > > > > > > Yes, 6/9 also appeared to be the most likely suspect to me and
-> > > > > > > > > > I was already doing what you asked except in the opposite order.
-> > > > > > > > > > With 1/9 through 6/9 both the hot-add and hot-remove issues still
-> > > > > > > > > > reproduced.  After removing 6/9 both issues disappeared.
-> > > > > > > > > 
-> > > > > > > > > Thanks for verifying, I've already started to look for bugs in it.
-> > > > > > > > 
-> > > > > > > > Thanks!
-> > > > > > > > 
-> > > > > > > > > 
-> > > > > > > > > What's your kernel command line, BTW?
-> > > > > > > > 
-> > > > > > > > root=/dev/disk/by-id/scsi-35000c5000036ffcb-part7 ip=9.47.66.9:9.47.67.50:9.47.66.1:255.255.254.0 resume=/dev/disk/by-id/scsi-35000c50000370247-part3 crashkernel=256M-:128M console=tty0 console=ttyS0,115200 pci=use_crs pci=norom
-> > > > > > > 
-> > > > > > > Thanks.  We found a bug in the patch, but it would require you to use a
-> > > > > > > specific command line switch to trigger, which you don't use.
-> > > > > > > 
-> > > > > > > I'll let you know if I have anything to test.
-> > > > > > 
-> > > > > > OK, please try the patch below on top of [1-6/9].
-> > > > > 
-> > > > > Sorry, it didn't help.  The hot-add and hot-remove behaviors
-> > > > > still look the same.
-> > > > 
-> > > > Thanks for testing.
-> > > > 
-> > > > Well, this time I found another real bug, which is that we should add
-> > > > gpe_block->block_base_number to the GPE index within the block in order to
-> > > > compute the GPE number.  If there are GPE devices other than the FADT ones in
-> > > > your system, that may explain the symptoms.
-> > > > 
-> > > > Please try the patch below (on top of [1-6/9]).  In case it doesn't help, please
-> > > > look for "Failed to ebable GPE" messages in dmesg and let me know if there are
-> > > > any.
-> > > 
-> > > That one worked!  It corrected both the blinking amber LED
-> > > after hot-remove and acpiphp's failure to see the hot-add event.
-> > 
-> > Great!
-> > 
-> > > Now when you have patch(es) ready for Jesse's linux-next branch
-> > 
-> > Well, not quite.  I had to rework them in the meantime. ;-)
-> > 
-> > > I can get back to my original mission of checking out Bjorn's
-> > > _CRS enablement changes.
-> > 
-> > May I still ask you to test something?
+On Wednesday 10 February 2010, Moore, Robert wrote:
 > 
-> Oh, I guess so. :)
+> >-----Original Message-----
+> >From: Rafael J. Wysocki [mailto:rjw@sisk.pl]
+> >Sent: Saturday, February 06, 2010 3:32 PM
+> >To: Moore, Robert
+> >Cc: Matthew Garrett; linux-acpi@vger.kernel.org; Len Brown
+> >Subject: Re: Recent GPE patches - some questions.
+...
+> >Moreover, we need two reference counters, because there are cases when a
+> >GPE should be enabled for wakeup and not enabled for run time and vice
+> >versa.
+> >
+> >> Adding the reference count semantic to these interfaces changes their
+> >> behavior in a fairly simple way:
+> >>
+> >> Support for shared GPEs:
+> >> AcpiEnableGpe: For a given GPE, it is actually enabled only on the first
+> >call.
+> >> AcpiDisableGpe: For a given GPE, it is actually disabled only on the last
+> >call.
+> >
+> >I suppose you mean acpi_enable_gpe() and acpi_disable_gpe().
+> >
+> >That wouldn't work, because sometimes we need to actually hardware-disable
+> >GPEs and hardware-enable them regardless of the refcount mechanism, like
+> >for example in the EC suspend and resume routines.
 > 
-> > 
-> > In case I can, please try the appended patch on top of [1-3/6].  It is a
-> > replacement for [4-6/9] with the last fix included.
+> Yes, this makes sense, even if the EC GPE is shared.
 > 
-> I just tried it and it seemed to work fine.
+> >
+> >That said, if you are afraid that the new interface may be cumbersome for
+> >the
+> >callers, I think we can introduce just two callbacks,
+> >
+> >acpi_get_gpe()
+> >acpi_put_gpe()
+> >
+> >taking 3 arguments each, where the two first arguments are like for the
+> >Matthew's callbacks and the third argument is a mask of two bits:
+> >
+> >ACPI_GPE_TYPE_WAKE
+> >ACPI_GPE_TYPE_RUNTIME
+> >
+> >that will tell the callback whether to use the wakeup or runtime counter
+> >for
+> >reference counting (if called with ACPI_GPE_TYPE_WAKE_RUN, both
+> >reference counters will be modified at the same time).
+> >
+> >Please tell me what you think.
+> 
+> Good, I like having the two interfaces better than the original four.
+> 
+> However, I'm having some trouble with the naming. I think I would like to
+> keep acpi_enable_gpe and acpi_disable_gpe as the high-level enable/disable
+> interfaces that may or may not actually touch the hardware depending on
+> reference count, run vs. wake, etc. Thus, enable_gpe and disable_gpe remain
+> similar to today (with addition of new reference count mechanisms) and would
+> correspond to put_gpe and get_gpe above. I think this also has the advantage
+> of reducing changes to existing drivers across all operating systems
+> supported by ACPICA.
+> 
+> Then, we have the special case where a driver must absolutely (H/W)
+> enable/disable a GPE, regardless of sharing. Probably only the EC driver
+> needs this. I would like to see new interfaces for these. Actually, one new
+> interface would probably suffice. Something like:
+> 
+> acpi_set_gpe (ENABLE | DISABLE)
 
-Great, thanks!
+OK
 
-I have one more testing request if you don't mind, but I'd like to make sure
-the PCI runtime PM patches won't break the PCI hotplug again.
+I had to fold the 3 patches into the appended one.  I used the names like you
+suggested.
 
-Please apply [7/9] (ACPI / PM: Add more run-time wake-up field) on top of the
-just tested patch and apply the appended patch on top of that.  Then, please
-check if the PCI hotplug still works.
+The patch has been initially tested on a few machines and appears to work fine.
 
 Rafael
 
 ---
+Subject: ACPI: Use GPE reference counting to support shared GPEs
 From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PCI / ACPI / PM: Platform support for PCI PME wake-up (rev. 8)
 
-Although the majority of PCI devices can generate PMEs that in
-principle may be used to wake up devices suspended at run time,
-platform support is generally necessary to convert PMEs into wake-up
-events that can be delivered to the kernel.  If ACPI is used for this
-purpose, a PME generated by a PCI device will trigger the ACPI GPE
-associated with the device to generate an ACPI wake-up event that we
-can set up a handler for, provided that everything is configured
-correctly.
+ACPI GPEs may map to multiple devices.  The current GPE interface
+only provides a mechanism for enabling and disabling GPEs, making
+it difficult to change the state of GPEs at runtime without extensive
+cooperation between devices.
 
-Unfortunately, the subset of PCI devices that have GPEs associated
-with them is quite limited and the other devices have to rely on
-the GPEs associated with their upstream bridges and, possibly, the
-root bridge to generate ACPI wake-up events in response to PMEs from
-them.  Moreover, ACPI-based PCI hotplug also uses ACPI notify
-handlers that in general may conflict with the PM notify handlers,
-unless this issue is specifically taken care of.
+Add an API to allow devices to indicate whether or not they want
+their device's GPE to be enabled for both runtime and wakeup events.
 
-Add ACPI platform support for PCI PME wake-up:
-o Add a framework making is possible to use ACPI system notify
-  handlers for both PM and hotplug at the same time and to take the
-  wake-up GPE sharing into account.
-o Add new PCI platform callback ->run_wake() to struct
-  pci_platform_pm_ops allowing us to enable/disable the platform to
-  generate wake-up events for given device.  Implemet this callback
-  for the ACPI platform.
-o Define ACPI wake-up handlers for PCI devices and PCI buses and make
-  the PCI-ACPI binding code register wake-up notifiers for devices
-  associated with wake-up GPEs.
-o Add function pci_dev_run_wake() which can be used by PCI drivers to
-  check if given device is capable of generating wake-up events at
-  run time.
+Remove the old GPE type handling entirely, which gets rid of various
+quirks, like the implicit disabling with GPE type setting. This
+requires a small amount of rework in order to ensure that non-wake
+GPEs are enabled by default to preserve existing behaviour.
 
-Developed in cooperation with Matthew Garrett <mjg@redhat.com>.
+Based on patches from Matthew Garrett <mjg@redhat.com>.
 
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/internal.h            |    2 
- drivers/acpi/pci_bind.c            |   14 +
- drivers/acpi/pci_root.c            |    8 
- drivers/pci/hotplug/acpiphp_glue.c |   23 --
- drivers/pci/pci-acpi.c             |  351 +++++++++++++++++++++++++++++++++++++
- drivers/pci/pci.c                  |   67 +++++++
- drivers/pci/pci.h                  |    7 
- include/acpi/acpi_bus.h            |    3 
- include/linux/pci-acpi.h           |   10 +
- include/linux/pci.h                |    1 
- 10 files changed, 469 insertions(+), 17 deletions(-)
+ drivers/acpi/acpica/acevents.h |    6 -
+ drivers/acpi/acpica/aclocal.h  |    2 
+ drivers/acpi/acpica/evgpe.c    |  153 ++++-------------------------------------
+ drivers/acpi/acpica/evgpeblk.c |   87 ++++++++---------------
+ drivers/acpi/acpica/evxface.c  |   14 ---
+ drivers/acpi/acpica/evxfevnt.c |   90 +++++++++++++++++-------
+ drivers/acpi/button.c          |   13 ++-
+ drivers/acpi/ec.c              |   14 ++-
+ drivers/acpi/sleep.c           |   15 +++-
+ drivers/acpi/system.c          |    4 -
+ drivers/acpi/wakeup.c          |   81 +++++++--------------
+ include/acpi/acpixf.h          |    6 -
+ include/acpi/actypes.h         |   28 ++-----
+ 13 files changed, 188 insertions(+), 325 deletions(-)
 
-Index: linux-2.6/drivers/pci/pci.h
+Index: linux-2.6/drivers/acpi/acpica/aclocal.h
 ===================================================================
---- linux-2.6.orig/drivers/pci/pci.h
-+++ linux-2.6/drivers/pci/pci.h
-@@ -35,6 +35,10 @@ int pci_probe_reset_function(struct pci_
-  *
-  * @sleep_wake: enables/disables the system wake up capability of given device
-  *
-+ * @run_wake: enables/disables the platform to generate run-time wake-up events
-+ *		for given device (the device's wake-up capability has to be
-+ *		enabled by @sleep_wake for this feature to work)
-+ *
-  * If given platform is generally capable of power managing PCI devices, all of
-  * these callbacks are mandatory.
-  */
-@@ -44,12 +48,15 @@ struct pci_platform_pm_ops {
- 	pci_power_t (*choose_state)(struct pci_dev *dev);
- 	bool (*can_wakeup)(struct pci_dev *dev);
- 	int (*sleep_wake)(struct pci_dev *dev, bool enable);
-+	int (*run_wake)(struct pci_dev *dev, bool enable);
+--- linux-2.6.orig/drivers/acpi/acpica/aclocal.h
++++ linux-2.6/drivers/acpi/acpica/aclocal.h
+@@ -426,6 +426,8 @@ struct acpi_gpe_event_info {
+ 	struct acpi_gpe_register_info *register_info;	/* Backpointer to register info */
+ 	u8 flags;		/* Misc info about this GPE */
+ 	u8 gpe_number;		/* This GPE */
++	u8 runtime_count;
++	u8 wakeup_count;
  };
  
- extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
- extern void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
- extern void pci_disable_enabled_device(struct pci_dev *dev);
- extern bool pci_check_pme_status(struct pci_dev *dev);
-+extern int __pci_pme_wakeup(struct pci_dev *dev, void *ign);
-+extern void pci_pme_wakeup_bus(struct pci_bus *bus);
- extern void pci_pm_init(struct pci_dev *dev);
- extern void platform_pci_wakeup_init(struct pci_dev *dev);
- extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
-Index: linux-2.6/drivers/pci/pci-acpi.c
+ /* Information about a GPE register pair, one per each status/enable pair in an array */
+Index: linux-2.6/drivers/acpi/acpica/evxfevnt.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/pci-acpi.c
-+++ linux-2.6/drivers/pci/pci-acpi.c
-@@ -16,8 +16,284 @@
- #include <acpi/acpi_bus.h>
+--- linux-2.6.orig/drivers/acpi/acpica/evxfevnt.c
++++ linux-2.6/drivers/acpi/acpica/evxfevnt.c
+@@ -201,23 +201,27 @@ ACPI_EXPORT_SYMBOL(acpi_enable_event)
  
- #include <linux/pci-acpi.h>
-+#include <linux/pm_runtime.h>
- #include "pci.h"
- 
-+static DEFINE_MUTEX(pci_acpi_notify_mtx);
-+static LIST_HEAD(pci_acpi_notify_list);
-+
-+struct pci_acpi_notify_object
-+{
-+	struct list_head entry;
-+	acpi_handle handle;
-+	acpi_notify_handler hp_cb;
-+	void *hp_data;
-+	struct pci_bus *pci_bus;
-+	struct pci_dev *pci_dev;
-+};
-+
-+/**
-+ * pci_acpi_event_fn - Universal system notification handler.
-+ * @handle: ACPI handle of a device the notification is for.
-+ * @event: Type of the signaled event.
-+ * @context: Pointer to the notify object associated with the handle.
-+ *
-+ * Use @handle to obtain the address of the ACPI device object the event is
-+ * signaled for.  If this is a wake-up event, execute the appropriate PME
-+ * handler for the bus or device represented by it (or both, if @dev is a
-+ * bridge).  If this is not a wake-up event, execute the hotplug notify handler
-+ * for @handle.
-+ */
-+static void pci_acpi_event_fn(acpi_handle handle, u32 event, void *context)
-+{
-+	struct pci_acpi_notify_object *notify_obj = context;
-+
-+	if (!notify_obj)
-+		return;
-+
-+	mutex_lock(&pci_acpi_notify_mtx);
-+
-+	if (event == ACPI_NOTIFY_DEVICE_WAKE) {
-+		if (notify_obj->pci_bus) {
-+			pci_pme_wakeup_bus(notify_obj->pci_bus);
-+		}
-+		if (notify_obj->pci_dev) {
-+			pci_check_pme_status(notify_obj->pci_dev);
-+			pm_request_resume(&notify_obj->pci_dev->dev);
-+		}
-+	} else if (notify_obj->hp_cb) {
-+		notify_obj->hp_cb(handle, event, notify_obj->hp_data);
-+	}
-+
-+	mutex_unlock(&pci_acpi_notify_mtx);
-+}
-+
-+/**
-+ * add_notify_obj - Create a new notify object for given ACPI handle.
-+ * @handle: ACPI handle to create the notify object for.
-+ */
-+static struct pci_acpi_notify_object *add_notify_obj(acpi_handle handle)
-+{
-+	struct pci_acpi_notify_object *notify_obj;
-+
-+	notify_obj = kzalloc(sizeof(*notify_obj), GFP_KERNEL);
-+	if (!notify_obj)
-+		return NULL;
-+
-+	notify_obj->handle = handle;
-+	return notify_obj;
-+}
-+
-+/**
-+ * pci_acpi_add_hp_notifier - Register a hotplug notifier for given device.
-+ * @handle: ACPI handle to register the notifier for.
-+ * @handler: Callback to execute for hotplug events related to @handle.
-+ * @context: Pointer to the context data to pass to @handler.
-+ *
-+ * Find the notify object associated with @handle or create one if not found.
-+ * Return error code if the notify object already contains a valid pointer to
-+ * a hotplug handler or add @handler and @context to the notify object.
-+ */
-+acpi_status pci_acpi_add_hp_notifier(acpi_handle handle,
-+				     acpi_notify_handler handler, void *context)
-+{
-+	struct pci_acpi_notify_object *notify_obj;
-+	acpi_status status = AE_OK;
-+
-+	if (!handle)
-+		return AE_BAD_PARAMETER;
-+
-+	mutex_lock(&pci_acpi_notify_mtx);
-+
-+	list_for_each_entry(notify_obj, &pci_acpi_notify_list, entry)
-+		if (notify_obj->handle == handle) {
-+			if (notify_obj->hp_cb) {
-+				status = AE_ALREADY_EXISTS;
-+				goto out;
-+			} else {
-+				goto add;
-+			}
-+		}
-+
-+	notify_obj = add_notify_obj(handle);
-+	if (!notify_obj) {
-+		status = AE_NO_MEMORY;
-+		goto out;
-+	}
-+
-+	status = acpi_install_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
-+						pci_acpi_event_fn, notify_obj);
-+	if (ACPI_FAILURE(status)) {
-+		kfree(notify_obj);
-+		goto out;
-+	}
-+
-+	list_add_tail(&notify_obj->entry, &pci_acpi_notify_list);
-+
-+ add:
-+	notify_obj->hp_cb = handler;
-+	notify_obj->hp_data = context;
-+
-+ out:
-+	mutex_unlock(&pci_acpi_notify_mtx);
-+
-+	return status;
-+}
-+EXPORT_SYMBOL_GPL(pci_acpi_add_hp_notifier);
-+
-+/**
-+ * pci_acpi_remove_hp_notifier - Unregister a hotplug notifier for given device.
-+ * @handle: ACPI handle of the device to unregister the notifier for.
-+ * @handler: Callback executed for hotplug events related to @handle.
-+ *
-+ * Find the notify object corresponding to @handle and remove the pointers to
-+ * the hotplug handler and data from it.  Return error code if the notify object
-+ * is not found.
-+ */
-+acpi_status pci_acpi_remove_hp_notifier(acpi_handle handle,
-+					acpi_notify_handler handler)
-+{
-+	struct pci_acpi_notify_object *notify_obj;
-+	acpi_status status = AE_NOT_FOUND;
-+
-+	if (!handle)
-+		return AE_BAD_PARAMETER;
-+
-+	mutex_lock(&pci_acpi_notify_mtx);
-+
-+	list_for_each_entry(notify_obj, &pci_acpi_notify_list, entry)
-+		if (notify_obj->handle == handle)
-+			goto remove;
-+
-+	goto out;
-+
-+ remove:
-+	notify_obj->hp_data = NULL;
-+	notify_obj->hp_cb = NULL;
-+
-+	if (notify_obj->pci_bus || notify_obj->pci_dev) {
-+		status = AE_OK;
-+		goto out;
-+	}
-+
-+	status = acpi_remove_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
-+						pci_acpi_event_fn);
-+	list_del(&notify_obj->entry);
-+	kfree(notify_obj);
-+
-+ out:
-+	mutex_unlock(&pci_acpi_notify_mtx);
-+	return status;
-+}
-+EXPORT_SYMBOL_GPL(pci_acpi_remove_hp_notifier);
-+
-+/**
-+ * pci_acpi_add_pm_notifier - Register PM notifier for given device.
-+ * @dev: ACPI device to add the notifier for.
-+ * @pci_dev: PCI device to check for the PME status if an event is signaled.
-+ * @pci_bus: PCI bus to walk (checking PME status) if an event is signaled.
-+ *
-+ * Use @dev to find the notify object corresponding to its handle or create a
-+ * new one if not found.  Return error code if the notify object already
-+ * contains a valid pointer to a PCI device or bus object.  Otherwise, add
-+ * @pci_dev and @pci_bus to the notify object, as the device whose PME status
-+ * should be checked whenever a PM event is signaled for @dev and the bus to
-+ * walk checking the PME status of all devices on it whenever a PM event is
-+ * signaled for @dev, respectively.
-+ *
-+ * NOTE: @dev need not be a run-wake or wake-up device to be a valid source of
-+ * PM wake-up events.  For example, wake-up events may be generated for bridges
-+ * if one of the devices below the bridge is signaling PME, even if the bridge
-+ * itself doesn't have a wake-up GPE associated with it.
-+ */
-+acpi_status pci_acpi_add_pm_notifier(struct acpi_device *dev,
-+				     struct pci_dev *pci_dev,
-+				     struct pci_bus *pci_bus)
-+{
-+	struct pci_acpi_notify_object *notify_obj;
-+	acpi_handle handle = dev->handle;
-+	acpi_status status = AE_OK;
-+
-+	if (!handle)
-+		return AE_BAD_PARAMETER;
-+
-+	mutex_lock(&pci_acpi_notify_mtx);
-+
-+	list_for_each_entry(notify_obj, &pci_acpi_notify_list, entry)
-+		if (notify_obj->handle == handle) {
-+			if (notify_obj->pci_dev || notify_obj->pci_bus) {
-+				status = AE_ALREADY_EXISTS;
-+				goto out;
-+			} else {
-+				goto add;
-+			}
-+		}
-+
-+	notify_obj = add_notify_obj(handle);
-+	if (!notify_obj) {
-+		status = AE_NO_MEMORY;
-+		goto out;
-+	}
-+
-+	status = acpi_install_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
-+						pci_acpi_event_fn, notify_obj);
-+	if (ACPI_FAILURE(status)) {
-+		kfree(notify_obj);
-+		goto out;
-+	}
-+
-+	list_add_tail(&notify_obj->entry, &pci_acpi_notify_list);
-+
-+ add:
-+	notify_obj->pci_dev = pci_dev;
-+	notify_obj->pci_bus = pci_bus;
-+
-+ out:
-+	mutex_unlock(&pci_acpi_notify_mtx);
-+	return status;
-+}
-+
-+/**
-+ * pci_acpi_remove_pm_notifier - Unregister PM notifier for given device.
-+ * @dev: ACPI device to remove the notifier from.
-+ *
-+ * Find the notify object for @dev and clear its @pci_dev and @pci_bus
-+ * fields.  If the notify data object is not necessary any more after that,
-+ * remove it altogether.
-+ */
-+acpi_status pci_acpi_remove_pm_notifier(struct acpi_device *dev)
-+{
-+	struct pci_acpi_notify_object *notify_obj;
-+	acpi_handle handle = dev->handle;
-+	acpi_status status = AE_NOT_FOUND;
-+
-+	mutex_lock(&pci_acpi_notify_mtx);
-+
-+	list_for_each_entry(notify_obj, &pci_acpi_notify_list, entry)
-+		if (notify_obj->handle == handle)
-+			goto remove;
-+
-+	goto out;
-+
-+ remove:
-+	notify_obj->pci_dev = NULL;
-+	notify_obj->pci_bus = NULL;
-+
-+	if (notify_obj->hp_cb) {
-+		status = AE_OK;
-+		goto out;
-+	}
-+
-+	status = acpi_remove_notify_handler(dev->handle, ACPI_SYSTEM_NOTIFY,
-+						pci_acpi_event_fn);
-+	list_del(&notify_obj->entry);
-+	kfree(notify_obj);
-+
-+ out:
-+	mutex_unlock(&pci_acpi_notify_mtx);
-+	return status;
-+}
-+
- /*
-  * _SxD returns the D-state with the highest power
-  * (lowest D-state number) supported in the S-state "x".
-@@ -131,12 +407,87 @@ static int acpi_pci_sleep_wake(struct pc
- 	return 0;
- }
- 
-+/**
-+ * acpi_dev_run_wake - Enable/disable wake-up for given device.
-+ * @phys_dev: Device to enable/disable the platform to wake-up the system for.
-+ * @enable: Whether enable or disable the wake-up functionality.
-+ *
-+ * Find the ACPI device object corresponding to @pci_dev and try to
-+ * enable/disable the GPE associated with it.
-+ */
-+static int acpi_dev_run_wake(struct device *phys_dev, bool enable)
-+{
-+	struct acpi_device *dev;
-+	acpi_handle handle;
-+	int error = -ENODEV;
-+
-+	if (!device_run_wake(phys_dev))
-+		return -EINVAL;
-+
-+	handle = DEVICE_ACPI_HANDLE(phys_dev);
-+	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &dev))) {
-+		dev_dbg(phys_dev, "ACPI handle has no context in %s!\n",
-+			__func__);
-+		return -ENODEV;
-+	}
-+
-+	if (enable) {
-+		if (!dev->wakeup.run_wake_count++) {
-+			acpi_enable_wakeup_device_power(dev, ACPI_STATE_S0);
-+			acpi_enable_gpe(dev->wakeup.gpe_device,
-+					dev->wakeup.gpe_number,
-+					ACPI_GPE_TYPE_RUNTIME);
-+		}
-+	} else if (dev->wakeup.run_wake_count > 0) {
-+		if (!--dev->wakeup.run_wake_count) {
-+			acpi_disable_gpe(dev->wakeup.gpe_device,
-+					dev->wakeup.gpe_number,
-+					ACPI_GPE_TYPE_RUNTIME);
-+			acpi_disable_wakeup_device_power(dev);
-+		}
-+	} else {
-+		error = -EALREADY;
-+	}
-+
-+	return error;
-+}
-+
-+static void acpi_pci_propagate_run_wake(struct pci_bus *bus, bool enable)
-+{
-+	while (bus->parent) {
-+		struct pci_dev *bridge = bus->self;
-+
-+		if (bridge->pme_interrupt)
-+			return;
-+		if (!acpi_dev_run_wake(&bridge->dev, enable))
-+			return;
-+		bus = bus->parent;
-+	}
-+
-+	/* We have reached the root bus. */
-+	if (bus->bridge)
-+		acpi_dev_run_wake(bus->bridge, enable);
-+}
-+
-+static int acpi_pci_run_wake(struct pci_dev *dev, bool enable)
-+{
-+	if (dev->pme_interrupt)
-+		return 0;
-+
-+	if (!acpi_dev_run_wake(&dev->dev, enable))
-+		return 0;
-+
-+	acpi_pci_propagate_run_wake(dev->bus, enable);
-+	return 0;
-+}
-+
- static struct pci_platform_pm_ops acpi_pci_platform_pm = {
- 	.is_manageable = acpi_pci_power_manageable,
- 	.set_state = acpi_pci_set_power_state,
- 	.choose_state = acpi_pci_choose_state,
- 	.can_wakeup = acpi_pci_can_wakeup,
- 	.sleep_wake = acpi_pci_sleep_wake,
-+	.run_wake = acpi_pci_run_wake,
- };
- 
- /* ACPI bus type */
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -20,6 +20,7 @@
- #include <linux/pm_wakeup.h>
- #include <linux/interrupt.h>
- #include <linux/device.h>
-+#include <linux/pm_runtime.h>
- #include <asm/setup.h>
- #include "pci.h"
- 
-@@ -462,6 +463,12 @@ static inline int platform_pci_sleep_wak
- 			pci_platform_pm->sleep_wake(dev, enable) : -ENODEV;
- }
- 
-+static inline int platform_pci_run_wake(struct pci_dev *dev, bool enable)
-+{
-+	return pci_platform_pm ?
-+			pci_platform_pm->run_wake(dev, enable) : -ENODEV;
-+}
-+
- /**
-  * pci_raw_set_power_state - Use PCI PM registers to set the power state of
-  *                           given PCI device
-@@ -1230,6 +1237,31 @@ bool pci_check_pme_status(struct pci_dev
- }
- 
- /**
-+ * pci_pme_wakeup - Wake up a PCI device if its PME Status bit is set.
-+ * @dev: Device to handle.
-+ * @ign: Ignored.
-+ *
-+ * Check if @dev has generated PME and queue a resume request for it in that
-+ * case.
-+ */
-+static int pci_pme_wakeup(struct pci_dev *dev, void *ign)
-+{
-+	if (pci_check_pme_status(dev))
-+		pm_request_resume(&dev->dev);
-+	return 0;
-+}
-+
-+/**
-+ * pci_pme_wakeup_bus - Walk given bus and wake up devices on it, if necessary.
-+ * @bus: Top bus of the subtree to walk.
-+ */
-+void pci_pme_wakeup_bus(struct pci_bus *bus)
-+{
-+	if (bus)
-+		pci_walk_bus(bus, pci_pme_wakeup, NULL);
-+}
-+
-+/**
-  * pci_pme_capable - check the capability of PCI device to generate PME#
-  * @dev: PCI device to handle.
-  * @state: PCI state from which device will issue PME#.
-@@ -1434,6 +1466,41 @@ int pci_back_from_sleep(struct pci_dev *
- }
- 
- /**
-+ * pci_dev_run_wake - Check if device can generate run-time wake-up events.
-+ * @dev: Device to check.
-+ *
-+ * Return true if the device itself is cabable of generating wake-up events
-+ * (through the platform or using the native PCIe PME) or if the device supports
-+ * PME and one of its upstream bridges can generate wake-up events.
-+ */
-+bool pci_dev_run_wake(struct pci_dev *dev)
-+{
-+	struct pci_bus *bus = dev->bus;
-+
-+	if (device_run_wake(&dev->dev))
-+		return true;
-+
-+	if (!dev->pme_support)
-+		return false;
-+
-+	while (bus->parent) {
-+		struct pci_dev *bridge = bus->self;
-+
-+		if (device_run_wake(&bridge->dev))
-+			return true;
-+
-+		bus = bus->parent;
-+	}
-+
-+	/* We have reached the root bus. */
-+	if (bus->bridge)
-+		return device_run_wake(bus->bridge);
-+
-+	return false;
-+}
-+EXPORT_SYMBOL_GPL(pci_dev_run_wake);
-+
-+/**
-  * pci_pm_init - Initialize PM functions of given PCI device
-  * @dev: PCI device to handle.
-  */
-Index: linux-2.6/include/linux/pci-acpi.h
-===================================================================
---- linux-2.6.orig/include/linux/pci-acpi.h
-+++ linux-2.6/include/linux/pci-acpi.h
-@@ -11,6 +11,16 @@
- #include <linux/acpi.h>
- 
- #ifdef CONFIG_ACPI
-+extern acpi_status pci_acpi_add_hp_notifier(acpi_handle handle,
-+					     acpi_notify_handler handler,
-+					     void *context);
-+extern acpi_status pci_acpi_remove_hp_notifier(acpi_handle handle,
-+					       acpi_notify_handler handler);
-+extern acpi_status pci_acpi_add_pm_notifier(struct acpi_device *dev,
-+					     struct pci_dev *pci_dev,
-+					     struct pci_bus *pci_bus);
-+extern acpi_status pci_acpi_remove_pm_notifier(struct acpi_device *dev);
-+
- static inline acpi_handle acpi_find_root_bridge_handle(struct pci_dev *pdev)
+ /*******************************************************************************
+  *
+- * FUNCTION:    acpi_set_gpe_type
++ * FUNCTION:    acpi_set_gpe
+  *
+  * PARAMETERS:  gpe_device      - Parent GPE Device
+  *              gpe_number      - GPE level within the GPE block
+- *              Type            - New GPE type
++ *              action          - Enable or disable
++ *                                Called from ISR or not
+  *
+  * RETURN:      Status
+  *
+- * DESCRIPTION: Set the type of an individual GPE
++ * DESCRIPTION: Enable or disable an ACPI event (general purpose)
+  *
+  ******************************************************************************/
+-acpi_status acpi_set_gpe_type(acpi_handle gpe_device, u32 gpe_number, u8 type)
++acpi_status acpi_set_gpe(acpi_handle gpe_device, u32 gpe_number, u8 action)
  {
- 	struct pci_bus *pbus = pdev->bus;
-Index: linux-2.6/drivers/acpi/pci_bind.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/pci_bind.c
-+++ linux-2.6/drivers/acpi/pci_bind.c
-@@ -26,7 +26,9 @@
- #include <linux/kernel.h>
- #include <linux/types.h>
- #include <linux/pci.h>
-+#include <linux/pci-acpi.h>
- #include <linux/acpi.h>
-+#include <linux/pm_runtime.h>
- #include <acpi/acpi_bus.h>
- #include <acpi/acpi_drivers.h>
+ 	acpi_status status = AE_OK;
++	acpi_cpu_flags flags;
+ 	struct acpi_gpe_event_info *gpe_event_info;
  
-@@ -38,7 +40,13 @@ static int acpi_pci_unbind(struct acpi_d
- 	struct pci_dev *dev;
- 
- 	dev = acpi_get_pci_dev(device->handle);
--	if (!dev || !dev->subordinate)
-+	if (!dev)
-+		goto out;
+-	ACPI_FUNCTION_TRACE(acpi_set_gpe_type);
++	ACPI_FUNCTION_TRACE(acpi_set_gpe);
 +
-+	device_set_run_wake(&dev->dev, false);
-+	pci_acpi_remove_pm_notifier(device);
-+
-+	if (!dev->subordinate)
- 		goto out;
++	flags = acpi_os_acquire_lock(acpi_gbl_gpe_lock);
  
- 	acpi_pci_irq_del_prt(dev->subordinate);
-@@ -62,6 +70,10 @@ static int acpi_pci_bind(struct acpi_dev
- 	if (!dev)
- 		return 0;
+ 	/* Ensure that we have a valid GPE number */
  
-+	pci_acpi_add_pm_notifier(device, dev, dev->subordinate);
-+	if (device->wakeup.flags.run_wake)
-+		device_set_run_wake(&dev->dev, true);
-+
- 	/*
- 	 * Install the 'bind' function to facilitate callbacks for
- 	 * children of the P2P bridge.
-Index: linux-2.6/drivers/pci/hotplug/acpiphp_glue.c
-===================================================================
---- linux-2.6.orig/drivers/pci/hotplug/acpiphp_glue.c
-+++ linux-2.6/drivers/pci/hotplug/acpiphp_glue.c
-@@ -236,8 +236,7 @@ register_slot(acpi_handle handle, u32 lv
- 
- 	/* install notify handler */
- 	if (!(newfunc->flags & FUNC_HAS_DCK)) {
--		status = acpi_install_notify_handler(handle,
--					     ACPI_SYSTEM_NOTIFY,
-+		status = pci_acpi_add_hp_notifier(handle,
- 					     handle_hotplug_event_func,
- 					     newfunc);
- 
-@@ -288,14 +287,12 @@ static void init_bridge_misc(struct acpi
- 	/* install notify handler */
- 	if (bridge->type != BRIDGE_TYPE_HOST) {
- 		if ((bridge->flags & BRIDGE_HAS_EJ0) && bridge->func) {
--			status = acpi_remove_notify_handler(bridge->func->handle,
--						ACPI_SYSTEM_NOTIFY,
-+			status = pci_acpi_remove_hp_notifier(bridge->func->handle,
- 						handle_hotplug_event_func);
- 			if (ACPI_FAILURE(status))
- 				err("failed to remove notify handler\n");
- 		}
--		status = acpi_install_notify_handler(bridge->handle,
--					     ACPI_SYSTEM_NOTIFY,
-+		status = pci_acpi_add_hp_notifier(bridge->handle,
- 					     handle_hotplug_event_bridge,
- 					     bridge);
- 
-@@ -505,15 +502,14 @@ static void cleanup_bridge(struct acpiph
- 	acpi_status status;
- 	acpi_handle handle = bridge->handle;
- 
--	status = acpi_remove_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
-+	status = pci_acpi_remove_hp_notifier(handle,
- 					    handle_hotplug_event_bridge);
- 	if (ACPI_FAILURE(status))
- 		err("failed to remove notify handler\n");
- 
- 	if ((bridge->type != BRIDGE_TYPE_HOST) &&
- 	    ((bridge->flags & BRIDGE_HAS_EJ0) && bridge->func)) {
--		status = acpi_install_notify_handler(bridge->func->handle,
--						ACPI_SYSTEM_NOTIFY,
-+		status = pci_acpi_add_hp_notifier(bridge->func->handle,
- 						handle_hotplug_event_func,
- 						bridge->func);
- 		if (ACPI_FAILURE(status))
-@@ -529,8 +525,7 @@ static void cleanup_bridge(struct acpiph
- 				unregister_dock_notifier(&func->nb);
- 			}
- 			if (!(func->flags & FUNC_HAS_DCK)) {
--				status = acpi_remove_notify_handler(func->handle,
--						ACPI_SYSTEM_NOTIFY,
-+				status = pci_acpi_remove_hp_notifier(func->handle,
- 						handle_hotplug_event_func);
- 				if (ACPI_FAILURE(status))
- 					err("failed to remove notify handler\n");
-@@ -592,7 +587,7 @@ static void remove_bridge(acpi_handle ha
- 	if (bridge)
- 		cleanup_bridge(bridge);
- 	else
--		acpi_remove_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
-+		pci_acpi_remove_hp_notifier(handle,
- 					   handle_hotplug_event_bridge);
- }
- 
-@@ -1278,8 +1273,8 @@ find_root_bridges(acpi_handle handle, u3
- 	int *count = (int *)context;
- 
- 	if (acpi_is_root_bridge(handle)) {
--		acpi_install_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
--				handle_hotplug_event_bridge, NULL);
-+		pci_acpi_add_hp_notifier(handle,
-+					handle_hotplug_event_bridge, NULL);
- 			(*count)++;
+@@ -227,19 +231,29 @@ acpi_status acpi_set_gpe_type(acpi_handl
+ 		goto unlock_and_exit;
  	}
- 	return AE_OK ;
-Index: linux-2.6/include/linux/pci.h
-===================================================================
---- linux-2.6.orig/include/linux/pci.h
-+++ linux-2.6/include/linux/pci.h
-@@ -756,6 +756,7 @@ int pci_wake_from_d3(struct pci_dev *dev
- pci_power_t pci_target_state(struct pci_dev *dev);
- int pci_prepare_to_sleep(struct pci_dev *dev);
- int pci_back_from_sleep(struct pci_dev *dev);
-+bool pci_dev_run_wake(struct pci_dev *dev);
  
- /* For use by arch with custom probe code */
- void set_pcie_port_type(struct pci_dev *pdev);
-Index: linux-2.6/include/acpi/acpi_bus.h
-===================================================================
---- linux-2.6.orig/include/acpi/acpi_bus.h
-+++ linux-2.6/include/acpi/acpi_bus.h
-@@ -388,6 +388,9 @@ acpi_handle acpi_get_pci_rootbridge_hand
- struct acpi_pci_root *acpi_pci_find_root(acpi_handle handle);
- #define DEVICE_ACPI_HANDLE(dev) ((acpi_handle)((dev)->archdata.acpi_handle))
+-	if ((gpe_event_info->flags & ACPI_GPE_TYPE_MASK) == type) {
+-		return_ACPI_STATUS(AE_OK);
+-	}
++	/* Perform the action */
  
-+int acpi_enable_wakeup_device_power(struct acpi_device *dev, int state);
-+int acpi_disable_wakeup_device_power(struct acpi_device *dev);
+-	/* Set the new type (will disable GPE if currently enabled) */
++	switch (action) {
++	case ACPI_GPE_ENABLE:
++		status = acpi_ev_enable_gpe(gpe_event_info, TRUE);
++		break;
 +
- #ifdef CONFIG_PM_SLEEP
- int acpi_pm_device_sleep_state(struct device *, int *);
- int acpi_pm_device_sleep_wake(struct device *, bool);
-Index: linux-2.6/drivers/acpi/pci_root.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/pci_root.c
-+++ linux-2.6/drivers/acpi/pci_root.c
-@@ -30,6 +30,7 @@
- #include <linux/proc_fs.h>
- #include <linux/spinlock.h>
- #include <linux/pm.h>
-+#include <linux/pm_runtime.h>
- #include <linux/pci.h>
- #include <linux/pci-acpi.h>
- #include <linux/acpi.h>
-@@ -528,6 +529,10 @@ static int __devinit acpi_pci_root_add(s
- 	if (flags != base_flags)
- 		acpi_pci_osc_support(root, flags);
++	case ACPI_GPE_DISABLE:
++		status = acpi_ev_disable_gpe(gpe_event_info);
++		break;
  
-+	pci_acpi_add_pm_notifier(device, NULL, root->bus);
-+	if (device->wakeup.flags.run_wake)
-+		device_set_run_wake(root->bus->bridge, true);
-+
- 	return 0;
+-	status = acpi_ev_set_gpe_type(gpe_event_info, type);
++	default:
++		ACPI_ERROR((AE_INFO, "Invalid action\n"));
++		status = AE_BAD_PARAMETER;
++		break;
++	}
  
- end:
-@@ -549,6 +554,9 @@ static int acpi_pci_root_remove(struct a
+       unlock_and_exit:
++	acpi_os_release_lock(acpi_gbl_gpe_lock, flags);
+ 	return_ACPI_STATUS(status);
+ }
+ 
+-ACPI_EXPORT_SYMBOL(acpi_set_gpe_type)
++ACPI_EXPORT_SYMBOL(acpi_set_gpe)
+ 
+ /*******************************************************************************
+  *
+@@ -247,15 +261,14 @@ ACPI_EXPORT_SYMBOL(acpi_set_gpe_type)
+  *
+  * PARAMETERS:  gpe_device      - Parent GPE Device
+  *              gpe_number      - GPE level within the GPE block
+- *              Flags           - Just enable, or also wake enable?
+- *                                Called from ISR or not
++ *              type            - Purpose the GPE will be used for
+  *
+  * RETURN:      Status
+  *
+- * DESCRIPTION: Enable an ACPI event (general purpose)
++ * DESCRIPTION: Take a reference to a GPE and enable it if necessary
+  *
+  ******************************************************************************/
+-acpi_status acpi_enable_gpe(acpi_handle gpe_device, u32 gpe_number)
++acpi_status acpi_enable_gpe(acpi_handle gpe_device, u32 gpe_number, u8 type)
  {
- 	struct acpi_pci_root *root = acpi_driver_data(device);
+ 	acpi_status status = AE_OK;
+ 	acpi_cpu_flags flags;
+@@ -273,15 +286,32 @@ acpi_status acpi_enable_gpe(acpi_handle 
+ 		goto unlock_and_exit;
+ 	}
  
-+	device_set_run_wake(root->bus->bridge, false);
-+	pci_acpi_remove_pm_notifier(device);
+-	/* Perform the enable */
++	if (type & ACPI_GPE_TYPE_RUNTIME) {
++		if (++gpe_event_info->runtime_count == 1)
++			status = acpi_ev_enable_gpe(gpe_event_info, TRUE);
+ 
+-	status = acpi_ev_enable_gpe(gpe_event_info, TRUE);
++		if (ACPI_FAILURE(status))
++			gpe_event_info->runtime_count--;
++	}
+ 
+-      unlock_and_exit:
++	if (type & ACPI_GPE_TYPE_WAKE) {
++		if (!(gpe_event_info->flags & ACPI_GPE_CAN_WAKE)) {
++			status = AE_BAD_PARAMETER;
++			goto unlock_and_exit;
++		}
 +
- 	kfree(root);
++		/*
++		 * Wake-up GPEs are only enabled right prior to putting the
++		 * system into a sleep state.
++		 */
++		if (++gpe_event_info->wakeup_count == 1)
++			acpi_ev_update_gpe_enable_masks(gpe_event_info);
++	}
++
++unlock_and_exit:
+ 	acpi_os_release_lock(acpi_gbl_gpe_lock, flags);
+ 	return_ACPI_STATUS(status);
+ }
+-
+ ACPI_EXPORT_SYMBOL(acpi_enable_gpe)
+ 
+ /*******************************************************************************
+@@ -290,15 +320,14 @@ ACPI_EXPORT_SYMBOL(acpi_enable_gpe)
+  *
+  * PARAMETERS:  gpe_device      - Parent GPE Device
+  *              gpe_number      - GPE level within the GPE block
+- *              Flags           - Just disable, or also wake disable?
+- *                                Called from ISR or not
++ *              type            - Purpose the GPE won't be used for any more
+  *
+  * RETURN:      Status
+  *
+- * DESCRIPTION: Disable an ACPI event (general purpose)
++ * DESCRIPTION: Release a reference to a GPE and disable it if necessary
+  *
+  ******************************************************************************/
+-acpi_status acpi_disable_gpe(acpi_handle gpe_device, u32 gpe_number)
++acpi_status acpi_disable_gpe(acpi_handle gpe_device, u32 gpe_number, u8 type)
+ {
+ 	acpi_status status = AE_OK;
+ 	acpi_cpu_flags flags;
+@@ -315,13 +344,24 @@ acpi_status acpi_disable_gpe(acpi_handle
+ 		goto unlock_and_exit;
+ 	}
+ 
+-	status = acpi_ev_disable_gpe(gpe_event_info);
++	if ((type & ACPI_GPE_TYPE_WAKE) && gpe_event_info->runtime_count) {
++		if (--gpe_event_info->runtime_count == 0)
++			acpi_ev_disable_gpe(gpe_event_info);
++	}
++
++	if ((type & ACPI_GPE_TYPE_RUNTIME) && gpe_event_info->wakeup_count) {
++		/*
++		 * Wake-up GPEs are not enabled after leaving system sleep
++		 * states, so we don't need to disable them here.
++		 */
++		if (--gpe_event_info->wakeup_count == 0)
++			acpi_ev_update_gpe_enable_masks(gpe_event_info);
++	}
+ 
+ unlock_and_exit:
+ 	acpi_os_release_lock(acpi_gbl_gpe_lock, flags);
+ 	return_ACPI_STATUS(status);
+ }
+-
+ ACPI_EXPORT_SYMBOL(acpi_disable_gpe)
+ 
+ /*******************************************************************************
+Index: linux-2.6/include/acpi/acpixf.h
+===================================================================
+--- linux-2.6.orig/include/acpi/acpixf.h
++++ linux-2.6/include/acpi/acpixf.h
+@@ -281,11 +281,11 @@ acpi_status acpi_get_event_status(u32 ev
+ /*
+  * GPE Interfaces
+  */
+-acpi_status acpi_set_gpe_type(acpi_handle gpe_device, u32 gpe_number, u8 type);
++acpi_status acpi_set_gpe(acpi_handle gpe_device, u32 gpe_number, u8 action);
+ 
+-acpi_status acpi_enable_gpe(acpi_handle gpe_device, u32 gpe_number);
++acpi_status acpi_enable_gpe(acpi_handle gpe_device, u32 gpe_number, u8 type);
+ 
+-acpi_status acpi_disable_gpe(acpi_handle gpe_device, u32 gpe_number);
++acpi_status acpi_disable_gpe(acpi_handle gpe_device, u32 gpe_number, u8 type);
+ 
+ acpi_status acpi_clear_gpe(acpi_handle gpe_device, u32 gpe_number, u32 flags);
+ 
+Index: linux-2.6/drivers/acpi/button.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/button.c
++++ linux-2.6/drivers/acpi/button.c
+@@ -422,11 +422,9 @@ static int acpi_button_add(struct acpi_d
+ 
+ 	if (device->wakeup.flags.valid) {
+ 		/* Button's GPE is run-wake GPE */
+-		acpi_set_gpe_type(device->wakeup.gpe_device,
+-				  device->wakeup.gpe_number,
+-				  ACPI_GPE_TYPE_WAKE_RUN);
+ 		acpi_enable_gpe(device->wakeup.gpe_device,
+-				device->wakeup.gpe_number);
++				device->wakeup.gpe_number,
++				ACPI_GPE_TYPE_WAKE_RUN);
+ 		device->wakeup.state.enabled = 1;
+ 	}
+ 
+@@ -446,6 +444,13 @@ static int acpi_button_remove(struct acp
+ {
+ 	struct acpi_button *button = acpi_driver_data(device);
+ 
++	if (device->wakeup.flags.valid) {
++		acpi_disable_gpe(device->wakeup.gpe_device,
++				device->wakeup.gpe_number,
++				ACPI_GPE_TYPE_WAKE_RUN);
++		device->wakeup.state.enabled = 0;
++	}
++
+ 	acpi_button_remove_fs(device);
+ 	input_unregister_device(button->input);
+ 	kfree(button);
+Index: linux-2.6/drivers/acpi/ec.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/ec.c
++++ linux-2.6/drivers/acpi/ec.c
+@@ -307,7 +307,7 @@ static int acpi_ec_transaction(struct ac
+ 	pr_debug(PREFIX "transaction start\n");
+ 	/* disable GPE during transaction if storm is detected */
+ 	if (test_bit(EC_FLAGS_GPE_STORM, &ec->flags)) {
+-		acpi_disable_gpe(NULL, ec->gpe);
++		acpi_set_gpe(NULL, ec->gpe, ACPI_GPE_DISABLE);
+ 	}
+ 
+ 	status = acpi_ec_transaction_unlocked(ec, t);
+@@ -317,7 +317,7 @@ static int acpi_ec_transaction(struct ac
+ 	if (test_bit(EC_FLAGS_GPE_STORM, &ec->flags)) {
+ 		msleep(1);
+ 		/* it is safe to enable GPE outside of transaction */
+-		acpi_enable_gpe(NULL, ec->gpe);
++		acpi_set_gpe(NULL, ec->gpe, ACPI_GPE_ENABLE);
+ 	} else if (t->irq_count > ACPI_EC_STORM_THRESHOLD) {
+ 		pr_info(PREFIX "GPE storm detected, "
+ 			"transactions will use polling mode\n");
+@@ -788,8 +788,8 @@ static int ec_install_handlers(struct ac
+ 				  &acpi_ec_gpe_handler, ec);
+ 	if (ACPI_FAILURE(status))
+ 		return -ENODEV;
+-	acpi_set_gpe_type(NULL, ec->gpe, ACPI_GPE_TYPE_RUNTIME);
+-	acpi_enable_gpe(NULL, ec->gpe);
++
++	acpi_enable_gpe(NULL, ec->gpe, ACPI_GPE_TYPE_RUNTIME);
+ 	status = acpi_install_address_space_handler(ec->handle,
+ 						    ACPI_ADR_SPACE_EC,
+ 						    &acpi_ec_space_handler,
+@@ -806,6 +806,7 @@ static int ec_install_handlers(struct ac
+ 		} else {
+ 			acpi_remove_gpe_handler(NULL, ec->gpe,
+ 				&acpi_ec_gpe_handler);
++			acpi_disable_gpe(NULL, ec->gpe, ACPI_GPE_TYPE_RUNTIME);
+ 			return -ENODEV;
+ 		}
+ 	}
+@@ -816,6 +817,7 @@ static int ec_install_handlers(struct ac
+ 
+ static void ec_remove_handlers(struct acpi_ec *ec)
+ {
++	acpi_disable_gpe(NULL, ec->gpe, ACPI_GPE_TYPE_RUNTIME);
+ 	if (ACPI_FAILURE(acpi_remove_address_space_handler(ec->handle,
+ 				ACPI_ADR_SPACE_EC, &acpi_ec_space_handler)))
+ 		pr_err(PREFIX "failed to remove space handler\n");
+@@ -1058,7 +1060,7 @@ static int acpi_ec_suspend(struct acpi_d
+ {
+ 	struct acpi_ec *ec = acpi_driver_data(device);
+ 	/* Stop using GPE */
+-	acpi_disable_gpe(NULL, ec->gpe);
++	acpi_set_gpe(NULL, ec->gpe, ACPI_GPE_DISABLE);
  	return 0;
  }
-Index: linux-2.6/drivers/acpi/internal.h
+ 
+@@ -1066,7 +1068,7 @@ static int acpi_ec_resume(struct acpi_de
+ {
+ 	struct acpi_ec *ec = acpi_driver_data(device);
+ 	/* Enable use of GPE back */
+-	acpi_enable_gpe(NULL, ec->gpe);
++	acpi_set_gpe(NULL, ec->gpe, ACPI_GPE_ENABLE);
+ 	return 0;
+ }
+ 
+Index: linux-2.6/drivers/acpi/sleep.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/internal.h
-+++ linux-2.6/drivers/acpi/internal.h
-@@ -36,8 +36,6 @@ static inline int acpi_debug_init(void) 
- int acpi_power_init(void);
- int acpi_device_sleep_wake(struct acpi_device *dev,
-                            int enable, int sleep_state, int dev_state);
--int acpi_enable_wakeup_device_power(struct acpi_device *dev, int sleep_state);
--int acpi_disable_wakeup_device_power(struct acpi_device *dev);
- int acpi_power_get_inferred_state(struct acpi_device *device);
- int acpi_power_transition(struct acpi_device *device, int state);
- extern int acpi_power_nocheck;
+--- linux-2.6.orig/drivers/acpi/sleep.c
++++ linux-2.6/drivers/acpi/sleep.c
+@@ -745,9 +745,18 @@ int acpi_pm_device_sleep_wake(struct dev
+ 		return -ENODEV;
+ 	}
+ 
+-	error = enable ?
+-		acpi_enable_wakeup_device_power(adev, acpi_target_sleep_state) :
+-		acpi_disable_wakeup_device_power(adev);
++	if (enable) {
++		error = acpi_enable_wakeup_device_power(adev,
++						acpi_target_sleep_state);
++		if (!error)
++			acpi_enable_gpe(adev->wakeup.gpe_device,
++					adev->wakeup.gpe_number,
++					ACPI_GPE_TYPE_WAKE);
++	} else {
++		acpi_disable_gpe(adev->wakeup.gpe_device, adev->wakeup.gpe_number,
++				ACPI_GPE_TYPE_WAKE);
++		error = acpi_disable_wakeup_device_power(adev);
++	}
+ 	if (!error)
+ 		dev_info(dev, "wake-up capability %s by ACPI\n",
+ 				enable ? "enabled" : "disabled");
+Index: linux-2.6/drivers/acpi/wakeup.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/wakeup.c
++++ linux-2.6/drivers/acpi/wakeup.c
+@@ -21,12 +21,12 @@
+ ACPI_MODULE_NAME("wakeup_devices")
+ 
+ /**
+- * acpi_enable_wakeup_device_prep - prepare wakeup devices
+- *	@sleep_state:	ACPI state
+- * Enable all wakup devices power if the devices' wakeup level
+- * is higher than requested sleep level
++ * acpi_enable_wakeup_device_prep - Prepare wake-up devices.
++ * @sleep_state: ACPI system sleep state.
++ *
++ * Enable all wake-up devices' power, unless the requested system sleep state is
++ * too deep.
+  */
+-
+ void acpi_enable_wakeup_device_prep(u8 sleep_state)
+ {
+ 	struct list_head *node, *next;
+@@ -36,9 +36,8 @@ void acpi_enable_wakeup_device_prep(u8 s
+ 						       struct acpi_device,
+ 						       wakeup_list);
+ 
+-		if (!dev->wakeup.flags.valid ||
+-		    !dev->wakeup.state.enabled ||
+-		    (sleep_state > (u32) dev->wakeup.sleep_state))
++		if (!dev->wakeup.flags.valid || !dev->wakeup.state.enabled
++		    || (sleep_state > (u32) dev->wakeup.sleep_state))
+ 			continue;
+ 
+ 		acpi_enable_wakeup_device_power(dev, sleep_state);
+@@ -46,9 +45,12 @@ void acpi_enable_wakeup_device_prep(u8 s
+ }
+ 
+ /**
+- * acpi_enable_wakeup_device - enable wakeup devices
+- *	@sleep_state:	ACPI state
+- * Enable all wakup devices's GPE
++ * acpi_enable_wakeup_device - Enable wake-up device GPEs.
++ * @sleep_state: ACPI system sleep state.
++ *
++ * Enable all wake-up devices' GPEs, with the assumption that
++ * acpi_disable_all_gpes() was executed before, so we don't need to disable any
++ * GPEs here.
+  */
+ void acpi_enable_wakeup_device(u8 sleep_state)
+ {
+@@ -65,29 +67,22 @@ void acpi_enable_wakeup_device(u8 sleep_
+ 		if (!dev->wakeup.flags.valid)
+ 			continue;
+ 
+-		/* If users want to disable run-wake GPE,
+-		 * we only disable it for wake and leave it for runtime
+-		 */
+ 		if ((!dev->wakeup.state.enabled && !dev->wakeup.prepare_count)
+-		    || sleep_state > (u32) dev->wakeup.sleep_state) {
+-			if (dev->wakeup.flags.run_wake) {
+-				/* set_gpe_type will disable GPE, leave it like that */
+-				acpi_set_gpe_type(dev->wakeup.gpe_device,
+-						  dev->wakeup.gpe_number,
+-						  ACPI_GPE_TYPE_RUNTIME);
+-			}
++		    || sleep_state > (u32) dev->wakeup.sleep_state)
+ 			continue;
+-		}
+-		if (!dev->wakeup.flags.run_wake)
+-			acpi_enable_gpe(dev->wakeup.gpe_device,
+-					dev->wakeup.gpe_number);
++
++		/* The wake-up power should have been enabled already. */
++		acpi_set_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
++				ACPI_GPE_ENABLE);
+ 	}
+ }
+ 
+ /**
+- * acpi_disable_wakeup_device - disable devices' wakeup capability
+- *	@sleep_state:	ACPI state
+- * Disable all wakup devices's GPE and wakeup capability
++ * acpi_disable_wakeup_device - Disable devices' wakeup capability.
++ * @sleep_state: ACPI system sleep state.
++ *
++ * This function only affects devices with wakeup.state.enabled set, which means
++ * that it reverses the changes made by acpi_enable_wakeup_device_prep().
+  */
+ void acpi_disable_wakeup_device(u8 sleep_state)
+ {
+@@ -97,30 +92,11 @@ void acpi_disable_wakeup_device(u8 sleep
+ 		struct acpi_device *dev =
+ 			container_of(node, struct acpi_device, wakeup_list);
+ 
+-		if (!dev->wakeup.flags.valid)
+-			continue;
+-
+-		if ((!dev->wakeup.state.enabled && !dev->wakeup.prepare_count)
+-		    || sleep_state > (u32) dev->wakeup.sleep_state) {
+-			if (dev->wakeup.flags.run_wake) {
+-				acpi_set_gpe_type(dev->wakeup.gpe_device,
+-						  dev->wakeup.gpe_number,
+-						  ACPI_GPE_TYPE_WAKE_RUN);
+-				/* Re-enable it, since set_gpe_type will disable it */
+-				acpi_enable_gpe(dev->wakeup.gpe_device,
+-						dev->wakeup.gpe_number);
+-			}
++		if (!dev->wakeup.flags.valid || !dev->wakeup.state.enabled
++		    || (sleep_state > (u32) dev->wakeup.sleep_state))
+ 			continue;
+-		}
+ 
+ 		acpi_disable_wakeup_device_power(dev);
+-		/* Never disable run-wake GPE */
+-		if (!dev->wakeup.flags.run_wake) {
+-			acpi_disable_gpe(dev->wakeup.gpe_device,
+-					 dev->wakeup.gpe_number);
+-			acpi_clear_gpe(dev->wakeup.gpe_device,
+-				       dev->wakeup.gpe_number, ACPI_NOT_ISR);
+-		}
+ 	}
+ }
+ 
+@@ -136,11 +112,8 @@ int __init acpi_wakeup_device_init(void)
+ 		/* In case user doesn't load button driver */
+ 		if (!dev->wakeup.flags.run_wake || dev->wakeup.state.enabled)
+ 			continue;
+-		acpi_set_gpe_type(dev->wakeup.gpe_device,
+-				  dev->wakeup.gpe_number,
+-				  ACPI_GPE_TYPE_WAKE_RUN);
+-		acpi_enable_gpe(dev->wakeup.gpe_device,
+-				dev->wakeup.gpe_number);
++ 		acpi_enable_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
++ 				ACPI_GPE_TYPE_WAKE);
+ 		dev->wakeup.state.enabled = 1;
+ 	}
+ 	mutex_unlock(&acpi_device_lock);
+Index: linux-2.6/drivers/acpi/acpica/acevents.h
+===================================================================
+--- linux-2.6.orig/drivers/acpi/acpica/acevents.h
++++ linux-2.6/drivers/acpi/acpica/acevents.h
+@@ -76,8 +76,7 @@ acpi_ev_queue_notify_request(struct acpi
+  * evgpe - GPE handling and dispatch
+  */
+ acpi_status
+-acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info,
+-				u8 type);
++acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info);
+ 
+ acpi_status
+ acpi_ev_enable_gpe(struct acpi_gpe_event_info *gpe_event_info,
+@@ -122,9 +121,6 @@ acpi_ev_gpe_dispatch(struct acpi_gpe_eve
+ u32 acpi_ev_gpe_detect(struct acpi_gpe_xrupt_info *gpe_xrupt_list);
+ 
+ acpi_status
+-acpi_ev_set_gpe_type(struct acpi_gpe_event_info *gpe_event_info, u8 type);
+-
+-acpi_status
+ acpi_ev_check_for_wake_only_gpe(struct acpi_gpe_event_info *gpe_event_info);
+ 
+ acpi_status acpi_ev_gpe_initialize(void);
+Index: linux-2.6/drivers/acpi/acpica/evgpe.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/acpica/evgpe.c
++++ linux-2.6/drivers/acpi/acpica/evgpe.c
+@@ -54,54 +54,9 @@ static void ACPI_SYSTEM_XFACE acpi_ev_as
+ 
+ /*******************************************************************************
+  *
+- * FUNCTION:    acpi_ev_set_gpe_type
+- *
+- * PARAMETERS:  gpe_event_info          - GPE to set
+- *              Type                    - New type
+- *
+- * RETURN:      Status
+- *
+- * DESCRIPTION: Sets the new type for the GPE (wake, run, or wake/run)
+- *
+- ******************************************************************************/
+-
+-acpi_status
+-acpi_ev_set_gpe_type(struct acpi_gpe_event_info *gpe_event_info, u8 type)
+-{
+-	acpi_status status;
+-
+-	ACPI_FUNCTION_TRACE(ev_set_gpe_type);
+-
+-	/* Validate type and update register enable masks */
+-
+-	switch (type) {
+-	case ACPI_GPE_TYPE_WAKE:
+-	case ACPI_GPE_TYPE_RUNTIME:
+-	case ACPI_GPE_TYPE_WAKE_RUN:
+-		break;
+-
+-	default:
+-		return_ACPI_STATUS(AE_BAD_PARAMETER);
+-	}
+-
+-	/* Disable the GPE if currently enabled */
+-
+-	status = acpi_ev_disable_gpe(gpe_event_info);
+-
+-	/* Clear the type bits and insert the new Type */
+-
+-	gpe_event_info->flags &= ~ACPI_GPE_TYPE_MASK;
+-	gpe_event_info->flags |= type;
+-	return_ACPI_STATUS(status);
+-}
+-
+-/*******************************************************************************
+- *
+  * FUNCTION:    acpi_ev_update_gpe_enable_masks
+  *
+  * PARAMETERS:  gpe_event_info          - GPE to update
+- *              Type                    - What to do: ACPI_GPE_DISABLE or
+- *                                        ACPI_GPE_ENABLE
+  *
+  * RETURN:      Status
+  *
+@@ -110,8 +65,7 @@ acpi_ev_set_gpe_type(struct acpi_gpe_eve
+  ******************************************************************************/
+ 
+ acpi_status
+-acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info,
+-				u8 type)
++acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info)
+ {
+ 	struct acpi_gpe_register_info *gpe_register_info;
+ 	u8 register_bit;
+@@ -127,37 +81,14 @@ acpi_ev_update_gpe_enable_masks(struct a
+ 	    (1 <<
+ 	     (gpe_event_info->gpe_number - gpe_register_info->base_gpe_number));
+ 
+-	/* 1) Disable case. Simply clear all enable bits */
+-
+-	if (type == ACPI_GPE_DISABLE) {
+-		ACPI_CLEAR_BIT(gpe_register_info->enable_for_wake,
+-			       register_bit);
+-		ACPI_CLEAR_BIT(gpe_register_info->enable_for_run, register_bit);
+-		return_ACPI_STATUS(AE_OK);
+-	}
+-
+-	/* 2) Enable case. Set/Clear the appropriate enable bits */
++	ACPI_CLEAR_BIT(gpe_register_info->enable_for_wake, register_bit);
++	ACPI_CLEAR_BIT(gpe_register_info->enable_for_run, register_bit);
+ 
+-	switch (gpe_event_info->flags & ACPI_GPE_TYPE_MASK) {
+-	case ACPI_GPE_TYPE_WAKE:
+-		ACPI_SET_BIT(gpe_register_info->enable_for_wake, register_bit);
+-		ACPI_CLEAR_BIT(gpe_register_info->enable_for_run, register_bit);
+-		break;
+-
+-	case ACPI_GPE_TYPE_RUNTIME:
+-		ACPI_CLEAR_BIT(gpe_register_info->enable_for_wake,
+-			       register_bit);
++	if (gpe_event_info->runtime_count)
+ 		ACPI_SET_BIT(gpe_register_info->enable_for_run, register_bit);
+-		break;
+ 
+-	case ACPI_GPE_TYPE_WAKE_RUN:
++	if (gpe_event_info->wakeup_count)
+ 		ACPI_SET_BIT(gpe_register_info->enable_for_wake, register_bit);
+-		ACPI_SET_BIT(gpe_register_info->enable_for_run, register_bit);
+-		break;
+-
+-	default:
+-		return_ACPI_STATUS(AE_BAD_PARAMETER);
+-	}
+ 
+ 	return_ACPI_STATUS(AE_OK);
+ }
+@@ -186,47 +117,20 @@ acpi_ev_enable_gpe(struct acpi_gpe_event
+ 
+ 	/* Make sure HW enable masks are updated */
+ 
+-	status =
+-	    acpi_ev_update_gpe_enable_masks(gpe_event_info, ACPI_GPE_ENABLE);
+-	if (ACPI_FAILURE(status)) {
++	status = acpi_ev_update_gpe_enable_masks(gpe_event_info);
++	if (ACPI_FAILURE(status))
+ 		return_ACPI_STATUS(status);
+-	}
+ 
+ 	/* Mark wake-enabled or HW enable, or both */
+ 
+-	switch (gpe_event_info->flags & ACPI_GPE_TYPE_MASK) {
+-	case ACPI_GPE_TYPE_WAKE:
+-
+-		ACPI_SET_BIT(gpe_event_info->flags, ACPI_GPE_WAKE_ENABLED);
+-		break;
+-
+-	case ACPI_GPE_TYPE_WAKE_RUN:
+-
+-		ACPI_SET_BIT(gpe_event_info->flags, ACPI_GPE_WAKE_ENABLED);
+-
+-		/*lint -fallthrough */
+-
+-	case ACPI_GPE_TYPE_RUNTIME:
+-
+-		ACPI_SET_BIT(gpe_event_info->flags, ACPI_GPE_RUN_ENABLED);
+-
+-		if (write_to_hardware) {
+-
+-			/* Clear the GPE (of stale events), then enable it */
+-
+-			status = acpi_hw_clear_gpe(gpe_event_info);
+-			if (ACPI_FAILURE(status)) {
+-				return_ACPI_STATUS(status);
+-			}
+-
+-			/* Enable the requested runtime GPE */
+-
+-			status = acpi_hw_write_gpe_enable_reg(gpe_event_info);
+-		}
+-		break;
++	if (gpe_event_info->runtime_count && write_to_hardware) {
++		/* Clear the GPE (of stale events), then enable it */
++		status = acpi_hw_clear_gpe(gpe_event_info);
++		if (ACPI_FAILURE(status))
++			return_ACPI_STATUS(status);
+ 
+-	default:
+-		return_ACPI_STATUS(AE_BAD_PARAMETER);
++		/* Enable the requested runtime GPE */
++		status = acpi_hw_write_gpe_enable_reg(gpe_event_info);
+ 	}
+ 
+ 	return_ACPI_STATUS(AE_OK);
+@@ -252,34 +156,9 @@ acpi_status acpi_ev_disable_gpe(struct a
+ 
+ 	/* Make sure HW enable masks are updated */
+ 
+-	status =
+-	    acpi_ev_update_gpe_enable_masks(gpe_event_info, ACPI_GPE_DISABLE);
+-	if (ACPI_FAILURE(status)) {
++	status = acpi_ev_update_gpe_enable_masks(gpe_event_info);
++	if (ACPI_FAILURE(status))
+ 		return_ACPI_STATUS(status);
+-	}
+-
+-	/* Clear the appropriate enabled flags for this GPE */
+-
+-	switch (gpe_event_info->flags & ACPI_GPE_TYPE_MASK) {
+-	case ACPI_GPE_TYPE_WAKE:
+-		ACPI_CLEAR_BIT(gpe_event_info->flags, ACPI_GPE_WAKE_ENABLED);
+-		break;
+-
+-	case ACPI_GPE_TYPE_WAKE_RUN:
+-		ACPI_CLEAR_BIT(gpe_event_info->flags, ACPI_GPE_WAKE_ENABLED);
+-
+-		/* fallthrough */
+-
+-	case ACPI_GPE_TYPE_RUNTIME:
+-
+-		/* Disable the requested runtime GPE */
+-
+-		ACPI_CLEAR_BIT(gpe_event_info->flags, ACPI_GPE_RUN_ENABLED);
+-		break;
+-
+-	default:
+-		break;
+-	}
+ 
+ 	/*
+ 	 * Even if we don't know the GPE type, make sure that we always
+Index: linux-2.6/drivers/acpi/acpica/evgpeblk.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/acpica/evgpeblk.c
++++ linux-2.6/drivers/acpi/acpica/evgpeblk.c
+@@ -258,7 +258,6 @@ acpi_ev_save_method_info(acpi_handle obj
+ 	u32 gpe_number;
+ 	char name[ACPI_NAME_SIZE + 1];
+ 	u8 type;
+-	acpi_status status;
+ 
+ 	ACPI_FUNCTION_TRACE(ev_save_method_info);
+ 
+@@ -325,26 +324,20 @@ acpi_ev_save_method_info(acpi_handle obj
+ 
+ 	/*
+ 	 * Now we can add this information to the gpe_event_info block for use
+-	 * during dispatch of this GPE. Default type is RUNTIME, although this may
+-	 * change when the _PRW methods are executed later.
++	 * during dispatch of this GPE.
+ 	 */
+ 	gpe_event_info =
+ 	    &gpe_block->event_info[gpe_number - gpe_block->block_base_number];
+ 
+-	gpe_event_info->flags = (u8)
+-	    (type | ACPI_GPE_DISPATCH_METHOD | ACPI_GPE_TYPE_RUNTIME);
++	gpe_event_info->flags = (u8) (type | ACPI_GPE_DISPATCH_METHOD);
+ 
+ 	gpe_event_info->dispatch.method_node =
+ 	    (struct acpi_namespace_node *)obj_handle;
+ 
+-	/* Update enable mask, but don't enable the HW GPE as of yet */
+-
+-	status = acpi_ev_enable_gpe(gpe_event_info, FALSE);
+-
+ 	ACPI_DEBUG_PRINT((ACPI_DB_LOAD,
+ 			  "Registered GPE method %s as GPE number 0x%.2X\n",
+ 			  name, gpe_number));
+-	return_ACPI_STATUS(status);
++	return_ACPI_STATUS(AE_OK);
+ }
+ 
+ /*******************************************************************************
+@@ -454,20 +447,7 @@ acpi_ev_match_prw_and_gpe(acpi_handle ob
+ 							gpe_block->
+ 							block_base_number];
+ 
+-		/* Mark GPE for WAKE-ONLY but WAKE_DISABLED */
+-
+-		gpe_event_info->flags &=
+-		    ~(ACPI_GPE_WAKE_ENABLED | ACPI_GPE_RUN_ENABLED);
+-
+-		status =
+-		    acpi_ev_set_gpe_type(gpe_event_info, ACPI_GPE_TYPE_WAKE);
+-		if (ACPI_FAILURE(status)) {
+-			goto cleanup;
+-		}
+-
+-		status =
+-		    acpi_ev_update_gpe_enable_masks(gpe_event_info,
+-						    ACPI_GPE_DISABLE);
++		gpe_event_info->flags |= ACPI_GPE_CAN_WAKE;
+ 	}
+ 
+       cleanup:
+@@ -989,7 +969,6 @@ acpi_status
+ acpi_ev_initialize_gpe_block(struct acpi_namespace_node *gpe_device,
+ 			     struct acpi_gpe_block_info *gpe_block)
+ {
+-	acpi_status status;
+ 	struct acpi_gpe_event_info *gpe_event_info;
+ 	struct acpi_gpe_walk_info gpe_info;
+ 	u32 wake_gpe_count;
+@@ -1019,42 +998,50 @@ acpi_ev_initialize_gpe_block(struct acpi
+ 		gpe_info.gpe_block = gpe_block;
+ 		gpe_info.gpe_device = gpe_device;
+ 
+-		status =
+-		    acpi_ns_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT,
++		acpi_ns_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT,
+ 					   ACPI_UINT32_MAX, ACPI_NS_WALK_UNLOCK,
+ 					   acpi_ev_match_prw_and_gpe, NULL,
+ 					   &gpe_info, NULL);
+ 	}
+ 
+ 	/*
+-	 * Enable all GPEs in this block that have these attributes:
+-	 * 1) are "runtime" or "run/wake" GPEs, and
+-	 * 2) have a corresponding _Lxx or _Exx method
+-	 *
+-	 * Any other GPEs within this block must be enabled via the
+-	 * acpi_enable_gpe() external interface.
++	 * Enable all GPEs that have a corresponding method and aren't
++	 * capable of generating wakeups. Any other GPEs within this block
++	 * must be enabled via the acpi_enable_gpe() interface.
+ 	 */
+ 	wake_gpe_count = 0;
+ 	gpe_enabled_count = 0;
++	if (gpe_device == acpi_gbl_fadt_gpe_device)
++		gpe_device = NULL;
+ 
+ 	for (i = 0; i < gpe_block->register_count; i++) {
+-		for (j = 0; j < 8; j++) {
++		for (j = 0; j < ACPI_GPE_REGISTER_WIDTH; j++) {
++			acpi_status status;
++			acpi_size gpe_index;
++			int gpe_number;
+ 
+ 			/* Get the info block for this particular GPE */
++			gpe_index = (acpi_size)i * ACPI_GPE_REGISTER_WIDTH + j;
++			gpe_event_info = &gpe_block->event_info[gpe_index];
+ 
+-			gpe_event_info = &gpe_block->event_info[((acpi_size) i *
+-								 ACPI_GPE_REGISTER_WIDTH)
+-								+ j];
+-
+-			if (((gpe_event_info->flags & ACPI_GPE_DISPATCH_MASK) ==
+-			     ACPI_GPE_DISPATCH_METHOD) &&
+-			    (gpe_event_info->flags & ACPI_GPE_TYPE_RUNTIME)) {
+-				gpe_enabled_count++;
+-			}
+-
+-			if (gpe_event_info->flags & ACPI_GPE_TYPE_WAKE) {
++			if (gpe_event_info->flags & ACPI_GPE_CAN_WAKE) {
+ 				wake_gpe_count++;
++				if (acpi_gbl_leave_wake_gpes_disabled)
++					continue;
+ 			}
++
++			if (!(gpe_event_info->flags & ACPI_GPE_DISPATCH_METHOD))
++				continue;
++
++			gpe_number = gpe_index + gpe_block->block_base_number;
++			status = acpi_enable_gpe(gpe_device, gpe_number,
++						ACPI_GPE_TYPE_RUNTIME);
++			if (ACPI_FAILURE(status))
++				ACPI_ERROR((AE_INFO,
++						"Failed to enable GPE %02X\n",
++						gpe_number));
++			else
++				gpe_enabled_count++;
+ 		}
+ 	}
+ 
+@@ -1062,15 +1049,7 @@ acpi_ev_initialize_gpe_block(struct acpi
+ 			  "Found %u Wake, Enabled %u Runtime GPEs in this block\n",
+ 			  wake_gpe_count, gpe_enabled_count));
+ 
+-	/* Enable all valid runtime GPEs found above */
+-
+-	status = acpi_hw_enable_runtime_gpe_block(NULL, gpe_block, NULL);
+-	if (ACPI_FAILURE(status)) {
+-		ACPI_ERROR((AE_INFO, "Could not enable GPEs in GpeBlock %p",
+-			    gpe_block));
+-	}
+-
+-	return_ACPI_STATUS(status);
++	return_ACPI_STATUS(AE_OK);
+ }
+ 
+ /*******************************************************************************
+Index: linux-2.6/drivers/acpi/acpica/evxface.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/acpica/evxface.c
++++ linux-2.6/drivers/acpi/acpica/evxface.c
+@@ -617,13 +617,6 @@ acpi_install_gpe_handler(acpi_handle gpe
+ 	handler->context = context;
+ 	handler->method_node = gpe_event_info->dispatch.method_node;
+ 
+-	/* Disable the GPE before installing the handler */
+-
+-	status = acpi_ev_disable_gpe(gpe_event_info);
+-	if (ACPI_FAILURE(status)) {
+-		goto unlock_and_exit;
+-	}
+-
+ 	/* Install the handler */
+ 
+ 	flags = acpi_os_acquire_lock(acpi_gbl_gpe_lock);
+@@ -707,13 +700,6 @@ acpi_remove_gpe_handler(acpi_handle gpe_
+ 		goto unlock_and_exit;
+ 	}
+ 
+-	/* Disable the GPE before removing the handler */
+-
+-	status = acpi_ev_disable_gpe(gpe_event_info);
+-	if (ACPI_FAILURE(status)) {
+-		goto unlock_and_exit;
+-	}
+-
+ 	/* Make sure all deferred tasks are completed */
+ 
+ 	(void)acpi_ut_release_mutex(ACPI_MTX_EVENTS);
+Index: linux-2.6/include/acpi/actypes.h
+===================================================================
+--- linux-2.6.orig/include/acpi/actypes.h
++++ linux-2.6/include/acpi/actypes.h
+@@ -668,15 +668,16 @@ typedef u32 acpi_event_status;
+ 
+ /*
+  * GPE info flags - Per GPE
+- * +-+-+-+---+---+-+
+- * |7|6|5|4:3|2:1|0|
+- * +-+-+-+---+---+-+
+- *  | | |  |   |  |
+- *  | | |  |   |  +--- Interrupt type: Edge or Level Triggered
+- *  | | |  |   +--- Type: Wake-only, Runtime-only, or wake/runtime
++ * +-+-+-+---+-+-+-+
++ * |7|6|5|4:3|2|1|0|
++ * +-+-+-+---+-+-+-+
++ *  | | |  |  | | |
++ *  | | |  |  | | +--- Interrupt type: Edge or Level Triggered
++ *  | | |  |  | +--- GPE can wake the system
++ *  | | |  |  +--- Unused
+  *  | | |  +--- Type of dispatch -- to method, handler, or none
+- *  | | +--- Enabled for runtime?
+- *  | +--- Enabled for wake?
++ *  | | +--- Unused
++ *  | +--- Unused
+  *  +--- Unused
+  */
+ #define ACPI_GPE_XRUPT_TYPE_MASK        (u8) 0x01
+@@ -687,22 +688,13 @@ typedef u32 acpi_event_status;
+ #define ACPI_GPE_TYPE_WAKE_RUN          (u8) 0x06
+ #define ACPI_GPE_TYPE_WAKE              (u8) 0x02
+ #define ACPI_GPE_TYPE_RUNTIME           (u8) 0x04	/* Default */
++#define ACPI_GPE_CAN_WAKE		(u8) 0x02
+ 
+ #define ACPI_GPE_DISPATCH_MASK          (u8) 0x18
+ #define ACPI_GPE_DISPATCH_HANDLER       (u8) 0x08
+ #define ACPI_GPE_DISPATCH_METHOD        (u8) 0x10
+ #define ACPI_GPE_DISPATCH_NOT_USED      (u8) 0x00	/* Default */
+ 
+-#define ACPI_GPE_RUN_ENABLE_MASK        (u8) 0x20
+-#define ACPI_GPE_RUN_ENABLED            (u8) 0x20
+-#define ACPI_GPE_RUN_DISABLED           (u8) 0x00	/* Default */
+-
+-#define ACPI_GPE_WAKE_ENABLE_MASK       (u8) 0x40
+-#define ACPI_GPE_WAKE_ENABLED           (u8) 0x40
+-#define ACPI_GPE_WAKE_DISABLED          (u8) 0x00	/* Default */
+-
+-#define ACPI_GPE_ENABLE_MASK            (u8) 0x60	/* Both run/wake */
+-
+ /*
+  * Flags for GPE and Lock interfaces
+  */
+Index: linux-2.6/drivers/acpi/system.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/system.c
++++ linux-2.6/drivers/acpi/system.c
+@@ -387,10 +387,10 @@ static ssize_t counter_set(struct kobjec
+ 	if (index < num_gpes) {
+ 		if (!strcmp(buf, "disable\n") &&
+ 				(status & ACPI_EVENT_FLAG_ENABLED))
+-			result = acpi_disable_gpe(handle, index);
++			result = acpi_set_gpe(handle, index, ACPI_GPE_DISABLE);
+ 		else if (!strcmp(buf, "enable\n") &&
+ 				!(status & ACPI_EVENT_FLAG_ENABLED))
+-			result = acpi_enable_gpe(handle, index);
++			result = acpi_set_gpe(handle, index, ACPI_GPE_ENABLE);
+ 		else if (!strcmp(buf, "clear\n") &&
+ 				(status & ACPI_EVENT_FLAG_SET))
+ 			result = acpi_clear_gpe(handle, index, ACPI_NOT_ISR);
