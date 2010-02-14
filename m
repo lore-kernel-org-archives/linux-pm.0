@@ -1,16 +1,13 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH 1/1] platform/x86/dell-laptop: Add another
-	Dell laptop	to the DMI whitelist
-Date: Sun, 14 Feb 2010 16:57:35 +0000
-Message-ID: <20100214165735.GB25624__23723.8467125737$1266166709$gmane$org@srcf.ucam.org>
-References: <1266144897-2681-1-git-send-email-erik.andren@gmail.com>
-	<20100214154709.GA7271@rhlx01.hs-esslingen.de>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Two problems with system sleep
+Date: Sun, 14 Feb 2010 13:36:57 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1002141336040.1365-100000@iolanthe.rowland.org>
+References: <201002130113.01434.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100214154709.GA7271@rhlx01.hs-esslingen.de>
+In-Reply-To: <201002130113.01434.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,27 +17,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andreas Mohr <andi@lisas.de>
-Cc: linux-pm@lists.linux-foundation.org, Erik Andren <erik.andren@gmail.com>, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Alan <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Feb 14, 2010 at 04:47:10PM +0100, Andreas Mohr wrote:
-> Definitely not only this one. E.g. my Inspiron 8000 (P3/700) has (dmidecode):
+On Sat, 13 Feb 2010, Rafael J. Wysocki wrote:
+
+> > The bigger problem is that with a normal sleep ("echo none >pm_test"),
+> > the system doesn't wake up.  Pressing a key or a mouse button does
+> > nothing.  Pressing the power button causes the machine to start up
+> > again, but the screen remains blank and there's no response to network
+> > pings.
+> > 
+> > This was with more or less standard 2.6.33-rc6 (Greg KH's patch set was 
+> > applied but none of your PM patches).  The motherboard is an Intel 
+> > ICH5 with a 32-bit CPU.  Any ideas on ways to approach this?
 > 
-> Handle 0x0300, DMI type 3, 13 bytes
-> Chassis Information
->         Manufacturer: Dell Computer Corporation
->         Type: Portable
-> 
-> which, if "Portable" happens to be "8", means that it would match.
+> That depends on the graphics adapter.  Is it Intel or AMD?
 
-8 should be portable, yes. 9 would be laptop (and 10 notebook), but I 
-haven't seen any examples of those in Dells.
+$ lspci -s 2.0
+00:02.0 VGA compatible controller: Intel Corporation 82865G Integrated Graphics Controller (rev 02)
 
-> So:
-> - do all older matching machines grok this?
+Do you need any more information than that?
 
-The dcdbas call should fail if they don't, so I think we're ok.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Alan Stern
