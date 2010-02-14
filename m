@@ -1,17 +1,13 @@
-From: =?ISO-8859-1?Q?Erik_Andr=E9n?= <erik.andren@gmail.com>
-Subject: Re: [PATCH 1/1] platform/x86/dell-laptop: Add another
-	Dell laptop to the DMI whitelist
-Date: Sun, 14 Feb 2010 20:07:56 +0100
-Message-ID: <62e5edd41002141107n787920f0p15fd91add5eee5be__29268.8857451596$1266174538$gmane$org@mail.gmail.com>
-References: <1266144897-2681-1-git-send-email-erik.andren@gmail.com>
-	<20100214165528.GA25624@srcf.ucam.org>
-	<62e5edd41002141059k5e06fc5o91b06e389d9609e3@mail.gmail.com>
-	<20100214190431.GA28842@srcf.ucam.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Two problems with system sleep
+Date: Sun, 14 Feb 2010 22:47:11 +0100
+Message-ID: <201002142247.11094.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.1002141336040.1365-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100214190431.GA28842@srcf.ucam.org>
+In-Reply-To: <Pine.LNX.4.44L0.1002141336040.1365-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,27 +17,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Alan <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-2010/2/14 Matthew Garrett <mjg59@srcf.ucam.org>:
-> On Sun, Feb 14, 2010 at 07:59:06PM +0100, Erik Andr=E9n wrote:
->
->> Darn, I forgot to add another module alias.
->> Shall I respin the whole patch or create another one depending on the ol=
-d one?
->
-> Oh, good point! I can add that myself and merge it in.
->
+On Sunday 14 February 2010, Alan Stern wrote:
+> On Sat, 13 Feb 2010, Rafael J. Wysocki wrote:
+> 
+> > > The bigger problem is that with a normal sleep ("echo none >pm_test"),
+> > > the system doesn't wake up.  Pressing a key or a mouse button does
+> > > nothing.  Pressing the power button causes the machine to start up
+> > > again, but the screen remains blank and there's no response to network
+> > > pings.
+> > > 
+> > > This was with more or less standard 2.6.33-rc6 (Greg KH's patch set was 
+> > > applied but none of your PM patches).  The motherboard is an Intel 
+> > > ICH5 with a 32-bit CPU.  Any ideas on ways to approach this?
+> > 
+> > That depends on the graphics adapter.  Is it Intel or AMD?
+> 
+> $ lspci -s 2.0
+> 00:02.0 VGA compatible controller: Intel Corporation 82865G Integrated Graphics Controller (rev 02)
 
-Thanks!
-FWIW I've verified that the following string works:
-MODULE_ALIAS("dmi:*svnDellComputerCorporation:*:ct8:*");
+Well, that is supposed to work.  Do you have KMS turned on?
 
-Best regards,
-Erik
+> Do you need any more information than that?
 
-> --
-> Matthew Garrett | mjg59@srcf.ucam.org
->
+Is the problem reproducible with init=/bin/bash vga=0?
+
+Rafael
