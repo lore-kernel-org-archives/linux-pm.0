@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
-	userspace is frozen?
-Date: Mon, 15 Feb 2010 22:04:04 +0100
-Message-ID: <201002152204.04148.rjw__44876.8346025192$1266267961$gmane$org@sisk.pl>
-References: <1266067746.16937.7.camel@maxim-laptop>
-	<1266249634.10662.6.camel@maxim-laptop>
+Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for
+	PCI PME wake-up (rev. 7)
+Date: Mon, 15 Feb 2010 22:42:48 +0100
+Message-ID: <201002152242.48303.rjw__16355.2374266603$1266270185$gmane$org@sisk.pl>
+References: <201001101431.38630.rjw@sisk.pl> <201002141451.17888.rjw@sisk.pl>
+	<20100215192252.GA11074@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1266249634.10662.6.camel@maxim-laptop>
+In-Reply-To: <20100215192252.GA11074@us.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,54 +19,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Jens Axboe <jens.axboe@oracle.com>
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Moore,
+	Robert" <robert.moore@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 15 February 2010, Maxim Levitsky wrote:
-> On Sat, 2010-02-13 at 15:29 +0200, Maxim Levitsky wrote: 
-> > I noticed that currently calling del_gendisk leads to sure deadlock if
-> > attemped from .suspend or .resume functions.
-
-Well, it shouldn't be called from there, then.
-
-> > Something like that:
+On Monday 15 February 2010, Gary Hade wrote:
+> On Sun, Feb 14, 2010 at 02:51:17PM +0100, Rafael J. Wysocki wrote:
+> > On Saturday 13 February 2010, Gary Hade wrote:
+> > > On Sat, Feb 13, 2010 at 01:20:29AM +0100, Rafael J. Wysocki wrote:
+> > > > On Friday 12 February 2010, Rafael J. Wysocki wrote:
+> > > > > On Friday 12 February 2010, Gary Hade wrote:
+> > ...
+> > > > In fact there are two problems in there.  First, the bridge event notification
+> > > > calls handle_bridge_insertion() which attempts to install a PM notifier for
+> > > > the bridge and that deadlocks, because it tries to acquire the mutex
+> > > > recursively.  Second, apparently, init_bridge_misc() may be called in the
+> > > > notification code path and it attempts to unregister the notifier and register
+> > > > it again, which can't be done with pci_acpi_notify_mtx held.
+> > > > 
+> > > > I guess there are similar problems on the hot remove notification path.
+> > > > 
+> > > > Anyway, I have a new version of the patch and I'm going to test it a bit
+> > > > over the weekend.  Unfortunately, I don't have hardware with PCI hotplug
+> > > > capability, so I'll send you the new patch for testing on Monday, if you don't
+> > > > mind.
+> > > 
+> > > I don't mind.
 > > 
-> > [<ffffffff8106620a>] ? prepare_to_wait+0x2a/0x90
-> > [<ffffffff810790bd>] ? trace_hardirqs_on+0xd/0x10
-> > [<ffffffff8140db12>] ? _raw_spin_unlock_irqrestore+0x42/0x80
-> > [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
-> > [<ffffffff8112a39e>] bdi_sched_wait+0xe/0x20
-> > [<ffffffff8140af6f>] __wait_on_bit+0x5f/0x90
-> > [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
-> > [<ffffffff8140b018>] out_of_line_wait_on_bit+0x78/0x90
-> > [<ffffffff81065fd0>] ? wake_bit_function+0x0/0x40
-> > [<ffffffff8112a2d3>] ? bdi_queue_work+0xa3/0xe0
-> > [<ffffffff8112a37f>] bdi_sync_writeback+0x6f/0x80
-> > [<ffffffff8112a3d2>] sync_inodes_sb+0x22/0x120
-> > [<ffffffff8112f1d2>] __sync_filesystem+0x82/0x90
-> > [<ffffffff8112f3db>] sync_filesystem+0x4b/0x70
-> > [<ffffffff811391de>] fsync_bdev+0x2e/0x60
-> > [<ffffffff812226be>] invalidate_partition+0x2e/0x50
-> > [<ffffffff8116b92f>] del_gendisk+0x3f/0x140
-> > [<ffffffffa00c0233>] mmc_blk_remove+0x33/0x60 [mmc_block]
-> > [<ffffffff81338977>] mmc_bus_remove+0x17/0x20
-> > [<ffffffff812ce746>] __device_release_driver+0x66/0xc0
-> > [<ffffffff812ce89d>] device_release_driver+0x2d/0x40
-> > [<ffffffff812cd9b5>] bus_remove_device+0xb5/0x120
-> > [<ffffffff812cb46f>] device_del+0x12f/0x1a0
-> > [<ffffffff81338a5b>] mmc_remove_card+0x5b/0x90
-> > [<ffffffff8133ac27>] mmc_sd_remove+0x27/0x50
-> > [<ffffffff81337d8c>] mmc_resume_host+0x10c/0x140
-> > [<ffffffffa00850e9>] sdhci_resume_host+0x69/0xa0 [sdhci]
-> > [<ffffffffa0bdc39e>] sdhci_pci_resume+0x8e/0xb0 [sdhci_pci]
+> > Thanks!
 > > 
-> > bdi_queue_work seems to be the problem.
+> > > Although I am concerned that my acpiphp only
+> > > testing on our IBM System x boxes may not be sufficient to
+> > > assure that PCI hotplug will work well on other PCI hotplug
+> > > capable systems.  I hope that others will also do some early
+> > > testing of this code.
 > > 
-> > Some device drivers need to remove their cards logically in .suspend,
-> > because the card is removable, and can be changed while system is
-> > suspended.
+> > The code that you've been testing is not very hardware-dependent.  It only
+> > matters whether or not the hardware is capable of PCI hotplugging
+> > (ACPI-based), so your testing should be sufficient.
+> 
+> Perhaps the tester-dependent aspect should also be considered. :)
+> 
+> > 
+> > In fact I have two patches to test.  The first one is an ACPI CA patch that
+> > allows us to use more than one system notify handler per device (below).
+> > Please test it on top of [1-3/9] with the replacement for [4-6/9] I sent
+> > you earlier (http://patchwork.kernel.org/patch/78814/) and (updated) [7/9].
+> 
+> This seemed to work OK.  I did not see any of the previously
+> reported issues during hot-remove and hot-add.
+> 
+> > 
+> > If this works, please apply the patch from
+> > http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=patch;h=d42c8b334bafe3a15f2dd43e395dafefe58dc588
+> > on top of the appended one and see if things still work correctly.
+> 
+> Results still looked good after adding this patch.
 
-I don't know how to resolve this right now.
+Thanks a lot for testing, it looks like the issues have been resolved, then.
 
 Rafael
