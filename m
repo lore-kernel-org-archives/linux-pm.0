@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for
-	PCI PME wake-up (rev. 7)
-Date: Mon, 15 Feb 2010 22:42:48 +0100
-Message-ID: <201002152242.48303.rjw__16355.2374266603$1266270185$gmane$org@sisk.pl>
-References: <201001101431.38630.rjw@sisk.pl> <201002141451.17888.rjw@sisk.pl>
-	<20100215192252.GA11074@us.ibm.com>
+Subject: Re: s2disk hang update
+Date: Tue, 16 Feb 2010 00:08:51 +0100
+Message-ID: <201002160008.51875.rjw__30604.8665698201$1266275467$gmane$org@sisk.pl>
+References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
+	<9b2b86521002030314s6f84b482v8cd680be556f8a4d@mail.gmail.com>
+	<4B718F11.2010402@tuffmail.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100215192252.GA11074@us.ibm.com>
+In-Reply-To: <4B718F11.2010402@tuffmail.co.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,64 +19,171 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Moore,
-	Robert" <robert.moore@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>, hugh.dickins@tiscali.co.uk, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Alan Jenkins <sourcejedi.lkml@googlemail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 15 February 2010, Gary Hade wrote:
-> On Sun, Feb 14, 2010 at 02:51:17PM +0100, Rafael J. Wysocki wrote:
-> > On Saturday 13 February 2010, Gary Hade wrote:
-> > > On Sat, Feb 13, 2010 at 01:20:29AM +0100, Rafael J. Wysocki wrote:
-> > > > On Friday 12 February 2010, Rafael J. Wysocki wrote:
-> > > > > On Friday 12 February 2010, Gary Hade wrote:
-> > ...
-> > > > In fact there are two problems in there.  First, the bridge event notification
-> > > > calls handle_bridge_insertion() which attempts to install a PM notifier for
-> > > > the bridge and that deadlocks, because it tries to acquire the mutex
-> > > > recursively.  Second, apparently, init_bridge_misc() may be called in the
-> > > > notification code path and it attempts to unregister the notifier and register
-> > > > it again, which can't be done with pci_acpi_notify_mtx held.
-> > > > 
-> > > > I guess there are similar problems on the hot remove notification path.
-> > > > 
-> > > > Anyway, I have a new version of the patch and I'm going to test it a bit
-> > > > over the weekend.  Unfortunately, I don't have hardware with PCI hotplug
-> > > > capability, so I'll send you the new patch for testing on Monday, if you don't
-> > > > mind.
-> > > 
-> > > I don't mind.
-> > 
-> > Thanks!
-> > 
-> > > Although I am concerned that my acpiphp only
-> > > testing on our IBM System x boxes may not be sufficient to
-> > > assure that PCI hotplug will work well on other PCI hotplug
-> > > capable systems.  I hope that others will also do some early
-> > > testing of this code.
-> > 
-> > The code that you've been testing is not very hardware-dependent.  It only
-> > matters whether or not the hardware is capable of PCI hotplugging
-> > (ACPI-based), so your testing should be sufficient.
+On Tuesday 09 February 2010, Alan Jenkins wrote:
+> Alan Jenkins wrote:
+> > On 2/2/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >   
+> >> On Tuesday 02 February 2010, Alan Jenkins wrote:
+> >>     
+> >>> On 1/2/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >>>       
+> >>>> On Saturday 02 January 2010, Alan Jenkins wrote:
+> >>>> Hi,
+> >>>>
+> >>>>         
+> >>>>> I've been suffering from s2disk hangs again.  This time, the hangs
+> >>>>> were always before the hibernation image was written out.
+> >>>>>
+> >>>>> They're still frustratingly random.  I just started trying to work out
+> >>>>> whether doubling PAGES_FOR_IO makes them go away, but they went away
+> >>>>> on their own again.
+> >>>>>
+> >>>>> I did manage to capture a backtrace with debug info though.  Here it
+> >>>>> is for 2.6.33-rc2.  (It has also happened on rc1).  I was able to get
+> >>>>> the line numbers (using gdb, e.g.  "info line
+> >>>>> *stop_machine_create+0x27"), having built the kernel with debug info.
+> >>>>>
+> >>>>> [top of trace lost due to screen height]
+> >>>>> ? sync_page	(filemap.c:183)
+> >>>>> ? wait_on_page_bit	(filemap.c:506)
+> >>>>> ? wake_bit_function	(wait.c:174)
+> >>>>> ? shrink_page_list	(vmscan.c:696)
+> >>>>> ? __delayacct_blkio_end	(delayacct.c:94)
+> >>>>> ? finish_wait	(list.h:142)
+> >>>>> ? congestion_wait	(backing-dev.c:761)
+> >>>>> ? shrink_inactive_list	(vmscan.c:1193)
+> >>>>> ? scsi_request_fn	(spinlock.h:306)
+> >>>>> ? blk_run_queue	(blk-core.c:434)
+> >>>>> ? shrink_zone	(vmscan.c:1484)
+> >>>>> ? do_try_to_free_pages	(vmscan.c:1684)
+> >>>>> ? try_to_free_pages	(vmscan.c:1848)
+> >>>>> ? isolate_pages_global	(vmscan.c:980)
+> >>>>> ? __alloc_pages_nodemask	(page_alloc.c:1702)
+> >>>>> ? __get_free_pages	(page_alloc.c:1990)
+> >>>>> ? copy_process	(fork.c:237)
+> >>>>> ? do_fork	(fork.c:1443)
+> >>>>> ? rb_erase
+> >>>>> ? __switch_to
+> >>>>> ? kthread
+> >>>>> ? kernel_thread
+> >>>>> ? kthread
+> >>>>> ? kernel_thread_helper
+> >>>>> ? kthreadd
+> >>>>> ? kthreadd
+> >>>>> ? kernel_thread_helper
+> >>>>>
+> >>>>> INFO: task s2disk:2174 blocked for more than 120 seconds
+> >>>>>           
+> >>>> This looks like we have run out of memory while creating a new kernel
+> >>>> thread
+> >>>> and we have blocked on I/O while trying to free some space (quite
+> >>>> obviously,
+> >>>> because the I/O doesn't work at this point).
+> >>>>         
+> >>> For context, the kernel thread being created here is the stop_machine
+> >>> thread.  It is created by disable_nonboot_cpus(), called from
+> >>> hibernation_snapshot().  See e.g. this hung task backtrace -
+> >>>
+> >>> http://picasaweb.google.com/lh/photo/BkKUwZCrQ2ceBIM9ZOh7Ow?feat=directlink
+> >>>
+> >>>       
+> >>>> I think it should help if you increase PAGES_FOR_IO, then.
+> >>>>         
+> >>> Ok, it's been happening again on 2.6.33-rc6.  Unfortunately increasing
+> >>> PAGES_FOR_IO doesn't help.
+> >>>
+> >>> I've been using a test patch to make PAGES_FOR_IO tunable at run time.
+> >>>  I get the same hang if I increase it by a factor of 10, to 10240:
+> >>>
+> >>> # cd /sys/module/kernel/parameters/
+> >>> # ls
+> >>> consoleblank  initcall_debug  PAGES_FOR_IO  panic  pause_on_oops
+> >>> SPARE_PAGES
+> >>> # echo 10240 > PAGES_FOR_IO
+> >>> # echo 2560 > SPARE_PAGES
+> >>> # cat SPARE_PAGES
+> >>> 2560
+> >>> # cat PAGES_FOR_IO
+> >>> 10240
+> >>>
+> >>> I also added a debug patch to try and understand the calculations with
+> >>> PAGES_FOR_IO in hibernate_preallocate_memory().  I still don't really
+> >>> understand them and there could easily be errors in my debug patch,
+> >>> but the output is interesting.
+> >>>
+> >>> Increasing PAGES_FOR_IO by almost 10000 has the expected effect of
+> >>> decreasing "max_size" by the same amount.  However it doesn't appear
+> >>> to increase the number of free pages at the critical moment.
+> >>>
+> >>> PAGES_FOR_IO = 1024:
+> >>> http://picasaweb.google.com/lh/photo/DYQGvB_4hvCvVuxZf2ibxg?feat=directlink
+> >>>
+> >>> PAGES_FOR_IO = 10240:
+> >>> http://picasaweb.google.com/lh/photo/AIkV_ZBwt22nzN-JdOJCWA?feat=directlink
+> >>>
+> >>>
+> >>> You may remember that I was originally able to avoid the hang by
+> >>> reverting commit 5f8dcc2.  It doesn't revert cleanly any more.
+> >>> However, I tried applying my test&debug patches on top of 5f8dcc2~1
+> >>> (just before the commit that triggered the hang).  That kernel
+> >>> apparently left ~5000 pages free at hibernation time, v.s. ~1200 when
+> >>> testing the same scenario on 2.6.33-rc6.  (As before, the number of
+> >>> free pages remained the same if I increased PAGES_FOR_IO to 10240).
+> >>>       
+> >> I think the hang may be avoided by using this patch
+> >> http://patchwork.kernel.org/patch/74740/
+> >> but the hibernation will fail instead.
+> >>
+> >> Can you please repeat your experiments with the patch below applied and
+> >> report back?
+> >>
+> >> Rafael
+> >>     
+> >
+> > It causes hibernation to succeed <grin>.
+> >   
 > 
-> Perhaps the tester-dependent aspect should also be considered. :)
+> Perhaps I spoke too soon.  I see the same hang if I run too many 
+> applications.  The first hibernation fails with "not enough swap" as 
+> expected, but the second or third attempt hangs (with the same backtrace 
+> as before).
 > 
-> > 
-> > In fact I have two patches to test.  The first one is an ACPI CA patch that
-> > allows us to use more than one system notify handler per device (below).
-> > Please test it on top of [1-3/9] with the replacement for [4-6/9] I sent
-> > you earlier (http://patchwork.kernel.org/patch/78814/) and (updated) [7/9].
-> 
-> This seemed to work OK.  I did not see any of the previously
-> reported issues during hot-remove and hot-add.
-> 
-> > 
-> > If this works, please apply the patch from
-> > http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=patch;h=d42c8b334bafe3a15f2dd43e395dafefe58dc588
-> > on top of the appended one and see if things still work correctly.
-> 
-> Results still looked good after adding this patch.
+> The patch definitely helps though.  Without the patch, I see a hang the 
+> first time I try to hibernate with too many applications running.
 
-Thanks a lot for testing, it looks like the issues have been resolved, then.
+Well, I have an idea.
+
+Can you try to apply the appended patch in addition and see if that helps?
 
 Rafael
+
+---
+ kernel/power/snapshot.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+Index: linux-2.6/kernel/power/snapshot.c
+===================================================================
+--- linux-2.6.orig/kernel/power/snapshot.c
++++ linux-2.6/kernel/power/snapshot.c
+@@ -1179,6 +1179,17 @@ static void free_unnecessary_pages(void)
+ 		to_free_normal -= save_highmem - alloc_highmem;
+ 	}
+ 
++	/*
++	 * After we have preallocated memory for the image there may be too
++	 * little memory for other things done later down the road, like
++	 * starting new kernel threads for disabling nonboot CPUs.  Try to
++	 * mitigate this by reducing the number of pages that we're going to
++	 * keep preallocated by 20%.
++	 */
++	to_free_normal += (alloc_normal - to_free_normal) / 5;
++	if (to_free_normal > alloc_normal)
++		to_free_normal = alloc_normal;
++
+ 	memory_bm_position_reset(&copy_bm);
+ 
+ 	while (to_free_normal > 0 && to_free_highmem > 0) {
