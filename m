@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.33-rc8: Reported regressions from 2.6.32
-Date: Mon, 15 Feb 2010 21:59:03 +0100
-Message-ID: <201002152159.03458.rjw__14995.3665015802$1266267570$gmane$org@sisk.pl>
-References: <Z5cmiqDComP.A.gyF.OiIeLB@chimera>
-	<b170af451002150152r43d7d916kd3d2013b8990627d@mail.gmail.com>
+Subject: Re: Is it supposed to be ok to call del_gendisk while
+	userspace is frozen?
+Date: Mon, 15 Feb 2010 22:04:04 +0100
+Message-ID: <201002152204.04148.rjw__44876.8346025192$1266267961$gmane$org@sisk.pl>
+References: <1266067746.16937.7.camel@maxim-laptop>
+	<1266249634.10662.6.camel@maxim-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <b170af451002150152r43d7d916kd3d2013b8990627d@mail.gmail.com>
+In-Reply-To: <1266249634.10662.6.camel@maxim-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,18 +19,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?utf-8?q?Rafa=C5=82_Mi=C5=82ecki?= <zajec5@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>
-Cc: DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Jens Axboe <jens.axboe@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uZGF5IDE1IEZlYnJ1YXJ5IDIwMTAsIFJhZmHFgiBNacWCZWNraSB3cm90ZToKPiAyMDEw
-LzIvMTUgUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPjoKPiA+IEJ1Zy1FbnRyeSAgICAg
-ICA6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNTI4Nwo+ID4g
-U3ViamVjdCAgICAgICAgIDogUmFkZW9uS01TIHNlZ2ZhdWx0cyBrZG0gb24gbW9iaWxpdHkgcmFk
-ZW9uIHg3MDAgcGNpZQo+ID4gU3VibWl0dGVyICAgICAgIDogSmFuIEtyZXV6ZXIgPGtvbnRyb2xs
-YXRvckBnbXguZGU+Cj4gPiBEYXRlICAgICAgICAgICAgOiAyMDEwLTAyLTEyIDE3OjU4ICgzIGRh
-eXMgb2xkKQo+IAo+IENhbiB5b3UgcmVhc3NpZ24gdGhpcyBhY2NvcmRpbmcgdG8gbGFzdCBjb21t
-ZW50cywgcGxlYXNlPwoKUmVhc3NpZ25lZCB0byBQQ0kuCgpUaGFua3MsClJhZmFlbApfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5n
-IGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Monday 15 February 2010, Maxim Levitsky wrote:
+> On Sat, 2010-02-13 at 15:29 +0200, Maxim Levitsky wrote: 
+> > I noticed that currently calling del_gendisk leads to sure deadlock if
+> > attemped from .suspend or .resume functions.
+
+Well, it shouldn't be called from there, then.
+
+> > Something like that:
+> > 
+> > [<ffffffff8106620a>] ? prepare_to_wait+0x2a/0x90
+> > [<ffffffff810790bd>] ? trace_hardirqs_on+0xd/0x10
+> > [<ffffffff8140db12>] ? _raw_spin_unlock_irqrestore+0x42/0x80
+> > [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
+> > [<ffffffff8112a39e>] bdi_sched_wait+0xe/0x20
+> > [<ffffffff8140af6f>] __wait_on_bit+0x5f/0x90
+> > [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
+> > [<ffffffff8140b018>] out_of_line_wait_on_bit+0x78/0x90
+> > [<ffffffff81065fd0>] ? wake_bit_function+0x0/0x40
+> > [<ffffffff8112a2d3>] ? bdi_queue_work+0xa3/0xe0
+> > [<ffffffff8112a37f>] bdi_sync_writeback+0x6f/0x80
+> > [<ffffffff8112a3d2>] sync_inodes_sb+0x22/0x120
+> > [<ffffffff8112f1d2>] __sync_filesystem+0x82/0x90
+> > [<ffffffff8112f3db>] sync_filesystem+0x4b/0x70
+> > [<ffffffff811391de>] fsync_bdev+0x2e/0x60
+> > [<ffffffff812226be>] invalidate_partition+0x2e/0x50
+> > [<ffffffff8116b92f>] del_gendisk+0x3f/0x140
+> > [<ffffffffa00c0233>] mmc_blk_remove+0x33/0x60 [mmc_block]
+> > [<ffffffff81338977>] mmc_bus_remove+0x17/0x20
+> > [<ffffffff812ce746>] __device_release_driver+0x66/0xc0
+> > [<ffffffff812ce89d>] device_release_driver+0x2d/0x40
+> > [<ffffffff812cd9b5>] bus_remove_device+0xb5/0x120
+> > [<ffffffff812cb46f>] device_del+0x12f/0x1a0
+> > [<ffffffff81338a5b>] mmc_remove_card+0x5b/0x90
+> > [<ffffffff8133ac27>] mmc_sd_remove+0x27/0x50
+> > [<ffffffff81337d8c>] mmc_resume_host+0x10c/0x140
+> > [<ffffffffa00850e9>] sdhci_resume_host+0x69/0xa0 [sdhci]
+> > [<ffffffffa0bdc39e>] sdhci_pci_resume+0x8e/0xb0 [sdhci_pci]
+> > 
+> > bdi_queue_work seems to be the problem.
+> > 
+> > Some device drivers need to remove their cards logically in .suspend,
+> > because the card is removable, and can be changed while system is
+> > suspended.
+
+I don't know how to resolve this right now.
+
+Rafael
