@@ -1,14 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
- userspace is frozen?
-Date: Tue, 16 Feb 2010 11:27:35 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1002161126340.1281-100000__40749.1486207165$1266337867$gmane$org@iolanthe.rowland.org>
-References: <201002152204.04148.rjw@sisk.pl>
+Subject: Re: Two problems with system sleep
+Date: Tue, 16 Feb 2010 11:52:50 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1002161118360.1281-100000@iolanthe.rowland.org>
+References: <201002142247.11094.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201002152204.04148.rjw@sisk.pl>
+In-Reply-To: <201002142247.11094.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,62 +18,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, Jens Axboe <jens.axboe@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Alan <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 15 Feb 2010, Rafael J. Wysocki wrote:
+On Sun, 14 Feb 2010, Rafael J. Wysocki wrote:
 
-> On Monday 15 February 2010, Maxim Levitsky wrote:
-> > On Sat, 2010-02-13 at 15:29 +0200, Maxim Levitsky wrote: 
-> > > I noticed that currently calling del_gendisk leads to sure deadlock if
-> > > attemped from .suspend or .resume functions.
+> On Sunday 14 February 2010, Alan Stern wrote:
+> > On Sat, 13 Feb 2010, Rafael J. Wysocki wrote:
+> > 
+> > > > The bigger problem is that with a normal sleep ("echo none >pm_test"),
+> > > > the system doesn't wake up.  Pressing a key or a mouse button does
+> > > > nothing.  Pressing the power button causes the machine to start up
+> > > > again, but the screen remains blank and there's no response to network
+> > > > pings.
+> > > > 
+> > > > This was with more or less standard 2.6.33-rc6 (Greg KH's patch set was 
+> > > > applied but none of your PM patches).  The motherboard is an Intel 
+> > > > ICH5 with a 32-bit CPU.  Any ideas on ways to approach this?
+> > > 
+> > > That depends on the graphics adapter.  Is it Intel or AMD?
+> > 
+> > $ lspci -s 2.0
+> > 00:02.0 VGA compatible controller: Intel Corporation 82865G Integrated Graphics Controller (rev 02)
 > 
-> Well, it shouldn't be called from there, then.
+> Well, that is supposed to work.  Do you have KMS turned on?
 
-Even if drivers avoid calling it from within suspend methods, they have
-to be able to call it from within resume methods.  After all, the
-resume method may find that the disk's device has vanished.
+It's hard to tell.  CONFIG_DRM and CONFIG_DRM_HELPER were both set to M
+and the i915 driver was loaded, which pulled both of them in as well.  
+But lsmod showed that i915's usage count was 0 and there were no kernel
+messages about the framebuffer device; the only relevant messages were:
 
-> > > Something like that:
-> > > 
-> > > [<ffffffff8106620a>] ? prepare_to_wait+0x2a/0x90
-> > > [<ffffffff810790bd>] ? trace_hardirqs_on+0xd/0x10
-> > > [<ffffffff8140db12>] ? _raw_spin_unlock_irqrestore+0x42/0x80
-> > > [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
-> > > [<ffffffff8112a39e>] bdi_sched_wait+0xe/0x20
-> > > [<ffffffff8140af6f>] __wait_on_bit+0x5f/0x90
-> > > [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
-> > > [<ffffffff8140b018>] out_of_line_wait_on_bit+0x78/0x90
-> > > [<ffffffff81065fd0>] ? wake_bit_function+0x0/0x40
-> > > [<ffffffff8112a2d3>] ? bdi_queue_work+0xa3/0xe0
-> > > [<ffffffff8112a37f>] bdi_sync_writeback+0x6f/0x80
-> > > [<ffffffff8112a3d2>] sync_inodes_sb+0x22/0x120
-> > > [<ffffffff8112f1d2>] __sync_filesystem+0x82/0x90
-> > > [<ffffffff8112f3db>] sync_filesystem+0x4b/0x70
-> > > [<ffffffff811391de>] fsync_bdev+0x2e/0x60
-> > > [<ffffffff812226be>] invalidate_partition+0x2e/0x50
-> > > [<ffffffff8116b92f>] del_gendisk+0x3f/0x140
-> > > [<ffffffffa00c0233>] mmc_blk_remove+0x33/0x60 [mmc_block]
-> > > [<ffffffff81338977>] mmc_bus_remove+0x17/0x20
-> > > [<ffffffff812ce746>] __device_release_driver+0x66/0xc0
-> > > [<ffffffff812ce89d>] device_release_driver+0x2d/0x40
-> > > [<ffffffff812cd9b5>] bus_remove_device+0xb5/0x120
-> > > [<ffffffff812cb46f>] device_del+0x12f/0x1a0
-> > > [<ffffffff81338a5b>] mmc_remove_card+0x5b/0x90
-> > > [<ffffffff8133ac27>] mmc_sd_remove+0x27/0x50
-> > > [<ffffffff81337d8c>] mmc_resume_host+0x10c/0x140
-> > > [<ffffffffa00850e9>] sdhci_resume_host+0x69/0xa0 [sdhci]
-> > > [<ffffffffa0bdc39e>] sdhci_pci_resume+0x8e/0xb0 [sdhci_pci]
-> > > 
-> > > bdi_queue_work seems to be the problem.
-> > > 
-> > > Some device drivers need to remove their cards logically in .suspend,
-> > > because the card is removable, and can be changed while system is
-> > > suspended.
+[   41.814441] [drm] Initialized drm 1.1.0 20060810
+[   41.869690] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[   41.869705] pci 0000:00:02.0: setting latency timer to 64
+[   41.883076] [drm] Initialized i915 1.6.0 20080730 for 0000:00:02.0 on minor 0
+
+Also, the console remained in the BIOS's original 80x25 video mode.  
+Since I wasn't running X11 during the test, KMS shouldn't have made any
+difference, right?
+
+> > Do you need any more information than that?
 > 
-> I don't know how to resolve this right now.
+> Is the problem reproducible with init=/bin/bash vga=0?
 
-This is a matter for Jens.  Is the bdi writeback task freezable?  If it
-is, should it be made unfreezable?
+Yes.  I tried booting with no initramfs and with "init=/bin/bash
+vga=0".  Just as before the suspended machine didn't do anything when I
+pressed keys on the keyboard, and pressing the power button caused it
+to come back up totally unresponsive with the screen blank and the
+CapsLock and ScrollLock lights blinking.
 
 Alan Stern
