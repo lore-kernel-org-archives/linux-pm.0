@@ -1,45 +1,60 @@
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Subject: Re: s2disk hang update
-Date: Tue, 16 Feb 2010 11:09:32 +0000
-Message-ID: <9b2b86521002160309g26d60bd2t4c19bd2294b76c28__1629.03906680203$1266318648$gmane$org@mail.gmail.com>
-References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
-	<9b2b86521002030314s6f84b482v8cd680be556f8a4d@mail.gmail.com>
-	<4B718F11.2010402@tuffmail.co.uk> <201002160008.51875.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: slow resume from suspend to disk
+Date: Tue, 16 Feb 2010 14:54:44 +0100
+Message-ID: <20100216135444.GA1337@ucw.cz>
+References: <201002110140.16122.mihai.dontu@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201002160008.51875.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>, hugh.dickins@tiscali.co.uk, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <201002110140.16122.mihai.dontu@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mihai Don??u <mihai.dontu@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+Cc: linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2/15/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday 09 February 2010, Alan Jenkins wrote:
->> Perhaps I spoke too soon.  I see the same hang if I run too many
->> applications.  The first hibernation fails with "not enough swap" as
->> expected, but the second or third attempt hangs (with the same backtrace
->> as before).
->>
->> The patch definitely helps though.  Without the patch, I see a hang the
->> first time I try to hibernate with too many applications running.
->
-> Well, I have an idea.
->
-> Can you try to apply the appended patch in addition and see if that helps?
->
-> Rafael
+Hi!
+> 
+> Is there any way to speed up the resume from suspend to disk? Currently, on my 
+> laptop it suspends in ~15s (wrote about 360MB) but resumes in ~120s and after 
+> that I'm still left with ~361MB in swap:
+> 
+>              total       used       free     shared    buffers     cached
+> Mem:       3333472    1139332    2194140          0      12808     473084
+> -/+ buffers/cache:     653440    2680032
+> Swap:      2104472     369428    1735044
+> 
+> Right now I'm better off with a cold boot.
 
-It doesn't seem to help.
+That's way too slow. Are you using in-kernel swsusp, or userland
+s2disk? dmesgM
+> 
+> Although I did not study the kernel code to see how things really work, I 
+> suspect on resume only necessary kernel data is loaded from swap and the 
+> userland tasks are left with the page fault mechanism to bring back their own 
+> data, which leads to an I/O storm on the swap device. Maybe changing the I/O 
+> scheduler from CFQ would help? or better yet, is there any way to tell the 
+> kernel to bring back all the pages from swap in one quick move? That would be 
+> something I want to put in my resume scripts.
+> 
+> $ uname -a
+> Linux mdontu-dell 2.6.32-gentoo-r3 #1 SMP PREEMPT Mon Feb 1 02:36:01 EET 2010 
+> x86_64 Intel(R) Core(TM)2 CPU T5500 @ 1.66GHz GenuineIntel GNU/Linux
+> 
+> I've installed Windows XP just for a test, started a few apps (like visual 
+> studio, mplayer, etc.) and then suspended/hibernated (~15s). It took roughly 
+> 15s to come back.
+> 
+> Thanks,
+> 
+> PS: I'm editing this e-mail as I do tests and I just noticed that my /sbin 
+> directory is empty. rmmod is there and I needed it to reload the b43 driver 
+> which generally does not feel well after a suspend/resume. A reboot fixed it. 
+> Weird ...
+> 
 
-Thanks
-Alan
+Seems like your system has problems...
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
