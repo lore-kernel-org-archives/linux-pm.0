@@ -1,13 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Two problems with system sleep
-Date: Wed, 17 Feb 2010 21:43:16 +0100
-Message-ID: <201002172143.16206.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1002171006450.1913-100000@iolanthe.rowland.org>
+Subject: [PATCH 0/8] PCI run-time PM support (rev. 4)
+Date: Wed, 17 Feb 2010 23:35:47 +0100
+Message-ID: <201002172335.47703.rjw__17718.3812404566$1266446786$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1002171006450.1913-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,49 +15,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Alan <alan@lxorguk.ukuu.org.uk>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>, "Moore, Robert" <robert.moore@intel.com>, Len Brown <lenb@kernel.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 17 February 2010, Alan Stern wrote:
-> On Tue, 16 Feb 2010, Rafael J. Wysocki wrote:
-> 
-> > > > Is the problem reproducible with init=/bin/bash vga=0?
-> > > 
-> > > Yes.  I tried booting with no initramfs and with "init=/bin/bash
-> > > vga=0".  Just as before the suspended machine didn't do anything when I
-> > > pressed keys on the keyboard, and pressing the power button caused it
-> > > to come back up totally unresponsive with the screen blank and the
-> > > CapsLock and ScrollLock lights blinking.
-> > 
-> > Hmm.  What about X86_CHECK_BIOS_CORRUPTION and friends?
-> 
-> CONFIG_X86_CHECK_BIOS_CORRUPTION was not set.  I created a new kernel 
-> with:
-> 
-> CONFIG_X86_CHECK_BIOS_CORRUPTION=y
-> CONFIG_X86_BOOTPARAM_MEMORY_CORRUPTION_CHECK=y
-> CONFIG_X86_RESERVE_LOW_64K=y
-> 
-> And then I booted with "memory_corruption_check=1 vga=0 init=/bin/bash" 
-> on the command line just to be sure.  There was a log message saying 
-> that low memory would be checked every 60 seconds, but no error 
-> messages appeared after waiting for a few minutes.
-> 
-> The behavior during resume was unchanged.
-> 
-> > Perhaps the BIOS steps onto the early wakeup code.
-> 
-> The difficulty is that I have no way to find out what's going on.  The
-> serial port isn't working (or nothing gets sent to it, or both) and the
-> system hangs before the video output gets enabled.
+Hi,
 
-You can try to put no_console_suspend into the kernel command line, but I doubt
-it'll help with the serial resume.
+The following (updated) series of patches provides basic run-time power
+management support for PCI devices through ACPI and/or the native PCIe
+PME.
 
-Anyway, we need to check if control gets back to acpi_suspend_enter().
+Patches [1/8] and [3/8] are unchanged, the other patches have been modified to
+address the reviewers' comments and/or to fix reported bugs.
 
-BTW, does anything change if you put acpi_sleep=sci_force_enable into the
-kernel command line?
+[1/8] - Add function for checking PME status of devices
 
+[2/8][Updated] - PCIe PME root port service driver
+
+[3/8] - "Don't use MSIs for PME signaling" switch for PCIe
+ 
+[4/8][New] - ACPI GPE refcounting, based on 3 patches from Matthew Garrett
+ 
+[5/8][Updated] - ACPI, add fields for handling run-wake devices
+
+[6/8][New] - ACPI, make it possible to use more than 1 notify handler per node
+
+[7/8][Updated] - PCI / ACPI platform support for run-time power management
+
+[8/8] - Runtime PM callbacks for the PCI bus type
+
+Bob, Len, patches [4/8] and [6/8] are vitally important for this feature, but
+they cannot be merged without your approval.  Please let me know if you have
+any objections to these patches.
+
+Thanks,
 Rafael
