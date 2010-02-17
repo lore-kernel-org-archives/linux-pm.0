@@ -1,13 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Two problems with system sleep
-Date: Tue, 16 Feb 2010 22:22:31 +0100
-Message-ID: <201002162222.31075.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1002161118360.1281-100000@iolanthe.rowland.org>
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Subject: Re: s2disk hang update
+Date: Wed, 17 Feb 2010 11:27:30 +0000
+Message-ID: <9b2b86521002170327m1f08ff73ncca9e5eff77b1966__47863.4226987653$1266406247$gmane$org@mail.gmail.com>
+References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
+	<9b2b86521002160309g26d60bd2t4c19bd2294b76c28@mail.gmail.com>
+	<9b2b86521002160712r39ecb2b1q5e01389e9209e17b@mail.gmail.com>
+	<201002162216.30192.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1002161118360.1281-100000@iolanthe.rowland.org>
+In-Reply-To: <201002162216.30192.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,59 +20,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Alan <alan@lxorguk.ukuu.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>, hugh.dickins@tiscali.co.uk, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 16 February 2010, Alan Stern wrote:
-> On Sun, 14 Feb 2010, Rafael J. Wysocki wrote:
-> 
-> > On Sunday 14 February 2010, Alan Stern wrote:
-> > > On Sat, 13 Feb 2010, Rafael J. Wysocki wrote:
-> > > 
-> > > > > The bigger problem is that with a normal sleep ("echo none >pm_test"),
-> > > > > the system doesn't wake up.  Pressing a key or a mouse button does
-> > > > > nothing.  Pressing the power button causes the machine to start up
-> > > > > again, but the screen remains blank and there's no response to network
-> > > > > pings.
-> > > > > 
-> > > > > This was with more or less standard 2.6.33-rc6 (Greg KH's patch set was 
-> > > > > applied but none of your PM patches).  The motherboard is an Intel 
-> > > > > ICH5 with a 32-bit CPU.  Any ideas on ways to approach this?
-> > > > 
-> > > > That depends on the graphics adapter.  Is it Intel or AMD?
-> > > 
-> > > $ lspci -s 2.0
-> > > 00:02.0 VGA compatible controller: Intel Corporation 82865G Integrated Graphics Controller (rev 02)
-> > 
-> > Well, that is supposed to work.  Do you have KMS turned on?
-> 
-> It's hard to tell.  CONFIG_DRM and CONFIG_DRM_HELPER were both set to M
-> and the i915 driver was loaded, which pulled both of them in as well.  
-> But lsmod showed that i915's usage count was 0 and there were no kernel
-> messages about the framebuffer device; the only relevant messages were:
-> 
-> [   41.814441] [drm] Initialized drm 1.1.0 20060810
-> [   41.869690] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> [   41.869705] pci 0000:00:02.0: setting latency timer to 64
-> [   41.883076] [drm] Initialized i915 1.6.0 20080730 for 0000:00:02.0 on minor 0
-> 
-> Also, the console remained in the BIOS's original 80x25 video mode.  
-> Since I wasn't running X11 during the test, KMS shouldn't have made any
-> difference, right?
-> 
-> > > Do you need any more information than that?
-> > 
-> > Is the problem reproducible with init=/bin/bash vga=0?
-> 
-> Yes.  I tried booting with no initramfs and with "init=/bin/bash
-> vga=0".  Just as before the suspended machine didn't do anything when I
-> pressed keys on the keyboard, and pressing the power button caused it
-> to come back up totally unresponsive with the screen blank and the
-> CapsLock and ScrollLock lights blinking.
+On 2/16/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Tuesday 16 February 2010, Alan Jenkins wrote:
+>> On 2/16/10, Alan Jenkins <sourcejedi.lkml@googlemail.com> wrote:
+>> > On 2/15/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >> On Tuesday 09 February 2010, Alan Jenkins wrote:
+>> >>> Perhaps I spoke too soon.  I see the same hang if I run too many
+>> >>> applications.  The first hibernation fails with "not enough swap" as
+>> >>> expected, but the second or third attempt hangs (with the same
+>> >>> backtrace
+>> >>> as before).
+>> >>>
+>> >>> The patch definitely helps though.  Without the patch, I see a hang
+>> >>> the
+>> >>> first time I try to hibernate with too many applications running.
+>> >>
+>> >> Well, I have an idea.
+>> >>
+>> >> Can you try to apply the appended patch in addition and see if that
+>> >> helps?
+>> >>
+>> >> Rafael
+>> >
+>> > It doesn't seem to help.
+>>
+>> To be clear: It doesn't stop the hang when I hibernate with too many
+>> applications.
+>>
+>> It does stop the same hang in a different case though.
+>>
+>> 1. boot with init=/bin/bash
+>> 2. run s2disk
+>> 3. cancel the s2disk
+>> 4. repeat steps 2&3
+>>
+>> With the patch, I can run 10s of iterations, with no hang.
+>> Without the patch, it soon hangs, (in disable_nonboot_cpus(), as always).
+>>
+>> That's what happens on 2.6.33-rc7.  On 2.6.30, there is no problem.
+>> On 2.6.31 and 2.6.32 I don't get a hang, but dmesg shows an allocation
+>> failure after a couple of iterations ("kthreadd: page allocation
+>> failure. order:1, mode:0xd0").  It looks like it might be the same
+>> stop_machine thread allocation failure that causes the hang.
+>
+> Have you tested it alone or on top of the previous one?  If you've tested it
+> alone, please apply the appended one in addition to it and retest.
+>
+> Rafael
 
-Hmm.  What about X86_CHECK_BIOS_CORRUPTION and friends?
+I did test with both patches applied together -
 
-Perhaps the BIOS steps onto the early wakeup code.
+1. [Update] MM / PM: Force GFP_NOIO during suspend/hibernation and resume
+2. "reducing the number of pages that we're going to keep preallocated by 20%"
 
-Rafael
+Alan
