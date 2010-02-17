@@ -1,16 +1,13 @@
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Subject: Re: s2disk hang update
-Date: Wed, 17 Feb 2010 11:27:30 +0000
-Message-ID: <9b2b86521002170327m1f08ff73ncca9e5eff77b1966__47863.4226987653$1266406247$gmane$org@mail.gmail.com>
-References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
-	<9b2b86521002160309g26d60bd2t4c19bd2294b76c28@mail.gmail.com>
-	<9b2b86521002160712r39ecb2b1q5e01389e9209e17b@mail.gmail.com>
-	<201002162216.30192.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Two problems with system sleep
+Date: Wed, 17 Feb 2010 13:10:50 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1002171006450.1913-100000@iolanthe.rowland.org>
+References: <201002162222.31075.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201002162216.30192.rjw@sisk.pl>
+In-Reply-To: <201002162222.31075.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,60 +18,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>, hugh.dickins@tiscali.co.uk, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Alan <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On 2/16/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday 16 February 2010, Alan Jenkins wrote:
->> On 2/16/10, Alan Jenkins <sourcejedi.lkml@googlemail.com> wrote:
->> > On 2/15/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> On Tuesday 09 February 2010, Alan Jenkins wrote:
->> >>> Perhaps I spoke too soon.  I see the same hang if I run too many
->> >>> applications.  The first hibernation fails with "not enough swap" as
->> >>> expected, but the second or third attempt hangs (with the same
->> >>> backtrace
->> >>> as before).
->> >>>
->> >>> The patch definitely helps though.  Without the patch, I see a hang
->> >>> the
->> >>> first time I try to hibernate with too many applications running.
->> >>
->> >> Well, I have an idea.
->> >>
->> >> Can you try to apply the appended patch in addition and see if that
->> >> helps?
->> >>
->> >> Rafael
->> >
->> > It doesn't seem to help.
->>
->> To be clear: It doesn't stop the hang when I hibernate with too many
->> applications.
->>
->> It does stop the same hang in a different case though.
->>
->> 1. boot with init=/bin/bash
->> 2. run s2disk
->> 3. cancel the s2disk
->> 4. repeat steps 2&3
->>
->> With the patch, I can run 10s of iterations, with no hang.
->> Without the patch, it soon hangs, (in disable_nonboot_cpus(), as always).
->>
->> That's what happens on 2.6.33-rc7.  On 2.6.30, there is no problem.
->> On 2.6.31 and 2.6.32 I don't get a hang, but dmesg shows an allocation
->> failure after a couple of iterations ("kthreadd: page allocation
->> failure. order:1, mode:0xd0").  It looks like it might be the same
->> stop_machine thread allocation failure that causes the hang.
->
-> Have you tested it alone or on top of the previous one?  If you've tested it
-> alone, please apply the appended one in addition to it and retest.
->
-> Rafael
+On Tue, 16 Feb 2010, Rafael J. Wysocki wrote:
 
-I did test with both patches applied together -
+> > > Is the problem reproducible with init=/bin/bash vga=0?
+> > 
+> > Yes.  I tried booting with no initramfs and with "init=/bin/bash
+> > vga=0".  Just as before the suspended machine didn't do anything when I
+> > pressed keys on the keyboard, and pressing the power button caused it
+> > to come back up totally unresponsive with the screen blank and the
+> > CapsLock and ScrollLock lights blinking.
+> 
+> Hmm.  What about X86_CHECK_BIOS_CORRUPTION and friends?
 
-1. [Update] MM / PM: Force GFP_NOIO during suspend/hibernation and resume
-2. "reducing the number of pages that we're going to keep preallocated by 20%"
+CONFIG_X86_CHECK_BIOS_CORRUPTION was not set.  I created a new kernel 
+with:
 
-Alan
+CONFIG_X86_CHECK_BIOS_CORRUPTION=y
+CONFIG_X86_BOOTPARAM_MEMORY_CORRUPTION_CHECK=y
+CONFIG_X86_RESERVE_LOW_64K=y
+
+And then I booted with "memory_corruption_check=1 vga=0 init=/bin/bash" 
+on the command line just to be sure.  There was a log message saying 
+that low memory would be checked every 60 seconds, but no error 
+messages appeared after waiting for a few minutes.
+
+The behavior during resume was unchanged.
+
+> Perhaps the BIOS steps onto the early wakeup code.
+
+The difficulty is that I have no way to find out what's going on.  The
+serial port isn't working (or nothing gets sent to it, or both) and the
+system hangs before the video output gets enabled.
+
+Alan Stern
