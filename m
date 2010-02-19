@@ -1,18 +1,15 @@
-From: Tino Keitel <tino.keitel@tikei.de>
-Subject: Re: [PATCH] i915 / PM: Fix hibernate regression caused
- by suspend/resume splitting
-Date: Fri, 19 Feb 2010 07:39:29 +0100
-Message-ID: <20100219063929.GA2851__44431.6707122654$1266600380$gmane$org@x61.home>
-References: <74fd948d1002171047g70d2bba0l957e264dfbc8ea23@mail.gmail.com>
-	<201002172320.57491.rjw@sisk.pl>
-	<74fd948d1002171629v7e86371cna4441e8feb27c326@mail.gmail.com>
-	<201002182306.28052.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 4/8] ACPI: Use GPE reference counting to
+	support shared GPEs
+Date: Fri, 19 Feb 2010 22:08:24 +0100
+Message-ID: <201002192208.24378.rjw__47746.3829484352$1266613862$gmane$org@sisk.pl>
+References: <201002172335.47703.rjw@sisk.pl> <201002182101.44171.rjw@sisk.pl>
+	<4B7E3CC5.9040901@np.css.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201002182306.28052.rjw@sisk.pl>
+In-Reply-To: <4B7E3CC5.9040901@np.css.fujitsu.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,20 +19,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>, Pedro Ribeiro <pedrib@gmail.com>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+To: Jin Dongming <jin.dongming@np.css.fujitsu.com>
+Cc: Matthew Garrett <mjg@redhat.com>, Linux PCI <linux-pci@vger.kernel.org>, "Moore, Robert" <robert.moore@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 18, 2010 at 23:06:27 +0100, Rafael J. Wysocki wrote:
+On Friday 19 February 2010, Jin Dongming wrote:
+> Hi, Rafael J. Wysocki
+> 
+> Rafael J. Wysocki wrote:
+> > On Thursday 18 February 2010, Jin Dongming wrote:
+> >> Hi, Rafael J. Wysocki
+> >>> -	/* Update enable mask, but don't enable the HW GPE as of yet */
+> >>> -
+> >>> -	status = acpi_ev_enable_gpe(gpe_event_info, FALSE);
+> > 
+> > You could preserve some more context.
+> > 
+> >> I think the above line code should be remained. If it is deleted, the exception 
+> >> event will be raised on some machine.
+> > 
+> > Why would it?  The GPE is still disabled at the hardware level at this point.
+> > 
+> > Rafael
+> > 
+> > 
+> I am very sorry for my wrong comment. The GPE is still disabled as you wrote.
+> 
+> The error message what I got was not caused by GPE event, it was caused by the "status"
+> variable which had not been deleted on x86-next tree. And it is also deleted at this
+> file. So I don't there is problem here.
 
-[...]
+Great, thanks for the review.
 
-> Jesse, Eric, the appended patch fixes a very recent hibernate regression in
-> i915, please push it to Linus ASAP.
-
-FYI: I got no resume failure during normal usage after 9 suspend to RAM
-and 8 suspend to disk cycles (using both suspend types alternately)
-with the patch applied.
-
-Regards,
-Tino
+Rafael
