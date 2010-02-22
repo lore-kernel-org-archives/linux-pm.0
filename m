@@ -1,13 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Two problems with system sleep
-Date: Mon, 22 Feb 2010 23:35:22 +0100
-Message-ID: <201002222335.22172.rjw__23826.7570654445$1266878309$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1002221713090.1393-100000@iolanthe.rowland.org>
+From: Brian King <brking@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/1] PM: Add arch_suspend_disable_nonboot_cpus
+Date: Mon, 22 Feb 2010 17:31:32 -0600
+Message-ID: <4B8313D4.4050802@linux.vnet.ibm.com>
+References: <201002211631.o1LGVsw8022630@d01av02.pok.ibm.com>
+	<201002212337.10462.rjw@sisk.pl>
+	<4B81B7C5.5060301@linux.vnet.ibm.com>
+	<201002222014.07280.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1002221713090.1393-100000@iolanthe.rowland.org>
+In-Reply-To: <201002222014.07280.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,80 +20,92 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, dri-devel@lists.sourceforge.net, Alan <alan@lxorguk.ukuu.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 22 February 2010, you wrote:
-> On Mon, 22 Feb 2010, Rafael J. Wysocki wrote:
+On 02/22/2010 01:14 PM, Rafael J. Wysocki wrote:
+> On Sunday 21 February 2010, Brian King wrote:
+>> On 02/21/2010 04:37 PM, Rafael J. Wysocki wrote:
+>>> On Sunday 21 February 2010, Brian King wrote:
+>>>> On 02/21/2010 04:27 PM, Rafael J. Wysocki wrote:
+>>>>> On Sunday 21 February 2010, Brian King wrote:
+>>>>>> On 02/21/2010 04:08 PM, Rafael J. Wysocki wrote:
+>>>>>>> I'm not a big fan of __attribute__ ((weak)), though.  While we already use that
+>>>>>>> in the suspend code, I'm not particularly comfortable with it.
+>>>>>>>
+>>>>>>> Have you considered any alternative approaches?
+>>>>>>
+>>>>>> I suppose another option would be to implement this similar to how
+>>>>>> arch_free_page and arch_alloc_page do. Something like this:
+>>>>>>
+>>>>>> #ifndef CONFIG_HAVE_ARCH_SUSPEND_CPUS
+>>>>>> static inline int arch_suspend_disable_nonboot_cpus(void)
+>>>>>> {
+>>>>>> 	return disable_nonboot_cpus();
+>>>>>> }
+>>>>>>
+>>>>>> static inline void arch_suspend_enable_nonboot_cpus(void)
+>>>>>> {
+>>>>>> 	return enable_nonboot_cpus()'
+>>>>>> }
+>>>>>> #else
+>>>>>> extern int arch_suspend_disable_nonboot_cpus(void);
+>>>>>> extern void arch_suspend_enable_nonboot_cpus(void);
+>>>>>> #endif
+>>>>>>
+>>>>>> I figured I would just be consistent with arch_suspend_disable_irqs /
+>>>>>> arch_suspend_enable_irqs.
+>>>>>
+>>>>> I just think that doing arch_suspend_[enable|disable]_irqs() this way was
+>>>>> a mistake.
+>>>>
+>>>> Do you prefer the example above? I can send an updated patch. If not,
+>>>> any other suggestions you might have as to the way you would like this
+>>>> done would be greatly appreciated.
+>>>
+>>> disable_nonboot_cpus() is also called by kernel_power_off().  Is that fine
+>>> with your architecture?
+>>
+>> Yes. We only need a different behavior for the suspend/resume path.
 > 
-> > > Here's what I got:
-> > > 
-> > > [    3.349334] PM: Resume from disk failed.
-> > > [    3.350060]   Magic number: 0:141:321
-> > > [    3.352583]   hash matches drivers/base/power/main.c:477
-> > > [    3.355144] tty tty46: hash matches
-> > > [    3.357742] i915 0000:00:02.0: hash matches
-> > > 
-> > > So it appears that the video driver is indeed the culprit.  Is there 
-> > > any way to narrow it down further?
-> > 
-> > Not without adding some debug code to the driver.
-> > 
-> > Which version of the kernel is this?
+> OK
 > 
-> 2.6.33-rc8.  The same problem occurs with earlier versions, such as
-> Fedora 12's 2.6.31.9 (which is what I'm running now).
-
-I _think_ think the i915 KMS doesn't work on your box for some reason.
-
-Doesn the screen switch to the graphics framebuffer when booted with
-vga=0?
-
-If not, you probably need to enable framebuffer console in .config (the i915
-KMS depends on that actually).
-
-> > > Here's my /proc/acpi/wakeup:
-> > > 
-> > > Device	S-state	  Status   Sysfs node
-> > > P0P4	  S4	 disabled  pci:0000:00:1e.0
-> > > MC97	  S4	 disabled  
-> > > USB1	  S4	 disabled  pci:0000:00:1d.0
-> > > USB2	  S4	 disabled  pci:0000:00:1d.1
-> > > USB3	  S4	 disabled  pci:0000:00:1d.2
-> > > USB4	  S4	 disabled  pci:0000:00:1d.3
-> > > EUSB	  S4	 disabled  pci:0000:00:1d.7
-> > > PS2K	  S4	 disabled  pnp:00:09
-> > > PS2M	  S4	 disabled  pnp:00:0a
-> > > GBEN	  S4	 disabled  
-> > > 
-> > > It appears that PS2K is the keyboard.  If I write "PS2K" to 
-> > > /proc/acpi/wakeup, I get:
-> > > 
-> > > ACPI: 'PS2M' and 'PS2K' have the same GPE, can't disable/enable one seperately
-> > > 
-> > > Apart from the misspelling, this doesn't bode well for making the
-> > > keyboard a wakeup device.
-> > 
-> > This only means both will be enabled at the same time.
-> > 
-> > > Furthermore, these values are not properly tied to the values in sysfs.
-> > 
-> > They are independent and the sysfs values probably don't matter for these
-> > devices.  What are the contents of /proc/acpi/wakeup after writing PS2K to it?
+>> Here is an alternative implementation of the patch. My test machine is
+>> currently unavailable, so it is not yet been tested. How does this one look?
 > 
-> Unchanged -- both PS2K and PS2M continue to be disabled.
+> Well, I'd like to do that cleanly from the start.
+> 
+> Now, the problem is that PM_SLEEP_SMP selects HOTPLUG_CPU, because
+> that's necessary for the other architectures to make SMP suspend work, but it's
+> not necessary on your architecture.  Moreover, you don't need to compile
+> enable_nonboot_cpus() at all.
 
-That sounds like a bug.  Please try to write 'PS2M' to it too.
+At least for the architecture I am enabling this support for (PPC_PSERIES), upon looking closer, it looks like PM_SLEEP_SMP was never defined, so enable_nonboot_cpus and disable_nonboot_cpus were always nooped before, which I didn't previously realize. We probably want to retain this behavior.
 
-> Why are the values independent from the wakeup settings in sysfs?  
-> Aren't they supposed to mean the same thing?
+So perhaps a better way to solve this might be to change the Kconfig rules so that PM_SLEEP_SMP is not defined for PPC_PSERIES and then use ->prepare_late to put the other CPUs in H_JOIN state and ->wake to send H_PROD to them to wake them up. In that case, I suppose a simple patch like the one below would suffice.
 
-Not really.  There are two separate flags for wakeup.  One of them is a
-property of the "physical" device object (eg. PCI device structure) and that
-one is set/unset via sysfs.  The other is a property of the device's ACPI
-"shadow" object and is set/unset through /proc/acpi/wakeup (this mechanism
-is regarded as obsolete, but it looks like some devices have not been converted
-to the sysfs-based one yet).
 
-Rafael
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
+
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
+
+ kernel/power/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff -puN kernel/power/Kconfig~suspend_no_pm_sleep_smp kernel/power/Kconfig
+--- linux-2.6/kernel/power/Kconfig~suspend_no_pm_sleep_smp	2010-02-22 17:05:25.000000000 -0600
++++ linux-2.6-bjking1/kernel/power/Kconfig	2010-02-22 17:07:00.000000000 -0600
+@@ -77,6 +77,7 @@ config PM_SLEEP_SMP
+ 	depends on SMP
+ 	depends on ARCH_SUSPEND_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
+ 	depends on PM_SLEEP
++	depends on !PPC_PSERIES
+ 	select HOTPLUG_CPU
+ 	default y
+ 
+_
