@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Two problems with system sleep
-Date: Mon, 22 Feb 2010 19:45:25 +0100
-Message-ID: <201002221945.25891.rjw__21867.8214740523$1266864510$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1002221119590.1262-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH 1/1] PM: Add arch_suspend_disable_nonboot_cpus
+Date: Mon, 22 Feb 2010 20:14:07 +0100
+Message-ID: <201002222014.07280.rjw@sisk.pl>
+References: <201002211631.o1LGVsw8022630@d01av02.pok.ibm.com>
+	<201002212337.10462.rjw@sisk.pl>
+	<4B81B7C5.5060301@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1002221119590.1262-100000@iolanthe.rowland.org>
+In-Reply-To: <4B81B7C5.5060301@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,61 +19,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Alan <alan@lxorguk.ukuu.org.uk>, linux-kbuild@vger.kernel.org
+To: Brian King <brking@linux.vnet.ibm.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 22 February 2010, Alan Stern wrote:
-> On Sun, 21 Feb 2010, Rafael J. Wysocki wrote:
-> 
-> > > > Anyway, we need to check if control gets back to acpi_suspend_enter().
-> 
-> Would PM_TRACE_RTC help?
-
-In my opinion that's worth doing.
-
-> What would I have to add in order to insert an appropriate tracepoint?
-
-Please follow Documentation/power/s2ram.txt .
-
-> > > > BTW, does anything change if you put acpi_sleep=sci_force_enable into the
-> > > > kernel command line?
-> > > 
-> > > Nothing changes.  I also added "pci=use_crs", based on a suggestion in 
-> > > the log, but that didn't make any difference either.
+On Sunday 21 February 2010, Brian King wrote:
+> On 02/21/2010 04:37 PM, Rafael J. Wysocki wrote:
+> > On Sunday 21 February 2010, Brian King wrote:
+> >> On 02/21/2010 04:27 PM, Rafael J. Wysocki wrote:
+> >>> On Sunday 21 February 2010, Brian King wrote:
+> >>>> On 02/21/2010 04:08 PM, Rafael J. Wysocki wrote:
+> >>>>> I'm not a big fan of __attribute__ ((weak)), though.  While we already use that
+> >>>>> in the suspend code, I'm not particularly comfortable with it.
+> >>>>>
+> >>>>> Have you considered any alternative approaches?
+> >>>>
+> >>>> I suppose another option would be to implement this similar to how
+> >>>> arch_free_page and arch_alloc_page do. Something like this:
+> >>>>
+> >>>> #ifndef CONFIG_HAVE_ARCH_SUSPEND_CPUS
+> >>>> static inline int arch_suspend_disable_nonboot_cpus(void)
+> >>>> {
+> >>>> 	return disable_nonboot_cpus();
+> >>>> }
+> >>>>
+> >>>> static inline void arch_suspend_enable_nonboot_cpus(void)
+> >>>> {
+> >>>> 	return enable_nonboot_cpus()'
+> >>>> }
+> >>>> #else
+> >>>> extern int arch_suspend_disable_nonboot_cpus(void);
+> >>>> extern void arch_suspend_enable_nonboot_cpus(void);
+> >>>> #endif
+> >>>>
+> >>>> I figured I would just be consistent with arch_suspend_disable_irqs /
+> >>>> arch_suspend_enable_irqs.
+> >>>
+> >>> I just think that doing arch_suspend_[enable|disable]_irqs() this way was
+> >>> a mistake.
+> >>
+> >> Do you prefer the example above? I can send an updated patch. If not,
+> >> any other suggestions you might have as to the way you would like this
+> >> done would be greatly appreciated.
 > > 
-> > The failure to resume may be graphics-related, so please try to compile i915
-> > statically into the kernel and set CONFIG_DRM_I915_KMS.
+> > disable_nonboot_cpus() is also called by kernel_power_off().  Is that fine
+> > with your architecture?
 > 
-> Odd -- when I use "make menuconfig", that part of the menu 
-> doesn't show up.  Navigating through "Device Drivers -> Graphics 
-> support" gives me this screen:
-> 
->     <*> /dev/agpgart (AGP Support)  --->                             
->     <*> Direct Rendering Manager (XFree86 4.1.0 and higher DRI suppor 
->     -*- Lowlevel video output switch controls                        
->     -*- Support for frame buffer devices  --->                       
->     [ ] Backlight & LCD device support  --->                         
->         Display device support  --->                                 
->         Console display driver support  --->                         
->     [ ] Bootup logo  --->                                            
-> 
-> None of the entries in drivers/gpu/drm/Kconfig show up beyond the first 
-> one.  I had to go in and edit .config by hand to set CONFIG_DRM, 
-> CONFIG_DRM_KMS_HELPER, CONFIG_DRM_I915, and CONFIG_DRM_I915_KMS all to 
-> "y".  Is this a bug in menuconfig?  CC'ing the mailing list...
-> 
-> Anyway, it didn't make any difference.  The behavior was exactly the 
-> same.  Pressing the power button during suspend causes an 
-> almost-instant hang, before the screen or anything else revives.
-> 
-> By concentrating on the video drivers, you may be missing part of 
-> the problem.  Have you considered why pressing a key on the keyboard 
-> doesn't wake the system up?  Nothing happens -- the power LED on the 
-> desktop case just keeps on blinking.
+> Yes. We only need a different behavior for the suspend/resume path.
 
-We may just not set up the keyboard as a wakeup device.  The other option is
-that the BIOS has a problem with resume handling, in which case I have no
-idea what to do.
+OK
+
+> Here is an alternative implementation of the patch. My test machine is
+> currently unavailable, so it is not yet been tested. How does this one look?
+
+Well, I'd like to do that cleanly from the start.
+
+Now, the problem is that PM_SLEEP_SMP selects HOTPLUG_CPU, because
+that's necessary for the other architectures to make SMP suspend work, but it's
+not necessary on your architecture.  Moreover, you don't need to compile
+enable_nonboot_cpus() at all.
+
+I'm not sure how to untangle it at the moment, but I think it should be
+untangled.
+
+Preferably, on architectures that need HOTPLUG_CPU for the SMP resume to work
+PM_SLEEP_SMP should depend on it instead of selecting it, but on your
+architectures they may be independent from each other.
 
 Rafael
