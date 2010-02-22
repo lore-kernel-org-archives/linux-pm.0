@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/1] PM: Add arch_suspend_disable_nonboot_cpus
-Date: Mon, 22 Feb 2010 20:14:07 +0100
-Message-ID: <201002222014.07280.rjw@sisk.pl>
-References: <201002211631.o1LGVsw8022630@d01av02.pok.ibm.com>
-	<201002212337.10462.rjw@sisk.pl>
-	<4B81B7C5.5060301@linux.vnet.ibm.com>
+Subject: Re: s2disk hang update
+Date: Mon, 22 Feb 2010 20:17:55 +0100
+Message-ID: <201002222017.55588.rjw__39549.2491349161$1266866362$gmane$org@sisk.pl>
+References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
+	<201002212147.07987.rjw@sisk.pl> <4B82A440.6010701@googlemail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4B81B7C5.5060301@linux.vnet.ibm.com>
+In-Reply-To: <4B82A440.6010701@googlemail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,71 +18,127 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian King <brking@linux.vnet.ibm.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>, hugh.dickins@tiscali.co.uk, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 21 February 2010, Brian King wrote:
-> On 02/21/2010 04:37 PM, Rafael J. Wysocki wrote:
-> > On Sunday 21 February 2010, Brian King wrote:
-> >> On 02/21/2010 04:27 PM, Rafael J. Wysocki wrote:
-> >>> On Sunday 21 February 2010, Brian King wrote:
-> >>>> On 02/21/2010 04:08 PM, Rafael J. Wysocki wrote:
-> >>>>> I'm not a big fan of __attribute__ ((weak)), though.  While we already use that
-> >>>>> in the suspend code, I'm not particularly comfortable with it.
-> >>>>>
-> >>>>> Have you considered any alternative approaches?
-> >>>>
-> >>>> I suppose another option would be to implement this similar to how
-> >>>> arch_free_page and arch_alloc_page do. Something like this:
-> >>>>
-> >>>> #ifndef CONFIG_HAVE_ARCH_SUSPEND_CPUS
-> >>>> static inline int arch_suspend_disable_nonboot_cpus(void)
-> >>>> {
-> >>>> 	return disable_nonboot_cpus();
-> >>>> }
-> >>>>
-> >>>> static inline void arch_suspend_enable_nonboot_cpus(void)
-> >>>> {
-> >>>> 	return enable_nonboot_cpus()'
-> >>>> }
-> >>>> #else
-> >>>> extern int arch_suspend_disable_nonboot_cpus(void);
-> >>>> extern void arch_suspend_enable_nonboot_cpus(void);
-> >>>> #endif
-> >>>>
-> >>>> I figured I would just be consistent with arch_suspend_disable_irqs /
-> >>>> arch_suspend_enable_irqs.
+On Monday 22 February 2010, Alan Jenkins wrote:
+> Rafael J. Wysocki wrote:
+> > On Friday 19 February 2010, Alan Jenkins wrote:
+> >   
+> >> On 2/18/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >>     
+> >>> On Thursday 18 February 2010, Alan Jenkins wrote:
+> >>>       
+> >>>> On 2/17/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >>>>         
+> >>>>> On Wednesday 17 February 2010, Alan Jenkins wrote:
+> >>>>>           
+> >>>>>> On 2/16/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >>>>>>             
+> >>>>>>> On Tuesday 16 February 2010, Alan Jenkins wrote:
+> >>>>>>>               
+> >>>>>>>> On 2/16/10, Alan Jenkins <sourcejedi.lkml@googlemail.com> wrote:
+> >>>>>>>>                 
+> >>>>>>>>> On 2/15/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >>>>>>>>>                   
+> >>>>>>>>>> On Tuesday 09 February 2010, Alan Jenkins wrote:
+> >>>>>>>>>>                     
+> >>>>>>>>>>> Perhaps I spoke too soon.  I see the same hang if I run too many
+> >>>>>>>>>>> applications.  The first hibernation fails with "not enough
+> >>>>>>>>>>> swap"
+> >>>>>>>>>>> as
+> >>>>>>>>>>> expected, but the second or third attempt hangs (with the same
+> >>>>>>>>>>> backtrace
+> >>>>>>>>>>> as before).
+> >>>>>>>>>>>
+> >>>>>>>>>>> The patch definitely helps though.  Without the patch, I see a
+> >>>>>>>>>>> hang
+> >>>>>>>>>>> the
+> >>>>>>>>>>> first time I try to hibernate with too many applications
+> >>>>>>>>>>> running.
+> >>>>>>>>>>>                       
+> >>>>>>>>>> Well, I have an idea.
+> >>>>>>>>>>
+> >>>>>>>>>> Can you try to apply the appended patch in addition and see if
+> >>>>>>>>>> that
+> >>>>>>>>>> helps?
+> >>>>>>>>>>
+> >>>>>>>>>> Rafael
+> >>>>>>>>>>                     
+> >>>>>>>>> It doesn't seem to help.
+> >>>>>>>>>                   
+> >>>>>>>> To be clear: It doesn't stop the hang when I hibernate with too many
+> >>>>>>>> applications.
+> >>>>>>>>
+> >>>>>>>> It does stop the same hang in a different case though.
+> >>>>>>>>
+> >>>>>>>> 1. boot with init=/bin/bash
+> >>>>>>>> 2. run s2disk
+> >>>>>>>> 3. cancel the s2disk
+> >>>>>>>> 4. repeat steps 2&3
+> >>>>>>>>
+> >>>>>>>> With the patch, I can run 10s of iterations, with no hang.
+> >>>>>>>> Without the patch, it soon hangs, (in disable_nonboot_cpus(), as
+> >>>>>>>> always).
+> >>>>>>>>
+> >>>>>>>> That's what happens on 2.6.33-rc7.  On 2.6.30, there is no problem.
+> >>>>>>>> On 2.6.31 and 2.6.32 I don't get a hang, but dmesg shows an
+> >>>>>>>> allocation
+> >>>>>>>> failure after a couple of iterations ("kthreadd: page allocation
+> >>>>>>>> failure. order:1, mode:0xd0").  It looks like it might be the same
+> >>>>>>>> stop_machine thread allocation failure that causes the hang.
+> >>>>>>>>                 
+> >>>>>>> Have you tested it alone or on top of the previous one?  If you've
+> >>>>>>> tested it
+> >>>>>>> alone, please apply the appended one in addition to it and retest.
+> >>>>>>>
+> >>>>>>> Rafael
+> >>>>>>>               
+> >>>>>> I did test with both patches applied together -
+> >>>>>>
+> >>>>>> 1. [Update] MM / PM: Force GFP_NOIO during suspend/hibernation and
+> >>>>>> resume
+> >>>>>> 2. "reducing the number of pages that we're going to keep preallocated
+> >>>>>> by
+> >>>>>> 20%"
+> >>>>>>             
+> >>>>> In that case you can try to reduce the number of preallocated pages even
+> >>>>> more,
+> >>>>> ie. change "/ 5" to "/ 2" (for example) in the second patch.
+> >>>>>           
+> >>>> It still hangs if I try to hibernate a couple of times with too many
+> >>>> applications.
+> >>>>         
+> >>> Hmm.  I guess I asked that before, but is this a 32-bit or 64-bit system and
+> >>> how much RAM is there in the box?
 > >>>
-> >>> I just think that doing arch_suspend_[enable|disable]_irqs() this way was
-> >>> a mistake.
-> >>
-> >> Do you prefer the example above? I can send an updated patch. If not,
-> >> any other suggestions you might have as to the way you would like this
-> >> done would be greatly appreciated.
-> > 
-> > disable_nonboot_cpus() is also called by kernel_power_off().  Is that fine
-> > with your architecture?
+> >>> Rafael
+> >>>       
+> >> EeePC 701.  32 bit.  512Mb RAM.  350Mb swap file, on a "first-gen" SSD.
+> >>     
+> >
+> > Hmm.  I'd try to make  free_unnecessary_pages() free all of the preallocated
+> > pages and see what happens.
+> >   
 > 
-> Yes. We only need a different behavior for the suspend/resume path.
+> It still hangs in hibernation_snapshot() / disable_nonboot_cpus().  
+> After apparently freeing over 400Mb / 100,000 pages of preallocated ram.
+> 
+> 
+> 
+> There is a change which I missed before.  When I applied your first 
+> patch ("Force GFP_NOIO during suspend" etc.), it did change the hung 
+> task backtraces a bit.  I don't know if it tells us anything.
+> 
+> Without the patch, there were two backtraces.  The first backtrace 
+> suggested a problem allocating pages for a kernel thread (at 
+> copy_process() / try_to_free_pages()).  The second showed that this 
+> problem was blocking s2disk (at hibernation_snapshot() / 
+> disable_nonboot_cpus() / stop_machine_create()). 
+> 
+> With the GFP_NOIO patch, I see only the s2disk backtrace.
 
-OK
-
-> Here is an alternative implementation of the patch. My test machine is
-> currently unavailable, so it is not yet been tested. How does this one look?
-
-Well, I'd like to do that cleanly from the start.
-
-Now, the problem is that PM_SLEEP_SMP selects HOTPLUG_CPU, because
-that's necessary for the other architectures to make SMP suspend work, but it's
-not necessary on your architecture.  Moreover, you don't need to compile
-enable_nonboot_cpus() at all.
-
-I'm not sure how to untangle it at the moment, but I think it should be
-untangled.
-
-Preferably, on architectures that need HOTPLUG_CPU for the SMP resume to work
-PM_SLEEP_SMP should depend on it instead of selecting it, but on your
-architectures they may be independent from each other.
+Can you please post this backtrace?
 
 Rafael
