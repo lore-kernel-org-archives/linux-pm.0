@@ -1,14 +1,15 @@
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH 1/8] PCI PM: Add function for checking PME
- status of devices
-Date: Mon, 22 Feb 2010 16:21:42 -0800
-Message-ID: <20100222162142.06095230__6213.37064444578$1266884714$gmane$org@jbarnes-piketon>
-References: <201002172335.47703.rjw@sisk.pl> <201002172336.58766.rjw@sisk.pl>
+Subject: Re: [PATCH 4/8] ACPI: Use GPE reference counting to
+ support shared GPEs
+Date: Mon, 22 Feb 2010 16:26:22 -0800
+Message-ID: <20100222162622.3d9c684a__235.432110685174$1266885037$gmane$org@jbarnes-piketon>
+References: <4911F71203A09E4D9981D27F9D83085859958760@orsmsx503.amr.corp.intel.com>
+	<201002200018.02700.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201002172336.58766.rjw@sisk.pl>
+In-Reply-To: <201002200018.02700.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,24 +20,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Garrett <mjg@redhat.com>, Matthew@smtp1.linux-foundation.org, Linux PCI <linux-pci@vger.kernel.org>, "Moore, Robert" <robert.moore@intel.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Bjorn@smtp1.linux-foundation.org, pm list <linux-pm@lists.linux-foundation.org>
+Cc: "Brown, Len" <len.brown@intel.com>, "Lin, Ming M" <ming.m.lin@intel.com>, Linux PCI <linux-pci@vger.kernel.org>, "Moore,
+	Robert" <robert.moore@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 17 Feb 2010 23:36:58 +0100
+On Sat, 20 Feb 2010 00:18:02 +0100
 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+> [Sorry for resending, tried to restore the CC list.]
 > 
-> Add function pci_check_pme_status() that will check the PME status
-> bit of given device and clear it along with the PME enable bit.  It
-> will be necessary for PCI run-time power management.
+> On Friday 19 February 2010, Moore, Robert wrote:
+> > 
+> > Here's some comments and questions on the GPE changes in ACPICA.
+> > Overall, looks good.
 > 
-> Based on a patch from Shaohua Li <shaohua.li@intel.com>
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
+> First of all, thanks a lot for the review.
 
-Applied this series and dropped the old patches, thanks Rafael.
+I missed this one when applying the series, can you resend as an
+incremental patch on top of linux-next?
 
+Thanks,
 -- 
 Jesse Barnes, Intel Open Source Technology Center
