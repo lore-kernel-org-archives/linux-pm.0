@@ -1,16 +1,15 @@
-From: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Is it supposed to be ok to call del_gendisk
-	while	userspace is frozen?
-Date: Tue, 23 Feb 2010 13:33:21 +0100
-Message-ID: <20100223123321.GA1025__22723.6306680881$1266928595$gmane$org@kernel.dk>
-References: <201002152204.04148.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.1002161126340.1281-100000@iolanthe.rowland.org>
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Subject: Re: s2disk hang update
+Date: Tue, 23 Feb 2010 14:24:25 +0000
+Message-ID: <9b2b86521002230624g20661564mc35093ee0423ff77__41836.8818158799$1266935247$gmane$org@mail.gmail.com>
+References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
+	<201002212147.07987.rjw@sisk.pl> <4B82A440.6010701@googlemail.com>
+	<201002222017.55588.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1002161126340.1281-100000@iolanthe.rowland.org>
+In-Reply-To: <201002222017.55588.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,77 +19,176 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>, hugh.dickins@tiscali.co.uk, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 16 2010, Alan Stern wrote:
-> On Mon, 15 Feb 2010, Rafael J. Wysocki wrote:
-> 
-> > On Monday 15 February 2010, Maxim Levitsky wrote:
-> > > On Sat, 2010-02-13 at 15:29 +0200, Maxim Levitsky wrote: 
-> > > > I noticed that currently calling del_gendisk leads to sure deadlock if
-> > > > attemped from .suspend or .resume functions.
-> > 
-> > Well, it shouldn't be called from there, then.
-> 
-> Even if drivers avoid calling it from within suspend methods, they have
-> to be able to call it from within resume methods.  After all, the
-> resume method may find that the disk's device has vanished.
+On 2/22/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Monday 22 February 2010, Alan Jenkins wrote:
+>> Rafael J. Wysocki wrote:
+>> > On Friday 19 February 2010, Alan Jenkins wrote:
+>> >
+>> >> On 2/18/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >>
+>> >>> On Thursday 18 February 2010, Alan Jenkins wrote:
+>> >>>
+>> >>>> On 2/17/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >>>>
+>> >>>>> On Wednesday 17 February 2010, Alan Jenkins wrote:
+>> >>>>>
+>> >>>>>> On 2/16/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >>>>>>
+>> >>>>>>> On Tuesday 16 February 2010, Alan Jenkins wrote:
+>> >>>>>>>
+>> >>>>>>>> On 2/16/10, Alan Jenkins <sourcejedi.lkml@googlemail.com> wrote:
+>> >>>>>>>>
+>> >>>>>>>>> On 2/15/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >>>>>>>>>
+>> >>>>>>>>>> On Tuesday 09 February 2010, Alan Jenkins wrote:
+>> >>>>>>>>>>
+>> >>>>>>>>>>> Perhaps I spoke too soon.  I see the same hang if I run too
+>> >>>>>>>>>>> many
+>> >>>>>>>>>>> applications.  The first hibernation fails with "not enough
+>> >>>>>>>>>>> swap"
+>> >>>>>>>>>>> as
+>> >>>>>>>>>>> expected, but the second or third attempt hangs (with the same
+>> >>>>>>>>>>> backtrace
+>> >>>>>>>>>>> as before).
+>> >>>>>>>>>>>
+>> >>>>>>>>>>> The patch definitely helps though.  Without the patch, I see a
+>> >>>>>>>>>>> hang
+>> >>>>>>>>>>> the
+>> >>>>>>>>>>> first time I try to hibernate with too many applications
+>> >>>>>>>>>>> running.
+>> >>>>>>>>>>>
+>> >>>>>>>>>> Well, I have an idea.
+>> >>>>>>>>>>
+>> >>>>>>>>>> Can you try to apply the appended patch in addition and see if
+>> >>>>>>>>>> that
+>> >>>>>>>>>> helps?
+>> >>>>>>>>>>
+>> >>>>>>>>>> Rafael
+>> >>>>>>>>>>
+>> >>>>>>>>> It doesn't seem to help.
+>> >>>>>>>>>
+>> >>>>>>>> To be clear: It doesn't stop the hang when I hibernate with too
+>> >>>>>>>> many
+>> >>>>>>>> applications.
+>> >>>>>>>>
+>> >>>>>>>> It does stop the same hang in a different case though.
+>> >>>>>>>>
+>> >>>>>>>> 1. boot with init=/bin/bash
+>> >>>>>>>> 2. run s2disk
+>> >>>>>>>> 3. cancel the s2disk
+>> >>>>>>>> 4. repeat steps 2&3
+>> >>>>>>>>
+>> >>>>>>>> With the patch, I can run 10s of iterations, with no hang.
+>> >>>>>>>> Without the patch, it soon hangs, (in disable_nonboot_cpus(), as
+>> >>>>>>>> always).
+>> >>>>>>>>
+>> >>>>>>>> That's what happens on 2.6.33-rc7.  On 2.6.30, there is no
+>> >>>>>>>> problem.
+>> >>>>>>>> On 2.6.31 and 2.6.32 I don't get a hang, but dmesg shows an
+>> >>>>>>>> allocation
+>> >>>>>>>> failure after a couple of iterations ("kthreadd: page allocation
+>> >>>>>>>> failure. order:1, mode:0xd0").  It looks like it might be the
+>> >>>>>>>> same
+>> >>>>>>>> stop_machine thread allocation failure that causes the hang.
+>> >>>>>>>>
+>> >>>>>>> Have you tested it alone or on top of the previous one?  If you've
+>> >>>>>>> tested it
+>> >>>>>>> alone, please apply the appended one in addition to it and retest.
+>> >>>>>>>
+>> >>>>>>> Rafael
+>> >>>>>>>
+>> >>>>>> I did test with both patches applied together -
+>> >>>>>>
+>> >>>>>> 1. [Update] MM / PM: Force GFP_NOIO during suspend/hibernation and
+>> >>>>>> resume
+>> >>>>>> 2. "reducing the number of pages that we're going to keep
+>> >>>>>> preallocated
+>> >>>>>> by
+>> >>>>>> 20%"
+>> >>>>>>
+>> >>>>> In that case you can try to reduce the number of preallocated pages
+>> >>>>> even
+>> >>>>> more,
+>> >>>>> ie. change "/ 5" to "/ 2" (for example) in the second patch.
+>> >>>>>
+>> >>>> It still hangs if I try to hibernate a couple of times with too many
+>> >>>> applications.
+>> >>>>
+>> >>> Hmm.  I guess I asked that before, but is this a 32-bit or 64-bit
+>> >>> system and
+>> >>> how much RAM is there in the box?
+>> >>>
+>> >>> Rafael
+>> >>>
+>> >> EeePC 701.  32 bit.  512Mb RAM.  350Mb swap file, on a "first-gen" SSD.
+>> >>
+>> >
+>> > Hmm.  I'd try to make  free_unnecessary_pages() free all of the
+>> > preallocated
+>> > pages and see what happens.
+>> >
+>>
+>> It still hangs in hibernation_snapshot() / disable_nonboot_cpus().
+>> After apparently freeing over 400Mb / 100,000 pages of preallocated ram.
+>>
+>>
+>>
+>> There is a change which I missed before.  When I applied your first
+>> patch ("Force GFP_NOIO during suspend" etc.), it did change the hung
+>> task backtraces a bit.  I don't know if it tells us anything.
+>>
+>> Without the patch, there were two backtraces.  The first backtrace
+>> suggested a problem allocating pages for a kernel thread (at
+>> copy_process() / try_to_free_pages()).  The second showed that this
+>> problem was blocking s2disk (at hibernation_snapshot() /
+>> disable_nonboot_cpus() / stop_machine_create()).
+>>
+>> With the GFP_NOIO patch, I see only the s2disk backtrace.
+>
+> Can you please post this backtrace?
 
-del_gendisk() needs process context at least, since it'll sleep (not
-just for sync/invalidate, but other parts of the destruction as well).
+Sure.  It's rather like the one I posted before, except
 
-> > > > Something like that:
-> > > > 
-> > > > [<ffffffff8106620a>] ? prepare_to_wait+0x2a/0x90
-> > > > [<ffffffff810790bd>] ? trace_hardirqs_on+0xd/0x10
-> > > > [<ffffffff8140db12>] ? _raw_spin_unlock_irqrestore+0x42/0x80
-> > > > [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
-> > > > [<ffffffff8112a39e>] bdi_sched_wait+0xe/0x20
-> > > > [<ffffffff8140af6f>] __wait_on_bit+0x5f/0x90
-> > > > [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
-> > > > [<ffffffff8140b018>] out_of_line_wait_on_bit+0x78/0x90
-> > > > [<ffffffff81065fd0>] ? wake_bit_function+0x0/0x40
-> > > > [<ffffffff8112a2d3>] ? bdi_queue_work+0xa3/0xe0
-> > > > [<ffffffff8112a37f>] bdi_sync_writeback+0x6f/0x80
-> > > > [<ffffffff8112a3d2>] sync_inodes_sb+0x22/0x120
-> > > > [<ffffffff8112f1d2>] __sync_filesystem+0x82/0x90
-> > > > [<ffffffff8112f3db>] sync_filesystem+0x4b/0x70
-> > > > [<ffffffff811391de>] fsync_bdev+0x2e/0x60
-> > > > [<ffffffff812226be>] invalidate_partition+0x2e/0x50
-> > > > [<ffffffff8116b92f>] del_gendisk+0x3f/0x140
-> > > > [<ffffffffa00c0233>] mmc_blk_remove+0x33/0x60 [mmc_block]
-> > > > [<ffffffff81338977>] mmc_bus_remove+0x17/0x20
-> > > > [<ffffffff812ce746>] __device_release_driver+0x66/0xc0
-> > > > [<ffffffff812ce89d>] device_release_driver+0x2d/0x40
-> > > > [<ffffffff812cd9b5>] bus_remove_device+0xb5/0x120
-> > > > [<ffffffff812cb46f>] device_del+0x12f/0x1a0
-> > > > [<ffffffff81338a5b>] mmc_remove_card+0x5b/0x90
-> > > > [<ffffffff8133ac27>] mmc_sd_remove+0x27/0x50
-> > > > [<ffffffff81337d8c>] mmc_resume_host+0x10c/0x140
-> > > > [<ffffffffa00850e9>] sdhci_resume_host+0x69/0xa0 [sdhci]
-> > > > [<ffffffffa0bdc39e>] sdhci_pci_resume+0x8e/0xb0 [sdhci_pci]
-> > > > 
-> > > > bdi_queue_work seems to be the problem.
-> > > > 
-> > > > Some device drivers need to remove their cards logically in .suspend,
-> > > > because the card is removable, and can be changed while system is
-> > > > suspended.
-> > 
-> > I don't know how to resolve this right now.
-> 
-> This is a matter for Jens.  Is the bdi writeback task freezable?  If it
-> is, should it be made unfreezable?
+a) it only shows the one hung task (s2disk)
+b) this time I had lockdep enabled
+c) this time most of the lines don't have question marks.
 
-I'm not a big expect on what tasks should be freezable or not. As it
-stands, the writeback tasks will attempt to freeze and thaw with the
-system. I guess that screws the sync from resume call, since it's not
-running and the sync will wait for it to retrieve and finish that work
-item.
 
-To the suspend experts - can we safely mark the writeback tasks as
-non-freezable?
+Kernel verson:
+- mainline v2.6.33-rc8-164-gaea187c, with the one patch "Force GFP_NOIO..."
 
--- 
-Jens Axboe
+Image:
+http://picasaweb.google.com/lh/photo/f9KRZT2l9wCmVt-Jdggd9g?feat=directlink
+
+
+INFO: task s2disk:1916 blocked for more than 120 seconds
+ ...
+ Call Trace:
+ ? _raw_spin_unlock
+ schedule_timeout+0x22	(timer.c:1366)
+ ? mark_held_locks
+ ? _raw_spin_unlock_irq
+ ? trace_hardirqs_on_caller
+ ? trace_hardirqs_on
+ wait_for_common+0xb8	(sched.c:5844)
+ ? default_wake_function
+ wait_for_completion+0x12	(sched.c:5879)
+ kthread_create+0x75	(kthread.c:133)
+ ? worker_thread+0x0
+ create_workqueue_thread+0x38	(workqueue.c:921)
+ ? worker_thread+0x0
+ __create_workqueue_key+0x156	(workqueue.c:1006)
+ stop_machine_create+0x32	(stop_machine.c:121)
+ disable_nonboot_cpus+0xe	(cpu.c:370)
+ hibernation_snapshot+0x94	(hibernate.c:266)
+ snapshot_ioctl+0x21b	(user.c:256)
+ ...
+ sys_ioctl+0x41 (ioctl.c:624)
+
+
+Thanks
+Alan
