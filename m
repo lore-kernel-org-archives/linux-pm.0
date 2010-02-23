@@ -1,13 +1,20 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Testing for dirty buffers on a block device
-Date: Tue, 23 Feb 2010 11:42:44 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1002231137520.1308-100000__6542.4014385373$1266943420$gmane$org@iolanthe.rowland.org>
-References: <20100223155803.GN1025@kernel.dk>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/1] PM: Add arch_suspend_disable_nonboot_cpus
+Date: Tue, 23 Feb 2010 17:49:00 +0100
+Message-ID: <20100223164900.GG6220@elf.ucw.cz>
+References: <201002211631.o1LGVsw8022630@d01av02.pok.ibm.com>
+	<201002212337.10462.rjw@sisk.pl>
+	<4B81B7C5.5060301@linux.vnet.ibm.com>
+	<201002222014.07280.rjw@sisk.pl>
+	<4B8313D4.4050802@linux.vnet.ibm.com>
+	<20100223154359.GA6220@elf.ucw.cz>
+	<4B84053D.60703@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100223155803.GN1025@kernel.dk>
+Content-Disposition: inline
+In-Reply-To: <4B84053D.60703@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,32 +24,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Brian King <brking@linux.vnet.ibm.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 23 Feb 2010, Jens Axboe wrote:
-
-> > P.S.: Jens, given a pointer to a struct gendisk or to a struct
-> > request_queue, is there a good way to tell whether there any dirty
-> > buffers for that device waiting to be written out?  This is for
-> > purposes of runtime power management -- in the initial implementation,
-> > I want to avoid powering-down a block device if it is open or has any
-> > dirty buffers.  In other words, only completely idle devices should be
-> > powered down (a good example would be a card reader with no memory card 
-> > inserted).
+> > (Please wrap at column 80)
+> > 
+> > This patch is already way better than the original one, but... Why do
+> > you want enable/disable_nonboot_cpus to be noped out?
 > 
-> There's no fool proof way. For most file systems I think you could get
-> away with checking the q->bdi dirty lists to see if there's anything
-> pending. But that wont work always, if the fs uses a different backing
-> dev info than then queue itself.
+> Today for PPC_PSERIES, PM_SLEEP_SMP is never defined, so for all the
+> current code paths that call enable/disable_nonboot_cpus (power off,
+> kexec), these functions are noops. I don't want to change that
+> behavior.
 
-That's not what I meant.  Dirty buffers on a filesystem make no 
-difference because they always get written out when the filesystem is 
-unmounted.  The device file remains open as long as the filesystem 
-is mounted, which would prevent the device from being powered down.
+Why not?
 
-I was asking about dirty buffers on a block device that isn't holding a 
-filesystem -- where the raw device is being used directly for I/O.
+> I figured I can just use the prepare_late and wake pm functions to do
+> the work I need to do. Let me know if you think this is a reasonable
+> approach and I'll be happy to resend the patch with an appropriate
+> subject line and description.
 
-Alan Stern
+No, I do not think that's reasonable approach. Please just implement
+enable/disable_nonboot_cpus; that's the clean fix.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
