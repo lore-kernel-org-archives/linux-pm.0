@@ -1,18 +1,13 @@
-From: Brian King <brking@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/1] PM: Add arch_suspend_disable_nonboot_cpus
-Date: Tue, 23 Feb 2010 10:41:33 -0600
-Message-ID: <4B84053D.60703@linux.vnet.ibm.com>
-References: <201002211631.o1LGVsw8022630@d01av02.pok.ibm.com>
-	<201002212337.10462.rjw@sisk.pl>
-	<4B81B7C5.5060301@linux.vnet.ibm.com>
-	<201002222014.07280.rjw@sisk.pl>
-	<4B8313D4.4050802@linux.vnet.ibm.com>
-	<20100223154359.GA6220@elf.ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Testing for dirty buffers on a block device
+Date: Tue, 23 Feb 2010 11:42:44 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1002231137520.1308-100000__6542.4014385373$1266943420$gmane$org@iolanthe.rowland.org>
+References: <20100223155803.GN1025@kernel.dk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100223154359.GA6220@elf.ucw.cz>
+In-Reply-To: <20100223155803.GN1025@kernel.dk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,50 +17,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 02/23/2010 09:43 AM, Pavel Machek wrote:
-> Hi!
-> 
->>> OK
->>>
->>>> Here is an alternative implementation of the patch. My test machine is
->>>> currently unavailable, so it is not yet been tested. How does this one look?
->>>
->>> Well, I'd like to do that cleanly from the start.
->>>
->>> Now, the problem is that PM_SLEEP_SMP selects HOTPLUG_CPU, because
->>> that's necessary for the other architectures to make SMP suspend work, but it's
->>> not necessary on your architecture.  Moreover, you don't need to compile
->>> enable_nonboot_cpus() at all.
-> 
->>  At least for the architecture I am enabling this support for
->> (PPC_PSERIES), upon looking closer, it looks like PM_SLEEP_SMP was
->> never defined, so enable_nonboot_cpus and disable_nonboot_cpus were
->> always nooped before, which I didn't previously realize. We probably
->> want to retain this behavior.  >
-> 
-> (Please wrap at column 80)
-> 
-> This patch is already way better than the original one, but... Why do
-> you want enable/disable_nonboot_cpus to be noped out?
-> 									Pavel
+On Tue, 23 Feb 2010, Jens Axboe wrote:
 
-Today for PPC_PSERIES, PM_SLEEP_SMP is never defined, so for all the
-current code paths that call enable/disable_nonboot_cpus (power off,
-kexec), these functions are noops. I don't want to change that behavior.
-I figured I can just use the prepare_late and wake pm functions to do
-the work I need to do. Let me know if you think this is a reasonable
-approach and I'll be happy to resend the patch with an appropriate
-subject line and description.
+> > P.S.: Jens, given a pointer to a struct gendisk or to a struct
+> > request_queue, is there a good way to tell whether there any dirty
+> > buffers for that device waiting to be written out?  This is for
+> > purposes of runtime power management -- in the initial implementation,
+> > I want to avoid powering-down a block device if it is open or has any
+> > dirty buffers.  In other words, only completely idle devices should be
+> > powered down (a good example would be a card reader with no memory card 
+> > inserted).
+> 
+> There's no fool proof way. For most file systems I think you could get
+> away with checking the q->bdi dirty lists to see if there's anything
+> pending. But that wont work always, if the fs uses a different backing
+> dev info than then queue itself.
 
-Thanks,
+That's not what I meant.  Dirty buffers on a filesystem make no 
+difference because they always get written out when the filesystem is 
+unmounted.  The device file remains open as long as the filesystem 
+is mounted, which would prevent the device from being powered down.
 
-Brian
+I was asking about dirty buffers on a block device that isn't holding a 
+filesystem -- where the raw device is being used directly for I/O.
 
--- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+Alan Stern
