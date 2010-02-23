@@ -1,16 +1,13 @@
-From: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Is it supposed to be ok to call del_gendisk
-	while	userspace is frozen?
-Date: Tue, 23 Feb 2010 23:16:35 +0100
-Message-ID: <20100223221635.GP1025__5782.11242468587$1266963460$gmane$org@kernel.dk>
-References: <20100223155803.GN1025@kernel.dk>
-	<Pine.LNX.4.44L0.1002231115510.1308-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Two problems with system sleep
+Date: Wed, 24 Feb 2010 00:08:27 +0100
+Message-ID: <201002240008.27228.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.1002231620350.1308-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1002231115510.1308-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1002231620350.1308-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,75 +18,101 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net, Alan <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 23 2010, Alan Stern wrote:
-> On Tue, 23 Feb 2010, Jens Axboe wrote:
+On Tuesday 23 February 2010, Alan Stern wrote:
+> On Tue, 23 Feb 2010, Rafael J. Wysocki wrote:
 > 
-> > On Tue, Feb 23 2010, Alan Stern wrote:
-> > > > > This is a matter for Jens.  Is the bdi writeback task freezable?  If it
-> > > > > is, should it be made unfreezable?
+> > > > I _think_ think the i915 KMS doesn't work on your box for some reason.
 > > > > 
-> > > > I'm not a big expect on what tasks should be freezable or not. As it
-> > > > stands, the writeback tasks will attempt to freeze and thaw with the
-> > > > system. I guess that screws the sync from resume call, since it's not
-> > > > running and the sync will wait for it to retrieve and finish that work
-> > > > item.
-> > > > 
-> > > > To the suspend experts - can we safely mark the writeback tasks as
-> > > > non-freezable?
+> > > > Doesn the screen switch to the graphics framebuffer when booted with
+> > > > vga=0?
 > > > 
-> > > The reason for freezing those tasks is to avoid writebacks at random
-> > > times during a system sleep transition, when the underlying device may
-> > > already be suspended, right?
+> > > Yes, it does switch.
 > > 
-> > Right, or at least it would seem pointless to have them running while
-> > the device is suspended. But my point was that if it's easier (and
-> > feasible) to just leave them running, perhaps that was easier.
-> 
-> I don't have a clear picture of how the block layer operates.  For 
-> example, what is the reason for this comment in the definition of 
-> struct genhd?
-> 
-> 	struct device *driverfs_dev;  // FIXME: remove
-> 
-> Isn't that crucial for making a disk show up in sysfs?  Is the comment 
-> out of date?
-
-Don't ask me, I'd suggest using git blame for finding out who wrote that
-and ping them.
-
-> A possible approach is to add suspend and resume methods for this 
-> driverfs_dev, and make them be responsible for stopping and restarting 
-> the writeback task instead of relying on the freezer.  Then 
-> del_gendisk() could cleanly restart the task when necessary.
-
-That sounds over engineered to me.
-
-> > > In principle, a device's writeback task could be unfrozen immediately
-> > > after the device is resumed.  In practice this might not solve the
-> > > problem, since the del_gendisk() call occurs _within_ the device's
-> > > resume routine.  I suppose del_gendisk() could be made responsible for 
-> > > unfreezing the writeback task.
+> > OK
 > > 
-> > And that's back to the question of whether or not that is a nice thing to
-> > do. It seems a bit dirty, but otoh where else to do it. Perhaps just
-> > using the kblockd to postpone the del_gendisk() to out-of-resume context
-> > would be the best approach.
+> > > > If not, you probably need to enable framebuffer console in .config (the i915
+> > > > KMS depends on that actually).
+> > > 
+> > > It's already enabled.  That is, CONFIG_FB and 
+> > > CONFIG_FRAMEBUFFER_CONSOLE are both set to 'y'.
+> > 
+> > Well, so the KMS suspend-resume doesn't work on your system.
+> > 
+> > I guess that would require some detailed debugging, so it may be a good idea to
+> > open a Bugzilla entry for this issue.
 > 
-> That would involve a layering violation, wouldn't it?  Either the 
-> driver would have to interface with kblockd directly, or else 
-> del_gendisk() would need to know whether the writeback task was frozen.
+> Okay, I'll set it up later.
 > 
-> On the whole, I think it's best for the block layer to retain full
-> control over its own tasks and requirements.
+> > > > > Why are the values independent from the wakeup settings in sysfs?  
+> > > > > Aren't they supposed to mean the same thing?
+> > > > 
+> > > > Not really.  There are two separate flags for wakeup.  One of them is a
+> > > > property of the "physical" device object (eg. PCI device structure) and that
+> > > > one is set/unset via sysfs.  The other is a property of the device's ACPI
+> > > > "shadow" object and is set/unset through /proc/acpi/wakeup (this mechanism
+> > > > is regarded as obsolete, but it looks like some devices have not been converted
+> > > > to the sysfs-based one yet).
+> > > 
+> > > It looks like the inline routines defined in include/linux/pm_wakeup.h 
+> > > should call corresponding platform-specific routines.  Apparently _no_ 
+> > > drivers have been converted in this way -- since the conversion needs 
+> > > to be part of the core.  In fact, there isn't even a platform-specific 
+> > > hook for enabling or disabling wakeup devices; we should have a 
+> > > platform_wakeup_ops structure.
+> > 
+> > There is one for PCI devices, actually.  It's struct pci_platform_pm_ops()
+> > defined in drivers/pci/pci.h.
+> > 
+> > For PCI devices we have pci_enable_wake() that sets up the platform to
+> > wake up the system using given device on the basis of the device's sysfs
+> > setting.  The ACPI flag shown by /proc/acpi/wakeup is not taken into account
+> > in that case.
+> 
+> That's not what I meant.  Writing to /sys/devices/.../power/wakeup 
+> should have the same effect as writing to /proc/acpi/wakeup (if the 
+> device has a "shadow" ACPI counterpart, of course).
 
-You would export such functionality - del_gendisk_deferred(), or
-something like that. The kblockd suggestion was implementation detail,
-not something the driver would concern itself with. It's not exactly
-picture perfect, but it could be used from eg resume context where the
-device isn't fully live yet.
+That really is not worth it.  The information about the sharing of a GPE is
+only useful for debugging purposes and only in "really broken" cases.
 
--- 
-Jens Axboe
+> It looks like /proc/acpi/wakeup does nothing but set
+> acpidev->wakeup.state.enabled and warn about duplicate GPE usage.
+
+That's correct, although the warning itself doesn't really make sense,
+because the sharing of the GPE doesn't mean we _have_ _to_ enable both devices
+to wake up (the devices usually require some more preparations than just
+setting the GPE).
+
+> It would make sense to issue the warning when writing to the sysfs file.
+
+That's not worth the added code complexity IMO.
+
+> And wakeup.state.enabled shouldn't be needed at all;
+
+Right, but it was there before.
+
+> the ACPI code should always use the physical device's may_wakeup flag instead
+> (unless there is no corresponding physical device).
+
+No, it shouldn't, because it doesn't know if the device has actually been set
+up for wakeup at its bus type level.
+
+> If writes to the sysfs file called a platform hook, we could warn about 
+> duplicate GPEs when the wakeup setting is changed.
+
+As I wrote above, this is not worth it IMO.  Moreover, that doesn't really
+matter, because the GPEs will be enabled as needed anyway and there's no real
+need to tell the user which of them are shared except for debugging (at the
+fairly low level).  Furthermore, the GPE refrence counting code we're going to
+add shortly changes that quite a bit.
+
+Generally speaking, I'd like to get rid of /proc/acpi/wakeup altogether or
+maybe leave it as read-only without the "disabled/enabled" column.
+
+However, there still are devices that don't have an alternative mechanism for
+enabling wakeup, so we can't just drop it right now.
+
+Rafael
