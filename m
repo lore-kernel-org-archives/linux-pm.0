@@ -1,15 +1,16 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH 4/8] ACPI: Use GPE reference counting to
- support shared GPEs
-Date: Mon, 22 Feb 2010 16:26:22 -0800
-Message-ID: <20100222162622.3d9c684a__235.432110685174$1266885037$gmane$org@jbarnes-piketon>
-References: <4911F71203A09E4D9981D27F9D83085859958760@orsmsx503.amr.corp.intel.com>
-	<201002200018.02700.rjw@sisk.pl>
+From: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: Is it supposed to be ok to call del_gendisk
+	while	userspace is frozen?
+Date: Tue, 23 Feb 2010 13:33:21 +0100
+Message-ID: <20100223123321.GA1025__22723.6306680881$1266928595$gmane$org@kernel.dk>
+References: <201002152204.04148.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.1002161126340.1281-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201002200018.02700.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1002161126340.1281-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,26 +20,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Brown, Len" <len.brown@intel.com>, "Lin, Ming M" <ming.m.lin@intel.com>, Linux PCI <linux-pci@vger.kernel.org>, "Moore,
-	Robert" <robert.moore@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 20 Feb 2010 00:18:02 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> [Sorry for resending, tried to restore the CC list.]
+On Tue, Feb 16 2010, Alan Stern wrote:
+> On Mon, 15 Feb 2010, Rafael J. Wysocki wrote:
 > 
-> On Friday 19 February 2010, Moore, Robert wrote:
+> > On Monday 15 February 2010, Maxim Levitsky wrote:
+> > > On Sat, 2010-02-13 at 15:29 +0200, Maxim Levitsky wrote: 
+> > > > I noticed that currently calling del_gendisk leads to sure deadlock if
+> > > > attemped from .suspend or .resume functions.
 > > 
-> > Here's some comments and questions on the GPE changes in ACPICA.
-> > Overall, looks good.
+> > Well, it shouldn't be called from there, then.
 > 
-> First of all, thanks a lot for the review.
+> Even if drivers avoid calling it from within suspend methods, they have
+> to be able to call it from within resume methods.  After all, the
+> resume method may find that the disk's device has vanished.
 
-I missed this one when applying the series, can you resend as an
-incremental patch on top of linux-next?
+del_gendisk() needs process context at least, since it'll sleep (not
+just for sync/invalidate, but other parts of the destruction as well).
 
-Thanks,
+> > > > Something like that:
+> > > > 
+> > > > [<ffffffff8106620a>] ? prepare_to_wait+0x2a/0x90
+> > > > [<ffffffff810790bd>] ? trace_hardirqs_on+0xd/0x10
+> > > > [<ffffffff8140db12>] ? _raw_spin_unlock_irqrestore+0x42/0x80
+> > > > [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
+> > > > [<ffffffff8112a39e>] bdi_sched_wait+0xe/0x20
+> > > > [<ffffffff8140af6f>] __wait_on_bit+0x5f/0x90
+> > > > [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
+> > > > [<ffffffff8140b018>] out_of_line_wait_on_bit+0x78/0x90
+> > > > [<ffffffff81065fd0>] ? wake_bit_function+0x0/0x40
+> > > > [<ffffffff8112a2d3>] ? bdi_queue_work+0xa3/0xe0
+> > > > [<ffffffff8112a37f>] bdi_sync_writeback+0x6f/0x80
+> > > > [<ffffffff8112a3d2>] sync_inodes_sb+0x22/0x120
+> > > > [<ffffffff8112f1d2>] __sync_filesystem+0x82/0x90
+> > > > [<ffffffff8112f3db>] sync_filesystem+0x4b/0x70
+> > > > [<ffffffff811391de>] fsync_bdev+0x2e/0x60
+> > > > [<ffffffff812226be>] invalidate_partition+0x2e/0x50
+> > > > [<ffffffff8116b92f>] del_gendisk+0x3f/0x140
+> > > > [<ffffffffa00c0233>] mmc_blk_remove+0x33/0x60 [mmc_block]
+> > > > [<ffffffff81338977>] mmc_bus_remove+0x17/0x20
+> > > > [<ffffffff812ce746>] __device_release_driver+0x66/0xc0
+> > > > [<ffffffff812ce89d>] device_release_driver+0x2d/0x40
+> > > > [<ffffffff812cd9b5>] bus_remove_device+0xb5/0x120
+> > > > [<ffffffff812cb46f>] device_del+0x12f/0x1a0
+> > > > [<ffffffff81338a5b>] mmc_remove_card+0x5b/0x90
+> > > > [<ffffffff8133ac27>] mmc_sd_remove+0x27/0x50
+> > > > [<ffffffff81337d8c>] mmc_resume_host+0x10c/0x140
+> > > > [<ffffffffa00850e9>] sdhci_resume_host+0x69/0xa0 [sdhci]
+> > > > [<ffffffffa0bdc39e>] sdhci_pci_resume+0x8e/0xb0 [sdhci_pci]
+> > > > 
+> > > > bdi_queue_work seems to be the problem.
+> > > > 
+> > > > Some device drivers need to remove their cards logically in .suspend,
+> > > > because the card is removable, and can be changed while system is
+> > > > suspended.
+> > 
+> > I don't know how to resolve this right now.
+> 
+> This is a matter for Jens.  Is the bdi writeback task freezable?  If it
+> is, should it be made unfreezable?
+
+I'm not a big expect on what tasks should be freezable or not. As it
+stands, the writeback tasks will attempt to freeze and thaw with the
+system. I guess that screws the sync from resume call, since it's not
+running and the sync will wait for it to retrieve and finish that work
+item.
+
+To the suspend experts - can we safely mark the writeback tasks as
+non-freezable?
+
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Jens Axboe
