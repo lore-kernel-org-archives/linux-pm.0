@@ -1,12 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Subject: Re: Two problems with system sleep
-Date: Tue, 23 Feb 2010 16:35:52 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1002231620350.1308-100000@iolanthe.rowland.org>
-References: <201002232202.05029.rjw@sisk.pl>
+Date: Tue, 23 Feb 2010 13:49:20 -0800
+Message-ID: <20100223214920.GA14313@core.coreip.homeip.net>
+References: <Pine.LNX.4.44L0.1002231051270.1308-100000@iolanthe.rowland.org>
+	<201002232202.05029.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 In-Reply-To: <201002232202.05029.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,11 +20,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net, Alan <alan@lxorguk.ukuu.org.uk>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net, Alan <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 23 Feb 2010, Rafael J. Wysocki wrote:
-
+On Tue, Feb 23, 2010 at 10:02:04PM +0100, Rafael J. Wysocki wrote:
+> On Tuesday 23 February 2010, Alan Stern wrote:
+> > On Mon, 22 Feb 2010, Rafael J. Wysocki wrote:
+> > 
+> > > On Monday 22 February 2010, you wrote:
+> > > > On Mon, 22 Feb 2010, Rafael J. Wysocki wrote:
+> > > > 
+> > > > > > Here's what I got:
+> > > > > > 
+> > > > > > [    3.349334] PM: Resume from disk failed.
+> > > > > > [    3.350060]   Magic number: 0:141:321
+> > > > > > [    3.352583]   hash matches drivers/base/power/main.c:477
+> > > > > > [    3.355144] tty tty46: hash matches
+> > > > > > [    3.357742] i915 0000:00:02.0: hash matches
+> > > > > > 
+> > > > > > So it appears that the video driver is indeed the culprit.  Is there 
+> > > > > > any way to narrow it down further?
+> > > > > 
+> > > > > Not without adding some debug code to the driver.
+> > > > > 
+> > > > > Which version of the kernel is this?
+> > > > 
+> > > > 2.6.33-rc8.  The same problem occurs with earlier versions, such as
+> > > > Fedora 12's 2.6.31.9 (which is what I'm running now).
+> > > 
 > > > I _think_ think the i915 KMS doesn't work on your box for some reason.
 > > > 
 > > > Doesn the screen switch to the graphics framebuffer when booted with
@@ -42,9 +67,12 @@ On Tue, 23 Feb 2010, Rafael J. Wysocki wrote:
 > 
 > I guess that would require some detailed debugging, so it may be a good idea to
 > open a Bugzilla entry for this issue.
-
-Okay, I'll set it up later.
-
+> 
+> ...
+> > I was wrong (don't know why).  Writing PS2K does indeed enable both.  
+> > And sure enough, doing that allows the system to wake up in response to
+> > a key press.  It still hangs during the video resume, though.
+> > 
 > > > > Why are the values independent from the wakeup settings in sysfs?  
 > > > > Aren't they supposed to mean the same thing?
 > > > 
@@ -69,21 +97,7 @@ Okay, I'll set it up later.
 > wake up the system using given device on the basis of the device's sysfs
 > setting.  The ACPI flag shown by /proc/acpi/wakeup is not taken into account
 > in that case.
-
-That's not what I meant.  Writing to /sys/devices/.../power/wakeup 
-should have the same effect as writing to /proc/acpi/wakeup (if the 
-device has a "shadow" ACPI counterpart, of course).  It looks like 
-/proc/acpi/wakeup does nothing but set acpidev->wakeup.state.enabled 
-and warn about duplicate GPE usage.
-
-It would make sense to issue the warning when writing to the sysfs
-file.  And wakeup.state.enabled shouldn't be needed at all; the ACPI
-code should always use the physical device's may_wakeup flag instead
-(unless there is no corresponding physical device).
-
-If writes to the sysfs file called a platform hook, we could warn about 
-duplicate GPEs when the wakeup setting is changed.
-
+> 
 > Generally, you can think of two levels one can enable wakeup at.
 > First, there is the device level controlled by the sysfs wakeup setting.  This
 > is how we would like to control wakeup.  Second, however, there is the
@@ -106,8 +120,18 @@ duplicate GPEs when the wakeup setting is changed.
 > are misleading for historical reasons).
 > 
 > So, it looks like we need a counterpart of pci_enable_wake() for PNP devices. 
+> 
+> I guess it's better to invite Dmitry into the discussion at this point.
+> 
 
-That sounds reasonable.  ACPI could be made to work without such a 
-thing, but other platforms probably would need it.
+Yes, I agree, we need a genric mechanism for PNP to emable wakups. It
+was discussed a bit here:
 
-Alan Stern
+	http://bugzilla.kernel.org/show_bug.cgi?id=8286
+
+but David was too hung up on the fact that number of devices in ACPI
+does not map directly onto number of serio ports when i8042 is in active
+multiplexing mode that it id not go anywhere.
+
+-- 
+Dmitry
