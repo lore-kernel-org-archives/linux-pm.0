@@ -1,14 +1,18 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
- userspace is frozen?
-Date: Tue, 23 Feb 2010 10:29:44 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1002231016500.1507-100000__1940.81787853992$1266939052$gmane$org@iolanthe.rowland.org>
-References: <20100223123321.GA1025@kernel.dk>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/1] PM: Add arch_suspend_disable_nonboot_cpus
+Date: Tue, 23 Feb 2010 16:43:59 +0100
+Message-ID: <20100223154359.GA6220@elf.ucw.cz>
+References: <201002211631.o1LGVsw8022630@d01av02.pok.ibm.com>
+	<201002212337.10462.rjw@sisk.pl>
+	<4B81B7C5.5060301@linux.vnet.ibm.com>
+	<201002222014.07280.rjw@sisk.pl>
+	<4B8313D4.4050802@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100223123321.GA1025@kernel.dk>
+Content-Disposition: inline
+In-Reply-To: <4B8313D4.4050802@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,64 +22,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Brian King <brking@linux.vnet.ibm.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 23 Feb 2010, Jens Axboe wrote:
+Hi!
 
-> On Tue, Feb 16 2010, Alan Stern wrote:
-> > On Mon, 15 Feb 2010, Rafael J. Wysocki wrote:
+> > OK
 > > 
-> > > On Monday 15 February 2010, Maxim Levitsky wrote:
-> > > > On Sat, 2010-02-13 at 15:29 +0200, Maxim Levitsky wrote: 
-> > > > > I noticed that currently calling del_gendisk leads to sure deadlock if
-> > > > > attemped from .suspend or .resume functions.
-> > > 
-> > > Well, it shouldn't be called from there, then.
+> >> Here is an alternative implementation of the patch. My test machine is
+> >> currently unavailable, so it is not yet been tested. How does this one look?
 > > 
-> > Even if drivers avoid calling it from within suspend methods, they have
-> > to be able to call it from within resume methods.  After all, the
-> > resume method may find that the disk's device has vanished.
-> 
-> del_gendisk() needs process context at least, since it'll sleep (not
-> just for sync/invalidate, but other parts of the destruction as well).
+> > Well, I'd like to do that cleanly from the start.
+> > 
+> > Now, the problem is that PM_SLEEP_SMP selects HOTPLUG_CPU, because
+> > that's necessary for the other architectures to make SMP suspend work, but it's
+> > not necessary on your architecture.  Moreover, you don't need to compile
+> > enable_nonboot_cpus() at all.
 
-That's not a problem; suspend and resume run in process context.
+>  At least for the architecture I am enabling this support for
+> (PPC_PSERIES), upon looking closer, it looks like PM_SLEEP_SMP was
+> never defined, so enable_nonboot_cpus and disable_nonboot_cpus were
+> always nooped before, which I didn't previously realize. We probably
+> want to retain this behavior.  >
 
-> > This is a matter for Jens.  Is the bdi writeback task freezable?  If it
-> > is, should it be made unfreezable?
-> 
-> I'm not a big expect on what tasks should be freezable or not. As it
-> stands, the writeback tasks will attempt to freeze and thaw with the
-> system. I guess that screws the sync from resume call, since it's not
-> running and the sync will wait for it to retrieve and finish that work
-> item.
-> 
-> To the suspend experts - can we safely mark the writeback tasks as
-> non-freezable?
+(Please wrap at column 80)
 
-The reason for freezing those tasks is to avoid writebacks at random
-times during a system sleep transition, when the underlying device may
-already be suspended, right?
-
-In principle, a device's writeback task could be unfrozen immediately
-after the device is resumed.  In practice this might not solve the
-problem, since the del_gendisk() call occurs _within_ the device's
-resume routine.  I suppose del_gendisk() could be made responsible for 
-unfreezing the writeback task.
-
-The best solution would be to have del_gendisk() avoid waiting for the 
-writeback task in cases where the underlying device has been removed.  
-I don't know if that is feasible, however.
-
-Alan Stern
-
-P.S.: Jens, given a pointer to a struct gendisk or to a struct
-request_queue, is there a good way to tell whether there any dirty
-buffers for that device waiting to be written out?  This is for
-purposes of runtime power management -- in the initial implementation,
-I want to avoid powering-down a block device if it is open or has any
-dirty buffers.  In other words, only completely idle devices should be
-powered down (a good example would be a card reader with no memory card 
-inserted).
+This patch is already way better than the original one, but... Why do
+you want enable/disable_nonboot_cpus to be noped out?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
