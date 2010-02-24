@@ -1,16 +1,13 @@
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: s2disk hang update
-Date: Wed, 24 Feb 2010 10:20:37 +0900
-Message-ID: <20100224102037.2cca4f83.kamezawa.hiroyu__46075.3313186162$1266974723$gmane$org@jp.fujitsu.com>
-References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
-	<201002222017.55588.rjw@sisk.pl>
-	<9b2b86521002230624g20661564mc35093ee0423ff77@mail.gmail.com>
-	<201002232213.56455.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Two problems with system sleep
+Date: Wed, 24 Feb 2010 10:39:09 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1002241024530.2436-100000@iolanthe.rowland.org>
+References: <20100223214920.GA14313@core.coreip.homeip.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201002232213.56455.rjw@sisk.pl>
+In-Reply-To: <20100223214920.GA14313@core.coreip.homeip.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,35 +17,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>, Linux MM <linux-mm@kvack.org>, hugh.dickins@tiscali.co.uk, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Alan <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 23 Feb 2010 22:13:56 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Tue, 23 Feb 2010, Dmitry Torokhov wrote:
 
-> Well, it still looks like we're waiting for create_workqueue_thread() to
-> return, which probably is trying to allocate memory for the thread
-> structure.
+> Yes, I agree, we need a genric mechanism for PNP to emable wakups. It
+> was discussed a bit here:
 > 
-> My guess is that the preallocated memory pages freed by
-> free_unnecessary_pages() go into a place from where they cannot be taken for
-> subsequent NOIO allocations.  I have no idea why that happens though.
+> 	http://bugzilla.kernel.org/show_bug.cgi?id=8286
 > 
-> To test that theory you can try to change GFP_IOFS to GFP_KERNEL in the
-> calls to clear_gfp_allowed_mask() in kernel/power/hibernate.c (and in
-> kernel/power/suspend.c for completness).
-> 
+> but David was too hung up on the fact that number of devices in ACPI
+> does not map directly onto number of serio ports when i8042 is in active
+> multiplexing mode that it id not go anywhere.
 
-If allocation of kernel threads for stop_machine_run() is the problem,
+I tend to agree with your views.  Although there still is a question
+about why my system has both /sys/devices/pnp0/00:09 and
+/sys/devices/platform/i8042/serio0.  Since they refer to the same
+keyboard device, why should there be two different sysfs nodes and two 
+different drivers?
 
-What happens when
-1. use CONIFG_4KSTACK
-or
-2. make use of stop_machine_create(), stop_machine_destroy().
-   A new interface added by this commit.
-  http://git.kernel.org/?p=linux/kernel/git/torvalds/  linux-2.6.git;a=commit;h=9ea09af3bd3090e8349ca2899ca2011bd94cda85
-   You can do no-fail stop_machine_run().
+(Somewhat tangentially, why do the "i8042 aux" and "i8042 kbd"  
+drivers on the pnp bus have names containing space characters?  Isn't
+that likely to mess up shell scripts?)
 
-Thanks,
--Kame
+At any rate, can the wakeup matter get fixed?  On my system I see two
+issues related to the keyboard/mouse devices.  The first is that they
+are not enabled for wakeup by default.  The second is that doing
+
+	echo enabled >/sys/devices/pnp0/00:09/power/wakeup
+
+does not actually enable the keyboard for wakeup; only writing to 
+/proc/acpi/wakeup works.
+
+Rafael's suggestion for a PNP analog of pci_enable_wake() should solve 
+the second issue.  I don't know what's needed to solve the first.
+
+Alan Stern
