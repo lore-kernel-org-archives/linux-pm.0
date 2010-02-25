@@ -1,16 +1,11 @@
-From: Dave Chinner <david@fromorbit.com>
-Subject: Re: Testing for dirty buffers on a block device
-Date: Fri, 26 Feb 2010 09:19:04 +1100
-Message-ID: <20100225221904.GN16175__25497.608658816$1267136429$gmane$org@discord.disaster>
-References: <20100224190942.GG1025@kernel.dk>
-	<Pine.LNX.4.44L0.1002241503300.1253-100000@iolanthe.rowland.org>
-	<20100225082035.GR1025@kernel.dk>
+From: =?UTF-8?B?w4Frb3MgTWFyw7N5?= <akos@maroy.hu>
+Subject: pm-suspend working, but pm-hibernate fails
+Date: Thu, 25 Feb 2010 23:27:54 +0100
+Message-ID: <4B86F96A.1010306@maroy.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100225082035.GR1025@kernel.dk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,34 +15,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBGZWIgMjUsIDIwMTAgYXQgMDk6MjA6MzVBTSArMDEwMCwgSmVucyBBeGJvZSB3cm90
-ZToKPiBPbiBXZWQsIEZlYiAyNCAyMDEwLCBBbGFuIFN0ZXJuIHdyb3RlOgo+ID4gT24gV2VkLCAy
-NCBGZWIgMjAxMCwgSmVucyBBeGJvZSB3cm90ZToKPiA+IAo+ID4gPiA+ID4gQnV0IGlmIHlvdSB3
-YW50ZWQsIEkgZ3Vlc3MgdGhlIG9ubHkgd2F5IHdvdWxkIGJlIHRvIGxvb2t1cAo+ID4gPiA+ID4g
-ZGlydHkvd3JpdGViYWNrIHBhZ2VzIG9uIHRoZSBiZGV2IGlub2RlIG1hcHBpbmcuIEZvciB0aGF0
-IHlvdSdkIG5lZWQgdGhlCj4gPiA+ID4gPiBiZGV2LCBub3QgdGhlIGdlbmRpc2sgb3IgdGhlIHF1
-ZXVlIHRob3VnaC4KPiA+ID4gPiAKPiA+ID4gPiBJIGNhbiBnZXQgdGhlIGJkZXYgZnJvbSB0aGUg
-Z2VuZGlzayBieSBjYWxsaW5nIGJkZ2V0X2Rpc2soKSB3aXRoIGEgCj4gPiA+ID4gcGFydGl0aW9u
-IG51bWJlciBvZiAwLCByaWdodD8gIFdoYXQgd291bGQgdGhlIG5leHQgc3RlcCBiZT8gIFdvdWxk
-IHRoaXMgCj4gPiA+ID4gY2hlY2sgZm9yIGRpcnR5IHBhZ2VzIGFzc29jaWF0ZWQgd2l0aCBhbnkg
-b2YgdGhlIHBhcnRpdGlvbnMgb3Igd291bGQgaXQgCj4gPiA+ID4gb25seSBsb29rIGF0IHBhZ2Vz
-IGFzc29jaWF0ZWQgd2l0aCB0aGUgaW5vZGUgZm9yIHRoZSBlbnRpcmUgZGlzaz8KPiA+ID4gCj4g
-PiA+IEl0IHdvdWxkIGNvdmVyIHRoZSBlbnRpcmUgYmRldi4KPiA+IAo+ID4gT2theSwgc28gb25j
-ZSBJJ3ZlIGdvdCB0aGUgYmRldiwgaG93IGRvIEkgbG9vayB1cCB0aGUgZGlydHkvd3JpdGViYWNr
-IAo+ID4gcGFnZXMgb24gdGhlIGlub2RlIG1hcHBpbmc/Cj4gCj4gSSBfdGhpbmtfIHlvdSBjYW4g
-Z2V0IGF3YXkgd2l0aCBub3QgZG9pbmcgYSByYWRpeCBsb29rdXAgZm9yIGRpcnR5Cj4gcGFnZXMs
-IGp1c3QgbG9va2luZyBhdCB0aGUgQkRJX1JFQ0xBSU1BQkxFIHN0YXQgb24gdGhlIGJkaS4gVGhh
-dCB3b3VsZAo+IGJlOgo+IAo+IGJkaV9zdGF0KGJkZXYtPmJkX2lub2RlLT5pX21hcHBpbmctPmJh
-Y2tpbmdfZGV2X2luZm8sIEJESV9SRUNMQUlNQUJMRSk7CgptYXBwaW5nX3RhZ2dlZChiZGV2LT5i
-ZF9pbm9kZS0+aV9tYXBwaW5nLCBQQUdFQ0FDSEVfVEFHX0RJUlRZKTsKCmlzIGFib3V0IGFzIGxv
-dyBvdmVyaGVhZCBhcyBpdCBnZXRzIGFzIHRoZSByYWRpeCB0cmVlIHByb3BhZ2F0ZdGVCnRhZ3Mg
-YmFjayB1cCB0byB0aGUgcm9vdC4gaS5lLiBubyBwYWdlIGxvb2t1cHMgbmVlZGVkIGF0IGFsbCB0
-bwpkZXRlcm1pbmUgaWYgaXQgaXMgZGlydHkuCgpDaGVlcnMsCgpEYXZlLgotLSAKRGF2ZSBDaGlu
-bmVyCmRhdmlkQGZyb21vcmJpdC5jb20KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4
-LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1h
-bi9saXN0aW5mby9saW51eC1wbQ==
+Hi,
+
+I wonder how I could debug this issue: I have a system with pm-suspend
+working at last (see this thread: http://lkml.org/lkml/2010/2/23/62 for
+details), but pm-hibernate does not work. after issuing pm-hibernate, I
+see an empty screen with a blinking cursor on the top-left, and then
+nothing happens. the machine doesn't power off or anything.
+
+forcing a power cycle leads me to a regular boot.
+
+how could I debug this issue, to find out what fails?
+
+this is on an HP Envy 15 laptop, and Ubunut 9.10, with a 2.6.32.8 kernel.
+
+
+Akos
