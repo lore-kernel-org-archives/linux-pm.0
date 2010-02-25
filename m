@@ -1,15 +1,15 @@
-From: Mark Brown <broonie@sirena.org.uk>
-Subject: Re: runtime PM: common hooks for static and runtime PM
-Date: Wed, 24 Feb 2010 22:32:20 +0000
-Message-ID: <DE9F524D-B8B9-41A0-B774-BC10097A317E@sirena.org.uk>
-References: <Pine.LNX.4.44L0.1002241354560.1253-100000@iolanthe.rowland.org>
-	(sfid-20100224_185637_724885_D7A3AE40)
-Mime-Version: 1.0 (iPhone Mail 7E18)
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/8] PM: Add parent information to timing
+	messages
+Date: Thu, 25 Feb 2010 08:01:47 +0100
+Message-ID: <20100225070147.GA1601__30531.0063333765$1267081487$gmane$org@ucw.cz>
+References: <201001240033.34253.rjw@sisk.pl> <201001240034.36423.rjw@sisk.pl>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1002241354560.1253-100000@iolanthe.rowland.org>
-	(sfid-20100224_185637_724885_D7A3AE40)
+Content-Disposition: inline
+In-Reply-To: <201001240034.36423.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,31 +19,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, Greg KH <gregkh@suse.de>, Linux SCSI <linux-scsi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, James Bottomley <James.Bottomley@suse.de>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 24 Feb 2010, at 18:56, Alan Stern <stern@rowland.harvard.edu> wrote:
+On Sun 2010-01-24 00:34:36, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Add parent information to the messages printed by the suspend/resume
+> core when initcall_debug is set.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-> On Wed, 24 Feb 2010, Mark Brown wrote:
->
->> On Mon, Feb 08, 2010 at 09:54:07AM -0500, Alan Stern wrote:
->>> On Sat, 6 Feb 2010, Alan Stern wrote:
->>
->>>> I'll give it a try and we'll see how it turns out...
->>
->>> And here it is.  You can see that the patch isn't ideal.
->>
->>> Anyway, it should do what you want -- I haven't tested it.
->>
->> It's taken a little while to test (and to be frank my testing is  
->> paper
->> thin) but it looks like this does what I'm looking for - thanks!
->
-> But should that patch be submitted for inclusion in the kernel,
-> warts and all?
+ACK.
 
-My feeling is that it solves a real problem so yes and if it turns out  
-there are issues we can always bug fix it later - if it's not merged  
-then cross tree issues would mean that there'd be a substantial lag  
-before it could be used in drivers.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
