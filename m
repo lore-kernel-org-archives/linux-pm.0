@@ -1,15 +1,15 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: runtime PM: common hooks for static and runtime PM
-Date: Thu, 25 Feb 2010 07:26:37 -0800
-Message-ID: <87iq9ljpzm.fsf@deeprootsystems.com>
-References: <Pine.LNX.4.44L0.1002241354560.1253-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: s2disk hang update
+Date: Thu, 25 Feb 2010 21:04:51 +0100
+Message-ID: <201002252104.51187.rjw__8615.34290384061$1267128318$gmane$org@sisk.pl>
+References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
+	<201002242152.55408.rjw@sisk.pl>
+	<9b2b86521002250510m75c8b314o37388a04b53a2b67@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1002241354560.1253-100000@iolanthe.rowland.org>
-	(Alan Stern's message of "Wed\,
-	24 Feb 2010 13\:56\:33 -0500 \(EST\)")
+In-Reply-To: <9b2b86521002250510m75c8b314o37388a04b53a2b67@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,29 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>, Linux MM <linux-mm@kvack.org>, hugh.dickins@tiscali.co.uk, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+On Thursday 25 February 2010, Alan Jenkins wrote:
+> On 2/24/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Wednesday 24 February 2010, Alan Jenkins wrote:
+...
+> 
+> > -	while (to_free_normal > 0 && to_free_highmem > 0) {
+> > +	while (to_free_normal > 0 || to_free_highmem > 0) {
+> 
+> Yes, that seems to do it.  No more hangs so far (and I can still
+> reproduce the hang with too many applications if I un-apply the
+> patch).
 
-> On Wed, 24 Feb 2010, Mark Brown wrote:
->
->> On Mon, Feb 08, 2010 at 09:54:07AM -0500, Alan Stern wrote:
->> > On Sat, 6 Feb 2010, Alan Stern wrote:
->> 
->> > > I'll give it a try and we'll see how it turns out...
->> 
->> > And here it is.  You can see that the patch isn't ideal.
->> 
->> > Anyway, it should do what you want -- I haven't tested it.
->> 
->> It's taken a little while to test (and to be frank my testing is paper
->> thin) but it looks like this does what I'm looking for - thanks!
->
-> But should that patch be submitted for inclusion in the kernel, 
-> warts and all?
+OK, great.  Is this with or without the NOIO-enforcing patch?
 
-I vote yes.
+> I did see a non-fatal allocation failure though, so I'm still not sure
+> that the current implementation is strictly correct.
+> 
+> This is without the patch to increase "to_free_normal".  If I get the
+> allocation failure again, should I try testing the "free 20% extra"
+> patch?
 
-Kevin
+Either that or try to increase SPARE_PAGES.  That should actually work with
+the last patch applied. :-)
+
+Rafael
