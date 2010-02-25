@@ -1,15 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/8] PM: Add parent information to timing
-	messages
-Date: Thu, 25 Feb 2010 08:01:47 +0100
-Message-ID: <20100225070147.GA1601__30531.0063333765$1267081487$gmane$org@ucw.cz>
-References: <201001240033.34253.rjw@sisk.pl> <201001240034.36423.rjw@sisk.pl>
+From: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: Testing for dirty buffers on a block device
+Date: Thu, 25 Feb 2010 09:20:35 +0100
+Message-ID: <20100225082035.GR1025__25474.1423800171$1267086134$gmane$org@kernel.dk>
+References: <20100224190942.GG1025@kernel.dk>
+	<Pine.LNX.4.44L0.1002241503300.1253-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201001240034.36423.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1002241503300.1253-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,20 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>, Greg KH <gregkh@suse.de>, Linux SCSI <linux-scsi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, James Bottomley <James.Bottomley@suse.de>, pm list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun 2010-01-24 00:34:36, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Wed, Feb 24 2010, Alan Stern wrote:
+> On Wed, 24 Feb 2010, Jens Axboe wrote:
 > 
-> Add parent information to the messages printed by the suspend/resume
-> core when initcall_debug is set.
+> > > > But if you wanted, I guess the only way would be to lookup
+> > > > dirty/writeback pages on the bdev inode mapping. For that you'd need the
+> > > > bdev, not the gendisk or the queue though.
+> > > 
+> > > I can get the bdev from the gendisk by calling bdget_disk() with a 
+> > > partition number of 0, right?  What would the next step be?  Would this 
+> > > check for dirty pages associated with any of the partitions or would it 
+> > > only look at pages associated with the inode for the entire disk?
+> > 
+> > It would cover the entire bdev.
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Okay, so once I've got the bdev, how do I look up the dirty/writeback 
+> pages on the inode mapping?
 
-ACK.
+I _think_ you can get away with not doing a radix lookup for dirty
+pages, just looking at the BDI_RECLAIMABLE stat on the bdi. That would
+be:
+
+bdi_stat(bdev->bd_inode->i_mapping->backing_dev_info, BDI_RECLAIMABLE);
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jens Axboe
