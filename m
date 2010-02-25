@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: s2disk hang update
-Date: Thu, 25 Feb 2010 21:04:51 +0100
-Message-ID: <201002252104.51187.rjw__8615.34290384061$1267128318$gmane$org@sisk.pl>
-References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
-	<201002242152.55408.rjw@sisk.pl>
-	<9b2b86521002250510m75c8b314o37388a04b53a2b67@mail.gmail.com>
+From: Dave Chinner <david@fromorbit.com>
+Subject: Re: Testing for dirty buffers on a block device
+Date: Fri, 26 Feb 2010 09:19:04 +1100
+Message-ID: <20100225221904.GN16175__25497.608658816$1267136429$gmane$org@discord.disaster>
+References: <20100224190942.GG1025@kernel.dk>
+	<Pine.LNX.4.44L0.1002241503300.1253-100000@iolanthe.rowland.org>
+	<20100225082035.GR1025@kernel.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <9b2b86521002250510m75c8b314o37388a04b53a2b67@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20100225082035.GR1025@kernel.dk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,32 +20,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel <linux-kernel@vger.kernel.org>, Linux MM <linux-mm@kvack.org>, hugh.dickins@tiscali.co.uk, pm list <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 25 February 2010, Alan Jenkins wrote:
-> On 2/24/10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Wednesday 24 February 2010, Alan Jenkins wrote:
-...
-> 
-> > -	while (to_free_normal > 0 && to_free_highmem > 0) {
-> > +	while (to_free_normal > 0 || to_free_highmem > 0) {
-> 
-> Yes, that seems to do it.  No more hangs so far (and I can still
-> reproduce the hang with too many applications if I un-apply the
-> patch).
-
-OK, great.  Is this with or without the NOIO-enforcing patch?
-
-> I did see a non-fatal allocation failure though, so I'm still not sure
-> that the current implementation is strictly correct.
-> 
-> This is without the patch to increase "to_free_normal".  If I get the
-> allocation failure again, should I try testing the "free 20% extra"
-> patch?
-
-Either that or try to increase SPARE_PAGES.  That should actually work with
-the last patch applied. :-)
-
-Rafael
+T24gVGh1LCBGZWIgMjUsIDIwMTAgYXQgMDk6MjA6MzVBTSArMDEwMCwgSmVucyBBeGJvZSB3cm90
+ZToKPiBPbiBXZWQsIEZlYiAyNCAyMDEwLCBBbGFuIFN0ZXJuIHdyb3RlOgo+ID4gT24gV2VkLCAy
+NCBGZWIgMjAxMCwgSmVucyBBeGJvZSB3cm90ZToKPiA+IAo+ID4gPiA+ID4gQnV0IGlmIHlvdSB3
+YW50ZWQsIEkgZ3Vlc3MgdGhlIG9ubHkgd2F5IHdvdWxkIGJlIHRvIGxvb2t1cAo+ID4gPiA+ID4g
+ZGlydHkvd3JpdGViYWNrIHBhZ2VzIG9uIHRoZSBiZGV2IGlub2RlIG1hcHBpbmcuIEZvciB0aGF0
+IHlvdSdkIG5lZWQgdGhlCj4gPiA+ID4gPiBiZGV2LCBub3QgdGhlIGdlbmRpc2sgb3IgdGhlIHF1
+ZXVlIHRob3VnaC4KPiA+ID4gPiAKPiA+ID4gPiBJIGNhbiBnZXQgdGhlIGJkZXYgZnJvbSB0aGUg
+Z2VuZGlzayBieSBjYWxsaW5nIGJkZ2V0X2Rpc2soKSB3aXRoIGEgCj4gPiA+ID4gcGFydGl0aW9u
+IG51bWJlciBvZiAwLCByaWdodD8gIFdoYXQgd291bGQgdGhlIG5leHQgc3RlcCBiZT8gIFdvdWxk
+IHRoaXMgCj4gPiA+ID4gY2hlY2sgZm9yIGRpcnR5IHBhZ2VzIGFzc29jaWF0ZWQgd2l0aCBhbnkg
+b2YgdGhlIHBhcnRpdGlvbnMgb3Igd291bGQgaXQgCj4gPiA+ID4gb25seSBsb29rIGF0IHBhZ2Vz
+IGFzc29jaWF0ZWQgd2l0aCB0aGUgaW5vZGUgZm9yIHRoZSBlbnRpcmUgZGlzaz8KPiA+ID4gCj4g
+PiA+IEl0IHdvdWxkIGNvdmVyIHRoZSBlbnRpcmUgYmRldi4KPiA+IAo+ID4gT2theSwgc28gb25j
+ZSBJJ3ZlIGdvdCB0aGUgYmRldiwgaG93IGRvIEkgbG9vayB1cCB0aGUgZGlydHkvd3JpdGViYWNr
+IAo+ID4gcGFnZXMgb24gdGhlIGlub2RlIG1hcHBpbmc/Cj4gCj4gSSBfdGhpbmtfIHlvdSBjYW4g
+Z2V0IGF3YXkgd2l0aCBub3QgZG9pbmcgYSByYWRpeCBsb29rdXAgZm9yIGRpcnR5Cj4gcGFnZXMs
+IGp1c3QgbG9va2luZyBhdCB0aGUgQkRJX1JFQ0xBSU1BQkxFIHN0YXQgb24gdGhlIGJkaS4gVGhh
+dCB3b3VsZAo+IGJlOgo+IAo+IGJkaV9zdGF0KGJkZXYtPmJkX2lub2RlLT5pX21hcHBpbmctPmJh
+Y2tpbmdfZGV2X2luZm8sIEJESV9SRUNMQUlNQUJMRSk7CgptYXBwaW5nX3RhZ2dlZChiZGV2LT5i
+ZF9pbm9kZS0+aV9tYXBwaW5nLCBQQUdFQ0FDSEVfVEFHX0RJUlRZKTsKCmlzIGFib3V0IGFzIGxv
+dyBvdmVyaGVhZCBhcyBpdCBnZXRzIGFzIHRoZSByYWRpeCB0cmVlIHByb3BhZ2F0ZdGVCnRhZ3Mg
+YmFjayB1cCB0byB0aGUgcm9vdC4gaS5lLiBubyBwYWdlIGxvb2t1cHMgbmVlZGVkIGF0IGFsbCB0
+bwpkZXRlcm1pbmUgaWYgaXQgaXMgZGlydHkuCgpDaGVlcnMsCgpEYXZlLgotLSAKRGF2ZSBDaGlu
+bmVyCmRhdmlkQGZyb21vcmJpdC5jb20KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4
+LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1h
+bi9saXN0aW5mby9saW51eC1wbQ==
