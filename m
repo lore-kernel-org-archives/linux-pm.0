@@ -1,11 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] PM updates for 2.6.34
-Date: Fri, 26 Feb 2010 21:30:43 +0100
-Message-ID: <201002262130.43405.rjw__22795.6521943726$1267216399$gmane$org@sisk.pl>
+Subject: Re: [PATCH] PM: add dpm_use_runtime_{suspend,
+	resume} helper functions
+Date: Fri, 26 Feb 2010 22:24:02 +0100
+Message-ID: <201002262224.02694.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.1002261130440.2029-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.1002261130440.2029-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,84 +18,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jiri Slaby <jslaby@suse.cz>, Frans Pop <elendil@planet.nl>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Friday 26 February 2010, Alan Stern wrote:
+...
+> Index: usb-2.6/drivers/base/power/power.h
+> ===================================================================
+> --- usb-2.6.orig/drivers/base/power/power.h
+> +++ usb-2.6/drivers/base/power/power.h
+> @@ -72,3 +72,14 @@ static inline void dpm_sysfs_remove(stru
+>  }
+>  
+>  #endif
+> +
+> +#if defined(CONFIG_PM_SLEEP) || defined(CONFIG_PM_RUNTIME)
 
-Please pull power management updates for 2.6.34 from:
+CONFIG_PM_OPS can be used for that, it means exactly the above.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
+> +/*
+> + * invoke_runtime.c
+> + */
+> +extern void dpm_invoke_runtime_idle(struct device *dev);
+> +extern int dpm_invoke_runtime_suspend(struct device *dev);
+> +extern int dpm_invoke_runtime_resume(struct device *dev);
+> +
+> +#endif
+> Index: usb-2.6/drivers/base/power/Makefile
+> ===================================================================
+> --- usb-2.6.orig/drivers/base/power/Makefile
+> +++ usb-2.6/drivers/base/power/Makefile
+> @@ -1,6 +1,6 @@
+>  obj-$(CONFIG_PM)	+= sysfs.o
+> -obj-$(CONFIG_PM_SLEEP)	+= main.o
+> -obj-$(CONFIG_PM_RUNTIME)	+= runtime.o
+> +obj-$(CONFIG_PM_SLEEP)	+= main.o invoke_runtime.o
+> +obj-$(CONFIG_PM_RUNTIME)	+= runtime.o invoke_runtime.o
 
-They include:
+And here I think.
 
-* Hibernate regression fix (quite urgent).
+There seem to be a few more places where the comment applies.
 
-* Introduction of a sysfs switch for controlling runtime PM of devices.
+>  obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
+>  
+>  ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
+> Index: usb-2.6/drivers/base/power/main.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/base/power/main.c
+> +++ usb-2.6/drivers/base/power/main.c
+> @@ -936,3 +936,51 @@ void __suspend_report_result(const char 
+>  		printk(KERN_ERR "%s(): %pF returns %d\n", function, fn, ret);
+>  }
+>  EXPORT_SYMBOL_GPL(__suspend_report_result);
+> +
+> +#if defined(CONFIG_PM_SLEEP) || defined(CONFIG_PM_RUNTIME)
+> +
+> +/* Convenience routines for drivers that want to use the same functions
+> + * for system suspend/resume and runtime suspend/resume:
+> + * Set driver->pm_ops->suspend = dpm_use_runtime_suspend and
+> + * driver->pm_ops->resume = dpm_use_runtime_resume.
+> + */
 
-* sysfs device power attributes documentation update.
+I have one problem with the design.  Namely, dpm_invoke_runtime_*() can
+run a callback from another subsystem.  Say you are a device class and you
+decide to use dpm_invoke_runtime_*(), but the device's bus type implements
+the runtime PM callbacks, so they will be run as device class suspend and
+resume callbacks.  That doesn't look particularly clean to me.
 
-* Asynchronous suspend and resume patchset.  Reworked and hopefully not so
-  controversial any more, speeds up suspend and, more importantly, resume
-  quite significantly in general.
-
-* Hibernate cleanups from Jiri Slaby and Frans Pop.
-
-
- Documentation/ABI/testing/sysfs-devices-power |   79 ++++++++++++++
- Documentation/ABI/testing/sysfs-power         |   13 +++
- Documentation/feature-removal-schedule.txt    |   11 ++
- drivers/base/power/main.c                     |  143 +++++++++++++++++++++++--
- drivers/base/power/power.h                    |    6 +-
- drivers/base/power/runtime.c                  |   45 ++++++++
- drivers/base/power/sysfs.c                    |  100 +++++++++++++++++
- drivers/pci/pci.c                             |    1 +
- drivers/pci/pcie/portdrv_core.c               |    1 +
- drivers/pci/probe.c                           |    1 +
- drivers/scsi/hosts.c                          |    4 +
- drivers/scsi/scsi_sysfs.c                     |    4 +
- drivers/usb/core/driver.c                     |    8 ++
- drivers/usb/core/endpoint.c                   |    1 +
- drivers/usb/core/hcd-pci.c                    |  127 ++++++++++++++++++++++-
- drivers/usb/core/hub.c                        |    1 +
- drivers/usb/core/message.c                    |    1 +
- include/linux/device.h                        |   17 +++
- include/linux/pm.h                            |    6 +
- include/linux/pm_runtime.h                    |    4 +
- include/linux/resume-trace.h                  |    7 ++
- include/linux/usb.h                           |    1 +
- kernel/power/Kconfig                          |   14 +++
- kernel/power/main.c                           |   31 +++++-
- kernel/power/snapshot.c                       |    4 +-
- kernel/power/swap.c                           |    4 -
- kernel/power/swsusp.c                         |   58 ----------
- kernel/power/user.c                           |   23 ++++-
- 28 files changed, 631 insertions(+), 84 deletions(-)
-
----------------
-
-Alan Stern (1):
-      USB: implement non-tree resume ordering constraints for PCI host controllers
-
-Frans Pop (1):
-      PM / Hibernate: Remove trailing space in message
-
-Jiri Slaby (3):
-      PM / Hibernate: Really deprecate deprecated user ioctls
-      PM / Hibernate: Swap, remove useless check from swsusp_read()
-      PM / Hibernate: Remove swsusp.c finally
-
-Rafael J. Wysocki (12):
-      PM / Runtime: Add sysfs switch for disabling device run-time PM
-      PM: Document device power attributes in sysfs
-      PM: Add parent information to timing messages
-      PM: Asynchronous suspend and resume of devices
-      PM: Add a switch for disabling/enabling asynchronous suspend/resume
-      PM: Add facility for advanced testing of async suspend/resume
-      PM: Start asynchronous resume threads upfront
-      PM: Allow device drivers to use dpm_wait()
-      PM: Allow PCI devices to suspend/resume asynchronously
-      PM: Allow USB devices to suspend/resume asynchronously
-      PM: Allow SCSI devices to suspend/resume asynchronously
-      PM / Hibernate: Fix preallocating of memory
+Rafael
