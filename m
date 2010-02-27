@@ -1,12 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Resend][PATCH] ACPI / EC: Remove race between EC driver
-	and suspend process (rev. 3)
-Date: Sat, 27 Feb 2010 21:40:36 +0100
-Message-ID: <201002272140.36891.rjw__6241.49160362339$1267303130$gmane$org@sisk.pl>
+Subject: Re: [PATCH] PM: add dpm_use_runtime_{suspend,
+	resume} helper functions
+Date: Sat, 27 Feb 2010 23:50:16 +0100
+Message-ID: <201002272350.16523.rjw@sisk.pl>
+References: <201002262224.02694.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.1002261702070.2029-100000@iolanthe.rowland.org>
+	<20100227104309.GB2994@sirena.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20100227104309.GB2994@sirena.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,261 +20,261 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Mark Brown <broonie@sirena.org.uk>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Saturday 27 February 2010, Mark Brown wrote:
+> On Fri, Feb 26, 2010 at 05:06:59PM -0500, Alan Stern wrote:
+> > On Fri, 26 Feb 2010, Rafael J. Wysocki wrote:
+> 
+> > > I have one problem with the design.  Namely, dpm_invoke_runtime_*() can
+> > > run a callback from another subsystem.  Say you are a device class and you
+> > > decide to use dpm_invoke_runtime_*(), but the device's bus type implements
+> > > the runtime PM callbacks, so they will be run as device class suspend and
+> > > resume callbacks.  That doesn't look particularly clean to me.
+> 
+> > That is a valid point.  I suppose there could be separate bus-type, 
+> > device-type, and device-class versions of these functions, but that 
+> > seems like excessive complication with little real benefit.
+> 
+> I do agree that it'd be good to avoid adding any further complexity here
+> - the use case I have is devices that only really have one suspend type
+> and don't want or need to know if it's a runtime, disk or memory suspend.
 
-There is a race between the suspend process and the EC driver that
-may result in suspending in the middle of an EC transaction in
-progress, which in turn may lead to unpredictable behavior of the
-platform.
+What about the patch below, then (untested)?
 
-To remove that race condition, add helpers for suspending and
-resuming EC transactions in a safe way to be executed by the ACPI
-platform suspend/hibernate callbacks.  Modify these callbacks so
-that the EC transactions are suspended right after executing the
-_PTS global control method and are allowed to happen right after
-the low-level wake-up.
+Use GENERIC_SUBSYS_PM_OPS for the subsystem and then
+UNIVERSAL_DEV_PM_OPS for drivers, possibly passing NULL as idle_fn.
 
-Fixes http://bugzilla.kernel.org/show_bug.cgi?id=14668
+Rafael
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-and-tested-by: Maxim Levitsky <maximlevitsky@gmail.com>
 ---
- drivers/acpi/ec.c       |   45 ++++++++++++++++++++++++++++++++++++++++++++-
- drivers/acpi/internal.h |    3 +++
- drivers/acpi/sleep.c    |   48 ++++++++++++++++++++++++++++++------------------
- 3 files changed, 77 insertions(+), 19 deletions(-)
+ drivers/base/power/Makefile      |    1 
+ drivers/base/power/generic_ops.c |  119 +++++++++++++++++++++++++++++++++++++++
+ include/linux/pm.h               |   67 +++++++++++++++++++--
+ 3 files changed, 181 insertions(+), 6 deletions(-)
 
-Index: linux-2.6/drivers/acpi/ec.c
+Index: linux-2.6/drivers/base/power/Makefile
 ===================================================================
---- linux-2.6.orig/drivers/acpi/ec.c
-+++ linux-2.6/drivers/acpi/ec.c
-@@ -76,8 +76,9 @@ enum ec_command {
- enum {
- 	EC_FLAGS_QUERY_PENDING,		/* Query is pending */
- 	EC_FLAGS_GPE_STORM,		/* GPE storm detected */
--	EC_FLAGS_HANDLERS_INSTALLED	/* Handlers for GPE and
-+	EC_FLAGS_HANDLERS_INSTALLED,	/* Handlers for GPE and
- 					 * OpReg are installed */
-+	EC_FLAGS_SUSPENDED,		/* Driver is suspended */
- };
+--- linux-2.6.orig/drivers/base/power/Makefile
++++ linux-2.6/drivers/base/power/Makefile
+@@ -1,6 +1,7 @@
+ obj-$(CONFIG_PM)	+= sysfs.o
+ obj-$(CONFIG_PM_SLEEP)	+= main.o
+ obj-$(CONFIG_PM_RUNTIME)	+= runtime.o
++obj-$(CONFIG_PM_OPS)	+= generic_ops.o
+ obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
  
- /* If we find an EC via the ECDT, we need to keep a ptr to its context */
-@@ -291,6 +292,12 @@ static int acpi_ec_transaction(struct ac
- 	if (t->rdata)
- 		memset(t->rdata, 0, t->rlen);
- 	mutex_lock(&ec->lock);
-+	if (test_bit(EC_FLAGS_SUSPENDED, &ec->flags)) {
-+		pr_err(PREFIX
-+			"transaction discarded due to power transition\n");
-+		status = -EINVAL;
-+		goto unlock;
-+	}
- 	if (ec->global_lock) {
- 		status = acpi_acquire_global_lock(ACPI_EC_UDELAY_GLK, &glk);
- 		if (ACPI_FAILURE(status)) {
-@@ -453,6 +460,42 @@ int ec_transaction(u8 command,
- 
- EXPORT_SYMBOL(ec_transaction);
- 
-+void acpi_ec_suspend_transactions(void)
-+{
-+	struct acpi_ec *ec = first_ec;
-+
-+	if (!ec)
-+		return;
-+
-+	mutex_lock(&ec->lock);
-+	/* Prevent transactions from happening while suspended */
-+	set_bit(EC_FLAGS_SUSPENDED, &ec->flags);
-+	mutex_unlock(&ec->lock);
-+}
-+
-+void acpi_ec_resume_transactions(void)
-+{
-+	struct acpi_ec *ec = first_ec;
-+
-+	if (!ec)
-+		return;
-+
-+	mutex_lock(&ec->lock);
-+	/* Allow transactions to happen again */
-+	clear_bit(EC_FLAGS_SUSPENDED, &ec->flags);
-+	mutex_unlock(&ec->lock);
-+}
-+
-+void acpi_ec_resume_transactions_noirq(void)
-+{
-+	/*
-+	 * Allow transactions to happen again (this function is called from
-+	 * atomic context during wake-up, so we don't need to acquire the mutex)
-+	 */
-+	if (first_ec)
-+		clear_bit(EC_FLAGS_SUSPENDED, &first_ec->flags);
-+}
-+
- static int acpi_ec_query_unlocked(struct acpi_ec *ec, u8 * data)
- {
- 	int result;
-Index: linux-2.6/drivers/acpi/internal.h
+ ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
+Index: linux-2.6/drivers/base/power/generic_ops.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/internal.h
-+++ linux-2.6/drivers/acpi/internal.h
-@@ -49,6 +49,9 @@ void acpi_early_processor_set_pdc(void);
- int acpi_ec_init(void);
- int acpi_ec_ecdt_probe(void);
- int acpi_boot_ec_enable(void);
-+void acpi_ec_suspend_transactions(void);
-+void acpi_ec_resume_transactions(void);
-+void acpi_ec_resume_transactions_noirq(void);
- 
- /*--------------------------------------------------------------------------
-                                   Suspend/Resume
-Index: linux-2.6/drivers/acpi/sleep.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep.c
-+++ linux-2.6/drivers/acpi/sleep.c
-@@ -110,11 +110,13 @@ void __init acpi_old_suspend_ordering(vo
- }
- 
- /**
-- *	acpi_pm_disable_gpes - Disable the GPEs.
-+ *	acpi_pm_freeze - Disable the GPEs and suspend EC transactions.
+--- linux-2.6.orig/drivers/base/power/generic_ops.c
++++ linux-2.6/drivers/base/power/generic_ops.c
+@@ -6,3 +6,122 @@
+  * This file is released under the GPLv2.
   */
--static int acpi_pm_disable_gpes(void)
-+static int acpi_pm_freeze(void)
- {
- 	acpi_disable_all_gpes();
-+	acpi_os_wait_events_complete(NULL);
-+	acpi_ec_suspend_transactions();
- 	return 0;
- }
  
-@@ -142,7 +144,8 @@ static int acpi_pm_prepare(void)
- 	int error = __acpi_pm_prepare();
- 
- 	if (!error)
--		acpi_disable_all_gpes();
-+		acpi_pm_freeze();
++#include <linux/pm.h>
++#include <linux/pm_runtime.h>
 +
- 	return error;
- }
- 
-@@ -276,6 +279,8 @@ static int acpi_suspend_enter(suspend_st
- 	 */
- 	acpi_disable_all_gpes();
- 
-+	acpi_ec_resume_transactions_noirq();
-+
- 	local_irq_restore(flags);
- 	printk(KERN_DEBUG "Back to C!\n");
- 
-@@ -286,6 +291,12 @@ static int acpi_suspend_enter(suspend_st
- 	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
- }
- 
-+static void acpi_suspend_finish(void)
++#ifdef CONFIG_PM_RUNTIME
++/**
++ * pm_generic_runtime_idle - Generic runtime idle callback for subsystems.
++ * @dev: Device to handle.
++ *
++ * If PM operations are defined for the driver of @dev and they include
++ * ->runtime_idle(), execute it and return the error code returned by it if
++ * nonzero.  Otherwise, execute pm_runtime_suspend() for the device.
++ */
++int pm_generic_runtime_idle(struct device *dev)
 +{
-+	acpi_ec_resume_transactions();
-+	acpi_pm_finish();
++	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
++
++	if (pm && pm->runtime_idle) {
++		int ret = pm->runtime_idle(dev);
++		if (ret)
++			return ret;
++	}
++
++	pm_runtime_suspend(dev);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(pm_generic_runtime_idle);
++
++/**
++ * pm_generic_runtime_suspend - Generic runtime suspend callback for subsystems.
++ * @dev: Device to suspend.
++ *
++ * If PM operations are defined for the driver of @dev and they include
++ * ->runtime_suspend(), execute it and return the error code returned by it.
++ * Otherwise, return zero.
++ */
++int pm_generic_runtime_suspend(struct device *dev)
++{
++	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
++	int ret = 0;
++
++	if (pm && pm->runtime_suspend)
++		ret = pm->runtime_suspend(dev);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(pm_generic_runtime_suspend);
++
++/**
++ * pm_generic_runtime_resume - Generic runtime resume callback for subsystems.
++ * @dev: Device to resume.
++ *
++ * If PM operations are defined for the driver of @dev and they include
++ * ->runtime_resume(), execute it and return the error code returned by it.
++ * Otherwise, return zero.
++ */
++int pm_generic_runtime_resume(struct device *dev)
++{
++	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
++	int ret = 0;
++
++	if (pm && pm->runtime_resume)
++		ret = pm->runtime_resume(dev);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(pm_generic_runtime_resume);
++#endif /* CONFIG_PM_RUNTIME */
++
++#define CONFIG_PM_SLEEP
++/**
++ * pm_generic_suspend - Generic suspend callback for subsystems.
++ * @dev: Device to suspend.
++ *
++ * If the device has not been suspended at run time, execute the suspend
++ * callback provided by its driver, if defined, and return the error code
++ * returned by it.  Otherwise, return zero.
++ */
++int pm_generic_suspend(struct device *dev)
++{
++	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
++	int ret = 0;
++
++	if (dev->power.runtime_status == RPM_SUSPENDED)
++		return 0;
++
++	if (pm && pm->suspend)
++		ret = pm->suspend(dev);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(pm_generic_suspend);
++
++/**
++ * pm_generic_resume - Generic resume callback for subsystems.
++ * @dev: Device to resume.
++ *
++ * Execute the resume callback provided by the driver of @dev, if defined.
++ * If it returns 0, change the device's runtime PM status to 'active'.  Return
++ * the error code returned by it.
++ */
++int pm_generic_resume(struct device *dev)
++{
++	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
++	int ret;
++
++	if (!pm || !pm->resume)
++		return 0;
++
++	ret = pm->resume(dev);
++	if (!ret) {
++		pm_runtime_disable(dev);
++		pm_runtime_set_active(dev);
++		pm_runtime_enable(dev);
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(pm_generic_resume);
++#endif /* CONFIG_PM_SLEEP */
+Index: linux-2.6/include/linux/pm.h
+===================================================================
+--- linux-2.6.orig/include/linux/pm.h
++++ linux-2.6/include/linux/pm.h
+@@ -215,18 +215,73 @@ struct dev_pm_ops {
+ 	int (*runtime_idle)(struct device *dev);
+ };
+ 
++#ifdef CONFIG_PM_SLEEP
++#define SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
++	.suspend = suspend_fn, \
++	.resume = resume_fn, \
++	.freeze = suspend_fn, \
++	.thaw = resume_fn, \
++	.poweroff = suspend_fn, \
++	.restore = resume_fn,
++#else
++#define SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
++#endif
++
++#ifdef CONFIG_PM_RUNTIME
++#define RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
++	.runtime_suspend = suspend_fn, \
++	.runtime_resume = resume_fn, \
++	.runtime_idle = idle_fn,
++#else
++#define RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
++#endif
++
+ /*
+  * Use this if you want to use the same suspend and resume callbacks for suspend
+  * to RAM and hibernation.
+  */
+ #define SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
+ const struct dev_pm_ops name = { \
+-	.suspend = suspend_fn, \
+-	.resume = resume_fn, \
+-	.freeze = suspend_fn, \
+-	.thaw = resume_fn, \
+-	.poweroff = suspend_fn, \
+-	.restore = resume_fn, \
++SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
 +}
 +
- static int acpi_suspend_state_valid(suspend_state_t pm_state)
- {
- 	u32 acpi_state;
-@@ -307,7 +318,7 @@ static struct platform_suspend_ops acpi_
- 	.begin = acpi_suspend_begin,
- 	.prepare_late = acpi_pm_prepare,
- 	.enter = acpi_suspend_enter,
--	.wake = acpi_pm_finish,
-+	.wake = acpi_suspend_finish,
- 	.end = acpi_pm_end,
- };
- 
-@@ -333,9 +344,9 @@ static int acpi_suspend_begin_old(suspen
- static struct platform_suspend_ops acpi_suspend_ops_old = {
- 	.valid = acpi_suspend_state_valid,
- 	.begin = acpi_suspend_begin_old,
--	.prepare_late = acpi_pm_disable_gpes,
-+	.prepare_late = acpi_pm_freeze,
- 	.enter = acpi_suspend_enter,
--	.wake = acpi_pm_finish,
-+	.wake = acpi_suspend_finish,
- 	.end = acpi_pm_end,
- 	.recover = acpi_pm_finish,
- };
-@@ -522,6 +533,7 @@ static int acpi_hibernation_enter(void)
- 	status = acpi_enter_sleep_state(ACPI_STATE_S4);
- 	/* Reprogram control registers and execute _BFS */
- 	acpi_leave_sleep_state_prep(ACPI_STATE_S4);
-+	acpi_ec_resume_transactions_noirq();
- 	local_irq_restore(flags);
- 
- 	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
-@@ -530,6 +542,7 @@ static int acpi_hibernation_enter(void)
- static void acpi_hibernation_finish(void)
- {
- 	hibernate_nvs_free();
-+	acpi_ec_resume_transactions();
- 	acpi_pm_finish();
++/*
++ * Use this for defining a set of PM operations to be used in all situations
++ * (system suspend, hibernation or runtime PM).
++ */
++#define UNIVERSAL_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn) \
++const struct dev_pm_ops name = { \
++SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
++RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
++}
++
++#ifdef CONFIG_PM_SLEEP
++#define GENERIC_SYSTEM_SLEEP_PM_OPS \
++	.suspend = pm_generic_suspend, \
++	.resume = pm_generic_resume,
++#else
++#define GENERIC_SYSTEM_SLEEP_PM_OPS
++
++#endif
++
++#ifdef CONFIG_PM_RUNTIME
++#define GENERIC_RUNTIME_PM_OPS \
++	.runtime_suspend = pm_generic_runtime_suspend, \
++	.runtime_resume = pm_generic_runtime_resume, \
++	.runtime_idle = pm_generic_runtime_idle,
++#else
++#define GENERIC_RUNTIME_PM_OPS
++#endif
++
++/*
++ * Use this for subsystems (bus types, device types, device classes) that only
++ * need to invoke PM callbacks provided by device drivers supporting both the
++ * system sleep PM and runtime PM.
++ */
++#define GENERIC_SUBSYS_PM_OPS(name) \
++const struct dev_pm_ops name = { \
++GENERIC_SYSTEM_SLEEP_PM_OPS \
++GENERIC_RUNTIME_PM_OPS \
  }
- 
-@@ -550,10 +563,12 @@ static void acpi_hibernation_leave(void)
- 	}
- 	/* Restore the NVS memory area */
- 	hibernate_nvs_restore();
-+	acpi_ec_resume_transactions_noirq();
- }
- 
--static void acpi_pm_enable_gpes(void)
-+static void acpi_pm_thaw(void)
- {
-+	acpi_ec_resume_transactions();
- 	acpi_enable_all_runtime_gpes();
- }
- 
-@@ -565,8 +580,8 @@ static struct platform_hibernation_ops a
- 	.prepare = acpi_pm_prepare,
- 	.enter = acpi_hibernation_enter,
- 	.leave = acpi_hibernation_leave,
--	.pre_restore = acpi_pm_disable_gpes,
--	.restore_cleanup = acpi_pm_enable_gpes,
-+	.pre_restore = acpi_pm_freeze,
-+	.restore_cleanup = acpi_pm_thaw,
- };
  
  /**
-@@ -598,12 +613,9 @@ static int acpi_hibernation_begin_old(vo
- 
- static int acpi_hibernation_pre_snapshot_old(void)
- {
--	int error = acpi_pm_disable_gpes();
--
--	if (!error)
--		hibernate_nvs_save();
--
--	return error;
-+	acpi_pm_freeze();
-+	hibernate_nvs_save();
-+	return 0;
- }
- 
- /*
-@@ -615,11 +627,11 @@ static struct platform_hibernation_ops a
- 	.end = acpi_pm_end,
- 	.pre_snapshot = acpi_hibernation_pre_snapshot_old,
- 	.finish = acpi_hibernation_finish,
--	.prepare = acpi_pm_disable_gpes,
-+	.prepare = acpi_pm_freeze,
- 	.enter = acpi_hibernation_enter,
- 	.leave = acpi_hibernation_leave,
--	.pre_restore = acpi_pm_disable_gpes,
--	.restore_cleanup = acpi_pm_enable_gpes,
-+	.pre_restore = acpi_pm_freeze,
-+	.restore_cleanup = acpi_pm_thaw,
- 	.recover = acpi_pm_finish,
- };
- #endif /* CONFIG_HIBERNATION */
