@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: add dpm_use_runtime_{suspend,
-	resume} helper functions
-Date: Tue, 2 Mar 2010 11:12:14 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1003021103080.1375-100000@iolanthe.rowland.org>
-References: <201003012306.38235.rjw@sisk.pl>
+From: Michal Hocko <mstsxfx@gmail.com>
+Subject: Re: unable to handle kernel paging request on resume
+ with 2.6.33-00001-gbaac35c
+Date: Mon, 1 Mar 2010 23:34:57 +0100
+Message-ID: <20100301223457.GB4034__926.86766661263$1267547084$gmane$org@tiehlicka.suse.cz>
+References: <20100301175256.GA4034@tiehlicka.suse.cz>
+	<201003012207.37582.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003012306.38235.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <201003012207.37582.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,111 +21,89 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: linux-mm@kvack.org, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 1 Mar 2010, Rafael J. Wysocki wrote:
+[Let's CC mm guys]
 
-> Updated patch is appended.  In the meantime I decided it would be better
-> to return error code from pm_generic_runtime_[suspend|resume]() if the driver
-> callback is not defined and I chose EINVAL (ie. shouldn't be called for a
-> device whose driver has no corresponding runtime callback).
+On Mon, Mar 01, 2010 at 10:07:37PM +0100, Rafael J. Wysocki wrote:
+> On Monday 01 March 2010, Michal Hocko wrote:
+> > Hi,
+> > 
+> > I have experienced the following kernel BUG on resume from suspend from
+> > disk (the whole log from  hibarnation to suspend along with kernel
+> > config are attached):
+> > 
+> > BUG: unable to handle kernel paging request at 00aaaaaa
+> > IP: [<c019e28c>] anon_vma_link+0x2c/0x39
+> > *pde = 00000000
+> > Oops: 0002 [#1] PREEMPT SMP
+> > last sysfs file: /sys/devices/LNXSYSTM:00/LNXSYBUS:00/ACPI0003:00/power_supply/AC/type
+> > Modules linked in: aes_i586 aes_generic iwl3945 iwlcore mac80211 cfg80211 fbcon font bitblit softcursor i915 drm_kms_helper drm fb i2c_algo_bit cfbcopyarea i2c_core cfbimgblt cfbfillrect fuse tun coretemp hwmon snd_hda_codec_realtek snd_hda_intel snd_hda_codec arc4 ecb snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_oss snd_seq_midi_event snd_seq snd_timer fujitsu_laptop snd_seq_device rtc_cmos rtc_core led_class rtc_lib snd snd_page_alloc video backlight output [last unloaded: cfg80211]
+> > 
+> > Pid: 3942, comm: kxkb Not tainted 2.6.33-00001-gbaac35c #11 FJNB1B5/LIFEBOOK S7110
+> > EIP: 0060:[<c019e28c>] EFLAGS: 00010246 CPU: 1
+> > EIP is at anon_vma_link+0x2c/0x39
+> > EAX: 00aaaaaa EBX: f69c6410 ECX: f69c6414 EDX: f63e4df4
+> > ESI: f63e4dc0 EDI: f63e4e14 EBP: f6901ec0 ESP: f6901eb8
+> >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> > Process kxkb (pid: 3942, ti=f6901000 task=f6aa6ff0 task.ti=f6901000)
+> > Stack:
+> >  f63e4dc0 f23fc7e4 f6901efc c012fc28 f6aa6ff0 f63e4e30 f63e4e34 f63e4e24
+> > <0> ca4656f4 f6ace734 f6aa6ff0 f6ace700 ca4656c0 f23fc790 ca560000 fffffff4
+> > <0> f659ef94 f6901f38 c0130821 f6aa6ff0 f6901fb4 bff441f0 ca560208 00000000
+> > Call Trace:
+> >  [<c012fc28>] ? dup_mm+0x1c7/0x3d3
+> >  [<c0130821>] ? copy_process+0x98e/0xf26
+> >  [<c0130ed6>] ? do_fork+0x11d/0x2a1
+> >  [<c0434547>] ? _raw_spin_unlock+0x14/0x28
+> >  [<c01b6795>] ? set_close_on_exec+0x45/0x4b
+> >  [<c01b6e98>] ? do_fcntl+0x15f/0x3f1
+> >  [<c0108678>] ? sys_clone+0x20/0x25
+> >  [<c010291d>] ? ptregs_clone+0x15/0x38
+> >  [<c0102850>] ? sysenter_do_call+0x12/0x26
+> > Code: 89 e5 56 53 0f 1f 44 00 00 8b 58 3c 89 c6 85 db 74 22 89 d8 e8 54 65 29 00 8b 43 08 8d 56 34 8d 4b 04 89 53 08 89 4e 34 89 46 38 <89> 10 89 d8 e8 9e 62 29 00 5b 5e 5d c3 55 89 e5 0f 1f 44 00 00
+> > EIP: [<c019e28c>] anon_vma_link+0x2c/0x39 SS:ESP 0068:f6901eb8
+> > CR2: 0000000000aaaaaa
+> > ---[ end trace b7f008b0e5aa7c65 ]---
+> 
+> This looks like a low-level memory management issue of some sort.
 
-Okay.
+Yes, it really looks strange. dup_mm+0x1c7 matches to:
+c102fc0e:       81 60 14 ff df ff ff    andl   $0xffffdfff,0x14(%eax)
+c102fc15:       8b 45 ec                mov    -0x14(%ebp),%eax
+c102fc18:       c7 43 0c 00 00 00 00    movl   $0x0,0xc(%ebx)
+c102fc1f:       89 03                   mov    %eax,(%ebx)
+c102fc21:       89 d8                   mov    %ebx,%eax
+c102fc23:       e8 38 e6 06 00          call   c109e260 <anon_vma_link>
+c102fc28:       8b 43 48                mov    0x48(%ebx),%eax  <<< BANG
 
-> Index: linux-2.6/drivers/base/power/generic_ops.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/power/generic_ops.c
-> +++ linux-2.6/drivers/base/power/generic_ops.c
-> @@ -6,3 +6,137 @@
->   * This file is released under the GPLv2.
->   */
->  
-> +#include <linux/pm.h>
-> +#include <linux/pm_runtime.h>
-> +
+which corresponds to:
+kernel/fork.c:336
+		tmp->vm_flags &= ~VM_LOCKED;
+                tmp->vm_mm = mm;
+                tmp->vm_next = NULL;
+                anon_vma_link(tmp);
+                file = tmp->vm_file; <<< BANG
 
-There's something strange about this patch -- it doesn't start at the
-beginning.  Do you already have an 8-line file named generic_ops.c?  I
-don't.
+ebx is tmp which somehow got deallocated. I cannot see how this could happened.
 
-> +struct dev_pm_ops generic_subsys_pm_ops = {
-> +#ifdef CONFIG_PM_SLEEP
-> +	.suspend = pm_generic_suspend,
-> +	.resume = pm_generic_resume,
-> +	.freeze = pm_generic_suspend,
-> +	.thaw = pm_generic_resume,
-> +	.poweroff = pm_generic_suspend,
-> +	.restore = pm_generic_resume,
-> +#endif
-> +#ifdef CONFIG_PM_RUNTIME
-> +	.runtime_suspend = pm_generic_runtime_suspend,
-> +	.runtime_resume = pm_generic_runtime_resume,
-> +	.runtime_idle = pm_generic_runtime_idle,
-> +#endif
-> +};
-> +EXPORT_SYMBOL_GPL(generic_subsys_pm_ops);
 
-Heh, you could use the UNIVERSAL_DEV_PM_OPS macro here.
+> 
+> What's the HEAD commit in this kernel tree?
 
-> Index: linux-2.6/include/linux/pm.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/pm.h
-> +++ linux-2.6/include/linux/pm.h
+$ git describe
+v2.6.33-1-gbaac35c
 
->  #define SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
->  const struct dev_pm_ops name = { \
-> -	.suspend = suspend_fn, \
-> -	.resume = resume_fn, \
-> -	.freeze = suspend_fn, \
-> -	.thaw = resume_fn, \
-> -	.poweroff = suspend_fn, \
-> -	.restore = resume_fn, \
-> +	SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
->  }
->  
-> +#define SET_UNIVERSAL_PM_OPS(suspend_fn, resume_fn, idle_fn) \
-> +	SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-> +	SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
-> +
-> +/*
-> + * Use this for defining a set of PM operations to be used in all situations
-> + * (system suspend, hibernation or runtime PM).
-> + */
-> +#define UNIVERSAL_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn) \
-> +const struct dev_pm_ops name = { \
-> +	SET_UNIVERSAL_PM_OPS(suspend_fn, resume_fn, idle_fn) \
-> +}
+> 
+> Also, is the problem reproducible?
 
-Personally, I would avoid defining SET_UNIVERSAL_PM_OPS (it doesn't
-seem likely to be used anywhere else) and just put
-SET_SYSTEM_SLEEP_PM_OPS followed by SET_RUNTIME_PM_OPS here.
+As I've already mentioned. This is the first time I have seen this problem.
+I am using suspend to disk and wake up quite often (several times a day). I
+haven't tried suspend/resume loop test yet.
 
-> Index: linux-2.6/include/linux/pm_runtime.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/pm_runtime.h
-> +++ linux-2.6/include/linux/pm_runtime.h
-> @@ -62,6 +62,11 @@ static inline void device_set_run_wake(s
->  	dev->power.run_wake = enable;
->  }
->  
-> +static inline bool pm_runtime_suspended(struct device *dev)
-> +{
-> +	return dev->power.runtime_status == RPM_SUSPENDED;
-> +}
-> +
->  #else /* !CONFIG_PM_RUNTIME */
->  
->  static inline int pm_runtime_idle(struct device *dev) { return -ENOSYS; }
-> @@ -89,6 +94,7 @@ static inline void pm_runtime_get_noresu
->  static inline void pm_runtime_put_noidle(struct device *dev) {}
->  static inline bool device_run_wake(struct device *dev) { return false; }
->  static inline void device_set_run_wake(struct device *dev, bool enable) {}
-> +static inline bool pm_runtime_suspended(struct device *dev) { return false; }
->  
->  #endif /* !CONFIG_PM_RUNTIME */
+> 
+> Rafael
 
-The documentation should be updated as well.  You can use some of the 
-text from my patch submission if you want.
-
-Alan Stern
+-- 
+Michal Hocko
