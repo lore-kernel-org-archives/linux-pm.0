@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug 15289] Regression 2.6.32 -> 2.6.33,
-	Kernel needs a helping key to boot :)
-Date: Mon, 1 Mar 2010 21:03:00 +0100
-Message-ID: <201003012103.00609.rjw__49176.1469202631$1267473710$gmane$org@sisk.pl>
-References: <bug-15289-10028@http.bugzilla.kernel.org/>
-	<201003010617.o216HBix024914@demeter.kernel.org>
+Subject: Re: pm-suspend working, but pm-hibernate fails
+Date: Mon, 1 Mar 2010 21:48:21 +0100
+Message-ID: <201003012148.21171.rjw@sisk.pl>
+References: <4B86F96A.1010306@maroy.hu> <201002271908.58333.rjw@sisk.pl>
+	<4B8B70DD.7000208@maroy.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003010617.o216HBix024914@demeter.kernel.org>
+In-Reply-To: <4B8B70DD.7000208@maroy.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,30 +18,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, bugzilla-daemon@bugzilla.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: =?iso-8859-1?q?=C1kos_Mar=F3y?= <akos@maroy.hu>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-W1N3aXRoaW5nIHRvIGUtbWFpbCwgcGxlYXNlIGtlZXAgYnVnemlsbGEtZGFlbW9uIGluIHRoZSBD
-QyBsaXN0Ll0KCk9uIE1vbmRheSAwMSBNYXJjaCAyMDEwLCBidWd6aWxsYS1kYWVtb25AYnVnemls
-bGEua2VybmVsLm9yZyB3cm90ZToKPiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1
-Zy5jZ2k/aWQ9MTUyODkKPiAKPiAtLS0gQ29tbWVudCAjMzAgZnJvbSBBc2Jqw7hybiBTYW5uZXMg
-PGtlcm5lbGJ1Z3ppbGxhQHNhbm5lcy5vcmc+ICAyMDEwLTAzLTAxIDA2OjE3OjA2IC0tLQo+IGht
-LCBzbyBmcm9tIHdoYXQgSSBoYXZlIGdhdGhlcmVkIHRoZSBwcmV2aW91c2x5IGJpc2VjdGVkIGNv
-bW1pdCBvbmx5IGV4cG9zZXMKPiBhbm90aGVyIGJ1ZyAoaGlkZGVuIGJ5IGVuYWJsaW5nIGhwZXQp
-LiBTbyBJIHN0YXJ0ZWQgYmlzZWN0aW5nIGFnYWluLCB0aGlzIHRpbWUKPiB3aXRoIGhwZXQ9ZGlz
-YWJsZWQgYWxsIHRoZSB3YXkgYW5kIGZvdW5kOgo+IAo+IGNvbW1pdCBhYTI3NmUxY2FmYjNjZTlk
-MDFkMWU4MzdiY2Q2N2U5MjYxNjAxM2FjCj4gQXV0aG9yOiBUaG9tYXMgR2xlaXhuZXIgPHRnbHhA
-bGludXRyb25peC5kZT4KPiBEYXRlOiAgIE1vbiBKdW4gOSAxOToxNTowMCAyMDA4ICswMjAwCj4g
-Cj4geDg2LCBjbG9ja2V2ZW50czogYWRkIEMxRSBhd2FyZSBpZGxlIGZ1bmN0aW9uCj4gCj4gUmV2
-ZXJ0aW5nIHRoaXMgZnJvbSBhIG5vbi13b3JraW5nIDIuNi4yNyBtYWtlcyBpdCB3b3JrIGFsc28u
-IFRoaW5ncyBoYXZlCj4gY2hhbmdlZCBjb25zaWRlcmFibHkgc2luY2UgdGhlbiBzbyBJIHdhcyBu
-b3QgYWJsZSB0byByZXZlcnQgaXQgZnJvbSB0aGUgbmV3ZXN0Cj4ga2VybmVsLgo+IAo+IE1heWJl
-IHRoYXQgZGlzYWJsaW5nIG9mIFNCWDAwIGhwZXQgbXNpLCBvbmx5IHNob3VsZCBiZSBkb25lIHdo
-ZW4geW91IGRvCj4gYWN0dWFsbHkgaGF2ZSBmbG9wcHkgc3VwcG9ydD8gTWFrZXMgbW9yZSBwZW9w
-bGUgYm9vdCBhdGxlYXN0IDpQCgpUaG9tYXMsIGl0IGxvb2tzIGxpa2Ugc29tZXRoaW5nJ3MgbWlz
-c2luZyBpbiBvdXIgQzFFIGhhbmRsaW5nLiAgQ2FuIHlvdSBoYXZlCmEgbG9vayBhdCB0aGlzIGJ1
-ZyByZXBvcnQsIHBsZWFzZT8KClJhZmFlbApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGlu
-dXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWls
-bWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Monday 01 March 2010, =C1kos Mar=F3y wrote:
+> Rafael,
+> =
+
+> > You can actually do that with the in-kernel hibernate too.
+> > =
+
+> > Please read Documentation/power/basic-pm-debugging.txt, there are more
+> > hibernate debugging hints in there.
+> =
+
+> thanks for the tip. I tried the various levels of hibernation, and the
+> freezer mode works, while the devices mode fails the same as the
+> 'normal' hibernation.
+> =
+
+> as the only point forward in the documentation is to do a binary search
+> on the kernel modules by unloading them before the test, I'll have to
+> find the time to do this. this is also quite complicated because of how
+> modules depend on each other.
+
+Well, you can try to boot the kernel with no_console_suspend and
+initcall_debug in the command line, echo 8 to /proc/sys/kernel/printk and
+repeat the failing "devices" test.
+
+With a bit of luck, you'll be able to see which driver is failing from the
+kernel messages printed to the console.
+
+Rafael
