@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
- userspace is frozen?
-Date: Mon, 1 Mar 2010 10:23:27 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1003011021440.1645-100000__8970.72268785468$1267457165$gmane$org@iolanthe.rowland.org>
-References: <20100301063508.GA1455@ucw.cz>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] PCI / PM / Runtime: Make runtime PM of PCI
+ devices inactive by default
+Date: Mon, 1 Mar 2010 09:38:31 -0800
+Message-ID: <20100301093831.18928f85__2525.75561539761$1267465515$gmane$org@jbarnes-piketon>
+References: <201002272137.37349.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100301063508.GA1455@ucw.cz>
+In-Reply-To: <201002272137.37349.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,36 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 1 Mar 2010, Pavel Machek wrote:
+On Sat, 27 Feb 2010 21:37:37 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> Hi!
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> > > > This is a matter for Jens.  Is the bdi writeback task freezable?  If it
-> > > > is, should it be made unfreezable?
-> > > 
-> > > I'm not a big expect on what tasks should be freezable or not. As it
-> > > stands, the writeback tasks will attempt to freeze and thaw with the
-> > > system. I guess that screws the sync from resume call, since it's not
-> > > running and the sync will wait for it to retrieve and finish that work
-> > > item.
-> > > 
-> > > To the suspend experts - can we safely mark the writeback tasks as
-> > > non-freezable?
-> > 
-> > The reason for freezing those tasks is to avoid writebacks at random
-> > times during a system sleep transition, when the underlying device may
-> > already be suspended, right?
+> Make the run-time power management of PCI devices be inactive by
+> default by calling pm_runtime_forbid() for each PCI device during its
+> initialization.  This setting may be overriden by the user space with
+> the help of the /sys/devices/.../power/control interface.
 > 
-> It is also there to avoid inconsistency between in-filesystem data and
-> snapshot in hibernation image.
+> That's necessary to avoid breakage on systems where ACPI-based
+> wake-up is known to fail for some devices.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/pci/pci.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> Index: linux-2.6/drivers/pci/pci.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/pci.c
+> +++ linux-2.6/drivers/pci/pci.c
+> @@ -1540,8 +1540,10 @@ void pci_pm_init(struct pci_dev *dev)
+>  	int pm;
+>  	u16 pmc;
+>  
+> +	pm_runtime_forbid(&dev->dev);
+>  	device_enable_async_suspend(&dev->dev);
+>  	dev->wakeup_prepared = false;
+> +
+>  	dev->pm_cap = 0;
+>  
+>  	/* find PCI PM capability in list */
+> 
 
-A good point, although in this case I think it won't matter.  Writing
-out a dirty page twice (once right after taking the snapshot and then
-again after resuming from hibernation) will leave the disk in a correct
-state.
+Applied to my for-linus branch, thanks.
 
-Alan Stern
+-- 
+Jesse Barnes, Intel Open Source Technology Center
