@@ -1,14 +1,18 @@
-From: =?ISO-8859-1?Q?=C1kos_Mar=F3y?= <akos@maroy.hu>
-Subject: Re: pm-suspend working, but pm-hibernate fails
-Date: Mon, 01 Mar 2010 08:46:37 +0100
-Message-ID: <4B8B70DD.7000208@maroy.hu>
-References: <4B86F96A.1010306@maroy.hu> <20100227135144.GA18662@qp>
-	<4B89288F.8070302@maroy.hu> <201002271908.58333.rjw@sisk.pl>
+From: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: [PATCH] PM: add dpm_use_runtime_{suspend,
+	resume} helper	functions
+Date: Mon, 1 Mar 2010 13:31:29 +0000
+Message-ID: <20100301133129.GB10658@sirena.org.uk>
+References: <201002262224.02694.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.1002261702070.2029-100000@iolanthe.rowland.org>
+	<20100227104309.GB2994@sirena.org.uk>
+	<201002272350.16523.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201002271908.58333.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <201002272350.16523.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,24 +23,14 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael,
+On Sat, Feb 27, 2010 at 11:50:16PM +0100, Rafael J. Wysocki wrote:
 
-> You can actually do that with the in-kernel hibernate too.
-> 
-> Please read Documentation/power/basic-pm-debugging.txt, there are more
-> hibernate debugging hints in there.
+> What about the patch below, then (untested)?
 
-thanks for the tip. I tried the various levels of hibernation, and the
-freezer mode works, while the devices mode fails the same as the
-'normal' hibernation.
+> Use GENERIC_SUBSYS_PM_OPS for the subsystem and then
+> UNIVERSAL_DEV_PM_OPS for drivers, possibly passing NULL as idle_fn.
 
-as the only point forward in the documentation is to do a binary search
-on the kernel modules by unloading them before the test, I'll have to
-find the time to do this. this is also quite complicated because of how
-modules depend on each other.
-
-
-Akos
+I've not tested but yes, this looks really helpful for my use cases.
