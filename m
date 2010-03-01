@@ -1,14 +1,14 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] PCI / PM / Runtime: Make runtime PM of PCI
- devices inactive by default
-Date: Mon, 1 Mar 2010 09:38:31 -0800
-Message-ID: <20100301093831.18928f85__2525.75561539761$1267465515$gmane$org@jbarnes-piketon>
-References: <201002272137.37349.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: add dpm_use_runtime_{suspend,
+	resume} helper functions
+Date: Mon, 1 Mar 2010 13:40:03 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1003011329550.1341-100000@iolanthe.rowland.org>
+References: <201002272350.16523.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201002272137.37349.rjw@sisk.pl>
+In-Reply-To: <201002272350.16523.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,45 +19,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 27 Feb 2010 21:37:37 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Sat, 27 Feb 2010, Rafael J. Wysocki wrote:
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+> What about the patch below, then (untested)?
 > 
-> Make the run-time power management of PCI devices be inactive by
-> default by calling pm_runtime_forbid() for each PCI device during its
-> initialization.  This setting may be overriden by the user space with
-> the help of the /sys/devices/.../power/control interface.
-> 
-> That's necessary to avoid breakage on systems where ACPI-based
-> wake-up is known to fail for some devices.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/pci/pci.c |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> Index: linux-2.6/drivers/pci/pci.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/pci.c
-> +++ linux-2.6/drivers/pci/pci.c
-> @@ -1540,8 +1540,10 @@ void pci_pm_init(struct pci_dev *dev)
->  	int pm;
->  	u16 pmc;
->  
-> +	pm_runtime_forbid(&dev->dev);
->  	device_enable_async_suspend(&dev->dev);
->  	dev->wakeup_prepared = false;
-> +
->  	dev->pm_cap = 0;
->  
->  	/* find PCI PM capability in list */
-> 
+> Use GENERIC_SUBSYS_PM_OPS for the subsystem and then
+> UNIVERSAL_DEV_PM_OPS for drivers, possibly passing NULL as idle_fn.
 
-Applied to my for-linus branch, thanks.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+> +#ifdef CONFIG_PM_SLEEP
+> +#define GENERIC_SYSTEM_SLEEP_PM_OPS \
+> +	.suspend = pm_generic_suspend, \
+> +	.resume = pm_generic_resume,
+> +#else
+> +#define GENERIC_SYSTEM_SLEEP_PM_OPS
+
+Wouldn't you want to have this work for hibernation as well as suspend?  
+So the .freeze, .thaw, etc. members should be defined too.
+
+> +/*
+> + * Use this for subsystems (bus types, device types, device classes) that only
+> + * need to invoke PM callbacks provided by device drivers supporting both the
+> + * system sleep PM and runtime PM.
+> + */  
+> +#define GENERIC_SUBSYS_PM_OPS(name) \
+> +const struct dev_pm_ops name = { \
+> +GENERIC_SYSTEM_SLEEP_PM_OPS \
+> +GENERIC_RUNTIME_PM_OPS \
+>  }
+
+There's no reason for this to have "name" as a parameter, since all
+instances of the structure will be identical.  Instead you can put
+
+	extern const struct dev_pm_ops generic_subsys_pm_ops;
+	EXPORT_SYMBOL_GPL(generic_subsys_pm_ops);
+
+in the header file and define the structure in generic_ops.c.
+
+Alan Stern
