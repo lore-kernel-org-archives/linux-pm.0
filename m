@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: add dpm_use_runtime_{suspend,
-	resume} helper functions
-Date: Tue, 2 Mar 2010 01:12:02 +0100
-Message-ID: <201003020112.02114.rjw@sisk.pl>
-References: <201002262224.02694.rjw@sisk.pl> <201002272350.16523.rjw@sisk.pl>
-	<87r5o3adcw.fsf@deeprootsystems.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Bug 15289] Regression 2.6.32 -> 2.6.33,
+ Kernel needs a helping key to boot :)
+Date: Tue, 2 Mar 2010 13:04:18 +0100 (CET)
+Message-ID: <alpine.LFD.2.00.1003021302360.4245__23350.2483032227$1267531689$gmane$org@localhost.localdomain>
+References: <bug-15289-10028@http.bugzilla.kernel.org/>
+	<201003010617.o216HBix024914@demeter.kernel.org>
+	<201003012103.00609.rjw@sisk.pl>
+	<alpine.LFD.2.00.1003012114470.4245@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-377522668-1267531460=:4245"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87r5o3adcw.fsf@deeprootsystems.com>
+In-Reply-To: <alpine.LFD.2.00.1003012114470.4245@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,50 +20,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>, bugzilla-daemon@bugzilla.kernel.org, LKML <linux-kernel@vger.kernel.org>, =?ISO-8859-15?Q?Asbj=F8rn_Sannes?= <kernelbugzilla@sannes.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 01 March 2010, Kevin Hilman wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > On Saturday 27 February 2010, Mark Brown wrote:
-> >> On Fri, Feb 26, 2010 at 05:06:59PM -0500, Alan Stern wrote:
-> >> > On Fri, 26 Feb 2010, Rafael J. Wysocki wrote:
-> >> 
-> >> > > I have one problem with the design.  Namely, dpm_invoke_runtime_*() can
-> >> > > run a callback from another subsystem.  Say you are a device class and you
-> >> > > decide to use dpm_invoke_runtime_*(), but the device's bus type implements
-> >> > > the runtime PM callbacks, so they will be run as device class suspend and
-> >> > > resume callbacks.  That doesn't look particularly clean to me.
-> >> 
-> >> > That is a valid point.  I suppose there could be separate bus-type, 
-> >> > device-type, and device-class versions of these functions, but that 
-> >> > seems like excessive complication with little real benefit.
-> >> 
-> >> I do agree that it'd be good to avoid adding any further complexity here
-> >> - the use case I have is devices that only really have one suspend type
-> >> and don't want or need to know if it's a runtime, disk or memory suspend.
-> >
-> > What about the patch below, then (untested)?
-> >
-> > Use GENERIC_SUBSYS_PM_OPS for the subsystem and then
-> > UNIVERSAL_DEV_PM_OPS for drivers, possibly passing NULL as idle_fn.
-> 
-> This looks good to me for what I'm tinkering with too, but have not
-> tested it.
-> 
-> One thing missing from the orignal patch is a publicly availble
-> version of pm_is_runtime_suspended().  I found this useful in at least
-> one driver where I needed a slightly different suspend hook from he
-> runtime hook.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-It is present, but called pm_runtime_suspended(), in the updated patch I sent
-a while ago:
+--8323328-377522668-1267531460=:4245
+Content-Type: TEXT/PLAIN; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id o22C5iJd015917
 
-https://lists.linux-foundation.org/pipermail/linux-pm/2010-March/024535.html
+Asbj=C3=B8rn,
 
-I'd appreciate it if someone could test that patch.  I only could verify that
-it built correctly with various combinations of .config options.
+can you please run the following tests and report the results ?
 
-Rafael
+1) Add "maxcpus=3D1" to the kernel command line
+
+2) Add "nomsi" to the kernel command line
+
+Thanks,
+
+	tglx
+--8323328-377522668-1267531460=:4245
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+
+
+--8323328-377522668-1267531460=:4245--
