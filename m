@@ -1,18 +1,16 @@
-From: Michal Hocko <mstsxfx@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: unable to handle kernel paging request on resume
- with 2.6.33-00001-gbaac35c
-Date: Tue, 2 Mar 2010 09:25:43 +0100
-Message-ID: <20100302082543.GA4241__2341.67479579828$1267547087$gmane$org@tiehlicka.suse.cz>
+	with 2.6.33-00001-gbaac35c
+Date: Tue, 2 Mar 2010 21:01:21 +0100
+Message-ID: <201003022101.21521.rjw__18867.9851628423$1267560071$gmane$org@sisk.pl>
 References: <20100301175256.GA4034@tiehlicka.suse.cz>
-	<201003012207.37582.rjw@sisk.pl>
-	<20100301223457.GB4034@tiehlicka.suse.cz>
-	<201003020106.06867.rjw@sisk.pl>
+	<20100302082543.GA4241@tiehlicka.suse.cz>
+	<20100302154553.GB4241@tiehlicka.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201003020106.06867.rjw@sisk.pl>
+In-Reply-To: <20100302154553.GB4241@tiehlicka.suse.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,115 +20,122 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Michal Hocko <mstsxfx@gmail.com>
 Cc: linux-mm@kvack.org, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 02, 2010 at 01:06:06AM +0100, Rafael J. Wysocki wrote:
-> On Monday 01 March 2010, Michal Hocko wrote:
-> > [Let's CC mm guys]
-> 
-> I guess it's rather architecture-related than a genering mm issue.
-> 
-> > On Mon, Mar 01, 2010 at 10:07:37PM +0100, Rafael J. Wysocki wrote:
+On Tuesday 02 March 2010, Michal Hocko wrote:
+> On Tue, Mar 02, 2010 at 09:25:43AM +0100, Michal Hocko wrote:
+> > On Tue, Mar 02, 2010 at 01:06:06AM +0100, Rafael J. Wysocki wrote:
 > > > On Monday 01 March 2010, Michal Hocko wrote:
-> > > > Hi,
-> > > > 
-> > > > I have experienced the following kernel BUG on resume from suspend from
-> > > > disk (the whole log from  hibarnation to suspend along with kernel
-> > > > config are attached):
-> > > > 
-> > > > BUG: unable to handle kernel paging request at 00aaaaaa
-> > > > IP: [<c019e28c>] anon_vma_link+0x2c/0x39
-> > > > *pde = 00000000
-> > > > Oops: 0002 [#1] PREEMPT SMP
-> > > > last sysfs file: /sys/devices/LNXSYSTM:00/LNXSYBUS:00/ACPI0003:00/power_supply/AC/type
-> > > > Modules linked in: aes_i586 aes_generic iwl3945 iwlcore mac80211 cfg80211 fbcon font bitblit softcursor i915 drm_kms_helper drm fb i2c_algo_bit cfbcopyarea i2c_core cfbimgblt cfbfillrect fuse tun coretemp hwmon snd_hda_codec_realtek snd_hda_intel snd_hda_codec arc4 ecb snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_oss snd_seq_midi_event snd_seq snd_timer fujitsu_laptop snd_seq_device rtc_cmos rtc_core led_class rtc_lib snd snd_page_alloc video backlight output [last unloaded: cfg80211]
-> > > > 
-> > > > Pid: 3942, comm: kxkb Not tainted 2.6.33-00001-gbaac35c #11 FJNB1B5/LIFEBOOK S7110
-> > > > EIP: 0060:[<c019e28c>] EFLAGS: 00010246 CPU: 1
-> > > > EIP is at anon_vma_link+0x2c/0x39
-> > > > EAX: 00aaaaaa EBX: f69c6410 ECX: f69c6414 EDX: f63e4df4
-> > > > ESI: f63e4dc0 EDI: f63e4e14 EBP: f6901ec0 ESP: f6901eb8
-> > > >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> > > > Process kxkb (pid: 3942, ti=f6901000 task=f6aa6ff0 task.ti=f6901000)
-> > > > Stack:
-> > > >  f63e4dc0 f23fc7e4 f6901efc c012fc28 f6aa6ff0 f63e4e30 f63e4e34 f63e4e24
-> > > > <0> ca4656f4 f6ace734 f6aa6ff0 f6ace700 ca4656c0 f23fc790 ca560000 fffffff4
-> > > > <0> f659ef94 f6901f38 c0130821 f6aa6ff0 f6901fb4 bff441f0 ca560208 00000000
-> > > > Call Trace:
-> > > >  [<c012fc28>] ? dup_mm+0x1c7/0x3d3
-> > > >  [<c0130821>] ? copy_process+0x98e/0xf26
-> > > >  [<c0130ed6>] ? do_fork+0x11d/0x2a1
-> > > >  [<c0434547>] ? _raw_spin_unlock+0x14/0x28
-> > > >  [<c01b6795>] ? set_close_on_exec+0x45/0x4b
-> > > >  [<c01b6e98>] ? do_fcntl+0x15f/0x3f1
-> > > >  [<c0108678>] ? sys_clone+0x20/0x25
-> > > >  [<c010291d>] ? ptregs_clone+0x15/0x38
-> > > >  [<c0102850>] ? sysenter_do_call+0x12/0x26
-> > > > Code: 89 e5 56 53 0f 1f 44 00 00 8b 58 3c 89 c6 85 db 74 22 89 d8 e8 54 65 29 00 8b 43 08 8d 56 34 8d 4b 04 89 53 08 89 4e 34 89 46 38 <89> 10 89 d8 e8 9e 62 29 00 5b 5e 5d c3 55 89 e5 0f 1f 44 00 00
-> > > > EIP: [<c019e28c>] anon_vma_link+0x2c/0x39 SS:ESP 0068:f6901eb8
-> > > > CR2: 0000000000aaaaaa
-> > > > ---[ end trace b7f008b0e5aa7c65 ]---
+> > > > [Let's CC mm guys]
 > > > 
-> > > This looks like a low-level memory management issue of some sort.
+> > > I guess it's rather architecture-related than a genering mm issue.
+s/genering/generic/  (why did I write that?)
+... 
+> > > > Yes, it really looks strange. dup_mm+0x1c7 matches to:
+> > > > c102fc0e:       81 60 14 ff df ff ff    andl   $0xffffdfff,0x14(%eax)
+> > > > c102fc15:       8b 45 ec                mov    -0x14(%ebp),%eax
+> > > > c102fc18:       c7 43 0c 00 00 00 00    movl   $0x0,0xc(%ebx)
+> > > > c102fc1f:       89 03                   mov    %eax,(%ebx)
+> > > > c102fc21:       89 d8                   mov    %ebx,%eax
+> > > > c102fc23:       e8 38 e6 06 00          call   c109e260 <anon_vma_link>
+> > > > c102fc28:       8b 43 48                mov    0x48(%ebx),%eax  <<< BANG
+> > > > 
+> > > > which corresponds to:
+> > > > kernel/fork.c:336
+> > > > 		tmp->vm_flags &= ~VM_LOCKED;
+> > > >                 tmp->vm_mm = mm;
+> > > >                 tmp->vm_next = NULL;
+> > > >                 anon_vma_link(tmp);
+> > > >                 file = tmp->vm_file; <<< BANG
+> > > > 
+> > > > ebx is tmp which somehow got deallocated. I cannot see how this could happened.
+> > > 
+> > > Through a page tables corruption or a TLB issue, for example.
 > > 
-> > Yes, it really looks strange. dup_mm+0x1c7 matches to:
-> > c102fc0e:       81 60 14 ff df ff ff    andl   $0xffffdfff,0x14(%eax)
-> > c102fc15:       8b 45 ec                mov    -0x14(%ebp),%eax
-> > c102fc18:       c7 43 0c 00 00 00 00    movl   $0x0,0xc(%ebx)
-> > c102fc1f:       89 03                   mov    %eax,(%ebx)
-> > c102fc21:       89 d8                   mov    %ebx,%eax
-> > c102fc23:       e8 38 e6 06 00          call   c109e260 <anon_vma_link>
-> > c102fc28:       8b 43 48                mov    0x48(%ebx),%eax  <<< BANG
+> > I thought so. Is there any other possibility? Like a race with vma
+> > unlinking?
+
+I don't think that particular instruction would trigger the NULL poiter
+dereference in that case.
+
+In theory, it may be a result of a stack corruption if EBX was saved on the
+stack by anon_vma_link().  I'm not sure if that happens, though.
+
+> It really looks like some memory corruption. Now I got the following:
+>
+> BUG: unable to handle kernel NULL pointer dereference at (null)
+> IP: [<c026db57>] strcmp+0xe/0x22
+> *pde = 00000000
+> Oops: 0000 [#1] PREEMPT SMP
+> last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:08:03.4/fw-host0/00000e1003d248c6/uevent
+> Modules linked in: fbcon font bitblit softcursor i915 drm_kms_helper drm fb i2c_algo_bit cfbcopyarea i2c
+> on snd_hda_codec_realtek arc4 ecb snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm iwl3945
+> d_timer snd_seq_device mac80211 snd fujitsu_laptop rtc_cmos cfg80211 rtc_core rtc_lib led_class snd_page
+> i_wait_scan]
+> 
+> Pid: 16719, comm: udev-acl.ck Not tainted 2.6.33-00001-gbaac35c #11 FJNB1B5/LIFEBOOK S7110
+> EIP: 0060:[<c026db57>] EFLAGS: 00010286 CPU: 0
+> EIP is at strcmp+0xe/0x22
+> EAX: 00000000 EBX: f71c0600 ECX: f70d0f00 EDX: f5a1d49c
+> ESI: 00000000 EDI: f5a1d49c EBP: f70d0dec ESP: f70d0de4
+>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Process udev-acl.ck (pid: 16719, ti=f70d0000 task=f6a65710 task.ti=f70d0000)
+> Stack:
+>  f5a1d49c fffffffe f70d0dfc c01ea0c0 f5a1d440 f71c05a0 f70d0e14 c01ea267
+> <0> f5a1d330 c044cfac f70d0f00 f6f44968 f70d0e3c c01b3a14 f70fcc80 f70d0e7c
+> <0> f6f449e0 f5a1d330 f5a1d440 f70d0f00 f6f44968 087bed70 f70d0e90 c01b508a
+> Call Trace:
+>  [<c01ea0c0>] ? sysfs_find_dirent+0x1b/0x2c
+>  [<c01ea267>] ? sysfs_lookup+0x2f/0xa6
+>  [<c01b3a14>] ? do_lookup+0xca/0x174
+>  [<c01b508a>] ? link_path_walk+0x691/0xa22
+>  [<c01bf3e8>] ? mntput_no_expire+0x1e/0xb2
+>  [<c01b552c>] ? path_walk+0x3f/0x89
+>  [<c01b3dd1>] ? path_init+0x73/0x114
+>  [<c01b5601>] ? do_path_lookup+0x26/0x47
+>  [<c01b6072>] ? do_filp_open+0xdc/0x79e
+>  [<c01899d0>] ? free_hot_page+0x55/0x59
+>  [<c01eaad0>] ? sysfs_put_link+0x0/0x1f
+>  [<c0189a6b>] ? free_pages+0x22/0x24
+>  [<c01b3d54>] ? generic_readlink+0x69/0x73
+>  [<c04371c9>] ? add_preempt_count+0x8/0x75
+>  [<c0437155>] ? sub_preempt_count+0x8/0x74
+>  [<c0434547>] ? _raw_spin_unlock+0x14/0x28
+>  [<c01aae0a>] ? do_sys_open+0x4d/0xe9
+>  [<c01aad0e>] ? filp_close+0x56/0x60
+>  [<c01aaef2>] ? sys_open+0x23/0x2b
+>  [<c0102850>] ? sysenter_do_call+0x12/0x26
+> Code: 31 c0 83 c9 ff f2 ae 4f 89 d1 49 78 06 ac aa 84 c0 75 f7 31 c0 aa 89 d8 5b 5e 5f 5d c3 55 89 e5 57 56 0f 1f 44 00 00 89 c6 89 d7 <ac> ae 75 08 84 c0 75 f8 31 c0 eb 04 19 c0 0c 01 5e 5f 5d c3 55
+> EIP: [<c026db57>] strcmp+0xe/0x22 SS:ESP 0068:f70d0de4
+> CR2: 0000000000000000
+> ---[ end trace 877af85bb64785ae ]---
+
+The question is whether hibernation is the reason of this or it's only a
+messenger.
+
+> > > > > What's the HEAD commit in this kernel tree?
+> > > > 
+> > > > $ git describe
+> > > > v2.6.33-1-gbaac35c
+> > > 
+> > > I can't find gbaac35c anywhere post 2.6.33.  
 > > 
-> > which corresponds to:
-> > kernel/fork.c:336
-> > 		tmp->vm_flags &= ~VM_LOCKED;
-> >                 tmp->vm_mm = mm;
-> >                 tmp->vm_next = NULL;
-> >                 anon_vma_link(tmp);
-> >                 file = tmp->vm_file; <<< BANG
+> > you should look at baac35c. Git describe displays gHASH
+
+Ah.
+
+> > > Can you just send the output
+> > > of "git show | head -1", please?
 > > 
-> > ebx is tmp which somehow got deallocated. I cannot see how this could happened.
-> 
-> Through a page tables corruption or a TLB issue, for example.
+> > The whole commit ID is baac35c4155a8aa826c70acee6553368ca5243a2
 
-I thought so. Is there any other possibility? Like a race with vma
-unlinking?
+So this is just plain 2.6.33 plus one commit.
 
-> 
-> > > What's the HEAD commit in this kernel tree?
-> > 
-> > $ git describe
-> > v2.6.33-1-gbaac35c
-> 
-> I can't find gbaac35c anywhere post 2.6.33.  
+Hmm.  There are only a few changes directly related to hibernation in that
+kernel and none of them can possibly introduce a problem like that.
 
-you should look at baac35c. Git describe displays gHASH
+Do you use s2disk or the in-kernel thing?
 
-> Can you just send the output
-> of "git show | head -1", please?
-
-The whole commit ID is baac35c4155a8aa826c70acee6553368ca5243a2
-
-> 
-> > > Also, is the problem reproducible?
-> > 
-> > As I've already mentioned. This is the first time I have seen this problem.
-> > I am using suspend to disk and wake up quite often (several times a day). I
-> > haven't tried suspend/resume loop test yet.
-> 
-> OK
-> 
-> Given the apparent nature of the problem it will be extremely difficult to
-> track down without a reliable way to reproduce it.
-
-Yes, I am aware of that but maybe someone will face the same problem.
-Let's see whether I am able to reproduce.
-
-> 
-> Rafael
-
--- 
-Michal Hocko
+Rafael
