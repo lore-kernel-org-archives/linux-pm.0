@@ -1,13 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] Wakeup for PNP
-Date: Wed, 3 Mar 2010 10:29:09 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1003031019040.2821-100000__10469.7371520617$1267630216$gmane$org@iolanthe.rowland.org>
-References: <20100302213105.GB13499@core.coreip.homeip.net>
+Subject: Re: [PATCH] PM: add dpm_use_runtime_{suspend,
+	resume} helper functions
+Date: Wed, 3 Mar 2010 11:46:42 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1003031140210.2821-100000@iolanthe.rowland.org>
+References: <201003022351.39552.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100302213105.GB13499@core.coreip.homeip.net>
+In-Reply-To: <201003022351.39552.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,44 +18,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-input@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2 Mar 2010, Dmitry Torokhov wrote:
+On Tue, 2 Mar 2010, Rafael J. Wysocki wrote:
 
-> > @@ -656,7 +658,7 @@ static struct pnp_device_id pnp_kbd_devi
-> >  };
-> >  
-> >  static struct pnp_driver i8042_pnp_kbd_driver = {
-> > -	.name           = "i8042 kbd",
-> > +	.name           = "i8042-kbd",
-> 
-> Why is this needed? I don't think spaces are more dangerous than a colon
-> which we do use...
+> +/**
+> + * __pm_generic_call - Generic suspend/freeze/poweroff/thaw subsystem callback.
+> + * @dev: Device to handle.
+> + * @event: PM transition of the system under way.
+> + *
+> + * If the device has not been suspended at run time, execute the
+> + * suspend/freeze/poweroff/thaw callback provided by its driver, if defined, and
+> + * return the error code returned by it.  Otherwise, return zero.
+> + */
+> +static int __pm_generic_call(struct device *dev, int event)
+> +{
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	int (*callback)(struct device *);
+> +
+> +	if (!pm || pm_runtime_suspended(dev))
+> +		return 0;
+> +
+> +	switch (event) {
+> +	case PM_EVENT_SUSPEND:
+> +		callback = pm->suspend;
+> +		break;
+> +	case PM_EVENT_FREEZE:
+> +		callback = pm->freeze;
+> +		break;
+> +	case PM_EVENT_HIBERNATE:
+> +		callback = pm->poweroff;
+> +		break;
+> +	case PM_EVENT_THAW:
+> +		callback = pm->thaw;
+> +		break;
+> +	default:
+> +		callback = NULL;
+> +		break;
+> +	}
+> +
+> +	return callback ? callback(dev) : 0;
+> +}
 
-This string becomes the name of a directory in sysfs.  Having a ' '
-character in a directory name just doesn't seem like a good idea; at
-the very least it's likely to confuse shell scripts.  (A ':' character
-is a lot less subject to misinterpretation.)  I could change the '-' to 
-':' if you prefer.
+Are you sure you want to avoid calling pm->thaw if the device is 
+runtime-suspended?  Maybe it would be better to treat thaw like resume 
+or restore.
 
-> Other than that - looks reasonable to me...
+> --- linux-2.6.orig/include/linux/pm_runtime.h
+> +++ linux-2.6/include/linux/pm_runtime.h
+> @@ -62,6 +62,11 @@ static inline void device_set_run_wake(s
+>  	dev->power.run_wake = enable;
+>  }
+>  
+> +static inline bool pm_runtime_suspended(struct device *dev)
+> +{
+> +	return dev->power.runtime_status == RPM_SUSPENDED;
+> +}
+> +
 
-Thanks.  I'll separate out the driver name change from the rest of the 
-patch.
-
-There are a couple of questions remaining.  The patch enables wakeup on 
-the i8042-aux device -- is this a good idea?  I haven't tested that 
-part of it yet, but we wouldn't want suspended systems waking up just 
-because somebody moves the mouse around.  On the other hand, on some 
-machines (like mine!) it may not be possible to enable keyboard-wakeup 
-without also enabling mouse-wakeup, since they use the same GPE.
-
-Also, the patch effectively tells the kernel that ISAPNP and PNPBIOS 
-devices are incapable of issuing wakeup requests.  Is that going to 
-cause trouble for people?  Would it be better to change the patch so 
-that it doesn't call device_set_wakeup_capable() if 
-dev->protocol->can_wakeup isn't defined?
+You didn't add this to the documentation file.
 
 Alan Stern
