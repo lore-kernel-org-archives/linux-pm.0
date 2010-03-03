@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: add dpm_use_runtime_{suspend,
-	resume} helper functions
-Date: Wed, 3 Mar 2010 22:33:14 +0100
-Message-ID: <201003032233.14971.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1003031140210.2821-100000@iolanthe.rowland.org>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [Resend][PATCH] ACPI / EC: Remove race between EC
+ driver and suspend process (rev. 3)
+Date: Wed, 03 Mar 2010 16:49:01 -0500 (EST)
+Message-ID: <alpine.LFD.2.00.1003031644410.1044__32152.5376676165$1267653041$gmane$org@localhost.localdomain>
+References: <201002272140.36891.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1003031140210.2821-100000@iolanthe.rowland.org>
+In-reply-to: <201002272140.36891.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,74 +18,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 03 March 2010, Alan Stern wrote:
-> On Tue, 2 Mar 2010, Rafael J. Wysocki wrote:
-> 
-> > +/**
-> > + * __pm_generic_call - Generic suspend/freeze/poweroff/thaw subsystem callback.
-> > + * @dev: Device to handle.
-> > + * @event: PM transition of the system under way.
-> > + *
-> > + * If the device has not been suspended at run time, execute the
-> > + * suspend/freeze/poweroff/thaw callback provided by its driver, if defined, and
-> > + * return the error code returned by it.  Otherwise, return zero.
-> > + */
-> > +static int __pm_generic_call(struct device *dev, int event)
-> > +{
-> > +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-> > +	int (*callback)(struct device *);
-> > +
-> > +	if (!pm || pm_runtime_suspended(dev))
-> > +		return 0;
-> > +
-> > +	switch (event) {
-> > +	case PM_EVENT_SUSPEND:
-> > +		callback = pm->suspend;
-> > +		break;
-> > +	case PM_EVENT_FREEZE:
-> > +		callback = pm->freeze;
-> > +		break;
-> > +	case PM_EVENT_HIBERNATE:
-> > +		callback = pm->poweroff;
-> > +		break;
-> > +	case PM_EVENT_THAW:
-> > +		callback = pm->thaw;
-> > +		break;
-> > +	default:
-> > +		callback = NULL;
-> > +		break;
-> > +	}
-> > +
-> > +	return callback ? callback(dev) : 0;
-> > +}
-> 
-> Are you sure you want to avoid calling pm->thaw if the device is 
-> runtime-suspended?  Maybe it would be better to treat thaw like resume 
-> or restore.
+For the record, Rafael, Alexey and I discusseed this a bit further...
 
-In .freeze() we check if the device is runtime suspended and skip the driver's
-.freeze() in that case, so the device is still suspended.  I don't think
-.thaw() should call the driver's .thaw() in that case and change the runtime
-suspended status (that won't serve any practical purpose IMO).
+We reasoned that this failure is impossible during the Suspend-to-RAM 
+path, and the failure is specific to the hibernate reboot kernel handoff
+to the resume image.
 
-> > --- linux-2.6.orig/include/linux/pm_runtime.h
-> > +++ linux-2.6/include/linux/pm_runtime.h
-> > @@ -62,6 +62,11 @@ static inline void device_set_run_wake(s
-> >  	dev->power.run_wake = enable;
-> >  }
-> >  
-> > +static inline bool pm_runtime_suspended(struct device *dev)
-> > +{
-> > +	return dev->power.runtime_status == RPM_SUSPENDED;
-> > +}
-> > +
-> 
-> You didn't add this to the documentation file.
+On a related note, we had trouble justifying the existence
+of the current EC .suspend and .resume routines.
 
-Yes,  I realized that after sending the patch, sorry.
-
-Rafael
+thanks,
+Len Brown, Intel Open Source Technology Center
