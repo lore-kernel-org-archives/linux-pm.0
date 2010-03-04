@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] ACPI / PM: Move ACPI video resume to a PM
-	notifier
-Date: Thu, 4 Mar 2010 20:12:36 +0100
-Message-ID: <201003042012.36416.rjw__17618.3148440488$1267729872$gmane$org@sisk.pl>
-References: <201003040125.30091.rjw@sisk.pl>
-	<b170af451003040311g3cea44caj1cd0e23e55814696@mail.gmail.com>
+Subject: Re: unable to handle kernel paging request on resume
+	with 2.6.33-00001-gbaac35c
+Date: Thu, 4 Mar 2010 20:14:09 +0100
+Message-ID: <201003042014.09444.rjw__46195.1022655287$1267729931$gmane$org@sisk.pl>
+References: <20100301175256.GA4034@tiehlicka.suse.cz>
+	<201003032204.51167.rjw@sisk.pl>
+	<20100304090207.GA4640@tiehlicka.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <b170af451003040311g3cea44caj1cd0e23e55814696@mail.gmail.com>
+In-Reply-To: <20100304090207.GA4640@tiehlicka.suse.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,27 +20,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?utf-8?q?Rafa=C5=82_Mi=C5=82ecki?= <zajec5@gmail.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Michal Hocko <mstsxfx@gmail.com>
+Cc: linux-mm@kvack.org, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1cnNkYXkgMDQgTWFyY2ggMjAxMCwgUmFmYcWCIE1pxYJlY2tpIHdyb3RlOgo+IDIwMTAv
-My80IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD46Cj4gPiBUaGVyZSBpcyBhIHByb2Js
-ZW0gd2l0aCB0aGUgQUNQSSB2aWRlbyByZXN1bWUgcm91dGluZSB0aGF0IGl0J3MKPiA+IGV4ZWN1
-dGVkIGJlZm9yZSB0aGUgR1BVIHRoYXQgbWF5IGJlIGFjY2Vzc2VkIGJ5IGl0LiAgVG8gZml4IHRo
-aXMKPiA+IGlzc3VlLCBtb3ZlIHRoZSBBQ1BJIHZpZGVvIHJlc3VtZSB0byBhIHBvd2VyIG1hbmFn
-ZW1lbnQgbm90aWZpZXIsCj4gPiBzbyB0aGF0IGl0J3MgZXhlY3V0ZWQgYWZ0ZXIgcmVzdW1pbmcg
-YWxsIGRldmljZXMsIGluY2x1ZGluZyB0aGUgR1BVLgo+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IFJh
-ZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD4KPiA+IC0tLQo+IAo+IFRlc3RlZC1ieTogUmFm
-YcWCIE1pxYJlY2tpIDx6YWplYzVAZ21haWwuY29tPgoKVGhhbmtzIQoKPiBJdCBwYXJ0aWFsbHkg
-Zml4ZXMgYnVnemlsbGEgYnVnICMxNTA5NiBhbmQgaXQgZmlyc3QgbmVlZGVkIHN0ZXAgdG8gZml4
-Cj4gaXQgY29tcGxldGVseS4KClRvIGZpeCB0aGF0IGNvbXBsZXRlbHkgd2UnZCBuZWVkIHRvIGF2
-b2lkIGNhbGxpbmcgYWNwaV92aWRlb19yZXN1bWUoKSBpbiB0aGUKbm9uLUtNUyBjYXNlLCBidXQg
-aXQncyBub3QgY2xlYXIgaG93IHRvIHRlbGwgdGhlIEFDUEkgZHJpdmVyIHdoaWNoIGNhc2Ugd2Un
-cmUKaW4uICBJdCdzIG5vdCBjZXJ0YWluIGhvdyB0byByZWxpYWJseSBkaXN0aW5ndWlzaCB0aGUg
-S01TIGFuZCBub24tS01TIGNhc2VzIGF0CnRoaXMgbGV2ZWwgaW4gdGhlIGZpcnN0IHBsYWNlLgoK
-PiBDYW4gd2Ugc2VuZCB0aGlzIHRvIHN0YWJsZSBmb3IgLjMyIGFuZCAuMzM/CgpUaGF0IGRlcGVu
-ZHMgb24gTGVuLgoKUmFmYWVsCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3Vu
-ZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlz
-dGluZm8vbGludXgtcG0=
+On Thursday 04 March 2010, Michal Hocko wrote:
+> On Wed, Mar 03, 2010 at 10:04:51PM +0100, Rafael J. Wysocki wrote:
+> > On Wednesday 03 March 2010, Michal Hocko wrote:
+> > > On Tue, Mar 02, 2010 at 09:01:21PM +0100, Rafael J. Wysocki wrote:
+> > > > On Tuesday 02 March 2010, Michal Hocko wrote:
+> > ...
+> > > > So this is just plain 2.6.33 plus one commit.
+> > > > 
+> > > > Hmm.  There are only a few changes directly related to hibernation in that
+> > > > kernel and none of them can possibly introduce a problem like that.
+> > > 
+> > > My previous kernel was vmlinux-2.6.33-rc8-00164-gaea187c and it didn't
+> > > show the problem.
+> > 
+> > Well, I have no idea which of the commits between -rc8 and .33 final might
+> > introduce such a problem.
+> > 
+> > What graphics is there in the affected box?
+> 
+> 00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME,
+> 943/940GML Express Integrated Graphics Controller (rev 03))
+
+Well, no clue.
+
+The problem appears to be 32-bit specific, though, because I'm unable to
+reproduce it on any of my 64-bit boxes.
+
+Rafael
