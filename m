@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: add dpm_use_runtime_{suspend,
- resume} helper functions
-Date: Wed, 3 Mar 2010 22:11:51 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1003032151581.6963-100000__37154.2718531147$1267672365$gmane$org@netrider.rowland.org>
-References: <201003040156.58763.rjw@sisk.pl>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [Resend][PATCH] ACPI / EC: Remove race between EC
+ driver and suspend process (rev. 3)
+Date: Thu, 04 Mar 2010 00:55:53 -0500 (EST)
+Message-ID: <alpine.LFD.2.00.1003040047310.1741__2084.54566677592$1267682313$gmane$org@localhost.localdomain>
+References: <201002272140.36891.rjw@sisk.pl>
+	<alpine.LFD.2.00.1003031644410.1044@localhost.localdomain>
+	<201003040152.58437.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003040156.58763.rjw@sisk.pl>
+In-reply-to: <201003040152.58437.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,122 +21,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 4 Mar 2010, Rafael J. Wysocki wrote:
+Isn't the problem at hand that the boot-kernel stops
+in mid-transaction, and the resumed hibernate image
+then blunders forward with its first transaction
+only to find the EC in an intermediate state?
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: PM: Provide generic subsystem-level callbacks
-> 
-> There are subsystems whose power management callbacks only need to
-> invoke the callbacks provided by device drivers.  Still, their system
-> sleep PM callbacks should play well with the runtime PM callbacks,
-> so that devices suspended at run time can be left in that state for
-> a system sleep transition.
-> 
-> Provide a set of generic PM callbacks for such subsystems and
-> define convenience macros for populating dev_pm_ops structures.
+If yes, I then making the transaction atomic WRT
+the boot kernel stopping should fix the problem.
 
-This looks pretty good, just a few minor typos and things that could be 
-worded better.
+The patch sets a FROZEN bit, and subsequent
+requests for EC transactions simply fail.
+How do we know that we set the bit at the right time?
+What transactions or parts of transactions will fail,
+and what are the consequences of those failures?
 
-> +/**
-> + * pm_generic_runtime_suspend - Generic runtime suspend callback for subsystems.
-> + * @dev: Device to suspend.
-> + *
-> + * If PM operations are defined for the driver of @dev and they include
-
-for @dev's driver
-
-> + * ->runtime_suspend(), execute it and return the error code returned by it.
-
-and return its error code.
-
-> + * Otherwise, return zero.
-
-Otherwise, return -EINVAL.
-
-> +/**
-> + * pm_generic_runtime_resume - Generic runtime resume callback for subsystems.
-> + * @dev: Device to resume.
-> + *
-> + * If PM operations are defined for the driver of @dev and they include
-> + * ->runtime_resume(), execute it and return the error code returned by it.
-> + * Otherwise, return zero.
-
-Same as above.
-
-> +/**
-> + * __pm_generic_call - Generic suspend/freeze/poweroff/thaw subsystem callback.
-> + * @dev: Device to handle.
-> + * @event: PM transition of the system under way.
-> + *
-> + * If the device has not been suspended at run time, execute the
-> + * suspend/freeze/poweroff/thaw callback provided by its driver, if defined, and
-> + * return the error code returned by it.  Otherwise, return zero.
-
-return its error code.
-
-> +/**
-> + * __pm_generic_resume - Generic resume/restore callback for subsystems.
-> + * @dev: Device to handle.
-> + * @event: PM transition of the system under way.
-> + *
-> + * Execute the resume/resotre callback provided by the driver of @dev, if
-
-restore, @dev's driver
-
-> + * defined.  If it returns 0, change the device's runtime PM status to 'active'.
-> + * Return the error code returned by it.
-
-Return the callback's error code.
-
-> --- linux-2.6.orig/Documentation/power/runtime_pm.txt
-> +++ linux-2.6/Documentation/power/runtime_pm.txt
-> @@ -335,6 +335,10 @@ drivers/base/power/runtime.c and include
->        'power.runtime_error' is set or 'power.disable_depth' is greater than
->        zero)
->  
-> +  bool pm_runtime_suspended(struct device *dev);
-> +    - return true if the devices runtime PM status is 'suspended' or false
-> +      otherwise
-
-device's run-time, comma before "or"
-
-> +7. Generic subsystem callbacks
-> +
-> +Subsystems may wish to conserve code space by using the set of generic power
-> +management callbacks provided by the PM core, defined in
-> +driver/base/power/generic_ops.c:
-> +
-> +  int pm_generic_runtime_idle(struct device *dev);
-> +    - invoke the ->runtime_idle() callback provided by the driver of this
-> +      device, if defined, and execute pm_runtime_suspend() for it
-
-and call pm_runtime_suspend() for this device if the return value is 0
-or the callback isn't defined
-
-> +  int pm_generic_runtime_suspend(struct device *dev);
-> +    - invoke the ->runtime_suspend() callback provided by the driver of this
-> +      device and return its result, or return -EINVAL if not defined
-> +
-> +  int pm_generic_runtime_resume(struct device *dev);
-> +    - invoke the ->runtime_resume() callback provided by the driver of this
-> +      device and return its result, or return -EINVAL if not defined
-> +
-> +  int pm_generic_suspend(struct device *dev);
-> +    - if the device has not been suspended at run time, invoke the ->suspend()
-> +      callback provided by its driver and return the result returned by it, or
-
-return its result (same change for the other functions below)
-
-> +Device drivers that wish to use the same function as a system suspend, freeze,
-> +poweroff and run-time suspend callback, and similarly for system resume, thaw,
-> +restore, and run-time resume, can achieve this with the help of the
-> +UNIVERSAL_DEV_PM_OPS macro defined in include/linux/pm.h, possibly passing NULL
-> +as the last argument of it.
-
-(possibly setting its last argument to NULL).
-
-Alan Stern
+thanks,
+Len Brown, Intel Open Source Technology Center
