@@ -1,14 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
- userspace is frozen?
-Date: Wed, 3 Mar 2010 21:48:39 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1003032142580.6963-100000__26839.5637548112$1267671016$gmane$org@netrider.rowland.org>
-References: <201003040123.13617.rjw@sisk.pl>
+Subject: Re: [PATCH] PM: add dpm_use_runtime_{suspend,
+ resume} helper functions
+Date: Wed, 3 Mar 2010 22:11:51 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1003032151581.6963-100000__37154.2718531147$1267672365$gmane$org@netrider.rowland.org>
+References: <201003040156.58763.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003040123.13617.rjw@sisk.pl>
+In-Reply-To: <201003040156.58763.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,31 +19,122 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Thu, 4 Mar 2010, Rafael J. Wysocki wrote:
 
-> > Very well.  Then we still need a solution to the original problem:  
-> > Devices sometimes need to be unregistered during resume, but
-> > del_gendisk() blocks on the writeback thread, which is frozen until
-> > after the resume finishes.  How do you suggest this be fixed?
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: PM: Provide generic subsystem-level callbacks
 > 
-> I thought about thawing the writeback thread earlier in such cases.
+> There are subsystems whose power management callbacks only need to
+> invoke the callbacks provided by device drivers.  Still, their system
+> sleep PM callbacks should play well with the runtime PM callbacks,
+> so that devices suspended at run time can be left in that state for
+> a system sleep transition.
 > 
-> Would that makes sense / is it doable at all?
+> Provide a set of generic PM callbacks for such subsystems and
+> define convenience macros for populating dev_pm_ops structures.
 
-My thought exactly.  This is the only approach that also solves the 
-following race:
+This looks pretty good, just a few minor typos and things that could be 
+worded better.
 
-	A driver is unloaded at the same time as a suspend starts.
+> +/**
+> + * pm_generic_runtime_suspend - Generic runtime suspend callback for subsystems.
+> + * @dev: Device to suspend.
+> + *
+> + * If PM operations are defined for the driver of @dev and they include
 
-	The writeback thread gets frozen.
+for @dev's driver
 
-	Then before the rmmod thread is frozen, it calls del_gendisk.
+> + * ->runtime_suspend(), execute it and return the error code returned by it.
 
-Delaying things by means of a workqueue (or the equivalent) might also 
-work, but it doesn't seem as safe.  For example, some important 
-writebacks might end up getting delayed until too late.
+and return its error code.
+
+> + * Otherwise, return zero.
+
+Otherwise, return -EINVAL.
+
+> +/**
+> + * pm_generic_runtime_resume - Generic runtime resume callback for subsystems.
+> + * @dev: Device to resume.
+> + *
+> + * If PM operations are defined for the driver of @dev and they include
+> + * ->runtime_resume(), execute it and return the error code returned by it.
+> + * Otherwise, return zero.
+
+Same as above.
+
+> +/**
+> + * __pm_generic_call - Generic suspend/freeze/poweroff/thaw subsystem callback.
+> + * @dev: Device to handle.
+> + * @event: PM transition of the system under way.
+> + *
+> + * If the device has not been suspended at run time, execute the
+> + * suspend/freeze/poweroff/thaw callback provided by its driver, if defined, and
+> + * return the error code returned by it.  Otherwise, return zero.
+
+return its error code.
+
+> +/**
+> + * __pm_generic_resume - Generic resume/restore callback for subsystems.
+> + * @dev: Device to handle.
+> + * @event: PM transition of the system under way.
+> + *
+> + * Execute the resume/resotre callback provided by the driver of @dev, if
+
+restore, @dev's driver
+
+> + * defined.  If it returns 0, change the device's runtime PM status to 'active'.
+> + * Return the error code returned by it.
+
+Return the callback's error code.
+
+> --- linux-2.6.orig/Documentation/power/runtime_pm.txt
+> +++ linux-2.6/Documentation/power/runtime_pm.txt
+> @@ -335,6 +335,10 @@ drivers/base/power/runtime.c and include
+>        'power.runtime_error' is set or 'power.disable_depth' is greater than
+>        zero)
+>  
+> +  bool pm_runtime_suspended(struct device *dev);
+> +    - return true if the devices runtime PM status is 'suspended' or false
+> +      otherwise
+
+device's run-time, comma before "or"
+
+> +7. Generic subsystem callbacks
+> +
+> +Subsystems may wish to conserve code space by using the set of generic power
+> +management callbacks provided by the PM core, defined in
+> +driver/base/power/generic_ops.c:
+> +
+> +  int pm_generic_runtime_idle(struct device *dev);
+> +    - invoke the ->runtime_idle() callback provided by the driver of this
+> +      device, if defined, and execute pm_runtime_suspend() for it
+
+and call pm_runtime_suspend() for this device if the return value is 0
+or the callback isn't defined
+
+> +  int pm_generic_runtime_suspend(struct device *dev);
+> +    - invoke the ->runtime_suspend() callback provided by the driver of this
+> +      device and return its result, or return -EINVAL if not defined
+> +
+> +  int pm_generic_runtime_resume(struct device *dev);
+> +    - invoke the ->runtime_resume() callback provided by the driver of this
+> +      device and return its result, or return -EINVAL if not defined
+> +
+> +  int pm_generic_suspend(struct device *dev);
+> +    - if the device has not been suspended at run time, invoke the ->suspend()
+> +      callback provided by its driver and return the result returned by it, or
+
+return its result (same change for the other functions below)
+
+> +Device drivers that wish to use the same function as a system suspend, freeze,
+> +poweroff and run-time suspend callback, and similarly for system resume, thaw,
+> +restore, and run-time resume, can achieve this with the help of the
+> +UNIVERSAL_DEV_PM_OPS macro defined in include/linux/pm.h, possibly passing NULL
+> +as the last argument of it.
+
+(possibly setting its last argument to NULL).
 
 Alan Stern
