@@ -1,17 +1,14 @@
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Subject: Re: [Resend][PATCH] ACPI / EC: Remove race between EC
-	driver and suspend process (rev. 3)
-Date: Thu, 4 Mar 2010 09:32:03 +0000
-Message-ID: <9b2b86521003040132v168399ct9241f3ad9ff8c4c7__28516.184751834$1267695285$gmane$org@mail.gmail.com>
-References: <201002272140.36891.rjw@sisk.pl>
-	<alpine.LFD.2.00.1003031644410.1044@localhost.localdomain>
-	<201003040152.58437.rjw@sisk.pl>
-	<alpine.LFD.2.00.1003040047310.1741@localhost.localdomain>
+From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+Subject: Re: [PATCH] ACPI / PM: Move ACPI video resume to a PM
+	notifier
+Date: Thu, 4 Mar 2010 12:11:06 +0100
+Message-ID: <b170af451003040311g3cea44caj1cd0e23e55814696__44051.5945469544$1267701140$gmane$org@mail.gmail.com>
+References: <201003040125.30091.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1003040047310.1741@localhost.localdomain>
+In-Reply-To: <201003040125.30091.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,33 +18,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 3/4/10, Len Brown <lenb@kernel.org> wrote:
-> Isn't the problem at hand that the boot-kernel stops
-> in mid-transaction, and the resumed hibernate image
-> then blunders forward with its first transaction
-> only to find the EC in an intermediate state?
->
-> If yes, I then making the transaction atomic WRT
-> the boot kernel stopping should fix the problem.
->
-> The patch sets a FROZEN bit, and subsequent
-> requests for EC transactions simply fail.
-> How do we know that we set the bit at the right time?
-> What transactions or parts of transactions will fail,
-> and what are the consequences of those failures?
-
-The problem transactions on my machine were probably started by
-ec_check_sci().  I.e. QUERY transactions which read the value of an
-event raised by the EC.  (I triggered the problem by pressing ACPI
-hotkeys, although I haven't been able to reproduce it since).
-
-That might explain why the transactions can be asynchronous with the
-s2disk task - because these transactions are run in the ACPI
-workqueue.  Perhaps the workqueue needs to be flushed after the EC GPE
-is disabled?
-
-Alan
+MjAxMC8zLzQgUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPjoKPiBUaGVyZSBpcyBhIHBy
+b2JsZW0gd2l0aCB0aGUgQUNQSSB2aWRlbyByZXN1bWUgcm91dGluZSB0aGF0IGl0J3MKPiBleGVj
+dXRlZCBiZWZvcmUgdGhlIEdQVSB0aGF0IG1heSBiZSBhY2Nlc3NlZCBieSBpdC4gwqBUbyBmaXgg
+dGhpcwo+IGlzc3VlLCBtb3ZlIHRoZSBBQ1BJIHZpZGVvIHJlc3VtZSB0byBhIHBvd2VyIG1hbmFn
+ZW1lbnQgbm90aWZpZXIsCj4gc28gdGhhdCBpdCdzIGV4ZWN1dGVkIGFmdGVyIHJlc3VtaW5nIGFs
+bCBkZXZpY2VzLCBpbmNsdWRpbmcgdGhlIEdQVS4KPgo+IFNpZ25lZC1vZmYtYnk6IFJhZmFlbCBK
+LiBXeXNvY2tpIDxyandAc2lzay5wbD4KPiAtLS0KClRlc3RlZC1ieTogUmFmYcWCIE1pxYJlY2tp
+IDx6YWplYzVAZ21haWwuY29tPgoKSXQgcGFydGlhbGx5IGZpeGVzIGJ1Z3ppbGxhIGJ1ZyAjMTUw
+OTYgYW5kIGl0IGZpcnN0IG5lZWRlZCBzdGVwIHRvIGZpeAppdCBjb21wbGV0ZWx5LgoKQ2FuIHdl
+IHNlbmQgdGhpcyB0byBzdGFibGUgZm9yIC4zMiBhbmQgLjMzPwoKLS0gClJhZmHFggpfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5n
+IGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5s
+aW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
