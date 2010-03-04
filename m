@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: unable to handle kernel paging request on resume
-	with 2.6.33-00001-gbaac35c
-Date: Thu, 4 Mar 2010 20:52:39 +0100
-Message-ID: <201003042052.39625.rjw__40876.4172615067$1267736271$gmane$org@sisk.pl>
-References: <20100301175256.GA4034@tiehlicka.suse.cz>
-	<20100304090207.GA4640@tiehlicka.suse.cz>
-	<201003042014.09444.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Is it supposed to be ok to call del_gendisk while
+ userspace is frozen?
+Date: Thu, 4 Mar 2010 21:15:48 +0100
+Message-ID: <20100304201548.GA1341@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.1003032142580.6963-100000@netrider.rowland.org>
+	<201003042026.30303.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003042014.09444.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <201003042026.30303.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,40 +20,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michal Hocko <mstsxfx@gmail.com>
-Cc: linux-mm@kvack.org, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 04 March 2010, Rafael J. Wysocki wrote:
-> On Thursday 04 March 2010, Michal Hocko wrote:
-> > On Wed, Mar 03, 2010 at 10:04:51PM +0100, Rafael J. Wysocki wrote:
-> > > On Wednesday 03 March 2010, Michal Hocko wrote:
-> > > > On Tue, Mar 02, 2010 at 09:01:21PM +0100, Rafael J. Wysocki wrote:
-> > > > > On Tuesday 02 March 2010, Michal Hocko wrote:
-> > > ...
-> > > > > So this is just plain 2.6.33 plus one commit.
-> > > > > 
-> > > > > Hmm.  There are only a few changes directly related to hibernation in that
-> > > > > kernel and none of them can possibly introduce a problem like that.
-> > > > 
-> > > > My previous kernel was vmlinux-2.6.33-rc8-00164-gaea187c and it didn't
-> > > > show the problem.
-> > > 
-> > > Well, I have no idea which of the commits between -rc8 and .33 final might
-> > > introduce such a problem.
-> > > 
-> > > What graphics is there in the affected box?
+Hi!
+
+> > My thought exactly.  This is the only approach that also solves the 
+> > following race:
 > > 
-> > 00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME,
-> > 943/940GML Express Integrated Graphics Controller (rev 03))
-> 
-> Well, no clue.
-> 
-> The problem appears to be 32-bit specific, though, because I'm unable to
-> reproduce it on any of my 64-bit boxes.
+> > 	A driver is unloaded at the same time as a suspend starts.
+> > 
+> > 	The writeback thread gets frozen.
+> > 
+> > 	Then before the rmmod thread is frozen, it calls del_gendisk.
+> > 
+> > Delaying things by means of a workqueue (or the equivalent) might also 
+> > work, but it doesn't seem as safe.  For example, some important 
+> > writebacks might end up getting delayed until too late.
 
-Well, this patch from Shaohua might help:
-
-http://patchwork.kernel.org/patch/83497/
-
-Rafael
+Delaying writebacks during sleep should be ok... That's why we do
+sync() after userspace is frozen -- nothing really important should be
+waiting for writeback after that point. 
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
