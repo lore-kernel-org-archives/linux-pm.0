@@ -1,18 +1,17 @@
-From: Michal Hocko <mstsxfx@gmail.com>
-Subject: Re: unable to handle kernel paging request on resume
- with 2.6.33-00001-gbaac35c
-Date: Thu, 4 Mar 2010 10:02:07 +0100
-Message-ID: <20100304090207.GA4640__35993.1190418594$1267693405$gmane$org@tiehlicka.suse.cz>
-References: <20100301175256.GA4034@tiehlicka.suse.cz>
-	<201003022101.21521.rjw@sisk.pl>
-	<20100303102621.GC4241@tiehlicka.suse.cz>
-	<201003032204.51167.rjw@sisk.pl>
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Subject: Re: [Resend][PATCH] ACPI / EC: Remove race between EC
+	driver and suspend process (rev. 3)
+Date: Thu, 4 Mar 2010 09:32:03 +0000
+Message-ID: <9b2b86521003040132v168399ct9241f3ad9ff8c4c7__28516.184751834$1267695285$gmane$org@mail.gmail.com>
+References: <201002272140.36891.rjw@sisk.pl>
+	<alpine.LFD.2.00.1003031644410.1044@localhost.localdomain>
+	<201003040152.58437.rjw@sisk.pl>
+	<alpine.LFD.2.00.1003040047310.1741@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201003032204.51167.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.2.00.1003040047310.1741@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,33 +21,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-mm@kvack.org, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 03, 2010 at 10:04:51PM +0100, Rafael J. Wysocki wrote:
-> On Wednesday 03 March 2010, Michal Hocko wrote:
-> > On Tue, Mar 02, 2010 at 09:01:21PM +0100, Rafael J. Wysocki wrote:
-> > > On Tuesday 02 March 2010, Michal Hocko wrote:
-> ...
-> > > So this is just plain 2.6.33 plus one commit.
-> > > 
-> > > Hmm.  There are only a few changes directly related to hibernation in that
-> > > kernel and none of them can possibly introduce a problem like that.
-> > 
-> > My previous kernel was vmlinux-2.6.33-rc8-00164-gaea187c and it didn't
-> > show the problem.
-> 
-> Well, I have no idea which of the commits between -rc8 and .33 final might
-> introduce such a problem.
-> 
-> What graphics is there in the affected box?
+On 3/4/10, Len Brown <lenb@kernel.org> wrote:
+> Isn't the problem at hand that the boot-kernel stops
+> in mid-transaction, and the resumed hibernate image
+> then blunders forward with its first transaction
+> only to find the EC in an intermediate state?
+>
+> If yes, I then making the transaction atomic WRT
+> the boot kernel stopping should fix the problem.
+>
+> The patch sets a FROZEN bit, and subsequent
+> requests for EC transactions simply fail.
+> How do we know that we set the bit at the right time?
+> What transactions or parts of transactions will fail,
+> and what are the consequences of those failures?
 
-00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME,
-943/940GML Express Integrated Graphics Controller (rev 03))
+The problem transactions on my machine were probably started by
+ec_check_sci().  I.e. QUERY transactions which read the value of an
+event raised by the EC.  (I triggered the problem by pressing ACPI
+hotkeys, although I haven't been able to reproduce it since).
 
-> 
-> Rafael
+That might explain why the transactions can be asynchronous with the
+s2disk task - because these transactions are run in the ACPI
+workqueue.  Perhaps the workqueue needs to be flushed after the EC GPE
+is disabled?
 
--- 
-Michal Hocko
+Alan
