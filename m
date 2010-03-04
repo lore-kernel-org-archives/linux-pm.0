@@ -1,14 +1,16 @@
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-Subject: Re: [PATCH] ACPI / PM: Move ACPI video resume to a PM
-	notifier
-Date: Thu, 4 Mar 2010 12:11:06 +0100
-Message-ID: <b170af451003040311g3cea44caj1cd0e23e55814696__44051.5945469544$1267701140$gmane$org@mail.gmail.com>
-References: <201003040125.30091.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Is it supposed to be ok to call del_gendisk
+	while	userspace is frozen?
+Date: Thu, 4 Mar 2010 14:53:37 +0100
+Message-ID: <20100304135337.GC12191__27290.8276216642$1267710898$gmane$org@atrey.karlin.mff.cuni.cz>
+References: <20100303215056.GB2579@ucw.cz>
+	<Pine.LNX.4.44L0.1003031720530.1380-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003040125.30091.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1003031720530.1380-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,20 +20,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-MjAxMC8zLzQgUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPjoKPiBUaGVyZSBpcyBhIHBy
-b2JsZW0gd2l0aCB0aGUgQUNQSSB2aWRlbyByZXN1bWUgcm91dGluZSB0aGF0IGl0J3MKPiBleGVj
-dXRlZCBiZWZvcmUgdGhlIEdQVSB0aGF0IG1heSBiZSBhY2Nlc3NlZCBieSBpdC4gwqBUbyBmaXgg
-dGhpcwo+IGlzc3VlLCBtb3ZlIHRoZSBBQ1BJIHZpZGVvIHJlc3VtZSB0byBhIHBvd2VyIG1hbmFn
-ZW1lbnQgbm90aWZpZXIsCj4gc28gdGhhdCBpdCdzIGV4ZWN1dGVkIGFmdGVyIHJlc3VtaW5nIGFs
-bCBkZXZpY2VzLCBpbmNsdWRpbmcgdGhlIEdQVS4KPgo+IFNpZ25lZC1vZmYtYnk6IFJhZmFlbCBK
-LiBXeXNvY2tpIDxyandAc2lzay5wbD4KPiAtLS0KClRlc3RlZC1ieTogUmFmYcWCIE1pxYJlY2tp
-IDx6YWplYzVAZ21haWwuY29tPgoKSXQgcGFydGlhbGx5IGZpeGVzIGJ1Z3ppbGxhIGJ1ZyAjMTUw
-OTYgYW5kIGl0IGZpcnN0IG5lZWRlZCBzdGVwIHRvIGZpeAppdCBjb21wbGV0ZWx5LgoKQ2FuIHdl
-IHNlbmQgdGhpcyB0byBzdGFibGUgZm9yIC4zMiBhbmQgLjMzPwoKLS0gClJhZmHFggpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5n
-IGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+Hi!
+
+> > journalling assumptions broken: commit block is there, but previous
+> > blocks are not intact. Data loss.
+> > 
+> > ...and that was the first I could think about. Lets not do
+> >  this. Barriers were invented for a reason.
+> 
+> Very well.  Then we still need a solution to the original problem:  
+> Devices sometimes need to be unregistered during resume, but
+> del_gendisk() blocks on the writeback thread, which is frozen until
+> after the resume finishes.  How do you suggest this be fixed?
+
+Avoid unregistering device during resume. Instead, return errors until
+resume is done and you can call del_gendisk? 
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
