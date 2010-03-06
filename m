@@ -1,13 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Problems with remote-wakeup settings
-Date: Fri, 5 Mar 2010 23:16:20 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1003052314130.10381-100000__39409.610318444$1267849056$gmane$org@netrider.rowland.org>
-References: <201003052304.49261.rjw@sisk.pl>
+Date: Fri, 5 Mar 2010 23:34:08 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1003052316290.10381-100000__16111.1543690369$1267850103$gmane$org@netrider.rowland.org>
+References: <201003052259.30365.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003052304.49261.rjw@sisk.pl>
+In-Reply-To: <201003052259.30365.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,38 +18,84 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: USB list <linux-usb@vger.kernel.org>, linux-hotplug@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, linux-hotplug@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 On Fri, 5 Mar 2010, Rafael J. Wysocki wrote:
 
-> On Friday 05 March 2010, Oliver Neukum wrote:
-> > Am Freitag, 5. M=E4rz 2010 21:59:31 schrieben Sie:
-> > > > I guess it's better if drivers don't set should_wakeup if unsure, b=
-ut of course
-> > > > that's impossible to enforce.
-> > > =
+> > So the problem is that subsystems can't usefully set the can_wakeup 
+> > flag before doing either device_initialize() or device_register().  
+> > This can be fixed easily by removing the call in device_initialize().
+> 
+> PCI depends on the flag being unset when pci_pm_init(dev) is called.
+> 
+> If that's still valid after removing the call in device_initialize(), I'm fine
+> with the removal.
 
-> > > That's the real question.  Ideally, drivers won't touch should_wakeup=
-.  =
+It should still be valid.  After all, there's nothing else to set the
+flag except for other parts of the PCI core.
 
-> > > How do we get there from here?
-> > =
 
-> > Enable it only for devices specifically designed for wakeup, that is
-> > keyboards, power buttons and WoL, perhaps also mice and modems.
-> > Are we far away from that?
-> =
+> > Agreed, ethtool and sysfs should affect the same flags.
+> 
+> Yeah, but.  Right now, if the setting is changed via sysfs, it doesn't modify
+> the WoL setting as visible by ethtool.
 
-> I don't think we're very far from that.
-> =
+> > I don't understand.  Do you mean there's no way to update the
+> > _device's_ WoL setting when the sysfs attribute is changed?
+> 
+> There's no code for that, that's the problem.
+> 
+> > The device's WoL setting matters only at suspend time.  So the network
+> > driver's suspend routine ought to test device_may_wakeup() to see
+> > whether or not WoL should be enabled.  Maybe this can be centralized 
+> > somewhere in the network stack.
+> 
+> Maybe.  The problem is people expect wakeup to work once WoL has been set
+> with the help of ethtool and they expect it to work if the WoL is set by
+> default.
 
-> Mice are known dangerous, especially the USB ones, though.
+It's not difficult in theory to tie together the WoL setting and the
+wakeup flag:
 
-I agree, especially for desktop systems.  You don't want the system to =
+	If ethtool changes the WoL setting, the driver's ioctl handler
+	should make the corresponding change to the wakeup flag.
 
-wake up merely because you happened to jostle the mouse.  That happened =
+	If ethtool queries the WoL setting, the ioctl handler should
+	check the wakeup flag.  If the flag is off, it should report 
+	that WoL is disabled; if the flag is on, it should report that 
+	WoL is enabled.  (The same check should be made in the suspend
+	routine.)
 
-to me just a few days ago (and it was a PS/2 mouse, not USB).
+> > And also IMO, enabling WoL by default is very questionable.  But that's 
+> > a separate matter.
+> 
+> That's been a common practice for years in the network adapter land and I don't
+> think we're able to change that now.  Besides, if the WoL is set to g by
+> default, which also is common, that doesn't really lead to any problems.
+
+All right, we can declare that network drivers are allowed to enable
+WoL by default (like keyboard drivers).  There shouldn't be any problem
+provided they initialize the wakeup setting before registering the
+network interface, so that the initialization doesn't override any 
+action by udev.
+
+> > That's the real question.  Ideally, drivers won't touch should_wakeup.  
+> > How do we get there from here?
+> 
+> The WoL problem is still in the way, exactly because it can be set using
+> ethtool.
+> 
+> IMO, we should set should_wakeup if the WoL is set via ethtool.  We also should
+> unset the WoL if should_wakeup is unset via sysfs (we're missing that piece
+> right now).   Generally speaking, it should work transparently both ways.
+
+As I described above.
+
+> Now, if the driver's policy is to set WoL to g, for example, by default, how is
+> this different from setting it via ethtool?
+
+Well, clearly there's a difference if the user _doesn't_ run ethtool.  
+Apart from that, it's okay.
 
 Alan Stern
