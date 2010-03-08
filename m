@@ -1,13 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Problems with remote-wakeup settings
-Date: Sat, 6 Mar 2010 16:05:37 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1003061601520.23895-100000@netrider.rowland.org>
-References: <201003062154.02199.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Resend][PATCH] ACPI / EC: Remove race between EC
+	driver and suspend process (rev. 3)
+Date: Mon, 8 Mar 2010 22:10:56 +0100
+Message-ID: <201003082210.56660.rjw__22348.260964691$1268082596$gmane$org@sisk.pl>
+References: <201002272140.36891.rjw@sisk.pl>
+	<alpine.LFD.2.00.1003031644410.1044@localhost.localdomain>
+	<201003040152.58437.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003062154.02199.rjw@sisk.pl>
+In-Reply-To: <201003040152.58437.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,30 +20,159 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, linux-hotplug@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 6 Mar 2010, Rafael J. Wysocki wrote:
-
-> > It's not difficult in theory to tie together the WoL setting and the
-> > wakeup flag:
+On Thursday 04 March 2010, Rafael J. Wysocki wrote:
+> On Wednesday 03 March 2010, Len Brown wrote:
+> > For the record, Rafael, Alexey and I discusseed this a bit further...
 > > 
-> > 	If ethtool changes the WoL setting, the driver's ioctl handler
-> > 	should make the corresponding change to the wakeup flag.
-> > 
-> > 	If ethtool queries the WoL setting, the ioctl handler should
-> > 	check the wakeup flag.  If the flag is off, it should report 
-> > 	that WoL is disabled; if the flag is on, it should report that 
-> > 	WoL is enabled.  (The same check should be made in the suspend
-> > 	routine.)
+> > We reasoned that this failure is impossible during the Suspend-to-RAM 
+> > path, and the failure is specific to the hibernate reboot kernel handoff
+> > to the resume image.
 > 
-> That's done this way already in all drivers I know, but we need a hook
-> from wake_store() back to the driver.
+> Below is a simplified version of the patch that also should fix the problem.
 
-What for?  wake_store() can't be called during a sleep transition
-(because tasks are frozen) or while the system is asleep.  And if it is
-called at any other time, the driver doesn't need to know until either
-its ioctl handler or its suspend method runs.
+Appended is updated version with the names changed as discussed on IRC.
 
-Alan Stern
+Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: ACPI / EC / PM: Close race between EC and resume from hibernation (rev. 2)
+
+There is a race between resume from hibernation and the EC driver
+that may result in restoring the hibernation image in the middle of
+an EC transaction in progress, which in turn may lead to
+unpredictable behavior of the platform.
+
+To remove that race condition, add a helpers for suspending and
+resuming EC transactions in a safe way to be executed by the ACPI
+platform hibernate pre-restore and restore cleanup callbacks.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-by: Maxim Levitsky <maximlevitsky@gmail.com>
+---
+ drivers/acpi/ec.c       |   33 ++++++++++++++++++++++++++++++++-
+ drivers/acpi/internal.h |    2 ++
+ drivers/acpi/sleep.c    |   19 ++++++++++++++-----
+ 3 files changed, 48 insertions(+), 6 deletions(-)
+
+Index: linux-2.6/drivers/acpi/ec.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/ec.c
++++ linux-2.6/drivers/acpi/ec.c
+@@ -76,8 +76,9 @@ enum ec_command {
+ enum {
+ 	EC_FLAGS_QUERY_PENDING,		/* Query is pending */
+ 	EC_FLAGS_GPE_STORM,		/* GPE storm detected */
+-	EC_FLAGS_HANDLERS_INSTALLED	/* Handlers for GPE and
++	EC_FLAGS_HANDLERS_INSTALLED,	/* Handlers for GPE and
+ 					 * OpReg are installed */
++	EC_FLAGS_BLOCKED,		/* Transactions are blocked */
+ };
+ 
+ /* If we find an EC via the ECDT, we need to keep a ptr to its context */
+@@ -291,6 +292,10 @@ static int acpi_ec_transaction(struct ac
+ 	if (t->rdata)
+ 		memset(t->rdata, 0, t->rlen);
+ 	mutex_lock(&ec->lock);
++	if (test_bit(EC_FLAGS_BLOCKED, &ec->flags)) {
++		status = -EINVAL;
++		goto unlock;
++	}
+ 	if (ec->global_lock) {
+ 		status = acpi_acquire_global_lock(ACPI_EC_UDELAY_GLK, &glk);
+ 		if (ACPI_FAILURE(status)) {
+@@ -453,6 +458,32 @@ int ec_transaction(u8 command,
+ 
+ EXPORT_SYMBOL(ec_transaction);
+ 
++void acpi_ec_block_transactions(void)
++{
++	struct acpi_ec *ec = first_ec;
++
++	if (!ec)
++		return;
++
++	mutex_lock(&ec->lock);
++	/* Prevent transactions from being carried out */
++	set_bit(EC_FLAGS_BLOCKED, &ec->flags);
++	mutex_unlock(&ec->lock);
++}
++
++void acpi_ec_unblock_transactions(void)
++{
++	struct acpi_ec *ec = first_ec;
++
++	if (!ec)
++		return;
++
++	mutex_lock(&ec->lock);
++	/* Allow transactions to be carried out again */
++	clear_bit(EC_FLAGS_BLOCKED, &ec->flags);
++	mutex_unlock(&ec->lock);
++}
++
+ static int acpi_ec_query_unlocked(struct acpi_ec *ec, u8 * data)
+ {
+ 	int result;
+Index: linux-2.6/drivers/acpi/internal.h
+===================================================================
+--- linux-2.6.orig/drivers/acpi/internal.h
++++ linux-2.6/drivers/acpi/internal.h
+@@ -49,6 +49,8 @@ void acpi_early_processor_set_pdc(void);
+ int acpi_ec_init(void);
+ int acpi_ec_ecdt_probe(void);
+ int acpi_boot_ec_enable(void);
++void acpi_ec_block_transactions(void);
++void acpi_ec_unblock_transactions(void);
+ 
+ /*--------------------------------------------------------------------------
+                                   Suspend/Resume
+Index: linux-2.6/drivers/acpi/sleep.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep.c
++++ linux-2.6/drivers/acpi/sleep.c
+@@ -552,8 +552,17 @@ static void acpi_hibernation_leave(void)
+ 	hibernate_nvs_restore();
+ }
+ 
+-static void acpi_pm_enable_gpes(void)
++static int acpi_pm_pre_restore(void)
+ {
++	acpi_disable_all_gpes();
++	acpi_os_wait_events_complete(NULL);
++	acpi_ec_block_transactions();
++	return 0;
++}
++
++static void acpi_pm_restore_cleanup(void)
++{
++	acpi_ec_unblock_transactions();
+ 	acpi_enable_all_runtime_gpes();
+ }
+ 
+@@ -565,8 +574,8 @@ static struct platform_hibernation_ops a
+ 	.prepare = acpi_pm_prepare,
+ 	.enter = acpi_hibernation_enter,
+ 	.leave = acpi_hibernation_leave,
+-	.pre_restore = acpi_pm_disable_gpes,
+-	.restore_cleanup = acpi_pm_enable_gpes,
++	.pre_restore = acpi_pm_pre_restore,
++	.restore_cleanup = acpi_pm_restore_cleanup,
+ };
+ 
+ /**
+@@ -618,8 +627,8 @@ static struct platform_hibernation_ops a
+ 	.prepare = acpi_pm_disable_gpes,
+ 	.enter = acpi_hibernation_enter,
+ 	.leave = acpi_hibernation_leave,
+-	.pre_restore = acpi_pm_disable_gpes,
+-	.restore_cleanup = acpi_pm_enable_gpes,
++	.pre_restore = acpi_pm_pre_restore,
++	.restore_cleanup = acpi_pm_restore_cleanup,
+ 	.recover = acpi_pm_finish,
+ };
+ #endif /* CONFIG_HIBERNATION */
