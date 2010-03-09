@@ -1,16 +1,17 @@
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-Subject: Re: [Q] How to tell we're using the KMS (during
-	suspend/resume) outside the graphics driver
-Date: Tue, 9 Mar 2010 12:38:50 +0100
-Message-ID: <b170af451003090338o69225e3ye6beb4b304dcdc8c__18478.9300583818$1268138374$gmane$org@mail.gmail.com>
-References: <201003062236.09801.rjw@sisk.pl>
-	<68676e01003090301s5bb40d4hac1224a9658339ac@mail.gmail.com>
-	<201003091234.59598.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2] intel_txt: add support for S3 memory
+	integrity	protection within Intel(R) TXT launched kernel
+Date: Tue, 9 Mar 2010 10:06:35 +0100
+Message-ID: <20100309090635.GA30549__21375.4593897194$1268139019$gmane$org@atrey.karlin.mff.cuni.cz>
+References: <4A9CE0B2.5060608@intel.com> <4ABF2B50.6070106@intel.com>
+	<20091004185801.GC1378@ucw.cz>
+	<D5AB6E638E5A3E4B8F4406B113A5A19A1D44A8FA@shsmsx501.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003091234.59598.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <D5AB6E638E5A3E4B8F4406B113A5A19A1D44A8FA@shsmsx501.ccr.corp.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,16 +21,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Luca Tettamanti <kronos.it@gmail.com>, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net
+To: "Wang, Shane" <shane.wang@intel.com>
+Cc: "chrisw@sous-sol.org" <chrisw@sous-sol.org>, "Brown,
+	Len" <len.brown@intel.com>, "Cihula, Joseph" <joseph.cihula@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "jbeulich@novell.com" <jbeulich@novell.com>, "jmorris@namei.org" <jmorris@namei.org>, "peterm@redhat.com" <peterm@redhat.com>, "andi@firstfloor.org" <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, "arjan@linux.intel.com" <arjan@linux.intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-MjAxMC8zLzkgUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPjoKPiBPbiBUdWVzZGF5IDA5
-IE1hcmNoIDIwMTAsIEx1Y2EgVGV0dGFtYW50aSB3cm90ZToKPj4gSSdtIG5vdGUgc3VyZSBob3cg
-dG8gY2hlY2sgdGhhdCBhIGRldmljZSBpcyBncmFwaGljIGNhcmQgdGhvdWdoIDp8Cj4KPiBXZWxs
-LCB0aGF0J3MgdGhlICJvdXRzaWRlIG9mIHRoZSBncmFwaGljcyBkcml2ZXIiIHBhcnQgb2YgbXkg
-cXVlc3Rpb24uIDotKQoKQ2FuIHdlIHVzZSB0aGUgc2FtZSB3YXkgdXNlcnNwYWNlIChERFgpIHVz
-ZXMgdG8gY2hlY2sgZm9yIEtNUz8gU29tZQpJT0NUTCBJIGd1ZXNzPwoKLS0gClJhZmHFggpfX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWls
-aW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0
-cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+> v2: Based on a complexity analysis and tradeoff, we moved all MAC'ing into tboot.
+> 
+> This patch adds support for S3 memory integrity protection within an Intel(R) TXT launched kernel, for all kernel and userspace memory.  All RAM used by the kernel and userspace, as indicated by memory ranges of type E820_RAM and E820_RESERVED_KERN in the e820 table, will be integrity protected.
+> 
+
+Please wrap at 80 columns.
+
+> The MAINTAINERS file is also updated to reflect the maintainers of
+>  the TXT-related code.
+
+> Signed-off-by: Shane Wang <shane.wang@intel.com>
+> Signed-off-by: Joseph Cihula <joseph.cihula@intel.com>
+
+Certainly looks better now. ACK.
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
