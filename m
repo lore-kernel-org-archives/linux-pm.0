@@ -1,16 +1,11 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [Q] How to tell we're using the KMS (during
- suspend/resume) outside the graphics driver
-Date: Tue, 9 Mar 2010 16:16:24 +0000 (GMT)
-Message-ID: <alpine.LFD.2.00.1003091613390.30952__9720.73061061582$1268174247$gmane$org@casper.infradead.org>
-References: <201003062236.09801.rjw@sisk.pl>
-	<68676e01003090301s5bb40d4hac1224a9658339ac@mail.gmail.com>
-	<201003091234.59598.rjw@sisk.pl>
+From: =?ISO-8859-1?Q?=C1kos_Mar=F3y?= <akos@maroy.hu>
+Subject: suspend works until core pm_test, but the still fails
+Date: Wed, 10 Mar 2010 00:42:51 -0600
+Message-ID: <4B973F6B.4000709@maroy.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003091234.59598.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,27 +15,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Luca Tettamanti <kronos.it@gmail.com>, Linux PCI <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net
+To: pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
-> > > Second, in the KMS case, we'd be able to skip the kernel VT switch, because
-> > > the KMS driver uses its own framebuffer anyway.
-> > >
-> > > So, is there any reasonable way to check that from the outside of the graphics
-> > > driver?  It should be general enough to cover the cases when there are two
-> > > graphics adapters with different drivers in the system and so forth.
-> > 
-> > Inside the kernel? If you have a struct pci_dev you can get the
-> > associated struct drm_device with pci_get_drvdata and then check the
-> > KMS feature: drm_core_check_feature(dev, DRIVER_MODESET).
-> 
-> Yeah, I know that.
-> 
-> > I'm note sure how to check that a device is graphic card though :|
-> 
-> Well, that's the "outside of the graphics driver" part of my question. :-)
+I'm still trying to make power management work on my HP Envy 15.
 
-if ((pdev->class >> 8) == PCI_CLASS_DISPLAY_VGA)
-	....
+I'm experimenting with unloading as many modules as possible, testing
+the suspend feature using various levels of /sys/power/pm_test
+
+I managed to get the number of modules as low as these:
+
+Module                  Size  Used by
+binfmt_misc             7454  1
+bnep                   11287  2
+btusb                  12729  2
+
+
+then I was going through these steps;
+
+echo freezer > /sys/power/pm_test
+echo mem > /sys/power/state
+echo devices > /sys/power/pm_test
+echo mem > /sys/power/state
+echo platform > /sys/power/pm_test
+echo mem > /sys/power/state
+echo processors > /sys/power/pm_test
+echo mem > /sys/power/state
+echo core > /sys/power/pm_test
+echo mem > /sys/power/state
+
+and all these worked fine - meaning that I got back to the console
+screen. I also ran dmesg, and didn't see anything suspicious.
+
+but, when I do:
+
+echo none > /sys/power/pm_test
+echo mem > /sys/power/state
+
+
+the machine will still hang :(
+
+
+what am I doing wrong?
+
+this is all on a 2.6.32.9 kernel
+
+
+Akos
