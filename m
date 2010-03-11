@@ -1,15 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] freezer: only show the state of tasks
-	refusing to freeze
-Date: Wed, 10 Mar 2010 23:00:19 +0100
-Message-ID: <201003102300.19497.rjw__16940.9066359096$1268258449$gmane$org@sisk.pl>
-References: <1268213322-5094-1-git-send-email-dfeng@redhat.com>
-	<alpine.DEB.2.00.1003100252550.25220@chino.kir.corp.google.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: power/level and power/control
+Date: Thu, 11 Mar 2010 11:44:59 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1003111139170.1367-100000__5126.99264004386$1268325999$gmane$org@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1003100252550.25220@chino.kir.corp.google.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,27 +15,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Rientjes <rientjes@google.com>
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Alexey Dobriyan <adobriyan@gmail.com>, Xiaotian Feng <dfeng@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 10 March 2010, David Rientjes wrote:
-> On Wed, 10 Mar 2010, Xiaotian Feng wrote:
-> 
-> > show_state will dump all tasks state, so if freezer failed to freeze
-> > any task, kernel will dump all tasks state and flood the dmesg log.
-> > This patch makes freezer only show state of tasks refusing to freeze.
-> > 
-> > Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-> > Cc: Pavel Machek <pavel@ucw.cz>
-> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> > Cc: Len Brown <len.brown@intel.com>
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > Cc: Alexey Dobriyan <adobriyan@gmail.com>
-> > Cc: David Rientjes <rientjes@google.com>
-> 
-> Acked-by: David Rientjes <rientjes@google.com>
+Greg & Rafael:
 
-Applied.
+In 2.6.34-rc1 we have the new /sys/devices/.../power/control attribute, 
+which does exactly the same thing as USB's existing power/level 
+attribute.
 
-Rafael
+There's no reason to keep both.  I'd remove power/level entirely, 
+except that it has been in existence for a while and people may be 
+using it.
+
+The best solution may be to replace "level" with a symbolic link to 
+"control", and possibly also to deprecate it.  Does that seem like the 
+right thing to do?
+
+Alan Stern
