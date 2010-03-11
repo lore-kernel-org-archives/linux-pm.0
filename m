@@ -1,11 +1,13 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: power/level and power/control
-Date: Thu, 11 Mar 2010 11:44:59 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1003111139170.1367-100000__5126.99264004386$1268325999$gmane$org@iolanthe.rowland.org>
+From: =?ISO-8859-1?Q?=C1kos_Mar=F3y?= <akos@maroy.hu>
+Subject: Re: suspend works until core pm_test, but the still fails
+Date: Thu, 11 Mar 2010 15:18:10 -0600
+Message-ID: <4B995E12.6020104@maroy.hu>
+References: <4B973F6B.4000709@maroy.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <4B973F6B.4000709@maroy.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,22 +17,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>
+To: pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Greg & Rafael:
+so, nobody would have any pointers on how to move forward with the issue
+below?
 
-In 2.6.34-rc1 we have the new /sys/devices/.../power/control attribute, 
-which does exactly the same thing as USB's existing power/level 
-attribute.
+=C1kos Mar=F3y wrote:
+> Hi,
+> =
 
-There's no reason to keep both.  I'd remove power/level entirely, 
-except that it has been in existence for a while and people may be 
-using it.
+> I'm still trying to make power management work on my HP Envy 15.
+> =
 
-The best solution may be to replace "level" with a symbolic link to 
-"control", and possibly also to deprecate it.  Does that seem like the 
-right thing to do?
+> I'm experimenting with unloading as many modules as possible, testing
+> the suspend feature using various levels of /sys/power/pm_test
+> =
 
-Alan Stern
+> I managed to get the number of modules as low as these:
+> =
+
+> Module                  Size  Used by
+> binfmt_misc             7454  1
+> bnep                   11287  2
+> btusb                  12729  2
+> =
+
+> =
+
+> then I was going through these steps;
+> =
+
+> echo freezer > /sys/power/pm_test
+> echo mem > /sys/power/state
+> echo devices > /sys/power/pm_test
+> echo mem > /sys/power/state
+> echo platform > /sys/power/pm_test
+> echo mem > /sys/power/state
+> echo processors > /sys/power/pm_test
+> echo mem > /sys/power/state
+> echo core > /sys/power/pm_test
+> echo mem > /sys/power/state
+> =
+
+> and all these worked fine - meaning that I got back to the console
+> screen. I also ran dmesg, and didn't see anything suspicious.
+> =
+
+> but, when I do:
+> =
+
+> echo none > /sys/power/pm_test
+> echo mem > /sys/power/state
+> =
+
+> =
+
+> the machine will still hang :(
+> =
+
+> =
+
+> what am I doing wrong?
+> =
+
+> this is all on a 2.6.32.9 kernel
+> =
+
+> =
+
+> Akos
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
