@@ -1,16 +1,16 @@
-From: Kay Sievers <kay.sievers@vrfy.org>
+From: Nithish Mahalingam <nithish.m@gmail.com>
 Subject: Re: power/level and power/control
-Date: Fri, 12 Mar 2010 10:22:56 +0100
-Message-ID: <ac3eb2511003120122n33130d22k61ca18ecf0d14e80@mail.gmail.com>
+Date: Fri, 12 Mar 2010 02:57:08 -0800
+Message-ID: <e6a3c75f1003120257i4adc05f0h83f48e76af1abaa5@mail.gmail.com>
 References: <Pine.LNX.4.44L0.1003111139170.1367-100000@iolanthe.rowland.org>
 	<201003120943.09520.oliver@neukum.org>
 	<ac3eb2511003120047l510fd464w31280f28c48f163a@mail.gmail.com>
 	<201003121008.49246.oliver@neukum.org>
+	<ac3eb2511003120122n33130d22k61ca18ecf0d14e80@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="===============4727487014348461139=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003121008.49246.oliver@neukum.org>
+In-Reply-To: <ac3eb2511003120122n33130d22k61ca18ecf0d14e80@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,31 +18,97 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
 Cc: Greg KH <greg@kroah.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBNYXIgMTIsIDIwMTAgYXQgMTA6MDgsIE9saXZlciBOZXVrdW0gPG9saXZlckBuZXVr
-dW0ub3JnPiB3cm90ZToKPiBBbSBGcmVpdGFnLCAxMi4gTcOkcnogMjAxMCAwOTo0NzoyOCBzY2hy
-aWViIEtheSBTaWV2ZXJzOgo+PiBPbiBGcmksIE1hciAxMiwgMjAxMCBhdCAwOTo0MywgT2xpdmVy
-IE5ldWt1bSA8b2xpdmVyQG5ldWt1bS5vcmc+IHdyb3RlOgo+Cj4+ID4gSGFzIHN1cHBvcnQgaW4g
-dXNlciBzcGFjZSBoYXJkd2FyZSBhYnN0cmFjdGlvbiBsYXllcnMgZm9yIHJ1bnRpbWUKPj4gPiBw
-b3dlciBtYW5hZ2VtZW50IGJlZW4gYWRkZWQ/IEl0IHNlZW1zIHRvIG1lIHRoYXQgd2UgbmVlZCB0
-aGlzLgo+Pgo+PiBUaGVyZSBpcyBubyBtYWpvciBwcm9qZWN0IEkga25vdyBvZiwgd2hpY2ggdXNl
-cyB0aGVzZSB0aGluZ3MsIGFuZAo+PiBub3RoaW5nIEkga25vdyBvZiBwZW9wbGUgd291bGQgd29y
-ayBvbiBhdCB0aGUgbW9tZW50Lgo+Cj4gSWYgdGhpcyB3ZXJlIHRvIGJlIGFkZGVkLCB3aGljaCBw
-cm9qZWN0IHNob3VsZCBpdCBiZSBhZGRlZCB0bz8KCkkgZG9uJ3QgdGhpbmsgdGhlcmUgaXMgYW4g
-ZXhpc3RpbmcgcHJvamVjdCB0aGF0IHdvdWxkIHJlYWxseSBmaXQgaGVyZS4KCj4gSSBkb24ndCB0
-aGluayBoYW5kbGluZyB0aGlzIHdpdGggdWRldiBzY3JpcHRzIGlzIGEgZ29vZCBpZGVhLCBiZWNh
-dXNlCj4geW91IHdhbnQgdG8gYmUgYWJsZSB0byByZXZpc2l0IHN1Y2ggZGVjaXNpb25zIHdoZW4g
-eW91IGdvIHRvCj4gYmF0dGVyeSBwb3dlciBvciBwb3dlciBpcyBsb3csIGZvciBleGFtcGxlIHdo
-ZXRoZXIgeW91IHdhbnQgdG8KPiBjaGFyZ2UgeW91ciBjZWxsIHBob25lLgoKUmlnaHQsIHRoYXQg
-bmVlZHMgcG9saWN5IHRvIGFwcGx5LCBkZXBlbmRpbmcgb24gdGhlIGN1cnJlbnQgc3RhdGUuIEJ1
-dAp1bmZvcnR1bmF0ZWx5IHRoZXJlIGlzIG5vIGV4aXN0aW5nIGluZnJhc3RydWN0dXJlIHdlIGNv
-dWxkIGVhc2lseQpleHRlbmQsIGl0IHdvdWxkIGJlIHNvbWV0aGluZyBuZXcgdG8gY29tZSB1cCB3
-aXRoLgoKS2F5Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-CmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
-ZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGlu
-dXgtcG0=
+--===============4727487014348461139==
+Content-Type: multipart/alternative; boundary=0016e6d99f6f86f93b0481986467
+
+--0016e6d99f6f86f93b0481986467
+Content-Type: text/plain; charset=ISO-8859-1
+
+>
+> >>> > Has support in user space hardware abstraction layers for runtime
+> >>> > power management been added? It seems to me that we need this.
+> >>>
+> >>> There is no major project I know of, which uses these things, and
+> >>> nothing I know of people would work on at the moment.
+> >>
+> >> If this were to be added, which project should it be added to?
+> >
+> > I don't think there is an existing project that would really fit here.
+> >
+> >> I don't think handling this with udev scripts is a good idea, because
+> >> you want to be able to revisit such decisions when you go to
+> >> battery power or power is low, for example whether you want to
+> >> charge your cell phone.
+> >
+> > Right, that needs policy to apply, depending on the current state. But
+> > unfortunately there is no existing infrastructure we could easily
+> > extend, it would be something new to come up with.
+>
+
+Shouldn't it suffice to extend usb_device namespace values in HAL
+specification for runtime PM and once added let distribution
+specific user space PM framework handle this.
+http://people.redhat.com/davidz/hal-spec/hal-spec.html#device-properties-usb
+
+I guess the industry is moving towards DeviceKit, anyway that is just
+implementation specific.
+
+regards,
+/N
+
+--0016e6d99f6f86f93b0481986467
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<div class=3D"gmail_quote"><blockquote class=3D"gmail_quote" style=3D"margi=
+n: 0pt 0pt 0pt 0.8ex; border-left: 1px solid rgb(204, 204, 204); padding-le=
+ft: 1ex;"><div class=3D"im">&gt;&gt;&gt; &gt; Has support in user space har=
+dware abstraction layers for runtime<br>
+
+&gt;&gt;&gt; &gt; power management been added? It seems to me that we need =
+this.<br>
+&gt;&gt;&gt;<br>
+&gt;&gt;&gt; There is no major project I know of, which uses these things, =
+and<br>
+&gt;&gt;&gt; nothing I know of people would work on at the moment.<br>
+&gt;&gt;<br>
+&gt;&gt; If this were to be added, which project should it be added to?<br>
+&gt; <br>
+</div>&gt; I don&#39;t think there is an existing project that would really=
+ fit here.<br>
+<div class=3D"im">&gt; <br>
+&gt;&gt; I don&#39;t think handling this with udev scripts is a good idea, =
+because<br>
+&gt;&gt; you want to be able to revisit such decisions when you go to<br>
+&gt;&gt; battery power or power is low, for example whether you want to<br>
+&gt;&gt; charge your cell phone.<br>
+&gt; <br>
+</div>&gt; Right, that needs policy to apply, depending on the current stat=
+e. But<br>
+&gt; unfortunately there is no existing infrastructure we could easily<br>
+&gt; extend, it would be something new to come up with.<br></blockquote><di=
+v><br>Shouldn&#39;t it suffice to extend usb_device namespace values in HAL=
+ <br>specification for runtime PM and once added let distribution <br>
+specific user space PM framework handle this.<br> <a href=3D"http://people.=
+redhat.com/davidz/hal-spec/hal-spec.html#device-properties-usb">http://peop=
+le.redhat.com/davidz/hal-spec/hal-spec.html#device-properties-usb</a><br>
+<br>I guess the industry is moving towards DeviceKit, anyway that is just <=
+br>implementation specific.<br><br>regards,<br>/N<br></div></div>
+
+--0016e6d99f6f86f93b0481986467--
+
+--===============4727487014348461139==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============4727487014348461139==--
