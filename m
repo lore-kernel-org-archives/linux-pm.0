@@ -1,15 +1,13 @@
-From: Oliver Neukum <oliver@neukum.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: power/level and power/control
-Date: Fri, 12 Mar 2010 12:40:36 +0100
-Message-ID: <201003121240.36634.oliver__7655.17182085222$1268394095$gmane$org@neukum.org>
-References: <Pine.LNX.4.44L0.1003111139170.1367-100000@iolanthe.rowland.org>
-	<e6a3c75f1003120257i4adc05f0h83f48e76af1abaa5@mail.gmail.com>
-	<ac3eb2511003120304v39387563l95d2a9c6a00f3f5d@mail.gmail.com>
+Date: Fri, 12 Mar 2010 09:44:39 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1003120941040.1771-100000__4714.91044522754$1268405403$gmane$org@iolanthe.rowland.org>
+References: <201003112300.11761.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <ac3eb2511003120304v39387563l95d2a9c6a00f3f5d@mail.gmail.com>
+In-Reply-To: <201003112300.11761.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,24 +17,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kay Sievers <kay.sievers@vrfy.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Greg KH <greg@kroah.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-QW0gRnJlaXRhZywgMTIuIE3DpHJ6IDIwMTAgMTI6MDQ6NTEgc2NocmllYiBLYXkgU2lldmVyczoK
-PiBPbiBGcmksIE1hciAxMiwgMjAxMCBhdCAxMTo1NywgTml0aGlzaCBNYWhhbGluZ2FtIDxuaXRo
-aXNoLm1AZ21haWwuY29tPiB3cm90ZToKCj4gPiBJIGd1ZXNzIHRoZSBpbmR1c3RyeSBpcyBtb3Zp
-bmcgdG93YXJkcyBEZXZpY2VLaXQsIGFueXdheSB0aGF0IGlzIGp1c3QKPiA+IGltcGxlbWVudGF0
-aW9uIHNwZWNpZmljLgo+IAo+IFRoZXJlIGlzIG5vIEhBTCBhbnltb3JlLCBpdCdzIGRlYWQgYW5k
-IG5vIGxvbmdlciBtYWludGFpbmVkLiBEZXZpY2VLaXQKPiB3YXMgb25seSBhIHRlbXBvcmFyeSBu
-YW1lLCBhbmQgZG9lcyBub3QgZXhpc3QgYXMgYSBwcm9qZWN0Lgo+IAo+IEhBTCBpcyBzcGxpdCBp
-bnRvIHBpZWNlcywgbGlrZSB1ZGlza3MsIHVwb3dlciwgYW5kIGFsb25nIHdpdGggdWRldiwKPiBQ
-dWxzZUF1ZGlvLCBOZXR3b3JrTWFuYWdlciwgQ29uc29sZUtpdCwgUG9saWN5S2l0LCAuLi4sIHRo
-ZXJlIGFyZQo+IHNwZWNpYWxpemVkIGRhZW1vbnMgdGFraW5nIGNhcmUgb2YgZG9tYWluLXNwZWNp
-ZmljIHRhc2tzLiBUaGVyZSBpcwo+IG5vdGhpbmcgcmVhbGx5IHdoZXJlIFVTQiBwb3dlciBtYW5h
-Z2VtZW50IHdvdWxkIHJlYWxseSBmaXQgaW4gdG9kYXkuCgpJdCBubyBsb25nZXIgaXMgVVNCIHBv
-d2VyIG1hbmFnZW1lbnQuIEl0IGhhcyBiZWVuIHNoaWZ0ZWQgaW50bwp0aGUgY29yZS4gRXZlcnkg
-ZGV2aWNlIGlzIGFmZmVjdGVkLgoKCVJlZ2FyZHMKCQlPbGl2ZXIKX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4
-LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRh
-dGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Thu, 11 Mar 2010, Rafael J. Wysocki wrote:
+
+> On Thursday 11 March 2010, Alan Stern wrote:
+> > Greg & Rafael:
+> > 
+> > In 2.6.34-rc1 we have the new /sys/devices/.../power/control attribute, 
+> > which does exactly the same thing as USB's existing power/level 
+> > attribute.
+> > 
+> > There's no reason to keep both.  I'd remove power/level entirely, 
+> > except that it has been in existence for a while and people may be 
+> > using it.
+> > 
+> > The best solution may be to replace "level" with a symbolic link to 
+> > "control", and possibly also to deprecate it.  Does that seem like the 
+> > right thing to do?
+> 
+> Sounds reasonable to me.
+
+On Thu, 11 Mar 2010, Greg KH wrote:
+
+> Sounds good to me.
+
+Alas, it turns out that sysfs doesn't provide any way to create 
+symlinks to attribute files (and especially not to attribute files in 
+group directories).
+
+I could add such a thing, but maybe it will be better to keep the
+existing attribute code for a year or so and add a WARN_ONCE to let
+people know it's going to be removed.
+
+Alan Stern
