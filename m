@@ -1,14 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bisected Regression in 2.6.32.8] i915 with KMS
-	enabled causes memorycorruption when resuming from suspend-to-disk
-Date: Sat, 13 Mar 2010 21:05:27 +0100
-Message-ID: <201003132105.27127.rjw__34384.3813207515$1268510646$gmane$org@sisk.pl>
-References: <4B9B1E8F.5090806@superonline.com>
+Subject: [PATCH] i2c: Use generic subsystem-level power
+	management callbacks
+Date: Sat, 13 Mar 2010 22:04:30 +0100
+Message-ID: <201003132204.30905.rjw__19524.1314745092$1268514151$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4B9B1E8F.5090806@superonline.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,114 +16,182 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "M. Vefa Bicakci" <bicave@superonline.com>, Chris Wilson <chris@chris-wilson.co.uk>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, dri-devel@lists.sourceforge.net, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux I2C <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 13 March 2010, M. Vefa Bicakci wrote:
-> Hello,
-> 
-> As you can guess from the subject, I have noticed that enabling the
-> KMS feature of the i915 module with any kernel version after 2.6.32.7
-> causes memory corruption after one resumes from suspend-to-disk.
-> 
-> My hardware is a Toshiba Satellite A100, with an Intel graphics card.
-> I am using an up-to-date version of Debian Sid. Here are the lspci 
-> entries for my graphics card:
-> 
-> === 8< ===
-> 00:02.0 VGA compatible controller [0300]: Intel Corporation Mobile 945GM/GMS, 943/940GML Express Integrated Graphics Controller [8086:27a2] (rev 03) (prog-if 00 [VGA controller])
-> 00:02.1 Display controller [0380]: Intel Corporation Mobile 945GM/GMS/GME, 943/940GML Express Integrated Graphics Controller [8086:27a6] (rev 03)
-> === >8 ===
-> 
-> I have noticed that after upgrading from 2.6.32.7 to 2.6.32.9, I started
-> to get a lot of segfaults from different programs when I resume from
-> suspend-to-disk. After searching the Internet for this problem, I have
-> seen that some other people also had it, and that it wasn't a new problem
-> either: 
-> 
-> http://bbs.archlinux.org/viewtopic.php?id=91375
-> https://bugzilla.redhat.com/show_bug.cgi?id=537494
-> http://bugzilla.kernel.org/show_bug.cgi?id=13811
-> 
-> Even though some people say that they have had this problem for a long time,
-> I have only noticed it after upgrading to 2.6.32.9.
-> 
-> After booting with "nomodeset" and confirming that the problem doesn't
-> happen with that kernel option, I have determined that the problem was
-> with i915.
-> 
-> Then I used the following command to bisect the changes that i915 has
-> seen between 2.6.32.7 and 2.6.32.9:
-> 
-> git bisect start v2.6.32.9 v2.6.32.7 -- ./drivers/gpu/drm/
-> 
-> With each iteration in the bisection, I have tried at least 3 cycles
-> of suspend-to-disk and resume operations. I saw that all of the tried
-> versions had memory corruption issues after resume from suspend-to-disk.
-> 
-> Then, git told me that the culprit is the first change to i915 after the
-> release 2.6.32.7. So 2.6.32.8 introduced the regression I am experiencing.
-> Here's the "git bisect log" output:
-> 
-> === 8< ===
-> # bad: [7f5e918e62cbc9ac27c2f47d3c3dd4b86f67ff0e] Linux 2.6.32.9
-> # good: [b4bdd73ce865213a5653dc424873e8da37e858cc] Linux 2.6.32.7
-> git bisect start 'v2.6.32.9' 'v2.6.32.7' '--' './drivers/gpu/drm/'
-> # bad: [192ff23a2206eb5136c779bfed73171a4d214ad6] drm/i915: Add HP nx9020/SamsungSX20S to ACPI LID quirk list
-> git bisect bad 192ff23a2206eb5136c779bfed73171a4d214ad6
-> # bad: [6240058ce3725f5e708e1c17c3a676217e44ba9b] drm/i915: disable hotplug detect before Ironlake CRT detect
-> git bisect bad 6240058ce3725f5e708e1c17c3a676217e44ba9b
-> # bad: [61d4374b51386dd40c03fd15df5a7f97347de688] drm/i915: Reload hangcheck timer too for Ironlake
-> git bisect bad 61d4374b51386dd40c03fd15df5a7f97347de688
-> # bad: [d8e0902806c0bd2ccc4f6a267ff52565a3ec933b] drm/i915: Selectively enable self-reclaim
-> git bisect bad d8e0902806c0bd2ccc4f6a267ff52565a3ec933b
-> 
-> d8e0902806c0bd2ccc4f6a267ff52565a3ec933b is the first bad commit
-> commit d8e0902806c0bd2ccc4f6a267ff52565a3ec933b
-> Author: Chris Wilson <chris@chris-wilson.co.uk>
-> Date:   Wed Jan 27 13:36:32 2010 +0000
-> 
->     drm/i915: Selectively enable self-reclaim
-> 
->     commit 4bdadb9785696439c6e2b3efe34aa76df1149c83 upstream.
-> 
->     Having missed the ENOMEM return via i915_gem_fault(), there are probably
->     other paths that I also missed. By not enabling NORETRY by default these
->     paths can run the shrinker and take memory from the system (but not from
->     our own inactive lists because our shrinker can not run whilst we hold
->     the struct mutex) and this may allow the system to survive a little longer
->     whilst our drivers consume all available memory.
-> 
->     References:
->       OOM killer unexpectedly called with kernel 2.6.32
->       http://bugzilla.kernel.org/show_bug.cgi?id=14933
-> 
->     v2: Pass gfp into page mapping.
->     v3: Use new read_cache_page_gfp() instead of open-coding.
-> 
->     ...
-> === >8 ===
-> 
-> For the record, just to confirm that this commit is actually the culprit,
-> I took a vanilla 2.6.32.9 source tree and reverted only this commit. I am
-> happy to let you know that with this commit reverted, I can no longer
-> reproduce the memory corruption issue.
-> 
-> However, as I noted above, some people have had this problem for a longer
-> time. So I am not sure if the commit above causes the bug or if it makes
-> the bug easier to trigger.
-> 
-> Finally, I would like to note that this regression is going to be important,
-> because, as you know, Intel's X11 drivers are not going to support mode-setting
-> in user mode starting with version 2.10.0.
-> 
-> If there is any help I can provide in fixing this regression, please let me
-> know. I am willing to try patches.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-If I remember correctly, this has been fixed in the mainline, but I don't
-remember the exact commit right now.
+There are three issues with the i2c's power management callbacks at
+the moment.  First, they don't include any hibernate callbacks,
+although they should at least include the .restore() callback
+(there's no guarantee that the driver will be in memory before
+loading the image kernel and we must restore the pre-hibernation
+state of the device).  Second, the "legacy" callbacks are not going
+to be invoked by the PM core since the bus type's pm object is not
+NULL.  Finally, the system power transition (ie. suspend/resume)
+callbacks don't check if the device hasn't been already suspended
+at run time, in which case they should skip suspending it and
+handle it in a special way during resume.  Also, it looks like the
+i2c bus type itself doesn't need any power management handling beyond
+that provided by the generic subsystem-level PM callbacks.
 
-Chris, Jesse, can you please help?
+For these reasons, remove the power management callbacks defined by
+the i2c bus type and make it use the generic subsystem-level power
+management callbacks.
 
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+Jean,
+
+I know I said I wanted to implement the generic callbacks later, but they
+were implemented in the meantime anyway, so I think we can use them now.
+
+Please note that the "legacy" callbacks removed by this patch are already
+effectively dead, because they are not going to be called by the PM core
+anyway.  I'm not sure if this is what we want, though, so please let me know
+in case it's not.
+
+Thanks,
 Rafael
+---
+ drivers/i2c/i2c-core.c |  113 -------------------------------------------------
+ 1 file changed, 1 insertion(+), 112 deletions(-)
+
+Index: linux-2.6/drivers/i2c/i2c-core.c
+===================================================================
+--- linux-2.6.orig/drivers/i2c/i2c-core.c
++++ linux-2.6/drivers/i2c/i2c-core.c
+@@ -156,107 +156,6 @@ static void i2c_device_shutdown(struct d
+ 		driver->shutdown(client);
+ }
+ 
+-#ifdef CONFIG_SUSPEND
+-static int i2c_device_pm_suspend(struct device *dev)
+-{
+-	const struct dev_pm_ops *pm;
+-
+-	if (!dev->driver)
+-		return 0;
+-	pm = dev->driver->pm;
+-	if (!pm || !pm->suspend)
+-		return 0;
+-	return pm->suspend(dev);
+-}
+-
+-static int i2c_device_pm_resume(struct device *dev)
+-{
+-	const struct dev_pm_ops *pm;
+-
+-	if (!dev->driver)
+-		return 0;
+-	pm = dev->driver->pm;
+-	if (!pm || !pm->resume)
+-		return 0;
+-	return pm->resume(dev);
+-}
+-#else
+-#define i2c_device_pm_suspend	NULL
+-#define i2c_device_pm_resume	NULL
+-#endif
+-
+-#ifdef CONFIG_PM_RUNTIME
+-static int i2c_device_runtime_suspend(struct device *dev)
+-{
+-	const struct dev_pm_ops *pm;
+-
+-	if (!dev->driver)
+-		return 0;
+-	pm = dev->driver->pm;
+-	if (!pm || !pm->runtime_suspend)
+-		return 0;
+-	return pm->runtime_suspend(dev);
+-}
+-
+-static int i2c_device_runtime_resume(struct device *dev)
+-{
+-	const struct dev_pm_ops *pm;
+-
+-	if (!dev->driver)
+-		return 0;
+-	pm = dev->driver->pm;
+-	if (!pm || !pm->runtime_resume)
+-		return 0;
+-	return pm->runtime_resume(dev);
+-}
+-
+-static int i2c_device_runtime_idle(struct device *dev)
+-{
+-	const struct dev_pm_ops *pm = NULL;
+-	int ret;
+-
+-	if (dev->driver)
+-		pm = dev->driver->pm;
+-	if (pm && pm->runtime_idle) {
+-		ret = pm->runtime_idle(dev);
+-		if (ret)
+-			return ret;
+-	}
+-
+-	return pm_runtime_suspend(dev);
+-}
+-#else
+-#define i2c_device_runtime_suspend	NULL
+-#define i2c_device_runtime_resume	NULL
+-#define i2c_device_runtime_idle		NULL
+-#endif
+-
+-static int i2c_device_suspend(struct device *dev, pm_message_t mesg)
+-{
+-	struct i2c_client *client = i2c_verify_client(dev);
+-	struct i2c_driver *driver;
+-
+-	if (!client || !dev->driver)
+-		return 0;
+-	driver = to_i2c_driver(dev->driver);
+-	if (!driver->suspend)
+-		return 0;
+-	return driver->suspend(client, mesg);
+-}
+-
+-static int i2c_device_resume(struct device *dev)
+-{
+-	struct i2c_client *client = i2c_verify_client(dev);
+-	struct i2c_driver *driver;
+-
+-	if (!client || !dev->driver)
+-		return 0;
+-	driver = to_i2c_driver(dev->driver);
+-	if (!driver->resume)
+-		return 0;
+-	return driver->resume(client);
+-}
+-
+ static void i2c_client_dev_release(struct device *dev)
+ {
+ 	kfree(to_i2c_client(dev));
+@@ -295,23 +194,13 @@ static const struct attribute_group *i2c
+ 	NULL
+ };
+ 
+-static const struct dev_pm_ops i2c_device_pm_ops = {
+-	.suspend = i2c_device_pm_suspend,
+-	.resume = i2c_device_pm_resume,
+-	.runtime_suspend = i2c_device_runtime_suspend,
+-	.runtime_resume = i2c_device_runtime_resume,
+-	.runtime_idle = i2c_device_runtime_idle,
+-};
+-
+ struct bus_type i2c_bus_type = {
+ 	.name		= "i2c",
+ 	.match		= i2c_device_match,
+ 	.probe		= i2c_device_probe,
+ 	.remove		= i2c_device_remove,
+ 	.shutdown	= i2c_device_shutdown,
+-	.suspend	= i2c_device_suspend,
+-	.resume		= i2c_device_resume,
+-	.pm		= &i2c_device_pm_ops,
++	.pm		= GENERIC_SUBSYS_PM_OPS,
+ };
+ EXPORT_SYMBOL_GPL(i2c_bus_type);
+ 
