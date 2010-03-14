@@ -1,14 +1,12 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] i2c: Use generic subsystem-level power
- management callbacks
-Date: Sat, 13 Mar 2010 16:34:29 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1003131627270.19476-100000__2934.68925306133$1268516147$gmane$org@netrider.rowland.org>
-References: <201003132204.30905.rjw@sisk.pl>
+From: 640E9920 <640e9920@gmail.com>
+Subject: [PATCH] PM_QOS updates for 2.6.34-rc1
+Date: Sat, 13 Mar 2010 16:34:25 -0800
+Message-ID: <20100314003425.GA17812__19843.8612897464$1268526953$gmane$org@mgross-acer>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003132204.30905.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,26 +16,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jean Delvare <khali@linux-fr.org>, pm list <linux-pm@lists.linux-foundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux I2C <linux-i2c@vger.kernel.org>
+To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, dwalker@codeaurora.org, tiwai@suse.de, bruce.w.allan@intel.com, aili@codeaurora.org, khilman@deeprootsy
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 13 Mar 2010, Rafael J. Wysocki wrote:
+The following patch series implements to following:
+1) pm_qos now uses a handle based implementation.  No more string
+compares while walking lists.
+2) renames the exports to using more accurate names.
+3) updates kernel clients of pm_qos per this change
+4) added ascii interface to pmqos recognizing strings formatted in 10
+charactor format "0x12345678"
+5) added new pm_qos class, "system_bus_throughput"
 
-> Please note that the "legacy" callbacks removed by this patch are already
-> effectively dead, because they are not going to be called by the PM core
-> anyway.  I'm not sure if this is what we want, though, so please let me know
-> in case it's not.
+I would like to see this series make it into 2.6.34 if its not too late. 
 
-You know, maybe we should allow bus types to use both the old and new
-interfaces.  It would make life easier for other subsystems in addition
-to i2c.
+I was able to test it on my laptop and comments welcome.
 
-This doesn't mean that the core would end up calling two sets of
-suspend routines.  If the bus type uses legacy routines then all the
-non-runtime entries in the pm_ops structure would be empty.
+Thank you!
 
-The changes to the PM core necessary to do this are quite small.  Does 
-it seem like a reasonable thing to do?
-
-Alan Stern
+--mgross
