@@ -1,14 +1,11 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM_QOS updates for 2.6.34-rc1
-Date: Sun, 14 Mar 2010 07:26:37 +0100
-Message-ID: <20100314062637.GA12064__15439.2847013243$1268548077$gmane$org@elf.ucw.cz>
-References: <20100314003425.GA17812@mgross-acer>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Runtime PM API issue
+Date: Sun, 14 Mar 2010 15:28:00 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1003141500230.1752-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100314003425.GA17812@mgross-acer>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,27 +15,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: 640E9920 <640e9920@gmail.com>
-Cc: dwalker@codeaurora.org, tiwai@suse.de, bruce.w.allan@intel.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat 2010-03-13 16:34:25, 640E9920 wrote:
-> The following patch series implements to following:
-> 1) pm_qos now uses a handle based implementation.  No more string
-> compares while walking lists.
-> 2) renames the exports to using more accurate names.
-> 3) updates kernel clients of pm_qos per this change
-> 4) added ascii interface to pmqos recognizing strings formatted in 10
-> charactor format "0x12345678"
-> 5) added new pm_qos class, "system_bus_throughput"
-> 
-> I would like to see this series make it into 2.6.34 if its not too late. 
+Rafael:
 
-I believe it is... -rc1 is past us.
+I ran across this issue recently.  The best way I can see to fix it is
+to modify the runtime PM API slightly.
 
-Also... the way the patches are structured... that will break bisect,
-no?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Drivers that handle high throughput may not want to incur the overhead
+of testing for idleness after every I/O operation; they may prefer to
+poll at regular intervals.  Currently this is awkward and inefficient
+to do.
+
+First, recognize that idleness testing will often be needed in the 
+runtime_suspend method, not just in the runtime_idle method.  This is 
+for two reasons:
+
+    (1) Suppose the driver determines the device isn't idle, so it 
+	wants to schedule another poll in the future.  There is no
+	pm_schedule_idle() routine, so it has to use 
+	pm_schedule_suspend().  When the delay expires, the job of 
+	determining whether the device is idle then has to fall on the 
+	runtime_suspend method.
+
+    (2) More importantly, an interrupt-driven driver will most likely
+	want to avoid races by doing both the idleness test and the 
+	actual suspend under a single spinlock_irq().  This can't be 
+	done if the test is in a different method from the suspend.
+
+Now here's the point.  Suppose the runtime_suspend method determines
+that the device isn't idle.  It needs to schedule another poll in the
+future.  But it can't!  pm_schedule_suspend() will fail if it is called
+while the runtime status is SUSPENDING.  Instead the suspend call has
+to be allowed to fail; then the PM core will call the runtime_idle
+method, which has to repeat the idleness test and call
+pm_schedule_suspend().  As I said before, this is inefficient.
+
+It's also a little awkward, since it requires the driver to maintain
+some extra device status information -- otherwise the runtime_idle
+method doesn't know whether it's being called because a suspend attempt
+failed or for some more benign reason.
+
+The best solution seems to be to allow pm_schedule_suspend() to succeed
+if the status is SUSPENDING.  In turn, __pm_runtime_suspend() should
+avoid calling pm_runtime_cancel_pending() if the suspend fails with
+-EAGAIN, and it should call pm_runtime_deactivate_timer() if the
+suspend succeeds.
+
+What do you think?
+
+Alan Stern
