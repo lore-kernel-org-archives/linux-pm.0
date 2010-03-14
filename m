@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM_QOS updates for 2.6.34-rc1
-Date: Sun, 14 Mar 2010 21:08:07 +0100
-Message-ID: <201003142108.07164.rjw__33940.2383346625$1268597187$gmane$org@sisk.pl>
-References: <20100314003425.GA17812@mgross-acer>
-	<20100314062637.GA12064@elf.ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] i2c: Use generic subsystem-level power
+ management callbacks
+Date: Sun, 14 Mar 2010 16:26:45 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1003141620540.1752-100000__46162.6076176346$1268598468$gmane$org@netrider.rowland.org>
+References: <201003142058.45981.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100314062637.GA12064@elf.ucw.cz>
+In-Reply-To: <201003142058.45981.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,30 +18,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>, Mark Gross <mgross@linux.intel.com>
-Cc: dwalker@codeaurora.org, tiwai@suse.de, bruce.w.allan@intel.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jean Delvare <khali@linux-fr.org>, pm list <linux-pm@lists.linux-foundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux I2C <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 14 March 2010, Pavel Machek wrote:
-> On Sat 2010-03-13 16:34:25, 640E9920 wrote:
-> > The following patch series implements to following:
-> > 1) pm_qos now uses a handle based implementation.  No more string
-> > compares while walking lists.
-> > 2) renames the exports to using more accurate names.
-> > 3) updates kernel clients of pm_qos per this change
-> > 4) added ascii interface to pmqos recognizing strings formatted in 10
-> > charactor format "0x12345678"
-> > 5) added new pm_qos class, "system_bus_throughput"
+On Sun, 14 Mar 2010, Rafael J. Wysocki wrote:
+
+> > You know, maybe we should allow bus types to use both the old and new
+> > interfaces.  It would make life easier for other subsystems in addition
+> > to i2c.
 > > 
-> > I would like to see this series make it into 2.6.34 if its not too late. 
+> > This doesn't mean that the core would end up calling two sets of
+> > suspend routines.  If the bus type uses legacy routines then all the
+> > non-runtime entries in the pm_ops structure would be empty.
+> > 
+> > The changes to the PM core necessary to do this are quite small.
 > 
-> I believe it is... -rc1 is past us.
+> Not really.  The detection that the particular callback is not present happens
+> in pm_op(), while the decision which framework to use is made at the
+> device_[suspend|resume]() level.
 
-It definitely is.
+All you have to do is change the "else if" lines in
+device_[suspend|resume]() to "if".
 
-> Also... the way the patches are structured... that will break bisect, no?
+> > Does it seem like a reasonable thing to do?
+> 
+> Well, if someone spends time on implementing new callbacks for a bus type,
+> writing them in such a way that they will call the "legacy" callbacks from
+> drivers if necessary is not really a big deal IMO.
 
-Not only that.  Some changelogs would be heartily welcome.  In short, what
-change the particular patch is going to make and why it's useful.
+Sure.  But suppose you _don't_ want to spend the time implementing new
+callbacks to replace the existing legacy suspend and resume methods,
+whereas you _do_ want to implement runtime PM.  Runtime PM forces the
+bus type to have a pm_ops member, which as you point out, will prevent
+the legacy methods from being called.
 
-Rafael
+Alan Stern
