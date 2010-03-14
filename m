@@ -1,10 +1,14 @@
-From: 640E9920 <640e9920@gmail.com>
-Subject: [PATCH] PM_QOS api update for linux-next
-Date: Sat, 13 Mar 2010 18:16:04 -0800
-Message-ID: <20100314021604.GA22158__5616.35913695699$1268533037$gmane$org@mgross-acer>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM_QOS updates for 2.6.34-rc1
+Date: Sun, 14 Mar 2010 07:26:37 +0100
+Message-ID: <20100314062637.GA12064__15439.2847013243$1268548077$gmane$org@elf.ucw.cz>
+References: <20100314003425.GA17812@mgross-acer>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6105810382369372480=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <20100314003425.GA17812@mgross-acer>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,78 +16,29 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Helmut.Schaa@gmx.de
+To: 640E9920 <640e9920@gmail.com>
+Cc: dwalker@codeaurora.org, tiwai@suse.de, bruce.w.allan@intel.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Sat 2010-03-13 16:34:25, 640E9920 wrote:
+> The following patch series implements to following:
+> 1) pm_qos now uses a handle based implementation.  No more string
+> compares while walking lists.
+> 2) renames the exports to using more accurate names.
+> 3) updates kernel clients of pm_qos per this change
+> 4) added ascii interface to pmqos recognizing strings formatted in 10
+> charactor format "0x12345678"
+> 5) added new pm_qos class, "system_bus_throughput"
+> 
+> I would like to see this series make it into 2.6.34 if its not too late. 
 
---===============6105810382369372480==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="OXfL5xGRrasGEqWY"
-Content-Disposition: inline
+I believe it is... -rc1 is past us.
 
-
---OXfL5xGRrasGEqWY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-This patch assumes the pm_qos update just posted is included int
-linux-next.
-
-Signed-off-by: mark gross <mgross@linux.intel.com>
-
-
-=46rom 361b695e0f6468214e6e8c8c789bdb651e163374 Mon Sep 17 00:00:00 2001
-=46rom: mgross <mgross@linux.intel.com>
-Date: Sat, 13 Mar 2010 18:09:04 -0800
-Subject: [PATCH] PM_QOS function name update pm_qos_requierment --> pm_qos_=
-request
-
----
- net/mac80211/scan.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/net/mac80211/scan.c b/net/mac80211/scan.c
-index 75a8597..077eef1 100644
---- a/net/mac80211/scan.c
-+++ b/net/mac80211/scan.c
-@@ -506,7 +506,7 @@ static int ieee80211_scan_state_decision(struct ieee802=
-11_local *local,
- 		bad_latency =3D time_after(jiffies +
- 				ieee80211_scan_get_channel_time(next_chan),
- 				local->leave_oper_channel_time +
--				usecs_to_jiffies(pm_qos_requirement(PM_QOS_NETWORK_LATENCY)));
-+				usecs_to_jiffies(pm_qos_request(PM_QOS_NETWORK_LATENCY)));
-=20
- 		listen_int_exceeded =3D time_after(jiffies +
- 				ieee80211_scan_get_channel_time(next_chan),
---=20
-1.6.3.3
-
-
---OXfL5xGRrasGEqWY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkucRuQACgkQhK5OsmQOmSCblQCcDBrdBncwhra2tA3r0SSR+/o9
-oyUAnisC0JS+AhGjSE3CvHVTE61MEXaP
-=P4sd
------END PGP SIGNATURE-----
-
---OXfL5xGRrasGEqWY--
-
---===============6105810382369372480==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============6105810382369372480==--
+Also... the way the patches are structured... that will break bisect,
+no?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
