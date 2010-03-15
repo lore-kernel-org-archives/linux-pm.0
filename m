@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/2] r8169 / PCI / PM: Add simplified runtime PM
-	support (rev. 3)
-Date: Mon, 15 Mar 2010 01:33:51 +0100
-Message-ID: <201003150133.51239.rjw__15863.2101760761$1268613238$gmane$org@sisk.pl>
-References: <201003150131.59619.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] i2c: Use generic subsystem-level power
+ management callbacks
+Date: Sun, 14 Mar 2010 21:28:55 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1003142117200.7108-100000__1957.39474515921$1268616598$gmane$org@netrider.rowland.org>
+References: <201003142352.50692.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003150131.59619.rjw@sisk.pl>
+In-Reply-To: <201003142352.50692.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,335 +18,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: NetDev <netdev@vger.kernel.org>
-Cc: e1000-devel@lists.sourceforge.net, Linux PCI <linux-pci@vger.kernel.org>, Jesse Brandeburg <jesse.brandeburg@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Jeff Kirsher <jeffrey.t.kirsher@intel.com>, Francois Romieu <romieu@fr.zoreil.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jean Delvare <khali@linux-fr.org>, pm list <linux-pm@lists.linux-foundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux I2C <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Sun, 14 Mar 2010, Rafael J. Wysocki wrote:
 
-Use the PCI runtime power management framework to add basic PCI
-runtime PM support to the r8169 driver.  Namely, make the driver
-suspend the device when the link is not present and set it up for
-generating a wakeup event after the link has been detected again.
-[This feature is disabled until the user space enables it with the
-help of the /sys/devices/.../power/contol device attribute.]
+> On Sunday 14 March 2010, Alan Stern wrote:
+> > On Sun, 14 Mar 2010, Rafael J. Wysocki wrote:
+> > 
+> > > > You know, maybe we should allow bus types to use both the old and new
+> > > > interfaces.  It would make life easier for other subsystems in addition
+> > > > to i2c.
+> > > > 
+> > > > This doesn't mean that the core would end up calling two sets of
+> > > > suspend routines.  If the bus type uses legacy routines then all the
+> > > > non-runtime entries in the pm_ops structure would be empty.
+> > > > 
+> > > > The changes to the PM core necessary to do this are quite small.
+> > > 
+> > > Not really.  The detection that the particular callback is not present happens
+> > > in pm_op(), while the decision which framework to use is made at the
+> > > device_[suspend|resume]() level.
+> > 
+> > All you have to do is change the "else if" lines in
+> > device_[suspend|resume]() to "if".
+> 
+> Then, if a bus type implements both "new" and "old" callbacks, we'll end up
+> calling both.  Not nice.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/net/r8169.c |  152 ++++++++++++++++++++++++++++++++++++++++++----------
- 1 file changed, 125 insertions(+), 27 deletions(-)
+Why would a bus type implement both?  Or looked at another way, if it 
+did implement both then wouldn't it want both sets of callbacks to be 
+invoked?
 
-Index: linux-2.6/drivers/net/r8169.c
-===================================================================
---- linux-2.6.orig/drivers/net/r8169.c
-+++ linux-2.6/drivers/net/r8169.c
-@@ -23,6 +23,7 @@
- #include <linux/tcp.h>
- #include <linux/init.h>
- #include <linux/dma-mapping.h>
-+#include <linux/pm_runtime.h>
- 
- #include <asm/system.h>
- #include <asm/io.h>
-@@ -504,6 +505,7 @@ struct rtl8169_private {
- 
- 	struct mii_if_info mii;
- 	struct rtl8169_counters counters;
-+	u32 saved_wolopts;
- };
- 
- MODULE_AUTHOR("Realtek and the Linux r8169 crew <netdev@vger.kernel.org>");
-@@ -744,53 +746,61 @@ static void rtl8169_check_link_status(st
- 
- 	spin_lock_irqsave(&tp->lock, flags);
- 	if (tp->link_ok(ioaddr)) {
-+		/* This is to cancel a scheduled suspend if there's one. */
-+		pm_request_resume(&tp->pci_dev->dev);
- 		netif_carrier_on(dev);
- 		netif_info(tp, ifup, dev, "link up\n");
- 	} else {
- 		netif_carrier_off(dev);
- 		netif_info(tp, ifdown, dev, "link down\n");
-+		pm_schedule_suspend(&tp->pci_dev->dev, 100);
- 	}
- 	spin_unlock_irqrestore(&tp->lock, flags);
- }
- 
--static void rtl8169_get_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
-+#define WAKE_ANY (WAKE_PHY | WAKE_MAGIC | WAKE_UCAST | WAKE_BCAST | WAKE_MCAST)
-+
-+static u32 __rtl8169_get_wol(struct rtl8169_private *tp)
- {
--	struct rtl8169_private *tp = netdev_priv(dev);
- 	void __iomem *ioaddr = tp->mmio_addr;
- 	u8 options;
--
--	wol->wolopts = 0;
--
--#define WAKE_ANY (WAKE_PHY | WAKE_MAGIC | WAKE_UCAST | WAKE_BCAST | WAKE_MCAST)
--	wol->supported = WAKE_ANY;
--
--	spin_lock_irq(&tp->lock);
-+	u32 wolopts = 0;
- 
- 	options = RTL_R8(Config1);
- 	if (!(options & PMEnable))
--		goto out_unlock;
-+		return 0;
- 
- 	options = RTL_R8(Config3);
- 	if (options & LinkUp)
--		wol->wolopts |= WAKE_PHY;
-+		wolopts |= WAKE_PHY;
- 	if (options & MagicPacket)
--		wol->wolopts |= WAKE_MAGIC;
-+		wolopts |= WAKE_MAGIC;
- 
- 	options = RTL_R8(Config5);
- 	if (options & UWF)
--		wol->wolopts |= WAKE_UCAST;
-+		wolopts |= WAKE_UCAST;
- 	if (options & BWF)
--		wol->wolopts |= WAKE_BCAST;
-+		wolopts |= WAKE_BCAST;
- 	if (options & MWF)
--		wol->wolopts |= WAKE_MCAST;
-+		wolopts |= WAKE_MCAST;
- 
--out_unlock:
--	spin_unlock_irq(&tp->lock);
-+	return wolopts;
- }
- 
--static int rtl8169_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
-+static void rtl8169_get_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
- {
- 	struct rtl8169_private *tp = netdev_priv(dev);
-+
-+	spin_lock_irq(&tp->lock);
-+
-+	wol->supported = WAKE_ANY;
-+	wol->wolopts = __rtl8169_get_wol(tp);
-+
-+	spin_unlock_irq(&tp->lock);
-+}
-+
-+static void __rtl8169_set_wol(struct rtl8169_private *tp, u32 wolopts)
-+{
- 	void __iomem *ioaddr = tp->mmio_addr;
- 	unsigned int i;
- 	static const struct {
-@@ -807,23 +817,29 @@ static int rtl8169_set_wol(struct net_de
- 		{ WAKE_ANY,   Config5, LanWake }
- 	};
- 
--	spin_lock_irq(&tp->lock);
--
- 	RTL_W8(Cfg9346, Cfg9346_Unlock);
- 
- 	for (i = 0; i < ARRAY_SIZE(cfg); i++) {
- 		u8 options = RTL_R8(cfg[i].reg) & ~cfg[i].mask;
--		if (wol->wolopts & cfg[i].opt)
-+		if (wolopts & cfg[i].opt)
- 			options |= cfg[i].mask;
- 		RTL_W8(cfg[i].reg, options);
- 	}
- 
- 	RTL_W8(Cfg9346, Cfg9346_Lock);
-+}
-+
-+static int rtl8169_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
-+{
-+	struct rtl8169_private *tp = netdev_priv(dev);
-+
-+	spin_lock_irq(&tp->lock);
- 
- 	if (wol->wolopts)
- 		tp->features |= RTL_FEATURE_WOL;
- 	else
- 		tp->features &= ~RTL_FEATURE_WOL;
-+	__rtl8169_set_wol(tp, wol->wolopts);
- 	device_set_wakeup_enable(&tp->pci_dev->dev, wol->wolopts);
- 
- 	spin_unlock_irq(&tp->lock);
-@@ -3189,6 +3205,12 @@ rtl8169_init_one(struct pci_dev *pdev, c
- 
- 	device_set_wakeup_enable(&pdev->dev, tp->features & RTL_FEATURE_WOL);
- 
-+	if (pci_dev_run_wake(pdev)) {
-+		pm_runtime_set_active(&pdev->dev);
-+		pm_runtime_enable(&pdev->dev);
-+	}
-+	pm_runtime_idle(&pdev->dev);
-+
- out:
- 	return rc;
- 
-@@ -3211,10 +3233,18 @@ static void __devexit rtl8169_remove_one
- 	struct net_device *dev = pci_get_drvdata(pdev);
- 	struct rtl8169_private *tp = netdev_priv(dev);
- 
-+	pm_runtime_get_sync(&pdev->dev);
-+
- 	flush_scheduled_work();
- 
- 	unregister_netdev(dev);
- 
-+	if (pci_dev_run_wake(pdev)) {
-+		pm_runtime_disable(&pdev->dev);
-+		pm_runtime_set_suspended(&pdev->dev);
-+	}
-+	pm_runtime_put_noidle(&pdev->dev);
-+
- 	/* restore original MAC address */
- 	rtl_rar_set(tp, dev->perm_addr);
- 
-@@ -3237,6 +3267,7 @@ static int rtl8169_open(struct net_devic
- 	struct pci_dev *pdev = tp->pci_dev;
- 	int retval = -ENOMEM;
- 
-+	pm_runtime_get_sync(&pdev->dev);
- 
- 	rtl8169_set_rxbufsize(tp, dev);
- 
-@@ -3247,7 +3278,7 @@ static int rtl8169_open(struct net_devic
- 	tp->TxDescArray = pci_alloc_consistent(pdev, R8169_TX_RING_BYTES,
- 					       &tp->TxPhyAddr);
- 	if (!tp->TxDescArray)
--		goto out;
-+		goto err_pm_runtime_put;
- 
- 	tp->RxDescArray = pci_alloc_consistent(pdev, R8169_RX_RING_BYTES,
- 					       &tp->RxPhyAddr);
-@@ -3274,6 +3305,9 @@ static int rtl8169_open(struct net_devic
- 
- 	rtl8169_request_timer(dev);
- 
-+	tp->saved_wolopts = 0;
-+	pm_runtime_put_noidle(&pdev->dev);
-+
- 	rtl8169_check_link_status(dev, tp, tp->mmio_addr);
- out:
- 	return retval;
-@@ -3283,9 +3317,13 @@ err_release_ring_2:
- err_free_rx_1:
- 	pci_free_consistent(pdev, R8169_RX_RING_BYTES, tp->RxDescArray,
- 			    tp->RxPhyAddr);
-+	tp->RxDescArray = NULL;
- err_free_tx_0:
- 	pci_free_consistent(pdev, R8169_TX_RING_BYTES, tp->TxDescArray,
- 			    tp->TxPhyAddr);
-+	tp->TxDescArray = NULL;
-+err_pm_runtime_put:
-+	pm_runtime_put_noidle(&pdev->dev);
- 	goto out;
- }
- 
-@@ -4692,6 +4730,8 @@ static int rtl8169_close(struct net_devi
- 	struct rtl8169_private *tp = netdev_priv(dev);
- 	struct pci_dev *pdev = tp->pci_dev;
- 
-+	pm_runtime_get_sync(&pdev->dev);
-+
- 	/* update counters before going down */
- 	rtl8169_update_counters(dev);
- 
-@@ -4706,6 +4746,8 @@ static int rtl8169_close(struct net_devi
- 	tp->TxDescArray = NULL;
- 	tp->RxDescArray = NULL;
- 
-+	pm_runtime_put_sync(&pdev->dev);
-+
- 	return 0;
- }
- 
-@@ -4804,21 +4846,74 @@ static int rtl8169_suspend(struct device
- 	return 0;
- }
- 
-+static void __rtl8169_resume(struct net_device *dev)
-+{
-+	netif_device_attach(dev);
-+	rtl8169_schedule_work(dev, rtl8169_reset_task);
-+}
-+
- static int rtl8169_resume(struct device *device)
- {
- 	struct pci_dev *pdev = to_pci_dev(device);
- 	struct net_device *dev = pci_get_drvdata(pdev);
- 
--	if (!netif_running(dev))
--		goto out;
-+	if (netif_running(dev))
-+		__rtl8169_resume(dev);
- 
--	netif_device_attach(dev);
-+	return 0;
-+}
-+
-+static int rtl8169_runtime_suspend(struct device *device)
-+{
-+	struct pci_dev *pdev = to_pci_dev(device);
-+	struct net_device *dev = pci_get_drvdata(pdev);
-+	struct rtl8169_private *tp = netdev_priv(dev);
-+
-+	if (!tp->TxDescArray)
-+		return 0;
-+
-+	spin_lock_irq(&tp->lock);
-+	tp->saved_wolopts = __rtl8169_get_wol(tp);
-+	__rtl8169_set_wol(tp, WAKE_ANY);
-+	spin_unlock_irq(&tp->lock);
-+
-+	rtl8169_net_suspend(dev);
-+
-+	return 0;
-+}
-+
-+static int rtl8169_runtime_resume(struct device *device)
-+{
-+	struct pci_dev *pdev = to_pci_dev(device);
-+	struct net_device *dev = pci_get_drvdata(pdev);
-+	struct rtl8169_private *tp = netdev_priv(dev);
-+
-+	if (!tp->TxDescArray)
-+		return 0;
-+
-+	spin_lock_irq(&tp->lock);
-+	__rtl8169_set_wol(tp, tp->saved_wolopts);
-+	tp->saved_wolopts = 0;
-+	spin_unlock_irq(&tp->lock);
-+
-+	__rtl8169_resume(dev);
- 
--	rtl8169_schedule_work(dev, rtl8169_reset_task);
--out:
- 	return 0;
- }
- 
-+static int rtl8169_runtime_idle(struct device *device)
-+{
-+	struct pci_dev *pdev = to_pci_dev(device);
-+	struct net_device *dev = pci_get_drvdata(pdev);
-+	struct rtl8169_private *tp = netdev_priv(dev);
-+
-+	if (!tp->TxDescArray)
-+		return 0;
-+
-+	rtl8169_check_link_status(dev, tp, tp->mmio_addr);
-+	return -EBUSY;
-+}
-+
- static const struct dev_pm_ops rtl8169_pm_ops = {
- 	.suspend = rtl8169_suspend,
- 	.resume = rtl8169_resume,
-@@ -4826,6 +4921,9 @@ static const struct dev_pm_ops rtl8169_p
- 	.thaw = rtl8169_resume,
- 	.poweroff = rtl8169_suspend,
- 	.restore = rtl8169_resume,
-+	.runtime_suspend = rtl8169_runtime_suspend,
-+	.runtime_resume = rtl8169_runtime_resume,
-+	.runtime_idle = rtl8169_runtime_idle,
- };
- 
- #define RTL8169_PM_OPS	(&rtl8169_pm_ops)
+If a bus type does define both types of callback by mistake and only 
+wants one of them to be used, that's a bug -- pure and simple.  It's 
+not the PM core's fault if something goes wrong under those 
+circumstances.
+
+> > Sure.  But suppose you _don't_ want to spend the time implementing new
+> > callbacks to replace the existing legacy suspend and resume methods,
+> > whereas you _do_ want to implement runtime PM.  Runtime PM forces the
+> > bus type to have a pm_ops member,
+> 
+> Which is very much on purpose, because the legacy suspend and resume have no
+> idea about the runtime stuff.
+> 
+> > which as you point out, will prevent the legacy methods from being called.
+> 
+> Yes, that's intentional.
+> 
+> That said, I think we might modify the generic callbacks in generic_ops.c to
+> call the drivers' legacy callbacks if the "new" ones are not defined.
+
+That's no good -- the routines in generic_ops.c invoke the _driver's_
+callbacks, not the _bus type's_ callbacks.
+
+I suppose you could write a new set of generic "legacy" callbacks that
+would work just as though the new ops weren't defined.  Removing those
+"else"s would be a lot simpler, though.
+
+Alan Stern
