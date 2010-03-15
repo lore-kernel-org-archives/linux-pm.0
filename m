@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] i2c: Use generic subsystem-level power
-	management callbacks
-Date: Mon, 15 Mar 2010 23:06:42 +0100
-Message-ID: <201003152306.42083.rjw__30034.6192242161$1268690683$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1003151630370.1332-100000@iolanthe.rowland.org>
+From: =?UTF-8?B?w4Frb3MgTWFyw7N5?= <akos@maroy.hu>
+Subject: Re: suspend works until core pm_test, but the still fails
+Date: Mon, 15 Mar 2010 16:30:19 -0600
+Message-ID: <4B9EB4FB.20201@maroy.hu>
+References: <4B973F6B.4000709@maroy.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1003151630370.1332-100000@iolanthe.rowland.org>
+In-Reply-To: <4B973F6B.4000709@maroy.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,29 +17,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Jean Delvare <khali@linux-fr.org>, pm list <linux-pm@lists.linux-foundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux I2C <linux-i2c@vger.kernel.org>
+To: pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 15 March 2010, Alan Stern wrote:
-> On Mon, 15 Mar 2010, Rafael J. Wysocki wrote:
-> 
-> > In fact, I'd like the "legacy" callbacks to go, at least at the subsystem
-> > level, so I'd prefer not to make it easier to keep them around.
-> > 
-> > How many bus types are there and how many of them actually implement power
-> > management callbacks?  I don't really think the issue is so big.
-> 
-> I have no idea.  But I'm in the middle of implementing runtime PM for
-> SCSI.  SCSI already has bus-level legacy callbacks, so to add the
-> runtime methods without changing the existing system sleep behavior
-> requires something like this.
-> 
-> The alternative is to write a bunch of tiny "shim" functions, sort of
-> like what I ended up doing in the USB stack (see usb_dev_prepare() and
-> the following routines in drivers/usb/core/usb.c).
+Hi,
 
-I prefer this approach to changing the core.  If we changed the core, it would
-defeat the whole purpose of introducing the new framework.
+I did some additional debugging on my issue below, namely booted the
+kernel with the no_console_suspend and initcall_debug options and then:
 
-Rafael
+echo 8 > /proc/sys/kernel/printk
+rmmod xhci
+echo mem > /sys/power/state
+
+and then I got to the console, the last screen had messages like:
+
+ACPI: Preparing to enter sleep state S3
+Broke affinit for irq 25 (same for 26, 27 and 28)
+CPU 1 is now offline (same for CPUs 1...8)
+SMP alternatives: switching to UP mode
+Extended CMOS year: 2000
+
+
+and then the machine hangs, it doesn't power off.
+
+this is on kernel 2.6.32.9
+
+what could I do to make this work - e.g. the machine power off on
+shutdown, and power off on suspend?
+
+
+Akos
