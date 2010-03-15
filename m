@@ -1,14 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] i2c: Use generic subsystem-level power
-	management callbacks
-Date: Sun, 14 Mar 2010 23:52:50 +0100
-Message-ID: <201003142352.50692.rjw__28778.5842702307$1268607171$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1003141620540.1752-100000@netrider.rowland.org>
+Subject: [PATCH 0/2] PCI runtime power management for r8169 and
+	e1000e
+Date: Mon, 15 Mar 2010 01:31:59 +0100
+Message-ID: <201003150131.59619.rjw__36414.3902821981$1268613226$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1003141620540.1752-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,52 +16,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Jean Delvare <khali@linux-fr.org>, pm list <linux-pm@lists.linux-foundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux I2C <linux-i2c@vger.kernel.org>
+To: NetDev <netdev@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: e1000-devel@lists.sourceforge.net, Linux PCI <linux-pci@vger.kernel.org>, Jesse Brandeburg <jesse.brandeburg@intel.com>, Jeff Kirsher <jeffrey.t.kirsher@intel.com>, Francois Romieu <romieu@fr.zoreil.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 14 March 2010, Alan Stern wrote:
-> On Sun, 14 Mar 2010, Rafael J. Wysocki wrote:
-> 
-> > > You know, maybe we should allow bus types to use both the old and new
-> > > interfaces.  It would make life easier for other subsystems in addition
-> > > to i2c.
-> > > 
-> > > This doesn't mean that the core would end up calling two sets of
-> > > suspend routines.  If the bus type uses legacy routines then all the
-> > > non-runtime entries in the pm_ops structure would be empty.
-> > > 
-> > > The changes to the PM core necessary to do this are quite small.
-> > 
-> > Not really.  The detection that the particular callback is not present happens
-> > in pm_op(), while the decision which framework to use is made at the
-> > device_[suspend|resume]() level.
-> 
-> All you have to do is change the "else if" lines in
-> device_[suspend|resume]() to "if".
+Hi,
 
-Then, if a bus type implements both "new" and "old" callbacks, we'll end up
-calling both.  Not nice.
+The following two patches add basic PCI runtime power management to the r8169
+and e1000e drivers.
 
-> > > Does it seem like a reasonable thing to do?
-> > 
-> > Well, if someone spends time on implementing new callbacks for a bus type,
-> > writing them in such a way that they will call the "legacy" callbacks from
-> > drivers if necessary is not really a big deal IMO.
-> 
-> Sure.  But suppose you _don't_ want to spend the time implementing new
-> callbacks to replace the existing legacy suspend and resume methods,
-> whereas you _do_ want to implement runtime PM.  Runtime PM forces the
-> bus type to have a pm_ops member,
+It works so that the adapter is put into PCI D3 if there's no network cable
+attached to it and back into PCI D0 once the cable has been detected.
 
-Which is very much on purpose, because the legacy suspend and resume have no
-idea about the runtime stuff.
+The feature is disabled by default and it can be enabled by writing "auto" to
+the device's /sys/devices/.../power/control file.  Writing "on" to this file
+disables the feature again.
 
-> which as you point out, will prevent the legacy methods from being called.
+The patches have been tested on MSI Wind U100 (r8169) and Toshiba Portege
+R500 (e1000e).
 
-Yes, that's intentional.
-
-That said, I think we might modify the generic callbacks in generic_ops.c to
-call the drivers' legacy callbacks if the "new" ones are not defined.
-
+Thanks,
 Rafael
