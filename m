@@ -1,15 +1,14 @@
-From: Randy Dunlap <rdunlap@xenotime.net>
-Subject: Re: [RFC][PATCH] PM: Update device power management
-	document
-Date: Mon, 15 Mar 2010 13:32:06 -0700
-Message-ID: <4B9E9946.20001__24244.0220005394$1268685225$gmane$org@xenotime.net>
-References: <201003142103.19420.rjw@sisk.pl> <4B9DA9F4.7040906@xenotime.net>
-	<201003152104.24882.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] i2c: Use generic subsystem-level power
+ management callbacks
+Date: Mon, 15 Mar 2010 16:38:03 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1003151630370.1332-100000__44100.4150933169$1268685649$gmane$org@iolanthe.rowland.org>
+References: <201003152034.12195.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003152104.24882.rjw@sisk.pl>
+In-Reply-To: <201003152034.12195.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,34 +19,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Jean Delvare <khali@linux-fr.org>, pm list <linux-pm@lists.linux-foundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux I2C <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 03/15/10 13:04, Rafael J. Wysocki wrote:
-> 
-> Updated patch is appended.
-> 
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: PM: Update device power management document
-> 
-> The device PM document, Documentation/power/devices.txt, is badly
-> outdated and requires total rework to fit the current design of the
-> PM framework.  Make it more up to date.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+On Mon, 15 Mar 2010, Rafael J. Wysocki wrote:
 
-Reviewed-by: Randy Dunlap <randy.dunlap@oracle.com>
-
-> ---
->  Documentation/power/devices.txt |  722 ++++++++++++++++++++++++----------------
->  1 file changed, 443 insertions(+), 279 deletions(-)
+> In fact, I'd like the "legacy" callbacks to go, at least at the subsystem
+> level, so I'd prefer not to make it easier to keep them around.
 > 
-> Index: linux-2.6/Documentation/power/devices.txt
-> ===================================================================
-> --- linux-2.6.orig/Documentation/power/devices.txt
-> +++ linux-2.6/Documentation/power/devices.txt
+> How many bus types are there and how many of them actually implement power
+> management callbacks?  I don't really think the issue is so big.
 
+I have no idea.  But I'm in the middle of implementing runtime PM for
+SCSI.  SCSI already has bus-level legacy callbacks, so to add the
+runtime methods without changing the existing system sleep behavior
+requires something like this.
 
--- 
-~Randy
+The alternative is to write a bunch of tiny "shim" functions, sort of
+like what I ended up doing in the USB stack (see usb_dev_prepare() and
+the following routines in drivers/usb/core/usb.c).
+
+Alan Stern
