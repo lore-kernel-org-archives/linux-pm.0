@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] i2c: Use generic subsystem-level power
- management callbacks
-Date: Sun, 14 Mar 2010 21:28:55 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1003142117200.7108-100000__1957.39474515921$1268616598$gmane$org@netrider.rowland.org>
-References: <201003142352.50692.rjw@sisk.pl>
+From: Randy Dunlap <rdunlap@xenotime.net>
+Subject: Re: [RFC][PATCH] PM: Update device power management
+	document
+Date: Sun, 14 Mar 2010 20:31:00 -0700
+Message-ID: <4B9DA9F4.7040906__48172.2171455205$1268623940$gmane$org@xenotime.net>
+References: <201003142103.19420.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003142352.50692.rjw@sisk.pl>
+In-Reply-To: <201003142103.19420.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,63 +19,238 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jean Delvare <khali@linux-fr.org>, pm list <linux-pm@lists.linux-foundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux I2C <linux-i2c@vger.kernel.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 14 Mar 2010, Rafael J. Wysocki wrote:
-
-> On Sunday 14 March 2010, Alan Stern wrote:
-> > On Sun, 14 Mar 2010, Rafael J. Wysocki wrote:
-> > 
-> > > > You know, maybe we should allow bus types to use both the old and new
-> > > > interfaces.  It would make life easier for other subsystems in addition
-> > > > to i2c.
-> > > > 
-> > > > This doesn't mean that the core would end up calling two sets of
-> > > > suspend routines.  If the bus type uses legacy routines then all the
-> > > > non-runtime entries in the pm_ops structure would be empty.
-> > > > 
-> > > > The changes to the PM core necessary to do this are quite small.
-> > > 
-> > > Not really.  The detection that the particular callback is not present happens
-> > > in pm_op(), while the decision which framework to use is made at the
-> > > device_[suspend|resume]() level.
-> > 
-> > All you have to do is change the "else if" lines in
-> > device_[suspend|resume]() to "if".
+On 03/14/10 13:03, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Then, if a bus type implements both "new" and "old" callbacks, we'll end up
-> calling both.  Not nice.
-
-Why would a bus type implement both?  Or looked at another way, if it 
-did implement both then wouldn't it want both sets of callbacks to be 
-invoked?
-
-If a bus type does define both types of callback by mistake and only 
-wants one of them to be used, that's a bug -- pure and simple.  It's 
-not the PM core's fault if something goes wrong under those 
-circumstances.
-
-> > Sure.  But suppose you _don't_ want to spend the time implementing new
-> > callbacks to replace the existing legacy suspend and resume methods,
-> > whereas you _do_ want to implement runtime PM.  Runtime PM forces the
-> > bus type to have a pm_ops member,
+> The device PM document, Documentation/power/devices.txt, is badly
+> outdated and requires total rework to fit the current design of the
+> PM framework.  Make it more up to date.
 > 
-> Which is very much on purpose, because the legacy suspend and resume have no
-> idea about the runtime stuff.
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+> This has been promised for a long time, but the interface has been changing
+> so that it's been a moving target.  Since I hope it'll stabilize now, here it
+> goes.
 > 
-> > which as you point out, will prevent the legacy methods from being called.
+> Please let me know if you find any problems.  I have read it for a few times
+> already, so I'm afraid I won't find any even if they are present.
 > 
-> Yes, that's intentional.
+> Enjoy!
 > 
-> That said, I think we might modify the generic callbacks in generic_ops.c to
-> call the drivers' legacy callbacks if the "new" ones are not defined.
+> Rafael
+> ---
+>  Documentation/power/devices.txt |  721 ++++++++++++++++++++++++----------------
+>  1 file changed, 442 insertions(+), 279 deletions(-)
+> 
+> Index: linux-2.6/Documentation/power/devices.txt
+> ===================================================================
+> --- linux-2.6.orig/Documentation/power/devices.txt
+> +++ linux-2.6/Documentation/power/devices.txt
+> @@ -1,3 +1,7 @@
+> +Device Power Management
+> +
+> +(C) 2010 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
+> +
+>  Most of the code in Linux is device drivers, so most of the Linux power
+>  management code is also driver-specific.  Most drivers will do very little;
+>  others, especially for platforms with small batteries (like cell phones),
+> @@ -25,31 +29,39 @@ states:
+>  	them without loss of data.
+>  
+>  	Some drivers can manage hardware wakeup events, which make the system
+> -	leave that low-power state.  This feature may be disabled using the
+> -	relevant /sys/devices/.../power/wakeup file; enabling it may cost some
+> -	power usage, but let the whole system enter low power states more often.
+> +	leave that low-power state.  This feature may be enabled or disabled
+> +	using the relevant /sys/devices/.../power/wakeup file (for Ethernet
+> +	drivers the ioctl interface used by ethtool may also be used for this
+> +	purpose); enabling it may cost some power usage, but let the whole
+> +	system enter low power states more often.
+>  
+>      Runtime Power Management model:
+> -	Drivers may also enter low power states while the system is running,
+> -	independently of other power management activity.  Upstream drivers
+> -	will normally not know (or care) if the device is in some low power
+> -	state when issuing requests; the driver will auto-resume anything
+> -	that's needed when it gets a request.
+> -
+> -	This doesn't have, or need much infrastructure; it's just something you
+> -	should do when writing your drivers.  For example, clk_disable() unused
+> -	clocks as part of minimizing power drain for currently-unused hardware.
+> -	Of course, sometimes clusters of drivers will collaborate with each
+> -	other, which could involve task-specific power management.
+> +	Devices may also be put into low power states while the system is
+> +	running, independently of other power management activity in principle.
+> +	However, devices are not generally independent of each other (for
+> +	example, parent device cannot be suspended unless all of its child
+> +	devices have been suspended).  Moreover,  depending on the bus type the
+> +	device is on, it may be necessary to carry some bus-specific operations
 
-That's no good -- the routines in generic_ops.c invoke the _driver's_
-callbacks, not the _bus type's_ callbacks.
+	                                     carry out (?)
 
-I suppose you could write a new set of generic "legacy" callbacks that
-would work just as though the new ops weren't defined.  Removing those
-"else"s would be a lot simpler, though.
+> +	on the device for this purpose.  Also, devices put into low power states
+> +	at run time may require special handling during system-wide power
+> +	transitions, like suspend to RAM.
 
-Alan Stern
+> @@ -103,64 +148,44 @@ physically support wakeup events.  When 
+>  
+...
+
+> +
+> +/sys/devices/.../power/control files
+> +------------------------------------
+> +All devices in the driver model have a flag to control the desired behavior of
+> +its driver with respect to runtime power management.  This flag, called
+> +runtime_auto, is initialized by the bus type (or generally subsystem) code using
+> +pm_runtime_allow() or pm_runtime_forbid(), depending on whether or not the
+> +driver is supposed to power manage the device at run time by default,
+> +respectively.
+> +
+> +This setting may be adjusted by the user space by writing either "on" or "auto"
+
+drop "the"                         ^^^
+
+> +to the device's "control" file.  If "auto" is written, the device's runtime_auto
+> +flag will be set and the driver will be allowed to power manage the device if
+> +capable of doing that.  If "on" is written, the driver is not allowed to power
+> +manage the device which in turn is supposed to remain in the full power state at
+> +run time.  The user space can check the current value of the runtime_auto flag
+
+              User space can check
+
+> +by reading from the device's "control" file.
+> +
+> +The device's runtime_auto flag has no effect on the handling of system-wide
+> +power transitions by its driver.  In particular, the device can (and in the
+> +majority of cases should and will) be put into a low power state during a
+> +system-wide transition to a sleep state (like "suspend-to-RAM") even though its
+> +runtime_auto flag is unset (in which case its "control" file contains "on").
+>  
+...
+
+> @@ -207,54 +231,166 @@ system always includes every phase, exec
+...
+
+> +Hibernation Phases
+> +------------------
+> +Hibernating the system is more complicated than putting it into the standby or
+> +memory sleep state, because it involves creating a system image and saving it.
+> +Therefore there are more phases of hibernation and special device PM methods are
+> +used in this case.
+> +
+> +First, it is necessary to prepare the system for creating a hibernation image.
+> +This is similar to putting the system into the standby or memory sleep state,
+> +although it generally doesn't require that devices be put into low power states
+> +(that even is not desirable at this point).  Driver notifications are then
+
+   (that is even not desirable at this point).
+or
+   omit "even"
+
+> +issued in the following order:
+> +
+> +   1	bus->pm.prepare(dev) is called after tasks have been frozen and enough
+> +	memory has been freed.
+> +
+
+
+> @@ -284,84 +420,86 @@ ways; the aforementioned LCD might be ac
+
+>  Resuming Devices
+>  ----------------
+>  Resuming is done in multiple phases, much like suspending, with all
+>  devices processing each phase's calls before the next phase begins.
+>  
+> -The phases are seen by driver notifications issued in this order:
+> +Again, however, different callbacks are used depending on whether the system is
+> +waking up from the standby or memory sleep state ("suspend-to-RAM") or from
+> +hibernation ("suspend-to-disk").
+> +
+> +If the system is waking up from the standby or memory sleep state, the phases
+> +are seen by driver notifications issued in this order:
+> +
+> +   1	bus->pm.resume_noirq(dev) is called, if implemented.  It may call the
+> +	device driver's ->pm.resume_noirq() method, depending on the bus type in
+> +	question.
+> +
+> +	The role of this method is to perform actions that need to be performed
+> +	before device drivers' interrupt handlers are allowed to be invoked.  If
+> +	given bus type permits devices to share interrupt vectors, like PCI,
+
+	the given (or "a given")
+
+> +	this method should bring the device and its driver into a state in which
+> +	the driver can recognize if the device is the source of incoming
+> +	interrupts, if any, and handle them correctly.
+> +
+> +	For example, the PCI bus type's ->pm.resume_noirq() puts the device into
+> +	the full power state (D0 in the PCI terminology) and restores the
+> +	standard configuration registers of the device.  Then, it calls the
+> +	device driver's ->pm.resume_noirq() method to perform device-specific
+> +	actions needed at this stage of resume.
+> +
+...
+
+> @@ -389,10 +592,13 @@ System devices will only be suspended wi
+>  all other devices have been suspended.  On resume, they will be resumed
+>  before any other devices, and also with interrupts disabled.
+>  
+> -That is, IRQs are disabled, the suspend_late() phase begins, then the
+> -sysdev_driver.suspend() phase, and the system enters a sleep state.  Then
+> -the sysdev_driver.resume() phase begins, followed by the resume_early()
+> -phase, after which IRQs are enabled.
+> +That is, when the nonboot CPUs are all offline and IRQs are disabled on the
+
+                     non-boot
+
+> +remaining online CPU, then the sysdev_driver.suspend() phase is carried out, and
+> +the system enters a sleep state (or hibernation image is created).  During
+> +resume (or after the image has been created) the sysdev_driver.resume() phase
+> +is carried out, IRQs are enabled on the only online CPU, the nonboot CPUs are
+
+                                                                non-boot
+
+> +enabled and that is followed by the "early resume" phase (in which the "noirq"
+> +callbacks provided by subsystems and device drivers are invoked).
+>  
+>  Code to actually enter and exit the system-wide low power state sometimes
+>  involves hardware details that are only known to the boot firmware, and
+> @@ -400,6 +606,21 @@ may leave a CPU running software (from S
+>  the system and manages its wakeup sequence.
+>  
+>  
+> +Power Management Notifiers
+> +--------------------------
+> +As stated in Documentation/power/notifiers.txt, there are some operations that
+> +cannot be carried out by the power management callbacks discussed above, because
+> +carrying them out at these points would be too late or too early.  To handle
+> +that cases subsystems and device drivers may register power management notifiers
+
+   these cases,
+
+> +called before tasks are frozen and after they have been thawed.
+
+   that are called before ...
+
+> +
+> +Generally speaking, the PM notifiers are suitable for performing actions that
+> +either require the user space to be available, or at least won't interfere with
+
+drop "the" before "user space" above and below
+
+> +the user space in a wrong way.
+> +
+> +For details refer to Documentation/power/notifiers.txt.
+> +
+> +
+>  Runtime Power Management
+>  ========================
+>  Many devices are able to dynamically power down while the system is still
+
+
+
+-- 
+~Randy
