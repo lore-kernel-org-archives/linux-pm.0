@@ -1,7 +1,8 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: TuxOnIce 3.1
-Date: Tue, 16 Mar 2010 11:57:03 +1100
-Message-ID: <4B9ED75F.1050600@crca.org.au>
+From: Shane Wang <shane.wang@intel.com>
+Subject: [RESEND][PATCH] intel_txt: add support for S3 memory
+	integrity protection within Intel(R) TXT launched kernel (v3)
+Date: Tue, 16 Mar 2010 07:31:11 -0700
+Message-ID: <1268749871-2521-1-git-send-email-shane.wang__37996.1364706562$1268721162$gmane$org@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,49 +16,133 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: tuxonice-announce@tuxonice.net, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, lwn@lwn.net
+To: hpa@zytor.com
+Cc: joseph.cihula@intel.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, mingo@elte.hu
 List-Id: linux-pm@vger.kernel.org
 
-Hi all.
+v3: Based on a complexity analysis and tradeoff, we moved all MAC'ing into
+tboot.
 
-Almost a year since TuxOnIce 3.0 was announced, I'm pleased to announce 
-a 3.1 release.
+This patch adds support for S3 memory integrity protection within an Intel(R)
+TXT launched kernel, for all kernel and userspace memory.  All RAM used by the
+kernel and userspace, as indicated by memory ranges of type E820_RAM and
+E820_RESERVED_KERN in the e820 table, will be integrity protected.
 
-In the intervening period, lots of work has been done on the code. The 
-major new features are:
+The MAINTAINERS file is also updated to reflect the maintainers of the
+TXT-related code.
 
-- Support for LZO compression (deflate will also work, but it's slooow!)
-- New sysfs entry making the sys_sync call in the freezer optional.
-- Support for using swap AND file storage in the same image.
-- Support for striped storage (swap priorities are now honoured and
-   there's a new sysfs entry to set the priority of file storage).
-- Binary signature now available through a sysfs entry (requires updated
-   hibernate script).
-- UUID support. This uses a simple table of UUID and filesystem
-   signature offsets as the basis for scanning partitions for a TuxOnIce
-   signature at resume time without the need for the resume= parameter.
-   If more than one partition is used for storing the image, UUIDs will
-   also be used for finding those partitions. This lets one user who had
-   flakey device detection resume first time, every time, instead of
-   having to reboot until the order is the same as that seen when
-   hibernating. (New kernel commandline param: uuid_debug=1).
-- (Extending the UUID support) Add support for checking last mount times
-   of filesystems, and refusing to resume if a filesystem has been
-   mounted since we hibernated. At the time of writing, we only know how
-   to find these times for ext filesystems. (Note that the bytes don't
-   need to be a mount time; they just need to be guaranteed to change
-   if the filesystem is mounted in the meantime).
-- We now display what storage from which devices was used in the image.
-- Give an estimate of time remaining (text userui only at the moment).
-- Reworked code which decides where the data will be loaded at resume
-   time. Especially on machines with large amounts of memory, this will
-   result in a signficant speed improvement in this phase of a cycle.
+Signed-off-by: Shane Wang <shane.wang@intel.com>
+Signed-off-by: Joseph Cihula <joseph.cihula@intel.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ Documentation/intel_txt.txt |   16 +++++++++-------
+ MAINTAINERS                 |   11 +++++++++++
+ arch/x86/include/asm/e820.h |    7 ++++++-
+ arch/x86/kernel/tboot.c     |   20 +++++++++++---------
+ 4 files changed, 37 insertions(+), 17 deletions(-)
 
-This release will be followed by updates to the hibernate script and 
-userui so that they work without issue with 3.1 Once that's done, I 
-intend to start focusing on seeking to improve the existing in-kernel 
-implementation.
-
-Regards,
-
-Nigel
+diff -r d2911aa1461d Documentation/intel_txt.txt
+--- a/Documentation/intel_txt.txt	Thu Mar 04 09:37:53 2010 -0500
++++ b/Documentation/intel_txt.txt	Wed Mar 10 08:18:48 2010 -0500
+@@ -161,13 +161,15 @@ o  In order to put a system into any of 
+       has been restored, it will restore the TPM PCRs and then
+       transfer control back to the kernel's S3 resume vector.
+       In order to preserve system integrity across S3, the kernel
+-      provides tboot with a set of memory ranges (kernel
+-      code/data/bss, S3 resume code, and AP trampoline) that tboot
+-      will calculate a MAC (message authentication code) over and then
+-      seal with the TPM.  On resume and once the measured environment
+-      has been re-established, tboot will re-calculate the MAC and
+-      verify it against the sealed value.  Tboot's policy determines
+-      what happens if the verification fails.
++      provides tboot with a set of memory ranges (RAM and RESERVED_KERN
++      in the e820 table, but not any memory that BIOS might alter over
++      the S3 transition) that tboot will calculate a MAC (message
++      authentication code) over and then seal with the TPM. On resume
++      and once the measured environment has been re-established, tboot
++      will re-calculate the MAC and verify it against the sealed value.
++      Tboot's policy determines what happens if the verification fails.
++      Note that the c/s 194 of tboot which has the new MAC code supports
++      this.
+ 
+ That's pretty much it for TXT support.
+ 
+diff -r d2911aa1461d MAINTAINERS
+--- a/MAINTAINERS	Thu Mar 04 09:37:53 2010 -0500
++++ b/MAINTAINERS	Wed Mar 10 08:18:48 2010 -0500
+@@ -2891,6 +2891,17 @@ F:	Documentation/networking/README.ipw22
+ F:	Documentation/networking/README.ipw2200
+ F:	drivers/net/wireless/ipw2x00/ipw2200.*
+ 
++INTEL(R) TRUSTED EXECUTION TECHNOLOGY (TXT)
++M:	Joseph Cihula <joseph.cihula@intel.com>
++M:	Shane Wang <shane.wang@intel.com>
++L:	tboot-devel@lists.sourceforge.net
++W:	http://tboot.sourceforge.net
++T:	Mercurial http://www.bughost.org/repos.hg/tboot.hg
++S:	Supported
++F:	Documentation/intel_txt.txt
++F:	include/linux/tboot.h
++F:	arch/x86/kernel/tboot.c
++
+ INTEL WIRELESS WIMAX CONNECTION 2400
+ M:	Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>
+ M:	linux-wimax@intel.com
+diff -r d2911aa1461d arch/x86/include/asm/e820.h
+--- a/arch/x86/include/asm/e820.h	Thu Mar 04 09:37:53 2010 -0500
++++ b/arch/x86/include/asm/e820.h	Wed Mar 10 08:18:48 2010 -0500
+@@ -45,7 +45,12 @@
+ #define E820_NVS	4
+ #define E820_UNUSABLE	5
+ 
+-/* reserved RAM used by kernel itself */
++/*
++ * reserved RAM used by kernel itself
++ * if CONFIG_INTEL_TXT is enabled, memory of this type will be
++ * included in the S3 integrity calculation and so should not include
++ * any memory that BIOS might alter over the S3 transition
++ */
+ #define E820_RESERVED_KERN        128
+ 
+ #ifndef __ASSEMBLY__
+diff -r d2911aa1461d arch/x86/kernel/tboot.c
+--- a/arch/x86/kernel/tboot.c	Thu Mar 04 09:37:53 2010 -0500
++++ b/arch/x86/kernel/tboot.c	Wed Mar 10 08:18:48 2010 -0500
+@@ -130,6 +130,9 @@ static void add_mac_region(phys_addr_t s
+ 	struct tboot_mac_region *mr;
+ 	phys_addr_t end = start + size;
+ 
++	if (tboot->num_mac_regions >= MAX_TB_MAC_REGIONS)
++		panic("tboot: Too many MAC regions\n");
++
+ 	if (start && size) {
+ 		mr = &tboot->mac_regions[tboot->num_mac_regions++];
+ 		mr->start = round_down(start, PAGE_SIZE);
+@@ -139,18 +142,17 @@ static void add_mac_region(phys_addr_t s
+ 
+ static void __init tboot_setup_sleep(void)
+ {
++	int i;
++
+ 	tboot->num_mac_regions = 0;
+ 
+-	/* S3 resume code */
+-	add_mac_region(acpi_wakeup_address, WAKEUP_SIZE);
++	for (i = 0; i < e820.nr_map; i++) {
++		if ((e820.map[i].type != E820_RAM)
++		 && (e820.map[i].type != E820_RESERVED_KERN))
++			continue;
+ 
+-#ifdef CONFIG_X86_TRAMPOLINE
+-	/* AP trampoline code */
+-	add_mac_region(virt_to_phys(trampoline_base), TRAMPOLINE_SIZE);
+-#endif
+-
+-	/* kernel code + data + bss */
+-	add_mac_region(virt_to_phys(_text), _end - _text);
++		add_mac_region(e820.map[i].addr, e820.map[i].size);
++	}
+ 
+ 	tboot->acpi_sinfo.kernel_s3_resume_vector = acpi_wakeup_address;
+ }
