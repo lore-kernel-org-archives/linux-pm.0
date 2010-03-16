@@ -1,14 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Update device power management
-	document
-Date: Tue, 16 Mar 2010 22:44:42 +0100
-Message-ID: <201003162244.42802.rjw__12764.4595843323$1268775782$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1003161557560.1307-100000@iolanthe.rowland.org>
+Subject: [PATCH] ACPI / ACPICA: Do not check reference counters
+	in acpi_ev_enable_gpe()
+Date: Tue, 16 Mar 2010 23:21:55 +0100
+Message-ID: <201003162321.55881.rjw__12580.1859926016$1268777997$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1003161557560.1307-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,20 +16,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Len Brown <lenb@kernel.org>
+Cc: "Moore, Robert" <robert.moore@intel.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 16 March 2010, Alan Stern wrote:
-> On Mon, 15 Mar 2010, Rafael J. Wysocki wrote:
-> 
-> > Thanks for the comments, I did my best to address them all.
-> > 
-> > Updated patch is appended.
-> 
-> I'm making some updates too.  They're pretty extensive, so they won't 
-> be ready for a day or two.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Do they interfere a lot with this doc?
+acpi_ev_enable_gpe() should enable the GPE at the hardware level
+regardless of the value of the GPE's runtime reference counter.
 
-Rafael
+There are only two callers of acpi_ev_enable_gpe(), acpi_enable_gpe()
+and acpi_set_gpe().  The first one checks the GPE's runtime
+reference counter itself and only calls acpi_ev_enable_gpe() if it's
+equal to one, and the other one is supposed to enable the GPE
+unconditionally (if called with ACPI_GPE_ENABLE).
+
+This change fixes the problem in acpi_enable_wakeup_device() where
+the GPE will not be enabled for wakeup if it's runtime reference
+counter is zero, which is a regression from 2.6.33.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-by: Robert Moore <robert.moore@intel.com>
+---
+ drivers/acpi/acpica/evgpe.c |   19 +++++++------------
+ 1 file changed, 7 insertions(+), 12 deletions(-)
+
+Index: linux-2.6/drivers/acpi/acpica/evgpe.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/acpica/evgpe.c
++++ linux-2.6/drivers/acpi/acpica/evgpe.c
+@@ -117,19 +117,14 @@ acpi_status acpi_ev_enable_gpe(struct ac
+ 	if (ACPI_FAILURE(status))
+ 		return_ACPI_STATUS(status);
+ 
+-	/* Mark wake-enabled or HW enable, or both */
+-
+-	if (gpe_event_info->runtime_count) {
+-		/* Clear the GPE (of stale events), then enable it */
+-		status = acpi_hw_clear_gpe(gpe_event_info);
+-		if (ACPI_FAILURE(status))
+-			return_ACPI_STATUS(status);
+-
+-		/* Enable the requested runtime GPE */
+-		status = acpi_hw_write_gpe_enable_reg(gpe_event_info);
+-	}
++	/* Clear the GPE (of stale events), then enable it */
++	status = acpi_hw_clear_gpe(gpe_event_info);
++	if (ACPI_FAILURE(status))
++		return_ACPI_STATUS(status);
+ 
+-	return_ACPI_STATUS(AE_OK);
++	/* Enable the requested GPE */
++	status = acpi_hw_write_gpe_enable_reg(gpe_event_info);
++	return_ACPI_STATUS(status);
+ }
+ 
+ /*******************************************************************************
