@@ -1,28 +1,28 @@
 From: Oren Laadan <orenl@cs.columbia.edu>
 Subject: [C/R v20][PATCH 15/96] cgroup freezer: Fix buggy resume
 	test for tasks frozen with cgroup freezer
-Date: Wed, 17 Mar 2010 11:55:48 -0400
-Message-ID: <1268841429-4515-16-git-send-email-orenl@cs.columbia.edu>
-References: <1268841429-4515-1-git-send-email-orenl@cs.columbia.edu>
-	<1268841429-4515-2-git-send-email-orenl@cs.columbia.edu>
-	<1268841429-4515-3-git-send-email-orenl@cs.columbia.edu>
-	<1268841429-4515-4-git-send-email-orenl@cs.columbia.edu>
-	<1268841429-4515-5-git-send-email-orenl@cs.columbia.edu>
-	<1268841429-4515-6-git-send-email-orenl@cs.columbia.edu>
-	<1268841429-4515-7-git-send-email-orenl@cs.columbia.edu>
-	<1268841429-4515-8-git-send-email-orenl@cs.columbia.edu>
-	<1268841429-4515-9-git-send-email-orenl@cs.columbia.edu>
-	<1268841429-4515-10-git-send-email-orenl@cs.columbia.edu>
-	<1268841429-4515-11-git-send-email-orenl@cs.columbia.edu>
-	<1268841429-4515-12-git-send-email-orenl@cs.columbia.edu>
-	<1268841429-4515-13-git-send-email-orenl@cs.columbia.edu>
-	<1268841429-4515-14-git-send-email-orenl@cs.columbia.edu>
-	<1268841429-4515-15-git-send-email-orenl@cs.columbia.edu>
+Date: Wed, 17 Mar 2010 12:08:03 -0400
+Message-ID: <1268842164-5590-16-git-send-email-orenl__6439.64350824735$1268847991$gmane$org@cs.columbia.edu>
+References: <1268842164-5590-1-git-send-email-orenl@cs.columbia.edu>
+	<1268842164-5590-2-git-send-email-orenl@cs.columbia.edu>
+	<1268842164-5590-3-git-send-email-orenl@cs.columbia.edu>
+	<1268842164-5590-4-git-send-email-orenl@cs.columbia.edu>
+	<1268842164-5590-5-git-send-email-orenl@cs.columbia.edu>
+	<1268842164-5590-6-git-send-email-orenl@cs.columbia.edu>
+	<1268842164-5590-7-git-send-email-orenl@cs.columbia.edu>
+	<1268842164-5590-8-git-send-email-orenl@cs.columbia.edu>
+	<1268842164-5590-9-git-send-email-orenl@cs.columbia.edu>
+	<1268842164-5590-10-git-send-email-orenl@cs.columbia.edu>
+	<1268842164-5590-11-git-send-email-orenl@cs.columbia.edu>
+	<1268842164-5590-12-git-send-email-orenl@cs.columbia.edu>
+	<1268842164-5590-13-git-send-email-orenl@cs.columbia.edu>
+	<1268842164-5590-14-git-send-email-orenl@cs.columbia.edu>
+	<1268842164-5590-15-git-send-email-orenl@cs.columbia.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1268841429-4515-15-git-send-email-orenl@cs.columbia.edu>
+In-Reply-To: <1268842164-5590-15-git-send-email-orenl@cs.columbia.edu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -32,8 +32,8 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: orenlaadan@gmail.com
-Cc: Cedric Le Goater <legoater@free.fr>, Li Zefan <lizf@cn.fujitsu.com>, Pavel Machek <pavel@suse.cz>, Paul Menage <menage@google.com>, linux-pm@lists.linux-foundation.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Cedric Le Goater <legoater@free.fr>, linux-api@vger.kernel.org, containers@lists.linux-foundation.org, Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@lists.linux-foundation.org, Serge Hallyn <serue@us.ibm.com>, Ingo Molnar <mingo@elte.hu>, Paul Menage <menage@google.com>
 List-Id: linux-pm@vger.kernel.org
 
 From: Matt Helsley <matthltc@us.ibm.com>
@@ -71,7 +71,7 @@ Cc: Cedric Le Goater <legoater@free.fr>
 Cc: Paul Menage <menage@google.com>
 Cc: Li Zefan <lizf@cn.fujitsu.com>
 Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>
+Cc: Pavel Machek <pavel@ucw.cz>
 Cc: linux-pm@lists.linux-foundation.org
 
 Seems like a candidate for -stable.
