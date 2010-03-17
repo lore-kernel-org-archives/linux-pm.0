@@ -1,13 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: runtime PM: common hooks for static and runtime PM
-Date: Wed, 17 Mar 2010 13:10:06 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1003171305410.1734-100000@iolanthe.rowland.org>
-References: <87tysesxvw.fsf@deeprootsystems.com>
+From: Sebastian Ott <sebott@linux.vnet.ibm.com>
+Subject: RFC: additional event for pm_notifier
+Date: Wed, 17 Mar 2010 19:56:10 +0100 (CET)
+Message-ID: <alpine.LFD.2.00.1003171945130.2469@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87tysesxvw.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,135 +15,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Magnus Damm <damm@igel.co.jp>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 17 Mar 2010, Kevin Hilman wrote:
+hi,
 
-> >> In my case, the driver's runtime_suspend and runtime_resume hooks are
-> >> not where the clocks are managed.  The actual hardware enable/disable
-> >> is done in the bus-level runtime PM hooks, in this case platform_bus.
-> >> So having the system PM methods directly call the drivers runtime PM
-> >> methods doesn't help.  In fact, because we handle the hardware at the
-> >> bus level, most drivers can live without any runtime PM methods, and
-> >> simply use get/put.
-> >> 
-> >> I've worked around this temporarily by calling the
-> >> bus->pm->runtime_suspend() and ->runtime_resume() methods from the
-> >> system PM methods, but am curious if that is an acceptable solution.
-> >
-> > If the platform bus manages the clocks from within its runtime-PM 
-> > routines, then it ought to provide a similar service from within its 
-> > system-PM routines.  
-> 
-> Hmm, good point.  Currently the platform bus code allows overriding
-> the runtime PM methods via weak functions (drivers/base/platform.c)
-> but not the system PM methods.  Below is a patch that allows platforms
-> to extend the system PM methods of the platform bus as well.
-> 
-> > You could do it by calling the bus's runtime-PM 
-> > routines indirectly through the method pointers (as you do now), or by 
-> > calling the runtime-PM routines directly, or by making the runtime-PM 
-> > routines and the system-PM routines both call a separate common 
-> > function responsible for managing the clocks.
-> 
-> Using the patch below, I am able to add custom system PM hooks and then
-> use common code to manage the clocks for runtime PM and system PM.
-> 
-> Comments?
-> 
-> Kevin
-> 
-> 
-> commit ca2173923bae3ba631e12698401ef0b59ec0433c
-> Author: Kevin Hilman <khilman@deeprootsystems.com>
-> Date:   Wed Mar 17 09:36:10 2010 -0700
-> 
->     platform_bus: allow custom extensions to system PM methods
->     
->     When runtime PM for platform_bus was added, it allowed for platforms
->     to customize the runtime PM methods since they are defined as weak
->     symbols.
->     
->     This patch allows platforms to extend the system PM methods with
->     custom hooks as well so runtime PM and system PM extensions can be
->     managed together.
->     
->     Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
-> 
-> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-> index 1ba9d61..a30f850 100644
-> --- a/drivers/base/platform.c
-> +++ b/drivers/base/platform.c
-> @@ -729,6 +729,26 @@ static void platform_pm_complete(struct device *dev)
->  
->  #ifdef CONFIG_SUSPEND
+on s390 certain hw features which we normally enable in our init
+calls, get reset while restoring the hibernation image.
+so we need a trigger to reenable them before the device callbacks
+are called.
 
-This probably should be CONFIG_SLEEP.
+is it possible to add an additional event for the existing
+pm_notifier (something like the attached patch)?
 
->  
-> +int __weak platform_pm_suspend_hook(struct device *dev)
-> +{
-> +	return 0;
-> +}
-> +
-> +int __weak platform_pm_suspend_noirq_hook(struct device *dev)
-> +{
-> +	return 0;
-> +}
-> +
-> +int __weak platform_pm_resume_hook(struct device *dev)
-> +{
-> +	return 0;
-> +}
-> +
-> +int __weak platform_pm_resume_noirq_hook(struct device *dev)
-> +{
-> +	return 0;
-> +}
-> +
->  static int platform_pm_suspend(struct device *dev)
->  {
->  	struct device_driver *drv = dev->driver;
-> @@ -744,6 +764,8 @@ static int platform_pm_suspend(struct device *dev)
->  		ret = platform_legacy_suspend(dev, PMSG_SUSPEND);
->  	}
->  
-> +	platform_pm_suspend_hook(dev);
-> +
->  	return ret;
->  }
->  
-> @@ -760,6 +782,8 @@ static int platform_pm_suspend_noirq(struct device *dev)
->  			ret = drv->pm->suspend_noirq(dev);
->  	}
->  
-> +	platform_pm_suspend_noirq_hook(dev);
-> +
->  	return ret;
->  }
->  
-> @@ -768,6 +792,8 @@ static int platform_pm_resume(struct device *dev)
->  	struct device_driver *drv = dev->driver;
->  	int ret = 0;
->  
-> +	platform_pm_resume_hook(dev);
-> +
->  	if (!drv)
->  		return 0;
->  
-> @@ -786,6 +812,8 @@ static int platform_pm_resume_noirq(struct device *dev)
->  	struct device_driver *drv = dev->driver;
->  	int ret = 0;
->  
-> +	platform_pm_resume_noirq_hook(dev);
-> +
->  	if (!drv)
->  		return 0;
->  
+regards
+sebastian
 
-It looks reasonable to me, but I'm not actively involved in PM for the 
-platform bus.  Magnus Damm might have some suggestions.
 
-Alan Stern
+Signed-off-by: Sebastian Ott <sebott@linux.vnet.ibm.com>
+---
+ include/linux/notifier.h |    1 +
+ kernel/power/hibernate.c |    2 ++
+ 2 files changed, 3 insertions(+)
+
+Index: linux-2.6/include/linux/notifier.h
+===================================================================
+--- linux-2.6.orig/include/linux/notifier.h
++++ linux-2.6/include/linux/notifier.h
+@@ -250,6 +250,8 @@ static inline int notifier_to_errno(int 
+ #define PM_POST_SUSPEND		0x0004 /* Suspend finished */
+ #define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved image */
+ #define PM_POST_RESTORE		0x0006 /* Restore failed */
++#define PM_RESTORE_FINISHED	0x0007 /* Image restored, called prior to
++					  device callbacks */
+ 
+ /* Console keyboard events.
+  * Note: KBD_KEYCODE is always sent before KBD_UNBOUND_KEYCODE, KBD_UNICODE and
+Index: linux-2.6/kernel/power/hibernate.c
+===================================================================
+--- linux-2.6.orig/kernel/power/hibernate.c
++++ linux-2.6/kernel/power/hibernate.c
+@@ -290,6 +290,8 @@ static int create_image(int platform_mod
+ 	if (!in_suspend)
+ 		platform_leave(platform_mode);
+ 
++	pm_notifier_call_chain(PM_RESTORE_FINISHED);
++
+  Power_up:
+ 	sysdev_resume();
+ 	/* NOTE:  dpm_resume_noirq() is just a resume() for devices
