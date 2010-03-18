@@ -1,10 +1,14 @@
-From: Fei Zhao <skywalkzf@gmail.com>
-Subject: linux-pm@lists.linux-foundation.org
-Date: Thu, 18 Mar 2010 13:06:41 +0800
-Message-ID: <45123d871003172206r33ff585asd2b29014b3a2e627@mail.gmail.com>
+From: Sebastian Ott <sebott@linux.vnet.ibm.com>
+Subject: Re: RFC: additional event for pm_notifier
+Date: Thu, 18 Mar 2010 10:13:18 +0100 (CET)
+Message-ID: <alpine.LFD.2.00.1003181012250.2139@localhost>
+References: <alpine.LFD.2.00.1003171945130.2469@localhost>
+	<201003172234.44039.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3191859472850807430=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201003172234.44039.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,37 +16,68 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
---===============3191859472850807430==
-Content-Type: multipart/alternative; boundary=0050450170294a19d304820c32b0
-
---0050450170294a19d304820c32b0
-Content-Type: text/plain; charset=ISO-8859-1
-
-linux-pm@lists.linux-foundation.org
-
---0050450170294a19d304820c32b0
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<meta http-equiv=3D"content-type" content=3D"text/html; charset=3Dutf-8"><s=
-pan class=3D"Apple-style-span" style=3D"font-family: arial, sans-serif; fon=
-t-size: 13px; border-collapse: collapse; "><a href=3D"mailto:linux-pm@lists=
-.linux-foundation.org" style=3D"color: rgb(20, 125, 186); ">linux-pm@lists.=
-linux-foundation.org</a></span>
-
---0050450170294a19d304820c32b0--
-
---===============3191859472850807430==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 
---===============3191859472850807430==--
+On Wed, 17 Mar 2010, Rafael J. Wysocki wrote:
+
+> On Wednesday 17 March 2010, Sebastian Ott wrote:
+> > hi,
+> > 
+> > on s390 certain hw features which we normally enable in our init
+> > calls, get reset while restoring the hibernation image.
+> > so we need a trigger to reenable them before the device callbacks
+> > are called.
+> > 
+> > is it possible to add an additional event for the existing
+> > pm_notifier (something like the attached patch)?
+> > 
+> > regards
+> > sebastian
+> > 
+> > 
+> > Signed-off-by: Sebastian Ott <sebott@linux.vnet.ibm.com>
+> > ---
+> >  include/linux/notifier.h |    1 +
+> >  kernel/power/hibernate.c |    2 ++
+> >  2 files changed, 3 insertions(+)
+> > 
+> > Index: linux-2.6/include/linux/notifier.h
+> > ===================================================================
+> > --- linux-2.6.orig/include/linux/notifier.h
+> > +++ linux-2.6/include/linux/notifier.h
+> > @@ -250,6 +250,8 @@ static inline int notifier_to_errno(int 
+> >  #define PM_POST_SUSPEND		0x0004 /* Suspend finished */
+> >  #define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved image */
+> >  #define PM_POST_RESTORE		0x0006 /* Restore failed */
+> > +#define PM_RESTORE_FINISHED	0x0007 /* Image restored, called prior to
+> > +					  device callbacks */
+> >  
+> >  /* Console keyboard events.
+> >   * Note: KBD_KEYCODE is always sent before KBD_UNBOUND_KEYCODE, KBD_UNICODE and
+> > Index: linux-2.6/kernel/power/hibernate.c
+> > ===================================================================
+> > --- linux-2.6.orig/kernel/power/hibernate.c
+> > +++ linux-2.6/kernel/power/hibernate.c
+> > @@ -290,6 +290,8 @@ static int create_image(int platform_mod
+> >  	if (!in_suspend)
+> >  		platform_leave(platform_mode);
+> >  
+> > +	pm_notifier_call_chain(PM_RESTORE_FINISHED);
+> 
+> Hmm.  Why can't you put that in platform_leave()?
+thanks for the tip - i'll try that
+
+> 
+> > +
+> >   Power_up:
+> >  	sysdev_resume();
+> >  	/* NOTE:  dpm_resume_noirq() is just a resume() for devices
+> 
+> Rafael
+> 
