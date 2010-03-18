@@ -1,17 +1,15 @@
-From: Greg KH <gregkh@suse.de>
-Subject: Re: [RFC/PATCH] platform_bus: allow custom extensions to
- system PM methods
-Date: Thu, 18 Mar 2010 10:20:24 -0700
-Message-ID: <20100318172024.GA1675__41332.2003013038$1268932915$gmane$org@suse.de>
-References: <1268867896-7616-1-git-send-email-khilman@deeprootsystems.com>
-	<20100317234414.GA23319@suse.de>
-	<87bpellg9p.fsf@deeprootsystems.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug 15559] Bad performance after suspend on Intel
+	i7 and i5
+Date: Thu, 18 Mar 2010 20:56:40 +0100
+Message-ID: <201003182056.40655.rjw__21710.4967836805$1268942168$gmane$org@sisk.pl>
+References: <bug-15559-10028@http.bugzilla.kernel.org/>
+	<201003181842.o2IIgUSL031098@demeter.kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <87bpellg9p.fsf@deeprootsystems.com>
+In-Reply-To: <201003181842.o2IIgUSL031098@demeter.kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,51 +19,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Eric Miao <eric.y.miao@gmail.com>, Dmitry Torokhov <dtor@mail.ru>, linux-kernel@vger.kernel.org, Magnus Damm <damm@opensource.se>, linux-pm@lists.linux-foundation.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>, bugzilla-daemon@bugzilla.kernel.org, Venki Pallipadi <venkatesh.pallipadi@intel.com>, Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 18, 2010 at 09:57:06AM -0700, Kevin Hilman wrote:
-> Greg KH <gregkh@suse.de> writes:
-> 
-> > On Wed, Mar 17, 2010 at 04:18:15PM -0700, Kevin Hilman wrote:
-> >> When runtime PM for platform_bus was added, it allowed for platforms
-> >> to customize the runtime PM methods since they are defined as weak
-> >> symbols.
-> >> 
-> >> This patch allows platforms to also extend the system PM methods with
-> >> custom hooks so runtime PM and system PM extensions can be managed
-> >> together by custom platform-specific code.
-> >
-> > Wow, that's scary, I didn't realize that was done for the runtime stuff.
-> >
-> > What would you be replacing these functions with for your platform that
-> > would require it to be in arch-specific code?
-> 
-> I'm basically copying the existing functions and extending them with
-> platform-specific code to manage device clocks and other PM HW state.
-> IOW, I still call the drivers PM methods, but also take care of some
-> platform specific PM HW management.  This is just like the runtime PM
-> hooks: platform-specific code + calling drivers runtime PM methods.
-> 
-> On my platform (TI OMAP), the code to handle device PM is common for
-> all devices, so for runtime PM, I'm taking care of it at the bus
-> level.  At the hardware level, there's really no difference between
-> runtime and system PM, so I want to take advantage of the same
-> platform specific code for system PM
-> 
-> Initially, rather than making the system PM methods themselves weak, I
-> added some weak hooks that could be overridden instead (see test patch
-> below).  The problem with that is that it is not as flexible if you
-> want to run some custom code before and/or after calling the drivers
-> PM methods.  To be more flexible, using this approach, we'd probably
-> need pre- and post- hooks to be used before and after the driver's PM
-> methods are called.  Rather than add all these hooks, I decided it was
-> cleaner to just allow override of the primary methods themselves,
-> which parallels the runtime PM approach.
-
-Ok, that sounds reasonable for now.  I'll queue it up for .35.
-
-thanks,
-
-greg k-h
+SGksCgpIZXJlJ3MgYW4gaW50ZXJlc3RpbmcgaXNzdWUsIGFwcGFyZW50bHkgQ29yZSBpNSBhbmQg
+aTcgaGF2ZSBwcm9ibGVtcyBhZnRlcgpyZXN1bWUgZnJvbSBzdXNwZW5kL3N0YW5kYnkuCgpJIHdv
+bmRlciB3aG9tIGF0IEludGVsIEkgc2hvdWxkIGxldCBrbm93IGFib3V0IHRoYXQuCgpSYWZhZWwK
+CgpPbiBUaHVyc2RheSAxOCBNYXJjaCAyMDEwLCBidWd6aWxsYS1kYWVtb25AYnVnemlsbGEua2Vy
+bmVsLm9yZyB3cm90ZToKPiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/
+aWQ9MTU1NTkKPiAKPiAKPiAKPiAKPiAKPiAtLS0gQ29tbWVudCAjMyBmcm9tIFRob21hcyBCw6Rj
+aGxlciA8dGhvbWFzQGFyY2hsaW51eC5vcmc+ICAyMDEwLTAzLTE4IDE4OjQyOjI2IC0tLQo+IEkg
+aGF2ZSBvbmx5IHRlc3RlZCAyLjYuMzMgYW5kIDIuNi4zMy4xLCBhcyB0aGlzIG1hY2hpbmUgaXMg
+cXVpdGUgbmV3LiBCZXNpZGVzCj4gb3RoZXIgdW5yZWxhdGVkIHN1c3BlbmQgcHJvYmxlbXMsIEkg
+Y2FuIGFsd2F5cyByZXByb2R1Y2UgdGhpcyBvbmUgb24gYSBDb3JlCj4gaTUtNTIwTSwgdGhlIHN5
+bXB0b21zIGFyZSBleGFjdGx5IHRoZSBvbmVzIHRoYXQgRmxvcmlhbiBkZXNjcmliZXMuCj4gCj4g
+VGhlIGRpdmVyc2l0eSBvZiBoYXJkd2FyZSBhbmQgZGlmZmVyZW50IGtlcm5lbHMgaGVyZSBzdWdn
+ZXN0cyB0aGF0IHRoaXMgaXMgYQo+IGdlbmVyYWwgcHJvYmxlbSB3aXRoIHRoZSBpNSBhbmQgaTcg
+Q1BVcyBvbiBMaW51eC4gQWxzbyBpbnRlcmVzdGluZyBpcyB0aGF0Cj4gRmxvcmlhbiBpcyB1c2lu
+ZyBhbiBpNyBvZiB0aGUgMjAwOSBnZW5lcmF0aW9uLCB3aGlsZSBJIHVzZSB0aGUgMjAxMCBpNSBD
+UFUgYW5kCj4gdGhlIGJ1ZyBpcyB0aGUgc2FtZSBvbiBib3RoLgo+IAo+IE9uIHRoZSBzYW1lIGtl
+cm5lbChzKSwgbXkgb2xkIENvcmUgMiBEdW8gQ1BVIGhhcyBubyB0cm91YmxlIGFmdGVyIHJlc3Vt
+ZSwgYWxsCj4gY29yZXMgYXJlIHN0aWxsIGJlaW5nIHVzZWQgYXMgdXN1YWwuCj4gCj4gSWYgeW91
+IG5lZWQgYW55IG1vcmUgaW5mbywgSSB0aGluayB3ZSB3aWxsIGJlIGFibGUgdG8gcHJvdmlkZSBh
+bnl0aGluZyB5b3UKPiBuZWVkLiBNYXliZSBpdCBtaWdodCBhbHNvIGJlIHVzZWZ1bCB0byBicmlu
+ZyBzb21lb25lIGZyb20gSW50ZWwgaW4gb24gdGhpcy4KX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxp
+c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5v
+cmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
