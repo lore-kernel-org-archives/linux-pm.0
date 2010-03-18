@@ -1,7 +1,7 @@
 From: Sebastian Ott <sebott@linux.vnet.ibm.com>
 Subject: Re: RFC: additional event for pm_notifier
-Date: Thu, 18 Mar 2010 10:13:18 +0100 (CET)
-Message-ID: <alpine.LFD.2.00.1003181012250.2139@localhost>
+Date: Thu, 18 Mar 2010 12:37:59 +0100 (CET)
+Message-ID: <alpine.LFD.2.00.1003181227110.2139@localhost>
 References: <alpine.LFD.2.00.1003171945130.2469@localhost>
 	<201003172234.44039.rjw@sisk.pl>
 Mime-Version: 1.0
@@ -71,7 +71,15 @@ On Wed, 17 Mar 2010, Rafael J. Wysocki wrote:
 > > +	pm_notifier_call_chain(PM_RESTORE_FINISHED);
 > 
 > Hmm.  Why can't you put that in platform_leave()?
-thanks for the tip - i'll try that
+
+i'm confused, are you suggesting to put the actual statement in
+platform_leave? this would change that all these platform_* functions
+are nop's if platform_mode isn't set (i need the trigger independent
+of the hibernation_mode)
+
+or are you suggesting to implement platform_hibernation_ops for s390?
+- this seems a bit too much since i only need one trigger, and again
+this depends on the hibernation_mode
 
 > 
 > > +
