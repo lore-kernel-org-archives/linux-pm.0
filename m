@@ -1,12 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH] PM: allow runtime_suspend methods to call
-	pm_schedule_suspend
-Date: Fri, 19 Mar 2010 11:51:17 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1003191149150.1300-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM_QOS updates for 2.6.34-rc1
+Date: Fri, 19 Mar 2010 20:49:34 +0100
+Message-ID: <201003192049.34665.rjw__17919.7629019201$1269028083$gmane$org@sisk.pl>
+References: <20100314003425.GA17812@mgross-acer>
+	<20100314062637.GA12064@elf.ucw.cz>
+	<20100319143055.GA6124@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20100319143055.GA6124@linux.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,55 +19,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: mgross@linux.intel.com
+Cc: dwalker@codeaurora.org, 640E9920 <640e9920@gmail.com>, tiwai@suse.de, bruce.w.allan@intel.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch (as1361) changes the runtime PM interface slightly; it
-allows suspend requests to be scheduled while the runtime_suspend
-method is running.  If the method succeeds then the scheduled request
-is cancelled, whereas if the method fails then an idle notification is
-sent only if no request was scheduled.
+On Friday 19 March 2010, mark gross wrote:
+> On Sun, Mar 14, 2010 at 07:26:37AM +0100, Pavel Machek wrote:
+> > On Sat 2010-03-13 16:34:25, 640E9920 wrote:
+> > > The following patch series implements to following:
+> > > 1) pm_qos now uses a handle based implementation.  No more string
+> > > compares while walking lists.
+> > > 2) renames the exports to using more accurate names.
+> > > 3) updates kernel clients of pm_qos per this change
+> > > 4) added ascii interface to pmqos recognizing strings formatted in 10
+> > > charactor format "0x12345678"
+> > > 5) added new pm_qos class, "system_bus_throughput"
+> > > 
+> > > I would like to see this series make it into 2.6.34 if its not too late. 
+> > 
+> > I believe it is... -rc1 is past us.
+> 
+> crap.  I'll guess I'll redo them for next then.
+> 
+> 
+>  
+> > Also... the way the patches are structured... that will break bisect,
+> > no?
+> 
+> Um not sure, how would you recomend I structure them?
 
-Being able to schedule suspend requests from within a runtime_suspend
-method is useful for drivers that need to test for idleness and
-suspend the device all while holding a single spinlock, or for drivers
-that want to check for idleness by polling.
+Generally speaking, the kernel should build and should work correctly after
+applying each consecutive patch in the series.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-
----
-
-Index: usb-2.6/drivers/base/power/runtime.c
-===================================================================
---- usb-2.6.orig/drivers/base/power/runtime.c
-+++ usb-2.6/drivers/base/power/runtime.c
-@@ -229,14 +229,16 @@ int __pm_runtime_suspend(struct device *
- 
- 	if (retval) {
- 		dev->power.runtime_status = RPM_ACTIVE;
--		pm_runtime_cancel_pending(dev);
--
- 		if (retval == -EAGAIN || retval == -EBUSY) {
--			notify = true;
-+			if (dev->power.timer_expires == 0)
-+				notify = true;
- 			dev->power.runtime_error = 0;
-+		} else {
-+			pm_runtime_cancel_pending(dev);
- 		}
- 	} else {
- 		dev->power.runtime_status = RPM_SUSPENDED;
-+		pm_runtime_deactivate_timer(dev);
- 
- 		if (dev->parent) {
- 			parent = dev->parent;
-@@ -659,8 +661,6 @@ int pm_schedule_suspend(struct device *d
- 
- 	if (dev->power.runtime_status == RPM_SUSPENDED)
- 		retval = 1;
--	else if (dev->power.runtime_status == RPM_SUSPENDING)
--		retval = -EINPROGRESS;
- 	else if (atomic_read(&dev->power.usage_count) > 0
- 	    || dev->power.disable_depth > 0)
- 		retval = -EAGAIN;
+Rafael
