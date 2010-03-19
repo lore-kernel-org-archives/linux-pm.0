@@ -1,15 +1,16 @@
-From: Sebastian Ott <sebott@linux.vnet.ibm.com>
-Subject: Re: RFC: additional event for pm_notifier
-Date: Fri, 19 Mar 2010 09:40:39 +0100 (CET)
-Message-ID: <alpine.LFD.2.00.1003190938350.2478@localhost>
-References: <alpine.LFD.2.00.1003171945130.2469@localhost>
-	<alpine.LFD.2.00.1003181227110.2139@localhost>
-	<201003182119.24070.rjw@sisk.pl> <201003182158.06832.rjw@sisk.pl>
+From: mark gross <mgross@linux.intel.com>
+Subject: Re: [PATCH] PM_QOS updates for 2.6.34-rc1
+Date: Fri, 19 Mar 2010 07:30:55 -0700
+Message-ID: <20100319143055.GA6124__35048.6676012681$1269009236$gmane$org@linux.intel.com>
+References: <20100314003425.GA17812@mgross-acer>
+	<20100314062637.GA12064@elf.ucw.cz>
+Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003182158.06832.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <20100314062637.GA12064@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,86 +20,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: dwalker@codeaurora.org, 640E9920 <640e9920@gmail.com>, tiwai@suse.de, bruce.w.allan@intel.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Thu, 18 Mar 2010, Rafael J. Wysocki wrote:
-
-> On Thursday 18 March 2010, Rafael J. Wysocki wrote:
-> > On Thursday 18 March 2010, Sebastian Ott wrote:
-> > > 
-> > > On Wed, 17 Mar 2010, Rafael J. Wysocki wrote:
-> > > 
-> > > > On Wednesday 17 March 2010, Sebastian Ott wrote:
-> > > > > hi,
-> > > > > 
-> > > > > on s390 certain hw features which we normally enable in our init
-> > > > > calls, get reset while restoring the hibernation image.
-> > > > > so we need a trigger to reenable them before the device callbacks
-> > > > > are called.
-> > > > > 
-> > > > > is it possible to add an additional event for the existing
-> > > > > pm_notifier (something like the attached patch)?
-> > > > > 
-> > > > > regards
-> > > > > sebastian
-> > > > > 
-> > > > > 
-> > > > > Signed-off-by: Sebastian Ott <sebott@linux.vnet.ibm.com>
-> > > > > ---
-> > > > >  include/linux/notifier.h |    1 +
-> > > > >  kernel/power/hibernate.c |    2 ++
-> > > > >  2 files changed, 3 insertions(+)
-> > > > > 
-> > > > > Index: linux-2.6/include/linux/notifier.h
-> > > > > ===================================================================
-> > > > > --- linux-2.6.orig/include/linux/notifier.h
-> > > > > +++ linux-2.6/include/linux/notifier.h
-> > > > > @@ -250,6 +250,8 @@ static inline int notifier_to_errno(int 
-> > > > >  #define PM_POST_SUSPEND		0x0004 /* Suspend finished */
-> > > > >  #define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved image */
-> > > > >  #define PM_POST_RESTORE		0x0006 /* Restore failed */
-> > > > > +#define PM_RESTORE_FINISHED	0x0007 /* Image restored, called prior to
-> > > > > +					  device callbacks */
-> > > > >  
-> > > > >  /* Console keyboard events.
-> > > > >   * Note: KBD_KEYCODE is always sent before KBD_UNBOUND_KEYCODE, KBD_UNICODE and
-> > > > > Index: linux-2.6/kernel/power/hibernate.c
-> > > > > ===================================================================
-> > > > > --- linux-2.6.orig/kernel/power/hibernate.c
-> > > > > +++ linux-2.6/kernel/power/hibernate.c
-> > > > > @@ -290,6 +290,8 @@ static int create_image(int platform_mod
-> > > > >  	if (!in_suspend)
-> > > > >  		platform_leave(platform_mode);
-> > > > >  
-> > > > > +	pm_notifier_call_chain(PM_RESTORE_FINISHED);
-> > > > 
-> > > > Hmm.  Why can't you put that in platform_leave()?
-> > > 
-> > > i'm confused, are you suggesting to put the actual statement in
-> > > platform_leave? this would change that all these platform_* functions
-> > > are nop's if platform_mode isn't set (i need the trigger independent
-> > > of the hibernation_mode)
-> > > 
-> > > or are you suggesting to implement platform_hibernation_ops for s390?
+On Sun, Mar 14, 2010 at 07:26:37AM +0100, Pavel Machek wrote:
+> On Sat 2010-03-13 16:34:25, 640E9920 wrote:
+> > The following patch series implements to following:
+> > 1) pm_qos now uses a handle based implementation.  No more string
+> > compares while walking lists.
+> > 2) renames the exports to using more accurate names.
+> > 3) updates kernel clients of pm_qos per this change
+> > 4) added ascii interface to pmqos recognizing strings formatted in 10
+> > charactor format "0x12345678"
+> > 5) added new pm_qos class, "system_bus_throughput"
 > > 
-> > This one.
-> > 
-> > > - this seems a bit too much since i only need one trigger,
-> > 
-> > So you don't need to implement the other ones. :-)
-> > 
-> > You'll need to remove the check in hibernation_set_ops(), but that's fine.
+> > I would like to see this series make it into 2.6.34 if its not too late. 
 > 
-> Oops, scratch that.  It's not enough.  There are a few helper functions
-> in kernel/power/hibernate.c that will need to be updated along with that.
-> 
-> Rafael
-> 
+> I believe it is... -rc1 is past us.
 
-ok, thanks again. i'll try that over the weekend
+crap.  I'll guess I'll redo them for next then.
 
-sebastian
+
+ 
+> Also... the way the patches are structured... that will break bisect,
+> no?
+
+Um not sure, how would you recomend I structure them?
+
+--mgross
+
+> 									Pavel
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
