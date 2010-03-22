@@ -1,13 +1,15 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.34-rc2: Reported regressions from 2.6.33
-Date: Mon, 22 Mar 2010 10:12:38 -0700 (PDT)
-Message-ID: <alpine.LFD.2.00.1003221012270.18017@i5.linux-foundation.org>
-References: <M9dVcHY7TxH.A.2GC.ZBopLB@chimera>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: runtime PM ops and PCMCIA bus
+Date: Mon, 22 Mar 2010 21:03:39 +0100
+Message-ID: <20100322200339.GA7673__24422.0774657608$1269288481$gmane$org@isilmar.linta.de>
+References: <20100321224546.GA23626@comet.dominikbrodowski.net>
+	<Pine.LNX.4.44L0.1003221045130.1606-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <M9dVcHY7TxH.A.2GC.ZBopLB@chimera>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1003221045130.1606-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,19 +19,122 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Alex Villacis Lasso <avillaci@ceibo.fiec.espol.edu.ec>
-Cc: DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Magnus Damm <damm@igel.co.jp>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-pcmcia@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
+Alan,
 
-On Sun, 21 Mar 2010, Rafael J. Wysocki wrote:
+many thanks for your extensive feedback!
+
+On Mon, Mar 22, 2010 at 11:38:44AM -0400, Alan Stern wrote:
+> On Sun, 21 Mar 2010, Dominik Brodowski wrote:
+> > (2) Whenever two functions local to drivers/pcmcia/ds.c --
+> >     runtime_suspend() or runtime_resume() -- are called,
+> >     we need to force a synchronous call to pcmcia_dev_suspend(),
+> >     or to pcmcia_dev_resume(). Currently, we do this by taking
+> >     device_lock() and calling the function manually.
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15495
-> Subject		: Flood of SELinux denials on polkitd
-> Submitter	: Alex Villacis Lasso <avillaci@ceibo.fiec.espol.edu.ec>
-> Date		: 2010-03-09 16:47 (13 days old)
+> That seems like the right thing to do.  (Except that I don't know what 
+> your device_lock() routine is for.)
 
-Fixed by commit 3836a03d978e68b0ae00d3589089343c998cd4ff ("anon_inodes: 
-mark the anon inode private"), I'm pretty sure.
+Actually, that's the generic device_lock(), which replaced down(&dev->sem)
+... which is used here to not let a reset or a runtime suspend/resume race
+with a system sleep event.
 
-		Linus
+> > (3) However, it'd be much nicer to be able to use the new runtime
+> >     PM interface.
+> 
+> I don't understand.  Aren't runtime_suspend() and runtime_resume(), as 
+> mentioned above, already part of your runtime PM interface?  Or at 
+> least, intended to be part of your runtime PM interface?
+
+Well, they are part of the PCMCIA-local runtime PM interface -- it is based
+around the concept that an user may, whenever she wants, can set a PCMCIA
+device (or the whole card) to the "suspend" state.
+
+> > As the PCMCIA bus can always suspend,
+> 
+> Is that really literally true?  Don't you run into trouble if you try
+> to suspend while a data transfer is taking place?  And if you've got a 
+> whole series of transfers going on, does it really make sense to 
+> suspend after each individual transfer, only to resume immediately when 
+> the next transfer comes along?
+> 
+> How long should a pcmcia device have to remain idle before suspending 
+> it will actually end up saving energy?
+> 
+> How does your driver determine when the device becomes idle (and just
+> as important, stops being idle)?
+
+Well, all of this is done by the user. I agree that it might make sense to
+take all these issues into consideration -- e.g. by get/put commands used by
+the ATA layer etc.
+
+> >     To enable it, we should add
+> > 
+> >        pm_runtime_set_active(&p_dev->dev);
+> >        pm_runtime_enable(&p_dev->dev);
+> > 
+> >     in pcmcia_device_add().
+> 
+> Yes.
+> 
+> > (4) What is then to be done to modify runtime_suspend() / runtime_resume() ?
+> >     Is it:
+> > 
+> > + static int runtime_suspend(struct device *dev)
+> > + {
+> > + 	pm_runtime_put_noidle(dev);
+> > + 	return pm_runtime_suspend(dev);
+> > + }
+> 
+> This makes no sense at all.  pm_runtime_suspend() calls your 
+> runtime_suspend() function, not the other way around.
+
+Well, that's not what this "runtime_suspend()" does -- it is the wrapper for
+userspace-issued suspend commands.
+
+> > (5) Another problem I'm seeing with the put/get approach: there are three
+> >     different callpaths where runtime_suspend() / runtime_resume() might
+> >     be called.[*] However, each one decreases the counter, which might get < 0.
+> 
+> The counter should never become negative; if it does, there's a bug in
+> your driver.  Every decrement should match a corresponding increment,
+> just like with refcounts.  And the device should never be
+> runtime-suspended unless the counter is 0.
+
+what's the initial value, actually? Is it 0 or 1?
+
+> One of the background assumptions behind the runtime PM
+> framework is that users don't tell the system when to suspend devices.  
+
+Ah, that's the fundamental issue. I agree that the PCMCIA subsystem does
+something unusual here (relating to PCMCIA cards or PCMCIA devices) --
+but I would prefer not to break how the system currently works.
+
+> Instead, the system automatically suspends devices when it realizes
+> they aren't being used.
+
+That's what we could use for PCMCIA sockets.
+
+> > --- a/drivers/pcmcia/Kconfig
+> > +++ b/drivers/pcmcia/Kconfig
+> > @@ -20,6 +20,7 @@ if PCCARD
+> >  config PCMCIA
+> >  	tristate "16-bit PCMCIA support"
+> >  	select CRC32
+> > +	select PM_RUNTIME
+> 
+> This seems very wrong.  Why do you need it?  Can't the pcmcia subsystem 
+> work correctly without runtime PM support?  Hasn't it been working 
+> correctly that way all along?
+
+Oh yes, it did. However, continuing support for the PCMCIA-style "runtime
+PM" might need to depend on PM_RUNTIME.
+
+Will do write (and possibly test) some patches first, then get back to you
+-- many thanks for your feedback. Really appreciate it!
+
+Best,
+	Dominik
