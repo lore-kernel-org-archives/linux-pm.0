@@ -1,17 +1,13 @@
-From: Oren Laadan <orenl@cs.columbia.edu>
-Subject: Re: [C/R v20][PATCH 15/96] cgroup freezer: Fix buggy
- resume test for tasks frozen with cgroup freezer
-Date: Tue, 23 Mar 2010 12:03:37 -0400
-Message-ID: <4BA8E659.1030702__33650.6154774272$1269360267$gmane$org@cs.columbia.edu>
-References: <1268842164-5590-1-git-send-email-orenl@cs.columbia.edu>
-	<1268842164-5590-15-git-send-email-orenl@cs.columbia.edu>
-	<1268842164-5590-16-git-send-email-orenl@cs.columbia.edu>
-	<201003230028.40915.rjw@sisk.pl>
+From: Jiri Slaby <jslaby@suse.cz>
+Subject: [RFC 08/15] PM / Hibernate: add user module_ops
+Date: Tue, 23 Mar 2010 17:17:36 +0100
+Message-ID: <1269361063-3341-8-git-send-email-jslaby@suse.cz>
+References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003230028.40915.rjw@sisk.pl>
+In-Reply-To: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,58 +17,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Paul Menage <menage@google.com>, Cedric Le Goater <legoater@free.fr>, linux-api@vger.kernel.org, containers@lists.linux-foundation.org, Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@lists.linux-foundation.org, Serge Hallyn <serue@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: jirislaby@gmail.com
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
+Add sws_module_ops into /dev/snapshot user interface, so far only with
+.storage_available. The structure will be shortly filled while converting
+it to ops.
 
+Also, when using this interface, switch to the ops on open/release.
 
-Rafael J. Wysocki wrote:
-> On Wednesday 17 March 2010, Oren Laadan wrote:
->> From: Matt Helsley <matthltc@us.ibm.com>
->>
->> When the cgroup freezer is used to freeze tasks we do not want to thaw
->> those tasks during resume. Currently we test the cgroup freezer
->> state of the resuming tasks to see if the cgroup is FROZEN.  If so
->> then we don't thaw the task. However, the FREEZING state also indicates
->> that the task should remain frozen.
->>
->> This also avoids a problem pointed out by Oren Ladaan: the freezer state
->> transition from FREEZING to FROZEN is updated lazily when userspace reads
->> or writes the freezer.state file in the cgroup filesystem. This means that
->> resume will thaw tasks in cgroups which should be in the FROZEN state if
->> there is no read/write of the freezer.state file to trigger this
->> transition before suspend.
->>
->> NOTE: Another "simple" solution would be to always update the cgroup
->> freezer state during resume. However it's a bad choice for several reasons:
->> Updating the cgroup freezer state is somewhat expensive because it requires
->> walking all the tasks in the cgroup and checking if they are each frozen.
->> Worse, this could easily make resume run in N^2 time where N is the number
->> of tasks in the cgroup. Finally, updating the freezer state from this code
->> path requires trickier locking because of the way locks must be ordered.
->>
->> Instead of updating the freezer state we rely on the fact that lazy
->> updates only manage the transition from FREEZING to FROZEN. We know that
->> a cgroup with the FREEZING state may actually be FROZEN so test for that
->> state too. This makes sense in the resume path even for partially-frozen
->> cgroups -- those that really are FREEZING but not FROZEN.
->>
->> Reported-by: Oren Ladaan <orenl@cs.columbia.edu>
->> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
->> Cc: Cedric Le Goater <legoater@free.fr>
->> Cc: Paul Menage <menage@google.com>
->> Cc: Li Zefan <lizf@cn.fujitsu.com>
->> Cc: Rafael J. Wysocki <rjw@sisk.pl>
->> Cc: Pavel Machek <pavel@ucw.cz>
->> Cc: linux-pm@lists.linux-foundation.org
-> 
-> Looks reasonable.
-> 
-> Is anyone handling that already or do you want me to take it to my tree?
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+---
+ kernel/power/user.c |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
-Yes, please do.
-
-Thanks !
-
-Oren.
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index 68a99c1..20bf34c 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -61,10 +61,20 @@ static struct snapshot_data {
+ 	char frozen;
+ 	char ready;
+ 	char platform_support;
++	struct sws_module_ops *prev_ops;
+ } snapshot_state;
+ 
+ atomic_t snapshot_device_available = ATOMIC_INIT(1);
+ 
++static unsigned long user_storage_available(void)
++{
++	return ~0UL; /* we have no idea, maybe we will fail later */
++}
++
++struct sws_module_ops user_ops = {
++	.storage_available = user_storage_available,
++};
++
+ static int snapshot_open(struct inode *inode, struct file *filp)
+ {
+ 	struct snapshot_data *data;
+@@ -115,6 +125,10 @@ static int snapshot_open(struct inode *inode, struct file *filp)
+ 	}
+ 	if (error)
+ 		atomic_inc(&snapshot_device_available);
++	else {
++		data->prev_ops = sws_io_ops;
++		sws_io_ops = &user_ops;
++	}
+ 	data->frozen = 0;
+ 	data->ready = 0;
+ 	data->platform_support = 0;
+@@ -139,6 +153,7 @@ static int snapshot_release(struct inode *inode, struct file *filp)
+ 		thaw_processes();
+ 	pm_notifier_call_chain(data->mode == O_WRONLY ?
+ 			PM_POST_HIBERNATION : PM_POST_RESTORE);
++	sws_io_ops = data->prev_ops;
+ 	atomic_inc(&snapshot_device_available);
+ 
+ 	mutex_unlock(&pm_mutex);
+-- 
+1.7.0.2
