@@ -1,8 +1,7 @@
 From: Jiri Slaby <jslaby@suse.cz>
-Subject: [RFC 10/15] PM / Hibernate: user,
-	implement user_ops reader
-Date: Tue, 23 Mar 2010 17:17:38 +0100
-Message-ID: <1269361063-3341-10-git-send-email-jslaby__17655.1204560839$1269363250$gmane$org@suse.cz>
+Subject: [RFC 13/15] PM / Hibernate: split snapshot_write_next
+Date: Tue, 23 Mar 2010 17:17:41 +0100
+Message-ID: <1269361063-3341-13-git-send-email-jslaby__42086.3068350174$1269363252$gmane$org@suse.cz>
 References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,142 +21,235 @@ To: jirislaby@gmail.com
 Cc: Nigel Cunningham <ncunningham@crca.org.au>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Switch /dev/snapshot reader to sws_module_ops approach so that we
-can transparently rewrite the rest of the snapshot from pages pulling
-to their pushing through layers.
+When reading the snapshot, do the initialization and header read in
+a separate function. This makes the code more readable and lowers
+complexity of snapshot_write_next.
 
 Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 Cc: Nigel Cunningham <ncunningham@crca.org.au>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 ---
- kernel/power/user.c |   73 +++++++++++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 65 insertions(+), 8 deletions(-)
+ kernel/power/power.h    |    1 +
+ kernel/power/snapshot.c |   98 +++++++++++++++++++++++++++++-----------------
+ kernel/power/swap.c     |   19 +++------
+ 3 files changed, 70 insertions(+), 48 deletions(-)
 
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 748567d..1b5d2e1 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -76,6 +76,7 @@ static DECLARE_BITMAP(to_do_flags, 10);
- #define TODO_FINISH	2
- #define TODO_CLOSED	3
- #define TODO_ERROR	4
-+#define TODO_RD_RUNNING	5
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index 638a97c..842d27b 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -130,6 +130,7 @@ struct sws_module_ops {
  
- static unsigned long user_storage_available(void)
- {
-@@ -123,12 +124,41 @@ static int put_user_writer(unsigned int flags, int error)
- 	return error;
+ extern unsigned int snapshot_additional_pages(struct zone *zone);
+ extern unsigned long snapshot_get_image_size(void);
++extern int snapshot_read_init(struct snapshot_handle *handle);
+ extern int snapshot_write_init(struct snapshot_handle *handle);
+ extern int snapshot_read_next(struct snapshot_handle *handle);
+ extern int snapshot_write_next(struct snapshot_handle *handle);
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index c8864de..d432e87 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -2126,10 +2126,52 @@ static void *get_buffer(struct memory_bitmap *bm, struct chain_allocator *ca)
  }
  
-+static int get_user_reader(unsigned int *flags_p)
-+{
-+	return 0;
-+}
-+
-+static int user_read_page(void *addr, struct bio **bio_chain)
-+{
-+	int err = 0;
-+
-+	to_do_buf = addr;
-+	wmb();
-+	set_bit(TODO_WORK, to_do_flags);
-+	wake_up_interruptible(&to_do_wait);
-+
-+	wait_event(to_do_done, !test_bit(TODO_WORK, to_do_flags) ||
-+			(err = test_bit(TODO_CLOSED, to_do_flags)));
-+
-+	return err ? -EIO : 0;
-+}
-+
-+static int put_user_reader(void)
-+{
-+	return 0;
-+}
-+
- struct sws_module_ops user_ops = {
- 	.storage_available = user_storage_available,
- 
- 	.get_writer = get_user_writer,
- 	.put_writer = put_user_writer,
- 	.write_page = user_write_page,
-+
-+	.get_reader = get_user_reader,
-+	.put_reader = put_user_reader,
-+	.read_page = user_read_page,
- };
- 
- static void snapshot_writer(struct work_struct *work)
-@@ -142,6 +172,22 @@ static void snapshot_writer(struct work_struct *work)
- 
- static DECLARE_WORK(snapshot_writer_w, snapshot_writer);
- 
-+static void snapshot_reader(struct work_struct *work)
+ /**
++ *	snapshot_read_init - initialization before reading the snapshot from
++ *	a backing storage
++ *
++ *	This function *must* be called before snapshot_write_next to initialize
++ *	@handle and read header.
++ *
++ *	@handle: snapshot handle to init
++ */
++int snapshot_read_init(struct snapshot_handle *handle)
 +{
 +	int ret;
 +
-+	set_bit(TODO_RD_RUNNING, to_do_flags);
-+	ret = swsusp_read(NULL);
-+	if (ret) {
-+		printk(KERN_ERR "PM: read failed with %d\n", ret);
-+		set_bit(TODO_ERROR, to_do_flags);
-+	}
-+	clear_bit(TODO_RD_RUNNING, to_do_flags);
-+	wake_up_interruptible(&to_do_wait);
++	/* This makes the buffer be freed by swsusp_free() */
++	buffer = get_image_page(GFP_ATOMIC, PG_ANY);
++	if (!buffer)
++		return -ENOMEM;
++
++	ret = sws_rw_buffer_init(0);
++	if (ret)
++		return ret;
++	ret = sws_rw_buffer(0, buffer, sizeof(struct swsusp_info));
++	if (ret)
++		goto finish;
++	sws_rw_buffer_finish(0);
++
++	ret = load_header(buffer);
++	if (ret)
++		return ret;
++
++	ret = memory_bm_create(&copy_bm, GFP_ATOMIC, PG_ANY);
++	if (ret)
++		return ret;
++
++	handle->buffer = buffer;
++	handle->sync_read = 1;
++	return 0;
++finish:
++	sws_rw_buffer_finish(0);
++	return ret;
 +}
 +
-+static DECLARE_WORK(snapshot_reader_w, snapshot_reader);
-+
- static int snapshot_open(struct inode *inode, struct file *filp)
++/**
+  *	snapshot_write_next - used for writing the system memory snapshot.
+  *
+- *	On the first call to it @handle should point to a zeroed
+- *	snapshot_handle structure.  The structure gets updated and a pointer
++ *	Before calling this function, snapshot_read_init has to be called with
++ *	handle passed as @handle here. The structure gets updated and a pointer
+  *	to it should be passed to this function every next time.
+  *
+  *	On success the function returns a positive number.  Then, the caller
+@@ -2141,42 +2183,20 @@ static void *get_buffer(struct memory_bitmap *bm, struct chain_allocator *ca)
+  *	structure pointed to by @handle is not updated and should not be used
+  *	any more.
+  */
+-
+ int snapshot_write_next(struct snapshot_handle *handle)
  {
- 	struct snapshot_data *data;
-@@ -287,19 +333,27 @@ static ssize_t snapshot_write(struct file *filp, const char __user *buf,
+ 	static struct chain_allocator ca;
+ 	int error = 0;
  
- 	mutex_lock(&pm_mutex);
+-	/* Check if we have already loaded the entire image */
+-	if (handle->cur > 1 && handle->cur > nr_meta_pages + nr_copy_pages)
+-		return 0;
+-
+ 	handle->sync_read = 1;
+-
+-	if (!handle->cur) {
+-		if (!buffer)
+-			/* This makes the buffer be freed by swsusp_free() */
+-			buffer = get_image_page(GFP_ATOMIC, PG_ANY);
+-
+-		if (!buffer)
+-			return -ENOMEM;
+-
+-		handle->buffer = buffer;
+-	} else if (handle->cur == 1) {
+-		error = load_header(buffer);
+-		if (error)
+-			return error;
+-
+-		error = memory_bm_create(&copy_bm, GFP_ATOMIC, PG_ANY);
+-		if (error)
+-			return error;
+-
+-	} else if (handle->cur <= nr_meta_pages + 1) {
++	if (handle->cur < nr_meta_pages) {
+ 		error = unpack_orig_pfns(buffer, &copy_bm);
+ 		if (error)
+ 			return error;
  
-+	if (!test_bit(TODO_RD_RUNNING, to_do_flags))
-+		queue_work(suspend_worker, &snapshot_reader_w);
-+
- 	data = filp->private_data;
- 
- 	if (!pg_offp) {
--		res = snapshot_write_next(&data->handle);
--		if (res <= 0)
-+		res = wait_event_interruptible(to_do_wait,
-+				test_bit(TODO_WORK, to_do_flags));
-+		if (res)
- 			goto unlock;
--	} else
--		res = PAGE_SIZE - pg_offp;
-+	}
-+	res = PAGE_SIZE - pg_offp;
- 
--	res = simple_write_to_buffer(data_of(data->handle), res, &pg_offp,
--			buf, count);
-+	res = simple_write_to_buffer(to_do_buf, res, &pg_offp, buf, count);
- 	if (res > 0)
- 		*offp += res;
-+
-+	if (!(pg_offp & ~PAGE_MASK)) {
-+		clear_bit(TODO_WORK, to_do_flags);
-+		wake_up(&to_do_done);
-+	}
- unlock:
- 	mutex_unlock(&pm_mutex);
- 
-@@ -384,9 +438,12 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
- 		break;
- 
- 	case SNAPSHOT_ATOMIC_RESTORE:
--		snapshot_write_finalize(&data->handle);
-+		error = wait_event_interruptible(to_do_wait,
-+				!test_bit(TODO_RD_RUNNING, to_do_flags));
-+		if (error)
-+			break;
- 		if (data->mode != O_WRONLY || !data->frozen ||
--		    !snapshot_image_loaded(&data->handle)) {
-+				test_bit(TODO_ERROR, to_do_flags)) {
- 			error = -EPERM;
- 			break;
+-		if (handle->cur == nr_meta_pages + 1) {
++		/* well, this was the last meta page
++		   prepare for ordinary pages */
++		if (handle->cur + 1 == nr_meta_pages) {
+ 			error = prepare_image(&orig_bm, &copy_bm);
+ 			if (error)
+ 				return error;
+@@ -2189,16 +2209,22 @@ int snapshot_write_next(struct snapshot_handle *handle)
+ 			if (IS_ERR(handle->buffer))
+ 				return PTR_ERR(handle->buffer);
  		}
++		error = PAGE_SIZE;
+ 	} else {
+ 		copy_last_highmem_page();
+-		handle->buffer = get_buffer(&orig_bm, &ca);
+-		if (IS_ERR(handle->buffer))
+-			return PTR_ERR(handle->buffer);
+-		if (handle->buffer != buffer)
+-			handle->sync_read = 0;
++		/* prepare next unless this was the last one */
++		if (handle->cur + 1 < nr_meta_pages + nr_copy_pages) {
++			handle->buffer = get_buffer(&orig_bm, &ca);
++			if (IS_ERR(handle->buffer))
++				return PTR_ERR(handle->buffer);
++			if (handle->buffer != buffer)
++				handle->sync_read = 0;
++			error = PAGE_SIZE;
++		}
+ 	}
++
+ 	handle->cur++;
+-	return PAGE_SIZE;
++	return error;
+ }
+ 
+ /**
+@@ -2213,7 +2239,7 @@ void snapshot_write_finalize(struct snapshot_handle *handle)
+ {
+ 	copy_last_highmem_page();
+ 	/* Free only if we have loaded the image entirely */
+-	if (handle->cur > 1 && handle->cur > nr_meta_pages + nr_copy_pages) {
++	if (handle->cur >= nr_meta_pages + nr_copy_pages) {
+ 		memory_bm_free(&orig_bm, PG_UNSAFE_CLEAR);
+ 		free_highmem_data();
+ 	}
+@@ -2222,7 +2248,7 @@ void snapshot_write_finalize(struct snapshot_handle *handle)
+ int snapshot_image_loaded(struct snapshot_handle *handle)
+ {
+ 	return !(!nr_copy_pages || !last_highmem_page_copied() ||
+-			handle->cur <= nr_meta_pages + nr_copy_pages);
++			handle->cur < nr_meta_pages + nr_copy_pages);
+ }
+ 
+ #ifdef CONFIG_HIGHMEM
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 1b0ed28..4472cf3 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -570,9 +570,6 @@ static int load_image(struct snapshot_handle *snapshot, unsigned int nr_to_read)
+ 	bio = NULL;
+ 	do_gettimeofday(&start);
+ 	for ( ; ; ) {
+-		error = snapshot_write_next(snapshot);
+-		if (error <= 0)
+-			break;
+ 		error = sws_io_ops->read_page(data_of(*snapshot), &bio);
+ 		if (error)
+ 			break;
+@@ -580,9 +577,13 @@ static int load_image(struct snapshot_handle *snapshot, unsigned int nr_to_read)
+ 			error = sws_wait_on_bio_chain(&bio);
+ 		if (error)
+ 			break;
++		error = snapshot_write_next(snapshot);
++		if (error >= 0)
++			nr_pages++;
++		if (error <= 0)
++			break;
+ 		if (!(nr_pages % m))
+ 			printk("\b\b\b\b%3d%%", nr_pages / m);
+-		nr_pages++;
+ 	}
+ 	err2 = sws_wait_on_bio_chain(&bio);
+ 	do_gettimeofday(&stop);
+@@ -609,20 +610,14 @@ int swsusp_read(unsigned int *flags_p)
+ {
+ 	int error;
+ 	struct snapshot_handle snapshot;
+-	struct swsusp_info *header;
+ 
+ 	memset(&snapshot, 0, sizeof(struct snapshot_handle));
+-	error = snapshot_write_next(&snapshot);
+-	if (error < PAGE_SIZE)
+-		return error < 0 ? error : -EFAULT;
+-	header = (struct swsusp_info *)data_of(snapshot);
+ 	error = sws_io_ops->get_reader(flags_p);
+ 	if (error)
+ 		goto end;
++	error = snapshot_read_init(&snapshot);
+ 	if (!error)
+-		error = sws_io_ops->read_page(header, NULL);
+-	if (!error)
+-		error = load_image(&snapshot, header->pages - 1);
++		error = load_image(&snapshot, snapshot_get_image_size() - 1);
+ 	sws_io_ops->put_reader();
+ end:
+ 	if (!error)
 -- 
 1.7.0.2
