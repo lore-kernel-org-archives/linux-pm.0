@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2] pcmcia: db1xxx-ss: suspend/resume fix
-Date: Tue, 23 Mar 2010 23:02:49 +0100
-Message-ID: <201003232302.49415.rjw@sisk.pl>
-References: <1269287003-15523-1-git-send-email-manuel.lauss@gmail.com>
-	<20100322205814.GB15250@isilmar.linta.de>
-	<f861ec6f1003231015j73d6de9dp7a3a4e087aabda0a@mail.gmail.com>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [RFC 01/15] FS: libfs,
+	implement simple_write_to_buffer
+Date: Wed, 24 Mar 2010 09:09:42 +1100
+Message-ID: <4BA93C26.90607__38447.9709122845$1269382335$gmane$org@crca.org.au>
+References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <f861ec6f1003231015j73d6de9dp7a3a4e087aabda0a@mail.gmail.com>
+In-Reply-To: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,35 +18,16 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Manuel Lauss <manuel.lauss@googlemail.com>, Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-pm@lists.linux-foundation.org, linux-pcmcia@lists.infradead.org
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: linux-fsdevel@vger.kernel.org, linux-pm@lists.linux-foundation.org, jirislaby@gmail.com, Alexander Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 23 March 2010, Manuel Lauss wrote:
-> Howdy,
-> 
-> On Mon, Mar 22, 2010 at 9:58 PM, Dominik Brodowski
-> <linux@dominikbrodowski.net> wrote:
-> > Hm, what about using two commits currently in my tree for 2.6.36 instead,
-> > which should fix all socket drivers?
-> >
-> >    power: support _noirq actions on device types and classes
-> >    pcmcia: use dev_pm_ops for class pcmcia_socket_class
-> >
-> > Manuel: Could you try whether they also solve these issues? If so, I'd
-> 
-> Yes it does, works on my MIPS test systems.
+Hi Jiri and others.
 
-I don't seem to have received the original message, so sorry for the lack of
-response.
- 
-> > propose pushing both patches already for 2.6.36. Rafael: do you concur?
+Just a general comment, having quickly read through the patches while 
+not fully understanding the uswsusp side of things, they look good to 
+me. Like Rafael has just said, I'll seek to take a more thorough look later.
 
-I do.  The patches look good and if they fix things for people right now,
-that's a good reason to push them for .34.
+Thanks!
 
-> I hope you meant 2.6.34
-
-I think Dominik meant .35 actually.
-
-Rafael
+Nigel
