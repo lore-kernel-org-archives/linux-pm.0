@@ -1,7 +1,8 @@
 From: Jiri Slaby <jslaby@suse.cz>
-Subject: [RFC 11/15] PM / Hibernate: add chunk i/o support
-Date: Tue, 23 Mar 2010 17:17:39 +0100
-Message-ID: <1269361063-3341-11-git-send-email-jslaby__28829.7780244195$1269363244$gmane$org@suse.cz>
+Subject: [RFC 10/15] PM / Hibernate: user,
+	implement user_ops reader
+Date: Tue, 23 Mar 2010 17:17:38 +0100
+Message-ID: <1269361063-3341-10-git-send-email-jslaby__17655.1204560839$1269363250$gmane$org@suse.cz>
 References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,150 +22,142 @@ To: jirislaby@gmail.com
 Cc: Nigel Cunningham <ncunningham@crca.org.au>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Chunk support is useful when not writing whole pages at once. It takes
-care of joining the buffers into the pages and writing at once when
-needed.
-
-In the end when pages are compressed they use this interface as well
-(because they are indeed shorter than PAGE_SIZE).
+Switch /dev/snapshot reader to sws_module_ops approach so that we
+can transparently rewrite the rest of the snapshot from pages pulling
+to their pushing through layers.
 
 Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 Cc: Nigel Cunningham <ncunningham@crca.org.au>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 ---
- kernel/power/block_io.c |   81 +++++++++++++++++++++++++++++++++++++++++++++++
- kernel/power/power.h    |    6 +++
- 2 files changed, 87 insertions(+), 0 deletions(-)
+ kernel/power/user.c |   73 +++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 files changed, 65 insertions(+), 8 deletions(-)
 
-diff --git a/kernel/power/block_io.c b/kernel/power/block_io.c
-index 2b7898a..37412f7 100644
---- a/kernel/power/block_io.c
-+++ b/kernel/power/block_io.c
-@@ -3,6 +3,7 @@
-  *
-  * Copyright (C) 1998,2001-2005 Pavel Machek <pavel@suse.cz>
-  * Copyright (C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
-+ * Copyright (C) 2004-2008 Nigel Cunningham (nigel at tuxonice net)
-  *
-  * This file is released under the GPLv2.
-  */
-@@ -14,6 +15,9 @@
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index 748567d..1b5d2e1 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -76,6 +76,7 @@ static DECLARE_BITMAP(to_do_flags, 10);
+ #define TODO_FINISH	2
+ #define TODO_CLOSED	3
+ #define TODO_ERROR	4
++#define TODO_RD_RUNNING	5
  
- #include "power.h"
- 
-+static char *sws_writer_buffer;
-+static unsigned long sws_writer_buffer_pos;
-+
- /**
-  *	submit - submit BIO request.
-  *	@rw:	READ or WRITE.
-@@ -74,6 +78,83 @@ int sws_bio_write_page(pgoff_t page_off, void *addr, struct bio **bio_chain)
- 			virt_to_page(addr), bio_chain);
+ static unsigned long user_storage_available(void)
+ {
+@@ -123,12 +124,41 @@ static int put_user_writer(unsigned int flags, int error)
+ 	return error;
  }
  
-+int sws_rw_buffer_init(int writing)
++static int get_user_reader(unsigned int *flags_p)
 +{
-+	BUG_ON(sws_writer_buffer || sws_writer_buffer_pos);
-+
-+	sws_writer_buffer = (void *)get_zeroed_page(__GFP_WAIT | __GFP_HIGH);
-+	if (sws_writer_buffer && !writing)
-+		sws_writer_buffer_pos = PAGE_SIZE;
-+
-+	return sws_writer_buffer ? 0 : -ENOMEM;
-+}
-+
-+/**
-+ * sws_rw_buffer - combine smaller buffers into PAGE_SIZE I/O
-+ * @writing:		Bool - whether writing (or reading).
-+ * @buffer:		The start of the buffer to write or fill.
-+ * @buffer_size:	The size of the buffer to write or fill.
-+ **/
-+int sws_rw_buffer(int writing, char *buffer, int buffer_size)
-+{
-+	int bytes_left = buffer_size, ret;
-+
-+	while (bytes_left) {
-+		char *source_start = buffer + buffer_size - bytes_left;
-+		char *dest_start = sws_writer_buffer + sws_writer_buffer_pos;
-+		int capacity = PAGE_SIZE - sws_writer_buffer_pos;
-+		char *to = writing ? dest_start : source_start;
-+		char *from = writing ? source_start : dest_start;
-+
-+		if (bytes_left <= capacity) {
-+			memcpy(to, from, bytes_left);
-+			sws_writer_buffer_pos += bytes_left;
-+			return 0;
-+		}
-+
-+		/* Complete this page and start a new one */
-+		memcpy(to, from, capacity);
-+		bytes_left -= capacity;
-+
-+		if (writing) {
-+			ret = sws_io_ops->write_page(sws_writer_buffer, NULL);
-+			clear_page(sws_writer_buffer);
-+			if (ret)
-+				return ret;
-+		} else {
-+			ret = sws_io_ops->read_page(sws_writer_buffer, NULL);
-+			if (ret)
-+				return ret;
-+		}
-+
-+		sws_writer_buffer_pos = 0;
-+	}
-+
 +	return 0;
 +}
 +
-+int sws_rw_buffer_flush_page(int writing)
++static int user_read_page(void *addr, struct bio **bio_chain)
 +{
-+	int ret = 0;
-+	if (writing && sws_writer_buffer_pos)
-+		ret = sws_io_ops->write_page(sws_writer_buffer, NULL);
-+	sws_writer_buffer_pos = writing ? 0 : PAGE_SIZE;
-+	return ret;
++	int err = 0;
++
++	to_do_buf = addr;
++	wmb();
++	set_bit(TODO_WORK, to_do_flags);
++	wake_up_interruptible(&to_do_wait);
++
++	wait_event(to_do_done, !test_bit(TODO_WORK, to_do_flags) ||
++			(err = test_bit(TODO_CLOSED, to_do_flags)));
++
++	return err ? -EIO : 0;
 +}
 +
-+int sws_rw_buffer_finish(int writing)
++static int put_user_reader(void)
 +{
-+	int ret = 0;
-+
-+	ret = sws_rw_buffer_flush_page(writing);
-+
-+	free_page((unsigned long)sws_writer_buffer);
-+	sws_writer_buffer = NULL;
-+	sws_writer_buffer_pos = 0;
-+
-+	return ret;
++	return 0;
 +}
 +
- int sws_wait_on_bio_chain(struct bio **bio_chain)
+ struct sws_module_ops user_ops = {
+ 	.storage_available = user_storage_available,
+ 
+ 	.get_writer = get_user_writer,
+ 	.put_writer = put_user_writer,
+ 	.write_page = user_write_page,
++
++	.get_reader = get_user_reader,
++	.put_reader = put_user_reader,
++	.read_page = user_read_page,
+ };
+ 
+ static void snapshot_writer(struct work_struct *work)
+@@ -142,6 +172,22 @@ static void snapshot_writer(struct work_struct *work)
+ 
+ static DECLARE_WORK(snapshot_writer_w, snapshot_writer);
+ 
++static void snapshot_reader(struct work_struct *work)
++{
++	int ret;
++
++	set_bit(TODO_RD_RUNNING, to_do_flags);
++	ret = swsusp_read(NULL);
++	if (ret) {
++		printk(KERN_ERR "PM: read failed with %d\n", ret);
++		set_bit(TODO_ERROR, to_do_flags);
++	}
++	clear_bit(TODO_RD_RUNNING, to_do_flags);
++	wake_up_interruptible(&to_do_wait);
++}
++
++static DECLARE_WORK(snapshot_reader_w, snapshot_reader);
++
+ static int snapshot_open(struct inode *inode, struct file *filp)
  {
- 	struct bio *bio;
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 0f08de4..50a888a 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -3,6 +3,8 @@
- #include <linux/utsname.h>
- #include <linux/freezer.h>
+ 	struct snapshot_data *data;
+@@ -287,19 +333,27 @@ static ssize_t snapshot_write(struct file *filp, const char __user *buf,
  
-+struct swap_map_handle;
+ 	mutex_lock(&pm_mutex);
+ 
++	if (!test_bit(TODO_RD_RUNNING, to_do_flags))
++		queue_work(suspend_worker, &snapshot_reader_w);
 +
- struct swsusp_info {
- 	struct new_utsname	uts;
- 	u32			version_code;
-@@ -161,6 +163,10 @@ extern int sws_bio_read_page(pgoff_t page_off, void *addr,
- extern int sws_bio_write_page(pgoff_t page_off, void *addr,
- 		struct bio **bio_chain);
- extern int sws_wait_on_bio_chain(struct bio **bio_chain);
-+extern int sws_rw_buffer_init(int writing);
-+extern int sws_rw_buffer_finish(int writing);
-+extern int sws_rw_buffer_flush_page(int writing);
-+extern int sws_rw_buffer(int writing, char *buffer, int buffer_size);
+ 	data = filp->private_data;
  
- struct timeval;
- /* kernel/power/swsusp.c */
+ 	if (!pg_offp) {
+-		res = snapshot_write_next(&data->handle);
+-		if (res <= 0)
++		res = wait_event_interruptible(to_do_wait,
++				test_bit(TODO_WORK, to_do_flags));
++		if (res)
+ 			goto unlock;
+-	} else
+-		res = PAGE_SIZE - pg_offp;
++	}
++	res = PAGE_SIZE - pg_offp;
+ 
+-	res = simple_write_to_buffer(data_of(data->handle), res, &pg_offp,
+-			buf, count);
++	res = simple_write_to_buffer(to_do_buf, res, &pg_offp, buf, count);
+ 	if (res > 0)
+ 		*offp += res;
++
++	if (!(pg_offp & ~PAGE_MASK)) {
++		clear_bit(TODO_WORK, to_do_flags);
++		wake_up(&to_do_done);
++	}
+ unlock:
+ 	mutex_unlock(&pm_mutex);
+ 
+@@ -384,9 +438,12 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+ 		break;
+ 
+ 	case SNAPSHOT_ATOMIC_RESTORE:
+-		snapshot_write_finalize(&data->handle);
++		error = wait_event_interruptible(to_do_wait,
++				!test_bit(TODO_RD_RUNNING, to_do_flags));
++		if (error)
++			break;
+ 		if (data->mode != O_WRONLY || !data->frozen ||
+-		    !snapshot_image_loaded(&data->handle)) {
++				test_bit(TODO_ERROR, to_do_flags)) {
+ 			error = -EPERM;
+ 			break;
+ 		}
 -- 
 1.7.0.2
