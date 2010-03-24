@@ -1,15 +1,16 @@
 From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [RFC 07/15] PM / Hibernate: add sws_modules_ops
-Date: Wed, 24 Mar 2010 22:31:09 +0100
-Message-ID: <4BAA849D.1080308__23299.7365099893$1269473414$gmane$org@gmail.com>
+Subject: Re: [RFC 06/15] PM / Hibernate: swap,
+	remove swap_map_handle usages
+Date: Wed, 24 Mar 2010 22:29:14 +0100
+Message-ID: <4BAA842A.6060906__14066.3240374581$1269473416$gmane$org@gmail.com>
 References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
-	<1269361063-3341-7-git-send-email-jslaby@suse.cz>
-	<20100324203634.GH5798@elf.ucw.cz>
+	<1269361063-3341-6-git-send-email-jslaby@suse.cz>
+	<20100324203329.GG5798@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100324203634.GH5798@elf.ucw.cz>
+In-Reply-To: <20100324203329.GG5798@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,18 +24,26 @@ To: Pavel Machek <pavel@ucw.cz>
 Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 03/24/2010 09:36 PM, Pavel Machek wrote:
-> On Tue 2010-03-23 17:17:35, Jiri Slaby wrote:
->> +struct sws_module_ops {
-...
-> sws_ prefix is strange.
+On 03/24/2010 09:33 PM, Pavel Machek wrote:
+> On Tue 2010-03-23 17:17:34, Jiri Slaby wrote:
+>> Some code, which will be moved out of swap.c, needs know nothing about
+>> swap. There will be also other than swap writers later, so that it
+>> won't make sense at all.
+>>
+>> Make it a global static in swap.c as a singleton.
+> 
+> I guess I just dislike global static. Logically, methods do operate on
+> handles, so...
 
-Yeah, noted on this in the previous mail.
+Ok, "upper layers" may get a handle via .get_reader/writer. The downside
+is that they would have to get (void *) and pass (void *) down again. I
+wanted to avoid that (taking into account that it's a singleton).
 
-> Plus, could we get some docs what it does? Stuff like "get_writer" is
-> not entirely self-documenting.
+> I don't see a point and I do not think the change is an improvement.
 
-Ah, this I wanted to do. Thanks for the reminder.
+The point was to avoid (void *)'s and save users from transferring
+pointer as a handle. No matter what, the decision is not up to me,
+discussion indeed welcome.
 
 -- 
 js
