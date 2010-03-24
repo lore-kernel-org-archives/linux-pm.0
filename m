@@ -1,16 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC 09/15] PM / Hibernate: user,
-	implement user_ops writer
-Date: Wed, 24 Mar 2010 21:42:59 +0100
-Message-ID: <20100324204259.GA6423__31023.2656811879$1269463752$gmane$org@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC 01/15] FS: libfs,
+	implement simple_write_to_buffer
+Date: Wed, 24 Mar 2010 23:13:36 +0100
+Message-ID: <201003242313.36811.rjw__34941.7411642664$1269471129$gmane$org@sisk.pl>
 References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
-	<1269361063-3341-9-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1269361063-3341-9-git-send-email-jslaby@suse.cz>
+In-Reply-To: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,64 +19,97 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Jiri Slaby <jslaby@suse.cz>
-Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>, jirislaby@gmail.com, linux-kernel@vger.kernel.org
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, jirislaby@gmail.com, linux-kernel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> Switch /dev/snapshot writer to sws_module_ops approach so that we
-> can transparently rewrite the rest of the snapshot from pages pulling
-> to their pushing through layers.
+On Tuesday 23 March 2010, Jiri Slaby wrote:
+> It will be used in suspend code and serves as an easy wrap around
+> copy_from_user. Similar to simple_read_from_buffer, it takes care
+> of transfers with proper lengths depending on available and count
+> parameters and advances ppos appropriately.
 > 
 > Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 > Cc: Nigel Cunningham <ncunningham@crca.org.au>
 > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+> Cc: linux-fsdevel@vger.kernel.org
+
+No objections from me.
+
+Is there any concern from the fs side?
+
+Rafael
+
+
 > ---
->  kernel/power/user.c |  113 +++++++++++++++++++++++++++++++++++++++++++++++----
->  1 files changed, 105 insertions(+), 8 deletions(-)
->
-
-> +	if (test_bit(TODO_CLOSED, to_do_flags))
-> +		return -EIO;
-> +
-> +	to_do_buf = buf;
-> +	wmb();
-> +	set_bit(TODO_WORK, to_do_flags);
-> +	wake_up_interruptible(&to_do_wait);
-
-Uhuh, open-coded barriers... these need to be commented, and I guess
-you just should not play this kind of trickery.
-
-spnlocks? Normal locks?
-
-> +
-> +	wait_event(to_do_done, !test_bit(TODO_WORK, to_do_flags) ||
-> +			(err = test_bit(TODO_CLOSED, to_do_flags)));
-> +
-> +	return err ? -EIO : 0;
-> +}
-> +
-> +static int put_user_writer(unsigned int flags, int error)
+>  fs/libfs.c         |   35 +++++++++++++++++++++++++++++++++++
+>  include/linux/fs.h |    2 ++
+>  2 files changed, 37 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/libfs.c b/fs/libfs.c
+> index 9e50bcf..fda73b3 100644
+> --- a/fs/libfs.c
+> +++ b/fs/libfs.c
+> @@ -546,6 +546,40 @@ ssize_t simple_read_from_buffer(void __user *to, size_t count, loff_t *ppos,
+>  }
+>  
+>  /**
+> + * simple_write_to_buffer - copy data from user space to the buffer
+> + * @to: the buffer to write to
+> + * @available: the size of the buffer
+> + * @ppos: the current position in the buffer
+> + * @from: the user space buffer to read from
+> + * @count: the maximum number of bytes to read
+> + *
+> + * The simple_write_to_buffer() function reads up to @count bytes from the user
+> + * space address starting at @from into the buffer @to at offset @ppos.
+> + *
+> + * On success, the number of bytes written is returned and the offset @ppos is
+> + * advanced by this number, or negative value is returned on error.
+> + **/
+> +ssize_t simple_write_to_buffer(void *to, size_t available, loff_t *ppos,
+> +		const void __user *from, size_t count)
 > +{
-> +	int err = 0;
+> +	loff_t pos = *ppos;
+> +	size_t ret;
 > +
-> +	if (error)
-> +		set_bit(TODO_ERROR, to_do_flags);
-> +	set_bit(TODO_FINISH, to_do_flags);
-> +	wake_up_interruptible(&to_do_wait);
-> +
-> +	wait_event(to_do_done, !test_bit(TODO_FINISH, to_do_flags) ||
-> +			(err = test_bit(TODO_CLOSED, to_do_flags)));
-> +
-> +	if (!error && err)
-> +		error = -EIO;
-> +
-> +	return error;
+> +	if (pos < 0)
+> +		return -EINVAL;
+> +	if (pos >= available || !count)
+> +		return 0;
+> +	if (count > available - pos)
+> +		count = available - pos;
+> +	ret = copy_from_user(to + pos, from, count);
+> +	if (ret == count)
+> +		return -EFAULT;
+> +	count -= ret;
+> +	*ppos = pos + count;
+> +	return count;
 > +}
 > +
->  struct sws_module_ops user_ops = {
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> +/**
+>   * memory_read_from_buffer - copy data from the buffer
+>   * @to: the kernel space buffer to read to
+>   * @count: the maximum number of bytes to read
+> @@ -863,6 +897,7 @@ EXPORT_SYMBOL(simple_statfs);
+>  EXPORT_SYMBOL(simple_sync_file);
+>  EXPORT_SYMBOL(simple_unlink);
+>  EXPORT_SYMBOL(simple_read_from_buffer);
+> +EXPORT_SYMBOL(simple_write_to_buffer);
+>  EXPORT_SYMBOL(memory_read_from_buffer);
+>  EXPORT_SYMBOL(simple_transaction_set);
+>  EXPORT_SYMBOL(simple_transaction_get);
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index a4636b6..0f751b6 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -2370,6 +2370,8 @@ extern void simple_release_fs(struct vfsmount **mount, int *count);
+>  
+>  extern ssize_t simple_read_from_buffer(void __user *to, size_t count,
+>  			loff_t *ppos, const void *from, size_t available);
+> +extern ssize_t simple_write_to_buffer(void *to, size_t available, loff_t *ppos,
+> +		const void __user *from, size_t count);
+>  
+>  extern int simple_fsync(struct file *, struct dentry *, int);
+>  
+> 
