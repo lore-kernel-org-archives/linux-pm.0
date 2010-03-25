@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: what the patches do Re: [RFC 10/15] PM / Hibernate:
-	user, implement user_ops reader
-Date: Thu, 25 Mar 2010 23:21:49 +0100
-Message-ID: <201003252321.49135.rjw__25051.7414453954$1269555573$gmane$org@sisk.pl>
+Subject: Re: [RFC 11/15] PM / Hibernate: add chunk i/o support
+Date: Thu, 25 Mar 2010 23:38:48 +0100
+Message-ID: <201003252338.48513.rjw__14528.8264182911$1269556609$gmane$org@sisk.pl>
 References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
-	<1269361063-3341-10-git-send-email-jslaby@suse.cz>
-	<20100325053003.GB12935@elf.ucw.cz>
+	<1269361063-3341-11-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100325053003.GB12935@elf.ucw.cz>
+In-Reply-To: <1269361063-3341-11-git-send-email-jslaby@suse.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,91 +18,172 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>, Jiri Slaby <jslaby@suse.cz>, jirislaby@gmail.com, linux-kernel@vger.kernel.org
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>, jirislaby@gmail.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 25 March 2010, Pavel Machek wrote:
-> Hi!
+On Tuesday 23 March 2010, Jiri Slaby wrote:
+> Chunk support is useful when not writing whole pages at once. It takes
+> care of joining the buffers into the pages and writing at once when
+> needed.
 > 
-> > Switch /dev/snapshot reader to sws_module_ops approach so that we
-> > can transparently rewrite the rest of the snapshot from pages pulling
-> > to their pushing through layers.
+> In the end when pages are compressed they use this interface as well
+> (because they are indeed shorter than PAGE_SIZE).
 > 
-> >  struct sws_module_ops user_ops = {
-> >  	.storage_available = user_storage_available,
-> >  
-> >  	.get_writer = get_user_writer,
-> >  	.put_writer = put_user_writer,
-> >  	.write_page = user_write_page,
-> > +
-> > +	.get_reader = get_user_reader,
-> > +	.put_reader = put_user_reader,
-> > +	.read_page = user_read_page,
-> >  };
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: Nigel Cunningham <ncunningham@crca.org.au>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> ---
+>  kernel/power/block_io.c |   81 +++++++++++++++++++++++++++++++++++++++++++++++
+>  kernel/power/power.h    |    6 +++
+>  2 files changed, 87 insertions(+), 0 deletions(-)
 > 
-> Ok, I guess that now I see what you are doing.... adding interface
-> layer between /dev/snapshot and core hibernation code.
-> 
-> To recap, 2.6.33 hibernation looks like:
-> 
-> 			core hibernation
-> 				/\
-> 			       /  \
-> 			swsusp	  /dev/snapshot
-> 			swap            \
-> 			writing      -------- read/write/ioctl interface
->                                           \
-> 					 s2disk
-> 
-> and after your patches, we'd get
-> 
-> 			core hibernation
-> 				/\
->                             ---------- sws_module_ops interface
-> 			       /  \
-> 			swsusp	  /dev/snapshot
-> 			swap            \
-> 			writing      -------- read/write/ioctl interface
->                                           \
-> 					 s2disk
-> 
-> (Right? Did I understand the patches correctly?)
-> 
-> I have some problems with sws_module_ops interface (handcoded locking
-> is too ugly to live), but it is better than I expected. But there may
-> be better solution available, one that does not need two interfaces to
-> maintain (we can't really get rid of userland interface). What about
-> this?
-> 
-> 
-> 
-> 			core hibernation
-> 				 \
-> 			          \
-> 			      	  /dev/snapshot
-> 		                      / \
-> 			           ---------- read/write/ioctl interface
->                                     /     \
-> 				swsusp	 s2disk
-> 				swap
-> 				writing
-> 
-> ? That way, we have just one interface, and still keep the advantages
-> of modularity / defined interfaces.
-> 
-> (You could literary call sys_read() from inside the kernel -- after
-> set_fs() -- but going to that extreme is probably not neccessary. But
-> having interface very similar to what /dev/snapshot provides -- with
-> the same locking rules -- should result in better code.)
+> diff --git a/kernel/power/block_io.c b/kernel/power/block_io.c
+> index 2b7898a..37412f7 100644
+> --- a/kernel/power/block_io.c
+> +++ b/kernel/power/block_io.c
+> @@ -3,6 +3,7 @@
+>   *
+>   * Copyright (C) 1998,2001-2005 Pavel Machek <pavel@suse.cz>
+>   * Copyright (C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
+> + * Copyright (C) 2004-2008 Nigel Cunningham (nigel at tuxonice net)
+>   *
+>   * This file is released under the GPLv2.
+>   */
+> @@ -14,6 +15,9 @@
+>  
+>  #include "power.h"
+>  
+> +static char *sws_writer_buffer;
+> +static unsigned long sws_writer_buffer_pos;
+> +
+>  /**
+>   *	submit - submit BIO request.
+>   *	@rw:	READ or WRITE.
+> @@ -74,6 +78,83 @@ int sws_bio_write_page(pgoff_t page_off, void *addr, struct bio **bio_chain)
+>  			virt_to_page(addr), bio_chain);
+>  }
+>  
+> +int sws_rw_buffer_init(int writing)
+> +{
+> +	BUG_ON(sws_writer_buffer || sws_writer_buffer_pos);
 
-The user space interface does things that the in-kernel one doesn't really care
-for, so I don't think that would be a good thing to do.  I admit it's a bit
-like this right now (snapshot_[read|write]_next() do some things to satisfy
-the user space interface's needs), but I don't really think it should go any
-further than that.
+Please don't do that.  Fail the operation instead.  You can also use WARN_ON
+or WARN if you _really_ want the user to notice the failure.
 
-Moreover, the Jiri's approach allows us to handle other types of storage as
-well as swap using uniform interface.
+BUG_ON's like this are annoying like hell for testers who trigger them.
 
-Rafael
+> +	sws_writer_buffer = (void *)get_zeroed_page(__GFP_WAIT | __GFP_HIGH);
+> +	if (sws_writer_buffer && !writing)
+> +		sws_writer_buffer_pos = PAGE_SIZE;
+> +
+> +	return sws_writer_buffer ? 0 : -ENOMEM;
+> +}
+> +
+> +/**
+> + * sws_rw_buffer - combine smaller buffers into PAGE_SIZE I/O
+> + * @writing:		Bool - whether writing (or reading).
+> + * @buffer:		The start of the buffer to write or fill.
+> + * @buffer_size:	The size of the buffer to write or fill.
+> + **/
+> +int sws_rw_buffer(int writing, char *buffer, int buffer_size)
+> +{
+> +	int bytes_left = buffer_size, ret;
+> +
+> +	while (bytes_left) {
+> +		char *source_start = buffer + buffer_size - bytes_left;
+> +		char *dest_start = sws_writer_buffer + sws_writer_buffer_pos;
+> +		int capacity = PAGE_SIZE - sws_writer_buffer_pos;
+> +		char *to = writing ? dest_start : source_start;
+> +		char *from = writing ? source_start : dest_start;
+> +
+> +		if (bytes_left <= capacity) {
+> +			memcpy(to, from, bytes_left);
+> +			sws_writer_buffer_pos += bytes_left;
+> +			return 0;
+> +		}
+> +
+> +		/* Complete this page and start a new one */
+> +		memcpy(to, from, capacity);
+> +		bytes_left -= capacity;
+> +
+> +		if (writing) {
+> +			ret = sws_io_ops->write_page(sws_writer_buffer, NULL);
+> +			clear_page(sws_writer_buffer);
+
+Why do we need that clear_page()?
+
+> +			if (ret)
+> +				return ret;
+
+Please move these two lines out of the if()/else.
+
+> +		} else {
+> +			ret = sws_io_ops->read_page(sws_writer_buffer, NULL);
+> +			if (ret)
+> +				return ret;
+> +		}
+> +
+> +		sws_writer_buffer_pos = 0;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +int sws_rw_buffer_flush_page(int writing)
+> +{
+> +	int ret = 0;
+> +	if (writing && sws_writer_buffer_pos)
+> +		ret = sws_io_ops->write_page(sws_writer_buffer, NULL);
+> +	sws_writer_buffer_pos = writing ? 0 : PAGE_SIZE;
+> +	return ret;
+> +}
+
+I'd split the above into two functions, one for writing and the other for
+reading.
+
+Doing the same with sws_rw_buffer() (under a better name), for the sake of
+clarity, also might make some sense, apparently.
+
+> +
+> +int sws_rw_buffer_finish(int writing)
+> +{
+> +	int ret = 0;
+> +
+> +	ret = sws_rw_buffer_flush_page(writing);
+> +
+> +	free_page((unsigned long)sws_writer_buffer);
+> +	sws_writer_buffer = NULL;
+> +	sws_writer_buffer_pos = 0;
+> +
+> +	return ret;
+> +}
+> +
+>  int sws_wait_on_bio_chain(struct bio **bio_chain)
+>  {
+>  	struct bio *bio;
+> diff --git a/kernel/power/power.h b/kernel/power/power.h
+> index 0f08de4..50a888a 100644
+> --- a/kernel/power/power.h
+> +++ b/kernel/power/power.h
+> @@ -3,6 +3,8 @@
+>  #include <linux/utsname.h>
+>  #include <linux/freezer.h>
+>  
+> +struct swap_map_handle;
+> +
+>  struct swsusp_info {
+>  	struct new_utsname	uts;
+>  	u32			version_code;
+> @@ -161,6 +163,10 @@ extern int sws_bio_read_page(pgoff_t page_off, void *addr,
+>  extern int sws_bio_write_page(pgoff_t page_off, void *addr,
+>  		struct bio **bio_chain);
+>  extern int sws_wait_on_bio_chain(struct bio **bio_chain);
+> +extern int sws_rw_buffer_init(int writing);
+> +extern int sws_rw_buffer_finish(int writing);
+> +extern int sws_rw_buffer_flush_page(int writing);
+> +extern int sws_rw_buffer(int writing, char *buffer, int buffer_size);
+>  
+>  struct timeval;
+>  /* kernel/power/swsusp.c */
+> 
