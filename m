@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: what the patches do Re: [RFC 10/15] PM / Hibernate:
-	user, implement user_ops reader
-Date: Thu, 25 Mar 2010 21:29:10 +0100
-Message-ID: <201003252129.10224.rjw__24922.3808794797$1269548824$gmane$org@sisk.pl>
+Subject: Re: [RFC 03/15] PM / Hibernate: separate block_io
+Date: Thu, 25 Mar 2010 21:33:50 +0100
+Message-ID: <201003252133.50206.rjw__9659.60198450393$1269549331$gmane$org@sisk.pl>
 References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
-	<201003252114.36605.rjw@sisk.pl> <4BABC5B6.2070301@crca.org.au>
+	<201003252112.25204.rjw@sisk.pl> <4BABC3D1.1050104@crca.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4BABC5B6.2070301@crca.org.au>
+In-Reply-To: <4BABC3D1.1050104@crca.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,45 +19,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>, jirislaby@gmail.com, linux-kernel@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org, Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 On Thursday 25 March 2010, Nigel Cunningham wrote:
 > Hi.
 > 
-> On 26/03/10 07:14, Rafael J. Wysocki wrote:
+> On 26/03/10 07:12, Rafael J. Wysocki wrote:
 > > On Thursday 25 March 2010, Nigel Cunningham wrote:
-> >> Hi.
+> >> Hi again.
 > >>
-> >> On 25/03/10 16:30, Pavel Machek wrote:
-> >> [...]
+> >> On 25/03/10 09:58, Nigel Cunningham wrote:
+> >>> Hi.
+> >>>
+> >>> On 25/03/10 08:22, Jiri Slaby wrote:
+> >>>> On 03/24/2010 09:30 PM, Pavel Machek wrote:
+> >>>>> On Tue 2010-03-23 17:17:31, Jiri Slaby wrote:
+> >>>>>> +int sws_bio_read_page(pgoff_t page_off, void *addr, struct bio **bio_chain)
+> >>>>>> +{
+> >>>>>> +	return submit(READ, sws_resume_bdev, page_off * (PAGE_SIZE>>    9),
+> >>>>>> +			virt_to_page(addr), bio_chain);
+> >>>>>> +}
+> >>>>>
+> >>>>> sws_ is kind of strange prefix. We were trying to get away from
+> >>>>> "swsuspend" name for quite some time...
+> >>>>
+> >>>> No problem to change the prefix to anything else. Do you (anybody)
+> >>>> suggest anything?
+> >>>>
+> >>>
+> >>> How about some abbreviation of hibernate? "hib"?
 > >>
-> >>> I have some problems with sws_module_ops interface (handcoded locking
-> >>> is too ugly to live), but it is better than I expected. But there may
-> >>> be better solution available, one that does not need two interfaces to
-> >>> maintain (we can't really get rid of userland interface). What about
-> >>> this?
-> >>
-> >> Just picking up on that bracketed part: Can we flag the userland
-> >> interface (and uswsusp) as being planned for eventual removal now... or
-> >> at least agree to work toward that?
+> >> On further reflection, how about "std" (suspend to disk)? I think that's
+> >> less ugly than the 'hib' suggestion :)
 > >
-> > No, we can't.
-> >
-> >> I'm asking because if we're going to make a go of getting the in-kernel
-> >> code in much better shape, and we have Rafael, Jiri and I - and you? -
-> >> all pulling in the same direction to improve it, there's going to come a
-> >> point (hopefully not too far away) where uswsusp is just making life too
-> >> difficult, and getting rid of it will be a big help.
-> >
-> > We're not dropping user space interfaces used by every distro I know of.
+> > But it also decodes as "standard" if someone is not in the right context. :-)
 > 
-> So what's your long term plan then?
+> Ah...
+> 
+> > If the "bio" part of the name is not essential (ie. there's no conflicting name
+> > already), we could call it simply hibernate_read_page().
+> 
+> Yeah. So we're going with hibernate or hib_ if it needs abbreviating?
 
-First, improve the in-kernel thing, second, switch people to it, _then_ remove
-the s2disk interface (after we're reasonably sure it's not used by any major
-distro) and _finally_ simplify things after it's been removed.
-
-Does that sound reasonable?
+I'd just use "hibernate" without abbreviating if reasonably possible.
+We can also use "image_" in some cases I guess.
 
 Rafael
