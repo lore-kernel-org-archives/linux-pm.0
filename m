@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC 15/15] PM / Hibernate: move non-swap code to
-	snapshot.c
-Date: Thu, 25 Mar 2010 23:50:23 +0100
-Message-ID: <201003252350.23191.rjw__17636.0442107127$1269557500$gmane$org@sisk.pl>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [RFC 11/15] PM / Hibernate: add chunk i/o support
+Date: Fri, 26 Mar 2010 10:09:08 +0100
+Message-ID: <4BAC79B4.4040200__19237.3743084774$1269594633$gmane$org@gmail.com>
 References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
-	<1269361063-3341-15-git-send-email-jslaby@suse.cz>
+	<1269361063-3341-11-git-send-email-jslaby@suse.cz>
+	<201003252338.48513.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1269361063-3341-15-git-send-email-jslaby@suse.cz>
+In-Reply-To: <201003252338.48513.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,504 +19,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>, jirislaby@gmail.com, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 23 March 2010, Jiri Slaby wrote:
-> Now, when all the swap-independent code was separated, it's time to
-> move it into snapshot.c, because it is snapshot related.
+On 03/25/2010 11:38 PM, Rafael J. Wysocki wrote:
+>> +int sws_rw_buffer_init(int writing)
+>> +{
+>> +	BUG_ON(sws_writer_buffer || sws_writer_buffer_pos);
 > 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: Nigel Cunningham <ncunningham@crca.org.au>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Please don't do that.  Fail the operation instead.  You can also use WARN_ON
+> or WARN if you _really_ want the user to notice the failure.
 
-Quite frankly, I'd keep memory management in snapshot.c and move this stuff
-to a separate file.
+It's not a failure, it's a bug when we leak memory or forgot to
+read/write all data.
 
-I have a plan to move snapshot.c to mm (perhaps under a different name) in
-future, so that the mm people don't overlook it when they redesign things. ;-)
+> BUG_ON's like this are annoying like hell for testers who trigger them.
 
-Rafael
+I think BUG is appropriate here (the system or image is in an
+inconsitent state for the latter condition), but if you prefer the
+WARN-family here, I can switch it to that.
 
-
-> ---
->  kernel/power/power.h    |    7 --
->  kernel/power/snapshot.c |  196 +++++++++++++++++++++++++++++++++++++++++++++--
->  kernel/power/swap.c     |  182 -------------------------------------------
->  3 files changed, 189 insertions(+), 196 deletions(-)
+>> +		if (writing) {
+>> +			ret = sws_io_ops->write_page(sws_writer_buffer, NULL);
+>> +			clear_page(sws_writer_buffer);
 > 
-> diff --git a/kernel/power/power.h b/kernel/power/power.h
-> index cf1450f..29c450a 100644
-> --- a/kernel/power/power.h
-> +++ b/kernel/power/power.h
-> @@ -128,14 +128,7 @@ struct sws_module_ops {
->  	int (*write_page)(void *addr, struct bio **bio_chain);
->  };
->  
-> -extern unsigned int snapshot_additional_pages(struct zone *zone);
->  extern unsigned long snapshot_get_image_size(void);
-> -extern int snapshot_read_init(struct snapshot_handle *handle);
-> -extern int snapshot_write_init(struct snapshot_handle *handle);
-> -extern int snapshot_read_next(struct snapshot_handle *handle);
-> -extern int snapshot_write_next(struct snapshot_handle *handle);
-> -extern void snapshot_write_finalize(struct snapshot_handle *handle);
-> -extern int snapshot_image_loaded(struct snapshot_handle *handle);
->  
->  /* If unset, the snapshot device cannot be open. */
->  extern atomic_t snapshot_device_available;
-> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> index d432e87..a8a28da 100644
-> --- a/kernel/power/snapshot.c
-> +++ b/kernel/power/snapshot.c
-> @@ -789,7 +789,7 @@ void free_basic_memory_bitmaps(void)
->   *	zone (usually the returned value is greater than the exact number)
->   */
->  
-> -unsigned int snapshot_additional_pages(struct zone *zone)
-> +static unsigned int snapshot_additional_pages(struct zone *zone)
->  {
->  	unsigned int res;
->  
-> @@ -1605,7 +1605,7 @@ pack_pfns(unsigned long *buf, struct memory_bitmap *bm)
->   *
->   *	@handle: snapshot handle to init
->   */
-> -int snapshot_write_init(struct snapshot_handle *handle)
-> +static int snapshot_write_init(struct snapshot_handle *handle)
->  {
->  	int ret;
->  
-> @@ -1646,7 +1646,7 @@ finish:
->   *	structure pointed to by @handle is not updated and should not be used
->   *	any more.
->   */
-> -int snapshot_read_next(struct snapshot_handle *handle)
-> +static int snapshot_read_next(struct snapshot_handle *handle)
->  {
->  	if (handle->cur < nr_meta_pages) {
->  		memset(buffer, 0, PAGE_SIZE);
-> @@ -2134,7 +2134,7 @@ static void *get_buffer(struct memory_bitmap *bm, struct chain_allocator *ca)
->   *
->   *	@handle: snapshot handle to init
->   */
-> -int snapshot_read_init(struct snapshot_handle *handle)
-> +static int snapshot_read_init(struct snapshot_handle *handle)
->  {
->  	int ret;
->  
-> @@ -2183,7 +2183,7 @@ finish:
->   *	structure pointed to by @handle is not updated and should not be used
->   *	any more.
->   */
-> -int snapshot_write_next(struct snapshot_handle *handle)
-> +static int snapshot_write_next(struct snapshot_handle *handle)
->  {
->  	static struct chain_allocator ca;
->  	int error = 0;
-> @@ -2235,7 +2235,7 @@ int snapshot_write_next(struct snapshot_handle *handle)
->   *	used any more.
->   */
->  
-> -void snapshot_write_finalize(struct snapshot_handle *handle)
-> +static void snapshot_write_finalize(struct snapshot_handle *handle)
->  {
->  	copy_last_highmem_page();
->  	/* Free only if we have loaded the image entirely */
-> @@ -2245,12 +2245,194 @@ void snapshot_write_finalize(struct snapshot_handle *handle)
->  	}
->  }
->  
-> -int snapshot_image_loaded(struct snapshot_handle *handle)
-> +static int snapshot_image_loaded(struct snapshot_handle *handle)
->  {
->  	return !(!nr_copy_pages || !last_highmem_page_copied() ||
->  			handle->cur < nr_meta_pages + nr_copy_pages);
->  }
->  
-> +/**
-> + *	save_image - save the suspend image data
-> + */
-> +
-> +static int save_image(struct snapshot_handle *snapshot,
-> +                      unsigned int nr_to_write)
-> +{
-> +	unsigned int m;
-> +	int ret;
-> +	int nr_pages;
-> +	int err2;
-> +	struct bio *bio;
-> +	struct timeval start;
-> +	struct timeval stop;
-> +
-> +	printk(KERN_INFO "PM: Saving image data pages (%u pages) ...     ",
-> +		nr_to_write);
-> +	m = nr_to_write / 100;
-> +	if (!m)
-> +		m = 1;
-> +	nr_pages = 0;
-> +	bio = NULL;
-> +	do_gettimeofday(&start);
-> +	while (1) {
-> +		ret = snapshot_read_next(snapshot);
-> +		if (ret <= 0)
-> +			break;
-> +		ret = sws_io_ops->write_page(data_of(*snapshot), &bio);
-> +		if (ret)
-> +			break;
-> +		if (!(nr_pages % m))
-> +			printk(KERN_CONT "\b\b\b\b%3d%%", nr_pages / m);
-> +		nr_pages++;
-> +	}
-> +	err2 = sws_wait_on_bio_chain(&bio);
-> +	do_gettimeofday(&stop);
-> +	if (!ret)
-> +		ret = err2;
-> +	if (!ret)
-> +		printk(KERN_CONT "\b\b\b\bdone\n");
-> +	else
-> +		printk(KERN_CONT "\n");
-> +	swsusp_show_speed(&start, &stop, nr_to_write, "Wrote");
-> +	return ret;
-> +}
-> +
-> +/**
-> + *	enough_space - Make sure we have enough space to save the image.
-> + *
-> + *	Returns TRUE or FALSE after checking the total amount of
-> + *	space avaiable from the resume block.
-> + */
-> +
-> +static int enough_space(unsigned int nr_pages)
-> +{
-> +	unsigned int free_pages = sws_io_ops->storage_available();
-> +
-> +	pr_debug("PM: Free storage pages: %u\n", free_pages);
-> +	return free_pages > nr_pages + PAGES_FOR_IO;
-> +}
-> +
-> +/**
-> + *	swsusp_write - Write entire image and metadata.
-> + *	@flags: flags to pass to the "boot" kernel in the image header
-> + *
-> + *	It is important _NOT_ to umount filesystems at this point. We want
-> + *	them synced (in case something goes wrong) but we DO not want to mark
-> + *	filesystem clean: it is not. (And it does not matter, if we resume
-> + *	correctly, we'll mark system clean, anyway.)
-> + */
-> +
-> +int swsusp_write(unsigned int flags)
-> +{
-> +	struct snapshot_handle snapshot;
-> +	unsigned long pages;
-> +	int error;
-> +
-> +	pages = snapshot_get_image_size();
-> +	error = sws_io_ops->get_writer();
-> +	if (error) {
-> +		printk(KERN_ERR "PM: Cannot get swap writer\n");
-> +		return error;
-> +	}
-> +	if (!enough_space(pages)) {
-> +		printk(KERN_ERR "PM: Not enough free space for image\n");
-> +		error = -ENOSPC;
-> +		goto out_finish;
-> +	}
-> +	memset(&snapshot, 0, sizeof(struct snapshot_handle));
-> +	error = snapshot_write_init(&snapshot);
-> +	if (error) {
-> +		printk(KERN_ERR "PM: Cannot init writer\n");
-> +		goto out_finish;
-> +	}
-> +	error = save_image(&snapshot, pages - 1);
-> +out_finish:
-> +	error = sws_io_ops->put_writer(flags, error);
-> +	return error;
-> +}
-> +
-> +/**
-> + *	load_image - load the image
-> + *	@handle and the snapshot handle @snapshot
-> + *	(assume there are @nr_pages pages to load)
-> + */
-> +
-> +static int load_image(struct snapshot_handle *snapshot, unsigned int nr_to_read)
-> +{
-> +	unsigned int m;
-> +	int error = 0;
-> +	struct timeval start;
-> +	struct timeval stop;
-> +	struct bio *bio;
-> +	int err2;
-> +	unsigned nr_pages;
-> +
-> +	printk(KERN_INFO "PM: Loading image data pages (%u pages) ...     ",
-> +		nr_to_read);
-> +	m = nr_to_read / 100;
-> +	if (!m)
-> +		m = 1;
-> +	nr_pages = 0;
-> +	bio = NULL;
-> +	do_gettimeofday(&start);
-> +	for ( ; ; ) {
-> +		error = sws_io_ops->read_page(data_of(*snapshot), &bio);
-> +		if (error)
-> +			break;
-> +		if (snapshot->sync_read)
-> +			error = sws_wait_on_bio_chain(&bio);
-> +		if (error)
-> +			break;
-> +		error = snapshot_write_next(snapshot);
-> +		if (error >= 0)
-> +			nr_pages++;
-> +		if (error <= 0)
-> +			break;
-> +		if (!(nr_pages % m))
-> +			printk("\b\b\b\b%3d%%", nr_pages / m);
-> +	}
-> +	err2 = sws_wait_on_bio_chain(&bio);
-> +	do_gettimeofday(&stop);
-> +	if (!error)
-> +		error = err2;
-> +	if (!error) {
-> +		printk("\b\b\b\bdone\n");
-> +		snapshot_write_finalize(snapshot);
-> +		if (!snapshot_image_loaded(snapshot))
-> +			error = -ENODATA;
-> +	} else
-> +		printk("\n");
-> +	swsusp_show_speed(&start, &stop, nr_to_read, "Read");
-> +	return error;
-> +}
-> +
-> +/**
-> + *	swsusp_read - read the hibernation image.
-> + *	@flags_p: flags passed by the "frozen" kernel in the image header should
-> + *		  be written into this memeory location
-> + */
-> +
-> +int swsusp_read(unsigned int *flags_p)
-> +{
-> +	int error;
-> +	struct snapshot_handle snapshot;
-> +
-> +	memset(&snapshot, 0, sizeof(struct snapshot_handle));
-> +	error = sws_io_ops->get_reader(flags_p);
-> +	if (error)
-> +		goto end;
-> +	error = snapshot_read_init(&snapshot);
-> +	if (!error)
-> +		error = load_image(&snapshot, snapshot_get_image_size() - 1);
-> +	sws_io_ops->put_reader();
-> +end:
-> +	if (!error)
-> +		pr_debug("PM: Image successfully loaded\n");
-> +	else
-> +		pr_debug("PM: Error %d resuming\n", error);
-> +	return error;
-> +}
-> +
->  #ifdef CONFIG_HIGHMEM
->  /* Assumes that @buf is ready and points to a "safe" page */
->  static inline void
-> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-> index 4472cf3..ddd7238 100644
-> --- a/kernel/power/swap.c
-> +++ b/kernel/power/swap.c
-> @@ -360,106 +360,6 @@ static int put_swap_writer(unsigned int flags, int error)
->  	return error;
->  }
->  
-> -/**
-> - *	save_image - save the suspend image data
-> - */
-> -
-> -static int save_image(struct snapshot_handle *snapshot,
-> -                      unsigned int nr_to_write)
-> -{
-> -	unsigned int m;
-> -	int ret;
-> -	int nr_pages;
-> -	int err2;
-> -	struct bio *bio;
-> -	struct timeval start;
-> -	struct timeval stop;
-> -
-> -	printk(KERN_INFO "PM: Saving image data pages (%u pages) ...     ",
-> -		nr_to_write);
-> -	m = nr_to_write / 100;
-> -	if (!m)
-> -		m = 1;
-> -	nr_pages = 0;
-> -	bio = NULL;
-> -	do_gettimeofday(&start);
-> -	while (1) {
-> -		ret = snapshot_read_next(snapshot);
-> -		if (ret <= 0)
-> -			break;
-> -		ret = sws_io_ops->write_page(data_of(*snapshot), &bio);
-> -		if (ret)
-> -			break;
-> -		if (!(nr_pages % m))
-> -			printk(KERN_CONT "\b\b\b\b%3d%%", nr_pages / m);
-> -		nr_pages++;
-> -	}
-> -	err2 = sws_wait_on_bio_chain(&bio);
-> -	do_gettimeofday(&stop);
-> -	if (!ret)
-> -		ret = err2;
-> -	if (!ret)
-> -		printk(KERN_CONT "\b\b\b\bdone\n");
-> -	else
-> -		printk(KERN_CONT "\n");
-> -	swsusp_show_speed(&start, &stop, nr_to_write, "Wrote");
-> -	return ret;
-> -}
-> -
-> -/**
-> - *	enough_space - Make sure we have enough space to save the image.
-> - *
-> - *	Returns TRUE or FALSE after checking the total amount of
-> - *	space avaiable from the resume block.
-> - */
-> -
-> -static int enough_space(unsigned int nr_pages)
-> -{
-> -	unsigned int free_pages = sws_io_ops->storage_available();
-> -
-> -	pr_debug("PM: Free storage pages: %u\n", free_pages);
-> -	return free_pages > nr_pages + PAGES_FOR_IO;
-> -}
-> -
-> -/**
-> - *	swsusp_write - Write entire image and metadata.
-> - *	@flags: flags to pass to the "boot" kernel in the image header
-> - *
-> - *	It is important _NOT_ to umount filesystems at this point. We want
-> - *	them synced (in case something goes wrong) but we DO not want to mark
-> - *	filesystem clean: it is not. (And it does not matter, if we resume
-> - *	correctly, we'll mark system clean, anyway.)
-> - */
-> -
-> -int swsusp_write(unsigned int flags)
-> -{
-> -	struct snapshot_handle snapshot;
-> -	unsigned long pages;
-> -	int error;
-> -
-> -	pages = snapshot_get_image_size();
-> -	error = sws_io_ops->get_writer();
-> -	if (error) {
-> -		printk(KERN_ERR "PM: Cannot get swap writer\n");
-> -		return error;
-> -	}
-> -	if (!enough_space(pages)) {
-> -		printk(KERN_ERR "PM: Not enough free space for image\n");
-> -		error = -ENOSPC;
-> -		goto out_finish;
-> -	}
-> -	memset(&snapshot, 0, sizeof(struct snapshot_handle));
-> -	error = snapshot_write_init(&snapshot);
-> -	if (error) {
-> -		printk(KERN_ERR "PM: Cannot init writer\n");
-> -		goto out_finish;
-> -	}
-> -	error = save_image(&snapshot, pages - 1);
-> -out_finish:
-> -	error = sws_io_ops->put_writer(flags, error);
-> -	return error;
-> -}
-> -
->  static unsigned long swap_storage_available(void)
->  {
->  	return count_swap_pages(root_swap, 1);
-> @@ -546,88 +446,6 @@ struct sws_module_ops swap_ops = {
->  };
->  
->  /**
-> - *	load_image - load the image
-> - *	@handle and the snapshot handle @snapshot
-> - *	(assume there are @nr_pages pages to load)
-> - */
-> -
-> -static int load_image(struct snapshot_handle *snapshot, unsigned int nr_to_read)
-> -{
-> -	unsigned int m;
-> -	int error = 0;
-> -	struct timeval start;
-> -	struct timeval stop;
-> -	struct bio *bio;
-> -	int err2;
-> -	unsigned nr_pages;
-> -
-> -	printk(KERN_INFO "PM: Loading image data pages (%u pages) ...     ",
-> -		nr_to_read);
-> -	m = nr_to_read / 100;
-> -	if (!m)
-> -		m = 1;
-> -	nr_pages = 0;
-> -	bio = NULL;
-> -	do_gettimeofday(&start);
-> -	for ( ; ; ) {
-> -		error = sws_io_ops->read_page(data_of(*snapshot), &bio);
-> -		if (error)
-> -			break;
-> -		if (snapshot->sync_read)
-> -			error = sws_wait_on_bio_chain(&bio);
-> -		if (error)
-> -			break;
-> -		error = snapshot_write_next(snapshot);
-> -		if (error >= 0)
-> -			nr_pages++;
-> -		if (error <= 0)
-> -			break;
-> -		if (!(nr_pages % m))
-> -			printk("\b\b\b\b%3d%%", nr_pages / m);
-> -	}
-> -	err2 = sws_wait_on_bio_chain(&bio);
-> -	do_gettimeofday(&stop);
-> -	if (!error)
-> -		error = err2;
-> -	if (!error) {
-> -		printk("\b\b\b\bdone\n");
-> -		snapshot_write_finalize(snapshot);
-> -		if (!snapshot_image_loaded(snapshot))
-> -			error = -ENODATA;
-> -	} else
-> -		printk("\n");
-> -	swsusp_show_speed(&start, &stop, nr_to_read, "Read");
-> -	return error;
-> -}
-> -
-> -/**
-> - *	swsusp_read - read the hibernation image.
-> - *	@flags_p: flags passed by the "frozen" kernel in the image header should
-> - *		  be written into this memeory location
-> - */
-> -
-> -int swsusp_read(unsigned int *flags_p)
-> -{
-> -	int error;
-> -	struct snapshot_handle snapshot;
-> -
-> -	memset(&snapshot, 0, sizeof(struct snapshot_handle));
-> -	error = sws_io_ops->get_reader(flags_p);
-> -	if (error)
-> -		goto end;
-> -	error = snapshot_read_init(&snapshot);
-> -	if (!error)
-> -		error = load_image(&snapshot, snapshot_get_image_size() - 1);
-> -	sws_io_ops->put_reader();
-> -end:
-> -	if (!error)
-> -		pr_debug("PM: Image successfully loaded\n");
-> -	else
-> -		pr_debug("PM: Error %d resuming\n", error);
-> -	return error;
-> -}
-> -
-> -/**
->   *      swsusp_check - Check for swsusp signature in the resume device
->   */
->  
+> Why do we need that clear_page()?
+
+Functionally for nothing, it was for my sakeness. Will remove.
+
+>> +int sws_rw_buffer_flush_page(int writing)
+>> +{
+>> +	int ret = 0;
+>> +	if (writing && sws_writer_buffer_pos)
+>> +		ret = sws_io_ops->write_page(sws_writer_buffer, NULL);
+>> +	sws_writer_buffer_pos = writing ? 0 : PAGE_SIZE;
+>> +	return ret;
+>> +}
 > 
+> I'd split the above into two functions, one for writing and the other for
+> reading.
+> 
+> Doing the same with sws_rw_buffer() (under a better name), for the sake of
+> clarity, also might make some sense, apparently.
+
+Do you mean adding hib*_buffer_read + hib*_buffer_write which would call
+static hib*_rw_buffer? sws_rw_buffer has much common code for R and W,
+so I would not make 2 functions from that.
+
+Nigel, you use _rw_ functions in toi, are there any pros opposing to _r_
++ _w_ (apart from exporting twice as symbols)?
+
+thanks,
+-- 
+js
