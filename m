@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: RFC: additional event for pm_notifier
-Date: Fri, 26 Mar 2010 22:31:27 +0100
-Message-ID: <201003262231.27156.rjw@sisk.pl>
-References: <alpine.LFD.2.00.1003171945130.2469@localhost>
-	<201003182119.24070.rjw@sisk.pl>
-	<alpine.LFD.2.00.1003262024310.2476@localhost>
+Subject: Re: [RFC 09/15] PM / Hibernate: user,
+	implement user_ops writer
+Date: Fri, 26 Mar 2010 23:04:32 +0100
+Message-ID: <201003262304.32118.rjw__37018.784802831$1269641054$gmane$org@sisk.pl>
+References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
+	<201003252314.33256.rjw@sisk.pl> <4BAC7FC3.50405@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1003262024310.2476@localhost>
+In-Reply-To: <4BAC7FC3.50405@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,34 +19,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Sebastian Ott <sebott@linux.vnet.ibm.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 26 March 2010, Sebastian Ott wrote:
->
-> hi,
+On Friday 26 March 2010, Jiri Slaby wrote:
+> On 03/25/2010 11:14 PM, Rafael J. Wysocki wrote:
+> > On Wednesday 24 March 2010, Jiri Slaby wrote:
+> >> On 03/24/2010 09:42 PM, Pavel Machek wrote:
+> >>>> +	if (test_bit(TODO_CLOSED, to_do_flags))
+> >>>> +		return -EIO;
+> >>>> +
+> >>>> +	to_do_buf = buf;
+> >>>> +	wmb();
+> >>>> +	set_bit(TODO_WORK, to_do_flags);
+> >>>> +	wake_up_interruptible(&to_do_wait);
+> >>>
+> >>> Uhuh, open-coded barriers... these need to be commented, and I guess
+> >>> you just should not play this kind of trickery.
+> >>
+> >> It's just to ensure the to_do_buf store is not reordered with the
+> >> set_bit. I wanted to avoid locks as too heavy tools here.
+> > 
+> > No, please use them, at least in a prototype version.
+> > 
+> > We can always optimize things out later, but doing optimizations upfront
+> > doesn't really work well from my experience.
+> > 
+> > So, if you'd use a lock somewhere, please use it, or maybe use a completion if
+> > that fits the design better.
 > 
-> i've got that working, but after some more thinking
-> i really didn't like that approach - in short, if we do that,
-> hibernation on s390 will allways be bound to the plattform mode
-> (with certain devices we will crash in our restore callbacks
-> if we haven't previously enabled the hw-feature, which those
-> devices use)
+> That's it, I don't think a lock is appropriate here (I didn't even think
+> of that) -- I don't know what to lock (OK, I see it, but it's not that
+> clear). There is no potential for race per se, I only need to disable
+> reordering (which locks do as a side-effect). I need the steps to be
+> done in the A-B order where there is a barrier appropriate. Here, A is
+> store to to_do_buf, B is set_bit. It's I set to_do_buf, flag that it may
+> be used, the consumer will see the flag and use to_do_buf, in this order.
 > 
-> and to the your-gun-your-foot argument - if someone tests
-> hibernation on s390 using the reboot mode he sure cannot
-> expect the potential panic, depending on the involved devices
+> Above that if I introduce locks the wait_event on the other side will
+> grow into an unreadable mess. I would need to hold a lock when checking
+> the condition and hold it until I reach to_do_buf use, but also unlock
+> it on all paths that do not reach that point. Yeah, it's indeed doable,
+> but I don't think, it will improve things.
+> 
+> I also don't think completion is appropriate here, as I have a condition
+> to check for and it differs over wake_up sites.
 
-Well, on x86 using ACPI the reboot and shutdown modes only work by fortunate
-conincidence, so to speak (if at all).
+OK
 
-That said, your argument is reasonable.
+I have some other comments to this patch, but I'd like to understand what
+really happens here, since the changelog is not too verbose.
 
-> do you absolutely oppose against the idea of a new notifier event?
-
-Yes, I do.  To the extent that I'd rather change the entire design so that the
-"hibernation modes" would be platform-dependent.
+Please explain the design here.
 
 Thanks,
 Rafael
