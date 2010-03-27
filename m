@@ -1,17 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC 09/15] PM / Hibernate: user,
-	implement user_ops writer
-Date: Sat, 27 Mar 2010 08:02:07 +0100
-Message-ID: <20100327070207.GQ18689__27187.5830287629$1269673412$gmane$org@elf.ucw.cz>
-References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
-	<20100324204259.GA6423@elf.ucw.cz> <4BAA86E8.5090108@gmail.com>
-	<201003252314.33256.rjw@sisk.pl> <4BAC7FC3.50405@gmail.com>
-Mime-Version: 1.0
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH/RFC] platform_bus: Allow runtime PM by default
+Date: Sat, 27 Mar 2010 19:41:40 +0000
+Message-ID: <251AAFA3-F44D-40D2-BF99-E82EE58FD52D__20277.0737618723$1269719009$gmane$org@opensource.wolfsonmicro.com>
+References: <1269625370-17754-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<201003262335.06941.rjw@sisk.pl>
+	(sfid-20100326_223222_633980_AC596020)
+Mime-Version: 1.0 (iPhone Mail 7E18)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4BAC7FC3.50405@gmail.com>
+In-Reply-To: <201003262335.06941.rjw@sisk.pl>
+	(sfid-20100326_223222_633980_AC596020)
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,49 +20,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2010-03-26 10:34:59, Jiri Slaby wrote:
-> On 03/25/2010 11:14 PM, Rafael J. Wysocki wrote:
-> > On Wednesday 24 March 2010, Jiri Slaby wrote:
-> >> On 03/24/2010 09:42 PM, Pavel Machek wrote:
-> >>>> +	if (test_bit(TODO_CLOSED, to_do_flags))
-> >>>> +		return -EIO;
-> >>>> +
-> >>>> +	to_do_buf = buf;
-> >>>> +	wmb();
-> >>>> +	set_bit(TODO_WORK, to_do_flags);
-> >>>> +	wake_up_interruptible(&to_do_wait);
-> >>>
-> >>> Uhuh, open-coded barriers... these need to be commented, and I guess
-> >>> you just should not play this kind of trickery.
-> >>
-> >> It's just to ensure the to_do_buf store is not reordered with the
-> >> set_bit. I wanted to avoid locks as too heavy tools here.
-> > 
-> > No, please use them, at least in a prototype version.
-> > 
-> > We can always optimize things out later, but doing optimizations upfront
-> > doesn't really work well from my experience.
-> > 
-> > So, if you'd use a lock somewhere, please use it, or maybe use a completion if
-> > that fits the design better.
-> 
-> That's it, I don't think a lock is appropriate here (I didn't even think
-> of that) -- I don't know what to lock (OK, I see it, but it's not that
-> clear). There is no potential for race per se, I only need to disable
-> reordering (which locks do as a side-effect). I need the steps to be
-> done in the A-B order where there is a barrier appropriate. Here, A is
-> store to to_do_buf, B is set_bit. It's I set to_do_buf, flag that it may
-> be used, the consumer will see the flag and use to_do_buf, in this
-> order.
+On 26 Mar 2010, at 22:35, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-Could you just use same locking user.c uses? It does not really do any
-magic...
-									Pavel
+> On Friday 26 March 2010, Mark Brown wrote:
+>> Currently the default runtime PM callbacks for platform devices  
+>> return
+>> -ENOSYS, preventing the use of runtime PM platforms until they have
+>> provided at least a default implementation. This hinders the use of
+>> runtime PM by devices which work with many platforms such as memory
+>> mapped devices, MFDs and on chip IPs shared by multiple  
+>> architectures.
+>>
+>> Change the default implementation to the standard pm_generic_runtime
+>> one, allowing drivers to use runtime PM without per-architecture
+>> changes.
+>>
+>> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+>
+> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> Is it very urgent?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Not especially - worst case you just don't get devices suspending  
+which isn't the end of the world and there's no build time  
+dependencies introduced.
+
+>
+> Rafael
+>
+>
+>> ---
+>>
+>> I'm not 100% sure why the curret implementation returns -ENOSYS -  
+>> I've
+>> got a horrible feeling I might be breaking something somewhere.
+>>
+>> drivers/base/platform.c |    6 +++---
+>> 1 files changed, 3 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+>> index 43479a9..eb0f8d9 100644
+>> --- a/drivers/base/platform.c
+>> +++ b/drivers/base/platform.c
+>> @@ -967,17 +967,17 @@ static int platform_pm_restore_noirq(struct  
+>> device *dev)
+>>
+>> int __weak platform_pm_runtime_suspend(struct device *dev)
+>> {
+>> -    return -ENOSYS;
+>> +    return pm_generic_runtime_suspend(dev);
+>> };
+>>
+>> int __weak platform_pm_runtime_resume(struct device *dev)
+>> {
+>> -    return -ENOSYS;
+>> +    return pm_generic_runtime_resume(dev);
+>> };
+>>
+>> int __weak platform_pm_runtime_idle(struct device *dev)
+>> {
+>> -    return -ENOSYS;
+>> +    return pm_generic_runtime_idle(dev);
+>> };
+>>
+>> #else /* !CONFIG_PM_RUNTIME */
+>>
+>
