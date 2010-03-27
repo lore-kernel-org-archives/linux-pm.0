@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [C/R v20][PATCH 15/96] cgroup freezer: Fix buggy
-	resume test for tasks frozen with cgroup freezer
-Date: Fri, 26 Mar 2010 23:53:26 +0100
-Message-ID: <201003262353.26181.rjw__25065.2816532694$1269643879$gmane$org@sisk.pl>
-References: <1268842164-5590-1-git-send-email-orenl@cs.columbia.edu>
-	<201003230028.40915.rjw@sisk.pl> <4BA8E659.1030702@cs.columbia.edu>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC 09/15] PM / Hibernate: user,
+	implement user_ops writer
+Date: Sat, 27 Mar 2010 08:02:07 +0100
+Message-ID: <20100327070207.GQ18689__27187.5830287629$1269673412$gmane$org@elf.ucw.cz>
+References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
+	<20100324204259.GA6423@elf.ucw.cz> <4BAA86E8.5090108@gmail.com>
+	<201003252314.33256.rjw@sisk.pl> <4BAC7FC3.50405@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4BA8E659.1030702@cs.columbia.edu>
+Content-Disposition: inline
+In-Reply-To: <4BAC7FC3.50405@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,58 +21,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Paul Menage <menage@google.com>, Cedric Le Goater <legoater@free.fr>, linux-api@vger.kernel.org, containers@lists.linux-foundation.org, Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@lists.linux-foundation.org, Serge Hallyn <serue@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 23 March 2010, Oren Laadan wrote:
-> 
-> Rafael J. Wysocki wrote:
-> > On Wednesday 17 March 2010, Oren Laadan wrote:
-> >> From: Matt Helsley <matthltc@us.ibm.com>
+On Fri 2010-03-26 10:34:59, Jiri Slaby wrote:
+> On 03/25/2010 11:14 PM, Rafael J. Wysocki wrote:
+> > On Wednesday 24 March 2010, Jiri Slaby wrote:
+> >> On 03/24/2010 09:42 PM, Pavel Machek wrote:
+> >>>> +	if (test_bit(TODO_CLOSED, to_do_flags))
+> >>>> +		return -EIO;
+> >>>> +
+> >>>> +	to_do_buf = buf;
+> >>>> +	wmb();
+> >>>> +	set_bit(TODO_WORK, to_do_flags);
+> >>>> +	wake_up_interruptible(&to_do_wait);
+> >>>
+> >>> Uhuh, open-coded barriers... these need to be commented, and I guess
+> >>> you just should not play this kind of trickery.
 > >>
-> >> When the cgroup freezer is used to freeze tasks we do not want to thaw
-> >> those tasks during resume. Currently we test the cgroup freezer
-> >> state of the resuming tasks to see if the cgroup is FROZEN.  If so
-> >> then we don't thaw the task. However, the FREEZING state also indicates
-> >> that the task should remain frozen.
-> >>
-> >> This also avoids a problem pointed out by Oren Ladaan: the freezer state
-> >> transition from FREEZING to FROZEN is updated lazily when userspace reads
-> >> or writes the freezer.state file in the cgroup filesystem. This means that
-> >> resume will thaw tasks in cgroups which should be in the FROZEN state if
-> >> there is no read/write of the freezer.state file to trigger this
-> >> transition before suspend.
-> >>
-> >> NOTE: Another "simple" solution would be to always update the cgroup
-> >> freezer state during resume. However it's a bad choice for several reasons:
-> >> Updating the cgroup freezer state is somewhat expensive because it requires
-> >> walking all the tasks in the cgroup and checking if they are each frozen.
-> >> Worse, this could easily make resume run in N^2 time where N is the number
-> >> of tasks in the cgroup. Finally, updating the freezer state from this code
-> >> path requires trickier locking because of the way locks must be ordered.
-> >>
-> >> Instead of updating the freezer state we rely on the fact that lazy
-> >> updates only manage the transition from FREEZING to FROZEN. We know that
-> >> a cgroup with the FREEZING state may actually be FROZEN so test for that
-> >> state too. This makes sense in the resume path even for partially-frozen
-> >> cgroups -- those that really are FREEZING but not FROZEN.
-> >>
-> >> Reported-by: Oren Ladaan <orenl@cs.columbia.edu>
-> >> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-> >> Cc: Cedric Le Goater <legoater@free.fr>
-> >> Cc: Paul Menage <menage@google.com>
-> >> Cc: Li Zefan <lizf@cn.fujitsu.com>
-> >> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> >> Cc: Pavel Machek <pavel@ucw.cz>
-> >> Cc: linux-pm@lists.linux-foundation.org
+> >> It's just to ensure the to_do_buf store is not reordered with the
+> >> set_bit. I wanted to avoid locks as too heavy tools here.
 > > 
-> > Looks reasonable.
+> > No, please use them, at least in a prototype version.
 > > 
-> > Is anyone handling that already or do you want me to take it to my tree?
+> > We can always optimize things out later, but doing optimizations upfront
+> > doesn't really work well from my experience.
+> > 
+> > So, if you'd use a lock somewhere, please use it, or maybe use a completion if
+> > that fits the design better.
 > 
-> Yes, please do.
+> That's it, I don't think a lock is appropriate here (I didn't even think
+> of that) -- I don't know what to lock (OK, I see it, but it's not that
+> clear). There is no potential for race per se, I only need to disable
+> reordering (which locks do as a side-effect). I need the steps to be
+> done in the A-B order where there is a barrier appropriate. Here, A is
+> store to to_do_buf, B is set_bit. It's I set to_do_buf, flag that it may
+> be used, the consumer will see the flag and use to_do_buf, in this
+> order.
 
-Applied.
+Could you just use same locking user.c uses? It does not really do any
+magic...
+									Pavel
 
-Rafael
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
