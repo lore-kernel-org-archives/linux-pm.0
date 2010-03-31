@@ -1,17 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC 09/15] PM / Hibernate: user,
-	implement	user_ops writer
-Date: Wed, 31 Mar 2010 16:47:02 +0200
-Message-ID: <20100331144702.GC3449@ucw.cz>
+	implement user_ops writer
+Date: Wed, 31 Mar 2010 22:29:18 +0200
+Message-ID: <201003312229.18142.rjw@sisk.pl>
 References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
-	<201003300009.18315.rjw@sisk.pl> <4BB1508E.9030103@crca.org.au>
-	<201003302303.12758.rjw@sisk.pl> <4BB2B3E5.7020708@crca.org.au>
+	<201003302250.26105.rjw@sisk.pl> <4BB35F1C.4030100@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4BB2B3E5.7020708@crca.org.au>
+In-Reply-To: <4BB35F1C.4030100@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,20 +19,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: linux-pm@lists.linux-foundation.org, Jiri Slaby <jirislaby@gmail.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Wednesday 31 March 2010, Jiri Slaby wrote:
+> On 03/30/2010 10:50 PM, Rafael J. Wysocki wrote:
+> > So, I definitely would like to see numbers.
+> 
+> With the patch attached, I get similar results for
+> uncompressed image -> user.c -> s2disk (compress+threads)
+> compressed image -> user.c -> s2disk (none of compress+threads)
+> 
+> BUT note that there are differences in pages _copied_ in the "user.c ->
+> s2disk" phase. Compression was about 40 %. So in the former case 100000
+> pages went through and in the latter one only ~ 38000. So presumably
+> there will be savings if the pages are compressed in the kernel in the
+> save-image phase instead of in userspace.
+> 
+> I'll test (after I hack that up) also the case of image compression when
+> saving the image and let you know.
+> 
+> It was tested on a machine with openSUSE factory with init 5 with KDE 4.
+> The memory consumption was ~ 400M (100000 pages) after boot every time.
+> Hibernation lasted 12-13s in both cases.
 
-> Regarding using LRU pages as temporary storage, if it wasn't safe and 
-> reliable, I would have stopped doing it ages ago. The only problem I can 
+So that's pretty much the same and I don't think feeding compressed images to
+s2disk is not worth the effort.  Let's assume s2disk will always receive a raw
+image (that will make it backwards compatible too).
 
-What kind of argument is that?
-
-And what prevents people from introducing more KMS-like breakage in
-future?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Rafael
