@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC 09/15] PM / Hibernate: user,
-	implement user_ops writer
-Date: Wed, 31 Mar 2010 22:29:18 +0200
-Message-ID: <201003312229.18142.rjw@sisk.pl>
-References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
-	<201003302250.26105.rjw@sisk.pl> <4BB35F1C.4030100@gmail.com>
+Subject: Re: RFC: additional event for pm_notifier
+Date: Wed, 31 Mar 2010 22:33:07 +0200
+Message-ID: <201003312233.07482.rjw@sisk.pl>
+References: <alpine.LFD.2.00.1003171945130.2469@localhost>
+	<201003262231.27156.rjw@sisk.pl>
+	<alpine.LFD.2.00.1003311333270.2244@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4BB35F1C.4030100@gmail.com>
+In-Reply-To: <alpine.LFD.2.00.1003311333270.2244@localhost>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,33 +19,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>
+To: Sebastian Ott <sebott@linux.vnet.ibm.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 31 March 2010, Jiri Slaby wrote:
-> On 03/30/2010 10:50 PM, Rafael J. Wysocki wrote:
-> > So, I definitely would like to see numbers.
+On Wednesday 31 March 2010, Sebastian Ott wrote:
 > 
-> With the patch attached, I get similar results for
-> uncompressed image -> user.c -> s2disk (compress+threads)
-> compressed image -> user.c -> s2disk (none of compress+threads)
+> On Fri, 26 Mar 2010, Rafael J. Wysocki wrote:
 > 
-> BUT note that there are differences in pages _copied_ in the "user.c ->
-> s2disk" phase. Compression was about 40 %. So in the former case 100000
-> pages went through and in the latter one only ~ 38000. So presumably
-> there will be savings if the pages are compressed in the kernel in the
-> save-image phase instead of in userspace.
+> > On Friday 26 March 2010, Sebastian Ott wrote:
+> > >
+> > > hi,
+> > > 
+> > > i've got that working, but after some more thinking
+> > > i really didn't like that approach - in short, if we do that,
+> > > hibernation on s390 will allways be bound to the plattform mode
+> > > (with certain devices we will crash in our restore callbacks
+> > > if we haven't previously enabled the hw-feature, which those
+> > > devices use)
+> > > 
+> > > and to the your-gun-your-foot argument - if someone tests
+> > > hibernation on s390 using the reboot mode he sure cannot
+> > > expect the potential panic, depending on the involved devices
+> > 
+> > Well, on x86 using ACPI the reboot and shutdown modes only work by fortunate
+> > conincidence, so to speak (if at all).
+> > 
+> > That said, your argument is reasonable.
+> > 
+> > > do you absolutely oppose against the idea of a new notifier event?
+> > 
+> > Yes, I do.  To the extent that I'd rather change the entire design so that the
+> > "hibernation modes" would be platform-dependent.
 > 
-> I'll test (after I hack that up) also the case of image compression when
-> saving the image and let you know.
-> 
-> It was tested on a machine with openSUSE factory with init 5 with KDE 4.
-> The memory consumption was ~ 400M (100000 pages) after boot every time.
-> Hibernation lasted 12-13s in both cases.
+> ok. i implemented a hook in arch/s390
 
-So that's pretty much the same and I don't think feeding compressed images to
-s2disk is not worth the effort.  Let's assume s2disk will always receive a raw
-image (that will make it backwards compatible too).
+Thanks a lot.
 
 Rafael
