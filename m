@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: RFC: additional event for pm_notifier
-Date: Wed, 31 Mar 2010 22:33:07 +0200
-Message-ID: <201003312233.07482.rjw@sisk.pl>
-References: <alpine.LFD.2.00.1003171945130.2469@localhost>
-	<201003262231.27156.rjw@sisk.pl>
-	<alpine.LFD.2.00.1003311333270.2244@localhost>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [RFC 09/15] PM / Hibernate: user,
+ implement	user_ops writer
+Date: Thu, 01 Apr 2010 08:01:23 +1100
+Message-ID: <4BB3B823.5080803@crca.org.au>
+References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
+	<201003300009.18315.rjw@sisk.pl> <4BB1508E.9030103@crca.org.au>
+	<201003302303.12758.rjw@sisk.pl> <4BB2B3E5.7020708@crca.org.au>
+	<20100331144702.GC3449@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1003311333270.2244@localhost>
+In-Reply-To: <20100331144702.GC3449@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,41 +21,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Sebastian Ott <sebott@linux.vnet.ibm.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@lists.linux-foundation.org, Jiri Slaby <jirislaby@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 31 March 2010, Sebastian Ott wrote:
-> 
-> On Fri, 26 Mar 2010, Rafael J. Wysocki wrote:
-> 
-> > On Friday 26 March 2010, Sebastian Ott wrote:
-> > >
-> > > hi,
-> > > 
-> > > i've got that working, but after some more thinking
-> > > i really didn't like that approach - in short, if we do that,
-> > > hibernation on s390 will allways be bound to the plattform mode
-> > > (with certain devices we will crash in our restore callbacks
-> > > if we haven't previously enabled the hw-feature, which those
-> > > devices use)
-> > > 
-> > > and to the your-gun-your-foot argument - if someone tests
-> > > hibernation on s390 using the reboot mode he sure cannot
-> > > expect the potential panic, depending on the involved devices
-> > 
-> > Well, on x86 using ACPI the reboot and shutdown modes only work by fortunate
-> > conincidence, so to speak (if at all).
-> > 
-> > That said, your argument is reasonable.
-> > 
-> > > do you absolutely oppose against the idea of a new notifier event?
-> > 
-> > Yes, I do.  To the extent that I'd rather change the entire design so that the
-> > "hibernation modes" would be platform-dependent.
-> 
-> ok. i implemented a hook in arch/s390
+Hi.
 
-Thanks a lot.
+On 01/04/10 01:47, Pavel Machek wrote:
+> Hi!
+>
+>> Regarding using LRU pages as temporary storage, if it wasn't safe and
+>> reliable, I would have stopped doing it ages ago. The only problem I can
+>
+> What kind of argument is that?
+>
+> And what prevents people from introducing more KMS-like breakage in
+> future?
 
-Rafael
+Nothing. And we catch it when it occurs and resave the pages. It is of 
+course also possible for us to take a more complicated approach and save 
+just what we know is safe.
+
+Or we could just use kexec...
+
+Nigel
