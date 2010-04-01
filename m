@@ -1,16 +1,16 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [RFC 09/15] PM / Hibernate: user,
- implement user_ops writer
-Date: Thu, 01 Apr 2010 08:54:44 +1100
-Message-ID: <4BB3C4A4.9080809@crca.org.au>
-References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>	<201003302303.12758.rjw@sisk.pl>
-	<4BB2B3E5.7020708@crca.org.au>	<201003312225.25085.rjw@sisk.pl>
-	<4BB3B95A.5000901@crca.org.au>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31 regression: programs crashing after a couple
+	of days of uptime with hibernation
+Date: Fri, 2 Apr 2010 00:33:55 +0200
+Message-ID: <201004020033.55994.rjw__23424.7031542056$1270161129$gmane$org@sisk.pl>
+References: <201004012332.49454.linux@rainbow-software.org>
+	<201004012345.33124.rjw@sisk.pl>
+	<201004020003.37305.linux@rainbow-software.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4BB3B95A.5000901@crca.org.au>
+In-Reply-To: <201004020003.37305.linux@rainbow-software.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,31 +20,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Jiri Slaby <jirislaby@gmail.com>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+On Friday 02 April 2010, Ondrej Zary wrote:
+> On Thursday 01 April 2010 23:45:33 you wrote:
+> > On Thursday 01 April 2010, Ondrej Zary wrote:
+> > > Hello,
+> > > with kernel 2.6.30, I can have uptime of more than a month on my desktop
+> > > PC (with hibernation). It's impossible with 2.6.31. After 1 to 3 days,
+> > > processes that were running during hibernation (e.g. konsole, kwin,
+> > > kicker, xorg) start to crash randomly in very weird ways. The kernel
+> > > itself does not seem to crash. When I run the crashed program again, it
+> > > seems to work. Looks like some memory corruption.
+> > >
+> > > This bug is also present in 2.6.32 and 2.6.33.
+> >
+> > Is the kernel 32-bit or 64-bit?  What kind of CPU is there in the box?
+> 
+> It's old 32-bit i686 CPU - Cyrix MII.
 
-On 01/04/10 08:06, Nigel Cunningham wrote:
->>>>> Wouldn't it also increase the memory requirements?
->>>>
->>>> Not really, or just a little bit (the size of the buffer).  I'm talking about
->>>> the image that's created atomically after we've frozen devices.
->>>
->>> The buffer would be the size of the compressed image.
->>
->> Not necessarily if the image is compressed in chunks.  According to
->> measurements I did some time ago, 256 KiB chunks were sufficient.
->
-> I must be missing something. You're talking about doing compression of
-> the image during the atomic copy, right? If that's the case, where do
-> the 256KiB chunks come in?
+Please try with this patch applied:
+http://git.kernel.org/?p=linux/kernel/git/mingo/linux-2.6-x86.git;a=patch;h=8ae06d223f8203c72104e5c0c4ee49a000aedb42
 
-Ah, we're talking about different things. I wasn't thinking about the 
-size of buffers for compression, but instead where this compressed image 
-would be stored (leading into the 1/6th extra below).
-
-Regards,
-
-Nigel
+Rafael
