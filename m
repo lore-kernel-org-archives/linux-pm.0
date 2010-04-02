@@ -1,11 +1,18 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: 2.6.34-rc3 doesn't suspend to disk (-rc2 did)
-Date: Fri, 2 Apr 2010 02:19:26 +0200 (CEST)
-Message-ID: <alpine.LNX.2.00.1004020215100.8345__10362.0117450648$1270167717$gmane$org@pobox.suse.cz>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: what the patches do Re: [RFC 10/15] PM /
+	Hibernate:	user, implement user_ops reader
+Date: Fri, 2 Apr 2010 08:36:45 +0200
+Message-ID: <20100402063644.GA14941__35068.9553110444$1270190276$gmane$org@atrey.karlin.mff.cuni.cz>
+References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
+	<201003252114.36605.rjw@sisk.pl> <4BABC5B6.2070301@crca.org.au>
+	<201003252129.10224.rjw@sisk.pl>
+	<20100325212656.GD22902@elf.ucw.cz> <4BABDA59.8070107@crca.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <4BABDA59.8070107@crca.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,40 +22,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org, jirislaby@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi!
 
-I have just hit this problem. Haven't bisected it yet, and going through 
-shortlog doesn't ring any bell immediately, so I am sending this out in 
-case it rings a bell for someone right away.
+>>>> So what's your long term plan then?
+>>>
+>>> First, improve the in-kernel thing, second, switch people to it, _then_ remove
+>>> the s2disk interface (after we're reasonably sure it's not used by any major
+>>> distro) and _finally_ simplify things after it's been removed.
+>>
+>> I'd really prefer to keep s2disk interface. It allows advanced stuff
+>> like internet suspend resume (yep someone is doing it), crazy stuff
+>> like multiple resumes from same image for fast booting (yep, some
+>> embedded people are doing that) and might-be-useful stuff like
+>> s2both...
+>
+> Neither of those are impossible with in-kernel code, so I'd argue that  
+> there's no need to keep the s2disk interface long-term. Userspace  
 
-Calling 
+I disagree.
 
-	s2disk -r /dev/sdb4
+> helpers might be necessary for the first one (to manage the network  
+> interface), but I already have multiple-resumes-from-the-same-image  
+> support in TuxOnice (and more 'crazy stuff' like support for resuming a  
+> different image after writing one - that can be used to switch to an  
+> initramfs containing the binaries needed to power down a UPS).
 
-suspends without any issues on 2.6.34-rc2, and resume is also fine. With 
-2.6.34-rc3 I get
-
-	s2disk: Could not use the resume device (try swapon -a). Reason: No such device
-
-Relevant part of s2disk strace:
-
-mount("none", "/proc/2449", "tmpfs", 0, NULL) = 0
-stat64("/dev/sdb4", {st_mode=S_IFBLK|0660, st_rdev=makedev(259, 65536), ...}) = 0
-chdir("/proc/2449")                     = 0
-mknod("resume", S_IFBLK|0600, makedev(259, 65536)) = 0
-open("resume", O_RDWR|O_LARGEFILE)      = 3
-stat64("/dev/snapshot", {st_mode=S_IFCHR|0660, st_rdev=makedev(10, 231), ...}) = 0
-open("/dev/snapshot", O_RDONLY|O_LARGEFILE) = 4
-ioctl(4, 0x400c330d, 0xbfdbcb04)        = -1 ENODEV (No such device)
-ioctl(4, 0x4004330a, 0x10010300)        = -1 ENODEV (No such device)
-write(2, "s2disk: Could not use the resume"..., 80s2disk: Could not use the resume device (try swapon -a). Reason: No such device
-
-Thanks,
+The fact that it can be done in kernel -- anything can -- but whether
+it should. I'd very much like to keep the 'crazy stuff' in userspace.
+									Pavel
 
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
