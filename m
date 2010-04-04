@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re:
- =?iso-8859-1?q?=5BRFC_09/15=5D_PM_/_Hibernate=3A_user?=
- =?iso-8859-1?q?=2C_=09implement_user=5Fops_writer?=
-Date: Mon, 5 Apr 2010 01:13:56 +0200
-Message-ID: <201004050113.56521.rjw@sisk.pl>
-References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
-	<201003312336.50620.rjw@sisk.pl> <4BB91BEC.6030906@crca.org.au>
+Subject: Re: [PATCH] ACPI / PM: Move ACPI video resume to a PM
+	notifier
+Date: Mon, 5 Apr 2010 01:43:51 +0200
+Message-ID: <201004050143.51109.rjw__13561.1303071075$1270424491$gmane$org@sisk.pl>
+References: <201003040125.30091.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4BB91BEC.6030906@crca.org.au>
+In-Reply-To: <201003040125.30091.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,81 +18,160 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: linux-pm@lists.linux-foundation.org, Jiri Slaby <jirislaby@gmail.com>
+To: Len Brown <lenb@kernel.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 05 April 2010, Nigel Cunningham wrote:
-> Hi again.
+Hi Len,
+
+On Thursday 04 March 2010, Rafael J. Wysocki wrote:
+> There is a problem with the ACPI video resume routine that it's
+> executed before the GPU that may be accessed by it.  To fix this
+> issue, move the ACPI video resume to a power management notifier,
+> so that it's executed after resuming all devices, including the GPU.
 > 
-> On 01/04/10 08:36, Rafael J. Wysocki wrote:
-> >>>> Regarding using LRU pages as temporary storage, if it wasn't safe and
-> >>>> reliable, I would have stopped doing it ages ago.
-> >>>
-> >>> We've been through that already and as you can see I'm still not convinced.
-> >>> Sorry, but that's how it goes.  The fact that ToI uses this approach without
-> >>> seeing any major breakage is a good indication that it _may_ be safe in
-> >>> general, not that it _is_ safe in all cases one can imagine.
-> >>
-> >> It's not "any major breakage", but no breakage at all over a course of
-> >> about 6 or 7 years of usage. I agree that it's not mathematical proof,
-> >> but still...
-> >
-> > I'd say without any reported breakage you could blame on the usage of LRU
-> > pages.  But I think even if such things were reported, it wouldn't be really
-> > straightforward to track them down to the LRU, because they wouldn't be
-> > reproducible.
-> 
-> That depends on the cause. There are only so many things that can change 
-> the contents of the LRU. Freezing tasks significantly reduces that 
-> number, and with memory allocation tracking, it shouldn't be that hard 
-> to figure out what caused the issue - especially when we find the 
-> problem while atomic and can therefore dump etc data structures without 
-> worrying about locking. Ugly, yes. But it would reliably find the cause.
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Possibly.
+Please replace the $subject patch with the appended one.
 
-However, I think we can also do something different.  Namely, add a mechanism
-tracking modifications of the LRU pages like copy-on-write.  We can safely
-assume that the number of LRU pages modified during hibernation will be very
-limited, so it should be possible to keep some spare pages for saving them
-if need be and use the following high-level hibernation algorithm:
-- freeze tasks
-- make room for atomic copying of non-LRU memory
-- freeze devices
-- create the copy of non-LRU memory, start monitoring LRU
-- thaw devices
-- save the copy of non-LRU memory and the contents of LRU pages
-  to the storage; if an LRU page is modified in the process, copy its contents
-  to a spare page (before the modification) and save it later (that can be done
-  using pages previously used to store the copy of non-LRU memory that have
-  been already saved)
+The problem is that the notifier is also executed while we're checking for
+the presence of hibernation image during boot and in that case we'll set the
+brightness to a wrong value if device->backlight->props.brightness  is not
+initialized by acpi_video_device_find_cap().
 
-That sounds pretty straightforward to me and doesn't seem to depend on
-assumptions that would be difficult to verify.
-
-> >>> Besides, that would be a constraint on the future changes of the mm subsystem
-> >>> that I'm not sure we should introduce.  At least the mm people would need to
-> >>> accept that and there's a long way before we're even able to ask them.
-> >>
-> >> It doesn't need to be that way. As with KMS, a simple way of flagging
-> >> which pages need to be atomically copied is all that's necessary.
-> >
-> > I'm not sure about that.
-> >
-> > Besides, assuming that the LRU pages are really safe, I'd prefer to save them
-> > directly as a part of the image along with the atomic copy instead of using
-> > them as temporary storage.
-> 
-> We're obviously not going to agree on this. Can we nevertheless find a 
-> way ahead in which we're both happy?
-
-I believe so.
-
-> Seek to minimise the differences, even if some of the TuxOnIce code isn't
-> merged?
-
-Sure.
-
-Thanks,
 Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: ACPI / PM: Move ACPI video resume to a PM notifier
+
+There is a problem with the ACPI video resume routine that it's
+executed before the GPU that may be accessed by it.  To fix this
+issue, move the ACPI video resume to a power management notifier,
+so that's executed after resuming all devices, including the GPU.
+
+Fixes https://bugzilla.kernel.org/show_bug.cgi?id=15096, which is
+a listed regression from 2.6.31.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/video.c |   38 ++++++++++++++++++++++++++++++--------
+ 1 file changed, 30 insertions(+), 8 deletions(-)
+
+Index: linux-2.6/drivers/acpi/video.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/video.c
++++ linux-2.6/drivers/acpi/video.c
+@@ -43,6 +43,7 @@
+ #include <linux/dmi.h>
+ #include <acpi/acpi_bus.h>
+ #include <acpi/acpi_drivers.h>
++#include <linux/suspend.h>
+ 
+ #define PREFIX "ACPI: "
+ 
+@@ -88,7 +89,6 @@ module_param(allow_duplicates, bool, 064
+ static int register_count = 0;
+ static int acpi_video_bus_add(struct acpi_device *device);
+ static int acpi_video_bus_remove(struct acpi_device *device, int type);
+-static int acpi_video_resume(struct acpi_device *device);
+ static void acpi_video_bus_notify(struct acpi_device *device, u32 event);
+ 
+ static const struct acpi_device_id video_device_ids[] = {
+@@ -104,7 +104,6 @@ static struct acpi_driver acpi_video_bus
+ 	.ops = {
+ 		.add = acpi_video_bus_add,
+ 		.remove = acpi_video_bus_remove,
+-		.resume = acpi_video_resume,
+ 		.notify = acpi_video_bus_notify,
+ 		},
+ };
+@@ -159,6 +158,7 @@ struct acpi_video_bus {
+ 	struct proc_dir_entry *dir;
+ 	struct input_dev *input;
+ 	char phys[32];	/* for input device */
++	struct notifier_block pm_nb;
+ };
+ 
+ struct acpi_video_device_flags {
+@@ -1020,6 +1020,13 @@ static void acpi_video_device_find_cap(s
+ 		if (IS_ERR(device->backlight))
+ 			return;
+ 
++		/*
++		 * Save current brightness level in case we have to restore it
++		 * before acpi_video_device_lcd_set_level() is called next time.
++		 */
++		device->backlight->props.brightness =
++				acpi_video_get_brightness(device->backlight);
++
+ 		result = sysfs_create_link(&device->backlight->dev.kobj,
+ 					   &device->dev->dev.kobj, "device");
+ 		if (result)
+@@ -2235,24 +2242,31 @@ static void acpi_video_device_notify(acp
+ 	return;
+ }
+ 
+-static int instance;
+-static int acpi_video_resume(struct acpi_device *device)
++static int acpi_video_resume(struct notifier_block *nb,
++				unsigned long val, void *ign)
+ {
+ 	struct acpi_video_bus *video;
+ 	struct acpi_video_device *video_device;
+ 	int i;
+ 
+-	if (!device || !acpi_driver_data(device))
+-		return -EINVAL;
++	switch (val) {
++	case PM_HIBERNATION_PREPARE:
++	case PM_SUSPEND_PREPARE:
++	case PM_RESTORE_PREPARE:
++		return NOTIFY_DONE;
++	}
+ 
+-	video = acpi_driver_data(device);
++	video = container_of(nb, struct acpi_video_bus, pm_nb);
++
++	dev_info(&video->device->dev, "Restoring backlight state\n");
+ 
+ 	for (i = 0; i < video->attached_count; i++) {
+ 		video_device = video->attached_array[i].bind_info;
+ 		if (video_device && video_device->backlight)
+ 			acpi_video_set_brightness(video_device->backlight);
+ 	}
+-	return AE_OK;
++
++	return NOTIFY_OK;
+ }
+ 
+ static acpi_status
+@@ -2276,6 +2290,8 @@ acpi_video_bus_match(acpi_handle handle,
+ 	return AE_OK;
+ }
+ 
++static int instance;
++
+ static int acpi_video_bus_add(struct acpi_device *device)
+ {
+ 	struct acpi_video_bus *video;
+@@ -2369,6 +2385,10 @@ static int acpi_video_bus_add(struct acp
+ 	       video->flags.rom ? "yes" : "no",
+ 	       video->flags.post ? "yes" : "no");
+ 
++	video->pm_nb.notifier_call = acpi_video_resume;
++	video->pm_nb.priority = 0;
++	register_pm_notifier(&video->pm_nb);
++
+ 	return 0;
+ 
+  err_free_input_dev:
+@@ -2395,6 +2415,8 @@ static int acpi_video_bus_remove(struct 
+ 
+ 	video = acpi_driver_data(device);
+ 
++	unregister_pm_notifier(&video->pm_nb);
++
+ 	acpi_video_bus_stop_devices(video);
+ 	acpi_video_bus_put_devices(video);
+ 	acpi_video_bus_remove_fs(device);
