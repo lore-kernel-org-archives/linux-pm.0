@@ -1,14 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] ACPI / PM: Move ACPI video resume to a PM
-	notifier
-Date: Mon, 5 Apr 2010 01:43:51 +0200
-Message-ID: <201004050143.51109.rjw__13561.1303071075$1270424491$gmane$org@sisk.pl>
-References: <201003040125.30091.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: document open(/dev/snapshot) sideeffects -- was Re:
+ syncing the disks when entering sleep
+Date: Mon, 5 Apr 2010 08:38:52 +0200
+Message-ID: <20100405063852.GA1924__1321.78896242312$1270449670$gmane$org@elf.ucw.cz>
+References: <76FA3B279DD9DA48896E2B404944957204E0B241@USA7061MS02.na.xerox.net>
+	<201001272150.05846.rjw@sisk.pl>
+	<20100128072658.GB25633@atrey.karlin.mff.cuni.cz>
+	<201001281143.08993.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201003040125.30091.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <201001281143.08993.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,160 +22,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@osdl.org>, linux-pm@lists.linux-foundation.org, kernel list <linux-kernel@vger.kernel.org>, "Leisner,
+	Martin" <Martin.Leisner@xerox.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Len,
+Hi!
 
-On Thursday 04 March 2010, Rafael J. Wysocki wrote:
-> There is a problem with the ACPI video resume routine that it's
-> executed before the GPU that may be accessed by it.  To fix this
-> issue, move the ACPI video resume to a power management notifier,
-> so that it's executed after resuming all devices, including the GPU.
+> > > Please note that merely _opening_ /dev/snapshot has side effects, so that's
+> > > not just "three ioctls".
+> > 
+> > I search Doc*/power/userland-swsusp.txt, and could not find mentions
+> > of sideeffects. Perhaps that should be fixed?
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Please feel free to make the docs more complete, then.
 
-Please replace the $subject patch with the appended one.
+Yes, something like this?
 
-The problem is that the notifier is also executed while we're checking for
-the presence of hibernation image during boot and in that case we'll set the
-brightness to a wrong value if device->backlight->props.brightness  is not
-initialized by acpi_video_device_find_cap().
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: ACPI / PM: Move ACPI video resume to a PM notifier
-
-There is a problem with the ACPI video resume routine that it's
-executed before the GPU that may be accessed by it.  To fix this
-issue, move the ACPI video resume to a power management notifier,
-so that's executed after resuming all devices, including the GPU.
-
-Fixes https://bugzilla.kernel.org/show_bug.cgi?id=15096, which is
-a listed regression from 2.6.31.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/video.c |   38 ++++++++++++++++++++++++++++++--------
- 1 file changed, 30 insertions(+), 8 deletions(-)
-
-Index: linux-2.6/drivers/acpi/video.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/video.c
-+++ linux-2.6/drivers/acpi/video.c
-@@ -43,6 +43,7 @@
- #include <linux/dmi.h>
- #include <acpi/acpi_bus.h>
- #include <acpi/acpi_drivers.h>
-+#include <linux/suspend.h>
+--- a/Documentation/power/userland-swsusp.txt
++++ b/Documentation/power/userland-swsusp.txt
+@@ -24,6 +24,10 @@ assumed to be in the resume mode.  The device cannot be open for simultaneous
+ reading and writing.  It is also impossible to have the device open more than
+ once at a time.
  
- #define PREFIX "ACPI: "
- 
-@@ -88,7 +89,6 @@ module_param(allow_duplicates, bool, 064
- static int register_count = 0;
- static int acpi_video_bus_add(struct acpi_device *device);
- static int acpi_video_bus_remove(struct acpi_device *device, int type);
--static int acpi_video_resume(struct acpi_device *device);
- static void acpi_video_bus_notify(struct acpi_device *device, u32 event);
- 
- static const struct acpi_device_id video_device_ids[] = {
-@@ -104,7 +104,6 @@ static struct acpi_driver acpi_video_bus
- 	.ops = {
- 		.add = acpi_video_bus_add,
- 		.remove = acpi_video_bus_remove,
--		.resume = acpi_video_resume,
- 		.notify = acpi_video_bus_notify,
- 		},
- };
-@@ -159,6 +158,7 @@ struct acpi_video_bus {
- 	struct proc_dir_entry *dir;
- 	struct input_dev *input;
- 	char phys[32];	/* for input device */
-+	struct notifier_block pm_nb;
- };
- 
- struct acpi_video_device_flags {
-@@ -1020,6 +1020,13 @@ static void acpi_video_device_find_cap(s
- 		if (IS_ERR(device->backlight))
- 			return;
- 
-+		/*
-+		 * Save current brightness level in case we have to restore it
-+		 * before acpi_video_device_lcd_set_level() is called next time.
-+		 */
-+		device->backlight->props.brightness =
-+				acpi_video_get_brightness(device->backlight);
++Even opening the device has side effects. Data structures are
++allocated, and PM_HIBERNATION_PREPARE / PM_RESTORE_PREPARE chains are
++called.
 +
- 		result = sysfs_create_link(&device->backlight->dev.kobj,
- 					   &device->dev->dev.kobj, "device");
- 		if (result)
-@@ -2235,24 +2242,31 @@ static void acpi_video_device_notify(acp
- 	return;
- }
+ The ioctl() commands recognized by the device are:
  
--static int instance;
--static int acpi_video_resume(struct acpi_device *device)
-+static int acpi_video_resume(struct notifier_block *nb,
-+				unsigned long val, void *ign)
- {
- 	struct acpi_video_bus *video;
- 	struct acpi_video_device *video_device;
- 	int i;
- 
--	if (!device || !acpi_driver_data(device))
--		return -EINVAL;
-+	switch (val) {
-+	case PM_HIBERNATION_PREPARE:
-+	case PM_SUSPEND_PREPARE:
-+	case PM_RESTORE_PREPARE:
-+		return NOTIFY_DONE;
-+	}
- 
--	video = acpi_driver_data(device);
-+	video = container_of(nb, struct acpi_video_bus, pm_nb);
-+
-+	dev_info(&video->device->dev, "Restoring backlight state\n");
- 
- 	for (i = 0; i < video->attached_count; i++) {
- 		video_device = video->attached_array[i].bind_info;
- 		if (video_device && video_device->backlight)
- 			acpi_video_set_brightness(video_device->backlight);
- 	}
--	return AE_OK;
-+
-+	return NOTIFY_OK;
- }
- 
- static acpi_status
-@@ -2276,6 +2290,8 @@ acpi_video_bus_match(acpi_handle handle,
- 	return AE_OK;
- }
- 
-+static int instance;
-+
- static int acpi_video_bus_add(struct acpi_device *device)
- {
- 	struct acpi_video_bus *video;
-@@ -2369,6 +2385,10 @@ static int acpi_video_bus_add(struct acp
- 	       video->flags.rom ? "yes" : "no",
- 	       video->flags.post ? "yes" : "no");
- 
-+	video->pm_nb.notifier_call = acpi_video_resume;
-+	video->pm_nb.priority = 0;
-+	register_pm_notifier(&video->pm_nb);
-+
- 	return 0;
- 
-  err_free_input_dev:
-@@ -2395,6 +2415,8 @@ static int acpi_video_bus_remove(struct 
- 
- 	video = acpi_driver_data(device);
- 
-+	unregister_pm_notifier(&video->pm_nb);
-+
- 	acpi_video_bus_stop_devices(video);
- 	acpi_video_bus_put_devices(video);
- 	acpi_video_bus_remove_fs(device);
+ SNAPSHOT_FREEZE - freeze user space processes (the current process is
+
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
