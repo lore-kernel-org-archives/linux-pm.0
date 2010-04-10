@@ -1,17 +1,16 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Subject: Re: 2.6.31 regression: programs crashing after a couple
-	of days of uptime with hibernation
-Date: Sat, 10 Apr 2010 11:03:19 +0200
-Message-ID: <201004101103.21380.linux__37865.9221147702$1270890381$gmane$org@rainbow-software.org>
-References: <201004012332.49454.linux@rainbow-software.org>
-	<201004021253.30668.linux@rainbow-software.org>
-	<201004021858.28611.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: commit 9630bdd9 changes behavior of the poweroff -
+	bug?
+Date: Sat, 10 Apr 2010 21:36:43 +0200
+Message-ID: <201004102136.43246.rjw__30816.1254426979$1270928093$gmane$org@sisk.pl>
+References: <20100401133923.GA4104@tiehlicka.suse.cz>
+	<201004092242.17341.rjw@sisk.pl>
+	<1270848027.3071.0.camel@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201004021858.28611.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <1270848027.3071.0.camel@localhost>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,44 +20,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+To: Tony Vroon <tony@linx.net>
+Cc: linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Michal Hocko <mhocko@suse.cz>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 02 April 2010 18:58:28 Rafael J. Wysocki wrote:
-> On Friday 02 April 2010, Ondrej Zary wrote:
-> > On Friday 02 April 2010 00:33:55 Rafael J. Wysocki wrote:
-> > > On Friday 02 April 2010, Ondrej Zary wrote:
-> > > > On Thursday 01 April 2010 23:45:33 you wrote:
-> > > > > On Thursday 01 April 2010, Ondrej Zary wrote:
-> > > > > > Hello,
-> > > > > > with kernel 2.6.30, I can have uptime of more than a month on my
-> > > > > > desktop PC (with hibernation). It's impossible with 2.6.31. After
-> > > > > > 1 to 3 days, processes that were running during hibernation (e.g.
-> > > > > > konsole, kwin, kicker, xorg) start to crash randomly in very
-> > > > > > weird ways. The kernel itself does not seem to crash. When I run
-> > > > > > the crashed program again, it seems to work. Looks like some
-> > > > > > memory corruption.
-> > > > > >
-> > > > > > This bug is also present in 2.6.32 and 2.6.33.
-> > > > >
-> > > > > Is the kernel 32-bit or 64-bit?  What kind of CPU is there in the
-> > > > > box?
-> > > >
-> > > > It's old 32-bit i686 CPU - Cyrix MII.
-> > >
-> > > Please try with this patch applied:
-> > > http://git.kernel.org/?p=linux/kernel/git/mingo/linux-2.6-x86.git;a=pat
-> > >ch;h =8ae06d223f8203c72104e5c0c4ee49a000aedb42
-> >
-> > Thanks, I'll try it. But I doubt that it will fix the problem. There were
-> > no changes in hibernate_asm_32.S between 2.6.30 and 2.6.31.
->
-> The change that exposed this issue was elsewhere in the x86 arch code.  I
-> don't know where exactly, but we surely didn't need the above patch before.
+On Friday 09 April 2010, Tony Vroon wrote:
+> On Fri, 2010-04-09 at 22:42 +0200, Rafael J. Wysocki wrote:
+> > Please check if the patch below changes anything.
+> >  drivers/acpi/wakeup.c |    4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> That didn't change the behaviour for me, sorry.
 
-It did not help. It started crashing with 2.6.32 and this patch applied after 
-two days.
+Well, I would be sorry if it did, because the patch removed some useful code. :-)
 
--- 
-Ondrej Zary
+> (I made sure to go through a full power down session before trying the
+> patched kernel)
+
+Thanks for testing.  So it looks like we don't disable the GPE during power off.
+
+I'll try to figure out what's going on, please stay tuned.
+
+Rafael
