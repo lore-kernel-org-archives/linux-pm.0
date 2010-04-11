@@ -1,16 +1,11 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Subject: Re: 2.6.31 regression: programs crashing after a couple
-	of days of uptime with hibernation
-Date: Sat, 10 Apr 2010 23:03:29 +0200
-Message-ID: <201004102303.32129.linux__27518.6114282862$1270933629$gmane$org@rainbow-software.org>
-References: <201004012332.49454.linux@rainbow-software.org>
-	<201004101103.21380.linux@rainbow-software.org>
-	<201004102158.17454.rjw@sisk.pl>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: [PATCH] runtime pm: add sysfs debug files
+Date: Sun, 11 Apr 2010 17:01:36 +0200
+Message-ID: <20100411150136.GA6693@comet.dominikbrodowski.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201004102158.17454.rjw@sisk.pl>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -21,54 +16,110 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 10 April 2010 21:58:17 Rafael J. Wysocki wrote:
-> On Saturday 10 April 2010, Ondrej Zary wrote:
-> > On Friday 02 April 2010 18:58:28 Rafael J. Wysocki wrote:
-> > > On Friday 02 April 2010, Ondrej Zary wrote:
-> > > > On Friday 02 April 2010 00:33:55 Rafael J. Wysocki wrote:
-> > > > > On Friday 02 April 2010, Ondrej Zary wrote:
-> > > > > > On Thursday 01 April 2010 23:45:33 you wrote:
-> > > > > > > On Thursday 01 April 2010, Ondrej Zary wrote:
-> > > > > > > > Hello,
-> > > > > > > > with kernel 2.6.30, I can have uptime of more than a month on
-> > > > > > > > my desktop PC (with hibernation). It's impossible with
-> > > > > > > > 2.6.31. After 1 to 3 days, processes that were running during
-> > > > > > > > hibernation (e.g. konsole, kwin, kicker, xorg) start to crash
-> > > > > > > > randomly in very weird ways. The kernel itself does not seem
-> > > > > > > > to crash. When I run the crashed program again, it seems to
-> > > > > > > > work. Looks like some memory corruption.
-> > > > > > > >
-> > > > > > > > This bug is also present in 2.6.32 and 2.6.33.
-> > > > > > >
-> > > > > > > Is the kernel 32-bit or 64-bit?  What kind of CPU is there in
-> > > > > > > the box?
-> > > > > >
-> > > > > > It's old 32-bit i686 CPU - Cyrix MII.
-> > > > >
-> > > > > Please try with this patch applied:
-> > > > > http://git.kernel.org/?p=linux/kernel/git/mingo/linux-2.6-x86.git;a
-> > > > >=pat ch;h =8ae06d223f8203c72104e5c0c4ee49a000aedb42
-> > > >
-> > > > Thanks, I'll try it. But I doubt that it will fix the problem. There
-> > > > were no changes in hibernate_asm_32.S between 2.6.30 and 2.6.31.
-> > >
-> > > The change that exposed this issue was elsewhere in the x86 arch code. 
-> > > I don't know where exactly, but we surely didn't need the above patch
-> > > before.
-> >
-> > It did not help. It started crashing with 2.6.32 and this patch applied
-> > after two days.
->
-> Well, no idea, then.
+Add a few sysfs files relating to runtime power management for
+advanced debug purposes:
 
-So I'll try to bisect it again.
+runtime_status:	what state is the device in currently? E.g., it
+	reports "disabled" if runtime power management is
+	disabled for a device, "suspended" for runtime-suspended
+	devices, and "active" for active devices.
 
-Here's a bug report so it won't get lost: 
-https://bugzilla.kernel.org/show_bug.cgi?id=15753
+runtime_usage: the runtime PM usage count of a device
 
--- 
-Ondrej Zary
+runtime_children: the runtime PM children usage count of a device, or
+	0 if the ignore_children flag is set.
+
+Also, CONFIG_PM_SLEEP_ADVANCED_DEBUG is not defined in any Kconfig
+file, so replace it with CONFIG_PM_ADVANCED_DEBUG.
+
+Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
+
+diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+index 86fd937..6ba0f06 100644
+--- a/drivers/base/power/sysfs.c
++++ b/drivers/base/power/sysfs.c
+@@ -5,6 +5,7 @@
+ #include <linux/device.h>
+ #include <linux/string.h>
+ #include <linux/pm_runtime.h>
++#include <asm/atomic.h>
+ #include "power.h"
+ 
+ /*
+@@ -143,7 +144,49 @@ wake_store(struct device * dev, struct device_attribute *attr,
+ 
+ static DEVICE_ATTR(wakeup, 0644, wake_show, wake_store);
+ 
+-#ifdef CONFIG_PM_SLEEP_ADVANCED_DEBUG
++#ifdef CONFIG_PM_ADVANCED_DEBUG
++#ifdef CONFIG_PM_RUNTIME
++
++static ssize_t usagecount_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%d\n", atomic_read(&dev->power.usage_count));
++}
++
++static ssize_t children_show(struct device *dev,
++			     struct device_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%d\n", dev->power.ignore_children ?
++		0 : atomic_read(&dev->power.child_count));
++}
++
++static ssize_t rtpm_show(struct device *dev,
++			 struct device_attribute *attr, char *buf)
++{
++	int status = dev->power.runtime_status;
++	if (dev->power.disable_depth)
++		return sprintf(buf, "disabled\n");
++	if (dev->power.runtime_auto == false)
++		return sprintf(buf, "forbidden\n");
++	switch (status) {
++	case RPM_SUSPENDED:
++		return sprintf(buf, "suspended\n");
++	case RPM_SUSPENDING:
++		return sprintf(buf, "to be suspended\n");
++	case RPM_RESUMING:
++		return sprintf(buf, "to be resumed\n");
++	case RPM_ACTIVE:
++		return sprintf(buf, "active\n");
++	}
++	return -EIO;
++}
++
++static DEVICE_ATTR(runtime_usage, 0444, usagecount_show, NULL);
++static DEVICE_ATTR(runtime_children, 0444, children_show, NULL);
++static DEVICE_ATTR(runtime_status, 0444, rtpm_show, NULL);
++
++#endif
++
+ static ssize_t async_show(struct device *dev, struct device_attribute *attr,
+ 			  char *buf)
+ {
+@@ -170,15 +213,20 @@ static ssize_t async_store(struct device *dev, struct device_attribute *attr,
+ }
+ 
+ static DEVICE_ATTR(async, 0644, async_show, async_store);
+-#endif /* CONFIG_PM_SLEEP_ADVANCED_DEBUG */
++#endif /* CONFIG_PM_ADVANCED_DEBUG */
+ 
+ static struct attribute * power_attrs[] = {
+ #ifdef CONFIG_PM_RUNTIME
+ 	&dev_attr_control.attr,
+ #endif
+ 	&dev_attr_wakeup.attr,
+-#ifdef CONFIG_PM_SLEEP_ADVANCED_DEBUG
++#ifdef CONFIG_PM_ADVANCED_DEBUG
+ 	&dev_attr_async.attr,
++#ifdef CONFIG_PM_RUNTIME
++	&dev_attr_runtime_usage.attr,
++	&dev_attr_runtime_children.attr,
++	&dev_attr_runtime_status.attr,
++#endif
+ #endif
+ 	NULL,
+ };
