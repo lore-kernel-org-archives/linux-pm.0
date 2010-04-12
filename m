@@ -1,13 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] runtime pm: add sysfs debug files
-Date: Sun, 11 Apr 2010 14:54:56 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1004111445260.13658-100000@netrider.rowland.org>
-References: <20100411150136.GA6693@comet.dominikbrodowski.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: commit 9630bdd9 changes behavior of the poweroff -
+	bug?
+Date: Tue, 13 Apr 2010 01:01:54 +0200
+Message-ID: <201004130101.54117.rjw__40957.1929289543$1271109706$gmane$org@sisk.pl>
+References: <20100401133923.GA4104@tiehlicka.suse.cz>
+	<1270848027.3071.0.camel@localhost>
+	<201004102136.43246.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100411150136.GA6693@comet.dominikbrodowski.net>
+In-Reply-To: <201004102136.43246.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,98 +20,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-pm@lists.linux-foundation.org
+To: Tony Vroon <tony@linx.net>, Michal Hocko <mhocko@suse.cz>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 11 Apr 2010, Dominik Brodowski wrote:
-
-> Add a few sysfs files relating to runtime power management for
-> advanced debug purposes:
+On Saturday 10 April 2010, Rafael J. Wysocki wrote:
+> On Friday 09 April 2010, Tony Vroon wrote:
+> > On Fri, 2010-04-09 at 22:42 +0200, Rafael J. Wysocki wrote:
+> > > Please check if the patch below changes anything.
+> > >  drivers/acpi/wakeup.c |    4 ++--
+> > >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > That didn't change the behaviour for me, sorry.
 > 
-> runtime_status:	what state is the device in currently? E.g., it
-> 	reports "disabled" if runtime power management is
-> 	disabled for a device, "suspended" for runtime-suspended
-> 	devices, and "active" for active devices.
+> Well, I would be sorry if it did, because the patch removed some useful code. :-)
 > 
-> runtime_usage: the runtime PM usage count of a device
+> > (I made sure to go through a full power down session before trying the
+> > patched kernel)
 > 
-> runtime_children: the runtime PM children usage count of a device, or
-> 	0 if the ignore_children flag is set.
+> Thanks for testing.  So it looks like we don't disable the GPE during power off.
 > 
-> Also, CONFIG_PM_SLEEP_ADVANCED_DEBUG is not defined in any Kconfig
-> file, so replace it with CONFIG_PM_ADVANCED_DEBUG.
-> 
-> Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
+> I'll try to figure out what's going on, please stay tuned.
 
-Just a couple of minor comments...
+Can you please check if the patch below changes the behavior?
 
-> @@ -143,7 +144,49 @@ wake_store(struct device * dev, struct device_attribute *attr,
->  
->  static DEVICE_ATTR(wakeup, 0644, wake_show, wake_store);
->  
-> -#ifdef CONFIG_PM_SLEEP_ADVANCED_DEBUG
-> +#ifdef CONFIG_PM_ADVANCED_DEBUG
-> +#ifdef CONFIG_PM_RUNTIME
-> +
-> +static ssize_t usagecount_show(struct device *dev,
-> +			       struct device_attribute *attr, char *buf)
-> +{
-> +	return sprintf(buf, "%d\n", atomic_read(&dev->power.usage_count));
-> +}
-> +
-> +static ssize_t children_show(struct device *dev,
-> +			     struct device_attribute *attr, char *buf)
-> +{
-> +	return sprintf(buf, "%d\n", dev->power.ignore_children ?
-> +		0 : atomic_read(&dev->power.child_count));
-> +}
-> +
-> +static ssize_t rtpm_show(struct device *dev,
-> +			 struct device_attribute *attr, char *buf)
-> +{
-> +	int status = dev->power.runtime_status;
+Rafael
 
-You don't need this variable.  Use dev->power.runtime_status directly
-in the switch statement.
+---
+ drivers/acpi/wakeup.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-> +	if (dev->power.disable_depth)
-> +		return sprintf(buf, "disabled\n");
-> +	if (dev->power.runtime_auto == false)
-> +		return sprintf(buf, "forbidden\n");
-
-The logic here isn't right.  A "disabled" device can be either 
-suspended or active.  The same holds for a "forbidden" device 
-(although the suspended-and-forbidden combination would be rather 
-unusual).  And a device can be both "disabled" and "forbidden".
-
-In addition, you need to check for the runtime error state.  In this 
-state, a device is neither active nor suspended.
-
-> +	switch (status) {
-> +	case RPM_SUSPENDED:
-> +		return sprintf(buf, "suspended\n");
-> +	case RPM_SUSPENDING:
-> +		return sprintf(buf, "to be suspended\n");
-
-Use "suspending", not "to be suspended".
-
-> +	case RPM_RESUMING:
-> +		return sprintf(buf, "to be resumed\n");
-
-Use "resuming", not "to be resumed".
-
-> +	case RPM_ACTIVE:
-> +		return sprintf(buf, "active\n");
-> +	}
-> +	return -EIO;
-> +}
-> +
-> +static DEVICE_ATTR(runtime_usage, 0444, usagecount_show, NULL);
-> +static DEVICE_ATTR(runtime_children, 0444, children_show, NULL);
-
-"runtime_children" seems like a slightly odd name.  It isn't the number 
-of children; it's the number of _active_ children.  But I don't have 
-any suggestions for a better name.
-
-Alan Stern
+Index: linux-2.6/drivers/acpi/wakeup.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/wakeup.c
++++ linux-2.6/drivers/acpi/wakeup.c
+@@ -63,17 +63,17 @@ void acpi_enable_wakeup_device(u8 sleep_
+ 	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+ 		struct acpi_device *dev =
+ 			container_of(node, struct acpi_device, wakeup_list);
++		u8 action = ACPI_GPE_ENABLE;
+ 
+ 		if (!dev->wakeup.flags.valid)
+ 			continue;
+ 
+ 		if ((!dev->wakeup.state.enabled && !dev->wakeup.prepare_count)
+ 		    || sleep_state > (u32) dev->wakeup.sleep_state)
+-			continue;
++			action = ACPI_GPE_DISABLE;
+ 
+-		/* The wake-up power should have been enabled already. */
+ 		acpi_set_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
+-				ACPI_GPE_ENABLE);
++				action);
+ 	}
+ }
+ 
