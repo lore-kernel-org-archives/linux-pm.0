@@ -1,16 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: commit 9630bdd9 changes behavior of the poweroff -
-	bug?
-Date: Tue, 13 Apr 2010 01:01:54 +0200
-Message-ID: <201004130101.54117.rjw__44196.0895820104$1271235285$gmane$org@sisk.pl>
-References: <20100401133923.GA4104@tiehlicka.suse.cz>
-	<1270848027.3071.0.camel@localhost>
-	<201004102136.43246.rjw@sisk.pl>
+From: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 1/3] [kidled]: introduce kidled.
+Date: Wed, 14 Apr 2010 11:49:56 +0200
+Message-ID: <87fx2y9xdn.fsf__34009.1104888872$1271238768$gmane$org@basil.nowhere.org>
+References: <20100413234902.29004.41655.stgit@bumblebee1.mtv.corp.google.com>
+	<20100414000823.29004.98991.stgit@bumblebee1.mtv.corp.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201004102136.43246.rjw@sisk.pl>
+In-Reply-To: <20100414000823.29004.98991.stgit@bumblebee1.mtv.corp.google.com>
+	(Salman's message of "Tue, 13 Apr 2010 17:08:33 -0700")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,58 +19,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tony Vroon <tony@linx.net>, Michal Hocko <mhocko@suse.cz>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+To: Salman <sqazi@google.com>
+Cc: ranjitm@google.com, peterz@infradead.org, linux-kernel@vger.kernel.org, csadler@google.com, kenchen@google.com, dawnchen@google.com, linux-pm@lists.linux-foundation.org, mingo@elte.hu, akpm@linux-foundation.org, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 10 April 2010, Rafael J. Wysocki wrote:
-> On Friday 09 April 2010, Tony Vroon wrote:
-> > On Fri, 2010-04-09 at 22:42 +0200, Rafael J. Wysocki wrote:
-> > > Please check if the patch below changes anything.
-> > >  drivers/acpi/wakeup.c |    4 ++--
-> > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > That didn't change the behaviour for me, sorry.
-> 
-> Well, I would be sorry if it did, because the patch removed some useful code. :-)
-> 
-> > (I made sure to go through a full power down session before trying the
-> > patched kernel)
-> 
-> Thanks for testing.  So it looks like we don't disable the GPE during power off.
-> 
-> I'll try to figure out what's going on, please stay tuned.
+Salman <sqazi@google.com> writes:
+> +
+> +static int proc_stats(struct ctl_table *table, int write,
+> +		      void __user *buffer, size_t *lenp, loff_t *ppos)
+> +{
+> +	int ret;
+> +	unsigned long stats[3];
+> +	int cpu = (int)((long)table->extra1);
+> +	struct ctl_table fake = {};
+> +
+> +	if (write)
+> +		return -EINVAL;
+> +
+> +	fake.data = stats;
+> +	fake.maxlen = 3*sizeof(unsigned long);
+> +
+> +	ret = smp_call_function_single(cpu, getstats, &stats, 1);
+> +	if (ret)
+> +		return ret;
 
-Can you please check if the patch below changes the behavior?
+Haven't read the whole thing, but do any of these stats really
+need to execute on the target CPU? They seem to be just readable
+fields.
 
-Rafael
+Or does it simply not matter because this proc call is too infrequent?
 
----
- drivers/acpi/wakeup.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Anyways global broadcasts are discouraged, there is typically
+always someone who feels their RT latency be messed up by them.
 
-Index: linux-2.6/drivers/acpi/wakeup.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/wakeup.c
-+++ linux-2.6/drivers/acpi/wakeup.c
-@@ -63,17 +63,17 @@ void acpi_enable_wakeup_device(u8 sleep_
- 	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
- 		struct acpi_device *dev =
- 			container_of(node, struct acpi_device, wakeup_list);
-+		u8 action = ACPI_GPE_ENABLE;
- 
- 		if (!dev->wakeup.flags.valid)
- 			continue;
- 
- 		if ((!dev->wakeup.state.enabled && !dev->wakeup.prepare_count)
- 		    || sleep_state > (u32) dev->wakeup.sleep_state)
--			continue;
-+			action = ACPI_GPE_DISABLE;
- 
--		/* The wake-up power should have been enabled already. */
- 		acpi_set_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
--				ACPI_GPE_ENABLE);
-+				action);
- 	}
- }
- 
+-Andi
+
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
