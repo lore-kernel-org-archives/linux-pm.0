@@ -1,11 +1,10 @@
-From: Arjan van de Ven <arjan@infradead.org>
+From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH 0/3] [idled]: Idle Cycle Injector for power
 	capping
-Date: Sat, 17 Apr 2010 10:57:21 -0700
-Message-ID: <20100417105721.63d48577__2495.90089447356$1271527141$gmane$org@infradead.org>
+Date: Sat, 17 Apr 2010 21:51:28 +0200
+Message-ID: <1271533888.1674.486.camel__31363.0256373019$1271534282$gmane$org@laptop>
 References: <20100413234902.29004.41655.stgit@bumblebee1.mtv.corp.google.com>
-	<1271317886.32749.69.camel@laptop>
-	<20100417170808.GE32634@thunk.org>
+	<1271317886.32749.69.camel@laptop> <20100417170808.GE32634@thunk.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,36 +20,15 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: tytso@mit.edu
-Cc: Salman <sqazi@google.com>, ranjitm@google.com, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, csadler@google.com, kenchen@google.com, dawnchen@google.com, linux-pm@lists.linux-foundation.org, mingo@elte.hu, akpm@linux-foundation.org
+Cc: Salman <sqazi@google.com>, akpm@linux-foundation.org, dawnchen@google.com, csadler@google.com, linux-kernel@vger.kernel.org, ranjitm@google.com, kenchen@google.com, linux-pm@lists.linux-foundation.org, mingo@elte.hu, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 17 Apr 2010 13:08:08 -0400
-tytso@mit.edu wrote:
-
-> On Thu, Apr 15, 2010 at 09:51:26AM +0200, Peter Zijlstra wrote:
-> > On Tue, 2010-04-13 at 17:08 -0700, Salman wrote:
-> > > As we discussed earlier this year, Google has an implementation
-> > > that it would like to share.  I have finally gotten around to
-> > > porting it to v2.6.33 and cleaning up the interfaces.  It is
-> > > provided in the following messages for your review.  I realize
-> > > that when we first discussed this idea, a lot of ideas were
-> > > presented for enhancing it.  Thanks alot for your suggestions.  I
-> > > haven't gotten around to implementing any of them.
-> > 
-> > .33 is way too old to submit patches against.
-> 
-> But it's not too old for review purposes; as Salman said, they were
-> sent to LKML for comments and review.  I think it's well understood
+On Sat, 2010-04-17 at 13:08 -0400, tytso@mit.edu wrote:
+> I think it's well understood
 > that when these patches are ready to be merged, they need to be
 > submitted right before the merge window opens, against a recent -rc
-> kernel.
+> kernel. 
 
-s/submitted/refreshed/ ;-)
-
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+No, they need to be in the relevant subsystem tree by then, patch
+submissions to subsystem trees right before the merge window opens are
+bound to get delayed another cycle.
