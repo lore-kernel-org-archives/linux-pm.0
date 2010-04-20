@@ -1,16 +1,17 @@
-From: Peter Zijlstra <peterz@infradead.org>
+From: Arjan van de Ven <arjan@infradead.org>
 Subject: Re: [PATCH 0/3] [idled]: Idle Cycle Injector for power
 	capping
-Date: Mon, 19 Apr 2010 21:01:41 +0200
-Message-ID: <1271703701.1676.235.camel__13665.7856092372$1271703791$gmane$org@laptop>
+Date: Mon, 19 Apr 2010 18:00:32 -0700
+Message-ID: <20100419180032.15586a90__6511.42242500118$1271725246$gmane$org@infradead.org>
 References: <20100413234902.29004.41655.stgit@bumblebee1.mtv.corp.google.com>
 	<1271317886.32749.69.camel@laptop>
 	<h2u4352991a1004191020q8200399oc8e9f7d8dee934bf@mail.gmail.com>
+	<1271703701.1676.235.camel@laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <h2u4352991a1004191020q8200399oc8e9f7d8dee934bf@mail.gmail.com>
+In-Reply-To: <1271703701.1676.235.camel@laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,46 +21,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Salman Qazi <sqazi@google.com>
-Cc: dawnchen@google.com, csadler@google.com, linux-kernel@vger.kernel.org, ranjitm@google.com, kenchen@google.com, linux-pm@lists.linux-foundation.org, mingo@elte.hu, akpm@linux-foundation.org, arjan@infradead.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Salman Qazi <sqazi@google.com>, akpm@linux-foundation.org, dawnchen@google.com, csadler@google.com, linux-kernel@vger.kernel.org, ranjitm@google.com, kenchen@google.com, linux-pm@lists.linux-foundation.org, mingo@elte.hu
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2010-04-19 at 10:20 -0700, Salman Qazi wrote:
-> On Thu, Apr 15, 2010 at 12:51 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Tue, 2010-04-13 at 17:08 -0700, Salman wrote:
-> >> As we discussed earlier this year, Google has an implementation that it
-> >> would like to share.  I have finally gotten around to porting it to
-> >> v2.6.33 and cleaning up the interfaces.  It is provided in the following
-> >> messages for your review.  I realize that when we first discussed this
-> >> idea, a lot of ideas were presented for enhancing it.  Thanks alot for
-> >> your suggestions.  I haven't gotten around to implementing any of them.
-> >
-> > .33 is way too old to submit patches against.
+On Mon, 19 Apr 2010 21:01:41 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
+
+> Right, so the IBM folks who were looking at power aware scheduling
+> were working on an interface to quantify the amount of power to save.
 > 
-> Will bump up the version when I refresh the change.
+> But their approach, was an extension of the regular power aware
+> load-balancer, which basically groups tasks onto sockets so that whole
+> sockets can go idle.
 > 
-> >
-> > That said, I really really dislike this approach, I would much rather
-> > see it tie in with power aware scheduling.
+> However Arjan explained to me that your approach, which idles the
+> whole machine, has the advantage that also memory banks can go into
+> idle mode and save power.
 > 
-> I think I can see your point:  there is potentially better information
-> about the power consumption of the CPU beyond the time it was busy.
-> But please clarify: is your complaint the lack of use of this
-> information or are you arguing for a deeper integration into the
-> scheduler (I.e. implementing it as part of the scheduler rather than
-> an independent thread) or both?
+> Still in the interest to cut back on power-saving interfaces it would
+> be nice to see if there is anything we can do to merge these things,
+> but I really haven't thought much about that yet.
 
-Right, so the IBM folks who were looking at power aware scheduling were
-working on an interface to quantify the amount of power to save.
+one correction, this is not about power *saving*, it is about power
+*capping*. Power capping is pretty much energy inefficient by
+definition (and surely in practice), but it's about dealing with
+reality about underdimensioned airconditioning or voltage rails....
 
-But their approach, was an extension of the regular power aware
-load-balancer, which basically groups tasks onto sockets so that whole
-sockets can go idle.
+Due to the reality that socket offlining isn't as good as idle
+insertion.. I rather focus on the later...
 
-However Arjan explained to me that your approach, which idles the whole
-machine, has the advantage that also memory banks can go into idle mode
-and save power.
 
-Still in the interest to cut back on power-saving interfaces it would be
-nice to see if there is anything we can do to merge these things, but I
-really haven't thought much about that yet.
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
