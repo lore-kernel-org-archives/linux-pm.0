@@ -1,15 +1,19 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [REGRESSION 2.6.34] Suspend fails in
-	pm_test=processor on Dell laptop
-Date: Wed, 21 Apr 2010 06:51:19 +0200
-Message-ID: <201004210651.20056.rjw__17304.9188954339$1271825605$gmane$org@sisk.pl>
-References: <4bcb1cf2.116bdc0a.2008.6f5a@mx.google.com>
-	<201004200533.13219.rjw@sisk.pl>
+From: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 0/3] [idled]: Idle Cycle Injector for power
+	capping
+Date: Tue, 20 Apr 2010 22:08:55 -0700
+Message-ID: <20100420220855.4619256b__12615.2862831534$1271826506$gmane$org@infradead.org>
+References: <20100413234902.29004.41655.stgit@bumblebee1.mtv.corp.google.com>
+	<1271317886.32749.69.camel@laptop>
+	<h2u4352991a1004191020q8200399oc8e9f7d8dee934bf@mail.gmail.com>
+	<1271703701.1676.235.camel@laptop>
+	<20100420045038.GB2915@dirshya.in.ibm.com>
+	<k2y4352991a1004201052lbef1fd73g714d527e872162fd@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201004200533.13219.rjw@sisk.pl>
+In-Reply-To: <k2y4352991a1004201052lbef1fd73g714d527e872162fd@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,34 +23,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ben Gamari <bgamari.foss@gmail.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+To: Salman Qazi <sqazi@google.com>
+Cc: ranjitm@google.com, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, csadler@google.com, kenchen@google.com, dawnchen@google.com, linux-pm@lists.linux-foundation.org, mingo@elte.hu, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 20 April 2010, Rafael J. Wysocki wrote:
-> On Sunday 18 April 2010, Ben Gamari wrote:
-> > Hey all,
-> > 
-> > It seems that something in the 2.6.34 merge cycle has broken suspend to RAM on
-> > my Dell Latitude D830. While suspend has been rock solid for several release
-> > cycles, as of 2.6.34-rc4 it locks up on suspend. All of the pm_test options up
-> > to processor work fine, precluding a driver issue.
-> 
-> Hmm, does the "processors" work?
+On Tue, 20 Apr 2010 10:52:58 -0700
+Salman Qazi <sqazi@google.com> wrote:
 
-Sorry, the subject says it doesn't.
+> For improving power savings in the non-SMT case, as Arjan suggested, I
+> will make the changes for heuristically aligning the injection on
+> multiple cores.  This will not be perfect, but then because it's a
+> power optimization, it doesn't have to always work.  I presume that
+> this works best when done according to the CPU hierarchy?  That is, it
+> is more beneficial to idle an entire socket than the same number of
+> cores on different sockets?
 
-> > Unfortunately, I've been unable to get any useful output from the serial
-> > console during suspend. I'll try bisecting and report back when I have more
-> > details. Let me know what else I can do to help.
-> 
-> I can't reproduce this, so it looks hardware or BIOS-related.  Or it's an
-> obscure x86 bug.
+not really; at least not for Intel CPUs.
+The problem is that due to the cache coherency, as long as one cpu in
+the system is awake, the memory controllers etc cannot go into a sleep
+mode...
 
-Does switching CPU1 on/off by echoing 0/1 to
+I would not be surprised if AMD has the same behavior... or anyone else
+with an integrated memory controller for that matter.
 
-/sys/devices/system/cpu/cpu1/online
 
-work?
-
-Rafael
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
