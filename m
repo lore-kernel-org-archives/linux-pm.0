@@ -1,13 +1,17 @@
-From: Ben Gamari <bgamari.foss@gmail.com>
+From: Nick Bowler <nbowler@elliptictech.com>
 Subject: Re: 2.6.34-rc5: Reported regressions from 2.6.33
-Date: Tue, 20 Apr 2010 19:02:43 -0700 (PDT)
-Message-ID: <4bce5cc3.966bdc0a.2ef7.fffff5de__4598.66095702655$1271866262$gmane$org@mx.google.com>
+Date: Wed, 21 Apr 2010 12:57:58 -0400
+Message-ID: <20100421165758.GA23565__4323.11807894639$1271869215$gmane$org@elliptictech.com>
 References: <deuQKFRcc0B.A.3EG.BRSzLB@tosh>
+	<20100420135636.GA10674@elliptictech.com>
+	<201004210715.38621.rjw@sisk.pl>
+	<20100421085739.GA2576@barney.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <deuQKFRcc0B.A.3EG.BRSzLB@tosh>
+Content-Disposition: inline
+In-Reply-To: <20100421085739.GA2576@barney.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,25 +21,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Jerome Glisse <glisse@freedesktop.org>
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, DRI <dri-devel@lists.sourceforge.net>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 20 Apr 2010 05:15:57 +0200 (CEST), "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> This message contains a list of some regressions from 2.6.33,
-> for which there are no fixes in the mainline known to the tracking team.
-> If any of them have been fixed already, please let us know.
+On Wed, Apr 21, 2010 at 07:15:38AM +0200, Rafael J. Wysocki wrote:
+> On Tuesday 20 April 2010, Nick Bowler wrote:
+> > Please list these two similar regressions from 2.6.33 in the r600 DRM:
+> > 
+> >  * r600 CS checker rejects GL_DEPTH_TEST w/o depth buffer:
+> >            https://bugs.freedesktop.org/show_bug.cgi?id=27571
+> > 
+> >  * r600 CS checker rejects narrow FBO renderbuffers:
+> >            https://bugs.freedesktop.org/show_bug.cgi?id=27609
 > 
-> If you know of any other unresolved regressions from 2.6.33, please let us
-> know either and we'll add them to the list.  Also, please let us know
-> if any of the entries below are invalid.
-> 
+> Do you want to me to add them as one entry or as two separate bugs?
 
-I have recently reported this suspend regression on my Dell laptop hardware.
+As upstream doesn't consider the first to be a kernel issue, I guess you
+should just list the second.
 
-References: http://lkml.org/lkml/2010/4/18/20
-Bug-report: https://bugzilla.kernel.org/show_bug.cgi?id=15820
+On 10:57 Wed 21 Apr     , Jerome Glisse wrote:
+> First one is userspace bug, i need to look into the second one.
+> ie we were lucky the hw didn't lockup without depth buffer and
+> depth test enabled.
 
-Thanks,
+OK, if the failure is due to userspace is doing Very Bad Things(tm),
+catching that seems reasonable.
 
-- Ben
+Nevertheless, even if it happened by luck, the result was (ostensibly)
+working programs that suddenly break once one "upgrades" to the latest
+kernel.  If userspace can't be fixed before 2.6.34 is released, perhaps
+a less cryptic log message would be appropriate?
+
+-- 
+Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
