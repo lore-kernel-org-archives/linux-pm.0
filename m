@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Reordering of dpm_list?
-Date: Tue, 20 Apr 2010 20:58:49 +0200
-Message-ID: <201004202058.49617.rjw@sisk.pl>
-References: <201004201643.12274.oliver@neukum.org>
+Subject: Re: [REGRESSION 2.6.34] Suspend fails in
+	pm_test=processor on Dell laptop
+Date: Wed, 21 Apr 2010 06:51:19 +0200
+Message-ID: <201004210651.20056.rjw__17304.9188954339$1271825605$gmane$org@sisk.pl>
+References: <4bcb1cf2.116bdc0a.2008.6f5a@mx.google.com>
+	<201004200533.13219.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201004201643.12274.oliver@neukum.org>
+In-Reply-To: <201004200533.13219.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,18 +19,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Ben Gamari <bgamari.foss@gmail.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 20 April 2010, Oliver Neukum wrote:
-> Hi,
+On Tuesday 20 April 2010, Rafael J. Wysocki wrote:
+> On Sunday 18 April 2010, Ben Gamari wrote:
+> > Hey all,
+> > 
+> > It seems that something in the 2.6.34 merge cycle has broken suspend to RAM on
+> > my Dell Latitude D830. While suspend has been rock solid for several release
+> > cycles, as of 2.6.34-rc4 it locks up on suspend. All of the pm_test options up
+> > to processor work fine, precluding a driver issue.
 > 
-> I am seeing rare problems with rfkill waking up before its assigned
-> btusb. Is something rearranging dpm_list in recent kernels? 2.6.32 onwards?
+> Hmm, does the "processors" work?
 
-Not that I know of right now, but it's possible.
+Sorry, the subject says it doesn't.
 
-However, I think most likely the ordering of device registration is not correct
-somewhere.
+> > Unfortunately, I've been unable to get any useful output from the serial
+> > console during suspend. I'll try bisecting and report back when I have more
+> > details. Let me know what else I can do to help.
+> 
+> I can't reproduce this, so it looks hardware or BIOS-related.  Or it's an
+> obscure x86 bug.
+
+Does switching CPU1 on/off by echoing 0/1 to
+
+/sys/devices/system/cpu/cpu1/online
+
+work?
 
 Rafael
