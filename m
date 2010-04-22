@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/9] PM: Add suspend block api.
-Date: Fri, 23 Apr 2010 12:45:41 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1004231244090.1777-100000__43801.1441649452$1272041204$gmane$org@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.1004231204450.1777-100000@iolanthe.rowland.org>
+From: Matt Reimer <mattjreimer@gmail.com>
+Subject: Re: Is it supposed to be ok to call del_gendisk while
+	userspace is frozen?
+Date: Thu, 22 Apr 2010 16:40:58 -0700
+Message-ID: <y2yf383264b1004221640rd1fca614zfa15d7e7984ab3ba__13820.5256815583$1272041590$gmane$org@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1003032142580.6963-100000@netrider.rowland.org>
+	<201003042026.30303.rjw@sisk.pl> <20100304201548.GA1341@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1004231204450.1777-100000@iolanthe.rowland.org>
+In-Reply-To: <20100304201548.GA1341@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,41 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?UTF-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 23 Apr 2010, Alan Stern wrote:
+On Thu, Mar 4, 2010 at 1:15 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+>> > My thought exactly. =A0This is the only approach that also solves the
+>> > following race:
+>> >
+>> > =A0 =A0 A driver is unloaded at the same time as a suspend starts.
+>> >
+>> > =A0 =A0 The writeback thread gets frozen.
+>> >
+>> > =A0 =A0 Then before the rmmod thread is frozen, it calls del_gendisk.
+>> >
+>> > Delaying things by means of a workqueue (or the equivalent) might also
+>> > work, but it doesn't seem as safe. =A0For example, some important
+>> > writebacks might end up getting delayed until too late.
+>
+> Delaying writebacks during sleep should be ok... That's why we do
+> sync() after userspace is frozen -- nothing really important should be
+> waiting for writeback after that point.
 
-> On Thu, 22 Apr 2010, [UTF-8] Arve Hj=C3=B8nnev=C3=A5g wrote:
+Has this been fixed, or has a consensus about how to fix this been
+achieved? I'm hitting the same problem and have some time to work on a
+fix.
 
-> > +struct suspend_blocker {
-> > +#ifdef CONFIG_SUSPEND_BLOCKERS
-> > +	atomic_t            flags;
-> > +	const char         *name;
-> > +#endif
-> =
-
-> Why is flags an atomic_t?  Are you worried that drivers might try to =
-
-> activate a suspend_blocker at the same time that it is being destroyed?
-> If this happens, does the code do the right thing?  I don't think it =
-
-> does -- if a race occurs, suspend_block() will leave flags set to the =
-
-> wrong value.  The same goes for suspend_unblock().
-> =
-
-> Since these routines don't nest, there is also the possibility of a
-> race between suspend_block() and suspend_unblock().  If the race goes
-> one way the blocker is active; the other way it isn't.  Given that such
-> problems already exist, why worry about what happens when the suspend
-> blocker is destroyed?
-
-Having now read the later patches, I see that you switch over to using =
-
-a spinlock instead of an atomic_t.  My suggestion is to use a spinlock =
-
-right from the start.  It will be less confusing.
-
-Alan Stern
+Matt
