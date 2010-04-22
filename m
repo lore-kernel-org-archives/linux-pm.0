@@ -1,15 +1,15 @@
-From: Mike Chan <mike@android.com>
-Subject: Re: [PATCH 0/3] [idled]: Idle Cycle Injector for power
-	capping
-Date: Wed, 21 Apr 2010 18:32:22 -0700
-Message-ID: <v2v8bb80c381004211832o88258fdez8e640ad9a45d11c0__47879.5815528885$1271900027$gmane$org@mail.gmail.com>
-References: <20100413234902.29004.41655.stgit@bumblebee1.mtv.corp.google.com>
-	<1271317886.32749.69.camel@laptop>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC 09/15] PM / Hibernate: user,
+	implement user_ops writer
+Date: Thu, 22 Apr 2010 05:43:48 +0200
+Message-ID: <201004220543.48943.rjw@sisk.pl>
+References: <1269361063-3341-1-git-send-email-jslaby@suse.cz>
+	<201003312229.18142.rjw@sisk.pl> <4BCF6C7F.7020807@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1271317886.32749.69.camel@laptop>
+In-Reply-To: <4BCF6C7F.7020807@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,35 +19,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Salman <sqazi@google.com>, akpm@linux-foundation.org, dawnchen@google.com, csadler@google.com, linux-kernel@vger.kernel.org, ranjitm@google.com, kenchen@google.com, linux-pm@lists.linux-foundation.org, mingo@elte.hu, arjan@infradead.org
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 15, 2010 at 12:51 AM, Peter Zijlstra <peterz@infradead.org> wro=
-te:
-> On Tue, 2010-04-13 at 17:08 -0700, Salman wrote:
->> As we discussed earlier this year, Google has an implementation that it
->> would like to share. =A0I have finally gotten around to porting it to
->> v2.6.33 and cleaning up the interfaces. =A0It is provided in the followi=
-ng
->> messages for your review. =A0I realize that when we first discussed this
->> idea, a lot of ideas were presented for enhancing it. =A0Thanks alot for
->> your suggestions. =A0I haven't gotten around to implementing any of them.
->
-> .33 is way too old to submit patches against.
->
-> That said, I really really dislike this approach, I would much rather
-> see it tie in with power aware scheduling.
+On Wednesday 21 April 2010, Jiri Slaby wrote:
+> On 03/31/2010 10:29 PM, Rafael J. Wysocki wrote:
+> > On Wednesday 31 March 2010, Jiri Slaby wrote:
+> >> On 03/30/2010 10:50 PM, Rafael J. Wysocki wrote:
+> >>> So, I definitely would like to see numbers.
+> >>
+> >> With the patch attached, I get similar results for
+> >> uncompressed image -> user.c -> s2disk (compress+threads)
+> >> compressed image -> user.c -> s2disk (none of compress+threads)
+> >>
+> >> BUT note that there are differences in pages _copied_ in the "user.c ->
+> >> s2disk" phase. Compression was about 40 %. So in the former case 100000
+> >> pages went through and in the latter one only ~ 38000. So presumably
+> >> there will be savings if the pages are compressed in the kernel in the
+> >> save-image phase instead of in userspace.
+> >>
+> >> I'll test (after I hack that up) also the case of image compression when
+> >> saving the image and let you know.
+> >>
+> >> It was tested on a machine with openSUSE factory with init 5 with KDE 4.
+> >> The memory consumption was ~ 400M (100000 pages) after boot every time.
+> >> Hibernation lasted 12-13s in both cases.
+> > 
+> > So that's pretty much the same and I don't think feeding compressed images to
+> > s2disk is not worth the effort.  Let's assume s2disk will always receive a raw
+> > image (that will make it backwards compatible too).
+> 
+> Hi.
+> 
+> Yes, I did it solely for comparison purposes.
+> 
+> Now, with the patch attached (depending on either COMPRESS_IMAGE or
+> COMPRESS_IMAGE1 defined) I tried to compare compression while doing
+> atomic copy with compression done when image storage takes place. The
+> latter outperformed the former a bit. I did 8 measurements with the
+> setup same as above. The average for them is 9684.32 and 10855.07 stored
+> raw (uncompressed) pages per second. That is 4.5M/s more.
+> 
+> There is a sheet with the numbers at:
+> http://spreadsheets.google.com/ccc?key=0AvVn7xYA1DnodHFFYzg3Y2tpMUl5NFlURXRtR0xQdmc&hl=en
 
-I may have missed this on lkml but are there any on-going community
-efforts to power aware scheduling?
+Thanks for doing that work!
 
--- Mike
+So clearly from performance POV it is better to compress while saving.
 
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at =A0http://www.tux.org/lkml/
->
+Rafael
