@@ -1,18 +1,14 @@
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/3] [idled]: Idle Cycle Injector for power
-	capping
-Date: Fri, 23 Apr 2010 00:32:08 +0530
-Message-ID: <20100422190208.GD10750__26877.8527890847$1271963031$gmane$org@dirshya.in.ibm.com>
-References: <20100413234902.29004.41655.stgit@bumblebee1.mtv.corp.google.com>
-	<1271317886.32749.69.camel@laptop>
-	<v2v8bb80c381004211832o88258fdez8e640ad9a45d11c0@mail.gmail.com>
-Reply-To: svaidy@linux.vnet.ibm.com
+From: Greg KH <greg@kroah.com>
+Subject: Re: platform_bus: Allow runtime PM by default
+Date: Thu, 22 Apr 2010 16:53:53 -0700
+Message-ID: <20100422235353.GA16310@kroah.com>
+References: <1269625370-17754-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <v2v8bb80c381004211832o88258fdez8e640ad9a45d11c0@mail.gmail.com>
+In-Reply-To: <1269625370-17754-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,43 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mike Chan <mike@android.com>
-Cc: Salman <sqazi@google.com>, akpm@linux-foundation.org, ranjitm@google.com, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, csadler@google.com, kenchen@google.com, dawnchen@google.com, linux-pm@lists.linux-foundation.org, mingo@elte.hu, arjan@infradead.org
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-pm@lists.linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-* Mike Chan <mike@android.com> [2010-04-21 18:32:22]:
-
-> On Thu, Apr 15, 2010 at 12:51 AM, Peter Zijlstra <peterz@infradead.org> w=
-rote:
-> > On Tue, 2010-04-13 at 17:08 -0700, Salman wrote:
-> >> As we discussed earlier this year, Google has an implementation that it
-> >> would like to share. =A0I have finally gotten around to porting it to
-> >> v2.6.33 and cleaning up the interfaces. =A0It is provided in the follo=
-wing
-> >> messages for your review. =A0I realize that when we first discussed th=
-is
-> >> idea, a lot of ideas were presented for enhancing it. =A0Thanks alot f=
-or
-> >> your suggestions. =A0I haven't gotten around to implementing any of th=
-em.
-> >
-> > .33 is way too old to submit patches against.
-> >
-> > That said, I really really dislike this approach, I would much rather
-> > see it tie in with power aware scheduling.
-> =
-
-> I may have missed this on lkml but are there any on-going community
-> efforts to power aware scheduling?
-
-Yes, mostly in power aware task placement and task consolidation in
-large SMP systems and also some timer consolidation to improve low
-power idle residency.
-
-There are some tuning and optimizations in cpuidle governor that is
-related to power management but not core scheduler.
-
-As Peter mentioned, most of them may not apply to uni processor
-systems.
-
---Vaidy
+T24gRnJpLCBNYXIgMjYsIDIwMTAgYXQgMDU6NDI6NTBQTSArMDAwMCwgTWFyayBCcm93biB3cm90
+ZToKPiAKPiBDdXJyZW50bHkgdGhlIGRlZmF1bHQgcnVudGltZSBQTSBjYWxsYmFja3MgZm9yIHBs
+YXRmb3JtIGRldmljZXMgcmV0dXJuCj4gLUVOT1NZUywgcHJldmVudGluZyB0aGUgdXNlIG9mIHJ1
+bnRpbWUgUE0gcGxhdGZvcm1zIHVudGlsIHRoZXkgaGF2ZQo+IHByb3ZpZGVkIGF0IGxlYXN0IGEg
+ZGVmYXVsdCBpbXBsZW1lbnRhdGlvbi4gVGhpcyBoaW5kZXJzIHRoZSB1c2Ugb2YKPiBydW50aW1l
+IFBNIGJ5IGRldmljZXMgd2hpY2ggd29yayB3aXRoIG1hbnkgcGxhdGZvcm1zIHN1Y2ggYXMgbWVt
+b3J5Cj4gbWFwcGVkIGRldmljZXMsIE1GRHMgYW5kIG9uIGNoaXAgSVBzIHNoYXJlZCBieSBtdWx0
+aXBsZSBhcmNoaXRlY3R1cmVzLgo+IAo+IENoYW5nZSB0aGUgZGVmYXVsdCBpbXBsZW1lbnRhdGlv
+biB0byB0aGUgc3RhbmRhcmQgcG1fZ2VuZXJpY19ydW50aW1lCj4gb25lLCBhbGxvd2luZyBkcml2
+ZXJzIHRvIHVzZSBydW50aW1lIFBNIHdpdGhvdXQgcGVyLWFyY2hpdGVjdHVyZQo+IGNoYW5nZXMu
+CgpUaGF0J3MgbmljZSwgYnV0IGl0IGJyZWFrcyB0aGUgYnVpbGQgb24gbXkgc3lzdGVtOgogIEND
+ICAgICAgZHJpdmVycy9iYXNlL3BsYXRmb3JtLm8KZHJpdmVycy9iYXNlL3BsYXRmb3JtLmM6IElu
+IGZ1bmN0aW9uIOKAmHBsYXRmb3JtX3BtX3J1bnRpbWVfc3VzcGVuZOKAmToKZHJpdmVycy9iYXNl
+L3BsYXRmb3JtLmM6OTcwOiBlcnJvcjogaW1wbGljaXQgZGVjbGFyYXRpb24gb2YgZnVuY3Rpb24g
+4oCYcG1fZ2VuZXJpY19ydW50aW1lX3N1c3BlbmTigJkKZHJpdmVycy9iYXNlL3BsYXRmb3JtLmM6
+IEluIGZ1bmN0aW9uIOKAmHBsYXRmb3JtX3BtX3J1bnRpbWVfcmVzdW1l4oCZOgpkcml2ZXJzL2Jh
+c2UvcGxhdGZvcm0uYzo5NzU6IGVycm9yOiBpbXBsaWNpdCBkZWNsYXJhdGlvbiBvZiBmdW5jdGlv
+biDigJhwbV9nZW5lcmljX3J1bnRpbWVfcmVzdW1l4oCZCmRyaXZlcnMvYmFzZS9wbGF0Zm9ybS5j
+OiBJbiBmdW5jdGlvbiDigJhwbGF0Zm9ybV9wbV9ydW50aW1lX2lkbGXigJk6CmRyaXZlcnMvYmFz
+ZS9wbGF0Zm9ybS5jOjk4MDogZXJyb3I6IGltcGxpY2l0IGRlY2xhcmF0aW9uIG9mIGZ1bmN0aW9u
+IOKAmHBtX2dlbmVyaWNfcnVudGltZV9pZGxl4oCZCm1ha2VbMV06ICoqKiBbZHJpdmVycy9iYXNl
+L3BsYXRmb3JtLm9dIEVycm9yIDEKbWFrZTogKioqIFtfbW9kdWxlX2RyaXZlcnMvYmFzZV0gRXJy
+b3IgMgoKQ2FyZSB0byBmaXggaXQgdXA/Cgp0aGFua3MsCgpncmVnIGstaApfX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QK
+bGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1m
+b3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
