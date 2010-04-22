@@ -1,13 +1,18 @@
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [patch] pm-qos refresh
-Date: Thu, 22 Apr 2010 08:52:31 -0700
-Message-ID: <20100422085231.3b8d1f43.randy.dunlap__20697.9686547585$1271951750$gmane$org@oracle.com>
-References: <20100422144158.GA22565@linux.intel.com>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/3] [idled]: Idle Cycle Injector for power
+	capping
+Date: Fri, 23 Apr 2010 00:32:08 +0530
+Message-ID: <20100422190208.GD10750__26877.8527890847$1271963031$gmane$org@dirshya.in.ibm.com>
+References: <20100413234902.29004.41655.stgit@bumblebee1.mtv.corp.google.com>
+	<1271317886.32749.69.camel@laptop>
+	<v2v8bb80c381004211832o88258fdez8e640ad9a45d11c0@mail.gmail.com>
+Reply-To: svaidy@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100422144158.GA22565@linux.intel.com>
+Content-Disposition: inline
+In-Reply-To: <v2v8bb80c381004211832o88258fdez8e640ad9a45d11c0@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,127 +22,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: mgross@linux.intel.com
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>
+To: Mike Chan <mike@android.com>
+Cc: Salman <sqazi@google.com>, akpm@linux-foundation.org, ranjitm@google.com, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, csadler@google.com, kenchen@google.com, dawnchen@google.com, linux-pm@lists.linux-foundation.org, mingo@elte.hu, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 22 Apr 2010 07:41:58 -0700 mark gross wrote:
+* Mike Chan <mike@android.com> [2010-04-21 18:32:22]:
 
-> From 72a6d704fd27639a8fb6ce4499a87ac1804a2551 Mon Sep 17 00:00:00 2001
-> From: mgross <mark.gross@gmail.com>
-> Date: Sat, 13 Mar 2010 08:18:36 -0800
-> Subject: [PATCH 1/2] PM_QOS to use handle based list implementation and exported function name changes to be more descriptive of what is actually happening.
-> 
-> 
-> Signed-off-by: markgross <mark.gross@intel.com>
-> ---
->  Documentation/power/pm_qos_interface.txt |   44 +++---
->  drivers/acpi/processor_idle.c            |    2 +-
->  drivers/cpuidle/governors/ladder.c       |    2 +-
->  drivers/cpuidle/governors/menu.c         |    2 +-
->  drivers/net/e1000e/netdev.c              |   22 ++--
->  drivers/net/igbvf/netdev.c               |    6 +-
->  drivers/net/wireless/ipw2x00/ipw2100.c   |   11 +-
->  include/linux/netdevice.h                |    4 +
->  include/linux/pm_qos_params.h            |   14 +-
->  include/sound/pcm.h                      |    3 +-
->  kernel/pm_qos_params.c                   |  214 ++++++++++++++---------------
->  net/mac80211/mlme.c                      |    2 +-
->  net/mac80211/scan.c                      |    2 +-
->  sound/core/pcm.c                         |    3 -
->  sound/core/pcm_native.c                  |   14 +-
->  15 files changed, 175 insertions(+), 170 deletions(-)
-> 
-> diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
-> index c40866e..2138afb 100644
-> --- a/Documentation/power/pm_qos_interface.txt
-> +++ b/Documentation/power/pm_qos_interface.txt
-> @@ -18,44 +18,46 @@ and pm_qos_params.h.  This is done because having the available parameters
->  being runtime configurable or changeable from a driver was seen as too easy to
->  abuse.
->  
-> -For each parameter a list of performance requirements is maintained along with
-> +For each parameter a list of performance requests is maintained along with
->  an aggregated target value.  The aggregated target value is updated with
-> -changes to the requirement list or elements of the list.  Typically the
-> -aggregated target value is simply the max or min of the requirement values held
-> +changes to the request list or elements of the list.  Typically the
-> +aggregated target value is simply the max or min of the request values held
->  in the parameter list elements.
->  
->  From kernel mode the use of this interface is simple:
-> -pm_qos_add_requirement(param_id, name, target_value):
-> -Will insert a named element in the list for that identified PM_QOS parameter
-> -with the target value.  Upon change to this list the new target is recomputed
-> -and any registered notifiers are called only if the target value is now
-> -different.
->  
-> -pm_qos_update_requirement(param_id, name, new_target_value):
-> -Will search the list identified by the param_id for the named list element and
-> -then update its target value, calling the notification tree if the aggregated
-> -target is changed.  with that name is already registered.
-> +handle = pm_qos_add_request(param_class, target_value):
-> +Will insert a element in the list for that identified PM_QOS class with the
+> On Thu, Apr 15, 2010 at 12:51 AM, Peter Zijlstra <peterz@infradead.org> w=
+rote:
+> > On Tue, 2010-04-13 at 17:08 -0700, Salman wrote:
+> >> As we discussed earlier this year, Google has an implementation that it
+> >> would like to share. =A0I have finally gotten around to porting it to
+> >> v2.6.33 and cleaning up the interfaces. =A0It is provided in the follo=
+wing
+> >> messages for your review. =A0I realize that when we first discussed th=
+is
+> >> idea, a lot of ideas were presented for enhancing it. =A0Thanks alot f=
+or
+> >> your suggestions. =A0I haven't gotten around to implementing any of th=
+em.
+> >
+> > .33 is way too old to submit patches against.
+> >
+> > That said, I really really dislike this approach, I would much rather
+> > see it tie in with power aware scheduling.
+> =
 
-               an element into
+> I may have missed this on lkml but are there any on-going community
+> efforts to power aware scheduling?
 
-> +target value.  Upon change to this list the new target is recomputed and any
-> +registered notifiers are called only if the target value is now different.
-> +Clients of pm_qos need to save the returned handle.
->  
-> -pm_qos_remove_requirement(param_id, name):
-> -Will search the identified list for the named element and remove it, after
-> -removal it will update the aggregate target and call the notification tree if
-> -the target was changed as a result of removing the named requirement.
-> +void pm_qos_update_request(handle, new_target_value):
-> +Will update list element pointed to by the handle with the new target value.
+Yes, mostly in power aware task placement and task consolidation in
+large SMP systems and also some timer consolidation to improve low
+power idle residency.
 
-               the list element                                          value
+There are some tuning and optimizations in cpuidle governor that is
+related to power management but not core scheduler.
 
-> +And recompute the new aggregated target, calling the notification tree if the
+As Peter mentioned, most of them may not apply to uni processor
+systems.
 
-   and
-
-> +target is changed.
-> +
-> +void pm_qos_remove_request(handle):
-> +Will remove the element, after removal it will update the aggregate target and
-
-                   element. After
-
-> +call the notification tree if the target was changed as a result of removing
-> +the request.
->  
->  
->  From user mode:
-> -Only processes can register a pm_qos requirement.  To provide for automatic
-> +Only processes can register a pm_qos request.  To provide for automatic
->  cleanup for process the interface requires the process to register its
-
-           of a process,
-
-> -parameter requirements in the following way:
-> +parameter requests in the following way:
->  
->  To register the default pm_qos target for the specific parameter, the process
->  must open one of /dev/[cpu_dma_latency, network_latency, network_throughput]
->  
->  As long as the device node is held open that process has a registered
-> -requirement on the parameter.  The name of the requirement is "process_<PID>"
-> -derived from the current->pid from within the open system call.
-> +request on the parameter.
->  
->  To change the requested target value the process needs to write a s32 value to
-
-                                                                   an s32
-
-> -the open device node.  This translates to a pm_qos_update_requirement call.
-> +the open device node.  Alternatively the user mode program could write a hex
-> +string for the value using 10 char long format e.g. "0x12345678".  This
-> +translates to a pm_qos_update_request call.
->  
->  To remove the user mode request for a target value simply close the device
->  node.
-
----
-~Randy
+--Vaidy
