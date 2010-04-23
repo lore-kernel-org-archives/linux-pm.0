@@ -1,14 +1,16 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 0/9] Suspend block api (version 4)
-Date: Thu, 22 Apr 2010 21:39:40 -0700
-Message-ID: <20100423043940.GB4198__33605.4023741328$1271998068$gmane$org@kroah.com>
-References: <1271984938-13920-1-git-send-email-arve@android.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Is it supposed to be ok to call del_gendisk while
+	userspace is frozen?
+Date: Fri, 23 Apr 2010 07:17:07 +0200
+Message-ID: <201004230717.07086.rjw__31467.730124905$1271999974$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1003032142580.6963-100000@netrider.rowland.org>
+	<20100304201548.GA1341@elf.ucw.cz>
+	<y2yf383264b1004221640rd1fca614zfa15d7e7984ab3ba@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1271984938-13920-1-git-send-email-arve@android.com>
+In-Reply-To: <y2yf383264b1004221640rd1fca614zfa15d7e7984ab3ba@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,21 +20,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj??nnev??g <arve@android.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Matt Reimer <mattjreimer@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 22, 2010 at 06:08:49PM -0700, Arve Hj??nnev??g wrote:
-> This patch series adds a suspend-block api that provides the same
-> functionality as the android wakelock api. The code is mostly the
-> same as version 3 posted last year, but the main entry point has
-> changed back to /sys/power/state with a new /sys/power/policy to
-> alter its behavior. Timeout support is not included in this initial
-> patchset.
+On Friday 23 April 2010, Matt Reimer wrote:
+> On Thu, Mar 4, 2010 at 1:15 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> > Hi!
+> >
+> >> > My thought exactly.  This is the only approach that also solves the
+> >> > following race:
+> >> >
+> >> >     A driver is unloaded at the same time as a suspend starts.
+> >> >
+> >> >     The writeback thread gets frozen.
+> >> >
+> >> >     Then before the rmmod thread is frozen, it calls del_gendisk.
+> >> >
+> >> > Delaying things by means of a workqueue (or the equivalent) might also
+> >> > work, but it doesn't seem as safe.  For example, some important
+> >> > writebacks might end up getting delayed until too late.
+> >
+> > Delaying writebacks during sleep should be ok... That's why we do
+> > sync() after userspace is frozen -- nothing really important should be
+> > waiting for writeback after that point.
+> 
+> Has this been fixed,
 
-Yeah!  Thanks for respining this and pushing it out.  This should help
-lots of drivers get merged after this is in-tree.
+No, it hasn't.
 
-thanks again,
+> or has a consensus about how to fix this been
+> achieved? I'm hitting the same problem and have some time to work on a
+> fix.
 
-greg k-h
+Generally, it looks like del_gendisk should thaw writeback threads, but not
+during suspend, only during resume.
+
+Rafael
