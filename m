@@ -1,22 +1,16 @@
-From: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH 7/9] PM: Add suspend blocking work.
-Date: Fri, 23 Apr 2010 14:20:32 +0200
-Message-ID: <20100423122032.GA23544__21481.967639602$1272025747$gmane$org@redhat.com>
-References: <1271984938-13920-1-git-send-email-arve@android.com>
-	<1271984938-13920-2-git-send-email-arve@android.com>
-	<1271984938-13920-3-git-send-email-arve@android.com>
-	<1271984938-13920-4-git-send-email-arve@android.com>
-	<1271984938-13920-5-git-send-email-arve@android.com>
-	<1271984938-13920-6-git-send-email-arve@android.com>
-	<1271984938-13920-7-git-send-email-arve@android.com>
-	<1271984938-13920-8-git-send-email-arve@android.com>
-	<4BD1576E.5070401@kernel.org>
+From: Greg KH <gregkh@suse.de>
+Subject: Re: platform_bus: Allow runtime PM by default
+Date: Fri, 23 Apr 2010 08:05:28 -0700
+Message-ID: <20100423150528.GB7648__19126.3479450301$1272035475$gmane$org@suse.de>
+References: <1269625370-17754-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<20100422235353.GA16310@kroah.com>
+	<20100423105750.GA27232@rakim.wolfsonmicro.main>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <4BD1576E.5070401@kernel.org>
+In-Reply-To: <20100423105750.GA27232@rakim.wolfsonmicro.main>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,34 +20,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
-Cc: Dmitri Vorobiev <dmitri.vorobiev@movial.com>, Andi Kleen <ak@linux.intel.com>, Jiri Kosina <jkosina@suse.cz>, Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 04/23, Tejun Heo wrote:
->
-> On 04/23/2010 03:08 AM, Arve Hj=F8nnev=E5g wrote:
-> > Allow work to be queued that will block suspend while it is pending
-> > or executing. To get the same functionality in the calling code often
-> > requires a separate suspend_blocker for pending and executing work, or
-> > additional state and locking.
->
-> Hmm... I think this can be implemented as pure wrapper around
-> workqueue instead of injecting a flag and code into workqueue core.
-> Adding @fn field to suspend_blocking_work struct and using a custom
-> work function to call it and then invoke suspend_unblock() should be
-> enough, right?  Oh, dedicated queue functions will be needed too.  I
-> don't think it's wise to meddle with workqueue core code for this.
+On Fri, Apr 23, 2010 at 11:57:51AM +0100, Mark Brown wrote:
+> On Thu, Apr 22, 2010 at 04:53:53PM -0700, Greg KH wrote:
+> > On Fri, Mar 26, 2010 at 05:42:50PM +0000, Mark Brown wrote:
+> 
+> > > Change the default implementation to the standard pm_generic_runtime
+> > > one, allowing drivers to use runtime PM without per-architecture
+> > > changes.
+> 
+> > That's nice, but it breaks the build on my system:
+> >   CC      drivers/base/platform.o
+> > drivers/base/platform.c: In function ???platform_pm_runtime_suspend???:
+> > drivers/base/platform.c:970: error: implicit declaration of function ???pm_generic_runtime_suspend???
+> > drivers/base/platform.c: In function ???platform_pm_runtime_resume???:
+> > drivers/base/platform.c:975: error: implicit declaration of function ???pm_generic_runtime_resume???
+> > drivers/base/platform.c: In function ???platform_pm_runtime_idle???:
+> > drivers/base/platform.c:980: error: implicit declaration of function ???pm_generic_runtime_idle???
+> > make[1]: *** [drivers/base/platform.o] Error 1
+> > make: *** [_module_drivers/base] Error 2
+> 
+> > Care to fix it up?
+> 
+> This depends on "PM: Provide generic subsystem-level callbacks" which is
+> in Linus' tree - which kernel version are you building against and with
+> what config?  Things work fine for me in -next...
 
-Completely agreed. The patch adds very "strange" hacks into workqueue
-code to solve the very specific problems.
+I was using Linus's latest tree as of yesterday when this failed.  Are
+you relying on something in -next that is not in Linus's tree?
 
+thanks,
 
-Besides, the patch doesn't look right. suspend_unblock() can be called
-twice if you use cancel_work(). Perhaps this is not a problem, I dunno.
-WORK_STRUCT_SUSPEND_BLOCKING needs to ensure that cpu_workqueue_struct
-has a proper alignment. The unblock code in run_workqueue() is racy,
-it can unblock after the work was queued on another CPU, cwq->lock can't
-help.
-
-Oleg.
+greg k-h
