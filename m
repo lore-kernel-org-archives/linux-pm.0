@@ -1,15 +1,22 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: platform_bus: Allow runtime PM by default
-Date: Fri, 23 Apr 2010 11:57:51 +0100
-Message-ID: <20100423105750.GA27232__22718.5423988432$1272020372$gmane$org@rakim.wolfsonmicro.main>
-References: <1269625370-17754-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<20100422235353.GA16310@kroah.com>
+From: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH 7/9] PM: Add suspend blocking work.
+Date: Fri, 23 Apr 2010 14:20:32 +0200
+Message-ID: <20100423122032.GA23544__21481.967639602$1272025747$gmane$org@redhat.com>
+References: <1271984938-13920-1-git-send-email-arve@android.com>
+	<1271984938-13920-2-git-send-email-arve@android.com>
+	<1271984938-13920-3-git-send-email-arve@android.com>
+	<1271984938-13920-4-git-send-email-arve@android.com>
+	<1271984938-13920-5-git-send-email-arve@android.com>
+	<1271984938-13920-6-git-send-email-arve@android.com>
+	<1271984938-13920-7-git-send-email-arve@android.com>
+	<1271984938-13920-8-git-send-email-arve@android.com>
+	<4BD1576E.5070401@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20100422235353.GA16310@kroah.com>
+In-Reply-To: <4BD1576E.5070401@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,31 +26,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <greg@kroah.com>
-Cc: linux-pm@lists.linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: Dmitri Vorobiev <dmitri.vorobiev@movial.com>, Andi Kleen <ak@linux.intel.com>, Jiri Kosina <jkosina@suse.cz>, Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBBcHIgMjIsIDIwMTAgYXQgMDQ6NTM6NTNQTSAtMDcwMCwgR3JlZyBLSCB3cm90ZToK
-PiBPbiBGcmksIE1hciAyNiwgMjAxMCBhdCAwNTo0Mjo1MFBNICswMDAwLCBNYXJrIEJyb3duIHdy
-b3RlOgoKPiA+IENoYW5nZSB0aGUgZGVmYXVsdCBpbXBsZW1lbnRhdGlvbiB0byB0aGUgc3RhbmRh
-cmQgcG1fZ2VuZXJpY19ydW50aW1lCj4gPiBvbmUsIGFsbG93aW5nIGRyaXZlcnMgdG8gdXNlIHJ1
-bnRpbWUgUE0gd2l0aG91dCBwZXItYXJjaGl0ZWN0dXJlCj4gPiBjaGFuZ2VzLgoKPiBUaGF0J3Mg
-bmljZSwgYnV0IGl0IGJyZWFrcyB0aGUgYnVpbGQgb24gbXkgc3lzdGVtOgo+ICAgQ0MgICAgICBk
-cml2ZXJzL2Jhc2UvcGxhdGZvcm0ubwo+IGRyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jOiBJbiBmdW5j
-dGlvbiDigJhwbGF0Zm9ybV9wbV9ydW50aW1lX3N1c3BlbmTigJk6Cj4gZHJpdmVycy9iYXNlL3Bs
-YXRmb3JtLmM6OTcwOiBlcnJvcjogaW1wbGljaXQgZGVjbGFyYXRpb24gb2YgZnVuY3Rpb24g4oCY
-cG1fZ2VuZXJpY19ydW50aW1lX3N1c3BlbmTigJkKPiBkcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYzog
-SW4gZnVuY3Rpb24g4oCYcGxhdGZvcm1fcG1fcnVudGltZV9yZXN1bWXigJk6Cj4gZHJpdmVycy9i
-YXNlL3BsYXRmb3JtLmM6OTc1OiBlcnJvcjogaW1wbGljaXQgZGVjbGFyYXRpb24gb2YgZnVuY3Rp
-b24g4oCYcG1fZ2VuZXJpY19ydW50aW1lX3Jlc3VtZeKAmQo+IGRyaXZlcnMvYmFzZS9wbGF0Zm9y
-bS5jOiBJbiBmdW5jdGlvbiDigJhwbGF0Zm9ybV9wbV9ydW50aW1lX2lkbGXigJk6Cj4gZHJpdmVy
-cy9iYXNlL3BsYXRmb3JtLmM6OTgwOiBlcnJvcjogaW1wbGljaXQgZGVjbGFyYXRpb24gb2YgZnVu
-Y3Rpb24g4oCYcG1fZ2VuZXJpY19ydW50aW1lX2lkbGXigJkKPiBtYWtlWzFdOiAqKiogW2RyaXZl
-cnMvYmFzZS9wbGF0Zm9ybS5vXSBFcnJvciAxCj4gbWFrZTogKioqIFtfbW9kdWxlX2RyaXZlcnMv
-YmFzZV0gRXJyb3IgMgoKPiBDYXJlIHRvIGZpeCBpdCB1cD8KClRoaXMgZGVwZW5kcyBvbiAiUE06
-IFByb3ZpZGUgZ2VuZXJpYyBzdWJzeXN0ZW0tbGV2ZWwgY2FsbGJhY2tzIiB3aGljaCBpcwppbiBM
-aW51cycgdHJlZSAtIHdoaWNoIGtlcm5lbCB2ZXJzaW9uIGFyZSB5b3UgYnVpbGRpbmcgYWdhaW5z
-dCBhbmQgd2l0aAp3aGF0IGNvbmZpZz8gIFRoaW5ncyB3b3JrIGZpbmUgZm9yIG1lIGluIC1uZXh0
-Li4uCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4
-LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRw
-czovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On 04/23, Tejun Heo wrote:
+>
+> On 04/23/2010 03:08 AM, Arve Hj=F8nnev=E5g wrote:
+> > Allow work to be queued that will block suspend while it is pending
+> > or executing. To get the same functionality in the calling code often
+> > requires a separate suspend_blocker for pending and executing work, or
+> > additional state and locking.
+>
+> Hmm... I think this can be implemented as pure wrapper around
+> workqueue instead of injecting a flag and code into workqueue core.
+> Adding @fn field to suspend_blocking_work struct and using a custom
+> work function to call it and then invoke suspend_unblock() should be
+> enough, right?  Oh, dedicated queue functions will be needed too.  I
+> don't think it's wise to meddle with workqueue core code for this.
+
+Completely agreed. The patch adds very "strange" hacks into workqueue
+code to solve the very specific problems.
+
+
+Besides, the patch doesn't look right. suspend_unblock() can be called
+twice if you use cancel_work(). Perhaps this is not a problem, I dunno.
+WORK_STRUCT_SUSPEND_BLOCKING needs to ensure that cpu_workqueue_struct
+has a proper alignment. The unblock code in run_workqueue() is racy,
+it can unblock after the work was queued on another CPU, cwq->lock can't
+help.
+
+Oleg.
