@@ -1,14 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 2/9] PM: suspend_block: Add driver to access
- suspend blockers from user-space
-Date: Fri, 23 Apr 2010 12:43:46 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1004231242460.1777-100000__17586.8717408322$1272041086$gmane$org@iolanthe.rowland.org>
-References: <20100423084349.GC1573@ucw.cz>
+Subject: Re: [PATCH 1/9] PM: Add suspend block api.
+Date: Fri, 23 Apr 2010 12:45:41 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1004231244090.1777-100000__43801.1441649452$1272041204$gmane$org@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.1004231204450.1777-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100423084349.GC1573@ucw.cz>
+In-Reply-To: <Pine.LNX.4.44L0.1004231204450.1777-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,40 +17,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org
+To: =?UTF-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 23 Apr 2010, Pavel Machek wrote:
+On Fri, 23 Apr 2010, Alan Stern wrote:
 
-> Hi!
-> 
-> > Add a misc device, "suspend_blocker", that allows user-space processes
-> > to block auto suspend. The device has ioctls to create a suspend_blocker,
-> > and to block and unblock suspend. To delete the suspend_blocker, close
-> > the device.
-> > 
-> > Signed-off-by: Arve Hj??nnev??g <arve@android.com>
-> 
-> > --- a/Documentation/power/suspend-blockers.txt
-> > +++ b/Documentation/power/suspend-blockers.txt
-> > @@ -95,3 +95,20 @@ if (list_empty(&state->pending_work))
-> >  else
-> >  	suspend_block(&state->suspend_blocker);
-> >  
-> > +User-space API
-> > +==============
-> > +
-> > +To create a suspend_blocker from user-space, open the suspend_blocker device:
-> > +    fd = open("/dev/suspend_blocker", O_RDWR | O_CLOEXEC);
-> > +then call:
-> > +    ioctl(fd, SUSPEND_BLOCKER_IOCTL_INIT(strlen(name)), name);
-> 
-> 
-> This seems like very wrong idea -- it uses different ioctl number for
-> each length AFAICT.
+> On Thu, 22 Apr 2010, [UTF-8] Arve Hj=C3=B8nnev=C3=A5g wrote:
 
-How about specifying the name by an ordinary write() call instead of
-by an ioctl()?
+> > +struct suspend_blocker {
+> > +#ifdef CONFIG_SUSPEND_BLOCKERS
+> > +	atomic_t            flags;
+> > +	const char         *name;
+> > +#endif
+> =
+
+> Why is flags an atomic_t?  Are you worried that drivers might try to =
+
+> activate a suspend_blocker at the same time that it is being destroyed?
+> If this happens, does the code do the right thing?  I don't think it =
+
+> does -- if a race occurs, suspend_block() will leave flags set to the =
+
+> wrong value.  The same goes for suspend_unblock().
+> =
+
+> Since these routines don't nest, there is also the possibility of a
+> race between suspend_block() and suspend_unblock().  If the race goes
+> one way the blocker is active; the other way it isn't.  Given that such
+> problems already exist, why worry about what happens when the suspend
+> blocker is destroyed?
+
+Having now read the later patches, I see that you switch over to using =
+
+a spinlock instead of an atomic_t.  My suggestion is to use a spinlock =
+
+right from the start.  It will be less confusing.
 
 Alan Stern
