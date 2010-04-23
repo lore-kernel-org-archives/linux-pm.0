@@ -1,19 +1,17 @@
-From: Nick Bowler <nbowler@elliptictech.com>
-Subject: Re: 2.6.34-rc5: Reported regressions from 2.6.33
-Date: Fri, 23 Apr 2010 11:31:45 -0400
-Message-ID: <20100423153145.GA6072__37521.8321024024$1272036878$gmane$org@elliptictech.com>
-References: <deuQKFRcc0B.A.3EG.BRSzLB@tosh>
-	<20100420135636.GA10674@elliptictech.com>
-	<201004210715.38621.rjw@sisk.pl>
-	<20100421085739.GA2576@barney.localdomain>
-	<20100421165758.GA23565@elliptictech.com>
-	<20100423102338.GA3151@barney.localdomain>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: platform_bus: Allow runtime PM by default
+Date: Fri, 23 Apr 2010 16:57:21 +0100
+Message-ID: <20100423155721.GG27232__21158.2005060793$1272038321$gmane$org@rakim.wolfsonmicro.main>
+References: <1269625370-17754-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<20100422235353.GA16310@kroah.com>
+	<20100423105750.GA27232@rakim.wolfsonmicro.main>
+	<20100423150528.GB7648@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20100423102338.GA3151@barney.localdomain>
+In-Reply-To: <20100423150528.GB7648@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,24 +21,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jerome Glisse <glisse@freedesktop.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 12:23 Fri 23 Apr     , Jerome Glisse wrote:
-> On Wed, Apr 21, 2010 at 12:57:58PM -0400, Nick Bowler wrote:
-> > OK, if the failure is due to userspace is doing Very Bad Things(tm),
-> > catching that seems reasonable.
-> > 
-> > Nevertheless, even if it happened by luck, the result was (ostensibly)
-> > working programs that suddenly break once one "upgrades" to the latest
-> > kernel.  If userspace can't be fixed before 2.6.34 is released, perhaps
-> > a less cryptic log message would be appropriate?
-> 
-> I pushed fix into mesa for the depth issue i will look into the other
-> one today and likely push kernel fix.
+On Fri, Apr 23, 2010 at 08:05:28AM -0700, Greg KH wrote:
+> On Fri, Apr 23, 2010 at 11:57:51AM +0100, Mark Brown wrote:
 
-Great, thanks.  I'll try out the depth fix tonight.
+> > > Care to fix it up?
 
--- 
-Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
+> > This depends on "PM: Provide generic subsystem-level callbacks" which is
+> > in Linus' tree - which kernel version are you building against and with
+> > what config?  Things work fine for me in -next...
+
+> I was using Linus's latest tree as of yesterday when this failed.  Are
+> you relying on something in -next that is not in Linus's tree?
+
+Turns out it's commit ad53012 "i2c: Fix bus-level power management
+callbacks" in the PM tree that it depends on.  Does it make sense to
+merge this via there rather than via your tree?
