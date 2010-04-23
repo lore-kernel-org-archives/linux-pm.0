@@ -1,19 +1,13 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: platform_bus: Allow runtime PM by default
-Date: Fri, 23 Apr 2010 17:28:12 +0100
-Message-ID: <20100423162811.GA31231__41315.4412097812$1272040155$gmane$org@rakim.wolfsonmicro.main>
-References: <1269625370-17754-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<20100422235353.GA16310@kroah.com>
-	<20100423105750.GA27232@rakim.wolfsonmicro.main>
-	<20100423150528.GB7648@suse.de>
-	<20100423155721.GG27232@rakim.wolfsonmicro.main>
-	<20100423161157.GA20971@suse.de>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/9] PM: Add suspend block api.
+Date: Fri, 23 Apr 2010 12:33:02 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1004231204450.1777-100000__5948.33987202055$1272040438$gmane$org@iolanthe.rowland.org>
+References: <1271984938-13920-2-git-send-email-arve@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100423161157.GA20971@suse.de>
+In-Reply-To: <1271984938-13920-2-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,31 +17,173 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <gregkh@suse.de>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: =?UTF-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Apr 23, 2010 at 09:11:57AM -0700, Greg KH wrote:
-> On Fri, Apr 23, 2010 at 04:57:21PM +0100, Mark Brown wrote:
+On Thu, 22 Apr 2010, [UTF-8] Arve Hj=C3=B8nnev=C3=A5g wrote:
 
-> > Turns out it's commit ad53012 "i2c: Fix bus-level power management
-> > callbacks" in the PM tree that it depends on.  Does it make sense to
-> > merge this via there rather than via your tree?
+> Adds /sys/power/policy that selects the behaviour of /sys/power/state.
+> After setting the policy to opportunistic, writes to /sys/power/state
+> become non-blocking requests that specify which suspend state to enter
+> when no suspend blockers are active. A special state, "on", stops the
+> process by activating the "main" suspend blocker.
 
-> Why would an i2c specific patch be needed here?  Do you have a pointer
-> to that patch?
+> --- /dev/null
+> +++ b/Documentation/power/suspend-blockers.txt
+> @@ -0,0 +1,97 @@
+> +Suspend blockers
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +Suspend blockers provide a mechanism for device drivers and user-space p=
+rocesses
+> +to prevent the system from entering suspend. By default writing to
+> +/sys/power/state will ignore suspend blockers. Writing "opportunistic" to
+> +/sys/power/policy will change the behaviour of /sys/power/state to repea=
+tedly
+> +enter the requested state when no suspend blockers are active. Writing "=
+on" to
+> +/sys/power/state will cancel the automatic sleep request. Suspend blocke=
+rs do
+> +not affect sleep states entered from idle.
 
-Despite the patch title being I2C specific it actually includes exposing
-some of the runtime PM implementation to external users - I2C being the
-first user of the generic PM runtime callbacks that I'm trying to use in
-the platform device implementation.
+You should document that writing "forced" to /sys/power/policy causes
+the /sys/power/state to return to normal operation (i.e., ignoring
+suspend blockers).
 
-http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commitdiff;h=ad530128cd302e5df930b6eb4d4c7e162c40fcb2;hp=b938b00444e900f1c86e754539e3d00f172c184e
-http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commitdiff;h=d690b2cd222afc75320b9b8e9da7df02e9e630ca
 
-> And yes, if it depends on something else in the PM tree, feel free to
-> send this patch also through it, I have no objection to that.  Rafael,
-> care to pick it up?  Mark, you might have to resend it to him.
+> +In cell phones or other embedded systems where powering the screen is a
+> +significant drain on the battery, suspend blockers can be used to allow
+> +user-space to decide whether a keystroke received while the system is su=
+spended
+> +should cause the screen to be turned back on or allow the system to go b=
+ack into
+> +suspend.
 
-OK, Raphael please let me know if you need a resend.  Greg, I guess I
-can add your Acked-by to that?
+The description below is incomplete and consequently doesn't make =
+
+sense.
+
+>  Use set_irq_wake or a platform specific api to make sure the keypad
+> +interrupt wakes up the cpu.
+
+And as part of waking up the CPU, the screen driver's resume method is
+called.  Presumably this will turn the screen back on.  If it doesn't,
+you need to explain why not.
+
+> Once the keypad driver has resumed, the sequence of
+> +events can look like this:
+> +
+> +- The Keypad driver gets an interrupt. It then calls suspend_block on the
+> +  keypad-scan suspend_blocker and starts scanning the keypad matrix.
+> +- The keypad-scan code detects a key change and reports it to the input-=
+event
+> +  driver.
+> +- The input-event driver sees the key change, enqueues an event, and cal=
+ls
+> +  suspend_block on the input-event-queue suspend_blocker.
+> +- The keypad-scan code detects that no keys are held and calls suspend_u=
+nblock
+> +  on the keypad-scan suspend_blocker.
+> +- The user-space input-event thread returns from select/poll, calls
+> +  suspend_block on the process-input-events suspend_blocker and then cal=
+ls read
+> +  on the input-event device.
+> +- The input-event driver dequeues the key-event and, since the queue is =
+now
+> +  empty, it calls suspend_unblock on the input-event-queue suspend_block=
+er.
+> +- The user-space input-event thread returns from read. If it determines =
+that
+> +  the key should leave the screen off, it calls suspend_unblock on the
+> +  process_input_events suspend_blocker and then calls select or poll. The
+> +  system will automatically suspend again, since now no suspend blockers=
+ are
+> +  active.
+
+This is highly misleading.  Although you _say_ this decision is about
+whether or not to leave the screen off, it _really_ is about whether or
+not to let the system automatically suspend again.  In other words, the
+exposition confuses suspending the system with turning off the screen.  =
+
+Unless you can keep the two notions separate and explain more clearly
+what's going on, this whole section should be removed from the
+documentation.
+
+
+> +Driver API
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +A driver can use the suspend block api by adding a suspend_blocker varia=
+ble to
+> +its state and calling suspend_blocker_init. For instance:
+> +struct state {
+> +	struct suspend_blocker suspend_blocker;
+> +}
+> +
+> +init() {
+> +	suspend_blocker_init(&state->suspend_blocker, "suspend-blocker-name");
+> +}
+> +
+> +Before freeing the memory, suspend_blocker_destroy must be called:
+> +
+> +uninit() {
+> +	suspend_blocker_destroy(&state->suspend_blocker);
+> +}
+> +
+> +When the driver determines that it needs to run (usually in an interrupt
+> +handler) it calls suspend_block:
+> +	suspend_block(&state->suspend_blocker);
+> +
+> +When it no longer needs to run it calls suspend_unblock:
+> +	suspend_unblock(&state->suspend_blocker);
+> +
+> +Calling suspend_block when the suspend blocker is active or suspend_unbl=
+ock when
+> +it is not active has no effect. This allows drivers to update their stat=
+e and
+> +call suspend suspend_block or suspend_unblock based on the result.
+
+But suspend_block() and suspend_unblock() don't nest.  You should =
+
+mention this.
+
+
+> --- /dev/null
+> +++ b/include/linux/suspend_blocker.h
+> @@ -0,0 +1,60 @@
+...
+> +/**
+> + * struct suspend_blocker - the basic suspend_blocker structure
+> + * @flags:	Tracks initialized and active state.
+> + * @name:	Name used for debugging.
+> + *
+> + * When a suspend_blocker is active it prevents the system from entering
+> + * suspend.
+> + *
+> + * The suspend_blocker structure must be initialized by suspend_blocker_=
+init()
+> + */
+> +
+> +struct suspend_blocker {
+> +#ifdef CONFIG_SUSPEND_BLOCKERS
+> +	atomic_t            flags;
+> +	const char         *name;
+> +#endif
+
+Why is flags an atomic_t?  Are you worried that drivers might try to =
+
+activate a suspend_blocker at the same time that it is being destroyed?
+If this happens, does the code do the right thing?  I don't think it =
+
+does -- if a race occurs, suspend_block() will leave flags set to the =
+
+wrong value.  The same goes for suspend_unblock().
+
+Since these routines don't nest, there is also the possibility of a
+race between suspend_block() and suspend_unblock().  If the race goes
+one way the blocker is active; the other way it isn't.  Given that such
+problems already exist, why worry about what happens when the suspend
+blocker is destroyed?
+
+Alan Stern
