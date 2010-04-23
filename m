@@ -1,17 +1,19 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 2/9] PM: suspend_block: Add driver to access
- suspend blockers from user-space
-Date: Fri, 23 Apr 2010 10:43:49 +0200
-Message-ID: <20100423084349.GC1573__37330.6565722034$1272036743$gmane$org@ucw.cz>
-References: <1271984938-13920-1-git-send-email-arve@android.com>
-	<1271984938-13920-2-git-send-email-arve@android.com>
-	<1271984938-13920-3-git-send-email-arve@android.com>
+From: Nick Bowler <nbowler@elliptictech.com>
+Subject: Re: 2.6.34-rc5: Reported regressions from 2.6.33
+Date: Fri, 23 Apr 2010 11:31:45 -0400
+Message-ID: <20100423153145.GA6072__37521.8321024024$1272036878$gmane$org@elliptictech.com>
+References: <deuQKFRcc0B.A.3EG.BRSzLB@tosh>
+	<20100420135636.GA10674@elliptictech.com>
+	<201004210715.38621.rjw@sisk.pl>
+	<20100421085739.GA2576@barney.localdomain>
+	<20100421165758.GA23565@elliptictech.com>
+	<20100423102338.GA3151@barney.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1271984938-13920-3-git-send-email-arve@android.com>
+In-Reply-To: <20100423102338.GA3151@barney.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,37 +23,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj??nnev??g <arve@android.com>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org
+To: Jerome Glisse <glisse@freedesktop.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> Add a misc device, "suspend_blocker", that allows user-space processes
-> to block auto suspend. The device has ioctls to create a suspend_blocker,
-> and to block and unblock suspend. To delete the suspend_blocker, close
-> the device.
+On 12:23 Fri 23 Apr     , Jerome Glisse wrote:
+> On Wed, Apr 21, 2010 at 12:57:58PM -0400, Nick Bowler wrote:
+> > OK, if the failure is due to userspace is doing Very Bad Things(tm),
+> > catching that seems reasonable.
+> > 
+> > Nevertheless, even if it happened by luck, the result was (ostensibly)
+> > working programs that suddenly break once one "upgrades" to the latest
+> > kernel.  If userspace can't be fixed before 2.6.34 is released, perhaps
+> > a less cryptic log message would be appropriate?
 > 
-> Signed-off-by: Arve Hj??nnev??g <arve@android.com>
+> I pushed fix into mesa for the depth issue i will look into the other
+> one today and likely push kernel fix.
 
-> --- a/Documentation/power/suspend-blockers.txt
-> +++ b/Documentation/power/suspend-blockers.txt
-> @@ -95,3 +95,20 @@ if (list_empty(&state->pending_work))
->  else
->  	suspend_block(&state->suspend_blocker);
->  
-> +User-space API
-> +==============
-> +
-> +To create a suspend_blocker from user-space, open the suspend_blocker device:
-> +    fd = open("/dev/suspend_blocker", O_RDWR | O_CLOEXEC);
-> +then call:
-> +    ioctl(fd, SUSPEND_BLOCKER_IOCTL_INIT(strlen(name)), name);
-
-
-This seems like very wrong idea -- it uses different ioctl number for
-each length AFAICT.
+Great, thanks.  I'll try out the depth fix tonight.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
