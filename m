@@ -1,14 +1,11 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: platform_bus: Allow runtime PM by default
-Date: Thu, 22 Apr 2010 16:53:53 -0700
-Message-ID: <20100422235353.GA16310@kroah.com>
-References: <1269625370-17754-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+From: =?UTF-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
+Subject: [PATCH 0/9] Suspend block api (version 4)
+Date: Thu, 22 Apr 2010 18:08:49 -0700
+Message-ID: <1271984938-13920-1-git-send-email-arve__3230.39606814763$1271985047$gmane$org@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1269625370-17754-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,33 +15,16 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-pm@lists.linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBNYXIgMjYsIDIwMTAgYXQgMDU6NDI6NTBQTSArMDAwMCwgTWFyayBCcm93biB3cm90
-ZToKPiAKPiBDdXJyZW50bHkgdGhlIGRlZmF1bHQgcnVudGltZSBQTSBjYWxsYmFja3MgZm9yIHBs
-YXRmb3JtIGRldmljZXMgcmV0dXJuCj4gLUVOT1NZUywgcHJldmVudGluZyB0aGUgdXNlIG9mIHJ1
-bnRpbWUgUE0gcGxhdGZvcm1zIHVudGlsIHRoZXkgaGF2ZQo+IHByb3ZpZGVkIGF0IGxlYXN0IGEg
-ZGVmYXVsdCBpbXBsZW1lbnRhdGlvbi4gVGhpcyBoaW5kZXJzIHRoZSB1c2Ugb2YKPiBydW50aW1l
-IFBNIGJ5IGRldmljZXMgd2hpY2ggd29yayB3aXRoIG1hbnkgcGxhdGZvcm1zIHN1Y2ggYXMgbWVt
-b3J5Cj4gbWFwcGVkIGRldmljZXMsIE1GRHMgYW5kIG9uIGNoaXAgSVBzIHNoYXJlZCBieSBtdWx0
-aXBsZSBhcmNoaXRlY3R1cmVzLgo+IAo+IENoYW5nZSB0aGUgZGVmYXVsdCBpbXBsZW1lbnRhdGlv
-biB0byB0aGUgc3RhbmRhcmQgcG1fZ2VuZXJpY19ydW50aW1lCj4gb25lLCBhbGxvd2luZyBkcml2
-ZXJzIHRvIHVzZSBydW50aW1lIFBNIHdpdGhvdXQgcGVyLWFyY2hpdGVjdHVyZQo+IGNoYW5nZXMu
-CgpUaGF0J3MgbmljZSwgYnV0IGl0IGJyZWFrcyB0aGUgYnVpbGQgb24gbXkgc3lzdGVtOgogIEND
-ICAgICAgZHJpdmVycy9iYXNlL3BsYXRmb3JtLm8KZHJpdmVycy9iYXNlL3BsYXRmb3JtLmM6IElu
-IGZ1bmN0aW9uIOKAmHBsYXRmb3JtX3BtX3J1bnRpbWVfc3VzcGVuZOKAmToKZHJpdmVycy9iYXNl
-L3BsYXRmb3JtLmM6OTcwOiBlcnJvcjogaW1wbGljaXQgZGVjbGFyYXRpb24gb2YgZnVuY3Rpb24g
-4oCYcG1fZ2VuZXJpY19ydW50aW1lX3N1c3BlbmTigJkKZHJpdmVycy9iYXNlL3BsYXRmb3JtLmM6
-IEluIGZ1bmN0aW9uIOKAmHBsYXRmb3JtX3BtX3J1bnRpbWVfcmVzdW1l4oCZOgpkcml2ZXJzL2Jh
-c2UvcGxhdGZvcm0uYzo5NzU6IGVycm9yOiBpbXBsaWNpdCBkZWNsYXJhdGlvbiBvZiBmdW5jdGlv
-biDigJhwbV9nZW5lcmljX3J1bnRpbWVfcmVzdW1l4oCZCmRyaXZlcnMvYmFzZS9wbGF0Zm9ybS5j
-OiBJbiBmdW5jdGlvbiDigJhwbGF0Zm9ybV9wbV9ydW50aW1lX2lkbGXigJk6CmRyaXZlcnMvYmFz
-ZS9wbGF0Zm9ybS5jOjk4MDogZXJyb3I6IGltcGxpY2l0IGRlY2xhcmF0aW9uIG9mIGZ1bmN0aW9u
-IOKAmHBtX2dlbmVyaWNfcnVudGltZV9pZGxl4oCZCm1ha2VbMV06ICoqKiBbZHJpdmVycy9iYXNl
-L3BsYXRmb3JtLm9dIEVycm9yIDEKbWFrZTogKioqIFtfbW9kdWxlX2RyaXZlcnMvYmFzZV0gRXJy
-b3IgMgoKQ2FyZSB0byBmaXggaXQgdXA/Cgp0aGFua3MsCgpncmVnIGstaApfX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QK
-bGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1m
-b3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+VGhpcyBwYXRjaCBzZXJpZXMgYWRkcyBhIHN1c3BlbmQtYmxvY2sgYXBpIHRoYXQgcHJvdmlkZXMg
+dGhlIHNhbWUKZnVuY3Rpb25hbGl0eSBhcyB0aGUgYW5kcm9pZCB3YWtlbG9jayBhcGkuIFRoZSBj
+b2RlIGlzIG1vc3RseSB0aGUKc2FtZSBhcyB2ZXJzaW9uIDMgcG9zdGVkIGxhc3QgeWVhciwgYnV0
+IHRoZSBtYWluIGVudHJ5IHBvaW50IGhhcwpjaGFuZ2VkIGJhY2sgdG8gL3N5cy9wb3dlci9zdGF0
+ZSB3aXRoIGEgbmV3IC9zeXMvcG93ZXIvcG9saWN5IHRvCmFsdGVyIGl0cyBiZWhhdmlvci4gVGlt
+ZW91dCBzdXBwb3J0IGlzIG5vdCBpbmNsdWRlZCBpbiB0aGlzIGluaXRpYWwKcGF0Y2hzZXQuCgot
+LQpBcnZlIEhqw7hubmV2w6VnIDxhcnZlQGFuZHJvaWQuY29tPgoKCl9fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51
+eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5k
+YXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
