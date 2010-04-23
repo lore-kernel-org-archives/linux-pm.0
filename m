@@ -1,17 +1,17 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: platform_bus: Allow runtime PM by default
-Date: Fri, 23 Apr 2010 16:13:27 +0100
-Message-ID: <20100423151327.GA23551@rakim.wolfsonmicro.main>
-References: <1269625370-17754-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<20100422235353.GA16310@kroah.com>
-	<20100423105750.GA27232@rakim.wolfsonmicro.main>
-	<20100423150528.GB7648@suse.de>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 2/9] PM: suspend_block: Add driver to access
+ suspend blockers from user-space
+Date: Fri, 23 Apr 2010 10:43:49 +0200
+Message-ID: <20100423084349.GC1573__37330.6565722034$1272036743$gmane$org@ucw.cz>
+References: <1271984938-13920-1-git-send-email-arve@android.com>
+	<1271984938-13920-2-git-send-email-arve@android.com>
+	<1271984938-13920-3-git-send-email-arve@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20100423150528.GB7648@suse.de>
+In-Reply-To: <1271984938-13920-3-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,20 +21,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <gregkh@suse.de>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Arve Hj??nnev??g <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Apr 23, 2010 at 08:05:28AM -0700, Greg KH wrote:
-> On Fri, Apr 23, 2010 at 11:57:51AM +0100, Mark Brown wrote:
+Hi!
 
-> > This depends on "PM: Provide generic subsystem-level callbacks" which is
-> > in Linus' tree - which kernel version are you building against and with
-> > what config?  Things work fine for me in -next...
+> Add a misc device, "suspend_blocker", that allows user-space processes
+> to block auto suspend. The device has ioctls to create a suspend_blocker,
+> and to block and unblock suspend. To delete the suspend_blocker, close
+> the device.
+> 
+> Signed-off-by: Arve Hj??nnev??g <arve@android.com>
 
-> I was using Linus's latest tree as of yesterday when this failed.  Are
-> you relying on something in -next that is not in Linus's tree?
+> --- a/Documentation/power/suspend-blockers.txt
+> +++ b/Documentation/power/suspend-blockers.txt
+> @@ -95,3 +95,20 @@ if (list_empty(&state->pending_work))
+>  else
+>  	suspend_block(&state->suspend_blocker);
+>  
+> +User-space API
+> +==============
+> +
+> +To create a suspend_blocker from user-space, open the suspend_blocker device:
+> +    fd = open("/dev/suspend_blocker", O_RDWR | O_CLOEXEC);
+> +then call:
+> +    ioctl(fd, SUSPEND_BLOCKER_IOCTL_INIT(strlen(name)), name);
 
-Not intentionally - it's also possible that it's specific to some option
-in .config, either an option or something that gets included by default
-due to the arch.
+
+This seems like very wrong idea -- it uses different ioctl number for
+each length AFAICT.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
