@@ -1,19 +1,17 @@
-From: =?UTF-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
-Subject: [PATCH 7/9] PM: Add suspend blocking work.
-Date: Thu, 22 Apr 2010 18:08:56 -0700
-Message-ID: <1271984938-13920-8-git-send-email-arve__6907.93445469371$1271985092$gmane$org@android.com>
+From: Matt Helsley <matthltc@us.ibm.com>
+Subject: Re: [PATCH 2/9] PM: suspend_block: Add driver to access
+ suspend blockers from user-space
+Date: Thu, 22 Apr 2010 19:25:22 -0700
+Message-ID: <20100423022522.GB32490__24616.3319018253$1271989613$gmane$org@count0.beaverton.ibm.com>
 References: <1271984938-13920-1-git-send-email-arve@android.com>
 	<1271984938-13920-2-git-send-email-arve@android.com>
 	<1271984938-13920-3-git-send-email-arve@android.com>
-	<1271984938-13920-4-git-send-email-arve@android.com>
-	<1271984938-13920-5-git-send-email-arve@android.com>
-	<1271984938-13920-6-git-send-email-arve@android.com>
-	<1271984938-13920-7-git-send-email-arve@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1271984938-13920-7-git-send-email-arve@android.com>
+Content-Disposition: inline
+In-Reply-To: <1271984938-13920-3-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,95 +21,130 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Dmitri Vorobiev <dmitri.vorobiev@movial.com>, Andi Kleen <ak@linux.intel.com>, Jiri Kosina <jkosina@suse.cz>, Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>
+To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-QWxsb3cgd29yayB0byBiZSBxdWV1ZWQgdGhhdCB3aWxsIGJsb2NrIHN1c3BlbmQgd2hpbGUgaXQg
-aXMgcGVuZGluZwpvciBleGVjdXRpbmcuIFRvIGdldCB0aGUgc2FtZSBmdW5jdGlvbmFsaXR5IGlu
-IHRoZSBjYWxsaW5nIGNvZGUgb2Z0ZW4KcmVxdWlyZXMgYSBzZXBhcmF0ZSBzdXNwZW5kX2Jsb2Nr
-ZXIgZm9yIHBlbmRpbmcgYW5kIGV4ZWN1dGluZyB3b3JrLCBvcgphZGRpdGlvbmFsIHN0YXRlIGFu
-ZCBsb2NraW5nLgoKU2lnbmVkLW9mZi1ieTogQXJ2ZSBIasO4bm5ldsOlZyA8YXJ2ZUBhbmRyb2lk
-LmNvbT4KLS0tCiBpbmNsdWRlL2xpbnV4L3dvcmtxdWV1ZS5oIHwgICA0NSArKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0KIGtlcm5lbC93b3JrcXVldWUuYyAgICAg
-ICAgfCAgIDE5ICsrKysrKysrKysrKysrKysrKysKIDIgZmlsZXMgY2hhbmdlZCwgNjMgaW5zZXJ0
-aW9ucygrKSwgMSBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3dvcmtx
-dWV1ZS5oIGIvaW5jbHVkZS9saW51eC93b3JrcXVldWUuaAppbmRleCA5NDY2ZTg2Li45YzVhMDc4
-IDEwMDY0NAotLS0gYS9pbmNsdWRlL2xpbnV4L3dvcmtxdWV1ZS5oCisrKyBiL2luY2x1ZGUvbGlu
-dXgvd29ya3F1ZXVlLmgKQEAgLTksNiArOSw3IEBACiAjaW5jbHVkZSA8bGludXgvbGlua2FnZS5o
-PgogI2luY2x1ZGUgPGxpbnV4L2JpdG9wcy5oPgogI2luY2x1ZGUgPGxpbnV4L2xvY2tkZXAuaD4K
-KyNpbmNsdWRlIDxsaW51eC9zdXNwZW5kX2Jsb2NrZXIuaD4KICNpbmNsdWRlIDxhc20vYXRvbWlj
-Lmg+CiAKIHN0cnVjdCB3b3JrcXVldWVfc3RydWN0OwpAQCAtMjYsNyArMjcsOCBAQCBzdHJ1Y3Qg
-d29ya19zdHJ1Y3QgewogCWF0b21pY19sb25nX3QgZGF0YTsKICNkZWZpbmUgV09SS19TVFJVQ1Rf
-UEVORElORyAwCQkvKiBUIGlmIHdvcmsgaXRlbSBwZW5kaW5nIGV4ZWN1dGlvbiAqLwogI2RlZmlu
-ZSBXT1JLX1NUUlVDVF9TVEFUSUMgIDEJCS8qIHN0YXRpYyBpbml0aWFsaXplciAoZGVidWdvYmpl
-Y3RzKSAqLwotI2RlZmluZSBXT1JLX1NUUlVDVF9GTEFHX01BU0sgKDNVTCkKKyNkZWZpbmUgV09S
-S19TVFJVQ1RfU1VTUEVORF9CTE9DS0lORyAgMgkvKiBzdXNwZW5kIGJsb2NraW5nIHdvcmsgKi8K
-KyNkZWZpbmUgV09SS19TVFJVQ1RfRkxBR19NQVNLICg3VUwpCiAjZGVmaW5lIFdPUktfU1RSVUNU
-X1dRX0RBVEFfTUFTSyAofldPUktfU1RSVUNUX0ZMQUdfTUFTSykKIAlzdHJ1Y3QgbGlzdF9oZWFk
-IGVudHJ5OwogCXdvcmtfZnVuY190IGZ1bmM7CkBAIC00OCw2ICs1MCwyMyBAQCBzdGF0aWMgaW5s
-aW5lIHN0cnVjdCBkZWxheWVkX3dvcmsgKnRvX2RlbGF5ZWRfd29yayhzdHJ1Y3Qgd29ya19zdHJ1
-Y3QgKndvcmspCiAJcmV0dXJuIGNvbnRhaW5lcl9vZih3b3JrLCBzdHJ1Y3QgZGVsYXllZF93b3Jr
-LCB3b3JrKTsKIH0KIAorc3RydWN0IHN1c3BlbmRfYmxvY2tpbmdfd29yayB7CisJc3RydWN0IHdv
-cmtfc3RydWN0IHdvcms7CisJc3RydWN0IHN1c3BlbmRfYmxvY2tlciBzdXNwZW5kX2Jsb2NrZXI7
-Cit9OworCitzdGF0aWMgaW5saW5lIHN0cnVjdCBzdXNwZW5kX2Jsb2NraW5nX3dvcmsgKgordG9f
-c3VzcGVuZF9ibG9ja2luZ193b3JrKHN0cnVjdCB3b3JrX3N0cnVjdCAqd29yaykKK3sKKwlyZXR1
-cm4gY29udGFpbmVyX29mKHdvcmssIHN0cnVjdCBzdXNwZW5kX2Jsb2NraW5nX3dvcmssIHdvcmsp
-OworfQorCitzdGF0aWMgaW5saW5lIHN0cnVjdCBzdXNwZW5kX2Jsb2NrZXIgKgord29ya190b19z
-dXNwZW5kX2Jsb2NrZXIoc3RydWN0IHdvcmtfc3RydWN0ICp3b3JrKQoreworCXJldHVybiAmdG9f
-c3VzcGVuZF9ibG9ja2luZ193b3JrKHdvcmspLT5zdXNwZW5kX2Jsb2NrZXI7Cit9CisKIHN0cnVj
-dCBleGVjdXRlX3dvcmsgewogCXN0cnVjdCB3b3JrX3N0cnVjdCB3b3JrOwogfTsKQEAgLTE1Nyw2
-ICsxNzYsMzAgQEAgc3RhdGljIGlubGluZSB2b2lkIGRlc3Ryb3lfd29ya19vbl9zdGFjayhzdHJ1
-Y3Qgd29ya19zdHJ1Y3QgKndvcmspIHsgfQogCQlpbml0X3RpbWVyX2RlZmVycmFibGUoJihfd29y
-ayktPnRpbWVyKTsJCVwKIAl9IHdoaWxlICgwKQogCitzdGF0aWMgaW5saW5lIHZvaWQgc3VzcGVu
-ZF9ibG9ja2luZ193b3JrX2luaXQoCisJc3RydWN0IHN1c3BlbmRfYmxvY2tpbmdfd29yayAqd29y
-aywgd29ya19mdW5jX3QgZnVuYywgY29uc3QgY2hhciAqbmFtZSkKK3sKKwlJTklUX1dPUksoJndv
-cmstPndvcmssIGZ1bmMpOworCXN1c3BlbmRfYmxvY2tlcl9pbml0KCZ3b3JrLT5zdXNwZW5kX2Js
-b2NrZXIsIG5hbWUpOworCXNldF9iaXQoV09SS19TVFJVQ1RfU1VTUEVORF9CTE9DS0lORywgd29y
-a19kYXRhX2JpdHMoJndvcmstPndvcmspKTsKK30KKworLyoqCisgKiBzdXNwZW5kX2Jsb2NraW5n
-X3dvcmtfZGVzdHJveSAtIERlc3Ryb3kgc3VzcGVuZF9ibG9ja2luZ193b3JrCisgKiBAd29yazog
-VGhlIHdvcmsgaXRlbSBpbiBxdWVzdGlvbgorICoKKyAqIElmIHRoZSB3b3JrIHdhcyBldmVyIHF1
-ZXVlZCBvbiBtb3JlIHRoZW4gb25lIHdvcmtxdWV1ZSBvciBvbiBhIG11bHRpdGhyZWFkZWQKKyAq
-IHdvcmtxdWV1ZSBhbGwgdGhlc2Ugd29ya3F1ZXVlcyBtdXN0IGJlIGZsdXNoZWQgYmVmb3JlIGNh
-bGxpbmcKKyAqIHN1c3BlbmRfYmxvY2tpbmdfd29ya19kZXN0cm95LiBJZiBvbmx5IGEgc2luZ2xl
-IHNpbmdsZXRocmVhZGVkIHdvcmtxdWV1ZQorICogd2FzIHVzZWQgZmx1c2hfd29yayBvciBjYW5j
-ZWxfd29ya19zeW5jIGNhbiBiZSB1c2VkIGluc3RlYWQuCisgKi8KKworc3RhdGljIGlubGluZSB2
-b2lkCitzdXNwZW5kX2Jsb2NraW5nX3dvcmtfZGVzdHJveShzdHJ1Y3Qgc3VzcGVuZF9ibG9ja2lu
-Z193b3JrICp3b3JrKQoreworCXN1c3BlbmRfYmxvY2tlcl9kZXN0cm95KCZ3b3JrLT5zdXNwZW5k
-X2Jsb2NrZXIpOworfQorCiAvKioKICAqIHdvcmtfcGVuZGluZyAtIEZpbmQgb3V0IHdoZXRoZXIg
-YSB3b3JrIGl0ZW0gaXMgY3VycmVudGx5IHBlbmRpbmcKICAqIEB3b3JrOiBUaGUgd29yayBpdGVt
-IGluIHF1ZXN0aW9uCmRpZmYgLS1naXQgYS9rZXJuZWwvd29ya3F1ZXVlLmMgYi9rZXJuZWwvd29y
-a3F1ZXVlLmMKaW5kZXggZGVlNDg2NS4uYjJhYmE5MCAxMDA2NDQKLS0tIGEva2VybmVsL3dvcmtx
-dWV1ZS5jCisrKyBiL2tlcm5lbC93b3JrcXVldWUuYwpAQCAtNjgsNiArNjgsMTUgQEAgc3RydWN0
-IHdvcmtxdWV1ZV9zdHJ1Y3QgewogI2VuZGlmCiB9OwogCitzdGF0aWMgaW5saW5lIGludCB3b3Jr
-X2Jsb2Nrc19zdXNwZW5kKHN0cnVjdCB3b3JrX3N0cnVjdCAqd29yaykKK3sKKyNpZmRlZiBDT05G
-SUdfU1VTUEVORF9CTE9DS0VSUworCXJldHVybiB0ZXN0X2JpdChXT1JLX1NUUlVDVF9TVVNQRU5E
-X0JMT0NLSU5HLCB3b3JrX2RhdGFfYml0cyh3b3JrKSk7CisjZWxzZQorCXJldHVybiBmYWxzZTsK
-KyNlbmRpZgorfQorCiAjaWZkZWYgQ09ORklHX0RFQlVHX09CSkVDVFNfV09SSwogCiBzdGF0aWMg
-c3RydWN0IGRlYnVnX29ial9kZXNjciB3b3JrX2RlYnVnX2Rlc2NyOwpAQCAtMjU3LDYgKzI2Niwx
-MCBAQCBzdGF0aWMgdm9pZCBfX3F1ZXVlX3dvcmsoc3RydWN0IGNwdV93b3JrcXVldWVfc3RydWN0
-ICpjd3EsCiAKIAlkZWJ1Z193b3JrX2FjdGl2YXRlKHdvcmspOwogCXNwaW5fbG9ja19pcnFzYXZl
-KCZjd3EtPmxvY2ssIGZsYWdzKTsKKworCWlmICh3b3JrX2Jsb2Nrc19zdXNwZW5kKHdvcmspKQor
-CQlzdXNwZW5kX2Jsb2NrKHdvcmtfdG9fc3VzcGVuZF9ibG9ja2VyKHdvcmspKTsKKwogCWluc2Vy
-dF93b3JrKGN3cSwgd29yaywgJmN3cS0+d29ya2xpc3QpOwogCXNwaW5fdW5sb2NrX2lycXJlc3Rv
-cmUoJmN3cS0+bG9jaywgZmxhZ3MpOwogfQpAQCAtMzc5LDYgKzM5Miw3IEBAIHN0YXRpYyB2b2lk
-IHJ1bl93b3JrcXVldWUoc3RydWN0IGNwdV93b3JrcXVldWVfc3RydWN0ICpjd3EpCiAJCXN0cnVj
-dCB3b3JrX3N0cnVjdCAqd29yayA9IGxpc3RfZW50cnkoY3dxLT53b3JrbGlzdC5uZXh0LAogCQkJ
-CQkJc3RydWN0IHdvcmtfc3RydWN0LCBlbnRyeSk7CiAJCXdvcmtfZnVuY190IGYgPSB3b3JrLT5m
-dW5jOworCQlib29sIGN1cnJlbnRfd29ya19ibG9ja3Nfc3VzcGVuZCA9IHdvcmtfYmxvY2tzX3N1
-c3BlbmQod29yayk7CiAjaWZkZWYgQ09ORklHX0xPQ0tERVAKIAkJLyoKIAkJICogSXQgaXMgcGVy
-bWlzc2libGUgdG8gZnJlZSB0aGUgc3RydWN0IHdvcmtfc3RydWN0CkBAIC00MTYsNiArNDMwLDkg
-QEAgc3RhdGljIHZvaWQgcnVuX3dvcmtxdWV1ZShzdHJ1Y3QgY3B1X3dvcmtxdWV1ZV9zdHJ1Y3Qg
-KmN3cSkKIAkJfQogCiAJCXNwaW5fbG9ja19pcnEoJmN3cS0+bG9jayk7CisJCWlmIChjdXJyZW50
-X3dvcmtfYmxvY2tzX3N1c3BlbmQgJiYKKwkJICAgIChnZXRfd3FfZGF0YSh3b3JrKSA9PSBjd3Ep
-ICYmICF3b3JrX3BlbmRpbmcod29yaykpCisJCQlzdXNwZW5kX3VuYmxvY2sod29ya190b19zdXNw
-ZW5kX2Jsb2NrZXIod29yaykpOwogCQljd3EtPmN1cnJlbnRfd29yayA9IE5VTEw7CiAJfQogCXNw
-aW5fdW5sb2NrX2lycSgmY3dxLT5sb2NrKTsKQEAgLTY3MSw2ICs2ODgsOCBAQCBzdGF0aWMgaW50
-IF9fY2FuY2VsX3dvcmtfdGltZXIoc3RydWN0IHdvcmtfc3RydWN0ICp3b3JrLAogCQl3YWl0X29u
-X3dvcmsod29yayk7CiAJfSB3aGlsZSAodW5saWtlbHkocmV0IDwgMCkpOwogCisJaWYgKHdvcmtf
-YmxvY2tzX3N1c3BlbmQod29yaykpCisJCXN1c3BlbmRfdW5ibG9jayh3b3JrX3RvX3N1c3BlbmRf
-YmxvY2tlcih3b3JrKSk7CiAJd29ya19jbGVhcl9wZW5kaW5nKHdvcmspOwogCXJldHVybiByZXQ7
-CiB9Ci0tIAoxLjYuNS4xCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRh
-dGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3Rp
-bmZvL2xpbnV4LXBt
+On Thu, Apr 22, 2010 at 06:08:51PM -0700, Arve Hj=F8nnev=E5g wrote:
+> Add a misc device, "suspend_blocker", that allows user-space processes
+> to block auto suspend. The device has ioctls to create a suspend_blocker,
+> and to block and unblock suspend. To delete the suspend_blocker, close
+> the device.
+> =
+
+> Signed-off-by: Arve Hj=F8nnev=E5g <arve@android.com>
+> ---
+>  Documentation/power/suspend-blockers.txt |   17 ++++
+>  include/linux/suspend_block_dev.h        |   25 ++++++
+>  kernel/power/Kconfig                     |    9 ++
+>  kernel/power/Makefile                    |    1 +
+>  kernel/power/user_suspend_blocker.c      |  128 ++++++++++++++++++++++++=
+++++++
+>  5 files changed, 180 insertions(+), 0 deletions(-)
+>  create mode 100644 include/linux/suspend_block_dev.h
+>  create mode 100644 kernel/power/user_suspend_blocker.c
+> =
+
+> diff --git a/Documentation/power/suspend-blockers.txt b/Documentation/pow=
+er/suspend-blockers.txt
+> index 1c48514..877bd8c 100644
+> --- a/Documentation/power/suspend-blockers.txt
+> +++ b/Documentation/power/suspend-blockers.txt
+> @@ -95,3 +95,20 @@ if (list_empty(&state->pending_work))
+>  else
+>  	suspend_block(&state->suspend_blocker);
+>  =
+
+> +User-space API
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +To create a suspend_blocker from user-space, open the suspend_blocker de=
+vice:
+> +    fd =3D open("/dev/suspend_blocker", O_RDWR | O_CLOEXEC);
+> +then call:
+> +    ioctl(fd, SUSPEND_BLOCKER_IOCTL_INIT(strlen(name)), name);
+
+Why not initialize the user suspend blocker struct by default and then
+allow each BLOCK to specify the name? Also, my guess is it's not
+really a name so much as a description of why we're blocking suspend,
+right?
+
+Should the kernel reject empty strings or strings composed only of
+"non-printing" characters?
+
+> +
+> +To activate a suspend_blocker call:
+> +    ioctl(fd, SUSPEND_BLOCKER_IOCTL_BLOCK);
+> +
+> +To unblock call:
+> +    ioctl(fd, SUSPEND_BLOCKER_IOCTL_UNBLOCK);
+
+lsof will show which tasks hold the device open but not which ones
+are blocking suspend. If merely keeping the device open corresponded to
+blocking suspend then this would be obvious and no ioctls would be
+necessary -- just write() the name/description.
+
+Do you block/unblock often enough that frequent open/close of the device are
+a problem? Or has this idea been considered and discarded for other reasons?
+
+> +
+> +To destroy the suspend_blocker, close the device:
+> +    close(fd);
+> +
+
+<snip>
+
+> diff --git a/kernel/power/user_suspend_blocker.c b/kernel/power/user_susp=
+end_blocker.c
+> new file mode 100644
+> index 0000000..a9be6f4
+> --- /dev/null
+> +++ b/kernel/power/user_suspend_blocker.c
+> @@ -0,0 +1,128 @@
+> +/* kernel/power/user_suspend_block.c
+> + *
+> + * Copyright (C) 2009-2010 Google, Inc.
+> + *
+> + * This software is licensed under the terms of the GNU General Public
+> + * License version 2, as published by the Free Software Foundation, and
+> + * may be copied, distributed, and modified under those terms.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + */
+> +
+> +#include <linux/fs.h>
+> +#include <linux/miscdevice.h>
+> +#include <linux/module.h>
+> +#include <linux/uaccess.h>
+> +#include <linux/slab.h>
+> +#include <linux/suspend_blocker.h>
+> +#include <linux/suspend_block_dev.h>
+> +
+> +enum {
+> +	DEBUG_FAILURE	=3D BIT(0),
+> +};
+> +static int debug_mask =3D DEBUG_FAILURE;
+> +module_param_named(debug_mask, debug_mask, int, S_IRUGO | S_IWUSR | S_IW=
+GRP);
+> +
+> +static DEFINE_MUTEX(ioctl_lock);
+
+nit: Usually locks protect data -- not functions.
+
+Couldn't this be part of the user_suspend_blocker struct? That would allow
+the description/name to change as described above.
+
+> +
+> +struct user_suspend_blocker {
+> +	struct suspend_blocker	blocker;
+> +	char			name[0];
+> +};
+
+<snip>
+
+Cheers,
+	-Matt Helsley
