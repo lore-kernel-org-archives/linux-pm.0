@@ -1,20 +1,18 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 7/9] PM: Add suspend blocking work.
-Date: Fri, 23 Apr 2010 10:16:46 +0200
-Message-ID: <4BD1576E.5070401__12475.2812007957$1272010755$gmane$org@kernel.org>
-References: <1271984938-13920-1-git-send-email-arve@android.com>
-	<1271984938-13920-2-git-send-email-arve@android.com>
-	<1271984938-13920-3-git-send-email-arve@android.com>
-	<1271984938-13920-4-git-send-email-arve@android.com>
-	<1271984938-13920-5-git-send-email-arve@android.com>
-	<1271984938-13920-6-git-send-email-arve@android.com>
-	<1271984938-13920-7-git-send-email-arve@android.com>
-	<1271984938-13920-8-git-send-email-arve@android.com>
+From: Jerome Glisse <glisse@freedesktop.org>
+Subject: Re: 2.6.34-rc5: Reported regressions from 2.6.33
+Date: Fri, 23 Apr 2010 12:23:38 +0200
+Message-ID: <20100423102338.GA3151__30117.5840701491$1272018406$gmane$org@barney.localdomain>
+References: <deuQKFRcc0B.A.3EG.BRSzLB@tosh>
+	<20100420135636.GA10674@elliptictech.com>
+	<201004210715.38621.rjw@sisk.pl>
+	<20100421085739.GA2576@barney.localdomain>
+	<20100421165758.GA23565@elliptictech.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1271984938-13920-8-git-send-email-arve@android.com>
+Content-Disposition: inline
+In-Reply-To: <20100421165758.GA23565@elliptictech.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,23 +22,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>
-Cc: Dmitri Vorobiev <dmitri.vorobiev@movial.com>, Andi Kleen <ak@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>, Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, DRI <dri-devel@lists.freedesktop.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGVsbG8sCgpPbiAwNC8yMy8yMDEwIDAzOjA4IEFNLCBBcnZlIEhqw7hubmV2w6VnIHdyb3RlOgo+
-IEFsbG93IHdvcmsgdG8gYmUgcXVldWVkIHRoYXQgd2lsbCBibG9jayBzdXNwZW5kIHdoaWxlIGl0
-IGlzIHBlbmRpbmcKPiBvciBleGVjdXRpbmcuIFRvIGdldCB0aGUgc2FtZSBmdW5jdGlvbmFsaXR5
-IGluIHRoZSBjYWxsaW5nIGNvZGUgb2Z0ZW4KPiByZXF1aXJlcyBhIHNlcGFyYXRlIHN1c3BlbmRf
-YmxvY2tlciBmb3IgcGVuZGluZyBhbmQgZXhlY3V0aW5nIHdvcmssIG9yCj4gYWRkaXRpb25hbCBz
-dGF0ZSBhbmQgbG9ja2luZy4KCkhtbS4uLiBJIHRoaW5rIHRoaXMgY2FuIGJlIGltcGxlbWVudGVk
-IGFzIHB1cmUgd3JhcHBlciBhcm91bmQKd29ya3F1ZXVlIGluc3RlYWQgb2YgaW5qZWN0aW5nIGEg
-ZmxhZyBhbmQgY29kZSBpbnRvIHdvcmtxdWV1ZSBjb3JlLgpBZGRpbmcgQGZuIGZpZWxkIHRvIHN1
-c3BlbmRfYmxvY2tpbmdfd29yayBzdHJ1Y3QgYW5kIHVzaW5nIGEgY3VzdG9tCndvcmsgZnVuY3Rp
-b24gdG8gY2FsbCBpdCBhbmQgdGhlbiBpbnZva2Ugc3VzcGVuZF91bmJsb2NrKCkgc2hvdWxkIGJl
-CmVub3VnaCwgcmlnaHQ/ICBPaCwgZGVkaWNhdGVkIHF1ZXVlIGZ1bmN0aW9ucyB3aWxsIGJlIG5l
-ZWRlZCB0b28uICBJCmRvbid0IHRoaW5rIGl0J3Mgd2lzZSB0byBtZWRkbGUgd2l0aCB3b3JrcXVl
-dWUgY29yZSBjb2RlIGZvciB0aGlzLgoKVGhhbmtzLgoKLS0gCnRlanVuCl9fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdAps
-aW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZv
-dW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Wed, Apr 21, 2010 at 12:57:58PM -0400, Nick Bowler wrote:
+> On Wed, Apr 21, 2010 at 07:15:38AM +0200, Rafael J. Wysocki wrote:
+> > On Tuesday 20 April 2010, Nick Bowler wrote:
+> > > Please list these two similar regressions from 2.6.33 in the r600 DRM:
+> > > 
+> > >  * r600 CS checker rejects GL_DEPTH_TEST w/o depth buffer:
+> > >            https://bugs.freedesktop.org/show_bug.cgi?id=27571
+> > > 
+> > >  * r600 CS checker rejects narrow FBO renderbuffers:
+> > >            https://bugs.freedesktop.org/show_bug.cgi?id=27609
+> > 
+> > Do you want to me to add them as one entry or as two separate bugs?
+> 
+> As upstream doesn't consider the first to be a kernel issue, I guess you
+> should just list the second.
+> 
+> On 10:57 Wed 21 Apr     , Jerome Glisse wrote:
+> > First one is userspace bug, i need to look into the second one.
+> > ie we were lucky the hw didn't lockup without depth buffer and
+> > depth test enabled.
+> 
+> OK, if the failure is due to userspace is doing Very Bad Things(tm),
+> catching that seems reasonable.
+> 
+> Nevertheless, even if it happened by luck, the result was (ostensibly)
+> working programs that suddenly break once one "upgrades" to the latest
+> kernel.  If userspace can't be fixed before 2.6.34 is released, perhaps
+> a less cryptic log message would be appropriate?
+> 
+> -- 
+> Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
+
+I pushed fix into mesa for the depth issue i will look into the other
+one today and likely push kernel fix.
+
+Cheers,
+Jerome
