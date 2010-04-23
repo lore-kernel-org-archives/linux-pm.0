@@ -1,22 +1,18 @@
 From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH 8/9] Input: Block suspend while event queue
- is not empty.
-Date: Fri, 23 Apr 2010 13:56:25 -0700
-Message-ID: <20100423135625.1e12d005.randy.dunlap__2290.74481544576$1272056373$gmane$org@oracle.com>
+Subject: Re: [PATCH 5/9] PM: suspend_block: Add debugfs file
+Date: Fri, 23 Apr 2010 13:58:53 -0700
+Message-ID: <20100423135853.478af057.randy.dunlap__12442.9840980612$1272056487$gmane$org@oracle.com>
 References: <1271984938-13920-1-git-send-email-arve@android.com>
 	<1271984938-13920-2-git-send-email-arve@android.com>
 	<1271984938-13920-3-git-send-email-arve@android.com>
 	<1271984938-13920-4-git-send-email-arve@android.com>
 	<1271984938-13920-5-git-send-email-arve@android.com>
 	<1271984938-13920-6-git-send-email-arve@android.com>
-	<1271984938-13920-7-git-send-email-arve@android.com>
-	<1271984938-13920-8-git-send-email-arve@android.com>
-	<1271984938-13920-9-git-send-email-arve@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1271984938-13920-9-git-send-email-arve@android.com>
+In-Reply-To: <1271984938-13920-6-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,77 +23,126 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: linux-input@vger.kernel.org, =?ISO-8859-1?Q?M=E1rton_N=E9meth?= <nm127@freemail.hu>, Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sven Neumann <s.neumann@raumfeld.com>, linux-kernel@vger.kernel.org, Matthew@smtp1.linux-foundation.org, Henrik Rydberg <rydberg@euromail.se>, Jiri Kosina <jkosina@suse.cz>, linux-pm@lists.linux-foundation.org, Tero Saarni <tero.saarni@gmail.com>, Garrett <mjg@redhat.com>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Pavel@smtp1.linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 22 Apr 2010 18:08:57 -0700 Arve Hj=F8nnev=E5g wrote:
+On Thu, 22 Apr 2010 18:08:54 -0700 Arve Hj=F8nnev=E5g wrote:
 
-> Add an ioctl, EVIOCSSUSPENDBLOCK, to enable a suspend_blocker that will b=
-lock
-> suspend while the event queue is not empty. This allows userspace code to
-> process input events while the device appears to be asleep.
+> Report active and inactive suspend blockers in
+> /sys/kernel/debug/suspend_blockers.
 
 
-All new ioctls need to be added to Documentation/ioctl/ioctl-number.txt, pl=
-ease.
+This looks more like user interface information than it does debug informat=
+ion.
+If that's correct, it shouldn't be in debugfs.
+
 
 > Signed-off-by: Arve Hj=F8nnev=E5g <arve@android.com>
 > ---
->  drivers/input/evdev.c |   22 ++++++++++++++++++++++
->  include/linux/input.h |    3 +++
->  2 files changed, 25 insertions(+), 0 deletions(-)
+>  kernel/power/suspend_blocker.c |   44 ++++++++++++++++++++++++++++++++++=
+++++-
+>  1 files changed, 42 insertions(+), 2 deletions(-)
 > =
 
-> diff --git a/drivers/input/evdev.c b/drivers/input/evdev.c
-> index 2ee6c7a..66e0d16 100644
-> --- a/drivers/input/evdev.c
-> +++ b/drivers/input/evdev.c
-> @@ -585,6 +594,19 @@ static long evdev_do_ioctl(struct file *file, unsign=
-ed int cmd,
->  		else
->  			return evdev_ungrab(evdev, client);
+> diff --git a/kernel/power/suspend_blocker.c b/kernel/power/suspend_blocke=
+r.c
+> index 868e8f1..047e910 100644
+> --- a/kernel/power/suspend_blocker.c
+> +++ b/kernel/power/suspend_blocker.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/rtc.h>
+>  #include <linux/suspend.h>
+>  #include <linux/suspend_blocker.h>
+> +#include <linux/debugfs.h>
+>  #include "power.h"
 >  =
 
-> +	case EVIOCGSUSPENDBLOCK:
-> +		return put_user(client->use_suspend_blocker, ip);
+>  enum {
+> @@ -41,6 +42,7 @@ struct workqueue_struct *suspend_work_queue;
+>  struct suspend_blocker main_suspend_blocker;
+>  static suspend_state_t requested_suspend_state =3D PM_SUSPEND_MEM;
+>  static bool enable_suspend_blockers;
+> +static struct dentry *suspend_blocker_stats_dentry;
+>  =
+
+>  #define pr_info_time(fmt, args...) \
+>  	do { \
+> @@ -54,6 +56,21 @@ static bool enable_suspend_blockers;
+>  			tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec); \
+>  	} while (0);
+>  =
+
+> +static int suspend_blocker_stats_show(struct seq_file *m, void *unused)
+> +{
+> +	unsigned long irqflags;
+> +	struct suspend_blocker *blocker;
 > +
-> +	case EVIOCSSUSPENDBLOCK:
-> +		spin_lock_irq(&client->buffer_lock);
-> +		if (!client->use_suspend_blocker && p)
-> +			suspend_blocker_init(&client->suspend_blocker, "evdev");
-> +		else if (client->use_suspend_blocker && !p)
-> +			suspend_blocker_destroy(&client->suspend_blocker);
-> +		client->use_suspend_blocker =3D !!p;
-> +		spin_unlock_irq(&client->buffer_lock);
-> +		return 0;
+> +	seq_puts(m, "name\tactive\n");
+> +	spin_lock_irqsave(&list_lock, irqflags);
+> +	list_for_each_entry(blocker, &inactive_blockers, link)
+> +		seq_printf(m, "\"%s\"\t0\n", blocker->name);
+> +	list_for_each_entry(blocker, &active_blockers, link)
+> +		seq_printf(m, "\"%s\"\t1\n", blocker->name);
+> +	spin_unlock_irqrestore(&list_lock, irqflags);
+> +	return 0;
+> +}
 > +
->  	default:
->  =
-
->  		if (_IOC_TYPE(cmd) !=3D 'E')
-> diff --git a/include/linux/input.h b/include/linux/input.h
-> index 7ed2251..b2d93b4 100644
-> --- a/include/linux/input.h
-> +++ b/include/linux/input.h
-> @@ -82,6 +82,9 @@ struct input_absinfo {
->  =
-
->  #define EVIOCGRAB		_IOW('E', 0x90, int)			/* Grab/Release device */
->  =
-
-> +#define EVIOCGSUSPENDBLOCK	_IOR('E', 0x91, int)			/* get suspend block e=
-nable */
-> +#define EVIOCSSUSPENDBLOCK	_IOW('E', 0x91, int)			/* set suspend block e=
-nable */
-> +
->  /*
->   * Event types
+>  static void print_active_blockers_locked(void)
+>  {
+>  	struct suspend_blocker *blocker;
+> @@ -101,8 +118,8 @@ static DECLARE_WORK(suspend_work, suspend_worker);
+>  /**
+>   * suspend_blocker_init() - Initialize a suspend blocker
+>   * @blocker:	The suspend blocker to initialize.
+> - * @name:	The name of the suspend blocker to show in debug messages.
+> - *
+> + * @name:	The name of the suspend blocker to show in debug messages and
+> + *		/sys/kernel/debug/suspend_blockers.
+>   * The suspend blocker struct and name must not be freed before calling
+>   * suspend_blocker_destroy.
 >   */
+> @@ -240,6 +257,19 @@ int request_suspend_state(suspend_state_t state)
+>  	return 0;
+>  }
+>  =
+
+> +static int suspend_blocker_stats_open(struct inode *inode, struct file *=
+file)
+> +{
+> +	return single_open(file, suspend_blocker_stats_show, NULL);
+> +}
+> +
+> +static const struct file_operations suspend_blocker_stats_fops =3D {
+> +	.owner =3D THIS_MODULE,
+> +	.open =3D suspend_blocker_stats_open,
+> +	.read =3D seq_read,
+> +	.llseek =3D seq_lseek,
+> +	.release =3D single_release,
+> +};
+> +
+>  static int __init suspend_block_init(void)
+>  {
+>  	suspend_work_queue =3D create_singlethread_workqueue("suspend");
+> @@ -251,4 +281,14 @@ static int __init suspend_block_init(void)
+>  	return 0;
+>  }
+>  =
+
+> +static int __init suspend_block_postcore_init(void)
+> +{
+> +	if (!suspend_work_queue)
+> +		return 0;
+> +	suspend_blocker_stats_dentry =3D debugfs_create_file("suspend_blockers",
+> +			S_IRUGO, NULL, NULL, &suspend_blocker_stats_fops);
+> +	return 0;
+> +}
+> +
+>  core_initcall(suspend_block_init);
+> +postcore_initcall(suspend_block_postcore_init);
 > -- =
 
 
 
-thanks,
 ---
 ~Randy
 *** Remember to use Documentation/SubmitChecklist when testing your code ***
