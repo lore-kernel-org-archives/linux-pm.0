@@ -1,15 +1,15 @@
-From: Matt Reimer <mattjreimer@gmail.com>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
-	userspace is frozen?
-Date: Thu, 22 Apr 2010 16:40:58 -0700
-Message-ID: <y2yf383264b1004221640rd1fca614zfa15d7e7984ab3ba__13820.5256815583$1272041590$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1003032142580.6963-100000@netrider.rowland.org>
-	<201003042026.30303.rjw@sisk.pl> <20100304201548.GA1341@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: platform_bus: Allow runtime PM by default
+Date: Fri, 23 Apr 2010 18:40:19 +0200
+Message-ID: <201004231840.20041.rjw__33332.6693544679$1272046378$gmane$org@sisk.pl>
+References: <1269625370-17754-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<20100423161157.GA20971@suse.de>
+	<20100423162811.GA31231@rakim.wolfsonmicro.main>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100304201548.GA1341@elf.ucw.cz>
+In-Reply-To: <20100423162811.GA31231@rakim.wolfsonmicro.main>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,32 +19,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-pm@lists.linux-foundation.org, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 4, 2010 at 1:15 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
->> > My thought exactly. =A0This is the only approach that also solves the
->> > following race:
->> >
->> > =A0 =A0 A driver is unloaded at the same time as a suspend starts.
->> >
->> > =A0 =A0 The writeback thread gets frozen.
->> >
->> > =A0 =A0 Then before the rmmod thread is frozen, it calls del_gendisk.
->> >
->> > Delaying things by means of a workqueue (or the equivalent) might also
->> > work, but it doesn't seem as safe. =A0For example, some important
->> > writebacks might end up getting delayed until too late.
->
-> Delaying writebacks during sleep should be ok... That's why we do
-> sync() after userspace is frozen -- nothing really important should be
-> waiting for writeback after that point.
+On Friday 23 April 2010, Mark Brown wrote:
+> On Fri, Apr 23, 2010 at 09:11:57AM -0700, Greg KH wrote:
+> > On Fri, Apr 23, 2010 at 04:57:21PM +0100, Mark Brown wrote:
+> 
+> > > Turns out it's commit ad53012 "i2c: Fix bus-level power management
+> > > callbacks" in the PM tree that it depends on.  Does it make sense to
+> > > merge this via there rather than via your tree?
+> 
+> > Why would an i2c specific patch be needed here?  Do you have a pointer
+> > to that patch?
+> 
+> Despite the patch title being I2C specific it actually includes exposing
+> some of the runtime PM implementation to external users - I2C being the
+> first user of the generic PM runtime callbacks that I'm trying to use in
+> the platform device implementation.
+> 
+> http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commitdiff;h=ad530128cd302e5df930b6eb4d4c7e162c40fcb2;hp=b938b00444e900f1c86e754539e3d00f172c184e
+> http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commitdiff;h=d690b2cd222afc75320b9b8e9da7df02e9e630ca
+> 
+> > And yes, if it depends on something else in the PM tree, feel free to
+> > send this patch also through it, I have no objection to that.  Rafael,
+> > care to pick it up?  Mark, you might have to resend it to him.
+> 
+> OK, Raphael please let me know if you need a resend.
 
-Has this been fixed, or has a consensus about how to fix this been
-achieved? I'm hitting the same problem and have some time to work on a
-fix.
+No, thanks, I have your original post.
 
-Matt
+Rafael
