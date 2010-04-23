@@ -1,18 +1,15 @@
-From: Jerome Glisse <glisse@freedesktop.org>
-Subject: Re: 2.6.34-rc5: Reported regressions from 2.6.33
-Date: Fri, 23 Apr 2010 12:23:38 +0200
-Message-ID: <20100423102338.GA3151__30117.5840701491$1272018406$gmane$org@barney.localdomain>
-References: <deuQKFRcc0B.A.3EG.BRSzLB@tosh>
-	<20100420135636.GA10674@elliptictech.com>
-	<201004210715.38621.rjw@sisk.pl>
-	<20100421085739.GA2576@barney.localdomain>
-	<20100421165758.GA23565@elliptictech.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: platform_bus: Allow runtime PM by default
+Date: Fri, 23 Apr 2010 11:57:51 +0100
+Message-ID: <20100423105750.GA27232__22718.5423988432$1272020372$gmane$org@rakim.wolfsonmicro.main>
+References: <1269625370-17754-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<20100422235353.GA16310@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20100421165758.GA23565@elliptictech.com>
+In-Reply-To: <20100422235353.GA16310@kroah.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,43 +19,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, DRI <dri-devel@lists.freedesktop.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>
+To: Greg KH <greg@kroah.com>
+Cc: linux-pm@lists.linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 21, 2010 at 12:57:58PM -0400, Nick Bowler wrote:
-> On Wed, Apr 21, 2010 at 07:15:38AM +0200, Rafael J. Wysocki wrote:
-> > On Tuesday 20 April 2010, Nick Bowler wrote:
-> > > Please list these two similar regressions from 2.6.33 in the r600 DRM:
-> > > 
-> > >  * r600 CS checker rejects GL_DEPTH_TEST w/o depth buffer:
-> > >            https://bugs.freedesktop.org/show_bug.cgi?id=27571
-> > > 
-> > >  * r600 CS checker rejects narrow FBO renderbuffers:
-> > >            https://bugs.freedesktop.org/show_bug.cgi?id=27609
-> > 
-> > Do you want to me to add them as one entry or as two separate bugs?
-> 
-> As upstream doesn't consider the first to be a kernel issue, I guess you
-> should just list the second.
-> 
-> On 10:57 Wed 21 Apr     , Jerome Glisse wrote:
-> > First one is userspace bug, i need to look into the second one.
-> > ie we were lucky the hw didn't lockup without depth buffer and
-> > depth test enabled.
-> 
-> OK, if the failure is due to userspace is doing Very Bad Things(tm),
-> catching that seems reasonable.
-> 
-> Nevertheless, even if it happened by luck, the result was (ostensibly)
-> working programs that suddenly break once one "upgrades" to the latest
-> kernel.  If userspace can't be fixed before 2.6.34 is released, perhaps
-> a less cryptic log message would be appropriate?
-> 
-> -- 
-> Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
-
-I pushed fix into mesa for the depth issue i will look into the other
-one today and likely push kernel fix.
-
-Cheers,
-Jerome
+T24gVGh1LCBBcHIgMjIsIDIwMTAgYXQgMDQ6NTM6NTNQTSAtMDcwMCwgR3JlZyBLSCB3cm90ZToK
+PiBPbiBGcmksIE1hciAyNiwgMjAxMCBhdCAwNTo0Mjo1MFBNICswMDAwLCBNYXJrIEJyb3duIHdy
+b3RlOgoKPiA+IENoYW5nZSB0aGUgZGVmYXVsdCBpbXBsZW1lbnRhdGlvbiB0byB0aGUgc3RhbmRh
+cmQgcG1fZ2VuZXJpY19ydW50aW1lCj4gPiBvbmUsIGFsbG93aW5nIGRyaXZlcnMgdG8gdXNlIHJ1
+bnRpbWUgUE0gd2l0aG91dCBwZXItYXJjaGl0ZWN0dXJlCj4gPiBjaGFuZ2VzLgoKPiBUaGF0J3Mg
+bmljZSwgYnV0IGl0IGJyZWFrcyB0aGUgYnVpbGQgb24gbXkgc3lzdGVtOgo+ICAgQ0MgICAgICBk
+cml2ZXJzL2Jhc2UvcGxhdGZvcm0ubwo+IGRyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jOiBJbiBmdW5j
+dGlvbiDigJhwbGF0Zm9ybV9wbV9ydW50aW1lX3N1c3BlbmTigJk6Cj4gZHJpdmVycy9iYXNlL3Bs
+YXRmb3JtLmM6OTcwOiBlcnJvcjogaW1wbGljaXQgZGVjbGFyYXRpb24gb2YgZnVuY3Rpb24g4oCY
+cG1fZ2VuZXJpY19ydW50aW1lX3N1c3BlbmTigJkKPiBkcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYzog
+SW4gZnVuY3Rpb24g4oCYcGxhdGZvcm1fcG1fcnVudGltZV9yZXN1bWXigJk6Cj4gZHJpdmVycy9i
+YXNlL3BsYXRmb3JtLmM6OTc1OiBlcnJvcjogaW1wbGljaXQgZGVjbGFyYXRpb24gb2YgZnVuY3Rp
+b24g4oCYcG1fZ2VuZXJpY19ydW50aW1lX3Jlc3VtZeKAmQo+IGRyaXZlcnMvYmFzZS9wbGF0Zm9y
+bS5jOiBJbiBmdW5jdGlvbiDigJhwbGF0Zm9ybV9wbV9ydW50aW1lX2lkbGXigJk6Cj4gZHJpdmVy
+cy9iYXNlL3BsYXRmb3JtLmM6OTgwOiBlcnJvcjogaW1wbGljaXQgZGVjbGFyYXRpb24gb2YgZnVu
+Y3Rpb24g4oCYcG1fZ2VuZXJpY19ydW50aW1lX2lkbGXigJkKPiBtYWtlWzFdOiAqKiogW2RyaXZl
+cnMvYmFzZS9wbGF0Zm9ybS5vXSBFcnJvciAxCj4gbWFrZTogKioqIFtfbW9kdWxlX2RyaXZlcnMv
+YmFzZV0gRXJyb3IgMgoKPiBDYXJlIHRvIGZpeCBpdCB1cD8KClRoaXMgZGVwZW5kcyBvbiAiUE06
+IFByb3ZpZGUgZ2VuZXJpYyBzdWJzeXN0ZW0tbGV2ZWwgY2FsbGJhY2tzIiB3aGljaCBpcwppbiBM
+aW51cycgdHJlZSAtIHdoaWNoIGtlcm5lbCB2ZXJzaW9uIGFyZSB5b3UgYnVpbGRpbmcgYWdhaW5z
+dCBhbmQgd2l0aAp3aGF0IGNvbmZpZz8gIFRoaW5ncyB3b3JrIGZpbmUgZm9yIG1lIGluIC1uZXh0
+Li4uCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4
+LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRw
+czovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
