@@ -1,21 +1,23 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 5/9] PM: suspend_block: Add debugfs file
-Date: Fri, 23 Apr 2010 21:54:29 -0700
-Message-ID: <x2sd6200be21004232154i4738d938vf57ade1b702cf404__13279.8136714429$1272084986$gmane$org@mail.gmail.com>
+Subject: Re: [PATCH 8/9] Input: Block suspend while event queue
+	is not empty.
+Date: Fri, 23 Apr 2010 21:58:56 -0700
+Message-ID: <v2sd6200be21004232158m3a3eaebai1ca0e49ae79e97f__3.37604801661229$1272085193$gmane$org@mail.gmail.com>
 References: <1271984938-13920-1-git-send-email-arve@android.com>
 	<1271984938-13920-2-git-send-email-arve@android.com>
 	<1271984938-13920-3-git-send-email-arve@android.com>
 	<1271984938-13920-4-git-send-email-arve@android.com>
 	<1271984938-13920-5-git-send-email-arve@android.com>
 	<1271984938-13920-6-git-send-email-arve@android.com>
-	<20100423135853.478af057.randy.dunlap@oracle.com>
-	<n2rd6200be21004232023hf138c65dia5b378825124933d@mail.gmail.com>
-	<4BD27266.8070900@oracle.com>
+	<1271984938-13920-7-git-send-email-arve@android.com>
+	<1271984938-13920-8-git-send-email-arve@android.com>
+	<1271984938-13920-9-git-send-email-arve@android.com>
+	<20100423135625.1e12d005.randy.dunlap@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4BD27266.8070900@oracle.com>
+In-Reply-To: <20100423135625.1e12d005.randy.dunlap@oracle.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,37 +28,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: linux-input@vger.kernel.org, =?ISO-8859-1?Q?M=E1rton_N=E9meth?= <nm127@freemail.hu>, Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sven Neumann <s.neumann@raumfeld.com>, linux-kernel@vger.kernel.org, Henrik Rydberg <rydberg@euromail.se>, Jiri Kosina <jkosina@suse.cz>, linux-pm@lists.linux-foundation.org, Tero Saarni <tero.saarni@gmail.com>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
 2010/4/23 Randy Dunlap <randy.dunlap@oracle.com>:
-> On 04/23/10 20:23, Arve Hj=F8nnev=E5g wrote:
->> 2010/4/23 Randy Dunlap <randy.dunlap@oracle.com>:
->>> On Thu, 22 Apr 2010 18:08:54 -0700 Arve Hj=F8nnev=E5g wrote:
->>>
->>>> Report active and inactive suspend blockers in
->>>> /sys/kernel/debug/suspend_blockers.
->>>
->>>
->>> This looks more like user interface information than it does debug info=
-rmation.
->>> If that's correct, it shouldn't be in debugfs.
->>
->> Where should it be? It is not allowed in sysfs, and procfs does not
->> appear to be open to new files.
+> On Thu, 22 Apr 2010 18:08:57 -0700 Arve Hj=F8nnev=E5g wrote:
 >
-> Why is it not allowed in sysfs? =A0due to more than one value per file
-
-Yes.
-
-> or something else?
+>> Add an ioctl, EVIOCSSUSPENDBLOCK, to enable a suspend_blocker that will =
+block
+>> suspend while the event queue is not empty. This allows userspace code to
+>> process input events while the device appears to be asleep.
 >
-> I don't think that procfs is closed to new files, but you may have to
-> justify why it should be used.
+>
+> All new ioctls need to be added to Documentation/ioctl/ioctl-number.txt, =
+please.
 >
 
-I used procfs in the original version and there were a lot of
-objections to this, so I moved it to debugfs.
+These two appear to already be covered by "'E'     all
+linux/input.h           conflict!", but I will add a line the user
+space suspend blocker ioctls added earlier in this patch set.
 
 -- =
 
