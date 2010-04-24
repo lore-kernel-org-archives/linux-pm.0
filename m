@@ -1,17 +1,22 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 2/9] PM: suspend_block: Add driver to access
- suspend blockers from user-space
-Date: Sat, 24 Apr 2010 07:55:23 +0200
-Message-ID: <20100424055523.GC2290__16460.4377154776$1272088599$gmane$org@elf.ucw.cz>
-References: <20100423084349.GC1573@ucw.cz>
-	<Pine.LNX.4.44L0.1004231242460.1777-100000@iolanthe.rowland.org>
-	<i2zd6200be21004232020t46f4de0ct93b94e2bd67a6e76@mail.gmail.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 7/9] PM: Add suspend blocking work.
+Date: Sat, 24 Apr 2010 08:33:48 +0200
+Message-ID: <4BD290CC.4080601__4429.37340490079$1272090930$gmane$org@kernel.org>
+References: <1271984938-13920-1-git-send-email-arve@android.com>	
+	<1271984938-13920-2-git-send-email-arve@android.com>	
+	<1271984938-13920-3-git-send-email-arve@android.com>	
+	<1271984938-13920-4-git-send-email-arve@android.com>	
+	<1271984938-13920-5-git-send-email-arve@android.com>	
+	<1271984938-13920-6-git-send-email-arve@android.com>	
+	<1271984938-13920-7-git-send-email-arve@android.com>	
+	<1271984938-13920-8-git-send-email-arve@android.com>	
+	<4BD1576E.5070401@kernel.org> <20100423122032.GA23544@redhat.com>
+	<y2ud6200be21004231549q8e52c9c0z441d82b5a15e177d@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <i2zd6200be21004232020t46f4de0ct93b94e2bd67a6e76@mail.gmail.com>
+In-Reply-To: <y2ud6200be21004231549q8e52c9c0z441d82b5a15e177d@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,64 +26,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org
+To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Dmitri Vorobiev <dmitri.vorobiev@movial.com>, Andi Kleen <ak@linux.intel.com>, Jiri Kosina <jkosina@suse.cz>, Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2010-04-23 20:20:47, Arve Hj?nnev?g wrote:
-> On Fri, Apr 23, 2010 at 9:43 AM, Alan Stern <stern@rowland.harvard.edu> w=
-rote:
-> > On Fri, 23 Apr 2010, Pavel Machek wrote:
-> >
-> >> Hi!
-> >>
-> >> > Add a misc device, "suspend_blocker", that allows user-space process=
-es
-> >> > to block auto suspend. The device has ioctls to create a suspend_blo=
-cker,
-> >> > and to block and unblock suspend. To delete the suspend_blocker, clo=
-se
-> >> > the device.
-> >> >
-> >> > Signed-off-by: Arve Hj??nnev??g <arve@android.com>
-> >>
-> >> > --- a/Documentation/power/suspend-blockers.txt
-> >> > +++ b/Documentation/power/suspend-blockers.txt
-> >> > @@ -95,3 +95,20 @@ if (list_empty(&state->pending_work))
-> >> > =A0else
-> >> > =A0 =A0 suspend_block(&state->suspend_blocker);
-> >> >
-> >> > +User-space API
-> >> > +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> >> > +
-> >> > +To create a suspend_blocker from user-space, open the suspend_block=
-er device:
-> >> > + =A0 =A0fd =3D open("/dev/suspend_blocker", O_RDWR | O_CLOEXEC);
-> >> > +then call:
-> >> > + =A0 =A0ioctl(fd, SUSPEND_BLOCKER_IOCTL_INIT(strlen(name)), name);
-> >>
-> >>
-> >> This seems like very wrong idea -- it uses different ioctl number for
-> >> each length AFAICT.
-> >
-> > How about specifying the name by an ordinary write() call instead of
-> > by an ioctl()?
-> >
-> =
+Hello,
 
-> I prefer using ioctls. We have three operations at the moment. Init,
-> block and unblock. If we do init with write but block and unblock
-> using ioctls, it would be pretty strange. Specifying a command and
+On 04/24/2010 12:49 AM, Arve Hj=F8nnev=E5g wrote:
+> I want the suspend blocker active when the work is pending or running.
+> I did not see a way to do this on top of the workqueue api without
+> adding additional locking.
 
-Why would it be "strange"?
+Well, then add additional locking.  suspend_blocker is far away from
+being a hot path and there's nothing wrong with additional locking as
+long as everything is wrapped inside proper APIs.  Adding stuff to the
+core code for things as specific as this is much worse.
 
-> argument in a string to write is more complicated to parse than using
-> ioctls.
+> If the work is both queued and starts running on another workqueue
+> between "get_wq_data(work) =3D=3D cwq" and "!work_pending(work)", then
+> suspend_unblock will be called when it shouldn't. It should work fine
+> if I change to it check pending first though, since it cannot move
+> back to the current workqueue without locking cwq->lock first.
 
-More complicated to parse?
+The code is more fundamentally broken.  Once work->func has started
+executing, the work pointer can't be dereferenced as work callback is
+allowed to free or re-purpose the work data structure and in the same
+manner you can't check for pending status after execution has
+completed.
+
+> Or are you talking about the race when the callback is running on
+> multiple (cpu) workqueues at the same time. In that case the suspend
+> blocker is released when the callback returns from the last workqueue
+> is was queued on, not when all the callbacks have returned. On that
+> note, is it ever safe to use flush_work and cancel_work_sync for work
+> queues on anything other than a single single threaded workqueue?
+
+flush_work() is guaranteed only to flush from the last queued cpu but
+cancel_work_sync() will guarantee that no cpu is executing or holding
+onto the work.  So, yeah, as long as the limitations of flush_work()
+is understood, it's safe.
+
+Going back to the original subject, just add simplistic outside
+locking in suspend_blocker_work API (or whatever other name you
+prefer).  That will be much cleaner and safer.  Let's think about
+moving them into workqueue implementation proper after the number of
+the API users grows to hundreds.
+
+Thanks.
 
 -- =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+tejun
