@@ -1,14 +1,18 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 1/9] PM: Add suspend block api.
-Date: Fri, 23 Apr 2010 19:15:59 -0700
-Message-ID: <p2vd6200be21004231915o5b2d4ed1zbabd3e51e6213f45__21606.000691145$1272075541$gmane$org@mail.gmail.com>
-References: <1271984938-13920-2-git-send-email-arve@android.com>
-	<Pine.LNX.4.44L0.1004231204450.1777-100000@iolanthe.rowland.org>
+From: tytso@mit.edu
+Subject: Re: [PATCH 2/9] PM: suspend_block: Add driver to access
+ suspend blockers from user-space
+Date: Fri, 23 Apr 2010 21:53:34 -0400
+Message-ID: <20100424015334.GO14986__5339.90181652388$1272075997$gmane$org@thunk.org>
+References: <1271984938-13920-1-git-send-email-arve@android.com>
+	<1271984938-13920-2-git-send-email-arve@android.com>
+	<1271984938-13920-3-git-send-email-arve@android.com>
+	<20100423084349.GC1573@ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1004231204450.1777-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <20100423084349.GC1573@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,29 +22,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-2010/4/23 Alan Stern <stern@rowland.harvard.edu>:
-> On Thu, 22 Apr 2010, [UTF-8] Arve Hj=F8nnev=E5g wrote:
-...
->> +Calling suspend_block when the suspend blocker is active or suspend_unb=
-lock when
->> +it is not active has no effect. This allows drivers to update their sta=
-te and
->> +call suspend suspend_block or suspend_unblock based on the result.
->
-> But suspend_block() and suspend_unblock() don't nest. =A0You should
-> mention this.
->
+On Fri, Apr 23, 2010 at 10:43:49AM +0200, Pavel Machek wrote:
+> > +To create a suspend_blocker from user-space, open the suspend_blocker device:
+> > +    fd = open("/dev/suspend_blocker", O_RDWR | O_CLOEXEC);
+> > +then call:
+> > +    ioctl(fd, SUSPEND_BLOCKER_IOCTL_INIT(strlen(name)), name);
+> 
+> 
+> This seems like very wrong idea -- it uses different ioctl number for
+> each length AFAICT.
 
-I'm not sure what you mean by this? I think the first sentence
-dictates nesting is not supported.
+Yep, and there's nothing wrong with that IMHO.  It's a clever use of
+the _IOC encoding scheme.
 
-I think the rest of your comments will be addressed in the next
-version of the document, that I worked with Rafael on.
-
--- =
-
-Arve Hj=F8nnev=E5g
+						- Ted
