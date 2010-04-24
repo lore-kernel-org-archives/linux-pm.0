@@ -1,15 +1,19 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 2/9] PM: suspend_block: Add driver to access
-	suspend blockers from user-space
-Date: Fri, 23 Apr 2010 20:20:47 -0700
-Message-ID: <i2zd6200be21004232020t46f4de0ct93b94e2bd67a6e76__19737.2867646211$1272079317$gmane$org@mail.gmail.com>
-References: <20100423084349.GC1573@ucw.cz>
-	<Pine.LNX.4.44L0.1004231242460.1777-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH 5/9] PM: suspend_block: Add debugfs file
+Date: Fri, 23 Apr 2010 20:23:22 -0700
+Message-ID: <n2rd6200be21004232023hf138c65dia5b378825124933d__38300.1620452434$1272079461$gmane$org@mail.gmail.com>
+References: <1271984938-13920-1-git-send-email-arve@android.com>
+	<1271984938-13920-2-git-send-email-arve@android.com>
+	<1271984938-13920-3-git-send-email-arve@android.com>
+	<1271984938-13920-4-git-send-email-arve@android.com>
+	<1271984938-13920-5-git-send-email-arve@android.com>
+	<1271984938-13920-6-git-send-email-arve@android.com>
+	<20100423135853.478af057.randy.dunlap@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1004231242460.1777-100000@iolanthe.rowland.org>
+In-Reply-To: <20100423135853.478af057.randy.dunlap@oracle.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,52 +23,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Apr 23, 2010 at 9:43 AM, Alan Stern <stern@rowland.harvard.edu> wro=
-te:
-> On Fri, 23 Apr 2010, Pavel Machek wrote:
+2010/4/23 Randy Dunlap <randy.dunlap@oracle.com>:
+> On Thu, 22 Apr 2010 18:08:54 -0700 Arve Hj=F8nnev=E5g wrote:
 >
->> Hi!
->>
->> > Add a misc device, "suspend_blocker", that allows user-space processes
->> > to block auto suspend. The device has ioctls to create a suspend_block=
-er,
->> > and to block and unblock suspend. To delete the suspend_blocker, close
->> > the device.
->> >
->> > Signed-off-by: Arve Hj??nnev??g <arve@android.com>
->>
->> > --- a/Documentation/power/suspend-blockers.txt
->> > +++ b/Documentation/power/suspend-blockers.txt
->> > @@ -95,3 +95,20 @@ if (list_empty(&state->pending_work))
->> > =A0else
->> > =A0 =A0 suspend_block(&state->suspend_blocker);
->> >
->> > +User-space API
->> > +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->> > +
->> > +To create a suspend_blocker from user-space, open the suspend_blocker=
- device:
->> > + =A0 =A0fd =3D open("/dev/suspend_blocker", O_RDWR | O_CLOEXEC);
->> > +then call:
->> > + =A0 =A0ioctl(fd, SUSPEND_BLOCKER_IOCTL_INIT(strlen(name)), name);
->>
->>
->> This seems like very wrong idea -- it uses different ioctl number for
->> each length AFAICT.
+>> Report active and inactive suspend blockers in
+>> /sys/kernel/debug/suspend_blockers.
 >
-> How about specifying the name by an ordinary write() call instead of
-> by an ioctl()?
 >
+> This looks more like user interface information than it does debug inform=
+ation.
+> If that's correct, it shouldn't be in debugfs.
 
-I prefer using ioctls. We have three operations at the moment. Init,
-block and unblock. If we do init with write but block and unblock
-using ioctls, it would be pretty strange. Specifying a command and
-argument in a string to write is more complicated to parse than using
-ioctls. Or did you have something else in mind?
+Where should it be? It is not allowed in sysfs, and procfs does not
+appear to be open to new files.
 
 -- =
 
