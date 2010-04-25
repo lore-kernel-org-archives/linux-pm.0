@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 2/9] PM: suspend_block: Add driver to access
- suspend blockers from user-space
-Date: Sat, 24 Apr 2010 10:44:43 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1004241037230.6848-100000__47973.8643080511$1272120342$gmane$org@netrider.rowland.org>
-References: <20100424055523.GC2290@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: commit 9630bdd9 changes behavior of the poweroff -
+	bug?
+Date: Sun, 25 Apr 2010 05:15:08 +0200
+Message-ID: <201004250515.08671.rjw__8088.69840479947$1272165326$gmane$org@sisk.pl>
+References: <20100401133923.GA4104@tiehlicka.suse.cz>
+	<201004191719.53602.rjw@sisk.pl> <201004250435.42779.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100424055523.GC2290@elf.ucw.cz>
+In-Reply-To: <201004250435.42779.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,77 +19,100 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org
+To: Michal Hocko <mhocko@suse.cz>
+Cc: Tony Vroon <tony@linx.net>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 24 Apr 2010, Pavel Machek wrote:
+On Sunday 25 April 2010, Rafael J. Wysocki wrote:
+> On Monday 19 April 2010, Rafael J. Wysocki wrote:
+> > On Monday 19 April 2010, Michal Hocko wrote:
+> > > On Fri 16-04-10 20:00:29, Rafael J. Wysocki wrote:
+> > > > On Wednesday 14 April 2010, Michal Hocko wrote:
+> > > > > On Tue 13-04-10 22:53:37, Rafael J. Wysocki wrote:
+> > > > > > On Tuesday 13 April 2010, Michal Hocko wrote:
+> > > > > > > On Tue 13-04-10 01:01:54, Rafael J. Wysocki wrote:
+> > > > > > > > On Saturday 10 April 2010, Rafael J. Wysocki wrote:
+> > > > > > > > > On Friday 09 April 2010, Tony Vroon wrote:
+> > > > > > > > > > On Fri, 2010-04-09 at 22:42 +0200, Rafael J. Wysocki wrote:
+> > > > > > > > > > > Please check if the patch below changes anything.
+> > > > > > > > > > >  drivers/acpi/wakeup.c |    4 ++--
+> > > > > > > > > > >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > > > > > > > > > 
+> > > > > > > > > > That didn't change the behaviour for me, sorry.
+> > > > > > > > > 
+> > > > > > > > > Well, I would be sorry if it did, because the patch removed some useful code. :-)
+> > > > > > > > > 
+> > > > > > > > > > (I made sure to go through a full power down session before trying the
+> > > > > > > > > > patched kernel)
+> > > > > > > > > 
+> > > > > > > > > Thanks for testing.  So it looks like we don't disable the GPE during power off.
+> > > > > > > > > 
+> > > > > > > > > I'll try to figure out what's going on, please stay tuned.
+> > > > > > > > 
+> > > > > > > > Can you please check if the patch below changes the behavior?
+> > > > > > > 
+> > > > > > > Unfortunately, it didn't help either (I have tried on top of the fresh
+> > > > > > > rc4).
+> > > > > > 
+> > > > > > That gets really weird.
+> > > > > > 
+> > > > > > > > ---
+> > > > > > > >  drivers/acpi/wakeup.c |    6 +++---
+> > > > > > > >  1 file changed, 3 insertions(+), 3 deletions(-)
+> > > > > > > > 
+> > > > > > > > Index: linux-2.6/drivers/acpi/wakeup.c
+> > > > > > > > ===================================================================
+> > > > > > > > --- linux-2.6.orig/drivers/acpi/wakeup.c
+> > > > > > > > +++ linux-2.6/drivers/acpi/wakeup.c
+> > > > > > > > @@ -63,17 +63,17 @@ void acpi_enable_wakeup_device(u8 sleep_
+> > > > > > > >  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+> > > > > > > >  		struct acpi_device *dev =
+> > > > > > > >  			container_of(node, struct acpi_device, wakeup_list);
+> > > > > > > > +		u8 action = ACPI_GPE_ENABLE;
+> > > > > > 
+> > > > > > Can you try to change the above to ACPI_GPE_DISABLE and retest, please?
+> > > > > 
+> > > > > Unfortunately didn't help as well...
+> > > > > Just for reference:
+> > > > > 
+> > > > > diff --git a/drivers/acpi/wakeup.c b/drivers/acpi/wakeup.c
+> > > > > index 248b473..f23c08f 100644
+> > > > > --- a/drivers/acpi/wakeup.c
+> > > > > +++ b/drivers/acpi/wakeup.c
+> > > > > @@ -63,7 +63,7 @@ void acpi_enable_wakeup_device(u8 sleep_state)
+> > > > >  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+> > > > >  		struct acpi_device *dev =
+> > > > >  			container_of(node, struct acpi_device, wakeup_list);
+> > > > > -		u8 action = ACPI_GPE_ENABLE;
+> > > > > +		u8 action = ACPI_GPE_DISABLE;
+> > > > 
+> > > > That probably means the chipset enables the GPEs by itself _after_ we've
+> > > > disabled them in acpi_enable_wakeup_device().
+> > > 
+> > > Is this something BIOS specific?
+> > > 
+> > > > 
+> > > > Unfortunately, I can't reproduce the issue on any of my test boxes and it's
+> > > > hard to find the source of the problem staring at the code.
+> > > 
+> > > Are there any debug options I can turn on to provide some information?
+> > 
+> > We can only check what the kernel tells us before power off, but all that seems
+> > correct.
+> > 
+> > > Btw. what exactly does this mean? In what state is the laptop while it
+> > > is turned off and GPE is enabled?
+> > 
+> > If a GPE is enabled, then some part of the chipset has power provided so that
+> > it can signal wakeup.
+> > 
+> > I'll look into it a bit more later today.
+> 
+> Please try the patch below.  It kind of restores the previous behavior,
+> let's see if it changes anything.
 
-> On Fri 2010-04-23 20:20:47, Arve Hj?nnev?g wrote:
-> > On Fri, Apr 23, 2010 at 9:43 AM, Alan Stern <stern@rowland.harvard.edu>=
- wrote:
-> > > On Fri, 23 Apr 2010, Pavel Machek wrote:
-> > >
-> > >> Hi!
-> > >>
-> > >> > Add a misc device, "suspend_blocker", that allows user-space proce=
-sses
-> > >> > to block auto suspend. The device has ioctls to create a suspend_b=
-locker,
-> > >> > and to block and unblock suspend. To delete the suspend_blocker, c=
-lose
-> > >> > the device.
-> > >> >
-> > >> > Signed-off-by: Arve Hj??nnev??g <arve@android.com>
-> > >>
-> > >> > --- a/Documentation/power/suspend-blockers.txt
-> > >> > +++ b/Documentation/power/suspend-blockers.txt
-> > >> > @@ -95,3 +95,20 @@ if (list_empty(&state->pending_work))
-> > >> > =A0else
-> > >> > =A0 =A0 suspend_block(&state->suspend_blocker);
-> > >> >
-> > >> > +User-space API
-> > >> > +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > >> > +
-> > >> > +To create a suspend_blocker from user-space, open the suspend_blo=
-cker device:
-> > >> > + =A0 =A0fd =3D open("/dev/suspend_blocker", O_RDWR | O_CLOEXEC);
-> > >> > +then call:
-> > >> > + =A0 =A0ioctl(fd, SUSPEND_BLOCKER_IOCTL_INIT(strlen(name)), name);
-> > >>
-> > >>
-> > >> This seems like very wrong idea -- it uses different ioctl number for
-> > >> each length AFAICT.
-> > >
-> > > How about specifying the name by an ordinary write() call instead of
-> > > by an ioctl()?
-> > >
-> > =
+If it doesn't help, please try to comment out the acpi_enable_gpe() in
+drivers/acpi/wakeup.c:acpi_wakeup_device_init() and retest (if you haven't
+done that already).
 
-> > I prefer using ioctls. We have three operations at the moment. Init,
-> > block and unblock. If we do init with write but block and unblock
-> > using ioctls, it would be pretty strange. Specifying a command and
-> =
-
-> Why would it be "strange"?
-
-Why indeed?  Using write() is the natural way to pass a data buffer
-into the kernel, especially a variable-length buffer.
-
-Mixing ioctl() and write() might seem strange at first, but it has
-plenty of precedent.  Consider adjusting the settings for a serial
-port, for example.
-
-> > argument in a string to write is more complicated to parse than using
-> > ioctls.
-> =
-
-> More complicated to parse?
-
-It shouldn't be -- especially if you assume that the init action must
-always come first.  The first write would contain the suspend blocker's
-name; all following writes would have to be either "on" or "off".  =
-
-That's not hard to parse.
-
-Alan Stern
+Rafael
