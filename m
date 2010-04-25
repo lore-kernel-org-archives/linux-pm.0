@@ -1,15 +1,15 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 2/9] PM: suspend_block: Add driver to access
-	suspend blockers from user-space
-Date: Sun, 25 Apr 2010 15:34:20 -0700
-Message-ID: <v2ld6200be21004251534y6c820e96l824f3288201a757d__18282.4685857215$1272235235$gmane$org@mail.gmail.com>
-References: <20100424055523.GC2290@elf.ucw.cz>
-	<Pine.LNX.4.44L0.1004241037230.6848-100000@netrider.rowland.org>
+Subject: Re: [PATCH 8/9] Input: Block suspend while event queue
+	is not empty.
+Date: Sun, 25 Apr 2010 15:41:23 -0700
+Message-ID: <j2id6200be21004251541z53ebce31rddb659680219c450__5444.65650241381$1272235642$gmane$org@mail.gmail.com>
+References: <201004250430.31054.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.1004251122230.25835-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1004241037230.6848-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1004251122230.25835-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,92 +20,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, =?ISO-8859-1?Q?M=E1rton_N=E9meth?= <nm127@freemail.hu>, Jiri Kosina <jkosina@suse.cz>, Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sven Neumann <s.neumann@raumfeld.com>, linux-kernel@vger.kernel.org, Henrik Rydberg <rydberg@euromail.se>, linux-input@vger.kernel.org, linux-pm@lists.linux-foundation.org, Tero Saarni <tero.saarni@gmail.com>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Apr 24, 2010 at 7:44 AM, Alan Stern <stern@rowland.harvard.edu> wro=
+On Sun, Apr 25, 2010 at 8:29 AM, Alan Stern <stern@rowland.harvard.edu> wro=
 te:
-> On Sat, 24 Apr 2010, Pavel Machek wrote:
+> On Sun, 25 Apr 2010, Rafael J. Wysocki wrote:
 >
->> On Fri 2010-04-23 20:20:47, Arve Hj?nnev?g wrote:
->> > On Fri, Apr 23, 2010 at 9:43 AM, Alan Stern <stern@rowland.harvard.edu=
-> wrote:
->> > > On Fri, 23 Apr 2010, Pavel Machek wrote:
->> > >
->> > >> Hi!
->> > >>
->> > >> > Add a misc device, "suspend_blocker", that allows user-space proc=
-esses
->> > >> > to block auto suspend. The device has ioctls to create a suspend_=
-blocker,
->> > >> > and to block and unblock suspend. To delete the suspend_blocker, =
-close
->> > >> > the device.
->> > >> >
->> > >> > Signed-off-by: Arve Hj??nnev??g <arve@android.com>
->> > >>
->> > >> > --- a/Documentation/power/suspend-blockers.txt
->> > >> > +++ b/Documentation/power/suspend-blockers.txt
->> > >> > @@ -95,3 +95,20 @@ if (list_empty(&state->pending_work))
->> > >> > =A0else
->> > >> > =A0 =A0 suspend_block(&state->suspend_blocker);
->> > >> >
->> > >> > +User-space API
->> > >> > +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->> > >> > +
->> > >> > +To create a suspend_blocker from user-space, open the suspend_bl=
-ocker device:
->> > >> > + =A0 =A0fd =3D open("/dev/suspend_blocker", O_RDWR | O_CLOEXEC);
->> > >> > +then call:
->> > >> > + =A0 =A0ioctl(fd, SUSPEND_BLOCKER_IOCTL_INIT(strlen(name)), name=
-);
->> > >>
->> > >>
->> > >> This seems like very wrong idea -- it uses different ioctl number f=
-or
->> > >> each length AFAICT.
->> > >
->> > > How about specifying the name by an ordinary write() call instead of
->> > > by an ioctl()?
->> > >
+>> On Saturday 24 April 2010, Alan Stern wrote:
+>> > On Fri, 23 Apr 2010, Arve Hj=F8nnev=E5g wrote:
 >> >
->> > I prefer using ioctls. We have three operations at the moment. Init,
->> > block and unblock. If we do init with write but block and unblock
->> > using ioctls, it would be pretty strange. Specifying a command and
+>> > > On Fri, Apr 23, 2010 at 2:08 PM, Dmitry Torokhov
+>> > > <dmitry.torokhov@gmail.com> wrote:
+>> > > > On Friday 23 April 2010 01:56:25 pm Randy Dunlap wrote:
+>> > > >> On Thu, 22 Apr 2010 18:08:57 -0700 Arve Hj=F8nnev=E5g wrote:
+>> > > >> > Add an ioctl, EVIOCSSUSPENDBLOCK, to enable a suspend_blocker t=
+hat will
+>> > > >> > block suspend while the event queue is not empty. This allows u=
+serspace
+>> > > >> > code to process input events while the device appears to be asl=
+eep.
+>
+>> > Is there some reason why this feature needs to be enabled by an
+>> > ioctl? =A0Why not make this suspend blocker permanently enabled?
 >>
->> Why would it be "strange"?
+>> The ioctl is there so that user space can use suspend blockers, which is
+>> needed because only user space know that some activities are going to co=
+ntinue
+>> and therefore the system should not be suspended (like playing music "in=
+ the
+>> background").
 >
-> Why indeed? =A0Using write() is the natural way to pass a data buffer
-> into the kernel, especially a variable-length buffer.
->
-> Mixing ioctl() and write() might seem strange at first, but it has
-> plenty of precedent. =A0Consider adjusting the settings for a serial
-> port, for example.
->
-That sound like to opposite situation to me. It uses ioctls for setup
-and read/write access the data stream.
-
->> > argument in a string to write is more complicated to parse than using
->> > ioctls.
->>
->> More complicated to parse?
->
-> It shouldn't be -- especially if you assume that the init action must
-> always come first. =A0The first write would contain the suspend blocker's
-> name; all following writes would have to be either "on" or "off".
-> That's not hard to parse.
+> No, you're thinking of a different ioctl: SUSPEND_BLOCKER_IOCTL_BLOCK.
+> This one (EVIOCSSUSPENDBLOCK) is present _only_ to enable one specific
+> suspend blocker, which is activated when the input event queue is
+> non-empty. =A0I don't see any reason why it shouldn't be enabled all the
+> time.
 >
 
-Why should I have to parse a string at all? We already have a control
-interface, ioctl, where user space can pass a command with data. If we
-later want to add other commands we can easily add them without
-breaking existing command. With your interface, where the first write
-is a name, adding more initialization data later becomes harder. I
-also don't like that wring the same string twice has a different
-meaning the second time. With the ioctl interface, you forget to
-initialize the suspend blocker, it block and unblock operations will
-fail. With your interface you create a suspend blocker call "on" or
-"off".
+Some user space processes keep input devices open that they don't
+currently read from. The current android kernel use a wakelock with a
+timeout limit the damage caused by this code, but not blocking suspend
+at all by default will handle this case better. Also, not all input
+devices are used for wakeup events, so there is no need to block
+suspend when their event queue is not empty.
 
 -- =
 
