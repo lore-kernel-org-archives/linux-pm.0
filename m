@@ -1,20 +1,15 @@
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH 5/9] PM: suspend_block: Add debugfs file
-Date: Sun, 25 Apr 2010 12:53:01 -0700
-Message-ID: <4BD49D9D.7020004__19641.4615413689$1272225697$gmane$org@oracle.com>
-References: <1271984938-13920-1-git-send-email-arve@android.com>
-	<1271984938-13920-2-git-send-email-arve@android.com>
-	<1271984938-13920-3-git-send-email-arve@android.com>
-	<1271984938-13920-4-git-send-email-arve@android.com>
-	<1271984938-13920-5-git-send-email-arve@android.com>
-	<1271984938-13920-6-git-send-email-arve@android.com>
-	<20100423135853.478af057.randy.dunlap@oracle.com>
-	<20100425181517.GA22676@kroah.com>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 2/9] PM: suspend_block: Add driver to access
+	suspend blockers from user-space
+Date: Sun, 25 Apr 2010 15:34:20 -0700
+Message-ID: <v2ld6200be21004251534y6c820e96l824f3288201a757d__18282.4685857215$1272235235$gmane$org@mail.gmail.com>
+References: <20100424055523.GC2290@elf.ucw.cz>
+	<Pine.LNX.4.44L0.1004241037230.6848-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100425181517.GA22676@kroah.com>
+In-Reply-To: <Pine.LNX.4.44L0.1004241037230.6848-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,28 +19,94 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <greg@kroah.com>
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On 04/25/10 11:15, Greg KH wrote:
-> On Fri, Apr 23, 2010 at 01:58:53PM -0700, Randy Dunlap wrote:
->> On Thu, 22 Apr 2010 18:08:54 -0700 Arve Hj?nnev?g wrote:
+On Sat, Apr 24, 2010 at 7:44 AM, Alan Stern <stern@rowland.harvard.edu> wro=
+te:
+> On Sat, 24 Apr 2010, Pavel Machek wrote:
+>
+>> On Fri 2010-04-23 20:20:47, Arve Hj?nnev?g wrote:
+>> > On Fri, Apr 23, 2010 at 9:43 AM, Alan Stern <stern@rowland.harvard.edu=
+> wrote:
+>> > > On Fri, 23 Apr 2010, Pavel Machek wrote:
+>> > >
+>> > >> Hi!
+>> > >>
+>> > >> > Add a misc device, "suspend_blocker", that allows user-space proc=
+esses
+>> > >> > to block auto suspend. The device has ioctls to create a suspend_=
+blocker,
+>> > >> > and to block and unblock suspend. To delete the suspend_blocker, =
+close
+>> > >> > the device.
+>> > >> >
+>> > >> > Signed-off-by: Arve Hj??nnev??g <arve@android.com>
+>> > >>
+>> > >> > --- a/Documentation/power/suspend-blockers.txt
+>> > >> > +++ b/Documentation/power/suspend-blockers.txt
+>> > >> > @@ -95,3 +95,20 @@ if (list_empty(&state->pending_work))
+>> > >> > =A0else
+>> > >> > =A0 =A0 suspend_block(&state->suspend_blocker);
+>> > >> >
+>> > >> > +User-space API
+>> > >> > +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>> > >> > +
+>> > >> > +To create a suspend_blocker from user-space, open the suspend_bl=
+ocker device:
+>> > >> > + =A0 =A0fd =3D open("/dev/suspend_blocker", O_RDWR | O_CLOEXEC);
+>> > >> > +then call:
+>> > >> > + =A0 =A0ioctl(fd, SUSPEND_BLOCKER_IOCTL_INIT(strlen(name)), name=
+);
+>> > >>
+>> > >>
+>> > >> This seems like very wrong idea -- it uses different ioctl number f=
+or
+>> > >> each length AFAICT.
+>> > >
+>> > > How about specifying the name by an ordinary write() call instead of
+>> > > by an ioctl()?
+>> > >
+>> >
+>> > I prefer using ioctls. We have three operations at the moment. Init,
+>> > block and unblock. If we do init with write but block and unblock
+>> > using ioctls, it would be pretty strange. Specifying a command and
 >>
->>> Report active and inactive suspend blockers in
->>> /sys/kernel/debug/suspend_blockers.
->>
->>
->> This looks more like user interface information than it does debug information.
->> If that's correct, it shouldn't be in debugfs.
-> 
-> It's debug-like information, and has more than one value per file, so
-> debugfs seems like the proper place for it.  I have no objection to it
-> going there.
+>> Why would it be "strange"?
+>
+> Why indeed? =A0Using write() is the natural way to pass a data buffer
+> into the kernel, especially a variable-length buffer.
+>
+> Mixing ioctl() and write() might seem strange at first, but it has
+> plenty of precedent. =A0Consider adjusting the settings for a serial
+> port, for example.
+>
+That sound like to opposite situation to me. It uses ioctls for setup
+and read/write access the data stream.
 
-I have no objection if it really is debug info, but I'm not convinced
-of that yet.
+>> > argument in a string to write is more complicated to parse than using
+>> > ioctls.
+>>
+>> More complicated to parse?
+>
+> It shouldn't be -- especially if you assume that the init action must
+> always come first. =A0The first write would contain the suspend blocker's
+> name; all following writes would have to be either "on" or "off".
+> That's not hard to parse.
+>
 
--- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Why should I have to parse a string at all? We already have a control
+interface, ioctl, where user space can pass a command with data. If we
+later want to add other commands we can easily add them without
+breaking existing command. With your interface, where the first write
+is a name, adding more initialization data later becomes harder. I
+also don't like that wring the same string twice has a different
+meaning the second time. With the ioctl interface, you forget to
+initialize the suspend blocker, it block and unblock operations will
+fail. With your interface you create a suspend blocker call "on" or
+"off".
+
+-- =
+
+Arve Hj=F8nnev=E5g
