@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: commit 9630bdd9 changes behavior of the poweroff -
-	bug?
-Date: Sun, 25 Apr 2010 04:35:42 +0200
-Message-ID: <201004250435.42779.rjw__20160.9760094017$1272165343$gmane$org@sisk.pl>
-References: <20100401133923.GA4104@tiehlicka.suse.cz>
-	<20100419115942.GC5160@tiehlicka.suse.cz>
-	<201004191719.53602.rjw@sisk.pl>
+Subject: Re: [PATCH 8/9] Input: Block suspend while event queue
+	is not empty.
+Date: Sun, 25 Apr 2010 04:30:30 +0200
+Message-ID: <201004250430.31054.rjw__47853.6866525703$1272165368$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1004241035260.6848-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201004191719.53602.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1004241035260.6848-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,131 +18,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michal Hocko <mhocko@suse.cz>
-Cc: Tony Vroon <tony@linx.net>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, =?iso-8859-1?q?M=E1rton_N=E9meth?= <nm127@freemail.hu>, Jiri Kosina <jkosina@suse.cz>, Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sven Neumann <s.neumann@raumfeld.com>, linux-kernel@vger.kernel.org, Henrik Rydberg <rydberg@euromail.se>, linux-input@vger.kernel.org, linux-pm@lists.linux-foundation.org, Tero Saarni <tero.saarni@gmail.com>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 19 April 2010, Rafael J. Wysocki wrote:
-> On Monday 19 April 2010, Michal Hocko wrote:
-> > On Fri 16-04-10 20:00:29, Rafael J. Wysocki wrote:
-> > > On Wednesday 14 April 2010, Michal Hocko wrote:
-> > > > On Tue 13-04-10 22:53:37, Rafael J. Wysocki wrote:
-> > > > > On Tuesday 13 April 2010, Michal Hocko wrote:
-> > > > > > On Tue 13-04-10 01:01:54, Rafael J. Wysocki wrote:
-> > > > > > > On Saturday 10 April 2010, Rafael J. Wysocki wrote:
-> > > > > > > > On Friday 09 April 2010, Tony Vroon wrote:
-> > > > > > > > > On Fri, 2010-04-09 at 22:42 +0200, Rafael J. Wysocki wrote:
-> > > > > > > > > > Please check if the patch below changes anything.
-> > > > > > > > > >  drivers/acpi/wakeup.c |    4 ++--
-> > > > > > > > > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > > > > > > > > 
-> > > > > > > > > That didn't change the behaviour for me, sorry.
-> > > > > > > > 
-> > > > > > > > Well, I would be sorry if it did, because the patch removed some useful code. :-)
-> > > > > > > > 
-> > > > > > > > > (I made sure to go through a full power down session before trying the
-> > > > > > > > > patched kernel)
-> > > > > > > > 
-> > > > > > > > Thanks for testing.  So it looks like we don't disable the GPE during power off.
-> > > > > > > > 
-> > > > > > > > I'll try to figure out what's going on, please stay tuned.
-> > > > > > > 
-> > > > > > > Can you please check if the patch below changes the behavior?
-> > > > > > 
-> > > > > > Unfortunately, it didn't help either (I have tried on top of the fresh
-> > > > > > rc4).
-> > > > > 
-> > > > > That gets really weird.
-> > > > > 
-> > > > > > > ---
-> > > > > > >  drivers/acpi/wakeup.c |    6 +++---
-> > > > > > >  1 file changed, 3 insertions(+), 3 deletions(-)
-> > > > > > > 
-> > > > > > > Index: linux-2.6/drivers/acpi/wakeup.c
-> > > > > > > ===================================================================
-> > > > > > > --- linux-2.6.orig/drivers/acpi/wakeup.c
-> > > > > > > +++ linux-2.6/drivers/acpi/wakeup.c
-> > > > > > > @@ -63,17 +63,17 @@ void acpi_enable_wakeup_device(u8 sleep_
-> > > > > > >  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
-> > > > > > >  		struct acpi_device *dev =
-> > > > > > >  			container_of(node, struct acpi_device, wakeup_list);
-> > > > > > > +		u8 action = ACPI_GPE_ENABLE;
-> > > > > 
-> > > > > Can you try to change the above to ACPI_GPE_DISABLE and retest, please?
-> > > > 
-> > > > Unfortunately didn't help as well...
-> > > > Just for reference:
-> > > > 
-> > > > diff --git a/drivers/acpi/wakeup.c b/drivers/acpi/wakeup.c
-> > > > index 248b473..f23c08f 100644
-> > > > --- a/drivers/acpi/wakeup.c
-> > > > +++ b/drivers/acpi/wakeup.c
-> > > > @@ -63,7 +63,7 @@ void acpi_enable_wakeup_device(u8 sleep_state)
-> > > >  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
-> > > >  		struct acpi_device *dev =
-> > > >  			container_of(node, struct acpi_device, wakeup_list);
-> > > > -		u8 action = ACPI_GPE_ENABLE;
-> > > > +		u8 action = ACPI_GPE_DISABLE;
-> > > 
-> > > That probably means the chipset enables the GPEs by itself _after_ we've
-> > > disabled them in acpi_enable_wakeup_device().
-> > 
-> > Is this something BIOS specific?
-> > 
-> > > 
-> > > Unfortunately, I can't reproduce the issue on any of my test boxes and it's
-> > > hard to find the source of the problem staring at the code.
-> > 
-> > Are there any debug options I can turn on to provide some information?
-> 
-> We can only check what the kernel tells us before power off, but all that seems
-> correct.
-> 
-> > Btw. what exactly does this mean? In what state is the laptop while it
-> > is turned off and GPE is enabled?
-> 
-> If a GPE is enabled, then some part of the chipset has power provided so that
-> it can signal wakeup.
-> 
-> I'll look into it a bit more later today.
+On Saturday 24 April 2010, Alan Stern wrote:
+> On Fri, 23 Apr 2010, Arve Hj=F8nnev=E5g wrote:
+> =
 
-Please try the patch below.  It kind of restores the previous behavior,
-let's see if it changes anything.
+> > On Fri, Apr 23, 2010 at 2:08 PM, Dmitry Torokhov
+> > <dmitry.torokhov@gmail.com> wrote:
+> > > On Friday 23 April 2010 01:56:25 pm Randy Dunlap wrote:
+> > >> On Thu, 22 Apr 2010 18:08:57 -0700 Arve Hj=F8nnev=E5g wrote:
+> > >> > Add an ioctl, EVIOCSSUSPENDBLOCK, to enable a suspend_blocker that=
+ will
+> > >> > block suspend while the event queue is not empty. This allows user=
+space
+> > >> > code to process input events while the device appears to be asleep.
+> > >>
+> > >> All new ioctls need to be added to Documentation/ioctl/ioctl-number.=
+txt,
+> > >> please.
+> > >
+> > > I do not see the reason for it to be in the kernel still. Have a proc=
+ess
+> > > that listens to all input devices (or subset of them), once events st=
+op
+> > > coming initiate suspend.
+
+This solution is not practical with the Android user space AFAICT.
+ =
+
+> > I think the document added by the first patch explains this. The
+> > solution you propose above will ignore a wakeup key pressed right
+> > after user space decides to initiate suspend.
+> =
+
+> Is there some reason why this feature needs to be enabled by an =
+
+> ioctl?  Why not make this suspend blocker permanently enabled?
+
+The ioctl is there so that user space can use suspend blockers, which is
+needed because only user space know that some activities are going to conti=
+nue
+and therefore the system should not be suspended (like playing music "in the
+background").
+
+>From all of the interfaces that could be used for this purpose ioctl appear=
+s to
+be the most convenient (we need something that is per process and allows us
+to carry out four operations: creat, destroy, activate, deactivate).
 
 Rafael
-
----
- drivers/acpi/acpica/evgpeblk.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/drivers/acpi/acpica/evgpeblk.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/evgpeblk.c
-+++ linux-2.6/drivers/acpi/acpica/evgpeblk.c
-@@ -364,7 +364,7 @@ acpi_ev_match_prw_and_gpe(acpi_handle ob
- 	union acpi_operand_object *pkg_desc;
- 	union acpi_operand_object *obj_desc;
- 	u32 gpe_number;
--	acpi_status status;
-+	acpi_status status = AE_OK;
- 
- 	ACPI_FUNCTION_TRACE(ev_match_prw_and_gpe);
- 
-@@ -439,13 +439,15 @@ acpi_ev_match_prw_and_gpe(acpi_handle ob
- 	if (gpe_device == target_gpe_device) {
- 		gpe_event_info = acpi_ev_gpeblk_event_info(gpe_block,
- 							   gpe_number);
--		if (gpe_event_info)
-+		if (gpe_event_info) {
-+			status = acpi_ev_disable_gpe(gpe_event_info);
- 			gpe_event_info->flags |= ACPI_GPE_CAN_WAKE;
-+		}
- 	}
- 
-       cleanup:
- 	acpi_ut_remove_reference(pkg_desc);
--	return_ACPI_STATUS(AE_OK);
-+	return_ACPI_STATUS(status);
- }
- 
- /*******************************************************************************
