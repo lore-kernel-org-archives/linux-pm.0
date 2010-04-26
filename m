@@ -1,16 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: commit 9630bdd9 changes behavior of the poweroff -
-	bug?
-Date: Mon, 26 Apr 2010 20:51:09 +0200
-Message-ID: <201004262051.09175.rjw__10319.1393813633$1272309031$gmane$org@sisk.pl>
-References: <20100401133923.GA4104@tiehlicka.suse.cz>
-	<201004250435.42779.rjw@sisk.pl>
-	<20100426150503.GA4005@tiehlicka.suse.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Invalid opcode on resume from STR on Asus P4P800-VM
+Date: Mon, 26 Apr 2010 15:17:27 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1004261512540.1764-100000__4088.46591967649$1272309604$gmane$org@iolanthe.rowland.org>
+References: <201004262043.24814.linux@rainbow-software.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100426150503.GA4005@tiehlicka.suse.cz>
+In-Reply-To: <201004262043.24814.linux@rainbow-software.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,106 +17,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michal Hocko <mhocko@suse.cz>
-Cc: Tony Vroon <tony@linx.net>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 26 April 2010, Michal Hocko wrote:
-> On Sun 25-04-10 04:35:42, Rafael J. Wysocki wrote:
-> > On Monday 19 April 2010, Rafael J. Wysocki wrote:
-> > > On Monday 19 April 2010, Michal Hocko wrote:
-> > > > On Fri 16-04-10 20:00:29, Rafael J. Wysocki wrote:
-> > > > > On Wednesday 14 April 2010, Michal Hocko wrote:
-> > > > > > On Tue 13-04-10 22:53:37, Rafael J. Wysocki wrote:
-> > > > > > > On Tuesday 13 April 2010, Michal Hocko wrote:
-> > > > > > > > On Tue 13-04-10 01:01:54, Rafael J. Wysocki wrote:
-> > > > > > > > > On Saturday 10 April 2010, Rafael J. Wysocki wrote:
-> > > > > > > > > > On Friday 09 April 2010, Tony Vroon wrote:
-> > > > > > > > > > > On Fri, 2010-04-09 at 22:42 +0200, Rafael J. Wysocki wrote:
-> > > > > > > > > > > > Please check if the patch below changes anything.
-> > > > > > > > > > > >  drivers/acpi/wakeup.c |    4 ++--
-> > > > > > > > > > > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > > > > > > > > > > 
-> > > > > > > > > > > That didn't change the behaviour for me, sorry.
-> > > > > > > > > > 
-> > > > > > > > > > Well, I would be sorry if it did, because the patch removed some useful code. :-)
-> > > > > > > > > > 
-> > > > > > > > > > > (I made sure to go through a full power down session before trying the
-> > > > > > > > > > > patched kernel)
-> > > > > > > > > > 
-> > > > > > > > > > Thanks for testing.  So it looks like we don't disable the GPE during power off.
-> > > > > > > > > > 
-> > > > > > > > > > I'll try to figure out what's going on, please stay tuned.
-> > > > > > > > > 
-> > > > > > > > > Can you please check if the patch below changes the behavior?
-> > > > > > > > 
-> > > > > > > > Unfortunately, it didn't help either (I have tried on top of the fresh
-> > > > > > > > rc4).
-> > > > > > > 
-> > > > > > > That gets really weird.
-> > > > > > > 
-> > > > > > > > > ---
-> > > > > > > > >  drivers/acpi/wakeup.c |    6 +++---
-> > > > > > > > >  1 file changed, 3 insertions(+), 3 deletions(-)
-> > > > > > > > > 
-> > > > > > > > > Index: linux-2.6/drivers/acpi/wakeup.c
-> > > > > > > > > ===================================================================
-> > > > > > > > > --- linux-2.6.orig/drivers/acpi/wakeup.c
-> > > > > > > > > +++ linux-2.6/drivers/acpi/wakeup.c
-> > > > > > > > > @@ -63,17 +63,17 @@ void acpi_enable_wakeup_device(u8 sleep_
-> > > > > > > > >  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
-> > > > > > > > >  		struct acpi_device *dev =
-> > > > > > > > >  			container_of(node, struct acpi_device, wakeup_list);
-> > > > > > > > > +		u8 action = ACPI_GPE_ENABLE;
-> > > > > > > 
-> > > > > > > Can you try to change the above to ACPI_GPE_DISABLE and retest, please?
-> > > > > > 
-> > > > > > Unfortunately didn't help as well...
-> > > > > > Just for reference:
-> > > > > > 
-> > > > > > diff --git a/drivers/acpi/wakeup.c b/drivers/acpi/wakeup.c
-> > > > > > index 248b473..f23c08f 100644
-> > > > > > --- a/drivers/acpi/wakeup.c
-> > > > > > +++ b/drivers/acpi/wakeup.c
-> > > > > > @@ -63,7 +63,7 @@ void acpi_enable_wakeup_device(u8 sleep_state)
-> > > > > >  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
-> > > > > >  		struct acpi_device *dev =
-> > > > > >  			container_of(node, struct acpi_device, wakeup_list);
-> > > > > > -		u8 action = ACPI_GPE_ENABLE;
-> > > > > > +		u8 action = ACPI_GPE_DISABLE;
-> > > > > 
-> > > > > That probably means the chipset enables the GPEs by itself _after_ we've
-> > > > > disabled them in acpi_enable_wakeup_device().
-> > > > 
-> > > > Is this something BIOS specific?
-> > > > 
-> > > > > 
-> > > > > Unfortunately, I can't reproduce the issue on any of my test boxes and it's
-> > > > > hard to find the source of the problem staring at the code.
-> > > > 
-> > > > Are there any debug options I can turn on to provide some information?
-> > > 
-> > > We can only check what the kernel tells us before power off, but all that seems
-> > > correct.
-> > > 
-> > > > Btw. what exactly does this mean? In what state is the laptop while it
-> > > > is turned off and GPE is enabled?
-> > > 
-> > > If a GPE is enabled, then some part of the chipset has power provided so that
-> > > it can signal wakeup.
-> > > 
-> > > I'll look into it a bit more later today.
-> > 
-> > Please try the patch below.  It kind of restores the previous behavior,
-> > let's see if it changes anything.
+On Mon, 26 Apr 2010, Ondrej Zary wrote:
+
+> Hello,
+> I'm trying to debug oops on resume from suspend-to-RAM on Asus P4P800-VM
+> mainboard. It crashes with invalid opcode (see below). The kernel is 
+> 2.6.32-trunk from Debian but the same problem is present with vanilla
+> kernels - both newer and older (but screen remains blank most of the time,
+> only keyboard LEDs blink indicating an oops).
 > 
-> Again, no success. Just to make sure that I didn't screw anything. I
-> have used just the following patch on top of the clean rc5 (your patch
-> has failed with some rejects but I guess that the following should do
-> the same):
+> What can cause this problem?
+> 
+>      8.000339  invalid opcode: 0000 [#1] SMP
+>      8.003529  last sysfs file: /sys/power/state
+>      8.004265  Modules linked in: sco bridge stp bnep l2cacp crc16 bluetooth rfkill loop i2c_i801 snd_intel8x0 snd_ac97_codec shpchp ac97_bus 
+> parport_pc parport
+> rng_core pci_hotplug snd_pcsp snd_pcm snd_timer snd soundcore psmouse snd_page_alloc serio_raw evdev processor ext3 jbd mbcache ide_gd_mod 
+> ata_generic libata scsi_mod
+> ide_pci_generic i915 drm_kms_helper uhci_hcd drm i2c_algo_bit piix i2c_core ehci_hcd intel_agp e100 video ide_core mii floppy agpgart output 
+> usbcore nls_base button
+> thermal fan thermal_sys [last unloaded: scsi_wait_scan]
+> [  148.004265]
+> [  148.004265] Pid: 0, comm: swapper Not tainted (2.6.32-trunk-686 #1) To Be Filled By O.E.M.
+> [  148.004265] EIP: 0060:[<c1008ff3>] EFLAGS: 00010086 CPU: 0
+> [  148.004265] EIP is at mwait_idle+0x4e/0x6c
 
-Thanks for testing.  Did you try the second thing, ie. try to comment out the
-acpi_enable_gpe() in drivers/acpi/wakeup.c:acpi_wakeup_device_init() and
-retest (if you haven't done that already)?
+I had exactly the same problem (on an HP computer with an Intel
+chipset).  As far as anyone could figure out, it is caused by a bug in 
+the BIOS.  It's not entirely clear that this is the complete answer, 
+but nothing else turned up.  See
 
-Rafael
+	http://bugzilla.kernel.org/show_bug.cgi?id=15385
+
+for the complete record.  The best solution I could find was to boot
+with "idle=halt" on the command line.  You might check to see if any 
+BIOS updates are available.
+
+Alan Stern
