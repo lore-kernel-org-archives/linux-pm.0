@@ -1,15 +1,21 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 8/9] Input: Block suspend while event queue
-	is not empty.
-Date: Sun, 25 Apr 2010 15:41:23 -0700
-Message-ID: <j2id6200be21004251541z53ebce31rddb659680219c450__5444.65650241381$1272235642$gmane$org@mail.gmail.com>
-References: <201004250430.31054.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.1004251122230.25835-100000@netrider.rowland.org>
+From: tytso@mit.edu
+Subject: Re: [PATCH 5/9] PM: suspend_block: Add debugfs file
+Date: Sun, 25 Apr 2010 20:00:25 -0400
+Message-ID: <20100426000025.GE667__9224.21655054695$1272240398$gmane$org@thunk.org>
+References: <1271984938-13920-1-git-send-email-arve@android.com>
+	<1271984938-13920-2-git-send-email-arve@android.com>
+	<1271984938-13920-3-git-send-email-arve@android.com>
+	<1271984938-13920-4-git-send-email-arve@android.com>
+	<1271984938-13920-5-git-send-email-arve@android.com>
+	<1271984938-13920-6-git-send-email-arve@android.com>
+	<20100423135853.478af057.randy.dunlap@oracle.com>
+	<20100425181517.GA22676@kroah.com> <4BD49D9D.7020004@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1004251122230.25835-100000@netrider.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <4BD49D9D.7020004@oracle.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,52 +25,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, =?ISO-8859-1?Q?M=E1rton_N=E9meth?= <nm127@freemail.hu>, Jiri Kosina <jkosina@suse.cz>, Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sven Neumann <s.neumann@raumfeld.com>, linux-kernel@vger.kernel.org, Henrik Rydberg <rydberg@euromail.se>, linux-input@vger.kernel.org, linux-pm@lists.linux-foundation.org, Tero Saarni <tero.saarni@gmail.com>, Matthew Garrett <mjg@redhat.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Apr 25, 2010 at 8:29 AM, Alan Stern <stern@rowland.harvard.edu> wro=
-te:
-> On Sun, 25 Apr 2010, Rafael J. Wysocki wrote:
->
->> On Saturday 24 April 2010, Alan Stern wrote:
->> > On Fri, 23 Apr 2010, Arve Hj=F8nnev=E5g wrote:
->> >
->> > > On Fri, Apr 23, 2010 at 2:08 PM, Dmitry Torokhov
->> > > <dmitry.torokhov@gmail.com> wrote:
->> > > > On Friday 23 April 2010 01:56:25 pm Randy Dunlap wrote:
->> > > >> On Thu, 22 Apr 2010 18:08:57 -0700 Arve Hj=F8nnev=E5g wrote:
->> > > >> > Add an ioctl, EVIOCSSUSPENDBLOCK, to enable a suspend_blocker t=
-hat will
->> > > >> > block suspend while the event queue is not empty. This allows u=
-serspace
->> > > >> > code to process input events while the device appears to be asl=
-eep.
->
->> > Is there some reason why this feature needs to be enabled by an
->> > ioctl? =A0Why not make this suspend blocker permanently enabled?
->>
->> The ioctl is there so that user space can use suspend blockers, which is
->> needed because only user space know that some activities are going to co=
-ntinue
->> and therefore the system should not be suspended (like playing music "in=
- the
->> background").
->
-> No, you're thinking of a different ioctl: SUSPEND_BLOCKER_IOCTL_BLOCK.
-> This one (EVIOCSSUSPENDBLOCK) is present _only_ to enable one specific
-> suspend blocker, which is activated when the input event queue is
-> non-empty. =A0I don't see any reason why it shouldn't be enabled all the
-> time.
->
+On Sun, Apr 25, 2010 at 12:53:01PM -0700, Randy Dunlap wrote:
+> > It's debug-like information, and has more than one value per file, so
+> > debugfs seems like the proper place for it.  I have no objection to it
+> > going there.
+> 
+> I have no objection if it really is debug info, but I'm not convinced
+> of that yet.
 
-Some user space processes keep input devices open that they don't
-currently read from. The current android kernel use a wakelock with a
-timeout limit the damage caused by this code, but not blocking suspend
-at all by default will handle this case better. Also, not all input
-devices are used for wakeup events, so there is no need to block
-suspend when their event queue is not empty.
+Well, I'll note right now we have a somewhat annoying gap.  If you
+need to export multiple values such that they are consistent with each
+other, what's the choice?  /proc, where some (but not all) kernel
+developers will say, "eeeeeeviilllll".  /sys is explicitly for single
+value per files only.  And then we have /debugfs, where some pendants
+are kvetching about whether something is "really" debug information.
 
--- =
+One of the things that we sometimes have to tell people who are trying
+to navigate the maze of upstream submission is that sometimes you need
+to know who to ignore, and that sometimes rules are guidelines
+(despite pendants who will NACK based on rules like, "/proc,
+eeeeewwww", or "/debugfs must only strictly be for debug information".
 
-Arve Hj=F8nnev=E5g
+Telling embedded developers who only want to submit their driver that
+they must create a whole new pseudo-filesystem just to export a single
+file that in older, simpler times, would have just been thrown into
+/proc is really not fair, and is precisely the sort of thing that may
+cause them to say, "f*ck it, these is one too many flaming hoops to
+jump through".  If we throw up too many barriers, in the long run it's
+not actually doing Linux a service.
+
+Sure, we need to make sure is code doesn't become a future burden, but
+does a new file in /proc or something that might not _really_ be debug
+information showing up in /debugfs really such a terrible thing in
+terms of making the kernel less maintainable in the future?
+
+Regards,
+
+						- Ted
