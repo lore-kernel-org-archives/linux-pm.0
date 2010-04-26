@@ -1,12 +1,16 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Subject: Invalid opcode on resume from STR on Asus P4P800-VM
-Date: Mon, 26 Apr 2010 20:43:23 +0200
-Message-ID: <201004262043.24814.linux__28081.7947736525$1272307667$gmane$org@rainbow-software.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: commit 9630bdd9 changes behavior of the poweroff -
+	bug?
+Date: Mon, 26 Apr 2010 20:51:09 +0200
+Message-ID: <201004262051.09175.rjw__10319.1393813633$1272309031$gmane$org@sisk.pl>
+References: <20100401133923.GA4104@tiehlicka.suse.cz>
+	<201004250435.42779.rjw@sisk.pl>
+	<20100426150503.GA4005@tiehlicka.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <20100426150503.GA4005@tiehlicka.suse.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,68 +20,106 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
+To: Michal Hocko <mhocko@suse.cz>
+Cc: Tony Vroon <tony@linx.net>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
-I'm trying to debug oops on resume from suspend-to-RAM on Asus P4P800-VM
-mainboard. It crashes with invalid opcode (see below). The kernel is 
-2.6.32-trunk from Debian but the same problem is present with vanilla
-kernels - both newer and older (but screen remains blank most of the time,
-only keyboard LEDs blink indicating an oops).
+On Monday 26 April 2010, Michal Hocko wrote:
+> On Sun 25-04-10 04:35:42, Rafael J. Wysocki wrote:
+> > On Monday 19 April 2010, Rafael J. Wysocki wrote:
+> > > On Monday 19 April 2010, Michal Hocko wrote:
+> > > > On Fri 16-04-10 20:00:29, Rafael J. Wysocki wrote:
+> > > > > On Wednesday 14 April 2010, Michal Hocko wrote:
+> > > > > > On Tue 13-04-10 22:53:37, Rafael J. Wysocki wrote:
+> > > > > > > On Tuesday 13 April 2010, Michal Hocko wrote:
+> > > > > > > > On Tue 13-04-10 01:01:54, Rafael J. Wysocki wrote:
+> > > > > > > > > On Saturday 10 April 2010, Rafael J. Wysocki wrote:
+> > > > > > > > > > On Friday 09 April 2010, Tony Vroon wrote:
+> > > > > > > > > > > On Fri, 2010-04-09 at 22:42 +0200, Rafael J. Wysocki wrote:
+> > > > > > > > > > > > Please check if the patch below changes anything.
+> > > > > > > > > > > >  drivers/acpi/wakeup.c |    4 ++--
+> > > > > > > > > > > >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > > > > > > > > > > 
+> > > > > > > > > > > That didn't change the behaviour for me, sorry.
+> > > > > > > > > > 
+> > > > > > > > > > Well, I would be sorry if it did, because the patch removed some useful code. :-)
+> > > > > > > > > > 
+> > > > > > > > > > > (I made sure to go through a full power down session before trying the
+> > > > > > > > > > > patched kernel)
+> > > > > > > > > > 
+> > > > > > > > > > Thanks for testing.  So it looks like we don't disable the GPE during power off.
+> > > > > > > > > > 
+> > > > > > > > > > I'll try to figure out what's going on, please stay tuned.
+> > > > > > > > > 
+> > > > > > > > > Can you please check if the patch below changes the behavior?
+> > > > > > > > 
+> > > > > > > > Unfortunately, it didn't help either (I have tried on top of the fresh
+> > > > > > > > rc4).
+> > > > > > > 
+> > > > > > > That gets really weird.
+> > > > > > > 
+> > > > > > > > > ---
+> > > > > > > > >  drivers/acpi/wakeup.c |    6 +++---
+> > > > > > > > >  1 file changed, 3 insertions(+), 3 deletions(-)
+> > > > > > > > > 
+> > > > > > > > > Index: linux-2.6/drivers/acpi/wakeup.c
+> > > > > > > > > ===================================================================
+> > > > > > > > > --- linux-2.6.orig/drivers/acpi/wakeup.c
+> > > > > > > > > +++ linux-2.6/drivers/acpi/wakeup.c
+> > > > > > > > > @@ -63,17 +63,17 @@ void acpi_enable_wakeup_device(u8 sleep_
+> > > > > > > > >  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+> > > > > > > > >  		struct acpi_device *dev =
+> > > > > > > > >  			container_of(node, struct acpi_device, wakeup_list);
+> > > > > > > > > +		u8 action = ACPI_GPE_ENABLE;
+> > > > > > > 
+> > > > > > > Can you try to change the above to ACPI_GPE_DISABLE and retest, please?
+> > > > > > 
+> > > > > > Unfortunately didn't help as well...
+> > > > > > Just for reference:
+> > > > > > 
+> > > > > > diff --git a/drivers/acpi/wakeup.c b/drivers/acpi/wakeup.c
+> > > > > > index 248b473..f23c08f 100644
+> > > > > > --- a/drivers/acpi/wakeup.c
+> > > > > > +++ b/drivers/acpi/wakeup.c
+> > > > > > @@ -63,7 +63,7 @@ void acpi_enable_wakeup_device(u8 sleep_state)
+> > > > > >  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+> > > > > >  		struct acpi_device *dev =
+> > > > > >  			container_of(node, struct acpi_device, wakeup_list);
+> > > > > > -		u8 action = ACPI_GPE_ENABLE;
+> > > > > > +		u8 action = ACPI_GPE_DISABLE;
+> > > > > 
+> > > > > That probably means the chipset enables the GPEs by itself _after_ we've
+> > > > > disabled them in acpi_enable_wakeup_device().
+> > > > 
+> > > > Is this something BIOS specific?
+> > > > 
+> > > > > 
+> > > > > Unfortunately, I can't reproduce the issue on any of my test boxes and it's
+> > > > > hard to find the source of the problem staring at the code.
+> > > > 
+> > > > Are there any debug options I can turn on to provide some information?
+> > > 
+> > > We can only check what the kernel tells us before power off, but all that seems
+> > > correct.
+> > > 
+> > > > Btw. what exactly does this mean? In what state is the laptop while it
+> > > > is turned off and GPE is enabled?
+> > > 
+> > > If a GPE is enabled, then some part of the chipset has power provided so that
+> > > it can signal wakeup.
+> > > 
+> > > I'll look into it a bit more later today.
+> > 
+> > Please try the patch below.  It kind of restores the previous behavior,
+> > let's see if it changes anything.
+> 
+> Again, no success. Just to make sure that I didn't screw anything. I
+> have used just the following patch on top of the clean rc5 (your patch
+> has failed with some rejects but I guess that the following should do
+> the same):
 
-What can cause this problem?
+Thanks for testing.  Did you try the second thing, ie. try to comment out the
+acpi_enable_gpe() in drivers/acpi/wakeup.c:acpi_wakeup_device_init() and
+retest (if you haven't done that already)?
 
-     8.000339  invalid opcode: 0000 [#1] SMP
-     8.003529  last sysfs file: /sys/power/state
-     8.004265  Modules linked in: sco bridge stp bnep l2cacp crc16 bluetooth rfkill loop i2c_i801 snd_intel8x0 snd_ac97_codec shpchp ac97_bus 
-parport_pc parport
-rng_core pci_hotplug snd_pcsp snd_pcm snd_timer snd soundcore psmouse snd_page_alloc serio_raw evdev processor ext3 jbd mbcache ide_gd_mod 
-ata_generic libata scsi_mod
-ide_pci_generic i915 drm_kms_helper uhci_hcd drm i2c_algo_bit piix i2c_core ehci_hcd intel_agp e100 video ide_core mii floppy agpgart output 
-usbcore nls_base button
-thermal fan thermal_sys [last unloaded: scsi_wait_scan]
-[  148.004265]
-[  148.004265] Pid: 0, comm: swapper Not tainted (2.6.32-trunk-686 #1) To Be Filled By O.E.M.
-[  148.004265] EIP: 0060:[<c1008ff3>] EFLAGS: 00010086 CPU: 0
-[  148.004265] EIP is at mwait_idle+0x4e/0x6c
-[  148.004265] EAX: c1336008 EBX: c1336008 ECX: 00000000 EDX: 00000000
-[  148.004265] ESI: 00000000 EDI: c1339000 EBP: 01642003 ESP: c1337fd0
-[  148.004265]  DS: 0068 ES: 007b FS: 00d8 GS: 00e0 SS: 0068
-[  148.004265] Process swapper (pid: 0, ti=c1336000 task=c1364ba0 task.ti=c1336000)
-[  148.004265] Stack:
-[  148.004265] c1396004 c1002388 4176f186 d147e8ee c13c61e8 00099800 c1399800 a05e3121
-[  148.004265] <0> 46258193 c13c61e8 00010800 00000000
-[  148.004265] Call Trace:
-[  148.004265]  [<c1002388>] ? cpu_idle+0x89/0xa5
-[  148.004265]  [<c1399800>] ? start_kernel+0x30c/0x311
-[  148.004265] Code: 8b 15 50 e9 3e c1 f6 44 10 27 02 74 0f 89 e2 81 e2 00 e0 ff ff 8d 42 08 0f ae 7a 08 89 e3 31 c9 81 e3 00 e0 ff ff 89 ca 
-8d 43 08 <0f> 01 c8
- 0f ae f0 89 f6 f6 43 08 08 75 08 89 c8 fb 0f 01 c9 eb
-[  148.004265] EIP: [<c1008ff3>] mwait_idle+0x4e/0x6c SS:ESP 0068:c1337fd0
-[  148.004265] ---[ end trace b2f32b48d4fa5394 ]---
-[  148.004265] Kernel panic - not syncing: Attempted to kill the idle task!
-[  148.004265] Pid: 0, comm: swapper Tainted: G      D    2.6.32-trunk-686 #1
-[  148.004265] Call Trace:
-[  148.004265]  [<c1259284>] ? panic+0x38/0xe4
-[  148.004265]  [<c1033805>] ? do_exit+0x5a/0x5c6
-[  148.004265]  [<c1259ee3>] ? printk+0xe/0x18
-[  148.004265]  [<c100509d>] ? oops_end+0x98/0x9d
-[  148.004265]  [<c100424b>] ? do_invalid_op+0x0/0x75
-[  148.004265]  [<c10042b7>] ? do_invalid_op+0x6c/0x75
-[  148.004265]  [<c1008ff3>] ? mwait_idle+0x4e/0x6c
-[  148.004265]  [<c1001f10>] ? __switch_to+0xcf/0x141
-[  148.004265]  [<c1046e9b>] ? hrtimer_get_next_event+0x8c/0xa0
-[  148.004265]  [<c103b9da>] ? get_next_timer_interrupt+0x16f/0x1da
-[  148.004265]  [<c1007fd1>] ? sched_clock+0x5/0x7
-[  148.004265]  [<c104829f>] ? sched_clock_local+0x15/0x11b
-[  148.004265]  [<c125af7b>] ? error_code+0x73/0x78
-[  148.004265]  [<c1008ff3>] ? mwait_idle+0x4e/0x6c
-[  148.004265]  [<c1002388>] ? cpu_idle+0x89/0xa5
-[  148.004265]  [<c1399800>] ? start_kernel+0x30c/0x311
-[  148.004265] [drm:drm_fb_helper_panic] *ERROR* panic occured, switching back to text console
-
-
--- 
-Ondrej Zary
+Rafael
