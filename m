@@ -1,18 +1,19 @@
 From: Michal Hocko <mhocko@suse.cz>
 Subject: Re: commit 9630bdd9 changes behavior of the poweroff -
 	bug?
-Date: Tue, 27 Apr 2010 08:51:09 +0200
-Message-ID: <20100427065109.GA3907__41974.0112185993$1272351162$gmane$org@tiehlicka.suse.cz>
+Date: Tue, 27 Apr 2010 09:04:05 +0200
+Message-ID: <20100427070405.GA6170__34885.9249883846$1272351904$gmane$org@tiehla.suse.cz>
 References: <20100401133923.GA4104@tiehlicka.suse.cz>
-	<201004250435.42779.rjw@sisk.pl>
+	<20100419115942.GC5160@tiehlicka.suse.cz>
+	<201004191719.53602.rjw@sisk.pl> <201004250435.42779.rjw@sisk.pl>
 	<20100426150503.GA4005@tiehlicka.suse.cz>
-	<201004262051.09175.rjw@sisk.pl>
+	<alpine.LFD.2.00.1004261130090.3999@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201004262051.09175.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.2.00.1004261130090.3999@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,148 +23,101 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
 Cc: Tony Vroon <tony@linx.net>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 26-04-10 20:51:09, Rafael J. Wysocki wrote:
-> On Monday 26 April 2010, Michal Hocko wrote:
-> > On Sun 25-04-10 04:35:42, Rafael J. Wysocki wrote:
-> > > On Monday 19 April 2010, Rafael J. Wysocki wrote:
-> > > > On Monday 19 April 2010, Michal Hocko wrote:
-> > > > > On Fri 16-04-10 20:00:29, Rafael J. Wysocki wrote:
-> > > > > > On Wednesday 14 April 2010, Michal Hocko wrote:
-> > > > > > > On Tue 13-04-10 22:53:37, Rafael J. Wysocki wrote:
-> > > > > > > > On Tuesday 13 April 2010, Michal Hocko wrote:
-> > > > > > > > > On Tue 13-04-10 01:01:54, Rafael J. Wysocki wrote:
-> > > > > > > > > > On Saturday 10 April 2010, Rafael J. Wysocki wrote:
-> > > > > > > > > > > On Friday 09 April 2010, Tony Vroon wrote:
-> > > > > > > > > > > > On Fri, 2010-04-09 at 22:42 +0200, Rafael J. Wysocki wrote:
-> > > > > > > > > > > > > Please check if the patch below changes anything.
-> > > > > > > > > > > > >  drivers/acpi/wakeup.c |    4 ++--
-> > > > > > > > > > > > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > > > > > > > > > > > 
-> > > > > > > > > > > > That didn't change the behaviour for me, sorry.
-> > > > > > > > > > > 
-> > > > > > > > > > > Well, I would be sorry if it did, because the patch removed some useful code. :-)
-> > > > > > > > > > > 
-> > > > > > > > > > > > (I made sure to go through a full power down session before trying the
-> > > > > > > > > > > > patched kernel)
-> > > > > > > > > > > 
-> > > > > > > > > > > Thanks for testing.  So it looks like we don't disable the GPE during power off.
-> > > > > > > > > > > 
-> > > > > > > > > > > I'll try to figure out what's going on, please stay tuned.
-> > > > > > > > > > 
-> > > > > > > > > > Can you please check if the patch below changes the behavior?
-> > > > > > > > > 
-> > > > > > > > > Unfortunately, it didn't help either (I have tried on top of the fresh
-> > > > > > > > > rc4).
-> > > > > > > > 
-> > > > > > > > That gets really weird.
-> > > > > > > > 
-> > > > > > > > > > ---
-> > > > > > > > > >  drivers/acpi/wakeup.c |    6 +++---
-> > > > > > > > > >  1 file changed, 3 insertions(+), 3 deletions(-)
-> > > > > > > > > > 
-> > > > > > > > > > Index: linux-2.6/drivers/acpi/wakeup.c
-> > > > > > > > > > ===================================================================
-> > > > > > > > > > --- linux-2.6.orig/drivers/acpi/wakeup.c
-> > > > > > > > > > +++ linux-2.6/drivers/acpi/wakeup.c
-> > > > > > > > > > @@ -63,17 +63,17 @@ void acpi_enable_wakeup_device(u8 sleep_
-> > > > > > > > > >  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
-> > > > > > > > > >  		struct acpi_device *dev =
-> > > > > > > > > >  			container_of(node, struct acpi_device, wakeup_list);
-> > > > > > > > > > +		u8 action = ACPI_GPE_ENABLE;
-> > > > > > > > 
-> > > > > > > > Can you try to change the above to ACPI_GPE_DISABLE and retest, please?
-> > > > > > > 
-> > > > > > > Unfortunately didn't help as well...
-> > > > > > > Just for reference:
-> > > > > > > 
-> > > > > > > diff --git a/drivers/acpi/wakeup.c b/drivers/acpi/wakeup.c
-> > > > > > > index 248b473..f23c08f 100644
-> > > > > > > --- a/drivers/acpi/wakeup.c
-> > > > > > > +++ b/drivers/acpi/wakeup.c
-> > > > > > > @@ -63,7 +63,7 @@ void acpi_enable_wakeup_device(u8 sleep_state)
-> > > > > > >  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
-> > > > > > >  		struct acpi_device *dev =
-> > > > > > >  			container_of(node, struct acpi_device, wakeup_list);
-> > > > > > > -		u8 action = ACPI_GPE_ENABLE;
-> > > > > > > +		u8 action = ACPI_GPE_DISABLE;
-> > > > > > 
-> > > > > > That probably means the chipset enables the GPEs by itself _after_ we've
-> > > > > > disabled them in acpi_enable_wakeup_device().
-> > > > > 
-> > > > > Is this something BIOS specific?
-> > > > > 
-> > > > > > 
-> > > > > > Unfortunately, I can't reproduce the issue on any of my test boxes and it's
-> > > > > > hard to find the source of the problem staring at the code.
-> > > > > 
-> > > > > Are there any debug options I can turn on to provide some information?
-> > > > 
-> > > > We can only check what the kernel tells us before power off, but all that seems
-> > > > correct.
-> > > > 
-> > > > > Btw. what exactly does this mean? In what state is the laptop while it
-> > > > > is turned off and GPE is enabled?
-> > > > 
-> > > > If a GPE is enabled, then some part of the chipset has power provided so that
-> > > > it can signal wakeup.
-> > > > 
-> > > > I'll look into it a bit more later today.
-> > > 
-> > > Please try the patch below.  It kind of restores the previous behavior,
-> > > let's see if it changes anything.
-> > 
-> > Again, no success. Just to make sure that I didn't screw anything. I
-> > have used just the following patch on top of the clean rc5 (your patch
-> > has failed with some rejects but I guess that the following should do
-> > the same):
+Hi Len,
+
+On Mon 26-04-10 12:22:58, Len Brown wrote:
+> Michal,
 > 
-> Thanks for testing.  Did you try the second thing, ie. try to comment out the
-> acpi_enable_gpe() in drivers/acpi/wakeup.c:acpi_wakeup_device_init() and
-> retest (if you haven't done that already)?
+> > my laptop changed behavior during poweroff recently (after upgrading
+> > from .33 to .34-rc1). The system seems to be powered off (status display
+> > is off) at first glance but when I close the lid then I can hear a noise
+> > which sounds like HDD parking and when I open lid again it starts
+> > booting without poweroff button (same like when I suspend to RAM).
+> 
+> Tony,
+> 
+> > I have the exact same "lid close = powering back on" regression on a
+> > Fujitsu-Siemens Lifebook S6420.
+> 
+> Perhaps you can review this description and help me
+> better understand the symptoms?
+> 
+> Michal,
+> Re: poweroff
+> 
+> Before the regression you could hear the HDD park as a result of the
 
-I have tried it just now and still no success.
+It is hard to tell whether this sound comes from HDD and I think that it
+is actually something different as I've realized that I've heard this
+kind of sound only when system was suspended to RAM and lid was closed.
+Never during poweroff.
 
+> "poweroff" command without touching the lid, and after the regression
+> you don't hear that sound until after you close the lid -- no matter
+> how long you wait to close the lid?
 
-commit 1a7e7c9ac82aa2de185fa2f686417a5eb7765420
-Author: Michal Hocko <mhocko@suse.cz>
-Date:   Tue Apr 27 08:22:23 2010 +0200
-
-    disable acpi_enable_gpe in acpi_wakeup_device_init
-    
-    as suggested by Rafael.
-
-diff --git a/drivers/acpi/wakeup.c b/drivers/acpi/wakeup.c
-index 4b9d339..a0f4859 100644
---- a/drivers/acpi/wakeup.c
-+++ b/drivers/acpi/wakeup.c
-@@ -113,8 +113,9 @@ int __init acpi_wakeup_device_init(void)
- 		if (!dev->wakeup.flags.always_enabled ||
- 		    dev->wakeup.state.enabled)
- 			continue;
-- 		acpi_enable_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
-+ 		/*acpi_enable_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
-  				ACPI_GPE_TYPE_WAKE);
-+		 */
- 		dev->wakeup.state.enabled = 1;
- 	}
- 	mutex_unlock(&acpi_device_lock);
-
-On top of the previous patch. If I understand that correctly then this
-is really strange because this patch disables GPE completely, doesn't
-it?
+Yes. Also the main difference is that the laptop turns on automatically
+after lid is open which did not happen before.
 
 > 
-> Rafael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> During this period after poweroff and LCD goes out, but before
+> lid close, are there any other signs of life?  eg. does caps
+> lock button light the caps LED?
 
+No signs of life at all. The small display which shows the status
+(charging, battery status, caps lock, num lock, etc.) is turned off.
+No reaction to any key press.
+
+> 
+> How about during this period if you press the power button and
+> hold it for 5 seconds, does that cause the HDD parking sound?
+
+No sound. Even when I closed the lid. Nevertheless, laptop doesn't
+start automatically after lid is open.
+
+> 
+> If yes, then the regression is that poweroff never completes,
+> though perhaps a lid event allows it to complete.
+> 
+> When you say 'when I open the lid again i starts booting'.
+> Is that a cold boot from scratch, or a resume from suspend?
+
+Cold boot.
+
+> 
+> Does the new boot start when the lid is closed, or when it is
+> subsequently opened?
+
+I have not seen start during lid being closed. As I already said, the
+system starts up automatically when I open the lid.
+
+> 
+> Thanks for sending your /proc/acpi/wakeup, it shows that
+> 
+> LID       S4    *enabled  
+> 
+> which means that the LID is not an S5 wakeup device.
+> So if you really do get down to S5, the LID should
+> not be able to wake the system.  So if it is, then
+> we are never getting to S5.
+> 
+> Tony,
+> Please send the /proc/acpi/wakeup file before and after
+> the regression.  Does the system reach a complete poweroff
+> before the lid is closed?  If yes, what happens when
+> you press the power button w/o closing the lid?
+> If you reached S5, it should give you a cold boot.
+> If you did not reach S5, it will have no effect.
+> 
+> thanks,
+> Len Brown, Intel Open Source Technology Center
+> 
+
+Thanks!
 -- 
 Michal Hocko
 L3 team 
