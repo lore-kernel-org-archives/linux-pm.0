@@ -1,16 +1,14 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
- (WKOC_E) and disconnect (WKDISC_E)
-Date: Tue, 27 Apr 2010 14:33:59 -0700
-Message-ID: <20100427213359.GA29696__9713.26688672907$1272404213$gmane$org@kroah.com>
-References: <Pine.LNX.4.44L0.1004271509450.1850-100000@iolanthe.rowland.org>
-	<201004272246.51494.linux@rainbow-software.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/5] FS: libfs,
+	implement simple_write_to_buffer
+Date: Tue, 27 Apr 2010 23:58:36 +0200
+Message-ID: <201004272358.36175.rjw__41699.7425644242$1272405580$gmane$org@sisk.pl>
+References: <1272356118-10012-1-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201004272246.51494.linux@rainbow-software.org>
+In-Reply-To: <1272356118-10012-1-git-send-email-jslaby@suse.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,20 +18,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, jirislaby@gmail.com, linux-kernel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 27, 2010 at 10:46:48PM +0200, Ondrej Zary wrote:
-> > Why would you want to change the jumper settings?  Host controllers are
-> > _supposed_ to supply 5V power during system suspend.
+On Tuesday 27 April 2010, Jiri Slaby wrote:
+> It will be used in suspend code and serves as an easy wrap around
+> copy_from_user. Similar to simple_read_from_buffer, it takes care
+> of transfers with proper lengths depending on available and count
+> parameters and advances ppos appropriately.
 > 
-> Maybe because I don't want all my USB devices to be powered when the system is 
-> turned off. I doubt that laptop in suspend-to-RAM (on battery) provides power 
-> to USB ports.
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: Nigel Cunningham <ncunningham@crca.org.au>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+> Cc: linux-fsdevel@vger.kernel.org
 
-On the contrary, it does.  Some of us use this mode to charge devices :)
+Thanks for the patches, I'll review them as soon as I can.
 
-thanks,
-
-greg k-h
+Rafael
