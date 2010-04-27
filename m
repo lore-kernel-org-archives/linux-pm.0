@@ -1,14 +1,16 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Subject: [PATCH 4/5] PM / Hibernate: move the first_sector out of
-	swsusp_write
-Date: Tue, 27 Apr 2010 10:15:17 +0200
-Message-ID: <1272356118-10012-4-git-send-email-jslaby@suse.cz>
-References: <1272356118-10012-1-git-send-email-jslaby@suse.cz>
+From: Ondrej Zary <linux@rainbow-software.org>
+Subject: Re: Invalid opcode on resume from STR on Asus P4P800-VM
+Date: Tue, 27 Apr 2010 12:05:15 +0200
+Message-ID: <201004271205.17369.linux__1553.60260182551$1272362841$gmane$org@rainbow-software.org>
+References: <201004262155.06949.linux@rainbow-software.org>
+	<Pine.LNX.4.44L0.1004261631320.1764-100000@iolanthe.rowland.org>
+	<4BD638D7.2090102@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1272356118-10012-1-git-send-email-jslaby@suse.cz>
+In-Reply-To: <4BD638D7.2090102@gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,152 +20,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl
-Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>, linux-kernel@vger.kernel.org, jirislaby@gmail.com
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
+On Tuesday 27 April 2010 03:07:35 Robert Hancock wrote:
+> On 04/26/2010 02:34 PM, Alan Stern wrote:
+> > On Mon, 26 Apr 2010, Ondrej Zary wrote:
+> >> On Monday 26 April 2010 21:17:27 Alan Stern wrote:
+> >>> On Mon, 26 Apr 2010, Ondrej Zary wrote:
+> >>>> Hello,
+> >>>> I'm trying to debug oops on resume from suspend-to-RAM on Asus
+> >>>> P4P800-VM mainboard. It crashes with invalid opcode (see below). The
+> >>>> kernel is 2.6.32-trunk from Debian but the same problem is present
+> >>>> with vanilla kernels - both newer and older (but screen remains blank
+> >>>> most of the time, only keyboard LEDs blink indicating an oops).
+> >>>>
+> >>>> What can cause this problem?
+> >>>>
+> >>>>       8.000339  invalid opcode: 0000 [#1] SMP
+> >>>>       8.003529  last sysfs file: /sys/power/state
+> >>>>       8.004265  Modules linked in: sco bridge stp bnep l2cacp crc16
+> >>>> bluetooth rfkill loop i2c_i801 snd_intel8x0 snd_ac97_codec shpchp
+> >>>> ac97_bus parport_pc parport
+> >>>> rng_core pci_hotplug snd_pcsp snd_pcm snd_timer snd soundcore psmouse
+> >>>> snd_page_alloc serio_raw evdev processor ext3 jbd mbcache ide_gd_mod
+> >>>> ata_generic libata scsi_mod
+> >>>> ide_pci_generic i915 drm_kms_helper uhci_hcd drm i2c_algo_bit piix
+> >>>> i2c_core ehci_hcd intel_agp e100 video ide_core mii floppy agpgart
+> >>>> output usbcore nls_base button
+> >>>> thermal fan thermal_sys [last unloaded: scsi_wait_scan]
+> >>>> [  148.004265]
+> >>>> [  148.004265] Pid: 0, comm: swapper Not tainted (2.6.32-trunk-686 #1)
+> >>>> To Be Filled By O.E.M. [  148.004265] EIP: 0060:[<c1008ff3>] EFLAGS:
+> >>>> 00010086 CPU: 0
+> >>>> [  148.004265] EIP is at mwait_idle+0x4e/0x6c
+> >>>
+> >>> I had exactly the same problem (on an HP computer with an Intel
+> >>> chipset).  As far as anyone could figure out, it is caused by a bug in
+> >>> the BIOS.  It's not entirely clear that this is the complete answer,
+> >>> but nothing else turned up.  See
+> >>>
+> >>> 	http://bugzilla.kernel.org/show_bug.cgi?id=15385
+> >>>
+> >>> for the complete record.  The best solution I could find was to boot
+> >>> with "idle=halt" on the command line.  You might check to see if any
+> >>> BIOS updates are available.
+> >>
+> >> Thanks, it does not crash with "idle=halt" or "idle=poll". According to
+> >> this: http://siyobik.info/index.php?module=x86&id=215
+> >> the MWAIT instruction can be enabled/disabled in IA32_MISC_ENABLES MSR.
+> >> Kernel probably should enable it at boot and also on resume.
+> >> Here's some more info:
+> >> http://software.intel.com/en-us/forums/showthread.php?t=63654
+> >
+> > That could be the answer.  Clearly this should be handled by the
+> > arch-specific boot/setup code.  I don't know enough about it, but other
+> > people do.
+>
+> It looks like idle=nomwait should be the workaround with the least
+> impact at the moment..
 
-The first sector knowledge is swap-only specific. Move it into the
-swap handle. This will be needed for later non-swap specific code
-moving into snapshot.c.
+It does not work for me.
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
----
- kernel/power/swap.c |   76 +++++++++++++++++++++++++-------------------------
- 1 files changed, 38 insertions(+), 38 deletions(-)
-
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 1b1ab6f..63e8062 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -29,6 +29,40 @@
- 
- #define SWSUSP_SIG	"S1SUSPEND"
- 
-+/*
-+ *	The swap map is a data structure used for keeping track of each page
-+ *	written to a swap partition.  It consists of many swap_map_page
-+ *	structures that contain each an array of MAP_PAGE_SIZE swap entries.
-+ *	These structures are stored on the swap and linked together with the
-+ *	help of the .next_swap member.
-+ *
-+ *	The swap map is created during suspend.  The swap map pages are
-+ *	allocated and populated one at a time, so we only need one memory
-+ *	page to set up the entire structure.
-+ *
-+ *	During resume we also only need to use one swap_map_page structure
-+ *	at a time.
-+ */
-+
-+#define MAP_PAGE_ENTRIES	(PAGE_SIZE / sizeof(sector_t) - 1)
-+
-+struct swap_map_page {
-+	sector_t entries[MAP_PAGE_ENTRIES];
-+	sector_t next_swap;
-+};
-+
-+/**
-+ *	The swap_map_handle structure is used for handling swap in
-+ *	a file-alike way
-+ */
-+
-+struct swap_map_handle {
-+	struct swap_map_page *cur;
-+	sector_t cur_swap;
-+	sector_t first_sector;
-+	unsigned int k;
-+};
-+
- struct swsusp_header {
- 	char reserved[PAGE_SIZE - 20 - sizeof(sector_t) - sizeof(int)];
- 	sector_t image;
-@@ -151,7 +185,7 @@ struct block_device *hib_resume_bdev;
-  * Saving part
-  */
- 
--static int mark_swapfiles(sector_t start, unsigned int flags)
-+static int mark_swapfiles(struct swap_map_handle *handle, unsigned int flags)
- {
- 	int error;
- 
-@@ -160,7 +194,7 @@ static int mark_swapfiles(sector_t start, unsigned int flags)
- 	    !memcmp("SWAPSPACE2",swsusp_header->sig, 10)) {
- 		memcpy(swsusp_header->orig_sig,swsusp_header->sig, 10);
- 		memcpy(swsusp_header->sig,SWSUSP_SIG, 10);
--		swsusp_header->image = start;
-+		swsusp_header->image = handle->first_sector;
- 		swsusp_header->flags = flags;
- 		error = hib_bio_write_page(swsusp_resume_block,
- 					swsusp_header, NULL);
-@@ -226,39 +260,6 @@ static int write_page(void *buf, sector_t offset, struct bio **bio_chain)
- 	return hib_bio_write_page(offset, src, bio_chain);
- }
- 
--/*
-- *	The swap map is a data structure used for keeping track of each page
-- *	written to a swap partition.  It consists of many swap_map_page
-- *	structures that contain each an array of MAP_PAGE_SIZE swap entries.
-- *	These structures are stored on the swap and linked together with the
-- *	help of the .next_swap member.
-- *
-- *	The swap map is created during suspend.  The swap map pages are
-- *	allocated and populated one at a time, so we only need one memory
-- *	page to set up the entire structure.
-- *
-- *	During resume we also only need to use one swap_map_page structure
-- *	at a time.
-- */
--
--#define MAP_PAGE_ENTRIES	(PAGE_SIZE / sizeof(sector_t) - 1)
--
--struct swap_map_page {
--	sector_t entries[MAP_PAGE_ENTRIES];
--	sector_t next_swap;
--};
--
--/**
-- *	The swap_map_handle structure is used for handling swap in
-- *	a file-alike way
-- */
--
--struct swap_map_handle {
--	struct swap_map_page *cur;
--	sector_t cur_swap;
--	unsigned int k;
--};
--
- static void release_swap_writer(struct swap_map_handle *handle)
- {
- 	if (handle->cur)
-@@ -277,6 +278,7 @@ static int get_swap_writer(struct swap_map_handle *handle)
- 		return -ENOSPC;
- 	}
- 	handle->k = 0;
-+	handle->first_sector = handle->cur_swap;
- 	return 0;
- }
- 
-@@ -421,8 +423,6 @@ int swsusp_write(unsigned int flags)
- 	}
- 	error = get_swap_writer(&handle);
- 	if (!error) {
--		sector_t start = handle.cur_swap;
--
- 		error = swap_write_page(&handle, header, NULL);
- 		if (!error)
- 			error = save_image(&handle, &snapshot,
-@@ -431,7 +431,7 @@ int swsusp_write(unsigned int flags)
- 		if (!error) {
- 			flush_swap_writer(&handle);
- 			printk(KERN_INFO "PM: S");
--			error = mark_swapfiles(start, flags);
-+			error = mark_swapfiles(&handle, flags);
- 			printk("|\n");
- 		}
- 	}
 -- 
-1.7.0.3
+Ondrej Zary
