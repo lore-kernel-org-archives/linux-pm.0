@@ -2,7 +2,7 @@ From: Ondrej Zary <linux@rainbow-software.org>
 Subject: ehci_hcd causes immediate wakeup from suspend to RAM or
 	disk on Asus P4P800-VM
 Date: Tue, 27 Apr 2010 15:23:46 +0200
-Message-ID: <201004271523.48647.linux__27071.165192365$1272374906$gmane$org@rainbow-software.org>
+Message-ID: <201004271523.48647.linux__38169.6594915867$1272375829$gmane$org@rainbow-software.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
