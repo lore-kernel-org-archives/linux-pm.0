@@ -1,15 +1,20 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 3/5] PM / Hibernate: separate block_io
-Date: Wed, 28 Apr 2010 07:52:44 +0200
-Message-ID: <20100428055244.GA3501@ucw.cz>
-References: <1272356118-10012-1-git-send-email-jslaby@suse.cz>
-	<1272356118-10012-3-git-send-email-jslaby@suse.cz>
+Subject: Re: [PATCH 6/8] PM: Add suspend blocking work.
+Date: Wed, 28 Apr 2010 08:06:59 +0200
+Message-ID: <20100428060659.GC3721@ucw.cz>
+References: <1272429119-12103-1-git-send-email-arve@android.com>
+	<1272429119-12103-2-git-send-email-arve@android.com>
+	<1272429119-12103-3-git-send-email-arve@android.com>
+	<1272429119-12103-4-git-send-email-arve@android.com>
+	<1272429119-12103-5-git-send-email-arve@android.com>
+	<1272429119-12103-6-git-send-email-arve@android.com>
+	<1272429119-12103-7-git-send-email-arve@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1272356118-10012-3-git-send-email-jslaby@suse.cz>
+In-Reply-To: <1272429119-12103-7-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,53 +24,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>, linux-kernel@vger.kernel.org, jirislaby@gmail.com
+To: Arve Hj??nnev??g <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> Move block I/O operations to a separate file. It is because it will
-> be used later not only by the swap writer.
+> Allow work to be queued that will block suspend while it is pending
+> or executing. To get the same functionality in the calling code often
+> requires a separate suspend_blocker for pending and executing work, or
+> additional state and locking. This implementation does add additional
+> state and locking, but this can be removed later if we add support for
+> suspend blocking work to the core workqueue code.
 > 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: Nigel Cunningham <ncunningham@crca.org.au>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Signed-off-by: Arve Hj??nnev??g <arve@android.com>
 
-> +++ b/kernel/power/block_io.c
-> @@ -0,0 +1,103 @@
-> +/*
-> + * This file provides functions for block I/O operations on swap/file.
-> + *
-> + * Copyright (C) 1998,2001-2005 Pavel Machek <pavel@suse.cz>
+Seems sane. ACK.
 
-That address no longer works, but keeps popping up....
+> +struct suspend_blocking_work {
+> +	struct work_struct work;
+> +#ifdef CONFIG_OPPORTUNISTIC_SUSPEND
 
-> diff --git a/kernel/power/power.h b/kernel/power/power.h
-> index b1e207d..006270f 100644
-> --- a/kernel/power/power.h
-> +++ b/kernel/power/power.h
-> @@ -142,6 +142,15 @@ extern int swsusp_read(unsigned int *flags_p);
->  extern int swsusp_write(unsigned int flags);
->  extern void swsusp_close(fmode_t);
->  
-> +/* kernel/power/block_io.c */
-> +extern struct block_device *hib_resume_bdev;
+Cound we name it C_AUTO_SUSPEND... to reduce length and typo
+potential?
 
-It is slightly sad that this is now not only static, but also
-cross-module...
+> +	struct suspend_blocker suspend_blocker;
+> +	work_func_t func;
+> +	spinlock_t lock;
+> +	int active;
 
-
-> +extern int hib_bio_read_page(pgoff_t page_off, void *addr,
-> +		struct bio **bio_chain);
-> +extern int hib_bio_write_page(pgoff_t page_off, void *addr,
-> +		struct bio **bio_chain);
-> +extern int hib_wait_on_bio_chain(struct bio **bio_chain);
-> +
-
-Does the documentation usually go to the header in these cases?
-
+Is the lock internal-use, or is API user allowed to use it?
 								Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
