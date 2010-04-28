@@ -1,21 +1,18 @@
-From: =?UTF-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
-Subject: [PATCH 8/8] power_supply: Block suspend while power
-	supply change notifications are pending
-Date: Tue, 27 Apr 2010 21:31:59 -0700
-Message-ID: <1272429119-12103-9-git-send-email-arve@android.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 3/8] PM: suspend_block: Abort task freezing
+ if a suspend_blocker is active.
+Date: Wed, 28 Apr 2010 07:07:53 +0200
+Message-ID: <20100428050753.GA2527__11909.4579284594$1272431434$gmane$org@ucw.cz>
 References: <1272429119-12103-1-git-send-email-arve@android.com>
 	<1272429119-12103-2-git-send-email-arve@android.com>
 	<1272429119-12103-3-git-send-email-arve@android.com>
 	<1272429119-12103-4-git-send-email-arve@android.com>
-	<1272429119-12103-5-git-send-email-arve@android.com>
-	<1272429119-12103-6-git-send-email-arve@android.com>
-	<1272429119-12103-7-git-send-email-arve@android.com>
-	<1272429119-12103-8-git-send-email-arve@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1272429119-12103-8-git-send-email-arve@android.com>
+Content-Disposition: inline
+In-Reply-To: <1272429119-12103-4-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,56 +22,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Oleg Nesterov <oleg@redhat.com>, Andres Salomon <dilinger@collabora.co.uk>, Anton Vorontsov <cbou@mail.ru>, Daniel Mack <daniel@caiaq.de>, Tejun Heo <tj@kernel.org>, David Woodhouse <dwmw2@infradead.org>
+To: Arve Hj??nnev??g <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, David Rientjes <rientjes@google.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-V2hlbiBjb25uZWN0aW5nIHVzYiBvciB0aGUgY2hhcmdlciB0aGUgZGV2aWNlIHdvdWxkIG9mdGVu
-IGdvIGJhY2sgdG8gc2xlZXAKYmVmb3JlIHRoZSBjaGFyZ2UgbGVkIGFuZCBzY3JlZW4gdHVybmVk
-IG9uLgoKU2lnbmVkLW9mZi1ieTogQXJ2ZSBIasO4bm5ldsOlZyA8YXJ2ZUBhbmRyb2lkLmNvbT4K
-LS0tCiBkcml2ZXJzL3Bvd2VyL3Bvd2VyX3N1cHBseV9jb3JlLmMgfCAgICA5ICsrKysrKy0tLQog
-aW5jbHVkZS9saW51eC9wb3dlcl9zdXBwbHkuaCAgICAgIHwgICAgMyArKy0KIDIgZmlsZXMgY2hh
-bmdlZCwgOCBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZl
-cnMvcG93ZXIvcG93ZXJfc3VwcGx5X2NvcmUuYyBiL2RyaXZlcnMvcG93ZXIvcG93ZXJfc3VwcGx5
-X2NvcmUuYwppbmRleCBjY2U3NWI0Li41NzdhMTMxIDEwMDY0NAotLS0gYS9kcml2ZXJzL3Bvd2Vy
-L3Bvd2VyX3N1cHBseV9jb3JlLmMKKysrIGIvZHJpdmVycy9wb3dlci9wb3dlcl9zdXBwbHlfY29y
-ZS5jCkBAIC0zOSw3ICszOSw3IEBAIHN0YXRpYyBpbnQgX19wb3dlcl9zdXBwbHlfY2hhbmdlZF93
-b3JrKHN0cnVjdCBkZXZpY2UgKmRldiwgdm9pZCAqZGF0YSkKIHN0YXRpYyB2b2lkIHBvd2VyX3N1
-cHBseV9jaGFuZ2VkX3dvcmsoc3RydWN0IHdvcmtfc3RydWN0ICp3b3JrKQogewogCXN0cnVjdCBw
-b3dlcl9zdXBwbHkgKnBzeSA9IGNvbnRhaW5lcl9vZih3b3JrLCBzdHJ1Y3QgcG93ZXJfc3VwcGx5
-LAotCQkJCQkJY2hhbmdlZF93b3JrKTsKKwkJCQkJCWNoYW5nZWRfd29yay53b3JrKTsKIAogCWRl
-dl9kYmcocHN5LT5kZXYsICIlc1xuIiwgX19mdW5jX18pOwogCkBAIC01NSw3ICs1NSw3IEBAIHZv
-aWQgcG93ZXJfc3VwcGx5X2NoYW5nZWQoc3RydWN0IHBvd2VyX3N1cHBseSAqcHN5KQogewogCWRl
-dl9kYmcocHN5LT5kZXYsICIlc1xuIiwgX19mdW5jX18pOwogCi0Jc2NoZWR1bGVfd29yaygmcHN5
-LT5jaGFuZ2VkX3dvcmspOworCXNjaGVkdWxlX3N1c3BlbmRfYmxvY2tpbmdfd29yaygmcHN5LT5j
-aGFuZ2VkX3dvcmspOwogfQogRVhQT1JUX1NZTUJPTF9HUEwocG93ZXJfc3VwcGx5X2NoYW5nZWQp
-OwogCkBAIC0xNTUsNyArMTU1LDggQEAgaW50IHBvd2VyX3N1cHBseV9yZWdpc3RlcihzdHJ1Y3Qg
-ZGV2aWNlICpwYXJlbnQsIHN0cnVjdCBwb3dlcl9zdXBwbHkgKnBzeSkKIAkJZ290byBkZXZfY3Jl
-YXRlX2ZhaWxlZDsKIAl9CiAKLQlJTklUX1dPUksoJnBzeS0+Y2hhbmdlZF93b3JrLCBwb3dlcl9z
-dXBwbHlfY2hhbmdlZF93b3JrKTsKKwlzdXNwZW5kX2Jsb2NraW5nX3dvcmtfaW5pdCgmcHN5LT5j
-aGFuZ2VkX3dvcmssCisJCQkJICAgcG93ZXJfc3VwcGx5X2NoYW5nZWRfd29yaywgInBvd2VyLXN1
-cHBseSIpOwogCiAJcmMgPSBwb3dlcl9zdXBwbHlfY3JlYXRlX2F0dHJzKHBzeSk7CiAJaWYgKHJj
-KQpAQCAtMTcyLDYgKzE3Myw3IEBAIGludCBwb3dlcl9zdXBwbHlfcmVnaXN0ZXIoc3RydWN0IGRl
-dmljZSAqcGFyZW50LCBzdHJ1Y3QgcG93ZXJfc3VwcGx5ICpwc3kpCiBjcmVhdGVfdHJpZ2dlcnNf
-ZmFpbGVkOgogCXBvd2VyX3N1cHBseV9yZW1vdmVfYXR0cnMocHN5KTsKIGNyZWF0ZV9hdHRyc19m
-YWlsZWQ6CisJc3VzcGVuZF9ibG9ja2luZ193b3JrX2Rlc3Ryb3koJnBzeS0+Y2hhbmdlZF93b3Jr
-KTsKIAlkZXZpY2VfdW5yZWdpc3Rlcihwc3ktPmRldik7CiBkZXZfY3JlYXRlX2ZhaWxlZDoKIHN1
-Y2Nlc3M6CkBAIC0xODQsNiArMTg2LDcgQEAgdm9pZCBwb3dlcl9zdXBwbHlfdW5yZWdpc3Rlcihz
-dHJ1Y3QgcG93ZXJfc3VwcGx5ICpwc3kpCiAJZmx1c2hfc2NoZWR1bGVkX3dvcmsoKTsKIAlwb3dl
-cl9zdXBwbHlfcmVtb3ZlX3RyaWdnZXJzKHBzeSk7CiAJcG93ZXJfc3VwcGx5X3JlbW92ZV9hdHRy
-cyhwc3kpOworCXN1c3BlbmRfYmxvY2tpbmdfd29ya19kZXN0cm95KCZwc3ktPmNoYW5nZWRfd29y
-ayk7CiAJZGV2aWNlX3VucmVnaXN0ZXIocHN5LT5kZXYpOwogfQogRVhQT1JUX1NZTUJPTF9HUEwo
-cG93ZXJfc3VwcGx5X3VucmVnaXN0ZXIpOwpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9wb3dl
-cl9zdXBwbHkuaCBiL2luY2x1ZGUvbGludXgvcG93ZXJfc3VwcGx5LmgKaW5kZXggZWJkMmI4Zi4u
-OGExMmQ1MCAxMDA2NDQKLS0tIGEvaW5jbHVkZS9saW51eC9wb3dlcl9zdXBwbHkuaAorKysgYi9p
-bmNsdWRlL2xpbnV4L3Bvd2VyX3N1cHBseS5oCkBAIC0xNCw2ICsxNCw3IEBACiAjZGVmaW5lIF9f
-TElOVVhfUE9XRVJfU1VQUExZX0hfXwogCiAjaW5jbHVkZSA8bGludXgvZGV2aWNlLmg+CisjaW5j
-bHVkZSA8bGludXgvc3VzcGVuZF9ibG9ja2VyLmg+CiAjaW5jbHVkZSA8bGludXgvd29ya3F1ZXVl
-Lmg+CiAjaW5jbHVkZSA8bGludXgvbGVkcy5oPgogCkBAIC0xNTIsNyArMTUzLDcgQEAgc3RydWN0
-IHBvd2VyX3N1cHBseSB7CiAKIAkvKiBwcml2YXRlICovCiAJc3RydWN0IGRldmljZSAqZGV2Owot
-CXN0cnVjdCB3b3JrX3N0cnVjdCBjaGFuZ2VkX3dvcms7CisJc3RydWN0IHN1c3BlbmRfYmxvY2tp
-bmdfd29yayBjaGFuZ2VkX3dvcms7CiAKICNpZmRlZiBDT05GSUdfTEVEU19UUklHR0VSUwogCXN0
-cnVjdCBsZWRfdHJpZ2dlciAqY2hhcmdpbmdfZnVsbF90cmlnOwotLSAKMS42LjUuMQoKX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGlu
-ZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMu
-bGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Tue 2010-04-27 21:31:54, Arve Hj??nnev??g wrote:
+> If a suspend_blocker is active, suspend will fail anyway. Since
+> try_to_freeze_tasks can take up to 20 seconds to complete or fail, aborting
+> as soon as someone blocks suspend (e.g. from an interrupt handler) improves
+> the worst case wakeup latency.
+> 
+> On an older kernel where task freezing could fail for processes attached
+> to a debugger, this fixed a problem where the device sometimes hung for
+> 20 seconds before the screen turned on.
+> 
+> Signed-off-by: Arve Hj??nnev??g <arve@android.com>
+
+ack.
+
+> ---
+>  kernel/power/process.c |   12 ++++++++++--
+>  1 files changed, 10 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/power/process.c b/kernel/power/process.c
+> index 71ae290..d8ebd50 100644
+> --- a/kernel/power/process.c
+> +++ b/kernel/power/process.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/syscalls.h>
+>  #include <linux/freezer.h>
+>  #include <linux/delay.h>
+> +#include <linux/suspend_blocker.h>
+>  
+>  /* 
+>   * Timeout for stopping processes
+> @@ -38,6 +39,7 @@ static int try_to_freeze_tasks(bool sig_only)
+>  	struct timeval start, end;
+>  	u64 elapsed_csecs64;
+>  	unsigned int elapsed_csecs;
+> +	bool wakeup = false;
+>  
+>  	do_gettimeofday(&start);
+>  
+> @@ -63,6 +65,10 @@ static int try_to_freeze_tasks(bool sig_only)
+>  				todo++;
+>  		} while_each_thread(g, p);
+>  		read_unlock(&tasklist_lock);
+> +		if (todo && suspend_is_blocked()) {
+> +			wakeup = true;
+> +			break;
+> +		}
+>  		if (!todo || time_after(jiffies, end_time))
+>  			break;
+>  
+> @@ -85,13 +91,15 @@ static int try_to_freeze_tasks(bool sig_only)
+>  		 * but it cleans up leftover PF_FREEZE requests.
+>  		 */
+>  		printk("\n");
+> -		printk(KERN_ERR "Freezing of tasks failed after %d.%02d seconds "
+> +		printk(KERN_ERR "Freezing of tasks %s after %d.%02d seconds "
+>  				"(%d tasks refusing to freeze):\n",
+> +				wakeup ? "aborted" : "failed",
+>  				elapsed_csecs / 100, elapsed_csecs % 100, todo);
+>  		read_lock(&tasklist_lock);
+>  		do_each_thread(g, p) {
+>  			task_lock(p);
+> -			if (freezing(p) && !freezer_should_skip(p))
+> +			if (freezing(p) && !freezer_should_skip(p)
+> +					&& elapsed_csecs > 100)
+>  				sched_show_task(p);
+>  			cancel_freezing(p);
+>  			task_unlock(p);
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
