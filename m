@@ -1,15 +1,14 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 6/8] PM: Add suspend blocking work.
-Date: Wed, 28 Apr 2010 15:09:16 -0700
-Message-ID: <x2id6200be21004281509j84c29664m60068e7bfc86f64f__8153.03511121801$1272492616$gmane$org@mail.gmail.com>
-References: <1272429119-12103-1-git-send-email-arve@android.com>
-	<1272429119-12103-7-git-send-email-arve@android.com>
-	<20100428194028.GA16389@redhat.com> <201004282309.42188.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/5] FS: libfs,
+	implement simple_write_to_buffer
+Date: Thu, 29 Apr 2010 00:10:33 +0200
+Message-ID: <201004290010.33950.rjw__15359.3402741992$1272492694$gmane$org@sisk.pl>
+References: <1272356118-10012-1-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201004282309.42188.rjw@sisk.pl>
+In-Reply-To: <1272356118-10012-1-git-send-email-jslaby@suse.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,87 +18,95 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, jirislaby@gmail.com, linux-kernel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-2010/4/28 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Wednesday 28 April 2010, Oleg Nesterov wrote:
->> On 04/27, Arve Hj=F8nnev=E5g wrote:
->> >
->> > Allow work to be queued that will block suspend while it is pending
->> > or executing. To get the same functionality in the calling code often
->> > requires a separate suspend_blocker for pending and executing work, or
->> > additional state and locking. This implementation does add additional
->> > state and locking, but this can be removed later if we add support for
->> > suspend blocking work to the core workqueue code.
->>
->> I think this patch is fine.
->>
->> Just one silly question,
->>
->> > +int queue_suspend_blocking_work(struct workqueue_struct *wq,
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct suspend_b=
-locking_work *work)
->> > +{
->> > + =A0 int ret;
->> > + =A0 unsigned long flags;
->> > +
->> > + =A0 spin_lock_irqsave(&work->lock, flags);
->> > + =A0 suspend_block(&work->suspend_blocker);
->> > + =A0 ret =3D queue_work(wq, &work->work);
->> > + =A0 if (ret)
->> > + =A0 =A0 =A0 =A0 =A0 work->active++;
->>
->> why not
->>
->> =A0 =A0 =A0 ret =3D queue_work(wq, &work->work);
->> =A0 =A0 =A0 if (ret) {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_block(&work->suspend_blocker);
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 work->active++;
->> =A0 =A0 =A0 }
->>
->> ?
->>
->> Afaics, we can't race with work->func() doing unblock, we hold work-lock.
->> And this way the code looks more clear.
->
-> Agreed. =A0Arve, any objections to doing that?
->
+On Tuesday 27 April 2010, Jiri Slaby wrote:
+> It will be used in suspend code and serves as an easy wrap around
+> copy_from_user. Similar to simple_read_from_buffer, it takes care
+> of transfers with proper lengths depending on available and count
+> parameters and advances ppos appropriately.
 
-I need to fix the race, but I can easily fix it in
-cancel_suspend_blocking_work_sync instead. If the suspend blocker is
-active for a long time, and DEBUG_SUSPEND_BLOCKER is enabled, we can
-tell if the work is constantly re-queued or if the workqueue is stuck.
+Will anyone object if I take this one into the suspend-2.6 tree?
 
->> Sorry, I had no chance to read the previous patches. After the quick look
->> at 1/8 I think it is OK to call suspend_block() twice, but still...
->
-> It is.
->
->> Or I missed something? Just curious.
->>
->>
->> Hmm... actually, queue_work() can also fail if we race with cancel_ which
->> temporary sets WORK_STRUCT_PENDING. In that case suspend_block() won't
->> be paired by unblock ?
->>
->>
->> > +int schedule_suspend_blocking_work(struct suspend_blocking_work *work)
->> > +{
->> > ...
->> > + =A0 ret =3D schedule_work(&work->work);
->>
->> Off-topic. We should probably export keventd_wq to avoid the duplications
->> like this.
->
-> Please see my reply to Tejun. :-)
->
-> Rafael
->
+Rafael
 
 
-
--- =
-
-Arve Hj=F8nnev=E5g
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: Nigel Cunningham <ncunningham@crca.org.au>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+> Cc: linux-fsdevel@vger.kernel.org
+> ---
+>  fs/libfs.c         |   35 +++++++++++++++++++++++++++++++++++
+>  include/linux/fs.h |    2 ++
+>  2 files changed, 37 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/libfs.c b/fs/libfs.c
+> index ea9a6cc..cfab42a 100644
+> --- a/fs/libfs.c
+> +++ b/fs/libfs.c
+> @@ -547,6 +547,40 @@ ssize_t simple_read_from_buffer(void __user *to, size_t count, loff_t *ppos,
+>  }
+>  
+>  /**
+> + * simple_write_to_buffer - copy data from user space to the buffer
+> + * @to: the buffer to write to
+> + * @available: the size of the buffer
+> + * @ppos: the current position in the buffer
+> + * @from: the user space buffer to read from
+> + * @count: the maximum number of bytes to read
+> + *
+> + * The simple_write_to_buffer() function reads up to @count bytes from the user
+> + * space address starting at @from into the buffer @to at offset @ppos.
+> + *
+> + * On success, the number of bytes written is returned and the offset @ppos is
+> + * advanced by this number, or negative value is returned on error.
+> + **/
+> +ssize_t simple_write_to_buffer(void *to, size_t available, loff_t *ppos,
+> +		const void __user *from, size_t count)
+> +{
+> +	loff_t pos = *ppos;
+> +	size_t ret;
+> +
+> +	if (pos < 0)
+> +		return -EINVAL;
+> +	if (pos >= available || !count)
+> +		return 0;
+> +	if (count > available - pos)
+> +		count = available - pos;
+> +	ret = copy_from_user(to + pos, from, count);
+> +	if (ret == count)
+> +		return -EFAULT;
+> +	count -= ret;
+> +	*ppos = pos + count;
+> +	return count;
+> +}
+> +
+> +/**
+>   * memory_read_from_buffer - copy data from the buffer
+>   * @to: the kernel space buffer to read to
+>   * @count: the maximum number of bytes to read
+> @@ -864,6 +898,7 @@ EXPORT_SYMBOL(simple_statfs);
+>  EXPORT_SYMBOL(simple_sync_file);
+>  EXPORT_SYMBOL(simple_unlink);
+>  EXPORT_SYMBOL(simple_read_from_buffer);
+> +EXPORT_SYMBOL(simple_write_to_buffer);
+>  EXPORT_SYMBOL(memory_read_from_buffer);
+>  EXPORT_SYMBOL(simple_transaction_set);
+>  EXPORT_SYMBOL(simple_transaction_get);
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index 66f3caa..e594a8d 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -2372,6 +2372,8 @@ extern void simple_release_fs(struct vfsmount **mount, int *count);
+>  
+>  extern ssize_t simple_read_from_buffer(void __user *to, size_t count,
+>  			loff_t *ppos, const void *from, size_t available);
+> +extern ssize_t simple_write_to_buffer(void *to, size_t available, loff_t *ppos,
+> +		const void __user *from, size_t count);
+>  
+>  extern int simple_fsync(struct file *, struct dentry *, int);
+>  
+> 
