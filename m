@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: commit 9630bdd9 changes behavior of the poweroff -
-	bug?
-Date: Wed, 28 Apr 2010 23:18:24 +0200
-Message-ID: <201004282318.24994.rjw__10987.6467301094$1272489590$gmane$org@sisk.pl>
-References: <20100401133923.GA4104@tiehlicka.suse.cz>
-	<20100427065109.GA3907@tiehlicka.suse.cz>
-	<201004280006.44540.rjw@sisk.pl>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Wed, 28 Apr 2010 22:50:44 +0200
+Message-ID: <201004282250.44200.rjw__24463.681682437$1272490075$gmane$org@sisk.pl>
+References: <1272429119-12103-1-git-send-email-arve@android.com>
+	<1272429119-12103-2-git-send-email-arve@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201004280006.44540.rjw@sisk.pl>
+In-Reply-To: <1272429119-12103-2-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,149 +18,200 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michal Hocko <mhocko@suse.cz>
-Cc: Tony Vroon <tony@linx.net>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Arve =?utf-8?q?Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 28 April 2010, Rafael J. Wysocki wrote:
-> On Tuesday 27 April 2010, Michal Hocko wrote:
-> > On Mon 26-04-10 20:51:09, Rafael J. Wysocki wrote:
-> > > On Monday 26 April 2010, Michal Hocko wrote:
-> > > > On Sun 25-04-10 04:35:42, Rafael J. Wysocki wrote:
-> > > > > On Monday 19 April 2010, Rafael J. Wysocki wrote:
-> > > > > > On Monday 19 April 2010, Michal Hocko wrote:
-> > > > > > > On Fri 16-04-10 20:00:29, Rafael J. Wysocki wrote:
-> > > > > > > > On Wednesday 14 April 2010, Michal Hocko wrote:
-> > > > > > > > > On Tue 13-04-10 22:53:37, Rafael J. Wysocki wrote:
-> > > > > > > > > > On Tuesday 13 April 2010, Michal Hocko wrote:
-> > > > > > > > > > > On Tue 13-04-10 01:01:54, Rafael J. Wysocki wrote:
-> > > > > > > > > > > > On Saturday 10 April 2010, Rafael J. Wysocki wrote:
-> > > > > > > > > > > > > On Friday 09 April 2010, Tony Vroon wrote:
-> > > > > > > > > > > > > > On Fri, 2010-04-09 at 22:42 +0200, Rafael J. Wysocki wrote:
-> > > > > > > > > > > > > > > Please check if the patch below changes anything.
-> > > > > > > > > > > > > > >  drivers/acpi/wakeup.c |    4 ++--
-> > > > > > > > > > > > > > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > > > > > > > > > > > > > 
-> > > > > > > > > > > > > > That didn't change the behaviour for me, sorry.
-> > > > > > > > > > > > > 
-> > > > > > > > > > > > > Well, I would be sorry if it did, because the patch removed some useful code. :-)
-> > > > > > > > > > > > > 
-> > > > > > > > > > > > > > (I made sure to go through a full power down session before trying the
-> > > > > > > > > > > > > > patched kernel)
-> > > > > > > > > > > > > 
-> > > > > > > > > > > > > Thanks for testing.  So it looks like we don't disable the GPE during power off.
-> > > > > > > > > > > > > 
-> > > > > > > > > > > > > I'll try to figure out what's going on, please stay tuned.
-> > > > > > > > > > > > 
-> > > > > > > > > > > > Can you please check if the patch below changes the behavior?
-> > > > > > > > > > > 
-> > > > > > > > > > > Unfortunately, it didn't help either (I have tried on top of the fresh
-> > > > > > > > > > > rc4).
-> > > > > > > > > > 
-> > > > > > > > > > That gets really weird.
-> > > > > > > > > > 
-> > > > > > > > > > > > ---
-> > > > > > > > > > > >  drivers/acpi/wakeup.c |    6 +++---
-> > > > > > > > > > > >  1 file changed, 3 insertions(+), 3 deletions(-)
-> > > > > > > > > > > > 
-> > > > > > > > > > > > Index: linux-2.6/drivers/acpi/wakeup.c
-> > > > > > > > > > > > ===================================================================
-> > > > > > > > > > > > --- linux-2.6.orig/drivers/acpi/wakeup.c
-> > > > > > > > > > > > +++ linux-2.6/drivers/acpi/wakeup.c
-> > > > > > > > > > > > @@ -63,17 +63,17 @@ void acpi_enable_wakeup_device(u8 sleep_
-> > > > > > > > > > > >  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
-> > > > > > > > > > > >  		struct acpi_device *dev =
-> > > > > > > > > > > >  			container_of(node, struct acpi_device, wakeup_list);
-> > > > > > > > > > > > +		u8 action = ACPI_GPE_ENABLE;
-> > > > > > > > > > 
-> > > > > > > > > > Can you try to change the above to ACPI_GPE_DISABLE and retest, please?
-> > > > > > > > > 
-> > > > > > > > > Unfortunately didn't help as well...
-> > > > > > > > > Just for reference:
-> > > > > > > > > 
-> > > > > > > > > diff --git a/drivers/acpi/wakeup.c b/drivers/acpi/wakeup.c
-> > > > > > > > > index 248b473..f23c08f 100644
-> > > > > > > > > --- a/drivers/acpi/wakeup.c
-> > > > > > > > > +++ b/drivers/acpi/wakeup.c
-> > > > > > > > > @@ -63,7 +63,7 @@ void acpi_enable_wakeup_device(u8 sleep_state)
-> > > > > > > > >  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
-> > > > > > > > >  		struct acpi_device *dev =
-> > > > > > > > >  			container_of(node, struct acpi_device, wakeup_list);
-> > > > > > > > > -		u8 action = ACPI_GPE_ENABLE;
-> > > > > > > > > +		u8 action = ACPI_GPE_DISABLE;
-> > > > > > > > 
-> > > > > > > > That probably means the chipset enables the GPEs by itself _after_ we've
-> > > > > > > > disabled them in acpi_enable_wakeup_device().
-> > > > > > > 
-> > > > > > > Is this something BIOS specific?
-> > > > > > > 
-> > > > > > > > 
-> > > > > > > > Unfortunately, I can't reproduce the issue on any of my test boxes and it's
-> > > > > > > > hard to find the source of the problem staring at the code.
-> > > > > > > 
-> > > > > > > Are there any debug options I can turn on to provide some information?
-> > > > > > 
-> > > > > > We can only check what the kernel tells us before power off, but all that seems
-> > > > > > correct.
-> > > > > > 
-> > > > > > > Btw. what exactly does this mean? In what state is the laptop while it
-> > > > > > > is turned off and GPE is enabled?
-> > > > > > 
-> > > > > > If a GPE is enabled, then some part of the chipset has power provided so that
-> > > > > > it can signal wakeup.
-> > > > > > 
-> > > > > > I'll look into it a bit more later today.
-> > > > > 
-> > > > > Please try the patch below.  It kind of restores the previous behavior,
-> > > > > let's see if it changes anything.
-> > > > 
-> > > > Again, no success. Just to make sure that I didn't screw anything. I
-> > > > have used just the following patch on top of the clean rc5 (your patch
-> > > > has failed with some rejects but I guess that the following should do
-> > > > the same):
-> > > 
-> > > Thanks for testing.  Did you try the second thing, ie. try to comment out the
-> > > acpi_enable_gpe() in drivers/acpi/wakeup.c:acpi_wakeup_device_init() and
-> > > retest (if you haven't done that already)?
-> > 
-> > I have tried it just now and still no success.
-> > 
-> > 
-> > commit 1a7e7c9ac82aa2de185fa2f686417a5eb7765420
-> > Author: Michal Hocko <mhocko@suse.cz>
-> > Date:   Tue Apr 27 08:22:23 2010 +0200
-> > 
-> >     disable acpi_enable_gpe in acpi_wakeup_device_init
-> >     
-> >     as suggested by Rafael.
-> > 
-> > diff --git a/drivers/acpi/wakeup.c b/drivers/acpi/wakeup.c
-> > index 4b9d339..a0f4859 100644
-> > --- a/drivers/acpi/wakeup.c
-> > +++ b/drivers/acpi/wakeup.c
-> > @@ -113,8 +113,9 @@ int __init acpi_wakeup_device_init(void)
-> >  		if (!dev->wakeup.flags.always_enabled ||
-> >  		    dev->wakeup.state.enabled)
-> >  			continue;
-> > - 		acpi_enable_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
-> > + 		/*acpi_enable_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
-> >   				ACPI_GPE_TYPE_WAKE);
-> > +		 */
-> >  		dev->wakeup.state.enabled = 1;
-> >  	}
-> >  	mutex_unlock(&acpi_device_lock);
-> > 
-> > On top of the previous patch. If I understand that correctly then this
-> > is really strange because this patch disables GPE completely, doesn't
-> > it?
-> 
-> Kind of, but this only happens for devices that are not handled by the button
-> driver which now has become our primary suspect.
-
-I'm thinking at the moment that we probably enable something at the hardware
-level that we didn't before.
-
-Why it is not _disabled_ before power off although there are all of the
-necessary things in the code remains to be a mystery to me.
-
-Rafael
+T24gV2VkbmVzZGF5IDI4IEFwcmlsIDIwMTAsIEFydmUgSGrDuG5uZXbDpWcgd3JvdGU6Cj4gQWRk
+cyAvc3lzL3Bvd2VyL3BvbGljeSB0aGF0IHNlbGVjdHMgdGhlIGJlaGF2aW91ciBvZiAvc3lzL3Bv
+d2VyL3N0YXRlLgo+IEFmdGVyIHNldHRpbmcgdGhlIHBvbGljeSB0byBvcHBvcnR1bmlzdGljLCB3
+cml0ZXMgdG8gL3N5cy9wb3dlci9zdGF0ZQo+IGJlY29tZSBub24tYmxvY2tpbmcgcmVxdWVzdHMg
+dGhhdCBzcGVjaWZ5IHdoaWNoIHN1c3BlbmQgc3RhdGUgdG8gZW50ZXIKPiB3aGVuIG5vIHN1c3Bl
+bmQgYmxvY2tlcnMgYXJlIGFjdGl2ZS4gQSBzcGVjaWFsIHN0YXRlLCAib24iLCBzdG9wcyB0aGUK
+PiBwcm9jZXNzIGJ5IGFjdGl2YXRpbmcgdGhlICJtYWluIiBzdXNwZW5kIGJsb2NrZXIuCj4gCj4g
+U2lnbmVkLW9mZi1ieTogQXJ2ZSBIasO4bm5ldsOlZyA8YXJ2ZUBhbmRyb2lkLmNvbT4KPiAtLS0K
+Li4uCj4gQEAgLTIwLDYgKzIxLDI3IEBAIERFRklORV9NVVRFWChwbV9tdXRleCk7Cj4gIHVuc2ln
+bmVkIGludCBwbV9mbGFnczsKPiAgRVhQT1JUX1NZTUJPTChwbV9mbGFncyk7Cj4gIAo+ICtzdHJ1
+Y3QgcG9saWN5IHsKPiArCWNvbnN0IGNoYXIgKm5hbWU7Cj4gKwlib29sICgqdmFsaWRfc3RhdGUp
+KHN1c3BlbmRfc3RhdGVfdCBzdGF0ZSk7Cj4gKwlpbnQgKCpzZXRfc3RhdGUpKHN1c3BlbmRfc3Rh
+dGVfdCBzdGF0ZSk7Cj4gK307Cj4gK3N0YXRpYyBzdHJ1Y3QgcG9saWN5IHBvbGljaWVzW10gPSB7
+Cj4gKwl7Cj4gKwkJLm5hbWUJCT0gImZvcmNlZCIsCj4gKwkJLnZhbGlkX3N0YXRlCT0gdmFsaWRf
+c3RhdGUsCj4gKwkJLnNldF9zdGF0ZQk9IGVudGVyX3N0YXRlLAo+ICsJfSwKPiArI2lmZGVmIENP
+TkZJR19PUFBPUlRVTklTVElDX1NVU1BFTkQKPiArCXsKPiArCQkubmFtZQkJPSAib3Bwb3J0dW5p
+c3RpYyIsCj4gKwkJLnZhbGlkX3N0YXRlCT0gcmVxdWVzdF9zdXNwZW5kX3ZhbGlkX3N0YXRlLAo+
+ICsJCS5zZXRfc3RhdGUJPSByZXF1ZXN0X3N1c3BlbmRfc3RhdGUsCj4gKwl9LAo+ICsjZW5kaWYK
+PiArfTsKPiArc3RhdGljIGludCBwb2xpY3k7Cj4gKwo+ICAjaWZkZWYgQ09ORklHX1BNX1NMRUVQ
+Cj4gIAo+ICAvKiBSb3V0aW5lcyBmb3IgUE0tdHJhbnNpdGlvbiBub3RpZmljYXRpb25zICovCj4g
+QEAgLTE0Niw2ICsxNjgsMTIgQEAgc3RydWN0IGtvYmplY3QgKnBvd2VyX2tvYmo7Cj4gICAqCj4g
+ICAqCXN0b3JlKCkgYWNjZXB0cyBvbmUgb2YgdGhvc2Ugc3RyaW5ncywgdHJhbnNsYXRlcyBpdCBp
+bnRvIHRoZSAKPiAgICoJcHJvcGVyIGVudW1lcmF0ZWQgdmFsdWUsIGFuZCBpbml0aWF0ZXMgYSBz
+dXNwZW5kIHRyYW5zaXRpb24uCj4gKyAqCj4gKyAqCUlmIHBvbGljeSBpcyBzZXQgdG8gb3Bwb3J0
+dW5pc3RpYywgc3RvcmUoKSBkb2VzIG5vdCBibG9jayB1bnRpbCB0aGUKPiArICoJc3lzdGVtIHJl
+c3VtZXMsIGFuZCBpdCB3aWxsIHRyeSB0byByZS1lbnRlciB0aGUgc3RhdGUgdW50aWwgYW5vdGhl
+cgo+ICsgKglzdGF0ZSBpcyByZXF1ZXN0ZWQuIFN1c3BlbmQgYmxvY2tlcnMgYXJlIHJlc3BlY3Rl
+ZCBhbmQgdGhlIHJlcXVlc3RlZAo+ICsgKglzdGF0ZSB3aWxsIG9ubHkgYmUgZW50ZXJlZCB3aGVu
+IG5vIHN1c3BlbmQgYmxvY2tlcnMgYXJlIGFjdGl2ZS4KPiArICoJV3JpdGUgIm9uIiB0byBjYW5j
+ZWwuCj4gICAqLwo+ICBzdGF0aWMgc3NpemVfdCBzdGF0ZV9zaG93KHN0cnVjdCBrb2JqZWN0ICpr
+b2JqLCBzdHJ1Y3Qga29ial9hdHRyaWJ1dGUgKmF0dHIsCj4gIAkJCSAgY2hhciAqYnVmKQo+IEBA
+IC0xNTUsMTIgKzE4MywxMyBAQCBzdGF0aWMgc3NpemVfdCBzdGF0ZV9zaG93KHN0cnVjdCBrb2Jq
+ZWN0ICprb2JqLCBzdHJ1Y3Qga29ial9hdHRyaWJ1dGUgKmF0dHIsCj4gIAlpbnQgaTsKPiAgCj4g
+IAlmb3IgKGkgPSAwOyBpIDwgUE1fU1VTUEVORF9NQVg7IGkrKykgewo+IC0JCWlmIChwbV9zdGF0
+ZXNbaV0gJiYgdmFsaWRfc3RhdGUoaSkpCj4gKwkJaWYgKHBtX3N0YXRlc1tpXSAmJiBwb2xpY2ll
+c1twb2xpY3ldLnZhbGlkX3N0YXRlKGkpKQo+ICAJCQlzICs9IHNwcmludGYocywiJXMgIiwgcG1f
+c3RhdGVzW2ldKTsKPiAgCX0KPiAgI2VuZGlmCj4gICNpZmRlZiBDT05GSUdfSElCRVJOQVRJT04K
+PiAtCXMgKz0gc3ByaW50ZihzLCAiJXNcbiIsICJkaXNrIik7Cj4gKwlpZiAoIXBvbGljeSkKPiAr
+CQlzICs9IHNwcmludGYocywgIiVzXG4iLCAiZGlzayIpOwo+ICAjZWxzZQo+ICAJaWYgKHMgIT0g
+YnVmKQo+ICAJCS8qIGNvbnZlcnQgdGhlIGxhc3Qgc3BhY2UgdG8gYSBuZXdsaW5lICovCj4gQEAg
+LTE3Myw3ICsyMDIsNyBAQCBzdGF0aWMgc3NpemVfdCBzdGF0ZV9zdG9yZShzdHJ1Y3Qga29iamVj
+dCAqa29iaiwgc3RydWN0IGtvYmpfYXR0cmlidXRlICphdHRyLAo+ICAJCQkgICBjb25zdCBjaGFy
+ICpidWYsIHNpemVfdCBuKQo+ICB7Cj4gICNpZmRlZiBDT05GSUdfU1VTUEVORAo+IC0Jc3VzcGVu
+ZF9zdGF0ZV90IHN0YXRlID0gUE1fU1VTUEVORF9TVEFOREJZOwo+ICsJc3VzcGVuZF9zdGF0ZV90
+IHN0YXRlID0gUE1fU1VTUEVORF9PTjsKPiAgCWNvbnN0IGNoYXIgKiBjb25zdCAqczsKPiAgI2Vu
+ZGlmCj4gIAljaGFyICpwOwo+IEBAIC0xODQsNyArMjEzLDcgQEAgc3RhdGljIHNzaXplX3Qgc3Rh
+dGVfc3RvcmUoc3RydWN0IGtvYmplY3QgKmtvYmosIHN0cnVjdCBrb2JqX2F0dHJpYnV0ZSAqYXR0
+ciwKPiAgCWxlbiA9IHAgPyBwIC0gYnVmIDogbjsKPiAgCj4gIAkvKiBGaXJzdCwgY2hlY2sgaWYg
+d2UgYXJlIHJlcXVlc3RlZCB0byBoaWJlcm5hdGUgKi8KPiAtCWlmIChsZW4gPT0gNCAmJiAhc3Ry
+bmNtcChidWYsICJkaXNrIiwgbGVuKSkgewo+ICsJaWYgKGxlbiA9PSA0ICYmICFzdHJuY21wKGJ1
+ZiwgImRpc2siLCBsZW4pICYmICFwb2xpY3kpIHsKPiAgCQllcnJvciA9IGhpYmVybmF0ZSgpOwo+
+ICAgIGdvdG8gRXhpdDsKPiAgCX0KPiBAQCAtMTk1LDcgKzIyNCw3IEBAIHN0YXRpYyBzc2l6ZV90
+IHN0YXRlX3N0b3JlKHN0cnVjdCBrb2JqZWN0ICprb2JqLCBzdHJ1Y3Qga29ial9hdHRyaWJ1dGUg
+KmF0dHIsCj4gIAkJCWJyZWFrOwo+ICAJfQo+ICAJaWYgKHN0YXRlIDwgUE1fU1VTUEVORF9NQVgg
+JiYgKnMpCj4gLQkJZXJyb3IgPSBlbnRlcl9zdGF0ZShzdGF0ZSk7Cj4gKwkJZXJyb3IgPSBwb2xp
+Y2llc1twb2xpY3ldLnNldF9zdGF0ZShzdGF0ZSk7Cj4gICNlbmRpZgo+ICAKPiAgIEV4aXQ6Cj4g
+QEAgLTIwNCw2ICsyMzMsNTUgQEAgc3RhdGljIHNzaXplX3Qgc3RhdGVfc3RvcmUoc3RydWN0IGtv
+YmplY3QgKmtvYmosIHN0cnVjdCBrb2JqX2F0dHJpYnV0ZSAqYXR0ciwKPiAgCj4gIHBvd2VyX2F0
+dHIoc3RhdGUpOwo+ICAKPiArLyoqCj4gKyAqCXBvbGljeSAtIHNldCBwb2xpY3kgZm9yIHN0YXRl
+Cj4gKyAqLwo+ICsKPiArc3RhdGljIHNzaXplX3QgcG9saWN5X3Nob3coc3RydWN0IGtvYmplY3Qg
+KmtvYmosCj4gKwkJCSAgIHN0cnVjdCBrb2JqX2F0dHJpYnV0ZSAqYXR0ciwgY2hhciAqYnVmKQo+
+ICt7Cj4gKwljaGFyICpzID0gYnVmOwo+ICsJaW50IGk7Cj4gKwo+ICsJZm9yIChpID0gMDsgaSA8
+IEFSUkFZX1NJWkUocG9saWNpZXMpOyBpKyspIHsKPiArCQlpZiAoaSA9PSBwb2xpY3kpCj4gKwkJ
+CXMgKz0gc3ByaW50ZihzLCAiWyVzXSAiLCBwb2xpY2llc1tpXS5uYW1lKTsKPiArCQllbHNlCj4g
+KwkJCXMgKz0gc3ByaW50ZihzLCAiJXMgIiwgcG9saWNpZXNbaV0ubmFtZSk7Cj4gKwl9Cj4gKwlp
+ZiAocyAhPSBidWYpCj4gKwkJLyogY29udmVydCB0aGUgbGFzdCBzcGFjZSB0byBhIG5ld2xpbmUg
+Ki8KPiArCQkqKHMtMSkgPSAnXG4nOwo+ICsJcmV0dXJuIChzIC0gYnVmKTsKPiArfQo+ICsKPiAr
+c3RhdGljIHNzaXplX3QgcG9saWN5X3N0b3JlKHN0cnVjdCBrb2JqZWN0ICprb2JqLAo+ICsJCQkg
+ICAgc3RydWN0IGtvYmpfYXR0cmlidXRlICphdHRyLAo+ICsJCQkgICAgY29uc3QgY2hhciAqYnVm
+LCBzaXplX3QgbikKPiArewo+ICsJY29uc3QgY2hhciAqczsKPiArCWNoYXIgKnA7Cj4gKwlpbnQg
+bGVuOwo+ICsJaW50IGk7Cj4gKwo+ICsJcCA9IG1lbWNocihidWYsICdcbicsIG4pOwo+ICsJbGVu
+ID0gcCA/IHAgLSBidWYgOiBuOwo+ICsKPiArCWZvciAoaSA9IDA7IGkgPCBBUlJBWV9TSVpFKHBv
+bGljaWVzKTsgaSsrKSB7Cj4gKwkJcyA9IHBvbGljaWVzW2ldLm5hbWU7Cj4gKwkJaWYgKHMgJiYg
+bGVuID09IHN0cmxlbihzKSAmJiAhc3RybmNtcChidWYsIHMsIGxlbikpIHsKPiArCQkJbXV0ZXhf
+bG9jaygmcG1fbXV0ZXgpOwo+ICsJCQlwb2xpY2llc1twb2xpY3ldLnNldF9zdGF0ZShQTV9TVVNQ
+RU5EX09OKTsKPiArCQkJcG9saWN5ID0gaTsKPiArCQkJbXV0ZXhfdW5sb2NrKCZwbV9tdXRleCk7
+Cj4gKwkJCXJldHVybiBuOwo+ICsJCX0KPiArCX0KPiArCXJldHVybiAtRUlOVkFMOwo+ICt9Cj4g
+Kwo+ICtwb3dlcl9hdHRyKHBvbGljeSk7Cj4gKwo+ICAjaWZkZWYgQ09ORklHX1BNX1RSQUNFCj4g
+IGludCBwbV90cmFjZV9lbmFibGVkOwo+ICAKCldvdWxkIHlvdSBtaW5kIGlmIEkgY2hhbmdlZCB0
+aGUgYWJvdmUgc28gdGhhdCAicG9saWN5IiBkb2Vzbid0IGV2ZW4gc2hvdyB1cAppZiBDT05GSUdf
+T1BQT1JUVU5JU1RJQ19TVVNQRU5EIGlzIHVuc2V0PwoKLi4uCj4gK3N0YXRpYyB2b2lkIHN1c3Bl
+bmRfd29ya2VyKHN0cnVjdCB3b3JrX3N0cnVjdCAqd29yaykKPiArewo+ICsJaW50IHJldDsKPiAr
+CWludCBlbnRyeV9ldmVudF9udW07Cj4gKwo+ICsJZW5hYmxlX3N1c3BlbmRfYmxvY2tlcnMgPSB0
+cnVlOwo+ICsJd2hpbGUgKCFzdXNwZW5kX2lzX2Jsb2NrZWQoKSkgewo+ICsJCWVudHJ5X2V2ZW50
+X251bSA9IGN1cnJlbnRfZXZlbnRfbnVtOwo+ICsKPiArCQlpZiAoZGVidWdfbWFzayAmIERFQlVH
+X1NVU1BFTkQpCj4gKwkJCXByX2luZm8oInN1c3BlbmQ6IGVudGVyIHN1c3BlbmRcbiIpOwo+ICsK
+PiArCQlyZXQgPSBwbV9zdXNwZW5kKHJlcXVlc3RlZF9zdXNwZW5kX3N0YXRlKTsKPiArCj4gKwkJ
+aWYgKGRlYnVnX21hc2sgJiBERUJVR19FWElUX1NVU1BFTkQpCj4gKwkJCXByX2luZm9fdGltZSgi
+c3VzcGVuZDogZXhpdCBzdXNwZW5kLCByZXQgPSAlZCAiLCByZXQpOwo+ICsKPiArCQlpZiAoY3Vy
+cmVudF9ldmVudF9udW0gPT0gZW50cnlfZXZlbnRfbnVtKQo+ICsJCQlwcl9pbmZvKCJzdXNwZW5k
+OiBwbV9zdXNwZW5kIHJldHVybmVkIHdpdGggbm8gZXZlbnRcbiIpOwoKSG1tLCB3aGF0IGV4YWN0
+bHkgaXMgdGhpcyBmb3I/ICBJdCBsb29rcyBsaWtlIGEgZGVidWcgdGhpbmcgdG8gbWUuICBJJ2Qg
+dXNlCnByX2RlYnVnKCkgaGVyZSBhbmQgaW4gYm90aCBkZWJ1ZyBwcmludGsoKXMgYWJvdmUuICBX
+b3VsZCB5b3UgYWdyZWU/Cgo+ICsJfQo+ICsJZW5hYmxlX3N1c3BlbmRfYmxvY2tlcnMgPSBmYWxz
+ZTsKPiArfQo+ICtzdGF0aWMgREVDTEFSRV9XT1JLKHN1c3BlbmRfd29yaywgc3VzcGVuZF93b3Jr
+ZXIpOwo+ICsKPiArLyoqCj4gKyAqIHN1c3BlbmRfYmxvY2tlcl9pbml0KCkgLSBJbml0aWFsaXpl
+IGEgc3VzcGVuZCBibG9ja2VyCj4gKyAqIEBibG9ja2VyOglUaGUgc3VzcGVuZCBibG9ja2VyIHRv
+IGluaXRpYWxpemUuCj4gKyAqIEBuYW1lOglUaGUgbmFtZSBvZiB0aGUgc3VzcGVuZCBibG9ja2Vy
+IHRvIHNob3cgaW4gZGVidWcgbWVzc2FnZXMuCj4gKyAqCj4gKyAqIFRoZSBzdXNwZW5kIGJsb2Nr
+ZXIgc3RydWN0IGFuZCBuYW1lIG11c3Qgbm90IGJlIGZyZWVkIGJlZm9yZSBjYWxsaW5nCj4gKyAq
+IHN1c3BlbmRfYmxvY2tlcl9kZXN0cm95Lgo+ICsgKi8KPiArdm9pZCBzdXNwZW5kX2Jsb2NrZXJf
+aW5pdChzdHJ1Y3Qgc3VzcGVuZF9ibG9ja2VyICpibG9ja2VyLCBjb25zdCBjaGFyICpuYW1lKQo+
+ICt7Cj4gKwl1bnNpZ25lZCBsb25nIGlycWZsYWdzID0gMDsKPiArCj4gKwlXQVJOX09OKCFuYW1l
+KTsKPiArCj4gKwlpZiAoZGVidWdfbWFzayAmIERFQlVHX1NVU1BFTkRfQkxPQ0tFUikKPiArCQlw
+cl9pbmZvKCJzdXNwZW5kX2Jsb2NrZXJfaW5pdCBuYW1lPSVzXG4iLCBuYW1lKTsKPiArCj4gKwli
+bG9ja2VyLT5uYW1lID0gbmFtZTsKPiArCWJsb2NrZXItPmZsYWdzID0gU0JfSU5JVElBTElaRUQ7
+Cj4gKwlJTklUX0xJU1RfSEVBRCgmYmxvY2tlci0+bGluayk7Cj4gKwo+ICsJc3Bpbl9sb2NrX2ly
+cXNhdmUoJmxpc3RfbG9jaywgaXJxZmxhZ3MpOwo+ICsJbGlzdF9hZGQoJmJsb2NrZXItPmxpbmss
+ICZpbmFjdGl2ZV9ibG9ja2Vycyk7Cj4gKwlzcGluX3VubG9ja19pcnFyZXN0b3JlKCZsaXN0X2xv
+Y2ssIGlycWZsYWdzKTsKPiArfQo+ICtFWFBPUlRfU1lNQk9MKHN1c3BlbmRfYmxvY2tlcl9pbml0
+KTsKCklzIHRoZXJlIGEgc3Ryb25nIG9iamVjdGlvbiB0byBjaGFuZ2luZyB0aGF0IChhbmQgdGhl
+IG90aGVyIGluc3RhbmNlcyBiZWxvdykgdG8KRVhQT1JUX1NZTUJPTF9HUEw/Cgo+ICsKPiArLyoq
+Cj4gKyAqIHN1c3BlbmRfYmxvY2tlcl9kZXN0cm95KCkgLSBEZXN0cm95IGEgc3VzcGVuZCBibG9j
+a2VyCj4gKyAqIEBibG9ja2VyOglUaGUgc3VzcGVuZCBibG9ja2VyIHRvIGRlc3Ryb3kuCj4gKyAq
+Lwo+ICt2b2lkIHN1c3BlbmRfYmxvY2tlcl9kZXN0cm95KHN0cnVjdCBzdXNwZW5kX2Jsb2NrZXIg
+KmJsb2NrZXIpCj4gK3sKPiArCXVuc2lnbmVkIGxvbmcgaXJxZmxhZ3M7Cj4gKwlpZiAoV0FSTl9P
+TighKGJsb2NrZXItPmZsYWdzICYgU0JfSU5JVElBTElaRUQpKSkKPiArCQlyZXR1cm47Cj4gKwo+
+ICsJaWYgKGRlYnVnX21hc2sgJiBERUJVR19TVVNQRU5EX0JMT0NLRVIpCj4gKwkJcHJfaW5mbygi
+c3VzcGVuZF9ibG9ja2VyX2Rlc3Ryb3kgbmFtZT0lc1xuIiwgYmxvY2tlci0+bmFtZSk7Cj4gKwo+
+ICsJc3Bpbl9sb2NrX2lycXNhdmUoJmxpc3RfbG9jaywgaXJxZmxhZ3MpOwo+ICsJYmxvY2tlci0+
+ZmxhZ3MgJj0gflNCX0lOSVRJQUxJWkVEOwo+ICsJbGlzdF9kZWwoJmJsb2NrZXItPmxpbmspOwo+
+ICsJaWYgKChibG9ja2VyLT5mbGFncyAmIFNCX0FDVElWRSkgJiYgbGlzdF9lbXB0eSgmYWN0aXZl
+X2Jsb2NrZXJzKSkKPiArCQlxdWV1ZV93b3JrKHN1c3BlbmRfd29ya19xdWV1ZSwgJnN1c3BlbmRf
+d29yayk7Cj4gKwlzcGluX3VubG9ja19pcnFyZXN0b3JlKCZsaXN0X2xvY2ssIGlycWZsYWdzKTsK
+PiArfQo+ICtFWFBPUlRfU1lNQk9MKHN1c3BlbmRfYmxvY2tlcl9kZXN0cm95KTsKPiArCj4gKy8q
+Kgo+ICsgKiBzdXNwZW5kX2Jsb2NrKCkgLSBCbG9jayBzdXNwZW5kCj4gKyAqIEBibG9ja2VyOglU
+aGUgc3VzcGVuZCBibG9ja2VyIHRvIHVzZQo+ICsgKgo+ICsgKiBJdCBpcyBzYWZlIHRvIGNhbGwg
+dGhpcyBmdW5jdGlvbiBmcm9tIGludGVycnVwdCBjb250ZXh0Lgo+ICsgKi8KPiArdm9pZCBzdXNw
+ZW5kX2Jsb2NrKHN0cnVjdCBzdXNwZW5kX2Jsb2NrZXIgKmJsb2NrZXIpCj4gK3sKPiArCXVuc2ln
+bmVkIGxvbmcgaXJxZmxhZ3M7Cj4gKwo+ICsJaWYgKFdBUk5fT04oIShibG9ja2VyLT5mbGFncyAm
+IFNCX0lOSVRJQUxJWkVEKSkpCj4gKwkJcmV0dXJuOwo+ICsKPiArCXNwaW5fbG9ja19pcnFzYXZl
+KCZsaXN0X2xvY2ssIGlycWZsYWdzKTsKPiArCWJsb2NrZXItPmZsYWdzIHw9IFNCX0FDVElWRTsK
+PiArCWxpc3RfZGVsKCZibG9ja2VyLT5saW5rKTsKPiArCj4gKwlpZiAoZGVidWdfbWFzayAmIERF
+QlVHX1NVU1BFTkRfQkxPQ0tFUikKPiArCQlwcl9pbmZvKCJzdXNwZW5kX2Jsb2NrOiAlc1xuIiwg
+YmxvY2tlci0+bmFtZSk7Cj4gKwo+ICsJbGlzdF9hZGQoJmJsb2NrZXItPmxpbmssICZhY3RpdmVf
+YmxvY2tlcnMpOwo+ICsKPiArCWN1cnJlbnRfZXZlbnRfbnVtKys7Cj4gKwlzcGluX3VubG9ja19p
+cnFyZXN0b3JlKCZsaXN0X2xvY2ssIGlycWZsYWdzKTsKPiArfQo+ICtFWFBPUlRfU1lNQk9MKHN1
+c3BlbmRfYmxvY2spOwo+ICsKPiArLyoqCj4gKyAqIHN1c3BlbmRfdW5ibG9jaygpIC0gVW5ibG9j
+ayBzdXNwZW5kCj4gKyAqIEBibG9ja2VyOglUaGUgc3VzcGVuZCBibG9ja2VyIHRvIHVuYmxvY2su
+Cj4gKyAqCj4gKyAqIElmIG5vIG90aGVyIHN1c3BlbmQgYmxvY2tlcnMgYmxvY2sgc3VzcGVuZCwg
+dGhlIHN5c3RlbSB3aWxsIHN1c3BlbmQuCj4gKyAqCj4gKyAqIEl0IGlzIHNhZmUgdG8gY2FsbCB0
+aGlzIGZ1bmN0aW9uIGZyb20gaW50ZXJydXB0IGNvbnRleHQuCj4gKyAqLwo+ICt2b2lkIHN1c3Bl
+bmRfdW5ibG9jayhzdHJ1Y3Qgc3VzcGVuZF9ibG9ja2VyICpibG9ja2VyKQo+ICt7Cj4gKwl1bnNp
+Z25lZCBsb25nIGlycWZsYWdzOwo+ICsKPiArCWlmIChXQVJOX09OKCEoYmxvY2tlci0+ZmxhZ3Mg
+JiBTQl9JTklUSUFMSVpFRCkpKQo+ICsJCXJldHVybjsKPiArCj4gKwlzcGluX2xvY2tfaXJxc2F2
+ZSgmbGlzdF9sb2NrLCBpcnFmbGFncyk7Cj4gKwo+ICsJaWYgKGRlYnVnX21hc2sgJiBERUJVR19T
+VVNQRU5EX0JMT0NLRVIpCj4gKwkJcHJfaW5mbygic3VzcGVuZF91bmJsb2NrOiAlc1xuIiwgYmxv
+Y2tlci0+bmFtZSk7Cj4gKwo+ICsJbGlzdF9kZWwoJmJsb2NrZXItPmxpbmspOwo+ICsJbGlzdF9h
+ZGQoJmJsb2NrZXItPmxpbmssICZpbmFjdGl2ZV9ibG9ja2Vycyk7Cj4gKwo+ICsJaWYgKChibG9j
+a2VyLT5mbGFncyAmIFNCX0FDVElWRSkgJiYgbGlzdF9lbXB0eSgmYWN0aXZlX2Jsb2NrZXJzKSkK
+PiArCQlxdWV1ZV93b3JrKHN1c3BlbmRfd29ya19xdWV1ZSwgJnN1c3BlbmRfd29yayk7Cj4gKwli
+bG9ja2VyLT5mbGFncyAmPSB+KFNCX0FDVElWRSk7Cj4gKwlpZiAoYmxvY2tlciA9PSAmbWFpbl9z
+dXNwZW5kX2Jsb2NrZXIpIHsKPiArCQlpZiAoZGVidWdfbWFzayAmIERFQlVHX1NVU1BFTkQpCj4g
+KwkJCXByaW50X2FjdGl2ZV9ibG9ja2Vyc19sb2NrZWQoKTsKPiArCX0KPiArCXNwaW5fdW5sb2Nr
+X2lycXJlc3RvcmUoJmxpc3RfbG9jaywgaXJxZmxhZ3MpOwo+ICt9Cj4gK0VYUE9SVF9TWU1CT0wo
+c3VzcGVuZF91bmJsb2NrKTsKPiArCj4gKy8qKgo+ICsgKiBzdXNwZW5kX2Jsb2NrZXJfaXNfYWN0
+aXZlKCkgLSBUZXN0IGlmIGEgc3VzcGVuZCBibG9ja2VyIGlzIGJsb2NraW5nIHN1c3BlbmQKPiAr
+ICogQGJsb2NrZXI6CVRoZSBzdXNwZW5kIGJsb2NrZXIgdG8gY2hlY2suCj4gKyAqCj4gKyAqIFJl
+dHVybnMgdHJ1ZSBpZiB0aGUgc3VzcGVuZF9ibG9ja2VyIGlzIGN1cnJlbnRseSBhY3RpdmUuCj4g
+KyAqLwo+ICtib29sIHN1c3BlbmRfYmxvY2tlcl9pc19hY3RpdmUoc3RydWN0IHN1c3BlbmRfYmxv
+Y2tlciAqYmxvY2tlcikKPiArewo+ICsJV0FSTl9PTighKGJsb2NrZXItPmZsYWdzICYgU0JfSU5J
+VElBTElaRUQpKTsKPiArCj4gKwlyZXR1cm4gISEoYmxvY2tlci0+ZmxhZ3MgJiBTQl9BQ1RJVkUp
+Owo+ICt9Cj4gK0VYUE9SVF9TWU1CT0woc3VzcGVuZF9ibG9ja2VyX2lzX2FjdGl2ZSk7Cj4gKwo+
+ICtib29sIHJlcXVlc3Rfc3VzcGVuZF92YWxpZF9zdGF0ZShzdXNwZW5kX3N0YXRlX3Qgc3RhdGUp
+Cj4gK3sKPiArCXJldHVybiAoc3RhdGUgPT0gUE1fU1VTUEVORF9PTikgfHwgdmFsaWRfc3RhdGUo
+c3RhdGUpOwo+ICt9Cj4gKwo+ICtpbnQgcmVxdWVzdF9zdXNwZW5kX3N0YXRlKHN1c3BlbmRfc3Rh
+dGVfdCBzdGF0ZSkKPiArewo+ICsJdW5zaWduZWQgbG9uZyBpcnFmbGFnczsKPiArCj4gKwlpZiAo
+IXJlcXVlc3Rfc3VzcGVuZF92YWxpZF9zdGF0ZShzdGF0ZSkpCj4gKwkJcmV0dXJuIC1FTk9ERVY7
+Cj4gKwo+ICsJc3Bpbl9sb2NrX2lycXNhdmUoJnN0YXRlX2xvY2ssIGlycWZsYWdzKTsKPiArCj4g
+KwlpZiAoZGVidWdfbWFzayAmIERFQlVHX1VTRVJfU1RBVEUpCj4gKwkJcHJfaW5mb190aW1lKCJy
+ZXF1ZXN0X3N1c3BlbmRfc3RhdGU6ICVzICglZC0+JWQpIGF0ICVsbGQgIiwKPiArCQkJICAgICBz
+dGF0ZSAhPSBQTV9TVVNQRU5EX09OID8gInNsZWVwIiA6ICJ3YWtldXAiLAo+ICsJCQkgICAgIHJl
+cXVlc3RlZF9zdXNwZW5kX3N0YXRlLCBzdGF0ZSwKPiArCQkJICAgICBrdGltZV90b19ucyhrdGlt
+ZV9nZXQoKSkpOwo+ICsKPiArCXJlcXVlc3RlZF9zdXNwZW5kX3N0YXRlID0gc3RhdGU7Cj4gKwlp
+ZiAoc3RhdGUgPT0gUE1fU1VTUEVORF9PTikKPiArCQlzdXNwZW5kX2Jsb2NrKCZtYWluX3N1c3Bl
+bmRfYmxvY2tlcik7Cj4gKwllbHNlCj4gKwkJc3VzcGVuZF91bmJsb2NrKCZtYWluX3N1c3BlbmRf
+YmxvY2tlcik7Cj4gKwlzcGluX3VubG9ja19pcnFyZXN0b3JlKCZzdGF0ZV9sb2NrLCBpcnFmbGFn
+cyk7Cj4gKwlyZXR1cm4gMDsKPiArfQoKSSB0aGluayB0aGUgdHdvIGZ1bmN0aW9ucyBhYm92ZSBz
+aG91bGQgYmUgc3RhdGljLCBzaG91bGRuJ3QgdGhleT8KCj4gK3N0YXRpYyBpbnQgX19pbml0IHN1
+c3BlbmRfYmxvY2tfaW5pdCh2b2lkKQo+ICt7Cj4gKwlzdXNwZW5kX3dvcmtfcXVldWUgPSBjcmVh
+dGVfc2luZ2xldGhyZWFkX3dvcmtxdWV1ZSgic3VzcGVuZCIpOwo+ICsJaWYgKCFzdXNwZW5kX3dv
+cmtfcXVldWUpCj4gKwkJcmV0dXJuIC1FTk9NRU07Cj4gKwo+ICsJc3VzcGVuZF9ibG9ja2VyX2lu
+aXQoJm1haW5fc3VzcGVuZF9ibG9ja2VyLCAibWFpbiIpOwo+ICsJc3VzcGVuZF9ibG9jaygmbWFp
+bl9zdXNwZW5kX2Jsb2NrZXIpOwo+ICsJcmV0dXJuIDA7Cj4gK30KPiArCj4gK2NvcmVfaW5pdGNh
+bGwoc3VzcGVuZF9ibG9ja19pbml0KTsKCkhtbS4gIFdoeSBkb24ndCB5b3Ugd2FudCB0byBwdXQg
+dGhhdCBpbml0aWFsaXphdGlvbiBpbnRvIHBtX2luaXQoKSAoaW4Ka2VybmVsL3Bvd2VyL21haW4u
+Yyk/CgpBbHNvLCB3ZSBhbHJlYWR5IGhhdmUgb25lIFBNIHdvcmtxdWV1ZS4gIEl0IGlzIHVzZWQg
+Zm9yIHJ1bnRpbWUgUE0sIGJ1dCBJIGd1ZXNzCml0IG1heSBiZSB1c2VkIGp1c3QgYXMgd2VsbCBm
+b3IgdGhlIG9wcG9ydHVuaXN0aWMgc3VzcGVuZC4gIEl0IGlzIGZyZWV6YWJsZSwKYnV0IHdvdWxk
+IGl0IGh1cnQ/CgpSYWZhZWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5k
+YXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0
+aW5mby9saW51eC1wbQ==
