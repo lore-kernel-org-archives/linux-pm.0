@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Thu, 29 Apr 2010 23:16:14 +0200
-Message-ID: <201004292316.14524.rjw@sisk.pl>
-References: <1272429119-12103-1-git-send-email-arve@android.com>
-	<201004282250.44200.rjw@sisk.pl>
-	<l2yd6200be21004282037rc063266by91db7f732ceaa529@mail.gmail.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
+	(WKOC_E) and disconnect (WKDISC_E)
+Date: Thu, 29 Apr 2010 23:14:26 +0200
+Message-ID: <201004292314.29072.linux@rainbow-software.org>
+References: <Pine.LNX.4.44L0.1004291338090.1339-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <l2yd6200be21004282037rc063266by91db7f732ceaa529@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.1004291338090.1339-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,209 +19,252 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>, Alek Du <alek.du@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 29 April 2010, Arve Hj=F8nnev=E5g wrote:
-> 2010/4/28 Rafael J. Wysocki <rjw@sisk.pl>:
-> ...
-> >>
-> >> +/**
-> >> + *   policy - set policy for state
-> >> + */
-> >> +
-> >> +static ssize_t policy_show(struct kobject *kobj,
-> >> +                        struct kobj_attribute *attr, char *buf)
-> >> +{
-> >> +     char *s =3D buf;
-> >> +     int i;
-> >> +
-> >> +     for (i =3D 0; i < ARRAY_SIZE(policies); i++) {
-> >> +             if (i =3D=3D policy)
-> >> +                     s +=3D sprintf(s, "[%s] ", policies[i].name);
-> >> +             else
-> >> +                     s +=3D sprintf(s, "%s ", policies[i].name);
-> >> +     }
-> >> +     if (s !=3D buf)
-> >> +             /* convert the last space to a newline */
-> >> +             *(s-1) =3D '\n';
-> >> +     return (s - buf);
-> >> +}
-> >> +
-> >> +static ssize_t policy_store(struct kobject *kobj,
-> >> +                         struct kobj_attribute *attr,
-> >> +                         const char *buf, size_t n)
-> >> +{
-> >> +     const char *s;
-> >> +     char *p;
-> >> +     int len;
-> >> +     int i;
-> >> +
-> >> +     p =3D memchr(buf, '\n', n);
-> >> +     len =3D p ? p - buf : n;
-> >> +
-> >> +     for (i =3D 0; i < ARRAY_SIZE(policies); i++) {
-> >> +             s =3D policies[i].name;
-> >> +             if (s && len =3D=3D strlen(s) && !strncmp(buf, s, len)) {
-> >> +                     mutex_lock(&pm_mutex);
-> >> +                     policies[policy].set_state(PM_SUSPEND_ON);
-> >> +                     policy =3D i;
-> >> +                     mutex_unlock(&pm_mutex);
-> >> +                     return n;
-> >> +             }
-> >> +     }
-> >> +     return -EINVAL;
-> >> +}
-> >> +
-> >> +power_attr(policy);
-> >> +
-> >>  #ifdef CONFIG_PM_TRACE
-> >>  int pm_trace_enabled;
-> >>
+On Thursday 29 April 2010 19:45:33 Alan Stern wrote:
+> On Thu, 29 Apr 2010, Alan Stern wrote:
+> > > > > > You said earlier that the host controller was disabled for remote
+> > > > > > wakeup ("/sys/devices/pci0000:00/0000:00:1d.7/power/wakeup is
+> > > > > > disabled by default").  So even though the root hub might issue a
+> > > > > > wakeup request, the controller hardware should not forward that
+> > > > > > request to the PCI bus and it should not cause the system to wake
+> > > > > > up.
+> > > > >
+> > > > > Maybe it should not - but it wakes up this board and probably also
+> > > > > P4P800, P4P800-E and P4C800-E at least:
+> > > > > https://bugs.launchpad.net/ubuntu/+source/linux/+bug/75497
+> > > >
+> > > > Okay, evidently the hardware or firmware on these boards is buggy.
+> > > > Other systems do not have the same problem, as far as I know.
 > >
-> > Would you mind if I changed the above so that "policy" doesn't even sho=
-w up
-> > if CONFIG_OPPORTUNISTIC_SUSPEND is unset?
-> >
-> I don't mind, but It did not seem worth the trouble to hide it. It
-> will only list the supported policies, and it is easy to add or remove
-> policies this way.
-> =
+> > I take this back.  The same thing happens on my machine (Intel ICH5
+> > chipset).  I'd guess there is a bug in the PCI or ACPI subsystem, but
+> > more testing is needed before I can be sure.  Somehow the PCI or
+> > platform wakeup mechanism gets activated even when it is supposed to be
+> > disabled.
+>
+> This patch fixes the problem on my system.  Does it work for you?
+> I still think that disabling wakeup at the PCI or platform level should
+> override the port wakeup flags, but apparently it doesn't.
 
-> > ...
-> >> +static void suspend_worker(struct work_struct *work)
-> >> +{
-> >> +     int ret;
-> >> +     int entry_event_num;
-> >> +
-> >> +     enable_suspend_blockers =3D true;
-> >> +     while (!suspend_is_blocked()) {
-> >> +             entry_event_num =3D current_event_num;
-> >> +
-> >> +             if (debug_mask & DEBUG_SUSPEND)
-> >> +                     pr_info("suspend: enter suspend\n");
-> >> +
-> >> +             ret =3D pm_suspend(requested_suspend_state);
-> >> +
-> >> +             if (debug_mask & DEBUG_EXIT_SUSPEND)
-> >> +                     pr_info_time("suspend: exit suspend, ret =3D %d =
-", ret);
-> >> +
-> >> +             if (current_event_num =3D=3D entry_event_num)
-> >> +                     pr_info("suspend: pm_suspend returned with no ev=
-ent\n");
-> >
-> > Hmm, what exactly is this for?  It looks like a debug thing to me.  I'd=
- use
-> > pr_debug() here and in both debug printk()s above.  Would you agree?
-> >
-> =
+Thanks for the patch. When applied to 2.6.33 kernel, the ehci-fsl.c part fails 
+but that does not matter. Asus P4P800-VM now suspends correctly even when the 
+jumpers are set to 5V, both with and without USB device. Also device (un)plug 
+does not wake up the system anymore. So the patch works fine.
 
-> If the driver that caused the wakeup does not use suspend blockers, we
-> the only choice is to try to suspend again. I want to know if this
-> happened. The stats patch disable this printk by default since it will
-> show up in the stats, and the timeout patch (not included here) delays
-> the retry.
-> =
+Yes, this wakeup seems to work differently on different systems. For example, 
+Asus A7V8X-X [VIA] (which has these 5V/5VSB jumpers too) is not affected by 
+this (it wakes up dead but that's another problem). Also Asus Eee PC 701 
+(ICH6) and ASRock 939Dual-VSTA (ULi) are not affected. So maybe it affects 
+only ICH4/5/6 chips (only some revisions?). Or it's also board-dependent.
 
-> ...
-> >> +EXPORT_SYMBOL(suspend_blocker_init);
-> >
-> > Is there a strong objection to changing that (and the other instances b=
-elow) to
-> > EXPORT_SYMBOL_GPL?
-> >
-> =
+> Alek, can you confirm that the changes in this patch are okay for the
+> Moorestown EHCI controller?  I had to guess at how to handle the
+> HOSTPCx register settings.
+>
+> Alan Stern
+>
+>
+>
+> Index: usb-2.6/drivers/usb/host/ehci-hub.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/usb/host/ehci-hub.c
+> +++ usb-2.6/drivers/usb/host/ehci-hub.c
+> @@ -106,6 +106,47 @@ static void ehci_handover_companion_port
+>  	ehci->owned_ports = 0;
+>  }
+>
+> +static void ehci_set_wakeup_flags(struct ehci_hcd *ehci)
+> +{
+> +	int	port;
+> +
+> +	/* enable remote wakeup on all ports, if allowed */
+> +	port = HCS_N_PORTS(ehci->hcs_params);
+> +	while (port--) {
+> +		u32 __iomem	*reg = &ehci->regs->port_status[port];
+> +		u32		t1 = ehci_readl(ehci, reg) & ~PORT_RWC_BITS;
+> +		u32		t2 = t1 & ~PORT_WAKE_BITS;
+> +
+> +		/* only enable appropriate wake bits, otherwise the
+> +		 * hardware can not go phy low power mode. If a race
+> +		 * condition happens here(connection change during bits
+> +		 * set), the port change detection will finally fix it.
+> +		 */
+> +		if (device_may_wakeup(ehci_to_hcd(ehci)->self.controller)) {
+> +			if (t1 & PORT_CONNECT)
+> +				t2 |= PORT_WKOC_E | PORT_WKDISC_E;
+> +			else
+> +				t2 |= PORT_WKOC_E | PORT_WKCONN_E;
+> +			ehci_vdbg(ehci, "port %d, %08x -> %08x\n",
+> +					port + 1, t1, t2);
+> +		}
+> +		ehci_writel(ehci, t2, reg);
+> +	}
+> +}
+> +
+> +static void ehci_clear_wakeup_flags(struct ehci_hcd *ehci)
+> +{
+> +	int	port;
+> +
+> +	port = HCS_N_PORTS(ehci->hcs_params);
+> +	while (port--) {
+> +		u32 __iomem	*reg = &ehci->regs->port_status[port];
+> +		u32		t1 = ehci_readl(ehci, reg) & ~PORT_RWC_BITS;
+> +
+> +		ehci_writel(ehci, t1 & ~PORT_WAKE_BITS, reg);
+> +	}
+> +}
+> +
+>  static int ehci_bus_suspend (struct usb_hcd *hcd)
+>  {
+>  	struct ehci_hcd		*ehci = hcd_to_ehci (hcd);
+> @@ -170,26 +211,6 @@ static int ehci_bus_suspend (struct usb_
+>  		else if ((t1 & PORT_PE) && !(t1 & PORT_SUSPEND)) {
+>  			t2 |= PORT_SUSPEND;
+>  			set_bit(port, &ehci->bus_suspended);
+> -		}
+> -
+> -		/* enable remote wakeup on all ports */
+> -		if (hcd->self.root_hub->do_remote_wakeup) {
+> -			/* only enable appropriate wake bits, otherwise the
+> -			 * hardware can not go phy low power mode. If a race
+> -			 * condition happens here(connection change during bits
+> -			 * set), the port change detection will finally fix it.
+> -			 */
+> -			if (t1 & PORT_CONNECT) {
+> -				t2 |= PORT_WKOC_E | PORT_WKDISC_E;
+> -				t2 &= ~PORT_WKCONN_E;
+> -			} else {
+> -				t2 |= PORT_WKOC_E | PORT_WKCONN_E;
+> -				t2 &= ~PORT_WKDISC_E;
+> -			}
+> -		} else
+> -			t2 &= ~PORT_WAKE_BITS;
+> -
+> -		if (t1 != t2) {
+>  			ehci_vdbg (ehci, "port %d, %08x -> %08x\n",
+>  				port + 1, t1, t2);
+>  			ehci_writel(ehci, t2, reg);
+> @@ -907,12 +928,7 @@ static int ehci_hub_control (
+>
+>  					|| (temp & PORT_RESET) != 0)
+>
+>  				goto error;
+>
+> -			/* After above check the port must be connected.
+> -			 * Set appropriate bit thus could put phy into low power
+> -			 * mode if we have hostpc feature
+> -			 */
+> -			temp &= ~PORT_WKCONN_E;
+> -			temp |= PORT_WKDISC_E | PORT_WKOC_E;
+> +			temp &= ~PORT_WAKE_BITS;
+>  			ehci_writel(ehci, temp | PORT_SUSPEND, status_reg);
+>  			if (hostpc_reg) {
+>  				spin_unlock_irqrestore(&ehci->lock, flags);
+> Index: usb-2.6/drivers/usb/host/ehci-pci.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/usb/host/ehci-pci.c
+> +++ usb-2.6/drivers/usb/host/ehci-pci.c
+> @@ -284,23 +284,15 @@ static int ehci_pci_suspend(struct usb_h
+>  		msleep(10);
+>
+>  	/* Root hub was already suspended. Disable irq emission and
+> -	 * mark HW unaccessible, bail out if RH has been resumed. Use
+> -	 * the spinlock to properly synchronize with possible pending
+> -	 * RH suspend or resume activity.
+> -	 *
+> -	 * This is still racy as hcd->state is manipulated outside of
+> -	 * any locks =P But that will be a different fix.
+> +	 * mark HW unaccessible.  The PM and USB cores make sure that
+> +	 * the root hub is either suspended or stopped.
+>  	 */
+>  	spin_lock_irqsave (&ehci->lock, flags);
+> -	if (hcd->state != HC_STATE_SUSPENDED) {
+> -		rc = -EINVAL;
+> -		goto bail;
+> -	}
+> +	ehci_set_wakeup_flags(ehci);
+>  	ehci_writel(ehci, 0, &ehci->regs->intr_enable);
+>  	(void)ehci_readl(ehci, &ehci->regs->intr_enable);
+>
+>  	clear_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags);
+> - bail:
+>  	spin_unlock_irqrestore (&ehci->lock, flags);
+>
+>  	// could save FLADJ in case of Vaux power loss
+> @@ -330,6 +322,7 @@ static int ehci_pci_resume(struct usb_hc
+>  				!hibernated) {
+>  		int	mask = INTR_MASK;
+>
+> +		ehci_clear_wakeup_flags(ehci);
+>  		if (!hcd->self.root_hub->do_remote_wakeup)
+>  			mask &= ~STS_PCD;
+>  		ehci_writel(ehci, mask, &ehci->regs->intr_enable);
+> Index: usb-2.6/drivers/usb/host/ehci-au1xxx.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/usb/host/ehci-au1xxx.c
+> +++ usb-2.6/drivers/usb/host/ehci-au1xxx.c
+> @@ -215,26 +215,17 @@ static int ehci_hcd_au1xxx_drv_suspend(s
+>  		msleep(10);
+>
+>  	/* Root hub was already suspended. Disable irq emission and
+> -	 * mark HW unaccessible, bail out if RH has been resumed. Use
+> -	 * the spinlock to properly synchronize with possible pending
+> -	 * RH suspend or resume activity.
+> -	 *
+> -	 * This is still racy as hcd->state is manipulated outside of
+> -	 * any locks =P But that will be a different fix.
+> +	 * mark HW unaccessible.  The PM and USB cores make sure that
+> +	 * the root hub is either suspended or stopped.
+>  	 */
+>  	spin_lock_irqsave(&ehci->lock, flags);
+> -	if (hcd->state != HC_STATE_SUSPENDED) {
+> -		rc = -EINVAL;
+> -		goto bail;
+> -	}
+> +	ehci_set_wakeup_flags(ehci);
+>  	ehci_writel(ehci, 0, &ehci->regs->intr_enable);
+>  	(void)ehci_readl(ehci, &ehci->regs->intr_enable);
+>
+>  	clear_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags);
+>
+>  	au1xxx_stop_ehc();
+> -
+> -bail:
+>  	spin_unlock_irqrestore(&ehci->lock, flags);
+>
+>  	// could save FLADJ in case of Vaux power loss
+> @@ -264,6 +255,7 @@ static int ehci_hcd_au1xxx_drv_resume(st
+>  	if (ehci_readl(ehci, &ehci->regs->configured_flag) == FLAG_CF) {
+>  		int	mask = INTR_MASK;
+>
+> +		ehci_clear_wakeup_flags(ehci);
+>  		if (!hcd->self.root_hub->do_remote_wakeup)
+>  			mask &= ~STS_PCD;
+>  		ehci_writel(ehci, mask, &ehci->regs->intr_enable);
+> Index: usb-2.6/drivers/usb/host/ehci-fsl.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/usb/host/ehci-fsl.c
+> +++ usb-2.6/drivers/usb/host/ehci-fsl.c
+> @@ -313,6 +313,7 @@ static int ehci_fsl_drv_suspend(struct d
+>  	struct ehci_fsl *ehci_fsl = hcd_to_ehci_fsl(hcd);
+>  	void __iomem *non_ehci = hcd->regs;
+>
+> +	ehci_set_wakeup_flags(ehci);
+>  	if (!fsl_deep_sleep())
+>  		return 0;
+>
+> @@ -327,6 +328,7 @@ static int ehci_fsl_drv_resume(struct de
+>  	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
+>  	void __iomem *non_ehci = hcd->regs;
+>
+> +	ehci_clear_wakeup_flags(ehci);
+>  	if (!fsl_deep_sleep())
+>  		return 0;
 
-> I don't know if it is a strong objection, but I prefer that this api
-> is available to all drivers. I don't want to prevent a user from using
-> opportunistic suspend because a non-gpl driver could not use suspend
-> blockers. I changed the suspend blocking work functions to be gpl only
-> though, since they are not required, and the workqueue api is
-> available to gpl code anyway.
-> =
-
-> ...
-> >> +bool request_suspend_valid_state(suspend_state_t state)
-> >> +{
-> >> +     return (state =3D=3D PM_SUSPEND_ON) || valid_state(state);
-> >> +}
-> >> +
-> >> +int request_suspend_state(suspend_state_t state)
-> >> +{
-> >> +     unsigned long irqflags;
-> >> +
-> >> +     if (!request_suspend_valid_state(state))
-> >> +             return -ENODEV;
-> >> +
-> >> +     spin_lock_irqsave(&state_lock, irqflags);
-> >> +
-> >> +     if (debug_mask & DEBUG_USER_STATE)
-> >> +             pr_info_time("request_suspend_state: %s (%d->%d) at %lld=
- ",
-> >> +                          state !=3D PM_SUSPEND_ON ? "sleep" : "wakeu=
-p",
-> >> +                          requested_suspend_state, state,
-> >> +                          ktime_to_ns(ktime_get()));
-> >> +
-> >> +     requested_suspend_state =3D state;
-> >> +     if (state =3D=3D PM_SUSPEND_ON)
-> >> +             suspend_block(&main_suspend_blocker);
-> >> +     else
-> >> +             suspend_unblock(&main_suspend_blocker);
-> >> +     spin_unlock_irqrestore(&state_lock, irqflags);
-> >> +     return 0;
-> >> +}
-> >
-> > I think the two functions above should be static, shouldn't they?
-> =
-
-> No, they are used from main.c.
-> =
-
-> >
-> >> +static int __init suspend_block_init(void)
-> >> +{
-> >> +     suspend_work_queue =3D create_singlethread_workqueue("suspend");
-> >> +     if (!suspend_work_queue)
-> >> +             return -ENOMEM;
-> >> +
-> >> +     suspend_blocker_init(&main_suspend_blocker, "main");
-> >> +     suspend_block(&main_suspend_blocker);
-> >> +     return 0;
-> >> +}
-> >> +
-> >> +core_initcall(suspend_block_init);
-> >
-> > Hmm.  Why don't you want to put that initialization into pm_init() (in
-> > kernel/power/main.c)?
-> =
-
-> It was not needed before, but I changed pm_init to call
-> suspend_block_init after creating pm_wq.
-> =
-
-> >
-> > Also, we already have one PM workqueue.  It is used for runtime PM, but=
- I guess
-> > it may be used just as well for the opportunistic suspend.  It is freez=
-able,
-> > but would it hurt?
-> =
-
-> No, it works, the freezable flag is just ignored when I call
-> pm_suspend and I don't run anything else on the workqueue while
-> threads are frozen. It does need to be a single threaded workqueue
-> though, so make sure you don't just change that.
-
-Freezable workqueues have to be singlethread or else there will be unfixable
-races, so you can safely assume things will stay as they are in this respec=
-t.
-
-Rafael
 
 
-> =
-
-> =
+-- 
+Ondrej Zary
