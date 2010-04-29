@@ -1,13 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Thu, 29 Apr 2010 11:41:50 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1004291124580.1697-100000@iolanthe.rowland.org>
-References: <h2wd6200be21004281635x9740a6abl2664a1eef8be061d@mail.gmail.com>
+Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
+ (WKOC_E) and disconnect (WKDISC_E)
+Date: Thu, 29 Apr 2010 12:16:24 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1004291041300.1697-100000@iolanthe.rowland.org>
+References: <201004281930.12293.linux@rainbow-software.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <h2wd6200be21004281635x9740a6abl2664a1eef8be061d@mail.gmail.com>
+In-Reply-To: <201004281930.12293.linux@rainbow-software.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,104 +18,85 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 28 Apr 2010, Arve Hj=F8nnev=E5g wrote:
+On Wed, 28 Apr 2010, Ondrej Zary wrote:
 
-> >> > =A0suspend blockers can be used to allow
-> >> > +user-space to decide whether a keystroke received while the system =
-is suspended
-> >> > +should cause the screen to be turned back on or allow the system to=
- go back into
-> >> > +suspend.
-> >>
-> >> That's not right. =A0Handling the screen doesn't need suspend blockers:
-> >> The program decides what to do and then either turns on the screen or
-> >> else writes "mem" to /sys/power/state.
-> =
-
-> That does not work though. Unless every key turns the screen on you
-> will have a race every time the user presses a key you want to ignore.
-
-Of course.  You are confirming what I wrote immediately below: Suspend
-blockers help resolve races.  Note that this race has nothing to do
-with the _screen_ in particular -- exactly the same race occurs if you
-decide to turn on the audio speaker or some other piece of hardware.
-
-> >> =A0What suspend blockers add is
-> >> the ability to resolve races and satisfy multiple constraints when
-> >> going into suspend -- which has nothing to do with operating the
-> >> screen.
-> =
-
-> I'm not sure I agree with this. You cannot reliably turn the screen on
-> from user space when the user presses a wakeup-key without suspend
-> blockers.
-
-Let's say that it has nothing to do _specifically_ with the screen.  =
-
-_Any_ action you want to take in userspace is difficult to coordinate =
-
-with system suspends if you don't have suspend blockers.
-
-> >>
-> >> I _think_ what you're trying to get at can be expressed this way:
-> >>
-> >> =A0 =A0 =A0 Here's an example showing how a cell phone or other embedd=
-ed
-> >> =A0 =A0 =A0 system can handle keystrokes (or other input events) in the
-> >> =A0 =A0 =A0 presence of suspend blockers. =A0Use set_irq_wake...
-> =
-
-> OK, but the last version was what you (Alan) suggested last year.
-
-So at least my mental processes have remained consistent over the span
-of a year.  Nice to know I haven't undergone a complete personality =
-
-change...  :-)
-
-> >> =A0 =A0 =A0 ...
-> >>
-> >> =A0 =A0 =A0 - The user-space input-event thread returns from read. =A0=
-It
-> >> =A0 =A0 =A0 carries out whatever activities are appropriate (for examp=
-le,
-> >> =A0 =A0 =A0 powering up the display screen, running other programs, an=
-d so
-> >> =A0 =A0 =A0 on). =A0When it is finished, it calls suspend_unblock on t=
-he
-> >> =A0 =A0 =A0 process_input_events suspend_blocker and then calls select=
- or
-> >> =A0 =A0 =A0 poll. =A0The system will automatically suspend again when =
-it is
-> >> =A0 =A0 =A0 idle and no suspend blockers remain active.
+> On Wednesday 28 April 2010 17:41:30 Alan Stern wrote:
+> > On Tue, 27 Apr 2010, Ondrej Zary wrote:
+> > > On Tuesday 27 April 2010 21:21:23 Alan Stern wrote:
+> > > > On Tue, 27 Apr 2010, Ondrej Zary wrote:
+> > > > > The previous patch was not enough as it worked only when there were
+> > > > > no USB devices connected. With a bus-powered device connected, power
+> > > > > loss causes disconnect which wakes up the machine immediately again.
+> > > >
+> > > > You said earlier that the host controller was disabled for remote
+> > > > wakeup ("/sys/devices/pci0000:00/0000:00:1d.7/power/wakeup is disabled
+> > > > by default").  So even though the root hub might issue a wakeup
+> > > > request, the controller hardware should not forward that request to the
+> > > > PCI bus and it should not cause the system to wake up.
+> > >
+> > > Maybe it should not - but it wakes up this board and probably also
+> > > P4P800, P4P800-E and P4C800-E at least:
+> > > https://bugs.launchpad.net/ubuntu/+source/linux/+bug/75497
 > >
-> > Yeah, that sounds better. =A0Arve, what do you think?
-> >
-> =
+> > Okay, evidently the hardware or firmware on these boards is buggy.
+> > Other systems do not have the same problem, as far as I know.
 
-> Idle is irrelevant and needs to be removed. This new last step is also
-> no longer a concrete example, but if you really think is it better I
-> can change it.
+I take this back.  The same thing happens on my machine (Intel ICH5
+chipset).  I'd guess there is a bug in the PCI or ACPI subsystem, but
+more testing is needed before I can be sure.  Somehow the PCI or
+platform wakeup mechanism gets activated even when it is supposed to be
+disabled.
 
-Perhaps you would prefer to change this completely.  Write up a =
+> It works fine in Windows.
 
-description of what can go wrong when suspend blockers _aren't_ used, =
+How can you tell?  How do you know what values Windows writes into the 
+EHCI port control registers?
 
-and show how suspend blockers can prevent the problem from occurring.
+> > Regardless, I don't think a kernel patch is the way to solve your
+> > problem.  Changing the wakeup setting for the root hub will do what you
+> > want, and that setting is explicitly intended to be controlled by
+> > userspace (after all, that's why it is exposed in sysfs).  The initial
+> > value is only a reasonable default; you can certainly add scripts or
+> > udev rules to disable wakeup on your EHCI root hub.
+> 
+> Yes, I can work around that. But many users can't. This is an attempt to make 
+> it "just work".
 
-But whatever you do, don't make it appear that suspend blockers allow
-user programs to make decisions (which is what you wrote before).  They =
+It should "just work" already.  The fact that it doesn't means there is 
+a bug.  At the moment I can't be sure where the bug is -- but even if 
+it is in ehci-hcd, your suggested patch isn't the right fix.
 
-don't -- programs can make whatever decisions they want.  Suspend =
+> I'm trying to say that the "wakeup on everything" is not a good thing (if not 
+> a bug). Who needs it?
 
-blockers merely help them carry out the actions they have decided upon =
+I don't know, and neither do you.  But the USB spec requires this
+behavior from external hubs, so evidently _somebody_ thought it was a
+good idea.
 
-in a safe manner.
+> I can't imagine any real use for it. It clearly breaks 
+> suspend on some systems and is annoying on other.
 
-And don't make it appear that suspend blockers can only be used for
-solving screen-related problems.
+If everything was working properly, the machine wouldn't wake up when a
+disconnect occurred.
+
+>  Who expects that 
+> disconnecting a device should wake up sleeping machine?
+
+Perhaps the same people who expect that plugging in a device should
+wake up a sleeping machine?
+
+> When all these three wakeups (overcurrent, connect, disconnect) are disabled, 
+> we lose nothing. Connect/disconnect detection works fine after wakeup. Wakeup 
+> by USB devices (not by connect/disconnect but by the device itself signaling 
+> a resume) is completely independent of this (according to EHCI 
+> specification).
+
+What about UHCI or OHCI?  What about external hubs?
+
+In short, why should EHCI behave differently from everything else?
 
 Alan Stern
