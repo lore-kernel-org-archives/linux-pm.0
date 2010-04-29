@@ -1,8 +1,7 @@
 From: Oleg Nesterov <oleg@redhat.com>
-Subject: [PATCH 1/2] workqueues: flush_delayed_work: keep the
-	original	workqueue for re-queueing
-Date: Thu, 29 Apr 2010 21:45:16 +0200
-Message-ID: <20100429194516.GB17280@redhat.com>
+Subject: [PATCH 2/2] workqueues: export keventd_wq
+Date: Thu, 29 Apr 2010 21:45:45 +0200
+Message-ID: <20100429194545.GC17280@redhat.com>
 References: <1272429119-12103-1-git-send-email-arve@android.com>
 	<20100428194028.GA16389@redhat.com>
 	<4BD89922.1040306@kernel.org> <201004282308.10751.rjw@sisk.pl>
@@ -27,23 +26,39 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>
 Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-flush_delayed_work() always uses keventd_wq for re-queueing,
-but it should use the workqueue this dwork was queued on.
+Export keventd_wq. Otherwise, any helper on top of queue_work() has
+to be copy-and-pasted to create the version which uses keventd_wq.
+
+Note: we can do more cleanups with this change and kill EXPORT_SYMBOLs,
+almost any function which currently uses keventd_wq can become the
+trivial inline.
 
 Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 ---
 
- kernel/workqueue.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/workqueue.h |    1 +
+ kernel/workqueue.c        |    3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
---- 34-rc1/kernel/workqueue.c~FDW_DONT_USE_KEVENT_WQ	2009-12-18 19:05:38.000000000 +0100
-+++ 34-rc1/kernel/workqueue.c	2010-04-29 21:08:32.000000000 +0200
-@@ -774,7 +774,7 @@ void flush_delayed_work(struct delayed_w
- {
- 	if (del_timer_sync(&dwork->timer)) {
- 		struct cpu_workqueue_struct *cwq;
--		cwq = wq_per_cpu(keventd_wq, get_cpu());
-+		cwq = wq_per_cpu(get_wq_data(&dwork->work)->wq, get_cpu());
- 		__queue_work(cwq, &dwork->work);
- 		put_cpu();
- 	}
+--- 34-rc1/include/linux/workqueue.h~EXPORT_KEVENT_WQ	2009-12-18 19:05:38.000000000 +0100
++++ 34-rc1/include/linux/workqueue.h	2010-04-29 21:25:12.000000000 +0200
+@@ -12,6 +12,7 @@
+ #include <asm/atomic.h>
+ 
+ struct workqueue_struct;
++extern struct workqueue_struct *keventd_wq;
+ 
+ struct work_struct;
+ typedef void (*work_func_t)(struct work_struct *work);
+--- 34-rc1/kernel/workqueue.c~EXPORT_KEVENT_WQ	2010-04-29 21:08:32.000000000 +0200
++++ 34-rc1/kernel/workqueue.c	2010-04-29 21:23:46.000000000 +0200
+@@ -717,7 +717,8 @@ int cancel_delayed_work_sync(struct dela
+ }
+ EXPORT_SYMBOL(cancel_delayed_work_sync);
+ 
+-static struct workqueue_struct *keventd_wq __read_mostly;
++struct workqueue_struct *keventd_wq __read_mostly;
++EXPORT_SYMBOL(keventd_wq);
+ 
+ /**
+  * schedule_work - put work task in global workqueue
