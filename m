@@ -1,15 +1,14 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH 3/5] PM / Hibernate: separate block_io
-Date: Thu, 29 Apr 2010 08:22:34 +0200
-Message-ID: <4BD925AA.5060902@gmail.com>
-References: <1272356118-10012-1-git-send-email-jslaby@suse.cz>
-	<1272356118-10012-3-git-send-email-jslaby@suse.cz>
-	<20100428055244.GA3501@ucw.cz>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] acpi: Fall back to manually changing SCI_EN
+Date: Wed, 28 Apr 2010 20:22:25 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1004282019240.2598@sony>
+References: <1271711614-15527-1-git-send-email-mjg@redhat.com>
+	<201004282058.20910.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100428055244.GA3501@ucw.cz>
+In-Reply-To: <201004282058.20910.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,22 +18,85 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <ncunningham@crca.org.au>, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-acpi@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/28/2010 07:52 AM, Pavel Machek wrote:
->> + * Copyright (C) 1998,2001-2005 Pavel Machek <pavel@suse.cz>
+
+On Wed, 28 Apr 2010, Rafael J. Wysocki wrote:
+
+> On Monday 19 April 2010, Matthew Garrett wrote:
+> > The ACPI spec tells us that the ACPI SCI_EN bit is under hardware control
+> > and shouldn't be touched by the OS. It seems that the Leading Other OS
+> > ignores this and some machines expect this behaviour. We have a blacklist
+> > for these, but given that we're able to detect the failure case and the
+> > alternative to breaking the spec is letting the machine crash and burn,
+> > let's try falling back when we know the alternative is a mostly-dead
+> > machine.
+> > 
+> > Signed-off-by: Matthew Garrett <mjg@redhat.com>
 > 
-> That address no longer works, but keeps popping up....
+> I guess we can try that, but I'd prefer it if that went into .35.
+> 
+> It _should_ be safe, but ...
+> 
+> Anyway, Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Oops, it's a cut&paste from swap.c:
-$ grep -r pavel.*suse kernel/power/
-kernel/power/snapshot.c: * Copyright (C) 1998-2005 Pavel Machek
-<pavel@suse.cz>
-kernel/power/swap.c: * Copyright (C) 1998,2001-2005 Pavel Machek
-<pavel@suse.cz>
-kernel/power/hibernate.c: * Copyright (c) 2004 Pavel Machek <pavel@suse.cz>
 
--- 
-js
+I'd like to push this patch in .34,
+and in .35 remove the DMI list and the boot option.
+
+One thing that has bothered me about the boot option
+is that it writes SCI_EN instead of callin acpi_enable()
+as opposed to in-addition-to acpi_enable().
+If all acpi_enable() did was set SCI_EN, then it would
+not make a difference.  However, acpi_enable() writes
+SMI_CMD and we really have no idea what other stuff
+the BIOS may do in SMM on this transition.
+
+So if we don't end up reverting this one,
+I'd really like to see the boot option gone in .35.
+
+thanks,
+Len Brown, Intel Open Source Technology Center
+-
+> > ---
+> >  drivers/acpi/sleep.c |   16 +++++++++++++---
+> >  1 files changed, 13 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+> > index f74834a..79df8d4 100644
+> > --- a/drivers/acpi/sleep.c
+> > +++ b/drivers/acpi/sleep.c
+> > @@ -227,6 +227,7 @@ static int acpi_suspend_begin(suspend_state_t pm_state)
+> >  static int acpi_suspend_enter(suspend_state_t pm_state)
+> >  {
+> >  	acpi_status status = AE_OK;
+> > +	acpi_status enable_status = AE_OK;
+> >  	unsigned long flags = 0;
+> >  	u32 acpi_state = acpi_target_sleep_state;
+> >  
+> > @@ -254,10 +255,19 @@ static int acpi_suspend_enter(suspend_state_t pm_state)
+> >  	}
+> >  
+> >  	/* If ACPI is not enabled by the BIOS, we need to enable it here. */
+> > -	if (set_sci_en_on_resume)
+> > +	if (!set_sci_en_on_resume)
+> > +		enable_status = acpi_enable();
+> > +
+> > +	if (set_sci_en_on_resume || enable_status == AE_NO_HARDWARE_RESPONSE)
+> > +		/* If we're still in legacy mode then we have a problem. The
+> > +		 * spec tells us that this bit is under hardware control, but
+> > +		 * there's no plausible way that the OS can transition back to
+> > +		 * legacy mode so our choices here are to either ignore the
+> > +		 * spec or crash and burn horribly. The latter doesn't seem
+> > +		 * like it's ever going to be the preferable choice, so let's
+> > +		 * live dangerously.
+> > +		 */
+> >  		acpi_write_bit_register(ACPI_BITREG_SCI_ENABLE, 1);
+> > -	else
+> > -		acpi_enable();
+> >  
+> >  	/* Reprogram control registers and execute _BFS */
+> >  	acpi_leave_sleep_state_prep(acpi_state);
+> --
