@@ -1,17 +1,16 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 2/8] PM: suspend_block: Add driver to access
-	suspend blockers from user-space
-Date: Thu, 29 Apr 2010 16:41:57 -0700
-Message-ID: <t2jd6200be21004291641x7fcaab37t5f4c2d66a730bf09@mail.gmail.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Fri, 30 Apr 2010 06:24:43 +0200
+Message-ID: <4BDA5B8B.50004@kernel.org>
 References: <1272429119-12103-1-git-send-email-arve@android.com>
-	<201004290105.15707.rjw@sisk.pl>
-	<h2jd6200be21004281638y6b751abesfcf6416707e6fee4@mail.gmail.com>
-	<201004292311.27400.rjw@sisk.pl>
+	<201004282250.44200.rjw@sisk.pl>
+	<l2yd6200be21004282037rc063266by91db7f732ceaa529@mail.gmail.com>
+	<201004292316.14524.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201004292311.27400.rjw@sisk.pl>
+In-Reply-To: <201004292316.14524.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,57 +21,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Jim Collar <jim.collar@eqware.net>, linux-doc@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Avi Kivity <avi@redhat.com>, Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>, Tejun Heo <tj@kernel.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-2010/4/29 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Thursday 29 April 2010, Arve Hj=F8nnev=E5g wrote:
->> 2010/4/28 Rafael J. Wysocki <rjw@sisk.pl>:
->> > On Thursday 29 April 2010, Arve Hj=F8nnev=E5g wrote:
->> >> 2010/4/28 Rafael J. Wysocki <rjw@sisk.pl>:
->> >> > On Wednesday 28 April 2010, Arve Hj=F8nnev=E5g wrote:
->> >> >> Add a misc device, "suspend_blocker", that allows user-space proce=
-sses
->> >> >> to block auto suspend. The device has ioctls to create a suspend_b=
-locker,
->> >> >> and to block and unblock suspend. To delete the suspend_blocker, c=
-lose
->> >> >> the device.
->> >> >>
->> >> >> Signed-off-by: Arve Hj=F8nnev=E5g <arve@android.com>
->> >> > ...
->> >> >> +
->> >> >> +#include <linux/fs.h>
->> >> >> +#include <linux/miscdevice.h>
->> >> >> +#include <linux/module.h>
->> >> >> +#include <linux/uaccess.h>
->> >> >> +#include <linux/slab.h>
->> >> >> +#include <linux/suspend_blocker.h>
->> >> >> +#include <linux/suspend_block_dev.h>
->> >> >> +
->> >> >> +enum {
->> >> >> + =A0 =A0 DEBUG_FAILURE =A0 =3D BIT(0),
->> >> >> +};
->> >> >> +static int debug_mask =3D DEBUG_FAILURE;
->> >> >
->> >> > What's the exact purpose of this?
->> >>
->> >> To show errors returned to user space. I can turn it off by default i=
-f you want.
->> >
->> > Not necessarily, but why is it a mask? =A0It looks like a 0/1 thing wo=
-uld be
->> > sufficient.
+Hello,
+
+On 04/29/2010 11:16 PM, Rafael J. Wysocki wrote:
+>>> Also, we already have one PM workqueue.  It is used for runtime PM, but I guess
+>>> it may be used just as well for the opportunistic suspend.  It is freezable,
+>>> but would it hurt?
 >>
->> I may want to add a bit to print all user-space block and unblock calls.
->
-> Alternatively, you can add a new parameter for that, which I think I woul=
-d prefer.
->
+>> No, it works, the freezable flag is just ignored when I call
+>> pm_suspend and I don't run anything else on the workqueue while
+>> threads are frozen. It does need to be a single threaded workqueue
+>> though, so make sure you don't just change that.
+> 
+> Freezable workqueues have to be singlethread or else there will be unfixable
+> races, so you can safely assume things will stay as they are in this respect.
 
-I use a bit-mask in the main suspend blocker code. This makes it easy
-to turn on or off all the messages.
+Rafael, can you elaborate a bit more on this?  Just in case I missed
+something while doing cmwq as it currently doesn't have such limit.
 
--- =
+Thanks.
 
-Arve Hj=F8nnev=E5g
+-- 
+tejun
