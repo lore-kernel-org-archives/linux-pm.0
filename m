@@ -1,7 +1,7 @@
 From: mark gross <mgross@linux.intel.com>
 Subject: [PATCH]PM QOS refresh against next-20100430
-Date: Fri, 30 Apr 2010 14:17:35 -0700
-Message-ID: <20100430211735.GA30617__10025.3862365664$1272662462$gmane$org@linux.intel.com>
+Date: Fri, 30 Apr 2010 14:20:43 -0700
+Message-ID: <20100430212043.GA30315__34110.6715066873$1272662906$gmane$org@linux.intel.com>
 Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -43,8 +43,9 @@ Thanks!
 
 --mgross
 
+Ooops! forgot the signed off by line!
 
-
+Signed-off-by: mark gross <mgross@linux.intel.com>
 
 >From c45d8d86f89ac55fbb9a499fbc754e35258bf818 Mon Sep 17 00:00:00 2001
 From: mgross <mark.gross@gmail.com>
