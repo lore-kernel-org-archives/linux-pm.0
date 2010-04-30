@@ -1,13 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Oleg Nesterov <oleg@redhat.com>
 Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Fri, 30 Apr 2010 10:41:12 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1004301017170.1535-100000@iolanthe.rowland.org>
-References: <p2qd6200be21004291639qd65002a8l4cfbf635962615ba@mail.gmail.com>
+Date: Fri, 30 Apr 2010 19:26:18 +0200
+Message-ID: <20100430172618.GA9043__38064.4431840212$1272648677$gmane$org@redhat.com>
+References: <1272429119-12103-1-git-send-email-arve@android.com>
+	<201004282250.44200.rjw@sisk.pl>
+	<l2yd6200be21004282037rc063266by91db7f732ceaa529@mail.gmail.com>
+	<201004292316.14524.rjw@sisk.pl> <4BDA5B8B.50004@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <p2qd6200be21004291639qd65002a8l4cfbf635962615ba@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <4BDA5B8B.50004@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,93 +21,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 29 Apr 2010, Arve Hj=F8nnev=E5g wrote:
+On 04/30, Tejun Heo wrote:
+>
+> On 04/29/2010 11:16 PM, Rafael J. Wysocki wrote:
+> >>> Also, we already have one PM workqueue.  It is used for runtime PM, but I guess
+> >>> it may be used just as well for the opportunistic suspend.  It is freezable,
+> >>> but would it hurt?
+> >>
+> > Freezable workqueues have to be singlethread or else there will be unfixable
+> > races, so you can safely assume things will stay as they are in this respect.
+>
+> Rafael, can you elaborate a bit more on this?  Just in case I missed
+> something while doing cmwq as it currently doesn't have such limit.
 
-> >> That does not work though. Unless every key turns the screen on you
-> >> will have a race every time the user presses a key you want to ignore.
-> >
-> > Of course. =A0You are confirming what I wrote immediately below: Suspend
-> Yet you offered it as an example of why "Handling the screen doesn't
-> need suspend blockers".
+Currently _cpu_down() can't flush and/or stop the frozen cwq->thread.
 
-What I meant was this: Without suspend blockers you can still turn the
-screen on and off, but you can't avoid races.  Therefore: You don't
-need suspend blockers to handle the screen, but you do need them to
-handle races.
+IIRC this is fixable, but needs the nasty complications. We should
+thaw + stop the frozen cwq->thread, then move the pending works to
+another CPU.
 
-> > blockers help resolve races. =A0Note that this race has nothing to do
-> > with the _screen_ in particular -- exactly the same race occurs if you
-> > decide to turn on the audio speaker or some other piece of hardware.
-> >
-> I agree with this, but that does not mean that describing how you can
-> handle the screen with suspend blockers is a bad example.
-
-Agreed; it's not a bad example.  My objection is to the way the example
-is presented.
-
-> I think suspend blockers do allow user programs to make decisions.
-> Without suspend blockers some decisions can only be safely be made in
-> the kernel/drivers.
-
-This is our real disagreement -- it's mainly a question of the meaning
-of words.  When one says "A allows B to make a decision", this means
-that without A, B would literally be unable to decide what to do.  It
-wouldn't be able to "make up its mind" (like the donkey that starves
-while stuck halfway between two piles of hay because it can't decide =
-
-which pile to eat).
-
-That's not what you mean to say.  In your case there's no difficulty in
-making the choice -- the program knows exactly what it wants to do.  =
-
-The problem is that without suspend blockers, it can't _carry out_ the
-chosen action.  To put it another way, the suspend blockers don't help
-with deciding which action to take; rather they help with taking the
-action after it has been decided upon.
-
-Or put this way: Suppose suspend blockers were not available.  Then the
-desired action would not be safe, so the program wouldn't be able to
-take it.  The decision would thus be even simpler, since one of the
-choices would be eliminated.  In this way, lack of suspend blockers
-makes the decision easier, not harder.  So you shouldn't say that
-suspend blockers allow the program to make the decision.
-
-What your example _really_ shows is how a program can carry out a =
-
-prolonged action that requires the system to be awake for an extended =
-
-period of time.  Even with suspend blockers, the right way to do this =
-
-safely isn't necessarily obvious.  That's how the example helps.
-
-> How about:
-> =
-
-> - The user-space input-event thread returns from read. If it
-> determines that the key should be ignored, it calls suspend_unblock on
-> the process_input_events suspend_blocker and then calls select or
-> poll. The system will automatically suspend again, since now no
-> suspend blockers are active.
-
-Do you want to mention here that everything will work correctly even if =
-
-the system suspends before the thread can call select or poll?
-
-> If the key that was pressed instead should preform a simple action
-> (for example, adjusting the volume), this action can be performed
-> right before calling suspend_unblock on the process_input_events
-> suspend_blocker. However, if the key triggers a longer-running action,
-> that action needs its own suspend_blocker and suspend_block must be
-> called on that suspend blocker before calling suspend_unblock on the
-> process_input_events suspend_blocker.
-
-That's good!  I like it.  Now if you can change the beginning of the
-example, to say that it shows how programs should use suspend blockers
-instead of showing that suspend blockers allow programs to make
-decisions.
-
-Alan Stern
+Oleg.
