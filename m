@@ -1,13 +1,15 @@
-From: mark gross <mgross@linux.intel.com>
-Subject: [PATCH]PM QOS refresh against next-20100430
-Date: Fri, 30 Apr 2010 14:20:43 -0700
-Message-ID: <20100430212043.GA30315__34110.6715066873$1272662906$gmane$org@linux.intel.com>
-Reply-To: mgross@linux.intel.com
+From: =?UTF-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
+Subject: [PATCH 2/8] PM: suspend_block: Add driver to access
+	suspend blockers from user-space
+Date: Fri, 30 Apr 2010 15:36:55 -0700
+Message-ID: <1272667021-21312-3-git-send-email-arve@android.com>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<1272667021-21312-2-git-send-email-arve@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <1272667021-21312-2-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,848 +19,151 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>, aili@codeaurora.org, dwalker@codeaurora.org, tiwai@suse.de, bruce.w.allan@intel.com, davidb@quicinc.com, mcgrof@gmail.com, pavel@ucw.cz
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>
+To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, Jim Collar <jim.collar@eqware.net>, linux-doc@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, Oleg Nesterov <oleg@redhat.com>, Avi Kivity <avi@redhat.com>, Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>, Tejun Heo <tj@kernel.org>, Magnus Damm <damm@igel.co.jp>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-The following is a refresh of the PM_QOS implementation, this patch
-updates some documentation input I got from Randy.
-
-This patch changes the string based list management to a handle base
-implementation to help with the hot path use of pm-qos, it also renames
-much of the API to use "request" as opposed to "requirement" that was
-used in the initial implementation.  I did this because request more
-accurately represents what it actually does.
-
-Also, I added a string based ABI for users wanting to use a string
-interface.  So if the user writes 0xDDDDDDDD formatted hex it will be
-accepted by the interface.  (someone asked me for it and I don't think
-it hurts anything.)
-
-I really would like to get this refresh taken care of.  Its been taking
-me too long to close this.  please review or include it in next.
-
-Thanks!
-
-
---mgross
-
-Ooops! forgot the signed off by line!
-
-Signed-off-by: mark gross <mgross@linux.intel.com>
-
->From c45d8d86f89ac55fbb9a499fbc754e35258bf818 Mon Sep 17 00:00:00 2001
-From: mgross <mark.gross@gmail.com>
-Date: Sat, 13 Mar 2010 08:18:36 -0800
-Subject: [PATCH 1/2] PM_QOS to use handle based list implementation and exported function name changes to be more descriptive of what is actually happening.
-
----
- Documentation/power/pm_qos_interface.txt |   48 ++++---
- drivers/acpi/processor_idle.c            |    2 +-
- drivers/cpuidle/governors/ladder.c       |    2 +-
- drivers/cpuidle/governors/menu.c         |    2 +-
- drivers/net/e1000e/netdev.c              |   22 ++--
- drivers/net/igbvf/netdev.c               |    6 +-
- drivers/net/wireless/ipw2x00/ipw2100.c   |   11 +-
- include/linux/netdevice.h                |    4 +
- include/linux/pm_qos_params.h            |   14 +-
- include/sound/pcm.h                      |    3 +-
- kernel/pm_qos_params.c                   |  214 ++++++++++++++---------------
- net/mac80211/mlme.c                      |    2 +-
- net/mac80211/scan.c                      |    2 +-
- sound/core/pcm.c                         |    3 -
- sound/core/pcm_native.c                  |   14 +-
- 15 files changed, 177 insertions(+), 172 deletions(-)
-
-diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
-index c40866e..bfed898 100644
---- a/Documentation/power/pm_qos_interface.txt
-+++ b/Documentation/power/pm_qos_interface.txt
-@@ -18,44 +18,46 @@ and pm_qos_params.h.  This is done because having the available parameters
- being runtime configurable or changeable from a driver was seen as too easy to
- abuse.
- 
--For each parameter a list of performance requirements is maintained along with
-+For each parameter a list of performance requests is maintained along with
- an aggregated target value.  The aggregated target value is updated with
--changes to the requirement list or elements of the list.  Typically the
--aggregated target value is simply the max or min of the requirement values held
-+changes to the request list or elements of the list.  Typically the
-+aggregated target value is simply the max or min of the request values held
- in the parameter list elements.
- 
- From kernel mode the use of this interface is simple:
--pm_qos_add_requirement(param_id, name, target_value):
--Will insert a named element in the list for that identified PM_QOS parameter
--with the target value.  Upon change to this list the new target is recomputed
--and any registered notifiers are called only if the target value is now
--different.
- 
--pm_qos_update_requirement(param_id, name, new_target_value):
--Will search the list identified by the param_id for the named list element and
--then update its target value, calling the notification tree if the aggregated
--target is changed.  with that name is already registered.
-+handle = pm_qos_add_request(param_class, target_value):
-+Will insert an element into the list for that identified PM_QOS class with the
-+target value.  Upon change to this list the new target is recomputed and any
-+registered notifiers are called only if the target value is now different.
-+Clients of pm_qos need to save the returned handle.
- 
--pm_qos_remove_requirement(param_id, name):
--Will search the identified list for the named element and remove it, after
--removal it will update the aggregate target and call the notification tree if
--the target was changed as a result of removing the named requirement.
-+void pm_qos_update_request(handle, new_target_value):
-+Will update the list element pointed to by the handle with the new target value
-+and recompute the new aggregated target, calling the notification tree if the
-+target is changed.
-+
-+void pm_qos_remove_request(handle):
-+Will remove the element.  After removal it will update the aggregate target and
-+call the notification tree if the target was changed as a result of removing
-+the request.
- 
- 
- From user mode:
--Only processes can register a pm_qos requirement.  To provide for automatic
--cleanup for process the interface requires the process to register its
--parameter requirements in the following way:
-+Only processes can register a pm_qos request.  To provide for automatic
-+cleanup of a process, the interface requires the process to register its
-+parameter requests in the following way:
- 
- To register the default pm_qos target for the specific parameter, the process
- must open one of /dev/[cpu_dma_latency, network_latency, network_throughput]
- 
- As long as the device node is held open that process has a registered
--requirement on the parameter.  The name of the requirement is "process_<PID>"
--derived from the current->pid from within the open system call.
-+request on the parameter.
- 
--To change the requested target value the process needs to write a s32 value to
--the open device node.  This translates to a pm_qos_update_requirement call.
-+To change the requested target value the process needs to write an s32 value to
-+the open device node.  Alternatively the user mode program could write a hex
-+string for the value using 10 char long format e.g. "0x12345678".  This
-+translates to a pm_qos_update_request call.
- 
- To remove the user mode request for a target value simply close the device
- node.
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 5939e7f..c3817e1 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -698,7 +698,7 @@ static int acpi_processor_power_seq_show(struct seq_file *seq, void *offset)
- 		   "max_cstate:              C%d\n"
- 		   "maximum allowed latency: %d usec\n",
- 		   pr->power.state ? pr->power.state - pr->power.states : 0,
--		   max_cstate, pm_qos_requirement(PM_QOS_CPU_DMA_LATENCY));
-+		   max_cstate, pm_qos_request(PM_QOS_CPU_DMA_LATENCY));
- 
- 	seq_puts(seq, "states:\n");
- 
-diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-index 1c1ceb4..12c9890 100644
---- a/drivers/cpuidle/governors/ladder.c
-+++ b/drivers/cpuidle/governors/ladder.c
-@@ -67,7 +67,7 @@ static int ladder_select_state(struct cpuidle_device *dev)
- 	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
- 	struct ladder_device_state *last_state;
- 	int last_residency, last_idx = ldev->last_state_idx;
--	int latency_req = pm_qos_requirement(PM_QOS_CPU_DMA_LATENCY);
-+	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
- 
- 	/* Special case when user has set very strict latency requirement */
- 	if (unlikely(latency_req == 0)) {
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 1aea715..61ca939 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -183,7 +183,7 @@ static u64 div_round64(u64 dividend, u32 divisor)
- static int menu_select(struct cpuidle_device *dev)
- {
- 	struct menu_device *data = &__get_cpu_var(menu_devices);
--	int latency_req = pm_qos_requirement(PM_QOS_CPU_DMA_LATENCY);
-+	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
- 	int i;
- 	int multiplier;
- 
-diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-index 904bd6b..7550879 100644
---- a/drivers/net/e1000e/netdev.c
-+++ b/drivers/net/e1000e/netdev.c
-@@ -2882,12 +2882,12 @@ static void e1000_configure_rx(struct e1000_adapter *adapter)
- 			 * excessive C-state transition latencies result in
- 			 * dropped transactions.
- 			 */
--			pm_qos_update_requirement(PM_QOS_CPU_DMA_LATENCY,
--						  adapter->netdev->name, 55);
-+			pm_qos_update_request(
-+				adapter->netdev->pm_qos_req, 55);
- 		} else {
--			pm_qos_update_requirement(PM_QOS_CPU_DMA_LATENCY,
--						  adapter->netdev->name,
--						  PM_QOS_DEFAULT_VALUE);
-+			pm_qos_update_request(
-+				adapter->netdev->pm_qos_req,
-+				PM_QOS_DEFAULT_VALUE);
- 		}
- 	}
- 
-@@ -3181,8 +3181,8 @@ int e1000e_up(struct e1000_adapter *adapter)
- 
- 	/* DMA latency requirement to workaround early-receive/jumbo issue */
- 	if (adapter->flags & FLAG_HAS_ERT)
--		pm_qos_add_requirement(PM_QOS_CPU_DMA_LATENCY,
--		                       adapter->netdev->name,
-+		adapter->netdev->pm_qos_req =
-+			pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
- 				       PM_QOS_DEFAULT_VALUE);
- 
- 	/* hardware has been reset, we need to reload some things */
-@@ -3244,9 +3244,11 @@ void e1000e_down(struct e1000_adapter *adapter)
- 	e1000_clean_tx_ring(adapter);
- 	e1000_clean_rx_ring(adapter);
- 
--	if (adapter->flags & FLAG_HAS_ERT)
--		pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY,
--		                          adapter->netdev->name);
-+	if (adapter->flags & FLAG_HAS_ERT) {
-+		pm_qos_remove_request(
-+			      adapter->netdev->pm_qos_req);
-+		adapter->netdev->pm_qos_req = NULL;
-+	}
- 
- 	/*
- 	 * TODO: for power management, we could drop the link and
-diff --git a/drivers/net/igbvf/netdev.c b/drivers/net/igbvf/netdev.c
-index 7012e3d..5e2b2a8 100644
---- a/drivers/net/igbvf/netdev.c
-+++ b/drivers/net/igbvf/netdev.c
-@@ -48,6 +48,7 @@
- #define DRV_VERSION "1.0.0-k0"
- char igbvf_driver_name[] = "igbvf";
- const char igbvf_driver_version[] = DRV_VERSION;
-+struct pm_qos_request_list *igbvf_driver_pm_qos_req;
- static const char igbvf_driver_string[] =
- 				"Intel(R) Virtual Function Network Driver";
- static const char igbvf_copyright[] = "Copyright (c) 2009 Intel Corporation.";
-@@ -2901,7 +2902,7 @@ static int __init igbvf_init_module(void)
- 	printk(KERN_INFO "%s\n", igbvf_copyright);
- 
- 	ret = pci_register_driver(&igbvf_driver);
--	pm_qos_add_requirement(PM_QOS_CPU_DMA_LATENCY, igbvf_driver_name,
-+	igbvf_driver_pm_qos_req = pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
- 	                       PM_QOS_DEFAULT_VALUE);
- 
- 	return ret;
-@@ -2917,7 +2918,8 @@ module_init(igbvf_init_module);
- static void __exit igbvf_exit_module(void)
- {
- 	pci_unregister_driver(&igbvf_driver);
--	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY, igbvf_driver_name);
-+	pm_qos_remove_request(igbvf_driver_pm_qos_req);
-+	igbvf_driver_pm_qos_req = NULL;
- }
- module_exit(igbvf_exit_module);
- 
-diff --git a/drivers/net/wireless/ipw2x00/ipw2100.c b/drivers/net/wireless/ipw2x00/ipw2100.c
-index 2088ac0..7040e3b 100644
---- a/drivers/net/wireless/ipw2x00/ipw2100.c
-+++ b/drivers/net/wireless/ipw2x00/ipw2100.c
-@@ -174,6 +174,8 @@ that only one external action is invoked at a time.
- #define DRV_DESCRIPTION	"Intel(R) PRO/Wireless 2100 Network Driver"
- #define DRV_COPYRIGHT	"Copyright(c) 2003-2006 Intel Corporation"
- 
-+struct pm_qos_request_list *ipw2100_pm_qos_req;
-+
- /* Debugging stuff */
- #ifdef CONFIG_IPW2100_DEBUG
- #define IPW2100_RX_DEBUG	/* Reception debugging */
-@@ -1739,7 +1741,7 @@ static int ipw2100_up(struct ipw2100_priv *priv, int deferred)
- 	/* the ipw2100 hardware really doesn't want power management delays
- 	 * longer than 175usec
- 	 */
--	pm_qos_update_requirement(PM_QOS_CPU_DMA_LATENCY, "ipw2100", 175);
-+	pm_qos_update_request(ipw2100_pm_qos_req, 175);
- 
- 	/* If the interrupt is enabled, turn it off... */
- 	spin_lock_irqsave(&priv->low_lock, flags);
-@@ -1887,8 +1889,7 @@ static void ipw2100_down(struct ipw2100_priv *priv)
- 	ipw2100_disable_interrupts(priv);
- 	spin_unlock_irqrestore(&priv->low_lock, flags);
- 
--	pm_qos_update_requirement(PM_QOS_CPU_DMA_LATENCY, "ipw2100",
--			PM_QOS_DEFAULT_VALUE);
-+	pm_qos_update_request(ipw2100_pm_qos_req, PM_QOS_DEFAULT_VALUE);
- 
- 	/* We have to signal any supplicant if we are disassociating */
- 	if (associated)
-@@ -6669,7 +6670,7 @@ static int __init ipw2100_init(void)
- 	if (ret)
- 		goto out;
- 
--	pm_qos_add_requirement(PM_QOS_CPU_DMA_LATENCY, "ipw2100",
-+	ipw2100_pm_qos_req = pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
- 			PM_QOS_DEFAULT_VALUE);
- #ifdef CONFIG_IPW2100_DEBUG
- 	ipw2100_debug_level = debug;
-@@ -6692,7 +6693,7 @@ static void __exit ipw2100_exit(void)
- 			   &driver_attr_debug_level);
- #endif
- 	pci_unregister_driver(&ipw2100_pci_driver);
--	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY, "ipw2100");
-+	pm_qos_remove_request(ipw2100_pm_qos_req);
- }
- 
- module_init(ipw2100_init);
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 40d4c20..5dd6d8c 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -31,6 +31,7 @@
- #include <linux/if_link.h>
- 
- #ifdef __KERNEL__
-+#include <linux/pm_qos_params.h>
- #include <linux/timer.h>
- #include <linux/delay.h>
- #include <linux/mm.h>
-@@ -778,6 +779,9 @@ struct net_device {
- 	 * the interface.
- 	 */
- 	char			name[IFNAMSIZ];
-+
-+	struct pm_qos_request_list *pm_qos_req;
-+
- 	/* device name hash chain */
- 	struct hlist_node	name_hlist;
- 	/* snmp alias */
-diff --git a/include/linux/pm_qos_params.h b/include/linux/pm_qos_params.h
-index d74f75e..8ba440e 100644
---- a/include/linux/pm_qos_params.h
-+++ b/include/linux/pm_qos_params.h
-@@ -14,12 +14,14 @@
- #define PM_QOS_NUM_CLASSES 4
- #define PM_QOS_DEFAULT_VALUE -1
- 
--int pm_qos_add_requirement(int qos, char *name, s32 value);
--int pm_qos_update_requirement(int qos, char *name, s32 new_value);
--void pm_qos_remove_requirement(int qos, char *name);
-+struct pm_qos_request_list;
- 
--int pm_qos_requirement(int qos);
-+struct pm_qos_request_list *pm_qos_add_request(int pm_qos_class, s32 value);
-+void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
-+		s32 new_value);
-+void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req);
- 
--int pm_qos_add_notifier(int qos, struct notifier_block *notifier);
--int pm_qos_remove_notifier(int qos, struct notifier_block *notifier);
-+int pm_qos_request(int pm_qos_class);
-+int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
-+int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
- 
-diff --git a/include/sound/pcm.h b/include/sound/pcm.h
-index 8b611a5..dd76cde 100644
---- a/include/sound/pcm.h
-+++ b/include/sound/pcm.h
-@@ -29,6 +29,7 @@
- #include <linux/poll.h>
- #include <linux/mm.h>
- #include <linux/bitops.h>
-+#include <linux/pm_qos_params.h>
- 
- #define snd_pcm_substream_chip(substream) ((substream)->private_data)
- #define snd_pcm_chip(pcm) ((pcm)->private_data)
-@@ -365,7 +366,7 @@ struct snd_pcm_substream {
- 	int number;
- 	char name[32];			/* substream name */
- 	int stream;			/* stream (direction) */
--	char latency_id[20];		/* latency identifier */
-+	struct pm_qos_request_list *latency_pm_qos_req; /* pm_qos request */
- 	size_t buffer_bytes_max;	/* limit ring buffer size */
- 	struct snd_dma_buffer dma_buffer;
- 	unsigned int dma_buf_id;
-diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-index 3db49b9..a1aea04 100644
---- a/kernel/pm_qos_params.c
-+++ b/kernel/pm_qos_params.c
-@@ -2,7 +2,7 @@
-  * This module exposes the interface to kernel space for specifying
-  * QoS dependencies.  It provides infrastructure for registration of:
-  *
-- * Dependents on a QoS value : register requirements
-+ * Dependents on a QoS value : register requests
-  * Watchers of QoS value : get notified when target QoS value changes
-  *
-  * This QoS design is best effort based.  Dependents register their QoS needs.
-@@ -14,19 +14,21 @@
-  * timeout: usec <-- currently not used.
-  * throughput: kbs (kilo byte / sec)
-  *
-- * There are lists of pm_qos_objects each one wrapping requirements, notifiers
-+ * There are lists of pm_qos_objects each one wrapping requests, notifiers
-  *
-- * User mode requirements on a QOS parameter register themselves to the
-+ * User mode requests on a QOS parameter register themselves to the
-  * subsystem by opening the device node /dev/... and writing there request to
-  * the node.  As long as the process holds a file handle open to the node the
-  * client continues to be accounted for.  Upon file release the usermode
-- * requirement is removed and a new qos target is computed.  This way when the
-- * requirement that the application has is cleaned up when closes the file
-+ * request is removed and a new qos target is computed.  This way when the
-+ * request that the application has is cleaned up when closes the file
-  * pointer or exits the pm_qos_object will get an opportunity to clean up.
-  *
-  * Mark Gross <mgross@linux.intel.com>
-  */
- 
-+/*#define DEBUG*/
-+
- #include <linux/pm_qos_params.h>
- #include <linux/sched.h>
- #include <linux/spinlock.h>
-@@ -42,25 +44,25 @@
- #include <linux/uaccess.h>
- 
- /*
-- * locking rule: all changes to requirements or notifiers lists
-+ * locking rule: all changes to requests or notifiers lists
-  * or pm_qos_object list and pm_qos_objects need to happen with pm_qos_lock
-  * held, taken with _irqsave.  One lock to rule them all
-  */
--struct requirement_list {
-+struct pm_qos_request_list {
- 	struct list_head list;
- 	union {
- 		s32 value;
- 		s32 usec;
- 		s32 kbps;
- 	};
--	char *name;
-+	int pm_qos_class;
- };
- 
- static s32 max_compare(s32 v1, s32 v2);
- static s32 min_compare(s32 v1, s32 v2);
- 
- struct pm_qos_object {
--	struct requirement_list requirements;
-+	struct pm_qos_request_list requests;
- 	struct blocking_notifier_head *notifiers;
- 	struct miscdevice pm_qos_power_miscdev;
- 	char *name;
-@@ -72,7 +74,7 @@ struct pm_qos_object {
- static struct pm_qos_object null_pm_qos;
- static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
- static struct pm_qos_object cpu_dma_pm_qos = {
--	.requirements = {LIST_HEAD_INIT(cpu_dma_pm_qos.requirements.list)},
-+	.requests = {LIST_HEAD_INIT(cpu_dma_pm_qos.requests.list)},
- 	.notifiers = &cpu_dma_lat_notifier,
- 	.name = "cpu_dma_latency",
- 	.default_value = 2000 * USEC_PER_SEC,
-@@ -82,7 +84,7 @@ static struct pm_qos_object cpu_dma_pm_qos = {
- 
- static BLOCKING_NOTIFIER_HEAD(network_lat_notifier);
- static struct pm_qos_object network_lat_pm_qos = {
--	.requirements = {LIST_HEAD_INIT(network_lat_pm_qos.requirements.list)},
-+	.requests = {LIST_HEAD_INIT(network_lat_pm_qos.requests.list)},
- 	.notifiers = &network_lat_notifier,
- 	.name = "network_latency",
- 	.default_value = 2000 * USEC_PER_SEC,
-@@ -93,8 +95,7 @@ static struct pm_qos_object network_lat_pm_qos = {
- 
- static BLOCKING_NOTIFIER_HEAD(network_throughput_notifier);
- static struct pm_qos_object network_throughput_pm_qos = {
--	.requirements =
--		{LIST_HEAD_INIT(network_throughput_pm_qos.requirements.list)},
-+	.requests = {LIST_HEAD_INIT(network_throughput_pm_qos.requests.list)},
- 	.notifiers = &network_throughput_notifier,
- 	.name = "network_throughput",
- 	.default_value = 0,
-@@ -135,31 +136,34 @@ static s32 min_compare(s32 v1, s32 v2)
- }
- 
- 
--static void update_target(int target)
-+static void update_target(int pm_qos_class)
- {
- 	s32 extreme_value;
--	struct requirement_list *node;
-+	struct pm_qos_request_list *node;
- 	unsigned long flags;
- 	int call_notifier = 0;
- 
- 	spin_lock_irqsave(&pm_qos_lock, flags);
--	extreme_value = pm_qos_array[target]->default_value;
-+	extreme_value = pm_qos_array[pm_qos_class]->default_value;
- 	list_for_each_entry(node,
--			&pm_qos_array[target]->requirements.list, list) {
--		extreme_value = pm_qos_array[target]->comparitor(
-+			&pm_qos_array[pm_qos_class]->requests.list, list) {
-+		extreme_value = pm_qos_array[pm_qos_class]->comparitor(
- 				extreme_value, node->value);
- 	}
--	if (atomic_read(&pm_qos_array[target]->target_value) != extreme_value) {
-+	if (atomic_read(&pm_qos_array[pm_qos_class]->target_value) !=
-+			extreme_value) {
- 		call_notifier = 1;
--		atomic_set(&pm_qos_array[target]->target_value, extreme_value);
--		pr_debug(KERN_ERR "new target for qos %d is %d\n", target,
--			atomic_read(&pm_qos_array[target]->target_value));
-+		atomic_set(&pm_qos_array[pm_qos_class]->target_value,
-+				extreme_value);
-+		pr_debug(KERN_ERR "new target for qos %d is %d\n", pm_qos_class,
-+			atomic_read(&pm_qos_array[pm_qos_class]->target_value));
- 	}
- 	spin_unlock_irqrestore(&pm_qos_lock, flags);
- 
- 	if (call_notifier)
--		blocking_notifier_call_chain(pm_qos_array[target]->notifiers,
--			(unsigned long) extreme_value, NULL);
-+		blocking_notifier_call_chain(
-+				pm_qos_array[pm_qos_class]->notifiers,
-+					(unsigned long) extreme_value, NULL);
- }
- 
- static int register_pm_qos_misc(struct pm_qos_object *qos)
-@@ -185,125 +189,110 @@ static int find_pm_qos_object_by_minor(int minor)
- }
- 
- /**
-- * pm_qos_requirement - returns current system wide qos expectation
-+ * pm_qos_request - returns current system wide qos expectation
-  * @pm_qos_class: identification of which qos value is requested
-  *
-  * This function returns the current target value in an atomic manner.
-  */
--int pm_qos_requirement(int pm_qos_class)
-+int pm_qos_request(int pm_qos_class)
- {
- 	return atomic_read(&pm_qos_array[pm_qos_class]->target_value);
- }
--EXPORT_SYMBOL_GPL(pm_qos_requirement);
-+EXPORT_SYMBOL_GPL(pm_qos_request);
- 
- /**
-- * pm_qos_add_requirement - inserts new qos request into the list
-+ * pm_qos_add_request - inserts new qos request into the list
-  * @pm_qos_class: identifies which list of qos request to us
-- * @name: identifies the request
-  * @value: defines the qos request
-  *
-  * This function inserts a new entry in the pm_qos_class list of requested qos
-  * performance characteristics.  It recomputes the aggregate QoS expectations
-- * for the pm_qos_class of parameters.
-+ * for the pm_qos_class of parameters, and returns the pm_qos_request list
-+ * element as a handle for use in updating and removal.  Call needs to save
-+ * this handle for later use.
-  */
--int pm_qos_add_requirement(int pm_qos_class, char *name, s32 value)
-+struct pm_qos_request_list *pm_qos_add_request(int pm_qos_class, s32 value)
- {
--	struct requirement_list *dep;
-+	struct pm_qos_request_list *dep;
- 	unsigned long flags;
- 
--	dep = kzalloc(sizeof(struct requirement_list), GFP_KERNEL);
-+	dep = kzalloc(sizeof(struct pm_qos_request_list), GFP_KERNEL);
- 	if (dep) {
- 		if (value == PM_QOS_DEFAULT_VALUE)
- 			dep->value = pm_qos_array[pm_qos_class]->default_value;
- 		else
- 			dep->value = value;
--		dep->name = kstrdup(name, GFP_KERNEL);
--		if (!dep->name)
--			goto cleanup;
-+		dep->pm_qos_class = pm_qos_class;
- 
- 		spin_lock_irqsave(&pm_qos_lock, flags);
- 		list_add(&dep->list,
--			&pm_qos_array[pm_qos_class]->requirements.list);
-+			&pm_qos_array[pm_qos_class]->requests.list);
- 		spin_unlock_irqrestore(&pm_qos_lock, flags);
- 		update_target(pm_qos_class);
--
--		return 0;
- 	}
- 
--cleanup:
--	kfree(dep);
--	return -ENOMEM;
-+	return dep;
- }
--EXPORT_SYMBOL_GPL(pm_qos_add_requirement);
-+EXPORT_SYMBOL_GPL(pm_qos_add_request);
- 
- /**
-- * pm_qos_update_requirement - modifies an existing qos request
-- * @pm_qos_class: identifies which list of qos request to us
-- * @name: identifies the request
-+ * pm_qos_update_request - modifies an existing qos request
-+ * @pm_qos_req : handle to list element holding a pm_qos request to use
-  * @value: defines the qos request
-  *
-- * Updates an existing qos requirement for the pm_qos_class of parameters along
-+ * Updates an existing qos request for the pm_qos_class of parameters along
-  * with updating the target pm_qos_class value.
-  *
-- * If the named request isn't in the list then no change is made.
-+ * Attempts are made to make this code callable on hot code paths.
-  */
--int pm_qos_update_requirement(int pm_qos_class, char *name, s32 new_value)
-+void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
-+		s32 new_value)
- {
- 	unsigned long flags;
--	struct requirement_list *node;
- 	int pending_update = 0;
-+	s32 temp;
- 
- 	spin_lock_irqsave(&pm_qos_lock, flags);
--	list_for_each_entry(node,
--		&pm_qos_array[pm_qos_class]->requirements.list, list) {
--		if (strcmp(node->name, name) == 0) {
--			if (new_value == PM_QOS_DEFAULT_VALUE)
--				node->value =
--				pm_qos_array[pm_qos_class]->default_value;
--			else
--				node->value = new_value;
--			pending_update = 1;
--			break;
--		}
-+	if (new_value == PM_QOS_DEFAULT_VALUE)
-+		temp = pm_qos_array[pm_qos_req->pm_qos_class]->default_value;
-+	else
-+		temp = new_value;
-+
-+	if (temp != pm_qos_req->value) {
-+		pending_update = 1;
-+		pm_qos_req->value = temp;
- 	}
- 	spin_unlock_irqrestore(&pm_qos_lock, flags);
- 	if (pending_update)
--		update_target(pm_qos_class);
--
--	return 0;
-+		update_target(pm_qos_req->pm_qos_class);
- }
--EXPORT_SYMBOL_GPL(pm_qos_update_requirement);
-+EXPORT_SYMBOL_GPL(pm_qos_update_request);
- 
- /**
-- * pm_qos_remove_requirement - modifies an existing qos request
-- * @pm_qos_class: identifies which list of qos request to us
-- * @name: identifies the request
-+ * pm_qos_remove_request - modifies an existing qos request
-+ * @pm_qos_req: handle to request list element
-  *
-- * Will remove named qos request from pm_qos_class list of parameters and
-- * recompute the current target value for the pm_qos_class.
-+ * Will remove pm qos request from the list of requests and
-+ * recompute the current target value for the pm_qos_class.  Call this
-+ * on slow code paths.
-  */
--void pm_qos_remove_requirement(int pm_qos_class, char *name)
-+void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req)
- {
- 	unsigned long flags;
--	struct requirement_list *node;
--	int pending_update = 0;
-+	int qos_class;
-+
-+	if (pm_qos_req == NULL)
-+		return;
-+		/* silent return to keep pcm code cleaner */
- 
-+	qos_class = pm_qos_req->pm_qos_class;
- 	spin_lock_irqsave(&pm_qos_lock, flags);
--	list_for_each_entry(node,
--		&pm_qos_array[pm_qos_class]->requirements.list, list) {
--		if (strcmp(node->name, name) == 0) {
--			kfree(node->name);
--			list_del(&node->list);
--			kfree(node);
--			pending_update = 1;
--			break;
--		}
--	}
-+	list_del(&pm_qos_req->list);
-+	kfree(pm_qos_req);
- 	spin_unlock_irqrestore(&pm_qos_lock, flags);
--	if (pending_update)
--		update_target(pm_qos_class);
-+	update_target(qos_class);
- }
--EXPORT_SYMBOL_GPL(pm_qos_remove_requirement);
-+EXPORT_SYMBOL_GPL(pm_qos_remove_request);
- 
- /**
-  * pm_qos_add_notifier - sets notification entry for changes to target value
-@@ -313,7 +302,7 @@ EXPORT_SYMBOL_GPL(pm_qos_remove_requirement);
-  * will register the notifier into a notification chain that gets called
-  * upon changes to the pm_qos_class target value.
-  */
-- int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
-+int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
- {
- 	int retval;
- 
-@@ -343,21 +332,16 @@ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
- }
- EXPORT_SYMBOL_GPL(pm_qos_remove_notifier);
- 
--#define PID_NAME_LEN 32
--
- static int pm_qos_power_open(struct inode *inode, struct file *filp)
- {
--	int ret;
- 	long pm_qos_class;
--	char name[PID_NAME_LEN];
- 
- 	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
- 	if (pm_qos_class >= 0) {
--		filp->private_data = (void *)pm_qos_class;
--		snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
--		ret = pm_qos_add_requirement(pm_qos_class, name,
--					PM_QOS_DEFAULT_VALUE);
--		if (ret >= 0)
-+		filp->private_data = (void *) pm_qos_add_request(pm_qos_class,
-+				PM_QOS_DEFAULT_VALUE);
-+
-+		if (filp->private_data)
- 			return 0;
- 	}
- 	return -EPERM;
-@@ -365,32 +349,40 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
- 
- static int pm_qos_power_release(struct inode *inode, struct file *filp)
- {
--	int pm_qos_class;
--	char name[PID_NAME_LEN];
-+	struct pm_qos_request_list *req;
- 
--	pm_qos_class = (long)filp->private_data;
--	snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
--	pm_qos_remove_requirement(pm_qos_class, name);
-+	req = (struct pm_qos_request_list *)filp->private_data;
-+	pm_qos_remove_request(req);
- 
- 	return 0;
- }
- 
-+
- static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
- 		size_t count, loff_t *f_pos)
- {
- 	s32 value;
--	int pm_qos_class;
--	char name[PID_NAME_LEN];
--
--	pm_qos_class = (long)filp->private_data;
--	if (count != sizeof(s32))
-+	int x;
-+	char ascii_value[11];
-+	struct pm_qos_request_list *pm_qos_req;
-+
-+	if (count == sizeof(s32)) {
-+		if (copy_from_user(&value, buf, sizeof(s32)))
-+			return -EFAULT;
-+	} else if (count == 11) { /* len('0x12345678/0') */
-+		if (copy_from_user(ascii_value, buf, 11))
-+			return -EFAULT;
-+		x = sscanf(ascii_value, "%x", &value);
-+		if (x != 1)
-+			return -EINVAL;
-+		pr_debug(KERN_ERR "%s, %d, 0x%x\n", ascii_value, x, value);
-+	} else
- 		return -EINVAL;
--	if (copy_from_user(&value, buf, sizeof(s32)))
--		return -EFAULT;
--	snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
--	pm_qos_update_requirement(pm_qos_class, name, value);
- 
--	return  sizeof(s32);
-+	pm_qos_req = (struct pm_qos_request_list *)filp->private_data;
-+	pm_qos_update_request(pm_qos_req, value);
-+
-+	return count;
- }
- 
- 
-diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index 358226f..3deaac3 100644
---- a/net/mac80211/mlme.c
-+++ b/net/mac80211/mlme.c
-@@ -507,7 +507,7 @@ void ieee80211_recalc_ps(struct ieee80211_local *local, s32 latency)
- 		s32 beaconint_us;
- 
- 		if (latency < 0)
--			latency = pm_qos_requirement(PM_QOS_NETWORK_LATENCY);
-+			latency = pm_qos_request(PM_QOS_NETWORK_LATENCY);
- 
- 		beaconint_us = ieee80211_tu_to_usec(
- 					found->vif.bss_conf.beacon_int);
-diff --git a/net/mac80211/scan.c b/net/mac80211/scan.c
-index 8bc961f..be52bb8 100644
---- a/net/mac80211/scan.c
-+++ b/net/mac80211/scan.c
-@@ -510,7 +510,7 @@ static int ieee80211_scan_state_decision(struct ieee80211_local *local,
- 		bad_latency = time_after(jiffies +
- 				ieee80211_scan_get_channel_time(next_chan),
- 				local->leave_oper_channel_time +
--				usecs_to_jiffies(pm_qos_requirement(PM_QOS_NETWORK_LATENCY)));
-+				usecs_to_jiffies(pm_qos_request(PM_QOS_NETWORK_LATENCY)));
- 
- 		listen_int_exceeded = time_after(jiffies +
- 				ieee80211_scan_get_channel_time(next_chan),
-diff --git a/sound/core/pcm.c b/sound/core/pcm.c
-index 0d428d0..cbe815d 100644
---- a/sound/core/pcm.c
-+++ b/sound/core/pcm.c
-@@ -648,9 +648,6 @@ int snd_pcm_new_stream(struct snd_pcm *pcm, int stream, int substream_count)
- 		substream->number = idx;
- 		substream->stream = stream;
- 		sprintf(substream->name, "subdevice #%i", idx);
--		snprintf(substream->latency_id, sizeof(substream->latency_id),
--			 "ALSA-PCM%d-%d%c%d", pcm->card->number, pcm->device,
--			 (stream ? 'c' : 'p'), idx);
- 		substream->buffer_bytes_max = UINT_MAX;
- 		if (prev == NULL)
- 			pstr->substream = substream;
-diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
-index c22ebb0..1bb0e23 100644
---- a/sound/core/pcm_native.c
-+++ b/sound/core/pcm_native.c
-@@ -481,11 +481,13 @@ static int snd_pcm_hw_params(struct snd_pcm_substream *substream,
- 	snd_pcm_timer_resolution_change(substream);
- 	runtime->status->state = SNDRV_PCM_STATE_SETUP;
- 
--	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY,
--				substream->latency_id);
-+	if (substream->latency_pm_qos_req) {
-+		pm_qos_remove_request(substream->latency_pm_qos_req);
-+		substream->latency_pm_qos_req = NULL;
-+	}
- 	if ((usecs = period_to_usecs(runtime)) >= 0)
--		pm_qos_add_requirement(PM_QOS_CPU_DMA_LATENCY,
--					substream->latency_id, usecs);
-+		substream->latency_pm_qos_req = pm_qos_add_request(
-+					PM_QOS_CPU_DMA_LATENCY, usecs);
- 	return 0;
-  _error:
- 	/* hardware might be unuseable from this time,
-@@ -540,8 +542,8 @@ static int snd_pcm_hw_free(struct snd_pcm_substream *substream)
- 	if (substream->ops->hw_free)
- 		result = substream->ops->hw_free(substream);
- 	runtime->status->state = SNDRV_PCM_STATE_OPEN;
--	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY,
--		substream->latency_id);
-+	pm_qos_remove_request(substream->latency_pm_qos_req);
-+	substream->latency_pm_qos_req = NULL;
- 	return result;
- }
- 
--- 
-1.6.3.3
+QWRkIGEgbWlzYyBkZXZpY2UsICJzdXNwZW5kX2Jsb2NrZXIiLCB0aGF0IGFsbG93cyB1c2VyLXNw
+YWNlIHByb2Nlc3Nlcwp0byBibG9jayBhdXRvIHN1c3BlbmQuIFRoZSBkZXZpY2UgaGFzIGlvY3Rs
+cyB0byBjcmVhdGUgYSBzdXNwZW5kX2Jsb2NrZXIsCmFuZCB0byBibG9jayBhbmQgdW5ibG9jayBz
+dXNwZW5kLiBUbyBkZWxldGUgdGhlIHN1c3BlbmRfYmxvY2tlciwgY2xvc2UKdGhlIGRldmljZS4K
+ClNpZ25lZC1vZmYtYnk6IEFydmUgSGrDuG5uZXbDpWcgPGFydmVAYW5kcm9pZC5jb20+Ci0tLQog
+RG9jdW1lbnRhdGlvbi9pb2N0bC9pb2N0bC1udW1iZXIudHh0ICAgICAgICAgIHwgICAgMyArLQog
+RG9jdW1lbnRhdGlvbi9wb3dlci9vcHBvcnR1bmlzdGljLXN1c3BlbmQudHh0IHwgICAxNyArKysr
+CiBpbmNsdWRlL2xpbnV4L3N1c3BlbmRfYmxvY2tfZGV2LmggICAgICAgICAgICAgfCAgIDI1ICsr
+KysrCiBrZXJuZWwvcG93ZXIvS2NvbmZpZyAgICAgICAgICAgICAgICAgICAgICAgICAgfCAgICA5
+ICsrCiBrZXJuZWwvcG93ZXIvTWFrZWZpbGUgICAgICAgICAgICAgICAgICAgICAgICAgfCAgICAx
+ICsKIGtlcm5lbC9wb3dlci91c2VyX3N1c3BlbmRfYmxvY2tlci5jICAgICAgICAgICB8ICAxMjgg
+KysrKysrKysrKysrKysrKysrKysrKysrKwogNiBmaWxlcyBjaGFuZ2VkLCAxODIgaW5zZXJ0aW9u
+cygrKSwgMSBkZWxldGlvbnMoLSkKIGNyZWF0ZSBtb2RlIDEwMDY0NCBpbmNsdWRlL2xpbnV4L3N1
+c3BlbmRfYmxvY2tfZGV2LmgKIGNyZWF0ZSBtb2RlIDEwMDY0NCBrZXJuZWwvcG93ZXIvdXNlcl9z
+dXNwZW5kX2Jsb2NrZXIuYwoKZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vaW9jdGwvaW9jdGwt
+bnVtYmVyLnR4dCBiL0RvY3VtZW50YXRpb24vaW9jdGwvaW9jdGwtbnVtYmVyLnR4dAppbmRleCBk
+ZDU4MDZmLi5lMjQ1OGY3IDEwMDY0NAotLS0gYS9Eb2N1bWVudGF0aW9uL2lvY3RsL2lvY3RsLW51
+bWJlci50eHQKKysrIGIvRG9jdW1lbnRhdGlvbi9pb2N0bC9pb2N0bC1udW1iZXIudHh0CkBAIC0y
+NTQsNyArMjU0LDggQEAgQ29kZSAgU2VxIyhoZXgpCUluY2x1ZGUgRmlsZQkJQ29tbWVudHMKICdx
+Jwk4MC1GRglsaW51eC90ZWxlcGhvbnkuaAlJbnRlcm5ldCBQaG9uZUpBQ0ssIEludGVybmV0IExp
+bmVKQUNLCiAJCWxpbnV4L2l4anVzZXIuaAkJPGh0dHA6Ly93d3cucXVpY2tuZXQubmV0PgogJ3In
+CTAwLTFGCWxpbnV4L21zZG9zX2ZzLmggYW5kIGZzL2ZhdC9kaXIuYwotJ3MnCWFsbAlsaW51eC9j
+ZGsuaAorJ3MnCWFsbAlsaW51eC9jZGsuaAljb25mbGljdCEKKydzJwlhbGwJbGludXgvc3VzcGVu
+ZF9ibG9ja19kZXYuaAljb25mbGljdCEKICd0JwkwMC03RglsaW51eC9pZl9wcHAuaAogJ3QnCTgw
+LThGCWxpbnV4L2lzZG5fcHBwLmgKICd0Jwk5MAlsaW51eC90b3NoaWJhLmgKZGlmZiAtLWdpdCBh
+L0RvY3VtZW50YXRpb24vcG93ZXIvb3Bwb3J0dW5pc3RpYy1zdXNwZW5kLnR4dCBiL0RvY3VtZW50
+YXRpb24vcG93ZXIvb3Bwb3J0dW5pc3RpYy1zdXNwZW5kLnR4dAppbmRleCAzZDA2MGU4Li5mMmIx
+NDVlIDEwMDY0NAotLS0gYS9Eb2N1bWVudGF0aW9uL3Bvd2VyL29wcG9ydHVuaXN0aWMtc3VzcGVu
+ZC50eHQKKysrIGIvRG9jdW1lbnRhdGlvbi9wb3dlci9vcHBvcnR1bmlzdGljLXN1c3BlbmQudHh0
+CkBAIC0xMTcsMyArMTE3LDIwIEBAIGlmIChsaXN0X2VtcHR5KCZzdGF0ZS0+cGVuZGluZ193b3Jr
+KSkKIGVsc2UKIAlzdXNwZW5kX2Jsb2NrKCZzdGF0ZS0+c3VzcGVuZF9ibG9ja2VyKTsKIAorVXNl
+ci1zcGFjZSBBUEkKKz09PT09PT09PT09PT09CisKK1RvIGNyZWF0ZSBhIHN1c3BlbmRfYmxvY2tl
+ciBmcm9tIHVzZXItc3BhY2UsIG9wZW4gdGhlIHN1c3BlbmRfYmxvY2tlciBkZXZpY2U6CisgICAg
+ZmQgPSBvcGVuKCIvZGV2L3N1c3BlbmRfYmxvY2tlciIsIE9fUkRXUiB8IE9fQ0xPRVhFQyk7Cit0
+aGVuIGNhbGw6CisgICAgaW9jdGwoZmQsIFNVU1BFTkRfQkxPQ0tFUl9JT0NUTF9JTklUKHN0cmxl
+bihuYW1lKSksIG5hbWUpOworCitUbyBhY3RpdmF0ZSBhIHN1c3BlbmRfYmxvY2tlciBjYWxsOgor
+ICAgIGlvY3RsKGZkLCBTVVNQRU5EX0JMT0NLRVJfSU9DVExfQkxPQ0spOworCitUbyB1bmJsb2Nr
+IGNhbGw6CisgICAgaW9jdGwoZmQsIFNVU1BFTkRfQkxPQ0tFUl9JT0NUTF9VTkJMT0NLKTsKKwor
+VG8gZGVzdHJveSB0aGUgc3VzcGVuZF9ibG9ja2VyLCBjbG9zZSB0aGUgZGV2aWNlOgorICAgIGNs
+b3NlKGZkKTsKKwpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9zdXNwZW5kX2Jsb2NrX2Rldi5o
+IGIvaW5jbHVkZS9saW51eC9zdXNwZW5kX2Jsb2NrX2Rldi5oCm5ldyBmaWxlIG1vZGUgMTAwNjQ0
+CmluZGV4IDAwMDAwMDAuLjI0YmM1YzcKLS0tIC9kZXYvbnVsbAorKysgYi9pbmNsdWRlL2xpbnV4
+L3N1c3BlbmRfYmxvY2tfZGV2LmgKQEAgLTAsMCArMSwyNSBAQAorLyogaW5jbHVkZS9saW51eC9z
+dXNwZW5kX2Jsb2NrX2Rldi5oCisgKgorICogQ29weXJpZ2h0IChDKSAyMDA5IEdvb2dsZSwgSW5j
+LgorICoKKyAqIFRoaXMgc29mdHdhcmUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIHRlcm1zIG9mIHRo
+ZSBHTlUgR2VuZXJhbCBQdWJsaWMKKyAqIExpY2Vuc2UgdmVyc2lvbiAyLCBhcyBwdWJsaXNoZWQg
+YnkgdGhlIEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbiwgYW5kCisgKiBtYXkgYmUgY29waWVkLCBk
+aXN0cmlidXRlZCwgYW5kIG1vZGlmaWVkIHVuZGVyIHRob3NlIHRlcm1zLgorICoKKyAqIFRoaXMg
+cHJvZ3JhbSBpcyBkaXN0cmlidXRlZCBpbiB0aGUgaG9wZSB0aGF0IGl0IHdpbGwgYmUgdXNlZnVs
+LAorICogYnV0IFdJVEhPVVQgQU5ZIFdBUlJBTlRZOyB3aXRob3V0IGV2ZW4gdGhlIGltcGxpZWQg
+d2FycmFudHkgb2YKKyAqIE1FUkNIQU5UQUJJTElUWSBvciBGSVRORVNTIEZPUiBBIFBBUlRJQ1VM
+QVIgUFVSUE9TRS4gIFNlZSB0aGUKKyAqIEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlIGZvciBt
+b3JlIGRldGFpbHMuCisgKgorICovCisKKyNpZm5kZWYgX0xJTlVYX1NVU1BFTkRfQkxPQ0tfREVW
+X0gKKyNkZWZpbmUgX0xJTlVYX1NVU1BFTkRfQkxPQ0tfREVWX0gKKworI2luY2x1ZGUgPGxpbnV4
+L2lvY3RsLmg+CisKKyNkZWZpbmUgU1VTUEVORF9CTE9DS0VSX0lPQ1RMX0lOSVQobGVuKQkJX0lP
+QyhfSU9DX1dSSVRFLCAncycsIDAsIGxlbikKKyNkZWZpbmUgU1VTUEVORF9CTE9DS0VSX0lPQ1RM
+X0JMT0NLCQlfSU8oJ3MnLCAxKQorI2RlZmluZSBTVVNQRU5EX0JMT0NLRVJfSU9DVExfVU5CTE9D
+SwkJX0lPKCdzJywgMikKKworI2VuZGlmCmRpZmYgLS1naXQgYS9rZXJuZWwvcG93ZXIvS2NvbmZp
+ZyBiL2tlcm5lbC9wb3dlci9LY29uZmlnCmluZGV4IDU1YTA2YTEuLmZlNWEyZjIgMTAwNjQ0Ci0t
+LSBhL2tlcm5lbC9wb3dlci9LY29uZmlnCisrKyBiL2tlcm5lbC9wb3dlci9LY29uZmlnCkBAIC0x
+NDYsNiArMTQ2LDE1IEBAIGNvbmZpZyBPUFBPUlRVTklTVElDX1NVU1BFTkQKIAkgIGRldGVybWlu
+ZXMgdGhlIHNsZWVwIHN0YXRlIHRoZSBzeXN0ZW0gd2lsbCBiZSBwdXQgaW50byB3aGVuIHRoZXJl
+IGFyZQogCSAgbm8gYWN0aXZlIHN1c3BlbmQgYmxvY2tlcnMuCiAKK2NvbmZpZyBVU0VSX1NVU1BF
+TkRfQkxPQ0tFUlMKKwlib29sICJVc2Vyc3BhY2Ugc3VzcGVuZCBibG9ja2VycyIKKwlkZXBlbmRz
+IG9uIE9QUE9SVFVOSVNUSUNfU1VTUEVORAorCWRlZmF1bHQgeQorCS0tLWhlbHAtLS0KKwkgIFVz
+ZXItc3BhY2Ugc3VzcGVuZCBibG9jayBhcGkuIENyZWF0ZXMgYSBtaXNjIGRldmljZSB3aXRoIGlv
+Y3RscworCSAgdG8gY3JlYXRlLCBibG9jayBhbmQgdW5ibG9jayBhIHN1c3BlbmRfYmxvY2tlci4g
+VGhlIHN1c3BlbmRfYmxvY2tlcgorCSAgd2lsbCBiZSBkZWxldGVkIHdoZW4gdGhlIGRldmljZSBp
+cyBjbG9zZWQuCisKIGNvbmZpZyBISUJFUk5BVElPTl9OVlMKIAlib29sCiAKZGlmZiAtLWdpdCBh
+L2tlcm5lbC9wb3dlci9NYWtlZmlsZSBiL2tlcm5lbC9wb3dlci9NYWtlZmlsZQppbmRleCBlZTUy
+NzZkLi43OGY3MDNiIDEwMDY0NAotLS0gYS9rZXJuZWwvcG93ZXIvTWFrZWZpbGUKKysrIGIva2Vy
+bmVsL3Bvd2VyL01ha2VmaWxlCkBAIC04LDYgKzgsNyBAQCBvYmotJChDT05GSUdfUE1fU0xFRVAp
+CQkrPSBjb25zb2xlLm8KIG9iai0kKENPTkZJR19GUkVFWkVSKQkJKz0gcHJvY2Vzcy5vCiBvYmot
+JChDT05GSUdfU1VTUEVORCkJCSs9IHN1c3BlbmQubwogb2JqLSQoQ09ORklHX09QUE9SVFVOSVNU
+SUNfU1VTUEVORCkJKz0gc3VzcGVuZF9ibG9ja2VyLm8KK29iai0kKENPTkZJR19VU0VSX1NVU1BF
+TkRfQkxPQ0tFUlMpCSs9IHVzZXJfc3VzcGVuZF9ibG9ja2VyLm8KIG9iai0kKENPTkZJR19QTV9U
+RVNUX1NVU1BFTkQpCSs9IHN1c3BlbmRfdGVzdC5vCiBvYmotJChDT05GSUdfSElCRVJOQVRJT04p
+CSs9IGhpYmVybmF0ZS5vIHNuYXBzaG90Lm8gc3dhcC5vIHVzZXIubwogb2JqLSQoQ09ORklHX0hJ
+QkVSTkFUSU9OX05WUykJKz0gaGliZXJuYXRlX252cy5vCmRpZmYgLS1naXQgYS9rZXJuZWwvcG93
+ZXIvdXNlcl9zdXNwZW5kX2Jsb2NrZXIuYyBiL2tlcm5lbC9wb3dlci91c2VyX3N1c3BlbmRfYmxv
+Y2tlci5jCm5ldyBmaWxlIG1vZGUgMTAwNjQ0CmluZGV4IDAwMDAwMDAuLmRjMWQwNmYKLS0tIC9k
+ZXYvbnVsbAorKysgYi9rZXJuZWwvcG93ZXIvdXNlcl9zdXNwZW5kX2Jsb2NrZXIuYwpAQCAtMCww
+ICsxLDEyOCBAQAorLyoga2VybmVsL3Bvd2VyL3VzZXJfc3VzcGVuZF9ibG9jay5jCisgKgorICog
+Q29weXJpZ2h0IChDKSAyMDA5LTIwMTAgR29vZ2xlLCBJbmMuCisgKgorICogVGhpcyBzb2Z0d2Fy
+ZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgdGVybXMgb2YgdGhlIEdOVSBHZW5lcmFsIFB1YmxpYwor
+ICogTGljZW5zZSB2ZXJzaW9uIDIsIGFzIHB1Ymxpc2hlZCBieSB0aGUgRnJlZSBTb2Z0d2FyZSBG
+b3VuZGF0aW9uLCBhbmQKKyAqIG1heSBiZSBjb3BpZWQsIGRpc3RyaWJ1dGVkLCBhbmQgbW9kaWZp
+ZWQgdW5kZXIgdGhvc2UgdGVybXMuCisgKgorICogVGhpcyBwcm9ncmFtIGlzIGRpc3RyaWJ1dGVk
+IGluIHRoZSBob3BlIHRoYXQgaXQgd2lsbCBiZSB1c2VmdWwsCisgKiBidXQgV0lUSE9VVCBBTlkg
+V0FSUkFOVFk7IHdpdGhvdXQgZXZlbiB0aGUgaW1wbGllZCB3YXJyYW50eSBvZgorICogTUVSQ0hB
+TlRBQklMSVRZIG9yIEZJVE5FU1MgRk9SIEEgUEFSVElDVUxBUiBQVVJQT1NFLiAgU2VlIHRoZQor
+ICogR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgZm9yIG1vcmUgZGV0YWlscy4KKyAqCisgKi8K
+KworI2luY2x1ZGUgPGxpbnV4L2ZzLmg+CisjaW5jbHVkZSA8bGludXgvbWlzY2RldmljZS5oPgor
+I2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPgorI2luY2x1ZGUgPGxpbnV4L3VhY2Nlc3MuaD4KKyNp
+bmNsdWRlIDxsaW51eC9zbGFiLmg+CisjaW5jbHVkZSA8bGludXgvc3VzcGVuZF9ibG9ja2VyLmg+
+CisjaW5jbHVkZSA8bGludXgvc3VzcGVuZF9ibG9ja19kZXYuaD4KKworZW51bSB7CisJREVCVUdf
+RkFJTFVSRQk9IEJJVCgwKSwKK307CitzdGF0aWMgaW50IGRlYnVnX21hc2sgPSBERUJVR19GQUlM
+VVJFOworbW9kdWxlX3BhcmFtX25hbWVkKGRlYnVnX21hc2ssIGRlYnVnX21hc2ssIGludCwgU19J
+UlVHTyB8IFNfSVdVU1IgfCBTX0lXR1JQKTsKKworc3RhdGljIERFRklORV9NVVRFWChpb2N0bF9s
+b2NrKTsKKworc3RydWN0IHVzZXJfc3VzcGVuZF9ibG9ja2VyIHsKKwlzdHJ1Y3Qgc3VzcGVuZF9i
+bG9ja2VyCWJsb2NrZXI7CisJY2hhcgkJCW5hbWVbMF07Cit9OworCitzdGF0aWMgaW50IGNyZWF0
+ZV91c2VyX3N1c3BlbmRfYmxvY2tlcihzdHJ1Y3QgZmlsZSAqZmlsZSwgdm9pZCBfX3VzZXIgKm5h
+bWUsCisJCQkJIHNpemVfdCBuYW1lX2xlbikKK3sKKwlzdHJ1Y3QgdXNlcl9zdXNwZW5kX2Jsb2Nr
+ZXIgKmJsOworCWlmIChmaWxlLT5wcml2YXRlX2RhdGEpCisJCXJldHVybiAtRUJVU1k7CisJaWYg
+KG5hbWVfbGVuID4gTkFNRV9NQVgpCisJCXJldHVybiAtRU5BTUVUT09MT05HOworCWJsID0ga3ph
+bGxvYyhzaXplb2YoKmJsKSArIG5hbWVfbGVuICsgMSwgR0ZQX0tFUk5FTCk7CisJaWYgKCFibCkK
+KwkJcmV0dXJuIC1FTk9NRU07CisJaWYgKGNvcHlfZnJvbV91c2VyKGJsLT5uYW1lLCBuYW1lLCBu
+YW1lX2xlbikpCisJCWdvdG8gZXJyX2ZhdWx0OworCXN1c3BlbmRfYmxvY2tlcl9pbml0KCZibC0+
+YmxvY2tlciwgYmwtPm5hbWUpOworCWZpbGUtPnByaXZhdGVfZGF0YSA9IGJsOworCXJldHVybiAw
+OworCitlcnJfZmF1bHQ6CisJa2ZyZWUoYmwpOworCXJldHVybiAtRUZBVUxUOworfQorCitzdGF0
+aWMgbG9uZyB1c2VyX3N1c3BlbmRfYmxvY2tlcl9pb2N0bChzdHJ1Y3QgZmlsZSAqZmlsZSwgdW5z
+aWduZWQgaW50IGNtZCwKKwkJCQl1bnNpZ25lZCBsb25nIF9hcmcpCit7CisJdm9pZCBfX3VzZXIg
+KmFyZyA9ICh2b2lkIF9fdXNlciAqKV9hcmc7CisJc3RydWN0IHVzZXJfc3VzcGVuZF9ibG9ja2Vy
+ICpibDsKKwlsb25nIHJldDsKKworCW11dGV4X2xvY2soJmlvY3RsX2xvY2spOworCWlmICgoY21k
+ICYgfklPQ1NJWkVfTUFTSykgPT0gU1VTUEVORF9CTE9DS0VSX0lPQ1RMX0lOSVQoMCkpIHsKKwkJ
+cmV0ID0gY3JlYXRlX3VzZXJfc3VzcGVuZF9ibG9ja2VyKGZpbGUsIGFyZywgX0lPQ19TSVpFKGNt
+ZCkpOworCQlnb3RvIGRvbmU7CisJfQorCWJsID0gZmlsZS0+cHJpdmF0ZV9kYXRhOworCWlmICgh
+YmwpIHsKKwkJcmV0ID0gLUVOT0VOVDsKKwkJZ290byBkb25lOworCX0KKwlzd2l0Y2ggKGNtZCkg
+eworCWNhc2UgU1VTUEVORF9CTE9DS0VSX0lPQ1RMX0JMT0NLOgorCQlzdXNwZW5kX2Jsb2NrKCZi
+bC0+YmxvY2tlcik7CisJCXJldCA9IDA7CisJCWJyZWFrOworCWNhc2UgU1VTUEVORF9CTE9DS0VS
+X0lPQ1RMX1VOQkxPQ0s6CisJCXN1c3BlbmRfdW5ibG9jaygmYmwtPmJsb2NrZXIpOworCQlyZXQg
+PSAwOworCQlicmVhazsKKwlkZWZhdWx0OgorCQlyZXQgPSAtRU5PVFNVUFA7CisJfQorZG9uZToK
+KwlpZiAocmV0ICYmIChkZWJ1Z19tYXNrICYgREVCVUdfRkFJTFVSRSkpCisJCXByX2VycigidXNl
+cl9zdXNwZW5kX2Jsb2NrZXJfaW9jdGw6IGNtZCAleCBmYWlsZWQsICVsZFxuIiwKKwkJCWNtZCwg
+cmV0KTsKKwltdXRleF91bmxvY2soJmlvY3RsX2xvY2spOworCXJldHVybiByZXQ7Cit9CisKK3N0
+YXRpYyBpbnQgdXNlcl9zdXNwZW5kX2Jsb2NrZXJfcmVsZWFzZShzdHJ1Y3QgaW5vZGUgKmlub2Rl
+LCBzdHJ1Y3QgZmlsZSAqZmlsZSkKK3sKKwlzdHJ1Y3QgdXNlcl9zdXNwZW5kX2Jsb2NrZXIgKmJs
+ID0gZmlsZS0+cHJpdmF0ZV9kYXRhOworCWlmICghYmwpCisJCXJldHVybiAwOworCXN1c3BlbmRf
+YmxvY2tlcl9kZXN0cm95KCZibC0+YmxvY2tlcik7CisJa2ZyZWUoYmwpOworCXJldHVybiAwOwor
+fQorCitjb25zdCBzdHJ1Y3QgZmlsZV9vcGVyYXRpb25zIHVzZXJfc3VzcGVuZF9ibG9ja2VyX2Zv
+cHMgPSB7CisJLnJlbGVhc2UgPSB1c2VyX3N1c3BlbmRfYmxvY2tlcl9yZWxlYXNlLAorCS51bmxv
+Y2tlZF9pb2N0bCA9IHVzZXJfc3VzcGVuZF9ibG9ja2VyX2lvY3RsLAorfTsKKworc3RydWN0IG1p
+c2NkZXZpY2UgdXNlcl9zdXNwZW5kX2Jsb2NrZXJfZGV2aWNlID0geworCS5taW5vciA9IE1JU0Nf
+RFlOQU1JQ19NSU5PUiwKKwkubmFtZSA9ICJzdXNwZW5kX2Jsb2NrZXIiLAorCS5mb3BzID0gJnVz
+ZXJfc3VzcGVuZF9ibG9ja2VyX2ZvcHMsCit9OworCitzdGF0aWMgaW50IF9faW5pdCB1c2VyX3N1
+c3BlbmRfYmxvY2tlcl9pbml0KHZvaWQpCit7CisJcmV0dXJuIG1pc2NfcmVnaXN0ZXIoJnVzZXJf
+c3VzcGVuZF9ibG9ja2VyX2RldmljZSk7Cit9CisKK3N0YXRpYyB2b2lkIF9fZXhpdCB1c2VyX3N1
+c3BlbmRfYmxvY2tlcl9leGl0KHZvaWQpCit7CisJbWlzY19kZXJlZ2lzdGVyKCZ1c2VyX3N1c3Bl
+bmRfYmxvY2tlcl9kZXZpY2UpOworfQorCittb2R1bGVfaW5pdCh1c2VyX3N1c3BlbmRfYmxvY2tl
+cl9pbml0KTsKK21vZHVsZV9leGl0KHVzZXJfc3VzcGVuZF9ibG9ja2VyX2V4aXQpOwotLSAKMS42
+LjUuMQoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGlu
+dXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0
+dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1w
+bQ==
