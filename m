@@ -1,17 +1,21 @@
 From: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Fri, 30 Apr 2010 19:26:18 +0200
-Message-ID: <20100430172618.GA9043__38064.4431840212$1272648677$gmane$org@redhat.com>
+Subject: Re: [PATCH 2/2] workqueues: export keventd_wq
+Date: Fri, 30 Apr 2010 20:05:20 +0200
+Message-ID: <20100430180520.GB9043@redhat.com>
 References: <1272429119-12103-1-git-send-email-arve@android.com>
-	<201004282250.44200.rjw@sisk.pl>
-	<l2yd6200be21004282037rc063266by91db7f732ceaa529@mail.gmail.com>
-	<201004292316.14524.rjw@sisk.pl> <4BDA5B8B.50004@kernel.org>
+	<20100428194028.GA16389@redhat.com>
+	<4BD89922.1040306@kernel.org> <201004282308.10751.rjw@sisk.pl>
+	<20100429185851.GA13862@redhat.com>
+	<20100429194447.GA17280@redhat.com>
+	<20100429194545.GC17280@redhat.com> <4BDA67C1.7050709@kernel.org>
+	<t2gd6200be21004292239r582b8a43l2409491b8d32ef1b@mail.gmail.com>
+	<4BDA700C.3050509@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <4BDA5B8B.50004@kernel.org>
+In-Reply-To: <4BDA700C.3050509@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,26 +26,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Tejun Heo <tj@kernel.org>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 On 04/30, Tejun Heo wrote:
 >
-> On 04/29/2010 11:16 PM, Rafael J. Wysocki wrote:
-> >>> Also, we already have one PM workqueue.  It is used for runtime PM, but I guess
-> >>> it may be used just as well for the opportunistic suspend.  It is freezable,
-> >>> but would it hurt?
+> On 04/30/2010 07:39 AM, Arve Hj=F8nnev=E5g wrote:
+> > On Thu, Apr 29, 2010 at 10:16 PM, Tejun Heo <tj@kernel.org> wrote:
+> >> Hello,
 > >>
-> > Freezable workqueues have to be singlethread or else there will be unfixable
-> > races, so you can safely assume things will stay as they are in this respect.
+> >> On 04/29/2010 09:45 PM, Oleg Nesterov wrote:
+> >>> -static struct workqueue_struct *keventd_wq __read_mostly;
+> >>> +struct workqueue_struct *keventd_wq __read_mostly;
+> >>> +EXPORT_SYMBOL(keventd_wq);
+> >>
+> >> Umm... does it have to be EXPORTed?  Suspend block API can't be built
+> >> as a module, right?
+
+Right, but this allows to make schedule_xxx/flush_scheduled_work
+inline and kill more EXPORT_SYMBOL's, and cmwq exports it anyway
+(iirc it also renames it).
+
+> > The suspend block api cannot be built as a module, but if
+> > schedule_suspend_blocking_work will just call
+> > queue_suspend_blocking_work(keventd_wq, work) it may as well be an
+> > inline function which would require the export.
 >
-> Rafael, can you elaborate a bit more on this?  Just in case I missed
-> something while doing cmwq as it currently doesn't have such limit.
+> I think it would be better to keep the thing inside the kernel, at
+> least for now.
 
-Currently _cpu_down() can't flush and/or stop the frozen cwq->thread.
+But then schedule_suspend_blocking_work() in turn needs EXPORT_SYMBOL().
 
-IIRC this is fixable, but needs the nasty complications. We should
-thaw + stop the frozen cwq->thread, then move the pending works to
-another CPU.
+
+OK. Let's forget this patch. We can unify schedule_suspend_blocking_work
+and queue_suspend_blocking_work later, or Arve can add this export into
+his patch (without EXPORT_SYMBOL) - either way I agree. This is very
+minor issue, I regret I originated this almost offtopic noise ;)
 
 Oleg.
