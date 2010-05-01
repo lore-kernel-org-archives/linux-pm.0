@@ -1,15 +1,19 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH]PM QOS refresh against next-20100430
-Date: Sat, 1 May 2010 01:08:28 +0200
-Message-ID: <201005010108.28593.rjw__5543.70023678548$1272669207$gmane$org@sisk.pl>
-References: <20100430212043.GA30315@linux.intel.com>
-	<201005010013.16262.rjw@sisk.pl>
-	<20100430230529.GA31391@linux.intel.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 6/8] PM: Add suspend blocking work.
+Date: Sat, 01 May 2010 08:14:50 +0200
+Message-ID: <4BDBC6DA.4060901@kernel.org>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<1272667021-21312-2-git-send-email-arve@android.com>
+	<1272667021-21312-3-git-send-email-arve@android.com>
+	<1272667021-21312-4-git-send-email-arve@android.com>
+	<1272667021-21312-5-git-send-email-arve@android.com>
+	<1272667021-21312-6-git-send-email-arve@android.com>
+	<1272667021-21312-7-git-send-email-arve@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100430230529.GA31391@linux.intel.com>
+In-Reply-To: <1272667021-21312-7-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,47 +23,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: mgross@linux.intel.com
-Cc: davidb@quicinc.com, dwalker@codeaurora.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, bruce.w.allan@intel.com, lkml <linux-kernel@vger.kernel.org>, "John W. Linville" <linville@tuxdriver.com>, tiwai@suse.de, mcgrof@gmail.com, NetDev <netdev@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+To: =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 01 May 2010, mark gross wrote:
-> On Sat, May 01, 2010 at 12:13:16AM +0200, Rafael J. Wysocki wrote:
-> > On Friday 30 April 2010, mark gross wrote:
-> > > The following is a refresh of the PM_QOS implementation, this patch
-> > > updates some documentation input I got from Randy.
-> > > 
-> > > This patch changes the string based list management to a handle base
-> > > implementation to help with the hot path use of pm-qos, it also renames
-> > > much of the API to use "request" as opposed to "requirement" that was
-> > > used in the initial implementation.  I did this because request more
-> > > accurately represents what it actually does.
-> > > 
-> > > Also, I added a string based ABI for users wanting to use a string
-> > > interface.  So if the user writes 0xDDDDDDDD formatted hex it will be
-> > > accepted by the interface.  (someone asked me for it and I don't think
-> > > it hurts anything.)
-> > > 
-> > > I really would like to get this refresh taken care of.  Its been taking
-> > > me too long to close this.  please review or include it in next.
-> > > 
-> > > Thanks!
-> > 
-> > Well, I'd take it to suspend-2.6/linux-next, but first, it touches
-> > subsystems whose maintainers were not in the Cc list, like the network
-> > drivers, wireless and ACPI.  The changes are trivial, so I hope they don't
-> > mind.
-> > 
-> > Second, my tree is based on the Linus' tree rather than linux-next and
-> > the change in net/mac80211/scan.c doesn't seem to match that.  Please tell me
-> > what I'm supposed to do about that.
-> 
-> You can waite for monday and I'll send a rebased version to linus' tree.
-> 
-> I thought linux-next was where folks wanted me to put it.
-> 
-> I'll email out a new one monday.
-
-Great, thanks!
-
-Rafael
+T24gMDUvMDEvMjAxMCAxMjozNiBBTSwgQXJ2ZSBIasO4bm5ldsOlZyB3cm90ZToKPiBBbGxvdyB3
+b3JrIHRvIGJlIHF1ZXVlZCB0aGF0IHdpbGwgYmxvY2sgc3VzcGVuZCB3aGlsZSBpdCBpcyBwZW5k
+aW5nCj4gb3IgZXhlY3V0aW5nLiBUbyBnZXQgdGhlIHNhbWUgZnVuY3Rpb25hbGl0eSBpbiB0aGUg
+Y2FsbGluZyBjb2RlIG9mdGVuCj4gcmVxdWlyZXMgYSBzZXBhcmF0ZSBzdXNwZW5kX2Jsb2NrZXIg
+Zm9yIHBlbmRpbmcgYW5kIGV4ZWN1dGluZyB3b3JrLCBvcgo+IGFkZGl0aW9uYWwgc3RhdGUgYW5k
+IGxvY2tpbmcuIFRoaXMgaW1wbGVtZW50YXRpb24gZG9lcyBhZGQgYWRkaXRpb25hbAo+IHN0YXRl
+IGFuZCBsb2NraW5nLCBidXQgdGhpcyBjYW4gYmUgcmVtb3ZlZCBsYXRlciBpZiB3ZSBhZGQgc3Vw
+cG9ydCBmb3IKPiBzdXNwZW5kIGJsb2NraW5nIHdvcmsgdG8gdGhlIGNvcmUgd29ya3F1ZXVlIGNv
+ZGUuCj4gCj4gU2lnbmVkLW9mZi1ieTogQXJ2ZSBIasO4bm5ldsOlZyA8YXJ2ZUBhbmRyb2lkLmNv
+bT4KClJldmlld2VkLWJ5OiBUZWp1biBIZW8gPHRqQGtlcm5lbC5vcmc+CgpUaGFuayB5b3UuCgot
+LSAKdGVqdW4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+bGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3Jn
+Cmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51
+eC1wbQ==
