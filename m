@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Sun, 2 May 2010 23:29:48 +0200
-Message-ID: <201005022329.48309.rjw__37691.370669245$1272835777$gmane$org@sisk.pl>
-References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<201005022210.54018.rjw@sisk.pl> <20100502205238.GC9051@elf.ucw.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 2/8] PM: suspend_block: Add driver to access
+ suspend blockers from user-space
+Date: Sun, 2 May 2010 17:56:21 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005021755320.30701-100000__26327.8119070039$1272837446$gmane$org@netrider.rowland.org>
+References: <201005022323.30128.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100502205238.GC9051@elf.ucw.cz>
+In-Reply-To: <201005022323.30128.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,49 +18,16 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, Jim Collar <jim.collar@eqware.net>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>, Oleg Nesterov <oleg@redhat.com>, Avi Kivity <avi@redhat.com>, Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 02 May 2010, Pavel Machek wrote:
-> On Sun 2010-05-02 22:10:53, Rafael J. Wysocki wrote:
-> > On Sunday 02 May 2010, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > > Adds /sys/power/policy that selects the behaviour of /sys/power/state.
-> > > > After setting the policy to opportunistic, writes to /sys/power/state
-> > > > become non-blocking requests that specify which suspend state to enter
-> > > > when no suspend blockers are active. A special state, "on", stops the
-> > > > process by activating the "main" suspend blocker.
-> > > 
-> > > As I explained before (and got no reply),  the proposed interface is
-> > > ugly. It uses one sysfs file to change semantics of another one.
-> > 
-> > In fact this behavior was discussed at the LF Collab Summit and no one
-> > involved had any problem with that.
-> 
-> Well, I explained why I disliked in previous mail in more details,
+On Sun, 2 May 2010, Rafael J. Wysocki wrote:
 
-We do exactly the same thing with 'pm_test', so I'm not sure what the problem is.
+> Hmm.  It doesn't seem to be possible to create two different suspend blockers
+> using the same file handle.  So, what exactly is a process supposed to do to
+> use two suspend blockers at the same time?
 
-> and neither you nor Arve explained why it is good solution.
+Open the file twice, thereby obtaining two file handles.
 
-Because it's less confusing.  Having two different attributes returning
-almost the same contents and working in a slightly different way wouldn't be
-too clean IMO.
-
-Also it reduces code duplication slightly.
-
-> I was not on LF Collab summit, so unfortunately I can't comment on that.
-> 
-> > > > Signed-off-by: Arve Hj??nnev??g <arve@android.com>
-> > > 
-> > > NAK.
-> > 
-> > Ignored.
-> 
-> WTF?
-
-Literally.  I'm not going to take that NAK into consideration.
-
-Rafael
+Alan Stern
