@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/5] FS: libfs,
-	implement simple_write_to_buffer
-Date: Sun, 2 May 2010 00:00:36 +0200
-Message-ID: <201005020000.37013.rjw__43214.0939090916$1272751291$gmane$org@sisk.pl>
-References: <1272356118-10012-1-git-send-email-jslaby@suse.cz>
-	<201004272358.36175.rjw@sisk.pl> <201004290016.40469.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Sun, 2 May 2010 08:56:36 +0200
+Message-ID: <20100502065635.GA1790__42572.2406864681$1272783528$gmane$org@ucw.cz>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<1272667021-21312-2-git-send-email-arve@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201004290016.40469.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <1272667021-21312-2-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,32 +19,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>, jirislaby@gmail.com, linux-kernel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Arve Hj??nnev??g <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 29 April 2010, Rafael J. Wysocki wrote:
-> On Tuesday 27 April 2010, Rafael J. Wysocki wrote:
-> > On Tuesday 27 April 2010, Jiri Slaby wrote:
-> > > It will be used in suspend code and serves as an easy wrap around
-> > > copy_from_user. Similar to simple_read_from_buffer, it takes care
-> > > of transfers with proper lengths depending on available and count
-> > > parameters and advances ppos appropriately.
-> > > 
-> > > Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> > > Cc: Nigel Cunningham <ncunningham@crca.org.au>
-> > > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> > > Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-> > > Cc: linux-fsdevel@vger.kernel.org
-> > 
-> > Thanks for the patches, I'll review them as soon as I can.
-> 
-> They look good.  If there are no objections from the other people, I'll add
-> them to suspend-2.6/linux-next in the next few days.
+Hi!
 
-All patches in this series applied to suspend-2.6/linux-next.
+> Adds /sys/power/policy that selects the behaviour of /sys/power/state.
+> After setting the policy to opportunistic, writes to /sys/power/state
+> become non-blocking requests that specify which suspend state to enter
+> when no suspend blockers are active. A special state, "on", stops the
+> process by activating the "main" suspend blocker.
 
-I fixed up the Pavel's address in the copyright notice in kernel/power/block_io.c.
+As I explained before (and got no reply),  the proposed interface is
+ugly. It uses one sysfs file to change semantics of another one.
 
-Thanks,
-Rafael
+> Signed-off-by: Arve Hj??nnev??g <arve@android.com>
+
+NAK.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
