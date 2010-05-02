@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Sun, 2 May 2010 22:10:53 +0200
-Message-ID: <201005022210.54018.rjw__2170.66551927037$1272833201$gmane$org@sisk.pl>
-References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<1272667021-21312-2-git-send-email-arve@android.com>
-	<20100502065635.GA1790@ucw.cz>
+Subject: Re: s2ram slow (radeon) / failing (usb)
+Date: Sun, 2 May 2010 22:16:05 +0200
+Message-ID: <201005022216.05641.rjw__42069.6539259099$1272833210$gmane$org@sisk.pl>
+References: <20100502155653.68fc3643@neptune.home>
+	<Pine.LNX.4.44L0.1005021102340.25185-100000@netrider.rowland.org>
+	<20100502220628.0728d8d4@neptune.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100502065635.GA1790@ucw.cz>
+In-Reply-To: <20100502220628.0728d8d4@neptune.home>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,30 +19,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Bruno =?utf-8?q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 02 May 2010, Pavel Machek wrote:
-> Hi!
-> 
-> > Adds /sys/power/policy that selects the behaviour of /sys/power/state.
-> > After setting the policy to opportunistic, writes to /sys/power/state
-> > become non-blocking requests that specify which suspend state to enter
-> > when no suspend blockers are active. A special state, "on", stops the
-> > process by activating the "main" suspend blocker.
-> 
-> As I explained before (and got no reply),  the proposed interface is
-> ugly. It uses one sysfs file to change semantics of another one.
-
-In fact this behavior was discussed at the LF Collab Summit and no one
-involved had any problem with that.
-
-> > Signed-off-by: Arve Hj??nnev??g <arve@android.com>
-> 
-> NAK.
-
-Ignored.
-
-Thanks,
-Rafael
+T24gU3VuZGF5IDAyIE1heSAyMDEwLCBCcnVubyBQcsOpbW9udCB3cm90ZToKPiBPbiBTdW4sIDAy
+IE1heSAyMDEwIEFsYW4gU3Rlcm4gPHN0ZXJuQHJvd2xhbmQuaGFydmFyZC5lZHU+IHdyb3RlOgo+
+ID4gT24gU3VuLCAyIE1heSAyMDEwLCBCcnVubyBbVVRGLThdIFByw6ltb250IHdyb3RlOgo+ID4g
+PiBPbiBhIElFSSBLaW5vIDY5MFMxIEknbSBoYXZpbmcgYSBoYXJkIHRpbWUgdG8gZ2V0IHMycmFt
+IHJ1bm5pbmcuCj4gPiA+IEl0IGZyZWV6ZXMgZHVyaW5nIGRldmljZSBzdXNwZW5kICh1bmxlc3Mg
+SSBybW1vZCBldmVyeXRoaW5nIFVTQgo+ID4gPiByZWxhdGVkKSAtIHVzYiBmYWlscyBldmVuIGlu
+IHBtX3Rlc3QgY2FzZSAnZGV2aWNlcycuCj4gPiA+IAo+ID4gPiBXaGVuIHRoZSBzeXN0ZW0gaXMg
+YWJsZSB0byBzdXNwZW5kIGl0IHRha2VzIGFuIGV0ZXJuaXR5IChtb3JlIHRoYW4gMwo+ID4gPiBt
+aW51dGVzIHRvIHdha2UtdXAsIHRoZSByYWRlb24gYXBwYXJlbnRseSBiZWluZyByZXNwb25zaWJs
+ZSBmb3IgcXVpdGUKPiA+ID4gYSBiaWcgc2hhcmUgb2YgdGhhdCBzbG93bmVzcy4KPiA+ID4gCj4g
+PiA+IAo+ID4gPiBEdXJpbmcgcmVzdW1lIGVhcmx5IGl0IGxvb2tzIGxpa2UgZXZlcnkgUENJIGFj
+Y2VzcyBuZWVkcyBhYm91dCBhIHNlY29uZCwKPiA+ID4gYW5kIHRoZXJlIGFyZSBhIGZldyBjYXNl
+cyB3aGVyZSBkdXJpbmcgbG90cyBvZiBzZWNvbmRzIG5vdGhpbmcgc2VlbXMgdG8KPiA+ID4gaGFw
+cGVuIGFuZCB0aGUgZmlyc3QgZXZlbnQgZm9sbG93aW5nIGlzIHJlbGF0ZWQgdG8gcmFkZW9uLgo+
+ID4gPiAKPiA+ID4gVGhlIGtlcm5lbCB1c2VkIGlzIHRvZGF5cyBMaW51cydzIHRyZWUgYXQgY29t
+bWl0IGJlMTA2NmJiY2Q0NDNhNjVkZjMxMmZkZWNlYTdlNDk1OWFkZWRiNDUKPiA+ID4gd2l0aCBE
+YXZlJ3MgZHJtLWxpbnVzIGFuZCBkcm0tcmFkZW9uLXRlc3RpbmcgYXBwbGllZCBvbiB0b3AuCj4g
+PiA+IAo+ID4gPiBOb3RlLCBJJ3ZlIG5vdCBiZWVuIGFibGUgdG8gc3VzcGVuZCB0byBSQU0gcHJv
+cGVybHkgcmVjZW50bHkgKGxhc3Qgb25lCj4gPiA+IHRoYXQgd29ya2VkIGNvcnJlY3RseSBidXQg
+cmVzdW1lZCB3aXRob3V0IGdyYXBoaWNzIHdhcyBzb21lLXdoZW4gZHVyaW5nCj4gPiA+IDIuNi4y
+eCwgYmVmb3JlIEtNUykKPiA+ID4gU2luY2UgdGhlbiB0aGUgc3lzdGVtIHdvdWxkIGVpdGhlciBm
+YWlsIHN1c3BlbmQgb3IgcmVzdW1lLgo+ID4gPiAKPiA+ID4gTWFudWFsIGNoYW5nZXMgSSBhcHBs
+aWVkIGluIG9yZGVyIHRvIGZpbmQgb3V0IHNvbWUgY29udGV4dCBpbmZvcm1hdGlvbjoKPiA+ID4g
+LSBhZGQgYSBmZXcgZGVidWdnaW5nIHByaW50aydzIHRvIGF0YS9haGNpIGFzIHRoYXQgd2FzIHRo
+ZSBsYXN0IGVudHJ5Cj4gPiA+ICAgb24gc2VyaWFsIGNvbnNvbGUgZm9yIGZyZWV6aW5nIHN1c3Bl
+bmRzICh0aGF0IG9uZSBzdWNjZWVkZWQgYnV0Cj4gPiA+ICAgZm9sbG93aW5nIHN0ZXAgbmV2ZXIg
+Y29tcGxldGVkLCBmcm9tIHN1c3BlbmRfcHJlcGFyZSB0aGF0IHdvdWxkIGhhdmUKPiA+ID4gICBi
+ZWVuIFVTQiA9PiB1bmxvYWQgdXNiIGJlZm9yZSBzdXNwZW5kKQo+ID4gPiAtIHN0cmlwICJpZiBF
+TUJFREVEIiBmcm9tIENPTkZJR19TRVJJQUxfODI1MF9QTlAgYW5kIGRpc2FibGVkIGl0IHNvIHNl
+cmlhbAo+ID4gPiAgIGNvbnNvbGUgd291bGQgY29udGludWUgd29ya2luZyBhcyBsb25nIGFzIHBv
+c3NpYmxlIGFuZCBvdXRwdXQgc3VzcGVuZAo+ID4gPiAgIHByb2dyZXNzIChyZXN1bWUgb3V0cHV0
+IGhhcHBlbnMgb25seSB2ZXJ5IGxhdGUpCj4gPiA+IAo+ID4gPiBJcyB0aGVyZSBzb21lIGFkZGl0
+aW9uYWwgaW5mb3JtYXRpb24gSSBjb3VsZCBnYXRoZXIgaW4gb3JkZXIgZG8gaGVscAo+ID4gPiBp
+bXByb3ZpbmcgczJyYW0gb24gdGhpcyBzeXN0ZW0/Cj4gPiA+IC0gZ2V0IGl0IHRvIHN1c3BlbmQg
+d2l0aCB1c2IgbG9hZGVkIChvaGNpICsgZWhjaSkKPiA+ID4gLSBnZXQgaXQgdG8gcmVzdW1lIGEg
+cmVhc29uYWJsZSBzcGVlZAo+ID4gCj4gPiBUaGVyZSdzIG5vIHdheSB0byBmaXggdGhlIFVTQiBw
+cm9ibGVtIHdpdGhvdXQga25vd2luZyB3aGF0IGdvZXMgd3JvbmcuICAKPiA+IExldCdzIHNlZSBo
+b3cgZmFyIHlvdSBnZXQgYmVmb3JlIHRoZSBzeXN0ZW0gZnJlZXplcyBvbiBhIGtlcm5lbCB3aXRo
+IAo+ID4gQ09ORklHX1VTQl9ERUJVRyBlbmFibGVkLgo+IAo+IEFtIEkgbWlzc2luZyBzb21ldGhp
+bmc/Cj4gCj4gSSd2ZSBlbmFibGVkIENPTkZJR19VU0JfREVCVUcgYnV0IGRvbid0IHNlZSBhbnkg
+YWRkaXRpb25hbCBtb2R1bGUgcGFyYW1ldGVyCj4gbm9yIGFueXRoaW5nIGV4dHJhIHRvIHRvZ2ds
+ZSBhbmQgSSBkb24ndCBnZXQgbW9yZSBvdXRwdXQgdGhhbiB3aXRob3V0IGl0Lgo+IAo+IERldmlj
+ZSBzdXNwZW5kIChwbV90ZXN0ID0gZGV2aWNlKSB3b3JrcyB3ZWxsIHdoZW4gdGhlcmUgaXMgbm8g
+VVNCIGRldmljZQo+IGNvbm5lY3RlZCwgYnV0IHdpdGggVVNCIGtleWJvYXJkIEkgZ2V0IHRoZSBm
+cmVlemUgKHRob3VnaCB0aGUga2V5Ym9hcmQKPiBpcyBzdGlsbCB1c2FibGUsIGUuZy4gQ0FQUyBr
+ZXkgd29ya3MgYW5kIEkgY2FuIGlzc3VlIFNZU1JRIGNvbW1hbmRzKS4KPiAKPiBXaGVuIEkgaXNz
+dWUgc3lzcmVxLXQsIEkgZmluZCB0aGUgZm9sbG93aW5nIHN1c3BpY2lvdXMgZW50cnk6Cj4gWyAg
+NjY5LjExMjUwNV0gdXNiaGlkX3Jlc3VtZSBEIGZmZmY4ODAwN2EwODVmZDggICAgIDAgIDExNDUg
+ICAgICAyIDB4MDAwMDAwMDAKPiBbICA2NjkuMTEyNTA1XSAgZmZmZjg4MDA3YTA4NWUyMCAwMDAw
+MDAwMDAwMDAwMDQ2IGZmZmY4ODAwN2EwODVmZDggZmZmZjg4MDA3YzUzNjgyMAo+IFsgIDY2OS4x
+MTI1MDVdICBmZmZmODgwMDdhMDg1ZmQ4IGZmZmY4ODAwN2EwODVmZDggMDAwMDAwMDAwMDAxMjlj
+MCAwMDAwMDAwMDAwMDEyOWMwCj4gWyAgNjY5LjExMjUwNV0gIGZmZmY4ODAwN2M1MzY4MjAgZmZm
+Zjg4MDA3Y2YzZjA0MCBmZmZmODgwMDdhMDg1ZmQ4IGZmZmY4ODAwN2EwODVmZDgKPiBbICA2Njku
+MTEyNTA1XSBDYWxsIFRyYWNlOgo+IFsgIDY2OS4xMTI1MDVdICBbPGZmZmZmZmZmODEwNWQ3NjU+
+XSByZWZyaWdlcmF0b3IrMHg5NS8weGYwCj4gWyAgNjY5LjExMjUwNV0gIFs8ZmZmZmZmZmY4MTA1
+MWExNj5dIHdvcmtlcl90aHJlYWQrMHhjNi8weDFlMAo+IFsgIDY2OS4xMTI1MDVdICBbPGZmZmZm
+ZmZmODEwNTVlOTA+XSA/IGF1dG9yZW1vdmVfd2FrZV9mdW5jdGlvbisweDAvMHg0MAo+IFsgIDY2
+OS4xMTI1MDVdICBbPGZmZmZmZmZmODEwNTE5NTA+XSA/IHdvcmtlcl90aHJlYWQrMHgwLzB4MWUw
+Cj4gWyAgNjY5LjExMjUwNV0gIFs8ZmZmZmZmZmY4MTA1NTliZT5dIGt0aHJlYWQrMHg4ZS8weGEw
+Cj4gWyAgNjY5LjExMjUwNV0gIFs8ZmZmZmZmZmY4MTAwM2E5ND5dIGtlcm5lbF90aHJlYWRfaGVs
+cGVyKzB4NC8weDEwCj4gWyAgNjY5LjExMjUwNV0gIFs8ZmZmZmZmZmY4MTA1NTkzMD5dID8ga3Ro
+cmVhZCsweDAvMHhhMAo+IFsgIDY2OS4xMTI1MDVdICBbPGZmZmZmZmZmODEwMDNhOTA+XSA/IGtl
+cm5lbF90aHJlYWRfaGVscGVyKzB4MC8weDEwCj4gCj4gRXhjZXB0IGZvciB0aGF0IG9uZSB0aGVy
+ZSBhcmUgYSBmZXcgYXN5bmMvKiB0YXNrcyB3YWl0aW5nLgoKSXQgbG9va3MgbGlrZSB0aGUgZnJl
+ZXplciBmYWlscyBvbiB5b3VyIHN5c3RlbS4KCkhvdyBtdWNoIHRpbWUgZGlkIHlvdSB3YWl0IGZv
+ciB0aGUgZmFpbGlnICJwbV90ZXN0ID0gZGV2aWNlIiB0byByZWNvdmVyPwoKUmFmYWVsCl9fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxp
+bmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3Rz
+LmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
