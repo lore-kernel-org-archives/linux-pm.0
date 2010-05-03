@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Mon, 3 May 2010 23:18:35 +0200
-Message-ID: <201005032318.35383.rjw__14429.4849633754$1272921841$gmane$org@sisk.pl>
-References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<87wrvl5479.fsf@deeprootsystems.com>
-	<20100503180741.GB2098@rakim.wolfsonmicro.main>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 2/8] PM: suspend_block: Add driver to access
+	suspend blockers from user-space
+Date: Mon, 3 May 2010 14:26:59 -0700
+Message-ID: <m2yd6200be21005031426n87ea43a0k968fd5898ce0b873__12757.5019411326$1272922129$gmane$org@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1005021755320.30701-100000@netrider.rowland.org>
+	<201005031703.11448.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100503180741.GB2098@rakim.wolfsonmicro.main>
+In-Reply-To: <201005031703.11448.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,50 +19,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, linux-kernel@vger.kernel.org, Arve@smtp1.linux-foundation.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, Jim Collar <jim.collar@eqware.net>, linux-doc@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Avi Kivity <avi@redhat.com>, Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 03 May 2010, Mark Brown wrote:
-> On Mon, May 03, 2010 at 09:40:26AM -0700, Kevin Hilman wrote:
-> 
-> > At least from the kernel perspective, both suspend blockers and
-> > runtime PM have the same goal.  Given that, which framework should the
-> > driver writer target?  Both?  Seems like duplicate effort.  Using
-> > suspend blockers assumes the system is in opportunitstic suspend mode
-> > and (at least in the keypad example given) assumes a suspend-blocker
-> > aware userspace (Android.) Without both, targeted power savings will
-> > not be acheived.
-> 
-> The other concern here is that for many mobile systems the actual
-> semantic intended by "suspend" as it's currently used is more runtime PM
-> like than full suspend - the classic example of this is that when
-> suspending while on a call in a phone you don't want to suspend the
-> modem or audio CODEC, you want to leave them running.  If you use a full
-> system suspend then the drivers for affected components have to play
-> guessing games (or add currently non-standard knobs for apps to twiddle)
-> to decide if the system intends them to actually implement the suspend
-> or not but with runtime PM it all falls out very naturally without any
-> effort on the part of the driver.
-> 
-> > To me, runtime PM is a generic and flexible approach that can be used
-> > with any userspace.  Driver writers should not have to care whether
-> > the system is in "opportunistic" mode or about whether userspace is
-> > suspend blocker capable.  They should only have to think about when
-> > the device is (or should be) idle.
-> 
-> I fully agree with this.  We do need to ensure that a runtime PM based
-> system can suspend the CPU core and RAM as well as system suspend can
-> but that seems doable.
+On Mon, May 3, 2010 at 8:03 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Sunday 02 May 2010, Alan Stern wrote:
+>> On Sun, 2 May 2010, Rafael J. Wysocki wrote:
+>>
+>> > Hmm. =A0It doesn't seem to be possible to create two different suspend=
+ blockers
+>> > using the same file handle. =A0So, what exactly is a process supposed =
+to do to
+>> > use two suspend blockers at the same time?
+>>
+>> Open the file twice, thereby obtaining two file handles.
+>
+> Well, that's what I thought.
+>
+> I must admit I'm not really comfortable with this interface. =A0IMO it wo=
+uld
+> be better if _open() created the suspend blocker giving it a name based on
+> the name of the process that called it. =A0Something like
+> "<process name>_<timestamp>" might work at first sight.
+>
+> Alternatively, "<process_name><number>", where <number> is 0 for the first
+> suspend blocker created by the given process, 1 for the second one etc., =
+also
+> seems to be doable.
 
-I _think_ it would be hard at least.  On ACPI-based systems it's not doable at
-all AFAICS.
+I think it is important to let user-space specify the name. If a
+process uses multiple suspend blockers, it is impossible to tell what
+each one is used for if they are automatically named.
 
-However, the real question is whether or not the opportunistic suspend feature
-is worth adding to the kernel as such and I think it is.
+-- =
 
-To me, it doesn't duplicate the runtime PM framework which is aimed at the power
-management of individual devices rather than the system as a whole.
-
-Thanks,
-Rafael
+Arve Hj=F8nnev=E5g
