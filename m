@@ -1,15 +1,14 @@
-From: Matthew Garrett <mjg@redhat.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Mon, 3 May 2010 22:50:28 +0100
-Message-ID: <20100503215028.GB18910__41770.9361332983$1272923898$gmane$org@srcf.ucam.org>
-References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<87wrvl5479.fsf@deeprootsystems.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH -next] power: fix block_io.c printk warning
+Date: Tue, 4 May 2010 00:00:56 +0200
+Message-ID: <201005040000.56650.rjw__47179.3116922074$1272924037$gmane$org@sisk.pl>
+References: <20100503151619.f75e3a80.sfr@canb.auug.org.au>
+	<20100503100611.2ca63b58.randy.dunlap@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <87wrvl5479.fsf@deeprootsystems.com>
+In-Reply-To: <20100503100611.2ca63b58.randy.dunlap@oracle.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +18,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-pm@lists.linux-foundation.org, linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 03, 2010 at 09:40:26AM -0700, Kevin Hilman wrote:
+On Monday 03 May 2010, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix printk format warning in block_io.c:
+> 
+> kernel/power/block_io.c:41: warning: format '%ld' expects type 'long int', but argument 2 has type 'sector_t'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 
-> In my view, the truly significant difference between suspend blockers
-> and runtime PM is what happens to userspace.  So far, to me the only
-> compelling argument for suspend blockers is the goal of forcibly
-> shutting down userspace and thus forcing the system into idle
-> (although drivers could still reject a suspend request.)
+Applied to suspend-2.6/linux-next.
 
-I'd say that this is certainly the main issue, though the remaining 
-periodic timers in the kernel are also inconvenient.
+Thanks,
+Rafael
 
-> And if untrusted userspace apps remain as the major problem, maybe we
-> should aim for a solution directly targetting that problem.  I'm just
-> shooting from the hip now, but maybe containing (cgroups?) untrusted
-> processes together into a set that could be frozen/idled so that runtime PM
-> would be more effective would be a workable solution?
 
-I considered this. The problem is that not all of your wakeup events 
-pass through trusted code. Assume we've used a freezer cgroup and the 
-applications are now frozen. One of them is blocking on a network 
-socket. A packet arrives and triggers a wakeup of the hardware. How do 
-we unfreeze the userspace app?
-
-I agree that the runtime scenario is a far more appealing one from an 
-aesthetic standpoint, but so far we don't have a very compelling 
-argument for dealing with the starting and stopping of userspace. The 
-use-cases that Google have provided are valid and they have an 
-implementation that addresses them, and while we're unable to provide an 
-alternative that provides the same level of functionality I think we're 
-in a poor position to prevent this from going in.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> ---
+>  kernel/power/block_io.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- linux-next-20100503.orig/kernel/power/block_io.c
+> +++ linux-next-20100503/kernel/power/block_io.c
+> @@ -37,8 +37,8 @@ static int submit(int rw, struct block_d
+>  	bio->bi_end_io = end_swap_bio_read;
+>  
+>  	if (bio_add_page(bio, page, PAGE_SIZE, 0) < PAGE_SIZE) {
+> -		printk(KERN_ERR "PM: Adding page to bio failed at %ld\n",
+> -			sector);
+> +		printk(KERN_ERR "PM: Adding page to bio failed at %llu\n",
+> +			(unsigned long long)sector);
+>  		bio_put(bio);
+>  		return -EFAULT;
+>  	}
+> 
+> 
