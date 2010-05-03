@@ -1,15 +1,15 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Subject: Re: s2ram slow (radeon) / failing (usb)
-Date: Mon, 3 May 2010 23:11:54 +0200
-Message-ID: <20100503231154.486c27d6__9171.25811470232$1272921180$gmane$org@neptune.home>
-References: <20100503214642.67577f91@neptune.home>
-	<Pine.LNX.4.44L0.1005031557080.1502-100000@iolanthe.rowland.org>
-	<20100503225735.6b5e2687@neptune.home>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Mon, 3 May 2010 23:18:35 +0200
+Message-ID: <201005032318.35383.rjw__14429.4849633754$1272921841$gmane$org@sisk.pl>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<87wrvl5479.fsf@deeprootsystems.com>
+	<20100503180741.GB2098@rakim.wolfsonmicro.main>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100503225735.6b5e2687@neptune.home>
+In-Reply-To: <20100503180741.GB2098@rakim.wolfsonmicro.main>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,85 +19,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>, Jiri Kosina <jkosina@suse.cz>
-Cc: USB@smtp1.linux-foundation.org, list <linux-usb@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, linux-kernel@vger.kernel.org, Arve@smtp1.linux-foundation.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCAwMyBNYXkgMjAxMCBCcnVubyBQcsOpbW9udCA8Ym9uYm9uc0BsaW51eC12c2VydmVy
-Lm9yZz4gd3JvdGU6Cj4gTmV3IHN1c3BlbmQgYXR0ZW1wdCwgd2l0aCBhIGZldyBwcmludGtzIGFk
-ZGVkIGFuZCBhc3luYyBkaXNhYmxlZDoKPiAuLi4KPiBbIDEyODAuNjMwODEyXSB1c2IgdXNiMTog
-cHJlcGFyaW5nIHR5cGUgc3VzcGVuZCwgbWF5IHdha2V1cAo+IFsgMTI4MC42MzY0MzVdIHVzYiB1
-c2IyOiBwcmVwYXJpbmcgdHlwZSBzdXNwZW5kLCBtYXkgd2FrZXVwCj4gWyAxMjgwLjY0MjAxNl0g
-dXNiIHVzYjM6IHByZXBhcmluZyB0eXBlIHN1c3BlbmQsIG1heSB3YWtldXAKPiBbIDEyODAuNjQ3
-NjMxXSB1c2IgdXNiNDogcHJlcGFyaW5nIHR5cGUgc3VzcGVuZCwgbWF5IHdha2V1cAo+IFsgMTI4
-MC42NTMyMjldIHVzYiB1c2I1OiBwcmVwYXJpbmcgdHlwZSBzdXNwZW5kLCBtYXkgd2FrZXVwCj4g
-WyAxMjgwLjY1ODgxM10gdXNiIHVzYjY6IHByZXBhcmluZyB0eXBlIHN1c3BlbmQsIG1heSB3YWtl
-dXAKPiBbIDEyODAuNjY0NDA4XSB1c2IgMi0yOiBwcmVwYXJpbmcgdHlwZSBzdXNwZW5kLCBtYXkg
-d2FrZXVwCj4gWyAxMjgwLjY2OTg4Nl0gdXNiIDItMi4xOiBwcmVwYXJpbmcgdHlwZSBzdXNwZW5k
-LCBtYXkgd2FrZXVwCj4gWyAxMjgwLjY3NTU3N10gaW5wdXQgaW5wdXQ0OiB0eXBlIHN1c3BlbmQK
-PiBbIDEyODAuNjc5NTM4XSB1c2JoaWQgMi0yLjE6MS4xOiBzdXNwZW5kCj4gWyAxMjgwLjY4MzQx
-NV0gdXNiaGlkIDItMi4xOjEuMDogc3VzcGVuZAo+IFsgMTI4MC42ODcyNjZdIHVzYiAyLTIuMTog
-dHlwZSBzdXNwZW5kLCBtYXkgd2FrZXVwCj4gWyAxMjgwLjY5MjA0NF0gaGlkIDAwMDM6MDU4Rjo5
-NDYyLjAwMDI6IFN1c3BlbmRpbmcgSElEIGRldmljZS4uLgo+IAo+IFNvIHllYWgsIGZvciBzb21l
-IHJlYXNvbiBoaWQgZmFpbHMgdG8gc3VzcGVuZCB0aGlzIGRldmljZS4KPiAKPiBJdCdzIGJsb2Nr
-aW5nIHNvbWV3aGVyZSBpbiBoaWRfc3VzcGVuZCgpIG9mIHVzYmhpZC9oaWQtY29yZS5jCj4gYmV0
-d2VlbiBmdW5jdGlvbiBzdGFydCBhbmQgaW5jbHVkaW5nIGNhbGwgdG8gaGlkX2NlYXNlX2lvKCku
-Cj4gCj4gR29pbmcgdG8gYWRkIG1vcmUgcHJpbnRrcyBpbiB0aGVyZSBpbiB0aGUgaG9wZSB0byBn
-ZXQgbW9yZSBwcmVjaXNlCj4gbG9jYXRpb24sIGFsc28gYWRkaW5nIGRlYnVnIHBhcmFtIHRvIGhp
-ZC5rbyAuLi4KCkxvYWRpbmcgdXNiaGlkIG9uIHRvcCBvZiBoaWQgd2l0aCBkZWJ1Zz0xOgoKWyAg
-NDczLjc4NjYwNF0gSElEOiBoaWRfZGVidWcgaXMgbm93IHVzZWQgc29sZWx5IGZvciBwYXJzZXIg
-YW5kIGRyaXZlciBkZWJ1Z2dpbmcuClsgIDQ3My43ODY2MTBdIEhJRDogZGVidWdmcyBpcyBub3cg
-dXNlZCBmb3IgaW5zcGVjdGluZyB0aGUgZGV2aWNlIChyZXBvcnQgZGVzY3JpcHRvciwgcmVwb3J0
-cykKWyAgNDc3LjQ1NTQ5Ml0gdXNiaGlkIDEtMi4xOjEuMDogdXNiX3Byb2JlX2ludGVyZmFjZQpb
-ICA0NzcuNDU1NTAyXSB1c2JoaWQgMS0yLjE6MS4wOiB1c2JfcHJvYmVfaW50ZXJmYWNlIC0gZ290
-IGlkClsgIDQ3Ny40NTU1MTBdIHVzYiAxLTIuMTogX19wbV9ydW50aW1lX3Jlc3VtZSgpIQpbICA0
-NzcuNDU1NTE2XSB1c2IgMS0yLjE6IF9fcG1fcnVudGltZV9yZXN1bWUoKSByZXR1cm5zIDEhClsg
-IDQ3Ny40NTU1MjJdIHVzYiAxLTIuMTogdXNiX2F1dG9yZXN1bWVfZGV2aWNlOiBjbnQgMiAtPiAx
-ClsgIDQ3Ny40NTU1MzFdIC91c3Ivc3JjL2xpbnV4LTIuNi1naXQvZHJpdmVycy9oaWQvdXNiaGlk
-L2hpZC1jb3JlLmM6IEhJRCBwcm9iZSBjYWxsZWQgZm9yIGlmbnVtIDAKWyAgNDc3LjQ2MzAzOF0g
-UE06IEFkZGluZyBpbmZvIGZvciBoaWQ6MDAwMzowNThGOjk0NjIuMDAwMQpbICA0NzcuNDc3NjE0
-XSAvdXNyL3NyYy9saW51eC0yLjYtZ2l0L2RyaXZlcnMvaGlkL3VzYmhpZC9oaWQtY29yZS5jOiBz
-dWJtaXR0aW5nIGN0cmwgdXJiOiBTZXRfUmVwb3J0IHdWYWx1ZT0weDAyMDAgd0luZGV4PTB4MDAw
-MCB3TGVuZ3RoPTEKWyAgNDc3LjQ3NzgyOV0gUE06IEFkZGluZyBpbmZvIGZvciBObyBCdXM6aW5w
-dXQ0ClsgIDQ3Ny40Nzc5MTddIGlucHV0OiBNdWx0aW1lZGlhIFVTQiBLZXlib2FyZCBNdWx0aW1l
-ZGlhIFVTQiBLZXlib2FyZCBhcyAvZGV2aWNlcy9wY2kwMDAwOjAwLzAwMDA6MDA6MTMuMC91c2Ix
-LzEtMi8xLTIuMS8xLTIuMToxLjAvaW5wdXQvaW5wdXQ0ClsgIDQ3Ny40OTE1NTRdIHVzYmhpZCAx
-LTIuMToxLjA6IF9fcG1fcnVudGltZV9yZXN1bWUoKSEKWyAgNDc3LjQ5MTU2MF0gdXNiaGlkIDEt
-Mi4xOjEuMDogX19wbV9ydW50aW1lX3Jlc3VtZSgpIHJldHVybnMgMSEKWyAgNDc3LjQ5MTU2Nl0g
-dXNiaGlkIDEtMi4xOjEuMDogdXNiX2F1dG9wbV9nZXRfaW50ZXJmYWNlOiBjbnQgMiAtPiAxClsg
-IDQ3Ny40OTE1NzldIHVzYmhpZCAxLTIuMToxLjA6IHVzYl9hdXRvcG1fcHV0X2ludGVyZmFjZTog
-Y250IDEgLT4gMApbICA0NzcuNDkxNjQ1XSBQTTogQWRkaW5nIGluZm8gZm9yIE5vIEJ1czpldmVu
-dDMKWyAgNDc3LjQ5MTY4MV0gZ2VuZXJpYy11c2IgMDAwMzowNThGOjk0NjIuMDAwMTogaW5wdXQ6
-IFVTQiBISUQgdjEuMTAgS2V5Ym9hcmQgW011bHRpbWVkaWEgVVNCIEtleWJvYXJkIE11bHRpbWVk
-aWEgVVNCIEtleWJvYXJkXSBvbiB1c2ItMDAwMDowMDoxMy4wLTIuMS9pbnB1dDAKWyAgNDc3LjUw
-Njc1NF0gdXNiIDEtMi4xOiB1c2JfYXV0b3N1c3BlbmRfZGV2aWNlOiBjbnQgMSAtPiAwClsgIDQ3
-Ny41MDY3NjNdIHVzYmhpZCAxLTIuMToxLjA6IF9fcG1fcnVudGltZV9zdXNwZW5kKCkhClsgIDQ3
-Ny41MDY3NzFdIHVzYmhpZCAxLTIuMToxLjA6IF9fcG1fcnVudGltZV9zdXNwZW5kKCkgcmV0dXJu
-cyAwIQpbICA0NzcuNTA2ODE1XSB1c2JoaWQgMS0yLjE6MS4xOiB1c2JfcHJvYmVfaW50ZXJmYWNl
-ClsgIDQ3Ny41MDY4MjJdIHVzYmhpZCAxLTIuMToxLjE6IHVzYl9wcm9iZV9pbnRlcmZhY2UgLSBn
-b3QgaWQKWyAgNDc3LjUwNjgyN10gdXNiIDEtMi4xOiBfX3BtX3J1bnRpbWVfcmVzdW1lKCkhClsg
-IDQ3Ny41MDY4MzFdIHVzYiAxLTIuMTogX19wbV9ydW50aW1lX3Jlc3VtZSgpIHJldHVybnMgMSEK
-WyAgNDc3LjUwNjgzNl0gdXNiIDEtMi4xOiB1c2JfYXV0b3Jlc3VtZV9kZXZpY2U6IGNudCAyIC0+
-IDEKWyAgNDc3LjUwNjg0M10gL3Vzci9zcmMvbGludXgtMi42LWdpdC9kcml2ZXJzL2hpZC91c2Jo
-aWQvaGlkLWNvcmUuYzogSElEIHByb2JlIGNhbGxlZCBmb3IgaWZudW0gMQpbICA0NzcuNTE1MDI3
-XSBQTTogQWRkaW5nIGluZm8gZm9yIGhpZDowMDAzOjA1OEY6OTQ2Mi4wMDAyClsgIDQ3Ny41MzU2
-MTRdIC91c3Ivc3JjL2xpbnV4LTIuNi1naXQvZHJpdmVycy9oaWQvaGlkLWNvcmUuYzogdXNhZ2Ug
-aW5kZXggZXhjZWVkZWQKWyAgNDc3LjUzNTYyMV0gL3Vzci9zcmMvbGludXgtMi42LWdpdC9kcml2
-ZXJzL2hpZC9oaWQtY29yZS5jOiBoaWRfYWRkX3VzYWdlIGZhaWxlZApbICA0NzcuNTM1NjI3XSAv
-dXNyL3NyYy9saW51eC0yLjYtZ2l0L2RyaXZlcnMvaGlkL2hpZC1jb3JlLmM6IGl0ZW0gMCAyIDIg
-MiBwYXJzaW5nIGZhaWxlZApbICA0NzcuNTM1NjQzXSAvdXNyL3NyYy9saW51eC0yLjYtZ2l0L2Ry
-aXZlcnMvaGlkL3VzYmhpZC9oaWQtY29yZS5jOiBwYXJzaW5nIHJlcG9ydCBkZXNjcmlwdG9yIGZh
-aWxlZApbICA0NzcuNTM1NjU2XSBnZW5lcmljLXVzYjogcHJvYmUgb2YgMDAwMzowNThGOjk0NjIu
-MDAwMiBmYWlsZWQgd2l0aCBlcnJvciAtMjIKWyAgNDc3LjU0MzMwNF0gdXNiIDEtMi4xOiB1c2Jf
-YXV0b3N1c3BlbmRfZGV2aWNlOiBjbnQgMSAtPiAwClsgIDQ3Ny41NDMzMTZdIHVzYmhpZCAxLTIu
-MToxLjE6IF9fcG1fcnVudGltZV9zdXNwZW5kKCkhClsgIDQ3Ny41NDMzMjZdIHVzYmhpZCAxLTIu
-MToxLjE6IF9fcG1fcnVudGltZV9zdXNwZW5kKCkgcmV0dXJucyAwIQpbICA0NzcuNTQzMzgwXSB1
-c2Jjb3JlOiByZWdpc3RlcmVkIG5ldyBpbnRlcmZhY2UgZHJpdmVyIHVzYmhpZApbICA0NzcuNTQ5
-NDU3XSB1c2JoaWQ6IFVTQiBISUQgY29yZSBkcml2ZXIKCkFuZCBzdXNwZW5kIGlzIGZyZWV6aW5n
-IGluc2lkZSBvZiBoaWRfY2FuY2VsX2RlbGF5ZWRfc3R1ZmYodXNiaGlkKSBjYWxsCmZyb20gaGlk
-X3N1c3BlbmQoKSBpbiBkcml2ZXJzL2hpZC91c2JoaWQvaGlkLWNvcmUuYyAuLi4KCklzIGl0IHdv
-cnRoIGNvbnRpbnVpbmcgaXRlcmF0aW9uIGFuZCBhZGRpbmcgZnVydGhlciBwcmludGsncyBkb3du
-IHRoZXJlPwpKaXJpLCB3aGF0J3MgeW91ciBvcGluaW9uIG9uIHRoaXM/CgpUaGFua3MsCkJydW5v
-Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBt
-IG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczov
-L2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Monday 03 May 2010, Mark Brown wrote:
+> On Mon, May 03, 2010 at 09:40:26AM -0700, Kevin Hilman wrote:
+> 
+> > At least from the kernel perspective, both suspend blockers and
+> > runtime PM have the same goal.  Given that, which framework should the
+> > driver writer target?  Both?  Seems like duplicate effort.  Using
+> > suspend blockers assumes the system is in opportunitstic suspend mode
+> > and (at least in the keypad example given) assumes a suspend-blocker
+> > aware userspace (Android.) Without both, targeted power savings will
+> > not be acheived.
+> 
+> The other concern here is that for many mobile systems the actual
+> semantic intended by "suspend" as it's currently used is more runtime PM
+> like than full suspend - the classic example of this is that when
+> suspending while on a call in a phone you don't want to suspend the
+> modem or audio CODEC, you want to leave them running.  If you use a full
+> system suspend then the drivers for affected components have to play
+> guessing games (or add currently non-standard knobs for apps to twiddle)
+> to decide if the system intends them to actually implement the suspend
+> or not but with runtime PM it all falls out very naturally without any
+> effort on the part of the driver.
+> 
+> > To me, runtime PM is a generic and flexible approach that can be used
+> > with any userspace.  Driver writers should not have to care whether
+> > the system is in "opportunistic" mode or about whether userspace is
+> > suspend blocker capable.  They should only have to think about when
+> > the device is (or should be) idle.
+> 
+> I fully agree with this.  We do need to ensure that a runtime PM based
+> system can suspend the CPU core and RAM as well as system suspend can
+> but that seems doable.
+
+I _think_ it would be hard at least.  On ACPI-based systems it's not doable at
+all AFAICS.
+
+However, the real question is whether or not the opportunistic suspend feature
+is worth adding to the kernel as such and I think it is.
+
+To me, it doesn't duplicate the runtime PM framework which is aimed at the power
+management of individual devices rather than the system as a whole.
+
+Thanks,
+Rafael
