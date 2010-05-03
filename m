@@ -1,15 +1,16 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Mon, 03 May 2010 11:17:52 -0700
-Message-ID: <87vdb4zw6n.fsf__38574.1621991203$1272910732$gmane$org@deeprootsystems.com>
-References: <Pine.LNX.4.44L0.1005031301400.1651-100000@iolanthe.rowland.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Mon, 3 May 2010 21:01:36 +0200
+Message-ID: <20100503190136.GA4173__29859.8803849474$1272913479$gmane$org@ucw.cz>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<201005022210.54018.rjw@sisk.pl> <20100502205238.GC9051@elf.ucw.cz>
+	<201005022329.48309.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005031301400.1651-100000@iolanthe.rowland.org>
-	(Alan Stern's message of "Mon\,
-	3 May 2010 13\:12\:02 -0400 \(EDT\)")
+Content-Disposition: inline
+In-Reply-To: <201005022329.48309.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,113 +20,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Oleg Nesterov <oleg@redhat.com>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+Hi!
 
-> On Mon, 3 May 2010, Kevin Hilman wrote:
->
->> Suspend blockers vs runtime PM
->> ------------------------------
->> 
->> My primary concern is that suspend blockers attempt to address the
->> same problem(s) as runtime PM, but with a very different approach.
->> Suspend blockers use one very large hammer whereas runtime PM hands
->> out many little hammers.  Since I believe power management to be a
->> problem of many little nails, I think many little hammers are better
->> suited for the job.
->
-> There is a major difference between suspend blockers and runtime PM 
-> which was not discussed in your email.  Namely: Runtime PM is aimed at 
-> suspending individual devices and not the system as a whole (in 
-> particular, not CPUs), whereas suspend blockers are aimed at suspending 
-> -- or more accurately, blocking suspends -- of the system as a whole 
-> and not individual devices.
->
-> So for example, runtime PM cannot be used to put the system into an S3 
-> sleep state.  But suspend blockers _are_ used to keep the system from 
-> going into S3.
+> > > > As I explained before (and got no reply),  the proposed interface is
+> > > > ugly. It uses one sysfs file to change semantics of another one.
+> > > 
+> > > In fact this behavior was discussed at the LF Collab Summit and no one
+> > > involved had any problem with that.
+> > 
+> > Well, I explained why I disliked in previous mail in more details,
+> 
+> We do exactly the same thing with 'pm_test', so I'm not sure what the problem is.
+> 
+> > and neither you nor Arve explained why it is good solution.
+> 
+> Because it's less confusing.  Having two different attributes returning
+> almost the same contents and working in a slightly different way wouldn't be
+> too clean IMO.
 
-Good point.  However, adding CPUidle to runtime PM you indeed achieve
-a dynamic PM that affects the whole system. 
+No, I don't think it is similar to pm_test. pm_test is debug-only, and
+orthogonal to state -- all combinations make sense.
 
-The main difference then comes down to what prevents system-wide
-low-power state: activity vs. suspend blocker held.
+With 'oportunistic > policy', state changes from blocking to
+nonblocking (surprise!). Plus, it is not orthogonal:
 
->> Currently in the kernel, we have two main forms of PM
->> 
->> - static PM (system PM, traditional suspend/resume etc.)
->> - dynamic PM (runtime PM, CPUfreq, CPUidle, etc.)
->> 
->> And with the addition of suspend blockers we have something in
->> between.  In my simple world, I think of suspend_blockers as static PM
->> with a retrofit of some basic dynamic capabilities.  In my view, a
->> poor man's dynamic PM.
->
-> I wouldn't describe it like that.  Consider dividing PM along a 
-> different axis:
->
-> - entire system (ACPI sleep states, CPUs turned off, etc.)
-> - single, independent devices (e.g., USB autosuspend)
->
-> Then system PM combines static + entire, whereas runtime PM combines 
-> dynamic + single.  By contrast, suspend blockers are aimed at the 
-> dynamic + entire combination.  This makes them different from anything 
-> already present in the kernel.
+(assume we added s-t-flash on android for powersaving... or imagine I
+get oportunistic suspend working on PC --I was there with limited
+config on x60).
 
-Adding CPUidle to runtime PM (dynamic + single), you add 'entire' as
-well, as CPUidle manages the CPU states.
+policy: oportunistic forced
 
-However, one problem I have with your proposed division is it doesn't
-seem to match well to the hardware available on modern embedded SoCs,
-mainly because these are not ACPI devices.  The CPU is just another
-"independent" device whose runtime PM is managed by CPUidle.
+state: on mem disk
 
-IOW, The 'entire system' state is just a function of the CPU state
-and the state of all the on- and off-chip devices.  With CPUidle
-managing the CPUs, and runtime PM managing the rest of the devices,
-you have a fully flexible dynamic PM for the entire system.
+First disadvantage of proposed interface is that while 'opportunistic
+mem' is active, I can't do 'forced disk' to save bit more power.
 
->> The current design of suspend blockers was (presumably) taken due to
->> major limitations and/or problems in dynamic PM when it was designed.
->> However, since then, some very signifcant improvements in dynamic PM
->> have come along, particularily in the form of runtime PM.  What I
->> still feel is missing from this discussion are details about why the
->> issues addressed by suspend blockers cannot be solved with runtime PM.
->
-> The simplest example is that suspend blockers can be used to control 
-> whether or not the CPU shuts down, whereas runtime PM can't.
+Next, not all combinations make sense.
 
-True, by iteslf, runtime PM does not shut down CPUs, but in
-combination with CPUidle the CPU(s) can be shut down based on
-activity.  In a way, you could think of CPUidle as runtime PM for the
-CPU(s).
+oportunistic on == forced <nothing>
 
-Again, the primary difference comes down to: why should I not enter a
-low-power state?  activity (runtime PM + CPUidle) or suspend blocker.
+oportunistic disk -- probably something that will not be implemented
+any time soon.
 
->> To me, runtime PM is a generic and flexible approach that can be used
->> with any userspace.  Driver writers should not have to care whether
->> the system is in "opportunistic" mode or about whether userspace is
->> suspend blocker capable.  They should only have to think about when
->> the device is (or should be) idle.
->> 
->> From my experience with OMAP, we *really* do not want to care about
->> what userspace is or isn't capable of, or what suspend-mode the kernel
->> is in.  Among other things, the OMAP linux kernel is used in the Nokia
->> N900 (Maemo), the Motorola Droid (Android) and the Palm Pre (webOS).
->> Comments on the future of each SW stack aside, we really want to run
->> the same kernel and drivers across all of those platforms as well as
->> whatever comes next.
->
-> That is indeed a weak point of the proposal.  Kernel drivers' use of
-> suspend blockers appears to be somewhat arbitrary and directed by the
-> needs of userspace.  It's not at all clear how drivers can use suspend
-> blockers in a way that will work on all systems.
+oportunistic mem -- makes sense.
 
-Nor is it clear (to me) what drivers would/should look like that would
-need to do suspend blockers in addition to runtime PM.  
+forced on -- NOP
 
-Kevin
+forced mem  -- makes sense.
+
+forced disk -- makes sense.
+
+So we have matrix of 7 possibilities, but only 4 make sense... IMO its confusing.
+
+
+
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
