@@ -1,13 +1,19 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Tue, 4 May 2010 13:16:25 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005041252480.1729-100000__26881.0931862847$1272993564$gmane$org@iolanthe.rowland.org>
-References: <20100504160346.GA27938@linux.intel.com>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Tue, 04 May 2010 11:04:49 -0700
+Message-ID: <87wrvjh7b2.fsf__46310.4895702147$1272996432$gmane$org@deeprootsystems.com>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<87wrvl5479.fsf@deeprootsystems.com>
+	<20100503180741.GB2098@rakim.wolfsonmicro.main>
+	<201005032318.35383.rjw@sisk.pl> <87sk68r1zh.fsf@deeprootsystems.com>
+	<s2qd6200be21005031709r28420f0ezf3cf286517ee9114@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100504160346.GA27938@linux.intel.com>
+In-Reply-To: <s2qd6200be21005031709r28420f0ezf3cf286517ee9114@mail.gmail.com> ("Arve
+	=?iso-8859-1?Q?Hj=F8nnev=E5g=22's?= message of "Mon\,
+	3 May 2010 17\:09\:22 -0700")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,152 +23,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: mark gross <mgross@linux.intel.com>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, markgross@thegnar.org, Oleg Nesterov <oleg@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Arve =?iso-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 4 May 2010, mark gross wrote:
+Arve Hj=F8nnev=E5g <arve@android.com> writes:
 
-> On Tue, May 04, 2010 at 09:59:59AM -0400, Alan Stern wrote:
-> > On Mon, 3 May 2010, mark gross wrote:
-> > 
-> > > You know things would be so much easier if the policy was a one-shot
-> > > styled thing.  i.e. when enabled it does what it does, but upon resume
-> > > the policy must be re-enabled by user mode to get the opportunistic
-> > > behavior.  That way we don't need to grab the suspend blocker from the
-> > > wake up irq handler all the way up to user mode as the example below
-> > > calls out.  I suppose doing this would put a burden on the user mode code
-> > > to keep track of if it has no pending blockers registered after a wake
-> > > up from the suspend.  but that seems nicer to me than sprinkling
-> > > overlapping blocker critical sections from the mettle up to user mode.
-> > > 
-> > > Please consider making the policy a one shot API that needs to be
-> > > re-enabled after resume by user mode.  That would remove my issue with
-> > > the design.
-> > 
-> > This won't work right if a second IRQ arrives while the first is being
-> > processed.  Suppose the kernel driver for the second IRQ doesn't
-> > activate a suspend blocker, and suppose all the userspace handlers for
-> > the first IRQ end (and the opportunistic policy is re-enabled) before
-> > the userspace handler for the second IRQ can start.  Then the system
-> > will go back to sleep before userspace can handle the second IRQ.
-> >
-> 
-> What?  If the suspend blocker API was a one shot styled api, after the
-> suspend, the one shot is over and the behavior is that you do not fall
-> back into suspend again until user mode re-enables the one-shot
-> behavior.  
+> On Mon, May 3, 2010 at 4:37 PM, Kevin Hilman
+> <khilman@deeprootsystems.com> wrote:
+>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>>
 
-I was referring to your sentence: "That way we don't need to grab the 
-suspend blocker from the wake up irq handler all the way up to user 
-mode..."  The problem arises when kernel handlers don't do _something_ 
-to prevent another suspend from occurring too soon.
+[...]
 
-> With what I am proposing the next suspend would not happen until the
-> user mode code re-enables the suspend blocking behavior.  It would much
-> cleaner for everyone and I see zero down side WRT the example you just
-> posted.  
-> 
-> If user mode triggers a suspend by releasing the last blocker, you have
-> until pm_suspend('mem') turns off interrupts to cancel it.  That race
-> will never go away. 
+>>> However, the real question is whether or not the opportunistic suspend =
+feature
+>>> is worth adding to the kernel as such and I think it is.
+>>>
+>>> To me, it doesn't duplicate the runtime PM framework which is aimed at =
+the power
+>>> management of individual devices rather than the system as a whole.
+>>
+>> From the use cases presented, the *usage* of suspend blockers is aimed
+>> at power management of individual devices or subsystems, just like
+>> usage of runtime PM.
+>>
+> No, suspend blockers are mostly used to ensure wakeup events are not
+> ignored, and to ensure tasks triggered by these wakeup events
+> complete.
 
-(Actually the kernel can cancel the suspend even after interrupts are
-turned off, if it has a reason to do so.)
+OK, but my point was that their *usage* is at the level of inidividual
+devices and subsystems, just like runtime PM.  Hence, duplicate work.
 
-In theory the race between interrupts and suspend don't need to be a
-problem.  In practice it still is -- the PM core needs a few changes to
-allow wakeup interrupts to cancel a suspend in progress.  Regardless, 
-that's not what I was talking about.
+>> So I still see a large duplication in the usage and the goals of both
+>> frameworks. =A0The goal of both is to always enter lowest-power state
+>> except
+>>
+>> =A0- if there's activity (runtime PM for devices, CPUidle for CPU)
+>> =A0- if there's a suspend blocker (opportunitic suspend)
+>>
+>> In addition, it will likely cause duplicate work to be done in
+>> drivers. =A0Presumably, PM aware drivers will want to know if the system
+>> is in opportunistic mode. =A0For example, for many drivers, doing
+>> runtime PM may not be worth the effort if the system is in
+>> opportunistic mode.
+>
+> Why? If a device is not in use it should be off regardless of what
+> state the rest of the system is in.
 
-> Let me think this through, please check that I'm understanding the issue
-> please:
-> 1) one-shot policy enable blocker PM suspend behavior;
-> 2) release last blocker and call pm_suspend('mem') and suspend all the
-> way down.
-> 3) get wake up event, one-shot policy over, no-blockers in list
-> 4) go all the way to user mode, 
-> 5) user mode decides to not grab a blocker, and re-enables one-shot
-> policy
-> 6) pm_suspend('mem') called
-> 7) interrupt comes in (say the modem rings)
-> 8) modem driver handler needs to returns fail from pm_suspend call back,
-> device resumes (I am proposing changing the posted api for doing this.)
-> 9) user mode figures out one-shot needs to be re-enabled and it grabs a
-> blocker to handle the call and re-enables the one-shot.
+Not necessarily.
 
-This is not the scenario I was describing.  Here's what I had in mind:
+If a device is not in use, what power state it goes into depends on
+many device/subsystem specific things.  For example, recent activity
+(timeouts), whether it will be busy soon (pending transfers),
+latency/throughput constraints, dependency on other devices, or any
+other device/subsystem specific reason.
 
-1) The system is asleep
-2) Wakeup event occurs, one-shot policy over
-3) Go all the way to user mode
-4) A second wakeup interrupt occurs (say the modem rings)
-5) The modem driver does not enable any suspend blockers
-6) The modem driver queues an input event for userspace
-7) The userspace handler invoked during 3) finishes and re-enables
-	the one-shot policy
-8) No suspend blockers are enabled, so the system goes to sleep
-9) The userspace handler for the input event in 6) doesn't get to run
+All of these can be handled with runtime PM.  None of which are taken
+into consideration with opportunistic suspend.
 
-> So the real problem grabbing blockers from ISR's trying to solve is to
-> reduce the window of time where a pm_suspend('mem') can be canceled.
-
-No.  The real problem is how ISRs should prevent the system from
-suspending before the events they generate can be handled by userspace.
-
-> My proposal is to;
-> 1) change the kernel blocker api to be
-> "cancel-one-shot-policy-enable" that can be called from the ISR's for
-> the wake up devices before the IRQ's are disabled to cancel an in-flight
-> suspend.  I would make it 2 macros one goes in the pm_suspend callback
-> to return fail, and the other in the ISR to disable the one-shot-policy.
->  
-> 2) make the policy a one shot that user mode must re-enable after each
-> suspend attempted.
-
-Neither of these solves the race I described.
-
-> Would it help if I coded up the above proposal as patch to the current
-> (rev-6) of the blocker patchset?  I'm offering.
-> 
-> Because this part of the current design is broken, in that it demands
-> the sprinkling of blocker critical sections from the hardware up to the
-> user mode.  Its ugly, hard to get right and if more folks would take a
-> look at how well it worked out for the existing kernels on
-> android.git.kernel.org/kernels/ perhaps it would get more attention.
-
-I agree, it is ugly and probably hard to get right.  But something like 
-it is necessary to solve this race.
-
-> Finally, as an aside, lets look at the problem with the posted rev-6
-> patches:
-> 1) enable suspend blocker policy
-> 2) release user-mode blocker
-> 3) start suspend
-> 4) get a modem interrupt (incoming call)
-> 5) ooops, IRQ came in after pm_suspend('mem') turned off interrupts.
-> bummer for you, thats life with this design.  Better hope your modem
-> hardware is modified to keep pulling on that wake up line because you're
-> past the point of no return now and going to suspend.
-
-That is not a problem for level-sensitive IRQs.  If interrupts have
-been turned off then the modem will not receive any commands telling
-it to stop requesting an interrupt.  So the IRQ line will remain active 
-until the system goes to sleep, at which point it will immediately 
-wake up the system.
-
-For edge-sensitive interrupts the situation isn't as simple.  The
-low-level IRQ code must handle this somehow.
-
-> Grabbing a blocker in the ISR doesn't solve this.  So your hardware
-> needs to have a persistent wake up trigger that is robust against this
-> scenario.  And, if you have such hardware then why are we killing
-> ourselves to maximize the window of time between pm_suspend('mem') and
-> platform suspend where you can cancel the suspend?  The hardware will
-> simply wake up anyway.
-
-That's not what we are killing ourselves for.  The point of suspend
-blockers is not to prevent races with the hardware.  It is to prevent 
-userspace from being frozen while there's still work to be done.
-
-Alan Stern
+Kevin
