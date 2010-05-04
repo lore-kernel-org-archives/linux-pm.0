@@ -1,18 +1,15 @@
 From: Kevin Hilman <khilman@deeprootsystems.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Tue, 04 May 2010 08:13:09 -0700
-Message-ID: <878w7zog3e.fsf__9289.4289795824$1272986041$gmane$org@deeprootsystems.com>
-References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<87wrvl5479.fsf@deeprootsystems.com>
-	<20100503180741.GB2098@rakim.wolfsonmicro.main>
-	<201005032318.35383.rjw@sisk.pl> <87sk68r1zh.fsf@deeprootsystems.com>
-	<20100504004338.GA22678@srcf.ucam.org>
+Date: Tue, 04 May 2010 08:13:53 -0700
+Message-ID: <876333og26.fsf__19634.0847797275$1272986086$gmane$org@deeprootsystems.com>
+References: <Pine.LNX.4.44L0.1005040949060.1729-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100504004338.GA22678@srcf.ucam.org> (Matthew Garrett's message
-	of "Tue\, 4 May 2010 01\:43\:38 +0100")
+In-Reply-To: <Pine.LNX.4.44L0.1005040949060.1729-100000@iolanthe.rowland.org>
+	(Alan Stern's message of "Tue\,
+	4 May 2010 09\:51\:39 -0400 \(EDT\)")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,31 +19,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Matthew Garrett <mjg@redhat.com> writes:
+Alan Stern <stern@rowland.harvard.edu> writes:
 
-> On Mon, May 03, 2010 at 04:37:22PM -0700, Kevin Hilman wrote:
+> On Tue, 4 May 2010, Matthew Garrett wrote:
 >
->> Please forgive the ignorance of ACPI (in embedded, we thankfully live
->> in magical world without ACPI) but doesn't that already happen with
->> CPUidle and C-states?  I think of CPUidle as basically runtime PM for
->> the CPU.  IOW, runtime PM manages the devices, CPUidle manages the CPU
->> (via C-states), resulting in dynaimc PM for the entire system.  What
->> am I missing?
+>> On Mon, May 03, 2010 at 04:37:22PM -0700, Kevin Hilman wrote:
+>> 
+>> > Please forgive the ignorance of ACPI (in embedded, we thankfully live
+>> > in magical world without ACPI) but doesn't that already happen with
+>> > CPUidle and C-states?  I think of CPUidle as basically runtime PM for
+>> > the CPU.  IOW, runtime PM manages the devices, CPUidle manages the CPU
+>> > (via C-states), resulting in dynaimc PM for the entire system.  What
+>> > am I missing?
+>> 
+>> ACPI doesn't provide any functionality for cutting power to most devices 
+>> other than shifting into full system suspend. The number of wakeup 
+>> events available to us on a given machine is usually small and the 
+>> wakeup latency large, so it's not terribly practical to do this 
+>> transparently on most hardware.
 >
-> ACPI doesn't provide any functionality for cutting power to most
-> devices other than shifting into full system suspend. The number of
-> wakeup events available to us on a given machine is usually small
-> and the wakeup latency large, so it's not terribly practical to do
-> this transparently on most hardware.
+> Another thing that Kevin is missing: There is more to the system than
+> the devices and the CPU.  For example: RAM, an embedded controller (on
+> modern desktop/laptop systems), a power supply, and so on.  Dynamic PM
+> for the CPU and the devices won't power-down these things, but system
+> PM will.
 
-OK, that's a major difference with embedded SoCs where the kernel must
-directly manage the power state of all devices using runtime PM.
+I consider all of those things devices.
 
-So basically, on ACPI systems, runtime PM doesn't get you any power
-savings for most devices.  
+On non-ACPI systems where the kernel has to manage all of the above
+directly, we have drivers for all of them using runtime PM as well as
+the regulator framework for dynamic PM power supplies.
 
 Kevin
