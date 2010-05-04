@@ -1,16 +1,13 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: s2ram slow (radeon) / failing (usb)
-Date: Tue, 4 May 2010 10:37:56 +0200 (CEST)
-Message-ID: <alpine.LNX.2.00.1005041028300.9849__43282.5094707825$1272962356$gmane$org@pobox.suse.cz>
-References: <20100503214642.67577f91@neptune.home>
-	<20100503225735.6b5e2687@neptune.home>
-	<20100503231154.486c27d6@neptune.home>
-	<201005040842.35260.oneukum@suse.de>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Tue, 4 May 2010 09:51:39 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005040949060.1729-100000__14320.8146015697$1272981181$gmane$org@iolanthe.rowland.org>
+References: <20100504004338.GA22678@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005040842.35260.oneukum@suse.de>
+In-Reply-To: <20100504004338.GA22678@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,84 +17,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oneukum@suse.de>, =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: linux-pm@lists.linux-foundation.org, list <linux-usb@vger.kernel.org>, USB@smtp1.linux-foundation.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 4 May 2010, Oliver Neukum wrote:
+On Tue, 4 May 2010, Matthew Garrett wrote:
 
-> > [  477.543304] usb 1-2.1: usb_autosuspend_device: cnt 1 -> 0
-> > [  477.543316] usbhid 1-2.1:1.1: __pm_runtime_suspend()!
-> > [  477.543326] usbhid 1-2.1:1.1: __pm_runtime_suspend() returns 0!
-> > [  477.543380] usbcore: registered new interface driver usbhid
-> > [  477.549457] usbhid: USB HID core driver
-> > 
-> > And suspend is freezing inside of hid_cancel_delayed_stuff(usbhid) call
-> > from hid_suspend() in drivers/hid/usbhid/hid-core.c ...
-> > 
-> > Is it worth continuing iteration and adding further printk's down there?
-> > Jiri, what's your opinion on this?
+> On Mon, May 03, 2010 at 04:37:22PM -0700, Kevin Hilman wrote:
 > 
-> Ugh. That looks like a bug in usbhid that I introduced. A fix is not trivial.
-> In short, I did not think the device could be undergoing a queued resumption
-> while suspend() is being called. I wonder why this is happening.
+> > Please forgive the ignorance of ACPI (in embedded, we thankfully live
+> > in magical world without ACPI) but doesn't that already happen with
+> > CPUidle and C-states?  I think of CPUidle as basically runtime PM for
+> > the CPU.  IOW, runtime PM manages the devices, CPUidle manages the CPU
+> > (via C-states), resulting in dynaimc PM for the entire system.  What
+> > am I missing?
+> 
+> ACPI doesn't provide any functionality for cutting power to most devices 
+> other than shifting into full system suspend. The number of wakeup 
+> events available to us on a given machine is usually small and the 
+> wakeup latency large, so it's not terribly practical to do this 
+> transparently on most hardware.
 
-Hmmm ... seems to me that in this case, the problem might be that there is 
-a device hanging in the air, for which the parsing of report descriptor 
-failed (interface .0002), but it's still somehow there on the bus.
+Another thing that Kevin is missing: There is more to the system than
+the devices and the CPU.  For example: RAM, an embedded controller (on
+modern desktop/laptop systems), a power supply, and so on.  Dynamic PM
+for the CPU and the devices won't power-down these things, but system
+PM will.
 
-It's a bit strange that we are not seeing 
-
-	dev_err(&intf->dev, "can't add hid device: %d\n", ret);
-
-message from usbhid_probe(), are we? That would mean, that we are 
-returning ENODEV from the usb_driver->probe routine properly.
-
-Bruno, could you, for testing purposes, check, whether the patch below 
-changes the behavior you are seeing (and also check what the actual return 
-value from device_add() was, see the added printk()).
-Thanks.
-
-
-
- drivers/hid/hid-core.c        |    5 +++--
- drivers/hid/usbhid/hid-core.c |    4 ++--
- 2 files changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-index 2e2aa75..7186f9f 100644
---- a/drivers/hid/hid-core.c
-+++ b/drivers/hid/hid-core.c
-@@ -1770,10 +1770,11 @@ int hid_add_device(struct hid_device *hdev)
- 		     hdev->vendor, hdev->product, atomic_inc_return(&id));
- 
- 	ret = device_add(&hdev->dev);
-+	printk(KERN_DEBUG "HID: device_add() returned %d\n", ret);
- 	if (!ret)
- 		hdev->status |= HID_STAT_ADDED;
--
--	hid_debug_register(hdev, dev_name(&hdev->dev));
-+	else
-+		hid_debug_register(hdev, dev_name(&hdev->dev));
- 
- 	return ret;
- }
-diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-index 56d06cd..f33445a 100644
---- a/drivers/hid/usbhid/hid-core.c
-+++ b/drivers/hid/usbhid/hid-core.c
-@@ -1181,8 +1181,8 @@ static int usbhid_probe(struct usb_interface *intf, const struct usb_device_id *
- 
- 	ret = hid_add_device(hid);
- 	if (ret) {
--		if (ret != -ENODEV)
--			dev_err(&intf->dev, "can't add hid device: %d\n", ret);
-+		dev_err(&intf->dev, "can't add hid device: %d\n", ret);
-+		ret = -ENODEV;
- 		goto err_free;
- 	}
- 
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Alan Stern
