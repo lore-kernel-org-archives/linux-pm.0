@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/8] PM: suspend_block: Add driver to access
-	suspend blockers from user-space
-Date: Tue, 4 May 2010 22:02:40 +0200
-Message-ID: <201005042202.40197.rjw__12316.4998986342$1273003358$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1005021755320.30701-100000@netrider.rowland.org>
-	<201005032349.00876.rjw@sisk.pl>
-	<x2id6200be21005031501p7f151324wb8bbf928bc2cb25e@mail.gmail.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Tue, 4 May 2010 22:23:41 +0200
+Message-ID: <201005042223.41370.rjw@sisk.pl>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<20100504135907.GA3651@opensource.wolfsonmicro.com>
+	<87r5lrh780.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <x2id6200be21005031501p7f151324wb8bbf928bc2cb25e@mail.gmail.com>
+In-Reply-To: <87r5lrh780.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,82 +19,129 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Len Brown <len.brown@intel.com>, Jim Collar <jim.collar@eqware.net>, linux-doc@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Avi Kivity <avi@redhat.com>, Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Arve@smtp1.linux-foundation.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 04 May 2010, Arve Hj=F8nnev=E5g wrote:
-> 2010/5/3 Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Monday 03 May 2010, Arve Hj=F8nnev=E5g wrote:
-> >> On Mon, May 3, 2010 at 8:03 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > On Sunday 02 May 2010, Alan Stern wrote:
-> >> >> On Sun, 2 May 2010, Rafael J. Wysocki wrote:
-> >> >>
-> >> >> > Hmm.  It doesn't seem to be possible to create two different susp=
-end blockers
-> >> >> > using the same file handle.  So, what exactly is a process suppos=
-ed to do to
-> >> >> > use two suspend blockers at the same time?
-> >> >>
-> >> >> Open the file twice, thereby obtaining two file handles.
-> >> >
-> >> > Well, that's what I thought.
-> >> >
-> >> > I must admit I'm not really comfortable with this interface.  IMO it=
- would
-> >> > be better if _open() created the suspend blocker giving it a name ba=
-sed on
-> >> > the name of the process that called it.  Something like
-> >> > "<process name>_<timestamp>" might work at first sight.
-> >> >
-> >> > Alternatively, "<process_name><number>", where <number> is 0 for the=
- first
-> >> > suspend blocker created by the given process, 1 for the second one e=
-tc., also
-> >> > seems to be doable.
-> >>
-> >> I think it is important to let user-space specify the name. If a
-> >> process uses multiple suspend blockers, it is impossible to tell what
-> >> each one is used for if they are automatically named.
-> >
-> > Well, the problem is the only purpose of this is user space debugging, =
-isn't it?
-> >
-> At the moment, yes.
-
-OK
-
-> But having an explicit init call also simplifies future expansion.
-
-That's irrelevant.  Let's focus _only_ on the "at the moment" part, please.
-
-And BTW, a "future expansion" is not relevant at all to the patchset at hand
-and let's work with this assumption from now on.  OK?
-
-> If we ever need to add back multiple types of
-> suspend blockers, we can add an init call with a type argument and
-> have the current init call use the default type. If the past we have
-> had types that keeps the screen on and prevented idle sleep modes. In
-> the future we could for instance want to specify if a suspend blocker
-> should prevent suspend when the battery is low or when the lid is
-> closed.
-
-_If_ we ever do anything like thie, _then_ we will extend the interface.
-
-> > Now, while I don't think it's generally bad to provide kernel interfaces
-> > helping to debug user space, I'm not quite sure if that should be done =
-at the
-> > expense of the clarity of kernel-user space interfaces.
-> >
-> > I wonder how many cases there are in which distinguishing between suspe=
-nd
-> > blockers used by the same user space task is practically relevant.
-> >
+On Tuesday 04 May 2010, Kevin Hilman wrote:
+> Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
 > =
 
-> I think all of them (when more than one suspend blocker is used).
+> > On Mon, May 03, 2010 at 05:43:34PM -0700, Brian Swetland wrote:
+> >> On Mon, May 3, 2010 at 5:09 PM, Arve Hj=F8nnev=E5g <arve@android.com> =
+wrote:
+> >> > On Mon, May 3, 2010 at 4:37 PM, Kevin Hilman
+> >
+> >> >> This last point is especially troubling.  I don't find it a comfort=
+ing
+> >> >> path to go down if the drivers have to start caring about which PM
+> >> >> policy is currently in use.
+> >
+> >> I'll echo Arve here -- all drivers should seek to be in the lowest
+> >> power state possible at all times.  We've never suggested that
+> >> suspend_block is a substitute for that.
+> >
+> > Looking at this from a subsystem/driver author point of view the problem
+> > I'm faced with is that as a result of using system suspend much more
+> > aggressively the subsystem and driver layers are getting conflicting
+> > instructions about what the lowest power state possible is.
+> =
 
-So how many user space processes use more than one suspend blocker right
-now on Android?  I'm interested only in the order of magnitude.
+> Exactly.
+> =
 
+> With runtime PM, there is flexibility in choosing the lowest power
+> state at the device/subsystem level, based on activity, timeouts,
+> bitrate, dependencies, latency/throughput constraints, etc.
+> =
+
+> With opportunistic suspend, all of this flexibility is gone, and the
+> device/subsystem is told to go into the lowest power, highest latency
+> state, period.
+
+Guys, please.
+
+The opportunistic suspend feature is _not_ to replace runtime PM by any mea=
+ns!
+
+However, there are situations in which runtime PM is clearly insufficient.
+The idea behind runtime PM is that subsystems and device drivers will know
+when to put devices into low power states and save energy this way.  Still,
+even if all subsystems do that 100% efficiently, there may be more savings
+possible by putting the entire system into a sleep state (like on ACPI-based
+PCs) and we can reach there by runtime PM alone.
+
+> >> Suspend blockers give us some flexibility on systems where runtime pm
+> >> will not get us all the way there. If you can meet your power needs
+> >> without needing suspend blockers, awesome, you don't need them on that
+> >> platform.  The patchset Arve sent out makes this feature an
+> >> off-by-default kernel configuration option that compiles out to no-ops
+> >> when disabled.
+> >
+> > I think a big part of this for me is that this approach changes the
+> > intended use of the system-wide suspend a bit, complicating it a bit
+> > further than it already is.  We end up doing a suspend (which in the
+> > normal course of affairs means that the driver should shut everything
+> > down) partly as a substitute for runtime PM on the core system devices
+> > and partly because our runtime PM isn't doing as well as it should on
+> > the individual devices.
+> =
+
+> Agreed, and because of this, part of my concern is that opportunistic
+> suspend will take the place of doing the "right thing" which (IMHO) =
+
+> would be to improve runtime PM for devices.
+
+It really can't, at least on some platforms.  For example, resuming a PC
+notebook from suspend to RAM takes more than 1s (with an SSD; rotational di=
+sks
+add more latency here) which is way too much for such a replacement.
+
+Besides, there also is room for runtime PM in the Android framework, because
+it needs to suspend certain devices without freezing processes, for example.
+
+The freezing of processes is the most important difference to me.  Runtime =
+PM
+works with the assumption that processes are not frozen (hence the name), b=
+ut
+arguably energy savings you can get without going behind that point are
+naturally limited.
+
+> > I'd be a lot more comfortable with this if it came with a mechanism for
+> > communicating the intended effect of a suspend on a per-device level so
+> > that the drivers have a clear way of figuring out what to do when the
+> > system suspends.  If there isn't one we can add subsystem or driver
+> > specific hooks, of course, but it'd be better to address this at the
+> > system level.
+> =
+
+> I agree.
+
+I'm not sure.  Why _exactly_ would you need that?
+
+> I think there needs to be more discussion on the indended usage
+> of suspend blockers by drivers/subsystems, especially those PM aware
+> drivers and subsystems already doing runtime PM with constraints etc.
+> =
+
+> >> In our experience, periodic timers and polling, both userspace side
+> >> and kernelside make suspend blockers a win even on platforms like OMAP
+> >> which have pretty flexible hardware power management.  Going to low
+> >> power states in idle results in higher average power consumption than
+> >> going to the same states in full suspend, at least on Android devices
+> >> shipping today.
+> >
+> > There's definite work to be done here, yes.
+> =
+
+> And I've admitted this to be the only compelling reason for
+> opportunistic suspend so far.
+> =
+
+> But the driver/subsystem implications of opportunistic suspend still
+> need some fleshing out IMO.
+
+At the moment, if you're not on Android, there are none.
+
+Thanks,
 Rafael
