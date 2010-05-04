@@ -1,22 +1,16 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Tue, 4 May 2010 20:06:56 +0100
-Message-ID: <20100504190656.GA4611__4511.63524198837$1273000106$gmane$org@opensource.wolfsonmicro.com>
-References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<87wrvl5479.fsf@deeprootsystems.com>
-	<20100503180741.GB2098@rakim.wolfsonmicro.main>
-	<201005032318.35383.rjw@sisk.pl>
-	<87sk68r1zh.fsf@deeprootsystems.com>
-	<s2qd6200be21005031709r28420f0ezf3cf286517ee9114@mail.gmail.com>
-	<w2pa55d774e1005031743x859e82fz401346fae7fe873a@mail.gmail.com>
-	<20100504135907.GA3651@opensource.wolfsonmicro.com>
-	<87r5lrh780.fsf@deeprootsystems.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/8] PM: suspend_block: Add driver to access
+	suspend blockers from user-space
+Date: Tue, 4 May 2010 22:02:40 +0200
+Message-ID: <201005042202.40197.rjw__12316.4998986342$1273003358$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1005021755320.30701-100000@netrider.rowland.org>
+	<201005032349.00876.rjw@sisk.pl>
+	<x2id6200be21005031501p7f151324wb8bbf928bc2cb25e@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <87r5lrh780.fsf@deeprootsystems.com>
+In-Reply-To: <x2id6200be21005031501p7f151324wb8bbf928bc2cb25e@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,27 +20,82 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, Jim Collar <jim.collar@eqware.net>, linux-doc@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Avi Kivity <avi@redhat.com>, Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 04, 2010 at 11:06:39AM -0700, Kevin Hilman wrote:
+On Tuesday 04 May 2010, Arve Hj=F8nnev=E5g wrote:
+> 2010/5/3 Rafael J. Wysocki <rjw@sisk.pl>:
+> > On Monday 03 May 2010, Arve Hj=F8nnev=E5g wrote:
+> >> On Mon, May 3, 2010 at 8:03 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> > On Sunday 02 May 2010, Alan Stern wrote:
+> >> >> On Sun, 2 May 2010, Rafael J. Wysocki wrote:
+> >> >>
+> >> >> > Hmm.  It doesn't seem to be possible to create two different susp=
+end blockers
+> >> >> > using the same file handle.  So, what exactly is a process suppos=
+ed to do to
+> >> >> > use two suspend blockers at the same time?
+> >> >>
+> >> >> Open the file twice, thereby obtaining two file handles.
+> >> >
+> >> > Well, that's what I thought.
+> >> >
+> >> > I must admit I'm not really comfortable with this interface.  IMO it=
+ would
+> >> > be better if _open() created the suspend blocker giving it a name ba=
+sed on
+> >> > the name of the process that called it.  Something like
+> >> > "<process name>_<timestamp>" might work at first sight.
+> >> >
+> >> > Alternatively, "<process_name><number>", where <number> is 0 for the=
+ first
+> >> > suspend blocker created by the given process, 1 for the second one e=
+tc., also
+> >> > seems to be doable.
+> >>
+> >> I think it is important to let user-space specify the name. If a
+> >> process uses multiple suspend blockers, it is impossible to tell what
+> >> each one is used for if they are automatically named.
+> >
+> > Well, the problem is the only purpose of this is user space debugging, =
+isn't it?
+> >
+> At the moment, yes.
 
-> With opportunistic suspend, all of this flexibility is gone, and the
-> device/subsystem is told to go into the lowest power, highest latency
-> state, period.
+OK
 
-Well, half the problem I have is that unfortunately it's not a case of
-doing that period.  The prime example I'm familiar with is that for
-understandable reasons users become irate when you power down the audio
-CODEC while they're in the middle of a call so if opportunistic PM is in
-use then the audio subsystem needs some additional help interpreting a
-suspend request so that it can figure out how to handle it.  Similar
-issues apply to PMICs, though less pressingly for various reasons.
+> But having an explicit init call also simplifies future expansion.
 
-Just to be clear, I do understand and mostly agree with the idea that
-opportunistic suspend presents a reasonable workaround for our current
-inability to deliver good power savings with runtime PM methods on many
-important platforms but I do think that if we're going to make this
-standard Linux PM functionality then we need to be clearer about how
-everything is intended to hang together.
+That's irrelevant.  Let's focus _only_ on the "at the moment" part, please.
+
+And BTW, a "future expansion" is not relevant at all to the patchset at hand
+and let's work with this assumption from now on.  OK?
+
+> If we ever need to add back multiple types of
+> suspend blockers, we can add an init call with a type argument and
+> have the current init call use the default type. If the past we have
+> had types that keeps the screen on and prevented idle sleep modes. In
+> the future we could for instance want to specify if a suspend blocker
+> should prevent suspend when the battery is low or when the lid is
+> closed.
+
+_If_ we ever do anything like thie, _then_ we will extend the interface.
+
+> > Now, while I don't think it's generally bad to provide kernel interfaces
+> > helping to debug user space, I'm not quite sure if that should be done =
+at the
+> > expense of the clarity of kernel-user space interfaces.
+> >
+> > I wonder how many cases there are in which distinguishing between suspe=
+nd
+> > blockers used by the same user space task is practically relevant.
+> >
+> =
+
+> I think all of them (when more than one suspend blocker is used).
+
+So how many user space processes use more than one suspend blocker right
+now on Android?  I'm interested only in the order of magnitude.
+
+Rafael
