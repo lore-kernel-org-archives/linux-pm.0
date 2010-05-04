@@ -1,51 +1,40 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 2/8] PM: suspend_block: Add driver to access
- suspend blockers from user-space
-Date: Tue, 4 May 2010 06:16:19 +0200
-Message-ID: <20100504041618.GB5326__35817.1924403452$1272959751$gmane$org@ucw.cz>
-References: <Pine.LNX.4.44L0.1005021755320.30701-100000@netrider.rowland.org>
-	<201005031703.11448.rjw@sisk.pl>
+Subject: Re: 2.6.33-2.6.34-rc5 suspend issues
+Date: Tue, 4 May 2010 06:18:50 +0200
+Message-ID: <20100504041849.GA1262@ucw.cz>
+References: <20100427074609.GA3261@ikn.schottelius.org>
+ <20100427083202.GA3143@ikn.schottelius.org>
+ <20100428160935.GA4010@schottelius.org>
+ <20100429191241.GA3407@schottelius.org>
+ <20100501122441.GA3273@schottelius.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <201005031703.11448.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Jim Collar <jim.collar@eqware.net>, linux-doc@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, Oleg Nesterov <oleg@redhat.com>, Kernel development list <linux-kernel@vger.kernel.org>, Avi Kivity <avi@redhat.com>, Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20100501122441.GA3273@schottelius.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nico Schottelius <nico-linux-20100427@schottelius.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2010-05-03 17:03:11, Rafael J. Wysocki wrote:
-> On Sunday 02 May 2010, Alan Stern wrote:
-> > On Sun, 2 May 2010, Rafael J. Wysocki wrote:
-> > 
-> > > Hmm.  It doesn't seem to be possible to create two different suspend blockers
-> > > using the same file handle.  So, what exactly is a process supposed to do to
-> > > use two suspend blockers at the same time?
-> > 
-> > Open the file twice, thereby obtaining two file handles.
-> 
-> Well, that's what I thought.
-> 
-> I must admit I'm not really comfortable with this interface.  IMO it would
-> be better if _open() created the suspend blocker giving it a name based on
-> the name of the process that called it.  Something like
-> "<process name>_<timestamp>" might work at first sight.
-> 
-> Alternatively, "<process_name><number>", where <number> is 0 for the first
-> suspend blocker created by the given process, 1 for the second one etc., also
-> seems to be doable.
+On Sat 2010-05-01 14:24:41, Nico Schottelius wrote:
+> Nico Schottelius [Thu, Apr 29, 2010 at 09:12:42PM +0200]:
+> > Nico Schottelius [Wed, Apr 28, 2010 at 06:09:36PM +0200]:
+> > > Nico Schottelius [Tue, Apr 27, 2010 at 10:32:02AM +0200]:
+> > > > 
+> > > > Nico Schottelius [Tue, Apr 27, 2010 at 09:46:09AM +0200]:
+> > > > > [..] 
+> > > > > - suspend & resume works once
+> > > > > - second time system
+> > > > >   b) suspends, but comes up with the bios screen after resume
+> > > > >      and hangs there forever (2.6.34-*)
+...
+> Same happens on 2.6.34-rc5-00340-g79dba2e, now testing
+> 2.6.34-rc6-00063-gbe1066b.
 
-Yes please.
+There's one bit that needs to be set to stay in the acpi mode, and
+there's blacklist somewhere...?
+									Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
