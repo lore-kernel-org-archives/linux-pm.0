@@ -1,56 +1,74 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Tue, 4 May 2010 15:53:32 +0100
-Message-ID: <20100504145332.GB3651__48189.5285695375$1272984868$gmane$org@opensource.wolfsonmicro.com>
-References: <20100504004338.GA22678@srcf.ucam.org>
-	<Pine.LNX.4.44L0.1005040949060.1729-100000@iolanthe.rowland.org>
+From: Nico Schottelius <nico-linux-20100427@schottelius.org>
+Subject: Re: 2.6.33-2.6.34-rc5 suspend issues
+Date: Tue, 4 May 2010 16:47:16 +0200
+Message-ID: <20100504144714.GA3527@schottelius.org>
+References: <20100427074609.GA3261@ikn.schottelius.org>
+ <20100427083202.GA3143@ikn.schottelius.org>
+ <20100428160935.GA4010@schottelius.org>
+ <20100429191241.GA3407@schottelius.org>
+ <20100501122441.GA3273@schottelius.org>
+ <20100504041849.GA1262@ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="pf9I7BMVVzbSWLtt"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1005040949060.1729-100000@iolanthe.rowland.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
+In-Reply-To: <20100504041849.GA1262@ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Nico Schottelius <nico-linux-20100427@schottelius.org>, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 04, 2010 at 09:51:39AM -0400, Alan Stern wrote:
-> On Tue, 4 May 2010, Matthew Garrett wrote:
-> > On Mon, May 03, 2010 at 04:37:22PM -0700, Kevin Hilman wrote:
 
-> > > Please forgive the ignorance of ACPI (in embedded, we thankfully live
-> > > in magical world without ACPI) but doesn't that already happen with
-> > > CPUidle and C-states?  I think of CPUidle as basically runtime PM for
-> > > the CPU.  IOW, runtime PM manages the devices, CPUidle manages the CPU
-> > > (via C-states), resulting in dynaimc PM for the entire system.  What
-> > > am I missing?
+--pf9I7BMVVzbSWLtt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > ACPI doesn't provide any functionality for cutting power to most devices 
-> > other than shifting into full system suspend. The number of wakeup 
-> > events available to us on a given machine is usually small and the 
-> > wakeup latency large, so it's not terribly practical to do this 
-> > transparently on most hardware.
+Pavel Machek [Tue, May 04, 2010 at 06:18:50AM +0200]:
+> On Sat 2010-05-01 14:24:41, Nico Schottelius wrote:
+> > Nico Schottelius [Thu, Apr 29, 2010 at 09:12:42PM +0200]:
+> > > Nico Schottelius [Wed, Apr 28, 2010 at 06:09:36PM +0200]:
+> > > > Nico Schottelius [Tue, Apr 27, 2010 at 10:32:02AM +0200]:
+> > > > >=20
+> > > > > Nico Schottelius [Tue, Apr 27, 2010 at 09:46:09AM +0200]:
+> > > > > > [..]=20
+> > > > > > - suspend & resume works once
+> > > > > > - second time system
+> > > > > >   b) suspends, but comes up with the bios screen after resume
+> > > > > >      and hangs there forever (2.6.34-*)
+> ...
+> > Same happens on 2.6.34-rc5-00340-g79dba2e, now testing
+> > 2.6.34-rc6-00063-gbe1066b.
+>=20
+> There's one bit that needs to be set to stay in the acpi mode, and
+> there's blacklist somewhere...?
 
-> Another thing that Kevin is missing: There is more to the system than
-> the devices and the CPU.  For example: RAM, an embedded controller (on
-> modern desktop/laptop systems), a power supply, and so on.  Dynamic PM
-> for the CPU and the devices won't power-down these things, but system
-> PM will.
+Don't know if I should answer the question, but the problem also happens
+on 2.6.34-rc6-00063-gbe1066b.
 
-In an embedded system I'd expect that these other system devices would
-fall naturally out through the management of the CPUs and devices - for
-example, the drivers for the individual devices could use the regulator
-API to manage their supplies and runtime PM is being used to manage CPU
-core stuff - or could at least readily be handled in a similar fashion.
+Now compiling v2.6.34-rc6-106-gd93ac51.
 
-This isn't to say that we're there yet from an implementation point of
-view, of course.
+Cheers,
+
+Nico
+
+--=20
+New PGP key: 7ED9 F7D3 6B10 81D7 0EC5  5C09 D7DC C8E4 3187 7DF0
+Please resign, if you signed 9885188C or 8D0E27A4.
+
+Currently moving *.schottelius.org to http://www.nico.schottelius.org/ ...
+
+--pf9I7BMVVzbSWLtt
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkvgM3EACgkQ19zI5DGHffAk3QCeKdw7X1a1mcPCca8wLKeU2cgb
+KZkAn0lHQU5g3EmnfNBd0feEeFI64Qq8
+=juR+
+-----END PGP SIGNATURE-----
+
+--pf9I7BMVVzbSWLtt--
