@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Wed, 5 May 2010 01:42:41 +0200
-Message-ID: <201005050142.41537.rjw__39236.233130987$1273016552$gmane$org@sisk.pl>
+Date: Wed, 5 May 2010 00:56:44 +0100
+Message-ID: <20100504235644.GA5231__28467.9999146194$1273017541$gmane$org@opensource.wolfsonmicro.com>
 References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<201005042237.56844.rjw@sisk.pl>
-	<87wrvjdztr.fsf@deeprootsystems.com>
+	<20100504135907.GA3651@opensource.wolfsonmicro.com>
+	<87r5lrh780.fsf@deeprootsystems.com>
+	<201005042223.41370.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87wrvjdztr.fsf@deeprootsystems.com>
+Content-Disposition: inline
+In-Reply-To: <201005042223.41370.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,69 +21,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Arve@smtp1.linux-foundation.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 05 May 2010, Kevin Hilman wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > On Tuesday 04 May 2010, Mark Brown wrote:
-> >> On Tue, May 04, 2010 at 11:06:39AM -0700, Kevin Hilman wrote:
-> >> 
-> >> > With opportunistic suspend, all of this flexibility is gone, and the
-> >> > device/subsystem is told to go into the lowest power, highest latency
-> >> > state, period.
-> >> 
-> >> Well, half the problem I have is that unfortunately it's not a case of
-> >> doing that period.  The prime example I'm familiar with is that for
-> >> understandable reasons users become irate when you power down the audio
-> >> CODEC while they're in the middle of a call so if opportunistic PM is in
-> >> use then the audio subsystem needs some additional help interpreting a
-> >> suspend request so that it can figure out how to handle it.  Similar
-> >> issues apply to PMICs, though less pressingly for various reasons.
-> >> 
-> >> Just to be clear, I do understand and mostly agree with the idea that
-> >> opportunistic suspend presents a reasonable workaround for our current
-> >> inability to deliver good power savings with runtime PM methods on many
-> >> important platforms but I do think that if we're going to make this
-> >> standard Linux PM functionality then we need to be clearer about how
-> >> everything is intended to hang together.
-> >
-> > At the moment the rule of thumb is: if you don't need the opportunistic
-> > suspend, don't use it.  It is not going to be enabled by default on anything
-> > other than Android right now.
-> 
-> Sure, but there are driver authors and subsystem maintainers who care
-> about optimal PM in "normal" Linux *and* in Android.
-> 
-> As a PM maintainer for an embedded platform (OMAP) used in both, I
-> certainly care about both, so "disable it if you don't like it" is not
-> really an option.
-> 
-> IMO, driver/subsystem authors should not have to care if the userspace
-> is Android or not.  We should be working towards a world where Android
-> is not a special case.
+On Tue, May 04, 2010 at 10:23:41PM +0200, Rafael J. Wysocki wrote:
+> On Tuesday 04 May 2010, Kevin Hilman wrote:
+> > Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
 
-I agree, but "working on towards a world where ..." need not mean "be there
-from day one" IMO.  Also, I guess you'll agree that using the same _binary_
-kernel with Android and non-Android user spaces doesn't necessarily make sense
-(regardless of the fact that Android kernels have hardware-specific board files
-included), so probably you'll still disable opportunistic suspend building the
-kernel for non-Android systems (at least for the time being).
+> Guys, please.
 
-It looks like you're thinking the opportunistic suspend somehow is (or can be
-used as) a replacement for runtime PM, but this is not the case.  The reason
-why it's not the case is that runtime PM works with the assumption that user
-space is not frozen and it works on individual devices.
+> The opportunistic suspend feature is _not_ to replace runtime PM by any means!
 
-OTOH, generally, there is a limit on the amount of energy savings you can
-achieve with runtime PM alone and something like the opportunistic suspend is
-necessary to go beyond that limit.
+Certainly in my case and I think Kevin's I agree with the need for the
+bodge at the minute if we can get a clearer idea of how it's supposed to
+work.
 
-Now, I can easily imagine using suspend blockers and runtime PM in the same
-driver with the general rule that you'll probably want to call suspend_unblock()
-whenever the device is suspended with the help of the runtime PM framework.
-That really depends on the device and the driver in question, though.
+> when to put devices into low power states and save energy this way.  Still,
+> even if all subsystems do that 100% efficiently, there may be more savings
+> possible by putting the entire system into a sleep state (like on ACPI-based
+> PCs) and we can reach there by runtime PM alone.
 
-Rafael
+Right, this is likely to be a win for PCs - for embedded systems we
+rarely have other software to interoperate with so if you can make the
+hardware do it then it's unlikely there would be any fundamental issue
+with Linux doing it at runtime.
+
+> > > I'd be a lot more comfortable with this if it came with a mechanism for
+> > > communicating the intended effect of a suspend on a per-device level so
+> > > that the drivers have a clear way of figuring out what to do when the
+> > > system suspends.  If there isn't one we can add subsystem or driver
+> > > specific hooks, of course, but it'd be better to address this at the
+> > > system level.
+
+> > I agree.
+
+> I'm not sure.  Why _exactly_ would you need that?
+
+The use case that causes serious issues with this at the minute in the
+domains I work is this:
+
+On a mobile phone when the system is in a voice call the data flow for
+the call is entirely handled outside the CPU (normally referred to as
+Applications Processor or AP here) by the baseband and audio CODEC,
+which are either integrated or directly connected by analogue or digital
+audio links on the board.  If the user has the phone to their ear and is
+talking away with the screen blanked then the AP is just waiting for
+input, will appear idle and so trigger an opportunistic suspend.  If the
+audio CODEC is managed by Linux (as is standard) then running through
+the suspend process will as things stand cause the audio subsystem to be
+suspended.  Since in the normal course of affairs suspend means power
+down that's what will happen, but this is clearly highly undesirable in
+this situation.
+
+Now, the solution here if we're going to use opportunistic suspend like
+this is to provide some method for the audio subsystem to figure out
+that the system doesn't actually want it to suspend when it gets told do
+do so.  Like I say ideally we'd provide some standard interface in the
+PM subsystem for userspace to communicate this to subsystems and drivers
+so that we've got a joined up story when people run into issues in cases
+like this, though obviously if this goes in then we'll have to put in
+something subsystem or driver specific for affected areas.  I know what
+I'd implement generically for audio, but I've held back since the option
+is fairly messy when not used in conjunction with a deliberate choice to
+use opportunistic suspend and I was expecting a standard mechanism to
+slot into to provide control for userspace.
+
+In other words, the issue is that we run into situations where we need
+an element of suspend control to go along with the opportunistic suspend
+in order to allow some elements to be kept running - since suspend
+blocking is taken suspend suppression seems like a reasonable term.
