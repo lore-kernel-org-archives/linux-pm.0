@@ -1,19 +1,20 @@
 From: Kevin Hilman <khilman@deeprootsystems.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Tue, 04 May 2010 11:04:49 -0700
-Message-ID: <87wrvjh7b2.fsf__46310.4895702147$1272996432$gmane$org@deeprootsystems.com>
+Date: Tue, 04 May 2010 11:06:39 -0700
+Message-ID: <87r5lrh780.fsf__21443.2521643632$1272996563$gmane$org@deeprootsystems.com>
 References: <1272667021-21312-1-git-send-email-arve@android.com>
 	<87wrvl5479.fsf@deeprootsystems.com>
 	<20100503180741.GB2098@rakim.wolfsonmicro.main>
 	<201005032318.35383.rjw@sisk.pl> <87sk68r1zh.fsf@deeprootsystems.com>
 	<s2qd6200be21005031709r28420f0ezf3cf286517ee9114@mail.gmail.com>
+	<w2pa55d774e1005031743x859e82fz401346fae7fe873a@mail.gmail.com>
+	<20100504135907.GA3651@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <s2qd6200be21005031709r28420f0ezf3cf286517ee9114@mail.gmail.com> ("Arve
-	=?iso-8859-1?Q?Hj=F8nnev=E5g=22's?= message of "Mon\,
-	3 May 2010 17\:09\:22 -0700")
+In-Reply-To: <20100504135907.GA3651@opensource.wolfsonmicro.com> (Mark Brown's
+	message of "Tue\, 4 May 2010 14\:59\:07 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,63 +24,87 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Arve@smtp1.linux-foundation.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Arve Hj=F8nnev=E5g <arve@android.com> writes:
+Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
 
-> On Mon, May 3, 2010 at 4:37 PM, Kevin Hilman
-> <khilman@deeprootsystems.com> wrote:
->> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->>
-
-[...]
-
->>> However, the real question is whether or not the opportunistic suspend =
-feature
->>> is worth adding to the kernel as such and I think it is.
->>>
->>> To me, it doesn't duplicate the runtime PM framework which is aimed at =
-the power
->>> management of individual devices rather than the system as a whole.
->>
->> From the use cases presented, the *usage* of suspend blockers is aimed
->> at power management of individual devices or subsystems, just like
->> usage of runtime PM.
->>
-> No, suspend blockers are mostly used to ensure wakeup events are not
-> ignored, and to ensure tasks triggered by these wakeup events
-> complete.
-
-OK, but my point was that their *usage* is at the level of inidividual
-devices and subsystems, just like runtime PM.  Hence, duplicate work.
-
->> So I still see a large duplication in the usage and the goals of both
->> frameworks. =A0The goal of both is to always enter lowest-power state
->> except
->>
->> =A0- if there's activity (runtime PM for devices, CPUidle for CPU)
->> =A0- if there's a suspend blocker (opportunitic suspend)
->>
->> In addition, it will likely cause duplicate work to be done in
->> drivers. =A0Presumably, PM aware drivers will want to know if the system
->> is in opportunistic mode. =A0For example, for many drivers, doing
->> runtime PM may not be worth the effort if the system is in
->> opportunistic mode.
+> On Mon, May 03, 2010 at 05:43:34PM -0700, Brian Swetland wrote:
+>> On Mon, May 3, 2010 at 5:09 PM, Arve Hj=F8nnev=E5g <arve@android.com> wr=
+ote:
+>> > On Mon, May 3, 2010 at 4:37 PM, Kevin Hilman
 >
-> Why? If a device is not in use it should be off regardless of what
-> state the rest of the system is in.
+>> >> This last point is especially troubling. =A0I don't find it a comfort=
+ing
+>> >> path to go down if the drivers have to start caring about which PM
+>> >> policy is currently in use.
+>
+>> I'll echo Arve here -- all drivers should seek to be in the lowest
+>> power state possible at all times.  We've never suggested that
+>> suspend_block is a substitute for that.
+>
+> Looking at this from a subsystem/driver author point of view the problem
+> I'm faced with is that as a result of using system suspend much more
+> aggressively the subsystem and driver layers are getting conflicting
+> instructions about what the lowest power state possible is.
 
-Not necessarily.
+Exactly.
 
-If a device is not in use, what power state it goes into depends on
-many device/subsystem specific things.  For example, recent activity
-(timeouts), whether it will be busy soon (pending transfers),
-latency/throughput constraints, dependency on other devices, or any
-other device/subsystem specific reason.
+With runtime PM, there is flexibility in choosing the lowest power
+state at the device/subsystem level, based on activity, timeouts,
+bitrate, dependencies, latency/throughput constraints, etc.
 
-All of these can be handled with runtime PM.  None of which are taken
-into consideration with opportunistic suspend.
+With opportunistic suspend, all of this flexibility is gone, and the
+device/subsystem is told to go into the lowest power, highest latency
+state, period.
+
+>> Suspend blockers give us some flexibility on systems where runtime pm
+>> will not get us all the way there. If you can meet your power needs
+>> without needing suspend blockers, awesome, you don't need them on that
+>> platform.  The patchset Arve sent out makes this feature an
+>> off-by-default kernel configuration option that compiles out to no-ops
+>> when disabled.
+>
+> I think a big part of this for me is that this approach changes the
+> intended use of the system-wide suspend a bit, complicating it a bit
+> further than it already is.  We end up doing a suspend (which in the
+> normal course of affairs means that the driver should shut everything
+> down) partly as a substitute for runtime PM on the core system devices
+> and partly because our runtime PM isn't doing as well as it should on
+> the individual devices.
+
+Agreed, and because of this, part of my concern is that opportunistic
+suspend will take the place of doing the "right thing" which (IMHO) =
+
+would be to improve runtime PM for devices.
+
+> I'd be a lot more comfortable with this if it came with a mechanism for
+> communicating the intended effect of a suspend on a per-device level so
+> that the drivers have a clear way of figuring out what to do when the
+> system suspends.  If there isn't one we can add subsystem or driver
+> specific hooks, of course, but it'd be better to address this at the
+> system level.
+
+I agree.
+
+I think there needs to be more discussion on the indended usage
+of suspend blockers by drivers/subsystems, especially those PM aware
+drivers and subsystems already doing runtime PM with constraints etc.
+
+>> In our experience, periodic timers and polling, both userspace side
+>> and kernelside make suspend blockers a win even on platforms like OMAP
+>> which have pretty flexible hardware power management.  Going to low
+>> power states in idle results in higher average power consumption than
+>> going to the same states in full suspend, at least on Android devices
+>> shipping today.
+>
+> There's definite work to be done here, yes.
+
+And I've admitted this to be the only compelling reason for
+opportunistic suspend so far.
+
+But the driver/subsystem implications of opportunistic suspend still
+need some fleshing out IMO.
 
 Kevin
