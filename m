@@ -1,17 +1,18 @@
-From: Brian Swetland <swetland@google.com>
+From: Matthew Garrett <mjg@redhat.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Mon, 3 May 2010 17:43:34 -0700
-Message-ID: <w2pa55d774e1005031743x859e82fz401346fae7fe873a__43694.8092807599$1272933878$gmane$org@mail.gmail.com>
+Date: Tue, 4 May 2010 01:43:38 +0100
+Message-ID: <20100504004338.GA22678__17449.7370761403$1272933886$gmane$org@srcf.ucam.org>
 References: <1272667021-21312-1-git-send-email-arve@android.com>
 	<87wrvl5479.fsf@deeprootsystems.com>
 	<20100503180741.GB2098@rakim.wolfsonmicro.main>
-	<201005032318.35383.rjw@sisk.pl> <87sk68r1zh.fsf@deeprootsystems.com>
-	<s2qd6200be21005031709r28420f0ezf3cf286517ee9114@mail.gmail.com>
+	<201005032318.35383.rjw@sisk.pl>
+	<87sk68r1zh.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <s2qd6200be21005031709r28420f0ezf3cf286517ee9114@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <87sk68r1zh.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,39 +22,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>
+To: Kevin Hilman <khilman@deeprootsystems.com>
 Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBNYXkgMywgMjAxMCBhdCA1OjA5IFBNLCBBcnZlIEhqw7hubmV2w6VnIDxhcnZlQGFu
-ZHJvaWQuY29tPiB3cm90ZToKPiBPbiBNb24sIE1heSAzLCAyMDEwIGF0IDQ6MzcgUE0sIEtldmlu
-IEhpbG1hbgo+Pgo+PiBJbiBhZGRpdGlvbiwgaXQgd2lsbCBsaWtlbHkgY2F1c2UgZHVwbGljYXRl
-IHdvcmsgdG8gYmUgZG9uZSBpbgo+PiBkcml2ZXJzLiDCoFByZXN1bWFibHksIFBNIGF3YXJlIGRy
-aXZlcnMgd2lsbCB3YW50IHRvIGtub3cgaWYgdGhlIHN5c3RlbQo+PiBpcyBpbiBvcHBvcnR1bmlz
-dGljIG1vZGUuIMKgRm9yIGV4YW1wbGUsIGZvciBtYW55IGRyaXZlcnMsIGRvaW5nCj4+IHJ1bnRp
-bWUgUE0gbWF5IG5vdCBiZSB3b3J0aCB0aGUgZWZmb3J0IGlmIHRoZSBzeXN0ZW0gaXMgaW4KPj4g
-b3Bwb3J0dW5pc3RpYyBtb2RlLgo+Cj4gV2h5PyBJZiBhIGRldmljZSBpcyBub3QgaW4gdXNlIGl0
-IHNob3VsZCBiZSBvZmYgcmVnYXJkbGVzcyBvZiB3aGF0Cj4gc3RhdGUgdGhlIHJlc3Qgb2YgdGhl
-IHN5c3RlbSBpcyBpbi4KPgo+PiBUaGlzIGxhc3QgcG9pbnQgaXMgZXNwZWNpYWxseSB0cm91Ymxp
-bmcuIMKgSSBkb24ndCBmaW5kIGl0IGEgY29tZm9ydGluZwo+PiBwYXRoIHRvIGdvIGRvd24gaWYg
-dGhlIGRyaXZlcnMgaGF2ZSB0byBzdGFydCBjYXJpbmcgYWJvdXQgd2hpY2ggUE0KPj4gcG9saWN5
-IGlzIGN1cnJlbnRseSBpbiB1c2UuCgpJJ2xsIGVjaG8gQXJ2ZSBoZXJlIC0tIGFsbCBkcml2ZXJz
-IHNob3VsZCBzZWVrIHRvIGJlIGluIHRoZSBsb3dlc3QKcG93ZXIgc3RhdGUgcG9zc2libGUgYXQg
-YWxsIHRpbWVzLiAgV2UndmUgbmV2ZXIgc3VnZ2VzdGVkIHRoYXQKc3VzcGVuZF9ibG9jayBpcyBh
-IHN1YnN0aXR1dGUgZm9yIHRoYXQuCgpTdXNwZW5kIGJsb2NrZXJzIGdpdmUgdXMgc29tZSBmbGV4
-aWJpbGl0eSBvbiBzeXN0ZW1zIHdoZXJlIHJ1bnRpbWUgcG0Kd2lsbCBub3QgZ2V0IHVzIGFsbCB0
-aGUgd2F5IHRoZXJlLiBJZiB5b3UgY2FuIG1lZXQgeW91ciBwb3dlciBuZWVkcwp3aXRob3V0IG5l
-ZWRpbmcgc3VzcGVuZCBibG9ja2VycywgYXdlc29tZSwgeW91IGRvbid0IG5lZWQgdGhlbSBvbiB0
-aGF0CnBsYXRmb3JtLiAgVGhlIHBhdGNoc2V0IEFydmUgc2VudCBvdXQgbWFrZXMgdGhpcyBmZWF0
-dXJlIGFuCm9mZi1ieS1kZWZhdWx0IGtlcm5lbCBjb25maWd1cmF0aW9uIG9wdGlvbiB0aGF0IGNv
-bXBpbGVzIG91dCB0byBuby1vcHMKd2hlbiBkaXNhYmxlZC4KCkluIG91ciBleHBlcmllbmNlLCBw
-ZXJpb2RpYyB0aW1lcnMgYW5kIHBvbGxpbmcsIGJvdGggdXNlcnNwYWNlIHNpZGUKYW5kIGtlcm5l
-bHNpZGUgbWFrZSBzdXNwZW5kIGJsb2NrZXJzIGEgd2luIGV2ZW4gb24gcGxhdGZvcm1zIGxpa2Ug
-T01BUAp3aGljaCBoYXZlIHByZXR0eSBmbGV4aWJsZSBoYXJkd2FyZSBwb3dlciBtYW5hZ2VtZW50
-LiAgR29pbmcgdG8gbG93CnBvd2VyIHN0YXRlcyBpbiBpZGxlIHJlc3VsdHMgaW4gaGlnaGVyIGF2
-ZXJhZ2UgcG93ZXIgY29uc3VtcHRpb24gdGhhbgpnb2luZyB0byB0aGUgc2FtZSBzdGF0ZXMgaW4g
-ZnVsbCBzdXNwZW5kLCBhdCBsZWFzdCBvbiBBbmRyb2lkIGRldmljZXMKc2hpcHBpbmcgdG9kYXku
-CgpCcmlhbgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwps
-aW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcK
-aHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4
-LXBt
+On Mon, May 03, 2010 at 04:37:22PM -0700, Kevin Hilman wrote:
+
+> Please forgive the ignorance of ACPI (in embedded, we thankfully live
+> in magical world without ACPI) but doesn't that already happen with
+> CPUidle and C-states?  I think of CPUidle as basically runtime PM for
+> the CPU.  IOW, runtime PM manages the devices, CPUidle manages the CPU
+> (via C-states), resulting in dynaimc PM for the entire system.  What
+> am I missing?
+
+ACPI doesn't provide any functionality for cutting power to most devices 
+other than shifting into full system suspend. The number of wakeup 
+events available to us on a given machine is usually small and the 
+wakeup latency large, so it's not terribly practical to do this 
+transparently on most hardware.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
