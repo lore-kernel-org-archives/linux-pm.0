@@ -1,14 +1,17 @@
-From: Brian Swetland <swetland@google.com>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Wed, 5 May 2010 14:37:39 -0700
-Message-ID: <z2ta55d774e1005051437heb584584q6afca0b4b254d5d0__42833.448565989$1273096213$gmane$org@mail.gmail.com>
-References: <20100505202826.GB7450@linux.intel.com>
-	<Pine.LNX.4.44L0.1005051705200.1885-100000@iolanthe.rowland.org>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Wed, 5 May 2010 22:57:11 +0100
+Message-ID: <20100505215711.GA4838__41142.9398613565$1273096738$gmane$org@opensource.wolfsonmicro.com>
+References: <20100505185225.GA4411@srcf.ucam.org>
+	<20100505195534.GD18762@thunk.org>
+	<20100505202637.GH7139@rakim.wolfsonmicro.main>
+	<201005052244.03225.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005051705200.1885-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <201005052244.03225.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,32 +21,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, markgross@thegnar.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Paul Walmsley <paul@pwsan.com>, tytso@mit.edu, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBNYXkgNSwgMjAxMCBhdCAyOjEyIFBNLCBBbGFuIFN0ZXJuIDxzdGVybkByb3dsYW5k
-LmhhcnZhcmQuZWR1PiB3cm90ZToKPj4KPj4gT2gsIGxpa2UgdGVsbCB0aGUgbW9kZW0gdGhhdCB1
-c2VyIG1vZGUgaGFzIGhhbmRsZWQgdGhlIHJpbmcgZXZlbnQgYW5kCj4+IGl0cyBvayB0byB1bi1i
-bG9jaz8KPgo+IE5vLCB0aGF0J3Mgbm90IGhvdyBpdCB3b3Jrcy4gwqBJdCB3b3VsZCBnbyBsaWtl
-IHRoaXM6Cj4KPiDCoCDCoCDCoCDCoFRoZSBtb2RlbSBJUlEgaGFuZGxlciBxdWV1ZXMgaXRzIGV2
-ZW50IHRvIHRoZSBpbnB1dCBzdWJzeXN0ZW0uCj4gwqAgwqAgwqAgwqBBcyBpdCBkb2VzIHNvIHRo
-ZSBpbnB1dCBzdWJzeXN0ZW0gZW5hYmxlcyBhIHN1c3BlbmQgYmxvY2tlciwKPiDCoCDCoCDCoCDC
-oGNhdXNpbmcgdGhlIHN5c3RlbSB0byBzdGF5IGF3YWtlIGFmdGVyIHRoZSBJUlEgaXMgZG9uZS4K
-Pgo+IMKgIMKgIMKgIMKgVGhlIHVzZXIgcHJvZ3JhbSBlbmFibGVzIGl0cyBvd24gc3VzcGVuZCBi
-bG9ja2VyIGJlZm9yZSByZWFkaW5nCj4gwqAgwqAgwqAgwqB0aGUgaW5wdXQgcXVldWUuIMKgV2hl
-biB0aGUgcXVldWUgaXMgZW1wdHksIHRoZSBpbnB1dCBzdWJzeXN0ZW0KPiDCoCDCoCDCoCDCoHJl
-bGVhc2VzIGl0cyBzdXNwZW5kIGJsb2NrZXIuCj4KPiDCoCDCoCDCoCDCoFdoZW4gdGhlIHVzZXIg
-cHJvZ3JhbSBmaW5pc2hlcyBwcm9jZXNzaW5nIHRoZSBldmVudCwgaXQKPiDCoCDCoCDCoCDCoHJl
-bGVhc2VzIGl0cyBzdXNwZW5kIGJsb2NrZXIuIMKgTm93IHRoZSBzeXN0ZW0gY2FuIGdvIGJhY2sg
-dG8KPiDCoCDCoCDCoCDCoHNsZWVwLgo+Cj4gQXQgbm8gcG9pbnQgZG9lcyB0aGUgdXNlciBwcm9n
-cmFtIGhhdmUgdG8gY29tbXVuaWNhdGUgYW55dGhpbmcgdG8gdGhlCj4gbW9kZW0gZHJpdmVyLCBh
-bmQgYXQgbm8gcG9pbnQgZG9lcyBpdCBoYXZlIHRvIGRvIGFueXRoaW5nIG91dCBvZiB0aGUKPiBv
-cmRpbmFyeSBleGNlcHQgdG8gZW5hYmxlIGFuZCBkaXNhYmxlIGEgc3VzcGVuZCBibG9ja2VyLgoK
-RXhhY3RseSAtLSBhbmQgeW91IGNhbiB1c2UgdGhlIHNhbWUgc3R5bGUgb2Ygb3ZlcmxhcHBpbmcg
-c3VzcGVuZApibG9ja2VycyB3aXRoIG90aGVyIGRyaXZlcnMgdGhhbiBpbnB1dCwgaWYgdGhlIGlu
-cHV0IGludGVyZmFjZSBpcyBub3QKc3VpdGFibGUgZm9yIHRoZSBwYXJ0aWN1bGFyIGludGVyYWN0
-aW9uLgoKQnJpYW4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24u
-b3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9s
-aW51eC1wbQ==
+On Wed, May 05, 2010 at 10:44:03PM +0200, Rafael J. Wysocki wrote:
+
+> To me, the above may be summarized that in your opinion some components of
+> the system will generally need to stay powered when it's suspended
+> opportunistically, so we need an interface to specify which components they are.
+> Is that correct?
+
+Yes, though I think I'd be inclined to treat the problem orthogonally to
+opportunistic suspend to allow more flexibility in use and since
+treating it as part of opportunistic suspend would imply that there's
+some meaningful difference between the end result of that and a manual
+suspend which AIUI there isn't.
