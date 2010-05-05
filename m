@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Wed, 5 May 2010 02:22:30 +0200
-Message-ID: <201005050222.31038.rjw__46102.8135418475$1273019043$gmane$org@sisk.pl>
+Date: Tue, 4 May 2010 18:11:00 -0700
+Message-ID: <v2ta55d774e1005041811se31aa4d1i617b829ae010535__706.800903617655$1273021913$gmane$org@mail.gmail.com>
 References: <1272667021-21312-1-git-send-email-arve@android.com>
 	<201005042223.41370.rjw@sisk.pl>
 	<20100504235644.GA5231@opensource.wolfsonmicro.com>
+	<201005050222.31038.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100504235644.GA5231@opensource.wolfsonmicro.com>
+In-Reply-To: <201005050222.31038.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,100 +20,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Arve@smtp1.linux-foundation.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 05 May 2010, Mark Brown wrote:
-> On Tue, May 04, 2010 at 10:23:41PM +0200, Rafael J. Wysocki wrote:
-> > On Tuesday 04 May 2010, Kevin Hilman wrote:
-> > > Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
-> 
-> > Guys, please.
-> 
-> > The opportunistic suspend feature is _not_ to replace runtime PM by any means!
-> 
-> Certainly in my case and I think Kevin's I agree with the need for the
-> bodge at the minute if we can get a clearer idea of how it's supposed to
-> work.
-> 
-> > when to put devices into low power states and save energy this way.  Still,
-> > even if all subsystems do that 100% efficiently, there may be more savings
-> > possible by putting the entire system into a sleep state (like on ACPI-based
-> > PCs) and we can reach there by runtime PM alone.
-> 
-> Right, this is likely to be a win for PCs - for embedded systems we
-> rarely have other software to interoperate with so if you can make the
-> hardware do it then it's unlikely there would be any fundamental issue
-> with Linux doing it at runtime.
-
-Evidently, the Android developers had a problem with that.  Of course, you can
-argue that they didn't consider using runtime PM for this purpose, but the real
-question is how much time it would take to achieve the same level of energy
-saving using runtime PM without opportunistic suspend.
-
-> > > > I'd be a lot more comfortable with this if it came with a mechanism for
-> > > > communicating the intended effect of a suspend on a per-device level so
-> > > > that the drivers have a clear way of figuring out what to do when the
-> > > > system suspends.  If there isn't one we can add subsystem or driver
-> > > > specific hooks, of course, but it'd be better to address this at the
-> > > > system level.
-> 
-> > > I agree.
-> 
-> > I'm not sure.  Why _exactly_ would you need that?
-> 
-> The use case that causes serious issues with this at the minute in the
-> domains I work is this:
-> 
-> On a mobile phone when the system is in a voice call the data flow for
-> the call is entirely handled outside the CPU (normally referred to as
-> Applications Processor or AP here) by the baseband and audio CODEC,
-> which are either integrated or directly connected by analogue or digital
-> audio links on the board.  If the user has the phone to their ear and is
-> talking away with the screen blanked then the AP is just waiting for
-> input, will appear idle and so trigger an opportunistic suspend.  If the
-> audio CODEC is managed by Linux (as is standard) then running through
-> the suspend process will as things stand cause the audio subsystem to be
-> suspended.  Since in the normal course of affairs suspend means power
-> down that's what will happen, but this is clearly highly undesirable in
-> this situation.
-
-In that case someone (either a driver or, most likely, user space) will need to
-keep a suspend blocker active.
-
-> Now, the solution here if we're going to use opportunistic suspend like
-> this is to provide some method for the audio subsystem to figure out
-> that the system doesn't actually want it to suspend when it gets told do
-> do so.  Like I say ideally we'd provide some standard interface in the
-> PM subsystem for userspace to communicate this to subsystems and drivers
-> so that we've got a joined up story when people run into issues in cases
-> like this, though obviously if this goes in then we'll have to put in
-> something subsystem or driver specific for affected areas.
-
-My understanding is that on Android suspend blockers are used for this
-purpose.
-
-> I know what I'd implement generically for audio, but I've held back since
-> the option is fairly messy when not used in conjunction with a deliberate
-> choice to use opportunistic suspend and I was expecting a standard mechanism
-> to slot into to provide control for userspace.
-> 
-> In other words, the issue is that we run into situations where we need
-> an element of suspend control to go along with the opportunistic suspend
-> in order to allow some elements to be kept running - since suspend
-> blocking is taken suspend suppression seems like a reasonable term.
-
-Suspend really is a sledgehammer thing.  Either you suspend the whole system
-or you don't suspend at all.  You can prevent opportunistic suspend from
-happening using suspend blockers (that's what they are for), but that's pretty
-much everything you can do about it.  If you want power savings while some
-parts of the system are active, use runtime PM for that.
-
-What I'd use opportunistic suspend for is not the saving of energy when there's
-a call in progress, because in that case some parts of the system need to be
-active, but to save energy when the device is completely idle, ie. the user
-interface is not used, music is not played "in the background" etc. (my phone
-is in such a state 90% of the time at least).
-
-Rafael
+T24gVHVlLCBNYXkgNCwgMjAxMCBhdCA1OjIyIFBNLCBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNp
+c2sucGw+IHdyb3RlOgo+Pgo+PiBJbiBvdGhlciB3b3JkcywgdGhlIGlzc3VlIGlzIHRoYXQgd2Ug
+cnVuIGludG8gc2l0dWF0aW9ucyB3aGVyZSB3ZSBuZWVkCj4+IGFuIGVsZW1lbnQgb2Ygc3VzcGVu
+ZCBjb250cm9sIHRvIGdvIGFsb25nIHdpdGggdGhlIG9wcG9ydHVuaXN0aWMgc3VzcGVuZAo+PiBp
+biBvcmRlciB0byBhbGxvdyBzb21lIGVsZW1lbnRzIHRvIGJlIGtlcHQgcnVubmluZyAtIHNpbmNl
+IHN1c3BlbmQKPj4gYmxvY2tpbmcgaXMgdGFrZW4gc3VzcGVuZCBzdXBwcmVzc2lvbiBzZWVtcyBs
+aWtlIGEgcmVhc29uYWJsZSB0ZXJtLgo+Cj4gU3VzcGVuZCByZWFsbHkgaXMgYSBzbGVkZ2VoYW1t
+ZXIgdGhpbmcuIMKgRWl0aGVyIHlvdSBzdXNwZW5kIHRoZSB3aG9sZSBzeXN0ZW0KPiBvciB5b3Ug
+ZG9uJ3Qgc3VzcGVuZCBhdCBhbGwuIMKgWW91IGNhbiBwcmV2ZW50IG9wcG9ydHVuaXN0aWMgc3Vz
+cGVuZCBmcm9tCj4gaGFwcGVuaW5nIHVzaW5nIHN1c3BlbmQgYmxvY2tlcnMgKHRoYXQncyB3aGF0
+IHRoZXkgYXJlIGZvciksIGJ1dCB0aGF0J3MgcHJldHR5Cj4gbXVjaCBldmVyeXRoaW5nIHlvdSBj
+YW4gZG8gYWJvdXQgaXQuIMKgSWYgeW91IHdhbnQgcG93ZXIgc2F2aW5ncyB3aGlsZSBzb21lCj4g
+cGFydHMgb2YgdGhlIHN5c3RlbSBhcmUgYWN0aXZlLCB1c2UgcnVudGltZSBQTSBmb3IgdGhhdC4K
+Pgo+IFdoYXQgSSdkIHVzZSBvcHBvcnR1bmlzdGljIHN1c3BlbmQgZm9yIGlzIG5vdCB0aGUgc2F2
+aW5nIG9mIGVuZXJneSB3aGVuIHRoZXJlJ3MKPiBhIGNhbGwgaW4gcHJvZ3Jlc3MsIGJlY2F1c2Ug
+aW4gdGhhdCBjYXNlIHNvbWUgcGFydHMgb2YgdGhlIHN5c3RlbSBuZWVkIHRvIGJlCj4gYWN0aXZl
+LCBidXQgdG8gc2F2ZSBlbmVyZ3kgd2hlbiB0aGUgZGV2aWNlIGlzIGNvbXBsZXRlbHkgaWRsZSwg
+aWUuIHRoZSB1c2VyCj4gaW50ZXJmYWNlIGlzIG5vdCB1c2VkLCBtdXNpYyBpcyBub3QgcGxheWVk
+ICJpbiB0aGUgYmFja2dyb3VuZCIgZXRjLiAobXkgcGhvbmUKPiBpcyBpbiBzdWNoIGEgc3RhdGUg
+OTAlIG9mIHRoZSB0aW1lIGF0IGxlYXN0KS4KCldlIGFjdHVhbGx5IGRvIHVzZSBvcHBvcnR1bmlz
+dGljIHN1c3BlbmQgZm9yIGNhc2VzIGxpa2UgdGhpcyBvbgpBbmRyb2lkIHRvZGF5LiAgSXQgbW9z
+dGx5IGNvbWVzIGRvd24gdG8gYSBxdWVzdGlvbiBvZiBsYXRlbmN5IGZvcgpyZXR1cm4gZnJvbSBm
+dWxsIHN1c3BlbmQuICBGb3IgZXhhbXBsZToKClNvbWUgTVNNNzIwMSBiYXNlZCBkZXZpY2VzIHR5
+cGljYWxseSByZXN1bWUgZnJvbSBwb3dlciBjb2xsYXBzZSBpbgozLTVtcywgYnV0IGFic29sdXRl
+IHdvcnN0IGNhc2UgKGJlY2F1c2UgdGhlIEwxIHJhZGlvIHNlcnZpY2VzIGFyZQpoaWdoZXIgcHJp
+b3JpdHkgdGhhbiB0aGUgd2FrZS10aGUtYXBwcy1jcHUgc2VydmljZXMpIGlzIH45MG1zLiAgT24K
+dGhlc2UgZGV2aWNlcyB3ZSBob2xkIGEgc3VzcGVuZF9ibG9ja2VyIHdoaWxlIHBsYXlpbmcgYXVk
+aW8uICBCZWZvcmUKZGlzY292ZXJ5IG9mIHRoaXMgd2Ugd2VudCBpbnRvIGZ1bGwgc3VzcGVuZCB3
+aGlsZSBwbGF5aW5nIGF1ZGlvIHdoaWNoCndvcmtlZCBmaW5lLCBidXQgaW4gY2VydGFpbiBuZXR3
+b3JrIGNvbmRpdGlvbnMgd2Ugd291bGQgZHJvcCBidWZmZXJzCmlmIHdlIGNvdWxkIG5vdCB3YWtl
+IGZhc3QgZW5vdWdoLgoKU28sIGl0J3Mgc29tZXdoYXQgc3lzdGVtIGRlcGVuZGVudCwgYnV0IGl0
+IGNhbiBiZSB2ZXJ5IGhlbHBmdWwgaW4gYQpsb3Qgb2YgY2FzZXMuCgpCcmlhbgpfX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxp
+c3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51
+eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
