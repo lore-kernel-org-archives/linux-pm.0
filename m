@@ -1,16 +1,14 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Thu, 6 May 2010 00:40:26 +0100
-Message-ID: <20100505234025.GB4838__35618.6417666779$1273102941$gmane$org@opensource.wolfsonmicro.com>
-References: <20100505185225.GA4411@srcf.ucam.org>
-	<Pine.LNX.4.44L0.1005051511040.1885-100000@iolanthe.rowland.org>
-	<m2oa55d774e1005051356n3610d780ra42200c1785e02bd@mail.gmail.com>
+Date: Wed, 5 May 2010 16:42:29 -0700
+Message-ID: <h2va55d774e1005051642m6159aadclfda9d1c77cb10cda__26867.3811959617$1273103095$gmane$org@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1005051554490.1885-100000@iolanthe.rowland.org>
+	<87fx26ymrf.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <m2oa55d774e1005051356n3610d780ra42200c1785e02bd@mail.gmail.com>
+In-Reply-To: <87fx26ymrf.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,53 +18,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 05, 2010 at 01:56:07PM -0700, Brian Swetland wrote:
-
-> From my point of view, the codec should be powered up while audio is
-> playing and powered down when it's not -- that's the approach I've
-
-This is what we've got already with Linux - we've had rather aggressive
-runtime PM for embedded audio as standard for years now.  It's only very
-recently that mobile hardware has got to the point where you can
-actually totally kill the power without introducing problems but it's
-been getting pretty much as close as possible.
-
-> taken on MSM, regardless of suspend state.  I don't view suspend as
-> something that stops audio playback in progress.  Sort of similar to
-> how the modem doesn't power off down when the system is in suspend,
-> etc.
-
-This really does depend heavily on system design and the intended
-function of the suspend on the part of the initiator.  In many systems
-suspend will remove sufficient power to stop audio running even if it
-were desired, and there's the idea with existing manually initiated
-suspends that the system should stop what it's doing and go into a low
-power, low responsiveness state.  Some systems will initiate a suspend
-with active audio paths (especially those to or from the AP) which they
-expect to be stopped.
-
-> In effect, we have followed a sort of runtime pm model of
-> clocking/powering peripherals at the lowest possible level at all
-> times, which is why I've never viewed suspend_block as somehow
-> competing with runtime pm -- we always want all drivers/peripherals in
-
-Right, and this will work well on systems like your current devices
-because the problem hardware is not directly visible to the AP (the
-actual audio hardware is hidden behind the DSP which functions as
-autonomously as the modem does) so it's not affected by the Linux
-suspend process in the first place.  It causes confusion when the power
-for the audio device is managed by Linux since the opportunistic suspend
-will include suspending the audio device and so the code handling the
-suspend then has to decide what exactly it's being asked to do.
-
-> the lowers power state.  Sometimes the lowest power state possible is
-> higher than "full suspend" (for example when we can't meet latency
-> requirements on audio on 7201A) and suspend_blockers cover that case.
-
-In this situation there's no physical reason why the lower power state
-is not achievable so blocking the suspend would just waste power, it's
-just that our way of getting into it is creating some confusion.
+T24gV2VkLCBNYXkgNSwgMjAxMCBhdCA0OjAzIFBNLCBLZXZpbiBIaWxtYW4KPGtoaWxtYW5AZGVl
+cHJvb3RzeXN0ZW1zLmNvbT4gd3JvdGU6Cj4KPiBJIGd1ZXNzIHdoYXQgd2UncmUgdGFsa2luZyBh
+Ym91dCBoZXJlIGlzIGEgc2V0IG9mIHBlci1kZXZpY2UKPiBjb25zdHJhaW50cyB0aGF0IGNvdWxk
+IGJlIHVzZWQgYnkgYm90aCBbb3Bwb3J0dW5pc3RpY3xzeXN0ZW1dIHN1c3BlbmQKPiBhbmQgcnVu
+dGltZSBQTS4gwqBGb3IgbGFjayBvZiBhIGJldHRlciB0ZXJtLCBwZXItZGV2aWNlIFBNIFFvUyAo
+YXMKPiBjb21wYXJlZCB0byB0aGUgY3VycmVudCBzeXN0ZW0td2lkZSBQTSBRb1MuKQo+Cj4gRm9y
+IGV4YW1wbGUsIGlmIHVzZXJzcGFjZSAob3Igc29tZSBvdGhlciBkZXZpY2UpIGhhcyBjb21tdW5p
+Y2F0ZWQgdGhhdAo+IGl0IGhhcyBhIGNvbnN0cmFpbnQgb24gdGhlIGF1ZGlvIEhXLCB0aGVuIGJv
+dGggdGhlIHN1c3BlbmQgcGF0aCBhbmQgdGhlCj4gcnVudGltZSBQTSBwYXRoIGNvdWxkIGNoZWNr
+IHRob3NlIGNvbnN0cmFpbnRzIGJlZm9yZSBtYWtpbmcgYSBkZWNpc2lvbgo+IG9uIGhvdyB0byBh
+Y3QuIMKgSG9wZWZ1bGx5IHRoZSBwaG9uZSBhcHAgd291bGQgc2V0IGEgY29uc3RyYWludCBhbmQg
+dGhlCj4gY293LW5vaXNlIGFwcCB3b3VsZCBub3QuIMKgOikKPgo+IE9uIE9NQVAsIHdlIGtlZXAg
+dHJhY2sgb2YgcGVyLWRldmljZSBjb25zdHJhaW50cyAoY3VycmVudGx5IGxhdGVuY3kKPiBhbmQg
+dGhyb3VnaHB1dCkgaW4gb3JkZXIgdG8gbWFrZSBwcm9wZXIgcnVuLXRpbWUgUE0gZGVjaWNpb25z
+IGluIHRoZQo+IGtlcm5lbCwgYnV0IHdlIGFyZSByZWFsaXppbmcgdGhhdCB3ZSBuZWVkIGEgd2F5
+IGZvciB1c2Vyc3BhY2UgdG8KPiBjb21tdW5pY2F0ZSB0aGVzZSBjb25zdHJhaW50cyBhcyB3ZWxs
+LCBzbyB0aGF0IHVzZXJzcGFjZSBjYW4gbWFrZQo+IHBvd2VyIHZzLiBwZXJmb3JtYW5jZSBwb2xp
+Y3kgZGVjaXNpb25zIGluc3RlYWQgb2YgdGhlIGtlcm5lbC4KPgo+IFByb2JhYmx5IGdlbmVyYWxp
+emluZyB0aGVzZSBpbnRvIHRoZSBMRE0gaXMgdGhlIGRpcmVjdGlvbiB0byBnbyBzbwo+IHVzZXJz
+cGFjZSBjYW4gc2V0IGNvbnN0cmFpbnRzIG9uIGEgcGVyLWRldmljZSAob3IgcGVyLWNsYXNzPykg
+YmFzaXM6Cj4KPiAvc3lzL2RldmljZXMvLi4uL3Bvd2VyL2NvbnN0cmFpbnQvdGhyb3VnaHB1dAo+
+IC9zeXMvZGV2aWNlcy8uLi4vcG93ZXIvY29uc3RyYWludC93YWtldXBfbGF0ZW5jeQo+IC9zeXMv
+ZGV2aWNlcy8uLi4vcG93ZXIvY29uc3RyYWludC8uLi4gPwoKVGhlIGNvbnN0cmFpbnQgc3R1ZmYg
+aXMgZGVmaW5pdGVseSBzb21ldGhpbmcgSSdkIGxvdmUgdG8gdGFsayBhYm91dCBpbgpkZXRhaWwu
+ICBJdCdzIGEgcHJvYmxlbSB0aGF0IEkgdGhpbmsgaXMgY29tbW9uIHRvIGV2ZXJ5IFNvQyBJJ3Zl
+CndvcmtlZCB3aXRoLiAgSGF2aW5nIGEgZ2VuZXJhbCBzb2x1dGlvbiBmb3IgdGhpcyBwcm9ibGVt
+IChvZgpzcGVjaWZ5aW5nIGFuZCBvYnNlcnZpbmcgdmFyaW91cyBjb25zdHJhaW50cyBmb3IgY2xv
+Y2ssIHBvd2VyLCBxb3MsCmV0Yykga2VybmVsLXdpZGUgd291bGQgc2VlbSBsaWtlIGEgYmlnIHdp
+bi4KCk1pZ2h0IGJlIHdvcnRoIGtpY2tpbmcgc29tZSBkZXNpZ24gaWRlYXMgYXJvdW5kIGFuZCBn
+ZXR0aW5nIGEgYnVuY2ggb2YKdGhlIGludGVyZXN0ZWQgcGFydGllcyB0b2dldGhlciBhdCBzb21l
+IG9mIHRoZSB1cGNvbWluZyBsaW51eApjb25mZXJlbmNlIHRoaW5ncyB0aGlzIGZhbGwgb24gdGhl
+IGVhc3QgY29hc3Q/CgpCcmlhbgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91
+bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xp
+c3RpbmZvL2xpbnV4LXBt
