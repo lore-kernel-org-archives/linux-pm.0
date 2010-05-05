@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Thu, 6 May 2010 01:33:59 +0200
-Message-ID: <201005060133.59417.rjw__812.417714814906$1273102501$gmane$org@sisk.pl>
+Date: Thu, 6 May 2010 00:40:26 +0100
+Message-ID: <20100505234025.GB4838__35618.6417666779$1273102941$gmane$org@opensource.wolfsonmicro.com>
 References: <20100505185225.GA4411@srcf.ucam.org>
-	<201005060005.01215.rjw@sisk.pl>
-	<20100505230917.GA5269@opensource.wolfsonmicro.com>
+	<Pine.LNX.4.44L0.1005051511040.1885-100000@iolanthe.rowland.org>
+	<m2oa55d774e1005051356n3610d780ra42200c1785e02bd@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100505230917.GA5269@opensource.wolfsonmicro.com>
+Content-Disposition: inline
+In-Reply-To: <m2oa55d774e1005051356n3610d780ra42200c1785e02bd@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,47 +20,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Paul Walmsley <paul@pwsan.com>, tytso@mit.edu, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
+To: Brian Swetland <swetland@google.com>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 06 May 2010, Mark Brown wrote:
-> On Thu, May 06, 2010 at 12:05:01AM +0200, Rafael J. Wysocki wrote:
-> 
-> > So, gnerenally, we may need a mechanism to specify which components of the
-> > system need to stay powered while the whole system is suspended (in addition to
-> > wakeup devices, that is).
-> 
-> > That certainly I can agree with.
-> 
-> > I'm not sure, however, in what way this is relevant to the $subject patchset.
-> 
-> The patch set essentially makes using a full system suspend as the
-> lowest power state for runtime PM part of the standard Linux power
-> management toolkit which means that it's no longer clear as it used to
-> be that suspend is an instruction to cease all activity and go into a
-> minimal power state if the device is not a wake source.
+On Wed, May 05, 2010 at 01:56:07PM -0700, Brian Swetland wrote:
 
-I don't see why, really.  This patchset doesn't change the meaning of suspend
-at all, it only changes the way in which suspend is triggered (if specifically
-set up that way).  Even without the patchset you may implement a power
-manager in user space that will suspend the system whenever it thinks it's
-idle.
+> From my point of view, the codec should be powered up while audio is
+> playing and powered down when it's not -- that's the approach I've
 
-> In the primary existing application this change interoperates very poorly
-> with at least the current audio subsystem since that handles suspend by
-> ceasing all activity and powering as much as it can off, which is sensible for
-> manual only suspends but highly undesirable for opportunistic suspend in
-> phones.
+This is what we've got already with Linux - we've had rather aggressive
+runtime PM for embedded audio as standard for years now.  It's only very
+recently that mobile hardware has got to the point where you can
+actually totally kill the power without introducing problems but it's
+been getting pretty much as close as possible.
 
-You said that there's no fundamental difference between manual and
-opportunistic suspend.  It only matters what _you_ are going to use suspend
-for.  I agree that at the moment it's not suitable for aggressive power
-management in phones because of the audio problem, but that applies to
-"manual" as well as to "opportunistic" suspend.
+> taken on MSM, regardless of suspend state.  I don't view suspend as
+> something that stops audio playback in progress.  Sort of similar to
+> how the modem doesn't power off down when the system is in suspend,
+> etc.
 
-You're saying that suspend is not suitable for one particular purpose in its
-current form, which is entirely correct, but that doesn't imply that the
-patchset is wrong.
+This really does depend heavily on system design and the intended
+function of the suspend on the part of the initiator.  In many systems
+suspend will remove sufficient power to stop audio running even if it
+were desired, and there's the idea with existing manually initiated
+suspends that the system should stop what it's doing and go into a low
+power, low responsiveness state.  Some systems will initiate a suspend
+with active audio paths (especially those to or from the AP) which they
+expect to be stopped.
 
-Rafael
+> In effect, we have followed a sort of runtime pm model of
+> clocking/powering peripherals at the lowest possible level at all
+> times, which is why I've never viewed suspend_block as somehow
+> competing with runtime pm -- we always want all drivers/peripherals in
+
+Right, and this will work well on systems like your current devices
+because the problem hardware is not directly visible to the AP (the
+actual audio hardware is hidden behind the DSP which functions as
+autonomously as the modem does) so it's not affected by the Linux
+suspend process in the first place.  It causes confusion when the power
+for the audio device is managed by Linux since the opportunistic suspend
+will include suspending the audio device and so the code handling the
+suspend then has to decide what exactly it's being asked to do.
+
+> the lowers power state.  Sometimes the lowest power state possible is
+> higher than "full suspend" (for example when we can't meet latency
+> requirements on audio on 7201A) and suspend_blockers cover that case.
+
+In this situation there's no physical reason why the lower power state
+is not achievable so blocking the suspend would just waste power, it's
+just that our way of getting into it is creating some confusion.
