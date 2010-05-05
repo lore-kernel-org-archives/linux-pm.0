@@ -1,15 +1,19 @@
-From: Matthew Garrett <mjg@redhat.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Wed, 5 May 2010 20:22:08 +0100
-Message-ID: <20100505192208.GB5085__524.273495148186$1273090421$gmane$org@srcf.ucam.org>
-References: <20100505185225.GA4411@srcf.ucam.org>
-	<Pine.LNX.4.44L0.1005051511040.1885-100000@iolanthe.rowland.org>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Subject: Re: s2ram slow (radeon) / failing (usb)
+Date: Wed, 5 May 2010 21:17:42 +0200
+Message-ID: <20100505211742.1cb4e448__38251.0329284289$1273090423$gmane$org@neptune.home>
+References: <20100503214642.67577f91@neptune.home>
+	<20100503225735.6b5e2687@neptune.home>
+	<20100503231154.486c27d6@neptune.home>
+	<201005040842.35260.oneukum@suse.de>
+	<alpine.LNX.2.00.1005041028300.9849@pobox.suse.cz>
+	<20100504230415.6097a767@neptune.home>
+	<alpine.LNX.2.00.1005051457460.9849@pobox.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1005051511040.1885-100000@iolanthe.rowland.org>
+In-Reply-To: <alpine.LNX.2.00.1005051457460.9849@pobox.suse.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,27 +23,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Oliver Neukum <oneukum@suse.de>, list <linux-usb@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 05, 2010 at 03:13:52PM -0400, Alan Stern wrote:
-
-> Should the audio driver be smart enough to know that the codec needs to
-> remain powered up during every opportunistic suspend?
-> 
-> Or only during opportunistic suspends while a call is in progress?  
-
-The latter is obviously preferable...
-
-> Does it know when a call is in progress?
-
-Perhaps you could infer that from the audio routing setup? I don't know 
-enough about embedded codecs.
-
-> Does Android use forced suspends?
-
-No.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+T24gV2VkLCAwNSBNYXkgMjAxMCBKaXJpIEtvc2luYSA8amtvc2luYUBzdXNlLmN6PiB3cm90ZToK
+Cj4gT24gVHVlLCA0IE1heSAyMDEwLCBCcnVubyBQcsOpbW9udCB3cm90ZToKPiAKPiA+ID4gQnJ1
+bm8sIGNvdWxkIHlvdSwgZm9yIHRlc3RpbmcgcHVycG9zZXMsIGNoZWNrLCB3aGV0aGVyIHRoZSBw
+YXRjaCBiZWxvdyAKPiA+ID4gY2hhbmdlcyB0aGUgYmVoYXZpb3IgeW91IGFyZSBzZWVpbmcgKGFu
+ZCBhbHNvIGNoZWNrIHdoYXQgdGhlIGFjdHVhbCByZXR1cm4gCj4gPiA+IHZhbHVlIGZyb20gZGV2
+aWNlX2FkZCgpIHdhcywgc2VlIHRoZSBhZGRlZCBwcmludGsoKSkuCj4gPiAKPiA+IFdlbGwsIGl0
+J3Mgc2FpZCB0byByZXR1cm4gMDoKPiA+IAo+ID4gWyAgMjg2Ljg3MjczOV0gZ2VuZXJpYy11c2Ig
+MDAwMzowNThGOjk0NjIuMDAwMzogaW5wdXQ6IFVTQiBISUQgdjEuMTAgS2V5Ym9hcmQgW011bHRp
+bWVkaWEgVVNCIEtleWJvYXJkIE11bHRpbWVkaWEgVVNCIEtleWJvYXJkXSBvbiB1c2ItMDAwMDow
+MDoxMy4wLTIuMS9pbnB1dDAKPiA+IFsgIDI4Ni44OTAxMzZdIEhJRDogZGV2aWNlX2FkZCgpIHJl
+dHVybmVkIDAKPiA+IAo+ID4gWyAgMjg2LjkxOTY5OF0gZ2VuZXJpYy11c2I6IHByb2JlIG9mIDAw
+MDM6MDU4Rjo5NDYyLjAwMDQgZmFpbGVkIHdpdGggZXJyb3IgLTIyCj4gPiBbICAyODYuOTI5MzYz
+XSBISUQ6IGRldmljZV9hZGQoKSByZXR1cm5lZCAwCj4gPiAKPiA+IG9yIHdpdGggZGVidWc9MSBm
+b3IgSElEOgo+ID4gWyAgNTU5Ljk4Mjk1OF0gL3Vzci9zcmMvbGludXgtMi42LWdpdC9kcml2ZXJz
+L2hpZC91c2JoaWQvaGlkLWNvcmUuYzogSElEIHByb2JlIGNhbGxlZCBmb3IgaWZudW0gMQo+ID4g
+WyAgNTYwLjAxMTY5OF0gL3Vzci9zcmMvbGludXgtMi42LWdpdC9kcml2ZXJzL2hpZC9oaWQtY29y
+ZS5jOiB1c2FnZSBpbmRleCBleGNlZWRlZAo+ID4gWyAgNTYwLjAxMTcwNF0gL3Vzci9zcmMvbGlu
+dXgtMi42LWdpdC9kcml2ZXJzL2hpZC9oaWQtY29yZS5jOiBoaWRfYWRkX3VzYWdlIGZhaWxlZAo+
+ID4gWyAgNTYwLjAxMTcxMF0gL3Vzci9zcmMvbGludXgtMi42LWdpdC9kcml2ZXJzL2hpZC9oaWQt
+Y29yZS5jOiBpdGVtIDAgMiAyIDIgcGFyc2luZyBmYWlsZWQKPiA+IFsgIDU2MC4wMTE3MzJdIC91
+c3Ivc3JjL2xpbnV4LTIuNi1naXQvZHJpdmVycy9oaWQvdXNiaGlkL2hpZC1jb3JlLmM6IHBhcnNp
+bmcgcmVwb3J0IGRlc2NyaXB0b3IgZmFpbGVkCj4gPiBbICA1NjAuMDExNzQ3XSBnZW5lcmljLXVz
+YjogcHJvYmUgb2YgMDAwMzowNThGOjk0NjIuMDAwNiBmYWlsZWQgd2l0aCBlcnJvciAtMjIKPiA+
+IFsgIDU2MC4wMjE3MThdIEhJRDogZGV2aWNlX2FkZCgpIHJldHVybmVkIDAKPiAKPiBDb3VsZCB5
+b3UgcGxlYXNlIHZlcmlmeSB3aXRoIHRoaXMgcGF0Y2g/IFRoYW5rcy4KCk5vIGRpZmZlcmVuY2Us
+IHRoZSBzZWNvbmQgaW50ZXJmYWNlIHJlbWFpbnMgcmVnaXN0ZXJlZCB3aXRoIEhJRCBidXMKYW5k
+IEkgZG9uJ3Qgc3BvdCBhbnkgZGlmZmVyZW5jZSBpbiBrZXJuZWwgbG9nLgoKR29pbmcgdG8gaGF2
+ZSBhIGxvb2sgYXQgd2hhdCBwcm9iZSBleGFjdGx5IGl0J3MgdGhhdCByZXR1cm5zIC1FSU5WQUwK
+YW5kIHRoZW4gYXR0ZW1wdCB0byB1bnJvbGwgaXQgdXAgdG8gZGV2aWNlX2FkZCgpIC4uLgpIb3Bl
+ZnVsbHkgSSB3aWxsIGZpbmQgdGhlIGZ1bmN0aW9uIHRoYXQgZG9lcyBub3QgaGFuZCBiYWNrIHRo
+ZSBmYWlsdXJlLgoKVGhhbmtzLApCcnVubwoKPiAgZHJpdmVycy9oaWQvaGlkLWNvcmUuYyB8ICAg
+IDQgKysrLQo+ICAxIGZpbGVzIGNoYW5nZWQsIDMgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbnMo
+LSkKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9oaWQvaGlkLWNvcmUuYyBiL2RyaXZlcnMvaGlk
+L2hpZC1jb3JlLmMKPiBpbmRleCAyZTJhYTc1Li44ZGYxOWQzIDEwMDY0NAo+IC0tLSBhL2RyaXZl
+cnMvaGlkL2hpZC1jb3JlLmMKPiArKysgYi9kcml2ZXJzL2hpZC9oaWQtY29yZS5jCj4gQEAgLTE0
+ODYsOCArMTQ4NiwxMCBAQCBzdGF0aWMgaW50IGhpZF9kZXZpY2VfcHJvYmUoc3RydWN0IGRldmlj
+ZSAqZGV2KQo+ICAJCQlpZiAoIXJldCkKPiAgCQkJCXJldCA9IGhpZF9od19zdGFydChoZGV2LCBI
+SURfQ09OTkVDVF9ERUZBVUxUKTsKPiAgCQl9Cj4gLQkJaWYgKHJldCkKPiArCQlpZiAocmV0KSB7
+Cj4gIAkJCWhkZXYtPmRyaXZlciA9IE5VTEw7Cj4gKwkJCXJldCA9IC1FTk9ERVY7Cj4gKwkJfQo+
+ICAJfQo+ICAJcmV0dXJuIHJldDsKPiAgfQo+IApfX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMu
+bGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9t
+YWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
