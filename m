@@ -1,14 +1,13 @@
-From: Brian Swetland <swetland@google.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Wed, 5 May 2010 13:56:07 -0700
-Message-ID: <m2oa55d774e1005051356n3610d780ra42200c1785e02bd__48375.3959335901$1273094942$gmane$org@mail.gmail.com>
-References: <20100505185225.GA4411@srcf.ucam.org>
-	<Pine.LNX.4.44L0.1005051511040.1885-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Wed, 5 May 2010 17:12:00 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005051705200.1885-100000__10459.8442129374$1273095435$gmane$org@iolanthe.rowland.org>
+References: <20100505202826.GB7450@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005051511040.1885-100000@iolanthe.rowland.org>
+In-Reply-To: <20100505202826.GB7450@linux.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,53 +17,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
+To: mark gross <mgross@linux.intel.com>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, markgross@thegnar.org, Oleg Nesterov <oleg@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBNYXkgNSwgMjAxMCBhdCAxMjoxMyBQTSwgQWxhbiBTdGVybiA8c3Rlcm5Acm93bGFu
-ZC5oYXJ2YXJkLmVkdT4gd3JvdGU6Cj4gT24gV2VkLCA1IE1heSAyMDEwLCBNYXR0aGV3IEdhcnJl
-dHQgd3JvdGU6Cj4KPj4gPiBDbGVhcmx5IGlmIHRoZXJlJ3MgYSBjYWxsIGluIHByb2dyZXNzIHlv
-dSBkb24ndCB3YW50IHRvIHNodXQgdGhlIGNvZGVjCj4+ID4gZG93bi4gwqBBcmUgdGhlcmUgYW55
-IG90aGVyIGNpcmN1bXN0YW5jZXM/IMKgV291bGQgdGhleSB2YXJ5IGFjY29yZGluZyB0bwo+PiA+
-IHdoZXRoZXIgdGhlIHN1c3BlbmQgd2FzIGZvcmNlZCBvciBvcHBvcnR1bmlzdGljPwo+Pgo+PiBZ
-ZWFoLCBvay4gV2UgcHJvYmFibHkgZG8gbmVlZCB0byBmaWd1cmUgdGhpcyBvdXQuCj4+Cj4+IChD
-YzppbmcgUmViZWNjYSB0byBzZWUgaG93IHRoaXMgZ290IGhhbmRsZWQgb24gRHJvaWQpCj4+Cj4+
-IFRoZSBjdXJyZW50IHN0YXRlIG9mIGFmZmFpcnMgaXMgdGhhdCBhIHN5c3RlbSBzdXNwZW5kIHJl
-cXVlc3QgaXMKPj4gZXhwZWN0ZWQgdG8gcHV0IHRoZSBkZXZpY2UgaW4gYXMgbG93IGEgcG93ZXIg
-c3RhdGUgYXMgcG9zc2libGUgZ2l2ZW4gdGhlCj4+IHJlcXVpcmVkIHdha2V1cCBldmVudHMuIFJ1
-bnRpbWUgcG93ZXIgbWFuYWdlbWVudCBpcyBleHBlY3RlZCB0byBwdXQgdGhlCj4+IGRldmljZSBp
-biBhcyBsb3cgYSBwb3dlciBzdGF0ZSBhcyBwb3NzaWJsZSBnaXZlbiBpdHMgdXNhZ2UgY29uc3Ry
-YWludHMuCj4+IElmIG9wcG9ydHVuaXN0aWMgc3VzcGVuZCBkb2VzIHRoZSBmb3JtZXIgdGhlbiBp
-dCdsbCB0ZWFyIGRvd24gZGV2aWNlcwo+PiB0aGF0IG1heSBiZSBpbiB1c2UsIGJ1dCB3ZSBkb24n
-dCBoYXZlIGFueSByZWFsIHdheSB0byBpbmRpY2F0ZSB1c2FnZQo+PiBjb25zdHJhaW50cyBvdGhl
-ciB0aGFuIHRoZSBwaG9uZSBhcHAgdGFraW5nIGEgd2FrZWxvY2sgLSBhbmQgdGhhdCBtZWFucwo+
-PiBsZWF2aW5nIHVzZXJzcGFjZSBydW5uaW5nIGR1cmluZyBjYWxscywgd2hpY2ggc2VlbXMgZXhj
-ZXNzaXZlLgo+Pgo+PiBNYXJrJ3MgcmlnaHQgaW4gdGhhdCB0aGUgb25seSBjYXNlIEkgY2FuIHRo
-aW5rIG9mIHRoYXQncyByZWFsbHkgcmVsZXZhbnQKPj4gcmlnaHQgbm93IGlzIHRoZSBhdWRpbyBo
-YXJkd2FyZSwgc28gdGhlIGluZWxlZ2FudCBzb2x1dGlvbiBpcyB0aGF0IHRoaXMKPj4gaXMgc29t
-ZXRoaW5nIHRoYXQgY291bGQgYmUgcHJvdmlkZWQgYXQgdGhlIGF1ZGlvIGxldmVsLiBJcyB0aGlz
-Cj4+IHNvbWV0aGluZyB3ZSB3YW50IGEgZ2VuZXJpYyBzb2x1dGlvbiBmb3I/IElmIHNvLCB3aGF0
-IHNob3VsZCBpdCBsb29rCj4+IGxpa2U/Cj4KPiBTaG91bGQgdGhlIGF1ZGlvIGRyaXZlciBiZSBz
-bWFydCBlbm91Z2ggdG8ga25vdyB0aGF0IHRoZSBjb2RlYyBuZWVkcyB0bwo+IHJlbWFpbiBwb3dl
-cmVkIHVwIGR1cmluZyBldmVyeSBvcHBvcnR1bmlzdGljIHN1c3BlbmQ/Cj4KPiBPciBvbmx5IGR1
-cmluZyBvcHBvcnR1bmlzdGljIHN1c3BlbmRzIHdoaWxlIGEgY2FsbCBpcyBpbiBwcm9ncmVzcz8K
-Pgo+IERvZXMgaXQga25vdyB3aGVuIGEgY2FsbCBpcyBpbiBwcm9ncmVzcz8KCkZyb20gbXkgcG9p
-bnQgb2YgdmlldywgdGhlIGNvZGVjIHNob3VsZCBiZSBwb3dlcmVkIHVwIHdoaWxlIGF1ZGlvIGlz
-CnBsYXlpbmcgYW5kIHBvd2VyZWQgZG93biB3aGVuIGl0J3Mgbm90IC0tIHRoYXQncyB0aGUgYXBw
-cm9hY2ggSSd2ZQp0YWtlbiBvbiBNU00sIHJlZ2FyZGxlc3Mgb2Ygc3VzcGVuZCBzdGF0ZS4gIEkg
-ZG9uJ3QgdmlldyBzdXNwZW5kIGFzCnNvbWV0aGluZyB0aGF0IHN0b3BzIGF1ZGlvIHBsYXliYWNr
-IGluIHByb2dyZXNzLiAgU29ydCBvZiBzaW1pbGFyIHRvCmhvdyB0aGUgbW9kZW0gZG9lc24ndCBw
-b3dlciBvZmYgZG93biB3aGVuIHRoZSBzeXN0ZW0gaXMgaW4gc3VzcGVuZCwKZXRjLgoKSW4gZWZm
-ZWN0LCB3ZSBoYXZlIGZvbGxvd2VkIGEgc29ydCBvZiBydW50aW1lIHBtIG1vZGVsIG9mCmNsb2Nr
-aW5nL3Bvd2VyaW5nIHBlcmlwaGVyYWxzIGF0IHRoZSBsb3dlc3QgcG9zc2libGUgbGV2ZWwgYXQg
-YWxsCnRpbWVzLCB3aGljaCBpcyB3aHkgSSd2ZSBuZXZlciB2aWV3ZWQgc3VzcGVuZF9ibG9jayBh
-cyBzb21laG93CmNvbXBldGluZyB3aXRoIHJ1bnRpbWUgcG0gLS0gd2UgYWx3YXlzIHdhbnQgYWxs
-IGRyaXZlcnMvcGVyaXBoZXJhbHMgaW4KdGhlIGxvd2VycyBwb3dlciBzdGF0ZS4gIFNvbWV0aW1l
-cyB0aGUgbG93ZXN0IHBvd2VyIHN0YXRlIHBvc3NpYmxlIGlzCmhpZ2hlciB0aGFuICJmdWxsIHN1
-c3BlbmQiIChmb3IgZXhhbXBsZSB3aGVuIHdlIGNhbid0IG1lZXQgbGF0ZW5jeQpyZXF1aXJlbWVu
-dHMgb24gYXVkaW8gb24gNzIwMUEpIGFuZCBzdXNwZW5kX2Jsb2NrZXJzIGNvdmVyIHRoYXQgY2Fz
-ZS4KCkJyaWFuCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-CmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
-ZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGlu
-dXgtcG0=
+On Wed, 5 May 2010, mark gross wrote:
+
+> > > True, you need an ack back from user mode for when its ok to allow
+> > > suspend to happen.  This ack is device specific and needs to be custom
+> > > built per product to its wake up sources.
+> > 
+> > No and no.  Nothing special is needed.  All userspace needs to do is 
+> > remove the condition that led to the blocker being enabled initially -- 
+> > which is exactly what userspace would do normally anyway.
+> 
+> Oh, like tell the modem that user mode has handled the ring event and
+> its ok to un-block?
+
+No, that's not how it works.  It would go like this:
+
+	The modem IRQ handler queues its event to the input subsystem.  
+	As it does so the input subsystem enables a suspend blocker, 
+	causing the system to stay awake after the IRQ is done.
+
+	The user program enables its own suspend blocker before reading
+	the input queue.  When the queue is empty, the input subsystem
+	releases its suspend blocker.
+
+	When the user program finishes processing the event, it
+	releases its suspend blocker.  Now the system can go back to
+	sleep.
+
+At no point does the user program have to communicate anything to the 
+modem driver, and at no point does it have to do anything out of the 
+ordinary except to enable and disable a suspend blocker.
+
+Alan Stern
