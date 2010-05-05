@@ -1,13 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Wed, 5 May 2010 11:44:39 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005051136140.1885-100000__39253.977899398$1273074327$gmane$org@iolanthe.rowland.org>
-References: <20100505015050.GA30591@linux.intel.com>
+Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
+ (WKOC_E) and disconnect (WKDISC_E)
+Date: Wed, 5 May 2010 11:55:47 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005051144490.1885-100000__5582.18146111376$1273075086$gmane$org@iolanthe.rowland.org>
+References: <20100505111245.2c480ea1@dxy2>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100505015050.GA30591@linux.intel.com>
+In-Reply-To: <20100505111245.2c480ea1@dxy2>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,49 +18,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: mark gross <mgross@linux.intel.com>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, markgross@thegnar.org, Oleg Nesterov <oleg@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: "Du, Alek" <alek.du@intel.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Ondrej Zary <linux@rainbow-software.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 4 May 2010, mark gross wrote:
+On Wed, 5 May 2010, Du, Alek wrote:
 
-> Thanks, I think I'm starting to get it.  From this it seems that the
-> system integrator needs to identify those wake up sources that need to
-> be able to block a suspend, and figure out a way of acknowledging from
-> user mode, that its now ok to allow a suspend to happen.
-
-The second part is easy.  Userspace doesn't need to do anything special 
-to acknowledge that a suspend is now okay; it just has to remove the 
-conditions that led the driver to block suspends in the first place.
-
-For example, if suspends are blocked because some input event has been
-queued, emptying the input event queue should unblock suspends.
-
-> The rev-6 proposed way is for the integrator to implement overlapping
-> blocker sections from ISR up to user mode for selected wake up devices
-> (i.e. the modem)
+> On Fri, 30 Apr 2010 01:45:33 +0800
+> Alan Stern <stern@rowland.harvard.edu> wrote:
 > 
-> There *has* to be a better way.
+> 
+> > This patch fixes the problem on my system.  Does it work for you?
+> > I still think that disabling wakeup at the PCI or platform level should 
+> > override the port wakeup flags, but apparently it doesn't.
+> > 
+> > Alek, can you confirm that the changes in this patch are okay for the
+> > Moorestown EHCI controller?  I had to guess at how to handle the
+> > HOSTPCx register settings.
+> > 
+> > Alan Stern
+> 
+> 
+> Alan,
+> 
+> As I tested, the patch breaks phy low power mode, the EHCI works, but it never
+> enter phy low power mode when suspending port...
+> 
+> I guess this part of the diff breaks it.
+> 
+> 
+>  -			/* only enable appropriate wake bits, otherwise the
+>  -			 * hardware can not go phy low power mode. If a race
+>  -			 * condition happens here(connection change during bits
+>  -			 * set), the port change detection will finally fix it.
+>  -			 */
+>  -			if (t1 & PORT_CONNECT) {
+>  -				t2 |= PORT_WKOC_E | PORT_WKDISC_E;
+>  -				t2 &= ~PORT_WKCONN_E;
+>  -			} else {
+>  -				t2 |= PORT_WKOC_E | PORT_WKCONN_E;
+>  -				t2 &= ~PORT_WKDISC_E;
+>  -			}
 
-Why?  What's wrong with overlapping blockers?  It's a very common
-idiom.  For example, the same sort of thing is used when locking
-subtrees of a tree: You lock the root node, and then use overlapping
-locks on the nodes leading down to the subtree you're interested in.
+That seems very odd.  Why should removing code that enables wakeup bits
+cause the suspend to fail?  Can't the phy go into low-power mode when
+all the wakeup bits are disabled?
 
-> Can't we have some notification based thing that supports user mode
-> acks through a misc device or sysfs thing?   Anything to avoid the
-> overlapping blocker sections. 
-
-Userspace acks aren't the issue; the issue is how (and when) kernel 
-drivers should initiate a blocker.  Switching to notifications, misc 
-devices, or sysfs won't help solve this issue.
-
-> True, you need an ack back from user mode for when its ok to allow
-> suspend to happen.  This ack is device specific and needs to be custom
-> built per product to its wake up sources.
-
-No and no.  Nothing special is needed.  All userspace needs to do is 
-remove the condition that led to the blocker being enabled initially -- 
-which is exactly what userspace would do normally anyway.
+Does applying this additional patch on top of the previous one help?
 
 Alan Stern
+
+
+
+Index: usb-2.6/drivers/usb/host/ehci-hub.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/host/ehci-hub.c
++++ usb-2.6/drivers/usb/host/ehci-hub.c
+@@ -200,7 +200,7 @@ static int ehci_bus_suspend (struct usb_
+ 	while (port--) {
+ 		u32 __iomem	*reg = &ehci->regs->port_status [port];
+ 		u32		t1 = ehci_readl(ehci, reg) & ~PORT_RWC_BITS;
+-		u32		t2 = t1;
++		u32		t2;
+ 
+ 		if (ehci->has_hostpc)
+ 			hostpc_reg = (u32 __iomem *)((u8 *)ehci->regs
+@@ -209,6 +209,7 @@ static int ehci_bus_suspend (struct usb_
+ 		if (t1 & PORT_OWNER)
+ 			set_bit(port, &ehci->owned_ports);
+ 		else if ((t1 & PORT_PE) && !(t1 & PORT_SUSPEND)) {
++			t2 = t1 & ~PORT_WAKE_BITS;
+ 			t2 |= PORT_SUSPEND;
+ 			set_bit(port, &ehci->bus_suspended);
+ 			ehci_vdbg (ehci, "port %d, %08x -> %08x\n",
