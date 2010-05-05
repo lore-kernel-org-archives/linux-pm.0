@@ -1,19 +1,13 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Subject: Re: s2ram slow (radeon) / failing (usb)
-Date: Wed, 5 May 2010 21:17:42 +0200
-Message-ID: <20100505211742.1cb4e448__38251.0329284289$1273090423$gmane$org@neptune.home>
-References: <20100503214642.67577f91@neptune.home>
-	<20100503225735.6b5e2687@neptune.home>
-	<20100503231154.486c27d6@neptune.home>
-	<201005040842.35260.oneukum@suse.de>
-	<alpine.LNX.2.00.1005041028300.9849@pobox.suse.cz>
-	<20100504230415.6097a767@neptune.home>
-	<alpine.LNX.2.00.1005051457460.9849@pobox.suse.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Wed, 5 May 2010 15:20:40 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005051515060.1885-100000__23095.3459664763$1273090424$gmane$org@iolanthe.rowland.org>
+References: <20100505190758.GG7139@rakim.wolfsonmicro.main>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LNX.2.00.1005051457460.9849@pobox.suse.cz>
+In-Reply-To: <20100505190758.GG7139@rakim.wolfsonmicro.main>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,50 +17,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Oliver Neukum <oneukum@suse.de>, list <linux-usb@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAwNSBNYXkgMjAxMCBKaXJpIEtvc2luYSA8amtvc2luYUBzdXNlLmN6PiB3cm90ZToK
-Cj4gT24gVHVlLCA0IE1heSAyMDEwLCBCcnVubyBQcsOpbW9udCB3cm90ZToKPiAKPiA+ID4gQnJ1
-bm8sIGNvdWxkIHlvdSwgZm9yIHRlc3RpbmcgcHVycG9zZXMsIGNoZWNrLCB3aGV0aGVyIHRoZSBw
-YXRjaCBiZWxvdyAKPiA+ID4gY2hhbmdlcyB0aGUgYmVoYXZpb3IgeW91IGFyZSBzZWVpbmcgKGFu
-ZCBhbHNvIGNoZWNrIHdoYXQgdGhlIGFjdHVhbCByZXR1cm4gCj4gPiA+IHZhbHVlIGZyb20gZGV2
-aWNlX2FkZCgpIHdhcywgc2VlIHRoZSBhZGRlZCBwcmludGsoKSkuCj4gPiAKPiA+IFdlbGwsIGl0
-J3Mgc2FpZCB0byByZXR1cm4gMDoKPiA+IAo+ID4gWyAgMjg2Ljg3MjczOV0gZ2VuZXJpYy11c2Ig
-MDAwMzowNThGOjk0NjIuMDAwMzogaW5wdXQ6IFVTQiBISUQgdjEuMTAgS2V5Ym9hcmQgW011bHRp
-bWVkaWEgVVNCIEtleWJvYXJkIE11bHRpbWVkaWEgVVNCIEtleWJvYXJkXSBvbiB1c2ItMDAwMDow
-MDoxMy4wLTIuMS9pbnB1dDAKPiA+IFsgIDI4Ni44OTAxMzZdIEhJRDogZGV2aWNlX2FkZCgpIHJl
-dHVybmVkIDAKPiA+IAo+ID4gWyAgMjg2LjkxOTY5OF0gZ2VuZXJpYy11c2I6IHByb2JlIG9mIDAw
-MDM6MDU4Rjo5NDYyLjAwMDQgZmFpbGVkIHdpdGggZXJyb3IgLTIyCj4gPiBbICAyODYuOTI5MzYz
-XSBISUQ6IGRldmljZV9hZGQoKSByZXR1cm5lZCAwCj4gPiAKPiA+IG9yIHdpdGggZGVidWc9MSBm
-b3IgSElEOgo+ID4gWyAgNTU5Ljk4Mjk1OF0gL3Vzci9zcmMvbGludXgtMi42LWdpdC9kcml2ZXJz
-L2hpZC91c2JoaWQvaGlkLWNvcmUuYzogSElEIHByb2JlIGNhbGxlZCBmb3IgaWZudW0gMQo+ID4g
-WyAgNTYwLjAxMTY5OF0gL3Vzci9zcmMvbGludXgtMi42LWdpdC9kcml2ZXJzL2hpZC9oaWQtY29y
-ZS5jOiB1c2FnZSBpbmRleCBleGNlZWRlZAo+ID4gWyAgNTYwLjAxMTcwNF0gL3Vzci9zcmMvbGlu
-dXgtMi42LWdpdC9kcml2ZXJzL2hpZC9oaWQtY29yZS5jOiBoaWRfYWRkX3VzYWdlIGZhaWxlZAo+
-ID4gWyAgNTYwLjAxMTcxMF0gL3Vzci9zcmMvbGludXgtMi42LWdpdC9kcml2ZXJzL2hpZC9oaWQt
-Y29yZS5jOiBpdGVtIDAgMiAyIDIgcGFyc2luZyBmYWlsZWQKPiA+IFsgIDU2MC4wMTE3MzJdIC91
-c3Ivc3JjL2xpbnV4LTIuNi1naXQvZHJpdmVycy9oaWQvdXNiaGlkL2hpZC1jb3JlLmM6IHBhcnNp
-bmcgcmVwb3J0IGRlc2NyaXB0b3IgZmFpbGVkCj4gPiBbICA1NjAuMDExNzQ3XSBnZW5lcmljLXVz
-YjogcHJvYmUgb2YgMDAwMzowNThGOjk0NjIuMDAwNiBmYWlsZWQgd2l0aCBlcnJvciAtMjIKPiA+
-IFsgIDU2MC4wMjE3MThdIEhJRDogZGV2aWNlX2FkZCgpIHJldHVybmVkIDAKPiAKPiBDb3VsZCB5
-b3UgcGxlYXNlIHZlcmlmeSB3aXRoIHRoaXMgcGF0Y2g/IFRoYW5rcy4KCk5vIGRpZmZlcmVuY2Us
-IHRoZSBzZWNvbmQgaW50ZXJmYWNlIHJlbWFpbnMgcmVnaXN0ZXJlZCB3aXRoIEhJRCBidXMKYW5k
-IEkgZG9uJ3Qgc3BvdCBhbnkgZGlmZmVyZW5jZSBpbiBrZXJuZWwgbG9nLgoKR29pbmcgdG8gaGF2
-ZSBhIGxvb2sgYXQgd2hhdCBwcm9iZSBleGFjdGx5IGl0J3MgdGhhdCByZXR1cm5zIC1FSU5WQUwK
-YW5kIHRoZW4gYXR0ZW1wdCB0byB1bnJvbGwgaXQgdXAgdG8gZGV2aWNlX2FkZCgpIC4uLgpIb3Bl
-ZnVsbHkgSSB3aWxsIGZpbmQgdGhlIGZ1bmN0aW9uIHRoYXQgZG9lcyBub3QgaGFuZCBiYWNrIHRo
-ZSBmYWlsdXJlLgoKVGhhbmtzLApCcnVubwoKPiAgZHJpdmVycy9oaWQvaGlkLWNvcmUuYyB8ICAg
-IDQgKysrLQo+ICAxIGZpbGVzIGNoYW5nZWQsIDMgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbnMo
-LSkKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9oaWQvaGlkLWNvcmUuYyBiL2RyaXZlcnMvaGlk
-L2hpZC1jb3JlLmMKPiBpbmRleCAyZTJhYTc1Li44ZGYxOWQzIDEwMDY0NAo+IC0tLSBhL2RyaXZl
-cnMvaGlkL2hpZC1jb3JlLmMKPiArKysgYi9kcml2ZXJzL2hpZC9oaWQtY29yZS5jCj4gQEAgLTE0
-ODYsOCArMTQ4NiwxMCBAQCBzdGF0aWMgaW50IGhpZF9kZXZpY2VfcHJvYmUoc3RydWN0IGRldmlj
-ZSAqZGV2KQo+ICAJCQlpZiAoIXJldCkKPiAgCQkJCXJldCA9IGhpZF9od19zdGFydChoZGV2LCBI
-SURfQ09OTkVDVF9ERUZBVUxUKTsKPiAgCQl9Cj4gLQkJaWYgKHJldCkKPiArCQlpZiAocmV0KSB7
-Cj4gIAkJCWhkZXYtPmRyaXZlciA9IE5VTEw7Cj4gKwkJCXJldCA9IC1FTk9ERVY7Cj4gKwkJfQo+
-ICAJfQo+ICAJcmV0dXJuIHJldDsKPiAgfQo+IApfX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMu
-bGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9t
-YWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Wed, 5 May 2010, Mark Brown wrote:
+
+> > In short, I'm trying to get at how much information drivers _really_ 
+> > need to have about the reason for a system suspend.
+> 
+> It's not exactly the *reason* that makes the difference, it's more that
+> this aggressive use of suspend makes much more apparent a problem which
+> might exist anyway for this sort of hardware.
+
+Then the underlying problem should be solved -- hopefully in a nice, 
+system-independent way.  But I'm still trying to understand exactly 
+what that underlying problem _is_.
+
+That means understanding when the codec needs to be shut down and when
+it doesn't, and knowing how much of this information is available to
+the driver.
+
+> When we get runtime PM delviering similar power levels we'll sidestep
+> the problem since we won't need to do a system wide suspend.
+
+One the face of it, a runtime-PM solution would dictate that the
+codec's driver ought to turn off the codec whenever the driver thinks
+it isn't being used.  Ergo, if the driver didn't know when a call was
+in progress, it would use runtime PM to turn off the codec during a
+call.
+
+For this reason I don't see how using runtime PM instead of suspend
+blockers would solve anything.
+
+Alan Stern
