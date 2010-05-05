@@ -1,17 +1,18 @@
-From: Brian Swetland <swetland@google.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Wed, 5 May 2010 05:00:33 -0700
-Message-ID: <j2xa55d774e1005050500ocaa77b0di8e9eb58ce9c82d58__6070.35212819955$1273060906$gmane$org@mail.gmail.com>
-References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<201005042223.41370.rjw@sisk.pl>
-	<20100504235644.GA5231@opensource.wolfsonmicro.com>
-	<201005050222.31038.rjw@sisk.pl>
-	<20100505110630.GA5754@opensource.wolfsonmicro.com>
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: s2ram slow (radeon) / failing (usb)
+Date: Wed, 5 May 2010 14:58:40 +0200 (CEST)
+Message-ID: <alpine.LNX.2.00.1005051457460.9849@pobox.suse.cz>
+References: <20100503214642.67577f91@neptune.home>
+	<20100503225735.6b5e2687@neptune.home>
+	<20100503231154.486c27d6@neptune.home>
+	<201005040842.35260.oneukum@suse.de>
+	<alpine.LNX.2.00.1005041028300.9849@pobox.suse.cz>
+	<20100504230415.6097a767@neptune.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100505110630.GA5754@opensource.wolfsonmicro.com>
+In-Reply-To: <20100504230415.6097a767@neptune.home>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,58 +22,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
+To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
+Cc: Oliver Neukum <oneukum@suse.de>, list <linux-usb@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>, USB@smtp1.linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBNYXkgNSwgMjAxMCBhdCA0OjA2IEFNLCBNYXJrIEJyb3duCjxicm9vbmllQG9wZW5z
-b3VyY2Uud29sZnNvbm1pY3JvLmNvbT4gd3JvdGU6Cj4gT24gV2VkLCBNYXkgMDUsIDIwMTAgYXQg
-MDI6MjI6MzBBTSArMDIwMCwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4+IE9uIFdlZG5lc2Rh
-eSAwNSBNYXkgMjAxMCwgTWFyayBCcm93biB3cm90ZToKPgo+PiA+IE9uIGEgbW9iaWxlIHBob25l
-IHdoZW4gdGhlIHN5c3RlbSBpcyBpbiBhIHZvaWNlIGNhbGwgdGhlIGRhdGEgZmxvdyBmb3IKPj4g
-PiB0aGUgY2FsbCBpcyBlbnRpcmVseSBoYW5kbGVkIG91dHNpZGUgdGhlIENQVSAobm9ybWFsbHkg
-cmVmZXJyZWQgdG8gYXMKPj4gPiBBcHBsaWNhdGlvbnMgUHJvY2Vzc29yIG9yIEFQIGhlcmUpIGJ5
-IHRoZSBiYXNlYmFuZCBhbmQgYXVkaW8gQ09ERUMsCj4KPj4gSW4gdGhhdCBjYXNlIHNvbWVvbmUg
-KGVpdGhlciBhIGRyaXZlciBvciwgbW9zdCBsaWtlbHksIHVzZXIgc3BhY2UpIHdpbGwgbmVlZCB0
-bwo+PiBrZWVwIGEgc3VzcGVuZCBibG9ja2VyIGFjdGl2ZS4KPgo+IFRoYXQgaXMgbm90IGFjdHVh
-bGx5IHdoYXQgQW5kcm9pZCBzeXN0ZW1zIGFyZSBkb2luZywgYW5kIGlmIGl0IGlzIHdoYXQncwo+
-IHN1cHBvc2VkIHRvIGhhcHBlbiB0aGVuIEknZCByZWFsbHkgZXhwZWN0IHRvIHNlZSBhIHBhdGNo
-IHRvIEFTb0MgYXMgcGFydAo+IG9mIHRoaXMgc2VyaWVzIHdoaWNoIHNob3dzIGhvdyB0aGlzIGlz
-IHN1cHBvc2VkIHRvIGJlIGludGVncmF0ZWQgLSBpdCdzCj4gdGhlIHNvcnQgb2YgdGhpbmcgSSdk
-IGV4cGVjdCB0byBzZWUgc29tZSBrZXJuZWwgc3BhY2UgbWFuYWdlbWVudCBmb3IuCj4KPiBIb25l
-c3RseSBJIGRvbid0IHRoaW5rIHRoYXQncyBhIHZlcnkgZ29vZCBzb2x1dGlvbiBmb3IgYWN0dWFs
-IHN5c3RlbXMsCj4gdGhvdWdoLiDCoEEgcGFydCBvZiB0aGUgcmVhc29uaW5nIGJlaGluZCBkZXNp
-Z25pbmcgc3lzdGVtcyBpbiB0aGlzIHdheSBpcwo+IGFsbG93aW5nIHRoZSBBUCB0byBnbyBpbnRv
-IHRoZSBsb3dlc3QgcG9zc2libGUgcG93ZXIgc3RhdGUgd2hpbGUgb24gYQo+IHZvaWNlIGNhbGwg
-c28gaXQgZG9lc24ndCBzZWVtIGF0IGFsbCB1bnJlYXNvbmFibGUgZm9yIHRoZSBzeXN0ZW0KPiBp
-bnRlZ3JhdG9yIHRvIGV4cGVjdCB0aGF0IHRoZSBBUCB3aWxsIGJlIGRyaXZlbiBpbnRvIHRoZSBz
-dGFuZGFyZCBsb3cKPiBwb3dlciBzdGF0ZSB0aGUgc3lzdGVtIHVzZXMgZm9yIGl0IGR1cmluZyBh
-IGNhbGwgYW5kIGluIGEgc3lzdGVtIHVzaW5nCj4gb3Bwb3J0dW5pc3RpYyBzdXNwZW5kIHRoYXQn
-cyBzdXNwZW5kIG1vZGUuCgpZdXAuICBBbmQgdGhhdCdzIGV4YWN0bHkgd2hhdCBoYXBwZW5zIG9u
-IHRoZSBwbGF0Zm9ybXMgd2UndmUgc2hpcHBlZApvbiBzbyBmYXIgLS0gdGhlIGFwcHMgc2lkZSBv
-ZiB0aGUgd29ybGQgZnVsbHkgc3VzcGVuZHMgd2hpbGUgaW4gYQp2b2ljZSBjYWxsLiAgU29tZSBl
-dmVudHMgKHByb3ggc2Vuc29yLCBidXR0b25zLCBtb2RlbSBzZW5kaW5nIGEgc3RhdGUKbm90aWZp
-Y2F0aW9uKSB3aWxsIHdha2UgaXQgdXAsIG9mIGNvdXJzZS4KCkkgaGF2ZW4ndCBzcGVudCBtdWNo
-IHRpbWUgbG9va2luZyBhdCBhbHNhL2Fzb2MgeWV0LCBidXQgaXQncyBvbiBteQpsaXN0IGZvciAy
-MDEwIC0tIEknbSBob3BpbmcgdG8gbWlncmF0ZSB0aGUgdmVyeSBzaW1wbGUgYXVkaW8gZHJpdmVy
-cyBJCndyb3RlIGZvciB0aGUgbXNtIHBsYXRmb3JtIG9yaWdpbmFsbHkgdG8gYWN0dWFsbHkgYmUg
-YWxzYSBkcml2ZXJzIGFzCnBhcnQgb2YgdGhlIGdlbmVyYWwgInRyeSB0byB1c2UgZXhpc3Rpbmcg
-aW50ZXJmYWNlcyBpZiB0aGV5IGZpdCIgcGxhbgp3ZSd2ZSBiZWVuIHdvcmtpbmcgdG93YXJkLgoK
-VGhlIHN1c3BlbmRfYmxvY2sgc3lzdGVtIGdldHMgdXMgd2hhdCB3ZSBuZWVkIHRvZGF5ICh3ZWxs
-IHdoYXQgd2UKbmVlZGVkIHRocmVlIHllYXJzIGFnbyB0b28hKSB0byBzaGlwIGFuZCBoaXQgcmVh
-c29uYWJsZSBwb3dlciB0YXJnZXRzCm9uIGEgbnVtYmVyIG9mIHBsYXRmb3Jtcy4gIFRoZXJlJ3Mg
-YmVlbiBhIGxvdCBvZiB2YXJpb3VzIGhhbmR3YXZpbmcKYWJvdXQgImFuZHJvaWQga2VybmVsIGZv
-cmtzIiBhbmQgd2hhdCBoYXZlIHlvdSwgYnV0IGhlcmUgd2UgYXJlIGFnYWluLAp0cnlpbmcgdG8g
-d29yayBvdXQgcGVyaGFwcyB0aGUgb25seSAibmV3IHN1YnN5c3RlbSIgdHlwZSBjaGFuZ2UgdGhh
-dApvdXIgZHJpdmVyIGNvZGUgZGVwZW5kcyBvbiAoYWxtb3N0IGFsbCBvdGhlciBjb250ZW50aW91
-cyBzdHVmZiBpcyBzZWxmCmNvbnRhaW5lZCBhbmQgeW91IGNhbiB0YWtlIG9yIGxlYXZlIGl0KS4K
-Ck91ciBob3BlIGhlcmUgaXMgdG8gZ2V0IHNvbWV0aGluZyBvdXQgdGhlcmUgaW4gdGhlIG5lYXIg
-dGVybSBzbyB0aGF0CnRoZSB2YXJpb3VzIGRyaXZlcnMgd2UgbWFpbnRhaW4gd291bGQgImp1c3Qg
-d29yayIgaW4gbWFpbmxpbmUgKHlvdXIKY2hvaWNlIG9mIGlmIHlvdSB1c2Ugc3VzcGVuZF9ibG9j
-ayBvciBub3QgLS0gaXQncyBkZXNpZ25lZCB0byBiZSBhbgpvcHRpb24pIGFuZCB3ZSBjYW4gbW92
-ZSBmb3J3YXJkLiAgSWYgaW4gdGhlIGZ1dHVyZSBydW50aW1lIHBvd2VyCm1hbmFnZW1lbnQgb3Ig
-b3RoZXIgc3lzdGVtcyBjb21wbGV0ZWx5IG9ic29sZXRlIHN1c3BlbmRfYmxvY2tlcnMsCmF3ZXNv
-bWUsIHdlIHJlbW92ZSAnZW0uCgpCcmlhbgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGlu
-dXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWls
-bWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Tue, 4 May 2010, Bruno Pr=E9mont wrote:
+
+> > Bruno, could you, for testing purposes, check, whether the patch below =
+
+> > changes the behavior you are seeing (and also check what the actual ret=
+urn =
+
+> > value from device_add() was, see the added printk()).
+> =
+
+> Well, it's said to return 0:
+> =
+
+> [  286.872739] generic-usb 0003:058F:9462.0003: input: USB HID v1.10 Keyb=
+oard [Multimedia USB Keyboard Multimedia USB Keyboard] on usb-0000:00:13.0-=
+2.1/input0
+> [  286.890136] HID: device_add() returned 0
+> =
+
+> [  286.919698] generic-usb: probe of 0003:058F:9462.0004 failed with erro=
+r -22
+> [  286.929363] HID: device_add() returned 0
+> =
+
+> or with debug=3D1 for HID:
+> [  559.982958] /usr/src/linux-2.6-git/drivers/hid/usbhid/hid-core.c: HID =
+probe called for ifnum 1
+> [  560.011698] /usr/src/linux-2.6-git/drivers/hid/hid-core.c: usage index=
+ exceeded
+> [  560.011704] /usr/src/linux-2.6-git/drivers/hid/hid-core.c: hid_add_usa=
+ge failed
+> [  560.011710] /usr/src/linux-2.6-git/drivers/hid/hid-core.c: item 0 2 2 =
+2 parsing failed
+> [  560.011732] /usr/src/linux-2.6-git/drivers/hid/usbhid/hid-core.c: pars=
+ing report descriptor failed
+> [  560.011747] generic-usb: probe of 0003:058F:9462.0006 failed with erro=
+r -22
+> [  560.021718] HID: device_add() returned 0
+
+Could you please verify with this patch? Thanks.
+
+
+
+ drivers/hid/hid-core.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index 2e2aa75..8df19d3 100644
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -1486,8 +1486,10 @@ static int hid_device_probe(struct device *dev)
+ 			if (!ret)
+ 				ret =3D hid_hw_start(hdev, HID_CONNECT_DEFAULT);
+ 		}
+-		if (ret)
++		if (ret) {
+ 			hdev->driver =3D NULL;
++			ret =3D -ENODEV;
++		}
+ 	}
+ 	return ret;
+ }
+
+-- =
+
+Jiri Kosina
+SUSE Labs, Novell Inc.
