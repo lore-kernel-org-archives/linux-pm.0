@@ -1,17 +1,17 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Wed, 5 May 2010 12:06:30 +0100
-Message-ID: <20100505110630.GA5754__42432.1100152612$1273057732$gmane$org@opensource.wolfsonmicro.com>
+Date: Wed, 5 May 2010 05:00:33 -0700
+Message-ID: <j2xa55d774e1005050500ocaa77b0di8e9eb58ce9c82d58__6070.35212819955$1273060906$gmane$org@mail.gmail.com>
 References: <1272667021-21312-1-git-send-email-arve@android.com>
 	<201005042223.41370.rjw@sisk.pl>
 	<20100504235644.GA5231@opensource.wolfsonmicro.com>
 	<201005050222.31038.rjw@sisk.pl>
+	<20100505110630.GA5754@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201005050222.31038.rjw@sisk.pl>
+In-Reply-To: <20100505110630.GA5754@opensource.wolfsonmicro.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,57 +21,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 05, 2010 at 02:22:30AM +0200, Rafael J. Wysocki wrote:
-> On Wednesday 05 May 2010, Mark Brown wrote:
-
-> > On a mobile phone when the system is in a voice call the data flow for
-> > the call is entirely handled outside the CPU (normally referred to as
-> > Applications Processor or AP here) by the baseband and audio CODEC,
-
-> In that case someone (either a driver or, most likely, user space) will need to
-> keep a suspend blocker active.
-
-That is not actually what Android systems are doing, and if it is what's
-supposed to happen then I'd really expect to see a patch to ASoC as part
-of this series which shows how this is supposed to be integrated - it's
-the sort of thing I'd expect to see some kernel space management for.
-
-Honestly I don't think that's a very good solution for actual systems,
-though.  A part of the reasoning behind designing systems in this way is
-allowing the AP to go into the lowest possible power state while on a
-voice call so it doesn't seem at all unreasonable for the system
-integrator to expect that the AP will be driven into the standard low
-power state the system uses for it during a call and in a system using
-opportunistic suspend that's suspend mode.
-
-> > In other words, the issue is that we run into situations where we need
-> > an element of suspend control to go along with the opportunistic suspend
-> > in order to allow some elements to be kept running - since suspend
-> > blocking is taken suspend suppression seems like a reasonable term.
-
-> Suspend really is a sledgehammer thing.  Either you suspend the whole system
-> or you don't suspend at all.  You can prevent opportunistic suspend from
-> happening using suspend blockers (that's what they are for), but that's pretty
-> much everything you can do about it.  If you want power savings while some
-> parts of the system are active, use runtime PM for that.
-
-On the one hand that's the answer that works well with the existing
-Linux design here so great.  On the other hand as discussed above that
-doesn't match so well with user expectations.
-
-> What I'd use opportunistic suspend for is not the saving of energy when there's
-> a call in progress, because in that case some parts of the system need to be
-> active, but to save energy when the device is completely idle, ie. the user
-> interface is not used, music is not played "in the background" etc. (my phone
-> is in such a state 90% of the time at least).
-
-Remember that even in your full system suspend the system is not
-actually fully idle - the baseband is still sitting there looking after
-itself, keeping the phone on the network.  The only difference between
-on call and off call from the point of view of the Linux system is that
-there is an active audio path which happens to have been set up by the
-Linux system.
+T24gV2VkLCBNYXkgNSwgMjAxMCBhdCA0OjA2IEFNLCBNYXJrIEJyb3duCjxicm9vbmllQG9wZW5z
+b3VyY2Uud29sZnNvbm1pY3JvLmNvbT4gd3JvdGU6Cj4gT24gV2VkLCBNYXkgMDUsIDIwMTAgYXQg
+MDI6MjI6MzBBTSArMDIwMCwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4+IE9uIFdlZG5lc2Rh
+eSAwNSBNYXkgMjAxMCwgTWFyayBCcm93biB3cm90ZToKPgo+PiA+IE9uIGEgbW9iaWxlIHBob25l
+IHdoZW4gdGhlIHN5c3RlbSBpcyBpbiBhIHZvaWNlIGNhbGwgdGhlIGRhdGEgZmxvdyBmb3IKPj4g
+PiB0aGUgY2FsbCBpcyBlbnRpcmVseSBoYW5kbGVkIG91dHNpZGUgdGhlIENQVSAobm9ybWFsbHkg
+cmVmZXJyZWQgdG8gYXMKPj4gPiBBcHBsaWNhdGlvbnMgUHJvY2Vzc29yIG9yIEFQIGhlcmUpIGJ5
+IHRoZSBiYXNlYmFuZCBhbmQgYXVkaW8gQ09ERUMsCj4KPj4gSW4gdGhhdCBjYXNlIHNvbWVvbmUg
+KGVpdGhlciBhIGRyaXZlciBvciwgbW9zdCBsaWtlbHksIHVzZXIgc3BhY2UpIHdpbGwgbmVlZCB0
+bwo+PiBrZWVwIGEgc3VzcGVuZCBibG9ja2VyIGFjdGl2ZS4KPgo+IFRoYXQgaXMgbm90IGFjdHVh
+bGx5IHdoYXQgQW5kcm9pZCBzeXN0ZW1zIGFyZSBkb2luZywgYW5kIGlmIGl0IGlzIHdoYXQncwo+
+IHN1cHBvc2VkIHRvIGhhcHBlbiB0aGVuIEknZCByZWFsbHkgZXhwZWN0IHRvIHNlZSBhIHBhdGNo
+IHRvIEFTb0MgYXMgcGFydAo+IG9mIHRoaXMgc2VyaWVzIHdoaWNoIHNob3dzIGhvdyB0aGlzIGlz
+IHN1cHBvc2VkIHRvIGJlIGludGVncmF0ZWQgLSBpdCdzCj4gdGhlIHNvcnQgb2YgdGhpbmcgSSdk
+IGV4cGVjdCB0byBzZWUgc29tZSBrZXJuZWwgc3BhY2UgbWFuYWdlbWVudCBmb3IuCj4KPiBIb25l
+c3RseSBJIGRvbid0IHRoaW5rIHRoYXQncyBhIHZlcnkgZ29vZCBzb2x1dGlvbiBmb3IgYWN0dWFs
+IHN5c3RlbXMsCj4gdGhvdWdoLiDCoEEgcGFydCBvZiB0aGUgcmVhc29uaW5nIGJlaGluZCBkZXNp
+Z25pbmcgc3lzdGVtcyBpbiB0aGlzIHdheSBpcwo+IGFsbG93aW5nIHRoZSBBUCB0byBnbyBpbnRv
+IHRoZSBsb3dlc3QgcG9zc2libGUgcG93ZXIgc3RhdGUgd2hpbGUgb24gYQo+IHZvaWNlIGNhbGwg
+c28gaXQgZG9lc24ndCBzZWVtIGF0IGFsbCB1bnJlYXNvbmFibGUgZm9yIHRoZSBzeXN0ZW0KPiBp
+bnRlZ3JhdG9yIHRvIGV4cGVjdCB0aGF0IHRoZSBBUCB3aWxsIGJlIGRyaXZlbiBpbnRvIHRoZSBz
+dGFuZGFyZCBsb3cKPiBwb3dlciBzdGF0ZSB0aGUgc3lzdGVtIHVzZXMgZm9yIGl0IGR1cmluZyBh
+IGNhbGwgYW5kIGluIGEgc3lzdGVtIHVzaW5nCj4gb3Bwb3J0dW5pc3RpYyBzdXNwZW5kIHRoYXQn
+cyBzdXNwZW5kIG1vZGUuCgpZdXAuICBBbmQgdGhhdCdzIGV4YWN0bHkgd2hhdCBoYXBwZW5zIG9u
+IHRoZSBwbGF0Zm9ybXMgd2UndmUgc2hpcHBlZApvbiBzbyBmYXIgLS0gdGhlIGFwcHMgc2lkZSBv
+ZiB0aGUgd29ybGQgZnVsbHkgc3VzcGVuZHMgd2hpbGUgaW4gYQp2b2ljZSBjYWxsLiAgU29tZSBl
+dmVudHMgKHByb3ggc2Vuc29yLCBidXR0b25zLCBtb2RlbSBzZW5kaW5nIGEgc3RhdGUKbm90aWZp
+Y2F0aW9uKSB3aWxsIHdha2UgaXQgdXAsIG9mIGNvdXJzZS4KCkkgaGF2ZW4ndCBzcGVudCBtdWNo
+IHRpbWUgbG9va2luZyBhdCBhbHNhL2Fzb2MgeWV0LCBidXQgaXQncyBvbiBteQpsaXN0IGZvciAy
+MDEwIC0tIEknbSBob3BpbmcgdG8gbWlncmF0ZSB0aGUgdmVyeSBzaW1wbGUgYXVkaW8gZHJpdmVy
+cyBJCndyb3RlIGZvciB0aGUgbXNtIHBsYXRmb3JtIG9yaWdpbmFsbHkgdG8gYWN0dWFsbHkgYmUg
+YWxzYSBkcml2ZXJzIGFzCnBhcnQgb2YgdGhlIGdlbmVyYWwgInRyeSB0byB1c2UgZXhpc3Rpbmcg
+aW50ZXJmYWNlcyBpZiB0aGV5IGZpdCIgcGxhbgp3ZSd2ZSBiZWVuIHdvcmtpbmcgdG93YXJkLgoK
+VGhlIHN1c3BlbmRfYmxvY2sgc3lzdGVtIGdldHMgdXMgd2hhdCB3ZSBuZWVkIHRvZGF5ICh3ZWxs
+IHdoYXQgd2UKbmVlZGVkIHRocmVlIHllYXJzIGFnbyB0b28hKSB0byBzaGlwIGFuZCBoaXQgcmVh
+c29uYWJsZSBwb3dlciB0YXJnZXRzCm9uIGEgbnVtYmVyIG9mIHBsYXRmb3Jtcy4gIFRoZXJlJ3Mg
+YmVlbiBhIGxvdCBvZiB2YXJpb3VzIGhhbmR3YXZpbmcKYWJvdXQgImFuZHJvaWQga2VybmVsIGZv
+cmtzIiBhbmQgd2hhdCBoYXZlIHlvdSwgYnV0IGhlcmUgd2UgYXJlIGFnYWluLAp0cnlpbmcgdG8g
+d29yayBvdXQgcGVyaGFwcyB0aGUgb25seSAibmV3IHN1YnN5c3RlbSIgdHlwZSBjaGFuZ2UgdGhh
+dApvdXIgZHJpdmVyIGNvZGUgZGVwZW5kcyBvbiAoYWxtb3N0IGFsbCBvdGhlciBjb250ZW50aW91
+cyBzdHVmZiBpcyBzZWxmCmNvbnRhaW5lZCBhbmQgeW91IGNhbiB0YWtlIG9yIGxlYXZlIGl0KS4K
+Ck91ciBob3BlIGhlcmUgaXMgdG8gZ2V0IHNvbWV0aGluZyBvdXQgdGhlcmUgaW4gdGhlIG5lYXIg
+dGVybSBzbyB0aGF0CnRoZSB2YXJpb3VzIGRyaXZlcnMgd2UgbWFpbnRhaW4gd291bGQgImp1c3Qg
+d29yayIgaW4gbWFpbmxpbmUgKHlvdXIKY2hvaWNlIG9mIGlmIHlvdSB1c2Ugc3VzcGVuZF9ibG9j
+ayBvciBub3QgLS0gaXQncyBkZXNpZ25lZCB0byBiZSBhbgpvcHRpb24pIGFuZCB3ZSBjYW4gbW92
+ZSBmb3J3YXJkLiAgSWYgaW4gdGhlIGZ1dHVyZSBydW50aW1lIHBvd2VyCm1hbmFnZW1lbnQgb3Ig
+b3RoZXIgc3lzdGVtcyBjb21wbGV0ZWx5IG9ic29sZXRlIHN1c3BlbmRfYmxvY2tlcnMsCmF3ZXNv
+bWUsIHdlIHJlbW92ZSAnZW0uCgpCcmlhbgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGlu
+dXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWls
+bWFuL2xpc3RpbmZvL2xpbnV4LXBt
