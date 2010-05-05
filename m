@@ -1,15 +1,18 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Wed, 5 May 2010 21:15:36 +0100
-Message-ID: <20100505201536.GE11441__47438.2441294894$1273092477$gmane$org@sirena.org.uk>
-References: <20100505192811.GA5468@srcf.ucam.org>
-	<Pine.LNX.4.44L0.1005051554490.1885-100000@iolanthe.rowland.org>
+From: mark gross <mgross@linux.intel.com>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Wed, 5 May 2010 13:09:06 -0700
+Message-ID: <20100505200906.GA7450__45257.6486197815$1273094676$gmane$org@linux.intel.com>
+References: <20100504160346.GA27938@linux.intel.com>
+	<Pine.LNX.4.44L0.1005041252480.1729-100000@iolanthe.rowland.org>
+	<20100505015050.GA30591@linux.intel.com>
+	<20100505133131.GA24477@srcf.ucam.org>
+Reply-To: mgross@linux.intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1005051554490.1885-100000@iolanthe.rowland.org>
+In-Reply-To: <20100505133131.GA24477@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,18 +22,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, markgross@thegnar.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 05, 2010 at 04:04:00PM -0400, Alan Stern wrote:
+On Wed, May 05, 2010 at 02:31:31PM +0100, Matthew Garrett wrote:
+> On Tue, May 04, 2010 at 06:50:50PM -0700, mark gross wrote:
+> 
+> > In my sequence above I had the modem driver "magically" knowing to fail
+> > this suspend attempt.  (that "magic" wasn't fully thought out though.)
+> 
+> If the modem driver knows to "magically" fail a suspend attempt until it 
+> knows that userspace has consumed the event, you have something that 
+> looks awfully like suspend blockers.
+> 
+> > There *has* to be a better way.
+> 
+> But nobody has reasonably proposed one and demonstrated that it works. 
+> We've had over a year to do so and failed, and I think it's pretty 
+> unreasonable to ask Google to attempt to rearchitect based on a 
+> hypothetical.
+>
 
-> P.S.: What happens if a suspend occurs while a call is in progress, so
-> the codec is left powered up, and then the call ends?  Does the system
-> wake up at that point?  Or does it stay suspended with the codec still
-> powered, even though it's not needed any more?
+These are not new issues being raised. They've had over a year to
+address them, and all thats really happened was some sed script changes
+from wake_lock to suspend_blocker.  Nothing is really different
+here.
 
-Call end will be a system wake event in pretty much all systems,
-userspace will want to do some work when the call goes away anyway.
-Anyone who doesn't do that will see the CODEC stay powered, hopefully
-the baseband will send it a nice mute signal instead of popping.
+Rearchitecting out of tree code is as silly thing for you to expect from
+a community member.  
+
+sigh, lets stop wasting time and just merge it then.
+
+I'm finished with this thread until I do some rearchecting and post
+something that looks better to me.  I'll look for this stuff in 2.6.34
+or 35.
+
+--mgross 
+ps It think the name suspend blocker is worse than wake-lock.  I'd
+change it back.
