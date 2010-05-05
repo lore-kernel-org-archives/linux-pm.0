@@ -1,18 +1,13 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Wed, 5 May 2010 21:09:41 +0100
-Message-ID: <20100505200940.GD11441__2160.87608500875$1273094791$gmane$org@sirena.org.uk>
-References: <20100505185225.GA4411@srcf.ucam.org>
-	<Pine.LNX.4.44L0.1005051511040.1885-100000@iolanthe.rowland.org>
-	<20100505192208.GB5085@srcf.ucam.org>
-	<20100505195249.GC11441@sirena.org.uk>
-	<20100505200243.GA6266@srcf.ucam.org>
+Date: Wed, 5 May 2010 22:28:19 +0200
+Message-ID: <201005052228.19851.rjw__15030.6700067178$1273094792$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1005051554490.1885-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100505200243.GA6266@srcf.ucam.org>
+In-Reply-To: <Pine.LNX.4.44L0.1005051554490.1885-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,25 +17,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Arve@smtp1.linux-foundation.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 05, 2010 at 09:02:43PM +0100, Matthew Garrett wrote:
+On Wednesday 05 May 2010, Alan Stern wrote:
+> On Wed, 5 May 2010, Matthew Garrett wrote:
+> 
+> > On Wed, May 05, 2010 at 03:20:40PM -0400, Alan Stern wrote:
+> > 
+> > > One the face of it, a runtime-PM solution would dictate that the
+> > > codec's driver ought to turn off the codec whenever the driver thinks
+> > > it isn't being used.  Ergo, if the driver didn't know when a call was
+> > > in progress, it would use runtime PM to turn off the codec during a
+> > > call.
+> > 
+> > Well, part of the problem is that right now most of our beliefs about 
+> > imposed constraints tend to be based on what userspace is doing - "Don't 
+> > power down the audio codec when userspace has it open", for instance. 
+> > But that goes away with opportunistic suspend. In most cases you don't 
+> > want the audio codec to stay awake just because userspace was using it 
+> > to make bouncing cow noises, especially if you've just frozen userspace. 
+> > So the problem becomes more complicated than it would otherwise be.
+> 
+> It sounds like the problem can be stated simply enough: At the moment, 
+> nobody knows when the codec should be powered down!  Userspace might 
+> have some idea, but even if its ideas are right it has no way of 
+> communicating them to the kernel.
+> 
+> The power/control sysfs attribute was intended for just that purpose,
+> although it was aimed at runtime PM rather than system PM.  
+> Nevertheless, it or something like it could be used.  Of course, there 
+> would still remain the issue of userspace telling the kernel not to 
+> power down the codec while making bouncing cow noises -- but at this 
+> point it's not really a kernel problem any more.
 
-> One thing that's been mentioned before is that some vendors can swap the 
-> kernel much more easily than they can swap userspace, with the added 
-> constraint that they have little control over the bootloader. So if 
-> there's a userspace interface, it may well also be helpful to provide a 
-> kernel hook to allow the platform setup code to configure things. But 
+We'd need a separate control, I think.  The problem is, though, that the
+Android user space, for example, doesn't use the sysfs attributes of devices,
+so this control wouldn't be particularly useful for it.
 
-Oh, there's definitely going to be a platform-specific hook to configure
-things.  The platform needs to specify how the devices that make up the
-audio subsystem are interconnected on the board, and that's done in
-kernel since it depends on the hardware and can potentially lead to
-physical damage if done incorrectly.
+> P.S.: What happens if a suspend occurs while a call is in progress, so
+> the codec is left powered up, and then the call ends?  Does the system
+> wake up at that point?  Or does it stay suspended with the codec still
+> powered, even though it's not needed any more?
 
-> otherwise, I think that'd work for audio - the only question is whether 
-> we need it to be more generic.
+I guess you end up telling the user that the call ended, so the system wakes up.
+That's only a guess, though.
 
-Agreed.
+Rafael
