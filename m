@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
- (WKOC_E) and disconnect (WKDISC_E)
-Date: Wed, 5 May 2010 11:55:47 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005051144490.1885-100000__5582.18146111376$1273075086$gmane$org@iolanthe.rowland.org>
-References: <20100505111245.2c480ea1@dxy2>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Wed, 5 May 2010 17:27:00 +0100
+Message-ID: <20100505162700.GE7139__7581.67029493979$1273076985$gmane$org@rakim.wolfsonmicro.main>
+References: <20100504235644.GA5231@opensource.wolfsonmicro.com>
+	<Pine.LNX.4.44L0.1005051133210.1885-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100505111245.2c480ea1@dxy2>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1005051133210.1885-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,76 +19,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Du, Alek" <alek.du@intel.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Ondrej Zary <linux@rainbow-software.org>, Kernel development list <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 5 May 2010, Du, Alek wrote:
+On Wed, May 05, 2010 at 11:35:56AM -0400, Alan Stern wrote:
+> On Wed, 5 May 2010, Mark Brown wrote:
 
-> On Fri, 30 Apr 2010 01:45:33 +0800
-> Alan Stern <stern@rowland.harvard.edu> wrote:
-> 
-> 
-> > This patch fixes the problem on my system.  Does it work for you?
-> > I still think that disabling wakeup at the PCI or platform level should 
-> > override the port wakeup flags, but apparently it doesn't.
-> > 
-> > Alek, can you confirm that the changes in this patch are okay for the
-> > Moorestown EHCI controller?  I had to guess at how to handle the
-> > HOSTPCx register settings.
-> > 
-> > Alan Stern
-> 
-> 
-> Alan,
-> 
-> As I tested, the patch breaks phy low power mode, the EHCI works, but it never
-> enter phy low power mode when suspending port...
-> 
-> I guess this part of the diff breaks it.
-> 
-> 
->  -			/* only enable appropriate wake bits, otherwise the
->  -			 * hardware can not go phy low power mode. If a race
->  -			 * condition happens here(connection change during bits
->  -			 * set), the port change detection will finally fix it.
->  -			 */
->  -			if (t1 & PORT_CONNECT) {
->  -				t2 |= PORT_WKOC_E | PORT_WKDISC_E;
->  -				t2 &= ~PORT_WKCONN_E;
->  -			} else {
->  -				t2 |= PORT_WKOC_E | PORT_WKCONN_E;
->  -				t2 &= ~PORT_WKDISC_E;
->  -			}
+> > In other words, the issue is that we run into situations where we need
+> > an element of suspend control to go along with the opportunistic suspend
+> > in order to allow some elements to be kept running - since suspend
+> > blocking is taken suspend suppression seems like a reasonable term.
 
-That seems very odd.  Why should removing code that enables wakeup bits
-cause the suspend to fail?  Can't the phy go into low-power mode when
-all the wakeup bits are disabled?
+> Android must already include some solution to this problem.  Why not 
+> use that solution more generally?
 
-Does applying this additional patch on top of the previous one help?
+Not so much; at least for audio it's being handled with platform
+specific bodges as far as I've seen so far.  If there had been a
+standard way of doing this I'd have expected to see it in this patch
+series.  The Google systems all use Qualcomm chipsets which aren't
+affected by this since the audio CODEC is hidden from Linux and none of
+the audio actually uses ALSA at all in the BSPs I looked at.
 
-Alan Stern
-
-
-
-Index: usb-2.6/drivers/usb/host/ehci-hub.c
-===================================================================
---- usb-2.6.orig/drivers/usb/host/ehci-hub.c
-+++ usb-2.6/drivers/usb/host/ehci-hub.c
-@@ -200,7 +200,7 @@ static int ehci_bus_suspend (struct usb_
- 	while (port--) {
- 		u32 __iomem	*reg = &ehci->regs->port_status [port];
- 		u32		t1 = ehci_readl(ehci, reg) & ~PORT_RWC_BITS;
--		u32		t2 = t1;
-+		u32		t2;
- 
- 		if (ehci->has_hostpc)
- 			hostpc_reg = (u32 __iomem *)((u8 *)ehci->regs
-@@ -209,6 +209,7 @@ static int ehci_bus_suspend (struct usb_
- 		if (t1 & PORT_OWNER)
- 			set_bit(port, &ehci->owned_ports);
- 		else if ((t1 & PORT_PE) && !(t1 & PORT_SUSPEND)) {
-+			t2 = t1 & ~PORT_WAKE_BITS;
- 			t2 |= PORT_SUSPEND;
- 			set_bit(port, &ehci->bus_suspended);
- 			ehci_vdbg (ehci, "port %d, %08x -> %08x\n",
+It's entirely possible I'm missing something here, everything I know has
+come from either talking to users or trawling code on the internet.
