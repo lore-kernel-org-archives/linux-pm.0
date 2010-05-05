@@ -1,15 +1,17 @@
-From: "Du, Alek" <alek.du@intel.com>
-Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
- (WKOC_E) and disconnect (WKDISC_E)
-Date: Wed, 5 May 2010 11:12:45 +0800
-Message-ID: <20100505111245.2c480ea1__34956.504769116$1273029399$gmane$org@dxy2>
-References: <Pine.LNX.4.44L0.1004291041300.1697-100000@iolanthe.rowland.org>
-	<Pine.LNX.4.44L0.1004291338090.1339-100000@iolanthe.rowland.org>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Wed, 5 May 2010 12:06:30 +0100
+Message-ID: <20100505110630.GA5754__42432.1100152612$1273057732$gmane$org@opensource.wolfsonmicro.com>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<201005042223.41370.rjw@sisk.pl>
+	<20100504235644.GA5231@opensource.wolfsonmicro.com>
+	<201005050222.31038.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1004291338090.1339-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <201005050222.31038.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,248 +21,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Ondrej Zary <linux@rainbow-software.org>, Kernel development list <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 30 Apr 2010 01:45:33 +0800
-Alan Stern <stern@rowland.harvard.edu> wrote:
+On Wed, May 05, 2010 at 02:22:30AM +0200, Rafael J. Wysocki wrote:
+> On Wednesday 05 May 2010, Mark Brown wrote:
 
+> > On a mobile phone when the system is in a voice call the data flow for
+> > the call is entirely handled outside the CPU (normally referred to as
+> > Applications Processor or AP here) by the baseband and audio CODEC,
 
-> This patch fixes the problem on my system.  Does it work for you?
-> I still think that disabling wakeup at the PCI or platform level should 
-> override the port wakeup flags, but apparently it doesn't.
-> 
-> Alek, can you confirm that the changes in this patch are okay for the
-> Moorestown EHCI controller?  I had to guess at how to handle the
-> HOSTPCx register settings.
-> 
-> Alan Stern
+> In that case someone (either a driver or, most likely, user space) will need to
+> keep a suspend blocker active.
 
+That is not actually what Android systems are doing, and if it is what's
+supposed to happen then I'd really expect to see a patch to ASoC as part
+of this series which shows how this is supposed to be integrated - it's
+the sort of thing I'd expect to see some kernel space management for.
 
-Alan,
+Honestly I don't think that's a very good solution for actual systems,
+though.  A part of the reasoning behind designing systems in this way is
+allowing the AP to go into the lowest possible power state while on a
+voice call so it doesn't seem at all unreasonable for the system
+integrator to expect that the AP will be driven into the standard low
+power state the system uses for it during a call and in a system using
+opportunistic suspend that's suspend mode.
 
-As I tested, the patch breaks phy low power mode, the EHCI works, but it never
-enter phy low power mode when suspending port...
+> > In other words, the issue is that we run into situations where we need
+> > an element of suspend control to go along with the opportunistic suspend
+> > in order to allow some elements to be kept running - since suspend
+> > blocking is taken suspend suppression seems like a reasonable term.
 
-I guess this part of the diff breaks it.
+> Suspend really is a sledgehammer thing.  Either you suspend the whole system
+> or you don't suspend at all.  You can prevent opportunistic suspend from
+> happening using suspend blockers (that's what they are for), but that's pretty
+> much everything you can do about it.  If you want power savings while some
+> parts of the system are active, use runtime PM for that.
 
+On the one hand that's the answer that works well with the existing
+Linux design here so great.  On the other hand as discussed above that
+doesn't match so well with user expectations.
 
- -			/* only enable appropriate wake bits, otherwise the
- -			 * hardware can not go phy low power mode. If a race
- -			 * condition happens here(connection change during bits
- -			 * set), the port change detection will finally fix it.
- -			 */
- -			if (t1 & PORT_CONNECT) {
- -				t2 |= PORT_WKOC_E | PORT_WKDISC_E;
- -				t2 &= ~PORT_WKCONN_E;
- -			} else {
- -				t2 |= PORT_WKOC_E | PORT_WKCONN_E;
- -				t2 &= ~PORT_WKDISC_E;
- -			}
+> What I'd use opportunistic suspend for is not the saving of energy when there's
+> a call in progress, because in that case some parts of the system need to be
+> active, but to save energy when the device is completely idle, ie. the user
+> interface is not used, music is not played "in the background" etc. (my phone
+> is in such a state 90% of the time at least).
 
-
-
-
-Thanks,
-Alek
-
-
-> 
-> 
-> 
-> Index: usb-2.6/drivers/usb/host/ehci-hub.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/usb/host/ehci-hub.c
-> +++ usb-2.6/drivers/usb/host/ehci-hub.c
-> @@ -106,6 +106,47 @@ static void ehci_handover_companion_port
->  	ehci->owned_ports = 0;
->  }
->  
-> +static void ehci_set_wakeup_flags(struct ehci_hcd *ehci)
-> +{
-> +	int	port;
-> +
-> +	/* enable remote wakeup on all ports, if allowed */
-> +	port = HCS_N_PORTS(ehci->hcs_params);
-> +	while (port--) {
-> +		u32 __iomem	*reg = &ehci->regs->port_status[port];
-> +		u32		t1 = ehci_readl(ehci, reg) & ~PORT_RWC_BITS;
-> +		u32		t2 = t1 & ~PORT_WAKE_BITS;
-> +
-> +		/* only enable appropriate wake bits, otherwise the
-> +		 * hardware can not go phy low power mode. If a race
-> +		 * condition happens here(connection change during bits
-> +		 * set), the port change detection will finally fix it.
-> +		 */
-> +		if (device_may_wakeup(ehci_to_hcd(ehci)->self.controller)) {
-> +			if (t1 & PORT_CONNECT)
-> +				t2 |= PORT_WKOC_E | PORT_WKDISC_E;
-> +			else
-> +				t2 |= PORT_WKOC_E | PORT_WKCONN_E;
-> +			ehci_vdbg(ehci, "port %d, %08x -> %08x\n",
-> +					port + 1, t1, t2);
-> +		}
-> +		ehci_writel(ehci, t2, reg);
-> +	}
-> +}
-> +
-> +static void ehci_clear_wakeup_flags(struct ehci_hcd *ehci)
-> +{
-> +	int	port;
-> +
-> +	port = HCS_N_PORTS(ehci->hcs_params);
-> +	while (port--) {
-> +		u32 __iomem	*reg = &ehci->regs->port_status[port];
-> +		u32		t1 = ehci_readl(ehci, reg) & ~PORT_RWC_BITS;
-> +
-> +		ehci_writel(ehci, t1 & ~PORT_WAKE_BITS, reg);
-> +	}
-> +}
-> +
->  static int ehci_bus_suspend (struct usb_hcd *hcd)
->  {
->  	struct ehci_hcd		*ehci = hcd_to_ehci (hcd);
-> @@ -170,26 +211,6 @@ static int ehci_bus_suspend (struct usb_
->  		else if ((t1 & PORT_PE) && !(t1 & PORT_SUSPEND)) {
->  			t2 |= PORT_SUSPEND;
->  			set_bit(port, &ehci->bus_suspended);
-> -		}
-> -
-> -		/* enable remote wakeup on all ports */
-> -		if (hcd->self.root_hub->do_remote_wakeup) {
-> -			/* only enable appropriate wake bits, otherwise the
-> -			 * hardware can not go phy low power mode. If a race
-> -			 * condition happens here(connection change during bits
-> -			 * set), the port change detection will finally fix it.
-> -			 */
-> -			if (t1 & PORT_CONNECT) {
-> -				t2 |= PORT_WKOC_E | PORT_WKDISC_E;
-> -				t2 &= ~PORT_WKCONN_E;
-> -			} else {
-> -				t2 |= PORT_WKOC_E | PORT_WKCONN_E;
-> -				t2 &= ~PORT_WKDISC_E;
-> -			}
-> -		} else
-> -			t2 &= ~PORT_WAKE_BITS;
-> -
-> -		if (t1 != t2) {
->  			ehci_vdbg (ehci, "port %d, %08x -> %08x\n",
->  				port + 1, t1, t2);
->  			ehci_writel(ehci, t2, reg);
-> @@ -907,12 +928,7 @@ static int ehci_hub_control (
->  					|| (temp & PORT_RESET) != 0)
->  				goto error;
->  
-> -			/* After above check the port must be connected.
-> -			 * Set appropriate bit thus could put phy into low power
-> -			 * mode if we have hostpc feature
-> -			 */
-> -			temp &= ~PORT_WKCONN_E;
-> -			temp |= PORT_WKDISC_E | PORT_WKOC_E;
-> +			temp &= ~PORT_WAKE_BITS;
->  			ehci_writel(ehci, temp | PORT_SUSPEND, status_reg);
->  			if (hostpc_reg) {
->  				spin_unlock_irqrestore(&ehci->lock, flags);
-> Index: usb-2.6/drivers/usb/host/ehci-pci.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/usb/host/ehci-pci.c
-> +++ usb-2.6/drivers/usb/host/ehci-pci.c
-> @@ -284,23 +284,15 @@ static int ehci_pci_suspend(struct usb_h
->  		msleep(10);
->  
->  	/* Root hub was already suspended. Disable irq emission and
-> -	 * mark HW unaccessible, bail out if RH has been resumed. Use
-> -	 * the spinlock to properly synchronize with possible pending
-> -	 * RH suspend or resume activity.
-> -	 *
-> -	 * This is still racy as hcd->state is manipulated outside of
-> -	 * any locks =P But that will be a different fix.
-> +	 * mark HW unaccessible.  The PM and USB cores make sure that
-> +	 * the root hub is either suspended or stopped.
->  	 */
->  	spin_lock_irqsave (&ehci->lock, flags);
-> -	if (hcd->state != HC_STATE_SUSPENDED) {
-> -		rc = -EINVAL;
-> -		goto bail;
-> -	}
-> +	ehci_set_wakeup_flags(ehci);
->  	ehci_writel(ehci, 0, &ehci->regs->intr_enable);
->  	(void)ehci_readl(ehci, &ehci->regs->intr_enable);
->  
->  	clear_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags);
-> - bail:
->  	spin_unlock_irqrestore (&ehci->lock, flags);
->  
->  	// could save FLADJ in case of Vaux power loss
-> @@ -330,6 +322,7 @@ static int ehci_pci_resume(struct usb_hc
->  				!hibernated) {
->  		int	mask = INTR_MASK;
->  
-> +		ehci_clear_wakeup_flags(ehci);
->  		if (!hcd->self.root_hub->do_remote_wakeup)
->  			mask &= ~STS_PCD;
->  		ehci_writel(ehci, mask, &ehci->regs->intr_enable);
-> Index: usb-2.6/drivers/usb/host/ehci-au1xxx.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/usb/host/ehci-au1xxx.c
-> +++ usb-2.6/drivers/usb/host/ehci-au1xxx.c
-> @@ -215,26 +215,17 @@ static int ehci_hcd_au1xxx_drv_suspend(s
->  		msleep(10);
->  
->  	/* Root hub was already suspended. Disable irq emission and
-> -	 * mark HW unaccessible, bail out if RH has been resumed. Use
-> -	 * the spinlock to properly synchronize with possible pending
-> -	 * RH suspend or resume activity.
-> -	 *
-> -	 * This is still racy as hcd->state is manipulated outside of
-> -	 * any locks =P But that will be a different fix.
-> +	 * mark HW unaccessible.  The PM and USB cores make sure that
-> +	 * the root hub is either suspended or stopped.
->  	 */
->  	spin_lock_irqsave(&ehci->lock, flags);
-> -	if (hcd->state != HC_STATE_SUSPENDED) {
-> -		rc = -EINVAL;
-> -		goto bail;
-> -	}
-> +	ehci_set_wakeup_flags(ehci);
->  	ehci_writel(ehci, 0, &ehci->regs->intr_enable);
->  	(void)ehci_readl(ehci, &ehci->regs->intr_enable);
->  
->  	clear_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags);
->  
->  	au1xxx_stop_ehc();
-> -
-> -bail:
->  	spin_unlock_irqrestore(&ehci->lock, flags);
->  
->  	// could save FLADJ in case of Vaux power loss
-> @@ -264,6 +255,7 @@ static int ehci_hcd_au1xxx_drv_resume(st
->  	if (ehci_readl(ehci, &ehci->regs->configured_flag) == FLAG_CF) {
->  		int	mask = INTR_MASK;
->  
-> +		ehci_clear_wakeup_flags(ehci);
->  		if (!hcd->self.root_hub->do_remote_wakeup)
->  			mask &= ~STS_PCD;
->  		ehci_writel(ehci, mask, &ehci->regs->intr_enable);
-> Index: usb-2.6/drivers/usb/host/ehci-fsl.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/usb/host/ehci-fsl.c
-> +++ usb-2.6/drivers/usb/host/ehci-fsl.c
-> @@ -313,6 +313,7 @@ static int ehci_fsl_drv_suspend(struct d
->  	struct ehci_fsl *ehci_fsl = hcd_to_ehci_fsl(hcd);
->  	void __iomem *non_ehci = hcd->regs;
->  
-> +	ehci_set_wakeup_flags(ehci);
->  	if (!fsl_deep_sleep())
->  		return 0;
->  
-> @@ -327,6 +328,7 @@ static int ehci_fsl_drv_resume(struct de
->  	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
->  	void __iomem *non_ehci = hcd->regs;
->  
-> +	ehci_clear_wakeup_flags(ehci);
->  	if (!fsl_deep_sleep())
->  		return 0;
->  
-> 
+Remember that even in your full system suspend the system is not
+actually fully idle - the baseband is still sitting there looking after
+itself, keeping the phone on the network.  The only difference between
+on call and off call from the point of view of the Linux system is that
+there is an active audio path which happens to have been set up by the
+Linux system.
