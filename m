@@ -1,16 +1,18 @@
-From: mark gross <mgross@linux.intel.com>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Wed, 5 May 2010 13:28:26 -0700
-Message-ID: <20100505202826.GB7450__25608.3181397573$1273094791$gmane$org@linux.intel.com>
-References: <20100505015050.GA30591@linux.intel.com>
-	<Pine.LNX.4.44L0.1005051136140.1885-100000@iolanthe.rowland.org>
-Reply-To: mgross@linux.intel.com
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Wed, 5 May 2010 21:09:41 +0100
+Message-ID: <20100505200940.GD11441__2160.87608500875$1273094791$gmane$org@sirena.org.uk>
+References: <20100505185225.GA4411@srcf.ucam.org>
+	<Pine.LNX.4.44L0.1005051511040.1885-100000@iolanthe.rowland.org>
+	<20100505192208.GB5085@srcf.ucam.org>
+	<20100505195249.GC11441@sirena.org.uk>
+	<20100505200243.GA6266@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1005051136140.1885-100000@iolanthe.rowland.org>
+In-Reply-To: <20100505200243.GA6266@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,62 +22,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, markgross@thegnar.org, Oleg Nesterov <oleg@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 05, 2010 at 11:44:39AM -0400, Alan Stern wrote:
-> On Tue, 4 May 2010, mark gross wrote:
-> 
-> > Thanks, I think I'm starting to get it.  From this it seems that the
-> > system integrator needs to identify those wake up sources that need to
-> > be able to block a suspend, and figure out a way of acknowledging from
-> > user mode, that its now ok to allow a suspend to happen.
-> 
-> The second part is easy.  Userspace doesn't need to do anything special 
-> to acknowledge that a suspend is now okay; it just has to remove the 
-> conditions that led the driver to block suspends in the first place.
-> 
-> For example, if suspends are blocked because some input event has been
-> queued, emptying the input event queue should unblock suspends.
-> 
-> > The rev-6 proposed way is for the integrator to implement overlapping
-> > blocker sections from ISR up to user mode for selected wake up devices
-> > (i.e. the modem)
-> > 
-> > There *has* to be a better way.
-> 
-> Why?  What's wrong with overlapping blockers?  It's a very common
-> idiom.  For example, the same sort of thing is used when locking
-> subtrees of a tree: You lock the root node, and then use overlapping
-> locks on the nodes leading down to the subtree you're interested in.
+On Wed, May 05, 2010 at 09:02:43PM +0100, Matthew Garrett wrote:
 
-Because in the kenel there is only a partial ordering of calling
-sequences from IRQ to usermode.  I see a lot of custom out of tree code
-being developed to deal with getting the overlapping blocker sections
-right, per device.
+> One thing that's been mentioned before is that some vendors can swap the 
+> kernel much more easily than they can swap userspace, with the added 
+> constraint that they have little control over the bootloader. So if 
+> there's a userspace interface, it may well also be helpful to provide a 
+> kernel hook to allow the platform setup code to configure things. But 
 
- 
-> > Can't we have some notification based thing that supports user mode
-> > acks through a misc device or sysfs thing?   Anything to avoid the
-> > overlapping blocker sections. 
-> 
-> Userspace acks aren't the issue; the issue is how (and when) kernel 
-> drivers should initiate a blocker.  Switching to notifications, misc 
-> devices, or sysfs won't help solve this issue.
+Oh, there's definitely going to be a platform-specific hook to configure
+things.  The platform needs to specify how the devices that make up the
+audio subsystem are interconnected on the board, and that's done in
+kernel since it depends on the hardware and can potentially lead to
+physical damage if done incorrectly.
 
-communicating non-local knowledge back down to the blocking object to
-tell it that it can unblock is the issue
- 
-> > True, you need an ack back from user mode for when its ok to allow
-> > suspend to happen.  This ack is device specific and needs to be custom
-> > built per product to its wake up sources.
-> 
-> No and no.  Nothing special is needed.  All userspace needs to do is 
-> remove the condition that led to the blocker being enabled initially -- 
-> which is exactly what userspace would do normally anyway.
+> otherwise, I think that'd work for audio - the only question is whether 
+> we need it to be more generic.
 
-Oh, like tell the modem that user mode has handled the ring event and
-its ok to un-block?
-
---mgross
+Agreed.
