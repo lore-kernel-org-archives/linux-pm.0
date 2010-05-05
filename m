@@ -1,7 +1,7 @@
-From: tytso@mit.edu
+From: Matthew Garrett <mjg@redhat.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Wed, 5 May 2010 15:55:34 -0400
-Message-ID: <20100505195534.GD18762__19154.7157861807$1273091067$gmane$org@thunk.org>
+Date: Wed, 5 May 2010 21:02:43 +0100
+Message-ID: <20100505200243.GA6266__4192.71481591767$1273091075$gmane$org@srcf.ucam.org>
 References: <20100505185225.GA4411@srcf.ucam.org>
 	<Pine.LNX.4.44L0.1005051511040.1885-100000@iolanthe.rowland.org>
 	<20100505192208.GB5085@srcf.ucam.org>
@@ -22,27 +22,11 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
-
-Hi Mark,
-
-I confess I've completely lost track of (a) what problem you are
-trying to solve, and (b) how this might relate to some change that
-you'd like to see in the suspend block API.  Could you do a quick
-summary and recap?  I've gone over the entire thread, and it's still
-not clear what change you're advocating for in suspend blockers.
-
-Thanks, regards,
-
-						- Ted
 
 On Wed, May 05, 2010 at 08:52:50PM +0100, Mark Brown wrote:
 > On Wed, May 05, 2010 at 08:22:08PM +0100, Matthew Garrett wrote:
-> > On Wed, May 05, 2010 at 03:13:52PM -0400, Alan Stern wrote:
-> 
-> > > Does it know when a call is in progress?
-> 
 > > Perhaps you could infer that from the audio routing setup? I don't know 
 > > enough about embedded codecs.
 > 
@@ -52,13 +36,14 @@ On Wed, May 05, 2010 at 08:52:50PM +0100, Mark Brown wrote:
 > for marking some of the path endpoints as suspend insensitive then on
 > suspend leave those endpoints in their current state, force the other
 > endpoints off temporarily and re-run the standard power checks.
-> 
-> One thing I'll need to have a bit of a think about is if we need to
-> provide the ability to offer control to userspace for the suspend state
-> of path endpoints separately to their runtime state; I suspect the
-> answer is yes.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
+One thing that's been mentioned before is that some vendors can swap the 
+kernel much more easily than they can swap userspace, with the added 
+constraint that they have little control over the bootloader. So if 
+there's a userspace interface, it may well also be helpful to provide a 
+kernel hook to allow the platform setup code to configure things. But 
+otherwise, I think that'd work for audio - the only question is whether 
+we need it to be more generic.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
