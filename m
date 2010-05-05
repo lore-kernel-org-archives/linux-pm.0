@@ -1,16 +1,15 @@
-From: mark gross <mgross@linux.intel.com>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Tue, 4 May 2010 18:50:50 -0700
-Message-ID: <20100505015050.GA30591__49086.7607448765$1273024316$gmane$org@linux.intel.com>
-References: <20100504160346.GA27938@linux.intel.com>
-	<Pine.LNX.4.44L0.1005041252480.1729-100000@iolanthe.rowland.org>
-Reply-To: mgross@linux.intel.com
+From: "Du, Alek" <alek.du@intel.com>
+Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
+ (WKOC_E) and disconnect (WKDISC_E)
+Date: Wed, 5 May 2010 11:12:45 +0800
+Message-ID: <20100505111245.2c480ea1__34956.504769116$1273029399$gmane$org@dxy2>
+References: <Pine.LNX.4.44L0.1004291041300.1697-100000@iolanthe.rowland.org>
+	<Pine.LNX.4.44L0.1004291338090.1339-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1005041252480.1729-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1004291338090.1339-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,180 +20,247 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, markgross@thegnar.org, Oleg Nesterov <oleg@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Ondrej Zary <linux@rainbow-software.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 04, 2010 at 01:16:25PM -0400, Alan Stern wrote:
-> On Tue, 4 May 2010, mark gross wrote:
-> 
-> > On Tue, May 04, 2010 at 09:59:59AM -0400, Alan Stern wrote:
-> > > On Mon, 3 May 2010, mark gross wrote:
-> > > 
-> > > > You know things would be so much easier if the policy was a one-shot
-> > > > styled thing.  i.e. when enabled it does what it does, but upon resume
-> > > > the policy must be re-enabled by user mode to get the opportunistic
-> > > > behavior.  That way we don't need to grab the suspend blocker from the
-> > > > wake up irq handler all the way up to user mode as the example below
-> > > > calls out.  I suppose doing this would put a burden on the user mode code
-> > > > to keep track of if it has no pending blockers registered after a wake
-> > > > up from the suspend.  but that seems nicer to me than sprinkling
-> > > > overlapping blocker critical sections from the mettle up to user mode.
-> > > > 
-> > > > Please consider making the policy a one shot API that needs to be
-> > > > re-enabled after resume by user mode.  That would remove my issue with
-> > > > the design.
-> > > 
-> > > This won't work right if a second IRQ arrives while the first is being
-> > > processed.  Suppose the kernel driver for the second IRQ doesn't
-> > > activate a suspend blocker, and suppose all the userspace handlers for
-> > > the first IRQ end (and the opportunistic policy is re-enabled) before
-> > > the userspace handler for the second IRQ can start.  Then the system
-> > > will go back to sleep before userspace can handle the second IRQ.
-> > >
-> > 
-> > What?  If the suspend blocker API was a one shot styled api, after the
-> > suspend, the one shot is over and the behavior is that you do not fall
-> > back into suspend again until user mode re-enables the one-shot
-> > behavior.  
-> 
-> I was referring to your sentence: "That way we don't need to grab the 
-> suspend blocker from the wake up irq handler all the way up to user 
-> mode..."  The problem arises when kernel handlers don't do _something_ 
-> to prevent another suspend from occurring too soon.
-> 
-> > With what I am proposing the next suspend would not happen until the
-> > user mode code re-enables the suspend blocking behavior.  It would much
-> > cleaner for everyone and I see zero down side WRT the example you just
-> > posted.  
-> > 
-> > If user mode triggers a suspend by releasing the last blocker, you have
-> > until pm_suspend('mem') turns off interrupts to cancel it.  That race
-> > will never go away. 
-> 
-> (Actually the kernel can cancel the suspend even after interrupts are
-> turned off, if it has a reason to do so.)
-> 
-> In theory the race between interrupts and suspend don't need to be a
-> problem.  In practice it still is -- the PM core needs a few changes to
-> allow wakeup interrupts to cancel a suspend in progress.  Regardless, 
-> that's not what I was talking about.
-> 
-> > Let me think this through, please check that I'm understanding the issue
-> > please:
-> > 1) one-shot policy enable blocker PM suspend behavior;
-> > 2) release last blocker and call pm_suspend('mem') and suspend all the
-> > way down.
-> > 3) get wake up event, one-shot policy over, no-blockers in list
-> > 4) go all the way to user mode, 
-> > 5) user mode decides to not grab a blocker, and re-enables one-shot
-> > policy
-> > 6) pm_suspend('mem') called
-> > 7) interrupt comes in (say the modem rings)
-> > 8) modem driver handler needs to returns fail from pm_suspend call back,
-> > device resumes (I am proposing changing the posted api for doing this.)
-> > 9) user mode figures out one-shot needs to be re-enabled and it grabs a
-> > blocker to handle the call and re-enables the one-shot.
-> 
-> This is not the scenario I was describing.  Here's what I had in mind:
-> 
-> 1) The system is asleep
-> 2) Wakeup event occurs, one-shot policy over
-> 3) Go all the way to user mode
-> 4) A second wakeup interrupt occurs (say the modem rings)
-> 5) The modem driver does not enable any suspend blockers
-> 6) The modem driver queues an input event for userspace
-> 7) The userspace handler invoked during 3) finishes and re-enables
-> 	the one-shot policy
-> 8) No suspend blockers are enabled, so the system goes to sleep
-In my sequence above I had the modem driver "magically" knowing to fail
-this suspend attempt.  (that "magic" wasn't fully thought out though.)
-> 9) The userspace handler for the input event in 6) doesn't get to run
-> 
-> > So the real problem grabbing blockers from ISR's trying to solve is to
-> > reduce the window of time where a pm_suspend('mem') can be canceled.
-> 
-> No.  The real problem is how ISRs should prevent the system from
-> suspending before the events they generate can be handled by userspace.
-
-Thanks, I think I'm starting to get it.  From this it seems that the
-system integrator needs to identify those wake up sources that need to
-be able to block a suspend, and figure out a way of acknowledging from
-user mode, that its now ok to allow a suspend to happen.
-
-The rev-6 proposed way is for the integrator to implement overlapping
-blocker sections from ISR up to user mode for selected wake up devices
-(i.e. the modem)
-
-There *has* to be a better way.
-
-Can't we have some notification based thing that supports user mode
-acks through a misc device or sysfs thing?   Anything to avoid the
-overlapping blocker sections. 
+On Fri, 30 Apr 2010 01:45:33 +0800
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
 
-> > My proposal is to;
-> > 1) change the kernel blocker api to be
-> > "cancel-one-shot-policy-enable" that can be called from the ISR's for
-> > the wake up devices before the IRQ's are disabled to cancel an in-flight
-> > suspend.  I would make it 2 macros one goes in the pm_suspend callback
-> > to return fail, and the other in the ISR to disable the one-shot-policy.
-> >  
-> > 2) make the policy a one shot that user mode must re-enable after each
-> > suspend attempted.
+> This patch fixes the problem on my system.  Does it work for you?
+> I still think that disabling wakeup at the PCI or platform level should 
+> override the port wakeup flags, but apparently it doesn't.
 > 
-> Neither of these solves the race I described.
+> Alek, can you confirm that the changes in this patch are okay for the
+> Moorestown EHCI controller?  I had to guess at how to handle the
+> HOSTPCx register settings.
+> 
+> Alan Stern
 
-True, you need an ack back from user mode for when its ok to allow
-suspend to happen.  This ack is device specific and needs to be custom
-built per product to its wake up sources.
+
+Alan,
+
+As I tested, the patch breaks phy low power mode, the EHCI works, but it never
+enter phy low power mode when suspending port...
+
+I guess this part of the diff breaks it.
+
+
+ -			/* only enable appropriate wake bits, otherwise the
+ -			 * hardware can not go phy low power mode. If a race
+ -			 * condition happens here(connection change during bits
+ -			 * set), the port change detection will finally fix it.
+ -			 */
+ -			if (t1 & PORT_CONNECT) {
+ -				t2 |= PORT_WKOC_E | PORT_WKDISC_E;
+ -				t2 &= ~PORT_WKCONN_E;
+ -			} else {
+ -				t2 |= PORT_WKOC_E | PORT_WKCONN_E;
+ -				t2 &= ~PORT_WKDISC_E;
+ -			}
+
+
+
+
+Thanks,
+Alek
+
 
 > 
-> > Would it help if I coded up the above proposal as patch to the current
-> > (rev-6) of the blocker patchset?  I'm offering.
-> > 
-> > Because this part of the current design is broken, in that it demands
-> > the sprinkling of blocker critical sections from the hardware up to the
-> > user mode.  Its ugly, hard to get right and if more folks would take a
-> > look at how well it worked out for the existing kernels on
-> > android.git.kernel.org/kernels/ perhaps it would get more attention.
 > 
-> I agree, it is ugly and probably hard to get right.  But something like 
-> it is necessary to solve this race.
 > 
-> > Finally, as an aside, lets look at the problem with the posted rev-6
-> > patches:
-> > 1) enable suspend blocker policy
-> > 2) release user-mode blocker
-> > 3) start suspend
-> > 4) get a modem interrupt (incoming call)
-> > 5) ooops, IRQ came in after pm_suspend('mem') turned off interrupts.
-> > bummer for you, thats life with this design.  Better hope your modem
-> > hardware is modified to keep pulling on that wake up line because you're
-> > past the point of no return now and going to suspend.
+> Index: usb-2.6/drivers/usb/host/ehci-hub.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/usb/host/ehci-hub.c
+> +++ usb-2.6/drivers/usb/host/ehci-hub.c
+> @@ -106,6 +106,47 @@ static void ehci_handover_companion_port
+>  	ehci->owned_ports = 0;
+>  }
+>  
+> +static void ehci_set_wakeup_flags(struct ehci_hcd *ehci)
+> +{
+> +	int	port;
+> +
+> +	/* enable remote wakeup on all ports, if allowed */
+> +	port = HCS_N_PORTS(ehci->hcs_params);
+> +	while (port--) {
+> +		u32 __iomem	*reg = &ehci->regs->port_status[port];
+> +		u32		t1 = ehci_readl(ehci, reg) & ~PORT_RWC_BITS;
+> +		u32		t2 = t1 & ~PORT_WAKE_BITS;
+> +
+> +		/* only enable appropriate wake bits, otherwise the
+> +		 * hardware can not go phy low power mode. If a race
+> +		 * condition happens here(connection change during bits
+> +		 * set), the port change detection will finally fix it.
+> +		 */
+> +		if (device_may_wakeup(ehci_to_hcd(ehci)->self.controller)) {
+> +			if (t1 & PORT_CONNECT)
+> +				t2 |= PORT_WKOC_E | PORT_WKDISC_E;
+> +			else
+> +				t2 |= PORT_WKOC_E | PORT_WKCONN_E;
+> +			ehci_vdbg(ehci, "port %d, %08x -> %08x\n",
+> +					port + 1, t1, t2);
+> +		}
+> +		ehci_writel(ehci, t2, reg);
+> +	}
+> +}
+> +
+> +static void ehci_clear_wakeup_flags(struct ehci_hcd *ehci)
+> +{
+> +	int	port;
+> +
+> +	port = HCS_N_PORTS(ehci->hcs_params);
+> +	while (port--) {
+> +		u32 __iomem	*reg = &ehci->regs->port_status[port];
+> +		u32		t1 = ehci_readl(ehci, reg) & ~PORT_RWC_BITS;
+> +
+> +		ehci_writel(ehci, t1 & ~PORT_WAKE_BITS, reg);
+> +	}
+> +}
+> +
+>  static int ehci_bus_suspend (struct usb_hcd *hcd)
+>  {
+>  	struct ehci_hcd		*ehci = hcd_to_ehci (hcd);
+> @@ -170,26 +211,6 @@ static int ehci_bus_suspend (struct usb_
+>  		else if ((t1 & PORT_PE) && !(t1 & PORT_SUSPEND)) {
+>  			t2 |= PORT_SUSPEND;
+>  			set_bit(port, &ehci->bus_suspended);
+> -		}
+> -
+> -		/* enable remote wakeup on all ports */
+> -		if (hcd->self.root_hub->do_remote_wakeup) {
+> -			/* only enable appropriate wake bits, otherwise the
+> -			 * hardware can not go phy low power mode. If a race
+> -			 * condition happens here(connection change during bits
+> -			 * set), the port change detection will finally fix it.
+> -			 */
+> -			if (t1 & PORT_CONNECT) {
+> -				t2 |= PORT_WKOC_E | PORT_WKDISC_E;
+> -				t2 &= ~PORT_WKCONN_E;
+> -			} else {
+> -				t2 |= PORT_WKOC_E | PORT_WKCONN_E;
+> -				t2 &= ~PORT_WKDISC_E;
+> -			}
+> -		} else
+> -			t2 &= ~PORT_WAKE_BITS;
+> -
+> -		if (t1 != t2) {
+>  			ehci_vdbg (ehci, "port %d, %08x -> %08x\n",
+>  				port + 1, t1, t2);
+>  			ehci_writel(ehci, t2, reg);
+> @@ -907,12 +928,7 @@ static int ehci_hub_control (
+>  					|| (temp & PORT_RESET) != 0)
+>  				goto error;
+>  
+> -			/* After above check the port must be connected.
+> -			 * Set appropriate bit thus could put phy into low power
+> -			 * mode if we have hostpc feature
+> -			 */
+> -			temp &= ~PORT_WKCONN_E;
+> -			temp |= PORT_WKDISC_E | PORT_WKOC_E;
+> +			temp &= ~PORT_WAKE_BITS;
+>  			ehci_writel(ehci, temp | PORT_SUSPEND, status_reg);
+>  			if (hostpc_reg) {
+>  				spin_unlock_irqrestore(&ehci->lock, flags);
+> Index: usb-2.6/drivers/usb/host/ehci-pci.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/usb/host/ehci-pci.c
+> +++ usb-2.6/drivers/usb/host/ehci-pci.c
+> @@ -284,23 +284,15 @@ static int ehci_pci_suspend(struct usb_h
+>  		msleep(10);
+>  
+>  	/* Root hub was already suspended. Disable irq emission and
+> -	 * mark HW unaccessible, bail out if RH has been resumed. Use
+> -	 * the spinlock to properly synchronize with possible pending
+> -	 * RH suspend or resume activity.
+> -	 *
+> -	 * This is still racy as hcd->state is manipulated outside of
+> -	 * any locks =P But that will be a different fix.
+> +	 * mark HW unaccessible.  The PM and USB cores make sure that
+> +	 * the root hub is either suspended or stopped.
+>  	 */
+>  	spin_lock_irqsave (&ehci->lock, flags);
+> -	if (hcd->state != HC_STATE_SUSPENDED) {
+> -		rc = -EINVAL;
+> -		goto bail;
+> -	}
+> +	ehci_set_wakeup_flags(ehci);
+>  	ehci_writel(ehci, 0, &ehci->regs->intr_enable);
+>  	(void)ehci_readl(ehci, &ehci->regs->intr_enable);
+>  
+>  	clear_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags);
+> - bail:
+>  	spin_unlock_irqrestore (&ehci->lock, flags);
+>  
+>  	// could save FLADJ in case of Vaux power loss
+> @@ -330,6 +322,7 @@ static int ehci_pci_resume(struct usb_hc
+>  				!hibernated) {
+>  		int	mask = INTR_MASK;
+>  
+> +		ehci_clear_wakeup_flags(ehci);
+>  		if (!hcd->self.root_hub->do_remote_wakeup)
+>  			mask &= ~STS_PCD;
+>  		ehci_writel(ehci, mask, &ehci->regs->intr_enable);
+> Index: usb-2.6/drivers/usb/host/ehci-au1xxx.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/usb/host/ehci-au1xxx.c
+> +++ usb-2.6/drivers/usb/host/ehci-au1xxx.c
+> @@ -215,26 +215,17 @@ static int ehci_hcd_au1xxx_drv_suspend(s
+>  		msleep(10);
+>  
+>  	/* Root hub was already suspended. Disable irq emission and
+> -	 * mark HW unaccessible, bail out if RH has been resumed. Use
+> -	 * the spinlock to properly synchronize with possible pending
+> -	 * RH suspend or resume activity.
+> -	 *
+> -	 * This is still racy as hcd->state is manipulated outside of
+> -	 * any locks =P But that will be a different fix.
+> +	 * mark HW unaccessible.  The PM and USB cores make sure that
+> +	 * the root hub is either suspended or stopped.
+>  	 */
+>  	spin_lock_irqsave(&ehci->lock, flags);
+> -	if (hcd->state != HC_STATE_SUSPENDED) {
+> -		rc = -EINVAL;
+> -		goto bail;
+> -	}
+> +	ehci_set_wakeup_flags(ehci);
+>  	ehci_writel(ehci, 0, &ehci->regs->intr_enable);
+>  	(void)ehci_readl(ehci, &ehci->regs->intr_enable);
+>  
+>  	clear_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags);
+>  
+>  	au1xxx_stop_ehc();
+> -
+> -bail:
+>  	spin_unlock_irqrestore(&ehci->lock, flags);
+>  
+>  	// could save FLADJ in case of Vaux power loss
+> @@ -264,6 +255,7 @@ static int ehci_hcd_au1xxx_drv_resume(st
+>  	if (ehci_readl(ehci, &ehci->regs->configured_flag) == FLAG_CF) {
+>  		int	mask = INTR_MASK;
+>  
+> +		ehci_clear_wakeup_flags(ehci);
+>  		if (!hcd->self.root_hub->do_remote_wakeup)
+>  			mask &= ~STS_PCD;
+>  		ehci_writel(ehci, mask, &ehci->regs->intr_enable);
+> Index: usb-2.6/drivers/usb/host/ehci-fsl.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/usb/host/ehci-fsl.c
+> +++ usb-2.6/drivers/usb/host/ehci-fsl.c
+> @@ -313,6 +313,7 @@ static int ehci_fsl_drv_suspend(struct d
+>  	struct ehci_fsl *ehci_fsl = hcd_to_ehci_fsl(hcd);
+>  	void __iomem *non_ehci = hcd->regs;
+>  
+> +	ehci_set_wakeup_flags(ehci);
+>  	if (!fsl_deep_sleep())
+>  		return 0;
+>  
+> @@ -327,6 +328,7 @@ static int ehci_fsl_drv_resume(struct de
+>  	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
+>  	void __iomem *non_ehci = hcd->regs;
+>  
+> +	ehci_clear_wakeup_flags(ehci);
+>  	if (!fsl_deep_sleep())
+>  		return 0;
+>  
 > 
-> That is not a problem for level-sensitive IRQs.  If interrupts have
-> been turned off then the modem will not receive any commands telling
-> it to stop requesting an interrupt.  So the IRQ line will remain active 
-> until the system goes to sleep, at which point it will immediately 
-> wake up the system.
-> 
-> For edge-sensitive interrupts the situation isn't as simple.  The
-> low-level IRQ code must handle this somehow.
-> 
-> > Grabbing a blocker in the ISR doesn't solve this.  So your hardware
-> > needs to have a persistent wake up trigger that is robust against this
-> > scenario.  And, if you have such hardware then why are we killing
-> > ourselves to maximize the window of time between pm_suspend('mem') and
-> > platform suspend where you can cancel the suspend?  The hardware will
-> > simply wake up anyway.
-> 
-> That's not what we are killing ourselves for.  The point of suspend
-> blockers is not to prevent races with the hardware.  It is to prevent 
-> userspace from being frozen while there's still work to be done.
-ok.
-
-I'm going to think on this some more.  There must be a cleaner way to do
-this.
-
---mgross
- 
