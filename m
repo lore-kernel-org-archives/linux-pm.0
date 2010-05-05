@@ -1,13 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: s2ram slow (radeon) / failing (usb)
-Date: Wed, 5 May 2010 17:35:31 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005051724260.1885-100000__36149.6128178716$1273096210$gmane$org@iolanthe.rowland.org>
-References: <alpine.LNX.2.00.1005052255350.9849@pobox.suse.cz>
+From: Brian Swetland <swetland@google.com>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Wed, 5 May 2010 14:37:39 -0700
+Message-ID: <z2ta55d774e1005051437heb584584q6afca0b4b254d5d0__42833.448565989$1273096213$gmane$org@mail.gmail.com>
+References: <20100505202826.GB7450@linux.intel.com>
+	<Pine.LNX.4.44L0.1005051705200.1885-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LNX.2.00.1005052255350.9849@pobox.suse.cz>
+In-Reply-To: <Pine.LNX.4.44L0.1005051705200.1885-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,61 +18,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Oliver Neukum <oneukum@suse.de>, list <linux-usb@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>, =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>, linux-pm@lists.linux-foundation.org, jslaby@suse.cz
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, markgross@thegnar.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 5 May 2010, Jiri Kosina wrote:
-
-> > > Ok, I've been digging some further...
-> > > 
-> > > The hid_device_probe properly returns -ENODEV, but:
-> > > 
-> > > Call trace:
-> > > [ 3228.866146]  [<ffffffffa01a00e6>] hid_device_probe+0xd6/0x1f0 [hid]
-> > >     return -ENODEV
-> > > [ 3228.874594]  [<ffffffff8130995a>] driver_probe_device+0xaa/0x1d0
-> > >     calls inlined really_probe from drivers/base/dd.c
-> > >     which ALLWAYS returns 0:
-> > >      dd.c:147 /*
-> > >           148  * Ignore errors returned by ->probe so that the next driver can try
-> > >           149  * its luck.
-> > >           150  */
-> > >           151 ret = 0;
-> > >      and has on line 139 (under same failure label):
-> > >               dev->driver = NULL;
-> > > [ 3228.882758]  [<ffffffff81309b20>] ? __device_attach+0x0/0x50
-> > > [ 3228.890555]  [<ffffffff81309b6b>] __device_attach+0x4b/0x50
-> > >      lets 0 bubble up
-> > > [ 3228.898272]  [<ffffffff81308d28>] bus_for_each_drv+0x68/0x90
-> > >      lets 0 bubble up
-> > > [ 3228.906080]  [<ffffffff81309c3b>] device_attach+0x8b/0xa0
-> > >      lets 0 bubble up
-> > > [ 3228.913603]  [<ffffffff81308b15>] bus_probe_device+0x25/0x40
-> > >      returns void and does WARN_ON(device_attach() < 0)
-> > > [ 3228.921356]  [<ffffffff81307166>] device_add+0x3d6/0x610
-> > >      returns 0 here as there was no local error
-> > > [ 3228.928772]  [<ffffffffa019fc53>] hid_add_device+0x183/0x1e0 [hid]
-> > > [ 3228.937098]  [<ffffffffa01b4a77>] usbhid_probe+0x287/0x420 [usbhid]
-> > > [ 3228.945535]  [<ffffffffa005006d>] usb_probe_interface+0x14d/0x230 [usbcore]
-> > > ...
-> > > 
-> > > So IMHO in hid_add_device() we should also check for hdev->dev.driver
-> > > when device_add() returns 0 and consider that one being NULL as a
-> > > (possible) error.
-
-Note that it is perfectly normal for devices to be registered on a bus 
-without a driver.  Perhaps the usbhid core doesn't expect this, though, 
-or perhaps it doesn't make sense for HID devices.  Regardless, I don't 
-see how this could cause the problem.
-
-Earlier, Bruno said that the hang occurs in hid_cancel_delayed_stuff(), 
-presumably during one of its cancel_work_sync() calls, and presumably 
-because the workqueue has been frozen.  But as far as I can tell, 
-cancel_work_sync() should work just fine if the workqueue has been 
-frozen.  Maybe this should be investigated more closely.
-
-Bruno, can you confirm that the hang occurs during one of those 
-cancel_work_sync() calls?
-
-Alan Stern
+T24gV2VkLCBNYXkgNSwgMjAxMCBhdCAyOjEyIFBNLCBBbGFuIFN0ZXJuIDxzdGVybkByb3dsYW5k
+LmhhcnZhcmQuZWR1PiB3cm90ZToKPj4KPj4gT2gsIGxpa2UgdGVsbCB0aGUgbW9kZW0gdGhhdCB1
+c2VyIG1vZGUgaGFzIGhhbmRsZWQgdGhlIHJpbmcgZXZlbnQgYW5kCj4+IGl0cyBvayB0byB1bi1i
+bG9jaz8KPgo+IE5vLCB0aGF0J3Mgbm90IGhvdyBpdCB3b3Jrcy4gwqBJdCB3b3VsZCBnbyBsaWtl
+IHRoaXM6Cj4KPiDCoCDCoCDCoCDCoFRoZSBtb2RlbSBJUlEgaGFuZGxlciBxdWV1ZXMgaXRzIGV2
+ZW50IHRvIHRoZSBpbnB1dCBzdWJzeXN0ZW0uCj4gwqAgwqAgwqAgwqBBcyBpdCBkb2VzIHNvIHRo
+ZSBpbnB1dCBzdWJzeXN0ZW0gZW5hYmxlcyBhIHN1c3BlbmQgYmxvY2tlciwKPiDCoCDCoCDCoCDC
+oGNhdXNpbmcgdGhlIHN5c3RlbSB0byBzdGF5IGF3YWtlIGFmdGVyIHRoZSBJUlEgaXMgZG9uZS4K
+Pgo+IMKgIMKgIMKgIMKgVGhlIHVzZXIgcHJvZ3JhbSBlbmFibGVzIGl0cyBvd24gc3VzcGVuZCBi
+bG9ja2VyIGJlZm9yZSByZWFkaW5nCj4gwqAgwqAgwqAgwqB0aGUgaW5wdXQgcXVldWUuIMKgV2hl
+biB0aGUgcXVldWUgaXMgZW1wdHksIHRoZSBpbnB1dCBzdWJzeXN0ZW0KPiDCoCDCoCDCoCDCoHJl
+bGVhc2VzIGl0cyBzdXNwZW5kIGJsb2NrZXIuCj4KPiDCoCDCoCDCoCDCoFdoZW4gdGhlIHVzZXIg
+cHJvZ3JhbSBmaW5pc2hlcyBwcm9jZXNzaW5nIHRoZSBldmVudCwgaXQKPiDCoCDCoCDCoCDCoHJl
+bGVhc2VzIGl0cyBzdXNwZW5kIGJsb2NrZXIuIMKgTm93IHRoZSBzeXN0ZW0gY2FuIGdvIGJhY2sg
+dG8KPiDCoCDCoCDCoCDCoHNsZWVwLgo+Cj4gQXQgbm8gcG9pbnQgZG9lcyB0aGUgdXNlciBwcm9n
+cmFtIGhhdmUgdG8gY29tbXVuaWNhdGUgYW55dGhpbmcgdG8gdGhlCj4gbW9kZW0gZHJpdmVyLCBh
+bmQgYXQgbm8gcG9pbnQgZG9lcyBpdCBoYXZlIHRvIGRvIGFueXRoaW5nIG91dCBvZiB0aGUKPiBv
+cmRpbmFyeSBleGNlcHQgdG8gZW5hYmxlIGFuZCBkaXNhYmxlIGEgc3VzcGVuZCBibG9ja2VyLgoK
+RXhhY3RseSAtLSBhbmQgeW91IGNhbiB1c2UgdGhlIHNhbWUgc3R5bGUgb2Ygb3ZlcmxhcHBpbmcg
+c3VzcGVuZApibG9ja2VycyB3aXRoIG90aGVyIGRyaXZlcnMgdGhhbiBpbnB1dCwgaWYgdGhlIGlu
+cHV0IGludGVyZmFjZSBpcyBub3QKc3VpdGFibGUgZm9yIHRoZSBwYXJ0aWN1bGFyIGludGVyYWN0
+aW9uLgoKQnJpYW4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24u
+b3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9s
+aW51eC1wbQ==
