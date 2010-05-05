@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Matthew Garrett <mjg@redhat.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Wed, 5 May 2010 15:20:40 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005051515060.1885-100000__23095.3459664763$1273090424$gmane$org@iolanthe.rowland.org>
+Date: Wed, 5 May 2010 20:28:11 +0100
+Message-ID: <20100505192811.GA5468__44942.6551269882$1273090457$gmane$org@srcf.ucam.org>
 References: <20100505190758.GG7139@rakim.wolfsonmicro.main>
+	<Pine.LNX.4.44L0.1005051515060.1885-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100505190758.GG7139@rakim.wolfsonmicro.main>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1005051515060.1885-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,37 +19,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 5 May 2010, Mark Brown wrote:
+On Wed, May 05, 2010 at 03:20:40PM -0400, Alan Stern wrote:
 
-> > In short, I'm trying to get at how much information drivers _really_ 
-> > need to have about the reason for a system suspend.
-> 
-> It's not exactly the *reason* that makes the difference, it's more that
-> this aggressive use of suspend makes much more apparent a problem which
-> might exist anyway for this sort of hardware.
+> One the face of it, a runtime-PM solution would dictate that the
+> codec's driver ought to turn off the codec whenever the driver thinks
+> it isn't being used.  Ergo, if the driver didn't know when a call was
+> in progress, it would use runtime PM to turn off the codec during a
+> call.
 
-Then the underlying problem should be solved -- hopefully in a nice, 
-system-independent way.  But I'm still trying to understand exactly 
-what that underlying problem _is_.
+Well, part of the problem is that right now most of our beliefs about 
+imposed constraints tend to be based on what userspace is doing - "Don't 
+power down the audio codec when userspace has it open", for instance. 
+But that goes away with opportunistic suspend. In most cases you don't 
+want the audio codec to stay awake just because userspace was using it 
+to make bouncing cow noises, especially if you've just frozen userspace. 
+So the problem becomes more complicated than it would otherwise be.
 
-That means understanding when the codec needs to be shut down and when
-it doesn't, and knowing how much of this information is available to
-the driver.
-
-> When we get runtime PM delviering similar power levels we'll sidestep
-> the problem since we won't need to do a system wide suspend.
-
-One the face of it, a runtime-PM solution would dictate that the
-codec's driver ought to turn off the codec whenever the driver thinks
-it isn't being used.  Ergo, if the driver didn't know when a call was
-in progress, it would use runtime PM to turn off the codec during a
-call.
-
-For this reason I don't see how using runtime PM instead of suspend
-blockers would solve anything.
-
-Alan Stern
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
