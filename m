@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Magnus Damm <magnus.damm@gmail.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Thu, 6 May 2010 02:51:18 +0200
-Message-ID: <201005060251.18656.rjw__34705.4211925299$1273107071$gmane$org@sisk.pl>
-References: <20100505185225.GA4411@srcf.ucam.org>
-	<201005060133.59417.rjw@sisk.pl>
-	<20100506002125.GA22013@sirena.org.uk>
+Date: Thu, 6 May 2010 10:40:18 +0900
+Message-ID: <AANLkTinWEmlrBs5T_SX2h-YFY_OSgcDFLO18SuqZT9RN__4001.8834326931$1273110093$gmane$org@mail.gmail.com>
+References: <20100504004338.GA22678@srcf.ucam.org>
+	<Pine.LNX.4.44L0.1005040949060.1729-100000@iolanthe.rowland.org>
+	<20100504152724.GA2184@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100506002125.GA22013@sirena.org.uk>
+In-Reply-To: <20100504152724.GA2184@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,58 +19,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Paul Walmsley <paul@pwsan.com>, tytso@mit.edu, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 06 May 2010, Mark Brown wrote:
-> On Thu, May 06, 2010 at 01:33:59AM +0200, Rafael J. Wysocki wrote:
-> 
-> > set up that way).  Even without the patchset you may implement a power
-> > manager in user space that will suspend the system whenever it thinks it's
-> > idle.
-> 
-> Clearly, but...
-> 
-> > On Thursday 06 May 2010, Mark Brown wrote:
-> 
-> > > In the primary existing application this change interoperates very poorly
-> > > with at least the current audio subsystem since that handles suspend by
-> > > ceasing all activity and powering as much as it can off, which is sensible for
-> > > manual only suspends but highly undesirable for opportunistic suspend in
-> > > phones.
-> 
-> > You said that there's no fundamental difference between manual and
-> > opportunistic suspend.  It only matters what _you_ are going to use suspend
-> > for.  I agree that at the moment it's not suitable for aggressive power
-> > management in phones because of the audio problem, but that applies to
-> > "manual" as well as to "opportunistic" suspend.
-> 
-> ...on the other hand there's exactly one existing application for this,
-> and that's the one that's most likely to run into problems since it's a
-> phone OS and aggressive power management is pretty important for phones.
-> 
-> Merging a feature into mainline makes it much more something which one
-> would expect to play nicely with the rest of the kernel - if it's
-> something that isn't part of the standard kernel or userspaces it's much
-> less surprising that additional changes may be required to produce a
-> well integrated system.
-> 
-> > You're saying that suspend is not suitable for one particular purpose in its
-> > current form, which is entirely correct, but that doesn't imply that the
-> > patchset is wrong.
-> 
-> As I keep saying I agree that merging this is reasonable given the
-> additional power savings it brings in practical systems today.  As I
-> also keep saying I do want to have some understanding about what the
-> story is for dealing with the problems so that people can easily use
-> this feature out of the box.
-> 
-> Like I say, my current impression is that the best approach is for
-> affected subsystems or drivers to implement a custom solution - does
-> that match your understanding and that of the other PM maintainers?
+On Wed, May 5, 2010 at 12:27 AM, Matthew Garrett <mjg@redhat.com> wrote:
+> On Tue, May 04, 2010 at 09:51:39AM -0400, Alan Stern wrote:
+>
+>> Another thing that Kevin is missing: There is more to the system than
+>> the devices and the CPU. =A0For example: RAM, an embedded controller (on
+>> modern desktop/laptop systems), a power supply, and so on. =A0Dynamic PM
+>> for the CPU and the devices won't power-down these things, but system
+>> PM will.
+>
+> Somewhat true - machines with C1E support will put the RAM into self
+> refresh when the cpu is idle, but you're right that there are various
+> components that we simply don't have control over in the desktop world
+> at present.
 
-I agree that this appears to be the best approach for the time being, although
-I can only speak for myself.
+As a contrast, at least on some embedded SoCs without firmware
+limitations the low level sleep code for Runtime PM / CPU Idle is
+shared with system wide suspend. So the RAM is put into self refresh
+regardless of entering a half-deep CPU Idle state or entering
+suspend-to-memory.
 
-Rafael
+I've heard that newer SH-Mobile ARM hardware monitors the memory bus
+activity behind the scenes and can put the system RAM into self
+refresh automatically. On older parts we had to manage that from CPU
+idle context.
+
+/ magnus
