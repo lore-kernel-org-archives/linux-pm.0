@@ -1,16 +1,16 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Wed, 5 May 2010 21:25:18 -0700
-Message-ID: <l2kd6200be21005052125rc43217a2r8c65bc98e7a5d3d4__1320.03082330829$1273119979$gmane$org@mail.gmail.com>
-References: <20100505185225.GA4411@srcf.ucam.org>
-	<Pine.LNX.4.44L0.1005051511040.1885-100000@iolanthe.rowland.org>
-	<m2oa55d774e1005051356n3610d780ra42200c1785e02bd@mail.gmail.com>
-	<20100505234025.GB4838@opensource.wolfsonmicro.com>
+From: "Du, Alek" <alek.du@intel.com>
+Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
+ (WKOC_E) and disconnect (WKDISC_E)
+Date: Thu, 6 May 2010 16:23:09 +0800
+Message-ID: <1865303E0DED764181A9D882DEF65FB61A82A6DA3B__18508.3903059878$1273134264$gmane$org@shsmsx502.ccr.corp.intel.com>
+References: <20100505111245.2c480ea1@dxy2>
+	<Pine.LNX.4.44L0.1005051144490.1885-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100505234025.GB4838@opensource.wolfsonmicro.com>
+In-Reply-To: <Pine.LNX.4.44L0.1005051144490.1885-100000@iolanthe.rowland.org>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,36 +20,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Ondrej Zary <linux@rainbow-software.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 5, 2010 at 4:40 PM, Mark Brown
-<broonie@opensource.wolfsonmicro.com> wrote:
-> On Wed, May 05, 2010 at 01:56:07PM -0700, Brian Swetland wrote:
-...
->> taken on MSM, regardless of suspend state. =A0I don't view suspend as
->> something that stops audio playback in progress. =A0Sort of similar to
->> how the modem doesn't power off down when the system is in suspend,
->> etc.
+>> Alan,
+>>
+>> As I tested, the patch breaks phy low power mode, the EHCI works, but it
+>never
+>> enter phy low power mode when suspending port...
+>>
+>> I guess this part of the diff breaks it.
+>>
+>>
+>>  -			/* only enable appropriate wake bits, otherwise the
+>>  -			 * hardware can not go phy low power mode. If a race
+>>  -			 * condition happens here(connection change during bits
+>>  -			 * set), the port change detection will finally fix it.
+>>  -			 */
+>>  -			if (t1 & PORT_CONNECT) {
+>>  -				t2 |= PORT_WKOC_E | PORT_WKDISC_E;
+>>  -				t2 &= ~PORT_WKCONN_E;
+>>  -			} else {
+>>  -				t2 |= PORT_WKOC_E | PORT_WKCONN_E;
+>>  -				t2 &= ~PORT_WKDISC_E;
+>>  -			}
 >
-> This really does depend heavily on system design and the intended
-> function of the suspend on the part of the initiator. =A0In many systems
-> suspend will remove sufficient power to stop audio running even if it
-> were desired, and there's the idea with existing manually initiated
-> suspends that the system should stop what it's doing and go into a low
-> power, low responsiveness state. =A0Some systems will initiate a suspend
-> with active audio paths (especially those to or from the AP) which they
-> expect to be stopped.
+>That seems very odd.  Why should removing code that enables wakeup bits
+>cause the suspend to fail?  Can't the phy go into low-power mode when
+>all the wakeup bits are disabled?
 >
+>Does applying this additional patch on top of the previous one help?
+>
+>Alan Stern
+>
+>
+>
+>Index: usb-2.6/drivers/usb/host/ehci-hub.c
+>===================================================================
+>--- usb-2.6.orig/drivers/usb/host/ehci-hub.c
+>+++ usb-2.6/drivers/usb/host/ehci-hub.c
+>@@ -200,7 +200,7 @@ static int ehci_bus_suspend (struct usb_
+> 	while (port--) {
+> 		u32 __iomem	*reg = &ehci->regs->port_status [port];
+> 		u32		t1 = ehci_readl(ehci, reg) & ~PORT_RWC_BITS;
+>-		u32		t2 = t1;
+>+		u32		t2;
+>
+> 		if (ehci->has_hostpc)
+> 			hostpc_reg = (u32 __iomem *)((u8 *)ehci->regs
+>@@ -209,6 +209,7 @@ static int ehci_bus_suspend (struct usb_
+> 		if (t1 & PORT_OWNER)
+> 			set_bit(port, &ehci->owned_ports);
+> 		else if ((t1 & PORT_PE) && !(t1 & PORT_SUSPEND)) {
+>+			t2 = t1 & ~PORT_WAKE_BITS;
+> 			t2 |= PORT_SUSPEND;
+> 			set_bit(port, &ehci->bus_suspended);
+> 			ehci_vdbg (ehci, "port %d, %08x -> %08x\n",
 
-You can support both in the same driver in some cases (without a
-switch). If the hardware cannot wake the system when it needs more
-audio buffers, then the driver needs to block suspend while audio is
-playing. Since suspend blockers only block opportunistic suspend, the
-driver can also implement suspend to stop audio playback and it will
-only be called for forced suspend.
 
--- =
+Alan,
 
-Arve Hj=F8nnev=E5g
+I think the problem is: For the original code, once t2 != t1, the HCD will try to put into phy low power mode. While after the patch, the HCD will only enter phy low power mode if PORT_PE is set and PORT_SUSPEND is not set.
+
+Thanks,
+Alek
