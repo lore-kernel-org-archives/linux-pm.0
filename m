@@ -1,18 +1,17 @@
-From: Matt Helsley <matthltc@us.ibm.com>
-Subject: Re: [PATCH v21 015/100] cgroup freezer: Update stale
- locking comments
-Date: Thu, 6 May 2010 15:34:57 -0700
-Message-ID: <20100506223457.GN31830__3350.55377004228$1273185555$gmane$org@count0.beaverton.ibm.com>
-References: <1272723382-19470-1-git-send-email-orenl@cs.columbia.edu>
-	<1272723382-19470-16-git-send-email-orenl@cs.columbia.edu>
-	<201005062140.19821.rjw@sisk.pl>
-	<20100506203117.GM31830@count0.beaverton.ibm.com>
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: linux-next: Tree for May 6 (acpi: PM=n)
+Date: Thu, 06 May 2010 16:38:57 -0700
+Message-ID: <4BE35311.7030502__5755.47805424339$1273189359$gmane$org@oracle.com>
+References: <20100506151502.f97afe54.sfr@canb.auug.org.au>
+	<20100506080538.b566f50e.randy.dunlap@oracle.com>
+	<alpine.LFD.2.00.1005061623060.15286@localhost.localdomain>
+	<20100506133215.f5dc579a.randy.dunlap@oracle.com>
+	<alpine.LRH.2.00.1005070910490.31779@tundra.namei.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100506203117.GM31830@count0.beaverton.ibm.com>
+In-Reply-To: <alpine.LRH.2.00.1005070910490.31779@tundra.namei.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,38 +21,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: Cedric Le Goater <legoater@free.fr>, Oren Laadan <orenl@cs.columbia.edu>, containers@lists.linux-foundation.org, Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Serge Hallyn <serue@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>, Pavel Emelyanov <xemul@openvz.org>
+To: James Morris <jmorris@namei.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Rajiv Andrade <srajiv@linux.vnet.ibm.com>, LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, linux-next@vger.kernel.org, linux-pm@lists.linux-foundation.org, Mimi Zohar <zohar@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 06, 2010 at 01:31:17PM -0700, Matt Helsley wrote:
-> On Thu, May 06, 2010 at 09:40:19PM +0200, Rafael J. Wysocki wrote:
-> > On Saturday 01 May 2010, Oren Laadan wrote:
-> > > From: Matt Helsley <matthltc@us.ibm.com>
-> > > 
-> > > Update stale comments regarding locking order and add a little more detail
-> > > so it's easier to follow the locking between the cgroup freezer and the
-> > > power management freezer code.
-> > 
-> > I guess these three patches are for me.
-> > 
-> > Do you want me to handle them?
-> > 
-> > Rafael
+On 05/06/10 16:27, James Morris wrote:
+> On Thu, 6 May 2010, Randy Dunlap wrote:
 > 
-> Hi Rafael,
+>> On Thu, 06 May 2010 16:26:13 -0400 (EDT) Len Brown wrote:
+>>
+>>>> When CONFIG_PM is not set:
+>>>>
+>>>> drivers/built-in.o: In function `acpi_init':
+>>>> bus.c:(.init.text+0x2d84): undefined reference to `pm_flags'
+>>>> bus.c:(.init.text+0x2d91): undefined reference to `pm_flags'
+>>>
+>>> CONFIG_ACPI depends on CONFIG_PM,
+>>> so acpi/bus.c should not be compiled for CONFIG_PM=n
+>>>
+>>> Hmm, is is somebody doing something strange, like "select ACPI"
+>>> without guaranteeing that all of ACPI's dependencies are satisfied?
+>>
+>> Oh, thanks for the clue.
+>>
+>> That would be a patch that I commented on and was ignored,
+>> but James Morris merged it anyway.  Now it should be dropped.
+>>
+>> http://lkml.org/lkml/2010/5/4/379
 > 
-> 	I think you can take 15 as it's an update to the comments.
+> You weren't ignored.  Mimi responded and mentioned a subsequent patch, 
+> after which, there was no further discussion.
+
+OK.  But merging a known bad patch doesn't make much sense to me.
+
+> I've reverted:
 > 
-> 16 and 17 are specific to checkpoint/restart. There are no other in-kernel
-> uses, that we've identified, for them. So I was under the impression that it's
-> inappropriate to add them without also adding the checkpoint/restart patches
-> that use them.
+> b89e66e1e396f7b5436af154e58209320cc08aed
+> "TPM: ACPI/PNP dependency removal"
+> 
+> a674fa46c79ffa37995bd1c8e4daa2b3be5a95ae
+> "ima: remove ACPI dependency"
+> 
 
-Of course, assuming I'm wrong about the dependency on checkpoint/restart, I
-have no objection to your taking them.
+Thanks.
 
-Thanks again!
+> 
+> Note: any further ACPI-related changes here should have acks from 
+> linux-acpi folk.
 
-Cheers,
-	-Matt Helsley
+
+-- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
