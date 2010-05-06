@@ -1,16 +1,17 @@
-From: "Du, Alek" <alek.du@intel.com>
-Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
- (WKOC_E) and disconnect (WKDISC_E)
-Date: Thu, 6 May 2010 16:23:09 +0800
-Message-ID: <1865303E0DED764181A9D882DEF65FB61A82A6DA3B__18508.3903059878$1273134264$gmane$org@shsmsx502.ccr.corp.intel.com>
-References: <20100505111245.2c480ea1@dxy2>
-	<Pine.LNX.4.44L0.1005051144490.1885-100000@iolanthe.rowland.org>
+From: Matthew Garrett <mjg@redhat.com>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Thu, 6 May 2010 14:40:15 +0100
+Message-ID: <20100506134015.GA23426__42914.0834989541$1273153422$gmane$org@srcf.ucam.org>
+References: <20100505202826.GB7450@linux.intel.com>
+	<Pine.LNX.4.44L0.1005051705200.1885-100000@iolanthe.rowland.org>
+	<z2ta55d774e1005051437heb584584q6afca0b4b254d5d0@mail.gmail.com>
+	<20100505234755.GI29604@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005051144490.1885-100000@iolanthe.rowland.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20100505234755.GI29604@atomide.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,68 +21,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Ondrej Zary <linux@rainbow-software.org>, Kernel development list <linux-kernel@vger.kernel.org>
+To: Tony Lindgren <tony@atomide.com>
+Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
->> Alan,
->>
->> As I tested, the patch breaks phy low power mode, the EHCI works, but it
->never
->> enter phy low power mode when suspending port...
->>
->> I guess this part of the diff breaks it.
->>
->>
->>  -			/* only enable appropriate wake bits, otherwise the
->>  -			 * hardware can not go phy low power mode. If a race
->>  -			 * condition happens here(connection change during bits
->>  -			 * set), the port change detection will finally fix it.
->>  -			 */
->>  -			if (t1 & PORT_CONNECT) {
->>  -				t2 |= PORT_WKOC_E | PORT_WKDISC_E;
->>  -				t2 &= ~PORT_WKCONN_E;
->>  -			} else {
->>  -				t2 |= PORT_WKOC_E | PORT_WKCONN_E;
->>  -				t2 &= ~PORT_WKDISC_E;
->>  -			}
->
->That seems very odd.  Why should removing code that enables wakeup bits
->cause the suspend to fail?  Can't the phy go into low-power mode when
->all the wakeup bits are disabled?
->
->Does applying this additional patch on top of the previous one help?
->
->Alan Stern
->
->
->
->Index: usb-2.6/drivers/usb/host/ehci-hub.c
->===================================================================
->--- usb-2.6.orig/drivers/usb/host/ehci-hub.c
->+++ usb-2.6/drivers/usb/host/ehci-hub.c
->@@ -200,7 +200,7 @@ static int ehci_bus_suspend (struct usb_
-> 	while (port--) {
-> 		u32 __iomem	*reg = &ehci->regs->port_status [port];
-> 		u32		t1 = ehci_readl(ehci, reg) & ~PORT_RWC_BITS;
->-		u32		t2 = t1;
->+		u32		t2;
->
-> 		if (ehci->has_hostpc)
-> 			hostpc_reg = (u32 __iomem *)((u8 *)ehci->regs
->@@ -209,6 +209,7 @@ static int ehci_bus_suspend (struct usb_
-> 		if (t1 & PORT_OWNER)
-> 			set_bit(port, &ehci->owned_ports);
-> 		else if ((t1 & PORT_PE) && !(t1 & PORT_SUSPEND)) {
->+			t2 = t1 & ~PORT_WAKE_BITS;
-> 			t2 |= PORT_SUSPEND;
-> 			set_bit(port, &ehci->bus_suspended);
-> 			ehci_vdbg (ehci, "port %d, %08x -> %08x\n",
+On Wed, May 05, 2010 at 04:47:55PM -0700, Tony Lindgren wrote:
 
+> How about instead the modem driver fails to suspend until it's done?
 
-Alan,
+Because every attempted suspend requires freezing userspace, suspending 
+devices until you hit one that refuses to suspend, resuming the devies 
+that did suspend and then unfreezing userspace. That's not an attractive 
+option.
 
-I think the problem is: For the original code, once t2 != t1, the HCD will try to put into phy low power mode. While after the patch, the HCD will only enter phy low power mode if PORT_PE is set and PORT_SUSPEND is not set.
-
-Thanks,
-Alek
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
