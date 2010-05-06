@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Thu, 6 May 2010 21:28:30 +0200
-Message-ID: <201005062128.31068.rjw__31495.9044023$1273174081$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1005061110090.1708-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH v21 015/100] cgroup freezer: Update stale
+	locking comments
+Date: Thu, 6 May 2010 21:40:19 +0200
+Message-ID: <201005062140.19821.rjw__25832.7749361799$1273174964$gmane$org@sisk.pl>
+References: <1272723382-19470-1-git-send-email-orenl@cs.columbia.edu>
+	<1272723382-19470-16-git-send-email-orenl@cs.columbia.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005061110090.1708-100000@iolanthe.rowland.org>
+In-Reply-To: <1272723382-19470-16-git-send-email-orenl@cs.columbia.edu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,45 +19,95 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Cedric Le Goater <legoater@free.fr>, containers@lists.linux-foundation.org, Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Serge Hallyn <serue@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>, Pavel Emelyanov <xemul@openvz.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 06 May 2010, Alan Stern wrote:
-> On Tue, 27 Apr 2010, [UTF-8] Arve Hj=C3=B8nnev=C3=A5g wrote:
-> =
+On Saturday 01 May 2010, Oren Laadan wrote:
+> From: Matt Helsley <matthltc@us.ibm.com>
+> 
+> Update stale comments regarding locking order and add a little more detail
+> so it's easier to follow the locking between the cgroup freezer and the
+> power management freezer code.
 
-> > +static void suspend_worker(struct work_struct *work)
-> > +{
-> > +	int ret;
-> > +	int entry_event_num;
-> > +
-> > +	enable_suspend_blockers =3D true;
-> > +	while (!suspend_is_blocked()) {
-> > +		entry_event_num =3D current_event_num;
-> > +
-> > +		if (debug_mask & DEBUG_SUSPEND)
-> > +			pr_info("suspend: enter suspend\n");
-> > +
-> > +		ret =3D pm_suspend(requested_suspend_state);
-> > +
-> > +		if (debug_mask & DEBUG_EXIT_SUSPEND)
-> > +			pr_info_time("suspend: exit suspend, ret =3D %d ", ret);
-> > +
-> > +		if (current_event_num =3D=3D entry_event_num)
-> > +			pr_info("suspend: pm_suspend returned with no event\n");
-> > +	}
-> > +	enable_suspend_blockers =3D false;
-> > +}
-> =
+I guess these three patches are for me.
 
-> Here's a completely new issue.  When using opportunistic suspends on an
-> SMP system, it could happen that the system gets a wakeup event and
-> this routine starts running again before the event's IRQ handler has
-> finished (or has enabled a suspend blocker).  The system would =
-
-> re-suspend too soon.
-
-This routine will be run from a freezable workqueue.
+Do you want me to handle them?
 
 Rafael
+
+
+> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+> Cc: Oren Laadan <orenl@cs.columbia.edu>
+> Cc: Cedric Le Goater <legoater@free.fr>
+> Cc: Paul Menage <menage@google.com>
+> Cc: Li Zefan <lizf@cn.fujitsu.com>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: linux-pm@lists.linux-foundation.org
+> ---
+>  kernel/cgroup_freezer.c |   21 +++++++++++++--------
+>  1 files changed, 13 insertions(+), 8 deletions(-)
+> 
+> diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
+> index da5e139..85f19cc 100644
+> --- a/kernel/cgroup_freezer.c
+> +++ b/kernel/cgroup_freezer.c
+> @@ -89,10 +89,10 @@ struct cgroup_subsys freezer_subsys;
+>  
+>  /* Locks taken and their ordering
+>   * ------------------------------
+> - * css_set_lock
+>   * cgroup_mutex (AKA cgroup_lock)
+> - * task->alloc_lock (AKA task_lock)
+>   * freezer->lock
+> + * css_set_lock
+> + * task->alloc_lock (AKA task_lock)
+>   * task->sighand->siglock
+>   *
+>   * cgroup code forces css_set_lock to be taken before task->alloc_lock
+> @@ -100,33 +100,38 @@ struct cgroup_subsys freezer_subsys;
+>   * freezer_create(), freezer_destroy():
+>   * cgroup_mutex [ by cgroup core ]
+>   *
+> - * can_attach():
+> - * cgroup_mutex
+> + * freezer_can_attach():
+> + * cgroup_mutex (held by caller of can_attach)
+>   *
+> - * cgroup_frozen():
+> + * cgroup_freezing_or_frozen():
+>   * task->alloc_lock (to get task's cgroup)
+>   *
+>   * freezer_fork() (preserving fork() performance means can't take cgroup_mutex):
+> - * task->alloc_lock (to get task's cgroup)
+>   * freezer->lock
+>   *  sighand->siglock (if the cgroup is freezing)
+>   *
+>   * freezer_read():
+>   * cgroup_mutex
+>   *  freezer->lock
+> + *   write_lock css_set_lock (cgroup iterator start)
+> + *    task->alloc_lock
+>   *   read_lock css_set_lock (cgroup iterator start)
+>   *
+>   * freezer_write() (freeze):
+>   * cgroup_mutex
+>   *  freezer->lock
+> + *   write_lock css_set_lock (cgroup iterator start)
+> + *    task->alloc_lock
+>   *   read_lock css_set_lock (cgroup iterator start)
+> - *    sighand->siglock
+> + *    sighand->siglock (fake signal delivery inside freeze_task())
+>   *
+>   * freezer_write() (unfreeze):
+>   * cgroup_mutex
+>   *  freezer->lock
+> + *   write_lock css_set_lock (cgroup iterator start)
+> + *    task->alloc_lock
+>   *   read_lock css_set_lock (cgroup iterator start)
+> - *    task->alloc_lock (to prevent races with freeze_task())
+> + *    task->alloc_lock (inside thaw_process(), prevents race with refrigerator())
+>   *     sighand->siglock
+>   */
+>  static struct cgroup_subsys_state *freezer_create(struct cgroup_subsys *ss,
+> 
