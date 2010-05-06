@@ -1,13 +1,13 @@
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: linux-next: Tree for May 6 (acpi: PM=n)
-Date: Thu, 6 May 2010 08:05:38 -0700
-Message-ID: <20100506080538.b566f50e.randy.dunlap__32217.6906899132$1273158815$gmane$org@oracle.com>
-References: <20100506151502.f97afe54.sfr@canb.auug.org.au>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Thu, 6 May 2010 11:18:05 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005061110090.1708-100000__33222.0848453746$1273159163$gmane$org@iolanthe.rowland.org>
+References: <1272429119-12103-2-git-send-email-arve@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100506151502.f97afe54.sfr@canb.auug.org.au>
+In-Reply-To: <1272429119-12103-2-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,23 +17,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stephen Rothwell <sfr@canb.auug.org.au>, linux-pm@lists.linux-foundation.org
-Cc: linux-acpi@vger.kernel.org, linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: =?UTF-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 6 May 2010 15:15:02 +1000 Stephen Rothwell wrote:
+On Tue, 27 Apr 2010, [UTF-8] Arve Hj=C3=B8nnev=C3=A5g wrote:
 
-> Hi all,
-> 
-> Changes since 20100505:
+> +static void suspend_worker(struct work_struct *work)
+> +{
+> +	int ret;
+> +	int entry_event_num;
+> +
+> +	enable_suspend_blockers =3D true;
+> +	while (!suspend_is_blocked()) {
+> +		entry_event_num =3D current_event_num;
+> +
+> +		if (debug_mask & DEBUG_SUSPEND)
+> +			pr_info("suspend: enter suspend\n");
+> +
+> +		ret =3D pm_suspend(requested_suspend_state);
+> +
+> +		if (debug_mask & DEBUG_EXIT_SUSPEND)
+> +			pr_info_time("suspend: exit suspend, ret =3D %d ", ret);
+> +
+> +		if (current_event_num =3D=3D entry_event_num)
+> +			pr_info("suspend: pm_suspend returned with no event\n");
+> +	}
+> +	enable_suspend_blockers =3D false;
+> +}
 
+Here's a completely new issue.  When using opportunistic suspends on an
+SMP system, it could happen that the system gets a wakeup event and
+this routine starts running again before the event's IRQ handler has
+finished (or has enabled a suspend blocker).  The system would =
 
-When CONFIG_PM is not set:
+re-suspend too soon.
 
-drivers/built-in.o: In function `acpi_init':
-bus.c:(.init.text+0x2d84): undefined reference to `pm_flags'
-bus.c:(.init.text+0x2d91): undefined reference to `pm_flags'
+Is there anything in the PM core that waits until all outstanding IRQs =
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+have been handled before unfreezing processes?  If there is, I can't =
+
+find it.  Should such a thing be added?
+
+Alan Stern
