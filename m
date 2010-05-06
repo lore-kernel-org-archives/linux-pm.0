@@ -1,14 +1,16 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Subject: Re: s2ram slow (radeon) / failing (usb)
-Date: Thu, 6 May 2010 22:59:24 +0200
-Message-ID: <20100506225924.3131a5ea__29808.7015901276$1273179769$gmane$org@neptune.home>
-References: <20100506194711.75979d22@neptune.home>
-	<Pine.LNX.4.44L0.1005061426160.1708-100000@iolanthe.rowland.org>
+From: Oren Laadan <orenl@cs.columbia.edu>
+Subject: Re: [PATCH v21 015/100] cgroup freezer: Update stale
+	locking comments
+Date: Thu, 06 May 2010 17:25:04 -0400
+Message-ID: <4BE333B0.1010003__16316.5590064184$1273181346$gmane$org@cs.columbia.edu>
+References: <1272723382-19470-1-git-send-email-orenl@cs.columbia.edu>
+	<1272723382-19470-16-git-send-email-orenl@cs.columbia.edu>
+	<201005062140.19821.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005061426160.1708-100000@iolanthe.rowland.org>
+In-Reply-To: <201005062140.19821.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,61 +20,106 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oneukum@suse.de>, Jiri Kosina <jkosina@suse.cz>, list <linux-usb@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, jslaby@suse.cz
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Cedric Le Goater <legoater@free.fr>, containers@lists.linux-foundation.org, Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Serge Hallyn <serue@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>, Pavel Emelyanov <xemul@openvz.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCAwNiBNYXkgMjAxMCBBbGFuIFN0ZXJuIDxzdGVybkByb3dsYW5kLmhhcnZhcmQuZWR1
-PiB3cm90ZToKPiBPbiBUaHUsIDYgTWF5IDIwMTAsIEJydW5vIFtVVEYtOF0gUHLDqW1vbnQgd3Jv
-dGU6Cj4gCj4gPiA+IEJydW5vLCBjYW4geW91IGNvbmZpcm0gdGhhdCB0aGUgaGFuZyBvY2N1cnMg
-ZHVyaW5nIG9uZSBvZiB0aG9zZSAKPiA+ID4gY2FuY2VsX3dvcmtfc3luYygpIGNhbGxzPwo+ID4g
-Cj4gPiBObywgaXQncyBub3Qgb25lIG9mIHRoZSBjYW5jZWxfd29ya19zeW5jKCkgdGhhdCBoYW5n
-cyBidXQgaXQncyB0aGUKPiA+IGRlbF90aW1lcl9zeW5jKCkgcmlnaHQgYmVmb3JlIHRoZW0gdGhh
-dCBoYW5ncyEKPiA+IChkZWxfdGltZXJfc3luYygpIGFsc28gaGFuZ3MgaWYgSSBwdXQgaXQgbGFz
-dCwgc28gdGhlIGNhbmNlbF93b3JrX3N5bmMoKQo+ID4gZG9uJ3QgaGFuZyBhbnl0aGluZykKPiA+
-IAo+ID4gc3RhdGljIHZvaWQgaGlkX2NhbmNlbF9kZWxheWVkX3N0dWZmKHN0cnVjdCB1c2JoaWRf
-ZGV2aWNlICp1c2JoaWQpCj4gPiB7Cj4gPiAJZGVsX3RpbWVyX3N5bmMoJnVzYmhpZC0+aW9fcmV0
-cnkpOyAvKiB0aGlzIG9uZSBuZXZlciByZXR1cm5zICovCj4gPiAJY2FuY2VsX3dvcmtfc3luYygm
-dXNiaGlkLT5yZXN0YXJ0X3dvcmspOwo+ID4gCWNhbmNlbF93b3JrX3N5bmMoJnVzYmhpZC0+cmVz
-ZXRfd29yayk7Cj4gPiB9Cj4gCj4gT2theSwgSSBzZWUgd2hhdCB0aGUgcHJvYmxlbSBpcy4gIElu
-IHVzYmhpZF9zdGFydCgpIHRoZXJlJ3MgYSBidW5jaCBvZgo+IHN0YXRlbWVudHMgaW5pdGlhbGl6
-aW5nIHBhcnRzIG9mIHRoZSB1c2JoaWQgc3RydWN0dXJlLiAgV2hlbiBwcm9iaW5nCj4gZmFpbHMg
-dGhvc2Ugc3RhdGVtZW50cyBkb24ndCBnZXQgZXhlY3V0ZWQsIHNvIHRoZSB0aW1lciBhbmQgd29y
-a3F1ZXVlCj4gdGhpbmdzIGFyZW4ndCBzZXQgdXAgcHJvcGVybHkuCj4gCj4gVGhpcyBwYXRjaCBz
-aG91bGQgZml4IGl0LgoKVGhpcyB2ZXJ5IG11Y2ggcmVtaW5kcyBtZSB0aGUgcmVzdW1lIGlzc3Vl
-IHdpdGggdGhlIHNhbWUga2V5Ym9hcmQgb24gYQohQ09ORklHX1NNUCBzeXN0ZW0gYmFjayBpbiBG
-ZWJydWFyeSB3aGVuIHRoZSBmaXggd2FzIHRvIGNvcHkvbW92ZSAKdXNiaGlkLT5pbnRmID0gaW50
-ZjsgZnJvbSB1c2JoaWRfc3RhcnQoKSB0byB1c2JoaWRfcHJvYmUoKSEKCkhvcGVmdWxseSB0aGVz
-ZSBhcmUgYWxsIHRob3NlIGluaXRpYWxpemF0aW9ucyB0aGF0IG5lZWQgdG8gYmUgdGFrZW4KY2Fy
-ZSBvZi4uLgoKCldpdGggdGhpcyBwYXRjaCBzeXN0ZW0gbm93IGl0IHBhc3NlcyAiZGV2aWNlcyIg
-bGV2ZWwgcG1fdGVzdCBhcyB3ZWxsIGFzCmZ1bGwgc3VzcGVuZCBwcm9jZXNzLCBldmVuIG11bHRp
-cGxlIHRpbWVzIGluIGEgcm93ICh0aG91Z2ggaXQncyBzdGlsbApkYW1uIHNsb3cgdG8gcmVzdW1l
-IElGIG5vX2NvbnNvbGVfc3VzcGVuZCBpcyBwYXNzZWQgdG8ga2VybmVsIC0gcmFkZW9uCktNUz8s
-IGJ1dCB0aGF0J3MgYSBuZXcgYnJhbmNoIGZyb20gc3RhcnQgb2YgdGhpcyB0aHJlYWQpCgpSZXBv
-cnRlZC1ieTogQnJ1bm8gUHLDqW1vbnQgPGJvbmJvbnNAbGludXgtdnNlcnZlci5vcmc+ClRlc3Rl
-ZC1CeTogQnJ1bm8gUHLDqW1vbnQgPGJvbmJvbnNAbGludXgtdnNlcnZlci5vcmc+CgoKTm93IGl0
-IGNhbiBjb250aW51ZSBodW50aW5nIHRoZSBuZXh0IGlzc3VlcyBwcmV2ZW50aW5nIHNtb290aCBT
-MwpleHBlcmllbmNlLi4uCgpUaGFua3MsCkJydW5vCgo+IEluZGV4OiB1c2ItMi42L2RyaXZlcnMv
-aGlkL3VzYmhpZC9oaWQtY29yZS5jCj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQo+IC0tLSB1c2ItMi42Lm9yaWcvZHJp
-dmVycy9oaWQvdXNiaGlkL2hpZC1jb3JlLmMKPiArKysgdXNiLTIuNi9kcml2ZXJzL2hpZC91c2Jo
-aWQvaGlkLWNvcmUuYwo+IEBAIC05OTgsMTMgKzk5OCw2IEBAIHN0YXRpYyBpbnQgdXNiaGlkX3N0
-YXJ0KHN0cnVjdCBoaWRfZGV2aWMKPiAgCQl9Cj4gIAl9Cj4gIAo+IC0JaW5pdF93YWl0cXVldWVf
-aGVhZCgmdXNiaGlkLT53YWl0KTsKPiAtCUlOSVRfV09SSygmdXNiaGlkLT5yZXNldF93b3JrLCBo
-aWRfcmVzZXQpOwo+IC0JSU5JVF9XT1JLKCZ1c2JoaWQtPnJlc3RhcnRfd29yaywgX191c2JoaWRf
-cmVzdGFydF9xdWV1ZXMpOwo+IC0Jc2V0dXBfdGltZXIoJnVzYmhpZC0+aW9fcmV0cnksIGhpZF9y
-ZXRyeV90aW1lb3V0LCAodW5zaWduZWQgbG9uZykgaGlkKTsKPiAtCj4gLQlzcGluX2xvY2tfaW5p
-dCgmdXNiaGlkLT5sb2NrKTsKPiAtCj4gIAl1c2JoaWQtPnVyYmN0cmwgPSB1c2JfYWxsb2NfdXJi
-KDAsIEdGUF9LRVJORUwpOwo+ICAJaWYgKCF1c2JoaWQtPnVyYmN0cmwpIHsKPiAgCQlyZXQgPSAt
-RU5PTUVNOwo+IEBAIC0xMTgwLDYgKzExNzMsMTIgQEAgc3RhdGljIGludCB1c2JoaWRfcHJvYmUo
-c3RydWN0IHVzYl9pbnRlcgo+ICAJdXNiaGlkLT5pbnRmID0gaW50ZjsKPiAgCXVzYmhpZC0+aWZu
-dW0gPSBpbnRlcmZhY2UtPmRlc2MuYkludGVyZmFjZU51bWJlcjsKPiAgCj4gKwlpbml0X3dhaXRx
-dWV1ZV9oZWFkKCZ1c2JoaWQtPndhaXQpOwo+ICsJSU5JVF9XT1JLKCZ1c2JoaWQtPnJlc2V0X3dv
-cmssIGhpZF9yZXNldCk7Cj4gKwlJTklUX1dPUksoJnVzYmhpZC0+cmVzdGFydF93b3JrLCBfX3Vz
-YmhpZF9yZXN0YXJ0X3F1ZXVlcyk7Cj4gKwlzZXR1cF90aW1lcigmdXNiaGlkLT5pb19yZXRyeSwg
-aGlkX3JldHJ5X3RpbWVvdXQsICh1bnNpZ25lZCBsb25nKSBoaWQpOwo+ICsJc3Bpbl9sb2NrX2lu
-aXQoJnVzYmhpZC0+bG9jayk7Cj4gKwo+ICAJcmV0ID0gaGlkX2FkZF9kZXZpY2UoaGlkKTsKPiAg
-CWlmIChyZXQpIHsKPiAgCQlpZiAocmV0ICE9IC1FTk9ERVYpCj4gCl9fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51
-eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5k
-YXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+
+On 05/06/2010 03:40 PM, Rafael J. Wysocki wrote:
+> On Saturday 01 May 2010, Oren Laadan wrote:
+>> From: Matt Helsley <matthltc@us.ibm.com>
+>>
+>> Update stale comments regarding locking order and add a little more detail
+>> so it's easier to follow the locking between the cgroup freezer and the
+>> power management freezer code.
+> 
+> I guess these three patches are for me.
+> 
+> Do you want me to handle them?
+
+Yes, please, that would be great.
+
+Thanks,
+
+Oren.
+
+> 
+> Rafael
+> 
+> 
+>> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+>> Cc: Oren Laadan <orenl@cs.columbia.edu>
+>> Cc: Cedric Le Goater <legoater@free.fr>
+>> Cc: Paul Menage <menage@google.com>
+>> Cc: Li Zefan <lizf@cn.fujitsu.com>
+>> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+>> Cc: linux-pm@lists.linux-foundation.org
+>> ---
+>>  kernel/cgroup_freezer.c |   21 +++++++++++++--------
+>>  1 files changed, 13 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
+>> index da5e139..85f19cc 100644
+>> --- a/kernel/cgroup_freezer.c
+>> +++ b/kernel/cgroup_freezer.c
+>> @@ -89,10 +89,10 @@ struct cgroup_subsys freezer_subsys;
+>>  
+>>  /* Locks taken and their ordering
+>>   * ------------------------------
+>> - * css_set_lock
+>>   * cgroup_mutex (AKA cgroup_lock)
+>> - * task->alloc_lock (AKA task_lock)
+>>   * freezer->lock
+>> + * css_set_lock
+>> + * task->alloc_lock (AKA task_lock)
+>>   * task->sighand->siglock
+>>   *
+>>   * cgroup code forces css_set_lock to be taken before task->alloc_lock
+>> @@ -100,33 +100,38 @@ struct cgroup_subsys freezer_subsys;
+>>   * freezer_create(), freezer_destroy():
+>>   * cgroup_mutex [ by cgroup core ]
+>>   *
+>> - * can_attach():
+>> - * cgroup_mutex
+>> + * freezer_can_attach():
+>> + * cgroup_mutex (held by caller of can_attach)
+>>   *
+>> - * cgroup_frozen():
+>> + * cgroup_freezing_or_frozen():
+>>   * task->alloc_lock (to get task's cgroup)
+>>   *
+>>   * freezer_fork() (preserving fork() performance means can't take cgroup_mutex):
+>> - * task->alloc_lock (to get task's cgroup)
+>>   * freezer->lock
+>>   *  sighand->siglock (if the cgroup is freezing)
+>>   *
+>>   * freezer_read():
+>>   * cgroup_mutex
+>>   *  freezer->lock
+>> + *   write_lock css_set_lock (cgroup iterator start)
+>> + *    task->alloc_lock
+>>   *   read_lock css_set_lock (cgroup iterator start)
+>>   *
+>>   * freezer_write() (freeze):
+>>   * cgroup_mutex
+>>   *  freezer->lock
+>> + *   write_lock css_set_lock (cgroup iterator start)
+>> + *    task->alloc_lock
+>>   *   read_lock css_set_lock (cgroup iterator start)
+>> - *    sighand->siglock
+>> + *    sighand->siglock (fake signal delivery inside freeze_task())
+>>   *
+>>   * freezer_write() (unfreeze):
+>>   * cgroup_mutex
+>>   *  freezer->lock
+>> + *   write_lock css_set_lock (cgroup iterator start)
+>> + *    task->alloc_lock
+>>   *   read_lock css_set_lock (cgroup iterator start)
+>> - *    task->alloc_lock (to prevent races with freeze_task())
+>> + *    task->alloc_lock (inside thaw_process(), prevents race with refrigerator())
+>>   *     sighand->siglock
+>>   */
+>>  static struct cgroup_subsys_state *freezer_create(struct cgroup_subsys *ss,
+>>
+> 
+> 
