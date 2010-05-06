@@ -1,17 +1,14 @@
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: linux-next: Tree for May 6 (acpi: PM=n)
-Date: Thu, 06 May 2010 16:38:57 -0700
-Message-ID: <4BE35311.7030502__5755.47805424339$1273189359$gmane$org@oracle.com>
-References: <20100506151502.f97afe54.sfr@canb.auug.org.au>
-	<20100506080538.b566f50e.randy.dunlap@oracle.com>
-	<alpine.LFD.2.00.1005061623060.15286@localhost.localdomain>
-	<20100506133215.f5dc579a.randy.dunlap@oracle.com>
-	<alpine.LRH.2.00.1005070910490.31779@tundra.namei.org>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Thu, 6 May 2010 16:48:41 -0700
+Message-ID: <y2id6200be21005061648m47d03875h6e9de89d0e965344__15929.6647449539$1273189829$gmane$org@mail.gmail.com>
+References: <201005062128.31068.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.1005061535540.1708-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LRH.2.00.1005070910490.31779@tundra.namei.org>
+In-Reply-To: <Pine.LNX.4.44L0.1005061535540.1708-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,55 +18,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Morris <jmorris@namei.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Rajiv Andrade <srajiv@linux.vnet.ibm.com>, LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, linux-next@vger.kernel.org, linux-pm@lists.linux-foundation.org, Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 05/06/10 16:27, James Morris wrote:
-> On Thu, 6 May 2010, Randy Dunlap wrote:
-> 
->> On Thu, 06 May 2010 16:26:13 -0400 (EDT) Len Brown wrote:
+On Thu, May 6, 2010 at 12:40 PM, Alan Stern <stern@rowland.harvard.edu> wro=
+te:
+> On Thu, 6 May 2010, Rafael J. Wysocki wrote:
+>
+>> > Here's a completely new issue. =A0When using opportunistic suspends on=
+ an
+>> > SMP system, it could happen that the system gets a wakeup event and
+>> > this routine starts running again before the event's IRQ handler has
+>> > finished (or has enabled a suspend blocker). =A0The system would
+>> > re-suspend too soon.
 >>
->>>> When CONFIG_PM is not set:
->>>>
->>>> drivers/built-in.o: In function `acpi_init':
->>>> bus.c:(.init.text+0x2d84): undefined reference to `pm_flags'
->>>> bus.c:(.init.text+0x2d91): undefined reference to `pm_flags'
->>>
->>> CONFIG_ACPI depends on CONFIG_PM,
->>> so acpi/bus.c should not be compiled for CONFIG_PM=n
->>>
->>> Hmm, is is somebody doing something strange, like "select ACPI"
->>> without guaranteeing that all of ACPI's dependencies are satisfied?
->>
->> Oh, thanks for the clue.
->>
->> That would be a patch that I commented on and was ignored,
->> but James Morris merged it anyway.  Now it should be dropped.
->>
->> http://lkml.org/lkml/2010/5/4/379
-> 
-> You weren't ignored.  Mimi responded and mentioned a subsequent patch, 
-> after which, there was no further discussion.
+>> This routine will be run from a freezable workqueue.
+>
+> But how do you know that processes won't get unfrozen until all the
+> pending IRQs have been handled? =A0Imagine something like this:
+>
+> =A0 =A0 =A0 =A0CPU 0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 CPU 1
+> =A0 =A0 =A0 =A0----- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 -----
+> =A0 =A0 =A0 =A0Wake up non-boot CPUs
+> =A0 =A0 =A0 =A0Resume devices =A0 =A0 =A0 =A0 =A0Invoke the IRQ handler
+>
+> =A0 =A0 =A0 =A0[ CPU 0 should wait here for the handler to finish,
+> =A0 =A0 =A0 =A0 =A0but it doesn't ]
+>
+> =A0 =A0 =A0 =A0Defrost threads =A0 =A0 =A0 =A0 Handler running...
+> =A0 =A0 =A0 =A0Workqueue routine runs
+> =A0 =A0 =A0 =A0Start another suspend
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0Handler en=
+ables a suspend blocker,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0but it's t=
+oo late
 
-OK.  But merging a known bad patch doesn't make much sense to me.
+It is not optimal, but it is not too late. We check if any suspend
+blockers block suspend after disabling non-boot cpus so as long as
+this is done in a way that does not lose interrupts the resuspend
+attempt will not succeed.
 
-> I've reverted:
-> 
-> b89e66e1e396f7b5436af154e58209320cc08aed
-> "TPM: ACPI/PNP dependency removal"
-> 
-> a674fa46c79ffa37995bd1c8e4daa2b3be5a95ae
-> "ima: remove ACPI dependency"
-> 
+-- =
 
-Thanks.
-
-> 
-> Note: any further ACPI-related changes here should have acks from 
-> linux-acpi folk.
-
-
--- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Arve Hj=F8nnev=E5g
