@@ -1,15 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH]PM QOS refresh against next-20100430
-Date: Thu, 6 May 2010 01:59:10 +0200
-Message-ID: <201005060159.10224.rjw__6811.50831883333$1273103917$gmane$org@sisk.pl>
-References: <20100430212043.GA30315@linux.intel.com>
-	<201005010108.28593.rjw@sisk.pl>
-	<20100504143043.GA27927@linux.intel.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Wed, 5 May 2010 17:05:53 -0700
+Message-ID: <20100506000552.GJ29604__43269.1037109636$1273104497$gmane$org@atomide.com>
+References: <20100505202826.GB7450@linux.intel.com>
+	<Pine.LNX.4.44L0.1005051705200.1885-100000@iolanthe.rowland.org>
+	<z2ta55d774e1005051437heb584584q6afca0b4b254d5d0@mail.gmail.com>
+	<20100505234755.GI29604@atomide.com>
+	<l2ra55d774e1005051656wbf4f3d7cr8cc9de0478e509f1@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100504143043.GA27927@linux.intel.com>
+Content-Disposition: inline
+In-Reply-To: <l2ra55d774e1005051656wbf4f3d7cr8cc9de0478e509f1@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,58 +22,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: mgross@linux.intel.com
-Cc: davidb@quicinc.com, dwalker@codeaurora.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, bruce.w.allan@intel.com, lkml <linux-kernel@vger.kernel.org>, "John W. Linville" <linville@tuxdriver.com>, tiwai@suse.de, mcgrof@gmail.com, NetDev <netdev@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Johannes Berg <johannes@sipsolutions.net>
+To: Brian Swetland <swetland@google.com>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, markgross@thegnar.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 04 May 2010, mark gross wrote:
-> On Sat, May 01, 2010 at 01:08:28AM +0200, Rafael J. Wysocki wrote:
-> > On Saturday 01 May 2010, mark gross wrote:
-> > > On Sat, May 01, 2010 at 12:13:16AM +0200, Rafael J. Wysocki wrote:
-> > > > On Friday 30 April 2010, mark gross wrote:
-> > > > > The following is a refresh of the PM_QOS implementation, this patch
-> > > > > updates some documentation input I got from Randy.
-> > > > > 
-> > > > > This patch changes the string based list management to a handle base
-> > > > > implementation to help with the hot path use of pm-qos, it also renames
-> > > > > much of the API to use "request" as opposed to "requirement" that was
-> > > > > used in the initial implementation.  I did this because request more
-> > > > > accurately represents what it actually does.
-> > > > > 
-> > > > > Also, I added a string based ABI for users wanting to use a string
-> > > > > interface.  So if the user writes 0xDDDDDDDD formatted hex it will be
-> > > > > accepted by the interface.  (someone asked me for it and I don't think
-> > > > > it hurts anything.)
-> > > > > 
-> > > > > I really would like to get this refresh taken care of.  Its been taking
-> > > > > me too long to close this.  please review or include it in next.
-> > > > > 
-> > > > > Thanks!
-> > > > 
-> > > > Well, I'd take it to suspend-2.6/linux-next, but first, it touches
-> > > > subsystems whose maintainers were not in the Cc list, like the network
-> > > > drivers, wireless and ACPI.  The changes are trivial, so I hope they don't
-> > > > mind.
-> > > > 
-> > > > Second, my tree is based on the Linus' tree rather than linux-next and
-> > > > the change in net/mac80211/scan.c doesn't seem to match that.  Please tell me
-> > > > what I'm supposed to do about that.
-> > > 
-> > > You can waite for monday and I'll send a rebased version to linus' tree.
-> > > 
-> > > I thought linux-next was where folks wanted me to put it.
-> > > 
-> > > I'll email out a new one monday.
-> > 
-> > Great, thanks!
-> > 
-> > Rafael
-> 
-> Sorry I'm late, 
-> 
-> 
-> Signed-off-by: markgross <mgross@linux.intel.com>
-
-Applied to suspend-2.6/linux-next.  Please verify the changelog.
-
-Rafael
+KiBCcmlhbiBTd2V0bGFuZCA8c3dldGxhbmRAZ29vZ2xlLmNvbT4gWzEwMDUwNSAxNjo1MV06Cj4g
+T24gV2VkLCBNYXkgNSwgMjAxMCBhdCA0OjQ3IFBNLCBUb255IExpbmRncmVuIDx0b255QGF0b21p
+ZGUuY29tPiB3cm90ZToKPiA+ICogQnJpYW4gU3dldGxhbmQgPHN3ZXRsYW5kQGdvb2dsZS5jb20+
+IFsxMDA1MDUgMTQ6MzRdOgo+ID4+IE9uIFdlZCwgTWF5IDUsIDIwMTAgYXQgMjoxMiBQTSwgQWxh
+biBTdGVybiA8c3Rlcm5Acm93bGFuZC5oYXJ2YXJkLmVkdT4gd3JvdGU6Cj4gPj4gPj4KPiA+PiA+
+PiBPaCwgbGlrZSB0ZWxsIHRoZSBtb2RlbSB0aGF0IHVzZXIgbW9kZSBoYXMgaGFuZGxlZCB0aGUg
+cmluZyBldmVudCBhbmQKPiA+PiA+PiBpdHMgb2sgdG8gdW4tYmxvY2s/Cj4gPj4gPgo+ID4+ID4g
+Tm8sIHRoYXQncyBub3QgaG93IGl0IHdvcmtzLiDCoEl0IHdvdWxkIGdvIGxpa2UgdGhpczoKPiA+
+PiA+Cj4gPj4gPiDCoCDCoCDCoCDCoFRoZSBtb2RlbSBJUlEgaGFuZGxlciBxdWV1ZXMgaXRzIGV2
+ZW50IHRvIHRoZSBpbnB1dCBzdWJzeXN0ZW0uCj4gPj4gPiDCoCDCoCDCoCDCoEFzIGl0IGRvZXMg
+c28gdGhlIGlucHV0IHN1YnN5c3RlbSBlbmFibGVzIGEgc3VzcGVuZCBibG9ja2VyLAo+ID4+ID4g
+wqAgwqAgwqAgwqBjYXVzaW5nIHRoZSBzeXN0ZW0gdG8gc3RheSBhd2FrZSBhZnRlciB0aGUgSVJR
+IGlzIGRvbmUuCj4gPgo+ID4gSG93IGFib3V0IGluc3RlYWQgdGhlIG1vZGVtIGRyaXZlciBmYWls
+cyB0byBzdXNwZW5kIHVudGlsIGl0J3MgZG9uZT8KPiA+Cj4gPiBFYWNoIGRyaXZlciBjb3VsZCBo
+YXZlIGEgc3VzcGVuZF9wb2xpY3kgc3lzZnMgZW50cnkgd2l0aCBvcHRpb25zIHN1Y2gKPiA+IGFz
+IFsgZm9yY2VkIHwgc2FmZSBdLiBUaGUgZGVmYXVsdCB3b3VsZCBiZSBmb3JjZWQuIEZvcmNlZCB3
+b3VsZAo+ID4gYmUgdGhlIGN1cnJlbnQgYmVoYXZpb3VyLCB3aGlsZSBzYWZlIHdvdWxkIHJlZnVz
+ZSBzdXNwZW5kIHVudGlsIHRoZQo+ID4gZHJpdmVyIGlzIGRvbmUgcHJvY2Vzc2luZy4KPiA+Cj4g
+Pj4gPiDCoCDCoCDCoCDCoFRoZSB1c2VyIHByb2dyYW0gZW5hYmxlcyBpdHMgb3duIHN1c3BlbmQg
+YmxvY2tlciBiZWZvcmUgcmVhZGluZwo+ID4+ID4gwqAgwqAgwqAgwqB0aGUgaW5wdXQgcXVldWUu
+IMKgV2hlbiB0aGUgcXVldWUgaXMgZW1wdHksIHRoZSBpbnB1dCBzdWJzeXN0ZW0KPiA+PiA+IMKg
+IMKgIMKgIMKgcmVsZWFzZXMgaXRzIHN1c3BlbmQgYmxvY2tlci4KPiA+Cj4gPiBBbmQgYWxzbyB0
+aGUgaW5wdXQgbGF5ZXIgY291bGQgcmVmdXNlIHRvIHN1c3BlbmQgdW50aWwgaXQncyBkb25lLgo+
+ID4KPiA+PiA+IMKgIMKgIMKgIMKgV2hlbiB0aGUgdXNlciBwcm9ncmFtIGZpbmlzaGVzIHByb2Nl
+c3NpbmcgdGhlIGV2ZW50LCBpdAo+ID4+ID4gwqAgwqAgwqAgwqByZWxlYXNlcyBpdHMgc3VzcGVu
+ZCBibG9ja2VyLiDCoE5vdyB0aGUgc3lzdGVtIGNhbiBnbyBiYWNrIHRvCj4gPj4gPiDCoCDCoCDC
+oCDCoHNsZWVwLgo+ID4KPiA+IEFuZCBoZXJlIHRoZSB1c2VyIHNwYWNlIGp1c3QgdHJpZXMgdG8g
+c3VzcGVuZCBhZ2FpbiB3aGVuIGl0J3MgZG9uZT8KPiA+IEl0J3Mgbm90IGxpa2UgeW91J3JlIHRy
+eWluZyB0byBzdXNwZW5kIGFsbCB0aGUgdGltZSwgc28gaXQgc2hvdWxkIGJlCj4gPiBPSyB0byBy
+ZXRyeSBhIGZldyB0aW1lcy4KPiAKPiBXZSBhY3R1YWxseSBhcmUgdHJ5aW5nIHRvIHN1c3BlbmQg
+YWxsIHRoZSB0aW1lIC0tIHRoYXQncyBvdXIgYmFzaWMKPiBtb2RlbCAtLSBzdXNwZW5kIHdoZW5l
+dmVyIHdlIGNhbiB3aGVuIHNvbWV0aGluZyBkb2Vzbid0IHByZXZlbnQgaXQuCgpNYXliZSB0aGF0
+IHN0YXRlIGNvdWxkIGJlIGtlcHQgaW4gc29tZSB1c2Vyc3BhY2Ugc3VzcGVuZCBwb2xpY3kgbWFu
+YWdlcj8KIAo+ID4+ID4gQXQgbm8gcG9pbnQgZG9lcyB0aGUgdXNlciBwcm9ncmFtIGhhdmUgdG8g
+Y29tbXVuaWNhdGUgYW55dGhpbmcgdG8gdGhlCj4gPj4gPiBtb2RlbSBkcml2ZXIsIGFuZCBhdCBu
+byBwb2ludCBkb2VzIGl0IGhhdmUgdG8gZG8gYW55dGhpbmcgb3V0IG9mIHRoZQo+ID4+ID4gb3Jk
+aW5hcnkgZXhjZXB0IHRvIGVuYWJsZSBhbmQgZGlzYWJsZSBhIHN1c3BlbmQgYmxvY2tlci4KPiA+
+Pgo+ID4+IEV4YWN0bHkgLS0gYW5kIHlvdSBjYW4gdXNlIHRoZSBzYW1lIHN0eWxlIG9mIG92ZXJs
+YXBwaW5nIHN1c3BlbmQKPiA+PiBibG9ja2VycyB3aXRoIG90aGVyIGRyaXZlcnMgdGhhbiBpbnB1
+dCwgaWYgdGhlIGlucHV0IGludGVyZmFjZSBpcyBub3QKPiA+PiBzdWl0YWJsZSBmb3IgdGhlIHBh
+cnRpY3VsYXIgaW50ZXJhY3Rpb24uCj4gPgo+ID4gV291bGQgdGhlIHN1c3BlbmQgYmxvY2tlcnMg
+c3RpbGwgYmUgbmVlZGVkIHNvbWV3aGVyZSBpbiB0aGUgZXhhbXBsZQo+ID4gYWJvdmU/Cj4gCj4g
+SG93IG9mdGVuIHdvdWxkIHdlIHJldHJ5IHN1c3BlbmRpbmc/CgpXZWxsIGJhc2VkIG9uIHNvbWUg
+dGltZXIsIHRoZSBzYW1lIHdheSB0aGUgc2NyZWVuIGJsYW5rcz8gT3IgZml2ZQpzZWNvbmRzIG9m
+IG5vIGF1ZGlvIHBsYXk/IFNvIGlmIHRoZSBzdXNwZW5kIGZhaWxzLCB0aGVuIHJlc2V0IHdoYXRl
+dmVyCnVzZXJzcGFjZSBzdXNwZW5kIHBvbGljeSB0aW1lcnMuCiAKPiBJZiB3ZSBmYWlsIHRvIHN1
+c3BlbmQsIGRvbid0IHdlIGhhdmUgdG8gcmVzdW1lIGFsbCB0aGUgZHJpdmVycyB0aGF0Cj4gc3Vz
+cGVuZGVkIGJlZm9yZSB0aGUgb25lIHRoYXQgZmFpbGVkPyAgKE1heWJlIEknbSBtaXN0YWtlbiBo
+ZXJlKQoKU3VyZSwgYnV0IEkgZ3Vlc3MgdGhhdCBzaG91bGQgYmUgYSByYXJlIGV2ZW50IHRoYXQg
+b25seSBoYXBwZW5zIHdoZW4KeW91IHRyeSB0byBzdXNwZW5kIGFuZCBzb21ldGhpbmcgaW50ZXJy
+dXB0cyB0aGUgc3VzcGVuZC4KIAo+IFdpdGggdGhlIHN1c3BlbmQgYmxvY2sgbW9kZWwgd2Uga25v
+dyB0aGUgbW9tZW50IHdlJ3JlIGNhcGFibGUgb2YKPiBzdXNwZW5kaW5nIGFuZCB0aGVuIGNhbiBz
+dXNwZW5kIGF0IHRoYXQgbW9tZW50LiAgQ29udGludWFsbHkgdHJ5aW5nIHRvCj4gc3VzcGVuZCBz
+ZWVtcyBsaWtlIGl0J2QgYmUgaW5lZmZpY2llbnQgcG93ZXItd2lzZSAod2UncmUgZ29pbmcgdG8g
+YmUKPiBkb2luZyBhIGxvdCBtb3JlIHdvcmsgYXMgd2UgdHJ5IHRvIHN1c3BlbmQgb3ZlciBhbmQg
+b3Zlciwgb3Igd2UncmUKPiBnb2luZyB0byByZXRyeSBhZnRlciBhIHRpbWVvdXQgYW5kIHNwZW5k
+IGV4dHJhIHRpbWUgbm90IHN1c3BlbmRlZCkuCj4gCj4gV2UgY2FuIG9mdGVuIHNwZW5kIG1pbnV0
+ZXMgKHBvc3NpYmx5IG1hbnkpIGF0IGEgdGltZSBwcmV2ZW50aW5nCj4gc3VzcGVuZCB3aGVuIHRo
+ZSBzeXN0ZW0gaXMgZG9pbmcgd29yayB0aGF0IHdvdWxkIGJlIGludGVycnVwdGVkIGJ5IGEKPiBm
+dWxsIHN1c3BlbmQuCgpNYXliZSB5b3UgYSB1c2Vyc3BhY2Ugc3VzcGVuZCBwb2xpY3kgbWFuYWdl
+ciB3b3VsZCBkbyB0aGUgdHJpY2sgaWYKaXQga25vd3Mgd2hlbiB0aGUgc2NyZWVuIGlzIGJsYW5r
+ZWQgYW5kIG5vIGF1ZGlvIGhhcyBiZWVuIHBsYXllZCBmb3IKZml2ZSBzZWNvbmRzIGV0Yz8KClJl
+Z2FyZHMsCgpUb255Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9u
+Lm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8v
+bGludXgtcG0=
