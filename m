@@ -1,18 +1,16 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Wed, 5 May 2010 17:05:53 -0700
-Message-ID: <20100506000552.GJ29604__43269.1037109636$1273104497$gmane$org@atomide.com>
-References: <20100505202826.GB7450@linux.intel.com>
-	<Pine.LNX.4.44L0.1005051705200.1885-100000@iolanthe.rowland.org>
-	<z2ta55d774e1005051437heb584584q6afca0b4b254d5d0@mail.gmail.com>
-	<20100505234755.GI29604@atomide.com>
-	<l2ra55d774e1005051656wbf4f3d7cr8cc9de0478e509f1@mail.gmail.com>
+From: "Du, Alek" <alek.du@intel.com>
+Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
+ (WKOC_E) and disconnect (WKDISC_E)
+Date: Thu, 6 May 2010 08:11:08 +0800
+Message-ID: <1865303E0DED764181A9D882DEF65FB61A82A6D6F9__8071.32430277324$1273104836$gmane$org@shsmsx502.ccr.corp.intel.com>
+References: <20100505111245.2c480ea1@dxy2>
+	<Pine.LNX.4.44L0.1005051144490.1885-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <l2ra55d774e1005051656wbf4f3d7cr8cc9de0478e509f1@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.1005051144490.1885-100000@iolanthe.rowland.org>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,73 +20,99 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, markgross@thegnar.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Ondrej Zary <linux@rainbow-software.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-KiBCcmlhbiBTd2V0bGFuZCA8c3dldGxhbmRAZ29vZ2xlLmNvbT4gWzEwMDUwNSAxNjo1MV06Cj4g
-T24gV2VkLCBNYXkgNSwgMjAxMCBhdCA0OjQ3IFBNLCBUb255IExpbmRncmVuIDx0b255QGF0b21p
-ZGUuY29tPiB3cm90ZToKPiA+ICogQnJpYW4gU3dldGxhbmQgPHN3ZXRsYW5kQGdvb2dsZS5jb20+
-IFsxMDA1MDUgMTQ6MzRdOgo+ID4+IE9uIFdlZCwgTWF5IDUsIDIwMTAgYXQgMjoxMiBQTSwgQWxh
-biBTdGVybiA8c3Rlcm5Acm93bGFuZC5oYXJ2YXJkLmVkdT4gd3JvdGU6Cj4gPj4gPj4KPiA+PiA+
-PiBPaCwgbGlrZSB0ZWxsIHRoZSBtb2RlbSB0aGF0IHVzZXIgbW9kZSBoYXMgaGFuZGxlZCB0aGUg
-cmluZyBldmVudCBhbmQKPiA+PiA+PiBpdHMgb2sgdG8gdW4tYmxvY2s/Cj4gPj4gPgo+ID4+ID4g
-Tm8sIHRoYXQncyBub3QgaG93IGl0IHdvcmtzLiDCoEl0IHdvdWxkIGdvIGxpa2UgdGhpczoKPiA+
-PiA+Cj4gPj4gPiDCoCDCoCDCoCDCoFRoZSBtb2RlbSBJUlEgaGFuZGxlciBxdWV1ZXMgaXRzIGV2
-ZW50IHRvIHRoZSBpbnB1dCBzdWJzeXN0ZW0uCj4gPj4gPiDCoCDCoCDCoCDCoEFzIGl0IGRvZXMg
-c28gdGhlIGlucHV0IHN1YnN5c3RlbSBlbmFibGVzIGEgc3VzcGVuZCBibG9ja2VyLAo+ID4+ID4g
-wqAgwqAgwqAgwqBjYXVzaW5nIHRoZSBzeXN0ZW0gdG8gc3RheSBhd2FrZSBhZnRlciB0aGUgSVJR
-IGlzIGRvbmUuCj4gPgo+ID4gSG93IGFib3V0IGluc3RlYWQgdGhlIG1vZGVtIGRyaXZlciBmYWls
-cyB0byBzdXNwZW5kIHVudGlsIGl0J3MgZG9uZT8KPiA+Cj4gPiBFYWNoIGRyaXZlciBjb3VsZCBo
-YXZlIGEgc3VzcGVuZF9wb2xpY3kgc3lzZnMgZW50cnkgd2l0aCBvcHRpb25zIHN1Y2gKPiA+IGFz
-IFsgZm9yY2VkIHwgc2FmZSBdLiBUaGUgZGVmYXVsdCB3b3VsZCBiZSBmb3JjZWQuIEZvcmNlZCB3
-b3VsZAo+ID4gYmUgdGhlIGN1cnJlbnQgYmVoYXZpb3VyLCB3aGlsZSBzYWZlIHdvdWxkIHJlZnVz
-ZSBzdXNwZW5kIHVudGlsIHRoZQo+ID4gZHJpdmVyIGlzIGRvbmUgcHJvY2Vzc2luZy4KPiA+Cj4g
-Pj4gPiDCoCDCoCDCoCDCoFRoZSB1c2VyIHByb2dyYW0gZW5hYmxlcyBpdHMgb3duIHN1c3BlbmQg
-YmxvY2tlciBiZWZvcmUgcmVhZGluZwo+ID4+ID4gwqAgwqAgwqAgwqB0aGUgaW5wdXQgcXVldWUu
-IMKgV2hlbiB0aGUgcXVldWUgaXMgZW1wdHksIHRoZSBpbnB1dCBzdWJzeXN0ZW0KPiA+PiA+IMKg
-IMKgIMKgIMKgcmVsZWFzZXMgaXRzIHN1c3BlbmQgYmxvY2tlci4KPiA+Cj4gPiBBbmQgYWxzbyB0
-aGUgaW5wdXQgbGF5ZXIgY291bGQgcmVmdXNlIHRvIHN1c3BlbmQgdW50aWwgaXQncyBkb25lLgo+
-ID4KPiA+PiA+IMKgIMKgIMKgIMKgV2hlbiB0aGUgdXNlciBwcm9ncmFtIGZpbmlzaGVzIHByb2Nl
-c3NpbmcgdGhlIGV2ZW50LCBpdAo+ID4+ID4gwqAgwqAgwqAgwqByZWxlYXNlcyBpdHMgc3VzcGVu
-ZCBibG9ja2VyLiDCoE5vdyB0aGUgc3lzdGVtIGNhbiBnbyBiYWNrIHRvCj4gPj4gPiDCoCDCoCDC
-oCDCoHNsZWVwLgo+ID4KPiA+IEFuZCBoZXJlIHRoZSB1c2VyIHNwYWNlIGp1c3QgdHJpZXMgdG8g
-c3VzcGVuZCBhZ2FpbiB3aGVuIGl0J3MgZG9uZT8KPiA+IEl0J3Mgbm90IGxpa2UgeW91J3JlIHRy
-eWluZyB0byBzdXNwZW5kIGFsbCB0aGUgdGltZSwgc28gaXQgc2hvdWxkIGJlCj4gPiBPSyB0byBy
-ZXRyeSBhIGZldyB0aW1lcy4KPiAKPiBXZSBhY3R1YWxseSBhcmUgdHJ5aW5nIHRvIHN1c3BlbmQg
-YWxsIHRoZSB0aW1lIC0tIHRoYXQncyBvdXIgYmFzaWMKPiBtb2RlbCAtLSBzdXNwZW5kIHdoZW5l
-dmVyIHdlIGNhbiB3aGVuIHNvbWV0aGluZyBkb2Vzbid0IHByZXZlbnQgaXQuCgpNYXliZSB0aGF0
-IHN0YXRlIGNvdWxkIGJlIGtlcHQgaW4gc29tZSB1c2Vyc3BhY2Ugc3VzcGVuZCBwb2xpY3kgbWFu
-YWdlcj8KIAo+ID4+ID4gQXQgbm8gcG9pbnQgZG9lcyB0aGUgdXNlciBwcm9ncmFtIGhhdmUgdG8g
-Y29tbXVuaWNhdGUgYW55dGhpbmcgdG8gdGhlCj4gPj4gPiBtb2RlbSBkcml2ZXIsIGFuZCBhdCBu
-byBwb2ludCBkb2VzIGl0IGhhdmUgdG8gZG8gYW55dGhpbmcgb3V0IG9mIHRoZQo+ID4+ID4gb3Jk
-aW5hcnkgZXhjZXB0IHRvIGVuYWJsZSBhbmQgZGlzYWJsZSBhIHN1c3BlbmQgYmxvY2tlci4KPiA+
-Pgo+ID4+IEV4YWN0bHkgLS0gYW5kIHlvdSBjYW4gdXNlIHRoZSBzYW1lIHN0eWxlIG9mIG92ZXJs
-YXBwaW5nIHN1c3BlbmQKPiA+PiBibG9ja2VycyB3aXRoIG90aGVyIGRyaXZlcnMgdGhhbiBpbnB1
-dCwgaWYgdGhlIGlucHV0IGludGVyZmFjZSBpcyBub3QKPiA+PiBzdWl0YWJsZSBmb3IgdGhlIHBh
-cnRpY3VsYXIgaW50ZXJhY3Rpb24uCj4gPgo+ID4gV291bGQgdGhlIHN1c3BlbmQgYmxvY2tlcnMg
-c3RpbGwgYmUgbmVlZGVkIHNvbWV3aGVyZSBpbiB0aGUgZXhhbXBsZQo+ID4gYWJvdmU/Cj4gCj4g
-SG93IG9mdGVuIHdvdWxkIHdlIHJldHJ5IHN1c3BlbmRpbmc/CgpXZWxsIGJhc2VkIG9uIHNvbWUg
-dGltZXIsIHRoZSBzYW1lIHdheSB0aGUgc2NyZWVuIGJsYW5rcz8gT3IgZml2ZQpzZWNvbmRzIG9m
-IG5vIGF1ZGlvIHBsYXk/IFNvIGlmIHRoZSBzdXNwZW5kIGZhaWxzLCB0aGVuIHJlc2V0IHdoYXRl
-dmVyCnVzZXJzcGFjZSBzdXNwZW5kIHBvbGljeSB0aW1lcnMuCiAKPiBJZiB3ZSBmYWlsIHRvIHN1
-c3BlbmQsIGRvbid0IHdlIGhhdmUgdG8gcmVzdW1lIGFsbCB0aGUgZHJpdmVycyB0aGF0Cj4gc3Vz
-cGVuZGVkIGJlZm9yZSB0aGUgb25lIHRoYXQgZmFpbGVkPyAgKE1heWJlIEknbSBtaXN0YWtlbiBo
-ZXJlKQoKU3VyZSwgYnV0IEkgZ3Vlc3MgdGhhdCBzaG91bGQgYmUgYSByYXJlIGV2ZW50IHRoYXQg
-b25seSBoYXBwZW5zIHdoZW4KeW91IHRyeSB0byBzdXNwZW5kIGFuZCBzb21ldGhpbmcgaW50ZXJy
-dXB0cyB0aGUgc3VzcGVuZC4KIAo+IFdpdGggdGhlIHN1c3BlbmQgYmxvY2sgbW9kZWwgd2Uga25v
-dyB0aGUgbW9tZW50IHdlJ3JlIGNhcGFibGUgb2YKPiBzdXNwZW5kaW5nIGFuZCB0aGVuIGNhbiBz
-dXNwZW5kIGF0IHRoYXQgbW9tZW50LiAgQ29udGludWFsbHkgdHJ5aW5nIHRvCj4gc3VzcGVuZCBz
-ZWVtcyBsaWtlIGl0J2QgYmUgaW5lZmZpY2llbnQgcG93ZXItd2lzZSAod2UncmUgZ29pbmcgdG8g
-YmUKPiBkb2luZyBhIGxvdCBtb3JlIHdvcmsgYXMgd2UgdHJ5IHRvIHN1c3BlbmQgb3ZlciBhbmQg
-b3Zlciwgb3Igd2UncmUKPiBnb2luZyB0byByZXRyeSBhZnRlciBhIHRpbWVvdXQgYW5kIHNwZW5k
-IGV4dHJhIHRpbWUgbm90IHN1c3BlbmRlZCkuCj4gCj4gV2UgY2FuIG9mdGVuIHNwZW5kIG1pbnV0
-ZXMgKHBvc3NpYmx5IG1hbnkpIGF0IGEgdGltZSBwcmV2ZW50aW5nCj4gc3VzcGVuZCB3aGVuIHRo
-ZSBzeXN0ZW0gaXMgZG9pbmcgd29yayB0aGF0IHdvdWxkIGJlIGludGVycnVwdGVkIGJ5IGEKPiBm
-dWxsIHN1c3BlbmQuCgpNYXliZSB5b3UgYSB1c2Vyc3BhY2Ugc3VzcGVuZCBwb2xpY3kgbWFuYWdl
-ciB3b3VsZCBkbyB0aGUgdHJpY2sgaWYKaXQga25vd3Mgd2hlbiB0aGUgc2NyZWVuIGlzIGJsYW5r
-ZWQgYW5kIG5vIGF1ZGlvIGhhcyBiZWVuIHBsYXllZCBmb3IKZml2ZSBzZWNvbmRzIGV0Yz8KClJl
-Z2FyZHMsCgpUb255Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9u
-Lm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8v
-bGludXgtcG0=
+>-----Original Message-----
+>From: Alan Stern [mailto:stern@rowland.harvard.edu]
+>Sent: Wednesday, May 05, 2010 11:56 PM
+>To: Du, Alek
+>Cc: Ondrej Zary; Linux-pm mailing list; USB list; Kernel development list
+>Subject: Re: [linux-pm] [PATCH v2] [RFC] ehci: Disable wake on overcurrent
+>(WKOC_E) and disconnect (WKDISC_E)
+>
+>On Wed, 5 May 2010, Du, Alek wrote:
+>
+>> On Fri, 30 Apr 2010 01:45:33 +0800
+>> Alan Stern <stern@rowland.harvard.edu> wrote:
+>>
+>>
+>> > This patch fixes the problem on my system.  Does it work for you?
+>> > I still think that disabling wakeup at the PCI or platform level should
+>> > override the port wakeup flags, but apparently it doesn't.
+>> >
+>> > Alek, can you confirm that the changes in this patch are okay for the
+>> > Moorestown EHCI controller?  I had to guess at how to handle the
+>> > HOSTPCx register settings.
+>> >
+>> > Alan Stern
+>>
+>>
+>> Alan,
+>>
+>> As I tested, the patch breaks phy low power mode, the EHCI works, but it
+>never
+>> enter phy low power mode when suspending port...
+>>
+>> I guess this part of the diff breaks it.
+>>
+>>
+>>  -			/* only enable appropriate wake bits, otherwise the
+>>  -			 * hardware can not go phy low power mode. If a race
+>>  -			 * condition happens here(connection change during bits
+>>  -			 * set), the port change detection will finally fix it.
+>>  -			 */
+>>  -			if (t1 & PORT_CONNECT) {
+>>  -				t2 |= PORT_WKOC_E | PORT_WKDISC_E;
+>>  -				t2 &= ~PORT_WKCONN_E;
+>>  -			} else {
+>>  -				t2 |= PORT_WKOC_E | PORT_WKCONN_E;
+>>  -				t2 &= ~PORT_WKDISC_E;
+>>  -			}
+>
+>That seems very odd.  Why should removing code that enables wakeup bits
+>cause the suspend to fail?  Can't the phy go into low-power mode when
+>all the wakeup bits are disabled?
+>
+>Does applying this additional patch on top of the previous one help?
+>
+>Alan Stern
+>
+>
+>
+>Index: usb-2.6/drivers/usb/host/ehci-hub.c
+>===================================================================
+>--- usb-2.6.orig/drivers/usb/host/ehci-hub.c
+>+++ usb-2.6/drivers/usb/host/ehci-hub.c
+>@@ -200,7 +200,7 @@ static int ehci_bus_suspend (struct usb_
+> 	while (port--) {
+> 		u32 __iomem	*reg = &ehci->regs->port_status [port];
+> 		u32		t1 = ehci_readl(ehci, reg) & ~PORT_RWC_BITS;
+>-		u32		t2 = t1;
+>+		u32		t2;
+>
+> 		if (ehci->has_hostpc)
+> 			hostpc_reg = (u32 __iomem *)((u8 *)ehci->regs
+>@@ -209,6 +209,7 @@ static int ehci_bus_suspend (struct usb_
+> 		if (t1 & PORT_OWNER)
+> 			set_bit(port, &ehci->owned_ports);
+> 		else if ((t1 & PORT_PE) && !(t1 & PORT_SUSPEND)) {
+>+			t2 = t1 & ~PORT_WAKE_BITS;
+> 			t2 |= PORT_SUSPEND;
+> 			set_bit(port, &ehci->bus_suspended);
+> 			ehci_vdbg (ehci, "port %d, %08x -> %08x\n",
+
+Alan,
+
+This would be better, but before entering phy low power mode, the HW need the exact wakeup bits to be set, that's why we have:
+
+			/* only enable appropriate wake bits, otherwise the
+			 * hardware can not go phy low power mode. If a race
+			 * condition happens here(connection change during bits
+			 * set), the port change detection will finally fix it.
+			 */
+In the code. When port is connected, we must only enable PORT_WKOC_E | PORT_WKDISC_E, and when port is disconnected, we must only enable PORT_WKOC_E | PORT_WKCONN_E. Enable all wakeup bits won't work.
+
+Thanks,
+Alek
