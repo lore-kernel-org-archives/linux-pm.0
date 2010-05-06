@@ -1,22 +1,12 @@
-From: Matthew Garrett <mjg@redhat.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Thu, 6 May 2010 19:44:18 +0100
-Message-ID: <20100506184418.GA30669__46327.3777896122$1273171632$gmane$org@srcf.ucam.org>
-References: <z2ta55d774e1005051437heb584584q6afca0b4b254d5d0@mail.gmail.com>
-	<20100505234755.GI29604@atomide.com>
-	<20100506134015.GA23426@srcf.ucam.org>
-	<20100506170151.GA30928@atomide.com>
-	<20100506170956.GA28104@srcf.ucam.org>
-	<20100506171453.GC30928@atomide.com>
-	<20100506172201.GA28578@srcf.ucam.org>
-	<20100506173807.GD30928@atomide.com>
-	<20100506174331.GA29103@srcf.ucam.org>
-	<20100506183335.GE30928@atomide.com>
+Date: Thu, 6 May 2010 14:47:34 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005061440370.1708-100000__16156.5987546512$1273171696$gmane$org@iolanthe.rowland.org>
+References: <20100506183335.GE30928@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <20100506183335.GE30928@atomide.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -28,26 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Tony Lindgren <tony@atomide.com>
-Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 06, 2010 at 11:33:35AM -0700, Tony Lindgren wrote:
-> * Matthew Garrett <mjg@redhat.com> [100506 10:39]:
-> > On Thu, May 06, 2010 at 10:38:08AM -0700, Tony Lindgren wrote:
-> > 
-> > > If your userspace keeps polling and has runaway timers, then you
-> > > could suspend it's parent process to idle the system?
-> > 
-> > If your userspace is suspended, how does it process the events that 
-> > generated a system wakeup? If we had a good answer to that then suspend 
-> > blockers would be much less necessary.
-> 
+On Thu, 6 May 2010, Tony Lindgren wrote:
+
 > Well if your hardware runs off-while-idle or even just
 > retention-while-idle, then the basic shell works just fine waking up
 > every few seconds or so.
+> 
+> Then you could keep init/shell/suspend policy deamon running until
+> it's time to suspend the whole device. To cut down runaway timers,
+> you could already freeze the desktop/GUI/whatever earlier.
 
-And the untrusted userspace code that's waiting for a network packet? 
-Adding a few seconds of latency isn't an option here.
+This comes down mostly to efficiency.  Although the suspend blocker
+patch does the actual suspending in a workqueue thread, AFAIK there's
+no reason it couldn't use a user thread instead.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+The important difference lies in what happens when a suspend fails
+because a driver is busy.  Without suspend blockers, the kernel has to
+go through the whole procedure of freezing userspace and kernel threads
+and then suspending a bunch of drivers before hitting the one that's
+busy.  Then all that work has to be undone.  By contrast, with suspend
+blockers the suspend attempt can fail right away with minimal overhead.
+
+There's also a question of reliability.  With suspends controlled by 
+userspace there is a possibility of races, which could lead the system 
+to suspend when it shouldn't.  With control in the kernel, these races 
+can be eliminated.
+
+Alan Stern
