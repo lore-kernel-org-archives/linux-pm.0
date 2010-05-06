@@ -1,14 +1,18 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
- (WKOC_E) and disconnect (WKDISC_E)
-Date: Thu, 6 May 2010 12:06:33 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005061204000.1708-100000__48653.9110112519$1273162084$gmane$org@iolanthe.rowland.org>
-References: <1865303E0DED764181A9D882DEF65FB61A82A6DAFD@shsmsx502.ccr.corp.intel.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Thu, 6 May 2010 10:01:51 -0700
+Message-ID: <20100506170151.GA30928__25061.4456869245$1273165453$gmane$org@atomide.com>
+References: <20100505202826.GB7450@linux.intel.com>
+	<Pine.LNX.4.44L0.1005051705200.1885-100000@iolanthe.rowland.org>
+	<z2ta55d774e1005051437heb584584q6afca0b4b254d5d0@mail.gmail.com>
+	<20100505234755.GI29604@atomide.com>
+	<20100506134015.GA23426@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1865303E0DED764181A9D882DEF65FB61A82A6DAFD@shsmsx502.ccr.corp.intel.com>
+Content-Disposition: inline
+In-Reply-To: <20100506134015.GA23426@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,24 +22,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Du, Alek" <alek.du@intel.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Ondrej Zary <linux@rainbow-software.org>, Kernel development list <linux-kernel@vger.kernel.org>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 6 May 2010, Du, Alek wrote:
-
-> Hi Alan,
+* Matthew Garrett <mjg@redhat.com> [100506 06:35]:
+> On Wed, May 05, 2010 at 04:47:55PM -0700, Tony Lindgren wrote:
 > 
-> >With this patch, _none_ of the wakeup bits are enabled.  That should
-> >work, right?
-> >
-> I guess so, but if no wakeup bits set, how to handle remote wakeup case? Seems you removed remote wakeup case?
+> > How about instead the modem driver fails to suspend until it's done?
+> 
+> Because every attempted suspend requires freezing userspace, suspending 
+> devices until you hit one that refuses to suspend, resuming the devies 
+> that did suspend and then unfreezing userspace. That's not an attractive 
+> option.
 
-The wakeup bits get set later, in ehci_set_wakeup_flags().
+But how many times per day are you really suspending? Maybe few tens
+of times at most if it's based on some user activity?
 
-The point is that the wakeup bits take effect only when the controller 
-leaves D0.  But ehci_bus_suspend() is called when the root hub is 
-suspended, which happens first.  So at that time the wakeup bits aren't 
-needed.
+Or are you suspending constantly, tens of times per minute even if
+there's no user activity?
 
-Alan Stern
+Regards,
+
+Tony
