@@ -1,8 +1,9 @@
-From: Tony Lindgren <tony@atomide.com>
+From: Daniel Walker <dwalker@fifo99.com>
 Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Fri, 7 May 2010 14:42:11 -0700
-Message-ID: <20100507214211.GR387__35139.0600939796$1273268692$gmane$org@atomide.com>
-References: <20100507184621.GA25978@srcf.ucam.org>
+Date: Fri, 07 May 2010 14:43:57 -0700
+Message-ID: <1273268637.3542.130.camel__42007.2945919403$1273268802$gmane$org@c-dwalke-linux.qualcomm.com>
+References: <20100507180152.GH387@atomide.com>
+	<20100507184621.GA25978@srcf.ucam.org>
 	<1273259186.3542.93.camel@c-dwalke-linux.qualcomm.com>
 	<20100507192837.GM387@atomide.com>
 	<20100507193353.GA27175@srcf.ucam.org>
@@ -10,14 +11,13 @@ References: <20100507184621.GA25978@srcf.ucam.org>
 	<20100507202859.GA27328@srcf.ucam.org>
 	<20100507205329.GP387@atomide.com>
 	<20100507210304.GA28701@srcf.ucam.org>
-	<20100507212556.GQ387@atomide.com>
-	<20100507213917.GE28906@srcf.ucam.org>
+	<1273267820.3542.120.camel@c-dwalke-linux.qualcomm.com>
+	<p2vd6200be21005071435hf75ed42dnff2c2c02118e97@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100507213917.GE28906@srcf.ucam.org>
+In-Reply-To: <p2vd6200be21005071435hf75ed42dnff2c2c02118e97@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,34 +27,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-* Matthew Garrett <mjg@redhat.com> [100507 14:34]:
-> On Fri, May 07, 2010 at 02:25:56PM -0700, Tony Lindgren wrote:
-> > * Matthew Garrett <mjg@redhat.com> [100507 13:58]:
-> > > Here's a different example. A process is waiting for a keypress, but 
-> > > because it's badly written it's also drawing to the screen at 60 frames 
-> > > per second and preventing the system from every going to idle. How do 
-> > > you quiesce the system while still ensuring that the keypress will be 
-> > > delivered to the application?
-> > 
-> > I guess it depends. If it's a game and I'm waiting to hit the fire
-> > button, then I don't want the system to suspend!
-> > 
-> > It's starting to sound like you're really using suspend blocks
-> > to "certify" that the app is safe to keep running.
-> > 
-> > Maybe it could be done with some kind of process flag instead that
-> > would tell "this process is safe to keep running from timer point of view"
-> > and if that flag is not set, then assume it's OK to stop the process
-> > at any point?
-> 
-> How do you know to wake the process up in response to the keypress?
-
-Does it matter for processes that are not "certified"? Maybe you
-could assume that you can keep it stopped until the screen is on
-again, or some other policy.
-
-Tony
+T24gRnJpLCAyMDEwLTA1LTA3IGF0IDE0OjM1IC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
+Ogo+IE9uIEZyaSwgTWF5IDcsIDIwMTAgYXQgMjozMCBQTSwgRGFuaWVsIFdhbGtlciA8ZHdhbGtl
+ckBmaWZvOTkuY29tPiB3cm90ZToKPiA+IE9uIEZyaSwgMjAxMC0wNS0wNyBhdCAyMjowMyArMDEw
+MCwgTWF0dGhldyBHYXJyZXR0IHdyb3RlOgo+ID4KPiA+PiBIZXJlJ3MgYSBkaWZmZXJlbnQgZXhh
+bXBsZS4gQSBwcm9jZXNzIGlzIHdhaXRpbmcgZm9yIGEga2V5cHJlc3MsIGJ1dAo+ID4+IGJlY2F1
+c2UgaXQncyBiYWRseSB3cml0dGVuIGl0J3MgYWxzbyBkcmF3aW5nIHRvIHRoZSBzY3JlZW4gYXQg
+NjAgZnJhbWVzCj4gPj4gcGVyIHNlY29uZCBhbmQgcHJldmVudGluZyB0aGUgc3lzdGVtIGZyb20g
+ZXZlcnkgZ29pbmcgdG8gaWRsZS4gSG93IGRvCj4gPj4geW91IHF1aWVzY2UgdGhlIHN5c3RlbSB3
+aGlsZSBzdGlsbCBlbnN1cmluZyB0aGF0IHRoZSBrZXlwcmVzcyB3aWxsIGJlCj4gPj4gZGVsaXZl
+cmVkIHRvIHRoZSBhcHBsaWNhdGlvbj8KPiA+Cj4gPiBUbyBtZSBpdCdzIHNvbWV3aGF0IG9mIGEg
+bmVnYXRpdmUgZm9yIHN1c3BlbmQgYmxvY2tlcnMuIFNpbmNlIHRvIHNvbHZlCj4gPiB0aGUgcHJv
+YmxlbSB5b3UgZ2l2ZSBhYm92ZSB5b3Ugd291bGQgaGF2ZSB0byB1c2UgYSBzdXNwZW5kIGJsb2Nr
+ZXIgaW4gYW4KPiA+IGFzeW5jaHJvbm91cyB3YXkgKGxvY2tlZCBpbiBhbiBpbnRlcnJ1cHQsIHJl
+bGVhc2VkIGluIGEgdGhyZWFkIHRvbykKPiA+IGFzc3VtaW5nIEkgdW5kZXJzdGFuZCB5b3VyIGV4
+YW1wbGUuIEkndmUgaGFkIG15IHNoYXJlIG9mIHNlbWFwaG9yZQo+ID4gbmlnaHRtYXJlcywgYW5k
+IEknbSBub3QgdG9vIGV4Y2l0ZWQgdG8gc2VlIGEgcHJvdGVjdGlvbiBzY2hlbWUgKGkuZS4gYQo+
+ID4gbG9jaykgd2hpY2ggYWxsb3dzIGFzeW5jaHJvbm91cyB1c2FnZSBsaWtlIHN1c3BlbmQgYmxv
+Y2tlcnMuCj4gPgo+IAo+IFdoeSBkbyB5b3UgdGhpbmsgdGhpcz8gVGhlIGV4YW1wbGUgaW4gdGhl
+IGRvY3VtZW50YXRpb24gZGVzY3JpYmUgaG93Cj4gd2UgaGFuZGxlIGtleSBldmVudHMuCgorLSBU
+aGUgS2V5cGFkIGRyaXZlciBnZXRzIGFuIGludGVycnVwdC4gSXQgdGhlbiBjYWxscyBzdXNwZW5k
+X2Jsb2NrIG9uIHRoZQorICBrZXlwYWQtc2NhbiBzdXNwZW5kX2Jsb2NrZXIgYW5kIHN0YXJ0cyBz
+Y2FubmluZyB0aGUga2V5cGFkIG1hdHJpeC4KKy0gVGhlIGtleXBhZC1zY2FuIGNvZGUgZGV0ZWN0
+cyBhIGtleSBjaGFuZ2UgYW5kIHJlcG9ydHMgaXQgdG8gdGhlIGlucHV0LWV2ZW50CisgIGRyaXZl
+ci4KKy0gVGhlIGlucHV0LWV2ZW50IGRyaXZlciBzZWVzIHRoZSBrZXkgY2hhbmdlLCBlbnF1ZXVl
+cyBhbiBldmVudCwgYW5kIGNhbGxzCisgIHN1c3BlbmRfYmxvY2sgb24gdGhlIGlucHV0LWV2ZW50
+LXF1ZXVlIHN1c3BlbmRfYmxvY2tlci4KKy0gVGhlIGtleXBhZC1zY2FuIGNvZGUgZGV0ZWN0cyB0
+aGF0IG5vIGtleXMgYXJlIGhlbGQgYW5kIGNhbGxzIHN1c3BlbmRfdW5ibG9jaworICBvbiB0aGUg
+a2V5cGFkLXNjYW4gc3VzcGVuZF9ibG9ja2VyLgorLSBUaGUgdXNlci1zcGFjZSBpbnB1dC1ldmVu
+dCB0aHJlYWQgcmV0dXJucyBmcm9tIHNlbGVjdC9wb2xsLCBjYWxscworICBzdXNwZW5kX2Jsb2Nr
+IG9uIHRoZSBwcm9jZXNzLWlucHV0LWV2ZW50cyBzdXNwZW5kX2Jsb2NrZXIgYW5kIHRoZW4gY2Fs
+bHMgcmVhZAorICBvbiB0aGUgaW5wdXQtZXZlbnQgZGV2aWNlLgorLSBUaGUgaW5wdXQtZXZlbnQg
+ZHJpdmVyIGRlcXVldWVzIHRoZSBrZXktZXZlbnQgYW5kLCBzaW5jZSB0aGUgcXVldWUgaXMgbm93
+CisgIGVtcHR5LCBpdCBjYWxscyBzdXNwZW5kX3VuYmxvY2sgb24gdGhlIGlucHV0LWV2ZW50LXF1
+ZXVlIHN1c3BlbmRfYmxvY2tlci4KKy0gVGhlIHVzZXItc3BhY2UgaW5wdXQtZXZlbnQgdGhyZWFk
+IHJldHVybnMgZnJvbSByZWFkLiBJZiBpdCBkZXRlcm1pbmVzIHRoYXQKKyAgdGhlIGtleSBzaG91
+bGQgbGVhdmUgdGhlIHNjcmVlbiBvZmYsIGl0IGNhbGxzIHN1c3BlbmRfdW5ibG9jayBvbiB0aGUK
+KyAgcHJvY2Vzc19pbnB1dF9ldmVudHMgc3VzcGVuZF9ibG9ja2VyIGFuZCB0aGVuIGNhbGxzIHNl
+bGVjdCBvciBwb2xsLiBUaGUKKyAgc3lzdGVtIHdpbGwgYXV0b21hdGljYWxseSBzdXNwZW5kIGFn
+YWluLCBzaW5jZSBub3cgbm8gc3VzcGVuZCBibG9ja2VycyBhcmUKKyAgYWN0aXZlLgoKVGhpcz8g
+SXNuJ3QgdGhpcyBhc3luY2hyb25vdXMgb24gdGhlIGlucHV0LWV2ZW50LXF1ZXVlIHNpbmNlIGl0
+J3MgdGFrZW4KaW4gdGhlIGludGVycnVwdCAsIGFuZCByZWxlYXNlIGluIHRoZSB1c2Vyc3BhY2Ug
+dGhyZWFkPwoKRGFuaWVsCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRh
+dGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3Rp
+bmZvL2xpbnV4LXBt
