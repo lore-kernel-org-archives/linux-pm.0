@@ -1,14 +1,22 @@
-From: Sundar <sunder.svit@gmail.com>
-Subject: Re: Power Domain Framework
-Date: Sun, 16 May 2010 16:43:52 +0530
-Message-ID: <AANLkTikyqnKDNz7FIUvLDAvBReHskHvRCrEz2qBBqseH__24466.0263568678$1274008529$gmane$org@mail.gmail.com>
-References: <AANLkTinZU1D1rMOBQDi47tRhXrOXwduQIdni7bCXdce0@mail.gmail.com>
-	<20100510140527.GG5199@sirena.org.uk>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: 2.6.33-2.6.34-rc5 suspend issues
+Date: Fri, 7 May 2010 15:43:02 +0200
+Message-ID: <20100507134302.GB3089@ucw.cz>
+References: <20100427074609.GA3261@ikn.schottelius.org>
+	<20100427083202.GA3143@ikn.schottelius.org>
+	<20100428160935.GA4010@schottelius.org>
+	<20100429191241.GA3407@schottelius.org>
+	<20100501122441.GA3273@schottelius.org>
+	<20100504041849.GA1262@ucw.cz>
+	<20100504144714.GA3527@schottelius.org>
+	<20100507135704.GB3455@schottelius.org>
+	<20100512060843.GA20895@schottelius.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100510140527.GG5199@sirena.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20100512060843.GA20895@schottelius.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,81 +26,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: viresh.kumar@st.com, rajeev-dlh.kumar@st.com, linus.walleij@stericsson.com, armando.visconti@st.com, linux-kernel@vger.kernel.org, vipin.kumar@st.com, shiraz.hashim@st.com, linux-pm@lists.linux-foundation.org
+To: Nico Schottelius <nico-kernel@schottelius.org>, Nico Schottelius <nico-linux-20100427@schottelius.org>, LKML <linux-kernel@vger.kernel.org>, Linux-pm
 List-Id: linux-pm@vger.kernel.org
 
-Hi All,
 
-The regulator framework documentation already refers to the concept of
-power domains and I think the framework *can* be extended more to
-support on-SoC power domains as well.
+> > > > > Same happens on 2.6.34-rc5-00340-g79dba2e, now testing
+> > > > > 2.6.34-rc6-00063-gbe1066b.
+> > > > 
+> > > > There's one bit that needs to be set to stay in the acpi mode, and
+> > > > there's blacklist somewhere...?
+> > > 
+> > > Don't know if I should answer the question, but the problem also happens
+> > > on 2.6.34-rc6-00063-gbe1066b.
+> > > 
+> > > Now compiling v2.6.34-rc6-106-gd93ac51.
+> > 
+> > Same issue on 2.6.34-rc6-00201-g722154e.
+> 
+> Success, success! With 2.6.34-rc7 I can resume at least two times!
+> 
+> I'll keep an eye on it and notify you if things continue to work / break again.
+> 
 
-I have been working with the regulator framework for on-chip power
-domains too and....
+Congratulations. I have no idea what fixed it, but hopefully it will
+keep working.
 
->2. Maintain a list of the different power domains present.
->3. The devices in a specific power domain, as per the requirements would g=
-et the power
->domain...
->4. Typically a usage count of zero for any power domai..
->5. The same could be mapped on to the PM framework..
->6. The model could further be build upon to check any dependency in the po=
-wer domains
 
-the above requirements can be leveraged through the current regulator
-framework itself.
-
-However, for working with power domains within the framework, I feel that,
-- support must be added to allow additional domain-specific states
-like retention, idle etc.
-- controlling operating points for regulators, unlike setting optimal modes.
-- controlling regulator modes via constraints enforced by clients and
-managing transition to various states through the client requests and
-pushing the client states up to the parent regulator.
-
->7. The advantages of the framework could be leveraged in the CPU idle time=
-, by switching >off the Power domains with zero usage counts.
-
-Yes. A simple platform specific list of all regulators ( and power
-domains ) can be easily used in the CPUIdle driver for determining low
-power states. Further, enforcing run time PM can club together any
-peripheral's power sources in terms of external regulators, on-chip
-domains ( and clock sources possibly).
-
-i have a very primitive implementation for adding operating points and
-constraints into the framework and currently i am able to control
-regulator aka domain states based on various child domains and
-contraints.
-
-However, with more inputs, I think we can make the regulator framework
-easily manage power sources, whether on-chip domains or external
-conventional regulators...
-
-Waiting for opinions and views,
-
-Regards,
-Sundar
-
- Mon, May 10, 2010 at 7:35 PM, Mark Brown
-<broonie@opensource.wolfsonmicro.com> wrote:
-> On Mon, May 10, 2010 at 07:16:06PM +0530, Deepak Sikri wrote:
->
->> In our System on chip we have several power domains. As such there is no
->> generic framework for the Power Domains in linux , and I find huge poten=
-tial
->> in the software to control the domains and exploit the power management
->> capabilities.
->
->> There is one very small model that I could think of, something on the li=
-nes
->> of clock framework.
->
-> Might be worth looking at what the OMAP and SH Mobile CPUs are doing
-> here, they have existing handling for power domains. =A0Off-SoC the
-> regulator API should already cope with a lot of this stuff.
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
->
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
