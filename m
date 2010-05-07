@@ -1,23 +1,23 @@
-From: Daniel Walker <dwalker@fifo99.com>
+From: Tony Lindgren <tony@atomide.com>
 Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Fri, 07 May 2010 11:00:55 -0700
-Message-ID: <1273255255.3542.43.camel__19565.3434297585$1273255397$gmane$org@c-dwalke-linux.qualcomm.com>
-References: <20100506170151.GA30928@atomide.com>
-	<20100506170956.GA28104@srcf.ucam.org>
-	<20100506171453.GC30928@atomide.com>
-	<1273167311.20494.13.camel@c-dwalke-linux.qualcomm.com>
-	<20100506183605.GF30928@atomide.com>
-	<1273173110.20494.19.camel@c-dwalke-linux.qualcomm.com>
-	<20100507020057.GG30928@atomide.com>
-	<1273252837.3542.30.camel@c-dwalke-linux.qualcomm.com>
-	<20100507173621.GA23604@srcf.ucam.org>
-	<1273254043.3542.37.camel@c-dwalke-linux.qualcomm.com>
-	<20100507175159.GB23952@srcf.ucam.org>
+Date: Fri, 7 May 2010 11:01:52 -0700
+Message-ID: <20100507180152.GH387__20143.963470082$1273255407$gmane$org@atomide.com>
+References: <20100506171453.GC30928@atomide.com>
+	<20100506172201.GA28578@srcf.ucam.org>
+	<20100506173807.GD30928@atomide.com>
+	<20100506174331.GA29103@srcf.ucam.org>
+	<20100506183335.GE30928@atomide.com>
+	<20100506184418.GA30669@srcf.ucam.org>
+	<20100507020541.GH30928@atomide.com>
+	<20100507171218.GA23142@srcf.ucam.org>
+	<20100507173549.GF387@atomide.com>
+	<20100507175025.GA23952@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100507175159.GB23952@srcf.ucam.org>
+Content-Disposition: inline
+In-Reply-To: <20100507175025.GA23952@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -31,27 +31,38 @@ To: Matthew Garrett <mjg@redhat.com>
 Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2010-05-07 at 18:51 +0100, Matthew Garrett wrote:
-> On Fri, May 07, 2010 at 10:40:43AM -0700, Daniel Walker wrote:
-> > On Fri, 2010-05-07 at 18:36 +0100, Matthew Garrett wrote:
-> > > If your wakeup latencies are sufficiently low and you have fine-grained 
-> > > enough control over your hardware then suspend in idle is a reasonable 
-> > > thing to do - but if you have a userspace app that's spinning then 
-> > > that doesn't solve the issue.
+* Matthew Garrett <mjg@redhat.com> [100507 10:46]:
+> On Fri, May 07, 2010 at 10:35:49AM -0700, Tony Lindgren wrote:
+> > * Matthew Garrett <mjg@redhat.com> [100507 10:08]:
+> > > The situation is this. You've frozen most of your userspace because you 
+> > > don't trust the applications. One of those applications has an open 
+> > > network socket, and policy indicates that receiving a network packet 
+> > > should generate a wakeup, allow the userspace application to handle the 
+> > > packet and then return to sleep. What mechanism do you use to do that?
 > > 
-> > If there's a userspace app spinning then you don't go idle (or that's my
-> > assumption anyway). You mean like repeatedly blocking and unblocking
-> > right?
+> > I think the ideal way of doing this would be to have the system running
+> > and hitting some deeper idle states using cpuidle. Then fix the apps
+> > so timers don't wake up the system too often. Then everything would
+> > just run in a normal way.
 > 
-> Right, that's the problem. idle-based suspend works fine if your 
-> applications let the system go idle, but if your applications are 
-> anything other than absolutely perfect in this respect then you consume 
-> significant power even if the device is sitting unused in someone's 
-> pocket.
+> Effective power management in the face of real-world applications is a 
+> reasonable usecase.
 
-True .. I'd wonder how an OMAP based devices deal with that issue, since
-they would have that exact problem. According to what Tony is telling
-us. Actually a bogus userspace can do a lot more than just consume power
-you could hang the system too.
+Sure there's no easy solution to misbehaving apps.
 
-Daniel
+> > For the misbehaving stopped apps, maybe they could be woken
+> > to deal with the incoming network data with sysfs_notify?
+> 
+> How would that work? Have the kernel send a sysfs_notify on every netwrk 
+> packet and have a monitor app listen for it and unfreeze the rest of 
+> userspace if it's frozen? That sounds expensive.
+
+Yeah maybe there are better ways of dealing with this.
+
+Maybe deferred timers would help some so all the apps could
+be allowed to run until some power management policy decides
+to suspend the whole device.
+
+Regards,
+
+Tony
