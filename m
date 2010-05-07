@@ -1,23 +1,23 @@
-From: Tony Lindgren <tony@atomide.com>
+From: Matthew Garrett <mjg@redhat.com>
 Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Fri, 7 May 2010 10:50:30 -0700
-Message-ID: <20100507175029.GG387__506.077535874461$1273254711$gmane$org@atomide.com>
-References: <20100505234755.GI29604@atomide.com>
-	<20100506134015.GA23426@srcf.ucam.org>
-	<20100506170151.GA30928@atomide.com>
-	<20100506170956.GA28104@srcf.ucam.org>
+Date: Fri, 7 May 2010 18:50:25 +0100
+Message-ID: <20100507175025.GA23952__48706.2109671116$1273254736$gmane$org@srcf.ucam.org>
+References: <20100506170956.GA28104@srcf.ucam.org>
 	<20100506171453.GC30928@atomide.com>
-	<1273167311.20494.13.camel@c-dwalke-linux.qualcomm.com>
-	<20100506183605.GF30928@atomide.com>
-	<1273173110.20494.19.camel@c-dwalke-linux.qualcomm.com>
-	<20100507020057.GG30928@atomide.com>
-	<1273252837.3542.30.camel@c-dwalke-linux.qualcomm.com>
+	<20100506172201.GA28578@srcf.ucam.org>
+	<20100506173807.GD30928@atomide.com>
+	<20100506174331.GA29103@srcf.ucam.org>
+	<20100506183335.GE30928@atomide.com>
+	<20100506184418.GA30669@srcf.ucam.org>
+	<20100507020541.GH30928@atomide.com>
+	<20100507171218.GA23142@srcf.ucam.org>
+	<20100507173549.GF387@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1273252837.3542.30.camel@c-dwalke-linux.qualcomm.com>
+In-Reply-To: <20100507173549.GF387@atomide.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,36 +27,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-* Daniel Walker <dwalker@fifo99.com> [100507 10:15]:
-> On Thu, 2010-05-06 at 19:00 -0700, Tony Lindgren wrote:
+On Fri, May 07, 2010 at 10:35:49AM -0700, Tony Lindgren wrote:
+> * Matthew Garrett <mjg@redhat.com> [100507 10:08]:
+> > The situation is this. You've frozen most of your userspace because you 
+> > don't trust the applications. One of those applications has an open 
+> > network socket, and policy indicates that receiving a network packet 
+> > should generate a wakeup, allow the userspace application to handle the 
+> > packet and then return to sleep. What mechanism do you use to do that?
 > 
-> > Oh some SoC devices like omap hit retention or off modes in the idle loop.
-> > That brings down the idle consumption of a running system to minimal
-> > levels. It's basically the same as suspending the device in every idle loop.
-> > 
-> > The system wakes up every few seconds or so, but that already provides
-> > battery life of over ten days or so on an idle system. Of course the
-> > wakeup latencies are in milliseconds then.
-> 
-> MSM doesn't have those power states unfortunately .. Your kind of
-> suggesting what I was suggesting in that we should suspend in idle. Your
-> hardware can do it easier tho since your have power states that are
-> equal to suspend.
+> I think the ideal way of doing this would be to have the system running
+> and hitting some deeper idle states using cpuidle. Then fix the apps
+> so timers don't wake up the system too often. Then everything would
+> just run in a normal way.
 
-You might be able to implement suspend-while-idle with cpuidle and
-a custom idle function on MSM. That is if MSM supports waking to
-a timer event and some device interrupts. However, if it only wakes
-to pressing some power button, then you will get missed timers
-and the system won't behave in a normal way.
+Effective power management in the face of real-world applications is a 
+reasonable usecase.
 
-Maybe you could still kill -STOP the misbehaving apps, then keep the
-idle system running until some timer expires, then when no activity,
-echo mem > /sys/power/state?
+> For the misbehaving stopped apps, maybe they could be woken
+> to deal with the incoming network data with sysfs_notify?
 
-Regards,
+How would that work? Have the kernel send a sysfs_notify on every netwrk 
+packet and have a monitor app listen for it and unfreeze the rest of 
+userspace if it's frozen? That sounds expensive.
 
-Tony
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
