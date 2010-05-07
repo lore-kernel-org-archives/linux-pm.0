@@ -1,68 +1,77 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Fri, 7 May 2010 10:22:20 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005071019170.1804-100000__17070.1704839759$1273242236$gmane$org@iolanthe.rowland.org>
-References: <y2id6200be21005061648m47d03875h6e9de89d0e965344@mail.gmail.com>
+From: Nico Schottelius <nico-linux-20100427@schottelius.org>
+Subject: Re: 2.6.33-2.6.34-rc5 suspend issues
+Date: Fri, 7 May 2010 15:57:04 +0200
+Message-ID: <20100507135704.GB3455@schottelius.org>
+References: <20100427074609.GA3261@ikn.schottelius.org>
+ <20100427083202.GA3143@ikn.schottelius.org>
+ <20100428160935.GA4010@schottelius.org>
+ <20100429191241.GA3407@schottelius.org>
+ <20100501122441.GA3273@schottelius.org>
+ <20100504041849.GA1262@ucw.cz>
+ <20100504144714.GA3527@schottelius.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <y2id6200be21005061648m47d03875h6e9de89d0e965344@mail.gmail.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="TYecfFk8j8mZq+dy"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20100504144714.GA3527@schottelius.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nico Schottelius <nico-linux-20100427@schottelius.org>, Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 6 May 2010, Arve Hj=F8nnev=E5g wrote:
 
-> On Thu, May 6, 2010 at 12:40 PM, Alan Stern <stern@rowland.harvard.edu> w=
-rote:
-> > On Thu, 6 May 2010, Rafael J. Wysocki wrote:
-> >
-> >> > Here's a completely new issue. =A0When using opportunistic suspends =
-on an
-> >> > SMP system, it could happen that the system gets a wakeup event and
-> >> > this routine starts running again before the event's IRQ handler has
-> >> > finished (or has enabled a suspend blocker). =A0The system would
-> >> > re-suspend too soon.
-> >>
-> >> This routine will be run from a freezable workqueue.
-> >
-> > But how do you know that processes won't get unfrozen until all the
-> > pending IRQs have been handled? =A0Imagine something like this:
-> >
-> > =A0 =A0 =A0 =A0CPU 0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 CPU 1
-> > =A0 =A0 =A0 =A0----- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 -----
-> > =A0 =A0 =A0 =A0Wake up non-boot CPUs
-> > =A0 =A0 =A0 =A0Resume devices =A0 =A0 =A0 =A0 =A0Invoke the IRQ handler
-> >
-> > =A0 =A0 =A0 =A0[ CPU 0 should wait here for the handler to finish,
-> > =A0 =A0 =A0 =A0 =A0but it doesn't ]
-> >
-> > =A0 =A0 =A0 =A0Defrost threads =A0 =A0 =A0 =A0 Handler running...
-> > =A0 =A0 =A0 =A0Workqueue routine runs
-> > =A0 =A0 =A0 =A0Start another suspend
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0Handler =
-enables a suspend blocker,
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0but it's=
- too late
-> =
+--TYecfFk8j8mZq+dy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> It is not optimal, but it is not too late. We check if any suspend
-> blockers block suspend after disabling non-boot cpus so as long as
-> this is done in a way that does not lose interrupts the resuspend
-> attempt will not succeed.
+Nico Schottelius [Tue, May 04, 2010 at 04:47:16PM +0200]:
+> Pavel Machek [Tue, May 04, 2010 at 06:18:50AM +0200]:
+> > On Sat 2010-05-01 14:24:41, Nico Schottelius wrote:
+> > > Nico Schottelius [Thu, Apr 29, 2010 at 09:12:42PM +0200]:
+> > > > Nico Schottelius [Wed, Apr 28, 2010 at 06:09:36PM +0200]:
+> > > > > Nico Schottelius [Tue, Apr 27, 2010 at 10:32:02AM +0200]:
+> > > > > >=20
+> > > > > > Nico Schottelius [Tue, Apr 27, 2010 at 09:46:09AM +0200]:
+> > > > > > > [..]=20
+> > > > > > > - suspend & resume works once
+> > > > > > > - second time system
+> > > > > > >   b) suspends, but comes up with the bios screen after resume
+> > > > > > >      and hangs there forever (2.6.34-*)
+> > ...
+> > > Same happens on 2.6.34-rc5-00340-g79dba2e, now testing
+> > > 2.6.34-rc6-00063-gbe1066b.
+> >=20
+> > There's one bit that needs to be set to stay in the acpi mode, and
+> > there's blacklist somewhere...?
+>=20
+> Don't know if I should answer the question, but the problem also happens
+> on 2.6.34-rc6-00063-gbe1066b.
+>=20
+> Now compiling v2.6.34-rc6-106-gd93ac51.
 
-Is it possible for the resuspend to disable CPU 1 before the IRQ
-handler can enable its suspend blocker?  (Probably not -- but I don't
-know enough about how non-boot CPUs are enabled or disabled.)
+Same issue on 2.6.34-rc6-00201-g722154e.
 
-Alan Stern
+Cheers,
+
+Nico
+
+--=20
+New PGP key: 7ED9 F7D3 6B10 81D7 0EC5  5C09 D7DC C8E4 3187 7DF0
+Please resign, if you signed 9885188C or 8D0E27A4.
+
+Currently moving *.schottelius.org to http://www.nico.schottelius.org/ ...
+
+--TYecfFk8j8mZq+dy
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkvkHDAACgkQ19zI5DGHffBG3ACgxs4TWXnOm5FuSlw5/XfhXO6C
+bPoAoMITxdzEF6kHhskGU/cnc6FUWHhr
+=OwJe
+-----END PGP SIGNATURE-----
+
+--TYecfFk8j8mZq+dy--
