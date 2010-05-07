@@ -1,15 +1,23 @@
-From: "Du, Alek" <alek.du@intel.com>
-Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
- (WKOC_E) and disconnect (WKDISC_E)
-Date: Fri, 7 May 2010 09:32:00 +0800
-Message-ID: <20100507093200.28ecd63c__22018.2119323455$1273196257$gmane$org@dxy2>
-References: <1865303E0DED764181A9D882DEF65FB61A82A6DAFD@shsmsx502.ccr.corp.intel.com>
-	<Pine.LNX.4.44L0.1005061204000.1708-100000@iolanthe.rowland.org>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Thu, 6 May 2010 19:00:57 -0700
+Message-ID: <20100507020057.GG30928__16479.5267548927$1273197737$gmane$org@atomide.com>
+References: <Pine.LNX.4.44L0.1005051705200.1885-100000@iolanthe.rowland.org>
+	<z2ta55d774e1005051437heb584584q6afca0b4b254d5d0@mail.gmail.com>
+	<20100505234755.GI29604@atomide.com>
+	<20100506134015.GA23426@srcf.ucam.org>
+	<20100506170151.GA30928@atomide.com>
+	<20100506170956.GA28104@srcf.ucam.org>
+	<20100506171453.GC30928@atomide.com>
+	<1273167311.20494.13.camel@c-dwalke-linux.qualcomm.com>
+	<20100506183605.GF30928@atomide.com>
+	<1273173110.20494.19.camel@c-dwalke-linux.qualcomm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005061204000.1708-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <1273173110.20494.19.camel@c-dwalke-linux.qualcomm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,41 +27,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Ondrej Zary <linux@rainbow-software.org>, Kernel development list <linux-kernel@vger.kernel.org>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 7 May 2010 00:06:33 +0800
-Alan Stern <stern@rowland.harvard.edu> wrote:
-
-> On Thu, 6 May 2010, Du, Alek wrote:
-> 
-> > Hi Alan,
+* Daniel Walker <dwalker@fifo99.com> [100506 12:07]:
+> On Thu, 2010-05-06 at 11:36 -0700, Tony Lindgren wrote:
+> > * Daniel Walker <dwalker@fifo99.com> [100506 10:30]:
+> > > On Thu, 2010-05-06 at 10:14 -0700, Tony Lindgren wrote:
+> > > > * Matthew Garrett <mjg@redhat.com> [100506 10:05]:
+> > > > > On Thu, May 06, 2010 at 10:01:51AM -0700, Tony Lindgren wrote:
+> > > > > 
+> > > > > > Or are you suspending constantly, tens of times per minute even if
+> > > > > > there's no user activity?
+> > > > > 
+> > > > > In this case you'd be repeatedly trying to suspend until the modem 
+> > > > > driver stopped blocking it. It's pretty much a waste.
+> > > > 
+> > > > But then the userspace knows you're getting data from the modem, and
+> > > > it can kick some inactivity timer that determines when to try to
+> > > > suspend next.
+> > > 
+> > > If the idle thread was doing the suspending then the inactivity timer by
+> > > it's self could block suspend. As long as the idle thread was setup to
+> > > check for timers. I'm sure that _isn't_ the point your trying to make.
+> > > It just makes gobs more sense to me that the idle thread does the
+> > > suspending .. Your idle, so depending on how long your idle then you
+> > > suspend.
 > > 
-> > >With this patch, _none_ of the wakeup bits are enabled.  That should
-> > >work, right?
-> > >
-> > I guess so, but if no wakeup bits set, how to handle remote wakeup case? Seems you removed remote wakeup case?
+> > The alternative logic I'm suggesting is get the GUI into idle mode as
+> > soon as possible, then limp along with off-while-idle or
+> > retention-while-idle until some timer expires, then suspend the whole
+> > device.
 > 
-> The wakeup bits get set later, in ehci_set_wakeup_flags().
-> 
-> The point is that the wakeup bits take effect only when the controller 
-> leaves D0.  But ehci_bus_suspend() is called when the root hub is 
-> suspended, which happens first.  So at that time the wakeup bits aren't 
-> needed.
-> 
-> Alan Stern
-> 
+> Could you elaborate on "off-while-idle" and "retention-while-idle" ? I'm
+> not sure I follow what you mean.
 
-Alan,
+Oh some SoC devices like omap hit retention or off modes in the idle loop.
+That brings down the idle consumption of a running system to minimal
+levels. It's basically the same as suspending the device in every idle loop.
 
-As I tested, with the second patch, after entering phy low power mode, the port cannot detect any USB devices that plugged in.
-I also confirm that after set PHCD flag, any write to PORTSC is illegal. (I have another patch will send out soon named "Clear PHCD before resuming",
-but the patch is not related with this one) 
+The system wakes up every few seconds or so, but that already provides
+battery life of over ten days or so on an idle system. Of course the
+wakeup latencies are in milliseconds then.
 
-So it seems wakeup bits must set before set PHCD. So we may revise the flowchart a little bit, for example, if the HCD has hostpc,
-then set the wakeup bits like before, if the HCD is the normal one, then go your new way?
+Regards,
 
-
-Thanks,
-Alek
+Tony
