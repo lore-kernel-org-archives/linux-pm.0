@@ -1,22 +1,14 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 2.6.33-2.6.34-rc5 suspend issues
-Date: Fri, 7 May 2010 15:43:02 +0200
-Message-ID: <20100507134302.GB3089@ucw.cz>
-References: <20100427074609.GA3261@ikn.schottelius.org>
-	<20100427083202.GA3143@ikn.schottelius.org>
-	<20100428160935.GA4010@schottelius.org>
-	<20100429191241.GA3407@schottelius.org>
-	<20100501122441.GA3273@schottelius.org>
-	<20100504041849.GA1262@ucw.cz>
-	<20100504144714.GA3527@schottelius.org>
-	<20100507135704.GB3455@schottelius.org>
-	<20100512060843.GA20895@schottelius.org>
+Subject: Re: [RFC,5/7] NUMA hotplug emulator
+Date: Fri, 7 May 2010 16:11:42 +0200
+Message-ID: <20100507141142.GA8696__14593.7979141765$1274012439$gmane$org@ucw.cz>
+References: <20100513115625.GF2169@shaohui>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20100512060843.GA20895@schottelius.org>
+In-Reply-To: <20100513115625.GF2169@shaohui>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,31 +18,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nico Schottelius <nico-kernel@schottelius.org>, Nico Schottelius <nico-linux-20100427@schottelius.org>, LKML <linux-kernel@vger.kernel.org>, Linux-pm
+To: akpm@linux-foundation.org, linux-mm@kvack.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
-> > > > > Same happens on 2.6.34-rc5-00340-g79dba2e, now testing
-> > > > > 2.6.34-rc6-00063-gbe1066b.
-> > > > 
-> > > > There's one bit that needs to be set to stay in the acpi mode, and
-> > > > there's blacklist somewhere...?
-> > > 
-> > > Don't know if I should answer the question, but the problem also happens
-> > > on 2.6.34-rc6-00063-gbe1066b.
-> > > 
-> > > Now compiling v2.6.34-rc6-106-gd93ac51.
-> > 
-> > Same issue on 2.6.34-rc6-00201-g722154e.
+> hotplug emulator: Abstract cpu register functions
 > 
-> Success, success! With 2.6.34-rc7 I can resume at least two times!
+> Abstract function arch_register_cpu and register_cpu, move the implementation
+> details to a sub function with prefix "__". 
 > 
-> I'll keep an eye on it and notify you if things continue to work / break again.
-> 
+> each of the sub function has an extra parameter nid, it can be used to register
+> CPU under a fake NUMA node, it is a reserved interface for cpu hotplug emulation
+> (CPU PROBE/RELEASE) in x86.
 
-Congratulations. I have no idea what fixed it, but hopefully it will
-keep working.
+I don't get it. CPU hotplug can already be tested using echo 0/1 >
+online, and that works on 386. How is this different?
 
+It seems to add some numa magic. Why is it important?
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
