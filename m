@@ -1,13 +1,18 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: s2ram slow (radeon) / failing (usb)
-Date: Fri, 7 May 2010 10:29:25 +0200 (CEST)
-Message-ID: <alpine.LNX.2.00.1005071028320.9849__14232.9469942071$1273221055$gmane$org@pobox.suse.cz>
-References: <Pine.LNX.4.44L0.1005061426160.1708-100000@iolanthe.rowland.org>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Fri, 7 May 2010 11:04:07 +0100
+Message-ID: <20100507100406.GA21498__17124.0374482752$1273226764$gmane$org@rakim.wolfsonmicro.main>
+References: <20100505185225.GA4411@srcf.ucam.org>
+	<Pine.LNX.4.44L0.1005051511040.1885-100000@iolanthe.rowland.org>
+	<m2oa55d774e1005051356n3610d780ra42200c1785e02bd@mail.gmail.com>
+	<20100505234025.GB4838@opensource.wolfsonmicro.com>
+	<l2kd6200be21005052125rc43217a2r8c65bc98e7a5d3d4@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005061426160.1708-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <l2kd6200be21005052125rc43217a2r8c65bc98e7a5d3d4@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,51 +22,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oneukum@suse.de>, list <linux-usb@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>, =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>, linux-pm@lists.linux-foundation.org, jslaby@suse.cz
+To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 6 May 2010, Alan Stern wrote:
+On Wed, May 05, 2010 at 09:25:18PM -0700, Arve Hj=F8nnev=E5g wrote:
+> On Wed, May 5, 2010 at 4:40 PM, Mark Brown
 
-> On Thu, 6 May 2010, Bruno [UTF-8] Pr=C3=A9mont wrote:
-> =
+> > This really does depend heavily on system design and the intended
+> > function of the suspend on the part of the initiator. =A0In many systems
+> > suspend will remove sufficient power to stop audio running even if it
+> > were desired, and there's the idea with existing manually initiated
+> > suspends that the system should stop what it's doing and go into a low
+> > power, low responsiveness state. =A0Some systems will initiate a suspend
+> > with active audio paths (especially those to or from the AP) which they
+> > expect to be stopped.
 
-> > > Bruno, can you confirm that the hang occurs during one of those =
+> You can support both in the same driver in some cases (without a
+> switch). If the hardware cannot wake the system when it needs more
+> audio buffers, then the driver needs to block suspend while audio is
+> playing. Since suspend blockers only block opportunistic suspend, the
+> driver can also implement suspend to stop audio playback and it will
+> only be called for forced suspend.
 
-> > > cancel_work_sync() calls?
-> > =
-
-> > No, it's not one of the cancel_work_sync() that hangs but it's the
-> > del_timer_sync() right before them that hangs!
-> > (del_timer_sync() also hangs if I put it last, so the cancel_work_sync()
-> > don't hang anything)
-> > =
-
-> > static void hid_cancel_delayed_stuff(struct usbhid_device *usbhid)
-> > {
-> > 	del_timer_sync(&usbhid->io_retry); /* this one never returns */
-> > 	cancel_work_sync(&usbhid->restart_work);
-> > 	cancel_work_sync(&usbhid->reset_work);
-> > }
-> =
-
-> Okay, I see what the problem is.  In usbhid_start() there's a bunch of
-> statements initializing parts of the usbhid structure.  When probing
-> fails those statements don't get executed, so the timer and workqueue
-> things aren't set up properly.
-> =
-
-> This patch should fix it.
-
-Indeed, good catch, thanks a lot Alan!
-
-Could you please send to me with your Signed-off-by: line and short =
-
-changelog, so that I could apply it with proper credit being given to you?
-
-And Bruno, thanks a lot for excellent testing efforts.
-
--- =
-
-Jiri Kosina
-SUSE Labs, Novell Inc.
+As discussed elsewhere in the thread a suspend blocker is not desirable
+here - the AP is not doing anything useful on a voice call so blocking
+the suspend will just waste power unless runtime PM is good enough to
+mean opportunistic suspend isn't adding anything anyway.  It will avoid
+the immediate issue with loosing audio but it's not really what we want
+to happen.
