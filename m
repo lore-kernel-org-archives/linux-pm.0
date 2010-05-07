@@ -1,22 +1,23 @@
-From: mgross <markgross@thegnar.org>
+From: Matthew Garrett <mjg@redhat.com>
 Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Thu, 6 May 2010 20:45:54 -0700
-Message-ID: <20100507034554.GB20935__7256.06555720351$1273247783$gmane$org@thegnar.org>
-References: <20100505202826.GB7450@linux.intel.com>
-	<Pine.LNX.4.44L0.1005051705200.1885-100000@iolanthe.rowland.org>
-	<z2ta55d774e1005051437heb584584q6afca0b4b254d5d0@mail.gmail.com>
-	<20100505234755.GI29604@atomide.com>
-	<20100506134015.GA23426@srcf.ucam.org>
+Date: Fri, 7 May 2010 18:12:18 +0100
+Message-ID: <20100507171218.GA23142__7764.21021805636$1273252534$gmane$org@srcf.ucam.org>
+References: <20100506134015.GA23426@srcf.ucam.org>
 	<20100506170151.GA30928@atomide.com>
 	<20100506170956.GA28104@srcf.ucam.org>
 	<20100506171453.GC30928@atomide.com>
-Reply-To: markgross@thegnar.org
+	<20100506172201.GA28578@srcf.ucam.org>
+	<20100506173807.GD30928@atomide.com>
+	<20100506174331.GA29103@srcf.ucam.org>
+	<20100506183335.GE30928@atomide.com>
+	<20100506184418.GA30669@srcf.ucam.org>
+	<20100507020541.GH30928@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20100506171453.GC30928@atomide.com>
+In-Reply-To: <20100507020541.GH30928@atomide.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,30 +28,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Tony Lindgren <tony@atomide.com>
-Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
+Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 06, 2010 at 10:14:53AM -0700, Tony Lindgren wrote:
-> * Matthew Garrett <mjg@redhat.com> [100506 10:05]:
-> > On Thu, May 06, 2010 at 10:01:51AM -0700, Tony Lindgren wrote:
-> > 
-> > > Or are you suspending constantly, tens of times per minute even if
-> > > there's no user activity?
-> > 
-> > In this case you'd be repeatedly trying to suspend until the modem 
-> > driver stopped blocking it. It's pretty much a waste.
+On Thu, May 06, 2010 at 07:05:41PM -0700, Tony Lindgren wrote:
+> * Matthew Garrett <mjg@redhat.com> [100506 11:39]:
+> > And the untrusted userspace code that's waiting for a network packet? 
+> > Adding a few seconds of latency isn't an option here.
 > 
-> But then the userspace knows you're getting data from the modem, and
-> it can kick some inactivity timer that determines when to try to
-> suspend next.
+> Hmm well hitting retention and wake you can basically do between
+> jiffies. Hitting off mode in idle has way longer latencies,
+> but still in few hundred milliseconds or so, not seconds.
 
-Thank you for thinking.
+The situation is this. You've frozen most of your userspace because you 
+don't trust the applications. One of those applications has an open 
+network socket, and policy indicates that receiving a network packet 
+should generate a wakeup, allow the userspace application to handle the 
+packet and then return to sleep. What mechanism do you use to do that?
 
---mgross
-
-> 
-> Why would you need to constantly try to suspend in that case?
-> 
-> Regards,
-> 
-> Tony
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
