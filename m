@@ -1,7 +1,7 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Fri, 7 May 2010 04:41:02 -0700
-Message-ID: <t2od6200be21005070441sec3111f3k550ba03553abcc8c__46488.8198338032$1273232512$gmane$org@mail.gmail.com>
+Date: Fri, 7 May 2010 13:25:20 +0100
+Message-ID: <20100507122520.GD21498__7592.76389512724$1273235182$gmane$org@rakim.wolfsonmicro.main>
 References: <20100505185225.GA4411@srcf.ucam.org>
 	<Pine.LNX.4.44L0.1005051511040.1885-100000@iolanthe.rowland.org>
 	<m2oa55d774e1005051356n3610d780ra42200c1785e02bd@mail.gmail.com>
@@ -10,11 +10,13 @@ References: <20100505185225.GA4411@srcf.ucam.org>
 	<20100507100406.GA21498@rakim.wolfsonmicro.main>
 	<w2kd6200be21005070357r9aad2896l355168a23bf85eae@mail.gmail.com>
 	<20100507112102.GC21498@rakim.wolfsonmicro.main>
+	<81818215-44A2-4B74-A43F-E2644C950F5C@mit.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100507112102.GC21498@rakim.wolfsonmicro.main>
+Content-Disposition: inline
+In-Reply-To: <81818215-44A2-4B74-A43F-E2644C950F5C@mit.edu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,50 +26,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Theodore Tso <tytso@MIT.EDU>
 Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-2010/5/7 Mark Brown <broonie@opensource.wolfsonmicro.com>:
-> On Fri, May 07, 2010 at 03:57:37AM -0700, Arve Hj=F8nnev=E5g wrote:
->> 2010/5/7 Mark Brown <broonie@opensource.wolfsonmicro.com>:
->
->> > As discussed elsewhere in the thread a suspend blocker is not desirable
->> > here - the AP is not doing anything useful on a voice call so blocking
->> > the suspend will just waste power unless runtime PM is good enough to
->> > mean opportunistic suspend isn't adding anything anyway. =A0It will av=
-oid
->> > the immediate issue with loosing audio but it's not really what we want
->> > to happen.
->
->> I was talking about audio from the AP. Why would you ever turn off
->> another core's audio path on suspend?
->
-> This goes back to the thing about a full system suspend being a
-> sledgehammer which doesn't give enough information about what's going
-> on when it's used like this. =A0As discussed we need a way to know that
-> the connections involved are able to stay live during suspend (on a
-> large proportion of systems suspend is going to mean that the relevant
-> bits of the board will loose power so need to be shut down) and that
+On Fri, May 07, 2010 at 07:29:47AM -0400, Theodore Tso wrote:
 
-Are you trying to use the same driver on systems that can support
-audio while suspend and on systems where this is impossible? If audio
-cannot work while suspended, supporting opportunistic suspend is easy.
-You block suspend while audio is active.
+> This sounds like it may be something unique to your board/product.  Or
+> am I missing something?
 
-If the hardware does support some audio paths while suspended, I'll
-ask again, is there a reason to turn them off on suspend?
+I suspect you're missing something here - I'm approaching this as one of
+the maintainers of the embedded audio subsystem for the kernel.  I need
+to worry about any system running Linux which has an embedded style
+audio subsystem.  The problem might be unique to audio, but I can't say
+that for certain.
 
-> that the intention of the user is that they should do so (this isn't
-> clear in the general system, especially not if the suspend is initiated
-> manually).
->
-> With a runtime PM approach this is trivial - we just turn off anything
-> that isn't in use at the current time. =A0I'll need to extend ASoC to add
-> information about what to do on suspend to the existing power data.
->
-OK, but is this at all related to opportunistic suspend?
+> One of the challenges with PM in the embedded world is that everybody
+> seems to have slightly different assumptions, and hardware that doesn't
+> behave the same way.
 
--- =
+This isn't really a problem for audio - we've already got a subsystem
+which copes well with pretty much all systems and does runtime PM that's
+equivalent to suspending already, which is half the problem here.  If we
+had less generalisation this would probably not have come up.
 
-Arve Hj=F8nnev=E5g
+> More than once this discussion has wandered off into the weeds wrt to
+> whether this patch series is ready to be merged, since there are so many
+> drivers blocked on it....
+
+Once more, my main objective here has been to make sure that when this
+is merged we've got a joined up story about how people think this hangs
+together, which I think we have now.  As I say now that we have that
+understanding I don't see any reason to block merge.
+
+It's unfortunate that I only noticed that this was actually wakelocks
+very late in the day but I think I can get an implementation which
+handles paths that ignore suspends done quickly.
