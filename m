@@ -1,14 +1,22 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
- (WKOC_E) and disconnect (WKDISC_E)
-Date: Fri, 7 May 2010 11:20:18 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005071106570.1804-100000__21114.8585928187$1273245666$gmane$org@iolanthe.rowland.org>
-References: <20100507093200.28ecd63c@dxy2>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Fri, 7 May 2010 08:54:55 -0700
+Message-ID: <20100507155455.GC387__21107.5209001594$1273247771$gmane$org@atomide.com>
+References: <20100505202826.GB7450@linux.intel.com>
+	<Pine.LNX.4.44L0.1005051705200.1885-100000@iolanthe.rowland.org>
+	<z2ta55d774e1005051437heb584584q6afca0b4b254d5d0@mail.gmail.com>
+	<20100505234755.GI29604@atomide.com>
+	<l2ra55d774e1005051656wbf4f3d7cr8cc9de0478e509f1@mail.gmail.com>
+	<20100506000552.GJ29604@atomide.com>
+	<g2yd6200be21005052116n5dd8708fk33eaf8944379bfc2@mail.gmail.com>
+	<20100506170420.GB30928@atomide.com>
+	<i2od6200be21005061710mae9a437by90b22f61cbc2ae15@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100507093200.28ecd63c@dxy2>
+Content-Disposition: inline
+In-Reply-To: <i2od6200be21005061710mae9a437by90b22f61cbc2ae15@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,35 +26,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Du, Alek" <alek.du@intel.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Ondrej Zary <linux@rainbow-software.org>, Kernel development list <linux-kernel@vger.kernel.org>
+To: Arve =?utf-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 7 May 2010, Du, Alek wrote:
-
-> Alan,
-> 
-> As I tested, with the second patch, after entering phy low power mode, the port cannot detect any USB devices that plugged in.
-
-Ooh, that's not good.  It almost violates the EHCI spec (see the last
-line on p.60 in table 4.4).
-
-> I also confirm that after set PHCD flag, any write to PORTSC is illegal. (I have another patch will send out soon named "Clear PHCD before resuming",
-> but the patch is not related with this one) 
-
-I'm afraid we are going to have to modify the wakeup bits in PORTSC
-after PHCD is set.  Can we clear PHCD, modify PORTSC, and then set PHCD
-again?
-
-> So it seems wakeup bits must set before set PHCD. So we may revise the flowchart a little bit, for example, if the HCD has hostpc,
-> then set the wakeup bits like before, if the HCD is the normal one, then go your new way?
-
-For normal HCDs, the wakeup bits don't matter when the controller is in
-D0.  Therefore we can continue to set them as before during bus or port
-suspend.
-
-But during controller suspend, if the controller isn't supposed to be
-remote-wakeup-enabled then we will need to clear the wakeup bits
-(and set them again during controller resume).  Will that work?
-
-Alan Stern
+KiBBcnZlIEhqw7hubmV2w6VnIDxhcnZlQGFuZHJvaWQuY29tPiBbMTAwNTA2IDE3OjA1XToKPiAy
+MDEwLzUvNiBUb255IExpbmRncmVuIDx0b255QGF0b21pZGUuY29tPjoKPiA+ICogQXJ2ZSBIasO4
+bm5ldsOlZyA8YXJ2ZUBhbmRyb2lkLmNvbT4gWzEwMDUwNSAyMToxMV06Cgo8c25pcD4KCj4gPj4g
+VGhpcyBpcyBub3QgYSByYXJlIGV2ZW50LiBGb3IgZXhhbXBsZSwgdGhlIG1hdHJpeCBrZXlwYWQg
+ZHJpdmVyIGJsb2Nrcwo+ID4+IHN1c3BlbmQgd2hlbiBhIGtleSBpcyBkb3duIHNvIGl0IGNhbiBz
+Y2FuIHRoZSBtYXRyaXguCj4gPgo+ID4gU3VyZSwgYnV0IGhvdyBtYW55IHRpbWVzIHBlciBkYXkg
+YXJlIHlvdSBzdXNwZW5kaW5nPwo+ID4KPiAKPiBIb3cgbWFueSB0aW1lcyB3ZSBzdWNjZXNzZnVs
+bHkgc3VzcGVuZCBpcyBpcnJlbGV2YW50IGhlcmUuIElmIHRoZQo+IGRyaXZlciBibG9ja3Mgc3Vz
+cGVuZCB0aGUgbnVtYmVyIG9mIHN1c3BlbmQgYXR0ZW1wdHMgZGVwZW5kIG9uIHlvdXIKPiBwb2xs
+IGZyZXF1ZW5jeS4KCkkgZ3Vlc3Mgd2hhdCBJJ20gdHJ5aW5nIHRvIHNheSBpcyB0aGF0IGEgZmFp
+bGVkIHN1c3BlbmQgc2hvdWxkIGJlCmEgcmFyZSBldmVudC4KIAo+ID4+ID4+IFdpdGggdGhlIHN1
+c3BlbmQgYmxvY2sgbW9kZWwgd2Uga25vdyB0aGUgbW9tZW50IHdlJ3JlIGNhcGFibGUgb2YKPiA+
+PiA+PiBzdXNwZW5kaW5nIGFuZCB0aGVuIGNhbiBzdXNwZW5kIGF0IHRoYXQgbW9tZW50LiDCoENv
+bnRpbnVhbGx5IHRyeWluZyB0bwo+ID4+ID4+IHN1c3BlbmQgc2VlbXMgbGlrZSBpdCdkIGJlIGlu
+ZWZmaWNpZW50IHBvd2VyLXdpc2UgKHdlJ3JlIGdvaW5nIHRvIGJlCj4gPj4gPj4gZG9pbmcgYSBs
+b3QgbW9yZSB3b3JrIGFzIHdlIHRyeSB0byBzdXNwZW5kIG92ZXIgYW5kIG92ZXIsIG9yIHdlJ3Jl
+Cj4gPj4gPj4gZ29pbmcgdG8gcmV0cnkgYWZ0ZXIgYSB0aW1lb3V0IGFuZCBzcGVuZCBleHRyYSB0
+aW1lIG5vdCBzdXNwZW5kZWQpLgo+ID4+ID4+Cj4gPj4gPj4gV2UgY2FuIG9mdGVuIHNwZW5kIG1p
+bnV0ZXMgKHBvc3NpYmx5IG1hbnkpIGF0IGEgdGltZSBwcmV2ZW50aW5nCj4gPj4gPj4gc3VzcGVu
+ZCB3aGVuIHRoZSBzeXN0ZW0gaXMgZG9pbmcgd29yayB0aGF0IHdvdWxkIGJlIGludGVycnVwdGVk
+IGJ5IGEKPiA+PiA+PiBmdWxsIHN1c3BlbmQuCj4gPj4gPgo+ID4+ID4gTWF5YmUgeW91IGEgdXNl
+cnNwYWNlIHN1c3BlbmQgcG9saWN5IG1hbmFnZXIgd291bGQgZG8gdGhlIHRyaWNrIGlmCj4gPj4g
+PiBpdCBrbm93cyB3aGVuIHRoZSBzY3JlZW4gaXMgYmxhbmtlZCBhbmQgbm8gYXVkaW8gaGFzIGJl
+ZW4gcGxheWVkIGZvcgo+ID4+ID4gZml2ZSBzZWNvbmRzIGV0Yz8KPiA+PiA+Cj4gPj4KPiA+PiBJ
+ZiB1c2VyIHNwYWNlIGhhcyB0byBpbml0aWF0ZSBldmVyeSBzdXNwZW5kIGF0dGVtcHQsIHRoZW4g
+eW91IGFyZQo+ID4+IGZvcmNpbmcgaXQgdG8gcG9sbCB3aGVuZXZlciBhIGRyaXZlciBuZWVkcyB0
+byBibG9jayBzdXNwZW5kLgo+ID4KPiA+IEhtbSBJIGRvbid0IGZvbGxvdyB5b3UuIElmIHRoZSB1
+c2Vyc3BhY2UgcG9saWN5IGRhZW1vbiB0aW1lciB0aW1lcwo+ID4gb3V0LCB0aGUgZGV2aWNlIHN1
+c3BlbmRzLiBJZiB0aGUgZGV2aWNlIGRvZXMgbm90IHN1c3BlbmQgYmVjYXVzZSBvZgo+ID4gYSBi
+bG9ja2luZyBkcml2ZXIsIHRoZW4gdGhlIHRpbWVycyBnZXQgcmVzZXQgYW5kIHlvdSB0cnkgYWdh
+aW4gYmFzZWQKPiA+IG9uIHNvbWUgZXZlbnQgc3VjaCBhcyB3aGVuIHRoZSBzY3JlZW4gYmxhbmtz
+Lgo+ID4KPiAKPiBUaGlzIHJldHJ5IGlzIHdoYXQgSSBjYWxsIHBvbGxpbmcuIFlvdSBoYXZlIHRv
+IGtlZXAgcmV0cnlpbmcgdW50aWwgeW91Cj4gc3VjY2VlZC4gQWxzbywgdXNpbmcgdGhlIHNjcmVl
+biBibGFuayB0aW1lb3V0IGZvciB0aGlzIHBvbGxpbmcgaXMgbm90Cj4gYSBnb29kIGlkZWEuIFlv
+dSBkbyBub3Qgd2FudCB0byB0b2dnbGUgdGhlIHNjcmVlbiBvZmYgYW5kIG9uIHdpdGggd2l0aAo+
+IGV2ZXJ5IHN1c3BlbmQgYXR0ZW1wdC4KClRoZSBudW1iZXIgb2YgcmV0cmllcyBkZXBlbmRzIG9u
+IHRoZSBwb3dlciBtYW5hZ2VtZW50IHBvbGljeSBmb3IgeW91cgpkZXZpY2UuIEFuZCB0aGF0IGlz
+IG9mdGVuIGRldmljZSBhbmQgdXNlIHNwZWNpZmljLgoKU28gaGF2aW5nIHRvIHJldHJ5IHN1c3Bl
+bmQgc2hvdWxkIGJlIGEgcmFyZSBldmVudC4gVGhlIHVzZXJzcGFjZSBzaG91bGQKbW9zdGx5IGtu
+b3cgd2hlbiBpdCdzIE9LIHRvIHN1c3BlbmQuCgpSZWdhcmRzLAoKVG9ueQpfX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QK
+bGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1m
+b3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
