@@ -1,77 +1,52 @@
-From: Nico Schottelius <nico-linux-20100427@schottelius.org>
-Subject: Re: 2.6.33-2.6.34-rc5 suspend issues
-Date: Fri, 7 May 2010 15:57:04 +0200
-Message-ID: <20100507135704.GB3455@schottelius.org>
-References: <20100427074609.GA3261@ikn.schottelius.org>
- <20100427083202.GA3143@ikn.schottelius.org>
- <20100428160935.GA4010@schottelius.org>
- <20100429191241.GA3407@schottelius.org>
- <20100501122441.GA3273@schottelius.org>
- <20100504041849.GA1262@ucw.cz>
- <20100504144714.GA3527@schottelius.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
+ (WKOC_E) and disconnect (WKDISC_E)
+Date: Fri, 7 May 2010 11:20:18 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005071106570.1804-100000__21114.8585928187$1273245666$gmane$org@iolanthe.rowland.org>
+References: <20100507093200.28ecd63c@dxy2>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="TYecfFk8j8mZq+dy"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20100504144714.GA3527@schottelius.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nico Schottelius <nico-linux-20100427@schottelius.org>, Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20100507093200.28ecd63c@dxy2>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Du, Alek" <alek.du@intel.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Ondrej Zary <linux@rainbow-software.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, 7 May 2010, Du, Alek wrote:
 
---TYecfFk8j8mZq+dy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Alan,
+> 
+> As I tested, with the second patch, after entering phy low power mode, the port cannot detect any USB devices that plugged in.
 
-Nico Schottelius [Tue, May 04, 2010 at 04:47:16PM +0200]:
-> Pavel Machek [Tue, May 04, 2010 at 06:18:50AM +0200]:
-> > On Sat 2010-05-01 14:24:41, Nico Schottelius wrote:
-> > > Nico Schottelius [Thu, Apr 29, 2010 at 09:12:42PM +0200]:
-> > > > Nico Schottelius [Wed, Apr 28, 2010 at 06:09:36PM +0200]:
-> > > > > Nico Schottelius [Tue, Apr 27, 2010 at 10:32:02AM +0200]:
-> > > > > >=20
-> > > > > > Nico Schottelius [Tue, Apr 27, 2010 at 09:46:09AM +0200]:
-> > > > > > > [..]=20
-> > > > > > > - suspend & resume works once
-> > > > > > > - second time system
-> > > > > > >   b) suspends, but comes up with the bios screen after resume
-> > > > > > >      and hangs there forever (2.6.34-*)
-> > ...
-> > > Same happens on 2.6.34-rc5-00340-g79dba2e, now testing
-> > > 2.6.34-rc6-00063-gbe1066b.
-> >=20
-> > There's one bit that needs to be set to stay in the acpi mode, and
-> > there's blacklist somewhere...?
->=20
-> Don't know if I should answer the question, but the problem also happens
-> on 2.6.34-rc6-00063-gbe1066b.
->=20
-> Now compiling v2.6.34-rc6-106-gd93ac51.
+Ooh, that's not good.  It almost violates the EHCI spec (see the last
+line on p.60 in table 4.4).
 
-Same issue on 2.6.34-rc6-00201-g722154e.
+> I also confirm that after set PHCD flag, any write to PORTSC is illegal. (I have another patch will send out soon named "Clear PHCD before resuming",
+> but the patch is not related with this one) 
 
-Cheers,
+I'm afraid we are going to have to modify the wakeup bits in PORTSC
+after PHCD is set.  Can we clear PHCD, modify PORTSC, and then set PHCD
+again?
 
-Nico
+> So it seems wakeup bits must set before set PHCD. So we may revise the flowchart a little bit, for example, if the HCD has hostpc,
+> then set the wakeup bits like before, if the HCD is the normal one, then go your new way?
 
---=20
-New PGP key: 7ED9 F7D3 6B10 81D7 0EC5  5C09 D7DC C8E4 3187 7DF0
-Please resign, if you signed 9885188C or 8D0E27A4.
+For normal HCDs, the wakeup bits don't matter when the controller is in
+D0.  Therefore we can continue to set them as before during bus or port
+suspend.
 
-Currently moving *.schottelius.org to http://www.nico.schottelius.org/ ...
+But during controller suspend, if the controller isn't supposed to be
+remote-wakeup-enabled then we will need to clear the wakeup bits
+(and set them again during controller resume).  Will that work?
 
---TYecfFk8j8mZq+dy
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkvkHDAACgkQ19zI5DGHffBG3ACgxs4TWXnOm5FuSlw5/XfhXO6C
-bPoAoMITxdzEF6kHhskGU/cnc6FUWHhr
-=OwJe
------END PGP SIGNATURE-----
-
---TYecfFk8j8mZq+dy--
+Alan Stern
