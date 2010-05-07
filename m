@@ -1,7 +1,7 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Fri, 7 May 2010 13:25:20 +0100
-Message-ID: <20100507122520.GD21498__7592.76389512724$1273235182$gmane$org@rakim.wolfsonmicro.main>
+Date: Fri, 7 May 2010 05:37:21 -0700
+Message-ID: <z2wa55d774e1005070537k8e3cb6baxc74e998e930d254d__38235.1395012394$1273235979$gmane$org@mail.gmail.com>
 References: <20100505185225.GA4411@srcf.ucam.org>
 	<Pine.LNX.4.44L0.1005051511040.1885-100000@iolanthe.rowland.org>
 	<m2oa55d774e1005051356n3610d780ra42200c1785e02bd@mail.gmail.com>
@@ -11,12 +11,12 @@ References: <20100505185225.GA4411@srcf.ucam.org>
 	<w2kd6200be21005070357r9aad2896l355168a23bf85eae@mail.gmail.com>
 	<20100507112102.GC21498@rakim.wolfsonmicro.main>
 	<81818215-44A2-4B74-A43F-E2644C950F5C@mit.edu>
+	<20100507122520.GD21498@rakim.wolfsonmicro.main>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <81818215-44A2-4B74-A43F-E2644C950F5C@mit.edu>
+In-Reply-To: <20100507122520.GD21498@rakim.wolfsonmicro.main>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,39 +26,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Theodore Tso <tytso@MIT.EDU>
-Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Paul Walmsley <paul@pwsan.com>, Theodore Tso <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 07, 2010 at 07:29:47AM -0400, Theodore Tso wrote:
-
-> This sounds like it may be something unique to your board/product.  Or
-> am I missing something?
-
-I suspect you're missing something here - I'm approaching this as one of
-the maintainers of the embedded audio subsystem for the kernel.  I need
-to worry about any system running Linux which has an embedded style
-audio subsystem.  The problem might be unique to audio, but I can't say
-that for certain.
-
-> One of the challenges with PM in the embedded world is that everybody
-> seems to have slightly different assumptions, and hardware that doesn't
-> behave the same way.
-
-This isn't really a problem for audio - we've already got a subsystem
-which copes well with pretty much all systems and does runtime PM that's
-equivalent to suspending already, which is half the problem here.  If we
-had less generalisation this would probably not have come up.
-
-> More than once this discussion has wandered off into the weeds wrt to
-> whether this patch series is ready to be merged, since there are so many
-> drivers blocked on it....
-
-Once more, my main objective here has been to make sure that when this
-is merged we've got a joined up story about how people think this hangs
-together, which I think we have now.  As I say now that we have that
-understanding I don't see any reason to block merge.
-
-It's unfortunate that I only noticed that this was actually wakelocks
-very late in the day but I think I can get an implementation which
-handles paths that ignore suspends done quickly.
+T24gRnJpLCBNYXkgNywgMjAxMCBhdCA1OjI1IEFNLCBNYXJrIEJyb3duCjxicm9vbmllQG9wZW5z
+b3VyY2Uud29sZnNvbm1pY3JvLmNvbT4gd3JvdGU6Cj4gT24gRnJpLCBNYXkgMDcsIDIwMTAgYXQg
+MDc6Mjk6NDdBTSAtMDQwMCwgVGhlb2RvcmUgVHNvIHdyb3RlOgo+Cj4+IFRoaXMgc291bmRzIGxp
+a2UgaXQgbWF5IGJlIHNvbWV0aGluZyB1bmlxdWUgdG8geW91ciBib2FyZC9wcm9kdWN0LiDCoE9y
+Cj4+IGFtIEkgbWlzc2luZyBzb21ldGhpbmc/Cj4KPiBJIHN1c3BlY3QgeW91J3JlIG1pc3Npbmcg
+c29tZXRoaW5nIGhlcmUgLSBJJ20gYXBwcm9hY2hpbmcgdGhpcyBhcyBvbmUgb2YKPiB0aGUgbWFp
+bnRhaW5lcnMgb2YgdGhlIGVtYmVkZGVkIGF1ZGlvIHN1YnN5c3RlbSBmb3IgdGhlIGtlcm5lbC4g
+wqBJIG5lZWQKPiB0byB3b3JyeSBhYm91dCBhbnkgc3lzdGVtIHJ1bm5pbmcgTGludXggd2hpY2gg
+aGFzIGFuIGVtYmVkZGVkIHN0eWxlCj4gYXVkaW8gc3Vic3lzdGVtLiDCoFRoZSBwcm9ibGVtIG1p
+Z2h0IGJlIHVuaXF1ZSB0byBhdWRpbywgYnV0IEkgY2FuJ3Qgc2F5Cj4gdGhhdCBmb3IgY2VydGFp
+bi4KPgo+PiBPbmUgb2YgdGhlIGNoYWxsZW5nZXMgd2l0aCBQTSBpbiB0aGUgZW1iZWRkZWQgd29y
+bGQgaXMgdGhhdCBldmVyeWJvZHkKPj4gc2VlbXMgdG8gaGF2ZSBzbGlnaHRseSBkaWZmZXJlbnQg
+YXNzdW1wdGlvbnMsIGFuZCBoYXJkd2FyZSB0aGF0IGRvZXNuJ3QKPj4gYmVoYXZlIHRoZSBzYW1l
+IHdheS4KPgo+IFRoaXMgaXNuJ3QgcmVhbGx5IGEgcHJvYmxlbSBmb3IgYXVkaW8gLSB3ZSd2ZSBh
+bHJlYWR5IGdvdCBhIHN1YnN5c3RlbQo+IHdoaWNoIGNvcGVzIHdlbGwgd2l0aCBwcmV0dHkgbXVj
+aCBhbGwgc3lzdGVtcyBhbmQgZG9lcyBydW50aW1lIFBNIHRoYXQncwo+IGVxdWl2YWxlbnQgdG8g
+c3VzcGVuZGluZyBhbHJlYWR5LCB3aGljaCBpcyBoYWxmIHRoZSBwcm9ibGVtIGhlcmUuIMKgSWYg
+d2UKPiBoYWQgbGVzcyBnZW5lcmFsaXNhdGlvbiB0aGlzIHdvdWxkIHByb2JhYmx5IG5vdCBoYXZl
+IGNvbWUgdXAuCj4KPj4gTW9yZSB0aGFuIG9uY2UgdGhpcyBkaXNjdXNzaW9uIGhhcyB3YW5kZXJl
+ZCBvZmYgaW50byB0aGUgd2VlZHMgd3J0IHRvCj4+IHdoZXRoZXIgdGhpcyBwYXRjaCBzZXJpZXMg
+aXMgcmVhZHkgdG8gYmUgbWVyZ2VkLCBzaW5jZSB0aGVyZSBhcmUgc28gbWFueQo+PiBkcml2ZXJz
+IGJsb2NrZWQgb24gaXQuLi4uCj4KPiBPbmNlIG1vcmUsIG15IG1haW4gb2JqZWN0aXZlIGhlcmUg
+aGFzIGJlZW4gdG8gbWFrZSBzdXJlIHRoYXQgd2hlbiB0aGlzCj4gaXMgbWVyZ2VkIHdlJ3ZlIGdv
+dCBhIGpvaW5lZCB1cCBzdG9yeSBhYm91dCBob3cgcGVvcGxlIHRoaW5rIHRoaXMgaGFuZ3MKPiB0
+b2dldGhlciwgd2hpY2ggSSB0aGluayB3ZSBoYXZlIG5vdy4gwqBBcyBJIHNheSBub3cgdGhhdCB3
+ZSBoYXZlIHRoYXQKPiB1bmRlcnN0YW5kaW5nIEkgZG9uJ3Qgc2VlIGFueSByZWFzb24gdG8gYmxv
+Y2sgbWVyZ2UuCj4KPiBJdCdzIHVuZm9ydHVuYXRlIHRoYXQgSSBvbmx5IG5vdGljZWQgdGhhdCB0
+aGlzIHdhcyBhY3R1YWxseSB3YWtlbG9ja3MKPiB2ZXJ5IGxhdGUgaW4gdGhlIGRheSBidXQgSSB0
+aGluayBJIGNhbiBnZXQgYW4gaW1wbGVtZW50YXRpb24gd2hpY2gKPiBoYW5kbGVzIHBhdGhzIHRo
+YXQgaWdub3JlIHN1c3BlbmRzIGRvbmUgcXVpY2tseS4KCkRvIHlvdSBtZWFuIGFuIGltcGxlbWVu
+dGF0aW9uIG9mIGVtYmVkZGVkIGxpbnV4IGF1ZGlvIG9yIGFuCmltcGxlbWVudGF0aW9uIG9mIHN1
+c3BlbmQgYmxvY2tlcnMgIndoaWNoIGhhbmRsZXMgcGF0aHMgdGhhdCBpZ25vcmUKc3VzcGVuZHMi
+PyAgSSBhc3N1bWUgeW91IG1lYW4gdGhlIGZvcm1lciwgYnV0IG1heWJlIEkgbWlzdW5kZXJzdGFu
+ZC4KCldlJ3ZlIGRvbmUgYSBsb3Qgb2Ygd29yayBhcm91bmQgbXVsdGljb3JlIFNvQ3Mgd2hlcmUg
+dGhlIGJhc2ViYW5kCmdlbmVyYWxseSBvd25zIGEgbG90IG9mIHRoZSBhdWRpbyByb3V0aW5nIGFu
+ZCBzbyBvbiwgYnV0IHdlIGRvIGFzCmdlbmVyYWwgcG9saWN5IG5vdCBkaXNhYmxlIGF1ZGlvLCBj
+b2RlY3MsIGFuZCBhbXBzIHdoaWxlIHBsYXliYWNrIG9yCnJlY29yZCBpcyB1bmRlcndheS4gIEkg
+c3VwcG9zZSBmb3IgZW52aXJvbm1lbnRzIG1vcmUgbGlrZSBhIHBjIGxhcHRvcAp3aGVyZSB0aGUg
+ZXhwZWN0YXRpb24gaXMgdGhlIHdvcmxkIHN0b3BzIHdoZW4geW91IGNsb3NlIHRoZSBsaWQgYQpk
+aWZmZXJlbnQgcG9saWN5IHdvdWxkIGJlIHByZWZlcmFibGUuCgpXZSB0eXBpY2FsbHkgZmlyZSB1
+cCBjb2RlY3MgYW5kIGFtcHMgd2hlbiBwbGF5YmFjayBzdGFydHMgKGlmIHRoZXkKd2VyZSBvZmYp
+LCBhbmQgdXN1YWxseSBzZXQgYSB0aW1lciBmb3IgYSBjb3VwbGUgc2Vjb25kcyBhZnRlciBwbGF5
+YmFjawpzdG9wcyB0byBzcGluIHRoZW0gZG93biAoc2luY2UgeW91IHRlbmQgdG8gaGF2ZSB0byBk
+ZWxheSB3aGlsZSB0aGV5J3JlCnBvd2VyaW5nIHVwIHRvIGF2b2lkIHBvcHMsIGV0YywgYW5kIGlm
+IHRoZSBzeXN0ZW0ganVzdCBwbGF5ZWQgYSBzaG9ydApzb3VuZCB0aGVyZSdzIGEgcmVhc29uYWJs
+ZSBjaGFuY2UgaXQnbGwgZm9sbG93IHRoYXQgd2l0aCBhbm90aGVyKS4KCkFwb2xvZ2llcyBhYm91
+dCB0aGUgbmFtZSBjb25mdXNpb24gLS0gbGFzdCB5ZWFyIHdoZW4gd2UgZmlyc3Qgc3RhcnRlZApw
+dXNoaW5nIHRoZXNlIHBhdGNoZXMgb3V0IHRoZXJlIHdhcyBtdWNoIGRpc2xpa2UgZm9yIHRoZSBu
+YW1lIHdha2Vsb2NrCmFuZCBhZnRlciBhIGxvdCBvZiBiYWNrIGFuZCBmb3J0aCBzdXNwZW5kX2Js
+b2NrIGVuZGVkIHVwIGFzIHRoZSBsZWFzdApoYXRlZCBvZiB0aGUgc3VnZ2VzdGVkIGFsdGVybmF0
+aXZlcyAoSSBraW5kYSBsaWtlICJ3YWtlbG9jayIgYXMgYQpuYW1lLCBidXQgbWF5YmUgdGhhdCdz
+IGp1c3QgYnJhaW4gcm90IGFmdGVyIGRlYWxpbmcgd2l0aCAnZW0gZm9yIGZvdXIKeWVhcnMgbm93
+KS4KCkJyaWFuCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+CmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
+ZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGlu
+dXgtcG0=
