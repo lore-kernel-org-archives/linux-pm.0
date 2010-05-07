@@ -1,16 +1,13 @@
-From: Jean Delvare <khali@linux-fr.org>
-Subject: Re: platform_bus: Allow runtime PM by default
-Date: Fri, 7 May 2010 16:20:28 +0200
-Message-ID: <20100507162028.022a737c__19413.0052849234$1273242107$gmane$org@hyperion.delvare>
-References: <1269625370-17754-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<201004231840.20041.rjw@sisk.pl> <201004232026.37114.rjw@sisk.pl>
-	<201004232041.42064.rjw@sisk.pl>
-	<20100507132746.GA3425@sirena.org.uk>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Fri, 7 May 2010 10:22:20 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005071019170.1804-100000__17070.1704839759$1273242236$gmane$org@iolanthe.rowland.org>
+References: <y2id6200be21005061648m47d03875h6e9de89d0e965344@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100507132746.GA3425@sirena.org.uk>
+In-Reply-To: <y2id6200be21005061648m47d03875h6e9de89d0e965344@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,35 +17,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-pm@lists.linux-foundation.org, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Mark,
+On Thu, 6 May 2010, Arve Hj=F8nnev=E5g wrote:
 
-On Fri, 7 May 2010 14:27:46 +0100, Mark Brown wrote:
-> On Fri, Apr 23, 2010 at 08:41:41PM +0200, Rafael J. Wysocki wrote:
-> 
-> > Jean, the patch we're discussing depends on the
-> > "i2c: Fix bus-level power management callbacks" patch that's in your tree right
-> > now.  Would it be possible to move the i2c patch to my tree, or alternatively
-> > would it be acceptable for you to merge a core PM patch through your tree?
-> 
-> Jean, any updates on this?
+> On Thu, May 6, 2010 at 12:40 PM, Alan Stern <stern@rowland.harvard.edu> w=
+rote:
+> > On Thu, 6 May 2010, Rafael J. Wysocki wrote:
+> >
+> >> > Here's a completely new issue. =A0When using opportunistic suspends =
+on an
+> >> > SMP system, it could happen that the system gets a wakeup event and
+> >> > this routine starts running again before the event's IRQ handler has
+> >> > finished (or has enabled a suspend blocker). =A0The system would
+> >> > re-suspend too soon.
+> >>
+> >> This routine will be run from a freezable workqueue.
+> >
+> > But how do you know that processes won't get unfrozen until all the
+> > pending IRQs have been handled? =A0Imagine something like this:
+> >
+> > =A0 =A0 =A0 =A0CPU 0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 CPU 1
+> > =A0 =A0 =A0 =A0----- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 -----
+> > =A0 =A0 =A0 =A0Wake up non-boot CPUs
+> > =A0 =A0 =A0 =A0Resume devices =A0 =A0 =A0 =A0 =A0Invoke the IRQ handler
+> >
+> > =A0 =A0 =A0 =A0[ CPU 0 should wait here for the handler to finish,
+> > =A0 =A0 =A0 =A0 =A0but it doesn't ]
+> >
+> > =A0 =A0 =A0 =A0Defrost threads =A0 =A0 =A0 =A0 Handler running...
+> > =A0 =A0 =A0 =A0Workqueue routine runs
+> > =A0 =A0 =A0 =A0Start another suspend
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0Handler =
+enables a suspend blocker,
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0but it's=
+ too late
+> =
 
-I'm sorry, I never received Rafael's initial message. I just checked
-through my mailbox and it isn't there.
+> It is not optimal, but it is not too late. We check if any suspend
+> blockers block suspend after disabling non-boot cpus so as long as
+> this is done in a way that does not lose interrupts the resuspend
+> attempt will not succeed.
 
-The current status is that patch "i2c: Fix bus-level power management
-callbacks" is currently queued in my i2c tree at:
-ftp://ftp.kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-i2c/i2c-fix-bus-level-power-management-callbacks.patch
-and is scheduled to be merged in 2.6.35-rc1. If this isn't OK, we can
-change the plan.
+Is it possible for the resuspend to disable CPU 1 before the IRQ
+handler can enable its suspend blocker?  (Probably not -- but I don't
+know enough about how non-boot CPUs are enabled or disabled.)
 
-Merging a core PM patch through the i2c tree would be quite confusing,
-I think, and might draw even more odd dependencies. So I'd rather have
-the i2c patch moved to the PM staging tree (or whatever tree the
-dependent patch lives in.) Just let me know and I'll drop my copy.
-
--- 
-Jean Delvare
+Alan Stern
