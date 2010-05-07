@@ -1,15 +1,20 @@
-From: Tony Lindgren <tony@atomide.com>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Thu, 6 May 2010 19:20:24 -0700
-Message-ID: <20100507022024.GI30928__9892.80203725702$1273198891$gmane$org@atomide.com>
-References: <20100506183335.GE30928@atomide.com>
-	<Pine.LNX.4.44L0.1005061440370.1708-100000@iolanthe.rowland.org>
+Date: Thu, 6 May 2010 21:10:14 -0700
+Message-ID: <s2hd6200be21005062110p27491d9l16f93f1d6d713e36__13757.6981251643$1273205601$gmane$org@mail.gmail.com>
+References: <20100505202826.GB7450@linux.intel.com>
+	<Pine.LNX.4.44L0.1005051705200.1885-100000@iolanthe.rowland.org>
+	<z2ta55d774e1005051437heb584584q6afca0b4b254d5d0@mail.gmail.com>
+	<20100505234755.GI29604@atomide.com>
+	<20100506134015.GA23426@srcf.ucam.org>
+	<20100506170151.GA30928@atomide.com>
+	<20100506170956.GA28104@srcf.ucam.org>
+	<20100507034510.GA20935@thegnar.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1005061440370.1708-100000@iolanthe.rowland.org>
+In-Reply-To: <20100507034510.GA20935@thegnar.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,45 +24,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
+To: markgross@thegnar.org
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Brian Swetland <swetland@google.com>, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-* Alan Stern <stern@rowland.harvard.edu> [100506 11:42]:
-> On Thu, 6 May 2010, Tony Lindgren wrote:
-> 
-> > Well if your hardware runs off-while-idle or even just
-> > retention-while-idle, then the basic shell works just fine waking up
-> > every few seconds or so.
-> > 
-> > Then you could keep init/shell/suspend policy deamon running until
-> > it's time to suspend the whole device. To cut down runaway timers,
-> > you could already freeze the desktop/GUI/whatever earlier.
-> 
-> This comes down mostly to efficiency.  Although the suspend blocker
-> patch does the actual suspending in a workqueue thread, AFAIK there's
-> no reason it couldn't use a user thread instead.
-> 
-> The important difference lies in what happens when a suspend fails
-> because a driver is busy.  Without suspend blockers, the kernel has to
-> go through the whole procedure of freezing userspace and kernel threads
-> and then suspending a bunch of drivers before hitting the one that's
-> busy.  Then all that work has to be undone.  By contrast, with suspend
-> blockers the suspend attempt can fail right away with minimal overhead.
+On Thu, May 6, 2010 at 8:45 PM, mgross <markgross@thegnar.org> wrote:
+> On Thu, May 06, 2010 at 06:09:56PM +0100, Matthew Garrett wrote:
+>> On Thu, May 06, 2010 at 10:01:51AM -0700, Tony Lindgren wrote:
+>>
+>> > Or are you suspending constantly, tens of times per minute even if
+>> > there's no user activity?
+>>
+>> In this case you'd be repeatedly trying to suspend until the modem
+>> driver stopped blocking it. It's pretty much a waste.
+>
+>
+> lets not go off in the weeds for the wrong things now. =A0The answer to
+> the retry is at most one time. =A0The first time would be blocked, then
+> the suspend enable would need to re-enabled under user mode control that
+> would, buy that time, know it has to ack to the modem to stop rejecting
+> the suspend attempt.
+>
 
-But does that really matter if you're only few tens of times times per
-day or so? I don't understand why you would want to try to suspend except
-after some timeout of no user or network activity.
- 
-> There's also a question of reliability.  With suspends controlled by 
-> userspace there is a possibility of races, which could lead the system 
-> to suspend when it shouldn't.  With control in the kernel, these races 
-> can be eliminated.
+This is incorrect in the general case. User-space has no way of
+knowing which driver blocked suspend or when it will stop blocking
+suspend.
 
-I agree the suspend needs to happen without races. But I think the
-logic for when to suspend should be done in the userspace as it
-can be device or user specific.
+-- =
 
-Regards,
-
-Tony
+Arve Hj=F8nnev=E5g
