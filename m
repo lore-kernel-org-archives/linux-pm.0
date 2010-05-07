@@ -1,23 +1,15 @@
 From: Tony Lindgren <tony@atomide.com>
 Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Thu, 6 May 2010 19:05:41 -0700
-Message-ID: <20100507020541.GH30928__32866.7041067549$1273198012$gmane$org@atomide.com>
-References: <20100505234755.GI29604@atomide.com>
-	<20100506134015.GA23426@srcf.ucam.org>
-	<20100506170151.GA30928@atomide.com>
-	<20100506170956.GA28104@srcf.ucam.org>
-	<20100506171453.GC30928@atomide.com>
-	<20100506172201.GA28578@srcf.ucam.org>
-	<20100506173807.GD30928@atomide.com>
-	<20100506174331.GA29103@srcf.ucam.org>
-	<20100506183335.GE30928@atomide.com>
-	<20100506184418.GA30669@srcf.ucam.org>
+Date: Thu, 6 May 2010 19:20:24 -0700
+Message-ID: <20100507022024.GI30928__9892.80203725702$1273198891$gmane$org@atomide.com>
+References: <20100506183335.GE30928@atomide.com>
+	<Pine.LNX.4.44L0.1005061440370.1708-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20100506184418.GA30669@srcf.ucam.org>
+In-Reply-To: <Pine.LNX.4.44L0.1005061440370.1708-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,37 +19,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-* Matthew Garrett <mjg@redhat.com> [100506 11:39]:
-> On Thu, May 06, 2010 at 11:33:35AM -0700, Tony Lindgren wrote:
-> > * Matthew Garrett <mjg@redhat.com> [100506 10:39]:
-> > > On Thu, May 06, 2010 at 10:38:08AM -0700, Tony Lindgren wrote:
-> > > 
-> > > > If your userspace keeps polling and has runaway timers, then you
-> > > > could suspend it's parent process to idle the system?
-> > > 
-> > > If your userspace is suspended, how does it process the events that 
-> > > generated a system wakeup? If we had a good answer to that then suspend 
-> > > blockers would be much less necessary.
-> > 
+* Alan Stern <stern@rowland.harvard.edu> [100506 11:42]:
+> On Thu, 6 May 2010, Tony Lindgren wrote:
+> 
 > > Well if your hardware runs off-while-idle or even just
 > > retention-while-idle, then the basic shell works just fine waking up
 > > every few seconds or so.
+> > 
+> > Then you could keep init/shell/suspend policy deamon running until
+> > it's time to suspend the whole device. To cut down runaway timers,
+> > you could already freeze the desktop/GUI/whatever earlier.
 > 
-> And the untrusted userspace code that's waiting for a network packet? 
-> Adding a few seconds of latency isn't an option here.
+> This comes down mostly to efficiency.  Although the suspend blocker
+> patch does the actual suspending in a workqueue thread, AFAIK there's
+> no reason it couldn't use a user thread instead.
+> 
+> The important difference lies in what happens when a suspend fails
+> because a driver is busy.  Without suspend blockers, the kernel has to
+> go through the whole procedure of freezing userspace and kernel threads
+> and then suspending a bunch of drivers before hitting the one that's
+> busy.  Then all that work has to be undone.  By contrast, with suspend
+> blockers the suspend attempt can fail right away with minimal overhead.
 
-Hmm well hitting retention and wake you can basically do between
-jiffies. Hitting off mode in idle has way longer latencies,
-but still in few hundred milliseconds or so, not seconds.
+But does that really matter if you're only few tens of times times per
+day or so? I don't understand why you would want to try to suspend except
+after some timeout of no user or network activity.
+ 
+> There's also a question of reliability.  With suspends controlled by 
+> userspace there is a possibility of races, which could lead the system 
+> to suspend when it shouldn't.  With control in the kernel, these races 
+> can be eliminated.
 
-And cpuidle pretty much takes care of hitting the desired C state
-for you. This setup is totally working on Nokia N900 for example,
-it's hitting off modes in idle and running all the time, it never
-suspends.
+I agree the suspend needs to happen without races. But I think the
+logic for when to suspend should be done in the userspace as it
+can be device or user specific.
 
 Regards,
 
