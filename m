@@ -1,74 +1,154 @@
-From: "Du, Alek" <alek.du@intel.com>
-Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
- (WKOC_E) and disconnect (WKDISC_E)
-Date: Sat, 8 May 2010 10:00:59 +0800
-Message-ID: <1865303E0DED764181A9D882DEF65FB61A82A6DF26__2981.14030524648$1273284148$gmane$org@shsmsx502.ccr.corp.intel.com>
-References: <20100507093200.28ecd63c@dxy2>
-	<Pine.LNX.4.44L0.1005071106570.1804-100000@iolanthe.rowland.org>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.33 & 2.6.34-rc6: Huge number of Load Balancing tick wakeups.
+Date: Sat, 08 May 2010 15:16:16 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1005081511550.4103@localhost.localdomain>
+References: <4BE4F5DF.70903@crca.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005071106570.1804-100000@iolanthe.rowland.org>
-Content-Language: en-US
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Ondrej Zary <linux@rainbow-software.org>, Kernel development list <linux-kernel@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <4BE4F5DF.70903@crca.org.au>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux Power Management List <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
->On Fri, 7 May 2010, Du, Alek wrote:
->
->> Alan,
->>
->> As I tested, with the second patch, after entering phy low power mode, the
->port cannot detect any USB devices that plugged in.
->
->Ooh, that's not good.  It almost violates the EHCI spec (see the last
->line on p.60 in table 4.4).
+(linux-pm cc'd)
 
-Ok, that's the new behavior that PHCD brings to us, It shouldn't a big deal if we
-take care of the wakeup bits before PHCD, right? The spec may be modified if
-PHCD become a normal feature to EHCI, just like why we have EHCI1.1 addendum
-spec. (We have some ehci1.1 addendum patches that will submit soon, but the
-PHCD is not in EHCI1.1 addendum currently)
+> I'm seeing a huge number of load balancing tick wakeups, with both 2.6.33 and
+> current git (f1c448e0a9e99c76f4ece368714fb35a40a8daba).
+> 
+> This has been reported as a bug in some distros:
+> 
+> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=521944
+> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/524281
 
->
->> I also confirm that after set PHCD flag, any write to PORTSC is illegal. (I have
->another patch will send out soon named "Clear PHCD before resuming",
->> but the patch is not related with this one)
->
->I'm afraid we are going to have to modify the wakeup bits in PORTSC
->after PHCD is set.  Can we clear PHCD, modify PORTSC, and then set PHCD
->again?
+Unclear if your sighting is the same as those two.
 
-This is doable. It is confirmed by the HW designer, before accessing PORTSC, just
-Clear PHCD. But we still need additional 5ms for the second time PHCD setting to
-ensure it enter phy low power mode.
+What do you see if vmware is not present?
+What do you see if you boot single user mode,
+how about with maxcpusx=1?
 
->
->> So it seems wakeup bits must set before set PHCD. So we may revise the
->flowchart a little bit, for example, if the HCD has hostpc,
->> then set the wakeup bits like before, if the HCD is the normal one, then go
->your new way?
->
->For normal HCDs, the wakeup bits don't matter when the controller is in
->D0.  Therefore we can continue to set them as before during bus or port
->suspend.
->
->But during controller suspend, if the controller isn't supposed to be
->remote-wakeup-enabled then we will need to clear the wakeup bits
->(and set them again during controller resume).  Will that work?
+cheers,
+Len Brown, Intel Open Source Technology Center
 
-That should be ok. For Moorestown, the controller should always enable remote
-wakeup, so that won't impact us.
+> PowerTOP 1.12   (C) 2007, 2008 Intel Corporation
+> 
+> Collecting data for 15 seconds
+> 
+> 
+> Your CPU supports the following C-states : C1 C2 C3 C4
+> Your BIOS reports the following C-states : C1 C2 C4
+> Cn                Avg residency
+> C0 (cpu running)        (40.8%)
+> polling           0.7ms ( 0.1%)
+> C1 mwait          0.0ms ( 0.0%)
+> C2 mwait          0.1ms ( 3.2%)
+> C4 mwait          0.4ms (56.0%)
+> P-states (frequencies)
+> Turbo Mode     7.3%
+>   2.21 Ghz     0.7%
+>   1.60 Ghz     0.8%
+>   1200 Mhz     0.9%
+>    800 Mhz    90.3%
+> Wakeups-from-idle per second : 1727.3   interval: 15.0s
+> no ACPI power usage estimate available
+> Top causes for wakeups:
+>   53.0% (1983.1)   [kernel scheduler] Load balancing tick
+>   27.7% (1035.1)   vmware-vmx
+>    8.8% (330.6)   [extra timer interrupt]
+>    2.3% ( 85.5)   [TLB shootdowns] <kernel IPI>
+>    1.6% ( 61.3)   totem
+>    1.2% ( 45.9)   [Rescheduling interrupts] <kernel IPI>
+>    1.1% ( 41.1)   [iwl3945] <interrupt>
+>    1.0% ( 36.2)   firefox-bin
+>    0.4% ( 16.2)   [ata_piix] <interrupt>
+>    0.3% ( 11.6)   vmware
+>    0.3% ( 11.3)   pulseaudio
+>    0.3% ( 11.1)   vmware-unity-he
+>    0.3% ( 10.7)   skype
+>    0.2% (  8.0)   [kernel core] usb_hcd_poll_rh_status (rh_timer_func)
+>    0.1% (  5.4)   [hda_intel] <interrupt>
+>    0.1% (  5.3)   gnome-do
+>    0.1% (  5.1)   compiz
+>    0.1% (  4.1)   python
+>    0.1% (  4.0)   avant-window-na
+>    0.1% (  2.3)   liferea
+>    0.1% (  2.1)   vmware-tray
+>    0.1% (  2.1)   thunderbird-bin
+>    0.1% (  2.0)   mysqld
+>    0.1% (  2.0)   emerald
+>    0.1% (  1.9)   gnome-terminal
+>    0.0% (  1.3)   [kernel core] sk_reset_timer (tcp_delack_timer)
+>    0.0% (  1.3)   [ahci] <interrupt>
+>    0.0% (  1.2)   cc1
+>    0.0% (  1.0)   [nvidia] <interrupt>
+>    0.0% (  1.0)   vmware-usbarbit
+>    0.0% (  1.0)   vmnet-natd
+>    0.0% (  1.0)   gvfs-afc-volume
+>    0.0% (  1.0)   [kernel core] enqueue_task_rt (sched_rt_period_timer)
+>    0.0% (  1.0)   [kernel module] HostIF_InitUptime (HostIFUptimeResyncMono)
+>    0.0% (  0.8)   cli
+>    0.0% (  0.5)   events/1
+>    0.0% (  0.5)   events/0
+>    0.0% (  1.0)   vmware-usbarbit
+>    0.0% (  1.0)   vmnet-natd
+>    0.0% (  1.0)   gvfs-afc-volume
+>    0.0% (  1.0)   [kernel core] enqueue_task_rt (sched_rt_period_timer)
+>    0.0% (  1.0)   [kernel module] HostIF_InitUptime (HostIFUptimeResyncMono)
+>    0.0% (  0.8)   cli
+>    0.0% (  0.5)   events/1
+>    0.0% (  0.5)   events/0
+>    0.0% (  0.5)   hald-addon-stor
+>    0.0% (  0.5)   udisks-daemon
+>    0.0% (  0.3)   tomboy
+>    0.0% (  0.3)   awn-applet
+>    0.0% (  0.2)   rtkit-daemon
+>    0.0% (  0.2)   Thunar
+>    0.0% (  0.2)   padevchooser
+>    0.0% (  0.2)   xfdesktop
+>    0.0% (  0.1)   gnome-power-man
+>    0.0% (  0.1)   ssh-agent
+>    0.0% (  0.1)   mono
+>    0.0% (  0.1)   NetworkManager
+>    0.0% (  0.1)   hald
 
->
->Alan Stern
+
+> An audio device is active 100.0% of the time:
+> hwC0D2 SigmaTel STAC9228
+> 
+> A USB device is active  0.0% of the time:
+> USB device  2-2 : Biometric Coprocessor (STMicroelectronics)
+> 
+> Suggestion: Enable SATA ALPM link power management via:
+>   echo min_power > /sys/class/scsi_host/host0/link_power_management_policy
+> or press the S key.
+> 
+> Suggestion: Enable wireless power saving mode by executing the following
+> command:
+>   iwconfig wlan0 power timeout 500ms
+> This will sacrifice network performance slightly to save power.
+> 
+> Suggestion: Enable the CONFIG_USB_SUSPEND kernel configuration option.
+> This option will automatically disable UHCI USB when not in use, and may
+> save approximately 1 Watt of power.
+> 
+> Recent USB suspend statistics
+> Active  Device name
+>   0.0%  USB device  5-2 : Generic RNDIS (HTC)
+>   0.0%  USB device  2-2 : Biometric Coprocessor (STMicroelectronics)
+>   0.0%  USB device  1-1 : Laptop Integrated Webcam (OmniVision Technologies,
+> Inc. -2640-07.07.20.3)
+>   0.0%  USB device usb7 : UHCI Host Controller (Linux 2.6.34-rc6 uhci_hcd)
+>   0.0%  USB device usb6 : UHCI Host Controller (Linux 2.6.34-rc6 uhci_hcd)
+>   0.0%  USB device usb5 : UHCI Host Controller (Linux 2.6.34-rc6 uhci_hcd)
+>   0.0%  USB device usb4 : EHCI Host Controller (Linux 2.6.34-rc6 ehci_hcd)
+>   0.0%  USB device usb3 : UHCI Host Controller (Linux 2.6.34-rc6 uhci_hcd)
+>   0.0%  USB device usb2 : UHCI Host Controller (Linux 2.6.34-rc6 uhci_hcd)
+>   0.0%  USB device usb1 : EHCI Host Controller (Linux 2.6.34-rc6 ehci_hcd)
+> 
+> Recent audio activity statistics
+> Active  Device name
+> 100.0%  hwC0D2 SigmaTel STAC9228
+> 
+> Recent SATA AHCI link activity statistics
+> Active  Partial Slumber Device name
