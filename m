@@ -1,89 +1,109 @@
 From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Proposal for a new algorithm for reading & writing a
- hibernation image.
-Date: Mon, 10 May 2010 09:38:02 +1000
-Message-ID: <4BE7475A.8030901__35793.3602565483$1273448346$gmane$org@crca.org.au>
+Subject: Re: 2.6.33 & 2.6.34-rc6: Huge number of Load Balancing tick wakeups.
+Date: Mon, 10 May 2010 09:48:18 +1000
+Message-ID: <4BE749C2.50300@crca.org.au>
+References: <4BE4F5DF.70903@crca.org.au> <alpine.LFD.2.00.1005081511550.4103@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.1005081511550.4103@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux Power Management List <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi all.
+Hi again.
 
-Some discussions with Rafael a while ago (can't find the original 
-message now, sorry) got me thinking about whether there might be a 
-better way of writing a complete image of memory, particularly in the 
-context of KMS breaking existing TuxOnIce algorithms. I finally got 
-around to hammering out the algorithm last night, and thought I'd put it 
-out there for others to comment on, particularly since I'm no expert on 
-fault handling - it may be that what I'm thinking of is impossible on 
-the hardware we support.
+On 09/05/10 05:16, Len Brown wrote:
+> What do you see if vmware is not present?
+> What do you see if you boot single user mode,
+> how about with maxcpusx=1?
 
-The algorithm I'm thinking of trying to implement goes as follows:
+Repeated the tests, just booting into X (xfce) - except for the init S 
+test. No programs were started and wifi was turned off.
 
-When saving the image
-=====================
+1) No vmware (etc)
 
-1. Modify driver suspend and resume routines so that the freeing of 
-memory used for the storage of state is separated from restoring the 
-resume methods. This will allow us to get the drivers to save their 
-state prior to writing the image, without needing the memory allocated 
-for this purpose to be atomically copied.
-2. Prior to writing any of the image, also set up new 4k page tables 
-such that an attempt to make a change to any of the pages we're about to 
-write to disk will result in a page fault, giving us an opportunity to 
-flag the page as needing an atomic copy later. Once this is done, write 
-protection for the page can be disabled and the write that caused the 
-fault allowed to proceed.
-3. Write the entire contents of memory to disk.
-4. Disable secondary CPUs (no need to do the driver suspend/resume 
-again) and atomically copy pages that faulted while writing the image.
-5. Write atomically copied data to disk, giving a complete image on disk 
-of memory at the time of the atomic copy.
+Cn                Avg residency
+C0 (cpu running)        ( 3.7%)
+polling           0.0ms ( 0.0%)
+C1 mwait          0.0ms ( 0.0%)
+C2 mwait          0.1ms ( 0.3%)
+C4 mwait          5.4ms (96.0%)
+P-states (frequencies)
+Turbo Mode     1.4%
+   2.21 Ghz     0.0%
+   1.60 Ghz     0.0%
+   1200 Mhz     0.0%
+    800 Mhz    98.6%
+Wakeups-from-idle per second : 202.7    interval: 15.0s
+no ACPI power usage estimate available
+Top causes for wakeups:
+   56.1% (128.5)   [kernel scheduler] Load balancing tick
+   13.1% ( 30.1)   [extra timer interrupt]
+    6.9% ( 15.9)   [ata_piix] <interrupt>
 
-When loading the image
-======================
-1. Locate and allocate pages that can have data directly loaded (ie are 
-free now and used in the saved image). These will be loaded without an 
-'atomic restore'.
-2. For other pages:
-    As each page is loaded:
-    - Write protect existing data.
-    - If contents are the same as what is being loaded
-      Discard loaded version
-      If contents change after being write protected,
-      1. make a copy of unmodified version to later atomically copy back.
-      2. remove write protection
-    - If contents differ
-      1. set up atomic restore later
-      2. remove write protection
-3. After loading memory and determining what needs to be atomically 
-restored:
-- Do drivers suspend, atomic restore as is done at the moment
+2) Above + maxcpus=1
 
-The main difficulties I see with the above are - apart from not being 
-sure that I can achieve the above with fault handling - are:
+Cn                Avg residency
+C0 (cpu running)        ( 4.0%)
+polling           0.0ms ( 0.0%)
+C1 mwait          0.0ms ( 0.0%)
+C2 mwait          0.4ms ( 0.2%)
+C4 mwait         16.0ms (95.9%)
+P-states (frequencies)
+Turbo Mode     6.0%
+   2.21 Ghz     0.0%
+   1.60 Ghz     0.0%
+   1200 Mhz     0.0%
+    800 Mhz    94.0%
+Wakeups-from-idle per second : 64.5     interval: 15.0s
+no ACPI power usage estimate available
+Top causes for wakeups:
+   39.6% ( 46.3)   [kernel scheduler] Load balancing tick
+   12.3% ( 14.3)   [ata_piix] <interrupt>
 
-1. Memory requirements for the atomic copy wouldn't be known until the 
-point where we get to the atomic copy. I guess, though, that with most 
-things frozen, we'd expect the number to be reasonably consistent and small.
-2. We also need extra memory for the driver suspend at resume time. That 
-said, since it's not otherwise needed, it could be the same memory 
-that's reserved for doing I/O and for atomically copied data when 
-writing the image.
+(No idea why you need a load balancing tick with one core!)
 
-Are there other issues people can see that I might have missed?
+3) Init S, without maxcpus=1
+
+Cn                Avg residency
+C0 (cpu running)        ( 0.0%)
+polling           0.0ms ( 0.0%)
+C1 mwait          0.0ms ( 0.0%)
+C2 mwait          0.1ms ( 0.0%)
+C4 mwait         48.9ms (100.0%)
+P-states (frequencies)
+Turbo Mode     0.0%
+   2.21 Ghz     0.0%
+   1.60 Ghz     0.0%
+   1200 Mhz     0.0%
+    800 Mhz   100.0%
+Wakeups-from-idle per second : 21.4     interval: 15.0s
+no ACPI power usage estimate available
+Top causes for wakeups:
+   33.5% ( 10.3)   [kernel core] hrtimer_start (tick_sched_timer)
+   16.1% (  4.9)   [kernel core] cursor_timer_handler (cursor_timer_handler)
+   15.9% (  4.9)   [kernel scheduler] Load balancing tick
+   12.8% (  3.9)   [kernel core] usb_hcd_poll_rh_status (rh_timer_func)
+    9.3% (  2.9)   [ahci] <interrupt>
+
+I also tried the patch Dominik provided, and it didn't seem to make a 
+difference:
+
+P-states (frequencies)
+Turbo Mode     3.7%
+   2.21 Ghz     0.0%
+   1.60 Ghz     0.0%
+   1200 Mhz     0.6%
+    800 Mhz    95.7%
+Wakeups-from-idle per second : 236.7    interval: 15.0s
+no ACPI power usage estimate available
+Top causes for wakeups:
+   55.4% (119.7)   [kernel scheduler] Load balancing tick
+    9.7% ( 20.9)   skype
+    7.7% ( 16.5)   [ata_piix] <interrupt>
 
 Regards,
 
