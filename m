@@ -1,16 +1,10 @@
-From: "Du, Alek" <alek.du@intel.com>
-Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
- (WKOC_E) and disconnect (WKDISC_E)
-Date: Mon, 10 May 2010 10:25:57 +0800
-Message-ID: <20100510102557.0c30f15d__5828.37601327828$1273458577$gmane$org@dxy2>
-References: <20100507093200.28ecd63c@dxy2>
-	<Pine.LNX.4.44L0.1005071106570.1804-100000@iolanthe.rowland.org>
-	<6C44CD31806DCD4BB88546DAB7AFC9A201EB5A39FA@shsmsx502.ccr.corp.intel.com>
+From: Deepak Sikri <deepak.sikri79@gmail.com>
+Subject: Power Domain Framework
+Date: Mon, 10 May 2010 19:16:06 +0530
+Message-ID: <AANLkTinZU1D1rMOBQDi47tRhXrOXwduQIdni7bCXdce0@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0134264022903217613=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <6C44CD31806DCD4BB88546DAB7AFC9A201EB5A39FA@shsmsx502.ccr.corp.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,88 +12,111 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Ondrej Zary <linux@rainbow-software.org>, Kernel development list <linux-kernel@vger.kernel.org>, "Du,
-	Alek" <alek.du@intel.com>
+To: linux-pm@lists.linux-foundation.org
+Cc: viresh.kumar@st.com, rajeev-dlh.kumar@st.com, armando.visconti@st.com, linux-kernel@vger.kernel.org, vipin.kumar@st.com, shiraz.hashim@st.com
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 8 May 2010 10:00:59 +0800
-"Du, Alek" <alek.du@intel.com> wrote:
+--===============0134264022903217613==
+Content-Type: multipart/alternative; boundary=00c09f9c98017cb1d104863da10b
 
-> >On Fri, 7 May 2010, Du, Alek wrote:
-> >
-> >> Alan,
-> >>
-> >> As I tested, with the second patch, after entering phy low power mode, the
-> >port cannot detect any USB devices that plugged in.
-> >
-> >Ooh, that's not good.  It almost violates the EHCI spec (see the last
-> >line on p.60 in table 4.4).
-> 
+--00c09f9c98017cb1d104863da10b
+Content-Type: text/plain; charset=ISO-8859-1
 
-Alan,
+Hi,
 
-The following patch (based on your previous two patches) works for me, could you
-help to review and test on your machine? Basically, this will only affect those
-"has_hostpc" HCDs.
+In our System on chip we have several power domains. As such there is no
+generic framework for the Power Domains in linux , and I find huge potential
+in the software to control the domains and exploit the power management
+capabilities.
 
-Thanks,
-Alek
+There is one very small model that I could think of, something on the lines
+of clock framework.
+
+1. Essentially the model would be based on defining the attributes of a
+power domain ( name, current state: on/off, usage count, wake up sources,
+list head etc) and the operations to be performed on a typical power domain
+( Current State Check, Target State to be moved into etc) maintained in
+software data structures, that would be mapped onto hardware registers in
+the architecture specific code.
+2. Maintain a list of the different power domains present.
+3. The devices in a specific power domain, as per the requirements would get
+the power domain handler ( which would increment the usage count of the
+power domain) and would release it when not in need.
+4. Typically a usage count of zero for any power domain -> switch off the
+power domain removing static power dissipation.
+5. The same could be mapped on to the PM framework, where the devices would
+release their power handlers at the time of suspend and reaquire at time of
+resume operations.
+6. The model could further be build upon to check any dependency in the
+power domains, eg DDR in on power domain should have the power domain on, if
+any of the devices in other power domain is trying to access DDR. This could
+be more architecture specific.
+7. The advantages of the framework could be leveraged in the CPU idle time,
+by switching off the Power domains with zero usage counts.
+
+The model could be build upon, but seek lot more inputs if there exists any
+provision on which we can build upon OR develop a generic power domain
+framework.
+
+Regards
+Deepak
+
+--00c09f9c98017cb1d104863da10b
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<div>Hi,</div>
+<div>=A0</div>
+<div>In our System on chip we have several power domains. As such there is =
+no generic framework for the Power Domains in linux=A0, and I find huge pot=
+ential in the software to control the domains and exploit the power managem=
+ent capabilities.</div>
+
+<div>=A0</div>
+<div>There is one very small model that I could think of, something on the =
+lines of clock framework.</div>
+<div>=A0</div>
+<div>1. Essentially the model would be based on defining the attributes of =
+a power domain ( name, current state: on/off, usage count, wake up=A0source=
+s, list head=A0etc) and the operations to be performed on a typical power d=
+omain ( Current State Check, Target State to be moved into etc) maintained =
+in software data structures, that would be mapped onto hardware registers i=
+n the architecture specific code.</div>
+
+<div>2. Maintain a list of the different power domains present.</div>
+<div>3. The devices in a specific power domain, as per the requirements wou=
+ld=A0get the power domain handler ( which would increment the usage count o=
+f the power domain) and would release it when not in need.</div>
+<div>4. Typically a usage count of zero for any power domain -&gt; switch o=
+ff the power domain removing static power dissipation.</div>
+<div>5. The same could be mapped on to the PM framework, where the devices =
+would release their power handlers at the time of suspend and reaquire at t=
+ime of resume operations.</div>
+<div>6. The model could further be build upon to check any dependency in th=
+e power domains, eg DDR in on power domain should have the power domain on,=
+ if any of the devices in other power domain is trying to access DDR. This =
+could be more architecture specific.</div>
+
+<div>7. The advantages of the framework could be leveraged in the CPU idle =
+time, by switching off the Power domains with zero usage counts.</div>
+<div>=A0</div>
+<div>The model could be build upon, but seek lot more inputs if there exist=
+s any provision on which we can build upon OR develop a generic power domai=
+n framework.</div>
+<div>=A0</div>
+<div>Regards</div>
+<div>Deepak</div>
+
+--00c09f9c98017cb1d104863da10b--
+
+--===============0134264022903217613==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 
-diff --git a/drivers/usb/host/ehci-hub.c b/drivers/usb/host/ehci-hub.c
-index 004379b..a2d2fbe 100644
---- a/drivers/usb/host/ehci-hub.c
-+++ b/drivers/usb/host/ehci-hub.c
-@@ -116,6 +116,17 @@ static void ehci_set_wakeup_flags(struct ehci_hcd *ehci)
-                u32 __iomem     *reg = &ehci->regs->port_status[port];
-                u32             t1 = ehci_readl(ehci, reg) & ~PORT_RWC_BITS;
-                u32             t2 = t1 & ~PORT_WAKE_BITS;
-+               u32 __iomem     *hostpc_reg;
-+               u32             temp;
-+
-+               /* clear phy low power mode first*/
-+               if (ehci->has_hostpc) {
-+                       hostpc_reg = (u32 __iomem *)((u8 *)ehci->regs
-+                                       + HOSTPC0 + 4 * (port & 0xff));
-+                       temp = ehci_readl(ehci, hostpc_reg);
-+                       ehci_writel(ehci, temp & ~HOSTPC_PHCD, hostpc_reg);
-+                       mdelay(5);
-+               }
- 
-                /* only enable appropriate wake bits, otherwise the
-                 * hardware can not go phy low power mode. If a race
-@@ -131,6 +142,16 @@ static void ehci_set_wakeup_flags(struct ehci_hcd *ehci)
-                                        port + 1, t1, t2);
-                }
-                ehci_writel(ehci, t2, reg);
-+
-+               /* enable phy low power mode again */
-+               if (ehci->has_hostpc) {
-+                       temp = ehci_readl(ehci, hostpc_reg);
-+                       ehci_writel(ehci, temp | HOSTPC_PHCD, hostpc_reg);
-+                       temp = ehci_readl(ehci, hostpc_reg);
-+                       ehci_dbg(ehci, "Port%d phy low pwr mode %s\n",
-+                                       port, (temp & HOSTPC_PHCD) ?
-+                                       "succeeded" : "failed");
-+               }
-        }
- }
- 
-@@ -217,6 +238,14 @@ static int ehci_bus_suspend (struct usb_hcd *hcd)
-                                u32 __iomem     *hostpc_reg;
-                                u32             t3;
- 
-+                               if (t1 & PORT_CONNECT) {
-+                                       t2 |= PORT_WKOC_E | PORT_WKDISC_E;
-+                                       t2 &= ~PORT_WKCONN_E;
-+                               } else {
-+                                       t2 |= PORT_WKOC_E | PORT_WKCONN_E;
-+                                       t2 &= ~PORT_WKDISC_E;
-+                               }
-+                               ehci_writel(ehci, t2, reg);
-                                hostpc_reg = (u32 __iomem *)((u8 *)ehci->regs
-                                        + HOSTPC0 + 4 * (port & 0xff));
-                                spin_unlock_irq(&ehci->lock);
+--===============0134264022903217613==--
