@@ -1,13 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: libata, hddtemp + s2ram is racy
-Date: Mon, 10 May 2010 10:04:20 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005100958430.1626-100000__16628.0486774214$1273500309$gmane$org@iolanthe.rowland.org>
-References: <20100507230732.5dd15e93@neptune.home>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: Power Domain Framework
+Date: Mon, 10 May 2010 15:05:28 +0100
+Message-ID: <20100510140527.GG5199__47631.4000938602$1273500379$gmane$org@sirena.org.uk>
+References: <AANLkTinZU1D1rMOBQDi47tRhXrOXwduQIdni7bCXdce0@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100507230732.5dd15e93@neptune.home>
+Content-Disposition: inline
+In-Reply-To: <AANLkTinZU1D1rMOBQDi47tRhXrOXwduQIdni7bCXdce0@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,56 +18,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Cc: linux-ide@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Deepak Sikri <deepak.sikri79@gmail.com>
+Cc: viresh.kumar@st.com, rajeev-dlh.kumar@st.com, armando.visconti@st.com, linux-kernel@vger.kernel.org, vipin.kumar@st.com, shiraz.hashim@st.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 7 May 2010, Bruno [UTF-8] Pr=C3=A9mont wrote:
+On Mon, May 10, 2010 at 07:16:06PM +0530, Deepak Sikri wrote:
 
-> Hi,
-> =
+> In our System on chip we have several power domains. As such there is no
+> generic framework for the Power Domains in linux , and I find huge potential
+> in the software to control the domains and exploit the power management
+> capabilities.
 
-> On a SMP system I've hit a race condition between suspend and hddtemp
-> checking disk's temperature.
-> =
+> There is one very small model that I could think of, something on the lines
+> of clock framework.
 
-> System details:
-> - Dual-core AMD Turion CPU
-> - 00:12.0 SATA controller [0106]: ATI Technologies Inc SB600 Non-Raid-5 S=
-ATA [1002:4380]
-> - hddtemp-0.3_beta15 (Gentoo package app-admin/hddtemp-0.3_beta15-r3)
-> - Linus' tree shortly after v2.6.34-rc6, at commit
->   be1066bbcd443a65df312fdecea7e4959adedb45 with some drm updates on
->   top of it.
-> =
-
-> =
-
-> It looked like hddtemp had sent the SMART request to disk right before
-> suspend and during suspend process ata2 did complain without aborting
-> suspend (see below).
-> After resume access to that disk was dead-locked (any further
-> attempt to suspend timed-out freezing hddtemp and any access attempt
-> towards that disk did put userspace tasks in uninterruptible state and
-> caused soft-raid to mark the disk failed).
-> =
-
-> Is suspend not waiting on SG_IO ioctls to complete (at ata host level)?
-
-If you use the libata driver then the ATA I/O is handled by the SCSI =
-
-midlayer.  The SCSI midlayer waits for the device's command queue to =
-
-drain completely before initiating a suspend.
-
-Furthermore, the hddtemp process has to get frozen before the suspend =
-
-can begin, and I believe a process cannot be frozen while it is waiting =
-
-for an SG_IO to complete.
-
-At any rate, you should try posting this bug report on the linux-scsi =
-
-mailing list.
-
-Alan Stern
+Might be worth looking at what the OMAP and SH Mobile CPUs are doing
+here, they have existing handling for power domains.  Off-SoC the
+regulator API should already cope with a lot of this stuff.
