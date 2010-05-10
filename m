@@ -1,110 +1,105 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: 2.6.33 & 2.6.34-rc6: Huge number of Load Balancing tick wakeups.
-Date: Mon, 10 May 2010 09:48:18 +1000
-Message-ID: <4BE749C2.50300@crca.org.au>
-References: <4BE4F5DF.70903@crca.org.au> <alpine.LFD.2.00.1005081511550.4103@localhost.localdomain>
+From: "Du, Alek" <alek.du@intel.com>
+Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
+ (WKOC_E) and disconnect (WKDISC_E)
+Date: Mon, 10 May 2010 10:25:57 +0800
+Message-ID: <20100510102557.0c30f15d__5828.37601327828$1273458577$gmane$org@dxy2>
+References: <20100507093200.28ecd63c@dxy2>
+	<Pine.LNX.4.44L0.1005071106570.1804-100000@iolanthe.rowland.org>
+	<6C44CD31806DCD4BB88546DAB7AFC9A201EB5A39FA@shsmsx502.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.1005081511550.4103@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux Power Management List <linux-pm@lists.osdl.org>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <6C44CD31806DCD4BB88546DAB7AFC9A201EB5A39FA@shsmsx502.ccr.corp.intel.com>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Ondrej Zary <linux@rainbow-software.org>, Kernel development list <linux-kernel@vger.kernel.org>, "Du,
+	Alek" <alek.du@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi again.
+On Sat, 8 May 2010 10:00:59 +0800
+"Du, Alek" <alek.du@intel.com> wrote:
 
-On 09/05/10 05:16, Len Brown wrote:
-> What do you see if vmware is not present?
-> What do you see if you boot single user mode,
-> how about with maxcpusx=1?
+> >On Fri, 7 May 2010, Du, Alek wrote:
+> >
+> >> Alan,
+> >>
+> >> As I tested, with the second patch, after entering phy low power mode, the
+> >port cannot detect any USB devices that plugged in.
+> >
+> >Ooh, that's not good.  It almost violates the EHCI spec (see the last
+> >line on p.60 in table 4.4).
+> 
 
-Repeated the tests, just booting into X (xfce) - except for the init S 
-test. No programs were started and wifi was turned off.
+Alan,
 
-1) No vmware (etc)
+The following patch (based on your previous two patches) works for me, could you
+help to review and test on your machine? Basically, this will only affect those
+"has_hostpc" HCDs.
 
-Cn                Avg residency
-C0 (cpu running)        ( 3.7%)
-polling           0.0ms ( 0.0%)
-C1 mwait          0.0ms ( 0.0%)
-C2 mwait          0.1ms ( 0.3%)
-C4 mwait          5.4ms (96.0%)
-P-states (frequencies)
-Turbo Mode     1.4%
-   2.21 Ghz     0.0%
-   1.60 Ghz     0.0%
-   1200 Mhz     0.0%
-    800 Mhz    98.6%
-Wakeups-from-idle per second : 202.7    interval: 15.0s
-no ACPI power usage estimate available
-Top causes for wakeups:
-   56.1% (128.5)   [kernel scheduler] Load balancing tick
-   13.1% ( 30.1)   [extra timer interrupt]
-    6.9% ( 15.9)   [ata_piix] <interrupt>
+Thanks,
+Alek
 
-2) Above + maxcpus=1
 
-Cn                Avg residency
-C0 (cpu running)        ( 4.0%)
-polling           0.0ms ( 0.0%)
-C1 mwait          0.0ms ( 0.0%)
-C2 mwait          0.4ms ( 0.2%)
-C4 mwait         16.0ms (95.9%)
-P-states (frequencies)
-Turbo Mode     6.0%
-   2.21 Ghz     0.0%
-   1.60 Ghz     0.0%
-   1200 Mhz     0.0%
-    800 Mhz    94.0%
-Wakeups-from-idle per second : 64.5     interval: 15.0s
-no ACPI power usage estimate available
-Top causes for wakeups:
-   39.6% ( 46.3)   [kernel scheduler] Load balancing tick
-   12.3% ( 14.3)   [ata_piix] <interrupt>
-
-(No idea why you need a load balancing tick with one core!)
-
-3) Init S, without maxcpus=1
-
-Cn                Avg residency
-C0 (cpu running)        ( 0.0%)
-polling           0.0ms ( 0.0%)
-C1 mwait          0.0ms ( 0.0%)
-C2 mwait          0.1ms ( 0.0%)
-C4 mwait         48.9ms (100.0%)
-P-states (frequencies)
-Turbo Mode     0.0%
-   2.21 Ghz     0.0%
-   1.60 Ghz     0.0%
-   1200 Mhz     0.0%
-    800 Mhz   100.0%
-Wakeups-from-idle per second : 21.4     interval: 15.0s
-no ACPI power usage estimate available
-Top causes for wakeups:
-   33.5% ( 10.3)   [kernel core] hrtimer_start (tick_sched_timer)
-   16.1% (  4.9)   [kernel core] cursor_timer_handler (cursor_timer_handler)
-   15.9% (  4.9)   [kernel scheduler] Load balancing tick
-   12.8% (  3.9)   [kernel core] usb_hcd_poll_rh_status (rh_timer_func)
-    9.3% (  2.9)   [ahci] <interrupt>
-
-I also tried the patch Dominik provided, and it didn't seem to make a 
-difference:
-
-P-states (frequencies)
-Turbo Mode     3.7%
-   2.21 Ghz     0.0%
-   1.60 Ghz     0.0%
-   1200 Mhz     0.6%
-    800 Mhz    95.7%
-Wakeups-from-idle per second : 236.7    interval: 15.0s
-no ACPI power usage estimate available
-Top causes for wakeups:
-   55.4% (119.7)   [kernel scheduler] Load balancing tick
-    9.7% ( 20.9)   skype
-    7.7% ( 16.5)   [ata_piix] <interrupt>
-
-Regards,
-
-Nigel
+diff --git a/drivers/usb/host/ehci-hub.c b/drivers/usb/host/ehci-hub.c
+index 004379b..a2d2fbe 100644
+--- a/drivers/usb/host/ehci-hub.c
++++ b/drivers/usb/host/ehci-hub.c
+@@ -116,6 +116,17 @@ static void ehci_set_wakeup_flags(struct ehci_hcd *ehci)
+                u32 __iomem     *reg = &ehci->regs->port_status[port];
+                u32             t1 = ehci_readl(ehci, reg) & ~PORT_RWC_BITS;
+                u32             t2 = t1 & ~PORT_WAKE_BITS;
++               u32 __iomem     *hostpc_reg;
++               u32             temp;
++
++               /* clear phy low power mode first*/
++               if (ehci->has_hostpc) {
++                       hostpc_reg = (u32 __iomem *)((u8 *)ehci->regs
++                                       + HOSTPC0 + 4 * (port & 0xff));
++                       temp = ehci_readl(ehci, hostpc_reg);
++                       ehci_writel(ehci, temp & ~HOSTPC_PHCD, hostpc_reg);
++                       mdelay(5);
++               }
+ 
+                /* only enable appropriate wake bits, otherwise the
+                 * hardware can not go phy low power mode. If a race
+@@ -131,6 +142,16 @@ static void ehci_set_wakeup_flags(struct ehci_hcd *ehci)
+                                        port + 1, t1, t2);
+                }
+                ehci_writel(ehci, t2, reg);
++
++               /* enable phy low power mode again */
++               if (ehci->has_hostpc) {
++                       temp = ehci_readl(ehci, hostpc_reg);
++                       ehci_writel(ehci, temp | HOSTPC_PHCD, hostpc_reg);
++                       temp = ehci_readl(ehci, hostpc_reg);
++                       ehci_dbg(ehci, "Port%d phy low pwr mode %s\n",
++                                       port, (temp & HOSTPC_PHCD) ?
++                                       "succeeded" : "failed");
++               }
+        }
+ }
+ 
+@@ -217,6 +238,14 @@ static int ehci_bus_suspend (struct usb_hcd *hcd)
+                                u32 __iomem     *hostpc_reg;
+                                u32             t3;
+ 
++                               if (t1 & PORT_CONNECT) {
++                                       t2 |= PORT_WKOC_E | PORT_WKDISC_E;
++                                       t2 &= ~PORT_WKCONN_E;
++                               } else {
++                                       t2 |= PORT_WKOC_E | PORT_WKCONN_E;
++                                       t2 &= ~PORT_WKDISC_E;
++                               }
++                               ehci_writel(ehci, t2, reg);
+                                hostpc_reg = (u32 __iomem *)((u8 *)ehci->regs
+                                        + HOSTPC0 + 4 * (port & 0xff));
+                                spin_unlock_irq(&ehci->lock);
