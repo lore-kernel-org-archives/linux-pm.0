@@ -1,14 +1,15 @@
-From: Nick Bowler <nbowler@elliptictech.com>
-Subject: Re: 2.6.34-rc6-git6: Reported regressions from 2.6.33
-Date: Mon, 10 May 2010 12:07:24 -0400
-Message-ID: <20100510160724.GA31416@elliptictech.com>
-References: <10aqDnTJcLO.A.mLE.48y5LB@chimera>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Mon, 10 May 2010 11:06:15 -0700
+Message-ID: <87632vhbs8.fsf__7422.8920777843$1273514982$gmane$org@deeprootsystems.com>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<87wrvl5479.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <10aqDnTJcLO.A.mLE.48y5LB@chimera>
+In-Reply-To: <87wrvl5479.fsf@deeprootsystems.com> (Kevin Hilman's message of
+	"Mon\, 03 May 2010 09\:40\:26 -0700")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,25 +19,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Arve =?iso-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Paul Walmsley <paul@pwsan.com>, Geoff Smith <geoffx.smith@intel.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 23:13 Sun 09 May     , Rafael J. Wysocki wrote:
-> This message contains a list of some regressions from 2.6.33,
-> for which there are no fixes in the mainline known to the tracking team.
-> If any of them have been fixed already, please let us know.
-> 
-> If you know of any other unresolved regressions from 2.6.33, please let us
-> know either and we'll add them to the list.  Also, please let us know
-> if any of the entries below are invalid.
+Hello,
 
-Seems that
+I think many folks are still confused about exactly the problem being
+solved by this series as well as mixed up between opportunistic
+suspend and suspend blockers.  Also, how this series impatcs the rest
+of the kernel (especially PM-aware drivers and subsystems) has caused
+a bit of confusion.
 
-  r600 CS checker rejects narrow FBO renderbuffers
-  https://bugs.freedesktop.org/show_bug.cgi?id=27609
+To help with the confusion, I think a much clearer description of the
+problem being solved and the proposed solution is needed.  
 
-never got added to the list.  It is still an issue as of 2.6.34-rc7.
+To that end, I created a starting point for that below which
+summarizes how I understand the problem and the proposed solution, but
+of course this should be filled out in more detail and updated as part
+of the documentation that goes with this series.
 
--- 
-Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
+Hope this helps improve the understanding of this feature,
+
+Kevin
+
+
+
+Table of Contents
+=================
+1 Problem Statement 
+2 Solution: Opportunistic suspend 
+    2.1 When to use a suspend blocker 
+    2.2 Usage in PM aware drivers 
+
+
+1 Problem Statement 
+~~~~~~~~~~~~~~~~~~~~
+
+Want to to hit deep power state, even when the system is not actually
+idle.
+
+Why?
+
+- some hardware is not capable of deep power states in idle
+- difficulty getting userspace and/or kernel to be idle
+
+2 Solution: Opportunistic suspend 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create an additional "idle path" which has new rules for determining
+idleness.  When this new "idle" is reached, trigger full-system
+suspend.  Since a suspend is triggered whenever the opportunity
+arises, this is called opportunistic suspend.
+
+The new rules for making the idleness decision are simple:
+
+1.  system may suspend if and only if no suspend blockers are held
+
+2.1 When to use a suspend blocker 
+==================================
+
+[A list of reasons why suspend blockers might be used would be very
+ helpful here.] 
+
+- ensure wakeup events propagate to userspace (e.g. keypad example in doc)
+
+- screen is on
+
+- someone mentioned "Google use cases"
+  (would be nice to hear about more of these)
+
+2.2 Usage in PM aware drivers 
+==============================
+
+[An example of how a driver already using runtime PM would use 
+ a suspend blocker would also be helpful.
