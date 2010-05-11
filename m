@@ -1,9 +1,8 @@
-From: Matthew Garrett <mjg@redhat.com>
+From: Tony Lindgren <tony@atomide.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Tue, 11 May 2010 18:30:36 +0100
-Message-ID: <20100511173036.GB17868__28170.2557615519$1273599301$gmane$org@srcf.ucam.org>
-References: <87wrvl5479.fsf@deeprootsystems.com>
-	<87632vhbs8.fsf@deeprootsystems.com>
+Date: Tue, 11 May 2010 10:48:58 -0700
+Message-ID: <20100511174857.GC13931__17366.9053860523$1273600296$gmane$org@atomide.com>
+References: <87632vhbs8.fsf@deeprootsystems.com>
 	<201005102225.52431.rjw@sisk.pl>
 	<20100511161227.GD13600@atomide.com>
 	<20100511161448.GA16148@srcf.ucam.org>
@@ -12,12 +11,13 @@ References: <87wrvl5479.fsf@deeprootsystems.com>
 	<20100511165821.GA13931@atomide.com>
 	<20100511170348.GA17443@srcf.ucam.org>
 	<20100511172442.GB13931@atomide.com>
+	<20100511173036.GB17868@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20100511172442.GB13931@atomide.com>
+In-Reply-To: <20100511173036.GB17868@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,22 +27,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tony Lindgren <tony@atomide.com>
+To: Matthew Garrett <mjg@redhat.com>
 Cc: Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 11, 2010 at 10:24:43AM -0700, Tony Lindgren wrote:
+* Matthew Garrett <mjg@redhat.com> [100511 10:25]:
+> On Tue, May 11, 2010 at 10:24:43AM -0700, Tony Lindgren wrote:
+> 
+> > For the failed suspend path in the kernel, currently the kernel would
+> > unwind back all the drivers because of the failed driver, but that path
+> > should be possible to optimize.
+> 
+> If you think it's possible to make this work then feel free to. But at 
+> the point where you're adding code to every driver's suspend function to 
+> determine whether or not it's got any pending events that userspace 
+> hasn't consumed yet, and adding code to every bit of userspace to allow 
+> it to indicate whether or not it's busy consuming events or just busy 
+> drawing 3D bouncing cattle, I think you've reinvented suspend blocks.
 
-> For the failed suspend path in the kernel, currently the kernel would
-> unwind back all the drivers because of the failed driver, but that path
-> should be possible to optimize.
+Sorry, I have a working system that idles nicely and stays up on
+batteries for a long time while running. I don't need to implement
+anything like this :)
 
-If you think it's possible to make this work then feel free to. But at 
-the point where you're adding code to every driver's suspend function to 
-determine whether or not it's got any pending events that userspace 
-hasn't consumed yet, and adding code to every bit of userspace to allow 
-it to indicate whether or not it's busy consuming events or just busy 
-drawing 3D bouncing cattle, I think you've reinvented suspend blocks.
+Cheers,
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Tony
