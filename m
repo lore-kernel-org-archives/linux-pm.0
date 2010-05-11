@@ -1,15 +1,23 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Tue, 11 May 2010 20:19:02 +0200
-Message-ID: <201005112019.02670.rjw__30547.866135794$1273602051$gmane$org@sisk.pl>
-References: <87wrvl5479.fsf@deeprootsystems.com>
-	<20100511172442.GB13931@atomide.com>
-	<20100511173036.GB17868@srcf.ucam.org>
+Date: Tue, 11 May 2010 19:47:19 +0100
+Message-ID: <20100511184718.GA8732__48972.3235987642$1273603972$gmane$org@sirena.org.uk>
+References: <m2oa55d774e1005051356n3610d780ra42200c1785e02bd@mail.gmail.com>
+	<20100505234025.GB4838@opensource.wolfsonmicro.com>
+	<l2kd6200be21005052125rc43217a2r8c65bc98e7a5d3d4@mail.gmail.com>
+	<20100507100406.GA21498@rakim.wolfsonmicro.main>
+	<w2kd6200be21005070357r9aad2896l355168a23bf85eae@mail.gmail.com>
+	<20100507112102.GC21498@rakim.wolfsonmicro.main>
+	<81818215-44A2-4B74-A43F-E2644C950F5C@mit.edu>
+	<20100507122520.GD21498@rakim.wolfsonmicro.main>
+	<z2wa55d774e1005070537k8e3cb6baxc74e998e930d254d@mail.gmail.com>
+	<20100507133025.GA23983@rakim.wolfsonmicro.main>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100511173036.GB17868@srcf.ucam.org>
+Content-Disposition: inline
+In-Reply-To: <20100507133025.GA23983@rakim.wolfsonmicro.main>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,25 +27,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Arve@smtp1.linux-foundation.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
+To: Brian Swetland <swetland@google.com>
+Cc: Theodore Tso <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 11 May 2010, Matthew Garrett wrote:
-> On Tue, May 11, 2010 at 10:24:43AM -0700, Tony Lindgren wrote:
-> 
-> > For the failed suspend path in the kernel, currently the kernel would
-> > unwind back all the drivers because of the failed driver, but that path
-> > should be possible to optimize.
-> 
-> If you think it's possible to make this work then feel free to. But at 
-> the point where you're adding code to every driver's suspend function to 
-> determine whether or not it's got any pending events that userspace 
-> hasn't consumed yet, and adding code to every bit of userspace to allow 
-> it to indicate whether or not it's busy consuming events or just busy 
-> drawing 3D bouncing cattle, I think you've reinvented suspend blocks.
+On Fri, May 07, 2010 at 02:30:25PM +0100, Mark Brown wrote:
 
-Yeah, pretty much so.
+> I mean that I will extend the embedded audio subsystem that the kernel
+> already has (ASoC, in sound/soc) to support ignoring suspends for some
+> audio paths so that they can be kept up during suspend.  This will be
+> primarily intended for use with opportunistic suspend but not specific
+> to it.
 
-Thanks,
-Rafael
+Just for the record I've now done an implementation of this which should
+show up in -next when it's rebuilt and 2.6.35.  It's not the most
+thoroughly tested code I've ever written but I'm fairly happy it'll do
+the right thing, especially for analogue basebands.  The functionality
+needs to be explicitly requested by machine drivers so there should be
+no impact on systems using suspend in a more standard fashion.
+
+This means that there should be even less of an issue merging this from
+an audio point of view.
