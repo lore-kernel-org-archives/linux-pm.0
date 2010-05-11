@@ -1,23 +1,17 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Tue, 11 May 2010 19:47:19 +0100
-Message-ID: <20100511184718.GA8732__48972.3235987642$1273603972$gmane$org@sirena.org.uk>
-References: <m2oa55d774e1005051356n3610d780ra42200c1785e02bd@mail.gmail.com>
-	<20100505234025.GB4838@opensource.wolfsonmicro.com>
-	<l2kd6200be21005052125rc43217a2r8c65bc98e7a5d3d4@mail.gmail.com>
-	<20100507100406.GA21498@rakim.wolfsonmicro.main>
-	<w2kd6200be21005070357r9aad2896l355168a23bf85eae@mail.gmail.com>
-	<20100507112102.GC21498@rakim.wolfsonmicro.main>
-	<81818215-44A2-4B74-A43F-E2644C950F5C@mit.edu>
-	<20100507122520.GD21498@rakim.wolfsonmicro.main>
-	<z2wa55d774e1005070537k8e3cb6baxc74e998e930d254d@mail.gmail.com>
-	<20100507133025.GA23983@rakim.wolfsonmicro.main>
+From: Matt Reimer <mattjreimer@gmail.com>
+Subject: Re: Is it supposed to be ok to call del_gendisk while
+	userspace is frozen?
+Date: Tue, 11 May 2010 16:55:38 -0700
+Message-ID: <AANLkTikH7DvizJ9340SiksoIWU5KU2n-OCqWc4f_-z9v__22934.4591418796$1273622204$gmane$org@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1003032142580.6963-100000@netrider.rowland.org>
+	<20100304201548.GA1341@elf.ucw.cz>
+	<y2yf383264b1004221640rd1fca614zfa15d7e7984ab3ba@mail.gmail.com>
+	<201004230717.07086.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100507133025.GA23983@rakim.wolfsonmicro.main>
+In-Reply-To: <201004230717.07086.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,24 +21,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: Theodore Tso <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, rebecca@android.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 07, 2010 at 02:30:25PM +0100, Mark Brown wrote:
+On Thu, Apr 22, 2010 at 10:17 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Friday 23 April 2010, Matt Reimer wrote:
+>> On Thu, Mar 4, 2010 at 1:15 PM, Pavel Machek <pavel@ucw.cz> wrote:
+>> > Hi!
+>> >
+>> >> > My thought exactly. =A0This is the only approach that also solves t=
+he
+>> >> > following race:
+>> >> >
+>> >> > =A0 =A0 A driver is unloaded at the same time as a suspend starts.
+>> >> >
+>> >> > =A0 =A0 The writeback thread gets frozen.
+>> >> >
+>> >> > =A0 =A0 Then before the rmmod thread is frozen, it calls del_gendis=
+k.
+>> >> >
+>> >> > Delaying things by means of a workqueue (or the equivalent) might a=
+lso
+>> >> > work, but it doesn't seem as safe. =A0For example, some important
+>> >> > writebacks might end up getting delayed until too late.
+>> >
+>> > Delaying writebacks during sleep should be ok... That's why we do
+>> > sync() after userspace is frozen -- nothing really important should be
+>> > waiting for writeback after that point.
+>>
+>> Has this been fixed,
+>
+> No, it hasn't.
+>
+>> or has a consensus about how to fix this been
+>> achieved? I'm hitting the same problem and have some time to work on a
+>> fix.
+>
+> Generally, it looks like del_gendisk should thaw writeback threads, but n=
+ot
+> during suspend, only during resume.
 
-> I mean that I will extend the embedded audio subsystem that the kernel
-> already has (ASoC, in sound/soc) to support ignoring suspends for some
-> audio paths so that they can be kept up during suspend.  This will be
-> primarily intended for use with opportunistic suspend but not specific
-> to it.
+Thawing the writeback thread only during resume does fix the case
+Maxim originally presented:
 
-Just for the record I've now done an implementation of this which should
-show up in -next when it's rebuilt and 2.6.35.  It's not the most
-thoroughly tested code I've ever written but I'm fairly happy it'll do
-the right thing, especially for analogue basebands.  The functionality
-needs to be explicitly requested by machine drivers so there should be
-no impact on systems using suspend in a more standard fashion.
+0. build kernel with CONFIG_MMC_UNSAFE_RESUME
+1. insert SD card
+2. suspend
+3. remove SD card while suspended
+4. resume from suspend hangs
 
-This means that there should be even less of an issue merging this from
-an audio point of view.
+But if CONFIG_MMC_UNSAFE_RESUME is not set, the kernel oopses during
+suspend because the MMC device suspend times out:
+
+mmc0: card e624 removed
+**** DPM device timeout: pxa2xx-mci.0 (pxa2xx-mci)
+kernel BUG at /home/mreimer/sdg/android/android-2.1/kernel/drivers/base/pow=
+er/main.c:453!
+Unable to handle kernel NULL pointer dereference at virtual address 00000000
+pgd =3D c0004000
+[00000000] *pgd=3D00000000
+Internal error: Oops: 817 [#1] PREEMPT
+
+If I thaw the writeback thread unconditionally in del_gendisk() then
+suspend and resume work as expected for both CONFIG_MMC_UNSAFE_RESUME
+set/not set, even when the card is removed while suspended.
+
+So what is the proper fix?
+
+Matt
