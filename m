@@ -1,18 +1,14 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: platform_bus: Allow runtime PM by default
-Date: Tue, 11 May 2010 14:00:12 +0100
-Message-ID: <20100511130011.GB5574__16903.3472695903$1273582939$gmane$org@sirena.org.uk>
-References: <1269625370-17754-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<20100507132746.GA3425@sirena.org.uk>
-	<20100507162028.022a737c@hyperion.delvare>
-	<201005102310.55838.rjw@sisk.pl>
-	<20100511081900.0e7a1956@hyperion.delvare>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v2] [RFC] ehci: Disable wake on overcurrent
+ (WKOC_E) and disconnect (WKDISC_E)
+Date: Tue, 11 May 2010 10:01:59 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005111000560.1834-100000__28844.9087100618$1273586635$gmane$org@iolanthe.rowland.org>
+References: <20100511113120.02787f96@dxy2>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100511081900.0e7a1956@hyperion.delvare>
+In-Reply-To: <20100511113120.02787f96@dxy2>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,20 +18,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jean Delvare <khali@linux-fr.org>
-Cc: linux-pm@lists.linux-foundation.org, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+To: "Du, Alek" <alek.du@intel.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, Ondrej Zary <linux@rainbow-software.org>, Kernel development list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 11, 2010 at 08:19:00AM +0200, Jean Delvare wrote:
-> On Mon, 10 May 2010 23:10:55 +0200, Rafael J. Wysocki wrote:
+On Tue, 11 May 2010, Du, Alek wrote:
 
-> > The patch above has been applied to suspend-2.6/linux-next along with the
-> > Mark's $subject patch.
+> > Based on your suggestion, I completely redid both of my patches.  They 
+> > are now combined into a single patch, which is meant to go on top of 
+> > the patch you submitted this morning.  It adds the stuff we talked 
+> > about, and it cleans up some of the changes you made.
+> > 
+> > Does it look good to you?
+> > 
+> > Alan Stern
+> > 
+> 
+> Alan,
+> 
+> It looks good and works for my hardware. Thanks a lot!
+> Will you submit it soon?
 
-> OK, I've dropped it from my i2c tree.
+Thank you.  Yes, I will.
 
-> > I have converted your sign-off into an ack, hope that's fine.
-
-> Perfectly fine, yes, thanks.
-
-Thanks to both of you for sorting this out!
+Alan Stern
