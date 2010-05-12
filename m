@@ -1,17 +1,15 @@
-From: Matt Reimer <mattjreimer@gmail.com>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
-	userspace is frozen?
-Date: Tue, 11 May 2010 16:55:38 -0700
-Message-ID: <AANLkTikH7DvizJ9340SiksoIWU5KU2n-OCqWc4f_-z9v__22934.4591418796$1273622204$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1003032142580.6963-100000@netrider.rowland.org>
-	<20100304201548.GA1341@elf.ucw.cz>
-	<y2yf383264b1004221640rd1fca614zfa15d7e7984ab3ba@mail.gmail.com>
-	<201004230717.07086.rjw@sisk.pl>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Tue, 11 May 2010 18:11:09 -0700
+Message-ID: <AANLkTikJV-wQX9xh8mRVptebJBctcRrQaUls-IGDhQar__9399.53868878565$1273626732$gmane$org@mail.gmail.com>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<87wrvl5479.fsf@deeprootsystems.com>
+	<87632vhbs8.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201004230717.07086.rjw@sisk.pl>
+In-Reply-To: <87632vhbs8.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,72 +19,120 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Geoff Smith <geoffx.smith@intel.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 22, 2010 at 10:17 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday 23 April 2010, Matt Reimer wrote:
->> On Thu, Mar 4, 2010 at 1:15 PM, Pavel Machek <pavel@ucw.cz> wrote:
->> > Hi!
->> >
->> >> > My thought exactly. =A0This is the only approach that also solves t=
-he
->> >> > following race:
->> >> >
->> >> > =A0 =A0 A driver is unloaded at the same time as a suspend starts.
->> >> >
->> >> > =A0 =A0 The writeback thread gets frozen.
->> >> >
->> >> > =A0 =A0 Then before the rmmod thread is frozen, it calls del_gendis=
-k.
->> >> >
->> >> > Delaying things by means of a workqueue (or the equivalent) might a=
-lso
->> >> > work, but it doesn't seem as safe. =A0For example, some important
->> >> > writebacks might end up getting delayed until too late.
->> >
->> > Delaying writebacks during sleep should be ok... That's why we do
->> > sync() after userspace is frozen -- nothing really important should be
->> > waiting for writeback after that point.
->>
->> Has this been fixed,
+2010/5/10 Kevin Hilman <khilman@deeprootsystems.com>:
+> Hello,
 >
-> No, it hasn't.
+> I think many folks are still confused about exactly the problem being
+> solved by this series as well as mixed up between opportunistic
+> suspend and suspend blockers. =A0Also, how this series impatcs the rest
+> of the kernel (especially PM-aware drivers and subsystems) has caused
+> a bit of confusion.
 >
->> or has a consensus about how to fix this been
->> achieved? I'm hitting the same problem and have some time to work on a
->> fix.
+> To help with the confusion, I think a much clearer description of the
+> problem being solved and the proposed solution is needed.
 >
-> Generally, it looks like del_gendisk should thaw writeback threads, but n=
-ot
-> during suspend, only during resume.
+> To that end, I created a starting point for that below which
+> summarizes how I understand the problem and the proposed solution, but
+> of course this should be filled out in more detail and updated as part
+> of the documentation that goes with this series.
+>
+> Hope this helps improve the understanding of this feature,
+>
+> Kevin
+>
+>
+>
+> Table of Contents
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> 1 Problem Statement
+> 2 Solution: Opportunistic suspend
+> =A0 =A02.1 When to use a suspend blocker
+> =A0 =A02.2 Usage in PM aware drivers
+>
+>
+> 1 Problem Statement
+> ~~~~~~~~~~~~~~~~~~~~
+>
+> Want to to hit deep power state, even when the system is not actually
+> idle.
+>
+> Why?
+>
+> - some hardware is not capable of deep power states in idle
+> - difficulty getting userspace and/or kernel to be idle
 
-Thawing the writeback thread only during resume does fix the case
-Maxim originally presented:
+There are two parts to this. Suspend freezes tasks that don't idle at
+all, and it stops the monotonic clock which in turn stops tasks that
+do (frequent) periodic work.
 
-0. build kernel with CONFIG_MMC_UNSAFE_RESUME
-1. insert SD card
-2. suspend
-3. remove SD card while suspended
-4. resume from suspend hangs
+>
+> 2 Solution: Opportunistic suspend
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>
+> Create an additional "idle path" which has new rules for determining
+> idleness. =A0When this new "idle" is reached, trigger full-system
+> suspend. =A0Since a suspend is triggered whenever the opportunity
+> arises, this is called opportunistic suspend.
+>
+> The new rules for making the idleness decision are simple:
+>
+> 1. =A0system may suspend if and only if no suspend blockers are held
+>
+> 2.1 When to use a suspend blocker
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>
+> [A list of reasons why suspend blockers might be used would be very
+> =A0helpful here.]
+>
+> - ensure wakeup events propagate to userspace (e.g. keypad example in doc)
+>
+> - screen is on
+>
+> - someone mentioned "Google use cases"
+> =A0(would be nice to hear about more of these)
 
-But if CONFIG_MMC_UNSAFE_RESUME is not set, the kernel oopses during
-suspend because the MMC device suspend times out:
+Most uses of suspend blockers are in some way tied to a potential
+wakeup event. We use (a) suspend blocker(s) to make sure the event
+propagates to the code that will handle the event, and that code then
+uses another suspend blocker while it handles the event.
 
-mmc0: card e624 removed
-**** DPM device timeout: pxa2xx-mci.0 (pxa2xx-mci)
-kernel BUG at /home/mreimer/sdg/android/android-2.1/kernel/drivers/base/pow=
-er/main.c:453!
-Unable to handle kernel NULL pointer dereference at virtual address 00000000
-pgd =3D c0004000
-[00000000] *pgd=3D00000000
-Internal error: Oops: 817 [#1] PREEMPT
+Some examples:
 
-If I thaw the writeback thread unconditionally in del_gendisk() then
-suspend and resume work as expected for both CONFIG_MMC_UNSAFE_RESUME
-set/not set, even when the card is removed while suspended.
+The battery monitor on Nexus One uses a periodic alarm to wake up the
+system. The alarm driver will block suspend so the timer can fire, and
+the battery monitor will block suspend while reading the battery
+status and changing the charge mode.
 
-So what is the proper fix?
+Phone rings: We use a few suspend blockers to process the low level
+message from the modem which end up returning a message on a tty. The
+last step in the kernel currently uses a wakelock with a timeout since
+we have not modified the tty layer to block suspend. The user space
+ril process then blocks suspend while it handles this message.
 
-Matt
+USB: We get a (wakeup) message from the modem that there is power on
+the usb connector and we block suspend while we detect what is
+connected. If we are connected to a USB host, we block suspend and
+turn on the usb interface.
+
+>
+> 2.2 Usage in PM aware drivers
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D
+>
+> [An example of how a driver already using runtime PM would use
+> =A0a suspend blocker would also be helpful.
+>
+
+An audio driver can block suspend while audio is playing. We don't
+currently use the runtime pm framework since this is new, but we do
+runtime pm by turning off clocks and power when the device is
+inactive.
+
+-- =
+
+Arve Hj=F8nnev=E5g
