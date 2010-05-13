@@ -1,17 +1,19 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Thu, 13 May 2010 15:26:36 -0700
-Message-ID: <AANLkTikrRZtMDHqgHmQsxxUoSdS4nXV02byX-hdslNSU__42066.4768120789$1273789712$gmane$org@mail.gmail.com>
-References: <alpine.DEB.2.00.1005122118530.7624@utopia.booyaka.com>
-	<Pine.LNX.4.44L0.1005131002380.1695-100000@iolanthe.rowland.org>
-	<20100513191717.GA3428@atomide.com>
-	<20100513192522.GA19256@srcf.ucam.org>
-	<20100513194205.GC3428@atomide.com>
+Date: Thu, 13 May 2010 23:27:49 +0100
+Message-ID: <20100513222748.GA3240__39433.2509291873$1273789724$gmane$org@opensource.wolfsonmicro.com>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<201005132311.26293.rjw@sisk.pl>
+	<1273785399.19100.98.camel@c-dwalke-linux.qualcomm.com>
+	<201005132327.16163.rjw@sisk.pl>
+	<1273786409.19100.104.camel@c-dwalke-linux.qualcomm.com>
+	<20100513214653.GA21120@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100513194205.GC3428@atomide.com>
+Content-Disposition: inline
+In-Reply-To: <20100513214653.GA21120@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,64 +23,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-omap@vger.kernel.org, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Matthew Garrett <mjg@redhat.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Oleg Nesterov <oleg@redhat.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 13, 2010 at 12:42 PM, Tony Lindgren <tony@atomide.com> wrote:
-> * Matthew Garrett <mjg@redhat.com> [100513 12:20]:
->> On Thu, May 13, 2010 at 12:17:17PM -0700, Tony Lindgren wrote:
->> > The suspend blocks seems like a hack to spam filter good and bad
->> > apps from timer usage point of view. Applications are categorized
->> > as good or bad depending if they grab a susped blocker or not.
->> >
->> > I believe categorizing the apps should be instead done with some
->> > timer flags or cgroups instead.
->>
->> I agree, but we have no mechanism for implementing that in a race-free
->> way. We don't even have a realistical proposal for what that mechanism
->> would look like. Should we refuse bread today for the promise of cake
->> tomorrow?
->
-> Well this is an interesting problem, and once solved will be handy
-> for all kind of things. My worry is that if it's integrated in it's
-> current form it will be totally out of control all over the place :(
->
-> Still hoping we can come up with some clean way that avoid the patching
-> all over the place part.. How about the following, can you please check
-> if it would help with your example of guaranteed handling of event:
->
-> 1. In the kernel, we add one more timer queue for critical timers.
-> =A0 The current timer queue(s) stay as it is.
->
-> 2. We allow selecting the timer based on some flag, the default
-> =A0 behaviour being the current default timer queue.
->
-> 3. Then we add next_timer_interupt_critical() to only query the
-> =A0 critical timers along the lines of the current next_timer_interrupt().
->
-> 4. We implement a custom pm_idle that suspends the system based on
-> =A0 some logic and checking if next_timer_interrupt_critical() is
-> =A0 empty. If the next_timer_interrupt_critical() does not return
-> =A0 anything, we assume it's OK to suspend the system.
->
+On Thu, May 13, 2010 at 02:46:53PM -0700, Greg KH wrote:
+> On Thu, May 13, 2010 at 02:33:29PM -0700, Daniel Walker wrote:
 
-I think trying to solve this at the timer level requires more patching
-than using suspend blockers. With suspend blocker you block suspend
-until some work has finished, or an event has been consumed. You can
-safely use any existing synchronous api.
+> > You get the driver mainlined, then maintain a small patch to add
+> > wakelocks. Not hard at all , with lots of incentive to do so since you
+> > don't have to maintain such a large block of code out of tree.
 
-> Now to me it sounds if your the input layer and userspace handle
-> both grab the timers with the critical flags, it should be guaranteed
-> that the events get handled before the system is suspended.
->
+> Sorry, but it doesn't seem to work that way.  Look at the large number
+> of out-of-tree android device drivers that remain sitting there because
+> of the lack of this interface being in the kernel.
 
-There are no timers used in this path. However any critical section
-used from this path could cause the system to enter idle. Instead of
-blocking suspend while there are unprocessed input event you now have
-to make sure all code that can block any of the threads involved in
-processing those event don't wait on a non critical timer.
+Is that really the issue?  The ones I've looked at have mostly suffered
+from being built on 2.6.29 and needing refreshes for current kernel APIs
+or from general code quality issues - I don't recall ever looking at one
+and thinking that the wakelocks were the one issue.
 
--- =
+> Also note that such a driver, without wakelocks, would never get tested,
+> and so, things start quickly diverging.
 
-Arve Hj=F8nnev=E5g
+Chances are that if the driver is useful people will start using it in
+non-Android systems anyway.  As people have already observed wakelocks
+needn't have any practical effect on the running system so if the
+drivers are broken without wakelocks they'd be broken anyway.  
+
+If this really is a big concern with getting drivers into mainline then
+surely we could just add some noop wakelock functions for the drivers to
+call?  It's not particularly pretty but it'd deal with the driver merge
+side of things.
