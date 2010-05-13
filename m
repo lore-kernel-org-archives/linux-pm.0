@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
- userspace is frozen?
-Date: Thu, 13 May 2010 17:54:39 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005131752160.1731-100000__38520.9865090021$1273787717$gmane$org@iolanthe.rowland.org>
-References: <AANLkTimW3wLEt-DIRirHic1ZN1Z0k1t3TavwaCxTh_QL@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Thu, 13 May 2010 23:54:24 +0200
+Message-ID: <201005132354.24259.rjw__33507.475074339$1273787719$gmane$org@sisk.pl>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<1273786409.19100.104.camel@c-dwalke-linux.qualcomm.com>
+	<20100513213656.GL3428@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTimW3wLEt-DIRirHic1ZN1Z0k1t3TavwaCxTh_QL@mail.gmail.com>
+In-Reply-To: <20100513213656.GL3428@atomide.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,29 +19,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matt Reimer <mattjreimer@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Tony Lindgren <tony@atomide.com>
+Cc: Greg KH <gregkh@suse.de>, Arve@smtp1.linux-foundation.org, Oleg Nesterov <oleg@redhat.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 13 May 2010, Matt Reimer wrote:
+On Thursday 13 May 2010, Tony Lindgren wrote:
+> * Daniel Walker <dwalker@fifo99.com> [100513 14:28]:
+> > On Thu, 2010-05-13 at 23:27 +0200, Rafael J. Wysocki wrote:
+> > 
+> > > Because someone would have to remove suspend blockers (or rather wakelocks)
+> > > from the drivers, test that they work correctly without suspend blockers and
+> > > submit the modified versions.  Going forward, every party responsible for such
+> > > a driver would have to maintain an out-of-tree version with suspend blockers
+> > > (or wakelocks) anyway, so the incentive to do that is zero.
+> > 
+> > They should work without wakelock since wakelock are optional .. I mean
+> > there's nothing in suspend blockers I've seen that indicates it's
+> > required for some drivers to work. So it's just a matter of patching out
+> > the wakelocks, with no need to re-test anything.
+> > 
+> > You get the driver mainlined, then maintain a small patch to add
+> > wakelocks. Not hard at all , with lots of incentive to do so since you
+> > don't have to maintain such a large block of code out of tree.
+> > 
+> > > Practically, as long as the opportunistic suspend is out of tree, there will be
+> > > a _growing_ number of out-of-tree drivers out there, which is not acceptable
+> > > in the long run.
+> > 
+> > I don't see why your saying that. These driver should work with out all
+> > of this, which means they can get mainlined right now.
+> 
+> I agree with Daniel here. We should keep merging the drivers separate
+> from the suspend blocks issues.
 
-> So how does the attached patch look?
-> 
-> Matt
-> 
-> 
-> From 20d8340471eb05aa54af1349f4ddccecd9c230c6 Mon Sep 17 00:00:00 2001
-> From: Matt Reimer <mreimer@sdgsystems.com>
-> Date: Thu, 13 May 2010 14:36:54 -0700
-> Subject: [PATCH] fs: prevent hang on suspend/resume when MMC/SD card present
-> 
-> Devices can come and go from the MMC/SD bus during suspend or resume,
-> when the writeback thread is frozen, resulting in a hang. So thaw the
-> writeback thread in del_gendisk() to prevent the hang.
+Unfortunately, that's completely unrealistic.  Please refer to the Greg's reply
+for details.
 
-I don't see anything wrong with the patch itself, but I dislike the 
-description.  Devices can come and go from any hotpluggable bus, not 
-just MMC/SD.  That just happens to be the first place the problem was 
-observed.
-
-Alan Stern
+Rafael
