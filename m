@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Tony Lindgren <tony@atomide.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Thu, 13 May 2010 23:54:24 +0200
-Message-ID: <201005132354.24259.rjw__33507.475074339$1273787719$gmane$org@sisk.pl>
-References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<1273786409.19100.104.camel@c-dwalke-linux.qualcomm.com>
-	<20100513213656.GL3428@atomide.com>
+Date: Thu, 13 May 2010 14:54:05 -0700
+Message-ID: <20100513215404.GN3428__15861.9631002241$1273787733$gmane$org@atomide.com>
+References: <20100513194205.GC3428@atomide.com>
+	<Pine.LNX.4.44L0.1005131740370.1731-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100513213656.GL3428@atomide.com>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1005131740370.1731-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +19,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Greg KH <gregkh@suse.de>, Arve@smtp1.linux-foundation.org, Oleg Nesterov <oleg@redhat.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-omap@vger.kernel.org, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 13 May 2010, Tony Lindgren wrote:
-> * Daniel Walker <dwalker@fifo99.com> [100513 14:28]:
-> > On Thu, 2010-05-13 at 23:27 +0200, Rafael J. Wysocki wrote:
-> > 
-> > > Because someone would have to remove suspend blockers (or rather wakelocks)
-> > > from the drivers, test that they work correctly without suspend blockers and
-> > > submit the modified versions.  Going forward, every party responsible for such
-> > > a driver would have to maintain an out-of-tree version with suspend blockers
-> > > (or wakelocks) anyway, so the incentive to do that is zero.
-> > 
-> > They should work without wakelock since wakelock are optional .. I mean
-> > there's nothing in suspend blockers I've seen that indicates it's
-> > required for some drivers to work. So it's just a matter of patching out
-> > the wakelocks, with no need to re-test anything.
-> > 
-> > You get the driver mainlined, then maintain a small patch to add
-> > wakelocks. Not hard at all , with lots of incentive to do so since you
-> > don't have to maintain such a large block of code out of tree.
-> > 
-> > > Practically, as long as the opportunistic suspend is out of tree, there will be
-> > > a _growing_ number of out-of-tree drivers out there, which is not acceptable
-> > > in the long run.
-> > 
-> > I don't see why your saying that. These driver should work with out all
-> > of this, which means they can get mainlined right now.
+* Alan Stern <stern@rowland.harvard.edu> [100513 14:36]:
+> On Thu, 13 May 2010, Tony Lindgren wrote:
 > 
-> I agree with Daniel here. We should keep merging the drivers separate
-> from the suspend blocks issues.
+> > Well this is an interesting problem, and once solved will be handy
+> > for all kind of things. My worry is that if it's integrated in it's
+> > current form it will be totally out of control all over the place :(
+> > 
+> > Still hoping we can come up with some clean way that avoid the patching
+> > all over the place part.. How about the following, can you please check
+> > if it would help with your example of guaranteed handling of event:
+> > 
+> > 1. In the kernel, we add one more timer queue for critical timers.
+> >    The current timer queue(s) stay as it is.
+> > 
+> > 2. We allow selecting the timer based on some flag, the default
+> >    behaviour being the current default timer queue.
+> > 
+> > 3. Then we add next_timer_interupt_critical() to only query the
+> >    critical timers along the lines of the current next_timer_interrupt().
+> > 
+> > 4. We implement a custom pm_idle that suspends the system based on
+> >    some logic and checking if next_timer_interrupt_critical() is
+> >    empty. If the next_timer_interrupt_critical() does not return
+> >    anything, we assume it's OK to suspend the system.
+> > 
+> > Now to me it sounds if your the input layer and userspace handle
+> > both grab the timers with the critical flags, it should be guaranteed
+> > that the events get handled before the system is suspended.
+> 
+> Why do you want this to be tied to timers?  Many of the events in 
+> question are asynchronous with no specific timing relations.
 
-Unfortunately, that's completely unrealistic.  Please refer to the Greg's reply
-for details.
+To me it seems that the non-timer related events can be dealt
+with toggling the opportunistic suspend idle flag in sysfs.
+That should depend on the device and use specific policy.
 
-Rafael
+Tony
