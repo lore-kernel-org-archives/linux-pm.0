@@ -1,15 +1,15 @@
-From: Tony Lindgren <tony@atomide.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Thu, 13 May 2010 14:54:05 -0700
-Message-ID: <20100513215404.GN3428__15861.9631002241$1273787733$gmane$org@atomide.com>
-References: <20100513194205.GC3428@atomide.com>
-	<Pine.LNX.4.44L0.1005131740370.1731-100000@iolanthe.rowland.org>
+Date: Thu, 13 May 2010 23:56:21 +0200
+Message-ID: <201005132356.21355.rjw__39475.0827145346$1273787747$gmane$org@sisk.pl>
+References: <alpine.DEB.2.00.1005122118530.7624@utopia.booyaka.com>
+	<201005132321.59245.rjw@sisk.pl>
+	<20100513212556.GI3428@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1005131740370.1731-100000@iolanthe.rowland.org>
+In-Reply-To: <20100513212556.GI3428@atomide.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,44 +19,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-omap@vger.kernel.org, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Matthew Garrett <mjg@redhat.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Kernel development list <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Oleg Nesterov <oleg@redhat.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-* Alan Stern <stern@rowland.harvard.edu> [100513 14:36]:
-> On Thu, 13 May 2010, Tony Lindgren wrote:
+On Thursday 13 May 2010, Tony Lindgren wrote:
+> * Rafael J. Wysocki <rjw@sisk.pl> [100513 14:16]:
+> > On Thursday 13 May 2010, Matthew Garrett wrote:
+> > > On Thu, May 13, 2010 at 01:23:20PM -0700, Tony Lindgren wrote:
+> > > > * Matthew Garrett <mjg@redhat.com> [100513 13:03]:
+> > > > > On Thu, May 13, 2010 at 01:00:04PM -0700, Tony Lindgren wrote:
+> > > > > 
+> > > > > > The system stays running because there's something to do. The system
+> > > > > > won't suspend until all the processors hit the kernel idle loop and
+> > > > > > the next_timer_interrupt_critical() returns nothing.
+> > > > > 
+> > > > > At which point an application in a busy loop cripples you.
+> > > > 
+> > > > Maybe you could deal with the misbehaving untrusted apps in the userspace
+> > > > by sending kill -STOP to them when the screen blanks? Then continue
+> > > > when some event wakes up the system again.
+> > > 
+> > > And if that's the application that's listening to the network socket 
+> > > that you want to get a wakeup event from? This problem is hard. I'd love 
+> > > there to be an elegant solution based on using the scheduler, but I 
+> > > really don't know what it is.
+> > 
+> > I agree and I don't understand the problem that people have with the
+> > opportunistic suspend feature.
 > 
-> > Well this is an interesting problem, and once solved will be handy
-> > for all kind of things. My worry is that if it's integrated in it's
-> > current form it will be totally out of control all over the place :(
-> > 
-> > Still hoping we can come up with some clean way that avoid the patching
-> > all over the place part.. How about the following, can you please check
-> > if it would help with your example of guaranteed handling of event:
-> > 
-> > 1. In the kernel, we add one more timer queue for critical timers.
-> >    The current timer queue(s) stay as it is.
-> > 
-> > 2. We allow selecting the timer based on some flag, the default
-> >    behaviour being the current default timer queue.
-> > 
-> > 3. Then we add next_timer_interupt_critical() to only query the
-> >    critical timers along the lines of the current next_timer_interrupt().
-> > 
-> > 4. We implement a custom pm_idle that suspends the system based on
-> >    some logic and checking if next_timer_interrupt_critical() is
-> >    empty. If the next_timer_interrupt_critical() does not return
-> >    anything, we assume it's OK to suspend the system.
-> > 
-> > Now to me it sounds if your the input layer and userspace handle
-> > both grab the timers with the critical flags, it should be guaranteed
-> > that the events get handled before the system is suspended.
+> It seems to be picking quite a few comments for one.
+>  
+> > It solves a practical issue that _at_ _the_ _moment_ cannot be solved
+> > differently, while there's a growing number of out-of-tree drivers depending
+> > on this framework.  We need those drivers in and because we don't have any
+> > viable alternative at hand, we have no good reason to reject it.
 > 
-> Why do you want this to be tied to timers?  Many of the events in 
-> question are asynchronous with no specific timing relations.
+> Nothing is preventing merging the drivers can be merged without
+> these calls.
 
-To me it seems that the non-timer related events can be dealt
-with toggling the opportunistic suspend idle flag in sysfs.
-That should depend on the device and use specific policy.
+And yet, there _is_ a growing nuber of drivers that don't get merge because
+of that.  That's _reality_.  Are you going to discuss with facts, or what?
 
-Tony
+Rafael
