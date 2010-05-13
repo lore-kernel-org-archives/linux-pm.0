@@ -1,14 +1,13 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
- userspace is frozen?
-Date: Wed, 12 May 2010 10:50:59 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005121048420.1962-100000__20596.9697483399$1273675937$gmane$org@iolanthe.rowland.org>
-References: <AANLkTikH7DvizJ9340SiksoIWU5KU2n-OCqWc4f_-z9v@mail.gmail.com>
+From: Paul Walmsley <paul@pwsan.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Wed, 12 May 2010 21:35:30 -0600 (MDT)
+Message-ID: <alpine.DEB.2.00.1005122118530.7624__26121.2980877191$1273721807$gmane$org@utopia.booyaka.com>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikH7DvizJ9340SiksoIWU5KU2n-OCqWc4f_-z9v@mail.gmail.com>
+In-Reply-To: <1272667021-21312-1-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,47 +17,115 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matt Reimer <mattjreimer@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: linux-omap@vger.kernel.org, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Linus Walleij <linus.walleij@ericsson.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 11 May 2010, Matt Reimer wrote:
+Hello,
 
-> >> or has a consensus about how to fix this been
-> >> achieved? I'm hitting the same problem and have some time to work on a
-> >> fix.
-> >
-> > Generally, it looks like del_gendisk should thaw writeback threads, but not
-> > during suspend, only during resume.
-> 
-> Thawing the writeback thread only during resume does fix the case
-> Maxim originally presented:
-> 
-> 0. build kernel with CONFIG_MMC_UNSAFE_RESUME
-> 1. insert SD card
-> 2. suspend
-> 3. remove SD card while suspended
-> 4. resume from suspend hangs
-> 
-> But if CONFIG_MMC_UNSAFE_RESUME is not set, the kernel oopses during
-> suspend because the MMC device suspend times out:
-> 
-> mmc0: card e624 removed
-> **** DPM device timeout: pxa2xx-mci.0 (pxa2xx-mci)
-> kernel BUG at /home/mreimer/sdg/android/android-2.1/kernel/drivers/base/power/main.c:453!
-> Unable to handle kernel NULL pointer dereference at virtual address 00000000
-> pgd = c0004000
-> [00000000] *pgd=00000000
-> Internal error: Oops: 817 [#1] PREEMPT
-> 
-> If I thaw the writeback thread unconditionally in del_gendisk() then
-> suspend and resume work as expected for both CONFIG_MMC_UNSAFE_RESUME
-> set/not set, even when the card is removed while suspended.
-> 
-> So what is the proper fix?
+Some general comments on the suspend blockers/wakelock/opportunistic
+suspend v6 patch series, posted here:
 
-I don't see any reason not to let del_gendisk thaw the writeback thread
-during suspend.  Since the device is going away anyhow, letting the
-thread run shouldn't cause any problems.
+    https://lists.linux-foundation.org/pipermail/linux-pm/2010-April/025146.html
 
-Alan Stern
+The comments below are somewhat telegraphic in the interests of 
+readability - more specific comments to follow in later E-mails. I am 
+indebted to those of us who discussed these issues at LPC last year and 
+ELC this year for several stimulating discussions.
+
+There are several general problems with the design of opportunistic
+suspend and suspend-blocks.
+
+1. The opportunistic suspend code bypasses existing Linux kernel code,
+   such as timers and the scheduler, that indicates when code
+   needs to run, and when the system is idle.  This causes two problems:
+
+   a. When opportunistic suspend is enabled, the default mode is to
+      break all timers and scheduling on the system.  This isn't
+      right: the default mode should be to preserve standard Linux
+      behavior.  Exceptions can then be added for process groups that
+      should run with the non-standard timer and scheduler behavior.
+
+   b. The series introduces a de novo kernel API and userspace API
+      that are unrelated to timers and the scheduler, but if the point
+      is to modify the behavior of timers or the scheduler, the
+      existing timer or scheduler APIs should be extended.  Any new
+      APIs will need to be widely spread throughout the kernel and
+      userspace.
+
+2. The suspend-block kernel API tells the kernel _how_ to accomplish a
+   goal, rather than telling the kernel _what_ the goal is.  This
+   results in layering violations, unstated assumptions, and is too
+   coarse-grained.  These problems in turn will cause fragile kernel
+   code, kernel code with userspace dependencies, and power management
+   problems on modern hardware.  Code should ask for what it wants.
+   For example, if a driver needs to place an upper bound on its
+   device wakeup latency, or if it needs to place an upper bound on
+   interrupt response latency, that is what it should request.  Driver
+   and subsystem code should not care how the kernel implements those
+   requests, since the implementation can differ on different hardware
+   and even on different use-cases with the same hardware.
+   
+3. Similarly, the suspend-block userspace API tells the kernel how to
+   accomplish a goal, rather than telling the kernel what the goal is.
+   Userspace processes should ask the kernel for what they really
+   want.  If a process' timers should be disabled upon entering
+   suspend, or the timer durations should have a lower bound, that's
+   what the API should request.
+
+Merging this series as currently designed and implemented will cause 
+problems.  Suspend-blocks introduce a second, separate idle management 
+approach in the Linux kernel.  The existing approach is the familiar timer 
+and scheduler based approach.  The new approach is one where timers and 
+runqueues no longer matter: the system is always at risk of entering 
+suspend at any moment, with only suspend-blocks to stop it. Driver authors 
+will effectively have to implement both approaches in their code.
+
+Once merged, it will be nearly impossible to remove this code in favor 
+of a cleaner approach.  Suspend-block calls are likely to spread 
+throughout the kernel and drivers.  Patches 6, 7, and 8 are the leading 
+edge of this - a quick grep through the Android common kernel at
+
+    git://android.git.kernel.org/kernel/common.git 
+
+shows wakelocks in the following drivers:
+
+    drivers/input/evdev.c
+    drivers/input/misc/gpio_input.c
+    drivers/input/misc/gpio_matrix.c
+    drivers/mmc/core/core.c
+    drivers/rtc/alarm.c
+    drivers/usb/gadget/f_mass_storage.c
+
+Suspend-blocks will be difficult to convert to a finer-grained approach 
+later.  The API design problems, mentioned above in points 2 and 3, will 
+make it very difficult to determine what a driver author's or modifier's 
+intention was when adding the suspend-block.  Also, patches 2 and 7 
+introduce userspace APIs.  We will undoubtedly wish to avoid removing a 
+userspace API once it is merged.  It will be quite difficult to implement 
+such a general directive ("block system suspend") on a future kernel that 
+may have a much finer-grained notion of low-power system modes, indeed 
+that may have no useful notion of "system suspend."
+
+...
+
+The opportunistic suspend patches try to solve at least two real problems, 
+that should be resolved in some way.  First, some types of userspace 
+processes can unintentionally block system power management.  Second, the 
+kernel is missing a system-wide form of CPUIdle.  This patch series, 
+though, isn't the right way to solve either of these problems.  Let's 
+figure out a different approach.
+
+Figuring out a different way to do this should not limit Android at all, 
+since Google can do what other Linux distributions do and continue to 
+patch opportunistic suspend/suspend-block calls into their kernels as 
+needed to ship devices, while contributing towards a different solution to 
+the problem.
+
+ 
+regards,
+
+- Paul
+
+(Linux-OMAP co-maintainer, focusing mostly on power management and 
+software architecture issues)
