@@ -1,7 +1,7 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+From: "Woodruff, Richard" <r-woodruff2@ti.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Thu, 13 May 2010 23:27:49 +0100
-Message-ID: <20100513222748.GA3240__39433.2509291873$1273789724$gmane$org@opensource.wolfsonmicro.com>
+Date: Thu, 13 May 2010 17:33:58 -0500
+Message-ID: <13B9B4C6EF24D648824FF11BE896716203BB0EEAE9__45684.1456740678$1273790259$gmane$org@dlee02.ent.ti.com>
 References: <1272667021-21312-1-git-send-email-arve@android.com>
 	<201005132311.26293.rjw@sisk.pl>
 	<1273785399.19100.98.camel@c-dwalke-linux.qualcomm.com>
@@ -12,8 +12,8 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <20100513214653.GA21120@suse.de>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,35 +23,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <gregkh@suse.de>
-Cc: Oleg Nesterov <oleg@redhat.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
+To: Greg KH <gregkh@suse.de>, Daniel Walker <dwalker@fifo99.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Brian@smtp1.linux-foundation.org, Arjan@smtp1.linux-foundation.org, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Matthew Garrett <mjg@redhat.com>, Oleg Nesterov <oleg@redhat.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, de Ven <arjan@infradead.org>, Theodore Ts'o <tytso@mit.edu>, Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Tejun Heo <tj@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 13, 2010 at 02:46:53PM -0700, Greg KH wrote:
-> On Thu, May 13, 2010 at 02:33:29PM -0700, Daniel Walker wrote:
 
-> > You get the driver mainlined, then maintain a small patch to add
-> > wakelocks. Not hard at all , with lots of incentive to do so since you
-> > don't have to maintain such a large block of code out of tree.
-
-> Sorry, but it doesn't seem to work that way.  Look at the large number
-> of out-of-tree android device drivers that remain sitting there because
-> of the lack of this interface being in the kernel.
-
-Is that really the issue?  The ones I've looked at have mostly suffered
-from being built on 2.6.29 and needing refreshes for current kernel APIs
-or from general code quality issues - I don't recall ever looking at one
-and thinking that the wakelocks were the one issue.
+> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
+> owner@vger.kernel.org] On Behalf Of Greg KH
+> Sent: Thursday, May 13, 2010 4:47 PM
 
 > Also note that such a driver, without wakelocks, would never get tested,
 > and so, things start quickly diverging.
 
-Chances are that if the driver is useful people will start using it in
-non-Android systems anyway.  As people have already observed wakelocks
-needn't have any practical effect on the running system so if the
-drivers are broken without wakelocks they'd be broken anyway.  
+Do wakelock enabled drivers require a wakelock aware user space to function properly?  If the driver is added you want to make sure the benefit is there and testable for all userspaces.
 
-If this really is a big concern with getting drivers into mainline then
-surely we could just add some noop wakelock functions for the drivers to
-call?  It's not particularly pretty but it'd deal with the driver merge
-side of things.
+Early Android service managers did take/release userspace locks to ensure the handoff worked.
+
+Getting all these drivers is positive.  Getting to some constraint mechanism is positive.  It does need to exist end to end to make a difference at the battery.
+
+Regards,
+Richard W.
