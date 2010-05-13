@@ -1,23 +1,13 @@
-From: Tony Lindgren <tony@atomide.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Thu, 13 May 2010 14:34:55 -0700
-Message-ID: <20100513213455.GK3428__21754.7023356476$1273786668$gmane$org@atomide.com>
+Date: Thu, 13 May 2010 17:37:03 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005131729510.1731-100000__23710.3070169271$1273786671$gmane$org@iolanthe.rowland.org>
 References: <20100513191717.GA3428@atomide.com>
-	<20100513192522.GA19256@srcf.ucam.org>
-	<20100513194205.GC3428@atomide.com>
-	<20100513195349.GB19722@srcf.ucam.org>
-	<20100513200003.GE3428@atomide.com>
-	<20100513200814.GA20254@srcf.ucam.org>
-	<20100513202320.GF3428@atomide.com>
-	<20100513203412.GA21244@srcf.ucam.org>
-	<20100513211006.GG3428@atomide.com>
-	<20100513212108.GA22103@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100513212108.GA22103@srcf.ucam.org>
+In-Reply-To: <20100513191717.GA3428@atomide.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,32 +17,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Linus Walleij <linus.walleij@ericsson.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-* Matthew Garrett <mjg@redhat.com> [100513 14:16]:
-> On Thu, May 13, 2010 at 02:10:06PM -0700, Tony Lindgren wrote:
-> > * Matthew Garrett <mjg@redhat.com> [100513 13:29]:
-> > > And if that's the application that's listening to the network socket 
-> > > that you want to get a wakeup event from? This problem is hard. I'd love 
-> > > there to be an elegant solution based on using the scheduler, but I 
-> > > really don't know what it is.
+On Thu, 13 May 2010, Tony Lindgren wrote:
+
+> * Alan Stern <stern@rowland.harvard.edu> [100513 07:11]:
+> > On Wed, 12 May 2010, Paul Walmsley wrote:
 > > 
-> > Your system should wake up to an interrupt in that case. Then you have
-> > the trusted apps running that can decide if the untrusted apps should
-> > be continued or not.
+> > > Hello,
+> > > 
+> > > Some general comments on the suspend blockers/wakelock/opportunistic
+> > > suspend v6 patch series, posted here:
+> > > 
+> > >     https://lists.linux-foundation.org/pipermail/linux-pm/2010-April/025146.html
+> > > 
+> > > The comments below are somewhat telegraphic in the interests of 
+> > > readability - more specific comments to follow in later E-mails. I am 
+> > > indebted to those of us who discussed these issues at LPC last year and 
+> > > ELC this year for several stimulating discussions.
+> > > 
+> > > There are several general problems with the design of opportunistic
+> > > suspend and suspend-blocks.
+> > > 
+> > > 1. The opportunistic suspend code bypasses existing Linux kernel code,
+> > >    such as timers and the scheduler, that indicates when code
+> > >    needs to run, and when the system is idle.
+> > 
+> > Whoa!  That's not my understanding at all.
+> > 
+> > As I see it, opportunistic suspend doesn't bypass any code that isn't 
+> > already bypassed by the existing suspend code.  Users can do
+> > 
+> > 	echo mem >/sys/power/state
+> > 
+> > whenever they want, without regard to kernel timers and the scheduler 
+> > (other than the fact that the user's thread must be running in order to 
+> > carry out the write, of course).
 > 
-> What race-free mechanism do you use to ensure that? It's very easy to 
-> handwave these problems away. It's very difficult to actually write an 
-> implementation that works.
+> The difference between echo mem > /sys/power/state and suspend blocks
+> is that with suspend blocks the system keeps running.
 
-Can you describe where do you see the race now?
+Irrelevant.  Paul wasn't talking about the suspend blockers; he was 
+talking about opportunistic suspend.  So what's the difference between 
+opportunistic suspend and "echo mem >/sys/power/state"?  Especially 
+when suspend blockers aren't being used?
 
-Your trusted apps should be have in quite a normal way except the system
-suspends if no critical timers are on the list. For the untrusted apps
-you assume you can stop them at whatever userspace policy you set.
+> And that's why 
+> it should be handled by runtime power management instead.
 
-Regards,
+Runtime PM is not capable of freezing userspace and shutting down CPUs.  
+More or less by definition -- if it could then it wouldn't be "runtime" 
+any more, since the processor wouldn't be running.
 
-Tony
+> The suspend blocks seems like a hack to spam filter good and bad
+> apps from timer usage point of view. Applications are categorized
+> as good or bad depending if they grab a susped blocker or not.
+
+You're referring just to the userspace part of the suspend blocker 
+API.  What about the kernel part?
+
+> I believe categorizing the apps should be instead done with some
+> timer flags or cgroups instead.
+
+That would be compatible with using suspend blockers.
+
+Alan Stern
