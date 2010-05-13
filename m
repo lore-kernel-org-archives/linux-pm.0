@@ -1,17 +1,23 @@
-From: Tony Lindgren <tony@atomide.com>
+From: Matthew Garrett <mjg@redhat.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Thu, 13 May 2010 12:42:05 -0700
-Message-ID: <20100513194205.GC3428__43240.588103845$1273779800$gmane$org@atomide.com>
-References: <alpine.DEB.2.00.1005122118530.7624@utopia.booyaka.com>
-	<Pine.LNX.4.44L0.1005131002380.1695-100000@iolanthe.rowland.org>
-	<20100513191717.GA3428@atomide.com>
-	<20100513192522.GA19256@srcf.ucam.org>
+Date: Thu, 13 May 2010 20:48:20 +0100
+Message-ID: <20100513194820.GA19722__11902.9552829035$1273780193$gmane$org@srcf.ucam.org>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<alpine.DEB.2.00.1005122118530.7624@utopia.booyaka.com>
+	<20100513121745.GA10749@srcf.ucam.org>
+	<1273771990.19100.13.camel@c-dwalke-linux.qualcomm.com>
+	<s2ga55d774e1005131117yd138c59bk54cc109401eb4a8d@mail.gmail.com>
+	<1273775157.19100.20.camel@c-dwalke-linux.qualcomm.com>
+	<20100513183646.GA18155@srcf.ucam.org>
+	<1273777177.19100.24.camel@c-dwalke-linux.qualcomm.com>
+	<20100513191142.GA18886@srcf.ucam.org>
+	<1273779394.19100.47.camel@c-dwalke-linux.qualcomm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20100513192522.GA19256@srcf.ucam.org>
+In-Reply-To: <1273779394.19100.47.camel@c-dwalke-linux.qualcomm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,50 +27,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-* Matthew Garrett <mjg@redhat.com> [100513 12:20]:
-> On Thu, May 13, 2010 at 12:17:17PM -0700, Tony Lindgren wrote:
-> > The suspend blocks seems like a hack to spam filter good and bad
-> > apps from timer usage point of view. Applications are categorized
-> > as good or bad depending if they grab a susped blocker or not.
-> > 
-> > I believe categorizing the apps should be instead done with some
-> > timer flags or cgroups instead.
+On Thu, May 13, 2010 at 12:36:34PM -0700, Daniel Walker wrote:
+> On Thu, 2010-05-13 at 20:11 +0100, Matthew Garrett wrote:
+> > See feature-removal-schedule.txt. So far we have no indication that it's 
+> > going to be replaced, because nobody has actually suggested a working 
+> > way to do this better. If we had a concrete implementation proposal for 
+> > that then we'd be in a pretty different position right now.
 > 
-> I agree, but we have no mechanism for implementing that in a race-free 
-> way. We don't even have a realistical proposal for what that mechanism 
-> would look like. Should we refuse bread today for the promise of cake 
-> tomorrow?
+> Ok, feature-removal-schedule.txt applies to everything tho. What your
+> saying is that if this interface only last a short time it might take 6
+> months, if it last for a long time it would take longer. There's no easy
+> way to know that Google is the only user after some amount of time
+> passes.
 
-Well this is an interesting problem, and once solved will be handy
-for all kind of things. My worry is that if it's integrated in it's
-current form it will be totally out of control all over the place :(
+If the interface is there for a long time, it's because we haven't come 
+up with anything better. And if we haven't come up with anything better, 
+the interface deserves to be there.
 
-Still hoping we can come up with some clean way that avoid the patching
-all over the place part.. How about the following, can you please check
-if it would help with your example of guaranteed handling of event:
-
-1. In the kernel, we add one more timer queue for critical timers.
-   The current timer queue(s) stay as it is.
-
-2. We allow selecting the timer based on some flag, the default
-   behaviour being the current default timer queue.
-
-3. Then we add next_timer_interupt_critical() to only query the
-   critical timers along the lines of the current next_timer_interrupt().
-
-4. We implement a custom pm_idle that suspends the system based on
-   some logic and checking if next_timer_interrupt_critical() is
-   empty. If the next_timer_interrupt_critical() does not return
-   anything, we assume it's OK to suspend the system.
-
-Now to me it sounds if your the input layer and userspace handle
-both grab the timers with the critical flags, it should be guaranteed
-that the events get handled before the system is suspended.
-
-Regards,
-
-Tony
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
