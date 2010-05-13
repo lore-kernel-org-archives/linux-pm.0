@@ -1,14 +1,15 @@
-From: Matt Reimer <mattjreimer@gmail.com>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
-	userspace is frozen?
-Date: Thu, 13 May 2010 15:20:07 -0700
-Message-ID: <AANLkTimBxoCCeT_ns30JTIGKqgkiRIvKTf4LfE3mopkS__49450.3596485176$1273789356$gmane$org@mail.gmail.com>
-References: <AANLkTimW3wLEt-DIRirHic1ZN1Z0k1t3TavwaCxTh_QL@mail.gmail.com>
-	<Pine.LNX.4.44L0.1005131752160.1731-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Thu, 13 May 2010 23:57:33 +0200
+Message-ID: <201005132357.33385.rjw__14618.9493280419$1273789475$gmane$org@sisk.pl>
+References: <alpine.DEB.2.00.1005122118530.7624@utopia.booyaka.com>
+	<201005132314.22497.rjw@sisk.pl>
+	<20100513213121.GJ3428@atomide.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=000e0cd598303cae1304868129f0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005131752160.1731-100000@iolanthe.rowland.org>
+In-Reply-To: <20100513213121.GJ3428@atomide.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,104 +19,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Tony Lindgren <tony@atomide.com>
+Cc: Arve@smtp1.linux-foundation.org, Kernel development list <linux-kernel@vger.kernel.org>, Linus Walleij <linus.walleij@ericsson.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>, Oleg Nesterov <oleg@redhat.com>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Tejun Heo <tj@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---000e0cd598303cae1304868129f0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Thursday 13 May 2010, Tony Lindgren wrote:
+> * Rafael J. Wysocki <rjw@sisk.pl> [100513 14:08]:
+> > On Thursday 13 May 2010, Tony Lindgren wrote:
+> > > 
+> > > The difference between echo mem > /sys/power/state and suspend blocks
+> > > is that with suspend blocks the system keeps running.
+> > 
+> > Care to elaborate?
+> 
+> The suspend blocks affects the runtime behaviour of the system by
+> categorizing apps into good and bad apps in a weird way.
 
-On Thu, May 13, 2010 at 2:54 PM, Alan Stern <stern@rowland.harvard.edu> wro=
-te:
-> On Thu, 13 May 2010, Matt Reimer wrote:
->
->> So how does the attached patch look?
->>
->> Matt
->>
->>
->> From 20d8340471eb05aa54af1349f4ddccecd9c230c6 Mon Sep 17 00:00:00 2001
->> From: Matt Reimer <mreimer@sdgsystems.com>
->> Date: Thu, 13 May 2010 14:36:54 -0700
->> Subject: [PATCH] fs: prevent hang on suspend/resume when MMC/SD card pre=
-sent
->>
->> Devices can come and go from the MMC/SD bus during suspend or resume,
->> when the writeback thread is frozen, resulting in a hang. So thaw the
->> writeback thread in del_gendisk() to prevent the hang.
->
-> I don't see anything wrong with the patch itself, but I dislike the
-> description. =A0Devices can come and go from any hotpluggable bus, not
-> just MMC/SD. =A0That just happens to be the first place the problem was
-> observed.
+I don't see this, can you please explain?
 
-Good point. How about this?
-
-Matt
-
->From 813bd223e5a2fa577b9e64ddf12654a93d0aab8b Mon Sep 17 00:00:00 2001
-From: Matt Reimer <mreimer@sdgsystems.com>
-Date: Thu, 13 May 2010 14:36:54 -0700
-Subject: [PATCH] fs: prevent hang on suspend/resume when MMC/SD card presen=
-t
-
-Devices can come and go bus during suspend or resume, when the
-writeback thread is frozen, resulting in a hang. Prevent the hang
-by thawing the writeback thread in del_gendisk().
-
-Signed-off-by: Matt Reimer <mreimer@sdgsystems.com>
----
- fs/partitions/check.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index e238ab2..b303919 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -666,6 +666,8 @@ void del_gendisk(struct gendisk *disk)
-        struct disk_part_iter piter;
-        struct hd_struct *part;
-
-+       thaw_process(disk->queue->backing_dev_info.wb.task);
-+
-        /* invalidate stuff */
-        disk_part_iter_init(&piter, disk,
-                             DISK_PITER_INCL_EMPTY | DISK_PITER_REVERSE);
---=20
-1.7.0.4
-
---000e0cd598303cae1304868129f0
-Content-Type: application/octet-stream;
-	name="0001-fs-prevent-hang-on-suspend-resume-when-MMC-SD-card-p.patch"
-Content-Disposition: attachment;
-	filename="0001-fs-prevent-hang-on-suspend-resume-when-MMC-SD-card-p.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g965743o0
-
-RnJvbSA4MTNiZDIyM2U1YTJmYTU3N2I5ZTY0ZGRmMTI2NTRhOTNkMGFhYjhiIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBNYXR0IFJlaW1lciA8bXJlaW1lckBzZGdzeXN0ZW1zLmNvbT4K
-RGF0ZTogVGh1LCAxMyBNYXkgMjAxMCAxNDozNjo1NCAtMDcwMApTdWJqZWN0OiBbUEFUQ0hdIGZz
-OiBwcmV2ZW50IGhhbmcgb24gc3VzcGVuZC9yZXN1bWUgd2hlbiBNTUMvU0QgY2FyZCBwcmVzZW50
-CgpEZXZpY2VzIGNhbiBjb21lIGFuZCBnbyBidXMgZHVyaW5nIHN1c3BlbmQgb3IgcmVzdW1lLCB3
-aGVuIHRoZQp3cml0ZWJhY2sgdGhyZWFkIGlzIGZyb3plbiwgcmVzdWx0aW5nIGluIGEgaGFuZy4g
-UHJldmVudCB0aGUgaGFuZwpieSB0aGF3aW5nIHRoZSB3cml0ZWJhY2sgdGhyZWFkIGluIGRlbF9n
-ZW5kaXNrKCkuCgpTaWduZWQtb2ZmLWJ5OiBNYXR0IFJlaW1lciA8bXJlaW1lckBzZGdzeXN0ZW1z
-LmNvbT4KLS0tCiBmcy9wYXJ0aXRpb25zL2NoZWNrLmMgfCAgICAyICsrCiAxIGZpbGVzIGNoYW5n
-ZWQsIDIgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9mcy9wYXJ0
-aXRpb25zL2NoZWNrLmMgYi9mcy9wYXJ0aXRpb25zL2NoZWNrLmMKaW5kZXggZTIzOGFiMi4uYjMw
-MzkxOSAxMDA2NDQKLS0tIGEvZnMvcGFydGl0aW9ucy9jaGVjay5jCisrKyBiL2ZzL3BhcnRpdGlv
-bnMvY2hlY2suYwpAQCAtNjY2LDYgKzY2Niw4IEBAIHZvaWQgZGVsX2dlbmRpc2soc3RydWN0IGdl
-bmRpc2sgKmRpc2spCiAJc3RydWN0IGRpc2tfcGFydF9pdGVyIHBpdGVyOwogCXN0cnVjdCBoZF9z
-dHJ1Y3QgKnBhcnQ7CiAKKwl0aGF3X3Byb2Nlc3MoZGlzay0+cXVldWUtPmJhY2tpbmdfZGV2X2lu
-Zm8ud2IudGFzayk7CisKIAkvKiBpbnZhbGlkYXRlIHN0dWZmICovCiAJZGlza19wYXJ0X2l0ZXJf
-aW5pdCgmcGl0ZXIsIGRpc2ssCiAJCQkgICAgIERJU0tfUElURVJfSU5DTF9FTVBUWSB8IERJU0tf
-UElURVJfUkVWRVJTRSk7Ci0tIAoxLjcuMC40Cgo=
---000e0cd598303cae1304868129f0
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---000e0cd598303cae1304868129f0--
+Rafael
