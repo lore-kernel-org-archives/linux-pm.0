@@ -1,13 +1,15 @@
-From: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [RFC,5/7] NUMA hotplug emulator
-Date: Thu, 13 May 2010 14:11:20 +0200
-Message-ID: <20100513141120.10524f05__9998.41414527527$1273752927$gmane$org@hyperion.delvare>
-References: <20100513115625.GF2169@shaohui>
+From: Matthew Garrett <mjg@redhat.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Thu, 13 May 2010 13:17:45 +0100
+Message-ID: <20100513121745.GA10749__38283.0312745229$1273753231$gmane$org@srcf.ucam.org>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<alpine.DEB.2.00.1005122118530.7624@utopia.booyaka.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100513115625.GF2169@shaohui>
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1005122118530.7624@utopia.booyaka.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,28 +19,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shaohui Zheng <shaohui.zheng@intel.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>, haicheng.li@linux.intel.com, shaohui.zheng@linux.intel.com, Bottomley <James.Bottomley@HansenPartnership.com>, linux-mm@kvack.org, "H. Peter Anvin" <hpa@zytor.com>, Stephen Rothwell <sfr@canb.auug.org.au>, Hidetoshi@smtp1.linux-foundation.org, Andi Kleen <ak@linux.intel.com>, x86@kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, David Rientjes <rientjes@google.com>, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Len Brown <len.brown@intel.com>, Seto <seto.hidetoshi@jp.fujitsu.com>, Alex Chiang <achiang@hp.com>, Mel Gorman <mel@csn.ul.ie>, James@smtp1.linux-foundation.org, Greg@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org, Linus Walleij <linus.walleij@ericsson.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 13 May 2010 19:56:25 +0800, Shaohui Zheng wrote:
+On Wed, May 12, 2010 at 09:35:30PM -0600, Paul Walmsley wrote:
 > 
-> hotplug emulator: Abstract cpu register functions
-> 
-> Abstract function arch_register_cpu and register_cpu, move the implementation
-> details to a sub function with prefix "__". 
-> 
-> each of the sub function has an extra parameter nid, it can be used to register
-> CPU under a fake NUMA node, it is a reserved interface for cpu hotplug emulation
-> (CPU PROBE/RELEASE) in x86.
-> 
-> Signed-off-by: Shaohui Zheng <shaohui.zheng@intel.com>
-> Signed-off-by: Haicheng Li <haicheng.li@intel.com>
+> Figuring out a different way to do this should not limit Android at all, 
+> since Google can do what other Linux distributions do and continue to 
+> patch opportunistic suspend/suspend-block calls into their kernels as 
+> needed to ship devices, while contributing towards a different solution to 
+> the problem.
 
-I don't know anything about this, please don't Cc me on these patches.
-Given the very long Cc list, I'm certain many other developers you have
-included are not interested. Please focus on the relevant lists next
-time!
+I basically agree, except that despite having a year to do so none of us 
+have come up with a different way that would actually work. Google have 
+done this work. Who's going to prove that there is actually a different 
+way to do this?
 
 -- 
-Jean Delvare
+Matthew Garrett | mjg59@srcf.ucam.org
