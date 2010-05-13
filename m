@@ -1,15 +1,14 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Thu, 13 May 2010 14:47:40 -0700
-Message-ID: <20100513214739.GM3428__43075.496532447$1273787582$gmane$org@atomide.com>
-References: <20100513191717.GA3428@atomide.com>
-	<Pine.LNX.4.44L0.1005131729510.1731-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Is it supposed to be ok to call del_gendisk while
+ userspace is frozen?
+Date: Thu, 13 May 2010 17:54:39 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005131752160.1731-100000__38520.9865090021$1273787717$gmane$org@iolanthe.rowland.org>
+References: <AANLkTimW3wLEt-DIRirHic1ZN1Z0k1t3TavwaCxTh_QL@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1005131729510.1731-100000@iolanthe.rowland.org>
+In-Reply-To: <AANLkTimW3wLEt-DIRirHic1ZN1Z0k1t3TavwaCxTh_QL@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,44 +18,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-omap@vger.kernel.org, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Linus Walleij <linus.walleij@ericsson.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Matt Reimer <mattjreimer@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-* Alan Stern <stern@rowland.harvard.edu> [100513 14:32]:
-> On Thu, 13 May 2010, Tony Lindgren wrote:
+On Thu, 13 May 2010, Matt Reimer wrote:
+
+> So how does the attached patch look?
 > 
-> > The difference between echo mem > /sys/power/state and suspend blocks
-> > is that with suspend blocks the system keeps running.
+> Matt
 > 
-> Irrelevant.  Paul wasn't talking about the suspend blockers; he was 
-> talking about opportunistic suspend.  So what's the difference between 
-> opportunistic suspend and "echo mem >/sys/power/state"?  Especially 
-> when suspend blockers aren't being used?
-
-Opportunistic suspend is really trying to do runtime PM, see below.
- 
-> > And that's why 
-> > it should be handled by runtime power management instead.
 > 
-> Runtime PM is not capable of freezing userspace and shutting down CPUs.  
-> More or less by definition -- if it could then it wouldn't be "runtime" 
-> any more, since the processor wouldn't be running.
-
-Not true. We are already powering off CPUs and rebooting them for
-at least omaps in every idle loop using cpuidle. The memory stays on.
- 
-> > The suspend blocks seems like a hack to spam filter good and bad
-> > apps from timer usage point of view. Applications are categorized
-> > as good or bad depending if they grab a susped blocker or not.
+> From 20d8340471eb05aa54af1349f4ddccecd9c230c6 Mon Sep 17 00:00:00 2001
+> From: Matt Reimer <mreimer@sdgsystems.com>
+> Date: Thu, 13 May 2010 14:36:54 -0700
+> Subject: [PATCH] fs: prevent hang on suspend/resume when MMC/SD card present
 > 
-> You're referring just to the userspace part of the suspend blocker 
-> API.  What about the kernel part?
+> Devices can come and go from the MMC/SD bus during suspend or resume,
+> when the writeback thread is frozen, resulting in a hang. So thaw the
+> writeback thread in del_gendisk() to prevent the hang.
 
-IMHO some timer flags should be used in the kernel too. Currently
-there's no way of knowing which timers are good or bad from suspend
-point of view.
+I don't see anything wrong with the patch itself, but I dislike the 
+description.  Devices can come and go from any hotpluggable bus, not 
+just MMC/SD.  That just happens to be the first place the problem was 
+observed.
 
-Regards,
-
-Tony 
+Alan Stern
