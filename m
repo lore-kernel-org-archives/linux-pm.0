@@ -1,16 +1,16 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Fri, 14 May 2010 15:45:58 -0700
-Message-ID: <87k4r69k61.fsf__41331.6163853326$1273877313$gmane$org@deeprootsystems.com>
+Date: Fri, 14 May 2010 15:59:16 -0700
+Message-ID: <AANLkTil-Ky5L84JF7xn6su8VMtglBpZwCNIh7VgBiHgL__24870.4034755521$1273878025$gmane$org@mail.gmail.com>
 References: <alpine.DEB.2.00.1005122118530.7624@utopia.booyaka.com>
 	<878w7mgqse.fsf@deeprootsystems.com>
 	<87tyqaduvr.fsf@deeprootsystems.com> <201005142350.01222.rjw@sisk.pl>
+	<87k4r69k61.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005142350.01222.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Fri\, 14 May 2010 23\:50\:01 +0200")
+In-Reply-To: <87k4r69k61.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,66 +20,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-omap@vger.kernel.org, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Matthew Garrett <mjg@redhat.com>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: linux-omap@vger.kernel.org, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
-
-> On Friday 14 May 2010, Kevin Hilman wrote:
->> Kevin Hilman <khilman@deeprootsystems.com> writes:
->> 
->> > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->> >
->> >> On Thursday 13 May 2010, Tony Lindgren wrote:
->> >>> * Rafael J. Wysocki <rjw@sisk.pl> [100513 14:16]:
->> >
->> > [...]
->> >
->> >>>  
->> >>> > It solves a practical issue that _at_ _the_ _moment_ cannot be solved
->> >>> > differently, while there's a growing number of out-of-tree drivers depending
->> >>> > on this framework.  We need those drivers in and because we don't have any
->> >>> > viable alternative at hand, we have no good reason to reject it.
->> >>> 
->> >>> Nothing is preventing merging the drivers can be merged without
->> >>> these calls.
->> >>
->> >> And yet, there _is_ a growing nuber of drivers that don't get merge because
->> >> of that.  That's _reality_.  Are you going to discuss with facts, or what?
->> >
->> > It may be reality, but IMO, "preventing other drivers" isn't a good
->> > *technical* argument for merging a feature.  It feels like these "for
->> > the 'good' of the community" arguments are being used to trump the
->> > technical arguments.  Maybe we need to keep the separate.
->> 
->> To continue along the "for the good of the community" path...
->> 
->> If it truly is the lack of a suspend blocker API that is preventing
->> the merge of these out of tree drivers, I second Mark's proposal[1] to
->> merge a noop version of the API while the technical issues continue to
->> be discussed.
->
-> I'm against that, sorry.
-
-OK, I'll bite... Why?
-
->> Then we would see how many drivers get submitted and merged.
->>
->> Personally, I suspect that lack of this feature is not the real
->> obstacle to getting these out-of-tree drivers upstream.  Having this
->> API upstream will not change the product schedules and corporate
->> cultures that have prevented code from making its way upstream.
->
-> But apparently it is considered as a suitable excuse.
-
-No, it is not a _technical_ excuse.  Just a healthy, experience-based
-dose of skepticism.
-
-It was expressed because I find the arguments above for merging
-because it prevents out-of-tree drivers from merging quite
-unconvincing.  This is not just about opportunistic suspend + suspend
-blockers specifically but comes from several years experience in the
-embedded Linux world.
-
-Kevin
+T24gRnJpLCBNYXkgMTQsIDIwMTAgYXQgMzo0NSBQTSwgS2V2aW4gSGlsbWFuCjxraGlsbWFuQGRl
+ZXByb290c3lzdGVtcy5jb20+IHdyb3RlOgo+Pj4gUGVyc29uYWxseSwgSSBzdXNwZWN0IHRoYXQg
+bGFjayBvZiB0aGlzIGZlYXR1cmUgaXMgbm90IHRoZSByZWFsCj4+PiBvYnN0YWNsZSB0byBnZXR0
+aW5nIHRoZXNlIG91dC1vZi10cmVlIGRyaXZlcnMgdXBzdHJlYW0uIMKgSGF2aW5nIHRoaXMKPj4+
+IEFQSSB1cHN0cmVhbSB3aWxsIG5vdCBjaGFuZ2UgdGhlIHByb2R1Y3Qgc2NoZWR1bGVzIGFuZCBj
+b3Jwb3JhdGUKPj4+IGN1bHR1cmVzIHRoYXQgaGF2ZSBwcmV2ZW50ZWQgY29kZSBmcm9tIG1ha2lu
+ZyBpdHMgd2F5IHVwc3RyZWFtLgo+Pgo+PiBCdXQgYXBwYXJlbnRseSBpdCBpcyBjb25zaWRlcmVk
+IGFzIGEgc3VpdGFibGUgZXhjdXNlLgo+Cj4gTm8sIGl0IGlzIG5vdCBhIF90ZWNobmljYWxfIGV4
+Y3VzZS4gwqBKdXN0IGEgaGVhbHRoeSwgZXhwZXJpZW5jZS1iYXNlZAo+IGRvc2Ugb2Ygc2tlcHRp
+Y2lzbS4KPgo+IEl0IHdhcyBleHByZXNzZWQgYmVjYXVzZSBJIGZpbmQgdGhlIGFyZ3VtZW50cyBh
+Ym92ZSBmb3IgbWVyZ2luZwo+IGJlY2F1c2UgaXQgcHJldmVudHMgb3V0LW9mLXRyZWUgZHJpdmVy
+cyBmcm9tIG1lcmdpbmcgcXVpdGUKPiB1bmNvbnZpbmNpbmcuIMKgVGhpcyBpcyBub3QganVzdCBh
+Ym91dCBvcHBvcnR1bmlzdGljIHN1c3BlbmQgKyBzdXNwZW5kCj4gYmxvY2tlcnMgc3BlY2lmaWNh
+bGx5IGJ1dCBjb21lcyBmcm9tIHNldmVyYWwgeWVhcnMgZXhwZXJpZW5jZSBpbiB0aGUKPiBlbWJl
+ZGRlZCBMaW51eCB3b3JsZC4KCkl0IHByb3ZpZGVzIHVzZWZ1bCBmdW5jdGlvbmFsaXR5IC0tIHlv
+dSBhcHBhcmVudGx5IGRpc2FncmVlLCBidXQgdGhlCndha2Vsb2NrL3N1c3BlbmRibG9jayBtb2Rl
+bCBpcyBpbiB1c2UsIHNoaXBwaW5nLCBhbmQgc29sdmluZyBwcm9ibGVtcwpmb3IgcXVpdGUgYSBs
+b3Qgb2YgYW5kcm9pZCBkZXZpY2VzIHRoYXQgaGF2ZSBiZWVuIHNoaXBwaW5nIGZvciBhIHdoaWxl
+Cm5vdy4gIFdlIGFjdGl2ZWx5IGdvIHRvIGxvd2VzdCBwb3dlciBzdGF0ZSBpbiBpZGxlIChvbiBv
+bWFwLCBtc20sCmV0YyksIGFuZCB1c2UgZHJpdmVycyB0aGF0IGFnZ3Jlc3NpdmVseSBkZWNsb2Nr
+IGFuZCBkZXBvd2VyIG1vZHVsZXMKKHNpbWlsYXIgdG8gcnVudGltZSBwbSksIGJ1dCB3ZSBoYXZl
+IGZvdW5kIHRoYXQgdXNpbmcgdGhlCm9wcG9ydHVuaXN0aWMgc3VzcGVuZCBtb2RlbCBjb21iaW5l
+ZCB3aXRoIHdha2Vsb2NrcyBhbGxvd3MgdXMgdG8KYXR0YWluIGV2ZW4gbG93ZXIgYXZlcmFnZSBw
+b3dlciBjb25zdW1wdGlvbiBpbiBhbHdheXMtY29ubmVjdGVkLAphY3RpdmVseS1zeW5jaW5nIGRl
+dmljZXMuCgpJdCBoYXMgYmVlbiBjbGFpbWVkIHRoYXQgYmVjYXVzZSBBbmRyb2lkIHVzZXJzcGFj
+ZSBtYWtlcyB1c2Ugb2YgdGhpcwpmdW5jdGlvbmFsaXR5IGEgbnVtYmVyIG9mIHNpbGljb24gdmVu
+ZG9ycyB3aG8gd2FudCB0byBzdWJtaXQgY29kZQp1cHN0cmVhbSBhcmUgaW5jb252ZW5pZW5jZWQg
+YnkgaGF2aW5nIHRvIG1haW50YWluICJhbmRyb2lkIiBhbmQKIm1haW5saW5lIiB2ZXJzaW9ucyBv
+ZiB0aGVpciBkcml2ZXJzLiAgSSBjYW4ndCBzcGVhayBmb3IgdGhlbSwgc2luY2UKbm9ib2R5IGhh
+cyBpZGVudGlmaWVkIHRoZSBwYXJ0aWN1bGFyIGluY29udmVuaWVuY2VkIHZlbmRvcnMgdG8gbWUs
+IG5vcgpoYXZlIHRoZXkgc3Bva2VuIHdpdGggbWUgZGlyZWN0bHksIGJ1dCBwZXJzb25hbGx5IEkg
+ZG8gZmluZCB0aGF0CmhhdmluZyB0byBtYWludGFpbiB0d28gZGlmZmVyZW50IHZlcnNpb25zIG9m
+IGRyaXZlcnMgKG9uZSB2ZXJzaW9uIGZvcgp1cHN0cmVhbSwgb25lIGZvciBzaGlwcGluZyBwcm9k
+dWN0cykgaXMgaW5jb252ZW5pZW50LgoKQnJpYW4KX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3Rz
+LmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcv
+bWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
