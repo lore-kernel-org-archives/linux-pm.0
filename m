@@ -1,18 +1,13 @@
-From: Daniel Walker <dwalker@fifo99.com>
+From: Paul Walmsley <paul@pwsan.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Fri, 14 May 2010 09:47:39 -0700
-Message-ID: <1273855659.25594.29.camel__32038.7049847797$1273855897$gmane$org@c-dwalke-linux.qualcomm.com>
-References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<201005132311.26293.rjw@sisk.pl>
-	<1273785399.19100.98.camel@c-dwalke-linux.qualcomm.com>
-	<201005132327.16163.rjw@sisk.pl>
-	<1273786409.19100.104.camel@c-dwalke-linux.qualcomm.com>
-	<20100513214653.GA21120@suse.de>
+Date: Fri, 14 May 2010 11:22:05 -0600 (MDT)
+Message-ID: <alpine.DEB.2.00.1005141101070.3348@utopia.booyaka.com>
+References: <Pine.LNX.4.44L0.1005031301400.1651-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100513214653.GA21120@suse.de>
+In-Reply-To: <Pine.LNX.4.44L0.1005031301400.1651-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,51 +17,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Liam Girdwood <lrg@slimlogic.co.uk>, Matthew Garrett <mjg@redhat.com>, Oleg Nesterov <oleg@redhat.com>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Tejun Heo <tj@kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Liam Girdwood <lrg@slimlogic.co.uk>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Oleg Nesterov <oleg@redhat.com>, linux-omap@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>, Daniel Walker <dwalker@codeaurora.org>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2010-05-13 at 14:46 -0700, Greg KH wrote:
-> On Thu, May 13, 2010 at 02:33:29PM -0700, Daniel Walker wrote:
-> > On Thu, 2010-05-13 at 23:27 +0200, Rafael J. Wysocki wrote:
-> > 
-> > > Because someone would have to remove suspend blockers (or rather wakelocks)
-> > > from the drivers, test that they work correctly without suspend blockers and
-> > > submit the modified versions.  Going forward, every party responsible for such
-> > > a driver would have to maintain an out-of-tree version with suspend blockers
-> > > (or wakelocks) anyway, so the incentive to do that is zero.
-> > 
-> > They should work without wakelock since wakelock are optional .. I mean
-> > there's nothing in suspend blockers I've seen that indicates it's
-> > required for some drivers to work. So it's just a matter of patching out
-> > the wakelocks, with no need to re-test anything.
-> > 
-> > You get the driver mainlined, then maintain a small patch to add
-> > wakelocks. Not hard at all , with lots of incentive to do so since you
-> > don't have to maintain such a large block of code out of tree.
-> 
-> Sorry, but it doesn't seem to work that way.  Look at the large number
-> of out-of-tree android device drivers that remain sitting there because
-> of the lack of this interface being in the kernel.
 
-I don't think that's due to this interface tho. During your CELF
-presentation you noted several bits of code that could go in right now
-but haven't (and still haven't as far as I've seen). I'm actively
-pushing code related to Android (with wakelocks removed).. Putting a
-wakelock contingency on everything to me doesn't make much sense.
+Hello,
 
-> Also note that such a driver, without wakelocks, would never get tested,
-> and so, things start quickly diverging.
+Please forgive the delay in commenting - I am just now catching up on 
+these huge E-mail threads;
 
-That's not totally true. For example the MMC driver had wakelocks (I
-think, or for sure mmc core does), and the MMC driver has been tested
-for G1 and works fine so far without them. I have code that is queued
-for my tree that will enable MMC on G1. I can merge Nexus one support
-through my tree also which would allow all the drivers for that device
-to eventually be used.
+On Mon, 3 May 2010, Alan Stern wrote:
 
-With that device support in mainline then those drivers become nice
-things to have with or with out wakelocks. You don't need wakelocks to
-run Debian or anything else except Android.
+> So for example, runtime PM cannot be used to put the system into an S3 
+> sleep state.
 
-Daniel
+This is not quite true.  Runtime PM, *in conjunction with CPUIdle,* can 
+put many current embedded Linux systems into not just S3, but actually S5.
+
+This is done right now on OMAP in mainline Linux[1].  (S5 is called "C6" 
+in that codebase, since the CPUIdle governor is used - this is a 
+misnomer.)
+
+This approach allows the system to wake up, or stay running, as requested 
+by the timer subsystem, or the scheduler.  No suspend-block-like API is 
+needed.
+
+Several consumer-market Linux devices have already shipped using this 
+mechanism.
+
+> The simplest example is that suspend blockers can be used to control 
+> whether or not the CPU shuts down, whereas runtime PM can't.
+
+Runtime PM still needs to be combined with some sort of governor to 
+control not only CPU power states, but also system power states.  CPUIdle 
+works pretty well as a system power governor for a single-CPU system, but 
+is admittedly something of a hack[2].
+
+Going forward, some sort of basic, system-wide governor is a cleaner 
+design[3].  But since the "opportunistic suspend" governor proposed in 
+patch 1 ignores timer expiries and the scheduler runqueue, and then hacks 
+around that decision by inserting suspend-block calls into code that would 
+otherwise work normally, it's not a good approach.
+
+
+- Paul
+
+
+
+1. http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=arch/arm/mach-omap2/cpuidle34xx.c;h=3d3d035db9aff62ce522e0080e570cfdbf8e70cc;hb=4462dc02842698f173f518c1f5ce79c0fb89395a#l292
+
+2. Paul Walmsley E-mail to the linux-pm mailing list, dated Thu, 13
+   May 2010 13:01:33 -0600:
+   http://permalink.gmane.org/gmane.linux.power-management.general/18592
+
+3. ibid.
