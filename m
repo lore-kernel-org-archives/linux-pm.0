@@ -1,18 +1,14 @@
-From: =?UTF-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
-Subject: [PATCH 6/8] PM: Add suspend blocking work.
-Date: Thu, 13 May 2010 21:11:11 -0700
-Message-ID: <1273810273-3039-7-git-send-email-arve__22700.6735666238$1273810369$gmane$org@android.com>
+From: Paul Walmsley <paul@pwsan.com>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Fri, 14 May 2010 00:13:50 -0600 (MDT)
+Message-ID: <alpine.DEB.2.00.1005140001360.3348@utopia.booyaka.com>
 References: <1273810273-3039-1-git-send-email-arve@android.com>
 	<1273810273-3039-2-git-send-email-arve@android.com>
-	<1273810273-3039-3-git-send-email-arve@android.com>
-	<1273810273-3039-4-git-send-email-arve@android.com>
-	<1273810273-3039-5-git-send-email-arve@android.com>
-	<1273810273-3039-6-git-send-email-arve@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: MULTIPART/MIXED; BOUNDARY="155748971-315612775-1273817099=:3348"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1273810273-3039-6-git-send-email-arve@android.com>
+In-Reply-To: <1273810273-3039-2-git-send-email-arve@android.com>
+Content-ID: <alpine.DEB.2.00.1005140006370.3348@utopia.booyaka.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,136 +18,149 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>, Len Brown <len.brown@intel.com>
+To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sven Neumann <s.neumann@raumfeld.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, Tero Saarni <tero.saarni@gmail.com>, linux-input@vger.kernel.org, linux-pm@lists.linux-foundation.org, Liam Girdwood <lrg@slimlogic.co.uk>, Alexey Dobriyan <adobriyan@gmail.com>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Daniel Mack <daniel@caiaq.de>, Oleg Nesterov <oleg@redhat.com>, linux-omap@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>, Daniel Walker <dwalker@codeaurora.org>, Theodore Ts'o <tytso@mit.edu>, =?ISO-8859-15?Q?M=E1rton_N=E9meth?= <nm127@freemail.hu>, Brian Swetland <swetland@google.com>, Mark Brown <brooni>
 List-Id: linux-pm@vger.kernel.org
 
-QWxsb3cgd29yayB0byBiZSBxdWV1ZWQgdGhhdCB3aWxsIGJsb2NrIHN1c3BlbmQgd2hpbGUgaXQg
-aXMgcGVuZGluZwpvciBleGVjdXRpbmcuIFRvIGdldCB0aGUgc2FtZSBmdW5jdGlvbmFsaXR5IGlu
-IHRoZSBjYWxsaW5nIGNvZGUgb2Z0ZW4KcmVxdWlyZXMgYSBzZXBhcmF0ZSBzdXNwZW5kX2Jsb2Nr
-ZXIgZm9yIHBlbmRpbmcgYW5kIGV4ZWN1dGluZyB3b3JrLCBvcgphZGRpdGlvbmFsIHN0YXRlIGFu
-ZCBsb2NraW5nLiBUaGlzIGltcGxlbWVudGF0aW9uIGRvZXMgYWRkIGFkZGl0aW9uYWwKc3RhdGUg
-YW5kIGxvY2tpbmcsIGJ1dCB0aGlzIGNhbiBiZSByZW1vdmVkIGxhdGVyIGlmIHdlIGFkZCBzdXBw
-b3J0IGZvcgpzdXNwZW5kIGJsb2NraW5nIHdvcmsgdG8gdGhlIGNvcmUgd29ya3F1ZXVlIGNvZGUu
-CgpTaWduZWQtb2ZmLWJ5OiBBcnZlIEhqw7hubmV2w6VnIDxhcnZlQGFuZHJvaWQuY29tPgpSZXZp
-ZXdlZC1ieTogVGVqdW4gSGVvIDx0akBrZXJuZWwub3JnPgpBY2tlZC1ieTogUGF2ZWwgTWFjaGVr
-IDxwYXZlbEB1Y3cuY3o+Ci0tLQogaW5jbHVkZS9saW51eC9zdXNwZW5kX2Jsb2NrZXIuaCAgICAg
-IHwgICA2NyArKysrKysrKysrKysrKysrKysrKysKIGtlcm5lbC9wb3dlci9vcHBvcnR1bmlzdGlj
-X3N1c3BlbmQuYyB8ICAxMDkgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKwogMiBm
-aWxlcyBjaGFuZ2VkLCAxNzYgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKCmRpZmYgLS1n
-aXQgYS9pbmNsdWRlL2xpbnV4L3N1c3BlbmRfYmxvY2tlci5oIGIvaW5jbHVkZS9saW51eC9zdXNw
-ZW5kX2Jsb2NrZXIuaAppbmRleCAyNTZhZjE1Li5iYjkwYjQ1IDEwMDc1NQotLS0gYS9pbmNsdWRl
-L2xpbnV4L3N1c3BlbmRfYmxvY2tlci5oCisrKyBiL2luY2x1ZGUvbGludXgvc3VzcGVuZF9ibG9j
-a2VyLmgKQEAgLTE4LDYgKzE4LDcgQEAKIAogI2luY2x1ZGUgPGxpbnV4L2xpc3QuaD4KICNpbmNs
-dWRlIDxsaW51eC9rdGltZS5oPgorI2luY2x1ZGUgPGxpbnV4L3dvcmtxdWV1ZS5oPgogCiAvKioK
-ICAqIHN0cnVjdCBzdXNwZW5kX2Jsb2NrZXJfc3RhdHMgLSBzdGF0aXN0aWNzIGZvciBhIHN1c3Bl
-bmQgYmxvY2tlcgpAQCAtNjIsNiArNjMsMzggQEAgc3RydWN0IHN1c3BlbmRfYmxvY2tlciB7CiAj
-ZW5kaWYKIH07CiAKKy8qKgorICogc3RydWN0IHN1c3BlbmRfYmxvY2tpbmdfd29yayAtIHRoZSBi
-YXNpYyBzdXNwZW5kX2Jsb2NraW5nX3dvcmsgc3RydWN0dXJlCisgKiBAd29yazoJCVN0YW5kYXJk
-IHdvcmsgc3RydWN0LgorICogQHN1c3BlbmRfYmxvY2tlcjoJU3VzcGVuZCBibG9ja2VyLgorICog
-QGZ1bmM6CQlDYWxsYmFjay4KKyAqIEBsb2NrOgkJU3BpbmxvY2sgcHJvdGVjdGluZyBwZW5kaW5n
-IGFuZCBydW5uaW5nIHN0YXRlLgorICogQGFjdGl2ZToJCU51bWJlciBvZiBjcHUgd29ya3F1ZXVl
-cyB3aGVyZSB3b3JrIGlzIHBlbmRpbmcgb3IKKyAqCQkJY2FsbGJhY2sgaXMgcnVubmluZy4KKyAq
-CisgKiBXaGVuIHN1c3BlbmQgYmxvY2tpbmcgd29yayBpcyBwZW5kaW5nIG9yIGl0cyBjYWxsYmFj
-ayBpcyBydW5uaW5nIGl0IHByZXZlbnRzCisgKiB0aGUgc3lzdGVtIGZyb20gZW50ZXJpbmcgb3Bw
-b3J0dW5pc3RpYyBzdXNwZW5kLgorICoKKyAqIFRoZSBzdXNwZW5kX2Jsb2NraW5nX3dvcmsgc3Ry
-dWN0dXJlIG11c3QgYmUgaW5pdGlhbGl6ZWQgYnkKKyAqIHN1c3BlbmRfYmxvY2tpbmdfd29ya19p
-bml0KCkuCisgKi8KKworc3RydWN0IHN1c3BlbmRfYmxvY2tpbmdfd29yayB7CisJc3RydWN0IHdv
-cmtfc3RydWN0IHdvcms7CisjaWZkZWYgQ09ORklHX09QUE9SVFVOSVNUSUNfU1VTUEVORAorCXN0
-cnVjdCBzdXNwZW5kX2Jsb2NrZXIgc3VzcGVuZF9ibG9ja2VyOworCXdvcmtfZnVuY190IGZ1bmM7
-CisJc3BpbmxvY2tfdCBsb2NrOworCWludCBhY3RpdmU7CisjZW5kaWYKK307CisKK3N0YXRpYyBp
-bmxpbmUgc3RydWN0IHN1c3BlbmRfYmxvY2tpbmdfd29yayAqdG9fc3VzcGVuZF9ibG9ja2luZ193
-b3JrKAorCXN0cnVjdCB3b3JrX3N0cnVjdCAqd29yaykKK3sKKwlyZXR1cm4gY29udGFpbmVyX29m
-KHdvcmssIHN0cnVjdCBzdXNwZW5kX2Jsb2NraW5nX3dvcmssIHdvcmspOworfQorCiAjaWZkZWYg
-Q09ORklHX09QUE9SVFVOSVNUSUNfU1VTUEVORAogI2RlZmluZSBfX1NVU1BFTkRfQkxPQ0tFUl9J
-TklUSUFMSVpFUihibG9ja2VyX25hbWUpIFwKIAl7IC5uYW1lID0gI2Jsb2NrZXJfbmFtZSwgfQpA
-QCAtNzgsNiArMTExLDE0IEBAIGV4dGVybiB2b2lkIHN1c3BlbmRfdW5ibG9jayhzdHJ1Y3Qgc3Vz
-cGVuZF9ibG9ja2VyICpibG9ja2VyKTsKIGV4dGVybiBib29sIHN1c3BlbmRfYmxvY2tlcl9pc19h
-Y3RpdmUoc3RydWN0IHN1c3BlbmRfYmxvY2tlciAqYmxvY2tlcik7CiBleHRlcm4gYm9vbCBzdXNw
-ZW5kX2lzX2Jsb2NrZWQodm9pZCk7CiAKK3ZvaWQgc3VzcGVuZF9ibG9ja2luZ193b3JrX2luaXQo
-c3RydWN0IHN1c3BlbmRfYmxvY2tpbmdfd29yayAqd29yaywKKwkJCQl3b3JrX2Z1bmNfdCBmdW5j
-LCBjb25zdCBjaGFyICpuYW1lKTsKK3ZvaWQgc3VzcGVuZF9ibG9ja2luZ193b3JrX2Rlc3Ryb3ko
-c3RydWN0IHN1c3BlbmRfYmxvY2tpbmdfd29yayAqd29yayk7CitpbnQgcXVldWVfc3VzcGVuZF9i
-bG9ja2luZ193b3JrKHN0cnVjdCB3b3JrcXVldWVfc3RydWN0ICp3cSwKKwkJCQlzdHJ1Y3Qgc3Vz
-cGVuZF9ibG9ja2luZ193b3JrICp3b3JrKTsKK2ludCBzY2hlZHVsZV9zdXNwZW5kX2Jsb2NraW5n
-X3dvcmsoc3RydWN0IHN1c3BlbmRfYmxvY2tpbmdfd29yayAqd29yayk7CitpbnQgY2FuY2VsX3N1
-c3BlbmRfYmxvY2tpbmdfd29ya19zeW5jKHN0cnVjdCBzdXNwZW5kX2Jsb2NraW5nX3dvcmsgKndv
-cmspOworCiAjZWxzZQogCiAjZGVmaW5lIERFRklORV9TVVNQRU5EX0JMT0NLRVIoYmxvY2tlciwg
-bmFtZSkgXApAQCAtOTQsNiArMTM1LDMyIEBAIHN0YXRpYyBpbmxpbmUgYm9vbCBzdXNwZW5kX2Js
-b2NrZXJfaXNfYWN0aXZlKHN0cnVjdCBzdXNwZW5kX2Jsb2NrZXIgKmJsKQogCXJldHVybiBmYWxz
-ZTsKIH0KIHN0YXRpYyBpbmxpbmUgYm9vbCBzdXNwZW5kX2lzX2Jsb2NrZWQodm9pZCkgeyByZXR1
-cm4gZmFsc2U7IH0KKworc3RhdGljIGlubGluZSB2b2lkIHN1c3BlbmRfYmxvY2tpbmdfd29ya19p
-bml0KAorCXN0cnVjdCBzdXNwZW5kX2Jsb2NraW5nX3dvcmsgKndvcmssIHdvcmtfZnVuY190IGZ1
-bmMsIGNvbnN0IGNoYXIgKm5hbWUpCit7CisJSU5JVF9XT1JLKCZ3b3JrLT53b3JrLCBmdW5jKTsK
-K30KK3N0YXRpYyBpbmxpbmUgdm9pZCBzdXNwZW5kX2Jsb2NraW5nX3dvcmtfZGVzdHJveSgKKwlz
-dHJ1Y3Qgc3VzcGVuZF9ibG9ja2luZ193b3JrICp3b3JrKQoreworCWNhbmNlbF93b3JrX3N5bmMo
-JndvcmstPndvcmspOworfQorc3RhdGljIGlubGluZSBpbnQgcXVldWVfc3VzcGVuZF9ibG9ja2lu
-Z193b3JrKAorCXN0cnVjdCB3b3JrcXVldWVfc3RydWN0ICp3cSwgc3RydWN0IHN1c3BlbmRfYmxv
-Y2tpbmdfd29yayAqd29yaykKK3sKKwlyZXR1cm4gcXVldWVfd29yayh3cSwgJndvcmstPndvcmsp
-OworfQorc3RhdGljIGlubGluZSBpbnQgc2NoZWR1bGVfc3VzcGVuZF9ibG9ja2luZ193b3JrKAor
-CXN0cnVjdCBzdXNwZW5kX2Jsb2NraW5nX3dvcmsgKndvcmspCit7CisJcmV0dXJuIHNjaGVkdWxl
-X3dvcmsoJndvcmstPndvcmspOworfQorc3RhdGljIGlubGluZSBpbnQgY2FuY2VsX3N1c3BlbmRf
-YmxvY2tpbmdfd29ya19zeW5jKAorCXN0cnVjdCBzdXNwZW5kX2Jsb2NraW5nX3dvcmsgKndvcmsp
-Cit7CisJcmV0dXJuIGNhbmNlbF93b3JrX3N5bmMoJndvcmstPndvcmspOworfQogI2VuZGlmCiAK
-ICNlbmRpZgpkaWZmIC0tZ2l0IGEva2VybmVsL3Bvd2VyL29wcG9ydHVuaXN0aWNfc3VzcGVuZC5j
-IGIva2VybmVsL3Bvd2VyL29wcG9ydHVuaXN0aWNfc3VzcGVuZC5jCmluZGV4IDNmMDE1M2QuLjYz
-YmU5YWQgMTAwNjQ0Ci0tLSBhL2tlcm5lbC9wb3dlci9vcHBvcnR1bmlzdGljX3N1c3BlbmQuYwor
-KysgYi9rZXJuZWwvcG93ZXIvb3Bwb3J0dW5pc3RpY19zdXNwZW5kLmMKQEAgLTUxNywzICs1MTcs
-MTEyIEBAIHN0YXRpYyBpbnQgX19pbml0IHN1c3BlbmRfYmxvY2tlcl9kZWJ1Z2ZzX2luaXQodm9p
-ZCkKIH0KIAogcG9zdGNvcmVfaW5pdGNhbGwoc3VzcGVuZF9ibG9ja2VyX2RlYnVnZnNfaW5pdCk7
-CisKK3N0YXRpYyB2b2lkIHN1c3BlbmRfYmxvY2tpbmdfd29ya19jb21wbGV0ZShzdHJ1Y3Qgc3Vz
-cGVuZF9ibG9ja2luZ193b3JrICp3b3JrKQoreworCXVuc2lnbmVkIGxvbmcgZmxhZ3M7CisKKwlX
-QVJOX09OKCF3b3JrLT5hY3RpdmUpOworCXNwaW5fbG9ja19pcnFzYXZlKCZ3b3JrLT5sb2NrLCBm
-bGFncyk7CisJaWYgKCEtLXdvcmstPmFjdGl2ZSkKKwkJc3VzcGVuZF91bmJsb2NrKCZ3b3JrLT5z
-dXNwZW5kX2Jsb2NrZXIpOworCXNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJndvcmstPmxvY2ssIGZs
-YWdzKTsKK30KKworc3RhdGljIHZvaWQgc3VzcGVuZF9ibG9ja2luZ193b3JrX2Z1bmMoc3RydWN0
-IHdvcmtfc3RydWN0ICp3b3JrKQoreworCXN0cnVjdCBzdXNwZW5kX2Jsb2NraW5nX3dvcmsgKnNi
-d29yayA9IHRvX3N1c3BlbmRfYmxvY2tpbmdfd29yayh3b3JrKTsKKworCXNid29yay0+ZnVuYyh3
-b3JrKTsKKwlzdXNwZW5kX2Jsb2NraW5nX3dvcmtfY29tcGxldGUoc2J3b3JrKTsKK30KKworLyoq
-CisgKiBzdXNwZW5kX2Jsb2NraW5nX3dvcmtfaW5pdCAtIEluaXRpYWxpemUgYSBzdXNwZW5kLWJs
-b2NraW5nIHdvcmsgaXRlbS4KKyAqIEB3b3JrOiBXb3JrIGl0ZW0gdG8gaW5pdGlhbGl6ZS4KKyAq
-IEBmdW5jOiBDYWxsYmFjay4KKyAqIEBuYW1lOiBOYW1lIGZvciBzdXNwZW5kIGJsb2NrZXIuCisg
-KgorICovCit2b2lkIHN1c3BlbmRfYmxvY2tpbmdfd29ya19pbml0KHN0cnVjdCBzdXNwZW5kX2Js
-b2NraW5nX3dvcmsgKndvcmssCisJCQkJd29ya19mdW5jX3QgZnVuYywgY29uc3QgY2hhciAqbmFt
-ZSkKK3sKKwlJTklUX1dPUksoJndvcmstPndvcmssIHN1c3BlbmRfYmxvY2tpbmdfd29ya19mdW5j
-KTsKKwlzdXNwZW5kX2Jsb2NrZXJfaW5pdCgmd29yay0+c3VzcGVuZF9ibG9ja2VyLCBuYW1lKTsK
-Kwl3b3JrLT5mdW5jID0gZnVuYzsKKwlzcGluX2xvY2tfaW5pdCgmd29yay0+bG9jayk7CisJd29y
-ay0+YWN0aXZlID0gMDsKK30KK0VYUE9SVF9TWU1CT0xfR1BMKHN1c3BlbmRfYmxvY2tpbmdfd29y
-a19pbml0KTsKKworLyoqCisgKiBjYW5jZWxfc3VzcGVuZF9ibG9ja2luZ193b3JrX3N5bmMgLSBD
-YW5jZWwgYSBzdXNwZW5kLWJsb2NraW5nIHdvcmsgaXRlbS4KKyAqIEB3b3JrOiBXb3JrIGl0ZW0g
-dG8gaGFuZGxlLgorICovCitpbnQgY2FuY2VsX3N1c3BlbmRfYmxvY2tpbmdfd29ya19zeW5jKHN0
-cnVjdCBzdXNwZW5kX2Jsb2NraW5nX3dvcmsgKndvcmspCit7CisJaW50IHJldDsKKworCXJldCA9
-IGNhbmNlbF93b3JrX3N5bmMoJndvcmstPndvcmspOworCWlmIChyZXQpCisJCXN1c3BlbmRfYmxv
-Y2tpbmdfd29ya19jb21wbGV0ZSh3b3JrKTsKKwlyZXR1cm4gcmV0OworfQorRVhQT1JUX1NZTUJP
-TF9HUEwoY2FuY2VsX3N1c3BlbmRfYmxvY2tpbmdfd29ya19zeW5jKTsKKworLyoqCisgKiBzdXNw
-ZW5kX2Jsb2NraW5nX3dvcmtfZGVzdHJveSAtIERlc3Ryb3kgYSBzdXNwZW5kLWJsb2NraW5nIHdv
-cmsgaXRlbS4KKyAqIEB3b3JrOiBUaGUgd29yayBpdGVtIGluIHF1ZXN0aW9uLgorICoKKyAqIElm
-IHRoZSB3b3JrIHdhcyBldmVyIHF1ZXVlZCBvbiBtb3JlIHRoZW4gb25lIHdvcmtxdWV1ZSBhbGwg
-YnV0IHRoZSBsYXN0CisgKiB3b3JrcXVldWUgbXVzdCBiZSBmbHVzaGVkIGJlZm9yZSBjYWxsaW5n
-IHN1c3BlbmRfYmxvY2tpbmdfd29ya19kZXN0cm95LgorICovCit2b2lkIHN1c3BlbmRfYmxvY2tp
-bmdfd29ya19kZXN0cm95KHN0cnVjdCBzdXNwZW5kX2Jsb2NraW5nX3dvcmsgKndvcmspCit7CisJ
-Y2FuY2VsX3N1c3BlbmRfYmxvY2tpbmdfd29ya19zeW5jKHdvcmspOworCVdBUk5fT04od29yay0+
-YWN0aXZlKTsKKwlzdXNwZW5kX2Jsb2NrZXJfdW5yZWdpc3Rlcigmd29yay0+c3VzcGVuZF9ibG9j
-a2VyKTsKK30KK0VYUE9SVF9TWU1CT0xfR1BMKHN1c3BlbmRfYmxvY2tpbmdfd29ya19kZXN0cm95
-KTsKKworLyoqCisgKiBxdWV1ZV9zdXNwZW5kX2Jsb2NraW5nX3dvcmsgLSBRdWV1ZSBhIHN1c3Bl
-bmQtYmxvY2tpbmcgd29yayBpdGVtLgorICogQHdxOiBXb3JrcXVldWUgdG8gcXVldWUgdGhlIHdv
-cmsgb24uCisgKiBAd29yazogV29yayBpdGVtIHRvIHF1ZXVlLgorICovCitpbnQgcXVldWVfc3Vz
-cGVuZF9ibG9ja2luZ193b3JrKHN0cnVjdCB3b3JrcXVldWVfc3RydWN0ICp3cSwKKwkJCQlzdHJ1
-Y3Qgc3VzcGVuZF9ibG9ja2luZ193b3JrICp3b3JrKQoreworCWludCByZXQ7CisJdW5zaWduZWQg
-bG9uZyBmbGFnczsKKworCXNwaW5fbG9ja19pcnFzYXZlKCZ3b3JrLT5sb2NrLCBmbGFncyk7CisJ
-cmV0ID0gcXVldWVfd29yayh3cSwgJndvcmstPndvcmspOworCWlmIChyZXQpIHsKKwkJc3VzcGVu
-ZF9ibG9jaygmd29yay0+c3VzcGVuZF9ibG9ja2VyKTsKKwkJd29yay0+YWN0aXZlKys7CisJfQor
-CXNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJndvcmstPmxvY2ssIGZsYWdzKTsKKwlyZXR1cm4gcmV0
-OworfQorRVhQT1JUX1NZTUJPTF9HUEwocXVldWVfc3VzcGVuZF9ibG9ja2luZ193b3JrKTsKKwor
-LyoqCisgKiBzY2hlZHVsZV9zdXNwZW5kX2Jsb2NraW5nX3dvcmsgLSBTY2hlZHVsZSBhIHN1c3Bl
-bmQtYmxvY2tpbmcgd29yayBpdGVtLgorICogQHdvcms6IFdvcmsgaXRlbSB0byBzY2hlZHVsZS4K
-KyAqLworaW50IHNjaGVkdWxlX3N1c3BlbmRfYmxvY2tpbmdfd29yayhzdHJ1Y3Qgc3VzcGVuZF9i
-bG9ja2luZ193b3JrICp3b3JrKQoreworCWludCByZXQ7CisJdW5zaWduZWQgbG9uZyBmbGFnczsK
-KworCXNwaW5fbG9ja19pcnFzYXZlKCZ3b3JrLT5sb2NrLCBmbGFncyk7CisJcmV0ID0gc2NoZWR1
-bGVfd29yaygmd29yay0+d29yayk7CisJaWYgKHJldCkgeworCQlzdXNwZW5kX2Jsb2NrKCZ3b3Jr
-LT5zdXNwZW5kX2Jsb2NrZXIpOworCQl3b3JrLT5hY3RpdmUrKzsKKwl9CisJc3Bpbl91bmxvY2tf
-aXJxcmVzdG9yZSgmd29yay0+bG9jaywgZmxhZ3MpOworCXJldHVybiByZXQ7Cit9CitFWFBPUlRf
-U1lNQk9MX0dQTChzY2hlZHVsZV9zdXNwZW5kX2Jsb2NraW5nX3dvcmspOwotLSAKMS42LjUuMQoK
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0g
-bWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8v
-bGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--155748971-315612775-1273817099=:3348
+Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-15
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-ID: <alpine.DEB.2.00.1005140006371.3348@utopia.booyaka.com>
+
+
+Hello,
+
+some comments on the kernel-level suspend blocker API.
+
+On Thu, 13 May 2010, Arve Hj=F8nnev=E5g wrote:
+
+> Adds /sys/power/policy that selects the behaviour of /sys/power/state.
+> After setting the policy to opportunistic, writes to /sys/power/state
+> become non-blocking requests that specify which suspend state to enter
+> when no suspend blockers are active. A special state, "on", stops the
+> process by activating the "main" suspend blocker.
+>=20
+> Signed-off-by: Arve Hj=F8nnev=E5g <arve@android.com>
+
+Another problem with the suspend-block kernel API is that its primary=20
+use-case[1] is to work around the brokenness of patch 1's opportunistic=20
+suspend governor.  The governor is broken because it intentionally ignores=
+=20
+timers and the scheduler.  To work around problems caused by this=20
+decision, suspend-blocks must be spread throughout the kernel (and=20
+userspace) to restore the previous behavior of the system.  But if patch=20
+1's opportunistic suspend governor were fixed, most of the need for a=20
+suspend blockers would disappear.
+
+[ This E-mail expands on some earlier comments[2] and is also related
+  to other opportunistic suspend comments[3]. ]
+
+The suspend-block patches require already-working code to be patched to=20
+keep it working.  This is a backwards approach.  Instead, broken code=20
+should be patched to fix the brokenness.  But the former approach is=20
+exactly what the suspend block API is intended to do.  Patches 7 and 8 in=
+=20
+this series are two clear cases.  Patch 7 adds an ioctl to the input=20
+subsystem that will cause the system to stay running as long as there is=20
+an event in the event queue.  Patch 8 adds a suspend-block call to the=20
+power_supply code that causes the system to stay running as long as=20
+power_supply's changed_work workqueue has work to do.  Neither of these=20
+patches should be needed, since the default expectation of the mainline=20
+Linux kernel is that the system should run when there is work to be done.
+
+This longstanding expectation should be preserved, not broken and then=20
+patched around.  But since patch 1 violates that expectation, there is no=
+=20
+choice but to add patches 7 and 8 -- and ultimately many more patches --=20
+to get a working system.  Once the opportunistic suspend governor in patch=
+=20
+1 is introduced and enabled, the kernel will suspend the system=20
+immediately, even if the system has work to do.  The only way to prevent=20
+that is to add suspend-blocks.
+
+Many suspend blocks will be needed throughout the kernel to keep things=20
+working.  One might think that patches 7 and 8 are the only changes needed=
+=20
+to get a working Android-style opportunistic suspend system.  It turns out=
+=20
+that many more changes are needed.  This can be seen by looking at=20
+currently shipping Android kernels, such as the current current Android=20
+'msm' kernel tree[4]. Suspend-blocker usage is spread through many drivers=
+=20
+and subsystems:
+
+[paul@twilight msm]$ fgrep -r wake_lock . | egrep '(^./drivers|^./arch)' |=
+=20
+cut -f1 -d: | sort -u
+=2E/arch/arm/mach-msm/htc_battery.c
+=2E/arch/arm/mach-msm/pm.c
+=2E/arch/arm/mach-msm/qdsp5/adsp.c
+=2E/arch/arm/mach-msm/qdsp5/audio_out.c
+=2E/arch/arm/mach-msm/smd_qmi.c
+=2E/arch/arm/mach-msm/smd_rpcrouter.c
+=2E/arch/arm/mach-msm/smd_rpcrouter.h
+=2E/arch/arm/mach-msm/smd_rpcrouter_servers.c
+=2E/arch/arm/mach-msm/smd_tty.c
+=2E/drivers/i2c/chips/mt9t013.c
+=2E/drivers/input/evdev.c
+=2E/drivers/input/misc/gpio_input.c
+=2E/drivers/input/misc/gpio_matrix.c
+=2E/drivers/mmc/core/core.c
+=2E/drivers/net/msm_rmnet.c
+=2E/drivers/rtc/alarm.c
+=2E/drivers/serial/msm_serial_hs.c
+=2E/drivers/usb/function/mass_storage.c
+=2E/drivers/usb/gadget/f_mass_storage.c
+=2E/drivers/video/msm/mddi.c
+=2E/drivers/video/msm/msm_fb.c
+
+I guess this is something like what kernel developers should eventually=20
+expect to see if suspend blockers are merged.
+
+There is a better way to make the system work as expected: these patch 1=20
+shouldn't break general timer and scheduler assumptions.  If patch 1's=20
+governor is fixed, most of these calls will be unnecessary.  The apparent=
+=20
+motivation is to prevent "untrusted" userspace processes from preventing=20
+the system from entering a low-power state.  I agree that this is a=20
+problem.  But it should be fixed by modifying the specific Linux code that=
+=20
+determines when the idle loop is entered and when the next timer wakeup=20
+should occur, on a per-process basis.  Such targeted changes would ensure=
+=20
+that the rest of the kernel would continue to execute as expected.
+
+regards,
+
+- Paul
+
+
+1. Arve Hj=F8nnev=E5g E-mail to the linux-pm mailing list, dated Mon, 3
+   May 2010 17:09:22 -0700:
+   http://www.spinics.net/lists/linux-pm/msg18432.html
+
+2. Paul Walmsley E-mail to the linux-pm mailing list, dated Wed, 12
+   May 2010 21:35:30 -0600: http://lkml.org/lkml/2010/5/12/528
+
+3. Paul Walmsley E-mail to the linux-pm mailing list, dated Thu, 13
+   May 2010 13:01:33 -0600:
+   http://permalink.gmane.org/gmane.linux.power-management.general/18592
+
+4. git://android.git.kernel.org/kernel/msm.git - as of commit
+   c7f8bcecb06b937c45dd0e342450a3218b286b8d, "[ARM] msm: defconfig:
+   Set mmap_min_addr to 32k"
+
+5. http://android.git.kernel.org/?p=3Dkernel/msm.git;a=3Dblob;f=3Ddrivers/m=
+mc/core/core.c;h=3D22f6ddad85c92f34c55035982049bb03b5abfc74;hb=3Dc7f8bcecb0=
+6b937c45dd0e342450a3218b286b8d#l721
+--155748971-315612775-1273817099=:3348
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--155748971-315612775-1273817099=:3348--
