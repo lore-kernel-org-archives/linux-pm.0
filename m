@@ -1,19 +1,15 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+From: Magnus Damm <magnus.damm@gmail.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Fri, 14 May 2010 01:29:56 +0100
-Message-ID: <20100514002956.GB4798__14316.303554415$1273797127$gmane$org@opensource.wolfsonmicro.com>
-References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<20100513214653.GA21120@suse.de>
-	<20100513222748.GA3240@opensource.wolfsonmicro.com>
-	<201005140046.33508.rjw@sisk.pl>
-	<20100513233608.GA1582@sirena.org.uk>
-	<r2qa55d774e1005131648i1702d3b2ob6bc823e4a4a113c@mail.gmail.com>
+Date: Fri, 14 May 2010 12:25:26 +0900
+Message-ID: <AANLkTilL2mvqpwirTfJRWZFdrFJvSihnaY8-xao4pLpH__16245.0006850579$1273807588$gmane$org@mail.gmail.com>
+References: <20100513191717.GA3428@atomide.com>
+	<Pine.LNX.4.44L0.1005131729510.1731-100000@iolanthe.rowland.org>
+	<20100513214739.GM3428@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <r2qa55d774e1005131648i1702d3b2ob6bc823e4a4a113c@mail.gmail.com>
+In-Reply-To: <20100513214739.GM3428@atomide.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,56 +19,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Linus Walleij <linus.walleij@ericsson.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 13, 2010 at 04:48:40PM -0700, Brian Swetland wrote:
-> On Thu, May 13, 2010 at 4:36 PM, Mark Brown
+On Fri, May 14, 2010 at 6:47 AM, Tony Lindgren <tony@atomide.com> wrote:
+> * Alan Stern <stern@rowland.harvard.edu> [100513 14:32]:
+>> On Thu, 13 May 2010, Tony Lindgren wrote:
+>>
+>> > The difference between echo mem > /sys/power/state and suspend blocks
+>> > is that with suspend blocks the system keeps running.
+>>
+>> Irrelevant. =A0Paul wasn't talking about the suspend blockers; he was
+>> talking about opportunistic suspend. =A0So what's the difference between
+>> opportunistic suspend and "echo mem >/sys/power/state"? =A0Especially
+>> when suspend blockers aren't being used?
+>
+> Opportunistic suspend is really trying to do runtime PM, see below.
+>
+>> > And that's why
+>> > it should be handled by runtime power management instead.
+>>
+>> Runtime PM is not capable of freezing userspace and shutting down CPUs.
+>> More or less by definition -- if it could then it wouldn't be "runtime"
+>> any more, since the processor wouldn't be running.
+>
+> Not true. We are already powering off CPUs and rebooting them for
+> at least omaps in every idle loop using cpuidle. The memory stays on.
 
-> Current published trees are based on .32 (used for the coming-soon
-> froyo release that's been in late QA for a while now) and forward
-> development is moving to .34 post final (or in the case of tegra2,
-> tracking .34-rc series as it happens).  We've been actively snapping
-> up to track mainline since we started doing this around 2.6.16.  We'd
+I agree with you Tony. I thought shutting down CPUs for power
+managment purposes could be done without freezing user space. At least
+that's what we do today with SH-Mobile.
 
-Yeah, I had noticed the development stuff was more up to date - it'll be
-good once it gets out of QA and into general use since system
-integrators do seem to pick up your new releases fairly quickly.
+I don't dislike the idea of freezing a misbehaing user space app, but
+I wonder if hardware platforms really need this. I think hardware
+requirements and software requirements should be kept separated.
 
-> *love* to be able to get more stuff sanely upstream instead of
-> maintaining branches and rebasing every other mainline release or so.
+There seem to be some confusion regarding what Runtime PM can and can
+not do. For SH-Mobile we use Runtime PM to manage the clocks and power
+supply to on-chip I/O devices, and from CPU idle context we check the
+state of the Runtime PM devices and decide what level of CPU deep
+sleep we can enter. You can call this system CPU deep sleep if you'd
+like depending on the dependencies are layed out on your hardware
+platform.
 
-Having greatly cut down the number of out of tree drivers I'm carrying I
-can only say that it's great when it happens :)
+For CPU deep sleep we more or less always stop the clock so we need to
+put the memory in self-refresh to avoid loosing memory contents. In
+some cases the deep sleep means that the power to the CPU core will be
+cut, so a more advanced context save/restore path needs to be used.
 
-> I'd love to have a separate discussion on using standard linux
-> embedded audio for mobile devices -- one of my goals for 2010 is to
-> try to migrate from our "one off" approach on MSM to making use of
+Still not sure how the system wide suspend is different from Runtime
+PM and CPUidle from the hardware perspective...
 
-Probably best to do that, this thread is already quite big enough
-without going off on a tangent.  FWIW we can usually be found in
-#alsa-soc on freenode as well as on the lists.  A couple of pointers
-which might help your research, though:
-
-> ALSA and standard interfaces.  I have a lot of questions about handing
-> encoded data (mp3/aac/etc) that will be processed by the DSP, how to
-
-This usually doesn't go through ALSA at all (the ALSA APIs can't cope
-with variable bitrate data), the data currently goes via DSP specific
-APIs and gets injected into the ALSA domain in much the same way as data
-from the baseband.
-
-> approach routing control, and how to best interact with the
-> user/kernel interface, etc.
-
-Routing control for embedded systems is done by exposing the routing
-control to userspace via ALSA controls which can be set by apps - using
-a GUI to configure the routes interactively is a massive usability win
-in development.  Abstraction for generic user-visible apps is intended
-to be handled by a layer on top of that:
-
-	http://www.slimlogic.co.uk/?p=40
-
-which is currently in development but I believe is expected to come to
-fruition this year (Liam is driving this one).
+/ magnus
