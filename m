@@ -1,13 +1,13 @@
-From: Paul Walmsley <paul@pwsan.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Fri, 14 May 2010 14:53:42 -0600 (MDT)
-Message-ID: <alpine.DEB.2.00.1005141441220.3348@utopia.booyaka.com>
-References: <Pine.LNX.4.44L0.1005040949060.1729-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/8] Suspend block api (version 7)
+Date: Fri, 14 May 2010 23:08:48 +0200
+Message-ID: <201005142308.48386.rjw__19909.2865841978$1273871329$gmane$org@sisk.pl>
+References: <1273810273-3039-1-git-send-email-arve@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005040949060.1729-100000@iolanthe.rowland.org>
+In-Reply-To: <1273810273-3039-1-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,37 +17,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Liam Girdwood <lrg@slimlogic.co.uk>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Oleg Nesterov <oleg@redhat.com>, linux-omap@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>, Daniel Walker <dwalker@codeaurora.org>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Arjan van de Ven <arjan@infradead.org>
+To: Arve =?utf-8?q?Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-
-Hello,
-
-On Tue, 4 May 2010, Alan Stern wrote:
-
-> Another thing that Kevin is missing: There is more to the system than
-> the devices and the CPU.  For example: RAM, an embedded controller (on
-> modern desktop/laptop systems), a power supply, and so on.  Dynamic PM
-> for the CPU and the devices won't power-down these things, but system
-> PM will.
-
-No.  A dynamic PM-based kernel can, and in the case of the mainline Linux 
-code running on OMAP, does, power down RAM[1] and the power supply[2].
-
-Since the CPU is already powered off when it is time for this to happen, 
-so this is done under autonomous hardware control.  We currently use 
-CPUIdle[3] to choose whether to program the SoC hardware to enable this 
-autonomous power control before it goes off, depending on the required 
-wakeup latency for timers and PM constraints.
-
-
-- Paul
-
-
-1. (technically, put the RAM into self-refresh mode): 
-   http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=arch/arm/mach-omap2/sleep34xx.S/sleep34xx.S;h=d522cd70bf53485d0a3af2453845777e3a89edd7;hb=4fc4c3ce0dc1096cbd0daa3fe8f6905cbec2b87e#l204
-
-2. http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=arch/arm/mach-omap2/sleep34xx.S/sleep34xx.S;h=d522cd70bf53485d0a3af2453845777e3a89edd7;hb=4fc4c3ce0dc1096cbd0daa3fe8f6905cbec2b87e#l204
-
-3. http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=arch/arm/mach-omap2/cpuidle34xx.c;h=3d3d035db9aff62ce522e0080e570cfdbf8e70cc;hb=4462dc02842698f173f518c1f5ce79c0fb89395a#l292
+T24gRnJpZGF5IDE0IE1heSAyMDEwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3RlOgo+IFRoaXMgcGF0
+Y2ggc2VyaWVzIGFkZHMgYSBzdXNwZW5kLWJsb2NrIGFwaSB0aGF0IHByb3ZpZGVzIHRoZSBzYW1l
+Cj4gZnVuY3Rpb25hbGl0eSBhcyB0aGUgYW5kcm9pZCB3YWtlbG9jayBhcGkuIFRoaXMgdmVyc2lv
+biBoYXMgc29tZQo+IGNoYW5nZXMgZnJvbSwgb3IgcmVxdWVzdGVkIGJ5LCBSYWZhZWwuIFRoZSBt
+b3N0IG5vdGFibGUgY2hhbmdlcyBhcmU6Cj4gLSBERUZJTkVfU1VTUEVORF9CTE9DS0VSIGFuZCBz
+dXNwZW5kX2Jsb2NrZXJfcmVnaXN0ZXIgaGF2ZSBiZWVuIGFkZGVkCj4gICBmb3Igc3RhdGljYWxs
+eSBhbGxvY2F0ZWQgc3VzcGVuZCBibG9ja2Vycy4gCj4gLSBzdXNwZW5kX2Jsb2NrZXJfZGVzdHJv
+eSBpcyBub3cgY2FsbGVkIHN1c3BlbmRfYmxvY2tlcl91bnJlZ2lzdGVyCj4gLSBUaGUgdXNlciBz
+cGFjZSBtYW5kYXRvcnkgX0lOSVQgaW9jdGwgaGFzIGJlZW4gcmVwbGFjZWQgd2l0aCBhbgo+ICAg
+b3B0aW9uYWwgX1NFVF9OQU1FIGlvY3RsLgo+IAo+IEkga2VwdCB0aGUgYWNrIGFuZCByZXZpZXdl
+ZCBieSB0YWdzIG9uIHR3byBvZiB0aGUgcGF0Y2hlcyBldmVuIHRob3VnaAo+IHRoZXJlIHdlcmUg
+YSBmZXcgY29zbWV0aWMgY2hhbmdlcy4KClRoYW5rcyBmb3IgdGhlIHBhdGNoZXMsIEkgdGhpbmsg
+dGhleSBhcmUgaW4gYSBwcmV0dHkgZ29vZCBzaGFwZSBub3cuCgpUaGF0IHNhaWQsIEknZCBsaWtl
+IHRoZSBjaGFuZ2Vsb2dzIHRvIGJlIGEgYml0IG1vcmUgZGVzY3JpcHRpdmUsIGF0IGxlYXN0IGZv
+cgpwYXRjaCBbMS84XS4gIEkgdGhpbmsgaXQgc2hvdWxkIGV4cGxhaW4gKGluIGEgZmV3IHdvcmRz
+KSB3aGF0IHRoZSBwdXJwb3NlIG9mCnRoZSBmZWF0dXJlIGlzIGFuZCB3aGF0IHByb2JsZW1zIGl0
+IHNvbHZlcyB0aGF0IGdlbmVyYWxseSBhIGNvbWJpbmF0aW9uIG9mCnJ1bnRpbWUgUE0gYW5kIGNw
+dWlkbGUgaXMgbm90IHN1aXRhYmxlIGZvciBpbiB5b3VyIG9waW5pb24uICBJT1csIHdoeSB5b3UK
+dGhpbmsgd2UgbmVlZCB0aGF0IGZlYXR1cmUuCgpUaGUgY2hhbmdlbG9nIG9mIHBhdGNoIFsyLzhd
+IGFwcGVhcnMgdG8gYmUgb3V0ZGF0ZWQsIHRoYXQgbmVlZHMgdG8gYmUgZml4ZWQuCkFsc28sIGl0
+IHdvdWxkIGJlIG5pY2UgdG8gZXhwbGFpbiBpbiB0aGUgY2hhbmdlbG9nIHdoYXQgdGhlIGludGVy
+ZmFjZSBpcyBuZWVkZWQKZm9yIChpbiB0ZXJtcyBvZiB0aGUgcHJvYmxlbXMgdGhhdCBpdCBoZWxw
+cyB0byBoYW5kbGUpLgoKUmFmYWVsCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1m
+b3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4v
+bGlzdGluZm8vbGludXgtcG0=
