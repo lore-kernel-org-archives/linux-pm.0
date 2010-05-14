@@ -1,16 +1,21 @@
-From: Brian Swetland <swetland@google.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Thu, 13 May 2010 16:48:40 -0700
-Message-ID: <r2qa55d774e1005131648i1702d3b2ob6bc823e4a4a113c__19975.6028749563$1273794569$gmane$org@mail.gmail.com>
+Date: Fri, 14 May 2010 01:03:27 +0100
+Message-ID: <20100514000327.GB1582__31260.6583502658$1273795461$gmane$org@sirena.org.uk>
 References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<201005132311.26293.rjw@sisk.pl>
+	<1273785399.19100.98.camel@c-dwalke-linux.qualcomm.com>
+	<201005132327.16163.rjw@sisk.pl>
+	<1273786409.19100.104.camel@c-dwalke-linux.qualcomm.com>
 	<20100513214653.GA21120@suse.de>
 	<20100513222748.GA3240@opensource.wolfsonmicro.com>
-	<201005140046.33508.rjw@sisk.pl> <20100513233608.GA1582@sirena.org.uk>
+	<20100513224503.GA23014@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100513233608.GA1582@sirena.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20100513224503.GA23014@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,44 +25,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Oleg Nesterov <oleg@redhat.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBNYXkgMTMsIDIwMTAgYXQgNDozNiBQTSwgTWFyayBCcm93bgo8YnJvb25pZUBvcGVu
-c291cmNlLndvbGZzb25taWNyby5jb20+IHdyb3RlOgo+Cj4+IEknbSBub3QgYSBiaWcgZmFuIG9m
-IHN1c3BlbmQgYmxvY2tlcnMgbXlzZWxmLCBidXQgbGV0J3MgZmFjZSBpdCwgX2N1cnJlbnRseV8K
-Pj4gdGhlcmUncyBubyBhbHRlcm5hdGl2ZSBhbmQgd2UgbmVlZCB0byBzdG9wIHRoZSB0cmVuZCwg
-dGhlIHNvb25lciB0aGUgYmV0dGVyLgo+Cj4gSSBkb24ndCB0aGluayB0aGlzIGlzIGEgbWFqb3Ig
-cGFydCBvZiB0aGUgdHJlbmQgLSBsaWtlIEkgc2F5LCB0aGUgZmFjdAo+IHRoYXQgcGVvcGxlIGhh
-dmUgYmVlbiB3b3JraW5nIHdpdGggYW4gb2xkIGtlcm5lbCB2ZXJzaW9uIGlzIGdlbmVyYWxseQo+
-IGEgbXVjaCBtb3JlIHN1YnN0YW50aWFsIGlzc3VlIHRoYW4gdGhlIHdha2Vsb2NrcyBpbiB0aGUg
-Y29kZSBJJ3ZlIHNlZW4uCgpDdXJyZW50IHB1Ymxpc2hlZCB0cmVlcyBhcmUgYmFzZWQgb24gLjMy
-ICh1c2VkIGZvciB0aGUgY29taW5nLXNvb24KZnJveW8gcmVsZWFzZSB0aGF0J3MgYmVlbiBpbiBs
-YXRlIFFBIGZvciBhIHdoaWxlIG5vdykgYW5kIGZvcndhcmQKZGV2ZWxvcG1lbnQgaXMgbW92aW5n
-IHRvIC4zNCBwb3N0IGZpbmFsIChvciBpbiB0aGUgY2FzZSBvZiB0ZWdyYTIsCnRyYWNraW5nIC4z
-NC1yYyBzZXJpZXMgYXMgaXQgaGFwcGVucykuICBXZSd2ZSBiZWVuIGFjdGl2ZWx5IHNuYXBwaW5n
-CnVwIHRvIHRyYWNrIG1haW5saW5lIHNpbmNlIHdlIHN0YXJ0ZWQgZG9pbmcgdGhpcyBhcm91bmQg
-Mi42LjE2LiAgV2UnZAoqbG92ZSogdG8gYmUgYWJsZSB0byBnZXQgbW9yZSBzdHVmZiBzYW5lbHkg
-dXBzdHJlYW0gaW5zdGVhZCBvZgptYWludGFpbmluZyBicmFuY2hlcyBhbmQgcmViYXNpbmcgZXZl
-cnkgb3RoZXIgbWFpbmxpbmUgcmVsZWFzZSBvciBzby4KCj4gVGhlIGlzc3VlIHdhcyB0aGF0IHdo
-ZW4gSSBvcmlnaW5hbGx5IG5vdGljZWQgdGhlIHBhdGNoIHNlcmllcyB3YXMgYmVpbmcKPiBjb25z
-aWRlcmVkIGZvciBtYWlubGluZSBhZ2FpbiB3YXMgdGhhdCBvbmUgZWZmZWN0IG9mIHVzaW5nIGl0
-IGluIGEKPiBtb2JpbGUgcGhvbmUgd2l0aCB0aGUgc3RhbmRhcmQgTGludXggZW1iZWRkZWQgYXVk
-aW8gc3Vic3lzdGVtIHdvdWxkIGJlCj4gdG8gYnJlYWsgdXNlIGNhc2VzIHN1Y2ggYXMgYXVkaW8g
-b24gdm9pY2UgY2FsbHMsIHdoaWNoIGlzbid0IHJlYWxseQo+IGRlc2lyYWJsZSwgYW5kIHRoYXQg
-dGhlcmUgd2FzIG5vIHJvYWRtYXAgZm9yIGhvdyB0byBmaXggdGhhdCBvciBhbnkKPiBvdGhlciBz
-dWJzeXN0ZW1zIHdpdGggc2ltaWxhciBpc3N1ZXMuIMKgVGhpcyBkaWRuJ3Qgc2VlbSBsaWtlIGl0
-IHdvdWxkCj4gaGF2ZSBiZWVuIGEgZ29vZCBzaXR1YXRpb24gZ2l2ZW4gdGhhdCB0aGUgbWFqb3Ig
-dXNlciBpcyBleHBlY3RlZCB0byBiZQo+IEFuZHJvaWQsIHdoaWNoIGlzIG1haW5seSBmb3IgbW9i
-aWxlIHBob25lcy4KCkknZCBsb3ZlIHRvIGhhdmUgYSBzZXBhcmF0ZSBkaXNjdXNzaW9uIG9uIHVz
-aW5nIHN0YW5kYXJkIGxpbnV4CmVtYmVkZGVkIGF1ZGlvIGZvciBtb2JpbGUgZGV2aWNlcyAtLSBv
-bmUgb2YgbXkgZ29hbHMgZm9yIDIwMTAgaXMgdG8KdHJ5IHRvIG1pZ3JhdGUgZnJvbSBvdXIgIm9u
-ZSBvZmYiIGFwcHJvYWNoIG9uIE1TTSB0byBtYWtpbmcgdXNlIG9mCkFMU0EgYW5kIHN0YW5kYXJk
-IGludGVyZmFjZXMuICBJIGhhdmUgYSBsb3Qgb2YgcXVlc3Rpb25zIGFib3V0IGhhbmRpbmcKZW5j
-b2RlZCBkYXRhIChtcDMvYWFjL2V0YykgdGhhdCB3aWxsIGJlIHByb2Nlc3NlZCBieSB0aGUgRFNQ
-LCBob3cgdG8KYXBwcm9hY2ggcm91dGluZyBjb250cm9sLCBhbmQgaG93IHRvIGJlc3QgaW50ZXJh
-Y3Qgd2l0aCB0aGUKdXNlci9rZXJuZWwgaW50ZXJmYWNlLCBldGMuCgpCcmlhbgpfX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxp
-c3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51
-eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Thu, May 13, 2010 at 03:45:03PM -0700, Greg KH wrote:
+> On Thu, May 13, 2010 at 11:27:49PM +0100, Mark Brown wrote:
+> > On Thu, May 13, 2010 at 02:46:53PM -0700, Greg KH wrote:
+
+> > Is that really the issue?  The ones I've looked at have mostly suffered
+> > from being built on 2.6.29 and needing refreshes for current kernel APIs
+> > or from general code quality issues - I don't recall ever looking at one
+> > and thinking that the wakelocks were the one issue.
+
+> Yes, it is an issue.  See the mess that we have had in trying to get
+> some of the original G1 drivers merged in the staging tree for proof of
+> this.
+
+Ah, that's surprising - I had thought most of the issues there were due
+to the substantial MSM architecture core code which most of the G1 stuff
+depended on (things like the DSP interface and so on) and the general
+need for staging-style updates which churned against the non-mainline
+versions rather than the wakelocks.  It's true that the wakelocks
+weren't helping, though.
+ 
+Most of the cases I've seen have been off-CPU drivers that were either
+working to outdated APIs or having to jump through hoops because they
+really wanted to use new kernel features rather than CPU things.
+
+> > Chances are that if the driver is useful people will start using it in
+> > non-Android systems anyway.
+
+> No, not usually.  Do you really think that someone else is going to use
+> the G1 camera driver for anything else?  :)
+
+Not if it's genuinely G1 specific, although presumably most of that
+driver is actually chip drivers for the various components of a camera
+subsystem which may well appear in other systems (not that I have the
+slightest bit of familiarity with how camera hardware is organised).
+
+> > If this really is a big concern with getting drivers into mainline then
+> > surely we could just add some noop wakelock functions for the drivers to
+> > call?  It's not particularly pretty but it'd deal with the driver merge
+> > side of things.
+
+> I fail to see why getting the real functionality of the wakelocks into
+> the kernel is a problem.  Especially as they fit a real need, and work
+> well for that.
+
+Well, like I've said I personally don't object to merging them now that
+the audio use case has been sorted.  I suggested this because it would
+allow something to be put in place to facilitate driver merging which
+would avoid the core and userspace issues that people are still raising
+with the implementation and let people get on with at least the driver
+side.
+
+If wakelocks don't make the next merge window and there is a problem
+with drivers then it'd be nice to get the stubs in so that the APIs are
+present in subsystem trees for drivers to merge.
