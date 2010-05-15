@@ -1,13 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Fri, 14 May 2010 22:25:09 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005142216481.11498-100000@netrider.rowland.org>
-References: <AANLkTinyNYFwM4QJKPunlvK-ATJwSYVXGayeZIR9izx2@mail.gmail.com>
+Subject: Re: Is it supposed to be ok to call del_gendisk while
+ userspace is frozen?
+Date: Fri, 14 May 2010 22:32:41 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005142231390.11498-100000__15487.766339402$1273890891$gmane$org@netrider.rowland.org>
+References: <AANLkTimBxoCCeT_ns30JTIGKqgkiRIvKTf4LfE3mopkS@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinyNYFwM4QJKPunlvK-ATJwSYVXGayeZIR9izx2@mail.gmail.com>
+In-Reply-To: <AANLkTimBxoCCeT_ns30JTIGKqgkiRIvKTf4LfE3mopkS@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,54 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Sven Neumann <s.neumann@raumfeld.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Tero Saarni <tero.saarni@gmail.com>, linux-input@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Alexey Dobriyan <adobriyan@gmail.com>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Daniel Mack <daniel@caiaq.de>, linux-omap@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>, Daniel Walker <dwalker@codeaurora.org>, Theodore Ts'o <tytso@mit.edu>, =?ISO-8859-1?Q?M=E1rton_N=E9meth?= <nm127@freemail.hu>, Brian Swetland <swetland@google.co>
+To: Matt Reimer <mattjreimer@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 14 May 2010, Arve Hj=F8nnev=E5g wrote:
+On Thu, 13 May 2010, Matt Reimer wrote:
 
-> On Fri, May 14, 2010 at 1:27 PM, Paul Walmsley <paul@pwsan.com> wrote:
-> >
-> > Hello,
-> >
-> > On Mon, 3 May 2010, Arve Hj=F8nnev=E5g wrote:
-> >
-> >> No, suspend blockers are mostly used to ensure wakeup events are not
-> >> ignored, and to ensure tasks triggered by these wakeup events
-> >> complete.
-> >
-> > Standard Linux systems don't need these,
+> > I don't see anything wrong with the patch itself, but I dislike the
+> > description. =A0Devices can come and go from any hotpluggable bus, not
+> > just MMC/SD. =A0That just happens to be the first place the problem was
+> > observed.
 > =
 
-> If you don't want to lose wakeup events they do. Standard Linux
-> systems support suspend, but since they usually don't have a lot of
-> wakeup events you don't run into a lot of problems.
-
-The primary client for opportunistic suspend and suspend blockers
-appears to be embedded systems.  These systems are typically capable of
-powering the CPU down and up again with low latency, and they typically
-have very aggressive runtime PM support capable of powering down each
-device when it's not in active use.  Given this ability, it does seem
-that opportunistic suspend and suspend blockers might be unnecessary.
-
-I'd like to explore this avenue a little farther.  In particular, what =
-
-is the issue involving loss of wakeup events?  Can you describe this in =
-
-more detail?
-
-> > because the scheduler just keeps
-> > the system running as long as there is work to be done.
-> >
+> Good point. How about this?
 > =
 
-> That is only true if you never use suspend.
+> Matt
+> =
 
-Why would you want to use system suspend if runtime PM can do
-everything you need?
+> From 813bd223e5a2fa577b9e64ddf12654a93d0aab8b Mon Sep 17 00:00:00 2001
+> From: Matt Reimer <mreimer@sdgsystems.com>
+> Date: Thu, 13 May 2010 14:36:54 -0700
+> Subject: [PATCH] fs: prevent hang on suspend/resume when MMC/SD card pres=
+ent
+> =
 
-Sure, I can see that an ACPI-based system needs something more.  But =
+> Devices can come and go bus during suspend or resume, when the
+> writeback thread is frozen, resulting in a hang. Prevent the hang
+> by thawing the writeback thread in del_gendisk().
 
-that's not the real issue here.
+I would have said "the block layer's writeback thread", but this is =
+
+okay.
 
 Alan Stern
