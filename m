@@ -1,23 +1,16 @@
-From: Matthew Garrett <mjg@redhat.com>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Sat, 15 May 2010 20:54:01 +0100
-Message-ID: <20100515195401.GA29677__7970.27397570691$1273953416$gmane$org@srcf.ucam.org>
-References: <20100513192522.GA19256@srcf.ucam.org>
-	<20100513194205.GC3428@atomide.com>
-	<20100513195349.GB19722@srcf.ucam.org>
-	<20100513200003.GE3428@atomide.com>
-	<20100513200814.GA20254@srcf.ucam.org>
-	<20100513202320.GF3428@atomide.com>
-	<20100513203412.GA21244@srcf.ucam.org>
-	<20100513211006.GG3428@atomide.com>
-	<20100513212108.GA22103@srcf.ucam.org>
-	<20100513213455.GK3428@atomide.com>
+Date: Sat, 15 May 2010 12:55:44 -0700
+Message-ID: <AANLkTim8OXbnCyrT_9mPGr-5Us4kjf_mUOSHDIHW_LtB@mail.gmail.com>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<87aas2azc5.fsf@deeprootsystems.com>
+	<AANLkTilsAC--0TGYgeJpNVPzBCFL5uQmeBTjb3SgtjKY@mail.gmail.com>
+	<201005152147.22122.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100513213455.GK3428@atomide.com>
+In-Reply-To: <201005152147.22122.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,26 +20,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Theodore Ts'o <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Oleg Nesterov <oleg@redhat.com>, Liam Girdwood <lrg@slimlogic.co.uk>, linux-omap@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>, Daniel Walker <dwalker@codeaurora.org>, Theodore Ts'o <tytso@mit.edu>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 13, 2010 at 02:34:55PM -0700, Tony Lindgren wrote:
-> * Matthew Garrett <mjg@redhat.com> [100513 14:16]:
-> > What race-free mechanism do you use to ensure that? It's very easy to 
-> > handwave these problems away. It's very difficult to actually write an 
-> > implementation that works.
-> 
-> Can you describe where do you see the race now?
+On Sat, May 15, 2010 at 12:47 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >
+>> > Yes, "excruciatingly bad" apps can kill PM on these systems since
+>> > anyone can write apps, but the same is true on an opporunistic-suspend
+>> > based system since any app could hold a suspend blocker whenever it
+>> > wants.
+>>
+>> No, apps need permission to block suspend.
+>
+> Are you referring to the fact the permissions of the special device file or
+> something different?
 
-1) Trusted app decides to suspend
-2) Network packet that would otherwise wake the system is received
-3) Trusted app sends SIGSTOP to untrusted userspace
-4) Network packet sits waiting for stopped userspace to process it
+The special device file will have filesystem permissions that limit
+access to system services.
 
-Unless the trusted userspace gets woken up on every event that would 
-potentially cause a wakeup, you're racy. And the alternative involves an 
-extra userspace wakeup for every network packet - which is expensive.
+Arbitrary userspace apps do not have direct access to the device --
+they use a service (provided by binder rpc), and the app must declare
+its intent (and the user accept this on install) in order to use that
+service. The service keeps track of usage stats so if a user
+experiences poor battery life they can look at the battery usage thing
+and see which apps are keeping the device awake, etc.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Brian
