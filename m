@@ -1,17 +1,14 @@
-From: mgross <markgross@thegnar.org>
-Subject: Re: [patch] pm_qos update fixing mmotm 2010-05-11 -dies
- in pm_qos_update_request()
-Date: Sat, 15 May 2010 14:42:56 -0700
-Message-ID: <20100515214256.GA3506__26199.7976493605$1273959857$gmane$org@thegnar.org>
-References: <20100515021922.GA5041@thegnar.org>
-	<201005152138.47178.rjw@sisk.pl>
-Reply-To: markgross@thegnar.org
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Is it supposed to be ok to call del_gendisk while
+	userspace is frozen?
+Date: Sat, 15 May 2010 22:30:10 +0200
+Message-ID: <201005152230.10230.rjw__36809.7418839627$1273966974$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1005142231390.11498-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201005152138.47178.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1005142231390.11498-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,98 +18,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Valdis.Kletnieks@vt.eu, markgross@thegnar.org, e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org, davem@davemloft.net
+To: Alan Stern <stern@rowland.harvard.edu>, Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Matt Reimer <mattjreimer@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, May 15, 2010 at 09:38:47PM +0200, Rafael J. Wysocki wrote:
-> On Saturday 15 May 2010, mgross wrote:
-> > I apologize for the goofy email address.  
+On Saturday 15 May 2010, Alan Stern wrote:
+> On Thu, 13 May 2010, Matt Reimer wrote:
+> 
+> > > I don't see anything wrong with the patch itself, but I dislike the
+> > > description.  Devices can come and go from any hotpluggable bus, not
+> > > just MMC/SD.  That just happens to be the first place the problem was
+> > > observed.
 > > 
-> > The following is a fix for the crash reported by Valdis.
+> > Good point. How about this?
 > > 
-> > The problem was that the original pm_qos silently fails when a request
-> > update is passed to a parameter that has not been added to the list
-> > yet.  It seems that the e1000e is doing this.  This update restores this
-> > behavior.
+> > Matt
 > > 
-> > I need to think about how to better handle such abuse, but for now this
-> > restores the original behavior.
+> > From 813bd223e5a2fa577b9e64ddf12654a93d0aab8b Mon Sep 17 00:00:00 2001
+> > From: Matt Reimer <mreimer@sdgsystems.com>
+> > Date: Thu, 13 May 2010 14:36:54 -0700
+> > Subject: [PATCH] fs: prevent hang on suspend/resume when MMC/SD card present
+> > 
+> > Devices can come and go bus during suspend or resume, when the
+> > writeback thread is frozen, resulting in a hang. Prevent the hang
+> > by thawing the writeback thread in del_gendisk().
 > 
-> Can you please post a signed-off incremental patch against
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-llinus
-> 
-> that contains your original PM QOS update?
-> 
-> Thanks,
-> Rafael
-> 
+> I would have said "the block layer's writeback thread", but this is 
+> okay.
 
+OK, so now I have a question who's going to take the patch.
 
-No problem:
+Jens, what's your opinion?
 
-Signed-off-by: markgross <markgross@thegnar.org>
-
---mgross
-
-
->From 487b8dcaeb66d3c226d4c06c1bd99689f93024be Mon Sep 17 00:00:00 2001
-From: mgross <mgross@mgross-desktop.(none)>
-Date: Sat, 15 May 2010 14:30:15 -0700
-Subject: [PATCH] Gard against pm_qos users calling API before registering a proper
- request.
-
-This update handles a use case where pm_qos update requests need to
-silently fail if the update is being sent to a handle that is null.
-
-The problem was that the original pm_qos silently fails when a request
-update is passed to a parameter that has not been added to the list yet.
-This update restores that behavior.
-
-Signed-off-by: markgross <markgross@thegnar.org>
-
----
- kernel/pm_qos_params.c |   26 ++++++++++++++------------
- 1 files changed, 14 insertions(+), 12 deletions(-)
-
-diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-index a1aea04..f42d3f7 100644
---- a/kernel/pm_qos_params.c
-+++ b/kernel/pm_qos_params.c
-@@ -252,19 +252,21 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
- 	int pending_update = 0;
- 	s32 temp;
- 
--	spin_lock_irqsave(&pm_qos_lock, flags);
--	if (new_value == PM_QOS_DEFAULT_VALUE)
--		temp = pm_qos_array[pm_qos_req->pm_qos_class]->default_value;
--	else
--		temp = new_value;
--
--	if (temp != pm_qos_req->value) {
--		pending_update = 1;
--		pm_qos_req->value = temp;
-+	if (pm_qos_req) { /*guard against callers passing in null */
-+		spin_lock_irqsave(&pm_qos_lock, flags);
-+		if (new_value == PM_QOS_DEFAULT_VALUE)
-+			temp = pm_qos_array[pm_qos_req->pm_qos_class]->default_value;
-+		else
-+			temp = new_value;
-+
-+		if (temp != pm_qos_req->value) {
-+			pending_update = 1;
-+			pm_qos_req->value = temp;
-+		}
-+		spin_unlock_irqrestore(&pm_qos_lock, flags);
-+		if (pending_update)
-+			update_target(pm_qos_req->pm_qos_class);
- 	}
--	spin_unlock_irqrestore(&pm_qos_lock, flags);
--	if (pending_update)
--		update_target(pm_qos_req->pm_qos_class);
- }
- EXPORT_SYMBOL_GPL(pm_qos_update_request);
- 
--- 
-1.6.3.3
+Rafael
