@@ -1,13 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Sat, 15 May 2010 17:25:37 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005151720330.24645-100000@netrider.rowland.org>
-References: <AANLkTinztS8B4LkceGgZB94sRKbseKQ6qMnWB0Jcyh9I@mail.gmail.com>
+From: mgross <markgross@thegnar.org>
+Subject: Re: [patch] pm_qos update fixing mmotm 2010-05-11 -dies
+ in pm_qos_update_request()
+Date: Sat, 15 May 2010 14:42:56 -0700
+Message-ID: <20100515214256.GA3506__26199.7976493605$1273959857$gmane$org@thegnar.org>
+References: <20100515021922.GA5041@thegnar.org>
+	<201005152138.47178.rjw@sisk.pl>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinztS8B4LkceGgZB94sRKbseKQ6qMnWB0Jcyh9I@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <201005152138.47178.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,54 +21,98 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Sven Neumann <s.neumann@raumfeld.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Tero Saarni <tero.saarni@gmail.com>, linux-input@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Alexey Dobriyan <adobriyan@gmail.com>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Daniel Mack <daniel@caiaq.de>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Daniel Walker <dwalker@codeaurora.org>, Theodore Ts'o <tytso@mit.edu>, =?ISO-8859-1?Q?M=E1rton_N=E9meth?= <nm127@freemail.hu>, Brian Swetland <swetland@google.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Valdis.Kletnieks@vt.eu, markgross@thegnar.org, e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org, davem@davemloft.net
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 14 May 2010, Arve Hj=F8nnev=E5g wrote:
+On Sat, May 15, 2010 at 09:38:47PM +0200, Rafael J. Wysocki wrote:
+> On Saturday 15 May 2010, mgross wrote:
+> > I apologize for the goofy email address.  
+> > 
+> > The following is a fix for the crash reported by Valdis.
+> > 
+> > The problem was that the original pm_qos silently fails when a request
+> > update is passed to a parameter that has not been added to the list
+> > yet.  It seems that the e1000e is doing this.  This update restores this
+> > behavior.
+> > 
+> > I need to think about how to better handle such abuse, but for now this
+> > restores the original behavior.
+> 
+> Can you please post a signed-off incremental patch against
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-llinus
+> 
+> that contains your original PM QOS update?
+> 
+> Thanks,
+> Rafael
+> 
 
-> > I'd like to explore this avenue a little farther. =A0In particular, what
-> > is the issue involving loss of wakeup events? =A0Can you describe this =
-in
-> > more detail?
-> >
-> =
 
-> On the desktop systems I have used I only wake the up the system by
-> pressing a button/key or with an rtc alarm. Losing a button or key
-> wakeup event is not usually a problem on a desktop since the user will
-> press it again. Losing an alarm however could be a problem and this
-> can be avoided by using opportunistic suspend and suspend blockers.
+No problem:
 
-How can runtime PM combined with CPUidle cause an alarm to be lost?
+Signed-off-by: markgross <markgross@thegnar.org>
 
-> > Why would you want to use system suspend if runtime PM can do
-> > everything you need?
-> >
-> Because it stops threads that wakeup every second to check if they
-> have work to do (this includes standard kernel threads), and it
-> prevents bad apps that never go idle from completely destroying our
-> battery life.
+--mgross
 
-Ah, the ill-behaved apps problem.  I think everybody agrees that they =
 
-are hard to deal with.
+>From 487b8dcaeb66d3c226d4c06c1bd99689f93024be Mon Sep 17 00:00:00 2001
+From: mgross <mgross@mgross-desktop.(none)>
+Date: Sat, 15 May 2010 14:30:15 -0700
+Subject: [PATCH] Gard against pm_qos users calling API before registering a proper
+ request.
 
-The kernel-threads problem might better be addressed by fixing those
-threads than by adding a new API.
+This update handles a use case where pm_qos update requests need to
+silently fail if the update is being sent to a handle that is null.
 
-> > Sure, I can see that an ACPI-based system needs something more. =A0But
-> > that's not the real issue here.
-> >
-> =
+The problem was that the original pm_qos silently fails when a request
+update is passed to a parameter that has not been added to the list yet.
+This update restores that behavior.
 
-> The system we started with entered a much lower power state from
-> suspend than idle so we needed wakelocks to get more than 24 hours
-> battery life. We kept wakelocks when we moved to the msm platform
-> since it reduces our power consumption.
+Signed-off-by: markgross <markgross@thegnar.org>
 
-Is it generally true among embedded systems nowadays that idle is =
+---
+ kernel/pm_qos_params.c |   26 ++++++++++++++------------
+ 1 files changed, 14 insertions(+), 12 deletions(-)
 
-capable of reaching essentially the same power states as suspend?
-
-Alan Stern
+diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+index a1aea04..f42d3f7 100644
+--- a/kernel/pm_qos_params.c
++++ b/kernel/pm_qos_params.c
+@@ -252,19 +252,21 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
+ 	int pending_update = 0;
+ 	s32 temp;
+ 
+-	spin_lock_irqsave(&pm_qos_lock, flags);
+-	if (new_value == PM_QOS_DEFAULT_VALUE)
+-		temp = pm_qos_array[pm_qos_req->pm_qos_class]->default_value;
+-	else
+-		temp = new_value;
+-
+-	if (temp != pm_qos_req->value) {
+-		pending_update = 1;
+-		pm_qos_req->value = temp;
++	if (pm_qos_req) { /*guard against callers passing in null */
++		spin_lock_irqsave(&pm_qos_lock, flags);
++		if (new_value == PM_QOS_DEFAULT_VALUE)
++			temp = pm_qos_array[pm_qos_req->pm_qos_class]->default_value;
++		else
++			temp = new_value;
++
++		if (temp != pm_qos_req->value) {
++			pending_update = 1;
++			pm_qos_req->value = temp;
++		}
++		spin_unlock_irqrestore(&pm_qos_lock, flags);
++		if (pending_update)
++			update_target(pm_qos_req->pm_qos_class);
+ 	}
+-	spin_unlock_irqrestore(&pm_qos_lock, flags);
+-	if (pending_update)
+-		update_target(pm_qos_req->pm_qos_class);
+ }
+ EXPORT_SYMBOL_GPL(pm_qos_update_request);
+ 
+-- 
+1.6.3.3
