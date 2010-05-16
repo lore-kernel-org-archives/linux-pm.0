@@ -1,15 +1,14 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
- userspace is frozen?
-Date: Sun, 16 May 2010 17:49:09 +1000
-Message-ID: <4BEFA375.7030404__12714.1702258543$1273996224$gmane$org@crca.org.au>
-References: <Pine.LNX.4.44L0.1005142231390.11498-100000@netrider.rowland.org>
-	<201005152230.10230.rjw@sisk.pl>
+From: Sundar <sunder.svit@gmail.com>
+Subject: Re: Power Domain Framework
+Date: Sun, 16 May 2010 16:43:52 +0530
+Message-ID: <AANLkTikyqnKDNz7FIUvLDAvBReHskHvRCrEz2qBBqseH__24466.0263568678$1274008529$gmane$org@mail.gmail.com>
+References: <AANLkTinZU1D1rMOBQDi47tRhXrOXwduQIdni7bCXdce0@mail.gmail.com>
+	<20100510140527.GG5199@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005152230.10230.rjw@sisk.pl>
+In-Reply-To: <20100510140527.GG5199@sirena.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,53 +18,81 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Matt Reimer <mattjreimer@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: viresh.kumar@st.com, rajeev-dlh.kumar@st.com, linus.walleij@stericsson.com, armando.visconti@st.com, linux-kernel@vger.kernel.org, vipin.kumar@st.com, shiraz.hashim@st.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Hi All,
 
-On 16/05/10 06:30, Rafael J. Wysocki wrote:
-> On Saturday 15 May 2010, Alan Stern wrote:
->> On Thu, 13 May 2010, Matt Reimer wrote:
->>
->>>> I don't see anything wrong with the patch itself, but I dislike the
->>>> description.  Devices can come and go from any hotpluggable bus, not
->>>> just MMC/SD.  That just happens to be the first place the problem was
->>>> observed.
->>>
->>> Good point. How about this?
->>>
->>> Matt
->>>
->>>  From 813bd223e5a2fa577b9e64ddf12654a93d0aab8b Mon Sep 17 00:00:00 2001
->>> From: Matt Reimer<mreimer@sdgsystems.com>
->>> Date: Thu, 13 May 2010 14:36:54 -0700
->>> Subject: [PATCH] fs: prevent hang on suspend/resume when MMC/SD card present
->>>
->>> Devices can come and go bus during suspend or resume, when the
->>> writeback thread is frozen, resulting in a hang. Prevent the hang
->>> by thawing the writeback thread in del_gendisk().
->>
->> I would have said "the block layer's writeback thread", but this is
->> okay.
->
-> OK, so now I have a question who's going to take the patch.
+The regulator framework documentation already refers to the concept of
+power domains and I think the framework *can* be extended more to
+support on-SoC power domains as well.
 
-I object to the patch.
+I have been working with the regulator framework for on-chip power
+domains too and....
 
-Tell the patch it ought to exit once thawed, by all means.
+>2. Maintain a list of the different power domains present.
+>3. The devices in a specific power domain, as per the requirements would g=
+et the power
+>domain...
+>4. Typically a usage count of zero for any power domai..
+>5. The same could be mapped on to the PM framework..
+>6. The model could further be build upon to check any dependency in the po=
+wer domains
 
-Make the patch unfreezeable to begin with, by all means.
+the above requirements can be leveraged through the current regulator
+framework itself.
 
-But don't go down the path of having $random_code_path unfreeze a 
-thread. That will lead to unpredictability, confusion and bugs.
+However, for working with power domains within the framework, I feel that,
+- support must be added to allow additional domain-specific states
+like retention, idle etc.
+- controlling operating points for regulators, unlike setting optimal modes.
+- controlling regulator modes via constraints enforced by clients and
+managing transition to various states through the client requests and
+pushing the client states up to the parent regulator.
 
-If you know a disk is going to be unregistered during resume, use the 
-hooks early in the suspend / hibernate process to block new I/O and 
-flush what's already there so that there's no need to block on the 
-writeback thread, and/or no need to have the writeback thread frozen.
+>7. The advantages of the framework could be leveraged in the CPU idle time=
+, by switching >off the Power domains with zero usage counts.
+
+Yes. A simple platform specific list of all regulators ( and power
+domains ) can be easily used in the CPUIdle driver for determining low
+power states. Further, enforcing run time PM can club together any
+peripheral's power sources in terms of external regulators, on-chip
+domains ( and clock sources possibly).
+
+i have a very primitive implementation for adding operating points and
+constraints into the framework and currently i am able to control
+regulator aka domain states based on various child domains and
+contraints.
+
+However, with more inputs, I think we can make the regulator framework
+easily manage power sources, whether on-chip domains or external
+conventional regulators...
+
+Waiting for opinions and views,
 
 Regards,
+Sundar
 
-Nigel
+ Mon, May 10, 2010 at 7:35 PM, Mark Brown
+<broonie@opensource.wolfsonmicro.com> wrote:
+> On Mon, May 10, 2010 at 07:16:06PM +0530, Deepak Sikri wrote:
+>
+>> In our System on chip we have several power domains. As such there is no
+>> generic framework for the Power Domains in linux , and I find huge poten=
+tial
+>> in the software to control the domains and exploit the power management
+>> capabilities.
+>
+>> There is one very small model that I could think of, something on the li=
+nes
+>> of clock framework.
+>
+> Might be worth looking at what the OMAP and SH Mobile CPUs are doing
+> here, they have existing handling for power domains. =A0Off-SoC the
+> regulator API should already cope with a lot of this stuff.
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+>
