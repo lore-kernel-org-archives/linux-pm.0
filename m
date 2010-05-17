@@ -1,22 +1,25 @@
-From: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Tue, 18 May 2010 09:59:48 -0400
-Message-ID: <1274191188.10304.5.camel__45094.3223703236$1274191389$gmane$org@mulgrave.site>
-References: <Pine.LNX.4.44L0.1005151716180.24645-100000@netrider.rowland.org>
-	<87hbm6cz90.fsf@deeprootsystems.com>
-	<1274115885.4418.59.camel@mulgrave.site>
-	<20100517174647.GA11512@gandalf>
-	<1274119179.4418.68.camel@mulgrave.site>
-	<20100517181252.GA14260@gandalf>
-	<1274124267.4418.149.camel@mulgrave.site>
-	<20100517193840.GB14047@gandalf> <20100517193952.GC14047@gandalf>
-	<1274125775.4418.182.camel@mulgrave.site>
-	<20100518064022.GA6522@nokia.com>
+From: Linus WALLEIJ <linus.walleij@stericsson.com>
+Subject: Re: Power Domain Framework
+Date: Mon, 17 May 2010 22:38:53 +0200
+Message-ID: <CEE6BB42CAD6E947908279175AF8470A025A726240__32517.9839427166$1274192456$gmane$org@EXDCVYMBSTM006.EQ1STM.local>
+References: <AANLkTinZU1D1rMOBQDi47tRhXrOXwduQIdni7bCXdce0@mail.gmail.com>
+	<20100510140527.GG5199@sirena.org.uk>
+	<AANLkTikyqnKDNz7FIUvLDAvBReHskHvRCrEz2qBBqseH@mail.gmail.com>
+	<20100517031613.GA3130@opensource.wolfsonmicro.com>
+	<AANLkTimDdBCnRFMDiUkuNKanOzuPNwCpfRv9Gsi03Lsy@mail.gmail.com>
+	<AANLkTinZRhUpFTOOUCdH5dEl3QaXn10USL_hPPQX8cie@mail.gmail.com>
+	<20100517143319.GC5257@opensource.wolfsonmicro.com>
+	<AANLkTiniwUDg8rQzwgm_X7EbkQJ9tHzBfVtaJRiNE9az@mail.gmail.com>
+	<1274114107.20589.64.camel@bnru01>	
+	(sfid-20100517_173524_963855_B42F2966)
+	<1274115886.2698.22.camel@finisterre.wolfsonmicro.main>
+	<1274118332.17303.17.camel@bnru01>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100518064022.GA6522@nokia.com>
+In-Reply-To: <1274118332.17303.17.camel@bnru01>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,31 +29,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: felipe.balbi@nokia.com
-Cc: Matthew Garrett <mjg@redhat.com>, "me@felipebalbi.com" <me@felipebalbi.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Sundar R IYER <sundar.iyer@stericsson.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Viresh KUMAR <viresh.kumar@st.com>, Rajeev KUMAR <rajeev-dlh.kumar@st.com>, Armando VISCONTI <armando.visconti@st.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vipin KUMAR <vipin.kumar@st.com>, Shiraz HASHIM <shiraz.hashim@st.com>, STEricsson_nomadik_linux <STEricsson_nomadik_linux@list.st.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2010-05-18 at 09:40 +0300, Felipe Balbi wrote:
-> On Mon, May 17, 2010 at 09:49:35PM +0200, ext James Bottomley wrote:
-> >Right, because Firmware writers are from the rugged unresponsive uplands
-> >of planet
-> >ignore-user-complaints-and-eat-them-for-breakfast-if-they-file-bugs and
-> >Software writers are from the emollient responsive groves of planet
-> >harmony.  Obviously what would work for one wouldn't work for the other.
-> >
-> >As a software writer, I fully buy into that world view.  The trouble is
-> >that when I go to dinner with hardware people, they seem to be awfully
-> >nice chaps ... almost exactly like me, in fact ...
-> 
-> what does this add to suspend_blockers discussion ?
+[Sundar]
 
-Sorry I was evidently being too subtle.
+> This is one of the most important aspect for such a change in the
+> regulator framework: bringing in the domain aspect can encourage all
+> newer (possibly older) architectures to come under a generic umbrella.
 
-The point is that if, as you acknowledge, that you can't train firmware
-engineers to be responsive, there's no reason to think you can train
-software engineers in the same quality ... they're very similar people.
+I have the same view, and I've been enouraging Sundar to bring this
+discussion with the community in order to avoid code duplication.
 
-The corollary is that real world systems have to operate in the face of
-misbehaving hardware *and* software.
+Of course we can start inventing our own power-domain machine
+like everyone else, but before we do that, let's atleast try to
+do something generic, so bear with us...
 
-James
+Yours,
+Linus Walleij
