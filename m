@@ -1,15 +1,21 @@
-From: Mike Snitzer <snitzer@gmail.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 7)
-Date: Mon, 17 May 2010 15:01:19 -0400
-Message-ID: <AANLkTilE4bLZql7W0manAfJUp-S03jK-hUjLfNFxVFcx__43069.2545640797$1274123021$gmane$org@mail.gmail.com>
-References: <1273810273-3039-1-git-send-email-arve@android.com>
-	<201005142308.48386.rjw@sisk.pl>
-	<AANLkTilX0uhqrJtUSOC4smdH1M8V-h14J7YtRG4PPxOQ@mail.gmail.com>
+From: Felipe Balbi <me@felipebalbi.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Mon, 17 May 2010 21:39:05 +0300
+Message-ID: <20100517183904.GA14047__23513.1388799802$1274123022$gmane$org@gandalf>
+References: <Pine.LNX.4.44L0.1005151716180.24645-100000@netrider.rowland.org>
+	<87hbm6cz90.fsf@deeprootsystems.com>
+	<1274115885.4418.59.camel@mulgrave.site>
+	<20100517174647.GA11512@gandalf>
+	<1274119179.4418.68.camel@mulgrave.site>
+	<20100517181252.GA14260@gandalf>
+	<AANLkTikueXPEWEHQt-Fl3Xvb3EB4ntsBlJUjjtmpinGK@mail.gmail.com>
+Reply-To: me@felipebalbi.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTilX0uhqrJtUSOC4smdH1M8V-h14J7YtRG4PPxOQ@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <AANLkTikueXPEWEHQt-Fl3Xvb3EB4ntsBlJUjjtmpinGK@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,46 +25,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
+To: Brian Swetland <swetland@google.com>
+Cc: Matthew Garrett <mjg@redhat.com>, me@felipebalbi.com, Theodore Ts'o <tytso@mit.edu>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-2010/5/17 Arve Hj=F8nnev=E5g <arve@android.com>:
-> 2010/5/14 Rafael J. Wysocki <rjw@sisk.pl>:
->> On Friday 14 May 2010, Arve Hj=F8nnev=E5g wrote:
->>> This patch series adds a suspend-block api that provides the same
->>> functionality as the android wakelock api. This version has some
->>> changes from, or requested by, Rafael. The most notable changes are:
->>> - DEFINE_SUSPEND_BLOCKER and suspend_blocker_register have been added
->>> =A0 for statically allocated suspend blockers.
->>> - suspend_blocker_destroy is now called suspend_blocker_unregister
->>> - The user space mandatory _INIT ioctl has been replaced with an
->>> =A0 optional _SET_NAME ioctl.
->>>
->>> I kept the ack and reviewed by tags on two of the patches even though
->>> there were a few cosmetic changes.
->>
->> Thanks for the patches, I think they are in a pretty good shape now.
->>
->> That said, I'd like the changelogs to be a bit more descriptive, at leas=
-t for
->> patch [1/8]. =A0I think it should explain (in a few words) what the purp=
-ose of
->> the feature is and what problems it solves that generally a combination =
-of
->> runtime PM and cpuidle is not suitable for in your opinion. =A0IOW, why =
-you
->> think we need that feature.
->>
->
-> How about:
->
-> PM: Add opportunistic suspend support.
->
-> Adds a suspend block api
+Hi,
 
-In the future I think it'd be ideal if you were to always use "suspend
-blocker" (rather than "suspend block").
+On Mon, May 17, 2010 at 11:26:59AM -0700, Brian Swetland wrote:
+> We (Google) would like to allow completely open app distribution with
+> minimal hurdles, and avoid the walled garden approach.  Toward this
+> goal we're not even requiring the use of a central app store for
+> distribution.
 
-This work has nothing to do with the block layer yet by the subject I
-thought it somehow did.
+I understand that, but still we should be telling developers what
+they're doing wrong so that they can improve themselves as professionals
+and still make the final device better.
+
+> Obviously, given the ability to run *any* app, users will run into bad
+> (or perhaps just less-than-optimal-powerwise) apps.  Being able to
+> provide the best possible battery life (in spite of
+> sometimes-nonoptimal userspace apps) and simultaneously informing
+> users about which apps are better/worse for their battery life is a
+> goal here.
+
+I see. Just hope MeeGo doesn't venture on the same waters :-s
+
+> For a large majority of apps, running in the background while the
+> device is asleep (screen off) is not essential, they don't request the
+> "keep device awake" permission, never hold a wakelock, etc.  Those
+> that do need to do this have the permission, may hold suspend
+> blockers, and are accounted for.
+
+but can anyone write an app that holds a suspend_blocker ?? If so, then
+your goal is already broken, right ? I mean, if anyone can keep a
+suspend_blocker held forever, you'll never ever sleep, right ? While
+with runtime, if you keep the keypad open, only the keypad and the paths
+directly related to it (probably the i2c controller and the power domain
+where the i2c controller sits) will be kept alive, no ?
+
+> Unrelated to apps, the ability to say "please enter suspend as soon as
+> there's no more work (kernel or userspace) preventing it", in a
+> simple, non-racy way is useful.
+
+I just tend to agree with Kevin on questioning how different how
+different this actually is from runtime_pm. I guess I would need to dig
+through some documentation in order to understand but it seems really
+similar.
+
+-- 
+balbi
