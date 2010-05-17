@@ -1,16 +1,18 @@
-From: James Bottomley <James.Bottomley@suse.de>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Mon, 17 May 2010 13:59:39 -0400
-Message-ID: <1274119179.4418.68.camel__44722.6588651121$1274119527$gmane$org@mulgrave.site>
+Date: Mon, 17 May 2010 11:26:59 -0700
+Message-ID: <AANLkTikueXPEWEHQt-Fl3Xvb3EB4ntsBlJUjjtmpinGK__38464.6013532349$1274120925$gmane$org@mail.gmail.com>
 References: <Pine.LNX.4.44L0.1005151716180.24645-100000@netrider.rowland.org>
 	<87hbm6cz90.fsf@deeprootsystems.com>
 	<1274115885.4418.59.camel@mulgrave.site>
 	<20100517174647.GA11512@gandalf>
+	<1274119179.4418.68.camel@mulgrave.site>
+	<20100517181252.GA14260@gandalf>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100517174647.GA11512@gandalf>
+In-Reply-To: <20100517181252.GA14260@gandalf>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,87 +23,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: me@felipebalbi.com
-Cc: Matthew Garrett <mjg@redhat.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
+Cc: Matthew Garrett <mjg@redhat.com>, Theodore Ts'o <tytso@mit.edu>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2010-05-17 at 20:47 +0300, Felipe Balbi wrote:
-> On Mon, May 17, 2010 at 01:04:45PM -0400, James Bottomley wrote:
-> > > For userspace, apps that have polling behavior or are ill-behaved must
-> > > be found and fixed.  Thanks to tools like powertop, this is a farily
-> > > easy task.
-> > 
-> > That's a bit glib ... powertop can detect power consumption stats on a
-> > running system ... if you have a polling app preventing your system from
-> > suspending, powertop isn't necessarily going to find it ... especially
-> > if the polling interval is of the order of powertop's.  Powertop can
-> > find the bad tens of wakeups per second, but it only takes one wakup
-> > every few seconds or so to drain the battery significantly when
-> > operating on suspend from idle.
-> 
-> you can always increase powertop's interval through command line and
-> once you went down to 1 wakeup every two seconds, you increase
-> powertop's interval and try to cut down 10 more ill-behaved apps. And
-> you keep going until you have e.g. 1 wakeup per minute or whatever your
-> target is.
-
-Have you actually tried this?  On my N1 with CM5.0.6 just running
-powertop requires me to keep the USB system up (debugging cable) and
-paths into the usb console ... all of this produces significant wakeup
-distortion, mostly in the msm i2c subsystem.  But in all the noise it's
-hard to find rogue applications.
-
-> > > But really, I don't consider the "ill-behaved app" problem to be a
-> > > real-world problem.  Both in maemo/meego and Android, if someone
-> > > writes an app that kills battery life, it will get reported as a bug,
-> > > or get bad ratings etc.  On these kinds of devices, there is a *stong*
-> > > developer incentive to not write battery sucking apps.
-> > 
-> > I'm not sure this is real world, either.  Developers can fire up
-> > powertop from the command line when their phone isn't idling for as long
-> > as it should.  But a phone is a consumer device: the average smart phone
-> > user just wants to browse the web, get email, go to facebook and play
-> > with some cool apps.  If one of those cool apps is rogue, they're not
-> > really going to know which one or how to find it (and firing up powertop
-> > from the command line isn't something which will occur to them as a
-> > matter of routine).
-> 
-> Agree with you here.
-> 
-> > One of the nice things that suspend blockers actually does is to give
-> > the kernel a clear name for the process blocking suspend (and thus
-> > consuming power).  This allows a nice way to assign power budget to the
-> > application and present who's using what in a nice visible form, which
-> > does facilitate the reporting of bad apps, even for the non-developer
-> > user.
-> 
-> if that's the only thing we want suspend_blockers for, there are other
-> simpler ways to do it.
-
-Nice straw man slide.
-
-The technical reason for wanting suspend blockers (as has been stated
-more times than I can be bothered to go back and count) is that no-one
-can currently produce a working model for race free kernel to user work
-handoff and, in the face of open app stores, rogue applications are a
-significant problem.  The fact that suspend blockers enables easy
-identification of power hogging apps is just a very useful side effect.
-
-James
-
-
->  Just add a kernel debugging option for anyone
-> doing poll() or keeping a device open() or whatever and you have the
-> name the of the processes consuming power and preventing system from
-> going into sleep.
-> 
-> IMO, suspend_blocker is trying to fix application problems in kernel
-> space by unconditionaly (well sort of) freezing userspace if there are
-> no suspen_blockers held. So even if application is doing
-> poll(pfds, ARRAY_SIZE(pfds), 2); that won't be noticed because as long as
-> the suspend_blocker is released, that poll() will be frozen, no ?
-> 
-> IMO the real fix would be on that particular poll(), changing the
-> timeout e.g. based on cpufreq notifications or even relying completely
-> on IRQs with poll(pdfs, ARRAY_SIZE(pfds), -1); Of course, this is only a
-> crude example trying to show that the real issue lies on the application
-> rather than on kernel.
+T24gTW9uLCBNYXkgMTcsIDIwMTAgYXQgMTE6MTIgQU0sIEZlbGlwZSBCYWxiaSA8bWVAZmVsaXBl
+YmFsYmkuY29tPiB3cm90ZToKPgo+PiBUaGUgdGVjaG5pY2FsIHJlYXNvbiBmb3Igd2FudGluZyBz
+dXNwZW5kIGJsb2NrZXJzIChhcyBoYXMgYmVlbiBzdGF0ZWQKPj4gbW9yZSB0aW1lcyB0aGFuIEkg
+Y2FuIGJlIGJvdGhlcmVkIHRvIGdvIGJhY2sgYW5kIGNvdW50KSBpcyB0aGF0IG5vLW9uZQo+PiBj
+YW4gY3VycmVudGx5IHByb2R1Y2UgYSB3b3JraW5nIG1vZGVsIGZvciByYWNlIGZyZWUga2VybmVs
+IHRvIHVzZXIgd29yawo+PiBoYW5kb2ZmIGFuZCwgaW4gdGhlIGZhY2Ugb2Ygb3BlbiBhcHAgc3Rv
+cmVzLCByb2d1ZSBhcHBsaWNhdGlvbnMgYXJlIGEKPj4gc2lnbmlmaWNhbnQgcHJvYmxlbS4gwqBU
+aGUgZmFjdCB0aGF0IHN1c3BlbmQgYmxvY2tlcnMgZW5hYmxlcyBlYXN5Cj4+IGlkZW50aWZpY2F0
+aW9uIG9mIHBvd2VyIGhvZ2dpbmcgYXBwcyBpcyBqdXN0IGEgdmVyeSB1c2VmdWwgc2lkZSBlZmZl
+Y3QuCj4KPiBJIHN0aWxsIGNhbid0IGdldCBvdmVyIHRoZSBmYWN0IHRoYXQgc3VzcGVuZF9ibG9j
+a2VycyBhcmUgZGVhbGluZyB3aXRoCj4gdXNlcmxhbmQgcHJvYmxlbXMgaW4ga2VybmVsIHNwYWNl
+LiBJZiB3ZSBjYW4ndCByZWFsbHkgdHJ1c3QgYXBwcywgSSdtCj4gc29ycnkgYnV0IGNvbXBhbmll
+cyBsaWtlIEdvb2dsZSBhbmQgTm9raWEgKHdoaWNoIEkgd29yayBmb3IpIHdpbGwgaGF2ZQo+IHRv
+IHNldHVwIGJldHRlciBhcHBsaWNhdGlvbiBhY2NlcHRhbmNlIG9uIHRoZWlyIHN0b3Jlcy4KCldl
+IChHb29nbGUpIHdvdWxkIGxpa2UgdG8gYWxsb3cgY29tcGxldGVseSBvcGVuIGFwcCBkaXN0cmli
+dXRpb24gd2l0aAptaW5pbWFsIGh1cmRsZXMsIGFuZCBhdm9pZCB0aGUgd2FsbGVkIGdhcmRlbiBh
+cHByb2FjaC4gIFRvd2FyZCB0aGlzCmdvYWwgd2UncmUgbm90IGV2ZW4gcmVxdWlyaW5nIHRoZSB1
+c2Ugb2YgYSBjZW50cmFsIGFwcCBzdG9yZSBmb3IKZGlzdHJpYnV0aW9uLgoKT2J2aW91c2x5LCBn
+aXZlbiB0aGUgYWJpbGl0eSB0byBydW4gKmFueSogYXBwLCB1c2VycyB3aWxsIHJ1biBpbnRvIGJh
+ZAoob3IgcGVyaGFwcyBqdXN0IGxlc3MtdGhhbi1vcHRpbWFsLXBvd2Vyd2lzZSkgYXBwcy4gIEJl
+aW5nIGFibGUgdG8KcHJvdmlkZSB0aGUgYmVzdCBwb3NzaWJsZSBiYXR0ZXJ5IGxpZmUgKGluIHNw
+aXRlIG9mCnNvbWV0aW1lcy1ub25vcHRpbWFsIHVzZXJzcGFjZSBhcHBzKSBhbmQgc2ltdWx0YW5l
+b3VzbHkgaW5mb3JtaW5nCnVzZXJzIGFib3V0IHdoaWNoIGFwcHMgYXJlIGJldHRlci93b3JzZSBm
+b3IgdGhlaXIgYmF0dGVyeSBsaWZlIGlzIGEKZ29hbCBoZXJlLgoKPiBJTU8gd2Ugc2hvdWxkIGJl
+IGNlbGVicmF0aW5nIGdvb2QgYXBwcywgbm90IGRlYWxpbmcgaW4ga2VybmVsIHNwYWNlIHdpdGgK
+PiBiYWQgb25lcy4gQW5kIG9uIHRvcCBvZiBhbGwgdGhhdCwgd2Ugd291bGQgc3RpbGwgbmVlZCBj
+dXN0b20KPiBhcHBsaWNhdGlvbnMgd2l0aCBzdXNwZW5kX2Jsb2NrZXJzIHN1cHBvcnQgYnVpbHQg
+aW50byB0aGVtLgoKRm9yIGEgbGFyZ2UgbWFqb3JpdHkgb2YgYXBwcywgcnVubmluZyBpbiB0aGUg
+YmFja2dyb3VuZCB3aGlsZSB0aGUKZGV2aWNlIGlzIGFzbGVlcCAoc2NyZWVuIG9mZikgaXMgbm90
+IGVzc2VudGlhbCwgdGhleSBkb24ndCByZXF1ZXN0IHRoZQoia2VlcCBkZXZpY2UgYXdha2UiIHBl
+cm1pc3Npb24sIG5ldmVyIGhvbGQgYSB3YWtlbG9jaywgZXRjLiAgVGhvc2UKdGhhdCBkbyBuZWVk
+IHRvIGRvIHRoaXMgaGF2ZSB0aGUgcGVybWlzc2lvbiwgbWF5IGhvbGQgc3VzcGVuZApibG9ja2Vy
+cywgYW5kIGFyZSBhY2NvdW50ZWQgZm9yLgoKVW5yZWxhdGVkIHRvIGFwcHMsIHRoZSBhYmlsaXR5
+IHRvIHNheSAicGxlYXNlIGVudGVyIHN1c3BlbmQgYXMgc29vbiBhcwp0aGVyZSdzIG5vIG1vcmUg
+d29yayAoa2VybmVsIG9yIHVzZXJzcGFjZSkgcHJldmVudGluZyBpdCIsIGluIGEKc2ltcGxlLCBu
+b24tcmFjeSB3YXkgaXMgdXNlZnVsLgoKQnJpYW4KX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3Rz
+LmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcv
+bWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
