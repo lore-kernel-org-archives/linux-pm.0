@@ -1,8 +1,8 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Mon, 17 May 2010 15:56:44 -0700
-Message-ID: <87k4r2t9w3.fsf@deeprootsystems.com>
-References: <87wrvl5479.fsf@deeprootsystems.com>
+Date: Mon, 17 May 2010 16:04:21 -0700
+Message-ID: <AANLkTim5PZdKvH2HsDXtpzIPTNbVC54C4Y_YwbNVuypk__6735.48804265938$1274137621$gmane$org@mail.gmail.com>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
 	<20100503215028.GB18910@srcf.ucam.org>
 	<alpine.DEB.2.00.1005141408260.3348@utopia.booyaka.com>
 	<20100514203202.GA12409@srcf.ucam.org>
@@ -10,15 +10,13 @@ References: <87wrvl5479.fsf@deeprootsystems.com>
 	<20100514231510.GG16989@thunk.org>
 	<87r5laa4oc.fsf@deeprootsystems.com>
 	<AANLkTilL90pYVlquvMDAEPHj_AraEi9Qzk-0tTjw9Bkx@mail.gmail.com>
-	<20100517193440.GA32066@srcf.ucam.org>
-	<87ljbi1anb.fsf@deeprootsystems.com>
-	<20100517213437.GA2395@srcf.ucam.org>
+	<AANLkTil7358FHTlFZ0LqwymkiZZ-7An0HlaOTVhTkpgW@mail.gmail.com>
+	<87mxvyt9xz.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100517213437.GA2395@srcf.ucam.org> (Matthew Garrett's message
-	of "Mon\, 17 May 2010 22\:34\:37 +0100")
+In-Reply-To: <87mxvyt9xz.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,60 +26,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, linux-pm@lists.linux-foundation.org, Liam Girdwood <lrg@slimlogic.co.uk>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, linux-omap@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>, Daniel Walker <dwalker@codeaurora.org>, tytso@mit.edu, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Arjan van de Ven <arjan@infradead.org>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Len Brown <len.brown@intel.com>, Wu Fengguang <fengguang.wu@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, tytso@mit.edu, Linus Walleij <linus.walleij@stericsson.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-omap@vger.kernel.org, Daniel Walker <dwalker@codeaurora.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>, Liam Girdwood <lrg@slimlogic.co.uk>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Matthew Garrett <mjg@redhat.com> writes:
-
-> On Mon, May 17, 2010 at 02:27:52PM -0700, Kevin Hilman wrote:
->> Matthew Garrett <mjg@redhat.com> writes:
->> > Run this (or equivalent code) on an N900 and on an Android. Measure the 
->> > screen-off power draw on both.
->> >
->> > int main() {
->> > 	int i;
->> > 	while (1)
->> > 		i++;
->> > 	return 0;
->> > }
->> 
->> This kind of rogue app will also kill my CPU performance.  For rogue
->> CPU-hog apps, we use _tools_ to find and fix this kind of problem:
->> top, renice, kill, etc. that use features of the scheduler to find
->> and/or solve the problem.
->
-> If my phone is able to avoid losing almost all of its standby time 
-> without me having to care about whether my bouncing cow game was written 
-> by a complete fool or not, that means that my phone is *better* than one 
-> where I have to care. 
-
-Someday I hope to see this bouncing cow app I keep hearing about.  I
-must be pretty spectacular since can't help talking about it.  ;)
-
-> Would the world be better if said fool could be 
-> sent to reeducation camps before being allowed to write any more 
-> software? Probably, but sadly that doesn't seem to be something we can 
-> implement through code. I'd love it if we could assume that all software 
-> is going to be perfect, but in the absence of that ideal world there's a 
-> strong incentive to develop technology that does its best to cope with 
-> adverse situations.
-
-I completely agree.  
-
-The only thing being debated is the implementation of the coping
-mechanism.
-
-In particular, why the coping mechanism for PM "badness" has to be a
-large sledgehammer where other badness (CPU, IO, etc.) has been dealt
-with using infrastructure like timers, scheduling, throttling, etc.
-
-My shrink would say that the sledgehammer approach to badness might
-work for the short term, but eventually that badness is going to seep
-out in other, unpredictable places.
-
-My shrink would also probably tell me that since I'm seem to be the
-last one left who seems to care, it's probably time to throw in the
-towel.
-
-Kevin
+T24gTW9uLCBNYXkgMTcsIDIwMTAgYXQgMzo1NSBQTSwgS2V2aW4gSGlsbWFuCjxraGlsbWFuQGRl
+ZXByb290c3lzdGVtcy5jb20+IHdyb3RlOgo+Cj4gVGhlIGZ1bmRhbWVudGFsIHByb2JsZW0gaXMg
+b25lIG9mIGlkbGVuZXNzLiDCoFdoYXQgd2Ugd2FudCBpcyB0aGUKPiBzeXN0ZW0gdG8gYmUgaWRs
+ZSBpbiBvcmRlciB0byBoaXQgdGhlIGxvd2VzdCBwb3dlciBzdGF0ZXMuIMKgV2UgY2FuJ3QKPiBn
+ZXQgdGhlcmUgYmVjYXVzZSB0aGUgc3lzdGVtIGlzIG5vdCB0cnVseSBpZGxlLgo+Cj4gU28sIHRo
+ZXJlIGFyZSBiYXNpY2FsbHkgdHdvIHNvbHV0aW9uczoKPgo+IDEpIGZpbmQgYW5kIGZpeCB0aGUg
+cHJvYmxlbSBzcG90cyBzbyB3ZSBjYW4gYmUgaWRsZSBtb3JlIG9mdGVuCj4gMikgYWRkIGEgbmV3
+IGRlZmluaXRpb24gb2YgaWRsZSBzbyB3ZSBjYW4gYmUgaWRsZSBtb3JlIG9mdGVuCj4KPiBPcHBv
+cnVudGlzdGljIHN1c3BlbmQgdGFrZXMgdGhlIHNlY29uZCBhcHByb2FjaCB3aGVyZSB0aGUgbmV3
+Cj4gZGVmaW5pdGlvbiBvZiBpZGxlIGlzICJubyBzdXNwZW5kIGJsb2NrZXJzIGhlbGQuIgo+Cj4g
+T2YgY291cnNlLCBJIGNsZWFybHkgcHJlZmVyIHRoZSBmb3JtZXIsIGJ1dCBpdCdzIGFsc28gYmVj
+b21pbmcgY2xlYXIKPiB0aGF0IHNpbmNlIEknbSB0aGUgb25seSBvbmUgc3RpbGwgd2hpbmluZyBh
+Ym91dCBpdCwgSSBtdXN0IGJlIHRvbyBtdWNoCj4gb2YgYW4gaWRlYWxpc3QgdG8ga2VlcCBob3Bp
+bmcgZm9yIGl0LgoKSSdkIGxvdmUgdG8gc2VlIHRoZSBmb3JtZXIgd29yaywgYnV0IGl0IGlzIG5v
+dCBzb21ldGhpbmcgdGhhdCBJIHRoaW5rCmlzIGdvaW5nIHRvIGJlIGZpeGVkIHJhcGlkbHkuICBJ
+dCBwb3RlbnRpYWxseSBpbnZvbHZlcyBtYW55IGRpZmZlcmVudApzdWJzeXN0ZW1zLCBhbmQgc3Rp
+bGwgcmVxdWlyZXMgc29tZSBuZWVkIGZvciBtYW5hZ2luZyBhcmJpdHJhcnkKdXNlcnNwYWNlIGFn
+ZW50cyB3aGljaCBtYXkgaGF2ZSBub24taWRlYWwgYmVoYXZpb3JzIChpZiB3ZSdyZSBnb2luZyB0
+bwpzb2x2ZSB0aGUgcHJvYmxlbSBmb3IgZ2VuZXJhbCBwdXJwb3NlIGRldmljZXMgdGhhdCBjYW4g
+cnVuIGFyYml0cmFyeQp1c2VyLWluc3RhbGxlZCBzb2Z0d2FyZSkuICBJbmNyZW1lbnRhbCBpbXBy
+b3ZlbWVudHMgYXJlIGdyZWF0IHRob3VnaAooZm9yIGV4YW1wbGUsIHRoYXQgd2UgY2FuIG5vdyBi
+ZSBpbiBsb3dlc3QgcG93ZXIgaWRsZSBmb3IgcGVyaW9kcwpncmVhdGVyIHRoYW4gMiBzZWNvbmRz
+IGR1ZSB0byB0aGUgY2hhbmdlIGluIC4zMikuCgpFdmVuIHdoZW4gb3BlcmF0aW5nIGluIG9wcG9y
+dHVuaXN0aWMgc3VzcGVuZCwgaXQgaXMgc3RpbGwgYWR2YW50YWdlb3VzCmZvciBpZGxlIHRvIGJl
+IGFzIGlkbGUgYXMgcG9zc2libGUgYW5kIHdlIHNob3VsZCBrZWVwIHdvcmtpbmcgdG93YXJkCnRo
+YXQgZ29hbC4gIElmIHdlIGdldCB0byB0aGUgcG9pbnQgd2hlcmUgdGhlIHBvd2VyIGRpZmZlcmVu
+Y2UgYmV0d2VlbgpzdXNwZW5kLWluLWlkbGUgYW5kIG9wcG9ydHVuaXN0aWMgc3VzcGVuZCBpcyB6
+ZXJvLCB0aGVuIHdlIG5vIGxvbmdlcgpuZWVkIHRoZSBsYXR0ZXIuCgpJIGRvbid0IHRoaW5rIGFu
+eWJvZHkgb24gdGhlIEdvb2dsZS9BbmRyb2lkIHNpZGUgaXMgYXJndWluZyB0aGF0IHdlCipzaG91
+bGRuJ3QqIHB1cnN1ZSBkeW5hbWljIHBtIGFuZCBvdmVyYWxsIG1ha2luZyBpZGxlIG1vcmUgaWRs
+ZSBtb3JlCm9mIHRoZSB0aW1lLiAgV2UncmUganVzdCBzYXlpbmcgdGhhdCBoZXJlIGFuZCBub3cg
+d2UgYXJlIG5vdCBhdCB0aGUKaWRlYWwgYW5kIG9wcG9ydHVuaXN0aWMgc3VzcGVuZCBnYWlucyB1
+cyByZWFsIHBvd2VyIHNhdmluZ3MgYW5kIGlzCnVzZWZ1bC4KCkJyaWFuCl9fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdAps
+aW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZv
+dW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
