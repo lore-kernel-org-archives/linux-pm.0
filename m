@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
-	userspace is frozen?
-Date: Mon, 17 May 2010 22:35:37 +0200
-Message-ID: <201005172235.37824.rjw__23493.6733766974$1274128609$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1005162219330.24400-100000@netrider.rowland.org>
-	<4BF0F3FF.2010603@crca.org.au>
+Subject: Re: [PATCH 0/8] Suspend block api (version 7)
+Date: Mon, 17 May 2010 22:40:35 +0200
+Message-ID: <201005172240.35742.rjw__35531.5251196318$1274128918$gmane$org@sisk.pl>
+References: <1273810273-3039-1-git-send-email-arve@android.com>
+	<201005162142.39343.rjw@sisk.pl>
+	<AANLkTinP68yHYfVCW-urCrRbeSb0Mlz8JsvAs-FKoUPZ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4BF0F3FF.2010603@crca.org.au>
+In-Reply-To: <AANLkTinP68yHYfVCW-urCrRbeSb0Mlz8JsvAs-FKoUPZ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,76 +19,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Matt Reimer <mattjreimer@gmail.com>
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 17 May 2010, Nigel Cunningham wrote:
-> Hi.
-> 
-> On 17/05/10 12:22, Alan Stern wrote:
-> > On Mon, 17 May 2010, Nigel Cunningham wrote:
-> >
-> >>>> I object to the patch.
-> >>>>
-> >>>> Tell the patch it ought to exit once thawed, by all means.
-> >>>
-> >>> I'm not sure what you mean.  Care to explain?
+On Monday 17 May 2010, Arve Hj=F8nnev=E5g wrote:
+> 2010/5/16 Rafael J. Wysocki <rjw@sisk.pl>:
+> > On Friday 14 May 2010, Arve Hj=F8nnev=E5g wrote:
+> >> This patch series adds a suspend-block api that provides the same
+> >> functionality as the android wakelock api. This version has some
+> >> changes from, or requested by, Rafael. The most notable changes are:
+> >> - DEFINE_SUSPEND_BLOCKER and suspend_blocker_register have been added
+> >>   for statically allocated suspend blockers.
+> >> - suspend_blocker_destroy is now called suspend_blocker_unregister
+> >> - The user space mandatory _INIT ioctl has been replaced with an
+> >>   optional _SET_NAME ioctl.
 > >>
-> >> I mean "Set up some sort of flag that it can look at once thawed at
-> >> resume time, and use that to tell it to exit at that point."
+> >> I kept the ack and reviewed by tags on two of the patches even though
+> >> there were a few cosmetic changes.
 > >
-> > Doesn't the patch do exactly that?  The "flag" is set by virtue of the
-> > fact that this is part of del_gendisk -- which means the disk is being
-> > unregistered and hence the writeback thread will exit shortly.
+> > I have one more comment, sorry for that.
 > >
-> >>>> Make the patch unfreezeable to begin with, by all means.
-> >>>
-> >>> That wouldn't work.
-> >>
-> >> Why not?
+> > Namely, if /sys/power/policy is set to "opportunistic" and "mem" is wri=
+tten
+> > into /sys/power/state and there are no suspend blockers present except =
+for
+> > the main blocker (and the blockers used only for statistics), the syste=
+m won't
+> > be able to go out of an infinit suspend-resume loop (or at least it see=
+ms
+> > so from reading the code).
 > >
-> > It would be nice to know exactly why.  Perhaps the underlying problem
-> > can be fixed.
+> > I think we should prevent that from happening somehow.
 > >
-> >>>> If you know a disk is going to be unregistered during resume,
-> >>>
-> >>> How do we check that, exactly?
-> >>
-> >> Well, if you can figure out that you need to go down this path at this
-> >> point in the process, you must be able to apply the same logic to come
-> >> to the same conclusion earlier in the process.
-> >
-> > That's not true.  You don't know that a device is going to be unplugged
-> > until it actually _is_ unplugged.
-> 
-> Sorry - I got unregistered during suspend (instead of resume) in my 
-> head. That said, I'd argue that we should be...
-> 
-> 1) Syncing all the data at the start of the suspend/hibernate, so 
-> there's nothing for the workthread to do if we do del_gendisk.
-> 2) Telling things to exit if we do find the device is gone away at 
-> resume time, but not relying on the going-away happening until post 
-> process thaw, for a couple of reasons:
-> - Potential for races/confusion/mess etc in having $random process 
-> thawing other processes. Only the thread doing the suspend/hibernate 
-> should be freezing/thawing.
+> =
 
-I don't see a problem here, as far as kernel threads are concerned.  In this
-particular case this is a subsystem thawing a thread that belongs to it.  No
-problem.
+> It should get out of that loop as soon as someone blocks suspend. If
+> someone is constantly aborting suspend without using a suspend blocker
+> it will be very inefficient, but it should still work.
 
-> - We're dealing with the symptom, not the cause. Almost always a bad idea.
+Well, the scenario I have in mind is the following.  Someone wants to check
+the feature and simply writes "opportunistic" to /sys/power/policy and "mem=
+" to
+/sys/power/state without any drivers or apps that use suspend blockers.
 
-I very much prefer to have a fix for a symptom than no fix at all, which is the
-realistic alternative in this case.
+How in that case is the system supposed to break out of the suspend-resume =
+loop
+resulting from this?  I don't see right now, because the main blocker is
+inactive, there are no other blockers that can be activated and it is next =
+to
+impossible to write to /sys/power/state again.
 
-So, I think we should merge the patch and if someone finds the root cause
-at one point in future, then we can just use the *right* approach instead of
-the present one.
-
-The problem is real and people in the field are affected by it, so if you don't
-have a working alternative patch, please just let go.
-
-Thanks,
 Rafael
