@@ -1,21 +1,15 @@
-From: Mike Chan <mike@android.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Mon, 17 May 2010 13:07:50 -0700
-Message-ID: <AANLkTil7358FHTlFZ0LqwymkiZZ-7An0HlaOTVhTkpgW__47018.9121937894$1274127036$gmane$org@mail.gmail.com>
+Date: Mon, 17 May 2010 22:15:13 +0200
+Message-ID: <201005172215.13132.rjw@sisk.pl>
 References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<87wrvl5479.fsf@deeprootsystems.com>
-	<20100503215028.GB18910@srcf.ucam.org>
-	<alpine.DEB.2.00.1005141408260.3348@utopia.booyaka.com>
-	<20100514203202.GA12409@srcf.ucam.org>
-	<87aas2azc5.fsf@deeprootsystems.com>
 	<20100514231510.GG16989@thunk.org>
 	<87r5laa4oc.fsf@deeprootsystems.com>
-	<AANLkTilL90pYVlquvMDAEPHj_AraEi9Qzk-0tTjw9Bkx@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTilL90pYVlquvMDAEPHj_AraEi9Qzk-0tTjw9Bkx@mail.gmail.com>
+In-Reply-To: <87r5laa4oc.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,90 +19,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vitaly Wool <vitalywool@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, Wu Fengguang <fengguang.wu@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, tytso@mit.edu, Linus Walleij <linus.walleij@stericsson.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, linux-omap@vger.kernel.org, Daniel Walker <dwalker@codeaurora.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>, Liam Girdwood <lrg@slimlogic.co.uk>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Arve@smtp1.linux-foundation.org, Oleg Nesterov <oleg@redhat.com>, Liam Girdwood <lrg@slimlogic.co.uk>, linux-omap@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>, Daniel Walker <dwalker@codeaurora.org>, tytso@mit.edu, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 17, 2010 at 12:27 PM, Vitaly Wool <vitalywool@gmail.com> wrote:
-> On Mon, May 17, 2010 at 6:12 PM, Kevin Hilman
-> <khilman@deeprootsystems.com> wrote:
->
->>> and #2, the battery lifetime on the N770 and N800 (both of which I have)
->>> is **appalling** **bad**.
->>
->> Appalling bad compared to what?
->>
->> What's probably more interesting in terms of rough comparisons is
->> comparing similar devices with and without opportunistic suspend. =A0The
->> Nokia n900 (maemo) and the Moto Droid (android) use the same SoC (TI
->> OMAP3) and roughly the same kernel (2.6.2[89], although both are
->> heavily patched from mainline.)
->>
->> The n900 *never* suspends. =A0It only uses dynamic PM + CPUidle.
->> The droid uses opportunistic suspend (as well as dynamic PM + CPUidle)
->>
->> I don't know of any more objective comparison of the two, but as a
->> user of both devices I can say that the active usage is basically the
->> same (around a day) and the idle use is similar as well, even though
->> the Droid has a slightly bigger battery (1400 mAh vs. 1320 mAh.) =A0My
->> own usage suggests the n900 is a bit better in idle time, but I have
->> not done any measuring or objective tests. =A0I'm guessing the
->> difference is probably because the Droid does not use the deepest
->> off-mode power states either in idle or suspend (IIRC) where the n900
->> does. =A0I suspect that if both were using off-mode and had the same
->> battery, these differences would go away.
->>
+On Monday 17 May 2010, Kevin Hilman wrote:
+> tytso@mit.edu writes:
+...
+> At least for OMAP, I don't consider "config it out" a viable option.
+> 
+> We would like one kernel (in particular one PM core) to be usable for
+> a broad range of devices: maemo/meego, Android, webOS, Archos, and
+> whatever else we haven't seen yet.
 
-Although both are OMAP3430 and run 2.6.29 you cannot compare the N900
-and Droid's perceived user battery life to one another to evaluate
-opportunistic suspend. There are many factors uncounted for such as:
-network reception, screen brightness (and size), button back-light,
-keyboard back-light, modem stack (CDMA vs UMTS). Also the difference
-in uerspace.
+You don't need to config it out in the first place, so this argument doesn't
+really fly.  Besides, I don't get how rejecting the opportunisting suspend
+feature would help us achieve this goal.
 
->> While this is not really a scientific comparison, it at least gives a
->> rough idea. =A0If using opportunistic suspend was adding noticably
->> better battery life, I think this would be a different discussion.
->
-> Exactly. The point is, opportunistic suspend doesn't in fact add any
-> value compared to dynamic PM + CPUIdle. It only produces some false
-> impression that one can handle power management right without using
-> dynamic PM. And this false impression is the cause for many really
-> ugly designs (like, for instance, 15 minutes touchscreen inactivity
-> delay before forcibly shutting down the wireless, as it's done in
-> stock Android framework).
->
-
-Opportunistic suspend is an extension to the current suspend model,
-not a replacement dynamic / run-time PM. If you can replace good old
-suspend then this would be a different story.
-
-As you mention, Droid uses opportunistic suspend + dynamic pm +
-cpuidle + freq. So I decided to do some measurements on a Droid using
-our 2.9.32 kernel
-(http://android.git.kernel.org/?p=3Dkernel/omap.git;a=3Dsummary). For a
-little better apples to apples comparison.
-
-Droid (idle system, airplane mode, screen off, 3 min interval):
-measured average current
-- with opportunity suspend: 3.19mA
-- without opportunistic suspend: 3.5mA
-
-Stock userspace build, all I did was replace the kernel. We are
-hitting retention on idle as well as suspend for omap (instead of full
-off-mode).
-
-Also, your point about wifi, the 15 min timeout is in the framework
-and is configurable in the code and via UI, nothing to do with kernel,
-opportunistic suspend or run time suspend.
-
-
--- Mike
-
-> Thanks,
-> =A0 Vitaly
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
->
+Rafael
