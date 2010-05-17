@@ -1,14 +1,14 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 7)
-Date: Sun, 16 May 2010 21:50:00 -0700
-Message-ID: <AANLkTilX0uhqrJtUSOC4smdH1M8V-h14J7YtRG4PPxOQ__10399.6771541008$1274071868$gmane$org@mail.gmail.com>
-References: <1273810273-3039-1-git-send-email-arve@android.com>
-	<201005142308.48386.rjw@sisk.pl>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Sun, 16 May 2010 21:54:51 -0700
+Message-ID: <AANLkTikSu7D_qao0_coP8q0l6xL_sWp9c1-y_cYqm7wU@mail.gmail.com>
+References: <AANLkTinztS8B4LkceGgZB94sRKbseKQ6qMnWB0Jcyh9I@mail.gmail.com>
+	<Pine.LNX.4.44L0.1005151720330.24645-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005142308.48386.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1005151720330.24645-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,80 +18,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Sven Neumann <s.neumann@raumfeld.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Tero Saarni <tero.saarni@gmail.com>, linux-input@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Alexey Dobriyan <adobriyan@gmail.com>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Daniel Mack <daniel@caiaq.de>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Daniel Walker <dwalker@codeaurora.org>, Theodore Ts'o <tytso@mit.edu>, =?ISO-8859-1?Q?M=E1rton_N=E9meth?= <nm127@freemail.hu>, Brian Swetland <swetland@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-2010/5/14 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Friday 14 May 2010, Arve Hj=F8nnev=E5g wrote:
->> This patch series adds a suspend-block api that provides the same
->> functionality as the android wakelock api. This version has some
->> changes from, or requested by, Rafael. The most notable changes are:
->> - DEFINE_SUSPEND_BLOCKER and suspend_blocker_register have been added
->> =A0 for statically allocated suspend blockers.
->> - suspend_blocker_destroy is now called suspend_blocker_unregister
->> - The user space mandatory _INIT ioctl has been replaced with an
->> =A0 optional _SET_NAME ioctl.
+On Sat, May 15, 2010 at 2:25 PM, Alan Stern <stern@rowland.harvard.edu> wro=
+te:
+> On Fri, 14 May 2010, Arve Hj=F8nnev=E5g wrote:
+>
+>> > I'd like to explore this avenue a little farther. =A0In particular, wh=
+at
+>> > is the issue involving loss of wakeup events? =A0Can you describe this=
+ in
+>> > more detail?
+>> >
 >>
->> I kept the ack and reviewed by tags on two of the patches even though
->> there were a few cosmetic changes.
+>> On the desktop systems I have used I only wake the up the system by
+>> pressing a button/key or with an rtc alarm. Losing a button or key
+>> wakeup event is not usually a problem on a desktop since the user will
+>> press it again. Losing an alarm however could be a problem and this
+>> can be avoided by using opportunistic suspend and suspend blockers.
 >
-> Thanks for the patches, I think they are in a pretty good shape now.
+> How can runtime PM combined with CPUidle cause an alarm to be lost?
 >
-> That said, I'd like the changelogs to be a bit more descriptive, at least=
- for
-> patch [1/8]. =A0I think it should explain (in a few words) what the purpo=
-se of
-> the feature is and what problems it solves that generally a combination of
-> runtime PM and cpuidle is not suitable for in your opinion. =A0IOW, why y=
-ou
-> think we need that feature.
+It doesn't. My desktop systems only gets to a low power state (<3W)
+from suspend.
+
+>> > Why would you want to use system suspend if runtime PM can do
+>> > everything you need?
+>> >
+>> Because it stops threads that wakeup every second to check if they
+>> have work to do (this includes standard kernel threads), and it
+>> prevents bad apps that never go idle from completely destroying our
+>> battery life.
 >
-
-How about:
-
-PM: Add opportunistic suspend support.
-
-Adds a suspend block api that drivers can use to block opportunistic
-suspend. This is needed to avoid losing wakeup events that occur
-right after suspend is initiated.
-
-Adds /sys/power/policy that selects the behaviour of /sys/power/state.
-After setting the policy to opportunistic, writes to /sys/power/state
-become non-blocking requests that specify which suspend state to enter
-when no suspend blockers are active. A special state, "on", stops the
-process by activating the "main" suspend blocker.
-
-Opportunistic suspend is most useful on systems that cannot enter their
-lowest power state from idle, but it is also useful on systems that enter
-the same power state from idle and suspend. Periodic timers can cause
-a significant power drain on these systems, and suspend will stop most
-of this. Opportunistic suspend can also reduce the harm caused by apps
-that never go idle.
-
-> The changelog of patch [2/8] appears to be outdated, that needs to be fix=
-ed.
-> Also, it would be nice to explain in the changelog what the interface is =
-needed
-> for (in terms of the problems that it helps to handle).
+> Ah, the ill-behaved apps problem. =A0I think everybody agrees that they
+> are hard to deal with.
 >
+> The kernel-threads problem might better be addressed by fixing those
+> threads than by adding a new API.
+>
+>> > Sure, I can see that an ACPI-based system needs something more. =A0But
+>> > that's not the real issue here.
+>> >
+>>
+>> The system we started with entered a much lower power state from
+>> suspend than idle so we needed wakelocks to get more than 24 hours
+>> battery life. We kept wakelocks when we moved to the msm platform
+>> since it reduces our power consumption.
+>
+> Is it generally true among embedded systems nowadays that idle is
+> capable of reaching essentially the same power states as suspend?
 
-How about:
-
-PM: suspend_block: Add driver to access suspend blockers from user-space
-
-Add a misc device, "suspend_blocker", that allows user-space processes
-to block auto suspend. Opening this device creates a suspend_blocker.
-ioctls are provided to name this suspend_blocker, and to block and unblock
-suspend. To delete the suspend_blocker, close the device.
-
-For example, when select or poll indicates that input event are available, =
-this
-interface can be used to block suspend before reading those event. This all=
-ows
-the input driver to release its suspend blocker as soon as the event queue =
-is
-empty.
+Embedded system in general, no, but all the recent SOCs I've seen that
+target phones do.
 
 -- =
 
