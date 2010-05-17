@@ -1,7 +1,7 @@
-From: Brian Swetland <swetland@google.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Mon, 17 May 2010 11:45:32 -0700
-Message-ID: <AANLkTillcFg_y-GeXJNBuIYiGvht-NBZPxwdb71qDui0__1851.92027497596$1274122020$gmane$org@mail.gmail.com>
+Date: Mon, 17 May 2010 11:45:42 -0700
+Message-ID: <20100517184541.GA7963__12547.1208630644$1274122025$gmane$org@opensource.wolfsonmicro.com>
 References: <Pine.LNX.4.44L0.1005151716180.24645-100000@netrider.rowland.org>
 	<87hbm6cz90.fsf@deeprootsystems.com>
 	<1274115885.4418.59.camel@mulgrave.site>
@@ -11,9 +11,10 @@ References: <Pine.LNX.4.44L0.1005151716180.24645-100000@netrider.rowland.org>
 	<AANLkTikueXPEWEHQt-Fl3Xvb3EB4ntsBlJUjjtmpinGK@mail.gmail.com>
 	<20100517183904.GA14047@gandalf>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 In-Reply-To: <20100517183904.GA14047@gandalf>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -24,52 +25,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: me@felipebalbi.com
-Cc: Matthew Garrett <mjg@redhat.com>, Theodore Ts'o <tytso@mit.edu>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Felipe Balbi <me@felipebalbi.com>
+Cc: Matthew Garrett <mjg@redhat.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Geoff Smith <geoffx.smith@intel.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBNYXkgMTcsIDIwMTAgYXQgMTE6MzkgQU0sIEZlbGlwZSBCYWxiaSA8bWVAZmVsaXBl
-YmFsYmkuY29tPiB3cm90ZToKPiBIaSwKPgo+IE9uIE1vbiwgTWF5IDE3LCAyMDEwIGF0IDExOjI2
-OjU5QU0gLTA3MDAsIEJyaWFuIFN3ZXRsYW5kIHdyb3RlOgo+PiBXZSAoR29vZ2xlKSB3b3VsZCBs
-aWtlIHRvIGFsbG93IGNvbXBsZXRlbHkgb3BlbiBhcHAgZGlzdHJpYnV0aW9uIHdpdGgKPj4gbWlu
-aW1hbCBodXJkbGVzLCBhbmQgYXZvaWQgdGhlIHdhbGxlZCBnYXJkZW4gYXBwcm9hY2guIMKgVG93
-YXJkIHRoaXMKPj4gZ29hbCB3ZSdyZSBub3QgZXZlbiByZXF1aXJpbmcgdGhlIHVzZSBvZiBhIGNl
-bnRyYWwgYXBwIHN0b3JlIGZvcgo+PiBkaXN0cmlidXRpb24uCj4KPiBJIHVuZGVyc3RhbmQgdGhh
-dCwgYnV0IHN0aWxsIHdlIHNob3VsZCBiZSB0ZWxsaW5nIGRldmVsb3BlcnMgd2hhdAo+IHRoZXkn
-cmUgZG9pbmcgd3Jvbmcgc28gdGhhdCB0aGV5IGNhbiBpbXByb3ZlIHRoZW1zZWx2ZXMgYXMgcHJv
-ZmVzc2lvbmFscwo+IGFuZCBzdGlsbCBtYWtlIHRoZSBmaW5hbCBkZXZpY2UgYmV0dGVyLgoKSSBh
-Z3JlZS4gIFdoaWNoIGlzIHdoeSB3ZSBkZXZlbG9wIHRvb2xzIHRvIGhlbHAgZGV2ZWxvcGVycyB1
-bmRlcnN0YW5kCndoYXQgdGhlaXIgYXBwcyBhcmUgZG9pbmcuCgo+PiBGb3IgYSBsYXJnZSBtYWpv
-cml0eSBvZiBhcHBzLCBydW5uaW5nIGluIHRoZSBiYWNrZ3JvdW5kIHdoaWxlIHRoZQo+PiBkZXZp
-Y2UgaXMgYXNsZWVwIChzY3JlZW4gb2ZmKSBpcyBub3QgZXNzZW50aWFsLCB0aGV5IGRvbid0IHJl
-cXVlc3QgdGhlCj4+ICJrZWVwIGRldmljZSBhd2FrZSIgcGVybWlzc2lvbiwgbmV2ZXIgaG9sZCBh
-IHdha2Vsb2NrLCBldGMuIMKgVGhvc2UKPj4gdGhhdCBkbyBuZWVkIHRvIGRvIHRoaXMgaGF2ZSB0
-aGUgcGVybWlzc2lvbiwgbWF5IGhvbGQgc3VzcGVuZAo+PiBibG9ja2VycywgYW5kIGFyZSBhY2Nv
-dW50ZWQgZm9yLgo+Cj4gYnV0IGNhbiBhbnlvbmUgd3JpdGUgYW4gYXBwIHRoYXQgaG9sZHMgYSBz
-dXNwZW5kX2Jsb2NrZXIgPz8gSWYgc28sIHRoZW4KPiB5b3VyIGdvYWwgaXMgYWxyZWFkeSBicm9r
-ZW4sIHJpZ2h0ID8gSSBtZWFuLCBpZiBhbnlvbmUgY2FuIGtlZXAgYQo+IHN1c3BlbmRfYmxvY2tl
-ciBoZWxkIGZvcmV2ZXIsIHlvdSdsbCBuZXZlciBldmVyIHNsZWVwLCByaWdodCA/IFdoaWxlCj4g
-d2l0aCBydW50aW1lLCBpZiB5b3Uga2VlcCB0aGUga2V5cGFkIG9wZW4sIG9ubHkgdGhlIGtleXBh
-ZCBhbmQgdGhlIHBhdGhzCj4gZGlyZWN0bHkgcmVsYXRlZCB0byBpdCAocHJvYmFibHkgdGhlIGky
-YyBjb250cm9sbGVyIGFuZCB0aGUgcG93ZXIgZG9tYWluCj4gd2hlcmUgdGhlIGkyYyBjb250cm9s
-bGVyIHNpdHMpIHdpbGwgYmUga2VwdCBhbGl2ZSwgbm8gPwoKTm8sIHlvdSdsbCBuZXZlciBzdXNw
-ZW5kLCB3aGljaCBpcyBkaWZmZXJlbnQgZnJvbSBuZXZlciBnb2luZyB0byB0aGUKbG93ZXN0IENQ
-VSBwb3dlciBzdGF0ZS4gIE9uIHNoaXBwaW5nIEFuZHJvaWQgZGV2aWNlcyB3ZSBhZ2dyZXNzaXZl
-bHkKY29tcGxldGVseSBwb3dlciBkb3duIHRoZSBDUFUgaW4gaWRsZSB3aGVuZXZlciB3ZSBjYW4g
-KGJhc2VkIG9uCmxhdGVuY3kgcmVxdWlyZW1lbnRzIGdlbmVyYWxseSkuICBXZSBwb3dlciBvZmYg
-cGVyaXBoZXJhbHMgd2hlbmV2ZXIKdGhleSdyZSBub3QgaW4gdXNlLgoKVGhpcyBpcyB3aHkgSSd2
-ZSBzdGF0ZWQgcHJldmlvdXNseSB0aGF0IEkgZG9uJ3QgdGhpbmsgcnVudGltZSBQTSBhbmQKb3Bw
-b3J0dW5pc3RpYyBzdXNwZW5kIGFyZSBjb21wZXRpdGl2ZSBmZWF0dXJlcy4gIEV2ZXJ5b25lIHdo
-byBjYXJlcwphYm91dCBtaW5pbWl6aW5nIHBvd2VyIHNob3VsZCB3YW50IHJ1bnRpbWUgcG0gb3Ig
-YXQgbGVhc3Qgc2ltaWxhcgpmdW5jdGlvbmFsaXR5IChvdXIgZHJpdmVycyBoYXZlIGFsd2F5cyBw
-b3dlcmVkIGRvd24gcGVyaXBoZXJhbHMgd2hlbgpub3QgaW4gdXNlLCBldmVuIHdoaWxlIHRoZSBk
-ZXZpY2UgaXMgb3BlbiwgZXRjLCBwcmlvciB0byB0aGUgZXhpc3RlbmNlCm9mIHJ1bnRpbWUgUE0p
-LgoKSWYgeW91ciBlbnZpcm9ubWVudCBpcyBzdWNoIHRoYXQgZ29pbmcgdG8gZnVsbCBzdXNwZW5k
-IHdpbGwgbm90IGdhaW4KeW91IGFueXRoaW5nLCB0aGVuIGRvbid0IHVzZSBvcHBvcnR1bmlzdGlj
-IHN1c3BlbmQuICBXZSBmaW5kIHRoYXQKdGhlcmUgYXJlIHNhdmluZ3MgdG8gYmUgaGFkIHdpdGgg
-dGhpcyBtb2RlbCBpbiBBbmRyb2lkIHdoaWNoIGlzIHdoeSB3ZQp1c2UgaXQuICBJZiB5b3UgYXJl
-IGdvaW5nIHRvIHVzZSBvcHBvcnR1bmlzdGljIHN1c3BlbmQsCnN1c3BlbmRfYmxvY2tlcnMgcHJv
-dmlkZSB1c2VmdWwgZnVuY3Rpb25hbGl0eS4KCkJyaWFuCl9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBs
-aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24u
-b3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Mon, May 17, 2010 at 09:39:05PM +0300, Felipe Balbi wrote:
+> On Mon, May 17, 2010 at 11:26:59AM -0700, Brian Swetland wrote:
+
+> > For a large majority of apps, running in the background while the
+> > device is asleep (screen off) is not essential, they don't request the
+> > "keep device awake" permission, never hold a wakelock, etc.  Those
+> > that do need to do this have the permission, may hold suspend
+> > blockers, and are accounted for.
+
+> but can anyone write an app that holds a suspend_blocker ?? If so, then
+> your goal is already broken, right ? I mean, if anyone can keep a
+> suspend_blocker held forever, you'll never ever sleep, right ? While
+> with runtime, if you keep the keypad open, only the keypad and the paths
+> directly related to it (probably the i2c controller and the power domain
+> where the i2c controller sits) will be kept alive, no ?
+
+The Android UI provides a list of which applications have been
+preventing suspend and how long for, the idea being that if something
+has been holding suspend blockers for ever you can at least look at the
+list and see what it was.
