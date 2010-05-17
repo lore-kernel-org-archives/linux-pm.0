@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Mon, 17 May 2010 22:22:22 +0200
-Message-ID: <201005172222.22494.rjw__26908.1657090739$1274127970$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1005151716180.24645-100000@netrider.rowland.org>
-	<20100517183904.GA14047@gandalf>
-	<AANLkTillcFg_y-GeXJNBuIYiGvht-NBZPxwdb71qDui0@mail.gmail.com>
+Subject: Re: Is it supposed to be ok to call del_gendisk while
+	userspace is frozen?
+Date: Mon, 17 May 2010 22:35:37 +0200
+Message-ID: <201005172235.37824.rjw__23493.6733766974$1274128609$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1005162219330.24400-100000@netrider.rowland.org>
+	<4BF0F3FF.2010603@crca.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTillcFg_y-GeXJNBuIYiGvht-NBZPxwdb71qDui0@mail.gmail.com>
+In-Reply-To: <4BF0F3FF.2010603@crca.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,48 +19,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: Matthew Garrett <mjg@redhat.com>, me@felipebalbi.com, Theodore Ts'o <tytso@mit.edu>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Matt Reimer <mattjreimer@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 17 May 2010, Brian Swetland wrote:
-> On Mon, May 17, 2010 at 11:39 AM, Felipe Balbi <me@felipebalbi.com> wrote:
-...
-> > but can anyone write an app that holds a suspend_blocker ?? If so, then
-> > your goal is already broken, right ? I mean, if anyone can keep a
-> > suspend_blocker held forever, you'll never ever sleep, right ? While
-> > with runtime, if you keep the keypad open, only the keypad and the paths
-> > directly related to it (probably the i2c controller and the power domain
-> > where the i2c controller sits) will be kept alive, no ?
+On Monday 17 May 2010, Nigel Cunningham wrote:
+> Hi.
 > 
-> No, you'll never suspend, which is different from never going to the
-> lowest CPU power state.  On shipping Android devices we aggressively
-> completely power down the CPU in idle whenever we can (based on
-> latency requirements generally).  We power off peripherals whenever
-> they're not in use.
+> On 17/05/10 12:22, Alan Stern wrote:
+> > On Mon, 17 May 2010, Nigel Cunningham wrote:
+> >
+> >>>> I object to the patch.
+> >>>>
+> >>>> Tell the patch it ought to exit once thawed, by all means.
+> >>>
+> >>> I'm not sure what you mean.  Care to explain?
+> >>
+> >> I mean "Set up some sort of flag that it can look at once thawed at
+> >> resume time, and use that to tell it to exit at that point."
+> >
+> > Doesn't the patch do exactly that?  The "flag" is set by virtue of the
+> > fact that this is part of del_gendisk -- which means the disk is being
+> > unregistered and hence the writeback thread will exit shortly.
+> >
+> >>>> Make the patch unfreezeable to begin with, by all means.
+> >>>
+> >>> That wouldn't work.
+> >>
+> >> Why not?
+> >
+> > It would be nice to know exactly why.  Perhaps the underlying problem
+> > can be fixed.
+> >
+> >>>> If you know a disk is going to be unregistered during resume,
+> >>>
+> >>> How do we check that, exactly?
+> >>
+> >> Well, if you can figure out that you need to go down this path at this
+> >> point in the process, you must be able to apply the same logic to come
+> >> to the same conclusion earlier in the process.
+> >
+> > That's not true.  You don't know that a device is going to be unplugged
+> > until it actually _is_ unplugged.
 > 
-> This is why I've stated previously that I don't think runtime PM and
-> opportunistic suspend are competitive features.
+> Sorry - I got unregistered during suspend (instead of resume) in my 
+> head. That said, I'd argue that we should be...
+> 
+> 1) Syncing all the data at the start of the suspend/hibernate, so 
+> there's nothing for the workthread to do if we do del_gendisk.
+> 2) Telling things to exit if we do find the device is gone away at 
+> resume time, but not relying on the going-away happening until post 
+> process thaw, for a couple of reasons:
+> - Potential for races/confusion/mess etc in having $random process 
+> thawing other processes. Only the thread doing the suspend/hibernate 
+> should be freezing/thawing.
 
-Agreed.
+I don't see a problem here, as far as kernel threads are concerned.  In this
+particular case this is a subsystem thawing a thread that belongs to it.  No
+problem.
 
-> Everyone who cares about minimizing power should want runtime pm or at least
-> similar functionality (our drivers have always powered down peripherals when
-> not in use, even while the device is open, etc, prior to the existence
-> of runtime PM).
+> - We're dealing with the symptom, not the cause. Almost always a bad idea.
 
-Yes.
+I very much prefer to have a fix for a symptom than no fix at all, which is the
+realistic alternative in this case.
 
-> If your environment is such that going to full suspend will not gain
-> you anything, then don't use opportunistic suspend.
+So, I think we should merge the patch and if someone finds the root cause
+at one point in future, then we can just use the *right* approach instead of
+the present one.
 
-Exactly.
-
-> We find that there are savings to be had with this model in Android which is
-> why we use it.  If you are going to use opportunistic suspend,
-> suspend_blockers provide useful functionality.
-
-And as I said, I regard this as a legitimate approach to power management.
+The problem is real and people in the field are affected by it, so if you don't
+have a working alternative patch, please just let go.
 
 Thanks,
 Rafael
