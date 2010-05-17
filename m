@@ -1,22 +1,22 @@
-From: Vitaly Wool <vitalywool@gmail.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Mon, 17 May 2010 22:17:49 +0200
-Message-ID: <AANLkTikEIuVEhJXSx4kP4sGMP8LBepuJI5jBjqSxoH7F__33453.3716006719$1274127771$gmane$org@mail.gmail.com>
-References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<87wrvl5479.fsf@deeprootsystems.com>
-	<20100503215028.GB18910@srcf.ucam.org>
-	<alpine.DEB.2.00.1005141408260.3348@utopia.booyaka.com>
-	<20100514203202.GA12409@srcf.ucam.org>
-	<87aas2azc5.fsf@deeprootsystems.com>
-	<20100514231510.GG16989@thunk.org>
-	<87r5laa4oc.fsf@deeprootsystems.com>
-	<AANLkTilL90pYVlquvMDAEPHj_AraEi9Qzk-0tTjw9Bkx@mail.gmail.com>
-	<AANLkTil7358FHTlFZ0LqwymkiZZ-7An0HlaOTVhTkpgW@mail.gmail.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: Fwd:  Power Domain Framework
+Date: Mon, 17 May 2010 13:20:50 -0700
+Message-ID: <1274127650.2698.159.camel__788.882890674536$1274127965$gmane$org@finisterre.wolfsonmicro.main>
+References: <AANLkTinZU1D1rMOBQDi47tRhXrOXwduQIdni7bCXdce0@mail.gmail.com>
+	<20100510140527.GG5199@sirena.org.uk>
+	<AANLkTikyqnKDNz7FIUvLDAvBReHskHvRCrEz2qBBqseH@mail.gmail.com>
+	<20100517031613.GA3130@opensource.wolfsonmicro.com>
+	<AANLkTimDdBCnRFMDiUkuNKanOzuPNwCpfRv9Gsi03Lsy@mail.gmail.com>
+	<AANLkTinZRhUpFTOOUCdH5dEl3QaXn10USL_hPPQX8cie@mail.gmail.com>
+	<20100517143319.GC5257@opensource.wolfsonmicro.com>
+	<AANLkTiniwUDg8rQzwgm_X7EbkQJ9tHzBfVtaJRiNE9az@mail.gmail.com>
+	(sfid-20100517_172310_177677_DDC70D3F)
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTil7358FHTlFZ0LqwymkiZZ-7An0HlaOTVhTkpgW@mail.gmail.com>
+In-Reply-To: <AANLkTiniwUDg8rQzwgm_X7EbkQJ9tHzBfVtaJRiNE9az@mail.gmail.com>
+	(sfid-20100517_172310_177677_DDC70D3F)
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,96 +26,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mike Chan <mike@android.com>
-Cc: Len Brown <len.brown@intel.com>, Wu Fengguang <fengguang.wu@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, tytso@mit.edu, Linus Walleij <linus.walleij@stericsson.com>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, linux-omap@vger.kernel.org, Daniel Walker <dwalker@codeaurora.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>, Liam Girdwood <lrg@slimlogic.co.uk>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Sundar <sunder.svit@gmail.com>
+Cc: viresh.kumar@st.com, rajeev-dlh.kumar@st.com, linus.walleij@stericsson.com, armando.visconti@st.com, linux-kernel@vger.kernel.org, vipin.kumar@st.com, shiraz.hashim@st.com, STEricsson_nomadik_linux@list.st.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 17, 2010 at 10:07 PM, Mike Chan <mike@android.com> wrote:
-> On Mon, May 17, 2010 at 12:27 PM, Vitaly Wool <vitalywool@gmail.com> wrot=
-e:
->> On Mon, May 17, 2010 at 6:12 PM, Kevin Hilman
->> <khilman@deeprootsystems.com> wrote:
->>
->>>> and #2, the battery lifetime on the N770 and N800 (both of which I hav=
-e)
->>>> is **appalling** **bad**.
->>>
->>> Appalling bad compared to what?
->>>
->>> What's probably more interesting in terms of rough comparisons is
->>> comparing similar devices with and without opportunistic suspend. =A0The
->>> Nokia n900 (maemo) and the Moto Droid (android) use the same SoC (TI
->>> OMAP3) and roughly the same kernel (2.6.2[89], although both are
->>> heavily patched from mainline.)
->>>
->>> The n900 *never* suspends. =A0It only uses dynamic PM + CPUidle.
->>> The droid uses opportunistic suspend (as well as dynamic PM + CPUidle)
->>>
->>> I don't know of any more objective comparison of the two, but as a
->>> user of both devices I can say that the active usage is basically the
->>> same (around a day) and the idle use is similar as well, even though
->>> the Droid has a slightly bigger battery (1400 mAh vs. 1320 mAh.) =A0My
->>> own usage suggests the n900 is a bit better in idle time, but I have
->>> not done any measuring or objective tests. =A0I'm guessing the
->>> difference is probably because the Droid does not use the deepest
->>> off-mode power states either in idle or suspend (IIRC) where the n900
->>> does. =A0I suspect that if both were using off-mode and had the same
->>> battery, these differences would go away.
->>>
->
-> Although both are OMAP3430 and run 2.6.29 you cannot compare the N900
-> and Droid's perceived user battery life to one another to evaluate
-> opportunistic suspend. There are many factors uncounted for such as:
-> network reception, screen brightness (and size), button back-light,
-> keyboard back-light, modem stack (CDMA vs UMTS). Also the difference
-> in uerspace.
->
->>> While this is not really a scientific comparison, it at least gives a
->>> rough idea. =A0If using opportunistic suspend was adding noticably
->>> better battery life, I think this would be a different discussion.
->>
->> Exactly. The point is, opportunistic suspend doesn't in fact add any
->> value compared to dynamic PM + CPUIdle. It only produces some false
->> impression that one can handle power management right without using
->> dynamic PM. And this false impression is the cause for many really
->> ugly designs (like, for instance, 15 minutes touchscreen inactivity
->> delay before forcibly shutting down the wireless, as it's done in
->> stock Android framework).
->>
->
-> Opportunistic suspend is an extension to the current suspend model,
-> not a replacement dynamic / run-time PM. If you can replace good old
-> suspend then this would be a different story.
+On Mon, 2010-05-17 at 21:53 +0530, Sundar wrote:
+> On Mon, May 17, 2010 at 8:03 PM, Mark Brown
+> > On Mon, May 17, 2010 at 07:03:57PM +0530, Sundar wrote:
 
-Yes, but what does it extend? What aspect it makes the current suspend
-model better in?
+> > The major goal of the regulator API is to allow us to match up consumer
+> > drivers with regulator drivers without having any device specific tie
+> > between the two.  Pushing things that need such tie in through the API
+> > breaks that.
 
-> As you mention, Droid uses opportunistic suspend + dynamic pm +
-> cpuidle + freq. So I decided to do some measurements on a Droid using
-> our 2.9.32 kernel
-> (http://android.git.kernel.org/?p=3Dkernel/omap.git;a=3Dsummary). For a
-> little better apples to apples comparison.
->
-> Droid (idle system, airplane mode, screen off, 3 min interval):
-> measured average current
-> - with opportunity suspend: 3.19mA
-> - without opportunistic suspend: 3.5mA
->
-> Stock userspace build, all I did was replace the kernel. We are
-> hitting retention on idle as well as suspend for omap (instead of full
-> off-mode).
+> Aren't machine constraints, setting maximum current limit based on total loads
+> similar to primitive tie ups between devices and regulator driver?
 
-That's implementation specific. If CPUIdle implemented CPU deep sleep,
-I bet you would see different figures.
+Like I say, there are similarities - it's the way the parts of the
+system are connected and the level of knowledge they can have of each
+other that differs.
 
-> Also, your point about wifi, the 15 min timeout is in the framework
-> and is configurable in the code and via UI, nothing to do with kernel,
-> opportunistic suspend or run time suspend.
+> I am still confused about the knowledge of regulator about its consumer. How
+> I see is, with the added controls, it is still devoid of any
+> information about its
+> clients. All that a regulator still would know is if at all there are
+> any clients which
 
-You don't quite get it :) This should NOT at all be timeout driven.
-This should be activity driven or constraint driven which perfectly
-fits into the runtime PM paradigm but is in no way cleanly implemented
-within the "pure" Android PM.
+As I said in reply to the patch I am concerned that this may be an
+oversimplification relative to what general hardware needs.
 
-Thanks,
-   Vitaly
+> require it at full load. I think the function *set_optimal_load is
+> very similar to a OPP
+> control mechanism. Instead of summing up load currents, now there are
+> constraints.
+> Probably you may look at the patch set at the end of this mail and comment.
+
+Right, and if we could work out some generic constraints that meshed
+well with the regulator API constraints it might be sensible to do this
+(though it may still be more sensible to just clone the bits shared with
+regulator API if there's not enough overlap in anything except really
+basic stuff like enables).
+
+> > includes a strong tie in with information about the device clocking.
+> > Typically changing the operating mode will change or limit the clock
+> > rates in use in various parts of the device.
+
+> cannot these be handled with existing/new notifiers in place?
+
+Things may start to get complicated there when the clocking and
+operating points get tightly enough interlinked, and I would worry that
+you'd end up spending more time faffing about with back and forth
+callbacks than would be required to just implement something specific to
+operating modes.
