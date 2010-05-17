@@ -1,19 +1,14 @@
-From: Sundar <sunder.svit@gmail.com>
-Subject: Re: Fwd:  Power Domain Framework
-Date: Mon, 17 May 2010 21:53:03 +0530
-Message-ID: <AANLkTiniwUDg8rQzwgm_X7EbkQJ9tHzBfVtaJRiNE9az__4226.46178999475$1274113555$gmane$org@mail.gmail.com>
-References: <AANLkTinZU1D1rMOBQDi47tRhXrOXwduQIdni7bCXdce0@mail.gmail.com>
-	<20100510140527.GG5199@sirena.org.uk>
-	<AANLkTikyqnKDNz7FIUvLDAvBReHskHvRCrEz2qBBqseH@mail.gmail.com>
-	<20100517031613.GA3130@opensource.wolfsonmicro.com>
-	<AANLkTimDdBCnRFMDiUkuNKanOzuPNwCpfRv9Gsi03Lsy@mail.gmail.com>
-	<AANLkTinZRhUpFTOOUCdH5dEl3QaXn10USL_hPPQX8cie@mail.gmail.com>
-	<20100517143319.GC5257@opensource.wolfsonmicro.com>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Mon, 17 May 2010 13:04:45 -0400
+Message-ID: <1274115885.4418.59.camel__43209.5543634661$1274115962$gmane$org@mulgrave.site>
+References: <Pine.LNX.4.44L0.1005151716180.24645-100000@netrider.rowland.org>
+	<87hbm6cz90.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100517143319.GC5257@opensource.wolfsonmicro.com>
+In-Reply-To: <87hbm6cz90.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,70 +18,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: viresh.kumar@st.com, rajeev-dlh.kumar@st.com, linus.walleij@stericsson.com, armando.visconti@st.com, linux-kernel@vger.kernel.org, vipin.kumar@st.com, shiraz.hashim@st.com, STEricsson_nomadik_linux@list.st.com, linux-pm@lists.linux-foundation.org
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Matthew Garrett <mjg@redhat.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 17, 2010 at 8:03 PM, Mark Brown
-<broonie@opensource.wolfsonmicro.com> wrote:
-> On Mon, May 17, 2010 at 07:03:57PM +0530, Sundar wrote:
->
-> There's two problems I see. =A0One is expressing the operating modes in a
-> way that is suitably abstract and will work for more than one chip.
-Okay.
+On Mon, 2010-05-17 at 08:40 -0700, Kevin Hilman wrote:
+> > Also, how does it handle the issue of ill-behaved apps?
+> 
+> For userspace, apps that have polling behavior or are ill-behaved must
+> be found and fixed.  Thanks to tools like powertop, this is a farily
+> easy task.
 
-> other is that as soon as the regulator driver has to know something
-> about the consumers you're running into trouble.
->
-> The major goal of the regulator API is to allow us to match up consumer
-> drivers with regulator drivers without having any device specific tie
-> between the two. =A0Pushing things that need such tie in through the API
-> breaks that.
->
-Aren't machine constraints, setting maximum current limit based on total lo=
-ads
-similar to primitive tie ups between devices and regulator driver?
+That's a bit glib ... powertop can detect power consumption stats on a
+running system ... if you have a polling app preventing your system from
+suspending, powertop isn't necessarily going to find it ... especially
+if the polling interval is of the order of powertop's.  Powertop can
+find the bad tens of wakeups per second, but it only takes one wakup
+every few seconds or so to drain the battery significantly when
+operating on suspend from idle.
 
-> Are you sure about these statements? =A0Bear in mind that with a regulator
-> on a separate device there is no direct way for the regulator to know
-> anything about what the device it is supplying is doing, and not only
-> are latency requirements for mode changes are very tight but there may
-> not be any software running when the mode changes which is in a position
-> to relay information to the regulator. =A0The trend with regulators
-> appears to be rather more towards removal of user visible control of the
-> internal operating modes of the regulator itself with the device
-> reconfiguring itself based on the ability to achieve good regulation at
-> a given load point. =A0This gives good responsivness and efficiency over
-> the full range of loads.
-I am still confused about the knowledge of regulator about its consumer. How
-I see is, with the added controls, it is still devoid of any
-information about its
-clients. All that a regulator still would know is if at all there are
-any clients which
-require it at full load. I think the function *set_optimal_load is
-very similar to a OPP
-control mechanism. Instead of summing up load currents, now there are
-constraints.
-Probably you may look at the patch set at the end of this mail and comment.
+> But really, I don't consider the "ill-behaved app" problem to be a
+> real-world problem.  Both in maemo/meego and Android, if someone
+> writes an app that kills battery life, it will get reported as a bug,
+> or get bad ratings etc.  On these kinds of devices, there is a *stong*
+> developer incentive to not write battery sucking apps.
 
-> have various power modes doesn't impact on the regulator except in that
-> it may be able to get some information about the range of currents being
-> supplied. =A0The converse also applies - the consumer doesn't really need
-> to know anything about what the regulator is up to internally.
-IMO, this leads to a more decisive control over what state the
-regulator *can* be in;
-without affecting any child clients.
+I'm not sure this is real world, either.  Developers can fire up
+powertop from the command line when their phone isn't idling for as long
+as it should.  But a phone is a consumer device: the average smart phone
+user just wants to browse the web, get email, go to facebook and play
+with some cool apps.  If one of those cool apps is rogue, they're not
+really going to know which one or how to find it (and firing up powertop
+from the command line isn't something which will occur to them as a
+matter of routine).
 
-> The big difference is that the on-SoC power domain configuration does
-> frequently rely on an abstraction other than the simple voltage plus
-> load one that the regulator API represents, as I said this frequently
-which is what I see as that can be bridged down.
+One of the nice things that suspend blockers actually does is to give
+the kernel a clear name for the process blocking suspend (and thus
+consuming power).  This allows a nice way to assign power budget to the
+application and present who's using what in a nice visible form, which
+does facilitate the reporting of bad apps, even for the non-developer
+user.
 
-> includes a strong tie in with information about the device clocking.
-> Typically changing the operating mode will change or limit the clock
-> rates in use in various parts of the device.
-cannot these be handled with existing/new notifiers in place?
-
-Regards,
-Sundar
-P.S : Let me post out the patch set following on.
+James
