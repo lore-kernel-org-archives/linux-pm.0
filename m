@@ -1,21 +1,17 @@
 From: Felipe Balbi <me@felipebalbi.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Mon, 17 May 2010 21:39:05 +0300
-Message-ID: <20100517183904.GA14047__23513.1388799802$1274123022$gmane$org@gandalf>
+Date: Mon, 17 May 2010 20:47:31 +0300
+Message-ID: <20100517174647.GA11512__24495.9472482607$1274123052$gmane$org@gandalf>
 References: <Pine.LNX.4.44L0.1005151716180.24645-100000@netrider.rowland.org>
 	<87hbm6cz90.fsf@deeprootsystems.com>
 	<1274115885.4418.59.camel@mulgrave.site>
-	<20100517174647.GA11512@gandalf>
-	<1274119179.4418.68.camel@mulgrave.site>
-	<20100517181252.GA14260@gandalf>
-	<AANLkTikueXPEWEHQt-Fl3Xvb3EB4ntsBlJUjjtmpinGK@mail.gmail.com>
 Reply-To: me@felipebalbi.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <AANLkTikueXPEWEHQt-Fl3Xvb3EB4ntsBlJUjjtmpinGK@mail.gmail.com>
+In-Reply-To: <1274115885.4418.59.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,52 +21,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: Matthew Garrett <mjg@redhat.com>, me@felipebalbi.com, Theodore Ts'o <tytso@mit.edu>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: Matthew Garrett <mjg@redhat.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Mon, May 17, 2010 at 01:04:45PM -0400, James Bottomley wrote:
+> > For userspace, apps that have polling behavior or are ill-behaved must
+> > be found and fixed.  Thanks to tools like powertop, this is a farily
+> > easy task.
+> 
+> That's a bit glib ... powertop can detect power consumption stats on a
+> running system ... if you have a polling app preventing your system from
+> suspending, powertop isn't necessarily going to find it ... especially
+> if the polling interval is of the order of powertop's.  Powertop can
+> find the bad tens of wakeups per second, but it only takes one wakup
+> every few seconds or so to drain the battery significantly when
+> operating on suspend from idle.
 
-On Mon, May 17, 2010 at 11:26:59AM -0700, Brian Swetland wrote:
-> We (Google) would like to allow completely open app distribution with
-> minimal hurdles, and avoid the walled garden approach.  Toward this
-> goal we're not even requiring the use of a central app store for
-> distribution.
+you can always increase powertop's interval through command line and
+once you went down to 1 wakeup every two seconds, you increase
+powertop's interval and try to cut down 10 more ill-behaved apps. And
+you keep going until you have e.g. 1 wakeup per minute or whatever your
+target is.
 
-I understand that, but still we should be telling developers what
-they're doing wrong so that they can improve themselves as professionals
-and still make the final device better.
+> > But really, I don't consider the "ill-behaved app" problem to be a
+> > real-world problem.  Both in maemo/meego and Android, if someone
+> > writes an app that kills battery life, it will get reported as a bug,
+> > or get bad ratings etc.  On these kinds of devices, there is a *stong*
+> > developer incentive to not write battery sucking apps.
+> 
+> I'm not sure this is real world, either.  Developers can fire up
+> powertop from the command line when their phone isn't idling for as long
+> as it should.  But a phone is a consumer device: the average smart phone
+> user just wants to browse the web, get email, go to facebook and play
+> with some cool apps.  If one of those cool apps is rogue, they're not
+> really going to know which one or how to find it (and firing up powertop
+> from the command line isn't something which will occur to them as a
+> matter of routine).
 
-> Obviously, given the ability to run *any* app, users will run into bad
-> (or perhaps just less-than-optimal-powerwise) apps.  Being able to
-> provide the best possible battery life (in spite of
-> sometimes-nonoptimal userspace apps) and simultaneously informing
-> users about which apps are better/worse for their battery life is a
-> goal here.
+Agree with you here.
 
-I see. Just hope MeeGo doesn't venture on the same waters :-s
+> One of the nice things that suspend blockers actually does is to give
+> the kernel a clear name for the process blocking suspend (and thus
+> consuming power).  This allows a nice way to assign power budget to the
+> application and present who's using what in a nice visible form, which
+> does facilitate the reporting of bad apps, even for the non-developer
+> user.
 
-> For a large majority of apps, running in the background while the
-> device is asleep (screen off) is not essential, they don't request the
-> "keep device awake" permission, never hold a wakelock, etc.  Those
-> that do need to do this have the permission, may hold suspend
-> blockers, and are accounted for.
+if that's the only thing we want suspend_blockers for, there are other
+simpler ways to do it. Just add a kernel debugging option for anyone
+doing poll() or keeping a device open() or whatever and you have the
+name the of the processes consuming power and preventing system from
+going into sleep.
 
-but can anyone write an app that holds a suspend_blocker ?? If so, then
-your goal is already broken, right ? I mean, if anyone can keep a
-suspend_blocker held forever, you'll never ever sleep, right ? While
-with runtime, if you keep the keypad open, only the keypad and the paths
-directly related to it (probably the i2c controller and the power domain
-where the i2c controller sits) will be kept alive, no ?
+IMO, suspend_blocker is trying to fix application problems in kernel
+space by unconditionaly (well sort of) freezing userspace if there are
+no suspen_blockers held. So even if application is doing
+poll(pfds, ARRAY_SIZE(pfds), 2); that won't be noticed because as long as
+the suspend_blocker is released, that poll() will be frozen, no ?
 
-> Unrelated to apps, the ability to say "please enter suspend as soon as
-> there's no more work (kernel or userspace) preventing it", in a
-> simple, non-racy way is useful.
-
-I just tend to agree with Kevin on questioning how different how
-different this actually is from runtime_pm. I guess I would need to dig
-through some documentation in order to understand but it seems really
-similar.
+IMO the real fix would be on that particular poll(), changing the
+timeout e.g. based on cpufreq notifications or even relying completely
+on IRQs with poll(pdfs, ARRAY_SIZE(pfds), -1); Of course, this is only a
+crude example trying to show that the real issue lies on the application
+rather than on kernel.
 
 -- 
 balbi
