@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 7)
-Date: Mon, 17 May 2010 22:40:35 +0200
-Message-ID: <201005172240.35742.rjw__35531.5251196318$1274128918$gmane$org@sisk.pl>
+Date: Mon, 17 May 2010 13:51:16 -0700
+Message-ID: <AANLkTim2b8cKnzPgN7m5zImb0hVDfqVjRidKNVoYi1yO__27232.5637903579$1274129625$gmane$org@mail.gmail.com>
 References: <1273810273-3039-1-git-send-email-arve@android.com>
 	<201005162142.39343.rjw@sisk.pl>
 	<AANLkTinP68yHYfVCW-urCrRbeSb0Mlz8JsvAs-FKoUPZ@mail.gmail.com>
+	<201005172240.35742.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinP68yHYfVCW-urCrRbeSb0Mlz8JsvAs-FKoUPZ@mail.gmail.com>
+In-Reply-To: <201005172240.35742.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,55 +20,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 17 May 2010, Arve Hj=F8nnev=E5g wrote:
-> 2010/5/16 Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Friday 14 May 2010, Arve Hj=F8nnev=E5g wrote:
-> >> This patch series adds a suspend-block api that provides the same
-> >> functionality as the android wakelock api. This version has some
-> >> changes from, or requested by, Rafael. The most notable changes are:
-> >> - DEFINE_SUSPEND_BLOCKER and suspend_blocker_register have been added
-> >>   for statically allocated suspend blockers.
-> >> - suspend_blocker_destroy is now called suspend_blocker_unregister
-> >> - The user space mandatory _INIT ioctl has been replaced with an
-> >>   optional _SET_NAME ioctl.
-> >>
-> >> I kept the ack and reviewed by tags on two of the patches even though
-> >> there were a few cosmetic changes.
-> >
-> > I have one more comment, sorry for that.
-> >
-> > Namely, if /sys/power/policy is set to "opportunistic" and "mem" is wri=
-tten
-> > into /sys/power/state and there are no suspend blockers present except =
-for
-> > the main blocker (and the blockers used only for statistics), the syste=
-m won't
-> > be able to go out of an infinit suspend-resume loop (or at least it see=
-ms
-> > so from reading the code).
-> >
-> > I think we should prevent that from happening somehow.
-> >
-> =
-
-> It should get out of that loop as soon as someone blocks suspend. If
-> someone is constantly aborting suspend without using a suspend blocker
-> it will be very inefficient, but it should still work.
-
-Well, the scenario I have in mind is the following.  Someone wants to check
-the feature and simply writes "opportunistic" to /sys/power/policy and "mem=
-" to
-/sys/power/state without any drivers or apps that use suspend blockers.
-
-How in that case is the system supposed to break out of the suspend-resume =
-loop
-resulting from this?  I don't see right now, because the main blocker is
-inactive, there are no other blockers that can be activated and it is next =
-to
-impossible to write to /sys/power/state again.
-
-Rafael
+T24gTW9uLCBNYXkgMTcsIDIwMTAgYXQgMTo0MCBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0Bz
+aXNrLnBsPiB3cm90ZToKPiBPbiBNb25kYXkgMTcgTWF5IDIwMTAsIEFydmUgSGrDuG5uZXbDpWcg
+d3JvdGU6Cj4+Cj4+IEl0IHNob3VsZCBnZXQgb3V0IG9mIHRoYXQgbG9vcCBhcyBzb29uIGFzIHNv
+bWVvbmUgYmxvY2tzIHN1c3BlbmQuIElmCj4+IHNvbWVvbmUgaXMgY29uc3RhbnRseSBhYm9ydGlu
+ZyBzdXNwZW5kIHdpdGhvdXQgdXNpbmcgYSBzdXNwZW5kIGJsb2NrZXIKPj4gaXQgd2lsbCBiZSB2
+ZXJ5IGluZWZmaWNpZW50LCBidXQgaXQgc2hvdWxkIHN0aWxsIHdvcmsuCj4KPiBXZWxsLCB0aGUg
+c2NlbmFyaW8gSSBoYXZlIGluIG1pbmQgaXMgdGhlIGZvbGxvd2luZy4gwqBTb21lb25lIHdhbnRz
+IHRvIGNoZWNrCj4gdGhlIGZlYXR1cmUgYW5kIHNpbXBseSB3cml0ZXMgIm9wcG9ydHVuaXN0aWMi
+IHRvIC9zeXMvcG93ZXIvcG9saWN5IGFuZCAibWVtIiB0bwo+IC9zeXMvcG93ZXIvc3RhdGUgd2l0
+aG91dCBhbnkgZHJpdmVycyBvciBhcHBzIHRoYXQgdXNlIHN1c3BlbmQgYmxvY2tlcnMuCj4KPiBI
+b3cgaW4gdGhhdCBjYXNlIGlzIHRoZSBzeXN0ZW0gc3VwcG9zZWQgdG8gYnJlYWsgb3V0IG9mIHRo
+ZSBzdXNwZW5kLXJlc3VtZSBsb29wCj4gcmVzdWx0aW5nIGZyb20gdGhpcz8gwqBJIGRvbid0IHNl
+ZSByaWdodCBub3csIGJlY2F1c2UgdGhlIG1haW4gYmxvY2tlciBpcwo+IGluYWN0aXZlLCB0aGVy
+ZSBhcmUgbm8gb3RoZXIgYmxvY2tlcnMgdGhhdCBjYW4gYmUgYWN0aXZhdGVkIGFuZCBpdCBpcyBu
+ZXh0IHRvCj4gaW1wb3NzaWJsZSB0byB3cml0ZSB0byAvc3lzL3Bvd2VyL3N0YXRlIGFnYWluLgoK
+SSBndWVzcyB3ZSBjb3VsZCBzZXQgYSBmbGFnIHdoZW4gYSBzdXNwZW5kIGJsb2NrZXIgaXMgcmVn
+aXN0ZXJlZCBhbmQKcmVmdXNlIHRvIGVudGVyIG9wcG9ydHVuaXN0aWMgbW9kZSBpZiBubyBibG9j
+a2VycyBoYXZlIGV2ZXIgYmVlbgpyZWdpc3RlcmVkLgoKSXQgZG9lcyBzZWVtIGxpa2UgZXh0cmEg
+ZWZmb3J0IHRvIGdvIHRocm91Z2ggdG8gaGFuZGxlIGEgImRvbid0IGRvCnRoYXQiIHR5cGUgc2Nl
+bmFyaW8gKGVudGVyaW5nIGludG8gb3Bwb3J0dW5pc3RpYyBzdXNwZW5kIHdpdGhvdXQKYW55dGhp
+bmcgdGhhdCB3aWxsIHByZXZlbnQgaXQpLgoKQnJpYW4KX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxp
+c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5v
+cmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
