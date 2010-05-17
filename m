@@ -1,14 +1,17 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
- userspace is frozen?
-Date: Mon, 17 May 2010 17:45:03 +1000
-Message-ID: <4BF0F3FF.2010603__39062.653136398$1274082410$gmane$org@crca.org.au>
-References: <Pine.LNX.4.44L0.1005162219330.24400-100000@netrider.rowland.org>
+From: Sundar <sunder.svit@gmail.com>
+Subject: Fwd:  Power Domain Framework
+Date: Mon, 17 May 2010 19:03:57 +0530
+Message-ID: <AANLkTinZRhUpFTOOUCdH5dEl3QaXn10USL_hPPQX8cie__33690.4347561815$1274103475$gmane$org@mail.gmail.com>
+References: <AANLkTinZU1D1rMOBQDi47tRhXrOXwduQIdni7bCXdce0@mail.gmail.com>
+	<20100510140527.GG5199@sirena.org.uk>
+	<AANLkTikyqnKDNz7FIUvLDAvBReHskHvRCrEz2qBBqseH@mail.gmail.com>
+	<20100517031613.GA3130@opensource.wolfsonmicro.com>
+	<AANLkTimDdBCnRFMDiUkuNKanOzuPNwCpfRv9Gsi03Lsy@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005162219330.24400-100000@netrider.rowland.org>
+In-Reply-To: <AANLkTimDdBCnRFMDiUkuNKanOzuPNwCpfRv9Gsi03Lsy@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,61 +21,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>, Matt Reimer <mattjreimer@gmail.com>, Jens Axboe <jens.axboe@oracle.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: viresh.kumar@st.com, rajeev-dlh.kumar@st.com, linus.walleij@stericsson.com, armando.visconti@st.com, linux-kernel@vger.kernel.org, vipin.kumar@st.com, shiraz.hashim@st.com, STEricsson_nomadik_linux@list.st.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Hi,
 
-On 17/05/10 12:22, Alan Stern wrote:
-> On Mon, 17 May 2010, Nigel Cunningham wrote:
+On Mon, May 17, 2010 at 8:46 AM, Mark Brown
+<broonie@opensource.wolfsonmicro.com> wrote:
+> On Sun, May 16, 2010 at 04:43:52PM +0530, Sundar wrote:
 >
->>>> I object to the patch.
->>>>
->>>> Tell the patch it ought to exit once thawed, by all means.
->>>
->>> I'm not sure what you mean.  Care to explain?
->>
->> I mean "Set up some sort of flag that it can look at once thawed at
->> resume time, and use that to tell it to exit at that point."
->
-> Doesn't the patch do exactly that?  The "flag" is set by virtue of the
-> fact that this is part of del_gendisk -- which means the disk is being
-> unregistered and hence the writeback thread will exit shortly.
->
->>>> Make the patch unfreezeable to begin with, by all means.
->>>
->>> That wouldn't work.
->>
->> Why not?
->
-> It would be nice to know exactly why.  Perhaps the underlying problem
-> can be fixed.
->
->>>> If you know a disk is going to be unregistered during resume,
->>>
->>> How do we check that, exactly?
->>
->> Well, if you can figure out that you need to go down this path at this
->> point in the process, you must be able to apply the same logic to come
->> to the same conclusion earlier in the process.
->
-> That's not true.  You don't know that a device is going to be unplugged
-> until it actually _is_ unplugged.
+> Please don't top post, it breaks the thread of discussion.
+Sorry.
 
-Sorry - I got unregistered during suspend (instead of resume) in my 
-head. That said, I'd argue that we should be...
+> I'm really not convinced that this is a good idea. =A0Generally I suspect
+> the implementations of these concepts that I've seen would introduce
+> layering violations if done via the regulator API - from what I've seen
+> the power domains can end up knowing rather more about the things that
+> are being powered than is healthy for the regulator API and...
 
-1) Syncing all the data at the start of the suspend/hibernate, so 
-there's nothing for the workthread to do if we do del_gendisk.
-2) Telling things to exit if we do find the device is gone away at 
-resume time, but not relying on the going-away happening until post 
-process thaw, for a couple of reasons:
-- Potential for races/confusion/mess etc in having $random process 
-thawing other processes. Only the thread doing the suspend/hibernate 
-should be freezing/thawing.
-- We're dealing with the symptom, not the cause. Almost always a bad idea.
+I am sorry but I do not understand how this can violate the framework APIs.
+Even know, a regulator knows about its machine constraints, valid features
+w.r.t operating modes, DRMS, load currents etc. What additional information
+the regulator would be associated with would be operating points, constrain=
+ts
+w.r.t peripherals etc.
+
+> I do think it's likely that you'll want something that looks like the
+> regulator API at the edges, but that a separate implementation that
+> avoids having to shoehorn through the abstractions of the regulator API
+> for the on-chip work seems much more sensible (and is what OMAP and SH
+
+True. But a separate implementation is not needed because the current
+framework already provides me support for a majority of features. Features =
+like
+OPP control, power states which are usually associated with SoC power domai=
+ns
+are available on modem regulators. When such features will eventually creep=
+ in
+the regular framework, then why distinguish between on-SoC power sources
+and on-board power sources..
+
+> are already doing). =A0This is fairly similar to the relationship between
+> the clock and regulator APIs - they look a lot alike, especially from a
+> user point of view, but they are separate because there are enough
+> differences in what they are trying to represent to make it sensible to
+> keep them apart.
+
+Agreed. But if I compare a SoC power domain and a regulator power domain, I
+dont see differences to keep them apart. Please correct me if I am wrong.
+
+> However, if you have patches it's probably easier to talk about those
+> than architecture astronauting; perhaps your implementation avoids my
+> concerns.
+>
+Okay. I will surely send them out.
 
 Regards,
-
-Nigel
+Sundar
