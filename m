@@ -1,27 +1,22 @@
 From: Linus WALLEIJ <linus.walleij@stericsson.com>
-Subject: Re: Power Domain Framework
-Date: Mon, 17 May 2010 23:46:38 +0200
-Message-ID: <CEE6BB42CAD6E947908279175AF8470A025A72624A__43927.7663048871$1274192464$gmane$org@EXDCVYMBSTM006.EQ1STM.local>
-References: <AANLkTinZU1D1rMOBQDi47tRhXrOXwduQIdni7bCXdce0@mail.gmail.com>
-	<20100510140527.GG5199@sirena.org.uk>
-	<AANLkTikyqnKDNz7FIUvLDAvBReHskHvRCrEz2qBBqseH@mail.gmail.com>
-	<20100517031613.GA3130@opensource.wolfsonmicro.com>
-	<AANLkTimDdBCnRFMDiUkuNKanOzuPNwCpfRv9Gsi03Lsy@mail.gmail.com>
-	<AANLkTinZRhUpFTOOUCdH5dEl3QaXn10USL_hPPQX8cie@mail.gmail.com>
-	<20100517143319.GC5257@opensource.wolfsonmicro.com>
-	<AANLkTiniwUDg8rQzwgm_X7EbkQJ9tHzBfVtaJRiNE9az@mail.gmail.com>
-	<1274114107.20589.64.camel@bnru01>	
-	(sfid-20100517_173524_963855_B42F2966)
-	<1274115886.2698.22.camel@finisterre.wolfsonmicro.main>
-	<1274118332.17303.17.camel@bnru01>
-	<CEE6BB42CAD6E947908279175AF8470A025A726240@EXDCVYMBSTM006.EQ1STM.local>
-	(sfid-20100517_213915_202336_5BFAA478)
-	<1274131108.2698.161.camel@finisterre.wolfsonmicro.main>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Mon, 17 May 2010 23:16:52 +0200
+Message-ID: <CEE6BB42CAD6E947908279175AF8470A025A726244@EXDCVYMBSTM006.EQ1STM.local>
+References: <87wrvl5479.fsf@deeprootsystems.com>
+	<20100503215028.GB18910@srcf.ucam.org>
+	<alpine.DEB.2.00.1005141408260.3348@utopia.booyaka.com>
+	<20100514203202.GA12409@srcf.ucam.org>
+	<87aas2azc5.fsf@deeprootsystems.com>
+	<20100514231510.GG16989@thunk.org> <87r5laa4oc.fsf@deeprootsystems.com>
+	<AANLkTilL90pYVlquvMDAEPHj_AraEi9Qzk-0tTjw9Bkx@mail.gmail.com>
+	<20100517193440.GA32066@srcf.ucam.org>
+	<CEE6BB42CAD6E947908279175AF8470A025A726242@EXDCVYMBSTM006.EQ1STM.local>
+	<20100517210615.GB1873@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1274131108.2698.161.camel@finisterre.wolfsonmicro.main>
+In-Reply-To: <20100517210615.GB1873@srcf.ucam.org>
 Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -32,23 +27,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Viresh KUMAR <viresh.kumar@st.com>, Rajeev KUMAR <rajeev-dlh.kumar@st.com>, Armando VISCONTI <armando.visconti@st.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vipin KUMAR <vipin.kumar@st.com>, Shiraz HASHIM <shiraz.hashim@st.com>, STEricsson_nomadik_linux <STEricsson_nomadik_linux@list.st.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Sundar R IYER <sundar.iyer@stericsson.com>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Daniel Walker <dwalker@codeaurora.org>, "tytso@mit.edu" <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-[Mark]
+[Matthew]
+> On Mon, May 17, 2010 at 10:53:36PM +0200, Linus WALLEIJ wrote:
+> > I understand the problem such that the scheduler cannot determine wheth=
+er
+> > a certain process should be allowed to schedule or not.
+> >
+> > It strikes me that the intuitive solution is to group all un-trusted
+> > processes/threads/tasks that need to be shut off even if they are
+> > scheduling into a control group and let the idle code ignore the
+> > processes in this group.
+> >
+> > Or is there something too na=EFve about this?
+> =
 
-> I do agree that separating out the common bits of power
-> domain implementation would be good, my concerns here are around the
-> level of integration with the regulator API.
+> It gets most of the way there (and I spent a while playing with it), but
+> the problem is that not all wakeup events get proxied through the
+> trusted userspace runtime. Network packets are the easiest example - a
+> packet may wake the system, but if the process it's delivered to is
+> frozen then obviously things get trickier. It's also racy, in that if
+> you're currently awake and receive a packet that would otherwise have
+> woken the system you may go to sleep between the packet being received
+> and bubbling up through the kernel to get to userspace.
 
-The plenty talk about power domains in
-Documentation/power/regulators/overview.txt
-was what got us started in this regulator direction from the
-beginning.
+Maybe I'm misunderstanding something basic here, but when you say frozen,
+are you referring to freezer control groups
+Documentation/cgroups/freezer-subsystem.txt?
 
-Anyhow: it will certainly be closely related even if we come
-up with some different API for power domains so we're in the
-right forum.
+I was more thinking about something new, that isn't freezing anything.
+The only purpose would be to group the stuff that CPUidle can ignore,
+and let CPUidle ignore it, so that the system can still be idled.
 
-Linus
+Yours,
+Linus Walleij
