@@ -1,20 +1,19 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Mon, 17 May 2010 09:12:03 -0700
-Message-ID: <87r5laa4oc.fsf@deeprootsystems.com>
-References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<87wrvl5479.fsf@deeprootsystems.com>
-	<20100503215028.GB18910@srcf.ucam.org>
-	<alpine.DEB.2.00.1005141408260.3348@utopia.booyaka.com>
-	<20100514203202.GA12409@srcf.ucam.org>
-	<87aas2azc5.fsf@deeprootsystems.com>
-	<20100514231510.GG16989@thunk.org>
+From: Sundar <sunder.svit@gmail.com>
+Subject: Re: Fwd:  Power Domain Framework
+Date: Mon, 17 May 2010 21:53:03 +0530
+Message-ID: <AANLkTiniwUDg8rQzwgm_X7EbkQJ9tHzBfVtaJRiNE9az__4226.46178999475$1274113555$gmane$org@mail.gmail.com>
+References: <AANLkTinZU1D1rMOBQDi47tRhXrOXwduQIdni7bCXdce0@mail.gmail.com>
+	<20100510140527.GG5199@sirena.org.uk>
+	<AANLkTikyqnKDNz7FIUvLDAvBReHskHvRCrEz2qBBqseH@mail.gmail.com>
+	<20100517031613.GA3130@opensource.wolfsonmicro.com>
+	<AANLkTimDdBCnRFMDiUkuNKanOzuPNwCpfRv9Gsi03Lsy@mail.gmail.com>
+	<AANLkTinZRhUpFTOOUCdH5dEl3QaXn10USL_hPPQX8cie@mail.gmail.com>
+	<20100517143319.GC5257@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100514231510.GG16989@thunk.org> (tytso@mit.edu's message of
-	"Fri\, 14 May 2010 19\:15\:10 -0400")
+In-Reply-To: <20100517143319.GC5257@opensource.wolfsonmicro.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,74 +23,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: tytso@mit.edu
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Oleg Nesterov <oleg@redhat.com>, Liam Girdwood <lrg@slimlogic.co.uk>, linux-omap@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>, Daniel Walker <dwalker@codeaurora.org>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: viresh.kumar@st.com, rajeev-dlh.kumar@st.com, linus.walleij@stericsson.com, armando.visconti@st.com, linux-kernel@vger.kernel.org, vipin.kumar@st.com, shiraz.hashim@st.com, STEricsson_nomadik_linux@list.st.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-tytso@mit.edu writes:
-
-> On Fri, May 14, 2010 at 03:32:58PM -0700, Kevin Hilman wrote:
->> Another likely reason that that there hasn't been an alternate
->> proposal (at least from some of us that are raising concerns) is
->> because we already have a working solution to dynamic, system-wide PM
->> that is 1) already in mainline and 2) shipping on consumer devices
->> with very strict power budgets (as already pointed out in detail by
->> Paul[2].)
+On Mon, May 17, 2010 at 8:03 PM, Mark Brown
+<broonie@opensource.wolfsonmicro.com> wrote:
+> On Mon, May 17, 2010 at 07:03:57PM +0530, Sundar wrote:
 >
-> The examples cited where the things like the Palm Pre, and the Nokia
-> N770/800/810 series.  #1, what works on one embedded
-> chipset/architecture might not work on another, 
+> There's two problems I see. =A0One is expressing the operating modes in a
+> way that is suitably abstract and will work for more than one chip.
+Okay.
 
-In my experience with embedded SoCs they are all remarkably similar in
-power management capabilities and control.
+> other is that as soon as the regulator driver has to know something
+> about the consumers you're running into trouble.
+>
+> The major goal of the regulator API is to allow us to match up consumer
+> drivers with regulator drivers without having any device specific tie
+> between the two. =A0Pushing things that need such tie in through the API
+> breaks that.
+>
+Aren't machine constraints, setting maximum current limit based on total lo=
+ads
+similar to primitive tie ups between devices and regulator driver?
 
-> and #2, the battery lifetime on the N770 and N800 (both of which I have)
-> is **appalling** **bad**.
+> Are you sure about these statements? =A0Bear in mind that with a regulator
+> on a separate device there is no direct way for the regulator to know
+> anything about what the device it is supplying is doing, and not only
+> are latency requirements for mode changes are very tight but there may
+> not be any software running when the mode changes which is in a position
+> to relay information to the regulator. =A0The trend with regulators
+> appears to be rather more towards removal of user visible control of the
+> internal operating modes of the regulator itself with the device
+> reconfiguring itself based on the ability to achieve good regulation at
+> a given load point. =A0This gives good responsivness and efficiency over
+> the full range of loads.
+I am still confused about the knowledge of regulator about its consumer. How
+I see is, with the added controls, it is still devoid of any
+information about its
+clients. All that a regulator still would know is if at all there are
+any clients which
+require it at full load. I think the function *set_optimal_load is
+very similar to a OPP
+control mechanism. Instead of summing up load currents, now there are
+constraints.
+Probably you may look at the patch set at the end of this mail and comment.
 
-Appalling bad compared to what?  
+> have various power modes doesn't impact on the regulator except in that
+> it may be able to get some information about the range of currents being
+> supplied. =A0The converse also applies - the consumer doesn't really need
+> to know anything about what the regulator is up to internally.
+IMO, this leads to a more decisive control over what state the
+regulator *can* be in;
+without affecting any child clients.
 
-What's probably more interesting in terms of rough comparisons is
-comparing similar devices with and without opportunistic suspend.  The
-Nokia n900 (maemo) and the Moto Droid (android) use the same SoC (TI
-OMAP3) and roughly the same kernel (2.6.2[89], although both are
-heavily patched from mainline.)
+> The big difference is that the on-SoC power domain configuration does
+> frequently rely on an abstraction other than the simple voltage plus
+> load one that the regulator API represents, as I said this frequently
+which is what I see as that can be bridged down.
 
-The n900 *never* suspends.  It only uses dynamic PM + CPUidle.
-The droid uses opportunistic suspend (as well as dynamic PM + CPUidle)
+> includes a strong tie in with information about the device clocking.
+> Typically changing the operating mode will change or limit the clock
+> rates in use in various parts of the device.
+cannot these be handled with existing/new notifiers in place?
 
-I don't know of any more objective comparison of the two, but as a
-user of both devices I can say that the active usage is basically the
-same (around a day) and the idle use is similar as well, even though
-the Droid has a slightly bigger battery (1400 mAh vs. 1320 mAh.)  My
-own usage suggests the n900 is a bit better in idle time, but I have
-not done any measuring or objective tests.  I'm guessing the
-difference is probably because the Droid does not use the deepest
-off-mode power states either in idle or suspend (IIRC) where the n900
-does.  I suspect that if both were using off-mode and had the same
-battery, these differences would go away.
-
-While this is not really a scientific comparison, it at least gives a
-rough idea.  If using opportunistic suspend was adding noticably
-better battery life, I think this would be a different discussion.
-
-> I really don't understand why people are so opposed to merging code
-> that works well for a very large set of devices and products.  Just
-> because *you* don't need it is not a sufficiently good reason to argue
-> for it not be merged.  If you don't want to use it, then don't CONFIG
-> it in.
-
-At least for OMAP, I don't consider "config it out" a viable option.
-
-We would like one kernel (in particular one PM core) to be usable for
-a broad range of devices: maemo/meego, Android, webOS, Archos, and
-whatever else we haven't seen yet.  Having to config in/out something
-as important as core PM functionality has other consequences.  It
-makes PM-aware driver and subsystem writers (and maintainers) to have
-to develop and validate against two different types of PM
-functionality.
-
-As co-maintainer of the PM subsystem for an architecture (OMAP) where
-people *really* care about power, I don't consider that a viable or
-scalable option.
-
-Kevin
+Regards,
+Sundar
+P.S : Let me post out the patch set following on.
