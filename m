@@ -1,22 +1,15 @@
-From: Daniel Walker <dwalker@codeaurora.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Mon, 17 May 2010 14:39:57 -0700
-Message-ID: <1274132397.25625.58.camel@c-dwalke-linux.qualcomm.com>
-References: <87aas2azc5.fsf@deeprootsystems.com>
-	<20100514231510.GG16989@thunk.org> <87r5laa4oc.fsf@deeprootsystems.com>
-	<AANLkTilL90pYVlquvMDAEPHj_AraEi9Qzk-0tTjw9Bkx@mail.gmail.com>
-	<20100517193440.GA32066@srcf.ucam.org>
-	<CEE6BB42CAD6E947908279175AF8470A025A726242@EXDCVYMBSTM006.EQ1STM.local>
-	<20100517210615.GB1873@srcf.ucam.org>
-	<CEE6BB42CAD6E947908279175AF8470A025A726244@EXDCVYMBSTM006.EQ1STM.local>
-	<20100517212437.GA2190@srcf.ucam.org>
-	<1274131764.25625.54.camel@c-dwalke-linux.qualcomm.com>
-	<20100517213530.GB2395@srcf.ucam.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/8] Suspend block api (version 7)
+Date: Mon, 17 May 2010 23:44:46 +0200
+Message-ID: <201005172344.46222.rjw__32775.6523191512$1274132751$gmane$org@sisk.pl>
+References: <1273810273-3039-1-git-send-email-arve@android.com>
+	<201005172240.35742.rjw@sisk.pl>
+	<AANLkTim2b8cKnzPgN7m5zImb0hVDfqVjRidKNVoYi1yO@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100517213530.GB2395@srcf.ucam.org>
+In-Reply-To: <AANLkTim2b8cKnzPgN7m5zImb0hVDfqVjRidKNVoYi1yO@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,34 +19,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, nes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Linus WALLEIJ <linus.walleij@stericsson.com>, "tytso@mit.edu" <tytso@mit.edu>, Geoff Smith <geoffx.smith@intel.com>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Arjan van de Ven <arjan@infradead.org>, Jesse@smtp1.lin
+To: Brian Swetland <swetland@google.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2010-05-17 at 22:35 +0100, Matthew Garrett wrote:
-> On Mon, May 17, 2010 at 02:29:24PM -0700, Daniel Walker wrote:
-> > On Mon, 2010-05-17 at 22:24 +0100, Matthew Garrett wrote:
-> > > > I was more thinking about something new, that isn't freezing anything.
-> > > > The only purpose would be to group the stuff that CPUidle can ignore,
-> > > > and let CPUidle ignore it, so that the system can still be idled.
-> > > 
-> > > So they'd be on the runqeue but wouldn't factor into cpuidle's 
-> > > calculations of when the next wakeup should be? Ok. I think that still 
-> > > leaves you with the same problem - you're not scheduling that task, so 
-> > > how do you know to execute it when a network packet is received? I think 
-> > > you also still have the race condition.
-> > 
-> > Couldn't you special case the network packet situation ? Like the idle
-> > loop could take into account that there are packets flowing through the
-> > networking stack that may need to get handled.
-> 
-> And once you've done that for every wakeup source you have something 
-> that looks pretty much like suspend blockers.
-
-Well, maybe (this is theoretical after all), but it's within the
-confines of our current PM model .. You basically centralize all the
-decision making into the kernel, and into idle. that seems to me more
-powerful than suspend blockers since they interleave parts with
-userspace.
-
-Daniel
+T24gTW9uZGF5IDE3IE1heSAyMDEwLCBCcmlhbiBTd2V0bGFuZCB3cm90ZToKPiBPbiBNb24sIE1h
+eSAxNywgMjAxMCBhdCAxOjQwIFBNLCBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+IHdy
+b3RlOgo+ID4gT24gTW9uZGF5IDE3IE1heSAyMDEwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3RlOgo+
+ID4+Cj4gPj4gSXQgc2hvdWxkIGdldCBvdXQgb2YgdGhhdCBsb29wIGFzIHNvb24gYXMgc29tZW9u
+ZSBibG9ja3Mgc3VzcGVuZC4gSWYKPiA+PiBzb21lb25lIGlzIGNvbnN0YW50bHkgYWJvcnRpbmcg
+c3VzcGVuZCB3aXRob3V0IHVzaW5nIGEgc3VzcGVuZCBibG9ja2VyCj4gPj4gaXQgd2lsbCBiZSB2
+ZXJ5IGluZWZmaWNpZW50LCBidXQgaXQgc2hvdWxkIHN0aWxsIHdvcmsuCj4gPgo+ID4gV2VsbCwg
+dGhlIHNjZW5hcmlvIEkgaGF2ZSBpbiBtaW5kIGlzIHRoZSBmb2xsb3dpbmcuICBTb21lb25lIHdh
+bnRzIHRvIGNoZWNrCj4gPiB0aGUgZmVhdHVyZSBhbmQgc2ltcGx5IHdyaXRlcyAib3Bwb3J0dW5p
+c3RpYyIgdG8gL3N5cy9wb3dlci9wb2xpY3kgYW5kICJtZW0iIHRvCj4gPiAvc3lzL3Bvd2VyL3N0
+YXRlIHdpdGhvdXQgYW55IGRyaXZlcnMgb3IgYXBwcyB0aGF0IHVzZSBzdXNwZW5kIGJsb2NrZXJz
+Lgo+ID4KPiA+IEhvdyBpbiB0aGF0IGNhc2UgaXMgdGhlIHN5c3RlbSBzdXBwb3NlZCB0byBicmVh
+ayBvdXQgb2YgdGhlIHN1c3BlbmQtcmVzdW1lIGxvb3AKPiA+IHJlc3VsdGluZyBmcm9tIHRoaXM/
+ICBJIGRvbid0IHNlZSByaWdodCBub3csIGJlY2F1c2UgdGhlIG1haW4gYmxvY2tlciBpcwo+ID4g
+aW5hY3RpdmUsIHRoZXJlIGFyZSBubyBvdGhlciBibG9ja2VycyB0aGF0IGNhbiBiZSBhY3RpdmF0
+ZWQgYW5kIGl0IGlzIG5leHQgdG8KPiA+IGltcG9zc2libGUgdG8gd3JpdGUgdG8gL3N5cy9wb3dl
+ci9zdGF0ZSBhZ2Fpbi4KPiAKPiBJIGd1ZXNzIHdlIGNvdWxkIHNldCBhIGZsYWcgd2hlbiBhIHN1
+c3BlbmQgYmxvY2tlciBpcyByZWdpc3RlcmVkIGFuZAo+IHJlZnVzZSB0byBlbnRlciBvcHBvcnR1
+bmlzdGljIG1vZGUgaWYgbm8gYmxvY2tlcnMgaGF2ZSBldmVyIGJlZW4KPiByZWdpc3RlcmVkLgo+
+IAo+IEl0IGRvZXMgc2VlbSBsaWtlIGV4dHJhIGVmZm9ydCB0byBnbyB0aHJvdWdoIHRvIGhhbmRs
+ZSBhICJkb24ndCBkbwo+IHRoYXQiIHR5cGUgc2NlbmFyaW8gKGVudGVyaW5nIGludG8gb3Bwb3J0
+dW5pc3RpYyBzdXNwZW5kIHdpdGhvdXQKPiBhbnl0aGluZyB0aGF0IHdpbGwgcHJldmVudCBpdCku
+CgpJIGFncmVlLCBidXQgSSB0aGluayBpdCdzIG5lY2Vzc2FyeS4gIFdlIHNob3VsZG4ndCBhZGQg
+aW50ZXJmYWNlcyB0aGF0IGh1cnQKdXNlcnMgaWYgbm90IHVzZWQgd2l0aCBjYXJlLgoKVGhhbmtz
+LApSYWZhZWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+bGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3Jn
+Cmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51
+eC1wbQ==
