@@ -1,15 +1,23 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
- userspace is frozen?
-Date: Tue, 18 May 2010 08:51:23 +1000
-Message-ID: <4BF1C86B.8000203__47239.1310068362$1274136804$gmane$org@crca.org.au>
-References: <Pine.LNX.4.44L0.1005162219330.24400-100000@netrider.rowland.org>
-	<4BF0F3FF.2010603@crca.org.au> <201005172235.37824.rjw@sisk.pl>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Mon, 17 May 2010 15:55:36 -0700
+Message-ID: <87mxvyt9xz.fsf__36341.1114005887$1274137086$gmane$org@deeprootsystems.com>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<87wrvl5479.fsf@deeprootsystems.com>
+	<20100503215028.GB18910@srcf.ucam.org>
+	<alpine.DEB.2.00.1005141408260.3348@utopia.booyaka.com>
+	<20100514203202.GA12409@srcf.ucam.org>
+	<87aas2azc5.fsf@deeprootsystems.com>
+	<20100514231510.GG16989@thunk.org>
+	<87r5laa4oc.fsf@deeprootsystems.com>
+	<AANLkTilL90pYVlquvMDAEPHj_AraEi9Qzk-0tTjw9Bkx@mail.gmail.com>
+	<AANLkTil7358FHTlFZ0LqwymkiZZ-7An0HlaOTVhTkpgW@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005172235.37824.rjw@sisk.pl>
+In-Reply-To: <AANLkTil7358FHTlFZ0LqwymkiZZ-7An0HlaOTVhTkpgW@mail.gmail.com>
+	(Mike Chan's message of "Mon\, 17 May 2010 13\:07\:50 -0700")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,90 +27,120 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Matt Reimer <mattjreimer@gmail.com>
+To: Mike Chan <mike@android.com>
+Cc: Len Brown <len.brown@intel.com>, Wu Fengguang <fengguang.wu@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, tytso@mit.edu, Linus Walleij <linus.walleij@stericsson.com>, Brian Swetland <swetland@google.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-omap@vger.kernel.org, Daniel Walker <dwalker@codeaurora.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>, Liam Girdwood <lrg@slimlogic.co.uk>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Mike Chan <mike@android.com> writes:
 
-On 18/05/10 06:35, Rafael J. Wysocki wrote:
-> On Monday 17 May 2010, Nigel Cunningham wrote:
->> On 17/05/10 12:22, Alan Stern wrote:
->>> On Mon, 17 May 2010, Nigel Cunningham wrote:
->>>>>> I object to the patch.
->>>>>>
->>>>>> Tell the patch it ought to exit once thawed, by all means.
->>>>>
->>>>> I'm not sure what you mean.  Care to explain?
->>>>
->>>> I mean "Set up some sort of flag that it can look at once thawed at
->>>> resume time, and use that to tell it to exit at that point."
->>>
->>> Doesn't the patch do exactly that?  The "flag" is set by virtue of the
->>> fact that this is part of del_gendisk -- which means the disk is being
->>> unregistered and hence the writeback thread will exit shortly.
->>>
->>>>>> Make the patch unfreezeable to begin with, by all means.
->>>>>
->>>>> That wouldn't work.
->>>>
->>>> Why not?
->>>
->>> It would be nice to know exactly why.  Perhaps the underlying problem
->>> can be fixed.
->>>
->>>>>> If you know a disk is going to be unregistered during resume,
->>>>>
->>>>> How do we check that, exactly?
->>>>
->>>> Well, if you can figure out that you need to go down this path at this
->>>> point in the process, you must be able to apply the same logic to come
->>>> to the same conclusion earlier in the process.
->>>
->>> That's not true.  You don't know that a device is going to be unplugged
->>> until it actually _is_ unplugged.
+> On Mon, May 17, 2010 at 12:27 PM, Vitaly Wool <vitalywool@gmail.com> wrot=
+e:
+>> On Mon, May 17, 2010 at 6:12 PM, Kevin Hilman
+>> <khilman@deeprootsystems.com> wrote:
 >>
->> Sorry - I got unregistered during suspend (instead of resume) in my
->> head. That said, I'd argue that we should be...
+>>>> and #2, the battery lifetime on the N770 and N800 (both of which I hav=
+e)
+>>>> is **appalling** **bad**.
+>>>
+>>> Appalling bad compared to what?
+>>>
+>>> What's probably more interesting in terms of rough comparisons is
+>>> comparing similar devices with and without opportunistic suspend. =A0The
+>>> Nokia n900 (maemo) and the Moto Droid (android) use the same SoC (TI
+>>> OMAP3) and roughly the same kernel (2.6.2[89], although both are
+>>> heavily patched from mainline.)
+>>>
+>>> The n900 *never* suspends. =A0It only uses dynamic PM + CPUidle.
+>>> The droid uses opportunistic suspend (as well as dynamic PM + CPUidle)
+>>>
+>>> I don't know of any more objective comparison of the two, but as a
+>>> user of both devices I can say that the active usage is basically the
+>>> same (around a day) and the idle use is similar as well, even though
+>>> the Droid has a slightly bigger battery (1400 mAh vs. 1320 mAh.) =A0My
+>>> own usage suggests the n900 is a bit better in idle time, but I have
+>>> not done any measuring or objective tests. =A0I'm guessing the
+>>> difference is probably because the Droid does not use the deepest
+>>> off-mode power states either in idle or suspend (IIRC) where the n900
+>>> does. =A0I suspect that if both were using off-mode and had the same
+>>> battery, these differences would go away.
+>>>
+>
+> Although both are OMAP3430 and run 2.6.29 you cannot compare the N900
+> and Droid's perceived user battery life to one another to evaluate
+> opportunistic suspend. There are many factors uncounted for such as:
+> network reception, screen brightness (and size), button back-light,
+> keyboard back-light, modem stack (CDMA vs UMTS). Also the difference
+> in uerspace.
+
+Agreed.  I was reluctant to even make the comparison for all those
+reasons, but with the lack of real numbers, it was all I had to show a
+very rough subjective guess, and at least show that with and without
+opportunistic suspend, you're in the same ballpark.
+
+>>> While this is not really a scientific comparison, it at least gives a
+>>> rough idea. =A0If using opportunistic suspend was adding noticably
+>>> better battery life, I think this would be a different discussion.
 >>
->> 1) Syncing all the data at the start of the suspend/hibernate, so
->> there's nothing for the workthread to do if we do del_gendisk.
->> 2) Telling things to exit if we do find the device is gone away at
->> resume time, but not relying on the going-away happening until post
->> process thaw, for a couple of reasons:
->> - Potential for races/confusion/mess etc in having $random process
->> thawing other processes. Only the thread doing the suspend/hibernate
->> should be freezing/thawing.
+>> Exactly. The point is, opportunistic suspend doesn't in fact add any
+>> value compared to dynamic PM + CPUIdle. It only produces some false
+>> impression that one can handle power management right without using
+>> dynamic PM. And this false impression is the cause for many really
+>> ugly designs (like, for instance, 15 minutes touchscreen inactivity
+>> delay before forcibly shutting down the wireless, as it's done in
+>> stock Android framework).
+>>
 >
-> I don't see a problem here, as far as kernel threads are concerned.  In this
-> particular case this is a subsystem thawing a thread that belongs to it.  No
-> problem.
+> Opportunistic suspend is an extension to the current suspend model,
+> not a replacement dynamic / run-time PM. If you can replace good old
+> suspend then this would be a different story.
 >
->> - We're dealing with the symptom, not the cause. Almost always a bad idea.
->
-> I very much prefer to have a fix for a symptom than no fix at all, which is the
-> realistic alternative in this case.
->
-> So, I think we should merge the patch and if someone finds the root cause
-> at one point in future, then we can just use the *right* approach instead of
-> the present one.
->
-> The problem is real and people in the field are affected by it, so if you don't
-> have a working alternative patch, please just let go.
+> As you mention, Droid uses opportunistic suspend + dynamic pm +
+> cpuidle + freq. So I decided to do some measurements on a Droid using
+> our 2.9.32 kernel
+> (http://android.git.kernel.org/?p=3Dkernel/omap.git;a=3Dsummary). For a
+> little better apples to apples comparison.
 
-I'm not denying that the problem is real. What I am concerned about is 
-finding a real solution, not just putting a sticky plaster over the 
-wound. It seems to me to be much wiser to deal with the issue properly 
-now instead of doing extra work later to diagnose what might be a harder 
-to reproduce symptom of the same problem. I'd happily put the time in 
-now myself, but I simply don't have the time this week.
+Excellent.  Thanks for some real numbers.
 
-Would it be possible to apply the patch, adding some sort of new tag 
-that can be used to say "This needs further attention", perhaps 
-including an enduring reference to this conversation. Later, the 'real' 
-fix could include another special tag that says "Proper fix for the 
-symptom addressed in commit 5e94f810"?
+(btw, sure would be nice to have the basic droid board files in mainline. ;)
 
-Regards,
+> Droid (idle system, airplane mode, screen off, 3 min interval):
+> measured average current
+> - with opportunity suspend: 3.19mA
+> - without opportunistic suspend: 3.5mA
+>
+> Stock userspace build, all I did was replace the kernel. We are
+> hitting retention on idle as well as suspend for omap (instead of full
+> off-mode).
 
-Nigel
+[at risk of stating the obvious] Since both approaches hit the same
+power states, if the system was truly idle, you'd expect the numbers
+to be the same, right?  So what the difference shows is that the
+system is not fully idle, IOW userspace and/or kernel wakeups are
+cusing the difference.
+
+It might also be instructive to see these numbers with a "noop"
+userspace, like just booting into busybox init=3D/bin/sh (or the android
+equivalent.)  That would show how much of that difference is due to
+kernel idleness (or lack thereof.)
+
+Even still, to me this all boils down to the lack of definition of the
+problem and clear description of the solution
+
+The fundamental problem is one of idleness.  What we want is the
+system to be idle in order to hit the lowest power states.  We can't
+get there because the system is not truly idle.
+
+So, there are basically two solutions:
+
+1) find and fix the problem spots so we can be idle more often
+2) add a new definition of idle so we can be idle more often
+
+Opporuntistic suspend takes the second approach where the new
+definition of idle is "no suspend blockers held."
+
+Of course, I clearly prefer the former, but it's also becoming clear
+that since I'm the only one still whining about it, I must be too much
+of an idealist to keep hoping for it.
+
+Kevin
