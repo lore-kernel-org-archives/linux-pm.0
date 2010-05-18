@@ -1,23 +1,15 @@
-From: Felipe Balbi <felipe.balbi@nokia.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Tue, 18 May 2010 09:40:22 +0300
-Message-ID: <20100518064022.GA6522__48379.1978950196$1274166289$gmane$org@nokia.com>
-References: <Pine.LNX.4.44L0.1005151716180.24645-100000@netrider.rowland.org>
-	<87hbm6cz90.fsf@deeprootsystems.com>
-	<1274115885.4418.59.camel@mulgrave.site>
-	<20100517174647.GA11512@gandalf>
-	<1274119179.4418.68.camel@mulgrave.site>
-	<20100517181252.GA14260@gandalf>
-	<1274124267.4418.149.camel@mulgrave.site>
-	<20100517193840.GB14047@gandalf> <20100517193952.GC14047@gandalf>
-	<1274125775.4418.182.camel@mulgrave.site>
-Reply-To: felipe.balbi@nokia.com
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Tue, 18 May 2010 15:11:11 +0200
+Message-ID: <20100518131111.GB1563__38430.2338389263$1274188413$gmane$org@ucw.cz>
+References: <1273810273-3039-1-git-send-email-arve@android.com>
+	<1273810273-3039-2-git-send-email-arve@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1274125775.4418.182.camel@mulgrave.site>
+In-Reply-To: <1273810273-3039-2-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,24 +19,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ext James Bottomley <James.Bottomley@suse.de>
-Cc: Matthew Garrett <mjg@redhat.com>, "me@felipebalbi.com" <me@felipebalbi.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Kernel development list <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Arve Hj??nnev??g <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 17, 2010 at 09:49:35PM +0200, ext James Bottomley wrote:
->Right, because Firmware writers are from the rugged unresponsive uplands
->of planet
->ignore-user-complaints-and-eat-them-for-breakfast-if-they-file-bugs and
->Software writers are from the emollient responsive groves of planet
->harmony.  Obviously what would work for one wouldn't work for the other.
->
->As a software writer, I fully buy into that world view.  The trouble is
->that when I go to dinner with hardware people, they seem to be awfully
->nice chaps ... almost exactly like me, in fact ...
+On Thu 2010-05-13 21:11:06, Arve Hj??nnev??g wrote:
+> Adds /sys/power/policy that selects the behaviour of /sys/power/state.
+> After setting the policy to opportunistic, writes to /sys/power/state
+> become non-blocking requests that specify which suspend state to
+> enter
 
-what does this add to suspend_blockers discussion ?
+Yeah, one file selects behavior of another file, and to read available
+states for opportunistic, you have to write to file first.
+
+I still don't like the interface.
 
 -- 
-balbi
-
-DefectiveByDesign.org
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
