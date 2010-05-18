@@ -1,16 +1,15 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 7)
-Date: Mon, 17 May 2010 17:52:46 -0700
-Message-ID: <AANLkTilQ5wZ_7fMyDMpUBCtu9oD1Wh22JGllyS1EPlxB@mail.gmail.com>
-References: <1273810273-3039-1-git-send-email-arve@android.com>
-	<201005142308.48386.rjw@sisk.pl>
-	<AANLkTilX0uhqrJtUSOC4smdH1M8V-h14J7YtRG4PPxOQ@mail.gmail.com>
-	<201005172342.52660.rjw@sisk.pl>
+From: Paul Walmsley <paul@pwsan.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Mon, 17 May 2010 19:39:44 -0600 (MDT)
+Message-ID: <alpine.DEB.2.00.1005171932540.27473@utopia.booyaka.com>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<87aas2azc5.fsf@deeprootsystems.com>
+	<20100514231510.GG16989@thunk.org> <201005152152.15996.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005172342.52660.rjw@sisk.pl>
+In-Reply-To: <201005152152.15996.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,187 +20,181 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Oleg Nesterov <oleg@redhat.com>, Liam Girdwood <lrg@slimlogic.co.uk>, linux-omap@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>, Daniel Walker <dwalker@codeaurora.org>, tytso@mit.edu, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-2010/5/17 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Monday 17 May 2010, Arve Hj=F8nnev=E5g wrote:
->> 2010/5/14 Rafael J. Wysocki <rjw@sisk.pl>:
->> > On Friday 14 May 2010, Arve Hj=F8nnev=E5g wrote:
->> >> This patch series adds a suspend-block api that provides the same
->> >> functionality as the android wakelock api. This version has some
->> >> changes from, or requested by, Rafael. The most notable changes are:
->> >> - DEFINE_SUSPEND_BLOCKER and suspend_blocker_register have been added
->> >> =A0 for statically allocated suspend blockers.
->> >> - suspend_blocker_destroy is now called suspend_blocker_unregister
->> >> - The user space mandatory _INIT ioctl has been replaced with an
->> >> =A0 optional _SET_NAME ioctl.
->> >>
->> >> I kept the ack and reviewed by tags on two of the patches even though
->> >> there were a few cosmetic changes.
->> >
->> > Thanks for the patches, I think they are in a pretty good shape now.
->> >
->> > That said, I'd like the changelogs to be a bit more descriptive, at le=
-ast for
->> > patch [1/8]. =A0I think it should explain (in a few words) what the pu=
-rpose of
->> > the feature is and what problems it solves that generally a combinatio=
-n of
->> > runtime PM and cpuidle is not suitable for in your opinion. =A0IOW, wh=
-y you
->> > think we need that feature.
->> >
->>
->> How about:
->>
->> PM: Add opportunistic suspend support.
->
-> "PM: Opportunistic suspend support" would be sufficient IMO.
->
-> Now, I'd start with the motivation. =A0Like "Power management features pr=
-esent
-> in the current mainline kernel are insufficient to get maximum possible e=
-nergy
-> savings on some platforms, such as Android, because ..." (here go explana=
-tions
-> why this is the case in your opinion).
->
-> Next, "To allow Android and similar platforms to save more energy than th=
-ey
-> currently can save using the mainline kernel, introduce a mechanism by wh=
-ich
-> the system is automatically suspended (i.e. put into a system-wide sleep =
-state)
-> whenever it's not doing useful work, called opportunistic suspend".
->
-> "For this purpose introduce the suspend blockers framework allowing the
-> kernel's power management subsystem to decide when it is desirable to sus=
-pend
-> the system (i.e. when useful work is not being done). =A0Add an API that =
-..."
->
+Hello Rafael,
 
-PM: Opportunistic suspend support.
+On Sat, 15 May 2010, Rafael J. Wysocki wrote:
 
-Power management features present in the current mainline kernel are
-insufficient to get maximum possible energy savings on some platforms,
-such as Android, because low power states can only safely be entered
-from idle. Suspend, in its current form, cannot be used, since wakeup
-events that occur right after initiating suspend will not be processed
-until another possibly unrelated event wake up the system again.
+> And really, the only semi-technical argument against the opportunistic suspend
+> feature I've seen so far in this thread is that it _may_ _be_ possible to
+> achieve the same goal in a different way.  If I don't see anything more serious
+> than that, I will take the patchset and push it to Linus (patches [1-6/8] from
+> version 7 to be precise, as soon as the changelogs are improved as
+> requested).
 
-On some systems idle combined with runtime PM can enter the same power
-state as suspend, but periodic wakeups increase the average power
-consumption. Suspending the system also reduces the harm caused by
-apps that never go idle. On other systems suspend can enter a much
-lower power state than idle.
+The Android opportunistic suspend series still has problems, even if 
+opportunistic suspend mode is not enabled.  These problems can be fixed, 
+but it's too late to fix them for this merge window.  There shouldn't be a 
+rush to merge these patches, given the current amount of discussion.
 
-To allow Android and similar platforms to save more energy than they
-currently can save using the mainline kernel, we introduce a mechanism
-by which the system is automatically suspended (i.e. put into a
-system-wide sleep state) whenever it's not doing useful work, called
-opportunistic suspend.
+Details:
 
-For this purpose introduce the suspend blockers framework allowing the
-kernel's power management subsystem to decide when it is desirable to
-suspend the system (i.e. when useful work is not being done). Add an
-API that that drivers can use to block opportunistic suspend. This is
-needed to avoid losing wakeup events that occur right after suspend is
-initiated.
+A. The series still has problems, even if the opportunistic suspend
+   mode is not enabled:
 
-Adds /sys/power/policy that selects the behavior of /sys/power/state.
-After setting the policy to opportunistic, writes to /sys/power/state
-become non-blocking requests that specify which suspend state to enter
-when no suspend blockers are active. A special state, "on", stops the
-process by activating the "main" suspend blocker.
+   1. Many suspend_block() calls will need to be added throughout the
+      kernel and drivers[1], beyond just those in the current patch 
+      series.  Android systems will not work without  these calls.  
+      The primary stated goal of adding suspend-block calls is not to
+      add a new feature, but to restore an approximation of the
+      original, expected behavior of the kernel timer and scheduler
+      subsystems: to keep running as long as there is work to be done.
+      This approach -- requiring patching of the kernel to restore
+      expected behavior -- is inferior to an approach that preserves
+      the timer and scheduler subsystems' behavior and only patches
+      areas where the kernel doesn't have enough information to make
+      the right decision[2].
 
+   2. suspend_block() calls will be difficult for driver and subsystem
+      maintainers to test.  This is because the calls contain hidden
+      dependencies to specific Android userspace setups and unrelated
+      kernel code[3].
 
->> Adds a suspend block api that drivers can use to block opportunistic
->> suspend. This is needed to avoid losing wakeup events that occur
->> right after suspend is initiated.
->>
->> Adds /sys/power/policy that selects the behaviour of /sys/power/state.
->> After setting the policy to opportunistic, writes to /sys/power/state
->> become non-blocking requests that specify which suspend state to enter
->> when no suspend blockers are active. A special state, "on", stops the
->> process by activating the "main" suspend blocker.
->>
->> Opportunistic suspend is most useful on systems that cannot enter their
->> lowest power state from idle, but it is also useful on systems that enter
->> the same power state from idle and suspend. Periodic timers can cause
->> a significant power drain on these systems, and suspend will stop most
->> of this. Opportunistic suspend can also reduce the harm caused by apps
->> that never go idle.
->>
->> > The changelog of patch [2/8] appears to be outdated, that needs to be =
-fixed.
->> > Also, it would be nice to explain in the changelog what the interface =
-is needed
->> > for (in terms of the problems that it helps to handle).
->> >
->>
->> How about:
->>
->> PM: suspend_block: Add driver to access suspend blockers from user-space
->>
->> Add a misc device, "suspend_blocker", that allows user-space processes
->> to block auto suspend.
->
-> "automatic suspend" would be better IMO.
->
->> Opening this device creates a suspend_blocker.
->
-> "suspend blocker that can be used by the opener to prevent automatic susp=
-end
-> from occuring. =A0There are ioctls provided for blocking and unblocking s=
-uspend
-> and for giving the suspend blocker a meaningful name. =A0Closing the devi=
-ce
-> special file causes the suspend blocker to be destroyed."
->
->> ioctls are provided to name this suspend_blocker, and to block and unblo=
-ck
->> suspend. To delete the suspend_blocker, close the device.
->>
->> For example, when select or poll indicates that input event are availabl=
-e, this
->> interface can be used to block suspend before reading those event. This =
-allows
->> the input driver to release its suspend blocker as soon as the event que=
-ue is
->> empty.
->
-> I think you should explain in more detail how suspend blockers used by us=
-er
-> space make that possible.
->
+B. These problems can be fixed:
+
+   1. Patch 1's opportunistic suspend governor can be converted into
+      an "opportunistic system low power governor."  In other words,
+      when the governor decides to put the system into a low-power
+      state, the way to do it should be up to the architecture, system
+      integrator, or user -- not only "queue_work(pm_wq,
+      &suspend_work);"
+   
+   2. The opportunistic system low power governor can then be extended
+      to handle multiple system low-power states ("S-states" in ACPI
+      terms)[4], rather than just one low-power state; similar to the
+      way that CPUIdle selects C-states.
+   
+   3. The system low power governor can then be entered before the
+      last active CPU in the system enters WFI/HLT (i.e., immediately
+      before CPUIdle calls state->enter() [5]).  At this point, the
+      governor would respect timers and the scheduler, and most
+      suspend-block calls can be removed from the kernel.
+
+   4. The process-freezing behavior of the opportunistic suspend
+      patches can be implemented by improving the Linux timer and
+      scheduler subsystems.  If freezer cgroups won't do, then based
+      on a quick glance last week, here might be some reasonable
+      approaches for emulating the Android behavior:
+
+      A. To prevent untrusted process timers from waking the system,
+         the processes can be run in a cgroup that calls
+         del_timer_sync() on all process timers upon receipt of some
+         trigger.  When the system returns from the system low-power
+         state and some trigger event happens, add_timer() can be
+         called to add all the cgroup's timers back.
+
+      B. To prevent untrusted processes from hogging CPUs, the
+         processes can be run in a cgroup that puts all threads in
+         TASK_RUNNING processes into TASK_INTERRUPTIBLE state and
+         calls schedule() [6], upon receipt of some trigger.  This
+         should allow processes to be awakened by an external system
+         event, e.g., network packet received.  When the system
+         returns from the system low-power state and some trigger
+         event happens, those process threads can be placed back into
+         TASK_RUNNING state and rescheduled.
+
+      The trigger events could be as simple as writing '1' or '0' into
+      some cgroup or sysfs control file.
+
+   5. At this point there would likely be a few remaining
+      suspend-block users that use suspend_block() as an ersatz PM
+      constraint API.  These should be replaced by a declarative PM
+      constraint API a la [7] or [8].  Architectures and system
+      integrators must be allowed to control how these PM constraints
+      are implemented, because different chipsets, boards, and
+      use-cases may have different power management feature
+      implementations.
+
+   Fixing the above issues should remove any need to add a
+   suspend-block API.  It should handle the process-freezing use case.
+   Android can still enter full system suspend in their system idle
+   governor, but it should no longer need to.  Since this approach
+   will honor "trusted" timers and processes, it won't break code that
+   relies on longstanding kernel scheduling assumptions.
+
+C. There shouldn't be a rush to merge the existing Android series:
+
+   1. The lack of suspend-block support should not prevent existing
+      drivers from being upstreamed without suspend-block calls.
+      Non-Android users will be using the drivers without
+      suspend-blocks, so the drivers will need to work without
+      suspend-blocks anyway.  Until a fixed version of the series is
+      submitted, Android can just carry the suspend-block patches in
+      their own tree: the suspend-block patch rebase load from one
+      Linux kernel release to the next should be light.  Many of the
+      code sites where suspend-block calls are currently present in
+      Android's MSM kernel[9] are unlikely to change, so git should be
+      able to merge those automatically.
+
+   2. Once these patches are merged, it will be difficult to remove
+      the suspend-block approach from the kernel[10].  It touches a lot of
+      kernel code.  And the power management constraint that it
+      specifies is so general ("block system suspend"), that, for the
+      subset of suspend_block() use-cases that actually implement a
+      driver PM constraint, it will be difficult to figure out what
+      these constraints were originally intended to be.
+
+   3. There is no imminent danger if these patches are not merged.
+      These are not security patches, or patches that fix some
+      existing code that could damage hardware.  There is no liability
+      motivation to fast-track these patches, particularly given the
+      current high level of discussion.
+
+Some of the features that these opportunistic suspend patches implement 
+are desirable, such as process freezing and a system low power governor 
+independent from CPUIdle.  However, there are significant problems with 
+the way that these opportunistic suspend patches are designed, since they 
+break existing kernel semantics and then touch lots of other code to work 
+around the breakage.
+
+The right approach should be to implement these features in a way that 
+does not require patching all over the kernel, does not break existing 
+timer and scheduler behavior, and will not impact bottom-up power 
+management approaches.
 
 
-PM: suspend_block: Add driver to access suspend blockers from user-space
+regards,
 
-Add a misc device, "suspend_blocker", that allows user-space processes
-to block automatic suspend.
+- Paul
+     
 
-Opening this device creates a suspend blocker that can be used by the
-opener to prevent automatic suspend from occurring.  There are ioctls
-provided for blocking and unblocking suspend and for giving the
-suspend blocker a meaningful name.  Closing the device special file
-causes the suspend blocker to be destroyed.
+1. Paul Walmsley E-mail to the linux-pm mailing list, dated Fri, 14
+   May 2010 00:27:56 -0600:
+   http://permalink.gmane.org/gmane.linux.power-management.general/18658
 
-For example, when select or poll indicates that input event are
-available, this interface can be used by user space to block suspend
-before it reads those events. This allows the input driver to release
-its suspend blocker as soon as the event queue is empty. If user space
-could not use a suspend blocker here the input driver would need to
-delay the release of its suspend blocker until it knows (or assumes)
-that user space has finished processing the events.
+2. http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=arch/arm/plat-omap/include/plat/omap-pm.h;h=3ee41d7114929d771cadbb9f02191fd16c5b5abe;hb=ba2e1c5f25a99dec3873745031ad23ce3fd79bff
 
-By careful use of suspend blockers in drivers and user space system
-code, one can arrange for the system to stay awake for extremely short
-periods of time in reaction to events, rapidly returning to a fully
-suspended state.
+3. Paul Walmsley E-mail to the linux-pm mailing list, dated Fri, 14
+   May 2010 00:27:56 -0600:
+   http://permalink.gmane.org/gmane.linux.power-management.general/18658
 
--- =
+4. Paul Walmsley E-mail to the linux-pm mailing list, dated Thu, 13
+   May 2010 13:01:33 -0600:
+   http://permalink.gmane.org/gmane.linux.power-management.general/18592
 
-Arve Hj=F8nnev=E5g
+5. http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=drivers/cpuidle/cpuidle.c;h=12fdd3987a36c2b09ab65b9d598f276e51fbf5b7;hb=ba2e1c5f25a99dec3873745031ad23ce3fd79bff#l88
+
+6. http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=kernel/signal.c;h=dbd7fe073c558dbc57080e7d0d9344b2cf47b2dd;hb=ba2e1c5f25a99dec3873745031ad23ce3fd79bff#l2696
+
+7. http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=arch/arm/plat-omap/include/plat/omap-pm.h;h=3ee41d7114929d771cadbb9f02191fd16c5b5abe;hb=ba2e1c5f25a99dec3873745031ad23ce3fd79bff
+
+8. http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=kernel/pm_qos_params.c;h=3db49b9ca374ded32bf224f266e904a8006e61a8;hb=ba2e1c5f25a99dec3873745031ad23ce3fd79bff
+
+9. Paul Walmsley E-mail to the linux-pm mailing list, dated Fri, 14
+   May 2010 00:13:50 -0600:
+   http://permalink.gmane.org/gmane.linux.power-management.general/18657
+
+10. Paul Walmsley E-mail to the linux-pm mailing list, dated Wed, 12
+    May 2010 21:35:30 -0600: http://lkml.org/lkml/2010/5/12/528
