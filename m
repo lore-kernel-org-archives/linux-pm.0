@@ -1,16 +1,16 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 7)
-Date: Tue, 18 May 2010 13:35:45 -0700
-Message-ID: <AANLkTileYiu6pL4eX3lpvpYLuu76A8auZp4xrcDX94BQ__11698.4594533735$1274215095$gmane$org@mail.gmail.com>
+Date: Tue, 18 May 2010 13:47:12 -0700
+Message-ID: <AANLkTinPC94F1wj-CEb3vvSo7__u625DsZxErlmTymEw__21513.0579345443$1274215852$gmane$org@mail.gmail.com>
 References: <1273810273-3039-1-git-send-email-arve@android.com>
-	<201005172344.46222.rjw@sisk.pl>
-	<AANLkTikENyp0UOKP2NzwjKye1EiZitdE0o4k1Z4ygCsT@mail.gmail.com>
-	<201005182138.04610.rjw@sisk.pl>
+	<201005172342.52660.rjw@sisk.pl>
+	<AANLkTilQ5wZ_7fMyDMpUBCtu9oD1Wh22JGllyS1EPlxB@mail.gmail.com>
+	<201005182113.10448.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005182138.04610.rjw@sisk.pl>
+In-Reply-To: <201005182113.10448.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,83 +21,180 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
 2010/5/18 Rafael J. Wysocki <rjw@sisk.pl>:
 > On Tuesday 18 May 2010, Arve Hj=F8nnev=E5g wrote:
->> On Mon, May 17, 2010 at 2:44 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > On Monday 17 May 2010, Brian Swetland wrote:
->> >> On Mon, May 17, 2010 at 1:40 PM, Rafael J. Wysocki <rjw@sisk.pl> wrot=
+>> 2010/5/17 Rafael J. Wysocki <rjw@sisk.pl>:
+>> > On Monday 17 May 2010, Arve Hj=F8nnev=E5g wrote:
+>> >> 2010/5/14 Rafael J. Wysocki <rjw@sisk.pl>:
+>> >> > On Friday 14 May 2010, Arve Hj=F8nnev=E5g wrote:
+>> >> >> This patch series adds a suspend-block api that provides the same
+>> >> >> functionality as the android wakelock api. This version has some
+>> >> >> changes from, or requested by, Rafael. The most notable changes ar=
 e:
->> >> > On Monday 17 May 2010, Arve Hj=F8nnev=E5g wrote:
+>> >> >> - DEFINE_SUSPEND_BLOCKER and suspend_blocker_register have been ad=
+ded
+>> >> >> =A0 for statically allocated suspend blockers.
+>> >> >> - suspend_blocker_destroy is now called suspend_blocker_unregister
+>> >> >> - The user space mandatory _INIT ioctl has been replaced with an
+>> >> >> =A0 optional _SET_NAME ioctl.
 >> >> >>
->> >> >> It should get out of that loop as soon as someone blocks suspend. =
-If
->> >> >> someone is constantly aborting suspend without using a suspend blo=
-cker
->> >> >> it will be very inefficient, but it should still work.
+>> >> >> I kept the ack and reviewed by tags on two of the patches even tho=
+ugh
+>> >> >> there were a few cosmetic changes.
 >> >> >
->> >> > Well, the scenario I have in mind is the following. =A0Someone want=
-s to check
->> >> > the feature and simply writes "opportunistic" to /sys/power/policy =
-and "mem" to
->> >> > /sys/power/state without any drivers or apps that use suspend block=
-ers.
+>> >> > Thanks for the patches, I think they are in a pretty good shape now.
 >> >> >
->> >> > How in that case is the system supposed to break out of the suspend=
--resume loop
->> >> > resulting from this? =A0I don't see right now, because the main blo=
-cker is
->> >> > inactive, there are no other blockers that can be activated and it =
-is next to
->> >> > impossible to write to /sys/power/state again.
+>> >> > That said, I'd like the changelogs to be a bit more descriptive, at=
+ least for
+>> >> > patch [1/8]. =A0I think it should explain (in a few words) what the=
+ purpose of
+>> >> > the feature is and what problems it solves that generally a combina=
+tion of
+>> >> > runtime PM and cpuidle is not suitable for in your opinion. =A0IOW,=
+ why you
+>> >> > think we need that feature.
+>> >> >
 >> >>
->> >> I guess we could set a flag when a suspend blocker is registered and
->> >> refuse to enter opportunistic mode if no blockers have ever been
->> >> registered.
+>> >> How about:
 >> >>
->> >> It does seem like extra effort to go through to handle a "don't do
->> >> that" type scenario (entering into opportunistic suspend without
->> >> anything that will prevent it).
+>> >> PM: Add opportunistic suspend support.
 >> >
->> > I agree, but I think it's necessary. =A0We shouldn't add interfaces th=
-at hurt
->> > users if not used with care.
+>> > "PM: Opportunistic suspend support" would be sufficient IMO.
+>> >
+>> > Now, I'd start with the motivation. =A0Like "Power management features=
+ present
+>> > in the current mainline kernel are insufficient to get maximum possibl=
+e energy
+>> > savings on some platforms, such as Android, because ..." (here go expl=
+anations
+>> > why this is the case in your opinion).
+>> >
+>> > Next, "To allow Android and similar platforms to save more energy than=
+ they
+>> > currently can save using the mainline kernel, introduce a mechanism by=
+ which
+>> > the system is automatically suspended (i.e. put into a system-wide sle=
+ep state)
+>> > whenever it's not doing useful work, called opportunistic suspend".
+>> >
+>> > "For this purpose introduce the suspend blockers framework allowing the
+>> > kernel's power management subsystem to decide when it is desirable to =
+suspend
+>> > the system (i.e. when useful work is not being done). =A0Add an API th=
+at ..."
 >> >
 >>
->> I'm not sure this can be "fixed".
+>> PM: Opportunistic suspend support.
+>>
+>> Power management features present in the current mainline kernel are
+>> insufficient to get maximum possible energy savings on some platforms,
+>> such as Android, because low power states can only safely be entered
+>> from idle.
 >
-> Yes, it can, but perhaps a workaround would be sufficient (see below).
+> Do you mean CPU low-power states or system low-power states here?
 >
->> The user asked that the system to suspend whenever possible, which is wh=
-at it
->> is doing. I don't think disabling opportunistic suspend if no suspend
->> blockers have been registered will work. As soon as we register a suspend
->> blocker we are back in the same situation.
+I think either.
+
+> I'd add more details here, because it may not be completely clear to the
+> (interested) reader why entering these states only from idle affects the
+> possibility to achieve maximum energy savings. =A0I _guess_ you mean that
+> using idle is not sufficient, because there are so many wakeups on the
+> systems in question that more savings are still possible. =A0Is that corr=
+ect?
 >
-> Not really, because the new suspend blocker is not added by the _framewor=
-k_ _itself_.
+Yes, is this not what the next paragraph explains?
+
+>> Suspend, in its current form, cannot be used, since wakeup
+>> events that occur right after initiating suspend will not be processed
+>> until another possibly unrelated event wake up the system again.
+>
+> I think the word "cannot" is too strong here. =A0I'd say "not suitable" i=
+nstead
+
+I don't think it is too strong, but I can change it.
+
+> and I'd say what kind of wakeup events I meant more precisely (there are
+> events that wake up a CPU from idle and events that wake up the system fr=
+om
+> suspend).
+
+When I say wakeup events I mean events that do both. Is there another
+term for this, or should I just add: "since wakeup events (events that
+wake the CPU from idle and the system from suspend)..."
+
+>
+>> On some systems idle combined with runtime PM can enter the same power
+>> state as suspend, but periodic wakeups increase the average power
+>> consumption. Suspending the system also reduces the harm caused by
+>> apps that never go idle. On other systems suspend can enter a much
+>> lower power state than idle.
+>>
+>> To allow Android and similar platforms to save more energy than they
+>> currently can save using the mainline kernel, we introduce a mechanism
+>
+> Just "introduce" without "we" works too.
+>
+>> by which the system is automatically suspended (i.e. put into a
+>> system-wide sleep state) whenever it's not doing useful work, called
+>> opportunistic suspend.
+>
+> I think we can address the Kevin's comment about "useful" and say "whenev=
+er
+> it's only doing work that can be done later without noticeable effect on
+> functionality".
+>
+>> For this purpose introduce the suspend blockers framework allowing the
+>> kernel's power management subsystem to decide when it is desirable to
+>> suspend the system (i.e. when useful work is not being done). Add an
+>
+> Perhaps remove the part in parens entirely.
+>
+>> API that that drivers can use to block opportunistic suspend. This is
+>> needed to avoid losing wakeup events that occur right after suspend is
+>> initiated.
+>>
+>> Adds /sys/power/policy that selects the behavior of /sys/power/state.
+>> After setting the policy to opportunistic, writes to /sys/power/state
+>> become non-blocking requests that specify which suspend state to enter
+>> when no suspend blockers are active. A special state, "on", stops the
+>> process by activating the "main" suspend blocker.
+>
+> ...
+>
+>> PM: suspend_block: Add driver to access suspend blockers from user-space
+>>
+>> Add a misc device, "suspend_blocker", that allows user-space processes
+>> to block automatic suspend.
+>>
+>> Opening this device creates a suspend blocker that can be used by the
+>> opener to prevent automatic suspend from occurring. =A0There are ioctls
+>> provided for blocking and unblocking suspend and for giving the
+>> suspend blocker a meaningful name. =A0Closing the device special file
+>> causes the suspend blocker to be destroyed.
+>>
+>> For example, when select or poll indicates that input event are
+>> available, this interface can be used by user space to block suspend
+>> before it reads those events. This allows the input driver to release
+>> its suspend blocker as soon as the event queue is empty. If user space
+>> could not use a suspend blocker here the input driver would need to
+>> delay the release of its suspend blocker until it knows (or assumes)
+>> that user space has finished processing the events.
+>>
+>> By careful use of suspend blockers in drivers and user space system
+>> code, one can arrange for the system to stay awake for extremely short
+>> periods of time in reaction to events, rapidly returning to a fully
+>> suspended state.
+>
+> That's fine by me.
+>
+> Thanks,
+> Rafael
 >
 
-I'm not sure what you mean by this. If we add a workaround that is
-disabled when the first suspend blocker is registered, then we cannot
-add any suspend blockers without disabling the workaround (for
-instance the power supply framework patch later in this patch set).
 
-> Now, to make it more "user-friendly", we can simply use
-> queue_delayed_work() with a reasonable delay instead of queue_work() to q=
-ueue
-> the suspend work (the delay may be configurable via sysfs).
->
-
-I can add a delay (and the timeout support code does add a delay as an
-optimization) to the unknown wakeup case, but this does not fix the
-problem of a user turning on opportunistic suspend with a user space
-framework that does not use suspend blockers. If the kernel uses
-suspend blockers to make sure the wakeup event makes it to user space,
-but user space does not block suspend, then the system will suspend
-before the event is processed.
 
 -- =
 
