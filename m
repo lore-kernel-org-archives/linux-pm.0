@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Tue, 18 May 2010 21:39:29 +0200
-Message-ID: <201005182139.29783.rjw@sisk.pl>
-References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<AANLkTinOFSVHnufbVKIei0KMbfkVvDgLVDRHkCldagfY@mail.gmail.com>
-	<4BF23BAC.90102@euromail.se>
+Subject: Re: Is it supposed to be ok to call del_gendisk while
+	userspace is frozen?
+Date: Tue, 18 May 2010 21:43:27 +0200
+Message-ID: <201005182143.28004.rjw__31297.1026906327$1274211896$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1005162219330.24400-100000@netrider.rowland.org>
+	<201005172235.37824.rjw@sisk.pl> <4BF1C86B.8000203@crca.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4BF23BAC.90102@euromail.se>
+In-Reply-To: <4BF1C86B.8000203@crca.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,24 +19,93 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Henrik Rydberg <rydberg@euromail.se>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Sven Neumann <s.neumann@raumfeld.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Tero Saarni <tero.saarni@gmail.com>, linux-input@vger.kernel.org, linux-pm@lists.linux-foundation.org, Liam Girdwood <lrg@slimlogic.co.uk>, Alexey Dobriyan <adobriyan@gmail.com>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Daniel Mack <daniel@caiaq.de>, Oleg Nesterov <oleg@redhat.com>, linux-omap@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>, Daniel Walker <dwalker@codeaurora.org>, Theodore Ts'o <tytso@mit.edu>, =?iso-8859-1?q?M=E1rton_N=E9meth?= <nm127@freemail.hu>, Brian Swetland <swetland@goo>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Matt Reimer <mattjreimer@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 18 May 2010, Henrik Rydberg wrote:
-> Arve Hj=F8nnev=E5g wrote:
-> > It does not matter how you enter suspend. Without opportunistic
-> > suspend, once you tell the kernel that you want to suspend, you cannot
-> > abort. If a wakeup event occurs at this point, it will probably not be
-> > processed until the system wakes up for another wakeup event.
-> > =
+On Tuesday 18 May 2010, Nigel Cunningham wrote:
+> Hi.
+> 
+> On 18/05/10 06:35, Rafael J. Wysocki wrote:
+> > On Monday 17 May 2010, Nigel Cunningham wrote:
+> >> On 17/05/10 12:22, Alan Stern wrote:
+> >>> On Mon, 17 May 2010, Nigel Cunningham wrote:
+> >>>>>> I object to the patch.
+> >>>>>>
+> >>>>>> Tell the patch it ought to exit once thawed, by all means.
+> >>>>>
+> >>>>> I'm not sure what you mean.  Care to explain?
+> >>>>
+> >>>> I mean "Set up some sort of flag that it can look at once thawed at
+> >>>> resume time, and use that to tell it to exit at that point."
+> >>>
+> >>> Doesn't the patch do exactly that?  The "flag" is set by virtue of the
+> >>> fact that this is part of del_gendisk -- which means the disk is being
+> >>> unregistered and hence the writeback thread will exit shortly.
+> >>>
+> >>>>>> Make the patch unfreezeable to begin with, by all means.
+> >>>>>
+> >>>>> That wouldn't work.
+> >>>>
+> >>>> Why not?
+> >>>
+> >>> It would be nice to know exactly why.  Perhaps the underlying problem
+> >>> can be fixed.
+> >>>
+> >>>>>> If you know a disk is going to be unregistered during resume,
+> >>>>>
+> >>>>> How do we check that, exactly?
+> >>>>
+> >>>> Well, if you can figure out that you need to go down this path at this
+> >>>> point in the process, you must be able to apply the same logic to come
+> >>>> to the same conclusion earlier in the process.
+> >>>
+> >>> That's not true.  You don't know that a device is going to be unplugged
+> >>> until it actually _is_ unplugged.
+> >>
+> >> Sorry - I got unregistered during suspend (instead of resume) in my
+> >> head. That said, I'd argue that we should be...
+> >>
+> >> 1) Syncing all the data at the start of the suspend/hibernate, so
+> >> there's nothing for the workthread to do if we do del_gendisk.
+> >> 2) Telling things to exit if we do find the device is gone away at
+> >> resume time, but not relying on the going-away happening until post
+> >> process thaw, for a couple of reasons:
+> >> - Potential for races/confusion/mess etc in having $random process
+> >> thawing other processes. Only the thread doing the suspend/hibernate
+> >> should be freezing/thawing.
+> >
+> > I don't see a problem here, as far as kernel threads are concerned.  In this
+> > particular case this is a subsystem thawing a thread that belongs to it.  No
+> > problem.
+> >
+> >> - We're dealing with the symptom, not the cause. Almost always a bad idea.
+> >
+> > I very much prefer to have a fix for a symptom than no fix at all, which is the
+> > realistic alternative in this case.
+> >
+> > So, I think we should merge the patch and if someone finds the root cause
+> > at one point in future, then we can just use the *right* approach instead of
+> > the present one.
+> >
+> > The problem is real and people in the field are affected by it, so if you don't
+> > have a working alternative patch, please just let go.
+> 
+> I'm not denying that the problem is real. What I am concerned about is 
+> finding a real solution, not just putting a sticky plaster over the 
+> wound. It seems to me to be much wiser to deal with the issue properly 
+> now instead of doing extra work later to diagnose what might be a harder 
+> to reproduce symptom of the same problem. I'd happily put the time in 
+> now myself, but I simply don't have the time this week.
+> 
+> Would it be possible to apply the patch, adding some sort of new tag 
+> that can be used to say "This needs further attention", perhaps 
+> including an enduring reference to this conversation.
 
-> =
+Yeah, /* FIXME: */ is for that.  With some comment why we're doing this.  :-)
 
-> Since it seems to be at the very core of the argument, how long time does=
- it
-> take to suspend your system? Is it something that could be improved upon?
+> Later, the 'real' fix could include another special tag that says "Proper fix for the 
+> symptom addressed in commit 5e94f810"?
 
-It's not a matter of time.  It's a matter of lost keystrokes and such.
-
+Thanks,
 Rafael
