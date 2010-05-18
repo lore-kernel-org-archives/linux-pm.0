@@ -1,15 +1,16 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [update] Re: [RFC][PATCH] PM / PCI: Update PCI power
- management documentation
-Date: Tue, 18 May 2010 15:05:13 -0700
-Message-ID: <20100518150513.050bb794__33061.9673048661$1274220501$gmane$org@virtuousgeek.org>
-References: <201005162149.31770.rjw@sisk.pl> <4BF0B1C5.4060601@oracle.com>
-	<201005180023.24885.rjw@sisk.pl>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 7)
+Date: Tue, 18 May 2010 15:21:09 -0700
+Message-ID: <AANLkTikm69OKbRUvqiqGh4KRMn7u166tyt4kx0-bjR3Z__27291.8016570204$1274221353$gmane$org@mail.gmail.com>
+References: <1273810273-3039-1-git-send-email-arve@android.com>
+	<201005182138.04610.rjw@sisk.pl>
+	<AANLkTileYiu6pL4eX3lpvpYLuu76A8auZp4xrcDX94BQ@mail.gmail.com>
+	<201005182314.08761.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005180023.24885.rjw@sisk.pl>
+In-Reply-To: <201005182314.08761.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,42 +21,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Linux PCI <linux-pci@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
+Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 18 May 2010 00:23:24 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+2010/5/18 Rafael J. Wysocki <rjw@sisk.pl>:
+> On Tuesday 18 May 2010, Arve Hj=F8nnev=E5g wrote:
+>> 2010/5/18 Rafael J. Wysocki <rjw@sisk.pl>:
+>> > On Tuesday 18 May 2010, Arve Hj=F8nnev=E5g wrote:
+>> >> On Mon, May 17, 2010 at 2:44 PM, Rafael J. Wysocki <rjw@sisk.pl> wrot=
+e:
+>> >> > On Monday 17 May 2010, Brian Swetland wrote:
+>> >> >> On Mon, May 17, 2010 at 1:40 PM, Rafael J. Wysocki <rjw@sisk.pl> w=
+rote:
+>> >> >> > On Monday 17 May 2010, Arve Hj=F8nnev=E5g wrote:
+>> >> >> >>
+> ...
+>>
+>> > Now, to make it more "user-friendly", we can simply use
+>> > queue_delayed_work() with a reasonable delay instead of queue_work() t=
+o queue
+>> > the suspend work (the delay may be configurable via sysfs).
+>> >
+>>
+>> I can add a delay (and the timeout support code does add a delay as an
+>> optimization) to the unknown wakeup case, but this does not fix the
+>> problem of a user turning on opportunistic suspend with a user space
+>> framework that does not use suspend blockers. If the kernel uses
+>> suspend blockers to make sure the wakeup event makes it to user space,
+>> but user space does not block suspend, then the system will suspend
+>> before the event is processed.
+>
+> But the user can still manually write to /sys/power/state. :-)
+>
 
-> On Monday 17 May 2010, Randy Dunlap wrote:
-> > On 05/16/10 12:49, Rafael J. Wysocki wrote:
-> > > Hi,
-> > > 
-> > > I've just finished rewriting the PCI PM documentation.  I hope I didn't forget
-> > > of anything important, so please let me know if I did.
-> > > 
-> > > Generally, please let me know what you think.
-> > 
-> > Hi,
-> > 
-> > It reads pretty well IMO.
-> > 
-> > I have corrected several typos etc.
-> > I have also noted a need for explaining *why* something is being done,
-> > not just what is being done.
-> 
-> Thanks a lot for the very useful comments.  I did my best to address them all
-> and the modified (and hopefully improved patch) is appended.
-> 
-> > There may be a few other places where some justification is needed
-> > (i.e., would be helpful).
-> 
-> Well, in fact it is quite difficult to me to identify places where such a
-> justification would be useful, because I know how all of this works. :-)
-> Fortunately, the justification is usually given in the other two documents this
-> one refers to.
-> 
+Does adding or removing a delay change this? It seems in only changes
+how quickly the user can finish that write.
 
-Applied, thanks guys.
+I'm not convinced adding a configurable delay here is necessary. Once
+the driver that enabled the wakeup event has been updated to block
+suspend until this event gets to user space, then this delay will
+never be triggered. The kernel cannot tell the difference between a
+user enabling opportunistic suspend but not wanting it and
+opportunistic suspend aware user space code deciding that this wakeup
+event should be ignored.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+-- =
+
+Arve Hj=F8nnev=E5g
