@@ -1,11 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] PM updates for 2.6.35
-Date: Tue, 18 May 2010 22:09:21 +0200
-Message-ID: <201005182209.21774.rjw__11563.4391237565$1274213518$gmane$org@sisk.pl>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 7)
+Date: Tue, 18 May 2010 13:35:45 -0700
+Message-ID: <AANLkTileYiu6pL4eX3lpvpYLuu76A8auZp4xrcDX94BQ__11698.4594533735$1274215095$gmane$org@mail.gmail.com>
+References: <1273810273-3039-1-git-send-email-arve@android.com>
+	<201005172344.46222.rjw@sisk.pl>
+	<AANLkTikENyp0UOKP2NzwjKye1EiZitdE0o4k1Z4ygCsT@mail.gmail.com>
+	<201005182138.04610.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201005182138.04610.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,97 +20,85 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Greg Kroah-Hartman <gregkh@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Jean Delvare <khali@linux-fr.org>, pm list <linux-pm@lists.linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+2010/5/18 Rafael J. Wysocki <rjw@sisk.pl>:
+> On Tuesday 18 May 2010, Arve Hj=F8nnev=E5g wrote:
+>> On Mon, May 17, 2010 at 2:44 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > On Monday 17 May 2010, Brian Swetland wrote:
+>> >> On Mon, May 17, 2010 at 1:40 PM, Rafael J. Wysocki <rjw@sisk.pl> wrot=
+e:
+>> >> > On Monday 17 May 2010, Arve Hj=F8nnev=E5g wrote:
+>> >> >>
+>> >> >> It should get out of that loop as soon as someone blocks suspend. =
+If
+>> >> >> someone is constantly aborting suspend without using a suspend blo=
+cker
+>> >> >> it will be very inefficient, but it should still work.
+>> >> >
+>> >> > Well, the scenario I have in mind is the following. =A0Someone want=
+s to check
+>> >> > the feature and simply writes "opportunistic" to /sys/power/policy =
+and "mem" to
+>> >> > /sys/power/state without any drivers or apps that use suspend block=
+ers.
+>> >> >
+>> >> > How in that case is the system supposed to break out of the suspend=
+-resume loop
+>> >> > resulting from this? =A0I don't see right now, because the main blo=
+cker is
+>> >> > inactive, there are no other blockers that can be activated and it =
+is next to
+>> >> > impossible to write to /sys/power/state again.
+>> >>
+>> >> I guess we could set a flag when a suspend blocker is registered and
+>> >> refuse to enter opportunistic mode if no blockers have ever been
+>> >> registered.
+>> >>
+>> >> It does seem like extra effort to go through to handle a "don't do
+>> >> that" type scenario (entering into opportunistic suspend without
+>> >> anything that will prevent it).
+>> >
+>> > I agree, but I think it's necessary. =A0We shouldn't add interfaces th=
+at hurt
+>> > users if not used with care.
+>> >
+>>
+>> I'm not sure this can be "fixed".
+>
+> Yes, it can, but perhaps a workaround would be sufficient (see below).
+>
+>> The user asked that the system to suspend whenever possible, which is wh=
+at it
+>> is doing. I don't think disabling opportunistic suspend if no suspend
+>> blockers have been registered will work. As soon as we register a suspend
+>> blocker we are back in the same situation.
+>
+> Not really, because the new suspend blocker is not added by the _framewor=
+k_ _itself_.
+>
 
-Please pull power management updates for 2.6.35 from:
+I'm not sure what you mean by this. If we add a workaround that is
+disabled when the first suspend blocker is registered, then we cannot
+add any suspend blockers without disabling the workaround (for
+instance the power supply framework patch later in this patch set).
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
+> Now, to make it more "user-friendly", we can simply use
+> queue_delayed_work() with a reasonable delay instead of queue_work() to q=
+ueue
+> the suspend work (the delay may be configurable via sysfs).
+>
 
-They include:
+I can add a delay (and the timeout support code does add a delay as an
+optimization) to the unknown wakeup case, but this does not fix the
+problem of a user turning on opportunistic suspend with a user space
+framework that does not use suspend blockers. If the kernel uses
+suspend blockers to make sure the wakeup event makes it to user space,
+but user space does not block suspend, then the system will suspend
+before the event is processed.
 
-* Runtime PM improvements from Alan Stern and Dominik Brodowski
+-- =
 
-* Hibernate cleanups from Jiri Slaby
-
-* PM documentation updates from me, Alan Stern and Pavel Machek
-
-* PM QOS update from Mark Gross
-
-* Subsystem PM improvements from Mark Brown and me
-
-
- Documentation/power/devices.txt          |  847 +++++++++++++++++-------------
- Documentation/power/pm_qos_interface.txt |   48 +-
- Documentation/power/userland-swsusp.txt  |    4 +
- drivers/acpi/processor_idle.c            |    2 +-
- drivers/base/platform.c                  |    6 +-
- drivers/base/power/runtime.c             |   10 +-
- drivers/base/power/sysfs.c               |   65 +++-
- drivers/cpuidle/governors/ladder.c       |    2 +-
- drivers/cpuidle/governors/menu.c         |    2 +-
- drivers/i2c/i2c-core.c                   |  166 ++++---
- drivers/net/e1000e/netdev.c              |   22 +-
- drivers/net/igbvf/netdev.c               |    6 +-
- drivers/net/wireless/ipw2x00/ipw2100.c   |   11 +-
- fs/libfs.c                               |   35 ++
- include/linux/fs.h                       |    2 +
- include/linux/netdevice.h                |    4 +
- include/linux/pm_qos_params.h            |   14 +-
- include/linux/pm_runtime.h               |    7 +
- include/linux/pm_wakeup.h                |   38 +-
- include/sound/pcm.h                      |    3 +-
- kernel/cgroup_freezer.c                  |   21 +-
- kernel/pm_qos_params.c                   |  218 ++++----
- kernel/power/Makefile                    |    3 +-
- kernel/power/block_io.c                  |  103 ++++
- kernel/power/power.h                     |   27 +-
- kernel/power/snapshot.c                  |  145 ++----
- kernel/power/swap.c                      |  333 +++++-------
- kernel/power/user.c                      |   37 +-
- net/mac80211/mlme.c                      |    2 +-
- sound/core/pcm.c                         |    3 -
- sound/core/pcm_native.c                  |   14 +-
- 31 files changed, 1251 insertions(+), 949 deletions(-)
-
----------------
-
-Alan Stern (2):
-      PM: Allow runtime_suspend methods to call pm_schedule_suspend()
-      PM: Improve device power management document
-
-Dmitry Torokhov (1):
-      PM: pm_wakeup - switch to using bool
-
-Dominik Brodowski (1):
-      PM / Runtime: Add sysfs debug files
-
-Jiri Slaby (5):
-      FS / libfs: Implement simple_write_to_buffer
-      PM / Hibernate: Snapshot cleanup
-      PM / Hibernate: Separate block_io
-      PM / Hibernate: Move the first_sector out of swsusp_write
-      PM / Hibernate: Group swap ops
-
-Mark Brown (1):
-      PM / platform_bus: Allow runtime PM by default
-
-Mark Gross (2):
-      PM QOS update
-      PM: PM QOS update fix
-
-Matt Helsley (1):
-      Freezer / cgroup freezer: Update stale locking comments
-
-Pavel Machek (1):
-      PM / Hibernate: document open(/dev/snapshot) side effects
-
-Rafael J. Wysocki (2):
-      PM: Update device power management document
-      i2c: Fix bus-level power management callbacks
-
-Randy Dunlap (1):
-      PM / Hibernate: Fix block_io.c printk warning
+Arve Hj=F8nnev=E5g
