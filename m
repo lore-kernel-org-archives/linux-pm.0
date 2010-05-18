@@ -1,14 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
- userspace is frozen?
-Date: Tue, 18 May 2010 16:06:53 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005181558480.1795-100000__30303.5645200454$1274213346$gmane$org@iolanthe.rowland.org>
-References: <201005182143.28004.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [GIT PULL] PM updates for 2.6.35
+Date: Tue, 18 May 2010 22:09:21 +0200
+Message-ID: <201005182209.21774.rjw__11563.4391237565$1274213518$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005182143.28004.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,41 +15,97 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>, linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Matt Reimer <mattjreimer@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Greg Kroah-Hartman <gregkh@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Jean Delvare <khali@linux-fr.org>, pm list <linux-pm@lists.linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 18 May 2010, Rafael J. Wysocki wrote:
+Hi Linus,
 
-> > > So, I think we should merge the patch and if someone finds the root cause
-> > > at one point in future, then we can just use the *right* approach instead of
-> > > the present one.
-> > >
-> > > The problem is real and people in the field are affected by it, so if you don't
-> > > have a working alternative patch, please just let go.
-> > 
-> > I'm not denying that the problem is real. What I am concerned about is 
-> > finding a real solution, not just putting a sticky plaster over the 
-> > wound. It seems to me to be much wiser to deal with the issue properly 
-> > now instead of doing extra work later to diagnose what might be a harder 
-> > to reproduce symptom of the same problem. I'd happily put the time in 
-> > now myself, but I simply don't have the time this week.
-> > 
-> > Would it be possible to apply the patch, adding some sort of new tag 
-> > that can be used to say "This needs further attention", perhaps 
-> > including an enduring reference to this conversation.
+Please pull power management updates for 2.6.35 from:
 
-Isn't there a problem involving filesystems with userspace components 
-(fuse and such)?
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
 
-You can't sync these filesystems after userspace is frozen.  And if you 
-sync everything first, there's a possibility that some more pages will 
-get marked dirty before all the threads are frozen.
+They include:
 
-The only safe course seems to be to freeze the writeback thread.  But 
-Nigel is right; there is a race here.  What happens if del_gendisk is 
-called just as the freezer is starting up?  Clearly, del_gendisk needs 
-to mark the writeback thread as unfreezable in addition to thawing it.  
-And there has to be some synchronization -- a spinlock for example.
+* Runtime PM improvements from Alan Stern and Dominik Brodowski
 
-Alan Stern
+* Hibernate cleanups from Jiri Slaby
+
+* PM documentation updates from me, Alan Stern and Pavel Machek
+
+* PM QOS update from Mark Gross
+
+* Subsystem PM improvements from Mark Brown and me
+
+
+ Documentation/power/devices.txt          |  847 +++++++++++++++++-------------
+ Documentation/power/pm_qos_interface.txt |   48 +-
+ Documentation/power/userland-swsusp.txt  |    4 +
+ drivers/acpi/processor_idle.c            |    2 +-
+ drivers/base/platform.c                  |    6 +-
+ drivers/base/power/runtime.c             |   10 +-
+ drivers/base/power/sysfs.c               |   65 +++-
+ drivers/cpuidle/governors/ladder.c       |    2 +-
+ drivers/cpuidle/governors/menu.c         |    2 +-
+ drivers/i2c/i2c-core.c                   |  166 ++++---
+ drivers/net/e1000e/netdev.c              |   22 +-
+ drivers/net/igbvf/netdev.c               |    6 +-
+ drivers/net/wireless/ipw2x00/ipw2100.c   |   11 +-
+ fs/libfs.c                               |   35 ++
+ include/linux/fs.h                       |    2 +
+ include/linux/netdevice.h                |    4 +
+ include/linux/pm_qos_params.h            |   14 +-
+ include/linux/pm_runtime.h               |    7 +
+ include/linux/pm_wakeup.h                |   38 +-
+ include/sound/pcm.h                      |    3 +-
+ kernel/cgroup_freezer.c                  |   21 +-
+ kernel/pm_qos_params.c                   |  218 ++++----
+ kernel/power/Makefile                    |    3 +-
+ kernel/power/block_io.c                  |  103 ++++
+ kernel/power/power.h                     |   27 +-
+ kernel/power/snapshot.c                  |  145 ++----
+ kernel/power/swap.c                      |  333 +++++-------
+ kernel/power/user.c                      |   37 +-
+ net/mac80211/mlme.c                      |    2 +-
+ sound/core/pcm.c                         |    3 -
+ sound/core/pcm_native.c                  |   14 +-
+ 31 files changed, 1251 insertions(+), 949 deletions(-)
+
+---------------
+
+Alan Stern (2):
+      PM: Allow runtime_suspend methods to call pm_schedule_suspend()
+      PM: Improve device power management document
+
+Dmitry Torokhov (1):
+      PM: pm_wakeup - switch to using bool
+
+Dominik Brodowski (1):
+      PM / Runtime: Add sysfs debug files
+
+Jiri Slaby (5):
+      FS / libfs: Implement simple_write_to_buffer
+      PM / Hibernate: Snapshot cleanup
+      PM / Hibernate: Separate block_io
+      PM / Hibernate: Move the first_sector out of swsusp_write
+      PM / Hibernate: Group swap ops
+
+Mark Brown (1):
+      PM / platform_bus: Allow runtime PM by default
+
+Mark Gross (2):
+      PM QOS update
+      PM: PM QOS update fix
+
+Matt Helsley (1):
+      Freezer / cgroup freezer: Update stale locking comments
+
+Pavel Machek (1):
+      PM / Hibernate: document open(/dev/snapshot) side effects
+
+Rafael J. Wysocki (2):
+      PM: Update device power management document
+      i2c: Fix bus-level power management callbacks
+
+Randy Dunlap (1):
+      PM / Hibernate: Fix block_io.c printk warning
