@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/8] Suspend block api (version 7)
-Date: Tue, 18 May 2010 21:38:04 +0200
-Message-ID: <201005182138.04610.rjw__33010.8703965836$1274211567$gmane$org@sisk.pl>
-References: <1273810273-3039-1-git-send-email-arve@android.com>
-	<201005172344.46222.rjw@sisk.pl>
-	<AANLkTikENyp0UOKP2NzwjKye1EiZitdE0o4k1Z4ygCsT@mail.gmail.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Tue, 18 May 2010 21:39:29 +0200
+Message-ID: <201005182139.29783.rjw@sisk.pl>
+References: <1272667021-21312-1-git-send-email-arve@android.com>
+	<AANLkTinOFSVHnufbVKIei0KMbfkVvDgLVDRHkCldagfY@mail.gmail.com>
+	<4BF23BAC.90102@euromail.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikENyp0UOKP2NzwjKye1EiZitdE0o4k1Z4ygCsT@mail.gmail.com>
+In-Reply-To: <4BF23BAC.90102@euromail.se>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,67 +19,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Henrik Rydberg <rydberg@euromail.se>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Sven Neumann <s.neumann@raumfeld.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Tero Saarni <tero.saarni@gmail.com>, linux-input@vger.kernel.org, linux-pm@lists.linux-foundation.org, Liam Girdwood <lrg@slimlogic.co.uk>, Alexey Dobriyan <adobriyan@gmail.com>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Daniel Mack <daniel@caiaq.de>, Oleg Nesterov <oleg@redhat.com>, linux-omap@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>, Daniel Walker <dwalker@codeaurora.org>, Theodore Ts'o <tytso@mit.edu>, =?iso-8859-1?q?M=E1rton_N=E9meth?= <nm127@freemail.hu>, Brian Swetland <swetland@goo>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 18 May 2010, Arve Hj=F8nnev=E5g wrote:
-> On Mon, May 17, 2010 at 2:44 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Monday 17 May 2010, Brian Swetland wrote:
-> >> On Mon, May 17, 2010 at 1:40 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > On Monday 17 May 2010, Arve Hj=F8nnev=E5g wrote:
-> >> >>
-> >> >> It should get out of that loop as soon as someone blocks suspend. If
-> >> >> someone is constantly aborting suspend without using a suspend bloc=
-ker
-> >> >> it will be very inefficient, but it should still work.
-> >> >
-> >> > Well, the scenario I have in mind is the following.  Someone wants t=
-o check
-> >> > the feature and simply writes "opportunistic" to /sys/power/policy a=
-nd "mem" to
-> >> > /sys/power/state without any drivers or apps that use suspend blocke=
-rs.
-> >> >
-> >> > How in that case is the system supposed to break out of the suspend-=
-resume loop
-> >> > resulting from this?  I don't see right now, because the main blocke=
-r is
-> >> > inactive, there are no other blockers that can be activated and it i=
-s next to
-> >> > impossible to write to /sys/power/state again.
-> >>
-> >> I guess we could set a flag when a suspend blocker is registered and
-> >> refuse to enter opportunistic mode if no blockers have ever been
-> >> registered.
-> >>
-> >> It does seem like extra effort to go through to handle a "don't do
-> >> that" type scenario (entering into opportunistic suspend without
-> >> anything that will prevent it).
-> >
-> > I agree, but I think it's necessary.  We shouldn't add interfaces that =
-hurt
-> > users if not used with care.
-> >
+On Tuesday 18 May 2010, Henrik Rydberg wrote:
+> Arve Hj=F8nnev=E5g wrote:
+> > It does not matter how you enter suspend. Without opportunistic
+> > suspend, once you tell the kernel that you want to suspend, you cannot
+> > abort. If a wakeup event occurs at this point, it will probably not be
+> > processed until the system wakes up for another wakeup event.
+> > =
+
 > =
 
-> I'm not sure this can be "fixed".
+> Since it seems to be at the very core of the argument, how long time does=
+ it
+> take to suspend your system? Is it something that could be improved upon?
 
-Yes, it can, but perhaps a workaround would be sufficient (see below).
+It's not a matter of time.  It's a matter of lost keystrokes and such.
 
-> The user asked that the system to suspend whenever possible, which is wha=
-t it
-> is doing. I don't think disabling opportunistic suspend if no suspend
-> blockers have been registered will work. As soon as we register a suspend
-> blocker we are back in the same situation.
-
-Not really, because the new suspend blocker is not added by the _framework_=
- _itself_.
-
-Now, to make it more "user-friendly", we can simply use
-queue_delayed_work() with a reasonable delay instead of queue_work() to que=
-ue
-the suspend work (the delay may be configurable via sysfs).
-
-Thanks,
 Rafael
