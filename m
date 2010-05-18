@@ -1,22 +1,19 @@
-From: Linus WALLEIJ <linus.walleij@stericsson.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Mon, 17 May 2010 22:53:36 +0200
-Message-ID: <CEE6BB42CAD6E947908279175AF8470A025A726242@EXDCVYMBSTM006.EQ1STM.local>
-References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<87wrvl5479.fsf@deeprootsystems.com>
-	<20100503215028.GB18910@srcf.ucam.org>
-	<alpine.DEB.2.00.1005141408260.3348@utopia.booyaka.com>
-	<20100514203202.GA12409@srcf.ucam.org>
-	<87aas2azc5.fsf@deeprootsystems.com>
-	<20100514231510.GG16989@thunk.org> <87r5laa4oc.fsf@deeprootsystems.com>
-	<AANLkTilL90pYVlquvMDAEPHj_AraEi9Qzk-0tTjw9Bkx@mail.gmail.com>
-	<20100517193440.GA32066@srcf.ucam.org>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 7)
+Date: Tue, 18 May 2010 09:18:12 -0700
+Message-ID: <87tyq5qj3v.fsf__37544.930590275$1274202622$gmane$org@deeprootsystems.com>
+References: <1273810273-3039-1-git-send-email-arve@android.com>
+	<201005142308.48386.rjw@sisk.pl>
+	<AANLkTilX0uhqrJtUSOC4smdH1M8V-h14J7YtRG4PPxOQ@mail.gmail.com>
+	<201005172342.52660.rjw@sisk.pl>
+	<AANLkTilQ5wZ_7fMyDMpUBCtu9oD1Wh22JGllyS1EPlxB@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100517193440.GA32066@srcf.ucam.org>
-Content-Language: en-US
+In-Reply-To: <AANLkTilQ5wZ_7fMyDMpUBCtu9oD1Wh22JGllyS1EPlxB@mail.gmail.com>
+	("Arve =?iso-8859-1?Q?Hj=F8nnev=E5g=22's?= message of "Mon\, 17 May 2010
+	17\:52\:46 -0700")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,36 +23,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg@redhat.com>, Vitaly Wool <vitalywool@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Oleg Nesterov <oleg@redhat.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Daniel Walker <dwalker@codeaurora.org>, "tytso@mit.edu" <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
+To: Arve =?iso-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-[Matthew]
+Arve Hj=F8nnev=E5g <arve@android.com> writes:
 
-> Run this (or equivalent code) on an N900 and on an Android. Measure the
-> screen-off power draw on both.
-> =
+>
+> PM: Opportunistic suspend support.
+>
+> Power management features present in the current mainline kernel are
+> insufficient to get maximum possible energy savings on some platforms,
+> such as Android, because low power states can only safely be entered
+> from idle.  Suspend, in its current form, cannot be used, since wakeup
+> events that occur right after initiating suspend will not be processed
+> until another possibly unrelated event wake up the system again.
 
-> int main() {
-> 	int i;
-> 	while (1)
-> 		i++;
-> 	return 0;
-> }
+I think the problems with wakeups in the current suspend path need to
+be described in more detail.  In particular, why check_wakeup_irqs()
+is not enough etc.
 
-I understand the problem such that the scheduler cannot determine whether
-a certain process should be allowed to schedule or not.
+> On some systems idle combined with runtime PM can enter the same power
+> state as suspend, but periodic wakeups increase the average power
+> consumption. Suspending the system also reduces the harm caused by
+> apps that never go idle. On other systems suspend can enter a much
+> lower power state than idle.
+>
+> To allow Android and similar platforms to save more energy than they
+> currently can save using the mainline kernel, we introduce a mechanism
+> by which the system is automatically suspended (i.e. put into a
+> system-wide sleep state) whenever it's not doing useful work, called
+> opportunistic suspend.
 
-It strikes me that the intuitive solution is to group all un-trusted =
+A definition of "useful work" here would provide clarity and would
+also help clarify by what criteria other on-going work is determined
+to be not useful.
 
-processes/threads/tasks that need to be shut off even if they are
-scheduling into a control group and let the idle code ignore the
-processes in this group.
-
-Or is there something too na=EFve about this?
-
-Android is already using control groups to give some processes an
-extra share of CPU and some less IIRC.
-
-Yours,
-Linus Walleij
+Kevin
