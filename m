@@ -1,18 +1,23 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 7)
-Date: Tue, 18 May 2010 17:00:21 -0700
-Message-ID: <AANLkTinXyoHb8g597NW60rXuAvQBffNeG0Gvcjz8AGrq__36639.548399444$1274227285$gmane$org@mail.gmail.com>
-References: <1273810273-3039-1-git-send-email-arve@android.com>
-	<201005142308.48386.rjw@sisk.pl>
-	<AANLkTilX0uhqrJtUSOC4smdH1M8V-h14J7YtRG4PPxOQ@mail.gmail.com>
-	<201005172342.52660.rjw@sisk.pl>
-	<AANLkTilQ5wZ_7fMyDMpUBCtu9oD1Wh22JGllyS1EPlxB@mail.gmail.com>
-	<87tyq5qj3v.fsf@deeprootsystems.com>
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Wed, 19 May 2010 09:59:34 +0300
+Message-ID: <20100519065934.GH12879__23784.4714582481$1274253867$gmane$org@nokia.com>
+References: <1274115885.4418.59.camel@mulgrave.site>
+	<20100517174647.GA11512@gandalf>
+	<1274119179.4418.68.camel@mulgrave.site>
+	<20100517181252.GA14260@gandalf>
+	<1274124267.4418.149.camel@mulgrave.site>
+	<20100517193840.GB14047@gandalf> <20100517193952.GC14047@gandalf>
+	<1274125775.4418.182.camel@mulgrave.site>
+	<20100518064022.GA6522@nokia.com>
+	<1274191188.10304.5.camel@mulgrave.site>
+Reply-To: felipe.balbi@nokia.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87tyq5qj3v.fsf@deeprootsystems.com>
+Content-Disposition: inline
+In-Reply-To: <1274191188.10304.5.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,54 +27,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
+To: ext James Bottomley <James.Bottomley@suse.de>
+Cc: Matthew Garrett <mjg@redhat.com>, "me@felipebalbi.com" <me@felipebalbi.com>, Theodore Ts'o <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Kernel development list <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-2010/5/18 Kevin Hilman <khilman@deeprootsystems.com>:
-> Arve Hj=F8nnev=E5g <arve@android.com> writes:
->
+On Tue, May 18, 2010 at 03:59:48PM +0200, ext James Bottomley wrote:
+>On Tue, 2010-05-18 at 09:40 +0300, Felipe Balbi wrote:
+>> On Mon, May 17, 2010 at 09:49:35PM +0200, ext James Bottomley wrote:
+>> >Right, because Firmware writers are from the rugged unresponsive uplands
+>> >of planet
+>> >ignore-user-complaints-and-eat-them-for-breakfast-if-they-file-bugs and
+>> >Software writers are from the emollient responsive groves of planet
+>> >harmony.  Obviously what would work for one wouldn't work for the other.
+>> >
+>> >As a software writer, I fully buy into that world view.  The trouble is
+>> >that when I go to dinner with hardware people, they seem to be awfully
+>> >nice chaps ... almost exactly like me, in fact ...
 >>
->> PM: Opportunistic suspend support.
->>
->> Power management features present in the current mainline kernel are
->> insufficient to get maximum possible energy savings on some platforms,
->> such as Android, because low power states can only safely be entered
->> from idle. =A0Suspend, in its current form, cannot be used, since wakeup
->> events that occur right after initiating suspend will not be processed
->> until another possibly unrelated event wake up the system again.
+>> what does this add to suspend_blockers discussion ?
 >
-> I think the problems with wakeups in the current suspend path need to
-> be described in more detail. =A0In particular, why check_wakeup_irqs()
-> is not enough etc.
+>Sorry I was evidently being too subtle.
 >
+>The point is that if, as you acknowledge, that you can't train firmware
+>engineers to be responsive, there's no reason to think you can train
+>software engineers in the same quality ... they're very similar people.
 
-check_wakeup_irqs only handles interrupts that occurred after the
-interrupt was masked during suspend. If the interrupt occurred before
-it was masked, it will not be pending when check_wakeup_irqs is
-called.
+I wouldn't say it's up to the engineer himself, it's more related to how 
+the company that person works for deal with such things.
 
->> On some systems idle combined with runtime PM can enter the same power
->> state as suspend, but periodic wakeups increase the average power
->> consumption. Suspending the system also reduces the harm caused by
->> apps that never go idle. On other systems suspend can enter a much
->> lower power state than idle.
->>
->> To allow Android and similar platforms to save more energy than they
->> currently can save using the mainline kernel, we introduce a mechanism
->> by which the system is automatically suspended (i.e. put into a
->> system-wide sleep state) whenever it's not doing useful work, called
->> opportunistic suspend.
->
-> A definition of "useful work" here would provide clarity and would
-> also help clarify by what criteria other on-going work is determined
-> to be not useful.
->
-> Kevin
->
+>The corollary is that real world systems have to operate in the face of
+>misbehaving hardware *and* software.
 
+I still think the kernel shouldn't deal with broken applications and we 
+shouldn't try to fix them in kernel space. We can, of course, try to 
+find them and have all sorts of bells and whistles shouting 'process 
+%s is preventing CPU from sleeping for %llu nanoseconds' or something 
+like that.
 
+-- 
+balbi
 
--- =
-
-Arve Hj=F8nnev=E5g
+DefectiveByDesign.org
