@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/8] Suspend block api (version 7)
-Date: Wed, 19 May 2010 22:40:39 +0200
-Message-ID: <201005192240.39803.rjw__26489.5629058175$1274301821$gmane$org@sisk.pl>
-References: <1273810273-3039-1-git-send-email-arve@android.com>
-	<201005190056.36804.rjw@sisk.pl>
-	<AANLkTikc9MmR_r1NkdCwDaPD4kJa9l9KUwcWAxilcs3l@mail.gmail.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Wed, 19 May 2010 22:42:55 +0200
+Message-ID: <201005192242.55706.rjw__32318.7063252137$1274301945$gmane$org@sisk.pl>
+References: <1274115885.4418.59.camel@mulgrave.site>
+	<1274191188.10304.5.camel@mulgrave.site>
+	<20100519065934.GH12879@nokia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikc9MmR_r1NkdCwDaPD4kJa9l9KUwcWAxilcs3l@mail.gmail.com>
+In-Reply-To: <20100519065934.GH12879@nokia.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,78 +19,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Brian Swetland <swetland@google.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: felipe.balbi@nokia.com
+Cc: Matthew Garrett <mjg@redhat.com>, "me@felipebalbi.com" <me@felipebalbi.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Kernel development list <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 19 May 2010, Arve Hj=F8nnev=E5g wrote:
-> 2010/5/18 Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Wednesday 19 May 2010, Arve Hj=F8nnev=E5g wrote:
-> >> 2010/5/18 Rafael J. Wysocki <rjw@sisk.pl>:
-> >> > On Tuesday 18 May 2010, Arve Hj=F8nnev=E5g wrote:
-> >> >> 2010/5/18 Rafael J. Wysocki <rjw@sisk.pl>:
-> >> >> > On Tuesday 18 May 2010, Arve Hj=F8nnev=E5g wrote:
-> >> >> >> On Mon, May 17, 2010 at 2:44 PM, Rafael J. Wysocki <rjw@sisk.pl>=
- wrote:
-> >> >> >> > On Monday 17 May 2010, Brian Swetland wrote:
-> >> >> >> >> On Mon, May 17, 2010 at 1:40 PM, Rafael J. Wysocki <rjw@sisk.=
-pl> wrote:
-> >> >> >> >> > On Monday 17 May 2010, Arve Hj=F8nnev=E5g wrote:
-> >> >> >> >> >>
-> >> > ...
-> >> >>
-> >> >> > Now, to make it more "user-friendly", we can simply use
-> >> >> > queue_delayed_work() with a reasonable delay instead of queue_wor=
-k() to queue
-> >> >> > the suspend work (the delay may be configurable via sysfs).
-> >> >> >
-> >> >>
-> >> >> I can add a delay (and the timeout support code does add a delay as=
- an
-> >> >> optimization) to the unknown wakeup case, but this does not fix the
-> >> >> problem of a user turning on opportunistic suspend with a user space
-> >> >> framework that does not use suspend blockers. If the kernel uses
-> >> >> suspend blockers to make sure the wakeup event makes it to user spa=
-ce,
-> >> >> but user space does not block suspend, then the system will suspend
-> >> >> before the event is processed.
+On Wednesday 19 May 2010, Felipe Balbi wrote:
+> On Tue, May 18, 2010 at 03:59:48PM +0200, ext James Bottomley wrote:
+> >On Tue, 2010-05-18 at 09:40 +0300, Felipe Balbi wrote:
+> >> On Mon, May 17, 2010 at 09:49:35PM +0200, ext James Bottomley wrote:
+> >> >Right, because Firmware writers are from the rugged unresponsive uplands
+> >> >of planet
+> >> >ignore-user-complaints-and-eat-them-for-breakfast-if-they-file-bugs and
+> >> >Software writers are from the emollient responsive groves of planet
+> >> >harmony.  Obviously what would work for one wouldn't work for the other.
 > >> >
-> >> > But the user can still manually write to /sys/power/state. :-)
-> >> >
+> >> >As a software writer, I fully buy into that world view.  The trouble is
+> >> >that when I go to dinner with hardware people, they seem to be awfully
+> >> >nice chaps ... almost exactly like me, in fact ...
 > >>
-> >> Does adding or removing a delay change this? It seems in only changes
-> >> how quickly the user can finish that write.
+> >> what does this add to suspend_blockers discussion ?
 > >
-> > Yes, but that should allow the user to avoid rebooting the system if he=
- does
-> > the "wrong thing".
+> >Sorry I was evidently being too subtle.
 > >
-> >> I'm not convinced adding a configurable delay here is necessary.
-> >
-> > No, it's not, but it would be useful in some cases IMO.  Pretty much th=
-e same
-> > way your debug features are useful.
-> >
-> >> Once the driver that enabled the wakeup event has been updated to block
-> >> suspend until this event gets to user space, then this delay will
-> >> never be triggered. The kernel cannot tell the difference between a
-> >> user enabling opportunistic suspend but not wanting it and
-> >> opportunistic suspend aware user space code deciding that this wakeup
-> >> event should be ignored.
-> >
-> > The point is, if there's a delay, it may be too aggressive for some use=
-rs and
-> > too conservative for some other users, so it makes sense to provide a m=
-eans
-> > to adjust it to the user's needs.
-> >
-> =
+> >The point is that if, as you acknowledge, that you can't train firmware
+> >engineers to be responsive, there's no reason to think you can train
+> >software engineers in the same quality ... they're very similar people.
+> 
+> I wouldn't say it's up to the engineer himself, it's more related to how 
+> the company that person works for deal with such things.
+> 
+> >The corollary is that real world systems have to operate in the face of
+> >misbehaving hardware *and* software.
+> 
+> I still think the kernel shouldn't deal with broken applications and we 
+> shouldn't try to fix them in kernel space. We can, of course, try to 
+> find them and have all sorts of bells and whistles shouting 'process 
+> %s is preventing CPU from sleeping for %llu nanoseconds' or something 
+> like that.
 
-> My point is that the delay will not be used at all if the driver uses
-> a suspend blocker (like it should). Why add a configuration option for
-> opportunistic suspend that only works when the driver does not support
-> opportunistic suspend.
-
-Because on many systems there are no such drivers (yet, at least).
+Please note that this approach is not too practical for vendors who ship
+systems like cell phones to the general public.
 
 Rafael
