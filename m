@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/8] Suspend block api (version 7)
-Date: Fri, 21 May 2010 00:21:15 +0200
-Message-ID: <201005210021.15420.rjw__40463.4451763288$1274394256$gmane$org@sisk.pl>
-References: <1273810273-3039-1-git-send-email-arve@android.com>
-	<201005192239.25892.rjw@sisk.pl>
-	<AANLkTimoU9BrzbAl7q-LZzGeRolO7gUKBoGjkPWtWn1G@mail.gmail.com>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Fri, 21 May 2010 00:27:31 +0200
+Message-ID: <201005210027.31910.rjw__40346.1390677423$1274394416$gmane$org@sisk.pl>
+References: <1272429119-12103-1-git-send-email-arve@android.com>
+	<20100430172618.GA9043@redhat.com> <4BF4F31D.8070900@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTimoU9BrzbAl7q-LZzGeRolO7gUKBoGjkPWtWn1G@mail.gmail.com>
+In-Reply-To: <4BF4F31D.8070900@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,70 +18,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 19 May 2010, Arve Hj=F8nnev=E5g wrote:
-...
-> PM: Opportunistic suspend support.
-> =
+On Thursday 20 May 2010, Tejun Heo wrote:
+> Hello,
+> 
+> (sorry about late reply)
+> 
+> On 04/30/2010 07:26 PM, Oleg Nesterov wrote:
+> > Currently _cpu_down() can't flush and/or stop the frozen cwq->thread.
+> > 
+> > IIRC this is fixable, but needs the nasty complications. We should
+> > thaw + stop the frozen cwq->thread, then move the pending works to
+> > another CPU.
+> 
+> Oh, this isn't an issue w/ cmwq.  While frozen all new works are
+> collected into per-cpu delayed worklist and while frozen trustee in
+> charge of the cpu will keep waiting.  Once thawed, trustee will
+> execute all works including the delayed ones unbound to any cpu.
 
-> Power management features present in the current mainline kernel are
-> insufficient to get maximum possible energy savings on some platforms,
-> such as Android.  The problem is that to save maximum amount of energy
-> all system hardware components need to be in the lowest-power states
-> available for as long as reasonably possible, but at the same time the
-> system must always respond to certain events, regardless of the
-> current state of the hardware.
-> =
+So, does it require any intrusive changes to make it possible to create
+multithread freezable workqueues?
 
-> The first goal can be achieved either by using device runtime PM and
-> cpuidle to put all hardware into low-power states, transparently from
-> the user space point of view, or by suspending the whole system.
-> However, system suspend, in its current form, does not guarantee that
-> the events of interest will always be responded to, since wakeup
-> events (events that wake the CPU from idle and the system from
-> suspend) that occur right after initiating suspend will not be
-> processed until another possibly unrelated event wakes the system up
-> again.
-> =
-
-> On hardware where idle can enter the same power state as suspend, idle
-> combined with runtime PM can be used, but periodic wakeups increase
-> the average power consumption. Suspending the system also reduces the
-> harm caused by apps that never go idle. There also are systems where
-> some devices cannot be put into low-power states without suspending
-> the entire system (or the low-power states available to them without
-> suspending the entire system are substantially shallower than the
-> low-power states they are put into when the entire system is
-> suspended), so the system has to be suspended as a whole to achieve
-> the maximum energy savings.
-> =
-
-> To allow Android and similar platforms to save more energy than they
-> currently can save using the mainline kernel, introduce a mechanism by
-> which the system is automatically suspended (i.e. put into a
-> system-wide sleep state) whenever it's not doing work that's
-> immediately useful to the user, called opportunistic suspend.
-> =
-
-> For this purpose introduce the suspend blockers framework allowing the
-> kernel's power management subsystem to decide when it is desirable to
-> suspend the system (i.e. when the system is not doing anything the
-> user really cares about at the moment and therefore it may be
-> suspended). Add an API that that drivers can use to block
-> opportunistic suspend. This is needed to avoid losing wakeup events
-> that occur right after suspend is initiated.
-> =
-
-> Add /sys/power/policy that selects the behavior of /sys/power/state.
-> After setting the policy to opportunistic, writes to /sys/power/state
-> become non-blocking requests that specify which suspend state to enter
-> when no suspend blockers are active. A special state, "on", stops the
-> process by activating the "main" suspend blocker.
-
-That looks good to me.
-
-Thanks,
 Rafael
