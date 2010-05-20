@@ -1,16 +1,21 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 7)
-Date: Wed, 19 May 2010 14:34:56 -0700
-Message-ID: <AANLkTimoU9BrzbAl7q-LZzGeRolO7gUKBoGjkPWtWn1G__6390.05470225147$1274305082$gmane$org@mail.gmail.com>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Wed, 19 May 2010 17:35:42 -0700
+Message-ID: <AANLkTinBFqO_QnGxYqGIk3PXA9Hp0JrST_oVwJ_yDeZQ@mail.gmail.com>
 References: <1273810273-3039-1-git-send-email-arve@android.com>
-	<201005190119.07710.rjw@sisk.pl>
-	<AANLkTimFbvbDZdAFFTk0VCYhDtDk9B_LcEO60ZP70vjS@mail.gmail.com>
-	<201005192239.25892.rjw@sisk.pl>
+	<1273810273-3039-2-git-send-email-arve@android.com>
+	<alpine.DEB.2.00.1005140023220.3348@utopia.booyaka.com>
+	<AANLkTimghkjR5PaWdOpJFM7jeq8vFpEAcF9DhgEW0hCK@mail.gmail.com>
+	<alpine.DEB.2.00.1005172011310.27473@utopia.booyaka.com>
+	<AANLkTikybZSgsmcORpfptOrK__57sl71896JV-01OilQ@mail.gmail.com>
+	<alpine.DEB.2.00.1005172115020.27473@utopia.booyaka.com>
+	<AANLkTikKfyvHQVoY93u6-yK5V9RHzWdVcX73bpiD6Vdp@mail.gmail.com>
+	<alpine.DEB.2.00.1005190936560.27473@utopia.booyaka.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005192239.25892.rjw@sisk.pl>
+In-Reply-To: <alpine.DEB.2.00.1005190936560.27473@utopia.booyaka.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,342 +25,209 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Liam Girdwood <lrg@slimlogic.co.uk>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Oleg Nesterov <oleg@redhat.com>, linux-omap@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>, Daniel Walker <dwalker@codeaurora.org>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-2010/5/19 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Wednesday 19 May 2010, Arve Hj=F8nnev=E5g wrote:
->> 2010/5/18 Rafael J. Wysocki <rjw@sisk.pl>:
->> > On Wednesday 19 May 2010, Arve Hj=F8nnev=E5g wrote:
->> >> 2010/5/18 Rafael J. Wysocki <rjw@sisk.pl>:
->> >> > On Wednesday 19 May 2010, Arve Hj=F8nnev=E5g wrote:
->> >> >> 2010/5/18 Rafael J. Wysocki <rjw@sisk.pl>:
->> >> >> > On Tuesday 18 May 2010, Arve Hj=F8nnev=E5g wrote:
->> >> >> >> 2010/5/18 Rafael J. Wysocki <rjw@sisk.pl>:
->> >> >> >> > On Tuesday 18 May 2010, Arve Hj=F8nnev=E5g wrote:
->> >> >> >> >> 2010/5/17 Rafael J. Wysocki <rjw@sisk.pl>:
->> >> >> >> >> > On Monday 17 May 2010, Arve Hj=F8nnev=E5g wrote:
->> >> >> >> >> >> 2010/5/14 Rafael J. Wysocki <rjw@sisk.pl>:
->> >> >> >> >> >> > On Friday 14 May 2010, Arve Hj=F8nnev=E5g wrote:
->> >> >> >> >> >> >> This patch series adds a suspend-block api that provid=
-es the same
->> >> >> >> >> >> >> functionality as the android wakelock api. This versio=
-n has some
->> >> >> >> >> >> >> changes from, or requested by, Rafael. The most notabl=
-e changes are:
->> >> >> >> >> >> >> - DEFINE_SUSPEND_BLOCKER and suspend_blocker_register =
-have been added
->> >> >> >> >> >> >> =A0 for statically allocated suspend blockers.
->> >> >> >> >> >> >> - suspend_blocker_destroy is now called suspend_blocke=
-r_unregister
->> >> >> >> >> >> >> - The user space mandatory _INIT ioctl has been replac=
-ed with an
->> >> >> >> >> >> >> =A0 optional _SET_NAME ioctl.
->> >> >> >> >> >> >>
->> >> >> >> >> >> >> I kept the ack and reviewed by tags on two of the patc=
-hes even though
->> >> >> >> >> >> >> there were a few cosmetic changes.
->> >> >> >> >> >> >
->> >> >> >> >> >> > Thanks for the patches, I think they are in a pretty go=
-od shape now.
->> >> >> >> >> >> >
->> >> >> >> >> >> > That said, I'd like the changelogs to be a bit more des=
-criptive, at least for
->> >> >> >> >> >> > patch [1/8]. =A0I think it should explain (in a few wor=
-ds) what the purpose of
->> >> >> >> >> >> > the feature is and what problems it solves that general=
-ly a combination of
->> >> >> >> >> >> > runtime PM and cpuidle is not suitable for in your opin=
-ion. =A0IOW, why you
->> >> >> >> >> >> > think we need that feature.
->> >> >> >> >> >> >
->> >> >> >> >> >>
->> >> >> >> >> >> How about:
->> >> >> >> >> >>
->> >> >> >> >> >> PM: Add opportunistic suspend support.
->> >> >> >> >> >
->> >> >> >> >> > "PM: Opportunistic suspend support" would be sufficient IM=
-O.
->> >> >> >> >> >
->> >> >> >> >> > Now, I'd start with the motivation. =A0Like "Power managem=
-ent features present
->> >> >> >> >> > in the current mainline kernel are insufficient to get max=
-imum possible energy
->> >> >> >> >> > savings on some platforms, such as Android, because ..." (=
-here go explanations
->> >> >> >> >> > why this is the case in your opinion).
->> >> >> >> >> >
->> >> >> >> >> > Next, "To allow Android and similar platforms to save more=
- energy than they
->> >> >> >> >> > currently can save using the mainline kernel, introduce a =
-mechanism by which
->> >> >> >> >> > the system is automatically suspended (i.e. put into a sys=
-tem-wide sleep state)
->> >> >> >> >> > whenever it's not doing useful work, called opportunistic =
-suspend".
->> >> >> >> >> >
->> >> >> >> >> > "For this purpose introduce the suspend blockers framework=
- allowing the
->> >> >> >> >> > kernel's power management subsystem to decide when it is d=
-esirable to suspend
->> >> >> >> >> > the system (i.e. when useful work is not being done). =A0A=
-dd an API that ..."
->> >> >> >> >> >
->> >> >> >> >>
->> >> >> >> >> PM: Opportunistic suspend support.
->> >> >> >> >>
->> >> >> >> >> Power management features present in the current mainline ke=
-rnel are
->> >> >> >> >> insufficient to get maximum possible energy savings on some =
-platforms,
->> >> >> >> >> such as Android, because low power states can only safely be=
- entered
->> >> >> >> >> from idle.
->> >> >> >> >
->> >> >> >> > Do you mean CPU low-power states or system low-power states h=
-ere?
->> >> >> >> >
->> >> >> >> I think either.
+On Wed, May 19, 2010 at 8:55 AM, Paul Walmsley <paul@pwsan.com> wrote:
+> Hi Arve,
+>
+> On Mon, 17 May 2010, Arve Hj=F8nnev=E5g wrote:
+>
+>> On Mon, May 17, 2010 at 8:34 PM, Paul Walmsley <paul@pwsan.com> wrote:
+>> > On Mon, 17 May 2010, Arve Hj=F8nnev=E5g wrote:
+>> >> On Mon, May 17, 2010 at 7:17 PM, Paul Walmsley <paul@pwsan.com> wrote:
+>> >> > On Fri, 14 May 2010, Arve Hj=F8nnev=E5g wrote:
+>> >> >> On Thu, May 13, 2010 at 11:27 PM, Paul Walmsley <paul@pwsan.com> w=
+rote:
+>> >> >> > On Thu, 13 May 2010, Arve Hj=F8nnev=E5g wrote:
 >> >> >> >
->> >> >> > The statement is not true for system low-power states (or sleep =
-states),
->> >> >> > because generally (ie. on many platforms) they aren't entered fr=
-om idle.
->> >> >> > Suspend is for entering them.
+>> >> >> >> Adds /sys/power/policy that selects the behaviour of /sys/power=
+/state.
+>> >> >> >> After setting the policy to opportunistic, writes to /sys/power=
+/state
+>> >> >> >> become non-blocking requests that specify which suspend state t=
+o enter
+>> >> >> >> when no suspend blockers are active. A special state, "on", sto=
+ps the
+>> >> >> >> process by activating the "main" suspend blocker.
+>> >> >> >>
+>> >> >> >> Signed-off-by: Arve Hj=F8nnev=E5g <arve@android.com>
 >> >> >> >
->> >> >> I don't think that makes my statement false. If you can only safely
->> >> >> enter low power states from idle, but some low power states cannot=
- be
->> >> >> entered from idle, then it follows that you cannot safely enter th=
-ose
->> >> >> low power states.
->> >> >
->> >> > Define "safely", then.
->> >> >
->> >> OK. Is this clearer:
->> >
->> > Not really.
->> >
->> >> Power management features present in the current mainline kernel are
->> >> insufficient to get maximum possible energy savings on some platforms,
->> >> such as Android, because some wakeup events must work at all times
->> >> which means that low power states can only safely be entered from idl=
-e.
->> >
->> > It's not clear what you mean by "some wakeup events must work at all t=
-imes"
->> > and what "safely" means.
->> >
->> >> Suspend, in its current form, cannot be used, since wakeup events that
->> >> occur right after initiating suspend will not be processed until anot=
-her
->> >> possibly unrelated event wake up the system again.
->> >
->> > Well, I _guess_ I know what you're trying to say, but I'm not sure if =
-that's
->> > the core of the problem the patchset is supposed to address.
->> >
->> > The problem, as I see it, is really two-fold.
->> >
->> > First, to save as much energy as reasonably possible you need to put e=
-verything
->> > except for memory (ie. I/O devices and CPUs) into low-power states and=
- let that
->> > stay in these low-power states for as long as reasonably possible, rig=
-ht?
->>
->> Memory should also be in a low power state, but yes, everything should
->> be in the lowest power possible state for as long as possible.
->>
->> >
->> > Second, you need the system to _always_ respond to some _specific_ eve=
-nts
->> > regardless of its current state, correct?
->> >
->> > Now, at present, we can put I/O devices and the CPU into low-power sta=
-tes
->> > at the same time in two ways: (1) by using runtime PM and cpuidle and =
-(2) by
->> > suspending the system. =A0Unfortunately, none of these approaches is i=
-deal,
->> > because (1) is vulnerable to periodic timers and polling apps (and CPU=
--bound
->> > apps) and (2) doesn't guarantee that all events you care about will be
->> > responded to.
->> >
->> > The proposed solution is to use suspend with an additional mechanism t=
-hat
->> > will prevent the events that have to be responded to from being lost. =
-=A0This
->> > additional mechanism is suspend blockers.
->> >
->> > Is this correct?
->>
->> Yes.
->>
->> >
->> >> >> > So, there is a difference and the explanation can go like this: =
-"... to achieve
->> >> >> > maximum energy savings one has to put all I/O devices and the CP=
-U into
->> >> >> > low-power states, but the CPU can only be put into a low-power s=
-tate from
->> >> >> > idle. =A0This, in turn, means that the CPU leaves the low-power =
-state on
->> >> >> > interrupts triggered by periodic timers and user space processes=
- that use
->> >> >> > polling. =A0It turns out, however, that many of these events cau=
-sing the CPU to
->> >> >> > leave the low-power state aren't essential for the desired syste=
-m functionality
->> >> >> > and from the power management point of view it would be better i=
-f they didn't
->> >> >> > occur".
+>> >> >> > Looking at the way that suspend-blocks are used in the current A=
+ndroid
+>> >> >> > 'msm' kernel tree[1], they seem likely to cause layering violati=
+ons,
+>> >> >> > fragile kernel code with userspace dependencies, and code that c=
+onsumes
+>> >> >> > power unnecessarily.
+>> >> >> >
+>> >> >> > For example, in drivers/mmc/core/core.c:721, in mmc_rescan() [2]=
+, we find
+>> >> >> > the following code:
+>> >> >> >
+>> >> >> > =A0 =A0 =A0 =A0/* give userspace some time to react */
+>> >> >> > =A0 =A0 =A0 =A0wake_lock_timeout(&mmc_delayed_work_wake_lock, HZ=
+ / 2);
+>> >> >> >
+>> >> >> > This is a layering violation. =A0The MMC subsystem should have n=
+othing to do
+>> >> >> > with "giving userspace time to react." =A0That is the responsibi=
+lity of the
+>> >> >> > Linux scheduler.
+>> >> >> >
+>> >> >> > This code is also intrinsically fragile and use-case dependent. =
+=A0What if
+>> >> >> > userspace occasionally needs more than (HZ / 2) to react? =A0If =
+the
+>> >> >> > distributor is lucky enough to catch this before the product shi=
+ps, then
+>> >> >> > the distributor can patch in a new magic number. =A0But if the d=
+evice makes
+>> >> >> > it to the consumer, the result is an unstable device that unpred=
+ictably
+>> >> >> > suspends.
+>> >> >> >
+>> >> >> > The above code will also waste power. =A0Even if userspace takes=
+ less than
+>> >> >> > (HZ / 2) to react, the system will still be prevented from enter=
+ing a
+>> >> >> > system-wide low power state for the duration of the remaining ti=
+me. =A0This
+>> >> >> > is in contrast to an approach that uses the idle loop to enter a
+>> >> >> > system-wide low power state. =A0The moment that the system has n=
+o further
+>> >> >> > work to do, it can start saving power.
+>> >> >> >
 >> >> >>
->> >> >> This only explain why we still want to use suspend on systems that=
- can
->> >> >> enter the same power states from idle and suspend.
+>> >> >> Yes, preventing suspend for 1/2 second wastes some power, but are =
+you
+>> >> >> seriously suggesting that it wastes more power then never suspendi=
+ng?
+>> >> >> Opportunitic suspend does not prevent entering low power modes from
+>> >> >> idle.
 >> >> >
->> >> > Sorry, I'm confused now. =A0Isn't that why you do that on Android?
+>> >> > Sorry, my E-mail was unclear. =A0Here is my intended point:
+>> >> >
+>> >> > The current Android opportunistic suspend governor does not enter f=
+ull
+>> >> > system suspend until all suspend-blocks are released. =A0If the gov=
+ernor
+>> >> > were modified to respect the scheduler, then it could enter suspend=
+ the
+>> >> > moment that the system had no further work to do.
 >> >> >
 >> >>
->> >> Yes, but it is not the only reason to use opportunistic support. It is
->> >> way more important to have opportunistic suspend support if the
->> >> hardware can enter lower power states from suspend than idle.
+>> >> On the hardware that shipped we enter the same power state from idle
+>> >> and suspend, so the only power savings we get from suspend that we
+>> >> don't get in idle is from not respecting the scheduler and timers.
 >> >
->> > Sure, but you can add something like "There also are systems where some
->> > devices cannot be put into low-power states without suspending the ent=
-ire
->> > system (or the low-power states available to them without suspending t=
-he
->> > entire system are substantially shallower than the low-power states th=
-ey are
->> > put into when the entire system is suspended), so the system have to be
->> > suspended as a whole to achieve the maximum energy savings".
+>> > Other people
+>> > say that their hardware XXX. =A0(This is probably likely for anything =
+that
+>> > supports ACPI.)
+>
+> Heh, looks like this part of my E-mail escaped a little too early.
+>
+>> >> > So during part of the (HZ / 2) time interval in the above code, the=
+ system
+>> >> > is running some kernel or userspace code. =A0But after that work is=
+ done, an
+>> >> > idle-loop-based opportunistic suspend governor could enter idle dur=
+ing
+>> >> > the remaining portion of that (HZ / 2) time interval, while the cur=
+rent
+>> >> > governor must keep the system out of suspend.
+>> >> >
+>> >> Triggering a full suspend (that disregards normal timers) from idle
+>> >> does not work, since the system may temporarily enter idle while
+>> >> processing the event.
+>> >
+>> > Could you provide an example?
+>>
+>> The code takes a pagefault. The system is idle while waiting for the
+>> dma to finish.
+>
+> OK.
+>
+>> > In such a case, how can the kernel guarantee that the system will proc=
+ess
+>> > the event within (HZ / 2) seconds?
+>>
+>> It can't, but in my opinion if the event did not start processing in
+>> 1/2 second it was probably not time critical.
+>
+> Thanks for the correction regarding the unit of the time interval.
+>
+> To use the pagefault example, wouldn't that be partially dependent on
+> factors outside the control of the task that handles the input event?
+> (e.g., the time needed to page back in, or other code running on the
+> system.)
+>
+Yes (we don't need any timeouts to handle input events though).
+
+>> >> > Of course, to do this, a different method for freezing processes wo=
+uld be
+>> >> > needed; one possible approach is described here[1]; others have pro=
+posed
+>> >> > similar approaches.
+>> >>
+>> >> If you freeze processes you need something like a suspend blocker to
+>> >> prevent processes from being frozen.
+>> >
+>> > (It occurs to me that "frozen" is the wrong terminology to use.
+>> > =A0Perhaps "paused" would be a better term, along the lines of [1].)
+>> >
+>> > The full set of processes does not need to be paused. =A0For example, =
+if
+>> > "untrusted" processes are run in a cgroup, and only tasks in that cgro=
+up
+>> > are put into TASK_INTERRUPTIBLE, then "trusted" processes will not be
+>> > paused.
+>>
+>> We want to freeze trusted processes.
+>
+> By "trusted," I mean processes that are run with a suspend block, as in
+> your example to Tony[1]. =A0Isn't it so that Android has processes that
+> either run entirely under suspend-blocks, or which take suspend-blocks at
+> some point in time during their execution? =A0Wouldn't those processes ne=
+ed
+> to be prevented from a force-pause or force-freeze?
+>
+We don't freeze processes while any suspend blockers are active.
+
+>> >> By having a process that never gets frozen you could implement this
+>> >> entirely in user space, but you would have to funnel all wakeup events
+>> >> though this process.
+>> >
+>> > The proposal[2] does require a kernel change. =A0No wakeup funnel proc=
+ess
+>> > would be needed. =A0The proposal is to put processes into
+>> > TASK_INTERRUPTIBLE, not TASK_STOPPED (unlike most "freezers").
 >> >
 >>
->> Does this work for you:
+>> Why is the method used for pausing the processes relevant? If the
+>> process is paused it cannot process the wakeup event.
 >
-> Well, almost.
+> Tasks in TASK_INTERRUPTIBLE are woken back up when an event arrives,
+
+So you are not actually preventing them from. A task that wakes up 60
+times a second will still drain the battery, unless you happened to
+pause it while it was active.
+
+> unlike tasks in TASK_STOPPED, which are stopped until a SIGCONT arrives.
 >
->> PM: Opportunistic suspend support.
->>
->> Power management features present in the current mainline kernel are
->> insufficient to get maximum possible energy savings on some platforms,
->> such as Android,
+>> The only way to get the wake event to the process is to funnel it though
+>> a process that never is paused.
 >
-> I'd finish the first sentence here.
 >
->> because the system must always respond to certain
->> events. Suspend, in its current form, cannot be used on these
->> platforms,
+> - Paul
 >
-> This doesn't seem to be correct. =A0Surely you can suspend these systems,=
- but
-> you can't address the problem at hand using suspend as is.
+> 1. http://lkml.org/lkml/2010/5/7/420
 >
-> I'd say (in the second sentence) "The problem is that to save maximum amo=
-unt of
-> energy all system hardware components need to be in the lowest-power stat=
-es
-> available for as long as reasonably possible, but at the same time the sy=
-stem
-> must always respond to certain events, regardless of the current state of=
- the
-> hardware.
->
-> The first goal can be achieved either by using device runtime PM and cpui=
-dle to
-> put all hardware into low-power states, transparently from the user space=
- point
-> of view, or by suspending the whole system. =A0However, system suspend, i=
-n its
-> current form, does not guarantee that the events of interest will always =
-be
-> responded to, since wakeup events ..."
->
->> since wakeup events (events that wake the CPU from idle and
->> the system from suspend) that occur right after initiating suspend
->> will not be processed until another possibly unrelated event wake up
->
-> "... wakes up ..." I guess.
->
->> the system again.
->>
->> On hardware where idle can enter the same power state as suspend, idle
->> combined with runtime PM can be used, but periodic wakeups increase
->> the average power consumption. Suspending the system also reduces the
->> harm caused by apps that never go idle. There also are systems where
->> some devices cannot be put into low-power states without suspending
->> the entire system (or the low-power states available to them without
->> suspending the entire system are substantially shallower than the
->> low-power states they are put into when the entire system is
->> suspended), so the system have to be suspended as a whole to achieve
->> the maximum energy savings.
->>
->> To allow Android and similar platforms to save more energy than they
->> currently can save using the mainline kernel, introduce a mechanism by
->> which the system is automatically suspended (i.e. put into a
->> system-wide sleep state) whenever it's not doing useful work, called
->> opportunistic suspend.
->
-> I'd say "... whenever it's not doing work that's immediately useful to the
-> user, called =A0..." or something like this.
->
-> The rest is fine by me.
 >
 
-PM: Opportunistic suspend support.
 
-Power management features present in the current mainline kernel are
-insufficient to get maximum possible energy savings on some platforms,
-such as Android.  The problem is that to save maximum amount of energy
-all system hardware components need to be in the lowest-power states
-available for as long as reasonably possible, but at the same time the
-system must always respond to certain events, regardless of the
-current state of the hardware.
-
-The first goal can be achieved either by using device runtime PM and
-cpuidle to put all hardware into low-power states, transparently from
-the user space point of view, or by suspending the whole system.
-However, system suspend, in its current form, does not guarantee that
-the events of interest will always be responded to, since wakeup
-events (events that wake the CPU from idle and the system from
-suspend) that occur right after initiating suspend will not be
-processed until another possibly unrelated event wakes the system up
-again.
-
-On hardware where idle can enter the same power state as suspend, idle
-combined with runtime PM can be used, but periodic wakeups increase
-the average power consumption. Suspending the system also reduces the
-harm caused by apps that never go idle. There also are systems where
-some devices cannot be put into low-power states without suspending
-the entire system (or the low-power states available to them without
-suspending the entire system are substantially shallower than the
-low-power states they are put into when the entire system is
-suspended), so the system has to be suspended as a whole to achieve
-the maximum energy savings.
-
-To allow Android and similar platforms to save more energy than they
-currently can save using the mainline kernel, introduce a mechanism by
-which the system is automatically suspended (i.e. put into a
-system-wide sleep state) whenever it's not doing work that's
-immediately useful to the user, called opportunistic suspend.
-
-For this purpose introduce the suspend blockers framework allowing the
-kernel's power management subsystem to decide when it is desirable to
-suspend the system (i.e. when the system is not doing anything the
-user really cares about at the moment and therefore it may be
-suspended). Add an API that that drivers can use to block
-opportunistic suspend. This is needed to avoid losing wakeup events
-that occur right after suspend is initiated.
-
-Add /sys/power/policy that selects the behavior of /sys/power/state.
-After setting the policy to opportunistic, writes to /sys/power/state
-become non-blocking requests that specify which suspend state to enter
-when no suspend blockers are active. A special state, "on", stops the
-process by activating the "main" suspend blocker.
 
 -- =
 
