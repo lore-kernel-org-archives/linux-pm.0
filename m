@@ -1,17 +1,23 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Thu, 20 May 2010 10:30:21 +0200
-Message-ID: <4BF4F31D.8070900__11839.407348498$1274344452$gmane$org@kernel.org>
-References: <1272429119-12103-1-git-send-email-arve@android.com>
-	<201004282250.44200.rjw@sisk.pl>
-	<l2yd6200be21004282037rc063266by91db7f732ceaa529@mail.gmail.com>
-	<201004292316.14524.rjw@sisk.pl> <4BDA5B8B.50004@kernel.org>
-	<20100430172618.GA9043@redhat.com>
+From: Felipe Balbi <me@felipebalbi.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Thu, 20 May 2010 11:57:40 +0300
+Message-ID: <20100520085739.GB14584__45825.8328763351$1274345902$gmane$org@gandalf>
+References: <1274119179.4418.68.camel@mulgrave.site>
+	<20100517181252.GA14260@gandalf>
+	<1274124267.4418.149.camel@mulgrave.site>
+	<20100517193840.GB14047@gandalf> <20100517193952.GC14047@gandalf>
+	<1274125775.4418.182.camel@mulgrave.site>
+	<20100518064022.GA6522@nokia.com>
+	<1274191188.10304.5.camel@mulgrave.site>
+	<20100519065934.GH12879@nokia.com>
+	<20100520071528.494c38e4@schatten.dmk.lab>
+Reply-To: me@felipebalbi.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100430172618.GA9043@redhat.com>
+Content-Disposition: inline
+In-Reply-To: <20100520071528.494c38e4@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,27 +27,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5?=@smtp1.linux-foundation.org, Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Florian Mickler <florian@mickler.org>
+Cc: Matthew Garrett <mjg@redhat.com>, "me@felipebalbi.com" <me@felipebalbi.com>, Theodore Ts'o <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Kernel development list <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, felipe.balbi@nokia.com, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+On Thu, May 20, 2010 at 07:15:28AM +0200, Florian Mickler wrote:
+> But with that, you still shift the burden of exchanging that app with
+> an feature-equivalent non-broken version to the user. 
+> which is not user friendly and not necessary if you have a "smart"
+> enough kernel.
 
-(sorry about late reply)
+and _without that_, you shift the burden of having a working power
+management completely into the kernel. Forcing the kernel to deal with
+completely broken apps. What will happen is that apps developers won't
+boder thinking about power consumption since the kernel is "smart"
+enough to "fix" their mess.
 
-On 04/30/2010 07:26 PM, Oleg Nesterov wrote:
-> Currently _cpu_down() can't flush and/or stop the frozen cwq->thread.
-> 
-> IIRC this is fixable, but needs the nasty complications. We should
-> thaw + stop the frozen cwq->thread, then move the pending works to
-> another CPU.
-
-Oh, this isn't an issue w/ cmwq.  While frozen all new works are
-collected into per-cpu delayed worklist and while frozen trustee in
-charge of the cpu will keep waiting.  Once thawed, trustee will
-execute all works including the delayed ones unbound to any cpu.
-
-Thanks.
+To me that's much bigger burden to the kernel than the other option is
+to apps.
 
 -- 
-tejun
+balbi
