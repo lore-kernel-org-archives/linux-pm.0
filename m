@@ -1,22 +1,15 @@
 From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Thu, 20 May 2010 07:15:28 +0200
-Message-ID: <20100520071528.494c38e4__44863.787366967$1274367651$gmane$org@schatten.dmk.lab>
-References: <1274115885.4418.59.camel@mulgrave.site>
-	<20100517174647.GA11512@gandalf>
-	<1274119179.4418.68.camel@mulgrave.site>
-	<20100517181252.GA14260@gandalf>
-	<1274124267.4418.149.camel@mulgrave.site>
-	<20100517193840.GB14047@gandalf> <20100517193952.GC14047@gandalf>
-	<1274125775.4418.182.camel@mulgrave.site>
-	<20100518064022.GA6522@nokia.com>
-	<1274191188.10304.5.camel@mulgrave.site>
-	<20100519065934.GH12879@nokia.com>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Thu, 20 May 2010 11:11:11 +0200
+Message-ID: <20100520111111.333beb73__10102.6946366348$1274367740$gmane$org@schatten.dmk.lab>
+References: <1273810273-3039-1-git-send-email-arve@android.com>
+	<1273810273-3039-2-git-send-email-arve@android.com>
+	<20100518131111.GB1563@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100519065934.GH12879@nokia.com>
+In-Reply-To: <20100518131111.GB1563@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,28 +19,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: felipe.balbi@nokia.com
-Cc: Kernel@smtp1.linux-foundation.org, "me@felipebalbi.com" <me@felipebalbi.com>, Theodore Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Alan@smtp1.linux-foundation.org, development list <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Tejun@smtp1.linux-foundation.org, Oleg Nesterov <oleg@redhat.com>, Heo <tj@kernel.org>, Matthew Garrett <mjg@redhat.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <len.brown@intel.com>, Kleen <ak@linux.intel.com>, Andi@smtp1.linux-foundation.org, linux-doc@vger.kernel.org, Tejun@smtp1.linux-foundation.org, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, Heo <tj@kernel.org>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 19 May 2010 09:59:34 +0300
-Felipe Balbi <felipe.balbi@nokia.com> wrote:
+On Tue, 18 May 2010 15:11:11 +0200
+Pavel Machek <pavel@ucw.cz> wrote:
 
-
-> >The corollary is that real world systems have to operate in the face of
-> >misbehaving hardware *and* software.
+> On Thu 2010-05-13 21:11:06, Arve Hj??nnev??g wrote:
+> > Adds /sys/power/policy that selects the behaviour of /sys/power/state.
+> > After setting the policy to opportunistic, writes to /sys/power/state
+> > become non-blocking requests that specify which suspend state to
+> > enter
 > 
-> I still think the kernel shouldn't deal with broken applications and we 
-> shouldn't try to fix them in kernel space. We can, of course, try to 
-> find them and have all sorts of bells and whistles shouting 'process 
-> %s is preventing CPU from sleeping for %llu nanoseconds' or something 
-> like that.
+> Yeah, one file selects behavior of another file, and to read available
+> states for opportunistic, you have to write to file first.
+> 
+> I still don't like the interface.
 > 
 
-But with that, you still shift the burden of exchanging that app with
-an feature-equivalent non-broken version to the user. 
-which is not user friendly and not necessary if you have a "smart"
-enough kernel.
+Actually, what would be a better interface? 
+
+I wonder why it is not like this:
+
+/sys/power/state 
+	no change, works with and without opportunistic suspend the
+	same. Ignores suspend blockers. Really no change. (From user
+	perspective)
+
+/sys/power/opportunistic
+	On / Off
+	While Off the opportunistic suspend is off.
+	While On, the opportunistic suspend is on and if there are no
+	suspend blockers the system goes to suspend. 
 
 Cheers,
-Flo 
+Flo
