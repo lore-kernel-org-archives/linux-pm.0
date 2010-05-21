@@ -1,21 +1,12 @@
-From: Matthew Garrett <mjg@redhat.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Fri, 21 May 2010 18:09:44 +0100
-Message-ID: <20100521170944.GA13142@srcf.ucam.org>
-References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<87aas2azc5.fsf@deeprootsystems.com>
-	<20100514231510.GG16989@thunk.org> <201005152152.15996.rjw@sisk.pl>
-	<alpine.DEB.2.00.1005171932540.27473@utopia.booyaka.com>
-	<20100518015519.GA6500@srcf.ucam.org>
-	<alpine.DEB.2.00.1005191016110.27473@utopia.booyaka.com>
-	<20100519162557.GA25719@srcf.ucam.org>
-	<alpine.DEB.2.00.1005191320010.27473@utopia.booyaka.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH] PM: adjust comment regarding default wakeup
+	policy
+Date: Fri, 21 May 2010 15:16:19 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005211515000.4257-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1005191320010.27473@utopia.booyaka.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,27 +16,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Walmsley <paul@pwsan.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Liam Girdwood <lrg@slimlogic.co.uk>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Oleg Nesterov <oleg@redhat.com>, linux-omap@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>, Daniel Walker <dwalker@codeaurora.org>, tytso@mit.edu, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Geoff Smith <geoffx.smith@intel.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 21, 2010 at 10:51:58AM -0600, Paul Walmsley wrote:
+This patch (as1381) updates a comment describing the kernel's policy
+toward enabling wakeup by default.
 
->       B. To prevent untrusted processes from hogging CPUs, the
->          processes can be run in a cgroup that puts all threads in
->          TASK_RUNNING processes into TASK_INTERRUPTIBLE state and
->          calls schedule() [6], upon receipt of some trigger.  This
->          should allow processes to be awakened by an external system
->          event, e.g., network packet received.  When the system
->          returns from the system low-power state and some trigger
->          event happens, those process threads can be placed back into
->          TASK_RUNNING state and rescheduled.
+It also makes device_set_wakeup_capable() actually do something when
+CONFIG_PM isn't enabled.  It's not clear this is necessary; however if
+it isn't then device_init_wakeup() and device_can_wakeup() should also
+be do-nothing routines.  Furthermore, I don't expect this change to
+have any noticeable effect -- but if it does then clearly the old
+behavior was wrong.
 
-I don't think that works. If I have an app that would generally complete 
-some work and then call select(), you'll instead stop it in the middle 
-of that work. If that app is the one that should process the wakeup 
-event then it'll never be delivered because you've never got back to 
-select().
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+CC: David Brownell <david-b@pacbell.net>
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+---
+
+Index: usb-2.6/include/linux/pm_wakeup.h
+===================================================================
+--- usb-2.6.orig/include/linux/pm_wakeup.h
++++ usb-2.6/include/linux/pm_wakeup.h
+@@ -27,8 +27,11 @@
+ 
+ #ifdef CONFIG_PM
+ 
+-/* changes to device_may_wakeup take effect on the next pm state change.
+- * by default, devices should wakeup if they can.
++/* Changes to device_may_wakeup take effect on the next pm state change.
++ *
++ * By default, most devices should leave wakeup disabled.  The exceptions
++ * are devices that everyone expects to be wakeup sources: keyboards,
++ * power buttons, possibly network interfaces, etc.
+  */
+ static inline void device_init_wakeup(struct device *dev, int val)
+ {
+@@ -57,13 +60,16 @@ static inline int device_may_wakeup(stru
+ 
+ #else /* !CONFIG_PM */
+ 
+-/* For some reason the next two routines work even without CONFIG_PM */
++/* For some reason the following routines work even without CONFIG_PM */
+ static inline void device_init_wakeup(struct device *dev, int val)
+ {
+ 	dev->power.can_wakeup = !!val;
+ }
+ 
+-static inline void device_set_wakeup_capable(struct device *dev, int val) { }
++static inline void device_set_wakeup_capable(struct device *dev, int val)
++{
++	dev->power.can_wakeup = !!val;
++}
+ 
+ static inline int device_can_wakeup(struct device *dev)
+ {
