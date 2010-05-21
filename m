@@ -1,13 +1,16 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Thu, 20 May 2010 16:37:30 -0700 (PDT)
-Message-ID: <641482.90616.qm@web180303.mail.gq1.yahoo.com>
-References: <alpine.DEB.2.00.1005172018380.27473@utopia.booyaka.com>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Fri, 21 May 2010 08:04:17 +0200
+Message-ID: <20100521080417.7c8561a5__12147.9149362587$1274422050$gmane$org@schatten.dmk.lab>
+References: <1273810273-3039-1-git-send-email-arve@android.com>
+	<20100520111111.333beb73@schatten.dmk.lab>
+	<20100520112642.74d93d26@schatten.dmk.lab>
+	<201005210018.43576.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1005172018380.27473@utopia.booyaka.com>
+In-Reply-To: <201005210018.43576.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,41 +20,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?iso-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>, Paul Walmsley <paul@pwsan.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Sven Neumann <s.neumann@raumfeld.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tero Saarni <tero.saarni@gmail.com>, linux-input@vger.kernel.org, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Alexey Dobriyan <adobriyan@gmail.com>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Daniel Mack <daniel@caiaq.de>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Daniel Walker <dwalker@codeaurora.org>, Theodore Ts'o <tytso@mit.edu>, Linus Walleij <linus.walleij@stericsson.com>, =?iso-8859-1?Q?M=E1rton_N=E9meth?= <nm127@freemail.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-doc@vger.kernel.org, Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Andrew@smtp1.linux-foundation.org, Len@smtp1.linux-foundation.org, linux-pm@lists.linux-foundation.org, Brown <len.brown@intel.com>, Magnus Damm <damm@igel.co.jp>, Nigel@smtp1.linux-foundation.org, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>, Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Jesse@smtp1.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, 21 May 2010 00:18:43 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> > > On Mon, 3 May 2010, Arve Hj=F8nnev=E5g wrote:
-> > >
-> > >> No, suspend blockers are mostly used to
-> ensure wakeup events are not
-> > >> ignored, and to ensure tasks triggered by
-> these wakeup events
-> > >> complete.
-> > >
-> > > Standard Linux systems don't need these,
-> > =
+> > > Actually, what would be a better interface? 
+> > > 
+> > > I wonder why it is not like this:
+> 
+> Because I think the "forced" and "opportunistic" suspend "modes" are mutually
+> exclusive in practice and the interface as proposed reflects that quite well.
+> 
+> > > /sys/power/state 
+> > > 	no change, works with and without opportunistic suspend the
+> > > 	same. Ignores suspend blockers. Really no change. (From user
+> > > 	perspective)
+> > > 
+> > > /sys/power/opportunistic
+> > > 	On / Off
+> > > 	While Off the opportunistic suspend is off.
+> > > 	While On, the opportunistic suspend is on and if there are no
+> > > 	suspend blockers the system goes to suspend. 
+> > > 
+> > 
+> > I forgot, of course there needs to be another knob to implement the
+> > "on" behaviour  in the opportunistic mode
+> > 
+> >  /sys/power/block_opportunistic_suspend
+> > 
+> > There you have it. One file, one purpose. 
+> 
+> That's getting messy IMHO.
+> 
+> In addition to that you get a nice race when the user writes "mem"
+> to /sys/power/state and opportunistic suspend happens at the same time.
+> If the latter wins the race, the system will suspend again immediately after
+> being woken up, which probably is not the result you'd like to get.
 
-> > If you don't want to lose wakeup events they do.=A0
-> Standard Linux systems =
+But I don't think there is a problem with that. If the system is
+'awake' (suspend blocked) and you hit it with forced 'mem', the system
+_has_ to suspend. as that is what forced "mem"  means. And if
+opportunistic won the race you would _expect_ the machine to suspend
+again after the wakeup (and this time for good).
 
-> > support suspend, but since they usually don't have a
-> lot of wakeup =
+But perhaps this only makes sense if you can specify different
+wake-events for opportunistic and forced suspend.
 
-> > events you don't run into a lot of problems.
+This is probably some kind of bikeshed by now. I'm alright with the
+status quo. For what it's worth (not much): You can add my Reviewed-By.
 
-Yes and no...  stick a bunch of USB hubs and devices
-on the system, and you may have a lot of wake events.
-Keyboard, mouse, network adapter, and so on.
-
- Way back when I made USB remote wakeup work, ISTR running
-into a version of the issue you're raising.  Briefly, the
-wake event could be queued in hardware, but there were also
-various unavoidable races .... with ambiguity about just when
-particular events should be recognized.  If the system entered
-sleep before the wake event(s) triggered, or the relevant devices
-suspended first, then things were clear; otherwise, not.  On
-first blush, I'd expect every hardware wake mechanism would have
-the same issues; the fact that USB wakes are mediated via khubd
-is not a huge difference.
+Cheers,
+Flo
