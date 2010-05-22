@@ -1,16 +1,13 @@
-From: =?UTF-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
-Subject: [PATCH 4/8] PM: suspend_block: Add debugfs file
-Date: Fri, 21 May 2010 15:46:51 -0700
-Message-ID: <1274482015-30899-5-git-send-email-arve__16551.1864390739$1274483509$gmane$org@android.com>
-References: <1274482015-30899-1-git-send-email-arve@android.com>
-	<1274482015-30899-2-git-send-email-arve@android.com>
-	<1274482015-30899-3-git-send-email-arve@android.com>
-	<1274482015-30899-4-git-send-email-arve@android.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Fri, 21 May 2010 22:47:40 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005212226180.20028-100000__12286.4106474028$1274496527$gmane$org@netrider.rowland.org>
+References: <1274482015-30899-2-git-send-email-arve@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1274482015-30899-4-git-send-email-arve@android.com>
+In-Reply-To: <1274482015-30899-2-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,53 +17,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Tejun Heo <tj@kernel.org>
+To: =?UTF-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-UmVwb3J0IGFjdGl2ZSBhbmQgaW5hY3RpdmUgc3VzcGVuZCBibG9ja2VycyBpbgovc3lzL2tlcm5l
-bC9kZWJ1Zy9zdXNwZW5kX2Jsb2NrZXJzLgoKU2lnbmVkLW9mZi1ieTogQXJ2ZSBIasO4bm5ldsOl
-ZyA8YXJ2ZUBhbmRyb2lkLmNvbT4KLS0tCiBrZXJuZWwvcG93ZXIvb3Bwb3J0dW5pc3RpY19zdXNw
-ZW5kLmMgfCAgIDQzICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0KIDEgZmlsZXMg
-Y2hhbmdlZCwgNDIgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9r
-ZXJuZWwvcG93ZXIvb3Bwb3J0dW5pc3RpY19zdXNwZW5kLmMgYi9rZXJuZWwvcG93ZXIvb3Bwb3J0
-dW5pc3RpY19zdXNwZW5kLmMKaW5kZXggY2M5MGI2MC4uNmI1ZWIxZCAxMDA2NDQKLS0tIGEva2Vy
-bmVsL3Bvd2VyL29wcG9ydHVuaXN0aWNfc3VzcGVuZC5jCisrKyBiL2tlcm5lbC9wb3dlci9vcHBv
-cnR1bmlzdGljX3N1c3BlbmQuYwpAQCAtMTcsNiArMTcsNyBAQAogI2luY2x1ZGUgPGxpbnV4L21v
-ZHVsZS5oPgogI2luY2x1ZGUgPGxpbnV4L3J0Yy5oPgogI2luY2x1ZGUgPGxpbnV4L3N1c3BlbmQu
-aD4KKyNpbmNsdWRlIDxsaW51eC9kZWJ1Z2ZzLmg+CiAKICNpbmNsdWRlICJwb3dlci5oIgogCkBA
-IC0xNTEsNyArMTUyLDggQEAgRVhQT1JUX1NZTUJPTChzdXNwZW5kX2Jsb2NrZXJfcmVnaXN0ZXIp
-OwogLyoqCiAgKiBzdXNwZW5kX2Jsb2NrZXJfaW5pdCAtIEluaXRpYWxpemUgYSBzdXNwZW5kIGJs
-b2NrZXIncyBuYW1lIGFuZCByZWdpc3RlciBpdC4KICAqIEBibG9ja2VyOiBTdXNwZW5kIGJsb2Nr
-ZXIgdG8gaW5pdGlhbGl6ZS4KLSAqIEBuYW1lOiAgICBUaGUgbmFtZSBvZiB0aGUgc3VzcGVuZCBi
-bG9ja2VyIHRvIHNob3cgaW4gZGVidWcgbWVzc2FnZXMuCisgKiBAbmFtZTogICAgVGhlIG5hbWUg
-b2YgdGhlIHN1c3BlbmQgYmxvY2tlciB0byBzaG93IGluIGRlYnVnIG1lc3NhZ2VzIGFuZAorICoJ
-ICAgICAvc3lzL2tlcm5lbC9kZWJ1Zy9zdXNwZW5kX2Jsb2NrZXJzLgogICoKICAqIFRoZSBzdXNw
-ZW5kIGJsb2NrZXIgc3RydWN0IGFuZCBuYW1lIG11c3Qgbm90IGJlIGZyZWVkIGJlZm9yZSBjYWxs
-aW5nCiAgKiBzdXNwZW5kX2Jsb2NrZXJfdW5yZWdpc3RlcigpLgpAQCAtMjk2LDMgKzI5OCw0MiBA
-QCB2b2lkIF9faW5pdCBvcHBvcnR1bmlzdGljX3N1c3BlbmRfaW5pdCh2b2lkKQogCXN1c3BlbmRf
-YmxvY2soJm1haW5fc3VzcGVuZF9ibG9ja2VyKTsKIAlzdXNwZW5kX2Jsb2NrZXJfcmVnaXN0ZXIo
-JnVua25vd25fd2FrZXVwKTsKIH0KKworc3RhdGljIHN0cnVjdCBkZW50cnkgKnN1c3BlbmRfYmxv
-Y2tlcl9zdGF0c19kZW50cnk7CisKK3N0YXRpYyBpbnQgc3VzcGVuZF9ibG9ja2VyX3N0YXRzX3No
-b3coc3RydWN0IHNlcV9maWxlICptLCB2b2lkICp1bnVzZWQpCit7CisJdW5zaWduZWQgbG9uZyBp
-cnFmbGFnczsKKwlzdHJ1Y3Qgc3VzcGVuZF9ibG9ja2VyICpibG9ja2VyOworCisJc2VxX3B1dHMo
-bSwgIm5hbWVcdGFjdGl2ZVxuIik7CisJc3Bpbl9sb2NrX2lycXNhdmUoJmxpc3RfbG9jaywgaXJx
-ZmxhZ3MpOworCWxpc3RfZm9yX2VhY2hfZW50cnkoYmxvY2tlciwgJmluYWN0aXZlX2Jsb2NrZXJz
-LCBsaW5rKQorCQlzZXFfcHJpbnRmKG0sICJcIiVzXCJcdDBcbiIsIGJsb2NrZXItPm5hbWUpOwor
-CWxpc3RfZm9yX2VhY2hfZW50cnkoYmxvY2tlciwgJmFjdGl2ZV9ibG9ja2VycywgbGluaykKKwkJ
-c2VxX3ByaW50ZihtLCAiXCIlc1wiXHQxXG4iLCBibG9ja2VyLT5uYW1lKTsKKwlzcGluX3VubG9j
-a19pcnFyZXN0b3JlKCZsaXN0X2xvY2ssIGlycWZsYWdzKTsKKwlyZXR1cm4gMDsKK30KKworc3Rh
-dGljIGludCBzdXNwZW5kX2Jsb2NrZXJfc3RhdHNfb3BlbihzdHJ1Y3QgaW5vZGUgKmlub2RlLCBz
-dHJ1Y3QgZmlsZSAqZmlsZSkKK3sKKwlyZXR1cm4gc2luZ2xlX29wZW4oZmlsZSwgc3VzcGVuZF9i
-bG9ja2VyX3N0YXRzX3Nob3csIE5VTEwpOworfQorCitzdGF0aWMgY29uc3Qgc3RydWN0IGZpbGVf
-b3BlcmF0aW9ucyBzdXNwZW5kX2Jsb2NrZXJfc3RhdHNfZm9wcyA9IHsKKwkub3duZXIgPSBUSElT
-X01PRFVMRSwKKwkub3BlbiA9IHN1c3BlbmRfYmxvY2tlcl9zdGF0c19vcGVuLAorCS5yZWFkID0g
-c2VxX3JlYWQsCisJLmxsc2VlayA9IHNlcV9sc2VlaywKKwkucmVsZWFzZSA9IHNpbmdsZV9yZWxl
-YXNlLAorfTsKKworc3RhdGljIGludCBfX2luaXQgc3VzcGVuZF9ibG9ja2VyX2RlYnVnZnNfaW5p
-dCh2b2lkKQoreworCXN1c3BlbmRfYmxvY2tlcl9zdGF0c19kZW50cnkgPSBkZWJ1Z2ZzX2NyZWF0
-ZV9maWxlKCJzdXNwZW5kX2Jsb2NrZXJzIiwKKwkJCVNfSVJVR08sIE5VTEwsIE5VTEwsICZzdXNw
-ZW5kX2Jsb2NrZXJfc3RhdHNfZm9wcyk7CisJcmV0dXJuIDA7Cit9CisKK3Bvc3Rjb3JlX2luaXRj
-YWxsKHN1c3BlbmRfYmxvY2tlcl9kZWJ1Z2ZzX2luaXQpOwotLSAKMS42LjUuMQoKX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBs
-aXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGlu
-dXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Fri, 21 May 2010, [UTF-8] Arve Hj=C3=B8nnev=C3=A5g wrote:
+
+> The first goal can be achieved either by using device runtime PM and
+> cpuidle to put all hardware into low-power states, transparently from
+> the user space point of view, or by suspending the whole system.
+> However, system suspend, in its current form, does not guarantee that
+> the events of interest will always be responded to, since wakeup
+> events (events that wake the CPU from idle and the system from
+> suspend) that occur right after initiating suspend will not be
+> processed until another possibly unrelated event wakes the system up
+> again.
+
+Minor point of clarification here.  I'm not requesting that the patch =
+
+description be rewritten.  But this issue of lost wakeup events is more =
+
+subtle than it appears.
+
+Wakeup events can be lost in at least three different ways:
+
+     1. A hardware signal (such as an IRQ) gets ignored.
+
+     2. The hardware event occurs, but without effect since the
+	kernel thread that would handle the event has been frozen.
+	The event just ends up sitting in a queue somewhere until
+	something else wakes up the system.
+
+     3. The hardware event occurs and the kernel handles it fully,
+	but the event propagates to userspace for further handling
+	and the user program is already frozen.
+
+1 is a hardware configuration failure (for example, it might happen as
+a result of using edge-triggered IRQs instead of level-triggered) and
+is outside the scope of this discussion.
+
+2 generally represents a failure of the core PM subsystem, or a failure
+of some other part of the kernel to use the PM core correctly.  In
+theory we should be able to fix such mistakes.  Right now I'm aware of
+at least one possible failure scenario that could be fixed fairly
+easily.
+
+3 is the type of failure that suspend blockers were really meant to
+handle, particularly the userspace suspend-blocker API.
+
+IMO, we should strive to fix the existing type-2 failure modes.  =
+
+However it is worth pointing out that they are basically separate from =
+
+the suspend-blocker mechanism.
+
+And it might be a good idea to point out somewhere in the patch
+descriptions that suspend blockers are really meant to handle type-3
+wakeup losses.
+
+Alan Stern
