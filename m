@@ -1,13 +1,21 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Fri, 21 May 2010 22:47:40 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005212226180.20028-100000__12286.4106474028$1274496527$gmane$org@netrider.rowland.org>
-References: <1274482015-30899-2-git-send-email-arve@android.com>
+From: Sundar <sunder.svit@gmail.com>
+Subject: Re: Power Domain Framework
+Date: Sat, 22 May 2010 09:32:10 +0530
+Message-ID: <AANLkTinTdTp_X4lGtZ0hCaVJN5GmvI0tXR1RTRkRNkjN@mail.gmail.com>
+References: <AANLkTinZU1D1rMOBQDi47tRhXrOXwduQIdni7bCXdce0@mail.gmail.com>
+	<AANLkTiniwUDg8rQzwgm_X7EbkQJ9tHzBfVtaJRiNE9az@mail.gmail.com>
+	<1274114107.20589.64.camel@bnru01>
+	<1274115886.2698.22.camel@finisterre.wolfsonmicro.main>
+	<1274118332.17303.17.camel@bnru01>
+	<CEE6BB42CAD6E947908279175AF8470A025A726240@EXDCVYMBSTM006.EQ1STM.local>
+	<1274131108.2698.161.camel@finisterre.wolfsonmicro.main>
+	<CEE6BB42CAD6E947908279175AF8470A025A72624A@EXDCVYMBSTM006.EQ1STM.local>
+	<1274134636.2698.170.camel@finisterre.wolfsonmicro.main>
+	<1274162450.17303.35.camel@bnru01>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============7593361177771470606=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1274482015-30899-2-git-send-email-arve@android.com>
+In-Reply-To: <1274162450.17303.35.camel@bnru01>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,64 +23,58 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?UTF-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>
-Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Viresh KUMAR <viresh.kumar@st.com>, Rajeev KUMAR <rajeev-dlh.kumar@st.com>, Linus WALLEIJ <linus.walleij@stericsson.com>, Armando VISCONTI <armando.visconti@st.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vipin KUMAR <vipin.kumar@st.com>, Shiraz HASHIM <shiraz.hashim@st.com>, STEricsson_nomadik_linux <STEricsson_nomadik_linux@list.st.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 21 May 2010, [UTF-8] Arve Hj=C3=B8nnev=C3=A5g wrote:
+--===============7593361177771470606==
+Content-Type: multipart/alternative; boundary=0016e645b94239991b048726df53
 
-> The first goal can be achieved either by using device runtime PM and
-> cpuidle to put all hardware into low-power states, transparently from
-> the user space point of view, or by suspending the whole system.
-> However, system suspend, in its current form, does not guarantee that
-> the events of interest will always be responded to, since wakeup
-> events (events that wake the CPU from idle and the system from
-> suspend) that occur right after initiating suspend will not be
-> processed until another possibly unrelated event wakes the system up
-> again.
+--0016e645b94239991b048726df53
+Content-Type: text/plain; charset=ISO-8859-1
 
-Minor point of clarification here.  I'm not requesting that the patch =
+Hi,
 
-description be rewritten.  But this issue of lost wakeup events is more =
+> operating mode for the entire power domain. For example, I can see
+> hardware requiring that if more than a given number of blocks are
+> enabled at any level a higher operating point is selected.
+To me, since such a requirement is a constraint on the regulator,
+this can be added as a flag to the regulator details.
+This flag can then be used in the set_opp* functions to check the
+condition along with the client dependencies!
 
-subtle than it appears.
+Thanx!
+Sundar
 
-Wakeup events can be lost in at least three different ways:
+--0016e645b94239991b048726df53
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-     1. A hardware signal (such as an IRQ) gets ignored.
+<span class=3D"Apple-style-span" style=3D"font-family: arial, sans-serif; f=
+ont-size: 13px; border-collapse: collapse; "><div class=3D"im" style=3D"col=
+or: rgb(80, 0, 80); ">Hi,</div><div class=3D"im" style=3D"color: rgb(80, 0,=
+ 80); "><br>
+</div><div class=3D"im" style=3D"color: rgb(80, 0, 80); ">&gt; operating mo=
+de for the entire power domain. For example, I can see<br>&gt; hardware req=
+uiring that if more than a given number of blocks are<br>&gt; enabled at an=
+y level a higher operating point is selected.<br>
+</div></span>To me, since such a requirement is=A0a constraint=A0on the reg=
+ulator,=A0<div>this can be added as a flag to the regulator=A0details.=A0<d=
+iv>This flag can then be used in the set_opp* functions to check the<div>co=
+ndition along with the client=A0dependencies!</div>
+<div><br></div><div>Thanx!</div><div>Sundar</div><div><br></div></div></div=
+>
 
-     2. The hardware event occurs, but without effect since the
-	kernel thread that would handle the event has been frozen.
-	The event just ends up sitting in a queue somewhere until
-	something else wakes up the system.
+--0016e645b94239991b048726df53--
 
-     3. The hardware event occurs and the kernel handles it fully,
-	but the event propagates to userspace for further handling
-	and the user program is already frozen.
+--===============7593361177771470606==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-1 is a hardware configuration failure (for example, it might happen as
-a result of using edge-triggered IRQs instead of level-triggered) and
-is outside the scope of this discussion.
 
-2 generally represents a failure of the core PM subsystem, or a failure
-of some other part of the kernel to use the PM core correctly.  In
-theory we should be able to fix such mistakes.  Right now I'm aware of
-at least one possible failure scenario that could be fixed fairly
-easily.
-
-3 is the type of failure that suspend blockers were really meant to
-handle, particularly the userspace suspend-blocker API.
-
-IMO, we should strive to fix the existing type-2 failure modes.  =
-
-However it is worth pointing out that they are basically separate from =
-
-the suspend-blocker mechanism.
-
-And it might be a good idea to point out somewhere in the patch
-descriptions that suspend blockers are really meant to handle type-3
-wakeup losses.
-
-Alan Stern
+--===============7593361177771470606==--
