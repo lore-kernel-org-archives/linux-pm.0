@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: adjust comment regarding default wakeup
-	policy
-Date: Mon, 24 May 2010 16:09:19 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005241608390.1698-100000@iolanthe.rowland.org>
-References: <201005242058.53092.rjw@sisk.pl>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: Is it supposed to be ok to call del_gendisk while
+ userspace is frozen?
+Date: Tue, 25 May 2010 07:21:13 +1000
+Message-ID: <4BFAEDC9.1010707__20327.2716644735$1274736116$gmane$org@crca.org.au>
+References: <Pine.LNX.4.44L0.1005162219330.24400-100000@netrider.rowland.org>
+	<4BF0F3FF.2010603@crca.org.au> <201005172235.37824.rjw@sisk.pl>
+	<4BF1C86B.8000203@crca.org.au> <20100524190206.GL1292@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005242058.53092.rjw@sisk.pl>
+In-Reply-To: <20100524190206.GL1292@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,30 +20,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Matt Reimer <mattjreimer@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 24 May 2010, Rafael J. Wysocki wrote:
+Hi.
 
-> On Friday 21 May 2010, Alan Stern wrote:
-> > This patch (as1381) updates a comment describing the kernel's policy
-> > toward enabling wakeup by default.
-> > 
-> > It also makes device_set_wakeup_capable() actually do something when
-> > CONFIG_PM isn't enabled.  It's not clear this is necessary; however if
-> > it isn't then device_init_wakeup() and device_can_wakeup() should also
-> > be do-nothing routines.  Furthermore, I don't expect this change to
-> > have any noticeable effect -- but if it does then clearly the old
-> > behavior was wrong.
-> > 
-> > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> > CC: David Brownell <david-b@pacbell.net>
-> 
-> OK by me.
-> 
-> Do you want me to push that in this merge window?
+On 25/05/10 05:02, Pavel Machek wrote:
+>
+>>>> - We're dealing with the symptom, not the cause. Almost always a bad idea.
+>>>
+>>> I very much prefer to have a fix for a symptom than no fix at all, which is the
+>>> realistic alternative in this case.
+>>>
+>>> So, I think we should merge the patch and if someone finds the root cause
+>>> at one point in future, then we can just use the *right* approach instead of
+>>> the present one.
+>>>
+>>> The problem is real and people in the field are affected by it, so if you don't
+>>> have a working alternative patch, please just let go.
+>>
+>> I'm not denying that the problem is real. What I am concerned about
+>> is finding a real solution, not just putting a sticky plaster over
+>> the wound. It seems to me to be much wiser to deal with the issue
+>> properly now instead of doing extra work later to diagnose what
+>> might be a harder to reproduce symptom of the same problem. I'd
+>> happily put the time in now myself, but I simply don't have the time
+>> this week.
+>>
+>> Would it be possible to apply the patch, adding some sort of new tag
+>> that can be used to say "This needs further attention", perhaps
+>> including an enduring reference to this conversation. Later, the
+>> 'real' fix could include another special tag that says "Proper fix
+>> for the symptom addressed in commit 5e94f810"?
+>
+> WARN_ON() whenever patch triggers?
 
-No, it can wait for the window after this one.
+I suppose that would do. I was thinking of a more generic git tag that 
+could perhaps be searched for later, but .. okay.
 
-Alan Stern
+Nigel
