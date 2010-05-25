@@ -1,13 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Tue, 25 May 2010 15:05:19 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005251501500.1634-100000__11492.561773821$1274814466$gmane$org@iolanthe.rowland.org>
-References: <20100525184740.GA4248@core.coreip.homeip.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: linux-next: Tree for May 25 (kernel/power, SUSPEND=n)
+Date: Tue, 25 May 2010 21:24:52 +0200
+Message-ID: <201005252124.52108.rjw__15551.9147323959$1274815544$gmane$org@sisk.pl>
+References: <20100525142657.c2ae7804.sfr@canb.auug.org.au>
+	<20100525084959.4ff9e924.randy.dunlap@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100525184740.GA4248@core.coreip.homeip.net>
+In-Reply-To: <20100525084959.4ff9e924.randy.dunlap@oracle.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,50 +18,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-pm@lists.linux-foundation.org, linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 25 May 2010, Dmitry Torokhov wrote:
-
-> > > What you describe can be done in userspace though, via a "suspend manager" 
-> > > process. Tasks reading input events will post "busy" events to stop the 
-> > > manager process from sending system into suspend. But this can be confined to 
-> > > Android userspace, leaving the kernel as is (well, kernel needs to be modified 
-> > > to not go into suspend with full queues, but that is using existing kernel 
-> > > APIs).
-> > 
-> > I think that could be made to work.  And it might remove the need for 
-> > the userspace suspend-blocker API, which would be an advantage.  It 
-> > could even remove the need for the opportunistic-suspend workqueue -- 
-> > opportunistic suspends would be initiated by the "suspend manager" 
-> > process instead of by the kernel.
-> > 
-> > However you still have the issue of modifying the kernel drivers to 
-> > disallow opportunistic suspend if their queues are non-empty.  Doing 
-> > that is more or less equivalent to implementing kernel-level suspend 
-> > blockers.  (The suspend blocker approach is slightly more efficient, 
-> > because it will prevent a suspend from starting if a queue is 
-> > non-empty, instead of allowing the suspend to start and then aborting 
-> > it partway through.)
-> >
-> > Maybe I'm missing something here...  No doubt someone will point it out 
-> > if I am.
-> > 
+On Tuesday 25 May 2010, Randy Dunlap wrote:
+> On Tue, 25 May 2010 14:26:57 +1000 Stephen Rothwell wrote:
 > 
-> Well, from my perspective that would limit changes to the evdev driver
-> (well, limited input core plumbing will be needed) but that is using the
-> current PM infrastructure. The HW driver changes will be limited to what
-> you described "type 2" in your other e-mail.
+> > Hi all,
+> > 
+> > We are in the merge window again.  I remind you all not to add stuff for
+> > 2.6.36 to your linux-next trees until after 2.6.35-rc1.
 > 
-> Also, not suspending while events are in progress) is probably
-> beneficial for platforms other than Android as well. So unless I am
-> missing something this sounds like a win.
+> 
+> when CONFIG_SUSPEND=n, CONFIG_OPPORTUNISTIC_SUSPEND=n, CONFIG_PM=y:
+> 
+> kernel/power/main.c:66: error: 'pm_states' undeclared (first use in this function)
 
-I agree that simplifying the user API would be an advantage.  Instead 
-of the full-blown suspend-blocker interface, we would need only a way 
-to initiate an opportunistic suspend.  For example:
+Thanks, the patch below fixes this.
 
-	echo opportunistic >/sys/power/state
+Rafael
 
-Alan Stern
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM: Fix build with CONFIG_SUSPEND unset
+
+If CONFIG_SUSPEND is unset, pm_state_valid() doesn't build because
+the pm_states[] array is not defined, but pm_state_valid() is only
+used under #ifdef CONFIG_SUSPEND, so don't try to build it if
+CONFIG_SUSPEND is unset.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/main.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: linux-2.6/kernel/power/main.c
+===================================================================
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -61,10 +61,12 @@ static inline int pm_enter_state(int sta
+ 
+ static inline bool hibernation_supported(void) { return true; }
+ 
++#ifdef CONFIG_SUSPEND
+ static inline bool pm_state_valid(int state_idx)
+ {
+ 	return pm_states[state_idx] && valid_state(state_idx);
+ }
++#endif /* CONFIG_SUSPEND */
+ 
+ static inline int pm_enter_state(int state_idx)
+ {
