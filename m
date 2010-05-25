@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Tue, 25 May 2010 01:38:16 +0200
-Message-ID: <201005250138.16293.rjw__37517.8539347418$1274744314$gmane$org@sisk.pl>
-References: <1274482015-30899-1-git-send-email-arve@android.com>
-	<201005242049.18920.rjw@sisk.pl>
-	<87wrusvrqe.fsf@deeprootsystems.com>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Mon, 24 May 2010 18:05:14 -0700
+Message-ID: <AANLkTikz2UcDv6BZQ9Hq2MdowuAK1y_PBBPPXMEkDmNa__64.9587055251644$1274749622$gmane$org@mail.gmail.com>
+References: <1274482015-30899-2-git-send-email-arve@android.com>
+	<Pine.LNX.4.44L0.1005212226180.20028-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87wrusvrqe.fsf@deeprootsystems.com>
+In-Reply-To: <Pine.LNX.4.44L0.1005212226180.20028-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,93 +18,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 25 May 2010, Kevin Hilman wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> =
+2010/5/21 Alan Stern <stern@rowland.harvard.edu>:
+> On Fri, 21 May 2010, [UTF-8] Arve Hj=F8nnev=E5g wrote:
+>
+>> The first goal can be achieved either by using device runtime PM and
+>> cpuidle to put all hardware into low-power states, transparently from
+>> the user space point of view, or by suspending the whole system.
+>> However, system suspend, in its current form, does not guarantee that
+>> the events of interest will always be responded to, since wakeup
+>> events (events that wake the CPU from idle and the system from
+>> suspend) that occur right after initiating suspend will not be
+>> processed until another possibly unrelated event wakes the system up
+>> again.
+>
+> Minor point of clarification here. =A0I'm not requesting that the patch
+> description be rewritten. =A0But this issue of lost wakeup events is more
+> subtle than it appears.
+>
+> Wakeup events can be lost in at least three different ways:
+>
+> =A0 =A0 1. A hardware signal (such as an IRQ) gets ignored.
+>
+> =A0 =A0 2. The hardware event occurs, but without effect since the
+> =A0 =A0 =A0 =A0kernel thread that would handle the event has been frozen.
+> =A0 =A0 =A0 =A0The event just ends up sitting in a queue somewhere until
+> =A0 =A0 =A0 =A0something else wakes up the system.
+>
+> =A0 =A0 3. The hardware event occurs and the kernel handles it fully,
+> =A0 =A0 =A0 =A0but the event propagates to userspace for further handling
+> =A0 =A0 =A0 =A0and the user program is already frozen.
+>
+> 1 is a hardware configuration failure (for example, it might happen as
+> a result of using edge-triggered IRQs instead of level-triggered) and
+> is outside the scope of this discussion.
+>
+> 2 generally represents a failure of the core PM subsystem, or a failure
+> of some other part of the kernel to use the PM core correctly. =A0In
+> theory we should be able to fix such mistakes. =A0Right now I'm aware of
+> at least one possible failure scenario that could be fixed fairly
+> easily.
+>
+> 3 is the type of failure that suspend blockers were really meant to
+> handle, particularly the userspace suspend-blocker API.
+>
+> IMO, we should strive to fix the existing type-2 failure modes.
+> However it is worth pointing out that they are basically separate from
+> the suspend-blocker mechanism.
+>
+> And it might be a good idea to point out somewhere in the patch
+> descriptions that suspend blockers are really meant to handle type-3
+> wakeup losses.
+>
 
-> > On Monday 24 May 2010, Felipe Balbi wrote:
-> >> On Mon, May 24, 2010 at 02:46:54AM +0200, ext Rafael J. Wysocki wrote:
-> >> >On Saturday 22 May 2010, Arve Hj=F8nnev=E5g wrote:
-> >> >> This patch series adds a suspend-block api that provides the same
-> >> >> functionality as the android wakelock api. This version adds a
-> >> >> delay before suspending again if no suspend blockers were used
-> >> >> during the last suspend attempt.
-> >> >
-> >> >Patches [1-6/8] applied to suspend-2.6/linux-next
-> >> =
+I don't see a big difference between 2 and 3. You can use suspend
+blockers to handle either.
 
-> >> funny thing is that even without sorting out the concerns plenty of =
+-- =
 
-> >> developers had on the other thread, this series is still taken. What's =
-
-> >> the point in dicussing/reviewing the patches then ?
-> >
-> > I don't think the concerns you're referring to can be solved out.  =
-
-> > Some people just don't like the whole idea and I don't think there's
-> > any way we can improve the patches to make them happy.  The only
-> > "solution" they would be satisfied with would simply be rejecting
-> > the feature altogether, although there are no practically viable
-> > alternatives known to me.
-> =
-
-> I'm not sure who the "some people" you're referring to are, but I'll
-> assume I'm included in that group.
-> =
-
-> I don't think this is a fair characterization of the objections, nor
-> do I think "rejecting the feature altogether" is the only satisfactory
-> answer.  Speaking for myself, I find the idea of being able to suspend
-> while idle a valid objective, and certainly see the usefulness of it
-> for embedded systems.  I'm also an owner and user of an Android phone,
-> so I am certainly not out just to make life difficult for Android.
-> =
-
-> The primary objection is not the end goal, but rather the
-> implementation.  In particular, the problematic redefintion of what it
-> means to be idle, or "not doing work that's immediately useful to the
-> user" to use the phrase from the changelog (where "useful" is still
-> not defined.)
-
-So, in fact, you don't like the _idea_, because the _idea_ is to use suspend
-blockers instead of trying to define what "idle" means.
-
-I don't think it's generally possible to define "idle" to match every possi=
-ble
-criteria one can imagine, so you're request to do that simply cannot be
-satisfied.
-
-> This (re)definition completely bypasses all current idle
-> infrastructure based on timers, scheduler, etc. and makes "usefulness"
-> defined in terms of who holds suspend blockers.
-
-That's because the point is not to suspend when the system is "idle", becau=
-se
-that would mean "suspend transparently from the applications' point of view=
-",
-which is what the Android people _don't_ _want_ _to_ _do_, because in that
-case their battery life would go to the toilet.  The idea is to suspend even
-when the system is not techincally "idle" and you don't like _that_.
-
-> This of course will lead to a scattering of suspend blockers into any
-> drivers/subsystems considered "useful", which by looking through current
-> Android kernels is many of them.
-
-That depends on the maintainers of these subsystems, who still have the pow=
-er
-to reject requested changes.
-
-As I said before, I don't think there's a way to resolve this so that every=
-one
-is happy and in my opinion there are reasons to merge the feature.
-
-Also I don't think we can make any progress discussing it.  We've already
-discussed it for a month or so without any real progress and I don't see how
-that's going to change now.
-
-Thanks,
-Rafael
+Arve Hj=F8nnev=E5g
