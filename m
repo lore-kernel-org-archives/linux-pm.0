@@ -1,14 +1,13 @@
-From: mark gross <640e9920@gmail.com>
-Subject: Re: PM QoS dynamic resource manager
-Date: Tue, 25 May 2010 07:52:23 -0700
-Message-ID: <20100525145223.GA4974@gvim.org>
-References: <alpine.DEB.2.00.1005211533530.25765@pchidamb-lnx.qualcomm.com>
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: linux-next: Tree for May 25 (kernel/power, SUSPEND=n)
+Date: Tue, 25 May 2010 08:49:59 -0700
+Message-ID: <20100525084959.4ff9e924.randy.dunlap__19307.5798372321$1274802770$gmane$org@oracle.com>
+References: <20100525142657.c2ae7804.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1005211533530.25765@pchidamb-lnx.qualcomm.com>
+In-Reply-To: <20100525142657.c2ae7804.sfr@canb.auug.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,34 +17,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Chidambaram, Praveen" <pchidamb@codeaurora.org>
-Cc: linux-pm@lists.linux-foundation.org, markgross@thegnar.org
+To: Stephen Rothwell <sfr@canb.auug.org.au>, linux-pm@lists.linux-foundation.org
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 21, 2010 at 03:37:39PM -0600, Chidambaram, Praveen wrote:
-> Hi,
+On Tue, 25 May 2010 14:26:57 +1000 Stephen Rothwell wrote:
+
+> Hi all,
 > 
-> I am looking for some extensible features for PM QoS. Specifically, 
-> dynamic runtime parameters that my architecture could define at 
-> runtime and the drivers can make use of. 
-> 
-> What are the plans in this regard?
+> We are in the merge window again.  I remind you all not to add stuff for
+> 2.6.36 to your linux-next trees until after 2.6.35-rc1.
 
-we've talked about it a few times in the past.  
 
-It's come down to how do we prevent platform independent code from
-depending on such platform independent dynamic prarams in a sane manner.
+when CONFIG_SUSPEND=n, CONFIG_OPPORTUNISTIC_SUSPEND=n, CONFIG_PM=y:
 
-I've alway's pushed for coming up with more reasonable abstractions that
-could be re-used and adding them (like the bus thing) as opposed to
-having drivers make / use new parrameters dynamically.
+kernel/power/main.c:66: error: 'pm_states' undeclared (first use in this function)
 
---mgross
 
-> 
-> Thanks,
-> Praveen
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
