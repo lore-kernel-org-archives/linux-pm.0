@@ -1,15 +1,15 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Tue, 25 May 2010 15:05:41 -0700
-Message-ID: <AANLkTinz4wUJFkvhpMuYDEpQogBJtj-nhSRoEIFQBK6_@mail.gmail.com>
-References: <20100525165137.GB2730@core.coreip.homeip.net>
-	<Pine.LNX.4.44L0.1005251408120.1634-100000@iolanthe.rowland.org>
-	<20100525183334.GA4669@core.coreip.homeip.net>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Tue, 25 May 2010 15:23:23 -0700
+Message-ID: <AANLkTik7eKNIqMFGVl6OzpqBnhvjet9puUQDCRkrabkg__33942.9388558075$1274826333$gmane$org@mail.gmail.com>
+References: <201005251124.58017.dmitry.torokhov@gmail.com>
+	<Pine.LNX.4.44L0.1005251428090.1634-100000@iolanthe.rowland.org>
+	<20100525184740.GA4248@core.coreip.homeip.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100525183334.GA4669@core.coreip.homeip.net>
+In-Reply-To: <20100525184740.GA4248@core.coreip.homeip.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,39 +20,90 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Sven Neumann <s.neumann@raumfeld.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tero Saarni <tero.saarni@gmail.com>, linux-input@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Alexey Dobriyan <adobriyan@gmail.com>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Daniel Mack <daniel@caiaq.de>, linux-omap@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>, Daniel Walker <dwalker@codeaurora.org>, Theodore Ts'o <tytso@mit.edu>, =?ISO-8859-1?Q?M=E1rton_N=E9meth?= <nm127@freemail.hu>, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 25, 2010 at 11:33 AM, Dmitry Torokhov
+On Tue, May 25, 2010 at 11:47 AM, Dmitry Torokhov
 <dmitry.torokhov@gmail.com> wrote:
-> On Tue, May 25, 2010 at 02:25:08PM -0400, Alan Stern wrote:
+> On Tue, May 25, 2010 at 02:35:17PM -0400, Alan Stern wrote:
 >> On Tue, 25 May 2010, Dmitry Torokhov wrote:
 >>
->> > BTW, If you are concerned about events that already "left" physical
->> > device but has not reached userspace yet - maybe instead of suspend
->> > blockers we should make sure that all drivers throughout the chain
->> > implement suspend/resume and refuse suspending if their queues are not
->> > empty. =A0In input land that would mean extending suspend routine in
->> > input_dev and adding one to evdev.
+>> > > Here's the scenario:
+>> > >
+>> > > The system is awake, and the user presses a key. The keyboard driver
+>> > > processes the keystroke and puts it in an input queue. =A0A user pro=
+cess
+>> > > reads it from the event queue, thereby emptying the queue.
+>> > >
+>> > > At that moment, the system decides to go into opportunistic suspend.
+>> > > Since the input queue is empty, there's nothing to stop it. =A0As the
+>> > > first step, userspace is frozen -- before the process has a chance to
+>> > > do anything with the keystroke it just read. =A0As a result, the sys=
+tem
+>> > > stays asleep until something else wakes it up, even though the
+>> > > keystroke was important and should have prevented it from sleeping.
+>> > >
+>> > > Suspend blockers protect against this scenario. =A0Here's how:
+>> > >
+>> > > The user process doesn't read the input queue directly; instead it
+>> > > does a select or poll. =A0When it sees there is data in the queue, it
+>> > > first acquires a suspend blocker and then reads the data.
+>> > >
+>> > > Now the system _can't_ go into opportunistic suspend, because a susp=
+end
+>> > > blocker is active. =A0The user process can do whatever it wants with=
+ the
+>> > > keystroke. =A0When it is finished, it releases the suspend blocker a=
+nd
+>> > > loops back to the select/poll call.
+>> > >
+>> >
+>> > What you describe can be done in userspace though, via a "suspend mana=
+ger"
+>> > process. Tasks reading input events will post "busy" events to stop the
+>> > manager process from sending system into suspend. But this can be conf=
+ined to
+>> > Android userspace, leaving the kernel as is (well, kernel needs to be =
+modified
+>> > to not go into suspend with full queues, but that is using existing ke=
+rnel
+>> > APIs).
 >>
->> That's not the only problem. =A0We also have to consider events that have
->> reached userspace but not yet been fully processed. =A0The user thread
->> handling the event needs some way to prevent the system from suspending
->> until it is all done.
+>> I think that could be made to work. =A0And it might remove the need for
+>> the userspace suspend-blocker API, which would be an advantage. =A0It
+>> could even remove the need for the opportunistic-suspend workqueue --
+>> opportunistic suspends would be initiated by the "suspend manager"
+>> process instead of by the kernel.
+>>
+>> However you still have the issue of modifying the kernel drivers to
+>> disallow opportunistic suspend if their queues are non-empty. =A0Doing
+>> that is more or less equivalent to implementing kernel-level suspend
+>> blockers. =A0(The suspend blocker approach is slightly more efficient,
+>> because it will prevent a suspend from starting if a queue is
+>> non-empty, instead of allowing the suspend to start and then aborting
+>> it partway through.)
+>>
+>> Maybe I'm missing something here... =A0No doubt someone will point it out
+>> if I am.
 >>
 >
-> It is a problem if kernel initiated suspend transition on its own. I
-> believe that it is userspace responsibility to initiate sustend (and
-> make sure that needs of userspace, including processing of certain
-> events, are served beforehand).
+> Well, from my perspective that would limit changes to the evdev driver
+> (well, limited input core plumbing will be needed) but that is using the
+> current PM infrastructure. The HW driver changes will be limited to what
+> you described "type 2" in your other e-mail.
+>
+> Also, not suspending while events are in progress) is probably
+> beneficial for platforms other than Android as well. So unless I am
+> missing something this sounds like a win.
+>
 
-That only works if a single user-space thread initiates suspend and
-consumes all wakeup events (or if the user-space code that initiates
-suspend implements suspend blockers), and even then the kernel would
-still need to block suspend in same places as it does if the kernel
-initiates suspend. If a wakeup event happens right after user-space
-initiates suspend, that suspend must be aborted. By only initiating
-suspend from user-space, you force this to be a polling operation.
+How would this limit the changes you need in the evdev driver? It need
+to block suspend when there are unprocessed events in some queues.
+Suspend blockers gives you an api to do this, without it, you check
+the queues in your suspend hook and abort suspend if they are not
+empty. Without suspend blockers you have no api to signal that it is
+OK to suspend again, so you are forcing the thread that tried to
+suspend to poll until you stop aborting suspend.
 
 -- =
 
