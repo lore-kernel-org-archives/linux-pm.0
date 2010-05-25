@@ -1,14 +1,17 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Tue, 25 May 2010 15:33:50 -0700
-Message-ID: <AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y__17899.7838673697$1274826984$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
-	<201005252344.37639.rjw@sisk.pl>
+Date: Tue, 25 May 2010 15:37:48 -0700
+Message-ID: <AANLkTinnSH_egFYowkOQiYHL87QfIH332i1__OaTem-s__3464.71398738704$1274827123$gmane$org@mail.gmail.com>
+References: <201005251124.58017.dmitry.torokhov@gmail.com>
+	<Pine.LNX.4.44L0.1005251428090.1634-100000@iolanthe.rowland.org>
+	<20100525184740.GA4248@core.coreip.homeip.net>
+	<AANLkTik7eKNIqMFGVl6OzpqBnhvjet9puUQDCRkrabkg@mail.gmail.com>
+	<20100525223220.GC4928@core.coreip.homeip.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005252344.37639.rjw@sisk.pl>
+In-Reply-To: <20100525223220.GC4928@core.coreip.homeip.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,106 +21,115 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, tytso@mit.edu, linux-doc@vger.kernel.org, Greg KH <gregkh@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 25, 2010 at 2:44 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday 25 May 2010, Alan Stern wrote:
->> On Tue, 25 May 2010, Rafael J. Wysocki wrote:
->>
->> > So, basically, you'd prefer to move the entire complexity to user spac=
-e.
->>
->> No, just the complexity of the userspace suspend blockers. =A0That was
->> one of the parts of the interface that people objected to, after all.
->>
->> > I'm not sure if that's a big win
->>
->> It's not a _big_ win, but it is an improvement IMO.
->>
->> > =A0and I'm not sure anyone is actually going to
->> > implement it (and some drivers would still have to be modified to part=
-icipate
->> > in this framework).
->>
->> Of course drivers have to be modified. =A0The kernel-layer suspend
->> blockers aren't affected by this proposal, so they still have to be
->> implemented.
->>
->> > =A0So again, we have a hunch that the goal may be achieved
->> > in a different way, but at this point we'd rather need a _working_ _so=
-lution_
->> > (in the form of code one can build and actually use).
->>
->> It's not very different from what has been submitted, and I think
->> there's little doubt that it could be built and used fairly easily.
->> All we're talking about is removing the userspace suspend-blocker API
->> and the opportunistic workqueue, replacing them with an "opportunistic"
->> entry in /sys/power/state, and setting up a userspace power manager
->> process.
->>
->> > I don't think it's realistic to expect the Android people to go and re=
-design
->> > their stuff along the lines you've described, because they have a work=
-ing
->> > implementation (in the kernel) that they are satisfied with.
->>
->> The redesign would be pretty small. =A0The kernel changes relative to
->> what they have submitted are minimal, mostly just removing a few of
->> their additions. =A0Furthermore, we've been told that Android _already_
->> funnels all its userspace suspend-blocker work through a single
->> process. =A0All that would be needed would be to make that process
->> initiate an opportunistic suspend whenever no userspace suspend
->> blockers were active.
->>
->> > Now, we can reject their patches, but that's not going to cause any pr=
-ogress
->> > to happen, realistically. =A0Quite on the contrary, Android will conti=
-nue to use
->> > wakelocks and Android driver writers will continue to ignore the mainl=
-ine
->> > and the gap between the two kernel lines will only get wider and wider=
- over
->> > time.
+2010/5/25 Dmitry Torokhov <dmitry.torokhov@gmail.com>:
+> On Tue, May 25, 2010 at 03:23:23PM -0700, Arve Hj=F8nnev=E5g wrote:
+>> On Tue, May 25, 2010 at 11:47 AM, Dmitry Torokhov
+>> <dmitry.torokhov@gmail.com> wrote:
+>> > On Tue, May 25, 2010 at 02:35:17PM -0400, Alan Stern wrote:
+>> >> On Tue, 25 May 2010, Dmitry Torokhov wrote:
+>> >>
+>> >> > > Here's the scenario:
+>> >> > >
+>> >> > > The system is awake, and the user presses a key. The keyboard dri=
+ver
+>> >> > > processes the keystroke and puts it in an input queue. =A0A user =
+process
+>> >> > > reads it from the event queue, thereby emptying the queue.
+>> >> > >
+>> >> > > At that moment, the system decides to go into opportunistic suspe=
+nd.
+>> >> > > Since the input queue is empty, there's nothing to stop it. =A0As=
+ the
+>> >> > > first step, userspace is frozen -- before the process has a chanc=
+e to
+>> >> > > do anything with the keystroke it just read. =A0As a result, the =
+system
+>> >> > > stays asleep until something else wakes it up, even though the
+>> >> > > keystroke was important and should have prevented it from sleepin=
+g.
+>> >> > >
+>> >> > > Suspend blockers protect against this scenario. =A0Here's how:
+>> >> > >
+>> >> > > The user process doesn't read the input queue directly; instead it
+>> >> > > does a select or poll. =A0When it sees there is data in the queue=
+, it
+>> >> > > first acquires a suspend blocker and then reads the data.
+>> >> > >
+>> >> > > Now the system _can't_ go into opportunistic suspend, because a s=
+uspend
+>> >> > > blocker is active. =A0The user process can do whatever it wants w=
+ith the
+>> >> > > keystroke. =A0When it is finished, it releases the suspend blocke=
+r and
+>> >> > > loops back to the select/poll call.
+>> >> > >
+>> >> >
+>> >> > What you describe can be done in userspace though, via a "suspend m=
+anager"
+>> >> > process. Tasks reading input events will post "busy" events to stop=
+ the
+>> >> > manager process from sending system into suspend. But this can be c=
+onfined to
+>> >> > Android userspace, leaving the kernel as is (well, kernel needs to =
+be modified
+>> >> > to not go into suspend with full queues, but that is using existing=
+ kernel
+>> >> > APIs).
+>> >>
+>> >> I think that could be made to work. =A0And it might remove the need f=
+or
+>> >> the userspace suspend-blocker API, which would be an advantage. =A0It
+>> >> could even remove the need for the opportunistic-suspend workqueue --
+>> >> opportunistic suspends would be initiated by the "suspend manager"
+>> >> process instead of by the kernel.
+>> >>
+>> >> However you still have the issue of modifying the kernel drivers to
+>> >> disallow opportunistic suspend if their queues are non-empty. =A0Doing
+>> >> that is more or less equivalent to implementing kernel-level suspend
+>> >> blockers. =A0(The suspend blocker approach is slightly more efficient,
+>> >> because it will prevent a suspend from starting if a queue is
+>> >> non-empty, instead of allowing the suspend to start and then aborting
+>> >> it partway through.)
+>> >>
+>> >> Maybe I'm missing something here... =A0No doubt someone will point it=
+ out
+>> >> if I am.
+>> >>
 >> >
->> > And what really is the drawback if we merge the patches? =A0Quite fran=
-kly,
->> > I don't see any.
+>> > Well, from my perspective that would limit changes to the evdev driver
+>> > (well, limited input core plumbing will be needed) but that is using t=
+he
+>> > current PM infrastructure. The HW driver changes will be limited to wh=
+at
+>> > you described "type 2" in your other e-mail.
+>> >
+>> > Also, not suspending while events are in progress) is probably
+>> > beneficial for platforms other than Android as well. So unless I am
+>> > missing something this sounds like a win.
+>> >
 >>
->> You don't seem to appreciate how small a change Dmitry has proposed.
->> Almost all of the suspend-blocker work would remain as in the submitted
->> patches. =A0The only difference is that the userspace API and
->> opportunistic-suspend implementation would be simplified, by moving
->> some of the work out of the kernel.
+>> How would this limit the changes you need in the evdev driver? It need
+>> to block suspend when there are unprocessed events in some queues.
+>> Suspend blockers gives you an api to do this, without it, you check
+>> the queues in your suspend hook and abort suspend if they are not
+>> empty. Without suspend blockers you have no api to signal that it is
+>> OK to suspend again, so you are forcing the thread that tried to
+>> suspend to poll until you stop aborting suspend.
 >
-> No, I don't really think it's going to be a small change. =A0The problem =
-is that
-> for the Android people changing user space is very hard, so I don't think
-> this realy is an option, given that they would have to implement it thems=
-elves,
-> test it, validate it on multiple different hardware platforms etc. and _t=
-hen_
-> resubmit the feature without any guarantee that it will be merged.
->
-
-The biggest problem here is not that it is hard to change our
-user-space, but that the proposed change is inferior to what we have
-now. It forces us to poll until all drivers stop aborting suspend. On
-one hand we have people telling us that all code that polls is broken
-and must be fixed (instead of suspending to limit the damage), and on
-the other hand we have people suggesting we implement opportunistic
-suspend by polling from user-space until suspend succeeds.
-
-
-> So, my opinion is that we only have a choice to either take the feature a=
-s is
-> now, or reject it altogether and live with the consequeces in each case. =
-=A0And
-> quite frankly I don't feel like I'm in position to make that decision.
+> No, you do not need to poll. You just set a timeout (short or long,
+> depending on your needs) and if no userspace task blocked suspend
+> durng that time you attempt to initiate suspend from your manager
+> process. If it succeeds - good, if not that means that more events came
+> your way and you have to do it later.
 >
 
-
+How is that not polling? If the user is holding down a key, the keypad
+driver has to block suspend, and user space will try to suspend again
+and again and again...
 
 -- =
 
