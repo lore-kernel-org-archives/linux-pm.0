@@ -1,23 +1,16 @@
-From: Vitaly Wool <vitalywool@gmail.com>
+From: Florian Mickler <florian@mickler.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 26 May 2010 13:23:14 +0200
-Message-ID: <AANLkTinNY1vtXpjzPpdBYiI5fbz9Dp50YOpZSfHdoN_D__45316.3644801409$1274873049$gmane$org@mail.gmail.com>
+Date: Wed, 26 May 2010 13:35:14 +0200
+Message-ID: <20100526133514.3d018520__2460.74170941046$1274873772$gmane$org@schatten.dmk.lab>
 References: <1274482015-30899-1-git-send-email-arve@android.com>
-	<1274863655.5882.4875.camel@twins>
-	<AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
-	<1274867106.5882.5090.camel@twins>
-	<AANLkTiksR3YozbBH0Iv5kNsQkEGKCH1APCvn_s6LkjV9@mail.gmail.com>
-	<1274868593.5882.5185.camel@twins>
-	<AANLkTinuxCbeBmxIR7b_1OtrqQYJCamiDZJbnNTih1Fb@mail.gmail.com>
-	<1274869966.5882.5262.camel@twins>
-	<AANLkTikRMBkoFxgaKsxMJ2lOMomTXpiHJDk3rVt0EtwM@mail.gmail.com>
-	<1274870970.5882.5311.camel@twins>
-	<AANLkTinlxsokwralwRAL9_YRQ7-SZUSvrGHTlRISA9bC@mail.gmail.com>
+	<201005240246.55043.rjw@sisk.pl> <1274863533.5882.4864.camel@twins>
+	<20100526114053.440c0559@schatten.dmk.lab>
+	<1274867677.5882.5127.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinlxsokwralwRAL9_YRQ7-SZUSvrGHTlRISA9bC@mail.gmail.com>
+In-Reply-To: <1274867677.5882.5127.camel@twins>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,20 +20,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-2010/5/26 Arve Hj=F8nnev=E5g <arve@android.com>:
+On Wed, 26 May 2010 11:54:37 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-> Fixing the actually issue means fixing all user-space code, and
-> replacing most x86 hardware. I don't think keeping this feature out of
-> the kernel will significantly accelerate this.
+> On Wed, 2010-05-26 at 11:40 +0200, Florian Mickler wrote:
+> > _IF_ you want to suspend aggressively, I don't see another
+> > way.
+> > 
+> > The thing is, this is a paradigm change. Suspend is not anymore
+> > controlled by userspace. In order to let userspace control/work with
+> > this scheme, it needs to know when a suspend will be successfull or
+> > poll:
+> > 
+> > 1. kernel sees suspend may be possible on his side of things
+> > 
+> > 2. kernel sends a message to userspace that i could be possibly
+> > possible to suspend, but it may well be that by the time
+> > userspace suspends it is not possible anymore
+> > 
+> > 3. userspace decides to suspend. 
+> > 
+> > <- system suspends...  or not ..-> 
+> > 
+> > 4. userspace retries ... retries ... retries ... 
+> > 
+> > And then you have the whole can of worms and races.
+> 
+> I don't see any races, nor retry loops. 
 
-But if this feature gets merged, I bet you'll find another 100 reasons
-to not fix the actual issue. I wouldn't say so if you haven't provided
-the irrelevant points already, like "replacing x86 hardware". You're
-trying to merge the approach which makes the bad way of handing things
-the easiest way. This shouldn't get in as it is IMO.
+What about the worms?  :)
 
-~Vitaly
+I referred to retrying steps 1 through 3 as being the loop. 
+
+> 
+> There is always the race of an event arriving whilst in the process of
+> suspending, that is not solved by either the kernel nor user part of
+> suspend-blockers. The only thing is not to loose the event.
+> 
+> You simply have to deal with that, the suspend gets canceled, you do
+> deal with the event, and suspend again. How does making that 'retry' as
+> you call it happen from a kernel thread or from a userspace thread any
+> difference?
+> 
+You have a point there. But what follows?
+
+You either need to let userspace know that the kernel is now able to
+suspend or you let the kernel know that userspace is now able to
+suspend.
+Else you can not make a well informed suspend-decision and have to
+guess and retry.
+
+Why not look at blocking and unblocking as these events you want
+to have? Without wiggle room and retrying.
+
+And not having to route through userspace simplifies the auto-suspend
+scheme further.
+
+Cheers,
+Flo
