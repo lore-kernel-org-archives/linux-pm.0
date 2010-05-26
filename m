@@ -1,13 +1,23 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Wed, 26 May 2010 12:01:49 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005261156130.1328-100000@iolanthe.rowland.org>
-References: <CEE6BB42CAD6E947908279175AF8470A025A7D7DC4@EXDCVYMBSTM006.EQ1STM.local>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Wed, 26 May 2010 11:18:56 -0500
+Message-ID: <1274890736.4467.574.camel__10536.0466907316$1274890806$gmane$org@mulgrave.site>
+References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
+	<201005252344.37639.rjw@sisk.pl>
+	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
+	<1274863342.5882.4850.camel@twins>
+	<20100526112303.3fef15a4@schatten.dmk.lab>
+	<1274866402.5882.5051.camel@twins>
+	<AANLkTil9ZtMFxTfE6ITiFNOl4S1k3Lvdp5BPgGX7LJhw@mail.gmail.com>
+	<1274868384.5882.5169.camel@twins>
+	<AANLkTimHGpRAZklIwXu6wEbA3coKXJvCVLxj2twerkCw@mail.gmail.com>
+	<1274869262.5882.5222.camel@twins>
+	<AANLkTik9LINPmabJfVi0jfVs5sjVS_1l00WpnVTFEuLV@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CEE6BB42CAD6E947908279175AF8470A025A7D7DC4@EXDCVYMBSTM006.EQ1STM.local>
+In-Reply-To: <AANLkTik9LINPmabJfVi0jfVs5sjVS_1l00WpnVTFEuLV@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,43 +27,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus WALLEIJ <linus.walleij@stericsson.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Sven Neumann <s.neumann@raumfeld.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Tero Saarni <tero.saarni@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Alexey Dobriyan <adobriyan@gmail.com>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Daniel Mack <daniel@caiaq.de>, Oleg Nesterov <oleg@redhat.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Daniel Walker <dwalker@codeaurora.>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Greg KH <gregkh@suse.de>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, tytso@mit.edu, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 May 2010, Linus WALLEIJ wrote:
+On Wed, 2010-05-26 at 13:29 +0300, Pekka Enberg wrote:
+> Yup, I don't quite get Arve's argument either. C code can interact
+> with Java code (and vice versa) just fine in userspace.
 
-> Overall as a driver writer I'm quite confused at this point, if
-> I have a driver X, how is that code going to look if it is going
-> to support both runtime PM *and* suspend blockers? I don't say
-> it has to support both mechanisms in parallell, I'm even fine
-> with putting it in #ifdef:s, but how will the source code look?
-> A real-world example on a simple driver out of the Motorola Droid
-> git or so would help a lot.
+This is an incorrect statement.  It's possible for java to call C via
+the JNI, even though there are quite a few gotchas that mean not just
+*any* C code can do it (been there, tripped over some of them, although
+they were all ultimately ironed out).  It's very difficult for C to call
+directly into Java without being specially coded because it involves
+creating and managing a JVM (so in general, arbitrary C code can't do
+this).  The usual way we do C -> Java is process to process via some
+intermediary like RPC or Corba or SOAP (or even JSON) ... which gets
+very messy for a mobile device.
+
+On Wed, 2010-05-26 at 12:21 +0200, Peter Zijlstra wrote:
+> So provide a C interface to it as well?
+
+The way Android is currently coded, all user space suspend blocks are
+handled in Java code at what's called the Frameworks layer (Frameworks
+is the Java API for apps) this is also how the suspend permissions are
+managed and presented to the user.  The few C applications which block
+suspend just manipulate the device directly.
+
+> Surely you can have the java thing have a unix socket or something a C
+> app can talk to. That shouldn't be hard at all.
 > 
-> It's quite relevant since e.g. all OMAP drivers will need this
-> modification to be used with Android-like systems, and at
-> ST-Ericsson we will need both runtime PM and suspend blockers for
-> our drivers as well. It will as a consequence affect the drivers
-> for all ARM reference boards since we use the drivers for ARM
-> PrimeCells. etc...
-> 
-> Now if this mechanism is going in, my main interest is that there
-> is some clearly cut way and design pattern for supporting both
-> runtime PM and suspend blocks.
+> Or make the suspend manager a C proglet and provide a JNI interface,
+> or whatever.
 
-It's not difficult.  You just have to decide what situations should 
-block opportunistic suspend.  For example, let's say that opportunistic 
-suspend should be blocked when your event queue is non-empty.
+It's a fairly large piece of code to try to rewrite in C, so I don't
+think that's feasible on a reasonable timescale.  Android does have the
+concept of special sockets that can be used to communicate from less to
+more privileged processes (it has a very segmented runtime model), so
+these might be usable ... they have a drawback that they're essentially
+named pipes, so no multiplexing, but one per suspend influencing C
+process shouldn't be a huge burden.
 
-Then in the routine that adds new events to the queue, while still
-holding the spinlock that protects your queue, you enable your suspend
-blocker.  Likewise, in the routine that takes events off the queue and
-sends them to userspace, while holding the spinlock you test whether
-the queue has become empty; if it has you disable your suspend blocker.
-
-That's all.  No other changes are needed (except to create and destroy 
-the suspend blocker, of course).  No other interaction with suspend, 
-resume, or runtime PM.
-
-Alan Stern
+James
