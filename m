@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Thu, 27 May 2010 00:03:58 +0200
-Message-ID: <201005270003.58277.rjw__13594.4015616134$1274912737$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
-	<1274878665.27810.354.camel@twins>
-	<20100526132051.GA1834@srcf.ucam.org>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Wed, 26 May 2010 21:56:06 +0200
+Message-ID: <20100526215606.2a747c61__1887.01334777779$1274916079$gmane$org@schatten.dmk.lab>
+References: <20100526171106.0e44a736@schatten.dmk.lab>
+	<alpine.LFD.2.00.1005261829540.2995@localhost.localdomain>
+	<20100526190204.5efe4d59@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100526132051.GA1834@srcf.ucam.org>
+In-Reply-To: <20100526190204.5efe4d59@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,32 +19,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Greg KH <gregkh@suse.de>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Arve@smtp1.linux-foundation.org, Andi Kleen <ak@linux.intel.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, James Bottomley <James.Bottomley@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, tytso@mit.edu, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Linux@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 26 May 2010, Matthew Garrett wrote:
-> On Wed, May 26, 2010 at 02:57:45PM +0200, Peter Zijlstra wrote:
-> 
-> > I fail to see why. In both cases the woken userspace will contact a
-> > central governing task, either the kernel or the userspace suspend
-> > manager, and inform it there is work to be done, and please don't
-> > suspend now.
-> 
-> Thinking about this, you're right - we don't have to wait, but that does 
-> result in another problem. Imagine we get two wakeup events 
-> approximately simultaneously. In the kernel-level universe the kernel 
-> knows when both have been handled. In the user-level universe, we may 
-> have one task schedule, bump the count, handle the event, drop the count 
-> and then we attempt a suspend again because the second event handler 
-> hasn't had an opportunity to run yet. We'll then attempt a suspend and 
-> immediately bounce back up. That's kind of wasteful, although it'd be 
-> somewhat mitigated by checking that right at the top of suspend entry 
-> and returning -EAGAIN or similar.
+On Wed, 26 May 2010 19:02:04 +0100
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-I still think it would cause a loop-alike behavior between the user space
-power manager and the kernel PM core to happen, because the power manager
-will always have to check the user space counter after a failing suspend
-attempt.
+> > The power efficiency of a mobile device is depending on a sane overall
+> > software stack and not on the ability to mitigate crappy software in
+> > some obscure way which is prone to malfunction and disappoint users.
+> 
+> Even if you believe the kernel should be containing junk the model that
+> works and is used for everything else is resource management. Not giving
+> various tasks the ability to override rules, otherwise you end up needing
+> suspend blocker blockers next week.
+> 
+> A model based on the idea that a task can set its desired wakeup
+> behaviour *subject to hard limits* (ie soft/hard process wakeup) works
+> both for the sane system where its elegantly managing hard RT, and for
+> the crud where you sandbox it to stop it making a nasty mess.
+> 
+> Do we even need a syscall or will adding RLIMIT_WAKEUP or similar do the
+> trick ?
+> 
+> Alan
 
-Rafael
+Your approach definitely sounds better than the current solution. 
+What about mapping suspend blocker functionality later on, when this
+interface exists, on to this new approach and deprecating it?
+
+Cheers,
+Flo
