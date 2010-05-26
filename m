@@ -1,20 +1,23 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 26 May 2010 12:32:46 +0200
-Message-ID: <1274869966.5882.5262.camel__49830.6381552995$1274870008$gmane$org@twins>
-References: <1274482015-30899-1-git-send-email-arve@android.com>
-	<201005242049.18920.rjw@sisk.pl> <87wrusvrqe.fsf@deeprootsystems.com>
-	<201005250138.16293.rjw@sisk.pl> <1274863655.5882.4875.camel@twins>
-	<AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
-	<1274867106.5882.5090.camel@twins>
-	<AANLkTiksR3YozbBH0Iv5kNsQkEGKCH1APCvn_s6LkjV9@mail.gmail.com>
-	<1274868593.5882.5185.camel@twins>
-	<AANLkTinuxCbeBmxIR7b_1OtrqQYJCamiDZJbnNTih1Fb@mail.gmail.com>
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Wed, 26 May 2010 13:35:53 +0300
+Message-ID: <AANLkTimeU75ZOEZhX3vxQkjcNo93toJCphY3bSU6b0lf__9899.6270950467$1274870200$gmane$org@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
+	<201005252344.37639.rjw@sisk.pl>
+	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
+	<1274863342.5882.4850.camel@twins>
+	<20100526112303.3fef15a4@schatten.dmk.lab>
+	<1274866402.5882.5051.camel@twins>
+	<AANLkTil9ZtMFxTfE6ITiFNOl4S1k3Lvdp5BPgGX7LJhw@mail.gmail.com>
+	<1274868384.5882.5169.camel@twins>
+	<AANLkTimHGpRAZklIwXu6wEbA3coKXJvCVLxj2twerkCw@mail.gmail.com>
+	<1274869262.5882.5222.camel@twins>
+	<AANLkTilp1zWqvmUzGjEX3x9OBsdXdvNEG-znTjVvoM-b@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinuxCbeBmxIR7b_1OtrqQYJCamiDZJbnNTih1Fb@mail.gmail.com>
+In-Reply-To: <AANLkTilp1zWqvmUzGjEX3x9OBsdXdvNEG-znTjVvoM-b@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,19 +27,15 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
+To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, tytso@mit.edu, Greg KH <gregkh@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyMDEwLTA1LTI2IGF0IDAzOjI1IC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
-OgoKPiBhbmQgb24gc3lzdGVtcyB3aGVyZSB0aGUKPiBzYW1lIHBvd2VyIHN0YXRlIGNhbiBiZSB1
-c2VkIGZyb20gaWRsZSBhbmQgc3VzcGVuZCwgd2UgdXNlIHN1c3BlbmQgc28KPiB3ZSBjYW4gc3Rh
-eSBpbiB0aGUgbG93IHBvd2VyIHN0YXRlIGZvciBtaW51dGVzIHRvIGhvdXJzIGluc3RlYWQgb2YK
-PiBtaWxsaXNlY29uZHMgdG8gc2Vjb25kcy4KClNvIGRvbid0IHlvdSB0aGluayB3b3JraW5nIG9u
-IG1ha2luZyBpdCBwb3NzaWJsZSBmb3Igc3lzdGVtcyB0byBiZSBpZGxlCl90aGF0XyBsb25nIHdv
-dWxkIGltcHJvdmUgdGhpbmdzIGZvciBldmVyeWJvZHk/IGFzIG9wcG9zZWQgdG8gdGhpcwphdXRv
-LXN1c3BlbmQgd2hpY2ggb25seSBpbXByb3ZlcyBtYXR0ZXJzIGZvciB0aG9zZSB0aGF0IChjYW4p
-IHVzZSBpdD8KCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-XwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5v
-cmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xp
-bnV4LXBt
+2010/5/26 Arve Hj=F8nnev=E5g <arve@android.com>:
+>> So provide a C interface to it as well?
+>
+> We could, but the result would be that any program that needs to block
+> suspend has to be android specific.
+
+Why? You could put the userspace daemon to tools/suspend-manager, for examp=
+le?
