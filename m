@@ -1,11 +1,10 @@
-From: Brian Swetland <swetland@google.com>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 26 May 2010 03:40:01 -0700
-Message-ID: <AANLkTimQ_wahC5gnlip3APFzzfuCKab7y6OdlRyh2MWx__14848.574033431$1274870447$gmane$org@mail.gmail.com>
+Date: Wed, 26 May 2010 03:40:44 -0700
+Message-ID: <AANLkTikRMBkoFxgaKsxMJ2lOMomTXpiHJDk3rVt0EtwM__40877.5686439641$1274870490$gmane$org@mail.gmail.com>
 References: <1274482015-30899-1-git-send-email-arve@android.com>
-	<201005242049.18920.rjw@sisk.pl>
-	<87wrusvrqe.fsf@deeprootsystems.com>
-	<201005250138.16293.rjw@sisk.pl> <1274863655.5882.4875.camel@twins>
+	<87wrusvrqe.fsf@deeprootsystems.com> <201005250138.16293.rjw@sisk.pl>
+	<1274863655.5882.4875.camel@twins>
 	<AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
 	<1274867106.5882.5090.camel@twins>
 	<AANLkTiksR3YozbBH0Iv5kNsQkEGKCH1APCvn_s6LkjV9@mail.gmail.com>
@@ -13,8 +12,8 @@ References: <1274482015-30899-1-git-send-email-arve@android.com>
 	<AANLkTinuxCbeBmxIR7b_1OtrqQYJCamiDZJbnNTih1Fb@mail.gmail.com>
 	<1274869966.5882.5262.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <1274869966.5882.5262.camel@twins>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -30,31 +29,24 @@ To: Peter Zijlstra <peterz@infradead.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBNYXkgMjYsIDIwMTAgYXQgMzozMiBBTSwgUGV0ZXIgWmlqbHN0cmEgPHBldGVyekBp
-bmZyYWRlYWQub3JnPiB3cm90ZToKPiBPbiBXZWQsIDIwMTAtMDUtMjYgYXQgMDM6MjUgLTA3MDAs
-IEFydmUgSGrDuG5uZXbDpWcgd3JvdGU6Cj4KPj4gYW5kIG9uIHN5c3RlbXMgd2hlcmUgdGhlCj4+
-IHNhbWUgcG93ZXIgc3RhdGUgY2FuIGJlIHVzZWQgZnJvbSBpZGxlIGFuZCBzdXNwZW5kLCB3ZSB1
-c2Ugc3VzcGVuZCBzbwo+PiB3ZSBjYW4gc3RheSBpbiB0aGUgbG93IHBvd2VyIHN0YXRlIGZvciBt
-aW51dGVzIHRvIGhvdXJzIGluc3RlYWQgb2YKPj4gbWlsbGlzZWNvbmRzIHRvIHNlY29uZHMuCj4K
-PiBTbyBkb24ndCB5b3UgdGhpbmsgd29ya2luZyBvbiBtYWtpbmcgaXQgcG9zc2libGUgZm9yIHN5
-c3RlbXMgdG8gYmUgaWRsZQo+IF90aGF0XyBsb25nIHdvdWxkIGltcHJvdmUgdGhpbmdzIGZvciBl
-dmVyeWJvZHk/IGFzIG9wcG9zZWQgdG8gdGhpcwo+IGF1dG8tc3VzcGVuZCB3aGljaCBvbmx5IGlt
-cHJvdmVzIG1hdHRlcnMgZm9yIHRob3NlIHRoYXQgKGNhbikgdXNlIGl0PwoKQXMgd2UndmUgc3Rh
-dGVkIGEgbnVtYmVyIG9mIHRpbWVzIGluIHRoZSBzZXZlcmFsIHdlZWtzIG9mIGRpc2N1c3Npb24K
-KHRoaXMgdGltZSBhcm91bmQpIG9mIHRoaXMgcGF0Y2hzZXQsIHdlIGFyZSBhbGwgaW4gZmF2b3Ig
-b2YgaW1wcm92aW5nCnJ1bnRpbWUgcG0sIGZpbmRpbmcgYW5kIHJlc29sdmluZyBpc3N1ZXMgdGhh
-dCBwcmV2ZW50IGlkbGUsIGFuZApoZWFkaW5nIHRvd2FyZCBldmVyIGxvd2VyIHBvd2VyIHN0YXRl
-cyBpbiBpZGxlIC0tIGFmdGVyIGFsbCwgdGhpcwpiZW5lZml0cyBvdXIgYmF0dGVyeSBsaWZlIGlu
-IHRoZSBjYXNlcyB3aGVuIHRoZSBzeXN0ZW0gaXMgbm90CnN1c3BlbmRlZCBhcyB3ZWxsIGFzIG1v
-dmluZyB1cyBjbG9zZXIgdG8gYSBmdXR1cmUgd2hlcmUgdGhlIHBvd2VyCnNhdmluZ3MgYmV0d2Vl
-biBhY3RpdmVseSBlbnRlcmluZyBzdXNwZW5kIGFuZCBub3QgZG9pbmcgc28gYXBwcm9hY2gKemVy
-by4gIEFnZ3Jlc3NpdmVseSBlbnRlcmluZyB0aGUgbG93ZXN0IHBvc3NpYmxlIHBvd2VyIHN0YXRl
-IGF0IGFsbAp0aW1lcyBpcyBvdXIgZ29hbCBoZXJlLgoKQXQgdGhlIG1vbWVudCwgdGhlIHBvd2Vy
-IHNhdmluZ3MgZnJvbSBvcHBvcnR1bmlzdGljIHN1c3BlbmQgZG8KZGlyZWN0bHkgbGVhZCB0byBp
-bXByb3ZlZCBiYXR0ZXJ5IGxpZmUsIGFuZCB0aGVyZSBhcmUgc29tZSBhZHZhbnRhZ2VzCnRvIHRo
-aXMgbW9kZWwgaW4gdGhlIGZhY2Ugb2YgYSBub24tb3B0aW1hbCB1c2Vyc3BhY2UgKGFzIHdlIGVu
-Y291bnRlcgppbiBhIHdvcmxkIHdoZXJlIHRoZXJlIGFyZSBub3QgcmVzdHJpY3Rpb25zIG9uIHdo
-YXQgYXBwbGljYXRpb25zIHVzZXJzCm1heSBpbnN0YWxsIGFuZCBydW4pLgoKQnJpYW4KX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGlu
-ZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMu
-bGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+2010/5/26 Peter Zijlstra <peterz@infradead.org>:
+> On Wed, 2010-05-26 at 03:25 -0700, Arve Hj=F8nnev=E5g wrote:
+>
+>> and on systems where the
+>> same power state can be used from idle and suspend, we use suspend so
+>> we can stay in the low power state for minutes to hours instead of
+>> milliseconds to seconds.
+>
+> So don't you think working on making it possible for systems to be idle
+> _that_ long would improve things for everybody? as opposed to this
+> auto-suspend which only improves matters for those that (can) use it?
+
+I'm not preventing anyone from working on improving this. Currently
+both the kernel and our user-space code polls way too much. I don't
+think it is reasonable to demand that no one should run any user-space
+code with periodic timers when we have not even fixed the kernel to
+not do this.
+
+-- =
+
+Arve Hj=F8nnev=E5g
