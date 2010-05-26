@@ -1,17 +1,14 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Wed, 26 May 2010 11:33:22 +0200
-Message-ID: <1274866402.5882.5051.camel__43329.2725276717$1274866453$gmane$org@twins>
-References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
-	<201005252344.37639.rjw@sisk.pl>
-	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
-	<1274863342.5882.4850.camel@twins>
-	<20100526112303.3fef15a4@schatten.dmk.lab>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Wed, 26 May 2010 11:40:53 +0200
+Message-ID: <20100526114053.440c0559__16807.8556111597$1274866914$gmane$org@schatten.dmk.lab>
+References: <1274482015-30899-1-git-send-email-arve@android.com>
+	<201005240246.55043.rjw@sisk.pl> <1274863533.5882.4864.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100526112303.3fef15a4@schatten.dmk.lab>
+In-Reply-To: <1274863533.5882.4864.camel@twins>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,26 +18,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-doc@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, tytso@mit.edu, Greg KH <gregkh@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2010-05-26 at 11:23 +0200, Florian Mickler wrote:
+On Wed, 26 May 2010 10:45:33 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-> There is polling, because the suspend manager in userspace doesn't have
-> the whole picture. i.e. it doesn't know if a suspend will be
-> successfull. 
-> So for aggressive suspending as a powersave-feature you need to poll
-> (i.e. retry upon failure). because you don't want to stay unsuspended. 
+> On Mon, 2010-05-24 at 02:46 +0200, Rafael J. Wysocki wrote:
+> > On Saturday 22 May 2010, Arve Hj=F8nnev=E5g wrote:
+> > > This patch series adds a suspend-block api that provides the same
+> > > functionality as the android wakelock api. This version adds a
+> > > delay before suspending again if no suspend blockers were used
+> > > during the last suspend attempt.
+> > =
 
-Clearly if it fails, there something to be done, right? So whoever does
-the thing will communicate with the suspend manager that it's going to
-do and has finished doing its thing, at which point it will try again.
+> > Patches [1-6/8] applied to suspend-2.6/linux-next
+> =
 
-That's event driven, not polled.
+> So you're going to merge this junk?
+> =
 
-Also, if you want you can keep the kernel-side auto-suspend side, and
-have the suspend manager clear on !0 and re-establish the auto-suspend
-state on 0.
+> =
 
-But you really don't need this device thingy.
+
+Yes. By now, everyone reading the posts should know all points.
+Raffael obviously was part of this discussion and came to the decision
+to merge it. =
+
+
+My take of the discussion:
+_IF_ you want to suspend aggressively, I don't see another
+way.
+
+The thing is, this is a paradigm change. Suspend is not anymore
+controlled by userspace. In order to let userspace control/work with
+this scheme, it needs to know when a suspend will be successfull or
+poll:
+
+1. kernel sees suspend may be possible on his side of things
+
+2. kernel sends a message to userspace that i could be possibly
+possible to suspend, but it may well be that by the time
+userspace suspends it is not possible anymore
+
+3. userspace decides to suspend. =
+
+
+<- system suspends...  or not ..-> =
+
+
+4. userspace retries ... retries ... retries ... =
+
+
+And then you have the whole can of worms and races.
+
+
+
+Or you have the suspend-blocker scheme:
+
+1. kernel sees suspend is possible.
+2. kernel suspends.
+3. bingo.
+
+Cheers,
+Flo
