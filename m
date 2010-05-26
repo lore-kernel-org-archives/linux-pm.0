@@ -1,13 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Wed, 26 May 2010 09:59:01 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005260946430.1961-100000__28018.929428845$1274882494$gmane$org@iolanthe.rowland.org>
-References: <20100525225544.GA5331@core.coreip.homeip.net>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Wed, 26 May 2010 10:38:50 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005261033440.1961-100000__44036.5788098008$1274884795$gmane$org@iolanthe.rowland.org>
+References: <20100526151945.1b3813ac@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100525225544.GA5331@core.coreip.homeip.net>
+In-Reply-To: <20100526151945.1b3813ac@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,70 +17,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Florian Mickler <florian@mickler.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 25 May 2010, Dmitry Torokhov wrote:
+On Wed, 26 May 2010, Florian Mickler wrote:
 
-> > How is that not polling? If the user is holding down a key, the keypad
-> > driver has to block suspend, and user space will try to suspend again
-> > and again and again...
-> > 
+> I don't think that the in-kernel suspend block is a bad idea. 
 > 
-> If your userpsace is that stupid - sure. However, you can:
-> 
-> 1. Notify the suspend manager process that he rest of your userspace is
-> busy handling keystrokes so that it does not try to suspend while there
-> are events pending.
-> 
-> 2. Wait a tiny bit after last application notified you that it finished
-> processing events.
+> You could probably use the suspend-blockers unconditionally in the
+> suspend framework to indicate if a suspend is possible or not.
 
-This is more complicated than necessary.  Arve is wrong; my suggested 
-design does not require polling.
+That's not how it works.  Drivers aren't supposed to abort
+unconditional suspend -- not without a really good reason (for example,
+the device received a wakeup event before it was fully suspended).  In
+short, suspends should be considered to be _always_ possible.
 
-The reason is simple: When a user process initiates an opportunistic 
-suspend, you make it wait in an interruptible sleep until all the 
-kernel suspend blockers are released.  No polling.  If another user 
-thread decides in the meantime that it needs to block the suspend, it 
-sends a signal to the power manager process.
+> Regardless of opportunistic suspend or not. This way, you don't have to
+> try-and-fail on a suspend request and thus making suspending
+> potentially more robust or allowing for a "suspend as soon as
+> possible" semantic (which is probably a good idea, if you have to grab
+> your laptop in a hurry to get away).
 
-In fact, other threads should signal the power manager process whenever 
-they want to block or unblock suspends.  That way the power manager 
-process can spend all its time sleeping, without doing any polling.
+That's different.  Suspend blockers could block (not abort!) regular 
+suspends, just as they do opportunistic suspends.
 
-> So basically the difference is that with in-kernel suspend blockers,
-> there is a tiny window where we haven't started the suspend yet but are
-> about to the driver has a chance to prevent entire system from starting
-> sleep.
-> 
-> Without the blocker we may start suspending and will stop midcycle. We
-> may be even better off in the end since we could leave some devices
-> still powered down after aborting system-wide suspend.
-
-That's not so easy.  The design of the PM core requires that when the 
-system wakes up from suspend (or from an aborted suspend attempt), all 
-devices should go to full-power-on.  This is explained in section 6 of
-Documentation/power/runtime_pm.txt.
-
-The decision over whether to use kernel-space suspend blockers vs. 
-aborting suspends when queues are non-empty comes down to a tradeoff:
-
-	Suspend blockers involve a little more code (to create,
-	destroy, enable, and disable them) plus a little extra
-	runtime overhead each time an event occurs.  (Some people
-	may object to this extra overhead, although so far nobody
-	in this discussion has done so.)
-
-	Suspend blockers eliminate the extra overhead involved in
-	starting suspends that are just going to be aborted.
-
-	Suspend blockers offer extra debugging and accountability
-	(the user can find out which subsystems are responsible for
-	keeping the system awake).
-
-Which way you think the tradeoff should go is a subjective decision.  I 
-think that kernel suspend blockers are acceptable.
+But why should they?  I mean, if userspace wants to initiate a suspend
+that is capable of being blocked by a kernel suspend blocker, then all
+it has to do is initiate an opportunistic suspend instead of a normal
+suspend.
 
 Alan Stern
