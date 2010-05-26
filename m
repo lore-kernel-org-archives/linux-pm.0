@@ -1,7 +1,7 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
+From: James Bottomley <James.Bottomley@suse.de>
 Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Wed, 26 May 2010 09:38:29 -0700
-Message-ID: <87zkzmoby2.fsf__42686.4654910334$1274891963$gmane$org@deeprootsystems.com>
+Date: Wed, 26 May 2010 11:54:07 -0500
+Message-ID: <1274892847.4467.674.camel__13161.4766935401$1274893003$gmane$org@mulgrave.site>
 References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
 	<201005252344.37639.rjw@sisk.pl>
 	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
@@ -19,8 +19,7 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1274891308.1674.1766.camel@laptop> (Peter Zijlstra's message of
-	"Wed\, 26 May 2010 18\:28\:28 +0200")
+In-Reply-To: <1274891308.1674.1766.camel@laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -31,17 +30,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: Greg KH <gregkh@suse.de>, linux-doc@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, tytso@mit.edu, Pekka Enberg <penberg@cs.helsinki.fi>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
+Cc: Greg KH <gregkh@suse.de>, linux-doc@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, Pekka Enberg <penberg@cs.helsinki.fi>, tytso@mit.edu, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Peter Zijlstra <peterz@infradead.org> writes:
+On Wed, 2010-05-26 at 18:28 +0200, Peter Zijlstra wrote:
+> On Wed, 2010-05-26 at 11:18 -0500, James Bottomley wrote:
+> > > Or make the suspend manager a C proglet and provide a JNI interface,
+> > > or whatever.
+> > 
+> > It's a fairly large piece of code to try to rewrite in C, so I don't
+> > think that's feasible on a reasonable timescale.  Android does have the
+> > concept of special sockets that can be used to communicate from less to
+> > more privileged processes (it has a very segmented runtime model), so
+> > these might be usable ... they have a drawback that they're essentially
+> > named pipes, so no multiplexing, but one per suspend influencing C
+> > process shouldn't be a huge burden. 
+> 
+> It wouldn't need to convert the whole Frameworks layer into C, just
+> enough to manage the suspend state.
+
+That's actually what I was saying ... converting the whole frameworks
+would be impossible.  I'm saying the suspend state manager is still a
+large piece of work.
 
 > Anyway, I think there's been enough arguments against even the concept
 > of opportunistic/auto-suspend, and I for one will object with a NAK if
 > Rafael send this to Linus.
 
-It's already been submitted to Linus for 2.6.35, but not on LKML:
+Well, I suppose that's your prerogative.
 
-  https://lists.linux-foundation.org/pipermail/linux-pm/2010-May/025811.html
+> The whole idea of segregating userspace like that, and not letting
+> runnable thing run is very ill considered indeed.
 
-Kevin
+OK, so this is an approach difference.  I see it as controlling an
+application resource problem, which is similar to quotas on filesystems.
+The opinion divide seems to come down to those who think the application
+stack has to be fixed before a working device can be released, and those
+who want to make the devices work now and supply pressure to fix the
+applications as well.
+
+I fail to see how, in an environment where the whole value of the device
+is the third party supplied applications that the former view is
+reasonable.  I equally fail to see how the latter is achievable without
+segregating userspace into trusted and untrusted and taking action to
+curb the power consumption of untrusted applications.
+
+Given that I'm in the latter category, I think suspend blockers is a
+reasonable solution to an existing problem.  I like Alan's idea of
+restricting the API into a single user space program so we contain the
+API contamination ... but realistically that's mostly the current
+suspend blockers anyway.
+
+James
