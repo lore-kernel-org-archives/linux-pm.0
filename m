@@ -1,22 +1,19 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 26 May 2010 03:53:31 -0700
-Message-ID: <AANLkTinlxsokwralwRAL9_YRQ7-SZUSvrGHTlRISA9bC__9227.144069928$1274871511$gmane$org@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 2/8] PM: suspend_block: Add driver to access
+ suspend blockers from user-space
+Date: Wed, 26 May 2010 13:06:25 +0200
+Message-ID: <1274871985.5882.5373.camel__25250.2916534015$1274872041$gmane$org@twins>
 References: <1274482015-30899-1-git-send-email-arve@android.com>
-	<1274863655.5882.4875.camel@twins>
-	<AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
-	<1274867106.5882.5090.camel@twins>
-	<AANLkTiksR3YozbBH0Iv5kNsQkEGKCH1APCvn_s6LkjV9@mail.gmail.com>
-	<1274868593.5882.5185.camel@twins>
-	<AANLkTinuxCbeBmxIR7b_1OtrqQYJCamiDZJbnNTih1Fb@mail.gmail.com>
-	<1274869966.5882.5262.camel@twins>
-	<AANLkTikRMBkoFxgaKsxMJ2lOMomTXpiHJDk3rVt0EtwM@mail.gmail.com>
-	<1274870970.5882.5311.camel@twins>
+	<1274482015-30899-2-git-send-email-arve@android.com>
+	<1274482015-30899-3-git-send-email-arve@android.com>
+	<1274863428.5882.4860.camel@twins>
+	<AANLkTimTnzK1ByG2bE2gGjINxD_Pbvez7PFHo7Kzo9yk@mail.gmail.com>
+	<20100526125136.53f2dc82@schatten.dmk.lab>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1274870970.5882.5311.camel@twins>
+In-Reply-To: <20100526125136.53f2dc82@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,39 +23,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
+To: Florian Mickler <florian@mickler.org>
+Cc: Len Brown <len.brown@intel.com>, Jim Collar <jim.collar@eqware.net>, linux-doc@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>, Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-2010/5/26 Peter Zijlstra <peterz@infradead.org>:
-> On Wed, 2010-05-26 at 03:40 -0700, Arve Hj=F8nnev=E5g wrote:
->> 2010/5/26 Peter Zijlstra <peterz@infradead.org>:
->> > On Wed, 2010-05-26 at 03:25 -0700, Arve Hj=F8nnev=E5g wrote:
->> >
->> >> and on systems where the
->> >> same power state can be used from idle and suspend, we use suspend so
->> >> we can stay in the low power state for minutes to hours instead of
->> >> milliseconds to seconds.
->> >
->> > So don't you think working on making it possible for systems to be idle
->> > _that_ long would improve things for everybody? as opposed to this
->> > auto-suspend which only improves matters for those that (can) use it?
->>
->> I'm not preventing anyone from working on improving this. Currently
->> both the kernel and our user-space code polls way too much. I don't
->> think it is reasonable to demand that no one should run any user-space
->> code with periodic timers when we have not even fixed the kernel to
->> not do this.
->
-> All I'm saying is that merging a stop-gap measure will decrease the
-> urgency and thus the time spend fixing the actual issues while adding
-> the burden of maintaining this stop-gap measure.
->
-
-Fixing the actually issue means fixing all user-space code, and
-replacing most x86 hardware. I don't think keeping this feature out of
-the kernel will significantly accelerate this.
-
--- =
-
-Arve Hj=F8nnev=E5g
+T24gV2VkLCAyMDEwLTA1LTI2IGF0IDEyOjUxICswMjAwLCBGbG9yaWFuIE1pY2tsZXIgd3JvdGU6
+Cj4gT24gV2VkLCAyNiBNYXkgMjAxMCAwMzo0NzoyNyAtMDcwMAo+IEFydmUgSGrDuG5uZXbDpWcg
+PGFydmVAYW5kcm9pZC5jb20+IHdyb3RlOgo+IAo+ID4gMjAxMC81LzI2IFBldGVyIFppamxzdHJh
+IDxwZXRlcnpAaW5mcmFkZWFkLm9yZz46Cj4gPiA+IE9uIEZyaSwgMjAxMC0wNS0yMSBhdCAxNTo0
+NiAtMDcwMCwgQXJ2ZSBIasO4bm5ldsOlZyB3cm90ZToKPiA+ID4+ICtUbyBjcmVhdGUgYSBzdXNw
+ZW5kIGJsb2NrZXIgZnJvbSB1c2VyIHNwYWNlLCBvcGVuIHRoZSBzdXNwZW5kX2Jsb2NrZXIKPiA+
+ID4+IHNwZWNpYWwKPiA+ID4+ICtkZXZpY2UgZmlsZToKPiA+ID4+ICsKPiA+ID4+ICsgICAgZmQg
+PSBvcGVuKCIvZGV2L3N1c3BlbmRfYmxvY2tlciIsIE9fUkRXUiB8IE9fQ0xPRVhFQyk7Cj4gPiA+
+PiArCj4gPiA+PiArdGhlbiBvcHRpb25hbGx5IGNhbGw6Cj4gPiA+PiArCj4gPiA+PiArICAgIGlv
+Y3RsKGZkLCBTVVNQRU5EX0JMT0NLRVJfSU9DVExfU0VUX05BTUUoc3RybGVuKG5hbWUpKSwgbmFt
+ZSk7Cj4gPiA+PiArCj4gPiA+PiArVG8gYWN0aXZhdGUgdGhlIHN1c3BlbmQgYmxvY2tlciBjYWxs
+Ogo+ID4gPj4gKwo+ID4gPj4gKyAgICBpb2N0bChmZCwgU1VTUEVORF9CTE9DS0VSX0lPQ1RMX0JM
+T0NLKTsKPiA+ID4+ICsKPiA+ID4+ICtUbyBkZWFjdGl2YXRlIGl0IGNhbGw6Cj4gPiA+PiArCj4g
+PiA+PiArICAgIGlvY3RsKGZkLCBTVVNQRU5EX0JMT0NLRVJfSU9DVExfVU5CTE9DSyk7Cj4gPiA+
+PiArCj4gPiA+PiArVG8gZGVzdHJveSB0aGUgc3VzcGVuZCBibG9ja2VyLCBjbG9zZSB0aGUgZGV2
+aWNlOgo+ID4gPj4gKwo+ID4gPj4gKyAgICBjbG9zZShmZCk7Cj4gPiA+Cj4gPiA+IFVyZ2gsIHBs
+ZWFzZSBsZXQgdGhlIG9wZW4oKSBiZSBCTE9DSywgdGhlIGNsb3NlKCkgYmUgVU5CTE9DSywgYW5k
+IGtlZXAKPiA+ID4gdGhlIFNFVF9OQU1FIHRoaW5nIGlmIHlvdSByZWFsbHkgY2FyZS4KPiA+ID4K
+PiA+IAo+ID4gVGhhdCB3b3VsZCBiZSB2ZXJ5IGluZWZmaWNpZW50Lgo+ID4gCj4gCj4gQWxzbyBJ
+IHRoaW5rIGl0IGlzIGludGVuZGVkIHRvIGVuZm9yY2UgbmFtZWQgc3VzcGVuZCBibG9ja2Vycy4g
+KEZvcgo+IGRlYnVnZ2luZy9hY2NvdW50aW5nIHB1cnBvc2VzKS4KCkkgZG9uJ3QgdGhpbmsgdGhl
+IGNvZGUgYXMgcHJvcG9zZWQgbWFuZGF0ZXMgeW91IFNFVF9OQU1FLCBhbmQgSSBkaWRuJ3QKcHJv
+cG9zZSBraWxsaW5nIHRoYXQgb2ZmLCB5b3UgY2FuIHN0aWxsIFNFVF9OQU1FIGFmdGVyIHlvdSBv
+cGVuKCkgYW5kCmFjcXVpcmUgdGhlIHRoaW5nLgoKQW55d2F5LCB0aGUgd2hvbGUgcG9pbnQgaXMg
+bW9vdCBzaW5jZSBpdHMgc2ltcGx5IG5vdCBuZWVkZWQgYXQgYWxsLgpfX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGlu
+dXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3Vu
+ZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
