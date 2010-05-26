@@ -1,10 +1,9 @@
-From: Florian Mickler <florian@mickler.org>
+From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 26 May 2010 17:11:06 +0200
-Message-ID: <20100526171106.0e44a736__12631.6644404598$1274886717$gmane$org@schatten.dmk.lab>
+Date: Wed, 26 May 2010 17:12:44 +0200
+Message-ID: <1274886764.1674.1756.camel__1386.03580785475$1274886818$gmane$org@laptop>
 References: <1274482015-30899-1-git-send-email-arve@android.com>
-	<201005242049.18920.rjw@sisk.pl>
-	<87wrusvrqe.fsf@deeprootsystems.com>
+	<201005242049.18920.rjw@sisk.pl> <87wrusvrqe.fsf@deeprootsystems.com>
 	<201005250138.16293.rjw@sisk.pl> <1274863655.5882.4875.camel@twins>
 	<AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
 	<1274867106.5882.5090.camel@twins>
@@ -14,11 +13,12 @@ References: <1274482015-30899-1-git-send-email-arve@android.com>
 	<AANLkTikzgaOFdQKess4E-D86OLPOzxP3dWiDkU_UR0ri@mail.gmail.com>
 	<20100526142430.327ccbc4@schatten.dmk.lab>
 	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
+	<20100526171106.0e44a736@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100526171106.0e44a736@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,119 +28,16 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Linux@smtp1.linux-foundation.org, felipe.balbi@nokia.com, List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
+To: Florian Mickler <florian@mickler.org>
+Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 May 2010 14:16:12 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Wed, 2010-05-26 at 17:11 +0200, Florian Mickler wrote:
+> > Implementation-wise it probably ties into setpidle, its simply that a task
+> > has a pair of idle values, a dynamic one and a base one, the dynamic one
+> > being the base one but updatable temporarily by drivers.
 
-> > Really, what are you getting at? Do you deny that there are programs,
-> > that prevent a device from sleeping? (Just think of the bouncing
-> > cows app)
-> > 
-> > And if you have two kernels, one with which your device is dead after 1
-> > hour and one with which your device is dead after 10 hours. Which would
-> > you prefer? I mean really... this is ridiculous. 
-> 
-> The problem you have is that this is policy. If I have the device wired
-> to a big screen and I want cows bouncing on it I'll be most upset if
-> instead it suspends. What you are essentially arguing for is for the
-> kernel to disobey the userspace. It's as ridiculous (albeit usually less
-> damaging) as a file system saying "Ooh thats a rude file name, the app
-> can't have meant it, I'll put your document soemwhere else"
-> 
-> The whole API feels wrong to me. It's breaking rule #1 of technology "You
-> cannot solve a social problem with technology". In this case you have a
-> social/economic problem which is crap code. You solve it with an
-> economics solution - creative incentives not to produce crap code like
-> boxes that keep popping up saying "App XYZ is using all your battery" and
-> red-amber-green powermeter scores in app stores.
+> How does this address the loss of wakeup events while using suspend? 
+> (For example the 2 issues formulated by Alan Stern in [1])
 
-I'm not saying that your argument is not valid. But why don't you look
-at suspend blockers as a contract between userspace and kernelspace? An
-Opt-In to the current guarantees the kernel provides in the non-suspend
-case.
-
-<<If you want to use the rare resource "power" you have to take a
-suspend blocker. By this you assert that you are a well written
-application. If you are not well written, you will get the worst of our
-red-amber-green powermeter scores we have.>>
-
-On the other hand, applications can say, they don't need that much
-power and userspace guaranties and not take a suspend blocker.
-
-This is an option which they currently don't have.
-
-I don't think opportunistic suspend is a policy decision by the kernel.
-it is something new. Something which currently only the android
-userspace implements / supports. If you don't want to suspend while
-looking at the bouncing-cow, you have to take a suspend blocker and
-make yourself a user-visible power-eater, or don't do 
-
-echo "opportunistic" > /sys/power/policy 
-
-in the first place.
-
-This "optionally being badly written, who cares?" is a new feature the
-kernel can provide to applications. 
-
-That said, your proposed alternative implementation scheme looks like
-another possible approach.
-
-
-> That said if you want technical mitigation I think it makes more sense
-> if you look at it from a different starting point. The starting point
-> being this: We have idling logic in the kernel and improving this helps
-> everyone. What is needed to improve the existing logic ?
-> 
-> - You don't know which processes should be ignored for the purpose of
->   suspend (except for kernel threads) and there is no way to set this
-> 
-> - You don't know whether a move from a deep idle to a 'suspend' (which is
->   just a really deep idle in truth anyway) might break wakeups
->   requirements because a device has wake dependencies due to hardware
->   design (eg a port that has no electronics to kick the box out of
->   suspend into running). This is a problem we have already. [1]
-> 
-> That maps onto two existing ideas
-> 
-> Sandboxing/Resource Limits: handling apps that can't be trusted. So the
-> phone runs the appstore code via something like
-> 
-> 		setpidle(getpid(), something);
-> 		exec()
-> 
-> where 'something' is a value with meaning to both user space and to the
-> existing idling logic in the kernel that basically says to what extent it
-> is permitted to block idling/suspend. That also seems to tie into some of
-> the realtime + idle problems. This I think deals with Kevin Hillman's
-> thoughts on dealing with untrustworthy app code more cleanly and avoids
-> the need for userspace hackery like the blocker API.
-> 
-> And an entirely in kernel API where device drivers can indicate that in
-> their current situation they require that the power level doesn't drop
-> below some limit unless user requested. This is really important because
-> the platform vendor of the phone/pda/tablet whatever effectively owns the
-> kernel - so it's *their* problem, *their* control, *their* hardware and
-> they can make it work as best for the device. Best of all it means its
-> all free software stuff so if the vendor screws up you can still fix your
-> phone. 
-> 
-> Implementation-wise it probably ties into setpidle, its simply that a task
-> has a pair of idle values, a dynamic one and a base one, the dynamic one
-> being the base one but updatable temporarily by drivers.
-> 
-> Alan
-
-How does this address the loss of wakeup events while using suspend? 
-(For example the 2 issues formulated by Alan Stern in [1])
-
-cheers,
-Flo
-
-[1]http://lkml.org/lkml/2010/5/21/458
-
-p.s.: 
-dmk@schatten /usr/src/linux $ grep -r "setpidle" .
-dmk@schatten /usr/src/linux $ 
+By not suspending obviously.
