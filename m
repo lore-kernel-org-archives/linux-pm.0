@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Runtime PM for PCI-based USB host controllers
-Date: Wed, 26 May 2010 17:58:31 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005261753230.1328-100000__7526.42144584588$1274912307$gmane$org@iolanthe.rowland.org>
-References: <201005262311.56190.rjw@sisk.pl>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Wed, 26 May 2010 23:09:43 +0100
+Message-ID: <20100526230943.6f5e5b37__15297.4006291062$1274912494$gmane$org@lxorguk.ukuu.org.uk>
+References: <20100526171106.0e44a736@schatten.dmk.lab>
+	<alpine.LFD.2.00.1005261829540.2995@localhost.localdomain>
+	<20100526215409.33296d94@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005262311.56190.rjw@sisk.pl>
+In-Reply-To: <20100526215409.33296d94@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,21 +19,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-pci@vger.kernel.org
+To: Florian Mickler <florian@mickler.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Linux@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 May 2010, Rafael J. Wysocki wrote:
+> > suspend blockers are completely backwards as they basically disable
+> > the kernels ability to do resource management.
+> 
+> I don't think this is a defect in the approach but the point of it. 
 
-> At this point, yes.  At least drivers should leave the devices active and
-> let the core power take care of them.
+I think it's both. It's the point of it, and that itself is a defect. Its
+designed wrongly.
 
-What if the driver is unbound while the device is suspended?  It seems 
-pretty awkward.  The release method would have to do:
+> drivers code is needed anyway. What looses the kernel by implementing
+> suspend blockers, and later a more finegrained approach and mapping the
+> userspace part of suspend blockers on that finegrained approach later
+> on?
 
-	pm_runtime_get_sync(dev);
-	pm_runtime_disable(dev);
-	pm_runtime_set_suspended(dev);
-	pm_runtime_put_noidle(dev);
+The Linux approach is to do the job right. That means getting the
+interface right and so it works across all the interested parties (or as
+close as we can get).
 
-Alan Stern
+> >   - how much delay of wakeups is tolerated (missing interface)
+> 
+> Doesn't solve the segregation problem and is probably overkill for most
+> applications. I see this as an orthogonal thing (i.e. not
+> affecting this merge). 
+
+The key question that matters for suspend management is 'what wakeup
+delay is tolerated'. So it's absolutely fundamental.
+
+> True. But I wouldnt say, that it is the linux kernel who should force
+> this politics onto its users.
+
+This is the Linux way of doing things. It's like the GPL and being
+shouted at by Linus. They are things you accept when you choose to take
+part. Google chose to use Linux, if they want a feature upstream then the
+way you get it there is to figure out how to solve the real problem and
+make *everyone* (within reason) happy.
+
+We now have suggestions how to do the job properly so the right thing is
+probably to go and explore those suggestions not merge crap.
+
+Merging crap won't help anyway. The rest of the kernel community can
+still simply stonewall those interfaces, and a volunteer community has
+ways of dealing with abuse of process, notably by simply not getting
+around to, or implementing things directly contrary to the crap bits.
+
+So it's not even in the interest of people to play political games. Even
+if you get away with in the short term the people who rely on the junk
+will end up out on a limb and holding the baby when the crap hits the fan
+(see reiserfs)
+
+Alan
