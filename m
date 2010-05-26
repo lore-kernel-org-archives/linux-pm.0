@@ -1,24 +1,13 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 26 May 2010 15:46:55 +0200 (CEST)
-Message-ID: <alpine.LFD.2.00.1005261521510.2995__18404.1236796931$1274881767$gmane$org@localhost.localdomain>
-References: <1274482015-30899-1-git-send-email-arve@android.com>
-	<201005242049.18920.rjw@sisk.pl>
-	<87wrusvrqe.fsf@deeprootsystems.com>
-	<201005250138.16293.rjw@sisk.pl> <1274863655.5882.4875.camel@twins>
-	<AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
-	<1274867106.5882.5090.camel@twins>
-	<20100526120242.5c9b73ad@schatten.dmk.lab>
-	<AANLkTim4021cTnhVZrQpefq1MG-eEPOFLDRO-XDepHb4@mail.gmail.com>
-	<20100526133721.602633b2@schatten.dmk.lab>
-	<AANLkTikzgaOFdQKess4E-D86OLPOzxP3dWiDkU_UR0ri@mail.gmail.com>
-	<20100526142430.327ccbc4@schatten.dmk.lab>
-	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Wed, 26 May 2010 09:59:01 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005260946430.1961-100000__28018.929428845$1274882494$gmane$org@iolanthe.rowland.org>
+References: <20100525225544.GA5331@core.coreip.homeip.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100525225544.GA5331@core.coreip.homeip.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,63 +17,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Alan,
+On Tue, 25 May 2010, Dmitry Torokhov wrote:
 
-On Wed, 26 May 2010, Alan Cox wrote:
-
-> > Really, what are you getting at? Do you deny that there are programs,
-> > that prevent a device from sleeping? (Just think of the bouncing
-> > cows app)
+> > How is that not polling? If the user is holding down a key, the keypad
+> > driver has to block suspend, and user space will try to suspend again
+> > and again and again...
 > > 
-> > And if you have two kernels, one with which your device is dead after 1
-> > hour and one with which your device is dead after 10 hours. Which would
-> > you prefer? I mean really... this is ridiculous. 
 > 
-> The problem you have is that this is policy. If I have the device wired
-> to a big screen and I want cows bouncing on it I'll be most upset if
-> instead it suspends. What you are essentially arguing for is for the
-> kernel to disobey the userspace. It's as ridiculous (albeit usually less
-> damaging) as a file system saying "Ooh thats a rude file name, the app
-> can't have meant it, I'll put your document soemwhere else"
+> If your userpsace is that stupid - sure. However, you can:
 > 
-> The whole API feels wrong to me. It's breaking rule #1 of technology "You
-> cannot solve a social problem with technology". In this case you have a
-> social/economic problem which is crap code. You solve it with an
-> economics solution - creative incentives not to produce crap code like
-> boxes that keep popping up saying "App XYZ is using all your battery" and
-> red-amber-green powermeter scores in app stores.
+> 1. Notify the suspend manager process that he rest of your userspace is
+> busy handling keystrokes so that it does not try to suspend while there
+> are events pending.
+> 
+> 2. Wait a tiny bit after last application notified you that it finished
+> processing events.
 
-I completely agree. 
+This is more complicated than necessary.  Arve is wrong; my suggested 
+design does not require polling.
 
-We have already proven that the social pressure on crappy applications
-works. When NOHZ was merged into the kernel we got no effect at all
-because a big percentage of user space applications just used timers
-at will and without any thoughts, also it unveiled busy polling and
-other horrible coding constructs. So what happened ? Arjan created
-powertop which lets the user analyse the worst offenders in his
-system. As a result the offending apps got fixed rapidly simply
-because no maintainer wanted to be on top of the powertop sh*tlist.
+The reason is simple: When a user process initiates an opportunistic 
+suspend, you make it wait in an interruptible sleep until all the 
+kernel suspend blockers are released.  No polling.  If another user 
+thread decides in the meantime that it needs to block the suspend, it 
+sends a signal to the power manager process.
 
-In the mobile app space it's basically the same problem. Users can
-influence the app writers simply by voting and setting up public lists
-of apps which are crappy or excellent. All it needs is a nice powertop
-tool for the phone which allows the users to identify the crap on
-their phones. That provides much more incentive - especially for
-commercial players - to fix their crappy code.
+In fact, other threads should signal the power manager process whenever 
+they want to block or unblock suspends.  That way the power manager 
+process can spend all its time sleeping, without doing any polling.
 
-Adding that sys_try_to_fix_crappy_userspace_code() API to the kernel
-is just counter productive as it signals to the app provider: Go
-ahead, keep on coding crap!
+> So basically the difference is that with in-kernel suspend blockers,
+> there is a tiny window where we haven't started the suspend yet but are
+> about to the driver has a chance to prevent entire system from starting
+> sleep.
+> 
+> Without the blocker we may start suspending and will stop midcycle. We
+> may be even better off in the end since we could leave some devices
+> still powered down after aborting system-wide suspend.
 
-That's not a solution, that's just capitulation. 
+That's not so easy.  The design of the PM core requires that when the 
+system wakes up from suspend (or from an aborted suspend attempt), all 
+devices should go to full-power-on.  This is explained in section 6 of
+Documentation/power/runtime_pm.txt.
 
-It's absurd that some folks believe that giving up the most efficient
-tool to apply pressure to crappy app providers is a good idea.
+The decision over whether to use kernel-space suspend blockers vs. 
+aborting suspends when queues are non-empty comes down to a tradeoff:
 
-Thanks,
+	Suspend blockers involve a little more code (to create,
+	destroy, enable, and disable them) plus a little extra
+	runtime overhead each time an event occurs.  (Some people
+	may object to this extra overhead, although so far nobody
+	in this discussion has done so.)
 
-	tglx
+	Suspend blockers eliminate the extra overhead involved in
+	starting suspends that are just going to be aborted.
+
+	Suspend blockers offer extra debugging and accountability
+	(the user can find out which subsystems are responsible for
+	keeping the system awake).
+
+Which way you think the tradeoff should go is a subjective decision.  I 
+think that kernel suspend blockers are acceptable.
+
+Alan Stern
