@@ -1,27 +1,13 @@
-From: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Wed, 26 May 2010 12:14:02 -0500
-Message-ID: <1274894042.4467.727.camel__27668.1379917592$1274894157$gmane$org@mulgrave.site>
-References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
-	<201005252344.37639.rjw@sisk.pl>
-	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
-	<1274863342.5882.4850.camel@twins>
-	<20100526112303.3fef15a4@schatten.dmk.lab>
-	<1274866402.5882.5051.camel@twins>
-	<AANLkTil9ZtMFxTfE6ITiFNOl4S1k3Lvdp5BPgGX7LJhw@mail.gmail.com>
-	<1274868384.5882.5169.camel@twins>
-	<AANLkTimHGpRAZklIwXu6wEbA3coKXJvCVLxj2twerkCw@mail.gmail.com>
-	<1274869262.5882.5222.camel@twins>
-	<AANLkTik9LINPmabJfVi0jfVs5sjVS_1l00WpnVTFEuLV@mail.gmail.com>
-	<1274890736.4467.574.camel@mulgrave.site>
-	<1274891308.1674.1766.camel@laptop>
-	<1274892847.4467.674.camel@mulgrave.site>
-	<1274893228.1674.1772.camel@laptop>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Wed, 26 May 2010 19:22:16 +0200 (CEST)
+Message-ID: <alpine.LFD.2.00.1005261829540.2995__18624.6423320428$1274894605$gmane$org@localhost.localdomain>
+References: <20100526171106.0e44a736@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1274893228.1674.1772.camel@laptop>
+In-Reply-To: <20100526171106.0e44a736@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -31,35 +17,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Greg KH <gregkh@suse.de>, linux-doc@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, Pekka Enberg <penberg@cs.helsinki.fi>, tytso@mit.edu, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
+To: Florian Mickler <florian@mickler.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2010-05-26 at 19:00 +0200, Peter Zijlstra wrote:
-> On Wed, 2010-05-26 at 11:54 -0500, James Bottomley wrote:
-> > Given that I'm in the latter category, I think suspend blockers is a
-> > reasonable solution to an existing problem.  I like Alan's idea of
-> > restricting the API into a single user space program so we contain the
-> > API contamination ... but realistically that's mostly the current
-> > suspend blockers anyway. 
+Florian,
+
+On Wed, 26 May 2010, Florian Mickler wrote:
+>
+> On the other hand, applications can say, they don't need that much
+> power and userspace guaranties and not take a suspend blocker.
 > 
-> There's a _large_ difference between resource limits and these wonky
-> suspend blockers.
+> This is an option which they currently don't have.
 
-Well, you have policy and then you have implementation ... suspend
-blockers just looks like an implementation to me.  It seems to be
-reasonably well suited in that regard ... after all, we kill processes
-that exhaust memory for instance or cut off write privileges to those
-that go over quota.  Preventing power hungry processes from consuming
-power by not allowing them to run until there's a wakeup event is fairly
-gentle by those standards.
+Wrong. A well coded power aware application is very well able to
+express that in various ways already today. Admittedly it's far from
+perfect, but that can be fixed by adding interfaces which allow the
+power aware coder to express the requirements of his application
+actively, not by avoiding it.
 
-> The main and most important one being that suspend is a global property
-> and can/will hurt sensible tasks. It puts the whole task model upside
-> down.
+suspend blockers are completely backwards as they basically disable
+the kernels ability to do resource management.
 
-OK, so I believe you have an android phone ... it already implements
-this model ... specifically what are the problems on that platform this
-causes?
+Also they enforce a black and white scheme (suspend or run) on the
+kernel which is stupid, as there are more options to efficiently save
+power than those two. While current android devices might not provide
+them, later hardware will have it and any atom based device has them
+already.
 
-James
+So what the kernel needs to know to make better decisions are things
+like:
+
+  - how much slack can timers have (exisiting interface)
+  - how much delay of wakeups is tolerated (missing interface)
+
+and probably some others. That information would allow the kernel to
+make better decisions versus power states, grouping timers, race to
+idle and other things which influence the power consumption based on
+the hardware you are running on.
+
+> I don't think opportunistic suspend is a policy decision by the kernel.
+> it is something new. Something which currently only the android
+> userspace implements / supports. If you don't want to suspend while
+> looking at the bouncing-cow, you have to take a suspend blocker and
+> make yourself a user-visible power-eater, or don't do 
+> 
+> echo "opportunistic" > /sys/power/policy 
+> 
+> in the first place.
+> 
+> This "optionally being badly written, who cares?" is a new feature the
+> kernel can provide to applications. 
+
+It's a misfeature which the kernel should not provide at all. It sends
+out the completely wrong message: Hey, we can deal with your crappy
+code, keep on coding that way.
+
+While this seems to sound cool to certain people in the mobile space,
+it's completely backwards and will backfire in no time. 
+
+The power efficiency of a mobile device is depending on a sane overall
+software stack and not on the ability to mitigate crappy software in
+some obscure way which is prone to malfunction and disappoint users.
+
+Thanks,
+
+	tglx
