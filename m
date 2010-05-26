@@ -1,13 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Runtime PM for PCI-based USB host controllers
-Date: Wed, 26 May 2010 23:16:13 +0200
-Message-ID: <201005262316.13957.rjw__26662.2863630348$1274916131$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1005261138330.1328-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH 0/5] Preallocate swap + minor fix.
+Date: Wed, 26 May 2010 23:21:09 +0200
+Message-ID: <201005262321.09971.rjw__20079.8435289927$1274916242$gmane$org@sisk.pl>
+References: <4BFCC939.1000901@crca.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005261138330.1328-100000@iolanthe.rowland.org>
+In-Reply-To: <4BFCC939.1000901@crca.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,28 +17,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pci@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 26 May 2010, Alan Stern wrote:
-> Rafael:
+On Wednesday 26 May 2010, Nigel Cunningham wrote:
+> Hi all.
 > 
-> I've been updating the patch Matthew Garrett posted last November, 
-> adding runtime PM methods for PCI USB controllers.  Overall the 
-> situation is now easier, since the rest of the USB subsystem has been 
-> converted over to the runtime PM framework.  And it even seems to work!
+> In current in-kernel hibernation code, swap is allocated as the image is 
+> being written.
 > 
-> But there is one problem.  The device driver needs to know, during its
-> pm_suspend callback, whether or not wakeup should be enabled.  (Or more
-> accurately, the pm_suspend callback needs to fail if wakeup isn't going
-> to be available.) 
+> The first four patches in this series rework things so that all swap 
+> that will be used is allocated prior to any data being written to disk.
+> The fourth patch might look like too much for one patch, but it's 
+> necessary to not break bisecting.
+> 
+> The fifth patch fixes a minor error in displaying the speed at which I/O 
+> occurred.
+> 
+> This is the beginning of what I hope will be a long series of sets of 
+> patches, first working towards adding support for properly asynchronous 
+> I/O (not batching, as is currently done), then compression, multiple 
+> swap devices and more. In short, this is the beginning of work on 
+> merging TuxOnIce functionality a bit at a time.
+> 
+> The work is coming now because I recently finished my previous job, so 
+> I'm seeking to get some of those jobs I've been wanting to do for a long 
+> time out of the way. If anyone wants to employ me to do this work, I 
+> wouldn't say no! :)
+> 
+> Please excuse me if there are wrapping issues with the patches - I'm 
+> using Thunderbird, and haven't sent a patch series for quite a while, so 
+> don't remember the fancy git mailer way (will have to look it up).
+> 
+> Rafael, these and future patches will be available at:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/nigelc/tuxonice-head.git#for-rafael
 
-The driver can check that by calling pci_dev_run_wake() which returns false
-if there's no wakeup support for the device.  However, that's not enough on
-some broken machines where some signal pins are simply not connected to the
-system core logic (as a result the PCI core thinks that wakeup is supported,
-but in fact it doesn't work due to the broken hardware - yes, there are
-machines like this in the wild, Matthew has one).
+Thanks for the patches, I'll have a look at them as soon as I can.
+
+I haven't replied to your hibernation algorithm idea, mostly because I didn't
+have the time to look into it more thoroughly and I don't remember all of the
+details.  I'm still going to reply to it, though.
 
 Rafael
