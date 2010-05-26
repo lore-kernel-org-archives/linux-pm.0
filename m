@@ -1,7 +1,7 @@
 From: James Bottomley <James.Bottomley@suse.de>
 Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Wed, 26 May 2010 12:33:08 -0500
-Message-ID: <1274895188.4467.783.camel__22450.8907915608$1274895504$gmane$org@mulgrave.site>
+Date: Wed, 26 May 2010 12:40:11 -0500
+Message-ID: <1274895611.4467.805.camel__15360.1281148896$1274895755$gmane$org@mulgrave.site>
 References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
 	<201005252344.37639.rjw@sisk.pl>
 	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
@@ -14,16 +14,12 @@ References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
 	<1274869262.5882.5222.camel@twins>
 	<AANLkTik9LINPmabJfVi0jfVs5sjVS_1l00WpnVTFEuLV@mail.gmail.com>
 	<1274890736.4467.574.camel@mulgrave.site>
-	<1274891308.1674.1766.camel@laptop>
-	<1274892847.4467.674.camel@mulgrave.site>
-	<1274893228.1674.1772.camel@laptop>
-	<1274894042.4467.727.camel@mulgrave.site>
-	<1274894602.1674.1780.camel@laptop>
+	<AANLkTinv5C-TO48ZMP0ZV-ne7VbCAhXlARhYOJmhYoRa@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1274894602.1674.1780.camel@laptop>
+In-Reply-To: <AANLkTinv5C-TO48ZMP0ZV-ne7VbCAhXlARhYOJmhYoRa@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -33,59 +29,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Greg KH <gregkh@suse.de>, linux-doc@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, Pekka Enberg <penberg@cs.helsinki.fi>, tytso@mit.edu, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Greg KH <gregkh@suse.de>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, tytso@mit.edu, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2010-05-26 at 19:23 +0200, Peter Zijlstra wrote:
-> On Wed, 2010-05-26 at 12:14 -0500, James Bottomley wrote:
-> > On Wed, 2010-05-26 at 19:00 +0200, Peter Zijlstra wrote:
-> > > On Wed, 2010-05-26 at 11:54 -0500, James Bottomley wrote:
-> > > > Given that I'm in the latter category, I think suspend blockers is a
-> > > > reasonable solution to an existing problem.  I like Alan's idea of
-> > > > restricting the API into a single user space program so we contain the
-> > > > API contamination ... but realistically that's mostly the current
-> > > > suspend blockers anyway. 
-> > > 
-> > > There's a _large_ difference between resource limits and these wonky
-> > > suspend blockers.
-> > 
-> > Well, you have policy and then you have implementation ... suspend
-> > blockers just looks like an implementation to me.  It seems to be
-> > reasonably well suited in that regard ... after all, we kill processes
-> > that exhaust memory for instance or cut off write privileges to those
-> > that go over quota.  Preventing power hungry processes from consuming
-> > power by not allowing them to run until there's a wakeup event is fairly
-> > gentle by those standards.
+On Wed, 2010-05-26 at 20:25 +0300, Pekka Enberg wrote:
+> Hi James,
 > 
-> The difference is that the limit should be per task.
-
-How?  You've got two different limits ... one the power the application
-should be consuming when doing useful work for the user and the other is
-the idle power.  A badly constructed app may only be bad on idle
-power ... how is the scheduler going to detect this, exactly?  And what
-do we do to applications we've detected are over consuming idle power?
-
->  In this model a
-> process that only runs a little still gets suspended.
-
-That's why I think it looks like a reasonable solution.  For this to
-work, I agree you have to have all events the user is interested in wake
-the system up ... but on most embedded platforms, they do.
-
-> > > The main and most important one being that suspend is a global property
-> > > and can/will hurt sensible tasks. It puts the whole task model upside
-> > > down.
-> > 
-> > OK, so I believe you have an android phone ... it already implements
-> > this model ... specifically what are the problems on that platform this
-> > causes?
+> On Wed, 2010-05-26 at 13:29 +0300, Pekka Enberg wrote:
+> >> Yup, I don't quite get Arve's argument either. C code can interact
+> >> with Java code (and vice versa) just fine in userspace.
 > 
-> I do not have one, nor have I ever written an application for it (nor
-> will I likely ever do that, since I detest Java), but I would expect an
-> application to run when its runnable.
+> On Wed, May 26, 2010 at 7:18 PM, James Bottomley
+> <James.Bottomley@suse.de> wrote:
+> > This is an incorrect statement.  It's possible for java to call C via
+> > the JNI, even though there are quite a few gotchas that mean not just
+> > *any* C code can do it (been there, tripped over some of them, although
+> > they were all ultimately ironed out).  It's very difficult for C to call
+> > directly into Java without being specially coded because it involves
+> > creating and managing a JVM (so in general, arbitrary C code can't do
+> > this).  The usual way we do C -> Java is process to process via some
+> > intermediary like RPC or Corba or SOAP (or even JSON) ... which gets
+> > very messy for a mobile device.
+> 
+> Incorrect statement how exactly? A JVM can do mmap(), for example,
+> just fine through FileChannel.map() so there's no need for
+> heavy-weight RPC.
 
-OK, so I've got one ... tell me what I should see and I'll try to
-reproduce.
+Incorrect in that an arbitrary C application can't link to a java API.
+mmap and some other messaging (like signals) is just another form of
+IPC ... the list I gave wasn't exhaustive.
+
+>  Furthermore, the whole discussion is moot anyway as
+> Android runs Dalvik which can be hacked to support whatever
+> communication mechanism is the best choice here.
+> 
+> So can we drop the whole "we need to do it in kernel because Java is
+> hard" nonsense and concentrate on real issues?
+
+I've lost you.  This argument seems to hinge on whether or not you
+believe that suspend in any form is a solution to the rogue app
+problem ... whether it's implemented in Java or C is an ancillary issue.
 
 James
