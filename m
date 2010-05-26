@@ -1,7 +1,7 @@
-From: James Bottomley <James.Bottomley@suse.de>
+From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Wed, 26 May 2010 11:18:56 -0500
-Message-ID: <1274890736.4467.574.camel__10536.0466907316$1274890806$gmane$org@mulgrave.site>
+Date: Wed, 26 May 2010 18:28:28 +0200
+Message-ID: <1274891308.1674.1766.camel__44813.3140024312$1274891449$gmane$org@laptop>
 References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
 	<201005252344.37639.rjw@sisk.pl>
 	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
@@ -13,11 +13,12 @@ References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
 	<AANLkTimHGpRAZklIwXu6wEbA3coKXJvCVLxj2twerkCw@mail.gmail.com>
 	<1274869262.5882.5222.camel@twins>
 	<AANLkTik9LINPmabJfVi0jfVs5sjVS_1l00WpnVTFEuLV@mail.gmail.com>
+	<1274890736.4467.574.camel@mulgrave.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTik9LINPmabJfVi0jfVs5sjVS_1l00WpnVTFEuLV@mail.gmail.com>
+In-Reply-To: <1274890736.4467.574.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,45 +28,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Greg KH <gregkh@suse.de>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, tytso@mit.edu, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: Greg KH <gregkh@suse.de>, linux-doc@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, Pekka Enberg <penberg@cs.helsinki.fi>, tytso@mit.edu, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2010-05-26 at 13:29 +0300, Pekka Enberg wrote:
-> Yup, I don't quite get Arve's argument either. C code can interact
-> with Java code (and vice versa) just fine in userspace.
-
-This is an incorrect statement.  It's possible for java to call C via
-the JNI, even though there are quite a few gotchas that mean not just
-*any* C code can do it (been there, tripped over some of them, although
-they were all ultimately ironed out).  It's very difficult for C to call
-directly into Java without being specially coded because it involves
-creating and managing a JVM (so in general, arbitrary C code can't do
-this).  The usual way we do C -> Java is process to process via some
-intermediary like RPC or Corba or SOAP (or even JSON) ... which gets
-very messy for a mobile device.
-
-On Wed, 2010-05-26 at 12:21 +0200, Peter Zijlstra wrote:
-> So provide a C interface to it as well?
-
-The way Android is currently coded, all user space suspend blocks are
-handled in Java code at what's called the Frameworks layer (Frameworks
-is the Java API for apps) this is also how the suspend permissions are
-managed and presented to the user.  The few C applications which block
-suspend just manipulate the device directly.
-
-> Surely you can have the java thing have a unix socket or something a C
-> app can talk to. That shouldn't be hard at all.
+On Wed, 2010-05-26 at 11:18 -0500, James Bottomley wrote:
+> > Or make the suspend manager a C proglet and provide a JNI interface,
+> > or whatever.
 > 
-> Or make the suspend manager a C proglet and provide a JNI interface,
-> or whatever.
+> It's a fairly large piece of code to try to rewrite in C, so I don't
+> think that's feasible on a reasonable timescale.  Android does have the
+> concept of special sockets that can be used to communicate from less to
+> more privileged processes (it has a very segmented runtime model), so
+> these might be usable ... they have a drawback that they're essentially
+> named pipes, so no multiplexing, but one per suspend influencing C
+> process shouldn't be a huge burden. 
 
-It's a fairly large piece of code to try to rewrite in C, so I don't
-think that's feasible on a reasonable timescale.  Android does have the
-concept of special sockets that can be used to communicate from less to
-more privileged processes (it has a very segmented runtime model), so
-these might be usable ... they have a drawback that they're essentially
-named pipes, so no multiplexing, but one per suspend influencing C
-process shouldn't be a huge burden.
+It wouldn't need to convert the whole Frameworks layer into C, just
+enough to manage the suspend state.
 
-James
+Anyway, I think there's been enough arguments against even the concept
+of opportunistic/auto-suspend, and I for one will object with a NAK if
+Rafael send this to Linus.
+
+The whole idea of segregating userspace like that, and not letting
+runnable thing run is very ill considered indeed.
