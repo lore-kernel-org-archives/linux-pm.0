@@ -1,23 +1,14 @@
 From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Wed, 26 May 2010 21:15:42 +0200
-Message-ID: <20100526211542.1bfa2564__48421.4344680824$1274901400$gmane$org@schatten.dmk.lab>
-References: <AANLkTil9ZtMFxTfE6ITiFNOl4S1k3Lvdp5BPgGX7LJhw@mail.gmail.com>
-	<1274868384.5882.5169.camel@twins>
-	<AANLkTimHGpRAZklIwXu6wEbA3coKXJvCVLxj2twerkCw@mail.gmail.com>
-	<1274869262.5882.5222.camel@twins>
-	<AANLkTik9LINPmabJfVi0jfVs5sjVS_1l00WpnVTFEuLV@mail.gmail.com>
-	<1274890736.4467.574.camel@mulgrave.site>
-	<1274891308.1674.1766.camel@laptop>
-	<1274892847.4467.674.camel@mulgrave.site>
-	<1274893228.1674.1772.camel@laptop>
-	<1274894042.4467.727.camel@mulgrave.site>
-	<20100526172824.GA9069@elf.ucw.cz>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Wed, 26 May 2010 21:54:09 +0200
+Message-ID: <20100526215409.33296d94__35138.9829571874$1274903830$gmane$org@schatten.dmk.lab>
+References: <20100526171106.0e44a736@schatten.dmk.lab>
+	<alpine.LFD.2.00.1005261829540.2995@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100526172824.GA9069@elf.ucw.cz>
+In-Reply-To: <alpine.LFD.2.00.1005261829540.2995@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,35 +18,129 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Greg KH <gregkh@suse.de>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Maxim@smtp1.linux-foundation.org, Matthew@smtp1.linux-foundation.org, Andi Kleen <ak@linux.intel.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, James Bottomley <James.Bottomley@suse.de>, Arve@smtp1.linux-foundation.org, Kernel@smtp1.linux-foundation.org, tytso@mit.edu, Dmitry Torokhov <dmitry.torokhov@gmail.com>, development list <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@cs.helsinki.fi>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 May 2010 19:28:24 +0200
-Pavel Machek <pavel@ucw.cz> wrote:
+On Wed, 26 May 2010 19:22:16 +0200 (CEST)
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
+> Florian,
+> 
+> On Wed, 26 May 2010, Florian Mickler wrote:
+> >
+> > On the other hand, applications can say, they don't need that much
+> > power and userspace guaranties and not take a suspend blocker.
+> > 
+> > This is an option which they currently don't have.
+> 
+> Wrong. A well coded power aware application is very well able to
+> express that in various ways already today. Admittedly it's far from
+> perfect, but that can be fixed by adding interfaces which allow the
+> power aware coder to express the requirements of his application
+> actively, not by avoiding it.
 
-> Besides that it is not linux system at all?
+Yeah, but a user can't say: "I don't
+know programming, but I had this idea. Here try it out." 
+to his friend. Because his friends phone then will crap out.
 
-I believe the kernel to be a layer between userspace and hardware. What
-business is it to the kernel if it runs whatever android
-uses as init process or /bin/bash, sys-v-init or systemd?
+This is a negative. The phone just doesn't work well. 
 
-There is this thing called choice. 
+A knowledgeable programmer is able to do extra work to enable specific
+guarantees. A dummy-throw-away-programmer doesn't want to do
+any extra work. 
 
 > 
-> Yes, with custom userspace it works extremely nicely.
+> suspend blockers are completely backwards as they basically disable
+> the kernels ability to do resource management.
+
+I don't think this is a defect in the approach but the point of it. 
+
 > 
-> Had anyone even tried running oportunistic suspend on normal desktop?
-> 									Pavel
+> Also they enforce a black and white scheme (suspend or run) on the
+> kernel which is stupid, as there are more options to efficiently save
+> power than those two. While current android devices might not provide
+> them, later hardware will have it and any atom based device has them
+> already.
 
-I don't think this is a valid concern. Just because current linux/gnu
-systems don't implement the userspace part of this interface doesn't
-mean it is useless or broken. 
+This is true. Nonetheless, in my opinion, implementing the "backwards
+approach" in any form (suspend blockers or some other sort of "sane"
+interface) is necessary in the long run.  I also believe that Alan's
+approach is the more flexible one. But I'm not in a position to judge
+on this.
 
-Cheers,
-Flo
+If it really is better and superior, I think userland will switch
+over to it, as soon as it is possible to do it. The impact to the
+drivers code is needed anyway. What looses the kernel by implementing
+suspend blockers, and later a more finegrained approach and mapping the
+userspace part of suspend blockers on that finegrained approach later
+on?
 
--- 
-Just because I argue an issue, doesn't mean I agree with either side of
-it.
+
+
+> 
+> So what the kernel needs to know to make better decisions are things
+> like:
+> 
+>   - how much slack can timers have (exisiting interface)
+
+I liked this idea of Arjan, to give some applications infinite timer
+slack. But I don't know if it can made work in a "dummy proof" way.
+(I.e. it is too complicated to get it right in general, except for the
+"infinity" or not kind of tuning)
+
+>   - how much delay of wakeups is tolerated (missing interface)
+
+Doesn't solve the segregation problem and is probably overkill for most
+applications. I see this as an orthogonal thing (i.e. not
+affecting this merge). 
+
+> 
+> and probably some others. That information would allow the kernel to
+> make better decisions versus power states, grouping timers, race to
+> idle and other things which influence the power consumption based on
+> the hardware you are running on.
+> 
+> > I don't think opportunistic suspend is a policy decision by the kernel.
+> > it is something new. Something which currently only the android
+> > userspace implements / supports. If you don't want to suspend while
+> > looking at the bouncing-cow, you have to take a suspend blocker and
+> > make yourself a user-visible power-eater, or don't do 
+> > 
+> > echo "opportunistic" > /sys/power/policy 
+> > 
+> > in the first place.
+> > 
+> > This "optionally being badly written, who cares?" is a new feature the
+> > kernel can provide to applications. 
+> 
+> It's a misfeature which the kernel should not provide at all. It sends
+> out the completely wrong message: Hey, we can deal with your crappy
+> code, keep on coding that way.
+
+I can't really say anything against that. Or anything in favor of it.  
+Except that this is probably a really hard decision for Linus to
+make. 
+
+> 
+> While this seems to sound cool to certain people in the mobile space,
+> it's completely backwards and will backfire in no time. 
+
+Maybe. It is something which seems to not come from the traditional
+"linux distribution" model of software deployment, where you have a
+party that codes and another party that packages that code. 
+
+It instead is more targeted at the decentralised 3rd-party-app
+approach under which windows is suffering.
+
+> The power efficiency of a mobile device is depending on a sane overall
+> software stack and not on the ability to mitigate crappy software in
+> some obscure way which is prone to malfunction and disappoint users.
+
+True. But I wouldnt say, that it is the linux kernel who should force
+this politics onto its users.
+
+> 
+> Thanks,
+> 
+> 	tglx
