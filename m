@@ -1,15 +1,18 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 26 May 2010 11:54:37 +0200
-Message-ID: <1274867677.5882.5127.camel__25438.8262671002$1274867730$gmane$org@twins>
-References: <1274482015-30899-1-git-send-email-arve@android.com>
-	<201005240246.55043.rjw@sisk.pl> <1274863533.5882.4864.camel@twins>
-	<20100526114053.440c0559@schatten.dmk.lab>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Wed, 26 May 2010 02:54:37 -0700
+Message-ID: <AANLkTil9ZtMFxTfE6ITiFNOl4S1k3Lvdp5BPgGX7LJhw__8047.42167606509$1274867768$gmane$org@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
+	<201005252344.37639.rjw@sisk.pl>
+	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
+	<1274863342.5882.4850.camel@twins>
+	<20100526112303.3fef15a4@schatten.dmk.lab>
+	<1274866402.5882.5051.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100526114053.440c0559@schatten.dmk.lab>
+In-Reply-To: <1274866402.5882.5051.camel@twins>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,46 +22,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-doc@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, tytso@mit.edu, Greg KH <gregkh@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyMDEwLTA1LTI2IGF0IDExOjQwICswMjAwLCBGbG9yaWFuIE1pY2tsZXIgd3JvdGU6
-Cj4gT24gV2VkLCAyNiBNYXkgMjAxMCAxMDo0NTozMyArMDIwMAo+IFBldGVyIFppamxzdHJhIDxw
-ZXRlcnpAaW5mcmFkZWFkLm9yZz4gd3JvdGU6Cj4gCj4gPiBPbiBNb24sIDIwMTAtMDUtMjQgYXQg
-MDI6NDYgKzAyMDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+ID4gPiBPbiBTYXR1cmRheSAy
-MiBNYXkgMjAxMCwgQXJ2ZSBIasO4bm5ldsOlZyB3cm90ZToKPiA+ID4gPiBUaGlzIHBhdGNoIHNl
-cmllcyBhZGRzIGEgc3VzcGVuZC1ibG9jayBhcGkgdGhhdCBwcm92aWRlcyB0aGUgc2FtZQo+ID4g
-PiA+IGZ1bmN0aW9uYWxpdHkgYXMgdGhlIGFuZHJvaWQgd2FrZWxvY2sgYXBpLiBUaGlzIHZlcnNp
-b24gYWRkcyBhCj4gPiA+ID4gZGVsYXkgYmVmb3JlIHN1c3BlbmRpbmcgYWdhaW4gaWYgbm8gc3Vz
-cGVuZCBibG9ja2VycyB3ZXJlIHVzZWQKPiA+ID4gPiBkdXJpbmcgdGhlIGxhc3Qgc3VzcGVuZCBh
-dHRlbXB0Lgo+ID4gPiAKPiA+ID4gUGF0Y2hlcyBbMS02LzhdIGFwcGxpZWQgdG8gc3VzcGVuZC0y
-LjYvbGludXgtbmV4dAo+ID4gCj4gPiBTbyB5b3UncmUgZ29pbmcgdG8gbWVyZ2UgdGhpcyBqdW5r
-Pwo+ID4gCj4gPiAKPiAKPiBZZXMuIEJ5IG5vdywgZXZlcnlvbmUgcmVhZGluZyB0aGUgcG9zdHMg
-c2hvdWxkIGtub3cgYWxsIHBvaW50cy4KPiBSYWZmYWVsIG9idmlvdXNseSB3YXMgcGFydCBvZiB0
-aGlzIGRpc2N1c3Npb24gYW5kIGNhbWUgdG8gdGhlIGRlY2lzaW9uCj4gdG8gbWVyZ2UgaXQuIAo+
-IAo+IE15IHRha2Ugb2YgdGhlIGRpc2N1c3Npb246Cj4gX0lGXyB5b3Ugd2FudCB0byBzdXNwZW5k
-IGFnZ3Jlc3NpdmVseSwgSSBkb24ndCBzZWUgYW5vdGhlcgo+IHdheS4KPiAKPiBUaGUgdGhpbmcg
-aXMsIHRoaXMgaXMgYSBwYXJhZGlnbSBjaGFuZ2UuIFN1c3BlbmQgaXMgbm90IGFueW1vcmUKPiBj
-b250cm9sbGVkIGJ5IHVzZXJzcGFjZS4gSW4gb3JkZXIgdG8gbGV0IHVzZXJzcGFjZSBjb250cm9s
-L3dvcmsgd2l0aAo+IHRoaXMgc2NoZW1lLCBpdCBuZWVkcyB0byBrbm93IHdoZW4gYSBzdXNwZW5k
-IHdpbGwgYmUgc3VjY2Vzc2Z1bGwgb3IKPiBwb2xsOgo+IAo+IDEuIGtlcm5lbCBzZWVzIHN1c3Bl
-bmQgbWF5IGJlIHBvc3NpYmxlIG9uIGhpcyBzaWRlIG9mIHRoaW5ncwo+IAo+IDIuIGtlcm5lbCBz
-ZW5kcyBhIG1lc3NhZ2UgdG8gdXNlcnNwYWNlIHRoYXQgaSBjb3VsZCBiZSBwb3NzaWJseQo+IHBv
-c3NpYmxlIHRvIHN1c3BlbmQsIGJ1dCBpdCBtYXkgd2VsbCBiZSB0aGF0IGJ5IHRoZSB0aW1lCj4g
-dXNlcnNwYWNlIHN1c3BlbmRzIGl0IGlzIG5vdCBwb3NzaWJsZSBhbnltb3JlCj4gCj4gMy4gdXNl
-cnNwYWNlIGRlY2lkZXMgdG8gc3VzcGVuZC4gCj4gCj4gPC0gc3lzdGVtIHN1c3BlbmRzLi4uICBv
-ciBub3QgLi4tPiAKPiAKPiA0LiB1c2Vyc3BhY2UgcmV0cmllcyAuLi4gcmV0cmllcyAuLi4gcmV0
-cmllcyAuLi4gCj4gCj4gQW5kIHRoZW4geW91IGhhdmUgdGhlIHdob2xlIGNhbiBvZiB3b3JtcyBh
-bmQgcmFjZXMuCgpJIGRvbid0IHNlZSBhbnkgcmFjZXMsIG5vciByZXRyeSBsb29wcy4KClRoZXJl
-IGlzIGFsd2F5cyB0aGUgcmFjZSBvZiBhbiBldmVudCBhcnJpdmluZyB3aGlsc3QgaW4gdGhlIHBy
-b2Nlc3Mgb2YKc3VzcGVuZGluZywgdGhhdCBpcyBub3Qgc29sdmVkIGJ5IGVpdGhlciB0aGUga2Vy
-bmVsIG5vciB1c2VyIHBhcnQgb2YKc3VzcGVuZC1ibG9ja2Vycy4gVGhlIG9ubHkgdGhpbmcgaXMg
-bm90IHRvIGxvb3NlIHRoZSBldmVudC4KCllvdSBzaW1wbHkgaGF2ZSB0byBkZWFsIHdpdGggdGhh
-dCwgdGhlIHN1c3BlbmQgZ2V0cyBjYW5jZWxlZCwgeW91IGRvCmRlYWwgd2l0aCB0aGUgZXZlbnQs
-IGFuZCBzdXNwZW5kIGFnYWluLiBIb3cgZG9lcyBtYWtpbmcgdGhhdCAncmV0cnknIGFzCnlvdSBj
-YWxsIGl0IGhhcHBlbiBmcm9tIGEga2VybmVsIHRocmVhZCBvciBmcm9tIGEgdXNlcnNwYWNlIHRo
-cmVhZCBhbnkKZGlmZmVyZW5jZT8KCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgt
-Zm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFu
-L2xpc3RpbmZvL2xpbnV4LXBt
+On Wed, May 26, 2010 at 2:33 AM, Peter Zijlstra <peterz@infradead.org> wrot=
+e:
+> On Wed, 2010-05-26 at 11:23 +0200, Florian Mickler wrote:
+>
+>> There is polling, because the suspend manager in userspace doesn't have
+>> the whole picture. i.e. it doesn't know if a suspend will be
+>> successfull.
+>> So for aggressive suspending as a powersave-feature you need to poll
+>> (i.e. retry upon failure). because you don't want to stay unsuspended.
+>
+> Clearly if it fails, there something to be done, right? So whoever does
+> the thing will communicate with the suspend manager that it's going to
+> do and has finished doing its thing, at which point it will try again.
+>
+
+If you are talking about user-space code here, then that does not
+work. Not all kernel events that need to block suspend make it to
+user-space.
+
+> That's event driven, not polled.
+>
+> Also, if you want you can keep the kernel-side auto-suspend side, and
+> have the suspend manager clear on !0 and re-establish the auto-suspend
+> state on 0.
+>
+> But you really don't need this device thingy.
+>
+
+I'm not sure what you are proposing that we use instead. Both
+user-space and kernel code needs to block suspend. If we don't have
+suspend blockers in the kernel then user-space needs to poll when a
+driver blocks suspend by returning an error from its suspend hook.
+
+-- =
+
+Arve Hj=F8nnev=E5g
