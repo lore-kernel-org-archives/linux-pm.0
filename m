@@ -1,14 +1,13 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 26 May 2010 21:54:09 +0200
-Message-ID: <20100526215409.33296d94__35138.9829571874$1274903830$gmane$org@schatten.dmk.lab>
-References: <20100526171106.0e44a736@schatten.dmk.lab>
-	<alpine.LFD.2.00.1005261829540.2995@localhost.localdomain>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Wed, 26 May 2010 23:51:59 +0200
+Message-ID: <201005262351.59626.rjw__2065.71946987442$1274912050$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1005260946430.1961-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1005261829540.2995@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.44L0.1005260946430.1961-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,129 +17,81 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Tejun Heo <tj@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 May 2010 19:22:16 +0200 (CEST)
-Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> Florian,
+On Wednesday 26 May 2010, Alan Stern wrote:
+> On Tue, 25 May 2010, Dmitry Torokhov wrote:
 > 
-> On Wed, 26 May 2010, Florian Mickler wrote:
-> >
-> > On the other hand, applications can say, they don't need that much
-> > power and userspace guaranties and not take a suspend blocker.
+> > > How is that not polling? If the user is holding down a key, the keypad
+> > > driver has to block suspend, and user space will try to suspend again
+> > > and again and again...
+> > > 
 > > 
-> > This is an option which they currently don't have.
-> 
-> Wrong. A well coded power aware application is very well able to
-> express that in various ways already today. Admittedly it's far from
-> perfect, but that can be fixed by adding interfaces which allow the
-> power aware coder to express the requirements of his application
-> actively, not by avoiding it.
-
-Yeah, but a user can't say: "I don't
-know programming, but I had this idea. Here try it out." 
-to his friend. Because his friends phone then will crap out.
-
-This is a negative. The phone just doesn't work well. 
-
-A knowledgeable programmer is able to do extra work to enable specific
-guarantees. A dummy-throw-away-programmer doesn't want to do
-any extra work. 
-
-> 
-> suspend blockers are completely backwards as they basically disable
-> the kernels ability to do resource management.
-
-I don't think this is a defect in the approach but the point of it. 
-
-> 
-> Also they enforce a black and white scheme (suspend or run) on the
-> kernel which is stupid, as there are more options to efficiently save
-> power than those two. While current android devices might not provide
-> them, later hardware will have it and any atom based device has them
-> already.
-
-This is true. Nonetheless, in my opinion, implementing the "backwards
-approach" in any form (suspend blockers or some other sort of "sane"
-interface) is necessary in the long run.  I also believe that Alan's
-approach is the more flexible one. But I'm not in a position to judge
-on this.
-
-If it really is better and superior, I think userland will switch
-over to it, as soon as it is possible to do it. The impact to the
-drivers code is needed anyway. What looses the kernel by implementing
-suspend blockers, and later a more finegrained approach and mapping the
-userspace part of suspend blockers on that finegrained approach later
-on?
-
-
-
-> 
-> So what the kernel needs to know to make better decisions are things
-> like:
-> 
->   - how much slack can timers have (exisiting interface)
-
-I liked this idea of Arjan, to give some applications infinite timer
-slack. But I don't know if it can made work in a "dummy proof" way.
-(I.e. it is too complicated to get it right in general, except for the
-"infinity" or not kind of tuning)
-
->   - how much delay of wakeups is tolerated (missing interface)
-
-Doesn't solve the segregation problem and is probably overkill for most
-applications. I see this as an orthogonal thing (i.e. not
-affecting this merge). 
-
-> 
-> and probably some others. That information would allow the kernel to
-> make better decisions versus power states, grouping timers, race to
-> idle and other things which influence the power consumption based on
-> the hardware you are running on.
-> 
-> > I don't think opportunistic suspend is a policy decision by the kernel.
-> > it is something new. Something which currently only the android
-> > userspace implements / supports. If you don't want to suspend while
-> > looking at the bouncing-cow, you have to take a suspend blocker and
-> > make yourself a user-visible power-eater, or don't do 
+> > If your userpsace is that stupid - sure. However, you can:
 > > 
-> > echo "opportunistic" > /sys/power/policy 
+> > 1. Notify the suspend manager process that he rest of your userspace is
+> > busy handling keystrokes so that it does not try to suspend while there
+> > are events pending.
 > > 
-> > in the first place.
+> > 2. Wait a tiny bit after last application notified you that it finished
+> > processing events.
+> 
+> This is more complicated than necessary.  Arve is wrong; my suggested 
+> design does not require polling.
+> 
+> The reason is simple: When a user process initiates an opportunistic 
+> suspend, you make it wait in an interruptible sleep until all the 
+> kernel suspend blockers are released.  No polling.  If another user 
+> thread decides in the meantime that it needs to block the suspend, it 
+> sends a signal to the power manager process.
+> 
+> In fact, other threads should signal the power manager process whenever 
+> they want to block or unblock suspends.  That way the power manager 
+> process can spend all its time sleeping, without doing any polling.
+
+I still see an issue here.  Namely, if the power manager is in user space and
+it's signaled to suspend, it has to ask the kernel to do that, presumably by
+writing something to a sysfs file.  Then, if the kernel blocks the suspend, the
+power manager waits until the block is released.  Now, it should go back and
+check if user space still doesn't block suspend and if so, wait until the block
+is released and start over.  With all suspend blockers in the kernel this
+looping behavior is avoidable.
+
+> > So basically the difference is that with in-kernel suspend blockers,
+> > there is a tiny window where we haven't started the suspend yet but are
+> > about to the driver has a chance to prevent entire system from starting
+> > sleep.
 > > 
-> > This "optionally being badly written, who cares?" is a new feature the
-> > kernel can provide to applications. 
+> > Without the blocker we may start suspending and will stop midcycle. We
+> > may be even better off in the end since we could leave some devices
+> > still powered down after aborting system-wide suspend.
 > 
-> It's a misfeature which the kernel should not provide at all. It sends
-> out the completely wrong message: Hey, we can deal with your crappy
-> code, keep on coding that way.
-
-I can't really say anything against that. Or anything in favor of it.  
-Except that this is probably a really hard decision for Linus to
-make. 
-
+> That's not so easy.  The design of the PM core requires that when the 
+> system wakes up from suspend (or from an aborted suspend attempt), all 
+> devices should go to full-power-on.  This is explained in section 6 of
+> Documentation/power/runtime_pm.txt.
 > 
-> While this seems to sound cool to certain people in the mobile space,
-> it's completely backwards and will backfire in no time. 
-
-Maybe. It is something which seems to not come from the traditional
-"linux distribution" model of software deployment, where you have a
-party that codes and another party that packages that code. 
-
-It instead is more targeted at the decentralised 3rd-party-app
-approach under which windows is suffering.
-
-> The power efficiency of a mobile device is depending on a sane overall
-> software stack and not on the ability to mitigate crappy software in
-> some obscure way which is prone to malfunction and disappoint users.
-
-True. But I wouldnt say, that it is the linux kernel who should force
-this politics onto its users.
-
+> The decision over whether to use kernel-space suspend blockers vs. 
+> aborting suspends when queues are non-empty comes down to a tradeoff:
 > 
-> Thanks,
+> 	Suspend blockers involve a little more code (to create,
+> 	destroy, enable, and disable them) plus a little extra
+> 	runtime overhead each time an event occurs.  (Some people
+> 	may object to this extra overhead, although so far nobody
+> 	in this discussion has done so.)
 > 
-> 	tglx
+> 	Suspend blockers eliminate the extra overhead involved in
+> 	starting suspends that are just going to be aborted.
+> 
+> 	Suspend blockers offer extra debugging and accountability
+> 	(the user can find out which subsystems are responsible for
+> 	keeping the system awake).
+> 
+> Which way you think the tradeoff should go is a subjective decision.  I 
+> think that kernel suspend blockers are acceptable.
+
+I agree.
+
+Rafael
