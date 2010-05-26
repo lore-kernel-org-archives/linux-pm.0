@@ -1,27 +1,23 @@
-From: Valdis.Kletnieks@vt.edu
+From: Florian Mickler <florian@mickler.org>
 Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Wed, 26 May 2010 14:50:57 -0400
-Message-ID: <15650.1274899857__23001.7620757737$1274900124$gmane$org@localhost>
-References: <1274863342.5882.4850.camel@twins>
-	<20100526112303.3fef15a4@schatten.dmk.lab>
-	<1274866402.5882.5051.camel@twins>
-	<AANLkTil9ZtMFxTfE6ITiFNOl4S1k3Lvdp5BPgGX7LJhw@mail.gmail.com>
+Date: Wed, 26 May 2010 21:15:42 +0200
+Message-ID: <20100526211542.1bfa2564__48421.4344680824$1274901400$gmane$org@schatten.dmk.lab>
+References: <AANLkTil9ZtMFxTfE6ITiFNOl4S1k3Lvdp5BPgGX7LJhw@mail.gmail.com>
 	<1274868384.5882.5169.camel@twins>
 	<AANLkTimHGpRAZklIwXu6wEbA3coKXJvCVLxj2twerkCw@mail.gmail.com>
 	<1274869262.5882.5222.camel@twins>
 	<AANLkTik9LINPmabJfVi0jfVs5sjVS_1l00WpnVTFEuLV@mail.gmail.com>
 	<1274890736.4467.574.camel@mulgrave.site>
 	<1274891308.1674.1766.camel@laptop>
-	<20100526165919.GB2089@elf.ucw.cz>
-	<1274893309.1674.1773.camel@laptop>
-	<1274894685.4467.758.camel@mulgrave.site>
-	<alpine.LFD.2.00.1005261948290.2995@localhost.localdomain>
-	<1274898180.4467.925.camel@mulgrave.site>
+	<1274892847.4467.674.camel@mulgrave.site>
+	<1274893228.1674.1772.camel@laptop>
+	<1274894042.4467.727.camel@mulgrave.site>
+	<20100526172824.GA9069@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4133165657955233222=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: Your message of "Wed, 26 May 2010 13:23:00 CDT."
-	<1274898180.4467.925.camel@mulgrave.site>
+In-Reply-To: <20100526172824.GA9069@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,59 +25,37 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, Greg KH <gregkh@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>, Thomas Gleixner <tglx@linutronix.de>, tytso@mit.edu, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Greg KH <gregkh@suse.de>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Maxim@smtp1.linux-foundation.org, Matthew@smtp1.linux-foundation.org, Andi Kleen <ak@linux.intel.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, James Bottomley <James.Bottomley@suse.de>, Arve@smtp1.linux-foundation.org, Kernel@smtp1.linux-foundation.org, tytso@mit.edu, Dmitry Torokhov <dmitry.torokhov@gmail.com>, development list <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@cs.helsinki.fi>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
---===============4133165657955233222==
-Content-Type: multipart/signed; boundary="==_Exmh_1274899857_4200P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
+On Wed, 26 May 2010 19:28:24 +0200
+Pavel Machek <pavel@ucw.cz> wrote:
 
---==_Exmh_1274899857_4200P
-Content-Type: text/plain; charset=us-ascii
 
-On Wed, 26 May 2010 13:23:00 CDT, James Bottomley said:
-> On Wed, 2010-05-26 at 19:51 +0200, Thomas Gleixner wrote:
-> > Darn, _we_ have to deal with that forever as it sets a crappy user
-> > space ABI in stone.
+> Besides that it is not linux system at all?
+
+I believe the kernel to be a layer between userspace and hardware. What
+business is it to the kernel if it runs whatever android
+uses as init process or /bin/bash, sys-v-init or systemd?
+
+There is this thing called choice. 
+
 > 
-> I really don't see how it is ... the ABI comes with a switch that allows
-> it to be disabled, so only platforms wishing to use it have to support
-> it.  Even on those platforms that do support it, we can translate most
-> of it into pm QoS stuff and if one day someone solves the rogue app
-> problem, we can migrate over.
+> Yes, with custom userspace it works extremely nicely.
+> 
+> Had anyone even tried running oportunistic suspend on normal desktop?
+> 									Pavel
 
-And yet, the OSS drivers are *still* in-tree, even though similar arguments
-apply to an OSS->ALSA migration.  And there's a bunch of other stuff in
-Documentation/feature-removal-schedule.txt in a similar situation.
+I don't think this is a valid concern. Just because current linux/gnu
+systems don't implement the userspace part of this interface doesn't
+mean it is useless or broken. 
 
-Remember - programming is like sex. One poorly planned release and you're
-stuck maintaining it for years. :)
+Cheers,
+Flo
 
---==_Exmh_1274899857_4200P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFL/W2RcC3lWbTT17ARAvoDAKC9rHsYHH8ofLPpJII9kWXkNeMXygCg7qSL
-pOtBEw3pezX5Nm/KYZDX3xk=
-=BHVJ
------END PGP SIGNATURE-----
-
---==_Exmh_1274899857_4200P--
-
-
---===============4133165657955233222==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============4133165657955233222==--
+-- 
+Just because I argue an issue, doesn't mean I agree with either side of
+it.
