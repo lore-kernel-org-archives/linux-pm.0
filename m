@@ -1,25 +1,23 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 00:39:43 +0100
-Message-ID: <20100527003943.07c17f85__27891.6907184341$1274927843$gmane$org@lxorguk.ukuu.org.uk>
-References: <1274482015-30899-1-git-send-email-arve@android.com>
-	<201005242049.18920.rjw@sisk.pl>
-	<87wrusvrqe.fsf@deeprootsystems.com>
-	<201005250138.16293.rjw@sisk.pl> <1274863655.5882.4875.camel@twins>
-	<AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
-	<1274867106.5882.5090.camel@twins>
-	<20100526120242.5c9b73ad@schatten.dmk.lab>
-	<AANLkTim4021cTnhVZrQpefq1MG-eEPOFLDRO-XDepHb4@mail.gmail.com>
-	<20100526133721.602633b2@schatten.dmk.lab>
-	<AANLkTikzgaOFdQKess4E-D86OLPOzxP3dWiDkU_UR0ri@mail.gmail.com>
-	<20100526142430.327ccbc4@schatten.dmk.lab>
-	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
-	<AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: Power Domain Framework
+Date: Wed, 26 May 2010 17:07:28 -0400
+Message-ID: <20100526210728.GB19188__25671.2518436418$1274927923$gmane$org@opensource.wolfsonmicro.com>
+References: <1274115886.2698.22.camel@finisterre.wolfsonmicro.main>
+	<1274118332.17303.17.camel@bnru01>
+	<CEE6BB42CAD6E947908279175AF8470A025A726240@EXDCVYMBSTM006.EQ1STM.local>
+	<1274131108.2698.161.camel@finisterre.wolfsonmicro.main>
+	<CEE6BB42CAD6E947908279175AF8470A025A72624A@EXDCVYMBSTM006.EQ1STM.local>
+	<1274134636.2698.170.camel@finisterre.wolfsonmicro.main>
+	<1274162450.17303.35.camel@bnru01>
+	<AANLkTinTdTp_X4lGtZ0hCaVJN5GmvI0tXR1RTRkRNkjN@mail.gmail.com>
+	<20100524033859.GB24480@opensource.wolfsonmicro.com>
+	<33A307AF30D7BF4F811B1568FE7A9B180B67C60C@EXDCVYMBSTM006.EQ1STM.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-14"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <33A307AF30D7BF4F811B1568FE7A9B180B67C60C@EXDCVYMBSTM006.EQ1STM.local>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,167 +27,103 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?ISO-8859-14?B?SGr4bm5lduVn?= <arve@android.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
+To: Sundar R IYER <sundar.iyer@stericsson.com>
+Cc: Viresh KUMAR <viresh.kumar@st.com>, Rajeev KUMAR <rajeev-dlh.kumar@st.com>, Linus WALLEIJ <linus.walleij@stericsson.com>, Shiraz HASHIM <shiraz.hashim@st.com>, Armando VISCONTI <armando.visconti@st.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vipin KUMAR <vipin.kumar@st.com>, STEricsson_nomadik_linux <STEricsson_nomadik_linux@list.st.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 May 2010 15:30:58 -0700
-Arve Hj=F8nnev=E5g <arve@android.com> wrote:
+On Wed, May 26, 2010 at 10:33:49AM +0200, Sundar R IYER wrote:
 
-> On Wed, May 26, 2010 at 6:16 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrot=
-e:
-> >> Really, what are you getting at? Do you deny that there are programs,
-> >> that prevent a device from sleeping? (Just think of the bouncing
-> >> cows app)
-> >>
-> >> And if you have two kernels, one with which your device is dead after 1
-> >> hour and one with which your device is dead after 10 hours. Which would
-> >> you prefer? I mean really... this is ridiculous.
-> >
-> > The problem you have is that this is policy. If I have the device wired
-> > to a big screen and I want cows bouncing on it I'll be most upset if
-> > instead it suspends.
-> =
+> >needs of the core regulator applications.  As I keep saying I'm just not
+> >seeing much more overlap here with the regulator API than I do with the
+> >clock API: it feels like you've got another use case which needs an API
+> >with a similar structure and the reference counted enable and disable
+> >calls but otherwise very little overlap.
 
-> We never suspend when the screen is on. If the screen is off, I would
-> not be upset if it suspends.
+> As I agreed earlier, its true about requirement. It is also true that the clock API can suffice.
+> But what is essential here is: we are talking about regulators here.
+> Why would we need to model a seemingly similar regulator as a clock?
 
-This is policy and platform specific. The OLPC can suspend with the
-screen on. Should I write my app to know about this once for Android and
-once for OLPC (and no doubt once for Apple). In the OLPC case cows could
-indeed suspend to RAM between frames if the wakeup time was suitable.
+You're missing the point here.  I'm not saying use the clock API, I'm
+saying that it feels like you want a parallel API that's aimed at the
+needs of operating points which mirrors the structure of the existing
+clock and regulator APIs.
 
-My app simply should not have to know this sort of crap, that's the whole
-point of an OS.
+> 1. Both power domains and a regulator can be enabled/disabled.
+> 2. Both power domains and a regulator can be controlled to a specific voltage.
 
-> > What you are essentially arguing for is for the
-> > kernel to disobey the userspace.
-> =
+This isn't universal by any stretch of the imagination and manner in
+which this is done is very different to how a regulator consumer would
+operate.  A regulator consumer knows which voltage it wants to work at
+directly and is selecting that voltage purely for itself, generally in a
+way that applies to all implementations of the device.  With an
+operating point a voltage is not set by the individual consumer but
+rather for the power domain as a whole based on the needs of all the
+consumers in the power domain.  If the same consumer driver is used in
+multiple SoCs it's likely that the particular voltages needed will vary 
+depending on the implementation on a given device.
 
-> No I'm not. User-space asked the kernel to suspend when possible.
-> Suspend is an existing kernel feature. All opportunistic suspend adds
-> is the ability to use it safely when there are wakeup event you cannot
-> afford to ignore.
+It's perfectly sensible for the power domain to be a regulator consumer,
+but having the individual consumer devices be regulator consumers seems
+non-obvious.
 
-Don't get me wrong - opportunistic suspend isn't the problem. Suspend
-blockers are - or more precisely - the manner in which they express
-intent from userspace. Opportunistic suspend is wonderful stuff for all
-sorts of things and if it persuades people like netbook manufacturers to
-think harder, and Linux driver authors to optimise their suspend/resume
-paths we all win.
+> 3. Every peripheral is dependent on both power domains and a regulator to be essentially
+>    on. Turning off the clocks will disable the peripheral, but it is not the same as turning off
+>    the peripheral. And here is where the biggest difference from the clock API. You can disable
+>    the peripheral clock with the clk_disable, but turning it off will be encroachment there. Whilst
+>    a regulator_disable is the most logical fit here.
 
-> Our actual stating point is this: Some systems can only enter their
-> lowest power state from suspend. So we added an api that allowed us to
-> use suspend without loosing wakeup events. Since suspending also
-> improves our battery life on platforms that enter the same power state
-> from idle and suspend and we already have a way to safely use suspend,
-> we would be crazy not to use it.
+This is very much dependant on hardware again, some devices require a
+clock for even basic functionality such as register access and there are
+things such as dynamic RAM which won't even provide retention if they
+are declocked.
 
-Opportunistic suspend isn't special. Suspend is just a very deep idle. In
-fact some of the low power states on processors look little different to
-suspend - the OS executes a whole pile of CPU state saving and cache
-flushing. It might be a hardware state machine, it might be buried in
-firmware or it might be quite explicit (eg mrst). So we already have
-differing degrees of doing additional work in different states.
+You also need to remember that a key part of the operating point
+configuration of some devices is the clock rate - normally the voltage
+required by the block will be driven by the clock rates in operation in
+the block.  The clock rates required may be a function of the operation
+of the individual blocks but are often also driven by things like the
+overall bandwidth needed on the various buses in the system.
 
-User triggered suspend is a bit special in that the user is usually right
-in that case to override the power management policy.
+As I keep saying the operating point selection in general hardware is
+often a function of both the clocking and voltage selection, and often
+chosen in a different way.
 
-Note I'm not suggesting we run off and restructure all our power
-management code to take this view right now. I'm suggesting we need a
-clean 'opportunistic suspend is not special' view by user space. How the
-kernel handles this is addressible later without app breakage, but only
-if we get the interface wrong to begin with.
+> 4. Both power domains and a regulator can be enforced upon constraints from their clients.
 
-> > Sandboxing/Resource Limits: handling apps that can't be trusted. So the
-> > phone runs the appstore code via something like
-> =
+A different set of constraints, though - there's not much overlap here.
 
-> Sandboxing is problematic on Android since there are a lot of cross
-> process dependencies. When a call comes in I don't know where the name
-> and picture to display comes from. With suspend blockers we block
-> suspend when we get notified that we have an incoming call and we can
-> call into any process and get a response.
+> *What* power domains and regulators differ about is:
+> 1.a the nature of constraints is a bit different. On SoC regulators aka power domains have usually
+>      a fixed set of clients which don't vary, but off SoC regulators can have varying clients.
 
-But you can express user suspend blocking in this manner. Your call
-incoming code would say 'I want good latency'. As someone needs good
-latency the box won't suspend. If your approach is to start with an
-initial 'anyone can set a low latency we don't care' then anyone can
-block suspends.
+As I keep saying the interaction between the consumer and the supplier
+is also rather different between the two use cases.
 
-Equally your call handling example is about latency not about suspend.
-You want the phone to stay on, to fetch a picture and display it promptly.
+> 2.a On SoC regulators aka power domains allow you controlling operational states like 
+>      On/Off/Retention/Idle etc, whilst conventional regulators are more happy judging their current loads.
+>      However, this still doesn't stop anyone from actually adding operational states to regulators.
 
-So what are expressing
+Can you identify how operating points might be added to regulators?  The
+physical connection between the regulators and the devices they are
+supplying is very clear and does not leave much (if any) room for
+flexibility here, and as I discussed in a prior message the trend in
+hardware implementation is towards reducing the control which systems
+use rather than increasing it.
 
-'I am using device 'screen' please keep it live'  (which may or may not
-block suspend - see OLPC). I guess your display server and kernel support
-manage this bit.
+> I agree with your reservations about pains trying to co-relate exactly a power domain and a regulator.
+> If you agree, from the top, reaching out to bottom, there are only subtle differences and these 
+> differences (1.a/2.a) can also be incorporated into conventional regulators which can be gradually 
+> diminishing, whereas the similarities, (1,2,3,4) can only possible increase!
 
-'I want the photo to appear in a resonable timescale'  (latency). It's
-not a suspend question - an imaginary non suspend idle mode with a 20
-second latency would be just as annoying yes ?
+I'm still not seeing any meaningful overlap between the two things - it
+seems unlikely that a substantial proportion of the drivers that need to
+interact with operating points will also wish to explicitly use anything
+other than enable and disable that the regulator API offers so even if
+the two ended up being implemented in the same API you'd still have two
+disjoint blocks of code implementing different things.
 
-At the moment we have a very real bigger problem that your problem is
-part of.
-
-- Hard real time people want to be able to limit the CPU sleeping
-  behaviour based upon what tasks are running
-
-- Certain gaming types want their boxes to be good power citizens except
-  when committing digital mass murder. Right now that involves wrapping
-  the game in a script with bits occurring as root and that generally
-  breaks if the game crashes so the script doesn't run nicely on exit
-
-- Virtual machine people desperately want to see latency data to help
-  schedule stuff in a power efficient manner.  In a virtual machine
-  environment its vital information about how you schedule a virtual
-  machine, whether now is a good time to live migrate it and how best to
-  optimise power/performance on the server end.
-
-- Some drivers want to constrain idling because they know
-  platform/hardware stuff the core power management code doesn't (eg
-  serial ports at high speed). We want that expressed in a way that keeps
-  the power management code clean of such device knowledge
-
-Now I don't care if we have an elegant kernel interface and Android uses
-it as a big hammer - if that makes Android work well everyone can be
-happy. What I don't want is to have a big hammer when it doesn't solve the
-underlying big picture problem for everyone.
-
-So my working position is summarised thusly
-
-- Supporting Android needs well good
-- Opportunistic suspend good
-- Manner in which interface is expressed to userspace bad
-- Latency constraint interface would be better
-- Your existing behaviour can be implemented by a simplistic use of a
-  latency constraint interface
-- We can fix a pile of other directly connected things at the same time
-- Implementation internals I care far less about because we can fix those
-  later
-- Suspend is just a power state
-
-How does that fit your model and vision ?
-
-> What about platforms that currently cannot enter low power states from
-> idle? Do you remove suspend support from the kernel?
-
-I would actually expect a system that can't do any low power states to
-support the user API and blissfully ignore it. Applications will ask for
-various latency guarantees and of course always get them. The apps will be
-portable, the device will be offering it's best behaviour and everyone
-will be happy.
-
-If your device only supports full on and suspend I don't see why
-opportunistic suspend couldn't be provided assuming sufficient wakeup
-support was present. It won't be the most exciting power management
-policy to write but it's perfectly doable and the apps again will not need
-recoding to handle it.
-
-The latency goal data is also priceless for another consumer - in a
-virtual machine environment its vital information about how you schedule
-a virtual machine, whether now is a good time to live migrate it and how
-best to optimise power/performance on the server end.
-
-Alan
+There are many interfaces in the kernel which work together to provide
+power efficiency and to me it seems like you have identified a need for
+a new one.  I'd also repeat my previous suggestion to look in more
+detail at the operating point implementations that already exist in the
+kernel and the needs of the hardware out there.
