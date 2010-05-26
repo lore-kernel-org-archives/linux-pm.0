@@ -1,16 +1,16 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Wed, 26 May 2010 10:43:07 +0200
-Message-ID: <1274863387.5882.4855.camel__7139.31376017189$1274863729$gmane$org@twins>
-References: <Pine.LNX.4.44L0.1005251359580.1634-100000@iolanthe.rowland.org>
-	<201005252147.22358.rjw@sisk.pl>
-	<20100525195300.GA4455@core.coreip.homeip.net>
-	<201005252221.55888.rjw@sisk.pl>
+Subject: Re: [PATCH 2/8] PM: suspend_block: Add driver to access
+ suspend blockers from user-space
+Date: Wed, 26 May 2010 10:43:48 +0200
+Message-ID: <1274863428.5882.4860.camel__23297.4764462144$1274863791$gmane$org@twins>
+References: <1274482015-30899-1-git-send-email-arve@android.com>
+	<1274482015-30899-2-git-send-email-arve@android.com>
+	<1274482015-30899-3-git-send-email-arve@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005252221.55888.rjw@sisk.pl>
+In-Reply-To: <1274482015-30899-3-git-send-email-arve@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,21 +20,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, Jim Collar <jim.collar@eqware.net>, linux-doc@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>, Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2010-05-25 at 22:21 +0200, Rafael J. Wysocki wrote:
-> 
-> Now, we can reject their patches, but that's not going to cause any progress
-> to happen, realistically.  Quite on the contrary, Android will continue to use
-> wakelocks and Android driver writers will continue to ignore the mainline
-> and the gap between the two kernel lines will only get wider and wider over
-> time.
-> 
-> And what really is the drawback if we merge the patches?  Quite frankly,
-> I don't see any. 
-
-A funny userspace API of questionable use (esp. with the advent of
-better hardware and better runtime PM support) which we will have to
-support forever seems like a big enough downside.
+T24gRnJpLCAyMDEwLTA1LTIxIGF0IDE1OjQ2IC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
+Ogo+ICtUbyBjcmVhdGUgYSBzdXNwZW5kIGJsb2NrZXIgZnJvbSB1c2VyIHNwYWNlLCBvcGVuIHRo
+ZSBzdXNwZW5kX2Jsb2NrZXIKPiBzcGVjaWFsCj4gK2RldmljZSBmaWxlOgo+ICsKPiArICAgIGZk
+ID0gb3BlbigiL2Rldi9zdXNwZW5kX2Jsb2NrZXIiLCBPX1JEV1IgfCBPX0NMT0VYRUMpOwo+ICsK
+PiArdGhlbiBvcHRpb25hbGx5IGNhbGw6Cj4gKwo+ICsgICAgaW9jdGwoZmQsIFNVU1BFTkRfQkxP
+Q0tFUl9JT0NUTF9TRVRfTkFNRShzdHJsZW4obmFtZSkpLCBuYW1lKTsKPiArCj4gK1RvIGFjdGl2
+YXRlIHRoZSBzdXNwZW5kIGJsb2NrZXIgY2FsbDoKPiArCj4gKyAgICBpb2N0bChmZCwgU1VTUEVO
+RF9CTE9DS0VSX0lPQ1RMX0JMT0NLKTsKPiArCj4gK1RvIGRlYWN0aXZhdGUgaXQgY2FsbDoKPiAr
+Cj4gKyAgICBpb2N0bChmZCwgU1VTUEVORF9CTE9DS0VSX0lPQ1RMX1VOQkxPQ0spOwo+ICsKPiAr
+VG8gZGVzdHJveSB0aGUgc3VzcGVuZCBibG9ja2VyLCBjbG9zZSB0aGUgZGV2aWNlOgo+ICsKPiAr
+ICAgIGNsb3NlKGZkKTsKClVyZ2gsIHBsZWFzZSBsZXQgdGhlIG9wZW4oKSBiZSBCTE9DSywgdGhl
+IGNsb3NlKCkgYmUgVU5CTE9DSywgYW5kIGtlZXAKdGhlIFNFVF9OQU1FIHRoaW5nIGlmIHlvdSBy
+ZWFsbHkgY2FyZS4KCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9u
+Lm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8v
+bGludXgtcG0=
