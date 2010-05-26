@@ -1,7 +1,7 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 26 May 2010 17:15:47 +0200
-Message-ID: <1274886947.1674.1757.camel__26695.2577200302$1274887011$gmane$org@laptop>
+Date: Wed, 26 May 2010 17:16:26 +0200
+Message-ID: <1274886986.1674.1758.camel__20411.6933433854$1274887093$gmane$org@laptop>
 References: <1274482015-30899-1-git-send-email-arve@android.com>
 	<201005242049.18920.rjw@sisk.pl> <87wrusvrqe.fsf@deeprootsystems.com>
 	<201005250138.16293.rjw@sisk.pl> <1274863655.5882.4875.camel@twins>
@@ -33,9 +33,11 @@ Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, felipe
 List-Id: linux-pm@vger.kernel.org
 
 On Wed, 2010-05-26 at 17:11 +0200, Florian Mickler wrote:
-> I'm not saying that your argument is not valid. But why don't you look
-> at suspend blockers as a contract between userspace and kernelspace? An
-> Opt-In to the current guarantees the kernel provides in the non-suspend
-> case.
-
-That's backwards.
+> If you don't want to suspend while
+> looking at the bouncing-cow, you have to take a suspend blocker and
+> make yourself a user-visible power-eater, or don't do 
+> 
+> echo "opportunistic" > /sys/power/policy 
+> 
+How about we don't merge that junk and don't give you the opportunity to
+do silly things like that? :-)
