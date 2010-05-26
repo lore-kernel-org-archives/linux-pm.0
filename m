@@ -1,20 +1,21 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 26 May 2010 12:19:40 +0200
-Message-ID: <20100526121940.2edfd531__34137.6363685869$1274869227$gmane$org@schatten.dmk.lab>
-References: <1274482015-30899-1-git-send-email-arve@android.com>
-	<201005242049.18920.rjw@sisk.pl>
-	<87wrusvrqe.fsf@deeprootsystems.com>
-	<201005250138.16293.rjw@sisk.pl> <1274863655.5882.4875.camel@twins>
-	<AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
-	<1274867106.5882.5090.camel@twins>
-	<20100526120242.5c9b73ad@schatten.dmk.lab>
-	<1274868484.5882.5176.camel@twins>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Wed, 26 May 2010 12:21:02 +0200
+Message-ID: <1274869262.5882.5222.camel__38672.4035758109$1274869309$gmane$org@twins>
+References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
+	<201005252344.37639.rjw@sisk.pl>
+	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
+	<1274863342.5882.4850.camel@twins>
+	<20100526112303.3fef15a4@schatten.dmk.lab>
+	<1274866402.5882.5051.camel@twins>
+	<AANLkTil9ZtMFxTfE6ITiFNOl4S1k3Lvdp5BPgGX7LJhw@mail.gmail.com>
+	<1274868384.5882.5169.camel@twins>
+	<AANLkTimHGpRAZklIwXu6wEbA3coKXJvCVLxj2twerkCw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1274868484.5882.5176.camel@twins>
+In-Reply-To: <AANLkTimHGpRAZklIwXu6wEbA3coKXJvCVLxj2twerkCw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,35 +25,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Paul@smtp1.linux-foundation.org, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
+To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-doc@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, tytso@mit.edu, Greg KH <gregkh@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 May 2010 12:08:04 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
-
-> On Wed, 2010-05-26 at 12:02 +0200, Florian Mickler wrote:
-> > The summary is: The device this kernel is running on dosn't want to
-> > (or can) rely on userspace to save power. This is because it is an open
-> > system, without an app-store or the like. Everyone can run what he
-> > wants.
-> > 
-> > So anything relying on (all) userspace solves a different problem.
-> 
-> So what stops an application from grabbing a suspend blocker?
-
-Well, I don't own any android devices, but  If I read this all
-correctly, an app can request the permission to grab an suspend blocker
-at installation time. ("This application is requesting permission to
-keep the device from sleeping, thus possibly reducing your battery
-time. Are you shure you want to continue? [Yes,No]")
-
-every app grabbing a suspend blocker is showing
-up in a "these programs stop suspend" kind of battery-app and are thus
-well accounted for. _And the user knows who to blame_.
-
-Maybe this is implemented via fs-permissions? Anyway, I'm shure,
-that the access control uses a well established method. :)  
-
-Cheers,
-Flo
+T24gV2VkLCAyMDEwLTA1LTI2IGF0IDAzOjE3IC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
+Ogo+ID4gV2l0aCBhIHNpbmdsZSBzdXNwZW5kIG1hbmFnZXIgcHJvY2VzcyB0aGF0IG1hbmFnZXMg
+dGhlIHN1c3BlbmQgc3RhdGUgeW91Cj4gPiBjYW4gYWNoaWV2ZSB0aGUgc2FtZSBnb2FsLgo+ID4K
+PiAKPiBZZXMgd2UgZG9uJ3QgbmVlZCB0aGUgL2RldiBpbnRlcmZhY2UsIGJ1dCBpdCBpcyB1c2Vm
+dWwuIFdpdGhvdXQgaXQgYW55Cj4gcHJvZ3JhbSB0aGF0IG5lZWRzIHRvIGJsb2NrIHN1c3BlbmQg
+aGFzIHRvIG1ha2UgYSBibG9ja2luZyBpcGMgY2FsbAo+IGludG8gdGhlIHN1c3BlbmQgbWFuYWdl
+ciBwcm9jZXNzLiBBbmRyb2lkIGFscmVhZHkgZG9lcyB0aGlzIGZvciBqYXZhCj4gY29kZSwgYnV0
+IHN5c3RlbSBwcm9jZXNzZXMgd3JpdHRlbiBpbiBDIGJsb2NrIHN1c3BlbmQgZGlyZWN0bHkgd2l0
+aAo+IHRoZSBrZXJuZWwgc2luY2UgdGhleSBjYW5ub3QgdXNlIHRoZSBqYXZhIEFQSXMuIAoKU28g
+cHJvdmlkZSBhIEMgaW50ZXJmYWNlIHRvIGl0IGFzIHdlbGw/CgpTdXJlbHkgeW91IGNhbiBoYXZl
+IHRoZSBqYXZhIHRoaW5nIGhhdmUgYSB1bml4IHNvY2tldCBvciBzb21ldGhpbmcgYSBDCmFwcCBj
+YW4gdGFsayB0by4gVGhhdCBzaG91bGRuJ3QgYmUgaGFyZCBhdCBhbGwuCgpPciBtYWtlIHRoZSBz
+dXNwZW5kIG1hbmFnZXIgYSBDIHByb2dsZXQgYW5kIHByb3ZpZGUgYSBKTkkgaW50ZXJmYWNlLCBv
+cgp3aGF0ZXZlci4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24u
+b3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9s
+aW51eC1wbQ==
