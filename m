@@ -1,16 +1,20 @@
 From: Florian Mickler <florian@mickler.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 26 May 2010 13:35:14 +0200
-Message-ID: <20100526133514.3d018520__2460.74170941046$1274873772$gmane$org@schatten.dmk.lab>
+Date: Wed, 26 May 2010 13:37:21 +0200
+Message-ID: <20100526133721.602633b2__3702.75130630962$1274873888$gmane$org@schatten.dmk.lab>
 References: <1274482015-30899-1-git-send-email-arve@android.com>
-	<201005240246.55043.rjw@sisk.pl> <1274863533.5882.4864.camel@twins>
-	<20100526114053.440c0559@schatten.dmk.lab>
-	<1274867677.5882.5127.camel@twins>
+	<201005242049.18920.rjw@sisk.pl>
+	<87wrusvrqe.fsf@deeprootsystems.com>
+	<201005250138.16293.rjw@sisk.pl> <1274863655.5882.4875.camel@twins>
+	<AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
+	<1274867106.5882.5090.camel@twins>
+	<20100526120242.5c9b73ad@schatten.dmk.lab>
+	<AANLkTim4021cTnhVZrQpefq1MG-eEPOFLDRO-XDepHb4@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1274867677.5882.5127.camel@twins>
+In-Reply-To: <AANLkTim4021cTnhVZrQpefq1MG-eEPOFLDRO-XDepHb4@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,65 +24,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Vitaly Wool <vitalywool@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 May 2010 11:54:37 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
+On Wed, 26 May 2010 13:18:51 +0200
+Vitaly Wool <vitalywool@gmail.com> wrote:
 
-> On Wed, 2010-05-26 at 11:40 +0200, Florian Mickler wrote:
-> > _IF_ you want to suspend aggressively, I don't see another
-> > way.
-> > 
-> > The thing is, this is a paradigm change. Suspend is not anymore
-> > controlled by userspace. In order to let userspace control/work with
-> > this scheme, it needs to know when a suspend will be successfull or
-> > poll:
-> > 
-> > 1. kernel sees suspend may be possible on his side of things
-> > 
-> > 2. kernel sends a message to userspace that i could be possibly
-> > possible to suspend, but it may well be that by the time
-> > userspace suspends it is not possible anymore
-> > 
-> > 3. userspace decides to suspend. 
-> > 
-> > <- system suspends...  or not ..-> 
-> > 
-> > 4. userspace retries ... retries ... retries ... 
-> > 
-> > And then you have the whole can of worms and races.
+> On Wed, May 26, 2010 at 12:02 PM, Florian Mickler <florian@mickler.org> wrote:
 > 
-> I don't see any races, nor retry loops. 
-
-What about the worms?  :)
-
-I referred to retrying steps 1 through 3 as being the loop. 
-
+> >> So why again was this such a great scheme? Go fix your userspace to not
+> >> not run when not needed.
+> >
+> > Hi Peter!
+> >
+> > This was already mentioned in one of these threads.
+> >
+> > The summary is: The device this kernel is running on dosn't want to
+> > (or can) rely on userspace to save power. This is because it is an open
+> > system, without an app-store or the like. Everyone can run what he
+> > wants.
 > 
-> There is always the race of an event arriving whilst in the process of
-> suspending, that is not solved by either the kernel nor user part of
-> suspend-blockers. The only thing is not to loose the event.
+> I don't see this as a valid point. Everyone can run a different kernel
+> where nothing will just work. Are you aiming protection against that
+> as well?
 > 
-> You simply have to deal with that, the suspend gets canceled, you do
-> deal with the event, and suspend again. How does making that 'retry' as
-> you call it happen from a kernel thread or from a userspace thread any
-> difference?
-> 
-You have a point there. But what follows?
+> ~Vitaly
 
-You either need to let userspace know that the kernel is now able to
-suspend or you let the kernel know that userspace is now able to
-suspend.
-Else you can not make a well informed suspend-decision and have to
-guess and retry.
-
-Why not look at blocking and unblocking as these events you want
-to have? Without wiggle room and retrying.
-
-And not having to route through userspace simplifies the auto-suspend
-scheme further.
+This is not "protection". This is functioning properly in a real world
+scenario. Why would the user change the kernel, if the device would be
+buggy after that? (Except maybe he is a geek)
 
 Cheers,
 Flo
