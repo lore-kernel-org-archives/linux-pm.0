@@ -1,18 +1,29 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Wed, 26 May 2010 19:32:52 +0200
-Message-ID: <20100526173252.GC9069__1407.60944127596$1274895257$gmane$org@elf.ucw.cz>
-References: <1272667021-21312-1-git-send-email-arve@android.com>
-	<87wrvl5479.fsf@deeprootsystems.com>
-	<20100503215028.GB18910@srcf.ucam.org>
-	<20100524185754.GD1292@ucw.cz>
-	<AANLkTilR3CgkLRfxMN_A79kuC_KOgsfW4oNUDPZFlZFW@mail.gmail.com>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Wed, 26 May 2010 12:33:08 -0500
+Message-ID: <1274895188.4467.783.camel__22450.8907915608$1274895504$gmane$org@mulgrave.site>
+References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
+	<201005252344.37639.rjw@sisk.pl>
+	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
+	<1274863342.5882.4850.camel@twins>
+	<20100526112303.3fef15a4@schatten.dmk.lab>
+	<1274866402.5882.5051.camel@twins>
+	<AANLkTil9ZtMFxTfE6ITiFNOl4S1k3Lvdp5BPgGX7LJhw@mail.gmail.com>
+	<1274868384.5882.5169.camel@twins>
+	<AANLkTimHGpRAZklIwXu6wEbA3coKXJvCVLxj2twerkCw@mail.gmail.com>
+	<1274869262.5882.5222.camel@twins>
+	<AANLkTik9LINPmabJfVi0jfVs5sjVS_1l00WpnVTFEuLV@mail.gmail.com>
+	<1274890736.4467.574.camel@mulgrave.site>
+	<1274891308.1674.1766.camel@laptop>
+	<1274892847.4467.674.camel@mulgrave.site>
+	<1274893228.1674.1772.camel@laptop>
+	<1274894042.4467.727.camel@mulgrave.site>
+	<1274894602.1674.1780.camel@laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTilR3CgkLRfxMN_A79kuC_KOgsfW4oNUDPZFlZFW@mail.gmail.com>
+In-Reply-To: <1274894602.1674.1780.camel@laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,49 +33,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: Geoff Smith <geoffx.smith@intel.com>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@infradead.org>, Matthew Garrett <mjg@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Greg KH <gregkh@suse.de>, linux-doc@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, Pekka Enberg <penberg@cs.helsinki.fi>, tytso@mit.edu, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2010-05-24 18:16:15, Arve Hj?nnev?g wrote:
-> On Mon, May 24, 2010 at 11:57 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > Hi!
-> >
-> >> I agree that the runtime scenario is a far more appealing one from an
-> >> aesthetic standpoint, but so far we don't have a very compelling
-> >> argument for dealing with the starting and stopping of userspace. The
-> >> use-cases that Google have provided are valid and they have an
-> >> implementation that addresses them, and while we're unable to provide an
-> >> alternative that provides the same level of functionality I think we're
-> >> in a poor position to prevent this from going in.
-> >
-> > Uhuh?
-> >
-> > "We have this ugly code here, but it works and we don't have better
-> > one, so lets merge it"?
-> >
-> > I don't really like this line of reasoning. I would not want to judge
-> > wakelocks here, but... "it works, merge it" should not be used as
-> > argument.
-> >
-> > And btw I do have wakelock-less implementation of autosleep, that only
-> > sleeped the machine when nothing was ready to run. It was called
-> > "sleepy linux". Should I dig it out?
-> >
-> > Major difference was that it only sleeped the machine when it was
-> > absolutely certain machine is idle and no timers are close to firing
-> > -- needing elimination or at least markup of all short timers. It
-> > erred on side of not sleeping the machine when it would break
-> > something.
-> >
+On Wed, 2010-05-26 at 19:23 +0200, Peter Zijlstra wrote:
+> On Wed, 2010-05-26 at 12:14 -0500, James Bottomley wrote:
+> > On Wed, 2010-05-26 at 19:00 +0200, Peter Zijlstra wrote:
+> > > On Wed, 2010-05-26 at 11:54 -0500, James Bottomley wrote:
+> > > > Given that I'm in the latter category, I think suspend blockers is a
+> > > > reasonable solution to an existing problem.  I like Alan's idea of
+> > > > restricting the API into a single user space program so we contain the
+> > > > API contamination ... but realistically that's mostly the current
+> > > > suspend blockers anyway. 
+> > > 
+> > > There's a _large_ difference between resource limits and these wonky
+> > > suspend blockers.
+> > 
+> > Well, you have policy and then you have implementation ... suspend
+> > blockers just looks like an implementation to me.  It seems to be
+> > reasonably well suited in that regard ... after all, we kill processes
+> > that exhaust memory for instance or cut off write privileges to those
+> > that go over quota.  Preventing power hungry processes from consuming
+> > power by not allowing them to run until there's a wakeup event is fairly
+> > gentle by those standards.
 > 
-> How did you handle external events that occur right after you decided to sleep?
+> The difference is that the limit should be per task.
 
-I decided to go to sleep with interrupts disabled... it was prototype
-on x86, so it was rather tricky.
+How?  You've got two different limits ... one the power the application
+should be consuming when doing useful work for the user and the other is
+the idle power.  A badly constructed app may only be bad on idle
+power ... how is the scheduler going to detect this, exactly?  And what
+do we do to applications we've detected are over consuming idle power?
 
-I'd expect external events after sleep decision to just wakeup machine
-immediately, similar to entering deep CPU sleep mode...
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>  In this model a
+> process that only runs a little still gets suspended.
+
+That's why I think it looks like a reasonable solution.  For this to
+work, I agree you have to have all events the user is interested in wake
+the system up ... but on most embedded platforms, they do.
+
+> > > The main and most important one being that suspend is a global property
+> > > and can/will hurt sensible tasks. It puts the whole task model upside
+> > > down.
+> > 
+> > OK, so I believe you have an android phone ... it already implements
+> > this model ... specifically what are the problems on that platform this
+> > causes?
+> 
+> I do not have one, nor have I ever written an application for it (nor
+> will I likely ever do that, since I detest Java), but I would expect an
+> application to run when its runnable.
+
+OK, so I've got one ... tell me what I should see and I'll try to
+reproduce.
+
+James
