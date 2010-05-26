@@ -1,13 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Runtime PM for PCI-based USB host controllers
-Date: Wed, 26 May 2010 18:14:52 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005261813350.1328-100000__8353.65887401185$1274967542$gmane$org@iolanthe.rowland.org>
-References: <201005262316.13957.rjw@sisk.pl>
+Subject: Re: [PATCH 2/8] PM: suspend_block: Add driver to access
+ suspend blockers from user-space
+Date: Wed, 26 May 2010 18:18:36 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005261815480.1328-100000__26823.1247588576$1274967544$gmane$org@iolanthe.rowland.org>
+References: <201005262357.28933.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005262316.13957.rjw@sisk.pl>
+In-Reply-To: <201005262357.28933.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,37 +19,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pci@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
+Cc: Len Brown <len.brown@intel.com>, Jim Collar <jim.collar@eqware.net>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>, Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Wed, 26 May 2010, Rafael J. Wysocki wrote:
 
-> On Wednesday 26 May 2010, Alan Stern wrote:
-> > Rafael:
-> > 
-> > I've been updating the patch Matthew Garrett posted last November, 
-> > adding runtime PM methods for PCI USB controllers.  Overall the 
-> > situation is now easier, since the rest of the USB subsystem has been 
-> > converted over to the runtime PM framework.  And it even seems to work!
-> > 
-> > But there is one problem.  The device driver needs to know, during its
-> > pm_suspend callback, whether or not wakeup should be enabled.  (Or more
-> > accurately, the pm_suspend callback needs to fail if wakeup isn't going
-> > to be available.) 
-> 
-> The driver can check that by calling pci_dev_run_wake() which returns false
-> if there's no wakeup support for the device.
+> On Wednesday 26 May 2010, Peter Zijlstra wrote:
+> > On Fri, 2010-05-21 at 15:46 -0700, Arve Hj=C3=B8nnev=C3=A5g wrote:
+> > > +To create a suspend blocker from user space, open the suspend_blocker
+> > > special
+> > > +device file:
+> > > +
+> > > +    fd =3D open("/dev/suspend_blocker", O_RDWR | O_CLOEXEC);
+> > > +
+> > > +then optionally call:
+> > > +
+> > > +    ioctl(fd, SUSPEND_BLOCKER_IOCTL_SET_NAME(strlen(name)), name);
+> > > +
+> > > +To activate the suspend blocker call:
+> > > +
+> > > +    ioctl(fd, SUSPEND_BLOCKER_IOCTL_BLOCK);
+> > > +
+> > > +To deactivate it call:
+> > > +
+> > > +    ioctl(fd, SUSPEND_BLOCKER_IOCTL_UNBLOCK);
+> > > +
+> > > +To destroy the suspend blocker, close the device:
+> > > +
+> > > +    close(fd);
+> > =
 
-Ah, okay, thanks.
+> > Urgh, please let the open() be BLOCK, the close() be UNBLOCK, and keep
+> > the SET_NAME thing if you really care.
+> =
 
->  However, that's not enough on
-> some broken machines where some signal pins are simply not connected to the
-> system core logic (as a result the PCI core thinks that wakeup is supported,
-> but in fact it doesn't work due to the broken hardware - yes, there are
-> machines like this in the wild, Matthew has one).
+> SET_NAME wouldn't serve any purpose in that case.
+> =
 
-We don't have to worry about that.  If the hardware is broken and the 
-kernel doesn't realize it, the user will just have to tell it not to 
-allow runtime suspend for those devices.
+> This whole thing is related to the statistics part, which Arve says is
+> essential to him.  He wants to collect statistics for each suspend blocker
+> activated and deactivated so that he can tell who's causing problems by
+> blocking suspend too often.  The name also is a part of this.
+> =
+
+> In fact, without the statistics part the whole thing might be implemented
+> as a single reference counter such that suspend would happen when it went=
+ down
+> to zero.
+
+There's also Arve's other main point: These suspend blockers tend to
+get used quite a lot.  Opening and closing a file each time has much
+higher overhead than a simple ioctl.
+
+All these topics have been covered earlier in this discussion.  Peter =
+
+should go back and read the emails in the linux-pm archive.
 
 Alan Stern
