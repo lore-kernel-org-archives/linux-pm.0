@@ -1,7 +1,7 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 26 May 2010 17:12:44 +0200
-Message-ID: <1274886764.1674.1756.camel__1386.03580785475$1274886818$gmane$org@laptop>
+Date: Wed, 26 May 2010 17:15:47 +0200
+Message-ID: <1274886947.1674.1757.camel__26695.2577200302$1274887011$gmane$org@laptop>
 References: <1274482015-30899-1-git-send-email-arve@android.com>
 	<201005242049.18920.rjw@sisk.pl> <87wrusvrqe.fsf@deeprootsystems.com>
 	<201005250138.16293.rjw@sisk.pl> <1274863655.5882.4875.camel@twins>
@@ -33,11 +33,9 @@ Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, felipe
 List-Id: linux-pm@vger.kernel.org
 
 On Wed, 2010-05-26 at 17:11 +0200, Florian Mickler wrote:
-> > Implementation-wise it probably ties into setpidle, its simply that a task
-> > has a pair of idle values, a dynamic one and a base one, the dynamic one
-> > being the base one but updatable temporarily by drivers.
+> I'm not saying that your argument is not valid. But why don't you look
+> at suspend blockers as a contract between userspace and kernelspace? An
+> Opt-In to the current guarantees the kernel provides in the non-suspend
+> case.
 
-> How does this address the loss of wakeup events while using suspend? 
-> (For example the 2 issues formulated by Alan Stern in [1])
-
-By not suspending obviously.
+That's backwards.
