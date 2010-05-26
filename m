@@ -1,23 +1,23 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 26 May 2010 13:12:37 +0200
-Message-ID: <1274872357.27810.16.camel__5968.76225104115$1274872410$gmane$org@twins>
-References: <1274482015-30899-1-git-send-email-arve@android.com>
-	<1274863655.5882.4875.camel@twins>
-	<AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
-	<1274867106.5882.5090.camel@twins>
-	<AANLkTiksR3YozbBH0Iv5kNsQkEGKCH1APCvn_s6LkjV9@mail.gmail.com>
-	<1274868593.5882.5185.camel@twins>
-	<AANLkTinuxCbeBmxIR7b_1OtrqQYJCamiDZJbnNTih1Fb@mail.gmail.com>
-	<1274869966.5882.5262.camel@twins>
-	<AANLkTikRMBkoFxgaKsxMJ2lOMomTXpiHJDk3rVt0EtwM@mail.gmail.com>
-	<1274870970.5882.5311.camel@twins>
-	<AANLkTinlxsokwralwRAL9_YRQ7-SZUSvrGHTlRISA9bC@mail.gmail.com>
+From: Vitaly Wool <vitalywool@gmail.com>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Wed, 26 May 2010 13:16:18 +0200
+Message-ID: <AANLkTimxXcupV0KX1nQIPbuRzZYXZwCebDVahxR-kWkJ__29390.7948573635$1274872659$gmane$org@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
+	<201005252344.37639.rjw@sisk.pl>
+	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
+	<1274863342.5882.4850.camel@twins>
+	<20100526112303.3fef15a4@schatten.dmk.lab>
+	<1274866402.5882.5051.camel@twins>
+	<AANLkTil9ZtMFxTfE6ITiFNOl4S1k3Lvdp5BPgGX7LJhw@mail.gmail.com>
+	<1274868384.5882.5169.camel@twins>
+	<AANLkTimHGpRAZklIwXu6wEbA3coKXJvCVLxj2twerkCw@mail.gmail.com>
+	<1274869262.5882.5222.camel@twins>
+	<AANLkTilp1zWqvmUzGjEX3x9OBsdXdvNEG-znTjVvoM-b@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinlxsokwralwRAL9_YRQ7-SZUSvrGHTlRISA9bC@mail.gmail.com>
+In-Reply-To: <AANLkTilp1zWqvmUzGjEX3x9OBsdXdvNEG-znTjVvoM-b@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,53 +27,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
+To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, tytso@mit.edu, Andrew Morton <akpm@linux-foundation.org>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Florian Mickler <florian@mickler.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Greg KH <gregkh@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyMDEwLTA1LTI2IGF0IDAzOjUzIC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
-OiAKPiAyMDEwLzUvMjYgUGV0ZXIgWmlqbHN0cmEgPHBldGVyekBpbmZyYWRlYWQub3JnPjoKPiA+
-IE9uIFdlZCwgMjAxMC0wNS0yNiBhdCAwMzo0MCAtMDcwMCwgQXJ2ZSBIasO4bm5ldsOlZyB3cm90
-ZToKPiA+PiAyMDEwLzUvMjYgUGV0ZXIgWmlqbHN0cmEgPHBldGVyekBpbmZyYWRlYWQub3JnPjoK
-PiA+PiA+IE9uIFdlZCwgMjAxMC0wNS0yNiBhdCAwMzoyNSAtMDcwMCwgQXJ2ZSBIasO4bm5ldsOl
-ZyB3cm90ZToKPiA+PiA+Cj4gPj4gPj4gYW5kIG9uIHN5c3RlbXMgd2hlcmUgdGhlCj4gPj4gPj4g
-c2FtZSBwb3dlciBzdGF0ZSBjYW4gYmUgdXNlZCBmcm9tIGlkbGUgYW5kIHN1c3BlbmQsIHdlIHVz
-ZSBzdXNwZW5kIHNvCj4gPj4gPj4gd2UgY2FuIHN0YXkgaW4gdGhlIGxvdyBwb3dlciBzdGF0ZSBm
-b3IgbWludXRlcyB0byBob3VycyBpbnN0ZWFkIG9mCj4gPj4gPj4gbWlsbGlzZWNvbmRzIHRvIHNl
-Y29uZHMuCj4gPj4gPgo+ID4+ID4gU28gZG9uJ3QgeW91IHRoaW5rIHdvcmtpbmcgb24gbWFraW5n
-IGl0IHBvc3NpYmxlIGZvciBzeXN0ZW1zIHRvIGJlIGlkbGUKPiA+PiA+IF90aGF0XyBsb25nIHdv
-dWxkIGltcHJvdmUgdGhpbmdzIGZvciBldmVyeWJvZHk/IGFzIG9wcG9zZWQgdG8gdGhpcwo+ID4+
-ID4gYXV0by1zdXNwZW5kIHdoaWNoIG9ubHkgaW1wcm92ZXMgbWF0dGVycyBmb3IgdGhvc2UgdGhh
-dCAoY2FuKSB1c2UgaXQ/Cj4gPj4KPiA+PiBJJ20gbm90IHByZXZlbnRpbmcgYW55b25lIGZyb20g
-d29ya2luZyBvbiBpbXByb3ZpbmcgdGhpcy4gQ3VycmVudGx5Cj4gPj4gYm90aCB0aGUga2VybmVs
-IGFuZCBvdXIgdXNlci1zcGFjZSBjb2RlIHBvbGxzIHdheSB0b28gbXVjaC4gSSBkb24ndAo+ID4+
-IHRoaW5rIGl0IGlzIHJlYXNvbmFibGUgdG8gZGVtYW5kIHRoYXQgbm8gb25lIHNob3VsZCBydW4g
-YW55IHVzZXItc3BhY2UKPiA+PiBjb2RlIHdpdGggcGVyaW9kaWMgdGltZXJzIHdoZW4gd2UgaGF2
-ZSBub3QgZXZlbiBmaXhlZCB0aGUga2VybmVsIHRvCj4gPj4gbm90IGRvIHRoaXMuCj4gPgo+ID4g
-QWxsIEknbSBzYXlpbmcgaXMgdGhhdCBtZXJnaW5nIGEgc3RvcC1nYXAgbWVhc3VyZSB3aWxsIGRl
-Y3JlYXNlIHRoZQo+ID4gdXJnZW5jeSBhbmQgdGh1cyB0aGUgdGltZSBzcGVuZCBmaXhpbmcgdGhl
-IGFjdHVhbCBpc3N1ZXMgd2hpbGUgYWRkaW5nCj4gPiB0aGUgYnVyZGVuIG9mIG1haW50YWluaW5n
-IHRoaXMgc3RvcC1nYXAgbWVhc3VyZS4KPiA+Cj4gCj4gRml4aW5nIHRoZSBhY3R1YWxseSBpc3N1
-ZSBtZWFucyBmaXhpbmcgYWxsIHVzZXItc3BhY2UgY29kZSwgYW5kCj4gcmVwbGFjaW5nIG1vc3Qg
-eDg2IGhhcmR3YXJlLiBJIGRvbid0IHRoaW5rIGtlZXBpbmcgdGhpcyBmZWF0dXJlIG91dCBvZgo+
-IHRoZSBrZXJuZWwgd2lsbCBzaWduaWZpY2FudGx5IGFjY2VsZXJhdGUgdGhpcy4KCkkgZG9uJ3Qg
-dGhpbmsgeDg2IGlzIHJlbGV2YW50IGFueXdheSwgaXQgZG9lc24ndCBzdXNwZW5kL3Jlc3VtZSBh
-bnl3aGVyZQpuZWFyIGZhc3QgZW5vdWdoIGZvciB0aGlzIHRvIGJlIHVzYWJsZS4KCk15IGxhcHRv
-cCBzdGlsbCB0YWtlcyBzZXZlcmFsIHNlY29uZHMgdG8gc3VzcGVuZCAoTGVub3ZvIFQ1MDApLCBh
-bmQKcmVzdW1lIChhc2lkZSBmcm9tIHNvbWUgdXNlcnNwYWNlIGJ1c3RhZ2UpIHRha2VzIHRoZSBz
-YW1lIGFtb3VudCBvZgp0aW1lLiBUaGF0IGlzIHF1aWNrIGVub3VnaCBmb3IgbWFudWFsIHN1c3Bl
-bmQsIGJ1dCBJJ2QgaGF0ZSBpdCB0byB0cnkKYW5kIGF1dG8tc3VzcGVuZC4KCkdldHRpbmcgbG9u
-Z2VyIGlkbGUgcGVyaW9kcyBob3dldmVyIGlzIHNvbWV0aGluZyB0aGF0IGV2ZXJ5Ym9keSBiZW5l
-Zml0cwpmcm9tLiBPbiB4ODYgd2UncmUgbm93aGVyZSBjbG9zZSB0byBoaXR0aW5nIHRoZSBtYXgg
-aWRsZSB0aW1lIG9mIHRoZQpwbGF0Zm9ybSwgeW91IGdldCBfdG9uc18gb2Ygd2FrZXVwcyBvbiBj
-dXJyZW50ICdkZXNrdG9wJyBzb2Z0d2FyZS4KCkJ1dCB4ODYgYmVpbmcgYSBQSVRBIHNob3VsZG4n
-dCBzdG9wIHBlb3BsZSBmcm9tIHdvcmtpbmcgb24gdGhpcywgdGhlcmUncwpwbGVudHkgb3RoZXIg
-YXJjaGl0ZWN0dXJlcyBvdXQgdGhlcmUsIEkgcmVtZW1iZXIgZml4aW5nIGEgTk9fSFogYnVnIHdp
-dGgKZGF2ZW0gb24gc3BhcmM2NCBiZWNhdXNlIGhpcyBuaWFncmEgaGFkIGNvcmVzIGlkbGluZyBm
-b3IgdmVyeSBsb25nIHRpbWVzCmluZGVlZC4gCgpTbyB5ZXMsIEkgZG8gdGhpbmsgbWVyZ2luZyB0
-aGlzIHdpbGwgZGVsYXkgdGhlIGVmZm9ydCBpbiBmaXhpbmcKdXNlcnNwYWNlLCBzaW1wbHkgYmVj
-YXVzZSBhbGwgdGhlIG1vYmlsZS9lbWJlZGRlZCBmb2xrcyBkb24ndCBjYXJlIGFib3V0Cml0IGFu
-eW1vcmUuCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxp
-bnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpo
-dHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgt
-cG0=
+2010/5/26 Arve Hj=F8nnev=E5g <arve@android.com>:
+> 2010/5/26 Peter Zijlstra <peterz@infradead.org>:
+>> On Wed, 2010-05-26 at 03:17 -0700, Arve Hj=F8nnev=E5g wrote:
+>>> > With a single suspend manager process that manages the suspend state =
+you
+>>> > can achieve the same goal.
+>>> >
+>>>
+>>> Yes we don't need the /dev interface, but it is useful. Without it any
+>>> program that needs to block suspend has to make a blocking ipc call
+>>> into the suspend manager process. Android already does this for java
+>>> code, but system processes written in C block suspend directly with
+>>> the kernel since they cannot use the java APIs.
+>>
+>> So provide a C interface to it as well?
+>>
+>
+> We could, but the result would be that any program that needs to block
+> suspend has to be android specific.
+
+Just a suspicion, but... The things you're saying don't make sense to
+me other than if you're fighting with GPL in userspace here.
+
+~Vitaly
