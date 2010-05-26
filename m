@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/5] Preallocate swap + minor fix.
-Date: Wed, 26 May 2010 23:21:09 +0200
-Message-ID: <201005262321.09971.rjw__20079.8435289927$1274916242$gmane$org@sisk.pl>
-References: <4BFCC939.1000901@crca.org.au>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Thu, 27 May 2010 00:10:41 +0200
+Message-ID: <201005270010.41111.rjw__5449.0725313828$1274916760$gmane$org@sisk.pl>
+References: <AANLkTil9ZtMFxTfE6ITiFNOl4S1k3Lvdp5BPgGX7LJhw@mail.gmail.com>
+	<20100526172824.GA9069@elf.ucw.cz>
+	<20100526211542.1bfa2564@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4BFCC939.1000901@crca.org.au>
+In-Reply-To: <20100526211542.1bfa2564@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,47 +19,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: Florian Mickler <florian@mickler.org>
+Cc: Greg KH <gregkh@suse.de>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, James Bottomley <James.Bottomley@suse.de>, tytso@mit.edu, Pekka Enberg <penberg@cs.helsinki.fi>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 26 May 2010, Nigel Cunningham wrote:
-> Hi all.
+On Wednesday 26 May 2010, Florian Mickler wrote:
+> On Wed, 26 May 2010 19:28:24 +0200
+> Pavel Machek <pavel@ucw.cz> wrote:
 > 
-> In current in-kernel hibernation code, swap is allocated as the image is 
-> being written.
 > 
-> The first four patches in this series rework things so that all swap 
-> that will be used is allocated prior to any data being written to disk.
-> The fourth patch might look like too much for one patch, but it's 
-> necessary to not break bisecting.
+> > Besides that it is not linux system at all?
 > 
-> The fifth patch fixes a minor error in displaying the speed at which I/O 
-> occurred.
+> I believe the kernel to be a layer between userspace and hardware. What
+> business is it to the kernel if it runs whatever android
+> uses as init process or /bin/bash, sys-v-init or systemd?
 > 
-> This is the beginning of what I hope will be a long series of sets of 
-> patches, first working towards adding support for properly asynchronous 
-> I/O (not batching, as is currently done), then compression, multiple 
-> swap devices and more. In short, this is the beginning of work on 
-> merging TuxOnIce functionality a bit at a time.
+> There is this thing called choice. 
 > 
-> The work is coming now because I recently finished my previous job, so 
-> I'm seeking to get some of those jobs I've been wanting to do for a long 
-> time out of the way. If anyone wants to employ me to do this work, I 
-> wouldn't say no! :)
+> > 
+> > Yes, with custom userspace it works extremely nicely.
+> > 
+> > Had anyone even tried running oportunistic suspend on normal desktop?
+> > 									Pavel
 > 
-> Please excuse me if there are wrapping issues with the patches - I'm 
-> using Thunderbird, and haven't sent a patch series for quite a while, so 
-> don't remember the fancy git mailer way (will have to look it up).
-> 
-> Rafael, these and future patches will be available at:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/nigelc/tuxonice-head.git#for-rafael
+> I don't think this is a valid concern. Just because current linux/gnu
+> systems don't implement the userspace part of this interface doesn't
+> mean it is useless or broken. 
 
-Thanks for the patches, I'll have a look at them as soon as I can.
+Agreed.
 
-I haven't replied to your hibernation algorithm idea, mostly because I didn't
-have the time to look into it more thoroughly and I don't remember all of the
-details.  I'm still going to reply to it, though.
+BTW, this is a valid point.  We are used to think about Linux as the kernel
+plus the GNU user space, but that's not how it has to be.
 
+Thanks,
 Rafael
