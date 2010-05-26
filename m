@@ -1,23 +1,22 @@
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Wed, 26 May 2010 13:35:53 +0300
-Message-ID: <AANLkTimeU75ZOEZhX3vxQkjcNo93toJCphY3bSU6b0lf__9899.6270950467$1274870200$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
-	<201005252344.37639.rjw@sisk.pl>
-	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
-	<1274863342.5882.4850.camel@twins>
-	<20100526112303.3fef15a4@schatten.dmk.lab>
-	<1274866402.5882.5051.camel@twins>
-	<AANLkTil9ZtMFxTfE6ITiFNOl4S1k3Lvdp5BPgGX7LJhw@mail.gmail.com>
-	<1274868384.5882.5169.camel@twins>
-	<AANLkTimHGpRAZklIwXu6wEbA3coKXJvCVLxj2twerkCw@mail.gmail.com>
-	<1274869262.5882.5222.camel@twins>
-	<AANLkTilp1zWqvmUzGjEX3x9OBsdXdvNEG-znTjVvoM-b@mail.gmail.com>
+From: Brian Swetland <swetland@google.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Wed, 26 May 2010 03:40:01 -0700
+Message-ID: <AANLkTimQ_wahC5gnlip3APFzzfuCKab7y6OdlRyh2MWx__14848.574033431$1274870447$gmane$org@mail.gmail.com>
+References: <1274482015-30899-1-git-send-email-arve@android.com>
+	<201005242049.18920.rjw@sisk.pl>
+	<87wrusvrqe.fsf@deeprootsystems.com>
+	<201005250138.16293.rjw@sisk.pl> <1274863655.5882.4875.camel@twins>
+	<AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
+	<1274867106.5882.5090.camel@twins>
+	<AANLkTiksR3YozbBH0Iv5kNsQkEGKCH1APCvn_s6LkjV9@mail.gmail.com>
+	<1274868593.5882.5185.camel@twins>
+	<AANLkTinuxCbeBmxIR7b_1OtrqQYJCamiDZJbnNTih1Fb@mail.gmail.com>
+	<1274869966.5882.5262.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTilp1zWqvmUzGjEX3x9OBsdXdvNEG-znTjVvoM-b@mail.gmail.com>
+In-Reply-To: <1274869966.5882.5262.camel@twins>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,15 +26,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, tytso@mit.edu, Greg KH <gregkh@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-2010/5/26 Arve Hj=F8nnev=E5g <arve@android.com>:
->> So provide a C interface to it as well?
->
-> We could, but the result would be that any program that needs to block
-> suspend has to be android specific.
-
-Why? You could put the userspace daemon to tools/suspend-manager, for examp=
-le?
+T24gV2VkLCBNYXkgMjYsIDIwMTAgYXQgMzozMiBBTSwgUGV0ZXIgWmlqbHN0cmEgPHBldGVyekBp
+bmZyYWRlYWQub3JnPiB3cm90ZToKPiBPbiBXZWQsIDIwMTAtMDUtMjYgYXQgMDM6MjUgLTA3MDAs
+IEFydmUgSGrDuG5uZXbDpWcgd3JvdGU6Cj4KPj4gYW5kIG9uIHN5c3RlbXMgd2hlcmUgdGhlCj4+
+IHNhbWUgcG93ZXIgc3RhdGUgY2FuIGJlIHVzZWQgZnJvbSBpZGxlIGFuZCBzdXNwZW5kLCB3ZSB1
+c2Ugc3VzcGVuZCBzbwo+PiB3ZSBjYW4gc3RheSBpbiB0aGUgbG93IHBvd2VyIHN0YXRlIGZvciBt
+aW51dGVzIHRvIGhvdXJzIGluc3RlYWQgb2YKPj4gbWlsbGlzZWNvbmRzIHRvIHNlY29uZHMuCj4K
+PiBTbyBkb24ndCB5b3UgdGhpbmsgd29ya2luZyBvbiBtYWtpbmcgaXQgcG9zc2libGUgZm9yIHN5
+c3RlbXMgdG8gYmUgaWRsZQo+IF90aGF0XyBsb25nIHdvdWxkIGltcHJvdmUgdGhpbmdzIGZvciBl
+dmVyeWJvZHk/IGFzIG9wcG9zZWQgdG8gdGhpcwo+IGF1dG8tc3VzcGVuZCB3aGljaCBvbmx5IGlt
+cHJvdmVzIG1hdHRlcnMgZm9yIHRob3NlIHRoYXQgKGNhbikgdXNlIGl0PwoKQXMgd2UndmUgc3Rh
+dGVkIGEgbnVtYmVyIG9mIHRpbWVzIGluIHRoZSBzZXZlcmFsIHdlZWtzIG9mIGRpc2N1c3Npb24K
+KHRoaXMgdGltZSBhcm91bmQpIG9mIHRoaXMgcGF0Y2hzZXQsIHdlIGFyZSBhbGwgaW4gZmF2b3Ig
+b2YgaW1wcm92aW5nCnJ1bnRpbWUgcG0sIGZpbmRpbmcgYW5kIHJlc29sdmluZyBpc3N1ZXMgdGhh
+dCBwcmV2ZW50IGlkbGUsIGFuZApoZWFkaW5nIHRvd2FyZCBldmVyIGxvd2VyIHBvd2VyIHN0YXRl
+cyBpbiBpZGxlIC0tIGFmdGVyIGFsbCwgdGhpcwpiZW5lZml0cyBvdXIgYmF0dGVyeSBsaWZlIGlu
+IHRoZSBjYXNlcyB3aGVuIHRoZSBzeXN0ZW0gaXMgbm90CnN1c3BlbmRlZCBhcyB3ZWxsIGFzIG1v
+dmluZyB1cyBjbG9zZXIgdG8gYSBmdXR1cmUgd2hlcmUgdGhlIHBvd2VyCnNhdmluZ3MgYmV0d2Vl
+biBhY3RpdmVseSBlbnRlcmluZyBzdXNwZW5kIGFuZCBub3QgZG9pbmcgc28gYXBwcm9hY2gKemVy
+by4gIEFnZ3Jlc3NpdmVseSBlbnRlcmluZyB0aGUgbG93ZXN0IHBvc3NpYmxlIHBvd2VyIHN0YXRl
+IGF0IGFsbAp0aW1lcyBpcyBvdXIgZ29hbCBoZXJlLgoKQXQgdGhlIG1vbWVudCwgdGhlIHBvd2Vy
+IHNhdmluZ3MgZnJvbSBvcHBvcnR1bmlzdGljIHN1c3BlbmQgZG8KZGlyZWN0bHkgbGVhZCB0byBp
+bXByb3ZlZCBiYXR0ZXJ5IGxpZmUsIGFuZCB0aGVyZSBhcmUgc29tZSBhZHZhbnRhZ2VzCnRvIHRo
+aXMgbW9kZWwgaW4gdGhlIGZhY2Ugb2YgYSBub24tb3B0aW1hbCB1c2Vyc3BhY2UgKGFzIHdlIGVu
+Y291bnRlcgppbiBhIHdvcmxkIHdoZXJlIHRoZXJlIGFyZSBub3QgcmVzdHJpY3Rpb25zIG9uIHdo
+YXQgYXBwbGljYXRpb25zIHVzZXJzCm1heSBpbnN0YWxsIGFuZCBydW4pLgoKQnJpYW4KX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGlu
+ZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMu
+bGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
