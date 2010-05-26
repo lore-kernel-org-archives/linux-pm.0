@@ -1,29 +1,11 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 26 May 2010 17:49:40 +0200
-Message-ID: <20100526174940.1140370d__1519.57231942124$1274889055$gmane$org@schatten.dmk.lab>
-References: <1274482015-30899-1-git-send-email-arve@android.com>
-	<201005242049.18920.rjw@sisk.pl>
-	<87wrusvrqe.fsf@deeprootsystems.com>
-	<201005250138.16293.rjw@sisk.pl> <1274863655.5882.4875.camel@twins>
-	<AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
-	<1274867106.5882.5090.camel@twins>
-	<20100526120242.5c9b73ad@schatten.dmk.lab>
-	<AANLkTim4021cTnhVZrQpefq1MG-eEPOFLDRO-XDepHb4@mail.gmail.com>
-	<20100526133721.602633b2@schatten.dmk.lab>
-	<AANLkTikzgaOFdQKess4E-D86OLPOzxP3dWiDkU_UR0ri@mail.gmail.com>
-	<20100526142430.327ccbc4@schatten.dmk.lab>
-	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
-	<20100526171106.0e44a736@schatten.dmk.lab>
-	<1274886947.1674.1757.camel@laptop>
-	<20100526174049.5f803b4a@schatten.dmk.lab>
-	<1274888700.1674.1760.camel@laptop>
-	<20100526174735.2613c1d2@schatten.dmk.lab>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Runtime PM for PCI-based USB host controllers
+Date: Wed, 26 May 2010 11:51:12 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005261138330.1328-100000__11363.3682638921$1274889275$gmane$org@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100526174735.2613c1d2@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -33,38 +15,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pci@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 May 2010 17:47:35 +0200
-Florian Mickler <florian@mickler.org> wrote:
+Rafael:
 
-> On Wed, 26 May 2010 17:45:00 +0200
-> Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > On Wed, 2010-05-26 at 17:40 +0200, Florian Mickler wrote:
-> > > On Wed, 26 May 2010 17:15:47 +0200
-> > > Peter Zijlstra <peterz@infradead.org> wrote:
-> > > 
-> > > > On Wed, 2010-05-26 at 17:11 +0200, Florian Mickler wrote:
-> > > > > I'm not saying that your argument is not valid. But why don't you look
-> > > > > at suspend blockers as a contract between userspace and kernelspace? An
-> > > > > Opt-In to the current guarantees the kernel provides in the non-suspend
-> > > > > case.
-> > > > 
-> > > > That's backwards.
-> > > 
-> > > I think that's the point of it. 
-> > 
-> > Apparently, and you're not accepting that we're telling you we think its
-> > a singularly bad idea. Alan seems to have the skill to clearly explain
-> > why, I suggest you re-read his emails again.
-> 
-> I'm sorry if I offend you. I indeed read Alan's emails. It's just they
-> have more content than yours. So it takes longer. 
-> 
-> Cheers,
-> Flo
+I've been updating the patch Matthew Garrett posted last November, 
+adding runtime PM methods for PCI USB controllers.  Overall the 
+situation is now easier, since the rest of the USB subsystem has been 
+converted over to the runtime PM framework.  And it even seems to work!
 
-p.s.: also they encourage me to think more before answering. 
+But there is one problem.  The device driver needs to know, during its
+pm_suspend callback, whether or not wakeup should be enabled.  (Or more
+accurately, the pm_suspend callback needs to fail if wakeup isn't going
+to be available.)  However the wakeup decision isn't made in the PM
+core until pci_pm_runtime_suspend() calls pci_finish_runtime_suspend(),
+which doesn't occur until later.
+
+Should the code be rearranged?  The parts about selecting the target 
+state and pci_dev_run_wake() could be moved up into 
+pci_pm_runtime_suspend().  But there still remains the question of how 
+to let the driver know what the wakeup setting will be.  Any ideas?
+
+Another question...  The PCI core doesn't call pm_runtime_enable() or
+pci_runtime_set_active() anywhere.  Apparently this is left up to the
+individual device driver.  But shouldn't the core take this
+responsibility?  What happens to PCI devices for which there is no
+driver?  Shouldn't the core put them into runtime suspend by default?
+
+Alan Stern
