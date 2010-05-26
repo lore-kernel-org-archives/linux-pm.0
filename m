@@ -1,7 +1,7 @@
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Wed, 26 May 2010 13:29:00 +0300
-Message-ID: <AANLkTik9LINPmabJfVi0jfVs5sjVS_1l00WpnVTFEuLV__34056.6694424071$1274869793$gmane$org@mail.gmail.com>
+Date: Wed, 26 May 2010 03:30:17 -0700
+Message-ID: <AANLkTilp1zWqvmUzGjEX3x9OBsdXdvNEG-znTjVvoM-b__11621.7236886316$1274869900$gmane$org@mail.gmail.com>
 References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
 	<201005252344.37639.rjw@sisk.pl>
 	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
@@ -30,25 +30,33 @@ To: Peter Zijlstra <peterz@infradead.org>
 Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-doc@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, tytso@mit.edu, Greg KH <gregkh@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2010-05-26 at 03:17 -0700, Arve Hj=F8nnev=E5g wrote:
+2010/5/26 Peter Zijlstra <peterz@infradead.org>:
+> On Wed, 2010-05-26 at 03:17 -0700, Arve Hj=F8nnev=E5g wrote:
 >> > With a single suspend manager process that manages the suspend state y=
 ou
 >> > can achieve the same goal.
+>> >
 >>
 >> Yes we don't need the /dev interface, but it is useful. Without it any
 >> program that needs to block suspend has to make a blocking ipc call
 >> into the suspend manager process. Android already does this for java
 >> code, but system processes written in C block suspend directly with
 >> the kernel since they cannot use the java APIs.
-
-2010/5/26 Peter Zijlstra <peterz@infradead.org>:
+>
 > So provide a C interface to it as well?
 >
+
+We could, but the result would be that any program that needs to block
+suspend has to be android specific.
+
 > Surely you can have the java thing have a unix socket or something a C
 > app can talk to. That shouldn't be hard at all.
 >
 > Or make the suspend manager a C proglet and provide a JNI interface, or
 > whatever.
+>
 
-Yup, I don't quite get Arve's argument either. C code can interact
-with Java code (and vice versa) just fine in userspace.
+
+-- =
+
+Arve Hj=F8nnev=E5g
