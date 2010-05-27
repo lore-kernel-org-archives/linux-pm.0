@@ -1,17 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Thu, 27 May 2010 17:41:52 +0200
-Message-ID: <20100527154152.GF1957__24885.6283295483$1274974983$gmane$org@elf.ucw.cz>
-References: <1273810273-3039-1-git-send-email-arve@android.com>
-	<20100520111111.333beb73@schatten.dmk.lab>
-	<20100520112642.74d93d26@schatten.dmk.lab>
-	<201005210018.43576.rjw@sisk.pl>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Thu, 27 May 2010 16:31:47 +0100
+Message-ID: <20100527163147.5d9880af__34226.4642742977$1274975567$gmane$org@lxorguk.ukuu.org.uk>
+References: <alpine.LFD.2.00.1005271545190.3032@localhost.localdomain>
+	<Pine.LNX.4.44L0.1005271053420.3239-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201005210018.43576.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1005271053420.3239-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,58 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, Florian Mickler <florian@mickler.org>, Magnus Damm <damm@igel.co.jp>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+> The proposal I made a couple of days ago removes this API and leaves
+> the other things (i.e., the in-kernel suspend blockers and
+> opportunistic suspend) intact.  In place of the userspace
+> kernel-blocker API, Android would have to implement a power manager
+> process that would essentially juggle all the latency requirements in
+> userspace.
 
-> > > > Yeah, one file selects behavior of another file, and to read available
-> > > > states for opportunistic, you have to write to file first.
-> > > > 
-> > > > I still don't like the interface.
-> > > > 
-> > > 
-> > > Actually, what would be a better interface? 
-> > > 
-> > > I wonder why it is not like this:
-> 
-> Because I think the "forced" and "opportunistic" suspend "modes" are mutually
-> exclusive in practice and the interface as proposed reflects that quite well.
+On the kernel side you really want to add two arguments from day one which
+is the time in ms and the power state. We have enumerations of current
+power states (plus add suspend) so this is easy to do. The governors may
+not use them for a while but ACPI for example can use the latency pretty
+fast. You want the information there from day one so it is captured
+otherwise it ends up a right royal pain in the arse adjusting the API
+later. If the numbers are in but don't always get used it'll be a lot
+smoother.
 
-Why should they be? Forced disk while opportunistic mem is active
-makes a lot of sense. If code can't support it now, just return
--EINVAL, but please don't cripple the interface just because of that.
+> Communication between the power manager process and the kernel would be 
+> limited to adding a new "opportunistic" entry to /sys/power/state -- 
+> something which could well be useful in its own right.  Even if this 
+> API turns out not to be good, it's simple enough that it could be 
+> removed pretty easily.
 
-> > > /sys/power/state 
-> > > 	no change, works with and without opportunistic suspend the
-> > > 	same. Ignores suspend blockers. Really no change. (From user
-> > > 	perspective)
-> > > 
-> > > /sys/power/opportunistic
-> > > 	On / Off
-> > > 	While Off the opportunistic suspend is off.
-> > > 	While On, the opportunistic suspend is on and if there are no
-> > > 	suspend blockers the system goes to suspend. 
-> > > 
-> > 
-> > I forgot, of course there needs to be another knob to implement the
-> > "on" behaviour  in the opportunistic mode
-> > 
-> >  /sys/power/block_opportunistic_suspend
-> > 
-> > There you have it. One file, one purpose. 
-> 
-> That's getting messy IMHO.
-> 
-> In addition to that you get a nice race when the user writes "mem"
-> to /sys/power/state and opportunistic suspend happens at the same
-> time.
+Yes. Probably it really should be linked to a cpufreq driver thing -
+cpufreq_android or whatever being the starting point but thats not a big
+deal and it doesn't leak into all the apps either. This is detail however.
 
-It should not opportunistically suspend when it has work to do (like
-entering forced suspend).
-									Pavel
+> Indeed, having a power manager thread may well turn out to be a useful
+> thing -- but even if it doesn't, this scheme minimizes the damage while
+> still allowing the Android platform to use a vanilla kernel with only
+> limited modifications to their userspace.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+There have been some horribly bad attempts to do this, but if it works
+for Android and its encapsulated in cpufreq_android.c maybe with a private
+interface to a single supporting daemon then it's not creating bad user
+APIs, its not peeing in anyone elses pond and the policy will all be in
+the kernel and a daemon which keeps the wrong platform knowledge out of
+the application space.
+
+Alan
