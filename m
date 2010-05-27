@@ -1,15 +1,23 @@
 From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 18:31:18 +0100
-Message-ID: <20100527173118.GE2468__11419.9470998303$1274982415$gmane$org@srcf.ucam.org>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<alpine.LFD.2.00.1005271915540.3032@localhost.localdomain>
+Date: Thu, 27 May 2010 18:32:18 +0100
+Message-ID: <20100527173218.GF2468__1225.86537986553$1274982416$gmane$org@srcf.ucam.org>
+References: <20100527155201.GA31937@srcf.ucam.org>
+	<20100527171615.15a1fd3d@lxorguk.ukuu.org.uk>
+	<20100527161943.GA32764@srcf.ucam.org>
+	<alpine.LFD.2.00.1005271901020.3032@localhost.localdomain>
+	<20100527170740.GA1980@srcf.ucam.org>
+	<1274980391.27810.5552.camel@twins>
+	<20100527171644.GA2468@srcf.ucam.org>
+	<1274980856.27810.5582.camel@twins>
+	<20100527172510.GC2468@srcf.ucam.org>
+	<1274981288.27810.5609.camel@twins>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1005271915540.3032@localhost.localdomain>
+In-Reply-To: <1274981288.27810.5609.camel@twins>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,28 +27,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 27, 2010 at 07:24:02PM +0200, Thomas Gleixner wrote:
+On Thu, May 27, 2010 at 07:28:08PM +0200, Peter Zijlstra wrote:
+> On Thu, 2010-05-27 at 18:25 +0100, Matthew Garrett wrote:
+> > How (and why) does the WoL (which may be *any* packet, not just a magic 
+> > one) turn the screen back on?
+> 
+> Why would you care about the screen for a network event?
 
-> Oh no. They paper over a short coming. If there is a pending event,
-> the kernel knows that. It just does not make use of this
-> information. Blockers just paper over this by sprinkling
-> do_not_suspend() calls all over the place. What a sensible solution.
-
-Even if we could use suspend-via-deep-idle-state on PCs, we still need 
-to be able to enter suspend while the system isn't idle. There's two 
-ways to do that:
-
-1) Force the system to be idle. Doing this race-free is difficult.
-
-2) Enter suspend even though the system isn't idle. Since we can't rely 
-on the scheduler, we need drivers to know whether userspace has consumed 
-all wakeup events before allowing the transition to occur. Doing so 
-requires either in-kernel suspend blockers or something that's almost 
-identical.
+Because the application that needs to handle the network packet is 
+currently blocked trying to draw something to the screen.
 
 -- 
 Matthew Garrett | mjg59@srcf.ucam.org
