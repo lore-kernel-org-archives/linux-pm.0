@@ -1,13 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 01:24:25 +0200
-Message-ID: <201005280124.25347.rjw__48074.3514410735$1275002708$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1005271526130.3239-100000@iolanthe.rowland.org>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH-v2 3/8] cpuidle: make cpuidle_curr_driver
+	static
+Date: Thu, 27 May 2010 19:30:47 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1005271930120.4127__46528.0948476449$1275003196$gmane$org@localhost.localdomain>
+References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
+	<db2b1d371847edfdbba21f323b4fd4a480c8c5aa.1274926772.git.len.brown@intel.com>
+	<alpine.LFD.2.00.1005270126000.4039@localhost.localdomain>
+	<987664A83D2D224EAE907B061CE93D5301135014D2@orsmsx505.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005271526130.3239-100000@iolanthe.rowland.org>
+In-reply-to: <987664A83D2D224EAE907B061CE93D5301135014D2@orsmsx505.amr.corp.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,62 +21,10 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "x86@kernel.org" <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 27 May 2010, Alan Stern wrote:
-> On Thu, 27 May 2010, Alan Cox wrote:
-> 
-> > > Rather than continue going around in circles, let's agree that what the 
-> > > Android people want is a new version of forced suspend -- not a 
-> > 
-> > I don't think this is true. I think that is the root of the problem.
-> 
-> Of course it's true.  Just ask Arve -- he wants opportunistic suspend 
-> and it _is_ a variant of forced suspend.  Ergo he wants a new type of 
-> forced suspend.
+> ...it builds and boots for me.
 
-Well, as I just wrote in a different message, what he _really_ wants is to
-get maximum possible battery life and he found experimentally that this is
-achieved by suspending the whole system as often as reasonably possible.
-
-Of course, the "reasonably possible" part needs clarification.
-
-> Maybe that's not what he _ought_ to want.  Nevertheless, there are 
-> valid reasons for wanting it.
-> 
-> > I don't disagree with the user experience they are trying to create or
-> > the fact something is needed to make it possible (if it turns out we
-> > can't already do it).
-> > 
-> > Forced suspend is sticking stuff in running state into suspend
-> > 
-> > Power management models (such as Thomas ARM box) which we know work are
-> > 'when nothing is running' into suspend.
-> > 
-> > So for me the real question on that side of this specific case is 'how
-> > do you make sure those tasks are idle when you need them to be'
-> > 
-> > QoS ?
-> > Spanking them from user space ?
-> > Drivers enforcing policy elements by blocking tasks ?
-> 
-> Currently we use the freezer.  But it is a blunt tool -- it freezes 
-> every user process.  Also, it doesn't actually make processes 
-> unrunnable; it just arranges things so that when they do run, they 
-> immediately put themselves back to sleep.
-> 
-> And the forced-suspend design relies on the fact that processes remain 
-> frozen throughout.  If we leave some processes unfrozen and one of them 
-> somehow becomes runnable, that means we have to abort the forced 
-> suspend before the process is allowed to run.
-
-We could avoid that if drivers could block tasks, but there are questions to
-answer.  First off, how a driver is supposed to know when to block the task
-using it and when to do its power management transparently for the task?
-Second, how to intercept and block all possible interfaces that user space
-can use to talk to drivers (how to intercept a task using mmapped device, for
-example)?
-
-Rafael
+Thanks Tony, what would I do without you:-)
