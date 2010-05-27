@@ -1,17 +1,16 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH-v2 2/8] cpuidle: add
- cpuidle_unregister_driver() error check
-Date: Wed, 26 May 2010 22:13:01 -0700
-Message-ID: <20100526221301.5a85e3c5.akpm__44575.7578396753$1274937792$gmane$org@linux-foundation.org>
-References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
-	<56b9c89c17c1a85886f6d1928349e35bbb48c856.1274926772.git.len.brown@intel.com>
-	<20100526201437.51f5c7f7.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.1005270107360.4039@localhost.localdomain>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Thu, 27 May 2010 07:14:29 +0200
+Message-ID: <20100527071429.58fa81ac__21843.236385803$1274937805$gmane$org@schatten.dmk.lab>
+References: <20100526171106.0e44a736@schatten.dmk.lab>
+	<alpine.LFD.2.00.1005261829540.2995@localhost.localdomain>
+	<20100526215409.33296d94@schatten.dmk.lab>
+	<20100526230943.6f5e5b37@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1005270107360.4039@localhost.localdomain>
+In-Reply-To: <20100526230943.6f5e5b37@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,36 +20,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@lists.linux-foundation.org, x86@kernel.org, Mailing List <linux-kernel@vger.kernel.org>, Linux@smtp1.linux-foundation.org
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Linux@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 27 May 2010 01:11:03 -0400 (EDT) Len Brown <lenb@kernel.org> wrote:
+On Wed, 26 May 2010 23:09:43 +0100
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> From: Len Brown <len.brown@intel.com>
+> We now have suggestions how to do the job properly so the right thing is
+> probably to go and explore those suggestions not merge crap.
 > 
-> BUG_ON() cpuidle_unregister_driver() being called with
-> a driver not matching the onee that successfully registered.
+> Merging crap won't help anyway. The rest of the kernel community can
+> still simply stonewall those interfaces, and a volunteer community has
+> ways of dealing with abuse of process, notably by simply not getting
+> around to, or implementing things directly contrary to the crap bits.
 > 
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  drivers/cpuidle/driver.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
+> So it's not even in the interest of people to play political games. Even
+> if you get away with in the short term the people who rely on the junk
+> will end up out on a limb and holding the baby when the crap hits the fan
+> (see reiserfs)
 > 
-> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-> index 2257004..5b6fd0f 100644
-> --- a/drivers/cpuidle/driver.c
-> +++ b/drivers/cpuidle/driver.c
-> @@ -45,8 +45,7 @@ EXPORT_SYMBOL_GPL(cpuidle_register_driver);
->   */
->  void cpuidle_unregister_driver(struct cpuidle_driver *drv)
->  {
-> -	if (!drv)
-> -		return;
-> +	BUG_ON(drv != cpuidle_curr_driver)
->  
->  	spin_lock(&cpuidle_driver_lock);
->  	cpuidle_curr_driver = NULL;
+> Alan
 
-Actually, WARN_ON is nicer ;)   There's no point in killing the user's
-machine over this recoverable error.
+I'm not interested in "abusing processes". I just think, this is in
+limbo for too long already.
+Just decide something. One way or the other. The world will continue.
+
+Cheers,
+Flo
