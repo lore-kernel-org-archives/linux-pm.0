@@ -1,23 +1,23 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+From: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 18:52:58 +0100
-Message-ID: <20100527175258.GB3543__19781.9109111608$1274983223$gmane$org@srcf.ucam.org>
-References: <20100527170740.GA1980@srcf.ucam.org>
-	<1274980391.27810.5552.camel@twins>
-	<20100527171644.GA2468@srcf.ucam.org>
-	<1274980856.27810.5582.camel@twins>
-	<20100527172510.GC2468@srcf.ucam.org>
-	<1274981288.27810.5609.camel@twins>
-	<20100527173218.GF2468@srcf.ucam.org>
-	<1274981750.27810.5641.camel@twins>
-	<20100527174140.GB3187@srcf.ucam.org>
-	<1274982397.27810.5679.camel@twins>
+Date: Thu, 27 May 2010 19:04:38 +0200 (CEST)
+Message-ID: <alpine.LFD.2.00.1005271901020.3032__2701.47055057368$1274983424$gmane$org@localhost.localdomain>
+References: <20100526133721.602633b2@schatten.dmk.lab>
+	<AANLkTikzgaOFdQKess4E-D86OLPOzxP3dWiDkU_UR0ri@mail.gmail.com>
+	<20100526142430.327ccbc4@schatten.dmk.lab>
+	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
+	<AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
+	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
+	<20100527140655.GA28048@srcf.ucam.org>
+	<alpine.LFD.2.00.1005271642440.3032@localhost.localdomain>
+	<20100527155201.GA31937@srcf.ucam.org>
+	<20100527171615.15a1fd3d@lxorguk.ukuu.org.uk>
+	<20100527161943.GA32764@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1274982397.27810.5679.camel@twins>
+In-Reply-To: <20100527161943.GA32764@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,34 +27,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 27, 2010 at 07:46:37PM +0200, Peter Zijlstra wrote:
-> On Thu, 2010-05-27 at 18:41 +0100, Matthew Garrett wrote:
-> > On Thu, May 27, 2010 at 07:35:50PM +0200, Peter Zijlstra wrote:
-> > > Then that's an application bug right there, isn't it?
-> > > 
-> > > If should have listened to the window server telling its clients it was
-> > > going to go away. Drawing after you get that is your own damn fault ;-)
-> > 
-> > How long do you wait for applications to respond that they've stopped 
-> > drawing? What if the application is heavily in swap at the time?
+On Thu, 27 May 2010, Matthew Garrett wrote:
+
+> On Thu, May 27, 2010 at 05:16:15PM +0100, Alan Cox wrote:
 > 
-> Since we're talking about a purely idle driven power saving, we wait
-> until the cpu is idle.
+> > I can't speak for Thomas, but I'm certainly not arguing that you don't
+> > need something that looks more like the blocker side of the logic *in
+> > kernel*, because there is stuff that you want to express which isn't tied
+> > to the task.
+> 
+> Sure, if you're not using opportunistic suspend then I don't think 
+> there's any real need for the userspace side of this. The question is 
+> how to implement something with the useful properties of opportunistic 
+> suspend without without implementing something pretty much equivalent to 
+> the userspace suspend blockers. I've sent another mail expressing why I 
+> don't think your proposed QoS style behaviour provides that.
 
-If that's what you're aiming for then you don't need to block 
-applications on hardware access because they should all already have 
-idled themselves.
+Opportunistic suspend is just a deep idle state, nothing else. If the
+overall QoS requirements allow to enter that deep idle state then the
+kernel goes there. Same decision as for all other idle states. You
+don't need any user space blocker for this decision, just sensible QoS
+information.
 
-> Note that it doesn't need to broadcast this, it could opt to reply with
-> that message on the first drawing attempt after it goes away and block
-> on the second.
+Stop thinking about suspend as a special mechanism. It's not - except
+for s2disk, which is an entirely different beast.
 
-That's more interesting, but you're changing semantics quite heavily at 
-this point.
+Thanks,
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+	tglx
