@@ -1,14 +1,23 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 23:36:26 +0200
-Message-ID: <201005272336.26643.rjw__10916.8901028626$1274996272$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1005271329460.3239-100000@iolanthe.rowland.org>
-	<1274981871.27810.5650.camel@twins>
+Date: Thu, 27 May 2010 22:36:35 +0100
+Message-ID: <20100527213635.GA9916__16462.1686366901$1274996392$gmane$org@srcf.ucam.org>
+References: <20100527155201.GA31937@srcf.ucam.org>
+	<20100527171615.15a1fd3d@lxorguk.ukuu.org.uk>
+	<20100527161943.GA32764@srcf.ucam.org>
+	<alpine.LFD.2.00.1005271901020.3032@localhost.localdomain>
+	<20100527170740.GA1980@srcf.ucam.org>
+	<1274980391.27810.5552.camel@twins>
+	<20100527171644.GA2468@srcf.ucam.org>
+	<1274980856.27810.5582.camel@twins>
+	<20100527172510.GC2468@srcf.ucam.org>
+	<20100527223751.7af3b5ee@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1274981871.27810.5650.camel@twins>
+Content-Disposition: inline
+In-Reply-To: <20100527223751.7af3b5ee@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,18 +27,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, felipe.balbi@nokia.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 27 May 2010, Peter Zijlstra wrote:
-> On Thu, 2010-05-27 at 13:32 -0400, Alan Stern wrote:
+On Thu, May 27, 2010 at 10:37:51PM +0100, Alan Cox wrote:
+> On Thu, 27 May 2010 18:25:10 +0100
+> Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> > How (and why) does the WoL (which may be *any* packet, not just a magic 
+> > one) turn the screen back on?
 > 
-> > On some platforms (like those with ACPI), deeper power-savings are
-> > available by using forced suspend than by using idle. 
+> Well on my laptop today it works like this
 > 
-> Sounds like something that's fixable, doesn't it?
+> A WoL packet arrives
+> The CPU resumes
+> Depp process, chipset and laptop BIOS magic happens
+> The kernel gets called
+> The kernel lets interested people know a resume occurred
 
-The fix would probably have to involve rewriting the ACPI spec.
+No it doesn't. The kernel continues executing anything that was on the 
+runqueue before the scheduler stopped. If you're using idle-based 
+suspend then there's nothing on the runqueue - the application that 
+should be scheduled because of the event is blocked on writing to the 
+screen.
 
-Rafael
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
