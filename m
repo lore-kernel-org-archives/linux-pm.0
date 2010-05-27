@@ -1,23 +1,23 @@
 From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 18:26:35 +0100
-Message-ID: <20100527172635.GD2468__44158.9113710963$1274983993$gmane$org@srcf.ucam.org>
-References: <AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
+Date: Thu, 27 May 2010 18:23:43 +0100
+Message-ID: <20100527172343.GB2468__36092.3442560763$1274984114$gmane$org@srcf.ucam.org>
+References: <20100526142430.327ccbc4@schatten.dmk.lab>
+	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
+	<AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
 	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
 	<20100527140655.GA28048@srcf.ucam.org>
 	<alpine.LFD.2.00.1005271642440.3032@localhost.localdomain>
 	<20100527155201.GA31937@srcf.ucam.org>
-	<20100527171615.15a1fd3d@lxorguk.ukuu.org.uk>
-	<20100527161943.GA32764@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271901020.3032@localhost.localdomain>
-	<20100527170740.GA1980@srcf.ucam.org>
-	<20100527183041.0487bdf8@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.1005271808340.3032@localhost.localdomain>
+	<20100527165931.GB1062@srcf.ucam.org>
+	<alpine.LFD.2.00.1005271905000.3032@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20100527183041.0487bdf8@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.00.1005271905000.3032@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,22 +27,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 27, 2010 at 06:30:41PM +0100, Alan Cox wrote:
-> > > Opportunistic suspend is just a deep idle state, nothing else.
-> > 
-> > No. The useful property of opportunistic suspend is that nothing gets 
-> > scheduled. That's fundamentally different to a deep idle state.
+On Thu, May 27, 2010 at 07:15:31PM +0200, Thomas Gleixner wrote:
+> On Thu, 27 May 2010, Matthew Garrett wrote:
+> > You still need the in-kernel suspend blockers if you want to guarantee 
+> > that you can't lose wakeup events. But yes, if you're not concerned 
+> > handling badly behaved applications then I believe that you can lose 
+> > opportunistic suspend and just use the scheduler.
 > 
-> Nothing gets scheduled in a deep idle state either - its idle. We leave
-> the idle state to schedule anything.
+> No, we do not. We need correctly implemented drivers and a safe
+> switchover from normal event delivery to wakeup based.
 
-Certainly, if you can force the system to be idle then you don't need 
-opportunistic suspend. But you haven't shown how to do that without it 
-being racey.
+What is a "Correctly implemented driver" in this case? One that receives 
+a wakeup event and then prevents suspend being entered until userspace 
+has acknowledged that event? Because that's what an in-kernel suspend 
+blocker is.
+
+> > My question was about explicit suspend states, not implicitly handling 
+> > an identical state based on scheduler constraints. Suspend-as-a-C-state 
+> > isn't usable on x86 - you have to explicitly trigger it based on some 
+> 
+> And why not ? Just because suspend is not implemented as an ACPI
+> C-state ? 
+> 
+> Nonsense, if we want to push the system into suspend from the idle
+> state we can do that. It's just not implemented and we've never tried
+> to do it as it requires a non trivial amount of work, but I have done
+> it on an ARM two years ago as a prove of concept and it works like a
+> charm.
+
+ACPI provides no guarantees about what level of hardware functionality 
+remains during S3. You don't have any useful ability to determine which 
+events will generate wakeups. And from a purely practical point of view, 
+since the latency is in the range of seconds, you'll never have a low 
+enough wakeup rate to hit it.
+
+> > policy. And if you want to be able to do that without risking the loss 
+> > of wakeup events then you need in-kernel suspend blockers.
+> 
+> Crap. Stop beating on those lost wakeup events. If we lose them then
+> the drivers are broken and do not handle the switch over correctly. Or
+> the suspend mechanism is broken as it does not evaluate the system
+> state correctly. Blockers are just papering over that w/o tackling the
+> real problem.
+
+Ger;kljaserf;kljf;kljer;klj. Suspend blockers are the mechanism for the 
+driver to indicate whether the wakeup event has been handled. That's 
+what they're there for. The in-kernel ones don't paper over anything.
 
 -- 
 Matthew Garrett | mjg59@srcf.ucam.org
