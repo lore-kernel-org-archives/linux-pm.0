@@ -1,23 +1,23 @@
 From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 22:06:09 +0100
-Message-ID: <20100527210609.GA8865__18715.5085070573$1274994441$gmane$org@srcf.ucam.org>
-References: <20100527172510.GC2468@srcf.ucam.org>
-	<1274981288.27810.5609.camel@twins>
-	<20100527173218.GF2468@srcf.ucam.org>
-	<1274981750.27810.5641.camel@twins>
-	<20100527174140.GB3187@srcf.ucam.org>
-	<1274982397.27810.5679.camel@twins>
-	<20100527175258.GB3543@srcf.ucam.org>
-	<1274982981.27810.5719.camel@twins>
-	<20100527175920.GE3543@srcf.ucam.org>
-	<20100527220314.312d9e3c@lxorguk.ukuu.org.uk>
+Date: Thu, 27 May 2010 22:08:08 +0100
+Message-ID: <20100527210808.GB8865__12139.005031395$1274994551$gmane$org@srcf.ucam.org>
+References: <20100527165210.GA1062@srcf.ucam.org>
+	<20100527190204.14546caa@lxorguk.ukuu.org.uk>
+	<20100527181239.GF3543@srcf.ucam.org>
+	<20100527194840.5bca973f@lxorguk.ukuu.org.uk>
+	<20100527185658.GA5703@srcf.ucam.org>
+	<20100527202538.7d2d7f3c@lxorguk.ukuu.org.uk>
+	<20100527192926.GA6977@srcf.ucam.org>
+	<20100527205333.676ad65e@lxorguk.ukuu.org.uk>
+	<20100527201155.GB7449@srcf.ucam.org>
+	<20100527215347.431c4934@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20100527220314.312d9e3c@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100527215347.431c4934@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,28 +28,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 27, 2010 at 10:03:14PM +0100, Alan Cox wrote:
-> On Thu, 27 May 2010 18:59:20 +0100
-> Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> > Ok. So the existing badly-behaved application ignores your request and 
-> > then gets blocked. And now it no longer responds to wakeup events. So 
-> > you penalise well-behaved applications without providing any benefits to 
-> > badly-behaved ones.
+On Thu, May 27, 2010 at 09:53:47PM +0100, Alan Cox wrote:
+> > Not lost, but not delivered. So you need your policy agent to send 
 > 
-> I don't see how you put the first two sentences together and get the
-> final one.
+> it will be delivered next time the process wakes. It's not lost.
 > 
-> When you beat up badly behaved apps that doesn't penalise well behaved
-> ones.
+> > SIGCONT when you receive any wakeup event, which either means proxying 
+> > all your network traffic through your policy agent or having some 
+> > mechanism for alerting the policy agent whenever you leave the deep idle 
+> > state.
+> 
+> You didn't mention that requirement last time.
 
-If you're going to block an app on drawing then you either need to 
-reenable drawing on wakeup or you need to have an interface for alerting 
-the app to the fact that drawing is about to block and it should get 
-back to its event loop. The first is suboptimal, the second penalises 
-well behaved apps.
+I thought it was pretty obvious that wakeup events had to actually be 
+delivered to the applications that are listening for them.
+
+> > > > also the race of an application being in the middle of handling a wakeup 
+> > > > event when you send it the signal.
+> > > 
+> > > sigmask()
+> > 
+> > Doesn't help - I may be hit by the signal between the poll() unblocking 
+> > and me having the opportunity to call sigmask().
+> 
+> ppoll(). This is all existing solved stuff.
+
+Isn't that the inverse of what we want? The application should default 
+to being SIGSTOPpable except in the case of it being in the process of 
+having a specific event delivered.
 
 -- 
 Matthew Garrett | mjg59@srcf.ucam.org
