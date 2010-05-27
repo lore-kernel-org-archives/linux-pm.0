@@ -1,23 +1,13 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 15:06:55 +0100
-Message-ID: <20100527140655.GA28048__9231.49655941433$1274969381$gmane$org@srcf.ucam.org>
-References: <AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
-	<1274867106.5882.5090.camel@twins>
-	<20100526120242.5c9b73ad@schatten.dmk.lab>
-	<AANLkTim4021cTnhVZrQpefq1MG-eEPOFLDRO-XDepHb4@mail.gmail.com>
-	<20100526133721.602633b2@schatten.dmk.lab>
-	<AANLkTikzgaOFdQKess4E-D86OLPOzxP3dWiDkU_UR0ri@mail.gmail.com>
-	<20100526142430.327ccbc4@schatten.dmk.lab>
-	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
-	<AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
-	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Thu, 27 May 2010 10:09:06 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005271008230.3239-100000__15388.2996565246$1274969536$gmane$org@iolanthe.rowland.org>
+References: <AANLkTingAiO8dkwnInc993PTyA63rV-WRvBIRlB2ChXs@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100527003943.07c17f85@lxorguk.ukuu.org.uk>
+In-Reply-To: <AANLkTingAiO8dkwnInc993PTyA63rV-WRvBIRlB2ChXs@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,73 +17,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
+To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 27, 2010 at 12:39:43AM +0100, Alan Cox wrote:
+On Wed, 26 May 2010, Arve Hj=F8nnev=E5g wrote:
 
-> - Supporting Android needs well good
-> - Opportunistic suspend good
-> - Manner in which interface is expressed to userspace bad
-> - Latency constraint interface would be better
-> - Your existing behaviour can be implemented by a simplistic use of a
->   latency constraint interface
-> - We can fix a pile of other directly connected things at the same time
-> - Implementation internals I care far less about because we can fix those
->   later
-> - Suspend is just a power state
-> 
-> How does that fit your model and vision ?
+> >> > And even if it isn't, so what? =A0What's wrong with looping behavior?
+> >>
+> >> It is a significant power drain.
+> >
+> > Not in the situation I was discussing.
+> >
+> =
 
-I don't entirely see how this works. In order to deal with poorly 
-written applications, it's necessary to (optionally, based on some 
-policy) ignore them when it comes to the scheduler. The problem is how 
-to implement the optional nature of this in a race-free manner. This is 
-obviously a pathological case, but imagine an application that does 
-something along the following lines:
+> If you meant it spend most of the time suspended, then I agree. It
+> only wastes power when a driver blocks suspend by returning an error
+> from its suspend hook and we are forced to loop doing no useful work.
 
-int input = open ("/dev/input", O_RDONLY|O_NONBLOCK);
-char foo;
+Exactly the same as the in-kernel opportunistic suspend implementation.
 
-while (1) {
-	suspend_block();
-	if (read(input, &foo, 1) > 0) {
-		(do something)
-		suspend_unblock();
-	} else {
-		suspend_unblock();
-		(draw bouncing cows and clouds and tractor beams briefly)
-	}
-}
-
-Now, if the user is playing this game, you want it to be scheduled. If 
-the user has put down their phone and the screen lock has kicked in, you 
-don't want it to be scheduled. So we could imagine some sort of cgroup 
-that contains untrusted tasks - when the session is active we set a flag 
-one way which indicates to the scheduler that tasks in TASK_RUNNING 
-should be scheduled, and when the session is idle we set the flag the 
-other way and all processes in that cgroup get shifted to 
-TASK_INTERRUPTIBLE or something.
-
-Except that doesn't work. If the session goes idle in the middle of the 
-app drawing a frame, we'll stop the process and the task will never call 
-read(). So the user hits a key, we wake up, nothing shifts from 
-TASK_INTERRUPTIBLE into TASK_RUNNING, the key never gets read, we go 
-back to sleep. The event never gets delivered.
-
-Now let's try this in the Android world. The user hits a key and the 
-system wakes up. The input layer takes a suspend block. The application 
-now draws all the cows it wants to, takes its own suspend block and 
-reads the input device. This empties the queue and the kernel-level 
-suspend block is released. The application then processes the event 
-before releasing the suspend block. The event has been delivered and 
-handled.
-
-You can't express that with resource limits or QoS constraints. If you 
-want to deal with this kind of situation then, as far as I can tell, you 
-need either suspend blockers or something so close to them that it makes 
-no difference.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Alan Stern
