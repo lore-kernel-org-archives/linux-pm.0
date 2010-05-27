@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Kevin Hilman <khilman@deeprootsystems.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 01:43:01 +0200
-Message-ID: <201005280143.01889.rjw__41330.7401039221$1275003825$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
-	<201005272315.28475.rjw@sisk.pl>
-	<alpine.LFD.2.00.1005272334040.3478@localhost.localdomain>
+Date: Thu, 27 May 2010 16:42:15 -0700
+Message-ID: <87fx1cgbe0.fsf__23745.209122035$1275003941$gmane$org@deeprootsystems.com>
+References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
+	<20100527174019.GA3187@srcf.ucam.org>
+	<1274982447.27810.5684.camel@twins> <201005280041.43553.rjw@sisk.pl>
+	<20100528001514.28e593ef@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1005272334040.3478@localhost.localdomain>
+In-Reply-To: <20100528001514.28e593ef@lxorguk.ukuu.org.uk> (Alan Cox's message
+	of "Fri\, 28 May 2010 00\:15\:14 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,59 +21,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux@smtp1.linux-foundation.org, Mickler <florian@mickler.org>, Thomas Gleixner <tglx@linutronix.de>, List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Florian@smtp1.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 27 May 2010, Thomas Gleixner wrote:
-> On Thu, 27 May 2010, Rafael J. Wysocki wrote:
-> 
-> > On Thursday 27 May 2010, Thomas Gleixner wrote:
-> > > On Thu, 27 May 2010, Alan Stern wrote:
-> > > 
-> > > > On Thu, 27 May 2010, Felipe Balbi wrote:
-> > > > 
-> > > > > On Thu, May 27, 2010 at 05:06:23PM +0200, ext Alan Stern wrote:
-> > > > > >If people don't mind, here is a greatly simplified summary of the
-> > > > > >comments and objections I have seen so far on this thread:
-> > > > > >
-> > > > > >	The in-kernel suspend blocker implementation is okay, even
-> > > > > >	beneficial.
-> > > > > 
-> > > > > I disagree here. I believe expressing that as QoS is much better. Let 
-> > > > > the kernel decide which power state is better as long as I can say I 
-> > > > > need 100us IRQ latency or 100ms wakeup latency.
-> > > > 
-> > > > Does this mean you believe "echo mem >/sys/power/state" is bad and
-> > > > should be removed?  Or "echo disk >/sys/power/state"?  They pay no
-> > > 
-> > > mem should be replaced by an idle suspend to ram mechanism
-> > 
-> > Well, what about when I want the machine to suspend _regardless_ of whether
-> > or not it's idle at the moment?  That actually happens quite often to me. :-)
-> 
-> Fair enough. Let's agree on a non ambigous terminology then:
-> 
->      forced:
-> 
-> 	     suspend which you enforce via user interaction, which
->      	     also implies that you risk losing wakeups depending on
->      	     the hardware properties
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-OK
+> - Given a non forced (that is 'idle down') transition to a suspend level
+>   we can implement a 'suspend as idle' on many embedded platforms in a
+>   manner which is not racy at kernel level. Apparently implemented
+>   already on ARM
 
->      opportunistic:
-> 
-> 	     suspend driven from the idle context, which guarantees to
-> 	     not lose wakeups. Provided only when the hardware does
-> 	     provide the necessary capabilities.
+Just to confirm, yes, it is already implemeted on ARM, and in mainline
+for the TI OMAP3 (ARM Cortex-A8) and in commercial products (Nokia
+N900, Moto Droid, Palm Pre, Archos, etc.)  For the OMAP the deepest
+C-state is actually a fully powered-down ARM core.
 
-I can accept that definition, but this is not what "opportunistic" means in the
-Arve's changelogs.  What it means there is that he wants the system to suspend
-even when it is not technically idle (like in the updatedb example I gave in a
-previous message).  Suspend blockers are supposed to be a mechanism by which
-the kernel and user space together may determine when to suspend (and it's
-somewhat orthogonal to idle).
+While the Droid uses 'suspend as idle' in addition to opportunistic
+suspend, the N900 *never* suspends in the traditional sense, it is
+entirely idle based.
 
-Thanks,
-Rafael
+Kevin
