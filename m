@@ -1,23 +1,23 @@
 From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 19:17:58 +0100
-Message-ID: <20100527181758.GJ3543__29577.9845481322$1274985762$gmane$org@srcf.ucam.org>
-References: <20100527172510.GC2468@srcf.ucam.org>
+Date: Thu, 27 May 2010 19:18:58 +0100
+Message-ID: <20100527181858.GK3543__26995.6263983206$1274985777$gmane$org@srcf.ucam.org>
+References: <20100527170740.GA1980@srcf.ucam.org>
+	<1274980391.27810.5552.camel@twins>
+	<20100527171644.GA2468@srcf.ucam.org>
+	<1274980856.27810.5582.camel@twins>
+	<20100527172510.GC2468@srcf.ucam.org>
 	<1274981288.27810.5609.camel@twins>
 	<20100527173218.GF2468@srcf.ucam.org>
 	<1274981750.27810.5641.camel@twins>
 	<20100527174140.GB3187@srcf.ucam.org>
-	<1274982397.27810.5679.camel@twins>
-	<20100527175258.GB3543@srcf.ucam.org>
-	<1274982981.27810.5719.camel@twins>
-	<20100527175920.GE3543@srcf.ucam.org>
-	<1274983598.27810.5761.camel@twins>
+	<alpine.LFD.2.00.1005272009380.3032@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1274983598.27810.5761.camel@twins>
+In-Reply-To: <alpine.LFD.2.00.1005272009380.3032@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,29 +27,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 27, 2010 at 08:06:38PM +0200, Peter Zijlstra wrote:
-> On Thu, 2010-05-27 at 18:59 +0100, Matthew Garrett wrote:
-> > On Thu, May 27, 2010 at 07:56:21PM +0200, Peter Zijlstra wrote:
-> > > On Thu, 2010-05-27 at 18:52 +0100, Matthew Garrett wrote:
-> > > 
-> > > > If that's what you're aiming for then you don't need to block 
-> > > > applications on hardware access because they should all already have 
-> > > > idled themselves.
-> > > 
-> > > Correct, a well behaved app would have. I thought we all agreed that
-> > > well behaved apps weren't the problem?
-> > 
-> > Ok. So the existing badly-behaved application ignores your request and 
-> > then gets blocked. And now it no longer responds to wakeup events. 
+On Thu, May 27, 2010 at 08:12:15PM +0200, Thomas Gleixner wrote:
+> On Thu, 27 May 2010, Matthew Garrett wrote:
+> > How long do you wait for applications to respond that they've stopped 
+> > drawing? What if the application is heavily in swap at the time?
 > 
-> It will, when it gets unblocked from whatever thing it got stuck on.
+> Very realistic scenario on a mobile phone. 
 
-It's blocked on the screen being turned off. It's supposed to be reading 
-a network packet. How does it ever get to reading the network packet?
+If the aim is to produce a solution that isn't special-cased to specific 
+devices, thinking about how long an application may take to respond is 
+entirely relevant.
 
 -- 
 Matthew Garrett | mjg59@srcf.ucam.org
