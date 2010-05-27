@@ -1,14 +1,13 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 16:31:47 +0100
-Message-ID: <20100527163147.5d9880af__34226.4642742977$1274975567$gmane$org@lxorguk.ukuu.org.uk>
-References: <alpine.LFD.2.00.1005271545190.3032@localhost.localdomain>
-	<Pine.LNX.4.44L0.1005271053420.3239-100000@iolanthe.rowland.org>
+Date: Thu, 27 May 2010 11:47:48 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005271141410.3239-100000__1691.14001696489$1274975920$gmane$org@iolanthe.rowland.org>
+References: <1274974479.27810.5247.camel@twins>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005271053420.3239-100000@iolanthe.rowland.org>
+In-Reply-To: <1274974479.27810.5247.camel@twins>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,46 +17,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-> The proposal I made a couple of days ago removes this API and leaves
-> the other things (i.e., the in-kernel suspend blockers and
-> opportunistic suspend) intact.  In place of the userspace
-> kernel-blocker API, Android would have to implement a power manager
-> process that would essentially juggle all the latency requirements in
-> userspace.
+On Thu, 27 May 2010, Peter Zijlstra wrote:
 
-On the kernel side you really want to add two arguments from day one which
-is the time in ms and the power state. We have enumerations of current
-power states (plus add suspend) so this is easy to do. The governors may
-not use them for a while but ACPI for example can use the latency pretty
-fast. You want the information there from day one so it is captured
-otherwise it ends up a right royal pain in the arse adjusting the API
-later. If the numbers are in but don't always get used it'll be a lot
-smoother.
+> On Thu, 2010-05-27 at 16:33 +0100, Alan Cox wrote:
+> > On Thu, 27 May 2010 17:09:16 +0200
+> > Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > On Thu, 2010-05-27 at 11:06 -0400, Alan Stern wrote:
+> > > > 
+> > > >         Opportunistic suspends are okay.
+> > > > 
+> > > >         The proposed userspace API is too Android-specific.
+> > > 
+> > > I would argue opportunistic suspends are not ok, and therefore the
+> > > proposed API is utterly irrelevant.
+> > 
+> > Assuming you are happy that opportunistically entering C6 and the like is
+> > ok via ACPI can you explain why you have a problem with opportunistic
+> > suspend and why it is different to a very deep sleep CPU state such as we
+> > have now (and which on many embedded platforms we deal with *is* sleeping
+> > external devices too)
+> 
+> Agreed, but I understood the opportunistic suspend line from Alan Stern
+> to mean the echo opportunistic > /sys/power/foo thing.
 
-> Communication between the power manager process and the kernel would be 
-> limited to adding a new "opportunistic" entry to /sys/power/state -- 
-> something which could well be useful in its own right.  Even if this 
-> API turns out not to be good, it's simple enough that it could be 
-> removed pretty easily.
+Yes, that's what I meant.  Why do you think it is any worse than "echo 
+mem >/sys/power/state"?  The only difference is that it will block 
+until all in-kernel suspend blockers are disabled.
 
-Yes. Probably it really should be linked to a cpufreq driver thing -
-cpufreq_android or whatever being the starting point but thats not a big
-deal and it doesn't leak into all the apps either. This is detail however.
+Or do you also think that "echo mem >/sys/power/state" is evil and 
+should be removed from the kernel as soon as possible?
 
-> Indeed, having a power manager thread may well turn out to be a useful
-> thing -- but even if it doesn't, this scheme minimizes the damage while
-> still allowing the Android platform to use a vanilla kernel with only
-> limited modifications to their userspace.
+And to answer Thomas's question: The whole reason for having in-kernel 
+suspend blockers is so that userspace can tell the system to suspend 
+without losing wakeup events.
 
-There have been some horribly bad attempts to do this, but if it works
-for Android and its encapsulated in cpufreq_android.c maybe with a private
-interface to a single supporting daemon then it's not creating bad user
-APIs, its not peeing in anyone elses pond and the policy will all be in
-the kernel and a daemon which keeps the wrong platform knowledge out of
-the application space.
+Suppose a key is pressed just as a user program writes "mem" to
+/sys/power/state.  The keyboard driver handles the keystroke and queues
+an input event.  Then the system suspends and doesn't wake up until
+some other event occurs -- even though the keypress was an important
+one and it should have prevented the system from suspending.
 
-Alan
+With in-kernel suspend blockers and opportunistic suspend, this 
+scenario is prevented.  That is their raison-d'etre.
+
+Alan Stern
