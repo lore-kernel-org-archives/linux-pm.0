@@ -1,15 +1,14 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
- driver for select intel processors
-Date: Wed, 26 May 2010 20:44:26 -0700
-Message-ID: <20100526204426.fd2be7e0.akpm__38226.9456903034$1274932188$gmane$org@linux-foundation.org>
-References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
-	<198450ec1600d9a7f55270dd4d44d6b55bc5b184.1274926772.git.len.brown@intel.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] kernel/power/swap.c: fix typos in comments
+Date: Thu, 27 May 2010 06:45:12 +0200
+Message-ID: <20100527044511.GA19625__12440.6053488658$1274935599$gmane$org@elf.ucw.cz>
+References: <1274921340-4894-1-git-send-email-cesarb@cesarb.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <198450ec1600d9a7f55270dd4d44d6b55bc5b184.1274926772.git.len.brown@intel.com>
+Content-Disposition: inline
+In-Reply-To: <1274921340-4894-1-git-send-email-cesarb@cesarb.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,345 +18,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
+To: Cesar Eduardo Barros <cesarb@cesarb.net>
+Cc: linux-pm@lists.linux-foundation.org, trivial@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 May 2010 22:42:31 -0400 Len Brown <lenb@kernel.org> wrote:
+On Wed 2010-05-26 21:49:00, Cesar Eduardo Barros wrote:
+> Signed-off-by: Cesar Eduardo Barros <cesarb@cesarb.net>
 
-> From: Len Brown <len.brown@intel.com>
+ACK.
+
+> ---
+>  kernel/power/swap.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> This EXPERIMENTAL driver supersedes acpi_idle
-> on modern Intel processors. (Nehalem and Atom Processors).
-> 
-> For CONFIG_INTEL_IDLE=y, intel_idle probes before acpi_idle,
-> no matter if CONFIG_ACPI_PROCESSOR=y or =m.
-> 
-> Boot with "intel_idle.max_cstate=0" to disable the driver
-> and to fall back on ACPI.
-> 
-> CONFIG_INTEL_IDLE=m is not recommended unless the system
-> has a method to guarantee intel_idle loads before ACPI's
-> processor_idle.
-> 
-> This driver does not yet know about cpu online/offline
-> and thus will not yet play well with cpu-hotplug.
-> 
->
-> ...
->
-> +/*
-> + * Known issues
-> + *
-> + * The driver currently initializes for_each_online_cpu() upon modprobe.
-> + * It it unaware cpu online/offline and cpui hotplug
+> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+> index 66824d7..5846a02 100644
+> --- a/kernel/power/swap.c
+> +++ b/kernel/power/swap.c
+> @@ -114,7 +114,7 @@ sector_t alloc_swapdev_block(int swap)
+>  
+>  /**
+>   *	free_all_swap_pages - free swap pages allocated for saving image data.
+> - *	It also frees the extents used to register which swap entres had been
+> + *	It also frees the extents used to register which swap entries had been
+>   *	allocated.
+>   */
+>  
+> @@ -315,7 +315,7 @@ static int write_page(void *buf, sector_t offset, struct bio **bio_chain)
+>  /*
+>   *	The swap map is a data structure used for keeping track of each page
+>   *	written to a swap partition.  It consists of many swap_map_page
+> - *	structures that contain each an array of MAP_PAGE_SIZE swap entries.
+> + *	structures that contain each an array of MAP_PAGE_ENTRIES swap entries.
+>   *	These structures are stored on the swap and linked together with the
+>   *	help of the .next_swap member.
+>   *
 
-(typo).
-
-Implications?  What happens when an additional CPU is brought online? 
-It melts?  ;)
-
-CPU hotplug support is usually pretty simple to provide.  But it tends
-to affect the overall code structure and is best designed-in at the
-outset.
-
-> + * ACPI has a .suspend hack to turn off deep c-statees during suspend
-> + * to avoid complications with the lapic timer workaround
-> + * will need to address that situation here too.
-> + *
-> + * There is currently no automatic probing/loading mechanism
-> + * if the driver is built as a module.
-> + */
->
-> ...
->
-> +#define mwait_hint_to_cstate(hint) ((((hint) >> MWAIT_SUBSTATE_SIZE) & MWAIT_CSTATE_MASK) + 1)
-> +#define lapic_timer_reliable(cstate) (lapic_timer_reliable_states & (1 << (cstate)))
-
-Could have been implemented in C.  Nicer to look at, better typechecking.
-
-> +static struct cpuidle_driver intel_idle_driver = {
-> +	.name = "intel_idle",
-> +	.owner = THIS_MODULE,
-> +};
-> +static int max_cstate = MWAIT_MAX_NUM_CSTATES - 1;	/* intel_idle.max_cstate=0 disables driver */
-> +static int power_policy = 7; /* 0 = max perf; 15 = max powersave */
-> +
-> +static unsigned int substates;
-> +#define get_num_mwait_substates(cstate) ((substates >> ((cstate) * 4)) && 0xF)
-
-ddiittoo..
-
-> +/* Reliable LAPIC Timer States, bit 1 for C1 etc.  */
-> +static unsigned int lapic_timer_reliable_states;
-> +
-> +static struct cpuidle_device *intel_idle_cpuidle_devices;
-> +static int intel_idle(struct cpuidle_device *dev, struct cpuidle_state *state);
-> +
-> +/*
-> + * These attributes are be visible under
-> + * /sys/devices/system/cpu/cpu.../cpuidle/state.../
-> + *
-> + * name 
-> + * 	Hardware name of the state, from datasheet
-> + * desc
-> + * 	MWAIT param
-> + * driver_data
-> + * 	token passed to intel_idle()
-> + * flags
-> + * 	CPUIDLE_FLAG_TIME_VALID
-> + * 		we return valid times in all states
-> + * 	CPUIDLE_FLAG_SHALLOW
-> + * 		lapic timer keeps running
-> + * exit_latency
-> + * 	[usec]
-> + * power_usage
-> + * 	mW (TBD)
-> + * target_residency
-> + * 	currently we multiply exit_latency by 4
-> + * 	[usec]
-> + * usage
-> + * 	instance counter
-> + * time
-> + * 	residency counter [usec]
-> + */
-
-There's been a half-hearted attempt to describe sysfs files in
-Documentation/ABI/.
-
->
-> ...
->
-> +static struct cpuidle_state nehalem_cstates[MWAIT_MAX_NUM_CSTATES] = {
-> +	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
-> +	{ "NHM-C1", "MWAIT 0x00", (void *) 0x00,
-> +		CPUIDLE_FLAG_TIME_VALID,
-> +		3, 1000, 6, 0, 0, &intel_idle },
-> +	{ "NHM-C3", "MWAIT 0x10", (void *) 0x10,
-> +		CPUIDLE_FLAG_TIME_VALID,
-> +		20, 500, 80, 0, 0, &intel_idle },
-> +	{ "NHM-C6", "MWAIT 0x20", (void *) 0x20,
-> +		CPUIDLE_FLAG_TIME_VALID,
-> +		200, 350, 800, 0, 0, &intel_idle },
-> +	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
-> +	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
-> +	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
-> +	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0}
-> +};
-> +
-> +static struct cpuidle_state atom_cstates[MWAIT_MAX_NUM_CSTATES] = {
-> +	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
-> +	{ "ATM-C1", "MWAIT 0x00", (void *) 0x00,
-> +		CPUIDLE_FLAG_TIME_VALID,
-> +		1, 1000, 4, 0, 0, &intel_idle },
-> +	{ "ATM-C2", "MWAIT 0x10", (void *) 0x10,
-> +		CPUIDLE_FLAG_TIME_VALID,
-> +		20, 500, 80, 0, 0, &intel_idle },
-> +	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
-> +	{ "ATM-C4", "MWAIT 0x30", (void *) 0x30,
-> +		CPUIDLE_FLAG_TIME_VALID,
-> +		100, 250, 400, 0, 0, &intel_idle },
-> +	{ "ATM-C6", "MWAIT 0x40", (void *) 0x40,
-> +		CPUIDLE_FLAG_TIME_VALID,
-> +		200, 150, 800, 0, 0, &intel_idle },
-> +	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
-> +	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0}
-> +};
-
-Could omit all the zeroes.  Could possibly also omit the "" strings,
-with suitable handling.
-
-These would be better in { .name = value, } form.
-
->
-> ...
->
-> +static int intel_idle_probe(void)
-> +{
-> +	unsigned int eax, ebx, ecx, edx;
-> +
-> +	if (max_cstate == 0) {
-> +		pr_debug(PREFIX "disabled\n" );
-> +		return -1;
-> +	}
-> +
-> +	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
-> +		return -1;
-> + 
-> +	if (!boot_cpu_has(X86_FEATURE_MWAIT))
-> +		return -1;
-> +
-> +	if (boot_cpu_data.cpuid_level < CPUID_MWAIT_LEAF)
-> +		return -1;
-> +
-> +	cpuid(CPUID_MWAIT_LEAF, &eax, &ebx, &ecx, &edx);
-> +
-> +	if (!(ecx & CPUID5_ECX_EXTENSIONS_SUPPORTED) ||
-> +		!(ecx & CPUID5_ECX_INTERRUPT_BREAK))
-> +			return -1;
-> +
-> +	pr_debug(PREFIX "MWAIT substates: 0x%x\n", edx);
-> +
-> +#ifdef DEBUG
-> +	if (substates == 0)	/* can over-ride via modparam */
-> +#endif
-> +		substates = edx;
-> +
-> +	/*
-> + 	 * Bail out if non-stop TSC unavailable.
-> + 	 * Nehalem and newer have it.
-> + 	 *
-> + 	 * Atom and Core2 will will require
-> + 	 * mark_tsc_unstable("TSC halts in idle")
-> + 	 * when have a state deeper than C1
-> + 	 */
-> +	if (!boot_cpu_has(X86_FEATURE_NONSTOP_TSC))
-> +		return -1;
-> +
-> +	if (boot_cpu_has(X86_FEATURE_ARAT))	/* Always Reliable APIC Timer */
-> +		lapic_timer_reliable_states = 0xFFFFFFFF;
-> +
-> +	if (boot_cpu_data.x86 != 6)	/* family 6 */
-> +		return -1;
-> +
-> +	switch (boot_cpu_data.x86_model) {
-> +
-> +	case 0x1A:	/* Core i7, Xeon 5500 series */
-> +	case 0x1E:	/* Core i7 and i5 Processor - Lynnfield, Jasper Forest */
-> +	case 0x1F:	/* Core i7 and i5 Processor - Nehalem */
-> +	case 0x2E:	/* Nehalem-EX Xeon */
-> +		lapic_timer_reliable_states = (1 << 1);	 /* C1 */
-> +
-> +	case 0x25:	/* Westmere */
-> +	case 0x2C:	/* Westmere */
-> +
-> +		cpuidle_state_table = nehalem_cstates;
-> +		break;
-> +#ifdef notyet
-> +	case 0x1C:	/* 28 - Atom Processor */
-> +		cpuidle_state_table = atom_cstates;
-> +		break;
-> +#endif
-> +
-> +	case 0x17:	/* 23 - Core 2 Duo */
-> +		lapic_timer_reliable_states = (1 << 2) | (1 << 1); /* C2, C1 */
-> +
-> +	default:
-> +		pr_debug(PREFIX "does not run on family %d model %d\n",
-> +			boot_cpu_data.x86, boot_cpu_data.x86_model);
-> +		return -1;
-> +	}
-> +
-> +	pr_debug(PREFIX "v" INTEL_IDLE_VERSION
-> +		" model 0x%X\n", boot_cpu_data.x86_model);
-> +
-> +pr_debug(PREFIX "lapic_timer_reliable_states 0x%x\n", lapic_timer_reliable_states);
-
-layout went funny.
-
-> +	return 0;
-> +}
-> +
-> +/*
-> + * intel_idle_cpuidle_devices_init()
-> + * allocate, initialize, register cpuidle_devices
-> + */
-> +static int intel_idle_cpuidle_devices_init(void)
-> +{
-> +	int i, cstate;
-> +	struct cpuidle_device *dev;
-> +
-> +	intel_idle_cpuidle_devices = alloc_percpu(struct cpuidle_device);
-> +	if (intel_idle_cpuidle_devices == NULL)
-> +		return -1;
-> +
-> +	for_each_online_cpu(i) {
-> +		dev = per_cpu_ptr(intel_idle_cpuidle_devices, i);
-> +
-> +		dev->state_count = 1;
-> +
-> +		for (cstate = 1; cstate < MWAIT_MAX_NUM_CSTATES; ++cstate) {
-> +			int num_substates;
-> +
-> +			if (cstate > max_cstate) {
-> +				printk(PREFIX "max_cstate %d exceeded", max_cstate);
-> +				break;
-> +			}
-> +
-> +			/* does the state exist in CPUID.MWAIT? */
-> +			num_substates = get_num_mwait_substates(cstate);
-> +			if (num_substates == 0)
-> +				continue;
-> +
-> +			/* does the state exist in the driver's table? */
-> +			if (cpuidle_state_table[cstate].name == NULL) {
-> +				pr_debug(PREFIX "unaware of model 0x%x MWAIT %x\
-> +					please contact lenb@kernel.org", boot_cpu_data.x86_model, cstate);
-> +				continue;
-> +			}
-> +			dev->states[dev->state_count] = cpuidle_state_table[cstate];	/* structure copy */
-> +			dev->state_count += 1;
-> +		}
-> +
-> +		dev->cpu = i;
-> +		if (cpuidle_register_device(dev)) {
-> +			pr_debug(PREFIX "cpuidle_register_device %d failed!\n", i);
-> +			free_percpu(intel_idle_cpuidle_devices);
-> +			return -EIO;
-
-Should this unregister all the thus-far-registered devices?
-
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * intel_idle_cpuidle_devices_uninit()
-> + * unregister, free cpuidle_devices
-> + */
-> +static void intel_idle_cpuidle_devices_uninit(void)
-> +{
-> +	int i;
-> +	struct cpuidle_device *dev;
-> +
-> +	for_each_online_cpu(i) {
-> +		dev = per_cpu_ptr(intel_idle_cpuidle_devices, i);
-> +		cpuidle_unregister_device(dev);
-> +	}
-> +
-> +	free_percpu(intel_idle_cpuidle_devices);
-> +	return;
-> +}
-> +
-> +static int intel_idle_init(void) 
-
-__init?
-
-The patch adds trailing whitespace.  Has various other checkpatch
-problems.
-
-> +{
-> +
-> +	if (intel_idle_probe())
-> +		return -1;
-> +
-> +	if (cpuidle_register_driver(&intel_idle_driver)) {
-> +		pr_debug(PREFIX "unable to register with cpuidle due to %s",
-> +			cpuidle_get_driver()->name);
-> +		return -1;
-> +	}
-> +
-> +	if (intel_idle_cpuidle_devices_init()) {
-> +		cpuidle_unregister_driver(&intel_idle_driver);
-> +		return -1;
-> +	}
-
-All these hard-coded -1's are a bit sloppy.  Could use -ENODEV, -EIO,
-etc.  The only real value in this is to get better diagnostics out of
-do_one_initcall() when initcall_debug was selected.
-
-> +	return 0;	
-> +}
-> +
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
