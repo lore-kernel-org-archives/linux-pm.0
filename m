@@ -1,16 +1,17 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Thu, 27 May 2010 11:13:34 -0700
-Message-ID: <20100527181333.GA8297__32632.7518596829$1274985220$gmane$org@core.coreip.homeip.net>
-References: <AANLkTikFwznonORd42piWZvBv3oqqSj9odC9Jaud8o3x@mail.gmail.com>
-	<Pine.LNX.4.44L0.1005262044001.6349-100000@netrider.rowland.org>
-	<AANLkTingAiO8dkwnInc993PTyA63rV-WRvBIRlB2ChXs@mail.gmail.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Thu, 27 May 2010 20:14:30 +0200 (CEST)
+Message-ID: <alpine.LFD.2.00.1005272012350.3032__29231.9396081895$1274985295$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
+	<alpine.LFD.2.00.1005271915540.3032@localhost.localdomain>
+	<20100527173118.GE2468@srcf.ucam.org>
+	<1274981680.27810.5636.camel@twins>
+	<20100527174019.GA3187@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTingAiO8dkwnInc993PTyA63rV-WRvBIRlB2ChXs@mail.gmail.com>
+In-Reply-To: <20100527174019.GA3187@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,51 +21,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
-Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 26, 2010 at 05:52:40PM -0700, Arve Hj=F8nnev=E5g wrote:
-> 2010/5/26 Alan Stern <stern@rowland.harvard.edu>:
-> > On Wed, 26 May 2010, Arve Hj=F8nnev=E5g wrote:
-> >
-> >> > I must be missing something. =A0In Arve's patch 1/8, if the system i=
-s in
-> >> > opportunistic suspend, and a wakeup event occurs but no suspend
-> >> > blockers get enabled by the handler, what causes the system to go ba=
-ck
-> >> > into suspend after the event is handled? =A0Isn't that a loop of some
-> >> > sort?
-> >> >
-> >>
-> >> Yes it is a loop. I think what you are missing is that it only loops
-> >> repeatedly if the driver that aborts suspend does not use a suspend
-> >> blocker.
-> >
-> > You mean "the driver that handles the wakeup event". =A0I was asking wh=
-at
-> > happened if suspend succeeded and then a wakeup occurred. =A0But yes, if
-> > a suspend blocker is used then its release causes another suspend
-> > attempt, with no looping.
-> >
-> >> > And even if it isn't, so what? =A0What's wrong with looping behavior?
-> >>
-> >> It is a significant power drain.
-> >
-> > Not in the situation I was discussing.
-> >
-> =
+On Thu, 27 May 2010, Matthew Garrett wrote:
 
-> If you meant it spend most of the time suspended, then I agree. It
-> only wastes power when a driver blocks suspend by returning an error
-> from its suspend hook and we are forced to loop doing no useful work.
-> =
+> On Thu, May 27, 2010 at 07:34:40PM +0200, Peter Zijlstra wrote:
+> > > we still need to be able to enter suspend while the system isn't idle.
+> > 
+> > _WHY_!?
+> 
+> Because if I'm running a kernel build in a tmpfs and I hit the sleep 
+> key, I need to go to sleep. Blocking processes on driver access isn't 
+> sufficient.
 
+That's the difference between opportunistic and enforced suspend. On
+enforced suspend the QoS guarantee is forced to NONE for everything
+and you go down no matter what. When you decide to push the wakeup
+button the system restores.
 
-If driver refuses to suspend that means there are events that need
-processing. I fail to see why it would be called "looping doing no
-useful work".
+Thanks,
 
--- =
-
-Dmitry
+	tglx
