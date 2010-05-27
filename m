@@ -1,14 +1,23 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 2/8] PM: suspend_block: Add driver to access
- suspend blockers from user-space
-Date: Wed, 26 May 2010 18:18:36 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005261815480.1328-100000__26823.1247588576$1274967544$gmane$org@iolanthe.rowland.org>
-References: <201005262357.28933.rjw@sisk.pl>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Thu, 27 May 2010 15:06:55 +0100
+Message-ID: <20100527140655.GA28048__9231.49655941433$1274969381$gmane$org@srcf.ucam.org>
+References: <AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
+	<1274867106.5882.5090.camel@twins>
+	<20100526120242.5c9b73ad@schatten.dmk.lab>
+	<AANLkTim4021cTnhVZrQpefq1MG-eEPOFLDRO-XDepHb4@mail.gmail.com>
+	<20100526133721.602633b2@schatten.dmk.lab>
+	<AANLkTikzgaOFdQKess4E-D86OLPOzxP3dWiDkU_UR0ri@mail.gmail.com>
+	<20100526142430.327ccbc4@schatten.dmk.lab>
+	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
+	<AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
+	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005262357.28933.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <20100527003943.07c17f85@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,61 +27,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Jim Collar <jim.collar@eqware.net>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>, Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 May 2010, Rafael J. Wysocki wrote:
+On Thu, May 27, 2010 at 12:39:43AM +0100, Alan Cox wrote:
 
-> On Wednesday 26 May 2010, Peter Zijlstra wrote:
-> > On Fri, 2010-05-21 at 15:46 -0700, Arve Hj=C3=B8nnev=C3=A5g wrote:
-> > > +To create a suspend blocker from user space, open the suspend_blocker
-> > > special
-> > > +device file:
-> > > +
-> > > +    fd =3D open("/dev/suspend_blocker", O_RDWR | O_CLOEXEC);
-> > > +
-> > > +then optionally call:
-> > > +
-> > > +    ioctl(fd, SUSPEND_BLOCKER_IOCTL_SET_NAME(strlen(name)), name);
-> > > +
-> > > +To activate the suspend blocker call:
-> > > +
-> > > +    ioctl(fd, SUSPEND_BLOCKER_IOCTL_BLOCK);
-> > > +
-> > > +To deactivate it call:
-> > > +
-> > > +    ioctl(fd, SUSPEND_BLOCKER_IOCTL_UNBLOCK);
-> > > +
-> > > +To destroy the suspend blocker, close the device:
-> > > +
-> > > +    close(fd);
-> > =
+> - Supporting Android needs well good
+> - Opportunistic suspend good
+> - Manner in which interface is expressed to userspace bad
+> - Latency constraint interface would be better
+> - Your existing behaviour can be implemented by a simplistic use of a
+>   latency constraint interface
+> - We can fix a pile of other directly connected things at the same time
+> - Implementation internals I care far less about because we can fix those
+>   later
+> - Suspend is just a power state
+> 
+> How does that fit your model and vision ?
 
-> > Urgh, please let the open() be BLOCK, the close() be UNBLOCK, and keep
-> > the SET_NAME thing if you really care.
-> =
+I don't entirely see how this works. In order to deal with poorly 
+written applications, it's necessary to (optionally, based on some 
+policy) ignore them when it comes to the scheduler. The problem is how 
+to implement the optional nature of this in a race-free manner. This is 
+obviously a pathological case, but imagine an application that does 
+something along the following lines:
 
-> SET_NAME wouldn't serve any purpose in that case.
-> =
+int input = open ("/dev/input", O_RDONLY|O_NONBLOCK);
+char foo;
 
-> This whole thing is related to the statistics part, which Arve says is
-> essential to him.  He wants to collect statistics for each suspend blocker
-> activated and deactivated so that he can tell who's causing problems by
-> blocking suspend too often.  The name also is a part of this.
-> =
+while (1) {
+	suspend_block();
+	if (read(input, &foo, 1) > 0) {
+		(do something)
+		suspend_unblock();
+	} else {
+		suspend_unblock();
+		(draw bouncing cows and clouds and tractor beams briefly)
+	}
+}
 
-> In fact, without the statistics part the whole thing might be implemented
-> as a single reference counter such that suspend would happen when it went=
- down
-> to zero.
+Now, if the user is playing this game, you want it to be scheduled. If 
+the user has put down their phone and the screen lock has kicked in, you 
+don't want it to be scheduled. So we could imagine some sort of cgroup 
+that contains untrusted tasks - when the session is active we set a flag 
+one way which indicates to the scheduler that tasks in TASK_RUNNING 
+should be scheduled, and when the session is idle we set the flag the 
+other way and all processes in that cgroup get shifted to 
+TASK_INTERRUPTIBLE or something.
 
-There's also Arve's other main point: These suspend blockers tend to
-get used quite a lot.  Opening and closing a file each time has much
-higher overhead than a simple ioctl.
+Except that doesn't work. If the session goes idle in the middle of the 
+app drawing a frame, we'll stop the process and the task will never call 
+read(). So the user hits a key, we wake up, nothing shifts from 
+TASK_INTERRUPTIBLE into TASK_RUNNING, the key never gets read, we go 
+back to sleep. The event never gets delivered.
 
-All these topics have been covered earlier in this discussion.  Peter =
+Now let's try this in the Android world. The user hits a key and the 
+system wakes up. The input layer takes a suspend block. The application 
+now draws all the cows it wants to, takes its own suspend block and 
+reads the input device. This empties the queue and the kernel-level 
+suspend block is released. The application then processes the event 
+before releasing the suspend block. The event has been delivered and 
+handled.
 
-should go back and read the emails in the linux-pm archive.
+You can't express that with resource limits or QoS constraints. If you 
+want to deal with this kind of situation then, as far as I can tell, you 
+need either suspend blockers or something so close to them that it makes 
+no difference.
 
-Alan Stern
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
