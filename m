@@ -1,23 +1,13 @@
-From: Peter Zijlstra <peterz@infradead.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 19:26:56 +0200
-Message-ID: <1274981216.27810.5605.camel__3603.14655486054$1274982395$gmane$org@twins>
-References: <20100526142430.327ccbc4@schatten.dmk.lab>
-	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
-	<AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
-	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
-	<20100527140655.GA28048@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271642440.3032@localhost.localdomain>
-	<20100527155201.GA31937@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271808340.3032@localhost.localdomain>
-	<20100527165931.GB1062@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271905000.3032@localhost.localdomain>
-	<20100527172343.GB2468@srcf.ucam.org>
+Date: Thu, 27 May 2010 13:29:18 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005271327560.3239-100000__29087.368239607$1274982405$gmane$org@iolanthe.rowland.org>
+References: <1274980420.27810.5557.camel@twins>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100527172343.GB2468@srcf.ucam.org>
+In-Reply-To: <1274980420.27810.5557.camel@twins>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,16 +17,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2010-05-27 at 18:23 +0100, Matthew Garrett wrote:
-> ACPI provides no guarantees about what level of hardware functionality 
-> remains during S3. You don't have any useful ability to determine which 
-> events will generate wakeups. And from a purely practical point of view, 
-> since the latency is in the range of seconds, you'll never have a low 
-> enough wakeup rate to hit it. 
+On Thu, 27 May 2010, Peter Zijlstra wrote:
 
-If all of userspace is blocked on devices, WTH is keeping us from
-hitting it?
+> On Thu, 2010-05-27 at 13:04 -0400, Alan Stern wrote:
+> > 
+> > Does this mean you believe "echo mem >/sys/power/state" is bad and
+> > should be removed?  Or "echo disk >/sys/power/state"?  They pay no
+> > attention to latencies or other requirements. 
+> 
+> Those are a whole different beast, those are basically a quick-off
+> button like thing. Forced suspend is conceptually a very different beast
+> from power-saving a running system.
+
+They may be different conceptually.  Nevertheless, Android uses forced 
+suspend as a form of power saving.  Until better mechanisms are in 
+place, it makes sense.
+
+Alan Stern
