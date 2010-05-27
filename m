@@ -1,15 +1,23 @@
-From: Igor Stoppa <igor.stoppa@nokia.com>
-Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
- driver for select intel processors
-Date: Thu, 27 May 2010 17:51:00 +0300
-Message-ID: <4BFE86D4.60602__1024.72465155206$1274971788$gmane$org@nokia.com>
-References: <1274928151-30919-1-git-send-email-lenb@kernel.org>	<e099975ca65a7f6ac7f8bc3fee84d3e03893aa31.1274926772.git.len.brown@intel.com>	<198450ec1600d9a7f55270dd4d44d6b55bc5b184.1274926772.git.len.brown@intel.com>	<87ljb5l9d5.fsf@deeprootsystems.com>
-	<20100527072207.2e783b1e@infradead.org>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Thu, 27 May 2010 16:05:43 +0100
+Message-ID: <20100527160543.2228fc17@lxorguk.ukuu.org.uk>
+References: <AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
+	<1274867106.5882.5090.camel@twins>
+	<20100526120242.5c9b73ad@schatten.dmk.lab>
+	<AANLkTim4021cTnhVZrQpefq1MG-eEPOFLDRO-XDepHb4@mail.gmail.com>
+	<20100526133721.602633b2@schatten.dmk.lab>
+	<AANLkTikzgaOFdQKess4E-D86OLPOzxP3dWiDkU_UR0ri@mail.gmail.com>
+	<20100526142430.327ccbc4@schatten.dmk.lab>
+	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
+	<AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
+	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
+	<20100527140655.GA28048@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100527072207.2e783b1e@infradead.org>
+In-Reply-To: <20100527140655.GA28048@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,30 +27,94 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ext Arjan van de Ven <arjan@infradead.org>
-Cc: "Len@smtp1.linux-foundation.org" <Len@smtp1.linux-foundation.org>, Brown <len.brown@intel.com>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux@smtp1.linux-foundation.org, felipe.balbi@nokia.com, List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+> Now, if the user is playing this game, you want it to be scheduled. If 
+> the user has put down their phone and the screen lock has kicked in, you 
+> don't want it to be scheduled. So we could imagine some sort of cgroup 
+> that contains untrusted tasks - when the session is active we set a flag 
+
+I would hope not, because I'd rather prefer my app that used the screen
+to get the chance to save important data on what it was doing
+irrespective of the screen blank:  "I have an elegant proof for this
+problem but my battery has gone flat"
+
+(and I imagine we can play that examples game forever given Ashby's law)
+
+> You can't express that with resource limits or QoS constraints. 
+
+I don't see why not. You just have to think about the problem from the
+right end. Start from "normality is well behaved applications" and
+progress to "but I can constrain bogus ones". 
+
+So what are the resource constraints/QoS constraints for your example:
+
+[Simplistically]
+
+1. App says 'I want to wakeup from events for me within 1 second'
+	(Because I like drawing cows at about that rate)
+2. App open driver for buttons
+3. App opens driver for screen
+
+   Driver for buttons goes 'humm, well I can trigger wakeup from all
+   power states so I need no restrictions'. Screen will vary by device a
+   lot.
 
 
-ext Arjan van de Ven wrote:
+(I'll come back to the screen a bit more in a moment)
 
-> it's really inconvenient to have such drivers hidden in the
-> architecture code; it's much more convenient for cpuidle developers
-> if they're all in one place.
->   
+So lets consider the same binary
 
-why?
+App runs on OLPC like h/w
 
-> Think of it this way: you're not putting the NIC driver for your SOC in
-> a architecture directory either...
->
->   
+The pm code goes 'well I can suspend/resume in a second thats cool'
+The screen code goes 'Hey I've got OLPC like video so thats ok'
+The button driver can wake the system from suspend and queue an event
 
-That would be a separate chip, usually, which has its own driver.
 
-The SOC has some bus interface and the arch-specific part of it, if any, 
-is in the arch directory.
+App runs on Android like h/w
 
-igor
+The pm code goes 'well I can suspend/resume in a second thats cool'
+The screen code goes 'Gee the screen goes blank if I go below level X' so
+	I'll set a limit
+The button driver can wake the system from suspend and queue an event
+
+
+App runs on Android like h/w but not trusted
+
+The pm code goes 'well tough, you can't do that, I'll refuse you'
+	(Maybe user space wrapped by Android with a 'Cows wants to eat
+	your phone alive [Refuse] [This Time Only] [Always] UI
+	User hits refuse and Android duly assigns the code no guarantee
+	and a hard limit of no guarantee.
+
+The screen code goes 'tough'
+The button driver can wake the system etc
+
+Cows will get suspended for longer than one second whether it likes it or
+not
+
+App runs on a desktop PC
+
+The pm code goes 'well I can't do suspend/resume in 1 second, but I can
+do C6'
+The screen goes 'I need C6'
+The button driver goes 'I need C6'
+
+
+Same app in each case and a lot less syscalls. No pathalogical cases
+either - with suspend blockers you can get emergent synchronization
+patterns between applications where each app rarely blocks suspends but
+together their timings fall such that they never allow it. How do you
+propose to even detect that ?
+
+
+Ok now the screen
+
+If I write to an X server and the server doesn't wish to talk to me it
+ignores the stream and I block. This has been the case since the 1980s.
+
+What is the problem here - your device driver for the display can block
+tasks it doesn't want to use the display.
