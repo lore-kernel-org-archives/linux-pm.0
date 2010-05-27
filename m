@@ -1,15 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 00:41:43 +0200
-Message-ID: <201005280041.43553.rjw__49430.3480991677$1275000376$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<20100527174019.GA3187@srcf.ucam.org>
-	<1274982447.27810.5684.camel@twins>
+Date: Thu, 27 May 2010 23:55:46 +0100
+Message-ID: <20100527235546.09f3ce8a__22763.2288741463$1275000630$gmane$org@lxorguk.ukuu.org.uk>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
+	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
+	<20100527220949.GB10602@srcf.ucam.org>
+	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<20100527223605.GB11364@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1274982447.27810.5684.camel@twins>
+In-Reply-To: <20100527223605.GB11364@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,64 +22,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 27 May 2010, Peter Zijlstra wrote:
-> On Thu, 2010-05-27 at 18:40 +0100, Matthew Garrett wrote:
-> > On Thu, May 27, 2010 at 07:34:40PM +0200, Peter Zijlstra wrote:
-> > > > we still need to be able to enter suspend while the system isn't idle.
-> > > 
-> > > _WHY_!?
+On Thu, 27 May 2010 23:36:05 +0100
+Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+
+> On Thu, May 27, 2010 at 11:23:57PM +0100, Alan Cox wrote:
+> > On Thu, 27 May 2010 23:09:49 +0100
+> > Matthew Garrett <mjg59@srcf.ucam.org> wrote:
 > > 
-> > Because if I'm running a kernel build in a tmpfs and I hit the sleep 
-> > key, I need to go to sleep. Blocking processes on driver access isn't 
-> > sufficient.
+> > > On Thu, May 27, 2010 at 11:08:06PM +0100, Alan Cox wrote:
+> > > 
+> > > > This is I believe robust (and has been implemented on some non x86
+> > > > boxes). It depends on not forcing running tasks into suspend. That is the
+> > > > key.
+> > > 
+> > > We've already established that ACPI systems require us to force running 
+> > > tasks into suspend. How do we avoid the race in that situation?
+> > 
+> > Android phones do not have ACPI. Embedded platforms do not have ACPI. MID
+> > x86 devices do not have ACPI.
 > 
-> But that's a whole different issue. I agree that a forced suspend for
-> things like that make sense, just not for power managing a running
-> system. PC style hardware like that doesn't wake up from suspend for
-> funny things like a keypress either (good thing too).
+> It doesn't matter. Right now there's a race condition in terms of 
+> wakeup events on ACPI systems. What's your proposal for fixing that?
 
-In fact one of my PC test boxes does that. :-)
+I see it as a different problem  - and one that seems to be minimally
+pressing to most users jduging by the amount of noise it hasn't caused in
+the past seven odd years.
 
-> Anyway all that already works (more or less), so I don't see the
-> problem.
+This started because the Android people came to a meeting that was put
+together of various folks to try and sort of the big blockage in getting
+Android and Linux kernels back towards merging.
 
-The whole idea behind the patchset is not to power manage a _running_ system.
-It is based on the observation that for a good deal of time one doesn't need
-the system to be running at all, which is quite pragmatic to me.  Given that,
-the point is to figure out when the system doesn't need to run and effectively
-shut it down at that point (memory is refreshed in that state so that the
-system can go back to the working state relatively quickly).  From there, the
-system can only be woken up by specific events (like pressing a power button).
-However, it would be wasteful to shut it down knowing that the condition used
-to make the decision to shut it down didn't hold any more.
+I am interested right now in finding a general solution to the Android
+case and the fact it looks very similar to the VM, hard RT, gamer and
+other related problems although we seem to have diverged from that logic.
 
-The current mainline relies on the user to make that decision (and write
-something to /sys/power/state), but in principle I don't see why it cannot be
-made by software (either the kernel or the user space, or both in combination).
-The question is how to "teach" the software to make that decision in a way
-that's acceptable to the user and the Arve's approach is an attempt to give
-an answer to it.
+I dont think it particularly useful to go off on a mostly unrelated wild
+goose chase into ACPI land, especially one based on a premise of changing
+all the apps when the hardware will end up fixed faster.
 
-Of course, you may not like it, but the truth is it works in practice
-reasonably well.  That may not be an argument for merging it, but then we
-should at least tell the Android people what's fundamentally wrong with it
-and how to do it in a different way so that their own requirements are met.
-
-As long as we don't do that, we're rejecting it just because we don't like it.
-
-Yes, Alan Cox said why he thought the approach was fundamentally wrong from
-the technical standpoint and I appreciate that.  I don't think, though, that we
-can give Google a serious advice how to achieve their goal (which is battery
-life comparable to what they get with suspend blockers) in any different way.
-
-The approach with user space power manager suggested by Dmitry and Alan Stern
-may work, but it still assumes some kind of suspend blockers to be present in
-the kernel.  If we reject that too, I wonder what approach Google is supposed
-to use and still get the same battery life they get with suspend blockers.
-
-Thanks,
-Rafael
+Alan
