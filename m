@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 23:10:50 +0200
-Message-ID: <201005272310.50724.rjw__18629.4388528497$1274994608$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1005271327560.3239-100000@iolanthe.rowland.org>
-	<1274981533.27810.5624.camel@twins>
+Date: Thu, 27 May 2010 23:15:28 +0200
+Message-ID: <201005272315.28475.rjw__15593.9065422446$1274995012$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
+	<alpine.LFD.2.00.1005271924170.3032@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1274981533.27810.5624.camel@twins>
+In-Reply-To: <alpine.LFD.2.00.1005271924170.3032@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,24 +18,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 27 May 2010, Peter Zijlstra wrote:
-> On Thu, 2010-05-27 at 13:29 -0400, Alan Stern wrote:
-> > 
-> > They may be different conceptually.  Nevertheless, Android uses forced 
-> > suspend as a form of power saving.  Until better mechanisms are in 
-> > place, it makes sense. 
+On Thursday 27 May 2010, Thomas Gleixner wrote:
+> On Thu, 27 May 2010, Alan Stern wrote:
 > 
-> So let them, doesn't mean we have to merge it. Or will you saw your foot
-> off too if google were to promotes it?
+> > On Thu, 27 May 2010, Felipe Balbi wrote:
+> > 
+> > > On Thu, May 27, 2010 at 05:06:23PM +0200, ext Alan Stern wrote:
+> > > >If people don't mind, here is a greatly simplified summary of the
+> > > >comments and objections I have seen so far on this thread:
+> > > >
+> > > >	The in-kernel suspend blocker implementation is okay, even
+> > > >	beneficial.
+> > > 
+> > > I disagree here. I believe expressing that as QoS is much better. Let 
+> > > the kernel decide which power state is better as long as I can say I 
+> > > need 100us IRQ latency or 100ms wakeup latency.
+> > 
+> > Does this mean you believe "echo mem >/sys/power/state" is bad and
+> > should be removed?  Or "echo disk >/sys/power/state"?  They pay no
+> 
+> mem should be replaced by an idle suspend to ram mechanism
 
-Do you have to be offensive to people who disagree with you?
+Well, what about when I want the machine to suspend _regardless_ of whether
+or not it's idle at the moment?  That actually happens quite often to me. :-)
 
-Alan simply wants to understand the _technical_ objections that people have
-to this patchset and you're not helping.  So, could you please explain what
-exactly is your technical objection to it?
+> > attention to latencies or other requirements.
+> 
+> s2disk is a totally different beast as it shuts down the box into the
+> complete power off state.
+
+I don't see much difference between that and ACPI S3 other than the memory
+contents are preserved in S3.  It also is complete power off state - except for
+memory refresh and wakeup sources (which also may be active in S4).
 
 Rafael
