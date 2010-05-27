@@ -1,23 +1,19 @@
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 20:18:49 +0200 (CEST)
-Message-ID: <alpine.LFD.2.00.1005272015360.3032__8069.24881549111$1274985784$gmane$org@localhost.localdomain>
-References: <AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
-	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
-	<20100527140655.GA28048@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271642440.3032@localhost.localdomain>
-	<20100527155201.GA31937@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271808340.3032@localhost.localdomain>
-	<20100527165931.GB1062@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271905000.3032@localhost.localdomain>
-	<20100527172343.GB2468@srcf.ucam.org>
-	<20100527184918.3d090921@lxorguk.ukuu.org.uk>
-	<20100527175030.GA3543@srcf.ucam.org>
+Date: Thu, 27 May 2010 19:29:13 +0100
+Message-ID: <20100527182913.GO3543__20678.3488313251$1274985822$gmane$org@srcf.ucam.org>
+References: <Pine.LNX.4.44L0.1005271344040.3239-100000@iolanthe.rowland.org>
+	<1274982779.27810.5708.camel@twins>
+	<20100527175719.GD3543@srcf.ucam.org>
+	<1274983333.27810.5744.camel@twins>
+	<20100527181433.GG3543@srcf.ucam.org>
+	<1274984291.27810.5802.camel@twins>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100527175030.GA3543@srcf.ucam.org>
+Content-Disposition: inline
+In-Reply-To: <1274984291.27810.5802.camel@twins>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,32 +23,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 27 May 2010, Matthew Garrett wrote:
-
-> On Thu, May 27, 2010 at 06:49:18PM +0100, Alan Cox wrote:
-> > > ACPI provides no guarantees about what level of hardware functionality 
-> > > remains during S3. You don't have any useful ability to determine which 
-> > > events will generate wakeups. And from a purely practical point of view, 
-> > > since the latency is in the range of seconds, you'll never have a low 
-> > > enough wakeup rate to hit it.
-> > 
-> > So PCs with current ACPI don't get opportunistic suspend capability. It
-> > probably won't be supported on the Commodore Amiga either - your point ?
+On Thu, May 27, 2010 at 08:18:11PM +0200, Peter Zijlstra wrote:
+> On Thu, 2010-05-27 at 19:14 +0100, Matthew Garrett wrote:
+> > If I get a WoL 
+> > packet in the 0.5 of a second between userspace deciding to suspend and 
+> > actually doing so, the system shouldn't suspend. 
 > 
-> Actually, the reverse - there's no terribly good way to make PCs work 
-> with scheduler-based suspend, but there's no reason why they wouldn't 
-> work with the current opportunistic suspend implementation.
+> Please re-read Thomas' description of how a driver should do the state
+> transition.
+>
+> So either we get the packet before suspend, and we cancel the suspend,
+> or we get it after and we wake up. What's the problem, and how does that
+> need suspend blockers?
 
-How does that solve the problems you mentioned above ? Wakeup
-guarantees, latencies ...
+In order to cancel the suspend we need to keep track of whether 
+userspace has consumed the event and reacted appropriately. Since we 
+can't do this with the process scheduler, we end up with something that 
+looks like suspend blockers.
 
-It's not a prove of the technical correctness of the approach if it
-can provide a useless functionality.
- 
-Thanks,
-
-	tglx
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
