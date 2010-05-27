@@ -1,23 +1,19 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+From: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 19:26:33 +0100
-Message-ID: <20100527182633.GN3543__31257.9558151358$1274987823$gmane$org@srcf.ucam.org>
-References: <AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
-	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
-	<20100527140655.GA28048@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271642440.3032@localhost.localdomain>
-	<20100527155201.GA31937@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271808340.3032@localhost.localdomain>
-	<20100527165931.GB1062@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271905000.3032@localhost.localdomain>
-	<20100527172343.GB2468@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271930350.3032@localhost.localdomain>
+Date: Thu, 27 May 2010 20:55:51 +0200 (CEST)
+Message-ID: <alpine.LFD.2.00.1005272054070.3032__40063.025817699$1274987826$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.1005271344040.3239-100000@iolanthe.rowland.org>
+	<1274982779.27810.5708.camel@twins>
+	<20100527175719.GD3543@srcf.ucam.org>
+	<1274983333.27810.5744.camel@twins>
+	<20100527181433.GG3543@srcf.ucam.org>
+	<1274984291.27810.5802.camel@twins>
+	<20100527182913.GO3543@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1005271930350.3032@localhost.localdomain>
+In-Reply-To: <20100527182913.GO3543@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,43 +23,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
 Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 27, 2010 at 07:59:02PM +0200, Thomas Gleixner wrote:
-> On Thu, 27 May 2010, Matthew Garrett wrote:
-> > ACPI provides no guarantees about what level of hardware functionality 
-> > remains during S3. You don't have any useful ability to determine which 
-> > events will generate wakeups. And from a purely practical point of view, 
-> > since the latency is in the range of seconds, you'll never have a low 
-> > enough wakeup rate to hit it.
+On Thu, 27 May 2010, Matthew Garrett wrote:
+
+> On Thu, May 27, 2010 at 08:18:11PM +0200, Peter Zijlstra wrote:
+> > On Thu, 2010-05-27 at 19:14 +0100, Matthew Garrett wrote:
+> > > If I get a WoL 
+> > > packet in the 0.5 of a second between userspace deciding to suspend and 
+> > > actually doing so, the system shouldn't suspend. 
+> > 
+> > Please re-read Thomas' description of how a driver should do the state
+> > transition.
+> >
+> > So either we get the packet before suspend, and we cancel the suspend,
+> > or we get it after and we wake up. What's the problem, and how does that
+> > need suspend blockers?
 > 
-> Right, it does not as of today. So we cannot use that on x86
-> hardware. Fine. That does not prevent us to implement it for
-> architectures which can do it. And if x86 comes to the point where it
-> can handle it as well we're going to use it. Where is the problem ? If
-> x86 cannot guarantee the wakeup sources it's not going to be used for
-> such devices. The kernel just does not provide the service for it, so
-> what ?
+> In order to cancel the suspend we need to keep track of whether 
+> userspace has consumed the event and reacted appropriately. Since we 
+> can't do this with the process scheduler, we end up with something that 
+> looks like suspend blockers.
 
-We were talking about PCs. Suspend-as-c-state is already implemented for 
-OMAP.
+And the scheduler based approach does exactly this and provides
+exactly the same non guarantees to applications which are set to
+QoS(NONE) as it does to applications which do not (or are not allowed
+to) use the user space suspend blockers.
 
-> So the only thing you are imposing to app writers is to use an
-> interface which solves nothing and does not save you any power at
-> all. 
+Thanks,
 
-It's already been demonstrated that the Android approach saves power.
-
-> Runnable tasks and QoS guarantees are the indicators whether you can
-> go to opportunistic suspend or not. Everything else is just window
-> dressing.
-
-As I keep saying, this is all much less interesting if you don't care 
-about handling suboptimal applications. If you do care about them then 
-the Android approach works. Nobody has demonstrated a scheduler-based 
-one that does.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+	tglx
