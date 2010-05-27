@@ -1,23 +1,13 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 17:32:56 +0200 (CEST)
-Message-ID: <alpine.LFD.2.00.1005271642440.3032__10907.7648762197$1274974496$gmane$org@localhost.localdomain>
-References: <AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
-	<1274867106.5882.5090.camel@twins>
-	<20100526120242.5c9b73ad@schatten.dmk.lab>
-	<AANLkTim4021cTnhVZrQpefq1MG-eEPOFLDRO-XDepHb4@mail.gmail.com>
-	<20100526133721.602633b2@schatten.dmk.lab>
-	<AANLkTikzgaOFdQKess4E-D86OLPOzxP3dWiDkU_UR0ri@mail.gmail.com>
-	<20100526142430.327ccbc4@schatten.dmk.lab>
-	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
-	<AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
-	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
-	<20100527140655.GA28048@srcf.ucam.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 0/8] Suspend block api (version 6)
+Date: Thu, 27 May 2010 11:33:40 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005271121210.3239-100000@iolanthe.rowland.org>
+References: <CEE6BB42CAD6E947908279175AF8470A025A8206ED@EXDCVYMBSTM006.EQ1STM.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100527140655.GA28048@srcf.ucam.org>
+In-Reply-To: <CEE6BB42CAD6E947908279175AF8470A025A8206ED@EXDCVYMBSTM006.EQ1STM.local>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,124 +17,84 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus WALLEIJ <linus.walleij@stericsson.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Sven Neumann <s.neumann@raumfeld.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Tero Saarni <tero.saarni@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Alexey Dobriyan <adobriyan@gmail.com>, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Daniel Mack <daniel@caiaq.de>, Oleg Nesterov <oleg@redhat.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Daniel Walker <dwalker@codeaurora.>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 27 May 2010, Matthew Garrett wrote:
-> On Thu, May 27, 2010 at 12:39:43AM +0100, Alan Cox wrote:
+On Thu, 27 May 2010, Linus WALLEIJ wrote:
+
+> OK I understand it will be rather OK to do this. For example I have
+> drivers/spi/amba-pl022.c which is quite clearly taking elements
+> off a queue and transmitting them.
 > 
-> > - Supporting Android needs well good
-> > - Opportunistic suspend good
-> > - Manner in which interface is expressed to userspace bad
-> > - Latency constraint interface would be better
-> > - Your existing behaviour can be implemented by a simplistic use of a
-> >   latency constraint interface
-> > - We can fix a pile of other directly connected things at the same time
-> > - Implementation internals I care far less about because we can fix those
-> >   later
-> > - Suspend is just a power state
-> > 
-> > How does that fit your model and vision ?
+> Currently, as we do not have suspend blockers, we try to stop the
+> queue in suspend() and if that fails we return something negative
+> so that the suspend() is blocked by the negative return code.
+
+How can it fail?  Even if the queue can't be stopped immediately, can't
+the suspend routine block for a few milliseconds until the queue can be 
+stopped?
+
+> Maybe the behaviour for an SPI bus should rather be to return
+> -EBUSY as long as there are events in the queue. I don't quite
+> know frankly.
+
+No.  It should stop the queue.
+
+Think of it this way: Somebody has just closed the lid of their 
+laptop and thrown the computer into a backpack.  You don't want the 
+machine to fail to suspend merely because an SPI queue wasn't empty.
+
+> (We haven't added runtime PM yet, it will likely be the same
+> thing.)
+
+Runtime PM is very different.  It is supposed to take effect only when 
+the device is idle.  So failing if the queue is non-empty makes sense.
+
+> With suspend blockers we take a suspend blocker when we add
+> elements to the queue and release it when the queue is empty.
 > 
-> I don't entirely see how this works. In order to deal with poorly 
-> written applications, it's necessary to (optionally, based on some 
-> policy) ignore them when it comes to the scheduler. The problem is how 
-> to implement the optional nature of this in a race-free manner. This is 
-> obviously a pathological case, but imagine an application that does 
-> something along the following lines:
-> 
-> int input = open ("/dev/input", O_RDONLY|O_NONBLOCK);
-> char foo;
-> 
-> while (1) {
-> 	suspend_block();
-> 	if (read(input, &foo, 1) > 0) {
-> 		(do something)
-> 		suspend_unblock();
-> 	} else {
-> 		suspend_unblock();
-> 		(draw bouncing cows and clouds and tractor beams briefly)
-> 	}
-> }
-> 
-> Now, if the user is playing this game, you want it to be scheduled. If 
-> the user has put down their phone and the screen lock has kicked in, you 
-> don't want it to be scheduled. So we could imagine some sort of cgroup 
-> that contains untrusted tasks - when the session is active we set a flag 
-> one way which indicates to the scheduler that tasks in TASK_RUNNING 
-> should be scheduled, and when the session is idle we set the flag the 
-> other way and all processes in that cgroup get shifted to 
-> TASK_INTERRUPTIBLE or something.
-> 
-> Except that doesn't work. If the session goes idle in the middle of the 
-> app drawing a frame, we'll stop the process and the task will never call 
-> read(). So the user hits a key, we wake up, nothing shifts from 
-> TASK_INTERRUPTIBLE into TASK_RUNNING, the key never gets read, we go 
-> back to sleep. The event never gets delivered.
-> 
-> Now let's try this in the Android world. The user hits a key and the 
-> system wakes up. The input layer takes a suspend block. The application 
-> now draws all the cows it wants to, takes its own suspend block and 
-> reads the input device. This empties the queue and the kernel-level 
-> suspend block is released. The application then processes the event 
-> before releasing the suspend block. The event has been delivered and 
-> handled.
+> But with suspend blockers the need for suspend() to check if
+> the queue can be stopped or return -EBUSY if there are elements
+> in it is not necessary: suspend() simply won't be called
+> since a suspend blocker is taken.
 
-Thanks for providing this example:
+No, that's completely wrong.  The user can tell the computer to suspend
+at any time, whether or not any suspend blockers are enabled.  Think of
+the laptop-in-the-backpack case.
 
-  1) It proves that suspend blockers are solely designed to encourage
-     people to code crap.
+> There is no way for
+> suspend() to stop a running queue like we do today if using
+> suspend blockers.
 
-  2) It exposes the main conceptual problem of the approach:
+I don't know what you mean by this, but it doesn't sound right.
 
-     The input layer in the kernel magically takes a suspend blocker
-     and releases it in an equally magic way just to allow the crappy
-     application to reach the point where it takes it's own suspend
-     blocker and can react on the user input.
-     
-     And you need to do that, because the user applications suspend
-     blocker magic is racy as hell. To work around that you sprinkle
-     your suspend blocker magic all over the kernel instead of telling
-     people how to solve the problem correctly.
+> This means that driver writers only targeting configurations
+> where suspend blockers are used will probably not care about
+> handling suspend() calls by trying to stop the queue or
+> checking if there are things in it, because there will never
+> be anything there.
 
-     And what are you achieving with this versus power saving ?
+You also have to handle races.  What happens if your suspend routine is 
+called, and at that moment an interrupt occurs, causing the driver to 
+add an entry to the queue?
 
-     	 Exaclty _NOTHING_ ! 
+You're trying to over-simplify this, probably because you're not 
+thinking about it in the right way.  To put it bluntly, suspend 
+blockers should not affect with your suspend/resume routines at all.
 
-     Simply because you move the cow drawing CPU time from the point
-     where the device wants to go into suspend to the point where the
-     user hits a key again. You even delay the reaction of your app to
-     the user input by the time it needs to finish drawing cows.
- 
-     So you need to come up with a way better example why you need
-     your blockers than with this prove of misconception.
+> So while it is easy for me to have the driver work under both
+> suspend blockers and runtime PM or common suspend(), the
+> two configurations actually have different semantics of the
+> suspend() call: in the suspend blockers case you don't need
+> to check anything, just suspend, and in  the runtime PM
+> case you have to check that you can actually suspend.
 
-> You can't express that with resource limits or QoS constraints. If you 
-> want to deal with this kind of situation then, as far as I can tell, you 
-> need either suspend blockers or something so close to them that it makes 
-> no difference.
+The suspend-blockers case is exactly the same as the normal suspend 
+case.  The runtime PM case does require extra checking.
 
-Wrong. If your application is interactive then you set the QoS
-requirement once to interactive and be done.
+> Is this analysis correct?
 
-So the correct point to make a power state decision is when the app
-waits for a key press. At this point the kernel can take several
-pathes:
+No, it's mostly wrong.
 
-      1) Keep the system alive because the input device is in active
-       	 state and a key press is expected
-
-      2) Go into supsend because the input device is deactivated after
-      	 the screen lock kicked in.
-
-This behaves exactly the same way in terms of power consumption as
-your blocker example just without all the mess you are trying to
-create.
-
-And it allows the kernel to use intermediate power saving methods
-(between idle and suspend) which might be available on some hardware.
-
-Thanks,
-
-	tglx
+Alan Stern
