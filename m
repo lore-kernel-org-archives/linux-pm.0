@@ -1,15 +1,17 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 17:34:39 +0200
-Message-ID: <1274974479.27810.5247.camel__43310.7255994857$1274974659$gmane$org@twins>
-References: <Pine.LNX.4.44L0.1005271053420.3239-100000@iolanthe.rowland.org>
-	<1274972956.27810.5161.camel@twins>
-	<20100527163359.23e83bdd@lxorguk.ukuu.org.uk>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/8] PM: Add suspend block api.
+Date: Thu, 27 May 2010 17:41:52 +0200
+Message-ID: <20100527154152.GF1957__24885.6283295483$1274974983$gmane$org@elf.ucw.cz>
+References: <1273810273-3039-1-git-send-email-arve@android.com>
+	<20100520111111.333beb73@schatten.dmk.lab>
+	<20100520112642.74d93d26@schatten.dmk.lab>
+	<201005210018.43576.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100527163359.23e83bdd@lxorguk.ukuu.org.uk>
+Content-Disposition: inline
+In-Reply-To: <201005210018.43576.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,31 +21,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org, Florian Mickler <florian@mickler.org>, Magnus Damm <damm@igel.co.jp>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2010-05-27 at 16:33 +0100, Alan Cox wrote:
-> On Thu, 27 May 2010 17:09:16 +0200
-> Peter Zijlstra <peterz@infradead.org> wrote:
+Hi!
+
+> > > > Yeah, one file selects behavior of another file, and to read available
+> > > > states for opportunistic, you have to write to file first.
+> > > > 
+> > > > I still don't like the interface.
+> > > > 
+> > > 
+> > > Actually, what would be a better interface? 
+> > > 
+> > > I wonder why it is not like this:
 > 
-> > On Thu, 2010-05-27 at 11:06 -0400, Alan Stern wrote:
+> Because I think the "forced" and "opportunistic" suspend "modes" are mutually
+> exclusive in practice and the interface as proposed reflects that quite well.
+
+Why should they be? Forced disk while opportunistic mem is active
+makes a lot of sense. If code can't support it now, just return
+-EINVAL, but please don't cripple the interface just because of that.
+
+> > > /sys/power/state 
+> > > 	no change, works with and without opportunistic suspend the
+> > > 	same. Ignores suspend blockers. Really no change. (From user
+> > > 	perspective)
 > > > 
-> > >         Opportunistic suspends are okay.
+> > > /sys/power/opportunistic
+> > > 	On / Off
+> > > 	While Off the opportunistic suspend is off.
+> > > 	While On, the opportunistic suspend is on and if there are no
+> > > 	suspend blockers the system goes to suspend. 
 > > > 
-> > >         The proposed userspace API is too Android-specific.
 > > 
-> > I would argue opportunistic suspends are not ok, and therefore the
-> > proposed API is utterly irrelevant.
+> > I forgot, of course there needs to be another knob to implement the
+> > "on" behaviour  in the opportunistic mode
+> > 
+> >  /sys/power/block_opportunistic_suspend
+> > 
+> > There you have it. One file, one purpose. 
 > 
-> Assuming you are happy that opportunistically entering C6 and the like is
-> ok via ACPI can you explain why you have a problem with opportunistic
-> suspend and why it is different to a very deep sleep CPU state such as we
-> have now (and which on many embedded platforms we deal with *is* sleeping
-> external devices too)
+> That's getting messy IMHO.
+> 
+> In addition to that you get a nice race when the user writes "mem"
+> to /sys/power/state and opportunistic suspend happens at the same
+> time.
 
-Agreed, but I understood the opportunistic suspend line from Alan Stern
-to mean the echo opportunistic > /sys/power/foo thing.
+It should not opportunistically suspend when it has work to do (like
+entering forced suspend).
+									Pavel
 
-If you view it as an extra deep idle state I have no problem with it
-(because its simply an idle state, nothing magic about those).
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
