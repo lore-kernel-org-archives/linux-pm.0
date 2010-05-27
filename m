@@ -1,10 +1,8 @@
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 22:23:50 +0200 (CEST)
-Message-ID: <alpine.LFD.2.00.1005272207500.3032__9066.44515130228$1274991990$gmane$org@localhost.localdomain>
-References: <20100527140655.GA28048@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271642440.3032@localhost.localdomain>
-	<20100527155201.GA31937@srcf.ucam.org>
+Date: Thu, 27 May 2010 21:38:43 +0100
+Message-ID: <20100527203843.GA8395__32635.4005643681$1274992934$gmane$org@srcf.ucam.org>
+References: <20100527155201.GA31937@srcf.ucam.org>
 	<alpine.LFD.2.00.1005271808340.3032@localhost.localdomain>
 	<20100527165931.GB1062@srcf.ucam.org>
 	<alpine.LFD.2.00.1005271905000.3032@localhost.localdomain>
@@ -13,11 +11,13 @@ References: <20100527140655.GA28048@srcf.ucam.org>
 	<20100527182633.GN3543@srcf.ucam.org>
 	<alpine.LFD.2.00.1005272027560.3032@localhost.localdomain>
 	<20100527190622.GB5703@srcf.ucam.org>
+	<alpine.LFD.2.00.1005272207500.3032@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100527190622.GB5703@srcf.ucam.org>
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1005272207500.3032@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,137 +27,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Thomas Gleixner <tglx@linutronix.de>
 Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 27 May 2010, Matthew Garrett wrote:
-
-> On Thu, May 27, 2010 at 08:53:11PM +0200, Thomas Gleixner wrote:
-> > On Thu, 27 May 2010, Matthew Garrett wrote:
-> > > We were talking about PCs. Suspend-as-c-state is already implemented for 
-> > > OMAP.
-> >  
-> > Ah, now we talk about PCs. And all of a sudden the problem of the
-> > unability of determining wakeup sources is not longer relevant ? So
-> > how do you guarantee that we don't miss one if we cant figure out
-> > which ones are kept alive in S3 ?
+On Thu, May 27, 2010 at 10:23:50PM +0200, Thomas Gleixner wrote:
+> On Thu, 27 May 2010, Matthew Garrett wrote:
+> > A wakeup event is defined as one that wakes the system - if a system 
+> > can't be woken by a specific event then it's impossible to lose it, 
+> > since it wasn't a wakeup event to begin with.
 > 
-> A wakeup event is defined as one that wakes the system - if a system 
-> can't be woken by a specific event then it's impossible to lose it, 
-> since it wasn't a wakeup event to begin with.
+> So where is the problem ?
 
-So where is the problem ?
- 
-> > > > So the only thing you are imposing to app writers is to use an
-> > > > interface which solves nothing and does not save you any power at
-> > > > all. 
-> > > 
-> > > It's already been demonstrated that the Android approach saves power.
-> > 
-> > Demonstrated ? Care to explain me how it makes a difference:
-> > 
-> > while (1) {
-> >   block();
-> >   read();
-> >   process_event();
-> >   unblock();
-> > 		---> suspend
-> > 		<--- resume
-> >   do_crap();	1000000 cycles
-> > }
-> > 
-> > vs.
-> > 
-> > while (1) {
-> >   read();
-> > 		---> suspend
-> > 		<--- resume
-> >   process_event();
-> >   do_crap();	1000000 cycles
-> > }
-> > 
-> > You spend the damned 10000000 cycles in any case just at a different
-> > point in time. So if you are so convinced and have fully understood
-> > all the implications, please enlighten me why do_crap() costs less
-> > power with the blockers approach.
+The problem is that, right now, if a wakeup event is received between 
+the point where userspace decides to start a suspend and userspace 
+actually starts a suspend, that event may not abort the suspend.
+
+> > Consider the case where the read() is non-blocking.
 > 
-> Consider the case where the read() is non-blocking.
-
-Which I consider in the same range as the application which does:
-
-      while (1);
-
-> > 1) The kernel blocker does not guarantee that the lousy app has
-> >    processed the event. It just guarantees that the lousy app has
-> >    emptied the input queue. So what's the point of the kernel blocker
-> >    in that case ?
+> Which I consider in the same range as the application which does:
 > 
-> Yes, I think you're right here. You need the userspace component as well 
-> for this to work correctly.
+>       while (1);
+
+Not at all. Depending on what it reads, it may follow some other path 
+where it sleeps. But, as I keep saying, if you don't want to support 
+that kind of code then all of this is massively easier.
+
+> > What sets that flag, and how does it interact with an application that 
+> > never makes a blocking system call?
+> 
+>   QoS(NONE) would be default policy for untrusted apps in the same way
+>   as you'd refuse the usage of supsend blockers for untrusted apps.
 >
-> > 2) What's the difference on setting that app to QoS(NONE) and let the
-> >    kernel happily ignore it.
-> 
-> What sets that flag, and how does it interact with an application that 
-> never makes a blocking system call?
+>   while (1); is definitely not an application which should be granted
+>   trusted rights, right ?
 
-  QoS(NONE) would be default policy for untrusted apps in the same way
-  as you'd refuse the usage of supsend blockers for untrusted apps.
-  
-  while (1); is definitely not an application which should be granted
-  trusted rights, right ?
-
-  block_suspend(); while(1);
-  
-  is the same as:
-
-  QoS(minimal latency); while(1);
-
-  So if you really go to trust an "while (1);" application you better
-  make sure that this app has the appropriate QoS(NONE) or QoS(10s)
-  call in it before letting it lose.
+No, but if that while (1) is draw_cows() then the user may want this to 
+run while their session is active and stop running while their session 
+is idle. So you only want it to be QoS(NONE) in the idle session case. 
+How do you change that state?
  
-> > Come up with real explanations and numbers and not just the "it has
-> > been demonstrated" chant which is not holding water if you look at the
-> > above.
+> > The numbers were earlier in the thread.
 > 
-> The numbers were earlier in the thread.
+>   Numbers, yes. But I really give a sh*t about numbers w/o a detailed
+>   explanation of the scenario which created those numbers. And if the
+>   numbers boil down to: we handle the untrusted app which does "while
+>   (1);" then they are absolutely useless.
 
-  Numbers, yes. But I really give a sh*t about numbers w/o a detailed
-  explanation of the scenario which created those numbers. And if the
-  numbers boil down to: we handle the untrusted app which does "while
-  (1);" then they are absolutely useless.
+The tested case was a stock Android install with opportunistic suspend 
+enabled and one that just used runtime idle. The lowest power state 
+entered was the same on both.
 
-> > The kernel history is full of examples where crappy solutions got
-> > rejected and kept out of the kernel for a long time even if there was
-> > a need for them in the application field and they got shipped in
-> > quantities with out of tree patches (NOHZ, high resolution timers,
-> > ...). At some point people stopped arguing for crappy solutions and
-> > sat down and got it right. The problem of power management and
-> > opportunistic suspend is not different in any way.
+> > Yes, and I'd agree with this if anyone seemed to have any idea how to do 
+> > it right. But despite all the heat and noise in this thread, all we've 
+> > got is an expression that it should be handled by the scheduler (a 
+> > viewpoint I agree with) without any explanation of how to switch 
+> > policies in such a way that applications idle without losing wakeup 
+> > events.
 > 
-> Yes, and I'd agree with this if anyone seemed to have any idea how to do 
-> it right. But despite all the heat and noise in this thread, all we've 
-> got is an expression that it should be handled by the scheduler (a 
-> viewpoint I agree with) without any explanation of how to switch 
-> policies in such a way that applications idle without losing wakeup 
-> events.
+> Why in the world should they lose wakeup events ? If an app goes idle,
+> it goes idle because it is waiting for an event. There is no other
+> sane reason except for those apps which are untrusted and force
+> idled. And for those you agreed already the suspend blockers don't
+> solve anything as they are either not implemented or the app is not
+> trusted to use them.
+>
+> So we are back to round one of the whole discussion:
+> 
+>    Is it worth to create an utter mess in the kernel just to handle a
+>    subset of crappy coded applications ?
+> 
+> And the answer stays the same: No, not at all.
 
-Why in the world should they lose wakeup events ? If an app goes idle,
-it goes idle because it is waiting for an event. There is no other
-sane reason except for those apps which are untrusted and force
-idled. And for those you agreed already the suspend blockers don't
-solve anything as they are either not implemented or the app is not
-trusted to use them.
+You need suspend blockers to avoid losing wakeups in the explicit 
+suspend case even if you don't want to implement opportunistic suspend.
 
-So we are back to round one of the whole discussion:
-
-   Is it worth to create an utter mess in the kernel just to handle a
-   subset of crappy coded applications ?
-
-And the answer stays the same: No, not at all.
-
-Thanks,
-
-	tglx
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
