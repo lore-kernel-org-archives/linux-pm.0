@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Thu, 27 May 2010 22:00:09 +0200
-Message-ID: <201005272200.09679.rjw__3378.35321338407$1274990375$gmane$org@sisk.pl>
-References: <AANLkTikFwznonORd42piWZvBv3oqqSj9odC9Jaud8o3x@mail.gmail.com>
-	<AANLkTingAiO8dkwnInc993PTyA63rV-WRvBIRlB2ChXs@mail.gmail.com>
-	<20100527181333.GA8297@core.coreip.homeip.net>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Thu, 27 May 2010 19:34:40 +0200
+Message-ID: <1274981680.27810.5636.camel__47137.9973031164$1274990517$gmane$org@twins>
+References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
+	<alpine.LFD.2.00.1005271915540.3032@localhost.localdomain>
+	<20100527173118.GE2468@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100527181333.GA8297@core.coreip.homeip.net>
+In-Reply-To: <20100527173118.GE2468@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,58 +19,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 27 May 2010, Dmitry Torokhov wrote:
-> On Wed, May 26, 2010 at 05:52:40PM -0700, Arve Hj=F8nnev=E5g wrote:
-> > 2010/5/26 Alan Stern <stern@rowland.harvard.edu>:
-> > > On Wed, 26 May 2010, Arve Hj=F8nnev=E5g wrote:
-> > >
-> > >> > I must be missing something.  In Arve's patch 1/8, if the system i=
-s in
-> > >> > opportunistic suspend, and a wakeup event occurs but no suspend
-> > >> > blockers get enabled by the handler, what causes the system to go =
-back
-> > >> > into suspend after the event is handled?  Isn't that a loop of some
-> > >> > sort?
-> > >> >
-> > >>
-> > >> Yes it is a loop. I think what you are missing is that it only loops
-> > >> repeatedly if the driver that aborts suspend does not use a suspend
-> > >> blocker.
-> > >
-> > > You mean "the driver that handles the wakeup event".  I was asking wh=
-at
-> > > happened if suspend succeeded and then a wakeup occurred.  But yes, if
-> > > a suspend blocker is used then its release causes another suspend
-> > > attempt, with no looping.
-> > >
-> > >> > And even if it isn't, so what?  What's wrong with looping behavior?
-> > >>
-> > >> It is a significant power drain.
-> > >
-> > > Not in the situation I was discussing.
-> > >
-> > =
+On Thu, 2010-05-27 at 18:31 +0100, Matthew Garrett wrote:
 
-> > If you meant it spend most of the time suspended, then I agree. It
-> > only wastes power when a driver blocks suspend by returning an error
-> > from its suspend hook and we are forced to loop doing no useful work.
-> > =
+> Even if we could use suspend-via-deep-idle-state on PCs, 
 
-> =
+( see Alan Cox's argument on PCs )
 
-> If driver refuses to suspend that means there are events that need
-> processing. I fail to see why it would be called "looping doing no
-> useful work".
+> we still need to be able to enter suspend while the system isn't idle.
 
-I guess Arve meant the case of events that didn't propagate to user space.
+_WHY_!?
 
-Rafael
-
-
-> =
-
-> =
+We've been trying to tell you you don't need that.
