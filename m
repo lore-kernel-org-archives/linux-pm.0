@@ -1,23 +1,13 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 21:03:33 +0100
-Message-ID: <20100527210333.4b09dfe2@lxorguk.ukuu.org.uk>
-References: <AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
-	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
-	<20100527140655.GA28048@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271642440.3032@localhost.localdomain>
-	<20100527155201.GA31937@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271808340.3032@localhost.localdomain>
-	<20100527165931.GB1062@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271905000.3032@localhost.localdomain>
-	<20100527172343.GB2468@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271930350.3032@localhost.localdomain>
-	<20100527182633.GN3543@srcf.ucam.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Runtime PM for PCI-based USB host controllers
+Date: Thu, 27 May 2010 21:57:50 +0200
+Message-ID: <201005272157.50954.rjw__17612.9904030406$1274990237$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1005262051310.6349-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100527182633.GN3543@srcf.ucam.org>
+In-Reply-To: <Pine.LNX.4.44L0.1005262051310.6349-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,45 +17,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Linux@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, felipe.balbi@nokia.com
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> We were talking about PCs. Suspend-as-c-state is already implemented for 
-> OMAP.
-
-"You" were talking about PCs. Some of us are interested in the making
-Linux do the right thing not adding platform specific hacks all over the
-userspace of all the apps.
- 
-> > So the only thing you are imposing to app writers is to use an
-> > interface which solves nothing and does not save you any power at
-> > all. 
+On Thursday 27 May 2010, Alan Stern wrote:
+> On Thu, 27 May 2010, Matthew Garrett wrote:
 > 
-> It's already been demonstrated that the Android approach saves power.
-
-So do lots of other things
-
-> > Runnable tasks and QoS guarantees are the indicators whether you can
-> > go to opportunistic suspend or not. Everything else is just window
-> > dressing.
+> > On Wed, May 26, 2010 at 06:14:52PM -0400, Alan Stern wrote:
+> > 
+> > > We don't have to worry about that.  If the hardware is broken and the 
+> > > kernel doesn't realize it, the user will just have to tell it not to 
+> > > allow runtime suspend for those devices.
+> > 
+> > It's worse than that - Windows simply doesn't use legacy PCI PMEs for 
+> > anything, so an increasing number of modern machines don't have them 
+> > wired up. Defaulting to runtime PM simply isn't practical, since the 
+> > behaviour will simply be that the devices stop working without any 
+> > indication that they've stopped working.
 > 
-> As I keep saying, this is all much less interesting if you don't care 
-> about handling suboptimal applications. If you do care about them then 
+> Tell me about it!  The situation in USB is at least as bad...
+> 
+> >  The "easiest" workaround would 
+> > be a thread that polls for PCI devices with set PME bits, along with a 
+> > set of heuristics for determining whether the device can really wake up. 
+> 
+> ... and no such workaround is possible with USB.
+> 
+> > Devices in the core logic (like USB generally is) will be fine in any 
+> > case. It's discrete PCI devices that are the problem.
+> 
+> In any case, I assume we'll continue to initialize devices with
+> "forbidden" status and require userspace (or drivers that have special
+> information) to explicitly allow runtime PM.
 
-I don't believe the Android one does either. It maybe handles a subset in
-a specific case.
+Yeah.  I'd leave that entirely to user space, though.
 
-> the Android approach works. Nobody has demonstrated a scheduler-based 
-> one that does.
-
-I would point you at the web, cgi scripts and the huge Linux server farms
-fielding billions of hits per second on crap cgi scripts.
-
-That doesn't mean the Android one is the right approach. Nobody has
-explained to me how you don't get synchronization effects in Android or
-indeed answered several of the questions pointing out holes in the
-Android model. The fact we are at rev 8 says something too - that the
-Android 'proof' isn't old or tested either !
-
-Alan
+Rafael
