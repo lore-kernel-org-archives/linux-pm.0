@@ -1,22 +1,24 @@
-From: Neil Brown <neilb@suse.de>
+From: Bernd Petrovitsch <bernd@petrovitsch.priv.at>
 Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Thu, 27 May 2010 17:34:57 +1000
-Message-ID: <20100527173457.167bdd87__22410.1459062242$1274973987$gmane$org@notabene.brown>
-References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
-	<201005252344.37639.rjw@sisk.pl>
-	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
-	<1274863342.5882.4850.camel@twins>
-	<20100526112303.3fef15a4@schatten.dmk.lab>
-	<1274866402.5882.5051.camel@twins>
-	<AANLkTil9ZtMFxTfE6ITiFNOl4S1k3Lvdp5BPgGX7LJhw@mail.gmail.com>
+Date: Thu, 27 May 2010 10:13:07 +0200
+Message-ID: <1274947987.14002.24.camel__7766.41553170538$1274974048$gmane$org@thorin>
+References: <AANLkTil9ZtMFxTfE6ITiFNOl4S1k3Lvdp5BPgGX7LJhw@mail.gmail.com>
 	<1274868384.5882.5169.camel@twins>
 	<AANLkTimHGpRAZklIwXu6wEbA3coKXJvCVLxj2twerkCw@mail.gmail.com>
 	<1274869262.5882.5222.camel@twins>
+	<AANLkTik9LINPmabJfVi0jfVs5sjVS_1l00WpnVTFEuLV@mail.gmail.com>
+	<1274890736.4467.574.camel@mulgrave.site>
+	<1274891308.1674.1766.camel@laptop>
+	<1274892847.4467.674.camel@mulgrave.site>
+	<1274893228.1674.1772.camel@laptop>
+	<1274894042.4467.727.camel@mulgrave.site>
+	<20100526172824.GA9069@elf.ucw.cz>
+	<20100526211542.1bfa2564@schatten.dmk.lab>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1274869262.5882.5222.camel@twins>
+In-Reply-To: <20100526211542.1bfa2564@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,38 +28,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-doc@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, James Bottomley <James.Bottomley@suse.de>, tytso@mit.edu, Greg KH <gregkh@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
+To: Florian Mickler <florian@mickler.org>
+Cc: Greg KH <gregkh@suse.de>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, James Bottomley <James.Bottomley@suse.de>, tytso@mit.edu, Pekka Enberg <penberg@cs.helsinki.fi>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyNiBNYXkgMjAxMCAxMjoyMTowMiArMDIwMApQZXRlciBaaWpsc3RyYSA8cGV0ZXJ6
-QGluZnJhZGVhZC5vcmc+IHdyb3RlOgoKPiBPbiBXZWQsIDIwMTAtMDUtMjYgYXQgMDM6MTcgLTA3
-MDAsIEFydmUgSGrDuG5uZXbDpWcgd3JvdGU6Cj4gPiA+IFdpdGggYSBzaW5nbGUgc3VzcGVuZCBt
-YW5hZ2VyIHByb2Nlc3MgdGhhdCBtYW5hZ2VzIHRoZSBzdXNwZW5kIHN0YXRlIHlvdQo+ID4gPiBj
-YW4gYWNoaWV2ZSB0aGUgc2FtZSBnb2FsLgo+ID4gPgo+ID4gCj4gPiBZZXMgd2UgZG9uJ3QgbmVl
-ZCB0aGUgL2RldiBpbnRlcmZhY2UsIGJ1dCBpdCBpcyB1c2VmdWwuIFdpdGhvdXQgaXQgYW55Cj4g
-PiBwcm9ncmFtIHRoYXQgbmVlZHMgdG8gYmxvY2sgc3VzcGVuZCBoYXMgdG8gbWFrZSBhIGJsb2Nr
-aW5nIGlwYyBjYWxsCj4gPiBpbnRvIHRoZSBzdXNwZW5kIG1hbmFnZXIgcHJvY2Vzcy4gQW5kcm9p
-ZCBhbHJlYWR5IGRvZXMgdGhpcyBmb3IgamF2YQo+ID4gY29kZSwgYnV0IHN5c3RlbSBwcm9jZXNz
-ZXMgd3JpdHRlbiBpbiBDIGJsb2NrIHN1c3BlbmQgZGlyZWN0bHkgd2l0aAo+ID4gdGhlIGtlcm5l
-bCBzaW5jZSB0aGV5IGNhbm5vdCB1c2UgdGhlIGphdmEgQVBJcy4gCj4gCj4gU28gcHJvdmlkZSBh
-IEMgaW50ZXJmYWNlIHRvIGl0IGFzIHdlbGw/Cj4gCj4gU3VyZWx5IHlvdSBjYW4gaGF2ZSB0aGUg
-amF2YSB0aGluZyBoYXZlIGEgdW5peCBzb2NrZXQgb3Igc29tZXRoaW5nIGEgQwo+IGFwcCBjYW4g
-dGFsayB0by4gVGhhdCBzaG91bGRuJ3QgYmUgaGFyZCBhdCBhbGwuCj4gCj4gT3IgbWFrZSB0aGUg
-c3VzcGVuZCBtYW5hZ2VyIGEgQyBwcm9nbGV0IGFuZCBwcm92aWRlIGEgSk5JIGludGVyZmFjZSwg
-b3IKPiB3aGF0ZXZlci4KCkkgZmFpbCB0byB1bmRlcnN0YW5kIHRoZSBtb2Rlcm4gZmFzY2luYXRp
-b24gd2l0aCBjb21wbGV4IElQQyBtZWNoYW5pc21zLgoKSWYgeW91IGhhdmUgYSB1c2Vyc3BhY2Ug
-cHJvY2VzcyB0aGF0IGluaXRpYXRlcyBzdXNwZW5kcywgYW5kIHlvdSB3YW50IG90aGVyCnVzZXIt
-c3BhY2UgcHJvY2Vzc2VzIHRvIGJlIGFibGUgdG8gYmxvY2sgdGhhdCBzdXNwZW5kLCB0aGVuIEkg
-d291bGQgc3VnZ2VzdAp0aGUgdXNlIG9mIGEgbG9jay1maWxlLiAgL3Zhci9ydW4vc3VzcGVuZC9i
-bG9ja2VkIG1heWJlLgoKVG8gYmxvY2sgc3VzcGVuZCwgeW91IG9wZW4gdGhlIGZpbGUgYW5kIGdl
-dCBhIHJlYWQgbG9jay4KVG8gaW5pdGlhdGUgYSBzdXNwZW5kIHlvdSB0YWtlIGEgd3JpdGUtbG9j
-ayAoYmxvY2tpbmcgaWYgbmVjZXNzYXJ5KSwgdGhlbgphc2sgdGhlIGtlcm5lbCB0byBzdXNwZW5k
-LgpUbyByZXN0cmljdCBhY2Nlc3MgdG8gcGFydGljdWxhciB1c2VycyB5b3UgdXNlIHBlcm1pc3Np
-b25zIC0gZWl0aGVyIGdyb3VwCmJhc2VkIG9yIEFDTHMgKG9yIGJvdGgpLgpUaGlzIGlzIGFsbCBl
-YXN5IHRvIGRvIGZyb20gQyBvciBweXRob24gb3IgcGVybCBvciBwcmVzdW1hYmx5IGV2ZW4gamF2
-YS4uCihJIHVzZSB0aGlzIG1lY2hhbmlzbSBvbiBteSBGcmVlcnVubmVyIGFuZCBldmVuIGhhdmUg
-c2hlbGwgc2NyaXB0cyB0aGF0CmhhcHBpbHkgcHJldmVudCBzdXNwZW5kKS4KCk5laWxCcm93bgpf
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBt
-YWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9s
-aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Mit, 2010-05-26 at 21:15 +0200, Florian Mickler wrote:
+> On Wed, 26 May 2010 19:28:24 +0200
+> Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > Besides that it is not linux system at all?
+> 
+> I believe the kernel to be a layer between userspace and hardware. What
+> business is it to the kernel if it runs whatever android
+> uses as init process or /bin/bash, sys-v-init or systemd?
+
+The kernel has no business and doesn't care. But precisely that is the
+reason to clearly separate policy from means. And that separation is not
+done in a good way by a loosely-defined API but by a (well-defined)
+kernel-API which allows user-space so implement the policy (whatever it
+might feel) by using the means (wiht appopriate parameters).
+So the (kernel-)API should not use policy-defined (read: user-space)
+semantics/values - plain simply because they will change (in no time).
+But the kernel must use policy-independent semantics/values - if only
+the suspend/wakeup-latency or whatever technically makes sense.
+Perhaps some "will/want to be waken up every 0.1 second" makes sense for
+periodic jobs.
+
+> There is this thing called choice. 
+>
+> > Yes, with custom userspace it works extremely nicely.
+> > 
+> > Had anyone even tried running oportunistic suspend on normal desktop?
+>
+> I don't think this is a valid concern. Just because current linux/gnu
+
+A lot of stuff is not (or no longer) implemented because it's - plain
+simply - a bad idea in the first place.
+Other than that: Linux/GNU-systems come from the server and desktop
+world where power is not an important part. And laptop producers
+obviously didn't care enough ...
+And you do realize that in the non-embedded (and non-Apple) world the
+user-space is not controlled by one entity in any way.
+So forcing "good apps" vs "bad apps" doesn't workout - except you have
+direct feedback like "powertop" which makes it easy for everyone
+(especially the users) to rate the apps.
+So the kernel actually must have means to do that. If user-space defines
+the semantics of the API, the kernel can't do that because user-space is
+always right.
+
+> systems don't implement the userspace part of this interface doesn't
+> mean it is useless or broken. 
+
+Just because Android designed and/or implements it doesn't mean it's not
+broken (in the medium to long run).
+So what?
+
+	Bernd
+-- 
+Bernd Petrovitsch                  Email : bernd@petrovitsch.priv.at
+                     LUGA : http://www.luga.at
