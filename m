@@ -1,16 +1,18 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 00:50:45 +0100
-Message-ID: <20100528005045.6ea5feba__4213.3247633048$1275004075$gmane$org@lxorguk.ukuu.org.uk>
-References: <Pine.LNX.4.44L0.1005271344040.3239-100000@iolanthe.rowland.org>
-	<20100527181433.GG3543@srcf.ucam.org>
-	<20100527200313.5c532f2f@lxorguk.ukuu.org.uk>
-	<201005280110.17075.rjw@sisk.pl>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Thu, 27 May 2010 16:48:42 -0700
+Message-ID: <20100527234841.GA8645__27805.2073474557$1275004236$gmane$org@core.coreip.homeip.net>
+References: <AANLkTikFwznonORd42piWZvBv3oqqSj9odC9Jaud8o3x@mail.gmail.com>
+	<Pine.LNX.4.44L0.1005262044001.6349-100000@netrider.rowland.org>
+	<AANLkTingAiO8dkwnInc993PTyA63rV-WRvBIRlB2ChXs@mail.gmail.com>
+	<20100527181333.GA8297@core.coreip.homeip.net>
+	<AANLkTilu5us2sYmm_f422Z2gJ34ZmIF808yYRPXkLjme@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005280110.17075.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <AANLkTilu5us2sYmm_f422Z2gJ34ZmIF808yYRPXkLjme@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,95 +22,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Thomas@smtp1.linux-foundation.org, Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
+To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> That's correct, but to me the Arve's goal is simply to maximize battery life
-> and he found experimentally that the longest battery life is achieved if
-> system suspend is used whenever the system doesn't need to be active (from its
-> user's perspective).  This actually is different from "when the system is
-> idle", because the system isn't idle, for example, when updatedb is running.
-> However, from the user's perspective the updatedb process doesn't really need
-> to run at this particular time, it can very well do it's job in parallel with
-> the user typing or reading news.  So, the system may very well be suspended
-> when updatedb is running.
+On Thu, May 27, 2010 at 04:36:28PM -0700, Arve Hj=F8nnev=E5g wrote:
+> 2010/5/27 Dmitry Torokhov <dmitry.torokhov@gmail.com>:
+> > On Wed, May 26, 2010 at 05:52:40PM -0700, Arve Hj=F8nnev=E5g wrote:
+> >> 2010/5/26 Alan Stern <stern@rowland.harvard.edu>:
+> >> > On Wed, 26 May 2010, Arve Hj=F8nnev=E5g wrote:
+> >> >
+> >> >> > I must be missing something. =A0In Arve's patch 1/8, if the syste=
+m is in
+> >> >> > opportunistic suspend, and a wakeup event occurs but no suspend
+> >> >> > blockers get enabled by the handler, what causes the system to go=
+ back
+> >> >> > into suspend after the event is handled? =A0Isn't that a loop of =
+some
+> >> >> > sort?
+> >> >> >
+> >> >>
+> >> >> Yes it is a loop. I think what you are missing is that it only loops
+> >> >> repeatedly if the driver that aborts suspend does not use a suspend
+> >> >> blocker.
+> >> >
+> >> > You mean "the driver that handles the wakeup event". =A0I was asking=
+ what
+> >> > happened if suspend succeeded and then a wakeup occurred. =A0But yes=
+, if
+> >> > a suspend blocker is used then its release causes another suspend
+> >> > attempt, with no looping.
+> >> >
+> >> >> > And even if it isn't, so what? =A0What's wrong with looping behav=
+ior?
+> >> >>
+> >> >> It is a significant power drain.
+> >> >
+> >> > Not in the situation I was discussing.
+> >> >
+> >>
+> >> If you meant it spend most of the time suspended, then I agree. It
+> >> only wastes power when a driver blocks suspend by returning an error
+> >> from its suspend hook and we are forced to loop doing no useful work.
+> >>
+> >
+> > If driver refuses to suspend that means there are events that need
+> > processing. I fail to see why it would be called "looping doing no
+> > useful work".
+> =
 
-This is where the original questions around QoS came in
+> Because the useful work is done in another thread. All the loop does
+> is check if the useful work has completed which most likely will slow
+> down the useful work.
 
-> Since I think we've now rejected the feature, do we have a clear picture about
-> what the Android people should do _instead_ and yet keep the battery life they
-> want?  Because I don't think telling "let them do what they want, who cares"
-> is right.
+Or useful work could signal when it is done processing critical section.
 
-Today "idle" means "no task running"
-
-If you are prepared to rephrase that as "no task that matters is running"
-what would need to answer ?
-
-- How do we define who matters: QoS ?
-
-- Can you describe "idle" in terms of QoS without then breaking the
-  reliable wakeup for an event (and do you need to ?)
-
-	Could this for example look like
-
-	Set QoS of 'user apps' to QS_NONE
-	Button pushed
-	Button driver sets QoS of app it wakes to QS_ABOVESUSPEND
-
-	That would I think solve the reliable wakeup case although
-	drivers raising a QoS parameter is a bit unusual in the kernel.
-	That would at least however be specific to a few Android drivers
-	and maybe a tiny amount of shared driver stuff so probably not
-	unacceptable. (wake_up_pri(&queue, priority); isn't going to
-	kill anyone is it - especially if it usually ignores the
-	priority argument)
-
-	I am curious Thomas how that would tie in with PI in the RT
-	world, it's effectively inheriting priority from the users finger.
-
-- Would a model where the UI side behaviour looked like
-
-	Timeout
-	Screen Off
-	Set QoS of 'user apps' to QS_NONE
-
-	Event
-	[Some chain of activity]
-	Screen On
-	Set QoS of 'user apps' to QS_ABOVESUSPEND
-
-  do the job combined with the ability to see who is stopping us dropping
-  to suspend so user space can take action. This could be a data table
-  from the Android cpu manager provided to Android specific policy in
-  whoever owns the display.
+> Blocking suspend with a suspend blocker until
+> the useful work is done is more efficient.
+> =
 
 
-If so how do we fix the UI policy code doing
+-- =
 
-	Screen Off
-					Button Press
-					task to QS_ABOVESUSPEND
-	task to QS_NONE
-
-without touching the app userspace code
-
-
-Perhaps
-
-	count2 = tasks to QS_NONE | QS_NOTCHANGED
-	Screen off
-					Button Press
-					task to QS_ABOVESUSPEND
-	count = tasks that are QS_NOTCHANGED to QS_NONE
-
-	if (count != count2) {
-		Stuff happened ... rethink
-	}
-
-That is still a bit weird and wonderful but all the logic is in the right
-places. The special magic remains in the Android policy code and in the
-kernel specifics for Android.
-
-Thoughts ?
+Dmitry
