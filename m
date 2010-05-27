@@ -1,26 +1,16 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 26 May 2010 17:49:11 -0700
-Message-ID: <AANLkTinOf__Q9XIM1Lll1eJ5HZ35zkDlUp60LmGcetdG__46361.8259797387$1274928546$gmane$org@mail.gmail.com>
-References: <1274482015-30899-1-git-send-email-arve@android.com>
-	<201005242049.18920.rjw@sisk.pl>
-	<87wrusvrqe.fsf@deeprootsystems.com>
-	<201005250138.16293.rjw@sisk.pl> <1274863655.5882.4875.camel@twins>
-	<AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
-	<1274867106.5882.5090.camel@twins>
-	<20100526120242.5c9b73ad@schatten.dmk.lab>
-	<AANLkTim4021cTnhVZrQpefq1MG-eEPOFLDRO-XDepHb4@mail.gmail.com>
-	<20100526133721.602633b2@schatten.dmk.lab>
-	<AANLkTikzgaOFdQKess4E-D86OLPOzxP3dWiDkU_UR0ri@mail.gmail.com>
-	<20100526142430.327ccbc4@schatten.dmk.lab>
-	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
-	<AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
-	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 8/8] intel_idle: create a native cpuidle driver
+ for select intel processors
+Date: Wed, 26 May 2010 22:42:31 -0400
+Message-ID: <198450ec1600d9a7f55270dd4d44d6b55bc5b184.1274926772.git.len.brown__39343.0224423811$1274928917$gmane$org@intel.com>
+References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100527003943.07c17f85@lxorguk.ukuu.org.uk>
+In-reply-to: <1274928151-30919-1-git-send-email-lenb@kernel.org>
+In-reply-to: <e099975ca65a7f6ac7f8bc3fee84d3e03893aa31.1274926772.git.len.brown@intel.com>
+References: <e099975ca65a7f6ac7f8bc3fee84d3e03893aa31.1274926772.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -30,223 +20,574 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
+To: x86@kernel.org, linux-pm@lists.linux-foundation.org
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-2010/5/26 Alan Cox <alan@lxorguk.ukuu.org.uk>:
-> On Wed, 26 May 2010 15:30:58 -0700
-> Arve Hj=F8nnev=E5g <arve@android.com> wrote:
->
->> On Wed, May 26, 2010 at 6:16 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wro=
-te:
->> >> Really, what are you getting at? Do you deny that there are programs,
->> >> that prevent a device from sleeping? (Just think of the bouncing
->> >> cows app)
->> >>
->> >> And if you have two kernels, one with which your device is dead after=
- 1
->> >> hour and one with which your device is dead after 10 hours. Which wou=
-ld
->> >> you prefer? I mean really... this is ridiculous.
->> >
->> > The problem you have is that this is policy. If I have the device wired
->> > to a big screen and I want cows bouncing on it I'll be most upset if
->> > instead it suspends.
->>
->> We never suspend when the screen is on. If the screen is off, I would
->> not be upset if it suspends.
->
-> This is policy and platform specific. The OLPC can suspend with the
-> screen on. Should I write my app to know about this once for Android and
-> once for OLPC (and no doubt once for Apple). In the OLPC case cows could
-> indeed suspend to RAM between frames if the wakeup time was suitable.
+From: Len Brown <len.brown@intel.com>
 
-Are you still talking about Linux suspend? If you can enter S3 from
-idle and still wake up for the next timer or interrupt, then do that.
-Suspend blockers should have not effect on this.
+This EXPERIMENTAL driver supersedes acpi_idle
+on modern Intel processors. (Nehalem and Atom Processors).
 
->
-> My app simply should not have to know this sort of crap, that's the whole
-> point of an OS.
->
+For CONFIG_INTEL_IDLE=y, intel_idle probes before acpi_idle,
+no matter if CONFIG_ACPI_PROCESSOR=y or =m.
 
-Most apps does not have to know about this with opportunistic suspend
-either. If the user is interacting with the device, we don't suspend.
-If your apps needs to run when the user is not interacting with the
-device, then you can block suspend.
+Boot with "intel_idle.max_cstate=0" to disable the driver
+and to fall back on ACPI.
 
->> > What you are essentially arguing for is for the
->> > kernel to disobey the userspace.
->>
->> No I'm not. User-space asked the kernel to suspend when possible.
->> Suspend is an existing kernel feature. All opportunistic suspend adds
->> is the ability to use it safely when there are wakeup event you cannot
->> afford to ignore.
->
-> Don't get me wrong - opportunistic suspend isn't the problem. Suspend
-> blockers are - or more precisely - the manner in which they express
-> intent from userspace. Opportunistic suspend is wonderful stuff for all
-> sorts of things and if it persuades people like netbook manufacturers to
-> think harder, and Linux driver authors to optimise their suspend/resume
-> paths we all win.
->
->> Our actual stating point is this: Some systems can only enter their
->> lowest power state from suspend. So we added an api that allowed us to
->> use suspend without loosing wakeup events. Since suspending also
->> improves our battery life on platforms that enter the same power state
->> from idle and suspend and we already have a way to safely use suspend,
->> we would be crazy not to use it.
->
-> Opportunistic suspend isn't special. Suspend is just a very deep idle. In
+CONFIG_INTEL_IDLE=m is not recommended unless the system
+has a method to guarantee intel_idle loads before ACPI's
+processor_idle.
 
-Suspend as it is currently implemented in Linux is special. Regular
-timers stop, and only specially marked wakeup events can bring the
-system back to the normal state.
+This driver does not yet know about cpu online/offline
+and thus will not yet play well with cpu-hotplug.
 
-> fact some of the low power states on processors look little different to
-> suspend - the OS executes a whole pile of CPU state saving and cache
-> flushing. It might be a hardware state machine, it might be buried in
-> firmware or it might be quite explicit (eg mrst). So we already have
-> differing degrees of doing additional work in different states.
->
-> User triggered suspend is a bit special in that the user is usually right
-> in that case to override the power management policy.
->
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ MAINTAINERS                     |    7 +
+ drivers/Makefile                |    2 +-
+ drivers/acpi/processor_driver.c |    6 +-
+ drivers/idle/Kconfig            |   11 +
+ drivers/idle/Makefile           |    1 +
+ drivers/idle/intel_idle.c       |  446 +++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 471 insertions(+), 2 deletions(-)
+ create mode 100755 drivers/idle/intel_idle.c
 
-On a phone this is not the case. The user manually can toggle the
-screen on and off, and we may or may not enter suspend when the screen
-is off. If we forced suspend when the user turned the screen off, we
-could miss phone calls.
-
-> Note I'm not suggesting we run off and restructure all our power
-> management code to take this view right now. I'm suggesting we need a
-> clean 'opportunistic suspend is not special' view by user space. How the
-> kernel handles this is addressible later without app breakage, but only
-> if we get the interface wrong to begin with.
->
->> > Sandboxing/Resource Limits: handling apps that can't be trusted. So the
->> > phone runs the appstore code via something like
->>
->> Sandboxing is problematic on Android since there are a lot of cross
->> process dependencies. When a call comes in I don't know where the name
->> and picture to display comes from. With suspend blockers we block
->> suspend when we get notified that we have an incoming call and we can
->> call into any process and get a response.
->
-> But you can express user suspend blocking in this manner. Your call
-> incoming code would say 'I want good latency'. As someone needs good
-> latency the box won't suspend. If your approach is to start with an
-> initial 'anyone can set a low latency we don't care' then anyone can
-> block suspends.
->
-> Equally your call handling example is about latency not about suspend.
-> You want the phone to stay on, to fetch a picture and display it promptly.
->
-
-I don't think a latency api is the right way to express this since the
-only latency values we would use is minimal-latency and any-latency.
-What we are expressing is that this works need to happen now, even if
-the user is not currently interacting with the device.
-
-> So what are expressing
->
-> 'I am using device 'screen' please keep it live' =A0(which may or may not
-> block suspend - see OLPC). I guess your display server and kernel support
-> manage this bit.
->
-> 'I want the photo to appear in a resonable timescale' =A0(latency). It's
-> not a suspend question - an imaginary non suspend idle mode with a 20
-> second latency would be just as annoying yes ?
->
-> At the moment we have a very real bigger problem that your problem is
-> part of.
->
-> - Hard real time people want to be able to limit the CPU sleeping
-> =A0behaviour based upon what tasks are running
->
-> - Certain gaming types want their boxes to be good power citizens except
-> =A0when committing digital mass murder. Right now that involves wrapping
-> =A0the game in a script with bits occurring as root and that generally
-> =A0breaks if the game crashes so the script doesn't run nicely on exit
->
-> - Virtual machine people desperately want to see latency data to help
-> =A0schedule stuff in a power efficient manner. =A0In a virtual machine
-> =A0environment its vital information about how you schedule a virtual
-> =A0machine, whether now is a good time to live migrate it and how best to
-> =A0optimise power/performance on the server end.
->
-> - Some drivers want to constrain idling because they know
-> =A0platform/hardware stuff the core power management code doesn't (eg
-> =A0serial ports at high speed). We want that expressed in a way that keeps
-> =A0the power management code clean of such device knowledge
->
-> Now I don't care if we have an elegant kernel interface and Android uses
-> it as a big hammer - if that makes Android work well everyone can be
-> happy. What I don't want is to have a big hammer when it doesn't solve the
-> underlying big picture problem for everyone.
->
-> So my working position is summarised thusly
->
-> - Supporting Android needs well good
-> - Opportunistic suspend good
-> - Manner in which interface is expressed to userspace bad
-> - Latency constraint interface would be better
-> - Your existing behaviour can be implemented by a simplistic use of a
-> =A0latency constraint interface
-> - We can fix a pile of other directly connected things at the same time
-> - Implementation internals I care far less about because we can fix those
-> =A0later
-> - Suspend is just a power state
->
-> How does that fit your model and vision ?
->
-
-We have two main modes of operation. The user is interacting with the
-device and tasks and timers should run as requested. And, the user is
-not interacting with the device and the device should enter (and stay
-in) low power states regardless of running tasks and timers. Since
-some events (e.g. incoming phone call, alarm clock) will may cause the
-user to start interacting with the device, they need special
-treatment. A per thread latency api does not work for us. A global
-latency api could work, but since would only use minimal latency or
-any latency this seem like overkill. Also, with a global latency api,
-how do I know it the requested latency is meant to improve the
-experience while the user is interacting with the app, or if it meant
-the app needs to run when the user is not interacting with the device.
-
->> What about platforms that currently cannot enter low power states from
->> idle? Do you remove suspend support from the kernel?
->
-> I would actually expect a system that can't do any low power states to
-> support the user API and blissfully ignore it. Applications will ask for
-
-I don't think you understood what I asked. Currently most x86 systems
-can enter much lower power states from suspend than they can from
-idle. Are you suggesting that we remove suspend support from Linux and
-try to enter the same power states on x86 from idle that we now enter
-from suspend? It is not clear to me if this is possible.
-
-> various latency guarantees and of course always get them. The apps will be
-> portable, the device will be offering it's best behaviour and everyone
-> will be happy.
->
-> If your device only supports full on and suspend I don't see why
-> opportunistic suspend couldn't be provided assuming sufficient wakeup
-> support was present. It won't be the most exciting power management
-> policy to write but it's perfectly doable and the apps again will not need
-> recoding to handle it.
->
-> The latency goal data is also priceless for another consumer - in a
-> virtual machine environment its vital information about how you schedule
-> a virtual machine, whether now is a good time to live migrate it and how
-> best to optimise power/performance on the server end.
->
-> Alan
->
-
-
-
--- =
-
-Arve Hj=F8nnev=E5g
+diff --git a/MAINTAINERS b/MAINTAINERS
+index d329b05..276e79b 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2850,6 +2850,13 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git
+ S:	Maintained
+ F:	drivers/input/
+ 
++INTEL IDLE DRIVER
++M:	Len Brown <lenb@kernel.org>
++L:	linux-pm@lists.linux-foundation.org
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.git
++S:	Supported
++F:	drivers/idle/intel_idle.c
++
+ INTEL FRAMEBUFFER DRIVER (excluding 810 and 815)
+ M:	Maik Broemme <mbroemme@plusserver.de>
+ L:	linux-fbdev@vger.kernel.org
+diff --git a/drivers/Makefile b/drivers/Makefile
+index f42a030..91874e0 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -10,6 +10,7 @@ obj-$(CONFIG_PCI)		+= pci/
+ obj-$(CONFIG_PARISC)		+= parisc/
+ obj-$(CONFIG_RAPIDIO)		+= rapidio/
+ obj-y				+= video/
++obj-y				+= idle/
+ obj-$(CONFIG_ACPI)		+= acpi/
+ obj-$(CONFIG_SFI)		+= sfi/
+ # PnP must come after ACPI since it will eventually need to check if acpi
+@@ -91,7 +92,6 @@ obj-$(CONFIG_EISA)		+= eisa/
+ obj-y				+= lguest/
+ obj-$(CONFIG_CPU_FREQ)		+= cpufreq/
+ obj-$(CONFIG_CPU_IDLE)		+= cpuidle/
+-obj-y				+= idle/
+ obj-$(CONFIG_MMC)		+= mmc/
+ obj-$(CONFIG_MEMSTICK)		+= memstick/
+ obj-$(CONFIG_NEW_LEDS)		+= leds/
+diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
+index deefa85..b2a6d73 100644
+--- a/drivers/acpi/processor_driver.c
++++ b/drivers/acpi/processor_driver.c
+@@ -922,9 +922,13 @@ static int __init acpi_processor_init(void)
+ 		return -ENOMEM;
+ #endif
+ 
+-	if (!cpuidle_register_driver(&acpi_idle_driver))
++	if (!cpuidle_register_driver(&acpi_idle_driver)) {
+ 		printk(KERN_DEBUG "ACPI: %s registered with cpuidle\n",
+ 			acpi_idle_driver.name);
++	} else {
++                printk(KERN_DEBUG "ACPI: intel_idle yielding to %s",
++                        cpuidle_get_driver()->name);
++	}
+ 
+ 	result = acpi_bus_register_driver(&acpi_processor_driver);
+ 	if (result < 0)
+diff --git a/drivers/idle/Kconfig b/drivers/idle/Kconfig
+index f15e90a..fb5c518 100644
+--- a/drivers/idle/Kconfig
++++ b/drivers/idle/Kconfig
+@@ -1,3 +1,14 @@
++config INTEL_IDLE
++	tristate "Cpuidle Driver for Intel Processors"
++	depends on CPU_IDLE
++	depends on X86
++	depends on CPU_SUP_INTEL
++	depends on EXPERIMENTAL
++	help
++	  Enable intel_idle, a cpuidle driver that includes knowledge of
++	  native Intel hardware idle features.  The acpi_idle driver
++	  can be configured at the same time, in order to handle
++	  processors intel_idle does not support.
+ 
+ menu "Memory power savings"
+ depends on X86_64
+diff --git a/drivers/idle/Makefile b/drivers/idle/Makefile
+index 5f68fc3..23d295c 100644
+--- a/drivers/idle/Makefile
++++ b/drivers/idle/Makefile
+@@ -1,2 +1,3 @@
+ obj-$(CONFIG_I7300_IDLE)			+= i7300_idle.o
++obj-$(CONFIG_INTEL_IDLE)			+= intel_idle.o
+ 
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+new file mode 100755
+index 0000000..12f31d9
+--- /dev/null
++++ b/drivers/idle/intel_idle.c
+@@ -0,0 +1,446 @@
++/*
++ * intel_idle.c - native hardware idle loop for modern Intel processors
++ *
++ * Copyright (c) 2010, Intel Corporation.
++ * Len Brown <len.brown@intel.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
++ */
++
++/*
++ * intel_idle is a cpuidle driver that loads on specific Intel processors
++ * in lieu of the legacy ACPI processor_idle driver.  The intent is to
++ * make Linux more efficient on these processors, as intel_idle knows
++ * more than ACPI, as well as make Linux more immune to ACPI BIOS bugs.
++ */
++
++/*
++ * Design Assumptions
++ *
++ * All CPUs have same idle states as boot CPU
++ *
++ * Chipset BM_STS (bus master status) bit is a NOP
++ * 	for preventing entry into deep C-stats
++ */
++
++/*
++ * Known issues
++ *
++ * The driver currently initializes for_each_online_cpu() upon modprobe.
++ * It it unaware cpu online/offline and cpui hotplug
++ *
++ * ACPI has a .suspend hack to turn off deep c-statees during suspend
++ * to avoid complications with the lapic timer workaround
++ * will need to address that situation here too.
++ *
++ * There is currently no automatic probing/loading mechanism
++ * if the driver is built as a module.
++ */
++
++/*
++ * todo test
++ * test: build & run with acpi=off
++ * test: repeated load/unload
++ * test: suspend/resume vs timer workaround
++ */
++
++/*
++ * todo cpuidle
++ * 	cpuidle should supply the counters for each driver
++ * 	since they are private to cpuidle, not the driver
++ */
++
++
++/* un-comment DEBUG to enable pr_debug() statements */
++#define DEBUG
++
++#include <linux/kernel.h>
++#include <linux/cpuidle.h>
++#include <linux/clockchips.h>
++#include <linux/hrtimer.h>	/* ktime_get_real() */
++#include <trace/events/power.h>
++#include <linux/sched.h>
++
++#define INTEL_IDLE_VERSION "0.3"
++#define PREFIX "intel_idle: "
++
++#define MWAIT_SUBSTATE_MASK	(0xf)
++#define MWAIT_CSTATE_MASK	(0xf)
++#define MWAIT_SUBSTATE_SIZE	(4)
++#define MWAIT_MAX_NUM_CSTATES	8
++#define CPUID_MWAIT_LEAF (5)
++#define CPUID5_ECX_EXTENSIONS_SUPPORTED (0x1)
++#define CPUID5_ECX_INTERRUPT_BREAK	(0x2)
++
++#define mwait_hint_to_cstate(hint) ((((hint) >> MWAIT_SUBSTATE_SIZE) & MWAIT_CSTATE_MASK) + 1)
++#define lapic_timer_reliable(cstate) (lapic_timer_reliable_states & (1 << (cstate)))
++
++static struct cpuidle_driver intel_idle_driver = {
++	.name = "intel_idle",
++	.owner = THIS_MODULE,
++};
++static int max_cstate = MWAIT_MAX_NUM_CSTATES - 1;	/* intel_idle.max_cstate=0 disables driver */
++static int power_policy = 7; /* 0 = max perf; 15 = max powersave */
++
++static unsigned int substates;
++#define get_num_mwait_substates(cstate) ((substates >> ((cstate) * 4)) && 0xF)
++
++/* Reliable LAPIC Timer States, bit 1 for C1 etc.  */
++static unsigned int lapic_timer_reliable_states;
++
++static struct cpuidle_device *intel_idle_cpuidle_devices;
++static int intel_idle(struct cpuidle_device *dev, struct cpuidle_state *state);
++
++/*
++ * These attributes are be visible under
++ * /sys/devices/system/cpu/cpu.../cpuidle/state.../
++ *
++ * name 
++ * 	Hardware name of the state, from datasheet
++ * desc
++ * 	MWAIT param
++ * driver_data
++ * 	token passed to intel_idle()
++ * flags
++ * 	CPUIDLE_FLAG_TIME_VALID
++ * 		we return valid times in all states
++ * 	CPUIDLE_FLAG_SHALLOW
++ * 		lapic timer keeps running
++ * exit_latency
++ * 	[usec]
++ * power_usage
++ * 	mW (TBD)
++ * target_residency
++ * 	currently we multiply exit_latency by 4
++ * 	[usec]
++ * usage
++ * 	instance counter
++ * time
++ * 	residency counter [usec]
++ */
++
++static struct cpuidle_state *cpuidle_state_table;
++
++/*
++ * States are indexed by the cstate number,
++ * which is also the index into the MWAIT hint array.
++ * Thus C0 is a dummy.
++ */
++static struct cpuidle_state nehalem_cstates[MWAIT_MAX_NUM_CSTATES] = {
++	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
++	{ "NHM-C1", "MWAIT 0x00", (void *) 0x00,
++		CPUIDLE_FLAG_TIME_VALID,
++		3, 1000, 6, 0, 0, &intel_idle },
++	{ "NHM-C3", "MWAIT 0x10", (void *) 0x10,
++		CPUIDLE_FLAG_TIME_VALID,
++		20, 500, 80, 0, 0, &intel_idle },
++	{ "NHM-C6", "MWAIT 0x20", (void *) 0x20,
++		CPUIDLE_FLAG_TIME_VALID,
++		200, 350, 800, 0, 0, &intel_idle },
++	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
++	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
++	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
++	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0}
++};
++
++static struct cpuidle_state atom_cstates[MWAIT_MAX_NUM_CSTATES] = {
++	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
++	{ "ATM-C1", "MWAIT 0x00", (void *) 0x00,
++		CPUIDLE_FLAG_TIME_VALID,
++		1, 1000, 4, 0, 0, &intel_idle },
++	{ "ATM-C2", "MWAIT 0x10", (void *) 0x10,
++		CPUIDLE_FLAG_TIME_VALID,
++		20, 500, 80, 0, 0, &intel_idle },
++	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
++	{ "ATM-C4", "MWAIT 0x30", (void *) 0x30,
++		CPUIDLE_FLAG_TIME_VALID,
++		100, 250, 400, 0, 0, &intel_idle },
++	{ "ATM-C6", "MWAIT 0x40", (void *) 0x40,
++		CPUIDLE_FLAG_TIME_VALID,
++		200, 150, 800, 0, 0, &intel_idle },
++	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
++	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0}
++};
++
++/*
++ * choose_substate()
++ *
++ * Run-time decision on which C-state substate to invoke
++ * If power_policy = 0, choose shallowest substate (0)
++ * If power_policy = 15, choose deepest substate
++ * If power_policy = middle, choose middle substate etc.
++ */
++static int choose_substate(int cstate)
++{
++	unsigned int num_substates;
++
++	power_policy &= 0xF;	/* valid range: 0-15 */
++	cstate &= 7;	/* valid range: 0-7 */
++
++	num_substates = get_num_mwait_substates(cstate);
++
++	if (num_substates <= 1)
++		return 0;
++	
++	return ((power_policy + (power_policy + 1) * (num_substates - 1)) / 16);
++}
++
++/**
++ * intel_idle
++ * @dev: cpuidle_device
++ * @state: cpuidle state
++ *
++ */
++static int intel_idle(struct cpuidle_device *dev, struct cpuidle_state *state)
++{
++	unsigned long ecx = 1; /* break on interrupt flag */
++	unsigned long eax = (unsigned long)cpuidle_get_statedata(state);
++	unsigned int cstate;
++	ktime_t kt_before, kt_after;
++	s64 usec_delta;
++	int cpu = smp_processor_id();
++
++	cstate = mwait_hint_to_cstate(eax);
++
++	eax = eax + choose_substate(cstate);
++
++	local_irq_disable();
++
++	if (!lapic_timer_reliable(cstate))
++		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu); 
++
++	kt_before = ktime_get_real();
++
++	stop_critical_timings();
++#ifndef MODULE
++	trace_power_start(POWER_CSTATE, (eax >> 4) + 1);
++#endif
++	if (!need_resched()) {
++
++		__monitor((void *)&current_thread_info()->flags, 0, 0);
++		smp_mb();
++		if (!need_resched())
++			__mwait(eax, ecx);
++	}
++
++	start_critical_timings();
++
++	kt_after = ktime_get_real();
++	usec_delta = ktime_to_us(ktime_sub(kt_after, kt_before));
++
++	local_irq_enable();
++	
++	if (!lapic_timer_reliable(cstate))
++ 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu); 
++
++	return usec_delta;
++}
++
++
++/*
++ * intel_idle_probe()
++ */
++static int intel_idle_probe(void)
++{
++	unsigned int eax, ebx, ecx, edx;
++
++	if (max_cstate == 0) {
++		pr_debug(PREFIX "disabled\n" );
++		return -1;
++	}
++
++	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
++		return -1;
++ 
++	if (!boot_cpu_has(X86_FEATURE_MWAIT))
++		return -1;
++
++	if (boot_cpu_data.cpuid_level < CPUID_MWAIT_LEAF)
++		return -1;
++
++	cpuid(CPUID_MWAIT_LEAF, &eax, &ebx, &ecx, &edx);
++
++	if (!(ecx & CPUID5_ECX_EXTENSIONS_SUPPORTED) ||
++		!(ecx & CPUID5_ECX_INTERRUPT_BREAK))
++			return -1;
++
++	pr_debug(PREFIX "MWAIT substates: 0x%x\n", edx);
++
++#ifdef DEBUG
++	if (substates == 0)	/* can over-ride via modparam */
++#endif
++		substates = edx;
++
++	/*
++ 	 * Bail out if non-stop TSC unavailable.
++ 	 * Nehalem and newer have it.
++ 	 *
++ 	 * Atom and Core2 will will require
++ 	 * mark_tsc_unstable("TSC halts in idle")
++ 	 * when have a state deeper than C1
++ 	 */
++	if (!boot_cpu_has(X86_FEATURE_NONSTOP_TSC))
++		return -1;
++
++	if (boot_cpu_has(X86_FEATURE_ARAT))	/* Always Reliable APIC Timer */
++		lapic_timer_reliable_states = 0xFFFFFFFF;
++
++	if (boot_cpu_data.x86 != 6)	/* family 6 */
++		return -1;
++
++	switch (boot_cpu_data.x86_model) {
++
++	case 0x1A:	/* Core i7, Xeon 5500 series */
++	case 0x1E:	/* Core i7 and i5 Processor - Lynnfield, Jasper Forest */
++	case 0x1F:	/* Core i7 and i5 Processor - Nehalem */
++	case 0x2E:	/* Nehalem-EX Xeon */
++		lapic_timer_reliable_states = (1 << 1);	 /* C1 */
++
++	case 0x25:	/* Westmere */
++	case 0x2C:	/* Westmere */
++
++		cpuidle_state_table = nehalem_cstates;
++		break;
++#ifdef notyet
++	case 0x1C:	/* 28 - Atom Processor */
++		cpuidle_state_table = atom_cstates;
++		break;
++#endif
++
++	case 0x17:	/* 23 - Core 2 Duo */
++		lapic_timer_reliable_states = (1 << 2) | (1 << 1); /* C2, C1 */
++
++	default:
++		pr_debug(PREFIX "does not run on family %d model %d\n",
++			boot_cpu_data.x86, boot_cpu_data.x86_model);
++		return -1;
++	}
++
++	pr_debug(PREFIX "v" INTEL_IDLE_VERSION
++		" model 0x%X\n", boot_cpu_data.x86_model);
++
++pr_debug(PREFIX "lapic_timer_reliable_states 0x%x\n", lapic_timer_reliable_states);
++	return 0;
++}
++
++/*
++ * intel_idle_cpuidle_devices_init()
++ * allocate, initialize, register cpuidle_devices
++ */
++static int intel_idle_cpuidle_devices_init(void)
++{
++	int i, cstate;
++	struct cpuidle_device *dev;
++
++	intel_idle_cpuidle_devices = alloc_percpu(struct cpuidle_device);
++	if (intel_idle_cpuidle_devices == NULL)
++		return -1;
++
++	for_each_online_cpu(i) {
++		dev = per_cpu_ptr(intel_idle_cpuidle_devices, i);
++
++		dev->state_count = 1;
++
++		for (cstate = 1; cstate < MWAIT_MAX_NUM_CSTATES; ++cstate) {
++			int num_substates;
++
++			if (cstate > max_cstate) {
++				printk(PREFIX "max_cstate %d exceeded", max_cstate);
++				break;
++			}
++
++			/* does the state exist in CPUID.MWAIT? */
++			num_substates = get_num_mwait_substates(cstate);
++			if (num_substates == 0)
++				continue;
++
++			/* does the state exist in the driver's table? */
++			if (cpuidle_state_table[cstate].name == NULL) {
++				pr_debug(PREFIX "unaware of model 0x%x MWAIT %x\
++					please contact lenb@kernel.org", boot_cpu_data.x86_model, cstate);
++				continue;
++			}
++			dev->states[dev->state_count] = cpuidle_state_table[cstate];	/* structure copy */
++			dev->state_count += 1;
++		}
++
++		dev->cpu = i;
++		if (cpuidle_register_device(dev)) {
++			pr_debug(PREFIX "cpuidle_register_device %d failed!\n", i);
++			free_percpu(intel_idle_cpuidle_devices);
++			return -EIO;
++		}
++	}
++
++	return 0;
++}
++
++/*
++ * intel_idle_cpuidle_devices_uninit()
++ * unregister, free cpuidle_devices
++ */
++static void intel_idle_cpuidle_devices_uninit(void)
++{
++	int i;
++	struct cpuidle_device *dev;
++
++	for_each_online_cpu(i) {
++		dev = per_cpu_ptr(intel_idle_cpuidle_devices, i);
++		cpuidle_unregister_device(dev);
++	}
++
++	free_percpu(intel_idle_cpuidle_devices);
++	return;
++}
++
++static int intel_idle_init(void) 
++{
++
++	if (intel_idle_probe())
++		return -1;
++
++	if (cpuidle_register_driver(&intel_idle_driver)) {
++		pr_debug(PREFIX "unable to register with cpuidle due to %s",
++			cpuidle_get_driver()->name);
++		return -1;
++	}
++
++	if (intel_idle_cpuidle_devices_init()) {
++		cpuidle_unregister_driver(&intel_idle_driver);
++		return -1;
++	}
++
++	return 0;	
++}
++
++static void __exit intel_idle_exit(void)
++{
++	intel_idle_cpuidle_devices_uninit();
++	cpuidle_unregister_driver(&intel_idle_driver);
++
++	return;
++}
++
++module_init(intel_idle_init);
++module_exit(intel_idle_exit);
++
++module_param(power_policy, int, 0644);
++module_param(max_cstate, int, 0444);
++#ifdef DEBUG
++module_param(substates, int, 0444);
++#endif
++
++MODULE_AUTHOR("Len Brown <len.brown@intel.com>");
++MODULE_DESCRIPTION("Cpuidle driver for Intel Hardware v" INTEL_IDLE_VERSION);
++MODULE_LICENSE("GPL");
+-- 
+1.6.0.6
