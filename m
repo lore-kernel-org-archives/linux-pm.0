@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 17:49:51 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005271744130.3239-100000__42432.2406448939$1274997122$gmane$org@iolanthe.rowland.org>
-References: <alpine.LFD.2.00.1005272332320.3478@localhost.localdomain>
+Date: Thu, 27 May 2010 23:55:13 +0200
+Message-ID: <201005272355.13222.rjw__18616.2239675925$1274997330$gmane$org@sisk.pl>
+References: <20100527140655.GA28048@srcf.ucam.org>
+	<20100527182058.GL3543@srcf.ucam.org>
+	<20100527200950.44305cef@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1005272332320.3478@localhost.localdomain>
+In-Reply-To: <20100527200950.44305cef@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,26 +19,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 27 May 2010, Thomas Gleixner wrote:
-
-> > The two of you are talking at cross purposes.  Thomas is referring to 
-> > idle-based suspend and Matthew is talking about forced suspend.
+On Thursday 27 May 2010, Alan Cox wrote:
+> > > If one works so does the other.
+> > 
+> > Not at all. The entire point of opportunistic suspend is that I don't 
+> > care is currently in TASK_RUNNABLE or has a timer that's due to expire 
+> > in 100msec - based on policy (through not having any held suspend 
+> > blockers), I'll go to sleep. That's easily possible on PCs.
 > 
-> Yes, and forced suspend to disk is the same as force suspend to disk,
-> which has both nothing to do with sensible resource management.
+> Yes I appreciate what suspend blockers are trying to do. Now how does
+> that connect with my first sentence ?
 
-If I understand correctly, you are saying that all the untrusted 
-applications should run with QoS(NONE).  Then they could do whatever 
-they wanted without causing any interference.
+I guess what Matthew wanted to say was that you couldn't use ACPI S3 as
+a very deep CPU idle state, because of the way wakeup sources are set up
+for it, while you could use it for aggressive power management with suspend
+blockers as proposed by Arve.
 
-And with idle-based power management (rather than forced suspend), 
-there would be no issue with wakeup events getting unduly delayed.
-
-Unless one of those events was meant for an untrusted application.  Is 
-that the source of the difficulty?
-
-Alan Stern
+Rafael
