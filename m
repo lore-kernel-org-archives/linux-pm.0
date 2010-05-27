@@ -1,28 +1,14 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Thu, 27 May 2010 02:07:21 -0700
-Message-ID: <AANLkTilk7FX1Y0uWKyMEpf8uxFPBae3X0hGdLLa5oNUa__11798.793267417$1274951386$gmane$org@mail.gmail.com>
-References: <1274863342.5882.4850.camel@twins>
-	<20100526112303.3fef15a4@schatten.dmk.lab>
-	<1274866402.5882.5051.camel@twins>
-	<AANLkTil9ZtMFxTfE6ITiFNOl4S1k3Lvdp5BPgGX7LJhw@mail.gmail.com>
-	<1274868384.5882.5169.camel@twins>
-	<AANLkTimHGpRAZklIwXu6wEbA3coKXJvCVLxj2twerkCw@mail.gmail.com>
-	<1274869262.5882.5222.camel@twins>
-	<AANLkTik9LINPmabJfVi0jfVs5sjVS_1l00WpnVTFEuLV@mail.gmail.com>
-	<1274890736.4467.574.camel@mulgrave.site>
-	<1274891308.1674.1766.camel@laptop>
-	<20100526165919.GB2089@elf.ucw.cz>
-	<1274893309.1674.1773.camel@laptop>
-	<1274894685.4467.758.camel@mulgrave.site>
-	<alpine.LFD.2.00.1005261948290.2995@localhost.localdomain>
-	<1274898180.4467.925.camel@mulgrave.site>
-	<1274948234.14002.27.camel@thorin>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Thu, 27 May 2010 12:56:05 +0200
+Message-ID: <20100527125605.2855f980__19529.9069899649$1274957842$gmane$org@schatten.dmk.lab>
+References: <20100526151945.1b3813ac@schatten.dmk.lab>
+	<Pine.LNX.4.44L0.1005261033440.1961-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1274948234.14002.27.camel@thorin>
+In-Reply-To: <Pine.LNX.4.44L0.1005261033440.1961-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -32,45 +18,81 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Bernd Petrovitsch <bernd@petrovitsch.priv.at>
-Cc: linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, Greg KH <gregkh@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>, Thomas Gleixner <tglx@linutronix.de>, tytso@mit.edu, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Linux@smtp1.linux-foundation.org, felipe.balbi@nokia.com, Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 27, 2010 at 1:17 AM, Bernd Petrovitsch
-<bernd@petrovitsch.priv.at> wrote:
-> On Mit, 2010-05-26 at 13:23 -0500, James Bottomley wrote:
->> On Wed, 2010-05-26 at 19:51 +0200, Thomas Gleixner wrote:
-> [...]
->> > Darn, _we_ have to deal with that forever as it sets a crappy user
->> > space ABI in stone.
->>
->> I really don't see how it is ... the ABI comes with a switch that allows
->> it to be disabled, so only platforms wishing to use it have to support
->> it. =A0Even on those platforms that do support it, we can translate most
->
-> You completely missed the point: The crappy user interface - and
-> interferences with pother subsystems - must be maintained for ages - and
-> that is independent if one uses it or not. Even worse if it's not widely
-> used.
+On Wed, 26 May 2010 10:38:50 -0400 (EDT)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-When (or if) the time comes that suspend is no longer useful, this api
-becomes a NOP.
+> On Wed, 26 May 2010, Florian Mickler wrote:
+> 
+> > I don't think that the in-kernel suspend block is a bad idea. 
+> > 
+> > You could probably use the suspend-blockers unconditionally in the
+> > suspend framework to indicate if a suspend is possible or not.
+> 
+> That's not how it works.  Drivers aren't supposed to abort
+> unconditional suspend -- not without a really good reason (for example,
+> the device received a wakeup event before it was fully suspended).  In
+> short, suspends should be considered to be _always_ possible.
+> 
+> > Regardless of opportunistic suspend or not. This way, you don't have to
+> > try-and-fail on a suspend request and thus making suspending
+> > potentially more robust or allowing for a "suspend as soon as
+> > possible" semantic (which is probably a good idea, if you have to grab
+> > your laptop in a hurry to get away).
+> 
+> That's different.  Suspend blockers could block (not abort!) regular 
+> suspends, just as they do opportunistic suspends.
+> 
+> But why should they?  I mean, if userspace wants to initiate a suspend
+> that is capable of being blocked by a kernel suspend blocker, then all
+> it has to do is initiate an opportunistic suspend instead of a normal
+> suspend.
+> 
+> Alan Stern
 
->
->> of it into pm QoS stuff and if one day someone solves the rogue app
->> problem, we can migrate over.
->
-> If it's so important for Android and no one else, Android can carry it
-> out of tree.
->
+Let me elaborate what i mean:
 
-This is not only important for Android. If you use suspend on a
-current Linux system you run the risk of loosing wakeup events. If you
-have wakeup events that you cannot afford to lose your only option is
-to never suspend. On some hardware (e.g. x86) the cost of not
-suspending is always huge, on other hardware (many ARM SOCs) the cost
-is only huge if your apps behave poorly.
+The assumption beeing that specifying pm constraints in the drivers is
+a good thing which we will be doing anyway in the long run. 
+(See Alan Cox's summary of current mainline problems[1].)
 
--- =
+I don't wanna go into specifing any constraint API here, but it could
+probably be either a blocker flag (the here presented suspend-blocker,
+which Alan doesnt like?) 
+or maybe a few integer-typed constraints defined by the pm-core.
+(needed scheduler-latency/needed io-latency?)
 
-Arve Hj=F8nnev=E5g
+As an intermediate step, it would probably be possible to
+specify the "I cant be suspended" constraint (aka blocker) for all
+drivers not explicitly stating anything other. 
+
+Converting a driver to using any constraint-API would require analysing
+what makes a driver refuse suspending in the old suspend handler and
+then specify any "no suspend" (or whatever) constraint before those
+conditions arise and clearing of the constraints when it is no longer critical.  
+(Much work.)
+
+A future switch from something like a flag (blocker) to a
+full integer-typed requirement would probably be a simple search and
+replace or even possible by extending the blocker-api. 
+
+If that is done, the prototype of the driver callback
+
+int suspend(); 
+
+could probably be changed to 
+
+void suspend();
+
+and it be expected to always _successfully_ suspend.
+
+The hard part is finding the places where special guarantees are
+needed. But android did show that this is possible.
+
+Cheers,
+Flo
+
+[1]: http://lkml.org/lkml/2010/5/26/575
