@@ -1,16 +1,18 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 16:50:36 -0700
-Message-ID: <AANLkTinTk6iCgfcY1QaZkCCapYjzbEYgGbSR4Ki75z0R__30463.603747967$1275004417$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
-	<201005272315.28475.rjw@sisk.pl>
-	<alpine.LFD.2.00.1005272334040.3478@localhost.localdomain>
-	<201005280143.01889.rjw@sisk.pl>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Thu, 27 May 2010 16:52:28 -0700
+Message-ID: <AANLkTimhu4Z-OlxRK3sQcrxwGi9SL2XtzHqWkfAmZZhB__43984.6757719808$1275004420$gmane$org@mail.gmail.com>
+References: <AANLkTikFwznonORd42piWZvBv3oqqSj9odC9Jaud8o3x@mail.gmail.com>
+	<Pine.LNX.4.44L0.1005262044001.6349-100000@netrider.rowland.org>
+	<AANLkTingAiO8dkwnInc993PTyA63rV-WRvBIRlB2ChXs@mail.gmail.com>
+	<20100527181333.GA8297@core.coreip.homeip.net>
+	<AANLkTilu5us2sYmm_f422Z2gJ34ZmIF808yYRPXkLjme@mail.gmail.com>
+	<20100527234841.GA8645@core.coreip.homeip.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005280143.01889.rjw@sisk.pl>
+In-Reply-To: <20100527234841.GA8645@core.coreip.homeip.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,81 +22,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 27, 2010 at 4:43 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday 27 May 2010, Thomas Gleixner wrote:
->> On Thu, 27 May 2010, Rafael J. Wysocki wrote:
->>
->> > On Thursday 27 May 2010, Thomas Gleixner wrote:
->> > > On Thu, 27 May 2010, Alan Stern wrote:
->> > >
->> > > > On Thu, 27 May 2010, Felipe Balbi wrote:
->> > > >
->> > > > > On Thu, May 27, 2010 at 05:06:23PM +0200, ext Alan Stern wrote:
->> > > > > >If people don't mind, here is a greatly simplified summary of t=
-he
->> > > > > >comments and objections I have seen so far on this thread:
->> > > > > >
->> > > > > > =A0 =A0 The in-kernel suspend blocker implementation is okay, =
-even
->> > > > > > =A0 =A0 beneficial.
->> > > > >
->> > > > > I disagree here. I believe expressing that as QoS is much better=
-. Let
->> > > > > the kernel decide which power state is better as long as I can s=
-ay I
->> > > > > need 100us IRQ latency or 100ms wakeup latency.
->> > > >
->> > > > Does this mean you believe "echo mem >/sys/power/state" is bad and
->> > > > should be removed? =A0Or "echo disk >/sys/power/state"? =A0They pa=
-y no
->> > >
->> > > mem should be replaced by an idle suspend to ram mechanism
+2010/5/27 Dmitry Torokhov <dmitry.torokhov@gmail.com>:
+> On Thu, May 27, 2010 at 04:36:28PM -0700, Arve Hj=F8nnev=E5g wrote:
+>> 2010/5/27 Dmitry Torokhov <dmitry.torokhov@gmail.com>:
+>> > On Wed, May 26, 2010 at 05:52:40PM -0700, Arve Hj=F8nnev=E5g wrote:
+>> >> 2010/5/26 Alan Stern <stern@rowland.harvard.edu>:
+>> >> > On Wed, 26 May 2010, Arve Hj=F8nnev=E5g wrote:
+>> >> >
+>> >> >> > I must be missing something. =A0In Arve's patch 1/8, if the syst=
+em is in
+>> >> >> > opportunistic suspend, and a wakeup event occurs but no suspend
+>> >> >> > blockers get enabled by the handler, what causes the system to g=
+o back
+>> >> >> > into suspend after the event is handled? =A0Isn't that a loop of=
+ some
+>> >> >> > sort?
+>> >> >> >
+>> >> >>
+>> >> >> Yes it is a loop. I think what you are missing is that it only loo=
+ps
+>> >> >> repeatedly if the driver that aborts suspend does not use a suspend
+>> >> >> blocker.
+>> >> >
+>> >> > You mean "the driver that handles the wakeup event". =A0I was askin=
+g what
+>> >> > happened if suspend succeeded and then a wakeup occurred. =A0But ye=
+s, if
+>> >> > a suspend blocker is used then its release causes another suspend
+>> >> > attempt, with no looping.
+>> >> >
+>> >> >> > And even if it isn't, so what? =A0What's wrong with looping beha=
+vior?
+>> >> >>
+>> >> >> It is a significant power drain.
+>> >> >
+>> >> > Not in the situation I was discussing.
+>> >> >
+>> >>
+>> >> If you meant it spend most of the time suspended, then I agree. It
+>> >> only wastes power when a driver blocks suspend by returning an error
+>> >> from its suspend hook and we are forced to loop doing no useful work.
+>> >>
 >> >
->> > Well, what about when I want the machine to suspend _regardless_ of wh=
-ether
->> > or not it's idle at the moment? =A0That actually happens quite often t=
-o me. :-)
+>> > If driver refuses to suspend that means there are events that need
+>> > processing. I fail to see why it would be called "looping doing no
+>> > useful work".
 >>
->> Fair enough. Let's agree on a non ambigous terminology then:
->>
->> =A0 =A0 =A0forced:
->>
->> =A0 =A0 =A0 =A0 =A0 =A0suspend which you enforce via user interaction, w=
-hich
->> =A0 =A0 =A0 =A0 =A0 =A0also implies that you risk losing wakeups dependi=
-ng on
->> =A0 =A0 =A0 =A0 =A0 =A0the hardware properties
+>> Because the useful work is done in another thread. All the loop does
+>> is check if the useful work has completed which most likely will slow
+>> down the useful work.
 >
-> OK
+> Or useful work could signal when it is done processing critical section.
 >
->> =A0 =A0 =A0opportunistic:
->>
->> =A0 =A0 =A0 =A0 =A0 =A0suspend driven from the idle context, which guara=
-ntees to
->> =A0 =A0 =A0 =A0 =A0 =A0not lose wakeups. Provided only when the hardware=
- does
->> =A0 =A0 =A0 =A0 =A0 =A0provide the necessary capabilities.
->
-> I can accept that definition, but this is not what "opportunistic" means =
-in the
 
-Is there a difference between this new definition of opportunistic and
-idle? I assume suspend here means low a low power sleep state since it
-is impossible to initiate and abort Linux suspend from idle since
-initiating suspend will cause the system to become not idle.
+That is what suspend_unblock does.
 
-> Arve's changelogs. =A0What it means there is that he wants the system to =
-suspend
-> even when it is not technically idle (like in the updatedb example I gave=
- in a
-> previous message). =A0Suspend blockers are supposed to be a mechanism by =
-which
-> the kernel and user space together may determine when to suspend (and it's
-> somewhat orthogonal to idle).
+>> Blocking suspend with a suspend blocker until
+>> the useful work is done is more efficient.
+>>
+>
+> --
+> Dmitry
 >
 
 
