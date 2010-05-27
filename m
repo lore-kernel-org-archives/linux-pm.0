@@ -1,7 +1,7 @@
 From: Igor Stoppa <igor.stoppa@nokia.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 15:27:50 +0300
-Message-ID: <4BFE6546.9070300__3106.19932502068$1274961981$gmane$org@nokia.com>
+Date: Thu, 27 May 2010 15:28:07 +0300
+Message-ID: <4BFE6557.3030400__10917.7255574197$1274961981$gmane$org@nokia.com>
 References: <20100526151945.1b3813ac@schatten.dmk.lab>	<Pine.LNX.4.44L0.1005261033440.1961-100000@iolanthe.rowland.org>
 	<20100527125605.2855f980@schatten.dmk.lab>
 Mime-Version: 1.0
