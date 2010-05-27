@@ -1,17 +1,23 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 18:40:19 +0100
-Message-ID: <20100527174019.GA3187__40587.0376424447$1274983798$gmane$org@srcf.ucam.org>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<alpine.LFD.2.00.1005271915540.3032@localhost.localdomain>
-	<20100527173118.GE2468@srcf.ucam.org>
-	<1274981680.27810.5636.camel@twins>
+Date: Thu, 27 May 2010 19:56:21 +0200
+Message-ID: <1274982981.27810.5719.camel__49714.0874424533$1274983866$gmane$org@twins>
+References: <20100527170740.GA1980@srcf.ucam.org>
+	<1274980391.27810.5552.camel@twins>
+	<20100527171644.GA2468@srcf.ucam.org>
+	<1274980856.27810.5582.camel@twins>
+	<20100527172510.GC2468@srcf.ucam.org>
+	<1274981288.27810.5609.camel@twins>
+	<20100527173218.GF2468@srcf.ucam.org>
+	<1274981750.27810.5641.camel@twins>
+	<20100527174140.GB3187@srcf.ucam.org>
+	<1274982397.27810.5679.camel@twins>
+	<20100527175258.GB3543@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1274981680.27810.5636.camel@twins>
+In-Reply-To: <20100527175258.GB3543@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,17 +27,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
 Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 27, 2010 at 07:34:40PM +0200, Peter Zijlstra wrote:
-> > we still need to be able to enter suspend while the system isn't idle.
-> 
-> _WHY_!?
+On Thu, 2010-05-27 at 18:52 +0100, Matthew Garrett wrote:
 
-Because if I'm running a kernel build in a tmpfs and I hit the sleep 
-key, I need to go to sleep. Blocking processes on driver access isn't 
-sufficient.
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> If that's what you're aiming for then you don't need to block 
+> applications on hardware access because they should all already have 
+> idled themselves.
+
+Correct, a well behaved app would have. I thought we all agreed that
+well behaved apps weren't the problem?
+
+> > Note that it doesn't need to broadcast this, it could opt to reply with
+> > that message on the first drawing attempt after it goes away and block
+> > on the second.
+> 
+> That's more interesting, but you're changing semantics quite heavily at 
+> this point.
+
+So?
