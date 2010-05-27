@@ -1,14 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] kernel/power/swap.c: fix typos in comments
-Date: Thu, 27 May 2010 06:45:12 +0200
-Message-ID: <20100527044511.GA19625__12440.6053488658$1274935599$gmane$org@elf.ucw.cz>
-References: <1274921340-4894-1-git-send-email-cesarb@cesarb.net>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Thu, 27 May 2010 07:11:00 +0200
+Message-ID: <20100527071100.3a38bbac__43604.615974664$1274937114$gmane$org@schatten.dmk.lab>
+References: <20100526171106.0e44a736@schatten.dmk.lab>
+	<alpine.LFD.2.00.1005261829540.2995@localhost.localdomain>
+	<20100526190204.5efe4d59@lxorguk.ukuu.org.uk>
+	<20100526215606.2a747c61@schatten.dmk.lab>
+	<AANLkTil3OdarNjeIuzWqM59x4ysFqJrMeiUZzceC_r7P@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1274921340-4894-1-git-send-email-cesarb@cesarb.net>
+In-Reply-To: <AANLkTil3OdarNjeIuzWqM59x4ysFqJrMeiUZzceC_r7P@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,42 +21,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Cesar Eduardo Barros <cesarb@cesarb.net>
-Cc: linux-pm@lists.linux-foundation.org, trivial@kernel.org, linux-kernel@vger.kernel.org
+To: Vitaly Wool <vitalywool@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Linux@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2010-05-26 21:49:00, Cesar Eduardo Barros wrote:
-> Signed-off-by: Cesar Eduardo Barros <cesarb@cesarb.net>
+On Wed, 26 May 2010 22:03:37 +0200
+Vitaly Wool <vitalywool@gmail.com> wrote:
 
-ACK.
-
-> ---
->  kernel/power/swap.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+> On Wed, May 26, 2010 at 9:56 PM, Florian Mickler <florian@mickler.org> wrote:
 > 
-> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-> index 66824d7..5846a02 100644
-> --- a/kernel/power/swap.c
-> +++ b/kernel/power/swap.c
-> @@ -114,7 +114,7 @@ sector_t alloc_swapdev_block(int swap)
->  
->  /**
->   *	free_all_swap_pages - free swap pages allocated for saving image data.
-> - *	It also frees the extents used to register which swap entres had been
-> + *	It also frees the extents used to register which swap entries had been
->   *	allocated.
->   */
->  
-> @@ -315,7 +315,7 @@ static int write_page(void *buf, sector_t offset, struct bio **bio_chain)
->  /*
->   *	The swap map is a data structure used for keeping track of each page
->   *	written to a swap partition.  It consists of many swap_map_page
-> - *	structures that contain each an array of MAP_PAGE_SIZE swap entries.
-> + *	structures that contain each an array of MAP_PAGE_ENTRIES swap entries.
->   *	These structures are stored on the swap and linked together with the
->   *	help of the .next_swap member.
->   *
+> > Your approach definitely sounds better than the current solution.
+> > What about mapping suspend blocker functionality later on, when this
+> > interface exists, on to this new approach and deprecating it?
+> 
+> What about coming back after some while with the appropriate solution
+> when it's ready instead of stubbornly pushing crap?
+> 
+> ~Vitaly
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Because quite frankly, for a good part of linux users, suspend blockers
+is already in the kernel. It's just an historical mistake that they are
+not in the linux kernel's hosted on kernel.org. 
+So why don't we do what we always do? Improve existing interfaces step
+by step? 
+
+Top Down approaches fail from time to time. Also it is not clear, that
+that proposed interface works for the use cases. This has to be proven
+by providing an implementation. 
+
+Cheers,
+Flo
