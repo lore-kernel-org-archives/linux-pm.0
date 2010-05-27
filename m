@@ -1,23 +1,23 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 18:49:18 +0100
-Message-ID: <20100527184918.3d090921__39315.1797507473$1274982314$gmane$org@lxorguk.ukuu.org.uk>
-References: <20100526142430.327ccbc4@schatten.dmk.lab>
-	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
-	<AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
-	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
-	<20100527140655.GA28048@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271642440.3032@localhost.localdomain>
-	<20100527155201.GA31937@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271808340.3032@localhost.localdomain>
-	<20100527165931.GB1062@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271905000.3032@localhost.localdomain>
-	<20100527172343.GB2468@srcf.ucam.org>
+Date: Thu, 27 May 2010 18:41:40 +0100
+Message-ID: <20100527174140.GB3187__30140.1115874343$1274982327$gmane$org@srcf.ucam.org>
+References: <20100527161943.GA32764@srcf.ucam.org>
+	<alpine.LFD.2.00.1005271901020.3032@localhost.localdomain>
+	<20100527170740.GA1980@srcf.ucam.org>
+	<1274980391.27810.5552.camel@twins>
+	<20100527171644.GA2468@srcf.ucam.org>
+	<1274980856.27810.5582.camel@twins>
+	<20100527172510.GC2468@srcf.ucam.org>
+	<1274981288.27810.5609.camel@twins>
+	<20100527173218.GF2468@srcf.ucam.org>
+	<1274981750.27810.5641.camel@twins>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100527172343.GB2468@srcf.ucam.org>
+Content-Disposition: inline
+In-Reply-To: <1274981750.27810.5641.camel@twins>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,53 +27,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Linux@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, felipe.balbi@nokia.com
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-> What is a "Correctly implemented driver" in this case? One that receives 
-> a wakeup event and then prevents suspend being entered until userspace 
-> has acknowledged that event? Because that's what an in-kernel suspend 
-> blocker is.
+On Thu, May 27, 2010 at 07:35:50PM +0200, Peter Zijlstra wrote:
+> On Thu, 2010-05-27 at 18:32 +0100, Matthew Garrett wrote:
+> > On Thu, May 27, 2010 at 07:28:08PM +0200, Peter Zijlstra wrote:
+> > > Why would you care about the screen for a network event?
+> > 
+> > Because the application that needs to handle the network packet is 
+> > currently blocked trying to draw something to the screen.
+> 
+> Then that's an application bug right there, isn't it?
+> 
+> If should have listened to the window server telling its clients it was
+> going to go away. Drawing after you get that is your own damn fault ;-)
 
-Kernel side maybe - but even then its a subset of expressing
-latency/lowest level requirements. That bit isn't really too contentious.
-You need a kernel object to hang a constraint off.
+How long do you wait for applications to respond that they've stopped 
+drawing? What if the application is heavily in swap at the time?
 
-> ACPI provides no guarantees about what level of hardware functionality 
-> remains during S3. You don't have any useful ability to determine which 
-> events will generate wakeups. And from a purely practical point of view, 
-> since the latency is in the range of seconds, you'll never have a low 
-> enough wakeup rate to hit it.
-
-So PCs with current ACPI don't get opportunistic suspend capability. It
-probably won't be supported on the Commodore Amiga either - your point ?
-
-> Suspend blockers are the mechanism for the 
-> driver to indicate whether the wakeup event has been handled. That's 
-> what they're there for. The in-kernel ones don't paper over anything.
-
-Semantically the in kernel blockers and the in kernel expression of
-device driven constraints are the same thing except that instead of 
-yes/no you replace the boolean with information.
-
-
-So we go from
-
-	block_suspend() / unblock_suspend()
-
-to
-	add_pm_constraint(latency, level) 
-	remove_pm_constraint(latency, level);
-
-
-And if Android choses to interpret that in its policy code as
-
-	if (latency > MAGIC)
-		suspend_is_cool();
-	else
-		suspend_isnt_cool();
-
-that's now isolated in droidspace policy
-
-Alan
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
