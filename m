@@ -1,15 +1,16 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 19:20:56 +0100
-Message-ID: <20100527192056.6fd32c1d__40921.6412030675$1274985181$gmane$org@lxorguk.ukuu.org.uk>
-References: <Pine.LNX.4.44L0.1005271344040.3239-100000@iolanthe.rowland.org>
-	<1274982779.27810.5708.camel@twins>
-	<20100527175719.GD3543@srcf.ucam.org>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Thu, 27 May 2010 11:13:34 -0700
+Message-ID: <20100527181333.GA8297__32632.7518596829$1274985220$gmane$org@core.coreip.homeip.net>
+References: <AANLkTikFwznonORd42piWZvBv3oqqSj9odC9Jaud8o3x@mail.gmail.com>
+	<Pine.LNX.4.44L0.1005262044001.6349-100000@netrider.rowland.org>
+	<AANLkTingAiO8dkwnInc993PTyA63rV-WRvBIRlB2ChXs@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100527175719.GD3543@srcf.ucam.org>
+Content-Disposition: inline
+In-Reply-To: <AANLkTingAiO8dkwnInc993PTyA63rV-WRvBIRlB2ChXs@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,19 +20,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, felipe.balbi@nokia.com
+To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
+Cc: Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 27 May 2010 18:57:19 +0100
-Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+On Wed, May 26, 2010 at 05:52:40PM -0700, Arve Hj=F8nnev=E5g wrote:
+> 2010/5/26 Alan Stern <stern@rowland.harvard.edu>:
+> > On Wed, 26 May 2010, Arve Hj=F8nnev=E5g wrote:
+> >
+> >> > I must be missing something. =A0In Arve's patch 1/8, if the system i=
+s in
+> >> > opportunistic suspend, and a wakeup event occurs but no suspend
+> >> > blockers get enabled by the handler, what causes the system to go ba=
+ck
+> >> > into suspend after the event is handled? =A0Isn't that a loop of some
+> >> > sort?
+> >> >
+> >>
+> >> Yes it is a loop. I think what you are missing is that it only loops
+> >> repeatedly if the driver that aborts suspend does not use a suspend
+> >> blocker.
+> >
+> > You mean "the driver that handles the wakeup event". =A0I was asking wh=
+at
+> > happened if suspend succeeded and then a wakeup occurred. =A0But yes, if
+> > a suspend blocker is used then its release causes another suspend
+> > attempt, with no looping.
+> >
+> >> > And even if it isn't, so what? =A0What's wrong with looping behavior?
+> >>
+> >> It is a significant power drain.
+> >
+> > Not in the situation I was discussing.
+> >
+> =
 
-> On Thu, May 27, 2010 at 07:52:59PM +0200, Peter Zijlstra wrote:
-> 
-> > Shall we henceforth stop confusing forced suspend for laptops and
-> > powersaving a running system?
-> 
-> If you want to support forced suspend for laptops and you want to avoid 
-> the risk of losing wakeups then you need in-kernel suspend blockers.
+> If you meant it spend most of the time suspended, then I agree. It
+> only wastes power when a driver blocks suspend by returning an error
+> from its suspend hook and we are forced to loop doing no useful work.
+> =
 
-It isn't suspend blockers or nothing. Look at the bigger picture.
+
+If driver refuses to suspend that means there are events that need
+processing. I fail to see why it would be called "looping doing no
+useful work".
+
+-- =
+
+Dmitry
