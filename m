@@ -1,27 +1,13 @@
-From: Peter Zijlstra <peterz@infradead.org>
+From: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 19:52:09 +0200
-Message-ID: <1274982729.27810.5703.camel__33211.0668685802$1274982907$gmane$org@twins>
-References: <20100526120242.5c9b73ad@schatten.dmk.lab>
-	<AANLkTim4021cTnhVZrQpefq1MG-eEPOFLDRO-XDepHb4@mail.gmail.com>
-	<20100526133721.602633b2@schatten.dmk.lab>
-	<AANLkTikzgaOFdQKess4E-D86OLPOzxP3dWiDkU_UR0ri@mail.gmail.com>
-	<20100526142430.327ccbc4@schatten.dmk.lab>
-	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
-	<AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
-	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
-	<20100527140655.GA28048@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271642440.3032@localhost.localdomain>
-	<20100527155201.GA31937@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271808340.3032@localhost.localdomain>
-	<20100527192135.6c6543b3@schatten.dmk.lab>
-	<1274981127.27810.5597.camel@twins>
-	<20100527194241.52caaf37@schatten.dmk.lab>
+Date: Thu, 27 May 2010 19:25:36 +0200 (CEST)
+Message-ID: <alpine.LFD.2.00.1005271924170.3032__41199.5758921423$1274983060$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100527194241.52caaf37@schatten.dmk.lab>
+In-Reply-To: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -31,36 +17,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2010-05-27 at 19:42 +0200, Florian Mickler wrote:
+On Thu, 27 May 2010, Alan Stern wrote:
 
-> If in the imaginery situation where userspace can aquire certain
-> wakeup-constraints and loose certain wakeup-constraints, then it could
-> be that the system enters suspend without empty runqueues. 
-
-No. Wakeup constaints simply delay wakeups, not loose them.
-
-If there's something runnable, we run it.
-
-What could happen is that you try to program a timer every 5ms, but then
-QoS won't let you and errors the timer_create() or something. But then
-the app gets to deal with it.
-
-> > And as explained, you won't loose events if all the devices do a proper
-> > state transition. To quote:
+> On Thu, 27 May 2010, Felipe Balbi wrote:
 > 
-> I believe the problem beeing userspace frozen at an unopportune time.
-> So the wakeup event is processed (kernel-side) but userspace didn't
-> have time to reacquire the correct wakeup-constraint to process the
-> event.
+> > On Thu, May 27, 2010 at 05:06:23PM +0200, ext Alan Stern wrote:
+> > >If people don't mind, here is a greatly simplified summary of the
+> > >comments and objections I have seen so far on this thread:
+> > >
+> > >	The in-kernel suspend blocker implementation is okay, even
+> > >	beneficial.
+> > 
+> > I disagree here. I believe expressing that as QoS is much better. Let 
+> > the kernel decide which power state is better as long as I can say I 
+> > need 100us IRQ latency or 100ms wakeup latency.
 > 
-> I.e. the wakeup will be effectivly ignored.
+> Does this mean you believe "echo mem >/sys/power/state" is bad and
+> should be removed?  Or "echo disk >/sys/power/state"?  They pay no
 
-How so, event happens on hardware level, IRQ gets raised, CPU wakes up,
-handler gets run, handler generates a task wakeup, runqueue isn't empty,
-we run stuff.
+mem should be replaced by an idle suspend to ram mechanism
 
-I'm not quite sure how to loose something there.
+> attention to latencies or other requirements.
+
+s2disk is a totally different beast as it shuts down the box into the
+complete power off state.
+
+Thanks,
+
+	tglx
