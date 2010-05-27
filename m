@@ -1,13 +1,13 @@
-From: Peter Zijlstra <peterz@infradead.org>
+From: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 19:52:59 +0200
-Message-ID: <1274982779.27810.5708.camel__18380.8384616443$1274983063$gmane$org@twins>
-References: <Pine.LNX.4.44L0.1005271344040.3239-100000@iolanthe.rowland.org>
+Date: Thu, 27 May 2010 19:24:02 +0200 (CEST)
+Message-ID: <alpine.LFD.2.00.1005271915540.3032__8966.906523756$1274983122$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005271344040.3239-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,17 +18,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2010-05-27 at 13:44 -0400, Alan Stern wrote:
+On Thu, 27 May 2010, Alan Stern wrote:
 
-> You close your laptop's lid and throw the machine into a backpack.  At 
-> that time you want it to suspend even though it may not be idle.
+> On Thu, 27 May 2010, Thomas Gleixner wrote:
 > 
-> > We've been trying to tell you you don't need that.
+> > The whole notion of treating suspend to RAM any different than a plain
+> > idle C-State is wrong. It's not different at all. You just use a
+> > different mechanism which has longer takedown and wakeup latencies and
+> > requires to shut down stuff and setup extra wakeup sources.
 > 
-> And I'm trying to tell you that you do.
+> This is where you are wrong.  Maybe not wrong in principle, but wrong 
+> in practice -- the kernel's present suspend-to-RAM (or just "suspend") 
+> implementation is _very_ different from C-states (or just "idle").
 
-Shall we henceforth stop confusing forced suspend for laptops and
-powersaving a running system?
+Holy bouncing cow. I damned good know that the current implementation
+is not doing that and that suspend is implemented in a totally
+different way. That does not mean that this is written in stone. We
+CAN change that and fix it to gain opportunistic suspend.
+ 
+> The primary difference is that the kernel can be forced into suspend
+> even when the system isn't idle.  In particular, it may be in the
+> middle of processing a potential wakeup event -- and the current design
+> gives the PM core no way to know if that is so.  This is a weakness
+> that in-kernel suspend blockers fix.
+
+Oh no. They paper over a short coming. If there is a pending event,
+the kernel knows that. It just does not make use of this
+information. Blockers just paper over this by sprinkling
+do_not_suspend() calls all over the place. What a sensible solution.
+
+> With C-states this can't happen.  If the CPU goes into a deeper C-state 
+> then ipso facto it isn't busy processing anything, much less a wakeup 
+> event.
+
+And that's the whole point of doing the opportunistic suspend with the
+help of the scheduler.
+
+> Now maybe this difference is a bad thing, and the whole PM 
+> suspend/hibernate infrastructure should be rewritten.  But the fact, 
+> remains, that's how it works now.  And it can't be changed easily or 
+> quickly.
+
+So what you are saying is that we better paper over the shortcomings
+of our current implementation with do_not_suspend() code sprinkled all
+over the place instead of sitting down and making suspend from idle
+work. It's more or less trivial depending on the platform, but not
+rocket science.
+
+Thanks,
+
+	tglx
