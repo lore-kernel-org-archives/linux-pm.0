@@ -1,7 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 5/8] sched: clarify commment for TS_POLLING
-Date: Wed, 26 May 2010 22:42:28 -0400
-Message-ID: <4a831611847e8965ed5f3328e52fe8758115b951.1274926772.git.len.brown__45151.7495829195$1274931975$gmane$org@intel.com>
+Subject: [PATCH 2/8] cpuidle: add cpuidle_unregister_driver()
+	error check
+Date: Wed, 26 May 2010 22:42:25 -0400
+Message-ID: <56b9c89c17c1a85886f6d1928349e35bbb48c856.1274926772.git.len.brown__19028.9992293858$1274932096$gmane$org@intel.com>
 References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,36 +26,32 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-TS_POLLING set tells the scheduler a task will poll
-need_resched() to look for work.
+When cpuidle_unregister_driver() is called with a driver
+other than the one that was successfully registered, do nothing.
 
-TS_POLLING clear tells resched_task() and wake_up_idle_cpu()
-that the remote CPU is sleeping in idle, and thus requires
-a reschedule interrupt to wake them to notice work.
-
-Update the description of TS_POLLING to reflect how it works.
-"cleared when sleeping in idle, requiring reschedule interrupt"
+Previously we'd NULL-out the one that was registered.
+But that required the callers to remember what this
+routine already remembers.  With this check, the callers
+can be simplified.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
-Acked-by: Peter Zijlstra <peterz@infradead.org>
 ---
- arch/x86/include/asm/thread_info.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/cpuidle/driver.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
-index e0d2890..0a14da2 100644
---- a/arch/x86/include/asm/thread_info.h
-+++ b/arch/x86/include/asm/thread_info.h
-@@ -241,8 +241,8 @@ static inline struct thread_info *current_thread_info(void)
- #define TS_USEDFPU		0x0001	/* FPU was used by this task
- 					   this quantum (SMP) */
- #define TS_COMPAT		0x0002	/* 32bit syscall active (64BIT)*/
--#define TS_POLLING		0x0004	/* true if in idle loop
--					   and not sleeping */
-+#define TS_POLLING		0x0004	/* clear when sleeping in idle
-+					   requiring reschedule interrupt */
- #define TS_RESTORE_SIGMASK	0x0008	/* restore signal mask in do_signal() */
- #define TS_XSAVE		0x0010	/* Use xsave/xrstor */
+diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+index 2257004..30bcd44 100644
+--- a/drivers/cpuidle/driver.c
++++ b/drivers/cpuidle/driver.c
+@@ -49,7 +49,8 @@ void cpuidle_unregister_driver(struct cpuidle_driver *drv)
+ 		return;
+ 
+ 	spin_lock(&cpuidle_driver_lock);
+-	cpuidle_curr_driver = NULL;
++	if (drv == cpuidle_curr_driver)
++		cpuidle_curr_driver = NULL;
+ 	spin_unlock(&cpuidle_driver_lock);
+ }
  
 -- 
 1.6.0.6
