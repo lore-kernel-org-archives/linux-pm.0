@@ -1,17 +1,23 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
- driver for select intel processors
-Date: Thu, 27 May 2010 07:22:07 -0700
-Message-ID: <20100527072207.2e783b1e__44194.0704746687$1274970039$gmane$org@infradead.org>
-References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
-	<e099975ca65a7f6ac7f8bc3fee84d3e03893aa31.1274926772.git.len.brown@intel.com>
-	<198450ec1600d9a7f55270dd4d44d6b55bc5b184.1274926772.git.len.brown@intel.com>
-	<87ljb5l9d5.fsf@deeprootsystems.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Thu, 27 May 2010 16:28:51 +0200
+Message-ID: <1274970531.27810.5024.camel__48082.2870777503$1274970585$gmane$org@twins>
+References: <AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
+	<1274867106.5882.5090.camel@twins>
+	<20100526120242.5c9b73ad@schatten.dmk.lab>
+	<AANLkTim4021cTnhVZrQpefq1MG-eEPOFLDRO-XDepHb4@mail.gmail.com>
+	<20100526133721.602633b2@schatten.dmk.lab>
+	<AANLkTikzgaOFdQKess4E-D86OLPOzxP3dWiDkU_UR0ri@mail.gmail.com>
+	<20100526142430.327ccbc4@schatten.dmk.lab>
+	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
+	<AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
+	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
+	<20100527140655.GA28048@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87ljb5l9d5.fsf@deeprootsystems.com>
+In-Reply-To: <20100527140655.GA28048@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,59 +27,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Brown <len.brown@intel.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Len@smtp1.linux-foundation.org, linux-pm@lists.linux-foundation.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 27 May 2010 07:14:46 -0700
-Kevin Hilman <khilman@deeprootsystems.com> wrote:
+On Thu, 2010-05-27 at 15:06 +0100, Matthew Garrett wrote:
 
-> Len Brown <lenb@kernel.org> writes:
+> I don't entirely see how this works. In order to deal with poorly 
+> written applications, it's necessary to (optionally, based on some 
+> policy) ignore them when it comes to the scheduler. The problem is how 
+> to implement the optional nature of this in a race-free manner. This is 
+> obviously a pathological case, but imagine an application that does 
+> something along the following lines:
 > 
-> > From: Len Brown <len.brown@intel.com>
-> >
-> > This EXPERIMENTAL driver supersedes acpi_idle
-> > on modern Intel processors. (Nehalem and Atom Processors).
-> >
-> > For CONFIG_INTEL_IDLE=y, intel_idle probes before acpi_idle,
-> > no matter if CONFIG_ACPI_PROCESSOR=y or =m.
-> >
-> > Boot with "intel_idle.max_cstate=0" to disable the driver
-> > and to fall back on ACPI.
-> >
-> > CONFIG_INTEL_IDLE=m is not recommended unless the system
-> > has a method to guarantee intel_idle loads before ACPI's
-> > processor_idle.
-> >
-> > This driver does not yet know about cpu online/offline
-> > and thus will not yet play well with cpu-hotplug.
-> >
-> > Signed-off-by: Len Brown <len.brown@intel.com>
-> > ---
-> >  MAINTAINERS                     |    7 +
-> >  drivers/Makefile                |    2 +-
-> >  drivers/acpi/processor_driver.c |    6 +-
-> >  drivers/idle/Kconfig            |   11 +
-> >  drivers/idle/Makefile           |    1 +
-> >  drivers/idle/intel_idle.c       |  446
-> > +++++++++++++++++++++++++++++++++++++++
+> int input = open ("/dev/input", O_RDONLY|O_NONBLOCK);
+> char foo;
 > 
-> Any reason this arch-specific driver needs to be in drivers/idle
-> instead of under a platform specific dir like arch/x86?
+> while (1) {
+> 	suspend_block();
+> 	if (read(input, &foo, 1) > 0) {
+> 		(do something)
+> 		suspend_unblock();
+> 	} else {
+> 		suspend_unblock();
+> 		(draw bouncing cows and clouds and tractor beams briefly)
+> 	}
+> }
 > 
-> On embedded SoCs that have never had ACPI, we have our
-> platform-specific CPUidle drivers in with the rest of our platform
-> specific code.
-> 
+> Now, if the user is playing this game, you want it to be scheduled. If 
+> the user has put down their phone and the screen lock has kicked in, you 
+> don't want it to be scheduled. So we could imagine some sort of cgroup 
+> that contains untrusted tasks - when the session is active we set a flag 
+> one way which indicates to the scheduler that tasks in TASK_RUNNING 
+> should be scheduled, and when the session is idle we set the flag the 
+> other way and all processes in that cgroup get shifted to 
+> TASK_INTERRUPTIBLE or something.
 
-it's really inconvenient to have such drivers hidden in the
-architecture code; it's much more convenient for cpuidle developers
-if they're all in one place.
-Think of it this way: you're not putting the NIC driver for your SOC in
-a architecture directory either...
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+What's wrong with simply making the phone beep loudly and displaying:
+bouncing cows is preventing your phone from sleeping!
