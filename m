@@ -1,13 +1,23 @@
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 20:08:53 +0200 (CEST)
-Message-ID: <alpine.LFD.2.00.1005272006560.3032__5.71989589861488$1274985175$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.1005271334560.3239-100000@iolanthe.rowland.org>
+Date: Thu, 27 May 2010 19:12:39 +0100
+Message-ID: <20100527181239.GF3543__17718.7074245468$1274985178$gmane$org@srcf.ucam.org>
+References: <20100526142430.327ccbc4@schatten.dmk.lab>
+	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
+	<AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
+	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
+	<20100527140655.GA28048@srcf.ucam.org>
+	<20100527160543.2228fc17@lxorguk.ukuu.org.uk>
+	<20100527160714.GB31937@srcf.ucam.org>
+	<20100527174131.18fd1c72@lxorguk.ukuu.org.uk>
+	<20100527165210.GA1062@srcf.ucam.org>
+	<20100527190204.14546caa@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005271334560.3239-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <20100527190204.14546caa@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,31 +27,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 27 May 2010, Alan Stern wrote:
-
-> On Thu, 27 May 2010, Thomas Gleixner wrote:
+On Thu, May 27, 2010 at 07:02:04PM +0100, Alan Cox wrote:
+> > This is still racy. Going back to this:
+> > 
+> > int input = socket(AF_INET, SOCK_STREAM|SOCK_NONBLOCK, 0);
+> > char foo;
+> > struct sockaddr addr;
+> > connect (input, &addr, sizeof(addr))
+> > while (1) {
+> >        if (read(input, &foo, 1) > 0) {
+> >                (do something)
+> >        } else {
+> > 		* SUSPEND OCCURS HERE *
 > 
-> > Crap. Stop beating on those lost wakeup events. If we lose them then
-> > the drivers are broken and do not handle the switch over correctly. Or
-> > the suspend mechanism is broken as it does not evaluate the system
-> > state correctly. Blockers are just papering over that w/o tackling the
-> > real problem.
+> Fine but then the packet will arrive and we will wake back up process the
+> packet and wake the task. See suspend is just like a deep sleep. If we
+> went to sleep there and the packet arrival doesn't rewake the box the
+> driver was buggy.
+
+Yes, there's no problem so far. The question is how you guarantee that 
+the application has had the opportunity to handle the packet.
+
+> > reaches the end of its timeslice. At this point the application has not 
+> > had an opportunity to indicate in any way whether or not the packet has 
+> > altered its constraints in any way. What stops us from immediately 
+> > suspending again?
 > 
-> That's the point -- suspend does not evaluate the system state 
-> correctly because it doesn't have the necessary information.  Suspend 
-> blockers are a way of providing it that information.  They don't paper 
-> over the problem; they solve it.
+> If my app level constraint before the packet is 'don't suspend' then my
+> constraint on receipt is 'don't suspend' so I won't suspend. If my
+> constraint is then lowered and I suspend I will suspend *after* the
+> lowering.
 
-Nonsense. The system state is well defined when a event is pending and
-we just have to say good bye to the idea that forced suspend is a good
-solution. It's not as it does not guarantee the event processing in
-badly written apps and it does move the power consumption to a later
-point in time for those apps which acquire/drop the blockers.
+If the app level constraint before the packet was "don't suspend", we 
+wouldn't have suspended. Here's a description of the desired behaviour 
+of the application as you requested:
 
-Thanks,
+The application is a network monitoring app that renders server state 
+via animated bouncing cows. The desired behaviour is that the 
+application will cease to be scheduled if the session becomes idle 
+(where idle is defined as the system having received no user input for 
+30 seconds) but that push notifications from the server still be 
+received in order to allow the application to present the user with 
+critical alerts.
 
-	tglx
+Under Android:
+
+User puts down phone. 30 seconds later the screen turns off and releases 
+the last user-level suspend block. The phone enters suspend and the 
+application is suspended. A network packet is received, causing the 
+network driver to take a suspend block. The application finishes the 
+frame it was drawing, takes its own suspend block and reads the network 
+packet. In doing so the network driver releases its suspend block, but 
+since userspace is holding one the phone stays awake. The application 
+then handles the event as necessary, releases its suspend block and the 
+phone goes to sleep again.
+
+I don't see how this behaviour can be emulated in your model.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
