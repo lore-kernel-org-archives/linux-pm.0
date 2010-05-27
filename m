@@ -1,16 +1,14 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 07:14:29 +0200
-Message-ID: <20100527071429.58fa81ac__21843.236385803$1274937805$gmane$org@schatten.dmk.lab>
-References: <20100526171106.0e44a736@schatten.dmk.lab>
-	<alpine.LFD.2.00.1005261829540.2995@localhost.localdomain>
-	<20100526215409.33296d94@schatten.dmk.lab>
-	<20100526230943.6f5e5b37@lxorguk.ukuu.org.uk>
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH-v2 3/8] cpuidle: make cpuidle_curr_driver static
+Date: Thu, 27 May 2010 01:27:46 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1005270126000.4039__860.964894718741$1274938181$gmane$org@localhost.localdomain>
+References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
+	<db2b1d371847edfdbba21f323b4fd4a480c8c5aa.1274926772.git.len.brown@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100526230943.6f5e5b37@lxorguk.ukuu.org.uk>
+In-reply-to: <db2b1d371847edfdbba21f323b4fd4a480c8c5aa.1274926772.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,31 +18,171 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Linux@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, felipe.balbi@nokia.com
+To: x86@kernel.org, linux-pm@lists.linux-foundation.org
+Cc: tony.luck@intel.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 May 2010 23:09:43 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+From: Len Brown <len.brown@intel.com>
 
-> We now have suggestions how to do the job properly so the right thing is
-> probably to go and explore those suggestions not merge crap.
-> 
-> Merging crap won't help anyway. The rest of the kernel community can
-> still simply stonewall those interfaces, and a volunteer community has
-> ways of dealing with abuse of process, notably by simply not getting
-> around to, or implementing things directly contrary to the crap bits.
-> 
-> So it's not even in the interest of people to play political games. Even
-> if you get away with in the short term the people who rely on the junk
-> will end up out on a limb and holding the baby when the crap hits the fan
-> (see reiserfs)
-> 
-> Alan
+cpuidle_register_driver() sets cpuidle_curr_driver
+cpuidle_unregister_driver() clears cpuidle_curr_driver
 
-I'm not interested in "abusing processes". I just think, this is in
-limbo for too long already.
-Just decide something. One way or the other. The world will continue.
+We should't expose cpuidle_curr_driver to
+potential modification except via these interfaces.
+So make it static and create cpuidle_get_driver() to observe it.
 
-Cheers,
-Flo
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+Tony noticed that since IA64 builds with CONFIG_CPU_IDLE=n
+that we need an inline for the new cpuidle_get_driver() routine
+to make the ACPI driver build happy.
+
+ drivers/cpuidle/cpuidle.c |   12 +++++++-----
+ drivers/cpuidle/cpuidle.h |    1 -
+ drivers/cpuidle/driver.c  |   11 ++++++++++-
+ drivers/cpuidle/sysfs.c   |    5 +++--
+ include/linux/cpuidle.h   |    2 ++
+ 5 files changed, 22 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 12fdd39..1994885 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -156,7 +156,7 @@ int cpuidle_enable_device(struct cpuidle_device *dev)
+ 
+ 	if (dev->enabled)
+ 		return 0;
+-	if (!cpuidle_curr_driver || !cpuidle_curr_governor)
++	if (!cpuidle_get_driver() || !cpuidle_curr_governor)
+ 		return -EIO;
+ 	if (!dev->state_count)
+ 		return -EINVAL;
+@@ -207,7 +207,7 @@ void cpuidle_disable_device(struct cpuidle_device *dev)
+ {
+ 	if (!dev->enabled)
+ 		return;
+-	if (!cpuidle_curr_driver || !cpuidle_curr_governor)
++	if (!cpuidle_get_driver() || !cpuidle_curr_governor)
+ 		return;
+ 
+ 	dev->enabled = 0;
+@@ -271,10 +271,11 @@ static int __cpuidle_register_device(struct cpuidle_device *dev)
+ {
+ 	int ret;
+ 	struct sys_device *sys_dev = get_cpu_sysdev((unsigned long)dev->cpu);
++	struct cpuidle_driver *cpuidle_driver = cpuidle_get_driver();
+ 
+ 	if (!sys_dev)
+ 		return -EINVAL;
+-	if (!try_module_get(cpuidle_curr_driver->owner))
++	if (!try_module_get(cpuidle_driver->owner))
+ 		return -EINVAL;
+ 
+ 	init_completion(&dev->kobj_unregister);
+@@ -284,7 +285,7 @@ static int __cpuidle_register_device(struct cpuidle_device *dev)
+ 	per_cpu(cpuidle_devices, dev->cpu) = dev;
+ 	list_add(&dev->device_list, &cpuidle_detected_devices);
+ 	if ((ret = cpuidle_add_sysfs(sys_dev))) {
+-		module_put(cpuidle_curr_driver->owner);
++		module_put(cpuidle_driver->owner);
+ 		return ret;
+ 	}
+ 
+@@ -325,6 +326,7 @@ EXPORT_SYMBOL_GPL(cpuidle_register_device);
+ void cpuidle_unregister_device(struct cpuidle_device *dev)
+ {
+ 	struct sys_device *sys_dev = get_cpu_sysdev((unsigned long)dev->cpu);
++	struct cpuidle_driver *cpuidle_driver = cpuidle_get_driver();
+ 
+ 	if (dev->registered == 0)
+ 		return;
+@@ -340,7 +342,7 @@ void cpuidle_unregister_device(struct cpuidle_device *dev)
+ 
+ 	cpuidle_resume_and_unlock();
+ 
+-	module_put(cpuidle_curr_driver->owner);
++	module_put(cpuidle_driver->owner);
+ }
+ 
+ EXPORT_SYMBOL_GPL(cpuidle_unregister_device);
+diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
+index 9476ba3..33e50d5 100644
+--- a/drivers/cpuidle/cpuidle.h
++++ b/drivers/cpuidle/cpuidle.h
+@@ -9,7 +9,6 @@
+ 
+ /* For internal use only */
+ extern struct cpuidle_governor *cpuidle_curr_governor;
+-extern struct cpuidle_driver *cpuidle_curr_driver;
+ extern struct list_head cpuidle_governors;
+ extern struct list_head cpuidle_detected_devices;
+ extern struct mutex cpuidle_lock;
+diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+index 5b6fd0f..4a68d40 100644
+--- a/drivers/cpuidle/driver.c
++++ b/drivers/cpuidle/driver.c
+@@ -14,7 +14,7 @@
+ 
+ #include "cpuidle.h"
+ 
+-struct cpuidle_driver *cpuidle_curr_driver;
++static struct cpuidle_driver *cpuidle_curr_driver;
+ DEFINE_SPINLOCK(cpuidle_driver_lock);
+ 
+ /**
+@@ -40,6 +40,15 @@ int cpuidle_register_driver(struct cpuidle_driver *drv)
+ EXPORT_SYMBOL_GPL(cpuidle_register_driver);
+ 
+ /**
++ * cpuidle_get_driver - return the current driver
++ */
++struct cpuidle_driver *cpuidle_get_driver(void)
++{
++	return cpuidle_curr_driver;
++}
++EXPORT_SYMBOL_GPL(cpuidle_get_driver);
++
++/**
+  * cpuidle_unregister_driver - unregisters a driver
+  * @drv: the driver
+  */
+diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+index 0ba9c8b..0310ffa 100644
+--- a/drivers/cpuidle/sysfs.c
++++ b/drivers/cpuidle/sysfs.c
+@@ -47,10 +47,11 @@ static ssize_t show_current_driver(struct sysdev_class *class,
+ 				   char *buf)
+ {
+ 	ssize_t ret;
++	struct cpuidle_driver *cpuidle_driver = cpuidle_get_driver();
+ 
+ 	spin_lock(&cpuidle_driver_lock);
+-	if (cpuidle_curr_driver)
+-		ret = sprintf(buf, "%s\n", cpuidle_curr_driver->name);
++	if (cpuidle_driver)
++		ret = sprintf(buf, "%s\n", cpuidle_driver->name);
+ 	else
+ 		ret = sprintf(buf, "none\n");
+ 	spin_unlock(&cpuidle_driver_lock);
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 0fe1efe..ee27a1f 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -125,6 +125,7 @@ struct cpuidle_driver {
+ #ifdef CONFIG_CPU_IDLE
+ 
+ extern int cpuidle_register_driver(struct cpuidle_driver *drv);
++struct cpuidle_driver *cpuidle_get_driver(void);
+ extern void cpuidle_unregister_driver(struct cpuidle_driver *drv);
+ extern int cpuidle_register_device(struct cpuidle_device *dev);
+ extern void cpuidle_unregister_device(struct cpuidle_device *dev);
+@@ -138,6 +139,7 @@ extern void cpuidle_disable_device(struct cpuidle_device *dev);
+ 
+ static inline int cpuidle_register_driver(struct cpuidle_driver *drv)
+ {return -ENODEV;}
++static inline cpuidle_driver *cpuidle_get_driver(void) {return NULL;}
+ static inline void cpuidle_unregister_driver(struct cpuidle_driver *drv) { }
+ static inline int cpuidle_register_device(struct cpuidle_device *dev)
+ {return -ENODEV;}
+-- 
+1.6.0.6
