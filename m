@@ -1,24 +1,15 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 16:43:57 +0200
-Message-ID: <1274971437.27810.5078.camel__26302.7600165971$1274971489$gmane$org@twins>
-References: <20100526120242.5c9b73ad@schatten.dmk.lab>
-	<AANLkTim4021cTnhVZrQpefq1MG-eEPOFLDRO-XDepHb4@mail.gmail.com>
-	<20100526133721.602633b2@schatten.dmk.lab>
-	<AANLkTikzgaOFdQKess4E-D86OLPOzxP3dWiDkU_UR0ri@mail.gmail.com>
-	<20100526142430.327ccbc4@schatten.dmk.lab>
-	<20100526141612.3e2e0443@lxorguk.ukuu.org.uk>
-	<AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
-	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
-	<20100527140655.GA28048@srcf.ucam.org>
-	<1274970531.27810.5024.camel@twins>
-	<20100527143508.GA30117@srcf.ucam.org>
-	<1274971317.27810.5070.camel@twins>
+From: Igor Stoppa <igor.stoppa@nokia.com>
+Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
+ driver for select intel processors
+Date: Thu, 27 May 2010 17:51:00 +0300
+Message-ID: <4BFE86D4.60602__1024.72465155206$1274971788$gmane$org@nokia.com>
+References: <1274928151-30919-1-git-send-email-lenb@kernel.org>	<e099975ca65a7f6ac7f8bc3fee84d3e03893aa31.1274926772.git.len.brown@intel.com>	<198450ec1600d9a7f55270dd4d44d6b55bc5b184.1274926772.git.len.brown@intel.com>	<87ljb5l9d5.fsf@deeprootsystems.com>
+	<20100527072207.2e783b1e@infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1274971317.27810.5070.camel@twins>
+In-Reply-To: <20100527072207.2e783b1e@infradead.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,43 +19,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: ext Arjan van de Ven <arjan@infradead.org>
+Cc: "Len@smtp1.linux-foundation.org" <Len@smtp1.linux-foundation.org>, Brown <len.brown@intel.com>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2010-05-27 at 16:41 +0200, Peter Zijlstra wrote:
-> On Thu, 2010-05-27 at 15:35 +0100, Matthew Garrett wrote:
-> > On Thu, May 27, 2010 at 04:28:51PM +0200, Peter Zijlstra wrote:
-> > > On Thu, 2010-05-27 at 15:06 +0100, Matthew Garrett wrote:
-> > > > one way which indicates to the scheduler that tasks in TASK_RUNNING 
-> > > > should be scheduled, and when the session is idle we set the flag the 
-> > > > other way and all processes in that cgroup get shifted to 
-> > > > TASK_INTERRUPTIBLE or something.
-> > > 
-> > > What's wrong with simply making the phone beep loudly and displaying:
-> > > bouncing cows is preventing your phone from sleeping!
-> > 
-> > Well, primarily that it's possible to design an implementation where it 
-> > *doesn't* prevent your phone froms sleeping, but also because a given 
-> > application may justifiably be preventing your phone from sleeping for a 
-> > short while. What threshold do you use to determine the difference?
-> 
-> Whatever you want, why would the kernel care?
-> 
-> You can create a whole resource management layer in userspace, with
-> different privilidge/trust levels. Trusted apps may wake more than
-> untrusted apps. Who cares.
-> 
-> The thing is, you can easily detect what keeps your cpu from idling.
-> What you do about it a pure userspace solution.
-> 
-> You can use the QoS stuff to give hints, like don't wake me more than 5
-> times a minute, if with those hints an app still doesn't meet whatever
-> criteria are suitable for the current mode, yell at it. Or adjust its
-> QoS parameters for it.
-> 
-> Heck, for all I care, simply SIGKILL the thing and report it once the
-> user starts looking at his screen again.
+Hi,
 
-Provide incentive for Joe Clicker to improve his app, instead of cope
-with the shit he created.
+
+ext Arjan van de Ven wrote:
+
+> it's really inconvenient to have such drivers hidden in the
+> architecture code; it's much more convenient for cpuidle developers
+> if they're all in one place.
+>   
+
+why?
+
+> Think of it this way: you're not putting the NIC driver for your SOC in
+> a architecture directory either...
+>
+>   
+
+That would be a separate chip, usually, which has its own driver.
+
+The SOC has some bus interface and the arch-specific part of it, if any, 
+is in the arch directory.
+
+igor
