@@ -1,14 +1,23 @@
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 20:27:12 +0100
-Message-ID: <20100527202712.181fd172__44496.8323143714$1274989484$gmane$org@lxorguk.ukuu.org.uk>
-References: <20100527175719.GD3543@srcf.ucam.org>
-	<Pine.LNX.4.44L0.1005271449160.3239-100000@iolanthe.rowland.org>
+Date: Thu, 27 May 2010 20:53:33 +0100
+Message-ID: <20100527205333.676ad65e__40862.2279567227$1274989624$gmane$org@lxorguk.ukuu.org.uk>
+References: <20100527140655.GA28048@srcf.ucam.org>
+	<20100527160543.2228fc17@lxorguk.ukuu.org.uk>
+	<20100527160714.GB31937@srcf.ucam.org>
+	<20100527174131.18fd1c72@lxorguk.ukuu.org.uk>
+	<20100527165210.GA1062@srcf.ucam.org>
+	<20100527190204.14546caa@lxorguk.ukuu.org.uk>
+	<20100527181239.GF3543@srcf.ucam.org>
+	<20100527194840.5bca973f@lxorguk.ukuu.org.uk>
+	<20100527185658.GA5703@srcf.ucam.org>
+	<20100527202538.7d2d7f3c@lxorguk.ukuu.org.uk>
+	<20100527192926.GA6977@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1005271449160.3239-100000@iolanthe.rowland.org>
+In-Reply-To: <20100527192926.GA6977@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,29 +27,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux@smtp1.linux-foundation.org, felipe.balbi@nokia.com, List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> Rather than continue going around in circles, let's agree that what the 
-> Android people want is a new version of forced suspend -- not a 
+On Thu, 27 May 2010 20:29:26 +0100
+Matthew Garrett <mjg59@srcf.ucam.org> wrote:
 
-I don't think this is true. I think that is the root of the problem.
+> On Thu, May 27, 2010 at 08:25:38PM +0100, Alan Cox wrote:
+> 
+> > The scheduler can happily do this, the power management will also
+> > recognize STOPPED processes as no impediment to suspend.
+> 
+> But wakeup events won't be delivered to STOPped processes, and there's 
 
-I don't disagree with the user experience they are trying to create or
-the fact something is needed to make it possible (if it turns out we
-can't already do it).
+Try the following
 
-Forced suspend is sticking stuff in running state into suspend
+	cat <pipe
+	kill -STOP catpid
 
-Power management models (such as Thomas ARM box) which we know work are
-'when nothing is running' into suspend.
+	echo "wombats are cool" > pipe
+	kill -CONT catpid
 
-So for me the real question on that side of this specific case is 'how
-do you make sure those tasks are idle when you need them to be'
+it will echo "wombats are cool"
 
-QoS ?
-Spanking them from user space ?
-Drivers enforcing policy elements by blocking tasks ?
+The event was not lost.
 
-Alan
+> also the race of an application being in the middle of handling a wakeup 
+> event when you send it the signal.
+
+sigmask()
