@@ -1,23 +1,13 @@
-From: Zygo Blaxell <vger-linux-omap-esightcorp@mailtoo.hungrycats.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 15:32:43 -0400
-Message-ID: <20100527193243.GC25663__25484.8356162713$1274988859$gmane$org@gibbs.hungrycats.org>
-References: <20100527003943.07c17f85@lxorguk.ukuu.org.uk>
-	<20100527140655.GA28048@srcf.ucam.org>
-	<20100527160543.2228fc17@lxorguk.ukuu.org.uk>
-	<20100527160714.GB31937@srcf.ucam.org>
-	<20100527174131.18fd1c72@lxorguk.ukuu.org.uk>
-	<20100527165210.GA1062@srcf.ucam.org>
-	<20100527190204.14546caa@lxorguk.ukuu.org.uk>
-	<20100527181239.GF3543@srcf.ucam.org>
-	<20100527194840.5bca973f@lxorguk.ukuu.org.uk>
-	<20100527185658.GA5703@srcf.ucam.org>
+Date: Thu, 27 May 2010 15:32:50 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005271526130.3239-100000__19325.6582053893$1274988939$gmane$org@iolanthe.rowland.org>
+References: <20100527202712.181fd172@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100527185658.GA5703@srcf.ucam.org>
+In-Reply-To: <20100527202712.181fd172@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,12 +17,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 27, 2010 at 07:56:58PM +0100, Matthew Garrett wrote:
-> Even if it's using poll, it could block purely on the display if X turns 
-> the screen off between poll() waking and the write being made.
+On Thu, 27 May 2010, Alan Cox wrote:
 
-That's what fcntl(fd, F_SETFL, O_NONBLOCK) is for.
+> > Rather than continue going around in circles, let's agree that what the 
+> > Android people want is a new version of forced suspend -- not a 
+> 
+> I don't think this is true. I think that is the root of the problem.
+
+Of course it's true.  Just ask Arve -- he wants opportunistic suspend 
+and it _is_ a variant of forced suspend.  Ergo he wants a new type of 
+forced suspend.
+
+Maybe that's not what he _ought_ to want.  Nevertheless, there are 
+valid reasons for wanting it.
+
+> I don't disagree with the user experience they are trying to create or
+> the fact something is needed to make it possible (if it turns out we
+> can't already do it).
+> 
+> Forced suspend is sticking stuff in running state into suspend
+> 
+> Power management models (such as Thomas ARM box) which we know work are
+> 'when nothing is running' into suspend.
+> 
+> So for me the real question on that side of this specific case is 'how
+> do you make sure those tasks are idle when you need them to be'
+> 
+> QoS ?
+> Spanking them from user space ?
+> Drivers enforcing policy elements by blocking tasks ?
+
+Currently we use the freezer.  But it is a blunt tool -- it freezes 
+every user process.  Also, it doesn't actually make processes 
+unrunnable; it just arranges things so that when they do run, they 
+immediately put themselves back to sleep.
+
+And the forced-suspend design relies on the fact that processes remain 
+frozen throughout.  If we leave some processes unfrozen and one of them 
+somehow becomes runnable, that means we have to abort the forced 
+suspend before the process is allowed to run.
+
+Alan Stern
