@@ -1,23 +1,12 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 21:11:56 +0100
-Message-ID: <20100527201155.GB7449__24447.8058921688$1274991192$gmane$org@srcf.ucam.org>
-References: <20100527160714.GB31937@srcf.ucam.org>
-	<20100527174131.18fd1c72@lxorguk.ukuu.org.uk>
-	<20100527165210.GA1062@srcf.ucam.org>
-	<20100527190204.14546caa@lxorguk.ukuu.org.uk>
-	<20100527181239.GF3543@srcf.ucam.org>
-	<20100527194840.5bca973f@lxorguk.ukuu.org.uk>
-	<20100527185658.GA5703@srcf.ucam.org>
-	<20100527202538.7d2d7f3c@lxorguk.ukuu.org.uk>
-	<20100527192926.GA6977@srcf.ucam.org>
-	<20100527205333.676ad65e@lxorguk.ukuu.org.uk>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] CPU: Avoid using unititialized error variable in
+	disable_nonboot_cpus()
+Date: Thu, 27 May 2010 22:16:22 +0200
+Message-ID: <201005272216.22472.rjw__33983.2052043223$1274991372$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100527205333.676ad65e@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,40 +16,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 27, 2010 at 08:53:33PM +0100, Alan Cox wrote:
-> On Thu, 27 May 2010 20:29:26 +0100
-> Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> > But wakeup events won't be delivered to STOPped processes, and there's 
-> 
-> Try the following
-> 
-> 	cat <pipe
-> 	kill -STOP catpid
-> 
-> 	echo "wombats are cool" > pipe
-> 	kill -CONT catpid
-> 
-> it will echo "wombats are cool"
-> 
-> The event was not lost.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Not lost, but not delivered. So you need your policy agent to send 
-SIGCONT when you receive any wakeup event, which either means proxying 
-all your network traffic through your policy agent or having some 
-mechanism for alerting the policy agent whenever you leave the deep idle 
-state.
+If there's only one CPU online when disable_nonboot_cpus() is called,
+the error variable will not be initialized and that may lead to
+erroneous behavior.  Fix this issue by initializing error in
+disable_nonboot_cpus() as appropriate.
 
-> > also the race of an application being in the middle of handling a wakeup 
-> > event when you send it the signal.
-> 
-> sigmask()
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/cpu.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Doesn't help - I may be hit by the signal between the poll() unblocking 
-and me having the opportunity to call sigmask().
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Index: linux-2.6/kernel/cpu.c
+===================================================================
+--- linux-2.6.orig/kernel/cpu.c
++++ linux-2.6/kernel/cpu.c
+@@ -394,7 +394,7 @@ static cpumask_var_t frozen_cpus;
+ 
+ int disable_nonboot_cpus(void)
+ {
+-	int cpu, first_cpu, error;
++	int cpu, first_cpu, error = 0;
+ 
+ 	cpu_maps_update_begin();
+ 	first_cpu = cpumask_first(cpu_online_mask);
