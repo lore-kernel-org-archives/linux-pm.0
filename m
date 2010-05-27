@@ -1,17 +1,23 @@
-From: Peter Zijlstra <peterz@infradead.org>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 19:47:27 +0200
-Message-ID: <1274982447.27810.5684.camel__11509.0496991344$1274982582$gmane$org@twins>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<alpine.LFD.2.00.1005271915540.3032@localhost.localdomain>
-	<20100527173118.GE2468@srcf.ucam.org>
-	<1274981680.27810.5636.camel@twins>
-	<20100527174019.GA3187@srcf.ucam.org>
+Date: Thu, 27 May 2010 18:50:30 +0100
+Message-ID: <20100527175030.GA3543__503.091308246617$1274982784$gmane$org@srcf.ucam.org>
+References: <AANLkTin97MMu-XO_Lk-snefBWz2ymhS0Qi1y1RxLwdVA@mail.gmail.com>
+	<20100527003943.07c17f85@lxorguk.ukuu.org.uk>
+	<20100527140655.GA28048@srcf.ucam.org>
+	<alpine.LFD.2.00.1005271642440.3032@localhost.localdomain>
+	<20100527155201.GA31937@srcf.ucam.org>
+	<alpine.LFD.2.00.1005271808340.3032@localhost.localdomain>
+	<20100527165931.GB1062@srcf.ucam.org>
+	<alpine.LFD.2.00.1005271905000.3032@localhost.localdomain>
+	<20100527172343.GB2468@srcf.ucam.org>
+	<20100527184918.3d090921@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100527174019.GA3187@srcf.ucam.org>
+Content-Disposition: inline
+In-Reply-To: <20100527184918.3d090921@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,24 +27,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2010-05-27 at 18:40 +0100, Matthew Garrett wrote:
-> On Thu, May 27, 2010 at 07:34:40PM +0200, Peter Zijlstra wrote:
-> > > we still need to be able to enter suspend while the system isn't idle.
-> > 
-> > _WHY_!?
+On Thu, May 27, 2010 at 06:49:18PM +0100, Alan Cox wrote:
+> > ACPI provides no guarantees about what level of hardware functionality 
+> > remains during S3. You don't have any useful ability to determine which 
+> > events will generate wakeups. And from a purely practical point of view, 
+> > since the latency is in the range of seconds, you'll never have a low 
+> > enough wakeup rate to hit it.
 > 
-> Because if I'm running a kernel build in a tmpfs and I hit the sleep 
-> key, I need to go to sleep. Blocking processes on driver access isn't 
-> sufficient.
+> So PCs with current ACPI don't get opportunistic suspend capability. It
+> probably won't be supported on the Commodore Amiga either - your point ?
 
-But that's a whole different issue. I agree that a forced suspend for
-things like that make sense, just not for power managing a running
-system. PC style hardware like that doesn't wake up from suspend for
-funny things like a keypress either (good thing too).
+Actually, the reverse - there's no terribly good way to make PCs work 
+with scheduler-based suspend, but there's no reason why they wouldn't 
+work with the current opportunistic suspend implementation.
 
-Anyway all that already works (more or less), so I don't see the
-problem.
+> > Suspend blockers are the mechanism for the 
+> > driver to indicate whether the wakeup event has been handled. That's 
+> > what they're there for. The in-kernel ones don't paper over anything.
+> 
+> Semantically the in kernel blockers and the in kernel expression of
+> device driven constraints are the same thing except that instead of 
+> yes/no you replace the boolean with information.
+
+In some cases, not all. It may be a latency constraint (in which case 
+pm_qos is an appropriate mechanism), but instead it may be something 
+like "A key was pressed but never read" or "A network packet was 
+received but not delivered". These don't fit into the pm_qos model, but 
+it's state that you have to track.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
