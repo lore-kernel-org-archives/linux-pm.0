@@ -1,16 +1,23 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 7/8] ACPI: acpi_idle: touch TS_POLLING only in
- the non-MWAIT case
-Date: Wed, 26 May 2010 22:42:30 -0400
-Message-ID: <34959ffadbffe1eaedcf5cc677916b2f7313dc4e.1274926772.git.len.brown__32425.9524968967$1274929193$gmane$org@intel.com>
-References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: Power Domain Framework
+Date: Thu, 27 May 2010 12:01:00 +0900
+Message-ID: <20100527030059.GA30505__3886.54419589347$1274929419$gmane$org@linux-sh.org>
+References: <1274118332.17303.17.camel@bnru01>
+	<CEE6BB42CAD6E947908279175AF8470A025A726240@EXDCVYMBSTM006.EQ1STM.local>
+	<1274131108.2698.161.camel@finisterre.wolfsonmicro.main>
+	<CEE6BB42CAD6E947908279175AF8470A025A72624A@EXDCVYMBSTM006.EQ1STM.local>
+	<1274134636.2698.170.camel@finisterre.wolfsonmicro.main>
+	<1274162450.17303.35.camel@bnru01>
+	<AANLkTinTdTp_X4lGtZ0hCaVJN5GmvI0tXR1RTRkRNkjN@mail.gmail.com>
+	<20100524033859.GB24480@opensource.wolfsonmicro.com>
+	<33A307AF30D7BF4F811B1568FE7A9B180B67C60C@EXDCVYMBSTM006.EQ1STM.local>
+	<20100526210728.GB19188@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1274928151-30919-1-git-send-email-lenb@kernel.org>
-In-reply-to: <e099975ca65a7f6ac7f8bc3fee84d3e03893aa31.1274926772.git.len.brown@intel.com>
-References: <e099975ca65a7f6ac7f8bc3fee84d3e03893aa31.1274926772.git.len.brown@intel.com>
+Content-Disposition: inline
+In-Reply-To: <20100526210728.GB19188@opensource.wolfsonmicro.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,115 +27,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: x86@kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Venkatesh Pallipadi <venki@google.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Viresh KUMAR <viresh.kumar@st.com>, Rajeev KUMAR <rajeev-dlh.kumar@st.com>, Linus WALLEIJ <linus.walleij@stericsson.com>, Shiraz HASHIM <shiraz.hashim@st.com>, Armando VISCONTI <armando.visconti@st.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vipin KUMAR <vipin.kumar@st.com>, STEricsson_nomadik_linux <STEricsson_nomadik_linux@list.st.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Sundar R IYER <sundar.iyer@stericsson.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+On Wed, May 26, 2010 at 05:07:28PM -0400, Mark Brown wrote:
+> On Wed, May 26, 2010 at 10:33:49AM +0200, Sundar R IYER wrote:
+> > >needs of the core regulator applications.  As I keep saying I'm just not
+> > >seeing much more overlap here with the regulator API than I do with the
+> > >clock API: it feels like you've got another use case which needs an API
+> > >with a similar structure and the reference counted enable and disable
+> > >calls but otherwise very little overlap.
+> 
+> > As I agreed earlier, its true about requirement. It is also true that the clock API can suffice.
+> > But what is essential here is: we are talking about regulators here.
+> > Why would we need to model a seemingly similar regulator as a clock?
+> 
+> You're missing the point here.  I'm not saying use the clock API, I'm
+> saying that it feels like you want a parallel API that's aimed at the
+> needs of operating points which mirrors the structure of the existing
+> clock and regulator APIs.
+> 
+We did something like this on SH with our hwblk API for dealing with
+module power gating, which forms the basis for our runtime PM
+implementation. In the SH case we simply have a set of registers that
+have on/off control over the bulk of the modules in any given CPU, and we
+associate that at the platform device level.
 
-commit d306ebc28649b89877a22158fe0076f06cc46f60
-(ACPI: Be in TS_POLLING state during mwait based C-state entry)
-fixed an important power & performance issue where ACPI c2 and c3 C-states
-were clearing TS_POLLING even when using MWAIT (ACPI_STATE_FFH).
-That bug had been causing us to receive redundant scheduling interrups
-when we had already been woken up by MONITOR/MWAIT.
+Having said that, building on top of the regulator API for these cases
+wouldn't be that much work either, since it largely has all of the
+infrastructure in place (ie, the static consumer case).
 
-Following up on that...
+> It's perfectly sensible for the power domain to be a regulator consumer,
+> but having the individual consumer devices be regulator consumers seems
+> non-obvious.
+> 
+The common case on SH is that certain blocks are only available in
+certain power domains, while the on/off control remains uniform (albeit
+periodically ineffectual) regardless of state. We also don't have any
+ability to regulate voltage outside of things like PCMCIA.
 
-In the MWAIT case, we don't have to subsequently
-check need_resched(), as that c heck was there
-for the TS_POLLING-clearing case.
-
-Note that not only does the cpuidle calling function
-already check need_resched() before calling us, the
-low-level entry into monitor/mwait calls it twice --
-guaranteeing that a write to the trigger address
-can not go un-noticed.
-
-Also, in this case, we don't have to set TS_POLLING
-when we wake, because we never cleared it.
-
-Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: Venkatesh Pallipadi <venki@google.com>
----
- drivers/acpi/processor_idle.c |   28 ++++++++++++++++------------
- 1 files changed, 16 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 5939e7f..a4166e2 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -881,6 +881,7 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
- 		return(acpi_idle_enter_c1(dev, state));
- 
- 	local_irq_disable();
-+
- 	if (cx->entry_method != ACPI_CSTATE_FFH) {
- 		current_thread_info()->status &= ~TS_POLLING;
- 		/*
-@@ -888,12 +889,12 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
- 		 * NEED_RESCHED:
- 		 */
- 		smp_mb();
--	}
- 
--	if (unlikely(need_resched())) {
--		current_thread_info()->status |= TS_POLLING;
--		local_irq_enable();
--		return 0;
-+		if (unlikely(need_resched())) {
-+			current_thread_info()->status |= TS_POLLING;
-+			local_irq_enable();
-+			return 0;
-+		}
- 	}
- 
- 	/*
-@@ -918,7 +919,8 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
- 	sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
- 
- 	local_irq_enable();
--	current_thread_info()->status |= TS_POLLING;
-+	if (cx->entry_method != ACPI_CSTATE_FFH)
-+		current_thread_info()->status |= TS_POLLING;
- 
- 	cx->usage++;
- 
-@@ -968,6 +970,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
- 	}
- 
- 	local_irq_disable();
-+
- 	if (cx->entry_method != ACPI_CSTATE_FFH) {
- 		current_thread_info()->status &= ~TS_POLLING;
- 		/*
-@@ -975,12 +978,12 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
- 		 * NEED_RESCHED:
- 		 */
- 		smp_mb();
--	}
- 
--	if (unlikely(need_resched())) {
--		current_thread_info()->status |= TS_POLLING;
--		local_irq_enable();
--		return 0;
-+		if (unlikely(need_resched())) {
-+			current_thread_info()->status |= TS_POLLING;
-+			local_irq_enable();
-+			return 0;
-+		}
- 	}
- 
- 	acpi_unlazy_tlb(smp_processor_id());
-@@ -1032,7 +1035,8 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
- 	sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
- 
- 	local_irq_enable();
--	current_thread_info()->status |= TS_POLLING;
-+	if (cx->entry_method != ACPI_CSTATE_FFH)
-+		current_thread_info()->status |= TS_POLLING;
- 
- 	cx->usage++;
- 
--- 
-1.6.0.6
+On/off control in this context is completely orthoganol from clock
+control in that many peripherals without a specific input clock still
+implement power gating in the same way as those that do (this is the case
+for things like the L2 cache, TLB, breakpoint controller, etc). These are
+presently handled through the clock API largely because there was really
+no better fit for them at the time.
