@@ -1,15 +1,26 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Felipe Contreras <felipe.contreras@gmail.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sat, 29 May 2010 00:24:22 +0200
-Message-ID: <201005290024.22915.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<20100528104415.1403541a@schatten.dmk.lab>
-	<AANLkTikXtk-f41-z8gXfXLNLqgGVa0z4d-qgIvwljbR-@mail.gmail.com>
+Date: Sat, 29 May 2010 02:42:35 +0300
+Message-ID: <AANLkTinyh1YLmL6miVAxvkh9RMYDY5JChA-_f7oN0zvb__37350.9533274502$1275090300$gmane$org@mail.gmail.com>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
+	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
+	<20100527220949.GB10602@srcf.ucam.org>
+	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<20100527223605.GB11364@srcf.ucam.org>
+	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
+	<20100528043114.GC26177@thunk.org>
+	<20100528103713.0a7952d9@lxorguk.ukuu.org.uk>
+	<20100528114123.GA22947@srcf.ucam.org> <4BFFB681.1000105@nokia.com>
+	<AANLkTim04ZfMcPHRB2D_bqcAuguaGwySH2b6repuYLkk@mail.gmail.com>
+	<4BFFC5DF.5030504@nokia.com>
+	<AANLkTikKGeGHHL6AYC7uBuT7Zihj7lozfidWQ8zRHwab@mail.gmail.com>
+	<4BFFCF39.3010507@nokia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikXtk-f41-z8gXfXLNLqgGVa0z4d-qgIvwljbR-@mail.gmail.com>
+In-Reply-To: <4BFFCF39.3010507@nokia.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,33 +30,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Igor Stoppa <igor.stoppa@nokia.com>
+Cc: "tytso@mit.edu" <tytso@mit.edu>, Peter Zijlstra <peterz@infradead.org>, ext Brian Swetland <swetland@google.com>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 28 May 2010, Arve Hj=F8nnev=E5g wrote:
-> On Fri, May 28, 2010 at 1:44 AM, Florian Mickler <florian@mickler.org> wr=
-ote:
-> > On Thu, 27 May 2010 20:05:39 +0200 (CEST)
-> > Thomas Gleixner <tglx@linutronix.de> wrote:
-...
-> > To integrate this with the current way of doing things, i gathered it
-> > needs to be implemented as an idle-state that does the suspend()-call?
-> >
-> =
-
-> I think it is better no not confuse this with idle. Since initiating
-> suspend will cause the system to become not-idle, I don't think is is
-> beneficial to initiate suspend from idle.
-
-It is, if the following two conditions hold simultaneously:
-
-(a) Doing full system suspend is ultimately going to bring you more energy
-    savings than the (presumably lowest) idle state you're currently in.
-
-(b) You anticipate that the system will stay idle for a considerably long t=
-ime
-    such that it's worth suspending.
-
-Thanks,
-Rafael
+T24gRnJpLCBNYXkgMjgsIDIwMTAgYXQgNToxMiBQTSwgSWdvciBTdG9wcGEgPGlnb3Iuc3RvcHBh
+QG5va2lhLmNvbT4gd3JvdGU6Cj4gZXh0IEJyaWFuIFN3ZXRsYW5kIHdyb3RlOgo+PiBIb3cgaXMg
+aXQgZmxhd2VkPyDCoFNlcmlvdXMgcXVlc3Rpb24uCj4KPiBJIHdvdWxkIGF2b2lkIHJlcGVhdGlu
+ZyBhbGwgdGhlIGdvb2QgYXJndW1lbnRzIGdpdmVuIHNvIGZhciwgYnV0IHRvIG1ha2UgaXQKPiBz
+aG9ydDoKPgo+ICogSSBiZWxpZXZlIHJ1bnRpbWUgUE0gaXMgYSBtdWNoIGJldHRlciBzdGFydGlu
+ZyBwb2ludCAoYXQgbGVhc3QgZm9yIHRoZQo+IHR5cGUgb2YgSFcgdGFyZ2V0ZWQgYXQgbW9iaWxl
+IGRldmljZXMpIGJlY2F1c2UgaXQgbWltaWNzIGFuIGFsd2F5cy1vbiBzeXN0ZW0KPiB0b3dhcmQg
+dXNlcnNwYWNlLCB3aGljaCByZXF1aXJlcyBsZXNzIGRpc3J1cHRpb24gaW4gdGhlIHdheSBhcHBz
+IGFyZQo+IGRlc2lnbmVkCgpJIGFncmVlLgoKSWYgSSB1bmRlcnN0YW5kIGNvcnJlY3RseSwgaWYg
+d2UgaGF2ZSBhIHBlcmZlY3QgdXNlci1zcGFjZSB0aGF0IG9ubHkKZG9lcyB3b3JrIHdoZW4gc3Ry
+aWN0bHkgbmVlZGVkIGFuZCB0cnlpbmcgdG8gZG8gaXQgaW4gYnVyc3RzLCB0aGVuIHdlCndvdWxk
+IGJlIHJlYWNoaW5nIHRoZSBsb3dlc3QgcG93ZXIgc3RhdGUsIGFuZCB0aGVyZSB3b3VsZCBiZSBu
+byBuZWVkCmZvciBzdXNwZW5kLiBUaGUgcHJvYmxlbSBpcyB0aGF0IEFuZHJvaWQncyB1c2VyLXNw
+YWNlIGlzIHByZXR0eSBmYXIKZnJvbSB0aGF0LCBzbyB0aGV5IHNhaWQgImxldCdzIHNlZ3JlZ2F0
+ZSB1c2VyLXNwYWNlIGFuZCBnbyB0byBsb3dlcgpwb3dlciBtb2RlIGFueXdheSIuCgpJZiB0aGF0
+J3MgdHJ1ZSwgdGhlbiB0aGlzIHByb2JsZW0gY2FuIGJlIGZpeGVkIGluIHVzZXItc3BhY2UsIGFu
+ZCBpbgpmYWN0LCBpdCBhbHJlYWR5IGlzIG9uIE45MDAuIEdvb2QgYmVoYXZpbmcgYXBwbGljYXRp
+b25zIGFyZQphc3luY2hyb25vdXMsIHVzZSBnX3RpbWVvdXRfYWRkX3NlY29uZHMoKSB0byBhbGln
+biBidXJzdHMgb2Ygd29yayBhdAp0aGUgc2FtZSBzZWNvbmQgaW50ZXJ2YWxzLCBhbmQgZG9uJ3Qg
+ZG8gcG9sbHMgZGlyZWN0bHksIGJ1dCB1c2UgR0xpYidzCm1haW5sb29wLiBTYW1lIGFzIGluIEdO
+T01FIGRlc2t0b3AuIEl0IHNlZW1zIHRoZXJlIGFyZSBvdGhlciBtZXRob2RzCnRvIGFsaWduIG11
+bHRpcGxlIHByb2Nlc3NlcyBmb3IgbG9uZ2VyIHBlcmlvZHMgb2YgdGltZSwgYnV0IHRoYXQgY29k
+ZQppcyBjbG9zZWQgYW5kIEkgY2FuJ3QgZmluZCBtdWNoIGluZm9ybWF0aW9uLgoKPiAqIFFvUyBp
+cyBjbG9zZXIgdG8gdGhlIGFwcHMgcG92OiBmcHMgaWYgaXQgaXMgYSBtZWRpYSBwbGF5ZXIgb3Ig
+YSBnYW1lLAo+IHRyYW5zZmVyIHNwZWVkIGlmIGl0IGlzIGEgZmlsZSBtYW5hZ2VyLCBiYW5kd2lk
+dGggaWYgaXQgaXMgYSBuZXR3b3JrIGFwcCwKPiBldGMKPiBUaGUgYXBwIGlzIHJlcXVpcmVkIHRv
+IGV4cHJlc3MgaXRzIG9waW5pb24gYnkgdXNpbmcgYSBmb3JtYXQgdGhhdCBpdAo+IHVuZGVyc3Rh
+bmRzIGJldHRlciBhbmQgaXMgbGVzcyBzeXN0ZW0gZGVwZW5kZW50Lgo+IEFjdHVhbGx5IHRoZSBr
+ZXJuZWwgc2hvdWxkIG9ubHkgYmUgY29uY2VybmVkIHdpdGggMiBwYXJhbWV0ZXJzIGF0IG1vc3Qg
+Zm9yCj4gYW55IGdpdmVuIG9wZXJhdGlvbjogbGF0ZW5jeSBhbmQgYmFuZHdpZHRoL3Rocm91Z2hw
+dXQKCkkgdGhpbmsgdGhpcyBpbmZvcm1hdGlvbiBjYW4gYmUgb2J0YWluZWQgZHluYW1pY2FsbHkg
+d2hpbGUgdGhlCmFwcGxpY2F0aW9uIGlzIHJ1bm5pbmcsIGFuZCBwZXJoYXBzIHRoZSBsaW1pdHMg
+Y2FuIGJlIHN0b3JlZC4gSXQgd291bGQKYmUgcHJldHR5IGRpZmZpY3VsdCBmb3IgdGhlIGFwcGxp
+Y2F0aW9ucyB0byBnaXZlIHRoaXMga2luZCBvZgppbmZvcm1hdGlvbiBiZWNhdXNlIHRoZXJlIGFy
+ZSBzbyBtYW55IHZhcmlhYmxlcy4KCkZvciBleGFtcGxlLCBhbiBtZWRpYSBwbGF5ZXIgY2FuIHRl
+bGwgeW91OiB0aGlzIGNsaXAgaGFzIDI0IGZwcywgYnV0CmlmIHRoZSB1c2VyIGlzIG1vdmluZyB0
+aGUgdGltZSBzbGlkZXIsIHRoZSBmcHMgd291bGQgaW5jcmVhc2UgYW5kIGRyb3AKdmVyeSByYXBp
+ZGx5LCBhbmQgaG93IG11Y2ggZGVwZW5kcyBhdCBsZWFzdCBvbiB0aGUgY29udGFpbmVyIGZvcm1h
+dAphbmQgdHlwZSBvZiBzZWVrLgoKQSBnYW1lIG9yIGEgdGVsZXBob255IGFwcCBjb3VsZCB0ZWxs
+IHlvdSAiSSBuZWVkIHJlYWwtdGltZSBwcmlvcml0eSIKYnV0IHNvIG11Y2ggYXMgZ2l2aW5nIHRo
+ZSBkZXRhaWxzIG9mIGxhdGVuY3kgYW5kIGJhbmR3aWR0aD8gSSBmaW5kCnRoYXQgdmVyeSB1bmxp
+a2VseS4KCkNoZWVycy4KCi0tIApGZWxpcGUgQ29udHJlcmFzCl9fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1w
+bUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRp
+b24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
