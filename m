@@ -1,19 +1,20 @@
 From: Kevin Hilman <khilman@deeprootsystems.com>
 Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
  driver for select intel processors
-Date: Fri, 28 May 2010 10:27:32 -0700
-Message-ID: <1275067652.4507.192.camel__43267.4090298407$1275067735$gmane$org@localhost>
+Date: Fri, 28 May 2010 10:28:30 -0700
+Message-ID: <1275067710.4507.194.camel__44378.8212528036$1275067758$gmane$org@localhost>
 References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
 	<e099975ca65a7f6ac7f8bc3fee84d3e03893aa31.1274926772.git.len.brown@intel.com>
 	<198450ec1600d9a7f55270dd4d44d6b55bc5b184.1274926772.git.len.brown@intel.com>
 	<87ljb5l9d5.fsf@deeprootsystems.com>
-	<20100527072207.2e783b1e@infradead.org> <4BFE86D4.60602@nokia.com>
-	<20100527201439.6d0fd169@infradead.org>
+	<20100527072207.2e783b1e@infradead.org>
+	<87ocg1jts7.fsf@deeprootsystems.com>
+	<alpine.LFD.2.00.1005272009490.24823@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100527201439.6d0fd169@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.1005272009490.24823@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,32 +24,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: "Len@smtp1.linux-foundation.org" <Len@smtp1.linux-foundation.org>, Brown <len.brown@intel.com>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@lists.linux-foundation.org, x86@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2010-05-27 at 20:14 -0700, Arjan van de Ven wrote:
-> On Thu, 27 May 2010 17:51:00 +0300
-> Igor Stoppa <igor.stoppa@nokia.com> wrote:
+On Thu, 2010-05-27 at 20:22 -0400, Len Brown wrote:
+> > >> >  drivers/idle/intel_idle.c       |  446
 > 
-> > Hi,
-> > 
-> > 
-> > ext Arjan van de Ven wrote:
-> > 
-> > > it's really inconvenient to have such drivers hidden in the
-> > > architecture code; it's much more convenient for cpuidle developers
-> > > if they're all in one place.
-> > >   
-> > 
-> > why?
+> > >> Any reason this arch-specific driver needs to be in drivers/idle
+> > >> instead of under a platform specific dir like arch/x86?
 > 
-> because you have all the users of your API in one place.
+> > To me that would be much less convenient as I expect to maintain my
+> > platform-specific CPUidle driver along with the rest of my
+> > platform-specific code.
 > 
+> I guess the reason is conveneince of the maintainer (me).
 
-That's a rather x86-centric definition of "all".
+OK, fair enough.
 
-Are you suggesting we move all the embedded SoC specific CPUidle drivers
-to drivers/idle as well?
+At least that makes more sense to me than "keeping all users in one
+place."
 
 Kevin
