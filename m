@@ -1,16 +1,20 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
- driver for select intel processors
-Date: Fri, 28 May 2010 00:16:40 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.1005272359510.24823__22372.4779942588$1275020345$gmane$org@localhost.localdomain>
-References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
-	<198450ec1600d9a7f55270dd4d44d6b55bc5b184.1274926772.git.len.brown@intel.com>
-	<1275013933.2312.7.camel@cndougla-ubuntu>
+From: tytso@mit.edu
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Fri, 28 May 2010 00:31:14 -0400
+Message-ID: <20100528043114.GC26177__25330.0512828448$1275021151$gmane$org@thunk.org>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
+	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
+	<20100527220949.GB10602@srcf.ucam.org>
+	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<20100527223605.GB11364@srcf.ucam.org>
+	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1275013933.2312.7.camel@cndougla-ubuntu>
+Content-Disposition: inline
+In-Reply-To: <20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,39 +24,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Chase Douglas <chase.douglas@canonical.com>
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, May 27, 2010 at 11:55:46PM +0100, Alan Cox wrote:
+> 
+> This started because the Android people came to a meeting that was put
+> together of various folks to try and sort of the big blockage in getting
+> Android and Linux kernels back towards merging.
+> 
+> I am interested right now in finding a general solution to the Android
+> case and the fact it looks very similar to the VM, hard RT, gamer and
+> other related problems although we seem to have diverged from that logic.
 
-> I see that you have updated this code in your tree to disable C4 and C6
-> on atom. This has piqued my curiosity. I've now seen 2 atom netbooks
-> from different OEMs that hide C4 when you plug the power in. After the
-> first machine I thought, "must be a BIOS/ACPI bug," but now I'm
-> beginning to wonder if there's some issue with atom C4 states? That's
-> beside the fact that I've not seen C6 on either machine at all. Do you
-> have any insight?
+Keep in mind, though, that a solution which is acceptable for Android
+has to include making sure that crappy applications don't cause the
+battery to get drained.  There seem to be some people who seem
+adamently against this requirement.  From the Android folks'
+perspective, this is part of what is required to have an open app
+store, as opposed to one where each application has to be carefully
+screened and approved ala the Apple iPhone App Store.
 
-The reasoning behind ACPI taking deep C-states away
-when on AC is the assumption that users on AC
-care more about low latency and high performance
-than they care about power savings, heat, and noise.
+Maybe it would be acceptable if there were an easy way THAT A USER AND
+NOT A DEVELOPER COULD USE ON A SMART PHONE to find the bad
+application, but realistically, it's much better if the solution can
+work well even in the face of crappy application.  Having interacted
+with application programmers, I can assure you there are a lot of
+crappy application programmers out there, and they vastly outnumber us
+kernel developers.  (See as exhibit A all of the application programs
+who refuse to use fsync, even though it's going to wipe them out on
+all new modern file systems, including btrfs.)
 
-I have an Acer aspire-1 that exposes only C1 on AC
-but adds C2 and C4 when on DC.
+We need to agree on the requirements up front, because otherwise this
+is going to be a waste of everyone's time.
 
-Many believe that the BIOS is not the right place to
-make this policy decision.  Others feel that decision
-is dated no matter where it is made -- particularly in
-light of the latest EPA Energy STAR certification measuring
-power ONLY when plugged into AC...
+And if we can't get agreement on requirements, I'd suggest appealing
+this whole thing to Linus.  Either he'll agree to the requirements
+and/or the existing implementation, in which case we can move on with
+our lives, or he'll say no, in which case it will be blately obvious
+that it was Linux developer community who rejected the Android
+approach, despite a fairly large amount of effort trying to get
+something that satisfies *all* of the various LKML developers who have
+commented on this patch, and we can continue with Android having
+kernel which is different from mainline --- just as many other
+embedded companies have patches which are utterly required by their
+products, but which have been judged Too Ugly To Live In Mainline ---
+and we can also move on and get on with our lives.
 
-So my intent is to give Linux control over this decision,
-via PM_QOS or otherwise.  At the moment C4 is commented out
-because when i first tested it failed the lapic timer workaround.
-C6 is commented out because I've not found that any BIOS supporting
-it -- so it is possibly de-featured or has some other limitations that
-I need to find out about.
+						- Ted
 
-thanks,
-Len Brown, Intel Open Source Technology Center
+P.S.  Keep in mind how this looks from an outsider's perspective; an
+embedded manufacturer spends a fairly large amount of time answering
+one set of review comments, and a few weeks later, more people pop up,
+and make a much deeper set of complaints, and request that the current
+implementation be completely thrown out and that someone new be
+designed from scratch --- and the new design isn't even going to meet
+all of the requirements that the embedded manufacturer thought were
+necessary.  Is it any wonder a number of embedded developers have
+decided it's Just Too Hard to Work With the LKML?
