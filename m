@@ -1,7 +1,8 @@
 From: nigel@tuxonice.net
-Subject: [PATCH 04/10] Hibernation: Switch to preallocating swap.
-Date: Fri, 28 May 2010 21:14:53 +1000
-Message-ID: <1275045299-25890-5-git-send-email-nigel@tuxonice.net>
+Subject: [PATCH 10/10] Hibernation: Move block i/o fns to
+	block_io.c
+Date: Fri, 28 May 2010 21:14:59 +1000
+Message-ID: <1275045299-25890-11-git-send-email-nigel@tuxonice.net>
 References: <1275045299-25890-1-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,132 +23,541 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Nigel Cunningham <nigel@tuxonice.net>
 
-Switch from allocating swap as the image is written to allocating
-storage prior to writing the image.
+Move the functions that specifically deal with submitting I/O
+to block_io.c. This helps us in working towards having a clean
+separation between swap specific functions (which will be all
+that will be in swap.c eventually) and low level block i/o
+functions (block_io.c) that are/will be agnostic with regard to
+the source of the storage. The block_io.c functions will thus
+also be useable when support for storing an image in a generic
+file (non swap) is added later.
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 ---
- kernel/power/swap.c |   62 ++++++++++++++++++++++++++++++--------------------
- 1 files changed, 37 insertions(+), 25 deletions(-)
+ kernel/power/block_io.c |  200 ++++++++++++++++++++++++++++++++++++++++++++++
+ kernel/power/block_io.h |   23 ++++++
+ kernel/power/swap.c     |  202 +++--------------------------------------------
+ 3 files changed, 236 insertions(+), 189 deletions(-)
+ create mode 100644 kernel/power/block_io.h
 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 550c1ed..ff2fc15 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -201,6 +201,33 @@ int alloc_swapdev_blocks(int needed)
- }
+diff --git a/kernel/power/block_io.c b/kernel/power/block_io.c
+index c353d64..a612fd9 100644
+--- a/kernel/power/block_io.c
++++ b/kernel/power/block_io.c
+@@ -13,6 +13,7 @@
+ #include <linux/swap.h>
  
- /**
-+ *	allocate_swap - Allocate enough swap to save the image.
+ #include "power.h"
++#include "extents.h"
+ 
+ static struct bio *bio_chain;
+ 
+@@ -102,3 +103,202 @@ int hib_wait_on_bio_chain(void)
+ 	bio_chain = NULL;
+ 	return ret;
+ }
++
++/*
++ *	The swap map is a data structure used for keeping track of each page
++ *	written to a swap partition.  It consists of many swap_map_page
++ *	structures that contain each an array of MAP_PAGE_SIZE swap entries.
++ *	These structures are stored on the swap and linked together with the
++ *	help of the .next_swap member.
 + *
-+ *	Calculates the number of swap pages actually needed and seeks
-+ *	to allocate that many from the resume partition. Returns TRUE
-+ *	or FALSE to indicate whether we got enough storage.
++ *	The swap map is created during suspend.  The swap map pages are
++ *	allocated and populated one at a time, so we only need one memory
++ *	page to set up the entire structure.
++ *
++ *	During resume we also only need to use one swap_map_page structure
++ *	at a time.
 + */
 +
-+static int allocate_swap(unsigned int nr_pages)
++#define MAP_PAGE_ENTRIES	(PAGE_SIZE / sizeof(sector_t) - 1)
++
++struct swap_map_page {
++	sector_t entries[MAP_PAGE_ENTRIES];
++	sector_t next_swap;
++};
++
++/**
++ *	The swap_map_handle structure is used for handling swap in
++ *	a file-alike way
++ */
++
++struct swap_map_handle {
++	struct swap_map_page *cur;
++	sector_t cur_swap;
++	sector_t first_sector;
++	unsigned int k;
++};
++
++static struct swap_map_handle handle;
++
++extern struct hib_extent_state sector_extents;
++
++/* Calculate the overhead needed for storing n pages */
++unsigned int hib_bio_overhead(unsigned int nr_pages)
 +{
-+	unsigned int free_swap = count_swap_pages(root_swap, 1);
++	return DIV_ROUND_UP(nr_pages, MAP_PAGE_ENTRIES);
++}
 +
-+	nr_pages += DIV_ROUND_UP(nr_pages, MAP_PAGE_ENTRIES);
-+
-+	pr_debug("PM: Free swap pages: %u\n", free_swap);
-+	if (free_swap < nr_pages)
-+		return 0;
-+
-+	if (alloc_swapdev_blocks(nr_pages) < nr_pages) {
-+		free_all_swap_pages(root_swap);
-+		return 0;
-+	}
-+
-+	reset_storage_pos();
-+	return 1;
++/* Get the first sector of the image proper, for storing in the signature */
++sector_t hib_get_first_sector(void)
++{
++	return handle.first_sector;
 +}
 +
 +/**
-  *	free_all_swap_pages - free swap pages allocated for saving image data.
-  *	It also frees the extents used to register which swap entres had been
-  *	allocated.
-@@ -321,7 +348,7 @@ static void release_swap_writer(struct swap_map_handle *handle)
- 	handle->cur = NULL;
- }
- 
--static int get_swap_writer(struct swap_map_handle *handle)
-+static int get_swap_writer(struct swap_map_handle *handle, unsigned long pages)
- {
- 	int ret;
- 
-@@ -337,7 +364,12 @@ static int get_swap_writer(struct swap_map_handle *handle)
- 		ret = -ENOMEM;
- 		goto err_close;
- 	}
--	handle->cur_swap = alloc_swapdev_block(root_swap);
-+	if (!allocate_swap(pages)) {
-+		printk(KERN_ERR "PM: Not enough free swap\n");
-+		ret = -ENOSPC;
-+		goto err_close;
++ *	write_page - Write one page to given swap location.
++ *	@buf:		Address we're writing.
++ *	@offset:	Offset of the swap page we're writing to.
++ *	@sync:		Whether to force synchronous i/o.
++ */
++
++static int write_page(void *buf, sector_t offset, int sync)
++{
++	void *src;
++
++	if (!offset)
++		return -ENOSPC;
++
++	if (!sync) {
++		src = (void *)__get_free_page(__GFP_WAIT | __GFP_HIGH);
++		if (src) {
++			memcpy(src, buf, PAGE_SIZE);
++		} else {
++			WARN_ON_ONCE(1);
++			sync = 1;	/* Go synchronous */
++			src = buf;
++		}
++	} else {
++		src = buf;
 +	}
-+	handle->cur_swap = next_swapdev_block();
- 	if (!handle->cur_swap) {
- 		ret = -ENOSPC;
- 		goto err_rel;
-@@ -360,7 +392,7 @@ static int swap_write_page(struct swap_map_handle *handle, void *buf,
++	return hib_bio_write_page(offset, src, sync);
++}
++
++void release_swap_writer(void)
++{
++	if (handle.cur)
++		free_page((unsigned long)handle.cur);
++	handle.cur = NULL;
++}
++
++int hib_bio_prepare_write(void)
++{
++	handle.cur = (struct swap_map_page *)get_zeroed_page(GFP_KERNEL);
++
++	if (!handle.cur)
++		return -ENOMEM;
++
++	handle.cur_swap = hib_extent_next(&sector_extents);
++
++	if (!handle.cur_swap) {
++		release_swap_writer();
++		return -ENOSPC;
++	}
++
++	handle.k = 0;
++	handle.first_sector = handle.cur_swap;
++	return 0;
++}
++
++int swap_write_page(void *buf, int sync)
++{
++	int error = 0;
++	sector_t offset;
++
++	if (!handle.cur)
++		return -EINVAL;
++	offset = hib_extent_next(&sector_extents);
++	error = write_page(buf, offset, sync);
++	if (error)
++		return error;
++	handle.cur->entries[handle.k++] = offset;
++	if (handle.k >= MAP_PAGE_ENTRIES) {
++		error = hib_wait_on_bio_chain();
++		if (error)
++			goto out;
++		offset = hib_extent_next(&sector_extents);
++		if (!offset)
++			return -ENOSPC;
++		handle.cur->next_swap = offset;
++		error = write_page(handle.cur, handle.cur_swap, 1);
++		if (error)
++			goto out;
++		memset(handle.cur, 0, PAGE_SIZE);
++		handle.cur_swap = offset;
++		handle.k = 0;
++	}
++ out:
++	return error;
++}
++
++int flush_swap_writer(void)
++{
++	if (handle.cur && handle.cur_swap)
++		return write_page(handle.cur, handle.cur_swap, 1);
++	else
++		return -EINVAL;
++}
++
++/**
++ *	The following functions allow us to read data using a swap map
++ *	in a file-alike way
++ */
++
++void release_swap_reader(void)
++{
++	if (handle.cur)
++		free_page((unsigned long)handle.cur);
++	handle.cur = NULL;
++}
++
++int get_swap_reader(unsigned int *flags_p, sector_t first_page)
++{
++	int error;
++
++	handle.cur = (struct swap_map_page *)get_zeroed_page(__GFP_WAIT | __GFP_HIGH);
++	if (!handle.cur)
++		return -ENOMEM;
++
++	error = hib_bio_read_page(first_page, handle.cur, 1);
++	if (error) {
++		release_swap_reader();
++		return error;
++	}
++	handle.k = 0;
++	return 0;
++}
++
++int swap_read_page(void *buf, int sync)
++{
++	sector_t offset;
++	int error;
++
++	if (!handle.cur)
++		return -EINVAL;
++	offset = handle.cur->entries[handle.k];
++	if (!offset)
++		return -EFAULT;
++	error = hib_bio_read_page(offset, buf, sync);
++	if (error)
++		return error;
++	if (++handle.k >= MAP_PAGE_ENTRIES) {
++		error = hib_wait_on_bio_chain();
++		handle.k = 0;
++		offset = handle.cur->next_swap;
++		if (!offset)
++			release_swap_reader();
++		else if (!error)
++			error = hib_bio_read_page(offset, handle.cur, 1);
++	}
++	return error;
++}
++
+diff --git a/kernel/power/block_io.h b/kernel/power/block_io.h
+new file mode 100644
+index 0000000..2f91d6d
+--- /dev/null
++++ b/kernel/power/block_io.h
+@@ -0,0 +1,23 @@
++/*
++ * Copyright (C) 1998,2001-2005 Pavel Machek <pavel@ucw.cz>
++ * Copyright (C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
++ * Copyright (C) 2010 Nigel Cunningham <nigel@tuxonice.net>
++ *
++ * This file is released under the GPLv2.
++ */
++
++/* Low level routines */
++int hib_bio_read_page(pgoff_t page_off, void *addr, int sync);
++int hib_bio_write_page(pgoff_t page_off, void *addr, int sync);
++int hib_wait_on_bio_chain(void);
++
++unsigned int hib_bio_overhead(unsigned int nr_pages);
++sector_t hib_get_first_sector(void);
++extern struct hib_extent_state sector_extents;
++void release_swap_writer(void);
++int hib_bio_prepare_write(void);
++int flush_swap_writer(void);
++int swap_write_page(void *buf, int sync);
++int get_swap_reader(unsigned int *flags_p, sector_t first_page);
++void release_swap_reader(void);
++int swap_read_page(void *buf, int sync);
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 45f89dc..b4ab6a2 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -26,45 +26,10 @@
  
- 	if (!handle->cur)
- 		return -EINVAL;
--	offset = alloc_swapdev_block(root_swap);
-+	offset = next_swapdev_block();
- 	error = write_page(buf, offset, bio_chain);
- 	if (error)
- 		return error;
-@@ -369,7 +401,7 @@ static int swap_write_page(struct swap_map_handle *handle, void *buf,
- 		error = hib_wait_on_bio_chain(bio_chain);
- 		if (error)
- 			goto out;
--		offset = alloc_swapdev_block(root_swap);
-+		offset = next_swapdev_block();
- 		if (!offset)
- 			return -ENOSPC;
- 		handle->cur->next_swap = offset;
-@@ -458,21 +490,6 @@ static int save_image(struct swap_map_handle *handle,
- }
+ #include "power.h"
+ #include "extents.h"
++#include "block_io.h"
  
- /**
-- *	enough_swap - Make sure we have enough swap to save the image.
+ #define SWSUSP_SIG	"S1SUSPEND"
+ 
+-/*
+- *	The swap map is a data structure used for keeping track of each page
+- *	written to a swap partition.  It consists of many swap_map_page
+- *	structures that contain each an array of MAP_PAGE_SIZE swap entries.
+- *	These structures are stored on the swap and linked together with the
+- *	help of the .next_swap member.
 - *
-- *	Returns TRUE or FALSE after checking the total amount of swap
-- *	space avaiable from the resume partition.
+- *	The swap map is created during suspend.  The swap map pages are
+- *	allocated and populated one at a time, so we only need one memory
+- *	page to set up the entire structure.
+- *
+- *	During resume we also only need to use one swap_map_page structure
+- *	at a time.
 - */
 -
--static int enough_swap(unsigned int nr_pages)
--{
--	unsigned int free_swap = count_swap_pages(root_swap, 1);
+-#define MAP_PAGE_ENTRIES	(PAGE_SIZE / sizeof(sector_t) - 1)
 -
--	pr_debug("PM: Free swap pages: %u\n", free_swap);
--	return free_swap > nr_pages + PAGES_FOR_IO;
--}
+-struct swap_map_page {
+-	sector_t entries[MAP_PAGE_ENTRIES];
+-	sector_t next_swap;
+-};
 -
 -/**
-  *	swsusp_write - Write entire image and metadata.
-  *	@flags: flags to pass to the "boot" kernel in the image header
-  *
-@@ -491,16 +508,11 @@ int swsusp_write(unsigned int flags)
- 	int error;
+- *	The swap_map_handle structure is used for handling swap in
+- *	a file-alike way
+- */
+-
+-struct swap_map_handle {
+-	struct swap_map_page *cur;
+-	sector_t cur_swap;
+-	sector_t first_sector;
+-	unsigned int k;
+-};
+-
+-static struct swap_map_handle handle;
+-
+ static unsigned short root_swap = 0xffff;
  
- 	pages = snapshot_get_image_size();
--	error = get_swap_writer(&handle);
-+	error = get_swap_writer(&handle, pages);
- 	if (error) {
- 		printk(KERN_ERR "PM: Cannot get swap writer\n");
- 		return error;
- 	}
--	if (!enough_swap(pages)) {
--		printk(KERN_ERR "PM: Not enough free swap\n");
--		error = -ENOSPC;
--		goto out_finish;
+ struct swsusp_header {
+@@ -78,7 +43,7 @@ struct swsusp_header {
+ static struct swsusp_header *swsusp_header;
+ 
+ static struct hib_extent_state swap_extents;
+-static struct hib_extent_state sector_extents;
++struct hib_extent_state sector_extents;
+ 
+ /**
+  *	alloc_swapdev_block - allocate a swap page and register that it has
+@@ -126,7 +91,7 @@ static int allocate_swap(unsigned int nr_pages)
+ {
+ 	unsigned int free_swap = count_swap_pages(root_swap, 1);
+ 
+-	nr_pages += DIV_ROUND_UP(nr_pages, MAP_PAGE_ENTRIES);
++	nr_pages += hib_bio_overhead(nr_pages);
+ 
+ 	pr_debug("PM: Free swap pages: %u\n", free_swap);
+ 	if (free_swap < nr_pages)
+@@ -182,7 +147,7 @@ static int mark_swapfiles(unsigned int flags)
+ 	    !memcmp("SWAPSPACE2",swsusp_header->sig, 10)) {
+ 		memcpy(swsusp_header->orig_sig,swsusp_header->sig, 10);
+ 		memcpy(swsusp_header->sig,SWSUSP_SIG, 10);
+-		swsusp_header->image = handle.first_sector;
++		swsusp_header->image = hib_get_first_sector();
+ 		swsusp_header->flags = flags;
+ 		error = hib_bio_write_page(swsusp_resume_block,
+ 					swsusp_header, 1);
+@@ -220,42 +185,6 @@ static int swsusp_swap_check(void)
+ 	return res;
+ }
+ 
+-/**
+- *	write_page - Write one page to given swap location.
+- *	@buf:		Address we're writing.
+- *	@offset:	Offset of the swap page we're writing to.
+- *	@sync:		Whether to force synchronous i/o.
+- */
+-
+-static int write_page(void *buf, sector_t offset, int sync)
+-{
+-	void *src;
+-
+-	if (!offset)
+-		return -ENOSPC;
+-
+-	if (!sync) {
+-		src = (void *)__get_free_page(__GFP_WAIT | __GFP_HIGH);
+-		if (src) {
+-			memcpy(src, buf, PAGE_SIZE);
+-		} else {
+-			WARN_ON_ONCE(1);
+-			sync = 1;	/* Go synchronous */
+-			src = buf;
+-		}
+-	} else {
+-		src = buf;
 -	}
- 	memset(&snapshot, 0, sizeof(struct snapshot_handle));
- 	error = snapshot_read_next(&snapshot);
- 	if (error < PAGE_SIZE) {
+-	return hib_bio_write_page(offset, src, sync);
+-}
+-
+-static void release_swap_writer(void)
+-{
+-	if (handle.cur)
+-		free_page((unsigned long)handle.cur);
+-	handle.cur = NULL;
+-}
+-
+ static int get_swap_writer(unsigned long pages)
+ {
+ 	int ret;
+@@ -267,70 +196,19 @@ static int get_swap_writer(unsigned long pages)
+ 					"swapon -a.\n");
+ 		return ret;
+ 	}
+-	handle.cur = (struct swap_map_page *)get_zeroed_page(GFP_KERNEL);
+-	if (!handle.cur) {
+-		ret = -ENOMEM;
+-		goto err_close;
+-	}
+ 	if (!allocate_swap(pages)) {
+ 		printk(KERN_ERR "PM: Not enough free swap\n");
+ 		ret = -ENOSPC;
+ 		goto err_close;
+ 	}
+-	handle.cur_swap = hib_extent_next(&sector_extents);
+-	if (!handle.cur_swap) {
+-		ret = -ENOSPC;
+-		goto err_rel;
+-	}
+-	handle.k = 0;
+-	handle.first_sector = handle.cur_swap;
+-	return 0;
+-err_rel:
+-	release_swap_writer();
++	ret = hib_bio_prepare_write();
++	if (!ret)
++		return 0;
+ err_close:
+ 	swsusp_close(FMODE_WRITE);
+ 	return ret;
+ }
+ 
+-static int swap_write_page(void *buf, int sync)
+-{
+-	int error = 0;
+-	sector_t offset;
+-
+-	if (!handle.cur)
+-		return -EINVAL;
+-	offset = hib_extent_next(&sector_extents);
+-	error = write_page(buf, offset, sync);
+-	if (error)
+-		return error;
+-	handle.cur->entries[handle.k++] = offset;
+-	if (handle.k >= MAP_PAGE_ENTRIES) {
+-		error = hib_wait_on_bio_chain();
+-		if (error)
+-			goto out;
+-		offset = hib_extent_next(&sector_extents);
+-		if (!offset)
+-			return -ENOSPC;
+-		handle.cur->next_swap = offset;
+-		error = write_page(handle.cur, handle.cur_swap, 1);
+-		if (error)
+-			goto out;
+-		memset(handle.cur, 0, PAGE_SIZE);
+-		handle.cur_swap = offset;
+-		handle.k = 0;
+-	}
+- out:
+-	return error;
+-}
+-
+-static int flush_swap_writer(void)
+-{
+-	if (handle.cur && handle.cur_swap)
+-		return write_page(handle.cur, handle.cur_swap, 1);
+-	else
+-		return -EINVAL;
+-}
+-
+ static int swap_writer_finish(unsigned int flags, int error)
+ {
+ 	if (!error) {
+@@ -432,65 +310,6 @@ out_finish:
+ 	return error;
+ }
+ 
+-/**
+- *	The following functions allow us to read data using a swap map
+- *	in a file-alike way
+- */
+-
+-static void release_swap_reader(void)
+-{
+-	if (handle.cur)
+-		free_page((unsigned long)handle.cur);
+-	handle.cur = NULL;
+-}
+-
+-static int get_swap_reader(unsigned int *flags_p)
+-{
+-	int error;
+-
+-	*flags_p = swsusp_header->flags;
+-
+-	if (!swsusp_header->image) /* how can this happen? */
+-		return -EINVAL;
+-
+-	handle.cur = (struct swap_map_page *)get_zeroed_page(__GFP_WAIT | __GFP_HIGH);
+-	if (!handle.cur)
+-		return -ENOMEM;
+-
+-	error = hib_bio_read_page(swsusp_header->image, handle.cur, 1);
+-	if (error) {
+-		release_swap_reader();
+-		return error;
+-	}
+-	handle.k = 0;
+-	return 0;
+-}
+-
+-static int swap_read_page(void *buf, int sync)
+-{
+-	sector_t offset;
+-	int error;
+-
+-	if (!handle.cur)
+-		return -EINVAL;
+-	offset = handle.cur->entries[handle.k];
+-	if (!offset)
+-		return -EFAULT;
+-	error = hib_bio_read_page(offset, buf, sync);
+-	if (error)
+-		return error;
+-	if (++handle.k >= MAP_PAGE_ENTRIES) {
+-		error = hib_wait_on_bio_chain();
+-		handle.k = 0;
+-		offset = handle.cur->next_swap;
+-		if (!offset)
+-			release_swap_reader();
+-		else if (!error)
+-			error = hib_bio_read_page(offset, handle.cur, 1);
+-	}
+-	return error;
+-}
+-
+ static int swap_reader_finish(void)
+ {
+ 	release_swap_reader();
+@@ -567,7 +386,12 @@ int swsusp_read(unsigned int *flags_p)
+ 	if (error < PAGE_SIZE)
+ 		return error < 0 ? error : -EFAULT;
+ 	header = (struct swsusp_info *)data_of(snapshot);
+-	error = get_swap_reader(flags_p);
++	*flags_p = swsusp_header->flags;
++	if (!swsusp_header->image) { /* how can this happen? */
++		error = -EINVAL;
++		goto end;
++	}
++	error = get_swap_reader(flags_p, swsusp_header->image);
+ 	if (error)
+ 		goto end;
+ 	if (!error)
 -- 
 1.7.0.4
