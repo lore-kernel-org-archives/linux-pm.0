@@ -1,24 +1,15 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 14:53:31 -0700
-Message-ID: <AANLkTimqHZsm2g-yzl_XF0Wmtt9QZ9wfmLKaxJDWc5im__25.2868434928999$1275083670$gmane$org@mail.gmail.com>
-References: <20100527223605.GB11364@srcf.ucam.org>
-	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
-	<20100528043114.GC26177@thunk.org>
-	<20100528103713.0a7952d9@lxorguk.ukuu.org.uk>
-	<20100528114123.GA22947@srcf.ucam.org> <4BFFB681.1000105@nokia.com>
-	<AANLkTim04ZfMcPHRB2D_bqcAuguaGwySH2b6repuYLkk@mail.gmail.com>
-	<4BFFC5DF.5030504@nokia.com> <20100528133900.GG26177@thunk.org>
-	<4BFFCFC7.7070302@nokia.com> <20100528142124.GA26733@srcf.ucam.org>
-	<AANLkTilj6i7Qi-eh7e3WWeh4zxKALqr-0yhAvWKis52t@mail.gmail.com>
-	<20100528160628.7c121dab@lxorguk.ukuu.org.uk>
-	<AANLkTin3suKfGBSfiDj0n8ztY8UiHzr4af_Cr0SPOevY@mail.gmail.com>
-	<20100528173151.2c5f6fde@lxorguk.ukuu.org.uk>
+Date: Sat, 29 May 2010 00:11:32 +0200
+Message-ID: <201005290011.32543.rjw__43447.7059556686$1275084676$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1005271344040.3239-100000@iolanthe.rowland.org>
+	<AANLkTimqvMuMpB5E3tj58OtlRc-7mVaec-9EHAegywg7@mail.gmail.com>
+	<1275032623.32462.30.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100528173151.2c5f6fde@lxorguk.ukuu.org.uk>
+In-Reply-To: <1275032623.32462.30.camel@laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,118 +19,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, tytso@mit.edu, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>
+To: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@lists.linux-foundation.org>
+Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 28, 2010 at 9:31 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> I think Arve's concern was the representation of the "I care, but only
->> a little" or "just low enough to ensure threads must run" level which
->> is what suspend blockers would map to (low enough to ensure we
->> shouldn't halt the world but not necessarily implying a hard latency
->> constraint beyond that).
->
-> That's why I suggested "manyana" (can't get accents for ma=F1ana in a
-> define) or perhaps "dreckly"[1]. They are both words that mean "at some
-> point" but in a very very vague and 'relax it'll happen eventually' sense.
->
-> More importantly it's policy. It's a please meet this constraint guide
-> to the PM layer - not a you must do as say even if its stupid.
-
-Huh?
-
->
->> > They fix a general problem in terms of a driver specific item. We end =
-up
->> > making changes around the tree but we make everyone happy not just
->> > Android. Also we are isolating policy properly. The apps and drivers s=
-ay
->> > "I have these needs", the power manager figures out how to meet them.
->>
->> That makes sense -- and as I've mentioned elsewhere, we're really not
->> super picky about naming -- if it turns out that
->> wakelocks/suspendblockers were shorthand for "request a qos constraint
->> that ensures that threads are running", we'll be able to get things
->> done just as well as we do now.
->
-> Cool. I think they are or at least they are close enough that nobody will
-> notice the join ;)
->
->> > Where it gets ugly is if you start trying to have drivers giving an ap=
-p a
->> > guarantee which the app then magically has to know to dispose of.
->>
->> Yeah -- which is something we've avoided in the existing model with
->> overlapping wakelocks during handoff between domains.
->
-> I'm not sure avoided is the right description - its there in all its
-> identical ugliness in wakelock magic
->
-> If you treat QoS guarantees as a wakelock for your purposes (which is
-> just fine, drivers and apps give you policy, you use it how you like)
-> then you could write the paragraph below substituting the word
-> 'guarantee' for 'wakelock' So in that sense the mess is the same because
-> in both cases you are trying to suspend active tasks rather than asking
-> the task to behave and then taking remedial action with offenders.
->
->> - input service is select()ing on input devices
->> - when select() returns it grabs a wakelock, reads events, passes them
->> on, releases the wakelock
->> - the event subsystem can then safely drop its "should be running
->> threads" constraint as soon as the last event is read because it has
->> no queues for userspace to drain, but the overlapping wakelock
->> prevents the system from immediately snapping back to sleep
->
-> The conventional PC model is 'we don't go back into sleep proper fast
-> enough for that race to occur'.
-
-This is the same as saying these two threads don't run often enough to
-need a mutex around their critical section. Just because you have not
-been bitten by the race yet, does not mean it does not exist.
-
-> It's hard to see how you change it. An
-
-If each layer prevents suspend while it knows there are pending events
-you don't have a race. Suspend blockers lets you do this.
-
-> app->device "thank you for that event, I enjoyed it very much and have
-> finished with it" message moves the underlying event management and QoS
-> knowledge into he driver proper but doesn't really change the interface.
->
-Yes you can do this, and it it how the android alarm driver works, but
-we found the select()/poll(), block suspend, read event, process event
-then unblock suspend sequence cleaner (especially for interfaces that
-can return more than one event at a time). Kernel suspend blocker lets
-you implement the alarm driver model, adding user-space suspend
-blockers lets you implement the second.
-
->> > If you are prepared to exclude untrusted apps from perfectly reliable
->> > event reporting (ie from finger to application action) that doesn't se=
-em
->> > to be a neccessity anyway.
->>
->> Currently in the Android userpace only trusted (system) apps can
->> directly obtain wakelocks -- arbitrary apps obtain them via rpc to a
->> trusted system service (which ensures the app has been granted
->> permission to do this and tracks usage for accountability to
->> user/developer).
->
-> Clearly that would continue to work out.
->
-> Alan
-> [1] Dreckly being used in Cornwall, as one friend put it 'Like man=E3na b=
-ut
-> without that dreadful sense of urgency'
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at =A0http://www.tux.org/lkml/
->
-
-
-
--- =
-
-Arve Hj=F8nnev=E5g
+T24gRnJpZGF5IDI4IE1heSAyMDEwLCBQZXRlciBaaWpsc3RyYSB3cm90ZToKPiBPbiBUaHUsIDIw
+MTAtMDUtMjcgYXQgMTc6NDUgLTA3MDAsIEFydmUgSGrDuG5uZXbDpWcgd3JvdGU6Cj4gPiBXaGF0
+IGhhcHBlbnMgaWYgdGhlIHVzZXIgcHJlc3NlcyB0aGUgYnV0dG9uIHJpZ2h0IGJlZm9yZSB5b3Ug
+c2V0IFFvUwo+ID4gb2YgJ3VzZXIgYXBwcycgdG8gIFFTX05PTkU/Cj4gPiBUbyBtZSBpdCBsb29r
+cyBsaWtlIHRoaXMgc29sdXRpb24gd291bGQgcmVzdWx0IGluIHRoaXMgc2VxdWVuY2Ugd2hpY2gK
+PiA+IG1heSBpZ25vcmUgdGhlIGJ1dHRvbiBwcmVzczoKPiA+ICAgICAgICAgQnV0dG9uIHB1c2hl
+ZAo+ID4gICAgICAgICBCdXR0b24gZHJpdmVyIHNldHMgUW9TIG9mIGFwcCBpdCB3YWtlcyB0byBR
+U19BQk9WRVNVU1BFTkQKPiA+ICAgICAgICAgU2V0IFFvUyBvZiAndXNlciBhcHBzJyB0byBRU19O
+T05FIAo+IAo+IEkgZG9uJ3QgdGhpbmsgd2Ugc2hvdWxkIGNoYW5nZSBhcHAgUW9TIHBhcmFtZXRl
+cnMsIGJ1dCBjaGFuZ2Ugc2VydmljZQo+IHByb3ZpZGVyIHBhcmFtZXRlcnMuCj4gCj4gRm9yIGlu
+c3RhbmNlLCBzdXBwb3NlIHRoZSBmaWxlc3lzdGVtLUlPIFFvUyBoYXMgMyBsZXZlbHM6IAo+ICAg
+SGlnaCwgTm9ybWFsIGFuZCBJZGxlLgo+IAo+IFRoZW4gaWYgd2UgYXNzaWduIElkbGUgdG8gdXBk
+YXRlZGIsIHdlJ2xsIHNlcnZpY2UgaXQgYXMgbG9uZyBhcyB0aGUKPiBmaWxlc3lzdGVtLXNlcnZl
+ciBRb1MgaGFzIGEgaGlnaGVyIGxldmVsIChIaWdoIGFuZCBOb3JtYWwpLiBXaGVuIHdlCj4gY2hh
+bmdlIHRoZSBmaWxlc3lzdGVtLXNlcnZlcycgUW9TIHRvIGlkbGUsIGl0IGZpbmRzIHRoZXJlIGlz
+IG5vdGhpbmcgdG8KPiBrZWVwIGl0IHNlcnZpY2luZyBzdHVmZiBhbmQgaXQnbGwgYmxvY2sgcGVu
+ZGluZyByZXF1ZXN0cywgdXBkYXRlZGIgc3RvcHMKPiBiZWluZyBydW5uYWJsZSBhbmQgd2UncmUg
+Z29vZC4KClllYWgsIHRoYXQncyB3aGF0IEkgd2FzIHRoaW5raW5nLiAgSXQgd291bGQgYmUgbmlj
+ZSB0byBoYXZlIGEgbWVjaGFuaXNtIHRoYXQKd291bGQgcHJldmVudCB0YXNrcyBmcm9tIGJlaW5n
+IHJ1bm5hYmxlIGluIHNwZWNpZmljIGNvbmRpdGlvbnMgKG5vdCBuZWNlc3NhcmlseQpyZWxhdGVk
+IHRvIHBvd2VyIG1hbmFnZW1lbnQgZXZlbikuCgpIYXZpbmcgcmVjb25zaWRlcmVkIHRoZSBzdXNw
+ZW5kIGJsb2NrZXJzIGlkZWEgSSBjYW1lIHRvIHRoZSBjb25jbHVzaW9uIHRoYXQKaW4gZmFjdCBp
+dCB3YXMgYSB3b3JrYXJvdW5kIGZvciB0aHJlZSBkaWZmZXJlbnQgcHJvYmxlbXMuCgpUaGUgZmly
+c3Qgb25lIHdhcyB0aGF0IHdlIGNvdWxkbid0IHBvd2VyIG1hbmFnZSBJL08gZGV2aWNlcyBhdCBy
+dW4gdGltZSBhbmQKdGhlIG9ubHkgd2F5IHRvIHB1dCB0aGVtIGludG8gbG93LXBvd2VyIHN0YXRl
+cyB3YXMgdG8gY2Fycnkgb3V0IGZ1bGwgc3lzdGVtCnN1c3BlbmQuICBUaGF0J3MgY2hhbmdlZCB3
+aXRoIHRoZSBpbnRyb2R1Y3Rpb24gb2YgdGhlIHJ1bnRpbWUgUE0gZnJhbWV3b3JrLApidXQgdGhl
+IHNpdHVhdGlvbiBpcyBzdGlsbCBub3QgaWRlYWwsIGJlY2F1c2UgaW4gZ2VuZXJhbCB0aGVyZSdz
+IG5vIGNvbm5lY3Rpb24KYmV0d2VlbiB0aGUgaWRsZSBpbmZyYXN0cnVjdHVyZSBhbmQgcnVudGlt
+ZSBQTS4KClRoaXMgSU1PIGlzIHRoZSBzZWNvbmQgcHJvYmxlbSB3b3JrZWQgYXJvdW5kIGJ5IHN1
+c3BlbmQgYmxvY2tlcnMuCk5hbWVseSwgaXQgZ2VuZXJhbGx5IHdvdWxkIGJlIG5pY2UgdG8gc3Vz
+cGVuZCBJL08gZGV2aWNlcyB3aGVuIENQVXMgYXJlIGlkbGUKZm9yIGEgc3VmZmljaWVudGx5IGxv
+bmcgdGltZS4gIEZvciB0aGlzIHRvIHdvcmssIHRoZXJlIHNob3VsZCBiZSBhIHdheSB0bwpyZWdp
+c3RlciBhIGRldmljZSB3aXRoIHRoZSBpZGxlIGZyYW1ld29yayBzbyB0aGF0IGl0IGNhbiB0ZWxs
+IHRoZSBkZXZpY2Uncwpkcml2ZXIgdG8gc3VzcGVuZCB0aGUgZGV2aWNlIHdoZW4gaXQgbWFrZXMg
+c2Vuc2UuICBTb21ldGhpbmcgbGlrZQo8dmFndWUgaWRlYT5pZGxlX3JlZ2lzdGVyX2RldmljZShk
+ZXYsIHQpLCB3aGVyZSB0IG1lYW5zICJzdXNwZW5kIHRoYXQKZGV2aWNlIGFmdGVyIGFsbCBDUFVz
+IGhhdmUgYmVlbiBpZGxlIGZvciB0aW1lIHQiLCBzbyBiYXNpY2FsbHkgdGhlIGlkbGUKZnJhbWV3
+b3JrIHdpbGwgb25seSBuZWVkIHRvIHJ1biBwbV9zY2hlZHVsZV9zdXNwZW5kKGRldiwgdCkgZm9y
+IHRoYXQgZGV2aWNlCnJpZ2h0IGJlZm9yZSBpZGxpbmcgdGhlIGxhc3QgQ1BVPC92YWd1ZSBpZGVh
+Pi4KClRoZSB0aGlyZCBwcm9ibGVtIGlzIGV4YWN0bHkgdGhhdCBvbiBBbmRyb2lkIHN5c3RlbSB0
+aGVyZSBhcmUgKG9yIGF0IGxlYXN0CnRoZXJlIG1heSBiZSkgdGFza3MgdGhhdCBpbiBzcGVjaWZp
+YyBzaXR1YXRpb25zIHNob3VsZCBub3QgYmUgcmVnYXJkZWQgYXMKcnVubmFibGUgYXQgYWxsIGFu
+ZCBjdXJyZW50bHkgdGhlcmUncyBubyB3YXkgdG8gZW5zdXJlIHRoZXkgd29uJ3QgcnVuIG90aGVy
+CnRoYW4gZ29pbmcgdG8gYSBmdWxsIHN1c3BlbmQuCgpJZiB3ZSBjb3VsZCBhZGRyZXNzIHRoZXNl
+IGlzc3VlcyBzb21laG93LCBJIHRoaW5rIHN1c3BlbmQgYmxvY2tlcnMgd291bGQgbm90IGJlCm5l
+Y2Vzc2FyeSBmb3IgbWF4aW1pemluZyBiYXR0ZXJ5IGxpZmUgKHdlbGwsIHRoZXJlIGFyZSBzb21l
+IHRlY2huaWNhbCBkZXRhaWxzCmxpa2UgYXV0b21hdGljIGdvaW5nIHRvIGZ1bGwgc3VzcGVuZCB3
+aGVuIHRoZSBDUFVzIGFuZCBJL08gaGF2ZSAgYmVlbiBpZGxlIGZvcgpzdWZmaWNpZW50bHkgbG9u
+ZyBldGMuLCBidXQgdGhleSBhbGwgc2VlbSB0byBiZSB0cmFjdGFibGUpLgoKW0FuZCB0aGVyZSdz
+IGEgcHJvYmxlbSBvZiBwZXJpb2RpYyB0aW1lcnMgdGhhdCB0cmlnZ2VyIHRvbyBvZnRlbiwgYnV0
+IEkgdGhpbmsKdGhhdCdzIGp1c3QgYSBnZW5lcmFsIGlzc3VlIHRoYXQgbmVlZCB0byBiZSBmaXhl
+ZCBhbnl3YXkuXQoKVGhhbmtzLApSYWZhZWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxp
+bnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFp
+bG1hbi9saXN0aW5mby9saW51eC1wbQ==
