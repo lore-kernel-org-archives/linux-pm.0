@@ -1,16 +1,18 @@
-From: Florian Mickler <florian@mickler.org>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 10:44:15 +0200
-Message-ID: <20100528104415.1403541a__14417.2779786915$1275036309$gmane$org@schatten.dmk.lab>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<alpine.LFD.2.00.1005271915540.3032@localhost.localdomain>
-	<20100527173118.GE2468@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271959450.3032@localhost.localdomain>
+Date: Fri, 28 May 2010 10:17:55 +0100
+Message-ID: <20100528101755.7b5f6b8a@lxorguk.ukuu.org.uk>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
+	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
+	<20100527220949.GB10602@srcf.ucam.org>
+	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<AANLkTil6Bo7qZltbLzHJjIDyruKHFQEURpe5LPJEpTws@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1005271959450.3032@localhost.localdomain>
+In-Reply-To: <AANLkTil6Bo7qZltbLzHJjIDyruKHFQEURpe5LPJEpTws@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,109 +22,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arve =?ISO-8859-14?B?SGr4bm5lduVn?= <arve@android.com>
+Cc: Mailing List <linux-omap@vger.kernel.org>, Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Peter@smtp1.linux-foundation.org, Linux PM <linux-pm@lists.linux-foundation.org>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 27 May 2010 20:05:39 +0200 (CEST)
-Thomas Gleixner <tglx@linutronix.de> wrote:
+> Android does not only run on phones. It is possible that no android
+> devices have ACPI, but I don't know that for a fact. What I do know is
+> that people want to run Android on x86 hardware and supporting suspend
+> could be very benficial.
 
-> On Thu, 27 May 2010, Matthew Garrett wrote:
+Sufficently beneficial to justify putting all this stuff all over the
+kernel and apps ? That is a *very* high hurdle, doubly so when those
+vendors who have chosen to be part of the community are shipping phones
+and PDAs just fine without them.
+ 
+> > I would imagine the existing laptops will handle power management limited
+> > by the functionality they have available. Just like any other piece of
+> > hardware.
 > 
-> > On Thu, May 27, 2010 at 07:24:02PM +0200, Thomas Gleixner wrote:
-> > 
-> > > Oh no. They paper over a short coming. If there is a pending event,
-> > > the kernel knows that. It just does not make use of this
-> > > information. Blockers just paper over this by sprinkling
-> > > do_not_suspend() calls all over the place. What a sensible solution.
-> > 
-> > Even if we could use suspend-via-deep-idle-state on PCs, we still need 
-> > to be able to enter suspend while the system isn't idle. There's two 
-> > ways to do that:
-> > 
-> > 1) Force the system to be idle. Doing this race-free is difficult.
-> > 
-> > 2) Enter suspend even though the system isn't idle. Since we can't rely 
-> > on the scheduler, we need drivers to know whether userspace has consumed 
-> > all wakeup events before allowing the transition to occur. Doing so 
-> > requires either in-kernel suspend blockers or something that's almost 
-> > identical.
-> 
-> You're just not getting it. If user space has consumed the event is
-> not relevant at all.
-> 
-> What's relevant is whether the app has processed the event and reacted
-> accordingly. That's all that matters.
-> 
-> Emptying your input queue is just the wrong indicator.
-> 
-> And as I explained several times now: It does _NOT_ matter when the
-> app goes back in to blocked/idle state. You have to spend the CPU
-> cycles and power for that anyway.
-> 
-> And for the apps which do not use the user space blockers the queue
-> empty indicator is just bullshit, because after emptying the queue the
-> kernel can go into suspend w/o any guarantee that the event has been
-> processed.
-> 
-> The whole concept sucks, as it does not solve anything. Burning power
-> now or in 100ms is the same thing power consumption wise.
-> 
-> Thanks,
-> 
-> 	tglx
+> I think existing laptops (and desktops) can benefit from opportunistic
+> suspend support. If opportunistic suspend is used for auto-sleep after
+> inactivity instead of forced suspend, the user space suspend blocker
+> api will allow an application to delay this auto sleep until for
+> instance a download completes. This part could also be done with a
 
-Thomas,
-do you really have a problem with the actual concept? Or do you just
-don't like the way it is done?
+This assumes you modify all the applications. That isn't going to happen.
+The hardware is going to catch up anyway.
 
-IMO, the whole concept is defining 2 modes of operation: 
+> alarms. I know my desktops can wakeup at a specific time by
+> programming an RTC alarm, but without suspend blockers how do you
+> ensure that the system does not suspend right after the alarm
+> triggered? I have a system that wakes up at specific times requested
 
-1. user interacts with the device (at least one suspend block active)
-2. user doesn't interact with the device (zero suspend block active)
+How do you know that isn't the correct behavior. My laptop behaves in
+that way if for example the battery is almost flat. Your suspend blocker
+would cause me to lose all my work with a flat battery. This is another
+example of why the application must not be the policy manager.
 
-In case 1. the device wants _everything_ sheduled as normal (and save
-maximum possible power, i.e. runtime pm with every technology available
-now).
+In the normal case in the PC world outside of corner cases like flat
+batteries the answer is really simple. The laptop suspend to RAM
+on idle intervals set in the BIOS and the like are sufficient that
+progress will have been made before it considers going back to sleep
+again. Right now its about ten seconds in each direction plus other costs
+(wear on LCD backlight, disc parking etc).
 
-In case 2. we want nothing sheduled (and save maximum possible power,
-i.e. suspend)
-
-And now, every application and every kernel driver annotates (on behalve
-of the user) if it (possibly) interacts with the user. 
-
-(Is this really the problematic bit, that userspace is giving
-the kernel hints? Or is it that the hints are called "blocker"?)
-
-We can only enter mode 2, if _nothing_ (claims) to interact with the
-user.
-
-To integrate this with the current way of doing things, i gathered it 
-needs to be implemented as an idle-state that does the suspend()-call?
-
-Attributes of the idle states could be smth like this:
-
-c3
-	cost-to-transition-to-this-state: X 
-	powersavings-per-time: Y
-	expected time we stay in this state: relative short, there is a
-		timer sheduled
-	suspend-blockers: ignored
-
-suspend 
-	cost-to-transition-to-this-state: depends, how much drivers to
-	suspend, how much processes to freeze, how much state to save
-	powersavings-per-time: Y
-	expected time we stay in this state: long, independent of
-		sheduled timers
-	suspend-blockers: must not be activated
-
-
-Now all transitions and opportunistic suspend could be handled by the
-same algorithms.
-
-Would this work?
-
-
-Cheers,
-Flo
+Alan
