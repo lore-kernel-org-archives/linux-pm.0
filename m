@@ -1,20 +1,13 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 15:41:39 +0100
-Message-ID: <20100528144139.GA27140__42835.88844487$1275057835$gmane$org@srcf.ucam.org>
-References: <20100528043114.GC26177@thunk.org>
-	<20100528103713.0a7952d9@lxorguk.ukuu.org.uk>
-	<20100528114123.GA22947@srcf.ucam.org> <4BFFB681.1000105@nokia.com>
-	<AANLkTim04ZfMcPHRB2D_bqcAuguaGwySH2b6repuYLkk@mail.gmail.com>
-	<4BFFC5DF.5030504@nokia.com> <20100528133900.GG26177@thunk.org>
-	<4BFFCFC7.7070302@nokia.com> <20100528142124.GA26733@srcf.ucam.org>
-	<AANLkTilj6i7Qi-eh7e3WWeh4zxKALqr-0yhAvWKis52t@mail.gmail.com>
+Date: Fri, 28 May 2010 10:49:58 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005281045290.1939-100000__5466.63059290058$1275058362$gmane$org@iolanthe.rowland.org>
+References: <1275031197.32462.14.camel@laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTilj6i7Qi-eh7e3WWeh4zxKALqr-0yhAvWKis52t@mail.gmail.com>
+In-Reply-To: <1275031197.32462.14.camel@laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,24 +17,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 28, 2010 at 07:29:27AM -0700, Brian Swetland wrote:
+On Fri, 28 May 2010, Peter Zijlstra wrote:
 
-> I need to think more about the cgroups approach, but I'm pretty sure
-> it still suffers from wakeup race situations, and due to the
-> complexity of userspace (at least ours), I suspect it would risk
-> livelock/deadlock/priority-inversion style issues due to interaction
-> between different processes in different groups.
+> On Thu, 2010-05-27 at 20:59 -0400, Alan Stern wrote:
+> > On Fri, 28 May 2010, Rafael J. Wysocki wrote:
+> > 
+> > > > And the forced-suspend design relies on the fact that processes remain 
+> > > > frozen throughout.  If we leave some processes unfrozen and one of them 
+> > > > somehow becomes runnable, that means we have to abort the forced 
+> > > > suspend before the process is allowed to run.
+> > > 
+> > > We could avoid that if drivers could block tasks, but there are questions to
+> > > answer.  First off, how a driver is supposed to know when to block the task
+> > > using it and when to do its power management transparently for the task?
+> > > Second, how to intercept and block all possible interfaces that user space
+> > > can use to talk to drivers (how to intercept a task using mmapped device, for
+> > > example)?
+> > 
+> > We talked about this a few years ago and decided it was not feasible.  
+> > It would require substantial changes to every device driver.
+> 
+> But what if its the _right_ thing to do? We make changes to every device
+> driver out there on a regular basis. Also, why won't an incremental
+> process work? Add the interface with a fallback for drivers that haven't
+> implemented it and implement it for those drivers its most urgent (like
+> those in use on an Android phone).
 
-I think the cgroups approach works if you assume that applications that 
-consume wakeup events can be trusted to otherwise be good citizens. 
-Everything that has no direct interest in wakeup events (except the 
-generic Android userspace) can be frozen, and you can use the scheduler 
-to make everything else Just Work. That's a rather big if, but you've 
-got a better idea of the state of the Android app base than I do.
+There is no reasonable fallback.  In fact, I seriously doubt that
+there's any way to carry this out at all, reasonable or not.  For
+example, how do you handle the situation where a user task gets an
+error because it accessed an mmapped address belonging to a device that
+has been suspended?
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> Not doing the right thing simply because its a lot of work seems like a
+> fine way to let the kernel rot into an unmaintainable mess.
+
+Firstly, it's not at all clear that this _is_ the right thing.
+
+Secondly, when doing the right thing involves making invasive changes 
+to half the .c files in the kernel, people might stop to think that it 
+would add more bugs than it would solve problems.
+
+Alan Stern
