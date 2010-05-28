@@ -1,7 +1,7 @@
 From: nigel@tuxonice.net
-Subject: [PATCH 01/10] Hibernation: Swap iteration functions.
-Date: Fri, 28 May 2010 21:14:50 +1000
-Message-ID: <1275045299-25890-2-git-send-email-nigel@tuxonice.net>
+Subject: [PATCH 02/10] Hibernation: Move root_swap declaration.
+Date: Fri, 28 May 2010 21:14:51 +1000
+Message-ID: <1275045299-25890-3-git-send-email-nigel@tuxonice.net>
 References: <1275045299-25890-1-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,66 +22,34 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Nigel Cunningham <nigel@tuxonice.net>
 
-Add the data structure 'storage_position' and routines that allow
-a caller to iterate over swap in sector order. Note that calling
-reset_storage_pos only resets the position. next_swapdev_block
-must also be called to get the address of the first (and subsequent
-sectors).
+Move the declaration of root_swap in preparation for the
+next patch.
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 ---
- kernel/power/swap.c |   39 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 39 insertions(+), 0 deletions(-)
+ kernel/power/swap.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
 diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index b0bb217..829f7b4 100644
+index 829f7b4..e555b6c 100644
 --- a/kernel/power/swap.c
 +++ b/kernel/power/swap.c
-@@ -86,6 +86,45 @@ struct swsusp_extent {
+@@ -63,6 +63,8 @@ struct swap_map_handle {
+ 	unsigned int k;
+ };
  
- static struct rb_root swsusp_extents = RB_ROOT;
++static unsigned short root_swap = 0xffff;
++
+ struct swsusp_header {
+ 	char reserved[PAGE_SIZE - 20 - sizeof(sector_t) - sizeof(int)];
+ 	sector_t image;
+@@ -217,7 +219,6 @@ int swsusp_swap_in_use(void)
+  * General things
+  */
  
-+struct storage_position {
-+	struct rb_node *node;
-+	struct swsusp_extent *cur_ext;
-+	unsigned long offset;
-+};
-+
-+static struct storage_position pos;
-+
-+static void reset_storage_pos(void)
-+{
-+	pos.node = rb_first(&swsusp_extents);
-+
-+	if (!pos.node) {
-+		pos.cur_ext = NULL;
-+		pos.offset = 0;
-+		return;
-+	}
-+
-+	pos.cur_ext = container_of(pos.node, struct swsusp_extent, node);
-+	pos.offset = pos.cur_ext->start;
-+}
-+
-+static sector_t next_swapdev_block(void)
-+{
-+	if (!pos.node)
-+		return 0;
-+
-+	if (pos.cur_ext->end >= pos.offset)
-+		return pos.offset++;
-+
-+	pos.node = rb_next(pos.node);
-+	if (!pos.node)
-+		return 0;
-+
-+	pos.cur_ext = container_of(pos.node, struct swsusp_extent, node);
-+	pos.offset = pos.cur_ext->start;
-+	return pos.offset;
-+}
-+
- static int swsusp_extents_insert(unsigned long swap_offset)
- {
- 	struct rb_node **new = &(swsusp_extents.rb_node);
+-static unsigned short root_swap = 0xffff;
+ struct block_device *hib_resume_bdev;
+ 
+ /*
 -- 
 1.7.0.4
