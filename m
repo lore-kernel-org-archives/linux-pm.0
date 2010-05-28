@@ -1,17 +1,16 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
- driver for select intel processors
-Date: Fri, 28 May 2010 13:38:24 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.1005281331510.4045@localhost.localdomain>
+Subject: Re: idle-test patches queued for upstream
+Date: Fri, 28 May 2010 13:42:32 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1005281339010.4045__47963.9736972333$1275068707$gmane$org@localhost.localdomain>
 References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
-	<201005271053.31087.trenn@suse.de>
-	<alpine.LFD.2.00.1005272131400.24823@localhost.localdomain>
-	<201005280946.32981.trenn@suse.de>
+	<201005271045.33500.trenn@suse.de>
+	<alpine.LFD.2.00.1005272023510.24823@localhost.localdomain>
+	<201005281007.34706.trenn@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <201005280946.32981.trenn@suse.de>
+In-reply-to: <201005281007.34706.trenn@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,55 +21,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Thomas Renninger <trenn@suse.de>
-Cc: sfr@canb.auug.org.au, linux-pm@lists.linux-foundation.org, x86@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 28 May 2010, Thomas Renninger wrote:
+> > Yes, Windows uses ACPI.
+> > On the Dell above, that is why Linux consumes 15% less idle power
+> > and why Linux can take advantage of turbo mode and Windows can not.
 
-> On Friday 28 May 2010 03:44:16 Len Brown wrote:
-> > On Thu, 27 May 2010, Thomas Renninger wrote:
-> ...
-> > > > This driver does not yet know about cpu online/offline
-> > > > and thus will not yet play well with cpu-hotplug.
+> You always propageted to stay Windows compatible...
+> Now we go the untested way.
+> Let's see how much machines will break...
+> 
+> Thanks for clarifications,
 
-> I thought this is also about soft on/offlining.
+Don't get me wrong, Linux' ACPI "compatibility" is a huge asset.
 
-Right, the driver is ignorant of soft on/offlining,
-but doesn't break soft on/offlining.
-So rather than un-registering from cpuidle on
-an offline event and re-registering on an on-line event,
-it just stays registered.
+However, there are opportunities for Linux to do better than Windows,
+and I believe this is one of them.  Yes, when we take the risk of
+doing something that Windows does not do, there will always be
+the possibility that we will fail.
 
-The vast majority of on/offline is suspend to ram,
-and this works just fine there.
-
-Soft off-lining is somewhat broken for power management
-independent of this driver, of course.  As it uses only C1
-it can negatively impact the ability of the online processors
-to save power and enter turbo mode...
-
-> > > What means does not play well yet, suspend or manually offlining a
-> > > core will eventually (for sure?) hang the machine?
-> > 
-> > It means less power savings savings than optimal
-> > for processors not present at module load time.
-
-> Ok, not really sever...
-
-Agreed, not severe.
-
-> > > If this is known broken, should this already be spread through
-> > > linux-next?
-> > 
-> > If you know somebody with a system that supports CPU hot-add
-> > on one of the processors supported by intel_idle, and they
-> > are willing to test linux-next, please have them contact me.
-
-> Real CPU hotplug is broken with acpi processor driver as well,
-> eventually it got addressed lately. Anyway, not sever...
-
-Yeah, if I had a system with real cpu hotplug, I'd go ahead
-and test it -- but I've never even seen one.
-
-thanks,
+cheers,
 -Len Brown, Intel Open Source Technology Center
