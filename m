@@ -1,24 +1,19 @@
 From: Florian Mickler <florian@mickler.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 09:03:49 +0200
-Message-ID: <20100528090349.64112e8a__28458.408258348$1275030749$gmane$org@schatten.dmk.lab>
-References: <1274482015-30899-1-git-send-email-arve@android.com>
-	<201005242049.18920.rjw@sisk.pl>
-	<87wrusvrqe.fsf@deeprootsystems.com>
-	<201005250138.16293.rjw@sisk.pl> <1274863655.5882.4875.camel@twins>
-	<AANLkTinN6MKvCEhPkbYQRD2gu-mGXdNW9asRsTuKN3_Y@mail.gmail.com>
-	<1274867106.5882.5090.camel@twins>
-	<20100526120242.5c9b73ad@schatten.dmk.lab>
-	<AANLkTim4021cTnhVZrQpefq1MG-eEPOFLDRO-XDepHb4@mail.gmail.com>
-	<20100526133721.602633b2@schatten.dmk.lab>
-	<AANLkTikzgaOFdQKess4E-D86OLPOzxP3dWiDkU_UR0ri@mail.gmail.com>
-	<20100526142430.327ccbc4@schatten.dmk.lab>
-	<877hmon5em.fsf@gmail.com>
+Date: Fri, 28 May 2010 09:25:52 +0200
+Message-ID: <20100528092552.087bd38a__17356.1604148292$1275031614$gmane$org@schatten.dmk.lab>
+References: <20100526171106.0e44a736@schatten.dmk.lab>
+	<alpine.LFD.2.00.1005261829540.2995@localhost.localdomain>
+	<20100526190204.5efe4d59@lxorguk.ukuu.org.uk>
+	<20100526215606.2a747c61@schatten.dmk.lab>
+	<AANLkTil3OdarNjeIuzWqM59x4ysFqJrMeiUZzceC_r7P@mail.gmail.com>
+	<20100527071100.3a38bbac@schatten.dmk.lab>
+	<alpine.LFD.2.00.1005271530240.3032@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <877hmon5em.fsf@gmail.com>
+In-Reply-To: <alpine.LFD.2.00.1005271530240.3032@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,84 +23,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ben Gamari <bgamari.foss@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Linux@smtp1.linux-foundation.org, felipe.balbi@nokia.com, List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 27 May 2010 22:09:37 -0400
-Ben Gamari <bgamari.foss@gmail.com> wrote:
+On Thu, 27 May 2010 15:35:18 +0200 (CEST)
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> On Wed, 26 May 2010 14:24:30 +0200, Florian Mickler <florian@mickler.org> wrote:
-> > Because he is using a robust kernel that provides suspend blockers and
-> > is preventing the vampire from sucking power? 
+> On Thu, 27 May 2010, Florian Mickler wrote:
+> 
+> > On Wed, 26 May 2010 22:03:37 +0200
+> > Vitaly Wool <vitalywool@gmail.com> wrote:
 > > 
-> Suspend blockers are only a flawed and indirect way to keep the vampire
-> from sucking.
-> 
-
-
-
-> > Most users don't even grasp the simple concept of different "programs".
-> > They just have a device and click here and there and are happy. 
+> > > On Wed, May 26, 2010 at 9:56 PM, Florian Mickler <florian@mickler.org> wrote:
+> > > 
+> > > > Your approach definitely sounds better than the current solution.
+> > > > What about mapping suspend blocker functionality later on, when this
+> > > > interface exists, on to this new approach and deprecating it?
+> > > 
+> > > What about coming back after some while with the appropriate solution
+> > > when it's ready instead of stubbornly pushing crap?
+> > > 
+> > > ~Vitaly
 > > 
-> > Really, what are you getting at? Do you deny that there are programs,
-> > that prevent a device from sleeping? (Just think of the bouncing
-> > cows app)
+> > Because quite frankly, for a good part of linux users, suspend blockers
+> > is already in the kernel. It's just an historical mistake that they are
+> > not in the linux kernel's hosted on kernel.org. 
 > 
-> He's getting at the fact that there are much better ways to deal with
-> this problem. The issue here is that we seem to be expected to swallow
-> whatever Google throws at us, regardless of the quality of the
-> solution. It seems like the best argument we have for merging is "we
-> couldn't think of anything better and we need it yesterday." This might be
-> a good enough reason for shipping, but it certainly doesn't satisfy the
-> requirements for merging.
-
-I don't disagree on the quality. But I don't think it is because of the
-patches, but because of how the kernel is architectured in that area
-(suspend not being an idle state).
-
-Look, probably suspend needs to be integrated into the idle states and
-used from there. I could imagine a cost-specification for idle states:
-
-c3
-	cost-to-transition-to-this-state: X 
-	powersavings-per-time: Y
-	expected time we stay in this state: relative short, there is a
-	timer sheduled
-	suspend-blockers: ignored
-
-suspend 
-	cost-to-transition-to-this-state: depends, how much drivers to
-	suspend, how much processes to freeze, ...
-	powersavings-per-time: Y
-	expected time we stay in this state: long, independent of
-	sheduled timers
-	suspend-blockers: need not be activated
-
-Now, a governor could compute if it is ok, to enter suspend or only
-wait for idle-c3. And maybe it would never transition from idle-c3 to
-suspend but only from c1. because the cost to enter suspend would mean
-it just has to go to c1 anyway.
-
-what do ya think?
-
-> > And if you have two kernels, one with which your device is dead after 1
-> > hour and one with which your device is dead after 10 hours. Which would
-> > you prefer? I mean really... this is ridiculous. 
+> No, it's not a historical mistake. It's a technical decision _NOT_ to
+> merge crap. If we would accept every crappy patch which gets shipped
+> in large quantities as a defacto part of the kernel we would have a
+> completely unmaintainable mess since years.
+> > So why don't we do what we always do? Improve existing interfaces step
+> > by step? 
 > 
-> It is absolutely not. If you want to keep power usage down, then
-> implement real resource management in the scheduler. Suspend blockers
-> are nothing but a clunky and ineffective means of resource allocation.
-> As has been pointed out in this thread, there are much better ways of
-> dealing with this problem.
+> Exactly, that's what we are going to do. We improve and extend
+> existing interfaces step by step, but not by creating a horrible and
+> unmaintainable mess in the frist place which we can never get rid of
+> anymore.
+
+Ok to your two paragraphs. I can understand this. 
+
+Nonetheless, i'm convinced that there has to be some solution in
+mainline to allow for what android does. But perhaps it needs more
+refactoring and piggybagging on some more general constraint interface.
+
 > 
-> - Ben
+> > Top Down approaches fail from time to time. Also it is not clear, that
+> > that proposed interface works for the use cases. This has to be proven
+> > by providing an implementation. 
+> 
+> Nobody prevents you to sit down and start with a prove of concept
+> implementation.
 
-I think this has to be independently to the scheduler, because as soon
-as the user interacts with the phone, everything needs to be scheduled.
-even the stuff that doesn't directly interact with the user.
-as soon as _nothing_ interacts with the user, the phone does schedule
-_nothing_ anymore.
+Hmm... *scratch*... *lookaround* .. who?
 
-Cheers,
-Flo
+Really, I'd first like to get the whole picture before doing anything.
+
+> 
+> Thanks,
+> 
+> 	tglx
