@@ -1,8 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/8] cpuidle: add cpuidle_unregister_driver()
-	error check
-Date: Fri, 28 May 2010 02:01:55 -0400
-Message-ID: <c0d64cb031c21f163a0ec15cf10844bcf0ceedcf.1275026041.git.len.brown__2436.99795469201$1275030280$gmane$org@intel.com>
+Subject: [PATCH 5/8] sched: clarify commment for TS_POLLING
+Date: Fri, 28 May 2010 02:01:58 -0400
+Message-ID: <e45b7fa23097332508730123ac6d59227e7bd7f8.1275026041.git.len.brown__4483.76832432604$1275030404$gmane$org@intel.com>
 References: <1275026521-30835-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,30 +25,37 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-Assure that cpuidle_unregister_driver() will not clobber
-the registered driver if unregistered by somebody else.
+TS_POLLING set tells the scheduler an idle_task will poll
+need_resched() to look for work.
 
+TS_POLLING clear tells resched_task() and wake_up_idle_cpu()
+that the remote CPU's idle_task is now sleeping in idle,
+and thus requires a reschedule interrupt notice work.
+
+Update the description of TS_POLLING to reflect how it works.
+"idle task polling need_resched, skip sending interrupt"
+
+Wordsmithing-by: Milton Miller <miltonm@bga.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
 ---
- drivers/cpuidle/driver.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ arch/x86/include/asm/thread_info.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-index 2257004..826b5c0 100644
---- a/drivers/cpuidle/driver.c
-+++ b/drivers/cpuidle/driver.c
-@@ -45,8 +45,11 @@ EXPORT_SYMBOL_GPL(cpuidle_register_driver);
-  */
- void cpuidle_unregister_driver(struct cpuidle_driver *drv)
- {
--	if (!drv)
-+	if (drv != cpuidle_curr_driver) {
-+		WARN(1, "invalid cpuidle_unregister_driver(%s)\n",
-+			drv->name);
- 		return;
-+	}
+diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
+index e0d2890..8121869 100644
+--- a/arch/x86/include/asm/thread_info.h
++++ b/arch/x86/include/asm/thread_info.h
+@@ -241,8 +241,8 @@ static inline struct thread_info *current_thread_info(void)
+ #define TS_USEDFPU		0x0001	/* FPU was used by this task
+ 					   this quantum (SMP) */
+ #define TS_COMPAT		0x0002	/* 32bit syscall active (64BIT)*/
+-#define TS_POLLING		0x0004	/* true if in idle loop
+-					   and not sleeping */
++#define TS_POLLING		0x0004	/* idle task polling need_resched,
++					   skip sending interrupt */
+ #define TS_RESTORE_SIGMASK	0x0008	/* restore signal mask in do_signal() */
+ #define TS_XSAVE		0x0010	/* Use xsave/xrstor */
  
- 	spin_lock(&cpuidle_driver_lock);
- 	cpuidle_curr_driver = NULL;
 -- 
 1.6.0.6
