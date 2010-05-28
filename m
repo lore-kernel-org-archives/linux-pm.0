@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sat, 29 May 2010 00:11:32 +0200
-Message-ID: <201005290011.32543.rjw__43447.7059556686$1275084676$gmane$org@sisk.pl>
+Date: Sat, 29 May 2010 00:18:14 +0200
+Message-ID: <201005290018.14832.rjw__21496.6878215366$1275085055$gmane$org@sisk.pl>
 References: <Pine.LNX.4.44L0.1005271344040.3239-100000@iolanthe.rowland.org>
-	<AANLkTimqvMuMpB5E3tj58OtlRc-7mVaec-9EHAegywg7@mail.gmail.com>
-	<1275032623.32462.30.camel@laptop>
+	<20100528005045.6ea5feba@lxorguk.ukuu.org.uk>
+	<1275031797.32462.18.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275032623.32462.30.camel@laptop>
+In-Reply-To: <1275031797.32462.18.camel@laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,63 +19,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@lists.linux-foundation.org>
-Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpZGF5IDI4IE1heSAyMDEwLCBQZXRlciBaaWpsc3RyYSB3cm90ZToKPiBPbiBUaHUsIDIw
-MTAtMDUtMjcgYXQgMTc6NDUgLTA3MDAsIEFydmUgSGrDuG5uZXbDpWcgd3JvdGU6Cj4gPiBXaGF0
-IGhhcHBlbnMgaWYgdGhlIHVzZXIgcHJlc3NlcyB0aGUgYnV0dG9uIHJpZ2h0IGJlZm9yZSB5b3Ug
-c2V0IFFvUwo+ID4gb2YgJ3VzZXIgYXBwcycgdG8gIFFTX05PTkU/Cj4gPiBUbyBtZSBpdCBsb29r
-cyBsaWtlIHRoaXMgc29sdXRpb24gd291bGQgcmVzdWx0IGluIHRoaXMgc2VxdWVuY2Ugd2hpY2gK
-PiA+IG1heSBpZ25vcmUgdGhlIGJ1dHRvbiBwcmVzczoKPiA+ICAgICAgICAgQnV0dG9uIHB1c2hl
-ZAo+ID4gICAgICAgICBCdXR0b24gZHJpdmVyIHNldHMgUW9TIG9mIGFwcCBpdCB3YWtlcyB0byBR
-U19BQk9WRVNVU1BFTkQKPiA+ICAgICAgICAgU2V0IFFvUyBvZiAndXNlciBhcHBzJyB0byBRU19O
-T05FIAo+IAo+IEkgZG9uJ3QgdGhpbmsgd2Ugc2hvdWxkIGNoYW5nZSBhcHAgUW9TIHBhcmFtZXRl
-cnMsIGJ1dCBjaGFuZ2Ugc2VydmljZQo+IHByb3ZpZGVyIHBhcmFtZXRlcnMuCj4gCj4gRm9yIGlu
-c3RhbmNlLCBzdXBwb3NlIHRoZSBmaWxlc3lzdGVtLUlPIFFvUyBoYXMgMyBsZXZlbHM6IAo+ICAg
-SGlnaCwgTm9ybWFsIGFuZCBJZGxlLgo+IAo+IFRoZW4gaWYgd2UgYXNzaWduIElkbGUgdG8gdXBk
-YXRlZGIsIHdlJ2xsIHNlcnZpY2UgaXQgYXMgbG9uZyBhcyB0aGUKPiBmaWxlc3lzdGVtLXNlcnZl
-ciBRb1MgaGFzIGEgaGlnaGVyIGxldmVsIChIaWdoIGFuZCBOb3JtYWwpLiBXaGVuIHdlCj4gY2hh
-bmdlIHRoZSBmaWxlc3lzdGVtLXNlcnZlcycgUW9TIHRvIGlkbGUsIGl0IGZpbmRzIHRoZXJlIGlz
-IG5vdGhpbmcgdG8KPiBrZWVwIGl0IHNlcnZpY2luZyBzdHVmZiBhbmQgaXQnbGwgYmxvY2sgcGVu
-ZGluZyByZXF1ZXN0cywgdXBkYXRlZGIgc3RvcHMKPiBiZWluZyBydW5uYWJsZSBhbmQgd2UncmUg
-Z29vZC4KClllYWgsIHRoYXQncyB3aGF0IEkgd2FzIHRoaW5raW5nLiAgSXQgd291bGQgYmUgbmlj
-ZSB0byBoYXZlIGEgbWVjaGFuaXNtIHRoYXQKd291bGQgcHJldmVudCB0YXNrcyBmcm9tIGJlaW5n
-IHJ1bm5hYmxlIGluIHNwZWNpZmljIGNvbmRpdGlvbnMgKG5vdCBuZWNlc3NhcmlseQpyZWxhdGVk
-IHRvIHBvd2VyIG1hbmFnZW1lbnQgZXZlbikuCgpIYXZpbmcgcmVjb25zaWRlcmVkIHRoZSBzdXNw
-ZW5kIGJsb2NrZXJzIGlkZWEgSSBjYW1lIHRvIHRoZSBjb25jbHVzaW9uIHRoYXQKaW4gZmFjdCBp
-dCB3YXMgYSB3b3JrYXJvdW5kIGZvciB0aHJlZSBkaWZmZXJlbnQgcHJvYmxlbXMuCgpUaGUgZmly
-c3Qgb25lIHdhcyB0aGF0IHdlIGNvdWxkbid0IHBvd2VyIG1hbmFnZSBJL08gZGV2aWNlcyBhdCBy
-dW4gdGltZSBhbmQKdGhlIG9ubHkgd2F5IHRvIHB1dCB0aGVtIGludG8gbG93LXBvd2VyIHN0YXRl
-cyB3YXMgdG8gY2Fycnkgb3V0IGZ1bGwgc3lzdGVtCnN1c3BlbmQuICBUaGF0J3MgY2hhbmdlZCB3
-aXRoIHRoZSBpbnRyb2R1Y3Rpb24gb2YgdGhlIHJ1bnRpbWUgUE0gZnJhbWV3b3JrLApidXQgdGhl
-IHNpdHVhdGlvbiBpcyBzdGlsbCBub3QgaWRlYWwsIGJlY2F1c2UgaW4gZ2VuZXJhbCB0aGVyZSdz
-IG5vIGNvbm5lY3Rpb24KYmV0d2VlbiB0aGUgaWRsZSBpbmZyYXN0cnVjdHVyZSBhbmQgcnVudGlt
-ZSBQTS4KClRoaXMgSU1PIGlzIHRoZSBzZWNvbmQgcHJvYmxlbSB3b3JrZWQgYXJvdW5kIGJ5IHN1
-c3BlbmQgYmxvY2tlcnMuCk5hbWVseSwgaXQgZ2VuZXJhbGx5IHdvdWxkIGJlIG5pY2UgdG8gc3Vz
-cGVuZCBJL08gZGV2aWNlcyB3aGVuIENQVXMgYXJlIGlkbGUKZm9yIGEgc3VmZmljaWVudGx5IGxv
-bmcgdGltZS4gIEZvciB0aGlzIHRvIHdvcmssIHRoZXJlIHNob3VsZCBiZSBhIHdheSB0bwpyZWdp
-c3RlciBhIGRldmljZSB3aXRoIHRoZSBpZGxlIGZyYW1ld29yayBzbyB0aGF0IGl0IGNhbiB0ZWxs
-IHRoZSBkZXZpY2Uncwpkcml2ZXIgdG8gc3VzcGVuZCB0aGUgZGV2aWNlIHdoZW4gaXQgbWFrZXMg
-c2Vuc2UuICBTb21ldGhpbmcgbGlrZQo8dmFndWUgaWRlYT5pZGxlX3JlZ2lzdGVyX2RldmljZShk
-ZXYsIHQpLCB3aGVyZSB0IG1lYW5zICJzdXNwZW5kIHRoYXQKZGV2aWNlIGFmdGVyIGFsbCBDUFVz
-IGhhdmUgYmVlbiBpZGxlIGZvciB0aW1lIHQiLCBzbyBiYXNpY2FsbHkgdGhlIGlkbGUKZnJhbWV3
-b3JrIHdpbGwgb25seSBuZWVkIHRvIHJ1biBwbV9zY2hlZHVsZV9zdXNwZW5kKGRldiwgdCkgZm9y
-IHRoYXQgZGV2aWNlCnJpZ2h0IGJlZm9yZSBpZGxpbmcgdGhlIGxhc3QgQ1BVPC92YWd1ZSBpZGVh
-Pi4KClRoZSB0aGlyZCBwcm9ibGVtIGlzIGV4YWN0bHkgdGhhdCBvbiBBbmRyb2lkIHN5c3RlbSB0
-aGVyZSBhcmUgKG9yIGF0IGxlYXN0CnRoZXJlIG1heSBiZSkgdGFza3MgdGhhdCBpbiBzcGVjaWZp
-YyBzaXR1YXRpb25zIHNob3VsZCBub3QgYmUgcmVnYXJkZWQgYXMKcnVubmFibGUgYXQgYWxsIGFu
-ZCBjdXJyZW50bHkgdGhlcmUncyBubyB3YXkgdG8gZW5zdXJlIHRoZXkgd29uJ3QgcnVuIG90aGVy
-CnRoYW4gZ29pbmcgdG8gYSBmdWxsIHN1c3BlbmQuCgpJZiB3ZSBjb3VsZCBhZGRyZXNzIHRoZXNl
-IGlzc3VlcyBzb21laG93LCBJIHRoaW5rIHN1c3BlbmQgYmxvY2tlcnMgd291bGQgbm90IGJlCm5l
-Y2Vzc2FyeSBmb3IgbWF4aW1pemluZyBiYXR0ZXJ5IGxpZmUgKHdlbGwsIHRoZXJlIGFyZSBzb21l
-IHRlY2huaWNhbCBkZXRhaWxzCmxpa2UgYXV0b21hdGljIGdvaW5nIHRvIGZ1bGwgc3VzcGVuZCB3
-aGVuIHRoZSBDUFVzIGFuZCBJL08gaGF2ZSAgYmVlbiBpZGxlIGZvcgpzdWZmaWNpZW50bHkgbG9u
-ZyBldGMuLCBidXQgdGhleSBhbGwgc2VlbSB0byBiZSB0cmFjdGFibGUpLgoKW0FuZCB0aGVyZSdz
-IGEgcHJvYmxlbSBvZiBwZXJpb2RpYyB0aW1lcnMgdGhhdCB0cmlnZ2VyIHRvbyBvZnRlbiwgYnV0
-IEkgdGhpbmsKdGhhdCdzIGp1c3QgYSBnZW5lcmFsIGlzc3VlIHRoYXQgbmVlZCB0byBiZSBmaXhl
-ZCBhbnl3YXkuXQoKVGhhbmtzLApSYWZhZWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxp
-bnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFp
-bG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Friday 28 May 2010, Peter Zijlstra wrote:
+> On Fri, 2010-05-28 at 00:50 +0100, Alan Cox wrote:
+> > Today "idle" means "no task running"
+> > 
+> > If you are prepared to rephrase that as "no task that matters is running"
+> > what would need to answer ?
+> 
+> I'm not sure we need or want to go there.
+> 
+> Why not simply let upatedb block on its IO because its QoS policy tells
+> us that its IO priority is idle. Therefore it will not avoid the IO
+> device from going idle and indefinitely delaying servicing requests.
+> 
+> When updatedb blocks, the runqueue becomes empty and we gain goodness.
+> 
+> Or are we talking about the same thing?
+
+There may be apps that don't actually do I/O that we may want to be treated
+that way too.
+
+Consider the following scenario.  I have a purely computational task that's
+running on my laptop in the background (say it's a folding@home or something
+similar), but I only want it to run when (a) the box is on AC power and (b)
+when user interface is "active" (the latter would have to be defined precisely,
+but for the purpose of this thought experiment let's assume we have such a
+definition).  Then, I'd only like it to be regarded as runnable if (a) and (b)
+both happen at the same time, but it can't block on I/O.
+
+Thanks,
+Rafael
