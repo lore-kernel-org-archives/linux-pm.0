@@ -1,30 +1,16 @@
-From: Neil Brown <neilb@suse.de>
-Subject: Just fix the bug - Re: [PATCH 1/8] PM: Opportunistic
- suspend support.
-Date: Fri, 28 May 2010 13:50:21 +1000
-Message-ID: <20100528135021.3b6acb0b@notabene.brown>
-References: <1274863342.5882.4850.camel@twins>
-	<20100526112303.3fef15a4@schatten.dmk.lab>
-	<1274866402.5882.5051.camel@twins>
-	<AANLkTil9ZtMFxTfE6ITiFNOl4S1k3Lvdp5BPgGX7LJhw@mail.gmail.com>
-	<1274868384.5882.5169.camel@twins>
-	<AANLkTimHGpRAZklIwXu6wEbA3coKXJvCVLxj2twerkCw@mail.gmail.com>
-	<1274869262.5882.5222.camel@twins>
-	<AANLkTik9LINPmabJfVi0jfVs5sjVS_1l00WpnVTFEuLV@mail.gmail.com>
-	<1274890736.4467.574.camel@mulgrave.site>
-	<1274891308.1674.1766.camel@laptop>
-	<20100526165919.GB2089@elf.ucw.cz>
-	<1274893309.1674.1773.camel@laptop>
-	<1274894685.4467.758.camel@mulgrave.site>
-	<alpine.LFD.2.00.1005261948290.2995@localhost.localdomain>
-	<1274898180.4467.925.camel@mulgrave.site>
-	<1274948234.14002.27.camel@thorin>
-	<AANLkTilk7FX1Y0uWKyMEpf8uxFPBae3X0hGdLLa5oNUa@mail.gmail.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
+ driver for select intel processors
+Date: Thu, 27 May 2010 23:57:42 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1005272354100.24823__38497.9932489388$1275019118$gmane$org@localhost.localdomain>
+References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
+	<198450ec1600d9a7f55270dd4d44d6b55bc5b184.1274926772.git.len.brown@intel.com>
+	<20100526204426.fd2be7e0.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTilk7FX1Y0uWKyMEpf8uxFPBae3X0hGdLLa5oNUa@mail.gmail.com>
+In-reply-to: <20100526204426.fd2be7e0.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -34,67 +20,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>
-Cc: linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@linux.intel.com>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Len Brown <len.brown@intel.com>, Greg KH <gregkh@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>, Thomas Gleixner <tglx@linutronix.de>, tytso@mit.edu, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kernel development list <linux-kernel@vger.kernel.org>, James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>, Bernd Petrovitsch <bernd@petrovitsch.priv.at>, Andrew Morton <akpm@linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org, x86@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCAyNyBNYXkgMjAxMCAwMjowNzoyMSAtMDcwMApBcnZlIEhqw7hubmV2w6VnIDxhcnZl
-QGFuZHJvaWQuY29tPiB3cm90ZToKCj4gPgo+ID4+IG9mIGl0IGludG8gcG0gUW9TIHN0dWZmIGFu
-ZCBpZiBvbmUgZGF5IHNvbWVvbmUgc29sdmVzIHRoZSByb2d1ZSBhcHAKPiA+PiBwcm9ibGVtLCB3
-ZSBjYW4gbWlncmF0ZSBvdmVyLgo+ID4KPiA+IElmIGl0J3Mgc28gaW1wb3J0YW50IGZvciBBbmRy
-b2lkIGFuZCBubyBvbmUgZWxzZSwgQW5kcm9pZCBjYW4gY2FycnkgaXQKPiA+IG91dCBvZiB0cmVl
-Lgo+ID4KPiAKPiBUaGlzIGlzIG5vdCBvbmx5IGltcG9ydGFudCBmb3IgQW5kcm9pZC4gSWYgeW91
-IHVzZSBzdXNwZW5kIG9uIGEKPiBjdXJyZW50IExpbnV4IHN5c3RlbSB5b3UgcnVuIHRoZSByaXNr
-IG9mIGxvb3Npbmcgd2FrZXVwIGV2ZW50cy4gSWYgeW91Cj4gaGF2ZSB3YWtldXAgZXZlbnRzIHRo
-YXQgeW91IGNhbm5vdCBhZmZvcmQgdG8gbG9zZSB5b3VyIG9ubHkgb3B0aW9uIGlzCj4gdG8gbmV2
-ZXIgc3VzcGVuZC4gT24gc29tZSBoYXJkd2FyZSAoZS5nLiB4ODYpIHRoZSBjb3N0IG9mIG5vdAo+
-IHN1c3BlbmRpbmcgaXMgYWx3YXlzIGh1Z2UsIG9uIG90aGVyIGhhcmR3YXJlIChtYW55IEFSTSBT
-T0NzKSB0aGUgY29zdAo+IGlzIG9ubHkgaHVnZSBpZiB5b3VyIGFwcHMgYmVoYXZlIHBvb3JseS4K
-PiAKClNvIGhlcmUgaXMgbXkgc3VnZ2VzdGlvbi4KUmF0aGVyIHRoYW4gdHJ5aW5nIHRvIHB1c2gg
-YSBmZWF0dXJlIHRoYXQgaXMgY2xlYXJseSBtZWV0aW5nIGxvdHMgb2YKcmVzaXN0YW5jZSwgdGhl
-IEFuZHJvaWQgZGV2cyBzaG91bGQgc3RhdGUgdGhlIHByb2JsZW0gYXMgYSBidWcgdGhhdCBuZWVk
-cwpmaXhpbmcuICBBcyB5b3UgaGF2ZS4KVXBzdHJlYW0gaXMgYSBsb3QgbW9yZSByZWNlcHRpdmUg
-b2YgZml4aW5nIGJ1Z3MgdGhhbiBhZGRpbmcgZmVhdHVyZXMuCgpJbiB0aGlzIGNhc2UgdGhlIGJ1
-ZyBpcyB0aGF0IHlvdSBjYW5ub3Qgc3VzcGVuZCB3aXRob3V0IHRoZSByaXNrIG9mIGxvc2luZwp3
-YWtldXAgZXZlbnRzLiAgVGhpcyBpcyBhIHJlYWwgYnVnIHRoYXQgZm9yIHlvdXIgdXNlIGNhc2Ug
-aXMgYSBzZXJpb3VzCmJ1Zy4gIEkndmUgdG95ZWQgd2l0aCBzZXZlcmFsIHdheXMgb2YgZml4aW5n
-IHRoaXMgYnV0IHRoZSBvbmUgdGhhdCBzZWVtcyBtb3N0CnByb21pc2luZyBpcyB0byBub3RlIHRo
-YXQgaW4gdGhlIGtlcm5lbCB0aGUgc3VzcGVuZCBwcm9jZXNzIGlzIHR3by1zdGFnZSB3aXRoCmEg
-J3ByZXBhcmUnIGZvbGxvd2VkIGJ5IGEgJ3N1c3BlbmQnLiBVc2Vyc3BhY2UgY2Fubm90IG1ha2Ug
-dGhhdCBkaXN0aW5jdGlvbgphbmQgc28gZW5kcyB1cCB3aXRoIGEgcmFjZS4KCk1heWJlIHVzZXJz
-cGFjZSBzaG91bGQgYmUgYWJsZSB0byBzYXkgInByZXBhcmUgdG8gc3VzcGVuZCIgd2l0aCB0aGUg
-bWVhbmluZwp0aGF0IGFmdGVyIGEgc3VjY2Vzc2Z1bCByZXR1cm4sIGFueSBldmVudCB3aGljaCB3
-b3VsZCBjYXVzZSBhIHdha2V1cCBzZXRzIGEKZmxhZyBzbyB0aGF0IHRoZSBmaW5hbCBzdXNwZW5k
-IHJldHVybnMgaW1tZWRpYXRlbHkgKHdpdGhvdXQgYWN0dWFsbHkgZ29pbmcgdG8KdGhlIGxvd2Vy
-IHBvd2VyIHN0YXRlKS4KClRoZW4geW91ciBvcHBvcnR1bmlzdGljIHN1c3BlbmQgY291bGQgYmUg
-ZW50aXJlbHkgaW4gdXNlcnNwYWNlIHdoZXJlIHlvdQp3b3VsZG4ndCBoYXZlIHRvIGZpZ2h0IHdp
-dGggdGhlIGtlcm5lbCBjcm93ZCA6LSkKVGhlIHN1c3BlbmQtZGFlbW9uIHdvdWxkOgogIFdhaXQg
-Zm9yIGFsbCB1c2VyLXNwYWNlIHN1c3BlbmQgYmxvY2tzIHRvIGJlIGRyb3BwZWQuCiAgVGVsbCB0
-aGUga2VybmVsIHRvICJwcmVwYXJlIHRvIHN1c3BlbmQiLgogIFRlbGwgYWxsIHVzZXJzcGFjZSBw
-cm9ncmFtcyB3aGljaCBoYXZlIHJlZ2lzdGVyZWQgZm9yIHRoZSBtZXNzYWdlIHRoYXQgdGhleQog
-ICAgc2hvdWxkIHByZXBhcmUgdG8gc3VzcGVuZC4gIFRoZXkgaGF2ZSB0aGUgb3Bwb3J0dW5pdHkg
-YXQgdGhpcyBwb2ludCB0bwogICAgdGFrZSBvdXQgYSBuZXcgc3VzcGVuZCBibG9jayBpZiB0aGV5
-IG5vdGljZSBhbiBldmVudCB0aGF0IGhhcwogICAganVzdCBhcnJpdmVkCiAgV2FpdCBmb3IgYWxs
-IHRob3NlIHByb2dyYW1zIHRvIGFja25vd2xlZGdlCiAgSWYgdGhlcmUgYXJlIG5vIG5ldyBzdXNw
-ZW5kIGJsb2NrcywgdGVsbCB0aGUga2VybmVsIHRvIHN1c3BlbmQKICBlbHNlIHRlbGwgdGhlIGtl
-cm5lbCB0byBhYm9ydCB0aGUgc3VzcGVuZC4KClRoaXMgKEkgdGhpbmspIGFsbG93cyByYWNlLWZy
-ZWUgb3Bwb3J0dW5pc3RpYyBzdXNwZW5kIGluIHVzZXItc3BhY2Ugd2hlcmUKeW91IGNhbiBkbyBh
-bGwgdGhlIGFjY291bnRpbmcgeW91IG5lZWQuCgpJIGRvbid0IGZ1bGx5IHVuZGVyc3RhbmQgeW91
-ciByZXF1aXJlbWVudHMgZm9yIGFjY291bnRpbmcgb2YgZGV2aWNlcyBkcml2ZXJzCnJlamVjdGlu
-ZyBvciBibG9ja2luZyBhIHN1c3BlbmQsIHNvIEkgY2Fubm90IHNheSBwcmVjaXNlbHkgaG93IHRo
-YXQgd291bGQgZml0CmluLiAgTWF5YmUgeW91IGp1c3QgbmVlZCB0byBrbm93IC0gd2hlbmV2ZXIg
-dGhlICdzdXNwZW5kIHJlcXVlc3QnIGNvbXBsZXRlcyAtCndoYXQgdGhlIHdha2V1cCBldmVudHMg
-d2VyZS4gIEl0IHNob3VsZG4ndCBiZSB0b28gaGFyZCB0byBleHBvcnQgdGhhdCB0bwp1c2VyLXNw
-YWNlIHZpYSBzeXNmcy4KCkkgd29uJ3QgcHJvcG9zZSBhbiBleGFjdCBlbmhhbmNlbWVudCB0byB0
-aGUgdXNlci1zcGFjZSBpbnRlcmZhY2UgZm9yCnJlcXVlc3RpbmcgYSBzdXNwZW5kLCBidXQgSSBz
-dXNwZWN0IGl0IHNob3VsZCBleHBvc2UgZWFjaCBvZgogIHN1c3BlbmRfcHJlcGFyZQogIHN1c3Bl
-bmRfZGV2aWNlc19hbmRfZW50ZXIKICBzdXNwZW5kX2ZpbmlzaAoob3IgY2xvc2UgYW5hbG9ndWVz
-IHRoZXJlLW9mKSB0byB1c2VyLXNwYWNlLiAgSXQgaXMgdGVtcHRpbmcgdG8gbWFwIHRob3NlIHRv
-CiJvcGVuLWZvci13cml0ZSIsICJ3cml0ZSIsICJjbG9zZSIsIGJ1dCBJJ20gbm90IHN1cmUgdGhh
-dCBzdXNwZW5kX3ByZXBhcmUKd291bGQgYmUgYXBwcm9wcmlhdGUgaWYgdGhlIGFwcCB3YXMgYWJv
-dXQgdG8gd3JpdGUgImRpc2siIC0gaXQgaXMgYSBwaXR5IHRoYXQKYm90aCBzdXNwZW5kIGFuZCBo
-aWJlcm5hdGUgdXNlIHRoZSBzYW1lIHN5c2ZzIGZpbGUuCgpTbyBqdXN0IGZpeCB0aGUgYnVnLCBh
-bmQgZXZlcnlvbmUgd2lsbCBiZSBoYXBweSA6LSkKClRoYW5rcywKTmVpbEJyb3duCl9fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcg
-bGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxp
-bnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+
+> ... What happens when an additional CPU is brought online? 
+> It melts?  ;)
+
+With the current driver, processors hot-added after modprobe
+will use C1 only, and not use deeper C-states.
+
+Taking online processors offline and bringing them back online
+(like we do during suspend) works fine.
+
+> > +		dev->cpu = i;
+> > +		if (cpuidle_register_device(dev)) {
+> > +			pr_debug(PREFIX "cpuidle_register_device %d failed!\n", i);
+> > +			free_percpu(intel_idle_cpuidle_devices);
+> > +			return -EIO;
+> 
+> Should this unregister all the thus-far-registered devices?
+
+yes, that was a bug!
+
+thanks,
+Len Brown, Intel Open Source Technology Center
