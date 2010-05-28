@@ -1,14 +1,16 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: idle-test patches queued for upstream
-Date: Thu, 27 May 2010 20:59:07 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.1005272023510.24823__34237.1640880176$1275008417$gmane$org@localhost.localdomain>
+Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
+ driver for select intel processors
+Date: Thu, 27 May 2010 21:44:16 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1005272131400.24823__30195.9940036342$1275011209$gmane$org@localhost.localdomain>
 References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
-	<201005271045.33500.trenn@suse.de>
+	<198450ec1600d9a7f55270dd4d44d6b55bc5b184.1274926772.git.len.brown@intel.com>
+	<201005271053.31087.trenn@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <201005271045.33500.trenn@suse.de>
+In-reply-to: <201005271053.31087.trenn@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,97 +21,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Thomas Renninger <trenn@suse.de>
-Cc: linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
+Cc: sfr@canb.auug.org.au, linux-pm@lists.linux-foundation.org, x86@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-> > ... we think we can do better than ACPI.
+On Thu, 27 May 2010, Thomas Renninger wrote:
 
-> Why exactly? Is there any info missing in the ACPI tables?
-> Or is this just to be more independent from OEMs?
+> On Thursday 27 May 2010 04:42:31 Len Brown wrote:
+> > From: Len Brown <len.brown@intel.com>
+> ... 
+> > CONFIG_INTEL_IDLE=m is not recommended unless the system
+> > has a method to guarantee intel_idle loads before ACPI's
+> > processor_idle.
 
-ACPI has a few fundmental flaws here.  One is that it reports
-exit latency instead of break-even power duration.
-The other is that it requires a BIOS writer to
-get the tables right.
+> Then it should better be declared bool instead of tristate until it
+> works.
 
-Both of these are fatal flaws.
+intel_idle as a module works fine, and tristate should be retained.
 
-There are also more subtle problems, like bogus ACPI implementations
-mapping LAPIC breaking C-states to ACPI-C2, causing Linux to need
-to assume the LAPIC is always broken in in C2 -- which is erroneous.
+If user-space chooses to load intel_idle before acpi processor,
+then it correctly handlees idle states and acpi
+correctly yields.  If user space gets them in the other order,
+then user-space gets what it asked for.
 
-I'll be speaking on this topic at length at Linuxcon this summer.
+The fact that a typical desktop distro load acpi-cpufreq first,
+and that depends on the acpi processor driver should not prohibit
+intel_idle from being modular.
 
-> > Indeed, on my (production level commerically available) Nehalem desktop
-> > the ACPI tables are broken and an ACPI OS idles at 100W.  With this
-> > driver the box idles at 85W.
+Indeed, intel_idle has every right to be moduler on a system
+where CONFIG_ACPI=n...
 
-> What exactly was broken there?
+> > This driver does not yet know about cpu online/offline
+> > and thus will not yet play well with cpu-hotplug.
 
-Dell's BIOS developer botched a bug fix immediately before the system
-went to market and disabled support for all ACPI C-states except C1.
-After several month of shipping systems, they still were unable
-to ship them with a fixed BIOS.
+> What means does not play well yet, suspend or manually offlining a core 
+> will eventually (for sure?) hang the machine?
 
-Of course, besides a 15% idle power hit,the other effect of that BIOS issue
-was to disable all Turbo frequencies -- which is a somewhat important
-feature on a Core-i7 desktop...
+It means less power savings savings than optimal
+for processors not present at module load time.
 
-> IMO this is a step backward.
+> If this is known broken, should this already be spread through
+> linux-next?
 
-I don't dispute your right to have an opinion:-)
+If you know somebody with a system that supports CPU hot-add
+on one of the processors supported by intel_idle, and they
+are willing to test linux-next, please have them contact me.
 
-> CPUfreq runs rather well on nearly every machine supporting it without
-> tons of static frequency tables in kernel. Even powernow-k8 might get merged
-> into acpi-cpufreq.
-
-There are a couple of important differences between cpufreq and idle
-state enumeration.  p-states are per-bin within each model.
-Idle states not only span bins within a model, they span multiple
-models which span multiple years.  Note also the idle tables are
-validated at run-time by CPUID.MWAIT, which means the same
-table can be used for multiple parts -- the parts themselves
-know which states they have -- and they can tell us.
-
-So I don't expect a proliferation of idle tables in intel_idle.
-
-I do expect to tune some of the latencies based on some of
-the information that Intel instructs BIOS writers to convey,
-but they fail to convey.  In particular, the actual latencies
-and power break-even points of the same model in different
-configurations are actually different.  I've not seen a single
-BIOS get that part rigiht.
-
-I expect a new table to cover sandy bridge plus the generation after it.
-
-> Intel set up a huge ACPI API for this and now it's not used anymore?!?
-> Will these parts get obsoleted in a future spec?
-
-Both p-states and c-states will be moving to a more native enumeration
-method - but there will still be BIOS ACPI support wrapping that
-enumeration as long as somebody wants to run a legacy ACPI OS that
-knows nothing else.
-
-> While for C-states there are not that many static entries needed, another
-> drawback could be that OEMs will disable/hide C-states on purpose.
-
-Yes, there is a real possibility that a system has a device in it
-that malfunctions when a deep C-state is used.  On Linux, we
-invented PM_QOS to address exactly this problem.
-
-The number of devices requiring PM_QOS users is still quite small.
-
-> Using ACPI table based C-states by default and using intel_idle.enable=1
-> or similar for workarounds sounds safer.
-> At least as long as the driver is experimental.
-
-I plan to remove the EXPERIMENTAL in 1 release.
-
-> Does Windows use ACPI C-state info for idle?
-
-Yes, Windows uses ACPI.
-On the Dell above, that is why Linux consumes 15% less idle power
-and why Linux can take advantage of turbo mode and Windows can not.
-
-cheers,
-Len Brown, Intel Open Source Technology Center
+thanks,
+-Len Brown, Intel Open Source Technology Center
