@@ -1,13 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 20:59:24 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005272057500.31050-100000@netrider.rowland.org>
-References: <201005280124.25347.rjw@sisk.pl>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: idle-test patches queued for upstream
+Date: Thu, 27 May 2010 20:59:07 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1005272023510.24823__34237.1640880176$1275008417$gmane$org@localhost.localdomain>
+References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
+	<201005271045.33500.trenn@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005280124.25347.rjw@sisk.pl>
+In-reply-to: <201005271045.33500.trenn@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,25 +18,98 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Thomas Renninger <trenn@suse.de>
+Cc: linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 28 May 2010, Rafael J. Wysocki wrote:
+> > ... we think we can do better than ACPI.
 
-> > And the forced-suspend design relies on the fact that processes remain 
-> > frozen throughout.  If we leave some processes unfrozen and one of them 
-> > somehow becomes runnable, that means we have to abort the forced 
-> > suspend before the process is allowed to run.
-> 
-> We could avoid that if drivers could block tasks, but there are questions to
-> answer.  First off, how a driver is supposed to know when to block the task
-> using it and when to do its power management transparently for the task?
-> Second, how to intercept and block all possible interfaces that user space
-> can use to talk to drivers (how to intercept a task using mmapped device, for
-> example)?
+> Why exactly? Is there any info missing in the ACPI tables?
+> Or is this just to be more independent from OEMs?
 
-We talked about this a few years ago and decided it was not feasible.  
-It would require substantial changes to every device driver.
+ACPI has a few fundmental flaws here.  One is that it reports
+exit latency instead of break-even power duration.
+The other is that it requires a BIOS writer to
+get the tables right.
 
-Alan Stern
+Both of these are fatal flaws.
+
+There are also more subtle problems, like bogus ACPI implementations
+mapping LAPIC breaking C-states to ACPI-C2, causing Linux to need
+to assume the LAPIC is always broken in in C2 -- which is erroneous.
+
+I'll be speaking on this topic at length at Linuxcon this summer.
+
+> > Indeed, on my (production level commerically available) Nehalem desktop
+> > the ACPI tables are broken and an ACPI OS idles at 100W.  With this
+> > driver the box idles at 85W.
+
+> What exactly was broken there?
+
+Dell's BIOS developer botched a bug fix immediately before the system
+went to market and disabled support for all ACPI C-states except C1.
+After several month of shipping systems, they still were unable
+to ship them with a fixed BIOS.
+
+Of course, besides a 15% idle power hit,the other effect of that BIOS issue
+was to disable all Turbo frequencies -- which is a somewhat important
+feature on a Core-i7 desktop...
+
+> IMO this is a step backward.
+
+I don't dispute your right to have an opinion:-)
+
+> CPUfreq runs rather well on nearly every machine supporting it without
+> tons of static frequency tables in kernel. Even powernow-k8 might get merged
+> into acpi-cpufreq.
+
+There are a couple of important differences between cpufreq and idle
+state enumeration.  p-states are per-bin within each model.
+Idle states not only span bins within a model, they span multiple
+models which span multiple years.  Note also the idle tables are
+validated at run-time by CPUID.MWAIT, which means the same
+table can be used for multiple parts -- the parts themselves
+know which states they have -- and they can tell us.
+
+So I don't expect a proliferation of idle tables in intel_idle.
+
+I do expect to tune some of the latencies based on some of
+the information that Intel instructs BIOS writers to convey,
+but they fail to convey.  In particular, the actual latencies
+and power break-even points of the same model in different
+configurations are actually different.  I've not seen a single
+BIOS get that part rigiht.
+
+I expect a new table to cover sandy bridge plus the generation after it.
+
+> Intel set up a huge ACPI API for this and now it's not used anymore?!?
+> Will these parts get obsoleted in a future spec?
+
+Both p-states and c-states will be moving to a more native enumeration
+method - but there will still be BIOS ACPI support wrapping that
+enumeration as long as somebody wants to run a legacy ACPI OS that
+knows nothing else.
+
+> While for C-states there are not that many static entries needed, another
+> drawback could be that OEMs will disable/hide C-states on purpose.
+
+Yes, there is a real possibility that a system has a device in it
+that malfunctions when a deep C-state is used.  On Linux, we
+invented PM_QOS to address exactly this problem.
+
+The number of devices requiring PM_QOS users is still quite small.
+
+> Using ACPI table based C-states by default and using intel_idle.enable=1
+> or similar for workarounds sounds safer.
+> At least as long as the driver is experimental.
+
+I plan to remove the EXPERIMENTAL in 1 release.
+
+> Does Windows use ACPI C-state info for idle?
+
+Yes, Windows uses ACPI.
+On the Dell above, that is why Linux consumes 15% less idle power
+and why Linux can take advantage of turbo mode and Windows can not.
+
+cheers,
+Len Brown, Intel Open Source Technology Center
