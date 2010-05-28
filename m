@@ -1,13 +1,11 @@
 From: nigel@tuxonice.net
-Subject: [PATCH 05/10] Hiberation: Fix speed display.
-Date: Fri, 28 May 2010 21:14:54 +1000
-Message-ID: <1275045299-25890-6-git-send-email-nigel@tuxonice.net>
-References: <1275045299-25890-1-git-send-email-nigel@tuxonice.net>
+Subject: Nigel's current for-rafael queue
+Date: Fri, 28 May 2010 21:14:49 +1000
+Message-ID: <1275045299-25890-1-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275045299-25890-1-git-send-email-nigel@tuxonice.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,29 +18,16 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Linux PM <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Nigel Cunningham <nigel@tuxonice.net>
+I've done some more work today. Here's an updated copy of the patches
+in my queue. As you'll see, I'm focussing on the low level i/o. These
+patches split out the more generic bio functions to block_io.c, leaving
+swap.c with just the swap specific functions (and, at the moment, the
+highlevel i/o routines). In doing this, I'm setting up a foundation
+for getting rid of the swap_map pages (I'll instead store extents in
+the image header), and through that for doing fully asynchronous I/O,
+which should give some speed increase. The changes also lay the groundwork
+for support for multiple swap devices and non-swap at a later stage.
 
-Correct the situation where, if an error occurs while writing an image,
-the speed display still uses the number of pages that should have been
-written, rather than the number of pages that were written.
+Regards,
 
-Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
----
- kernel/power/swap.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index ff2fc15..1e6e5b6 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -485,7 +485,7 @@ static int save_image(struct swap_map_handle *handle,
- 		printk(KERN_CONT "\b\b\b\bdone\n");
- 	else
- 		printk(KERN_CONT "\n");
--	swsusp_show_speed(&start, &stop, nr_to_write, "Wrote");
-+	swsusp_show_speed(&start, &stop, nr_pages, "Wrote");
- 	return ret;
- }
- 
--- 
-1.7.0.4
+Nigel
