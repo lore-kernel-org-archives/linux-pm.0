@@ -1,25 +1,17 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 17:53:54 +0200
-Message-ID: <20100528175354.7e6a73d1__42419.6455431685$1275062102$gmane$org@schatten.dmk.lab>
-References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
-	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
-	<20100527220949.GB10602@srcf.ucam.org>
-	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
-	<AANLkTil6Bo7qZltbLzHJjIDyruKHFQEURpe5LPJEpTws@mail.gmail.com>
-	<20100528101755.7b5f6b8a@lxorguk.ukuu.org.uk>
-	<AANLkTilYHKKmQePBGW3LVLjUZy7HXHQku2Iub-LWGBm6@mail.gmail.com>
-	<20100528132138.2d802d77@lxorguk.ukuu.org.uk>
-	<1275049836.1645.1.camel@laptop>
-	<20100528140236.3214929e@lxorguk.ukuu.org.uk>
-	<1275052817.1645.64.camel@laptop>
-	<1275058794.27810.9571.camel@twins>
+From: Chase Douglas <chase.douglas@canonical.com>
+Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
+ driver for select intel processors
+Date: Fri, 28 May 2010 11:09:40 -0400
+Message-ID: <1275059380.5612.60.camel__7205.66416061974$1275063807$gmane$org@cndougla-ubuntu>
+References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
+	<198450ec1600d9a7f55270dd4d44d6b55bc5b184.1274926772.git.len.brown@intel.com>
+	<1275013933.2312.7.camel@cndougla-ubuntu>
+	<alpine.LFD.2.00.1005272359510.24823@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275058794.27810.9571.camel@twins>
+In-Reply-To: <alpine.LFD.2.00.1005272359510.24823@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,44 +21,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Linux PM <linux-pm@lists.linux-foundation.org>, Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Len Brown <lenb@kernel.org>
+Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 28 May 2010 16:59:54 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
+On Fri, 2010-05-28 at 00:16 -0400, Len Brown wrote:
+> > I see that you have updated this code in your tree to disable C4 and C6
+> > on atom. This has piqued my curiosity. I've now seen 2 atom netbooks
+> > from different OEMs that hide C4 when you plug the power in. After the
+> > first machine I thought, "must be a BIOS/ACPI bug," but now I'm
+> > beginning to wonder if there's some issue with atom C4 states? That's
+> > beside the fact that I've not seen C6 on either machine at all. Do you
+> > have any insight?
+> 
+> The reasoning behind ACPI taking deep C-states away
+> when on AC is the assumption that users on AC
+> care more about low latency and high performance
+> than they care about power savings, heat, and noise.
 
-> So lets look at the problem, we want to be frugal with power, this means
-> that the system as a whole should strive to do nothing. And we want to
-> enforce this as strict as possible.
+Maybe they forgot that a netbook is still a *lap*top when they did this,
+cause I can't keep mine on my lap when it's plugged in :). The CPU idles
+at 60 centigrade when powered on, and drops to a manageable 30-ish
+centigrade when running on battery.
 
-An interesting thought might be to add the costs of staying in
-a state versus going to a lower power state into consideration. 
+> So my intent is to give Linux control over this decision,
+> via PM_QOS or otherwise.  At the moment C4 is commented out
+> because when i first tested it failed the lapic timer workaround.
 
-If the system is busy doing stuff it would need to do anyway (today
-stuff that is guarded/annotated by the suspend blockers) , the costs for
-not being in suspend have to be paid anyway. So it is opportune for
-processes to run. Even if they by themselves would not justify the
-system running. 
+I am looking forward to testing out these changes on my netbook once
+this issue get sorted out!
 
-If instead nothing system-relevant has to be done, the costs of running
-anything non-relevant is the full amount of battery-life that could
-be saved by suspending + (some minor) running costs. 
-
-Also if there is much work to do (many tasks) its more likely that it's
-good to do the work.
-
-something along the lines :
-
-(amount of energy saved by being in suspend) / (number of tasks we
-would run if we werent suspended) *
-some_parameter_for_this_tasks_importance (which falls clearly into
-scheduler-territory)
-
-And if this goes above some threshold we run it.
-
-But this isn't easily done in a robust way.
-Also it complicates things. 
-
-Cheers,
-Flo
+-- Chase
