@@ -1,20 +1,17 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 09:11:44 +0200
-Message-ID: <1275030704.32462.11.camel__36111.7614470006$1275044521$gmane$org@laptop>
-References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
-	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
-	<20100527220949.GB10602@srcf.ucam.org>
-	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
-	<20100527223605.GB11364@srcf.ucam.org>
-	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
-	<20100528043114.GC26177@thunk.org>
+Date: Fri, 28 May 2010 09:29:57 +0200
+Message-ID: <1275031797.32462.18.camel__39776.6722985127$1275044639$gmane$org@laptop>
+References: <Pine.LNX.4.44L0.1005271344040.3239-100000@iolanthe.rowland.org>
+	<20100527181433.GG3543@srcf.ucam.org>
+	<20100527200313.5c532f2f@lxorguk.ukuu.org.uk>
+	<201005280110.17075.rjw@sisk.pl>
+	<20100528005045.6ea5feba@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100528043114.GC26177@thunk.org>
+In-Reply-To: <20100528005045.6ea5feba@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,41 +21,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: tytso@mit.edu
-Cc: LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2010-05-28 at 00:31 -0400, tytso@mit.edu wrote:
-> Keep in mind, though, that a solution which is acceptable for Android
-> has to include making sure that crappy applications don't cause the
-> battery to get drained.  There seem to be some people who seem
-> adamently against this requirement.  
+On Fri, 2010-05-28 at 00:50 +0100, Alan Cox wrote:
+> Today "idle" means "no task running"
+> 
+> If you are prepared to rephrase that as "no task that matters is running"
+> what would need to answer ?
 
-Again, Alan, Thomas and myself don't argue against that, what we do
-however argue against is suspend running apps as a form of power
-management.
+I'm not sure we need or want to go there.
 
-If you were to read Alan's latest posts he clearly outlines how you can
-contain crappy apps.
+Why not simply let upatedb block on its IO because its QoS policy tells
+us that its IO priority is idle. Therefore it will not avoid the IO
+device from going idle and indefinitely delaying servicing requests.
 
-A combination of weakening QoS guarantees (delaying wakeups etc.)
-blocking on resources (delay servicing requests) and monitoring resource
-usage (despite all that its still not idle) and taking affirmative
-action (shoot it in the head).
+When updatedb blocks, the runqueue becomes empty and we gain goodness.
 
-If we pose that a well behaved application is one that listens to the
-environment hints and idles when told to, we can let regular power
-management kick in and let deep idle states do their thing.
-
-If a bad application ignores those hints and manages to avoid getting
-blocked on denied resources, we can easily spot it and promote an
-attitude of violence toward it in the form of SIGXCPU, SIGSTOP, SIGTERM
-and SIGKILL, possibly coupled with a pop-up dialog -- much like we get
-today when we try to close a window and the app isn't responding.
-
-If we then also let the environment maintain a shitlist of crappy apps
-(those it had to take affirmative action against) and maybe set up a
-service that allows people to share their results, it provides an
-incentive to the app developers to fix their thing.
-
-How is this not working?
+Or are we talking about the same thing?
