@@ -1,16 +1,15 @@
-From: Venkatesh Pallipadi <venki@google.com>
-Subject: Re: [PATCH 7/8] ACPI: acpi_idle: touch TS_POLLING only
-	in the non-MWAIT case
-Date: Fri, 28 May 2010 09:19:22 -0700
-Message-ID: <AANLkTikRUyXMcIkqc3dRCtLPkKBOwOeyy_j1iILHeypj__45361.2055782743$1275063807$gmane$org@mail.gmail.com>
-References: <6b2c676bf32be91f43215d5874c07c1becaba013.1275026041.git.len.brown@intel.com>
-	<1275026521-30835-1-git-send-email-lenb@kernel.org>
-	<c4716a7a5639fd8f82dc6f2046b127e65a3851c5.1275026041.git.len.brown@intel.com>
+From: Chase Douglas <chase.douglas@canonical.com>
+Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
+ driver for select intel processors
+Date: Thu, 27 May 2010 22:32:13 -0400
+Message-ID: <1275013933.2312.7.camel__5495.82208409465$1275063813$gmane$org@cndougla-ubuntu>
+References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
+	<198450ec1600d9a7f55270dd4d44d6b55bc5b184.1274926772.git.len.brown@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <c4716a7a5639fd8f82dc6f2046b127e65a3851c5.1275026041.git.len.brown@intel.com>
+In-Reply-To: <198450ec1600d9a7f55270dd4d44d6b55bc5b184.1274926772.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,41 +20,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Len Brown <lenb@kernel.org>
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 27, 2010 at 11:02 PM, Len Brown <lenb@kernel.org> wrote:
-> From: Len Brown <len.brown@intel.com>
->
-> commit d306ebc28649b89877a22158fe0076f06cc46f60
-> (ACPI: Be in TS_POLLING state during mwait based C-state entry)
-> fixed an important power & performance issue where ACPI c2 and c3 C-states
-> were clearing TS_POLLING even when using MWAIT (ACPI_STATE_FFH).
-> That bug had been causing us to receive redundant scheduling interrups
-> when we had already been woken up by MONITOR/MWAIT.
->
-> Following up on that...
->
-> In the MWAIT case, we don't have to subsequently
-> check need_resched(), as that c heck was there
-> for the TS_POLLING-clearing case.
->
-> Note that not only does the cpuidle calling function
-> already check need_resched() before calling us, the
-> low-level entry into monitor/mwait calls it twice --
-> guaranteeing that a write to the trigger address
-> can not go un-noticed.
+On Wed, 2010-05-26 at 22:42 -0400, Len Brown wrote:
+> +static struct cpuidle_state atom_cstates[MWAIT_MAX_NUM_CSTATES] = {
+> +	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
+> +	{ "ATM-C1", "MWAIT 0x00", (void *) 0x00,
+> +		CPUIDLE_FLAG_TIME_VALID,
+> +		1, 1000, 4, 0, 0, &intel_idle },
+> +	{ "ATM-C2", "MWAIT 0x10", (void *) 0x10,
+> +		CPUIDLE_FLAG_TIME_VALID,
+> +		20, 500, 80, 0, 0, &intel_idle },
+> +	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
+> +	{ "ATM-C4", "MWAIT 0x30", (void *) 0x30,
+> +		CPUIDLE_FLAG_TIME_VALID,
+> +		100, 250, 400, 0, 0, &intel_idle },
+> +	{ "ATM-C6", "MWAIT 0x40", (void *) 0x40,
+> +		CPUIDLE_FLAG_TIME_VALID,
+> +		200, 150, 800, 0, 0, &intel_idle },
+> +	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0},
+> +	{ "", "", 0, 0, 0, 0, 0, 0, 0, 0}
+> +};
 
-Ack this part of the change.
-
-> Also, in this case, we don't have to set TS_POLLING
-> when we wake, because we never cleared it.
-
-I thought about this part of the change while working on the original
-patch. But decided to leave the set to be done unconditionally as in
-this case we are replacing "one write" by either "one read and one
-jump" or "one read and one write" and I am not sure we gain much by
-that.
+I see that you have updated this code in your tree to disable C4 and C6
+on atom. This has piqued my curiosity. I've now seen 2 atom netbooks
+from different OEMs that hide C4 when you plug the power in. After the
+first machine I thought, "must be a BIOS/ACPI bug," but now I'm
+beginning to wonder if there's some issue with atom C4 states? That's
+beside the fact that I've not seen C6 on either machine at all. Do you
+have any insight?
 
 Thanks,
-Venki
+
+-- Chase
