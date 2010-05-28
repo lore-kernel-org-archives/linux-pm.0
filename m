@@ -1,17 +1,16 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+From: Mike Chan <mike@android.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 17:45:25 -0700
-Message-ID: <AANLkTimqvMuMpB5E3tj58OtlRc-7mVaec-9EHAegywg7__27554.7182224274$1275007667$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1005271344040.3239-100000@iolanthe.rowland.org>
-	<20100527181433.GG3543@srcf.ucam.org>
-	<20100527200313.5c532f2f@lxorguk.ukuu.org.uk>
-	<201005280110.17075.rjw@sisk.pl>
-	<20100528005045.6ea5feba@lxorguk.ukuu.org.uk>
+Date: Thu, 27 May 2010 17:49:36 -0700
+Message-ID: <AANLkTik-8HtTVOh3toXBZZlXYgDTFtfkm6EDYRw-UPm4__43578.5917951309$1275007876$gmane$org@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
+	<201005280041.43553.rjw@sisk.pl>
+	<20100528001514.28e593ef@lxorguk.ukuu.org.uk>
+	<201005280205.01561.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100528005045.6ea5feba@lxorguk.ukuu.org.uk>
+In-Reply-To: <201005280205.01561.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,149 +20,92 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Arve@smtp1.linux-foundation.org, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 27, 2010 at 4:50 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> That's correct, but to me the Arve's goal is simply to maximize battery =
-life
->> and he found experimentally that the longest battery life is achieved if
->> system suspend is used whenever the system doesn't need to be active (fr=
-om its
->> user's perspective). =A0This actually is different from "when the system=
- is
->> idle", because the system isn't idle, for example, when updatedb is runn=
-ing.
->> However, from the user's perspective the updatedb process doesn't really=
- need
->> to run at this particular time, it can very well do it's job in parallel=
- with
->> the user typing or reading news. =A0So, the system may very well be susp=
-ended
->> when updatedb is running.
+On Thu, May 27, 2010 at 5:05 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Friday 28 May 2010, Alan Cox wrote:
+>> > The approach with user space power manager suggested by Dmitry and Ala=
+n Stern
+>> > may work, but it still assumes some kind of suspend blockers to be pre=
+sent in
+>> > the kernel. =A0If we reject that too, I wonder what approach Google is=
+ supposed
+>> > to use and still get the same battery life they get with suspend block=
+ers.
+>>
+>> I'm getting less convinced it needs suspend blockers at all for this cas=
+e,
+>> assuming that you are willing to have a policy that is based on
+>>
+>> - assuming apps play nicely
+>> - having the information to user space you need (who woke us, who blocked
+>> =A0 us, events)
+>> - dealing with offenders primarily from user space using that information
+>>
+>> I'm fairly happy about the following so far
+>>
+>> - we should have a common interface for seeing some pm events (like
+>> =A0 duh ?) but it does need careful thought so the watcher doesn't change
+>> =A0 the behaviour and break it. (Message "We are suspending", gosh someo=
+ne
+>> =A0 is running to receive the message, resume being the obvious case)
+>>
+>> - Suspend is (for many platforms) just a cotinuation down the power
+>> =A0 chain. Demonstrated and implemented on ARM. Very much the direction =
+of
+>> =A0 S0i1/S0i3 on x86 MID devices. Proved by the fact it has been done and
+>> =A0 made to work, and by reading the Moorestown PR.
+>>
+>> - Given a non forced (that is 'idle down') transition to a suspend level
+>> =A0 we can implement a 'suspend as idle' on many embedded platforms in a
+>> =A0 manner which is not racy at kernel level. Apparently implemented
+>> =A0 already on ARM
+>>
+>> - Given a non forced transition to such a suspend level and the reporting
+>> =A0 of certain events we can do a full user space managed graphical UI t=
+ype
+>> =A0 environment policy in a race free fashion
+>>
+>> - With notification of who caused a resume and maybe a bit of other
+>> =A0 general stat gathering it is possible to identify and handle abuses =
+of
+>> =A0 power resource. Proved by the fact we can do this with powertop but
+>> =A0 more elegance in the interfaces would be nice.
+>>
+>> I am not sure if a pm event is what is needed for this or a sum 'hardware
+>> triggered wake up' event.
+>>
+>> I accept that current ACPI based laptops probably couldn't make use of
+>> such a feature but I don't think this is important at the moment.
 >
-> This is where the original questions around QoS came in
+> No, it's not.
 >
->> Since I think we've now rejected the feature, do we have a clear picture=
- about
->> what the Android people should do _instead_ and yet keep the battery lif=
-e they
->> want? =A0Because I don't think telling "let them do what they want, who =
-cares"
->> is right.
+>> A resource constraint model might help further in the ACPI case. It's
+>> useful for other stuff but it might well be a distraction and
+>> implementation detail in terms of the basic question about what is needed
+>> for something like Android.
+>>
+>> At this point the input of the Android team and the Nokia people would
+>> be rather more useful to me.
 >
-> Today "idle" means "no task running"
->
-> If you are prepared to rephrase that as "no task that matters is running"
-> what would need to answer ?
->
-> - How do we define who matters: QoS ?
->
-
-This is a much harder question to answer that what we need to use
-opportunistic suspend. The question we ask is more like this: "Is all
-important work complete?". In the simplest case these can be the same,
-but on Android they are not. Some wakeup events require work to be
-performed in many processes. A thread that needs to respond to a
-wakeup event may currently be busy doing unimportant work. This could
-possibly be solved by saying all important work must be above priority
-N, but you would need full priority inheritance support and we are not
-there today.
-
-> - Can you describe "idle" in terms of QoS without then breaking the
-> =A0reliable wakeup for an event (and do you need to ?)
->
-> =A0 =A0 =A0 =A0Could this for example look like
->
-> =A0 =A0 =A0 =A0Set QoS of 'user apps' to QS_NONE
-> =A0 =A0 =A0 =A0Button pushed
-> =A0 =A0 =A0 =A0Button driver sets QoS of app it wakes to QS_ABOVESUSPEND
->
-
-What happens if the user presses the button right before you set QoS
-of 'user apps' to  QS_NONE?
-To me it looks like this solution would result in this sequence which
-may ignore the button press:
- =A0 =A0 =A0 =A0Button pushed
- =A0 =A0 =A0 =A0Button driver sets QoS of app it wakes to QS_ABOVESUSPEND
- =A0 =A0 =A0 =A0Set QoS of 'user apps' to QS_NONE
-
-
-> =A0 =A0 =A0 =A0That would I think solve the reliable wakeup case although
-> =A0 =A0 =A0 =A0drivers raising a QoS parameter is a bit unusual in the ke=
-rnel.
-> =A0 =A0 =A0 =A0That would at least however be specific to a few Android d=
-rivers
-> =A0 =A0 =A0 =A0and maybe a tiny amount of shared driver stuff so probably=
- not
-> =A0 =A0 =A0 =A0unacceptable. (wake_up_pri(&queue, priority); isn't going =
-to
-> =A0 =A0 =A0 =A0kill anyone is it - especially if it usually ignores the
-> =A0 =A0 =A0 =A0priority argument)
-
-Why is "wake_up_pri(&queue, priority)" more acceptable than "suspend_block(=
-..."?
-
->
-> =A0 =A0 =A0 =A0I am curious Thomas how that would tie in with PI in the RT
-> =A0 =A0 =A0 =A0world, it's effectively inheriting priority from the users=
- finger.
->
-> - Would a model where the UI side behaviour looked like
->
-> =A0 =A0 =A0 =A0Timeout
-> =A0 =A0 =A0 =A0Screen Off
-> =A0 =A0 =A0 =A0Set QoS of 'user apps' to QS_NONE
->
-> =A0 =A0 =A0 =A0Event
-> =A0 =A0 =A0 =A0[Some chain of activity]
-> =A0 =A0 =A0 =A0Screen On
-> =A0 =A0 =A0 =A0Set QoS of 'user apps' to QS_ABOVESUSPEND
->
-> =A0do the job combined with the ability to see who is stopping us dropping
-> =A0to suspend so user space can take action. This could be a data table
-> =A0from the Android cpu manager provided to Android specific policy in
-> =A0whoever owns the display.
->
->
-> If so how do we fix the UI policy code doing
->
-> =A0 =A0 =A0 =A0Screen Off
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0Button Press
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0task to QS_ABOVESUSPEND
-> =A0 =A0 =A0 =A0task to QS_NONE
->
-> without touching the app userspace code
->
->
-> Perhaps
+> OK, I added Arve and Brian to the CC list.
 >
 
-What happens if the button press happend before this line:
-> =A0 =A0 =A0 =A0count2 =3D tasks to QS_NONE | QS_NOTCHANGED
-> =A0 =A0 =A0 =A0Screen off
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0Button Press
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0task to QS_ABOVESUSPEND
-> =A0 =A0 =A0 =A0count =3D tasks that are QS_NOTCHANGED to QS_NONE
->
-> =A0 =A0 =A0 =A0if (count !=3D count2) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0Stuff happened ... rethink
-> =A0 =A0 =A0 =A0}
->
-> That is still a bit weird and wonderful but all the logic is in the right
-> places. The special magic remains in the Android policy code and in the
-> kernel specifics for Android.
->
-> Thoughts ?
+Even if we used the proposed QoS replacement, are there suggestions on
+how to keep the cpu idle for longer than 2 seconds in Linux without
+using suspend?
 
-I don't think it works. Also, it does not seem much less invasive than
-suspend blockers.
+On a thread somewhere I had real world power numbers on a Motorola
+Droid idling (screen off) with and without suspend blockers.
 
--- =
+-- Mike
 
-Arve Hj=F8nnev=E5g
+> Thanks,
+> Rafael
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+>
