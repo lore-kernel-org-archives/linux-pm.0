@@ -1,13 +1,11 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 1/8] cpuidle: fail to register if !CONFIG_CPU_IDLE
-Date: Fri, 28 May 2010 02:01:54 -0400
-Message-ID: <6b2c676bf32be91f43215d5874c07c1becaba013.1275026041.git.len.brown@intel.com>
-References: <1275026521-30835-1-git-send-email-lenb@kernel.org>
+Subject: idle patches for 2.6.35
+Date: Fri, 28 May 2010 02:01:53 -0400
+Message-ID: <1275026521-30835-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1275026521-30835-1-git-send-email-lenb@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,39 +16,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+This patch series responds to all the feedback I've received.
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- include/linux/cpuidle.h |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+I believe that this series is useful enough and clean enough
+to merit inclusion upstream.
 
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index dcf77fa..f5e6480 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -137,16 +137,16 @@ extern void cpuidle_disable_device(struct cpuidle_device *dev);
- #else
- 
- static inline int cpuidle_register_driver(struct cpuidle_driver *drv)
--{return 0;}
-+{return -ENODEV; }
- static inline void cpuidle_unregister_driver(struct cpuidle_driver *drv) { }
- static inline int cpuidle_register_device(struct cpuidle_device *dev)
--{return 0;}
-+{return -ENODEV; }
- static inline void cpuidle_unregister_device(struct cpuidle_device *dev) { }
- 
- static inline void cpuidle_pause_and_lock(void) { }
- static inline void cpuidle_resume_and_unlock(void) { }
- static inline int cpuidle_enable_device(struct cpuidle_device *dev)
--{return 0;}
-+{return -ENODEV; }
- static inline void cpuidle_disable_device(struct cpuidle_device *dev) { }
- 
- #endif
--- 
-1.6.0.6
+Please look it over and try it out and let me know what I missed.
+
+thanks,
+Len Brown, Intel Open Source Technology Center
+
+ps.
+Note that you can get the patch series as a single patch here:
+http://ftp.kernel.org/pub/linux/kernel/people/lenb/idle/patches/2.6.34/idle-test-2.6.34.diff.gz
+
+or pull from this git branch
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.git idle-test
+
+Note that I updated the series "in place", changing git history.
+So if you previously pulled from idle-test, you'll want to
+discard that branch and create a new one based on 2.6.34.
