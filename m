@@ -1,19 +1,15 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
- driver for select intel processors
-Date: Thu, 27 May 2010 20:22:46 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.1005272009490.24823__48941.2233852365$1275006254$gmane$org@localhost.localdomain>
-References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
-	<e099975ca65a7f6ac7f8bc3fee84d3e03893aa31.1274926772.git.len.brown@intel.com>
-	<198450ec1600d9a7f55270dd4d44d6b55bc5b184.1274926772.git.len.brown@intel.com>
-	<87ljb5l9d5.fsf@deeprootsystems.com>
-	<20100527072207.2e783b1e@infradead.org>
-	<87ocg1jts7.fsf@deeprootsystems.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Fri, 28 May 2010 02:39:14 +0200
+Message-ID: <201005280239.14819.rjw__5499.89558426223$1275007230$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1005271344040.3239-100000@iolanthe.rowland.org>
+	<201005280110.17075.rjw@sisk.pl>
+	<20100528005045.6ea5feba@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <87ocg1jts7.fsf@deeprootsystems.com>
+In-Reply-To: <20100528005045.6ea5feba@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,37 +19,103 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: linux-pm@lists.linux-foundation.org, x86@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arjan van de Ven <arjan@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Friday 28 May 2010, Alan Cox wrote:
+> > That's correct, but to me the Arve's goal is simply to maximize battery life
+> > and he found experimentally that the longest battery life is achieved if
+> > system suspend is used whenever the system doesn't need to be active (from its
+> > user's perspective).  This actually is different from "when the system is
+> > idle", because the system isn't idle, for example, when updatedb is running.
+> > However, from the user's perspective the updatedb process doesn't really need
+> > to run at this particular time, it can very well do it's job in parallel with
+> > the user typing or reading news.  So, the system may very well be suspended
+> > when updatedb is running.
+> 
+> This is where the original questions around QoS came in
+> 
+> > Since I think we've now rejected the feature, do we have a clear picture about
+> > what the Android people should do _instead_ and yet keep the battery life they
+> > want?  Because I don't think telling "let them do what they want, who cares"
+> > is right.
+> 
+> Today "idle" means "no task running"
+> 
+> If you are prepared to rephrase that as "no task that matters is running"
+> what would need to answer ?
+> 
+> - How do we define who matters: QoS ?
 
-> >> >  drivers/idle/intel_idle.c       |  446
+That's reasonable IMO.
 
-> >> Any reason this arch-specific driver needs to be in drivers/idle
-> >> instead of under a platform specific dir like arch/x86?
+> - Can you describe "idle" in terms of QoS without then breaking the
+>   reliable wakeup for an event (and do you need to ?)
+> 
+> 	Could this for example look like
+> 
+> 	Set QoS of 'user apps' to QS_NONE
+> 	Button pushed
+> 	Button driver sets QoS of app it wakes to QS_ABOVESUSPEND
+> 
+> 	That would I think solve the reliable wakeup case although
+> 	drivers raising a QoS parameter is a bit unusual in the kernel.
+> 	That would at least however be specific to a few Android drivers
+> 	and maybe a tiny amount of shared driver stuff so probably not
+> 	unacceptable. (wake_up_pri(&queue, priority); isn't going to
+> 	kill anyone is it - especially if it usually ignores the
+> 	priority argument)
+> 
+> 	I am curious Thomas how that would tie in with PI in the RT
+> 	world, it's effectively inheriting priority from the users finger.
+> 
+> - Would a model where the UI side behaviour looked like
+> 
+> 	Timeout
+> 	Screen Off
+> 	Set QoS of 'user apps' to QS_NONE
+> 
+> 	Event
+> 	[Some chain of activity]
+> 	Screen On
+> 	Set QoS of 'user apps' to QS_ABOVESUSPEND
+> 
+>   do the job combined with the ability to see who is stopping us dropping
+>   to suspend so user space can take action. This could be a data table
+>   from the Android cpu manager provided to Android specific policy in
+>   whoever owns the display.
+> 
+> 
+> If so how do we fix the UI policy code doing
+> 
+> 	Screen Off
+> 					Button Press
+> 					task to QS_ABOVESUSPEND
+> 	task to QS_NONE
+> 
+> without touching the app userspace code
+> 
+> 
+> Perhaps
+> 
+> 	count2 = tasks to QS_NONE | QS_NOTCHANGED
+> 	Screen off
+> 					Button Press
+> 					task to QS_ABOVESUSPEND
+> 	count = tasks that are QS_NOTCHANGED to QS_NONE
+> 
+> 	if (count != count2) {
+> 		Stuff happened ... rethink
+> 	}
+> 
+> That is still a bit weird and wonderful but all the logic is in the right
+> places. The special magic remains in the Android policy code and in the
+> kernel specifics for Android.
+> 
+> Thoughts ?
 
-> To me that would be much less convenient as I expect to maintain my
-> platform-specific CPUidle driver along with the rest of my
-> platform-specific code.
+Hmm.  How do we prevent the "non-relevant" tasks from being scheduled
+once we've decided to go for power saving?
 
-I guess the reason is conveneince of the maintainer (me).
-
-A good case could be made to put this driver under
-drivers/cpuidle/, arch/x86/, drivers/platform/x86/,
-as well as drivers/idle/ -- and maybe someplace else
-that I didn't think of.
-
-Maybe if I maintained all of arch/x86/, then I'd naturally
-propose putting it someplace under arch/x86/.  But like i7300_idle,
-it runs on only a sub-set of x86 boxes, so it seemed to
-make sense to put it with i7300_idle.
-
-BTW. There is an sfi_idle driver in the pipeline as well
-with the same naming issue.  It is x86 specific, sfi-specific,
-and cpuidle-specific -- so a case could be made to put it in
-arch/x86/, drivers/sfi/, drivers/cpuidle/ -- but it will
-just as likely land in drivers/idle/.
-
-cheers,
-Len Brown, Intel Open Source Technology Center
+Rafael
