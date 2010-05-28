@@ -1,20 +1,13 @@
-From: Brian Swetland <swetland@google.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 07:29:27 -0700
-Message-ID: <AANLkTilj6i7Qi-eh7e3WWeh4zxKALqr-0yhAvWKis52t__45613.875569734$1275057073$gmane$org@mail.gmail.com>
-References: <20100527223605.GB11364@srcf.ucam.org>
-	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
-	<20100528043114.GC26177@thunk.org>
-	<20100528103713.0a7952d9@lxorguk.ukuu.org.uk>
-	<20100528114123.GA22947@srcf.ucam.org> <4BFFB681.1000105@nokia.com>
-	<AANLkTim04ZfMcPHRB2D_bqcAuguaGwySH2b6repuYLkk@mail.gmail.com>
-	<4BFFC5DF.5030504@nokia.com> <20100528133900.GG26177@thunk.org>
-	<4BFFCFC7.7070302@nokia.com> <20100528142124.GA26733@srcf.ucam.org>
+Date: Fri, 28 May 2010 10:35:47 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005281029500.1939-100000__45391.4252379493$1275057675$gmane$org@iolanthe.rowland.org>
+References: <20100528132138.2d802d77@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100528142124.GA26733@srcf.ucam.org>
+In-Reply-To: <20100528132138.2d802d77@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,44 +17,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 28, 2010 at 7:21 AM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> On Fri, May 28, 2010 at 05:14:31PM +0300, Igor Stoppa wrote:
->
->> I have seen very good proposals for saner solutions.
->>
->> Is that progress?
->
-> The proposals so far involve either redefining the problem space or
-> being inherently racey. It may be that we can redefine the problem space
-> in such a way that everyone's happy, but it's not possible to do so by
-> fiat.
+On Fri, 28 May 2010, Alan Cox wrote:
 
-I think the suggestion that has the closet fit with what we're trying
-to accomplish is Ingo's (or perhaps Ingo's explanation of Alan's):
-http://lkml.org/lkml/2010/5/28/106 where it's implemented as a
-constraint of some sort.
+> If I push the button we get an IRQ
+> We come out of power save
+> The app gets poked
+> The app may be unimportant but the IRQ means we have a new timeout of
+>     some form to run down to idle
+> The app marks itself important
+> The app stays awake for 60 seconds rsyncing your email
+> The app marks itself unimportant
+> Time elapses
+> We return to suspend
+> 
+> 
+> If you are absolutely utterly paranoid about it you need the button
+> driver to mark the task it wakes back as important rather than rely on
+> time for response like everyone else. That specific bit is uggglly but
+> worst case its just a google private patch to a few drivers. I understand
+> why Android wants it. The narrower the gap between 'we are doing nothing,
+> sit in lowest CPU on state' and 'we are off' the better the battery life
+> and the more hittable the condition.
 
-Arve points out that qos constraint objects could work (but not if
-specifically tied to apps): http://lkml.org/lkml/2010/5/28/120 though
-he suggests that "latency" constraints don't represent this as well as
-"state" constraints.
+That "private patch to a few drivers" is almost exactly what suspend
+blockers are.  Given that much of this discussion has revolved around 
+whether suspend blockers are accptable in the kernel, I don't think you 
+should shrug them off quite so easily.
 
-Though if you look at it that way, then suspend_blockers become qos
-constraint objects, but their implementation and usage remain pretty
-much the same as we have now, which does not address Alan's concern
-regarding code turning up in drivers, etc.  I'm not sure how you can
-solve this problem (avoiding races around entering/exiting the suspend
-or suspend-like state) without having a means for drivers to prevent
-entry to that state.
+Also, you have forgotten about the case where there is no app waiting 
+to get poked:
 
-I need to think more about the cgroups approach, but I'm pretty sure
-it still suffers from wakeup race situations, and due to the
-complexity of userspace (at least ours), I suspect it would risk
-livelock/deadlock/priority-inversion style issues due to interaction
-between different processes in different groups.
+	The app is busy doing something else unimportant
+	We do into power save
+	Push a button, generate an IRQ
+	Come out of power save
+	No app to poke
+	* System goes back to sleep and eventually wakes up again
+	The app finishes what it was doing
+	The app sees there is a keystroke and marks itself important
+	...
 
-Brian
+The * step is where trouble can occur.
+
+Alan Stern
