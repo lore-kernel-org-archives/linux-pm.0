@@ -1,17 +1,20 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 7/8] ACPI: acpi_idle: touch TS_POLLING only
- in the non-MWAIT case
-Date: Fri, 28 May 2010 13:59:18 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.1005281351380.4045__3854.67755045301$1275069711$gmane$org@localhost.localdomain>
-References: <6b2c676bf32be91f43215d5874c07c1becaba013.1275026041.git.len.brown@intel.com>
-	<1275026521-30835-1-git-send-email-lenb@kernel.org>
-	<c4716a7a5639fd8f82dc6f2046b127e65a3851c5.1275026041.git.len.brown@intel.com>
-	<AANLkTikRUyXMcIkqc3dRCtLPkKBOwOeyy_j1iILHeypj@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Fri, 28 May 2010 20:16:20 +0200
+Message-ID: <1275070580.1645.379.camel__10684.9805838012$1275070793$gmane$org@laptop>
+References: <20100528114123.GA22947@srcf.ucam.org> <4BFFB681.1000105@nokia.com>
+	<AANLkTim04ZfMcPHRB2D_bqcAuguaGwySH2b6repuYLkk@mail.gmail.com>
+	<4BFFC5DF.5030504@nokia.com> <20100528133900.GG26177@thunk.org>
+	<4BFFCFC7.7070302@nokia.com> <20100528142124.GA26733@srcf.ucam.org>
+	<AANLkTilj6i7Qi-eh7e3WWeh4zxKALqr-0yhAvWKis52t@mail.gmail.com>
+	<20100528160628.7c121dab@lxorguk.ukuu.org.uk>
+	<AANLkTin3suKfGBSfiDj0n8ztY8UiHzr4af_Cr0SPOevY@mail.gmail.com>
+	<20100528172713.GA7444@gibbs.hungrycats.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <AANLkTikRUyXMcIkqc3dRCtLPkKBOwOeyy_j1iILHeypj@mail.gmail.com>
+In-Reply-To: <20100528172713.GA7444@gibbs.hungrycats.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,52 +24,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Venkatesh Pallipadi <venki@google.com>
-Cc: linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Zygo Blaxell <vger-linux-omap-esightcorp@mailtoo.hungrycats.org>
+Cc: Brian Swetland <swetland@google.com>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, tytso@mit.edu, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 28 May 2010, Venkatesh Pallipadi wrote:
+On Fri, 2010-05-28 at 13:27 -0400, Zygo Blaxell wrote:
+> From my reading of this thread, there's a lot of overlap between
+> suspendblockers and constraints.  Many use cases are served equally
+> well with one or the other, 
 
-> On Thu, May 27, 2010 at 11:02 PM, Len Brown <lenb@kernel.org> wrote:
-> > From: Len Brown <len.brown@intel.com>
-> >
-> > commit d306ebc28649b89877a22158fe0076f06cc46f60
-> > (ACPI: Be in TS_POLLING state during mwait based C-state entry)
-> > fixed an important power & performance issue where ACPI c2 and c3 C-states
-> > were clearing TS_POLLING even when using MWAIT (ACPI_STATE_FFH).
-> > That bug had been causing us to receive redundant scheduling interrups
-> > when we had already been woken up by MONITOR/MWAIT.
-> >
-> > Following up on that...
-> >
-> > In the MWAIT case, we don't have to subsequently
-> > check need_resched(), as that c heck was there
-> > for the TS_POLLING-clearing case.
-> >
-> > Note that not only does the cpuidle calling function
-> > already check need_resched() before calling us, the
-> > low-level entry into monitor/mwait calls it twice --
-> > guaranteeing that a write to the trigger address
-> > can not go un-noticed.
-> 
-> Ack this part of the change.
-> 
-> > Also, in this case, we don't have to set TS_POLLING
-> > when we wake, because we never cleared it.
-> 
-> I thought about this part of the change while working on the original
-> patch. But decided to leave the set to be done unconditionally as in
-> this case we are replacing "one write" by either "one read and one
-> jump" or "one read and one write" and I am not sure we gain much by
-> that.
+If using suspend-blockers, 
 
-I don't know if the write is more expensive than the read and branch.
-In the scheme of things, these things are free and it is the IO
-accesses and locks in the idle path that take time.
+Please explain to me how:
 
-But when I saw this code fragment incorrectly copied into
-the new sfi_idle driver, I decided it was time to change it
-to make logical sense to the reader.
+- I will avoid the cpu going into some idle state for which the wakeup
+latency is larger than my RT app fancies?
 
-thanks,
--Len Brown, Intel Open Source Technology Center
+- to avoid some tasks from being serviced by the filesystems whilst
+others are? (ionice on steroids).
+
+- does my sporadic task (with strict bandwidth budget) not suffer
+bandwidth inversion?
+
+
+suspend blockers do a bit of each of that, but none of it in a usable
+fashion.
