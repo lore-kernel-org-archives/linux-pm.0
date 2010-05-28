@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 4/8] ACPI: allow a native cpuidle driver to
-	displace ACPI
-Date: Fri, 28 May 2010 02:01:57 -0400
-Message-ID: <541adf7cd937b3895c7645406a9b060504df453b.1275026041.git.len.brown@intel.com>
+Subject: [PATCH 7/8] ACPI: acpi_idle: touch TS_POLLING only in
+ the non-MWAIT case
+Date: Fri, 28 May 2010 02:02:00 -0400
+Message-ID: <c4716a7a5639fd8f82dc6f2046b127e65a3851c5.1275026041.git.len.brown@intel.com>
 References: <1275026521-30835-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,63 +21,114 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Venkatesh Pallipadi <venki@google.com>
 List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-The ACPI driver would fail probe when it found that
-another driver had previously registered with cpuidle.
+commit d306ebc28649b89877a22158fe0076f06cc46f60
+(ACPI: Be in TS_POLLING state during mwait based C-state entry)
+fixed an important power & performance issue where ACPI c2 and c3 C-states
+were clearing TS_POLLING even when using MWAIT (ACPI_STATE_FFH).
+That bug had been causing us to receive redundant scheduling interrups
+when we had already been woken up by MONITOR/MWAIT.
 
-But this is a natural situation, as a native hardware
-cpuidle driver should be able to bind instead of ACPI,
-and the ACPI processor driver should be able to handle
-yielding control of C-states while still handling
-P-states and T-states.
+Following up on that...
 
-Add a KERN_DEBUG line showing when acpi_idle
-does successfully register.
+In the MWAIT case, we don't have to subsequently
+check need_resched(), as that c heck was there
+for the TS_POLLING-clearing case.
+
+Note that not only does the cpuidle calling function
+already check need_resched() before calling us, the
+low-level entry into monitor/mwait calls it twice --
+guaranteeing that a write to the trigger address
+can not go un-noticed.
+
+Also, in this case, we don't have to set TS_POLLING
+when we wake, because we never cleared it.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
+Cc: Venkatesh Pallipadi <venki@google.com>
 ---
- drivers/acpi/processor_driver.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
+ drivers/acpi/processor_idle.c |   28 ++++++++++++++++------------
+ 1 files changed, 16 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
-index 5675d97..deefa85 100644
---- a/drivers/acpi/processor_driver.c
-+++ b/drivers/acpi/processor_driver.c
-@@ -616,7 +616,8 @@ static int __cpuinit acpi_processor_add(struct acpi_device *device)
- 	acpi_processor_get_limit_info(pr);
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index 5939e7f..a4166e2 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -881,6 +881,7 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
+ 		return(acpi_idle_enter_c1(dev, state));
  
- 
--	acpi_processor_power_init(pr, device);
-+	if (cpuidle_get_driver() == &acpi_idle_driver)
-+		acpi_processor_power_init(pr, device);
- 
- 	pr->cdev = thermal_cooling_device_register("Processor", device,
- 						&processor_cooling_ops);
-@@ -920,9 +921,10 @@ static int __init acpi_processor_init(void)
- 	if (!acpi_processor_dir)
- 		return -ENOMEM;
- #endif
--	result = cpuidle_register_driver(&acpi_idle_driver);
--	if (result < 0)
--		goto out_proc;
+ 	local_irq_disable();
 +
-+	if (!cpuidle_register_driver(&acpi_idle_driver))
-+		printk(KERN_DEBUG "ACPI: %s registered with cpuidle\n",
-+			acpi_idle_driver.name);
+ 	if (cx->entry_method != ACPI_CSTATE_FFH) {
+ 		current_thread_info()->status &= ~TS_POLLING;
+ 		/*
+@@ -888,12 +889,12 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
+ 		 * NEED_RESCHED:
+ 		 */
+ 		smp_mb();
+-	}
  
- 	result = acpi_bus_register_driver(&acpi_processor_driver);
- 	if (result < 0)
-@@ -941,7 +943,6 @@ static int __init acpi_processor_init(void)
- out_cpuidle:
- 	cpuidle_unregister_driver(&acpi_idle_driver);
+-	if (unlikely(need_resched())) {
+-		current_thread_info()->status |= TS_POLLING;
+-		local_irq_enable();
+-		return 0;
++		if (unlikely(need_resched())) {
++			current_thread_info()->status |= TS_POLLING;
++			local_irq_enable();
++			return 0;
++		}
+ 	}
  
--out_proc:
- #ifdef CONFIG_ACPI_PROCFS
- 	remove_proc_entry(ACPI_PROCESSOR_CLASS, acpi_root_dir);
- #endif
+ 	/*
+@@ -918,7 +919,8 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
+ 	sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
+ 
+ 	local_irq_enable();
+-	current_thread_info()->status |= TS_POLLING;
++	if (cx->entry_method != ACPI_CSTATE_FFH)
++		current_thread_info()->status |= TS_POLLING;
+ 
+ 	cx->usage++;
+ 
+@@ -968,6 +970,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+ 	}
+ 
+ 	local_irq_disable();
++
+ 	if (cx->entry_method != ACPI_CSTATE_FFH) {
+ 		current_thread_info()->status &= ~TS_POLLING;
+ 		/*
+@@ -975,12 +978,12 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+ 		 * NEED_RESCHED:
+ 		 */
+ 		smp_mb();
+-	}
+ 
+-	if (unlikely(need_resched())) {
+-		current_thread_info()->status |= TS_POLLING;
+-		local_irq_enable();
+-		return 0;
++		if (unlikely(need_resched())) {
++			current_thread_info()->status |= TS_POLLING;
++			local_irq_enable();
++			return 0;
++		}
+ 	}
+ 
+ 	acpi_unlazy_tlb(smp_processor_id());
+@@ -1032,7 +1035,8 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+ 	sched_clock_idle_wakeup_event(sleep_ticks*PM_TIMER_TICK_NS);
+ 
+ 	local_irq_enable();
+-	current_thread_info()->status |= TS_POLLING;
++	if (cx->entry_method != ACPI_CSTATE_FFH)
++		current_thread_info()->status |= TS_POLLING;
+ 
+ 	cx->usage++;
+ 
 -- 
 1.6.0.6
