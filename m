@@ -1,11 +1,8 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Igor Stoppa <igor.stoppa@nokia.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 15:20:37 +0100
-Message-ID: <20100528152037.2568f2fb__24622.0124456615$1275056111$gmane$org@lxorguk.ukuu.org.uk>
-References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
-	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
-	<20100527220949.GB10602@srcf.ucam.org>
+Date: Fri, 28 May 2010 17:14:31 +0300
+Message-ID: <4BFFCFC7.7070302__4236.01469160548$1275056327$gmane$org@nokia.com>
+References: <20100527220949.GB10602@srcf.ucam.org>
 	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
 	<20100527223605.GB11364@srcf.ucam.org>
 	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
@@ -13,13 +10,12 @@ References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
 	<20100528103713.0a7952d9@lxorguk.ukuu.org.uk>
 	<20100528114123.GA22947@srcf.ucam.org> <4BFFB681.1000105@nokia.com>
 	<AANLkTim04ZfMcPHRB2D_bqcAuguaGwySH2b6repuYLkk@mail.gmail.com>
-	<4BFFC5DF.5030504@nokia.com>
-	<AANLkTikKGeGHHL6AYC7uBuT7Zihj7lozfidWQ8zRHwab@mail.gmail.com>
+	<4BFFC5DF.5030504@nokia.com> <20100528133900.GG26177@thunk.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikKGeGHHL6AYC7uBuT7Zihj7lozfidWQ8zRHwab@mail.gmail.com>
+In-Reply-To: <20100528133900.GG26177@thunk.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,58 +25,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian@smtp1.linux-foundation.org, "tytso@mit.edu" <tytso@mit.edu>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>
+To: tytso@mit.edu, Igor Stoppa <igor.stoppa@nokia.com>, ext Brian Swetland <swetland@google.com>, ext Matthew Garrett <mjg59@srcf.ucam.org>, Alan Cox <alan@lxorguk.uk>
 List-Id: linux-pm@vger.kernel.org
 
-> > That's very good. But if it is done in a conceptually flawed way, some
-> > better solution should be considered for upstream merge.
-> 
-> How is it flawed?  Serious question.
+ext tytso@mit.edu wrote:
 
-- It means changing drivers and quite a few apps
-- It doesn't solve the problem of rogue apps if they end up owning locks
-- It puts the deep knowledge of the platform in the applications
-- It gives the apps control of the action taken not policy indication
-- It doesn't resolve the problem of synchronization of take/releases
-  stopping any suspend
-- The kernel parts are not generically useful, merely effective for
-  solving a specific problem right now - even things like VM migration
-  to/from phones seems to break it
-- It inverts the whole logic the kernel is following and trend it is
-  following that suspend is simply a very deep idle (with implementations
-  merged)
+> Linus will disagree with you there.  Linus *has* merged code on the
+> basis that it is shipping in distributions, regardless of the fact
+> that some developers objected to it.  Sometimes "perfect" should not
+> be the enemy of "good enough" shipping code.
+>   
 
-If it was a localised turd I wouldn't worry. There are plenty df deep
-unmentionables hidden away enirely in platform specific code that deal
-with everything from stoned hardware engineers to crazed software stack
-implementations.
+"good enough" is very subjective, in this case
 
-Here is a question back the other way perhaps
+> If everyone agrees we're making progress, and we can let this 100+
+> mail thread keep going.
 
-- If the existing kerne was almostl entirely read only, or you had to pay
-  a large fee per line of code changed outside your own driver how would
-  you implement the wakelock/suspend blocker API ?
+I have seen very good proposals for saner solutions.
 
-Because if you take the path that 'we want wakelockers' that is
-essentially the question you have to answer. How do you merge it so that
-nobody outside of your driver and maybe a spot of arch code knows about
-it. You are permitted a couple of sneaky substitions of core function
-bits in headers.
+Is that progress?
 
-Right now bits are going to leak out over the kernel which is the cause of
-friction. At the point it's invisible to everyone else they cease to be
-stakeholders so you don't have keep them happy. You've only got a couple
-in your patches but its painfully obvious from Matthew and your comments
-you'll end up needing a ton more and these will get everywhere as Android
-grows hardware platforms and CPU support as phones become more featureful
-and PC like. The moment a phone grows a USB base station with hub for
-example the entire USB stack becomes burdened with them. Matthew has
-already indicated networking needs them. Good luck with Dave Miller on
-that.
-
-I'm asking questions to look for generalised approaches, or even better
-doing it without new kernel stuff in the first place, but it's not the
-only way.
-
-Alan
+igor
