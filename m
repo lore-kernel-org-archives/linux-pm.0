@@ -1,19 +1,16 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 09:25:52 +0200
-Message-ID: <20100528092552.087bd38a__17356.1604148292$1275031614$gmane$org@schatten.dmk.lab>
-References: <20100526171106.0e44a736@schatten.dmk.lab>
-	<alpine.LFD.2.00.1005261829540.2995@localhost.localdomain>
-	<20100526190204.5efe4d59@lxorguk.ukuu.org.uk>
-	<20100526215606.2a747c61@schatten.dmk.lab>
-	<AANLkTil3OdarNjeIuzWqM59x4ysFqJrMeiUZzceC_r7P@mail.gmail.com>
-	<20100527071100.3a38bbac@schatten.dmk.lab>
-	<alpine.LFD.2.00.1005271530240.3032@localhost.localdomain>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
+	driver for select intel processors
+Date: Fri, 28 May 2010 09:46:32 +0200
+Message-ID: <201005280946.32981.trenn__28728.796906262$1275032798$gmane$org@suse.de>
+References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
+	<201005271053.31087.trenn@suse.de>
+	<alpine.LFD.2.00.1005272131400.24823@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1005271530240.3032@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1005272131400.24823@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,64 +20,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Len Brown <lenb@kernel.org>
+Cc: sfr@canb.auug.org.au, linux-pm@lists.linux-foundation.org, x86@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 27 May 2010 15:35:18 +0200 (CEST)
-Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> On Thu, 27 May 2010, Florian Mickler wrote:
+On Friday 28 May 2010 03:44:16 Len Brown wrote:
+> On Thu, 27 May 2010, Thomas Renninger wrote:
+...
+> > > This driver does not yet know about cpu online/offline
+> > > and thus will not yet play well with cpu-hotplug.
+I thought this is also about soft on/offlining.
 > 
-> > On Wed, 26 May 2010 22:03:37 +0200
-> > Vitaly Wool <vitalywool@gmail.com> wrote:
-> > 
-> > > On Wed, May 26, 2010 at 9:56 PM, Florian Mickler <florian@mickler.org> wrote:
-> > > 
-> > > > Your approach definitely sounds better than the current solution.
-> > > > What about mapping suspend blocker functionality later on, when this
-> > > > interface exists, on to this new approach and deprecating it?
-> > > 
-> > > What about coming back after some while with the appropriate solution
-> > > when it's ready instead of stubbornly pushing crap?
-> > > 
-> > > ~Vitaly
-> > 
-> > Because quite frankly, for a good part of linux users, suspend blockers
-> > is already in the kernel. It's just an historical mistake that they are
-> > not in the linux kernel's hosted on kernel.org. 
+> > What means does not play well yet, suspend or manually offlining a
+> > core will eventually (for sure?) hang the machine?
 > 
-> No, it's not a historical mistake. It's a technical decision _NOT_ to
-> merge crap. If we would accept every crappy patch which gets shipped
-> in large quantities as a defacto part of the kernel we would have a
-> completely unmaintainable mess since years.
-> > So why don't we do what we always do? Improve existing interfaces step
-> > by step? 
+> It means less power savings savings than optimal
+> for processors not present at module load time.
+Ok, not really sever...
 > 
-> Exactly, that's what we are going to do. We improve and extend
-> existing interfaces step by step, but not by creating a horrible and
-> unmaintainable mess in the frist place which we can never get rid of
-> anymore.
-
-Ok to your two paragraphs. I can understand this. 
-
-Nonetheless, i'm convinced that there has to be some solution in
-mainline to allow for what android does. But perhaps it needs more
-refactoring and piggybagging on some more general constraint interface.
-
+> > If this is known broken, should this already be spread through
+> > linux-next?
 > 
-> > Top Down approaches fail from time to time. Also it is not clear, that
-> > that proposed interface works for the use cases. This has to be proven
-> > by providing an implementation. 
-> 
-> Nobody prevents you to sit down and start with a prove of concept
-> implementation.
+> If you know somebody with a system that supports CPU hot-add
+> on one of the processors supported by intel_idle, and they
+> are willing to test linux-next, please have them contact me.
+Real CPU hotplug is broken with acpi processor driver as well,
+eventually it got addressed lately. Anyway, not sever...
 
-Hmm... *scratch*... *lookaround* .. who?
+Thanks,
 
-Really, I'd first like to get the whole picture before doing anything.
-
-> 
-> Thanks,
-> 
-> 	tglx
+    Thomas
