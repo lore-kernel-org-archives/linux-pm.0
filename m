@@ -1,7 +1,7 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Fri, 28 May 2010 08:43:57 +0200
-Message-ID: <20100528064356.GA2455__28627.2776233547$1275029151$gmane$org@ucw.cz>
+Date: Fri, 28 May 2010 00:01:17 -0700
+Message-ID: <AANLkTinJZtdUQQqXk2WY6fRAQSFshy55rroJG8HrHIOT__29697.5580546588$1275030190$gmane$org@mail.gmail.com>
 References: <20100505202826.GB7450@linux.intel.com>
 	<Pine.LNX.4.44L0.1005051705200.1885-100000@iolanthe.rowland.org>
 	<z2ta55d774e1005051437heb584584q6afca0b4b254d5d0@mail.gmail.com>
@@ -11,12 +11,12 @@ References: <20100505202826.GB7450@linux.intel.com>
 	<g2yd6200be21005052116n5dd8708fk33eaf8944379bfc2@mail.gmail.com>
 	<20100506170420.GB30928@atomide.com>
 	<i2od6200be21005061710mae9a437by90b22f61cbc2ae15@mail.gmail.com>
+	<20100528064356.GA2455@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <i2od6200be21005061710mae9a437by90b22f61cbc2ae15@mail.gmail.com>
+In-Reply-To: <20100528064356.GA2455@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,45 +26,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj?nnev?g <arve@android.com>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Thu, May 27, 2010 at 11:43 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+>> >> >> How often would we retry suspending?
+>> >> >
+>> >> > Well based on some timer, the same way the screen blanks? Or five
+>> >> > seconds of no audio play? So if the suspend fails, then reset whate=
+ver
+>> >> > userspace suspend policy timers.
+>> >> >
+>> >> >> If we fail to suspend, don't we have to resume all the drivers that
+>> >> >> suspended before the one that failed? =A0(Maybe I'm mistaken here)
+>> >> >
+>> >> > Sure, but I guess that should be a rare event that only happens when
+>> >> > you try to suspend and something interrupts the suspend.
+>> >> >
+>> >>
+>> >> This is not a rare event. For example, the matrix keypad driver blocks
+>> >> suspend when a key is down so it can scan the matrix.
+>> >
+>> > Sure, but how many times per day are you suspending?
+>>
+>> How many times we successfully suspend is irrelevant here. If the
+>> driver blocks suspend the number of suspend attempts depend on your
+>> poll frequency.
+>
+> Actually, this is quite interesting question I'd like answer here:
+>
+> "Sure, but how many times per day are you suspending?"
+>
+> I suspect it may be in 1000s, but it would be cool to get better
+> answer -- so that people knew what we are talking about here.
 
-> >> >> How often would we retry suspending?
-> >> >
-> >> > Well based on some timer, the same way the screen blanks? Or five
-> >> > seconds of no audio play? So if the suspend fails, then reset whatev=
-er
-> >> > userspace suspend policy timers.
-> >> >
-> >> >> If we fail to suspend, don't we have to resume all the drivers that
-> >> >> suspended before the one that failed? =A0(Maybe I'm mistaken here)
-> >> >
-> >> > Sure, but I guess that should be a rare event that only happens when
-> >> > you try to suspend and something interrupts the suspend.
-> >> >
-> >>
-> >> This is not a rare event. For example, the matrix keypad driver blocks
-> >> suspend when a key is down so it can scan the matrix.
-> >
-> > Sure, but how many times per day are you suspending?
-> =
+This is highly variable. 1000s would mean that you wake about once
+every minute which is not uncommon, but more often than what typically
+happens on an idle device. The nexus one has to wake up every 10
+minutes to check the battery status check means your at least in the
+100s, but the G1 could stay suspended for much longer than that.
 
-> How many times we successfully suspend is irrelevant here. If the
-> driver blocks suspend the number of suspend attempts depend on your
-> poll frequency.
+The original question was about a driver blocking suspend though, and
+if we were to just retry suspend until it succeeds in that case you
+could easily get to 100000s suspend attempts in a day.
 
-Actually, this is quite interesting question I'd like answer here:
-
-"Sure, but how many times per day are you suspending?"
-
-I suspect it may be in 1000s, but it would be cool to get better
-answer -- so that people knew what we are talking about here.
-									Pavel
 -- =
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Arve Hj=F8nnev=E5g
