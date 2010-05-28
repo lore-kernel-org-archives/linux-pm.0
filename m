@@ -1,22 +1,22 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: tytso@mit.edu
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 14:55:26 +0100
-Message-ID: <20100528145526.0ce83c85__24777.508309535$1275054896$gmane$org@lxorguk.ukuu.org.uk>
-References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
-	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
-	<20100527220949.GB10602@srcf.ucam.org>
+Date: Fri, 28 May 2010 09:39:00 -0400
+Message-ID: <20100528133900.GG26177__25942.0925555334$1275055058$gmane$org@thunk.org>
+References: <20100527220949.GB10602@srcf.ucam.org>
 	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
-	<AANLkTil6Bo7qZltbLzHJjIDyruKHFQEURpe5LPJEpTws@mail.gmail.com>
-	<20100528101755.7b5f6b8a@lxorguk.ukuu.org.uk>
-	<AANLkTilYHKKmQePBGW3LVLjUZy7HXHQku2Iub-LWGBm6@mail.gmail.com>
-	<20100528121636.34be17ad@lxorguk.ukuu.org.uk>
-	<AANLkTinVs-YfxCHm7Zees9oq_NYySqI6UFtX57JlsLy-@mail.gmail.com>
+	<20100527223605.GB11364@srcf.ucam.org>
+	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
+	<20100528043114.GC26177@thunk.org>
+	<20100528103713.0a7952d9@lxorguk.ukuu.org.uk>
+	<20100528114123.GA22947@srcf.ucam.org> <4BFFB681.1000105@nokia.com>
+	<AANLkTim04ZfMcPHRB2D_bqcAuguaGwySH2b6repuYLkk@mail.gmail.com>
+	<4BFFC5DF.5030504@nokia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinVs-YfxCHm7Zees9oq_NYySqI6UFtX57JlsLy-@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <4BFFC5DF.5030504@nokia.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,54 +26,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?ISO-8859-14?B?SGr4bm5lduVn?= <arve@android.com>
-Cc: Mailing List <linux-omap@vger.kernel.org>, Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Peter@smtp1.linux-foundation.org, Linux PM <linux-pm@lists.linux-foundation.org>, felipe.balbi@nokia.com
+To: Igor Stoppa <igor.stoppa@nokia.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, ext Brian Swetland <swetland@google.com>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-> I think you are missing the point. It works fine if the alarm caused
-> the wakeup, but if you had just used your system and your inactivity
-> timeout expired just as your alarm goes off, the alarm will not wake
-> the system, nor does it prevent it from suspending.
-
-As far as I can tell (and its an extremely hard situation to replicate),
-this is not true. My laptop sleeps and wakes straight back up.
-
-The following cannot occur on my laptop for simple idling
-
-	Alarm
-		Suspend
-
-because the Alarm resets the suspend timer when it is delivered. The wake
-pins and wake logic also ensure that the sequence
-
-		Suspend
-			Alarm
-
-always causes
-
-		Suspend
-			Alarm
-		Suspend Finishes
-		Resume
-
-
-> > If I suspend/resume my laptop every time I have a 30 second idle gap I
-> > will need a new laptop much sooner than makes me happy.
-> >
+On Fri, May 28, 2010 at 04:32:15PM +0300, Igor Stoppa wrote:
 > 
-> Then don't set your inactivity timeout to 30 seconds. I don't see how
-> this is relevant.
+> What I consider plain wrong i to claim that since there are this
+> many units out, some code should be merged.
+> A company needs to cut corners sometimes when making a product but
+> this should not affect upstream code.
 
-It's very relevant because it means that considering current laptops is
-not that important because they can't do this kind of fast sleep/wakeup
+Linus will disagree with you there.  Linus *has* merged code on the
+basis that it is shipping in distributions, regardless of the fact
+that some developers objected to it.  Sometimes "perfect" should not
+be the enemy of "good enough" shipping code.
 
-> > I don't claim this is true for a typical mobile phone obviously.
-> >
-> The only difference on the phone is that we have way more wakeup
-> events which makes the race conditions more visible. The race exist on
-> your laptop as well.
+For example, I used to point out that we shipped PCMCIA code in
+mainline that had a 10% chance of crashing the system if you ejected
+the card.  NetBSD was proud to say that their code was so iron-clad
+and well designed that it always did the right thing, even if you
+ejected while it was busily passing network traffic.  Unfortunately,
+NetBSD had working PCMCIA support 3 years later than Linux.  So it
+used to be that we were the technical pragmatists (and Linus
+fortunately, still very much is the pragmatists, while others were the
+hard-line perfectionists.  It seems to me we've started getting some
+of the NetBSD attitude infecting LKML, and IMHO, that's unfortunate.
 
-The number of events is I think only partly relevant. What matters is how
-long you wait between idle and suspending. The longer you wait the less
-potential you have to end up with an event successfully owned by an
-application you are not considering relevant to suspend.
+We've rewritten our networking stack, 3 or 4 times, depending on how
+you count.  And sometimes shipping in products counts for a lot.  It
+doesn't count for everything, and it isn't a get-out-of-jail card, for
+sure.  But if it's a hard problem, and we have something that's good
+enough, maybe the right call is to merge it now, and we'll rework
+things to make something better and more general later.  Ultimately
+that's a call only Linus can make.
+
+If everyone agrees we're making progress, and we can let this 100+
+mail thread keep going.  But if anyone feels that we are spinning
+endlessly without making forward progress (which is after all the same
+criteria the OOM killer uses, no? :-), people should remember that
+sometimes Linus *has* ended arguments that have gone on too long by
+making a "merge or kill" decision.
+
+						- Ted
