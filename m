@@ -1,20 +1,20 @@
-From: Florian Mickler <florian@mickler.org>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 14:09:04 +0200
-Message-ID: <20100528140904.0d0d4878__4060.3002220907$1275048600$gmane$org@schatten.dmk.lab>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<alpine.LFD.2.00.1005271915540.3032@localhost.localdomain>
-	<20100527173118.GE2468@srcf.ucam.org>
-	<alpine.LFD.2.00.1005271959450.3032@localhost.localdomain>
-	<20100528104415.1403541a@schatten.dmk.lab>
-	<AANLkTikXtk-f41-z8gXfXLNLqgGVa0z4d-qgIvwljbR-@mail.gmail.com>
-	<20100528122521.3698a62e@schatten.dmk.lab>
-	<AANLkTikumixQTaKvlyaxjZgfCZNZXFM9LySJ2YZ4OVZf@mail.gmail.com>
+Date: Fri, 28 May 2010 13:21:38 +0100
+Message-ID: <20100528132138.2d802d77@lxorguk.ukuu.org.uk>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
+	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
+	<20100527220949.GB10602@srcf.ucam.org>
+	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<AANLkTil6Bo7qZltbLzHJjIDyruKHFQEURpe5LPJEpTws@mail.gmail.com>
+	<20100528101755.7b5f6b8a@lxorguk.ukuu.org.uk>
+	<AANLkTilYHKKmQePBGW3LVLjUZy7HXHQku2Iub-LWGBm6@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikumixQTaKvlyaxjZgfCZNZXFM9LySJ2YZ4OVZf@mail.gmail.com>
+In-Reply-To: <AANLkTilYHKKmQePBGW3LVLjUZy7HXHQku2Iub-LWGBm6@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,55 +24,85 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?ISO-8859-15?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: List <linux-omap@vger.kernel.org>, Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Linux@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Peter@smtp1.linux-foundation.org, Linux PM <linux-pm@lists.linux-foundation.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arve =?ISO-8859-14?B?SGr4bm5lduVn?= <arve@android.com>
+Cc: Mailing List <linux-omap@vger.kernel.org>, Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Peter@smtp1.linux-foundation.org, Linux PM <linux-pm@lists.linux-foundation.org>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 28 May 2010 04:35:34 -0700
-Arve Hj=F8nnev=E5g <arve@android.com> wrote:
-
-> 2010/5/28 Florian Mickler <florian@mickler.org>:
-
-> > It sounds like it could save some duplication of effort to integrate
-> > suspend into the idle-framework. "Purpose-fulness" could be just
-> > another measure of "idle".
-> >
-> =
-
-> To me idle means that no threads are ready to run and no interrupts are p=
-ending.
-
-I misused the term "idle".  I tried to express this by "quoting" it.
-
-> =
-
-> I don't think we can plug suspend in as a cpu idle state. 1. we want
-> to suspend even the cpu is not idle. 2. starting suspend will cause
-> the cpu to not be idle.
-> =
+Ok lets try and produce something more concrete. The control groups may
+be the wrong tool but we've got several such tools already
 
 
-yeah. it would have to move out of the cpu-specific context. it would
-be a more general "system-state" thing.
+Kernel involved
+----------------
+acquire:		mark myself important (into cgroup important)
+acquire(timeout)	ditto, plus app timer/timeout handler
+release:		mark myself unimportant (into cgroup downtrodden) 
 
-if the properties of the state's are well expressed, it does not matter
-that starting suspend will cause the cpu to not be idle, because our
-target-state(suspend) has better properties than any other state.
-
-(or maybe there needs to be a "state-transition-in-flight" flag.)
-
-if we take the "approximated duration of staying in that state" into
-account, we could provoke the pm-framework to always suspend if no
-constraint(i.e. blocker) is there.
-
-But really. I think I can't implement something like that.
-Also I really have _no_ idea how much work this would be.
-
-_And_ I am not really shure if this is a better approach than the
-current solution.
-
-Just an idea. =
+All user
+--------
+isHeld:			app implementation internal
+setReferenceCounted:	app implementation internal
 
 
-Cheers,
-Flo
+In the idle manager [Androids own probably]
+
+	if (member of ignored cgroup && in user space)
+		ignore for idle purposes
+
+
+In the Android code managing this [Android specific bits of
+probably userspace]
+	mark downtrodden as ignored
+	mark downtrodden as not ignored
+
+
+[Total kernel changes
+
+	Ability to mark/unmark a scheduler control group as outside of
+	some parts of idle consideration. Generically useful and
+	localised. Group latency will do most jobs fine (Zygo is correct
+	it can't solve his backup case elegantly I think)
+
+	Test in the idling logic to distinguish the case and only needed
+	for a single Android specific power module. Generically useful
+	and localised]
+
+So I put my phone down
+
+	The UI manager gets told the phone is 'down'
+	Ten seconds later it is still down
+	It marks the downtrodden group as 'ignored'
+
+	The idle logic goes
+		Nothing to run powersave
+		Still nothing
+		Ooh 0.3 seconds of nothing
+		Drop into suspend state
+
+
+If I push the button we get an IRQ
+We come out of power save
+The app gets poked
+The app may be unimportant but the IRQ means we have a new timeout of
+    some form to run down to idle
+The app marks itself important
+The app stays awake for 60 seconds rsyncing your email
+The app marks itself unimportant
+Time elapses
+We return to suspend
+
+
+If you are absolutely utterly paranoid about it you need the button
+driver to mark the task it wakes back as important rather than rely on
+time for response like everyone else. That specific bit is uggglly but
+worst case its just a google private patch to a few drivers. I understand
+why Android wants it. The narrower the gap between 'we are doing nothing,
+sit in lowest CPU on state' and 'we are off' the better the battery life
+and the more hittable the condition.
+
+Apart from that optional paranoia case my kernel now contains some
+trivial changes of generic value that have nothing to do with suspend
+blocking. Android has suspend blocking by choosing to use the generic
+features in its own specific way and we need almost no code writing ?
+
+Alan
