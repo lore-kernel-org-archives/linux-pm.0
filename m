@@ -1,22 +1,22 @@
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 14:54:20 +0100
-Message-ID: <20100528145420.1c06e4a3__34958.5689059042$1275054536$gmane$org@lxorguk.ukuu.org.uk>
+Date: Fri, 28 May 2010 14:54:44 +0100
+Message-ID: <20100528145444.265d1853__25603.201686363$1275054726$gmane$org@lxorguk.ukuu.org.uk>
 References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
 	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
 	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
 	<20100527220949.GB10602@srcf.ucam.org>
 	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
-	<AANLkTil6Bo7qZltbLzHJjIDyruKHFQEURpe5LPJEpTws@mail.gmail.com>
-	<20100528101755.7b5f6b8a@lxorguk.ukuu.org.uk>
-	<AANLkTilYHKKmQePBGW3LVLjUZy7HXHQku2Iub-LWGBm6@mail.gmail.com>
-	<20100528132138.2d802d77@lxorguk.ukuu.org.uk>
-	<20100528123110.GA23930@srcf.ucam.org>
+	<20100527223605.GB11364@srcf.ucam.org>
+	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
+	<20100528043114.GC26177@thunk.org>
+	<20100528103713.0a7952d9@lxorguk.ukuu.org.uk>
+	<20100528114123.GA22947@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100528123110.GA23930@srcf.ucam.org>
+In-Reply-To: <20100528114123.GA22947@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,68 +27,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Mailing List <linux-omap@vger.kernel.org>, Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Peter@smtp1.linux-foundation.org, Linux PM <linux-pm@lists.linux-foundation.org>, felipe.balbi@nokia.com
+Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-> > 	The UI manager gets told the phone is 'down'
-> > 	Ten seconds later it is still down
->             <- wakeup event that should be delivered to untrusted app arrives here
+On Fri, 28 May 2010 12:41:23 +0100
+Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+
+> On Fri, May 28, 2010 at 10:37:13AM +0100, Alan Cox wrote:
 > 
-> At this point you may mark the downtrodden group as ignored between the 
-> untrusted app receiving the event and the untrusted app marking itself 
-> as important. To avoid this you need the UI manager to receive every 
-> wakeup event in order to change its scheduling decisions.
-
-The event wakes the device, the event itself means the kernel is doing
-bits so the kernel is active and we are not idled so we have a time
-before we will consider re-suspending.
-
-[If you accept that untrusted apps must be constrained then you can't
- allow one to mark itself important - or at least you can't listen to it
- doing so and it goes to the static case which is trivial]
-
-> (The cgroup has to have some awareness of suspend/resume so that it can 
-> allow the untrusted apps to be scheduled again)
-
-I don't think so. The apps will get scheduled anyway when not suspended.
-The only reason they are not being scheduled is that the device is
-suspended.
-
-> Not just the button driver. Every driver that generates wakeupa. This 
-> gets difficult when it comes to the network layer, for instance, when 
-> the network driver has very little idea how the packet it just received 
-> will be routed.
-
-No. Every driver which generates wakeups which should wake an untrusted
-application. If network packets to untrusted applications should wake the
-box up then a simple background ping process left running is going to
-drain your battery and bugger your containment of the mess completely as
-you've just accepted an infinite supply of untrusted timed wakeup events
-with delay.
-
-> > Apart from that optional paranoia case my kernel now contains some
-> > trivial changes of generic value that have nothing to do with suspend
-> > blocking. Android has suspend blocking by choosing to use the generic
-> > features in its own specific way and we need almost no code writing ?
+> > The other vendors appear to be managing nicely without magic blockers. I
+> > conjecture therefore there are other solutions.
 > 
-> The problem is that you still have a race, and fixing that race requires 
-> every event that could generate a wakeup to be proxied out to the policy 
-> manager as well. That's a moderate additional overhead.
+> Actually, no. A badly behaved application will kill the N900's battery 
+> life. Nobody else has "managed nicely" - they've just made life harder 
+> for application developers and users, which may have something to do 
+> with the relative levels of market adoption of Maemo and Android. I'm 
+> not aware of any form of resource management framework in MeeGo either, 
+> so as far as I know it'll have exactly the same problem.
 
-I am not convinced at this point. If the app gets put into the important
-group by the driver then you don't need to poke a policy manager.
+Maemo has battery management applications. Right now they show you what
+is going on but haven't gone to a pop-up 'XYZ is eating all your battery'
+kill it behaviour. The information is there.
 
-This again moves us beyond containment because we just allowed an
-'untrusted' app a way to be trusted - just as it might abuse a suspend
-blocker.
+If my phone eventually becomes a 1GB RAM PC class system I will be running
+PC class apps on it and I will be migrating virtual machines to and from
+my phone which have no idea about the device properties of each device
+they migrate to and from.
 
-If you accept untrusted apps can't be fixed (for example they could
-simply lose the event internally due to app code bugs) then the static
-case all looks pretty trivial.
+Be that as it may the question of how you manage a naughty app is a good
+one. Historically we've managed them for network abuse, memory abuse, cpu
+use abuse, access rights, but not yet power.
 
-With a Meego hat on you'd dump all the stuff you didn't trust into a
-scheduler group and tell the suspend aspect of the idle choice to ignore
-it when the screen blanks. While you are it you also get a free ticket to
-putting trusted rt apps into the 'and don't even C6' group.
+Whether that looks like
+
+	setrlimit(pid, LIMIT_CHARGE, 150mWH);
+
+or
+	setrlimit(pid, LIMIT_POWER, 150mW);
+
+or something else is the question. I rather like the above but I don't
+see how to implement them nicely at the moment.
 
 Alan
