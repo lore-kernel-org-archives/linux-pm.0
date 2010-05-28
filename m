@@ -1,22 +1,22 @@
-From: Brian Swetland <swetland@google.com>
-Subject: Re: [PATCH 1/8] PM: Add suspend block api.
-Date: Fri, 28 May 2010 06:42:55 -0700
-Message-ID: <AANLkTimtBjrbtZDIP273kn4Xkhca-tq1bTet_MfmIvV9__13719.7956014008$1275054370$gmane$org@mail.gmail.com>
-References: <20100505202826.GB7450@linux.intel.com>
-	<Pine.LNX.4.44L0.1005051705200.1885-100000@iolanthe.rowland.org>
-	<z2ta55d774e1005051437heb584584q6afca0b4b254d5d0@mail.gmail.com>
-	<20100505234755.GI29604@atomide.com>
-	<20100506134015.GA23426@srcf.ucam.org>
-	<20100506170151.GA30928@atomide.com>
-	<20100506170956.GA28104@srcf.ucam.org>
-	<20100506171453.GC30928@atomide.com>
-	<20100506172201.GA28578@srcf.ucam.org>
-	<20100506173807.GD30928@atomide.com> <20100528132925.GA2677@ucw.cz>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Fri, 28 May 2010 14:54:20 +0100
+Message-ID: <20100528145420.1c06e4a3__34958.5689059042$1275054536$gmane$org@lxorguk.ukuu.org.uk>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
+	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
+	<20100527220949.GB10602@srcf.ucam.org>
+	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<AANLkTil6Bo7qZltbLzHJjIDyruKHFQEURpe5LPJEpTws@mail.gmail.com>
+	<20100528101755.7b5f6b8a@lxorguk.ukuu.org.uk>
+	<AANLkTilYHKKmQePBGW3LVLjUZy7HXHQku2Iub-LWGBm6@mail.gmail.com>
+	<20100528132138.2d802d77@lxorguk.ukuu.org.uk>
+	<20100528123110.GA23930@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100528132925.GA2677@ucw.cz>
+In-Reply-To: <20100528123110.GA23930@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,37 +26,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <len.brown@intel.com>, markgross@thegnar.org, linux-doc@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Wu Fengguang <fengguang.wu@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Mailing List <linux-omap@vger.kernel.org>, Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Peter@smtp1.linux-foundation.org, Linux PM <linux-pm@lists.linux-foundation.org>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 28, 2010 at 6:29 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
->> > > Why would you need to constantly try to suspend in that case?
->> >
->> > Because otherwise you're awake for longer than you need to be.
->>
->> If your system is idle and your hardware supports off-while-idle,
->> then that really does not matter. There's not much of a difference
->> in power savings, we're already talking over 10 days on batteries
->> with just off-while-idle on omaps.
->
-> Makes me wish g1 was omap based... it looks like you have superior hw.
+> > 	The UI manager gets told the phone is 'down'
+> > 	Ten seconds later it is still down
+>             <- wakeup event that should be delivered to untrusted app arrives here
+> 
+> At this point you may mark the downtrodden group as ignored between the 
+> untrusted app receiving the event and the untrusted app marking itself 
+> as important. To avoid this you need the UI manager to receive every 
+> wakeup event in order to change its scheduling decisions.
 
-G1 will happily do 10 days idle (radio on) under typical network
-conditions (roughly 4-5mA draw at the battery average in paging mode)
-if you have data disabled and there's no reason for it to wake up,
-process events, chat on the data network etc.  It'll go 25-30 days in
-"airplane mode" (radio off) provided there are not excessive wakeups.
+The event wakes the device, the event itself means the kernel is doing
+bits so the kernel is active and we are not idled so we have a time
+before we will consider re-suspending.
 
-If you happen to be running a perfect userspace where every thread in
-every process is blocked on something, it'll hit the exact same power
-state out of idle.  If you have a less optimal userspace or random
-third party nonoptimal apps, this becomes much harder, of course.
-Which is why we do the wakelock thing.
+[If you accept that untrusted apps must be constrained then you can't
+ allow one to mark itself important - or at least you can't listen to it
+ doing so and it goes to the static case which is trivial]
 
-OMAP does have a lot of nice auto-clock-down features compared to some
-other SoCs, sometimes simplifying other parts of power management.
+> (The cgroup has to have some awareness of suspend/resume so that it can 
+> allow the untrusted apps to be scheduled again)
 
-Brian
+I don't think so. The apps will get scheduled anyway when not suspended.
+The only reason they are not being scheduled is that the device is
+suspended.
+
+> Not just the button driver. Every driver that generates wakeupa. This 
+> gets difficult when it comes to the network layer, for instance, when 
+> the network driver has very little idea how the packet it just received 
+> will be routed.
+
+No. Every driver which generates wakeups which should wake an untrusted
+application. If network packets to untrusted applications should wake the
+box up then a simple background ping process left running is going to
+drain your battery and bugger your containment of the mess completely as
+you've just accepted an infinite supply of untrusted timed wakeup events
+with delay.
+
+> > Apart from that optional paranoia case my kernel now contains some
+> > trivial changes of generic value that have nothing to do with suspend
+> > blocking. Android has suspend blocking by choosing to use the generic
+> > features in its own specific way and we need almost no code writing ?
+> 
+> The problem is that you still have a race, and fixing that race requires 
+> every event that could generate a wakeup to be proxied out to the policy 
+> manager as well. That's a moderate additional overhead.
+
+I am not convinced at this point. If the app gets put into the important
+group by the driver then you don't need to poke a policy manager.
+
+This again moves us beyond containment because we just allowed an
+'untrusted' app a way to be trusted - just as it might abuse a suspend
+blocker.
+
+If you accept untrusted apps can't be fixed (for example they could
+simply lose the event internally due to app code bugs) then the static
+case all looks pretty trivial.
+
+With a Meego hat on you'd dump all the stuff you didn't trust into a
+scheduler group and tell the suspend aspect of the idle choice to ignore
+it when the screen blanks. While you are it you also get a free ticket to
+putting trusted rt apps into the 'and don't even C6' group.
+
+Alan
