@@ -1,17 +1,18 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 27 May 2010 19:47:18 -0700
-Message-ID: <AANLkTil6Bo7qZltbLzHJjIDyruKHFQEURpe5LPJEpTws__26705.3437921733$1275014912$gmane$org@mail.gmail.com>
-References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
-	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
-	<20100527220949.GB10602@srcf.ucam.org>
-	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+From: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
+ driver for select intel processors
+Date: Thu, 27 May 2010 20:14:39 -0700
+Message-ID: <20100527201439.6d0fd169__23705.4806588732$1275016422$gmane$org@infradead.org>
+References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
+	<e099975ca65a7f6ac7f8bc3fee84d3e03893aa31.1274926772.git.len.brown@intel.com>
+	<198450ec1600d9a7f55270dd4d44d6b55bc5b184.1274926772.git.len.brown@intel.com>
+	<87ljb5l9d5.fsf@deeprootsystems.com>
+	<20100527072207.2e783b1e@infradead.org> <4BFE86D4.60602@nokia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+In-Reply-To: <4BFE86D4.60602@nokia.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,55 +22,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
+To: Igor Stoppa <igor.stoppa@nokia.com>
+Cc: "Len@smtp1.linux-foundation.org" <Len@smtp1.linux-foundation.org>, Brown <len.brown@intel.com>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 27, 2010 at 3:23 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> On Thu, 27 May 2010 23:09:49 +0100
-> Matthew Garrett <mjg59@srcf.ucam.org> wrote:
->
->> On Thu, May 27, 2010 at 11:08:06PM +0100, Alan Cox wrote:
->>
->> > This is I believe robust (and has been implemented on some non x86
->> > boxes). It depends on not forcing running tasks into suspend. That is =
-the
->> > key.
->>
->> We've already established that ACPI systems require us to force running
->> tasks into suspend. How do we avoid the race in that situation?
->
-> Android phones do not have ACPI. Embedded platforms do not have ACPI. MID
-> x86 devices do not have ACPI.
->
+On Thu, 27 May 2010 17:51:00 +0300
+Igor Stoppa <igor.stoppa@nokia.com> wrote:
 
-Android does not only run on phones. It is possible that no android
-devices have ACPI, but I don't know that for a fact. What I do know is
-that people want to run Android on x86 hardware and supporting suspend
-could be very benficial.
+> Hi,
+> 
+> 
+> ext Arjan van de Ven wrote:
+> 
+> > it's really inconvenient to have such drivers hidden in the
+> > architecture code; it's much more convenient for cpuidle developers
+> > if they're all in one place.
+> >   
+> 
+> why?
 
-> I would imagine the existing laptops will handle power management limited
-> by the functionality they have available. Just like any other piece of
-> hardware.
-
-I think existing laptops (and desktops) can benefit from opportunistic
-suspend support. If opportunistic suspend is used for auto-sleep after
-inactivity instead of forced suspend, the user space suspend blocker
-api will allow an application to delay this auto sleep until for
-instance a download completes. This part could also be done with a
-user-space IPC call, but having a standard kernel interface for it may
-make it more common. A less common case, but more critical, is RTC
-alarms. I know my desktops can wakeup at a specific time by
-programming an RTC alarm, but without suspend blockers how do you
-ensure that the system does not suspend right after the alarm
-triggered? I have a system that wakes up at specific times requested
-by my DVR application, but I cannot use this system for anything else
-unless I manually turn off the DVR application's auto-sleep feature.
-With suspend blockers and something like the android alarm driver, I
-could use this system for more than one application that have
-scheduled tasks and it would be more usable for interactive
-applications.
-
--- =
-
-Arve Hj=F8nnev=E5g
+because you have all the users of your API in one place.
