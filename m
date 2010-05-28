@@ -1,13 +1,25 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Florian Mickler <florian@mickler.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 11:30:40 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005281128280.1939-100000__19052.5364516818$1275060750$gmane$org@iolanthe.rowland.org>
-References: <1275059924.27810.9640.camel@twins>
+Date: Fri, 28 May 2010 17:53:54 +0200
+Message-ID: <20100528175354.7e6a73d1__42419.6455431685$1275062102$gmane$org@schatten.dmk.lab>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
+	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
+	<20100527220949.GB10602@srcf.ucam.org>
+	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<AANLkTil6Bo7qZltbLzHJjIDyruKHFQEURpe5LPJEpTws@mail.gmail.com>
+	<20100528101755.7b5f6b8a@lxorguk.ukuu.org.uk>
+	<AANLkTilYHKKmQePBGW3LVLjUZy7HXHQku2Iub-LWGBm6@mail.gmail.com>
+	<20100528132138.2d802d77@lxorguk.ukuu.org.uk>
+	<1275049836.1645.1.camel@laptop>
+	<20100528140236.3214929e@lxorguk.ukuu.org.uk>
+	<1275052817.1645.64.camel@laptop>
+	<1275058794.27810.9571.camel@twins>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275059924.27810.9640.camel@twins>
+In-Reply-To: <1275058794.27810.9571.camel@twins>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,29 +30,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Thomas@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Linux PM <linux-pm@lists.linux-foundation.org>, Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 28 May 2010, Peter Zijlstra wrote:
+On Fri, 28 May 2010 16:59:54 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-> On Fri, 2010-05-28 at 10:35 -0400, Alan Stern wrote:
-> >         The app is busy doing something else unimportant
-> >         We do into power save
-> >         Push a button, generate an IRQ
-> >         Come out of power save
-> >         No app to poke
-> >         * System goes back to sleep and eventually wakes up again
-> >         The app finishes what it was doing
-> >         The app sees there is a keystroke and marks itself important
-> >         ...
-> > 
-> > The * step is where trouble can occur. 
-> 
-> Only because you don't run runnable tasks. Please stop considering that
-> an option and these problems go away.
+> So lets look at the problem, we want to be frugal with power, this means
+> that the system as a whole should strive to do nothing. And we want to
+> enforce this as strict as possible.
 
-True.  If the untrusted apps can be segregated and forcibly stopped, 
-and if they don't need timely delivery of wakeup events, then there's 
-no problem.
+An interesting thought might be to add the costs of staying in
+a state versus going to a lower power state into consideration. 
 
-Alan Stern
+If the system is busy doing stuff it would need to do anyway (today
+stuff that is guarded/annotated by the suspend blockers) , the costs for
+not being in suspend have to be paid anyway. So it is opportune for
+processes to run. Even if they by themselves would not justify the
+system running. 
+
+If instead nothing system-relevant has to be done, the costs of running
+anything non-relevant is the full amount of battery-life that could
+be saved by suspending + (some minor) running costs. 
+
+Also if there is much work to do (many tasks) its more likely that it's
+good to do the work.
+
+something along the lines :
+
+(amount of energy saved by being in suspend) / (number of tasks we
+would run if we werent suspended) *
+some_parameter_for_this_tasks_importance (which falls clearly into
+scheduler-territory)
+
+And if this goes above some threshold we run it.
+
+But this isn't easily done in a robust way.
+Also it complicates things. 
+
+Cheers,
+Flo
