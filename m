@@ -1,11 +1,13 @@
 From: nigel@tuxonice.net
-Subject: Nigel's current for-rafael queue
-Date: Fri, 28 May 2010 21:14:49 +1000
-Message-ID: <1275045299-25890-1-git-send-email-nigel@tuxonice.net>
+Subject: [PATCH 01/10] Hibernation: Swap iteration functions.
+Date: Fri, 28 May 2010 21:14:50 +1000
+Message-ID: <1275045299-25890-2-git-send-email-nigel@tuxonice.net>
+References: <1275045299-25890-1-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1275045299-25890-1-git-send-email-nigel@tuxonice.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,16 +20,68 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Linux PM <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-I've done some more work today. Here's an updated copy of the patches
-in my queue. As you'll see, I'm focussing on the low level i/o. These
-patches split out the more generic bio functions to block_io.c, leaving
-swap.c with just the swap specific functions (and, at the moment, the
-highlevel i/o routines). In doing this, I'm setting up a foundation
-for getting rid of the swap_map pages (I'll instead store extents in
-the image header), and through that for doing fully asynchronous I/O,
-which should give some speed increase. The changes also lay the groundwork
-for support for multiple swap devices and non-swap at a later stage.
+From: Nigel Cunningham <nigel@tuxonice.net>
 
-Regards,
+Add the data structure 'storage_position' and routines that allow
+a caller to iterate over swap in sector order. Note that calling
+reset_storage_pos only resets the position. next_swapdev_block
+must also be called to get the address of the first (and subsequent
+sectors).
 
-Nigel
+Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
+---
+ kernel/power/swap.c |   39 +++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 39 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index b0bb217..829f7b4 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -86,6 +86,45 @@ struct swsusp_extent {
+ 
+ static struct rb_root swsusp_extents = RB_ROOT;
+ 
++struct storage_position {
++	struct rb_node *node;
++	struct swsusp_extent *cur_ext;
++	unsigned long offset;
++};
++
++static struct storage_position pos;
++
++static void reset_storage_pos(void)
++{
++	pos.node = rb_first(&swsusp_extents);
++
++	if (!pos.node) {
++		pos.cur_ext = NULL;
++		pos.offset = 0;
++		return;
++	}
++
++	pos.cur_ext = container_of(pos.node, struct swsusp_extent, node);
++	pos.offset = pos.cur_ext->start;
++}
++
++static sector_t next_swapdev_block(void)
++{
++	if (!pos.node)
++		return 0;
++
++	if (pos.cur_ext->end >= pos.offset)
++		return pos.offset++;
++
++	pos.node = rb_next(pos.node);
++	if (!pos.node)
++		return 0;
++
++	pos.cur_ext = container_of(pos.node, struct swsusp_extent, node);
++	pos.offset = pos.cur_ext->start;
++	return pos.offset;
++}
++
+ static int swsusp_extents_insert(unsigned long swap_offset)
+ {
+ 	struct rb_node **new = &(swsusp_extents.rb_node);
+-- 
+1.7.0.4
