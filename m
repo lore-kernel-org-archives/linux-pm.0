@@ -1,7 +1,7 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 16:06:28 +0100
-Message-ID: <20100528160628.7c121dab__21490.3918713846$1275058880$gmane$org@lxorguk.ukuu.org.uk>
+Date: Fri, 28 May 2010 08:13:08 -0700
+Message-ID: <AANLkTin3suKfGBSfiDj0n8ztY8UiHzr4af_Cr0SPOevY__24564.292751211$1275059641$gmane$org@mail.gmail.com>
 References: <20100527223605.GB11364@srcf.ucam.org>
 	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
 	<20100528043114.GC26177@thunk.org>
@@ -11,11 +11,12 @@ References: <20100527223605.GB11364@srcf.ucam.org>
 	<4BFFC5DF.5030504@nokia.com> <20100528133900.GG26177@thunk.org>
 	<4BFFCFC7.7070302@nokia.com> <20100528142124.GA26733@srcf.ucam.org>
 	<AANLkTilj6i7Qi-eh7e3WWeh4zxKALqr-0yhAvWKis52t@mail.gmail.com>
+	<20100528160628.7c121dab@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTilj6i7Qi-eh7e3WWeh4zxKALqr-0yhAvWKis52t@mail.gmail.com>
+In-Reply-To: <20100528160628.7c121dab@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,53 +26,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian@smtp1.linux-foundation.org, tytso@mit.edu, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, tytso@mit.edu, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>
 List-Id: linux-pm@vger.kernel.org
 
-> I think the suggestion that has the closet fit with what we're trying
-> to accomplish is Ingo's (or perhaps Ingo's explanation of Alan's):
-> http://lkml.org/lkml/2010/5/28/106 where it's implemented as a
-> constraint of some sort.
-
-I think we ended up in the same place on our own.
-
-> Arve points out that qos constraint objects could work (but not if
-> specifically tied to apps): http://lkml.org/lkml/2010/5/28/120 though
-> he suggests that "latency" constraints don't represent this as well as
-> "state" constraints.
-
-With latency you have an "I don't give damn" latency in your model which
-we could describe as infinite or "manyana" perhaps.
-
-> Though if you look at it that way, then suspend_blockers become qos
-> constraint objects, but their implementation and usage remain pretty
-> much the same as we have now, which does not address Alan's concern
-> regarding code turning up in drivers, etc.  I'm not sure how you can
-> solve this problem (avoiding races around entering/exiting the suspend
-> or suspend-like state) without having a means for drivers to prevent
-> entry to that state.
-
-I am much much less concerned about general expressions of constraint
-appearing in drivers. One of my early mails gave a list of other
-people/projects/problems that need them - from hard real time, to high
-speed serial on low end embedded to virtualisation.
-
-They fix a general problem in terms of a driver specific item. We end up
-making changes around the tree but we make everyone happy not just
-Android. Also we are isolating policy properly. The apps and drivers say
-"I have these needs", the power manager figures out how to meet them.
-
-Where it gets ugly is if you start trying to have drivers giving an app a
-guarantee which the app then magically has to know to dispose of.
-
-If you are prepared to exclude untrusted apps from perfectly reliable
-event reporting (ie from finger to application action) that doesn't seem
-to be a neccessity anyway.
- 
-> livelock/deadlock/priority-inversion style issues due to interaction
-> between different processes in different groups.
-
-Priority inversion with the cgroup case is like synchronization effects
-with the suspend blockers - its a real ugly problem and one that is known
-to be hard to fix if you let it happen so I agree there.
+T24gRnJpLCBNYXkgMjgsIDIwMTAgYXQgODowNiBBTSwgQWxhbiBDb3ggPGFsYW5AbHhvcmd1ay51
+a3V1Lm9yZy51az4gd3JvdGU6Cj4+IEFydmUgcG9pbnRzIG91dCB0aGF0IHFvcyBjb25zdHJhaW50
+IG9iamVjdHMgY291bGQgd29yayAoYnV0IG5vdCBpZgo+PiBzcGVjaWZpY2FsbHkgdGllZCB0byBh
+cHBzKTogaHR0cDovL2xrbWwub3JnL2xrbWwvMjAxMC81LzI4LzEyMCB0aG91Z2gKPj4gaGUgc3Vn
+Z2VzdHMgdGhhdCAibGF0ZW5jeSIgY29uc3RyYWludHMgZG9uJ3QgcmVwcmVzZW50IHRoaXMgYXMg
+d2VsbCBhcwo+PiAic3RhdGUiIGNvbnN0cmFpbnRzLgo+Cj4gV2l0aCBsYXRlbmN5IHlvdSBoYXZl
+IGFuICJJIGRvbid0IGdpdmUgZGFtbiIgbGF0ZW5jeSBpbiB5b3VyIG1vZGVsIHdoaWNoCj4gd2Ug
+Y291bGQgZGVzY3JpYmUgYXMgaW5maW5pdGUgb3IgIm1hbnlhbmEiIHBlcmhhcHMuCgpJIHRoaW5r
+IEFydmUncyBjb25jZXJuIHdhcyB0aGUgcmVwcmVzZW50YXRpb24gb2YgdGhlICJJIGNhcmUsIGJ1
+dCBvbmx5CmEgbGl0dGxlIiBvciAianVzdCBsb3cgZW5vdWdoIHRvIGVuc3VyZSB0aHJlYWRzIG11
+c3QgcnVuIiBsZXZlbCB3aGljaAppcyB3aGF0IHN1c3BlbmQgYmxvY2tlcnMgd291bGQgbWFwIHRv
+IChsb3cgZW5vdWdoIHRvIGVuc3VyZSB3ZQpzaG91bGRuJ3QgaGFsdCB0aGUgd29ybGQgYnV0IG5v
+dCBuZWNlc3NhcmlseSBpbXBseWluZyBhIGhhcmQgbGF0ZW5jeQpjb25zdHJhaW50IGJleW9uZCB0
+aGF0KS4KCj4+IFRob3VnaCBpZiB5b3UgbG9vayBhdCBpdCB0aGF0IHdheSwgdGhlbiBzdXNwZW5k
+X2Jsb2NrZXJzIGJlY29tZSBxb3MKPj4gY29uc3RyYWludCBvYmplY3RzLCBidXQgdGhlaXIgaW1w
+bGVtZW50YXRpb24gYW5kIHVzYWdlIHJlbWFpbiBwcmV0dHkKPj4gbXVjaCB0aGUgc2FtZSBhcyB3
+ZSBoYXZlIG5vdywgd2hpY2ggZG9lcyBub3QgYWRkcmVzcyBBbGFuJ3MgY29uY2Vybgo+PiByZWdh
+cmRpbmcgY29kZSB0dXJuaW5nIHVwIGluIGRyaXZlcnMsIGV0Yy4gwqBJJ20gbm90IHN1cmUgaG93
+IHlvdSBjYW4KPj4gc29sdmUgdGhpcyBwcm9ibGVtIChhdm9pZGluZyByYWNlcyBhcm91bmQgZW50
+ZXJpbmcvZXhpdGluZyB0aGUgc3VzcGVuZAo+PiBvciBzdXNwZW5kLWxpa2Ugc3RhdGUpIHdpdGhv
+dXQgaGF2aW5nIGEgbWVhbnMgZm9yIGRyaXZlcnMgdG8gcHJldmVudAo+PiBlbnRyeSB0byB0aGF0
+IHN0YXRlLgo+Cj4gSSBhbSBtdWNoIG11Y2ggbGVzcyBjb25jZXJuZWQgYWJvdXQgZ2VuZXJhbCBl
+eHByZXNzaW9ucyBvZiBjb25zdHJhaW50Cj4gYXBwZWFyaW5nIGluIGRyaXZlcnMuIE9uZSBvZiBt
+eSBlYXJseSBtYWlscyBnYXZlIGEgbGlzdCBvZiBvdGhlcgo+IHBlb3BsZS9wcm9qZWN0cy9wcm9i
+bGVtcyB0aGF0IG5lZWQgdGhlbSAtIGZyb20gaGFyZCByZWFsIHRpbWUsIHRvIGhpZ2gKPiBzcGVl
+ZCBzZXJpYWwgb24gbG93IGVuZCBlbWJlZGRlZCB0byB2aXJ0dWFsaXNhdGlvbi4KPgo+IFRoZXkg
+Zml4IGEgZ2VuZXJhbCBwcm9ibGVtIGluIHRlcm1zIG9mIGEgZHJpdmVyIHNwZWNpZmljIGl0ZW0u
+IFdlIGVuZCB1cAo+IG1ha2luZyBjaGFuZ2VzIGFyb3VuZCB0aGUgdHJlZSBidXQgd2UgbWFrZSBl
+dmVyeW9uZSBoYXBweSBub3QganVzdAo+IEFuZHJvaWQuIEFsc28gd2UgYXJlIGlzb2xhdGluZyBw
+b2xpY3kgcHJvcGVybHkuIFRoZSBhcHBzIGFuZCBkcml2ZXJzIHNheQo+ICJJIGhhdmUgdGhlc2Ug
+bmVlZHMiLCB0aGUgcG93ZXIgbWFuYWdlciBmaWd1cmVzIG91dCBob3cgdG8gbWVldCB0aGVtLgoK
+VGhhdCBtYWtlcyBzZW5zZSAtLSBhbmQgYXMgSSd2ZSBtZW50aW9uZWQgZWxzZXdoZXJlLCB3ZSdy
+ZSByZWFsbHkgbm90CnN1cGVyIHBpY2t5IGFib3V0IG5hbWluZyAtLSBpZiBpdCB0dXJucyBvdXQg
+dGhhdAp3YWtlbG9ja3Mvc3VzcGVuZGJsb2NrZXJzIHdlcmUgc2hvcnRoYW5kIGZvciAicmVxdWVz
+dCBhIHFvcyBjb25zdHJhaW50CnRoYXQgZW5zdXJlcyB0aGF0IHRocmVhZHMgYXJlIHJ1bm5pbmci
+LCB3ZSdsbCBiZSBhYmxlIHRvIGdldCB0aGluZ3MKZG9uZSBqdXN0IGFzIHdlbGwgYXMgd2UgZG8g
+bm93LgoKPiBXaGVyZSBpdCBnZXRzIHVnbHkgaXMgaWYgeW91IHN0YXJ0IHRyeWluZyB0byBoYXZl
+IGRyaXZlcnMgZ2l2aW5nIGFuIGFwcCBhCj4gZ3VhcmFudGVlIHdoaWNoIHRoZSBhcHAgdGhlbiBt
+YWdpY2FsbHkgaGFzIHRvIGtub3cgdG8gZGlzcG9zZSBvZi4KClllYWggLS0gd2hpY2ggaXMgc29t
+ZXRoaW5nIHdlJ3ZlIGF2b2lkZWQgaW4gdGhlIGV4aXN0aW5nIG1vZGVsIHdpdGgKb3ZlcmxhcHBp
+bmcgd2FrZWxvY2tzIGR1cmluZyBoYW5kb2ZmIGJldHdlZW4gZG9tYWlucy4KLSBpbnB1dCBzZXJ2
+aWNlIGlzIHNlbGVjdCgpaW5nIG9uIGlucHV0IGRldmljZXMKLSB3aGVuIHNlbGVjdCgpIHJldHVy
+bnMgaXQgZ3JhYnMgYSB3YWtlbG9jaywgcmVhZHMgZXZlbnRzLCBwYXNzZXMgdGhlbQpvbiwgcmVs
+ZWFzZXMgdGhlIHdha2Vsb2NrCi0gdGhlIGV2ZW50IHN1YnN5c3RlbSBjYW4gdGhlbiBzYWZlbHkg
+ZHJvcCBpdHMgInNob3VsZCBiZSBydW5uaW5nCnRocmVhZHMiIGNvbnN0cmFpbnQgYXMgc29vbiBh
+cyB0aGUgbGFzdCBldmVudCBpcyByZWFkIGJlY2F1c2UgaXQgaGFzCm5vIHF1ZXVlcyBmb3IgdXNl
+cnNwYWNlIHRvIGRyYWluLCBidXQgdGhlIG92ZXJsYXBwaW5nIHdha2Vsb2NrCnByZXZlbnRzIHRo
+ZSBzeXN0ZW0gZnJvbSBpbW1lZGlhdGVseSBzbmFwcGluZyBiYWNrIHRvIHNsZWVwCgo+IElmIHlv
+dSBhcmUgcHJlcGFyZWQgdG8gZXhjbHVkZSB1bnRydXN0ZWQgYXBwcyBmcm9tIHBlcmZlY3RseSBy
+ZWxpYWJsZQo+IGV2ZW50IHJlcG9ydGluZyAoaWUgZnJvbSBmaW5nZXIgdG8gYXBwbGljYXRpb24g
+YWN0aW9uKSB0aGF0IGRvZXNuJ3Qgc2VlbQo+IHRvIGJlIGEgbmVjY2Vzc2l0eSBhbnl3YXkuCgpD
+dXJyZW50bHkgaW4gdGhlIEFuZHJvaWQgdXNlcnBhY2Ugb25seSB0cnVzdGVkIChzeXN0ZW0pIGFw
+cHMgY2FuCmRpcmVjdGx5IG9idGFpbiB3YWtlbG9ja3MgLS0gYXJiaXRyYXJ5IGFwcHMgb2J0YWlu
+IHRoZW0gdmlhIHJwYyB0byBhCnRydXN0ZWQgc3lzdGVtIHNlcnZpY2UgKHdoaWNoIGVuc3VyZXMg
+dGhlIGFwcCBoYXMgYmVlbiBncmFudGVkCnBlcm1pc3Npb24gdG8gZG8gdGhpcyBhbmQgdHJhY2tz
+IHVzYWdlIGZvciBhY2NvdW50YWJpbGl0eSB0bwp1c2VyL2RldmVsb3BlcikuCgpCcmlhbgpfX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWls
+aW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0
+cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
