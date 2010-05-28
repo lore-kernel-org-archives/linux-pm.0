@@ -1,7 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 5/8] sched: clarify commment for TS_POLLING
-Date: Fri, 28 May 2010 02:01:58 -0400
-Message-ID: <e45b7fa23097332508730123ac6d59227e7bd7f8.1275026041.git.len.brown__4483.76832432604$1275030404$gmane$org@intel.com>
+Subject: [PATCH 6/8] acpi_pad: uses MONITOR/MWAIT,
+ so it doesn't need to clear TS_POLLING
+Date: Fri, 28 May 2010 02:01:59 -0400
+Message-ID: <a7d27c37533524e23bbdc9ba1d78e3241b7483ea.1275026041.git.len.brown__47445.0593152598$1275030555$gmane$org@intel.com>
 References: <1275026521-30835-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,37 +26,42 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-TS_POLLING set tells the scheduler an idle_task will poll
-need_resched() to look for work.
+api_pad exclusively uses MONITOR/MWAIT to sleep in idle,
+so it does not need the wakeup IPI during idle sleep
+that is provoked by clearing TS_POLLING.
 
-TS_POLLING clear tells resched_task() and wake_up_idle_cpu()
-that the remote CPU's idle_task is now sleeping in idle,
-and thus requires a reschedule interrupt notice work.
-
-Update the description of TS_POLLING to reflect how it works.
-"idle task polling need_resched, skip sending interrupt"
-
-Wordsmithing-by: Milton Miller <miltonm@bga.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
-Acked-by: Peter Zijlstra <peterz@infradead.org>
+Cc: Shaohua Li <shaohua.li@intel.com>
 ---
- arch/x86/include/asm/thread_info.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/acpi/acpi_pad.c |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
-index e0d2890..8121869 100644
---- a/arch/x86/include/asm/thread_info.h
-+++ b/arch/x86/include/asm/thread_info.h
-@@ -241,8 +241,8 @@ static inline struct thread_info *current_thread_info(void)
- #define TS_USEDFPU		0x0001	/* FPU was used by this task
- 					   this quantum (SMP) */
- #define TS_COMPAT		0x0002	/* 32bit syscall active (64BIT)*/
--#define TS_POLLING		0x0004	/* true if in idle loop
--					   and not sleeping */
-+#define TS_POLLING		0x0004	/* idle task polling need_resched,
-+					   skip sending interrupt */
- #define TS_RESTORE_SIGMASK	0x0008	/* restore signal mask in do_signal() */
- #define TS_XSAVE		0x0010	/* Use xsave/xrstor */
+diff --git a/drivers/acpi/acpi_pad.c b/drivers/acpi/acpi_pad.c
+index 6212213..7edf053 100644
+--- a/drivers/acpi/acpi_pad.c
++++ b/drivers/acpi/acpi_pad.c
+@@ -168,13 +168,6 @@ static int power_saving_thread(void *data)
  
+ 		do_sleep = 0;
+ 
+-		current_thread_info()->status &= ~TS_POLLING;
+-		/*
+-		 * TS_POLLING-cleared state must be visible before we test
+-		 * NEED_RESCHED:
+-		 */
+-		smp_mb();
+-
+ 		expire_time = jiffies + HZ * (100 - idle_pct) / 100;
+ 
+ 		while (!need_resched()) {
+@@ -200,8 +193,6 @@ static int power_saving_thread(void *data)
+ 			}
+ 		}
+ 
+-		current_thread_info()->status |= TS_POLLING;
+-
+ 		/*
+ 		 * current sched_rt has threshold for rt task running time.
+ 		 * When a rt task uses 95% CPU time, the rt thread will be
 -- 
 1.6.0.6
