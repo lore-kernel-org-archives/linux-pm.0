@@ -1,16 +1,15 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
-	driver for select intel processors
-Date: Fri, 28 May 2010 09:46:32 +0200
-Message-ID: <201005280946.32981.trenn__28728.796906262$1275032798$gmane$org@suse.de>
+Subject: Re: idle-test patches queued for upstream
+Date: Fri, 28 May 2010 10:07:34 +0200
+Message-ID: <201005281007.34706.trenn__18033.192624762$1275034073$gmane$org@suse.de>
 References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
-	<201005271053.31087.trenn@suse.de>
-	<alpine.LFD.2.00.1005272131400.24823@localhost.localdomain>
+	<201005271045.33500.trenn@suse.de>
+	<alpine.LFD.2.00.1005272023510.24823@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1005272131400.24823@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1005272023510.24823@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,32 +20,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Len Brown <lenb@kernel.org>
-Cc: sfr@canb.auug.org.au, linux-pm@lists.linux-foundation.org, x86@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 28 May 2010 03:44:16 Len Brown wrote:
-> On Thu, 27 May 2010, Thomas Renninger wrote:
-...
-> > > This driver does not yet know about cpu online/offline
-> > > and thus will not yet play well with cpu-hotplug.
-I thought this is also about soft on/offlining.
+On Friday 28 May 2010 02:59:07 Len Brown wrote:
+> > > ... we think we can do better than ACPI.
 > 
-> > What means does not play well yet, suspend or manually offlining a
-> > core will eventually (for sure?) hang the machine?
+> > Why exactly? Is there any info missing in the ACPI tables?
+> > Or is this just to be more independent from OEMs?
 > 
-> It means less power savings savings than optimal
-> for processors not present at module load time.
-Ok, not really sever...
+> ACPI has a few fundmental flaws here.  One is that it reports
+> exit latency instead of break-even power duration.
+> The other is that it requires a BIOS writer to
+> get the tables right.
+This is a general ACPI problem...
+ 
+> > Using ACPI table based C-states by default and using
+> > intel_idle.enable=1
+> > or similar for workarounds sounds safer.
+> > At least as long as the driver is experimental.
 > 
-> > If this is known broken, should this already be spread through
-> > linux-next?
+> I plan to remove the EXPERIMENTAL in 1 release.
 > 
-> If you know somebody with a system that supports CPU hot-add
-> on one of the processors supported by intel_idle, and they
-> are willing to test linux-next, please have them contact me.
-Real CPU hotplug is broken with acpi processor driver as well,
-eventually it got addressed lately. Anyway, not sever...
+> > Does Windows use ACPI C-state info for idle?
 
-Thanks,
+> Yes, Windows uses ACPI.
+> On the Dell above, that is why Linux consumes 15% less idle power
+> and why Linux can take advantage of turbo mode and Windows can not.
+You always propageted to stay Windows compatible...
+Now we go the untested way.
+Let's see how much machines will break...
+
+Thanks for clarifications,
 
     Thomas
