@@ -1,16 +1,23 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 28 May 2010 18:11:22 -0700
-Message-ID: <AANLkTimM7O_k8KVSfMgsB8b_EKQEz0vpYu6pxjedsTcJ__1295.86930056593$1275095535$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<20100528104415.1403541a@schatten.dmk.lab>
-	<AANLkTikXtk-f41-z8gXfXLNLqgGVa0z4d-qgIvwljbR-@mail.gmail.com>
-	<201005290024.22915.rjw@sisk.pl>
+From: mark gross <640e9920@gmail.com>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Fri, 28 May 2010 19:52:15 -0700
+Message-ID: <20100529025215.GB11600__12805.0955282108$1275101697$gmane$org@gvim.org>
+References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
+	<201005252344.37639.rjw@sisk.pl>
+	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
+	<1274863342.5882.4850.camel@twins>
+	<1274863987.5882.4892.camel@twins>
+	<20100526124929.GA32580@srcf.ucam.org>
+	<1274878665.27810.354.camel@twins>
+	<20100526132051.GA1834@srcf.ucam.org>
+	<20100527172354.43e46cef@notabene.brown>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005290024.22915.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <20100527172354.43e46cef@notabene.brown>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,44 +27,82 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Neil Brown <neilb@suse.de>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, Andi Kleen <ak@linux.intel.com>, tytso@mit.edu, Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-2010/5/28 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Friday 28 May 2010, Arve Hj=F8nnev=E5g wrote:
->> On Fri, May 28, 2010 at 1:44 AM, Florian Mickler <florian@mickler.org> w=
-rote:
->> > On Thu, 27 May 2010 20:05:39 +0200 (CEST)
->> > Thomas Gleixner <tglx@linutronix.de> wrote:
-> ...
->> > To integrate this with the current way of doing things, i gathered it
->> > needs to be implemented as an idle-state that does the suspend()-call?
->> >
->>
->> I think it is better no not confuse this with idle. Since initiating
->> suspend will cause the system to become not-idle, I don't think is is
->> beneficial to initiate suspend from idle.
->
-> It is, if the following two conditions hold simultaneously:
->
-> (a) Doing full system suspend is ultimately going to bring you more energy
-> =A0 =A0savings than the (presumably lowest) idle state you're currently i=
-n.
->
-> (b) You anticipate that the system will stay idle for a considerably long=
- time
-> =A0 =A0such that it's worth suspending.
->
+On Thu, May 27, 2010 at 05:23:54PM +1000, Neil Brown wrote:
+> On Wed, 26 May 2010 14:20:51 +0100
+> Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> 
+> > On Wed, May 26, 2010 at 02:57:45PM +0200, Peter Zijlstra wrote:
+> > 
+> > > I fail to see why. In both cases the woken userspace will contact a
+> > > central governing task, either the kernel or the userspace suspend
+> > > manager, and inform it there is work to be done, and please don't
+> > > suspend now.
+> > 
+> > Thinking about this, you're right - we don't have to wait, but that does 
+> > result in another problem. Imagine we get two wakeup events 
+> > approximately simultaneously. In the kernel-level universe the kernel 
+> > knows when both have been handled. In the user-level universe, we may 
+> > have one task schedule, bump the count, handle the event, drop the count 
+> > and then we attempt a suspend again because the second event handler 
+> > hasn't had an opportunity to run yet. We'll then attempt a suspend and 
+> > immediately bounce back up. That's kind of wasteful, although it'd be 
+> > somewhat mitigated by checking that right at the top of suspend entry 
+> > and returning -EAGAIN or similar.
+> > 
+> 
+> (I'm coming a little late to this party, so excuse me if I say something that
+> has already been covered however...)
+> 
+> The above triggers a sequence of thoughts which (When they settled down) look
+> a bit like this.
+> 
+> At the hardware level, there is a thing that we could call a "suspend
+> blocker".  It is an interrupt (presumably level-triggered) that causes the
+> processor to come out of suspend, or not to go into it.
+> 
+> Maybe it makes sense to export a similar thing from the kernel to user-space.
+> When any event happens that would wake the device (and drivers need to know
+> about these already), it would present something to user-space to say that
+> the event happened.
+> 
+> When user-space processes the event, it clears the event indicator.
 
-I still don't think this matters. If you are waiting for in interrupt
-that cannot wake you up from suspend, then idle is not an indicator
-that it is safe to enter suspend. I also don't think you can avoid any
-user-space suspend blockers by delaying suspend until the system goes
-idle since any page fault could cause it to go idle. Therefore I don't
-see a benefit in delaying suspend until idle when the last suspend
-blocker is released (it would only mask possible race conditions).
+we did I proposed making the suspend enabling a oneshot type of thing
+and all sorts of weak arguments came spewing forth.  I honestly couldn't
+tell if I was reading valid input or fanboy BS.
 
--- =
+--mgross
 
-Arve Hj=F8nnev=E5g
+
+> 
+> When there are no more current event indicators, userspace is allowed to
+> request a suspend.  Obviously this could fail as an event could happen at any
+> moment, but the same is true when the kernel asks the device to suspend, an
+> interrupt might happen immediately to stop it.  But in either case an event
+> will be reported.  So when userspace requests a suspend and it fails, it
+> will see events reported and so will wait for them to be handled.
+> 
+> I imagine a sysfs directory with files that appear when events are pending.
+> We could have some separate mechanism for user-space processes to request
+> that the suspend-daemon not suspend.  Then it suspends whenever there are no
+> pending requests from user-space or from the kernel.
+> 
+> The advantage of this model of suspend-blockers is that it is a close
+> analogue for something that already exists in hardware so it isn't really
+> creating new concepts, just giving the Linux virtual-machine features that
+> have proved themselves in physical machines.
+> 
+> The cost is that any wake-up event needs to not only be handled, but also
+> explicitly acknowledged by clearing the relevant suspend-blocker (i.e.
+> removing the file from sysfs, or whatever interface was ultimately chosen).
+> I'm hoping that isn't a big cost.
+> 
+> NeilBrown
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
