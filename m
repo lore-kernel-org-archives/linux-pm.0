@@ -1,22 +1,17 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Fri, 28 May 2010 21:04:53 -0700
-Message-ID: <AANLkTimVhC3X68uN3krrkkAAAK4a4D5yTK1V8i_x_Vfy__6548.73770331523$1275105955$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
-	<201005252344.37639.rjw@sisk.pl>
-	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
-	<1274863342.5882.4850.camel@twins>
-	<1274863987.5882.4892.camel@twins>
-	<20100526124929.GA32580@srcf.ucam.org>
-	<1274878665.27810.354.camel@twins>
-	<20100526132051.GA1834@srcf.ucam.org>
-	<20100527172354.43e46cef@notabene.brown>
-	<20100529025215.GB11600@gvim.org>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
+	driver for select intel processors
+Date: Sat, 29 May 2010 06:17:19 +0200
+Message-ID: <201005290617.20771.trenn__18730.512870434$1275106670$gmane$org@suse.de>
+References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
+	<201005271053.31087.trenn@suse.de>
+	<alpine.LFD.2.00.1005272131400.24823@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100529025215.GB11600@gvim.org>
+In-Reply-To: <alpine.LFD.2.00.1005272131400.24823@localhost.localdomain>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,76 +21,219 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: Wu Fengguang <fengguang.wu@intel.com>, Andi Kleen <ak@linux.intel.com>, tytso@mit.edu, Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Neil Brown <neilb@suse.de>, Greg KH <gregkh@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+Cc: sfr@canb.auug.org.au, linux-pm@lists.linux-foundation.org, x86@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 28, 2010 at 7:52 PM, mark gross <640e9920@gmail.com> wrote:
-> On Thu, May 27, 2010 at 05:23:54PM +1000, Neil Brown wrote:
->> On Wed, 26 May 2010 14:20:51 +0100
->> Matthew Garrett <mjg59@srcf.ucam.org> wrote:
->>
->> > On Wed, May 26, 2010 at 02:57:45PM +0200, Peter Zijlstra wrote:
->> >
->> > > I fail to see why. In both cases the woken userspace will contact a
->> > > central governing task, either the kernel or the userspace suspend
->> > > manager, and inform it there is work to be done, and please don't
->> > > suspend now.
->> >
->> > Thinking about this, you're right - we don't have to wait, but that do=
-es
->> > result in another problem. Imagine we get two wakeup events
->> > approximately simultaneously. In the kernel-level universe the kernel
->> > knows when both have been handled. In the user-level universe, we may
->> > have one task schedule, bump the count, handle the event, drop the cou=
-nt
->> > and then we attempt a suspend again because the second event handler
->> > hasn't had an opportunity to run yet. We'll then attempt a suspend and
->> > immediately bounce back up. That's kind of wasteful, although it'd be
->> > somewhat mitigated by checking that right at the top of suspend entry
->> > and returning -EAGAIN or similar.
->> >
->>
->> (I'm coming a little late to this party, so excuse me if I say something=
- that
->> has already been covered however...)
->>
->> The above triggers a sequence of thoughts which (When they settled down)=
- look
->> a bit like this.
->>
->> At the hardware level, there is a thing that we could call a "suspend
->> blocker". =A0It is an interrupt (presumably level-triggered) that causes=
- the
->> processor to come out of suspend, or not to go into it.
->>
->> Maybe it makes sense to export a similar thing from the kernel to user-s=
-pace.
->> When any event happens that would wake the device (and drivers need to k=
-now
->> about these already), it would present something to user-space to say th=
-at
->> the event happened.
->>
->> When user-space processes the event, it clears the event indicator.
+On Friday 28 May 2010 03:44:16 am Len Brown wrote:
+> On Thu, 27 May 2010, Thomas Renninger wrote:
+> > On Thursday 27 May 2010 04:42:31 Len Brown wrote:
+...
+> > If this is known broken, should this already be spread through
+> > linux-next?
 >
-> we did I proposed making the suspend enabling a oneshot type of thing
-> and all sorts of weak arguments came spewing forth. =A0I honestly couldn't
-> tell if I was reading valid input or fanboy BS.
->
+> If you know somebody with a system that supports CPU hot-add
+> on one of the processors supported by intel_idle, and they
+> are willing to test linux-next, please have them contact me.
+This was my attempt to fix it.
+There still is an issue, eventually someone sees it,
+but it may give a picture what is missing.
 
-Can you be more specific? If you are talking about only letting
-drivers abort suspend, not block it, then the main argument against
-that is that you are forcing user-space to poll until the driver stops
-aborting suspend (which according to people arguing against us using
-suspend would make the power-manager a "bad" process). Or are you
-talking about blocking the request from user-space until all other
-suspend-blockers have been released and then doing a single suspend
-cycle before returning. This would not be as bad, but it would force
-the user-space power manager to be multi-threaded since it now would
-have way to cancel the request. Either way, what problem are you
-trying to solve by making it a one-shot request?
+        Thomas
 
--- =
-
-Arve Hj=F8nnev=E5g
+diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
+index b5658cd..62cd8a3 100644
+--- a/drivers/acpi/processor_driver.c
++++ b/drivers/acpi/processor_driver.c
+@@ -445,7 +445,28 @@ static int acpi_processor_get_info(struct acpi_device *device)
+ 		    (acpi_processor_hotadd_init(pr->handle, &pr->id))) {
+ 			return -ENODEV;
+ 		}
++		/*
++		 * CPU not initialized yet, the rest of .add must not touch
++		 * (struct cpuinfo_x86) cpu_data(cpu)!
++		 * If it does, move it from .add to init_components to
++		 * get it done, once the cpu got online and set up the
++		 * first time. Also look into the CPU_ONLINE notify code.
++		 */
++		pr->flags.hotplugged_uninitialized = 1;
++	} else {
++		struct cpuinfo_x86 *c;
++		c = &cpu_data(pr->id);
++		/*
++		 * Same as above, but the driver could have been unloaded
++		 * before the cpu got onlined the first time.
++		 */
++		if (c->x86 == 0 && c->x86_model == 0 && c->x86_mask == 0) {
++			printk(KERN_INFO "CPU %d not initialized yet!\n",
++			       pr->id);
++			pr->flags.hotplugged_uninitialized = 1;
++		}
+ 	}
++
+ 	/*
+ 	 * On some boxes several processors use the same processor bus id.
+ 	 * But they are located in different scope. For example:
+@@ -535,16 +556,94 @@ static void acpi_processor_notify(struct acpi_device *device, u32 event)
+ 	return;
+ }
+ 
++/*
++ * Add everything that must be run on the CPU that gets initialized
++ * or that depends on cpu_data(cpu) here.
++ * Otherwise things will break in cpu hotadd case as this info is not
++ * yet available in acpi_processor_add or acpi_processor_get_info()
++ */
++
++static int __cpuinit acpi_processor_init_components(struct acpi_processor *pr)
++{
++	int result = 0;
++	struct acpi_device *device;
++
++	acpi_bus_get_device(pr->handle, &device);
++
++	printk(KERN_INFO "%s - cpu: %d\n", __func__, pr->id);
++
++#ifdef CONFIG_CPU_FREQ
++	acpi_processor_ppc_has_changed(pr, 0);
++#endif
++	acpi_processor_get_throttling_info(pr);
++	acpi_processor_get_limit_info(pr);
++
++
++	acpi_processor_power_init(pr, device);
++
++	pr->cdev = thermal_cooling_device_register("Processor", device,
++						&processor_cooling_ops);
++	if (IS_ERR(pr->cdev)) {
++		result = PTR_ERR(pr->cdev);
++		goto err_power_exit;
++	}
++
++	dev_dbg(&device->dev, "registered as cooling_device%d\n",
++		 pr->cdev->id);
++
++	result = sysfs_create_link(&device->dev.kobj,
++				   &pr->cdev->device.kobj,
++				   "thermal_cooling");
++	if (result) {
++		printk(KERN_ERR PREFIX "Create sysfs link\n");
++		goto err_thermal_unregister;
++	}
++	result = sysfs_create_link(&pr->cdev->device.kobj,
++				   &device->dev.kobj,
++				   "device");
++	if (result) {
++		printk(KERN_ERR PREFIX "Create sysfs link\n");
++		goto err_remove_sysfs;
++	}
++
++	return 0;
++
++err_remove_sysfs:
++	sysfs_remove_link(&device->dev.kobj, "thermal_cooling");
++err_thermal_unregister:
++	thermal_cooling_device_unregister(pr->cdev);
++err_power_exit:
++	acpi_processor_power_exit(pr, device);
++
++	return result;
++}
++
++
+ static int acpi_cpu_soft_notify(struct notifier_block *nfb,
+ 		unsigned long action, void *hcpu)
+ {
+ 	unsigned int cpu = (unsigned long)hcpu;
+ 	struct acpi_processor *pr = per_cpu(processors, cpu);
++	int ret;
+ 
+ 	if (action == CPU_ONLINE && pr) {
+-		acpi_processor_ppc_has_changed(pr, 0);
+-		acpi_processor_cst_has_changed(pr);
+-		acpi_processor_tstate_has_changed(pr);
++		if (pr->flags.hotplugged_uninitialized) {
++			/* We only run into this if a CPU got hotplugged
++			 * and not fully initialized yet in .add
++			 * We have to do it here and only once,
++			 * because in .add cpu_data(cpu) is not set up yet
++			 */
++			acpi_processor_set_pdc(pr);
++			ret = acpi_processor_init_components(pr);
++			printk(KERN_INFO "Do initialize: %d - CPU: %d\n",
++			       ret, pr->id);
++			pr->flags.hotplugged_uninitialized = 0;
++		} else {
++			printk(KERN_INFO "already initialized: %d\n", pr->id);
++			acpi_processor_ppc_has_changed(pr, 0);
++			acpi_processor_cst_has_changed(pr);
++			acpi_processor_tstate_has_changed(pr);
++		}
+ 	}
+ 	return NOTIFY_OK;
+ }
+@@ -608,48 +707,14 @@ static int __cpuinit acpi_processor_add(struct acpi_device *device)
+ 		goto err_remove_fs;
+ 	}
+ 
+-#ifdef CONFIG_CPU_FREQ
+-	acpi_processor_ppc_has_changed(pr, 0);
+-#endif
+-	acpi_processor_get_throttling_info(pr);
+-	acpi_processor_get_limit_info(pr);
+-
+-
+-	acpi_processor_power_init(pr, device);
+-
+-	pr->cdev = thermal_cooling_device_register("Processor", device,
+-						&processor_cooling_ops);
+-	if (IS_ERR(pr->cdev)) {
+-		result = PTR_ERR(pr->cdev);
+-		goto err_power_exit;
+-	}
+-
+-	dev_dbg(&device->dev, "registered as cooling_device%d\n",
+-		 pr->cdev->id);
+-
+-	result = sysfs_create_link(&device->dev.kobj,
+-				   &pr->cdev->device.kobj,
+-				   "thermal_cooling");
+-	if (result) {
+-		printk(KERN_ERR PREFIX "Create sysfs link\n");
+-		goto err_thermal_unregister;
+-	}
+-	result = sysfs_create_link(&pr->cdev->device.kobj,
+-				   &device->dev.kobj,
+-				   "device");
+-	if (result) {
+-		printk(KERN_ERR PREFIX "Create sysfs link\n");
+-		goto err_remove_sysfs;
++	if (!pr->flags.hotplugged_uninitialized) {
++		result = acpi_processor_init_components(pr);
++		if (result)
++			goto err_remove_fs;
+ 	}
+ 
+ 	return 0;
+ 
+-err_remove_sysfs:
+-	sysfs_remove_link(&device->dev.kobj, "thermal_cooling");
+-err_thermal_unregister:
+-	thermal_cooling_device_unregister(pr->cdev);
+-err_power_exit:
+-	acpi_processor_power_exit(pr, device);
+ err_remove_fs:
+ 	acpi_processor_remove_fs(device);
+ err_free_cpumask:
+diff --git a/include/acpi/processor.h b/include/acpi/processor.h
+index 86825dd..e7716ec 100644
+--- a/include/acpi/processor.h
++++ b/include/acpi/processor.h
+@@ -207,6 +207,7 @@ struct acpi_processor_flags {
+ 	u8 has_cst:1;
+ 	u8 power_setup_done:1;
+ 	u8 bm_rld_set:1;
++	u8 hotplugged_uninitialized:1;
+ };
+ 
+ struct acpi_processor {
