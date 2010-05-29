@@ -1,22 +1,17 @@
 From: James Bottomley <James.Bottomley@suse.de>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sat, 29 May 2010 11:10:18 -0500
-Message-ID: <1275149418.4503.128.camel__25653.1355240897$1275149510$gmane$org@mulgrave.site>
-References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
-	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
-	<20100527220949.GB10602@srcf.ucam.org>
-	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
-	<20100527223605.GB11364@srcf.ucam.org>
-	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
-	<20100528043114.GC26177@thunk.org> <1275030704.32462.11.camel@laptop>
-	<AANLkTikEtlbkT4Ws3H2YGt_9QC46B5dr-b1oxJOcG4GN@mail.gmail.com>
-	<1275120618.27810.12699.camel@twins>
+Date: Sat, 29 May 2010 11:19:43 -0500
+Message-ID: <1275149983.4503.138.camel__42156.9981067025$1275150040$gmane$org@mulgrave.site>
+References: <Pine.LNX.4.44L0.1005271344040.3239-100000@iolanthe.rowland.org>
+	<AANLkTimqvMuMpB5E3tj58OtlRc-7mVaec-9EHAegywg7@mail.gmail.com>
+	<1275032623.32462.30.camel@laptop> <201005290011.32543.rjw@sisk.pl>
+	<20100529110426.077cba47@schatten.dmk.lab>
+	<1275129757.27810.13205.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275120618.27810.12699.camel@twins>
+In-Reply-To: <1275129757.27810.13205.camel@twins>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,111 +22,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: tytso@mit.edu, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, felipe.balbi@nokia.com
+Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU2F0LCAyMDEwLTA1LTI5IGF0IDEwOjEwICswMjAwLCBQZXRlciBaaWpsc3RyYSB3cm90ZToK
-PiBPbiBGcmksIDIwMTAtMDUtMjggYXQgMTc6NDMgLTA3MDAsIEFydmUgSGrDuG5uZXbDpWcgd3Jv
-dGU6Cj4gPiBPbiBGcmksIE1heSAyOCwgMjAxMCBhdCAxMjoxMSBBTSwgUGV0ZXIgWmlqbHN0cmEg
-PHBldGVyekBpbmZyYWRlYWQub3JnPiB3cm90ZToKPiA+ID4gT24gRnJpLCAyMDEwLTA1LTI4IGF0
-IDAwOjMxIC0wNDAwLCB0eXRzb0BtaXQuZWR1IHdyb3RlOgo+ID4gPj4gS2VlcCBpbiBtaW5kLCB0
-aG91Z2gsIHRoYXQgYSBzb2x1dGlvbiB3aGljaCBpcyBhY2NlcHRhYmxlIGZvciBBbmRyb2lkCj4g
-PiA+PiBoYXMgdG8gaW5jbHVkZSBtYWtpbmcgc3VyZSB0aGF0IGNyYXBweSBhcHBsaWNhdGlvbnMg
-ZG9uJ3QgY2F1c2UgdGhlCj4gPiA+PiBiYXR0ZXJ5IHRvIGdldCBkcmFpbmVkLiAgVGhlcmUgc2Vl
-bSB0byBiZSBzb21lIHBlb3BsZSB3aG8gc2VlbQo+ID4gPj4gYWRhbWVudGx5IGFnYWluc3QgdGhp
-cyByZXF1aXJlbWVudC4KPiA+ID4KPiA+ID4gQWdhaW4sIEFsYW4sIFRob21hcyBhbmQgbXlzZWxm
-IGRvbid0IGFyZ3VlIGFnYWluc3QgdGhhdCwgd2hhdCB3ZSBkbwo+ID4gPiBob3dldmVyIGFyZ3Vl
-IGFnYWluc3QgaXMgc3VzcGVuZCBydW5uaW5nIGFwcHMgYXMgYSBmb3JtIG9mIHBvd2VyCj4gPiA+
-IG1hbmFnZW1lbnQuCj4gPiA+Cj4gPiAKPiA+IFlvdSBzZWVtIHRvIGFyZ3VlIHRoYXQgYW5kcm9p
-ZCBpcyBub3QgYWxsb3dlZCB0byB1c2Ugc3VzcGVuZCBiZWNhdXNlCj4gPiB0aGUgaGFyZHdhcmUg
-d2UgaGF2ZSBzaGlwcGVkIG9uIGNhbiBlbnRlciB0aGUgc2FtZSBwb3dlciBzdGF0ZSBmcm9tCj4g
-PiBpZGxlLiBGcm9tIG15IHBvaW50IG9mIHZpZXcsIHNpbmNlIHdlIG5lZWQgdG8gc3VwcG9ydCBz
-dXNwZW5kIG9uIHNvbWUKPiA+IGhhcmR3YXJlIHdlIHNob3VsZCBiZSBhbGxvd2VkIHRvIGxldmVy
-YWdlIHRoaXMgc29sdXRpb24gb24gdGhlIGJldHRlcgo+ID4gaGFyZHdhcmUgcGxhdGZvcm1zIGFz
-IHdlbGwgaWYgaXQgaW1wcm92ZXMgb3VyIGJhdHRlcnkgbGlmZS4KPiAKPiBDb3JyZWN0LCBJIHN0
-cm9uZ2x5IG9wcG9zZSB1c2luZyBzdXNwZW5kLiBOb3QgcnVubmluZyBydW5uYWJsZSB0YXNrcyBp
-cwo+IG5vdCBhIHNhbmUgc29sdXRpb24uCgpMb29rLCB0aGlzIGlzIGdldHRpbmcgaW50byB0aGUg
-cmVhbG1zIG9mIGEgcG9pbnRsZXNzIHNlbWFudGljIHF1aWJibGUuClRoZSBwcm9ibGVtIGlzIHRo
-YXQgdW50cnVzdGVkIHRhc2tzIG5lZWQgdG8gYmUgZm9yY2libHkgc3VzcGVuZGVkIHdoZW4KdGhl
-eSBoYXZlIG5vIGxlZ2l0aW1hdGUgd29yayB0byBkbyBhbmQgdGhlIHVzZXIgaGFzbid0IGF1dGhv
-cmlzZWQgdGhlbQp0byBjb250aW51ZSBldmVuIGlmIHRoZSBzY2hlZHVsZXIgc2VlcyB0aGVtIGFz
-IHJ1bm5hYmxlLiAgV2hldGhlciB0aGF0J3MKYWNoaWV2ZWQgYnkgc3VzcGVuZGluZyB0aGUgZW50
-aXJlIHN5c3RlbSBvciBmb3JjaWJseSBpZGxpbmcgdGhlIHRhc2tzCih1c2luZyBibG9ja2luZyBz
-dGF0ZXMgb3IgZnJlZXplcnMgb3Igc29tZXRoaW5nKSBzbyB0aGUgc2NoZWR1bGVyIGNhbgpzdXNw
-ZW5kIGZyb20gaWRsZSBpcyBzb21ldGhpbmcgdG8gYmUgZGlzY3Vzc2VkLCBidXQgdGhlIG5ldCBy
-ZXN1bHQgaXMKdGhhdCB3ZSBoYXZlIHRvIHN0b3AgYSBjZXJ0YWluIHNldCBvZiB0YXNrcyBpbiBz
-dWNoIGEgd2F5IHRoYXQgdGhleSBjYW4Kc3RpbGwgcmVjZWl2ZSBjZXJ0YWluIGV4dGVybmFsIGV2
-ZW50cyAuLi4gc2VtYW50aWNhbGx5LCB0aGlzIGlzCmVxdWl2YWxlbnQgdG8gbm90IHJ1bm5pbmcg
-cnVubmFibGUgdGFza3MgaW4gbXkgYm9vay4gKFBlcmhhcHMgdGhpcyB3aG9sZQp0aGluZyBpcyBi
-ZWNhdXNlIHRoZSB3b3JkIHJ1bm5hYmxlIG1lYW5zIGRpZmZlcmVudCB0aGluZ3MgLi4uIEknbQp0
-aGlua2luZyBhIHRhc2sgdGhhdCB3b3VsZCBjb25zdW1lIHBvd2VyIC4uLiBhcmUgeW91IHRoaW5r
-aW5nIGluIHRoZQpzY2hlZHVsZXIgUiBzdGF0ZT8pCgpSZWFsaXN0aWNhbGx5LCB0aGUgbWFpbiB0
-aGluZyB3ZSBuZWVkIHRvIGRvIGlzIHN0b3AgdGltZXJzIHBvc3RlZAphZ2FpbnN0IHRoZSB0YXNr
-ICh3aGljaCBpcyBsaWtlbHkgcG9sbGluZyBpbiBhIG1haW4gbG9vcCwgdGhhdCBiZWluZyB0aGUK
-dXN1YWwgZm9ybSBvZiBlYXN5IHRvIHdyaXRlIGJ1dCBwb3dlciBjcmF6eSBhcHAgYmVoYXZpb3Vy
-KSBmcm9tIHdha2luZwp0aGUgdGFzayBhbmQgYnJpbmdpbmcgdGhlIHN5c3RlbSBvdXQgb2Ygc3Vz
-cGVuZCAod2hldGhlciBmcm9tIGlkbGUgb3IKZm9yY2VkKS4KCj4gSWYgY3VycmVudCBoYXJkd2Fy
-ZSBjYW4ndCBjb3BlLCB0b28gZnJpZ2dpbiBiYWQsIGdldCBiZXR0ZXIgaGFyZHdhcmUuCj4gCj4g
-QnV0IHRoZSB0cnV0aCBpcywgYWxsIHlvdXIgT01BUCBwaG9uZXMgcmVhbGx5IGNhbiBkZWFsIHdp
-dGggaXQuCgpUaGF0J3MgcnViYmlzaCBhbmQgeW91IGtub3cgaXQuICBXZSBkbyBzb2Z0d2FyZSB3
-b3JrYXJvdW5kcyBmb3IgaGFyZHdhcmUKcHJvYmxlbXMgYWxsIHRoZSB0aW1lIC4uLiB0cnkgZG9p
-bmcgYSBnaXQgZ3JlcCAtaSBlcnJhdGEgaW4gYXJjaCB4ODYsIG9yCmltYWdpbmUgYSBVU0Igc3Vi
-c3lzdGVtIHRoYXQgb25seSBzdXBwb3J0ZWQgc2FuZSBzdGFuZGFyZHMgY29uZm9ybWluZwpkZXZp
-Y2VzOiB0aGF0IHdvdWxkIGhhdmUgYW4gYWxtb3N0IHplcm8gaW50ZXJzZWN0IHdpdGggdGhlIGN1
-cnJlbnQgVVNCCmRldmljZSBtYXJrZXQuCgpUaGUgam9iIG9mIHRoZSBrZXJuZWwgaXMgdG8gYWNj
-b21tb2RhdGUgaGFyZHdhcmUgYXMgYmVzdCBpdCBjYW4gLi4uCnNvbWV0aW1lcyBpdCBtaWdodCBu
-b3QgYmUgYWJsZSB0bywgYnV0IG1vc3Qgb2YgdGhlIHRpbWUgaXQgZG9lcyBhIHByZXR0eQpnb29k
-IGpvYi4KClRoZSBmYWN0cyBhcmUgdGhhdCBDIHN0YXRlcyBhbmQgUyBzdGF0ZXMgYXJlIGRpZmZl
-cmVudCBhbmQgYXJlIGVudGVyZWQKZGlmZmVyZW50bHkuICBGb3Igc29tZSBvbWFwIGhhcmR3YXJl
-LCB0aGUgcG93ZXIgY29uc3VtcHRpb24gaW4gdGhlCmxvd2VzdCBDIHN0YXRlICh3aXRoIGFsbCB0
-aGUgYW5jaWxsYXJ5IHBvd2VyIGNvbnRyb2wpIGlzIHRoZSBzYW1lIGFzIFMzLAp0aGF0J3MgZmlu
-ZSwgc3VzcGVuZCBmcm9tIGlkbGUgd29ya3MgYXMgd2VsbCBhcyBzdXNwZW5kIHRvIHJhbSBtb2R1
-bG8KYmFkIGFwcHMuIEZvciBxdWl0ZSBhIGxvdCBvZiBNU00gaGFyZHdhcmUsIHRoZSBsb3dlc3Qg
-QyBzdGF0ZSBwb3dlcgpjb25zdW1wdGlvbiBpcyBxdWl0ZSBhIGJpdCBhYm92ZSBTMy4gIEl0J3Mg
-bm90IGFjY2VwdGFibGUgdG8gdGVsbCB0aG9zZQpwZW9wbGUgInRvdWdoLCB5b3VyIGJhdHRlcnkg
-cnVucyBvdXQgaW4gMzAgbWludXRlcyBiZWNhdXNlIHlvdSBib3VnaHQKdGhlIHdyb25nIGhhcmR3
-YXJlIi4gIFdlIGhhdmUgdG8gZmlndXJlIG91dCBob3cgdG8gZ2V0IHRvIFMzIC4uLiB3aGV0aGVy
-CnRoaXMgaXMgZnJvbSBpZGxlIG9yIHNvbWUgb3RoZXIgbWVjaGFuaXNtIGlzIGFnYWluIGEgZGlz
-Y3Vzc2lvbiBwb2ludCwKYnV0IG5vdCBkb2luZyBpdCBpcyBub3QgYW4gb3B0aW9uLgoKPiA+IEkg
-aGF2ZSBub3Qgc2VlbiBhbnkgc3VnZ2VzdGlvbnMgZm9yIGhvdyB0byBkZWFsIHdpdGggYWxsIG91
-cgo+ID4gaW50ZXJwcm9jZXNzIGRlcGVuZGVuY2llcyB3aGVuIHBhdXNpbmcgYSBzdWJzZXQgb2Yg
-cHJvY2Vzc2VzLiBXaXRob3V0Cj4gPiBhIHNvbHV0aW9uIHRvIHRoYXQgd2UgY2FuIG9ubHkgcGF1
-c2UgYSBzdWJzZXQgb2YgdGhlIHByb2Nlc3NlcyB3ZSB3YW50Cj4gPiB0byBwYXVzZS4KPiAKPiBE
-byBub3QgJ3BhdXNlJyBwcm9jZXNzZXMgYW5kIHlvdSBkb24ndCBoYXZlIHRoZSBwcm9ibGVtLCBt
-YWtlIHRoZW0gc3RvcAo+IG9uIHRoZWlyIG93biBhY2NvcmQgb3Iga2lsbCB0aGVtIGlmIHRoZXkg
-ZG9udCBsaXN0ZW4uLiB3aG8gY2FyZXMgYWJvdXQKPiBpbGwtYmVoYXZlZCBhcHBzIGFueXdheT8K
-PiAKPiBCdXQgcmVhbGx5LCBpZiB5b3Ugd2FudCBhIG1vcmUgZGV0YWlsZWQgYW5zd2VyLCB5b3Ug
-bmVlZCB0byBwcm92aWRlIG1vcmUKPiBkZXRhaWwgb24gdGhlc2UgcHJvYmxlbXMuCj4gCj4gSWYg
-eW91IHdhbnQgdG8gYWxsb3cgYW4gdW50cnVzdGVkIGFwcCB0byBwcm92aWRlIGEgZGVwZW5kZW5j
-eSBmb3IgYQo+IHRydXN0ZWQgYXBwLCB5b3UndmUgbG9zdCBhbmQgSSBkb24ndCBjYXJlLgo+IAo+
-IFRydXN0ZWQgYXBwcyBzaG91bGQgYmUgd2VsbCBiZWhhdmVkLCBvdGhlcndpc2UgdGhlcmUgcmVh
-bGx5IGlzIG5vIHBvaW50Lgo+IAo+ID4gVGhlc2Ugc29sdXRpb25zIGRvIG5vdCBhbGxvdyB1cyB0
-byB1c2Ugc3VzcGVuZC4gVGhleSBtYXkgZ2V0IHVzIGNsb3Nlcgo+ID4gdG8gdGhlIHBvd2VyIGNv
-bnN1bXB0aW9uIHdlIGdldCBmcm9tIHN1c3BlbmQgb24gdGhlIGdvb2QgaGFyZHdhcmUgb3IKPiA+
-IGV2ZW4gc3VycGFzcyBpdCwgYnV0IHdlIHN0aWxsIG5lZWQgc3VzcGVuZCBvbiBzb21lIGhhcmR3
-YXJlLCBhbmQgd2UKPiA+IHdvdWxkIGdldCBldmVudCBiZXR0ZXIgcmVzdWx0cyBieSB1c2luZyB0
-aGVzZSBzb2x1dGlvbnMgaW4gYWRkaXRpb24gdG8KPiA+IHN1c3BlbmQgY29tcGFyZWQgdG8gdXNp
-bmcgdGhlbSBpbnN0ZWFkIG9mIHN1c3BlbmQuCj4gCj4gTm90IHVzaW5nIHN1c3BlbmQgaXMgZXhh
-Y3RseSB0aGUgcG9pbnQuIEFzIEFsYW4gaGFzIGFyZ3VlZCwgcHJvcGFnYXRpbmcKPiBzdXNwZW5k
-IGJsb2NrZXJzIHVwIGludG8gYWxsIHJlZ2lvbnMgb2YgdXNlcnNwYWNlIHdpbGwgdGFrZSBtdWNo
-IGxvbmdlcgo+IHRoYW4gZml4aW5nIHRoZSBoYXJkd2FyZS4KClN0cmFuZ2UsIHRoYXQncyBub3Qg
-d2hhdCBJIGhlYXJkIGFzIHRoZSBwb3NzaWJsZSBzb2x1dGlvbi4gIEkgdGhvdWdodCBoZQp3YXMg
-YWR2b2NhdGluZyBleHByZXNzaW5nIHRoZSBrZXJuZWwgc2lkZSBvZiBzdXNwZW5kIGJsb2NrZXJz
-IGFzIFFvUwpjb25zdHJhaW50cy4gIE9uY2Ugd2UgaGF2ZSBRb1MgY29uc3RyYWludHMgY29ycmVj
-dGx5IGRvbmUgaW4gdGhlIGtlcm5lbCwKdXNlcnNwYWNlIHN0aWxsIGhhcyB0byBleHByZXNzIGl0
-cyByZXF1aXJlbWVudHMuICBJZiB0aGUgcmVxdWlyZW1lbnRzCmFyZSBzdGF0aWMsIHRoZW4gdGhl
-eSBjYW4gYmUgZG9uZSBmcm9tIHBvbGljeSBmaWxlcyBvciBpbiBzb21lIG90aGVyCnN0YXRpYyB3
-YXkgYnV0IGlmIHRoZXkncmUgZHluYW1pYywgdGhleSdsbCBzdGlsbCBoYXZlIHRvIGJlIGluIHRo
-ZQphcHBsaWNhdGlvbnMgLi4uIGluIGFib3V0IHRoZSBzYW1lIHBsYWNlcyB0aGUgYW5kcm9pZCB3
-YWtlbG9ja3MgYXJlLgoKPiBZb3UgZ290IHRvIHJlYWxpemUgdGhpcyBpcyBhYm91dCBMaW51eCBh
-cyBhIHdob2xlLCBJIHJlYWxseSBkb24ndCBjYXJlCj4gb25lIHdoaXQgYWJvdXQgdGhlIHNwZWNp
-ZmljIEFuZHJvaWQgY2FzZS4gV2Ugd2FudCBhIHNvbHV0aW9uIHRoYXQgaXMKPiBnZW5lcmljIGVu
-b3VnaCB0byBzb2x2ZSB0aGUgcG93ZXIgY29uc3VtcHRpb24gcHJvYmxlbSBhbmQgbWFrZXMgc2Vu
-c2Ugb24KPiBmdXR1cmUgaGFyZHdhcmUuCgpJIGRvbid0IHRoaW5rIGFueW9uZSBkaXNhZ3JlZXMg
-d2l0aCB0aGlzLiBBcyBsb25nIGFzIHdlIGZpbmQgYSBsb25nIHRlcm0Kc29sdXRpb24gdGhhdCBz
-YXRpc2ZpZXMgdGhlIGFuZHJvaWQgY2FzZSwgZXZlcnlvbmUgd2lsbCBiZSBoYXBweS4KCj4gVGhl
-IG9ubHkgYWJzdHJhY3Rpb24gdGhhdCByZWFsbHkgbWFrZXMgc2Vuc2UgaW4gdGhhdCB2aWV3IGlz
-IGlkbGUKPiBzdGF0ZXMuCgpKYW1lcwoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51
-eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxt
-YW4vbGlzdGluZm8vbGludXgtcG0=
+On Sat, 2010-05-29 at 12:42 +0200, Peter Zijlstra wrote:
+> On Sat, 2010-05-29 at 11:04 +0200, Florian Mickler wrote:
+> > On Sat, 29 May 2010 00:11:32 +0200
+> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > 
+> > > 
+> > > Having reconsidered the suspend blockers idea I came to the conclusion that
+> > > in fact it was a workaround for three different problems.
+> > 
+> > But it is also a change of paradigm. The scheduler should strive to
+> > have the system idle as long as possible to conserve battery. And
+> > everything that does not serve the purpose of the device has to be
+> > considered as not worth running, except if there are other
+> > purpose-fullfilling tasks to run anyway.
+> 
+> No the purpose of the scheduler is to run tasks when they are runnable.
+> Not to second guess whatever caused them to become runnable.
+
+I still think there is a semantic issue here ... see other email.
+
+> If you start to randomly not run tasks, the inversion chaos that ensues
+> is terrible.
+
+As a sweeping statement, I disagree because you're explicitly saying we
+can't solve the actual problem.  If you're saying the scheduler
+shouldn't do this and something external has to make the tasks idle
+somehow first, I agree.
+
+>  You can apply the regular means of alleviating that and
+> that entails adding *-inheritance to all blockable resources. The -rt
+> patch set is doing that in part.
+
+So as a mechanism for idling tasks, this looks possible.  I don't like
+it from a theoretical viewpoint because it can't idle cpu bound tasks.
+I'd like a solution that solved all of the problem, not just all except
+stuff we think probably won't happen on a phone because experience tells
+me that partial solutions eventually turn up gotchas down the road.
+
+> You really need to make applications not want to run and block on their
+> own volition (in a resource free point) and otherwise make them block on
+> something forcefully and disregard any malfunctioning that would result
+> from that, and in extreme cases terminate (releasing all resources).
+> 
+> But really Android shouldn't even need kernel support to do all this,
+> since its hosted on this massive middle-ware that intercepts everything,
+> called a Java Virtual Machine.
+
+The timers for a polling main loop have to be stopped ... this isn't
+possible with the current interface today, therefore we have to have
+kernel changes in some form.
+
+> Now, all I'm interested in is providing interfaces from the kernel where
+> needed, so that userspace can be optimally frugal with power usage, and
+> can monitor/contain badly behaving tasks.
+
+So, that sounds like the goal of just about everyone on the thread.
+
+> If Android is so set in its ways that they don't want to adopt (like
+> saying Android requires suspend for power management) then they can go
+> their own merry way and I'm not interested anymore (it would be a shame
+> though).
+
+They haven't actually said this.  They've said they've implemented
+opportunistic suspend because it solves two problems: power savings for
+devices whose C states don't go as low as S3 and forced idling of tasks.
+Their main goal is extending battery life per charge, and what I've
+heard them say is any solution that does this is fine ... as long as the
+life per charge is as good as (or preferably better than) their current
+implementation ... I don't think that's unreasonable, and I think it
+might be achievable with some of the ideas in this thread.
+
+James
