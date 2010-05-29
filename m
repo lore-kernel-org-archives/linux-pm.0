@@ -1,13 +1,15 @@
-From: mark gross <640e9920@gmail.com>
-Subject: [patch] complain when users abuse the pm_qos API
-Date: Fri, 28 May 2010 21:50:27 -0700
-Message-ID: <20100529045027.GE11600__33421.526689972$1275108665$gmane$org@gvim.org>
-Reply-To: markgross@thegnar.org
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Sat, 29 May 2010 09:53:37 +0200
+Message-ID: <1275119617.27810.12634.camel__45250.2939886928$1275119762$gmane$org@twins>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<1275052817.1645.64.camel@laptop> <1275058794.27810.9571.camel@twins>
+	<201005282344.49892.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <201005282344.49892.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,41 +20,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-The following patch is to help clean up API abusers of pm_qos where
-they call update_request before registering a request.
+On Fri, 2010-05-28 at 23:44 +0200, Rafael J. Wysocki wrote:
+> Consider updatedb or another file indexing ... thing on a laptop.  I certainly
+> don't want anything like this to run and drain my battery, even if it has
+> already been started when the machine was on AC power.  Now, of course,
+> I can kill it, but for that I need to notice that it's running and it presumably
+> might have done some job already and it would be wasteful to lose it.
+> It would be quite nice if that app was not regarded as runnable when the
+> system was on battery power. 
 
---mgross
+How will a ionice on steriods that will defer servicing IO when the IO
+system QoS limit doesn't meet the updatedb process's level is too low,
+not solve this?
 
---Signed-off-by: markgross <markgross@thegnar.org>
-
-
->From a0813007ddc7b72cb3da7a533fefba9889aab1d8 Mon Sep 17 00:00:00 2001
-From: mgross <mgross@mgross-desktop.(none)>
-Date: Fri, 28 May 2010 21:36:06 -0700
-Subject: [PATCH] complain when users abuse the pm_qos API by updating a request that
- isn't registered yet.
-
----
- kernel/pm_qos_params.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-index f42d3f7..8e55bf1 100644
---- a/kernel/pm_qos_params.c
-+++ b/kernel/pm_qos_params.c
-@@ -266,6 +266,10 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
- 		spin_unlock_irqrestore(&pm_qos_lock, flags);
- 		if (pending_update)
- 			update_target(pm_qos_req->pm_qos_class);
-+	} else {
-+		WARN(true, "pm_qos: updating an unregistered request "
-+				"does nothing");
-+		dump_stack();
- 	}
- }
- EXPORT_SYMBOL_GPL(pm_qos_update_request);
--- 
-1.7.0.4
+In that case the updatedb process will simply block on IO, will hence
+not be runnable and thus not drain your battery.
