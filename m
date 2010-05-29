@@ -1,7 +1,7 @@
-From: Vitaly Wool <vitalywool@gmail.com>
+From: Florian Mickler <florian@mickler.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sat, 29 May 2010 10:43:53 +0200
-Message-ID: <AANLkTimKI1G9qEKwpMOFvoWa5Qa__GcXGooE2_ZfmEHx__2598.88717341727$1275122779$gmane$org@mail.gmail.com>
+Date: Sat, 29 May 2010 10:56:55 +0200
+Message-ID: <20100529105655.484f516a__27080.223177518$1275123481$gmane$org@schatten.dmk.lab>
 References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
 	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
 	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
@@ -13,11 +13,16 @@ References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
 	<20100528103713.0a7952d9@lxorguk.ukuu.org.uk>
 	<20100528114123.GA22947@srcf.ucam.org> <4BFFB681.1000105@nokia.com>
 	<AANLkTim04ZfMcPHRB2D_bqcAuguaGwySH2b6repuYLkk@mail.gmail.com>
+	<4BFFC5DF.5030504@nokia.com>
+	<AANLkTikKGeGHHL6AYC7uBuT7Zihj7lozfidWQ8zRHwab@mail.gmail.com>
+	<4BFFCF39.3010507@nokia.com>
+	<AANLkTinyh1YLmL6miVAxvkh9RMYDY5JChA-_f7oN0zvb@mail.gmail.com>
+	<20100529102819.21732783@schatten.dmk.lab>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTim04ZfMcPHRB2D_bqcAuguaGwySH2b6repuYLkk@mail.gmail.com>
+In-Reply-To: <20100529102819.21732783@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,21 +32,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: "tytso@mit.edu" <tytso@mit.edu>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Thomas Gleixner <tglx@linutronix.de>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Florian Mickler <florian@mickler.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, ext Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, LKML <linux-kernel@vger.kernel.org>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>, ext@smtp1.linux-foundation.org, "tytso@mit.edu" <tytso@mit.edu>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 28, 2010 at 2:52 PM, Brian Swetland <swetland@google.com> wrote:
-> I am quite willing to state that on both MSM and OMAP based Android
-> platforms, we've found that the suspend blocker model allows us to
-> obtain a lower average power draw than if we don't use it -- Mike Chan
-> provided some numbers earlier in another thread in the trivial device
-> idle case, the win is of course much larger in the case of several
-> poorly behaved apps being active.
+On Sat, 29 May 2010 10:28:19 +0200
+Florian Mickler <florian@mickler.org> wrote:
 
-Without the clear description of the experiments, that statement
-proves just nothing other than your applications work better with your
-model, but I would expect that to be so without any experiments at
-all.
+> On Sat, 29 May 2010 02:42:35 +0300
+> Felipe Contreras <felipe.contreras@gmail.com> wrote:
+> =
 
-~Vitaly
+> > On Fri, May 28, 2010 at 5:12 PM, Igor Stoppa <igor.stoppa@nokia.com> wr=
+ote:
+> > > ext Brian Swetland wrote:
+> > >> How is it flawed? =A0Serious question.
+> > >
+> > > I would avoid repeating all the good arguments given so far, but to m=
+ake it
+> > > short:
+> > >
+> > > * I believe runtime PM is a much better starting point (at least for =
+the
+> > > type of HW targeted at mobile devices) because it mimics an always-on=
+ system
+> > > toward userspace, which requires less disruption in the way apps are
+> > > designed
+> > =
+
+> > I agree.
+> > =
+
+> > If I understand correctly, if we have a perfect user-space that only
+> > does work when strictly needed and trying to do it in bursts, then we
+> > would be reaching the lowest power state, and there would be no need
+> > for suspend. The problem is that Android's user-space is pretty far
+> > from that, so they said "let's segregate user-space and go to lower
+> > power mode anyway".
+> =
+
+> This has already been mentioned (who knew?): Android doesn't
+> want to depend on userspace for this.
+
+there is an implicit "all of userspace" in there, btw.. =
+
+
+> =
+
+> Cheers,
+> Flo
