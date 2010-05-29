@@ -1,7 +1,7 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sat, 29 May 2010 20:12:16 +0200
-Message-ID: <1275156736.1645.498.camel__5510.66405973888$1275323717$gmane$org@laptop>
+Date: Sat, 29 May 2010 20:12:14 +0200
+Message-ID: <1275156734.1645.496.camel__33360.4155960076$1275323721$gmane$org@laptop>
 References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
 	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
 	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
@@ -32,11 +32,54 @@ Cc: tytso@mit.edu, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian
 List-Id: linux-pm@vger.kernel.org
 
 On Sat, 2010-05-29 at 11:10 -0500, James Bottomley wrote:
-> > Not using suspend is exactly the point. As Alan has argued, propagating
-> > suspend blockers up into all regions of userspace will take much longer
-> > than fixing the hardware.
+> > Correct, I strongly oppose using suspend. Not running runnable tasks is
+> > not a sane solution.
 > 
-> Strange, that's not what I heard as the possible solution.  
+> Look, this is getting into the realms of a pointless semantic quibble.
+> The problem is that untrusted tasks need to be forcibly suspended when
+> they have no legitimate work to do and the user hasn't authorised them
+> to continue even if the scheduler sees them as runnable.  Whether that's
+> achieved by suspending the entire system or forcibly idling the tasks
+> (using blocking states or freezers or something) so the scheduler can
+> suspend from idle is something to be discussed,
 
-<20100527232043.784d5c72@lxorguk.ukuu.org.uk>
-<20100528101755.7b5f6b8a@lxorguk.ukuu.org.uk>
+So what happens if you task is CPU bound and gets suspended and is
+holding a resource (lock, whatever) that is required by someone else
+that didn't get suspended?
+
+That's the classic inversion problem, and is caused by not running
+runnable tasks.
+
+>  but the net result is
+> that we have to stop a certain set of tasks in such a way that they can
+> still receive certain external events ... semantically, this is
+> equivalent to not running runnable tasks in my book.
+
+Why would be care about external events? Clearly these apps are ill
+behaved, otherwise they would have listened to the environment telling
+them to idle.
+
+Why would you try to let buggy apps work as intended instead of break
+them as hard as possible? Such policy promotes crappy code since people
+get away with it.
+
+>  (Perhaps this whole
+> thing is because the word runnable means different things ... I'm
+> thinking a task that would consume power ... are you thinking in the
+> scheduler R state?)
+
+Clearly I mean TASK_RUNNABLE, if not that the scheduler doesn't care.
+
+> Realistically, the main thing we need to do is stop timers posted
+> against the task (which is likely polling in a main loop, that being the
+> usual form of easy to write but power crazy app behaviour) from waking
+> the task and bringing the system out of suspend (whether from idle or
+> forced).
+
+Sure, that same main loop will probably receive a message along the
+lines of, 'hey, screen is off, we ought to go sleep'. If after that it
+doesn't listen, and more serious messages don't get responded to, simply
+kill the thing.
+
+Again, there is no reason what so ever to tolerate broken apps, it only
+promotes crappy apps.
