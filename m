@@ -1,20 +1,21 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 8/8] intel_idle: create a native cpuidle
- driver for select intel processors
-Date: Fri, 28 May 2010 17:38:52 -0700
-Message-ID: <20100528173852.0b8389df__35803.3685516149$1275093453$gmane$org@infradead.org>
-References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
-	<e099975ca65a7f6ac7f8bc3fee84d3e03893aa31.1274926772.git.len.brown@intel.com>
-	<198450ec1600d9a7f55270dd4d44d6b55bc5b184.1274926772.git.len.brown@intel.com>
-	<87ljb5l9d5.fsf@deeprootsystems.com>
-	<20100527072207.2e783b1e@infradead.org> <4BFE86D4.60602@nokia.com>
-	<20100527201439.6d0fd169@infradead.org>
-	<1275067652.4507.192.camel@localhost>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Fri, 28 May 2010 17:43:12 -0700
+Message-ID: <AANLkTikEtlbkT4Ws3H2YGt_9QC46B5dr-b1oxJOcG4GN__23538.2438092076$1275093841$gmane$org@mail.gmail.com>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
+	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
+	<20100527220949.GB10602@srcf.ucam.org>
+	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<20100527223605.GB11364@srcf.ucam.org>
+	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
+	<20100528043114.GC26177@thunk.org>
+	<1275030704.32462.11.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275067652.4507.192.camel@localhost>
+In-Reply-To: <1275030704.32462.11.camel@laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,42 +25,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: "Len@smtp1.linux-foundation.org" <Len@smtp1.linux-foundation.org>, Brown <len.brown@intel.com>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: tytso@mit.edu, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 28 May 2010 10:27:32 -0700
-Kevin Hilman <khilman@deeprootsystems.com> wrote:
+On Fri, May 28, 2010 at 12:11 AM, Peter Zijlstra <peterz@infradead.org> wro=
+te:
+> On Fri, 2010-05-28 at 00:31 -0400, tytso@mit.edu wrote:
+>> Keep in mind, though, that a solution which is acceptable for Android
+>> has to include making sure that crappy applications don't cause the
+>> battery to get drained. =A0There seem to be some people who seem
+>> adamently against this requirement.
+>
+> Again, Alan, Thomas and myself don't argue against that, what we do
+> however argue against is suspend running apps as a form of power
+> management.
+>
 
-> On Thu, 2010-05-27 at 20:14 -0700, Arjan van de Ven wrote:
-> > On Thu, 27 May 2010 17:51:00 +0300
-> > Igor Stoppa <igor.stoppa@nokia.com> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > 
-> > > ext Arjan van de Ven wrote:
-> > > 
-> > > > it's really inconvenient to have such drivers hidden in the
-> > > > architecture code; it's much more convenient for cpuidle
-> > > > developers if they're all in one place.
-> > > >   
-> > > 
-> > > why?
-> > 
-> > because you have all the users of your API in one place.
-> > 
-> 
-> That's a rather x86-centric definition of "all".
-> 
-> Are you suggesting we move all the embedded SoC specific CPUidle
-> drivers to drivers/idle as well?
+You seem to argue that android is not allowed to use suspend because
+the hardware we have shipped on can enter the same power state from
+idle. From my point of view, since we need to support suspend on some
+hardware we should be allowed to leverage this solution on the better
+hardware platforms as well if it improves our battery life.
 
-yes.
+> If you were to read Alan's latest posts he clearly outlines how you can
+> contain crappy apps.
+>
 
+I have not seen any suggestions for how to deal with all our
+interprocess dependencies when pausing a subset of processes. Without
+a solution to that we can only pause a subset of the processes we want
+to pause.
 
+> A combination of weakening QoS guarantees (delaying wakeups etc.)
+> blocking on resources (delay servicing requests) and monitoring resource
+> usage (despite all that its still not idle) and taking affirmative
+> action (shoot it in the head).
+>
+> If we pose that a well behaved application is one that listens to the
+> environment hints and idles when told to, we can let regular power
+> management kick in and let deep idle states do their thing.
+>
+> If a bad application ignores those hints and manages to avoid getting
+> blocked on denied resources, we can easily spot it and promote an
+> attitude of violence toward it in the form of SIGXCPU, SIGSTOP, SIGTERM
+> and SIGKILL, possibly coupled with a pop-up dialog -- much like we get
+> today when we try to close a window and the app isn't responding.
+>
+> If we then also let the environment maintain a shitlist of crappy apps
+> (those it had to take affirmative action against) and maybe set up a
+> service that allows people to share their results, it provides an
+> incentive to the app developers to fix their thing.
+>
+> How is this not working?
+>
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+These solutions do not allow us to use suspend. They may get us closer
+to the power consumption we get from suspend on the good hardware or
+even surpass it, but we still need suspend on some hardware, and we
+would get event better results by using these solutions in addition to
+suspend compared to using them instead of suspend.
+
+-- =
+
+Arve Hj=F8nnev=E5g
