@@ -1,7 +1,7 @@
-From: Peter Zijlstra <peterz@infradead.org>
+From: Florian Mickler <florian@mickler.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sat, 29 May 2010 10:10:18 +0200
-Message-ID: <1275120618.27810.12699.camel__14566.247459925$1275120661$gmane$org@twins>
+Date: Sat, 29 May 2010 10:28:19 +0200
+Message-ID: <20100529102819.21732783__7389.2030436129$1275121759$gmane$org@schatten.dmk.lab>
 References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
 	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
 	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
@@ -9,13 +9,19 @@ References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
 	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
 	<20100527223605.GB11364@srcf.ucam.org>
 	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
-	<20100528043114.GC26177@thunk.org> <1275030704.32462.11.camel@laptop>
-	<AANLkTikEtlbkT4Ws3H2YGt_9QC46B5dr-b1oxJOcG4GN@mail.gmail.com>
+	<20100528043114.GC26177@thunk.org>
+	<20100528103713.0a7952d9@lxorguk.ukuu.org.uk>
+	<20100528114123.GA22947@srcf.ucam.org> <4BFFB681.1000105@nokia.com>
+	<AANLkTim04ZfMcPHRB2D_bqcAuguaGwySH2b6repuYLkk@mail.gmail.com>
+	<4BFFC5DF.5030504@nokia.com>
+	<AANLkTikKGeGHHL6AYC7uBuT7Zihj7lozfidWQ8zRHwab@mail.gmail.com>
+	<4BFFCF39.3010507@nokia.com>
+	<AANLkTinyh1YLmL6miVAxvkh9RMYDY5JChA-_f7oN0zvb@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikEtlbkT4Ws3H2YGt_9QC46B5dr-b1oxJOcG4GN@mail.gmail.com>
+In-Reply-To: <AANLkTinyh1YLmL6miVAxvkh9RMYDY5JChA-_f7oN0zvb@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,58 +31,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: tytso@mit.edu, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, ext Brian Swetland <swetland@google.com>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, "tytso@mit.edu" <tytso@mit.edu>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCAyMDEwLTA1LTI4IGF0IDE3OjQzIC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
-Ogo+IE9uIEZyaSwgTWF5IDI4LCAyMDEwIGF0IDEyOjExIEFNLCBQZXRlciBaaWpsc3RyYSA8cGV0
-ZXJ6QGluZnJhZGVhZC5vcmc+IHdyb3RlOgo+ID4gT24gRnJpLCAyMDEwLTA1LTI4IGF0IDAwOjMx
-IC0wNDAwLCB0eXRzb0BtaXQuZWR1IHdyb3RlOgo+ID4+IEtlZXAgaW4gbWluZCwgdGhvdWdoLCB0
-aGF0IGEgc29sdXRpb24gd2hpY2ggaXMgYWNjZXB0YWJsZSBmb3IgQW5kcm9pZAo+ID4+IGhhcyB0
-byBpbmNsdWRlIG1ha2luZyBzdXJlIHRoYXQgY3JhcHB5IGFwcGxpY2F0aW9ucyBkb24ndCBjYXVz
-ZSB0aGUKPiA+PiBiYXR0ZXJ5IHRvIGdldCBkcmFpbmVkLiAgVGhlcmUgc2VlbSB0byBiZSBzb21l
-IHBlb3BsZSB3aG8gc2VlbQo+ID4+IGFkYW1lbnRseSBhZ2FpbnN0IHRoaXMgcmVxdWlyZW1lbnQu
-Cj4gPgo+ID4gQWdhaW4sIEFsYW4sIFRob21hcyBhbmQgbXlzZWxmIGRvbid0IGFyZ3VlIGFnYWlu
-c3QgdGhhdCwgd2hhdCB3ZSBkbwo+ID4gaG93ZXZlciBhcmd1ZSBhZ2FpbnN0IGlzIHN1c3BlbmQg
-cnVubmluZyBhcHBzIGFzIGEgZm9ybSBvZiBwb3dlcgo+ID4gbWFuYWdlbWVudC4KPiA+Cj4gCj4g
-WW91IHNlZW0gdG8gYXJndWUgdGhhdCBhbmRyb2lkIGlzIG5vdCBhbGxvd2VkIHRvIHVzZSBzdXNw
-ZW5kIGJlY2F1c2UKPiB0aGUgaGFyZHdhcmUgd2UgaGF2ZSBzaGlwcGVkIG9uIGNhbiBlbnRlciB0
-aGUgc2FtZSBwb3dlciBzdGF0ZSBmcm9tCj4gaWRsZS4gRnJvbSBteSBwb2ludCBvZiB2aWV3LCBz
-aW5jZSB3ZSBuZWVkIHRvIHN1cHBvcnQgc3VzcGVuZCBvbiBzb21lCj4gaGFyZHdhcmUgd2Ugc2hv
-dWxkIGJlIGFsbG93ZWQgdG8gbGV2ZXJhZ2UgdGhpcyBzb2x1dGlvbiBvbiB0aGUgYmV0dGVyCj4g
-aGFyZHdhcmUgcGxhdGZvcm1zIGFzIHdlbGwgaWYgaXQgaW1wcm92ZXMgb3VyIGJhdHRlcnkgbGlm
-ZS4KCkNvcnJlY3QsIEkgc3Ryb25nbHkgb3Bwb3NlIHVzaW5nIHN1c3BlbmQuIE5vdCBydW5uaW5n
-IHJ1bm5hYmxlIHRhc2tzIGlzCm5vdCBhIHNhbmUgc29sdXRpb24uCgpJZiBjdXJyZW50IGhhcmR3
-YXJlIGNhbid0IGNvcGUsIHRvbyBmcmlnZ2luIGJhZCwgZ2V0IGJldHRlciBoYXJkd2FyZS4KCkJ1
-dCB0aGUgdHJ1dGggaXMsIGFsbCB5b3VyIE9NQVAgcGhvbmVzIHJlYWxseSBjYW4gZGVhbCB3aXRo
-IGl0LgoKPiBJIGhhdmUgbm90IHNlZW4gYW55IHN1Z2dlc3Rpb25zIGZvciBob3cgdG8gZGVhbCB3
-aXRoIGFsbCBvdXIKPiBpbnRlcnByb2Nlc3MgZGVwZW5kZW5jaWVzIHdoZW4gcGF1c2luZyBhIHN1
-YnNldCBvZiBwcm9jZXNzZXMuIFdpdGhvdXQKPiBhIHNvbHV0aW9uIHRvIHRoYXQgd2UgY2FuIG9u
-bHkgcGF1c2UgYSBzdWJzZXQgb2YgdGhlIHByb2Nlc3NlcyB3ZSB3YW50Cj4gdG8gcGF1c2UuCgpE
-byBub3QgJ3BhdXNlJyBwcm9jZXNzZXMgYW5kIHlvdSBkb24ndCBoYXZlIHRoZSBwcm9ibGVtLCBt
-YWtlIHRoZW0gc3RvcApvbiB0aGVpciBvd24gYWNjb3JkIG9yIGtpbGwgdGhlbSBpZiB0aGV5IGRv
-bnQgbGlzdGVuLi4gd2hvIGNhcmVzIGFib3V0CmlsbC1iZWhhdmVkIGFwcHMgYW55d2F5PwoKQnV0
-IHJlYWxseSwgaWYgeW91IHdhbnQgYSBtb3JlIGRldGFpbGVkIGFuc3dlciwgeW91IG5lZWQgdG8g
-cHJvdmlkZSBtb3JlCmRldGFpbCBvbiB0aGVzZSBwcm9ibGVtcy4KCklmIHlvdSB3YW50IHRvIGFs
-bG93IGFuIHVudHJ1c3RlZCBhcHAgdG8gcHJvdmlkZSBhIGRlcGVuZGVuY3kgZm9yIGEKdHJ1c3Rl
-ZCBhcHAsIHlvdSd2ZSBsb3N0IGFuZCBJIGRvbid0IGNhcmUuCgpUcnVzdGVkIGFwcHMgc2hvdWxk
-IGJlIHdlbGwgYmVoYXZlZCwgb3RoZXJ3aXNlIHRoZXJlIHJlYWxseSBpcyBubyBwb2ludC4KCj4g
-VGhlc2Ugc29sdXRpb25zIGRvIG5vdCBhbGxvdyB1cyB0byB1c2Ugc3VzcGVuZC4gVGhleSBtYXkg
-Z2V0IHVzIGNsb3Nlcgo+IHRvIHRoZSBwb3dlciBjb25zdW1wdGlvbiB3ZSBnZXQgZnJvbSBzdXNw
-ZW5kIG9uIHRoZSBnb29kIGhhcmR3YXJlIG9yCj4gZXZlbiBzdXJwYXNzIGl0LCBidXQgd2Ugc3Rp
-bGwgbmVlZCBzdXNwZW5kIG9uIHNvbWUgaGFyZHdhcmUsIGFuZCB3ZQo+IHdvdWxkIGdldCBldmVu
-dCBiZXR0ZXIgcmVzdWx0cyBieSB1c2luZyB0aGVzZSBzb2x1dGlvbnMgaW4gYWRkaXRpb24gdG8K
-PiBzdXNwZW5kIGNvbXBhcmVkIHRvIHVzaW5nIHRoZW0gaW5zdGVhZCBvZiBzdXNwZW5kLgoKTm90
-IHVzaW5nIHN1c3BlbmQgaXMgZXhhY3RseSB0aGUgcG9pbnQuIEFzIEFsYW4gaGFzIGFyZ3VlZCwg
-cHJvcGFnYXRpbmcKc3VzcGVuZCBibG9ja2VycyB1cCBpbnRvIGFsbCByZWdpb25zIG9mIHVzZXJz
-cGFjZSB3aWxsIHRha2UgbXVjaCBsb25nZXIKdGhhbiBmaXhpbmcgdGhlIGhhcmR3YXJlLgoKWW91
-IGdvdCB0byByZWFsaXplIHRoaXMgaXMgYWJvdXQgTGludXggYXMgYSB3aG9sZSwgSSByZWFsbHkg
-ZG9uJ3QgY2FyZQpvbmUgd2hpdCBhYm91dCB0aGUgc3BlY2lmaWMgQW5kcm9pZCBjYXNlLiBXZSB3
-YW50IGEgc29sdXRpb24gdGhhdCBpcwpnZW5lcmljIGVub3VnaCB0byBzb2x2ZSB0aGUgcG93ZXIg
-Y29uc3VtcHRpb24gcHJvYmxlbSBhbmQgbWFrZXMgc2Vuc2Ugb24KZnV0dXJlIGhhcmR3YXJlLgoK
-VGhlIG9ubHkgYWJzdHJhY3Rpb24gdGhhdCByZWFsbHkgbWFrZXMgc2Vuc2UgaW4gdGhhdCB2aWV3
-IGlzIGlkbGUKc3RhdGVzLgoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3Vu
-ZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlz
-dGluZm8vbGludXgtcG0=
+On Sat, 29 May 2010 02:42:35 +0300
+Felipe Contreras <felipe.contreras@gmail.com> wrote:
+
+> On Fri, May 28, 2010 at 5:12 PM, Igor Stoppa <igor.stoppa@nokia.com> wrot=
+e:
+> > ext Brian Swetland wrote:
+> >> How is it flawed? =A0Serious question.
+> >
+> > I would avoid repeating all the good arguments given so far, but to mak=
+e it
+> > short:
+> >
+> > * I believe runtime PM is a much better starting point (at least for the
+> > type of HW targeted at mobile devices) because it mimics an always-on s=
+ystem
+> > toward userspace, which requires less disruption in the way apps are
+> > designed
+> =
+
+> I agree.
+> =
+
+> If I understand correctly, if we have a perfect user-space that only
+> does work when strictly needed and trying to do it in bursts, then we
+> would be reaching the lowest power state, and there would be no need
+> for suspend. The problem is that Android's user-space is pretty far
+> from that, so they said "let's segregate user-space and go to lower
+> power mode anyway".
+
+This has already been mentioned (who knew?): Android doesn't
+want to depend on userspace for this.
+
+Cheers,
+Flo
