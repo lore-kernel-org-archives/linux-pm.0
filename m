@@ -1,13 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sat, 29 May 2010 11:03:24 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005291056490.31946-100000__8918.5579833158$1275145534$gmane$org@netrider.rowland.org>
+Date: Sat, 29 May 2010 08:11:58 -0700
+Message-ID: <AANLkTim7LMG0kcYwmcL9AcdR5-GgcCyb2ZagJhGyt2_e__24510.3016183295$1275146050$gmane$org@mail.gmail.com>
 References: <AANLkTimyLsldXoZ_egjybwS9kE_OcxsOuZwC0F-C2HjY@mail.gmail.com>
+	<Pine.LNX.4.44L0.1005291056490.31946-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTimyLsldXoZ_egjybwS9kE_OcxsOuZwC0F-C2HjY@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.1005291056490.31946-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,80 +18,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 29 May 2010, Brian Swetland wrote:
-
-> On Sat, May 29, 2010 at 7:10 AM, Alan Stern <stern@rowland.harvard.edu> w=
-rote:
-
-> > If no such constraints are active, the QoS-based suspend blocks in an
-> > interruptible wait until the number of active QOS_EVENTUALLY
-> > constraints drops to 0. =C2=A0When that happens, it carries out a normal
-> > suspend-to-RAM -- except that it checks along the way to make sure that
-> > no new QoS constraints are activated while the suspend is in progress.
-> > If they are, the PM core backs out and fails the QoS-based suspend.
-> >
-> > Userspace suspend blockers don't exist at all, as far as the kernel is
-> > concerned. =C2=A0In their place, the Android runs a power-manager progr=
-am
-> > that receives IPC requests from other processes when they need to
-> > prevent the system from suspending or allow it to suspend. =C2=A0The po=
-wer
-> > manager's main loop looks like this:
-> >
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0for (;;) {
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0while (any IPC r=
-equests remain)
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0handle them;
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (any processe=
-s need to prevent suspend)
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0sleep;
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0else
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0write "qos" to /sys/power/state;
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0}
-> =
-
-> The issue with this approach is that if userspace wants to suspend
-> while a driver is holding a QOS_EVENTUALLY constraint, it's basically
-> going to spin constantly writing "qos" and failing.
-
-No, no.  If userspace wants to suspend while a driver is holding a =
-
-QOS_EVENTUALLY constraint, the user process blocks in an interruptible =
-
-wait state as described in the first paragraph above.
-
-> Could we have write(powerstate_fd, "qos",3) block until all
-> QOS_EVENTUALLY constraints are lifted or the system successfully
-> suspends and resumes or a signal arrives?
-
-That is basically what I originally wrote.
-
-> > The idea is that receipt of a new IPC request will cause a signal to be
-> > sent, interrupting the sleep or the "qos" write.
-> =
-
-> Alternatively (to ipc), we could have a driver provide the same
-> suspendblock style interface to userspace and maps it to qos
-> constraints.  If it's something we maintain out-of-tree, no worries.
-> The kernel side api is the bit that's the headache to maintain
-> multiple versions of drivers with and without, after all.
-
-Yep.  The idea is that all this userspace-oriented part should be
-invisible to the vanilla kernel.
-
-> I'm sure Arve will weigh in on this later, but from what I can see it
-> certainly seems like this model provides us with the functionality
-> we're looking for, provided the issue with
-> spinning-while-waiting-for-drivers-to-release-constraints is sorted
-> out.
-
-I'm more concerned about how the other kernel developers will react.
-
-Alan Stern
+T24gU2F0LCBNYXkgMjksIDIwMTAgYXQgODowMyBBTSwgQWxhbiBTdGVybiA8c3Rlcm5Acm93bGFu
+ZC5oYXJ2YXJkLmVkdT4gd3JvdGU6Cj4gT24gU2F0LCAyOSBNYXkgMjAxMCwgQnJpYW4gU3dldGxh
+bmQgd3JvdGU6Cj4+IE9uIFNhdCwgTWF5IDI5LCAyMDEwIGF0IDc6MTAgQU0sIEFsYW4gU3Rlcm4g
+PHN0ZXJuQHJvd2xhbmQuaGFydmFyZC5lZHU+IHdyb3RlOgo+PiA+IElmIG5vIHN1Y2ggY29uc3Ry
+YWludHMgYXJlIGFjdGl2ZSwgdGhlIFFvUy1iYXNlZCBzdXNwZW5kIGJsb2NrcyBpbiBhbgo+PiA+
+IGludGVycnVwdGlibGUgd2FpdCB1bnRpbCB0aGUgbnVtYmVyIG9mIGFjdGl2ZSBRT1NfRVZFTlRV
+QUxMWQo+PiA+IGNvbnN0cmFpbnRzIGRyb3BzIHRvIDAuIMKgV2hlbiB0aGF0IGhhcHBlbnMsIGl0
+IGNhcnJpZXMgb3V0IGEgbm9ybWFsCj4+ID4gc3VzcGVuZC10by1SQU0gLS0gZXhjZXB0IHRoYXQg
+aXQgY2hlY2tzIGFsb25nIHRoZSB3YXkgdG8gbWFrZSBzdXJlIHRoYXQKPj4gPiBubyBuZXcgUW9T
+IGNvbnN0cmFpbnRzIGFyZSBhY3RpdmF0ZWQgd2hpbGUgdGhlIHN1c3BlbmQgaXMgaW4gcHJvZ3Jl
+c3MuCj4+ID4gSWYgdGhleSBhcmUsIHRoZSBQTSBjb3JlIGJhY2tzIG91dCBhbmQgZmFpbHMgdGhl
+IFFvUy1iYXNlZCBzdXNwZW5kLgo+Pgo+PiBUaGUgaXNzdWUgd2l0aCB0aGlzIGFwcHJvYWNoIGlz
+IHRoYXQgaWYgdXNlcnNwYWNlIHdhbnRzIHRvIHN1c3BlbmQKPj4gd2hpbGUgYSBkcml2ZXIgaXMg
+aG9sZGluZyBhIFFPU19FVkVOVFVBTExZIGNvbnN0cmFpbnQsIGl0J3MgYmFzaWNhbGx5Cj4+IGdv
+aW5nIHRvIHNwaW4gY29uc3RhbnRseSB3cml0aW5nICJxb3MiIGFuZCBmYWlsaW5nLgo+Cj4gTm8s
+IG5vLiDCoElmIHVzZXJzcGFjZSB3YW50cyB0byBzdXNwZW5kIHdoaWxlIGEgZHJpdmVyIGlzIGhv
+bGRpbmcgYQo+IFFPU19FVkVOVFVBTExZIGNvbnN0cmFpbnQsIHRoZSB1c2VyIHByb2Nlc3MgYmxv
+Y2tzIGluIGFuIGludGVycnVwdGlibGUKPiB3YWl0IHN0YXRlIGFzIGRlc2NyaWJlZCBpbiB0aGUg
+Zmlyc3QgcGFyYWdyYXBoIGFib3ZlLgoKT29wcyAtLSBJIG1pc3JlYWQgdGhlIGZpcnN0IHBhcmFn
+cmFwaC4gIFRoZSBiZWhhdmlvciB5b3UgZGVzY3JpYmVkIGlzCmluZGVlZCB3aGF0IEkgd291bGQg
+d2FudC4KCkJyaWFuCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9u
+Lm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8v
+bGludXgtcG0=
