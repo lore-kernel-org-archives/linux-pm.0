@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch] complain when users abuse the pm_qos API
-Date: Sat, 29 May 2010 22:08:04 +0200
-Message-ID: <201005292208.04309.rjw__15013.9461890378$1275163774$gmane$org@sisk.pl>
-References: <20100529045027.GE11600@gvim.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Sat, 29 May 2010 22:12:36 +0200
+Message-ID: <201005292212.36107.rjw__15809.2421865605$1275163974$gmane$org@sisk.pl>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<201005282344.49892.rjw@sisk.pl>
+	<1275119617.27810.12634.camel@twins>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100529045027.GE11600@gvim.org>
+In-Reply-To: <1275119617.27810.12634.camel@twins>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,46 +19,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 29 May 2010, mark gross wrote:
-> The following patch is to help clean up API abusers of pm_qos where
-> they call update_request before registering a request.
+On Saturday 29 May 2010, Peter Zijlstra wrote:
+> On Fri, 2010-05-28 at 23:44 +0200, Rafael J. Wysocki wrote:
+> > Consider updatedb or another file indexing ... thing on a laptop.  I certainly
+> > don't want anything like this to run and drain my battery, even if it has
+> > already been started when the machine was on AC power.  Now, of course,
+> > I can kill it, but for that I need to notice that it's running and it presumably
+> > might have done some job already and it would be wasteful to lose it.
+> > It would be quite nice if that app was not regarded as runnable when the
+> > system was on battery power. 
 > 
-> --mgross
+> How will a ionice on steriods that will defer servicing IO when the IO
+> system QoS limit doesn't meet the updatedb process's level is too low,
+> not solve this?
 > 
-> --Signed-off-by: markgross <markgross@thegnar.org>
+> In that case the updatedb process will simply block on IO, will hence
+> not be runnable and thus not drain your battery.
 
-Will there be a big issue if I push this during the next merge window?
-
-Rafael
-
-
-> From a0813007ddc7b72cb3da7a533fefba9889aab1d8 Mon Sep 17 00:00:00 2001
-> From: mgross <mgross@mgross-desktop.(none)>
-> Date: Fri, 28 May 2010 21:36:06 -0700
-> Subject: [PATCH] complain when users abuse the pm_qos API by updating a request that
->  isn't registered yet.
-> 
-> ---
->  kernel/pm_qos_params.c |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> index f42d3f7..8e55bf1 100644
-> --- a/kernel/pm_qos_params.c
-> +++ b/kernel/pm_qos_params.c
-> @@ -266,6 +266,10 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
->  		spin_unlock_irqrestore(&pm_qos_lock, flags);
->  		if (pending_update)
->  			update_target(pm_qos_req->pm_qos_class);
-> +	} else {
-> +		WARN(true, "pm_qos: updating an unregistered request "
-> +				"does nothing");
-> +		dump_stack();
->  	}
->  }
->  EXPORT_SYMBOL_GPL(pm_qos_update_request);
-> 
+It will only work for apps that use I/O, but there may be purely CPU-bound
+ones that need that kind of approach too.
