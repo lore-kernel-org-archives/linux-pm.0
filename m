@@ -1,15 +1,21 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sat, 29 May 2010 09:59:42 +0200
-Message-ID: <1275119982.27810.12660.camel__27937.4749785804$1275120031$gmane$org@twins>
-References: <Pine.LNX.4.44L0.1005271344040.3239-100000@iolanthe.rowland.org>
-	<20100528005045.6ea5feba@lxorguk.ukuu.org.uk>
-	<1275031797.32462.18.camel@laptop>  <201005290018.14832.rjw@sisk.pl>
+Date: Sat, 29 May 2010 10:10:18 +0200
+Message-ID: <1275120618.27810.12699.camel__14566.247459925$1275120661$gmane$org@twins>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
+	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
+	<20100527220949.GB10602@srcf.ucam.org>
+	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<20100527223605.GB11364@srcf.ucam.org>
+	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
+	<20100528043114.GC26177@thunk.org> <1275030704.32462.11.camel@laptop>
+	<AANLkTikEtlbkT4Ws3H2YGt_9QC46B5dr-b1oxJOcG4GN@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005290018.14832.rjw@sisk.pl>
+In-Reply-To: <AANLkTikEtlbkT4Ws3H2YGt_9QC46B5dr-b1oxJOcG4GN@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,55 +25,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: tytso@mit.edu, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2010-05-29 at 00:18 +0200, Rafael J. Wysocki wrote:
-> On Friday 28 May 2010, Peter Zijlstra wrote:
-> > On Fri, 2010-05-28 at 00:50 +0100, Alan Cox wrote:
-> > > Today "idle" means "no task running"
-> > > 
-> > > If you are prepared to rephrase that as "no task that matters is running"
-> > > what would need to answer ?
-> > 
-> > I'm not sure we need or want to go there.
-> > 
-> > Why not simply let upatedb block on its IO because its QoS policy tells
-> > us that its IO priority is idle. Therefore it will not avoid the IO
-> > device from going idle and indefinitely delaying servicing requests.
-> > 
-> > When updatedb blocks, the runqueue becomes empty and we gain goodness.
-> > 
-> > Or are we talking about the same thing?
-> 
-> There may be apps that don't actually do I/O that we may want to be treated
-> that way too.
-> 
-> Consider the following scenario.  I have a purely computational task that's
-> running on my laptop in the background (say it's a folding@home or something
-> similar), but I only want it to run when (a) the box is on AC power and (b)
-> when user interface is "active" (the latter would have to be defined precisely,
-> but for the purpose of this thought experiment let's assume we have such a
-> definition).  Then, I'd only like it to be regarded as runnable if (a) and (b)
-> both happen at the same time, but it can't block on I/O.
-
-Well, both folding@home and Seti will need to do some IO in order to get
-new data and report results, although the computational task might
-indeed take quite a while before it does so.
-
-Such tasks should listen to general environment hints, we already have
-battery power state exposed, make it use that information. The user
-interface is active can be gotten from X.
-
-The thing is, if its a well behaved app and listens to the environment
-hints, it will work as you want (could be done by policy knobs
-all-round).
-
-The only problem is dealing with apps that don't listen, those are
-considered bad/buggy and hence we don't particularly care if they don't
-function properly.
-
-For long-running computational tasks we will send a progression of
-SIGXCPU, SIGSTOP, SIGTERM and eventually SIGKILL if they keep violating
-policy.
+T24gRnJpLCAyMDEwLTA1LTI4IGF0IDE3OjQzIC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
+Ogo+IE9uIEZyaSwgTWF5IDI4LCAyMDEwIGF0IDEyOjExIEFNLCBQZXRlciBaaWpsc3RyYSA8cGV0
+ZXJ6QGluZnJhZGVhZC5vcmc+IHdyb3RlOgo+ID4gT24gRnJpLCAyMDEwLTA1LTI4IGF0IDAwOjMx
+IC0wNDAwLCB0eXRzb0BtaXQuZWR1IHdyb3RlOgo+ID4+IEtlZXAgaW4gbWluZCwgdGhvdWdoLCB0
+aGF0IGEgc29sdXRpb24gd2hpY2ggaXMgYWNjZXB0YWJsZSBmb3IgQW5kcm9pZAo+ID4+IGhhcyB0
+byBpbmNsdWRlIG1ha2luZyBzdXJlIHRoYXQgY3JhcHB5IGFwcGxpY2F0aW9ucyBkb24ndCBjYXVz
+ZSB0aGUKPiA+PiBiYXR0ZXJ5IHRvIGdldCBkcmFpbmVkLiAgVGhlcmUgc2VlbSB0byBiZSBzb21l
+IHBlb3BsZSB3aG8gc2VlbQo+ID4+IGFkYW1lbnRseSBhZ2FpbnN0IHRoaXMgcmVxdWlyZW1lbnQu
+Cj4gPgo+ID4gQWdhaW4sIEFsYW4sIFRob21hcyBhbmQgbXlzZWxmIGRvbid0IGFyZ3VlIGFnYWlu
+c3QgdGhhdCwgd2hhdCB3ZSBkbwo+ID4gaG93ZXZlciBhcmd1ZSBhZ2FpbnN0IGlzIHN1c3BlbmQg
+cnVubmluZyBhcHBzIGFzIGEgZm9ybSBvZiBwb3dlcgo+ID4gbWFuYWdlbWVudC4KPiA+Cj4gCj4g
+WW91IHNlZW0gdG8gYXJndWUgdGhhdCBhbmRyb2lkIGlzIG5vdCBhbGxvd2VkIHRvIHVzZSBzdXNw
+ZW5kIGJlY2F1c2UKPiB0aGUgaGFyZHdhcmUgd2UgaGF2ZSBzaGlwcGVkIG9uIGNhbiBlbnRlciB0
+aGUgc2FtZSBwb3dlciBzdGF0ZSBmcm9tCj4gaWRsZS4gRnJvbSBteSBwb2ludCBvZiB2aWV3LCBz
+aW5jZSB3ZSBuZWVkIHRvIHN1cHBvcnQgc3VzcGVuZCBvbiBzb21lCj4gaGFyZHdhcmUgd2Ugc2hv
+dWxkIGJlIGFsbG93ZWQgdG8gbGV2ZXJhZ2UgdGhpcyBzb2x1dGlvbiBvbiB0aGUgYmV0dGVyCj4g
+aGFyZHdhcmUgcGxhdGZvcm1zIGFzIHdlbGwgaWYgaXQgaW1wcm92ZXMgb3VyIGJhdHRlcnkgbGlm
+ZS4KCkNvcnJlY3QsIEkgc3Ryb25nbHkgb3Bwb3NlIHVzaW5nIHN1c3BlbmQuIE5vdCBydW5uaW5n
+IHJ1bm5hYmxlIHRhc2tzIGlzCm5vdCBhIHNhbmUgc29sdXRpb24uCgpJZiBjdXJyZW50IGhhcmR3
+YXJlIGNhbid0IGNvcGUsIHRvbyBmcmlnZ2luIGJhZCwgZ2V0IGJldHRlciBoYXJkd2FyZS4KCkJ1
+dCB0aGUgdHJ1dGggaXMsIGFsbCB5b3VyIE9NQVAgcGhvbmVzIHJlYWxseSBjYW4gZGVhbCB3aXRo
+IGl0LgoKPiBJIGhhdmUgbm90IHNlZW4gYW55IHN1Z2dlc3Rpb25zIGZvciBob3cgdG8gZGVhbCB3
+aXRoIGFsbCBvdXIKPiBpbnRlcnByb2Nlc3MgZGVwZW5kZW5jaWVzIHdoZW4gcGF1c2luZyBhIHN1
+YnNldCBvZiBwcm9jZXNzZXMuIFdpdGhvdXQKPiBhIHNvbHV0aW9uIHRvIHRoYXQgd2UgY2FuIG9u
+bHkgcGF1c2UgYSBzdWJzZXQgb2YgdGhlIHByb2Nlc3NlcyB3ZSB3YW50Cj4gdG8gcGF1c2UuCgpE
+byBub3QgJ3BhdXNlJyBwcm9jZXNzZXMgYW5kIHlvdSBkb24ndCBoYXZlIHRoZSBwcm9ibGVtLCBt
+YWtlIHRoZW0gc3RvcApvbiB0aGVpciBvd24gYWNjb3JkIG9yIGtpbGwgdGhlbSBpZiB0aGV5IGRv
+bnQgbGlzdGVuLi4gd2hvIGNhcmVzIGFib3V0CmlsbC1iZWhhdmVkIGFwcHMgYW55d2F5PwoKQnV0
+IHJlYWxseSwgaWYgeW91IHdhbnQgYSBtb3JlIGRldGFpbGVkIGFuc3dlciwgeW91IG5lZWQgdG8g
+cHJvdmlkZSBtb3JlCmRldGFpbCBvbiB0aGVzZSBwcm9ibGVtcy4KCklmIHlvdSB3YW50IHRvIGFs
+bG93IGFuIHVudHJ1c3RlZCBhcHAgdG8gcHJvdmlkZSBhIGRlcGVuZGVuY3kgZm9yIGEKdHJ1c3Rl
+ZCBhcHAsIHlvdSd2ZSBsb3N0IGFuZCBJIGRvbid0IGNhcmUuCgpUcnVzdGVkIGFwcHMgc2hvdWxk
+IGJlIHdlbGwgYmVoYXZlZCwgb3RoZXJ3aXNlIHRoZXJlIHJlYWxseSBpcyBubyBwb2ludC4KCj4g
+VGhlc2Ugc29sdXRpb25zIGRvIG5vdCBhbGxvdyB1cyB0byB1c2Ugc3VzcGVuZC4gVGhleSBtYXkg
+Z2V0IHVzIGNsb3Nlcgo+IHRvIHRoZSBwb3dlciBjb25zdW1wdGlvbiB3ZSBnZXQgZnJvbSBzdXNw
+ZW5kIG9uIHRoZSBnb29kIGhhcmR3YXJlIG9yCj4gZXZlbiBzdXJwYXNzIGl0LCBidXQgd2Ugc3Rp
+bGwgbmVlZCBzdXNwZW5kIG9uIHNvbWUgaGFyZHdhcmUsIGFuZCB3ZQo+IHdvdWxkIGdldCBldmVu
+dCBiZXR0ZXIgcmVzdWx0cyBieSB1c2luZyB0aGVzZSBzb2x1dGlvbnMgaW4gYWRkaXRpb24gdG8K
+PiBzdXNwZW5kIGNvbXBhcmVkIHRvIHVzaW5nIHRoZW0gaW5zdGVhZCBvZiBzdXNwZW5kLgoKTm90
+IHVzaW5nIHN1c3BlbmQgaXMgZXhhY3RseSB0aGUgcG9pbnQuIEFzIEFsYW4gaGFzIGFyZ3VlZCwg
+cHJvcGFnYXRpbmcKc3VzcGVuZCBibG9ja2VycyB1cCBpbnRvIGFsbCByZWdpb25zIG9mIHVzZXJz
+cGFjZSB3aWxsIHRha2UgbXVjaCBsb25nZXIKdGhhbiBmaXhpbmcgdGhlIGhhcmR3YXJlLgoKWW91
+IGdvdCB0byByZWFsaXplIHRoaXMgaXMgYWJvdXQgTGludXggYXMgYSB3aG9sZSwgSSByZWFsbHkg
+ZG9uJ3QgY2FyZQpvbmUgd2hpdCBhYm91dCB0aGUgc3BlY2lmaWMgQW5kcm9pZCBjYXNlLiBXZSB3
+YW50IGEgc29sdXRpb24gdGhhdCBpcwpnZW5lcmljIGVub3VnaCB0byBzb2x2ZSB0aGUgcG93ZXIg
+Y29uc3VtcHRpb24gcHJvYmxlbSBhbmQgbWFrZXMgc2Vuc2Ugb24KZnV0dXJlIGhhcmR3YXJlLgoK
+VGhlIG9ubHkgYWJzdHJhY3Rpb24gdGhhdCByZWFsbHkgbWFrZXMgc2Vuc2UgaW4gdGhhdCB2aWV3
+IGlzIGlkbGUKc3RhdGVzLgoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3Vu
+ZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlz
+dGluZm8vbGludXgtcG0=
