@@ -1,17 +1,13 @@
-From: Florian Mickler <florian@mickler.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sat, 29 May 2010 13:18:10 +0200
-Message-ID: <20100529131810.5bb51bdd__15102.9588575058$1275131946$gmane$org@schatten.dmk.lab>
-References: <Pine.LNX.4.44L0.1005271344040.3239-100000@iolanthe.rowland.org>
-	<AANLkTimqvMuMpB5E3tj58OtlRc-7mVaec-9EHAegywg7@mail.gmail.com>
-	<1275032623.32462.30.camel@laptop> <201005290011.32543.rjw@sisk.pl>
-	<20100529110426.077cba47@schatten.dmk.lab>
-	<1275129757.27810.13205.camel@twins>
+Date: Sat, 29 May 2010 10:10:07 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005290941060.30763-100000__33167.3075598248$1275142263$gmane$org@netrider.rowland.org>
+References: <20100529131810.5bb51bdd@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275129757.27810.13205.camel@twins>
+In-Reply-To: <20100529131810.5bb51bdd@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,82 +17,92 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas@smtp1.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Florian Mickler <florian@mickler.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 29 May 2010 12:42:37 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
+On Sat, 29 May 2010, Florian Mickler wrote:
 
-> On Sat, 2010-05-29 at 11:04 +0200, Florian Mickler wrote:
-> > On Sat, 29 May 2010 00:11:32 +0200
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> On Sat, 29 May 2010 12:42:37 +0200
+> Peter Zijlstra <peterz@infradead.org> wrote:
+
+> > Now, all I'm interested in is providing interfaces from the kernel where
+> > needed, so that userspace can be optimally frugal with power usage, and
+> > can monitor/contain badly behaving tasks.
 > > 
-> > > 
-> > > Having reconsidered the suspend blockers idea I came to the conclusion that
-> > > in fact it was a workaround for three different problems.
-> > 
-> > But it is also a change of paradigm. The scheduler should strive to
-> > have the system idle as long as possible to conserve battery. And
-> > everything that does not serve the purpose of the device has to be
-> > considered as not worth running, except if there are other
-> > purpose-fullfilling tasks to run anyway.
 > 
-> No the purpose of the scheduler is to run tasks when they are runnable.
-> Not to second guess whatever caused them to become runnable.
-> 
-> If you start to randomly not run tasks, the inversion chaos that ensues
-> is terrible. You can apply the regular means of alleviating that and
-> that entails adding *-inheritance to all blockable resources. The -rt
-> patch set is doing that in part.
+> I think this is a sensible approach.
 
-Yes. In the scheduler it becomes a hard problem. But if
-you have a clear definition of "purpose" (I mean, after all it is a
-phone) and you can annotate this in a way that makes sense. (Suspend
-blockers?) Then stopping the scheduler and suspend the device is at
-least an easily understandable, maybe naive, approach.
+Here is an attempt to satisfy everyone as much as possible.  But first 
+an explicit disclaimer: When I say "suspend", I mean it as in 
+"suspend-to-RAM"; i.e., a forced suspend and not a cpuidle mode.
 
-> 
-> You really need to make applications not want to run and block on their
-> own volition (in a resource free point) and otherwise make them block on
-> something forcefully and disregard any malfunctioning that would result
-> from that, and in extreme cases terminate (releasing all resources).
+In place of in-kernel suspend blockers, there will be a new type of QoS 
+constraint -- call it QOS_EVENTUALLY.  It's a very weak constraint, 
+compatible with all cpuidle modes in which runnable threads are allowed 
+to run (which is all of them), but not compatible with suspend.
 
-I can see why this would be the best solution. But it would also be just
-dodging the problem, wouldn't it?
- 
-> But really Android shouldn't even need kernel support to do all this,
-> since its hosted on this massive middle-ware that intercepts everything,
-> called a Java Virtual Machine.
+The Android people want debugging and accountability.  So in the most 
+objectionable part of this proposal, we add a new way of registering 
+QoS constraints: monitored constraints.  The "monitored" implies that:
 
-Here also, dodging the problem. 
+	The constraint has a name, which can be used for debugging
+	and accounting;
 
-Maybe there is no good solution for this. And maybe it even is not a
-generic problem. Suspend blockers block suspend. So that is what they
-do. And they have a userspace API (which of course has to be
-acceptable and not be borken). And they are optional. 
+	The kernel maintains statistics on the constraint's use and
+	makes them available to userspace; and
 
-But having a way in the drivers to annotate some kind of constraints
-seems to be a worthwile change in all cases. So this at least should go
-in. 
+	The PM core is notified whenever the number of active monitored
+	constraints drops to 0.
 
-And while there are differing opinions about the android approach
-(feature vs misfeature) of suspending all the time, i think this is
-addressed by having them configurable. 
+There is no /sys/power/policy file.  In place of opportunistic suspend,
+we have "QoS-based suspend".  This is initiated by userspace writing
+"qos" to /sys/power/state, and it is very much like suspend-to-RAM.
+However a QoS-based suspend fails immediately if there are any active
+normal QoS constraints incompatible with system suspend, in other
+words, any constraints requiring a throughput > 0 or an interrupt
+latency shorter than the time required for a suspend-to-RAM/resume
+cycle.
 
-Also the fear that userspace becomes infected with platform knowledge
-is, in my eyes, only a secondary problem, because it is confined to
-the android framework. The android framework guarantess applications
-that they run as long as the user interacts with the device.
-Applications have to deal with suspend in every case. So no special
-knowledge needs to be there.
+If no such constraints are active, the QoS-based suspend blocks in an
+interruptible wait until the number of active QOS_EVENTUALLY
+constraints drops to 0.  When that happens, it carries out a normal
+suspend-to-RAM -- except that it checks along the way to make sure that
+no new QoS constraints are activated while the suspend is in progress.  
+If they are, the PM core backs out and fails the QoS-based suspend.
 
-> Now, all I'm interested in is providing interfaces from the kernel where
-> needed, so that userspace can be optimally frugal with power usage, and
-> can monitor/contain badly behaving tasks.
-> 
+Userspace suspend blockers don't exist at all, as far as the kernel is 
+concerned.  In their place, the Android runs a power-manager program 
+that receives IPC requests from other processes when they need to 
+prevent the system from suspending or allow it to suspend.  The power 
+manager's main loop looks like this:
 
-I think this is a sensible approach.
+	for (;;) {
+		while (any IPC requests remain)
+			handle them;
+		if (any processes need to prevent suspend)
+			sleep;
+		else
+			write "qos" to /sys/power/state;
+	}
 
-Cheers,
-Flo
+The idea is that receipt of a new IPC request will cause a signal to be 
+sent, interrupting the sleep or the "qos" write.
+
+There remains a question as to which kernel drivers should create 
+monitored QOS_EVENTUALLY constraints.  Perhaps userspace could be 
+allowed to specify this (I don't know how).  In any case, this is a 
+relatively minor point.
+
+The advantages of this scheme are that this does everything the Android
+people need, and it does it in a way that's entirely compatible with 
+pure QoS/cpuidle-based power management.  It even starts along the path
+of making suspend-to-RAM just another kind of dynamic power state.
+
+If people such as Peter still want to complain that using
+suspend-to-RAM in Android phones isn't a good way to do power
+management, that's okay -- it's the designers' decision to program
+their phones the way they want.  At least the kernel can give them the
+ability to do so in a way that doesn't compromise everybody else.
+
+Alan Stern
