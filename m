@@ -1,16 +1,14 @@
 From: Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
-Date: Mon, 31 May 2010 09:03:29 +1000
-Message-ID: <20100531090329.786fce79__43646.1198878989$1275260697$gmane$org@notabene.brown>
-References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
-	<AANLkTimVhC3X68uN3krrkkAAAK4a4D5yTK1V8i_x_Vfy@mail.gmail.com>
-	<20100530180846.408e50be@notabene.brown>
-	<201005302152.14166.rjw@sisk.pl>
+Subject: Re: [RFC] lp_events: an lternitive to suspend blocker
+ user mode and kernel API
+Date: Mon, 31 May 2010 09:57:53 +1000
+Message-ID: <20100531095753.4c174f2d__47119.3174286329$1275264035$gmane$org@notabene.brown>
+References: <20100530200409.GA21632@gvim.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005302152.14166.rjw@sisk.pl>
+In-Reply-To: <20100530200409.GA21632@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,122 +18,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, Andi Kleen <ak@linux.intel.com>, markgross@thegnar.org, Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>, tytso@mit.edu, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
+To: markgross@thegnar.org
+Cc: mark.gross@intel.com, 640e9920@gmail.com, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuLCAzMCBNYXkgMjAxMCAyMTo1MjoxNCArMDIwMAoiUmFmYWVsIEouIFd5c29ja2kiIDxy
-andAc2lzay5wbD4gd3JvdGU6Cgo+IE9uIFN1bmRheSAzMCBNYXkgMjAxMCwgTmVpbCBCcm93biB3
-cm90ZToKPiA+IE9uIEZyaSwgMjggTWF5IDIwMTAgMjE6MDQ6NTMgLTA3MDAKPiA+IEFydmUgSGrD
-uG5uZXbDpWcgPGFydmVAYW5kcm9pZC5jb20+IHdyb3RlOgo+ID4gCj4gPiA+IE9uIEZyaSwgTWF5
-IDI4LCAyMDEwIGF0IDc6NTIgUE0sIG1hcmsgZ3Jvc3MgPDY0MGU5OTIwQGdtYWlsLmNvbT4gd3Jv
-dGU6Cj4gPiA+ID4gT24gVGh1LCBNYXkgMjcsIDIwMTAgYXQgMDU6MjM6NTRQTSArMTAwMCwgTmVp
-bCBCcm93biB3cm90ZToKPiA+ID4gPj4gT24gV2VkLCAyNiBNYXkgMjAxMCAxNDoyMDo1MSArMDEw
-MAo+ID4gPiA+PiBNYXR0aGV3IEdhcnJldHQgPG1qZzU5QHNyY2YudWNhbS5vcmc+IHdyb3RlOgo+
-ID4gPiA+Pgo+ID4gPiA+PiA+IE9uIFdlZCwgTWF5IDI2LCAyMDEwIGF0IDAyOjU3OjQ1UE0gKzAy
-MDAsIFBldGVyIFppamxzdHJhIHdyb3RlOgo+ID4gPiA+PiA+Cj4gPiA+ID4+ID4gPiBJIGZhaWwg
-dG8gc2VlIHdoeS4gSW4gYm90aCBjYXNlcyB0aGUgd29rZW4gdXNlcnNwYWNlIHdpbGwgY29udGFj
-dCBhCj4gPiA+ID4+ID4gPiBjZW50cmFsIGdvdmVybmluZyB0YXNrLCBlaXRoZXIgdGhlIGtlcm5l
-bCBvciB0aGUgdXNlcnNwYWNlIHN1c3BlbmQKPiA+ID4gPj4gPiA+IG1hbmFnZXIsIGFuZCBpbmZv
-cm0gaXQgdGhlcmUgaXMgd29yayB0byBiZSBkb25lLCBhbmQgcGxlYXNlIGRvbid0Cj4gPiA+ID4+
-ID4gPiBzdXNwZW5kIG5vdy4KPiA+ID4gPj4gPgo+ID4gPiA+PiA+IFRoaW5raW5nIGFib3V0IHRo
-aXMsIHlvdSdyZSByaWdodCAtIHdlIGRvbid0IGhhdmUgdG8gd2FpdCwgYnV0IHRoYXQgZG9lcwo+
-ID4gPiA+PiA+IHJlc3VsdCBpbiBhbm90aGVyIHByb2JsZW0uIEltYWdpbmUgd2UgZ2V0IHR3byB3
-YWtldXAgZXZlbnRzCj4gPiA+ID4+ID4gYXBwcm94aW1hdGVseSBzaW11bHRhbmVvdXNseS4gSW4g
-dGhlIGtlcm5lbC1sZXZlbCB1bml2ZXJzZSB0aGUga2VybmVsCj4gPiA+ID4+ID4ga25vd3Mgd2hl
-biBib3RoIGhhdmUgYmVlbiBoYW5kbGVkLiBJbiB0aGUgdXNlci1sZXZlbCB1bml2ZXJzZSwgd2Ug
-bWF5Cj4gPiA+ID4+ID4gaGF2ZSBvbmUgdGFzayBzY2hlZHVsZSwgYnVtcCB0aGUgY291bnQsIGhh
-bmRsZSB0aGUgZXZlbnQsIGRyb3AgdGhlIGNvdW50Cj4gPiA+ID4+ID4gYW5kIHRoZW4gd2UgYXR0
-ZW1wdCBhIHN1c3BlbmQgYWdhaW4gYmVjYXVzZSB0aGUgc2Vjb25kIGV2ZW50IGhhbmRsZXIKPiA+
-ID4gPj4gPiBoYXNuJ3QgaGFkIGFuIG9wcG9ydHVuaXR5IHRvIHJ1biB5ZXQuIFdlJ2xsIHRoZW4g
-YXR0ZW1wdCBhIHN1c3BlbmQgYW5kCj4gPiA+ID4+ID4gaW1tZWRpYXRlbHkgYm91bmNlIGJhY2sg
-dXAuIFRoYXQncyBraW5kIG9mIHdhc3RlZnVsLCBhbHRob3VnaCBpdCdkIGJlCj4gPiA+ID4+ID4g
-c29tZXdoYXQgbWl0aWdhdGVkIGJ5IGNoZWNraW5nIHRoYXQgcmlnaHQgYXQgdGhlIHRvcCBvZiBz
-dXNwZW5kIGVudHJ5Cj4gPiA+ID4+ID4gYW5kIHJldHVybmluZyAtRUFHQUlOIG9yIHNpbWlsYXIu
-Cj4gPiA+ID4+ID4KPiA+ID4gPj4KPiA+ID4gPj4gKEknbSBjb21pbmcgYSBsaXR0bGUgbGF0ZSB0
-byB0aGlzIHBhcnR5LCBzbyBleGN1c2UgbWUgaWYgSSBzYXkgc29tZXRoaW5nIHRoYXQKPiA+ID4g
-Pj4gaGFzIGFscmVhZHkgYmVlbiBjb3ZlcmVkIGhvd2V2ZXIuLi4pCj4gPiA+ID4+Cj4gPiA+ID4+
-IFRoZSBhYm92ZSB0cmlnZ2VycyBhIHNlcXVlbmNlIG9mIHRob3VnaHRzIHdoaWNoIChXaGVuIHRo
-ZXkgc2V0dGxlZCBkb3duKSBsb29rCj4gPiA+ID4+IGEgYml0IGxpa2UgdGhpcy4KPiA+ID4gPj4K
-PiA+ID4gPj4gQXQgdGhlIGhhcmR3YXJlIGxldmVsLCB0aGVyZSBpcyBhIHRoaW5nIHRoYXQgd2Ug
-Y291bGQgY2FsbCBhICJzdXNwZW5kCj4gPiA+ID4+IGJsb2NrZXIiLiAgSXQgaXMgYW4gaW50ZXJy
-dXB0IChwcmVzdW1hYmx5IGxldmVsLXRyaWdnZXJlZCkgdGhhdCBjYXVzZXMgdGhlCj4gPiA+ID4+
-IHByb2Nlc3NvciB0byBjb21lIG91dCBvZiBzdXNwZW5kLCBvciBub3QgdG8gZ28gaW50byBpdC4K
-PiA+ID4gPj4KPiA+ID4gPj4gTWF5YmUgaXQgbWFrZXMgc2Vuc2UgdG8gZXhwb3J0IGEgc2ltaWxh
-ciB0aGluZyBmcm9tIHRoZSBrZXJuZWwgdG8gdXNlci1zcGFjZS4KPiA+ID4gPj4gV2hlbiBhbnkg
-ZXZlbnQgaGFwcGVucyB0aGF0IHdvdWxkIHdha2UgdGhlIGRldmljZSAoYW5kIGRyaXZlcnMgbmVl
-ZCB0byBrbm93Cj4gPiA+ID4+IGFib3V0IHRoZXNlIGFscmVhZHkpLCBpdCB3b3VsZCBwcmVzZW50
-IHNvbWV0aGluZyB0byB1c2VyLXNwYWNlIHRvIHNheSB0aGF0Cj4gPiA+ID4+IHRoZSBldmVudCBo
-YXBwZW5lZC4KPiA+ID4gPj4KPiA+ID4gPj4gV2hlbiB1c2VyLXNwYWNlIHByb2Nlc3NlcyB0aGUg
-ZXZlbnQsIGl0IGNsZWFycyB0aGUgZXZlbnQgaW5kaWNhdG9yLgo+ID4gPiA+Cj4gPiA+ID4gd2Ug
-ZGlkIEkgcHJvcG9zZWQgbWFraW5nIHRoZSBzdXNwZW5kIGVuYWJsaW5nIGEgb25lc2hvdCB0eXBl
-IG9mIHRoaW5nCj4gPiA+ID4gYW5kIGFsbCBzb3J0cyBvZiB3ZWFrIGFyZ3VtZW50cyBjYW1lIHNw
-ZXdpbmcgZm9ydGguICBJIGhvbmVzdGx5IGNvdWxkbid0Cj4gPiA+ID4gdGVsbCBpZiBJIHdhcyBy
-ZWFkaW5nIHZhbGlkIGlucHV0IG9yIGZhbmJveSBCUy4KPiA+ID4gPgo+ID4gPiAKPiA+ID4gQ2Fu
-IHlvdSBiZSBtb3JlIHNwZWNpZmljPyBJZiB5b3UgYXJlIHRhbGtpbmcgYWJvdXQgb25seSBsZXR0
-aW5nCj4gPiA+IGRyaXZlcnMgYWJvcnQgc3VzcGVuZCwgbm90IGJsb2NrIGl0LCB0aGVuIHRoZSBt
-YWluIGFyZ3VtZW50IGFnYWluc3QKPiA+ID4gdGhhdCBpcyB0aGF0IHlvdSBhcmUgZm9yY2luZyB1
-c2VyLXNwYWNlIHRvIHBvbGwgdW50aWwgdGhlIGRyaXZlciBzdG9wcwo+ID4gPiBhYm9ydGluZyBz
-dXNwZW5kICh3aGljaCBhY2NvcmRpbmcgdG8gcGVvcGxlIGFyZ3VpbmcgYWdhaW5zdCB1cyB1c2lu
-Zwo+ID4gPiBzdXNwZW5kIHdvdWxkIG1ha2UgdGhlIHBvd2VyLW1hbmFnZXIgYSAiYmFkIiBwcm9j
-ZXNzKS4gT3IgYXJlIHlvdQo+ID4gPiB0YWxraW5nIGFib3V0IGJsb2NraW5nIHRoZSByZXF1ZXN0
-IGZyb20gdXNlci1zcGFjZSB1bnRpbCBhbGwgb3RoZXIKPiA+ID4gc3VzcGVuZC1ibG9ja2VycyBo
-YXZlIGJlZW4gcmVsZWFzZWQgYW5kIHRoZW4gZG9pbmcgYSBzaW5nbGUgc3VzcGVuZAo+ID4gPiBj
-eWNsZSBiZWZvcmUgcmV0dXJuaW5nLiBUaGlzIHdvdWxkIG5vdCBiZSBhcyBiYWQsIGJ1dCBpdCB3
-b3VsZCBmb3JjZQo+ID4gPiB0aGUgdXNlci1zcGFjZSBwb3dlciBtYW5hZ2VyIHRvIGJlIG11bHRp
-LXRocmVhZGVkIHNpbmNlIGl0IG5vdyB3b3VsZAo+ID4gPiBoYXZlIHdheSB0byBjYW5jZWwgdGhl
-IHJlcXVlc3QuIEVpdGhlciB3YXksIHdoYXQgcHJvYmxlbSBhcmUgeW91Cj4gPiA+IHRyeWluZyB0
-byBzb2x2ZSBieSBtYWtpbmcgaXQgYSBvbmUtc2hvdCByZXF1ZXN0Pwo+ID4gPiAKPiA+IAo+ID4g
-SSBkb24ndCBrbm93IGV4YWN0bHkgd2hhdCBNYXJrIGhhcyBpbiBtaW5kLCBidXQgSSB3b3VsZCBh
-ZHZvY2F0ZSAxLXNob3QKPiA+IHNpbXBseSBiZWNhdXNlIHdoYXQgd2UgY3VycmVudGx5IGhhdmUg
-KGVjaG8gbWVtID4gL3N5cy9wb3dlci9zdGF0ZSkgaXMKPiA+IDEtc2hvdCBhbmQgSSBkb24ndCBi
-ZWxpZXZlIHlvdSBuZWVkIHRvIGRvIG1vcmUgdGhhbiBmaXggdGhlIGJ1Z3MgaW4gdGhhdC4KPiA+
-IAo+ID4gWW91ciBxdWVzdGlvbiBvZiB3aGV0aGVyIHRvIGFib3J0IG9yIGJsb2NrIHN1c3BlbmQg
-aW4gY2VudHJhbCBJIHRoaW5rIC0gdGhlCj4gPiBhbnN3ZXIgdG8gdGhhdCBxdWVzdGlvbiB3aWxs
-IG1ha2Ugb3IgYnJlYWsgYSBwb3NzaWJsZSBzb2x1dGlvbi4gCj4gPiAKPiA+IFNpbXBseSBhYm9y
-dGluZyB0aGUgc3VzcGVuZCBjYW5ub3Qgd29yayBhcyB5b3UgcmlnaHRseSBzYXkgLSB0aGUgc3Vz
-cGVuZAo+ID4gZGFlbW9uIHdvdWxkIHRoZW4gc3BpbiB1bnRpbCBvdGhlciB1c2VyLXNwYWNlIHBy
-b2Nlc3NlcyBnZXQgaW50byBhY3Rpb24uCj4gPiBTaW1wbHkgYmxvY2tpbmcgd2hpbGUgdGhlcmUg
-YXJlIGFueSB1bmhhbmRsZWQgJ3dha2V1cCBldmVudHMnIC0gdGhlbiBhYm9ydGluZwo+ID4gaWYg
-dGhlcmUgd2VyZSBhbnkgLSBpcyBob3cgSSB0aGluayBpdCBzaG91bGQgd29yay4gIEhvd2V2ZXIg
-YXMgaXQKPiA+IGRvZXNuJ3Qgd29yayB0aGF0IHdheSBub3cgSSBkb24ndCB0aGluayBpdCBpcyBz
-YWZlIHRvIG1ha2UgaXQgd29yayB0aGF0IHdheQo+ID4gdW5jb25kaXRpb25hbGx5LiAgSWYgd2Ug
-ZGlkIHdlIGNvdWxkIGZpbmQgdGhhdCBleGlzdGluZyBjb25maWd1cmF0aW9ucyBhbHdheXMKPiA+
-IGJsb2NrIHN1c3BlbmQgaW5kZWZpbml0ZWx5IHdpdGggd291bGQgY2xlYXJseSBiZSBhIHJlZ3Jl
-c3Npb24uCj4gPiAKPiA+IEkgdGhpbmsgd2Ugc3RpbGwgbmVlZCBzb21lIHNvcnQgb2YgInN1c3Bl
-bmRfcHJlcGFyZSIuICBUaGlzIHdvdWxkIGhhdmUgdHdvCj4gPiBwYXJ0aWN1bGFyIGVmZmVjdHMu
-Cj4gPiAxLyBpdCBzZXRzIHRoZSBzdGFydCB0aW1lIGZvciBpbnRlcnByZXRpbmcgdGhlIHdvcmQg
-IndlcmUiIGFib3ZlLiAgaS5lLiB0aGUKPiA+ICAgc3VzcGVuZCB3b3VsZCBhYm9ydCBvZiB0aGVy
-ZSB3ZXJlIGFueSB1bmhhbmRsZWQgd2FrZXVwIGV2ZW50cyBzaW5jZSB0aGUKPiA+ICAgInN1c3Bl
-bmRfcHJlcGFyZSIgd2FzIGlzc3VlZC4KPiA+IDIvIEl0IHdvdWxkIGFsbG93IHVuaGFuZGxlZCB3
-YWtldXAgZXZlbnRzIHRvIGFib3J0IHRoZSBzdXNwZW5kLiAgSWYgbm8KPiA+ICAgc3VzcGVuZF9w
-cmVwYXJlIGhhZCBiZWVuIGlzc3VlZCwgdGhlbiBvbmx5ICJuZXciIHdha2V1cCBldmVudHMgd291
-bGQKPiA+ICAgYmUgYWxsb3dlZCB0byBhYm9ydCB0aGUgc3VzcGVuZCAoaS5lLiB0aGUgb2xkIHJh
-Y3kgdmVyc2lvbiBvZiBzdXNwZW5kKS4KPiA+IAo+ID4gU28gdGhlIHN1c3BlbmQgZGFlbW9uIGRv
-ZXM6Cj4gPiAKPiA+ICAgIHdhaXQgZm9yIHRoZXJlIHRvIGJlIG5vIHVzZXItc3BhY2Ugc3VzcGVu
-ZCBibG9ja3MKPiA+ICAgIGlzc3VlIHN1c3BlbmRfcHJlcGFyZQo+ID4gICAgY2hlY2sgdGhlcmUg
-YXJlIHN0aWxsIG5vIHN1c3BlbmQgYmxvY2tzCj4gPiAgICBpZiB0aGVyZSBhcmUsIGxvb3AgKHBv
-c3NpYmx5IGlzc3VlIHN1c3BlbmRfYWJvcnQgaWYgbmVlZGVkKQo+ID4gICAgaXNzdWUgc3VzcGVu
-ZCByZXF1ZXN0Cj4gPiAgICBsb29wCj4gPiAKPiA+IHByb2Nlc3NlcyB0aGF0IGhhbmRsZSB3YWtl
-dXAgZXZlbnRzIHdvdWxkCj4gPiAKPiA+ICAgIHBvbGwgZm9yIGV2ZW50IHRvIGJlIGF2YWlsYWJs
-ZQo+ID4gICAgcmVxdWVzdCBzdXNwZW5kLWJsb2NrCj4gPiAgICBjb25zdW1lIGV2ZW50Cj4gPiAg
-ICByZWxlYXNlIHN1c3BlbmQtYmxvY2sKPiA+ICAgIGxvb3AKPiA+IAo+ID4gKHdoZXJlIGNvbnN1
-bWluZyB0aGUgZXZlbnQgd291bGQgcXVpdGUgcG9zc2libHkgY2F1c2Ugc29tZSBvdGhlcgo+ID4g
-c3VzcGVuZC1ibG9jayB0byBiZWNvbWUgYWN0aXZlIC0gZS5nLiBpdCBtaWdodCByZXF1ZXN0IHRo
-YXQgdGhlIGRpc3BsYXkKPiA+IGJlIHVubG9ja2VkIHdoaWNoIHdvdWxkIGJsb2NrIHN1c3BlbmRz
-IGZvciBhIHRpbWUpLgo+IAo+IFdlbGwsIHBsZWFzZSBoYXZlIGEgbG9vayBhdCB0aGUgQWxhbiBT
-dGVybidzIHByb3Bvc2FsIGhlcmU6Cj4gaHR0cDovL2xrbWwub3JnL2xrbWwvMjAxMC81LzI5Lzc3
-Cj4KClRoYW5rcyBmb3IgdGhlIHJlZmVyZW5jZS4KU29tZSBvZiB0aGUgZGV0YWlscyBhcmUgZGlm
-ZmVyZW50LCBidXQgdGhlIGlkZWEgc2VlbXMgYWxtb3N0IGV4YWN0bHkgdGhlIHNhbWUKYXMgbWlu
-ZS4KVGhlIGFwcGFyZW50IGRlcGVuZGVuY2Ugb24gc2lnbmFscyBtYWtlcyBtZSBmZWVsIGEgbGl0
-dGxlIHVuY29tZm9ydGFibGUKKGludGVyZmFjZXMgdGhhdCBkZXBlbmQgb24gdXNpbmcgc2lnbmFs
-cyBzZWVtIHRvIGJlIGVhc3kgdG8gdXNlIHdyb25nbHkpLCBidXQKSSBkb24ndCB0aGluayB0aGF0
-IGlzIGEgc2VyaW91cyBmbGF3LgoKTWF5YmUgdGhlIGJpZ2dlc3QgZGlmZmVyZW5jZSBpcyBwaGls
-b3NvcGhpY2FsLiAgQWxhbidzIHByb3Bvc2FsIGFwcGVhcnMgdG8gYmUKYWRkaW5nIGEgbmV3IGZl
-YXR1cmUuICBNaW5lIHByZXNlbnRzIGFzIHRyeWluZyB0byBmaXggYW4gZXhpc3RpbmcgZmVhdHVy
-ZSBzbwp0aGF0IGl0IGNhbiBiZSB1c2VkIHJlbGlhYmx5LgpJdCBpcyBlYXNpZXIgdG8gYXJndWUg
-YWdhaW5zdCBhIGZlYXR1cmUgdGhhbiBhZ2FpbnN0IGEgYnVnLWZpeCAoPz8pLgoKVGhhbmtzLApO
-ZWlsQnJvd24KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
-bGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3Jn
-Cmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51
-eC1wbQ==
+On Sun, 30 May 2010 13:04:10 -0700
+mark gross <640e9920@gmail.com> wrote:
+
+> Low Power Events is a possible alternative to suspend blocker / wake
+> lock API used by Android.
+
+Here is how I see your proposal.  It is of course possible that I
+misunderstood bits, so please correct me where I'm wrong.
+
+1/ You have introduced a new mechanism for requesting a transition
+  to a low power state.  This involves writing a number to /dev/lpe_enter.
+  It is not clear to me from your text what the magic number really means.
+  I think this parallels writing to /sys/power/state, but achieves the same
+  result though a different mechanism and adds some extra checking.
+  So: I don't understand the numbers, and I don't see why we need a
+   second way to request a low power state.  Probably I missed something
+   important.
+
+2/ Rather than tracking wake-events from the hardware up through possibly
+   several kernel modules, you go directly from hardware to user-space so each
+   event is potentially presented to user-space twice: once as a "wake up
+   from low power state" event and once following the normal path (maybe a
+   key-press event, maybe a serial-port event, maybe a network receive event).
+   I can see that this is a very tempting approach.  It allows all those
+   intermediate modules to remain unchanged and that is good.
+   However it isn't clear to me that this would be easy for user-space to use
+   correctly.
+   When an lpe event arrived it would need to wait around for the real event
+   to arrive and then process that.  I probably wouldn't wait long, but it
+   would be an indeterminate wait, and it might not be  trivial to determine
+   if all events that would cause a wake-up have been consumed as a direct
+   mapping from lpe event to normal event may not always be possible.
+   Maybe this is more of a theoretical problem and in practice it would be
+   easy to get it right - I don't have enough concrete experience to be sure.
+
+   So: I like the idea of leaving the intermediate layers unchanged, but I'm
+   not convinced it would work.
+
+3/ You have created a new mechanism for passing events to user-space.  That
+   seems unnecessary.  We already have the input subsystem which is pretty
+   good at communication arbitrary events, and the events you are dealing
+   with a very much like input events.
+
+So I would suggest modifying your proposal to simply create a new 'input'
+device.  Any driver that supports wake-from-suspend queues an event to that
+device when a wakeup event occurs.  If the device is open and has any queued
+events, then a suspend request such as 'echo mem > /sys/power/state' completes
+without going into full suspend.
+
+Then you just need to convince us that this mechanism can be used without any
+race problems.  If it can, then it would certainly be a simple and
+unobtrusive approach.
+
+Thanks,
+NeilBrown
