@@ -1,13 +1,13 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [patch] complain when users abuse the pm_qos API
-Date: Sun, 30 May 2010 09:03:18 +1000
-Message-ID: <4C019D36.8070405__32656.2113398269$1275174414$gmane$org@crca.org.au>
-References: <20100529045027.GE11600@gvim.org> <201005292208.04309.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Sat, 29 May 2010 20:45:53 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005292026080.6300-100000__19341.0626183779$1275180444$gmane$org@netrider.rowland.org>
+References: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005292208.04309.rjw@sisk.pl>
+In-Reply-To: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,27 +17,87 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, markgross@thegnar.org
+To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+On Sat, 29 May 2010, Arve Hj=F8nnev=E5g wrote:
 
-On 30/05/10 06:08, Rafael J. Wysocki wrote:
-> On Saturday 29 May 2010, mark gross wrote:
->> The following patch is to help clean up API abusers of pm_qos where
->> they call update_request before registering a request.
->>
->> --mgross
->>
->> --Signed-off-by: markgross<markgross@thegnar.org>
->
-> Will there be a big issue if I push this during the next merge window?
+> > In place of in-kernel suspend blockers, there will be a new type of QoS
+> > constraint -- call it QOS_EVENTUALLY. =A0It's a very weak constraint,
+> > compatible with all cpuidle modes in which runnable threads are allowed
+> > to run (which is all of them), but not compatible with suspend.
+> >
+> This sound just like another API rename. It will work, but given that
+> suspend blockers was the name least objectionable last time around,
+> I'm not sure what this would solve.
 
-What's the point to the patch? That is: why is calling update_request 
-before registering a request such a big problem that it demands a WARN() 
-and dump stack?
+It's not just a rename.  By changing this into a QoS constraint, we =
 
-Regards,
+make it more generally useful.  Instead of standing on its own, it =
 
-Nigel
+becomes part of the PM-QOS framework.
+
+> > There is no /sys/power/policy file. =A0In place of opportunistic suspen=
+d,
+> > we have "QoS-based suspend". =A0This is initiated by userspace writing
+> > "qos" to /sys/power/state, and it is very much like suspend-to-RAM.
+> =
+
+> Why do you want to tie it to a specific state?
+
+I don't.  I suggested making it a veriant of suspend-to-RAM merely
+because that's what you were using.  But Nigel's suggestion of having
+"qos" variants of all the different suspend states makes sense.
+
+> > However a QoS-based suspend fails immediately if there are any active
+> =
+
+> Fail or block? Your next paragraph said that it blocks for
+> QOS_EVENTUALLY, but if normal constraints fail, you are still stuck in
+> a retry loop.
+
+Normal (i.e., non QOS_EVENTUALLY) constraints aren't part of the
+Android use case, so it wasn't clear how they should be treated.  On
+further thought, it probably makes more sense to block for them too
+instead of failing immediately.
+
+> > normal QoS constraints incompatible with system suspend, in other
+> > words, any constraints requiring a throughput > 0 or an interrupt
+> > latency shorter than the time required for a suspend-to-RAM/resume
+> > cycle.
+> >
+> > If no such constraints are active, the QoS-based suspend blocks in an
+> > interruptible wait until the number of active QOS_EVENTUALLY
+> =
+
+> How do you implement this?
+
+I'm not sure what you mean.  The same way you implement any =
+
+interruptible wait.
+
+> > =A0 =A0 =A0 =A0for (;;) {
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0while (any IPC requests remain)
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0handle them;
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (any processes need to prevent suspen=
+d)
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0sleep;
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0else
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0write "qos" to /sys/powe=
+r/state;
+> > =A0 =A0 =A0 =A0}
+> >
+> > The idea is that receipt of a new IPC request will cause a signal to be
+> > sent, interrupting the sleep or the "qos" write.
+> =
+
+> What happen if the signal is right before (or even right after)
+> calling write "qos". How does the signal handler stop the write?
+
+You're right, this is a serious problem.  The process would have to
+give the kernel a signal mask to be used during the wait, as in ppoll
+or pselect.  There ought to be a way to do this or something
+equivalent.
+
+Alan Stern
