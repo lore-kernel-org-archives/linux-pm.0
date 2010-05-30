@@ -1,13 +1,23 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sat, 29 May 2010 20:45:53 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1005292026080.6300-100000__19341.0626183779$1275180444$gmane$org@netrider.rowland.org>
-References: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
+From: Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Sun, 30 May 2010 18:08:46 +1000
+Message-ID: <20100530180846.408e50be__13770.9760143936$1275207020$gmane$org@notabene.brown>
+References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
+	<201005252344.37639.rjw@sisk.pl>
+	<AANLkTimL5rU5lALezEZVCwdcZL85tVahhsTibdpq9s-Y@mail.gmail.com>
+	<1274863342.5882.4850.camel@twins>
+	<1274863987.5882.4892.camel@twins>
+	<20100526124929.GA32580@srcf.ucam.org>
+	<1274878665.27810.354.camel@twins>
+	<20100526132051.GA1834@srcf.ucam.org>
+	<20100527172354.43e46cef@notabene.brown>
+	<20100529025215.GB11600@gvim.org>
+	<AANLkTimVhC3X68uN3krrkkAAAK4a4D5yTK1V8i_x_Vfy@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
+In-Reply-To: <AANLkTimVhC3X68uN3krrkkAAAK4a4D5yTK1V8i_x_Vfy@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,87 +27,100 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, Andi Kleen <ak@linux.intel.com>, markgross@thegnar.org, Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>, tytso@mit.edu, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 29 May 2010, Arve Hj=F8nnev=E5g wrote:
-
-> > In place of in-kernel suspend blockers, there will be a new type of QoS
-> > constraint -- call it QOS_EVENTUALLY. =A0It's a very weak constraint,
-> > compatible with all cpuidle modes in which runnable threads are allowed
-> > to run (which is all of them), but not compatible with suspend.
-> >
-> This sound just like another API rename. It will work, but given that
-> suspend blockers was the name least objectionable last time around,
-> I'm not sure what this would solve.
-
-It's not just a rename.  By changing this into a QoS constraint, we =
-
-make it more generally useful.  Instead of standing on its own, it =
-
-becomes part of the PM-QOS framework.
-
-> > There is no /sys/power/policy file. =A0In place of opportunistic suspen=
-d,
-> > we have "QoS-based suspend". =A0This is initiated by userspace writing
-> > "qos" to /sys/power/state, and it is very much like suspend-to-RAM.
-> =
-
-> Why do you want to tie it to a specific state?
-
-I don't.  I suggested making it a veriant of suspend-to-RAM merely
-because that's what you were using.  But Nigel's suggestion of having
-"qos" variants of all the different suspend states makes sense.
-
-> > However a QoS-based suspend fails immediately if there are any active
-> =
-
-> Fail or block? Your next paragraph said that it blocks for
-> QOS_EVENTUALLY, but if normal constraints fail, you are still stuck in
-> a retry loop.
-
-Normal (i.e., non QOS_EVENTUALLY) constraints aren't part of the
-Android use case, so it wasn't clear how they should be treated.  On
-further thought, it probably makes more sense to block for them too
-instead of failing immediately.
-
-> > normal QoS constraints incompatible with system suspend, in other
-> > words, any constraints requiring a throughput > 0 or an interrupt
-> > latency shorter than the time required for a suspend-to-RAM/resume
-> > cycle.
-> >
-> > If no such constraints are active, the QoS-based suspend blocks in an
-> > interruptible wait until the number of active QOS_EVENTUALLY
-> =
-
-> How do you implement this?
-
-I'm not sure what you mean.  The same way you implement any =
-
-interruptible wait.
-
-> > =A0 =A0 =A0 =A0for (;;) {
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0while (any IPC requests remain)
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0handle them;
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (any processes need to prevent suspen=
-d)
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0sleep;
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0else
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0write "qos" to /sys/powe=
-r/state;
-> > =A0 =A0 =A0 =A0}
-> >
-> > The idea is that receipt of a new IPC request will cause a signal to be
-> > sent, interrupting the sleep or the "qos" write.
-> =
-
-> What happen if the signal is right before (or even right after)
-> calling write "qos". How does the signal handler stop the write?
-
-You're right, this is a serious problem.  The process would have to
-give the kernel a signal mask to be used during the wait, as in ppoll
-or pselect.  There ought to be a way to do this or something
-equivalent.
-
-Alan Stern
+T24gRnJpLCAyOCBNYXkgMjAxMCAyMTowNDo1MyAtMDcwMApBcnZlIEhqw7hubmV2w6VnIDxhcnZl
+QGFuZHJvaWQuY29tPiB3cm90ZToKCj4gT24gRnJpLCBNYXkgMjgsIDIwMTAgYXQgNzo1MiBQTSwg
+bWFyayBncm9zcyA8NjQwZTk5MjBAZ21haWwuY29tPiB3cm90ZToKPiA+IE9uIFRodSwgTWF5IDI3
+LCAyMDEwIGF0IDA1OjIzOjU0UE0gKzEwMDAsIE5laWwgQnJvd24gd3JvdGU6Cj4gPj4gT24gV2Vk
+LCAyNiBNYXkgMjAxMCAxNDoyMDo1MSArMDEwMAo+ID4+IE1hdHRoZXcgR2FycmV0dCA8bWpnNTlA
+c3JjZi51Y2FtLm9yZz4gd3JvdGU6Cj4gPj4KPiA+PiA+IE9uIFdlZCwgTWF5IDI2LCAyMDEwIGF0
+IDAyOjU3OjQ1UE0gKzAyMDAsIFBldGVyIFppamxzdHJhIHdyb3RlOgo+ID4+ID4KPiA+PiA+ID4g
+SSBmYWlsIHRvIHNlZSB3aHkuIEluIGJvdGggY2FzZXMgdGhlIHdva2VuIHVzZXJzcGFjZSB3aWxs
+IGNvbnRhY3QgYQo+ID4+ID4gPiBjZW50cmFsIGdvdmVybmluZyB0YXNrLCBlaXRoZXIgdGhlIGtl
+cm5lbCBvciB0aGUgdXNlcnNwYWNlIHN1c3BlbmQKPiA+PiA+ID4gbWFuYWdlciwgYW5kIGluZm9y
+bSBpdCB0aGVyZSBpcyB3b3JrIHRvIGJlIGRvbmUsIGFuZCBwbGVhc2UgZG9uJ3QKPiA+PiA+ID4g
+c3VzcGVuZCBub3cuCj4gPj4gPgo+ID4+ID4gVGhpbmtpbmcgYWJvdXQgdGhpcywgeW91J3JlIHJp
+Z2h0IC0gd2UgZG9uJ3QgaGF2ZSB0byB3YWl0LCBidXQgdGhhdCBkb2VzCj4gPj4gPiByZXN1bHQg
+aW4gYW5vdGhlciBwcm9ibGVtLiBJbWFnaW5lIHdlIGdldCB0d28gd2FrZXVwIGV2ZW50cwo+ID4+
+ID4gYXBwcm94aW1hdGVseSBzaW11bHRhbmVvdXNseS4gSW4gdGhlIGtlcm5lbC1sZXZlbCB1bml2
+ZXJzZSB0aGUga2VybmVsCj4gPj4gPiBrbm93cyB3aGVuIGJvdGggaGF2ZSBiZWVuIGhhbmRsZWQu
+IEluIHRoZSB1c2VyLWxldmVsIHVuaXZlcnNlLCB3ZSBtYXkKPiA+PiA+IGhhdmUgb25lIHRhc2sg
+c2NoZWR1bGUsIGJ1bXAgdGhlIGNvdW50LCBoYW5kbGUgdGhlIGV2ZW50LCBkcm9wIHRoZSBjb3Vu
+dAo+ID4+ID4gYW5kIHRoZW4gd2UgYXR0ZW1wdCBhIHN1c3BlbmQgYWdhaW4gYmVjYXVzZSB0aGUg
+c2Vjb25kIGV2ZW50IGhhbmRsZXIKPiA+PiA+IGhhc24ndCBoYWQgYW4gb3Bwb3J0dW5pdHkgdG8g
+cnVuIHlldC4gV2UnbGwgdGhlbiBhdHRlbXB0IGEgc3VzcGVuZCBhbmQKPiA+PiA+IGltbWVkaWF0
+ZWx5IGJvdW5jZSBiYWNrIHVwLiBUaGF0J3Mga2luZCBvZiB3YXN0ZWZ1bCwgYWx0aG91Z2ggaXQn
+ZCBiZQo+ID4+ID4gc29tZXdoYXQgbWl0aWdhdGVkIGJ5IGNoZWNraW5nIHRoYXQgcmlnaHQgYXQg
+dGhlIHRvcCBvZiBzdXNwZW5kIGVudHJ5Cj4gPj4gPiBhbmQgcmV0dXJuaW5nIC1FQUdBSU4gb3Ig
+c2ltaWxhci4KPiA+PiA+Cj4gPj4KPiA+PiAoSSdtIGNvbWluZyBhIGxpdHRsZSBsYXRlIHRvIHRo
+aXMgcGFydHksIHNvIGV4Y3VzZSBtZSBpZiBJIHNheSBzb21ldGhpbmcgdGhhdAo+ID4+IGhhcyBh
+bHJlYWR5IGJlZW4gY292ZXJlZCBob3dldmVyLi4uKQo+ID4+Cj4gPj4gVGhlIGFib3ZlIHRyaWdn
+ZXJzIGEgc2VxdWVuY2Ugb2YgdGhvdWdodHMgd2hpY2ggKFdoZW4gdGhleSBzZXR0bGVkIGRvd24p
+IGxvb2sKPiA+PiBhIGJpdCBsaWtlIHRoaXMuCj4gPj4KPiA+PiBBdCB0aGUgaGFyZHdhcmUgbGV2
+ZWwsIHRoZXJlIGlzIGEgdGhpbmcgdGhhdCB3ZSBjb3VsZCBjYWxsIGEgInN1c3BlbmQKPiA+PiBi
+bG9ja2VyIi4gwqBJdCBpcyBhbiBpbnRlcnJ1cHQgKHByZXN1bWFibHkgbGV2ZWwtdHJpZ2dlcmVk
+KSB0aGF0IGNhdXNlcyB0aGUKPiA+PiBwcm9jZXNzb3IgdG8gY29tZSBvdXQgb2Ygc3VzcGVuZCwg
+b3Igbm90IHRvIGdvIGludG8gaXQuCj4gPj4KPiA+PiBNYXliZSBpdCBtYWtlcyBzZW5zZSB0byBl
+eHBvcnQgYSBzaW1pbGFyIHRoaW5nIGZyb20gdGhlIGtlcm5lbCB0byB1c2VyLXNwYWNlLgo+ID4+
+IFdoZW4gYW55IGV2ZW50IGhhcHBlbnMgdGhhdCB3b3VsZCB3YWtlIHRoZSBkZXZpY2UgKGFuZCBk
+cml2ZXJzIG5lZWQgdG8ga25vdwo+ID4+IGFib3V0IHRoZXNlIGFscmVhZHkpLCBpdCB3b3VsZCBw
+cmVzZW50IHNvbWV0aGluZyB0byB1c2VyLXNwYWNlIHRvIHNheSB0aGF0Cj4gPj4gdGhlIGV2ZW50
+IGhhcHBlbmVkLgo+ID4+Cj4gPj4gV2hlbiB1c2VyLXNwYWNlIHByb2Nlc3NlcyB0aGUgZXZlbnQs
+IGl0IGNsZWFycyB0aGUgZXZlbnQgaW5kaWNhdG9yLgo+ID4KPiA+IHdlIGRpZCBJIHByb3Bvc2Vk
+IG1ha2luZyB0aGUgc3VzcGVuZCBlbmFibGluZyBhIG9uZXNob3QgdHlwZSBvZiB0aGluZwo+ID4g
+YW5kIGFsbCBzb3J0cyBvZiB3ZWFrIGFyZ3VtZW50cyBjYW1lIHNwZXdpbmcgZm9ydGguIMKgSSBo
+b25lc3RseSBjb3VsZG4ndAo+ID4gdGVsbCBpZiBJIHdhcyByZWFkaW5nIHZhbGlkIGlucHV0IG9y
+IGZhbmJveSBCUy4KPiA+Cj4gCj4gQ2FuIHlvdSBiZSBtb3JlIHNwZWNpZmljPyBJZiB5b3UgYXJl
+IHRhbGtpbmcgYWJvdXQgb25seSBsZXR0aW5nCj4gZHJpdmVycyBhYm9ydCBzdXNwZW5kLCBub3Qg
+YmxvY2sgaXQsIHRoZW4gdGhlIG1haW4gYXJndW1lbnQgYWdhaW5zdAo+IHRoYXQgaXMgdGhhdCB5
+b3UgYXJlIGZvcmNpbmcgdXNlci1zcGFjZSB0byBwb2xsIHVudGlsIHRoZSBkcml2ZXIgc3RvcHMK
+PiBhYm9ydGluZyBzdXNwZW5kICh3aGljaCBhY2NvcmRpbmcgdG8gcGVvcGxlIGFyZ3VpbmcgYWdh
+aW5zdCB1cyB1c2luZwo+IHN1c3BlbmQgd291bGQgbWFrZSB0aGUgcG93ZXItbWFuYWdlciBhICJi
+YWQiIHByb2Nlc3MpLiBPciBhcmUgeW91Cj4gdGFsa2luZyBhYm91dCBibG9ja2luZyB0aGUgcmVx
+dWVzdCBmcm9tIHVzZXItc3BhY2UgdW50aWwgYWxsIG90aGVyCj4gc3VzcGVuZC1ibG9ja2VycyBo
+YXZlIGJlZW4gcmVsZWFzZWQgYW5kIHRoZW4gZG9pbmcgYSBzaW5nbGUgc3VzcGVuZAo+IGN5Y2xl
+IGJlZm9yZSByZXR1cm5pbmcuIFRoaXMgd291bGQgbm90IGJlIGFzIGJhZCwgYnV0IGl0IHdvdWxk
+IGZvcmNlCj4gdGhlIHVzZXItc3BhY2UgcG93ZXIgbWFuYWdlciB0byBiZSBtdWx0aS10aHJlYWRl
+ZCBzaW5jZSBpdCBub3cgd291bGQKPiBoYXZlIHdheSB0byBjYW5jZWwgdGhlIHJlcXVlc3QuIEVp
+dGhlciB3YXksIHdoYXQgcHJvYmxlbSBhcmUgeW91Cj4gdHJ5aW5nIHRvIHNvbHZlIGJ5IG1ha2lu
+ZyBpdCBhIG9uZS1zaG90IHJlcXVlc3Q/Cj4gCgpJIGRvbid0IGtub3cgZXhhY3RseSB3aGF0IE1h
+cmsgaGFzIGluIG1pbmQsIGJ1dCBJIHdvdWxkIGFkdm9jYXRlIDEtc2hvdApzaW1wbHkgYmVjYXVz
+ZSB3aGF0IHdlIGN1cnJlbnRseSBoYXZlIChlY2hvIG1lbSA+IC9zeXMvcG93ZXIvc3RhdGUpIGlz
+CjEtc2hvdCBhbmQgSSBkb24ndCBiZWxpZXZlIHlvdSBuZWVkIHRvIGRvIG1vcmUgdGhhbiBmaXgg
+dGhlIGJ1Z3MgaW4gdGhhdC4KCllvdXIgcXVlc3Rpb24gb2Ygd2hldGhlciB0byBhYm9ydCBvciBi
+bG9jayBzdXNwZW5kIGluIGNlbnRyYWwgSSB0aGluayAtIHRoZQphbnN3ZXIgdG8gdGhhdCBxdWVz
+dGlvbiB3aWxsIG1ha2Ugb3IgYnJlYWsgYSBwb3NzaWJsZSBzb2x1dGlvbi4gCgpTaW1wbHkgYWJv
+cnRpbmcgdGhlIHN1c3BlbmQgY2Fubm90IHdvcmsgYXMgeW91IHJpZ2h0bHkgc2F5IC0gdGhlIHN1
+c3BlbmQKZGFlbW9uIHdvdWxkIHRoZW4gc3BpbiB1bnRpbCBvdGhlciB1c2VyLXNwYWNlIHByb2Nl
+c3NlcyBnZXQgaW50byBhY3Rpb24uClNpbXBseSBibG9ja2luZyB3aGlsZSB0aGVyZSBhcmUgYW55
+IHVuaGFuZGxlZCAnd2FrZXVwIGV2ZW50cycgLSB0aGVuIGFib3J0aW5nCmlmIHRoZXJlIHdlcmUg
+YW55IC0gaXMgaG93IEkgdGhpbmsgaXQgc2hvdWxkIHdvcmsuICBIb3dldmVyIGFzIGl0CmRvZXNu
+J3Qgd29yayB0aGF0IHdheSBub3cgSSBkb24ndCB0aGluayBpdCBpcyBzYWZlIHRvIG1ha2UgaXQg
+d29yayB0aGF0IHdheQp1bmNvbmRpdGlvbmFsbHkuICBJZiB3ZSBkaWQgd2UgY291bGQgZmluZCB0
+aGF0IGV4aXN0aW5nIGNvbmZpZ3VyYXRpb25zIGFsd2F5cwpibG9jayBzdXNwZW5kIGluZGVmaW5p
+dGVseSB3aXRoIHdvdWxkIGNsZWFybHkgYmUgYSByZWdyZXNzaW9uLgoKSSB0aGluayB3ZSBzdGls
+bCBuZWVkIHNvbWUgc29ydCBvZiAic3VzcGVuZF9wcmVwYXJlIi4gIFRoaXMgd291bGQgaGF2ZSB0
+d28KcGFydGljdWxhciBlZmZlY3RzLgoxLyBpdCBzZXRzIHRoZSBzdGFydCB0aW1lIGZvciBpbnRl
+cnByZXRpbmcgdGhlIHdvcmQgIndlcmUiIGFib3ZlLiAgaS5lLiB0aGUKICBzdXNwZW5kIHdvdWxk
+IGFib3J0IG9mIHRoZXJlIHdlcmUgYW55IHVuaGFuZGxlZCB3YWtldXAgZXZlbnRzIHNpbmNlIHRo
+ZQogICJzdXNwZW5kX3ByZXBhcmUiIHdhcyBpc3N1ZWQuCjIvIEl0IHdvdWxkIGFsbG93IHVuaGFu
+ZGxlZCB3YWtldXAgZXZlbnRzIHRvIGFib3J0IHRoZSBzdXNwZW5kLiAgSWYgbm8KICBzdXNwZW5k
+X3ByZXBhcmUgaGFkIGJlZW4gaXNzdWVkLCB0aGVuIG9ubHkgIm5ldyIgd2FrZXVwIGV2ZW50cyB3
+b3VsZAogIGJlIGFsbG93ZWQgdG8gYWJvcnQgdGhlIHN1c3BlbmQgKGkuZS4gdGhlIG9sZCByYWN5
+IHZlcnNpb24gb2Ygc3VzcGVuZCkuCgpTbyB0aGUgc3VzcGVuZCBkYWVtb24gZG9lczoKCiAgIHdh
+aXQgZm9yIHRoZXJlIHRvIGJlIG5vIHVzZXItc3BhY2Ugc3VzcGVuZCBibG9ja3MKICAgaXNzdWUg
+c3VzcGVuZF9wcmVwYXJlCiAgIGNoZWNrIHRoZXJlIGFyZSBzdGlsbCBubyBzdXNwZW5kIGJsb2Nr
+cwogICBpZiB0aGVyZSBhcmUsIGxvb3AgKHBvc3NpYmx5IGlzc3VlIHN1c3BlbmRfYWJvcnQgaWYg
+bmVlZGVkKQogICBpc3N1ZSBzdXNwZW5kIHJlcXVlc3QKICAgbG9vcAoKcHJvY2Vzc2VzIHRoYXQg
+aGFuZGxlIHdha2V1cCBldmVudHMgd291bGQKCiAgIHBvbGwgZm9yIGV2ZW50IHRvIGJlIGF2YWls
+YWJsZQogICByZXF1ZXN0IHN1c3BlbmQtYmxvY2sKICAgY29uc3VtZSBldmVudAogICByZWxlYXNl
+IHN1c3BlbmQtYmxvY2sKICAgbG9vcAoKKHdoZXJlIGNvbnN1bWluZyB0aGUgZXZlbnQgd291bGQg
+cXVpdGUgcG9zc2libHkgY2F1c2Ugc29tZSBvdGhlcgpzdXNwZW5kLWJsb2NrIHRvIGJlY29tZSBh
+Y3RpdmUgLSBlLmcuIGl0IG1pZ2h0IHJlcXVlc3QgdGhhdCB0aGUgZGlzcGxheQpiZSB1bmxvY2tl
+ZCB3aGljaCB3b3VsZCBibG9jayBzdXNwZW5kcyBmb3IgYSB0aW1lKS4KCk5laWxCcm93bgpfX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWls
+aW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0
+cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
