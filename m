@@ -1,25 +1,11 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Mon, 31 May 2010 22:12:19 +0200
-Message-ID: <20100531221219.212bf119__4391.43544431335$1275336814$gmane$org@schatten.dmk.lab>
-References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
-	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
-	<20100527220949.GB10602@srcf.ucam.org>
-	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
-	<20100527223605.GB11364@srcf.ucam.org>
-	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
-	<20100528043114.GC26177@thunk.org>
-	<1275030704.32462.11.camel@laptop>
-	<AANLkTikEtlbkT4Ws3H2YGt_9QC46B5dr-b1oxJOcG4GN@mail.gmail.com>
-	<1275120618.27810.12699.camel@twins>
-	<1275149418.4503.128.camel@mulgrave.site>
-	<1275156734.1645.496.camel@laptop>
+From: Martin Steigerwald <Martin@lichtvoll.de>
+Subject: [regression] Please add bug 15788 and 15969,
+	usb sound / radeon kms broken after snapshot cycle
+Date: Mon, 31 May 2010 22:15:04 +0200
+Message-ID: <201005312215.17793.Martin__19292.1674381525$1275336970$gmane$org@lichtvoll.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============8556294127621980306=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275156734.1645.496.camel@laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,97 +13,72 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: tytso@mit.edu, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, felipe.balbi@nokia.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 29 May 2010 20:12:14 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
+--===============8556294127621980306==
+Content-Type: multipart/signed;
+  boundary="nextPart1372653.zhlqzsHAFM";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-> On Sat, 2010-05-29 at 11:10 -0500, James Bottomley wrote:
-> > > Correct, I strongly oppose using suspend. Not running runnable tasks is
-> > > not a sane solution.
-> > 
-> > Look, this is getting into the realms of a pointless semantic quibble.
-> > The problem is that untrusted tasks need to be forcibly suspended when
-> > they have no legitimate work to do and the user hasn't authorised them
-> > to continue even if the scheduler sees them as runnable.  Whether that's
-> > achieved by suspending the entire system or forcibly idling the tasks
-> > (using blocking states or freezers or something) so the scheduler can
-> > suspend from idle is something to be discussed,
-> 
-> So what happens if you task is CPU bound and gets suspended and is
-> holding a resource (lock, whatever) that is required by someone else
-> that didn't get suspended?
-> 
-> That's the classic inversion problem, and is caused by not running
-> runnable tasks.
+--nextPart1372653.zhlqzsHAFM
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-The trick with the approach currently discussed (i.e.
-opportunistic suspend, if you missed it): We suspend the whole machine.
 
-And I really think, this is the only way to do it. It is a big hammer,
-shure. But if you can pull it of... 
+Hi Rafael,
 
-> 
-> >  but the net result is
-> > that we have to stop a certain set of tasks in such a way that they can
-> > still receive certain external events ... semantically, this is
-> > equivalent to not running runnable tasks in my book.
-> 
-> Why would be care about external events? Clearly these apps are ill
-> behaved, otherwise they would have listened to the environment telling
-> them to idle.
-> 
-> Why would you try to let buggy apps work as intended instead of break
-> them as hard as possible? Such policy promotes crappy code since people
-> get away with it.
+please add
 
-If I have a simple shell script then I don't wanna jump through
-hoops just to please your fragile kernel. 
+Bug 15788 -  external usb sound card doesn't work after resume
+https://bugzilla.kernel.org/show_bug.cgi?id=3D15788
 
-And before you judge code that does not behave to work with YOUR buggy
-kernel, i would think twice. This cuts both ways. Just because the
-problem is too hard for you, this does not excuse forcing crappy
-kernels on other people. 
+to your regression list.
 
-I think you have a point in that it is _in general_ not easily
-possible to solve. But for this case this is clearly a simple, to the
-point and working solution for android based phones. 
+And
 
-"Der Wurm muss dem Fisch schmecken, nicht dem Angler." 
+Bug 15969 -  radeon regression couldn't schedule IB on resume with 2.6.34-
+rc7=20
+https://bugzilla.kernel.org/show_bug.cgi?id=3D15969
 
-> 
-> >  (Perhaps this whole
-> > thing is because the word runnable means different things ... I'm
-> > thinking a task that would consume power ... are you thinking in the
-> > scheduler R state?)
-> 
-> Clearly I mean TASK_RUNNABLE, if not that the scheduler doesn't care.
-> 
-> > Realistically, the main thing we need to do is stop timers posted
-> > against the task (which is likely polling in a main loop, that being the
-> > usual form of easy to write but power crazy app behaviour) from waking
-> > the task and bringing the system out of suspend (whether from idle or
-> > forced).
-> 
-> Sure, that same main loop will probably receive a message along the
-> lines of, 'hey, screen is off, we ought to go sleep'. If after that it
-> doesn't listen, and more serious messages don't get responded to, simply
-> kill the thing.
+Thanks.
 
-I think this would be a possibility. And maybe even sane. But I also
-think this has nothing to do with suspend_blockers. They block
-suspend. You know?   
+I find it irritating that a stable kernel is released with regressions like=
+=20
+this, but that seems to be what I can get for not waiting for 2.6.34.2 or=20
+higher.
 
-> 
-> Again, there is no reason what so ever to tolerate broken apps, it only
-> promotes crappy apps.
-> 
+Ciao,
+=2D-=20
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
 
-This simple doesn't solve the problem.
+--nextPart1372653.zhlqzsHAFM
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Cheers,
-Flo 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkwEGMkACgkQmRvqrKWZhMdAgwCbBdJwVp317zPLsQJcr0+fsHzk
+6+4AoIUVFZF5DOUVof0Ifj1AEp155JWn
+=9kYJ
+-----END PGP SIGNATURE-----
+
+--nextPart1372653.zhlqzsHAFM--
+
+--===============8556294127621980306==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============8556294127621980306==--
