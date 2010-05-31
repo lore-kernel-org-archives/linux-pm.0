@@ -1,16 +1,14 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Mon, 31 May 2010 02:16:45 -0700
-Message-ID: <AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt__48310.7195738286$1275297582$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<201005292227.15479.rjw@sisk.pl>
-	<AANLkTim6zsho4RSrseJostaOJe9lL4VNRKA3vDGJWJhK@mail.gmail.com>
-	<201005302202.39511.rjw@sisk.pl>
+Date: Mon, 31 May 2010 02:43:01 -0700
+Message-ID: <AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc__23907.7317681678$1275299053$gmane$org@mail.gmail.com>
+References: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
+	<Pine.LNX.4.44L0.1005292026080.6300-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201005302202.39511.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1005292026080.6300-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,82 +18,106 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-2010/5/30 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Saturday 29 May 2010, Arve Hj=F8nnev=E5g wrote:
->> 2010/5/29 Rafael J. Wysocki <rjw@sisk.pl>:
->> > On Saturday 29 May 2010, Arve Hj=F8nnev=E5g wrote:
->> >> 2010/5/28 Rafael J. Wysocki <rjw@sisk.pl>:
->> >> > On Friday 28 May 2010, Arve Hj=F8nnev=E5g wrote:
->> >> >> On Fri, May 28, 2010 at 1:44 AM, Florian Mickler <florian@mickler.=
-org> wrote:
->> >> >> > On Thu, 27 May 2010 20:05:39 +0200 (CEST)
->> >> >> > Thomas Gleixner <tglx@linutronix.de> wrote:
->> >> > ...
->> >> >> > To integrate this with the current way of doing things, i gather=
-ed it
->> >> >> > needs to be implemented as an idle-state that does the suspend()=
--call?
->> >> >> >
->> >> >>
->> >> >> I think it is better no not confuse this with idle. Since initiati=
-ng
->> >> >> suspend will cause the system to become not-idle, I don't think is=
- is
->> >> >> beneficial to initiate suspend from idle.
->> >> >
->> >> > It is, if the following two conditions hold simultaneously:
->> >> >
->> >> > (a) Doing full system suspend is ultimately going to bring you more=
- energy
->> >> > =A0 =A0savings than the (presumably lowest) idle state you're curre=
-ntly in.
->> >> >
->> >> > (b) You anticipate that the system will stay idle for a considerabl=
-y long time
->> >> > =A0 =A0such that it's worth suspending.
->> >> >
->> >>
->> >> I still don't think this matters. If you are waiting for in interrupt
->> >> that cannot wake you up from suspend, then idle is not an indicator
->> >> that it is safe to enter suspend. I also don't think you can avoid any
->> >> user-space suspend blockers by delaying suspend until the system goes
->> >> idle since any page fault could cause it to go idle. Therefore I don't
->> >> see a benefit in delaying suspend until idle when the last suspend
->> >> blocker is released (it would only mask possible race conditions).
->> >
->> > I wasn't referring to suspend blockers, but to the idea of initiating =
-full
->> > system suspend from idle, which I still think makes sense. =A0If you a=
-re
->> > waiting for an interrupt that cannot wake you from suspend, then
->> > _obviously_ suspend should not be started. =A0However, if you're not w=
-aiting for
->> > such an interrupt and the (a) and (b) above hold, it makes sense to st=
-art
->> > suspend from idle.
->> >
->>
->> What about timers? When you suspend timers stop (otherwise it is just
->> a deep-idle mode), and this could cause problems. Some drivers rely on
->> timers if the hardware does not have a completion interrupt. It is not
->> uncommon to see send command x then wait 200ms in a some hardware
->> specs.
+2010/5/29 Alan Stern <stern@rowland.harvard.edu>:
+> On Sat, 29 May 2010, Arve Hj=F8nnev=E5g wrote:
 >
-> QoS should be used in such cases.
+>> > In place of in-kernel suspend blockers, there will be a new type of QoS
+>> > constraint -- call it QOS_EVENTUALLY. =A0It's a very weak constraint,
+>> > compatible with all cpuidle modes in which runnable threads are allowed
+>> > to run (which is all of them), but not compatible with suspend.
+>> >
+>> This sound just like another API rename. It will work, but given that
+>> suspend blockers was the name least objectionable last time around,
+>> I'm not sure what this would solve.
+>
+> It's not just a rename. =A0By changing this into a QoS constraint, we
+> make it more generally useful. =A0Instead of standing on its own, it
+> becomes part of the PM-QOS framework.
 >
 
-I think it makes more sense to block suspend while wakeup events are
-pending than blocking it everywhere timers are used by code that could
-be called while handling wakeup events or other critical work. Also,
-even if you did block suspend everywhere timers where used you still
-have the race where a wakeup interrupt happens right after you decided
-to suspend. In other words, you still need to block suspend in all the
-same places as with the current opportunistic suspend code, so what is
-the benefit of delaying suspend until idle?
+We cannot use the existing pm-qos framework. It is not safe to call
+from atomic context. Also, it does not have any state constraints, so
+it iterates over every registered constraint each time one of them
+changes. Nor does is currently provide any stats for debugging.
+
+The original wakelock patchset supported a wakelock type so it could
+be used to block more then suspend, but I had to remove this because
+it "overlapped" with pm-qos. So, yes I do consider this just another
+rename.
+
+>> > There is no /sys/power/policy file. =A0In place of opportunistic suspe=
+nd,
+>> > we have "QoS-based suspend". =A0This is initiated by userspace writing
+>> > "qos" to /sys/power/state, and it is very much like suspend-to-RAM.
+>>
+>> Why do you want to tie it to a specific state?
+>
+> I don't. =A0I suggested making it a veriant of suspend-to-RAM merely
+> because that's what you were using. =A0But Nigel's suggestion of having
+> "qos" variants of all the different suspend states makes sense.
+>
+>> > However a QoS-based suspend fails immediately if there are any active
+>>
+>> Fail or block? Your next paragraph said that it blocks for
+>> QOS_EVENTUALLY, but if normal constraints fail, you are still stuck in
+>> a retry loop.
+>
+> Normal (i.e., non QOS_EVENTUALLY) constraints aren't part of the
+> Android use case, so it wasn't clear how they should be treated. =A0On
+> further thought, it probably makes more sense to block for them too
+> instead of failing immediately.
+>
+>> > normal QoS constraints incompatible with system suspend, in other
+>> > words, any constraints requiring a throughput > 0 or an interrupt
+>> > latency shorter than the time required for a suspend-to-RAM/resume
+>> > cycle.
+>> >
+>> > If no such constraints are active, the QoS-based suspend blocks in an
+>> > interruptible wait until the number of active QOS_EVENTUALLY
+>>
+>> How do you implement this?
+>
+> I'm not sure what you mean. =A0The same way you implement any
+> interruptible wait.
+>
+
+I mean what should it wait on so that it gets interrupted by a
+userspace ipc call. I guess you want to send a signal in addition to
+the ipc. I still don't know why you want to do it this way though. It
+seems much simpler to just return immedeately and allow the same
+thread to cancel the request with another write.
+
+>> > =A0 =A0 =A0 =A0for (;;) {
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0while (any IPC requests remain)
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0handle them;
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (any processes need to prevent suspe=
+nd)
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0sleep;
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0else
+>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0write "qos" to /sys/pow=
+er/state;
+>> > =A0 =A0 =A0 =A0}
+>> >
+>> > The idea is that receipt of a new IPC request will cause a signal to be
+>> > sent, interrupting the sleep or the "qos" write.
+>>
+>> What happen if the signal is right before (or even right after)
+>> calling write "qos". How does the signal handler stop the write?
+>
+> You're right, this is a serious problem. =A0The process would have to
+> give the kernel a signal mask to be used during the wait, as in ppoll
+> or pselect. =A0There ought to be a way to do this or something
+> equivalent.
+>
+> Alan Stern
+>
+>
+
+
 
 -- =
 
