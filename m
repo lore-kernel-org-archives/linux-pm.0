@@ -1,14 +1,15 @@
-From: Igor Stoppa <igor.stoppa@nokia.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 6)
-Date: Mon, 31 May 2010 09:06:42 +0300
-Message-ID: <4C0351F2.8030709@nokia.com>
-References: <1272667021-21312-1-git-send-email-arve@android.com>	<87wrvl5479.fsf@deeprootsystems.com>	<20100503215028.GB18910@srcf.ucam.org>	<alpine.DEB.2.00.1005141408260.3348@utopia.booyaka.com>	<20100514203202.GA12409@srcf.ucam.org>	<87aas2azc5.fsf@deeprootsystems.com>	<20100514231510.GG16989@thunk.org>	<87r5laa4oc.fsf@deeprootsystems.com>
-	<20100530122143.GA6405@thunk.org>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [RFC] lp_events: an lternitive to suspend blocker
+ user mode and kernel API
+Date: Mon, 31 May 2010 08:43:56 +0200
+Message-ID: <20100531084356.272f3e1a__32912.7735611566$1275288296$gmane$org@schatten.dmk.lab>
+References: <20100530200409.GA21632@gvim.org>
+	<20100531095753.4c174f2d@notabene.brown>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100530122143.GA6405@thunk.org>
+In-Reply-To: <20100531095753.4c174f2d@notabene.brown>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,53 +19,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: tytso@mit.edu, Kevin Hilman <khilman@deeprootsystems.com>, Matthew Garrett <mjg@redhat.com>, Paul Walmsley <paul@pwsan.com>, linux-pm@lists.linux-foundation.org, linux-ke
+To: Neil Brown <neilb@suse.de>
+Cc: mark.gross@intel.com, 640e9920@gmail.com, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-ext tytso@mit.edu wrote:
+On Mon, 31 May 2010 09:57:53 +1000
+Neil Brown <neilb@suse.de> wrote:
 
-> On Mon, May 17, 2010 at 09:12:03AM -0700, Kevin Hilman wrote:
->   
->> The n900 *never* suspends.  It only uses dynamic PM + CPUidle.
->> The droid uses opportunistic suspend (as well as dynamic PM + CPUidle)
->>
->> I don't know of any more objective comparison of the two, but as a
->> user of both devices I can say that the active usage is basically the
->> same (around a day) and the idle use is similar as well, even though
->> the Droid has a slightly bigger battery (1400 mAh vs. 1320 mAh.)....
->>     
->
-> Just for a bit of light amusement, although hopefully we've killed the
-> meme that other platforms have absolutely no problems in this area
-> without using something like suspend blockers,
+> On Sun, 30 May 2010 13:04:10 -0700
+> mark gross <640e9920@gmail.com> wrote:
+> 
+> > Low Power Events is a possible alternative to suspend blocker / wake
+> > lock API used by Android.
+> 
+> Here is how I see your proposal.  It is of course possible that I
+> misunderstood bits, so please correct me where I'm wrong.
+> 
+> 1/ You have introduced a new mechanism for requesting a transition
+>   to a low power state.  This involves writing a number to /dev/lpe_enter.
+>   It is not clear to me from your text what the magic number really means.
+>   I think this parallels writing to /sys/power/state, but achieves the same
+>   result though a different mechanism and adds some extra checking.
+>   So: I don't understand the numbers, and I don't see why we need a
+>    second way to request a low power state.  Probably I missed something
+>    important.
 
-If you are advocating QoS, I think it's a general agreement that 
-something like that is needed.
+I can only think for lpe to provide the levels and have userspace and
+platform code hook into there. Else you would have a dependency from
+userspace to platform code.
 
-If you are saying that suspend blockers - or the like - are needed, no, 
-that is not true.
->  I offer for your
-> consideration this thread from maemo-developers:
->
-> http://lists.maemo.org/pipermail/maemo-developers/2010-May/026490.html
->
-> Note how users conflate battery lifetime after downloading a random
-> application with the platform being "stable".  I also was amazed that
-> the thread degenerated into trying to detect processes that are taking
-> 90% of the CPU.  It's not necessary for a process to be constantly
-> running before it starts chewing up your battery, and if people think
-> the "blame the victim" trick works (``It's the user's fault for
-> "approving" the application by installing it!''), I suspect that
-> the platform will be not be very successful...
->   
- From the thread - if i have not missed it - the user doesn't say if 
-this is a newly flashed device or if he has done an upgrade of something 
-he used to hack with. Erroneous settings might be an explanation there ...
+> 
+> 2/ Rather than tracking wake-events from the hardware up through possibly
+>    several kernel modules, you go directly from hardware to user-space so each
+>    event is potentially presented to user-space twice: once as a "wake up
+>    from low power state" event and once following the normal path (maybe a
+>    key-press event, maybe a serial-port event, maybe a network receive event).
+>    I can see that this is a very tempting approach.  It allows all those
+>    intermediate modules to remain unchanged and that is good.
+>    However it isn't clear to me that this would be easy for user-space to use
+>    correctly.
+>    When an lpe event arrived it would need to wait around for the real event
+>    to arrive and then process that.  I probably wouldn't wait long, but it
+>    would be an indeterminate wait, and it might not be  trivial to determine
+>    if all events that would cause a wake-up have been consumed as a direct
+>    mapping from lpe event to normal event may not always be possible.
+>    Maybe this is more of a theoretical problem and in practice it would be
+>    easy to get it right - I don't have enough concrete experience to be sure.
+> 
+>    So: I like the idea of leaving the intermediate layers unchanged, but I'm
+>    not convinced it would work.
 
-Yes, I am blaming the victim, mostly out of previous experience in 
-similar cases.
+To add to this: Is it a correct assumption
+that all wake-up events that leave a driver trickle eventually up to
+userspace?
 
- From a platform pov I think this mostly proves the need to embed more 
-self diagnostic in the system and have QoS.
+I think splitting the actual driver product (i.e. keypress or whatever)
+of a wake-up-event and it's corresponding wake-lock is not possible.
+Because you would have to _somehow_ map the block back to the product
+when you consume the product. 
 
-igor
+If you want to abstract the blocking from the kernel-code you probably
+have to introduce an abstract "driver-product" entity where you can do
+all your blocking associated with the product but hidden from the code
+that uses the product. (Which I don't think is feasible, because it
+increases overhead)
+
+Or am I on the wrong track here? 
+
+cheers,
+Flo
