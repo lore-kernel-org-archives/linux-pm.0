@@ -1,16 +1,17 @@
-From: Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Tue, 1 Jun 2010 09:00:23 +1000
-Message-ID: <20100601090023.788cabf4@notabene.brown>
-References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
-	<alpine.LFD.2.00.1005272334040.3478@localhost.localdomain>
-	<20100531143339.249ae1f4@notabene.brown>
-	<201006010005.19554.rjw@sisk.pl>
+From: mark gross <640e9920@gmail.com>
+Subject: Re: [RFC] lp_events: an lternitive to suspend blocker
+ user mode and kernel API
+Date: Mon, 31 May 2010 16:03:44 -0700
+Message-ID: <20100531230343.GE31155__17758.6820246235$1275347149$gmane$org@gvim.org>
+References: <20100530200409.GA21632@gvim.org>
+	<AANLkTilPCxcVhcxEyLSixAoOs-ujXzzkSq8cAOE-5Nsz@mail.gmail.com>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006010005.19554.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <AANLkTilPCxcVhcxEyLSixAoOs-ujXzzkSq8cAOE-5Nsz@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,123 +21,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
+Cc: mark.gross@intel.com, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 1 Jun 2010 00:05:19 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Mon, May 31, 2010 at 02:55:16AM -0700, Arve Hj=F8nnev=E5g wrote:
+> On Sun, May 30, 2010 at 1:04 PM, mark gross <640e9920@gmail.com> wrote:
+> > Low Power Events is a possible alternative to suspend blocker / wake
+> > lock API used by Android.
+> >
+> > It provides comparable power state notification and kernel mode critical
+> > section definition. =A0It differs from suspend blocker in that:
+> > 1) it is a platform and device independent implementation. =A0Device
+> > specific code is register as lp_ops, similar to pm_ops. =A0Drivers use
+> > the platform independent functions.
+> >
+> How is this more platform independent than suspend blockers?
 
-> On Monday 31 May 2010, Neil Brown wrote:
-> > On Thu, 27 May 2010 23:40:29 +0200 (CEST)
-> > Thomas Gleixner <tglx@linutronix.de> wrote:
-> > 
-> > > On Thu, 27 May 2010, Rafael J. Wysocki wrote:
-> > > 
-> > > > On Thursday 27 May 2010, Thomas Gleixner wrote:
-> > > > > On Thu, 27 May 2010, Alan Stern wrote:
-> > > > > 
-> > > > > > On Thu, 27 May 2010, Felipe Balbi wrote:
-> > > > > > 
-> > > > > > > On Thu, May 27, 2010 at 05:06:23PM +0200, ext Alan Stern wrote:
-> > > > > > > >If people don't mind, here is a greatly simplified summary of the
-> > > > > > > >comments and objections I have seen so far on this thread:
-> > > > > > > >
-> > > > > > > >	The in-kernel suspend blocker implementation is okay, even
-> > > > > > > >	beneficial.
-> > > > > > > 
-> > > > > > > I disagree here. I believe expressing that as QoS is much better. Let 
-> > > > > > > the kernel decide which power state is better as long as I can say I 
-> > > > > > > need 100us IRQ latency or 100ms wakeup latency.
-> > > > > > 
-> > > > > > Does this mean you believe "echo mem >/sys/power/state" is bad and
-> > > > > > should be removed?  Or "echo disk >/sys/power/state"?  They pay no
-> > > > > 
-> > > > > mem should be replaced by an idle suspend to ram mechanism
-> > > > 
-> > > > Well, what about when I want the machine to suspend _regardless_ of whether
-> > > > or not it's idle at the moment?  That actually happens quite often to me. :-)
-> > > 
-> > > Fair enough. Let's agree on a non ambigous terminology then:
-> > > 
-> > >      forced:
-> > > 
-> > > 	     suspend which you enforce via user interaction, which
-> > >      	     also implies that you risk losing wakeups depending on
-> > >      	     the hardware properties
-> > 
-> > Reasonable definition I think.  However the current implementation doesn't
-> > exactly match it.
-> > With the current implementation you risk losing wakeups *independent* of the
-> > hardware properties.
-> 
-> Define "losing", please.
+You don't have to do "suspend to ram" for the low power mode and one
+could could entertain something different form S2R.
+ =
 
-I did.  See next line in my original.
- "... by which I mean that they will not be seen until some other event
- effects a wake-up".  By "seen" I mean "a user-space process has had a chance
- to react to the event, including having the opportunity to abort the suspend
- (or ensure an immediate wake-up)".
-Another way of saying it might be that the event - as an abstract concept -
-does not reach it's final destination promptly.  This "final destination" may
-be well outside the kernel.
+> > 2) it forces a user mode transition coming out of a LP state.
+> > Notification of wake up sources go to the user mode process managing the
+> > lp states. =A0Notification of blocked LP state entry is through an
+> > error return, and notification of un-blocking is through a file node as
+> > well.
+> >
+> If you want a user mode transition for every resume, you can easily
+> get this with the opportunistic suspend patchset by sending an input
+> event (or other a custom event with that blocks suspend) from a
+> driver's resume hook.
 
-> 
-> Currently, we simply don't regard hardware signals occuring _during_ the
-> suspend operation itself as wakeups (unless they are wakeup interrupts to be
-> precise, because these _are_ taken into account by our current code).
-> 
-> The reason is that the meaning of given event may be _different_ at run time
-> and after the system has been suspended.  For example, consider a power button
-> on a PC box.  If it's pressed at run time, it usually means "power off the
-> system" to the kernel.  After the system has been suspended, however, it means
-> "wake up".  So, you have to switch from one interpretation of the event to the
-> other and that's not an atomic operaition (to put it lightly).
+the input event thing looks like a way to go.
+ =
 
-Yes, a suspend-toggle switch is inherently racy.  It is only wake-up sources
-that are not inherently racy that are interesting.  e.g. a serial line from a
-GSM device which reports "You have an SMS message".
-I want to be able to turn my freerunner upside-down by which I tell it (via
-the accelerometers) that I am done and want it to turn off.  If a TXT message
-comes in just then, I don't want it to suspend, I want it to make an alert
-noise.
-I can put code in to ignore the accelerometer if a txt has just recently come
-in, but if the TXT arrives just as the write to /sys/power/state starts, the
-UART interrupt handler could have completed before it has the PRE_SUSPEND
-method called.  So the suspend will complete and the wakeup from the UART
-will have been "lost" in that the event didn't get all the way to its
-destination: my ear.
-My freerunner has a single core so without CONFIG_PREEMPT it may be that
-there is no actual race-window - maybe the PRE_SUSPENDs will all run before a
-soft_irq thread has a chance to finish handling of the interrupt (my
-knowledge of these details is limits).  But on a muilti-core device I think
-there would definitely be a race-window.
+> > I think the change need to the Google Android user mode power handling
+> > code can be limited to changes to _only_
+> > "hardware/libhardware_legacy/power/power.c"
+> >
+> > This code is still just a prototype of the platform independent code,
+> > and I'm implementing it on Eclair for the Intel Moorestown platform this
+> > weekend. =A0I'll have patches to eclair and updated kernel patches that
+> > enable this sometime Monday, after I bring it up on my target device.
+> > Hopefully by the end of next week I think I'll have it working well with
+> > Android.
+> >
+> > At this time the following patch is only known to compile. =A0I send it=
+ to
+> > help with the discussion.
+> >
+> > FWTW I do work on Android at Intel and I think I can make this work.
+> > (well, today I do.)
+> >
+> > --mgross
+> >
+> > Draft kernel patch :
+> >
+> ...
+> > +
+> > +/dev/lpe_wake_event:
+> > +reads from this returns a list of wake events that happened between en=
+try
+> > +into the LP state and the return from the read of the low_power_enter =
+device
+> > +node. =A0User mode is expected to do something with these events before
+> > +re-trying to enter low power mode.
+> > +
+> =
 
-Thanks,
-NeilBrown
+> I don't think this will work very well. Multiple input events can be
+> pending at the same time. If you register a single wake-event for an
+> input device, you don't know if all the events have been read when you
+> try to clear this wake-event.
+>
+whats important, to me at least, is that uppon wakeup some entity in
+user mode makes a choice on when to re-enter suspend.  =
 
-> 
-> > Even with ideal hardware events can be lost - by which I mean that they will
-> > not be seen until some other event effects a wake-up.
-> > e.g. the interrupt which signals the event happens immediately before the
-> > suspend is requested (or maybe at the same time as), but the process which
-> > needs to handle the event doesn't get a chance to see it before the suspend
-> > procedure freezes that process, and even if it did it would have no way to
-> > abort the suspend.
-> > 
-> > So I submit that the current implementation doesn't match your description of
-> > "forced", is therefore buggy, and that if it were fixed, that would be
-> > sufficient to meet the immediate needs of android.
-> 
-> I don't really think it may be fixed with respect to every possible kind of
-> hardware.  On platforms where I/O interrupts are wakeup events it should
-> work right now.  On other platforms it may be impossible to overcome hardware
-> limitations.
-> 
-> Thanks,
-> Rafael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
+--mgross
+ =
