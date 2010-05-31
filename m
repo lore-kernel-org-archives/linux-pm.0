@@ -1,17 +1,26 @@
-From: mark gross <640e9920@gmail.com>
-Subject: Re: [RFC] lp_events: an lternitive to suspend blocker
- user mode and kernel API
-Date: Mon, 31 May 2010 15:10:35 -0700
-Message-ID: <20100531221035.GB31155__11880.7490951896$1275343872$gmane$org@gvim.org>
-References: <20100530200409.GA21632@gvim.org>
-	<20100531095753.4c174f2d@notabene.brown>
-Reply-To: markgross@thegnar.org
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Tue, 1 Jun 2010 00:17:13 +0200 (CEST)
+Message-ID: <alpine.LFD.2.00.1006010006320.2933__33362.911156337$1275344301$gmane$org@localhost.localdomain>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
+	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
+	<20100527220949.GB10602@srcf.ucam.org>
+	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<20100527223605.GB11364@srcf.ucam.org>
+	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
+	<20100528043114.GC26177@thunk.org>
+	<1275030704.32462.11.camel@laptop>
+	<AANLkTikEtlbkT4Ws3H2YGt_9QC46B5dr-b1oxJOcG4GN@mail.gmail.com>
+	<1275120618.27810.12699.camel@twins>
+	<1275149418.4503.128.camel@mulgrave.site>
+	<alpine.LFD.2.00.1005312231120.2933@localhost.localdomain>
+	<1275340869.2823.344.camel@mulgrave.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100531095753.4c174f2d@notabene.brown>
+In-Reply-To: <1275340869.2823.344.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,87 +30,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Neil Brown <neilb@suse.de>
-Cc: mark.gross@intel.com, 640e9920@gmail.com, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 31, 2010 at 09:57:53AM +1000, Neil Brown wrote:
-> On Sun, 30 May 2010 13:04:10 -0700
-> mark gross <640e9920@gmail.com> wrote:
+On Mon, 31 May 2010, James Bottomley wrote:
+
+> On Mon, 2010-05-31 at 22:49 +0200, Thomas Gleixner wrote:
+> > On Sat, 29 May 2010, James Bottomley wrote:
+> > > The job of the kernel is to accommodate hardware as best it can ...
+> > > sometimes it might not be able to, but most of the time it does a pretty
+> > > good job.
+> > > 
+> > > The facts are that C states and S states are different and are entered
+> > > differently. 
+> > 
+> > That's an x86'ism which is going away. And that's really completely
+> > irrelevant for the mobile device space. Can we please stop trying to
+> > fix todays x86 based laptop problems? They are simply not fixable.
 > 
-> > Low Power Events is a possible alternative to suspend blocker / wake
-> > lock API used by Android.
-> 
-> Here is how I see your proposal.  It is of course possible that I
-> misunderstood bits, so please correct me where I'm wrong.
-> 
-> 1/ You have introduced a new mechanism for requesting a transition
->   to a low power state.  This involves writing a number to /dev/lpe_enter.
->   It is not clear to me from your text what the magic number really means.
->   I think this parallels writing to /sys/power/state, but achieves the same
->   result though a different mechanism and adds some extra checking.
->   So: I don't understand the numbers, and I don't see why we need a
->    second way to request a low power state.  Probably I missed something
->    important.
+> You're the one mentioning x86, not me.  I already explained that some
+> MSM hardware (the G1 for example) has lower power consumption in S3
+> (which I'm using as an ACPI shorthand for suspend to ram) than any
+> suspend from idle C state.
 
-You are not missing much.  Those numbers where an attempt at
-generalization for the level of suspend that could be requested by user
-mode.  The semantics of what I'm talking about are different form
-/sys/power/state even though they both enter low power states.
+Those machines can go from idle into S2RAM just fine w/o touching the
+/sys/power/state S2RAM mechanism.
 
-> 
-> 2/ Rather than tracking wake-events from the hardware up through possibly
->    several kernel modules, you go directly from hardware to user-space so each
->    event is potentially presented to user-space twice: once as a "wake up
->    from low power state" event and once following the normal path (maybe a
->    key-press event, maybe a serial-port event, maybe a network receive event).
->    I can see that this is a very tempting approach.  It allows all those
->    intermediate modules to remain unchanged and that is good.
->    However it isn't clear to me that this would be easy for user-space to use
->    correctly.
+It's just a deeper "C" state, really.
 
-yeah, I think it needs some prototyping too.
+The confusion is that S3 is considered to be a complete different
+mechanism - which is true for PC style x86 - but not relevant for
+hardware which is sane from the PM point of view.
 
->    When an lpe event arrived it would need to wait around for the real event
->    to arrive and then process that.  I probably wouldn't wait long, but it
->    would be an indeterminate wait, and it might not be  trivial to determine
->    if all events that would cause a wake-up have been consumed as a direct
->    mapping from lpe event to normal event may not always be possible.
->    Maybe this is more of a theoretical problem and in practice it would be
->    easy to get it right - I don't have enough concrete experience to be sure.
+Now some people think, that suspend blockers are a cure for the
+existing x86/ACPI/BIOS mess, which cannot go to S3 from idle, but
+that's simply not feasible.
 
-You suggest below adding a input class for wakeups.  I think using that
-would make sense.
- 
->    So: I like the idea of leaving the intermediate layers unchanged, but I'm
->    not convinced it would work.
-> 
+Thanks,
 
-I'm not fully convinced yet either, but I still think it could work.
-
-> 3/ You have created a new mechanism for passing events to user-space.  That
->    seems unnecessary.  We already have the input subsystem which is pretty
->    good at communication arbitrary events, and the events you are dealing
->    with a very much like input events.
-
-really good idea!
- 
-> So I would suggest modifying your proposal to simply create a new 'input'
-> device.  Any driver that supports wake-from-suspend queues an event to that
-> device when a wakeup event occurs.  If the device is open and has any queued
-> events, then a suspend request such as 'echo mem > /sys/power/state' completes
-> without going into full suspend.
-
-/me likes.
- 
-> Then you just need to convince us that this mechanism can be used without any
-> race problems.  If it can, then it would certainly be a simple and
-> unobtrusive approach.
-
-Lets find out.
-
---mgross
-
-> 
-> Thanks,
-> NeilBrown
+	tglx
