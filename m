@@ -1,16 +1,16 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [RFC] lp_events: an lternitive to suspend blocker
- user mode and kernel API
-Date: Mon, 31 May 2010 10:05:45 +0200
-Message-ID: <20100531100545.658a35b7__34874.0232795992$1275293305$gmane$org@schatten.dmk.lab>
-References: <20100530200409.GA21632@gvim.org>
-	<20100531095753.4c174f2d@notabene.brown>
-	<20100531084356.272f3e1a@schatten.dmk.lab>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Mon, 31 May 2010 02:16:45 -0700
+Message-ID: <AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt__48310.7195738286$1275297582$gmane$org@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
+	<201005292227.15479.rjw@sisk.pl>
+	<AANLkTim6zsho4RSrseJostaOJe9lL4VNRKA3vDGJWJhK@mail.gmail.com>
+	<201005302202.39511.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100531084356.272f3e1a@schatten.dmk.lab>
+In-Reply-To: <201005302202.39511.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,64 +20,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: mark.gross@intel.com, 640e9920@gmail.com, markgross@thegnar.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 31 May 2010 08:43:56 +0200
-Florian Mickler <florian@mickler.org> wrote:
+2010/5/30 Rafael J. Wysocki <rjw@sisk.pl>:
+> On Saturday 29 May 2010, Arve Hj=F8nnev=E5g wrote:
+>> 2010/5/29 Rafael J. Wysocki <rjw@sisk.pl>:
+>> > On Saturday 29 May 2010, Arve Hj=F8nnev=E5g wrote:
+>> >> 2010/5/28 Rafael J. Wysocki <rjw@sisk.pl>:
+>> >> > On Friday 28 May 2010, Arve Hj=F8nnev=E5g wrote:
+>> >> >> On Fri, May 28, 2010 at 1:44 AM, Florian Mickler <florian@mickler.=
+org> wrote:
+>> >> >> > On Thu, 27 May 2010 20:05:39 +0200 (CEST)
+>> >> >> > Thomas Gleixner <tglx@linutronix.de> wrote:
+>> >> > ...
+>> >> >> > To integrate this with the current way of doing things, i gather=
+ed it
+>> >> >> > needs to be implemented as an idle-state that does the suspend()=
+-call?
+>> >> >> >
+>> >> >>
+>> >> >> I think it is better no not confuse this with idle. Since initiati=
+ng
+>> >> >> suspend will cause the system to become not-idle, I don't think is=
+ is
+>> >> >> beneficial to initiate suspend from idle.
+>> >> >
+>> >> > It is, if the following two conditions hold simultaneously:
+>> >> >
+>> >> > (a) Doing full system suspend is ultimately going to bring you more=
+ energy
+>> >> > =A0 =A0savings than the (presumably lowest) idle state you're curre=
+ntly in.
+>> >> >
+>> >> > (b) You anticipate that the system will stay idle for a considerabl=
+y long time
+>> >> > =A0 =A0such that it's worth suspending.
+>> >> >
+>> >>
+>> >> I still don't think this matters. If you are waiting for in interrupt
+>> >> that cannot wake you up from suspend, then idle is not an indicator
+>> >> that it is safe to enter suspend. I also don't think you can avoid any
+>> >> user-space suspend blockers by delaying suspend until the system goes
+>> >> idle since any page fault could cause it to go idle. Therefore I don't
+>> >> see a benefit in delaying suspend until idle when the last suspend
+>> >> blocker is released (it would only mask possible race conditions).
+>> >
+>> > I wasn't referring to suspend blockers, but to the idea of initiating =
+full
+>> > system suspend from idle, which I still think makes sense. =A0If you a=
+re
+>> > waiting for an interrupt that cannot wake you from suspend, then
+>> > _obviously_ suspend should not be started. =A0However, if you're not w=
+aiting for
+>> > such an interrupt and the (a) and (b) above hold, it makes sense to st=
+art
+>> > suspend from idle.
+>> >
+>>
+>> What about timers? When you suspend timers stop (otherwise it is just
+>> a deep-idle mode), and this could cause problems. Some drivers rely on
+>> timers if the hardware does not have a completion interrupt. It is not
+>> uncommon to see send command x then wait 200ms in a some hardware
+>> specs.
+>
+> QoS should be used in such cases.
+>
 
-> On Mon, 31 May 2010 09:57:53 +1000
-> Neil Brown <neilb@suse.de> wrote:
-> 
-> > 2/ Rather than tracking wake-events from the hardware up through possibly
-> >    several kernel modules, you go directly from hardware to user-space so each
-> >    event is potentially presented to user-space twice: once as a "wake up
-> >    from low power state" event and once following the normal path (maybe a
-> >    key-press event, maybe a serial-port event, maybe a network receive event).
-> >    I can see that this is a very tempting approach.  It allows all those
-> >    intermediate modules to remain unchanged and that is good.
-> >    However it isn't clear to me that this would be easy for user-space to use
-> >    correctly.
-> >    When an lpe event arrived it would need to wait around for the real event
-> >    to arrive and then process that.  I probably wouldn't wait long, but it
-> >    would be an indeterminate wait, and it might not be  trivial to determine
-> >    if all events that would cause a wake-up have been consumed as a direct
-> >    mapping from lpe event to normal event may not always be possible.
-> >    Maybe this is more of a theoretical problem and in practice it would be
-> >    easy to get it right - I don't have enough concrete experience to be sure.
-> > 
-> >    So: I like the idea of leaving the intermediate layers unchanged, but I'm
-> >    not convinced it would work.
-> 
-> To add to this: Is it a correct assumption
-> that all wake-up events that leave a driver trickle eventually up to
-> userspace?
-> 
-> I think splitting the actual driver product (i.e. keypress or whatever)
-> of a wake-up-event and it's corresponding wake-lock is not possible.
-> Because you would have to _somehow_ map the block back to the product
-> when you consume the product. 
-> 
-> If you want to abstract the blocking from the kernel-code you probably
-> have to introduce an abstract "driver-product" entity where you can do
-> all your blocking associated with the product but hidden from the code
-> that uses the product. (Which I don't think is feasible, because it
-> increases overhead)
-> 
-> Or am I on the wrong track here? 
+I think it makes more sense to block suspend while wakeup events are
+pending than blocking it everywhere timers are used by code that could
+be called while handling wakeup events or other critical work. Also,
+even if you did block suspend everywhere timers where used you still
+have the race where a wakeup interrupt happens right after you decided
+to suspend. In other words, you still need to block suspend in all the
+same places as with the current opportunistic suspend code, so what is
+the benefit of delaying suspend until idle?
 
-I just realized, that you can cancel lpe_blocks via delete_lpe_block(),
-so this is not an issue at all.
-They can be used just like suspend blockers. 
+-- =
 
-Also the mapping of lpe_block to "wake event" is the same problem as
-with the suspend_blockers... 
-
-So I don't think this is a bad idea after all. It decouples the
-suspend_blockers from "suspend" quite nicely. 
-Although it still is only "block" or "no block" and not, as was
-suggested some sort of more fine grained requirement definition.
-
-Cheers,
-Flo
+Arve Hj=F8nnev=E5g
