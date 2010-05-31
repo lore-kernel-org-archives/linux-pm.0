@@ -1,24 +1,15 @@
-From: James Bottomley <James.Bottomley@suse.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Mon, 31 May 2010 16:21:09 -0500
-Message-ID: <1275340869.2823.344.camel__4822.68382697857$1275340925$gmane$org@mulgrave.site>
-References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
-	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
-	<20100527220949.GB10602@srcf.ucam.org>
-	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
-	<20100527223605.GB11364@srcf.ucam.org>
-	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
-	<20100528043114.GC26177@thunk.org> <1275030704.32462.11.camel@laptop>
-	<AANLkTikEtlbkT4Ws3H2YGt_9QC46B5dr-b1oxJOcG4GN@mail.gmail.com>
-	<1275120618.27810.12699.camel@twins>
-	<1275149418.4503.128.camel@mulgrave.site>
-	<alpine.LFD.2.00.1005312231120.2933@localhost.localdomain>
+Date: Mon, 31 May 2010 23:38:55 +0200
+Message-ID: <201005312338.55109.rjw__26799.1590816111$1275341982$gmane$org@sisk.pl>
+References: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
+	<Pine.LNX.4.44L0.1005292026080.6300-100000@netrider.rowland.org>
+	<AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1005312231120.2933@localhost.localdomain>
+In-Reply-To: <AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,53 +19,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2010-05-31 at 22:49 +0200, Thomas Gleixner wrote:
-> On Sat, 29 May 2010, James Bottomley wrote:
-> > The job of the kernel is to accommodate hardware as best it can ...
-> > sometimes it might not be able to, but most of the time it does a pretty
-> > good job.
-> > 
-> > The facts are that C states and S states are different and are entered
-> > differently. 
-> 
-> That's an x86'ism which is going away. And that's really completely
-> irrelevant for the mobile device space. Can we please stop trying to
-> fix todays x86 based laptop problems? They are simply not fixable.
+On Monday 31 May 2010, Arve Hj=F8nnev=E5g wrote:
+> 2010/5/29 Alan Stern <stern@rowland.harvard.edu>:
+> > On Sat, 29 May 2010, Arve Hj=F8nnev=E5g wrote:
+> >
+> >> > In place of in-kernel suspend blockers, there will be a new type of =
+QoS
+> >> > constraint -- call it QOS_EVENTUALLY.  It's a very weak constraint,
+> >> > compatible with all cpuidle modes in which runnable threads are allo=
+wed
+> >> > to run (which is all of them), but not compatible with suspend.
+> >> >
+> >> This sound just like another API rename. It will work, but given that
+> >> suspend blockers was the name least objectionable last time around,
+> >> I'm not sure what this would solve.
+> >
+> > It's not just a rename.  By changing this into a QoS constraint, we
+> > make it more generally useful.  Instead of standing on its own, it
+> > becomes part of the PM-QOS framework.
+> >
+> =
 
-You're the one mentioning x86, not me.  I already explained that some
-MSM hardware (the G1 for example) has lower power consumption in S3
-(which I'm using as an ACPI shorthand for suspend to ram) than any
-suspend from idle C state.  The fact that current x86 hardware has the
-same problem may be true, but it's not entirely relevant.
+> We cannot use the existing pm-qos framework. It is not safe to call
+> from atomic context.
 
-> > For some omap hardware, the power consumption in the
-> > lowest C state (with all the ancillary power control) is the same as S3,
-> > that's fine, suspend from idle works as well as suspend to ram modulo
-> > bad apps. For quite a lot of MSM hardware, the lowest C state power
-> > consumption is quite a bit above S3.  It's not acceptable to tell those
-> > people "tough, your battery runs out in 30 minutes because you bought
-> > the wrong hardware".  We have to figure out how to get to S3 ... whether
-> > this is from idle or some other mechanism is again a discussion point,
-> > but not doing it is not an option.
-> 
-> If you'd have read the answers from Alan carefully, then you'd have
-> noticed that even x86 hardware is getting to the point where OMAP is
-> today. i.e. support of transparent suspend from idle. If that wouldn't
-> happen then x86 would be simply unusable for mobile devices. It's that
-> easy. And we really do _NOT_ care about the existing laptop hardware
-> which does not provide that because it's a lost case. Not only due to
-> the missing (or just disabled) wakeup sources, also due to the fact
-> that you cannot do sensible power management by completely disabling
-> clock and/or power of unused devices in the chipset. There is a damn
-> good reason why the mobile space is _NOT_ x86 based at the moment.
+We've just merged a patch that fixed that if I'm not mistaken.  Mark, did y=
+our
+PM QoS update fix that?
 
-So not at all interested in x86 at the moment.
+> Also, it does not have any state constraints, so it iterates over every
+> registered constraint each time one of them changes.
 
-For MSM hardware, it looks possible to unify the S and C states by doing
-suspend to ram from idle but I'm not sure how much work that is.
+That's fixable IMO.
 
-James
+> Nor does is currently provide any stats for debugging.
+
+That's why Alan is proposing to add that.
+
+> The original wakelock patchset supported a wakelock type so it could
+> be used to block more then suspend, but I had to remove this because
+> it "overlapped" with pm-qos. So, yes I do consider this just another
+> rename.
+
+It's an extension of an existing framework rather than an addition of a new
+one, with entirely new API and so on.  Extending existing APIs is much
+preferred to adding new ones, in general.
+
+Rafael
