@@ -1,14 +1,17 @@
-From: Igor Stoppa <igor.stoppa@nokia.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Mon, 31 May 2010 08:55:33 +0300
-Message-ID: <4C034F55.1090807__574.994509998028$1275284010$gmane$org@nokia.com>
-References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>	<20100527220949.GB10602@srcf.ucam.org>	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>	<20100527223605.GB11364@srcf.ucam.org>	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>	<20100528043114.GC26177@thunk.org>	<20100528103713.0a7952d9@lxorguk.ukuu.org.uk>	<20100528114123.GA22947@srcf.ucam.org>	<4BFFB681.1000105@nokia.com>	<AANLkTim04ZfMcPHRB2D_bqcAuguaGwySH2b6repuYLkk@mail.gmail.com>	<4BFFC5DF.5030504@nokia.com>	<AANLkTikKGeGHHL6AYC7uBuT7Zihj7lozfidWQ8zRHwab@mail.gmail.com>	<4BFFCF39.3010507@nokia.com>
-	<AANLkTinyh1YLmL6miVAxvkh9RMYDY5JChA-_f7oN0zvb@mail.gmail.com>
+From: Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH 1/8] PM: Opportunistic suspend support.
+Date: Mon, 31 May 2010 15:56:25 +1000
+Message-ID: <20100531155625.65fd094d__31192.589729517$1275285483$gmane$org@notabene.brown>
+References: <Pine.LNX.4.44L0.1005251647530.1634-100000@iolanthe.rowland.org>
+	<AANLkTimVhC3X68uN3krrkkAAAK4a4D5yTK1V8i_x_Vfy@mail.gmail.com>
+	<20100530180846.408e50be@notabene.brown>
+	<201005302152.14166.rjw@sisk.pl>
+	<20100531090329.786fce79@notabene.brown>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinyh1YLmL6miVAxvkh9RMYDY5JChA-_f7oN0zvb@mail.gmail.com>
+In-Reply-To: <20100531090329.786fce79@notabene.brown>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,44 +21,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ext Felipe Contreras <felipe.contreras@gmail.com>
-Cc: "tytso@mit.edu" <tytso@mit.edu>, Peter Zijlstra <peterz@infradead.org>, ext Brian Swetland <swetland@google.com>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>, Alan Stern <stern@rowland.harvard.edu>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, Andi Kleen <ak@linux.intel.com>, markgross@thegnar.org, Len Brown <len.brown@intel.com>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>, Kernel development list <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, James Bottomley <James.Bottomley@suse.de>, Tejun Heo <tj@kernel.org>, tytso@mit.edu, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-ext Felipe Contreras wrote:
+On Mon, 31 May 2010 09:03:29 +1000
+Neil Brown <neilb@suse.de> wrote:
 
-> I think this information can be obtained dynamically while the
-> application is running,
+> > Well, please have a look at the Alan Stern's proposal here:
+> > http://lkml.org/lkml/2010/5/29/77
+> >
+> 
+> Thanks for the reference.
+> Some of the details are different, but the idea seems almost exactly the same
+> as mine.
+> The apparent dependence on signals makes me feel a little uncomfortable
+> (interfaces that depend on using signals seem to be easy to use wrongly), but
+> I don't think that is a serious flaw.
+> 
+> Maybe the biggest difference is philosophical.  Alan's proposal appears to be
+> adding a new feature.  Mine presents as trying to fix an existing feature so
+> that it can be used reliably.
+> It is easier to argue against a feature than against a bug-fix (??).
 
-yes, that was the idea
+Addendum...
 
->  and perhaps the limits can be stored. It would
-> be pretty difficult for the applications to give this kind of
-> information because there are so many variables.
->
-> For example, an media player can tell you: this clip has 24 fps, but
-> if the user is moving the time slider, the fps would increase and drop
-> very rapidly, and how much depends at least on the container format
-> and type of seek.
->   
+The use of signals by Alan here got me thinking.. and combining it which what 
+Alan Cox and Thomas Gleixner (and others?) have been saying about detecting
+idleness led me down an interesting path that I thought I would share.
 
-I doubt that belongs to typical QoS. Maybe the target could be to be 
-able to decode a sequence of i-frames?
-> A game or a telephony app could tell you "I need real-time priority"
-> but so much as giving the details of latency and bandwidth? I find
-> that very unlikely.
->   
+An absolutely minimal change to allow a user-space initiated auto-suspend to
+be race-free would be achieved by placing an interruptible wait between
+       pm_notifier_call_chain(PM_SUSPEND_PREPARE);
+and 
+       suspend_freeze_processes();
 
-from my gaming days the games were still evaluated in fps ... maybe i 
-made the wrong assumption?
+which waits for all kernel threads to have passed through an 'idle' state.
 
-A telephony app should still be able to tell if it's dropping audio frames.
+Then any wake event that happened after the PM_SUSPEND_PREPARE would
+presumably either abort the suspend later, or would cause an immediate
+wake-up.
+Any event that happened before the PM_SUSPEND_PREPARE would have been fully
+processed by any kernel thread and so would be queued for user-space (or have
+been discarded).
 
-In all cases there should be some device independent limit - like: what 
-is the sort of degradation that is considered acceptable by the typical 
-user?
+If we then require any process that handles wakeup events to use the
+equivalent of fcntl(F_SETOWN) to direct a SIGIO (or other signal) at the
+process which requests the suspend, then wakeup events won't be lost.
+They will either send a signal to the suspend-daemon in time to abort the
+suspend, or will be late enough to either abort the suspend in-kernel, or
+trigger an immediate wakeup.
 
-Tuning might be offered, but at least this should set some sane set of 
-defaults.
+Yes: this would require quite a large change of the android code, and the
+F_SETOWN usage is fairly ugly, but balanced against it actually working and
+it being minimal, that might be OK.
 
-igor
+The hardest part would be waiting for all kernel-threads to pass through idle
+(or all threads to pass through idle or user-space).  We'd need help to make
+that work, but at least it would be a fairly localised change.
+
+Maybe it is something to keep in mind when other possibilities have proven
+intractable.
+
+NeilBrown
