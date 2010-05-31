@@ -1,20 +1,16 @@
-From: Zygo Blaxell <vger-linux-omap-esightcorp@mailtoo.hungrycats.org>
+From: Neil Brown <neilb@suse.de>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sun, 30 May 2010 21:57:10 -0400
-Message-ID: <20100531015710.GA24917__43308.0354858705$1275271098$gmane$org@gibbs.hungrycats.org>
-References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
-	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
-	<20100527220949.GB10602@srcf.ucam.org>
-	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
-	<AANLkTil6Bo7qZltbLzHJjIDyruKHFQEURpe5LPJEpTws@mail.gmail.com>
-	<20100528101755.7b5f6b8a@lxorguk.ukuu.org.uk>
+Date: Mon, 31 May 2010 14:33:39 +1000
+Message-ID: <20100531143339.249ae1f4__21564.1620023691$1275280525$gmane$org@notabene.brown>
+References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
+	<alpine.LFD.2.00.1005271924170.3032@localhost.localdomain>
+	<201005272315.28475.rjw@sisk.pl>
+	<alpine.LFD.2.00.1005272334040.3478@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100528101755.7b5f6b8a@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.00.1005272334040.3478@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,101 +20,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 28, 2010 at 10:17:55AM +0100, Alan Cox wrote:
-> > Android does not only run on phones. It is possible that no android
-> > devices have ACPI, but I don't know that for a fact. What I do know is
-> > that people want to run Android on x86 hardware and supporting suspend
-> > could be very benficial.
+On Thu, 27 May 2010 23:40:29 +0200 (CEST)
+Thomas Gleixner <tglx@linutronix.de> wrote:
+
+> On Thu, 27 May 2010, Rafael J. Wysocki wrote:
 > 
-> Sufficently beneficial to justify putting all this stuff all over the
-> kernel and apps ? That is a *very* high hurdle, doubly so when those
-> vendors who have chosen to be part of the community are shipping phones
-> and PDAs just fine without them.
+> > On Thursday 27 May 2010, Thomas Gleixner wrote:
+> > > On Thu, 27 May 2010, Alan Stern wrote:
+> > > 
+> > > > On Thu, 27 May 2010, Felipe Balbi wrote:
+> > > > 
+> > > > > On Thu, May 27, 2010 at 05:06:23PM +0200, ext Alan Stern wrote:
+> > > > > >If people don't mind, here is a greatly simplified summary of the
+> > > > > >comments and objections I have seen so far on this thread:
+> > > > > >
+> > > > > >	The in-kernel suspend blocker implementation is okay, even
+> > > > > >	beneficial.
+> > > > > 
+> > > > > I disagree here. I believe expressing that as QoS is much better. Let 
+> > > > > the kernel decide which power state is better as long as I can say I 
+> > > > > need 100us IRQ latency or 100ms wakeup latency.
+> > > > 
+> > > > Does this mean you believe "echo mem >/sys/power/state" is bad and
+> > > > should be removed?  Or "echo disk >/sys/power/state"?  They pay no
+> > > 
+> > > mem should be replaced by an idle suspend to ram mechanism
+> > 
+> > Well, what about when I want the machine to suspend _regardless_ of whether
+> > or not it's idle at the moment?  That actually happens quite often to me. :-)
+> 
+> Fair enough. Let's agree on a non ambigous terminology then:
+> 
+>      forced:
+> 
+> 	     suspend which you enforce via user interaction, which
+>      	     also implies that you risk losing wakeups depending on
+>      	     the hardware properties
 
-I'm not sure "other people are shipping without them" is such a good
-metric, especially for scheduler features.  For some reason (I have some
-ideas what it might be, but I won't speculate here) people don't like
-messing with the scheduler in mainline, even though there's a lot of
-special cases where a bit of messing with the scheduler (or replacing
-it outright) goes a long way toward qualitatively improving performance
-on some workloads.
+Reasonable definition I think.  However the current implementation doesn't
+exactly match it.
+With the current implementation you risk losing wakeups *independent* of the
+hardware properties.
+Even with ideal hardware events can be lost - by which I mean that they will
+not be seen until some other event effects a wake-up.
+e.g. the interrupt which signals the event happens immediately before the
+suspend is requested (or maybe at the same time as), but the process which
+needs to handle the event doesn't get a chance to see it before the suspend
+procedure freezes that process, and even if it did it would have no way to
+abort the suspend.
 
-I'd love to have several more ways to have large classes of processes stop
-executing, and stay stopped, even though traditional Unix and mainline
-Linux would try to run them.  I don't want to put knowledge of this into
-every application I run since there are literally thousands of them,
-and IMNSHO it's not even an application's responsibility to know this
-kind of thing.  The "sort" program can't know what QoS to ask for in any
-sane system design.  The best it can do is try to execute as hard as it
-can whenever the kernel lets it, and have some other application advise
-the kernel about how much or how little service (including cases like
-"no service at all") the sort program should get from the system.
+So I submit that the current implementation doesn't match your description of
+"forced", is therefore buggy, and that if it were fixed, that would be
+sufficient to meet the immediate needs of android.
 
-To choose a random example, I'd like a "duty cycle" constraint on
-process execution (i.e. a runnable task must execute between L and M ns
-per N ns interval--stealing slices from lower priority processes if it
-doesn't get enough and isn't blocked on I/O, and leaving the CPU idle even
-though the process is runnable if it gets too much).  I usually want to
-apply this kind of limit to programs like Firefox, because Firefox is a)
-big enough that controlling it actually matters for power consumption,
-b) sensitive enough to user interaction latency that I want it to have
-fairly high CPU priority when it has something to do, and c) big and
-complex enough that I wouldn't want to try to adjust its behavior by
-modifying its source.  Also, Firefox's behavior tends to be driven by
-the data it pulls from random web sites, over which I have no control
-whatsoever, and many of them are intentionally wasteful.
+NeilBrown
 
-I'm not willing to run a non-mainline kernel (or Firefox, for that
-matter) just to get that feature, and I'm not willing to submit patches
-to mainline if I've seen nearly identical ideas rejected recently, so I
-live without the feature for now.  This implies that the statistic for
-"people running desirable scheduler features" is at least one lower than
-the statistic for "people who would use desirable scheduler features if
-they didn't have to hack up non-mainline kernels to get them."
-
-I can hack up something that does something similar to duty cycle in
-user-space, but it's got a lot of problems:
-
-	- when you send SIGSTOP/SIGCONT to a process, it wakes up its
-	parent through waitpid() (well, you can partially get around
-	this with ptrace(), but that raises other issues),
-
-	- it's racy wrt fork(),
-
-	- it can't opportunistically schedule process execution,
-	e.g. during times when the CPU is idle at high clock rates,
-
-	- sufficiently badly behaved processes are able to escape
-	the CPU usage regulation mechanism, and
-
-	- estimating how much global CPU has been used as a percentage of
-	real time is easy, but how much CPU relative to other processes
-	running on the system is not.  I keep doing math like "subtract
-	aggregate process CPU usage from global CPU usage" and getting
-	numbers outside the range of 0..100% of global CPU usage.
-
-Also, for non-trivial cases, the user-space CPU management process
-consumes more CPU than any other process on the system, and keeps waking
-up the CPU every N and M ns, even if the process being scheduled isn't
-runnable.  
-
-Simply providing better information to userspace to help a regulator
-application of this kind would be a huge leap in the right direction.
-
-Arguably I could run the applications I want to throttle under KVM,
-and hack up the KVM to manage the CPU usage; however, that's hardly
-transparent to the application, which is now running on the wrong machine
-for a lot of what it wants to do.
-
-So instead of fixing the software, I have an extra-large third-party
-battery on my laptop.  It's a cheaper solution on small (one user) scales.
-I can't ship a competitive product with that kind of problem, though.
-
-Having said all that, I'm fairly sure suspend blockers aren't the way to
-get it.  I'd much rather have interesting QoS constraint features,
-including new conditions under which to not run otherwise runnable tasks.
-Maybe ionice and SCHED_IDLEPRIO on steroids?
+> 
+>      opportunistic:
+> 
+> 	     suspend driven from the idle context, which guarantees to
+> 	     not lose wakeups. Provided only when the hardware does
+> 	     provide the necessary capabilities.
+> 
+> Thanks,
+> 
+> 	tglx
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
