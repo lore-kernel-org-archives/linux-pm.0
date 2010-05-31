@@ -1,14 +1,20 @@
-From: Neil Brown <neilb@suse.de>
-Subject: Re: [RFC] lp_events: an lternitive to suspend blocker
- user mode and kernel API
-Date: Mon, 31 May 2010 09:57:53 +1000
-Message-ID: <20100531095753.4c174f2d__47119.3174286329$1275264035$gmane$org@notabene.brown>
-References: <20100530200409.GA21632@gvim.org>
+From: Zygo Blaxell <vger-linux-omap-esightcorp@mailtoo.hungrycats.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Sun, 30 May 2010 21:57:10 -0400
+Message-ID: <20100531015710.GA24917__43308.0354858705$1275271098$gmane$org@gibbs.hungrycats.org>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
+	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
+	<20100527220949.GB10602@srcf.ucam.org>
+	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<AANLkTil6Bo7qZltbLzHJjIDyruKHFQEURpe5LPJEpTws@mail.gmail.com>
+	<20100528101755.7b5f6b8a@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100530200409.GA21632@gvim.org>
+Content-Disposition: inline
+In-Reply-To: <20100528101755.7b5f6b8a@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,62 +24,101 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: mark.gross@intel.com, 640e9920@gmail.com, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 30 May 2010 13:04:10 -0700
-mark gross <640e9920@gmail.com> wrote:
+On Fri, May 28, 2010 at 10:17:55AM +0100, Alan Cox wrote:
+> > Android does not only run on phones. It is possible that no android
+> > devices have ACPI, but I don't know that for a fact. What I do know is
+> > that people want to run Android on x86 hardware and supporting suspend
+> > could be very benficial.
+> 
+> Sufficently beneficial to justify putting all this stuff all over the
+> kernel and apps ? That is a *very* high hurdle, doubly so when those
+> vendors who have chosen to be part of the community are shipping phones
+> and PDAs just fine without them.
 
-> Low Power Events is a possible alternative to suspend blocker / wake
-> lock API used by Android.
+I'm not sure "other people are shipping without them" is such a good
+metric, especially for scheduler features.  For some reason (I have some
+ideas what it might be, but I won't speculate here) people don't like
+messing with the scheduler in mainline, even though there's a lot of
+special cases where a bit of messing with the scheduler (or replacing
+it outright) goes a long way toward qualitatively improving performance
+on some workloads.
 
-Here is how I see your proposal.  It is of course possible that I
-misunderstood bits, so please correct me where I'm wrong.
+I'd love to have several more ways to have large classes of processes stop
+executing, and stay stopped, even though traditional Unix and mainline
+Linux would try to run them.  I don't want to put knowledge of this into
+every application I run since there are literally thousands of them,
+and IMNSHO it's not even an application's responsibility to know this
+kind of thing.  The "sort" program can't know what QoS to ask for in any
+sane system design.  The best it can do is try to execute as hard as it
+can whenever the kernel lets it, and have some other application advise
+the kernel about how much or how little service (including cases like
+"no service at all") the sort program should get from the system.
 
-1/ You have introduced a new mechanism for requesting a transition
-  to a low power state.  This involves writing a number to /dev/lpe_enter.
-  It is not clear to me from your text what the magic number really means.
-  I think this parallels writing to /sys/power/state, but achieves the same
-  result though a different mechanism and adds some extra checking.
-  So: I don't understand the numbers, and I don't see why we need a
-   second way to request a low power state.  Probably I missed something
-   important.
+To choose a random example, I'd like a "duty cycle" constraint on
+process execution (i.e. a runnable task must execute between L and M ns
+per N ns interval--stealing slices from lower priority processes if it
+doesn't get enough and isn't blocked on I/O, and leaving the CPU idle even
+though the process is runnable if it gets too much).  I usually want to
+apply this kind of limit to programs like Firefox, because Firefox is a)
+big enough that controlling it actually matters for power consumption,
+b) sensitive enough to user interaction latency that I want it to have
+fairly high CPU priority when it has something to do, and c) big and
+complex enough that I wouldn't want to try to adjust its behavior by
+modifying its source.  Also, Firefox's behavior tends to be driven by
+the data it pulls from random web sites, over which I have no control
+whatsoever, and many of them are intentionally wasteful.
 
-2/ Rather than tracking wake-events from the hardware up through possibly
-   several kernel modules, you go directly from hardware to user-space so each
-   event is potentially presented to user-space twice: once as a "wake up
-   from low power state" event and once following the normal path (maybe a
-   key-press event, maybe a serial-port event, maybe a network receive event).
-   I can see that this is a very tempting approach.  It allows all those
-   intermediate modules to remain unchanged and that is good.
-   However it isn't clear to me that this would be easy for user-space to use
-   correctly.
-   When an lpe event arrived it would need to wait around for the real event
-   to arrive and then process that.  I probably wouldn't wait long, but it
-   would be an indeterminate wait, and it might not be  trivial to determine
-   if all events that would cause a wake-up have been consumed as a direct
-   mapping from lpe event to normal event may not always be possible.
-   Maybe this is more of a theoretical problem and in practice it would be
-   easy to get it right - I don't have enough concrete experience to be sure.
+I'm not willing to run a non-mainline kernel (or Firefox, for that
+matter) just to get that feature, and I'm not willing to submit patches
+to mainline if I've seen nearly identical ideas rejected recently, so I
+live without the feature for now.  This implies that the statistic for
+"people running desirable scheduler features" is at least one lower than
+the statistic for "people who would use desirable scheduler features if
+they didn't have to hack up non-mainline kernels to get them."
 
-   So: I like the idea of leaving the intermediate layers unchanged, but I'm
-   not convinced it would work.
+I can hack up something that does something similar to duty cycle in
+user-space, but it's got a lot of problems:
 
-3/ You have created a new mechanism for passing events to user-space.  That
-   seems unnecessary.  We already have the input subsystem which is pretty
-   good at communication arbitrary events, and the events you are dealing
-   with a very much like input events.
+	- when you send SIGSTOP/SIGCONT to a process, it wakes up its
+	parent through waitpid() (well, you can partially get around
+	this with ptrace(), but that raises other issues),
 
-So I would suggest modifying your proposal to simply create a new 'input'
-device.  Any driver that supports wake-from-suspend queues an event to that
-device when a wakeup event occurs.  If the device is open and has any queued
-events, then a suspend request such as 'echo mem > /sys/power/state' completes
-without going into full suspend.
+	- it's racy wrt fork(),
 
-Then you just need to convince us that this mechanism can be used without any
-race problems.  If it can, then it would certainly be a simple and
-unobtrusive approach.
+	- it can't opportunistically schedule process execution,
+	e.g. during times when the CPU is idle at high clock rates,
 
-Thanks,
-NeilBrown
+	- sufficiently badly behaved processes are able to escape
+	the CPU usage regulation mechanism, and
+
+	- estimating how much global CPU has been used as a percentage of
+	real time is easy, but how much CPU relative to other processes
+	running on the system is not.  I keep doing math like "subtract
+	aggregate process CPU usage from global CPU usage" and getting
+	numbers outside the range of 0..100% of global CPU usage.
+
+Also, for non-trivial cases, the user-space CPU management process
+consumes more CPU than any other process on the system, and keeps waking
+up the CPU every N and M ns, even if the process being scheduled isn't
+runnable.  
+
+Simply providing better information to userspace to help a regulator
+application of this kind would be a huge leap in the right direction.
+
+Arguably I could run the applications I want to throttle under KVM,
+and hack up the KVM to manage the CPU usage; however, that's hardly
+transparent to the application, which is now running on the wrong machine
+for a lot of what it wants to do.
+
+So instead of fixing the software, I have an extra-large third-party
+battery on my laptop.  It's a cheaper solution on small (one user) scales.
+I can't ship a competitive product with that kind of problem, though.
+
+Having said all that, I'm fairly sure suspend blockers aren't the way to
+get it.  I'd much rather have interesting QoS constraint features,
+including new conditions under which to not run otherwise runnable tasks.
+Maybe ionice and SCHED_IDLEPRIO on steroids?
