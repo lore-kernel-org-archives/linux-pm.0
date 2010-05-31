@@ -1,26 +1,15 @@
-From: Thomas Gleixner <tglx@linutronix.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Mon, 31 May 2010 23:46:12 +0200 (CEST)
-Message-ID: <alpine.LFD.2.00.1005312343290.2933__39199.6672413827$1275342420$gmane$org@localhost.localdomain>
-References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
-	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
-	<20100527220949.GB10602@srcf.ucam.org>
-	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
-	<20100527223605.GB11364@srcf.ucam.org>
-	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
-	<20100528043114.GC26177@thunk.org>
-	<1275030704.32462.11.camel@laptop>
-	<AANLkTikEtlbkT4Ws3H2YGt_9QC46B5dr-b1oxJOcG4GN@mail.gmail.com>
-	<1275120618.27810.12699.camel@twins>
-	<1275149418.4503.128.camel@mulgrave.site>
-	<alpine.LFD.2.00.1005312231120.2933@localhost.localdomain>
-	<1275340869.2823.344.camel@mulgrave.site>
+Date: Tue, 1 Jun 2010 00:05:19 +0200
+Message-ID: <201006010005.19554.rjw__49980.2270126112$1275343562$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
+	<alpine.LFD.2.00.1005272334040.3478@localhost.localdomain>
+	<20100531143339.249ae1f4@notabene.brown>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275340869.2823.344.camel@mulgrave.site>
+In-Reply-To: <20100531143339.249ae1f4@notabene.brown>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -30,20 +19,82 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Neil Brown <neilb@suse.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 31 May 2010, James Bottomley wrote:
+On Monday 31 May 2010, Neil Brown wrote:
+> On Thu, 27 May 2010 23:40:29 +0200 (CEST)
+> Thomas Gleixner <tglx@linutronix.de> wrote:
 > 
-> For MSM hardware, it looks possible to unify the S and C states by doing
-> suspend to ram from idle but I'm not sure how much work that is.
+> > On Thu, 27 May 2010, Rafael J. Wysocki wrote:
+> > 
+> > > On Thursday 27 May 2010, Thomas Gleixner wrote:
+> > > > On Thu, 27 May 2010, Alan Stern wrote:
+> > > > 
+> > > > > On Thu, 27 May 2010, Felipe Balbi wrote:
+> > > > > 
+> > > > > > On Thu, May 27, 2010 at 05:06:23PM +0200, ext Alan Stern wrote:
+> > > > > > >If people don't mind, here is a greatly simplified summary of the
+> > > > > > >comments and objections I have seen so far on this thread:
+> > > > > > >
+> > > > > > >	The in-kernel suspend blocker implementation is okay, even
+> > > > > > >	beneficial.
+> > > > > > 
+> > > > > > I disagree here. I believe expressing that as QoS is much better. Let 
+> > > > > > the kernel decide which power state is better as long as I can say I 
+> > > > > > need 100us IRQ latency or 100ms wakeup latency.
+> > > > > 
+> > > > > Does this mean you believe "echo mem >/sys/power/state" is bad and
+> > > > > should be removed?  Or "echo disk >/sys/power/state"?  They pay no
+> > > > 
+> > > > mem should be replaced by an idle suspend to ram mechanism
+> > > 
+> > > Well, what about when I want the machine to suspend _regardless_ of whether
+> > > or not it's idle at the moment?  That actually happens quite often to me. :-)
+> > 
+> > Fair enough. Let's agree on a non ambigous terminology then:
+> > 
+> >      forced:
+> > 
+> > 	     suspend which you enforce via user interaction, which
+> >      	     also implies that you risk losing wakeups depending on
+> >      	     the hardware properties
+> 
+> Reasonable definition I think.  However the current implementation doesn't
+> exactly match it.
+> With the current implementation you risk losing wakeups *independent* of the
+> hardware properties.
 
-On ARM, it's not rocket science and we have in tree support for this
-already (OMAP). I have done the same thing on a Samsung part as a
-prove of concept two years ago and it's really easy as the hardware is
-sane. Hint: It's designed for mobile devices :)
+Define "losing", please.
+
+Currently, we simply don't regard hardware signals occuring _during_ the
+suspend operation itself as wakeups (unless they are wakeup interrupts to be
+precise, because these _are_ taken into account by our current code).
+
+The reason is that the meaning of given event may be _different_ at run time
+and after the system has been suspended.  For example, consider a power button
+on a PC box.  If it's pressed at run time, it usually means "power off the
+system" to the kernel.  After the system has been suspended, however, it means
+"wake up".  So, you have to switch from one interpretation of the event to the
+other and that's not an atomic operaition (to put it lightly).
+
+> Even with ideal hardware events can be lost - by which I mean that they will
+> not be seen until some other event effects a wake-up.
+> e.g. the interrupt which signals the event happens immediately before the
+> suspend is requested (or maybe at the same time as), but the process which
+> needs to handle the event doesn't get a chance to see it before the suspend
+> procedure freezes that process, and even if it did it would have no way to
+> abort the suspend.
+> 
+> So I submit that the current implementation doesn't match your description of
+> "forced", is therefore buggy, and that if it were fixed, that would be
+> sufficient to meet the immediate needs of android.
+
+I don't really think it may be fixed with respect to every possible kind of
+hardware.  On platforms where I/O interrupts are wakeup events it should
+work right now.  On other platforms it may be impossible to overcome hardware
+limitations.
 
 Thanks,
-
-	tglx
+Rafael
