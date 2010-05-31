@@ -1,11 +1,13 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: hibernation hangs with ATA errors (lockup_detector bug)
-Date: Mon, 31 May 2010 16:22:00 +0200
-Message-ID: <4C03C608.1040600__29401.9879810095$1275315786$gmane$org@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Mon, 31 May 2010 11:13:43 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1005311053270.853-100000__29699.2234573283$1275318968$gmane$org@netrider.rowland.org>
+References: <AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,80 +17,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: dzickus@redhat.com
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Mon, 31 May 2010, Arve Hj=F8nnev=E5g wrote:
 
-with -next I get the following errors while trying to hibernate in
-qemu-kvm after the image is stored on disk:
-sd 0:0:0:0: [sda] Starting disk
-sd 0:0:1:0: [sdb] Starting disk
-e1000: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX
-ata1.00: configured for MWDMA2
-ata1.01: configured for MWDMA2
-PM: thaw of devices complete after 168.017 msecs
-ata2.01: qc timeout (cmd 0xec)
-ata2.01: failed to IDENTIFY (I/O error, err_mask=0x4)
-sd 0:0:1:0: [sdb] Stopping disk
-sd 0:0:0:0: [sda] Stopping disk
-uhci_hcd 0000:00:01.2: PCI INT D disabled
-e1000 0000:00:03.0: PCI INT A disabled
-ata2.01: qc timeout (cmd 0xec)
-ata2.01: failed to IDENTIFY (I/O error, err_mask=0x4)
-ata2.01: qc timeout (cmd 0xec)
-ata2.01: failed to IDENTIFY (I/O error, err_mask=0x4)
-...
+> >> This sound just like another API rename. It will work, but given that
+> >> suspend blockers was the name least objectionable last time around,
+> >> I'm not sure what this would solve.
+> >
+> > It's not just a rename. =A0By changing this into a QoS constraint, we
+> > make it more generally useful. =A0Instead of standing on its own, it
+> > becomes part of the PM-QOS framework.
+> >
+> =
 
-I bisected it down to:
-commit 58687acba59266735adb8ccd9b5b9aa2c7cd205b
-Author: Don Zickus <dzickus@redhat.com>
-Date:   Fri May 7 17:11:44 2010 -0400
+> We cannot use the existing pm-qos framework. It is not safe to call
+> from atomic context. Also, it does not have any state constraints, so
+> it iterates over every registered constraint each time one of them
+> changes. Nor does is currently provide any stats for debugging.
+> =
 
-    lockup_detector: Combine nmi_watchdog and softlockup detector
+> The original wakelock patchset supported a wakelock type so it could
+> be used to block more then suspend, but I had to remove this because
+> it "overlapped" with pm-qos. So, yes I do consider this just another
+> rename.
 
-    The new nmi_watchdog (which uses the perf event subsystem) is very
-    similar in structure to the softlockup detector.  Using Ingo's
-    suggestion, I combined the two functionalities into one file:
-    kernel/watchdog.c.
-...
+You're missing the point.  The fact that wakelocks "overlapped" with =
 
+pm-qos is _good_.  It means that you can implement what you need within =
 
+the pm-qos framework, if you expand the framework's capabilities (add =
 
-The config difference against 58687acb^:
---- .config.old     2010-05-31 16:01:51.727312636 +0200
-+++ .config 2010-05-31 16:11:08.682136175 +0200
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
- # Linux kernel version: 2.6.34-rc7
--# Mon May 31 16:01:51 2010
-+# Mon May 31 16:11:08 2010
- #
- CONFIG_64BIT=y
- # CONFIG_X86_32 is not set
-@@ -2133,7 +2133,7 @@
- CONFIG_DEBUG_KERNEL=y
- CONFIG_DEBUG_SHIRQ=y
- CONFIG_DETECT_SOFTLOCKUP=y
--CONFIG_NMI_WATCHDOG=y
-+CONFIG_LOCKUP_DETECTOR=y
- # CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC is not set
- CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
- CONFIG_DETECT_HUNG_TASK=y
+the ability to do things in atomic context, add the ability to collect =
 
+stats for debugging, etc.).
 
+Maybe this would require redesigning a large part of pm-qos.  I'm not
+very familiar with it, so I don't know what would be involved.  Still,
+it seems like a reasonable approach, given what you need to accomplish.
 
+> >> > If no such constraints are active, the QoS-based suspend blocks in an
+> >> > interruptible wait until the number of active QOS_EVENTUALLY
+> >>
+> >> How do you implement this?
+> >
+> > I'm not sure what you mean. =A0The same way you implement any
+> > interruptible wait.
+> >
+> =
 
-'nowatchdog' parameter helps.
+> I mean what should it wait on so that it gets interrupted by a
+> userspace ipc call. I guess you want to send a signal in addition to
+> the ipc.
 
-$ grep PERF .config
-CONFIG_HAVE_PERF_EVENTS=y
-CONFIG_PERF_EVENTS=y
-# CONFIG_PERF_COUNTERS is not set
-# CONFIG_DEBUG_PERF_USE_VMALLOC is not set
-CONFIG_HAVE_PERF_EVENTS_NMI=y
+If the IPC is carried out over a Unix socket, you can get SIGIO =
 
--- 
-js
+signals for free.  But yes, if necessary the client could send a signal =
+
+along with its request.
+
+> I still don't know why you want to do it this way though. It
+> seems much simpler to just return immedeately and allow the same
+> thread to cancel the request with another write.
+
+I suggested doing it this way because it is as close as possible to the =
+
+existing API.  A two-step submit/cancel approach would be a larger =
+
+change -- but it certainly would work.  I have no objection to it.
+
+The main idea behind this part of the proposal was to get rid of the
+new userspace-suspend-blocker API (along with /sys/power/policy, which
+Pavel objects to).  Equivalent functionality can be achieved by making
+only small changes to the existing /sys/power/state interface (and
+perhaps somewhat larger changes to the userspace daemon); the exact =
+
+details of the changes aren't critical.
+
+Alan Stern
