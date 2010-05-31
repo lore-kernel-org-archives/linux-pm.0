@@ -1,11 +1,26 @@
-From: Martin Steigerwald <Martin@lichtvoll.de>
-Subject: [regression] Please add bug 15788 and 15969,
-	usb sound / radeon kms broken after snapshot cycle
-Date: Mon, 31 May 2010 22:15:04 +0200
-Message-ID: <201005312215.17793.Martin__19292.1674381525$1275336970$gmane$org@lichtvoll.de>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Mon, 31 May 2010 22:47:32 +0200
+Message-ID: <20100531224732.2073828d__20452.3509055891$1275338906$gmane$org@schatten.dmk.lab>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
+	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
+	<20100527220949.GB10602@srcf.ucam.org>
+	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<20100527223605.GB11364@srcf.ucam.org>
+	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
+	<20100528043114.GC26177@thunk.org>
+	<1275030704.32462.11.camel@laptop>
+	<AANLkTikEtlbkT4Ws3H2YGt_9QC46B5dr-b1oxJOcG4GN@mail.gmail.com>
+	<1275120618.27810.12699.camel@twins>
+	<1275149418.4503.128.camel@mulgrave.site>
+	<1275156734.1645.496.camel@laptop>
+	<20100531221219.212bf119@schatten.dmk.lab>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8556294127621980306=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20100531221219.212bf119@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -13,72 +28,37 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+To: Florian Mickler <florian@mickler.org>
+Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
---===============8556294127621980306==
-Content-Type: multipart/signed;
-  boundary="nextPart1372653.zhlqzsHAFM";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+On Mon, 31 May 2010 22:12:19 +0200
+Florian Mickler <florian@mickler.org> wrote:
 
---nextPart1372653.zhlqzsHAFM
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+> On Sat, 29 May 2010 20:12:14 +0200
+> Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > Why would you try to let buggy apps work as intended instead of break
+> > them as hard as possible? Such policy promotes crappy code since people
+> > get away with it.
+> 
+> If I have a simple shell script then I don't wanna jump through
+> hoops just to please your fragile kernel. 
 
+Also why should that code on one device kill my uptime and on the
+other machine (my wall-plugged desktop) work just well? That doesn't
+sound right.
 
-Hi Rafael,
+Clearly opportunistic suspend is a workaround for battery-driven devices
+and no general solution. But it is not specific to android. At least
+not inherently. It could be useful for any embedded or mobile device
+where you can clearly distinguish important functions from convenience
+functions.
 
-please add
+I really can't understand the whole _fundamental_ opposition to this
+design choice. 
 
-Bug 15788 -  external usb sound card doesn't work after resume
-https://bugzilla.kernel.org/show_bug.cgi?id=3D15788
-
-to your regression list.
-
-And
-
-Bug 15969 -  radeon regression couldn't schedule IB on resume with 2.6.34-
-rc7=20
-https://bugzilla.kernel.org/show_bug.cgi?id=3D15969
-
-Thanks.
-
-I find it irritating that a stable kernel is released with regressions like=
-=20
-this, but that seems to be what I can get for not waiting for 2.6.34.2 or=20
-higher.
-
-Ciao,
-=2D-=20
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
-
---nextPart1372653.zhlqzsHAFM
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkwEGMkACgkQmRvqrKWZhMdAgwCbBdJwVp317zPLsQJcr0+fsHzk
-6+4AoIUVFZF5DOUVof0Ifj1AEp155JWn
-=9kYJ
------END PGP SIGNATURE-----
-
---nextPart1372653.zhlqzsHAFM--
-
---===============8556294127621980306==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============8556294127621980306==--
+Cheers,
+Flo
