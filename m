@@ -1,15 +1,26 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Mon, 31 May 2010 23:47:24 +0200
-Message-ID: <201005312347.24251.rjw__14275.6322552033$1275342403$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<201005302202.39511.rjw@sisk.pl>
-	<AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt@mail.gmail.com>
+Date: Mon, 31 May 2010 23:46:12 +0200 (CEST)
+Message-ID: <alpine.LFD.2.00.1005312343290.2933__39199.6672413827$1275342420$gmane$org@localhost.localdomain>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
+	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
+	<20100527220949.GB10602@srcf.ucam.org>
+	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<20100527223605.GB11364@srcf.ucam.org>
+	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
+	<20100528043114.GC26177@thunk.org>
+	<1275030704.32462.11.camel@laptop>
+	<AANLkTikEtlbkT4Ws3H2YGt_9QC46B5dr-b1oxJOcG4GN@mail.gmail.com>
+	<1275120618.27810.12699.camel@twins>
+	<1275149418.4503.128.camel@mulgrave.site>
+	<alpine.LFD.2.00.1005312231120.2933@localhost.localdomain>
+	<1275340869.2823.344.camel@mulgrave.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt@mail.gmail.com>
+In-Reply-To: <1275340869.2823.344.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,31 +30,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 31 May 2010, Arve Hj=F8nnev=E5g wrote:
-> 2010/5/30 Rafael J. Wysocki <rjw@sisk.pl>:
-...
-> =
+On Mon, 31 May 2010, James Bottomley wrote:
+> 
+> For MSM hardware, it looks possible to unify the S and C states by doing
+> suspend to ram from idle but I'm not sure how much work that is.
 
-> I think it makes more sense to block suspend while wakeup events are
-> pending than blocking it everywhere timers are used by code that could
-> be called while handling wakeup events or other critical work. Also,
-> even if you did block suspend everywhere timers where used you still
-> have the race where a wakeup interrupt happens right after you decided
-> to suspend. In other words, you still need to block suspend in all the
-> same places as with the current opportunistic suspend code, so what is
-> the benefit of delaying suspend until idle?
+On ARM, it's not rocket science and we have in tree support for this
+already (OMAP). I have done the same thing on a Samsung part as a
+prove of concept two years ago and it's really easy as the hardware is
+sane. Hint: It's designed for mobile devices :)
 
-Assume for a while that you don't use suspend blockers, OK?  I realize you
-think that anything else doesn't make sense, but evidently some other people
-have that opinion about suspend blockers.
+Thanks,
 
-Now, under that assumption, I think it _generally_ is reasonable to make the
-system go into full suspend if everything (ie. CPUs and I/O) has been idle
-for sufficiently long time and there are no QoS requirements that aren't
-compatible with full system suspend.
-
-Rafael
+	tglx
