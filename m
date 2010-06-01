@@ -1,13 +1,13 @@
 From: florian@mickler.org
 Subject: [PATCH] pm_qos: remove unnecessary list-traversal
-Date: Tue,  1 Jun 2010 10:46:54 +0200
-Message-ID: <1275382014-10178-1-git-send-email-florian__46146.8229572803$1275382096$gmane$org@mickler.org>
-References: <20100601090737.4bc243d9@schatten.dmk.lab>
+Date: Tue,  1 Jun 2010 10:52:11 +0200
+Message-ID: <1275382331-15180-1-git-send-email-florian__45864.0512581498$1275382395$gmane$org@mickler.org>
+References: <1275382014-10178-1-git-send-email-florian@mickler.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100601090737.4bc243d9@schatten.dmk.lab>
+In-Reply-To: <1275382014-10178-1-git-send-email-florian@mickler.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,11 +26,13 @@ the changed value.
 
 Signed-off-by: Florian Mickler <florian@mickler.org>
 ---
+This version actually compiles...  :)
+
  kernel/pm_qos_params.c |   19 +++++++++++++++++--
  1 files changed, 17 insertions(+), 2 deletions(-)
 
 diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-index f42d3f7..5d71c12 100644
+index f42d3f7..3ae94e1 100644
 --- a/kernel/pm_qos_params.c
 +++ b/kernel/pm_qos_params.c
 @@ -136,6 +136,16 @@ static s32 min_compare(s32 v1, s32 v2)
@@ -72,7 +74,7 @@ index f42d3f7..5d71c12 100644
  		if (pending_update)
 -			update_target(pm_qos_req->pm_qos_class);
 +			blocking_notifier_call_chain(
-+				pm_qos_array[pm_qos_class]->notifiers,
++				pm_qos_array[target]->notifiers,
 +					(unsigned long) temp, NULL);
  	}
  }
