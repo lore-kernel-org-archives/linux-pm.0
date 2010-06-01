@@ -1,16 +1,18 @@
-From: Thomas Gleixner <tglx@linutronix.de>
+From: mark gross <640e9920@gmail.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Tue, 1 Jun 2010 14:17:01 +0200 (CEST)
-Message-ID: <alpine.LFD.2.00.1006011411200.2933__6967.89708822525$1275394824$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<201005302202.39511.rjw@sisk.pl>
-	<AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt@mail.gmail.com>
-	<201005312347.24251.rjw@sisk.pl>
-	<AANLkTilvOgSFTDFtXbjJobMZWxgfvsC97TqC7_a_NHBX@mail.gmail.com>
+Date: Tue, 1 Jun 2010 06:46:55 -0700
+Message-ID: <20100601134655.GA1281__30472.2202047289$1275400069$gmane$org@gvim.org>
+References: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
+	<Pine.LNX.4.44L0.1005292026080.6300-100000@netrider.rowland.org>
+	<AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
+	<201005312338.55109.rjw@sisk.pl> <20100531232617.GF31155@gvim.org>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1710233220-1275394626=:2933"
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTilvOgSFTDFtXbjJobMZWxgfvsC97TqC7_a_NHBX@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20100531232617.GF31155@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,62 +22,86 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---8323328-1710233220-1275394626=:2933
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id o51CHnxS002108
-
-On Mon, 31 May 2010, Arve Hj=F8nnev=E5g wrote:
-
-> 2010/5/31 Rafael J. Wysocki <rjw@sisk.pl>:
+On Mon, May 31, 2010 at 04:26:17PM -0700, mark gross wrote:
+> On Mon, May 31, 2010 at 11:38:55PM +0200, Rafael J. Wysocki wrote:
 > > On Monday 31 May 2010, Arve Hj=F8nnev=E5g wrote:
-> >> 2010/5/30 Rafael J. Wysocki <rjw@sisk.pl>:
-> > ...
-> >>
-> >> I think it makes more sense to block suspend while wakeup events are
-> >> pending than blocking it everywhere timers are used by code that cou=
-ld
-> >> be called while handling wakeup events or other critical work. Also,
-> >> even if you did block suspend everywhere timers where used you still
-> >> have the race where a wakeup interrupt happens right after you decid=
-ed
-> >> to suspend. In other words, you still need to block suspend in all t=
-he
-> >> same places as with the current opportunistic suspend code, so what =
-is
-> >> the benefit of delaying suspend until idle?
+> > > 2010/5/29 Alan Stern <stern@rowland.harvard.edu>:
+> > > > On Sat, 29 May 2010, Arve Hj=F8nnev=E5g wrote:
+> > > >
+> > > >> > In place of in-kernel suspend blockers, there will be a new type=
+ of QoS
+> > > >> > constraint -- call it QOS_EVENTUALLY.  It's a very weak constrai=
+nt,
+> > > >> > compatible with all cpuidle modes in which runnable threads are =
+allowed
+> > > >> > to run (which is all of them), but not compatible with suspend.
+> > > >> >
+> > > >> This sound just like another API rename. It will work, but given t=
+hat
+> > > >> suspend blockers was the name least objectionable last time around,
+> > > >> I'm not sure what this would solve.
+> > > >
+> > > > It's not just a rename.  By changing this into a QoS constraint, we
+> > > > make it more generally useful.  Instead of standing on its own, it
+> > > > becomes part of the PM-QOS framework.
+> > > >
+> > > =
+
+> > > We cannot use the existing pm-qos framework. It is not safe to call
+> > > from atomic context.
+> > =
+
+> > We've just merged a patch that fixed that if I'm not mistaken.  Mark, d=
+id your
+> > PM QoS update fix that?
 > >
-> > Assume for a while that you don't use suspend blockers, OK? =A0I real=
-ize you
-> > think that anything else doesn't make sense, but evidently some other=
- people
-> > have that opinion about suspend blockers.
-> >
->=20
-> It sounded like you were suggesting that initiating suspend from idle
-> would somehow avoid the race condition with wakeup events. All I'm
-> saying is that you would need to block suspend in all the same places.
-> If you don't care about ignoring wakeup events, then sure you can
-> initiate suspend from idle.
+> =
 
-And why should you miss a wakeup there ? If you get an interrupt in
-the transition, then you are not longer idle.
-
-Thanks,
-
-	tglx
---8323328-1710233220-1275394626=:2933
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+> I'm pretty sure it can be called in atomic context, and if its not I'm
+> sure we can fix that.  It can be called in atomic context.  I don't
+> think it was ever a problem to call it in atomic context.  The problem it
+> had was that crappy list of string compares.  Thats been fixed.
+> =
 
 
---8323328-1710233220-1275394626=:2933--
+um, the notifiers that are currently used may not be cool in atomic
+context :(
+
+--mgross
+
+
+
+> --mgross
+>  =
+
+> > > Also, it does not have any state constraints, so it iterates over eve=
+ry
+> > > registered constraint each time one of them changes.
+> > =
+
+> > That's fixable IMO.
+> > =
+
+> > > Nor does is currently provide any stats for debugging.
+> > =
+
+> > That's why Alan is proposing to add that.
+> > =
+
+> > > The original wakelock patchset supported a wakelock type so it could
+> > > be used to block more then suspend, but I had to remove this because
+> > > it "overlapped" with pm-qos. So, yes I do consider this just another
+> > > rename.
+> > =
+
+> > It's an extension of an existing framework rather than an addition of a=
+ new
+> > one, with entirely new API and so on.  Extending existing APIs is much
+> > preferred to adding new ones, in general.
+> > =
+
+> > Rafael
