@@ -1,13 +1,14 @@
-From: florian@mickler.org
-Subject: [PATCH] pm_qos: remove unnecessary list-traversal
-Date: Tue,  1 Jun 2010 10:52:11 +0200
-Message-ID: <1275382331-15180-1-git-send-email-florian__45864.0512581498$1275382395$gmane$org@mickler.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] pm_qos: remove unnecessary list-traversal
+Date: Tue, 1 Jun 2010 12:43:21 +0200 (CEST)
+Message-ID: <alpine.LFD.2.00.1006011240360.2933__17123.1530410752$1275389202$gmane$org@localhost.localdomain>
 References: <1275382014-10178-1-git-send-email-florian@mickler.org>
+	<1275382331-15180-1-git-send-email-florian@mickler.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275382014-10178-1-git-send-email-florian@mickler.org>
+In-Reply-To: <1275382331-15180-1-git-send-email-florian@mickler.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,67 +18,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: 640e9920@gmail.com, markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Florian Mickler <florian@mickler.org>
+Cc: 640e9920@gmail.com, markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-The new extreme value is only depending on the old extreme value and
-the changed value.
+On Tue, 1 Jun 2010, florian@mickler.org wrote:
 
-Signed-off-by: Florian Mickler <florian@mickler.org>
----
-This version actually compiles...  :)
+> The new extreme value is only depending on the old extreme value and
+> the changed value.
 
- kernel/pm_qos_params.c |   19 +++++++++++++++++--
- 1 files changed, 17 insertions(+), 2 deletions(-)
+And how does that update to the next applicable constraint when the
+current constraint is removed ? Your patch is creating a one way
+decision.
+ 
+> Signed-off-by: Florian Mickler <florian@mickler.org>
+> ---
+> This version actually compiles...  :)
 
-diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-index f42d3f7..3ae94e1 100644
---- a/kernel/pm_qos_params.c
-+++ b/kernel/pm_qos_params.c
-@@ -136,6 +136,16 @@ static s32 min_compare(s32 v1, s32 v2)
- }
- 
- 
-+static void update_target_val(int pm_qos_class, s32 val)
-+{
-+	s32 extreme_value;
-+	s32 new_value;
-+	extreme_value = atomic_read(&pm_qos_array[pm_qos_class]->target_value);
-+	new_value = pm_qos_array[pm_qos_class]->comparitor(val,extreme_value);
-+	if (extreme_value != new_value)
-+		atomic_set(&pm_qos_array[pm_qos_class]->target_value,new_value);
-+}
-+
- static void update_target(int pm_qos_class)
- {
- 	s32 extreme_value;
-@@ -253,19 +263,24 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
- 	s32 temp;
- 
- 	if (pm_qos_req) { /*guard against callers passing in null */
-+		int target = pm_qos_req->pm_qos_class;
- 		spin_lock_irqsave(&pm_qos_lock, flags);
- 		if (new_value == PM_QOS_DEFAULT_VALUE)
--			temp = pm_qos_array[pm_qos_req->pm_qos_class]->default_value;
-+			temp = pm_qos_array[target]->default_value;
- 		else
- 			temp = new_value;
- 
- 		if (temp != pm_qos_req->value) {
- 			pending_update = 1;
- 			pm_qos_req->value = temp;
-+			update_target_val(target,temp);
- 		}
- 		spin_unlock_irqrestore(&pm_qos_lock, flags);
-+
- 		if (pending_update)
--			update_target(pm_qos_req->pm_qos_class);
-+			blocking_notifier_call_chain(
-+				pm_qos_array[target]->notifiers,
-+					(unsigned long) temp, NULL);
- 	}
- }
- EXPORT_SYMBOL_GPL(pm_qos_update_request);
--- 
-1.7.1
+That does not make it work.
+
+     tglx
