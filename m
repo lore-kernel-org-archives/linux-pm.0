@@ -1,13 +1,13 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Tue, 1 Jun 2010 14:39:29 -0700 (PDT)
-Message-ID: <599286.8177.qm__568.236891604279$1275428429$gmane$org@web180301.mail.gq1.yahoo.com>
-References: <1275426085.21962.967.camel@mulgrave.site>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Runtime PM for PCI-based USB host controllers
+Date: Tue, 1 Jun 2010 23:50:30 +0200
+Message-ID: <201006012350.30180.rjw__4603.30635910413$1275429090$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1006011157400.2949-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275426085.21962.967.camel@mulgrave.site>
+In-Reply-To: <Pine.LNX.4.44L0.1006011157400.2949-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,60 +17,130 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>, James Bottomley <James.Bottomley@suse.de>
-Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, felipe.balbi@nokia.com
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---- On Tue, 6/1/10, James Bottomley <James.Bottomley@suse.de> wrote:
+On Tuesday 01 June 2010, Alan Stern wrote:
+> On Tue, 1 Jun 2010, Matthew Garrett wrote:
+> 
+> > On Tue, Jun 01, 2010 at 10:59:17AM -0400, Alan Stern wrote:
+> > 
+> > > Can we rely on the forbid/allow mechanism?  If userspace never allows 
+> > > runtime suspend for devices like the video controller then there's no 
+> > > problem.  Conversely, if a PCI device really doesn't have a driver and 
+> > > isn't used for anything, then by default it should go into a lower 
+> > > power state if userspace allows this.
+> > 
+> > I think that's safe, yes. Other fringe concerns include things like 
+> > smbus controllers - we typically won't allow a driver to bind to them 
+> > because they're used by ACPI, so putting the in D3 is also an error. So 
+> > I think Rafael's right in that we should default to forbid unless a 
+> > driver knows that it's safe, and let userspace override us.
+> 
+> Therefore the default state for unbound PCI devices should be
+> runtime-PM-enabled.
 
-> > As long as you can set a wakeup timer, an S state is just a C state with 
-> > side effects.
+Why do you think it should?
 
-I've seen similar statements on this endless
-thread before; they're not quite true...
+> Devices will be put in a low-power state if userspace allows.  Also, the PCI
+> core should make sure that devices are active when drivers' probe and
+> release methods are called.
+> 
+> If a driver doesn't want to use runtime PM then not doing anything at 
+> all should leave the device with a positive usage count.  If it does 
+> want to use runtime PM then a pm_runtime_put_sync() during probe and 
+> pm_runtime_get_sync() during release will take care of everything.
+> 
+> Something like the patch below, awkward though it is.  Does this look 
+> reasonable?
 
-
-> > The significant one is that entering an
-> > S state stops the process scheduler and
-> > any in-kernel timers.
-
-There's a structural difference too, related
-to peripheral device activity and power states.
-
-Specifically, peripherals can be active in C
-states (erforming I/O, maybe with DMA etc) and
- will in general not be in lowest power states
-(PCI etc).  Whereas entry to ACPI S-states
-involves calling the AML code to put those
-peripherals into lowest power modes ... ones
-they can't in general enter at run time.  (An
-additional task of that bytecode is to activate
-any wakeup logic, which again is not generally
-functional in except in S-states).
+I'm not sure if r8169 and e1000e will work with it.  Probably not, but I'm
+too tired to check right now. :-)
 
 
-The point being perhaps more that ACPI doesn't
-map well to the more power-efficient architectures
-(often built on ARM) ... hardware vendors provide
-all kinds of PM hooks, and Linux can choose between
-them so it's more power-miserly than if it tried
-to emulate an ACPI based platform.
+> Index: usb-2.6/drivers/pci/bus.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/pci/bus.c
+> +++ usb-2.6/drivers/pci/bus.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/proc_fs.h>
+>  #include <linux/init.h>
+>  #include <linux/slab.h>
+> +#include <linux/pm_runtime.h>
+>  
+>  #include "pci.h"
+>  
+> @@ -134,6 +135,9 @@ pci_bus_alloc_resource(struct pci_bus *b
+>  int pci_bus_add_device(struct pci_dev *dev)
+>  {
+>  	int retval;
+> +
+> +	pm_runtime_set_active(&dev->dev);
+> +	pm_runtime_enable(&dev->dev);
+>  	retval = device_add(&dev->dev);
+>  	if (retval)
+>  		return retval;
+> Index: usb-2.6/drivers/pci/pci-driver.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/pci/pci-driver.c
+> +++ usb-2.6/drivers/pci/pci-driver.c
+> @@ -289,8 +289,23 @@ struct drv_dev_and_id {
+>  static long local_pci_probe(void *_ddi)
+>  {
+>  	struct drv_dev_and_id *ddi = _ddi;
+> -
+> -	return ddi->drv->probe(ddi->dev, ddi->id);
+> +	struct device *dev = &ddi->dev->dev;
+> +	struct device_driver *driver = dev->driver;
+> +	int rc;
+> +
+> +	dev->driver = NULL;
+> +	rc = pm_runtime_get_sync(dev);
+> +	dev->driver = driver;
+> +	if (rc < 0)
+> +		return rc;
+> +
+> +	rc = ddi->drv->probe(ddi->dev, ddi->id);
+> +	if (rc) {
+> +		dev->driver = NULL;
+> +		pm_runtime_put_sync(dev);
+> +		dev->driver = driver;
+> +	}
+> +	return rc;
+>  }
+>  
+>  static int pci_call_probe(struct pci_driver *drv, struct pci_dev *dev,
+> @@ -365,15 +380,24 @@ static int pci_device_probe(struct devic
+>  
+>  static int pci_device_remove(struct device * dev)
+>  {
+> +	struct device_driver *driver = dev->driver;
+>  	struct pci_dev * pci_dev = to_pci_dev(dev);
+>  	struct pci_driver * drv = pci_dev->driver;
+>  
+>  	if (drv) {
+> -		if (drv->remove)
+> +		if (drv->remove) {
+> +			pm_runtime_get_sync(dev);
+>  			drv->remove(pci_dev);
+> +			pm_runtime_put_noidle(dev);
+> +		}
+>  		pci_dev->driver = NULL;
+>  	}
 
-I've seen some Linux systems which put DRAM into
-self-refresh during certain idle modes, for example,
-not just during suspend-to-RAM, if it's known that
-no DMA is active.  (Why not save that power if it's
-safe?)  Likewise, disable some oscillators and PLLs
-if they're not needed (the clock API allows that to
-be done regardless of "C-states" etc).
+Is "else" missing here or am I missing something?
 
-The notion of "suspend" gets introduced on such
-systems primarily to match the ACPI-ish models  that
-exist ... rather than because they necessarily make
-good matches for the hardware.  Which has left a
-puzzle:  how and why to use such "suspend" models?
+> +	/* Undo the pm_runtime_get_sync() in local_pci_probe() */
+> +	dev->driver = NULL;
+> +	pm_runtime_put_sync(dev);
+> +	dev->driver = driver;
+> +
+>  	/*
+>  	 * If the device is still on, set the power state as "unknown",
+>  	 * since it might change by the next time we load the driver.
 
-Maybe that's underlying some of the pushback for
-the notion of automagic entry to "suspend" states.
+Do PCI bus type callbacks need to be reworked to work correctly with unbound
+devices?
 
-- Dave
+Rafael
