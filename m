@@ -1,16 +1,15 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [PATCH 1/2] suspend: Move NVS save/restore code to
- generic suspend functionality
-Date: Wed, 02 Jun 2010 00:52:05 +0300
-Message-ID: <1275429125.5573.7.camel__26005.8478838348$1275429603$gmane$org@maxim-laptop>
-References: <1275416390.3778.7.camel@maxim-laptop>
-	<1275416544-4515-1-git-send-email-maximlevitsky@gmail.com>
-	<201006012331.59747.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Wed, 2 Jun 2010 00:00:52 +0200
+Message-ID: <201006020000.52992.rjw__47992.450829088$1275429623$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
+	<201006010005.19554.rjw@sisk.pl>
+	<AANLkTimIzm7fEczlaDT5QqkiBFAjbe46rciLxxsoLSya@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006012331.59747.rjw@sisk.pl>
+In-Reply-To: <AANLkTimIzm7fEczlaDT5QqkiBFAjbe46rciLxxsoLSya@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,521 +19,125 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2010-06-01 at 23:31 +0200, Rafael J. Wysocki wrote: 
-> On Tuesday 01 June 2010, Maxim Levitsky wrote:
-> > Saving platform non-volatile state may be required for suspend to RAM as
-> > well as hibernation. Move it to more generic code.
-> > 
-> > Signed-off-by: Matthew Garrett <mjg@redhat.com>
-> > Signed-off-by: Matthew Garrett <maximlevitsky@gmail.com>
-> 
-> You made a mistake here.
-> 
-> Also, why are you resending the Matthews patches?  I think Len has seen them
-> already.
-Yea, a copypaste.
+On Tuesday 01 June 2010, Arve Hj=F8nnev=E5g wrote:
+> On Mon, May 31, 2010 at 3:05 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Monday 31 May 2010, Neil Brown wrote:
+> >> On Thu, 27 May 2010 23:40:29 +0200 (CEST)
+> >> Thomas Gleixner <tglx@linutronix.de> wrote:
+> >>
+> >> > On Thu, 27 May 2010, Rafael J. Wysocki wrote:
+> >> >
+> >> > > On Thursday 27 May 2010, Thomas Gleixner wrote:
+> >> > > > On Thu, 27 May 2010, Alan Stern wrote:
+> >> > > >
+> >> > > > > On Thu, 27 May 2010, Felipe Balbi wrote:
+> >> > > > >
+> >> > > > > > On Thu, May 27, 2010 at 05:06:23PM +0200, ext Alan Stern wro=
+te:
+> >> > > > > > >If people don't mind, here is a greatly simplified summary =
+of the
+> >> > > > > > >comments and objections I have seen so far on this thread:
+> >> > > > > > >
+> >> > > > > > >   The in-kernel suspend blocker implementation is okay, ev=
+en
+> >> > > > > > >   beneficial.
+> >> > > > > >
+> >> > > > > > I disagree here. I believe expressing that as QoS is much be=
+tter. Let
+> >> > > > > > the kernel decide which power state is better as long as I c=
+an say I
+> >> > > > > > need 100us IRQ latency or 100ms wakeup latency.
+> >> > > > >
+> >> > > > > Does this mean you believe "echo mem >/sys/power/state" is bad=
+ and
+> >> > > > > should be removed?  Or "echo disk >/sys/power/state"?  They pa=
+y no
+> >> > > >
+> >> > > > mem should be replaced by an idle suspend to ram mechanism
+> >> > >
+> >> > > Well, what about when I want the machine to suspend _regardless_ o=
+f whether
+> >> > > or not it's idle at the moment?  That actually happens quite often=
+ to me. :-)
+> >> >
+> >> > Fair enough. Let's agree on a non ambigous terminology then:
+> >> >
+> >> >      forced:
+> >> >
+> >> >          suspend which you enforce via user interaction, which
+> >> >                  also implies that you risk losing wakeups depending=
+ on
+> >> >                  the hardware properties
+> >>
+> >> Reasonable definition I think.  However the current implementation doe=
+sn't
+> >> exactly match it.
+> >> With the current implementation you risk losing wakeups *independent* =
+of the
+> >> hardware properties.
+> >
+> > Define "losing", please.
+> >
+> > Currently, we simply don't regard hardware signals occuring _during_ the
+> > suspend operation itself as wakeups (unless they are wakeup interrupts =
+to be
+> > precise, because these _are_ taken into account by our current code).
+> >
+> > The reason is that the meaning of given event may be _different_ at run=
+ time
+> > and after the system has been suspended.  For example, consider a power=
+ button
+> > on a PC box.  If it's pressed at run time, it usually means "power off =
+the
+> > system" to the kernel.  After the system has been suspended, however, i=
+t means
+> > "wake up".  So, you have to switch from one interpretation of the event=
+ to the
+> > other and that's not an atomic operaition (to put it lightly).
+> >
+> >> Even with ideal hardware events can be lost - by which I mean that the=
+y will
+> >> not be seen until some other event effects a wake-up.
+> >> e.g. the interrupt which signals the event happens immediately before =
+the
+> >> suspend is requested (or maybe at the same time as), but the process w=
+hich
+> >> needs to handle the event doesn't get a chance to see it before the su=
+spend
+> >> procedure freezes that process, and even if it did it would have no wa=
+y to
+> >> abort the suspend.
+> >>
+> >> So I submit that the current implementation doesn't match your descrip=
+tion of
+> >> "forced", is therefore buggy, and that if it were fixed, that would be
+> >> sufficient to meet the immediate needs of android.
+> >
+> > I don't really think it may be fixed with respect to every possible kin=
+d of
+> > hardware.  On platforms where I/O interrupts are wakeup events it should
+> > work right now.  On other platforms it may be impossible to overcome ha=
+rdware
+> > limitations.
+> >
+> =
 
-(I was told that if one submits modified patch, it adds his
-Signed-off-by.)
+> There is no reason you cannot make the rtc alarms work reliably on x86
+> hardware.
 
-I rebased these on top of 
-ACPI / EC / PM: Fix race between EC transactions and system suspend'
+They usually work, but not in 100% of cases.
 
-To be honest, I just want to get some feedback on this.
-This was major issue that kept me from using otherwise prefect suspend
-to ram.
+Generally, "x86 hardware" is a broad category, where modern ones have much =
+more
+interesting capabilities than the older.
 
-Thus I am thinking that maybe ready to apply patch will have more
-chances to be reviewed....
+> Even if you may loose key events while suspending I think it
+> is still valuable to have reliable alarms.
 
-(Athough I guess I need to wait until the oil spill in gulf of Mexico is
-plugged, because it seems to continue to feed the never ending
-discussion/flamewar on android suspend issues)....
+I don't think anyone will argue with that. :-)
 
-Best regards,
-Maxim Levitsky
-
-> 
-> Rafael
-> 
-> 
-> > ---
-> >  arch/x86/kernel/e820.c       |    2 +-
-> >  drivers/acpi/sleep.c         |   12 ++--
-> >  include/linux/suspend.h      |   26 ++++----
-> >  kernel/power/Kconfig         |    9 ++-
-> >  kernel/power/Makefile        |    2 +-
-> >  kernel/power/hibernate_nvs.c |  136 ------------------------------------------
-> >  kernel/power/nvs.c           |  136 ++++++++++++++++++++++++++++++++++++++++++
-> >  kernel/power/suspend.c       |    6 ++
-> >  8 files changed, 168 insertions(+), 161 deletions(-)
-> >  delete mode 100644 kernel/power/hibernate_nvs.c
-> >  create mode 100644 kernel/power/nvs.c
-> > 
-> > diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-> > index 7bca3c6..0d6fc71 100644
-> > --- a/arch/x86/kernel/e820.c
-> > +++ b/arch/x86/kernel/e820.c
-> > @@ -729,7 +729,7 @@ static int __init e820_mark_nvs_memory(void)
-> >  		struct e820entry *ei = &e820.map[i];
-> >  
-> >  		if (ei->type == E820_NVS)
-> > -			hibernate_nvs_register(ei->addr, ei->size);
-> > +			suspend_nvs_register(ei->addr, ei->size);
-> >  	}
-> >  
-> >  	return 0;
-> > diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
-> > index 3fb4bde..bdb306f 100644
-> > --- a/drivers/acpi/sleep.c
-> > +++ b/drivers/acpi/sleep.c
-> > @@ -404,7 +404,7 @@ static int acpi_hibernation_begin(void)
-> >  {
-> >  	int error;
-> >  
-> > -	error = s4_no_nvs ? 0 : hibernate_nvs_alloc();
-> > +	error = s4_no_nvs ? 0 : suspend_nvs_alloc();
-> >  	if (!error) {
-> >  		acpi_target_sleep_state = ACPI_STATE_S4;
-> >  		acpi_sleep_tts_switch(acpi_target_sleep_state);
-> > @@ -418,7 +418,7 @@ static int acpi_hibernation_pre_snapshot(void)
-> >  	int error = acpi_pm_prepare();
-> >  
-> >  	if (!error)
-> > -		hibernate_nvs_save();
-> > +		suspend_nvs_save();
-> >  
-> >  	return error;
-> >  }
-> > @@ -443,7 +443,7 @@ static int acpi_hibernation_enter(void)
-> >  
-> >  static void acpi_hibernation_finish(void)
-> >  {
-> > -	hibernate_nvs_free();
-> > +	suspend_nvs_free();
-> >  	acpi_ec_unblock_transactions();
-> >  	acpi_pm_finish();
-> >  }
-> > @@ -464,7 +464,7 @@ static void acpi_hibernation_leave(void)
-> >  		panic("ACPI S4 hardware signature mismatch");
-> >  	}
-> >  	/* Restore the NVS memory area */
-> > -	hibernate_nvs_restore();
-> > +	suspend_nvs_restore();
-> >  	/* Allow EC transactions to happen. */
-> >  	acpi_ec_unblock_transactions_early();
-> >  }
-> > @@ -507,7 +507,7 @@ static int acpi_hibernation_begin_old(void)
-> >  
-> >  	if (!error) {
-> >  		if (!s4_no_nvs)
-> > -			error = hibernate_nvs_alloc();
-> > +			error = suspend_nvs_alloc();
-> >  		if (!error)
-> >  			acpi_target_sleep_state = ACPI_STATE_S4;
-> >  	}
-> > @@ -517,7 +517,7 @@ static int acpi_hibernation_begin_old(void)
-> >  static int acpi_hibernation_pre_snapshot_old(void)
-> >  {
-> >  	acpi_pm_freeze();
-> > -	hibernate_nvs_save();
-> > +	suspend_nvs_save();
-> >  	return 0;
-> >  }
-> >  
-> > diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> > index 5e781d8..bc7d6bb 100644
-> > --- a/include/linux/suspend.h
-> > +++ b/include/linux/suspend.h
-> > @@ -256,22 +256,22 @@ static inline int hibernate(void) { return -ENOSYS; }
-> >  static inline bool system_entering_hibernation(void) { return false; }
-> >  #endif /* CONFIG_HIBERNATION */
-> >  
-> > -#ifdef CONFIG_HIBERNATION_NVS
-> > -extern int hibernate_nvs_register(unsigned long start, unsigned long size);
-> > -extern int hibernate_nvs_alloc(void);
-> > -extern void hibernate_nvs_free(void);
-> > -extern void hibernate_nvs_save(void);
-> > -extern void hibernate_nvs_restore(void);
-> > -#else /* CONFIG_HIBERNATION_NVS */
-> > -static inline int hibernate_nvs_register(unsigned long a, unsigned long b)
-> > +#ifdef CONFIG_SUSPEND_NVS
-> > +extern int suspend_nvs_register(unsigned long start, unsigned long size);
-> > +extern int suspend_nvs_alloc(void);
-> > +extern void suspend_nvs_free(void);
-> > +extern void suspend_nvs_save(void);
-> > +extern void suspend_nvs_restore(void);
-> > +#else /* CONFIG_SUSPEND_NVS */
-> > +static inline int suspend_nvs_register(unsigned long a, unsigned long b)
-> >  {
-> >  	return 0;
-> >  }
-> > -static inline int hibernate_nvs_alloc(void) { return 0; }
-> > -static inline void hibernate_nvs_free(void) {}
-> > -static inline void hibernate_nvs_save(void) {}
-> > -static inline void hibernate_nvs_restore(void) {}
-> > -#endif /* CONFIG_HIBERNATION_NVS */
-> > +static inline int suspend_nvs_alloc(void) { return 0; }
-> > +static inline void suspend_nvs_free(void) {}
-> > +static inline void suspend_nvs_save(void) {}
-> > +static inline void suspend_nvs_restore(void) {}
-> > +#endif /* CONFIG_SUSPEND_NVS */
-> >  
-> >  #ifdef CONFIG_PM_SLEEP
-> >  void save_processor_state(void);
-> > diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> > index 5c36ea9..ca6066a 100644
-> > --- a/kernel/power/Kconfig
-> > +++ b/kernel/power/Kconfig
-> > @@ -99,9 +99,13 @@ config PM_SLEEP_ADVANCED_DEBUG
-> >  	depends on PM_ADVANCED_DEBUG
-> >  	default n
-> >  
-> > +config SUSPEND_NVS
-> > +       bool
-> > +
-> >  config SUSPEND
-> >  	bool "Suspend to RAM and standby"
-> >  	depends on PM && ARCH_SUSPEND_POSSIBLE
-> > +	select SUSPEND_NVS if HAS_IOMEM
-> >  	default y
-> >  	---help---
-> >  	  Allow the system to enter sleep states in which main memory is
-> > @@ -130,13 +134,10 @@ config SUSPEND_FREEZER
-> >  
-> >  	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
-> >  
-> > -config HIBERNATION_NVS
-> > -	bool
-> > -
-> >  config HIBERNATION
-> >  	bool "Hibernation (aka 'suspend to disk')"
-> >  	depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
-> > -	select HIBERNATION_NVS if HAS_IOMEM
-> > +	select SUSPEND_NVS if HAS_IOMEM
-> >  	---help---
-> >  	  Enable the suspend to disk (STD) functionality, which is usually
-> >  	  called "hibernation" in user interfaces.  STD checkpoints the
-> > diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-> > index 524e058..f9063c6 100644
-> > --- a/kernel/power/Makefile
-> > +++ b/kernel/power/Makefile
-> > @@ -10,6 +10,6 @@ obj-$(CONFIG_SUSPEND)		+= suspend.o
-> >  obj-$(CONFIG_PM_TEST_SUSPEND)	+= suspend_test.o
-> >  obj-$(CONFIG_HIBERNATION)	+= hibernate.o snapshot.o swap.o user.o \
-> >  				   block_io.o
-> > -obj-$(CONFIG_HIBERNATION_NVS)	+= hibernate_nvs.o
-> > +obj-$(CONFIG_SUSPEND_NVS)	+= nvs.o
-> >  
-> >  obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
-> > diff --git a/kernel/power/hibernate_nvs.c b/kernel/power/hibernate_nvs.c
-> > deleted file mode 100644
-> > index fdcad9e..0000000
-> > --- a/kernel/power/hibernate_nvs.c
-> > +++ /dev/null
-> > @@ -1,136 +0,0 @@
-> > -/*
-> > - * linux/kernel/power/hibernate_nvs.c - Routines for handling NVS memory
-> > - *
-> > - * Copyright (C) 2008,2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
-> > - *
-> > - * This file is released under the GPLv2.
-> > - */
-> > -
-> > -#include <linux/io.h>
-> > -#include <linux/kernel.h>
-> > -#include <linux/list.h>
-> > -#include <linux/mm.h>
-> > -#include <linux/slab.h>
-> > -#include <linux/suspend.h>
-> > -
-> > -/*
-> > - * Platforms, like ACPI, may want us to save some memory used by them during
-> > - * hibernation and to restore the contents of this memory during the subsequent
-> > - * resume.  The code below implements a mechanism allowing us to do that.
-> > - */
-> > -
-> > -struct nvs_page {
-> > -	unsigned long phys_start;
-> > -	unsigned int size;
-> > -	void *kaddr;
-> > -	void *data;
-> > -	struct list_head node;
-> > -};
-> > -
-> > -static LIST_HEAD(nvs_list);
-> > -
-> > -/**
-> > - *	hibernate_nvs_register - register platform NVS memory region to save
-> > - *	@start - physical address of the region
-> > - *	@size - size of the region
-> > - *
-> > - *	The NVS region need not be page-aligned (both ends) and we arrange
-> > - *	things so that the data from page-aligned addresses in this region will
-> > - *	be copied into separate RAM pages.
-> > - */
-> > -int hibernate_nvs_register(unsigned long start, unsigned long size)
-> > -{
-> > -	struct nvs_page *entry, *next;
-> > -
-> > -	while (size > 0) {
-> > -		unsigned int nr_bytes;
-> > -
-> > -		entry = kzalloc(sizeof(struct nvs_page), GFP_KERNEL);
-> > -		if (!entry)
-> > -			goto Error;
-> > -
-> > -		list_add_tail(&entry->node, &nvs_list);
-> > -		entry->phys_start = start;
-> > -		nr_bytes = PAGE_SIZE - (start & ~PAGE_MASK);
-> > -		entry->size = (size < nr_bytes) ? size : nr_bytes;
-> > -
-> > -		start += entry->size;
-> > -		size -= entry->size;
-> > -	}
-> > -	return 0;
-> > -
-> > - Error:
-> > -	list_for_each_entry_safe(entry, next, &nvs_list, node) {
-> > -		list_del(&entry->node);
-> > -		kfree(entry);
-> > -	}
-> > -	return -ENOMEM;
-> > -}
-> > -
-> > -/**
-> > - *	hibernate_nvs_free - free data pages allocated for saving NVS regions
-> > - */
-> > -void hibernate_nvs_free(void)
-> > -{
-> > -	struct nvs_page *entry;
-> > -
-> > -	list_for_each_entry(entry, &nvs_list, node)
-> > -		if (entry->data) {
-> > -			free_page((unsigned long)entry->data);
-> > -			entry->data = NULL;
-> > -			if (entry->kaddr) {
-> > -				iounmap(entry->kaddr);
-> > -				entry->kaddr = NULL;
-> > -			}
-> > -		}
-> > -}
-> > -
-> > -/**
-> > - *	hibernate_nvs_alloc - allocate memory necessary for saving NVS regions
-> > - */
-> > -int hibernate_nvs_alloc(void)
-> > -{
-> > -	struct nvs_page *entry;
-> > -
-> > -	list_for_each_entry(entry, &nvs_list, node) {
-> > -		entry->data = (void *)__get_free_page(GFP_KERNEL);
-> > -		if (!entry->data) {
-> > -			hibernate_nvs_free();
-> > -			return -ENOMEM;
-> > -		}
-> > -	}
-> > -	return 0;
-> > -}
-> > -
-> > -/**
-> > - *	hibernate_nvs_save - save NVS memory regions
-> > - */
-> > -void hibernate_nvs_save(void)
-> > -{
-> > -	struct nvs_page *entry;
-> > -
-> > -	printk(KERN_INFO "PM: Saving platform NVS memory\n");
-> > -
-> > -	list_for_each_entry(entry, &nvs_list, node)
-> > -		if (entry->data) {
-> > -			entry->kaddr = ioremap(entry->phys_start, entry->size);
-> > -			memcpy(entry->data, entry->kaddr, entry->size);
-> > -		}
-> > -}
-> > -
-> > -/**
-> > - *	hibernate_nvs_restore - restore NVS memory regions
-> > - *
-> > - *	This function is going to be called with interrupts disabled, so it
-> > - *	cannot iounmap the virtual addresses used to access the NVS region.
-> > - */
-> > -void hibernate_nvs_restore(void)
-> > -{
-> > -	struct nvs_page *entry;
-> > -
-> > -	printk(KERN_INFO "PM: Restoring platform NVS memory\n");
-> > -
-> > -	list_for_each_entry(entry, &nvs_list, node)
-> > -		if (entry->data)
-> > -			memcpy(entry->kaddr, entry->data, entry->size);
-> > -}
-> > diff --git a/kernel/power/nvs.c b/kernel/power/nvs.c
-> > new file mode 100644
-> > index 0000000..30c662f
-> > --- /dev/null
-> > +++ b/kernel/power/nvs.c
-> > @@ -0,0 +1,136 @@
-> > +/*
-> > + * linux/kernel/power/nvs.c - Routines for handling NVS memory
-> > + *
-> > + * Copyright (C) 2008,2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
-> > + *
-> > + * This file is released under the GPLv2.
-> > + */
-> > +
-> > +#include <linux/io.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/list.h>
-> > +#include <linux/mm.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/suspend.h>
-> > +
-> > +/*
-> > + * Platforms, like ACPI, may want us to save some memory used by them during
-> > + * suspend and to restore the contents of this memory during the subsequent
-> > + * resume.  The code below implements a mechanism allowing us to do that.
-> > + */
-> > +
-> > +struct nvs_page {
-> > +	unsigned long phys_start;
-> > +	unsigned int size;
-> > +	void *kaddr;
-> > +	void *data;
-> > +	struct list_head node;
-> > +};
-> > +
-> > +static LIST_HEAD(nvs_list);
-> > +
-> > +/**
-> > + *	suspend_nvs_register - register platform NVS memory region to save
-> > + *	@start - physical address of the region
-> > + *	@size - size of the region
-> > + *
-> > + *	The NVS region need not be page-aligned (both ends) and we arrange
-> > + *	things so that the data from page-aligned addresses in this region will
-> > + *	be copied into separate RAM pages.
-> > + */
-> > +int suspend_nvs_register(unsigned long start, unsigned long size)
-> > +{
-> > +	struct nvs_page *entry, *next;
-> > +
-> > +	while (size > 0) {
-> > +		unsigned int nr_bytes;
-> > +
-> > +		entry = kzalloc(sizeof(struct nvs_page), GFP_KERNEL);
-> > +		if (!entry)
-> > +			goto Error;
-> > +
-> > +		list_add_tail(&entry->node, &nvs_list);
-> > +		entry->phys_start = start;
-> > +		nr_bytes = PAGE_SIZE - (start & ~PAGE_MASK);
-> > +		entry->size = (size < nr_bytes) ? size : nr_bytes;
-> > +
-> > +		start += entry->size;
-> > +		size -= entry->size;
-> > +	}
-> > +	return 0;
-> > +
-> > + Error:
-> > +	list_for_each_entry_safe(entry, next, &nvs_list, node) {
-> > +		list_del(&entry->node);
-> > +		kfree(entry);
-> > +	}
-> > +	return -ENOMEM;
-> > +}
-> > +
-> > +/**
-> > + *	suspend_nvs_free - free data pages allocated for saving NVS regions
-> > + */
-> > +void suspend_nvs_free(void)
-> > +{
-> > +	struct nvs_page *entry;
-> > +
-> > +	list_for_each_entry(entry, &nvs_list, node)
-> > +		if (entry->data) {
-> > +			free_page((unsigned long)entry->data);
-> > +			entry->data = NULL;
-> > +			if (entry->kaddr) {
-> > +				iounmap(entry->kaddr);
-> > +				entry->kaddr = NULL;
-> > +			}
-> > +		}
-> > +}
-> > +
-> > +/**
-> > + *	suspend_nvs_alloc - allocate memory necessary for saving NVS regions
-> > + */
-> > +int suspend_nvs_alloc(void)
-> > +{
-> > +	struct nvs_page *entry;
-> > +
-> > +	list_for_each_entry(entry, &nvs_list, node) {
-> > +		entry->data = (void *)__get_free_page(GFP_KERNEL);
-> > +		if (!entry->data) {
-> > +			suspend_nvs_free();
-> > +			return -ENOMEM;
-> > +		}
-> > +	}
-> > +	return 0;
-> > +}
-> > +
-> > +/**
-> > + *	suspend_nvs_save - save NVS memory regions
-> > + */
-> > +void suspend_nvs_save(void)
-> > +{
-> > +	struct nvs_page *entry;
-> > +
-> > +	printk(KERN_INFO "PM: Saving platform NVS memory\n");
-> > +
-> > +	list_for_each_entry(entry, &nvs_list, node)
-> > +		if (entry->data) {
-> > +			entry->kaddr = ioremap(entry->phys_start, entry->size);
-> > +			memcpy(entry->data, entry->kaddr, entry->size);
-> > +		}
-> > +}
-> > +
-> > +/**
-> > + *	suspend_nvs_restore - restore NVS memory regions
-> > + *
-> > + *	This function is going to be called with interrupts disabled, so it
-> > + *	cannot iounmap the virtual addresses used to access the NVS region.
-> > + */
-> > +void suspend_nvs_restore(void)
-> > +{
-> > +	struct nvs_page *entry;
-> > +
-> > +	printk(KERN_INFO "PM: Restoring platform NVS memory\n");
-> > +
-> > +	list_for_each_entry(entry, &nvs_list, node)
-> > +		if (entry->data)
-> > +			memcpy(entry->kaddr, entry->data, entry->size);
-> > +}
-> > diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> > index 56e7dbb..f37cb7d 100644
-> > --- a/kernel/power/suspend.c
-> > +++ b/kernel/power/suspend.c
-> > @@ -16,6 +16,12 @@
-> >  #include <linux/cpu.h>
-> >  #include <linux/syscalls.h>
-> >  #include <linux/gfp.h>
-> > +#include <linux/io.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/list.h>
-> > +#include <linux/mm.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/suspend.h>
-> >  
-> >  #include "power.h"
-> >  
-> > 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Rafael
