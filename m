@@ -1,19 +1,14 @@
-From: Florian Mickler <florian@mickler.org>
+From: Igor Stoppa <igor.stoppa@nokia.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Tue, 1 Jun 2010 07:35:48 +0200
-Message-ID: <20100601073548.5ed65352__29354.3523796417$1275370693$gmane$org@schatten.dmk.lab>
-References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
-	<201006010005.19554.rjw@sisk.pl>
-	<20100601090023.788cabf4@notabene.brown>
-	<201006010232.20263.rjw@sisk.pl>
-	<20100601113309.609349fd@notabene.brown>
-	<alpine.LFD.2.00.1006010340160.2933@localhost.localdomain>
-	<20100601122012.1edeaf48@notabene.brown>
+Date: Tue, 01 Jun 2010 09:57:31 +0300
+Message-ID: <4C04AF5B.1000702__46801.1241792285$1275374118$gmane$org@nokia.com>
+References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>	<201005302202.39511.rjw@sisk.pl>	<AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt@mail.gmail.com>	<201005312347.24251.rjw@sisk.pl>
+	<AANLkTilvOgSFTDFtXbjJobMZWxgfvsC97TqC7_a_NHBX@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100601122012.1edeaf48@notabene.brown>
+In-Reply-To: <AANLkTilvOgSFTDFtXbjJobMZWxgfvsC97TqC7_a_NHBX@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,62 +18,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Neil Brown <neilb@suse.de>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Alan@smtp1.linux-foundation.org, Peter Zijlstra <peterz@infradead.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: =?ISO-8859-1?Q?ext_Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 1 Jun 2010 12:20:12 +1000
-Neil Brown <neilb@suse.de> wrote:
+Hi,
 
-> On Tue, 1 Jun 2010 03:49:37 +0200 (CEST)
-> Thomas Gleixner <tglx@linutronix.de> wrote:
+ext Arve Hj=F8nnev=E5g wrote:
 
-> > If "suspend" is another deep idle state and the hardware is sane,
-> > there is no race at all - assumed that the driver/platform developer
-> > got it right. It's not rocket science to transition from "normal" irq
-> > delivery to wakeup based delivery raceless (except for PC style x86
-> > hardware of today)
+> It sounded like you were suggesting that initiating suspend from idle
+> would somehow avoid the race condition with wakeup events. All I'm
+> saying is that you would need to block suspend in all the same places.
+> If you don't care about ignoring wakeup events, then sure you can
+> initiate suspend from idle.
+>   =
 
-> > If "suspend" is the thing we are used to via /sys/power/state then the
-> > race will persist forever except for the suspend blocker workaround,
-> > which we can express in QoS terms as well w/o adding another suspend
-> > related user space API.
 
-Can you explain the difference between the /sys/power/state thing? Is
-it the reprogramming of wake-sources as mentioned by Raffael?
+Sorry if i'm asking something that was already said, but the thread is =
 
-In an idle based suspend I assume there would be no new wake-sources
-on suspending.
+quite complex and i am not sure i have been able to grasp all of it.
 
-> I'm not interested in adding another user-space API if it can possibly be
-> avoided, and I think it can.  But that is a later step in the process.
-> 
-> I think you have acknowledged that there is a race with suspend - thanks.
-> Next step was "can it be closed".
-> You seem to suggest that it can, but you describe it as a "work around"
-> rather than a "bug fix"...
+So, regardless of the SW implementation:
 
-Well as far as I get it, the workaround is to not suspend in sitations
-where a race is likely to occur. (I.e. block suspend)
+-1) are you focusing on "good" HW or do you want to address all at the =
 
-> 
-> Do you agree that the race is a "bug", and therefore it is appropriate to
-> "fix" it assuming an acceptable fix can be found (which I think it can)?
-> 
-> If you agree that it is appropriate for try to fix this bug, then the next
-> step would be to get the Android devs to agree that a fix could - in
-> principle - address the need for which they created suspend-blockers.
-> Arve: can you confirm that?
-> 
-> Then, with a clear and agreed goal, we can look at possible fixes.
-> 
-> Thanks,
-> NeilBrown
-> 
-> > 
-> > Thanks,
-> > 
-> > 	tglx
+same time?
 
-cheers,
-Flo
+-2) would you be ok with addressing "bad" HW as a special case, which =
+
+requires workarounds and shouldn't dictate the overall design?
+
+-3) do you agree with the assumption that new HW is expected to get =
+
+reasonably better and therefore workarounds at point 2) will =
+
+progressively be confined to devices less and less common?
+
+-4) going to the definition of "good" and "bad" (maybe this should have =
+
+come earlier in the list), can we define "good" HW as HW where:
+ * suspend state and lowest achievable runtime idle state are basically =
+
+equivalent from both power consumption and latency pov
+ * the HW itself is properly able to track wakeup sources while it is in =
+
+its deepest power state (as example OMAP3 has few independent =
+
+wake-capable pads and a "wake ring" where one only gets the information =
+
+that at least one of the pads belonging to such ring has received a wakeup)
+ * wakeup sources can be dynamically masked at HW level, so that if a =
+
+peripheral is not interesting, it doesn't wakeup the system (for example =
+
+the camera button when the camera cover is closed)
+
+-5) HW that is not capable of properly generating asynchronous signal is =
+
+most likely the cause for extra timers in kernel and it should be =
+
+considered "bad" - in any other case having recurring in-kernel timers =
+
+should be treated as bugs, if their existence is not tied to some =
+
+meaningful work
+
+thanks, igor
