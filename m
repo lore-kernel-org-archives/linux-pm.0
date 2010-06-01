@@ -1,17 +1,19 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [RFC] lp_events: an lternitive to suspend blocker
-	user mode and kernel API
-Date: Mon, 31 May 2010 22:24:30 -0700
-Message-ID: <AANLkTik4ixmtv5Ki7jds5gEspJAxBRAcJCR1Jv-V6ajR__16820.4881753356$1275369921$gmane$org@mail.gmail.com>
-References: <20100530200409.GA21632@gvim.org>
-	<20100531095753.4c174f2d@notabene.brown>
-	<20100531221035.GB31155@gvim.org> <201006010045.21382.rjw@sisk.pl>
-	<20100601050914.GG31155@gvim.org>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Tue, 1 Jun 2010 07:35:48 +0200
+Message-ID: <20100601073548.5ed65352__29354.3523796417$1275370693$gmane$org@schatten.dmk.lab>
+References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
+	<201006010005.19554.rjw@sisk.pl>
+	<20100601090023.788cabf4@notabene.brown>
+	<201006010232.20263.rjw@sisk.pl>
+	<20100601113309.609349fd@notabene.brown>
+	<alpine.LFD.2.00.1006010340160.2933@localhost.localdomain>
+	<20100601122012.1edeaf48@notabene.brown>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100601050914.GG31155@gvim.org>
+In-Reply-To: <20100601122012.1edeaf48@notabene.brown>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,48 +23,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: mark.gross@intel.com, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Arve@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Neil Brown <neilb@suse.de>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Alan@smtp1.linux-foundation.org, Peter Zijlstra <peterz@infradead.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 31, 2010 at 10:09 PM, mark gross <640e9920@gmail.com> wrote:
-> On Tue, Jun 01, 2010 at 12:45:21AM +0200, Rafael J. Wysocki wrote:
->> On Tuesday 01 June 2010, mark gross wrote:
->> > On Mon, May 31, 2010 at 09:57:53AM +1000, Neil Brown wrote:
->> ...
->> > > So I would suggest modifying your proposal to simply create a new 'i=
-nput'
->> > > device. =A0Any driver that supports wake-from-suspend queues an even=
-t to that
->> > > device when a wakeup event occurs. =A0If the device is open and has =
-any queued
->> > > events, then a suspend request such as 'echo mem > /sys/power/state'=
- completes
->> > > without going into full suspend.
->> >
->> > /me likes.
->> >
->> > > Then you just need to convince us that this mechanism can be used wi=
-thout any
->> > > race problems. =A0If it can, then it would certainly be a simple and
->> > > unobtrusive approach.
->> >
->> > Lets find out.
->>
->> Simple question: how is that better than the Alan Stern's proposed appro=
-ach?
->>
-> I just saw Alan Stern's proposal, and have gotten some input form some
-> others. =A0I can't say my patch represents a better Idea than what Alan
-> proposed. =A0However; what Alan (and Thomas) are talking about is
-> effectively the same as the kenrel mode wakelock/suspend blocker thing,
-> and although it reuses existing infrastructure, it doesn't solve the
-> problem of needing overlapping blocking sections of code from ISR to
-> user mode.
->
+On Tue, 1 Jun 2010 12:20:12 +1000
+Neil Brown <neilb@suse.de> wrote:
 
-I don't think your solution solves this either.
+> On Tue, 1 Jun 2010 03:49:37 +0200 (CEST)
+> Thomas Gleixner <tglx@linutronix.de> wrote:
 
--- =
+> > If "suspend" is another deep idle state and the hardware is sane,
+> > there is no race at all - assumed that the driver/platform developer
+> > got it right. It's not rocket science to transition from "normal" irq
+> > delivery to wakeup based delivery raceless (except for PC style x86
+> > hardware of today)
 
-Arve Hj=F8nnev=E5g
+> > If "suspend" is the thing we are used to via /sys/power/state then the
+> > race will persist forever except for the suspend blocker workaround,
+> > which we can express in QoS terms as well w/o adding another suspend
+> > related user space API.
+
+Can you explain the difference between the /sys/power/state thing? Is
+it the reprogramming of wake-sources as mentioned by Raffael?
+
+In an idle based suspend I assume there would be no new wake-sources
+on suspending.
+
+> I'm not interested in adding another user-space API if it can possibly be
+> avoided, and I think it can.  But that is a later step in the process.
+> 
+> I think you have acknowledged that there is a race with suspend - thanks.
+> Next step was "can it be closed".
+> You seem to suggest that it can, but you describe it as a "work around"
+> rather than a "bug fix"...
+
+Well as far as I get it, the workaround is to not suspend in sitations
+where a race is likely to occur. (I.e. block suspend)
+
+> 
+> Do you agree that the race is a "bug", and therefore it is appropriate to
+> "fix" it assuming an acceptable fix can be found (which I think it can)?
+> 
+> If you agree that it is appropriate for try to fix this bug, then the next
+> step would be to get the Android devs to agree that a fix could - in
+> principle - address the need for which they created suspend-blockers.
+> Arve: can you confirm that?
+> 
+> Then, with a clear and agreed goal, we can look at possible fixes.
+> 
+> Thanks,
+> NeilBrown
+> 
+> > 
+> > Thanks,
+> > 
+> > 	tglx
+
+cheers,
+Flo
