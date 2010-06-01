@@ -1,13 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Tue, 1 Jun 2010 10:47:49 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1006011032150.2949-100000__46970.3213581399$1275403862$gmane$org@iolanthe.rowland.org>
-References: <20100601123846.14d0535b@notabene.brown>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: hibernation hangs with ATA errors (lockup_detector
+	bug)
+Date: Tue, 01 Jun 2010 16:51:22 +0200
+Message-ID: <4C051E6A.20102__33063.0366145217$1275403981$gmane$org@gmail.com>
+References: <4C03C608.1040600@gmail.com> <20100601135004.GP15159@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100601123846.14d0535b@notabene.brown>
+In-Reply-To: <20100601135004.GP15159@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,72 +18,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Neil Brown <neilb@suse.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Don Zickus <dzickus@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 1 Jun 2010, Neil Brown wrote:
+On 06/01/2010 03:50 PM, Don Zickus wrote:
+> I'll need your whole boot up log to see how the lockup detector
+> initialized itself.
 
-> > With wakeup events the problem isn't so bad.  Wakeup events are always
-> > noticed, and if the system is designed properly they will either abort
-> > a suspend-in-progress or else cause the system to resume as soon as the
-> > suspend is complete.  (Linux is not yet properly designed in this
-> > sense.)
-> 
-> This is exactly the issue.  Linux doesn't get this right.  A wakeup that is
-> processed by the driver just before suspend may not get all the way out to
-> it's final destination (possibly in meat-space) until after some other event
-> wakes the device.  It is not possible to guarantee full delivery of a wakeup
-> event with Linux in its current state.  This is a bug.
+Ah, plus hung tasks:
 
-That wasn't what I meant.  An important requirement is that a wakeup 
-event received after the device has been suspended, but before the 
-system suspend is complete, should cause the system suspend to abort.  
-This is one of the things suspend blockers were meant to help with.  In 
-theory it should already work correctly -- but it doesn't.  That's a 
-real bug.
+INFO: task s2disk:3218 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+s2disk        D ffff88003c61cd40     0  3218   3184 0x00000000
+ ffff88003c639af8 0000000000000082 0000000000011f00 0000000000011f00
+ ffff88003c639fd8 ffff88003c639fd8 ffff88003c61cd40 0000000000011f00
+ ffff88003c639fd8 0000000000011f00 ffffffff8180d020 ffff88003c61cd40
+Call Trace:
+ [<ffffffff8157ba75>] schedule_timeout+0x1b5/0x220
+ [<ffffffff8157b113>] ? schedule+0x263/0x5a0
+ [<ffffffff8157b655>] wait_for_common+0xc5/0x150
+ [<ffffffff8105d7b0>] ? default_wake_function+0x0/0x10
+ [<ffffffff8157b778>] wait_for_completion+0x18/0x20
+ [<ffffffff8107772e>] flush_cpu_workqueue+0xce/0x110
+ [<ffffffff81077170>] ? wq_barrier_func+0x0/0x10
+ [<ffffffff81077788>] cleanup_workqueue_thread+0x18/0x30
+ [<ffffffff81568f3b>] workqueue_cpu_callback+0xc3/0x117
+ [<ffffffff81080acc>] notifier_call_chain+0x4c/0x70
+ [<ffffffff81080ba9>] __raw_notifier_call_chain+0x9/0x10
+ [<ffffffff8156768b>] __cpu_notify+0x1b/0x30
+ [<ffffffff81064550>] cpu_notify+0x10/0x20
+ [<ffffffff81064569>] cpu_notify_nofail+0x9/0x20
+ [<ffffffff81567a48>] _cpu_down+0x218/0x290
+ [<ffffffff8106482e>] disable_nonboot_cpus+0x7e/0xf0
+ [<ffffffff8109651d>] hibernation_platform_enter+0xbd/0x100
+ [<ffffffff8109a0b7>] snapshot_ioctl+0x3e7/0x670
+ [<ffffffff811042ac>] vfs_ioctl+0x3c/0xd0
+ [<ffffffff81104a5d>] do_vfs_ioctl+0x7d/0x3d0
+ [<ffffffff81104dfa>] sys_ioctl+0x4a/0x80
+ [<ffffffff81029deb>] system_call_fastpath+0x16/0x1b
+INFO: task events/1:3246 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+events/1      D 0000000000000000     0  3246      2 0x00000000
+ ffff88003b205ee0 0000000000000046 0000000000011f00 0000000000011f00
+ ffff88003b205fd8 ffff88003b205fd8 ffff88003195e090 0000000000011f00
+ ffff88003b205fd8 0000000000011f00 ffff88003c61cd40 ffff88003195e090
+Call Trace:
+ [<ffffffff81076f10>] ? worker_thread+0x0/0x100
+ [<ffffffff8107b2f2>] kthread+0x72/0xa0
+ [<ffffffff8102ab14>] kernel_thread_helper+0x4/0x10
+ [<ffffffff8107b280>] ? kthread+0x0/0xa0
+ [<ffffffff8102ab10>] ? kernel_thread_helper+0x0/0x10
 
-The other things you're talking about aren't really bugs.  That is,
-they are things which the kernel _ought_ to do but it wasn't _intended_
-to do.  They are misfeatures: failures of design, not failures of 
-execution.
-
-> I don't think I'm missing that.  Wakeup events are the only events of
-> interest.  But wakeup events are more than just low-level hardware events.
-> They are also the virtual events that are a direct consequence of the
-> original hardware event.
-
-This is a matter of semantics and it is highly debatable.
-
-> A UART asserts 'data ready' which is routed to an IO interrupt line that
-> wakes the device.  This is a wakeup event.
-
-Yes.
-
-> So are the bits that appear on the data line which represent the data
-> So are the characters that appear on the serial port
-> So is the "here is a message from the GSM processor" event
-> So is the "there is a new TXT message" event
-> So is the "'beep beep beep' out the speaker" event
-
-None of those things can cause the system to wake up after it is
-suspended.  Indeed, they can't happen at all if the CPU isn't running
-(unless the GSM processor runs autonomously -- let's ignore such
-details).  Hence it makes little sense to call them "wakeup" events.
-
-> All these events are wakeup events, and should abort or instant-resume the
-> system.  Currently only the first can be guaranteed to do this (... and maybe
-> the second, depending on the details of the implementation).
-> suspend-blocks effectively pass a lock from one event to the next to ensure
-> that all of these event block the suspend.  There are various other ways to
-> achieve the same thing, and I think it can be done with no significant change
-> to the API.  But some how we need to allow all of these events to be
-> linked wake-up events, not just the first one.
-
-That's not entirely clear.  Yes, for Android's use case that's what you 
-want.  But in other situations maybe you don't.  Consider the example 
-of someone who closes the lid of their laptop and throws it in a 
-backpack.  The computer should suspend immediately; it shouldn't be 
-delayed by these "virtual wakeup" events.
-
-Alan Stern
+-- 
+js
