@@ -1,16 +1,18 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Mon, 31 May 2010 22:04:39 -0700
-Message-ID: <AANLkTimIzm7fEczlaDT5QqkiBFAjbe46rciLxxsoLSya__22093.3013981723$1275368784$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
-	<alpine.LFD.2.00.1005272334040.3478@localhost.localdomain>
-	<20100531143339.249ae1f4@notabene.brown>
-	<201006010005.19554.rjw@sisk.pl>
+From: mark gross <640e9920@gmail.com>
+Subject: Re: [RFC] lp_events: an lternitive to suspend blocker
+ user mode and kernel API
+Date: Mon, 31 May 2010 22:09:14 -0700
+Message-ID: <20100601050914.GG31155__35117.1842114583$1275368998$gmane$org@gvim.org>
+References: <20100530200409.GA21632@gvim.org>
+	<20100531095753.4c174f2d@notabene.brown>
+	<20100531221035.GB31155@gvim.org> <201006010045.21382.rjw@sisk.pl>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006010005.19554.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <201006010045.21382.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,114 +23,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: mark.gross@intel.com, markgross@thegnar.org, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Arve@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 31, 2010 at 3:05 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday 31 May 2010, Neil Brown wrote:
->> On Thu, 27 May 2010 23:40:29 +0200 (CEST)
->> Thomas Gleixner <tglx@linutronix.de> wrote:
->>
->> > On Thu, 27 May 2010, Rafael J. Wysocki wrote:
->> >
->> > > On Thursday 27 May 2010, Thomas Gleixner wrote:
->> > > > On Thu, 27 May 2010, Alan Stern wrote:
->> > > >
->> > > > > On Thu, 27 May 2010, Felipe Balbi wrote:
->> > > > >
->> > > > > > On Thu, May 27, 2010 at 05:06:23PM +0200, ext Alan Stern wrote:
->> > > > > > >If people don't mind, here is a greatly simplified summary of=
- the
->> > > > > > >comments and objections I have seen so far on this thread:
->> > > > > > >
->> > > > > > > =A0 The in-kernel suspend blocker implementation is okay, ev=
-en
->> > > > > > > =A0 beneficial.
->> > > > > >
->> > > > > > I disagree here. I believe expressing that as QoS is much bett=
-er. Let
->> > > > > > the kernel decide which power state is better as long as I can=
- say I
->> > > > > > need 100us IRQ latency or 100ms wakeup latency.
->> > > > >
->> > > > > Does this mean you believe "echo mem >/sys/power/state" is bad a=
-nd
->> > > > > should be removed? =A0Or "echo disk >/sys/power/state"? =A0They =
-pay no
->> > > >
->> > > > mem should be replaced by an idle suspend to ram mechanism
->> > >
->> > > Well, what about when I want the machine to suspend _regardless_ of =
-whether
->> > > or not it's idle at the moment? =A0That actually happens quite often=
- to me. :-)
->> >
->> > Fair enough. Let's agree on a non ambigous terminology then:
->> >
->> > =A0 =A0 =A0forced:
->> >
->> > =A0 =A0 =A0 =A0 =A0suspend which you enforce via user interaction, whi=
-ch
->> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0also implies that you risk losing w=
-akeups depending on
->> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0the hardware properties
->>
->> Reasonable definition I think. =A0However the current implementation doe=
-sn't
->> exactly match it.
->> With the current implementation you risk losing wakeups *independent* of=
- the
->> hardware properties.
+On Tue, Jun 01, 2010 at 12:45:21AM +0200, Rafael J. Wysocki wrote:
+> On Tuesday 01 June 2010, mark gross wrote:
+> > On Mon, May 31, 2010 at 09:57:53AM +1000, Neil Brown wrote:
+> ...
+> > > So I would suggest modifying your proposal to simply create a new 'input'
+> > > device.  Any driver that supports wake-from-suspend queues an event to that
+> > > device when a wakeup event occurs.  If the device is open and has any queued
+> > > events, then a suspend request such as 'echo mem > /sys/power/state' completes
+> > > without going into full suspend.
+> > 
+> > /me likes.
+> >  
+> > > Then you just need to convince us that this mechanism can be used without any
+> > > race problems.  If it can, then it would certainly be a simple and
+> > > unobtrusive approach.
+> > 
+> > Lets find out.
+> 
+> Simple question: how is that better than the Alan Stern's proposed approach?
 >
-> Define "losing", please.
->
-> Currently, we simply don't regard hardware signals occuring _during_ the
-> suspend operation itself as wakeups (unless they are wakeup interrupts to=
- be
-> precise, because these _are_ taken into account by our current code).
->
-> The reason is that the meaning of given event may be _different_ at run t=
-ime
-> and after the system has been suspended. =A0For example, consider a power=
- button
-> on a PC box. =A0If it's pressed at run time, it usually means "power off =
-the
-> system" to the kernel. =A0After the system has been suspended, however, i=
-t means
-> "wake up". =A0So, you have to switch from one interpretation of the event=
- to the
-> other and that's not an atomic operaition (to put it lightly).
->
->> Even with ideal hardware events can be lost - by which I mean that they =
-will
->> not be seen until some other event effects a wake-up.
->> e.g. the interrupt which signals the event happens immediately before the
->> suspend is requested (or maybe at the same time as), but the process whi=
-ch
->> needs to handle the event doesn't get a chance to see it before the susp=
-end
->> procedure freezes that process, and even if it did it would have no way =
-to
->> abort the suspend.
->>
->> So I submit that the current implementation doesn't match your descripti=
-on of
->> "forced", is therefore buggy, and that if it were fixed, that would be
->> sufficient to meet the immediate needs of android.
->
-> I don't really think it may be fixed with respect to every possible kind =
-of
-> hardware. =A0On platforms where I/O interrupts are wakeup events it should
-> work right now. =A0On other platforms it may be impossible to overcome ha=
-rdware
-> limitations.
->
+I just saw Alan Stern's proposal, and have gotten some input form some
+others.  I can't say my patch represents a better Idea than what Alan
+proposed.  However; what Alan (and Thomas) are talking about is
+effectively the same as the kenrel mode wakelock/suspend blocker thing,
+and although it reuses existing infrastructure, it doesn't solve the
+problem of needing overlapping blocking sections of code from ISR to
+user mode.
 
-There is no reason you cannot make the rtc alarms work reliably on x86
-hardware. Even if you may loose key events while suspending I think it
-is still valuable to have reliable alarms. I gave an example earlier
-why reliable alarms are useful (dvr application).
+(which to be fair, I seem to be the only one that feels thats a problem.
+so perhaps I'm making that a bigger issue than it is...)
 
--- =
+Also my current patch may be better in that it makes it explicit that we
+need wake event notification up to user mode, where this Alan's leaves
+it as an exercise for the integrator.
 
-Arve Hj=F8nnev=E5g
+(wake events are not just key presses or lid events,  there is modem,
+UI, network, usb, block device insertion, RTC and likely a few other
+wake events that need to be handled effectively before re-suspending.
+
+so to answer your question: I'm not sure.  I need to stub out what Alan
+is proposing and hash it out with some folks.  I'm sorry I can't be
+decisive on this yet.
+
+I'll stub out a new pm_qos class for "qos_eventually" (perhaps with a
+better name.) some modes to the input event mechanism to see how that
+feels.
+
+
+--mgross
