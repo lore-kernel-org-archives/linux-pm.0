@@ -1,14 +1,16 @@
-From: Igor Stoppa <igor.stoppa@nokia.com>
+From: Florian Mickler <florian@mickler.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Tue, 01 Jun 2010 09:57:31 +0300
-Message-ID: <4C04AF5B.1000702__46801.1241792285$1275374118$gmane$org@nokia.com>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>	<201005302202.39511.rjw@sisk.pl>	<AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt@mail.gmail.com>	<201005312347.24251.rjw@sisk.pl>
-	<AANLkTilvOgSFTDFtXbjJobMZWxgfvsC97TqC7_a_NHBX@mail.gmail.com>
+Date: Tue, 1 Jun 2010 09:07:37 +0200
+Message-ID: <20100601090737.4bc243d9__23819.9645457373$1275376120$gmane$org@schatten.dmk.lab>
+References: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
+	<Pine.LNX.4.44L0.1005292026080.6300-100000@netrider.rowland.org>
+	<AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
+	<201005312338.55109.rjw@sisk.pl> <20100531232617.GF31155@gvim.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="iso-8859-15"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTilvOgSFTDFtXbjJobMZWxgfvsC97TqC7_a_NHBX@mail.gmail.com>
+In-Reply-To: <20100531232617.GF31155@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,69 +20,144 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?ext_Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>
+To: markgross@thegnar.org
+Cc: 640e9920@gmail.com, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Linux@smtp1.linux-foundation.org, PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Mon, 31 May 2010 16:26:17 -0700
+mark gross <640e9920@gmail.com> wrote:
 
-ext Arve Hj=F8nnev=E5g wrote:
+> On Mon, May 31, 2010 at 11:38:55PM +0200, Rafael J. Wysocki wrote:
+> > On Monday 31 May 2010, Arve Hj=F8nnev=E5g wrote:
+> > > 2010/5/29 Alan Stern <stern@rowland.harvard.edu>:
+> > > > On Sat, 29 May 2010, Arve Hj=F8nnev=E5g wrote:
+> > > >
+> > > >> > In place of in-kernel suspend blockers, there will be a new type=
+ of QoS
+> > > >> > constraint -- call it QOS_EVENTUALLY.  It's a very weak constrai=
+nt,
+> > > >> > compatible with all cpuidle modes in which runnable threads are =
+allowed
+> > > >> > to run (which is all of them), but not compatible with suspend.
+> > > >> >
+> > > >> This sound just like another API rename. It will work, but given t=
+hat
+> > > >> suspend blockers was the name least objectionable last time around,
+> > > >> I'm not sure what this would solve.
+> > > >
+> > > > It's not just a rename.  By changing this into a QoS constraint, we
+> > > > make it more generally useful.  Instead of standing on its own, it
+> > > > becomes part of the PM-QOS framework.
+> > > >
+> > > =
 
-> It sounded like you were suggesting that initiating suspend from idle
-> would somehow avoid the race condition with wakeup events. All I'm
-> saying is that you would need to block suspend in all the same places.
-> If you don't care about ignoring wakeup events, then sure you can
-> initiate suspend from idle.
->   =
+> > > We cannot use the existing pm-qos framework. It is not safe to call
+> > > from atomic context.
+> > =
+
+> > We've just merged a patch that fixed that if I'm not mistaken.  Mark, d=
+id your
+> > PM QoS update fix that?
+> >
+> =
+
+> I'm pretty sure it can be called in atomic context, and if its not I'm
+> sure we can fix that.  It can be called in atomic context.  I don't
+> think it was ever a problem to call it in atomic context.  The problem it
+> had was that crappy list of string compares.  Thats been fixed.
+> =
+
+> --mgross
+>  =
 
 
-Sorry if i'm asking something that was already said, but the thread is =
+Well, the register call uses kzalloc. Apart from that I
+think we're good. =
 
-quite complex and i am not sure i have been able to grasp all of it.
 
-So, regardless of the SW implementation:
+The outstanding list traversals can be fixed also. (see below)
 
--1) are you focusing on "good" HW or do you want to address all at the =
+Cheers,
+Flo
 
-same time?
+>From 66fdd76f8cc4be722dba3859ddadfe07e7a4b755 Mon Sep 17 00:00:00 2001
+From: Florian Mickler <florian@mickler.org>
+Date: Tue, 1 Jun 2010 09:04:26 +0200
+Subject: [PATCH] pm_qos: remove unnecessary list-traversal
 
--2) would you be ok with addressing "bad" HW as a special case, which =
+The new extreme_value is only depending on the old extreme_value and
+the changing value.
 
-requires workarounds and shouldn't dictate the overall design?
+Signed-off-by: Florian Mickler <florian@mickler.org>
+---
+ kernel/pm_qos_params.c |   20 ++++++++++++++------
+ 1 files changed, 14 insertions(+), 6 deletions(-)
 
--3) do you agree with the assumption that new HW is expected to get =
+diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+index f42d3f7..6618e2c 100644
+--- a/kernel/pm_qos_params.c
++++ b/kernel/pm_qos_params.c
+@@ -136,6 +136,16 @@ static s32 min_compare(s32 v1, s32 v2)
+ }
+ =
 
-reasonably better and therefore workarounds at point 2) will =
+ =
 
-progressively be confined to devices less and less common?
++static void update_target_val(int pm_qos_class, s32 val)
++{
++	s32 extreme_value;
++	s32 new_value;
++	extreme_value =3D atomic_read(&pm_qos_array[pm_qos_class]->target_value);
++	new_value =3D pm_qos_array[pm_qos_class]->comparitor(val,extreme_value);
++	if (extreme_value !=3D new_value)
++		atomic_set(&pm_qos_array[pm_qos_class]->target_value,new_value);
++}
++
+ static void update_target(int pm_qos_class)
+ {
+ 	s32 extreme_value;
+@@ -227,8 +237,8 @@ struct pm_qos_request_list *pm_qos_add_request(int pm_q=
+os_class, s32 value)
+ 		spin_lock_irqsave(&pm_qos_lock, flags);
+ 		list_add(&dep->list,
+ 			&pm_qos_array[pm_qos_class]->requests.list);
++		update_target_val(pm_qos_class,dep->value);
+ 		spin_unlock_irqrestore(&pm_qos_lock, flags);
+-		update_target(pm_qos_class);
+ 	}
+ =
 
--4) going to the definition of "good" and "bad" (maybe this should have =
+ 	return dep;
+@@ -249,23 +259,21 @@ void pm_qos_update_request(struct pm_qos_request_list=
+ *pm_qos_req,
+ 		s32 new_value)
+ {
+ 	unsigned long flags;
+-	int pending_update =3D 0;
+ 	s32 temp;
+ =
 
-come earlier in the list), can we define "good" HW as HW where:
- * suspend state and lowest achievable runtime idle state are basically =
+ 	if (pm_qos_req) { /*guard against callers passing in null */
++		int target =3D pm_qos_req->pm_qos_class;
+ 		spin_lock_irqsave(&pm_qos_lock, flags);
+ 		if (new_value =3D=3D PM_QOS_DEFAULT_VALUE)
+-			temp =3D pm_qos_array[pm_qos_req->pm_qos_class]->default_value;
++			temp =3D pm_qos_array[target]->default_value;
+ 		else
+ 			temp =3D new_value;
+ =
 
-equivalent from both power consumption and latency pov
- * the HW itself is properly able to track wakeup sources while it is in =
+ 		if (temp !=3D pm_qos_req->value) {
+-			pending_update =3D 1;
+ 			pm_qos_req->value =3D temp;
++			update_target_val(target,temp);
+ 		}
+ 		spin_unlock_irqrestore(&pm_qos_lock, flags);
+-		if (pending_update)
+-			update_target(pm_qos_req->pm_qos_class);
+ 	}
+ }
+ EXPORT_SYMBOL_GPL(pm_qos_update_request);
+-- =
 
-its deepest power state (as example OMAP3 has few independent =
-
-wake-capable pads and a "wake ring" where one only gets the information =
-
-that at least one of the pads belonging to such ring has received a wakeup)
- * wakeup sources can be dynamically masked at HW level, so that if a =
-
-peripheral is not interesting, it doesn't wakeup the system (for example =
-
-the camera button when the camera cover is closed)
-
--5) HW that is not capable of properly generating asynchronous signal is =
-
-most likely the cause for extra timers in kernel and it should be =
-
-considered "bad" - in any other case having recurring in-kernel timers =
-
-should be treated as bugs, if their existence is not tied to some =
-
-meaningful work
-
-thanks, igor
+1.7.1
