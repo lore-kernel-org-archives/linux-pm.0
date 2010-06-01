@@ -1,20 +1,16 @@
 From: mark gross <640e9920@gmail.com>
-Subject: Re: [RFC] lp_events: an lternitive to suspend blocker
- user mode and kernel API
-Date: Tue, 1 Jun 2010 07:01:20 -0700
-Message-ID: <20100601140120.GB1281__17108.7195784368$1275400939$gmane$org@gvim.org>
-References: <20100530200409.GA21632@gvim.org>
-	<20100531095753.4c174f2d@notabene.brown>
-	<20100531221035.GB31155@gvim.org> <201006010045.21382.rjw@sisk.pl>
-	<20100601050914.GG31155@gvim.org>
-	<AANLkTik4ixmtv5Ki7jds5gEspJAxBRAcJCR1Jv-V6ajR@mail.gmail.com>
+Subject: Re: [PATCH] pm_qos: remove unnecessary list-traversal
+Date: Tue, 1 Jun 2010 07:08:12 -0700
+Message-ID: <20100601140811.GD1281__46366.7006734342$1275401427$gmane$org@gvim.org>
+References: <20100601090737.4bc243d9@schatten.dmk.lab>
+	<1275382014-10178-1-git-send-email-florian@mickler.org>
 Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <AANLkTik4ixmtv5Ki7jds5gEspJAxBRAcJCR1Jv-V6ajR@mail.gmail.com>
+In-Reply-To: <1275382014-10178-1-git-send-email-florian@mickler.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,64 +20,79 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
-Cc: mark.gross@intel.com, markgross@thegnar.org, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Arve@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: florian@mickler.org
+Cc: 640e9920@gmail.com, markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 31, 2010 at 10:24:30PM -0700, Arve Hj=F8nnev=E5g wrote:
-> On Mon, May 31, 2010 at 10:09 PM, mark gross <640e9920@gmail.com> wrote:
-> > On Tue, Jun 01, 2010 at 12:45:21AM +0200, Rafael J. Wysocki wrote:
-> >> On Tuesday 01 June 2010, mark gross wrote:
-> >> > On Mon, May 31, 2010 at 09:57:53AM +1000, Neil Brown wrote:
-> >> ...
-> >> > > So I would suggest modifying your proposal to simply create a new =
-'input'
-> >> > > device. =A0Any driver that supports wake-from-suspend queues an ev=
-ent to that
-> >> > > device when a wakeup event occurs. =A0If the device is open and ha=
-s any queued
-> >> > > events, then a suspend request such as 'echo mem > /sys/power/stat=
-e' completes
-> >> > > without going into full suspend.
-> >> >
-> >> > /me likes.
-> >> >
-> >> > > Then you just need to convince us that this mechanism can be used =
-without any
-> >> > > race problems. =A0If it can, then it would certainly be a simple a=
-nd
-> >> > > unobtrusive approach.
-> >> >
-> >> > Lets find out.
-> >>
-> >> Simple question: how is that better than the Alan Stern's proposed app=
-roach?
-> >>
-> > I just saw Alan Stern's proposal, and have gotten some input form some
-> > others. =A0I can't say my patch represents a better Idea than what Alan
-> > proposed. =A0However; what Alan (and Thomas) are talking about is
-> > effectively the same as the kenrel mode wakelock/suspend blocker thing,
-> > and although it reuses existing infrastructure, it doesn't solve the
-> > problem of needing overlapping blocking sections of code from ISR to
-> > user mode.
-> >
-> =
+On Tue, Jun 01, 2010 at 10:46:54AM +0200, florian@mickler.org wrote:
+> The new extreme value is only depending on the old extreme value and
+> the changed value.
+> 
+> Signed-off-by: Florian Mickler <florian@mickler.org>
+> ---
+>  kernel/pm_qos_params.c |   19 +++++++++++++++++--
+>  1 files changed, 17 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+> index f42d3f7..5d71c12 100644
+> --- a/kernel/pm_qos_params.c
+> +++ b/kernel/pm_qos_params.c
+> @@ -136,6 +136,16 @@ static s32 min_compare(s32 v1, s32 v2)
+>  }
+>  
+>  
+> +static void update_target_val(int pm_qos_class, s32 val)
+> +{
+> +	s32 extreme_value;
+> +	s32 new_value;
+> +	extreme_value = atomic_read(&pm_qos_array[pm_qos_class]->target_value);
+> +	new_value = pm_qos_array[pm_qos_class]->comparitor(val,extreme_value);
+> +	if (extreme_value != new_value)
+> +		atomic_set(&pm_qos_array[pm_qos_class]->target_value,new_value);
+> +}
+> +
 
-> I don't think your solution solves this either.
+only works right when the new val is a more stringent constraint
+(request) than what is already there.  When removing or reducing a
+constraint (request) the list still needs to be walked to get the new
+aggregate request.
 
-Why?  my proposal effectively removes the overlapping kernel blocking
-sections uppon wake up by forcing the user mode to ack the wake event
-and re-issue the suspend request explicitly.  That pretty much solves
-that problem.
-
-We can talk about whether or not it can be used effectively with Android
-user mode PM or not, which I still think it can, but I need to try the
-mods to power.c.
+But its a really good optimization for 1/2 of the calls to pm_qos I
+should have seen and included a long time ago!  Thanks!
 
 --mgross
 
- =
 
-> -- =
-
-> Arve Hj=F8nnev=E5g
+>  static void update_target(int pm_qos_class)
+>  {
+>  	s32 extreme_value;
+> @@ -253,19 +263,24 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
+>  	s32 temp;
+>  
+>  	if (pm_qos_req) { /*guard against callers passing in null */
+> +		int target = pm_qos_req->pm_qos_class;
+>  		spin_lock_irqsave(&pm_qos_lock, flags);
+>  		if (new_value == PM_QOS_DEFAULT_VALUE)
+> -			temp = pm_qos_array[pm_qos_req->pm_qos_class]->default_value;
+> +			temp = pm_qos_array[target]->default_value;
+>  		else
+>  			temp = new_value;
+>  
+>  		if (temp != pm_qos_req->value) {
+>  			pending_update = 1;
+>  			pm_qos_req->value = temp;
+> +			update_target_val(target,temp);
+>  		}
+>  		spin_unlock_irqrestore(&pm_qos_lock, flags);
+> +
+>  		if (pending_update)
+> -			update_target(pm_qos_req->pm_qos_class);
+> +			blocking_notifier_call_chain(
+> +				pm_qos_array[pm_qos_class]->notifiers,
+> +					(unsigned long) temp, NULL);
+>  	}
+>  }
+>  EXPORT_SYMBOL_GPL(pm_qos_update_request);
+> -- 
+> 1.7.1
+> 
