@@ -1,7 +1,7 @@
-From: James Bottomley <James.Bottomley@suse.de>
+From: Florian Mickler <florian@mickler.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 02 Jun 2010 18:03:38 -0500
-Message-ID: <1275519818.2799.527.camel__26163.8796343052$1275519884$gmane$org@mulgrave.site>
+Date: Thu, 3 Jun 2010 01:06:07 +0200
+Message-ID: <20100603010607.5baf82a6__30216.4625529715$1275520029$gmane$org@schatten.dmk.lab>
 References: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
 	<20100601135102.GA8098@srcf.ucam.org>
 	<1275426085.21962.967.camel@mulgrave.site>
@@ -13,12 +13,11 @@ References: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
 	<1275491111.2799.110.camel@mulgrave.site>
 	<20100602214748.7742e3ae@schatten.dmk.lab>
 	<1275511271.2799.516.camel@mulgrave.site>
-	<AANLkTikeHarkwvO5-Fdrxt1FzTQL2lGHiQXBSG0vsKob@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikeHarkwvO5-Fdrxt1FzTQL2lGHiQXBSG0vsKob@mail.gmail.com>
+In-Reply-To: <1275511271.2799.516.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,69 +27,122 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: tytso@mit.edu, Neil Brown <neilb@suse.de>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@lists.linux-foundation.org>, mark.gross@intel.com, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: tytso@mit.edu, Neil Brown <neilb@suse.de>, felipe.balbi@nokia.com, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux@smtp1.linux-foundation.org, mark.gross@intel.com, Thomas Gleixner <tglx@linutronix.de>, Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyMDEwLTA2LTAyIGF0IDE1OjI3IC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
-Ogo+IE9uIFdlZCwgSnVuIDIsIDIwMTAgYXQgMTo0MSBQTSwgSmFtZXMgQm90dG9tbGV5IDxKYW1l
-cy5Cb3R0b21sZXlAc3VzZS5kZT4gd3JvdGU6Cj4gPiBPbiBXZWQsIDIwMTAtMDYtMDIgYXQgMjE6
-NDcgKzAyMDAsIEZsb3JpYW4gTWlja2xlciB3cm90ZToKPiA+PiBPbiBXZWQsIDAyIEp1biAyMDEw
-IDEwOjA1OjExIC0wNTAwCj4gPj4gSmFtZXMgQm90dG9tbGV5IDxKYW1lcy5Cb3R0b21sZXlAc3Vz
-ZS5kZT4gd3JvdGU6Cj4gPj4KPiA+PiA+IE9uIFR1ZSwgMjAxMC0wNi0wMSBhdCAyMTo0MSAtMDcw
-MCwgQXJ2ZSBIasO4bm5ldsOlZyB3cm90ZToKPiA+PiA+ID4gTm8sIHRoZXkgaGF2ZSB0byBiZSB0
-d28gc2VwYXJhdGUgY29uc3RyYWludHMsIG90aGVyd2lzZSBhIGNvbnN0cmFpbnQKPiA+PiA+ID4g
-dG8gYmxvY2sgc3VzcGVuZCB3b3VsZCBvdmVycmlkZSBhIGNvbnN0cmFpbnQgdG8gYmxvY2sgYSBs
-b3cgcG93ZXIgaWRsZQo+ID4+ID4gPiBtb2RlIG9yIHRoZSBvdGhlciB3YXkgYXJvdW5kLgo+ID4+
-ID4KPiA+PiA+IERlcGVuZHMuICBJZiB5b3UgYmxvY2sgdGhlIHN5c3RlbSBmcm9tIGdvaW5nIGlu
-dG8gbG93IHBvd2VyIGlkbGUsIGRvZXMKPiA+PiA+IHRoYXQgbWVhbiB5b3Ugc3RpbGwgd2FudCBp
-dCB0byBiZSBmdWxseSBzdXNwZW5kZWQ/Cj4gPj4gPgo+ID4+ID4gSWYgeWVzLCB0aGVuIHdlIGRv
-IGhhdmUgaW5kZXBlbmRlbnQgY29uc3RyYWludHMuICBJZiBub3QsIHRoZXkgaGF2ZSBhCj4gPj4g
-PiBoaWVyYXJjaHk6Cj4gPj4gPgo+ID4+ID4gICAgICAgKiBGdWxseSBJbnRlcmFjdGl2ZSAobm8g
-bG93IHBvd2VyIGlkbGUgb3Igc3VzcGVuZCkKPiA+PiA+ICAgICAgICogUGFydGlhbGx5IEludGVy
-YWN0aXZlIChtYXkgZ28gaW50byBsb3cgcG93ZXIgaWRsZSBidXQgbm90Cj4gPj4gPiAgICAgICAg
-IHN1c3BlbmQpCj4gPj4gPiAgICAgICAqIE5vbmUgKG1heSBnbyBpbnRvIGxvdyBwb3dlciBpZGxl
-IG9yIHN1c3BlbmQpCj4gPj4gPgo+ID4+ID4gV2hpY2ggaXMgZXhwcmVzc2FibGUgYXMgYSB0ZXJu
-YXJ5IGNvbnN0cmFpbnQuCj4gPj4gPgo+ID4+ID4gSmFtZXMKPiA+PiA+Cj4gPj4KPiA+PiBCdXQg
-dW5ibG9ja2luZyBzdXNwZW5kIGF0IHRoZSBtb21lbnQgaXMgaW5kZXBlbmRlbnQgdG8gZ2V0dGlu
-ZyBpZGxlLgo+ID4+IElmIHlvdSBoYXZlIHRoZSByZXF1aXJlbWVudCB0byBzdGF5IGluIHRoZSBo
-aWdoZXN0LWlkbGUgbGV2ZWwgKGkuZS4KPiA+PiBiZXN0IGxhdGVuY3kgeW91IGNhbiBnZXQpIHRo
-YXQgZG9lcyBub3QgKGN1cnJlbnRseSkgbWVhbiwgdGhhdCB5b3UgY2FuCj4gPj4gbm90IHN1c3Bl
-bmQuCj4gPgo+ID4gSSBkb24ndCB1bmRlcnN0YW5kIHRoYXQgYXMgYSByZWFzb24uICBJZiB3ZSBs
-b29rcyBhdCB0aGlzIGEgcW9zCj4gPiBjb25zdHJhaW50cywgeW91J3JlIHNheWluZyB0aGF0IHRo
-ZSBzeXN0ZW0gbWF5IG5vdCBkcm9wIGludG8gY2VydGFpbiBsb3cKPiA+IHBvd2VyIHN0YXRlcyBi
-ZWNhdXNlIGl0IG1pZ2h0IHR1cm4gc29tZXRoaW5nIG9mZiB0aGF0J3MgY3VycmVudGx5IGJlaW5n
-Cj4gPiB1c2VkIGJ5IGEgZHJpdmVyIG9yIGEgcHJvY2Vzcy4gIFN1c3BlbmQgaXMgY2VydGFpbmx5
-IHRoZSBsb3dlc3Qgc3RhdGUgb2YKPiA+IHRoYXQgYmVjYXVzZSBpdCB0dXJucyBldmVyeXRoaW5n
-IG9mZiwgd2h5IHdvdWxkIGl0IGJlIGxlZ2FsIHRvIGRyb3AgaW50bwo+ID4gdGhhdD8KPiAKPiBC
-ZWNhdXNlIHRoZSBkcml2ZXIgZ2V0cyBjYWxsZWQgb24gc3VzcGVuZCB3aGljaCBnaXZlcyBpdCBh
-IGNoYW5nZSB0bwo+IHN0b3AgdXNpbmcgaXQuCj4gCj4gPgo+ID4gSSBhbHNvIGNvdWxkbid0IGZp
-bmQgdGhpcyBub3Rpb24gb2Ygc2VwYXJhdGlvbiBvZiBpZGxlbmVzcyBwb3dlciBmcm9tCj4gPiBz
-dXNwZW5kIGJsb2NraW5nIGluIHRoZSBvcmlnaW5hbCBzdXNwZW5kIGJsb2NrIHBhdGNoIHNldCAu
-Li4gaWYgeW91IGNhbgo+ID4gZWl0aGVyIHRlbGwgbWUgd2hlcmUgaXQgaXMsIG9yIGdpdmUgbWUg
-YW4gZXhhbXBsZSBvZiB0aGUgc2VwYXJhdGVkIHVzZQo+ID4gY2FzZXMsIEknZCB1bmRlcnN0YW5k
-IGJldHRlci4KPiA+Cj4gCj4gVGhlIHN1c3BlbmQgYmxvY2sgcGF0Y2hzZXQgb25seSBkZWFscyB3
-aXRoIHN1c3BlbmQsIG5vdCBsb3cgcG93ZXIgaWRsZQo+IG1vZGVzLiBUaGUgb3JpZ2luYWwgd2Fr
-ZWxvY2sgcGF0Y2hzZXQgaGFkIHR3byB3YWtlbG9jayB0eXBlcywgaWRsZSBhbmQKPiBzdXNwZW5k
-LgoKT0ssIHNvIHRoYXQgZXhwbGFpbnMgd2h5IEkgZGlkbid0IHNlZSBpdCAuLi4KCj4gPj4gVG8g
-cHJlc2VydmUgdGhhdCBleHBsaWNpdCBmYWxsLXRocm91Z2ggd2hpbGUgc3RpbGwgaGF2aW5nIHdv
-cmtpbmcKPiA+PiBydW4tdGltZS1wb3dlcm1hbmFnZW1lbnQgSSB0aGluayB0aGUgcW9zLWNvbnN0
-cmFpbnRzIG5lZWQgdG8gYmUKPiA+PiBzZXBhcmF0ZWQuCj4gPgo+ID4gT0ssIGFzIGFib3ZlLCB3
-aHk/ICBvciBiZXR0ZXIgeWV0LCBqdXN0IGdpdmUgYW4gZXhhbXBsZS4KPiA+Cj4gCj4gVGhlIGky
-YyBidXMgb24gdGhlIE5leHVzIE9uZSBpcyB1c2VkIGJ5IHRoZSBvdGhlciBjb3JlIHRvIHR1cm4g
-b2ZmIHRoZQo+IHBvd2VyIHlvdSBvdXIgY29yZSB3aGVuIHdlIGVudGVyIHRoZSBsb3dlc3QgcG93
-ZXIgbW9kZS4gVGhpcyBtZWFucwo+IHRoYXQgd2UgY2Fubm90IGVudGVyIHRoYXQgbG93IHBvd2Vy
-IG1vZGUgd2hpbGUgdGhlIGkyYyBidXMgaXMgYWN0aXZlLAo+IHNvIHdlIGJsb2NrIGxvdyBwb3dl
-ciBpZGxlIG1vZGVzLiBBdCBzb21lIHBvaW50IHdlIGFsc28gdHJpZXMgdG8gYmxvY2sKPiBzdXNw
-ZW5kIGluIHRoaXMgY2FzZSwgYnV0IHRoaXMgY2F1c2VkIGEgbG90IG9mIGZhaWxlZCBzdXNwZW5k
-IGF0dGVtcHRzCj4gc2luY2UgdGhlIGZyZXF1ZW5jeSBzY2FsaW5nIGNvZGUgd291bGQgdHJ5IHRv
-IHJhbXAgdXAgd2hpbGUgZnJlZXppbmcKPiBwcm9jZXNzZXMgd2hpY2ggaW4gdHVybiBhYm9ydGVk
-IHRoZSBwcm9jZXNzIGZyZWV6aW5nIGF0dGVtcHRzLgoKT0ssIHNvIHRoaXMgaXMgYSBkZXZpY2Ug
-c3BlY2lmaWMgcG93ZXIgY29uc3RyYWludCBzdGF0ZS4gIEkgc3VwcG9zZSBpdAptYWtlcyBzZW5z
-ZSB0byBoYXZlIGEgYnVuY2ggb2YgdGhvc2UsIGJlY2F1c2UgdGhlIGRldmljZSBpc24ndApuZWNl
-c3NhcmlseSBnb2luZyB0byBrbm93IHdoYXQgaWRsZSBwb3dlciBtb2RlIGl0IGNhbid0IGdvIGlu
-dG8sIHNvIHRoZQpjcHUgZ292ZW5vciBzaG91bGQgc29ydCBpdCBvdXQgcmF0aGVyIHRoYW4gaGF2
-ZSB0aGUgZGV2aWNlIHNwZWNpZnkgYQptaW5pbXVtIHN0YXRlLiAgCgpKYW1lcwoKCl9fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcg
-bGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxp
-bnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Wed, 02 Jun 2010 15:41:11 -0500
+James Bottomley <James.Bottomley@suse.de> wrote:
+
+> On Wed, 2010-06-02 at 21:47 +0200, Florian Mickler wrote:
+> > On Wed, 02 Jun 2010 10:05:11 -0500
+> > James Bottomley <James.Bottomley@suse.de> wrote:
+> > =
+
+> > > On Tue, 2010-06-01 at 21:41 -0700, Arve Hj=F8nnev=E5g wrote:
+> > > > No, they have to be two separate constraints, otherwise a constraint
+> > > > to block suspend would override a constraint to block a low power i=
+dle
+> > > > mode or the other way around.
+> > > =
+
+> > > Depends.  If you block the system from going into low power idle, does
+> > > that mean you still want it to be fully suspended?
+> > > =
+
+> > > If yes, then we do have independent constraints.  If not, they have a
+> > > hierarchy:
+> > > =
+
+> > >       * Fully Interactive (no low power idle or suspend)
+> > >       * Partially Interactive (may go into low power idle but not
+> > >         suspend)
+> > >       * None (may go into low power idle or suspend)
+> > > =
+
+> > > Which is expressable as a ternary constraint.
+> > > =
+
+> > > James
+> > > =
+
+> > =
+
+> > But unblocking suspend at the moment is independent to getting idle.
+> > If you have the requirement to stay in the highest-idle level (i.e.
+> > best latency you can get) that does not (currently) mean, that you can
+> > not suspend.
+> =
+
+> I don't understand that as a reason.  If we looks at this a qos
+> constraints, you're saying that the system may not drop into certain low
+> power states because it might turn something off that's currently being
+> used by a driver or a process.  Suspend is certainly the lowest state of
+> that because it turns everything off, why would it be legal to drop into
+> that?
+> =
+
+> I also couldn't find this notion of separation of idleness power from
+> suspend blocking in the original suspend block patch set ... if you can
+> either tell me where it is, or give me an example of the separated use
+> cases, I'd understand better.
+> =
+
+> > To preserve that explicit fall-through while still having working
+> > run-time-powermanagement I think the qos-constraints need to be
+> > separated. =
+
+> =
+
+> OK, as above, why?  or better yet, just give an example.
+
+Hm. Maybe it is me who doesn't understand. =
+
+
+With proposed patchset: =
+
+1. As soon as we unblock suspend we go down.  (i.e. suspending)
+2. While suspend is blocked, the idle-loop does it's things. (i.e.
+runtime power managment -> can give same power-result as suspend)
+
+possible cases:
+1: =
+
+   - qos-latency-constraints: 1ms,  [here: forbids anything other than
+     C1 idle state.]
+   - suspend is blocked
+
+2: - qos latency-constraints: as in 1
+   - suspend unblocked
+
+3: - qos latency-constraints: infinity, cpu in lowest power state.
+   - suspend is blocked
+
+4: - qos latency-constraints: infinity, cpu in lowest power state.
+   - suspend unblocked
+
+
+in case 2 and 4 we would suspend, regardeless of the qos-latency.
+
+in case 1 and 3 we would stay awake, regardeless of the qos-latency
+constraint.
+
+
+If only one constraint, then case 2 (or 3) wouldn't be possible. But it
+is possible now. =
+
+
+A possible use case as an example?
+(hmm... i'm trying my imagination hard now): =
+
+	Your sound needs low latency, so that could be a cause for the
+	qos-latency constraint. =
+
+
+	And unblocking suspend could nonetheless happen:
+	For example... you have an firefox open and don't want to
+	prevent suspend for that case when the display is turned off
+
+
+Cheers,
+Flo
