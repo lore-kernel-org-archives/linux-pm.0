@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 2 Jun 2010 22:55:51 +0200
-Message-ID: <201006022255.51551.rjw__46544.7602015503$1275512200$gmane$org@sisk.pl>
-References: <20100601123846.14d0535b@notabene.brown>
-	<Pine.LNX.4.44L0.1006011032150.2949-100000@iolanthe.rowland.org>
-	<20100602104318.0c41b3cd@notabene.brown>
+From: Don Zickus <dzickus@redhat.com>
+Subject: Re: hibernation hangs with ATA errors (lockup_detector
+	bug)
+Date: Wed, 2 Jun 2010 17:03:32 -0400
+Message-ID: <20100602210332.GD15159__8970.98842910982$1275512757$gmane$org@redhat.com>
+References: <4C03C608.1040600@gmail.com> <20100601135004.GP15159@redhat.com>
+	<4C051D44.7040203@gmail.com> <20100602184459.GA15159@redhat.com>
+	<20100602191336.GA5164@nowhere>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100602104318.0c41b3cd@notabene.brown>
+Content-Disposition: inline
+In-Reply-To: <20100602191336.GA5164@nowhere>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,28 +21,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Neil Brown <neilb@suse.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-ide@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jiri Slaby <jirislaby@gmail.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 02 June 2010, Neil Brown wrote:
-> On Tue, 1 Jun 2010 10:47:49 -0400 (EDT)
-> Alan Stern <stern@rowland.harvard.edu> wrote:
-...
-> So yes, there are different use cases and we should support all of them,
-> both "I shut the lid and my laptop really stays asleep" and "I never miss a
-> TXT because my phone went to sleep at a bad time".  The process that
-> initiates the suspend has a role in choosing what can wake it up.
+On Wed, Jun 02, 2010 at 09:13:40PM +0200, Frederic Weisbecker wrote:
+> On Wed, Jun 02, 2010 at 02:44:59PM -0400, Don Zickus wrote:
+> > On Tue, Jun 01, 2010 at 04:46:28PM +0200, Jiri Slaby wrote:
+> > > On 06/01/2010 03:50 PM, Don Zickus wrote:
+> > > > On Mon, May 31, 2010 at 04:22:00PM +0200, Jiri Slaby wrote:
+> > > >> Hi,
+> > > >>
+> > > >> with -next I get the following errors while trying to hibernate in
+> > > >> qemu-kvm after the image is stored on disk:
+> > > > 
+> > > > Is this the host that is hibernating or the guest?
+> > > 
+> > > Guest.
+> > > 
+> > > > KVM guests don't emulate the performance counters, so the nmi piece
+> > > > shouldn't be functioning and the soft lockup piece just sits on top of an
+> > > > hrtimer, so off the top of my head it is hard to imagine it intefering
+> > > > with a sata driver.
+> > > > 
+> > > > I'll need your whole boot up log to see how the lockup detector
+> > > > initialized itself.
+> > 
+> > Ok, so I found out what is causing the problem, not entirely sure why or
+> > what the right fix is, but this patch should do the trick.
+> > 
+> > This is probably one of those fixing the symptoms but not the problem patch,
+> > but I don't know enough about suspend/resume to understand what the real
+> > problem is.
+> 
+> 
+> So the problem is that we stop the cpu hotplug notifying, I guess this prevents
+> some ata callbacks to execute in the cpu hotplug notifier and then provoke this
+> crash.
+> 
+> The patch looks ok, but I think you should at least print a message in such
+> case of watchdog failure.
 
-You'd need to add some all new infrastructure for that, because right now
-only hardware wakeup signals are regarded as (system) wakeup events
-(they are either interrupts or things like PCI PMEs, possibly translated to
-some platform signals like GPIOs or something).
+Well this is already printed and in Jiri's dmesg output
 
-I think I know how to prevent these hardware wakeup events from being lost
-(such that the entire suspend will be aborted if one of them happens
-during suspend), but for the handling of more generally defined wakeup
-events we'd need to provide user space with information on what wakeup events
-are available and how to enable and disable them, among other things.
+NMI watchdog failed to create perf event on cpu1: ffffffffffffffed
 
-Rafael
+I could change it to make it more obvious?
+
+Cheers,
+Don
