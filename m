@@ -1,13 +1,24 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Runtime PM for PCI-based USB host controllers
-Date: Thu, 3 Jun 2010 00:30:27 +0200
-Message-ID: <201006030030.27234.rjw__32021.4844229215$1275517785$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1006021539460.1628-100000@iolanthe.rowland.org>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Wed, 02 Jun 2010 18:03:38 -0500
+Message-ID: <1275519818.2799.527.camel__26163.8796343052$1275519884$gmane$org@mulgrave.site>
+References: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<20100601135102.GA8098@srcf.ucam.org>
+	<1275426085.21962.967.camel@mulgrave.site>
+	<201006020024.14220.rjw@sisk.pl>
+	<1275431816.21962.1108.camel@mulgrave.site>
+	<AANLkTikObnAZbyOxeYAhXcEbimO3XTTO-HlC9CD_HH6t@mail.gmail.com>
+	<1275451342.21962.1777.camel@mulgrave.site>
+	<AANLkTilRcFZyYa-0HlaM-6IEZSyar3S9S_cCWSFax2Zo@mail.gmail.com>
+	<1275491111.2799.110.camel@mulgrave.site>
+	<20100602214748.7742e3ae@schatten.dmk.lab>
+	<1275511271.2799.516.camel@mulgrave.site>
+	<AANLkTikeHarkwvO5-Fdrxt1FzTQL2lGHiQXBSG0vsKob@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006021539460.1628-100000@iolanthe.rowland.org>
+In-Reply-To: <AANLkTikeHarkwvO5-Fdrxt1FzTQL2lGHiQXBSG0vsKob@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,68 +28,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-pci@vger.kernel.org
+To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: tytso@mit.edu, Neil Brown <neilb@suse.de>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@lists.linux-foundation.org>, mark.gross@intel.com, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 02 June 2010, Alan Stern wrote:
-> On Wed, 2 Jun 2010, Rafael J. Wysocki wrote:
-> 
-> > > > Do PCI bus type callbacks need to be reworked to work correctly with unbound
-> > > > devices?
-> > > 
-> > > They do; I neglected to take care of them when first writing this 
-> > > patch.  After everything is working I'll submit it for real.  For now, 
-> > > the point was to find out whether this is going in the right direction.
-> > 
-> > I don't have a fundamental problem with it.  As long as all things can be made
-> > work along these lines, it's fine by me.
-> 
-> Arggh!  I just tried out a revised patch.  It seems to work
-> perfectly, except for one thing.  When I unbound ehci-hcd from one of
-> the USB controllers, which should have caused the controller to be 
-> runtime-suspended, this is what showed up in the log:
-> 
-> [  295.651545] pci 0000:00:1d.7: PME# enabled
-> [  295.664044] pci 0000:00:1d.7: Refused to change power state, currently in D0
-> 
-> Which seems to mean that the controller didn't want to go into D3hot!  
-> Presumably this is because it was unconfigured when the driver was 
-> unbound.  That's the only explanation I can think of; the controller 
-> had no objection about going into D3hot when it was bound to the 
-> driver.
-
-Hmm.  I must say I don't quite understand this behavior.  Oh well.
-
-> Assuming other PCI devices will have similar behavior, I have to agree
-> that there's no point trying to put driverless devices into low-power
-> states.
-
-I guess so.
-
-> One more thing: When looking at the r8169 and e1000e drivers, I noticed
-> that you used the same test (pci_dev_run_wake -- not the greatest name
-> in the world, BTW)
-
-It's following the ACPI naming which I admit generally sucks.
-
-> in both the probe and remove routines.  That's not
-> the right thing to do if the runtime-wakeup setting could get changed
-> inbetween.  (I realize that currently there is no way to change the
-> setting, but in the future there might be.)
-> 
-> Do you want to make an explicit assumption that the runtime wakeup
-> settings are fixed, not subject to change?
-
-I'm not sure yet. :-)
-
-> If so, then why not compute the setting just once, when the device is
-> registered, and store it in the pci_device structure?  Or even in the struct
-> device?
-
-If we decide it will be immutable, then yes, in which case I think struct
-pci_dev will be a better place to store it, because that kind of setting may
-not be meaningful for other types of devices (some of them will always be
-wakeup-capable and some of them will never be).
-
-Rafael
+T24gV2VkLCAyMDEwLTA2LTAyIGF0IDE1OjI3IC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
+Ogo+IE9uIFdlZCwgSnVuIDIsIDIwMTAgYXQgMTo0MSBQTSwgSmFtZXMgQm90dG9tbGV5IDxKYW1l
+cy5Cb3R0b21sZXlAc3VzZS5kZT4gd3JvdGU6Cj4gPiBPbiBXZWQsIDIwMTAtMDYtMDIgYXQgMjE6
+NDcgKzAyMDAsIEZsb3JpYW4gTWlja2xlciB3cm90ZToKPiA+PiBPbiBXZWQsIDAyIEp1biAyMDEw
+IDEwOjA1OjExIC0wNTAwCj4gPj4gSmFtZXMgQm90dG9tbGV5IDxKYW1lcy5Cb3R0b21sZXlAc3Vz
+ZS5kZT4gd3JvdGU6Cj4gPj4KPiA+PiA+IE9uIFR1ZSwgMjAxMC0wNi0wMSBhdCAyMTo0MSAtMDcw
+MCwgQXJ2ZSBIasO4bm5ldsOlZyB3cm90ZToKPiA+PiA+ID4gTm8sIHRoZXkgaGF2ZSB0byBiZSB0
+d28gc2VwYXJhdGUgY29uc3RyYWludHMsIG90aGVyd2lzZSBhIGNvbnN0cmFpbnQKPiA+PiA+ID4g
+dG8gYmxvY2sgc3VzcGVuZCB3b3VsZCBvdmVycmlkZSBhIGNvbnN0cmFpbnQgdG8gYmxvY2sgYSBs
+b3cgcG93ZXIgaWRsZQo+ID4+ID4gPiBtb2RlIG9yIHRoZSBvdGhlciB3YXkgYXJvdW5kLgo+ID4+
+ID4KPiA+PiA+IERlcGVuZHMuICBJZiB5b3UgYmxvY2sgdGhlIHN5c3RlbSBmcm9tIGdvaW5nIGlu
+dG8gbG93IHBvd2VyIGlkbGUsIGRvZXMKPiA+PiA+IHRoYXQgbWVhbiB5b3Ugc3RpbGwgd2FudCBp
+dCB0byBiZSBmdWxseSBzdXNwZW5kZWQ/Cj4gPj4gPgo+ID4+ID4gSWYgeWVzLCB0aGVuIHdlIGRv
+IGhhdmUgaW5kZXBlbmRlbnQgY29uc3RyYWludHMuICBJZiBub3QsIHRoZXkgaGF2ZSBhCj4gPj4g
+PiBoaWVyYXJjaHk6Cj4gPj4gPgo+ID4+ID4gICAgICAgKiBGdWxseSBJbnRlcmFjdGl2ZSAobm8g
+bG93IHBvd2VyIGlkbGUgb3Igc3VzcGVuZCkKPiA+PiA+ICAgICAgICogUGFydGlhbGx5IEludGVy
+YWN0aXZlIChtYXkgZ28gaW50byBsb3cgcG93ZXIgaWRsZSBidXQgbm90Cj4gPj4gPiAgICAgICAg
+IHN1c3BlbmQpCj4gPj4gPiAgICAgICAqIE5vbmUgKG1heSBnbyBpbnRvIGxvdyBwb3dlciBpZGxl
+IG9yIHN1c3BlbmQpCj4gPj4gPgo+ID4+ID4gV2hpY2ggaXMgZXhwcmVzc2FibGUgYXMgYSB0ZXJu
+YXJ5IGNvbnN0cmFpbnQuCj4gPj4gPgo+ID4+ID4gSmFtZXMKPiA+PiA+Cj4gPj4KPiA+PiBCdXQg
+dW5ibG9ja2luZyBzdXNwZW5kIGF0IHRoZSBtb21lbnQgaXMgaW5kZXBlbmRlbnQgdG8gZ2V0dGlu
+ZyBpZGxlLgo+ID4+IElmIHlvdSBoYXZlIHRoZSByZXF1aXJlbWVudCB0byBzdGF5IGluIHRoZSBo
+aWdoZXN0LWlkbGUgbGV2ZWwgKGkuZS4KPiA+PiBiZXN0IGxhdGVuY3kgeW91IGNhbiBnZXQpIHRo
+YXQgZG9lcyBub3QgKGN1cnJlbnRseSkgbWVhbiwgdGhhdCB5b3UgY2FuCj4gPj4gbm90IHN1c3Bl
+bmQuCj4gPgo+ID4gSSBkb24ndCB1bmRlcnN0YW5kIHRoYXQgYXMgYSByZWFzb24uICBJZiB3ZSBs
+b29rcyBhdCB0aGlzIGEgcW9zCj4gPiBjb25zdHJhaW50cywgeW91J3JlIHNheWluZyB0aGF0IHRo
+ZSBzeXN0ZW0gbWF5IG5vdCBkcm9wIGludG8gY2VydGFpbiBsb3cKPiA+IHBvd2VyIHN0YXRlcyBi
+ZWNhdXNlIGl0IG1pZ2h0IHR1cm4gc29tZXRoaW5nIG9mZiB0aGF0J3MgY3VycmVudGx5IGJlaW5n
+Cj4gPiB1c2VkIGJ5IGEgZHJpdmVyIG9yIGEgcHJvY2Vzcy4gIFN1c3BlbmQgaXMgY2VydGFpbmx5
+IHRoZSBsb3dlc3Qgc3RhdGUgb2YKPiA+IHRoYXQgYmVjYXVzZSBpdCB0dXJucyBldmVyeXRoaW5n
+IG9mZiwgd2h5IHdvdWxkIGl0IGJlIGxlZ2FsIHRvIGRyb3AgaW50bwo+ID4gdGhhdD8KPiAKPiBC
+ZWNhdXNlIHRoZSBkcml2ZXIgZ2V0cyBjYWxsZWQgb24gc3VzcGVuZCB3aGljaCBnaXZlcyBpdCBh
+IGNoYW5nZSB0bwo+IHN0b3AgdXNpbmcgaXQuCj4gCj4gPgo+ID4gSSBhbHNvIGNvdWxkbid0IGZp
+bmQgdGhpcyBub3Rpb24gb2Ygc2VwYXJhdGlvbiBvZiBpZGxlbmVzcyBwb3dlciBmcm9tCj4gPiBz
+dXNwZW5kIGJsb2NraW5nIGluIHRoZSBvcmlnaW5hbCBzdXNwZW5kIGJsb2NrIHBhdGNoIHNldCAu
+Li4gaWYgeW91IGNhbgo+ID4gZWl0aGVyIHRlbGwgbWUgd2hlcmUgaXQgaXMsIG9yIGdpdmUgbWUg
+YW4gZXhhbXBsZSBvZiB0aGUgc2VwYXJhdGVkIHVzZQo+ID4gY2FzZXMsIEknZCB1bmRlcnN0YW5k
+IGJldHRlci4KPiA+Cj4gCj4gVGhlIHN1c3BlbmQgYmxvY2sgcGF0Y2hzZXQgb25seSBkZWFscyB3
+aXRoIHN1c3BlbmQsIG5vdCBsb3cgcG93ZXIgaWRsZQo+IG1vZGVzLiBUaGUgb3JpZ2luYWwgd2Fr
+ZWxvY2sgcGF0Y2hzZXQgaGFkIHR3byB3YWtlbG9jayB0eXBlcywgaWRsZSBhbmQKPiBzdXNwZW5k
+LgoKT0ssIHNvIHRoYXQgZXhwbGFpbnMgd2h5IEkgZGlkbid0IHNlZSBpdCAuLi4KCj4gPj4gVG8g
+cHJlc2VydmUgdGhhdCBleHBsaWNpdCBmYWxsLXRocm91Z2ggd2hpbGUgc3RpbGwgaGF2aW5nIHdv
+cmtpbmcKPiA+PiBydW4tdGltZS1wb3dlcm1hbmFnZW1lbnQgSSB0aGluayB0aGUgcW9zLWNvbnN0
+cmFpbnRzIG5lZWQgdG8gYmUKPiA+PiBzZXBhcmF0ZWQuCj4gPgo+ID4gT0ssIGFzIGFib3ZlLCB3
+aHk/ICBvciBiZXR0ZXIgeWV0LCBqdXN0IGdpdmUgYW4gZXhhbXBsZS4KPiA+Cj4gCj4gVGhlIGky
+YyBidXMgb24gdGhlIE5leHVzIE9uZSBpcyB1c2VkIGJ5IHRoZSBvdGhlciBjb3JlIHRvIHR1cm4g
+b2ZmIHRoZQo+IHBvd2VyIHlvdSBvdXIgY29yZSB3aGVuIHdlIGVudGVyIHRoZSBsb3dlc3QgcG93
+ZXIgbW9kZS4gVGhpcyBtZWFucwo+IHRoYXQgd2UgY2Fubm90IGVudGVyIHRoYXQgbG93IHBvd2Vy
+IG1vZGUgd2hpbGUgdGhlIGkyYyBidXMgaXMgYWN0aXZlLAo+IHNvIHdlIGJsb2NrIGxvdyBwb3dl
+ciBpZGxlIG1vZGVzLiBBdCBzb21lIHBvaW50IHdlIGFsc28gdHJpZXMgdG8gYmxvY2sKPiBzdXNw
+ZW5kIGluIHRoaXMgY2FzZSwgYnV0IHRoaXMgY2F1c2VkIGEgbG90IG9mIGZhaWxlZCBzdXNwZW5k
+IGF0dGVtcHRzCj4gc2luY2UgdGhlIGZyZXF1ZW5jeSBzY2FsaW5nIGNvZGUgd291bGQgdHJ5IHRv
+IHJhbXAgdXAgd2hpbGUgZnJlZXppbmcKPiBwcm9jZXNzZXMgd2hpY2ggaW4gdHVybiBhYm9ydGVk
+IHRoZSBwcm9jZXNzIGZyZWV6aW5nIGF0dGVtcHRzLgoKT0ssIHNvIHRoaXMgaXMgYSBkZXZpY2Ug
+c3BlY2lmaWMgcG93ZXIgY29uc3RyYWludCBzdGF0ZS4gIEkgc3VwcG9zZSBpdAptYWtlcyBzZW5z
+ZSB0byBoYXZlIGEgYnVuY2ggb2YgdGhvc2UsIGJlY2F1c2UgdGhlIGRldmljZSBpc24ndApuZWNl
+c3NhcmlseSBnb2luZyB0byBrbm93IHdoYXQgaWRsZSBwb3dlciBtb2RlIGl0IGNhbid0IGdvIGlu
+dG8sIHNvIHRoZQpjcHUgZ292ZW5vciBzaG91bGQgc29ydCBpdCBvdXQgcmF0aGVyIHRoYW4gaGF2
+ZSB0aGUgZGV2aWNlIHNwZWNpZnkgYQptaW5pbXVtIHN0YXRlLiAgCgpKYW1lcwoKCl9fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcg
+bGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxp
+bnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
