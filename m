@@ -1,24 +1,13 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
- Suspend block api (version 8)
-Date: Wed, 2 Jun 2010 10:50:39 +0200
-Message-ID: <20100602105039.068c5e00__25829.7158325606$1275468714$gmane$org@schatten.dmk.lab>
-References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
-	<201006010005.19554.rjw@sisk.pl>
-	<20100601090023.788cabf4@notabene.brown>
-	<201006010232.20263.rjw@sisk.pl>
-	<20100601113309.609349fd@notabene.brown>
-	<alpine.LFD.2.00.1006010340160.2933@localhost.localdomain>
-	<20100601122012.1edeaf48@notabene.brown>
-	<alpine.LFD.2.00.1006011243350.2933@localhost.localdomain>
-	<20100602153235.340a7852@notabene.brown>
-	<AANLkTikVjAf5nHdMx2bcHRAUSkq99s-b5YZCECXIJJLy@mail.gmail.com>
-	<20100602180614.729246ea@notabene.brown>
+From: Jiri Slaby <jslaby@suse.cz>
+Subject: [PATCH 8/9] PM / Hibernate: dealign swsusp_info
+Date: Wed,  2 Jun 2010 10:52:47 +0200
+Message-ID: <1275468768-28229-8-git-send-email-jslaby@suse.cz>
+References: <1275468768-28229-1-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100602180614.729246ea@notabene.brown>
+In-Reply-To: <1275468768-28229-1-git-send-email-jslaby@suse.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,29 +17,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Neil Brown <neilb@suse.de>
-Cc: Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Peter@smtp1.linux-foundation.org, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: rjw@sisk.pl
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, jirislaby@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2 Jun 2010 18:06:14 +1000
-Neil Brown <neilb@suse.de> wrote:
+From: Jiri Slaby <jirislaby@gmail.com>
 
-> I cannot imagine why it would take multiple seconds to scan a keypad.
-> Can you explain that?
-> 
-> Do you mean while keys are held pressed?  Maybe you don't get a wake-up event
-> on key-release?  In that case your user-space daemon could block suspend
-> while there are any pressed keys....  confused.
+Now there is no need to have swsusp_info page aligned thanks to chunk
+i/o support. We may add more info after it on the very same page.
+Later...
 
-IIRC, the device sends interrupts only for first key-down and
-last key-up.
-To detect simultaneous key-presses you must actively scan it after the
-first key-down.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+---
+ kernel/power/power.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index 6e2e796..1fdbfe7 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -12,7 +12,7 @@ struct swsusp_info {
+ 	unsigned long		image_pages;
+ 	unsigned long		pages;
+ 	unsigned long		size;
+-} __attribute__((aligned(PAGE_SIZE)));
++};
+ 
+ #ifdef CONFIG_HIBERNATION
+ #ifdef CONFIG_ARCH_HIBERNATION_HEADER
+-- 
+1.7.1
