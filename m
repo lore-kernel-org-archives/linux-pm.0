@@ -1,21 +1,11 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 2 Jun 2010 12:58:11 +0100
-Message-ID: <20100602125811.4ae414e2@lxorguk.ukuu.org.uk>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<201005302202.39511.rjw@sisk.pl>
-	<AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt@mail.gmail.com>
-	<201005312347.24251.rjw@sisk.pl>
-	<AANLkTilvOgSFTDFtXbjJobMZWxgfvsC97TqC7_a_NHBX@mail.gmail.com>
-	<alpine.LFD.2.00.1006011411200.2933@localhost.localdomain>
-	<AANLkTikZHmF6baP7dEXEGFE8YsbEteRjlhb5wqZX8ll1@mail.gmail.com>
-	<alpine.LFD.2.00.1006020905410.2933@localhost.localdomain>
-	<1275469851.27810.30775.camel@twins>
+From: Nigel Cunningham <nigel@tuxonice.net>
+Subject: Nigel's current for-rafael queue
+Date: Wed,  2 Jun 2010 22:18:59 +1000
+Message-ID: <1275481160-31150-1-git-send-email-nigel__46191.2750536159$1275481246$gmane$org@tuxonice.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275469851.27810.30775.camel@twins>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,30 +15,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 02 Jun 2010 11:10:51 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
+Hi all.
 
-> On Wed, 2010-06-02 at 10:29 +0200, Thomas Gleixner wrote:
-> 
-> 
-> > If I understood you correctly then you can shutdown the CPU in idle
-> > completelty already, but that's not enough due to:
-> > 
-> >     1) crappy applications keeping the cpu away from idle
-> >     2) timers firing
-> > 
-> > Would solving those two issues be sufficient for you or am I missing
-> > something ?
-> 
-> Aren't the container snapshot/resume people fighting the same set of
-> problems here?
+Here is my current patch queue.
 
-And virtualisation - its a big one for virtualisation because if you've
-got 1000 misbehaving guests generating 100 wakeups a second you've got a
-problem ....
+Taken together, the patches implement the separation of low level
+block i/o into a separate file, switch from using swap_map_pages
+to extents stores prior to the 'header' page and implement fully
+asynchronous (rather than batched I/O). I have only run it under
+VMware so far, but would estimate a doubling in speed due to the
+async i/o.
 
-Alan
+Looking at Jiri's patches, there is definitely some overlap, but
+more in terms of lines in the code than direction of effort (with
+the exception of separating swap out). He has covered areas for
+improvement that I was going to do, just not yet.
+
+Jiri, unless you object, I'm going to seek to apply your patches
+on top of what I've done. Does that sound okay?
+
+Nigel
