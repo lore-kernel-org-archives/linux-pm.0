@@ -1,20 +1,18 @@
-From: James Bottomley <James.Bottomley@suse.de>
+From: "Gross, Mark" <mark.gross@intel.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 02 Jun 2010 10:05:11 -0500
-Message-ID: <1275491111.2799.110.camel__10854.9366741956$1275491600$gmane$org@mulgrave.site>
+Date: Tue, 1 Jun 2010 19:44:05 -0700
+Message-ID: <CA1BBBBC9359F04AA639128AC0D5D1E9692AAF29__36120.1317435645$1275491781$gmane$org@orsmsx502.amr.corp.intel.com>
 References: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
 	<20100601135102.GA8098@srcf.ucam.org>
-	<1275426085.21962.967.camel@mulgrave.site>
-	<201006020024.14220.rjw@sisk.pl>
+	<1275426085.21962.967.camel@mulgrave.site>	<201006020024.14220.rjw@sisk.pl>
 	<1275431816.21962.1108.camel@mulgrave.site>
 	<AANLkTikObnAZbyOxeYAhXcEbimO3XTTO-HlC9CD_HH6t@mail.gmail.com>
-	<1275451342.21962.1777.camel@mulgrave.site>
-	<AANLkTilRcFZyYa-0HlaM-6IEZSyar3S9S_cCWSFax2Zo@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTilRcFZyYa-0HlaM-6IEZSyar3S9S_cCWSFax2Zo@mail.gmail.com>
+In-Reply-To: <AANLkTikObnAZbyOxeYAhXcEbimO3XTTO-HlC9CD_HH6t@mail.gmail.com>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,78 +22,149 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: tytso@mit.edu, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, felipe.balbi@nokia.com, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, mark.gross@intel.com, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: =?iso-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>, James Bottomley <James.Bottomley@suse.de>
+Cc: Neil Brown <neilb@suse.de>, "tytso@mit.edu" <tytso@mit.edu>, Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian@smtp1.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, "felipe.balbi@nokia.com" <felipe.balbi@nokia.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCAyMDEwLTA2LTAxIGF0IDIxOjQxIC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
-Ogo+IDIwMTAvNi8xIEphbWVzIEJvdHRvbWxleSA8SmFtZXMuQm90dG9tbGV5QHN1c2UuZGU+Ogo+
-ID4gT24gVHVlLCAyMDEwLTA2LTAxIGF0IDE4OjEwIC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdy
-b3RlOgo+ID4+IE9uIFR1ZSwgSnVuIDEsIDIwMTAgYXQgMzozNiBQTSwgSmFtZXMgQm90dG9tbGV5
-IDxKYW1lcy5Cb3R0b21sZXlAc3VzZS5kZT4gd3JvdGU6Cj4gPj4gPiBPbiBXZWQsIDIwMTAtMDYt
-MDIgYXQgMDA6MjQgKzAyMDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+ID4+ID4+IE9uIFR1
-ZXNkYXkgMDEgSnVuZSAyMDEwLCBKYW1lcyBCb3R0b21sZXkgd3JvdGU6Cj4gPj4gPj4gPiBPbiBU
-dWUsIDIwMTAtMDYtMDEgYXQgMTQ6NTEgKzAxMDAsIE1hdHRoZXcgR2FycmV0dCB3cm90ZToKPiA+
-PiA+PiA+ID4gT24gTW9uLCBNYXkgMzEsIDIwMTAgYXQgMDQ6MjE6MDlQTSAtMDUwMCwgSmFtZXMg
-Qm90dG9tbGV5IHdyb3RlOgo+ID4+ID4+ID4gPgo+ID4+ID4+ID4gPiA+IFlvdSdyZSB0aGUgb25l
-IG1lbnRpb25pbmcgeDg2LCBub3QgbWUuICBJIGFscmVhZHkgZXhwbGFpbmVkIHRoYXQgc29tZQo+
-ID4+ID4+ID4gPiA+IE1TTSBoYXJkd2FyZSAodGhlIEcxIGZvciBleGFtcGxlKSBoYXMgbG93ZXIg
-cG93ZXIgY29uc3VtcHRpb24gaW4gUzMKPiA+PiA+PiA+ID4gPiAod2hpY2ggSSdtIHVzaW5nIGFz
-IGFuIEFDUEkgc2hvcnRoYW5kIGZvciBzdXNwZW5kIHRvIHJhbSkgdGhhbiBhbnkKPiA+PiA+PiA+
-ID4gPiBzdXNwZW5kIGZyb20gaWRsZSBDIHN0YXRlLiAgVGhlIGZhY3QgdGhhdCBjdXJyZW50IHg4
-NiBoYXJkd2FyZSBoYXMgdGhlCj4gPj4gPj4gPiA+ID4gc2FtZSBwcm9ibGVtIG1heSBiZSB0cnVl
-LCBidXQgaXQncyBub3QgZW50aXJlbHkgcmVsZXZhbnQuCj4gPj4gPj4gPiA+Cj4gPj4gPj4gPiA+
-IEFzIGxvbmcgYXMgeW91IGNhbiBzZXQgYSB3YWtldXAgdGltZXIsIGFuIFMgc3RhdGUgaXMganVz
-dCBhIEMgc3RhdGUgd2l0aAo+ID4+ID4+ID4gPiBzaWRlIGVmZmVjdHMuIFRoZSBzaWduaWZpY2Fu
-dCBvbmUgaXMgdGhhdCBlbnRlcmluZyBhbiBTIHN0YXRlIHN0b3BzIHRoZQo+ID4+ID4+ID4gPiBw
-cm9jZXNzIHNjaGVkdWxlciBhbmQgYW55IGluLWtlcm5lbCB0aW1lcnMuIEkgZG9uJ3QgdGhpbmsg
-R29vZ2xlIGNhcmUgYXQKPiA+PiA+PiA+ID4gYWxsIGFib3V0IHdoZXRoZXIgc3VzcGVuZCBpcyBl
-bnRlcmVkIHRocm91Z2ggYW4gZXhwbGljaXQgdHJhbnNpdGlvbiBvcgo+ID4+ID4+ID4gPiBzb21l
-dGhpbmcgaG9va2VkIGludG8gY3B1aWRsZSAtIHRoZSByZWxldmFudCBpc3N1ZSBpcyB0aGF0IHRo
-ZXkgd2FudCB0bwo+ID4+ID4+ID4gPiBiZSBhYmxlIHRvIGV4cHJlc3MgYSBzZXQgb2YgY29uc3Ry
-YWludHMgdGhhdCBsZXRzIHRoZW0gY29udHJvbCB3aGV0aGVyCj4gPj4gPj4gPiA+IG9yIG5vdCB0
-aGUgc2NoZWR1bGVyIGtlZXBzIG9uIHNjaGVkdWxpbmcsIGFuZCB3aGljaCBkb2Vzbid0IGxldCB0
-aGVtCj4gPj4gPj4gPiA+IGxvc2Ugd2FrZXVwIGV2ZW50cyBpbiB0aGUgcHJvY2Vzcy4KPiA+PiA+
-PiA+Cj4gPj4gPj4gPiBFeGFjdGx5LCBzbyBteSB1bmRlcnN0YW5kaW5nIG9mIHdoZXJlIHdlIGN1
-cnJlbnRseSBhcmUgaXM6Cj4gPj4gPj4KPiA+PiA+PiBUaGFua3MgZm9yIHRoZSByZWNhcC4KPiA+
-PiA+Pgo+ID4+ID4+ID4gICAgICAxLiBwbV9xb3Mgd2lsbCBiZSB1cGRhdGVkIHRvIGJlIGFibGUg
-dG8gZXhwcmVzcyB0aGUgYW5kcm9pZCBzdXNwZW5kCj4gPj4gPj4gPiAgICAgICAgIGJsb2NrZXJz
-IGFzIGludGVyYWN0aXZpdHkgY29uc3RyYWludHMgKGV4YWN0IG5hbWUgVEJELCBidXQKPiA+PiA+
-PiA+ICAgICAgICAgcHJvYmFibHkgL2Rldi9jcHVfaW50ZXJhY3Rpdml0eSkKPiA+PiA+Pgo+ID4+
-ID4+IEkgdGhpbmsgdGhhdCdzIG5vdCBiZWVuIGRlY2lkZWQgeWV0IHByZWNpc2VseSBlbm91Z2gu
-ICBJIHNhdyBhIGZldyBpZGVhcwo+ID4+ID4+IGhlcmUgYW5kIHRoZXJlIGluIHRoZSB0aHJlYWQs
-IGJ1dCB3aGljaCBvZiB0aGVtIGFyZSB3ZSBnb2luZyB0byBmb2xsb3c/Cj4gPj4gPgo+ID4+ID4g
-V2VsbCwgYW5kcm9pZCBvbmx5IG5lZWRzIHR3byBzdGF0ZXMgKGJsb2NrIGFuZCBkb24ndCBibG9j
-ayksIHNvIHRoYXQKPiA+PiA+IGdldHMgdHJhbnNsYXRlZCBhcyAyIHMzMiB2YWx1ZXMgKHNheSAw
-IGFuZCBJTlRfTUFYKS4gIEkndmUgc2VlbiBkZWZpbmVzCj4gPj4gPiBsaWtlIFFPU19JTlRFUkFD
-VElWRSBhbmQgUU9TX05PTkUgKG9yIFFPU19EUkVDS0xZIG9yIFFPU19NQU5BTkEpIHRvCj4gPj4g
-PiBkZXNjcmliZSB0aGVzZSwgYnV0IGlmIGFsbCB3ZSdyZSBhcmd1aW5nIG92ZXIgaXMgdGhlIGRl
-ZmluZSBuYW1lLCB0aGF0J3MKPiA+PiA+IHByb2dyZXNzLgo+ID4+Cj4gPj4gSSB0aGluayB3ZSBu
-ZWVkIHNlcGFyYXRlIHN0YXRlIGNvbnN0cmFpbnRzIGZvciBzdXNwZW5kIGFuZCBpZGxlIGxvdwo+
-ID4+IHBvd2VyIG1vZGVzLiBPbiB0aGUgbXNtIHBsYXRmb3JtIG9ubHkgYSBzdWJzZXQgb2YgdGhl
-IGludGVycnVwdHMgY2FuCj4gPj4gd2FrZSB1cCBmcm9tIHRoZSBsb3cgcG93ZXIgbW9kZSwgc28g
-d2UgYmxvY2sgdGhlIHVzZSBpZiB0aGUgbG93IHBvd2VyCj4gPj4gbW9kZSBmcm9tIGlkbGUgd2hp
-bGUgb3RoZXIgaW50ZXJydXB0cyBhcmUgZW5hYmxlZC4gV2UgZG8gbm90IGJsb2NrCj4gPj4gc3Vz
-cGVuZCBob3dldmVyIGlmIHRob3NlIGludGVycnVwdHMgYXJlIG5vdCBtYXJrZWQgYXMgd2FrZXVw
-Cj4gPj4gaW50ZXJydXB0cy4gTW9zdCBjb25zdHJhaW50cyB0aGF0IHByZXZlbnQgc3VzcGVuZCBh
-cmUgbm90IGhhcmR3YXJlCj4gPj4gc3BlY2lmaWMgYW5kIHNob3VsZCBub3QgcHJldmVudCBlbnRl
-cmluZyBsb3cgcG93ZXIgbW9kZXMgZnJvbSBpZGxlLiBJbgo+ID4+IG90aGVyIHdvcmRzIHdlIG1h
-eSBuZWVkIHRvIHByZXZlbnQgbG93IHBvd2VyIGlkbGUgbW9kZXMgd2hpbGUgYWxsb3dpbmcKPiA+
-PiBzdXNwZW5kLCBhbmQgd2UgbWF5IG5lZWQgdG8gcHJldmVudCBzdXNwZW5kIHdoaWxlIGFsbG93
-aW5nIGxvdyBwb3dlcgo+ID4+IGlkbGUgbW9kZXMuCj4gPgo+ID4gV2VsbCwgYXMgSSBzYWlkLCBw
-bV9xb3MgaXMgczMyIC4uLiBpdCdzIGVhc3kgdG8gbWFrZSB0aGUgY29uc3RyYWludAo+ID4gdGVy
-bmFyeSBpbnN0ZWFkIG9mIGJpbmFyeS4KPiAKPiBObywgdGhleSBoYXZlIHRvIGJlIHR3byBzZXBh
-cmF0ZSBjb25zdHJhaW50cywgb3RoZXJ3aXNlIGEgY29uc3RyYWludAo+IHRvIGJsb2NrIHN1c3Bl
-bmQgd291bGQgb3ZlcnJpZGUgYSBjb25zdHJhaW50IHRvIGJsb2NrIGEgbG93IHBvd2VyIGlkbGUK
-PiBtb2RlIG9yIHRoZSBvdGhlciB3YXkgYXJvdW5kLgoKRGVwZW5kcy4gIElmIHlvdSBibG9jayB0
-aGUgc3lzdGVtIGZyb20gZ29pbmcgaW50byBsb3cgcG93ZXIgaWRsZSwgZG9lcwp0aGF0IG1lYW4g
-eW91IHN0aWxsIHdhbnQgaXQgdG8gYmUgZnVsbHkgc3VzcGVuZGVkPwoKSWYgeWVzLCB0aGVuIHdl
-IGRvIGhhdmUgaW5kZXBlbmRlbnQgY29uc3RyYWludHMuICBJZiBub3QsIHRoZXkgaGF2ZSBhCmhp
-ZXJhcmNoeToKCiAgICAgICogRnVsbHkgSW50ZXJhY3RpdmUgKG5vIGxvdyBwb3dlciBpZGxlIG9y
-IHN1c3BlbmQpCiAgICAgICogUGFydGlhbGx5IEludGVyYWN0aXZlIChtYXkgZ28gaW50byBsb3cg
-cG93ZXIgaWRsZSBidXQgbm90CiAgICAgICAgc3VzcGVuZCkKICAgICAgKiBOb25lIChtYXkgZ28g
-aW50byBsb3cgcG93ZXIgaWRsZSBvciBzdXNwZW5kKQoKV2hpY2ggaXMgZXhwcmVzc2FibGUgYXMg
-YSB0ZXJuYXJ5IGNvbnN0cmFpbnQuCgpKYW1lcwoKCl9fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0
-cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3Jn
-L21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+
+
+>-----Original Message-----
+>From: Arve Hj=F8nnev=E5g [mailto:arve@android.com]
+>Sent: Tuesday, June 01, 2010 6:11 PM
+>To: James Bottomley
+>Cc: Rafael J. Wysocki; Matthew Garrett; Thomas Gleixner; Peter Zijlstra;
+>tytso@mit.edu; LKML; Florian Mickler; Linux PM; Linux OMAP Mailing List;
+>felipe.balbi@nokia.com; Alan Cox; Alan Stern; Gross, Mark; Neil Brown
+>Subject: Re: [linux-pm] [PATCH 0/8] Suspend block api (version 8)
+>
+>On Tue, Jun 1, 2010 at 3:36 PM, James Bottomley <James.Bottomley@suse.de>
+>wrote:
+>> On Wed, 2010-06-02 at 00:24 +0200, Rafael J. Wysocki wrote:
+>>> On Tuesday 01 June 2010, James Bottomley wrote:
+>>> > On Tue, 2010-06-01 at 14:51 +0100, Matthew Garrett wrote:
+>>> > > On Mon, May 31, 2010 at 04:21:09PM -0500, James Bottomley wrote:
+>>> > >
+>>> > > > You're the one mentioning x86, not me. =A0I already explained that
+>some
+>>> > > > MSM hardware (the G1 for example) has lower power consumption in
+>S3
+>>> > > > (which I'm using as an ACPI shorthand for suspend to ram) than any
+>>> > > > suspend from idle C state. =A0The fact that current x86 hardware =
+has
+>the
+>>> > > > same problem may be true, but it's not entirely relevant.
+>>> > >
+>>> > > As long as you can set a wakeup timer, an S state is just a C state
+>with
+>>> > > side effects. The significant one is that entering an S state stops
+>the
+>>> > > process scheduler and any in-kernel timers. I don't think Google
+>care at
+>>> > > all about whether suspend is entered through an explicit transition
+>or
+>>> > > something hooked into cpuidle - the relevant issue is that they want
+>to
+>>> > > be able to express a set of constraints that lets them control
+>whether
+>>> > > or not the scheduler keeps on scheduling, and which doesn't let them
+>>> > > lose wakeup events in the process.
+>>> >
+>>> > Exactly, so my understanding of where we currently are is:
+>>>
+>>> Thanks for the recap.
+>>>
+>>> > =A0 =A0 =A01. pm_qos will be updated to be able to express the android
+>suspend
+>>> > =A0 =A0 =A0 =A0 blockers as interactivity constraints (exact name TBD=
+, but
+>>> > =A0 =A0 =A0 =A0 probably /dev/cpu_interactivity)
+>>>
+>>> I think that's not been decided yet precisely enough. =A0I saw a few id=
+eas
+>>> here and there in the thread, but which of them are we going to follow?
+>>
+>> Well, android only needs two states (block and don't block), so that
+>> gets translated as 2 s32 values (say 0 and INT_MAX). =A0I've seen defines
+>> like QOS_INTERACTIVE and QOS_NONE (or QOS_DRECKLY or QOS_MANANA) to
+>> describe these, but if all we're arguing over is the define name, that's
+>> progress.
+>
+>I think we need separate state constraints for suspend and idle low
+>power modes. On the msm platform only a subset of the interrupts can
+>wake up from the low power mode, so we block the use if the low power
+>mode from idle while other interrupts are enabled. We do not block
+>suspend however if those interrupts are not marked as wakeup
+>interrupts. Most constraints that prevent suspend are not hardware
+>specific and should not prevent entering low power modes from idle. In
+>other words we may need to prevent low power idle modes while allowing
+>suspend, and we may need to prevent suspend while allowing low power
+>idle modes.
+>
+>It would also be good to not have an implementation that gets slower
+>and slower the more clients you have. With binary constraints this is
+>trivial.
+[mtg: ] agreed.
+
+>
+>>
+>> The other piece they need is the suspend block name, which comes with
+>> the stats API, and finally we need to decide what the actual constraint
+>> is called (which is how the dev node gets its name) ...
+>>
+>>> > =A0 =A0 =A02. pm_qos will be updated to be callable from atomic conte=
+xt
+>>> > =A0 =A0 =A03. pm_qos will be updated to export statistics initially c=
+losely
+>>> > =A0 =A0 =A0 =A0 matching what suspend blockers provides (simple updat=
+e of the
+>rw
+>>> > =A0 =A0 =A0 =A0 interface?)
+>
+>4. It would be useful to change pm_qos_add_request to not allocate
+>anything so can add constraints from init functions that currently
+>cannot fail.
+[mtg: ] I'm not sure how to do this but I agree it would be good.  I guess =
+we could have a block of pm_qos requests pre-allocated statically and re-us=
+e them.  In practice there will not be more than a handful of requests ever=
+.  Dynamic allocation does seem like a bit of a waste.
+
+>
+>>> >
+>>> > After this is done, the current android suspend block patch becomes a
+>>> > re-expression in kernel space in terms of pm_qos, with the current
+>>> > userspace wakelocks being adapted by the android framework into pm_qos
+>>> > requirements expressed to /dev/cpu_interactivity (or whatever name is
+>>> > chosen). =A0Then opportunistic suspend is either a small add-on kernel
+>>> > patch they have in their tree to suspend when the interactivity
+>>> > constraint goes to NONE, or it could be done entirely by a userspace
+>>> > process. =A0Long term this could migrate to the freezer and suspend f=
+rom
+>>> > idle approach as the various problem timers get fixed.
+>>> >
+>>> > I think the big unresolved issue is the stats extension. =A0For andro=
+id,
+>>> > we need just a name written along with the value, so we have something
+>>> > to hang the stats off ... current pm_qos userspace users just write a
+>>> > value, so the name would be optional. =A0From the kernel, we probably
+>just
+>>> > need an additional API that takes a stats name or NULL if none
+>>> > (pm_qos_add_request_named()?). =A0Then reading the stats could be done
+>by
+>>> > implementing a fops read routine on the misc device.
+>>>
+>>> Is the original idea of having that information in debugfs
+>objectionable?
+>>
+>> Well ... debugfs is usually used to get around the sysfs rules. =A0In th=
+is
+>> case, pm_qos has a dev interface ... I don't specifically object to
+>> using debugfs, but I don't see any reason to forbid it from being a
+>> simple dev read interface either.
+>>
+>
+>We don't currently have a dev interface for stats so this is not an
+>immediate requirement. The suspend blocker debugfs interface is just
+>as good as the proc interface we have for wakelocks.
+>
+>--
+>Arve Hj=F8nnev=E5g
