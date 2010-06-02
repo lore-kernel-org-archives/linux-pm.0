@@ -1,23 +1,13 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 2 Jun 2010 15:27:28 -0700
-Message-ID: <AANLkTikeHarkwvO5-Fdrxt1FzTQL2lGHiQXBSG0vsKob__32359.6210837879$1275517700$gmane$org@mail.gmail.com>
-References: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
-	<20100601135102.GA8098@srcf.ucam.org>
-	<1275426085.21962.967.camel@mulgrave.site>
-	<201006020024.14220.rjw@sisk.pl>
-	<1275431816.21962.1108.camel@mulgrave.site>
-	<AANLkTikObnAZbyOxeYAhXcEbimO3XTTO-HlC9CD_HH6t@mail.gmail.com>
-	<1275451342.21962.1777.camel@mulgrave.site>
-	<AANLkTilRcFZyYa-0HlaM-6IEZSyar3S9S_cCWSFax2Zo@mail.gmail.com>
-	<1275491111.2799.110.camel@mulgrave.site>
-	<20100602214748.7742e3ae@schatten.dmk.lab>
-	<1275511271.2799.516.camel@mulgrave.site>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Runtime PM for PCI-based USB host controllers
+Date: Thu, 3 Jun 2010 00:30:27 +0200
+Message-ID: <201006030030.27234.rjw__32021.4844229215$1275517785$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1006021539460.1628-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275511271.2799.516.camel@mulgrave.site>
+In-Reply-To: <Pine.LNX.4.44L0.1006021539460.1628-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,105 +17,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: tytso@mit.edu, Neil Brown <neilb@suse.de>, felipe.balbi@nokia.com, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, mark.gross@intel.com, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 2, 2010 at 1:41 PM, James Bottomley <James.Bottomley@suse.de> w=
-rote:
-> On Wed, 2010-06-02 at 21:47 +0200, Florian Mickler wrote:
->> On Wed, 02 Jun 2010 10:05:11 -0500
->> James Bottomley <James.Bottomley@suse.de> wrote:
->>
->> > On Tue, 2010-06-01 at 21:41 -0700, Arve Hj=F8nnev=E5g wrote:
->> > > No, they have to be two separate constraints, otherwise a constraint
->> > > to block suspend would override a constraint to block a low power id=
-le
->> > > mode or the other way around.
->> >
->> > Depends. =A0If you block the system from going into low power idle, do=
-es
->> > that mean you still want it to be fully suspended?
->> >
->> > If yes, then we do have independent constraints. =A0If not, they have a
->> > hierarchy:
->> >
->> > =A0 =A0 =A0 * Fully Interactive (no low power idle or suspend)
->> > =A0 =A0 =A0 * Partially Interactive (may go into low power idle but not
->> > =A0 =A0 =A0 =A0 suspend)
->> > =A0 =A0 =A0 * None (may go into low power idle or suspend)
->> >
->> > Which is expressable as a ternary constraint.
->> >
->> > James
->> >
->>
->> But unblocking suspend at the moment is independent to getting idle.
->> If you have the requirement to stay in the highest-idle level (i.e.
->> best latency you can get) that does not (currently) mean, that you can
->> not suspend.
->
-> I don't understand that as a reason. =A0If we looks at this a qos
-> constraints, you're saying that the system may not drop into certain low
-> power states because it might turn something off that's currently being
-> used by a driver or a process. =A0Suspend is certainly the lowest state of
-> that because it turns everything off, why would it be legal to drop into
-> that?
+On Wednesday 02 June 2010, Alan Stern wrote:
+> On Wed, 2 Jun 2010, Rafael J. Wysocki wrote:
+> 
+> > > > Do PCI bus type callbacks need to be reworked to work correctly with unbound
+> > > > devices?
+> > > 
+> > > They do; I neglected to take care of them when first writing this 
+> > > patch.  After everything is working I'll submit it for real.  For now, 
+> > > the point was to find out whether this is going in the right direction.
+> > 
+> > I don't have a fundamental problem with it.  As long as all things can be made
+> > work along these lines, it's fine by me.
+> 
+> Arggh!  I just tried out a revised patch.  It seems to work
+> perfectly, except for one thing.  When I unbound ehci-hcd from one of
+> the USB controllers, which should have caused the controller to be 
+> runtime-suspended, this is what showed up in the log:
+> 
+> [  295.651545] pci 0000:00:1d.7: PME# enabled
+> [  295.664044] pci 0000:00:1d.7: Refused to change power state, currently in D0
+> 
+> Which seems to mean that the controller didn't want to go into D3hot!  
+> Presumably this is because it was unconfigured when the driver was 
+> unbound.  That's the only explanation I can think of; the controller 
+> had no objection about going into D3hot when it was bound to the 
+> driver.
 
-Because the driver gets called on suspend which gives it a change to
-stop using it.
+Hmm.  I must say I don't quite understand this behavior.  Oh well.
 
->
-> I also couldn't find this notion of separation of idleness power from
-> suspend blocking in the original suspend block patch set ... if you can
-> either tell me where it is, or give me an example of the separated use
-> cases, I'd understand better.
->
+> Assuming other PCI devices will have similar behavior, I have to agree
+> that there's no point trying to put driverless devices into low-power
+> states.
 
-The suspend block patchset only deals with suspend, not low power idle
-modes. The original wakelock patchset had two wakelock types, idle and
-suspend.
+I guess so.
 
->> To preserve that explicit fall-through while still having working
->> run-time-powermanagement I think the qos-constraints need to be
->> separated.
->
-> OK, as above, why? =A0or better yet, just give an example.
->
+> One more thing: When looking at the r8169 and e1000e drivers, I noticed
+> that you used the same test (pci_dev_run_wake -- not the greatest name
+> in the world, BTW)
 
-The i2c bus on the Nexus One is used by the other core to turn off the
-power you our core when we enter the lowest power mode. This means
-that we cannot enter that low power mode while the i2c bus is active,
-so we block low power idle modes. At some point we also tries to block
-suspend in this case, but this caused a lot of failed suspend attempts
-since the frequency scaling code would try to ramp up while freezing
-processes which in turn aborted the process freezing attempts.
+It's following the ACPI naming which I admit generally sucks.
 
->> <disclaimer: just from what I read>
->> Provided you can reach the same power state from idle, current suspend
->> could probably also be implemented by just the freezing part and a hint
->> to the idle-loop to provide accelerated fall-through to lowest power.
->> </disclaimer>
->>
->> At that point, you could probably merge the constraints.
->>
->> But the freezing part is also the hard part, isn't it? (I have no
->> idea. Thomas seems to think about cgroups for that and doing smth about =
-the timers.)
->
-> Um, well, as I said, I think using suspend from idle and freezer is
-> longer term. =A0I think if we express the constraints as qos android can
-> then use them to gate when to enter S3 .. which is functionally
-> equivalent to suspend blockers. =A0And the vanilla kernel can use them to
-> gate power states for the drivers in suspend from idle.
->
-> James
->
->
->
+> in both the probe and remove routines.  That's not
+> the right thing to do if the runtime-wakeup setting could get changed
+> inbetween.  (I realize that currently there is no way to change the
+> setting, but in the future there might be.)
+> 
+> Do you want to make an explicit assumption that the runtime wakeup
+> settings are fixed, not subject to change?
 
+I'm not sure yet. :-)
 
+> If so, then why not compute the setting just once, when the device is
+> registered, and store it in the pci_device structure?  Or even in the struct
+> device?
 
--- =
+If we decide it will be immutable, then yes, in which case I think struct
+pci_dev will be a better place to store it, because that kind of setting may
+not be meaningful for other types of devices (some of them will always be
+wakeup-capable and some of them will never be).
 
-Arve Hj=F8nnev=E5g
+Rafael
