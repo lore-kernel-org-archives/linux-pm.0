@@ -1,29 +1,18 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Tue, 1 Jun 2010 20:32:02 -0700
-Message-ID: <AANLkTimTO5n_s9JZAcFJOhMlPMtsOrogx-5S5nykOWtY__48973.358810372$1275449574$gmane$org@mail.gmail.com>
-References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
-	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
-	<20100527220949.GB10602@srcf.ucam.org>
-	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
-	<20100527223605.GB11364@srcf.ucam.org>
-	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
-	<20100528043114.GC26177@thunk.org>
-	<1275030704.32462.11.camel@laptop>
-	<AANLkTikEtlbkT4Ws3H2YGt_9QC46B5dr-b1oxJOcG4GN@mail.gmail.com>
-	<1275120618.27810.12699.camel@twins>
-	<1275149418.4503.128.camel@mulgrave.site>
-	<alpine.LFD.2.00.1005312231120.2933@localhost.localdomain>
-	<1275340869.2823.344.camel@mulgrave.site>
-	<alpine.LFD.2.00.1005312343290.2933@localhost.localdomain>
-	<AANLkTinwvkJRU0JjJdNrGfXWYpQMIr8bO3BZxcXubt_Z@mail.gmail.com>
-	<alpine.LFD.2.00.1006011257580.2933@localhost.localdomain>
+Date: Tue, 1 Jun 2010 20:50:02 -0700
+Message-ID: <AANLkTikF-B23_UWG1O3tlBl4m8NStAJllGhhevNhYZT6__8365.48642623729$1275450686$gmane$org@mail.gmail.com>
+References: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
+	<Pine.LNX.4.44L0.1005292026080.6300-100000@netrider.rowland.org>
+	<AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
+	<201005312338.55109.rjw@sisk.pl> <20100531232617.GF31155@gvim.org>
+	<20100601090737.4bc243d9@schatten.dmk.lab>
+	<20100601140519.GC1281@gvim.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1006011257580.2933@localhost.localdomain>
+In-Reply-To: <20100601140519.GC1281@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -33,53 +22,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: markgross@thegnar.org
+Cc: 640e9920@gmail.com, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-2010/6/1 Thomas Gleixner <tglx@linutronix.de>:
+On Tue, Jun 1, 2010 at 7:05 AM, mark gross <640e9920@gmail.com> wrote:
+> On Tue, Jun 01, 2010 at 09:07:37AM +0200, Florian Mickler wrote:
+...
+>> +static void update_target_val(int pm_qos_class, s32 val)
+>> +{
+>> + =A0 =A0 s32 extreme_value;
+>> + =A0 =A0 s32 new_value;
+>> + =A0 =A0 extreme_value =3D atomic_read(&pm_qos_array[pm_qos_class]->tar=
+get_value);
+>> + =A0 =A0 new_value =3D pm_qos_array[pm_qos_class]->comparitor(val,extre=
+me_value);
+>> + =A0 =A0 if (extreme_value !=3D new_value)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 atomic_set(&pm_qos_array[pm_qos_class]->target=
+_value,new_value);
+>> +}
+>> +
 >
-> On Mon, 31 May 2010, Arve Hj=F8nnev=E5g wrote:
->
->> On Mon, May 31, 2010 at 2:46 PM, Thomas Gleixner <tglx@linutronix.de> wr=
-ote:
->> > On Mon, 31 May 2010, James Bottomley wrote:
->> >>
->> >> For MSM hardware, it looks possible to unify the S and C states by do=
-ing
->> >> suspend to ram from idle but I'm not sure how much work that is.
->> >
->> > On ARM, it's not rocket science and we have in tree support for this
->> > already (OMAP). I have done the same thing on a Samsung part as a
->> > prove of concept two years ago and it's really easy as the hardware is
->> > sane. Hint: It's designed for mobile devices :)
->> >
->>
->> We already enter the same power state from idle and suspend on msm. In
->> the absence of misbehaving apps, the difference in power consumption
->> is entirely caused by periodic timers in the user-space framework
->> _and_ kernel. It only takes a few timers triggering per second (I
->> think 3 if they do no work) to double the average power consumption on
->> the G1 if the radio is off. We originally added wakelocks because the
->> hardware we had at the time had much lower power consumption in
->> suspend then idle, but we still use suspend because it saves power.
->
-> So how do you differentiate between timers which _should_ fire and
-> those you do not care about ?
+> Only works 1/2 the time, but I like the idea!
+> It fails to get the righ answer when constraints are reduced. =A0But, this
+> idea is a good improvement i'll roll into the next pm_qos update!
 >
 
-Only alarms are allowed to fire while suspended.
-
-> We have mechanisms in place to defer timers so the wakeups are
-> minimized. If that's not enough we need to revisit.
->
-
-Deferring the the timers forever without stopping the clock can cause
-problems. Our user space code has a lot of timeouts that will trigger
-an error if an app does not respond in time. Freezing everything and
-stopping the clock while suspended is a lot simpler than trying to
-stop individual timers and processes from running.
-
+I think it would be a better idea to track your constraints with a
+sorted data structure. That way you can to better than O(n) for both
+directions. If you have a lot of constraints with the same value, it
+may even be worthwhile to have a two stage structure where for
+instance you use a rbtree for the unique values and list for identical
+constraints.
 
 -- =
 
