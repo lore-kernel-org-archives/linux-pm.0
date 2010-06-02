@@ -1,7 +1,8 @@
 From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 17/21] Hibernation: Remove swap_map_pages
-Date: Wed,  2 Jun 2010 22:19:16 +1000
-Message-ID: <1275481160-31150-18-git-send-email-nigel__12763.1507967182$1275482631$gmane$org@tuxonice.net>
+Subject: [PATCH 18/21] Hibernation: Remove wait_on_bio_chain
+	result
+Date: Wed,  2 Jun 2010 22:19:17 +1000
+Message-ID: <1275481160-31150-19-git-send-email-nigel__47658.6615237922$1275482634$gmane$org@tuxonice.net>
 References: <1275481160-31150-1-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -20,144 +21,121 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-Stop storing swap_map pages in the image. This removes the need
-for a wait_on_bio_chain every MAP_PAGE_ENTRIES pages and thus
-allows the whole image to be written using async I/O.
+wait_on_bio_chain can't fail - make the result void instead
+of int.
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 ---
- kernel/power/block_io.c |   61 +++-------------------------------------------
- 1 files changed, 4 insertions(+), 57 deletions(-)
+ kernel/power/block_io.c |    6 +++---
+ kernel/power/block_io.h |    2 +-
+ kernel/power/power.h    |    2 +-
+ kernel/power/swap.c     |   14 +++-----------
+ 4 files changed, 8 insertions(+), 16 deletions(-)
 
 diff --git a/kernel/power/block_io.c b/kernel/power/block_io.c
-index c9569e5..66cdc5a 100644
+index 66cdc5a..c71c7c3 100644
 --- a/kernel/power/block_io.c
 +++ b/kernel/power/block_io.c
-@@ -156,7 +156,6 @@ struct swap_map_page {
- 
- struct swap_map_handle {
- 	struct swap_map_page *cur;
--	sector_t cur_swap;
- 	unsigned int k;
- };
- 
-@@ -168,8 +167,7 @@ extern struct hib_extent_state sector_extents;
- /* Calculate the overhead needed for storing n pages */
- unsigned int hib_bio_overhead(unsigned int nr_pages)
- {
--	return DIV_ROUND_UP(nr_pages, MAP_PAGE_ENTRIES) +
--	       DIV_ROUND_UP(hib_extents_storage_needed(&sector_extents),
-+	return DIV_ROUND_UP(hib_extents_storage_needed(&sector_extents),
- 			PAGE_SIZE);
+@@ -121,10 +121,9 @@ int hib_bio_write_page(pgoff_t page_off, void *addr, int sync)
+ 			virt_to_page(addr), sync);
  }
  
-@@ -235,12 +233,8 @@ int hib_bio_prepare_write(void)
- 	result = hib_extents_store(&sector_extents);
- 	result2 = hib_flush_write_buffer();
- 
--	handle.cur_swap = hib_extent_next(&sector_extents);
- 	handle.k = 0;
- 
--	if (!handle.cur_swap)
--		result = -ENOSPC;
--
- 	if (result || result2)
- 		release_swap_writer();
- 
-@@ -249,41 +243,17 @@ int hib_bio_prepare_write(void)
- 
- int swap_write_page(void *buf, int sync)
+-int hib_wait_on_bio_chain(void)
++void hib_wait_on_bio_chain(void)
  {
--	int error = 0;
- 	sector_t offset;
- 
- 	if (!handle.cur)
- 		return -EINVAL;
- 	offset = hib_extent_next(&sector_extents);
--	error = write_page(buf, offset, sync);
--	if (error)
--		return error;
--	handle.cur->entries[handle.k++] = offset;
--	if (handle.k >= MAP_PAGE_ENTRIES) {
--		error = hib_wait_on_bio_chain();
--		if (error)
--			goto out;
--		offset = hib_extent_next(&sector_extents);
--		if (!offset)
--			return -ENOSPC;
--		handle.cur->next_swap = offset;
--		error = write_page(handle.cur, handle.cur_swap, 1);
--		if (error)
--			goto out;
--		memset(handle.cur, 0, PAGE_SIZE);
--		handle.cur_swap = offset;
--		handle.k = 0;
--	}
-- out:
--	return error;
-+	return write_page(buf, offset, sync);
+ 	wait_event(num_in_progress_wait, !atomic_read(&hib_io_in_progress));
+-	return 0;
  }
+ 
+ /*
+@@ -253,7 +252,8 @@ int swap_write_page(void *buf, int sync)
  
  int flush_swap_writer(void)
  {
--	if (handle.cur && handle.cur_swap)
--		return write_page(handle.cur, handle.cur_swap, 1);
--	else
--		return -EINVAL;
-+	return hib_wait_on_bio_chain();
+-	return hib_wait_on_bio_chain();
++	hib_wait_on_bio_chain();
++	return 0;
  }
  
  /**
-@@ -301,7 +271,6 @@ void release_swap_reader(void)
- int get_swap_reader(unsigned int *flags_p, sector_t first_page)
- {
- 	int error;
--	sector_t offset;
+diff --git a/kernel/power/block_io.h b/kernel/power/block_io.h
+index ac378c5..1482060 100644
+--- a/kernel/power/block_io.h
++++ b/kernel/power/block_io.h
+@@ -9,7 +9,7 @@
+ /* Low level routines */
+ int hib_bio_read_page(pgoff_t page_off, void *addr, int sync);
+ int hib_bio_write_page(pgoff_t page_off, void *addr, int sync);
+-int hib_wait_on_bio_chain(void);
++void hib_wait_on_bio_chain(void);
  
- 	handle.cur = (struct swap_map_page *)get_zeroed_page(__GFP_WAIT | __GFP_HIGH);
- 	if (!handle.cur)
-@@ -330,41 +299,19 @@ int get_swap_reader(unsigned int *flags_p, sector_t first_page)
- 		return error;
+ unsigned int hib_bio_overhead(unsigned int nr_pages);
+ sector_t hib_get_first_sector(void);
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index 9a046cd..4c21388 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -147,7 +147,7 @@ extern struct block_device *hib_resume_bdev;
+ 
+ extern int hib_bio_read_page(pgoff_t page_off, void *addr, int sync);
+ extern int hib_bio_write_page(pgoff_t page_off, void *addr, int sync);
+-extern int hib_wait_on_bio_chain(void);
++extern void hib_wait_on_bio_chain(void);
+ 
+ struct timeval;
+ /* kernel/power/swsusp.c */
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index b4ab6a2..e477310 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -236,7 +236,6 @@ static int save_image(struct snapshot_handle *snapshot,
+ 	unsigned int m;
+ 	int ret;
+ 	int nr_pages;
+-	int err2;
+ 	struct timeval start;
+ 	struct timeval stop;
+ 
+@@ -258,11 +257,9 @@ static int save_image(struct snapshot_handle *snapshot,
+ 			printk(KERN_CONT "\b\b\b\b%3d%%", nr_pages / m);
+ 		nr_pages++;
  	}
+-	err2 = hib_wait_on_bio_chain();
++	hib_wait_on_bio_chain();
+ 	do_gettimeofday(&stop);
+ 	if (!ret)
+-		ret = err2;
+-	if (!ret)
+ 		printk(KERN_CONT "\b\b\b\bdone\n");
+ 	else
+ 		printk(KERN_CONT "\n");
+@@ -329,7 +326,6 @@ static int load_image(struct snapshot_handle *snapshot, unsigned int nr_to_read)
+ 	int error = 0;
+ 	struct timeval start;
+ 	struct timeval stop;
+-	int err2;
+ 	unsigned nr_pages;
  
--	offset = hib_extent_next(&sector_extents);
--
--	/* Now read the first swap_map_page */
--	error = hib_bio_read_page(offset, handle.cur, 1);
--	if (error) {
--		release_swap_reader();
--		return error;
--	}
--
- 	return error;
- }
- 
- int swap_read_page(void *buf, int sync)
- {
- 	sector_t offset;
--	int error;
- 
- 	if (!handle.cur)
- 		return -EINVAL;
- 	offset = hib_extent_next(&sector_extents);
- 	if (!offset)
- 		return -EFAULT;
--	error = hib_bio_read_page(offset, buf, sync);
--	if (error)
--		return error;
--	if (++handle.k >= MAP_PAGE_ENTRIES) {
--		error = hib_wait_on_bio_chain();
--		handle.k = 0;
--		offset = hib_extent_next(&sector_extents);
--		if (!offset)
--			release_swap_reader();
--		else if (!error)
--			error = hib_bio_read_page(offset, handle.cur, 1);
--	}
--	return error;
-+	return hib_bio_read_page(offset, buf, sync);
- }
- 
- /* Part Page I/O functions */
+ 	printk(KERN_INFO "PM: Loading image data pages (%u pages) ...     ",
+@@ -347,17 +343,13 @@ static int load_image(struct snapshot_handle *snapshot, unsigned int nr_to_read)
+ 		if (error)
+ 			break;
+ 		if (snapshot->sync_read)
+-			error = hib_wait_on_bio_chain();
+-		if (error)
+-			break;
++			hib_wait_on_bio_chain();
+ 		if (!(nr_pages % m))
+ 			printk("\b\b\b\b%3d%%", nr_pages / m);
+ 		nr_pages++;
+ 	}
+-	err2 = hib_wait_on_bio_chain();
++	hib_wait_on_bio_chain();
+ 	do_gettimeofday(&stop);
+-	if (!error)
+-		error = err2;
+ 	if (!error) {
+ 		printk("\b\b\b\bdone\n");
+ 		snapshot_write_finalize(snapshot);
 -- 
 1.7.0.4
