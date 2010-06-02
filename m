@@ -1,17 +1,21 @@
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: hibernation hangs with ATA errors (lockup_detector
-	bug)
-Date: Wed, 2 Jun 2010 21:43:37 +0200
-Message-ID: <20100602194336.GB5164__32175.0420415357$1275507948$gmane$org@nowhere>
-References: <4C03C608.1040600@gmail.com> <20100601135004.GP15159@redhat.com>
-	<4C051D44.7040203@gmail.com> <20100602184459.GA15159@redhat.com>
-	<20100602191336.GA5164@nowhere>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Wed, 2 Jun 2010 21:47:48 +0200
+Message-ID: <20100602214748.7742e3ae__4875.26462316072$1275508125$gmane$org@schatten.dmk.lab>
+References: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<20100601135102.GA8098@srcf.ucam.org>
+	<1275426085.21962.967.camel@mulgrave.site>
+	<201006020024.14220.rjw@sisk.pl>
+	<1275431816.21962.1108.camel@mulgrave.site>
+	<AANLkTikObnAZbyOxeYAhXcEbimO3XTTO-HlC9CD_HH6t@mail.gmail.com>
+	<1275451342.21962.1777.camel@mulgrave.site>
+	<AANLkTilRcFZyYa-0HlaM-6IEZSyar3S9S_cCWSFax2Zo@mail.gmail.com>
+	<1275491111.2799.110.camel@mulgrave.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100602191336.GA5164@nowhere>
+In-Reply-To: <1275491111.2799.110.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,50 +25,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Don Zickus <dzickus@redhat.com>, Jeff Garzik <jgarzik@pobox.com>
-Cc: linux-ide@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jiri Slaby <jirislaby@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: tytso@mit.edu, Neil Brown <neilb@suse.de>, felipe.balbi@nokia.com, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux@smtp1.linux-foundation.org, mark.gross@intel.com, Thomas Gleixner <tglx@linutronix.de>, Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 02, 2010 at 09:13:40PM +0200, Frederic Weisbecker wrote:
-> On Wed, Jun 02, 2010 at 02:44:59PM -0400, Don Zickus wrote:
-> > On Tue, Jun 01, 2010 at 04:46:28PM +0200, Jiri Slaby wrote:
-> > > On 06/01/2010 03:50 PM, Don Zickus wrote:
-> > > > On Mon, May 31, 2010 at 04:22:00PM +0200, Jiri Slaby wrote:
-> > > >> Hi,
-> > > >>
-> > > >> with -next I get the following errors while trying to hibernate in
-> > > >> qemu-kvm after the image is stored on disk:
-> > > > 
-> > > > Is this the host that is hibernating or the guest?
-> > > 
-> > > Guest.
-> > > 
-> > > > KVM guests don't emulate the performance counters, so the nmi piece
-> > > > shouldn't be functioning and the soft lockup piece just sits on top of an
-> > > > hrtimer, so off the top of my head it is hard to imagine it intefering
-> > > > with a sata driver.
-> > > > 
-> > > > I'll need your whole boot up log to see how the lockup detector
-> > > > initialized itself.
-> > 
-> > Ok, so I found out what is causing the problem, not entirely sure why or
-> > what the right fix is, but this patch should do the trick.
-> > 
-> > This is probably one of those fixing the symptoms but not the problem patch,
-> > but I don't know enough about suspend/resume to understand what the real
-> > problem is.
-> 
-> 
-> So the problem is that we stop the cpu hotplug notifying, I guess this prevents
-> some ata callbacks to execute in the cpu hotplug notifier and then provoke this
-> crash.
+On Wed, 02 Jun 2010 10:05:11 -0500
+James Bottomley <James.Bottomley@suse.de> wrote:
+
+> On Tue, 2010-06-01 at 21:41 -0700, Arve Hj=F8nnev=E5g wrote:
+> > No, they have to be two separate constraints, otherwise a constraint
+> > to block suspend would override a constraint to block a low power idle
+> > mode or the other way around.
+> =
+
+> Depends.  If you block the system from going into low power idle, does
+> that mean you still want it to be fully suspended?
+> =
+
+> If yes, then we do have independent constraints.  If not, they have a
+> hierarchy:
+> =
+
+>       * Fully Interactive (no low power idle or suspend)
+>       * Partially Interactive (may go into low power idle but not
+>         suspend)
+>       * None (may go into low power idle or suspend)
+> =
+
+> Which is expressable as a ternary constraint.
+> =
+
+> James
+> =
 
 
-(Adding more people in Cc)
+But unblocking suspend at the moment is independent to getting idle.
+If you have the requirement to stay in the highest-idle level (i.e.
+best latency you can get) that does not (currently) mean, that you can
+not suspend.
+
+To preserve that explicit fall-through while still having working
+run-time-powermanagement I think the qos-constraints need to be
+separated. =
 
 
-But I'm eventually surprised about this: stopping the cpu hotplug callbacks
-prevents some ATA resume callbacks to execute.
+<disclaimer: just from what I read>
+Provided you can reach the same power state from idle, current suspend
+could probably also be implemented by just the freezing part and a hint
+to the idle-loop to provide accelerated fall-through to lowest power. =
 
-Does that mean some ata resume path are done from a cpu hotplug notifier?
-That looks weird.
+</disclaimer>
+
+At that point, you could probably merge the constraints. =
+
+
+But the freezing part is also the hard part, isn't it? (I have no
+idea. Thomas seems to think about cgroups for that and doing smth about the=
+ timers.)
+
+Cheers,
+Flo
