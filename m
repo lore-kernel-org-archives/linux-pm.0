@@ -1,21 +1,13 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 2 Jun 2010 21:47:48 +0200
-Message-ID: <20100602214748.7742e3ae__4875.26462316072$1275508125$gmane$org@schatten.dmk.lab>
-References: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
-	<20100601135102.GA8098@srcf.ucam.org>
-	<1275426085.21962.967.camel@mulgrave.site>
-	<201006020024.14220.rjw@sisk.pl>
-	<1275431816.21962.1108.camel@mulgrave.site>
-	<AANLkTikObnAZbyOxeYAhXcEbimO3XTTO-HlC9CD_HH6t@mail.gmail.com>
-	<1275451342.21962.1777.camel@mulgrave.site>
-	<AANLkTilRcFZyYa-0HlaM-6IEZSyar3S9S_cCWSFax2Zo@mail.gmail.com>
-	<1275491111.2799.110.camel@mulgrave.site>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Runtime PM for PCI-based USB host controllers
+Date: Wed, 2 Jun 2010 15:53:28 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006021539460.1628-100000__25057.5763675899$1275508511$gmane$org@iolanthe.rowland.org>
+References: <201006022136.02785.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275491111.2799.110.camel@mulgrave.site>
+In-Reply-To: <201006022136.02785.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,63 +17,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: tytso@mit.edu, Neil Brown <neilb@suse.de>, felipe.balbi@nokia.com, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux@smtp1.linux-foundation.org, mark.gross@intel.com, Thomas Gleixner <tglx@linutronix.de>, Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 02 Jun 2010 10:05:11 -0500
-James Bottomley <James.Bottomley@suse.de> wrote:
+On Wed, 2 Jun 2010, Rafael J. Wysocki wrote:
 
-> On Tue, 2010-06-01 at 21:41 -0700, Arve Hj=F8nnev=E5g wrote:
-> > No, they have to be two separate constraints, otherwise a constraint
-> > to block suspend would override a constraint to block a low power idle
-> > mode or the other way around.
-> =
+> > > Do PCI bus type callbacks need to be reworked to work correctly with unbound
+> > > devices?
+> > 
+> > They do; I neglected to take care of them when first writing this 
+> > patch.  After everything is working I'll submit it for real.  For now, 
+> > the point was to find out whether this is going in the right direction.
+> 
+> I don't have a fundamental problem with it.  As long as all things can be made
+> work along these lines, it's fine by me.
 
-> Depends.  If you block the system from going into low power idle, does
-> that mean you still want it to be fully suspended?
-> =
+Arggh!  I just tried out a revised patch.  It seems to work
+perfectly, except for one thing.  When I unbound ehci-hcd from one of
+the USB controllers, which should have caused the controller to be 
+runtime-suspended, this is what showed up in the log:
 
-> If yes, then we do have independent constraints.  If not, they have a
-> hierarchy:
-> =
+[  295.651545] pci 0000:00:1d.7: PME# enabled
+[  295.664044] pci 0000:00:1d.7: Refused to change power state, currently in D0
 
->       * Fully Interactive (no low power idle or suspend)
->       * Partially Interactive (may go into low power idle but not
->         suspend)
->       * None (may go into low power idle or suspend)
-> =
+Which seems to mean that the controller didn't want to go into D3hot!  
+Presumably this is because it was unconfigured when the driver was 
+unbound.  That's the only explanation I can think of; the controller 
+had no objection about going into D3hot when it was bound to the 
+driver.
 
-> Which is expressable as a ternary constraint.
-> =
-
-> James
-> =
-
-
-But unblocking suspend at the moment is independent to getting idle.
-If you have the requirement to stay in the highest-idle level (i.e.
-best latency you can get) that does not (currently) mean, that you can
-not suspend.
-
-To preserve that explicit fall-through while still having working
-run-time-powermanagement I think the qos-constraints need to be
-separated. =
+Assuming other PCI devices will have similar behavior, I have to agree
+that there's no point trying to put driverless devices into low-power
+states.
 
 
-<disclaimer: just from what I read>
-Provided you can reach the same power state from idle, current suspend
-could probably also be implemented by just the freezing part and a hint
-to the idle-loop to provide accelerated fall-through to lowest power. =
+One more thing: When looking at the r8169 and e1000e drivers, I noticed
+that you used the same test (pci_dev_run_wake -- not the greatest name
+in the world, BTW) in both the probe and remove routines.  That's not
+the right thing to do if the runtime-wakeup setting could get changed
+inbetween.  (I realize that currently there is no way to change the
+setting, but in the future there might be.)
 
-</disclaimer>
+Do you want to make an explicit assumption that the runtime wakeup
+settings are fixed, not subject to change?  If so, then why not compute
+the setting just once, when the device is registered, and store it in
+the pci_device structure?  Or even in the struct device?
 
-At that point, you could probably merge the constraints. =
-
-
-But the freezing part is also the hard part, isn't it? (I have no
-idea. Thomas seems to think about cgroups for that and doing smth about the=
- timers.)
-
-Cheers,
-Flo
+Alan Stern
