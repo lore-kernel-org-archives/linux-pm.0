@@ -1,16 +1,26 @@
-From: Don Zickus <dzickus@redhat.com>
-Subject: Re: hibernation hangs with ATA errors (lockup_detector
-	bug)
-Date: Wed, 2 Jun 2010 14:44:59 -0400
-Message-ID: <20100602184459.GA15159__31792.4641109586$1275504580$gmane$org@redhat.com>
-References: <4C03C608.1040600@gmail.com> <20100601135004.GP15159@redhat.com>
-	<4C051D44.7040203@gmail.com>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
+ Suspend block api (version 8)
+Date: Wed, 2 Jun 2010 21:05:21 +0200
+Message-ID: <20100602210521.54b9cd9b__19808.0854760066$1275505669$gmane$org@schatten.dmk.lab>
+References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
+	<201006010005.19554.rjw@sisk.pl>
+	<20100601090023.788cabf4@notabene.brown>
+	<201006010232.20263.rjw@sisk.pl>
+	<20100601113309.609349fd@notabene.brown>
+	<alpine.LFD.2.00.1006010340160.2933@localhost.localdomain>
+	<20100601122012.1edeaf48@notabene.brown>
+	<alpine.LFD.2.00.1006011243350.2933@localhost.localdomain>
+	<20100602153235.340a7852@notabene.brown>
+	<AANLkTikVjAf5nHdMx2bcHRAUSkq99s-b5YZCECXIJJLy@mail.gmail.com>
+	<20100602180614.729246ea@notabene.brown>
+	<AANLkTimISbs4X2YR_Pal9A80mpkNyCy8laWBcOgR2Cl7@mail.gmail.com>
+	<20100602210224.6ae2333f@notabene.brown>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4C051D44.7040203@gmail.com>
+In-Reply-To: <20100602210224.6ae2333f@notabene.brown>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,63 +30,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+To: Neil Brown <neilb@suse.de>
+Cc: Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Peter@smtp1.linux-foundation.org, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 01, 2010 at 04:46:28PM +0200, Jiri Slaby wrote:
-> On 06/01/2010 03:50 PM, Don Zickus wrote:
-> > On Mon, May 31, 2010 at 04:22:00PM +0200, Jiri Slaby wrote:
-> >> Hi,
-> >>
-> >> with -next I get the following errors while trying to hibernate in
-> >> qemu-kvm after the image is stored on disk:
-> > 
-> > Is this the host that is hibernating or the guest?
+On Wed, 2 Jun 2010 21:02:24 +1000
+Neil Brown <neilb@suse.de> wrote:
 > 
-> Guest.
+> And this decision (to block suspend) really needs to be made in the driver,
+> not in userspace?
+
+Well, it fits. The requirement is a direct consequence of the intimate
+knowledge the driver has about the driven devices. 
+Or if you get in an upper layer, the knowledge that the subsystem has
+about it's requirements to function properly. Why would you separate it out?
+
+If all your drivers specify their needed requirements, the pm-core (or
+idle) has the maximum flexibility to implement any strategy and is
+guaranteed a stable system as long as it honours the given requirements.
+(That's the theory, of course.)
+
 > 
-> > KVM guests don't emulate the performance counters, so the nmi piece
-> > shouldn't be functioning and the soft lockup piece just sits on top of an
-> > hrtimer, so off the top of my head it is hard to imagine it intefering
-> > with a sata driver.
-> > 
-> > I'll need your whole boot up log to see how the lockup detector
-> > initialized itself.
+> You could get those drivers to return EBUSY from PM_SUSPEND_PREPARE (which
+> would need to be a configurable option), but then I guess you have no way to
+> wait for the device to become non-busy.
+> 
+> If user-space really cannot tell if the driver is busy or not, then I would
+> suggest that the driver is fairly poorly designed.
 
-Ok, so I found out what is causing the problem, not entirely sure why or
-what the right fix is, but this patch should do the trick.
-
-This is probably one of those fixing the symptoms but not the problem patch,
-but I don't know enough about suspend/resume to understand what the real
-problem is.
-
----->SNIP<---------------------
-[lockup detector] don't return NOTIFY_BAD when cpu goes online for suspend
-
-KVM guests do not support performance counter emulation, so if the nmi
-watchdog piece is compiled in, it will always fail during boot.  The
-failure returns NOTIFY_BAD when the cpu goes online in the cpu notifier
-callback.  Returning NOTIFY_BAD causes hibernation to do really bad
-things, so avoid doing that.
-
-The cpu failure shouldn't be a critical failure anyway, so returning
-NOTIFY_BAD was probably overstating things.
-
-Signed-off-by: Don Zickus <dzickus@redhat.com>
+In general, userspace has no business knowing if the driver is busy or
+not. It would need intimate knowledge about the driver to determine if
+it is busy or not. That is what the kernel is all about, to hide that
+knowledge from userspace and masking it with a one-fits-all-API.
 
 
-diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-index 6b7fad8..fda9770 100644
---- a/kernel/watchdog.c
-+++ b/kernel/watchdog.c
-@@ -550,8 +550,7 @@ cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 		break;
- 	case CPU_ONLINE:
- 	case CPU_ONLINE_FROZEN:
--		if (watchdog_enable(hotcpu))
--			return NOTIFY_BAD;
-+		watchdog_enable(hotcpu)
- 		break;
- #ifdef CONFIG_HOTPLUG_CPU
- 	case CPU_UP_CANCELED:
+> 
+> It would seem then that a user-space requested suspend is not sufficient for
+> your needs even if we remove the race window, as you have drivers that want
+> to avoid suspend indefinitely, and that "need to avoid suspend" status is not
+> visible from user-space.
+
+Well, but the kernel-solution and the userspace solution should be
+pretty independent. The tricky part here seems to be to have a
+kernel-userspace-boundary that doesn't require a specific kernel
+implementation and works. 
+
+Could someone perhaps make a recap on what are the problems with the
+API? I have no clear eye (experience?) for that (or so it seems).
+
+> It is a pity that this extra requirement was not clear from your introduction
+> to the "Opportunistic suspend support" patch.
+
+I think that the main problem was that _all_ the requirements were
+not communicated well.  That caused everybody to think that their
+solution would be a better fit. You are not alone.
+ 
+> If that be the case, I'll stop bothering you with suggestions that can never
+> work.
+> Thanks for your time,
+> NeilBrown
+
+Don't be frustrated. What should Arve be?  :)
+
+Cheers,
+Flo
