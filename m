@@ -1,16 +1,13 @@
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: hibernation hangs with ATA errors (lockup_detector
-	bug)
-Date: Wed, 2 Jun 2010 21:13:40 +0200
-Message-ID: <20100602191336.GA5164__15447.1767288216$1275506124$gmane$org@nowhere>
-References: <4C03C608.1040600@gmail.com> <20100601135004.GP15159@redhat.com>
-	<4C051D44.7040203@gmail.com> <20100602184459.GA15159@redhat.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Runtime PM for PCI-based USB host controllers
+Date: Wed, 2 Jun 2010 21:36:02 +0200
+Message-ID: <201006022136.02785.rjw__13387.1791222647$1275507342$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1006021120520.1992-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100602184459.GA15159@redhat.com>
+In-Reply-To: <Pine.LNX.4.44L0.1006021120520.1992-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,77 +17,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Don Zickus <dzickus@redhat.com>
-Cc: linux-ide@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jiri Slaby <jirislaby@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 02, 2010 at 02:44:59PM -0400, Don Zickus wrote:
-> On Tue, Jun 01, 2010 at 04:46:28PM +0200, Jiri Slaby wrote:
-> > On 06/01/2010 03:50 PM, Don Zickus wrote:
-> > > On Mon, May 31, 2010 at 04:22:00PM +0200, Jiri Slaby wrote:
-> > >> Hi,
-> > >>
-> > >> with -next I get the following errors while trying to hibernate in
-> > >> qemu-kvm after the image is stored on disk:
-> > > 
-> > > Is this the host that is hibernating or the guest?
+On Wednesday 02 June 2010, Alan Stern wrote:
+> On Tue, 1 Jun 2010, Rafael J. Wysocki wrote:
+> 
+> > > Therefore the default state for unbound PCI devices should be
+> > > runtime-PM-enabled.
 > > 
-> > Guest.
+> > Why do you think it should?
+> 
+> So that they can be put into a low-power state.  If they are disabled 
+> for runtime PM then they will remain in a high-power state.
+> 
+> > > Something like the patch below, awkward though it is.  Does this look 
+> > > reasonable?
 > > 
-> > > KVM guests don't emulate the performance counters, so the nmi piece
-> > > shouldn't be functioning and the soft lockup piece just sits on top of an
-> > > hrtimer, so off the top of my head it is hard to imagine it intefering
-> > > with a sata driver.
-> > > 
-> > > I'll need your whole boot up log to see how the lockup detector
-> > > initialized itself.
+> > I'm not sure if r8169 and e1000e will work with it.  Probably not, but I'm
+> > too tired to check right now. :-)
 > 
-> Ok, so I found out what is causing the problem, not entirely sure why or
-> what the right fix is, but this patch should do the trick.
+> You mean because they already include their own runtime power 
+> management?  Then they would need to be updated to match these changes, 
+> naturally.
 > 
-> This is probably one of those fixing the symptoms but not the problem patch,
-> but I don't know enough about suspend/resume to understand what the real
-> problem is.
+> > > @@ -365,15 +380,24 @@ static int pci_device_probe(struct devic
+> > >  
+> > >  static int pci_device_remove(struct device * dev)
+> > >  {
+> > > +	struct device_driver *driver = dev->driver;
+> > >  	struct pci_dev * pci_dev = to_pci_dev(dev);
+> > >  	struct pci_driver * drv = pci_dev->driver;
+> > >  
+> > >  	if (drv) {
+> > > -		if (drv->remove)
+> > > +		if (drv->remove) {
+> > > +			pm_runtime_get_sync(dev);
+> > >  			drv->remove(pci_dev);
+> > > +			pm_runtime_put_noidle(dev);
+> > > +		}
+> > >  		pci_dev->driver = NULL;
+> > >  	}
+> > 
+> > Is "else" missing here or am I missing something?
+> 
+> I don't think an "else" is missing.  Rather, the entire "if (drv)"  
+> line should be eliminated because it can never fail.
+> 
+> > > +	/* Undo the pm_runtime_get_sync() in local_pci_probe() */
+> > > +	dev->driver = NULL;
+> > > +	pm_runtime_put_sync(dev);
+> > > +	dev->driver = driver;
+> > > +
+> > >  	/*
+> > >  	 * If the device is still on, set the power state as "unknown",
+> > >  	 * since it might change by the next time we load the driver.
+> > 
+> > Do PCI bus type callbacks need to be reworked to work correctly with unbound
+> > devices?
+> 
+> They do; I neglected to take care of them when first writing this 
+> patch.  After everything is working I'll submit it for real.  For now, 
+> the point was to find out whether this is going in the right direction.
 
+I don't have a fundamental problem with it.  As long as all things can be made
+work along these lines, it's fine by me.
 
-So the problem is that we stop the cpu hotplug notifying, I guess this prevents
-some ata callbacks to execute in the cpu hotplug notifier and then provoke this
-crash.
-
-The patch looks ok, but I think you should at least print a message in such
-case of watchdog failure.
-
-Thanks.
-
-
-
-> 
-> ---->SNIP<---------------------
-> [lockup detector] don't return NOTIFY_BAD when cpu goes online for suspend
-> 
-> KVM guests do not support performance counter emulation, so if the nmi
-> watchdog piece is compiled in, it will always fail during boot.  The
-> failure returns NOTIFY_BAD when the cpu goes online in the cpu notifier
-> callback.  Returning NOTIFY_BAD causes hibernation to do really bad
-> things, so avoid doing that.
-> 
-> The cpu failure shouldn't be a critical failure anyway, so returning
-> NOTIFY_BAD was probably overstating things.
-> 
-> Signed-off-by: Don Zickus <dzickus@redhat.com>
-> 
-> 
-> diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-> index 6b7fad8..fda9770 100644
-> --- a/kernel/watchdog.c
-> +++ b/kernel/watchdog.c
-> @@ -550,8 +550,7 @@ cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
->  		break;
->  	case CPU_ONLINE:
->  	case CPU_ONLINE_FROZEN:
-> -		if (watchdog_enable(hotcpu))
-> -			return NOTIFY_BAD;
-> +		watchdog_enable(hotcpu)
->  		break;
->  #ifdef CONFIG_HOTPLUG_CPU
->  	case CPU_UP_CANCELED:
+Rafael
