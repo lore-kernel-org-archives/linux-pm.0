@@ -1,17 +1,20 @@
-From: Don Zickus <dzickus@redhat.com>
-Subject: Re: hibernation hangs with ATA errors (lockup_detector
-	bug)
-Date: Wed, 2 Jun 2010 17:03:32 -0400
-Message-ID: <20100602210332.GD15159__8970.98842910982$1275512757$gmane$org@redhat.com>
-References: <4C03C608.1040600@gmail.com> <20100601135004.GP15159@redhat.com>
-	<4C051D44.7040203@gmail.com> <20100602184459.GA15159@redhat.com>
-	<20100602191336.GA5164@nowhere>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Wed, 2 Jun 2010 14:58:30 -0700
+Message-ID: <AANLkTilSU79cnBODXFokzIPB1hRcZBxbwTgTQ59MeKcK__42427.671122323$1275516001$gmane$org@mail.gmail.com>
+References: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
+	<Pine.LNX.4.44L0.1005292026080.6300-100000@netrider.rowland.org>
+	<AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
+	<201005312338.55109.rjw@sisk.pl> <20100531232617.GF31155@gvim.org>
+	<20100601090737.4bc243d9@schatten.dmk.lab>
+	<20100601140519.GC1281@gvim.org>
+	<AANLkTikF-B23_UWG1O3tlBl4m8NStAJllGhhevNhYZT6@mail.gmail.com>
+	<20100602133910.GA9106@gvim.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100602191336.GA5164@nowhere>
+In-Reply-To: <20100602133910.GA9106@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,52 +24,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-ide@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jiri Slaby <jirislaby@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+To: markgross@thegnar.org
+Cc: 640e9920@gmail.com, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 02, 2010 at 09:13:40PM +0200, Frederic Weisbecker wrote:
-> On Wed, Jun 02, 2010 at 02:44:59PM -0400, Don Zickus wrote:
-> > On Tue, Jun 01, 2010 at 04:46:28PM +0200, Jiri Slaby wrote:
-> > > On 06/01/2010 03:50 PM, Don Zickus wrote:
-> > > > On Mon, May 31, 2010 at 04:22:00PM +0200, Jiri Slaby wrote:
-> > > >> Hi,
-> > > >>
-> > > >> with -next I get the following errors while trying to hibernate in
-> > > >> qemu-kvm after the image is stored on disk:
-> > > > 
-> > > > Is this the host that is hibernating or the guest?
-> > > 
-> > > Guest.
-> > > 
-> > > > KVM guests don't emulate the performance counters, so the nmi piece
-> > > > shouldn't be functioning and the soft lockup piece just sits on top of an
-> > > > hrtimer, so off the top of my head it is hard to imagine it intefering
-> > > > with a sata driver.
-> > > > 
-> > > > I'll need your whole boot up log to see how the lockup detector
-> > > > initialized itself.
-> > 
-> > Ok, so I found out what is causing the problem, not entirely sure why or
-> > what the right fix is, but this patch should do the trick.
-> > 
-> > This is probably one of those fixing the symptoms but not the problem patch,
-> > but I don't know enough about suspend/resume to understand what the real
-> > problem is.
-> 
-> 
-> So the problem is that we stop the cpu hotplug notifying, I guess this prevents
-> some ata callbacks to execute in the cpu hotplug notifier and then provoke this
-> crash.
-> 
-> The patch looks ok, but I think you should at least print a message in such
-> case of watchdog failure.
+2010/6/2 mark gross <640e9920@gmail.com>:
+> On Tue, Jun 01, 2010 at 08:50:02PM -0700, Arve Hj=F8nnev=E5g wrote:
+>> On Tue, Jun 1, 2010 at 7:05 AM, mark gross <640e9920@gmail.com> wrote:
+>> > On Tue, Jun 01, 2010 at 09:07:37AM +0200, Florian Mickler wrote:
+>> ...
+>> >> +static void update_target_val(int pm_qos_class, s32 val)
+>> >> +{
+>> >> + =A0 =A0 s32 extreme_value;
+>> >> + =A0 =A0 s32 new_value;
+>> >> + =A0 =A0 extreme_value =3D atomic_read(&pm_qos_array[pm_qos_class]->=
+target_value);
+>> >> + =A0 =A0 new_value =3D pm_qos_array[pm_qos_class]->comparitor(val,ex=
+treme_value);
+>> >> + =A0 =A0 if (extreme_value !=3D new_value)
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 atomic_set(&pm_qos_array[pm_qos_class]->tar=
+get_value,new_value);
+>> >> +}
+>> >> +
+>> >
+>> > Only works 1/2 the time, but I like the idea!
+>> > It fails to get the righ answer when constraints are reduced. =A0But, =
+this
+>> > idea is a good improvement i'll roll into the next pm_qos update!
+>> >
+>>
+>> I think it would be a better idea to track your constraints with a
+>> sorted data structure. That way you can to better than O(n) for both
+>> directions. If you have a lot of constraints with the same value, it
+>> may even be worthwhile to have a two stage structure where for
+>> instance you use a rbtree for the unique values and list for identical
+>> constraints.
+>
+> I don't agree, we went through this tree vrs list discussion a few times
+> before in other areas of the kernel. =A0Wherever the list tended to be
+> short, a simple list wins. =A0However; we can try it, after we have some
+> metrics and stress test cases identified we can measure its effectivenes
+> against.
+>
 
-Well this is already printed and in Jiri's dmesg output
+The list is not short. You have all the inactive and active
+constraints on the same list. If you change it to a two level list
+though, the list of unique values (which is the list you have to walk)
+may be short enough for a tree to be overkill.
 
-NMI watchdog failed to create perf event on cpu1: ffffffffffffffed
+-- =
 
-I could change it to make it more obvious?
-
-Cheers,
-Don
+Arve Hj=F8nnev=E5g
