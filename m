@@ -1,23 +1,25 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 02 Jun 2010 12:21:28 +0200
-Message-ID: <1275474088.27810.31000.camel__27653.5896388397$1275474146$gmane$org@twins>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<201005302202.39511.rjw@sisk.pl>
-	<AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt@mail.gmail.com>
-	<201005312347.24251.rjw@sisk.pl>
-	<AANLkTilvOgSFTDFtXbjJobMZWxgfvsC97TqC7_a_NHBX@mail.gmail.com>
-	<alpine.LFD.2.00.1006011411200.2933@localhost.localdomain>
-	<AANLkTikZHmF6baP7dEXEGFE8YsbEteRjlhb5wqZX8ll1@mail.gmail.com>
-	<alpine.LFD.2.00.1006020905410.2933@localhost.localdomain>
-	<AANLkTinDm3FIrbS1jqEzW15THmr1hdd7ox0Mllm1VLjZ@mail.gmail.com>
-	<1275471561.27810.30865.camel@twins>
-	<AANLkTilLmAb2c9fQwuguzWtjcHfuTZvPUTbUx7vuwFI6@mail.gmail.com>
+From: Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
+ Suspend block api (version 8)
+Date: Wed, 2 Jun 2010 20:23:00 +1000
+Message-ID: <20100602202300.468b73fe__46292.0513622977$1275474236$gmane$org@notabene.brown>
+References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
+	<201006010005.19554.rjw@sisk.pl>
+	<20100601090023.788cabf4@notabene.brown>
+	<201006010232.20263.rjw@sisk.pl>
+	<20100601113309.609349fd@notabene.brown>
+	<alpine.LFD.2.00.1006010340160.2933@localhost.localdomain>
+	<20100601122012.1edeaf48@notabene.brown>
+	<alpine.LFD.2.00.1006011243350.2933@localhost.localdomain>
+	<20100602153235.340a7852@notabene.brown>
+	<AANLkTikVjAf5nHdMx2bcHRAUSkq99s-b5YZCECXIJJLy@mail.gmail.com>
+	<20100602180614.729246ea@notabene.brown>
+	<20100602105039.068c5e00@schatten.dmk.lab>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTilLmAb2c9fQwuguzWtjcHfuTZvPUTbUx7vuwFI6@mail.gmail.com>
+In-Reply-To: <20100602105039.068c5e00@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,34 +29,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Florian Mickler <florian@mickler.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyMDEwLTA2LTAyIGF0IDAzOjAwIC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
-Ogo+IDIwMTAvNi8yIFBldGVyIFppamxzdHJhIDxwZXRlcnpAaW5mcmFkZWFkLm9yZz46Cj4gPiBP
-biBXZWQsIDIwMTAtMDYtMDIgYXQgMDE6NTQgLTA3MDAsIEFydmUgSGrDuG5uZXbDpWcgd3JvdGU6
-Cj4gPj4gTm8gSSB3YW50IHlvdSB0byBzdG9wIGNvbmZ1c2luZyBsb3cgcG93ZXIgaWRsZSBtb2Rl
-cyB3aXRoIHN1c3BlbmQuCj4gPgo+ID4gSSB0aGluayBpdCBpcyB5b3Ugd2hvIGlzIGNvbmZ1c2Vk
-LiBGb3IgcG93ZXIgbWFuYWdlbWVudCBwdXJwb3NlcyBzdXNwZW5kCj4gPiBpcyBub3RoaW5nIG1v
-cmUgYnV0IGEgZGVlcCBpZGxlIHN0YXRlLgo+IAo+IE5vLCBpZGxlIGlzIHRyYW5zcGFyZW50LCBz
-dXNwZW5kIGlzIG5vdC4KCldoaWNoIGlzIHdoZXJlIHRoZSBwcm9ibGVtIGlzLCBpdCBzaG91bGQg
-YmUuCgo+IFdoeSB3b3VsZCBJIGFkZCBzdXNwZW5kIGJsb2NrZXJzIHRvIHRoZSBjb2RlIEkgd2Fu
-dCB0byBwcmV2ZW50IHJ1bm5pbmc/CgpCZWNhdXNlIHdoYXQgeW91IHdhbnQgbWlnaHQgbm90IGJl
-IHdoYXQgb3RoZXJzIHdhbnQuIFN1cHBvc2UgeW91J3JlIGZpbmUKd2l0aCB5b3VyIHRvcnJlbnQg
-Y2xpZW50L2lyYyBjbGllbnQvZXRjLi4gdG8gbG9vc2UgdGhlaXIgbmV0d29yawpjb25uZWN0aW9u
-IHdoZW4geW91J3JlIG5vdCBiZWhpbmQgeW91ciBkZXNrdG9wIHNvIHlvdSBkb24ndCBhZGQgc3Vz
-cGVuZApibG9ja2VycyB0aGVyZS4KCk1lLCBJJ2QgYmUgcmVhZHkgdG8gYWRtaW5pc3RlciBwaHlz
-aWNhbCB2aW9sZW5jZSBpZiBlaXRoZXIgb2YgdGhvc2UgbG9zdAp0aGVpciBjb25uZWN0aW9ucyB3
-aGVuIEkgd2Fzbid0IGFyb3VuZCB0byBrZWVwIHRoZSBzY3JlZW4tc2F2ZXIgZnJvbQpraWNraW5n
-IGluLgoKVGhpcyBsZWFkcyB0byBoYXZpbmcgdG8gc3ByaW5rbGUgbWFnaWMgZHVzdCAoYW5kIGxv
-dHMgb2YgY29uZmlnIG9wdGlvbnMpCmFsbCBvdmVyIHVzZXJzcGFjZS4gU29tZXRoaW5nIHRoYXQg
-Z2V0cyBlc3AgaW50ZXJlc3Rpbmcgd2l0aCBvbmx5IGEKYm9vbGVhbiBpbnRlcmZhY2UuCgpJbiB0
-aGUgZXhhbXBsZSBhYm92ZSwgaGF2aW5nIGFuIGFjdGl2ZSBuZXQgY29ubmVjdGlvbiB3b3VsZCBw
-cmV2ZW50IG15CmRlc2t0b3AgZnJvbSBzdXNwZW5kaW5nLCBidXQgd2hhdCBpZiBhbm90aGVyIHBs
-YXRmb3JtIGNhbiBtYWludGFpbiBuZXQKY29ubmVjdGlvbnMgd2hpbGUgc3VzcGVuZGVkPyBEbyB3
-ZSB0aGVuIGVuZCB1cCB3aXRoIGFyY2ggc3BlY2lmaWMgY29kZQppbiB0aGUgbmV0LXN0YWNrPyBJ
-J20gc3VyZSBEYXZlTSB3b3VsZCBsb3ZlIHRoYXQuCgoKX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxp
-c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5v
-cmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Wed, 2 Jun 2010 10:50:39 +0200
+Florian Mickler <florian@mickler.org> wrote:
+
+> On Wed, 2 Jun 2010 18:06:14 +1000
+> Neil Brown <neilb@suse.de> wrote:
+> 
+> > I cannot imagine why it would take multiple seconds to scan a keypad.
+> > Can you explain that?
+> > 
+> > Do you mean while keys are held pressed?  Maybe you don't get a wake-up event
+> > on key-release?  In that case your user-space daemon could block suspend
+> > while there are any pressed keys....  confused.
+> 
+> IIRC, the device sends interrupts only for first key-down and
+> last key-up.
+> To detect simultaneous key-presses you must actively scan it after the
+> first key-down.
+
+That makes sense - thanks.
+Presumably the first key-press gets to user-space promptly, so the user-space
+suspend daemon can be told not to suspend until the last key-up.
+
+Thanks,
+NeilBrown
