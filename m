@@ -1,7 +1,8 @@
 From: Jiri Slaby <jslaby@suse.cz>
-Subject: [PATCH 5/9] PM / Hibernate: add chunk i/o support
-Date: Wed,  2 Jun 2010 10:52:44 +0200
-Message-ID: <1275468768-28229-5-git-send-email-jslaby__31538.3986257531$1275469270$gmane$org@suse.cz>
+Subject: [PATCH 3/9] PM / Hibernate: user,
+	implement user_ops writer
+Date: Wed,  2 Jun 2010 10:52:42 +0200
+Message-ID: <1275468768-28229-3-git-send-email-jslaby__540.728125679557$1275469384$gmane$org@suse.cz>
 References: <1275468768-28229-1-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,202 +22,258 @@ To: rjw@sisk.pl
 Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, jirislaby@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-Chunk support is useful when not writing whole pages at once. It takes
-care of joining the buffers into the pages and writing at once when
-needed.
+Switch /dev/snapshot writer to hibernate_io_ops approach so that we
+can do whatever we want with snapshot processing code. All the later
+code changes will be transparent and needn't care about different
+readers/writers.
 
-This adds functions for both reads and writes.
+In this patch only writer is implemented -- for better bisectability
+if something breaks. (The development was easier too, because one
+could break only one part, not both.)
 
-In the end when pages are compressed they use this interface as well
-(because they are indeed shorter than PAGE_SIZE).
+Also, when using this interface, switch to the ops on open/release,
+so they are used.
+
+There are explicit barriers protecting to_do_buffer, because it is
+all done in a producer-consumer fashion:
+PRODUCER (snapshot layer)
+1) to_do_buffer is set
+2) set TODO bit
+3) wake CONSUMER
+4) wait for TODO bit _clear_
+
+CONSUMER (fops->read)
+1) wait for TODO bit
+2) pass to_do_buffer to userspace
+3) clear TODO bit
+4) wake PRODUCER
 
 Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 ---
- kernel/power/block_io.c |  126 +++++++++++++++++++++++++++++++++++++++++++++++
- kernel/power/power.h    |   16 ++++++
- 2 files changed, 142 insertions(+), 0 deletions(-)
+ kernel/power/user.c |  140 ++++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 132 insertions(+), 8 deletions(-)
 
-diff --git a/kernel/power/block_io.c b/kernel/power/block_io.c
-index 97024fd..5b6413d 100644
---- a/kernel/power/block_io.c
-+++ b/kernel/power/block_io.c
-@@ -3,6 +3,7 @@
-  *
-  * Copyright (C) 1998,2001-2005 Pavel Machek <pavel@ucw.cz>
-  * Copyright (C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
-+ * Copyright (C) 2004-2008 Nigel Cunningham (nigel at tuxonice net)
-  *
-  * This file is released under the GPLv2.
-  */
-@@ -74,6 +75,131 @@ int hib_bio_write_page(pgoff_t page_off, void *addr, struct bio **bio_chain)
- 			virt_to_page(addr), bio_chain);
- }
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index e819e17..b4610c3 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -23,6 +23,8 @@
+ #include <linux/console.h>
+ #include <linux/cpu.h>
+ #include <linux/freezer.h>
++#include <linux/mutex.h>
++#include <linux/wait.h>
+ #include <scsi/scsi_scan.h>
  
-+static int hib_buffer_init_rw(struct hibernate_io_handle *io_handle,
-+		int writing)
+ #include <asm/uaccess.h>
+@@ -61,10 +63,93 @@ static struct snapshot_data {
+ 	char frozen;
+ 	char ready;
+ 	char platform_support;
++	struct hibernate_io_ops *prev_ops;
+ } snapshot_state;
+ 
+ atomic_t snapshot_device_available = ATOMIC_INIT(1);
+ 
++static struct {
++	void *buffer; /* buffer to pass through */
++	struct workqueue_struct *worker; /* the thread initiating read/write */
++	wait_queue_head_t wait; /* wait for buffer */
++	wait_queue_head_t done; /* read/write done? */
++	struct mutex lock; /* protection for buffer */
++
++#define TODO_WORK	1
++#define TODO_FINISH	2
++#define TODO_CLOSED	3
++#define TODO_ERROR	4
++	DECLARE_BITMAP(flags, 10); /* TODO_* flags defined above */
++} to_do;
++
++static unsigned long user_free_space(void)
 +{
-+	/* should never happen - it means we didn't finish properly last time */
-+	BUG_ON(io_handle->chunk_buffer || io_handle->chunk_buffer_pos);
-+
-+	io_handle->chunk_buffer =
-+		(void *)get_zeroed_page(__GFP_WAIT | __GFP_HIGH);
-+	if (io_handle->chunk_buffer && !writing)
-+		io_handle->chunk_buffer_pos = PAGE_SIZE;
-+
-+	return io_handle->chunk_buffer ? 0 : -ENOMEM;
++	return ~0UL; /* we have no idea, maybe we will fail later */
 +}
 +
-+int hib_buffer_init_read(struct hibernate_io_handle *io_handle)
++static struct hibernate_io_handle *user_writer_start(void)
 +{
-+	return hib_buffer_init_rw(io_handle, 0);
++	return hib_io_handle_alloc(0) ? : ERR_PTR(-ENOMEM);
 +}
 +
-+int hib_buffer_init_write(struct hibernate_io_handle *io_handle)
++static int user_write_page(struct hibernate_io_handle *io_handle, void *buf,
++		struct bio **bio_chain)
 +{
-+	return hib_buffer_init_rw(io_handle, 1);
++	int err = 0;
++
++	if (test_bit(TODO_CLOSED, to_do.flags))
++		return -EIO;
++
++	mutex_lock(&to_do.lock);
++	to_do.buffer = buf;
++	mutex_unlock(&to_do.lock);
++	set_bit(TODO_WORK, to_do.flags);
++	wake_up_interruptible(&to_do.wait);
++
++	wait_event(to_do.done, !test_bit(TODO_WORK, to_do.flags) ||
++			(err = test_bit(TODO_CLOSED, to_do.flags)));
++
++	return err ? -EIO : 0;
 +}
 +
-+/**
-+ * hib_buffer_rw - combine smaller buffers into PAGE_SIZE I/O
-+ * @io_handle: handle from reader/writer
-+ * @writing: whether writing (or reading).
-+ * @buffer: the start of the buffer to write or fill.
-+ * @buffer_size: the size of the buffer to write or fill.
-+ **/
-+static int hib_buffer_rw(struct hibernate_io_handle *io_handle, int writing,
-+		char *buffer, int buffer_size)
++static int user_writer_finish(struct hibernate_io_handle *io_handle,
++		unsigned int flags, int error)
 +{
-+	int bytes_left = buffer_size, ret;
++	int err = 0;
 +
-+	while (bytes_left) {
-+		char *source_start = buffer + buffer_size - bytes_left;
-+		char *dest_start = io_handle->chunk_buffer +
-+			io_handle->chunk_buffer_pos;
-+		int capacity = PAGE_SIZE - io_handle->chunk_buffer_pos;
-+		char *to = writing ? dest_start : source_start;
-+		char *from = writing ? source_start : dest_start;
++	if (error)
++		set_bit(TODO_ERROR, to_do.flags);
++	set_bit(TODO_FINISH, to_do.flags);
++	wake_up_interruptible(&to_do.wait);
 +
-+		if (bytes_left <= capacity) {
-+			memcpy(to, from, bytes_left);
-+			io_handle->chunk_buffer_pos += bytes_left;
-+			return 0;
-+		}
++	wait_event(to_do.done, !test_bit(TODO_FINISH, to_do.flags) ||
++			(err = test_bit(TODO_CLOSED, to_do.flags)));
 +
-+		/* Complete this page and start a new one */
-+		memcpy(to, from, capacity);
-+		bytes_left -= capacity;
++	if (!error && err)
++		error = -EIO;
 +
-+		if (writing)
-+			ret = hibernate_io_ops->write_page(io_handle,
-+					io_handle->chunk_buffer, NULL);
-+		else
-+			ret = hibernate_io_ops->read_page(io_handle,
-+					io_handle->chunk_buffer, NULL);
-+
-+		if (ret)
-+			return ret;
-+
-+		io_handle->chunk_buffer_pos = 0;
-+	}
-+
-+	return 0;
++	return error;
 +}
 +
-+int hib_buffer_read(struct hibernate_io_handle *io_handle, char *buffer,
-+		int buffer_size)
-+{
-+	return hib_buffer_rw(io_handle, 0, buffer, buffer_size);
-+}
++struct hibernate_io_ops user_ops = {
++	.free_space = user_free_space,
 +
-+int hib_buffer_write(struct hibernate_io_handle *io_handle, char *buffer,
-+		int buffer_size)
-+{
-+	return hib_buffer_rw(io_handle, 1, buffer, buffer_size);
-+}
++	.writer_start = user_writer_start,
++	.writer_finish = user_writer_finish,
++	.write_page = user_write_page,
++};
 +
-+int hib_buffer_flush_page_read(struct hibernate_io_handle *io_handle)
-+{
-+	io_handle->chunk_buffer_pos = PAGE_SIZE;
-+
-+	return 0;
-+}
-+
-+int hib_buffer_finish_read(struct hibernate_io_handle *io_handle)
++static void snapshot_writer(struct work_struct *work)
 +{
 +	int ret;
 +
-+	ret = hib_buffer_flush_page_read(io_handle);
-+
-+	free_page((unsigned long)io_handle->chunk_buffer);
-+	io_handle->chunk_buffer = NULL;
-+	io_handle->chunk_buffer_pos = 0;
-+
-+	return ret;
++	ret = swsusp_write(0);
++	if (ret)
++		printk(KERN_ERR "PM: write failed with %d\n", ret);
 +}
 +
-+int hib_buffer_flush_page_write(struct hibernate_io_handle *io_handle)
-+{
-+	int ret = 0;
-+	if (io_handle->chunk_buffer_pos)
-+		ret = hibernate_io_ops->write_page(io_handle,
-+				io_handle->chunk_buffer, NULL);
-+	io_handle->chunk_buffer_pos = 0;
-+	return ret;
-+}
++static DECLARE_WORK(snapshot_writer_w, snapshot_writer);
 +
-+int hib_buffer_finish_write(struct hibernate_io_handle *io_handle)
-+{
-+	int ret = 0;
-+
-+	ret = hib_buffer_flush_page_write(io_handle);
-+
-+	free_page((unsigned long)io_handle->chunk_buffer);
-+	io_handle->chunk_buffer = NULL;
-+	io_handle->chunk_buffer_pos = 0;
-+
-+	return ret;
-+}
-+
- int hib_wait_on_bio_chain(struct bio **bio_chain)
+ static int snapshot_open(struct inode *inode, struct file *filp)
  {
- 	struct bio *bio;
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 32a40f9..812b66c 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -119,9 +119,14 @@ struct snapshot_handle {
- /**
-  * struct hibernate_io_handle - handle for image I/O processing
-  *
-+ * @chunk_buffer: temporary buffer used by chunk I/O to fill whole page
-+ * @chunk_buffer_pos: position in chio_buffer
-  * @priv: private data for each processor (swap_map_handle etc.)
-  */
- struct hibernate_io_handle {
-+	char *chunk_buffer;
-+	unsigned long chunk_buffer_pos;
+ 	struct snapshot_data *data;
+@@ -115,9 +200,17 @@ static int snapshot_open(struct inode *inode, struct file *filp)
+ 	}
+ 	if (error)
+ 		atomic_inc(&snapshot_device_available);
++	else {
++		data->prev_ops = hibernate_io_ops;
++		hibernate_io_ops = &user_ops;
++	}
+ 	data->frozen = 0;
+ 	data->ready = 0;
+ 	data->platform_support = 0;
++	memset(to_do.flags, 0, sizeof(*to_do.flags));
++	init_waitqueue_head(&to_do.wait);
++	init_waitqueue_head(&to_do.done);
++	mutex_init(&to_do.lock);
+ 
+  Unlock:
+ 	mutex_unlock(&pm_mutex);
+@@ -131,6 +224,10 @@ static int snapshot_release(struct inode *inode, struct file *filp)
+ 
+ 	mutex_lock(&pm_mutex);
+ 
++	set_bit(TODO_CLOSED, to_do.flags);
++	wake_up(&to_do.done);
++	flush_workqueue(to_do.worker);
 +
- 	void *priv;
+ 	swsusp_free();
+ 	free_basic_memory_bitmaps();
+ 	data = filp->private_data;
+@@ -139,6 +236,7 @@ static int snapshot_release(struct inode *inode, struct file *filp)
+ 		thaw_processes();
+ 	pm_notifier_call_chain(data->mode == O_WRONLY ?
+ 			PM_POST_HIBERNATION : PM_POST_RESTORE);
++	hibernate_io_ops = data->prev_ops;
+ 	atomic_inc(&snapshot_device_available);
+ 
+ 	mutex_unlock(&pm_mutex);
+@@ -152,6 +250,7 @@ static ssize_t snapshot_read(struct file *filp, char __user *buf,
+ 	struct snapshot_data *data;
+ 	ssize_t res;
+ 	loff_t pg_offp = *offp & ~PAGE_MASK;
++	int fin = 0;
+ 
+ 	mutex_lock(&pm_mutex);
+ 
+@@ -161,18 +260,31 @@ static ssize_t snapshot_read(struct file *filp, char __user *buf,
+ 		goto Unlock;
+ 	}
+ 	if (!pg_offp) { /* on page boundary? */
+-		res = snapshot_read_next(&data->handle);
+-		if (res <= 0)
++		res = wait_event_interruptible(to_do.wait,
++			test_bit(TODO_WORK, to_do.flags) ||
++			(fin = test_and_clear_bit(TODO_FINISH, to_do.flags)));
++		if (res)
+ 			goto Unlock;
+-	} else {
+-		res = PAGE_SIZE - pg_offp;
++		if (test_bit(TODO_ERROR, to_do.flags)) {
++			res = -EIO;
++			goto Unlock;
++		}
++		if (fin)
++			goto wake;
+ 	}
++	res = PAGE_SIZE - pg_offp;
+ 
+-	res = simple_read_from_buffer(buf, count, &pg_offp,
+-			data_of(data->handle), res);
++	mutex_lock(&to_do.lock);
++	res = simple_read_from_buffer(buf, count, &pg_offp, to_do.buffer, res);
++	mutex_unlock(&to_do.lock);
+ 	if (res > 0)
+ 		*offp += res;
+ 
++	if (!(pg_offp & ~PAGE_MASK)) {
++		clear_bit(TODO_WORK, to_do.flags);
++wake:
++		wake_up(&to_do.done);
++	}
+  Unlock:
+ 	mutex_unlock(&pm_mutex);
+ 
+@@ -278,8 +390,11 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+ 		error = hibernation_snapshot(data->platform_support);
+ 		if (!error)
+ 			error = put_user(in_suspend, (int __user *)arg);
+-		if (!error)
++		if (!error) {
++			if (in_suspend)
++				queue_work(to_do.worker, &snapshot_writer_w);
+ 			data->ready = 1;
++		}
+ 		break;
+ 
+ 	case SNAPSHOT_ATOMIC_RESTORE:
+@@ -473,7 +588,16 @@ static struct miscdevice snapshot_device = {
+ 
+ static int __init snapshot_device_init(void)
+ {
+-	return misc_register(&snapshot_device);
++	int ret;
++
++	to_do.worker = create_singlethread_workqueue("suspend_worker");
++	if (!to_do.worker)
++		return -ENOMEM;
++
++	ret = misc_register(&snapshot_device);
++	if (ret)
++		destroy_workqueue(to_do.worker);
++	return ret;
  };
  
-@@ -200,6 +205,17 @@ extern int hib_bio_write_page(pgoff_t page_off, void *addr,
- 		struct bio **bio_chain);
- extern int hib_wait_on_bio_chain(struct bio **bio_chain);
- 
-+extern int hib_buffer_init_read(struct hibernate_io_handle *io_handle);
-+extern int hib_buffer_init_write(struct hibernate_io_handle *io_handle);
-+extern int hib_buffer_finish_read(struct hibernate_io_handle *io_handle);
-+extern int hib_buffer_finish_write(struct hibernate_io_handle *io_handle);
-+extern int hib_buffer_flush_page_read(struct hibernate_io_handle *io_handle);
-+extern int hib_buffer_flush_page_write(struct hibernate_io_handle *io_handle);
-+extern int hib_buffer_read(struct hibernate_io_handle *io_handle, char *buffer,
-+		int buffer_size);
-+extern int hib_buffer_write(struct hibernate_io_handle *io_handle, char *buffer,
-+		int buffer_size);
-+
- struct timeval;
- /* kernel/power/swsusp.c */
- extern void swsusp_show_speed(struct timeval *, struct timeval *,
+ device_initcall(snapshot_device_init);
 -- 
 1.7.1
