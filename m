@@ -1,23 +1,19 @@
-From: Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
- Suspend block api (version 8)
-Date: Wed, 2 Jun 2010 18:06:14 +1000
-Message-ID: <20100602180614.729246ea__22167.1320884072$1275466113$gmane$org@notabene.brown>
-References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
-	<201006010005.19554.rjw@sisk.pl>
-	<20100601090023.788cabf4@notabene.brown>
-	<201006010232.20263.rjw@sisk.pl>
-	<20100601113309.609349fd@notabene.brown>
-	<alpine.LFD.2.00.1006010340160.2933@localhost.localdomain>
-	<20100601122012.1edeaf48@notabene.brown>
-	<alpine.LFD.2.00.1006011243350.2933@localhost.localdomain>
-	<20100602153235.340a7852@notabene.brown>
-	<AANLkTikVjAf5nHdMx2bcHRAUSkq99s-b5YZCECXIJJLy@mail.gmail.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Wed, 2 Jun 2010 10:29:14 +0200 (CEST)
+Message-ID: <alpine.LFD.2.00.1006020905410.2933__14388.7922670276$1275467474$gmane$org@localhost.localdomain>
+References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
+	<201005302202.39511.rjw@sisk.pl>
+	<AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt@mail.gmail.com>
+	<201005312347.24251.rjw@sisk.pl>
+	<AANLkTilvOgSFTDFtXbjJobMZWxgfvsC97TqC7_a_NHBX@mail.gmail.com>
+	<alpine.LFD.2.00.1006011411200.2933@localhost.localdomain>
+	<AANLkTikZHmF6baP7dEXEGFE8YsbEteRjlhb5wqZX8ll1@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-3244195-1275462694=:2933"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikVjAf5nHdMx2bcHRAUSkq99s-b5YZCECXIJJLy@mail.gmail.com>
+In-Reply-To: <AANLkTikZHmF6baP7dEXEGFE8YsbEteRjlhb5wqZX8ll1@mail.gmail.com>
+Content-ID: <alpine.LFD.2.00.1006020922080.2933@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,105 +23,107 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyIEp1biAyMDEwIDAwOjA1OjE0IC0wNzAwCkFydmUgSGrDuG5uZXbDpWcgPGFydmVA
-YW5kcm9pZC5jb20+IHdyb3RlOgoKPiBPbiBUdWUsIEp1biAxLCAyMDEwIGF0IDEwOjMyIFBNLCBO
-ZWlsIEJyb3duIDxuZWlsYkBzdXNlLmRlPiB3cm90ZToKPiA+IE9uIFR1ZSwgMSBKdW4gMjAxMCAx
-Mjo1MDowMSArMDIwMCAoQ0VTVCkKPiA+IFRob21hcyBHbGVpeG5lciA8dGdseEBsaW51dHJvbml4
-LmRlPiB3cm90ZToKPiA+Cj4gPj4gT24gVHVlLCAxIEp1biAyMDEwLCBOZWlsIEJyb3duIHdyb3Rl
-Ogo+ID4+ID4KPiA+PiA+IEkgdGhpbmsgeW91IGhhdmUgYWNrbm93bGVkZ2VkIHRoYXQgdGhlcmUg
-aXMgYSByYWNlIHdpdGggc3VzcGVuZCAtIHRoYW5rcy4KPiA+PiA+IE5leHQgc3RlcCB3YXMgImNh
-biBpdCBiZSBjbG9zZWQiLgo+ID4+ID4gWW91IHNlZW0gdG8gc3VnZ2VzdCB0aGF0IGl0IGNhbiwg
-YnV0IHlvdSBkZXNjcmliZSBpdCBhcyBhICJ3b3JrIGFyb3VuZCIKPiA+PiA+IHJhdGhlciB0aGFu
-IGEgImJ1ZyBmaXgiLi4uCj4gPj4gPgo+ID4+ID4gRG8geW91IGFncmVlIHRoYXQgdGhlIHJhY2Ug
-aXMgYSAiYnVnIiwgYW5kIHRoZXJlZm9yZSBpdCBpcyBhcHByb3ByaWF0ZSB0bwo+ID4+ID4gImZp
-eCIgaXQgYXNzdW1pbmcgYW4gYWNjZXB0YWJsZSBmaXggY2FuIGJlIGZvdW5kICh3aGljaCBJIHRo
-aW5rIGl0IGNhbik/Cj4gPj4KPiA+PiBJZiB3ZSBjYW4gZml4IGl0LCB5ZXMgd2UgZGVmaW5pdGVs
-eSBzaG91bGQgZG8gYW5kIG5vdCB3b3JrIGFyb3VuZCBpdC4KPiA+Pgo+ID4+IFRoYW5rcywKPiA+
-Pgo+ID4+IMKgIMKgIMKgIHRnbHgKPiA+Cj4gPiBPSy4KPiA+IEhlcmUgaXMgbXkgc3VnZ2VzdGlv
-bi4KPiA+Cj4gPiBXaGlsZSBJIHRoaW5rIHRoaXMgcGF0Y2ggd291bGQgYWN0dWFsbHkgd29yaywg
-YW5kIGhvcGUgdGhlIHVnbHkgYXNwZWN0cyBhcmUKPiA+IHJlYXNvbmFibHkgYmFsYW5jZWQgYnkg
-dGhlIHNpbXBsaWNpdHksIEkgcHJlc2VudCBpdCBwcmltYXJpbHkgYXMgYSBiYXNlIGZvcgo+ID4g
-aW1wcm92ZW1lbnQuCj4gPiBUaGUgaW1wb3J0YW50IHBhcnQgaXMgdG8gcHJlc2VudCBob3cgZHJp
-dmVycyBhbmQgdXNlci1zcGFjZSBjYW4gY28tb3BlcmF0ZQo+ID4gdG8gYXZvaWQgbG9zaW5nIHdh
-a2UtZXZlbnRzLiDCoFRoZSBkZXRhaWxzIG9mIHdoYXQgaGFwcGVucyBpbiB0aGUga2VybmVsIGFy
-ZQo+ID4gY2VydGFpbmx5IHVwIGZvciBkaXNjdXNzaW9uIChhcyBpcyBldmVyeXRoaW5nIGVsc2Ug
-cmVhbGx5IG9mIGNvdXJzZSkuCj4gPgo+ID4gVGhlIHVzZXItc3BhY2Ugc3VzcGVuZCBkYWVtb24g
-YXZvaWRzIGxvc2luZyB3YWtlLWV2ZW50cyBieSB1c2luZwo+ID4gZmNudGwoRl9PV05FUikgdG8g
-ZW5zdXJlIGl0IGdldHMgYSBzaWduYWwgd2hlbmV2ZXIgYW55IGltcG9ydGFudCB3YWtlLWV2ZW50
-Cj4gPiBpcyByZWFkeSB0byBiZSByZWFkIGJ5IHVzZXItc3BhY2UuIMKgVGhpcyBtYXkgaW52b2x2
-ZToKPiA+IMKgLSB0aGUgb25lIGRhZW1vbiBwcm9jZXNzaW5nIGFsbCB3YWtlIGV2ZW50cwo+IAo+
-IFdha2UgdXAgZXZlbnRzIGFyZSBub3QgYWxsIHByb2Nlc3NlZCBieSBvbmUgZGFlbW9uLgoKTm90
-IHdpdGggeW91ciBjdXJyZW50IHVzZXItc3BhY2UgY29kZSwgbm8uICBBcmUgeW91IHNheWluZyB0
-aGF0IHlvdSBhcmUgbm90Cm9wZW4gdG8gYW55IHNpZ25pZmljYW50IGNoYW5nZSBpbiB0aGUgQW5k
-cm9pZCB1c2VyLXNwYWNlIGNvZGU/ICBUaGF0IHdvdWxkCm1ha2UgdGhlIHNpdHVhdGlvbiBhIGxv
-dCBoYXJkZXIgdG8gcmVzb2x2ZS4KCj4gCj4gPiDCoC0gQm90aCB0aGUgc3VzcGVuZCBkYWVtb24g
-YW5kIHRoZSBtYWluIGV2ZW50IGhhbmRsaW5nIGRhZW1vbiBvcGVuaW5nIGFueQo+ID4gwqAgwqBn
-aXZlbiBkZXZpY2UgdGhhdCBkZWxpdmVycyB3YWtlIGV2ZW50cyAodGhpcyBzaG91bGQgd29yayB3
-aXRoIGlucHV0Cj4gPiDCoCDCoGV2ZW50cyAuLi4gdW5sZXNzIGdyYWJiaW5nIGlzIG5lZWRlZCkK
-PiAKPiBOb3QgYWxsIHdha2V1cCBldmVudHMgYXJlIGJyb2FkY2FzdCBsaWtlIGlucHV0IGV2ZW50
-cyBzbyB0aGV5IGNhbm5vdAo+IGJlIHJlYWQgYnkgYm90aCBkYWVtb25zLiBOb3QgdGhhdCB0aGlz
-IHJlYWxseSBtYXR0ZXJzLCBzaW5jZSByZWFkaW5nCj4gdGhlIGV2ZW50IGZyb20gdGhlIHN1c3Bl
-bmQgZGFlbW9uIGRvZXMgbm90IG1lYW4gdGhhdCBpdCBoYXMgYmVlbgo+IGRlbGl2ZXJlZCB0byBh
-bmQgcHJvY2Vzc2VkIGJ5IHRoZSBvdGhlciBkYWVtb24uCgpUaGVyZSB3b3VsZCBzdGlsbCBuZWVk
-IHRvIGJlIHNvbWUgc29ydCBvZiBjb21tdW5pY2F0aW9uIGJldHdlZW4gdGhlIHRoZQpzdXNwZW5k
-IGRhZW1vbiBvbiBhbnkgZXZlbnQgZGFlbW9uIHRvIGVuc3VyZSB0aGF0IHRoZSBldmVudHMgaGFk
-IGJlZW4KcHJvY2Vzc2VkLiAgVGhpcyBjb3VsZCBiZSB2ZXJ5IGxpZ2h0IHdlaWdodCBpbnRlcmFj
-dGlvbi4gIFRoZSBwb2ludCB0aG91Z2ggaXMKdGhhdCB3aXRoIHRoaXMgcGF0Y2ggaXQgYmVjb21l
-cyBwb3NzaWJsZSB0byBhdm9pZCByYWNlcy4gIFBvc3NpYmxlIGlzIGJldHRlcgp0aGFuIGltcG9z
-c2libGUuCgo+IAo+ID4gwqAtIFRoZSBldmVudCBoYW5kbGluZyBkYWVtb24gZ2l2aW5nIHRoZSBz
-dXNwZW5kLWRhZW1vbidzIHBpZCBhcyBGX09XTkVSLCBhbmQKPiA+IMKgIMKgdXNpbmcgcG9sbC9z
-ZWxlY3QgdG8gZ2V0IHRoZSBldmVudHMgaXRzZWxmLgo+IAo+IEkgZG9uJ3QgbGlrZSB0aGUgaWRl
-YSBvZiB1c2luZyBzaWduYWxzIGZvciB0aGlzLiBXaXRob3V0IHRoZSBoYWNrIEFsYW4KPiBTdGVy
-biBzdWdnZXN0ZWQsIHlvdSB3aWxsIHRlbXBvcmFyaWx5IGJsb2NrIHN1c3BlbmQgaWYgdGhlIHdh
-a2V1cAo+IGV2ZW50IGhhcHBlbmVkIGJlZm9yZSB0aGUgc3VzcGVuZCBkYWVtb24gdGhyZWFkIG1h
-ZGUgaXQgdG8gdGhlIGtlcm5lbCwKPiBidXQgYWJvcnQgc3VzcGVuZCBpZiBpdCBoYXBwZW5lZCBy
-aWdodCBhZnRlci4KCkknbSBub3Qgc3VyZSB3aHkgdGhhdCBkaWZmZXJlbmNlIG1hdHRlcnMuICBC
-dXQgSSdtIGFsc28gbm90IHN1cmUgdGhhdCBpdCBpcwp0cnVlLgpXaGVuIGFueSB3YWtldXAgZXZl
-bnQgaGFwcGVuLCBhIHNpZ25hbCB3aWxsIGJlIGRlbGl2ZXJlZCB0byB0aGUgc3VzcGVuZApkYWVt
-b24uClRoaXMgd2lsbCBpbnRlcnJ1cHQgYSBwZW5kaW5nIHN1c3BlbmQgcmVxdWVzdCwgb3IgYSBz
-bGVlcCwgb3Igd2hhdGV2ZXIgZWxzZQp0aGUgZGFlbW9uIGlzIGRvaW5nLgpJdCBjYW4gdGhlbiBn
-byBiYWNrIHRvIHdhaXRpbmcgZm9yIGEgZ29vZCB0aW1lIHRvIHN1c3BlbmQsIGFuZCB0aGVuIHRy
-eSB0bwpzdXNwZW5kIGFnYWluLgoKCj4gCj4gPgo+ID4gV2hlbiAnbWVtJyBpcyB3cml0dGVuIHRv
-IC9zeXMvcG93ZXIvc3RhdGUsIHN1c3BlbmRfcHJlcGFyZSB3YWl0cyBpbiBhbgo+ID4gaW50ZXJy
-dXB0aWJsZSB3YWl0IHVudGlsIGFueSB3YWtlLWV2ZW50IHRoYXQgbWlnaHQgaGF2ZSBiZWVuIGlu
-aXRpYXRlZCBiZWZvcmUKPiA+IHRoZSBzdXNwZW5kIHdhcyByZXF1ZXN0LCBoYXMgaGFkIGEgY2hh
-bmNlIHRvIGJlIHF1ZXVlZCBmb3IgdXNlci1zcGFjZSBhbmQKPiA+IHRyaWdnZXIga2lsbF9mYXN5
-bmMuCj4gCj4gQW5kIHdoYXQgaGFwcGVucyBpZiB5b3UgYXJlIG5vdCB3YWl0aW5nIHdoZW4gdGhp
-cyBoYXBwZW5zPwoKSSdtIG5vdCBzdXJlIEkgdW5kZXJzdGFuZCB0aGUgcXVlc3Rpb24uICBDb3Vs
-ZCB5b3UgZXhwbGFpbiBpdCBwbGVhc2U/CgpFaXRoZXIgdGhlIGluaXRpYWwgZXZlbnQgaGFwcGVu
-cyBsYXRlIGVub3VnaCB0byBhYm9ydC9yZXN1bWUgdGhlIHN1c3BlbmQsIG9yCnRoZSBzaWduYWwg
-aGFwcGVucyBlYXJseSBlbm91Z2ggdG8gYWJvcnQgdGhlIHN1c3BlbmQsIG9yIGFsZXJ0IHRoZSBk
-YWVtb24gbm90CnRvIGRvIGEgc3VzcGVuZC4gIEVpdGhlciB3YXkgd2UgZG9uJ3QgZ2V0IHN0dWNr
-IGluIHN1c3BlbmQuCgoKPiAKPiA+IEN1cnJlbnRseSB0aGlzIHdhaXQgaXMgYSBjb25maWd1cmFi
-bGUgdGltZSBhZnRlciB0aGUgbGFzdCB3YWtlLWV2ZW50IHdhcwo+ID4gaW5pdGlhdGVkLiDCoFRo
-aXMgaXMgaGFja2lzaCwgYnV0IHNpbXBsZSBhbmQgcHJvYmFibHkgYWRlcXVhdGUuCj4gCj4gV2Fp
-dGluZyBhZnRlciBhIHdha2UgZXZlbnQgaXMgdGhlIHNhbWUgYXMgc3VzcGVuZF9ibG9ja190aW1l
-b3V0LiBUaGlzCj4gaXMgdXNlZnVsIHdoZW4gcGFzc2luZyBldmVudHMgdGhyb3VnaCBsYXllcnMg
-b2YgY29kZSB0aGF0IGRvZXMgbm8KPiBibG9jayBzdXNwZW5kLCBidXQgd2Ugc2hvdWxkIHN0cml2
-ZSB0byBhdm9pZCBpdC4gT3RoZXIgcGVvcGxlIGhhZCBtdWNoCj4gc3Ryb25nZXIgb2JqZWN0aW9u
-cyB0byB0aGlzLCB3aGljaCBpcyB3aHkgaXQgaXMgbm90IGluY2x1ZGVkIGluIHRoZQo+IGxhc3Qg
-c3VzcGVuZCBibG9ja2VyIHBhdGNoc2V0LgoKQWJzb2x1dGVseSBhZ3JlZS4gIFRoZSBpZGVhIG9m
-IG9mIHdhaXRpbmcgd2FzIGp1c3QgYSBzaW1wbGUgd2F5IHRvIHByZXNlbnQKY29kZSB0aGF0IGFj
-dHVhbGx5IGNvdWxkIHdvcmsuICBUaGVyZSBhcmUgZG91YnRsZXNzbHkgYmV0dGVyIHdheXMgYW5k
-IEkKYXNzdW1lIHRoZXkgaGF2ZSBiZWVuIGltcGxlbWVudGVkIGluIHRoZSBzdXNwZW5kLWJsb2Nr
-ZXIgY29kZS4KV2UganVzdCBuZWVkIHNvbWUgd2F5IHRvIHdhaXQgZm9yIHRoZSBzdXNwZW5kLWJs
-b2NrIGNvdW50IHRvIHJlYWNoIHplcm8sIHdpdGgKc29tZSBjb25maWRlbmNlIHRoYXQgdGhpcyBh
-bW91bnQgb2YgdGltZSBpcyBsaW1pdGVkLgoKKHRob3VnaCB0byBiZSBob25lc3QgLi4uIHRoZSBp
-bmNyZWRpYmxlIHNpbXBsaWNpdHkgb2Ygd2FpdGluZyBhIGxpdHRsZSB3aGlsZQppcyB2ZXJ5IGNv
-bXBlbGxpbmcuLi4uIDotKSkKCj4gCj4gSXQgYWxzbyBkb2VzIG5vdCB3b3JrIGZvciBkcml2ZXJz
-IHRoYXQgbmVlZCB0byBibG9jayBzdXNwZW5kIGZvciBtb3JlCj4gdGhhbiBhIGZldyBzZWNvbmRz
-LiBGb3IgaW5zdGFuY2UgdGhlIGdwaW8ga2V5cGFkIG1hdHJpeCBkcml2ZXIgbmVlZHMKPiB0byBi
-bG9jayBzdXNwZW5kIHdoaWxlIGtleXMgYXJlIHByZXNzZWQgc28gaXQgY2FuIHNjYW4gdGhlIGtl
-eXBhZC4KCkkgY2Fubm90IGltYWdpbmUgd2h5IGl0IHdvdWxkIHRha2UgbXVsdGlwbGUgc2Vjb25k
-cyB0byBzY2FuIGEga2V5cGFkLgpDYW4geW91IGV4cGxhaW4gdGhhdD8KCkRvIHlvdSBtZWFuIHdo
-aWxlIGtleXMgYXJlIGhlbGQgcHJlc3NlZD8gIE1heWJlIHlvdSBkb24ndCBnZXQgYSB3YWtlLXVw
-IGV2ZW50Cm9uIGtleS1yZWxlYXNlPyAgSW4gdGhhdCBjYXNlIHlvdXIgdXNlci1zcGFjZSBkYWVt
-b24gY291bGQgYmxvY2sgc3VzcGVuZAp3aGlsZSB0aGVyZSBhcmUgYW55IHByZXNzZWQga2V5cy4u
-Li4gIGNvbmZ1c2VkLgoKClRoYW5rcyBmb3IgdGhlIHJldmlldywKCk5laWxCcm93bgoKX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGlu
-ZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMu
-bGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--8323328-3244195-1275462694=:2933
+Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-15
+Content-ID: <alpine.LFD.2.00.1006020922081.2933@localhost.localdomain>
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id o528Trbc016943
+
+On Tue, 1 Jun 2010, Arve Hj=F8nnev=E5g wrote:
+> 2010/6/1 Thomas Gleixner <tglx@linutronix.de>:
+> > On Mon, 31 May 2010, Arve Hj=F8nnev=E5g wrote:
+> >
+> >> 2010/5/31 Rafael J. Wysocki <rjw@sisk.pl>:
+> >> > On Monday 31 May 2010, Arve Hj=F8nnev=E5g wrote:
+> >> >> 2010/5/30 Rafael J. Wysocki <rjw@sisk.pl>:
+> >> > ...
+> >> >>
+> >> >> I think it makes more sense to block suspend while wakeup events =
+are
+> >> >> pending than blocking it everywhere timers are used by code that =
+could
+> >> >> be called while handling wakeup events or other critical work. Al=
+so,
+> >> >> even if you did block suspend everywhere timers where used you st=
+ill
+> >> >> have the race where a wakeup interrupt happens right after you de=
+cided
+> >> >> to suspend. In other words, you still need to block suspend in al=
+l the
+> >> >> same places as with the current opportunistic suspend code, so wh=
+at is
+> >> >> the benefit of delaying suspend until idle?
+> >> >
+> >> > Assume for a while that you don't use suspend blockers, OK? =A0I r=
+ealize you
+> >> > think that anything else doesn't make sense, but evidently some ot=
+her people
+> >> > have that opinion about suspend blockers.
+> >> >
+> >>
+> >> It sounded like you were suggesting that initiating suspend from idl=
+e
+> >> would somehow avoid the race condition with wakeup events. All I'm
+> >> saying is that you would need to block suspend in all the same place=
+s.
+> >> If you don't care about ignoring wakeup events, then sure you can
+> >> initiate suspend from idle.
+> >
+> > And why should you miss a wakeup there ? If you get an interrupt in
+> > the transition, then you are not longer idle.
+> >
+>=20
+> Because suspend itself causes you to not be idle you cannot abort
+> suspend just because you are not idle anymore.
+
+You still are addicted to the current suspend mechanism. :)
+
+The whole point of doing it from idle in the form of a deep power
+state is to avoid the massive sh*tload of work which is neccesary to
+run the existing suspend code. But that needs runtime power management
+and tweaks to avoid your timers waking you, etc.
+
+The mechanism you want to use is: suspend no matter what, like closing
+the lid of the laptop, but with a few tweaks around it:
+
+   1) An interrupt on a wakeup source which comes in while the suspend
+      code runs, i.e before you transitioned into wakeup mode, must
+      abort / prevent suspend.
+
+   2) Prevent another attempt to suspend before the event has been
+      delivered and the apps have signaled that they have not longer
+      any work to do.
+
+   As a side effect you confine crappy apps with that mechanism in
+   some way.
+
+In the laptop case we do not want the tweaks as not going into suspend
+might set your backpack on fire.
+
+If I understood you correctly then you can shutdown the CPU in idle
+completelty already, but that's not enough due to:
+
+    1) crappy applications keeping the cpu away from idle
+    2) timers firing
+
+Would solving those two issues be sufficient for you or am I missing
+something ?
+
+Thanks,
+
+	tglx
+--8323328-3244195-1275462694=:2933
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+
+
+--8323328-3244195-1275462694=:2933--
