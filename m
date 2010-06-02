@@ -1,13 +1,21 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 20/21] Hibernation: Remove swap_map structure
-Date: Wed,  2 Jun 2010 22:19:19 +1000
-Message-ID: <1275481160-31150-21-git-send-email-nigel__4602.88095423511$1275483635$gmane$org@tuxonice.net>
-References: <1275481160-31150-1-git-send-email-nigel@tuxonice.net>
+From: mark gross <640e9920@gmail.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Wed, 2 Jun 2010 06:39:10 -0700
+Message-ID: <20100602133910.GA9106__34007.1222781718$1275486053$gmane$org@gvim.org>
+References: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
+	<Pine.LNX.4.44L0.1005292026080.6300-100000@netrider.rowland.org>
+	<AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
+	<201005312338.55109.rjw@sisk.pl> <20100531232617.GF31155@gvim.org>
+	<20100601090737.4bc243d9@schatten.dmk.lab>
+	<20100601140519.GC1281@gvim.org>
+	<AANLkTikF-B23_UWG1O3tlBl4m8NStAJllGhhevNhYZT6@mail.gmail.com>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275481160-31150-1-git-send-email-nigel@tuxonice.net>
+Content-Disposition: inline
+In-Reply-To: <AANLkTikF-B23_UWG1O3tlBl4m8NStAJllGhhevNhYZT6@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,138 +25,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
+Cc: 640e9920@gmail.com, markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-Remove the now unused swap_map structure and associated
-swap_map_handle.
+On Tue, Jun 01, 2010 at 08:50:02PM -0700, Arve Hj=F8nnev=E5g wrote:
+> On Tue, Jun 1, 2010 at 7:05 AM, mark gross <640e9920@gmail.com> wrote:
+> > On Tue, Jun 01, 2010 at 09:07:37AM +0200, Florian Mickler wrote:
+> ...
+> >> +static void update_target_val(int pm_qos_class, s32 val)
+> >> +{
+> >> + =A0 =A0 s32 extreme_value;
+> >> + =A0 =A0 s32 new_value;
+> >> + =A0 =A0 extreme_value =3D atomic_read(&pm_qos_array[pm_qos_class]->t=
+arget_value);
+> >> + =A0 =A0 new_value =3D pm_qos_array[pm_qos_class]->comparitor(val,ext=
+reme_value);
+> >> + =A0 =A0 if (extreme_value !=3D new_value)
+> >> + =A0 =A0 =A0 =A0 =A0 =A0 atomic_set(&pm_qos_array[pm_qos_class]->targ=
+et_value,new_value);
+> >> +}
+> >> +
+> >
+> > Only works 1/2 the time, but I like the idea!
+> > It fails to get the righ answer when constraints are reduced. =A0But, t=
+his
+> > idea is a good improvement i'll roll into the next pm_qos update!
+> >
+> =
 
-Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
----
- kernel/power/block_io.c |   56 -----------------------------------------------
- 1 files changed, 0 insertions(+), 56 deletions(-)
+> I think it would be a better idea to track your constraints with a
+> sorted data structure. That way you can to better than O(n) for both
+> directions. If you have a lot of constraints with the same value, it
+> may even be worthwhile to have a two stage structure where for
+> instance you use a rbtree for the unique values and list for identical
+> constraints.
 
-diff --git a/kernel/power/block_io.c b/kernel/power/block_io.c
-index dd71ef2..5c791c0 100644
---- a/kernel/power/block_io.c
-+++ b/kernel/power/block_io.c
-@@ -126,40 +126,7 @@ void hib_wait_on_bio_chain(void)
- 	wait_event(num_in_progress_wait, !atomic_read(&hib_io_in_progress));
- }
- 
--/*
-- *	The swap map is a data structure used for keeping track of each page
-- *	written to a swap partition.  It consists of many swap_map_page
-- *	structures that contain each an array of MAP_PAGE_SIZE swap entries.
-- *	These structures are stored on the swap and linked together with the
-- *	help of the .next_swap member.
-- *
-- *	The swap map is created during suspend.  The swap map pages are
-- *	allocated and populated one at a time, so we only need one memory
-- *	page to set up the entire structure.
-- *
-- *	During resume we also only need to use one swap_map_page structure
-- *	at a time.
-- */
--
--#define MAP_PAGE_ENTRIES	(PAGE_SIZE / sizeof(sector_t) - 1)
--
--struct swap_map_page {
--	sector_t entries[MAP_PAGE_ENTRIES];
--	sector_t next_swap;
--};
--
--/**
-- *	The swap_map_handle structure is used for handling swap in
-- *	a file-alike way
-- */
--
--struct swap_map_handle {
--	struct swap_map_page *cur;
--	unsigned int k;
--};
--
- static sector_t first_sector;
--static struct swap_map_handle handle;
- 
- extern struct hib_extent_state sector_extents;
- 
-@@ -207,20 +174,12 @@ static int write_page(void *buf, sector_t offset, int sync)
- 
- void release_swap_writer(void)
- {
--	if (handle.cur)
--		free_page((unsigned long)handle.cur);
--	handle.cur = NULL;
- }
- 
- int hib_bio_prepare_write(void)
- {
- 	int result, result2;
- 
--	handle.cur = (struct swap_map_page *)get_zeroed_page(GFP_KERNEL);
--
--	if (!handle.cur)
--		return -ENOMEM;
--
- 	result = hib_prepare_buffer();
- 	if (result) {
- 		release_swap_writer();
-@@ -232,8 +191,6 @@ int hib_bio_prepare_write(void)
- 	result = hib_extents_store(&sector_extents);
- 	result2 = hib_flush_write_buffer();
- 
--	handle.k = 0;
--
- 	if (result || result2)
- 		release_swap_writer();
- 
-@@ -244,8 +201,6 @@ int swap_write_page(void *buf, int sync)
- {
- 	sector_t offset;
- 
--	if (!handle.cur)
--		return -EINVAL;
- 	offset = hib_extent_next(&sector_extents);
- 	return write_page(buf, offset, sync);
- }
-@@ -263,19 +218,12 @@ int flush_swap_writer(void)
- 
- void release_swap_reader(void)
- {
--	if (handle.cur)
--		free_page((unsigned long)handle.cur);
--	handle.cur = NULL;
- }
- 
- int get_swap_reader(unsigned int *flags_p, sector_t first_page)
- {
- 	int error;
- 
--	handle.cur = (struct swap_map_page *)get_zeroed_page(__GFP_WAIT | __GFP_HIGH);
--	if (!handle.cur)
--		return -ENOMEM;
--
- 	error = hib_prepare_buffer();
- 	if (error) {
- 		release_swap_reader();
-@@ -290,8 +238,6 @@ int get_swap_reader(unsigned int *flags_p, sector_t first_page)
- 		return error;
- 	}
- 
--	handle.k = 0;
--
- 	error = hib_extents_load(&sector_extents, 1);
- 
- 	if (error) {
-@@ -306,8 +252,6 @@ int swap_read_page(void *buf, int sync)
- {
- 	sector_t offset;
- 
--	if (!handle.cur)
--		return -EINVAL;
- 	offset = hib_extent_next(&sector_extents);
- 	if (!offset)
- 		return -EFAULT;
--- 
-1.7.0.4
+I don't agree, we went through this tree vrs list discussion a few times
+before in other areas of the kernel.  Wherever the list tended to be
+short, a simple list wins.  However; we can try it, after we have some
+metrics and stress test cases identified we can measure its effectivenes
+against.
+
+--mgross
