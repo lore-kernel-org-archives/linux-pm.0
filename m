@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 3 Jun 2010 00:03:49 +0200
-Message-ID: <201006030003.49486.rjw__3368.79345491088$1275516218$gmane$org@sisk.pl>
-References: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
-	<AANLkTikF-B23_UWG1O3tlBl4m8NStAJllGhhevNhYZT6@mail.gmail.com>
-	<20100602133910.GA9106@gvim.org>
+From: Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
+ Suspend block api (version 8)
+Date: Thu, 3 Jun 2010 08:05:56 +1000
+Message-ID: <20100603080556.46d2d671__20054.5259555385$1275516422$gmane$org@notabene.brown>
+References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
+	<alpine.LFD.2.00.1006011243350.2933@localhost.localdomain>
+	<20100602153235.340a7852@notabene.brown>
+	<201006022241.14152.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100602133910.GA9106@gvim.org>
+In-Reply-To: <201006022241.14152.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,50 +21,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: 640e9920@gmail.com, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 02 June 2010, mark gross wrote:
-> On Tue, Jun 01, 2010 at 08:50:02PM -0700, Arve Hj=F8nnev=E5g wrote:
-> > On Tue, Jun 1, 2010 at 7:05 AM, mark gross <640e9920@gmail.com> wrote:
-> > > On Tue, Jun 01, 2010 at 09:07:37AM +0200, Florian Mickler wrote:
-> > ...
-> > >> +static void update_target_val(int pm_qos_class, s32 val)
-> > >> +{
-> > >> +     s32 extreme_value;
-> > >> +     s32 new_value;
-> > >> +     extreme_value =3D atomic_read(&pm_qos_array[pm_qos_class]->tar=
-get_value);
-> > >> +     new_value =3D pm_qos_array[pm_qos_class]->comparitor(val,extre=
-me_value);
-> > >> +     if (extreme_value !=3D new_value)
-> > >> +             atomic_set(&pm_qos_array[pm_qos_class]->target_value,n=
-ew_value);
-> > >> +}
-> > >> +
-> > >
-> > > Only works 1/2 the time, but I like the idea!
-> > > It fails to get the righ answer when constraints are reduced.  But, t=
-his
-> > > idea is a good improvement i'll roll into the next pm_qos update!
-> > >
-> > =
+On Wed, 2 Jun 2010 22:41:14 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> > I think it would be a better idea to track your constraints with a
-> > sorted data structure. That way you can to better than O(n) for both
-> > directions. If you have a lot of constraints with the same value, it
-> > may even be worthwhile to have a two stage structure where for
-> > instance you use a rbtree for the unique values and list for identical
-> > constraints.
-> =
+> On Wednesday 02 June 2010, Neil Brown wrote:
+> > - Would this fix the "bug"??
+> > - and address the issues that suspend-blockers was created to address?
+> > - or are the requirements on user-space too onerous?
+> 
+> In theory wakeup events can also happen after  wait_for_blockers() has returned
+> 0 and I guess we should rollback the suspend in such cases.
+> 
 
-> I don't agree, we went through this tree vrs list discussion a few times
-> before in other areas of the kernel.  Wherever the list tended to be
-> short, a simple list wins.  However; we can try it, after we have some
-> metrics and stress test cases identified we can measure its effectivenes
-> against.
+I naively assumed this was already the case, but on a slightly closer look at
+the code it seems not.
 
-How many different values are there to handle?
+Presumably there is some point deep in the suspend code, probably after the
+call to sysdev_suspend, where interrupts are disabled and we are about to
+actually suspend.  At that point a simple "is a roll-back required" test
+could abort the suspend.
+Then any driver that handles wake-up events, if it gets and event that (would
+normally cause a wakeup) PM_SUSPEND_PREPARE and PM_POST_SUSPEND, could set
+the "roll-back is required" flag.
 
-Rafael
+??
+
+NeilBrown
