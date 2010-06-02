@@ -1,19 +1,24 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 2 Jun 2010 10:29:14 +0200 (CEST)
-Message-ID: <alpine.LFD.2.00.1006020905410.2933__14388.7922670276$1275467474$gmane$org@localhost.localdomain>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<201005302202.39511.rjw@sisk.pl>
-	<AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt@mail.gmail.com>
-	<201005312347.24251.rjw@sisk.pl>
-	<AANLkTilvOgSFTDFtXbjJobMZWxgfvsC97TqC7_a_NHBX@mail.gmail.com>
-	<alpine.LFD.2.00.1006011411200.2933@localhost.localdomain>
-	<AANLkTikZHmF6baP7dEXEGFE8YsbEteRjlhb5wqZX8ll1@mail.gmail.com>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
+ Suspend block api (version 8)
+Date: Wed, 2 Jun 2010 10:50:39 +0200
+Message-ID: <20100602105039.068c5e00__25829.7158325606$1275468714$gmane$org@schatten.dmk.lab>
+References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
+	<201006010005.19554.rjw@sisk.pl>
+	<20100601090023.788cabf4@notabene.brown>
+	<201006010232.20263.rjw@sisk.pl>
+	<20100601113309.609349fd@notabene.brown>
+	<alpine.LFD.2.00.1006010340160.2933@localhost.localdomain>
+	<20100601122012.1edeaf48@notabene.brown>
+	<alpine.LFD.2.00.1006011243350.2933@localhost.localdomain>
+	<20100602153235.340a7852@notabene.brown>
+	<AANLkTikVjAf5nHdMx2bcHRAUSkq99s-b5YZCECXIJJLy@mail.gmail.com>
+	<20100602180614.729246ea@notabene.brown>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-3244195-1275462694=:2933"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikZHmF6baP7dEXEGFE8YsbEteRjlhb5wqZX8ll1@mail.gmail.com>
-Content-ID: <alpine.LFD.2.00.1006020922080.2933@localhost.localdomain>
+In-Reply-To: <20100602180614.729246ea@notabene.brown>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,107 +28,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Neil Brown <neilb@suse.de>
+Cc: Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Peter@smtp1.linux-foundation.org, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wed, 2 Jun 2010 18:06:14 +1000
+Neil Brown <neilb@suse.de> wrote:
 
---8323328-3244195-1275462694=:2933
-Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-15
-Content-ID: <alpine.LFD.2.00.1006020922081.2933@localhost.localdomain>
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id o528Trbc016943
+> I cannot imagine why it would take multiple seconds to scan a keypad.
+> Can you explain that?
+> 
+> Do you mean while keys are held pressed?  Maybe you don't get a wake-up event
+> on key-release?  In that case your user-space daemon could block suspend
+> while there are any pressed keys....  confused.
 
-On Tue, 1 Jun 2010, Arve Hj=F8nnev=E5g wrote:
-> 2010/6/1 Thomas Gleixner <tglx@linutronix.de>:
-> > On Mon, 31 May 2010, Arve Hj=F8nnev=E5g wrote:
-> >
-> >> 2010/5/31 Rafael J. Wysocki <rjw@sisk.pl>:
-> >> > On Monday 31 May 2010, Arve Hj=F8nnev=E5g wrote:
-> >> >> 2010/5/30 Rafael J. Wysocki <rjw@sisk.pl>:
-> >> > ...
-> >> >>
-> >> >> I think it makes more sense to block suspend while wakeup events =
-are
-> >> >> pending than blocking it everywhere timers are used by code that =
-could
-> >> >> be called while handling wakeup events or other critical work. Al=
-so,
-> >> >> even if you did block suspend everywhere timers where used you st=
-ill
-> >> >> have the race where a wakeup interrupt happens right after you de=
-cided
-> >> >> to suspend. In other words, you still need to block suspend in al=
-l the
-> >> >> same places as with the current opportunistic suspend code, so wh=
-at is
-> >> >> the benefit of delaying suspend until idle?
-> >> >
-> >> > Assume for a while that you don't use suspend blockers, OK? =A0I r=
-ealize you
-> >> > think that anything else doesn't make sense, but evidently some ot=
-her people
-> >> > have that opinion about suspend blockers.
-> >> >
-> >>
-> >> It sounded like you were suggesting that initiating suspend from idl=
-e
-> >> would somehow avoid the race condition with wakeup events. All I'm
-> >> saying is that you would need to block suspend in all the same place=
-s.
-> >> If you don't care about ignoring wakeup events, then sure you can
-> >> initiate suspend from idle.
-> >
-> > And why should you miss a wakeup there ? If you get an interrupt in
-> > the transition, then you are not longer idle.
-> >
->=20
-> Because suspend itself causes you to not be idle you cannot abort
-> suspend just because you are not idle anymore.
-
-You still are addicted to the current suspend mechanism. :)
-
-The whole point of doing it from idle in the form of a deep power
-state is to avoid the massive sh*tload of work which is neccesary to
-run the existing suspend code. But that needs runtime power management
-and tweaks to avoid your timers waking you, etc.
-
-The mechanism you want to use is: suspend no matter what, like closing
-the lid of the laptop, but with a few tweaks around it:
-
-   1) An interrupt on a wakeup source which comes in while the suspend
-      code runs, i.e before you transitioned into wakeup mode, must
-      abort / prevent suspend.
-
-   2) Prevent another attempt to suspend before the event has been
-      delivered and the apps have signaled that they have not longer
-      any work to do.
-
-   As a side effect you confine crappy apps with that mechanism in
-   some way.
-
-In the laptop case we do not want the tweaks as not going into suspend
-might set your backpack on fire.
-
-If I understood you correctly then you can shutdown the CPU in idle
-completelty already, but that's not enough due to:
-
-    1) crappy applications keeping the cpu away from idle
-    2) timers firing
-
-Would solving those two issues be sufficient for you or am I missing
-something ?
-
-Thanks,
-
-	tglx
---8323328-3244195-1275462694=:2933
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+IIRC, the device sends interrupts only for first key-down and
+last key-up.
+To detect simultaneous key-presses you must actively scan it after the
+first key-down.
 
 
---8323328-3244195-1275462694=:2933--
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
