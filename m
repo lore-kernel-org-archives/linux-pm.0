@@ -1,16 +1,22 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
-	Suspend block api (version 8)
-Date: Wed, 2 Jun 2010 22:41:14 +0200
-Message-ID: <201006022241.14152.rjw__48432.6972080909$1275511648$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
-	<alpine.LFD.2.00.1006011243350.2933@localhost.localdomain>
-	<20100602153235.340a7852@notabene.brown>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Wed, 02 Jun 2010 15:41:11 -0500
+Message-ID: <1275511271.2799.516.camel__13741.5619254627$1275511728$gmane$org@mulgrave.site>
+References: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<20100601135102.GA8098@srcf.ucam.org>
+	<1275426085.21962.967.camel@mulgrave.site>
+	<201006020024.14220.rjw@sisk.pl>
+	<1275431816.21962.1108.camel@mulgrave.site>
+	<AANLkTikObnAZbyOxeYAhXcEbimO3XTTO-HlC9CD_HH6t@mail.gmail.com>
+	<1275451342.21962.1777.camel@mulgrave.site>
+	<AANLkTilRcFZyYa-0HlaM-6IEZSyar3S9S_cCWSFax2Zo@mail.gmail.com>
+	<1275491111.2799.110.camel@mulgrave.site>
+	<20100602214748.7742e3ae@schatten.dmk.lab>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100602153235.340a7852@notabene.brown>
+In-Reply-To: <20100602214748.7742e3ae@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,74 +26,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Neil Brown <neilb@suse.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Florian Mickler <florian@mickler.org>
+Cc: tytso@mit.edu, Neil Brown <neilb@suse.de>, felipe.balbi@nokia.com, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, mark.gross@intel.com, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 02 June 2010, Neil Brown wrote:
-> On Tue, 1 Jun 2010 12:50:01 +0200 (CEST)
-> Thomas Gleixner <tglx@linutronix.de> wrote:
-> 
-> > On Tue, 1 Jun 2010, Neil Brown wrote:
-> > > 
-> > > I think you have acknowledged that there is a race with suspend - thanks.
-> > > Next step was "can it be closed".
-> > > You seem to suggest that it can, but you describe it as a "work around"
-> > > rather than a "bug fix"...
-> > > 
-> > > Do you agree that the race is a "bug", and therefore it is appropriate to
-> > > "fix" it assuming an acceptable fix can be found (which I think it can)?
-> > 
-> > If we can fix it, yes we definitely should do and not work around it.
-> >  
-> > Thanks,
-> > 
-> > 	tglx
-> 
-> OK.
-> Here is my suggestion.
-> 
-> While I think this patch would actually work, and hope the ugly aspects are
-> reasonably balanced by the simplicity, I present it primarily as a base for
-> improvement.
-> The important part is to present how drivers and user-space can co-operate 
-> to avoid losing wake-events.  The details of what happens in the kernel are
-> certainly up for discussion (as is everything else really of course).
-> 
-> The user-space suspend daemon avoids losing wake-events by using
-> fcntl(F_OWNER) to ensure it gets a signal whenever any important wake-event
-> is ready to be read by user-space.  This may involve:
->   - the one daemon processing all wake events
->   - Both the suspend daemon and the main event handling daemon opening any
->     given device that delivers wake events (this should work with input
->     events ... unless grabbing is needed)
->   - The event handling daemon giving the suspend-daemon's pid as F_OWNER, and
->     using poll/select to get the events itself.
-> 
-> When 'mem' is written to /sys/power/state, suspend_prepare waits in an
-> interruptible wait until any wake-event that might have been initiated before
-> the suspend was request, has had a chance to be queued for user-space and
-> trigger kill_fasync.
-> Currently this wait is a configurable time after the last wake-event was
-> initiated.  This is hackish, but simple and probably adequate.
-> If more precise timing is needed and achievable, that can be added later.  It
-> would be an entirely internal change and would not affect the API further.
-> Some of the code developed for suspend-blockers might be a starting point for
-> this.
-> 
-> Drivers should call pm_suspend_delay() whenever a wake-event occurs.  This
-> simply records the time so that the suspend process knows if there is in fact
-> any need to wait at all.
-> 
-> The delay to wait after the last pm_suspend_delay() is limited to 10 seconds
-> and can be set by kernel parameter suspend_block_delay=number-of-milliseconds
-> It defaults to 2 jiffies (which is possibly too short).
-> 
-> - Would this fix the "bug"??
-> - and address the issues that suspend-blockers was created to address?
-> - or are the requirements on user-space too onerous?
-
-In theory wakeup events can also happen after  wait_for_blockers() has returned
-0 and I guess we should rollback the suspend in such cases.
-
-Rafael
+T24gV2VkLCAyMDEwLTA2LTAyIGF0IDIxOjQ3ICswMjAwLCBGbG9yaWFuIE1pY2tsZXIgd3JvdGU6
+Cj4gT24gV2VkLCAwMiBKdW4gMjAxMCAxMDowNToxMSAtMDUwMAo+IEphbWVzIEJvdHRvbWxleSA8
+SmFtZXMuQm90dG9tbGV5QHN1c2UuZGU+IHdyb3RlOgo+IAo+ID4gT24gVHVlLCAyMDEwLTA2LTAx
+IGF0IDIxOjQxIC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3RlOgo+ID4gPiBObywgdGhleSBo
+YXZlIHRvIGJlIHR3byBzZXBhcmF0ZSBjb25zdHJhaW50cywgb3RoZXJ3aXNlIGEgY29uc3RyYWlu
+dAo+ID4gPiB0byBibG9jayBzdXNwZW5kIHdvdWxkIG92ZXJyaWRlIGEgY29uc3RyYWludCB0byBi
+bG9jayBhIGxvdyBwb3dlciBpZGxlCj4gPiA+IG1vZGUgb3IgdGhlIG90aGVyIHdheSBhcm91bmQu
+Cj4gPiAKPiA+IERlcGVuZHMuICBJZiB5b3UgYmxvY2sgdGhlIHN5c3RlbSBmcm9tIGdvaW5nIGlu
+dG8gbG93IHBvd2VyIGlkbGUsIGRvZXMKPiA+IHRoYXQgbWVhbiB5b3Ugc3RpbGwgd2FudCBpdCB0
+byBiZSBmdWxseSBzdXNwZW5kZWQ/Cj4gPiAKPiA+IElmIHllcywgdGhlbiB3ZSBkbyBoYXZlIGlu
+ZGVwZW5kZW50IGNvbnN0cmFpbnRzLiAgSWYgbm90LCB0aGV5IGhhdmUgYQo+ID4gaGllcmFyY2h5
+Ogo+ID4gCj4gPiAgICAgICAqIEZ1bGx5IEludGVyYWN0aXZlIChubyBsb3cgcG93ZXIgaWRsZSBv
+ciBzdXNwZW5kKQo+ID4gICAgICAgKiBQYXJ0aWFsbHkgSW50ZXJhY3RpdmUgKG1heSBnbyBpbnRv
+IGxvdyBwb3dlciBpZGxlIGJ1dCBub3QKPiA+ICAgICAgICAgc3VzcGVuZCkKPiA+ICAgICAgICog
+Tm9uZSAobWF5IGdvIGludG8gbG93IHBvd2VyIGlkbGUgb3Igc3VzcGVuZCkKPiA+IAo+ID4gV2hp
+Y2ggaXMgZXhwcmVzc2FibGUgYXMgYSB0ZXJuYXJ5IGNvbnN0cmFpbnQuCj4gPiAKPiA+IEphbWVz
+Cj4gPiAKPiAKPiBCdXQgdW5ibG9ja2luZyBzdXNwZW5kIGF0IHRoZSBtb21lbnQgaXMgaW5kZXBl
+bmRlbnQgdG8gZ2V0dGluZyBpZGxlLgo+IElmIHlvdSBoYXZlIHRoZSByZXF1aXJlbWVudCB0byBz
+dGF5IGluIHRoZSBoaWdoZXN0LWlkbGUgbGV2ZWwgKGkuZS4KPiBiZXN0IGxhdGVuY3kgeW91IGNh
+biBnZXQpIHRoYXQgZG9lcyBub3QgKGN1cnJlbnRseSkgbWVhbiwgdGhhdCB5b3UgY2FuCj4gbm90
+IHN1c3BlbmQuCgpJIGRvbid0IHVuZGVyc3RhbmQgdGhhdCBhcyBhIHJlYXNvbi4gIElmIHdlIGxv
+b2tzIGF0IHRoaXMgYSBxb3MKY29uc3RyYWludHMsIHlvdSdyZSBzYXlpbmcgdGhhdCB0aGUgc3lz
+dGVtIG1heSBub3QgZHJvcCBpbnRvIGNlcnRhaW4gbG93CnBvd2VyIHN0YXRlcyBiZWNhdXNlIGl0
+IG1pZ2h0IHR1cm4gc29tZXRoaW5nIG9mZiB0aGF0J3MgY3VycmVudGx5IGJlaW5nCnVzZWQgYnkg
+YSBkcml2ZXIgb3IgYSBwcm9jZXNzLiAgU3VzcGVuZCBpcyBjZXJ0YWlubHkgdGhlIGxvd2VzdCBz
+dGF0ZSBvZgp0aGF0IGJlY2F1c2UgaXQgdHVybnMgZXZlcnl0aGluZyBvZmYsIHdoeSB3b3VsZCBp
+dCBiZSBsZWdhbCB0byBkcm9wIGludG8KdGhhdD8KCkkgYWxzbyBjb3VsZG4ndCBmaW5kIHRoaXMg
+bm90aW9uIG9mIHNlcGFyYXRpb24gb2YgaWRsZW5lc3MgcG93ZXIgZnJvbQpzdXNwZW5kIGJsb2Nr
+aW5nIGluIHRoZSBvcmlnaW5hbCBzdXNwZW5kIGJsb2NrIHBhdGNoIHNldCAuLi4gaWYgeW91IGNh
+bgplaXRoZXIgdGVsbCBtZSB3aGVyZSBpdCBpcywgb3IgZ2l2ZSBtZSBhbiBleGFtcGxlIG9mIHRo
+ZSBzZXBhcmF0ZWQgdXNlCmNhc2VzLCBJJ2QgdW5kZXJzdGFuZCBiZXR0ZXIuCgo+IFRvIHByZXNl
+cnZlIHRoYXQgZXhwbGljaXQgZmFsbC10aHJvdWdoIHdoaWxlIHN0aWxsIGhhdmluZyB3b3JraW5n
+Cj4gcnVuLXRpbWUtcG93ZXJtYW5hZ2VtZW50IEkgdGhpbmsgdGhlIHFvcy1jb25zdHJhaW50cyBu
+ZWVkIHRvIGJlCj4gc2VwYXJhdGVkLiAKCk9LLCBhcyBhYm92ZSwgd2h5PyAgb3IgYmV0dGVyIHll
+dCwganVzdCBnaXZlIGFuIGV4YW1wbGUuCgo+IDxkaXNjbGFpbWVyOiBqdXN0IGZyb20gd2hhdCBJ
+IHJlYWQ+Cj4gUHJvdmlkZWQgeW91IGNhbiByZWFjaCB0aGUgc2FtZSBwb3dlciBzdGF0ZSBmcm9t
+IGlkbGUsIGN1cnJlbnQgc3VzcGVuZAo+IGNvdWxkIHByb2JhYmx5IGFsc28gYmUgaW1wbGVtZW50
+ZWQgYnkganVzdCB0aGUgZnJlZXppbmcgcGFydCBhbmQgYSBoaW50Cj4gdG8gdGhlIGlkbGUtbG9v
+cCB0byBwcm92aWRlIGFjY2VsZXJhdGVkIGZhbGwtdGhyb3VnaCB0byBsb3dlc3QgcG93ZXIuIAo+
+IDwvZGlzY2xhaW1lcj4KPiAKPiBBdCB0aGF0IHBvaW50LCB5b3UgY291bGQgcHJvYmFibHkgbWVy
+Z2UgdGhlIGNvbnN0cmFpbnRzLiAKPiAKPiBCdXQgdGhlIGZyZWV6aW5nIHBhcnQgaXMgYWxzbyB0
+aGUgaGFyZCBwYXJ0LCBpc24ndCBpdD8gKEkgaGF2ZSBubwo+IGlkZWEuIFRob21hcyBzZWVtcyB0
+byB0aGluayBhYm91dCBjZ3JvdXBzIGZvciB0aGF0IGFuZCBkb2luZyBzbXRoIGFib3V0IHRoZSB0
+aW1lcnMuKQoKVW0sIHdlbGwsIGFzIEkgc2FpZCwgSSB0aGluayB1c2luZyBzdXNwZW5kIGZyb20g
+aWRsZSBhbmQgZnJlZXplciBpcwpsb25nZXIgdGVybS4gIEkgdGhpbmsgaWYgd2UgZXhwcmVzcyB0
+aGUgY29uc3RyYWludHMgYXMgcW9zIGFuZHJvaWQgY2FuCnRoZW4gdXNlIHRoZW0gdG8gZ2F0ZSB3
+aGVuIHRvIGVudGVyIFMzIC4uIHdoaWNoIGlzIGZ1bmN0aW9uYWxseQplcXVpdmFsZW50IHRvIHN1
+c3BlbmQgYmxvY2tlcnMuICBBbmQgdGhlIHZhbmlsbGEga2VybmVsIGNhbiB1c2UgdGhlbSB0bwpn
+YXRlIHBvd2VyIHN0YXRlcyBmb3IgdGhlIGRyaXZlcnMgaW4gc3VzcGVuZCBmcm9tIGlkbGUuCgpK
+YW1lcwoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxp
+bnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpo
+dHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgt
+cG0=
