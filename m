@@ -1,16 +1,23 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
-	Suspend block api (version 8)
-Date: Thu, 3 Jun 2010 00:15:32 +0200
-Message-ID: <201006030015.32313.rjw__30858.5843690254$1275516890$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
-	<201006022241.14152.rjw@sisk.pl>
-	<20100603080556.46d2d671@notabene.brown>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Wed, 2 Jun 2010 15:27:28 -0700
+Message-ID: <AANLkTikeHarkwvO5-Fdrxt1FzTQL2lGHiQXBSG0vsKob__32359.6210837879$1275517700$gmane$org@mail.gmail.com>
+References: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<20100601135102.GA8098@srcf.ucam.org>
+	<1275426085.21962.967.camel@mulgrave.site>
+	<201006020024.14220.rjw@sisk.pl>
+	<1275431816.21962.1108.camel@mulgrave.site>
+	<AANLkTikObnAZbyOxeYAhXcEbimO3XTTO-HlC9CD_HH6t@mail.gmail.com>
+	<1275451342.21962.1777.camel@mulgrave.site>
+	<AANLkTilRcFZyYa-0HlaM-6IEZSyar3S9S_cCWSFax2Zo@mail.gmail.com>
+	<1275491111.2799.110.camel@mulgrave.site>
+	<20100602214748.7742e3ae@schatten.dmk.lab>
+	<1275511271.2799.516.camel@mulgrave.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100603080556.46d2d671@notabene.brown>
+In-Reply-To: <1275511271.2799.516.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,41 +27,105 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Neil Brown <neilb@suse.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: tytso@mit.edu, Neil Brown <neilb@suse.de>, felipe.balbi@nokia.com, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, mark.gross@intel.com, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 03 June 2010, Neil Brown wrote:
-> On Wed, 2 Jun 2010 22:41:14 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > On Wednesday 02 June 2010, Neil Brown wrote:
-> > > - Would this fix the "bug"??
-> > > - and address the issues that suspend-blockers was created to address?
-> > > - or are the requirements on user-space too onerous?
-> > 
-> > In theory wakeup events can also happen after  wait_for_blockers() has returned
-> > 0 and I guess we should rollback the suspend in such cases.
-> > 
-> 
-> I naively assumed this was already the case, but on a slightly closer look at
-> the code it seems not.
-> 
-> Presumably there is some point deep in the suspend code, probably after the
-> call to sysdev_suspend, where interrupts are disabled and we are about to
-> actually suspend.  At that point a simple "is a roll-back required" test
-> could abort the suspend.
+On Wed, Jun 2, 2010 at 1:41 PM, James Bottomley <James.Bottomley@suse.de> w=
+rote:
+> On Wed, 2010-06-02 at 21:47 +0200, Florian Mickler wrote:
+>> On Wed, 02 Jun 2010 10:05:11 -0500
+>> James Bottomley <James.Bottomley@suse.de> wrote:
+>>
+>> > On Tue, 2010-06-01 at 21:41 -0700, Arve Hj=F8nnev=E5g wrote:
+>> > > No, they have to be two separate constraints, otherwise a constraint
+>> > > to block suspend would override a constraint to block a low power id=
+le
+>> > > mode or the other way around.
+>> >
+>> > Depends. =A0If you block the system from going into low power idle, do=
+es
+>> > that mean you still want it to be fully suspended?
+>> >
+>> > If yes, then we do have independent constraints. =A0If not, they have a
+>> > hierarchy:
+>> >
+>> > =A0 =A0 =A0 * Fully Interactive (no low power idle or suspend)
+>> > =A0 =A0 =A0 * Partially Interactive (may go into low power idle but not
+>> > =A0 =A0 =A0 =A0 suspend)
+>> > =A0 =A0 =A0 * None (may go into low power idle or suspend)
+>> >
+>> > Which is expressable as a ternary constraint.
+>> >
+>> > James
+>> >
+>>
+>> But unblocking suspend at the moment is independent to getting idle.
+>> If you have the requirement to stay in the highest-idle level (i.e.
+>> best latency you can get) that does not (currently) mean, that you can
+>> not suspend.
+>
+> I don't understand that as a reason. =A0If we looks at this a qos
+> constraints, you're saying that the system may not drop into certain low
+> power states because it might turn something off that's currently being
+> used by a driver or a process. =A0Suspend is certainly the lowest state of
+> that because it turns everything off, why would it be legal to drop into
+> that?
 
-Yes.
+Because the driver gets called on suspend which gives it a change to
+stop using it.
 
-> Then any driver that handles wake-up events, if it gets and event that (would
-> normally cause a wakeup) PM_SUSPEND_PREPARE and PM_POST_SUSPEND, could set
-> the "roll-back is required" flag.
+>
+> I also couldn't find this notion of separation of idleness power from
+> suspend blocking in the original suspend block patch set ... if you can
+> either tell me where it is, or give me an example of the separated use
+> cases, I'd understand better.
+>
 
-That's my idea, but instead of setting a flag, I'd use a counter increased
-every time there is a wakeup event.  Then, the core suspend core code
-would store a pre-suspend value of the counter and compare it with
-the current value after all wakeup event sources had been set.  If they
-were different, the suspend would be aborted.
+The suspend block patchset only deals with suspend, not low power idle
+modes. The original wakelock patchset had two wakelock types, idle and
+suspend.
 
-Rafael
+>> To preserve that explicit fall-through while still having working
+>> run-time-powermanagement I think the qos-constraints need to be
+>> separated.
+>
+> OK, as above, why? =A0or better yet, just give an example.
+>
+
+The i2c bus on the Nexus One is used by the other core to turn off the
+power you our core when we enter the lowest power mode. This means
+that we cannot enter that low power mode while the i2c bus is active,
+so we block low power idle modes. At some point we also tries to block
+suspend in this case, but this caused a lot of failed suspend attempts
+since the frequency scaling code would try to ramp up while freezing
+processes which in turn aborted the process freezing attempts.
+
+>> <disclaimer: just from what I read>
+>> Provided you can reach the same power state from idle, current suspend
+>> could probably also be implemented by just the freezing part and a hint
+>> to the idle-loop to provide accelerated fall-through to lowest power.
+>> </disclaimer>
+>>
+>> At that point, you could probably merge the constraints.
+>>
+>> But the freezing part is also the hard part, isn't it? (I have no
+>> idea. Thomas seems to think about cgroups for that and doing smth about =
+the timers.)
+>
+> Um, well, as I said, I think using suspend from idle and freezer is
+> longer term. =A0I think if we express the constraints as qos android can
+> then use them to gate when to enter S3 .. which is functionally
+> equivalent to suspend blockers. =A0And the vanilla kernel can use them to
+> gate power states for the drivers in suspend from idle.
+>
+> James
+>
+>
+>
+
+
+
+-- =
+
+Arve Hj=F8nnev=E5g
