@@ -1,7 +1,8 @@
 From: Jiri Slaby <jslaby@suse.cz>
-Subject: [PATCH 6/9] PM / Hibernate: split snapshot_read_next
-Date: Wed,  2 Jun 2010 10:52:45 +0200
-Message-ID: <1275468768-28229-6-git-send-email-jslaby@suse.cz>
+Subject: [PATCH 4/9] PM / Hibernate: user,
+	implement user_ops reader
+Date: Wed,  2 Jun 2010 10:52:43 +0200
+Message-ID: <1275468768-28229-4-git-send-email-jslaby__47568.0881333121$1275468847$gmane$org@suse.cz>
 References: <1275468768-28229-1-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,160 +22,151 @@ To: rjw@sisk.pl
 Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, jirislaby@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-When writing the snapshot, do the initialization and header write in
-a separate function. This makes the code more readable and lowers
-complexity of snapshot_read_next.
+Switch /dev/snapshot writer to hibernate_io_ops approach so that we
+can do whatever we want with snapshot processing code. All the later
+code changes will be transparent and needn't care about different
+readers/writers.
+
+In this patch only reader is implemented, writer was done previously.
+
+It works similarly to writer, CONSUMER here is snapshot layer,
+PRODUCER is fops->write.
 
 Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 ---
- kernel/power/power.h    |    2 +
- kernel/power/snapshot.c |   65 ++++++++++++++++++++++++++++++----------------
- kernel/power/swap.c     |   14 +++-------
- 3 files changed, 48 insertions(+), 33 deletions(-)
+ kernel/power/user.c |   76 +++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 files changed, 68 insertions(+), 8 deletions(-)
 
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 812b66c..ff3f63f 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -171,6 +171,8 @@ struct hibernate_io_ops {
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index b4610c3..fb9e5c8 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -79,6 +79,7 @@ static struct {
+ #define TODO_FINISH	2
+ #define TODO_CLOSED	3
+ #define TODO_ERROR	4
++#define TODO_RD_RUNNING	5
+ 	DECLARE_BITMAP(flags, 10); /* TODO_* flags defined above */
+ } to_do;
  
- extern unsigned int snapshot_additional_pages(struct zone *zone);
- extern unsigned long snapshot_get_image_size(void);
-+extern int snapshot_write_init(struct hibernate_io_handle *io_handle,
-+		struct snapshot_handle *handle);
- extern int snapshot_read_next(struct snapshot_handle *handle);
- extern int snapshot_write_next(struct snapshot_handle *handle);
- extern void snapshot_write_finalize(struct snapshot_handle *handle);
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 25ce010..4600d15 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1598,10 +1598,46 @@ pack_pfns(unsigned long *buf, struct memory_bitmap *bm)
+@@ -131,12 +132,43 @@ static int user_writer_finish(struct hibernate_io_handle *io_handle,
+ 	return error;
  }
  
- /**
-+ *	snapshot_write_init - initialization before writing the snapshot to
-+ *	a backing storage
-+ *
-+ *	This function *must* be called before snapshot_read_next to initialize
-+ *	@handle and write a header.
-+ *
-+ *	@io_handle: handle used when writing the initial info onto storage
-+ *	@handle: snapshot handle to init
-+ */
-+int snapshot_write_init(struct hibernate_io_handle *io_handle,
-+		struct snapshot_handle *handle)
++static struct hibernate_io_handle *user_reader_start(unsigned int *flags_p)
++{
++	return hib_io_handle_alloc(0) ? : ERR_PTR(-ENOMEM);
++}
++
++static int user_read_page(struct hibernate_io_handle *io_handle, void *addr,
++		struct bio **bio_chain)
++{
++	int err = 0;
++
++	mutex_lock(&to_do.lock);
++	to_do.buffer = addr;
++	mutex_unlock(&to_do.lock);
++	set_bit(TODO_WORK, to_do.flags);
++	wake_up_interruptible(&to_do.wait);
++
++	wait_event(to_do.done, !test_bit(TODO_WORK, to_do.flags) ||
++			(err = test_bit(TODO_CLOSED, to_do.flags)));
++
++	return err ? -EIO : 0;
++}
++
++static int user_reader_finish(struct hibernate_io_handle *io_handle)
++{
++	return 0;
++}
++
+ struct hibernate_io_ops user_ops = {
+ 	.free_space = user_free_space,
+ 
+ 	.writer_start = user_writer_start,
+ 	.writer_finish = user_writer_finish,
+ 	.write_page = user_write_page,
++
++	.reader_start = user_reader_start,
++	.reader_finish = user_reader_finish,
++	.read_page = user_read_page,
+ };
+ 
+ static void snapshot_writer(struct work_struct *work)
+@@ -150,6 +182,22 @@ static void snapshot_writer(struct work_struct *work)
+ 
+ static DECLARE_WORK(snapshot_writer_w, snapshot_writer);
+ 
++static void snapshot_reader(struct work_struct *work)
 +{
 +	int ret;
 +
-+	/* This makes the buffer be freed by swsusp_free() */
-+	buffer = get_image_page(GFP_ATOMIC, PG_ANY);
-+	if (!buffer)
-+		return -ENOMEM;
-+	init_header(buffer);
-+	ret = hib_buffer_init_write(io_handle);
-+	if (ret)
-+		return ret;
-+	ret = hib_buffer_write(io_handle, buffer, sizeof(struct swsusp_info));
-+	if (ret)
-+		goto finish;
-+	hib_buffer_finish_write(io_handle);
-+	memory_bm_position_reset(&orig_bm);
-+	memory_bm_position_reset(&copy_bm);
-+	handle->buffer = buffer;
-+	return 0;
-+finish:
-+	hib_buffer_finish_write(io_handle);
-+	return ret;
++	set_bit(TODO_RD_RUNNING, to_do.flags);
++	ret = swsusp_read(NULL);
++	if (ret) {
++		printk(KERN_ERR "PM: read failed with %d\n", ret);
++		set_bit(TODO_ERROR, to_do.flags);
++	}
++	clear_bit(TODO_RD_RUNNING, to_do.flags);
++	wake_up_interruptible(&to_do.wait);
 +}
 +
-+/**
-  *	snapshot_read_next - used for reading the system memory snapshot.
-  *
-- *	On the first call to it @handle should point to a zeroed
-- *	snapshot_handle structure.  The structure gets updated and a pointer
-+ *	Before calling this function, snapshot_write_init has to be called with
-+ *	handle passed as @handle here. The structure gets updated and a pointer
-  *	to it should be passed to this function every next time.
-  *
-  *	On success the function returns a positive number.  Then, the caller
-@@ -1613,31 +1649,12 @@ pack_pfns(unsigned long *buf, struct memory_bitmap *bm)
-  *	structure pointed to by @handle is not updated and should not be used
-  *	any more.
-  */
--
- int snapshot_read_next(struct snapshot_handle *handle)
++static DECLARE_WORK(snapshot_reader_w, snapshot_reader);
++
+ static int snapshot_open(struct inode *inode, struct file *filp)
  {
--	if (handle->cur > nr_meta_pages + nr_copy_pages)
--		return 0;
--
--	if (!buffer) {
--		/* This makes the buffer be freed by swsusp_free() */
--		buffer = get_image_page(GFP_ATOMIC, PG_ANY);
--		if (!buffer)
--			return -ENOMEM;
--	}
--	if (!handle->cur) {
--		int error;
--
--		error = init_header((struct swsusp_info *)buffer);
--		if (error)
--			return error;
--		handle->buffer = buffer;
--		memory_bm_position_reset(&orig_bm);
--		memory_bm_position_reset(&copy_bm);
--	} else if (handle->cur <= nr_meta_pages) {
-+	if (handle->cur < nr_meta_pages) {
- 		memset(buffer, 0, PAGE_SIZE);
- 		pack_pfns(buffer, &orig_bm);
+ 	struct snapshot_data *data;
+@@ -300,20 +348,29 @@ static ssize_t snapshot_write(struct file *filp, const char __user *buf,
+ 
+ 	mutex_lock(&pm_mutex);
+ 
++	if (!test_bit(TODO_RD_RUNNING, to_do.flags))
++		queue_work(to_do.worker, &snapshot_reader_w);
++
+ 	data = filp->private_data;
+ 
+ 	if (!pg_offp) {
+-		res = snapshot_write_next(&data->handle);
+-		if (res <= 0)
++		res = wait_event_interruptible(to_do.wait,
++				test_bit(TODO_WORK, to_do.flags));
++		if (res)
+ 			goto unlock;
 -	} else {
-+	} else if (handle->cur < nr_meta_pages + nr_copy_pages) {
- 		struct page *page;
+-		res = PAGE_SIZE - pg_offp;
+ 	}
++	res = PAGE_SIZE - pg_offp;
  
- 		page = pfn_to_page(memory_bm_next_pfn(&copy_bm));
-@@ -1655,6 +1672,8 @@ int snapshot_read_next(struct snapshot_handle *handle)
- 		} else {
- 			handle->buffer = page_address(page);
+-	res = simple_write_to_buffer(data_of(data->handle), res, &pg_offp,
+-			buf, count);
++	mutex_lock(&to_do.lock);
++	res = simple_write_to_buffer(to_do.buffer, res, &pg_offp, buf, count);
++	mutex_unlock(&to_do.lock);
+ 	if (res > 0)
+ 		*offp += res;
++
++	if (!(pg_offp & ~PAGE_MASK)) {
++		clear_bit(TODO_WORK, to_do.flags);
++		wake_up(&to_do.done);
++	}
+ unlock:
+ 	mutex_unlock(&pm_mutex);
+ 
+@@ -398,9 +455,12 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+ 		break;
+ 
+ 	case SNAPSHOT_ATOMIC_RESTORE:
+-		snapshot_write_finalize(&data->handle);
++		error = wait_event_interruptible(to_do.wait,
++				!test_bit(TODO_RD_RUNNING, to_do.flags));
++		if (error)
++			break;
+ 		if (data->mode != O_WRONLY || !data->frozen ||
+-		    !snapshot_image_loaded(&data->handle)) {
++				test_bit(TODO_ERROR, to_do.flags)) {
+ 			error = -EPERM;
+ 			break;
  		}
-+	} else {
-+		return 0;
- 	}
- 	handle->cur++;
- 	return PAGE_SIZE;
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index f09494e..9b319f1 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -448,7 +448,6 @@ int swsusp_write(unsigned int flags)
- {
- 	struct hibernate_io_handle *io_handle;
- 	struct snapshot_handle snapshot;
--	struct swsusp_info *header;
- 	unsigned long pages;
- 	int error;
- 
-@@ -464,17 +463,12 @@ int swsusp_write(unsigned int flags)
- 		goto out_finish;
- 	}
- 	memset(&snapshot, 0, sizeof(struct snapshot_handle));
--	error = snapshot_read_next(&snapshot);
--	if (error < PAGE_SIZE) {
--		if (error >= 0)
--			error = -EFAULT;
--
-+	error = snapshot_write_init(io_handle, &snapshot);
-+	if (error) {
-+		printk(KERN_ERR "PM: Cannot init writer\n");
- 		goto out_finish;
- 	}
--	header = (struct swsusp_info *)data_of(snapshot);
--	error = hibernate_io_ops->write_page(io_handle, header, NULL);
--	if (!error)
--		error = save_image(io_handle, &snapshot, pages - 1);
-+	error = save_image(io_handle, &snapshot, pages - 1);
- out_finish:
- 	error = hibernate_io_ops->writer_finish(io_handle, flags, error);
- 	return error;
 -- 
 1.7.1
