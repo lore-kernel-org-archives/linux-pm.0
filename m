@@ -1,14 +1,15 @@
-From: Bryan Huntsman <bryanh@codeaurora.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 03 Jun 2010 14:50:39 -0700
-Message-ID: <4C0823AF.6020709__11834.6914802261$1275601885$gmane$org@codeaurora.org>
-References: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>	<20100601135102.GA8098@srcf.ucam.org>	<1275426085.21962.967.camel@mulgrave.site>	<201006020024.14220.rjw@sisk.pl>	<1275431816.21962.1108.camel@mulgrave.site>	<AANLkTikObnAZbyOxeYAhXcEbimO3XTTO-HlC9CD_HH6t@mail.gmail.com>	<1275451342.21962.1777.camel@mulgrave.site>	<AANLkTilRcFZyYa-0HlaM-6IEZSyar3S9S_cCWSFax2Zo@mail.gmail.com>	<1275491111.2799.110.camel@mulgrave.site>	<20100602214748.7742e3ae@schatten.dmk.lab>	<1275511271.2799.516.camel@mulgrave.site>	<20100603010607.5baf82a6@schatten.dmk.lab>	<CA1BBBBC9359F04AA639128AC0D5D1E9692ABC92@orsmsx502.amr.corp.intel.com>	<20100603110312.48a508dc@lxorguk.ukuu.org.uk>	<1275559512.27810.35287.camel@twins>	<87d3w818ki.fsf@deeprootsystems.com>
-	<CA1BBBBC9359F04AA639128AC0D5D1E96931D4BB@orsmsx502.amr.corp.intel.com>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: suspend blockers & Android integration
+Date: Fri, 4 Jun 2010 01:23:02 +0200
+Message-ID: <20100603232302.GA16184__17765.316720079$1275607476$gmane$org@elte.hu>
+References: <20100603193045.GA7188@elte.hu>
+ <20100603231153.GA11302@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CA1BBBBC9359F04AA639128AC0D5D1E96931D4BB@orsmsx502.amr.corp.intel.com>
+Content-Disposition: inline
+In-Reply-To: <20100603231153.GA11302@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,29 +19,99 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Gross, Mark" <mark.gross@intel.com>
-Cc: Neil Brown <neilb@suse.de>, "tytso@mit.edu" <tytso@mit.edu>, Florian Mickler <florian@mickler.org>, LKML <linux-kernel@vger.kernel.org>, Linux@smtp1.linux-foundation.org, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, "felipe.balbi@nokia.com" <felipe.balbi@nokia.com>, OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: tytso@mit.edu
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
->> Yes, having a QoS parameter per-subsystem (or even per-device) is very
->> important for SoCs that have independently controlled powerdomains.
->> If all devices/subsystems in a particular powerdomain have QoS
->> parameters that permit, the power state of that powerdomain can be
->> lowered independently from system-wide power state and power states of
->> other power domains.
->>
-> This seems similar to that pm_qos generalization into bus drivers we where 
-> waving our hands at during the collab summit in April?  We never did get 
-> into meaningful detail at that time.
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> * tytso@mit.edu <tytso@mit.edu> wrote:
 > 
-> --mgross
+> > [...] Not only has the source code been made available, but hundreds of 
+> > engineering hours have been made trying to accomodate the demands of LKML 
+> > --- and LKML has said no to suspend blockers/wakelocks.
+> 
+> I dont think you are being fair here, at all.
+> 
+> Firstly, the suspend-blockers feature is not being rejected (fixing and 
+> extending suspend is a worthwile goal), it's just that various different 
+> schemes have been proposed by the people who'll eventually have to maintain 
+> that code down the line.
 
-I think there is definitely a need for QoS parameters per-device.  I've 
-been pondering how to incorporate this concept into runtime_pm.  One 
-idea would be to add pm_qos-like callbacks to struct dev_pm_ops, e.g. 
-runtime_pm_qos_add/update/remove_requirement().  Requirements would be 
-passed up the tree to the first parent that cares, usually a bus driver. 
-  Is this similar to what you guys were discussing at the collab summit? 
-  Thanks.
+Btw., i'd like to summarize the scheduler based suspend scheme proposed by 
+Thomas Gleixner, Peter Zijlstra and myself. I found no good summary of it in 
+the big thread, and there are also new elements of the proposal:
 
-- Bryan
+ - Create a 'deep idle' mode that suspends. This, if all constraints
+   are met, is triggered by the scheduler automatically: just like the other
+   idle modes are triggered currently. This approach fixes the wakeup
+   races because an incoming wakeup event will set need_resched() and
+   abort the suspend.
+
+   ( This mode can even use the existing suspend code to bring stuff down,
+     therefore it also solves the pending timer problem and works even on
+     PC style x86. )
+
+ - Introduce a 'minimum wakeup latency' task attribute (task->latency), 
+   settable via a scheduler syscall. This is an ABI that influences the kernel 
+   how idle the system can go. (i.e. the equivalent of suspend blockers, just
+   not binary and not system-wide.)
+
+ - Solve crappy app confinement via the scheduler:
+
+   A first proposal was to use the existing cgroup mechanism, but we found
+   a different and probably more elegant solution:
+
+   We can slightly extend the scheduler and introduce another per task 'minimum
+   latency other tasks are allowed to run' scheduling attribute 
+   (task->exclude_latency) - set via a scheduler syscall as well. (only 
+   settable by privileged tasks - such as the screensaver.)
+
+   This allows a task to 'exclude' other tasks that dont have low-latency 
+   requirements. Crappy apps would have a large latency value, so they'd
+   be idled out when a privileged task sets the exclusion level low enough.
+
+   In the case of Android, this would for example be used by the screensaver 
+   to introduce different levels of runnability/idling.
+
+   [ Note that this scheme would also be useful in a completely different
+     scenario, for real-time tasks as well: it would allow extreme-RT tasks to 
+     quiescence all lower prio tasks in a controlled manner. (even if the RT 
+     task is sleeping) ]
+
+ - Controlled auto-suspend: drivers (such as input) could on wakeup
+   automatically set the 'minimum wakeup latency' value of wakee tasks to a 
+   lower value. This automatically prevents another auto-suspend in the near 
+   future: up to the point the wakee task increases its latency (via the 
+   scheduler syscall) again and allows suspend again.
+
+   This means there will be no surprise suspends for a task that may take a 
+   bit longer than usual to finish its work. [ Detail: this would only be done 
+   for tasks that have a non-default (non-infinity) task->latency value - to 
+   prevent the input driver from lowering latency values (and preventing 
+   future suspends) just because some unaware apps are running and using input 
+   drivers. ]
+
+All in one, this scheme allows everything without exception that 
+suspend-blockers allows and supports all the important usecases:
+
+ - allows agressive auto-idling
+
+ - has no wakeup races
+
+ - allows crappy-app confinement and other finegrained suspend control
+
+ - it should be pretty easy to adopt by Android as well, as it goes
+   along similar principles of kernel automatisms combined with
+   user-space controlled task and system attributes.
+
+It's straightforward to adapt and it is also more generic, more clean and more 
+flexible than suspend-blockers.
+
+Please mention any remaining technical issues that may still be are 
+unaddressed.
+
+Thanks,
+
+	Ingo
