@@ -1,27 +1,25 @@
-From: Peter Zijlstra <peterz@infradead.org>
+From: James Bottomley <James.Bottomley@suse.de>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 03 Jun 2010 17:28:01 +0200
-Message-ID: <1275578881.27810.35995.camel__18827.2113133737$1275578917$gmane$org@twins>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<201005302202.39511.rjw@sisk.pl>
-	<AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt@mail.gmail.com>
-	<201005312347.24251.rjw@sisk.pl>
-	<AANLkTilvOgSFTDFtXbjJobMZWxgfvsC97TqC7_a_NHBX@mail.gmail.com>
-	<alpine.LFD.2.00.1006011411200.2933@localhost.localdomain>
-	<AANLkTikZHmF6baP7dEXEGFE8YsbEteRjlhb5wqZX8ll1@mail.gmail.com>
-	<alpine.LFD.2.00.1006020905410.2933@localhost.localdomain>
-	<AANLkTinDm3FIrbS1jqEzW15THmr1hdd7ox0Mllm1VLjZ@mail.gmail.com>
-	<1275471561.27810.30865.camel@twins>
-	<AANLkTilLmAb2c9fQwuguzWtjcHfuTZvPUTbUx7vuwFI6@mail.gmail.com>
-	<1275474088.27810.31000.camel@twins>
-	<20100602221309.6da754e7@schatten.dmk.lab>
-	<1275550802.27810.34863.camel@twins>
-	<20100603161205.73a2b56d@schatten.dmk.lab>
+Date: Thu, 03 Jun 2010 10:29:52 -0500
+Message-ID: <1275578992.5914.146.camel__19418.3310996324$1275579044$gmane$org@mulgrave.site>
+References: <AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
+	<201005312338.55109.rjw@sisk.pl> <20100531232617.GF31155@gvim.org>
+	<20100601090737.4bc243d9@schatten.dmk.lab>
+	<20100601140519.GC1281@gvim.org>
+	<AANLkTikF-B23_UWG1O3tlBl4m8NStAJllGhhevNhYZT6@mail.gmail.com>
+	<20100602133910.GA9106@gvim.org>
+	<AANLkTilSU79cnBODXFokzIPB1hRcZBxbwTgTQ59MeKcK@mail.gmail.com>
+	<20100603031842.GB11311@gvim.org>
+	<AANLkTiks7sQBbDnN6QrtGVqSXLob1qCs7VA12LZAWnfM@mail.gmail.com>
+	<20100603054018.GE11311@gvim.org>
+	<AANLkTikvuqtcGS1UdePRxipSk4S5Vmci2uPfFtzZgx6X@mail.gmail.com>
+	<1275575794.5914.74.camel@mulgrave.site>
+	<20100603171727.7d835a1d@schatten.dmk.lab>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100603161205.73a2b56d@schatten.dmk.lab>
+In-Reply-To: <20100603171727.7d835a1d@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -32,28 +30,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Florian Mickler <florian@mickler.org>
-Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: 640e9920@gmail.com, markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2010-06-03 at 16:12 +0200, Florian Mickler wrote:
-> On Thu, 03 Jun 2010 09:40:02 +0200
-> Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > Same for firefox, you can teach it to not render animated gifs and run
-> > javascript for invisible tabs, and once the screen-saver kicks in,
-> > nothing is visible (and with X telling apps their window is visible or
-> > not it knows), so it should go idle all of its own.
-> > 
-> > Fix the friggin apps, don't kludge with freezing.
-> 
-> Of course programs should be as smart as possible. But that is an
-> orthogonal problem.
-> 
-> Suppose firefox were fixed. It still needs to fetch my rss feeds every
-> minute, because I'm sad if it doesn't. It just can't be fixed at the
-> application level.
-
-Sure it can, why would it need to fetch RSS feeds when the screen is off
-and nobody could possible see the result? So you can stop the timer when
-you know the window isn't visible or alternatively when the screensaver
-is active, I think most desktops have notification of that as well.
+T24gVGh1LCAyMDEwLTA2LTAzIGF0IDE3OjE3ICswMjAwLCBGbG9yaWFuIE1pY2tsZXIgd3JvdGU6
+Cj4gT24gVGh1LCAwMyBKdW4gMjAxMCAwOTozNjozNCAtMDUwMAo+IEphbWVzIEJvdHRvbWxleSA8
+SmFtZXMuQm90dG9tbGV5QHN1c2UuZGU+IHdyb3RlOgo+IAo+ID4gT24gVGh1LCAyMDEwLTA2LTAz
+IGF0IDAwOjEwIC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3RlOgo+ID4gPiBPbiBXZWQsIEp1
+biAyLCAyMDEwIGF0IDEwOjQwIFBNLCBtYXJrIGdyb3NzIDw2NDBlOTkyMEBnbWFpbC5jb20+IHdy
+b3RlOgo+ID4gPiA+IE9uIFdlZCwgSnVuIDAyLCAyMDEwIGF0IDA5OjU0OjE1UE0gLTA3MDAsIEJy
+aWFuIFN3ZXRsYW5kIHdyb3RlOgo+ID4gPiA+PiBPbiBXZWQsIEp1biAyLCAyMDEwIGF0IDg6MTgg
+UE0sIG1hcmsgZ3Jvc3MgPDY0MGU5OTIwQGdtYWlsLmNvbT4gd3JvdGU6Cj4gPiA+ID4+ID4gT24g
+V2VkLCBKdW4gMDIsIDIwMTAgYXQgMDI6NTg6MzBQTSAtMDcwMCwgQXJ2ZSBIasO4bm5ldsOlZyB3
+cm90ZToKPiA+ID4gPj4gPj4KPiA+ID4gPj4gPj4gVGhlIGxpc3QgaXMgbm90IHNob3J0LiBZb3Ug
+aGF2ZSBhbGwgdGhlIGluYWN0aXZlIGFuZCBhY3RpdmUKPiA+ID4gPj4gPj4gY29uc3RyYWludHMg
+b24gdGhlIHNhbWUgbGlzdC4gSWYgeW91IGNoYW5nZSBpdCB0byBhIHR3byBsZXZlbCBsaXN0Cj4g
+PiA+ID4+ID4+IHRob3VnaCwgdGhlIGxpc3Qgb2YgdW5pcXVlIHZhbHVlcyAod2hpY2ggaXMgdGhl
+IGxpc3QgeW91IGhhdmUgdG8gd2FsaykKPiA+ID4gPj4gPj4gbWF5IGJlIHNob3J0IGVub3VnaCBm
+b3IgYSB0cmVlIHRvIGJlIG92ZXJraWxsLgo+ID4gPiA+PiA+Cj4gPiA+ID4+ID4gd2hhdCBoYXZl
+IHlvdSBzZWVuIGluIHByYWN0aWNlIGZyb20gdGhlIHdha2UtbG9jayBzdGF0cz8KPiA+ID4gPj4g
+Pgo+ID4gPiA+PiA+IEknbSBoYXZpbmcgYSBoYXJkIHRpbWUgc2VlaW5nIHdoZXJlIHlvdSBjb3Vs
+ZCBnZXQgbW9yZSB0aGFuIGp1c3QgYQo+ID4gPiA+PiA+IGhhbmRmdWxsLiAgSG93ZXZlcjsgb25l
+IGNvdWxkIGdvIHRvIGEgZHVhbCBsaXN0IChsaWtlIHRoZSBzY2hlZHVsZXIpIGFuZAo+ID4gPiA+
+PiA+IG1vdmUgaW5hY3RpdmUgbm9kZXMgZnJvbSBhbiBhY3RpdmUgdG8gaW5hY3RpdmUgbGlzdCwg
+b3Igd2UgY291bGQgc2ltcGx5Cj4gPiA+ID4+ID4gcmVtb3ZlIHRoZW0gZnJvbSB0aGUgbGlzdCB1
+cHBvbiBpbmFjdGl2aXR5LiAgd2hpY2ggd291bGQgd291bGQgd2VsbAo+ID4gPiA+PiA+IGFmdGVy
+IEkgY2hhbmdlIHRoZSBhcGkgdG8gaGF2ZSB0aGUgY2xpZW50IGFsbG9jYXRlIHRoZSBtZW1vcnkg
+Zm9yIHRoZQo+ID4gPiA+PiA+IG5vZGVzLi4uICBCVVQsIGlmIHlvdXIgbW92aW5nIHRoaW5ncyBp
+biBhbmQgb3V0IG9mIGEgbGlzdCBhIGxvdCwgSSdtIG5vdAo+ID4gPiA+PiA+IHN1cmUgdGhlIGJy
+ZWFrIGV2ZW4gcG9pbnQgd2hlcmUgY2hhbmdpbmcgdGhlIHN0cnVjdHVyZSBoZWxwcy4KPiA+ID4g
+Pj4gPgo+ID4gPiA+PiA+IFdlJ2xsIG5lZWQgdG8gdHJ5IGl0Lgo+ID4gPiA+PiA+Cj4gPiA+ID4+
+ID4gSSB0aGluayB3ZSB3aWxsIGFsbW9zdCBuZXZlciBzZWUgbW9yZSB0aGFuIDEwIGxpc3QgZWxl
+bWVudHMuCj4gPiA+ID4+ID4KPiA+ID4gPj4gPiAtLW1ncm9zcwo+ID4gPiA+PiA+Cj4gPiA+ID4+
+ID4KPiA+ID4gPj4KPiA+ID4gPj4gSSBzZWUgYWJvdXQgODAgKGJhc2VkIG9uIHRoZSBiYXR0ZXJ5
+aW5mbyBkdW1wKSBvbiBteSBOZXh1cyBPbmUKPiA+ID4gPj4gKFFTRDgyNTAsIEFuZHJvaWQgRnJv
+eW8pOgo+ID4gPiA+Cj4gPiA+ID4gc2h1Y2tzLgo+ID4gPiA+Cj4gPiA+ID4gd2VsbCBJIHRoaW5r
+IGZvciBhIHBtX3FvcyBjbGFzcyB0aGF0IGhhcyBib29sZWFuIGR5bmFtaWMgcmFuZ2Ugd2UgY2Fu
+Cj4gPiA+ID4gZ2V0IGF3YXkgd2l0aCBub3Qgd2Fsa2luZyB0aGUgbGlzdCBvbiBldmVyeSByZXF1
+ZXN0IHVwZGF0ZS4gIHdlIGNhbiB1c2UKPiA+ID4gPiBhIGNvdW50ZXIsIGFuZCB0aGUgbGlzdCB3
+aWxsIGJlIGZvciBtb3N0bHkgZm9yIHN0YXRzLgo+ID4gPiA+Cj4gPiA+IAo+ID4gPiBEaWQgeW91
+IGdpdmUgYW55IHRob3VnaHQgdG8gbXkgc3VnZ2VzdGlvbiB0byBvbmx5IHVzZSBvbmUgZW50cnkg
+cGVyCj4gPiA+IHVuaXF1ZSB2YWx1ZSBvbiB0aGUgZmlyc3QgbGV2ZWwgbGlzdCBhbmQgdGhlbiB1
+c2Ugc2Vjb25kYXJ5IGxpc3RzIG9mCj4gPiA+IGlkZW50aWNhbCB2YWx1ZXMuIFRoYXQgd2F5IGlm
+IHlvdSBvbmx5IGhhdmUgdHdvIGNvbnN0cmFpbnRzIHZhbHVlcyB0aGUKPiA+ID4gbGlzdCB5b3Ug
+aGF2ZSB0byB3YWxrIHdoZW4gdXBkYXRpbmcgYSByZXF1ZXN0IHdpbGwgbmV2ZXIgaGF2ZSBtb3Jl
+Cj4gPiA+IHRoYW4gdHdvIGVudHJpZXMgcmVnYXJkbGVzcyBvZiBob3cgbWFueSB0b3RhbCByZXF1
+ZXN0IHlvdSBoYXZlLgo+ID4gPiAKPiA+ID4gQSByZXF1ZXN0IHVwZGF0ZSB0aGVuIGJlY29tZXMg
+c29tZXRoaW5nIGxpa2UgdGhpczoKPiA+ID4gICBpZiBvbiBwcmltYXJ5IGxpc3Qgewo+ID4gPiAg
+ICAgdW5saW5rIGZyb20gcHJpbWFyeSBsaXN0Cj4gPiA+ICAgICBpZiBzZWNvbmRhcnkgbGlzdCBp
+cyBub3QgZW1wdHkKPiA+ID4gICAgICAgZ2V0IG5leHQgc2Vjb25kYXJ5IGVudHJ5IGFuZCBhZGQg
+aW4gc2FtZSBzcG90IG9uIHByaW1hcnkgbGlzdAo+ID4gPiAgIH0KPiA+ID4gICB1bmxpbmsgZnJv
+bSBzZWNvbmRhcnkgbGlzdAo+ID4gPiAgIGZpbmQgbmV3IHNwb3Qgb24gcHJpbWFyeSBsaXN0Cj4g
+PiA+ICAgaWYgYWxyZWFkeSB0aGVyZQo+ID4gPiAgICAgYWRkIHRvIHNlY29uZGFyeSBsaXN0Cj4g
+PiA+ICAgZWxzZQo+ID4gPiAgICAgYWRkIHRvIHByaW1hcnkgbGlzdAo+ID4gCj4gPiBUaGlzIGlz
+IGp1c3QgcmVpbnZlbnRpbmcgaGFzaCBidWNrZXRlZCBsaXN0cy4gIFRvIGdldCB0aGUgYmVuZWZp
+dHMsIGFsbAo+ID4gd2UgZG8gaXMgaW1wbGVtZW50IGFuIE4gc3RhdGUgY29uc3RyYWludCBhcyBi
+YWNrZWQgYnkgYW4gTiBidWNrZXRlZCBoYXNoCj4gPiBsaXN0LCB3aGljaCB0aGUga2VybmVsIGFs
+cmVhZHkgaGFzIGFsbCB0aGUgaW50ZXJuYWwgbWVjaGFuaWNzIGZvci4KPiA+IAo+ID4gSmFtZXMK
+PiA+Cj4gCj4gaHR0cDovL3d3dy5pdGwubmlzdC5nb3YvZGl2ODk3L3NxZy9kYWRzL0hUTUwvcHJp
+b3JpdHlxdWUuaHRtbAo+IAo+IFNvIG5vIHJlaW52ZW50aW9uLiBKdXN0IHVzaW5nIGEgY29tbW9u
+IHNjaGVtZS4gCgpCeSByZWludmVudGlvbiBJIG1lYW50IG9wZW4gY29kaW5nIGEgY29tbW9uIHBh
+dHRlcm4gZm9yIHdoaWNoIHRoZSBrZXJuZWwKYWxyZWFkeSBoYXMgYW4gQVBJLiAgKFdoZXRoZXIg
+d2UgZ28gd2l0aCBoYXNoIGJ1Y2tldHMgb3IgcGxpc3RzKS4KCkphbWVzCgoKX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0
+CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgt
+Zm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
