@@ -1,23 +1,14 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 3 Jun 2010 15:55:52 +0200
-Message-ID: <20100603155552.24c38afc__14252.5887386457$1275573411$gmane$org@schatten.dmk.lab>
-References: <AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
-	<201005312338.55109.rjw@sisk.pl> <20100531232617.GF31155@gvim.org>
-	<20100601090737.4bc243d9@schatten.dmk.lab>
-	<20100601140519.GC1281@gvim.org>
-	<AANLkTikF-B23_UWG1O3tlBl4m8NStAJllGhhevNhYZT6@mail.gmail.com>
-	<20100602133910.GA9106@gvim.org>
-	<AANLkTilSU79cnBODXFokzIPB1hRcZBxbwTgTQ59MeKcK@mail.gmail.com>
-	<20100603031842.GB11311@gvim.org>
-	<AANLkTiks7sQBbDnN6QrtGVqSXLob1qCs7VA12LZAWnfM@mail.gmail.com>
-	<20100603054018.GE11311@gvim.org>
-	<AANLkTikvuqtcGS1UdePRxipSk4S5Vmci2uPfFtzZgx6X@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: How to disable async resume for few selected devices
+ (does it work?)
+Date: Thu, 3 Jun 2010 10:08:24 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006031000060.1683-100000@iolanthe.rowland.org>
+References: <1275548145.2582.2.camel@maxim-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikvuqtcGS1UdePRxipSk4S5Vmci2uPfFtzZgx6X@mail.gmail.com>
+In-Reply-To: <1275548145.2582.2.camel@maxim-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,49 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?ISO-8859-15?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Thomas@smtp1.linux-foundation.org, Ingo@smtp1.linux-foundation.org, 640e9920@gmail.com, markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Linux@smtp1.linux-foundation.org, PM <linux-pm@lists.linux-foundation.org>, Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 3 Jun 2010 00:10:03 -0700
-Arve Hj=F8nnev=E5g <arve@android.com> wrote:
+On Thu, 3 Jun 2010, Maxim Levitsky wrote:
 
-> On Wed, Jun 2, 2010 at 10:40 PM, mark gross <640e9920@gmail.com> wrote:
+> On Wed, 2010-06-02 at 21:51 -0400, Alan Stern wrote: 
+> > On Thu, 3 Jun 2010, Maxim Levitsky wrote:
+> > 
+> > > I have a card reader on which one function implements SDHCI and other
+> > > MMC (to workaround windows bug....)
+> > > 
+> > > There is a way to disable MMC function, but is causes the device
+> > > sometimes to die on resume from disk/ram.
+> > > 
+> > > I today was told that MMC function is in fact _almost_ standard SDHCI
+> > > controller, and in fact now sdhci binds to it and works just fine.
+> > > 
+> > > However since both devices share same hardware they appear to have need
+> > > to be resumed one after another, and definitely not in parallel.
+> > > I tried to use device_disable_async_suspend on both pci devices and
+> > > indeed both power/async turns to false.
+> > > 
+> > > But they are still resumed in parallel:
+> > > (look how well mmc0 and mmc1 interleave...)
+> > > Why?
+> > 
+> > My guess is that you shouldn't have disabled async suspend on the PCI 
+> > devices but on their children instead.  That is, the PCI devices are 
+> > 0000:07:00.1 and 0000:07:00.2, but the devices causing your problem are 
+> > mmc0 and mmc1.  Or maybe you'd prefer to disable async suspend on all 
+> > four devices.
+> Nope, all childeren of both pci device has 'async' disabled.
+> Just checked that.
 
-> > well I think for a pm_qos class that has boolean dynamic range we can
-> > get away with not walking the list on every request update. =A0we can u=
-se
-> > a counter, and the list will be for mostly for stats.
-> >
-> =
+The mmc drivers probably do part of their work in a separate thread (a
+workqueue).  But I'm not acquainted with those drivers and I don't know
+for certain.  You could get a clearer idea by putting printk statements
+at the beginning and end of the resume routines.  And a dump_stack()  
+would tell you for certain whether the routine was invoked
+asynchronously.
 
-> Did you give any thought to my suggestion to only use one entry per
-> unique value on the first level list and then use secondary lists of
-> identical values. That way if you only have two constraints values the
-> list you have to walk when updating a request will never have more
-> than two entries regardless of how many total request you have.
-> =
-
-> A request update then becomes something like this:
->   if on primary list {
->     unlink from primary list
->     if secondary list is not empty
->       get next secondary entry and add in same spot on primary list
->   }
->   unlink from secondary list
->   find new spot on primary list
->   if already there
->     add to secondary list
->   else
->     add to primary list
-> =
-
-
-Yes. I think that would be good. If we keep the primary list sorted,
-then this becomes a nice priority queue implementation which does =
-
-GetMax in constant time and Insert and Delete in logarithmic
-complexity to the number of different values.
-
-Cheers,
-Flo
+Alan Stern
