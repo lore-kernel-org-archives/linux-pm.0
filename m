@@ -1,26 +1,14 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 3 Jun 2010 18:00:32 +0200
-Message-ID: <20100603180032.7f38b0e8__35092.9004642696$1275580901$gmane$org@schatten.dmk.lab>
-References: <AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
-	<201005312338.55109.rjw@sisk.pl> <20100531232617.GF31155@gvim.org>
-	<20100601090737.4bc243d9@schatten.dmk.lab>
-	<20100601140519.GC1281@gvim.org>
-	<AANLkTikF-B23_UWG1O3tlBl4m8NStAJllGhhevNhYZT6@mail.gmail.com>
-	<20100602133910.GA9106@gvim.org>
-	<AANLkTilSU79cnBODXFokzIPB1hRcZBxbwTgTQ59MeKcK@mail.gmail.com>
-	<20100603031842.GB11311@gvim.org>
-	<AANLkTiks7sQBbDnN6QrtGVqSXLob1qCs7VA12LZAWnfM@mail.gmail.com>
-	<20100603054018.GE11311@gvim.org>
-	<AANLkTikvuqtcGS1UdePRxipSk4S5Vmci2uPfFtzZgx6X@mail.gmail.com>
-	<1275575794.5914.74.camel@mulgrave.site>
-	<20100603171727.7d835a1d@schatten.dmk.lab>
-	<1275578992.5914.146.camel@mulgrave.site>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: How to disable async resume for few selected devices
+ (does it work?)
+Date: Thu, 03 Jun 2010 19:12:54 +0300
+Message-ID: <1275581574.2563.2.camel@maxim-laptop>
+References: <Pine.LNX.4.44L0.1006031000060.1683-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275578992.5914.146.camel@mulgrave.site>
+In-Reply-To: <Pine.LNX.4.44L0.1006031000060.1683-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -30,20 +18,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: 640e9920@gmail.com, markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 03 Jun 2010 10:29:52 -0500
-James Bottomley <James.Bottomley@suse.de> wrote:
+On Thu, 2010-06-03 at 10:08 -0400, Alan Stern wrote: 
+> On Thu, 3 Jun 2010, Maxim Levitsky wrote:
+> 
+> > On Wed, 2010-06-02 at 21:51 -0400, Alan Stern wrote: 
+> > > On Thu, 3 Jun 2010, Maxim Levitsky wrote:
+> > > 
+> > > > I have a card reader on which one function implements SDHCI and other
+> > > > MMC (to workaround windows bug....)
+> > > > 
+> > > > There is a way to disable MMC function, but is causes the device
+> > > > sometimes to die on resume from disk/ram.
+> > > > 
+> > > > I today was told that MMC function is in fact _almost_ standard SDHCI
+> > > > controller, and in fact now sdhci binds to it and works just fine.
+> > > > 
+> > > > However since both devices share same hardware they appear to have need
+> > > > to be resumed one after another, and definitely not in parallel.
+> > > > I tried to use device_disable_async_suspend on both pci devices and
+> > > > indeed both power/async turns to false.
+> > > > 
+> > > > But they are still resumed in parallel:
+> > > > (look how well mmc0 and mmc1 interleave...)
+> > > > Why?
+> > > 
+> > > My guess is that you shouldn't have disabled async suspend on the PCI 
+> > > devices but on their children instead.  That is, the PCI devices are 
+> > > 0000:07:00.1 and 0000:07:00.2, but the devices causing your problem are 
+> > > mmc0 and mmc1.  Or maybe you'd prefer to disable async suspend on all 
+> > > four devices.
+> > Nope, all childeren of both pci device has 'async' disabled.
+> > Just checked that.
+> 
+> The mmc drivers probably do part of their work in a separate thread (a
+> workqueue).  
+They seems not to do so.
 
 
-> > So no reinvention. Just using a common scheme. 
-> 
-> By reinvention I meant open coding a common pattern for which the kernel
-> already has an API.  (Whether we go with hash buckets or plists).
-> 
-> James
-> 
+> But I'm not acquainted with those drivers and I don't know
+> for certain.  You could get a clearer idea by putting printk statements
+> at the beginning and end of the resume routines.  And a dump_stack()  
+> would tell you for certain whether the routine was invoked
+> asynchronously.
+I will do that.
 
-Ah, plists.h! Thanks for the pointer.
+In fact it seems just to work now. I can't reproduce that anymore.
+It strange. I double checked that power/async was disabled.
+Maybe I am just lucky now and the suspend/resume functions still run in
+async mode.
+
+I checked pm code and it seems to be correct.
+
+
+Best regards,
+Maxim Levitsky
