@@ -1,14 +1,30 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: How to disable async resume for few selected devices
- (does it work?)
-Date: Thu, 03 Jun 2010 19:12:54 +0300
-Message-ID: <1275581574.2563.2.camel@maxim-laptop>
-References: <Pine.LNX.4.44L0.1006031000060.1683-100000@iolanthe.rowland.org>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Thu, 03 Jun 2010 09:58:26 -0700
+Message-ID: <87hblkyrwt.fsf__4685.98009688339$1275584592$gmane$org@deeprootsystems.com>
+References: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<20100601135102.GA8098@srcf.ucam.org>
+	<1275426085.21962.967.camel@mulgrave.site>
+	<201006020024.14220.rjw@sisk.pl>
+	<1275431816.21962.1108.camel@mulgrave.site>
+	<AANLkTikObnAZbyOxeYAhXcEbimO3XTTO-HlC9CD_HH6t@mail.gmail.com>
+	<1275451342.21962.1777.camel@mulgrave.site>
+	<AANLkTilRcFZyYa-0HlaM-6IEZSyar3S9S_cCWSFax2Zo@mail.gmail.com>
+	<1275491111.2799.110.camel@mulgrave.site>
+	<20100602214748.7742e3ae@schatten.dmk.lab>
+	<1275511271.2799.516.camel@mulgrave.site>
+	<20100603010607.5baf82a6@schatten.dmk.lab>
+	<CA1BBBBC9359F04AA639128AC0D5D1E9692ABC92@orsmsx502.amr.corp.intel.com>
+	<20100603110312.48a508dc@lxorguk.ukuu.org.uk>
+	<1275559512.27810.35287.camel@twins>
+	<87d3w818ki.fsf@deeprootsystems.com>
+	<CA1BBBBC9359F04AA639128AC0D5D1E96931D4BB@orsmsx502.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006031000060.1683-100000@iolanthe.rowland.org>
+In-Reply-To: <CA1BBBBC9359F04AA639128AC0D5D1E96931D4BB@orsmsx502.amr.corp.intel.com>
+	(Mark Gross's message of "Thu\, 3 Jun 2010 07\:52\:38 -0700")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,61 +34,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>
+To: "Gross, Mark" <mark.gross@intel.com>
+Cc: Neil Brown <neilb@suse.de>, "tytso@mit.edu" <tytso@mit.edu>, Peter Zijlstra <peterz@infradead.org>, "felipe.balbi@nokia.com" <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2010-06-03 at 10:08 -0400, Alan Stern wrote: 
-> On Thu, 3 Jun 2010, Maxim Levitsky wrote:
-> 
-> > On Wed, 2010-06-02 at 21:51 -0400, Alan Stern wrote: 
-> > > On Thu, 3 Jun 2010, Maxim Levitsky wrote:
-> > > 
-> > > > I have a card reader on which one function implements SDHCI and other
-> > > > MMC (to workaround windows bug....)
-> > > > 
-> > > > There is a way to disable MMC function, but is causes the device
-> > > > sometimes to die on resume from disk/ram.
-> > > > 
-> > > > I today was told that MMC function is in fact _almost_ standard SDHCI
-> > > > controller, and in fact now sdhci binds to it and works just fine.
-> > > > 
-> > > > However since both devices share same hardware they appear to have need
-> > > > to be resumed one after another, and definitely not in parallel.
-> > > > I tried to use device_disable_async_suspend on both pci devices and
-> > > > indeed both power/async turns to false.
-> > > > 
-> > > > But they are still resumed in parallel:
-> > > > (look how well mmc0 and mmc1 interleave...)
-> > > > Why?
-> > > 
-> > > My guess is that you shouldn't have disabled async suspend on the PCI 
-> > > devices but on their children instead.  That is, the PCI devices are 
-> > > 0000:07:00.1 and 0000:07:00.2, but the devices causing your problem are 
-> > > mmc0 and mmc1.  Or maybe you'd prefer to disable async suspend on all 
-> > > four devices.
-> > Nope, all childeren of both pci device has 'async' disabled.
-> > Just checked that.
-> 
-> The mmc drivers probably do part of their work in a separate thread (a
-> workqueue).  
-They seems not to do so.
+"Gross, Mark" <mark.gross@intel.com> writes:
 
+>>-----Original Message-----
+>>From: Kevin Hilman [mailto:khilman@deeprootsystems.com]
+>>Sent: Thursday, June 03, 2010 7:43 AM
+>>To: Peter Zijlstra
+>>Cc: Alan Cox; Gross, Mark; Florian Mickler; James Bottomley; Arve
+>>Hj=F8nnev=E5g; Neil Brown; tytso@mit.edu; LKML; Thomas Gleixner; Linux OM=
+AP
+>>Mailing List; Linux PM; felipe.balbi@nokia.com
+>>Subject: Re: [linux-pm] [PATCH 0/8] Suspend block api (version 8)
+>>
+>>Peter Zijlstra <peterz@infradead.org> writes:
+>>
+>>> On Thu, 2010-06-03 at 11:03 +0100, Alan Cox wrote:
+>>>> > [mtg: ] This has been a pain point for the PM_QOS implementation.
+>>>> They change the constrain back and forth at the transaction level of
+>>>> the i2c driver.  The pm_qos code really wasn't made to deal with such
+>>>> hot path use, as each such change triggers a re-computation of what
+>>>> the aggregate qos request is.
+>>>>
+>>>> That should be trivial in the usual case because 99% of the time you c=
+an
+>>>> hot path
+>>>>
+>>>> 	the QoS entry changing is the latest one
+>>>> 	there have been no other changes
+>>>> 	If it is valid I can use the cached previous aggregate I cunningly
+>>>> 		saved in the top QoS entry when I computed the new one
+>>>>
+>>>> (ie most of the time from the kernel side you have a QoS stack)
+>>>
+>>> Why would the kernel change the QoS state of a task? Why not have two
+>>> interacting QoS variables, one for the task, one for the subsystem in
+>>> question, and the action depends on their relative value?
+>>
+>>Yes, having a QoS parameter per-subsystem (or even per-device) is very
+>>important for SoCs that have independently controlled powerdomains.
+>>If all devices/subsystems in a particular powerdomain have QoS
+>>parameters that permit, the power state of that powerdomain can be
+>>lowered independently from system-wide power state and power states of
+>>other power domains.
+>>
+> This seems similar to that pm_qos generalization into bus drivers we wher=
+e =
 
-> But I'm not acquainted with those drivers and I don't know
-> for certain.  You could get a clearer idea by putting printk statements
-> at the beginning and end of the resume routines.  And a dump_stack()  
-> would tell you for certain whether the routine was invoked
-> asynchronously.
-I will do that.
+> waving our hands at during the collab summit in April?  We never did get =
 
-In fact it seems just to work now. I can't reproduce that anymore.
-It strange. I double checked that power/async was disabled.
-Maybe I am just lucky now and the suspend/resume functions still run in
-async mode.
+> into meaningful detail at that time.
 
-I checked pm code and it seems to be correct.
+The hand-waving was around how to generalize it into the driver-model,
+or PM QoS.  We're already doing this for OMAP, but in an OMAP-specific
+way, but it's become clear that this is something useful to
+generalize.
 
-
-Best regards,
-Maxim Levitsky
+Kevin
