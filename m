@@ -1,24 +1,14 @@
-From: Brian Swetland <swetland@google.com>
-Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
-	Suspend block api (version 8)
-Date: Thu, 3 Jun 2010 10:26:58 -0700
-Message-ID: <AANLkTinbLQNRyDC2PRUwoVXMF16RLHa2xZl3gJr-ftgB__21314.9654599421$1275586152$gmane$org@mail.gmail.com>
-References: <20100601113309.609349fd@notabene.brown>
-	<alpine.LFD.2.00.1006010340160.2933@localhost.localdomain>
-	<20100601122012.1edeaf48@notabene.brown>
-	<alpine.LFD.2.00.1006011243350.2933@localhost.localdomain>
-	<20100602153235.340a7852@notabene.brown>
-	<AANLkTikVjAf5nHdMx2bcHRAUSkq99s-b5YZCECXIJJLy@mail.gmail.com>
-	<20100602180614.729246ea@notabene.brown>
-	<AANLkTikXy__71nBNW0EFbyL_qNf0nQ68pW9KymWlTk7L@mail.gmail.com>
-	<20100603060444.GF11311@gvim.org>
-	<AANLkTilml9GM2GmJhlB39oqDk6oPnLSSfiQAinpCpAbt@mail.gmail.com>
-	<20100603133646.GF15595@gvim.org>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: How to disable async resume for few selected devices
+ (does it work?)
+Date: Thu, 03 Jun 2010 20:43:26 +0300
+Message-ID: <1275587006.2594.5.camel@maxim-laptop>
+References: <Pine.LNX.4.44L0.1006031000060.1683-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100603133646.GF15595@gvim.org>
+In-Reply-To: <Pine.LNX.4.44L0.1006031000060.1683-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,37 +18,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Felipe Balbi <felipe.balbi@nokia.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBKdW4gMywgMjAxMCBhdCA2OjM2IEFNLCBtYXJrIGdyb3NzIDw2NDBlOTkyMEBnbWFp
-bC5jb20+IHdyb3RlOgo+IE9uIFdlZCwgSnVuIDAyLCAyMDEwIGF0IDExOjEyOjM5UE0gLTA3MDAs
-IEJyaWFuIFN3ZXRsYW5kIHdyb3RlOgo+PiBPbiBXZWQsIEp1biAyLCAyMDEwIGF0IDExOjA0IFBN
-LCBtYXJrIGdyb3NzIDw2NDBlOTkyMEBnbWFpbC5jb20+IHdyb3RlOgo+PiA+Pgo+PiA+PiBUaGVy
-ZSBhcmUgbWFueSB3YWtldXAgZXZlbnRzIHBvc3NpYmxlIGluIGEgdHlwaWNhbCBzeXN0ZW0gLS0K
-Pj4gPj4ga2V5cHJlc3NlcyBvciBvdGhlciBpbnB1dCBldmVudHMsIG5ldHdvcmsgdHJhZmZpYywg
-dGVsZXBob255IGV2ZW50cywKPj4gPj4gbWVkaWEgZXZlbnRzIChmaWxsIGF1ZGlvIGJ1ZmZlciwg
-ZmlsbCB2aWRlbyBkZWNvZGVyIGJ1ZmZlciwgZXRjKSwgYW5kCj4+ID4+IEkgdGhpbmsgcmVxdWly
-aW5nIHRoYXQgYWxsIHdha2V1cCBldmVudCBwcm9jZXNzaW5nIGJvdHRsZW5lY2sgdGhyb3VnaAo+
-PiA+PiBhIHNpbmdsZSB1c2Vyc3BhY2UgcHJvY2VzcyBpcyBub24tb3B0aW1hbCBoZXJlLgo+PiA+
-Cj4+ID4gVW0gZG9lc24ndCB0aGUgYW5kcm9pZCBmcmFtZXdvcmsgYm90dGxlbmVjayB0aGUgdXNl
-ciBtb2RlIGxvY2sKPj4gPiBwcm9jZXNzaW5nIHRocm91Z2ggdGhlIHBvd2VybWFuYWdlciBhbmQg
-YW55IHdha2UgdXAgZXZlbnQgcHJvY2Vzc2luZwo+PiA+IGV2ZW50dWFsbHkgaGFzIHRvIGdyYWIg
-YSBsb2NrIHRocm91Z2ggdGhpcyBib3R0bGVuZWNrIGFueXdheT8KPj4KPj4gRm9yICJoaWdoIGxl
-dmVsIiBmcmFtZXdvcmsvYXBwbGljYXRpb24gbGV2ZWwgd2FrZWxvY2tzLCB5ZXMsIGJ1dCBsb3dl
-cgo+PiBsZXZlbCBjb21wb25lbnRzIGJlbmVhdGggdGhlIGphdmEgYXBpIGxheWVyIHVzZSB0aGUg
-a2VybmVsIGludGVyZmFjZQo+PiBkaXJlY3RseS4KPj4KPiBPaC4gwqBJIHRob3VnaHQgZXZlcnl0
-aGluZyB3ZW50IHRocm91Z2gKPiBoYXJkd2FyZS9saWJoYXJkd2FyZV9sZWdhY3kvcG93ZXIvcG93
-ZXIuYwo+IHdobyBlbHNlIGlzIGhpdHRpbmcgL3N5cy9wb3dlci8qIGluIHRoZSBhbmRyb2lkIHVz
-ZXIgbW9kZSB0aGVuPwoKSSBiZWxpZXZlIGV2ZXJ5dGhpbmcgZG9lcyAtLSB0aGF0J3MgdGhlIHRo
-aW4gd3JhcHBlciBhcm91bmQgdGhlIGtlcm5lbAppbnRlcmZhY2UgKHdoaWNoIHdpbGwgaGF2ZSB0
-byBjaGFuZ2Ugc2xpZ2h0bHkgdG8gbWVldCB0aGUKc3VzcGVuZF9ibG9ja2VyIGRldmljZS9mZCB2
-cyB3YWtlbG9jayBwcm9jL3N5cyBpbnRlcmZhY2UsIGV0YyksIHdoaWNoCmlzIHVzZWQgYnkgdGhl
-IHBvd2VybWFuYWdlciBzZXJ2aWNlLCB0aGUgUklMLCBhbmQgYW55IG90aGVyIGxvdyBsZXZlbApj
-b2RlLiAgQXQgdGhlIEFwcC9TZXJ2aWNlIGxldmVsLCB3YWtlbG9ja3MgYXJlIHByb3ZpZGVkIGJ5
-IGEgamF2YQpsZXZlbCBBUEkgdGhhdCBpcyBhIHJlbW90ZSBpbnRlcmZhY2UgdG8gdGhlIHBvd2Vy
-bWFuYWdlci4KCkJyaWFuCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0
-aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGlu
-Zm8vbGludXgtcG0=
+On Thu, 2010-06-03 at 10:08 -0400, Alan Stern wrote: 
+> On Thu, 3 Jun 2010, Maxim Levitsky wrote:
+> 
+> > On Wed, 2010-06-02 at 21:51 -0400, Alan Stern wrote: 
+> > > On Thu, 3 Jun 2010, Maxim Levitsky wrote:
+> > > 
+> > > > I have a card reader on which one function implements SDHCI and other
+> > > > MMC (to workaround windows bug....)
+> > > > 
+> > > > There is a way to disable MMC function, but is causes the device
+> > > > sometimes to die on resume from disk/ram.
+> > > > 
+> > > > I today was told that MMC function is in fact _almost_ standard SDHCI
+> > > > controller, and in fact now sdhci binds to it and works just fine.
+> > > > 
+> > > > However since both devices share same hardware they appear to have need
+> > > > to be resumed one after another, and definitely not in parallel.
+> > > > I tried to use device_disable_async_suspend on both pci devices and
+> > > > indeed both power/async turns to false.
+> > > > 
+> > > > But they are still resumed in parallel:
+> > > > (look how well mmc0 and mmc1 interleave...)
+> > > > Why?
+> > > 
+> > > My guess is that you shouldn't have disabled async suspend on the PCI 
+> > > devices but on their children instead.  That is, the PCI devices are 
+> > > 0000:07:00.1 and 0000:07:00.2, but the devices causing your problem are 
+> > > mmc0 and mmc1.  Or maybe you'd prefer to disable async suspend on all 
+> > > four devices.
+> > Nope, all childeren of both pci device has 'async' disabled.
+> > Just checked that.
+> 
+> The mmc drivers probably do part of their work in a separate thread (a
+> workqueue).  But I'm not acquainted with those drivers and I don't know
+> for certain.  You could get a clearer idea by putting printk statements
+> at the beginning and end of the resume routines.  And a dump_stack()  
+> would tell you for certain whether the routine was invoked
+> asynchronously.
+Exactly, it is mmc and async code (tasklets)!
+Thanks very much, and sorry for noise.
+
+Best regards,
+Maxim Levitsky
