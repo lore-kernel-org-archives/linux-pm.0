@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 3 Jun 2010 23:02:59 +0200
-Message-ID: <201006032302.59947.rjw__33827.5624708787$1275598976$gmane$org@sisk.pl>
-References: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
-	<201006030003.49486.rjw@sisk.pl> <20100603031024.GA11311@gvim.org>
+Date: Thu, 3 Jun 2010 23:05:58 +0200
+Message-ID: <201006032305.58082.rjw__7688.22064060277$1275599122$gmane$org@sisk.pl>
+References: <AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
+	<AANLkTikvuqtcGS1UdePRxipSk4S5Vmci2uPfFtzZgx6X@mail.gmail.com>
+	<1275575794.5914.74.camel@mulgrave.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100603031024.GA11311@gvim.org>
+In-Reply-To: <1275575794.5914.74.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,79 +19,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: 640e9920@gmail.com, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: 640e9920@gmail.com, markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 03 June 2010, mark gross wrote:
-> On Thu, Jun 03, 2010 at 12:03:49AM +0200, Rafael J. Wysocki wrote:
-> > On Wednesday 02 June 2010, mark gross wrote:
-> > > On Tue, Jun 01, 2010 at 08:50:02PM -0700, Arve Hj=F8nnev=E5g wrote:
-> > > > On Tue, Jun 1, 2010 at 7:05 AM, mark gross <640e9920@gmail.com> wro=
-te:
-> > > > > On Tue, Jun 01, 2010 at 09:07:37AM +0200, Florian Mickler wrote:
-> > > > ...
-> > > > >> +static void update_target_val(int pm_qos_class, s32 val)
-> > > > >> +{
-> > > > >> +     s32 extreme_value;
-> > > > >> +     s32 new_value;
-> > > > >> +     extreme_value =3D atomic_read(&pm_qos_array[pm_qos_class]-=
->target_value);
-> > > > >> +     new_value =3D pm_qos_array[pm_qos_class]->comparitor(val,e=
-xtreme_value);
-> > > > >> +     if (extreme_value !=3D new_value)
-> > > > >> +             atomic_set(&pm_qos_array[pm_qos_class]->target_val=
-ue,new_value);
-> > > > >> +}
-> > > > >> +
-> > > > >
-> > > > > Only works 1/2 the time, but I like the idea!
-> > > > > It fails to get the righ answer when constraints are reduced.  Bu=
-t, this
-> > > > > idea is a good improvement i'll roll into the next pm_qos update!
-> > > > >
-> > > > =
-
-> > > > I think it would be a better idea to track your constraints with a
-> > > > sorted data structure. That way you can to better than O(n) for both
-> > > > directions. If you have a lot of constraints with the same value, it
-> > > > may even be worthwhile to have a two stage structure where for
-> > > > instance you use a rbtree for the unique values and list for identi=
-cal
-> > > > constraints.
-> > > =
-
-> > > I don't agree, we went through this tree vrs list discussion a few ti=
-mes
-> > > before in other areas of the kernel.  Wherever the list tended to be
-> > > short, a simple list wins.  However; we can try it, after we have some
-> > > metrics and stress test cases identified we can measure its effective=
-nes
-> > > against.
-> > =
-
-> > How many different values are there to handle?
-> >
-> =
-
-> for the current pm_qos users its tiny.  I've never heard of more than a
-> few < 10.  However; for the new "interactive" class to provide suspend
-> blocker functionality, I expect the number to be up to 20.
-> =
-
-> but realistically I bet we never get more than 10ish.
-> =
-
-> One constraint constraint request per module from isr to user mode.
-> Once in user mode there would be only a few (assuming Android user
-> space) I think just from the power HAL, input HAL, and the RIL.
-> =
-
-> Still a pretty small number I don't think we need to worry about scaling
-> as much as we need to worry about performance.
-
-In that case sorting the structure is rather not going to improve things, b=
-ut
-it might be worth using a hashtable or something similar.
-
-Rafael
+T24gVGh1cnNkYXkgMDMgSnVuZSAyMDEwLCBKYW1lcyBCb3R0b21sZXkgd3JvdGU6Cj4gT24gVGh1
+LCAyMDEwLTA2LTAzIGF0IDAwOjEwIC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3RlOgo+ID4g
+T24gV2VkLCBKdW4gMiwgMjAxMCBhdCAxMDo0MCBQTSwgbWFyayBncm9zcyA8NjQwZTk5MjBAZ21h
+aWwuY29tPiB3cm90ZToKPiA+ID4gT24gV2VkLCBKdW4gMDIsIDIwMTAgYXQgMDk6NTQ6MTVQTSAt
+MDcwMCwgQnJpYW4gU3dldGxhbmQgd3JvdGU6Cj4gPiA+PiBPbiBXZWQsIEp1biAyLCAyMDEwIGF0
+IDg6MTggUE0sIG1hcmsgZ3Jvc3MgPDY0MGU5OTIwQGdtYWlsLmNvbT4gd3JvdGU6Cj4gPiA+PiA+
+IE9uIFdlZCwgSnVuIDAyLCAyMDEwIGF0IDAyOjU4OjMwUE0gLTA3MDAsIEFydmUgSGrDuG5uZXbD
+pWcgd3JvdGU6Cj4gPiA+PiA+Pgo+ID4gPj4gPj4gVGhlIGxpc3QgaXMgbm90IHNob3J0LiBZb3Ug
+aGF2ZSBhbGwgdGhlIGluYWN0aXZlIGFuZCBhY3RpdmUKPiA+ID4+ID4+IGNvbnN0cmFpbnRzIG9u
+IHRoZSBzYW1lIGxpc3QuIElmIHlvdSBjaGFuZ2UgaXQgdG8gYSB0d28gbGV2ZWwgbGlzdAo+ID4g
+Pj4gPj4gdGhvdWdoLCB0aGUgbGlzdCBvZiB1bmlxdWUgdmFsdWVzICh3aGljaCBpcyB0aGUgbGlz
+dCB5b3UgaGF2ZSB0byB3YWxrKQo+ID4gPj4gPj4gbWF5IGJlIHNob3J0IGVub3VnaCBmb3IgYSB0
+cmVlIHRvIGJlIG92ZXJraWxsLgo+ID4gPj4gPgo+ID4gPj4gPiB3aGF0IGhhdmUgeW91IHNlZW4g
+aW4gcHJhY3RpY2UgZnJvbSB0aGUgd2FrZS1sb2NrIHN0YXRzPwo+ID4gPj4gPgo+ID4gPj4gPiBJ
+J20gaGF2aW5nIGEgaGFyZCB0aW1lIHNlZWluZyB3aGVyZSB5b3UgY291bGQgZ2V0IG1vcmUgdGhh
+biBqdXN0IGEKPiA+ID4+ID4gaGFuZGZ1bGwuICBIb3dldmVyOyBvbmUgY291bGQgZ28gdG8gYSBk
+dWFsIGxpc3QgKGxpa2UgdGhlIHNjaGVkdWxlcikgYW5kCj4gPiA+PiA+IG1vdmUgaW5hY3RpdmUg
+bm9kZXMgZnJvbSBhbiBhY3RpdmUgdG8gaW5hY3RpdmUgbGlzdCwgb3Igd2UgY291bGQgc2ltcGx5
+Cj4gPiA+PiA+IHJlbW92ZSB0aGVtIGZyb20gdGhlIGxpc3QgdXBwb24gaW5hY3Rpdml0eS4gIHdo
+aWNoIHdvdWxkIHdvdWxkIHdlbGwKPiA+ID4+ID4gYWZ0ZXIgSSBjaGFuZ2UgdGhlIGFwaSB0byBo
+YXZlIHRoZSBjbGllbnQgYWxsb2NhdGUgdGhlIG1lbW9yeSBmb3IgdGhlCj4gPiA+PiA+IG5vZGVz
+Li4uICBCVVQsIGlmIHlvdXIgbW92aW5nIHRoaW5ncyBpbiBhbmQgb3V0IG9mIGEgbGlzdCBhIGxv
+dCwgSSdtIG5vdAo+ID4gPj4gPiBzdXJlIHRoZSBicmVhayBldmVuIHBvaW50IHdoZXJlIGNoYW5n
+aW5nIHRoZSBzdHJ1Y3R1cmUgaGVscHMuCj4gPiA+PiA+Cj4gPiA+PiA+IFdlJ2xsIG5lZWQgdG8g
+dHJ5IGl0Lgo+ID4gPj4gPgo+ID4gPj4gPiBJIHRoaW5rIHdlIHdpbGwgYWxtb3N0IG5ldmVyIHNl
+ZSBtb3JlIHRoYW4gMTAgbGlzdCBlbGVtZW50cy4KPiA+ID4+ID4KPiA+ID4+ID4gLS1tZ3Jvc3MK
+PiA+ID4+ID4KPiA+ID4+ID4KPiA+ID4+Cj4gPiA+PiBJIHNlZSBhYm91dCA4MCAoYmFzZWQgb24g
+dGhlIGJhdHRlcnlpbmZvIGR1bXApIG9uIG15IE5leHVzIE9uZQo+ID4gPj4gKFFTRDgyNTAsIEFu
+ZHJvaWQgRnJveW8pOgo+ID4gPgo+ID4gPiBzaHVja3MuCj4gPiA+Cj4gPiA+IHdlbGwgSSB0aGlu
+ayBmb3IgYSBwbV9xb3MgY2xhc3MgdGhhdCBoYXMgYm9vbGVhbiBkeW5hbWljIHJhbmdlIHdlIGNh
+bgo+ID4gPiBnZXQgYXdheSB3aXRoIG5vdCB3YWxraW5nIHRoZSBsaXN0IG9uIGV2ZXJ5IHJlcXVl
+c3QgdXBkYXRlLiAgd2UgY2FuIHVzZQo+ID4gPiBhIGNvdW50ZXIsIGFuZCB0aGUgbGlzdCB3aWxs
+IGJlIGZvciBtb3N0bHkgZm9yIHN0YXRzLgo+ID4gPgo+ID4gCj4gPiBEaWQgeW91IGdpdmUgYW55
+IHRob3VnaHQgdG8gbXkgc3VnZ2VzdGlvbiB0byBvbmx5IHVzZSBvbmUgZW50cnkgcGVyCj4gPiB1
+bmlxdWUgdmFsdWUgb24gdGhlIGZpcnN0IGxldmVsIGxpc3QgYW5kIHRoZW4gdXNlIHNlY29uZGFy
+eSBsaXN0cyBvZgo+ID4gaWRlbnRpY2FsIHZhbHVlcy4gVGhhdCB3YXkgaWYgeW91IG9ubHkgaGF2
+ZSB0d28gY29uc3RyYWludHMgdmFsdWVzIHRoZQo+ID4gbGlzdCB5b3UgaGF2ZSB0byB3YWxrIHdo
+ZW4gdXBkYXRpbmcgYSByZXF1ZXN0IHdpbGwgbmV2ZXIgaGF2ZSBtb3JlCj4gPiB0aGFuIHR3byBl
+bnRyaWVzIHJlZ2FyZGxlc3Mgb2YgaG93IG1hbnkgdG90YWwgcmVxdWVzdCB5b3UgaGF2ZS4KPiA+
+IAo+ID4gQSByZXF1ZXN0IHVwZGF0ZSB0aGVuIGJlY29tZXMgc29tZXRoaW5nIGxpa2UgdGhpczoK
+PiA+ICAgaWYgb24gcHJpbWFyeSBsaXN0IHsKPiA+ICAgICB1bmxpbmsgZnJvbSBwcmltYXJ5IGxp
+c3QKPiA+ICAgICBpZiBzZWNvbmRhcnkgbGlzdCBpcyBub3QgZW1wdHkKPiA+ICAgICAgIGdldCBu
+ZXh0IHNlY29uZGFyeSBlbnRyeSBhbmQgYWRkIGluIHNhbWUgc3BvdCBvbiBwcmltYXJ5IGxpc3QK
+PiA+ICAgfQo+ID4gICB1bmxpbmsgZnJvbSBzZWNvbmRhcnkgbGlzdAo+ID4gICBmaW5kIG5ldyBz
+cG90IG9uIHByaW1hcnkgbGlzdAo+ID4gICBpZiBhbHJlYWR5IHRoZXJlCj4gPiAgICAgYWRkIHRv
+IHNlY29uZGFyeSBsaXN0Cj4gPiAgIGVsc2UKPiA+ICAgICBhZGQgdG8gcHJpbWFyeSBsaXN0Cj4g
+Cj4gVGhpcyBpcyBqdXN0IHJlaW52ZW50aW5nIGhhc2ggYnVja2V0ZWQgbGlzdHMuICBUbyBnZXQg
+dGhlIGJlbmVmaXRzLCBhbGwKPiB3ZSBkbyBpcyBpbXBsZW1lbnQgYW4gTiBzdGF0ZSBjb25zdHJh
+aW50IGFzIGJhY2tlZCBieSBhbiBOIGJ1Y2tldGVkIGhhc2gKPiBsaXN0LCB3aGljaCB0aGUga2Vy
+bmVsIGFscmVhZHkgaGFzIGFsbCB0aGUgaW50ZXJuYWwgbWVjaGFuaWNzIGZvci4KCkFncmVlZC4K
+ClJhZmFlbApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwps
+aW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcK
+aHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4
+LXBt
