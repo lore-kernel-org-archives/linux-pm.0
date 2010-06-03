@@ -1,25 +1,24 @@
-From: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 03 Jun 2010 10:29:52 -0500
-Message-ID: <1275578992.5914.146.camel__19418.3310996324$1275579044$gmane$org@mulgrave.site>
-References: <AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
-	<201005312338.55109.rjw@sisk.pl> <20100531232617.GF31155@gvim.org>
-	<20100601090737.4bc243d9@schatten.dmk.lab>
-	<20100601140519.GC1281@gvim.org>
-	<AANLkTikF-B23_UWG1O3tlBl4m8NStAJllGhhevNhYZT6@mail.gmail.com>
-	<20100602133910.GA9106@gvim.org>
-	<AANLkTilSU79cnBODXFokzIPB1hRcZBxbwTgTQ59MeKcK@mail.gmail.com>
-	<20100603031842.GB11311@gvim.org>
-	<AANLkTiks7sQBbDnN6QrtGVqSXLob1qCs7VA12LZAWnfM@mail.gmail.com>
-	<20100603054018.GE11311@gvim.org>
-	<AANLkTikvuqtcGS1UdePRxipSk4S5Vmci2uPfFtzZgx6X@mail.gmail.com>
-	<1275575794.5914.74.camel@mulgrave.site>
-	<20100603171727.7d835a1d@schatten.dmk.lab>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
+ Suspend block api (version 8)
+Date: Thu, 03 Jun 2010 17:41:41 +0200
+Message-ID: <1275579701.27810.36036.camel__27224.8957110152$1275579743$gmane$org@twins>
+References: <20100601113309.609349fd@notabene.brown>
+	<alpine.LFD.2.00.1006010340160.2933@localhost.localdomain>
+	<20100601122012.1edeaf48@notabene.brown>
+	<alpine.LFD.2.00.1006011243350.2933@localhost.localdomain>
+	<20100602153235.340a7852@notabene.brown>
+	<AANLkTikVjAf5nHdMx2bcHRAUSkq99s-b5YZCECXIJJLy@mail.gmail.com>
+	<20100602180614.729246ea@notabene.brown>
+	<AANLkTikXy__71nBNW0EFbyL_qNf0nQ68pW9KymWlTk7L@mail.gmail.com>
+	<20100603163307.721b1c23@notabene.brown>
+	<AANLkTikuf6bKVHoGRTjrM_2kPtZqUM6J76Z0hNUQxT_3@mail.gmail.com>
+	<20100603142150.GB13179@thunk.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100603171727.7d835a1d@schatten.dmk.lab>
+In-Reply-To: <20100603142150.GB13179@thunk.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,69 +28,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: 640e9920@gmail.com, markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: tytso@mit.edu
+Cc: Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCAyMDEwLTA2LTAzIGF0IDE3OjE3ICswMjAwLCBGbG9yaWFuIE1pY2tsZXIgd3JvdGU6
-Cj4gT24gVGh1LCAwMyBKdW4gMjAxMCAwOTozNjozNCAtMDUwMAo+IEphbWVzIEJvdHRvbWxleSA8
-SmFtZXMuQm90dG9tbGV5QHN1c2UuZGU+IHdyb3RlOgo+IAo+ID4gT24gVGh1LCAyMDEwLTA2LTAz
-IGF0IDAwOjEwIC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3RlOgo+ID4gPiBPbiBXZWQsIEp1
-biAyLCAyMDEwIGF0IDEwOjQwIFBNLCBtYXJrIGdyb3NzIDw2NDBlOTkyMEBnbWFpbC5jb20+IHdy
-b3RlOgo+ID4gPiA+IE9uIFdlZCwgSnVuIDAyLCAyMDEwIGF0IDA5OjU0OjE1UE0gLTA3MDAsIEJy
-aWFuIFN3ZXRsYW5kIHdyb3RlOgo+ID4gPiA+PiBPbiBXZWQsIEp1biAyLCAyMDEwIGF0IDg6MTgg
-UE0sIG1hcmsgZ3Jvc3MgPDY0MGU5OTIwQGdtYWlsLmNvbT4gd3JvdGU6Cj4gPiA+ID4+ID4gT24g
-V2VkLCBKdW4gMDIsIDIwMTAgYXQgMDI6NTg6MzBQTSAtMDcwMCwgQXJ2ZSBIasO4bm5ldsOlZyB3
-cm90ZToKPiA+ID4gPj4gPj4KPiA+ID4gPj4gPj4gVGhlIGxpc3QgaXMgbm90IHNob3J0LiBZb3Ug
-aGF2ZSBhbGwgdGhlIGluYWN0aXZlIGFuZCBhY3RpdmUKPiA+ID4gPj4gPj4gY29uc3RyYWludHMg
-b24gdGhlIHNhbWUgbGlzdC4gSWYgeW91IGNoYW5nZSBpdCB0byBhIHR3byBsZXZlbCBsaXN0Cj4g
-PiA+ID4+ID4+IHRob3VnaCwgdGhlIGxpc3Qgb2YgdW5pcXVlIHZhbHVlcyAod2hpY2ggaXMgdGhl
-IGxpc3QgeW91IGhhdmUgdG8gd2FsaykKPiA+ID4gPj4gPj4gbWF5IGJlIHNob3J0IGVub3VnaCBm
-b3IgYSB0cmVlIHRvIGJlIG92ZXJraWxsLgo+ID4gPiA+PiA+Cj4gPiA+ID4+ID4gd2hhdCBoYXZl
-IHlvdSBzZWVuIGluIHByYWN0aWNlIGZyb20gdGhlIHdha2UtbG9jayBzdGF0cz8KPiA+ID4gPj4g
-Pgo+ID4gPiA+PiA+IEknbSBoYXZpbmcgYSBoYXJkIHRpbWUgc2VlaW5nIHdoZXJlIHlvdSBjb3Vs
-ZCBnZXQgbW9yZSB0aGFuIGp1c3QgYQo+ID4gPiA+PiA+IGhhbmRmdWxsLiAgSG93ZXZlcjsgb25l
-IGNvdWxkIGdvIHRvIGEgZHVhbCBsaXN0IChsaWtlIHRoZSBzY2hlZHVsZXIpIGFuZAo+ID4gPiA+
-PiA+IG1vdmUgaW5hY3RpdmUgbm9kZXMgZnJvbSBhbiBhY3RpdmUgdG8gaW5hY3RpdmUgbGlzdCwg
-b3Igd2UgY291bGQgc2ltcGx5Cj4gPiA+ID4+ID4gcmVtb3ZlIHRoZW0gZnJvbSB0aGUgbGlzdCB1
-cHBvbiBpbmFjdGl2aXR5LiAgd2hpY2ggd291bGQgd291bGQgd2VsbAo+ID4gPiA+PiA+IGFmdGVy
-IEkgY2hhbmdlIHRoZSBhcGkgdG8gaGF2ZSB0aGUgY2xpZW50IGFsbG9jYXRlIHRoZSBtZW1vcnkg
-Zm9yIHRoZQo+ID4gPiA+PiA+IG5vZGVzLi4uICBCVVQsIGlmIHlvdXIgbW92aW5nIHRoaW5ncyBp
-biBhbmQgb3V0IG9mIGEgbGlzdCBhIGxvdCwgSSdtIG5vdAo+ID4gPiA+PiA+IHN1cmUgdGhlIGJy
-ZWFrIGV2ZW4gcG9pbnQgd2hlcmUgY2hhbmdpbmcgdGhlIHN0cnVjdHVyZSBoZWxwcy4KPiA+ID4g
-Pj4gPgo+ID4gPiA+PiA+IFdlJ2xsIG5lZWQgdG8gdHJ5IGl0Lgo+ID4gPiA+PiA+Cj4gPiA+ID4+
-ID4gSSB0aGluayB3ZSB3aWxsIGFsbW9zdCBuZXZlciBzZWUgbW9yZSB0aGFuIDEwIGxpc3QgZWxl
-bWVudHMuCj4gPiA+ID4+ID4KPiA+ID4gPj4gPiAtLW1ncm9zcwo+ID4gPiA+PiA+Cj4gPiA+ID4+
-ID4KPiA+ID4gPj4KPiA+ID4gPj4gSSBzZWUgYWJvdXQgODAgKGJhc2VkIG9uIHRoZSBiYXR0ZXJ5
-aW5mbyBkdW1wKSBvbiBteSBOZXh1cyBPbmUKPiA+ID4gPj4gKFFTRDgyNTAsIEFuZHJvaWQgRnJv
-eW8pOgo+ID4gPiA+Cj4gPiA+ID4gc2h1Y2tzLgo+ID4gPiA+Cj4gPiA+ID4gd2VsbCBJIHRoaW5r
-IGZvciBhIHBtX3FvcyBjbGFzcyB0aGF0IGhhcyBib29sZWFuIGR5bmFtaWMgcmFuZ2Ugd2UgY2Fu
-Cj4gPiA+ID4gZ2V0IGF3YXkgd2l0aCBub3Qgd2Fsa2luZyB0aGUgbGlzdCBvbiBldmVyeSByZXF1
-ZXN0IHVwZGF0ZS4gIHdlIGNhbiB1c2UKPiA+ID4gPiBhIGNvdW50ZXIsIGFuZCB0aGUgbGlzdCB3
-aWxsIGJlIGZvciBtb3N0bHkgZm9yIHN0YXRzLgo+ID4gPiA+Cj4gPiA+IAo+ID4gPiBEaWQgeW91
-IGdpdmUgYW55IHRob3VnaHQgdG8gbXkgc3VnZ2VzdGlvbiB0byBvbmx5IHVzZSBvbmUgZW50cnkg
-cGVyCj4gPiA+IHVuaXF1ZSB2YWx1ZSBvbiB0aGUgZmlyc3QgbGV2ZWwgbGlzdCBhbmQgdGhlbiB1
-c2Ugc2Vjb25kYXJ5IGxpc3RzIG9mCj4gPiA+IGlkZW50aWNhbCB2YWx1ZXMuIFRoYXQgd2F5IGlm
-IHlvdSBvbmx5IGhhdmUgdHdvIGNvbnN0cmFpbnRzIHZhbHVlcyB0aGUKPiA+ID4gbGlzdCB5b3Ug
-aGF2ZSB0byB3YWxrIHdoZW4gdXBkYXRpbmcgYSByZXF1ZXN0IHdpbGwgbmV2ZXIgaGF2ZSBtb3Jl
-Cj4gPiA+IHRoYW4gdHdvIGVudHJpZXMgcmVnYXJkbGVzcyBvZiBob3cgbWFueSB0b3RhbCByZXF1
-ZXN0IHlvdSBoYXZlLgo+ID4gPiAKPiA+ID4gQSByZXF1ZXN0IHVwZGF0ZSB0aGVuIGJlY29tZXMg
-c29tZXRoaW5nIGxpa2UgdGhpczoKPiA+ID4gICBpZiBvbiBwcmltYXJ5IGxpc3Qgewo+ID4gPiAg
-ICAgdW5saW5rIGZyb20gcHJpbWFyeSBsaXN0Cj4gPiA+ICAgICBpZiBzZWNvbmRhcnkgbGlzdCBp
-cyBub3QgZW1wdHkKPiA+ID4gICAgICAgZ2V0IG5leHQgc2Vjb25kYXJ5IGVudHJ5IGFuZCBhZGQg
-aW4gc2FtZSBzcG90IG9uIHByaW1hcnkgbGlzdAo+ID4gPiAgIH0KPiA+ID4gICB1bmxpbmsgZnJv
-bSBzZWNvbmRhcnkgbGlzdAo+ID4gPiAgIGZpbmQgbmV3IHNwb3Qgb24gcHJpbWFyeSBsaXN0Cj4g
-PiA+ICAgaWYgYWxyZWFkeSB0aGVyZQo+ID4gPiAgICAgYWRkIHRvIHNlY29uZGFyeSBsaXN0Cj4g
-PiA+ICAgZWxzZQo+ID4gPiAgICAgYWRkIHRvIHByaW1hcnkgbGlzdAo+ID4gCj4gPiBUaGlzIGlz
-IGp1c3QgcmVpbnZlbnRpbmcgaGFzaCBidWNrZXRlZCBsaXN0cy4gIFRvIGdldCB0aGUgYmVuZWZp
-dHMsIGFsbAo+ID4gd2UgZG8gaXMgaW1wbGVtZW50IGFuIE4gc3RhdGUgY29uc3RyYWludCBhcyBi
-YWNrZWQgYnkgYW4gTiBidWNrZXRlZCBoYXNoCj4gPiBsaXN0LCB3aGljaCB0aGUga2VybmVsIGFs
-cmVhZHkgaGFzIGFsbCB0aGUgaW50ZXJuYWwgbWVjaGFuaWNzIGZvci4KPiA+IAo+ID4gSmFtZXMK
-PiA+Cj4gCj4gaHR0cDovL3d3dy5pdGwubmlzdC5nb3YvZGl2ODk3L3NxZy9kYWRzL0hUTUwvcHJp
-b3JpdHlxdWUuaHRtbAo+IAo+IFNvIG5vIHJlaW52ZW50aW9uLiBKdXN0IHVzaW5nIGEgY29tbW9u
-IHNjaGVtZS4gCgpCeSByZWludmVudGlvbiBJIG1lYW50IG9wZW4gY29kaW5nIGEgY29tbW9uIHBh
-dHRlcm4gZm9yIHdoaWNoIHRoZSBrZXJuZWwKYWxyZWFkeSBoYXMgYW4gQVBJLiAgKFdoZXRoZXIg
-d2UgZ28gd2l0aCBoYXNoIGJ1Y2tldHMgb3IgcGxpc3RzKS4KCkphbWVzCgoKX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0
-CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgt
-Zm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Thu, 2010-06-03 at 10:21 -0400, tytso@mit.edu wrote:
+
+> And let's be blunt.  If in the future the Android team (which I'm not
+> a member of) decides that they have invested more engineering time
+> than they can justify from a business perspective, the next time
+> someone starts whining on a blog, or on Slashdot, or at a conference,
+> about how "OMG!  Google is forking the kernel!!!", or "Google is
+> making the lives of device driver writers for the embedded world
+> difficult", it will now be possible from a political point of view to
+> point and the hundreds, if not thousands, of e-mail messages of LKML
+> developers wanting to redesign this effort and saying "Nyet!  Nyet!
+> Nyet!" to the original patchset, to point out that Google has a made
+> an effort, and gone far beyond what is required by the GPL.  Not only
+> has the source code been made available, but hundreds of engineering
+> hours have been made trying to accomodate the demands of LKML --- and
+> LKML has said no to suspend blockers/wakelocks.
+
+
+In the spirit of being blunt, so what?
+
+We say no for good technical reasons. Also when did it become sensible
+to push features after they were shipped?
+
+It never works to develop stuff like this out-of-tree and then push for
+inclusion. You always get to rewrite (at least 3 times).
+
+If Google indeed decides it doesn't want to play upstream, then sad. But
+I don't see how we would be unjust in complaining about it.
+
+There is more to our community than the letter of the GPL, and you
+should know that. So I really don't see the point of your argument (was
+there one besides the management gibberish?).
