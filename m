@@ -1,7 +1,7 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
+From: James Bottomley <James.Bottomley@suse.de>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 03 Jun 2010 09:58:26 -0700
-Message-ID: <87hblkyrwt.fsf__4685.98009688339$1275584592$gmane$org@deeprootsystems.com>
+Date: Thu, 03 Jun 2010 12:01:33 -0500
+Message-ID: <1275584493.5914.247.camel__41444.1183711917$1275584702$gmane$org@mulgrave.site>
 References: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
 	<20100601135102.GA8098@srcf.ucam.org>
 	<1275426085.21962.967.camel@mulgrave.site>
@@ -19,12 +19,12 @@ References: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
 	<1275559512.27810.35287.camel@twins>
 	<87d3w818ki.fsf@deeprootsystems.com>
 	<CA1BBBBC9359F04AA639128AC0D5D1E96931D4BB@orsmsx502.amr.corp.intel.com>
+	<87hblkyrwt.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CA1BBBBC9359F04AA639128AC0D5D1E96931D4BB@orsmsx502.amr.corp.intel.com>
-	(Mark Gross's message of "Thu\, 3 Jun 2010 07\:52\:38 -0700")
+In-Reply-To: <87hblkyrwt.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -34,63 +34,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Gross, Mark" <mark.gross@intel.com>
-Cc: Neil Brown <neilb@suse.de>, "tytso@mit.edu" <tytso@mit.edu>, Peter Zijlstra <peterz@infradead.org>, "felipe.balbi@nokia.com" <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Neil Brown <neilb@suse.de>, "Gross, Mark" <mark.gross@intel.com>, Peter Zijlstra <peterz@infradead.org>, "felipe.balbi@nokia.com" <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, "tytso@mit.edu" <tytso@mit.edu>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-"Gross, Mark" <mark.gross@intel.com> writes:
-
->>-----Original Message-----
->>From: Kevin Hilman [mailto:khilman@deeprootsystems.com]
->>Sent: Thursday, June 03, 2010 7:43 AM
->>To: Peter Zijlstra
->>Cc: Alan Cox; Gross, Mark; Florian Mickler; James Bottomley; Arve
->>Hj=F8nnev=E5g; Neil Brown; tytso@mit.edu; LKML; Thomas Gleixner; Linux OM=
-AP
->>Mailing List; Linux PM; felipe.balbi@nokia.com
->>Subject: Re: [linux-pm] [PATCH 0/8] Suspend block api (version 8)
->>
->>Peter Zijlstra <peterz@infradead.org> writes:
->>
->>> On Thu, 2010-06-03 at 11:03 +0100, Alan Cox wrote:
->>>> > [mtg: ] This has been a pain point for the PM_QOS implementation.
->>>> They change the constrain back and forth at the transaction level of
->>>> the i2c driver.  The pm_qos code really wasn't made to deal with such
->>>> hot path use, as each such change triggers a re-computation of what
->>>> the aggregate qos request is.
->>>>
->>>> That should be trivial in the usual case because 99% of the time you c=
-an
->>>> hot path
->>>>
->>>> 	the QoS entry changing is the latest one
->>>> 	there have been no other changes
->>>> 	If it is valid I can use the cached previous aggregate I cunningly
->>>> 		saved in the top QoS entry when I computed the new one
->>>>
->>>> (ie most of the time from the kernel side you have a QoS stack)
->>>
->>> Why would the kernel change the QoS state of a task? Why not have two
->>> interacting QoS variables, one for the task, one for the subsystem in
->>> question, and the action depends on their relative value?
->>
->>Yes, having a QoS parameter per-subsystem (or even per-device) is very
->>important for SoCs that have independently controlled powerdomains.
->>If all devices/subsystems in a particular powerdomain have QoS
->>parameters that permit, the power state of that powerdomain can be
->>lowered independently from system-wide power state and power states of
->>other power domains.
->>
-> This seems similar to that pm_qos generalization into bus drivers we wher=
-e =
-
-> waving our hands at during the collab summit in April?  We never did get =
-
-> into meaningful detail at that time.
-
-The hand-waving was around how to generalize it into the driver-model,
-or PM QoS.  We're already doing this for OMAP, but in an OMAP-specific
-way, but it's become clear that this is something useful to
-generalize.
-
-Kevin
+T24gVGh1LCAyMDEwLTA2LTAzIGF0IDA5OjU4IC0wNzAwLCBLZXZpbiBIaWxtYW4gd3JvdGU6Cj4g
+Ikdyb3NzLCBNYXJrIiA8bWFyay5ncm9zc0BpbnRlbC5jb20+IHdyaXRlczoKPiAKPiA+Pi0tLS0t
+T3JpZ2luYWwgTWVzc2FnZS0tLS0tCj4gPj5Gcm9tOiBLZXZpbiBIaWxtYW4gW21haWx0bzpraGls
+bWFuQGRlZXByb290c3lzdGVtcy5jb21dCj4gPj5TZW50OiBUaHVyc2RheSwgSnVuZSAwMywgMjAx
+MCA3OjQzIEFNCj4gPj5UbzogUGV0ZXIgWmlqbHN0cmEKPiA+PkNjOiBBbGFuIENveDsgR3Jvc3Ms
+IE1hcms7IEZsb3JpYW4gTWlja2xlcjsgSmFtZXMgQm90dG9tbGV5OyBBcnZlCj4gPj5IasO4bm5l
+dsOlZzsgTmVpbCBCcm93bjsgdHl0c29AbWl0LmVkdTsgTEtNTDsgVGhvbWFzIEdsZWl4bmVyOyBM
+aW51eCBPTUFQCj4gPj5NYWlsaW5nIExpc3Q7IExpbnV4IFBNOyBmZWxpcGUuYmFsYmlAbm9raWEu
+Y29tCj4gPj5TdWJqZWN0OiBSZTogW2xpbnV4LXBtXSBbUEFUQ0ggMC84XSBTdXNwZW5kIGJsb2Nr
+IGFwaSAodmVyc2lvbiA4KQo+ID4+Cj4gPj5QZXRlciBaaWpsc3RyYSA8cGV0ZXJ6QGluZnJhZGVh
+ZC5vcmc+IHdyaXRlczoKPiA+Pgo+ID4+PiBPbiBUaHUsIDIwMTAtMDYtMDMgYXQgMTE6MDMgKzAx
+MDAsIEFsYW4gQ294IHdyb3RlOgo+ID4+Pj4gPiBbbXRnOiBdIFRoaXMgaGFzIGJlZW4gYSBwYWlu
+IHBvaW50IGZvciB0aGUgUE1fUU9TIGltcGxlbWVudGF0aW9uLgo+ID4+Pj4gVGhleSBjaGFuZ2Ug
+dGhlIGNvbnN0cmFpbiBiYWNrIGFuZCBmb3J0aCBhdCB0aGUgdHJhbnNhY3Rpb24gbGV2ZWwgb2YK
+PiA+Pj4+IHRoZSBpMmMgZHJpdmVyLiAgVGhlIHBtX3FvcyBjb2RlIHJlYWxseSB3YXNuJ3QgbWFk
+ZSB0byBkZWFsIHdpdGggc3VjaAo+ID4+Pj4gaG90IHBhdGggdXNlLCBhcyBlYWNoIHN1Y2ggY2hh
+bmdlIHRyaWdnZXJzIGEgcmUtY29tcHV0YXRpb24gb2Ygd2hhdAo+ID4+Pj4gdGhlIGFnZ3JlZ2F0
+ZSBxb3MgcmVxdWVzdCBpcy4KPiA+Pj4+Cj4gPj4+PiBUaGF0IHNob3VsZCBiZSB0cml2aWFsIGlu
+IHRoZSB1c3VhbCBjYXNlIGJlY2F1c2UgOTklIG9mIHRoZSB0aW1lIHlvdSBjYW4KPiA+Pj4+IGhv
+dCBwYXRoCj4gPj4+Pgo+ID4+Pj4gCXRoZSBRb1MgZW50cnkgY2hhbmdpbmcgaXMgdGhlIGxhdGVz
+dCBvbmUKPiA+Pj4+IAl0aGVyZSBoYXZlIGJlZW4gbm8gb3RoZXIgY2hhbmdlcwo+ID4+Pj4gCUlm
+IGl0IGlzIHZhbGlkIEkgY2FuIHVzZSB0aGUgY2FjaGVkIHByZXZpb3VzIGFnZ3JlZ2F0ZSBJIGN1
+bm5pbmdseQo+ID4+Pj4gCQlzYXZlZCBpbiB0aGUgdG9wIFFvUyBlbnRyeSB3aGVuIEkgY29tcHV0
+ZWQgdGhlIG5ldyBvbmUKPiA+Pj4+Cj4gPj4+PiAoaWUgbW9zdCBvZiB0aGUgdGltZSBmcm9tIHRo
+ZSBrZXJuZWwgc2lkZSB5b3UgaGF2ZSBhIFFvUyBzdGFjaykKPiA+Pj4KPiA+Pj4gV2h5IHdvdWxk
+IHRoZSBrZXJuZWwgY2hhbmdlIHRoZSBRb1Mgc3RhdGUgb2YgYSB0YXNrPyBXaHkgbm90IGhhdmUg
+dHdvCj4gPj4+IGludGVyYWN0aW5nIFFvUyB2YXJpYWJsZXMsIG9uZSBmb3IgdGhlIHRhc2ssIG9u
+ZSBmb3IgdGhlIHN1YnN5c3RlbSBpbgo+ID4+PiBxdWVzdGlvbiwgYW5kIHRoZSBhY3Rpb24gZGVw
+ZW5kcyBvbiB0aGVpciByZWxhdGl2ZSB2YWx1ZT8KPiA+Pgo+ID4+WWVzLCBoYXZpbmcgYSBRb1Mg
+cGFyYW1ldGVyIHBlci1zdWJzeXN0ZW0gKG9yIGV2ZW4gcGVyLWRldmljZSkgaXMgdmVyeQo+ID4+
+aW1wb3J0YW50IGZvciBTb0NzIHRoYXQgaGF2ZSBpbmRlcGVuZGVudGx5IGNvbnRyb2xsZWQgcG93
+ZXJkb21haW5zLgo+ID4+SWYgYWxsIGRldmljZXMvc3Vic3lzdGVtcyBpbiBhIHBhcnRpY3VsYXIg
+cG93ZXJkb21haW4gaGF2ZSBRb1MKPiA+PnBhcmFtZXRlcnMgdGhhdCBwZXJtaXQsIHRoZSBwb3dl
+ciBzdGF0ZSBvZiB0aGF0IHBvd2VyZG9tYWluIGNhbiBiZQo+ID4+bG93ZXJlZCBpbmRlcGVuZGVu
+dGx5IGZyb20gc3lzdGVtLXdpZGUgcG93ZXIgc3RhdGUgYW5kIHBvd2VyIHN0YXRlcyBvZgo+ID4+
+b3RoZXIgcG93ZXIgZG9tYWlucy4KPiA+Pgo+ID4gVGhpcyBzZWVtcyBzaW1pbGFyIHRvIHRoYXQg
+cG1fcW9zIGdlbmVyYWxpemF0aW9uIGludG8gYnVzIGRyaXZlcnMgd2Ugd2hlcmUgCj4gPiB3YXZp
+bmcgb3VyIGhhbmRzIGF0IGR1cmluZyB0aGUgY29sbGFiIHN1bW1pdCBpbiBBcHJpbD8gIFdlIG5l
+dmVyIGRpZCBnZXQgCj4gPiBpbnRvIG1lYW5pbmdmdWwgZGV0YWlsIGF0IHRoYXQgdGltZS4KPiAK
+PiBUaGUgaGFuZC13YXZpbmcgd2FzIGFyb3VuZCBob3cgdG8gZ2VuZXJhbGl6ZSBpdCBpbnRvIHRo
+ZSBkcml2ZXItbW9kZWwsCj4gb3IgUE0gUW9TLiAgV2UncmUgYWxyZWFkeSBkb2luZyB0aGlzIGZv
+ciBPTUFQLCBidXQgaW4gYW4gT01BUC1zcGVjaWZpYwo+IHdheSwgYnV0IGl0J3MgYmVjb21lIGNs
+ZWFyIHRoYXQgdGhpcyBpcyBzb21ldGhpbmcgdXNlZnVsIHRvCj4gZ2VuZXJhbGl6ZS4KCkRvIHlv
+dSBoYXZlIGEgcG9pbnRlciB0byB0aGUgc291cmNlIGFuZCBkZXNjcmlwdGlvbj8gIEl0IG1pZ2h0
+IGJlIHVzZWZ1bAp0byBsb29rIGF0IHRvIGRvIGEgcmVhbGl0eSBjaGVjayBvbiB3aGF0IHdlJ3Jl
+IHRhbGtpbmcgYWJvdXQuCgpKYW1lcwoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51
+eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxt
+YW4vbGlzdGluZm8vbGludXgtcG0=
