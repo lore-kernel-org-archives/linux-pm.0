@@ -1,27 +1,23 @@
-From: Thomas Gleixner <tglx@linutronix.de>
+From: James Bottomley <James.Bottomley@suse.de>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 3 Jun 2010 16:35:12 +0200 (CEST)
-Message-ID: <alpine.LFD.2.00.1006031602160.2933__22369.2893902355$1275575787$gmane$org@localhost.localdomain>
-References: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
-	<20100601135102.GA8098@srcf.ucam.org>
-	<1275426085.21962.967.camel@mulgrave.site>
-	<201006020024.14220.rjw@sisk.pl>
-	<1275431816.21962.1108.camel@mulgrave.site>
-	<AANLkTikObnAZbyOxeYAhXcEbimO3XTTO-HlC9CD_HH6t@mail.gmail.com>
-	<1275451342.21962.1777.camel@mulgrave.site>
-	<AANLkTilRcFZyYa-0HlaM-6IEZSyar3S9S_cCWSFax2Zo@mail.gmail.com>
-	<1275491111.2799.110.camel@mulgrave.site>
-	<20100602214748.7742e3ae@schatten.dmk.lab>
-	<1275511271.2799.516.camel@mulgrave.site>
-	<20100603010607.5baf82a6@schatten.dmk.lab>
-	<CA1BBBBC9359F04AA639128AC0D5D1E9692ABC92@orsmsx502.amr.corp.intel.com>
-	<20100603110312.48a508dc@lxorguk.ukuu.org.uk>
-	<1275571471.5914.2.camel@mulgrave.site>
+Date: Thu, 03 Jun 2010 09:36:34 -0500
+Message-ID: <1275575794.5914.74.camel__42745.7085614607$1275575850$gmane$org@mulgrave.site>
+References: <AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
+	<201005312338.55109.rjw@sisk.pl> <20100531232617.GF31155@gvim.org>
+	<20100601090737.4bc243d9@schatten.dmk.lab>
+	<20100601140519.GC1281@gvim.org>
+	<AANLkTikF-B23_UWG1O3tlBl4m8NStAJllGhhevNhYZT6@mail.gmail.com>
+	<20100602133910.GA9106@gvim.org>
+	<AANLkTilSU79cnBODXFokzIPB1hRcZBxbwTgTQ59MeKcK@mail.gmail.com>
+	<20100603031842.GB11311@gvim.org>
+	<AANLkTiks7sQBbDnN6QrtGVqSXLob1qCs7VA12LZAWnfM@mail.gmail.com>
+	<20100603054018.GE11311@gvim.org>
+	<AANLkTikvuqtcGS1UdePRxipSk4S5Vmci2uPfFtzZgx6X@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275571471.5914.2.camel@mulgrave.site>
+In-Reply-To: <AANLkTikvuqtcGS1UdePRxipSk4S5Vmci2uPfFtzZgx6X@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -31,38 +27,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Gross, Mark" <mark.gross@intel.com>, Neil Brown <neilb@suse.de>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, "tytso@mit.edu" <tytso@mit.edu>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "felipe.balbi@nokia.com" <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: 640e9920@gmail.com, markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 3 Jun 2010, James Bottomley wrote:
-
-> On Thu, 2010-06-03 at 11:03 +0100, Alan Cox wrote:
-> > > [mtg: ] This has been a pain point for the PM_QOS implementation.  They change the constrain back and forth at the transaction level of the i2c driver.  The pm_qos code really wasn't made to deal with such hot path use, as each such change triggers a re-computation of what the aggregate qos request is.
-> > 
-> > That should be trivial in the usual case because 99% of the time you can
-> > hot path
-> > 
-> > 	the QoS entry changing is the latest one
-> > 	there have been no other changes
-> > 	If it is valid I can use the cached previous aggregate I cunningly
-> > 		saved in the top QoS entry when I computed the new one
-> > 
-> > (ie most of the time from the kernel side you have a QoS stack)
-> 
-> It's not just the list based computation: that's trivial to fix, as you
-> say ... the other problem is the notifier chain, because that's blocking
-> and could be long.  Could we invoke the notifier through a workqueue?
-> It doesn't seem to have veto power, so it's pure notification, does it
-> matter if the notice is delayed (as long as it's in order)?
-
-It depends on the information type and for a lot of things we might
-get away without notifiers. 
-
-The only real issue is when you need to get other cores out of their
-deep idle state to make a new constraint work. That's what we do with
-the DMA latency notifier right now.
-
-Thanks,
-
-	tglx
+T24gVGh1LCAyMDEwLTA2LTAzIGF0IDAwOjEwIC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
+Ogo+IE9uIFdlZCwgSnVuIDIsIDIwMTAgYXQgMTA6NDAgUE0sIG1hcmsgZ3Jvc3MgPDY0MGU5OTIw
+QGdtYWlsLmNvbT4gd3JvdGU6Cj4gPiBPbiBXZWQsIEp1biAwMiwgMjAxMCBhdCAwOTo1NDoxNVBN
+IC0wNzAwLCBCcmlhbiBTd2V0bGFuZCB3cm90ZToKPiA+PiBPbiBXZWQsIEp1biAyLCAyMDEwIGF0
+IDg6MTggUE0sIG1hcmsgZ3Jvc3MgPDY0MGU5OTIwQGdtYWlsLmNvbT4gd3JvdGU6Cj4gPj4gPiBP
+biBXZWQsIEp1biAwMiwgMjAxMCBhdCAwMjo1ODozMFBNIC0wNzAwLCBBcnZlIEhqw7hubmV2w6Vn
+IHdyb3RlOgo+ID4+ID4+Cj4gPj4gPj4gVGhlIGxpc3QgaXMgbm90IHNob3J0LiBZb3UgaGF2ZSBh
+bGwgdGhlIGluYWN0aXZlIGFuZCBhY3RpdmUKPiA+PiA+PiBjb25zdHJhaW50cyBvbiB0aGUgc2Ft
+ZSBsaXN0LiBJZiB5b3UgY2hhbmdlIGl0IHRvIGEgdHdvIGxldmVsIGxpc3QKPiA+PiA+PiB0aG91
+Z2gsIHRoZSBsaXN0IG9mIHVuaXF1ZSB2YWx1ZXMgKHdoaWNoIGlzIHRoZSBsaXN0IHlvdSBoYXZl
+IHRvIHdhbGspCj4gPj4gPj4gbWF5IGJlIHNob3J0IGVub3VnaCBmb3IgYSB0cmVlIHRvIGJlIG92
+ZXJraWxsLgo+ID4+ID4KPiA+PiA+IHdoYXQgaGF2ZSB5b3Ugc2VlbiBpbiBwcmFjdGljZSBmcm9t
+IHRoZSB3YWtlLWxvY2sgc3RhdHM/Cj4gPj4gPgo+ID4+ID4gSSdtIGhhdmluZyBhIGhhcmQgdGlt
+ZSBzZWVpbmcgd2hlcmUgeW91IGNvdWxkIGdldCBtb3JlIHRoYW4ganVzdCBhCj4gPj4gPiBoYW5k
+ZnVsbC4gIEhvd2V2ZXI7IG9uZSBjb3VsZCBnbyB0byBhIGR1YWwgbGlzdCAobGlrZSB0aGUgc2No
+ZWR1bGVyKSBhbmQKPiA+PiA+IG1vdmUgaW5hY3RpdmUgbm9kZXMgZnJvbSBhbiBhY3RpdmUgdG8g
+aW5hY3RpdmUgbGlzdCwgb3Igd2UgY291bGQgc2ltcGx5Cj4gPj4gPiByZW1vdmUgdGhlbSBmcm9t
+IHRoZSBsaXN0IHVwcG9uIGluYWN0aXZpdHkuICB3aGljaCB3b3VsZCB3b3VsZCB3ZWxsCj4gPj4g
+PiBhZnRlciBJIGNoYW5nZSB0aGUgYXBpIHRvIGhhdmUgdGhlIGNsaWVudCBhbGxvY2F0ZSB0aGUg
+bWVtb3J5IGZvciB0aGUKPiA+PiA+IG5vZGVzLi4uICBCVVQsIGlmIHlvdXIgbW92aW5nIHRoaW5n
+cyBpbiBhbmQgb3V0IG9mIGEgbGlzdCBhIGxvdCwgSSdtIG5vdAo+ID4+ID4gc3VyZSB0aGUgYnJl
+YWsgZXZlbiBwb2ludCB3aGVyZSBjaGFuZ2luZyB0aGUgc3RydWN0dXJlIGhlbHBzLgo+ID4+ID4K
+PiA+PiA+IFdlJ2xsIG5lZWQgdG8gdHJ5IGl0Lgo+ID4+ID4KPiA+PiA+IEkgdGhpbmsgd2Ugd2ls
+bCBhbG1vc3QgbmV2ZXIgc2VlIG1vcmUgdGhhbiAxMCBsaXN0IGVsZW1lbnRzLgo+ID4+ID4KPiA+
+PiA+IC0tbWdyb3NzCj4gPj4gPgo+ID4+ID4KPiA+Pgo+ID4+IEkgc2VlIGFib3V0IDgwIChiYXNl
+ZCBvbiB0aGUgYmF0dGVyeWluZm8gZHVtcCkgb24gbXkgTmV4dXMgT25lCj4gPj4gKFFTRDgyNTAs
+IEFuZHJvaWQgRnJveW8pOgo+ID4KPiA+IHNodWNrcy4KPiA+Cj4gPiB3ZWxsIEkgdGhpbmsgZm9y
+IGEgcG1fcW9zIGNsYXNzIHRoYXQgaGFzIGJvb2xlYW4gZHluYW1pYyByYW5nZSB3ZSBjYW4KPiA+
+IGdldCBhd2F5IHdpdGggbm90IHdhbGtpbmcgdGhlIGxpc3Qgb24gZXZlcnkgcmVxdWVzdCB1cGRh
+dGUuICB3ZSBjYW4gdXNlCj4gPiBhIGNvdW50ZXIsIGFuZCB0aGUgbGlzdCB3aWxsIGJlIGZvciBt
+b3N0bHkgZm9yIHN0YXRzLgo+ID4KPiAKPiBEaWQgeW91IGdpdmUgYW55IHRob3VnaHQgdG8gbXkg
+c3VnZ2VzdGlvbiB0byBvbmx5IHVzZSBvbmUgZW50cnkgcGVyCj4gdW5pcXVlIHZhbHVlIG9uIHRo
+ZSBmaXJzdCBsZXZlbCBsaXN0IGFuZCB0aGVuIHVzZSBzZWNvbmRhcnkgbGlzdHMgb2YKPiBpZGVu
+dGljYWwgdmFsdWVzLiBUaGF0IHdheSBpZiB5b3Ugb25seSBoYXZlIHR3byBjb25zdHJhaW50cyB2
+YWx1ZXMgdGhlCj4gbGlzdCB5b3UgaGF2ZSB0byB3YWxrIHdoZW4gdXBkYXRpbmcgYSByZXF1ZXN0
+IHdpbGwgbmV2ZXIgaGF2ZSBtb3JlCj4gdGhhbiB0d28gZW50cmllcyByZWdhcmRsZXNzIG9mIGhv
+dyBtYW55IHRvdGFsIHJlcXVlc3QgeW91IGhhdmUuCj4gCj4gQSByZXF1ZXN0IHVwZGF0ZSB0aGVu
+IGJlY29tZXMgc29tZXRoaW5nIGxpa2UgdGhpczoKPiAgIGlmIG9uIHByaW1hcnkgbGlzdCB7Cj4g
+ICAgIHVubGluayBmcm9tIHByaW1hcnkgbGlzdAo+ICAgICBpZiBzZWNvbmRhcnkgbGlzdCBpcyBu
+b3QgZW1wdHkKPiAgICAgICBnZXQgbmV4dCBzZWNvbmRhcnkgZW50cnkgYW5kIGFkZCBpbiBzYW1l
+IHNwb3Qgb24gcHJpbWFyeSBsaXN0Cj4gICB9Cj4gICB1bmxpbmsgZnJvbSBzZWNvbmRhcnkgbGlz
+dAo+ICAgZmluZCBuZXcgc3BvdCBvbiBwcmltYXJ5IGxpc3QKPiAgIGlmIGFscmVhZHkgdGhlcmUK
+PiAgICAgYWRkIHRvIHNlY29uZGFyeSBsaXN0Cj4gICBlbHNlCj4gICAgIGFkZCB0byBwcmltYXJ5
+IGxpc3QKClRoaXMgaXMganVzdCByZWludmVudGluZyBoYXNoIGJ1Y2tldGVkIGxpc3RzLiAgVG8g
+Z2V0IHRoZSBiZW5lZml0cywgYWxsCndlIGRvIGlzIGltcGxlbWVudCBhbiBOIHN0YXRlIGNvbnN0
+cmFpbnQgYXMgYmFja2VkIGJ5IGFuIE4gYnVja2V0ZWQgaGFzaApsaXN0LCB3aGljaCB0aGUga2Vy
+bmVsIGFscmVhZHkgaGFzIGFsbCB0aGUgaW50ZXJuYWwgbWVjaGFuaWNzIGZvci4KCkphbWVzCgoK
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0g
+bWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8v
+bGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
