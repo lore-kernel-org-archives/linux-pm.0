@@ -1,9 +1,11 @@
-From: Brian Swetland <swetland@google.com>
+From: Neil Brown <neilb@suse.de>
 Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
-	Suspend block api (version 8)
-Date: Wed, 2 Jun 2010 23:12:39 -0700
-Message-ID: <AANLkTilml9GM2GmJhlB39oqDk6oPnLSSfiQAinpCpAbt__10453.3308106058$1275545774$gmane$org@mail.gmail.com>
-References: <20100601090023.788cabf4@notabene.brown>
+ Suspend block api (version 8)
+Date: Thu, 3 Jun 2010 16:33:07 +1000
+Message-ID: <20100603163307.721b1c23__43666.9132709087$1275546949$gmane$org@notabene.brown>
+References: <Pine.LNX.4.44L0.1005271303190.3239-100000@iolanthe.rowland.org>
+	<201006010005.19554.rjw@sisk.pl>
+	<20100601090023.788cabf4@notabene.brown>
 	<201006010232.20263.rjw@sisk.pl>
 	<20100601113309.609349fd@notabene.brown>
 	<alpine.LFD.2.00.1006010340160.2933@localhost.localdomain>
@@ -13,12 +15,11 @@ References: <20100601090023.788cabf4@notabene.brown>
 	<AANLkTikVjAf5nHdMx2bcHRAUSkq99s-b5YZCECXIJJLy@mail.gmail.com>
 	<20100602180614.729246ea@notabene.brown>
 	<AANLkTikXy__71nBNW0EFbyL_qNf0nQ68pW9KymWlTk7L@mail.gmail.com>
-	<20100603060444.GF11311@gvim.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100603060444.GF11311@gvim.org>
+In-Reply-To: <AANLkTikXy__71nBNW0EFbyL_qNf0nQ68pW9KymWlTk7L@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,24 +29,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Felipe Balbi <felipe.balbi@nokia.com>
+To: Brian Swetland <swetland@google.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 2, 2010 at 11:04 PM, mark gross <640e9920@gmail.com> wrote:
->>
->> There are many wakeup events possible in a typical system --
->> keypresses or other input events, network traffic, telephony events,
->> media events (fill audio buffer, fill video decoder buffer, etc), and
->> I think requiring that all wakeup event processing bottleneck through
->> a single userspace process is non-optimal here.
->
-> Um doesn't the android framework bottleneck the user mode lock
-> processing through the powermanager and any wake up event processing
-> eventually has to grab a lock through this bottleneck anyway?
-
-For "high level" framework/application level wakelocks, yes, but lower
-level components beneath the java api layer use the kernel interface
-directly.
-
-Brian
+T24gV2VkLCAyIEp1biAyMDEwIDExOjA1OjE4IC0wNzAwCkJyaWFuIFN3ZXRsYW5kIDxzd2V0bGFu
+ZEBnb29nbGUuY29tPiB3cm90ZToKCj4gT24gV2VkLCBKdW4gMiwgMjAxMCBhdCAxOjA2IEFNLCBO
+ZWlsIEJyb3duIDxuZWlsYkBzdXNlLmRlPiB3cm90ZToKPiA+IE9uIFdlZCwgMiBKdW4gMjAxMCAw
+MDowNToxNCAtMDcwMAo+ID4gQXJ2ZSBIasO4bm5ldsOlZyA8YXJ2ZUBhbmRyb2lkLmNvbT4gd3Jv
+dGU6Cj4gPj4gPiBUaGUgdXNlci1zcGFjZSBzdXNwZW5kIGRhZW1vbiBhdm9pZHMgbG9zaW5nIHdh
+a2UtZXZlbnRzIGJ5IHVzaW5nCj4gPj4gPiBmY250bChGX09XTkVSKSB0byBlbnN1cmUgaXQgZ2V0
+cyBhIHNpZ25hbCB3aGVuZXZlciBhbnkgaW1wb3J0YW50IHdha2UtZXZlbnQKPiA+PiA+IGlzIHJl
+YWR5IHRvIGJlIHJlYWQgYnkgdXNlci1zcGFjZS4gwqBUaGlzIG1heSBpbnZvbHZlOgo+ID4+ID4g
+wqAtIHRoZSBvbmUgZGFlbW9uIHByb2Nlc3NpbmcgYWxsIHdha2UgZXZlbnRzCj4gPj4KPiA+PiBX
+YWtlIHVwIGV2ZW50cyBhcmUgbm90IGFsbCBwcm9jZXNzZWQgYnkgb25lIGRhZW1vbi4KPiA+Cj4g
+PiBOb3Qgd2l0aCB5b3VyIGN1cnJlbnQgdXNlci1zcGFjZSBjb2RlLCBuby4gwqBBcmUgeW91IHNh
+eWluZyB0aGF0IHlvdSBhcmUgbm90Cj4gPiBvcGVuIHRvIGFueSBzaWduaWZpY2FudCBjaGFuZ2Ug
+aW4gdGhlIEFuZHJvaWQgdXNlci1zcGFjZSBjb2RlPyDCoFRoYXQgd291bGQKPiA+IG1ha2UgdGhl
+IHNpdHVhdGlvbiBhIGxvdCBoYXJkZXIgdG8gcmVzb2x2ZS4KPiAKPiBUaGVyZSBhcmUgbWFueSB3
+YWtldXAgZXZlbnRzIHBvc3NpYmxlIGluIGEgdHlwaWNhbCBzeXN0ZW0gLS0KPiBrZXlwcmVzc2Vz
+IG9yIG90aGVyIGlucHV0IGV2ZW50cywgbmV0d29yayB0cmFmZmljLCB0ZWxlcGhvbnkgZXZlbnRz
+LAo+IG1lZGlhIGV2ZW50cyAoZmlsbCBhdWRpbyBidWZmZXIsIGZpbGwgdmlkZW8gZGVjb2RlciBi
+dWZmZXIsIGV0YyksIGFuZAo+IEkgdGhpbmsgcmVxdWlyaW5nIHRoYXQgYWxsIHdha2V1cCBldmVu
+dCBwcm9jZXNzaW5nIGJvdHRsZW5lY2sgdGhyb3VnaAo+IGEgc2luZ2xlIHVzZXJzcGFjZSBwcm9j
+ZXNzIGlzIG5vbi1vcHRpbWFsIGhlcmUuCgpKdXN0IHRvIGJlIGNsZWFyOiBJJ20gbm90IHN1Z2dl
+c3RpbmcgYWxsIHdha2UtZXZlbnRzIG5lZWQgdG8gZ28gdGhyb3VnaCBvbmUKcHJvY2Vzcy4gIFRo
+YXQgd2FzIGp1c3Qgb25lIGV4YW1wbGUgb2YgaG93IHRoZSBpbnRlcmZhY2UgSSBwcm9wb3NlZCBj
+b3VsZCBiZQp1c2VkLiAgVGhlcmUgd2VyZSB0d28gb3RoZXIgZXhhbXBsZXMuCkhvd2V2ZXIgb25l
+IHByb2Nlc3Mgd291bGQgbmVlZCB0byBrbm93IGFib3V0IGFueSB3YWtldXAgZXZlbnQgdGhhdCBo
+YXBwZW5zLgpJIGRvbid0IHRoaW5rIHRoYXQgbmVlZHMgdG8gYmUgYSBzaWduaWZpY2FudCBib3R0
+bGVuZWNrLCBidXQgSSBkb24ndCByZWFsbHkKa25vdyBlbm91Z2ggYWJvdXQgYWxsIHRoZSByZXF1
+aXJlbWVudCB0byB0cnkgZGV2aXNpbmcgYSBkZW1vbnN0cmF0aW9uLgoKPiAKPiBUaGUgY3VycmVu
+dCBzdXNwZW5kLWJsb2NrZXIgcHJvcG9zYWwgYWxyZWFkeSBpbnZvbHZlcyB1c2Vyc3BhY2UKPiBj
+aGFuZ2VzIChpdCdzIGRpZmZlcmVudCB0aGFuIG91ciBleGlzdGluZyB3YWtlbG9jayBpbnRlcmZh
+Y2UpLCBhbmQKPiB3ZSdyZSBjZXJ0YWlubHkgbm90IG9wcG9zZWQgdG8gYW55L2FsbCB1c2Vyc3Bh
+Y2UgY2hhbmdlcyBvbiBwcmluY2lwbGUsCj4gYnV0IG9uIHRoZSBvdGhlciBoYW5kIHdlJ3JlIG5v
+dCBpbnRlcmVzdGVkIGluIHNpZ25pZmljYW50IHJld29ya3Mgb2YKPiB1c2Vyc3BhY2UgdW5sZXNz
+IHRoZXkgYWN0dWFsbHkgaW1wcm92ZSB0aGUgc2l0dWF0aW9uIHNvbWVob3cuICBJIHRoaW5rCj4g
+Ym90dGxlbmVja2luZyBldmVudHMgdGhyb3VnaCBhIGNlbnRyYWwgZGFlbW9uIHdvdWxkIHJlcHJl
+c2VudCBhIHN0ZXAKPiBiYWNrd2FyZHMuCgpJIGd1ZXNzIGl0IGJlY29tZXMgYW4gcXVlc3Rpb24g
+b2YgZWNvbm9taWNzIGZvciB5b3UgdGhlbi4gIERvZXMgdGhlIGNvc3Qgb2YKd2hhdGV2ZXIgdXNl
+ci1zcGFjZSBjaGFuZ2VzIGFyZSByZXF1aXJlZCBleGNlZWQgdGhlIHZhbHVlIG9mIHVzaW5nIGFu
+IHVwc3RyZWFtCmtlcm5lbD8gIEJvdGggdGhlIGNvc3QgYW5kIHRoZSB2YWx1ZSB3b3VsZCBiZSB2
+ZXJ5IGhhcmQgdG8gZXN0aW1hdGUgaW4KYWR2YW5jZS4gIEkgZG9uJ3QgZW52eSB5b3UgdGhlIGRl
+Y2lzaW9uLi4uCgpOZWlsQnJvd24KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZv
+dW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9s
+aXN0aW5mby9saW51eC1wbQ==
