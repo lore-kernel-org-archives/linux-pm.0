@@ -1,24 +1,23 @@
-From: tytso@mit.edu
-Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
- Suspend block api (version 8)
-Date: Thu, 3 Jun 2010 10:21:50 -0400
-Message-ID: <20100603142150.GB13179__34516.9028769762$1275574995$gmane$org@thunk.org>
-References: <20100601113309.609349fd@notabene.brown>
-	<alpine.LFD.2.00.1006010340160.2933@localhost.localdomain>
-	<20100601122012.1edeaf48@notabene.brown>
-	<alpine.LFD.2.00.1006011243350.2933@localhost.localdomain>
-	<20100602153235.340a7852@notabene.brown>
-	<AANLkTikVjAf5nHdMx2bcHRAUSkq99s-b5YZCECXIJJLy@mail.gmail.com>
-	<20100602180614.729246ea@notabene.brown>
-	<AANLkTikXy__71nBNW0EFbyL_qNf0nQ68pW9KymWlTk7L@mail.gmail.com>
-	<20100603163307.721b1c23@notabene.brown>
-	<AANLkTikuf6bKVHoGRTjrM_2kPtZqUM6J76Z0hNUQxT_3@mail.gmail.com>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Thu, 3 Jun 2010 16:30:49 +0200
+Message-ID: <20100603163049.4eba1574__44246.9546724626$1275575511$gmane$org@schatten.dmk.lab>
+References: <20100531232617.GF31155@gvim.org>
+	<20100601090737.4bc243d9@schatten.dmk.lab>
+	<20100601140519.GC1281@gvim.org>
+	<AANLkTikF-B23_UWG1O3tlBl4m8NStAJllGhhevNhYZT6@mail.gmail.com>
+	<20100602133910.GA9106@gvim.org>
+	<AANLkTilSU79cnBODXFokzIPB1hRcZBxbwTgTQ59MeKcK@mail.gmail.com>
+	<20100603031842.GB11311@gvim.org>
+	<AANLkTiks7sQBbDnN6QrtGVqSXLob1qCs7VA12LZAWnfM@mail.gmail.com>
+	<20100603054018.GE11311@gvim.org>
+	<AANLkTikvuqtcGS1UdePRxipSk4S5Vmci2uPfFtzZgx6X@mail.gmail.com>
+	<20100603132449.GA15595@gvim.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="iso-8859-15"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTikuf6bKVHoGRTjrM_2kPtZqUM6J76Z0hNUQxT_3@mail.gmail.com>
+In-Reply-To: <20100603132449.GA15595@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,66 +27,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: markgross@thegnar.org
+Cc: 640e9920@gmail.com, Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Peter@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 02, 2010 at 11:43:06PM -0700, Brian Swetland wrote:
-> > I guess it becomes an question of economics for you then. =A0Does the c=
-ost of
-> > whatever user-space changes are required exceed the value of using an u=
-pstream
-> > kernel? =A0Both the cost and the value would be very hard to estimate in
-> > advance. =A0I don't envy you the decision...
+On Thu, 3 Jun 2010 06:24:49 -0700
+mark gross <640e9920@gmail.com> wrote:
+
+> On Thu, Jun 03, 2010 at 12:10:03AM -0700, Arve Hj=F8nnev=E5g wrote:
+
+> ok I'm not getting it.
+> is this a fancy com-sci algorithm I should know about?
 > =
 
-> Well, at this point we've invested more engineering hours in the
-> various rewrites of this (single) patchset and discussion around it
-> than we have spent on rebasing our trees on roughly every other
-> mainline release since 2.6.16 or so, across five years of Android
-> development.  We think there's some good value to be had (all the
-> usual reasons) by heading upstream, so we're still discussing these
-> patches and exploring alternatives, but yes, from one way of looking
-> at it, it'd certainly be cheaper to just keep maintaining our own
-> trees.
+> --mgross
 
-And let's be blunt.  If in the future the Android team (which I'm not
-a member of) decides that they have invested more engineering time
-than they can justify from a business perspective, the next time
-someone starts whining on a blog, or on Slashdot, or at a conference,
-about how "OMG!  Google is forking the kernel!!!", or "Google is
-making the lives of device driver writers for the embedded world
-difficult", it will now be possible from a political point of view to
-point and the hundreds, if not thousands, of e-mail messages of LKML
-developers wanting to redesign this effort and saying "Nyet!  Nyet!
-Nyet!" to the original patchset, to point out that Google has a made
-an effort, and gone far beyond what is required by the GPL.  Not only
-has the source code been made available, but hundreds of engineering
-hours have been made trying to accomodate the demands of LKML --- and
-LKML has said no to suspend blockers/wakelocks.
+I think you are at an advantage if you have studied fancy com-sci for
+this? Here is an example:
 
-Realistically, a company makes decisions about whether to pursue
-engineering efforts based on business plans, and this is true whether
-the company is Red Hat, or Novell, or IBM, or Google.  One of the
-cost/benefits can be things that aren't easily measured such as public
-relations.  But past a certain point, it may be that the right answer
-is to make a single public appeal to Linus, and if he says no, or if
-he ignores the pull request, then the company at hand can say, "We've
-done the best that we could, but the Linux developer community, and
-Linus specifically, has refused our patch".  And yes, it's all about
-PR, but let's not kid ourselves --- the GPL and bad PR can't be used
-as blackmail to force a company to invest arbitrarily unlimited
-amounts of engineering effort just to satisfy the mandarins of the
-LKML and/or Linus.
+say you have 5 constraints: =
 
-And if people want to call this a fork, Linus has in the past said
-that sometimes forks are healthy, and necessary, and we can see how
-things play out in the marketplace.
+qos1 with a value of 10
+qos2 with 5
+qos3 with 10
+qos4 with 11
 
-Disclosure: I work at Google, but I'm not at all involved in the
-Android development team, and it's not at all my call when Brian and
-his team should make a decision that they've invested more time/energy
-than can be justified to their management --- heck, they even roll up
-to an completely different VP than I do.  :-)
+Now, you hash that list by the qos-values:
 
-						- Ted
+11    ---- 10 	----- 5 =
+
+|	   |  	      |
+qos4	   qos3       qos2
+	   |
+	   qos1
+
+
+To compute the maximum you just walk the "----" list.
+
+To reduce qos4 from 11 to 5 you remove it from its "|" list and
+prepend it to the corresponding "|" list.  (4 Pointer adjustments +
+searching the "-----" list for the right place to insert.  =
+
+
+result:
+
+10 ---- 5
+|	|
+qos3	qos4
+|	|
+qos1	qos2
+
+Cheers,
+Flo
