@@ -1,14 +1,15 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: How to disable async resume for few selected devices
- (does it work?)
-Date: Thu, 03 Jun 2010 09:55:45 +0300
-Message-ID: <1275548145.2582.2.camel@maxim-laptop>
-References: <Pine.LNX.4.44L0.1006022147430.24772-100000@netrider.rowland.org>
+From: Brian Swetland <swetland@google.com>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Wed, 2 Jun 2010 23:58:37 -0700
+Message-ID: <AANLkTinxP73uOG4XtnTtS1LZnWDvvgpAFN5Uv_xdKEwk__26810.0912952379$1275548375$gmane$org@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1005271141410.3239-100000@iolanthe.rowland.org>
+	<alpine.LFD.2.00.1005271751240.3032@localhost.localdomain>
+	<20100603042403.GC20028@linux-sh.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006022147430.24772-100000@netrider.rowland.org>
+In-Reply-To: <20100603042403.GC20028@linux-sh.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,42 +19,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2010-06-02 at 21:51 -0400, Alan Stern wrote: 
-> On Thu, 3 Jun 2010, Maxim Levitsky wrote:
-> 
-> > I have a card reader on which one function implements SDHCI and other
-> > MMC (to workaround windows bug....)
-> > 
-> > There is a way to disable MMC function, but is causes the device
-> > sometimes to die on resume from disk/ram.
-> > 
-> > I today was told that MMC function is in fact _almost_ standard SDHCI
-> > controller, and in fact now sdhci binds to it and works just fine.
-> > 
-> > However since both devices share same hardware they appear to have need
-> > to be resumed one after another, and definitely not in parallel.
-> > I tried to use device_disable_async_suspend on both pci devices and
-> > indeed both power/async turns to false.
-> > 
-> > But they are still resumed in parallel:
-> > (look how well mmc0 and mmc1 interleave...)
-> > Why?
-> 
-> My guess is that you shouldn't have disabled async suspend on the PCI 
-> devices but on their children instead.  That is, the PCI devices are 
-> 0000:07:00.1 and 0000:07:00.2, but the devices causing your problem are 
-> mmc0 and mmc1.  Or maybe you'd prefer to disable async suspend on all 
-> four devices.
-Nope, all childeren of both pci device has 'async' disabled.
-Just checked that.
+On Wed, Jun 2, 2010 at 9:24 PM, Paul Mundt <lethal@linux-sh.org> wrote:
+>
+> On the other hand, while this isn't that difficult for the UP case it
+> does pose more problems for the SMP case. Presently the suspend paths
+> (suspend-to-RAM/hibernate/kexec jump) all deal with disabling and
+> enabling of non-boot CPUs via CPU hotplug explicitly, which will clear
+> them from the online CPU map. We would have to rework the semantics a bit
+> if cpuidle were also permitted to opportunistically offline CPUs.
 
-Best regards,
-Maxim Levitsky
+That's definitely something we'd be interested in looking at.  Some
+upcoming ARM v7 architecture SMP SoCs we're seeing will support full
+independent clock scaling and power gating for the individual cores --
+if there's not enough work to keep the 2nd (or nth) cpu busy, there
+would be good power savings to be had shutting it down.
 
-> 
-> Alan Stern
-> 
+I haven't poked around too much with how things work in SMP
+environments -- are there per-cpu idle threads?
+
+Brian
