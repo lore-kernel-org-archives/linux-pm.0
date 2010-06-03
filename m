@@ -1,24 +1,14 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
- Suspend block api (version 8)
-Date: Thu, 3 Jun 2010 03:27:46 +0200
-Message-ID: <20100603032746.014f5c07__31221.901116851$1275528526$gmane$org@schatten.dmk.lab>
-References: <20100601113309.609349fd@notabene.brown>
-	<alpine.LFD.2.00.1006010340160.2933@localhost.localdomain>
-	<20100601122012.1edeaf48@notabene.brown>
-	<alpine.LFD.2.00.1006011243350.2933@localhost.localdomain>
-	<20100602153235.340a7852@notabene.brown>
-	<AANLkTikVjAf5nHdMx2bcHRAUSkq99s-b5YZCECXIJJLy@mail.gmail.com>
-	<20100602180614.729246ea@notabene.brown>
-	<AANLkTimISbs4X2YR_Pal9A80mpkNyCy8laWBcOgR2Cl7@mail.gmail.com>
-	<20100602210224.6ae2333f@notabene.brown>
-	<20100602210521.54b9cd9b@schatten.dmk.lab>
-	<20100602233243.GA27666@core.coreip.homeip.net>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: How to disable async resume for few selected devices
+ (does it work?)
+Date: Wed, 2 Jun 2010 21:51:40 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006022147430.24772-100000@netrider.rowland.org>
+References: <1275527287.2664.10.camel@maxim-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100602233243.GA27666@core.coreip.homeip.net>
+In-Reply-To: <1275527287.2664.10.camel@maxim-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,55 +18,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Neil Brown <neilb@suse.de>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Felipe@smtp1.linux-foundation.org, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2 Jun 2010 16:32:44 -0700
-Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+On Thu, 3 Jun 2010, Maxim Levitsky wrote:
 
-> On Wed, Jun 02, 2010 at 09:05:21PM +0200, Florian Mickler wrote:
-> > On Wed, 2 Jun 2010 21:02:24 +1000
-> > Neil Brown <neilb@suse.de> wrote:
-> > > 
-> > > And this decision (to block suspend) really needs to be made in the driver,
-> > > not in userspace?
-> > 
-> > Well, it fits. The requirement is a direct consequence of the intimate
-> > knowledge the driver has about the driven devices.
+> I have a card reader on which one function implements SDHCI and other
+> MMC (to workaround windows bug....)
 > 
-> That is not really true. A driver does have intimate knowledge of the
-> device, however it does not necessarily have an idea about the data read
-> from the device. Consider the gpio_matrix driver: Arve says that it has
-> to continue scanning matrix once first interrupt arrvies. But it really
-> depends on what key has been pressed - if user pressed KEY_SUSPEND or
-> KEY_POWER it cmight be better if we did not wait for key release but
-> initiated the action right away. The decision on how system reacts to a
-> key press does not belong to the driver but really to userspace.
->  
+> There is a way to disable MMC function, but is causes the device
+> sometimes to die on resume from disk/ram.
+> 
+> I today was told that MMC function is in fact _almost_ standard SDHCI
+> controller, and in fact now sdhci binds to it and works just fine.
+> 
+> However since both devices share same hardware they appear to have need
+> to be resumed one after another, and definitely not in parallel.
+> I tried to use device_disable_async_suspend on both pci devices and
+> indeed both power/async turns to false.
+> 
+> But they are still resumed in parallel:
+> (look how well mmc0 and mmc1 interleave...)
+> Why?
 
-I can't follow the gpio_matrix_driver example, but your point is
-obviously true. 
-A device should never register a constraint because of the data it
-handles. That belongs into userspace. Or wherever the data is
-consumed. 
+My guess is that you shouldn't have disabled async suspend on the PCI 
+devices but on their children instead.  That is, the PCI devices are 
+0000:07:00.1 and 0000:07:00.2, but the devices causing your problem are 
+mmc0 and mmc1.  Or maybe you'd prefer to disable async suspend on all 
+four devices.
 
-I'm obviously not trying to say that a network driver should block
-suspend while I'm on facebook. Or unblock when visiting m$.com. That
-would be absurd. 
-
-But, there are of course places in the kernel, where some kernel code
-listens to data. For example the packet-filtering. Or sysrq-keys.
-But I don't know how that relates to suspend_blockers now... ? 
-
-Mind if I rephrase the quote?
-From: "Well, it fits. The requirement is a direct consequence of the
-intimate knowledge the driver has about the driven devices." 
-To: "It fits, when the requirement is a direct consequence of the
-intimate knowledge the driver has about the driven devices."
-
-Cheers,
-Flo
-
-p.s.: tsss.... language... what a broken concept. And yet we have to
-work with it.
+Alan Stern
