@@ -1,13 +1,14 @@
-From: Brian Swetland <swetland@google.com>
-Subject: Re: suspend blockers & Android integration
-Date: Thu, 3 Jun 2010 12:50:02 -0700
-Message-ID: <AANLkTinsOF3wnxsruR0TvjBAQcHks4tf0ay_sM2xB_p4__40777.5111184039$1275594677$gmane$org@mail.gmail.com>
-References: <20100603193045.GA7188@elte.hu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Thu, 3 Jun 2010 23:02:59 +0200
+Message-ID: <201006032302.59947.rjw__33827.5624708787$1275598976$gmane$org@sisk.pl>
+References: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
+	<201006030003.49486.rjw@sisk.pl> <20100603031024.GA11311@gvim.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100603193045.GA7188@elte.hu>
+In-Reply-To: <20100603031024.GA11311@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,95 +18,79 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: tytso@mit.edu, Peter Zijlstra <a.p.zijlstra@chello.nl>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: markgross@thegnar.org
+Cc: 640e9920@gmail.com, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 3, 2010 at 12:30 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> Sadly the response from the Android team has been 100% uncompromising: either
-> suspend blockers or nothing.
+On Thursday 03 June 2010, mark gross wrote:
+> On Thu, Jun 03, 2010 at 12:03:49AM +0200, Rafael J. Wysocki wrote:
+> > On Wednesday 02 June 2010, mark gross wrote:
+> > > On Tue, Jun 01, 2010 at 08:50:02PM -0700, Arve Hj=F8nnev=E5g wrote:
+> > > > On Tue, Jun 1, 2010 at 7:05 AM, mark gross <640e9920@gmail.com> wro=
+te:
+> > > > > On Tue, Jun 01, 2010 at 09:07:37AM +0200, Florian Mickler wrote:
+> > > > ...
+> > > > >> +static void update_target_val(int pm_qos_class, s32 val)
+> > > > >> +{
+> > > > >> +     s32 extreme_value;
+> > > > >> +     s32 new_value;
+> > > > >> +     extreme_value =3D atomic_read(&pm_qos_array[pm_qos_class]-=
+>target_value);
+> > > > >> +     new_value =3D pm_qos_array[pm_qos_class]->comparitor(val,e=
+xtreme_value);
+> > > > >> +     if (extreme_value !=3D new_value)
+> > > > >> +             atomic_set(&pm_qos_array[pm_qos_class]->target_val=
+ue,new_value);
+> > > > >> +}
+> > > > >> +
+> > > > >
+> > > > > Only works 1/2 the time, but I like the idea!
+> > > > > It fails to get the righ answer when constraints are reduced.  Bu=
+t, this
+> > > > > idea is a good improvement i'll roll into the next pm_qos update!
+> > > > >
+> > > > =
 
-Well, we're willing to accept something that gives us the same
-functionality (thus rewriting the api several times to meet various
-objections, current discussions around
-constraint-based-implementations / pm-qos, etc).  We believe we're
-solving a real problem here and have not seen a counter-proposal that
-accomplishes the same.
+> > > > I think it would be a better idea to track your constraints with a
+> > > > sorted data structure. That way you can to better than O(n) for both
+> > > > directions. If you have a lot of constraints with the same value, it
+> > > > may even be worthwhile to have a two stage structure where for
+> > > > instance you use a rbtree for the unique values and list for identi=
+cal
+> > > > constraints.
+> > > =
 
-Suggestions such as "just yell at developers for writing bad apps" or
-"it's the user's fault if they install a lousy app" or "make your app
-marketplace more restrictive" are not helpful.  The technical
-discussions around alternatives are more so (though I do feel like
-we're going in circles in places), which again is why we're still here
-talking about this (that and Arve is about a billion times more
-patient and persistent than I am).
+> > > I don't agree, we went through this tree vrs list discussion a few ti=
+mes
+> > > before in other areas of the kernel.  Wherever the list tended to be
+> > > short, a simple list wins.  However; we can try it, after we have some
+> > > metrics and stress test cases identified we can measure its effective=
+nes
+> > > against.
+> > =
 
-We're not interested in massively rearchitecting our userspace to
-accomplish this (and the "rewrite your userspace!" proposals I've seen
-have had race conditions and/or significant more complexity than the
-wakelock model).
+> > How many different values are there to handle?
+> >
+> =
 
-...
+> for the current pm_qos users its tiny.  I've never heard of more than a
+> few < 10.  However; for the new "interactive" class to provide suspend
+> blocker functionality, I expect the number to be up to 20.
+> =
 
-> Also, why did the Android team start its contributions with such a difficult
-> and controversial kernel feature?
+> but realistically I bet we never get more than 10ish.
+> =
 
-We started here because it's possibly the only api level change we
-have -- almost everything else is driver or subarch type work or
-controversial but entirely self-contained (like the binder, which I
-would be shocked to see ever hit mainline).  Assertions have been made
-that because the "android kernel" (not a term I like -- linux is
-linux, we have some assorted patches on top) has this feature it
-represents a difficulty for silicon vendors trying to support both
-Android projects and OEMs and mainline:
+> One constraint constraint request per module from isr to user mode.
+> Once in user mode there would be only a few (assuming Android user
+> space) I think just from the power HAL, input HAL, and the RIL.
+> =
 
-See: http://www.kroah.com/log/linux/android-kernel-problems.html and
-various other rants about the evil terrible android forks, etc.
+> Still a pretty small number I don't think we need to worry about scaling
+> as much as we need to worry about performance.
 
-So, we figure, let's sort out the hard problem first and then move on
-with our lives.
+In that case sorting the structure is rather not going to improve things, b=
+ut
+it might be worth using a hashtable or something similar.
 
-> There is absolutely _zero_ technical reason why the Android team should
-> present this as as an all-or-nothing effort. Why not merge hw drivers first
-> (with suspend blockers commented or stubbed out), to reduce the fork distance?
-
-If that's the case then there is no problem and people could stop
-yelling at us and just submit their drivers.  Awesome.
-
-I can't speak for all the nameless silicon vendors Greg represents,
-that we apparently are preventing from doing this (how? I don't
-know!), etc, but for my team maintaining multiple versions of drivers
-is a headache, we'd rather square away the wakelock debate first and
-figure something out there, as it just seems like a more logical
-approach.  Maybe we're crazy.
-
-> Really, i myself have controversial kernel features pending all the time. They
-> dont go upstream for a few kernel releases - over a year sometimes - and
-> sometimes they never go upstream.
->
-> But the fact that some feature of mine is pending doesnt give me the right to
-> go away sulking, it doesnt mean i will block the whole flow of patches in
-> retaliation (as you seem to suggest Google will now have the right to do) - i
-> simply try to work it out.
-
-We're not blocking anything.  Hell, if people want drivers we wrote
-upstream and we're not fast enough for 'em, we publish everything via
-android.git.kernel.org, pretty aggressively rebase to follow latest
-mainline, and release everything under GPLv2, ready-to-go.  We have to
-ship though, and as long as the version we maintain has the features
-we need to ship and the mainline version doesn't, we're going to ship
-based on our version, but this really shouldn't be surprising to
-anyone.
-
-> Lets be reasonable and work it all out, ok?
-
-We're trying.
-
-I do feel like we're suffering from lack of a clear "how do we move
-forward" path, and in particular from an environment where every time
-we do a bunch of work to address one set of concerns and entirely new
-set of people pop up with different concerns (sometimes contradicting
-the last round of changes we were asked to make, etc, etc).
-
-Brian
+Rafael
