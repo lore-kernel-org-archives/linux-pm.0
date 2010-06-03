@@ -1,14 +1,24 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: How to disable async resume for few selected devices
- (does it work?)
-Date: Wed, 2 Jun 2010 21:51:40 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1006022147430.24772-100000@netrider.rowland.org>
-References: <1275527287.2664.10.camel@maxim-laptop>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
+	Suspend block api (version 8)
+Date: Wed, 2 Jun 2010 19:44:59 -0700
+Message-ID: <AANLkTim3WQ6qgBH5Cx5tkf-LPtYZ7L6BN6OZIJpQbET1__41150.0253635042$1275533157$gmane$org@mail.gmail.com>
+References: <20100601113309.609349fd@notabene.brown>
+	<alpine.LFD.2.00.1006010340160.2933@localhost.localdomain>
+	<20100601122012.1edeaf48@notabene.brown>
+	<alpine.LFD.2.00.1006011243350.2933@localhost.localdomain>
+	<20100602153235.340a7852@notabene.brown>
+	<AANLkTikVjAf5nHdMx2bcHRAUSkq99s-b5YZCECXIJJLy@mail.gmail.com>
+	<20100602180614.729246ea@notabene.brown>
+	<AANLkTimISbs4X2YR_Pal9A80mpkNyCy8laWBcOgR2Cl7@mail.gmail.com>
+	<20100602210224.6ae2333f@notabene.brown>
+	<20100602210521.54b9cd9b@schatten.dmk.lab>
+	<20100602233243.GA27666@core.coreip.homeip.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275527287.2664.10.camel@maxim-laptop>
+In-Reply-To: <20100602233243.GA27666@core.coreip.homeip.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,34 +28,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Neil Brown <neilb@suse.de>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 3 Jun 2010, Maxim Levitsky wrote:
+On Wed, Jun 2, 2010 at 4:32 PM, Dmitry Torokhov
+<dmitry.torokhov@gmail.com> wrote:
+> On Wed, Jun 02, 2010 at 09:05:21PM +0200, Florian Mickler wrote:
+>> On Wed, 2 Jun 2010 21:02:24 +1000
+>> Neil Brown <neilb@suse.de> wrote:
+>> >
+>> > And this decision (to block suspend) really needs to be made in the dr=
+iver,
+>> > not in userspace?
+>>
+>> Well, it fits. The requirement is a direct consequence of the intimate
+>> knowledge the driver has about the driven devices.
+>
+> That is not really true. A driver does have intimate knowledge of the
+> device, however it does not necessarily have an idea about the data read
+> from the device. Consider the gpio_matrix driver: Arve says that it has
+> to continue scanning matrix once first interrupt arrvies. But it really
+> depends on what key has been pressed - if user pressed KEY_SUSPEND or
+> KEY_POWER it cmight be better if we did not wait for key release but
+> initiated the action right away. The decision on how system reacts to a
+> key press does not belong to the driver but really to userspace.
 
-> I have a card reader on which one function implements SDHCI and other
-> MMC (to workaround windows bug....)
-> 
-> There is a way to disable MMC function, but is causes the device
-> sometimes to die on resume from disk/ram.
-> 
-> I today was told that MMC function is in fact _almost_ standard SDHCI
-> controller, and in fact now sdhci binds to it and works just fine.
-> 
-> However since both devices share same hardware they appear to have need
-> to be resumed one after another, and definitely not in parallel.
-> I tried to use device_disable_async_suspend on both pci devices and
-> indeed both power/async turns to false.
-> 
-> But they are still resumed in parallel:
-> (look how well mmc0 and mmc1 interleave...)
-> Why?
+If we just suspend while the keypad scan is active, a second press of
+KEY_POWER would not be able wake the device up. The gpio keypad matrix
+driver has two operating modes. No keys are pressed: all the outputs
+are active so a key press will generate an interrupt in one of the
+inputs. Keys are pressed: Activate a single output at a time so we can
+determine which keys are pressed. The second mode is entered when the
+driver gets an interrupt in the first mode. The first mode is entered
+if the scan detected that no keys are pressed. The driver could be
+modified to stop the scan on suspend and forcibly put the device back
+in no-keys-pressed state, but pressing additional keys connected to
+the same input can no longer generate any events (the input does not
+change).
 
-My guess is that you shouldn't have disabled async suspend on the PCI 
-devices but on their children instead.  That is, the PCI devices are 
-0000:07:00.1 and 0000:07:00.2, but the devices causing your problem are 
-mmc0 and mmc1.  Or maybe you'd prefer to disable async suspend on all 
-four devices.
+-- =
 
-Alan Stern
+Arve Hj=F8nnev=E5g
