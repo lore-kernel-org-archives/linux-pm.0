@@ -1,14 +1,12 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: How to disable async resume for few selected devices
- (does it work?)
-Date: Thu, 03 Jun 2010 20:43:26 +0300
-Message-ID: <1275587006.2594.5.camel@maxim-laptop>
-References: <Pine.LNX.4.44L0.1006031000060.1683-100000@iolanthe.rowland.org>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: suspend blockers & Android integration
+Date: Thu, 3 Jun 2010 21:30:45 +0200
+Message-ID: <20100603193045.GA7188__10016.5930380628$1275593527$gmane$org@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006031000060.1683-100000@iolanthe.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,50 +16,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>
+To: tytso@mit.edu
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2010-06-03 at 10:08 -0400, Alan Stern wrote: 
-> On Thu, 3 Jun 2010, Maxim Levitsky wrote:
-> 
-> > On Wed, 2010-06-02 at 21:51 -0400, Alan Stern wrote: 
-> > > On Thu, 3 Jun 2010, Maxim Levitsky wrote:
-> > > 
-> > > > I have a card reader on which one function implements SDHCI and other
-> > > > MMC (to workaround windows bug....)
-> > > > 
-> > > > There is a way to disable MMC function, but is causes the device
-> > > > sometimes to die on resume from disk/ram.
-> > > > 
-> > > > I today was told that MMC function is in fact _almost_ standard SDHCI
-> > > > controller, and in fact now sdhci binds to it and works just fine.
-> > > > 
-> > > > However since both devices share same hardware they appear to have need
-> > > > to be resumed one after another, and definitely not in parallel.
-> > > > I tried to use device_disable_async_suspend on both pci devices and
-> > > > indeed both power/async turns to false.
-> > > > 
-> > > > But they are still resumed in parallel:
-> > > > (look how well mmc0 and mmc1 interleave...)
-> > > > Why?
-> > > 
-> > > My guess is that you shouldn't have disabled async suspend on the PCI 
-> > > devices but on their children instead.  That is, the PCI devices are 
-> > > 0000:07:00.1 and 0000:07:00.2, but the devices causing your problem are 
-> > > mmc0 and mmc1.  Or maybe you'd prefer to disable async suspend on all 
-> > > four devices.
-> > Nope, all childeren of both pci device has 'async' disabled.
-> > Just checked that.
-> 
-> The mmc drivers probably do part of their work in a separate thread (a
-> workqueue).  But I'm not acquainted with those drivers and I don't know
-> for certain.  You could get a clearer idea by putting printk statements
-> at the beginning and end of the resume routines.  And a dump_stack()  
-> would tell you for certain whether the routine was invoked
-> asynchronously.
-Exactly, it is mmc and async code (tasklets)!
-Thanks very much, and sorry for noise.
 
-Best regards,
-Maxim Levitsky
+* tytso@mit.edu <tytso@mit.edu> wrote:
+
+> [...] Not only has the source code been made available, but hundreds of 
+> engineering hours have been made trying to accomodate the demands of LKML 
+> --- and LKML has said no to suspend blockers/wakelocks.
+
+I dont think you are being fair here, at all.
+
+Firstly, the suspend-blockers feature is not being rejected (fixing and 
+extending suspend is a worthwile goal), it's just that various different 
+schemes have been proposed by the people who'll eventually have to maintain 
+that code down the line.
+
+Those reasons seem justified and they are based in praxis that have solved 
+similar problems to what Android tries to solve.
+
+Sadly the response from the Android team has been 100% uncompromising: either 
+suspend blockers or nothing.
+
+The thing is, if the insertion of 'hundreds of man hours' into discussing a 
+feature was technical grounds for upstream inclusion then we'd today have a 
+Linux kernel with:
+
+ - STREAMS
+ - a kABI
+ - modularized ipv4
+ - perfmon
+ - two dozen CPU schedulers
+ - zero-copy stupidly pushed to all the file APIs
+
+... and IMO we'd be off much worse technically.
+
+Lets realize it, Linux is an engineering effort that has literally cost about 
+ten thousand man years. That's about a _85 million_ man hours. It takes effort 
+to keep that kind of work valuable!
+
+Also, why did the Android team start its contributions with such a difficult 
+and controversial kernel feature?
+
+There is absolutely _zero_ technical reason why the Android team should 
+present this as as an all-or-nothing effort. Why not merge hw drivers first 
+(with suspend blockers commented or stubbed out), to reduce the fork distance?
+
+Really, i myself have controversial kernel features pending all the time. They 
+dont go upstream for a few kernel releases - over a year sometimes - and 
+sometimes they never go upstream.
+
+But the fact that some feature of mine is pending doesnt give me the right to 
+go away sulking, it doesnt mean i will block the whole flow of patches in 
+retaliation (as you seem to suggest Google will now have the right to do) - i 
+simply try to work it out.
+
+Lets be reasonable and work it all out, ok?
+
+Thanks,
+
+	Ingo
