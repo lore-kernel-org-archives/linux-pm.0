@@ -1,24 +1,27 @@
-From: Florian Mickler <florian@mickler.org>
+From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 3 Jun 2010 17:17:27 +0200
-Message-ID: <20100603171727.7d835a1d__3800.28249132938$1275578314$gmane$org@schatten.dmk.lab>
-References: <AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
-	<201005312338.55109.rjw@sisk.pl> <20100531232617.GF31155@gvim.org>
-	<20100601090737.4bc243d9@schatten.dmk.lab>
-	<20100601140519.GC1281@gvim.org>
-	<AANLkTikF-B23_UWG1O3tlBl4m8NStAJllGhhevNhYZT6@mail.gmail.com>
-	<20100602133910.GA9106@gvim.org>
-	<AANLkTilSU79cnBODXFokzIPB1hRcZBxbwTgTQ59MeKcK@mail.gmail.com>
-	<20100603031842.GB11311@gvim.org>
-	<AANLkTiks7sQBbDnN6QrtGVqSXLob1qCs7VA12LZAWnfM@mail.gmail.com>
-	<20100603054018.GE11311@gvim.org>
-	<AANLkTikvuqtcGS1UdePRxipSk4S5Vmci2uPfFtzZgx6X@mail.gmail.com>
-	<1275575794.5914.74.camel@mulgrave.site>
+Date: Thu, 03 Jun 2010 17:28:01 +0200
+Message-ID: <1275578881.27810.35995.camel__18827.2113133737$1275578917$gmane$org@twins>
+References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
+	<201005302202.39511.rjw@sisk.pl>
+	<AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt@mail.gmail.com>
+	<201005312347.24251.rjw@sisk.pl>
+	<AANLkTilvOgSFTDFtXbjJobMZWxgfvsC97TqC7_a_NHBX@mail.gmail.com>
+	<alpine.LFD.2.00.1006011411200.2933@localhost.localdomain>
+	<AANLkTikZHmF6baP7dEXEGFE8YsbEteRjlhb5wqZX8ll1@mail.gmail.com>
+	<alpine.LFD.2.00.1006020905410.2933@localhost.localdomain>
+	<AANLkTinDm3FIrbS1jqEzW15THmr1hdd7ox0Mllm1VLjZ@mail.gmail.com>
+	<1275471561.27810.30865.camel@twins>
+	<AANLkTilLmAb2c9fQwuguzWtjcHfuTZvPUTbUx7vuwFI6@mail.gmail.com>
+	<1275474088.27810.31000.camel@twins>
+	<20100602221309.6da754e7@schatten.dmk.lab>
+	<1275550802.27810.34863.camel@twins>
+	<20100603161205.73a2b56d@schatten.dmk.lab>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275575794.5914.74.camel@mulgrave.site>
+In-Reply-To: <20100603161205.73a2b56d@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,93 +31,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: 640e9920@gmail.com, markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Florian Mickler <florian@mickler.org>
+Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 03 Jun 2010 09:36:34 -0500
-James Bottomley <James.Bottomley@suse.de> wrote:
+On Thu, 2010-06-03 at 16:12 +0200, Florian Mickler wrote:
+> On Thu, 03 Jun 2010 09:40:02 +0200
+> Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > Same for firefox, you can teach it to not render animated gifs and run
+> > javascript for invisible tabs, and once the screen-saver kicks in,
+> > nothing is visible (and with X telling apps their window is visible or
+> > not it knows), so it should go idle all of its own.
+> > 
+> > Fix the friggin apps, don't kludge with freezing.
+> 
+> Of course programs should be as smart as possible. But that is an
+> orthogonal problem.
+> 
+> Suppose firefox were fixed. It still needs to fetch my rss feeds every
+> minute, because I'm sad if it doesn't. It just can't be fixed at the
+> application level.
 
-> On Thu, 2010-06-03 at 00:10 -0700, Arve Hj=F8nnev=E5g wrote:
-> > On Wed, Jun 2, 2010 at 10:40 PM, mark gross <640e9920@gmail.com> wrote:
-> > > On Wed, Jun 02, 2010 at 09:54:15PM -0700, Brian Swetland wrote:
-> > >> On Wed, Jun 2, 2010 at 8:18 PM, mark gross <640e9920@gmail.com> wrot=
-e:
-> > >> > On Wed, Jun 02, 2010 at 02:58:30PM -0700, Arve Hj=F8nnev=E5g wrote:
-> > >> >>
-> > >> >> The list is not short. You have all the inactive and active
-> > >> >> constraints on the same list. If you change it to a two level list
-> > >> >> though, the list of unique values (which is the list you have to =
-walk)
-> > >> >> may be short enough for a tree to be overkill.
-> > >> >
-> > >> > what have you seen in practice from the wake-lock stats?
-> > >> >
-> > >> > I'm having a hard time seeing where you could get more than just a
-> > >> > handfull.  However; one could go to a dual list (like the schedule=
-r) and
-> > >> > move inactive nodes from an active to inactive list, or we could s=
-imply
-> > >> > remove them from the list uppon inactivity.  which would would well
-> > >> > after I change the api to have the client allocate the memory for =
-the
-> > >> > nodes...  BUT, if your moving things in and out of a list a lot, I=
-'m not
-> > >> > sure the break even point where changing the structure helps.
-> > >> >
-> > >> > We'll need to try it.
-> > >> >
-> > >> > I think we will almost never see more than 10 list elements.
-> > >> >
-> > >> > --mgross
-> > >> >
-> > >> >
-> > >>
-> > >> I see about 80 (based on the batteryinfo dump) on my Nexus One
-> > >> (QSD8250, Android Froyo):
-> > >
-> > > shucks.
-> > >
-> > > well I think for a pm_qos class that has boolean dynamic range we can
-> > > get away with not walking the list on every request update.  we can u=
-se
-> > > a counter, and the list will be for mostly for stats.
-> > >
-> > =
-
-> > Did you give any thought to my suggestion to only use one entry per
-> > unique value on the first level list and then use secondary lists of
-> > identical values. That way if you only have two constraints values the
-> > list you have to walk when updating a request will never have more
-> > than two entries regardless of how many total request you have.
-> > =
-
-> > A request update then becomes something like this:
-> >   if on primary list {
-> >     unlink from primary list
-> >     if secondary list is not empty
-> >       get next secondary entry and add in same spot on primary list
-> >   }
-> >   unlink from secondary list
-> >   find new spot on primary list
-> >   if already there
-> >     add to secondary list
-> >   else
-> >     add to primary list
-> =
-
-> This is just reinventing hash bucketed lists.  To get the benefits, all
-> we do is implement an N state constraint as backed by an N bucketed hash
-> list, which the kernel already has all the internal mechanics for.
-> =
-
-> James
->
-
-http://www.itl.nist.gov/div897/sqg/dads/HTML/priorityque.html
-
-So no reinvention. Just using a common scheme. =
-
-
-Cheers,
-Flo
+Sure it can, why would it need to fetch RSS feeds when the screen is off
+and nobody could possible see the result? So you can stop the timer when
+you know the window isn't visible or alternatively when the screensaver
+is active, I think most desktops have notification of that as well.
