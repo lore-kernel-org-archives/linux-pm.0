@@ -1,10 +1,8 @@
-From: Brian Swetland <swetland@google.com>
+From: mark gross <640e9920@gmail.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 2 Jun 2010 21:54:15 -0700
-Message-ID: <AANLkTiks7sQBbDnN6QrtGVqSXLob1qCs7VA12LZAWnfM__1511.28907823495$1275541002$gmane$org@mail.gmail.com>
-References: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
-	<Pine.LNX.4.44L0.1005292026080.6300-100000@netrider.rowland.org>
-	<AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
+Date: Wed, 2 Jun 2010 22:40:18 -0700
+Message-ID: <20100603054018.GE11311__18262.731729965$1275543682$gmane$org@gvim.org>
+References: <AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
 	<201005312338.55109.rjw@sisk.pl> <20100531232617.GF31155@gvim.org>
 	<20100601090737.4bc243d9@schatten.dmk.lab>
 	<20100601140519.GC1281@gvim.org>
@@ -12,11 +10,14 @@ References: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
 	<20100602133910.GA9106@gvim.org>
 	<AANLkTilSU79cnBODXFokzIPB1hRcZBxbwTgTQ59MeKcK@mail.gmail.com>
 	<20100603031842.GB11311@gvim.org>
+	<AANLkTiks7sQBbDnN6QrtGVqSXLob1qCs7VA12LZAWnfM@mail.gmail.com>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100603031842.GB11311@gvim.org>
+Content-Disposition: inline
+In-Reply-To: <AANLkTiks7sQBbDnN6QrtGVqSXLob1qCs7VA12LZAWnfM@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,111 +27,141 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: 640e9920@gmail.com, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Brian Swetland <swetland@google.com>
+Cc: 640e9920@gmail.com, markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBKdW4gMiwgMjAxMCBhdCA4OjE4IFBNLCBtYXJrIGdyb3NzIDw2NDBlOTkyMEBnbWFp
-bC5jb20+IHdyb3RlOgo+IE9uIFdlZCwgSnVuIDAyLCAyMDEwIGF0IDAyOjU4OjMwUE0gLTA3MDAs
-IEFydmUgSGrDuG5uZXbDpWcgd3JvdGU6Cj4+Cj4+IFRoZSBsaXN0IGlzIG5vdCBzaG9ydC4gWW91
-IGhhdmUgYWxsIHRoZSBpbmFjdGl2ZSBhbmQgYWN0aXZlCj4+IGNvbnN0cmFpbnRzIG9uIHRoZSBz
-YW1lIGxpc3QuIElmIHlvdSBjaGFuZ2UgaXQgdG8gYSB0d28gbGV2ZWwgbGlzdAo+PiB0aG91Z2gs
-IHRoZSBsaXN0IG9mIHVuaXF1ZSB2YWx1ZXMgKHdoaWNoIGlzIHRoZSBsaXN0IHlvdSBoYXZlIHRv
-IHdhbGspCj4+IG1heSBiZSBzaG9ydCBlbm91Z2ggZm9yIGEgdHJlZSB0byBiZSBvdmVya2lsbC4K
-Pgo+IHdoYXQgaGF2ZSB5b3Ugc2VlbiBpbiBwcmFjdGljZSBmcm9tIHRoZSB3YWtlLWxvY2sgc3Rh
-dHM/Cj4KPiBJJ20gaGF2aW5nIGEgaGFyZCB0aW1lIHNlZWluZyB3aGVyZSB5b3UgY291bGQgZ2V0
-IG1vcmUgdGhhbiBqdXN0IGEKPiBoYW5kZnVsbC4gwqBIb3dldmVyOyBvbmUgY291bGQgZ28gdG8g
-YSBkdWFsIGxpc3QgKGxpa2UgdGhlIHNjaGVkdWxlcikgYW5kCj4gbW92ZSBpbmFjdGl2ZSBub2Rl
-cyBmcm9tIGFuIGFjdGl2ZSB0byBpbmFjdGl2ZSBsaXN0LCBvciB3ZSBjb3VsZCBzaW1wbHkKPiBy
-ZW1vdmUgdGhlbSBmcm9tIHRoZSBsaXN0IHVwcG9uIGluYWN0aXZpdHkuIMKgd2hpY2ggd291bGQg
-d291bGQgd2VsbAo+IGFmdGVyIEkgY2hhbmdlIHRoZSBhcGkgdG8gaGF2ZSB0aGUgY2xpZW50IGFs
-bG9jYXRlIHRoZSBtZW1vcnkgZm9yIHRoZQo+IG5vZGVzLi4uIMKgQlVULCBpZiB5b3VyIG1vdmlu
-ZyB0aGluZ3MgaW4gYW5kIG91dCBvZiBhIGxpc3QgYSBsb3QsIEknbSBub3QKPiBzdXJlIHRoZSBi
-cmVhayBldmVuIHBvaW50IHdoZXJlIGNoYW5naW5nIHRoZSBzdHJ1Y3R1cmUgaGVscHMuCj4KPiBX
-ZSdsbCBuZWVkIHRvIHRyeSBpdC4KPgo+IEkgdGhpbmsgd2Ugd2lsbCBhbG1vc3QgbmV2ZXIgc2Vl
-IG1vcmUgdGhhbiAxMCBsaXN0IGVsZW1lbnRzLgo+Cj4gLS1tZ3Jvc3MKPgo+CgpJIHNlZSBhYm91
-dCA4MCAoYmFzZWQgb24gdGhlIGJhdHRlcnlpbmZvIGR1bXApIG9uIG15IE5leHVzIE9uZQooUVNE
-ODI1MCwgQW5kcm9pZCBGcm95byk6CgogIEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50NS04NiI6IChu
-b3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgIlBvd2VyTWFuYWdlclNlcnZpY2Ui
-OiA0bSAyN3MgOTk0bXMgICg0NTMgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9jayAi
-ZXZlbnQ0LTkyIjogNzJtcyAgKDEwIHRpbWVzKSByZWFsdGltZQogIEtlcm5lbCBXYWtlIGxvY2sg
-IkF1ZGlvSGFyZHdhcmVRU0RJbiI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxv
-Y2sgImV2ZW50NC04NyI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImV2
-ZW50NS04MiI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50Mi04
-NyI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImFsYXJtX3J0YyI6IDIx
-cyA4ODJtcyAgKDE4NiB0aW1lcykgcmVhbHRpbWUKICBLZXJuZWwgV2FrZSBsb2NrICJ2ZGVjX3N1
-c3BlbmQiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDYtODci
-OiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDAtOTEiOiAobm90
-aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJTTURfRFMiOiAzMHMgOTM4bXMgICg1
-MyB0aW1lcykgcmVhbHRpbWUKICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDYtOTEiOiAobm90aGlu
-ZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJLZXlFdmVudHMiOiAzOThtcyAgKDMyMjYg
-dGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9jayAicW1pMSI6IChub3RoaW5nIGV4ZWN1
-dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgIm1tY19kZWxheWVkX3dvcmsiOiAobm90aGluZyBleGVj
-dXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDMtODIiOiAobm90aGluZyBleGVjdXRlZCkK
-ICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDMtOTIiOiA1OG1zICAoNiB0aW1lcykgcmVhbHRpbWUK
-ICBLZXJuZWwgV2FrZSBsb2NrICJTTURfUlBDQ0FMTCI6IDI5NW1zICAoMTc1NiB0aW1lcykgcmVh
-bHRpbWUKICBLZXJuZWwgV2FrZSBsb2NrICJTTURfREFUQTYiOiAobm90aGluZyBleGVjdXRlZCkK
-ICBLZXJuZWwgV2FrZSBsb2NrICJhdWRpb19wY21faWRsZSI6IDNzIDk5bXMgICgxIHRpbWVzKSBy
-ZWFsdGltZQogIEtlcm5lbCBXYWtlIGxvY2sgInNlcmlhbC1kZWJ1ZyI6IChub3RoaW5nIGV4ZWN1
-dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50Ni04MiI6IChub3RoaW5nIGV4ZWN1dGVkKQog
-IEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50My04NiI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5l
-bCBXYWtlIGxvY2sgImV2ZW50Mi04MiI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtl
-IGxvY2sgImkyYyI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50
-Mi04NiI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50NS04NyI6
-IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50NC04NiI6IChub3Ro
-aW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50NS05MiI6IDRtcyAgKDIxIHRp
-bWVzKSByZWFsdGltZQogIEtlcm5lbCBXYWtlIGxvY2sgInJwY19zZXJ2ZXIiOiAobm90aGluZyBl
-eGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJwb3dlci1zdXBwbHkiOiA1MjdtcyAgKDggdGlt
-ZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9jayAicmFkaW8taW50ZXJmYWNlIjogMTBzIDEx
-bXMgICgxMCB0aW1lcykgcmVhbHRpbWUKICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDYtODYiOiAo
-bm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJkZWxldGVkX3dha2VfbG9ja3Mi
-OiAyMDNtcyAgKDIxNCB0aW1lcykgcmVhbHRpbWUKICBLZXJuZWwgV2FrZSBsb2NrICJxbWkwIjog
-KG5vdGhpbmcgZXhlY3V0ZWQpCiAgS2VybmVsIFdha2UgbG9jayAiZXZlbnQyLTkxIjogKG5vdGhp
-bmcgZXhlY3V0ZWQpCiAgS2VybmVsIFdha2UgbG9jayAiZXZlbnQ0LTgyIjogKG5vdGhpbmcgZXhl
-Y3V0ZWQpCiAgS2VybmVsIFdha2UgbG9jayAiZXZlbnQ3LTgyIjogKG5vdGhpbmcgZXhlY3V0ZWQp
-CiAgS2VybmVsIFdha2UgbG9jayAiZG9jayI6IDI3bXMgICgxIHRpbWVzKSByZWFsdGltZQogIEtl
-cm5lbCBXYWtlIGxvY2sgIlNNRF9EQVRBNSI6IDFtIDQ1cyAxMjFtcyAgKDE1OCB0aW1lcykgcmVh
-bHRpbWUKICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDEtOTIiOiAobm90aGluZyBleGVjdXRlZCkK
-ICBLZXJuZWwgV2FrZSBsb2NrICJncGlvX2twIjogKG5vdGhpbmcgZXhlY3V0ZWQpCiAgS2VybmVs
-IFdha2UgbG9jayAiZXZlbnQzLTg3IjogKG5vdGhpbmcgZXhlY3V0ZWQpCiAgS2VybmVsIFdha2Ug
-bG9jayAiZXZlbnQ3LTkyIjogKG5vdGhpbmcgZXhlY3V0ZWQpCiAgS2VybmVsIFdha2UgbG9jayAi
-bXNtX3NlcmlhbF9oc19kbWEiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2Nr
-ICJldmVudDUtOTEiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJ2YnVz
-X3ByZXNlbnQiOiA1MTdtcyAgKDEgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9jayAi
-YWxhcm0iOiAzcyAyMjltcyAgKDI0OSB0aW1lcykgcmVhbHRpbWUKICBLZXJuZWwgV2FrZSBsb2Nr
-ICJldmVudDEtODIiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJ2ZW5j
-X3N1c3BlbmQiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDEt
-ODYiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJBdWRpb0hhcmR3YXJl
-UVNET3V0IjogM3MgOThtcyAgKDEgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9jayAi
-ZXZlbnQwLTg3IjogKG5vdGhpbmcgZXhlY3V0ZWQpCiAgS2VybmVsIFdha2UgbG9jayAiZXZlbnQy
-LTkyIjogMTY5bXMgICg2ODcgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9jayAiZHMy
-Nzg0LWJhdHRlcnkiOiAxMnMgODQ2bXMgICgxNTggdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdh
-a2UgbG9jayAiQXBtQ29tbWFuZFRocmVhZCI6IDU2NG1zICAoMiB0aW1lcykgcmVhbHRpbWUKICBL
-ZXJuZWwgV2FrZSBsb2NrICJtc21mYl9pZGxlX2xvY2siOiAxcyA0OTVtcyAgKDcxNSB0aW1lcykg
-cmVhbHRpbWUKICBLZXJuZWwgV2FrZSBsb2NrICJoZWFkc2V0IjogKG5vdGhpbmcgZXhlY3V0ZWQp
-CiAgS2VybmVsIFdha2UgbG9jayAia2dzbCI6IDI2cyA0NzNtcyAgKDEyMyB0aW1lcykgcmVhbHRp
-bWUKICBLZXJuZWwgV2FrZSBsb2NrICJ2ZW5jX2lkbGUiOiAobm90aGluZyBleGVjdXRlZCkKICBL
-ZXJuZWwgV2FrZSBsb2NrICJldmVudDEtOTEiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwg
-V2FrZSBsb2NrICJzNWszZTJmeCI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxv
-Y2sgInVzYl9tYXNzX3N0b3JhZ2UiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBs
-b2NrICJ1bmtub3duX3dha2V1cHMiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBs
-b2NrICJ2ZGVjX2lkbGUiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJh
-dWRpb19wY21fc3VzcGVuZCI6IDNzIDk5bXMgICgxIHRpbWVzKSByZWFsdGltZQogIEtlcm5lbCBX
-YWtlIGxvY2sgIm1pY3JvcF9pMmNfcHJlc2VudCI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5l
-bCBXYWtlIGxvY2sgImV2ZW50NC05MSI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtl
-IGxvY2sgImV2ZW50Ni05MiI6IDE4Mm1zICAoODYgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdh
-a2UgbG9jayAiZXZlbnQwLTgyIjogKG5vdGhpbmcgZXhlY3V0ZWQpCiAgS2VybmVsIFdha2UgbG9j
-ayAiZXZlbnQwLTkyIjogOG1zICAoMzcgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9j
-ayAicnBjX3JlYWQiOiAxMTJtcyAgKDE1NDAgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2Ug
-bG9jayAiZXZlbnQwLTg2IjogKG5vdGhpbmcgZXhlY3V0ZWQpCiAgS2VybmVsIFdha2UgbG9jayAi
-bXNtX3NlcmlhbF9oc19yeCI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sg
-InFtaTIiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDEtODci
-OiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJtc21fY2FtZXJhIjogKG5v
-dGhpbmcgZXhlY3V0ZWQpCiAgS2VybmVsIFdha2UgbG9jayAicnBjLWludGVyZmFjZSI6IDJtcyAg
-KDEgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9jayAibWFpbiI6IDFtIDM4cyAzMTRt
-cyAgKDUgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9jayAiZ3Bpb19pbnB1dCI6IChu
-b3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50My05MSI6IChub3RoaW5n
-IGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgIlNNRF9EQVRBNyI6IChub3RoaW5nIGV4ZWN1
-dGVkKQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51
-eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0
-cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Wed, Jun 02, 2010 at 09:54:15PM -0700, Brian Swetland wrote:
+> On Wed, Jun 2, 2010 at 8:18 PM, mark gross <640e9920@gmail.com> wrote:
+> > On Wed, Jun 02, 2010 at 02:58:30PM -0700, Arve Hj=F8nnev=E5g wrote:
+> >>
+> >> The list is not short. You have all the inactive and active
+> >> constraints on the same list. If you change it to a two level list
+> >> though, the list of unique values (which is the list you have to walk)
+> >> may be short enough for a tree to be overkill.
+> >
+> > what have you seen in practice from the wake-lock stats?
+> >
+> > I'm having a hard time seeing where you could get more than just a
+> > handfull. =A0However; one could go to a dual list (like the scheduler) =
+and
+> > move inactive nodes from an active to inactive list, or we could simply
+> > remove them from the list uppon inactivity. =A0which would would well
+> > after I change the api to have the client allocate the memory for the
+> > nodes... =A0BUT, if your moving things in and out of a list a lot, I'm =
+not
+> > sure the break even point where changing the structure helps.
+> >
+> > We'll need to try it.
+> >
+> > I think we will almost never see more than 10 list elements.
+> >
+> > --mgross
+> >
+> >
+> =
+
+> I see about 80 (based on the batteryinfo dump) on my Nexus One
+> (QSD8250, Android Froyo):
+
+shucks.
+
+well I think for a pm_qos class that has boolean dynamic range we can
+get away with not walking the list on every request update.  we can use
+a counter, and the list will be for mostly for stats.
+ =
+
+>   Kernel Wake lock "event5-86": (nothing executed)
+>   Kernel Wake lock "PowerManagerService": 4m 27s 994ms  (453 times) realt=
+ime
+>   Kernel Wake lock "event4-92": 72ms  (10 times) realtime
+>   Kernel Wake lock "AudioHardwareQSDIn": (nothing executed)
+>   Kernel Wake lock "event4-87": (nothing executed)
+>   Kernel Wake lock "event5-82": (nothing executed)
+>   Kernel Wake lock "event2-87": (nothing executed)
+>   Kernel Wake lock "alarm_rtc": 21s 882ms  (186 times) realtime
+>   Kernel Wake lock "vdec_suspend": (nothing executed)
+>   Kernel Wake lock "event6-87": (nothing executed)
+>   Kernel Wake lock "event0-91": (nothing executed)
+>   Kernel Wake lock "SMD_DS": 30s 938ms  (53 times) realtime
+>   Kernel Wake lock "event6-91": (nothing executed)
+>   Kernel Wake lock "KeyEvents": 398ms  (3226 times) realtime
+>   Kernel Wake lock "qmi1": (nothing executed)
+>   Kernel Wake lock "mmc_delayed_work": (nothing executed)
+>   Kernel Wake lock "event3-82": (nothing executed)
+>   Kernel Wake lock "event3-92": 58ms  (6 times) realtime
+>   Kernel Wake lock "SMD_RPCCALL": 295ms  (1756 times) realtime
+>   Kernel Wake lock "SMD_DATA6": (nothing executed)
+>   Kernel Wake lock "audio_pcm_idle": 3s 99ms  (1 times) realtime
+>   Kernel Wake lock "serial-debug": (nothing executed)
+>   Kernel Wake lock "event6-82": (nothing executed)
+>   Kernel Wake lock "event3-86": (nothing executed)
+>   Kernel Wake lock "event2-82": (nothing executed)
+>   Kernel Wake lock "i2c": (nothing executed)
+>   Kernel Wake lock "event2-86": (nothing executed)
+>   Kernel Wake lock "event5-87": (nothing executed)
+>   Kernel Wake lock "event4-86": (nothing executed)
+>   Kernel Wake lock "event5-92": 4ms  (21 times) realtime
+>   Kernel Wake lock "rpc_server": (nothing executed)
+>   Kernel Wake lock "power-supply": 527ms  (8 times) realtime
+>   Kernel Wake lock "radio-interface": 10s 11ms  (10 times) realtime
+>   Kernel Wake lock "event6-86": (nothing executed)
+>   Kernel Wake lock "deleted_wake_locks": 203ms  (214 times) realtime
+>   Kernel Wake lock "qmi0": (nothing executed)
+>   Kernel Wake lock "event2-91": (nothing executed)
+>   Kernel Wake lock "event4-82": (nothing executed)
+>   Kernel Wake lock "event7-82": (nothing executed)
+>   Kernel Wake lock "dock": 27ms  (1 times) realtime
+>   Kernel Wake lock "SMD_DATA5": 1m 45s 121ms  (158 times) realtime
+>   Kernel Wake lock "event1-92": (nothing executed)
+>   Kernel Wake lock "gpio_kp": (nothing executed)
+>   Kernel Wake lock "event3-87": (nothing executed)
+>   Kernel Wake lock "event7-92": (nothing executed)
+>   Kernel Wake lock "msm_serial_hs_dma": (nothing executed)
+>   Kernel Wake lock "event5-91": (nothing executed)
+>   Kernel Wake lock "vbus_present": 517ms  (1 times) realtime
+>   Kernel Wake lock "alarm": 3s 229ms  (249 times) realtime
+>   Kernel Wake lock "event1-82": (nothing executed)
+>   Kernel Wake lock "venc_suspend": (nothing executed)
+>   Kernel Wake lock "event1-86": (nothing executed)
+>   Kernel Wake lock "AudioHardwareQSDOut": 3s 98ms  (1 times) realtime
+>   Kernel Wake lock "event0-87": (nothing executed)
+>   Kernel Wake lock "event2-92": 169ms  (687 times) realtime
+>   Kernel Wake lock "ds2784-battery": 12s 846ms  (158 times) realtime
+>   Kernel Wake lock "ApmCommandThread": 564ms  (2 times) realtime
+>   Kernel Wake lock "msmfb_idle_lock": 1s 495ms  (715 times) realtime
+>   Kernel Wake lock "headset": (nothing executed)
+>   Kernel Wake lock "kgsl": 26s 473ms  (123 times) realtime
+>   Kernel Wake lock "venc_idle": (nothing executed)
+>   Kernel Wake lock "event1-91": (nothing executed)
+>   Kernel Wake lock "s5k3e2fx": (nothing executed)
+>   Kernel Wake lock "usb_mass_storage": (nothing executed)
+>   Kernel Wake lock "unknown_wakeups": (nothing executed)
+>   Kernel Wake lock "vdec_idle": (nothing executed)
+>   Kernel Wake lock "audio_pcm_suspend": 3s 99ms  (1 times) realtime
+>   Kernel Wake lock "microp_i2c_present": (nothing executed)
+>   Kernel Wake lock "event4-91": (nothing executed)
+>   Kernel Wake lock "event6-92": 182ms  (86 times) realtime
+>   Kernel Wake lock "event0-82": (nothing executed)
+>   Kernel Wake lock "event0-92": 8ms  (37 times) realtime
+>   Kernel Wake lock "rpc_read": 112ms  (1540 times) realtime
+>   Kernel Wake lock "event0-86": (nothing executed)
+>   Kernel Wake lock "msm_serial_hs_rx": (nothing executed)
+>   Kernel Wake lock "qmi2": (nothing executed)
+>   Kernel Wake lock "event1-87": (nothing executed)
+>   Kernel Wake lock "msm_camera": (nothing executed)
+>   Kernel Wake lock "rpc-interface": 2ms  (1 times) realtime
+>   Kernel Wake lock "main": 1m 38s 314ms  (5 times) realtime
+>   Kernel Wake lock "gpio_input": (nothing executed)
+>   Kernel Wake lock "event3-91": (nothing executed)
+>   Kernel Wake lock "SMD_DATA7": (nothing executed)
+
+How much of this is portable to your next phone?  I bet it was a big
+effort to get these right too.  FWIW I don't think most of these will
+map into the moorestown port of android I'm working on.
+
+This is why I really think a low power event framework would be cleaner
+but, lets make everyone happy and expand pm_qos into a wake lock
+re-implementation first.
+
+--mgross
