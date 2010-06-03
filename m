@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Bryan Huntsman <bryanh@codeaurora.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 3 Jun 2010 23:05:58 +0200
-Message-ID: <201006032305.58082.rjw__7688.22064060277$1275599122$gmane$org@sisk.pl>
-References: <AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
-	<AANLkTikvuqtcGS1UdePRxipSk4S5Vmci2uPfFtzZgx6X@mail.gmail.com>
-	<1275575794.5914.74.camel@mulgrave.site>
+Date: Thu, 03 Jun 2010 14:50:39 -0700
+Message-ID: <4C0823AF.6020709__11834.6914802261$1275601885$gmane$org@codeaurora.org>
+References: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>	<20100601135102.GA8098@srcf.ucam.org>	<1275426085.21962.967.camel@mulgrave.site>	<201006020024.14220.rjw@sisk.pl>	<1275431816.21962.1108.camel@mulgrave.site>	<AANLkTikObnAZbyOxeYAhXcEbimO3XTTO-HlC9CD_HH6t@mail.gmail.com>	<1275451342.21962.1777.camel@mulgrave.site>	<AANLkTilRcFZyYa-0HlaM-6IEZSyar3S9S_cCWSFax2Zo@mail.gmail.com>	<1275491111.2799.110.camel@mulgrave.site>	<20100602214748.7742e3ae@schatten.dmk.lab>	<1275511271.2799.516.camel@mulgrave.site>	<20100603010607.5baf82a6@schatten.dmk.lab>	<CA1BBBBC9359F04AA639128AC0D5D1E9692ABC92@orsmsx502.amr.corp.intel.com>	<20100603110312.48a508dc@lxorguk.ukuu.org.uk>	<1275559512.27810.35287.camel@twins>	<87d3w818ki.fsf@deeprootsystems.com>
+	<CA1BBBBC9359F04AA639128AC0D5D1E96931D4BB@orsmsx502.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275575794.5914.74.camel@mulgrave.site>
+In-Reply-To: <CA1BBBBC9359F04AA639128AC0D5D1E96931D4BB@orsmsx502.amr.corp.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,61 +18,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: 640e9920@gmail.com, markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Gross, Mark" <mark.gross@intel.com>
+Cc: Neil Brown <neilb@suse.de>, "tytso@mit.edu" <tytso@mit.edu>, Florian Mickler <florian@mickler.org>, LKML <linux-kernel@vger.kernel.org>, Linux@smtp1.linux-foundation.org, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, "felipe.balbi@nokia.com" <felipe.balbi@nokia.com>, OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1cnNkYXkgMDMgSnVuZSAyMDEwLCBKYW1lcyBCb3R0b21sZXkgd3JvdGU6Cj4gT24gVGh1
-LCAyMDEwLTA2LTAzIGF0IDAwOjEwIC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3RlOgo+ID4g
-T24gV2VkLCBKdW4gMiwgMjAxMCBhdCAxMDo0MCBQTSwgbWFyayBncm9zcyA8NjQwZTk5MjBAZ21h
-aWwuY29tPiB3cm90ZToKPiA+ID4gT24gV2VkLCBKdW4gMDIsIDIwMTAgYXQgMDk6NTQ6MTVQTSAt
-MDcwMCwgQnJpYW4gU3dldGxhbmQgd3JvdGU6Cj4gPiA+PiBPbiBXZWQsIEp1biAyLCAyMDEwIGF0
-IDg6MTggUE0sIG1hcmsgZ3Jvc3MgPDY0MGU5OTIwQGdtYWlsLmNvbT4gd3JvdGU6Cj4gPiA+PiA+
-IE9uIFdlZCwgSnVuIDAyLCAyMDEwIGF0IDAyOjU4OjMwUE0gLTA3MDAsIEFydmUgSGrDuG5uZXbD
-pWcgd3JvdGU6Cj4gPiA+PiA+Pgo+ID4gPj4gPj4gVGhlIGxpc3QgaXMgbm90IHNob3J0LiBZb3Ug
-aGF2ZSBhbGwgdGhlIGluYWN0aXZlIGFuZCBhY3RpdmUKPiA+ID4+ID4+IGNvbnN0cmFpbnRzIG9u
-IHRoZSBzYW1lIGxpc3QuIElmIHlvdSBjaGFuZ2UgaXQgdG8gYSB0d28gbGV2ZWwgbGlzdAo+ID4g
-Pj4gPj4gdGhvdWdoLCB0aGUgbGlzdCBvZiB1bmlxdWUgdmFsdWVzICh3aGljaCBpcyB0aGUgbGlz
-dCB5b3UgaGF2ZSB0byB3YWxrKQo+ID4gPj4gPj4gbWF5IGJlIHNob3J0IGVub3VnaCBmb3IgYSB0
-cmVlIHRvIGJlIG92ZXJraWxsLgo+ID4gPj4gPgo+ID4gPj4gPiB3aGF0IGhhdmUgeW91IHNlZW4g
-aW4gcHJhY3RpY2UgZnJvbSB0aGUgd2FrZS1sb2NrIHN0YXRzPwo+ID4gPj4gPgo+ID4gPj4gPiBJ
-J20gaGF2aW5nIGEgaGFyZCB0aW1lIHNlZWluZyB3aGVyZSB5b3UgY291bGQgZ2V0IG1vcmUgdGhh
-biBqdXN0IGEKPiA+ID4+ID4gaGFuZGZ1bGwuICBIb3dldmVyOyBvbmUgY291bGQgZ28gdG8gYSBk
-dWFsIGxpc3QgKGxpa2UgdGhlIHNjaGVkdWxlcikgYW5kCj4gPiA+PiA+IG1vdmUgaW5hY3RpdmUg
-bm9kZXMgZnJvbSBhbiBhY3RpdmUgdG8gaW5hY3RpdmUgbGlzdCwgb3Igd2UgY291bGQgc2ltcGx5
-Cj4gPiA+PiA+IHJlbW92ZSB0aGVtIGZyb20gdGhlIGxpc3QgdXBwb24gaW5hY3Rpdml0eS4gIHdo
-aWNoIHdvdWxkIHdvdWxkIHdlbGwKPiA+ID4+ID4gYWZ0ZXIgSSBjaGFuZ2UgdGhlIGFwaSB0byBo
-YXZlIHRoZSBjbGllbnQgYWxsb2NhdGUgdGhlIG1lbW9yeSBmb3IgdGhlCj4gPiA+PiA+IG5vZGVz
-Li4uICBCVVQsIGlmIHlvdXIgbW92aW5nIHRoaW5ncyBpbiBhbmQgb3V0IG9mIGEgbGlzdCBhIGxv
-dCwgSSdtIG5vdAo+ID4gPj4gPiBzdXJlIHRoZSBicmVhayBldmVuIHBvaW50IHdoZXJlIGNoYW5n
-aW5nIHRoZSBzdHJ1Y3R1cmUgaGVscHMuCj4gPiA+PiA+Cj4gPiA+PiA+IFdlJ2xsIG5lZWQgdG8g
-dHJ5IGl0Lgo+ID4gPj4gPgo+ID4gPj4gPiBJIHRoaW5rIHdlIHdpbGwgYWxtb3N0IG5ldmVyIHNl
-ZSBtb3JlIHRoYW4gMTAgbGlzdCBlbGVtZW50cy4KPiA+ID4+ID4KPiA+ID4+ID4gLS1tZ3Jvc3MK
-PiA+ID4+ID4KPiA+ID4+ID4KPiA+ID4+Cj4gPiA+PiBJIHNlZSBhYm91dCA4MCAoYmFzZWQgb24g
-dGhlIGJhdHRlcnlpbmZvIGR1bXApIG9uIG15IE5leHVzIE9uZQo+ID4gPj4gKFFTRDgyNTAsIEFu
-ZHJvaWQgRnJveW8pOgo+ID4gPgo+ID4gPiBzaHVja3MuCj4gPiA+Cj4gPiA+IHdlbGwgSSB0aGlu
-ayBmb3IgYSBwbV9xb3MgY2xhc3MgdGhhdCBoYXMgYm9vbGVhbiBkeW5hbWljIHJhbmdlIHdlIGNh
-bgo+ID4gPiBnZXQgYXdheSB3aXRoIG5vdCB3YWxraW5nIHRoZSBsaXN0IG9uIGV2ZXJ5IHJlcXVl
-c3QgdXBkYXRlLiAgd2UgY2FuIHVzZQo+ID4gPiBhIGNvdW50ZXIsIGFuZCB0aGUgbGlzdCB3aWxs
-IGJlIGZvciBtb3N0bHkgZm9yIHN0YXRzLgo+ID4gPgo+ID4gCj4gPiBEaWQgeW91IGdpdmUgYW55
-IHRob3VnaHQgdG8gbXkgc3VnZ2VzdGlvbiB0byBvbmx5IHVzZSBvbmUgZW50cnkgcGVyCj4gPiB1
-bmlxdWUgdmFsdWUgb24gdGhlIGZpcnN0IGxldmVsIGxpc3QgYW5kIHRoZW4gdXNlIHNlY29uZGFy
-eSBsaXN0cyBvZgo+ID4gaWRlbnRpY2FsIHZhbHVlcy4gVGhhdCB3YXkgaWYgeW91IG9ubHkgaGF2
-ZSB0d28gY29uc3RyYWludHMgdmFsdWVzIHRoZQo+ID4gbGlzdCB5b3UgaGF2ZSB0byB3YWxrIHdo
-ZW4gdXBkYXRpbmcgYSByZXF1ZXN0IHdpbGwgbmV2ZXIgaGF2ZSBtb3JlCj4gPiB0aGFuIHR3byBl
-bnRyaWVzIHJlZ2FyZGxlc3Mgb2YgaG93IG1hbnkgdG90YWwgcmVxdWVzdCB5b3UgaGF2ZS4KPiA+
-IAo+ID4gQSByZXF1ZXN0IHVwZGF0ZSB0aGVuIGJlY29tZXMgc29tZXRoaW5nIGxpa2UgdGhpczoK
-PiA+ICAgaWYgb24gcHJpbWFyeSBsaXN0IHsKPiA+ICAgICB1bmxpbmsgZnJvbSBwcmltYXJ5IGxp
-c3QKPiA+ICAgICBpZiBzZWNvbmRhcnkgbGlzdCBpcyBub3QgZW1wdHkKPiA+ICAgICAgIGdldCBu
-ZXh0IHNlY29uZGFyeSBlbnRyeSBhbmQgYWRkIGluIHNhbWUgc3BvdCBvbiBwcmltYXJ5IGxpc3QK
-PiA+ICAgfQo+ID4gICB1bmxpbmsgZnJvbSBzZWNvbmRhcnkgbGlzdAo+ID4gICBmaW5kIG5ldyBz
-cG90IG9uIHByaW1hcnkgbGlzdAo+ID4gICBpZiBhbHJlYWR5IHRoZXJlCj4gPiAgICAgYWRkIHRv
-IHNlY29uZGFyeSBsaXN0Cj4gPiAgIGVsc2UKPiA+ICAgICBhZGQgdG8gcHJpbWFyeSBsaXN0Cj4g
-Cj4gVGhpcyBpcyBqdXN0IHJlaW52ZW50aW5nIGhhc2ggYnVja2V0ZWQgbGlzdHMuICBUbyBnZXQg
-dGhlIGJlbmVmaXRzLCBhbGwKPiB3ZSBkbyBpcyBpbXBsZW1lbnQgYW4gTiBzdGF0ZSBjb25zdHJh
-aW50IGFzIGJhY2tlZCBieSBhbiBOIGJ1Y2tldGVkIGhhc2gKPiBsaXN0LCB3aGljaCB0aGUga2Vy
-bmVsIGFscmVhZHkgaGFzIGFsbCB0aGUgaW50ZXJuYWwgbWVjaGFuaWNzIGZvci4KCkFncmVlZC4K
-ClJhZmFlbApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwps
-aW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcK
-aHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4
-LXBt
+>> Yes, having a QoS parameter per-subsystem (or even per-device) is very
+>> important for SoCs that have independently controlled powerdomains.
+>> If all devices/subsystems in a particular powerdomain have QoS
+>> parameters that permit, the power state of that powerdomain can be
+>> lowered independently from system-wide power state and power states of
+>> other power domains.
+>>
+> This seems similar to that pm_qos generalization into bus drivers we where 
+> waving our hands at during the collab summit in April?  We never did get 
+> into meaningful detail at that time.
+> 
+> --mgross
+
+I think there is definitely a need for QoS parameters per-device.  I've 
+been pondering how to incorporate this concept into runtime_pm.  One 
+idea would be to add pm_qos-like callbacks to struct dev_pm_ops, e.g. 
+runtime_pm_qos_add/update/remove_requirement().  Requirements would be 
+passed up the tree to the first parent that cares, usually a bus driver. 
+  Is this similar to what you guys were discussing at the collab summit? 
+  Thanks.
+
+- Bryan
