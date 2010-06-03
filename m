@@ -1,15 +1,26 @@
-From: Martin Steigerwald <Martin@lichtvoll.de>
-Subject: Re: [regression] Please add bug 15788 and 15969,
-	usb sound / radeon kms broken after snapshot cycle
-Date: Thu, 3 Jun 2010 12:42:46 +0200
-Message-ID: <201006031243.16703.Martin__11240.9293106341$1275561873$gmane$org@lichtvoll.de>
-References: <201005312215.17793.Martin@lichtvoll.de>
-	<201006011002.59191.oneukum@suse.de>
-	(sfid-20100601_212614_090179_B3E275A8)
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Thu, 03 Jun 2010 08:24:31 -0500
+Message-ID: <1275571471.5914.2.camel__45735.2407895543$1275571538$gmane$org@mulgrave.site>
+References: <20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
+	<20100601135102.GA8098@srcf.ucam.org>
+	<1275426085.21962.967.camel@mulgrave.site>
+	<201006020024.14220.rjw@sisk.pl>
+	<1275431816.21962.1108.camel@mulgrave.site>
+	<AANLkTikObnAZbyOxeYAhXcEbimO3XTTO-HlC9CD_HH6t@mail.gmail.com>
+	<1275451342.21962.1777.camel@mulgrave.site>
+	<AANLkTilRcFZyYa-0HlaM-6IEZSyar3S9S_cCWSFax2Zo@mail.gmail.com>
+	<1275491111.2799.110.camel@mulgrave.site>
+	<20100602214748.7742e3ae@schatten.dmk.lab>
+	<1275511271.2799.516.camel@mulgrave.site>
+	<20100603010607.5baf82a6@schatten.dmk.lab>
+	<CA1BBBBC9359F04AA639128AC0D5D1E9692ABC92@orsmsx502.amr.corp.intel.com>
+	<20100603110312.48a508dc@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0792858558477337751=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006011002.59191.oneukum@suse.de>
+In-Reply-To: <20100603110312.48a508dc@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,81 +28,35 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Gross, Mark" <mark.gross@intel.com>, Neil Brown <neilb@suse.de>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, "tytso@mit.edu" <tytso@mit.edu>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, "felipe.balbi@nokia.com" <felipe.balbi@nokia.com>
 List-Id: linux-pm@vger.kernel.org
 
---===============0792858558477337751==
-Content-Type: multipart/signed;
-  boundary="nextPart3450944.LDfSZctE7r";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+On Thu, 2010-06-03 at 11:03 +0100, Alan Cox wrote:
+> > [mtg: ] This has been a pain point for the PM_QOS implementation.  They change the constrain back and forth at the transaction level of the i2c driver.  The pm_qos code really wasn't made to deal with such hot path use, as each such change triggers a re-computation of what the aggregate qos request is.
+> 
+> That should be trivial in the usual case because 99% of the time you can
+> hot path
+> 
+> 	the QoS entry changing is the latest one
+> 	there have been no other changes
+> 	If it is valid I can use the cached previous aggregate I cunningly
+> 		saved in the top QoS entry when I computed the new one
+> 
+> (ie most of the time from the kernel side you have a QoS stack)
 
---nextPart3450944.LDfSZctE7r
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
+It's not just the list based computation: that's trivial to fix, as you
+say ... the other problem is the notifier chain, because that's blocking
+and could be long.  Could we invoke the notifier through a workqueue?
+It doesn't seem to have veto power, so it's pure notification, does it
+matter if the notice is delayed (as long as it's in order)?
 
-Am Dienstag 01 Juni 2010 schrieb Oliver Neukum:
-> Am Montag, 31. Mai 2010 22:15:04 schrieb Martin Steigerwald:
-> > Hi Rafael,
-> >=20
-> > please add
-> >=20
-> > Bug 15788 -  external usb sound card doesn't work after resume
-> > https://bugzilla.kernel.org/show_bug.cgi?id=3D15788
->=20
-> Does it show up in /proc/asound/cards ?
+> > We've had a number of attempts at fixing this, but I think the proper fix is to bolt a "disable C-states > x" interface into cpu_idle that bypases pm_qos altogether.  Or, perhaps add a new pm_qos API that does the equivalent operation, overriding whatever constraint is active.
+> 
+> We need some of this anyway for deep power saving because there is
+> hardware which can't wake from soem states, which in turn means if that
+> device is active we need to be above the state in question.
 
-Currently I have 2.6.33.1 installed again, since even the work-around to=20
-unload and reload the usb audio sound module did not work. And on the=20
-other machine, my ThinkPad T42, I had two hard freezes, but these might or=
-=20
-might not be related to Radeon KMS stuff. Not yet reported, as I did not=20
-yet take time for it and I do not have many details or any idea on what=20
-circumstances these freezes happened.
-
-It was all too much for me and I decided to go back to a kernel that works=
-=20
-for me.
-
-I had it in lsusb at least.
-
-I hope to have time and energy for further testing soon, but right now=20
-other things are more important to me.
-
-I did one thing tough: I asked your question in the bug report, since=20
-there are other reporters that might easy take time for this. When you are=
-=20
-interested in the outcome, please add your Cc to the bug report.
-
-=2D-=20
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
-
---nextPart3450944.LDfSZctE7r
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkwHhycACgkQmRvqrKWZhMcQawCgpJsNTwsZgty5WDsXC8/OnDZl
-TRsAn0Jbo7iZk5w5sdnOaO9Cv/NI5nYD
-=6Xlk
------END PGP SIGNATURE-----
-
---nextPart3450944.LDfSZctE7r--
-
---===============0792858558477337751==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============0792858558477337751==--
+James
