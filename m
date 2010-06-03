@@ -1,25 +1,15 @@
-From: Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
- Suspend block api (version 8)
-Date: Thu, 3 Jun 2010 13:26:48 +1000
-Message-ID: <20100603132648.3b1e265e__39486.5931979895$1275535670$gmane$org@notabene.brown>
-References: <20100601113309.609349fd@notabene.brown>
-	<alpine.LFD.2.00.1006010340160.2933@localhost.localdomain>
-	<20100601122012.1edeaf48@notabene.brown>
-	<alpine.LFD.2.00.1006011243350.2933@localhost.localdomain>
-	<20100602153235.340a7852@notabene.brown>
-	<AANLkTikVjAf5nHdMx2bcHRAUSkq99s-b5YZCECXIJJLy@mail.gmail.com>
-	<20100602180614.729246ea@notabene.brown>
-	<AANLkTimISbs4X2YR_Pal9A80mpkNyCy8laWBcOgR2Cl7@mail.gmail.com>
-	<20100602210224.6ae2333f@notabene.brown>
-	<20100602210521.54b9cd9b@schatten.dmk.lab>
-	<20100602233243.GA27666@core.coreip.homeip.net>
-	<AANLkTim3WQ6qgBH5Cx5tkf-LPtYZ7L6BN6OZIJpQbET1@mail.gmail.com>
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Thu, 3 Jun 2010 13:24:06 +0900
+Message-ID: <20100603042403.GC20028__9201.30277886546$1275539145$gmane$org@linux-sh.org>
+References: <Pine.LNX.4.44L0.1005271141410.3239-100000@iolanthe.rowland.org>
+	<alpine.LFD.2.00.1005271751240.3032@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTim3WQ6qgBH5Cx5tkf-LPtYZ7L6BN6OZIJpQbET1@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1005271751240.3032@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,68 +19,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyIEp1biAyMDEwIDE5OjQ0OjU5IC0wNzAwCkFydmUgSGrDuG5uZXbDpWcgPGFydmVA
-YW5kcm9pZC5jb20+IHdyb3RlOgoKPiBPbiBXZWQsIEp1biAyLCAyMDEwIGF0IDQ6MzIgUE0sIERt
-aXRyeSBUb3Jva2hvdgo+IDxkbWl0cnkudG9yb2tob3ZAZ21haWwuY29tPiB3cm90ZToKPiA+IE9u
-IFdlZCwgSnVuIDAyLCAyMDEwIGF0IDA5OjA1OjIxUE0gKzAyMDAsIEZsb3JpYW4gTWlja2xlciB3
-cm90ZToKPiA+PiBPbiBXZWQsIDIgSnVuIDIwMTAgMjE6MDI6MjQgKzEwMDAKPiA+PiBOZWlsIEJy
-b3duIDxuZWlsYkBzdXNlLmRlPiB3cm90ZToKPiA+PiA+Cj4gPj4gPiBBbmQgdGhpcyBkZWNpc2lv
-biAodG8gYmxvY2sgc3VzcGVuZCkgcmVhbGx5IG5lZWRzIHRvIGJlIG1hZGUgaW4gdGhlIGRyaXZl
-ciwKPiA+PiA+IG5vdCBpbiB1c2Vyc3BhY2U/Cj4gPj4KPiA+PiBXZWxsLCBpdCBmaXRzLiBUaGUg
-cmVxdWlyZW1lbnQgaXMgYSBkaXJlY3QgY29uc2VxdWVuY2Ugb2YgdGhlIGludGltYXRlCj4gPj4g
-a25vd2xlZGdlIHRoZSBkcml2ZXIgaGFzIGFib3V0IHRoZSBkcml2ZW4gZGV2aWNlcy4KPiA+Cj4g
-PiBUaGF0IGlzIG5vdCByZWFsbHkgdHJ1ZS4gQSBkcml2ZXIgZG9lcyBoYXZlIGludGltYXRlIGtu
-b3dsZWRnZSBvZiB0aGUKPiA+IGRldmljZSwgaG93ZXZlciBpdCBkb2VzIG5vdCBuZWNlc3Nhcmls
-eSBoYXZlIGFuIGlkZWEgYWJvdXQgdGhlIGRhdGEgcmVhZAo+ID4gZnJvbSB0aGUgZGV2aWNlLiBD
-b25zaWRlciB0aGUgZ3Bpb19tYXRyaXggZHJpdmVyOiBBcnZlIHNheXMgdGhhdCBpdCBoYXMKPiA+
-IHRvIGNvbnRpbnVlIHNjYW5uaW5nIG1hdHJpeCBvbmNlIGZpcnN0IGludGVycnVwdCBhcnJ2aWVz
-LiBCdXQgaXQgcmVhbGx5Cj4gPiBkZXBlbmRzIG9uIHdoYXQga2V5IGhhcyBiZWVuIHByZXNzZWQg
-LSBpZiB1c2VyIHByZXNzZWQgS0VZX1NVU1BFTkQgb3IKPiA+IEtFWV9QT1dFUiBpdCBjbWlnaHQg
-YmUgYmV0dGVyIGlmIHdlIGRpZCBub3Qgd2FpdCBmb3Iga2V5IHJlbGVhc2UgYnV0Cj4gPiBpbml0
-aWF0ZWQgdGhlIGFjdGlvbiByaWdodCBhd2F5LiBUaGUgZGVjaXNpb24gb24gaG93IHN5c3RlbSBy
-ZWFjdHMgdG8gYQo+ID4ga2V5IHByZXNzIGRvZXMgbm90IGJlbG9uZyB0byB0aGUgZHJpdmVyIGJ1
-dCByZWFsbHkgdG8gdXNlcnNwYWNlLgo+IAo+IElmIHdlIGp1c3Qgc3VzcGVuZCB3aGlsZSB0aGUg
-a2V5cGFkIHNjYW4gaXMgYWN0aXZlLCBhIHNlY29uZCBwcmVzcyBvZgo+IEtFWV9QT1dFUiB3b3Vs
-ZCBub3QgYmUgYWJsZSB3YWtlIHRoZSBkZXZpY2UgdXAuIFRoZSBncGlvIGtleXBhZCBtYXRyaXgK
-PiBkcml2ZXIgaGFzIHR3byBvcGVyYXRpbmcgbW9kZXMuIE5vIGtleXMgYXJlIHByZXNzZWQ6IGFs
-bCB0aGUgb3V0cHV0cwo+IGFyZSBhY3RpdmUgc28gYSBrZXkgcHJlc3Mgd2lsbCBnZW5lcmF0ZSBh
-biBpbnRlcnJ1cHQgaW4gb25lIG9mIHRoZQo+IGlucHV0cy4gS2V5cyBhcmUgcHJlc3NlZDogQWN0
-aXZhdGUgYSBzaW5nbGUgb3V0cHV0IGF0IGEgdGltZSBzbyB3ZSBjYW4KPiBkZXRlcm1pbmUgd2hp
-Y2gga2V5cyBhcmUgcHJlc3NlZC4gVGhlIHNlY29uZCBtb2RlIGlzIGVudGVyZWQgd2hlbiB0aGUK
-PiBkcml2ZXIgZ2V0cyBhbiBpbnRlcnJ1cHQgaW4gdGhlIGZpcnN0IG1vZGUuIFRoZSBmaXJzdCBt
-b2RlIGlzIGVudGVyZWQKPiBpZiB0aGUgc2NhbiBkZXRlY3RlZCB0aGF0IG5vIGtleXMgYXJlIHBy
-ZXNzZWQuIFRoZSBkcml2ZXIgY291bGQgYmUKPiBtb2RpZmllZCB0byBzdG9wIHRoZSBzY2FuIG9u
-IHN1c3BlbmQgYW5kIGZvcmNpYmx5IHB1dCB0aGUgZGV2aWNlIGJhY2sKPiBpbiBuby1rZXlzLXBy
-ZXNzZWQgc3RhdGUsIGJ1dCBwcmVzc2luZyBhZGRpdGlvbmFsIGtleXMgY29ubmVjdGVkIHRvCj4g
-dGhlIHNhbWUgaW5wdXQgY2FuIG5vIGxvbmdlciBnZW5lcmF0ZSBhbnkgZXZlbnRzICh0aGUgaW5w
-dXQgZG9lcyBub3QKPiBjaGFuZ2UpLgo+IAoKVGhhbmtzIGZvciB0aGUgZGV0YWlsZWQgZXhwbGFu
-YXRpb24uICBUaGF0IGhlbHBzIGEgbG90LgoKSSBzZWUgdGhhdCBpZiBmb2xsb3dzIHRoYXQgcGVy
-Zm9ybWluZyBhIHN1c3BlbmQgd2hpbGUga2V5cyBhcmUgcHJlc3NlZCB3b3VsZApub3QgYmUgZ29v
-ZCwgYW5kIGtleXMgY291bGQgYmUgcHJlc3NlZCBmb3IgYXJiaXRyYXJpbHkgbG9uZyBwZXJpb2Rz
-LgpJdCBkb2VzIG5vdCBmb2xsb3cgdGhhdCB0aGUga2V5cGFkIGRyaXZlciBzaG91bGQgdGhlcmVm
-b3JlIGV4cGxpY2l0bHkgZGlzYWJsZQpzdXNwZW5kLiAgSXQgY291bGQgc2ltcGx5IGluZm9ybSB1
-c2VyLXNwYWNlIHRoYXQgdGhlIGtleXBhZCBpcyBpbiB0aGUKYWx0ZXJuYXRlIHNjYW4gbW9kZSwg
-c28gdXNlci1zcGFjZSBjYW4gY2hvb3NlIG5vdCB0byBlbnRlciBzdXNwZW5kIGluIGF0IHRoYXQK
-dGltZSAoaS5lLiBwb2xpY3kgaW4gdXNlci1zcGFjZSkuCgpJIGNhbiBzZWUgYWxzbyBob3cgb25l
-IG1pZ2h0IHdhbnQgdG8gZXhwcmVzcyB0aGlzIGJlaGF2aW91ciBhcyBhIFBNX1FPUwpjb25zdHJh
-aW50IChub3cgdGhhdCBJIGhhdmUgcmVhZCBhIGJpdCBhYm91dCBQTV9RT1MpLCBidXQgSSBjYW5u
-b3Qgc2VlIHRoYXQKeW91IHdvdWxkIG5lZWQgdG8uICBBcyB0aGUga2V5cGFkIGRyaXZlciBpcyBw
-b2xsaW5nIGR1cmluZyB0aGlzIG1vZGUsIGl0CndvdWxkIHByZXN1bWFibHkgc2V0IGEgdGltZXIg
-dGhhdCB3b3VsZCBmaXJlIGluIHRoZSBuZWFyIGZ1dHVyZSwgYW5kIHRoZSB2ZXJ5CmV4aXN0ZW5j
-ZSBvZiB0aGlzIHRpbWVyICh3aXRoIGEgZHVyYXRpb24gc2hvcnRlciB0aGFuIHRoZSBTMyBsYXRl
-bmN5KSB3b3VsZApiZSBlbm91Z2ggdG8gZW5zdXJlIFMzIHdhc24ndCBhdXRvbWF0aWNhbGx5IGVu
-dGVyZWQgYnkgUE0uCkF0IG1vc3QgeW91IG1pZ2h0IHVzZSBzZXRfdGltZXJfc2xhY2sgdG8gZ2l2
-ZSBhIHNsaWdodGx5IGhpZ2hlciB1cHBlciBib3VuZAp0byB0aGUgdGltZW91dC4KClNvIGlmIHdl
-IHRha2UgdGhlIHN1c3BlbmQtZnJvbS1pZGxlIGFwcHJvYWNoLCB0aGlzIGRyaXZlciBuZWVkcyBu
-bwphbm5vdGF0aW9uLCBhbmQgaWYgd2UgdGFrZSB0aGUgJ2ZpeCB0aGUgc3VzcGVuZC93YWtlLWV2
-ZW50IHJhY2UnIHRoZW4gdGhpcwpkcml2ZXIgbmVlZHMgbm8gc3BlY2lhbCB0cmVhdG1lbnQgLSBq
-dXN0IGVub3VnaCB0byBjbG9zZSB0aGUgcmFjZSwgYW5kIHNvbWUKdXNlci1zcGFjZSBwb2xpY3kg
-c3VwcG9ydC4KCmkuZS4gaXQgZG9lc24ndCBzZWVtIHRvIGJlIGEgc3BlY2lhbCBjYXNlLgoKTmVp
-bEJyb3duCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxp
-bnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpo
-dHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgt
-cG0=
+On Thu, May 27, 2010 at 06:06:43PM +0200, Thomas Gleixner wrote:
+> On Thu, 27 May 2010, Alan Stern wrote:
+> > And to answer Thomas's question: The whole reason for having in-kernel 
+> > suspend blockers is so that userspace can tell the system to suspend 
+> > without losing wakeup events.
+> > 
+> > Suppose a key is pressed just as a user program writes "mem" to
+> > /sys/power/state.  The keyboard driver handles the keystroke and queues
+> > an input event.  Then the system suspends and doesn't wake up until
+> > some other event occurs -- even though the keypress was an important
+> > one and it should have prevented the system from suspending.
+> > 
+> > With in-kernel suspend blockers and opportunistic suspend, this 
+> > scenario is prevented.  That is their raison-d'etre.
+> 
+> I tend to disagree. You are still looking at suspend as some extra
+> esoteric mechanism. We should stop doing this and look at suspend (to
+> RAM) as an additional deep idle state, which is well defined in terms
+> of power savings and wakeup latency. That's what I think opportunistic
+> suspend is all about. Now if you look at our current idle states in
+> x86 the incoming keystroke is never lost. 
+> 
+For systems with runtime PM and deep idle states in cpuidle suspend is
+already fairly opportunistic. If sleep states (including suspend to RAM
+and CPU off) are factored in to cpuidle then it's very easy to get in to
+situations where everything simply shuts off automatically, which can be
+problematic if a platform doesn't expose any external wakeup sources.
+
+Platforms still need to be able to establish some heuristics, whether
+this is via blocking certain state transitions or simply defining a
+maximum acceptable suspend depth irrespective of latency (at least we
+presently don't have a clean interface for preventing entry in to
+impossible to recover from idle states outside of latency hints via PM
+QoS, or at least not one that I'm aware of).
+
+On the other hand, while this isn't that difficult for the UP case it
+does pose more problems for the SMP case. Presently the suspend paths
+(suspend-to-RAM/hibernate/kexec jump) all deal with disabling and
+enabling of non-boot CPUs via CPU hotplug explicitly, which will clear
+them from the online CPU map. We would have to rework the semantics a bit
+if cpuidle were also permitted to opportunistically offline CPUs.
