@@ -1,15 +1,22 @@
-From: Paul Mundt <lethal@linux-sh.org>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Thu, 3 Jun 2010 13:24:06 +0900
-Message-ID: <20100603042403.GC20028__9201.30277886546$1275539145$gmane$org@linux-sh.org>
-References: <Pine.LNX.4.44L0.1005271141410.3239-100000@iolanthe.rowland.org>
-	<alpine.LFD.2.00.1005271751240.3032@localhost.localdomain>
+Date: Wed, 2 Jun 2010 21:54:15 -0700
+Message-ID: <AANLkTiks7sQBbDnN6QrtGVqSXLob1qCs7VA12LZAWnfM__1511.28907823495$1275541002$gmane$org@mail.gmail.com>
+References: <AANLkTik_4ezDAQoAQjkpEgwD9SLKeOjDzy2H7T2v6uCP@mail.gmail.com>
+	<Pine.LNX.4.44L0.1005292026080.6300-100000@netrider.rowland.org>
+	<AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
+	<201005312338.55109.rjw@sisk.pl> <20100531232617.GF31155@gvim.org>
+	<20100601090737.4bc243d9@schatten.dmk.lab>
+	<20100601140519.GC1281@gvim.org>
+	<AANLkTikF-B23_UWG1O3tlBl4m8NStAJllGhhevNhYZT6@mail.gmail.com>
+	<20100602133910.GA9106@gvim.org>
+	<AANLkTilSU79cnBODXFokzIPB1hRcZBxbwTgTQ59MeKcK@mail.gmail.com>
+	<20100603031842.GB11311@gvim.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1005271751240.3032@localhost.localdomain>
+In-Reply-To: <20100603031842.GB11311@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,48 +26,111 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, felipe.balbi@nokia.com, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: markgross@thegnar.org
+Cc: 640e9920@gmail.com, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 27, 2010 at 06:06:43PM +0200, Thomas Gleixner wrote:
-> On Thu, 27 May 2010, Alan Stern wrote:
-> > And to answer Thomas's question: The whole reason for having in-kernel 
-> > suspend blockers is so that userspace can tell the system to suspend 
-> > without losing wakeup events.
-> > 
-> > Suppose a key is pressed just as a user program writes "mem" to
-> > /sys/power/state.  The keyboard driver handles the keystroke and queues
-> > an input event.  Then the system suspends and doesn't wake up until
-> > some other event occurs -- even though the keypress was an important
-> > one and it should have prevented the system from suspending.
-> > 
-> > With in-kernel suspend blockers and opportunistic suspend, this 
-> > scenario is prevented.  That is their raison-d'etre.
-> 
-> I tend to disagree. You are still looking at suspend as some extra
-> esoteric mechanism. We should stop doing this and look at suspend (to
-> RAM) as an additional deep idle state, which is well defined in terms
-> of power savings and wakeup latency. That's what I think opportunistic
-> suspend is all about. Now if you look at our current idle states in
-> x86 the incoming keystroke is never lost. 
-> 
-For systems with runtime PM and deep idle states in cpuidle suspend is
-already fairly opportunistic. If sleep states (including suspend to RAM
-and CPU off) are factored in to cpuidle then it's very easy to get in to
-situations where everything simply shuts off automatically, which can be
-problematic if a platform doesn't expose any external wakeup sources.
-
-Platforms still need to be able to establish some heuristics, whether
-this is via blocking certain state transitions or simply defining a
-maximum acceptable suspend depth irrespective of latency (at least we
-presently don't have a clean interface for preventing entry in to
-impossible to recover from idle states outside of latency hints via PM
-QoS, or at least not one that I'm aware of).
-
-On the other hand, while this isn't that difficult for the UP case it
-does pose more problems for the SMP case. Presently the suspend paths
-(suspend-to-RAM/hibernate/kexec jump) all deal with disabling and
-enabling of non-boot CPUs via CPU hotplug explicitly, which will clear
-them from the online CPU map. We would have to rework the semantics a bit
-if cpuidle were also permitted to opportunistically offline CPUs.
+T24gV2VkLCBKdW4gMiwgMjAxMCBhdCA4OjE4IFBNLCBtYXJrIGdyb3NzIDw2NDBlOTkyMEBnbWFp
+bC5jb20+IHdyb3RlOgo+IE9uIFdlZCwgSnVuIDAyLCAyMDEwIGF0IDAyOjU4OjMwUE0gLTA3MDAs
+IEFydmUgSGrDuG5uZXbDpWcgd3JvdGU6Cj4+Cj4+IFRoZSBsaXN0IGlzIG5vdCBzaG9ydC4gWW91
+IGhhdmUgYWxsIHRoZSBpbmFjdGl2ZSBhbmQgYWN0aXZlCj4+IGNvbnN0cmFpbnRzIG9uIHRoZSBz
+YW1lIGxpc3QuIElmIHlvdSBjaGFuZ2UgaXQgdG8gYSB0d28gbGV2ZWwgbGlzdAo+PiB0aG91Z2gs
+IHRoZSBsaXN0IG9mIHVuaXF1ZSB2YWx1ZXMgKHdoaWNoIGlzIHRoZSBsaXN0IHlvdSBoYXZlIHRv
+IHdhbGspCj4+IG1heSBiZSBzaG9ydCBlbm91Z2ggZm9yIGEgdHJlZSB0byBiZSBvdmVya2lsbC4K
+Pgo+IHdoYXQgaGF2ZSB5b3Ugc2VlbiBpbiBwcmFjdGljZSBmcm9tIHRoZSB3YWtlLWxvY2sgc3Rh
+dHM/Cj4KPiBJJ20gaGF2aW5nIGEgaGFyZCB0aW1lIHNlZWluZyB3aGVyZSB5b3UgY291bGQgZ2V0
+IG1vcmUgdGhhbiBqdXN0IGEKPiBoYW5kZnVsbC4gwqBIb3dldmVyOyBvbmUgY291bGQgZ28gdG8g
+YSBkdWFsIGxpc3QgKGxpa2UgdGhlIHNjaGVkdWxlcikgYW5kCj4gbW92ZSBpbmFjdGl2ZSBub2Rl
+cyBmcm9tIGFuIGFjdGl2ZSB0byBpbmFjdGl2ZSBsaXN0LCBvciB3ZSBjb3VsZCBzaW1wbHkKPiBy
+ZW1vdmUgdGhlbSBmcm9tIHRoZSBsaXN0IHVwcG9uIGluYWN0aXZpdHkuIMKgd2hpY2ggd291bGQg
+d291bGQgd2VsbAo+IGFmdGVyIEkgY2hhbmdlIHRoZSBhcGkgdG8gaGF2ZSB0aGUgY2xpZW50IGFs
+bG9jYXRlIHRoZSBtZW1vcnkgZm9yIHRoZQo+IG5vZGVzLi4uIMKgQlVULCBpZiB5b3VyIG1vdmlu
+ZyB0aGluZ3MgaW4gYW5kIG91dCBvZiBhIGxpc3QgYSBsb3QsIEknbSBub3QKPiBzdXJlIHRoZSBi
+cmVhayBldmVuIHBvaW50IHdoZXJlIGNoYW5naW5nIHRoZSBzdHJ1Y3R1cmUgaGVscHMuCj4KPiBX
+ZSdsbCBuZWVkIHRvIHRyeSBpdC4KPgo+IEkgdGhpbmsgd2Ugd2lsbCBhbG1vc3QgbmV2ZXIgc2Vl
+IG1vcmUgdGhhbiAxMCBsaXN0IGVsZW1lbnRzLgo+Cj4gLS1tZ3Jvc3MKPgo+CgpJIHNlZSBhYm91
+dCA4MCAoYmFzZWQgb24gdGhlIGJhdHRlcnlpbmZvIGR1bXApIG9uIG15IE5leHVzIE9uZQooUVNE
+ODI1MCwgQW5kcm9pZCBGcm95byk6CgogIEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50NS04NiI6IChu
+b3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgIlBvd2VyTWFuYWdlclNlcnZpY2Ui
+OiA0bSAyN3MgOTk0bXMgICg0NTMgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9jayAi
+ZXZlbnQ0LTkyIjogNzJtcyAgKDEwIHRpbWVzKSByZWFsdGltZQogIEtlcm5lbCBXYWtlIGxvY2sg
+IkF1ZGlvSGFyZHdhcmVRU0RJbiI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxv
+Y2sgImV2ZW50NC04NyI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImV2
+ZW50NS04MiI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50Mi04
+NyI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImFsYXJtX3J0YyI6IDIx
+cyA4ODJtcyAgKDE4NiB0aW1lcykgcmVhbHRpbWUKICBLZXJuZWwgV2FrZSBsb2NrICJ2ZGVjX3N1
+c3BlbmQiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDYtODci
+OiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDAtOTEiOiAobm90
+aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJTTURfRFMiOiAzMHMgOTM4bXMgICg1
+MyB0aW1lcykgcmVhbHRpbWUKICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDYtOTEiOiAobm90aGlu
+ZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJLZXlFdmVudHMiOiAzOThtcyAgKDMyMjYg
+dGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9jayAicW1pMSI6IChub3RoaW5nIGV4ZWN1
+dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgIm1tY19kZWxheWVkX3dvcmsiOiAobm90aGluZyBleGVj
+dXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDMtODIiOiAobm90aGluZyBleGVjdXRlZCkK
+ICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDMtOTIiOiA1OG1zICAoNiB0aW1lcykgcmVhbHRpbWUK
+ICBLZXJuZWwgV2FrZSBsb2NrICJTTURfUlBDQ0FMTCI6IDI5NW1zICAoMTc1NiB0aW1lcykgcmVh
+bHRpbWUKICBLZXJuZWwgV2FrZSBsb2NrICJTTURfREFUQTYiOiAobm90aGluZyBleGVjdXRlZCkK
+ICBLZXJuZWwgV2FrZSBsb2NrICJhdWRpb19wY21faWRsZSI6IDNzIDk5bXMgICgxIHRpbWVzKSBy
+ZWFsdGltZQogIEtlcm5lbCBXYWtlIGxvY2sgInNlcmlhbC1kZWJ1ZyI6IChub3RoaW5nIGV4ZWN1
+dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50Ni04MiI6IChub3RoaW5nIGV4ZWN1dGVkKQog
+IEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50My04NiI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5l
+bCBXYWtlIGxvY2sgImV2ZW50Mi04MiI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtl
+IGxvY2sgImkyYyI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50
+Mi04NiI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50NS04NyI6
+IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50NC04NiI6IChub3Ro
+aW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50NS05MiI6IDRtcyAgKDIxIHRp
+bWVzKSByZWFsdGltZQogIEtlcm5lbCBXYWtlIGxvY2sgInJwY19zZXJ2ZXIiOiAobm90aGluZyBl
+eGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJwb3dlci1zdXBwbHkiOiA1MjdtcyAgKDggdGlt
+ZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9jayAicmFkaW8taW50ZXJmYWNlIjogMTBzIDEx
+bXMgICgxMCB0aW1lcykgcmVhbHRpbWUKICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDYtODYiOiAo
+bm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJkZWxldGVkX3dha2VfbG9ja3Mi
+OiAyMDNtcyAgKDIxNCB0aW1lcykgcmVhbHRpbWUKICBLZXJuZWwgV2FrZSBsb2NrICJxbWkwIjog
+KG5vdGhpbmcgZXhlY3V0ZWQpCiAgS2VybmVsIFdha2UgbG9jayAiZXZlbnQyLTkxIjogKG5vdGhp
+bmcgZXhlY3V0ZWQpCiAgS2VybmVsIFdha2UgbG9jayAiZXZlbnQ0LTgyIjogKG5vdGhpbmcgZXhl
+Y3V0ZWQpCiAgS2VybmVsIFdha2UgbG9jayAiZXZlbnQ3LTgyIjogKG5vdGhpbmcgZXhlY3V0ZWQp
+CiAgS2VybmVsIFdha2UgbG9jayAiZG9jayI6IDI3bXMgICgxIHRpbWVzKSByZWFsdGltZQogIEtl
+cm5lbCBXYWtlIGxvY2sgIlNNRF9EQVRBNSI6IDFtIDQ1cyAxMjFtcyAgKDE1OCB0aW1lcykgcmVh
+bHRpbWUKICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDEtOTIiOiAobm90aGluZyBleGVjdXRlZCkK
+ICBLZXJuZWwgV2FrZSBsb2NrICJncGlvX2twIjogKG5vdGhpbmcgZXhlY3V0ZWQpCiAgS2VybmVs
+IFdha2UgbG9jayAiZXZlbnQzLTg3IjogKG5vdGhpbmcgZXhlY3V0ZWQpCiAgS2VybmVsIFdha2Ug
+bG9jayAiZXZlbnQ3LTkyIjogKG5vdGhpbmcgZXhlY3V0ZWQpCiAgS2VybmVsIFdha2UgbG9jayAi
+bXNtX3NlcmlhbF9oc19kbWEiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2Nr
+ICJldmVudDUtOTEiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJ2YnVz
+X3ByZXNlbnQiOiA1MTdtcyAgKDEgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9jayAi
+YWxhcm0iOiAzcyAyMjltcyAgKDI0OSB0aW1lcykgcmVhbHRpbWUKICBLZXJuZWwgV2FrZSBsb2Nr
+ICJldmVudDEtODIiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJ2ZW5j
+X3N1c3BlbmQiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDEt
+ODYiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJBdWRpb0hhcmR3YXJl
+UVNET3V0IjogM3MgOThtcyAgKDEgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9jayAi
+ZXZlbnQwLTg3IjogKG5vdGhpbmcgZXhlY3V0ZWQpCiAgS2VybmVsIFdha2UgbG9jayAiZXZlbnQy
+LTkyIjogMTY5bXMgICg2ODcgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9jayAiZHMy
+Nzg0LWJhdHRlcnkiOiAxMnMgODQ2bXMgICgxNTggdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdh
+a2UgbG9jayAiQXBtQ29tbWFuZFRocmVhZCI6IDU2NG1zICAoMiB0aW1lcykgcmVhbHRpbWUKICBL
+ZXJuZWwgV2FrZSBsb2NrICJtc21mYl9pZGxlX2xvY2siOiAxcyA0OTVtcyAgKDcxNSB0aW1lcykg
+cmVhbHRpbWUKICBLZXJuZWwgV2FrZSBsb2NrICJoZWFkc2V0IjogKG5vdGhpbmcgZXhlY3V0ZWQp
+CiAgS2VybmVsIFdha2UgbG9jayAia2dzbCI6IDI2cyA0NzNtcyAgKDEyMyB0aW1lcykgcmVhbHRp
+bWUKICBLZXJuZWwgV2FrZSBsb2NrICJ2ZW5jX2lkbGUiOiAobm90aGluZyBleGVjdXRlZCkKICBL
+ZXJuZWwgV2FrZSBsb2NrICJldmVudDEtOTEiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwg
+V2FrZSBsb2NrICJzNWszZTJmeCI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxv
+Y2sgInVzYl9tYXNzX3N0b3JhZ2UiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBs
+b2NrICJ1bmtub3duX3dha2V1cHMiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBs
+b2NrICJ2ZGVjX2lkbGUiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJh
+dWRpb19wY21fc3VzcGVuZCI6IDNzIDk5bXMgICgxIHRpbWVzKSByZWFsdGltZQogIEtlcm5lbCBX
+YWtlIGxvY2sgIm1pY3JvcF9pMmNfcHJlc2VudCI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5l
+bCBXYWtlIGxvY2sgImV2ZW50NC05MSI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtl
+IGxvY2sgImV2ZW50Ni05MiI6IDE4Mm1zICAoODYgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdh
+a2UgbG9jayAiZXZlbnQwLTgyIjogKG5vdGhpbmcgZXhlY3V0ZWQpCiAgS2VybmVsIFdha2UgbG9j
+ayAiZXZlbnQwLTkyIjogOG1zICAoMzcgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9j
+ayAicnBjX3JlYWQiOiAxMTJtcyAgKDE1NDAgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2Ug
+bG9jayAiZXZlbnQwLTg2IjogKG5vdGhpbmcgZXhlY3V0ZWQpCiAgS2VybmVsIFdha2UgbG9jayAi
+bXNtX3NlcmlhbF9oc19yeCI6IChub3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sg
+InFtaTIiOiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJldmVudDEtODci
+OiAobm90aGluZyBleGVjdXRlZCkKICBLZXJuZWwgV2FrZSBsb2NrICJtc21fY2FtZXJhIjogKG5v
+dGhpbmcgZXhlY3V0ZWQpCiAgS2VybmVsIFdha2UgbG9jayAicnBjLWludGVyZmFjZSI6IDJtcyAg
+KDEgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9jayAibWFpbiI6IDFtIDM4cyAzMTRt
+cyAgKDUgdGltZXMpIHJlYWx0aW1lCiAgS2VybmVsIFdha2UgbG9jayAiZ3Bpb19pbnB1dCI6IChu
+b3RoaW5nIGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgImV2ZW50My05MSI6IChub3RoaW5n
+IGV4ZWN1dGVkKQogIEtlcm5lbCBXYWtlIGxvY2sgIlNNRF9EQVRBNyI6IChub3RoaW5nIGV4ZWN1
+dGVkKQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51
+eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0
+cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
