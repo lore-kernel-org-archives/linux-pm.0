@@ -1,17 +1,16 @@
-From: Dave Young <hidave.darkstar@gmail.com>
-Subject: Re: mmotm 2010-06-03-16-36 uploaded
-Date: Fri, 4 Jun 2010 10:13:52 +0800
-Message-ID: <AANLkTik5xtRYSdUGogmBBW2V3t1D42QeTnQrmkMSAXWr__17749.6679629714$1275617683$gmane$org@mail.gmail.com>
-References: <201006040005.o5405Afw023296@imap1.linux-foundation.org>
-	<AANLkTilX_Fbc_pR1jtgQJsvu7RbMfgyhJYCxqV725T18@mail.gmail.com>
-	<20100603185401.1851c94e.akpm@linux-foundation.org>
-	<AANLkTikDzAHHH62Wti1D-iV7pqa6u24BDgigIYO5JZJR@mail.gmail.com>
-	<20100603191023.96d74346.akpm@linux-foundation.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: suspend blockers & Android integration
+Date: Thu, 3 Jun 2010 19:16:55 -0700 (PDT)
+Message-ID: <alpine.LFD.2.00.1006031856420.8175@i5.linux-foundation.org>
+References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
+	<20100603232302.GA16184@elte.hu>
+	<alpine.LFD.2.00.1006031630300.8175@i5.linux-foundation.org>
+	<20100603234634.GA21831@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100603191023.96d74346.akpm@linux-foundation.org>
+In-Reply-To: <20100603234634.GA21831@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,49 +20,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: tytso@mit.edu, Peter Zijlstra <a.p.zijlstra@chello.nl>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBKdW4gNCwgMjAxMCBhdCAxMDoxMCBBTSwgQW5kcmV3IE1vcnRvbgo8YWtwbUBsaW51
-eC1mb3VuZGF0aW9uLm9yZz4gd3JvdGU6Cj4gT24gRnJpLCA0IEp1biAyMDEwIDEwOjAyOjU3ICsw
-ODAwIERhdmUgWW91bmcgPGhpZGF2ZS5kYXJrc3RhckBnbWFpbC5jb20+IHdyb3RlOgo+Cj4+IE9u
-IEZyaSwgSnVuIDQsIDIwMTAgYXQgOTo1NCBBTSwgQW5kcmV3IE1vcnRvbiA8YWtwbUBsaW51eC1m
-b3VuZGF0aW9uLm9yZz4gd3JvdGU6Cj4+ID4gT24gRnJpLCA0IEp1biAyMDEwIDA5OjQxOjU4ICsw
-ODAwIERhdmUgWW91bmcgPGhpZGF2ZS5kYXJrc3RhckBnbWFpbC5jb20+IHdyb3RlOgo+PiA+Cj4+
-ID4+IE9uIEZyaSwgSnVuIDQsIDIwMTAgYXQgNzozNiBBTSwgX188YWtwbUBsaW51eC1mb3VuZGF0
-aW9uLm9yZz4gd3JvdGU6Cj4+ID4+ID4gVGhlIG1tLW9mLXRoZS1tb21lbnQgc25hcHNob3QgMjAx
-MC0wNi0wMy0xNi0zNiBoYXMgYmVlbiB1cGxvYWRlZCB0bwo+PiA+PiA+Cj4+ID4+ID4gX18gaHR0
-cDovL3VzZXJ3ZWIua2VybmVsLm9yZy9+YWtwbS9tbW90bS8KPj4gPj4gPgo+PiA+Pgo+PiA+PiBI
-aSwgaW50ZWxfaWRsZSBidWlsZCBmYWlsczoKPj4gPj4KPj4gPj4gZHJpdmVycy9pZGxlL2ludGVs
-X2lkbGUuYzogSW4gZnVuY3Rpb24gX19faW50ZWxfaWRsZV9fXzoKPj4gPj4gZHJpdmVycy9pZGxl
-L2ludGVsX2lkbGUuYzoyMzQ6IGVycm9yOiB0b28gZmV3IGFyZ3VtZW50cyB0byBmdW5jdGlvbiBf
-X190cmFjZV9wb3dlcgo+PiA+PiBfc3RhcnRfX18KPj4gPj4gbWFrZVsyXTogKioqIFtkcml2ZXJz
-L2lkbGUvaW50ZWxfaWRsZS5vXSBFcnJvciAxCj4+ID4+IG1ha2VbMV06ICoqKiBbZHJpdmVycy9p
-ZGxlXSBFcnJvciAyCj4+ID4+IG1ha2VbMV06ICoqKiBXYWl0aW5nIGZvciB1bmZpbmlzaGVkIGpv
-YnMuLi4uCj4+ID4+Cj4+ID4KPj4gPiBDYXVzZWQgYnkKPj4gPiB4ODYtY3B1ZnJlcS1tYWtlLXRy
-YWNlX3Bvd2VyX2ZyZXF1ZW5jeS1jcHVmcmVxLWRyaXZlci1pbmRlcGVuZGVudC5wYXRjaAo+PiA+
-IHdoaWNoIGNoYW5nZWQgdHJhY2VfcG93ZXJfc3RhcnQoKS4KPj4gPgo+PiA+IGRyaXZlcnMvaWRs
-ZS9pbnRlbF9pZGxlLmMgd2Fzbid0IHRoZXJlIHdoZW4gVGhvbWFzIHdyb3RlIHRoYXQgcGF0Y2gu
-Cj4+ID4KPj4gPiB0aGlzLCBJIGd1ZXNzOgo+PiA+Cj4+ID4gLS0tIGEvZHJpdmVycy9pZGxlL2lu
-dGVsX2lkbGUuY354ODYtY3B1ZnJlcS1tYWtlLXRyYWNlX3Bvd2VyX2ZyZXF1ZW5jeS1jcHVmcmVx
-LWRyaXZlci1pbmRlcGVuZGVudC1maXgKPj4gPiArKysgYS9kcml2ZXJzL2lkbGUvaW50ZWxfaWRs
-ZS5jCj4+ID4gQEAgLTIzMSw3ICsyMzEsNyBAQCBzdGF0aWMgaW50IGludGVsX2lkbGUoc3RydWN0
-IGNwdWlkbGVfZGV2Cj4+ID4KPj4gPiBfXyBfXyBfXyBfX3N0b3BfY3JpdGljYWxfdGltaW5ncygp
-Owo+PiA+IF9fI2lmbmRlZiBNT0RVTEUKPj4gPiAtIF9fIF9fIF9fIHRyYWNlX3Bvd2VyX3N0YXJ0
-KFBPV0VSX0NTVEFURSwgKGVheCA+PiA0KSArIDEpOwo+PiA+ICsgX18gX18gX18gdHJhY2VfcG93
-ZXJfc3RhcnQoUE9XRVJfQ1NUQVRFLCAoZWF4ID4+IDQpICsgMSwgY3B1KTsKPj4gPiBfXyNlbmRp
-Zgo+PiA+IF9fIF9fIF9fIF9faWYgKCFuZWVkX3Jlc2NoZWQoKSkgewo+PiA+Cj4+Cj4+IFdpdGgg
-b25lIG1vcmUgcGFyYW0gImNwdSIsIGZhaWxzIHdpdGggInRvbyBtYW55IGFyZ3VtZW50cyI6Cj4+
-Cj4+IMKgIENDIMKgIMKgIMKgZHJpdmVycy9pZGxlL2ludGVsX2lkbGUubwo+PiBkcml2ZXJzL2lk
-bGUvaW50ZWxfaWRsZS5jOiBJbiBmdW5jdGlvbiBfX19pbnRlbF9pZGxlX19fOgo+PiBkcml2ZXJz
-L2lkbGUvaW50ZWxfaWRsZS5jOjIzNDogZXJyb3I6IHRvbyBtYW55IGFyZ3VtZW50cyB0byBmdW5j
-dGlvbgo+PiBfX190cmFjZV9wb3dlcl9zdGFydF9fXwo+PiBtYWtlWzJdOiAqKiogW2RyaXZlcnMv
-aWRsZS9pbnRlbF9pZGxlLm9dIEVycm9yIDEKPj4gbWFrZVsxXTogKioqIFtkcml2ZXJzL2lkbGVd
-IEVycm9yIDIKPj4gbWFrZVsxXTogKioqIFdhaXRpbmcgZm9yIHVuZmluaXNoZWQgam9icy4uLi4K
-Pgo+IGhtLCBJdCBXb3JrcyBGb3IgTWUuIMKgSSBzdXNwZWN0IHlvdSBhcHBsaWVkIG15IHBhdGNo
-IHRvIG1haW5saW5lLCBub3QKPiB0byAtbW0uCj4KCm9vcHMsIHlvdSBhcmUgcmlnaHQsIEkgYXBw
-bGllZCB0byBkaWZmZXJlbnQgdHJlZS4KClRlc3RlZCwgaXQgd29ya3MKCi0tIApSZWdhcmRzCmRh
-dmUKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgt
-cG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBz
-Oi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+
+
+On Fri, 4 Jun 2010, Ingo Molnar wrote:
+> 
+> What you say is absolutely true, hence this would be driven via sched_tick() + 
+> TIF notifiers - i.e. only ever treat user-mode tasks as 'idle-able'. This can 
+> be done with no overhead to the regular fastpaths.
+> 
+> The TIF notifier would be the one scheduling to idle - and would thus do it 
+> only to user-mode tasks.
+
+The thing is, unless there is some _really_ deep other reason to do 
+something like this, I still think it's total overdesign to push any 
+knowledge/choices like this into the scheduler. I'd rather keep things way 
+more independent, less tied to each other and to deep kernel subsystems.
+
+IOW, my personal opinion is that somethng like a suspend (blocker or not) 
+decision simply shouldn't be important enough to be tied into the 
+scheduler. Especially not if it could just be its own layer.
+
+That said, as far as I know, the Android people have mostly been looking 
+at the suspend angle from a single-core standpoint. And I'm not at all 
+convinced that they should hijack the existing "/sys/power/state" thing 
+which is what I think they do now.
+
+And those two things go together. The /sys/power/state thing is a global 
+suspend - which I don't think is appropriate for a opportunistic thing in 
+the first place, especially for multi-core.
+
+A well-designed opportunistic suspend should be a two-phase thing: an 
+opportunistc CPU hotunplug (shutting down cores one by one as the system 
+is idle), and not a "global" event in the first place. And only when 
+you've reached single-core state should you then say "do I suspend the 
+system too".
+
+So I've tried to look a bit at the patches, and my admittedly rough 
+comments so far is
+
+ - I really do prefer the "off to the side" approach that the current 
+   google opportunistic suspend patches have. As mentioned, I don't think 
+   this should be deep in the scheduler. Not at all.
+
+ - I do think there are possibly races and CPU idle issues there, but I 
+   think they are mainly for the multi-core thing. And I think that's a 
+   totally separate issue. Or it _should_ be.
+
+ - once you're single-core (whether because you never had more cores to 
+   begin with, or because the "opportunistic CPU offlining" has taken down 
+   the other cores), I think the suspend-blocker is fine as a concept, and 
+   certainly shouldn't need any deep scheduler hooks.
+
+so I'd like to see the opportunistc suspend thing think about CPU 
+offlining, and I'd like to see it disconnect from the existing 
+/sys/power/state. And I'd really not like to involved deep internal kernel 
+hooks into it.
+
+But I'll also admit that maybe I'm not seeing some problems. I've frankly 
+tried to avoid the whole discussion until Andrew pulled me in yesterday.
+
+			Linus
