@@ -1,15 +1,16 @@
-From: Dave Young <hidave.darkstar@gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: mmotm 2010-06-03-16-36 uploaded
-Date: Fri, 4 Jun 2010 10:02:57 +0800
-Message-ID: <AANLkTikDzAHHH62Wti1D-iV7pqa6u24BDgigIYO5JZJR__31405.5268573158$1275617116$gmane$org@mail.gmail.com>
+Date: Thu, 3 Jun 2010 19:10:23 -0700
+Message-ID: <20100603191023.96d74346.akpm__18779.538307763$1275617481$gmane$org@linux-foundation.org>
 References: <201006040005.o5405Afw023296@imap1.linux-foundation.org>
 	<AANLkTilX_Fbc_pR1jtgQJsvu7RbMfgyhJYCxqV725T18@mail.gmail.com>
 	<20100603185401.1851c94e.akpm@linux-foundation.org>
+	<AANLkTikDzAHHH62Wti1D-iV7pqa6u24BDgigIYO5JZJR@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100603185401.1851c94e.akpm@linux-foundation.org>
+In-Reply-To: <AANLkTikDzAHHH62Wti1D-iV7pqa6u24BDgigIYO5JZJR@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,44 +20,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBKdW4gNCwgMjAxMCBhdCA5OjU0IEFNLCBBbmRyZXcgTW9ydG9uIDxha3BtQGxpbnV4
-LWZvdW5kYXRpb24ub3JnPiB3cm90ZToKPiBPbiBGcmksIDQgSnVuIDIwMTAgMDk6NDE6NTggKzA4
-MDAgRGF2ZSBZb3VuZyA8aGlkYXZlLmRhcmtzdGFyQGdtYWlsLmNvbT4gd3JvdGU6Cj4KPj4gT24g
-RnJpLCBKdW4gNCwgMjAxMCBhdCA3OjM2IEFNLCDCoDxha3BtQGxpbnV4LWZvdW5kYXRpb24ub3Jn
-PiB3cm90ZToKPj4gPiBUaGUgbW0tb2YtdGhlLW1vbWVudCBzbmFwc2hvdCAyMDEwLTA2LTAzLTE2
-LTM2IGhhcyBiZWVuIHVwbG9hZGVkIHRvCj4+ID4KPj4gPiBfXyBodHRwOi8vdXNlcndlYi5rZXJu
-ZWwub3JnL35ha3BtL21tb3RtLwo+PiA+Cj4+Cj4+IEhpLCBpbnRlbF9pZGxlIGJ1aWxkIGZhaWxz
-Ogo+Pgo+PiBkcml2ZXJzL2lkbGUvaW50ZWxfaWRsZS5jOiBJbiBmdW5jdGlvbiBfX19pbnRlbF9p
-ZGxlX19fOgo+PiBkcml2ZXJzL2lkbGUvaW50ZWxfaWRsZS5jOjIzNDogZXJyb3I6IHRvbyBmZXcg
-YXJndW1lbnRzIHRvIGZ1bmN0aW9uIF9fX3RyYWNlX3Bvd2VyCj4+IF9zdGFydF9fXwo+PiBtYWtl
-WzJdOiAqKiogW2RyaXZlcnMvaWRsZS9pbnRlbF9pZGxlLm9dIEVycm9yIDEKPj4gbWFrZVsxXTog
-KioqIFtkcml2ZXJzL2lkbGVdIEVycm9yIDIKPj4gbWFrZVsxXTogKioqIFdhaXRpbmcgZm9yIHVu
-ZmluaXNoZWQgam9icy4uLi4KPj4KPgo+IENhdXNlZCBieQo+IHg4Ni1jcHVmcmVxLW1ha2UtdHJh
-Y2VfcG93ZXJfZnJlcXVlbmN5LWNwdWZyZXEtZHJpdmVyLWluZGVwZW5kZW50LnBhdGNoCj4gd2hp
-Y2ggY2hhbmdlZCB0cmFjZV9wb3dlcl9zdGFydCgpLgo+Cj4gZHJpdmVycy9pZGxlL2ludGVsX2lk
-bGUuYyB3YXNuJ3QgdGhlcmUgd2hlbiBUaG9tYXMgd3JvdGUgdGhhdCBwYXRjaC4KPgo+IHRoaXMs
-IEkgZ3Vlc3M6Cj4KPiAtLS0gYS9kcml2ZXJzL2lkbGUvaW50ZWxfaWRsZS5jfng4Ni1jcHVmcmVx
-LW1ha2UtdHJhY2VfcG93ZXJfZnJlcXVlbmN5LWNwdWZyZXEtZHJpdmVyLWluZGVwZW5kZW50LWZp
-eAo+ICsrKyBhL2RyaXZlcnMvaWRsZS9pbnRlbF9pZGxlLmMKPiBAQCAtMjMxLDcgKzIzMSw3IEBA
-IHN0YXRpYyBpbnQgaW50ZWxfaWRsZShzdHJ1Y3QgY3B1aWRsZV9kZXYKPgo+IMKgIMKgIMKgIMKg
-c3RvcF9jcml0aWNhbF90aW1pbmdzKCk7Cj4gwqAjaWZuZGVmIE1PRFVMRQo+IC0gwqAgwqAgwqAg
-dHJhY2VfcG93ZXJfc3RhcnQoUE9XRVJfQ1NUQVRFLCAoZWF4ID4+IDQpICsgMSk7Cj4gKyDCoCDC
-oCDCoCB0cmFjZV9wb3dlcl9zdGFydChQT1dFUl9DU1RBVEUsIChlYXggPj4gNCkgKyAxLCBjcHUp
-Owo+IMKgI2VuZGlmCj4gwqAgwqAgwqAgwqBpZiAoIW5lZWRfcmVzY2hlZCgpKSB7Cj4KCldpdGgg
-b25lIG1vcmUgcGFyYW0gImNwdSIsIGZhaWxzIHdpdGggInRvbyBtYW55IGFyZ3VtZW50cyI6Cgog
-IENDICAgICAgZHJpdmVycy9pZGxlL2ludGVsX2lkbGUubwpkcml2ZXJzL2lkbGUvaW50ZWxfaWRs
-ZS5jOiBJbiBmdW5jdGlvbiDigJhpbnRlbF9pZGxl4oCZOgpkcml2ZXJzL2lkbGUvaW50ZWxfaWRs
-ZS5jOjIzNDogZXJyb3I6IHRvbyBtYW55IGFyZ3VtZW50cyB0byBmdW5jdGlvbgrigJh0cmFjZV9w
-b3dlcl9zdGFydOKAmQptYWtlWzJdOiAqKiogW2RyaXZlcnMvaWRsZS9pbnRlbF9pZGxlLm9dIEVy
-cm9yIDEKbWFrZVsxXTogKioqIFtkcml2ZXJzL2lkbGVdIEVycm9yIDIKbWFrZVsxXTogKioqIFdh
-aXRpbmcgZm9yIHVuZmluaXNoZWQgam9icy4uLi4KCj4gXwo+Cj4KPiBpdCdzIGEgYml0IG9kZCB0
-aGF0IGFsbCB0cmFjZV9wb3dlcl9zdGFydCgpIGNhbGxlcnMganVzdCBwYXNzIGluCj4gc21wX3By
-b2Nlc3Nvcl9pZCgpLiDCoFdoeSBub3QgZG8gaXQgd2l0aGluIHRyYWNlX3Bvd2VyX3N0YXJ0KCkg
-aXRzZWxmPwo+Cj4KPgoKCgotLSAKUmVnYXJkcwpkYXZlCl9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBs
-aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24u
-b3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Fri, 4 Jun 2010 10:02:57 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
+
+> On Fri, Jun 4, 2010 at 9:54 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Fri, 4 Jun 2010 09:41:58 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
+> >
+> >> On Fri, Jun 4, 2010 at 7:36 AM, __<akpm@linux-foundation.org> wrote:
+> >> > The mm-of-the-moment snapshot 2010-06-03-16-36 has been uploaded to
+> >> >
+> >> > __ http://userweb.kernel.org/~akpm/mmotm/
+> >> >
+> >>
+> >> Hi, intel_idle build fails:
+> >>
+> >> drivers/idle/intel_idle.c: In function ___intel_idle___:
+> >> drivers/idle/intel_idle.c:234: error: too few arguments to function ___trace_power
+> >> _start___
+> >> make[2]: *** [drivers/idle/intel_idle.o] Error 1
+> >> make[1]: *** [drivers/idle] Error 2
+> >> make[1]: *** Waiting for unfinished jobs....
+> >>
+> >
+> > Caused by
+> > x86-cpufreq-make-trace_power_frequency-cpufreq-driver-independent.patch
+> > which changed trace_power_start().
+> >
+> > drivers/idle/intel_idle.c wasn't there when Thomas wrote that patch.
+> >
+> > this, I guess:
+> >
+> > --- a/drivers/idle/intel_idle.c~x86-cpufreq-make-trace_power_frequency-cpufreq-driver-independent-fix
+> > +++ a/drivers/idle/intel_idle.c
+> > @@ -231,7 +231,7 @@ static int intel_idle(struct cpuidle_dev
+> >
+> > __ __ __ __stop_critical_timings();
+> > __#ifndef MODULE
+> > - __ __ __ trace_power_start(POWER_CSTATE, (eax >> 4) + 1);
+> > + __ __ __ trace_power_start(POWER_CSTATE, (eax >> 4) + 1, cpu);
+> > __#endif
+> > __ __ __ __if (!need_resched()) {
+> >
+> 
+> With one more param "cpu", fails with "too many arguments":
+> 
+>   CC      drivers/idle/intel_idle.o
+> drivers/idle/intel_idle.c: In function ___intel_idle___:
+> drivers/idle/intel_idle.c:234: error: too many arguments to function
+> ___trace_power_start___
+> make[2]: *** [drivers/idle/intel_idle.o] Error 1
+> make[1]: *** [drivers/idle] Error 2
+> make[1]: *** Waiting for unfinished jobs....
+
+hm, It Works For Me.  I suspect you applied my patch to mainline, not
+to -mm.
