@@ -1,15 +1,19 @@
-From: Peter Zijlstra <peterz@infradead.org>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: suspend blockers & Android integration
-Date: Fri, 04 Jun 2010 12:08:23 +0200
-Message-ID: <1275646103.27810.39526.camel__41193.5842865661$1275646463$gmane$org@twins>
-References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
-	<20100603232302.GA16184@elte.hu> <1275644619.27810.39462.camel@twins>
-	<1275645245.27810.39493.camel@twins>  <20100604100306.GB3324@elte.hu>
+Date: Fri, 4 Jun 2010 03:09:38 -0700
+Message-ID: <AANLkTimCOcDbeBsvE4ztZXgJISKn49Ela5P8eWGeUjtQ__36412.2072038755$1275646505$gmane$org@mail.gmail.com>
+References: <20100603193045.GA7188@elte.hu>
+	<AANLkTinsOF3wnxsruR0TvjBAQcHks4tf0ay_sM2xB_p4@mail.gmail.com>
+	<20100604075722.GA15181@elte.hu>
+	<AANLkTiksGnpL8tkcc5eScWHrGoijyZNUwZik5lXmU_TS@mail.gmail.com>
+	<20100604085513.GE15181@elte.hu>
+	<AANLkTinphtxn-8pGTYv_mBxKFMa7jU8i1yNbHrs50Vzl@mail.gmail.com>
+	<20100604095917.GA3324@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100604100306.GB3324@elte.hu>
+In-Reply-To: <20100604095917.GA3324@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,21 +24,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Ingo Molnar <mingo@elte.hu>
-Cc: tytso@mit.edu, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+Cc: tytso@mit.edu, Peter Zijlstra <a.p.zijlstra@chello.nl>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2010-06-04 at 12:03 +0200, Ingo Molnar wrote:
-
-> > The only 'interesting' issue I can see here is that if you create 1000 
-> > CLOCK_MONOTONIC namepaces, we'd need to have a tree of trees in order to 
-> > efficiently find the leftmost timer.
-> 
-> Realistically Android userspace would create just a single such namespace for 
-> all the untrusted/unknown/uncontrolled apps, right?
-
-Possibly, yeah. 
-
-But it might not stop someone else from create an insane amount of them.
-So we do need to deal with that, and a linear loop over all timer bases,
-which then will be a user controlled quantity, just doesn't sound
-right :-)
+T24gRnJpLCBKdW4gNCwgMjAxMCBhdCAyOjU5IEFNLCBJbmdvIE1vbG5hciA8bWluZ29AZWx0ZS5o
+dT4gd3JvdGU6Cj4KPiBZb3UgY2FuIGNlcnRhaW5seSBwdXQgaW4gYSBzdXNwZW5kX2Jsb2NrZXJz
+LmggdGhpbmcgaW50byBzb21lIEFuZHJvaWQKPiBkaXJlY3RvcnksIGFuZCBwb3B1bGF0ZSBpdCB3
+aXRoIGVtcHR5IHdyYXBwZXJzIC0gYXMgbG9uZyBhcyB5b3Ugb25seSB1c2UgaXQKPiB3aXRoaW4g
+QW5kcm9pZCBkcml2ZXJzIGFuZCBub3QgY29yZSBrZXJuZWwgY29kZSBvciBvdGhlciBzdWJzeXN0
+ZW1zIHlvdSBkb250Cj4gbWFpbnRhaW4uCj4KPiBJdCdzIGJlaW5nIGRvbmUgYWxsIHRoZSB0aW1l
+IGFuZCBoZWxwZnVsIGNsZWFudXAgcGF0Y2hlcyBlbGltaW5hdGluZyB0aGUgc3R1YnMKPiBhcmUg
+ZnJvd25lZCB1cG9uICh1bmxlc3MgdGhlIHN1YnMgYXJlIHRoZXJlIGxpa2UgZm9yIHllYXJzIHdp
+dGggbm8gcHJvZ3Jlc3MKPiBhbmQgbm8gbWFpbnRlbmFuY2UgaW4gc2lnaHQpLgo+Cj4gUHV0dGlu
+ZyBlbXB0eSBzdHVicyBpbnRvIGluY2x1ZGUvbGludXgvIHdvdWxkIGJlIHB1c2hpbmcgdGhpbmdz
+IGkgdGhpbmsuCj4KPiBJbiBmYWN0IHNvbWV0aW1lcyBhcmNoaXRlY3R1cmVzIGV2ZW4ganVtcCB0
+aGUgZ3VuIHdpdGggbWFqb3Iga2VybmVsIGZlYXR1cmVzOgo+IHdlIGhhZCBhIGR5bnRpY2tzIGlt
+cGxlbWVudGF0aW9uIGluIEFSTSBmb3IgeWVhcnMsIHdlIGhhZCBSVExpbnV4IHN0dWJzIGluIHg4
+Ngo+IGNvZGUgZm9yIHF1aXRlIHNvbWUgdGltZSwgYW5kIHdlIHN0aWxsIGhhdmUgcGVyZm1vbiBp
+biBJQTY0IC0gZGVzcGl0ZSB0aGUgY29yZQo+IGtlcm5lbCBoYXZpbmcgZ29uZSBmb3IgYSBkaWZm
+ZXJlbnQgZGVzaWduLgo+Cj4gSXQncyBjZXJ0YWlubHkgbm90IGlkZWFsLCBidXQgaXQncyBjZXJ0
+YWlubHkgYSBzb2x1dGlvbiB0aGF0IGlzIHVzZWQgZXZlcnkgbm93Cj4gYW5kIHRoZW4uIFRoZSBs
+ZXNzIGRpZmZlcmVuY2UgdGhlcmUgaXMgYmV0d2VlbiB0cmVlcyB0aGUgZWFzaWVyIGl0IGJlY29t
+ZXMgdG8KPiBtZXJnZSAtIGZvciBib3RoIHNpZGVzLCBib3RoIHRlY2huaWNhbGx5IGFuZCBzb2Np
+YWxseS4KClRvdGFsbHkgLS0gb3VyIGdvYWwgd291bGQgYmUgdGhhdCBhcyBkcml2ZXJzIGZpbmQg
+dGhlaXIgd2F5IGZyb20gb3VyCnRyZWUgdG8gbWFpbmxpbmUgd2UnZCBrZWVwIHRoZW0gMToxIGJl
+dHdlZW4gdGhlIHRyZWVzLiAgSWYgd2UgY2FuIGl0IGEKbG9jYWwgc3VzcGVuZF9ibG9ja2VyLmgg
+c29tZXdoZXJlIHdoaWxlIHRoZSBsb25nIHRlcm0gc29sdXRpb24gZ2V0cwpoYXNoZWQgb3V0IHRo
+YXQnZCByZW1vdmUgdGhlIGJpZ2dlc3QgcGFpbnBvaW50IG9uIGEgZHJpdmVyIGxldmVsLiAgSSdt
+Cm5vdCBxdWl0ZSBzdXJlIHdoZXJlIHRoZSBiZXN0IHBsYWNlIHRvIGRyb3Agc3VjaCBhIHRoaW5n
+IHdvdWxkIGJlIC0tCndlJ2QgbGlrZWx5IGJlIGluY2x1ZGluZyBpdCBmcm9tIG1hY2gtbXNtLCBt
+YWNoLXRlZ3JhMiwgYW5kIGRyaXZlcnMKZm9yIGJvdGggdGhvc2UgYXJjaGl0ZWN0dXJlcyBpbiB0
+aGUgbm9ybWFsIGRyaXZlciBwbGFjZXMgZm9yIHRoZSB0cmVlLgpJIGd1ZXNzIHdlIGNvdWxkIGp1
+c3QgZHJvcCBpdCBpbgphcmNoL2FybS9tYWNoLXttc20sdGVncmEyfS9pbmNsdWRlL21hY2gvIGFu
+ZCBib3RoIHRoZSBzdWJhcmNoIGNvZGUgYW5kCnN1YmFyY2gtc3BlY2lmaWMtZHJpdmVycyB3ZSd2
+ZSBiZWVuIHdyaXRpbmcgY291bGQgcGljayBpdCB1cCB2aWEKI2luY2x1ZGUgPG1hY2gvc3VzcGVu
+ZF9ibG9ja2Vycy5oPgoKPj4gWWVhaCwgSSBkbyB1bmRlcnN0YW5kIHRoYXQgd2UncmUgbm90IG1h
+a2luZyBpdCBlYXN5IGZvciBvdXJzZWx2ZXMgaGVyZS4gwqBJCj4+IHRoaW5rIHdlIGhpdCB0aGUg
+cG9pbnQgd2hlcmUgUmFmYWVsIGFuZCBNYXR0aGV3IHNpZ25lZCBvZmYgb24gdGhpbmdzIGFuZAo+
+PiB0aG91Z2h0ICJhaGEsIGxpbnV4LXBtIG1haW50YWluZXJzIGFyZSBoYXBweSwgbm93IHdlJ3Jl
+IGdldHRpbmcgc29tZXdoZXJlIgo+PiBvbmx5IHRvIHJlYWxpemUgdGhlIGxpZ2h0IGF0IHRoZSBl
+bmQgb2YgdGhlIHR1bm5lbCB3YXMgYSBiaXQgZnVydGhlciBvdXQKPj4gdGhhbiB3ZSBhbnRpY2lw
+YXRlZCBeXgo+Cj4gVGhhdCdzIGEgd2VsbC1rbm93biBwcm9ibGVtIG9uIGxrbWw6IHRoZSBsaWdo
+dCBhdCB0aGUgZW5kIG9mIHRoZSB0dW5uZWwgd2FzCj4gdGhlIG90aGVyIHRyYWluIDstKQo+Cj4g
+QW55d2F5LCBpJ20gbm90IHBlc3NpbWlzdGljIGF0IGFsbDogX3NvbWVfIHNvcnQgb2Ygc2NoZW1l
+IGFwcGVhcnMgdG8gYmUKPiBjcnlzdGFsaXNpbmcgb3V0IHRvZGF5LiBFdmVyeW9uZSBzZWVtcyB0
+byBhZ3JlZSBub3cgdGhhdCB0aGUgbWFpbiB1c2VjYXNlcyBhcmUKPiBpbmRlZWQgdXNlZnVsIGFu
+ZCBuZWVkIGhhbmRsaW5nIG9uZSB3YXkgb3IgYW5vdGhlciAtIHRoZSByZXN0IGlzIHJlYWxseSBq
+dXN0Cj4gdGVjaG5vbG9naWNhbCBkaXNjdXNzaW9ucyBob3cgdG8gYWNoaWV2ZSB0aGUgbW9zdGx5
+LWFncmVlZC11cG9uIGVuZCBnb2FsLgo+Cj4gVGhlIHdvcnN0IHNpdHVhdGlvbiBhcmUgZmVhdHVy
+ZXMgd2hlcmUgb25lIHNpZGUgc2F5cyAnd2UgZG9udCBuZWVkIHRoaXMga2luZAo+IG9mIGZ1bmN0
+aW9uYWxpdHkgYXQgYWxsJyAtIElNTyBhdXRvL29wcG9ydHVuaXN0aWMtc3VzcGVuZCBpc250IGlu
+IHRoYXQKPiBzaXR1YXRpb24sIGZvcnR1bmF0ZWx5LgoKSXQgaXMgZW5jb3VyYWdpbmcgdGhhdCB0
+aGVyZSdzIGF0IGxlYXN0IHNvbWUgZ2VuZXJhbCBjb25zZW5zdXMgdGhhdAp0aGUgZmVhdHVyZSBp
+cyB1c2VmdWwsIGFuZCBhcyBBcnZlIGFuZCBJIGhhdmUgYm90aCBtZW50aW9uZWQsIHdlJ3JlCnJl
+YWxseSBub3QgcmVsaWdpb3VzIGFib3V0IG5hbWVzLCBldGMsIHByb3ZpZGVkIHdlIGNhbiBzb2x2
+ZSB0aGUKcHJvYmxlbSB3ZSdyZSB0cnlpbmcgdG8gc29sdmUsIHNvIGlmIGl0IGVuZHMgdXAgYmVp
+bmcgcW9zIGNvbnN0cmFpbnRzCm9yIHNvbWV0aGluZyBlbHNlIGVudGlyZWx5IGJ1dCBzdGlsbCBn
+ZXRzIHVzIHdoZXJlIHdlJ3JlIHRyeWluZyB0byBnbywKaXQncyBnb29kIG5ld3MuCgpJIHRoaW5r
+IG9uZSBwb2ludCBvZiBjb250ZW50aW9uIHJlbWFpbmluZyBtYXkgYmUgImp1c3QgYmxvY2tpbmcK
+c3VzcGVuZCIgdnMgImhhbHRpbmcgc3BlY2lmaWMgdW50cnVzdGVkIHByb2Nlc3NlcyIuICBUaGUg
+bGF0dGVyIGlzCmRpZmZpY3VsdCBmb3IgdXMgdG8gd29yayB3aXRoIGJlY2F1c2Ugb2YgdGhlIG92
+ZXJhbGwgY29tcGxleGl0eSBvZgoob3VyKSB1c2Vyc3BhY2UgZW52aXJvbm1lbnQuICBBIGJpZyBo
+YW1tZXIgd2hlcmUgd2Ugc3RvcCBpdCBhbGwgYW5kCnN1c3BlbmQgZW5kcyB1cCBiZWluZyBsZXNz
+IGRlYWRsb2NrL2ludmVyc2lvbi1wcm9uZS4gIE9mIGNvdXJzZSBpZiB0aGUKZ2VuZXJhbCBzb2x1
+dGlvbiBlbmRzIHVwIGJlaW5nIGFibGUgdG8gZG8gZWl0aGVyLCB0aGVuIHBlcmhhcHMKZXZlcnlv
+bmUncyBoYXBweS4KCkJyaWFuCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3Vu
+ZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlz
+dGluZm8vbGludXgtcG0=
