@@ -1,28 +1,15 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 4 Jun 2010 17:43:28 +0200
-Message-ID: <20100604174328.30b26b6a__30691.3925371648$1275666311$gmane$org@schatten.dmk.lab>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<201005302202.39511.rjw@sisk.pl>
-	<AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt@mail.gmail.com>
-	<201005312347.24251.rjw@sisk.pl>
-	<AANLkTilvOgSFTDFtXbjJobMZWxgfvsC97TqC7_a_NHBX@mail.gmail.com>
-	<alpine.LFD.2.00.1006011411200.2933@localhost.localdomain>
-	<AANLkTikZHmF6baP7dEXEGFE8YsbEteRjlhb5wqZX8ll1@mail.gmail.com>
-	<alpine.LFD.2.00.1006020905410.2933@localhost.localdomain>
-	<AANLkTinDm3FIrbS1jqEzW15THmr1hdd7ox0Mllm1VLjZ@mail.gmail.com>
-	<1275471561.27810.30865.camel@twins>
-	<AANLkTilLmAb2c9fQwuguzWtjcHfuTZvPUTbUx7vuwFI6@mail.gmail.com>
-	<1275474088.27810.31000.camel@twins>
-	<20100602221309.6da754e7@schatten.dmk.lab>
-	<1275550802.27810.34863.camel@twins>
-	<20100603161205.73a2b56d@schatten.dmk.lab>
-	<1275578881.27810.35995.camel@twins>
+From: Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH] drivers/base/power: be more verbose in
+	device_pm_add()
+Date: Fri, 4 Jun 2010 09:45:27 -0700
+Message-ID: <20100604164527.GA27034__47288.6352720254$1275670298$gmane$org@suse.de>
+References: <1275653834-9132-1-git-send-email-daniel@caiaq.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275578881.27810.35995.camel@twins>
+Content-Disposition: inline
+In-Reply-To: <1275653834-9132-1-git-send-email-daniel@caiaq.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -32,58 +19,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 03 Jun 2010 17:28:01 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
-
-> On Thu, 2010-06-03 at 16:12 +0200, Florian Mickler wrote:
-> > On Thu, 03 Jun 2010 09:40:02 +0200
-> > Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> > > Same for firefox, you can teach it to not render animated gifs and run
-> > > javascript for invisible tabs, and once the screen-saver kicks in,
-> > > nothing is visible (and with X telling apps their window is visible or
-> > > not it knows), so it should go idle all of its own.
-> > > 
-> > > Fix the friggin apps, don't kludge with freezing.
-> > 
-> > Of course programs should be as smart as possible. But that is an
-> > orthogonal problem.
-> > 
-> > Suppose firefox were fixed. It still needs to fetch my rss feeds every
-> > minute, because I'm sad if it doesn't. It just can't be fixed at the
-> > application level.
+On Fri, Jun 04, 2010 at 02:17:14PM +0200, Daniel Mack wrote:
+> If a parentless device was added during a PM transaction, developers
+> might want to know which device caused the troube. Hence, output the
+> kobject's name in this case.
 > 
-> Sure it can, why would it need to fetch RSS feeds when the screen is off
-> and nobody could possible see the result? So you can stop the timer when
-> you know the window isn't visible or alternatively when the screensaver
-> is active, I think most desktops have notification of that as well.
+> Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Greg Kroah-Hartman <gregkh@suse.de>
+> Cc: Magnus Damm <damm@igel.co.jp>
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: linux-pm@lists.linux-foundation.org
+> ---
+>  drivers/base/power/main.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 941fcb8..9e9fe6a 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -98,7 +98,7 @@ void device_pm_add(struct device *dev)
+>  		 * transition is in progress in order to avoid leaving them
+>  		 * unhandled down the road
+>  		 */
+> -		dev_WARN(dev, "Parentless device registered during a PM transaction\n");
+> +		dev_WARN(dev, "Parentless device registered during a PM transaction: %s\n", kobject_name(&dev->kobj));
 
-This is arguing on a very thin line. In fact it is becoming pointless. 
+Doesn'tthe dev_WARN call already print the name of the device?  Why
+print it twice?
 
-Suppose there were an RSS-feed plugin that signals events to an event
-Plugin. That event plugin could be either visual notification or sending
-audio-signals. But the RSS feed doesn't know what specific plugin it
-talks to. So screen off is _not always_ the right indicator. Sometimes
-it is, sometimes it's not. 
-There would be a seperate infrastructure needed in the program to tell
-the different plugins that the core thinks everything should stop.
-How does the core knows when to stop? And then there probably need to
-be some kind of "suspend blockers" in the program. *g*
+thanks,
 
-Just solve it at the right level, so that the apps don't need to be
-infected with this shit. And this belongs between the iron and the
-apps. And it seems it needs to be some cooperative approach of kernel
-and userspace-framework as it isn't right to put that much policy in
-the kernel.
-
-I don't think it is a black and white thing, where you can just say
-"fix the friggin apps". 
-
-And this is a really f*beep*ng serious point. (at least to me)
-
-Cheers,
-Flo
+greg k-h
