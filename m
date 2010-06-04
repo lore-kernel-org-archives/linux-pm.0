@@ -1,16 +1,24 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: suspend blockers & Android integration
-Date: Fri, 4 Jun 2010 00:37:48 -0700
-Message-ID: <AANLkTimH4ihf3QqtKFpfGXRKtO55PrUuff9JYtaEBG44__25054.6128642329$1275637181$gmane$org@mail.gmail.com>
-References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
-	<20100603232302.GA16184@elte.hu>
-	<AANLkTikZP3bmckpfb_jUdG7qZO5W9DgpZ79ugtSZaEpt@mail.gmail.com>
-	<20100604071354.GA14451@elte.hu>
+Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
+	Suspend block api (version 8)
+Date: Fri, 4 Jun 2010 00:55:10 -0700
+Message-ID: <AANLkTintskDDRTiVCC-reC2uNVL9nygMaKYYxCagidFt__17946.6820591644$1275638164$gmane$org@mail.gmail.com>
+References: <20100601122012.1edeaf48@notabene.brown>
+	<alpine.LFD.2.00.1006011243350.2933@localhost.localdomain>
+	<20100602153235.340a7852@notabene.brown>
+	<AANLkTikVjAf5nHdMx2bcHRAUSkq99s-b5YZCECXIJJLy@mail.gmail.com>
+	<20100602180614.729246ea@notabene.brown>
+	<AANLkTimISbs4X2YR_Pal9A80mpkNyCy8laWBcOgR2Cl7@mail.gmail.com>
+	<20100602210224.6ae2333f@notabene.brown>
+	<20100602210521.54b9cd9b@schatten.dmk.lab>
+	<20100602233243.GA27666@core.coreip.homeip.net>
+	<AANLkTim3WQ6qgBH5Cx5tkf-LPtYZ7L6BN6OZIJpQbET1@mail.gmail.com>
+	<20100604071445.GG21239@core.coreip.homeip.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100604071354.GA14451@elte.hu>
+In-Reply-To: <20100604071445.GG21239@core.coreip.homeip.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,72 +28,81 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: tytso@mit.edu, Peter Zijlstra <a.p.zijlstra@chello.nl>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Neil Brown <neilb@suse.de>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 4, 2010 at 12:13 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Arve Hj?nnev?g <arve@android.com> wrote:
->
->> On Thu, Jun 3, 2010 at 4:23 PM, Ingo Molnar <mingo@elte.hu> wrote:
->> ...
->> > ?- Controlled auto-suspend: drivers (such as input) could on wakeup
->> > ? automatically set the 'minimum wakeup latency' value of wakee tasks =
-to a
->> > ? lower value. This automatically prevents another auto-suspend in the=
- near
->> > ? future: up to the point the wakee task increases its latency (via the
->> > ? scheduler syscall) again and allows suspend again.
+2010/6/4 Dmitry Torokhov <dmitry.torokhov@gmail.com>:
+> On Wed, Jun 02, 2010 at 07:44:59PM -0700, Arve Hj=F8nnev=E5g wrote:
+>> On Wed, Jun 2, 2010 at 4:32 PM, Dmitry Torokhov
+>> <dmitry.torokhov@gmail.com> wrote:
+>> > On Wed, Jun 02, 2010 at 09:05:21PM +0200, Florian Mickler wrote:
+>> >> On Wed, 2 Jun 2010 21:02:24 +1000
+>> >> Neil Brown <neilb@suse.de> wrote:
+>> >> >
+>> >> > And this decision (to block suspend) really needs to be made in the=
+ driver,
+>> >> > not in userspace?
+>> >>
+>> >> Well, it fits. The requirement is a direct consequence of the intimate
+>> >> knowledge the driver has about the driven devices.
 >> >
+>> > That is not really true. A driver does have intimate knowledge of the
+>> > device, however it does not necessarily have an idea about the data re=
+ad
+>> > from the device. Consider the gpio_matrix driver: Arve says that it has
+>> > to continue scanning matrix once first interrupt arrvies. But it really
+>> > depends on what key has been pressed - if user pressed KEY_SUSPEND or
+>> > KEY_POWER it cmight be better if we did not wait for key release but
+>> > initiated the action right away. The decision on how system reacts to a
+>> > key press does not belong to the driver but really to userspace.
 >>
->> How do you clear the latency value in a safe way? If another wakeup event
->> happens right after your wakee task is done processing the last event and
->> decides to increase its latency, auto suspend will be allowed even though
->> you have an unprocessed wakeup event. Also how do you know which task wi=
-ll
->> read the event if it is not already waiting for it?
+>> If we just suspend while the keypad scan is active, a second press of
+>> KEY_POWER would not be able wake the device up. The gpio keypad matrix
+>> driver has two operating modes. No keys are pressed: all the outputs
+>> are active so a key press will generate an interrupt in one of the
+>> inputs. Keys are pressed: Activate a single output at a time so we can
+>> determine which keys are pressed. The second mode is entered when the
+>> driver gets an interrupt in the first mode. The first mode is entered
+>> if the scan detected that no keys are pressed. The driver could be
+>> modified to stop the scan on suspend and forcibly put the device back
+>> in no-keys-pressed state, but pressing additional keys connected to
+>> the same input can no longer generate any events (the input does not
+>> change).
 >
-> The easiest solution would be to not do any of that initially. (If it's e=
-ver a
-> concern we could subtract/add without destroying the nesting property)
->
-> Why do you need to track input wakeups? It's rather fragile and rather
+> Would that be still the case if you reprogram the device as wakeup
+> source while suspending?
 
-Because we have keys that should always turn the screen on, but the
-problem is not specific to input events. If we enabled a wakeup event
-it usually means we need this event to always work, not just when the
-system is fully awake or fully suspended.
+It depends on what part you are referring to. It is impossible to
+detect some keys presses if you suspend while a key is held down. That
+key will connect one output to one input. If the interrupt is edge
+triggered you can just turn all the outputs back on (and clear the
+interrupt that this will generate) and suspend, but no additional key
+presses on keys connected to the same input will cause an interrupt
+until all those keys have been released first or a key connected to
+another input is pressed. If the interrupt is level triggered (and
+fixed polarity) you cannot do this. You must either disable the input
+interrupt or the output. This means that you if the user releases the
+key and press it again, you cannot wakeup on this key. You can also
+not wake up on any other keys connected to the disables input or
+output. So you have some choice in what events you loose, but there
+will always be some key press sequence that will not work if you
+suspend but will work if you prevent suspend in the middle.
 
-> unnecessary - the idle drivers know it very well how to not go into the
-> deepest idle mode already today. We wont hit C8 on laptops when you are u=
-sing
-> the desktop.
 >
+> Anyway, it does not really matter. Your case (current suspend blockers)
+> would delay putting device to sleep till you release all the keys,
+> including KEY_POWER. If you delegate the decision to userspace it would
+> have an _option_ of putting the device to sleep earlier, however in both
+> cases user has to release all keys before the device can be resumed.
 
-The whole point allow the use of suspend.
-
->> > ? This means there will be no surprise suspends for a task that may ta=
-ke a
->> > ? bit longer than usual to finish its work. [ Detail: this would only =
-be done
->> > ? for tasks that have a non-default (non-infinity) task->latency value=
- - to
->> > ? prevent the input driver from lowering latency values (and preventing
->> > ? future suspends) just because some unaware apps are running and usin=
-g input
->> > ? drivers. ]
->>
->> Don't you need two inifinity values for this?
->
-> Yes - any value above the max idle latency in the system will do.
->
-> Thanks,
->
-> =A0 =A0 =A0 =A0Ingo
->
-
-
+We deliver all keys to user space so that is has the option of
+reacting to them. Yes if we did not do this user space would have the
+option of suspending while keys are pressed, but it would need
+detailed knowledge about the driver to make this decision (will the
+driver loose key events if we suspend, which keys can be lost, does
+the condition clear automatically when all the keys are released or do
+we need another wakeup event to get out of it).
 
 -- =
 
