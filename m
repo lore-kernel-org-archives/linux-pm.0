@@ -1,14 +1,15 @@
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Dave Young <hidave.darkstar@gmail.com>
 Subject: Re: mmotm 2010-06-03-16-36 uploaded
-Date: Thu, 3 Jun 2010 18:56:16 -0700
-Message-ID: <20100603185616.db556b0b.akpm__46907.5072942816$1275616613$gmane$org@linux-foundation.org>
+Date: Fri, 4 Jun 2010 10:02:57 +0800
+Message-ID: <AANLkTikDzAHHH62Wti1D-iV7pqa6u24BDgigIYO5JZJR__31405.5268573158$1275617116$gmane$org@mail.gmail.com>
 References: <201006040005.o5405Afw023296@imap1.linux-foundation.org>
 	<AANLkTilX_Fbc_pR1jtgQJsvu7RbMfgyhJYCxqV725T18@mail.gmail.com>
+	<20100603185401.1851c94e.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTilX_Fbc_pR1jtgQJsvu7RbMfgyhJYCxqV725T18@mail.gmail.com>
+In-Reply-To: <20100603185401.1851c94e.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,33 +19,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 4 Jun 2010 09:41:58 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
-
-> On Fri, Jun 4, 2010 at 7:36 AM,  <akpm@linux-foundation.org> wrote:
-> > The mm-of-the-moment snapshot 2010-06-03-16-36 has been uploaded to
-> >
-> > __ http://userweb.kernel.org/~akpm/mmotm/
-> >
-> 
-> Hi, intel_idle build fails:
-> 
-> drivers/idle/intel_idle.c: In function ___intel_idle___:
-> drivers/idle/intel_idle.c:234: error: too few arguments to function ___trace_power
-> _start___
-> make[2]: *** [drivers/idle/intel_idle.o] Error 1
-> make[1]: *** [drivers/idle] Error 2
-> make[1]: *** Waiting for unfinished jobs....
-
-Oh, and why didn't my x86_64 allmodconfig build catch this? 
-allmodconfig is for compile coverage testing (IMO) and someone isn't
-being covered.  Someone needs thwapping!
-
-#ifndef MODULE
-        trace_power_start(POWER_CSTATE, (eax >> 4) + 1);
-#endif
-
-Len: thwap.
+T24gRnJpLCBKdW4gNCwgMjAxMCBhdCA5OjU0IEFNLCBBbmRyZXcgTW9ydG9uIDxha3BtQGxpbnV4
+LWZvdW5kYXRpb24ub3JnPiB3cm90ZToKPiBPbiBGcmksIDQgSnVuIDIwMTAgMDk6NDE6NTggKzA4
+MDAgRGF2ZSBZb3VuZyA8aGlkYXZlLmRhcmtzdGFyQGdtYWlsLmNvbT4gd3JvdGU6Cj4KPj4gT24g
+RnJpLCBKdW4gNCwgMjAxMCBhdCA3OjM2IEFNLCDCoDxha3BtQGxpbnV4LWZvdW5kYXRpb24ub3Jn
+PiB3cm90ZToKPj4gPiBUaGUgbW0tb2YtdGhlLW1vbWVudCBzbmFwc2hvdCAyMDEwLTA2LTAzLTE2
+LTM2IGhhcyBiZWVuIHVwbG9hZGVkIHRvCj4+ID4KPj4gPiBfXyBodHRwOi8vdXNlcndlYi5rZXJu
+ZWwub3JnL35ha3BtL21tb3RtLwo+PiA+Cj4+Cj4+IEhpLCBpbnRlbF9pZGxlIGJ1aWxkIGZhaWxz
+Ogo+Pgo+PiBkcml2ZXJzL2lkbGUvaW50ZWxfaWRsZS5jOiBJbiBmdW5jdGlvbiBfX19pbnRlbF9p
+ZGxlX19fOgo+PiBkcml2ZXJzL2lkbGUvaW50ZWxfaWRsZS5jOjIzNDogZXJyb3I6IHRvbyBmZXcg
+YXJndW1lbnRzIHRvIGZ1bmN0aW9uIF9fX3RyYWNlX3Bvd2VyCj4+IF9zdGFydF9fXwo+PiBtYWtl
+WzJdOiAqKiogW2RyaXZlcnMvaWRsZS9pbnRlbF9pZGxlLm9dIEVycm9yIDEKPj4gbWFrZVsxXTog
+KioqIFtkcml2ZXJzL2lkbGVdIEVycm9yIDIKPj4gbWFrZVsxXTogKioqIFdhaXRpbmcgZm9yIHVu
+ZmluaXNoZWQgam9icy4uLi4KPj4KPgo+IENhdXNlZCBieQo+IHg4Ni1jcHVmcmVxLW1ha2UtdHJh
+Y2VfcG93ZXJfZnJlcXVlbmN5LWNwdWZyZXEtZHJpdmVyLWluZGVwZW5kZW50LnBhdGNoCj4gd2hp
+Y2ggY2hhbmdlZCB0cmFjZV9wb3dlcl9zdGFydCgpLgo+Cj4gZHJpdmVycy9pZGxlL2ludGVsX2lk
+bGUuYyB3YXNuJ3QgdGhlcmUgd2hlbiBUaG9tYXMgd3JvdGUgdGhhdCBwYXRjaC4KPgo+IHRoaXMs
+IEkgZ3Vlc3M6Cj4KPiAtLS0gYS9kcml2ZXJzL2lkbGUvaW50ZWxfaWRsZS5jfng4Ni1jcHVmcmVx
+LW1ha2UtdHJhY2VfcG93ZXJfZnJlcXVlbmN5LWNwdWZyZXEtZHJpdmVyLWluZGVwZW5kZW50LWZp
+eAo+ICsrKyBhL2RyaXZlcnMvaWRsZS9pbnRlbF9pZGxlLmMKPiBAQCAtMjMxLDcgKzIzMSw3IEBA
+IHN0YXRpYyBpbnQgaW50ZWxfaWRsZShzdHJ1Y3QgY3B1aWRsZV9kZXYKPgo+IMKgIMKgIMKgIMKg
+c3RvcF9jcml0aWNhbF90aW1pbmdzKCk7Cj4gwqAjaWZuZGVmIE1PRFVMRQo+IC0gwqAgwqAgwqAg
+dHJhY2VfcG93ZXJfc3RhcnQoUE9XRVJfQ1NUQVRFLCAoZWF4ID4+IDQpICsgMSk7Cj4gKyDCoCDC
+oCDCoCB0cmFjZV9wb3dlcl9zdGFydChQT1dFUl9DU1RBVEUsIChlYXggPj4gNCkgKyAxLCBjcHUp
+Owo+IMKgI2VuZGlmCj4gwqAgwqAgwqAgwqBpZiAoIW5lZWRfcmVzY2hlZCgpKSB7Cj4KCldpdGgg
+b25lIG1vcmUgcGFyYW0gImNwdSIsIGZhaWxzIHdpdGggInRvbyBtYW55IGFyZ3VtZW50cyI6Cgog
+IENDICAgICAgZHJpdmVycy9pZGxlL2ludGVsX2lkbGUubwpkcml2ZXJzL2lkbGUvaW50ZWxfaWRs
+ZS5jOiBJbiBmdW5jdGlvbiDigJhpbnRlbF9pZGxl4oCZOgpkcml2ZXJzL2lkbGUvaW50ZWxfaWRs
+ZS5jOjIzNDogZXJyb3I6IHRvbyBtYW55IGFyZ3VtZW50cyB0byBmdW5jdGlvbgrigJh0cmFjZV9w
+b3dlcl9zdGFydOKAmQptYWtlWzJdOiAqKiogW2RyaXZlcnMvaWRsZS9pbnRlbF9pZGxlLm9dIEVy
+cm9yIDEKbWFrZVsxXTogKioqIFtkcml2ZXJzL2lkbGVdIEVycm9yIDIKbWFrZVsxXTogKioqIFdh
+aXRpbmcgZm9yIHVuZmluaXNoZWQgam9icy4uLi4KCj4gXwo+Cj4KPiBpdCdzIGEgYml0IG9kZCB0
+aGF0IGFsbCB0cmFjZV9wb3dlcl9zdGFydCgpIGNhbGxlcnMganVzdCBwYXNzIGluCj4gc21wX3By
+b2Nlc3Nvcl9pZCgpLiDCoFdoeSBub3QgZG8gaXQgd2l0aGluIHRyYWNlX3Bvd2VyX3N0YXJ0KCkg
+aXRzZWxmPwo+Cj4KPgoKCgotLSAKUmVnYXJkcwpkYXZlCl9fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBs
+aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24u
+b3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
