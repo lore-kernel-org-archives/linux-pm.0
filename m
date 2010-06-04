@@ -1,16 +1,19 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
- userspace is frozen?
-Date: Fri, 04 Jun 2010 14:20:16 +0300
-Message-ID: <1275650416.3403.5.camel__31646.3012983606$1275650567$gmane$org@maxim-laptop>
-References: <20100303215056.GB2579@ucw.cz>
-	<Pine.LNX.4.44L0.1003031720530.1380-100000@iolanthe.rowland.org>
-	<20100304135337.GC12191@atrey.karlin.mff.cuni.cz>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: suspend blockers & Android integration
+Date: Fri, 04 Jun 2010 14:06:50 +0200
+Message-ID: <1275653210.27810.39762.camel__25135.3381820538$1275653360$gmane$org@twins>
+References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
+	<20100603232302.GA16184@elte.hu>
+	<AANLkTikZP3bmckpfb_jUdG7qZO5W9DgpZ79ugtSZaEpt@mail.gmail.com>
+	<20100604071354.GA14451@elte.hu>
+	<AANLkTimH4ihf3QqtKFpfGXRKtO55PrUuff9JYtaEBG44@mail.gmail.com>
+	<20100604083423.GD15181@elte.hu>
+	<AANLkTinQyzzeF-NOAjrAqqQXqKjFJhx85nI4uyBGRtWd@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100304135337.GC12191@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <AANLkTinQyzzeF-NOAjrAqqQXqKjFJhx85nI4uyBGRtWd@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,43 +23,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: tytso@mit.edu, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Felipe Balbi <felipe.balbi@nokia.com>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2010-03-04 at 14:53 +0100, Pavel Machek wrote: 
-> Hi!
-> 
-> > > journalling assumptions broken: commit block is there, but previous
-> > > blocks are not intact. Data loss.
-> > > 
-> > > ...and that was the first I could think about. Lets not do
-> > >  this. Barriers were invented for a reason.
-> > 
-> > Very well.  Then we still need a solution to the original problem:  
-> > Devices sometimes need to be unregistered during resume, but
-> > del_gendisk() blocks on the writeback thread, which is frozen until
-> > after the resume finishes.  How do you suggest this be fixed?
-> 
-> Avoid unregistering device during resume. Instead, return errors until
-> resume is done and you can call del_gendisk? 
-
-This won't help ether. The same driver needs to unregister perfectly
-working device on suspend, because the user might replace the card
-during suspend and fool the os.
-There is a setting, CONFIG_MMC_UNSAFE_RESUME and I use it, but it isn't
-default.
-
-Anyway to revive that old thread, how about introducing new
-del_gendisk_no_sync?
-
-A less safe version of del_gendisk, but which won't sync the filesystem.
-Since driver knows that card is gone, there is no point of syncing it.
-
-(the sync is done by invalidate_partition, so some flag should be
-propagated to it).
-
-
-
-Best regards,
-Maxim Levitsky
+T24gRnJpLCAyMDEwLTA2LTA0IGF0IDAxOjU2IC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
+Ogo+IE9uIEZyaSwgSnVuIDQsIDIwMTAgYXQgMTozNCBBTSwgSW5nbyBNb2xuYXIgPG1pbmdvQGVs
+dGUuaHU+IHdyb3RlOgo+ID4KPiA+ICogQXJ2ZSBIaj9ubmV2P2cgPGFydmVAYW5kcm9pZC5jb20+
+IHdyb3RlOgo+ID4KPiA+PiA+IFsuLi5dCj4gPj4gPgo+ID4+ID4gV2h5IGRvIHlvdSBuZWVkIHRv
+IHRyYWNrIGlucHV0IHdha2V1cHM/IEl0J3MgcmF0aGVyIGZyYWdpbGUgYW5kIHJhdGhlcgo+ID4+
+ID4gdW5uZWNlc3NhcnkgWy4uLl0KPiA+Pgo+ID4+IEJlY2F1c2Ugd2UgaGF2ZSBrZXlzIHRoYXQg
+c2hvdWxkIGFsd2F5cyB0dXJuIHRoZSBzY3JlZW4gb24sIGJ1dCB0aGUgcHJvYmxlbQo+ID4+IGlz
+IG5vdCBzcGVjaWZpYyB0byBpbnB1dCBldmVudHMuIElmIHdlIGVuYWJsZWQgYSB3YWtldXAgZXZl
+bnQgaXQgdXN1YWxseQo+ID4+IG1lYW5zIHdlIG5lZWQgdGhpcyBldmVudCB0byBhbHdheXMgd29y
+aywgbm90IGp1c3Qgd2hlbiB0aGUgc3lzdGVtIGlzIGZ1bGx5Cj4gPj4gYXdha2Ugb3IgZnVsbHkg
+c3VzcGVuZGVkLgo+ID4KPiA+IEhtLCBpIGNhbm5vdCBmb2xsb3cgdGhhdCBnZW5lcmljIGNsYWlt
+LiBDb3VsZCB5b3UgcGxlYXNlIHBvaW50IG91dCB0aGUgcHJvYmxlbQo+ID4gdG8gbWUgdmlhIGEg
+c3BlY2lmaWMgZXhhbXBsZT8gV2hpY2ggdGFzayBkb2VzIHdoYXQsIHdoYXQgdW5kZXNpcmFibGUg
+dGhpbmcKPiA+IGhhcHBlbnMgd2hlcmUsIGV0Yy4KPiA+Cj4gCj4gV2UgaGF2ZSBtYW55IHdha2V1
+cCBldmVudHMsIGFuZCBzb21lIG9mIHRoZW0gYXJlIGludmlzaWJsZSB0byB0aGUKPiB1c2VyLiBG
+b3IgaW5zdGFuY2Ugb24gdGhlIE5leHVzIE9uZSB3YWtlIHVwIGV2ZXJ5IDEwIG1pbnV0ZXMgbW9u
+aXRvcgo+IHRoZSBiYXR0ZXJ5IGhlYWx0aC4gCgo+IElmIHRoZSB1c2VyIHByZXNzZXMgYSBrZXkg
+cmlnaHQgYWZ0ZXIgdGhpcyB3b3JrCj4gaGFzIGZpbmlzaGVkIGFuZCB3ZSBkaWQgbm90IGJsb2Nr
+IHN1c3BlbmQgdW50aWwgdXNlcnNwYWNlIGNvdWxkCj4gcHJvY2VzcyB0aGlzIGtleSBldmVudCwg
+d2UgcmlzayBzdXNwZW5kaW5nIGJlZm9yZSB3ZSBjb3VsZCB0dXJuIHRoZQo+IHNjcmVlbiBvbiwg
+d2hpY2ggdG8gdGhlIHVzZXIgbG9va3MgbGlrZSB0aGUga2V5IGRpZCBub3Qgd29yay4gCgo+IEFu
+b3RoZXIKPiBleGFtcGxlLCB0aGUgdXNlciBwcmVzc2VkIHRoZSBwb3dlciBrZXkgd2hpY2ggdHVy
+bnMgdGhlIHNjcmVlbiBvZmYgYW5kCj4gYWxsb3dzIHN1c3BlbmQuIFdlIGluaXRpYXRlIHN1c3Bl
+bmQgYW5kIGEgcGhvbmUgY2FsbCBjb21lcyBpbi4gSWYgd2UKPiBkb24ndCBibG9jayBzdXNwZW5k
+IHVudGlsIHdlIHByb2Nlc3NlZCB0aGUgaW5jb21pbmcgcGhvbmUgY2FsbAo+IG5vdGlmaWNhdGlv
+biwgdGhlIHBob25lIG1heSBuZXZlciByaW5nIChzb21lIGRldmljZXMgd2lsbCBzZW5kIGEgbmV3
+Cj4gbWVzc2FnZSBldmVyeSBmZXcgc2Vjb25kcyBmb3IgdGhpcywgc28gb24gdGhvc2UgZGV2aWNl
+cyBpdCB3b3VsZCBqdXN0Cj4gZGVsYXkgdGhlIHJpbmdpbmcpLgoKUmlnaHQsIHNvIGluIHRoZSBw
+cm9wb3NlZCBzY2hlbWUgYWxsIHRoZXNlIHRhc2tzIHdvdWxkIGJlIGV4ZWN1dGVkIGJ5CnRydXN0
+ZWQgcHJvY2Vzc2VzLCBhbmQgdHJ1c3RlZCBwcm9jZXNzZXMgd2lsbCBuZXZlciBnZXQgZnJvemVu
+IGFuZCBzbwp3aWxsIG5ldmVyIGJlIGRlbGF5ZWQgaW4gcHJvY2Vzc2luZyB0aGVzZSBldmVudHMu
+CgpPbmx5IHVudHJ1c3RlZCBjb2RlIHdpbGwgYmUgZnJvemVuLiBBbmQgdHJ1c3RlZCBwcm9jZXNz
+ZXMgYXJlIHJlbGlhYmxlCmZvciB0aGF3aW5nIHRoZSB1bnRydXN0ZWQgcHJvY2Vzc2VzIGFuZCBk
+ZWxpdmVyaW5nIGV2ZW50cyB0byBpdC4KClRydXN0ZWQgcHJvY2Vzc2VzIGFyZSBhc3N1bWVkIHRv
+IGJlIHNhbmUgYW5kIGlkbGUgd2hlbiB0aGVyZSBpcyBub3RoaW5nCmZvciB0aGVtIHRvIGRvLCBh
+bGxvd2luZyB0aGUgbWFjaGluZSB0byBnbyBpbnRvIGRlZXAgaWRsZSBzdGF0ZXMuCgpfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5n
+IGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5s
+aW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
