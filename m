@@ -1,20 +1,14 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: suspend blockers & Android integration
-Date: Fri, 4 Jun 2010 17:07:38 +0200
-Message-ID: <20100604170738.75c7436e__35785.3059577339$1275664202$gmane$org@schatten.dmk.lab>
-References: <20100603193045.GA7188@elte.hu>
-	<AANLkTinsOF3wnxsruR0TvjBAQcHks4tf0ay_sM2xB_p4@mail.gmail.com>
-	<20100604075722.GA15181@elte.hu>
-	<AANLkTiksGnpL8tkcc5eScWHrGoijyZNUwZik5lXmU_TS@mail.gmail.com>
-	<20100604085513.GE15181@elte.hu>
-	<AANLkTinphtxn-8pGTYv_mBxKFMa7jU8i1yNbHrs50Vzl@mail.gmail.com>
-	<20100604095917.GA3324@elte.hu>
-	<1275661446.4455.33.camel@mulgrave.site>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: Is it supposed to be ok to call del_gendisk while
+ userspace is frozen?
+Date: Fri, 04 Jun 2010 18:19:38 +0300
+Message-ID: <1275664778.4596.1.camel__4574.75686348534$1275664873$gmane$org@maxim-laptop>
+References: <Pine.LNX.4.44L0.1006041052570.1794-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275661446.4455.33.camel@mulgrave.site>
+In-Reply-To: <Pine.LNX.4.44L0.1006041052570.1794-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,54 +18,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, tytso@mit.edu, Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Felipe@smtp1.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Balbi <felipe.balbi@nokia.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 04 Jun 2010 09:24:06 -0500
-James Bottomley <James.Bottomley@suse.de> wrote:
+On Fri, 2010-06-04 at 10:59 -0400, Alan Stern wrote: 
+> On Fri, 4 Jun 2010, Maxim Levitsky wrote:
+> 
+> > On Thu, 2010-03-04 at 14:53 +0100, Pavel Machek wrote: 
+> > > Hi!
+> > > 
+> > > > > journalling assumptions broken: commit block is there, but previous
+> > > > > blocks are not intact. Data loss.
+> > > > > 
+> > > > > ...and that was the first I could think about. Lets not do
+> > > > >  this. Barriers were invented for a reason.
+> > > > 
+> > > > Very well.  Then we still need a solution to the original problem:  
+> > > > Devices sometimes need to be unregistered during resume, but
+> > > > del_gendisk() blocks on the writeback thread, which is frozen until
+> > > > after the resume finishes.  How do you suggest this be fixed?
+> > > 
+> > > Avoid unregistering device during resume. Instead, return errors until
+> > > resume is done and you can call del_gendisk? 
+> > 
+> > This won't help ether. The same driver needs to unregister perfectly
+> > working device on suspend, because the user might replace the card
+> > during suspend and fool the os.
+> > There is a setting, CONFIG_MMC_UNSAFE_RESUME and I use it, but it isn't
+> > default.
+> 
+> People have generally agreed that the best answer is to have 
+> del_gendisk always thaw the writeback thread.
+Now the question is how to do that? :-)
 
-> On Fri, 2010-06-04 at 11:59 +0200, Ingo Molnar wrote:
-> > Anyway, i'm not pessimistic at all: _some_ sort of scheme appears to be =
+Best regards,
+Maxim Levitsky
 
-> > crystalising out today. Everyone seems to agree now that the main useca=
-ses are =
-
-> > indeed useful and need handling one way or another - the rest is really=
- just =
-
-> > technological discussions how to achieve the mostly-agreed-upon end goa=
-l.
-> =
-
-> It's still not clear to me whether everyone's revolving around to using
-> the current suspend block API because it's orthogonal to all other
-> mechanisms and is therefore separate from the kernel (and can be
-> compiled out if you don't want it).  Or whether re-expressing what the
-> android drivers want (minimum idle states and suspend block) in pm_qos
-> terms which others can use is the way to go.  I think the latter, but
-> I'd like to know what other people think (because I'm not wedded to this
-> preference).
-
-I'd like to know that also. =
-
-I have a patch to add=A0pm_qos_add_request_nonblock function, so it is
-possible to register an pm_qos constraint by passing preallocated
-memory to it. =
-
-
-Notifying should be possible to do from atomic contexts via
-async_schedule()?
-
-The scalability issues of pm_qos can be adressed by using plists for
-all pm_qos_class'es. Or by having the different pm_qos_class'es provide
-their own implementations for the update and get operations. =
-
-
-Cheers,
-Flo
-
-> =
-
-> James
-> =
+> 
+> > Anyway to revive that old thread, how about introducing new
+> > del_gendisk_no_sync?
+> > 
+> > A less safe version of del_gendisk, but which won't sync the filesystem.
+> > Since driver knows that card is gone, there is no point of syncing it.
+> > 
+> > (the sync is done by invalidate_partition, so some flag should be
+> > propagated to it).
+> 
+> That might work for mmc, but it wouldn't help other drivers subject to
+> the same problem.
+> 
+> Besides, it's subject to races.  What if the card _isn't_ gone, but for 
+> some other reason the driver wants to unregister the device at a time 
+> when the writeback thread is frozen?
+> 
+> Alan Stern
+> 
