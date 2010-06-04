@@ -1,24 +1,15 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH] - race-free suspend. Was: Re: [PATCH 0/8]
-	Suspend block api (version 8)
-Date: Fri, 4 Jun 2010 00:55:10 -0700
-Message-ID: <AANLkTintskDDRTiVCC-reC2uNVL9nygMaKYYxCagidFt__17946.6820591644$1275638164$gmane$org@mail.gmail.com>
-References: <20100601122012.1edeaf48@notabene.brown>
-	<alpine.LFD.2.00.1006011243350.2933@localhost.localdomain>
-	<20100602153235.340a7852@notabene.brown>
-	<AANLkTikVjAf5nHdMx2bcHRAUSkq99s-b5YZCECXIJJLy@mail.gmail.com>
-	<20100602180614.729246ea@notabene.brown>
-	<AANLkTimISbs4X2YR_Pal9A80mpkNyCy8laWBcOgR2Cl7@mail.gmail.com>
-	<20100602210224.6ae2333f@notabene.brown>
-	<20100602210521.54b9cd9b@schatten.dmk.lab>
-	<20100602233243.GA27666@core.coreip.homeip.net>
-	<AANLkTim3WQ6qgBH5Cx5tkf-LPtYZ7L6BN6OZIJpQbET1@mail.gmail.com>
-	<20100604071445.GG21239@core.coreip.homeip.net>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: suspend blockers & Android integration
+Date: Fri, 4 Jun 2010 09:57:22 +0200
+Message-ID: <20100604075722.GA15181__49339.6203070462$1275638409$gmane$org@elte.hu>
+References: <20100603193045.GA7188@elte.hu>
+	<AANLkTinsOF3wnxsruR0TvjBAQcHks4tf0ay_sM2xB_p4@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100604071445.GG21239@core.coreip.homeip.net>
+Content-Disposition: inline
+In-Reply-To: <AANLkTinsOF3wnxsruR0TvjBAQcHks4tf0ay_sM2xB_p4@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,82 +19,137 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Neil Brown <neilb@suse.de>, "Paul@smtp1.linux-foundation.org" <Paul@smtp1.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Brian Swetland <swetland@google.com>
+Cc: tytso@mit.edu, Peter Zijlstra <a.p.zijlstra@chello.nl>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-2010/6/4 Dmitry Torokhov <dmitry.torokhov@gmail.com>:
-> On Wed, Jun 02, 2010 at 07:44:59PM -0700, Arve Hj=F8nnev=E5g wrote:
->> On Wed, Jun 2, 2010 at 4:32 PM, Dmitry Torokhov
->> <dmitry.torokhov@gmail.com> wrote:
->> > On Wed, Jun 02, 2010 at 09:05:21PM +0200, Florian Mickler wrote:
->> >> On Wed, 2 Jun 2010 21:02:24 +1000
->> >> Neil Brown <neilb@suse.de> wrote:
->> >> >
->> >> > And this decision (to block suspend) really needs to be made in the=
- driver,
->> >> > not in userspace?
->> >>
->> >> Well, it fits. The requirement is a direct consequence of the intimate
->> >> knowledge the driver has about the driven devices.
->> >
->> > That is not really true. A driver does have intimate knowledge of the
->> > device, however it does not necessarily have an idea about the data re=
-ad
->> > from the device. Consider the gpio_matrix driver: Arve says that it has
->> > to continue scanning matrix once first interrupt arrvies. But it really
->> > depends on what key has been pressed - if user pressed KEY_SUSPEND or
->> > KEY_POWER it cmight be better if we did not wait for key release but
->> > initiated the action right away. The decision on how system reacts to a
->> > key press does not belong to the driver but really to userspace.
->>
->> If we just suspend while the keypad scan is active, a second press of
->> KEY_POWER would not be able wake the device up. The gpio keypad matrix
->> driver has two operating modes. No keys are pressed: all the outputs
->> are active so a key press will generate an interrupt in one of the
->> inputs. Keys are pressed: Activate a single output at a time so we can
->> determine which keys are pressed. The second mode is entered when the
->> driver gets an interrupt in the first mode. The first mode is entered
->> if the scan detected that no keys are pressed. The driver could be
->> modified to stop the scan on suspend and forcibly put the device back
->> in no-keys-pressed state, but pressing additional keys connected to
->> the same input can no longer generate any events (the input does not
->> change).
+
+* Brian Swetland <swetland@google.com> wrote:
+
+> On Thu, Jun 3, 2010 at 12:30 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > Sadly the response from the Android team has been 100% uncompromising: either
+> > suspend blockers or nothing.
+> 
+> Well, we're willing to accept something that gives us the same
+> functionality (thus rewriting the api several times to meet various
+> objections, current discussions around
+> constraint-based-implementations / pm-qos, etc).  We believe we're
+> solving a real problem here and have not seen a counter-proposal that
+> accomplishes the same.
 >
-> Would that be still the case if you reprogram the device as wakeup
-> source while suspending?
+> Suggestions such as "just yell at developers for writing bad apps" or
+> "it's the user's fault if they install a lousy app" or "make your app
+> marketplace more restrictive" are not helpful. [...]
 
-It depends on what part you are referring to. It is impossible to
-detect some keys presses if you suspend while a key is held down. That
-key will connect one output to one input. If the interrupt is edge
-triggered you can just turn all the outputs back on (and clear the
-interrupt that this will generate) and suspend, but no additional key
-presses on keys connected to the same input will cause an interrupt
-until all those keys have been released first or a key connected to
-another input is pressed. If the interrupt is level triggered (and
-fixed polarity) you cannot do this. You must either disable the input
-interrupt or the output. This means that you if the user releases the
-key and press it again, you cannot wakeup on this key. You can also
-not wake up on any other keys connected to the disables input or
-output. So you have some choice in what events you loose, but there
-will always be some key press sequence that will not work if you
-suspend but will work if you prevent suspend in the middle.
+Agreed.
 
->
-> Anyway, it does not really matter. Your case (current suspend blockers)
-> would delay putting device to sleep till you release all the keys,
-> including KEY_POWER. If you delegate the decision to userspace it would
-> have an _option_ of putting the device to sleep earlier, however in both
-> cases user has to release all keys before the device can be resumed.
+> [...]  The technical discussions around alternatives are more so (though I 
+> do feel like we're going in circles in places), [...]
 
-We deliver all keys to user space so that is has the option of
-reacting to them. Yes if we did not do this user space would have the
-option of suspending while keys are pressed, but it would need
-detailed knowledge about the driver to make this decision (will the
-driver loose key events if we suspend, which keys can be lost, does
-the condition clear automatically when all the keys are released or do
-we need another wakeup event to get out of it).
+Yep.
 
--- =
+> [...] which again is why we're still here talking about this (that and Arve 
+> is about a billion times more patient and persistent than I am).
+> 
+> We're not interested in massively rearchitecting our userspace to accomplish 
+> this (and the "rewrite your userspace!" proposals I've seen have had race 
+> conditions and/or significant more complexity than the wakelock model).
 
-Arve Hj=F8nnev=E5g
+Having a somewhat different ABI for achieving things you'll probably have 
+prepare for. I doubt it would result in any large-scale, massive rewrites.
+
+> ...
+> 
+> > Also, why did the Android team start its contributions with such a 
+> > difficult and controversial kernel feature?
+> 
+> We started here because it's possibly the only api level change we have -- 
+> almost everything else is driver or subarch type work or controversial but 
+> entirely self-contained (like the binder, which I would be shocked to see 
+> ever hit mainline). [...]
+
+So why arent those bits mainline? It's a 1000 times easier to get drivers and 
+small improvements and non-ABI changes upstream.
+
+After basically two years of growing your fork (and some attempts to get your 
+drivers into drivers/staging/ - from where they have meanwhile dropped out 
+again) you re-started with the worst possible thing to merge: a big and 
+difficult kernel feature affecting many subsystems. Why?
+
+This is one of the fundamental problems here. People simply dont know you, 
+because you have not worked with us much - and hence they dont trust you 
+positively out of box - they are neutral at best.
+
+And believe me, it's hard enough to get difficult features upstream if people 
+_do_ know you and when they positively _do_ trust you ... Arent you talking to 
+Andrew Morton about how to do these things properly? This is kernel 
+contribution 101 really.
+
+> [...]  Assertions have been made that because the "android kernel" (not a 
+> term I like -- linux is linux, we have some assorted patches on top) [...]
+
+I've been tracking android-common and android-msm for a while and i have to 
+say that it shows a very lackluster attitude towards upstream:
+
+ - The latest branches i can see are v2.6.32 based today. We are in the
+   v2.6.35 stabilization cycle and are developing v2.6.36. I.e. your upstream
+   base is about a year too old.
+
+ - The last commit is a couple of weeks old AFAICS.
+
+ - The diffstat of android-common/android-2.6.32 is:
+
+      890 files changed, 39962 insertions(+), 6286 deletions(-)
+
+   Those assorted patches have spread over nearly a thousand files. FYI, by
+   the looks of it you are facing an exponentially worsening maintenance
+   overhead curve here.
+
+Is there perhaps some other tree i should be following? I'm looking at:
+
+ [remote "android-msm"]
+         url = git://android.git.kernel.org/kernel/msm.git
+         fetch = +refs/heads/*:refs/remotes/android-msm/*
+ [remote "android-common"]
+         url = git://android.git.kernel.org/kernel/common.git
+         fetch = +refs/heads/*:refs/remotes/android-common/*
+
+Btw., the commits i've glanced at looked mostly clean and well structured, so 
+i see no fundamental reason why this couldn't be done better.
+
+> See: http://www.kroah.com/log/linux/android-kernel-problems.html and various 
+> other rants about the evil terrible android forks, etc.
+> 
+> So, we figure, let's sort out the hard problem first and then move on with 
+> our lives.
+
+Well, my suggestion would be to first build up a path towards upstream, build 
+up trust, reduce your very high cross section to mainline - and do the most 
+difficult bits last.
+
+Especially 'move on with our lives' suggests that you just want to get rid of 
+this ABI divergence and continue-as-usual with the pattern of non-cooperation, 
+hm?
+
+> > There is absolutely _zero_ technical reason why the Android team should 
+> > present this as as an all-or-nothing effort. Why not merge hw drivers 
+> > first (with suspend blockers commented or stubbed out), to reduce the fork 
+> > distance?
+> 
+> If that's the case then there is no problem and people could stop yelling at 
+> us and just submit their drivers.  Awesome.
+> 
+> I can't speak for all the nameless silicon vendors Greg represents, that we 
+> apparently are preventing from doing this (how? I don't know!), etc, but for 
+> my team maintaining multiple versions of drivers is a headache, we'd rather 
+> square away the wakelock debate first and figure something out there, as it 
+> just seems like a more logical approach.  Maybe we're crazy.
+
+It's not crazy, it's just IMHO inefficient and very difficult to do it like 
+that. And you arent the first one to try it like that (people _always_ 
+gravitate towards coming with their most difficult patches first - because 
+they are very often the most useful patches) - it's a non-trivial learning 
+curve IMHO.
+
+	Ingo
