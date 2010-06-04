@@ -1,14 +1,28 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: Is it supposed to be ok to call del_gendisk while
- userspace is frozen?
-Date: Fri, 04 Jun 2010 18:19:38 +0300
-Message-ID: <1275664778.4596.1.camel__4574.75686348534$1275664873$gmane$org@maxim-laptop>
-References: <Pine.LNX.4.44L0.1006041052570.1794-100000@iolanthe.rowland.org>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Fri, 4 Jun 2010 17:43:28 +0200
+Message-ID: <20100604174328.30b26b6a__30691.3925371648$1275666311$gmane$org@schatten.dmk.lab>
+References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
+	<201005302202.39511.rjw@sisk.pl>
+	<AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt@mail.gmail.com>
+	<201005312347.24251.rjw@sisk.pl>
+	<AANLkTilvOgSFTDFtXbjJobMZWxgfvsC97TqC7_a_NHBX@mail.gmail.com>
+	<alpine.LFD.2.00.1006011411200.2933@localhost.localdomain>
+	<AANLkTikZHmF6baP7dEXEGFE8YsbEteRjlhb5wqZX8ll1@mail.gmail.com>
+	<alpine.LFD.2.00.1006020905410.2933@localhost.localdomain>
+	<AANLkTinDm3FIrbS1jqEzW15THmr1hdd7ox0Mllm1VLjZ@mail.gmail.com>
+	<1275471561.27810.30865.camel@twins>
+	<AANLkTilLmAb2c9fQwuguzWtjcHfuTZvPUTbUx7vuwFI6@mail.gmail.com>
+	<1275474088.27810.31000.camel@twins>
+	<20100602221309.6da754e7@schatten.dmk.lab>
+	<1275550802.27810.34863.camel@twins>
+	<20100603161205.73a2b56d@schatten.dmk.lab>
+	<1275578881.27810.35995.camel@twins>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006041052570.1794-100000@iolanthe.rowland.org>
+In-Reply-To: <1275578881.27810.35995.camel@twins>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,59 +32,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2010-06-04 at 10:59 -0400, Alan Stern wrote: 
-> On Fri, 4 Jun 2010, Maxim Levitsky wrote:
-> 
-> > On Thu, 2010-03-04 at 14:53 +0100, Pavel Machek wrote: 
-> > > Hi!
-> > > 
-> > > > > journalling assumptions broken: commit block is there, but previous
-> > > > > blocks are not intact. Data loss.
-> > > > > 
-> > > > > ...and that was the first I could think about. Lets not do
-> > > > >  this. Barriers were invented for a reason.
-> > > > 
-> > > > Very well.  Then we still need a solution to the original problem:  
-> > > > Devices sometimes need to be unregistered during resume, but
-> > > > del_gendisk() blocks on the writeback thread, which is frozen until
-> > > > after the resume finishes.  How do you suggest this be fixed?
-> > > 
-> > > Avoid unregistering device during resume. Instead, return errors until
-> > > resume is done and you can call del_gendisk? 
-> > 
-> > This won't help ether. The same driver needs to unregister perfectly
-> > working device on suspend, because the user might replace the card
-> > during suspend and fool the os.
-> > There is a setting, CONFIG_MMC_UNSAFE_RESUME and I use it, but it isn't
-> > default.
-> 
-> People have generally agreed that the best answer is to have 
-> del_gendisk always thaw the writeback thread.
-Now the question is how to do that? :-)
+On Thu, 03 Jun 2010 17:28:01 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-Best regards,
-Maxim Levitsky
+> On Thu, 2010-06-03 at 16:12 +0200, Florian Mickler wrote:
+> > On Thu, 03 Jun 2010 09:40:02 +0200
+> > Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > Same for firefox, you can teach it to not render animated gifs and run
+> > > javascript for invisible tabs, and once the screen-saver kicks in,
+> > > nothing is visible (and with X telling apps their window is visible or
+> > > not it knows), so it should go idle all of its own.
+> > > 
+> > > Fix the friggin apps, don't kludge with freezing.
+> > 
+> > Of course programs should be as smart as possible. But that is an
+> > orthogonal problem.
+> > 
+> > Suppose firefox were fixed. It still needs to fetch my rss feeds every
+> > minute, because I'm sad if it doesn't. It just can't be fixed at the
+> > application level.
+> 
+> Sure it can, why would it need to fetch RSS feeds when the screen is off
+> and nobody could possible see the result? So you can stop the timer when
+> you know the window isn't visible or alternatively when the screensaver
+> is active, I think most desktops have notification of that as well.
 
-> 
-> > Anyway to revive that old thread, how about introducing new
-> > del_gendisk_no_sync?
-> > 
-> > A less safe version of del_gendisk, but which won't sync the filesystem.
-> > Since driver knows that card is gone, there is no point of syncing it.
-> > 
-> > (the sync is done by invalidate_partition, so some flag should be
-> > propagated to it).
-> 
-> That might work for mmc, but it wouldn't help other drivers subject to
-> the same problem.
-> 
-> Besides, it's subject to races.  What if the card _isn't_ gone, but for 
-> some other reason the driver wants to unregister the device at a time 
-> when the writeback thread is frozen?
-> 
-> Alan Stern
-> 
+This is arguing on a very thin line. In fact it is becoming pointless. 
+
+Suppose there were an RSS-feed plugin that signals events to an event
+Plugin. That event plugin could be either visual notification or sending
+audio-signals. But the RSS feed doesn't know what specific plugin it
+talks to. So screen off is _not always_ the right indicator. Sometimes
+it is, sometimes it's not. 
+There would be a seperate infrastructure needed in the program to tell
+the different plugins that the core thinks everything should stop.
+How does the core knows when to stop? And then there probably need to
+be some kind of "suspend blockers" in the program. *g*
+
+Just solve it at the right level, so that the apps don't need to be
+infected with this shit. And this belongs between the iron and the
+apps. And it seems it needs to be some cooperative approach of kernel
+and userspace-framework as it isn't right to put that much policy in
+the kernel.
+
+I don't think it is a black and white thing, where you can just say
+"fix the friggin apps". 
+
+And this is a really f*beep*ng serious point. (at least to me)
+
+Cheers,
+Flo
