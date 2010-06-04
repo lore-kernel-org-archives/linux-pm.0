@@ -1,19 +1,12 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: suspend blockers & Android integration
-Date: Fri, 04 Jun 2010 14:06:50 +0200
-Message-ID: <1275653210.27810.39762.camel__25135.3381820538$1275653360$gmane$org@twins>
-References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
-	<20100603232302.GA16184@elte.hu>
-	<AANLkTikZP3bmckpfb_jUdG7qZO5W9DgpZ79ugtSZaEpt@mail.gmail.com>
-	<20100604071354.GA14451@elte.hu>
-	<AANLkTimH4ihf3QqtKFpfGXRKtO55PrUuff9JYtaEBG44@mail.gmail.com>
-	<20100604083423.GD15181@elte.hu>
-	<AANLkTinQyzzeF-NOAjrAqqQXqKjFJhx85nI4uyBGRtWd@mail.gmail.com>
+From: Daniel Mack <daniel@caiaq.de>
+Subject: [PATCH] drivers/base/power: be more verbose in
+	device_pm_add()
+Date: Fri,  4 Jun 2010 14:17:14 +0200
+Message-ID: <1275653834-9132-1-git-send-email-daniel__43980.3240624771$1275653902$gmane$org@caiaq.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinQyzzeF-NOAjrAqqQXqKjFJhx85nI4uyBGRtWd@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,46 +16,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: tytso@mit.edu, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Felipe Balbi <felipe.balbi@nokia.com>, Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Daniel Mack <daniel@caiaq.de>, Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCAyMDEwLTA2LTA0IGF0IDAxOjU2IC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
-Ogo+IE9uIEZyaSwgSnVuIDQsIDIwMTAgYXQgMTozNCBBTSwgSW5nbyBNb2xuYXIgPG1pbmdvQGVs
-dGUuaHU+IHdyb3RlOgo+ID4KPiA+ICogQXJ2ZSBIaj9ubmV2P2cgPGFydmVAYW5kcm9pZC5jb20+
-IHdyb3RlOgo+ID4KPiA+PiA+IFsuLi5dCj4gPj4gPgo+ID4+ID4gV2h5IGRvIHlvdSBuZWVkIHRv
-IHRyYWNrIGlucHV0IHdha2V1cHM/IEl0J3MgcmF0aGVyIGZyYWdpbGUgYW5kIHJhdGhlcgo+ID4+
-ID4gdW5uZWNlc3NhcnkgWy4uLl0KPiA+Pgo+ID4+IEJlY2F1c2Ugd2UgaGF2ZSBrZXlzIHRoYXQg
-c2hvdWxkIGFsd2F5cyB0dXJuIHRoZSBzY3JlZW4gb24sIGJ1dCB0aGUgcHJvYmxlbQo+ID4+IGlz
-IG5vdCBzcGVjaWZpYyB0byBpbnB1dCBldmVudHMuIElmIHdlIGVuYWJsZWQgYSB3YWtldXAgZXZl
-bnQgaXQgdXN1YWxseQo+ID4+IG1lYW5zIHdlIG5lZWQgdGhpcyBldmVudCB0byBhbHdheXMgd29y
-aywgbm90IGp1c3Qgd2hlbiB0aGUgc3lzdGVtIGlzIGZ1bGx5Cj4gPj4gYXdha2Ugb3IgZnVsbHkg
-c3VzcGVuZGVkLgo+ID4KPiA+IEhtLCBpIGNhbm5vdCBmb2xsb3cgdGhhdCBnZW5lcmljIGNsYWlt
-LiBDb3VsZCB5b3UgcGxlYXNlIHBvaW50IG91dCB0aGUgcHJvYmxlbQo+ID4gdG8gbWUgdmlhIGEg
-c3BlY2lmaWMgZXhhbXBsZT8gV2hpY2ggdGFzayBkb2VzIHdoYXQsIHdoYXQgdW5kZXNpcmFibGUg
-dGhpbmcKPiA+IGhhcHBlbnMgd2hlcmUsIGV0Yy4KPiA+Cj4gCj4gV2UgaGF2ZSBtYW55IHdha2V1
-cCBldmVudHMsIGFuZCBzb21lIG9mIHRoZW0gYXJlIGludmlzaWJsZSB0byB0aGUKPiB1c2VyLiBG
-b3IgaW5zdGFuY2Ugb24gdGhlIE5leHVzIE9uZSB3YWtlIHVwIGV2ZXJ5IDEwIG1pbnV0ZXMgbW9u
-aXRvcgo+IHRoZSBiYXR0ZXJ5IGhlYWx0aC4gCgo+IElmIHRoZSB1c2VyIHByZXNzZXMgYSBrZXkg
-cmlnaHQgYWZ0ZXIgdGhpcyB3b3JrCj4gaGFzIGZpbmlzaGVkIGFuZCB3ZSBkaWQgbm90IGJsb2Nr
-IHN1c3BlbmQgdW50aWwgdXNlcnNwYWNlIGNvdWxkCj4gcHJvY2VzcyB0aGlzIGtleSBldmVudCwg
-d2UgcmlzayBzdXNwZW5kaW5nIGJlZm9yZSB3ZSBjb3VsZCB0dXJuIHRoZQo+IHNjcmVlbiBvbiwg
-d2hpY2ggdG8gdGhlIHVzZXIgbG9va3MgbGlrZSB0aGUga2V5IGRpZCBub3Qgd29yay4gCgo+IEFu
-b3RoZXIKPiBleGFtcGxlLCB0aGUgdXNlciBwcmVzc2VkIHRoZSBwb3dlciBrZXkgd2hpY2ggdHVy
-bnMgdGhlIHNjcmVlbiBvZmYgYW5kCj4gYWxsb3dzIHN1c3BlbmQuIFdlIGluaXRpYXRlIHN1c3Bl
-bmQgYW5kIGEgcGhvbmUgY2FsbCBjb21lcyBpbi4gSWYgd2UKPiBkb24ndCBibG9jayBzdXNwZW5k
-IHVudGlsIHdlIHByb2Nlc3NlZCB0aGUgaW5jb21pbmcgcGhvbmUgY2FsbAo+IG5vdGlmaWNhdGlv
-biwgdGhlIHBob25lIG1heSBuZXZlciByaW5nIChzb21lIGRldmljZXMgd2lsbCBzZW5kIGEgbmV3
-Cj4gbWVzc2FnZSBldmVyeSBmZXcgc2Vjb25kcyBmb3IgdGhpcywgc28gb24gdGhvc2UgZGV2aWNl
-cyBpdCB3b3VsZCBqdXN0Cj4gZGVsYXkgdGhlIHJpbmdpbmcpLgoKUmlnaHQsIHNvIGluIHRoZSBw
-cm9wb3NlZCBzY2hlbWUgYWxsIHRoZXNlIHRhc2tzIHdvdWxkIGJlIGV4ZWN1dGVkIGJ5CnRydXN0
-ZWQgcHJvY2Vzc2VzLCBhbmQgdHJ1c3RlZCBwcm9jZXNzZXMgd2lsbCBuZXZlciBnZXQgZnJvemVu
-IGFuZCBzbwp3aWxsIG5ldmVyIGJlIGRlbGF5ZWQgaW4gcHJvY2Vzc2luZyB0aGVzZSBldmVudHMu
-CgpPbmx5IHVudHJ1c3RlZCBjb2RlIHdpbGwgYmUgZnJvemVuLiBBbmQgdHJ1c3RlZCBwcm9jZXNz
-ZXMgYXJlIHJlbGlhYmxlCmZvciB0aGF3aW5nIHRoZSB1bnRydXN0ZWQgcHJvY2Vzc2VzIGFuZCBk
-ZWxpdmVyaW5nIGV2ZW50cyB0byBpdC4KClRydXN0ZWQgcHJvY2Vzc2VzIGFyZSBhc3N1bWVkIHRv
-IGJlIHNhbmUgYW5kIGlkbGUgd2hlbiB0aGVyZSBpcyBub3RoaW5nCmZvciB0aGVtIHRvIGRvLCBh
-bGxvd2luZyB0aGUgbWFjaGluZSB0byBnbyBpbnRvIGRlZXAgaWRsZSBzdGF0ZXMuCgpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5n
-IGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+If a parentless device was added during a PM transaction, developers
+might want to know which device caused the troube. Hence, output the
+kobject's name in this case.
+
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Magnus Damm <damm@igel.co.jp>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-pm@lists.linux-foundation.org
+---
+ drivers/base/power/main.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 941fcb8..9e9fe6a 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -98,7 +98,7 @@ void device_pm_add(struct device *dev)
+ 		 * transition is in progress in order to avoid leaving them
+ 		 * unhandled down the road
+ 		 */
+-		dev_WARN(dev, "Parentless device registered during a PM transaction\n");
++		dev_WARN(dev, "Parentless device registered during a PM transaction: %s\n", kobject_name(&dev->kobj));
+ 	}
+ 
+ 	list_add_tail(&dev->power.entry, &dpm_list);
+-- 
+1.7.1
