@@ -1,16 +1,17 @@
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Dave Young <hidave.darkstar@gmail.com>
 Subject: Re: mmotm 2010-06-03-16-36 uploaded
-Date: Thu, 3 Jun 2010 19:10:23 -0700
-Message-ID: <20100603191023.96d74346.akpm__18779.538307763$1275617481$gmane$org@linux-foundation.org>
+Date: Fri, 4 Jun 2010 10:13:52 +0800
+Message-ID: <AANLkTik5xtRYSdUGogmBBW2V3t1D42QeTnQrmkMSAXWr__17749.6679629714$1275617683$gmane$org@mail.gmail.com>
 References: <201006040005.o5405Afw023296@imap1.linux-foundation.org>
 	<AANLkTilX_Fbc_pR1jtgQJsvu7RbMfgyhJYCxqV725T18@mail.gmail.com>
 	<20100603185401.1851c94e.akpm@linux-foundation.org>
 	<AANLkTikDzAHHH62Wti1D-iV7pqa6u24BDgigIYO5JZJR@mail.gmail.com>
+	<20100603191023.96d74346.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikDzAHHH62Wti1D-iV7pqa6u24BDgigIYO5JZJR@mail.gmail.com>
+In-Reply-To: <20100603191023.96d74346.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,60 +21,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dave Young <hidave.darkstar@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 4 Jun 2010 10:02:57 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
-
-> On Fri, Jun 4, 2010 at 9:54 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Fri, 4 Jun 2010 09:41:58 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
-> >
-> >> On Fri, Jun 4, 2010 at 7:36 AM, __<akpm@linux-foundation.org> wrote:
-> >> > The mm-of-the-moment snapshot 2010-06-03-16-36 has been uploaded to
-> >> >
-> >> > __ http://userweb.kernel.org/~akpm/mmotm/
-> >> >
-> >>
-> >> Hi, intel_idle build fails:
-> >>
-> >> drivers/idle/intel_idle.c: In function ___intel_idle___:
-> >> drivers/idle/intel_idle.c:234: error: too few arguments to function ___trace_power
-> >> _start___
-> >> make[2]: *** [drivers/idle/intel_idle.o] Error 1
-> >> make[1]: *** [drivers/idle] Error 2
-> >> make[1]: *** Waiting for unfinished jobs....
-> >>
-> >
-> > Caused by
-> > x86-cpufreq-make-trace_power_frequency-cpufreq-driver-independent.patch
-> > which changed trace_power_start().
-> >
-> > drivers/idle/intel_idle.c wasn't there when Thomas wrote that patch.
-> >
-> > this, I guess:
-> >
-> > --- a/drivers/idle/intel_idle.c~x86-cpufreq-make-trace_power_frequency-cpufreq-driver-independent-fix
-> > +++ a/drivers/idle/intel_idle.c
-> > @@ -231,7 +231,7 @@ static int intel_idle(struct cpuidle_dev
-> >
-> > __ __ __ __stop_critical_timings();
-> > __#ifndef MODULE
-> > - __ __ __ trace_power_start(POWER_CSTATE, (eax >> 4) + 1);
-> > + __ __ __ trace_power_start(POWER_CSTATE, (eax >> 4) + 1, cpu);
-> > __#endif
-> > __ __ __ __if (!need_resched()) {
-> >
-> 
-> With one more param "cpu", fails with "too many arguments":
-> 
->   CC      drivers/idle/intel_idle.o
-> drivers/idle/intel_idle.c: In function ___intel_idle___:
-> drivers/idle/intel_idle.c:234: error: too many arguments to function
-> ___trace_power_start___
-> make[2]: *** [drivers/idle/intel_idle.o] Error 1
-> make[1]: *** [drivers/idle] Error 2
-> make[1]: *** Waiting for unfinished jobs....
-
-hm, It Works For Me.  I suspect you applied my patch to mainline, not
-to -mm.
+T24gRnJpLCBKdW4gNCwgMjAxMCBhdCAxMDoxMCBBTSwgQW5kcmV3IE1vcnRvbgo8YWtwbUBsaW51
+eC1mb3VuZGF0aW9uLm9yZz4gd3JvdGU6Cj4gT24gRnJpLCA0IEp1biAyMDEwIDEwOjAyOjU3ICsw
+ODAwIERhdmUgWW91bmcgPGhpZGF2ZS5kYXJrc3RhckBnbWFpbC5jb20+IHdyb3RlOgo+Cj4+IE9u
+IEZyaSwgSnVuIDQsIDIwMTAgYXQgOTo1NCBBTSwgQW5kcmV3IE1vcnRvbiA8YWtwbUBsaW51eC1m
+b3VuZGF0aW9uLm9yZz4gd3JvdGU6Cj4+ID4gT24gRnJpLCA0IEp1biAyMDEwIDA5OjQxOjU4ICsw
+ODAwIERhdmUgWW91bmcgPGhpZGF2ZS5kYXJrc3RhckBnbWFpbC5jb20+IHdyb3RlOgo+PiA+Cj4+
+ID4+IE9uIEZyaSwgSnVuIDQsIDIwMTAgYXQgNzozNiBBTSwgX188YWtwbUBsaW51eC1mb3VuZGF0
+aW9uLm9yZz4gd3JvdGU6Cj4+ID4+ID4gVGhlIG1tLW9mLXRoZS1tb21lbnQgc25hcHNob3QgMjAx
+MC0wNi0wMy0xNi0zNiBoYXMgYmVlbiB1cGxvYWRlZCB0bwo+PiA+PiA+Cj4+ID4+ID4gX18gaHR0
+cDovL3VzZXJ3ZWIua2VybmVsLm9yZy9+YWtwbS9tbW90bS8KPj4gPj4gPgo+PiA+Pgo+PiA+PiBI
+aSwgaW50ZWxfaWRsZSBidWlsZCBmYWlsczoKPj4gPj4KPj4gPj4gZHJpdmVycy9pZGxlL2ludGVs
+X2lkbGUuYzogSW4gZnVuY3Rpb24gX19faW50ZWxfaWRsZV9fXzoKPj4gPj4gZHJpdmVycy9pZGxl
+L2ludGVsX2lkbGUuYzoyMzQ6IGVycm9yOiB0b28gZmV3IGFyZ3VtZW50cyB0byBmdW5jdGlvbiBf
+X190cmFjZV9wb3dlcgo+PiA+PiBfc3RhcnRfX18KPj4gPj4gbWFrZVsyXTogKioqIFtkcml2ZXJz
+L2lkbGUvaW50ZWxfaWRsZS5vXSBFcnJvciAxCj4+ID4+IG1ha2VbMV06ICoqKiBbZHJpdmVycy9p
+ZGxlXSBFcnJvciAyCj4+ID4+IG1ha2VbMV06ICoqKiBXYWl0aW5nIGZvciB1bmZpbmlzaGVkIGpv
+YnMuLi4uCj4+ID4+Cj4+ID4KPj4gPiBDYXVzZWQgYnkKPj4gPiB4ODYtY3B1ZnJlcS1tYWtlLXRy
+YWNlX3Bvd2VyX2ZyZXF1ZW5jeS1jcHVmcmVxLWRyaXZlci1pbmRlcGVuZGVudC5wYXRjaAo+PiA+
+IHdoaWNoIGNoYW5nZWQgdHJhY2VfcG93ZXJfc3RhcnQoKS4KPj4gPgo+PiA+IGRyaXZlcnMvaWRs
+ZS9pbnRlbF9pZGxlLmMgd2Fzbid0IHRoZXJlIHdoZW4gVGhvbWFzIHdyb3RlIHRoYXQgcGF0Y2gu
+Cj4+ID4KPj4gPiB0aGlzLCBJIGd1ZXNzOgo+PiA+Cj4+ID4gLS0tIGEvZHJpdmVycy9pZGxlL2lu
+dGVsX2lkbGUuY354ODYtY3B1ZnJlcS1tYWtlLXRyYWNlX3Bvd2VyX2ZyZXF1ZW5jeS1jcHVmcmVx
+LWRyaXZlci1pbmRlcGVuZGVudC1maXgKPj4gPiArKysgYS9kcml2ZXJzL2lkbGUvaW50ZWxfaWRs
+ZS5jCj4+ID4gQEAgLTIzMSw3ICsyMzEsNyBAQCBzdGF0aWMgaW50IGludGVsX2lkbGUoc3RydWN0
+IGNwdWlkbGVfZGV2Cj4+ID4KPj4gPiBfXyBfXyBfXyBfX3N0b3BfY3JpdGljYWxfdGltaW5ncygp
+Owo+PiA+IF9fI2lmbmRlZiBNT0RVTEUKPj4gPiAtIF9fIF9fIF9fIHRyYWNlX3Bvd2VyX3N0YXJ0
+KFBPV0VSX0NTVEFURSwgKGVheCA+PiA0KSArIDEpOwo+PiA+ICsgX18gX18gX18gdHJhY2VfcG93
+ZXJfc3RhcnQoUE9XRVJfQ1NUQVRFLCAoZWF4ID4+IDQpICsgMSwgY3B1KTsKPj4gPiBfXyNlbmRp
+Zgo+PiA+IF9fIF9fIF9fIF9faWYgKCFuZWVkX3Jlc2NoZWQoKSkgewo+PiA+Cj4+Cj4+IFdpdGgg
+b25lIG1vcmUgcGFyYW0gImNwdSIsIGZhaWxzIHdpdGggInRvbyBtYW55IGFyZ3VtZW50cyI6Cj4+
+Cj4+IMKgIENDIMKgIMKgIMKgZHJpdmVycy9pZGxlL2ludGVsX2lkbGUubwo+PiBkcml2ZXJzL2lk
+bGUvaW50ZWxfaWRsZS5jOiBJbiBmdW5jdGlvbiBfX19pbnRlbF9pZGxlX19fOgo+PiBkcml2ZXJz
+L2lkbGUvaW50ZWxfaWRsZS5jOjIzNDogZXJyb3I6IHRvbyBtYW55IGFyZ3VtZW50cyB0byBmdW5j
+dGlvbgo+PiBfX190cmFjZV9wb3dlcl9zdGFydF9fXwo+PiBtYWtlWzJdOiAqKiogW2RyaXZlcnMv
+aWRsZS9pbnRlbF9pZGxlLm9dIEVycm9yIDEKPj4gbWFrZVsxXTogKioqIFtkcml2ZXJzL2lkbGVd
+IEVycm9yIDIKPj4gbWFrZVsxXTogKioqIFdhaXRpbmcgZm9yIHVuZmluaXNoZWQgam9icy4uLi4K
+Pgo+IGhtLCBJdCBXb3JrcyBGb3IgTWUuIMKgSSBzdXNwZWN0IHlvdSBhcHBsaWVkIG15IHBhdGNo
+IHRvIG1haW5saW5lLCBub3QKPiB0byAtbW0uCj4KCm9vcHMsIHlvdSBhcmUgcmlnaHQsIEkgYXBw
+bGllZCB0byBkaWZmZXJlbnQgdHJlZS4KClRlc3RlZCwgaXQgd29ya3MKCi0tIApSZWdhcmRzCmRh
+dmUKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgt
+cG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBz
+Oi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
