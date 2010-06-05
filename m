@@ -1,24 +1,18 @@
-From: mark gross <640e9920@gmail.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Fri, 4 Jun 2010 20:22:26 -0700
-Message-ID: <20100605032226.GA20419__9813.65335542268$1275708185$gmane$org@gvim.org>
-References: <20100601140519.GC1281@gvim.org>
-	<AANLkTikF-B23_UWG1O3tlBl4m8NStAJllGhhevNhYZT6@mail.gmail.com>
-	<20100602133910.GA9106@gvim.org>
-	<AANLkTilSU79cnBODXFokzIPB1hRcZBxbwTgTQ59MeKcK@mail.gmail.com>
-	<20100603031842.GB11311@gvim.org>
-	<AANLkTiks7sQBbDnN6QrtGVqSXLob1qCs7VA12LZAWnfM@mail.gmail.com>
-	<20100603054018.GE11311@gvim.org>
-	<AANLkTikvuqtcGS1UdePRxipSk4S5Vmci2uPfFtzZgx6X@mail.gmail.com>
-	<20100603132449.GA15595@gvim.org>
-	<20100603163049.4eba1574@schatten.dmk.lab>
-Reply-To: markgross@thegnar.org
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [SUSPECTED SPAM] Re: Proposal for a new algorithm
+ for reading & writing a hibernation image.
+Date: Sat, 05 Jun 2010 13:37:06 +1000
+Message-ID: <4C09C662.2020705__39205.7886500426$1275709231$gmane$org@crca.org.au>
+References: <9rpccea67yy402c975fqru8r.1275576653521@email.android.com>	
+	<1275694775.3853.29.camel@maxim-laptop>
+	<4C09930E.20306@crca.org.au>	
+	<1275698169.10045.8.camel@maxim-laptop>
+	<1275698720.10045.15.camel@maxim-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100603163049.4eba1574@schatten.dmk.lab>
+In-Reply-To: <1275698720.10045.15.camel@maxim-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,73 +22,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: 640e9920@gmail.com, markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 03, 2010 at 04:30:49PM +0200, Florian Mickler wrote:
-> On Thu, 3 Jun 2010 06:24:49 -0700
-> mark gross <640e9920@gmail.com> wrote:
-> =
+Hi.
 
-> > On Thu, Jun 03, 2010 at 12:10:03AM -0700, Arve Hj=F8nnev=E5g wrote:
-> =
+On 05/06/10 10:45, Maxim Levitsky wrote:
+> On Sat, 2010-06-05 at 03:36 +0300, Maxim Levitsky wrote:
+>> On Sat, 2010-06-05 at 09:58 +1000, Nigel Cunningham wrote:
+>>> Hi Maxim.
+>>>
+>>> On 05/06/10 09:39, Maxim Levitsky wrote:
+>>>> On Thu, 2010-06-03 at 16:50 +0200, Pavel Machek wrote:
+>>>>>
+>>>>> "Nigel Cunningham"<ncunningham@crca.org.au>   wrote:
+>>>>>
+>>>>>> Hi.
+>>>>>>
+>>>>>> On 30/05/10 15:25, Pavel Machek wrote:
+>>>>>>> Hi!
+>>>>>>>
+>>>>>>>> 2. Prior to writing any of the image, also set up new 4k page tables
+>>>>>>>> such that an attempt to make a change to any of the pages we're about to
+>>>>>>>> write to disk will result in a page fault, giving us an opportunity to
+>>>>>>>> flag the page as needing an atomic copy later. Once this is done, write
+>>>>>>>> protection for the page can be disabled and the write that caused the
+>>>>>>>> fault allowed to proceed.
+>>>>>>>
+>>>>>>> Tricky.
+>>>>>>>
+>>>>>>> page faulting code touches memory, too...
+>>>>>>
+>>>>>> Yeah. I realise we'd need to make the pages that are used to record the
+>>>>>> faults be unprotected themselves. I'm imagining a bitmap for that.
+>>>>>>
+>>>>>> Do you see any reason that it could be inherently impossible? That's
+>>>>>> what I really want to know before (potentially) wasting time trying it.
+>>>>>
+>>>>> I'm not sure it is impossible, but it certainly seems way too complex to be
+>>>>> practical.
+>>>>>
+>>>>> 2mb pages will probably present a problem, as will bat mappings on powerpc.
+>>>>
+>>>>
+>>>> Some time ago, after tuxonce caused medium fs corruption twice on my
+>>>> root filesystem (superblock gone for example), I was thinking too about
+>>>> how to make it safe to save whole memory.
+>>>
+>>> I'd be asking why you got the corruption. On the odd occasion where it
+>>> has been reported, it's usually been because the person didn't set up
+>>> their initramfs correctly (resumed after mounting filesystems). Is there
+>>> any chance that you did that?
+> I didn't use any initramfs.
+> I did use kernel modesetting and nouveau.
+> I used ext4.
+> The corruption happened after normal suspend.
 
-> > ok I'm not getting it.
-> > is this a fancy com-sci algorithm I should know about?
-> > =
+What's 'normal suspend'?
 
-> > --mgross
-> =
+> I replaces swsusp with tuxonice.
+>
+> Anyway, some more or less verified method must be used to save memory
+> because fs corruption is too scary thing to have.
 
-> I think you are at an advantage if you have studied fancy com-sci for
-> this? Here is an example:
-> =
+Agreed.
 
-> say you have 5 constraints: =
+> I can't say it scared me that much 'cause I had dealt with worse
+> corruptions before, but being thrown to  "grub rescue>" on boot is not
+> pleasant thing to see.
 
-> qos1 with a value of 10
-> qos2 with 5
-> qos3 with 10
-> qos4 with 11
-> =
+Oh, I agree and don't want anyone to ever experience corruption because 
+of TuxOnIce. Unfortunately my wishes don't just happen :)
 
-> Now, you hash that list by the qos-values:
-> =
-
-> 11    ---- 10 	----- 5 =
-
-> |	   |  	      |
-> qos4	   qos3       qos2
-> 	   |
-> 	   qos1
-> =
-
-> =
-
-> To compute the maximum you just walk the "----" list.
-> =
-
-> To reduce qos4 from 11 to 5 you remove it from its "|" list and
-> prepend it to the corresponding "|" list.  (4 Pointer adjustments +
-> searching the "-----" list for the right place to insert.  =
-
-> =
-
-> result:
-> =
-
-> 10 ---- 5
-> |	|
-> qos3	qos4
-> |	|
-> qos1	qos2
-> =
-
-> Cheers,
-
-Oh!  ok, thats easy!
-
-Thanks!!!
-
---mgross
+Nigel
