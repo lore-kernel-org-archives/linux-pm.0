@@ -1,18 +1,16 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sat, 5 Jun 2010 23:52:57 +0200
-Message-ID: <20100605235257.7d1329ec__40011.0709634193$1275774889$gmane$org@schatten.dmk.lab>
-References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
-	<1275149418.4503.128.camel@mulgrave.site>
-	<1275156734.1645.496.camel@laptop> <201005312314.12391.rjw@sisk.pl>
-	<AANLkTil4DLUciWMVmCiiygS2Y1vLZu0Lnfys-w4q3L7W@mail.gmail.com>
-	<20100605214939.49dd0ee0@schatten.dmk.lab>
-	<AANLkTikp1Z9mGOaLf_oE_3qCL7U4oeHaPSp6zkp4eEfL@mail.gmail.com>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: suspend blockers & Android integration
+Date: Sat, 5 Jun 2010 15:10:46 -0700
+Message-ID: <AANLkTilP0uyJRuUq6BlVeHDydPYi4oJsf37VvSAixwgN__4426.2484334924$1275776010$gmane$org@mail.gmail.com>
+References: <20100603193045.GA7188@elte.hu>
+	<20100605011826.GB21016@count0.beaverton.ibm.com>
+	<AANLkTim3MMfJ6oa9OhUJch_v1qGyxSfrfxF3zDZhxqHk@mail.gmail.com>
+	<201006052025.11526.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikp1Z9mGOaLf_oE_3qCL7U4oeHaPSp6zkp4eEfL@mail.gmail.com>
+In-Reply-To: <201006052025.11526.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,37 +20,82 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, felipe.balbi@nokia.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: tytso@mit.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Felipe Balbi <felipe.balbi@nokia.com>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 5 Jun 2010 22:56:45 +0300
-Felipe Contreras <felipe.contreras@gmail.com> wrote:
+2010/6/5 Rafael J. Wysocki <rjw@sisk.pl>:
+> On Saturday 05 June 2010, Arve Hj=F8nnev=E5g wrote:
+>> 2010/6/4 Matt Helsley <matthltc@us.ibm.com>:
+>> > On Fri, Jun 04, 2010 at 05:39:17PM -0700, Arve Hj=F8nnev=E5g wrote:
+>> >> On Fri, Jun 4, 2010 at 5:05 PM, Thomas Gleixner <tglx@linutronix.de> =
+wrote:
+>> >> > On Sat, 5 Jun 2010, Rafael J. Wysocki wrote:
+>> >
+>> > <snip>
+>> >
+>> >>
+>> >> > =A0 =A0 With the cgroup freezer you can "suspend" them right away a=
+nd
+>> >> > =A0 =A0 just keep the trusted background task(s) alive which allows=
+ us to
+>> >> > =A0 =A0 go into deeper idle states instead of letting the crapplica=
+tions
+>> >> > =A0 =A0 run unconfined until the download finished and the suspend
+>> >> > =A0 =A0 blocker goes away.
+>> >> >
+>> >>
+>> >> Yes this would be better, but I want it in addition to suspend, not
+>> >> instead of it. It is also unclear if our user-space code could easily
+>> >> make use of it since our trusted code calls into untrusted code.
+>> >>
+>> >
+>> > Perhaps I'm misunderstanding, but suspend and the cgroup freezer
+>> > interoperate well today -- you don't have to choose one or the other.
+>> > If you've discovered otherwise I'd consider it a bug and would like to
+>> > hear more about it.
+>> >
+>>
+>> I'm not aware of any bug with combining both, but we cannot use
+>> suspend at all without suspend blockers in the kernel (since wakeup
+>> events may be ignored)
+>
+> The more I think of it, the more it appears to me that the problem of
+> lost wakeup events can actually be solved without suspend blockers.
+> I'll send a bunch of patches to address this issue, probably tomorrow.
+>
 
-> On Sat, Jun 5, 2010 at 10:49 PM, Florian Mickler <florian@mickler.org> wrote:
-> > On Sat, 5 Jun 2010 20:16:33 +0300
-> > Felipe Contreras <felipe.contreras@gmail.com> wrote:
-> >> New users will see it has low score; they will not install it. That's
-> >> a network effect.
-> >>
-> >> Having users is the quintessential reason people write code.
-> >
-> > That is nice. But how does it impact the problem that suspend blockers
-> > solve? And why do suspend blockers interfere with that?
-> 
-> It doesn't, I don't know why people keep bringing this argument, I
-> just though it should not be left open as a valid one.
-> 
-> I should have mentioned that this is indeed irrelevant.
-> 
+I know of two ways to prevent lost wakeup events. Reset a timeout
+every time you receive a wakeup event or prevents suspend until you
+know the event has been fully processed. Does your solution fall onto
+one of these two categories, or do you have a third way?
 
-Uh! I found out how this is relevant to the suspend blockers case.
-Because not having users means that the bugs don't get fixed.
-Whereas in the suspend blockers case the users can use the app and get
-the bugs fixed. 
+>> and I don't know how we can safely freeze
+>> cgroups without funneling all potential wakeup events through a
+>> process that never gets frozen.
+>
+> If your untrusted apps get called by the trusted ones, they aren't really
+> untrusted in the first place.
+>
+That is not a correct statement. A trusted apps can call into an
+untrusted app, it just has to validate the response and handle not
+getting a response at all. There are also different levels of trust. I
+may have trusted an app to provide a contact pictures, but not trusted
+it to block suspend. When the phone rings the app will be called to
+provide the picture for the incoming call dialog, but if it is frozen
+at this point the more trusted app that handles the incoming phone
+call will not be able to get the picture.
 
-Cheers,
-Flo
+> From what you're saying it follows that you're not really willing to acce=
+pt
+> any solution different to your suspend blockers. =A0Is that really the ca=
+se?
+>
+I don't think that is a fair way to put it. We need to support our
+user-space framework and I have not seen an alternative solution that
+clearly will work (other than replacing suspend_blockers with pm_qos
+constraints that do the same thing).
 
-p.s.: I really wished you would focus more on solving the
-problem and not on dismissing it.
+-- =
+
+Arve Hj=F8nnev=E5g
