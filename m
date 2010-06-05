@@ -1,17 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re:
- =?utf-8?q?=5BSUSPECTED_SPAM=5D_Re=3A_Proposal_for_a_ne?=
- =?utf-8?q?w_algorithm_for=09reading_=26_writing_a_hibernation_image=2E?=
-Date: Sat, 5 Jun 2010 21:21:45 +0200
-Message-ID: <201006052121.45816.rjw__20760.5891897858$1275765788$gmane$org@sisk.pl>
-References: <9rpccea67yy402c975fqru8r.1275576653521@email.android.com>
-	<201006052045.19889.rjw@sisk.pl>
-	<1275765021.12828.2.camel@maxim-laptop>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Sat, 5 Jun 2010 21:39:31 +0200
+Message-ID: <201006052139.31253.rjw__38136.3344648436$1275766814$gmane$org@sisk.pl>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<201006052104.05324.rjw@sisk.pl> <1275765379.1645.532.camel@laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275765021.12828.2.camel@maxim-laptop>
+In-Reply-To: <1275765379.1645.532.camel@laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,41 +18,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: TuxOnIce-devel <tuxonice-devel@tuxonice.net>, Nigel Cunningham <ncunningham@crca.org.au>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: tytso@mit.edu, Andrew Morton <akpm@linux-foundation.org>, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday 05 June 2010, Maxim Levitsky wrote:
-> On Sat, 2010-06-05 at 20:45 +0200, Rafael J. Wysocki wrote: 
-> > On Saturday 05 June 2010, Nigel Cunningham wrote:
-> > > Hi again.
-> > > 
-> > > As I think about this more, I reckon we could run into problems at 
-> > > resume time with reloading the image. Even if some bits aren't modified 
-> > > as we're writing the image, they still might need to be atomically 
-> > > restored. If we make the atomic restore part too small, we might not be 
-> > > able to do that.
-> > > 
-> > > So perhaps the best thing would be to stick with the way TuxOnIce splits 
-> > > the image at the moment (page cache / process pages vs 'rest'), but 
-> > > using this faulting mechanism to ensure we do get all the pages that are 
-> > > changed while writing the first part of the image.
+On Saturday 05 June 2010, Peter Zijlstra wrote:
+> On Sat, 2010-06-05 at 21:04 +0200, Rafael J. Wysocki wrote:
 > > 
-> > I still don't quite understand why you insist on saving the page cache data
-> > upfront and re-using the memory occupied by them for another purpose.  If you
-> > dropped that requirement, I'd really have much less of a problem with the
-> > TuxOnIce's approach.
-> Because its the biggest advantage?
+> > > I have seen recent proposals that don't require changing the whole
+> > > user-space. That might actually be used by other players.
+> > 
+> > Sure, an approach benefitting more platforms than just Android would be better,
+> > but saying that the kernel shouldn't address the Android's specific needs as a
+> > rule if no one else has those needs too is quite too far reaching to me. 
+> 
+> Well, if the android people keep rejecting all sensible approaches to
+> power savings except their suspend blocker mess, then I don't see why we
+> should support their ill designed mess.
 
-It isn't in fact.
+Well, I certainly would like the Android people to be more appreciative of our
+ideas if they expect reciprocity.
 
-> Really saving whole memory makes huge difference.
+> We should strive to provide an interface that can be used by all
+> interested parties to conserve power; if Android really is the only
+> possible user of the interface then I don't see any reason at all to
+> merge it, they might as well keep it in their private tree.
 
-You don't have to save the _whole_ memory to get the same speed (you don't
-do that anyway, but the amount of data you don't put into the image with
-TuxOnIce is smaller).  Something like 80% would be just sufficient IMO and
-then (a) the level of complications involved would drop significantly and (2)
-you'd be able to use the image-reading code already in the kernel without
-any modifications.  It really looks like a win-win to me, doesn't it?
+There is a number of kernel users that depend on Android user space
+(phone vendors using Android on their hardware, but providing their own
+drivers), so I don't think we really can identify Android with Google in that
+respect.
 
 Rafael
