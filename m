@@ -1,16 +1,29 @@
-From: Felipe Contreras <felipe.contreras@gmail.com>
+From: Florian Mickler <florian@mickler.org>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sat, 5 Jun 2010 22:53:50 +0300
-Message-ID: <AANLkTin2DjZjx7VNsWg7450sAUuQTIrUPyC2TA2MNPAP__22826.1334276342$1275767797$gmane$org@mail.gmail.com>
-References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
-	<20100531224732.2073828d@schatten.dmk.lab>
-	<AANLkTinPUNer7XhAqS4VSWhOxqjEjaHtr76EK5tzYYjJ@mail.gmail.com>
-	<201006052104.05324.rjw@sisk.pl>
+Date: Sat, 5 Jun 2010 21:56:04 +0200
+Message-ID: <20100605215604.68efc4e5__32586.0428544276$1275767931$gmane$org@schatten.dmk.lab>
+References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
+	<201005302202.39511.rjw@sisk.pl>
+	<AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt@mail.gmail.com>
+	<201005312347.24251.rjw@sisk.pl>
+	<AANLkTilvOgSFTDFtXbjJobMZWxgfvsC97TqC7_a_NHBX@mail.gmail.com>
+	<alpine.LFD.2.00.1006011411200.2933@localhost.localdomain>
+	<AANLkTikZHmF6baP7dEXEGFE8YsbEteRjlhb5wqZX8ll1@mail.gmail.com>
+	<alpine.LFD.2.00.1006020905410.2933@localhost.localdomain>
+	<AANLkTinDm3FIrbS1jqEzW15THmr1hdd7ox0Mllm1VLjZ@mail.gmail.com>
+	<1275471561.27810.30865.camel@twins>
+	<AANLkTilLmAb2c9fQwuguzWtjcHfuTZvPUTbUx7vuwFI6@mail.gmail.com>
+	<1275474088.27810.31000.camel@twins>
+	<20100602221309.6da754e7@schatten.dmk.lab>
+	<1275550802.27810.34863.camel@twins>
+	<20100603161205.73a2b56d@schatten.dmk.lab>
+	<1275578881.27810.35995.camel@twins>
+	<AANLkTinBg9W7zeomPbpGEDWkIsfxO9OfFUC0Kq7wafFb@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006052104.05324.rjw@sisk.pl>
+In-Reply-To: <AANLkTinBg9W7zeomPbpGEDWkIsfxO9OfFUC0Kq7wafFb@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,57 +33,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, felipe.balbi@nokia.com
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU2F0LCBKdW4gNSwgMjAxMCBhdCAxMDowNCBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0Bz
-aXNrLnBsPiB3cm90ZToKPiBPbiBTYXR1cmRheSAwNSBKdW5lIDIwMTAsIEZlbGlwZSBDb250cmVy
-YXMgd3JvdGU6Cj4+IE9uIE1vbiwgTWF5IDMxLCAyMDEwIGF0IDExOjQ3IFBNLCBGbG9yaWFuIE1p
-Y2tsZXIgPGZsb3JpYW5AbWlja2xlci5vcmc+IHdyb3RlOgo+PiA+IE9uIE1vbiwgMzEgTWF5IDIw
-MTAgMjI6MTI6MTkgKzAyMDAKPj4gPiBGbG9yaWFuIE1pY2tsZXIgPGZsb3JpYW5AbWlja2xlci5v
-cmc+IHdyb3RlOgo+PiA+PiBJZiBJIGhhdmUgYSBzaW1wbGUgc2hlbGwgc2NyaXB0IHRoZW4gSSBk
-b24ndCB3YW5uYSBqdW1wIHRocm91Z2gKPj4gPj4gaG9vcHMganVzdCB0byBwbGVhc2UgeW91ciBm
-cmFnaWxlIGtlcm5lbC4KPj4gPgo+PiA+IEFsc28gd2h5IHNob3VsZCB0aGF0IGNvZGUgb24gb25l
-IGRldmljZSBraWxsIG15IHVwdGltZSBhbmQgb24gdGhlCj4+ID4gb3RoZXIgbWFjaGluZSAobXkg
-d2FsbC1wbHVnZ2VkIGRlc2t0b3ApIHdvcmsganVzdCB3ZWxsPyBUaGF0IGRvZXNuJ3QKPj4gPiBz
-b3VuZCByaWdodC4KPj4KPj4gU291bmRzIHBlcmZlY3RseSByaWdodCB0byBtZTsgb25lIGNvZGUg
-cnVucyBwZXJmZWN0bHkgZmluZSBvbiBvbmUKPj4gbWFjaGluZSwgYW5kIG9uIHRoZSBvdGhlciBk
-b2Vzbid0IGV2ZW4gY29tcGlsZS4gV2VsbCwgc3VyZSwgaXQgd2Fzbid0Cj4+IHdyaXR0ZW4gd2l0
-aCB0aGF0IHVzZS1jYXNlIGluIG1pbmQuCj4+Cj4+ID4gQ2xlYXJseSBvcHBvcnR1bmlzdGljIHN1
-c3BlbmQgaXMgYSB3b3JrYXJvdW5kIGZvciBiYXR0ZXJ5LWRyaXZlbiBkZXZpY2VzCj4+ID4gYW5k
-IG5vIGdlbmVyYWwgc29sdXRpb24uIEJ1dCBpdCBpcyBub3Qgc3BlY2lmaWMgdG8gYW5kcm9pZC4g
-QXQgbGVhc3QKPj4gPiBub3QgaW5oZXJlbnRseS4gSXQgY291bGQgYmUgdXNlZnVsIGZvciBhbnkg
-ZW1iZWRkZWQgb3IgbW9iaWxlIGRldmljZQo+PiA+IHdoZXJlIHlvdSBjYW4gY2xlYXJseSBkaXN0
-aW5ndWlzaCBpbXBvcnRhbnQgZnVuY3Rpb25zIGZyb20gY29udmVuaWVuY2UKPj4gPiBmdW5jdGlv
-bnMuCj4+Cj4+IFllcywgaXQgY291bGQsIGJ1dCB3aHkgZ28gZm9yIHRoZSBoYWNreSBzb2x1dGlv
-biB3aGVuIHdlIGtub3cgaG93IHRvCj4+IGFjaGlldmUgdGhlIGlkZWFsIG9uZT8KPj4KPj4gPiBJ
-IHJlYWxseSBjYW4ndCB1bmRlcnN0YW5kIHRoZSB3aG9sZSBfZnVuZGFtZW50YWxfIG9wcG9zaXRp
-b24gdG8gdGhpcwo+PiA+IGRlc2lnbiBjaG9pY2UuCj4+Cj4+IE5vYm9keSBpcyB1c2luZyBpdCwg
-ZXhjZXB0IEFuZHJvaWQuIE5vYm9keSB3aWxsIHVzZSBpdCwgZXhjZXB0IEFuZHJvaWQuCj4KPiBU
-aGF0J3MgbGlrZSBzYXlpbmcgIkFuZHJvaWQgaXMgbm90IGEgbGVnaXRpbWF0ZSB1c2VyIG9mIHRo
-ZSBrZXJuZWwiLiDCoElzIHRoYXQKPiB5b3Ugd2FudGVkIHRvIHNheT8KClJlYWQgdGhlIGNvbnRl
-eHQ6IG9wcG9ydHVuaXN0aWMgc3VzcGVuZCwgd2hpY2ggaXMgY29uc2lkZXJlZCBhCndvcmthcm91
-bmQsIHdoaWNoIHJlcXVpcmVzIG5ldyB1c2VyLXNwYWNlIEFQSSBmb3Igc3VzcGVuZCBibG9ja2Vy
-cywKbWlnaHQgYmUgcmVtb3RlbHkgY29uc2lkZXJlZCBmb3IgaW5jbHVzaW9uICppZiogaXQgaW5k
-ZWVkIHNvbHZlcyBhCnByb2JsZW0gZm9yIGJhdHRlcnktZHJpdmVuIGRldmljZXMsIHdoaWNoIG90
-aGVyIHBhcnRpZXMgYWxzbwpleHBlcmllbmNlIGFuZCBjb3VsZCBiZW5lZml0IGZyb20gdGhpcyBz
-b2x1dGlvbi4KClRoZSBhbnN3ZXI6IG5vLCBpdCBkb2Vzbid0OiBvbmx5IEFuZHJvaWQgdXNlci1z
-cGFjZSB3aWxsIGJlbmVmaXQgZnJvbSBpdC4KCj4+IEkgaGF2ZSBzZWVuIHJlY2VudCBwcm9wb3Nh
-bHMgdGhhdCBkb24ndCByZXF1aXJlIGNoYW5naW5nIHRoZSB3aG9sZQo+PiB1c2VyLXNwYWNlLiBU
-aGF0IG1pZ2h0IGFjdHVhbGx5IGJlIHVzZWQgYnkgb3RoZXIgcGxheWVycy4KPgo+IFN1cmUsIGFu
-IGFwcHJvYWNoIGJlbmVmaXR0aW5nIG1vcmUgcGxhdGZvcm1zIHRoYW4ganVzdCBBbmRyb2lkIHdv
-dWxkIGJlIGJldHRlciwKPiBidXQgc2F5aW5nIHRoYXQgdGhlIGtlcm5lbCBzaG91bGRuJ3QgYWRk
-cmVzcyB0aGUgQW5kcm9pZCdzIHNwZWNpZmljIG5lZWRzIGFzIGEKPiBydWxlIGlmIG5vIG9uZSBl
-bHNlIGhhcyB0aG9zZSBuZWVkcyB0b28gaXMgcXVpdGUgdG9vIGZhciByZWFjaGluZyB0byBtZS4K
-ClRoZXJlIGFyZSBubyBBbmRyb2lkIHNwZWNpZmljIG5lZWRzLCB3aHkgc2hvdWxkIGNlcnRhaW4g
-dXNlci1zcGFjZQplY29zeXN0ZW0gbmVlZCBjZXJ0YWluIEFQSSB0aGF0IHNvbWVob3cgKm5vYm9k
-eSogZWxzZSBkb2VzPyBJIHRoaW5rIGluCnRoaXMgaHVnZSB0aHJlYWQgaXQgaGFzIGJlY29tZSBv
-YnZpb3VzIHRoYXQgcGVvcGxlIGFyZSByZWx1Y3RhbnQgdG8KdGhpcyBpZGVhLi4uIHdoYXRldmVy
-IHByb2JsZW0gQW5kcm9pZCB1c2VyLXNwYWNlIHByZXNlbnRzIChJIGRvbid0CnRoaW5rIHRoZXJl
-J3MgYW55KSwgaXQgY2FuIGJlIHNvbHZlZCBmb3IgImhlIHJlc3Qgb2YgdGhlIHdvcmxkIiB0b28s
-CmFuZCBzdWNoIGdlbmVyaWMgc29sdXRpb24gaXMgd29ydGggZXhwbG9yaW5nLgoKLS0gCkZlbGlw
-ZSBDb250cmVyYXMKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24u
-b3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9s
-aW51eC1wbQ==
+On Sat, 5 Jun 2010 20:30:40 +0300
+Felipe Contreras <felipe.contreras@gmail.com> wrote:
+
+> On Thu, Jun 3, 2010 at 6:28 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Thu, 2010-06-03 at 16:12 +0200, Florian Mickler wrote:
+> >> On Thu, 03 Jun 2010 09:40:02 +0200
+> >> Peter Zijlstra <peterz@infradead.org> wrote:
+> >>
+> >> > Fix the friggin apps, don't kludge with freezing.
+> >>
+> >> Of course programs should be as smart as possible. But that is an
+> >> orthogonal problem.
+> >>
+> >> Suppose firefox were fixed. It still needs to fetch my rss feeds every
+> >> minute, because I'm sad if it doesn't. It just can't be fixed at the
+> >> application level.
+> >
+> > Sure it can, why would it need to fetch RSS feeds when the screen is off
+> > and nobody could possible see the result? So you can stop the timer when
+> > you know the window isn't visible or alternatively when the screensaver
+> > is active, I think most desktops have notification of that as well.
+> 
+> Exactly, and that's what applications in the N900 do. For this to work
+> reliably, you need these notifications (network disconnected, screen
+> off) to be easily accessible, and even transparent to the application
+> writer.
+> 
+> I don't think the suspend blockers solve much. A bad application will
+> behave bad on any system. Suppose somebody decides to port Firefox to
+> Android, and forgets to listen to the screen off event (bad on Android
+> or Maemo), however, notices the application behaves very badly, so by
+> googling finds these suspend blockers, and enables them all the time
+> the application runs.
+> 
+> When the user install the application, will be greeted by a warning
+> "This application might break PM, do you want to enable suspend
+> blockers?" (or whatever), as any typical user would do, will press Yes
+> (whatever).
+> 
+> We end up in exactly the same situation.
+> 
+No. The application will show up in the suspend blocker stats and the
+user will remember: "Oh, yes. There was a warning about that. Well I
+think I'm going to file a bug there."
+
+The only difference is, that with suspend blockers, he can than
+dismiss the applications permission to block suspend and will not miss
+his job interview the next day because his phones battery run
+out. And also he can use the application to a certain extent.
+
+Cheers,
+Flo
