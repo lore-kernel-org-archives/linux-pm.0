@@ -1,16 +1,18 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [SUSPECTED SPAM] Re: Proposal for a new algorithm
- for reading & writing a hibernation image.
-Date: Sat, 05 Jun 2010 04:16:09 +0300
-Message-ID: <1275700569.18384.12.camel__32666.6613029831$1275700661$gmane$org@maxim-laptop>
-References: <9rpccea67yy402c975fqru8r.1275576653521@email.android.com>
-	<1275694775.3853.29.camel@maxim-laptop>  <4C09930E.20306@crca.org.au>
-	<1275698169.10045.8.camel@maxim-laptop> <4C099E8C.7070302@crca.org.au>
+From: Matt Helsley <matthltc@us.ibm.com>
+Subject: Re: suspend blockers & Android integration
+Date: Fri, 4 Jun 2010 18:18:26 -0700
+Message-ID: <20100605011826.GB21016__3894.98505178398$1275700776$gmane$org@count0.beaverton.ibm.com>
+References: <20100603193045.GA7188@elte.hu> <20100603232302.GA16184@elte.hu>
+	<1275644619.27810.39462.camel@twins>
+	<201006050138.30859.rjw@sisk.pl>
+	<alpine.LFD.2.00.1006050148080.2933@localhost.localdomain>
+	<AANLkTikGDSzaENwg_0BAtsYf3ulGd_6sGPR30WsvUxMi@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C099E8C.7070302@crca.org.au>
+Content-Disposition: inline
+In-Reply-To: <AANLkTikGDSzaENwg_0BAtsYf3ulGd_6sGPR30WsvUxMi@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,49 +22,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
+Cc: tytso@mit.edu, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Felipe Balbi <felipe.balbi@nokia.com>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, Jun 04, 2010 at 05:39:17PM -0700, Arve Hj=F8nnev=E5g wrote:
+> On Fri, Jun 4, 2010 at 5:05 PM, Thomas Gleixner <tglx@linutronix.de> wrot=
+e:
+> > On Sat, 5 Jun 2010, Rafael J. Wysocki wrote:
 
-> If the memory it writes to isn't protected, there'll be no recursive 
-> page fault and no problem, right? I'm imagining this page fault handler 
-> will only set a flag to record that the page needs to be atomically 
-> copied, copy the original contents to a page previously prepared for the 
-> purpose, remove the write protection for the page and allow the write to 
-> continue. That should be okay, right?
-I think so, although I have no experience yet to comment on such things.
-Despite that I think you might run out of 'page previously prepared for
-the purpose'
-However you can adopt a retrial process, like you do today in tuxonce.
-Just abort suspend, and do it again.
+<snip>
 
-> 
-> > Of course the sucky part will be how to edit the page tables.
-> > You might need to write your own code to do so to be sure.
-> > And this has to be arch specific.
-> 
-> Yeah. I wondered whether the code that's already used for creating page 
-> tables for the atomic restore could be reused, at least in part.
-This is very dangerous.
-The code might work now, and tomorrow somebody will add a code that does
-memory writes.
-The point is that you must be sure that there are no recursive faults,
-or somehow deal with them (this is probably too dangerous to even think
-of)
+> =
 
+> > =A0 =A0 With the cgroup freezer you can "suspend" them right away and
+> > =A0 =A0 just keep the trusted background task(s) alive which allows us =
+to
+> > =A0 =A0 go into deeper idle states instead of letting the crapplications
+> > =A0 =A0 run unconfined until the download finished and the suspend
+> > =A0 =A0 blocker goes away.
+> >
+> =
 
-> 
-> > Since userspace is frozen, you can be sure that faults can only be
-> > caused by access to WO memory or kernel bugs.
-> 
-> Userspace helpers or uswsusp shouldn't be forgotten.
-This is especially bad. because a fault in userspace will mean swapping.
-You won't get away with custom page fault for this.
-You could assure before suspend that all relevant userspace is not
-swapped, or forget about userspace, because its minor thing compared to
-speed increases of full memory write.
+> Yes this would be better, but I want it in addition to suspend, not
+> instead of it. It is also unclear if our user-space code could easily
+> make use of it since our trusted code calls into untrusted code.
+>
+
+Perhaps I'm misunderstanding, but suspend and the cgroup freezer
+interoperate well today -- you don't have to choose one or the other.
+If you've discovered otherwise I'd consider it a bug and would like to
+hear more about it.
+
+<snip> =
 
 
-Best regards,
-Maxim Levitsky
+> it can handle bad apps better (assuming you don't combine
+> opportunistic suspend and cgroup freezing).
+
+I don't see why that would be a problem. The cgroup freezer works
+independently of the suspend freezer -- even with suspend blockers.
+So my hunch is this is really the same as the next problem you refer to:
+
+> The biggest hurdle is how
+> to handle dependencies between processes that gets frozen and
+> processes that don't get frozen.
+
+I'm not sure it covers everything you want, but it should be possible to
+identify some of those so long as you know which process you're
+communicating with.
+
+A trusted app can look up the freezer cgroup of a target app in /proc, then
+look at the cgroup's freezer.state file. If it's FREEZING or FROZEN then
+you've very likely got a "bad" dependency.
+
+For example, say a trusted app plans on doing a blocking read() to fetch
+the output of an untrusted app via a pipe. Assuming we know the untrusted
+app's pid we could then check the dependency and determine that we're likely
+to block because the untrusted app's freezer cgroup is FREEZING or FROZEN.
+(certain to block if we see FROZEN)
+
+That said, it involves quite a few system calls compared to a simple read()
+from the pipe. So my guess is it would be a debugging tool at best -- not
+something you always have enabled.
+
+It may even be possible to make an lsof-like debugging tool to do that from
+outside both apps.
+
+Cheers,
+	-Matt Helsley
