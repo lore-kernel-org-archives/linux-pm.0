@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspend blockers & Android integration
-Date: Sun, 6 Jun 2010 00:52:21 +0200
-Message-ID: <201006060052.21501.rjw__41112.2740516022$1275778324$gmane$org@sisk.pl>
-References: <20100603193045.GA7188@elte.hu>
-	<20100605152326.7ccd5160@infradead.org>
-	<AANLkTinRH52dSTPCAO9k1yEFup1LLYizeinunxeTBzbQ@mail.gmail.com>
+From: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [SUSPECTED SPAM] Re: Proposal for a new algorithm
+ for reading & writing a hibernation image.
+Date: Sun, 06 Jun 2010 08:54:55 +1000
+Message-ID: <4C0AD5BF.3030204__16495.3665495434$1275778636$gmane$org@crca.org.au>
+References: <9rpccea67yy402c975fqru8r.1275576653521@email.android.com>
+	<201006052045.19889.rjw@sisk.pl>
+	<1275765021.12828.2.camel@maxim-laptop>
+	<201006052121.45816.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinRH52dSTPCAO9k1yEFup1LLYizeinunxeTBzbQ@mail.gmail.com>
+In-Reply-To: <201006052121.45816.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,39 +21,88 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: tytso@mit.edu, Andrew Morton <akpm@linux-foundation.org>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Felipe Balbi <felipe.balbi@nokia.com>, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: TuxOnIce-devel <tuxonice-devel@tuxonice.net>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 06 June 2010, Brian Swetland wrote:
-> On Sat, Jun 5, 2010 at 3:23 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> >>
-> >> We clearly have different standards for what we consider good. We
-> >> measure time suspended in minutes or hours, not seconds, and waking up
-> >> every second or two causes a noticeable decrease in battery life on
-> >> the hardware we have today.
-> >
-> > I guess I'm spoiled working with (unreleased) hardware that knows how
-> > to power gate ;-)
-> 
-> I'm continually surprised by answers like this.  We run on hardware
-> that power gates very aggressively and draws in the neighborhood of
-> 1-2mA at the battery when in the lowest state (3-5mA while the radio
-> is connected to the network and paging).  Waking up out of that lowest
-> state and executing code every few seconds or (worse) several times a
-> second) will raise your average power consumption.  Being able to stay
-> parked at the very bottom for minutes or hours at a time when nothing
-> "interesting" is happening is very useful and can have a significant
-> impact on overall battery life.
+Hi.
 
-Yes, and if you look at the approach I proposed in this very thread
-(http://lkml.org/lkml/2010/6/4/368), it goes exactly in this direction.
+On 06/06/10 05:21, Rafael J. Wysocki wrote:
+> On Saturday 05 June 2010, Maxim Levitsky wrote:
+>> On Sat, 2010-06-05 at 20:45 +0200, Rafael J. Wysocki wrote:
+>>> On Saturday 05 June 2010, Nigel Cunningham wrote:
+>>>> Hi again.
+>>>>
+>>>> As I think about this more, I reckon we could run into problems at
+>>>> resume time with reloading the image. Even if some bits aren't modified
+>>>> as we're writing the image, they still might need to be atomically
+>>>> restored. If we make the atomic restore part too small, we might not be
+>>>> able to do that.
+>>>>
+>>>> So perhaps the best thing would be to stick with the way TuxOnIce splits
+>>>> the image at the moment (page cache / process pages vs 'rest'), but
+>>>> using this faulting mechanism to ensure we do get all the pages that are
+>>>> changed while writing the first part of the image.
+>>>
+>>> I still don't quite understand why you insist on saving the page cache data
+>>> upfront and re-using the memory occupied by them for another purpose.  If you
+>>> dropped that requirement, I'd really have much less of a problem with the
+>>> TuxOnIce's approach.
+>> Because its the biggest advantage?
+>
+> It isn't in fact.
 
-And I think it is superior to the opportunistic suspend framework you have
-right now, because, for example, it doesn't require you to carry out full
-system resume and full system suspend every once a while to check battery
-status.
+Because saving a complete image of memory gives you a much more 
+responsive system, post-resume - especially if (as is likely) you're 
+going to keep doing the same work post-resume that you were doing 
+pre-hibernate. Saving a complete image means it's for all intents and 
+purposes just as if you'd never done the hibernation. Dropping page 
+cache, on the other hand, slows things down post-resume because it has 
+to be repopulated - and the repopulation takes longer than reading the 
+pages as part of the image because they're not compressed and there's 
+extra work required to get the pages back in.
 
-And guess what, suspending and resuming the whole system actually uses energy.
+>> Really saving whole memory makes huge difference.
+>
+> You don't have to save the _whole_ memory to get the same speed (you don't
+> do that anyway, but the amount of data you don't put into the image with
+> TuxOnIce is smaller).  Something like 80% would be just sufficient IMO and
+> then (a) the level of complications involved would drop significantly and (2)
+> you'd be able to use the image-reading code already in the kernel without
+> any modifications.  It really looks like a win-win to me, doesn't it?
 
-Rafael
+It is certainly true that you'll notice the effect less if you save 80% 
+of memory instead of 40%, but how much you'll be affected is also 
+heavily influenced by your amount of memory and how you're using it. If 
+you're swapping heavily or don't have much memory (embedded), freeing 
+memory might not be an option.
+
+At the end of the day, I would argue that the user knows best, and this 
+should be a tuneable. This is, in fact the way TuxOnIce has done it for 
+years: the user can use a single sysfs entry to set a (soft) image size 
+limit in MB (values 1 and up), tell TuxOnIce to only free memory if 
+needed (0), abort if freeing memory is necessary (-1) or drop caches (-2).
+
+I do agree that doing a single atomic copy and saving the result makes 
+for a simpler algorithm, but I've always been of the opinion that we're 
+writing code to satisfy real work needs and desires, not our own desires 
+for simpler or easier to understand algorithms. Doing the bare minimum 
+isn't an option for me. That's why I started trying to improve swsusp in 
+the first place, and why I kept working on it even through the 
+difficulties I've had with Pavel and times when I've really just wanted 
+to drop the whole thing.
+
+Saving the image in two parts isn't inherently unreliable, Rafael. Even 
+the recent KMS changes haven't broken TuxOnIce - the kernel bugzilla 
+report turned out to be KMS breakage, not TuxOnIce (I didn't change 
+anything in TuxOnIce, and it started working again in 2.6.34). Yes, this 
+isn't a guarantee that something in the future won't break TuxOnIce, but 
+it does show (and especially when you remember that it's worked this way 
+without issue for something like 8 or 9 years) that the basic concept 
+isn't inherently flaws. The page faulting idea is, I think, the last 
+piece of the puzzle to make it perfectly reliable, regardless of what 
+changes are made in the future.
+
+Regards,
+
+Nigel
