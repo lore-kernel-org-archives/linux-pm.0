@@ -1,15 +1,16 @@
-From: Theodore Tso <tytso@mit.edu>
-Subject: Re: [TuxOnIce-devel] [SUSPECTED SPAM] Re: Proposal for a
-	new algorithm for reading & writing a hibernation image.
-Date: Sat, 5 Jun 2010 08:59:53 -0400
-Message-ID: <88D03BC9-5E85-482D-9431-F1CE4C958C9B__22557.4908349246$1275742897$gmane$org@mit.edu>
-References: <9rpccea67yy402c975fqru8r.1275576653521@email.android.com>
-	<4C0994B9.6070406@crca.org.au>
-Mime-Version: 1.0 (Apple Message framework v1078)
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH] kernel/power/swap.c: fix typos in comments
+Date: Sat, 5 Jun 2010 17:39:48 +0200 (CEST)
+Message-ID: <alpine.LNX.2.00.1006051739360.12271__3200.07348568669$1275752467$gmane$org@pobox.suse.cz>
+References: <1274921340-4894-1-git-send-email-cesarb@cesarb.net>
+	<20100527044511.GA19625@elf.ucw.cz>
+	<alpine.LNX.2.00.1006041605420.12271@pobox.suse.cz>
+	<201006050007.34624.rjw@sisk.pl>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C0994B9.6070406@crca.org.au>
+In-Reply-To: <201006050007.34624.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,18 +20,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Cesar Eduardo Barros <cesarb@cesarb.net>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Sat, 5 Jun 2010, Rafael J. Wysocki wrote:
 
-On Jun 4, 2010, at 8:05 PM, Nigel Cunningham wrote:
->> 2mb pages will probably present a problem, as will bat mappings on powerpc.
+> > > > Signed-off-by: Cesar Eduardo Barros <cesarb@cesarb.net>
+> > > 
+> > > ACK.
+> > 
+> > Doesn't seem to be present in linux-next as of today, so I have queued it 
+> > in my tree.
 > 
-> I have the idea that 2MB pages are only used for the kernel text and read only data. Is that right? If so, perhaps they can just be unconditionally copied (so that we can restore the image if a different kernel is booted) and wouldn't need any page protection. Does that sound right?
+> I'm going to take it, but I guess you'll notice?
 
-No, hugepages are available for use by userspace programs.  
+No problem, dropped from my tree now.
 
-See: https://lwn.net/Articles/374424/
-
-- Ted
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
