@@ -1,14 +1,15 @@
-From: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: [RFC] pm_qos: reimplement using plists
-Date: Sat, 05 Jun 2010 13:19:29 -0500
-Message-ID: <1275761969.7227.19.camel@mulgrave.site>
-References: <1275760688.7227.10.camel@mulgrave.site>
-	<201006052017.22856.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: suspend blockers & Android integration
+Date: Sat, 5 Jun 2010 20:25:11 +0200
+Message-ID: <201006052025.11526.rjw@sisk.pl>
+References: <20100603193045.GA7188@elte.hu>
+	<20100605011826.GB21016@count0.beaverton.ibm.com>
+	<AANLkTim3MMfJ6oa9OhUJch_v1qGyxSfrfxF3zDZhxqHk@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006052017.22856.rjw@sisk.pl>
+In-Reply-To: <AANLkTim3MMfJ6oa9OhUJch_v1qGyxSfrfxF3zDZhxqHk@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,34 +19,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, markgross@thegnar.org
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: tytso@mit.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Felipe Balbi <felipe.balbi@nokia.com>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2010-06-05 at 20:17 +0200, Rafael J. Wysocki wrote:
-> On Saturday 05 June 2010, James Bottomley wrote:
-> > A lot of the pm_qos extremal value handling is really duplicating what a
-> > priority ordered list does, just in a less efficient fashion.  Simply
-> > redoing the implementation in terms of a plist gets rid of a lot of this
-> > junk (although there are several other strange things that could do with
-> > tidying up, like pm_qos_request_list has to carry the pm_qos_class with
-> > every node, simply because it doesn't get passed in to
-> > pm_qos_update_request even though every caller knows full well what
-> > parameter it's updating).
-> > 
-> > I think this redo is a win independent of android, so we should do
-> > something like this now.
-> 
-> I like it.
-> 
-> > There is one nasty that should probably be fixed in plists not open
-> > coded here: plist_first gives the highest priority value, but there's no
-> > corresponding API to give the lowest (even though you can get it from
-> > the head.nodes_list.prev) ... if the sched people are OK, I'll correct
-> > this with the final patch set.
-> 
-> I assume you'll send a signed-off version at one point.
+On Saturday 05 June 2010, Arve Hj=F8nnev=E5g wrote:
+> 2010/6/4 Matt Helsley <matthltc@us.ibm.com>:
+> > On Fri, Jun 04, 2010 at 05:39:17PM -0700, Arve Hj=F8nnev=E5g wrote:
+> >> On Fri, Jun 4, 2010 at 5:05 PM, Thomas Gleixner <tglx@linutronix.de> w=
+rote:
+> >> > On Sat, 5 Jun 2010, Rafael J. Wysocki wrote:
+> >
+> > <snip>
+> >
+> >>
+> >> >     With the cgroup freezer you can "suspend" them right away and
+> >> >     just keep the trusted background task(s) alive which allows us to
+> >> >     go into deeper idle states instead of letting the crapplications
+> >> >     run unconfined until the download finished and the suspend
+> >> >     blocker goes away.
+> >> >
+> >>
+> >> Yes this would be better, but I want it in addition to suspend, not
+> >> instead of it. It is also unclear if our user-space code could easily
+> >> make use of it since our trusted code calls into untrusted code.
+> >>
+> >
+> > Perhaps I'm misunderstanding, but suspend and the cgroup freezer
+> > interoperate well today -- you don't have to choose one or the other.
+> > If you've discovered otherwise I'd consider it a bug and would like to
+> > hear more about it.
+> >
+> =
 
-Yes ... probably as a two parter with the plist changes.
+> I'm not aware of any bug with combining both, but we cannot use
+> suspend at all without suspend blockers in the kernel (since wakeup
+> events may be ignored)
 
-James
+The more I think of it, the more it appears to me that the problem of
+lost wakeup events can actually be solved without suspend blockers.
+I'll send a bunch of patches to address this issue, probably tomorrow.
+
+> and I don't know how we can safely freeze
+> cgroups without funneling all potential wakeup events through a
+> process that never gets frozen.
+
+If your untrusted apps get called by the trusted ones, they aren't really
+untrusted in the first place.
+
+>From what you're saying it follows that you're not really willing to accept
+any solution different to your suspend blockers.  Is that really the case?
+
+Rafael
