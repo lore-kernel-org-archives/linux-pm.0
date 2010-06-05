@@ -1,7 +1,7 @@
 From: Felipe Contreras <felipe.contreras@gmail.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sat, 5 Jun 2010 19:58:35 +0300
-Message-ID: <AANLkTinJLxT845j8fV39jIzO1yznnyugfyimk9zA93z8__19570.2784265906$1275757160$gmane$org@mail.gmail.com>
+Date: Sat, 5 Jun 2010 20:04:28 +0300
+Message-ID: <AANLkTinPUNer7XhAqS4VSWhOxqjEjaHtr76EK5tzYYjJ__19209.7986968749$1275757519$gmane$org@mail.gmail.com>
 References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
 	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
 	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
@@ -10,19 +10,18 @@ References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
 	<20100527223605.GB11364@srcf.ucam.org>
 	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
 	<20100528043114.GC26177@thunk.org>
-	<20100528103713.0a7952d9@lxorguk.ukuu.org.uk>
-	<20100528114123.GA22947@srcf.ucam.org> <4BFFB681.1000105@nokia.com>
-	<AANLkTim04ZfMcPHRB2D_bqcAuguaGwySH2b6repuYLkk@mail.gmail.com>
-	<4BFFC5DF.5030504@nokia.com>
-	<AANLkTikKGeGHHL6AYC7uBuT7Zihj7lozfidWQ8zRHwab@mail.gmail.com>
-	<4BFFCF39.3010507@nokia.com>
-	<AANLkTinyh1YLmL6miVAxvkh9RMYDY5JChA-_f7oN0zvb@mail.gmail.com>
-	<4C034F55.1090807@nokia.com>
+	<1275030704.32462.11.camel@laptop>
+	<AANLkTikEtlbkT4Ws3H2YGt_9QC46B5dr-b1oxJOcG4GN@mail.gmail.com>
+	<1275120618.27810.12699.camel@twins>
+	<1275149418.4503.128.camel@mulgrave.site>
+	<1275156734.1645.496.camel@laptop>
+	<20100531221219.212bf119@schatten.dmk.lab>
+	<20100531224732.2073828d@schatten.dmk.lab>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C034F55.1090807@nokia.com>
+In-Reply-To: <20100531224732.2073828d@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -32,54 +31,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Igor Stoppa <igor.stoppa@nokia.com>
-Cc: "tytso@mit.edu" <tytso@mit.edu>, Peter Zijlstra <peterz@infradead.org>, ext Brian Swetland <swetland@google.com>, "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Florian Mickler <florian@mickler.org>
+Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBNYXkgMzEsIDIwMTAgYXQgODo1NSBBTSwgSWdvciBTdG9wcGEgPGlnb3Iuc3RvcHBh
-QG5va2lhLmNvbT4gd3JvdGU6Cj4gZXh0IEZlbGlwZSBDb250cmVyYXMgd3JvdGU6Cj4KPj4gSSB0
-aGluayB0aGlzIGluZm9ybWF0aW9uIGNhbiBiZSBvYnRhaW5lZCBkeW5hbWljYWxseSB3aGlsZSB0
-aGUKPj4gYXBwbGljYXRpb24gaXMgcnVubmluZywKPgo+IHllcywgdGhhdCB3YXMgdGhlIGlkZWEK
-Pgo+PiDCoGFuZCBwZXJoYXBzIHRoZSBsaW1pdHMgY2FuIGJlIHN0b3JlZC4gSXQgd291bGQKPj4g
-YmUgcHJldHR5IGRpZmZpY3VsdCBmb3IgdGhlIGFwcGxpY2F0aW9ucyB0byBnaXZlIHRoaXMga2lu
-ZCBvZgo+PiBpbmZvcm1hdGlvbiBiZWNhdXNlIHRoZXJlIGFyZSBzbyBtYW55IHZhcmlhYmxlcy4K
-Pj4KPj4gRm9yIGV4YW1wbGUsIGFuIG1lZGlhIHBsYXllciBjYW4gdGVsbCB5b3U6IHRoaXMgY2xp
-cCBoYXMgMjQgZnBzLCBidXQKPj4gaWYgdGhlIHVzZXIgaXMgbW92aW5nIHRoZSB0aW1lIHNsaWRl
-ciwgdGhlIGZwcyB3b3VsZCBpbmNyZWFzZSBhbmQgZHJvcAo+PiB2ZXJ5IHJhcGlkbHksIGFuZCBo
-b3cgbXVjaCBkZXBlbmRzIGF0IGxlYXN0IG9uIHRoZSBjb250YWluZXIgZm9ybWF0Cj4+IGFuZCB0
-eXBlIG9mIHNlZWsuCj4+Cj4KPiBJIGRvdWJ0IHRoYXQgYmVsb25ncyB0byB0eXBpY2FsIFFvUy4g
-TWF5YmUgdGhlIHRhcmdldCBjb3VsZCBiZSB0byBiZSBhYmxlIHRvCj4gZGVjb2RlIGEgc2VxdWVu
-Y2Ugb2YgaS1mcmFtZXM/CgpJJ20gbm90IHN1cmUgd2hhdCB5b3UgbWVhbi4gSS1mcmFtZXMgY29t
-ZXMgdXN1YWxseSBvbmUgcGVyIHNlY29uZCwgc28KaWYgeW91IG9ubHkgZGVjb2RlIEktZnJhbWVz
-LCB5b3VyIGV4cGVyaWVuY2Ugd291bGQgYmUgcmVhbGx5IGJhZC4KTW9yZW92ZXIsIHlvdSBkb24n
-dCBrbm93IGJlZm9yZWhhbmQgd2hlbiBhbiBJLWZyYW1lIGlzIGNvbWluZywgb25seQp3aGVuIGl0
-J3MgdGhlcmUsIGFuZCBzb21lIGNsaXBzIGNhbiBoYXZlIG9ubHkgb25lIEktZnJhbWUgYXQgdGhl
-CmJlZ2lubmluZy4KCj4+IEEgZ2FtZSBvciBhIHRlbGVwaG9ueSBhcHAgY291bGQgdGVsbCB5b3Ug
-IkkgbmVlZCByZWFsLXRpbWUgcHJpb3JpdHkiCj4+IGJ1dCBzbyBtdWNoIGFzIGdpdmluZyB0aGUg
-ZGV0YWlscyBvZiBsYXRlbmN5IGFuZCBiYW5kd2lkdGg/IEkgZmluZAo+PiB0aGF0IHZlcnkgdW5s
-aWtlbHkuCj4+Cj4KPiBmcm9tIG15IGdhbWluZyBkYXlzIHRoZSBnYW1lcyB3ZXJlIHN0aWxsIGV2
-YWx1YXRlZCBpbiBmcHMgLi4uIG1heWJlIGkgbWFkZQo+IHRoZSB3cm9uZyBhc3N1bXB0aW9uPwoK
-WWVzLCB0aGUgbW9yZSBmcHMsIHRoZSBiZXR0ZXIsIGJ1dCB5b3UgY2FsY3VsYXRlIHRoYXQgYnkg
-Y291bnRpbmcgdGhlCmFtb3VudCBvZiBmcmFtZXMgcmVuZGVyZWQgb3ZlciBhIHBlcmlvZCBvZiB0
-aW1lOyB5b3Uga25vdyB0aGUgZnBzCiphZnRlciogdGhlIGZhY3QuCgo+IEEgdGVsZXBob255IGFw
-cCBzaG91bGQgc3RpbGwgYmUgYWJsZSB0byB0ZWxsIGlmIGl0J3MgZHJvcHBpbmcgYXVkaW8gZnJh
-bWVzLgoKWWVzLCB3aGljaCBjb3VsZCBiZSB1bnJlbGF0ZWQgdG8gUE0sIGxpa2UgYmFkIG5ldHdv
-cmsgY29uZGl0aW9ucywgYnV0CnllYWgsIGl0IHNob3VsZCBhbHNvIGJlIGFibGUgdG8gdGVsbCBp
-ZiB0aGUgcHJvYmxlbSBpcyB3aXRoIHRoZQphcHBsaWNhdGlvbiBpdHNlbGYgKGF1ZGlvIGRlY29k
-ZXIgdG9vIHNsb3cpLgoKPiBJbiBhbGwgY2FzZXMgdGhlcmUgc2hvdWxkIGJlIHNvbWUgZGV2aWNl
-IGluZGVwZW5kZW50IGxpbWl0IC0gbGlrZTogd2hhdCBpcwo+IHRoZSBzb3J0IG9mIGRlZ3JhZGF0
-aW9uIHRoYXQgaXMgY29uc2lkZXJlZCBhY2NlcHRhYmxlIGJ5IHRoZSB0eXBpY2FsIHVzZXI/CgpJ
-dCBpcyBlYXN5IHRvIHRlbGwgYWZ0ZXIgdGhlIFBNIGFjdGlvbnMgaGF2ZSBiZWVuIG1hZGUsIGFz
-IGluICJ3YWl0IQpJJ20gbm90IGFibGUgdG8gcGVyZm9ybSBnaW1tZSBtb3JlIHBvd2VyISIuIEJ1
-dCBJIGRvbid0IHNlZSBob3cgdGhhdApjb3VsZCBiZSBkb25lIF9iZWZvcmVfIHRoZSBQTSBhY3Rp
-b25zIGFyZSBkb25lLgoKRnJvbSBhbGwgdGhlIFFvUyBwcm9wb3NhbHMgSSBoYXZlIHNlZW4gaGVy
-ZSwgYW5kIGNvbnNpZGVyaW5nIHRoYXQgc29tZQpwZW9wbGUgc2FpZCB0aGF0IHN1c3BlbmQgYmxv
-Y2tlcnMgY291bGQgYmUgYSBzcGVjaWZpYyBjYXNlIG9mIFFPUywgSQpkb24ndCB0aGluayBwZW9w
-bGUgaGF2ZSBiZWVuIGNvbnNpZGVyaW5nIFFvUyBhcyBzb21ldGhpbmcgdG8gc3RhdGUKX2FmdGVy
-Xy4KCj4gVHVuaW5nIG1pZ2h0IGJlIG9mZmVyZWQsIGJ1dCBhdCBsZWFzdCB0aGlzIHNob3VsZCBz
-ZXQgc29tZSBzYW5lIHNldCBvZgo+IGRlZmF1bHRzLgoKSHVoPyBEZWZhdWx0cyBpbiB3aGF0IHVu
-aXRzLCBiYXNlZCBvbiB3aGF0LCBhbmQgd2hlbiBhbmQgaG93IHRvIHVwZGF0ZT8KCkNoZWVycy4K
-Ci0tIApGZWxpcGUgQ29udHJlcmFzCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1m
-b3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4v
-bGlzdGluZm8vbGludXgtcG0=
+On Mon, May 31, 2010 at 11:47 PM, Florian Mickler <florian@mickler.org> wrote:
+> On Mon, 31 May 2010 22:12:19 +0200
+> Florian Mickler <florian@mickler.org> wrote:
+>> If I have a simple shell script then I don't wanna jump through
+>> hoops just to please your fragile kernel.
+>
+> Also why should that code on one device kill my uptime and on the
+> other machine (my wall-plugged desktop) work just well? That doesn't
+> sound right.
+
+Sounds perfectly right to me; one code runs perfectly fine on one
+machine, and on the other doesn't even compile. Well, sure, it wasn't
+written with that use-case in mind.
+
+> Clearly opportunistic suspend is a workaround for battery-driven devices
+> and no general solution. But it is not specific to android. At least
+> not inherently. It could be useful for any embedded or mobile device
+> where you can clearly distinguish important functions from convenience
+> functions.
+
+Yes, it could, but why go for the hacky solution when we know how to
+achieve the ideal one?
+
+> I really can't understand the whole _fundamental_ opposition to this
+> design choice.
+
+Nobody is using it, except Android. Nobody will use it, except Android.
+
+I have seen recent proposals that don't require changing the whole
+user-space. That might actually be used by other players.
+
+-- 
+Felipe Contreras
