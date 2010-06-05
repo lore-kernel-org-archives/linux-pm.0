@@ -1,15 +1,14 @@
 From: Nigel Cunningham <ncunningham@crca.org.au>
 Subject: Re: [SUSPECTED SPAM] Re: Proposal for a new algorithm
  for reading & writing a hibernation image.
-Date: Sat, 05 Jun 2010 09:58:06 +1000
-Message-ID: <4C09930E.20306__46823.7082161524$1275695942$gmane$org@crca.org.au>
+Date: Sat, 05 Jun 2010 10:05:13 +1000
+Message-ID: <4C0994B9.6070406__21174.9775255614$1275696449$gmane$org@crca.org.au>
 References: <9rpccea67yy402c975fqru8r.1275576653521@email.android.com>
-	<1275694775.3853.29.camel@maxim-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275694775.3853.29.camel@maxim-laptop>
+In-Reply-To: <9rpccea67yy402c975fqru8r.1275576653521@email.android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,141 +18,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Maxim.
+Hi.
 
-On 05/06/10 09:39, Maxim Levitsky wrote:
-> On Thu, 2010-06-03 at 16:50 +0200, Pavel Machek wrote:
->>
->> "Nigel Cunningham"<ncunningham@crca.org.au>  wrote:
->>
->>> Hi.
+On 04/06/10 00:50, Pavel Machek wrote:
+> "Nigel Cunningham"<ncunningham@crca.org.au>  wrote:
+>> On 30/05/10 15:25, Pavel Machek wrote:
+>>> Hi!
 >>>
->>> On 30/05/10 15:25, Pavel Machek wrote:
->>>> Hi!
->>>>
->>>>> 2. Prior to writing any of the image, also set up new 4k page tables
->>>>> such that an attempt to make a change to any of the pages we're about to
->>>>> write to disk will result in a page fault, giving us an opportunity to
->>>>> flag the page as needing an atomic copy later. Once this is done, write
->>>>> protection for the page can be disabled and the write that caused the
->>>>> fault allowed to proceed.
->>>>
->>>> Tricky.
->>>>
->>>> page faulting code touches memory, too...
+>>>> 2. Prior to writing any of the image, also set up new 4k page tables
+>>>> such that an attempt to make a change to any of the pages we're about to
+>>>> write to disk will result in a page fault, giving us an opportunity to
+>>>> flag the page as needing an atomic copy later. Once this is done, write
+>>>> protection for the page can be disabled and the write that caused the
+>>>> fault allowed to proceed.
 >>>
->>> Yeah. I realise we'd need to make the pages that are used to record the
->>> faults be unprotected themselves. I'm imagining a bitmap for that.
+>>> Tricky.
 >>>
->>> Do you see any reason that it could be inherently impossible? That's
->>> what I really want to know before (potentially) wasting time trying it.
+>>> page faulting code touches memory, too...
 >>
->> I'm not sure it is impossible, but it certainly seems way too complex to be
->> practical.
+>> Yeah. I realise we'd need to make the pages that are used to record the
+>> faults be unprotected themselves. I'm imagining a bitmap for that.
 >>
->> 2mb pages will probably present a problem, as will bat mappings on powerpc.
+>> Do you see any reason that it could be inherently impossible? That's
+>> what I really want to know before (potentially) wasting time trying it.
 >
->
-> Some time ago, after tuxonce caused medium fs corruption twice on my
-> root filesystem (superblock gone for example), I was thinking too about
-> how to make it safe to save whole memory.
+> I'm not sure it is impossible, but it certainly seems way too complex to be
+> practical.
 
-I'd be asking why you got the corruption. On the odd occasion where it 
-has been reported, it's usually been because the person didn't set up 
-their initramfs correctly (resumed after mounting filesystems). Is there 
-any chance that you did that?
+Oh. I thought this bit would actually be quite simple if it was 
+technically possible. I'm more concerned about the potential for 
+difficulties with restoring the state successfully.
 
-> Your tuxonice is so fast that it resembles suspend to ram.
+> 2mb pages will probably present a problem, as will bat mappings on powerpc.
 
-That depends on hard drive speed and CPU speed. I've just gotten a new 
-SSD drive, and can understand your statement now, but I wouldn't have 
-said the same beforehand.
+I have the idea that 2MB pages are only used for the kernel text and 
+read only data. Is that right? If so, perhaps they can just be 
+unconditionally copied (so that we can restore the image if a different 
+kernel is booted) and wouldn't need any page protection. Does that sound 
+right?
 
-> I have radically different proposal.
->
->
-> Lets create a kind of self-contained very small operation system that
-> will know to do just one thing, write the memory to disk.
->> From now on I am calling this OS, a suspend module.
-> Physically its code can be contained in linux kernel, or loaded as a
-> module.
->
->
-> Let see how things will work first:
->
-> 1. Linux loads the suspend module to memory (if it is inside kernel
-> image, that becomes unnecessary)
->
-> At that point, its even possible to add some user plug-ins to that
-> module for example to draw splash screen. Of course all such plug-ins
-> must be root approved.
->
->
-> 2. Linux turns off all devices, but hard disk.
-> Drivers for hard drives will register for this exception.
->
->
-> 3. Linux creates a list of memory areas to save (or exclude from save,
-> doesn't matter)
->
-> 4. Linux creates a list of hard disk sectors that will contain the
-> image.
-> This ensures support for swap partition and swap files as well.
->
-> 5. Linux allocates small 'scratch space'
-> Of course if memory is very tight, some swapping can happen, but that
-> isn't significant.
->
->
-> 6. Linux creates new page tables that cover: the suspend module, both of
-> above lists, scratch space, and (optionally) the framebuffer RW,
-> and rest of memory RO.
->
-> 7. Linux switches to new page table, and passes control to that module.
-> Even if the module wanted to it won't be able to change system memory.
-> It won't even know how to do so.
->
-> 8. Module optionally encrypts and/or compresses (and saves result to
-> scratch page)
->
-> 9. Module uses very simplified disk drivers to write the memory to disk.
-> These drivers can even omit using interrupts because there is nothing
-> else to do.
-> It can also draw progress bar on framebuffer using optional plugin
->
-> 10. Module passes control back to linux, which just shuts system off.
-
-Sounds a lot like kexec based hibernation that was suggested a year or 
-two back. Have you thought about resuming, too? That's the trickier part 
-of the process.
-
-> Now what code will be in the module:
->
-> 1. Optional compression&  encryption - easy
-> 2. Draw modules, also optional and easy
->
->
-> 3. New disk drivers.
-> This is the hard part, but if we cover libata and ahci, we will cover
-> the common case.
-> Other cases can be handled by existing code that saved 1/2 of ram.
-
-To my mind, supporting only some hardware isn't an option.
-
-> 4. Arch specific code. Since it doesn't deal with interrupts nor memory
-> managment, it won't be lot of code.
-> Again standard swsusp can be used for arches that that module wasn't
-> ported to.
-
-Perhaps I'm being a pessimist, but it sounds to me like this is going to 
-be a way bigger project than you're allowing for.
-
-> Anyone who had a dream to write a new (useful) OS is interested?
-
-:)
+ From the small bit I've read about bat mappings on the powerpc, it 
+looks like they could be replaced with normal ptes while doing 
+hibernation. More than willing to be told I don't understand what's 
+going on there :)
 
 Nigel
