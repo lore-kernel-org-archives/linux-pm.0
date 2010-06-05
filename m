@@ -1,18 +1,18 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: suspend blockers & Android integration
-Date: Fri, 4 Jun 2010 22:23:29 -0700
-Message-ID: <AANLkTikU21xF49Z-_Lnrq7U7buNmqw_gyEEST8LuN24z__18664.7953618833$1275715498$gmane$org@mail.gmail.com>
+Date: Fri, 4 Jun 2010 22:35:06 -0700
+Message-ID: <AANLkTim3MMfJ6oa9OhUJch_v1qGyxSfrfxF3zDZhxqHk__39508.6893150166$1275716242$gmane$org@mail.gmail.com>
 References: <20100603193045.GA7188@elte.hu> <20100603232302.GA16184@elte.hu>
 	<1275644619.27810.39462.camel@twins>
 	<201006050138.30859.rjw@sisk.pl>
 	<alpine.LFD.2.00.1006050148080.2933@localhost.localdomain>
 	<AANLkTikGDSzaENwg_0BAtsYf3ulGd_6sGPR30WsvUxMi@mail.gmail.com>
-	<alpine.LFD.2.00.1006050246350.2933@localhost.localdomain>
+	<20100605011826.GB21016@count0.beaverton.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1006050246350.2933@localhost.localdomain>
+In-Reply-To: <20100605011826.GB21016@count0.beaverton.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,58 +22,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: tytso@mit.edu, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: tytso@mit.edu, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Felipe Balbi <felipe.balbi@nokia.com>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-2010/6/4 Thomas Gleixner <tglx@linutronix.de>:
-> Arve,
->
-> On Fri, 4 Jun 2010, Arve Hj=F8nnev=E5g wrote:
->
+2010/6/4 Matt Helsley <matthltc@us.ibm.com>:
+> On Fri, Jun 04, 2010 at 05:39:17PM -0700, Arve Hj=F8nnev=E5g wrote:
 >> On Fri, Jun 4, 2010 at 5:05 PM, Thomas Gleixner <tglx@linutronix.de> wro=
 te:
 >> > On Sat, 5 Jun 2010, Rafael J. Wysocki wrote:
->> >> I kind of agree here, so I'd like to focus a bit on that.
->> >>
->> >> Here's my idea in the very general terms:
->> >>
->> >> (1) Use the cgroup freezer to "suspend" the "untrusted" apps (ie. the=
- ones
->> >> =A0 =A0 that don't use suspend blockers aka wakelocks in the Android =
-world) at the
->> >> =A0 =A0 point Android would normally start opportunistic suspend.
->> >
->> > There is an additional benefit to this approach:
->> >
->> > =A0 =A0 In the current android world a background task (e.g. download
->> > =A0 =A0 initiated before the screensaver kicked in) prevents the suspe=
-nd,
->> > =A0 =A0 but that also means that the crapplications can still suck pow=
-er
->> > =A0 =A0 completely unconfined.
->> >
+>
+> <snip>
+>
 >>
->> Yes this can happen. It is usually only a big problem when you combine
->> an (trusted) application that has a bug that blocks suspend forever
->> with an application that wakes up too often for us to enter low power
->> idle modes.
->
-> Why is it a BUG in the trusted app, when I initiate a download and put
-> the phone down ?
->
-
-It is not, but we have had bugs where a trusted app does not unblock
-suspend after some failure case where it is no longer making any
-progress.
-
-> That download might take a minute or two, but that's not an
-> justification for the crapplication to run unconfined and prevent
-> lower power states.
->
-
-I agree, but this is not a simple problem to solve.
-
 >> > =A0 =A0 With the cgroup freezer you can "suspend" them right away and
 >> > =A0 =A0 just keep the trusted background task(s) alive which allows us=
  to
@@ -86,97 +47,65 @@ ns
 >> Yes this would be better, but I want it in addition to suspend, not
 >> instead of it. It is also unclear if our user-space code could easily
 >> make use of it since our trusted code calls into untrusted code.
->
-> Sorry, that's really the worst argument I saw in this whole
-> discussion.
->
-> You're basically saying, that you have no idea what your user space
-> stack is doing and you do not care at all as long as your suspend
-> blocker scheme makes things work somehow.
->
-
-Yes I don't know everything our user-space stack is doing, but I do
-know that it makes many calls between processes (and in both
-directions). As far as I know it uses timeouts when calling into
-untrusted code, so a misbehaving application will cause an error
-dialog to pop up asking if the user if it should wait longer or
-terminate the application.
-
-> Up to that point, I really tried hard to step back from my initial
-> "OMG, promoting crap is a nono" reaction and work with you on a
-> sensible technical solution to confine crap and make it aligned with
-> other efforts in this area.
->
-> So now, after I spent a reasonable amount of time (as you did) to
-> understand what your requirements are, you come up with another
-> restriction which is so outside of any level of sanity, that I'm at
-> the point of giving up and just going into NAK mode.
->
-
-I don't think this is a new restriction. Both Brian and I have
-mentioned that we have a lot of dependencies between processes.
-
-> Can you please answer the following question:
->
-> =A0 =A0What is the point of having the distinction of "trusted" and
-> =A0 =A0"untrusted" when you have no way to prevent "trusted" code calling
-> =A0 =A0"into "untrusted" code ?
->
-
-Trusted code that calls into untrusted code has to deal with the
-untrusted code not responding, but we only want to pop up a message
-that the application is not responding if it is misbehaving, not just
-because it was frozen though no fault of its own.
-
-> That's violating any sense of abstraction and layering and makes it
-> entirely clear that the only way you can deal with your own design
-> failure is a big hammer which you need to force into the kernel.
->
-
-How can it be fixed? The user presses the back button, the framework
-determines that app A is in the foreground and send the key to app A,
-app A decides that it it does not have anything internal to go back to
-and tells the framework to switch back to the previous app. If the
-user presses the back key again, the framework does not know which app
-this key should go to until app A has finished processing the first
-key press.
-
-> Sorry, no. I'm perfectly willing to make progress on that, as long as
-> we walk on a sane ground. But abusing the kernel for fixing basic
-> engineering problems in the user space side of affairs is completely
-> out of discussion.
->
->> >> I wonder what people think. =A0Is this realistic and if so, would it =
-be difficult
->> >> to implement?
->> >
->> > I think it's realistic and not overly complicated to implement.
->> >
 >>
->> The kernel support can be easily implemented on most arm hardware, I
->> don't know if it can work on most existing x86 hardware. It does not
 >
-> It does not matter. Even Intel folks told you more than once, that x86
-
-How does it not matter. Are dropping support for existing x86 hardware
-once the new hardware comes out?
-
-> hardware is going to be fixed pretty soon. Hint: that's crucial to
-> their business ....
+> Perhaps I'm misunderstanding, but suspend and the cgroup freezer
+> interoperate well today -- you don't have to choose one or the other.
+> If you've discovered otherwise I'd consider it a bug and would like to
+> hear more about it.
 >
->> give us the same power savings as suspend with existing software, but
+
+I'm not aware of any bug with combining both, but we cannot use
+suspend at all without suspend blockers in the kernel (since wakeup
+events may be ignored) and I don't know how we can safely freeze
+cgroups without funneling all potential wakeup events through a
+process that never gets frozen.
+
+> <snip>
+>
 >> it can handle bad apps better (assuming you don't combine
->> opportunistic suspend and cgroup freezing). The biggest hurdle is how
+>> opportunistic suspend and cgroup freezing).
+>
+> I don't see why that would be a problem. The cgroup freezer works
+> independently of the suspend freezer -- even with suspend blockers.
+> So my hunch is this is really the same as the next problem you refer to:
+>
+>> The biggest hurdle is how
 >> to handle dependencies between processes that gets frozen and
 >> processes that don't get frozen.
 >
-> See above.
+> I'm not sure it covers everything you want, but it should be possible to
+> identify some of those so long as you know which process you're
+> communicating with.
 >
-> Thanks,
+> A trusted app can look up the freezer cgroup of a target app in /proc, th=
+en
+> look at the cgroup's freezer.state file. If it's FREEZING or FROZEN then
+> you've very likely got a "bad" dependency.
 >
-> =A0 =A0 =A0 =A0tglx
 
+I don't think they are "bad" dependencies. Our framework has to
+communicate with apps.
 
+> For example, say a trusted app plans on doing a blocking read() to fetch
+> the output of an untrusted app via a pipe. Assuming we know the untrusted
+> app's pid we could then check the dependency and determine that we're lik=
+ely
+> to block because the untrusted app's freezer cgroup is FREEZING or FROZEN.
+> (certain to block if we see FROZEN)
+>
+> That said, it involves quite a few system calls compared to a simple read=
+()
+> from the pipe. So my guess is it would be a debugging tool at best -- not
+> something you always have enabled.
+>
+> It may even be possible to make an lsof-like debugging tool to do that fr=
+om
+> outside both apps.
+>
+> Cheers,
+> =A0 =A0 =A0 =A0-Matt Helsley
+>
 
 -- =
 
