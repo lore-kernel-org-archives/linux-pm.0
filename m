@@ -1,27 +1,15 @@
 From: Felipe Contreras <felipe.contreras@gmail.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sat, 5 Jun 2010 20:04:28 +0300
-Message-ID: <AANLkTinPUNer7XhAqS4VSWhOxqjEjaHtr76EK5tzYYjJ__19209.7986968749$1275757519$gmane$org@mail.gmail.com>
+Date: Sat, 5 Jun 2010 20:16:33 +0300
+Message-ID: <AANLkTil4DLUciWMVmCiiygS2Y1vLZu0Lnfys-w4q3L7W__8681.17820141396$1275758242$gmane$org@mail.gmail.com>
 References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.44L0.1005271730180.3239-100000@iolanthe.rowland.org>
-	<20100527230806.4deb6de3@lxorguk.ukuu.org.uk>
-	<20100527220949.GB10602@srcf.ucam.org>
-	<20100527232357.6d14fdb2@lxorguk.ukuu.org.uk>
-	<20100527223605.GB11364@srcf.ucam.org>
-	<20100527235546.09f3ce8a@lxorguk.ukuu.org.uk>
-	<20100528043114.GC26177@thunk.org>
-	<1275030704.32462.11.camel@laptop>
-	<AANLkTikEtlbkT4Ws3H2YGt_9QC46B5dr-b1oxJOcG4GN@mail.gmail.com>
-	<1275120618.27810.12699.camel@twins>
 	<1275149418.4503.128.camel@mulgrave.site>
-	<1275156734.1645.496.camel@laptop>
-	<20100531221219.212bf119@schatten.dmk.lab>
-	<20100531224732.2073828d@schatten.dmk.lab>
+	<1275156734.1645.496.camel@laptop> <201005312314.12391.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100531224732.2073828d@schatten.dmk.lab>
+In-Reply-To: <201005312314.12391.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -31,40 +19,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, felipe.balbi@nokia.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 31, 2010 at 11:47 PM, Florian Mickler <florian@mickler.org> wrote:
-> On Mon, 31 May 2010 22:12:19 +0200
-> Florian Mickler <florian@mickler.org> wrote:
->> If I have a simple shell script then I don't wanna jump through
->> hoops just to please your fragile kernel.
->
-> Also why should that code on one device kill my uptime and on the
-> other machine (my wall-plugged desktop) work just well? That doesn't
-> sound right.
-
-Sounds perfectly right to me; one code runs perfectly fine on one
-machine, and on the other doesn't even compile. Well, sure, it wasn't
-written with that use-case in mind.
-
-> Clearly opportunistic suspend is a workaround for battery-driven devices
-> and no general solution. But it is not specific to android. At least
-> not inherently. It could be useful for any embedded or mobile device
-> where you can clearly distinguish important functions from convenience
-> functions.
-
-Yes, it could, but why go for the hacky solution when we know how to
-achieve the ideal one?
-
-> I really can't understand the whole _fundamental_ opposition to this
-> design choice.
-
-Nobody is using it, except Android. Nobody will use it, except Android.
-
-I have seen recent proposals that don't require changing the whole
-user-space. That might actually be used by other players.
-
--- 
-Felipe Contreras
+T24gVHVlLCBKdW4gMSwgMjAxMCBhdCAxMjoxNCBBTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0Bz
+aXNrLnBsPiB3cm90ZToKPiBEbyB5b3UgcmVhbGlzdGljYWxseSB0aGluayB0aGF0IGJ5IGh1cnRp
+bmcgdGhlIF91c2VyXyB5b3Ugd2lsbCBtYWtlIHRoZQo+IF9kZXZlbG9wZXJfIHdyaXRlIGJldHRl
+ciBjb2RlPyDCoE5vLCByZWFsbHkuCgpBcyBhbiBhcHBsaWNhdGlvbiB3cml0ZXIsIGlmIG15IHVz
+ZXJzIGNvbXBsYWluIHRoYXQgdGhlaXIgYmF0dGVyeSBpcwpiZWluZyBkcmFpbmVkIChhcyBpdCBo
+YXBwZW5lZCksIHRoZXkgc3RvcCB1c2luZyBpdCwgYW5kIG90aGVyIHBlb3BsZQpzZWUgdGhlcmUg
+YXJlIHByb2JsZW1zLCBzbyB0aGV5IHN0b3AgdXNpbmcgaXQsIGlmIHBlb3BsZSBnZXQgYW5ncnkK
+YWJvdXQgaXQgdGhleSB3aWxsIHZvdGUgaXQgZG93bi4KCk5ldyB1c2VycyB3aWxsIHNlZSBpdCBo
+YXMgbG93IHNjb3JlOyB0aGV5IHdpbGwgbm90IGluc3RhbGwgaXQuIFRoYXQncwphIG5ldHdvcmsg
+ZWZmZWN0LgoKSGF2aW5nIHVzZXJzIGlzIHRoZSBxdWludGVzc2VudGlhbCByZWFzb24gcGVvcGxl
+IHdyaXRlIGNvZGUuCgo+IElmIHRoZSB1c2VyIGxpa2VzIHRoZSBhcHAgdmVyeSBtdWNoIChvciBk
+ZXBlbmRzIG9uIGl0IG9yIHdoYXRldmVyIG1ha2VzIGhpbQo+IHVzZSBpdCksIGhlIHdpbGwgcmF0
+aGVyIHN3aXRjaCB0aGUgcGxhdGZvcm0gdG8gb25lIHRoYXQgYWxsb3dzIGhpbSB0byBydW4gdGhh
+dAo+IGFwcCB3aXRob3V0IF92aXNpYmxlXyBwcm9ibGVtcyB0aGFuIGNvbXBsYWluIHRvIHRoZSBk
+ZXZlbG9wZXIsIGJlY2F1c2UgX3RoZV8KPiBfdXNlcl8gX2RvZXNuJ3RfIF9yZWFsaXplXyB0aGF0
+IHRoZSBhcHAgaXMgYnJva2VuLiDCoEZyb20gdGhlIHVzZXIncwo+IHBlcnNwZWN0aXZlLCB0aGUg
+cGxhdGZvcm0gdGhhdCBoYXMgcHJvYmxlbXMgd2l0aCB0aGUgYXBwIGlzIGJyb2tlbiwgYmVjYXVz
+ZQo+IHRoZSBhcHAgYXBwYXJlbnRseSBydW5zIHdpdGhvdXQgcHJvYmxlbXMgb24gY29uY3VycmVu
+dCBwbGF0Zm9ybXMuCgpZZWFoLCByaWdodC4gSSBkb24ndCB0aGluayBhbnlib2R5IGhhcyBldmVy
+eSBib3VnaHQgYW4gaVBob25lIGJlY2F1c2UKb2YgVHdlZXRpZS4gUGVvcGxlIGNhcmUgaG93IHRo
+ZSBhcHBsaWNhdGlvbnMgcnVuIG9uIHRoZWlyIHBob25lcywgbm90CmhvdyB0aGVpciBwaG9uZSdz
+IHBsYXRmb3JtIHJ1bnMgdGhlaXIgZmF2b3JpdGUgYXBwbGljYXRpb24sIGluIGZhY3QsCm1vc3Qg
+cHJvYmFibHkgaXQgYmVjYW1lIHRoZWlyIGZhdm9yaXRlIGFwcGxpY2F0aW9uIGJlY2F1c2UgaXQg
+d2FzCnJ1bm5pbmcgZ3JlYXQgb24gdGhlaXIgcGhvbmUsIGFuZCB0aGV5IHdvdWxkbid0IGV4cGVj
+dCBpdCB0byBydW4gb24KcGhvbmVzIHdpdGggb3RoZXIgcGxhdGZvcm1zLiBFaXRoZXIgYXBwbGlj
+YXRpb25zIHJ1biBvbiBTNjAsIGlQaG9uZQpPUywgQW5kcm9pZCwgb3IgTWFlbW8sIGJ1dCBub3Qg
+aW4gYSBjb21iaW5hdGlvbiBvZiB0aG9zZS4gQW5kIGlmIHRoZWlyCmNlcnRhaW4gYXBwIHRoYXQg
+cnVucyBvbiBtdWx0aXBsZSBwbGF0Zm9ybXMsIGFuZCB0aGUgdXNlciBhY3R1YWxseQprbm93cyB0
+aGF0IChwcm9iYWJseSBhIGdlZWspLCB0aGVuIGhlIGtub3dzIGhlIGNhbid0IGV4cGVjdCBpdCB0
+byB3b3JrCmV4YWN0bHkgdGhlIHNhbWUuCgo+IFRoZSB3aG9sZSAibm8gcmVhc29uIHRvIHRvbGVy
+YXRlIGJyb2tlbiBhcHBzIiBtaWRzZXQgaXMgc2ltcGx5IG1pc2d1aWRlZCBJTU8sCj4gYmVjYXVz
+ZSBpdCdzIGJhc2VkIG9uIHVucmVhbGlzdGljIGFzc3VtcHRpb25zLiDCoFRoYXQncyBiZWNhdXNl
+IGluIGdlbmVyYWwgdXNlcnMKPiBvbmx5IG5lZWQgdGhlIHBsYXRmb3JtIGZvciBydW5uaW5nIGFw
+cHMgdGhleSBsaWtlIChvciBuZWVkIG9yIHdoYXRldmVyKS4gwqBJZgo+IHRoZXkgY2FuJ3QgcnVu
+IGFwcHMgdGhleSBsaWtlIG9uIGEgZ2l2ZW4gcGxhdGZvcm0sIG9yIGl0IGlzIHRvbyBwYWluZnVs
+IHRvIHRoZW0KPiB0byBydW4gdGhlaXIgYXBwcyBvbiBpdCwgdGhleSB3aWxsIHJhdGhlciBzd2l0
+Y2ggdG8gYW5vdGhlciBwbGF0Zm9ybSB0aGFuIHN0b3AKPiB1c2luZyB0aGUgYXBwcy4KCllvdSBz
+ZXJpb3VzbHkgdGhpbmsgcGVvcGxlIHN3aXRjaCBoaWdoLWVuZCBwaG9uZXMganVzdCB0byBydW4g
+dGhlaXIKZmF2b3JpdGUgYXBwcz8gSXQncyBtdWNoIGNoZWFwZXIgdG8gc3dpdGNoIGFwcHMsIGFu
+ZCB0aGF0J3Mgd2hhdCB1c2Vycwpkby4KCi0tIApGZWxpcGUgQ29udHJlcmFzCl9fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlz
+dApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4
+LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
