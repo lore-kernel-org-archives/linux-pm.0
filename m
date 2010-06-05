@@ -1,7 +1,7 @@
 From: Felipe Contreras <felipe.contreras@gmail.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sat, 5 Jun 2010 20:30:40 +0300
-Message-ID: <AANLkTinBg9W7zeomPbpGEDWkIsfxO9OfFUC0Kq7wafFb__39911.927880212$1275759112$gmane$org@mail.gmail.com>
+Date: Sat, 5 Jun 2010 20:44:24 +0300
+Message-ID: <AANLkTikna-Vs_phy2VrJs0I8gIsdSmwuxTJ67gQ_2oTt__7752.24670437655$1275760013$gmane$org@mail.gmail.com>
 References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
 	<201005302202.39511.rjw@sisk.pl>
 	<AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt@mail.gmail.com>
@@ -13,16 +13,11 @@ References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
 	<AANLkTinDm3FIrbS1jqEzW15THmr1hdd7ox0Mllm1VLjZ@mail.gmail.com>
 	<1275471561.27810.30865.camel@twins>
 	<AANLkTilLmAb2c9fQwuguzWtjcHfuTZvPUTbUx7vuwFI6@mail.gmail.com>
-	<1275474088.27810.31000.camel@twins>
-	<20100602221309.6da754e7@schatten.dmk.lab>
-	<1275550802.27810.34863.camel@twins>
-	<20100603161205.73a2b56d@schatten.dmk.lab>
-	<1275578881.27810.35995.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275578881.27810.35995.camel@twins>
+In-Reply-To: <AANLkTilLmAb2c9fQwuguzWtjcHfuTZvPUTbUx7vuwFI6@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -32,52 +27,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 3, 2010 at 6:28 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Thu, 2010-06-03 at 16:12 +0200, Florian Mickler wrote:
->> On Thu, 03 Jun 2010 09:40:02 +0200
->> Peter Zijlstra <peterz@infradead.org> wrote:
->>
->> > Same for firefox, you can teach it to not render animated gifs and run
->> > javascript for invisible tabs, and once the screen-saver kicks in,
->> > nothing is visible (and with X telling apps their window is visible or
->> > not it knows), so it should go idle all of its own.
->> >
->> > Fix the friggin apps, don't kludge with freezing.
->>
->> Of course programs should be as smart as possible. But that is an
->> orthogonal problem.
->>
->> Suppose firefox were fixed. It still needs to fetch my rss feeds every
->> minute, because I'm sad if it doesn't. It just can't be fixed at the
->> application level.
->
-> Sure it can, why would it need to fetch RSS feeds when the screen is off
-> and nobody could possible see the result? So you can stop the timer when
-> you know the window isn't visible or alternatively when the screensaver
-> is active, I think most desktops have notification of that as well.
-
-Exactly, and that's what applications in the N900 do. For this to work
-reliably, you need these notifications (network disconnected, screen
-off) to be easily accessible, and even transparent to the application
-writer.
-
-I don't think the suspend blockers solve much. A bad application will
-behave bad on any system. Suppose somebody decides to port Firefox to
-Android, and forgets to listen to the screen off event (bad on Android
-or Maemo), however, notices the application behaves very badly, so by
-googling finds these suspend blockers, and enables them all the time
-the application runs.
-
-When the user install the application, will be greeted by a warning
-"This application might break PM, do you want to enable suspend
-blockers?" (or whatever), as any typical user would do, will press Yes
-(whatever).
-
-We end up in exactly the same situation.
-
--- 
-Felipe Contreras
+MjAxMC82LzIgQXJ2ZSBIasO4bm5ldsOlZyA8YXJ2ZUBhbmRyb2lkLmNvbT46Cj4gMjAxMC82LzIg
+UGV0ZXIgWmlqbHN0cmEgPHBldGVyekBpbmZyYWRlYWQub3JnPjoKPj4gKGFuZCBwbGVhc2UgZG9u
+J3QgbWVudGlvbiBAIyRAIHVwIHg4NiBBQ1BJIGFnYWluLCBJbnRlbCBrbm93cywgdGhleSdyZQo+
+PiBmaXhpbmcgaXQsIGdldCBvdmVyIGl0IGFscmVhZHkpLgo+Pgo+Cj4gSSBkb24ndCB0aGluayBp
+dCBpcyByZWFsaXN0aWMgdG8gZHJvcCBzdXBwb3J0IGZvciBhbGwgZXhpc3RpbmcgaGFyZHdhcmUu
+CgpXZSBhcmUgdGFsa2luZyBhYm91dCBtYWlubGluZSBoZXJlLCB0aGVyZSdzIG5vIHN1cHBvcnQg
+Zm9yIHN1c3BlbmQKYmxvY2tlcnMsIHNvIG5vdGhpbmcgaXMgZHJvcHBlZC4KCkluIHRoZSBtaW5k
+IG9mIGV2ZXJ5Ym9keSwgc3VzcGVuZCBibG9ja2VycyBpcyBmb3Igb3Bwb3J0dW5pc3RpYwpzdXNw
+ZW5kLCB3aGljaCBvbmx5IG1ha2VzIHNlbnNlIG9uIHNlbnNpYmxlIGh3IChub3QgY3VycmVudCB4
+ODYpLiBTbwppbiB0aGUgbWluZCBvZiBldmVyeWJvZHksIHg4NiBzaG91bGQgYmUgb3V0IG9mIHNj
+b3BlIGZvciB0aGUgYW5hbHlzaXMKb2Ygc3VzcGVuZCBibG9ja2Vycy4KCkFyZSB5b3Ugc2VyaW91
+c2x5IHN1Z2dlc3RpbmcgdGhhdCBvbmUgb2YgdGhlIHN0cm9uZyBhcmd1bWVudHMgaW4gZmF2b3IK
+b2Ygc3VzcGVuZCBibG9ja2VycyBpcyB4ODYgdXNhZ2UgKG5vYm9keSBhZ3JlZXMpPyBJZiBub3Qs
+IHRoZW4gZHJvcAppdC4KCj4+PiBVbnJlbGF0ZWQgdG8KPj4+IEFuZHJvaWQsIEkgYWxzbyB3YW50
+IHRvIHVzZSBvcHBvcnR1bmlzdGljIHN1c3BlbmQgb24gbXkgZGVza3RvcC4KPj4KPj4gU28geW91
+J3JlIGdvaW5nIHRvIHNwcmlua2xlIHRoaXMgc3VzcGVuZCBibG9ja2VyIHNoaXRlIGFsbCBvdmVy
+IHJlZ3VsYXIKPj4gdXNlcnNwYWNlPwo+Cj4gSSBoYXZlIHNhaWQgc2V2ZXJhbCB0aW1lcywgdGhh
+dCByZWd1bGFyIHVzZXItc3BhY2Ugd2lsbCBub3QgbmVlZCB0byBiZQo+IG1vZGlmaWVkIHRvIG1h
+aW50YWluIHRoZWlyIGN1cnJlbnQgYmVoYXZpb3IuCgpJZiBJIGVuYWJsZSBzdXNwZW5kIGJsb2Nr
+ZXJzIG9uIG15IGxhcHRvcCwgSSBoYXZlIHRvIG1vZGlmeSBteQp1c2VyLXNwYWNlLiBPdGhlcndp
+c2UgbXkgc3lzdGVtIHdpbGwgYmVoYXZlIGhvcnJpYmx5LgoKLS0gCkZlbGlwZSBDb250cmVyYXMK
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0g
+bWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8v
+bGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
