@@ -1,16 +1,16 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: suspend blockers & Android integration
-Date: Fri, 4 Jun 2010 17:39:17 -0700
-Message-ID: <AANLkTikGDSzaENwg_0BAtsYf3ulGd_6sGPR30WsvUxMi__16975.954504642$1275698505$gmane$org@mail.gmail.com>
-References: <20100603193045.GA7188@elte.hu> <20100603232302.GA16184@elte.hu>
-	<1275644619.27810.39462.camel@twins>
-	<201006050138.30859.rjw@sisk.pl>
-	<alpine.LFD.2.00.1006050148080.2933@localhost.localdomain>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [SUSPECTED SPAM] Re: Proposal for a new algorithm
+ for reading & writing a hibernation image.
+Date: Sat, 05 Jun 2010 03:45:20 +0300
+Message-ID: <1275698720.10045.15.camel__29911.5462149077$1275698882$gmane$org@maxim-laptop>
+References: <9rpccea67yy402c975fqru8r.1275576653521@email.android.com>
+	<1275694775.3853.29.camel@maxim-laptop>  <4C09930E.20306@crca.org.au>
+	<1275698169.10045.8.camel@maxim-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1006050148080.2933@localhost.localdomain>
+In-Reply-To: <1275698169.10045.8.camel@maxim-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,101 +20,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: tytso@mit.edu, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 4, 2010 at 5:05 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Sat, 5 Jun 2010, Rafael J. Wysocki wrote:
->> I kind of agree here, so I'd like to focus a bit on that.
->>
->> Here's my idea in the very general terms:
->>
->> (1) Use the cgroup freezer to "suspend" the "untrusted" apps (ie. the on=
-es
->> =A0 =A0 that don't use suspend blockers aka wakelocks in the Android wor=
-ld) at the
->> =A0 =A0 point Android would normally start opportunistic suspend.
->
-> There is an additional benefit to this approach:
->
-> =A0 =A0 In the current android world a background task (e.g. download
-> =A0 =A0 initiated before the screensaver kicked in) prevents the suspend,
-> =A0 =A0 but that also means that the crapplications can still suck power
-> =A0 =A0 completely unconfined.
->
+On Sat, 2010-06-05 at 03:36 +0300, Maxim Levitsky wrote: 
+> On Sat, 2010-06-05 at 09:58 +1000, Nigel Cunningham wrote: 
+> > Hi Maxim.
+> > 
+> > On 05/06/10 09:39, Maxim Levitsky wrote:
+> > > On Thu, 2010-06-03 at 16:50 +0200, Pavel Machek wrote:
+> > >>
+> > >> "Nigel Cunningham"<ncunningham@crca.org.au>  wrote:
+> > >>
+> > >>> Hi.
+> > >>>
+> > >>> On 30/05/10 15:25, Pavel Machek wrote:
+> > >>>> Hi!
+> > >>>>
+> > >>>>> 2. Prior to writing any of the image, also set up new 4k page tables
+> > >>>>> such that an attempt to make a change to any of the pages we're about to
+> > >>>>> write to disk will result in a page fault, giving us an opportunity to
+> > >>>>> flag the page as needing an atomic copy later. Once this is done, write
+> > >>>>> protection for the page can be disabled and the write that caused the
+> > >>>>> fault allowed to proceed.
+> > >>>>
+> > >>>> Tricky.
+> > >>>>
+> > >>>> page faulting code touches memory, too...
+> > >>>
+> > >>> Yeah. I realise we'd need to make the pages that are used to record the
+> > >>> faults be unprotected themselves. I'm imagining a bitmap for that.
+> > >>>
+> > >>> Do you see any reason that it could be inherently impossible? That's
+> > >>> what I really want to know before (potentially) wasting time trying it.
+> > >>
+> > >> I'm not sure it is impossible, but it certainly seems way too complex to be
+> > >> practical.
+> > >>
+> > >> 2mb pages will probably present a problem, as will bat mappings on powerpc.
+> > >
+> > >
+> > > Some time ago, after tuxonce caused medium fs corruption twice on my
+> > > root filesystem (superblock gone for example), I was thinking too about
+> > > how to make it safe to save whole memory.
+> > 
+> > I'd be asking why you got the corruption. On the odd occasion where it 
+> > has been reported, it's usually been because the person didn't set up 
+> > their initramfs correctly (resumed after mounting filesystems). Is there 
+> > any chance that you did that?
+I didn't use any initramfs.
+I did use kernel modesetting and nouveau.
+I used ext4.
+The corruption happened after normal suspend.
+I replaces swsusp with tuxonice.
 
-Yes this can happen. It is usually only a big problem when you combine
-an (trusted) application that has a bug that blocks suspend forever
-with an application that wakes up too often for us to enter low power
-idle modes.
+Anyway, some more or less verified method must be used to save memory
+because fs corruption is too scary thing to have.
 
-> =A0 =A0 With the cgroup freezer you can "suspend" them right away and
-> =A0 =A0 just keep the trusted background task(s) alive which allows us to
-> =A0 =A0 go into deeper idle states instead of letting the crapplications
-> =A0 =A0 run unconfined until the download finished and the suspend
-> =A0 =A0 blocker goes away.
->
+I can't say it scared me that much 'cause I had dealt with worse
+corruptions before, but being thrown to  "grub rescue>" on boot is not
+pleasant thing to see.
 
-Yes this would be better, but I want it in addition to suspend, not
-instead of it. It is also unclear if our user-space code could easily
-make use of it since our trusted code calls into untrusted code.
-
->> (2) Allow the cpuidle framework to put CPUs into low-power states after =
-the
->> =A0 =A0 "trusted" apps (ie. the ones that use suspend blockers in the An=
-droid
->> =A0 =A0 world) have gone idle.
->>
-
-As far as I know this is what we already have on hardware that supports it.
-
->> (3) Teach the cpuidle framework to schedule runtime suspend of I/O devic=
-es
->> =A0 =A0 before idling the last CPU (*).
->>
-
-I don't think we need this for android phones. We already put I/O
-devices in low power modes when they are not in use.
-
->> (4) Design a mechanism to resume the I/O devices suspended in (3) so that
->> =A0 =A0 they are not powered up unnecessarily (that's going to be diffic=
-ult as far
->> =A0 =A0 as I can see).
->>
->> This way, in principle, we should be able to save (at least almost) as m=
-uch
->> energy as the opportunistic suspend currently used by Android, provided =
-that
->> things will be capable of staying idle for extended periods of time.
-
-The main reason we use suspend is that the system does not stay idle
-for extened periods of time. If this gets fixed, and our if user-space
-framework can deal with a subset of processes being frozen (this is a
-big if) this solution may work, but it does not help us today.
-
->>
->> (*) That may require per-device PM QoS requirements to be used, in which=
- case
->> =A0 =A0 devices may even be suspended earlier if the PM QoS requirements=
- of all
->> =A0 =A0 of their users are met.
->>
->> I wonder what people think. =A0Is this realistic and if so, would it be =
-difficult
->> to implement?
->
-> I think it's realistic and not overly complicated to implement.
->
-
-The kernel support can be easily implemented on most arm hardware, I
-don't know if it can work on most existing x86 hardware. It does not
-give us the same power savings as suspend with existing software, but
-it can handle bad apps better (assuming you don't combine
-opportunistic suspend and cgroup freezing). The biggest hurdle is how
-to handle dependencies between processes that gets frozen and
-processes that don't get frozen.
-
--- =
-
-Arve Hj=F8nnev=E5g
+Best regards,
+Maxim Levitsky
