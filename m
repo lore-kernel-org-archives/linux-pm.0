@@ -1,15 +1,16 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [SUSPECTED SPAM] Re: Proposal for a new algorithm
- for	reading & writing a hibernation image.
-Date: Sat, 05 Jun 2010 22:10:21 +0300
-Message-ID: <1275765021.12828.2.camel__46773.2891942889$1275765180$gmane$org@maxim-laptop>
-References: <9rpccea67yy402c975fqru8r.1275576653521@email.android.com>
-	<4C099867.4050807@crca.org.au>  <201006052045.19889.rjw@sisk.pl>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Sat, 05 Jun 2010 21:16:19 +0200
+Message-ID: <1275765379.1645.532.camel__48219.3371085033$1275765543$gmane$org@laptop>
+References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
+	<20100531224732.2073828d@schatten.dmk.lab>
+	<AANLkTinPUNer7XhAqS4VSWhOxqjEjaHtr76EK5tzYYjJ@mail.gmail.com>
+	<201006052104.05324.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006052045.19889.rjw@sisk.pl>
+In-Reply-To: <201006052104.05324.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,31 +21,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: TuxOnIce-devel <tuxonice-devel@tuxonice.net>, Nigel Cunningham <ncunningham@crca.org.au>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: tytso@mit.edu, Felipe Contreras <felipe.contreras@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2010-06-05 at 20:45 +0200, Rafael J. Wysocki wrote: 
-> On Saturday 05 June 2010, Nigel Cunningham wrote:
-> > Hi again.
-> > 
-> > As I think about this more, I reckon we could run into problems at 
-> > resume time with reloading the image. Even if some bits aren't modified 
-> > as we're writing the image, they still might need to be atomically 
-> > restored. If we make the atomic restore part too small, we might not be 
-> > able to do that.
-> > 
-> > So perhaps the best thing would be to stick with the way TuxOnIce splits 
-> > the image at the moment (page cache / process pages vs 'rest'), but 
-> > using this faulting mechanism to ensure we do get all the pages that are 
-> > changed while writing the first part of the image.
+On Sat, 2010-06-05 at 21:04 +0200, Rafael J. Wysocki wrote:
 > 
-> I still don't quite understand why you insist on saving the page cache data
-> upfront and re-using the memory occupied by them for another purpose.  If you
-> dropped that requirement, I'd really have much less of a problem with the
-> TuxOnIce's approach.
-Because its the biggest advantage?
-Really saving whole memory makes huge difference.
+> > I have seen recent proposals that don't require changing the whole
+> > user-space. That might actually be used by other players.
+> 
+> Sure, an approach benefitting more platforms than just Android would be better,
+> but saying that the kernel shouldn't address the Android's specific needs as a
+> rule if no one else has those needs too is quite too far reaching to me. 
 
+Well, if the android people keep rejecting all sensible approaches to
+power savings except their suspend blocker mess, then I don't see why we
+should support their ill designed mess.
 
-Best regards,
-Maxim Levitsky
+We should strive to provide an interface that can be used by all
+interested parties to conserve power; if Android really is the only
+possible user of the interface then I don't see any reason at all to
+merge it, they might as well keep it in their private tree.
