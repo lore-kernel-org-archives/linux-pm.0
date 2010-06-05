@@ -1,15 +1,16 @@
-From: Peter Zijlstra <peterz@infradead.org>
+From: Felipe Contreras <felipe.contreras@gmail.com>
 Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Sat, 05 Jun 2010 21:52:16 +0200
-Message-ID: <1275767536.1645.534.camel__27562.7885749147$1275767686$gmane$org@laptop>
+Date: Sat, 5 Jun 2010 22:53:50 +0300
+Message-ID: <AANLkTin2DjZjx7VNsWg7450sAUuQTIrUPyC2TA2MNPAP__22826.1334276342$1275767797$gmane$org@mail.gmail.com>
 References: <20100527222514.0a1710bf@lxorguk.ukuu.org.uk>
-	<201006052104.05324.rjw@sisk.pl> <1275765379.1645.532.camel@laptop>
-	<201006052139.31253.rjw@sisk.pl>
+	<20100531224732.2073828d@schatten.dmk.lab>
+	<AANLkTinPUNer7XhAqS4VSWhOxqjEjaHtr76EK5tzYYjJ@mail.gmail.com>
+	<201006052104.05324.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006052139.31253.rjw@sisk.pl>
+In-Reply-To: <201006052104.05324.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,16 +21,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: tytso@mit.edu, Andrew Morton <akpm@linux-foundation.org>, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, felipe.balbi@nokia.com
+Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, felipe.balbi@nokia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2010-06-05 at 21:39 +0200, Rafael J. Wysocki wrote:
-> 
-> There is a number of kernel users that depend on Android user space
-> (phone vendors using Android on their hardware, but providing their own
-> drivers), so I don't think we really can identify Android with Google in that
-> respect.
-
-I don't see why we can't merge the platform code and drivers without
-suspend blockers. Google can patch them back in on their side if they
-want to.
+T24gU2F0LCBKdW4gNSwgMjAxMCBhdCAxMDowNCBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0Bz
+aXNrLnBsPiB3cm90ZToKPiBPbiBTYXR1cmRheSAwNSBKdW5lIDIwMTAsIEZlbGlwZSBDb250cmVy
+YXMgd3JvdGU6Cj4+IE9uIE1vbiwgTWF5IDMxLCAyMDEwIGF0IDExOjQ3IFBNLCBGbG9yaWFuIE1p
+Y2tsZXIgPGZsb3JpYW5AbWlja2xlci5vcmc+IHdyb3RlOgo+PiA+IE9uIE1vbiwgMzEgTWF5IDIw
+MTAgMjI6MTI6MTkgKzAyMDAKPj4gPiBGbG9yaWFuIE1pY2tsZXIgPGZsb3JpYW5AbWlja2xlci5v
+cmc+IHdyb3RlOgo+PiA+PiBJZiBJIGhhdmUgYSBzaW1wbGUgc2hlbGwgc2NyaXB0IHRoZW4gSSBk
+b24ndCB3YW5uYSBqdW1wIHRocm91Z2gKPj4gPj4gaG9vcHMganVzdCB0byBwbGVhc2UgeW91ciBm
+cmFnaWxlIGtlcm5lbC4KPj4gPgo+PiA+IEFsc28gd2h5IHNob3VsZCB0aGF0IGNvZGUgb24gb25l
+IGRldmljZSBraWxsIG15IHVwdGltZSBhbmQgb24gdGhlCj4+ID4gb3RoZXIgbWFjaGluZSAobXkg
+d2FsbC1wbHVnZ2VkIGRlc2t0b3ApIHdvcmsganVzdCB3ZWxsPyBUaGF0IGRvZXNuJ3QKPj4gPiBz
+b3VuZCByaWdodC4KPj4KPj4gU291bmRzIHBlcmZlY3RseSByaWdodCB0byBtZTsgb25lIGNvZGUg
+cnVucyBwZXJmZWN0bHkgZmluZSBvbiBvbmUKPj4gbWFjaGluZSwgYW5kIG9uIHRoZSBvdGhlciBk
+b2Vzbid0IGV2ZW4gY29tcGlsZS4gV2VsbCwgc3VyZSwgaXQgd2Fzbid0Cj4+IHdyaXR0ZW4gd2l0
+aCB0aGF0IHVzZS1jYXNlIGluIG1pbmQuCj4+Cj4+ID4gQ2xlYXJseSBvcHBvcnR1bmlzdGljIHN1
+c3BlbmQgaXMgYSB3b3JrYXJvdW5kIGZvciBiYXR0ZXJ5LWRyaXZlbiBkZXZpY2VzCj4+ID4gYW5k
+IG5vIGdlbmVyYWwgc29sdXRpb24uIEJ1dCBpdCBpcyBub3Qgc3BlY2lmaWMgdG8gYW5kcm9pZC4g
+QXQgbGVhc3QKPj4gPiBub3QgaW5oZXJlbnRseS4gSXQgY291bGQgYmUgdXNlZnVsIGZvciBhbnkg
+ZW1iZWRkZWQgb3IgbW9iaWxlIGRldmljZQo+PiA+IHdoZXJlIHlvdSBjYW4gY2xlYXJseSBkaXN0
+aW5ndWlzaCBpbXBvcnRhbnQgZnVuY3Rpb25zIGZyb20gY29udmVuaWVuY2UKPj4gPiBmdW5jdGlv
+bnMuCj4+Cj4+IFllcywgaXQgY291bGQsIGJ1dCB3aHkgZ28gZm9yIHRoZSBoYWNreSBzb2x1dGlv
+biB3aGVuIHdlIGtub3cgaG93IHRvCj4+IGFjaGlldmUgdGhlIGlkZWFsIG9uZT8KPj4KPj4gPiBJ
+IHJlYWxseSBjYW4ndCB1bmRlcnN0YW5kIHRoZSB3aG9sZSBfZnVuZGFtZW50YWxfIG9wcG9zaXRp
+b24gdG8gdGhpcwo+PiA+IGRlc2lnbiBjaG9pY2UuCj4+Cj4+IE5vYm9keSBpcyB1c2luZyBpdCwg
+ZXhjZXB0IEFuZHJvaWQuIE5vYm9keSB3aWxsIHVzZSBpdCwgZXhjZXB0IEFuZHJvaWQuCj4KPiBU
+aGF0J3MgbGlrZSBzYXlpbmcgIkFuZHJvaWQgaXMgbm90IGEgbGVnaXRpbWF0ZSB1c2VyIG9mIHRo
+ZSBrZXJuZWwiLiDCoElzIHRoYXQKPiB5b3Ugd2FudGVkIHRvIHNheT8KClJlYWQgdGhlIGNvbnRl
+eHQ6IG9wcG9ydHVuaXN0aWMgc3VzcGVuZCwgd2hpY2ggaXMgY29uc2lkZXJlZCBhCndvcmthcm91
+bmQsIHdoaWNoIHJlcXVpcmVzIG5ldyB1c2VyLXNwYWNlIEFQSSBmb3Igc3VzcGVuZCBibG9ja2Vy
+cywKbWlnaHQgYmUgcmVtb3RlbHkgY29uc2lkZXJlZCBmb3IgaW5jbHVzaW9uICppZiogaXQgaW5k
+ZWVkIHNvbHZlcyBhCnByb2JsZW0gZm9yIGJhdHRlcnktZHJpdmVuIGRldmljZXMsIHdoaWNoIG90
+aGVyIHBhcnRpZXMgYWxzbwpleHBlcmllbmNlIGFuZCBjb3VsZCBiZW5lZml0IGZyb20gdGhpcyBz
+b2x1dGlvbi4KClRoZSBhbnN3ZXI6IG5vLCBpdCBkb2Vzbid0OiBvbmx5IEFuZHJvaWQgdXNlci1z
+cGFjZSB3aWxsIGJlbmVmaXQgZnJvbSBpdC4KCj4+IEkgaGF2ZSBzZWVuIHJlY2VudCBwcm9wb3Nh
+bHMgdGhhdCBkb24ndCByZXF1aXJlIGNoYW5naW5nIHRoZSB3aG9sZQo+PiB1c2VyLXNwYWNlLiBU
+aGF0IG1pZ2h0IGFjdHVhbGx5IGJlIHVzZWQgYnkgb3RoZXIgcGxheWVycy4KPgo+IFN1cmUsIGFu
+IGFwcHJvYWNoIGJlbmVmaXR0aW5nIG1vcmUgcGxhdGZvcm1zIHRoYW4ganVzdCBBbmRyb2lkIHdv
+dWxkIGJlIGJldHRlciwKPiBidXQgc2F5aW5nIHRoYXQgdGhlIGtlcm5lbCBzaG91bGRuJ3QgYWRk
+cmVzcyB0aGUgQW5kcm9pZCdzIHNwZWNpZmljIG5lZWRzIGFzIGEKPiBydWxlIGlmIG5vIG9uZSBl
+bHNlIGhhcyB0aG9zZSBuZWVkcyB0b28gaXMgcXVpdGUgdG9vIGZhciByZWFjaGluZyB0byBtZS4K
+ClRoZXJlIGFyZSBubyBBbmRyb2lkIHNwZWNpZmljIG5lZWRzLCB3aHkgc2hvdWxkIGNlcnRhaW4g
+dXNlci1zcGFjZQplY29zeXN0ZW0gbmVlZCBjZXJ0YWluIEFQSSB0aGF0IHNvbWVob3cgKm5vYm9k
+eSogZWxzZSBkb2VzPyBJIHRoaW5rIGluCnRoaXMgaHVnZSB0aHJlYWQgaXQgaGFzIGJlY29tZSBv
+YnZpb3VzIHRoYXQgcGVvcGxlIGFyZSByZWx1Y3RhbnQgdG8KdGhpcyBpZGVhLi4uIHdoYXRldmVy
+IHByb2JsZW0gQW5kcm9pZCB1c2VyLXNwYWNlIHByZXNlbnRzIChJIGRvbid0CnRoaW5rIHRoZXJl
+J3MgYW55KSwgaXQgY2FuIGJlIHNvbHZlZCBmb3IgImhlIHJlc3Qgb2YgdGhlIHdvcmxkIiB0b28s
+CmFuZCBzdWNoIGdlbmVyaWMgc29sdXRpb24gaXMgd29ydGggZXhwbG9yaW5nLgoKLS0gCkZlbGlw
+ZSBDb250cmVyYXMKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24u
+b3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9s
+aW51eC1wbQ==
