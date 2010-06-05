@@ -1,15 +1,27 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: suspend blockers & Android integration
-Date: Sun, 6 Jun 2010 01:39:03 +0200
-Message-ID: <201006060139.03585.rjw__34130.2979774356$1275781200$gmane$org@sisk.pl>
-References: <20100603193045.GA7188@elte.hu>
-	<alpine.LFD.2.00.1006052348200.2933@localhost.localdomain>
-	<AANLkTikmWDHYJ8wWF2cZapbkHHjV09R39I37yvQXFmor@mail.gmail.com>
+Date: Sun, 6 Jun 2010 01:45:52 +0200 (CEST)
+Message-ID: <alpine.LFD.2.00.1006060134160.2933__18581.2108255506$1275781650$gmane$org@localhost.localdomain>
+References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
+	<20100603232302.GA16184@elte.hu>
+	<AANLkTikZP3bmckpfb_jUdG7qZO5W9DgpZ79ugtSZaEpt@mail.gmail.com>
+	<20100604071354.GA14451@elte.hu>
+	<AANLkTimH4ihf3QqtKFpfGXRKtO55PrUuff9JYtaEBG44@mail.gmail.com>
+	<20100604083423.GD15181@elte.hu>
+	<AANLkTinQyzzeF-NOAjrAqqQXqKjFJhx85nI4uyBGRtWd@mail.gmail.com>
+	<1275653210.27810.39762.camel@twins>
+	<AANLkTinyjBa0KYfFz3_EFbC65hoQFwFINlTDYjCe-wM3@mail.gmail.com>
+	<1275731653.27810.41078.camel@twins>
+	<20100605092851.6ee15f13@infradead.org>
+	<AANLkTimEwznq9c_8lkuBMxEQ-42rdvpZEqA9Y71Cu-qC@mail.gmail.com>
+	<20100605152326.7ccd5160@infradead.org>
+	<AANLkTinRH52dSTPCAO9k1yEFup1LLYizeinunxeTBzbQ@mail.gmail.com>
+	<20100605154833.7d05e404@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikmWDHYJ8wWF2cZapbkHHjV09R39I37yvQXFmor@mail.gmail.com>
+In-Reply-To: <20100605154833.7d05e404@infradead.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,54 +31,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: tytso@mit.edu, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Felipe Balbi <felipe.balbi@nokia.com>, Arjan van de Ven <arjan@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: tytso@mit.edu, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 06 June 2010, Arve Hj=F8nnev=E5g wrote:
-> 2010/6/5 Thomas Gleixner <tglx@linutronix.de>:
-> > On Sat, 5 Jun 2010, Arve Hj=F8nnev=E5g wrote:
-> >> 2010/6/5 Thomas Gleixner <tglx@linutronix.de>:
-> >> > B1;2005;0cOn Fri, 4 Jun 2010, Arve Hj=F8nnev=E5g wrote:
-...
-> > So taking your example:
-> >
-> > Event happens and gets delivered to the framework
-> >
-> >      framework selects A because it is in the foreground
-> >
-> >      if (A is frozen)
-> >         unfreeze(A)
-> >
-> >      deliver_event_to(A)
-> >
-> > It's that simple.
-> >
-> =
+On Sat, 5 Jun 2010, Arjan van de Ven wrote:
 
-> That is too simple. You also have to prevent A from being frozen while
-> it is processing the event or the result would be the same as if it
-> was frozen beforehand.
+> On Sat, 5 Jun 2010 15:26:36 -0700
+> Brian Swetland <swetland@google.com> wrote:
+> 
+> > 
+> > I'm continually surprised by answers like this.  We run on hardware
+> > that power gates very aggressively and draws in the neighborhood of
+> > 1-2mA at the battery when in the lowest state (3-5mA while the radio
+> > is connected to the network and paging).  Waking up out of that lowest
+> > state and executing code every few seconds or (worse) several times a
+> > second) will raise your average power consumption.  Being able to stay
+> > parked at the very bottom for minutes or hours at a time when nothing
+> > "interesting" is happening is very useful and can have a significant
+> > impact on overall battery life.
+> 
+> It's relatively simple math.
+> 
+> If you wake up for a burst of work, you burn power at the higher level
+> P1 (versus the lower power level P2), for, lets say an average time T,
+> with a relatively small T (few milliseconds at most).
+> 
+> If you wake up X times per second (with X being a fractional number, so
+> can be smaller than 1) the extra power consumption factor is
+> 
+>           X * T * P1
+> -------------------------------
+> X * T * P1 + (1.0 - X * T) * P2
+> 
+> if you draw a graph of this, for real values of P and T, there's a real
+> point where you hit diminishing returns.
+> 
+> if say T is 5 milliseconds (that's a high amount), and X is 1
+> wakeup/second, then there's already a 200:1 ratio in time an power.
+> 
+> If X goes to once every 10 seconds (not unreasonable, especially since
+> any real device will pull email and stuff in the backgroudn), you have
+> 2000:1 time and power ratios...
+> 
+> Unless your "on" power is insane high (and hopefully it's not, since
+> you're not turning on the whole device obviously, you do selective
+> power and clock gating)... that "divide by 200 or 2000" makes the whole
+> problem go away.. in the "seconds" range for really low power devices.
+> Not in "hours" range. 
 
-Well, the freezing of the "untrusted" part of user space needs to be trigge=
-red
-somehow in the first place.  Whatever mechanism is used for that, there sho=
-uld
-be a way to tell it to not to freeze the "untrusted" part of user space for=
- a
-while.  Yes, it is similar to wakelocks, but I think it can be implemented
-entirely in user space.
+That's the whole problem. Suspend blockers are a binary all on/off
+approach so you waste power just to get the thing back to
+"suspend". They unleash the world and some more just to put it back
+into oblivion with brute force.
 
-So, in general, the "trusted" app that needs an "untrusted" one to handle s=
-tuff
-will take a "freeze lock" to prevent the power manager from freezing the
-"untrusted" part of user space (that will also cause it to thaw these tasks=
- if
-they are frozen at the moment) and will release the "freeze lock" when it's
-done with its job.  You can use timeouts and whatever you like with that and
-the kernel doesn't have to participate in that (except for carrying out the
-low-level freezing and thawing of the "untrusted" tasks at the power manage=
-r's
-request).
+Thanks,
 
-Rafael
+	tglx
