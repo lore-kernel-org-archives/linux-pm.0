@@ -1,14 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspend blockers & Android integration
-Date: Sun, 6 Jun 2010 01:03:20 +0200
-Message-ID: <201006060103.20540.rjw__2712.59152000329$1275779018$gmane$org@sisk.pl>
-References: <20100603193045.GA7188@elte.hu> <201006052025.11526.rjw@sisk.pl>
-	<AANLkTilP0uyJRuUq6BlVeHDydPYi4oJsf37VvSAixwgN@mail.gmail.com>
+From: Cesar Eduardo Barros <cesarb@cesarb.net>
+Subject: [PATCH v2 0/3] mm: Swap checksum
+Date: Sat, 05 Jun 2010 20:14:12 -0300
+Message-ID: <4C0ADA44.4020406__42403.8659235977$1275779715$gmane$org@cesarb.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTilP0uyJRuUq6BlVeHDydPYi4oJsf37VvSAixwgN@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,100 +15,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: tytso@mit.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Felipe Balbi <felipe.balbi@nokia.com>, Arjan van de Ven <arjan@infradead.org>
+To: linux-mm@kvack.org
+Cc: Nick Piggin <npiggin@suse.de>, Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>, linux-pm@lists.linux-foundation.org, Avi Kivity <avi@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday 06 June 2010, Arve Hj=F8nnev=E5g wrote:
-> 2010/6/5 Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Saturday 05 June 2010, Arve Hj=F8nnev=E5g wrote:
-> >> 2010/6/4 Matt Helsley <matthltc@us.ibm.com>:
-> >> > On Fri, Jun 04, 2010 at 05:39:17PM -0700, Arve Hj=F8nnev=E5g wrote:
-> >> >> On Fri, Jun 4, 2010 at 5:05 PM, Thomas Gleixner <tglx@linutronix.de=
-> wrote:
-> >> >> > On Sat, 5 Jun 2010, Rafael J. Wysocki wrote:
-> >> >
-> >> > <snip>
-> >> >
-> >> >>
-> >> >> >     With the cgroup freezer you can "suspend" them right away and
-> >> >> >     just keep the trusted background task(s) alive which allows u=
-s to
-> >> >> >     go into deeper idle states instead of letting the crapplicati=
-ons
-> >> >> >     run unconfined until the download finished and the suspend
-> >> >> >     blocker goes away.
-> >> >> >
-> >> >>
-> >> >> Yes this would be better, but I want it in addition to suspend, not
-> >> >> instead of it. It is also unclear if our user-space code could easi=
-ly
-> >> >> make use of it since our trusted code calls into untrusted code.
-> >> >>
-> >> >
-> >> > Perhaps I'm misunderstanding, but suspend and the cgroup freezer
-> >> > interoperate well today -- you don't have to choose one or the other.
-> >> > If you've discovered otherwise I'd consider it a bug and would like =
-to
-> >> > hear more about it.
-> >> >
-> >>
-> >> I'm not aware of any bug with combining both, but we cannot use
-> >> suspend at all without suspend blockers in the kernel (since wakeup
-> >> events may be ignored)
-> >
-> > The more I think of it, the more it appears to me that the problem of
-> > lost wakeup events can actually be solved without suspend blockers.
-> > I'll send a bunch of patches to address this issue, probably tomorrow.
-> >
-> =
+Add support for checksumming the swap pages written to disk, using the
+same checksum as btrfs (crc32c). Since the contents of the swap do not
+matter after a shutdown, the checksum is kept in memory only.
 
-> I know of two ways to prevent lost wakeup events. Reset a timeout
-> every time you receive a wakeup event or prevents suspend until you
-> know the event has been fully processed. Does your solution fall onto
-> one of these two categories, or do you have a third way?
+This protects against silent corruption of the swap caused by hardware
+problems, the same way the btrfs checksum protects against silent
+corruption of the filesystem. It is useful even with
+CONFIG_BLK_DEV_INTEGRITY because it also protects against reads of stale
+data.
 
-Basically, it involves two mechanisms, detection of wakeup events occuring
-right before suspend is started and aborting suspend if wakeup events occur
-in the middle of it.
+The checksum is done in the swap layer (instead of in a separate block
+device or in the block layer) to allow the checksums to be tracked
+together with the rest of swap state (also allowing later for things
+like Avi Kivity's suggestions of keeping the checksum in the pte when
+possible and converting zeroed pages to a pte_none), to better allow for
+different things to be done by the software suspend code (which writes
+to the same place but has different needs), to simplify configuration
+(no need to edit the fstab), and because it felt the most natural layer
+to do it.
 
-> >> and I don't know how we can safely freeze
-> >> cgroups without funneling all potential wakeup events through a
-> >> process that never gets frozen.
-> >
-> > If your untrusted apps get called by the trusted ones, they aren't real=
-ly
-> > untrusted in the first place.
-> >
-> That is not a correct statement. A trusted apps can call into an
-> untrusted app, it just has to validate the response and handle not
-> getting a response at all. There are also different levels of trust. I
-> may have trusted an app to provide a contact pictures, but not trusted
-> it to block suspend. When the phone rings the app will be called to
-> provide the picture for the incoming call dialog, but if it is frozen
-> at this point the more trusted app that handles the incoming phone
-> call will not be able to get the picture.
+Note that this code does not currently checksum the software suspend
+image. That will need to be done later.
 
-It will be able to do that if it causes the frozen part of user space to be
-thawed.
+Lightly tested on a x86 VM.
 
-I think you have this problem already, though, because you use full system
-suspend and all of your apps are frozen by it.  So, to handle the situation=
- you
-describe above, you need to carry out full system resume that will thaw the
-tasks for you.  I don't see any fundamental difference betwee the two cases.
+Changes since -v1:
+   Rebase to 2.6.35-rc1 (code moved from swap.c to block_io.c)
+   Use bio_data_dir() instead of acessing bi_rw directly
+   Use __read_mostly for swapcsum_workqueue
+   Include highmem.h instead of pagemap.h
 
-> > From what you're saying it follows that you're not really willing to ac=
-cept
-> > any solution different to your suspend blockers.  Is that really the ca=
-se?
-> >
-> I don't think that is a fair way to put it. We need to support our
-> user-space framework and I have not seen an alternative solution that
-> clearly will work (other than replacing suspend_blockers with pm_qos
-> constraints that do the same thing).
+Cesar Eduardo Barros (3):
+       mm/swapfile.c: better messages for swap_info_get
+       kernel/power/block_io.c: do not use end_swap_bio_read
+       mm: Swap checksum
 
-Then think again of the approach I proposed and explain to me why it won't
-work, because I haven't seen any convincing argument on that yet.
+  include/linux/swap.h    |   31 ++++++-
+  kernel/power/block_io.c |   22 +++++-
+  mm/Kconfig              |   22 +++++
+  mm/Makefile             |    1 +
+  mm/page_io.c            |   92 +++++++++++++++++--
+  mm/swapcsum.c           |   94 ++++++++++++++++++++
+  mm/swapfile.c           |  187 +++++++++++++++++++++++++++++++++++++--
+  7 files changed, 431 insertions(+), 18 deletions(-)
+  create mode 100644 mm/swapcsum.c
 
-Rafael
+-- 
+Cesar Eduardo Barros
+cesarb@cesarb.net
+cesar.barros@gmail.com
