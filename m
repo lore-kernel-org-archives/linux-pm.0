@@ -1,15 +1,18 @@
 From: mark gross <640e9920@gmail.com>
-Subject: Re: [RFC] pm_qos: reimplement using plists
-Date: Sun, 6 Jun 2010 14:39:54 -0700
-Message-ID: <20100606213954.GD8610@gvim.org>
-References: <1275760688.7227.10.camel@mulgrave.site>
+Subject: Re: PM_QOS re-design for hot path use of limited dynamic
+ range requests was- Re: [PATCH 0/8] Suspend block api (version 8)
+Date: Sun, 6 Jun 2010 14:43:38 -0700
+Message-ID: <20100606214338.GE8610__35366.8942502283$1275860664$gmane$org@gvim.org>
+References: <AANLkTikxws5kmFhnBO1MLzE65ETka3Jy0R5ayAKTS1Lc@mail.gmail.com>
+	<1275661390.4455.31.camel@mulgrave.site>
+	<20100605040638.GB20419@gvim.org> <201006052107.32318.rjw@sisk.pl>
 Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1275760688.7227.10.camel@mulgrave.site>
+In-Reply-To: <201006052107.32318.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,309 +22,185 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Linux PM <linux-pm@lists.linux-foundation.org>, markgross@thegnar.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: 640e9920@gmail.com, markgross@thegnar.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jun 05, 2010 at 12:58:08PM -0500, James Bottomley wrote:
-> A lot of the pm_qos extremal value handling is really duplicating what a
-> priority ordered list does, just in a less efficient fashion.  Simply
-> redoing the implementation in terms of a plist gets rid of a lot of this
-> junk (although there are several other strange things that could do with
-> tidying up, like pm_qos_request_list has to carry the pm_qos_class with
-> every node, simply because it doesn't get passed in to
-> pm_qos_update_request even though every caller knows full well what
-> parameter it's updating).
-> 
-> I think this redo is a win independent of android, so we should do
-> something like this now.
-> 
-> There is one nasty that should probably be fixed in plists not open
-> coded here: plist_first gives the highest priority value, but there's no
-> corresponding API to give the lowest (even though you can get it from
-> the head.nodes_list.prev) ... if the sched people are OK, I'll correct
-> this with the final patch set.
-> 
-> James
-> 
-> ---
-> 
->  kernel/pm_qos_params.c |  152 +++++++++++++++++++++++-------------------------
->  1 files changed, 73 insertions(+), 79 deletions(-)
-> 
-> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> index f42d3f7..241fa79 100644
-> --- a/kernel/pm_qos_params.c
-> +++ b/kernel/pm_qos_params.c
-> @@ -30,6 +30,7 @@
->  /*#define DEBUG*/
->  
->  #include <linux/pm_qos_params.h>
-> +#include <linux/plist.h>
->  #include <linux/sched.h>
->  #include <linux/spinlock.h>
->  #include <linux/slab.h>
-> @@ -49,58 +50,51 @@
->   * held, taken with _irqsave.  One lock to rule them all
->   */
->  struct pm_qos_request_list {
-> -	struct list_head list;
-> -	union {
-> -		s32 value;
-> -		s32 usec;
-> -		s32 kbps;
-> -	};
-> +	struct plist_node list;
->  	int pm_qos_class;
->  };
->  
-> -static s32 max_compare(s32 v1, s32 v2);
-> -static s32 min_compare(s32 v1, s32 v2);
-> +enum pm_qos_type {
-> +	PM_QOS_MAX,		/* return the largest value */
-> +	PM_QOS_MIN,		/* return the smallest value */
-> +};
->  
->  struct pm_qos_object {
-> -	struct pm_qos_request_list requests;
-> +	struct plist_head requests;
->  	struct blocking_notifier_head *notifiers;
->  	struct miscdevice pm_qos_power_miscdev;
->  	char *name;
->  	s32 default_value;
-> -	atomic_t target_value;
-> -	s32 (*comparitor)(s32, s32);
-> +	enum pm_qos_type type;
->  };
->  
->  static struct pm_qos_object null_pm_qos;
->  static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
->  static struct pm_qos_object cpu_dma_pm_qos = {
-> -	.requests = {LIST_HEAD_INIT(cpu_dma_pm_qos.requests.list)},
-> +	.requests = {_PLIST_HEAD_INIT(cpu_dma_pm_qos.requests)},
->  	.notifiers = &cpu_dma_lat_notifier,
->  	.name = "cpu_dma_latency",
->  	.default_value = 2000 * USEC_PER_SEC,
-> -	.target_value = ATOMIC_INIT(2000 * USEC_PER_SEC),
-> -	.comparitor = min_compare
-> +	.type = PM_QOS_MIN,
->  };
->  
->  static BLOCKING_NOTIFIER_HEAD(network_lat_notifier);
->  static struct pm_qos_object network_lat_pm_qos = {
-> -	.requests = {LIST_HEAD_INIT(network_lat_pm_qos.requests.list)},
-> +	.requests = {_PLIST_HEAD_INIT(network_lat_pm_qos.requests)},
->  	.notifiers = &network_lat_notifier,
->  	.name = "network_latency",
->  	.default_value = 2000 * USEC_PER_SEC,
-> -	.target_value = ATOMIC_INIT(2000 * USEC_PER_SEC),
-> -	.comparitor = min_compare
-> +	.type = PM_QOS_MIN
->  };
->  
->  
->  static BLOCKING_NOTIFIER_HEAD(network_throughput_notifier);
->  static struct pm_qos_object network_throughput_pm_qos = {
-> -	.requests = {LIST_HEAD_INIT(network_throughput_pm_qos.requests.list)},
-> +	.requests = {_PLIST_HEAD_INIT(network_throughput_pm_qos.requests)},
->  	.notifiers = &network_throughput_notifier,
->  	.name = "network_throughput",
->  	.default_value = 0,
-> -	.target_value = ATOMIC_INIT(0),
-> -	.comparitor = max_compare
-> +	.type = PM_QOS_MAX,
->  };
->  
->  
-> @@ -124,46 +118,40 @@ static const struct file_operations pm_qos_power_fops = {
->  	.release = pm_qos_power_release,
->  };
->  
-> -/* static helper functions */
-> -static s32 max_compare(s32 v1, s32 v2)
-> +/* unlocked internal variant */
-> +static inline int pm_qos_get_value(struct pm_qos_object *o)
->  {
-> -	return max(v1, v2);
-> -}
-> +	if (plist_head_empty(&o->requests))
-> +		return o->default_value;
->  
-> -static s32 min_compare(s32 v1, s32 v2)
-> -{
-> -	return min(v1, v2);
-> -}
-> +	switch (o->type) {
-> +	case PM_QOS_MIN:
-> +		return list_entry(o->requests.node_list.prev, struct plist_node, plist.node_list)->prio;
->  
-> +	case PM_QOS_MAX:
-> +		return plist_first(&o->requests)->prio;
-> +	}
-> +}
->  
-> -static void update_target(int pm_qos_class)
-> +static void update_target(struct pm_qos_object *o, struct plist_node *node,
-> +			  int del)
->  {
-> -	s32 extreme_value;
-> -	struct pm_qos_request_list *node;
->  	unsigned long flags;
-> -	int call_notifier = 0;
-> +	int prev_value, curr_value;
->  
->  	spin_lock_irqsave(&pm_qos_lock, flags);
-> -	extreme_value = pm_qos_array[pm_qos_class]->default_value;
-> -	list_for_each_entry(node,
-> -			&pm_qos_array[pm_qos_class]->requests.list, list) {
-> -		extreme_value = pm_qos_array[pm_qos_class]->comparitor(
-> -				extreme_value, node->value);
-> -	}
-> -	if (atomic_read(&pm_qos_array[pm_qos_class]->target_value) !=
-> -			extreme_value) {
-> -		call_notifier = 1;
-> -		atomic_set(&pm_qos_array[pm_qos_class]->target_value,
-> -				extreme_value);
-> -		pr_debug(KERN_ERR "new target for qos %d is %d\n", pm_qos_class,
-> -			atomic_read(&pm_qos_array[pm_qos_class]->target_value));
-> -	}
-> +	prev_value = pm_qos_get_value(o);
-> +	if (del)
-> +		plist_del(node, &o->requests);
-> +	else
-> +		plist_add(node, &o->requests);
-> +	curr_value = pm_qos_get_value(o);
->  	spin_unlock_irqrestore(&pm_qos_lock, flags);
->  
-> -	if (call_notifier)
-> -		blocking_notifier_call_chain(
-> -				pm_qos_array[pm_qos_class]->notifiers,
-> -					(unsigned long) extreme_value, NULL);
-> +	if (prev_value != curr_value)
-> +		blocking_notifier_call_chain(o->notifiers,
-> +					     (unsigned long)curr_value,
-> +					     NULL);
->  }
->  
->  static int register_pm_qos_misc(struct pm_qos_object *qos)
-> @@ -196,7 +184,14 @@ static int find_pm_qos_object_by_minor(int minor)
->   */
->  int pm_qos_request(int pm_qos_class)
->  {
-> -	return atomic_read(&pm_qos_array[pm_qos_class]->target_value);
-> +	unsigned long flags;
-> +	int value;
-> +
-> +	spin_lock_irqsave(&pm_qos_lock, flags);
-> +	value = pm_qos_get_value(pm_qos_array[pm_qos_class]);
-> +	spin_unlock_irqrestore(&pm_qos_lock, flags);
-> +
-> +	return value;
->  }
->  EXPORT_SYMBOL_GPL(pm_qos_request);
->  
-> @@ -214,21 +209,19 @@ EXPORT_SYMBOL_GPL(pm_qos_request);
->  struct pm_qos_request_list *pm_qos_add_request(int pm_qos_class, s32 value)
->  {
->  	struct pm_qos_request_list *dep;
-> -	unsigned long flags;
->  
->  	dep = kzalloc(sizeof(struct pm_qos_request_list), GFP_KERNEL);
->  	if (dep) {
-> +		struct pm_qos_object *o =  pm_qos_array[pm_qos_class];
-> +		int new_value;
-> +
->  		if (value == PM_QOS_DEFAULT_VALUE)
-> -			dep->value = pm_qos_array[pm_qos_class]->default_value;
-> +			new_value = o->default_value;
->  		else
-> -			dep->value = value;
-> +			new_value = value;
-> +		plist_node_init(&dep->list, new_value);
->  		dep->pm_qos_class = pm_qos_class;
-> -
-> -		spin_lock_irqsave(&pm_qos_lock, flags);
-> -		list_add(&dep->list,
-> -			&pm_qos_array[pm_qos_class]->requests.list);
-> -		spin_unlock_irqrestore(&pm_qos_lock, flags);
-> -		update_target(pm_qos_class);
-> +		update_target(o, &dep->list, 0);
->  	}
->  
->  	return dep;
-> @@ -251,22 +244,27 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
->  	unsigned long flags;
->  	int pending_update = 0;
->  	s32 temp;
-> +	struct pm_qos_object *o;
->  
-> -	if (pm_qos_req) { /*guard against callers passing in null */
-> -		spin_lock_irqsave(&pm_qos_lock, flags);
-> -		if (new_value == PM_QOS_DEFAULT_VALUE)
-> -			temp = pm_qos_array[pm_qos_req->pm_qos_class]->default_value;
-> -		else
-> -			temp = new_value;
-> +	if (!pm_qos_req) /*guard against callers passing in null */
-> +		return;
+On Sat, Jun 05, 2010 at 09:07:32PM +0200, Rafael J. Wysocki wrote:
+> On Saturday 05 June 2010, mark gross wrote:
+> > On Fri, Jun 04, 2010 at 09:23:10AM -0500, James Bottomley wrote:
+> > > On Thu, 2010-06-03 at 21:07 -0700, Arve Hj=F8nnev=E5g wrote:
+> > > > On Thu, Jun 3, 2010 at 2:05 PM, Rafael J. Wysocki <rjw@sisk.pl> wro=
+te:
+> > > > > On Thursday 03 June 2010, James Bottomley wrote:
+> > > > >> On Thu, 2010-06-03 at 00:10 -0700, Arve Hj=F8nnev=E5g wrote:
+> > > > >> > On Wed, Jun 2, 2010 at 10:40 PM, mark gross <640e9920@gmail.co=
+m> wrote:
+> > > > >> > > On Wed, Jun 02, 2010 at 09:54:15PM -0700, Brian Swetland wro=
+te:
+> > > > >> > >> On Wed, Jun 2, 2010 at 8:18 PM, mark gross <640e9920@gmail.=
+com> wrote:
+> > > > >> > >> > On Wed, Jun 02, 2010 at 02:58:30PM -0700, Arve Hj=F8nnev=
+=E5g wrote:
+> > > > >> > >> >>
+> > > > >> > >> >> The list is not short. You have all the inactive and act=
+ive
+> > > > >> > >> >> constraints on the same list. If you change it to a two =
+level list
+> > > > >> > >> >> though, the list of unique values (which is the list you=
+ have to walk)
+> > > > >> > >> >> may be short enough for a tree to be overkill.
+> > > > >> > >> >
+> > > > >> > >> > what have you seen in practice from the wake-lock stats?
+> > > > >> > >> >
+> > > > >> > >> > I'm having a hard time seeing where you could get more th=
+an just a
+> > > > >> > >> > handfull.  However; one could go to a dual list (like the=
+ scheduler) and
+> > > > >> > >> > move inactive nodes from an active to inactive list, or w=
+e could simply
+> > > > >> > >> > remove them from the list uppon inactivity.  which would =
+would well
+> > > > >> > >> > after I change the api to have the client allocate the me=
+mory for the
+> > > > >> > >> > nodes...  BUT, if your moving things in and out of a list=
+ a lot, I'm not
+> > > > >> > >> > sure the break even point where changing the structure he=
+lps.
+> > > > >> > >> >
+> > > > >> > >> > We'll need to try it.
+> > > > >> > >> >
+> > > > >> > >> > I think we will almost never see more than 10 list elemen=
+ts.
+> > > > >> > >> >
+> > > > >> > >> > --mgross
+> > > > >> > >> >
+> > > > >> > >> >
+> > > > >> > >>
+> > > > >> > >> I see about 80 (based on the batteryinfo dump) on my Nexus =
+One
+> > > > >> > >> (QSD8250, Android Froyo):
+> > > > >> > >
+> > > > >> > > shucks.
+> > > > >> > >
+> > > > >> > > well I think for a pm_qos class that has boolean dynamic ran=
+ge we can
+> > > > >> > > get away with not walking the list on every request update. =
+ we can use
+> > > > >> > > a counter, and the list will be for mostly for stats.
+> > > > >> > >
+> > > > >> >
+> > > > >> > Did you give any thought to my suggestion to only use one entr=
+y per
+> > > > >> > unique value on the first level list and then use secondary li=
+sts of
+> > > > >> > identical values. That way if you only have two constraints va=
+lues the
+> > > > >> > list you have to walk when updating a request will never have =
+more
+> > > > >> > than two entries regardless of how many total request you have.
+> > > > >> >
+> > > > >> > A request update then becomes something like this:
+> > > > >> >   if on primary list {
+> > > > >> >     unlink from primary list
+> > > > >> >     if secondary list is not empty
+> > > > >> >       get next secondary entry and add in same spot on primary=
+ list
+> > > > >> >   }
+> > > > >> >   unlink from secondary list
+> > > > >> >   find new spot on primary list
+> > > > >> >   if already there
+> > > > >> >     add to secondary list
+> > > > >> >   else
+> > > > >> >     add to primary list
+> > > > >>
+> > > > >> This is just reinventing hash bucketed lists.  To get the benefi=
+ts, all
+> > > > >> we do is implement an N state constraint as backed by an N bucke=
+ted hash
+> > > > >> list, which the kernel already has all the internal mechanics fo=
+r.
+> > > > >
+> > > > > Agreed.
+> > > > >
+> > > > =
 
-need a better test to see if the pm_qos_req is in the plist or not as we
-move to a caller allocated design.
+> > > > No, a hash is used for quick lookup of a specific value, not to find
+> > > > an extreme value.
+> > > =
 
->  
-> -		if (temp != pm_qos_req->value) {
-> -			pending_update = 1;
-> -			pm_qos_req->value = temp;
-> -		}
-> +	o = pm_qos_array[pm_qos_req->pm_qos_class];
-> +
-> +	if (new_value == PM_QOS_DEFAULT_VALUE)
-> +		temp = o->default_value;
-> +	else
-> +		temp = new_value;
-> +
-> +	if (temp != pm_qos_req->list.prio) {
-> +		pending_update = 1;
-> +		spin_lock_irqsave(&pm_qos_lock, flags);
-> +		plist_del(&pm_qos_req->list, &o->requests);
-> +		plist_node_init(&pm_qos_req->list, temp);
->  		spin_unlock_irqrestore(&pm_qos_lock, flags);
-> -		if (pending_update)
-> -			update_target(pm_qos_req->pm_qos_class);
->  	}
-> +	if (pending_update)
-> +		update_target(o, &pm_qos_req->list, 0);
->  }
->  EXPORT_SYMBOL_GPL(pm_qos_update_request);
->  
-> @@ -280,19 +278,15 @@ EXPORT_SYMBOL_GPL(pm_qos_update_request);
->   */
->  void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req)
->  {
-> -	unsigned long flags;
-> -	int qos_class;
-> +	struct pm_qos_object *o;
->  
->  	if (pm_qos_req == NULL)
->  		return;
->  		/* silent return to keep pcm code cleaner */
+> > > If you only have N possible values an N bucket hash list is rather
+> > > efficient (provided N is small).  But I would agree that knowing what=
+ N
+> > > is represents an API change, and since plists can do this without
+> > > changing the API, they're better.
+> > > =
 
-need a way to tell if the request is in the list or not so we don't
-crater removing a plist node that isn't in the list.
+> > > >  It is however extremely similar to plists. The only
+> > > > difference is that plists link all the secondary lists together.
+> > > =
 
->  
-> -	qos_class = pm_qos_req->pm_qos_class;
-> -	spin_lock_irqsave(&pm_qos_lock, flags);
-> -	list_del(&pm_qos_req->list);
-> +	o = pm_qos_array[pm_qos_req->pm_qos_class];
-> +	update_target(o, &pm_qos_req->list, 1);
->  	kfree(pm_qos_req);
-> -	spin_unlock_irqrestore(&pm_qos_lock, flags);
-> -	update_target(qos_class);
->  }
->  EXPORT_SYMBOL_GPL(pm_qos_remove_request);
+> > > Right, so they would solve the *current* problem exactly.
+> > > =
+
+> > > >  If we
+> > > > want to have constraints that autoexpire, then keeping the secondary
+> > > > lists separate allows the same optimization as I did for
+> > > > wakelock/suspend_blocker timeouts where no timer is active if an
+> > > > (equal or stricter) non-expiring constraint is active.
+> > > =
+
+> > > But this is a future discussion and not part of the patch.  The way o=
+pen
+> > > source works is that we sort out the best implementation for the curr=
+ent
+> > > conditions.  If the implementation has to change because of future
+> > > stuff, then we change it when the future stuff comes along.  Changing
+> > > implementations is easy (they don't have any externally visible impac=
+t).
+> > > Changing the in-kernel API is slightly harder, but easily doable.  It=
+'s
+> > > only changing the user visible ABI that we worry about and try not to
+> > > do.
+> > >
+> > =
+
+> > True.
+> > =
+
+> > The following is what I think I'll work on this weekend.  (hopefully
+> > have some sort of patch that at least compiles...)
+> > =
+
+> > =
+
+> > Changes to pm_qos to enable "wakelock" or "suspend blocker" support:
+> > =
+
+> > Requirements:
+> > 1) atomic context support.
+> > 2) make updating request fast enough for hot path users.
+> > 3) Add a request class for "interactive_suspend", this particular
+> > request has a dynamic range of 1 (its 0 or 1).  If zero then ok to auto
+> > suspend, if 1 then only user driven suspend.  Whenever the aggregate
+> > request changes value the registered notifiers are called.
+> > =
+
+> > =
+
+> > Implementation:
+> > * change api to have caller allocated the qos request structures. (solve
+> > the kalloc issue)
+> > * add plist use for constraint classes with hash-able dynamic ranges
+> =
+
+> Please have a look at the patch James posted earlier today on linux-pm,
+> you were CCed.
 >
 
-I like it.
+I like James' post.  I'm sorry I missed it before I sent this note, but
+I'm really glad he's posted it.  Now I can do some testing.
 
 --mgross
-  
+
+ =
