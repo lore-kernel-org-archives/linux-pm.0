@@ -1,30 +1,24 @@
-From: Florian Mickler <florian@mickler.org>
+From: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: suspend blockers & Android integration
-Date: Sun, 6 Jun 2010 12:49:49 +0200
-Message-ID: <20100606124949.539fa636__23541.8621021838$1275821554$gmane$org@schatten.dmk.lab>
-References: <20100603193045.GA7188@elte.hu>
-	<AANLkTikZP3bmckpfb_jUdG7qZO5W9DgpZ79ugtSZaEpt@mail.gmail.com>
-	<20100604071354.GA14451@elte.hu>
-	<AANLkTimH4ihf3QqtKFpfGXRKtO55PrUuff9JYtaEBG44@mail.gmail.com>
-	<20100604083423.GD15181@elte.hu>
-	<AANLkTinQyzzeF-NOAjrAqqQXqKjFJhx85nI4uyBGRtWd@mail.gmail.com>
-	<1275653210.27810.39762.camel@twins>
-	<AANLkTinyjBa0KYfFz3_EFbC65hoQFwFINlTDYjCe-wM3@mail.gmail.com>
-	<1275731653.27810.41078.camel@twins>
-	<20100605092851.6ee15f13@infradead.org>
-	<AANLkTimEwznq9c_8lkuBMxEQ-42rdvpZEqA9Y71Cu-qC@mail.gmail.com>
-	<AANLkTimKknOurmCffOpHjc1FjrP2MKf10pBwEEbLJPg_@mail.gmail.com>
-	<AANLkTil1NCX91bWhpXHtC88Opr29mNjdhXD9RXQ6DI0y@mail.gmail.com>
-	<AANLkTin1Za3GvfIKbcZdx6TzjIHzCvsg5uaY_Vk4nJIh@mail.gmail.com>
-	<AANLkTilQ1k78dDCYadOa1Wiyjm2nsBcRpxwdpGvYcf8z@mail.gmail.com>
-	<AANLkTin7oM3gVwHbIHWqYV8yeC6bbQ4q2jDDxAgz3DwQ@mail.gmail.com>
-	<alpine.DEB.2.01.1006060305060.17462@asgard.lang.hm>
-	<AANLkTinW-X5m85rUcqP-lrEdfBikVclJWgqiWDkpxnAc@mail.gmail.com>
+Date: Sun, 6 Jun 2010 12:56:59 +0200 (CEST)
+Message-ID: <alpine.LFD.2.00.1006061236350.2933__21402.8304246769$1275821888$gmane$org@localhost.localdomain>
+References: <20100603193045.GA7188@elte.hu> <20100603232302.GA16184@elte.hu>
+	<1275644619.27810.39462.camel@twins>
+	<201006050138.30859.rjw@sisk.pl>
+	<alpine.LFD.2.00.1006050148080.2933@localhost.localdomain>
+	<AANLkTikGDSzaENwg_0BAtsYf3ulGd_6sGPR30WsvUxMi@mail.gmail.com>
+	<alpine.LFD.2.00.1006050246350.2933@localhost.localdomain>
+	<AANLkTikU21xF49Z-_Lnrq7U7buNmqw_gyEEST8LuN24z@mail.gmail.com>
+	<alpine.LFD.2.00.1006051736040.2933@localhost.localdomain>
+	<AANLkTinD39rI47innPbGz1Gi8PsXV5HqkmaQuJ70oQ63@mail.gmail.com>
+	<alpine.LFD.2.00.1006052348200.2933@localhost.localdomain>
+	<AANLkTikmWDHYJ8wWF2cZapbkHHjV09R39I37yvQXFmor@mail.gmail.com>
+	<alpine.LFD.2.00.1006060148470.2933@localhost.localdomain>
+	<AANLkTikdM79nmARagK9gLveMWEiT6rlk44UELes1k8Ch@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-455178742-1275821822=:2933"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinW-X5m85rUcqP-lrEdfBikVclJWgqiWDkpxnAc@mail.gmail.com>
+In-Reply-To: <AANLkTikdM79nmARagK9gLveMWEiT6rlk44UELes1k8Ch@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -34,40 +28,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vitaly Wool <vitalywool@gmail.com>
-Cc: david@lang.hm, Felipe Balbi <felipe.balbi@nokia.com>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Linux@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: tytso@mit.edu, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 6 Jun 2010 12:19:08 +0200
-Vitaly Wool <vitalywool@gmail.com> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> 2010/6/6  <david@lang.hm>:
-> 
-> > as an example (taken from this thread).
+--8323328-455178742-1275821822=:2933
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id o56AvS8m006118
+
+On Sat, 5 Jun 2010, Arve Hj=F8nnev=E5g wrote:
+> 2010/6/5 Thomas Gleixner <tglx@linutronix.de>:
 > >
-> > system A needs to wake up to get a battery reading, store it and go back to
-> > sleep, It does so every 10 seconds. But when it does so it only runs the one
-> > process and then goes back to sleep.
+> > Can you please explain in a consistent way how the application stack
+> > and the underlying framework (which exists according to android docs)
+> > is handling events and how the separation of trust level works ?
 > >
-> > system B has the same need, but wakes up every 10 minutes. but when it does
-> > so it fully wakes up and this allows the mail app to power up the radio,
-> > connect to the Internet and start checking for new mail before oppurtunistic
-> > sleep shuts things down (causing the mail check to fail)
-> >
-> > System A will last considerably longer on a battery than System B.
-> 
-> Exactly, thanks for pointing out the specific example :)
-> 
-> ~Vitaly
+>=20
+> I don't think I can, since I only know small parts of it. I know some
 
-This does not affect suspend_blockers nor does suspend_blockers
-interfere with that. 
+Sigh, thats the whole reason why this discussion goes nowhere.
 
-Suspend_blockers allow the system to suspend ("mem">/sys/power/state
-suspend), when the userspace decides that the device is not in use.
+How in heavens sake should we be able to decide whether suspend
+blockers are the right and only thing which solves a problem, when the
+folks advocating suspend blockers are not able to explain the problem
+in the first place ?
 
-So implementing suspend_blockers support does not impact any
-optimizations done to either system A nor system B.
+> events like input event go though a single thread in our system
+> process, while other events like network packets (which are also
+> wakeup events) goes directly to the app.
 
-Cheers,
-Flo
+Yes, we know that already, but that's a completely useless information
+as it does not describe the full constraints and dependencies.
+
+Lemme summarize:
+
+  Android needs suspend blockers, because it works, but cannot explain
+  why it works and why it only works that way.
+
+A brilliant argument to merge them - NOT.
+
+Thanks,
+
+	tglx
+--8323328-455178742-1275821822=:2933
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+
+
+--8323328-455178742-1275821822=:2933--
