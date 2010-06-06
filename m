@@ -1,18 +1,16 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: suspend blockers & Android integration
-Date: Mon, 7 Jun 2010 00:26:55 +0200 (CEST)
-Message-ID: <alpine.LFD.2.00.1006070014380.2933__4673.74649965695$1275863305$gmane$org@localhost.localdomain>
-References: <1275834706.7227.545.camel@mulgrave.site>
-	<alpine.LFD.2.00.1006061725000.2933@localhost.localdomain>
-	<1275844114.7227.552.camel@mulgrave.site>
-	<20100606190525.GA20517@infradead.org>
-	<AANLkTikKx-gXCGtNo3woHLCpBoEQ7hG9Jbiq3hwUTW_w@mail.gmail.com>
-	<20100606192405.GA7559@infradead.org>
-	<AANLkTikA0ihlbehyyN-zQ3mN4WmlZJYBSRTYV8SbDhSr@mail.gmail.com>
+From: mark gross <640e9920@gmail.com>
+Subject: Re: [RFC] pm_qos: get rid of the allocation in
+	pm_qos_add_request()
+Date: Sun, 6 Jun 2010 16:10:21 -0700
+Message-ID: <20100606231021.GA17031__44529.6270926066$1275865869$gmane$org@gvim.org>
+References: <1275765614.7227.42.camel@mulgrave.site>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-705175777-1275863218=:2933"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikA0ihlbehyyN-zQ3mN4WmlZJYBSRTYV8SbDhSr@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1275765614.7227.42.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,92 +20,381 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: alsa-devel@alsa-project.org, markgross@thegnar.org, Takashi Iwai <tiwai@suse.de>, netdev@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sat, Jun 05, 2010 at 02:20:14PM -0500, James Bottomley wrote:
+> [alsa-devel says it's a moderated list, so feel free to drop before
+> replying]
+> 
+> Since every caller has to squirrel away the returned pointer anyway,
+> they might as well supply the memory area.  This fixes a bug in a few of
+> the call sites where the returned pointer was dereferenced without
+> checking it for NULL (which gets returned if the kzalloc failed).
+> 
+> I'd like to hear how sound and netdev feels about this: it will add
+> about two more pointers worth of data to struct netdev and struct
+> snd_pcm_substream .. but I think it's worth it.  If you're OK, I'll add
+> your acks and send through the pm tree.
+> 
+> This also looks to me like an android independent clean up (even though
+> it renders the request_add atomically callable).  I also added include
+> guards to include/linux/pm_qos_params.h
+> 
+> James
+> 
+> ---
+> 
+>  drivers/net/e1000e/netdev.c            |   17 ++++------
+>  drivers/net/igbvf/netdev.c             |    9 ++---
+>  drivers/net/wireless/ipw2x00/ipw2100.c |   12 +++---
+>  include/linux/netdevice.h              |    2 +-
+>  include/linux/pm_qos_params.h          |   12 +++++--
+>  include/sound/pcm.h                    |    2 +-
+>  kernel/pm_qos_params.c                 |   55 ++++++++++++++++---------------
+>  sound/core/pcm_native.c                |   12 ++-----
+>  8 files changed, 60 insertions(+), 61 deletions(-)
+> 
+> diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
+> index 24507f3..47ea62f 100644
+> --- a/drivers/net/e1000e/netdev.c
+> +++ b/drivers/net/e1000e/netdev.c
+> @@ -2901,10 +2901,10 @@ static void e1000_configure_rx(struct e1000_adapter *adapter)
+>  			 * dropped transactions.
+>  			 */
+>  			pm_qos_update_request(
+> -				adapter->netdev->pm_qos_req, 55);
+> +				&adapter->netdev->pm_qos_req, 55);
+>  		} else {
+>  			pm_qos_update_request(
+> -				adapter->netdev->pm_qos_req,
+> +				&adapter->netdev->pm_qos_req,
+>  				PM_QOS_DEFAULT_VALUE);
+>  		}
+>  	}
+> @@ -3196,9 +3196,9 @@ int e1000e_up(struct e1000_adapter *adapter)
+>  
+>  	/* DMA latency requirement to workaround early-receive/jumbo issue */
+>  	if (adapter->flags & FLAG_HAS_ERT)
+> -		adapter->netdev->pm_qos_req =
+> -			pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
+> -				       PM_QOS_DEFAULT_VALUE);
+> +		pm_qos_add_request(&adapter->netdev->pm_qos_req,
+> +				   PM_QOS_CPU_DMA_LATENCY,
+> +				   PM_QOS_DEFAULT_VALUE);
+>  
+>  	/* hardware has been reset, we need to reload some things */
+>  	e1000_configure(adapter);
+> @@ -3263,11 +3263,8 @@ void e1000e_down(struct e1000_adapter *adapter)
+>  	e1000_clean_tx_ring(adapter);
+>  	e1000_clean_rx_ring(adapter);
+>  
+> -	if (adapter->flags & FLAG_HAS_ERT) {
+> -		pm_qos_remove_request(
+> -			      adapter->netdev->pm_qos_req);
+> -		adapter->netdev->pm_qos_req = NULL;
+> -	}
+> +	if (adapter->flags & FLAG_HAS_ERT)
+> +		pm_qos_remove_request(&adapter->netdev->pm_qos_req);
+>  
+>  	/*
+>  	 * TODO: for power management, we could drop the link and
+> diff --git a/drivers/net/igbvf/netdev.c b/drivers/net/igbvf/netdev.c
+> index 5e2b2a8..5da569f 100644
+> --- a/drivers/net/igbvf/netdev.c
+> +++ b/drivers/net/igbvf/netdev.c
+> @@ -48,7 +48,7 @@
+>  #define DRV_VERSION "1.0.0-k0"
+>  char igbvf_driver_name[] = "igbvf";
+>  const char igbvf_driver_version[] = DRV_VERSION;
+> -struct pm_qos_request_list *igbvf_driver_pm_qos_req;
+> +struct pm_qos_request_list igbvf_driver_pm_qos_req;
+>  static const char igbvf_driver_string[] =
+>  				"Intel(R) Virtual Function Network Driver";
+>  static const char igbvf_copyright[] = "Copyright (c) 2009 Intel Corporation.";
+> @@ -2902,8 +2902,8 @@ static int __init igbvf_init_module(void)
+>  	printk(KERN_INFO "%s\n", igbvf_copyright);
+>  
+>  	ret = pci_register_driver(&igbvf_driver);
+> -	igbvf_driver_pm_qos_req = pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
+> -	                       PM_QOS_DEFAULT_VALUE);
+> +	pm_qos_add_request(igbvf_driver_pm_qos_req, PM_QOS_CPU_DMA_LATENCY,
+should be:
 
---8323328-705175777-1275863218=:2933
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id o56MRRbq024343
-
-Brian,
-
-On Sun, 6 Jun 2010, Brian Swetland wrote:
-
-> On Sun, Jun 6, 2010 at 12:24 PM, Christoph Hellwig <hch@infradead.org> =
-wrote:
-> >
-> > Yes. =C2=A0That's what makes me wonder about some parts of the discus=
-sion
-> > here. =C2=A0Getting the drivers for one or more of the android plattf=
-orms
-> > in is not a problem. =C2=A0I'd say it could have easily been done wit=
-h the
-> > manweeks spent arguing in this and related threads.
-> >
-> > The much bigger issues is to get android userspace running on a more
-> > or less vanilla kernel, that is withoutthe =C2=A0binder, without the =
-rather
-> > interesting group ID based security hack^H^H^H^Hmodel, without the
-> > suspend blocker userspace API and so on, and so on.
->=20
-> Somebody will have to broker a deal with the frameworks/apps folks to
-> get rid of the binder.  They like it a lot.  Of course if somebody
-> built a drop-in replacement for the userspace side that didn't require
-> a kernel driver, had the same performance characteristics, solved the
-> same problems, etc, they could probably make an argument for it (or
-> just provide it as a drop-in replacement for people who want a more
-> "pure" linux underneath Android, even if we didn't pick it up).
->=20
-> The group ID stuff works incredibly well for gating device access --
-> we ensure that devices that need access from various processes end up
-> with perms like 0660 root audio (say for a raw audio interface), and
-> then we assure that processes which have the "may use audio hardware"
-> permission are executed with audio as an additional group.  We ended
-> up using the same model to control socket, raw socket, and bt socket
-> access because at the time we could not find a reasonable way to grant
-> or exclude such permissions on a process by process basis.
-> Maintaining about 20-30 lines of diffs to make that work was not a bad
-> tradeoff (and we don't expect those patches to go upstream).  If
-> there's a way to accomplish this without patching the kernel, we're
-> all ears.
->=20
-> While we do maintain some assorted patches to core code (like the
-> permissions thing), we strongly prefer to keep our work localized to
-> drivers (generic to android or specific to hardware), and try to
-> migrate to common kernel features when possible, submit patches (like
-> work Mike Chan is doing around cpufreq and power measurement), etc.
-> Patches to core code cause more headaches when we rebase up to new
-> kernel versions, after all.
-
-thanks for the honest answer and thanks to Christoph for the
-reminder!=20
-
-That takes a lot of the bullshit arguments about downstream users
-being hurt out of the discussion. The above problems are way more
-complex to resolve than the suspend blocker details.
-
-That's another prove why we can let the drivers flow in (in the worst
-case w/o the suspend blocker stubs) and have no pressure to resolve
-the suspend blocker problem yesterday.
-
-That said, after thinking more about it, I'm advocating the stubs
-solution with a clear removal / decision date constraint
-(e.g. 2.6.37), as it forces all involved parties to stay tuned and not
-to forget about it. I'm curious about the outcome :)
-
-Thanks,
-
-	tglx
---8323328-705175777-1275863218=:2933
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
++	pm_qos_add_request(&igbvf_driver_pm_qos_req, PM_QOS_CPU_DMA_LATENCY,
 
 
---8323328-705175777-1275863218=:2933--
+--mgross
+
+> +			   PM_QOS_DEFAULT_VALUE);
+>  
+>  	return ret;
+>  }
+> @@ -2918,8 +2918,7 @@ module_init(igbvf_init_module);
+>  static void __exit igbvf_exit_module(void)
+>  {
+>  	pci_unregister_driver(&igbvf_driver);
+> -	pm_qos_remove_request(igbvf_driver_pm_qos_req);
+> -	igbvf_driver_pm_qos_req = NULL;
+> +	pm_qos_remove_request(&igbvf_driver_pm_qos_req);
+>  }
+>  module_exit(igbvf_exit_module);
+>  
+> diff --git a/drivers/net/wireless/ipw2x00/ipw2100.c b/drivers/net/wireless/ipw2x00/ipw2100.c
+> index 0bd4dfa..7f0d98b 100644
+> --- a/drivers/net/wireless/ipw2x00/ipw2100.c
+> +++ b/drivers/net/wireless/ipw2x00/ipw2100.c
+> @@ -174,7 +174,7 @@ that only one external action is invoked at a time.
+>  #define DRV_DESCRIPTION	"Intel(R) PRO/Wireless 2100 Network Driver"
+>  #define DRV_COPYRIGHT	"Copyright(c) 2003-2006 Intel Corporation"
+>  
+> -struct pm_qos_request_list *ipw2100_pm_qos_req;
+> +struct pm_qos_request_list ipw2100_pm_qos_req;
+>  
+>  /* Debugging stuff */
+>  #ifdef CONFIG_IPW2100_DEBUG
+> @@ -1741,7 +1741,7 @@ static int ipw2100_up(struct ipw2100_priv *priv, int deferred)
+>  	/* the ipw2100 hardware really doesn't want power management delays
+>  	 * longer than 175usec
+>  	 */
+> -	pm_qos_update_request(ipw2100_pm_qos_req, 175);
+> +	pm_qos_update_request(&ipw2100_pm_qos_req, 175);
+>  
+>  	/* If the interrupt is enabled, turn it off... */
+>  	spin_lock_irqsave(&priv->low_lock, flags);
+> @@ -1889,7 +1889,7 @@ static void ipw2100_down(struct ipw2100_priv *priv)
+>  	ipw2100_disable_interrupts(priv);
+>  	spin_unlock_irqrestore(&priv->low_lock, flags);
+>  
+> -	pm_qos_update_request(ipw2100_pm_qos_req, PM_QOS_DEFAULT_VALUE);
+> +	pm_qos_update_request(&ipw2100_pm_qos_req, PM_QOS_DEFAULT_VALUE);
+>  
+>  	/* We have to signal any supplicant if we are disassociating */
+>  	if (associated)
+> @@ -6669,8 +6669,8 @@ static int __init ipw2100_init(void)
+>  	if (ret)
+>  		goto out;
+>  
+> -	ipw2100_pm_qos_req = pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
+> -			PM_QOS_DEFAULT_VALUE);
+> +	pm_qos_add_request(&ipw2100_pm_qos_req, PM_QOS_CPU_DMA_LATENCY,
+> +			   PM_QOS_DEFAULT_VALUE);
+>  #ifdef CONFIG_IPW2100_DEBUG
+>  	ipw2100_debug_level = debug;
+>  	ret = driver_create_file(&ipw2100_pci_driver.driver,
+> @@ -6692,7 +6692,7 @@ static void __exit ipw2100_exit(void)
+>  			   &driver_attr_debug_level);
+>  #endif
+>  	pci_unregister_driver(&ipw2100_pci_driver);
+> -	pm_qos_remove_request(ipw2100_pm_qos_req);
+> +	pm_qos_remove_request(&ipw2100_pm_qos_req);
+>  }
+>  
+>  module_init(ipw2100_init);
+> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+> index 40291f3..393555a 100644
+> --- a/include/linux/netdevice.h
+> +++ b/include/linux/netdevice.h
+> @@ -779,7 +779,7 @@ struct net_device {
+>  	 */
+>  	char			name[IFNAMSIZ];
+>  
+> -	struct pm_qos_request_list *pm_qos_req;
+> +	struct pm_qos_request_list pm_qos_req;
+>  
+>  	/* device name hash chain */
+>  	struct hlist_node	name_hlist;
+> diff --git a/include/linux/pm_qos_params.h b/include/linux/pm_qos_params.h
+> index 8ba440e..d823cc0 100644
+> --- a/include/linux/pm_qos_params.h
+> +++ b/include/linux/pm_qos_params.h
+> @@ -1,8 +1,10 @@
+> +#ifndef _LINUX_PM_QOS_PARAMS_H
+> +#define _LINUX_PM_QOS_PARAMS_H
+>  /* interface for the pm_qos_power infrastructure of the linux kernel.
+>   *
+>   * Mark Gross <mgross@linux.intel.com>
+>   */
+> -#include <linux/list.h>
+> +#include <linux/plist.h>
+>  #include <linux/notifier.h>
+>  #include <linux/miscdevice.h>
+>  
+> @@ -14,9 +16,12 @@
+>  #define PM_QOS_NUM_CLASSES 4
+>  #define PM_QOS_DEFAULT_VALUE -1
+>  
+> -struct pm_qos_request_list;
+> +struct pm_qos_request_list {
+> +	struct plist_node list;
+> +	int pm_qos_class;
+> +};
+>  
+> -struct pm_qos_request_list *pm_qos_add_request(int pm_qos_class, s32 value);
+> +void pm_qos_add_request(struct pm_qos_request_list *l, int pm_qos_class, s32 value);
+>  void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
+>  		s32 new_value);
+>  void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req);
+> @@ -25,3 +30,4 @@ int pm_qos_request(int pm_qos_class);
+>  int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
+>  int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
+>  
+> +#endif
+> diff --git a/include/sound/pcm.h b/include/sound/pcm.h
+> index dd76cde..6e3a297 100644
+> --- a/include/sound/pcm.h
+> +++ b/include/sound/pcm.h
+> @@ -366,7 +366,7 @@ struct snd_pcm_substream {
+>  	int number;
+>  	char name[32];			/* substream name */
+>  	int stream;			/* stream (direction) */
+> -	struct pm_qos_request_list *latency_pm_qos_req; /* pm_qos request */
+> +	struct pm_qos_request_list latency_pm_qos_req; /* pm_qos request */
+>  	size_t buffer_bytes_max;	/* limit ring buffer size */
+>  	struct snd_dma_buffer dma_buffer;
+>  	unsigned int dma_buf_id;
+> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+> index 241fa79..f1d3d23 100644
+> --- a/kernel/pm_qos_params.c
+> +++ b/kernel/pm_qos_params.c
+> @@ -30,7 +30,6 @@
+>  /*#define DEBUG*/
+>  
+>  #include <linux/pm_qos_params.h>
+> -#include <linux/plist.h>
+>  #include <linux/sched.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/slab.h>
+> @@ -49,11 +48,6 @@
+>   * or pm_qos_object list and pm_qos_objects need to happen with pm_qos_lock
+>   * held, taken with _irqsave.  One lock to rule them all
+>   */
+> -struct pm_qos_request_list {
+> -	struct plist_node list;
+> -	int pm_qos_class;
+> -};
+> -
+>  enum pm_qos_type {
+>  	PM_QOS_MAX,		/* return the largest value */
+>  	PM_QOS_MIN,		/* return the smallest value */
+> @@ -195,6 +189,11 @@ int pm_qos_request(int pm_qos_class)
+>  }
+>  EXPORT_SYMBOL_GPL(pm_qos_request);
+>  
+> +static int pm_qos_request_active(struct pm_qos_request_list *req)
+> +{
+> +	return req->pm_qos_class != 0;
+> +}
+> +
+>  /**
+>   * pm_qos_add_request - inserts new qos request into the list
+>   * @pm_qos_class: identifies which list of qos request to us
+> @@ -206,25 +205,22 @@ EXPORT_SYMBOL_GPL(pm_qos_request);
+>   * element as a handle for use in updating and removal.  Call needs to save
+>   * this handle for later use.
+>   */
+> -struct pm_qos_request_list *pm_qos_add_request(int pm_qos_class, s32 value)
+> +void pm_qos_add_request(struct pm_qos_request_list *dep,
+> +			int pm_qos_class, s32 value)
+>  {
+> -	struct pm_qos_request_list *dep;
+> -
+> -	dep = kzalloc(sizeof(struct pm_qos_request_list), GFP_KERNEL);
+> -	if (dep) {
+> -		struct pm_qos_object *o =  pm_qos_array[pm_qos_class];
+> -		int new_value;
+> -
+> -		if (value == PM_QOS_DEFAULT_VALUE)
+> -			new_value = o->default_value;
+> -		else
+> -			new_value = value;
+> -		plist_node_init(&dep->list, new_value);
+> -		dep->pm_qos_class = pm_qos_class;
+> -		update_target(o, &dep->list, 0);
+> -	}
+> +	struct pm_qos_object *o =  pm_qos_array[pm_qos_class];
+> +	int new_value;
+> +
+> +	if (pm_qos_request_active(dep))
+> +		return;
+>  
+> -	return dep;
+> +	if (value == PM_QOS_DEFAULT_VALUE)
+> +		new_value = o->default_value;
+> +	else
+> +		new_value = value;
+> +	plist_node_init(&dep->list, new_value);
+> +	dep->pm_qos_class = pm_qos_class;
+> +	update_target(o, &dep->list, 0);
+>  }
+>  EXPORT_SYMBOL_GPL(pm_qos_add_request);
+>  
+> @@ -286,7 +282,7 @@ void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req)
+>  
+>  	o = pm_qos_array[pm_qos_req->pm_qos_class];
+>  	update_target(o, &pm_qos_req->list, 1);
+> -	kfree(pm_qos_req);
+> +	memset(pm_qos_req, 0, sizeof(*pm_qos_req));
+>  }
+>  EXPORT_SYMBOL_GPL(pm_qos_remove_request);
+>  
+> @@ -334,8 +330,12 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
+>  
+>  	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
+>  	if (pm_qos_class >= 0) {
+> -		filp->private_data = (void *) pm_qos_add_request(pm_qos_class,
+> -				PM_QOS_DEFAULT_VALUE);
+> +		struct pm_qos_request_list *req = kzalloc(GFP_KERNEL, sizeof(*req));
+> +		if (!req)
+> +			return -ENOMEM;
+> +
+> +		pm_qos_add_request(req, pm_qos_class, PM_QOS_DEFAULT_VALUE);
+> +		filp->private_data = req;
+>  
+>  		if (filp->private_data)
+>  			return 0;
+> @@ -347,8 +347,9 @@ static int pm_qos_power_release(struct inode *inode, struct file *filp)
+>  {
+>  	struct pm_qos_request_list *req;
+>  
+> -	req = (struct pm_qos_request_list *)filp->private_data;
+> +	req = filp->private_data;
+>  	pm_qos_remove_request(req);
+> +	kfree(req);
+>  
+>  	return 0;
+>  }
+> diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+> index 303ac04..d3b8b51 100644
+> --- a/sound/core/pcm_native.c
+> +++ b/sound/core/pcm_native.c
+> @@ -451,13 +451,10 @@ static int snd_pcm_hw_params(struct snd_pcm_substream *substream,
+>  	snd_pcm_timer_resolution_change(substream);
+>  	runtime->status->state = SNDRV_PCM_STATE_SETUP;
+>  
+> -	if (substream->latency_pm_qos_req) {
+> -		pm_qos_remove_request(substream->latency_pm_qos_req);
+> -		substream->latency_pm_qos_req = NULL;
+> -	}
+> +	pm_qos_remove_request(&substream->latency_pm_qos_req);
+>  	if ((usecs = period_to_usecs(runtime)) >= 0)
+> -		substream->latency_pm_qos_req = pm_qos_add_request(
+> -					PM_QOS_CPU_DMA_LATENCY, usecs);
+> +		pm_qos_add_request(&substream->latency_pm_qos_req,
+> +				   PM_QOS_CPU_DMA_LATENCY, usecs);
+>  	return 0;
+>   _error:
+>  	/* hardware might be unuseable from this time,
+> @@ -512,8 +509,7 @@ static int snd_pcm_hw_free(struct snd_pcm_substream *substream)
+>  	if (substream->ops->hw_free)
+>  		result = substream->ops->hw_free(substream);
+>  	runtime->status->state = SNDRV_PCM_STATE_OPEN;
+> -	pm_qos_remove_request(substream->latency_pm_qos_req);
+> -	substream->latency_pm_qos_req = NULL;
+> +	pm_qos_remove_request(&substream->latency_pm_qos_req);
+>  	return result;
+>  }
+>  
+> 
+> 
