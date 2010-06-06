@@ -1,7 +1,7 @@
-From: david@lang.hm
+From: Vitaly Wool <vitalywool@gmail.com>
 Subject: Re: suspend blockers & Android integration
-Date: Sun, 6 Jun 2010 02:56:04 -0700 (PDT)
-Message-ID: <alpine.DEB.2.01.1006060235130.17462__47648.9236615182$1275818389$gmane$org@asgard.lang.hm>
+Date: Sun, 6 Jun 2010 12:00:47 +0200
+Message-ID: <AANLkTin7oM3gVwHbIHWqYV8yeC6bbQ4q2jDDxAgz3DwQ__24646.9465237626$1275818503$gmane$org@mail.gmail.com>
 References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
 	<20100603232302.GA16184@elte.hu>
 	<AANLkTikZP3bmckpfb_jUdG7qZO5W9DgpZ79ugtSZaEpt@mail.gmail.com>
@@ -19,8 +19,8 @@ References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
 	<AANLkTin1Za3GvfIKbcZdx6TzjIHzCvsg5uaY_Vk4nJIh@mail.gmail.com>
 	<AANLkTilQ1k78dDCYadOa1Wiyjm2nsBcRpxwdpGvYcf8z@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <AANLkTilQ1k78dDCYadOa1Wiyjm2nsBcRpxwdpGvYcf8z@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -36,56 +36,64 @@ To: Brian Swetland <swetland@google.com>
 Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 6 Jun 2010, Brian Swetland wrote:
+On Sun, Jun 6, 2010 at 11:21 AM, Brian Swetland <swetland@google.com> wrote:
+>
+> The common case for a phone is to be sitting around. =A0Even for heavy
+> smartphone users, unless they power on, use the device screen-on for 4
+> hours solid or whatnot and drain the battery straight away, the device
+> is going to spend a significant portion of its operating time in
+> screen-off standby modes (conserving power for when you take a call,
+> browse the web, etc).
 
-> The savings in airplane mode (apart from preventing data connections,
-> which saves power by preventing data-hungry background apps from doing
-> much) is the difference between standby with radio (3-5mA) and without
-> (1-2mA).  I'm not suggesting that airplane mode is a typical case,
-> just using it as in illustration of the more extreme standby case.
+Sure, but my point was, some non-trivial (still kind of natural for a
+smartphone) activities with the device will prevent it from suspending
+for quite some time. Even worse, the suspend wakelock will keep the
+whole kernel active, as opposed to powering off unused devices
+separately as it's done in runtime PM. Yep, I know about the "early
+suspend" type of thing; yet it's excess, not mainlined and lacks
+granularity.
 
-for the sake of discussion, let's say that standby is 5ma and full 
-operation is 500ma and a minimal wakeup is 0.1 sec. these are probably 
-fairly pessimistic numbers.
+> For typical users on typical android devices, this means the device
+> stays suspended for 5-10 minutes at a time, coming up for air when a
+> network packet (mail sync, im, etc) or alarm (battery monitor) wakes
+> the device briefly. =A0Obviously with the right combination of bad apps
+> you will see a device suspending more rarely.
 
-waking up every second would be awake 10% of the time, so in an hour you 
-would use .9*5mA + .1*500mA = 4.5mA +45mA = 49.5mAH
+Wasn't that you who stated that you so successfully tolerate bad apps
+with opportunistic suspend that anything of the kind should not really
+be the case? :)
 
-waking up every 10 seconds would be awake 1% of the time, so in an hour 
-you would use .99*5mA + 0.01*500mA = 4.95mA + 5mA = 9.95mAH
+>> E. g. when the wireless is connected to an AP, it takes a wake lock
+>> which is released on 15 minutes touchscreen inactivity timeout, as far
+>> as I can tell. So:
+>>
+>> * the system will never hit suspend during this period;
+>> * if the download was ongoing and had not been completed during this
+>> period, it will be terminated.
+>
+> I'm pretty sure the wifi subsystem does not actually take a wakelock
+> while its connected -- it does have an alarm to spin down wifi after
+> 15 minutes (by default, and user disableable) largely due to power
+> inefficiencies in the wifi solution in some early devices.
 
-waking up every 100 seconds would be awake 0.1% of the time, so in an hour 
-you would use .999*5mA + 0.001*500mA =4.995mA + 0.5mA = 5.495mAH
+Oh? How does it make sure it's not powered off while scanning for APs,
+for instance?
 
-waking up every 1000 seconds would be awake 0.01% of the time so in an 
-hour you would use .9999*5mA + 0.0001*500mA = 4.9995mA + 0.05mAH = 
-5.0495mAH
+> Users do like that to work too -- I recall Arve leaving a device in
+> his filing cabinet with the radio off while he was out of the country
+> for three weeks once, and him discovering it was still running with
+> something like 25% battery remaining when he returned.
 
-now if you have a 1000mAH battery (small, but reasonable for a smartphone) 
-your standby life would be
+So what you're actually up to is that a user should restart the phone
+and turn the radio off if he wants to find it running when he's back
+from a long business trip or something. Nice...
 
-.1 second wakeup (on continuously) = 2 hours
-1 second wakup = 20 hours
-10 second wakeup = 100 hours
-100 second wakeup = 182 hours
-1000 second wakeup = 198 hours
+> In any case, I'm saying that suspending for minutes at a time
+> (typical, 10s of minutes or more in some cases, hours in others), does
+> happen and it does represent an improvement over suspending or
+> otherwise entering your lowest power state for seconds at a time.
 
-if you could shrink the time awake to 0.01 second per wakeup you would 
-shift this all up a category (and avoiding the need to wake everything up 
-to service a timer would help do this)
+That's for sure, if _all_ the other parameters *are* *equal*. This is
+obviously not the case.
 
-this effort very definantly has diminishing returns as you go to larger 
-sleep periods as the constant standby power draw becomes more and more 
-dominating. someone mentioned that they were getting the sleep time of 
-normal systems up past the 1 second mark with the 10 second mark looking 
-very attainable. that is where you get the most benifit for whatever 
-changes are needed. getting up to a 2 min sleep time really gives you 
-about all the benifit that you can get, going from there to 15 min makes 
-very little difference.
-
-don't let chasing the best possible sleep time prevent you from 
-considering options that would be good enough in time, but would 
-drastically reduce the maintinance effort (as things could be upstreamed 
-more easily), and would be usable on far more systems.
-
-David Lang
+~Vitaly
