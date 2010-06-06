@@ -1,17 +1,16 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: suspend blockers & Android integration
-Date: Sun, 6 Jun 2010 21:26:30 +0200 (CEST)
-Message-ID: <alpine.LFD.2.00.1006062114550.2933@localhost.localdomain>
-References: <1275834706.7227.545.camel@mulgrave.site>
-	<alpine.LFD.2.00.1006061725000.2933@localhost.localdomain>
-	<1275844114.7227.552.camel@mulgrave.site>
-	<alpine.LFD.2.00.1006061932240.2933@localhost.localdomain>
-	<AANLkTilRbTVbjAt9uodpzecHLUmcDQEKT_EVpjyrSIwn@mail.gmail.com>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [SUSPECTED SPAM] Re: Proposal for a new algorithm
+ for	reading & writing a hibernation image.
+Date: Sun, 06 Jun 2010 22:51:30 +0300
+Message-ID: <1275853890.3459.0.camel__31538.5453789078$1275853941$gmane$org@maxim-laptop>
+References: <9rpccea67yy402c975fqru8r.1275576653521@email.android.com>
+	<201006061557.20482.rjw@sisk.pl> <1275839650.5331.2.camel@maxim-laptop>
+	<201006062104.55869.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTilRbTVbjAt9uodpzecHLUmcDQEKT_EVpjyrSIwn@mail.gmail.com>
+In-Reply-To: <201006062104.55869.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,39 +20,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: TuxOnIce-devel <tuxonice-devel@tuxonice.net>, Nigel Cunningham <ncunningham@crca.org.au>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 6 Jun 2010, Brian Swetland wrote:
-
-> On Sun, Jun 6, 2010 at 11:04 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> >>
-> >> Right, so the sooner we make it easier for the drivers to use the kernel
-> >> as their main repository, the better.
-> >
-> > Yep, the fastest way is to provide two stub inlines in pm.h and let
-> > the driver flood come in.
+On Sun, 2010-06-06 at 21:04 +0200, Rafael J. Wysocki wrote: 
+> On Sunday 06 June 2010, Maxim Levitsky wrote:
+> > On Sun, 2010-06-06 at 15:57 +0200, Rafael J. Wysocki wrote: 
+> > > On Sunday 06 June 2010, Maxim Levitsky wrote:
+> ...
+> > > So how TuxOnIce helps here?
+> > Very simple.
+> > 
+> > With swsusp, I can save 750MB (memory) + 250 Vram (vram)
+> > With full memory save I can save (1750 MB of memory) + 250 MB of
+> > vram....
 > 
-> As mentioned previously, we didn't know this was an option (stubs
-> without an implementation behind them).  If it is, and thus we can
+> So what about being able to save 1600 MB total instead of the 2 GB
+> (which is what we're talking about in case that's not clear)?  Would it
+> be _that_ _much_ worse?
 
-That's what Greg did when he pulled stuff into staging, but there is
-no reason not to do it outside of staging as well. We can simply put
-the stub functions into Documentation/feature-removal.txt to ensure
-that we don't forget about them :)
+That I agree with you.
 
-> simplify the driver merging process short-term while sorting out a
-> long-term implementation or replacement for suspend blockers, then I
-> think we're making real progress.
-
-Yes, that way we do not lose the annotations. Replacing them, ripping
-them out or whatever we agree on, is a nobrainer.
-
-But it gets the drivers into the tree, so they are usable outside of
-android as well and the delta between android and mainline shrinks
-significantly.
-
-Thanks,
-
-	tglx
+Best regards,
+Maxim Levitsky
