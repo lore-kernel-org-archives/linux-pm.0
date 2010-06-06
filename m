@@ -1,7 +1,7 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: suspend blockers & Android integration
-Date: Sat, 5 Jun 2010 18:16:49 -0700
-Message-ID: <AANLkTikdM79nmARagK9gLveMWEiT6rlk44UELes1k8Ch__18161.4016452388$1275787063$gmane$org@mail.gmail.com>
+Date: Sat, 5 Jun 2010 18:24:43 -0700
+Message-ID: <AANLkTin5iXbnkqQnrkGRiOUvqcRAZJMNV4VoOUmZ6lZh__4610.04753965444$1275787631$gmane$org@mail.gmail.com>
 References: <20100603193045.GA7188@elte.hu> <20100603232302.GA16184@elte.hu>
 	<1275644619.27810.39462.camel@twins>
 	<201006050138.30859.rjw@sisk.pl>
@@ -13,12 +13,12 @@ References: <20100603193045.GA7188@elte.hu> <20100603232302.GA16184@elte.hu>
 	<AANLkTinD39rI47innPbGz1Gi8PsXV5HqkmaQuJ70oQ63@mail.gmail.com>
 	<alpine.LFD.2.00.1006052348200.2933@localhost.localdomain>
 	<AANLkTikmWDHYJ8wWF2cZapbkHHjV09R39I37yvQXFmor@mail.gmail.com>
-	<alpine.LFD.2.00.1006060148470.2933@localhost.localdomain>
+	<alpine.LFD.2.00.1006060208320.2933@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1006060148470.2933@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1006060208320.2933@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -35,66 +35,48 @@ List-Id: linux-pm@vger.kernel.org
 2010/6/5 Thomas Gleixner <tglx@linutronix.de>:
 > On Sat, 5 Jun 2010, Arve Hj=F8nnev=E5g wrote:
 >> 2010/6/5 Thomas Gleixner <tglx@linutronix.de>:
->> > On Sat, 5 Jun 2010, Arve Hj=F8nnev=E5g wrote:
->> >> >> > That download might take a minute or two, but that's not an
->> >> >> > justification for the crapplication to run unconfined and prevent
->> >> >> > lower power states.
->> >> >> >
->> >> >>
->> >> >> I agree, but this is not a simple problem to solve.
->> >> >
->> >> > Not with suspend blockers, but with cgroup confinement of crap, it's
->> >> > straight forward.
+>> >> > Well, that's simply an application bug which sucks battery with or
+>> >> > without suspend blockers. So it's unrelated to the freezing of
+>> >> > untrusted apps while a trusted app still works in the background
+>> >> > before allowing the machine to suspend.
 >> >> >
 >> >>
->> >> I don't think is is straight forward. If the a process in the frozen
->> >> group holds a resource that a process in the unfrozen group needs, how
->> >> do deal with that?
+>> >> It is not unrelated if the trusted app has stopped working but still
+>> >> blocks suspend. The battery drains when you combine them.
 >> >
->> > I'm going to fix the framework which puts the group into freeze state
->> > w/o making sure that there is no held shared resource. Come on it's
->> > not rocket science.
+>> > What you are describing is a problem which is not solvable either way.
+>> > If you take the lock and do not release it you're not going to
+>> > suspend. I never claimed that any other mechanism resolves this.
 >> >
->>
->> I'm not sure which framework you are talking about here, but I don't
->> think there is a single framework that knows about all shared
->> resources.
+>> Whether you claimed it or not, this is the only case where using
+>> cgroups would have a significant power saving over what we get with
+>> suspend. The trusted app is idle and the untrusted app is frozen, so
+>> we enter a low power mode from idle.
 >
-> Damn, it's not me talking about "our framework", you are mentioning
-> when it fits your needs.
-
-You said you were going to fix the framework. I did know if you were
-talking about the cgroup framework, or the android user-space
-frameworks. I don't think either has knowledge about all shared
-resources.
-
+> Nothing else was what I said and depending on the usage pattern this
+> can be significant. Just you converted a perfectly sensible technical
+> argument into a quibble about BUGs in applicatins which are not
+> confinable by defintion.
 >
-> If you do not have a clearly defined user space framework, then we
-> talk about a completely random conglomeration of applications which
-> need to be brought into submission by some global brute force
-> approach.
+>> > But this is not related to the fact that freezing crap while running a
+>> > sane background task is going to save you power vs. an approach where
+>> > running a sane background task allows crap to consume power unconfined
+>> > until it is done.
+>> >
+>> If the task that is blocking suspend is using the cpu anyway, then the
+>> bad app does not increase the power consumption nearly as much as if
+>> the task that blocked suspend is idle.
 >
-> I'm tired of this, really. You just use terminlology as it fits to
-> defend the complete design failure of android. But you fail to trick
-> me :)
+> That's utter bullshit. If the app missed to release the supsend
+> blocker then your crappy "while(1);" app is killing you in no time,
+> while the same frozen crappy "while(1);" does no harm at all.
 >
-> Can you please explain in a consistent way how the application stack
-> and the underlying framework (which exists according to android docs)
-> is handling events and how the separation of trust level works ?
->
-
-I don't think I can, since I only know small parts of it. I know some
-events like input event go though a single thread in our system
-process, while other events like network packets (which are also
-wakeup events) goes directly to the app.
-
-> We need to know that, otherwise we turn in circles forever.
->
-> Thanks,
->
-> =A0 =A0 =A0 =A0tglx
-
-
+This is the bug I described above. If the app that blocked suspend did
+not release the suspend blocker and went idle, then another while(1)
+app will drain the battery. If the app that blocked suspend only
+blocked suspend while it needs to run (which is the typical reason to
+block suspend) then the system is not idle anyway and the impact of
+the while(1) app is much less severe.
 
 -- =
 
