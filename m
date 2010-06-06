@@ -1,23 +1,17 @@
-From: Vitaly Wool <vitalywool@gmail.com>
-Subject: Re: suspend blockers & Android integration
-Date: Sun, 6 Jun 2010 17:47:10 +0200
-Message-ID: <AANLkTilOq_5yUW1AIMH1qSE699gyRUTlzGPUVc4CrReY__45081.9798782051$1275839295$gmane$org@mail.gmail.com>
-References: <1275731653.27810.41078.camel@twins>
-	<20100605092851.6ee15f13@infradead.org>
-	<AANLkTimEwznq9c_8lkuBMxEQ-42rdvpZEqA9Y71Cu-qC@mail.gmail.com>
-	<AANLkTimKknOurmCffOpHjc1FjrP2MKf10pBwEEbLJPg_@mail.gmail.com>
-	<AANLkTil1NCX91bWhpXHtC88Opr29mNjdhXD9RXQ6DI0y@mail.gmail.com>
-	<AANLkTin1Za3GvfIKbcZdx6TzjIHzCvsg5uaY_Vk4nJIh@mail.gmail.com>
-	<AANLkTilQ1k78dDCYadOa1Wiyjm2nsBcRpxwdpGvYcf8z@mail.gmail.com>
-	<AANLkTin7oM3gVwHbIHWqYV8yeC6bbQ4q2jDDxAgz3DwQ@mail.gmail.com>
-	<20100606133130.GA8513@srcf.ucam.org>
-	<AANLkTimXTgZS_fZQa8hjIptJrCn756gF_xakT1IQiLWa@mail.gmail.com>
-	<20100606152946.GA11351@srcf.ucam.org>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [SUSPECTED SPAM] Re: Proposal for a new algorithm
+ for	reading & writing a hibernation image.
+Date: Sun, 06 Jun 2010 18:54:10 +0300
+Message-ID: <1275839650.5331.2.camel__30812.60165568$1275839750$gmane$org@maxim-laptop>
+References: <9rpccea67yy402c975fqru8r.1275576653521@email.android.com>
+	<201006052121.45816.rjw@sisk.pl>
+	<1275784828.17835.4.camel@maxim-laptop>
+	<201006061557.20482.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100606152946.GA11351@srcf.ucam.org>
+In-Reply-To: <201006061557.20482.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,32 +21,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: TuxOnIce-devel <tuxonice-devel@tuxonice.net>, Nigel Cunningham <ncunningham@crca.org.au>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-2010/6/6 Matthew Garrett <mjg59@srcf.ucam.org>:
-> On Sun, Jun 06, 2010 at 05:26:09PM +0200, Vitaly Wool wrote:
->> 2010/6/6 Matthew Garrett <mjg59@srcf.ucam.org>:
->> > Holding a suspend blocker is entirely orthogonal to runtime pm. The
->> > "whole kernel" will not be "active" - it can continue to hit the same
->> > low power state in the idle loop, and any runtime pm implementation in
->> > the drivers will continue to be active.
->>
->> Yeah, that might also be the case, But then again, what's the use of
->> suspend blockers in this situation?
->
-> The difference between idle-based suspend and opportunistic suspend is
-> that the former will continue to wake up for timers and will never be
-> entered if something is using CPU, whereas the latter will be entered
-> whenever no suspend blocks are held. The problem with opportunistic
-> suspend is that you might make the decision to suspend simultaneusly
-> with a wakeup event being received. Suspend blocks facilitate
-> synchronisation between the kernel and userspace to ensure that all such
-> events have been consumed and handld appropriately.
+On Sun, 2010-06-06 at 15:57 +0200, Rafael J. Wysocki wrote: 
+> On Sunday 06 June 2010, Maxim Levitsky wrote:
+> > On Sat, 2010-06-05 at 21:21 +0200, Rafael J. Wysocki wrote: 
+> > > On Saturday 05 June 2010, Maxim Levitsky wrote:
+> > > > On Sat, 2010-06-05 at 20:45 +0200, Rafael J. Wysocki wrote: 
+> > > > > On Saturday 05 June 2010, Nigel Cunningham wrote:
+> > > > > > Hi again.
+> > > > > > 
+> > > > > > As I think about this more, I reckon we could run into problems at 
+> > > > > > resume time with reloading the image. Even if some bits aren't modified 
+> > > > > > as we're writing the image, they still might need to be atomically 
+> > > > > > restored. If we make the atomic restore part too small, we might not be 
+> > > > > > able to do that.
+> > > > > > 
+> > > > > > So perhaps the best thing would be to stick with the way TuxOnIce splits 
+> > > > > > the image at the moment (page cache / process pages vs 'rest'), but 
+> > > > > > using this faulting mechanism to ensure we do get all the pages that are 
+> > > > > > changed while writing the first part of the image.
+> > > > > 
+> > > > > I still don't quite understand why you insist on saving the page cache data
+> > > > > upfront and re-using the memory occupied by them for another purpose.  If you
+> > > > > dropped that requirement, I'd really have much less of a problem with the
+> > > > > TuxOnIce's approach.
+> > > > Because its the biggest advantage?
+> > > 
+> > > It isn't in fact.
+> > > 
+> > > > Really saving whole memory makes huge difference.
+> > > 
+> > > You don't have to save the _whole_ memory to get the same speed (you don't
+> > > do that anyway, but the amount of data you don't put into the image with
+> > > TuxOnIce is smaller).  Something like 80% would be just sufficient IMO and
+> > > then (a) the level of complications involved would drop significantly and (2)
+> > > you'd be able to use the image-reading code already in the kernel without
+> > > any modifications.  It really looks like a win-win to me, doesn't it?
+> > 
+> > 
+> > Well, in fact on modern systems its not possible to save 100% of ram
+> > even if we save it all because of video memory.
+> > Look I got 256MB of video ram, and when compiz is used I say most of it
+> > is used, and its isn't going to be magically preserved during suspend.
+> > So system still has to free about 256MB of memory before suspend (which
+> > means around 80% percent of ram is saved in best case :-) )
+> 
+> So how TuxOnIce helps here?
+Very simple.
 
-Right, and then you start taking suspend blockers in kernel here and
-there which eventually interferes with runtime PM.
-So I don't buy the "orthogonality" point. Generally speaking, it's not true.
+With swsusp, I can save 750MB (memory) + 250 Vram (vram)
+With full memory save I can save (1750 MB of memory) + 250 MB of
+vram....
 
-~Vitaly
+Of course save of vram sure can be made non atomic....
+
+
+Best regards,
+Maxim Levitsky
