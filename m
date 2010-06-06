@@ -1,16 +1,15 @@
-From: Brian Swetland <swetland@google.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: suspend blockers & Android integration
-Date: Sun, 6 Jun 2010 11:44:16 -0700
-Message-ID: <AANLkTilRbTVbjAt9uodpzecHLUmcDQEKT_EVpjyrSIwn__45407.7040813447$1275849914$gmane$org@mail.gmail.com>
-References: <1275834706.7227.545.camel@mulgrave.site>
-	<alpine.LFD.2.00.1006061725000.2933@localhost.localdomain>
-	<1275844114.7227.552.camel@mulgrave.site>
-	<alpine.LFD.2.00.1006061932240.2933@localhost.localdomain>
+Date: Sun, 6 Jun 2010 21:01:52 +0200
+Message-ID: <201006062101.52752.rjw__16073.1980730363$1275850977$gmane$org@sisk.pl>
+References: <AANLkTil1NCX91bWhpXHtC88Opr29mNjdhXD9RXQ6DI0y@mail.gmail.com>
+	<AANLkTim0JD4V0RTc6CRIADypqYhQo3JYp3dJs0l7g7Ps@mail.gmail.com>
+	<20100606173146.GA13432@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1006061932240.2933@localhost.localdomain>
+In-Reply-To: <20100606173146.GA13432@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,35 +19,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jun 6, 2010 at 11:04 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
->>
->> Right, so the sooner we make it easier for the drivers to use the kernel
->> as their main repository, the better.
->
-> Yep, the fastest way is to provide two stub inlines in pm.h and let
-> the driver flood come in.
+On Sunday 06 June 2010, Matthew Garrett wrote:
+> On Sun, Jun 06, 2010 at 07:21:49PM +0200, Vitaly Wool wrote:
+> > 2010/6/6 Matthew Garrett <mjg59@srcf.ucam.org>:
+> > 
+> > > Suspend blocks prevent system suspend, not any per-device suspend.
+> > 
+> > Can you suspend a device which is holding a wake lock?
+> 
+> Yes. Suspend blocks are orthogonal to runtime PM.
 
-As mentioned previously, we didn't know this was an option (stubs
-without an implementation behind them).  If it is, and thus we can
-simplify the driver merging process short-term while sorting out a
-long-term implementation or replacement for suspend blockers, then I
-think we're making real progress.
+Yes, they are.
 
-There is no reason that drivers that support suspend blockers cannot
-(or should not) support regular suspend/resume or runtime
-suspend/resume, so that shouldn't be a worry.  The various operating
-modes complement, not compete with each other (we want the lowest
-possible power consumption in all states, be that fully active, fully
-suspended, or anything in between -- I think everyone involved agrees
-with this).
+The idea that they would somehow interfere with runtime PM has always been pure
+nonsense.  They wouldn't and there's no way in which they could.
 
-> I think all of us involved in that can do with a break, where we sit
-> back, calm down and rethink w/o time pressure.
+Whether or not they are really necessary to address the Android requirements is
+a different question, though, and I don't really think so right now.  At least
+not in the form submitted by Arve.
 
-Total agreement.
+Also, there's some overlap between suspend blockers and the PM QoS framework,
+so it seems to be a good idea to extend PM QoS (which already is in the kernel)
+to express some requirements that suspend blockers are supposed to express.
 
-Brian
+Rafael
