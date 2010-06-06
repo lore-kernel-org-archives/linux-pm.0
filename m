@@ -1,16 +1,18 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [SUSPECTED SPAM] Re: Proposal for a new algorithm
- for	reading & writing a hibernation image.
-Date: Sun, 06 Jun 2010 22:51:30 +0300
-Message-ID: <1275853890.3459.0.camel__31538.5453789078$1275853941$gmane$org@maxim-laptop>
-References: <9rpccea67yy402c975fqru8r.1275576653521@email.android.com>
-	<201006061557.20482.rjw@sisk.pl> <1275839650.5331.2.camel@maxim-laptop>
-	<201006062104.55869.rjw@sisk.pl>
+From: Brian Swetland <swetland@google.com>
+Subject: Re: suspend blockers & Android integration
+Date: Sun, 6 Jun 2010 12:58:10 -0700
+Message-ID: <AANLkTikA0ihlbehyyN-zQ3mN4WmlZJYBSRTYV8SbDhSr__11633.4637896673$1275854428$gmane$org@mail.gmail.com>
+References: <1275834706.7227.545.camel@mulgrave.site>
+	<alpine.LFD.2.00.1006061725000.2933@localhost.localdomain>
+	<1275844114.7227.552.camel@mulgrave.site>
+	<20100606190525.GA20517@infradead.org>
+	<AANLkTikKx-gXCGtNo3woHLCpBoEQ7hG9Jbiq3hwUTW_w@mail.gmail.com>
+	<20100606192405.GA7559@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006062104.55869.rjw@sisk.pl>
+In-Reply-To: <20100606192405.GA7559@infradead.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,27 +22,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: TuxOnIce-devel <tuxonice-devel@tuxonice.net>, Nigel Cunningham <ncunningham@crca.org.au>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2010-06-06 at 21:04 +0200, Rafael J. Wysocki wrote: 
-> On Sunday 06 June 2010, Maxim Levitsky wrote:
-> > On Sun, 2010-06-06 at 15:57 +0200, Rafael J. Wysocki wrote: 
-> > > On Sunday 06 June 2010, Maxim Levitsky wrote:
-> ...
-> > > So how TuxOnIce helps here?
-> > Very simple.
-> > 
-> > With swsusp, I can save 750MB (memory) + 250 Vram (vram)
-> > With full memory save I can save (1750 MB of memory) + 250 MB of
-> > vram....
-> 
-> So what about being able to save 1600 MB total instead of the 2 GB
-> (which is what we're talking about in case that's not clear)?  Would it
-> be _that_ _much_ worse?
-
-That I agree with you.
-
-Best regards,
-Maxim Levitsky
+T24gU3VuLCBKdW4gNiwgMjAxMCBhdCAxMjoyNCBQTSwgQ2hyaXN0b3BoIEhlbGx3aWcgPGhjaEBp
+bmZyYWRlYWQub3JnPiB3cm90ZToKPgo+IFllcy4gwqBUaGF0J3Mgd2hhdCBtYWtlcyBtZSB3b25k
+ZXIgYWJvdXQgc29tZSBwYXJ0cyBvZiB0aGUgZGlzY3Vzc2lvbgo+IGhlcmUuIMKgR2V0dGluZyB0
+aGUgZHJpdmVycyBmb3Igb25lIG9yIG1vcmUgb2YgdGhlIGFuZHJvaWQgcGxhdHRmb3Jtcwo+IGlu
+IGlzIG5vdCBhIHByb2JsZW0uIMKgSSdkIHNheSBpdCBjb3VsZCBoYXZlIGVhc2lseSBiZWVuIGRv
+bmUgd2l0aCB0aGUKPiBtYW53ZWVrcyBzcGVudCBhcmd1aW5nIGluIHRoaXMgYW5kIHJlbGF0ZWQg
+dGhyZWFkcy4KPgo+IFRoZSBtdWNoIGJpZ2dlciBpc3N1ZXMgaXMgdG8gZ2V0IGFuZHJvaWQgdXNl
+cnNwYWNlIHJ1bm5pbmcgb24gYSBtb3JlCj4gb3IgbGVzcyB2YW5pbGxhIGtlcm5lbCwgdGhhdCBp
+cyB3aXRob3V0dGhlIMKgYmluZGVyLCB3aXRob3V0IHRoZSByYXRoZXIKPiBpbnRlcmVzdGluZyBn
+cm91cCBJRCBiYXNlZCBzZWN1cml0eSBoYWNrXkheSF5IXkhtb2RlbCwgd2l0aG91dCB0aGUKPiBz
+dXNwZW5kIGJsb2NrZXIgdXNlcnNwYWNlIEFQSSBhbmQgc28gb24sIGFuZCBzbyBvbi4KClNvbWVi
+b2R5IHdpbGwgaGF2ZSB0byBicm9rZXIgYSBkZWFsIHdpdGggdGhlIGZyYW1ld29ya3MvYXBwcyBm
+b2xrcyB0bwpnZXQgcmlkIG9mIHRoZSBiaW5kZXIuICBUaGV5IGxpa2UgaXQgYSBsb3QuICBPZiBj
+b3Vyc2UgaWYgc29tZWJvZHkKYnVpbHQgYSBkcm9wLWluIHJlcGxhY2VtZW50IGZvciB0aGUgdXNl
+cnNwYWNlIHNpZGUgdGhhdCBkaWRuJ3QgcmVxdWlyZQphIGtlcm5lbCBkcml2ZXIsIGhhZCB0aGUg
+c2FtZSBwZXJmb3JtYW5jZSBjaGFyYWN0ZXJpc3RpY3MsIHNvbHZlZCB0aGUKc2FtZSBwcm9ibGVt
+cywgZXRjLCB0aGV5IGNvdWxkIHByb2JhYmx5IG1ha2UgYW4gYXJndW1lbnQgZm9yIGl0IChvcgpq
+dXN0IHByb3ZpZGUgaXQgYXMgYSBkcm9wLWluIHJlcGxhY2VtZW50IGZvciBwZW9wbGUgd2hvIHdh
+bnQgYSBtb3JlCiJwdXJlIiBsaW51eCB1bmRlcm5lYXRoIEFuZHJvaWQsIGV2ZW4gaWYgd2UgZGlk
+bid0IHBpY2sgaXQgdXApLgoKVGhlIGdyb3VwIElEIHN0dWZmIHdvcmtzIGluY3JlZGlibHkgd2Vs
+bCBmb3IgZ2F0aW5nIGRldmljZSBhY2Nlc3MgLS0Kd2UgZW5zdXJlIHRoYXQgZGV2aWNlcyB0aGF0
+IG5lZWQgYWNjZXNzIGZyb20gdmFyaW91cyBwcm9jZXNzZXMgZW5kIHVwCndpdGggcGVybXMgbGlr
+ZSAwNjYwIHJvb3QgYXVkaW8gKHNheSBmb3IgYSByYXcgYXVkaW8gaW50ZXJmYWNlKSwgYW5kCnRo
+ZW4gd2UgYXNzdXJlIHRoYXQgcHJvY2Vzc2VzIHdoaWNoIGhhdmUgdGhlICJtYXkgdXNlIGF1ZGlv
+IGhhcmR3YXJlIgpwZXJtaXNzaW9uIGFyZSBleGVjdXRlZCB3aXRoIGF1ZGlvIGFzIGFuIGFkZGl0
+aW9uYWwgZ3JvdXAuICBXZSBlbmRlZAp1cCB1c2luZyB0aGUgc2FtZSBtb2RlbCB0byBjb250cm9s
+IHNvY2tldCwgcmF3IHNvY2tldCwgYW5kIGJ0IHNvY2tldAphY2Nlc3MgYmVjYXVzZSBhdCB0aGUg
+dGltZSB3ZSBjb3VsZCBub3QgZmluZCBhIHJlYXNvbmFibGUgd2F5IHRvIGdyYW50Cm9yIGV4Y2x1
+ZGUgc3VjaCBwZXJtaXNzaW9ucyBvbiBhIHByb2Nlc3MgYnkgcHJvY2VzcyBiYXNpcy4KTWFpbnRh
+aW5pbmcgYWJvdXQgMjAtMzAgbGluZXMgb2YgZGlmZnMgdG8gbWFrZSB0aGF0IHdvcmsgd2FzIG5v
+dCBhIGJhZAp0cmFkZW9mZiAoYW5kIHdlIGRvbid0IGV4cGVjdCB0aG9zZSBwYXRjaGVzIHRvIGdv
+IHVwc3RyZWFtKS4gIElmCnRoZXJlJ3MgYSB3YXkgdG8gYWNjb21wbGlzaCB0aGlzIHdpdGhvdXQg
+cGF0Y2hpbmcgdGhlIGtlcm5lbCwgd2UncmUKYWxsIGVhcnMuCgpXaGlsZSB3ZSBkbyBtYWludGFp
+biBzb21lIGFzc29ydGVkIHBhdGNoZXMgdG8gY29yZSBjb2RlIChsaWtlIHRoZQpwZXJtaXNzaW9u
+cyB0aGluZyksIHdlIHN0cm9uZ2x5IHByZWZlciB0byBrZWVwIG91ciB3b3JrIGxvY2FsaXplZCB0
+bwpkcml2ZXJzIChnZW5lcmljIHRvIGFuZHJvaWQgb3Igc3BlY2lmaWMgdG8gaGFyZHdhcmUpLCBh
+bmQgdHJ5IHRvCm1pZ3JhdGUgdG8gY29tbW9uIGtlcm5lbCBmZWF0dXJlcyB3aGVuIHBvc3NpYmxl
+LCBzdWJtaXQgcGF0Y2hlcyAobGlrZQp3b3JrIE1pa2UgQ2hhbiBpcyBkb2luZyBhcm91bmQgY3B1
+ZnJlcSBhbmQgcG93ZXIgbWVhc3VyZW1lbnQpLCBldGMuClBhdGNoZXMgdG8gY29yZSBjb2RlIGNh
+dXNlIG1vcmUgaGVhZGFjaGVzIHdoZW4gd2UgcmViYXNlIHVwIHRvIG5ldwprZXJuZWwgdmVyc2lv
+bnMsIGFmdGVyIGFsbC4KCj4gU28gZm9yIHBlb3BsZSB3aG8gcmVhbGx5IGNhcmUgYWJvdXQgcnVu
+bmluZyBhIG1haW5saW5lIGtlcm5lbCBvbiB0aGVpcgo+IGFuZHJvaWQgZGV2aWNlIGRvaW5nIHRo
+YXQgcGFydCBmaXJzdCBvbiBhIGdlbmVyaWMgQVJNIGJvYXJkIGluIHFlbXUKPiBtaWdodCBiZSBt
+dWNoIGJldHRlciBmaXJzdCBzdGVwIHdvcmsuCgo+IE9uIHRoZSBvdGhlciBoYW5kIEkndmUgaGVh
+cmQKPiB0aGF0IHZhcmlvdXMgaGFyZHdhcmUgdmVuZG9ycyBvciBwYXJ0aWVzIGNsb3NlZCB0byB0
+aGVtIGFyZSByYXRoZXIKPiBhbm5veWVkIGJ5IHRoZWlyIGRyaXZlcnMgYmVlaW5nIHN0dWNrIGlu
+IHRoZSBhbmRyb2lkIHRyZWUgLSBidXQgdGhhdAo+IGNhbiBiZSBlYXNpbHkgc29sdmVkIGJ5IGdl
+dHRpbmcgcmVtb3ZpbmcgdGhlIHN1c3BlbmQgYmxvY2tlcnMgKGF0IGxlYXN0Cj4gdGVtcG9yYXJp
+bHkpLCBjbGVhbmluZyB1cCBhIGZldyBiaXRzIGhlcmUgYW5kIHRoZXJlIGFuZCBnZXR0aW5nIHRo
+ZW0gaW4uCgpUaGlzIGNvbnRpbnVlcyB0byBiYWZmbGUgbWUuICBJZiB3ZSAoR29vZ2xlKSBhcmUg
+c3VjaCBhIGhlYWRhY2hlLCB3aHkKbm90IGp1c3Qgcm91dGUgYXJvdW5kIHVzLiAgVGhlIGRyaXZl
+cnMgd2UndmUgd3JpdHRlbiBhcmUgR1BMdjIsIHRoZQpzb3VyY2UgaXMgb3V0IHRoZXJlIGZvciBh
+bnlvbmUgd2hvIHdhbnRzIGl0LCBldGMuICBUaGUgZHJpdmVycyBvdGhlcgpwZW9wbGUgaGF2ZSB3
+cml0dGVuIHdlIGhhdmUgbm8gY29udHJvbCBvdmVyIGF0IGFsbC4gRnJvbSBteSBwb2ludCBvZgp2
+aWV3IGl0J2QgYmUgYW4gYW5ub3lhbmNlIGlmIHNvbWVib2R5IHRvb2sgdGhlIGNvZGUgd2Ugd3Jv
+dGUsIG1vZGlmaWVkCml0IGhlYXZpbHksIGFuZCBwdXNoZWQgaXQgdXBzdHJlYW0sIGJ1dCBmdW5k
+YW1lbnRhbGx5IEkgY2FuJ3Qgc3RvcAp0aGF0IGZyb20gaGFwcGVuaW5nIG90aGVyIHRoYW4gYnkg
+cHVzaGluZyBpdCB1cHN0cmVhbSBteXNlbGYsIGZpcnN0LgoKQmxhbWluZyBtZSBiZWNhdXNlIHlv
+dSB3YW50IG1lIHRvIHNlbmQgeW91ciBkcml2ZXJzIHVwc3RyZWFtIGFuZCBJJ20Kbm90IGRvaW5n
+IGl0IG9yIG5vdCBkb2luZyBpdCBmYXN0IGVub3VnaCBvciBub3QgZG9pbmcgaXQgdGhlIHdheSB5
+b3UKbGlrZSBkb2VzIG5vdCBzZWVtIHZlcnkgcHJvZHVjdGl2ZS4gIEknbSBub3QgYSBnYXRla2Vl
+cGVyIGZvciBwYXRjaApzdWJtaXNzaW9uIHRvIHRoZSBtYWlubGluZSBrZXJuZWwuCgpCcmlhbgpf
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBt
+YWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9s
+aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
