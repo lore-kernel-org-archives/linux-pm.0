@@ -1,9 +1,8 @@
 From: Florian Mickler <florian@mickler.org>
 Subject: Re: suspend blockers & Android integration
-Date: Sun, 6 Jun 2010 12:46:01 +0200
-Message-ID: <20100606124601.2f1f6714__28130.9183025316$1275821324$gmane$org@schatten.dmk.lab>
-References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
-	<20100603232302.GA16184@elte.hu>
+Date: Sun, 6 Jun 2010 12:49:49 +0200
+Message-ID: <20100606124949.539fa636__23541.8621021838$1275821554$gmane$org@schatten.dmk.lab>
+References: <20100603193045.GA7188@elte.hu>
 	<AANLkTikZP3bmckpfb_jUdG7qZO5W9DgpZ79ugtSZaEpt@mail.gmail.com>
 	<20100604071354.GA14451@elte.hu>
 	<AANLkTimH4ihf3QqtKFpfGXRKtO55PrUuff9JYtaEBG44@mail.gmail.com>
@@ -19,11 +18,13 @@ References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
 	<AANLkTin1Za3GvfIKbcZdx6TzjIHzCvsg5uaY_Vk4nJIh@mail.gmail.com>
 	<AANLkTilQ1k78dDCYadOa1Wiyjm2nsBcRpxwdpGvYcf8z@mail.gmail.com>
 	<AANLkTin7oM3gVwHbIHWqYV8yeC6bbQ4q2jDDxAgz3DwQ@mail.gmail.com>
+	<alpine.DEB.2.01.1006060305060.17462@asgard.lang.hm>
+	<AANLkTinW-X5m85rUcqP-lrEdfBikVclJWgqiWDkpxnAc@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTin7oM3gVwHbIHWqYV8yeC6bbQ4q2jDDxAgz3DwQ@mail.gmail.com>
+In-Reply-To: <AANLkTinW-X5m85rUcqP-lrEdfBikVclJWgqiWDkpxnAc@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -34,32 +35,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Vitaly Wool <vitalywool@gmail.com>
-Cc: Felipe Balbi <felipe.balbi@nokia.com>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Linux@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+Cc: david@lang.hm, Felipe Balbi <felipe.balbi@nokia.com>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Linux@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 6 Jun 2010 12:00:47 +0200
+On Sun, 6 Jun 2010 12:19:08 +0200
 Vitaly Wool <vitalywool@gmail.com> wrote:
 
-> Even worse, the suspend wakelock will keep the
-> whole kernel active, as opposed to powering off unused devices
-> separately as it's done in runtime PM. 
-
-That is not true. While the kernel is not suspended it does
-runtime pm.
-
-
-
-> > Users do like that to work too -- I recall Arve leaving a device in
-> > his filing cabinet with the radio off while he was out of the country
-> > for three weeks once, and him discovering it was still running with
-> > something like 25% battery remaining when he returned.
+> 2010/6/6  <david@lang.hm>:
 > 
-> So what you're actually up to is that a user should restart the phone
-> and turn the radio off if he wants to find it running when he's back
-> from a long business trip or something. Nice...
+> > as an example (taken from this thread).
+> >
+> > system A needs to wake up to get a battery reading, store it and go back to
+> > sleep, It does so every 10 seconds. But when it does so it only runs the one
+> > process and then goes back to sleep.
+> >
+> > system B has the same need, but wakes up every 10 minutes. but when it does
+> > so it fully wakes up and this allows the mail app to power up the radio,
+> > connect to the Internet and start checking for new mail before oppurtunistic
+> > sleep shuts things down (causing the mail check to fail)
+> >
+> > System A will last considerably longer on a battery than System B.
+> 
+> Exactly, thanks for pointing out the specific example :)
+> 
+> ~Vitaly
 
-?
+This does not affect suspend_blockers nor does suspend_blockers
+interfere with that. 
 
+Suspend_blockers allow the system to suspend ("mem">/sys/power/state
+suspend), when the userspace decides that the device is not in use.
+
+So implementing suspend_blockers support does not impact any
+optimizations done to either system A nor system B.
 
 Cheers,
 Flo
