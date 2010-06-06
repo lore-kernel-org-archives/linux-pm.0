@@ -1,11 +1,8 @@
-From: Felipe Contreras <felipe.contreras@gmail.com>
+From: david@lang.hm
 Subject: Re: suspend blockers & Android integration
-Date: Sun, 6 Jun 2010 14:11:50 +0300
-Message-ID: <AANLkTinZdZdLgB7wqDx3jyyfBJdRryWkMP-iwwsY_W5l__45881.3019133688$1275822858$gmane$org@mail.gmail.com>
-References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
-	<20100603232302.GA16184@elte.hu>
-	<AANLkTikZP3bmckpfb_jUdG7qZO5W9DgpZ79ugtSZaEpt@mail.gmail.com>
-	<20100604071354.GA14451@elte.hu>
+Date: Sun, 6 Jun 2010 04:14:09 -0700 (PDT)
+Message-ID: <alpine.DEB.2.01.1006060410050.17462__39143.0774856873$1275823039$gmane$org@asgard.lang.hm>
+References: <20100603193045.GA7188@elte.hu> <20100604071354.GA14451@elte.hu>
 	<AANLkTimH4ihf3QqtKFpfGXRKtO55PrUuff9JYtaEBG44@mail.gmail.com>
 	<20100604083423.GD15181@elte.hu>
 	<AANLkTinQyzzeF-NOAjrAqqQXqKjFJhx85nI4uyBGRtWd@mail.gmail.com>
@@ -18,12 +15,15 @@ References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
 	<AANLkTil1NCX91bWhpXHtC88Opr29mNjdhXD9RXQ6DI0y@mail.gmail.com>
 	<AANLkTin1Za3GvfIKbcZdx6TzjIHzCvsg5uaY_Vk4nJIh@mail.gmail.com>
 	<AANLkTilQ1k78dDCYadOa1Wiyjm2nsBcRpxwdpGvYcf8z@mail.gmail.com>
-	<alpine.DEB.2.01.1006060235130.17462@asgard.lang.hm>
+	<AANLkTin7oM3gVwHbIHWqYV8yeC6bbQ4q2jDDxAgz3DwQ@mail.gmail.com>
+	<alpine.DEB.2.01.1006060305060.17462@asgard.lang.hm>
+	<AANLkTinW-X5m85rUcqP-lrEdfBikVclJWgqiWDkpxnAc@mail.gmail.com>
+	<20100606124949.539fa636@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.01.1006060235130.17462@asgard.lang.hm>
+In-Reply-To: <20100606124949.539fa636@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -33,35 +33,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Florian Mickler <florian@mickler.org>
+Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-2010/6/6  <david@lang.hm>:
-> On Sun, 6 Jun 2010, Brian Swetland wrote:
-> if you could shrink the time awake to 0.01 second per wakeup you would shift
-> this all up a category (and avoiding the need to wake everything up to
-> service a timer would help do this)
->
-> this effort very definantly has diminishing returns as you go to larger
-> sleep periods as the constant standby power draw becomes more and more
-> dominating. someone mentioned that they were getting the sleep time of
-> normal systems up past the 1 second mark with the 10 second mark looking
-> very attainable. that is where you get the most benifit for whatever changes
-> are needed. getting up to a 2 min sleep time really gives you about all the
-> benifit that you can get, going from there to 15 min makes very little
-> difference.
->
-> don't let chasing the best possible sleep time prevent you from considering
-> options that would be good enough in time, but would drastically reduce the
-> maintinance effort (as things could be upstreamed more easily), and would be
-> usable on far more systems.
+On Sun, 6 Jun 2010, Florian Mickler wrote:
 
-Not to mention the fact that there's nothing fundamental that prevents
-dynamic PM to reach > 15 min idle. It's a matter of time before we
-find the tools needed. The amount of work that suspend blockers would
-require to implement properly in user-space other than Android just
-doesn't match the power savings.
+> On Sun, 6 Jun 2010 12:19:08 +0200
+> Vitaly Wool <vitalywool@gmail.com> wrote:
+>
+>> 2010/6/6  <david@lang.hm>:
+>>
+>>> as an example (taken from this thread).
+>>>
+>>> system A needs to wake up to get a battery reading, store it and go back to
+>>> sleep, It does so every 10 seconds. But when it does so it only runs the one
+>>> process and then goes back to sleep.
+>>>
+>>> system B has the same need, but wakes up every 10 minutes. but when it does
+>>> so it fully wakes up and this allows the mail app to power up the radio,
+>>> connect to the Internet and start checking for new mail before oppurtunistic
+>>> sleep shuts things down (causing the mail check to fail)
+>>>
+>>> System A will last considerably longer on a battery than System B.
+>>
+>> Exactly, thanks for pointing out the specific example :)
+>>
+>> ~Vitaly
+>
+> This does not affect suspend_blockers nor does suspend_blockers
+> interfere with that.
+>
+> Suspend_blockers allow the system to suspend ("mem">/sys/power/state
+> suspend), when the userspace decides that the device is not in use.
+>
+> So implementing suspend_blockers support does not impact any
+> optimizations done to either system A nor system B.
 
--- 
-Felipe Contreras
+Actually, it does.
+
+system A is what's being proposed by kernel developers, where the 
+untrusted stuff is in a different cgroup and what puts the system to sleep 
+is 'normal' power management. It doesn't sleep as long, but when it wakes 
+up the untrusted stuff is still frozen, so it doesn't stay awake long, or 
+do very much.
+
+System B is suspend blockers where you are either awake or asleep, and 
+when you wake up you wake up fully, but oppertunistic sleep can interrupt 
+untrusted processes at any time. The system sleeps longer (as fewer things 
+can wake it), but when it wakes up it's fully awake.
+
+David Lang
