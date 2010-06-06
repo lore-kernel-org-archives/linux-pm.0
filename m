@@ -1,7 +1,7 @@
-From: Brian Swetland <swetland@google.com>
+From: david@lang.hm
 Subject: Re: suspend blockers & Android integration
-Date: Sun, 6 Jun 2010 02:21:11 -0700
-Message-ID: <AANLkTilQ1k78dDCYadOa1Wiyjm2nsBcRpxwdpGvYcf8z__38842.453264124$1275816159$gmane$org@mail.gmail.com>
+Date: Sun, 6 Jun 2010 02:56:04 -0700 (PDT)
+Message-ID: <alpine.DEB.2.01.1006060235130.17462__47648.9236615182$1275818389$gmane$org@asgard.lang.hm>
 References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
 	<20100603232302.GA16184@elte.hu>
 	<AANLkTikZP3bmckpfb_jUdG7qZO5W9DgpZ79ugtSZaEpt@mail.gmail.com>
@@ -17,11 +17,12 @@ References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
 	<AANLkTimKknOurmCffOpHjc1FjrP2MKf10pBwEEbLJPg_@mail.gmail.com>
 	<AANLkTil1NCX91bWhpXHtC88Opr29mNjdhXD9RXQ6DI0y@mail.gmail.com>
 	<AANLkTin1Za3GvfIKbcZdx6TzjIHzCvsg5uaY_Vk4nJIh@mail.gmail.com>
+	<AANLkTilQ1k78dDCYadOa1Wiyjm2nsBcRpxwdpGvYcf8z@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTin1Za3GvfIKbcZdx6TzjIHzCvsg5uaY_Vk4nJIh@mail.gmail.com>
+In-Reply-To: <AANLkTilQ1k78dDCYadOa1Wiyjm2nsBcRpxwdpGvYcf8z@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -31,75 +32,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vitaly Wool <vitalywool@gmail.com>
+To: Brian Swetland <swetland@google.com>
 Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuLCBKdW4gNiwgMjAxMCBhdCAxOjMyIEFNLCBWaXRhbHkgV29vbCA8dml0YWx5d29vbEBn
-bWFpbC5jb20+IHdyb3RlOgo+Pgo+PiBJdCB2YXJpZXMgZGVwZW5kaW5nIG9uIGRldmljZSBhbmQg
-dXNhZ2UuIMKgVGhlIGJhdHRlcnkgbW9uaXRvcmluZyBvbgo+PiBOZXh1c09uZSBoYXBwZW5zIGV2
-ZXJ5IHRlbiBtaW51dGVzLCBzbyB0aGF0J3MgdGhlIGxvbmdlc3QgeW91J2xsIHNlZSBhCj4+IE4x
-IHN1c3BlbmRlZCBmb3IuIMKgT24gYSBHMSBvciBEcmVhbS9teVRvdWNoIHlvdSBjYW4gc2VlIDIw
-LTMwIG1pbnV0ZXMKPj4gYmV0d2VlbiB3YWtldXBzIChkZXBlbmRpbmcgb24gbmV0d29yayBpc3N1
-ZXMgYW5kIGJhY2tncm91bmQgZGF0YSBzeW5jCj4+IHRyYWZmaWMpLCBhbmQgaWYgeW91IGhhdmUg
-YmFja2dyb3VuZCBkYXRhIHN5bmMgb2ZmIHRob3NlIGRldmljZXMgY2FuCj4+IHNpdCBpbiBzdXNw
-ZW5kIGZvciBkYXlzIGF0IGEgdGltZSAodW5sZXNzIHlvdSByZWNlaXZlIGEgcGhvbmUgY2FsbCBv
-cgo+PiBzb21ldGhpbmcpLiDCoEluICJhaXJwbGFuZSBtb2RlIiwgd2l0aCBubyBsb2NhbCBhbGFy
-bXMsIGEgZGV2aWNlIGNhbgo+PiBlYXNpbHkgc2l0IGluIHRoZSBsb3dlc3QgcG93ZXIgc3RhdGUg
-Zm9yIGEgbW9udGggb3Igc28sIHVudGlsIHRoZQo+PiBiYXR0ZXJ5IGZpbmFsbHkgcnVucyBvdXQu
-Cj4KPiBUaGF0IG9ubHkgY29uY2VybnMgdGhlIGNhc2Ugd2hlbiB5b3UgaGF2ZSBqdXN0IHR1cm5l
-ZCBvbiB0aGUgcGhvbmUgYW5kCj4gbGVmdCBpdCBsYXlpbmcgYXJvdW5kLgo+IFlvdSBoYXZlIHRv
-IGFkbWl0IHRoYXQgaXQncyBub3QgdGhlIGNvbW1vbiBjYXNlIGZvciBhIHNtYXJ0cGhvbmUuIFRo
-ZQo+IGNvbW1vbiBjYXNlIGlzIHRoYXQgeW91J3ZlIHBsYXllZCB3aXRoIGl0IGZvciBhIGJpdCwg
-dHVybmluZyBvbiB0aGluZ3MKPiBsaWtlIEJUL1dJRkksIHJ1bm5pbmcgc29tZSBhcHBzIGFuZCBz
-byBvbi4gQW5kIGRvaW5nIHNvIHlvdSdsbCBlbmQgdXAKPiBoYXZpbmcgd2FrZSBsb2NrcyB0YWtl
-biBmcm9tIGV2ZXJ5d2hlcmUsIHNvIEkgY2FuIGhhcmRseSBzZWUgYSBzZWNvbmQKPiBvZiBzdXNw
-ZW5kIGZvciBOZXh1cy4KClRoZSBjb21tb24gY2FzZSBmb3IgYSBwaG9uZSBpcyB0byBiZSBzaXR0
-aW5nIGFyb3VuZC4gIEV2ZW4gZm9yIGhlYXZ5CnNtYXJ0cGhvbmUgdXNlcnMsIHVubGVzcyB0aGV5
-IHBvd2VyIG9uLCB1c2UgdGhlIGRldmljZSBzY3JlZW4tb24gZm9yIDQKaG91cnMgc29saWQgb3Ig
-d2hhdG5vdCBhbmQgZHJhaW4gdGhlIGJhdHRlcnkgc3RyYWlnaHQgYXdheSwgdGhlIGRldmljZQpp
-cyBnb2luZyB0byBzcGVuZCBhIHNpZ25pZmljYW50IHBvcnRpb24gb2YgaXRzIG9wZXJhdGluZyB0
-aW1lIGluCnNjcmVlbi1vZmYgc3RhbmRieSBtb2RlcyAoY29uc2VydmluZyBwb3dlciBmb3Igd2hl
-biB5b3UgdGFrZSBhIGNhbGwsCmJyb3dzZSB0aGUgd2ViLCBldGMpLgoKRm9yIHR5cGljYWwgdXNl
-cnMgb24gdHlwaWNhbCBhbmRyb2lkIGRldmljZXMsIHRoaXMgbWVhbnMgdGhlIGRldmljZQpzdGF5
-cyBzdXNwZW5kZWQgZm9yIDUtMTAgbWludXRlcyBhdCBhIHRpbWUsIGNvbWluZyB1cCBmb3IgYWly
-IHdoZW4gYQpuZXR3b3JrIHBhY2tldCAobWFpbCBzeW5jLCBpbSwgZXRjKSBvciBhbGFybSAoYmF0
-dGVyeSBtb25pdG9yKSB3YWtlcwp0aGUgZGV2aWNlIGJyaWVmbHkuICBPYnZpb3VzbHkgd2l0aCB0
-aGUgcmlnaHQgY29tYmluYXRpb24gb2YgYmFkIGFwcHMKeW91IHdpbGwgc2VlIGEgZGV2aWNlIHN1
-c3BlbmRpbmcgbW9yZSByYXJlbHkuCgo+IEUuIGcuIHdoZW4gdGhlIHdpcmVsZXNzIGlzIGNvbm5l
-Y3RlZCB0byBhbiBBUCwgaXQgdGFrZXMgYSB3YWtlIGxvY2sKPiB3aGljaCBpcyByZWxlYXNlZCBv
-biAxNSBtaW51dGVzIHRvdWNoc2NyZWVuIGluYWN0aXZpdHkgdGltZW91dCwgYXMgZmFyCj4gYXMg
-SSBjYW4gdGVsbC4gU286Cj4KPiAqIHRoZSBzeXN0ZW0gd2lsbCBuZXZlciBoaXQgc3VzcGVuZCBk
-dXJpbmcgdGhpcyBwZXJpb2Q7Cj4gKiBpZiB0aGUgZG93bmxvYWQgd2FzIG9uZ29pbmcgYW5kIGhh
-ZCBub3QgYmVlbiBjb21wbGV0ZWQgZHVyaW5nIHRoaXMKPiBwZXJpb2QsIGl0IHdpbGwgYmUgdGVy
-bWluYXRlZC4KCkknbSBwcmV0dHkgc3VyZSB0aGUgd2lmaSBzdWJzeXN0ZW0gZG9lcyBub3QgYWN0
-dWFsbHkgdGFrZSBhIHdha2Vsb2NrCndoaWxlIGl0cyBjb25uZWN0ZWQgLS0gaXQgZG9lcyBoYXZl
-IGFuIGFsYXJtIHRvIHNwaW4gZG93biB3aWZpIGFmdGVyCjE1IG1pbnV0ZXMgKGJ5IGRlZmF1bHQs
-IGFuZCB1c2VyIGRpc2FibGVhYmxlKSBsYXJnZWx5IGR1ZSB0byBwb3dlcgppbmVmZmljaWVuY2ll
-cyBpbiB0aGUgd2lmaSBzb2x1dGlvbiBpbiBzb21lIGVhcmx5IGRldmljZXMuICBUaGVyZSdzCnNv
-bWUgcm9vbSBmb3IgaW1wcm92ZW1lbnQgaGVyZSwgb2J2aW91c2x5LiAgV2l0aCBhIGRlY2VudCB3
-aWZpIGNoaXBzZXQKYW5kIGltcGxlbWVudGF0aW9uLCBkZXBlbmRpbmcgb24gbG9jYWwgd2lmaSB0
-cmFmZmljIHBhdHRlcm5zLCB5b3UgY2FuCnNlZSBwb3dlciB1c2FnZSBjb21wZXRpdGl2ZSB0byBj
-ZWxsdWxhci4KCj4gU28gdGhlIGJvdHRvbSBsaW5lIGlzOiB0aGUgYXBwcm9hY2ggaXMgdmVyeSBp
-bmZsZXhpYmxlLiBPZiBjb3Vyc2UgaXQKPiBjYW4gZ2l2ZSB5b3UgdGhlIGJlc3QgcG93ZXIgc2F2
-aW5ncyBpZiB5b3UgdHVybiB0aGUgQWlycGxhbmUgbW9kZSBvbgo+IGFzIHNvb24gYXMgeW91IHN3
-aXRjaGVkIG9uIHRoZSBwaG9uZSwgYnV0IHRoaXMgaXMgbm90IHdoYXQgYSB0eXBpY2FsCj4gdXNl
-ciB3b3VsZCBkby4KClRoZSBzYXZpbmdzIGluIGFpcnBsYW5lIG1vZGUgKGFwYXJ0IGZyb20gcHJl
-dmVudGluZyBkYXRhIGNvbm5lY3Rpb25zLAp3aGljaCBzYXZlcyBwb3dlciBieSBwcmV2ZW50aW5n
-IGRhdGEtaHVuZ3J5IGJhY2tncm91bmQgYXBwcyBmcm9tIGRvaW5nCm11Y2gpIGlzIHRoZSBkaWZm
-ZXJlbmNlIGJldHdlZW4gc3RhbmRieSB3aXRoIHJhZGlvICgzLTVtQSkgYW5kIHdpdGhvdXQKKDEt
-Mm1BKS4gIEknbSBub3Qgc3VnZ2VzdGluZyB0aGF0IGFpcnBsYW5lIG1vZGUgaXMgYSB0eXBpY2Fs
-IGNhc2UsCmp1c3QgdXNpbmcgaXQgYXMgaW4gaWxsdXN0cmF0aW9uIG9mIHRoZSBtb3JlIGV4dHJl
-bWUgc3RhbmRieSBjYXNlLgoKVXNlcnMgZG8gbGlrZSB0aGF0IHRvIHdvcmsgdG9vIC0tIEkgcmVj
-YWxsIEFydmUgbGVhdmluZyBhIGRldmljZSBpbgpoaXMgZmlsaW5nIGNhYmluZXQgd2l0aCB0aGUg
-cmFkaW8gb2ZmIHdoaWxlIGhlIHdhcyBvdXQgb2YgdGhlIGNvdW50cnkKZm9yIHRocmVlIHdlZWtz
-IG9uY2UsIGFuZCBoaW0gZGlzY292ZXJpbmcgaXQgd2FzIHN0aWxsIHJ1bm5pbmcgd2l0aApzb21l
-dGhpbmcgbGlrZSAyNSUgYmF0dGVyeSByZW1haW5pbmcgd2hlbiBoZSByZXR1cm5lZC4KCkluIGFu
-eSBjYXNlLCBJJ20gc2F5aW5nIHRoYXQgc3VzcGVuZGluZyBmb3IgbWludXRlcyBhdCBhIHRpbWUK
-KHR5cGljYWwsIDEwcyBvZiBtaW51dGVzIG9yIG1vcmUgaW4gc29tZSBjYXNlcywgaG91cnMgaW4g
-b3RoZXJzKSwgZG9lcwpoYXBwZW4gYW5kIGl0IGRvZXMgcmVwcmVzZW50IGFuIGltcHJvdmVtZW50
-IG92ZXIgc3VzcGVuZGluZyBvcgpvdGhlcndpc2UgZW50ZXJpbmcgeW91ciBsb3dlc3QgcG93ZXIg
-c3RhdGUgZm9yIHNlY29uZHMgYXQgYSB0aW1lLgoKQnJpYW4KX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBt
-QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlv
-bi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Sun, 6 Jun 2010, Brian Swetland wrote:
+
+> The savings in airplane mode (apart from preventing data connections,
+> which saves power by preventing data-hungry background apps from doing
+> much) is the difference between standby with radio (3-5mA) and without
+> (1-2mA).  I'm not suggesting that airplane mode is a typical case,
+> just using it as in illustration of the more extreme standby case.
+
+for the sake of discussion, let's say that standby is 5ma and full 
+operation is 500ma and a minimal wakeup is 0.1 sec. these are probably 
+fairly pessimistic numbers.
+
+waking up every second would be awake 10% of the time, so in an hour you 
+would use .9*5mA + .1*500mA = 4.5mA +45mA = 49.5mAH
+
+waking up every 10 seconds would be awake 1% of the time, so in an hour 
+you would use .99*5mA + 0.01*500mA = 4.95mA + 5mA = 9.95mAH
+
+waking up every 100 seconds would be awake 0.1% of the time, so in an hour 
+you would use .999*5mA + 0.001*500mA =4.995mA + 0.5mA = 5.495mAH
+
+waking up every 1000 seconds would be awake 0.01% of the time so in an 
+hour you would use .9999*5mA + 0.0001*500mA = 4.9995mA + 0.05mAH = 
+5.0495mAH
+
+now if you have a 1000mAH battery (small, but reasonable for a smartphone) 
+your standby life would be
+
+.1 second wakeup (on continuously) = 2 hours
+1 second wakup = 20 hours
+10 second wakeup = 100 hours
+100 second wakeup = 182 hours
+1000 second wakeup = 198 hours
+
+if you could shrink the time awake to 0.01 second per wakeup you would 
+shift this all up a category (and avoiding the need to wake everything up 
+to service a timer would help do this)
+
+this effort very definantly has diminishing returns as you go to larger 
+sleep periods as the constant standby power draw becomes more and more 
+dominating. someone mentioned that they were getting the sleep time of 
+normal systems up past the 1 second mark with the 10 second mark looking 
+very attainable. that is where you get the most benifit for whatever 
+changes are needed. getting up to a 2 min sleep time really gives you 
+about all the benifit that you can get, going from there to 15 min makes 
+very little difference.
+
+don't let chasing the best possible sleep time prevent you from 
+considering options that would be good enough in time, but would 
+drastically reduce the maintinance effort (as things could be upstreamed 
+more easily), and would be usable on far more systems.
+
+David Lang
