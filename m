@@ -1,30 +1,13 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: suspend blockers & Android integration
-Date: Sun, 6 Jun 2010 12:05:57 +0100
-Message-ID: <20100606120557.72356de9__7862.0798340582$1275821936$gmane$org@lxorguk.ukuu.org.uk>
-References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
-	<20100603232302.GA16184@elte.hu>
-	<AANLkTikZP3bmckpfb_jUdG7qZO5W9DgpZ79ugtSZaEpt@mail.gmail.com>
-	<20100604071354.GA14451@elte.hu>
-	<AANLkTimH4ihf3QqtKFpfGXRKtO55PrUuff9JYtaEBG44@mail.gmail.com>
-	<20100604083423.GD15181@elte.hu>
-	<AANLkTinQyzzeF-NOAjrAqqQXqKjFJhx85nI4uyBGRtWd@mail.gmail.com>
-	<1275653210.27810.39762.camel@twins>
-	<AANLkTinyjBa0KYfFz3_EFbC65hoQFwFINlTDYjCe-wM3@mail.gmail.com>
-	<1275731653.27810.41078.camel@twins>
-	<20100605092851.6ee15f13@infradead.org>
-	<AANLkTimEwznq9c_8lkuBMxEQ-42rdvpZEqA9Y71Cu-qC@mail.gmail.com>
-	<AANLkTimKknOurmCffOpHjc1FjrP2MKf10pBwEEbLJPg_@mail.gmail.com>
-	<AANLkTil1NCX91bWhpXHtC88Opr29mNjdhXD9RXQ6DI0y@mail.gmail.com>
-	<AANLkTin1Za3GvfIKbcZdx6TzjIHzCvsg5uaY_Vk4nJIh@mail.gmail.com>
-	<AANLkTilQ1k78dDCYadOa1Wiyjm2nsBcRpxwdpGvYcf8z@mail.gmail.com>
-	<AANLkTin7oM3gVwHbIHWqYV8yeC6bbQ4q2jDDxAgz3DwQ@mail.gmail.com>
-	<20100606124601.2f1f6714@schatten.dmk.lab>
+Date: Sun, 6 Jun 2010 07:09:55 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006060650270.28143-100000__28033.394952263$1275822727$gmane$org@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.1006052233100.22666-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100606124601.2f1f6714@schatten.dmk.lab>
+In-Reply-To: <Pine.LNX.4.44L0.1006052233100.22666-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -34,34 +17,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: tytso@mit.edu, James@smtp1.linux-foundation.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Linux@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Felipe Balbi <felipe.balbi@nokia.com>, Arjan van de Ven <arjan@infradead.org>
+To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 6 Jun 2010 12:46:01 +0200
-Florian Mickler <florian@mickler.org> wrote:
+On Sat, 5 Jun 2010, Alan Stern wrote:
 
-> On Sun, 6 Jun 2010 12:00:47 +0200
-> Vitaly Wool <vitalywool@gmail.com> wrote:
+> > If you are referring to the approach that we don't use suspend but
+> > freeze a cgroup instead, this only solves the problem of bad apps. It
+> > does not help pause timers in trusted user space code and in the
+> > kernel, so it does not lower our average power consumption.
 > 
-> > Even worse, the suspend wakelock will keep the
-> > whole kernel active, as opposed to powering off unused devices
-> > separately as it's done in runtime PM. 
+> You can solve this problem if you restructure your "trusted" apps in
+> the right way.  Require a trusted app to guarantee that whenever it
+> doesn't hold any suspend blockers, it will do nothing but wait (in a
+> poll() system call for example) for a wakeup event.  When the event
+> occurs, it must then activate a suspend blocker.
 > 
-> That is not true. While the kernel is not suspended it does
-> runtime pm.
+> Better yet, make it more fine-grained.  Instead of trusted apps, have
+> trusted threads.  Freeze the untrusted threads along with everything
+> else, and require the trusted threads to satisfy this guarantee.
+> 
+> In this way, while the system is idle no user timers will get renewed.
+> Kernel timers are another matter, but we should be able to handle them.  
+> There's nothing Android-specific about wanting to reduce kernel timer 
+> wakeups while in a low-power mode.
 
-On several of our platforms runtime PM already includes suspend so a
-suspend wakelock does interfere with existing power managemet at that
-level (not to mention the maintenance mess it causes).
+In fact it's possible to do this with only minimal changes to the
+userspace, providing you can specify all your possible hardware wakeup
+sources.  (On the Android this list probably isn't very large -- I
+imagine it includes the keypad, the radio link(s), the RTC, and maybe
+a few switches, buttons, or other things.)
 
-This is one of the reasons you want QoS information, it provides
-parameters by which the power management code can make a decision.
-Suspend blocksers simply don't have sufficient variety to manage the
-direction of power policy.
+Here's how you can do it.  Extend the userspace suspend-blocker API, so 
+that each suspend blocker can optionally have an associated wakeup 
+source.
 
-If Android chooses to abuse the QoS information for crude suspend
-blocking then that is fine, it doesn't interfere with doing the job
-'properly' on other systems or its use for realtime work on other boxes.
+The power-manager process should keep a list of "active" wakeup
+sources.  A source gets removed from the list when an associated
+suspend blocker is activated.
 
-Alan
+When the "active" list is empty and no suspend blockers are activated,
+the power manager freezes ALL other processes, trusted and untrusted
+alike.  It then does a big poll() on all the wakeup sources.  When the
+poll() returns, its output is used to repopulate the "active" list and
+processes are unfrozen.
+
+(You can also include some error detection: If a source remains on the
+"active" list for too long then something has gone wrong.)
+
+To do all this you don't even need to use cgroups.  The existing PM
+implementation allows a user process to freeze everything but itself;  
+that's how swsusp and related programs work.
+
+This is still a big-hammer sort of approach, but it doesn't require any 
+kernel changes.
+
+Alan Stern
