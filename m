@@ -1,17 +1,15 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [SUSPECTED SPAM] Re: Proposal for a new algorithm
- for	reading & writing a hibernation image.
-Date: Sun, 06 Jun 2010 03:40:28 +0300
-Message-ID: <1275784828.17835.4.camel__37276.0690785528$1275784968$gmane$org@maxim-laptop>
-References: <9rpccea67yy402c975fqru8r.1275576653521@email.android.com>
-	<201006052045.19889.rjw@sisk.pl>
-	<1275765021.12828.2.camel@maxim-laptop>
-	<201006052121.45816.rjw@sisk.pl>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: suspend blockers & Android integration
+Date: Sat, 5 Jun 2010 18:03:11 -0700
+Message-ID: <AANLkTikXUTZE1vesD-Ccn8VhPjhBYYS0Tw_Pq9u5nnq7__37835.1427884356$1275786284$gmane$org@mail.gmail.com>
+References: <20100603193045.GA7188@elte.hu> <201006052025.11526.rjw@sisk.pl>
+	<AANLkTilP0uyJRuUq6BlVeHDydPYi4oJsf37VvSAixwgN@mail.gmail.com>
+	<201006060103.20540.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006052121.45816.rjw@sisk.pl>
+In-Reply-To: <201006060103.20540.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,50 +20,132 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: TuxOnIce-devel <tuxonice-devel@tuxonice.net>, Nigel Cunningham <ncunningham@crca.org.au>, pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: tytso@mit.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Felipe Balbi <felipe.balbi@nokia.com>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2010-06-05 at 21:21 +0200, Rafael J. Wysocki wrote: 
-> On Saturday 05 June 2010, Maxim Levitsky wrote:
-> > On Sat, 2010-06-05 at 20:45 +0200, Rafael J. Wysocki wrote: 
-> > > On Saturday 05 June 2010, Nigel Cunningham wrote:
-> > > > Hi again.
-> > > > 
-> > > > As I think about this more, I reckon we could run into problems at 
-> > > > resume time with reloading the image. Even if some bits aren't modified 
-> > > > as we're writing the image, they still might need to be atomically 
-> > > > restored. If we make the atomic restore part too small, we might not be 
-> > > > able to do that.
-> > > > 
-> > > > So perhaps the best thing would be to stick with the way TuxOnIce splits 
-> > > > the image at the moment (page cache / process pages vs 'rest'), but 
-> > > > using this faulting mechanism to ensure we do get all the pages that are 
-> > > > changed while writing the first part of the image.
-> > > 
-> > > I still don't quite understand why you insist on saving the page cache data
-> > > upfront and re-using the memory occupied by them for another purpose.  If you
-> > > dropped that requirement, I'd really have much less of a problem with the
-> > > TuxOnIce's approach.
-> > Because its the biggest advantage?
-> 
-> It isn't in fact.
-> 
-> > Really saving whole memory makes huge difference.
-> 
-> You don't have to save the _whole_ memory to get the same speed (you don't
-> do that anyway, but the amount of data you don't put into the image with
-> TuxOnIce is smaller).  Something like 80% would be just sufficient IMO and
-> then (a) the level of complications involved would drop significantly and (2)
-> you'd be able to use the image-reading code already in the kernel without
-> any modifications.  It really looks like a win-win to me, doesn't it?
+2010/6/5 Rafael J. Wysocki <rjw@sisk.pl>:
+> On Sunday 06 June 2010, Arve Hj=F8nnev=E5g wrote:
+>> 2010/6/5 Rafael J. Wysocki <rjw@sisk.pl>:
+>> > On Saturday 05 June 2010, Arve Hj=F8nnev=E5g wrote:
+>> >> 2010/6/4 Matt Helsley <matthltc@us.ibm.com>:
+>> >> > On Fri, Jun 04, 2010 at 05:39:17PM -0700, Arve Hj=F8nnev=E5g wrote:
+>> >> >> On Fri, Jun 4, 2010 at 5:05 PM, Thomas Gleixner <tglx@linutronix.d=
+e> wrote:
+>> >> >> > On Sat, 5 Jun 2010, Rafael J. Wysocki wrote:
+>> >> >
+>> >> > <snip>
+>> >> >
+>> >> >>
+>> >> >> > =A0 =A0 With the cgroup freezer you can "suspend" them right awa=
+y and
+>> >> >> > =A0 =A0 just keep the trusted background task(s) alive which all=
+ows us to
+>> >> >> > =A0 =A0 go into deeper idle states instead of letting the crappl=
+ications
+>> >> >> > =A0 =A0 run unconfined until the download finished and the suspe=
+nd
+>> >> >> > =A0 =A0 blocker goes away.
+>> >> >> >
+>> >> >>
+>> >> >> Yes this would be better, but I want it in addition to suspend, not
+>> >> >> instead of it. It is also unclear if our user-space code could eas=
+ily
+>> >> >> make use of it since our trusted code calls into untrusted code.
+>> >> >>
+>> >> >
+>> >> > Perhaps I'm misunderstanding, but suspend and the cgroup freezer
+>> >> > interoperate well today -- you don't have to choose one or the othe=
+r.
+>> >> > If you've discovered otherwise I'd consider it a bug and would like=
+ to
+>> >> > hear more about it.
+>> >> >
+>> >>
+>> >> I'm not aware of any bug with combining both, but we cannot use
+>> >> suspend at all without suspend blockers in the kernel (since wakeup
+>> >> events may be ignored)
+>> >
+>> > The more I think of it, the more it appears to me that the problem of
+>> > lost wakeup events can actually be solved without suspend blockers.
+>> > I'll send a bunch of patches to address this issue, probably tomorrow.
+>> >
+>>
+>> I know of two ways to prevent lost wakeup events. Reset a timeout
+>> every time you receive a wakeup event or prevents suspend until you
+>> know the event has been fully processed. Does your solution fall onto
+>> one of these two categories, or do you have a third way?
+>
+> Basically, it involves two mechanisms, detection of wakeup events occuring
+> right before suspend is started
 
+This sounds like the timeout approach which I thought you did not like.
 
-Well, in fact on modern systems its not possible to save 100% of ram
-even if we save it all because of video memory.
-Look I got 256MB of video ram, and when compiz is used I say most of it
-is used, and its isn't going to be magically preserved during suspend.
-So system still has to free about 256MB of memory before suspend (which
-means around 80% percent of ram is saved in best case :-) )
+> and aborting suspend if wakeup events occur
+> in the middle of it.
+>
+Aborting suspend is easy, but when do you allow suspend again?
 
-Best regards,
-Maxim Levitsky
+>> >> and I don't know how we can safely freeze
+>> >> cgroups without funneling all potential wakeup events through a
+>> >> process that never gets frozen.
+>> >
+>> > If your untrusted apps get called by the trusted ones, they aren't rea=
+lly
+>> > untrusted in the first place.
+>> >
+>> That is not a correct statement. A trusted apps can call into an
+>> untrusted app, it just has to validate the response and handle not
+>> getting a response at all. There are also different levels of trust. I
+>> may have trusted an app to provide a contact pictures, but not trusted
+>> it to block suspend. When the phone rings the app will be called to
+>> provide the picture for the incoming call dialog, but if it is frozen
+>> at this point the more trusted app that handles the incoming phone
+>> call will not be able to get the picture.
+>
+> It will be able to do that if it causes the frozen part of user space to =
+be
+> thawed.
+>
+> I think you have this problem already, though, because you use full system
+> suspend and all of your apps are frozen by it. =A0So, to handle the situa=
+tion you
+> describe above, you need to carry out full system resume that will thaw t=
+he
+> tasks for you. =A0I don't see any fundamental difference betwee the two c=
+ases.
+>
+
+Yes, we can keep all our user space suspend blockers and thaw the
+frozen cgroup when any suspend blocker is held, but this would
+eliminate any power advantage that freezing a cgroup has over using
+suspend to freeze all processes. Without annotating the drivers to
+block the cgroup freezing in the same places as we now block suspend,
+it also prevents processes in the cgroup that we freeze from directly
+consuming wakup events.
+
+>> > From what you're saying it follows that you're not really willing to a=
+ccept
+>> > any solution different to your suspend blockers. =A0Is that really the=
+ case?
+>> >
+>> I don't think that is a fair way to put it. We need to support our
+>> user-space framework and I have not seen an alternative solution that
+>> clearly will work (other than replacing suspend_blockers with pm_qos
+>> constraints that do the same thing).
+>
+> Then think again of the approach I proposed and explain to me why it won't
+> work, because I haven't seen any convincing argument on that yet.
+>
+
+If you are referring to the approach that we don't use suspend but
+freeze a cgroup instead, this only solves the problem of bad apps. It
+does not help pause timers in trusted user space code and in the
+kernel, so it does not lower our average power consumption. And, it
+does not solve the problem for systems that enters lower power states
+from suspend than it can from idle. The last point my not be relevant
+to android anymore, but desktop systems already have auto suspend and
+it would be preferable to have a race free kernel api for this.
+
+-- =
+
+Arve Hj=F8nnev=E5g
