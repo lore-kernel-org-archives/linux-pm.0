@@ -1,18 +1,26 @@
-From: david@lang.hm
+From: Vitaly Wool <vitalywool@gmail.com>
 Subject: Re: suspend blockers & Android integration
-Date: Sun, 6 Jun 2010 01:23:57 -0700 (PDT)
-Message-ID: <alpine.DEB.2.01.1006060121180.17462__37036.0038163655$1275812712$gmane$org@asgard.lang.hm>
+Date: Sun, 6 Jun 2010 10:32:13 +0200
+Message-ID: <AANLkTin1Za3GvfIKbcZdx6TzjIHzCvsg5uaY_Vk4nJIh__34382.904545828$1275813188$gmane$org@mail.gmail.com>
 References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
 	<20100603232302.GA16184@elte.hu>
-	<alpine.LFD.2.00.1006031630300.8175@i5.linux-foundation.org>
-	<20100603234634.GA21831@elte.hu>
-	<alpine.LFD.2.00.1006031856420.8175@i5.linux-foundation.org>
-	<alpine.LFD.2.00.1006031917500.8175@i5.linux-foundation.org>
+	<AANLkTikZP3bmckpfb_jUdG7qZO5W9DgpZ79ugtSZaEpt@mail.gmail.com>
+	<20100604071354.GA14451@elte.hu>
+	<AANLkTimH4ihf3QqtKFpfGXRKtO55PrUuff9JYtaEBG44@mail.gmail.com>
+	<20100604083423.GD15181@elte.hu>
+	<AANLkTinQyzzeF-NOAjrAqqQXqKjFJhx85nI4uyBGRtWd@mail.gmail.com>
+	<1275653210.27810.39762.camel@twins>
+	<AANLkTinyjBa0KYfFz3_EFbC65hoQFwFINlTDYjCe-wM3@mail.gmail.com>
+	<1275731653.27810.41078.camel@twins>
+	<20100605092851.6ee15f13@infradead.org>
+	<AANLkTimEwznq9c_8lkuBMxEQ-42rdvpZEqA9Y71Cu-qC@mail.gmail.com>
+	<AANLkTimKknOurmCffOpHjc1FjrP2MKf10pBwEEbLJPg_@mail.gmail.com>
+	<AANLkTil1NCX91bWhpXHtC88Opr29mNjdhXD9RXQ6DI0y@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1006031917500.8175@i5.linux-foundation.org>
+In-Reply-To: <AANLkTil1NCX91bWhpXHtC88Opr29mNjdhXD9RXQ6DI0y@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,31 +30,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: tytso@mit.edu, Peter Zijlstra <a.p.zijlstra@chello.nl>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Felipe Balbi <felipe.balbi@nokia.com>, Arjan van de Ven <arjan@infradead.org>
+To: Brian Swetland <swetland@google.com>
+Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 3 Jun 2010, Linus Torvalds wrote:
-
-> On Thu, 3 Jun 2010, Linus Torvalds wrote:
+On Sun, Jun 6, 2010 at 10:20 AM, Brian Swetland <swetland@google.com> wrote:
+> On Sun, Jun 6, 2010 at 12:52 AM, Vitaly Wool <vitalywool@gmail.com> wrote:
+>> 2010/6/5 Arve Hj=F8nnev=E5g <arve@android.com>:
+>>>
+>>> We clearly have different standards for what we consider good. We
+>>> measure time suspended in minutes or hours, not seconds, and waking up
+>>> every second or two causes a noticeable decrease in battery life on
+>>> the hardware we have today.
 >>
->> so I'd like to see the opportunistc suspend thing think about CPU
->> offlining
+>> Are you stating that the existing Android implementation enters the
+>> suspended state for hours for any of the existing designs?
 >
-> Side note: one reason for me being somewhat interested in the CPU
-> offlining is that I think the Android kind of opportunistic suspend is
-> _not_ likely something I'd like to see on a desktop. But an the
-> "opportunistic CPU offliner"? That might _well_ be useful even outside of
-> any other suspend activity.
+> It varies depending on device and usage. =A0The battery monitoring on
+> NexusOne happens every ten minutes, so that's the longest you'll see a
+> N1 suspended for. =A0On a G1 or Dream/myTouch you can see 20-30 minutes
+> between wakeups (depending on network issues and background data sync
+> traffic), and if you have background data sync off those devices can
+> sit in suspend for days at a time (unless you receive a phone call or
+> something). =A0In "airplane mode", with no local alarms, a device can
+> easily sit in the lowest power state for a month or so, until the
+> battery finally runs out.
 
-When the OLPC was first released there was talk that the hardware was well 
-designed for sleeping (including the ability for the display to keep going 
-even if the system itself shut down), with the idealistic talk of the 
-system possibly sleeping between keystrokes.
+That only concerns the case when you have just turned on the phone and
+left it laying around.
+You have to admit that it's not the common case for a smartphone. The
+common case is that you've played with it for a bit, turning on things
+like BT/WIFI, running some apps and so on. And doing so you'll end up
+having wake locks taken from everywhere, so I can hardly see a second
+of suspend for Nexus.
 
-things didn't end up working (a couple pieces of hardware ended up not 
-playing well with others), but the concept is still something that could 
-end up impacting users outside of the mobile phone market, even if not on 
-your traditional desktop.
+E. g. when the wireless is connected to an AP, it takes a wake lock
+which is released on 15 minutes touchscreen inactivity timeout, as far
+as I can tell. So:
 
-David Lang
+* the system will never hit suspend during this period;
+* if the download was ongoing and had not been completed during this
+period, it will be terminated.
+
+So the bottom line is: the approach is very inflexible. Of course it
+can give you the best power savings if you turn the Airplane mode on
+as soon as you switched on the phone, but this is not what a typical
+user would do.
+
+~Vitaly
