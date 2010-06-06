@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: suspend blockers & Android integration
-Date: Sat, 5 Jun 2010 22:49:09 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1006052233100.22666-100000__8816.90284372798$1275792693$gmane$org@netrider.rowland.org>
-References: <AANLkTikXUTZE1vesD-Ccn8VhPjhBYYS0Tw_Pq9u5nnq7@mail.gmail.com>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: hibernation hangs with ATA errors (lockup_detector
+	bug)
+Date: Sun, 06 Jun 2010 08:22:12 +0200
+Message-ID: <4C0B3E94.6020506__8836.62277269668$1275805395$gmane$org@gmail.com>
+References: <4C03C608.1040600@gmail.com> <20100601135004.GP15159@redhat.com>
+	<4C051D44.7040203@gmail.com> <20100602184459.GA15159@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikXUTZE1vesD-Ccn8VhPjhBYYS0Tw_Pq9u5nnq7@mail.gmail.com>
+In-Reply-To: <20100602184459.GA15159@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,56 +19,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: tytso@mit.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Felipe Balbi <felipe.balbi@nokia.com>, Arjan van de Ven <arjan@infradead.org>
+To: Don Zickus <dzickus@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 5 Jun 2010, Arve Hj=F8nnev=E5g wrote:
+On 06/02/2010 08:44 PM, Don Zickus wrote:
+> --- a/kernel/watchdog.c
+> +++ b/kernel/watchdog.c
+> @@ -550,8 +550,7 @@ cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
+>  		break;
+>  	case CPU_ONLINE:
+>  	case CPU_ONLINE_FROZEN:
+> -		if (watchdog_enable(hotcpu))
+> -			return NOTIFY_BAD;
+> +		watchdog_enable(hotcpu)
 
-> Yes, we can keep all our user space suspend blockers and thaw the
-> frozen cgroup when any suspend blocker is held, but this would
-> eliminate any power advantage that freezing a cgroup has over using
-> suspend to freeze all processes. Without annotating the drivers to
-> block the cgroup freezing in the same places as we now block suspend,
-> it also prevents processes in the cgroup that we freeze from directly
-> consuming wakup events.
+This fixes the problem indeed.
 
-The driver annotations don't need to block the cgroup freezing.  They
-just need to keep the system running long enough to awaken a thread
-that will handle the wakeup event.  (See below.)  A pm-qos constraint =
-
-is good enough for this.
-
-> If you are referring to the approach that we don't use suspend but
-> freeze a cgroup instead, this only solves the problem of bad apps. It
-> does not help pause timers in trusted user space code and in the
-> kernel, so it does not lower our average power consumption.
-
-You can solve this problem if you restructure your "trusted" apps in
-the right way.  Require a trusted app to guarantee that whenever it
-doesn't hold any suspend blockers, it will do nothing but wait (in a
-poll() system call for example) for a wakeup event.  When the event
-occurs, it must then activate a suspend blocker.
-
-Better yet, make it more fine-grained.  Instead of trusted apps, have
-trusted threads.  Freeze the untrusted threads along with everything
-else, and require the trusted threads to satisfy this guarantee.
-
-In this way, while the system is idle no user timers will get renewed.
-Kernel timers are another matter, but we should be able to handle them.  =
-
-There's nothing Android-specific about wanting to reduce kernel timer =
-
-wakeups while in a low-power mode.
-
-> And, it
-> does not solve the problem for systems that enters lower power states
-> from suspend than it can from idle. The last point my not be relevant
-> to android anymore, but desktop systems already have auto suspend and
-> it would be preferable to have a race free kernel api for this.
-
-This is an entirely different matter from the rest of the discussion.
-It would be better to consider this separately after Android's current
-problems have been addressed.
-
-Alan Stern
+thanks,
+-- 
+js
