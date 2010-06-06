@@ -1,22 +1,27 @@
-From: Thomas Gleixner <tglx@linutronix.de>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: suspend blockers & Android integration
-Date: Sun, 6 Jun 2010 02:32:51 +0200 (CEST)
-Message-ID: <alpine.LFD.2.00.1006060220400.2933__12381.0480269187$1275784443$gmane$org@localhost.localdomain>
-References: <20100603193045.GA7188@elte.hu> <20100603232302.GA16184@elte.hu>
-	<1275644619.27810.39462.camel@twins>
-	<201006050138.30859.rjw@sisk.pl>
-	<alpine.LFD.2.00.1006050148080.2933@localhost.localdomain>
-	<AANLkTikGDSzaENwg_0BAtsYf3ulGd_6sGPR30WsvUxMi@mail.gmail.com>
-	<alpine.LFD.2.00.1006050246350.2933@localhost.localdomain>
-	<AANLkTikU21xF49Z-_Lnrq7U7buNmqw_gyEEST8LuN24z@mail.gmail.com>
-	<alpine.LFD.2.00.1006051736040.2933@localhost.localdomain>
-	<AANLkTinD39rI47innPbGz1Gi8PsXV5HqkmaQuJ70oQ63@mail.gmail.com>
-	<alpine.LFD.2.00.1006052348200.2933@localhost.localdomain>
-	<AANLkTikmWDHYJ8wWF2cZapbkHHjV09R39I37yvQXFmor@mail.gmail.com>
+Date: Sat, 5 Jun 2010 17:34:26 -0700
+Message-ID: <AANLkTilyAcphj6Jby3HY_hknoVZ1GjxnuDpE6pUO3Ppo__37880.2633997568$1275784606$gmane$org@mail.gmail.com>
+References: <20100603193045.GA7188@elte.hu> <20100603231153.GA11302@elte.hu>
+	<20100603232302.GA16184@elte.hu>
+	<AANLkTikZP3bmckpfb_jUdG7qZO5W9DgpZ79ugtSZaEpt@mail.gmail.com>
+	<20100604071354.GA14451@elte.hu>
+	<AANLkTimH4ihf3QqtKFpfGXRKtO55PrUuff9JYtaEBG44@mail.gmail.com>
+	<20100604083423.GD15181@elte.hu>
+	<AANLkTinQyzzeF-NOAjrAqqQXqKjFJhx85nI4uyBGRtWd@mail.gmail.com>
+	<1275653210.27810.39762.camel@twins>
+	<AANLkTinyjBa0KYfFz3_EFbC65hoQFwFINlTDYjCe-wM3@mail.gmail.com>
+	<1275731653.27810.41078.camel@twins>
+	<20100605092851.6ee15f13@infradead.org>
+	<AANLkTimEwznq9c_8lkuBMxEQ-42rdvpZEqA9Y71Cu-qC@mail.gmail.com>
+	<20100605152326.7ccd5160@infradead.org>
+	<AANLkTinRH52dSTPCAO9k1yEFup1LLYizeinunxeTBzbQ@mail.gmail.com>
+	<20100605154833.7d05e404@infradead.org>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1724491400-1275784374=:2933"
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikmWDHYJ8wWF2cZapbkHHjV09R39I37yvQXFmor@mail.gmail.com>
+In-Reply-To: <20100605154833.7d05e404@infradead.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,102 +31,85 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: tytso@mit.edu, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: tytso@mit.edu, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Felipe Balbi <felipe.balbi@nokia.com>
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sat, Jun 5, 2010 at 3:48 PM, Arjan van de Ven <arjan@infradead.org> wrot=
+e:
+> On Sat, 5 Jun 2010 15:26:36 -0700
+> Brian Swetland <swetland@google.com> wrote:
+>
+>>
+>> I'm continually surprised by answers like this. =A0We run on hardware
+>> that power gates very aggressively and draws in the neighborhood of
+>> 1-2mA at the battery when in the lowest state (3-5mA while the radio
+>> is connected to the network and paging). =A0Waking up out of that lowest
+>> state and executing code every few seconds or (worse) several times a
+>> second) will raise your average power consumption. =A0Being able to stay
+>> parked at the very bottom for minutes or hours at a time when nothing
+>> "interesting" is happening is very useful and can have a significant
+>> impact on overall battery life.
+>
+> It's relatively simple math.
+>
+> If you wake up for a burst of work, you burn power at the higher level
+> P1 (versus the lower power level P2), for, lets say an average time T,
+> with a relatively small T (few milliseconds at most).
+>
+> If you wake up X times per second (with X being a fractional number, so
+> can be smaller than 1) the extra power consumption factor is
+>
+> =A0 =A0 =A0 =A0 =A0X * T * P1
+> -------------------------------
+> X * T * P1 + (1.0 - X * T) * P2
+>
+> if you draw a graph of this, for real values of P and T, there's a real
+> point where you hit diminishing returns.
+>
+> if say T is 5 milliseconds (that's a high amount), and X is 1
+> wakeup/second, then there's already a 200:1 ratio in time an power.
+>
 
---8323328-1724491400-1275784374=:2933
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id o560XM9Y001900
+It is a 200:1 ratio in time not in power.
 
-On Sat, 5 Jun 2010, Arve Hj=F8nnev=E5g wrote:
-> 2010/6/5 Thomas Gleixner <tglx@linutronix.de>:
-> > On Sat, 5 Jun 2010, Arve Hj=F8nnev=E5g wrote:
-> >> 2010/6/5 Thomas Gleixner <tglx@linutronix.de>:
-> >> > B1;2005;0cOn Fri, 4 Jun 2010, Arve Hj=F8nnev=E5g wrote:
-> >> Cross app calls do not go through a central process.
-> >
-> > It's not about a central process, it goes through your framework,
-> > which should be able to deal with it. If not, it's a design failure
-> > which needs to be fixed at the place where the failure happened.
-> >
-> >> >>
-> >> >> How can it be fixed? The user presses the back button, the framew=
-ork
-> >> >> determines that app A is in the foreground and send the key to ap=
-p A,
-> >> >> app A decides that it it does not have anything internal to go ba=
-ck to
-> >> >> and tells the framework to switch back to the previous app. If th=
-e
-> >> >> user presses the back key again, the framework does not know whic=
-h app
-> >> >> this key should go to until app A has finished processing the fir=
-st
-> >> >> key press.
-> >> >
-> >> > Errm, what has this to do with frozen apps? If your system is
-> >> > handling input events then there are no frozen apps and even if th=
-ey
-> >> > are frozen your framework can unfreeze them _before_ talking to th=
-em.
-> >> >
-> >> > So which unfixable problem are you describing with the above examp=
-le ?
-> >> >
-> >>
-> >> You are claiming that trusted code should not have any dependencies =
-on
-> >> untrusted code. I gave you a visible example of such a dependency an=
-d
-> >> want you to tell me how you can avoid this dependency. Since you are
-> >> claiming that our user-space framework is fundamentally broken if it
-> >> has to wait for untrusted code, I don't think it is unreasonable for
-> >> you to answer this. Or do you think it is valid to communicate with
-> >> untrusted code when the screen is on but not when it is off.
-> >
-> > It does not matter whether the screen is off or not. If you need to
-> > call into that untrusted app from your trusted app and you know about
-> > the might be frozen state then you can deal with it.
-> >
-> > So taking your example:
-> >
-> > Event happens and gets delivered to the framework
-> >
-> > =A0 =A0 =A0framework selects A because it is in the foreground
-> >
-> > =A0 =A0 =A0if (A is frozen)
-> > =A0 =A0 =A0 =A0 unfreeze(A)
-> >
-> > =A0 =A0 =A0deliver_event_to(A)
-> >
-> > It's that simple.
-> >
->=20
-> That is too simple. You also have to prevent A from being frozen while
-> it is processing the event or the result would be the same as if it
-> was frozen beforehand.
+> If X goes to once every 10 seconds (not unreasonable, especially since
+> any real device will pull email and stuff in the backgroudn), you have
+> 2000:1 time and power ratios...
+>
+> Unless your "on" power is insane high (and hopefully it's not, since
 
-The framework decides when to freeze the app in the first place (as
-your framework does now when it decides to suspend)
-    =20
-     So it knows whether the app is frozen or not.
+The absolute "on" power is not relevant to the ratio, the difference
+between on and off power is. This can easily be 100:1.
 
-     So it knows damend well whether it processed the event or not.
+> you're not turning on the whole device obviously, you do selective
+> power and clock gating)... that "divide by 200 or 2000" makes the whole
+> problem go away.. in the "seconds" range for really low power devices.
+> Not in "hours" range.
+>
 
-Thanks,
+If you improve the low power state, compared to the "on" state wakeup
+gets worse, not better, but yes the phone hardware we have now does
+not need to stay idle for hours to get good battery life, the msm
+hardware at least needs to stay idle for more than a few seconds.
 
-	tglx
-=20
---8323328-1724491400-1275784374=:2933
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+>
+> On laptops (which have much more poor powermanagement) this point is
+> around 40 milliseconds or so.. but on phone silicon that I've seen,
+> both Intel and others, this is in the 1 to 5 seconds range.
+>
+>
+>
+>
+>
+> --
+> Arjan van de Ven =A0 =A0 =A0 =A0Intel Open Source Technology Centre
+> For development, discussion and tips for power savings,
+> visit http://www.lesswatts.org
+>
 
 
---8323328-1724491400-1275784374=:2933--
+
+-- =
+
+Arve Hj=F8nnev=E5g
