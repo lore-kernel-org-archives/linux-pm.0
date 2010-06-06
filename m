@@ -1,18 +1,15 @@
-From: Brian Swetland <swetland@google.com>
-Subject: Re: suspend blockers & Android integration
-Date: Sun, 6 Jun 2010 12:58:10 -0700
-Message-ID: <AANLkTikA0ihlbehyyN-zQ3mN4WmlZJYBSRTYV8SbDhSr__11633.4637896673$1275854428$gmane$org@mail.gmail.com>
-References: <1275834706.7227.545.camel@mulgrave.site>
-	<alpine.LFD.2.00.1006061725000.2933@localhost.localdomain>
-	<1275844114.7227.552.camel@mulgrave.site>
-	<20100606190525.GA20517@infradead.org>
-	<AANLkTikKx-gXCGtNo3woHLCpBoEQ7hG9Jbiq3hwUTW_w@mail.gmail.com>
-	<20100606192405.GA7559@infradead.org>
+From: mark gross <640e9920@gmail.com>
+Subject: Re: [RFC] pm_qos: reimplement using plists
+Date: Sun, 6 Jun 2010 14:05:53 -0700
+Message-ID: <20100606210553.GB8610@gvim.org>
+References: <1275760688.7227.10.camel@mulgrave.site>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100606192405.GA7559@infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1275760688.7227.10.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,72 +19,310 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Linux PM <linux-pm@lists.linux-foundation.org>, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuLCBKdW4gNiwgMjAxMCBhdCAxMjoyNCBQTSwgQ2hyaXN0b3BoIEhlbGx3aWcgPGhjaEBp
-bmZyYWRlYWQub3JnPiB3cm90ZToKPgo+IFllcy4gwqBUaGF0J3Mgd2hhdCBtYWtlcyBtZSB3b25k
-ZXIgYWJvdXQgc29tZSBwYXJ0cyBvZiB0aGUgZGlzY3Vzc2lvbgo+IGhlcmUuIMKgR2V0dGluZyB0
-aGUgZHJpdmVycyBmb3Igb25lIG9yIG1vcmUgb2YgdGhlIGFuZHJvaWQgcGxhdHRmb3Jtcwo+IGlu
-IGlzIG5vdCBhIHByb2JsZW0uIMKgSSdkIHNheSBpdCBjb3VsZCBoYXZlIGVhc2lseSBiZWVuIGRv
-bmUgd2l0aCB0aGUKPiBtYW53ZWVrcyBzcGVudCBhcmd1aW5nIGluIHRoaXMgYW5kIHJlbGF0ZWQg
-dGhyZWFkcy4KPgo+IFRoZSBtdWNoIGJpZ2dlciBpc3N1ZXMgaXMgdG8gZ2V0IGFuZHJvaWQgdXNl
-cnNwYWNlIHJ1bm5pbmcgb24gYSBtb3JlCj4gb3IgbGVzcyB2YW5pbGxhIGtlcm5lbCwgdGhhdCBp
-cyB3aXRob3V0dGhlIMKgYmluZGVyLCB3aXRob3V0IHRoZSByYXRoZXIKPiBpbnRlcmVzdGluZyBn
-cm91cCBJRCBiYXNlZCBzZWN1cml0eSBoYWNrXkheSF5IXkhtb2RlbCwgd2l0aG91dCB0aGUKPiBz
-dXNwZW5kIGJsb2NrZXIgdXNlcnNwYWNlIEFQSSBhbmQgc28gb24sIGFuZCBzbyBvbi4KClNvbWVi
-b2R5IHdpbGwgaGF2ZSB0byBicm9rZXIgYSBkZWFsIHdpdGggdGhlIGZyYW1ld29ya3MvYXBwcyBm
-b2xrcyB0bwpnZXQgcmlkIG9mIHRoZSBiaW5kZXIuICBUaGV5IGxpa2UgaXQgYSBsb3QuICBPZiBj
-b3Vyc2UgaWYgc29tZWJvZHkKYnVpbHQgYSBkcm9wLWluIHJlcGxhY2VtZW50IGZvciB0aGUgdXNl
-cnNwYWNlIHNpZGUgdGhhdCBkaWRuJ3QgcmVxdWlyZQphIGtlcm5lbCBkcml2ZXIsIGhhZCB0aGUg
-c2FtZSBwZXJmb3JtYW5jZSBjaGFyYWN0ZXJpc3RpY3MsIHNvbHZlZCB0aGUKc2FtZSBwcm9ibGVt
-cywgZXRjLCB0aGV5IGNvdWxkIHByb2JhYmx5IG1ha2UgYW4gYXJndW1lbnQgZm9yIGl0IChvcgpq
-dXN0IHByb3ZpZGUgaXQgYXMgYSBkcm9wLWluIHJlcGxhY2VtZW50IGZvciBwZW9wbGUgd2hvIHdh
-bnQgYSBtb3JlCiJwdXJlIiBsaW51eCB1bmRlcm5lYXRoIEFuZHJvaWQsIGV2ZW4gaWYgd2UgZGlk
-bid0IHBpY2sgaXQgdXApLgoKVGhlIGdyb3VwIElEIHN0dWZmIHdvcmtzIGluY3JlZGlibHkgd2Vs
-bCBmb3IgZ2F0aW5nIGRldmljZSBhY2Nlc3MgLS0Kd2UgZW5zdXJlIHRoYXQgZGV2aWNlcyB0aGF0
-IG5lZWQgYWNjZXNzIGZyb20gdmFyaW91cyBwcm9jZXNzZXMgZW5kIHVwCndpdGggcGVybXMgbGlr
-ZSAwNjYwIHJvb3QgYXVkaW8gKHNheSBmb3IgYSByYXcgYXVkaW8gaW50ZXJmYWNlKSwgYW5kCnRo
-ZW4gd2UgYXNzdXJlIHRoYXQgcHJvY2Vzc2VzIHdoaWNoIGhhdmUgdGhlICJtYXkgdXNlIGF1ZGlv
-IGhhcmR3YXJlIgpwZXJtaXNzaW9uIGFyZSBleGVjdXRlZCB3aXRoIGF1ZGlvIGFzIGFuIGFkZGl0
-aW9uYWwgZ3JvdXAuICBXZSBlbmRlZAp1cCB1c2luZyB0aGUgc2FtZSBtb2RlbCB0byBjb250cm9s
-IHNvY2tldCwgcmF3IHNvY2tldCwgYW5kIGJ0IHNvY2tldAphY2Nlc3MgYmVjYXVzZSBhdCB0aGUg
-dGltZSB3ZSBjb3VsZCBub3QgZmluZCBhIHJlYXNvbmFibGUgd2F5IHRvIGdyYW50Cm9yIGV4Y2x1
-ZGUgc3VjaCBwZXJtaXNzaW9ucyBvbiBhIHByb2Nlc3MgYnkgcHJvY2VzcyBiYXNpcy4KTWFpbnRh
-aW5pbmcgYWJvdXQgMjAtMzAgbGluZXMgb2YgZGlmZnMgdG8gbWFrZSB0aGF0IHdvcmsgd2FzIG5v
-dCBhIGJhZAp0cmFkZW9mZiAoYW5kIHdlIGRvbid0IGV4cGVjdCB0aG9zZSBwYXRjaGVzIHRvIGdv
-IHVwc3RyZWFtKS4gIElmCnRoZXJlJ3MgYSB3YXkgdG8gYWNjb21wbGlzaCB0aGlzIHdpdGhvdXQg
-cGF0Y2hpbmcgdGhlIGtlcm5lbCwgd2UncmUKYWxsIGVhcnMuCgpXaGlsZSB3ZSBkbyBtYWludGFp
-biBzb21lIGFzc29ydGVkIHBhdGNoZXMgdG8gY29yZSBjb2RlIChsaWtlIHRoZQpwZXJtaXNzaW9u
-cyB0aGluZyksIHdlIHN0cm9uZ2x5IHByZWZlciB0byBrZWVwIG91ciB3b3JrIGxvY2FsaXplZCB0
-bwpkcml2ZXJzIChnZW5lcmljIHRvIGFuZHJvaWQgb3Igc3BlY2lmaWMgdG8gaGFyZHdhcmUpLCBh
-bmQgdHJ5IHRvCm1pZ3JhdGUgdG8gY29tbW9uIGtlcm5lbCBmZWF0dXJlcyB3aGVuIHBvc3NpYmxl
-LCBzdWJtaXQgcGF0Y2hlcyAobGlrZQp3b3JrIE1pa2UgQ2hhbiBpcyBkb2luZyBhcm91bmQgY3B1
-ZnJlcSBhbmQgcG93ZXIgbWVhc3VyZW1lbnQpLCBldGMuClBhdGNoZXMgdG8gY29yZSBjb2RlIGNh
-dXNlIG1vcmUgaGVhZGFjaGVzIHdoZW4gd2UgcmViYXNlIHVwIHRvIG5ldwprZXJuZWwgdmVyc2lv
-bnMsIGFmdGVyIGFsbC4KCj4gU28gZm9yIHBlb3BsZSB3aG8gcmVhbGx5IGNhcmUgYWJvdXQgcnVu
-bmluZyBhIG1haW5saW5lIGtlcm5lbCBvbiB0aGVpcgo+IGFuZHJvaWQgZGV2aWNlIGRvaW5nIHRo
-YXQgcGFydCBmaXJzdCBvbiBhIGdlbmVyaWMgQVJNIGJvYXJkIGluIHFlbXUKPiBtaWdodCBiZSBt
-dWNoIGJldHRlciBmaXJzdCBzdGVwIHdvcmsuCgo+IE9uIHRoZSBvdGhlciBoYW5kIEkndmUgaGVh
-cmQKPiB0aGF0IHZhcmlvdXMgaGFyZHdhcmUgdmVuZG9ycyBvciBwYXJ0aWVzIGNsb3NlZCB0byB0
-aGVtIGFyZSByYXRoZXIKPiBhbm5veWVkIGJ5IHRoZWlyIGRyaXZlcnMgYmVlaW5nIHN0dWNrIGlu
-IHRoZSBhbmRyb2lkIHRyZWUgLSBidXQgdGhhdAo+IGNhbiBiZSBlYXNpbHkgc29sdmVkIGJ5IGdl
-dHRpbmcgcmVtb3ZpbmcgdGhlIHN1c3BlbmQgYmxvY2tlcnMgKGF0IGxlYXN0Cj4gdGVtcG9yYXJp
-bHkpLCBjbGVhbmluZyB1cCBhIGZldyBiaXRzIGhlcmUgYW5kIHRoZXJlIGFuZCBnZXR0aW5nIHRo
-ZW0gaW4uCgpUaGlzIGNvbnRpbnVlcyB0byBiYWZmbGUgbWUuICBJZiB3ZSAoR29vZ2xlKSBhcmUg
-c3VjaCBhIGhlYWRhY2hlLCB3aHkKbm90IGp1c3Qgcm91dGUgYXJvdW5kIHVzLiAgVGhlIGRyaXZl
-cnMgd2UndmUgd3JpdHRlbiBhcmUgR1BMdjIsIHRoZQpzb3VyY2UgaXMgb3V0IHRoZXJlIGZvciBh
-bnlvbmUgd2hvIHdhbnRzIGl0LCBldGMuICBUaGUgZHJpdmVycyBvdGhlcgpwZW9wbGUgaGF2ZSB3
-cml0dGVuIHdlIGhhdmUgbm8gY29udHJvbCBvdmVyIGF0IGFsbC4gRnJvbSBteSBwb2ludCBvZgp2
-aWV3IGl0J2QgYmUgYW4gYW5ub3lhbmNlIGlmIHNvbWVib2R5IHRvb2sgdGhlIGNvZGUgd2Ugd3Jv
-dGUsIG1vZGlmaWVkCml0IGhlYXZpbHksIGFuZCBwdXNoZWQgaXQgdXBzdHJlYW0sIGJ1dCBmdW5k
-YW1lbnRhbGx5IEkgY2FuJ3Qgc3RvcAp0aGF0IGZyb20gaGFwcGVuaW5nIG90aGVyIHRoYW4gYnkg
-cHVzaGluZyBpdCB1cHN0cmVhbSBteXNlbGYsIGZpcnN0LgoKQmxhbWluZyBtZSBiZWNhdXNlIHlv
-dSB3YW50IG1lIHRvIHNlbmQgeW91ciBkcml2ZXJzIHVwc3RyZWFtIGFuZCBJJ20Kbm90IGRvaW5n
-IGl0IG9yIG5vdCBkb2luZyBpdCBmYXN0IGVub3VnaCBvciBub3QgZG9pbmcgaXQgdGhlIHdheSB5
-b3UKbGlrZSBkb2VzIG5vdCBzZWVtIHZlcnkgcHJvZHVjdGl2ZS4gIEknbSBub3QgYSBnYXRla2Vl
-cGVyIGZvciBwYXRjaApzdWJtaXNzaW9uIHRvIHRoZSBtYWlubGluZSBrZXJuZWwuCgpCcmlhbgpf
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBt
-YWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9s
-aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Sat, Jun 05, 2010 at 12:58:08PM -0500, James Bottomley wrote:
+> A lot of the pm_qos extremal value handling is really duplicating what a
+> priority ordered list does, just in a less efficient fashion.  Simply
+> redoing the implementation in terms of a plist gets rid of a lot of this
+> junk (although there are several other strange things that could do with
+> tidying up, like pm_qos_request_list has to carry the pm_qos_class with
+> every node, simply because it doesn't get passed in to
+> pm_qos_update_request even though every caller knows full well what
+> parameter it's updating).
+> 
+> I think this redo is a win independent of android, so we should do
+> something like this now.
+> 
+> There is one nasty that should probably be fixed in plists not open
+> coded here: plist_first gives the highest priority value, but there's no
+> corresponding API to give the lowest (even though you can get it from
+> the head.nodes_list.prev) ... if the sched people are OK, I'll correct
+> this with the final patch set.
+> 
+> James
+> 
+> ---
+> 
+>  kernel/pm_qos_params.c |  152 +++++++++++++++++++++++-------------------------
+>  1 files changed, 73 insertions(+), 79 deletions(-)
+> 
+> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+> index f42d3f7..241fa79 100644
+> --- a/kernel/pm_qos_params.c
+> +++ b/kernel/pm_qos_params.c
+> @@ -30,6 +30,7 @@
+>  /*#define DEBUG*/
+>  
+>  #include <linux/pm_qos_params.h>
+> +#include <linux/plist.h>
+>  #include <linux/sched.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/slab.h>
+> @@ -49,58 +50,51 @@
+>   * held, taken with _irqsave.  One lock to rule them all
+>   */
+>  struct pm_qos_request_list {
+> -	struct list_head list;
+> -	union {
+> -		s32 value;
+> -		s32 usec;
+> -		s32 kbps;
+> -	};
+> +	struct plist_node list;
+>  	int pm_qos_class;
+>  };
+
+what is the scaling charactoristics of plist's for things that have a
+large dynamic range and a significant utilization of it?  (say 16 bits
+of it.  Which is very unlikely to ever happen)
+
+I think in practice this will not be an issue as most users only ever
+call the pm_qos API with 2 values (at least kernel users of the API) 
+
+I've only had a quick look so far but it looks really good to me.
+
+--mgross
+
+>  
+> -static s32 max_compare(s32 v1, s32 v2);
+> -static s32 min_compare(s32 v1, s32 v2);
+> +enum pm_qos_type {
+> +	PM_QOS_MAX,		/* return the largest value */
+> +	PM_QOS_MIN,		/* return the smallest value */
+> +};
+>  
+>  struct pm_qos_object {
+> -	struct pm_qos_request_list requests;
+> +	struct plist_head requests;
+>  	struct blocking_notifier_head *notifiers;
+>  	struct miscdevice pm_qos_power_miscdev;
+>  	char *name;
+>  	s32 default_value;
+> -	atomic_t target_value;
+> -	s32 (*comparitor)(s32, s32);
+> +	enum pm_qos_type type;
+>  };
+>  
+>  static struct pm_qos_object null_pm_qos;
+>  static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
+>  static struct pm_qos_object cpu_dma_pm_qos = {
+> -	.requests = {LIST_HEAD_INIT(cpu_dma_pm_qos.requests.list)},
+> +	.requests = {_PLIST_HEAD_INIT(cpu_dma_pm_qos.requests)},
+>  	.notifiers = &cpu_dma_lat_notifier,
+>  	.name = "cpu_dma_latency",
+>  	.default_value = 2000 * USEC_PER_SEC,
+> -	.target_value = ATOMIC_INIT(2000 * USEC_PER_SEC),
+> -	.comparitor = min_compare
+> +	.type = PM_QOS_MIN,
+>  };
+>  
+>  static BLOCKING_NOTIFIER_HEAD(network_lat_notifier);
+>  static struct pm_qos_object network_lat_pm_qos = {
+> -	.requests = {LIST_HEAD_INIT(network_lat_pm_qos.requests.list)},
+> +	.requests = {_PLIST_HEAD_INIT(network_lat_pm_qos.requests)},
+>  	.notifiers = &network_lat_notifier,
+>  	.name = "network_latency",
+>  	.default_value = 2000 * USEC_PER_SEC,
+> -	.target_value = ATOMIC_INIT(2000 * USEC_PER_SEC),
+> -	.comparitor = min_compare
+> +	.type = PM_QOS_MIN
+>  };
+>  
+>  
+>  static BLOCKING_NOTIFIER_HEAD(network_throughput_notifier);
+>  static struct pm_qos_object network_throughput_pm_qos = {
+> -	.requests = {LIST_HEAD_INIT(network_throughput_pm_qos.requests.list)},
+> +	.requests = {_PLIST_HEAD_INIT(network_throughput_pm_qos.requests)},
+>  	.notifiers = &network_throughput_notifier,
+>  	.name = "network_throughput",
+>  	.default_value = 0,
+> -	.target_value = ATOMIC_INIT(0),
+> -	.comparitor = max_compare
+> +	.type = PM_QOS_MAX,
+>  };
+>  
+>  
+> @@ -124,46 +118,40 @@ static const struct file_operations pm_qos_power_fops = {
+>  	.release = pm_qos_power_release,
+>  };
+>  
+> -/* static helper functions */
+> -static s32 max_compare(s32 v1, s32 v2)
+> +/* unlocked internal variant */
+> +static inline int pm_qos_get_value(struct pm_qos_object *o)
+>  {
+> -	return max(v1, v2);
+> -}
+> +	if (plist_head_empty(&o->requests))
+> +		return o->default_value;
+>  
+> -static s32 min_compare(s32 v1, s32 v2)
+> -{
+> -	return min(v1, v2);
+> -}
+> +	switch (o->type) {
+> +	case PM_QOS_MIN:
+> +		return list_entry(o->requests.node_list.prev, struct plist_node, plist.node_list)->prio;
+>  
+> +	case PM_QOS_MAX:
+> +		return plist_first(&o->requests)->prio;
+> +	}
+> +}
+>  
+> -static void update_target(int pm_qos_class)
+> +static void update_target(struct pm_qos_object *o, struct plist_node *node,
+> +			  int del)
+>  {
+> -	s32 extreme_value;
+> -	struct pm_qos_request_list *node;
+>  	unsigned long flags;
+> -	int call_notifier = 0;
+> +	int prev_value, curr_value;
+>  
+>  	spin_lock_irqsave(&pm_qos_lock, flags);
+> -	extreme_value = pm_qos_array[pm_qos_class]->default_value;
+> -	list_for_each_entry(node,
+> -			&pm_qos_array[pm_qos_class]->requests.list, list) {
+> -		extreme_value = pm_qos_array[pm_qos_class]->comparitor(
+> -				extreme_value, node->value);
+> -	}
+> -	if (atomic_read(&pm_qos_array[pm_qos_class]->target_value) !=
+> -			extreme_value) {
+> -		call_notifier = 1;
+> -		atomic_set(&pm_qos_array[pm_qos_class]->target_value,
+> -				extreme_value);
+> -		pr_debug(KERN_ERR "new target for qos %d is %d\n", pm_qos_class,
+> -			atomic_read(&pm_qos_array[pm_qos_class]->target_value));
+> -	}
+> +	prev_value = pm_qos_get_value(o);
+> +	if (del)
+> +		plist_del(node, &o->requests);
+> +	else
+> +		plist_add(node, &o->requests);
+> +	curr_value = pm_qos_get_value(o);
+>  	spin_unlock_irqrestore(&pm_qos_lock, flags);
+>  
+> -	if (call_notifier)
+> -		blocking_notifier_call_chain(
+> -				pm_qos_array[pm_qos_class]->notifiers,
+> -					(unsigned long) extreme_value, NULL);
+> +	if (prev_value != curr_value)
+> +		blocking_notifier_call_chain(o->notifiers,
+> +					     (unsigned long)curr_value,
+> +					     NULL);
+>  }
+>  
+>  static int register_pm_qos_misc(struct pm_qos_object *qos)
+> @@ -196,7 +184,14 @@ static int find_pm_qos_object_by_minor(int minor)
+>   */
+>  int pm_qos_request(int pm_qos_class)
+>  {
+> -	return atomic_read(&pm_qos_array[pm_qos_class]->target_value);
+> +	unsigned long flags;
+> +	int value;
+> +
+> +	spin_lock_irqsave(&pm_qos_lock, flags);
+> +	value = pm_qos_get_value(pm_qos_array[pm_qos_class]);
+> +	spin_unlock_irqrestore(&pm_qos_lock, flags);
+> +
+> +	return value;
+>  }
+>  EXPORT_SYMBOL_GPL(pm_qos_request);
+>  
+> @@ -214,21 +209,19 @@ EXPORT_SYMBOL_GPL(pm_qos_request);
+>  struct pm_qos_request_list *pm_qos_add_request(int pm_qos_class, s32 value)
+>  {
+>  	struct pm_qos_request_list *dep;
+> -	unsigned long flags;
+>  
+>  	dep = kzalloc(sizeof(struct pm_qos_request_list), GFP_KERNEL);
+>  	if (dep) {
+> +		struct pm_qos_object *o =  pm_qos_array[pm_qos_class];
+> +		int new_value;
+> +
+>  		if (value == PM_QOS_DEFAULT_VALUE)
+> -			dep->value = pm_qos_array[pm_qos_class]->default_value;
+> +			new_value = o->default_value;
+>  		else
+> -			dep->value = value;
+> +			new_value = value;
+> +		plist_node_init(&dep->list, new_value);
+>  		dep->pm_qos_class = pm_qos_class;
+> -
+> -		spin_lock_irqsave(&pm_qos_lock, flags);
+> -		list_add(&dep->list,
+> -			&pm_qos_array[pm_qos_class]->requests.list);
+> -		spin_unlock_irqrestore(&pm_qos_lock, flags);
+> -		update_target(pm_qos_class);
+> +		update_target(o, &dep->list, 0);
+>  	}
+>  
+>  	return dep;
+> @@ -251,22 +244,27 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
+>  	unsigned long flags;
+>  	int pending_update = 0;
+>  	s32 temp;
+> +	struct pm_qos_object *o;
+>  
+> -	if (pm_qos_req) { /*guard against callers passing in null */
+> -		spin_lock_irqsave(&pm_qos_lock, flags);
+> -		if (new_value == PM_QOS_DEFAULT_VALUE)
+> -			temp = pm_qos_array[pm_qos_req->pm_qos_class]->default_value;
+> -		else
+> -			temp = new_value;
+> +	if (!pm_qos_req) /*guard against callers passing in null */
+> +		return;
+>  
+> -		if (temp != pm_qos_req->value) {
+> -			pending_update = 1;
+> -			pm_qos_req->value = temp;
+> -		}
+> +	o = pm_qos_array[pm_qos_req->pm_qos_class];
+> +
+> +	if (new_value == PM_QOS_DEFAULT_VALUE)
+> +		temp = o->default_value;
+> +	else
+> +		temp = new_value;
+> +
+> +	if (temp != pm_qos_req->list.prio) {
+> +		pending_update = 1;
+> +		spin_lock_irqsave(&pm_qos_lock, flags);
+> +		plist_del(&pm_qos_req->list, &o->requests);
+> +		plist_node_init(&pm_qos_req->list, temp);
+>  		spin_unlock_irqrestore(&pm_qos_lock, flags);
+> -		if (pending_update)
+> -			update_target(pm_qos_req->pm_qos_class);
+>  	}
+> +	if (pending_update)
+> +		update_target(o, &pm_qos_req->list, 0);
+>  }
+>  EXPORT_SYMBOL_GPL(pm_qos_update_request);
+>  
+> @@ -280,19 +278,15 @@ EXPORT_SYMBOL_GPL(pm_qos_update_request);
+>   */
+>  void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req)
+>  {
+> -	unsigned long flags;
+> -	int qos_class;
+> +	struct pm_qos_object *o;
+>  
+>  	if (pm_qos_req == NULL)
+>  		return;
+>  		/* silent return to keep pcm code cleaner */
+>  
+> -	qos_class = pm_qos_req->pm_qos_class;
+> -	spin_lock_irqsave(&pm_qos_lock, flags);
+> -	list_del(&pm_qos_req->list);
+> +	o = pm_qos_array[pm_qos_req->pm_qos_class];
+> +	update_target(o, &pm_qos_req->list, 1);
+>  	kfree(pm_qos_req);
+> -	spin_unlock_irqrestore(&pm_qos_lock, flags);
+> -	update_target(qos_class);
+>  }
+>  EXPORT_SYMBOL_GPL(pm_qos_remove_request);
+>  
+> 
+> 
