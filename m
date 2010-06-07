@@ -1,15 +1,17 @@
 From: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: [RFC] pm_qos: get rid of the allocation in
-	pm_qos_add_request()
-Date: Sun, 06 Jun 2010 22:47:42 -0400
-Message-ID: <1275878862.7227.561.camel__3520.46400444141$1275878919$gmane$org@mulgrave.site>
-References: <1275765614.7227.42.camel@mulgrave.site>
-	<20100606213224.GC8610@gvim.org>
+Subject: Re: [PATCH] pm_qos: make update_request non blocking
+Date: Sun, 06 Jun 2010 22:49:11 -0400
+Message-ID: <1275878951.7227.563.camel@mulgrave.site>
+References: <1275770783-4183-1-git-send-email-florian@mickler.org>
+	<1275771430.7227.79.camel@mulgrave.site>
+	<20100605232102.0eef78aa@schatten.dmk.lab>
+	<1275777849.7227.192.camel@mulgrave.site>
+	<20100606215049.GF8610@gvim.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100606213224.GC8610@gvim.org>
+In-Reply-To: <20100606215049.GF8610@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,187 +22,144 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: markgross@thegnar.org
-Cc: Takashi Iwai <tiwai@suse.de>, netdev@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, alsa-devel@alsa-project.org, Jaroslav Kysela <perex@perex.cz>
+Cc: Florian Mickler <florian@mickler.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2010-06-06 at 14:32 -0700, mark gross wrote:
-> so the test for an un-registerd or in-initialized request is if list == null.
+On Sun, 2010-06-06 at 14:50 -0700, mark gross wrote:
+> On Sat, Jun 05, 2010 at 05:44:09PM -0500, James Bottomley wrote:
+> > On Sat, 2010-06-05 at 23:21 +0200, Florian Mickler wrote:
+> > > On Sat, 05 Jun 2010 15:57:10 -0500
+> > > James Bottomley <James.Bottomley@suse.de> wrote:
+> > > 
+> > > > On Sat, 2010-06-05 at 22:46 +0200, florian@mickler.org wrote:
+> > > > > First we use atomic_notifier to get the spinlocked variant.
+> > > > > Secondly we call the notifiers via schedule_work.
+> > > > > 
+> > > > > Signed-off-by: Florian Mickler <florian@mickler.org>
+> > > > > ---
+> > > > > 
+> > > > > Please advise.
+> > > > > 
+> > > > >  kernel/pm_qos_params.c |   33 ++++++++++++++++++++++-----------
+> > > > >  1 files changed, 22 insertions(+), 11 deletions(-)
+> > > > > 
+> > > > > diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+> > > > > index f42d3f7..7335c27 100644
+> > > > > --- a/kernel/pm_qos_params.c
+> > > > > +++ b/kernel/pm_qos_params.c
+> > > > > @@ -40,6 +40,7 @@
+> > > > >  #include <linux/string.h>
+> > > > >  #include <linux/platform_device.h>
+> > > > >  #include <linux/init.h>
+> > > > > +#include <linux/workqueue.h>
+> > > > >  
+> > > > >  #include <linux/uaccess.h>
+> > > > >  
+> > > > > @@ -63,7 +64,7 @@ static s32 min_compare(s32 v1, s32 v2);
+> > > > >  
+> > > > >  struct pm_qos_object {
+> > > > >  	struct pm_qos_request_list requests;
+> > > > > -	struct blocking_notifier_head *notifiers;
+> > > > > +	struct atomic_notifier_head *notifiers;
+> > > > >  	struct miscdevice pm_qos_power_miscdev;
+> > > > >  	char *name;
+> > > > >  	s32 default_value;
+> > > > > @@ -72,7 +73,7 @@ struct pm_qos_object {
+> > > > >  };
+> > > > >  
+> > > > >  static struct pm_qos_object null_pm_qos;
+> > > > > -static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
+> > > > > +static ATOMIC_NOTIFIER_HEAD(cpu_dma_lat_notifier);
+> > > > >  static struct pm_qos_object cpu_dma_pm_qos = {
+> > > > >  	.requests = {LIST_HEAD_INIT(cpu_dma_pm_qos.requests.list)},
+> > > > >  	.notifiers = &cpu_dma_lat_notifier,
+> > > > > @@ -82,7 +83,7 @@ static struct pm_qos_object cpu_dma_pm_qos = {
+> > > > >  	.comparitor = min_compare
+> > > > >  };
+> > > > >  
+> > > > > -static BLOCKING_NOTIFIER_HEAD(network_lat_notifier);
+> > > > > +static ATOMIC_NOTIFIER_HEAD(network_lat_notifier);
+> > > > >  static struct pm_qos_object network_lat_pm_qos = {
+> > > > >  	.requests = {LIST_HEAD_INIT(network_lat_pm_qos.requests.list)},
+> > > > >  	.notifiers = &network_lat_notifier,
+> > > > > @@ -93,7 +94,7 @@ static struct pm_qos_object network_lat_pm_qos = {
+> > > > >  };
+> > > > >  
+> > > > > 
+> > > > > -static BLOCKING_NOTIFIER_HEAD(network_throughput_notifier);
+> > > > > +static ATOMIC_NOTIFIER_HEAD(network_throughput_notifier);
+> > > > >  static struct pm_qos_object network_throughput_pm_qos = {
+> > > > >  	.requests = {LIST_HEAD_INIT(network_throughput_pm_qos.requests.list)},
+> > > > >  	.notifiers = &network_throughput_notifier,
+> > > > > @@ -103,7 +104,6 @@ static struct pm_qos_object network_throughput_pm_qos = {
+> > > > >  	.comparitor = max_compare
+> > > > >  };
+> > > > >  
+> > > > > -
+> > > > >  static struct pm_qos_object *pm_qos_array[] = {
+> > > > >  	&null_pm_qos,
+> > > > >  	&cpu_dma_pm_qos,
+> > > > > @@ -135,6 +135,15 @@ static s32 min_compare(s32 v1, s32 v2)
+> > > > >  	return min(v1, v2);
+> > > > >  }
+> > > > >  
+> > > > > +static void update_notify(struct work_struct* work){
+> > > > > +	int pm_qos_class = atomic_long_read(&work->data);
+> > > > > +	
+> > > > > +	s32 extreme_value = atomic_read(&pm_qos_array[pm_qos_class]->target_value);
+> > > > > +	atomic_notifier_call_chain(
+> > > > > +		pm_qos_array[pm_qos_class]->notifiers,
+> > > > > +			(unsigned long) extreme_value, NULL);
+> > > > > +}
+> > > > > +struct work_struct pm_qos_update_notify_work;
+> > > > >  
+> > > > >  static void update_target(int pm_qos_class)
+> > > > >  {
+> > > > > @@ -160,10 +169,10 @@ static void update_target(int pm_qos_class)
+> > > > >  	}
+> > > > >  	spin_unlock_irqrestore(&pm_qos_lock, flags);
+> > > > >  
+> > > > > -	if (call_notifier)
+> > > > > -		blocking_notifier_call_chain(
+> > > > > -				pm_qos_array[pm_qos_class]->notifiers,
+> > > > > -					(unsigned long) extreme_value, NULL);
+> > > > > +	if (call_notifier){
+> > > > > +		atomic_long_set(&pm_qos_update_notify_work.data, pm_qos_class);
+> > > > > +		schedule_work(&pm_qos_update_notify_work);
+> > > > 
+> > > > Actually, you should use execute_in_process_context for this ... that
+> > > > way any current call from user context won't change semantics (i.e. the
+> > > > notifier will be executed before the call finishes).
+> > > 
+> > > Ah, ok. Didn't know of its existence. 
+> > > After thinking a bit, I think it is crucial for the qos-infrastructure
+> > > to provide direct notifiers. For example, any missed change in latency
+> > > could impact the system.
+> > > 
+> > > > 
+> > > > I also suspect we might need an atomic notifier chain to be called
+> > > > in-line ... things like the dma latency notifier need in-line
+> > > > notification, I can see that some android ones would at all.  However,
+> > > > this question can be deferred until an actual use case is seen.
+> > > 
+> > > We should probably only provide an atomic queue and have all users
+> > > either schedule work or be quick, as it can be crucial to get the
+> > > information out there.
+> > > 
+> > > What do you think?
+> > 
+> > Yes, considering the use cases, I don't think we want to muck with
+> > workqueues at all, so just do two queues per constraint, one blocking
+> > and one atomic.  For a constraint  that has atomic update sites,
+> > registering a blocking notifier would be illegal and we'd give a runtime
+> > warning (we can even code a __might_sleep in there before the call).
+> > That way we preserve current semantics and permit blocking notifiers to
+> > be registered, but only if all the call sites have user context.
+> > 
+> I like the idea of having only atomic safe notifiers.  Is there an easy
+> way to enforce that?
 
-Actually I was using pm_qos_class == 0, but all current users use NULL
-as the pointer test, so they must all be allocated in zero initialised
-memory.
-
-> >  
-> > -struct pm_qos_request_list *pm_qos_add_request(int pm_qos_class, s32 value);
-> > +void pm_qos_add_request(struct pm_qos_request_list *l, int pm_qos_class, s32 value);
-> >  void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
-> >  		s32 new_value);
-> >  void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req);
-> > @@ -25,3 +30,4 @@ int pm_qos_request(int pm_qos_class);
-> >  int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
-> >  int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
-> >  
-> > +#endif
-> > diff --git a/include/sound/pcm.h b/include/sound/pcm.h
-> > index dd76cde..6e3a297 100644
-> > --- a/include/sound/pcm.h
-> > +++ b/include/sound/pcm.h
-> > @@ -366,7 +366,7 @@ struct snd_pcm_substream {
-> >  	int number;
-> >  	char name[32];			/* substream name */
-> >  	int stream;			/* stream (direction) */
-> > -	struct pm_qos_request_list *latency_pm_qos_req; /* pm_qos request */
-> > +	struct pm_qos_request_list latency_pm_qos_req; /* pm_qos request */
-> >  	size_t buffer_bytes_max;	/* limit ring buffer size */
-> >  	struct snd_dma_buffer dma_buffer;
-> >  	unsigned int dma_buf_id;
-> > diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> > index 241fa79..f1d3d23 100644
-> > --- a/kernel/pm_qos_params.c
-> > +++ b/kernel/pm_qos_params.c
-> > @@ -30,7 +30,6 @@
-> >  /*#define DEBUG*/
-> >  
-> >  #include <linux/pm_qos_params.h>
-> > -#include <linux/plist.h>
-> ? plist pm_qos isn't yet in the code base yet. ;)
-> Is this patch assumed after your RFC patch?
-> It must be....
-
-Yes, they're stacked.
-
-> >  #include <linux/sched.h>
-> >  #include <linux/spinlock.h>
-> >  #include <linux/slab.h>
-> > @@ -49,11 +48,6 @@
-> >   * or pm_qos_object list and pm_qos_objects need to happen with pm_qos_lock
-> >   * held, taken with _irqsave.  One lock to rule them all
-> >   */
-> > -struct pm_qos_request_list {
-> > -	struct plist_node list;
-> > -	int pm_qos_class;
-> > -};
-> > -
-> >  enum pm_qos_type {
-> >  	PM_QOS_MAX,		/* return the largest value */
-> >  	PM_QOS_MIN,		/* return the smallest value */
-> > @@ -195,6 +189,11 @@ int pm_qos_request(int pm_qos_class)
-> >  }
-> >  EXPORT_SYMBOL_GPL(pm_qos_request);
-> >  
-> > +static int pm_qos_request_active(struct pm_qos_request_list *req)
-> > +{
-> > +	return req->pm_qos_class != 0;
-> > +}
-> > +
-> >  /**
-> >   * pm_qos_add_request - inserts new qos request into the list
-> >   * @pm_qos_class: identifies which list of qos request to us
-> > @@ -206,25 +205,22 @@ EXPORT_SYMBOL_GPL(pm_qos_request);
-> >   * element as a handle for use in updating and removal.  Call needs to save
-> >   * this handle for later use.
-> >   */
-> > -struct pm_qos_request_list *pm_qos_add_request(int pm_qos_class, s32 value)
-> > +void pm_qos_add_request(struct pm_qos_request_list *dep,
-> > +			int pm_qos_class, s32 value)
-> >  {
-> > -	struct pm_qos_request_list *dep;
-> > -
-> > -	dep = kzalloc(sizeof(struct pm_qos_request_list), GFP_KERNEL);
-> > -	if (dep) {
-> > -		struct pm_qos_object *o =  pm_qos_array[pm_qos_class];
-> > -		int new_value;
-> > -
-> > -		if (value == PM_QOS_DEFAULT_VALUE)
-> > -			new_value = o->default_value;
-> > -		else
-> > -			new_value = value;
-> > -		plist_node_init(&dep->list, new_value);
-> > -		dep->pm_qos_class = pm_qos_class;
-> > -		update_target(o, &dep->list, 0);
-> > -	}
-> > +	struct pm_qos_object *o =  pm_qos_array[pm_qos_class];
-> > +	int new_value;
-> > +
-> > +	if (pm_qos_request_active(dep))
-> > +		return;
-> >  
-> > -	return dep;
-> > +	if (value == PM_QOS_DEFAULT_VALUE)
-> > +		new_value = o->default_value;
-> > +	else
-> > +		new_value = value;
-> > +	plist_node_init(&dep->list, new_value);
-> > +	dep->pm_qos_class = pm_qos_class;
-> > +	update_target(o, &dep->list, 0);
-> >  }
-> >  EXPORT_SYMBOL_GPL(pm_qos_add_request);
-> >  
-> > @@ -286,7 +282,7 @@ void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req)
-> >  
-> >  	o = pm_qos_array[pm_qos_req->pm_qos_class];
-> >  	update_target(o, &pm_qos_req->list, 1);
-> > -	kfree(pm_qos_req);
-> > +	memset(pm_qos_req, 0, sizeof(*pm_qos_req));
-> 
-> I was wondering how to tell if a pm_qos_request was un-initialized
-> un-registered request.
-
-The assumption is zero initialised.
-
-> >  }
-> >  EXPORT_SYMBOL_GPL(pm_qos_remove_request);
-> >  
-> > @@ -334,8 +330,12 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
-> >  
-> >  	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
-> >  	if (pm_qos_class >= 0) {
-> > -		filp->private_data = (void *) pm_qos_add_request(pm_qos_class,
-> > -				PM_QOS_DEFAULT_VALUE);
-> > +		struct pm_qos_request_list *req = kzalloc(GFP_KERNEL, sizeof(*req));
-> > +		if (!req)
-> > +			return -ENOMEM;
-> > +
-> > +		pm_qos_add_request(req, pm_qos_class, PM_QOS_DEFAULT_VALUE);
-> > +		filp->private_data = req;
-> >  
-> >  		if (filp->private_data)
-> >  			return 0;
-> > @@ -347,8 +347,9 @@ static int pm_qos_power_release(struct inode *inode, struct file *filp)
-> >  {
-> >  	struct pm_qos_request_list *req;
-> >  
-> > -	req = (struct pm_qos_request_list *)filp->private_data;
-> > +	req = filp->private_data;
-> >  	pm_qos_remove_request(req);
-> > +	kfree(req);
-> >  
-> >  	return 0;
-> >  }
-> > diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
-> > index 303ac04..d3b8b51 100644
-> > --- a/sound/core/pcm_native.c
-> > +++ b/sound/core/pcm_native.c
-> > @@ -451,13 +451,10 @@ static int snd_pcm_hw_params(struct snd_pcm_substream *substream,
-> >  	snd_pcm_timer_resolution_change(substream);
-> >  	runtime->status->state = SNDRV_PCM_STATE_SETUP;
-> >  
-> > -	if (substream->latency_pm_qos_req) {
-> > -		pm_qos_remove_request(substream->latency_pm_qos_req);
-> > -		substream->latency_pm_qos_req = NULL;
-> > -	}
-> > +	pm_qos_remove_request(&substream->latency_pm_qos_req);
-> >  	if ((usecs = period_to_usecs(runtime)) >= 0)
-> > -		substream->latency_pm_qos_req = pm_qos_add_request(
-> > -					PM_QOS_CPU_DMA_LATENCY, usecs);
-> > +		pm_qos_add_request(&substream->latency_pm_qos_req,
-> > +				   PM_QOS_CPU_DMA_LATENCY, usecs);
-> How are we going to avoid re-adding the latency_pm_qos_request multiple
-> times to the list?  the last time I looked at this I really wanted to
-> change this to update_request.  But, I got pushback so I added the file
-> gard in pmqos_params.c instead. 
-
-There's a guard check in add that does this ... it seemed better putting
-it there than replicating through the subsystems.
+There's a runtime way: you put a __might_sleep() into the code if
+someone registers a blocking notifier chain.
 
 James
