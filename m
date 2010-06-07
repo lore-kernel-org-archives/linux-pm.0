@@ -1,23 +1,30 @@
-From: Felipe Contreras <felipe.contreras@gmail.com>
+From: Florian Mickler <florian@mickler.org>
 Subject: Re: suspend blockers & Android integration
-Date: Mon, 7 Jun 2010 13:25:53 +0300
-Message-ID: <AANLkTinajoKfVD3eBNspiuf1e5jFb2jm-OyHJbcbk4xo__29007.0407012992$1275906437$gmane$org@mail.gmail.com>
-References: <AANLkTil1NCX91bWhpXHtC88Opr29mNjdhXD9RXQ6DI0y@mail.gmail.com>
+Date: Mon, 7 Jun 2010 14:16:24 +0200
+Message-ID: <20100607141624.3d004db2__22779.2513942861$1275913177$gmane$org@schatten.dmk.lab>
+References: <20100603193045.GA7188@elte.hu>
+	<AANLkTimH4ihf3QqtKFpfGXRKtO55PrUuff9JYtaEBG44@mail.gmail.com>
+	<20100604083423.GD15181@elte.hu>
+	<AANLkTinQyzzeF-NOAjrAqqQXqKjFJhx85nI4uyBGRtWd@mail.gmail.com>
+	<1275653210.27810.39762.camel@twins>
+	<AANLkTinyjBa0KYfFz3_EFbC65hoQFwFINlTDYjCe-wM3@mail.gmail.com>
+	<1275731653.27810.41078.camel@twins>
+	<20100605092851.6ee15f13@infradead.org>
+	<AANLkTimEwznq9c_8lkuBMxEQ-42rdvpZEqA9Y71Cu-qC@mail.gmail.com>
+	<AANLkTimKknOurmCffOpHjc1FjrP2MKf10pBwEEbLJPg_@mail.gmail.com>
+	<AANLkTil1NCX91bWhpXHtC88Opr29mNjdhXD9RXQ6DI0y@mail.gmail.com>
 	<AANLkTin1Za3GvfIKbcZdx6TzjIHzCvsg5uaY_Vk4nJIh@mail.gmail.com>
 	<AANLkTilQ1k78dDCYadOa1Wiyjm2nsBcRpxwdpGvYcf8z@mail.gmail.com>
 	<AANLkTin7oM3gVwHbIHWqYV8yeC6bbQ4q2jDDxAgz3DwQ@mail.gmail.com>
-	<20100606133130.GA8513@srcf.ucam.org>
-	<AANLkTimXTgZS_fZQa8hjIptJrCn756gF_xakT1IQiLWa@mail.gmail.com>
-	<20100606152946.GA11351@srcf.ucam.org>
-	<AANLkTilOq_5yUW1AIMH1qSE699gyRUTlzGPUVc4CrReY@mail.gmail.com>
-	<20100606164326.GA12570@srcf.ucam.org>
-	<AANLkTim0JD4V0RTc6CRIADypqYhQo3JYp3dJs0l7g7Ps@mail.gmail.com>
-	<20100606173146.GA13432@srcf.ucam.org>
+	<alpine.DEB.2.01.1006060305060.17462@asgard.lang.hm>
+	<AANLkTinW-X5m85rUcqP-lrEdfBikVclJWgqiWDkpxnAc@mail.gmail.com>
+	<20100606124949.539fa636@schatten.dmk.lab>
+	<alpine.DEB.2.01.1006060410050.17462@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100606173146.GA13432@srcf.ucam.org>
+In-Reply-To: <alpine.DEB.2.01.1006060410050.17462@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,29 +34,99 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: david@lang.hm
+Cc: tytso@mit.edu, James@smtp1.linux-foundation.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-2010/6/6 Matthew Garrett <mjg59@srcf.ucam.org>:
-> On Sun, Jun 06, 2010 at 07:21:49PM +0200, Vitaly Wool wrote:
->> 2010/6/6 Matthew Garrett <mjg59@srcf.ucam.org>:
->>
->> > Suspend blocks prevent system suspend, not any per-device suspend.
->>
->> Can you suspend a device which is holding a wake lock?
->
-> Yes. Suspend blocks are orthogonal to runtime PM.
+On Sun, 6 Jun 2010 04:14:09 -0700 (PDT)
+david@lang.hm wrote:
 
-In that sense yes, but as it has been stated before; if Android
-user-space concentrates on getting suspend blockers right, then the
-timers in user-space will not be aligned correctly, and runtime PM
-wouldn't work that great. Moreover, opportunistic suspend takes the
-device out of idle. So, as runtime PM gets better, there's a point
-where opportunistic suspend makes the situation worst.
+> On Sun, 6 Jun 2010, Florian Mickler wrote:
+> 
+> > On Sun, 6 Jun 2010 12:19:08 +0200
+> > Vitaly Wool <vitalywool@gmail.com> wrote:
+> >
+> >> 2010/6/6  <david@lang.hm>:
+> >>
+> >>> as an example (taken from this thread).
+> >>>
+> >>> system A needs to wake up to get a battery reading, store it and go back to
+> >>> sleep, It does so every 10 seconds. But when it does so it only runs the one
+> >>> process and then goes back to sleep.
+> >>>
+> >>> system B has the same need, but wakes up every 10 minutes. but when it does
+> >>> so it fully wakes up and this allows the mail app to power up the radio,
+> >>> connect to the Internet and start checking for new mail before oppurtunistic
+> >>> sleep shuts things down (causing the mail check to fail)
+> >>>
+> >>> System A will last considerably longer on a battery than System B.
+> >>
+> >> Exactly, thanks for pointing out the specific example :)
+> >>
+> >> ~Vitaly
+> >
+> > This does not affect suspend_blockers nor does suspend_blockers
+> > interfere with that.
+> >
+> > Suspend_blockers allow the system to suspend ("mem">/sys/power/state
+> > suspend), when the userspace decides that the device is not in use.
+> >
+> > So implementing suspend_blockers support does not impact any
+> > optimizations done to either system A nor system B.
+> 
+> Actually, it does.
+> 
+> system A is what's being proposed by kernel developers, where the 
+> untrusted stuff is in a different cgroup and what puts the system to sleep 
+> is 'normal' power management. It doesn't sleep as long, but when it wakes 
+> up the untrusted stuff is still frozen, so it doesn't stay awake long, or 
+> do very much.
+> 
+> System B is suspend blockers where you are either awake or asleep, and 
+> when you wake up you wake up fully, but oppertunistic sleep can interrupt 
+> untrusted processes at any time. The system sleeps longer (as fewer things 
+> can wake it), but when it wakes up it's fully awake.
+> 
+> David Lang
 
-So they are _mostly_ orthogonal, but not completely, at least for the
-analysis of suspend blockers' usefulness.
+You say, that coming back from suspend takes the system to full power
+(and everything runs) before it begins the descend into
+runtime-low-power?
+But are you referring to the fact that coming back
+from suspend starts in the zero-idle-state (i.e. "consumes extra
+power") or that all processes run when it is not suspended?
 
--- 
-Felipe Contreras
+Because the latter would of course (theretically) profit from the
+framework-controlled-cgroup-freeze/thaw (with and without
+opportunistic suspend) while the former should be a problem that
+both opportunistic suspend as well as suspend-from-idle have. Or not?
+
+So, here is the question I'm asking myself: If System A were to be
+complemented by suspend_blockers, wouldn't it still be better? 
+
+With System A you could try to do a really sophisticated
+power-management scheme and so on... but as soon as you allow 3rd-Party
+Apps, how do you manage their cross-dependencies? I.e. you can not
+automatically detect when App1 needs App2 to function. 
+You need to allow all 3rd-Party apps to run as a group. 
+
+So you can perhaps partition your software stack into "untrusted
+applications" and different groups of software with audited
+dependencies. 
+
+If one group interacts with another group (as will be the case at least
+with the "untrusted applications" group) you have to have them both
+running at the same time.
+
+This really gets pretty complex. Do you really think something like
+this is better than a simple suspend? (I.e. suspend blockers or
+having just one group)
+
+Suppose you implement suspend blockers with a cgroup freeze... how do
+you implement the freeze/thaw control? 
+
+Cheers,
+Flo
+
+p.s.: do you see an possibility for any kind of "priority inheritance"
+in the cgroup scheme? I don't.
