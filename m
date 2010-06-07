@@ -1,17 +1,15 @@
 From: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: [PATCH] pm_qos: make update_request non blocking
-Date: Sun, 06 Jun 2010 22:49:11 -0400
-Message-ID: <1275878951.7227.563.camel@mulgrave.site>
-References: <1275770783-4183-1-git-send-email-florian@mickler.org>
-	<1275771430.7227.79.camel@mulgrave.site>
-	<20100605232102.0eef78aa@schatten.dmk.lab>
-	<1275777849.7227.192.camel@mulgrave.site>
-	<20100606215049.GF8610@gvim.org>
+Subject: Re: [RFC] pm_qos: get rid of the allocation in
+	pm_qos_add_request()
+Date: Sun, 06 Jun 2010 22:50:19 -0400
+Message-ID: <1275879019.7227.564.camel__42048.7425792546$1275879071$gmane$org@mulgrave.site>
+References: <1275765614.7227.42.camel@mulgrave.site>
+	<20100606231021.GA17031@gvim.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100606215049.GF8610@gvim.org>
+In-Reply-To: <20100606231021.GA17031@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,144 +20,111 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: markgross@thegnar.org
-Cc: Florian Mickler <florian@mickler.org>, pm list <linux-pm@lists.linux-foundation.org>
+Cc: Takashi Iwai <tiwai@suse.de>, netdev@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, alsa-devel@alsa-project.org, Jaroslav Kysela <perex@perex.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2010-06-06 at 14:50 -0700, mark gross wrote:
-> On Sat, Jun 05, 2010 at 05:44:09PM -0500, James Bottomley wrote:
-> > On Sat, 2010-06-05 at 23:21 +0200, Florian Mickler wrote:
-> > > On Sat, 05 Jun 2010 15:57:10 -0500
-> > > James Bottomley <James.Bottomley@suse.de> wrote:
-> > > 
-> > > > On Sat, 2010-06-05 at 22:46 +0200, florian@mickler.org wrote:
-> > > > > First we use atomic_notifier to get the spinlocked variant.
-> > > > > Secondly we call the notifiers via schedule_work.
-> > > > > 
-> > > > > Signed-off-by: Florian Mickler <florian@mickler.org>
-> > > > > ---
-> > > > > 
-> > > > > Please advise.
-> > > > > 
-> > > > >  kernel/pm_qos_params.c |   33 ++++++++++++++++++++++-----------
-> > > > >  1 files changed, 22 insertions(+), 11 deletions(-)
-> > > > > 
-> > > > > diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> > > > > index f42d3f7..7335c27 100644
-> > > > > --- a/kernel/pm_qos_params.c
-> > > > > +++ b/kernel/pm_qos_params.c
-> > > > > @@ -40,6 +40,7 @@
-> > > > >  #include <linux/string.h>
-> > > > >  #include <linux/platform_device.h>
-> > > > >  #include <linux/init.h>
-> > > > > +#include <linux/workqueue.h>
-> > > > >  
-> > > > >  #include <linux/uaccess.h>
-> > > > >  
-> > > > > @@ -63,7 +64,7 @@ static s32 min_compare(s32 v1, s32 v2);
-> > > > >  
-> > > > >  struct pm_qos_object {
-> > > > >  	struct pm_qos_request_list requests;
-> > > > > -	struct blocking_notifier_head *notifiers;
-> > > > > +	struct atomic_notifier_head *notifiers;
-> > > > >  	struct miscdevice pm_qos_power_miscdev;
-> > > > >  	char *name;
-> > > > >  	s32 default_value;
-> > > > > @@ -72,7 +73,7 @@ struct pm_qos_object {
-> > > > >  };
-> > > > >  
-> > > > >  static struct pm_qos_object null_pm_qos;
-> > > > > -static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
-> > > > > +static ATOMIC_NOTIFIER_HEAD(cpu_dma_lat_notifier);
-> > > > >  static struct pm_qos_object cpu_dma_pm_qos = {
-> > > > >  	.requests = {LIST_HEAD_INIT(cpu_dma_pm_qos.requests.list)},
-> > > > >  	.notifiers = &cpu_dma_lat_notifier,
-> > > > > @@ -82,7 +83,7 @@ static struct pm_qos_object cpu_dma_pm_qos = {
-> > > > >  	.comparitor = min_compare
-> > > > >  };
-> > > > >  
-> > > > > -static BLOCKING_NOTIFIER_HEAD(network_lat_notifier);
-> > > > > +static ATOMIC_NOTIFIER_HEAD(network_lat_notifier);
-> > > > >  static struct pm_qos_object network_lat_pm_qos = {
-> > > > >  	.requests = {LIST_HEAD_INIT(network_lat_pm_qos.requests.list)},
-> > > > >  	.notifiers = &network_lat_notifier,
-> > > > > @@ -93,7 +94,7 @@ static struct pm_qos_object network_lat_pm_qos = {
-> > > > >  };
-> > > > >  
-> > > > > 
-> > > > > -static BLOCKING_NOTIFIER_HEAD(network_throughput_notifier);
-> > > > > +static ATOMIC_NOTIFIER_HEAD(network_throughput_notifier);
-> > > > >  static struct pm_qos_object network_throughput_pm_qos = {
-> > > > >  	.requests = {LIST_HEAD_INIT(network_throughput_pm_qos.requests.list)},
-> > > > >  	.notifiers = &network_throughput_notifier,
-> > > > > @@ -103,7 +104,6 @@ static struct pm_qos_object network_throughput_pm_qos = {
-> > > > >  	.comparitor = max_compare
-> > > > >  };
-> > > > >  
-> > > > > -
-> > > > >  static struct pm_qos_object *pm_qos_array[] = {
-> > > > >  	&null_pm_qos,
-> > > > >  	&cpu_dma_pm_qos,
-> > > > > @@ -135,6 +135,15 @@ static s32 min_compare(s32 v1, s32 v2)
-> > > > >  	return min(v1, v2);
-> > > > >  }
-> > > > >  
-> > > > > +static void update_notify(struct work_struct* work){
-> > > > > +	int pm_qos_class = atomic_long_read(&work->data);
-> > > > > +	
-> > > > > +	s32 extreme_value = atomic_read(&pm_qos_array[pm_qos_class]->target_value);
-> > > > > +	atomic_notifier_call_chain(
-> > > > > +		pm_qos_array[pm_qos_class]->notifiers,
-> > > > > +			(unsigned long) extreme_value, NULL);
-> > > > > +}
-> > > > > +struct work_struct pm_qos_update_notify_work;
-> > > > >  
-> > > > >  static void update_target(int pm_qos_class)
-> > > > >  {
-> > > > > @@ -160,10 +169,10 @@ static void update_target(int pm_qos_class)
-> > > > >  	}
-> > > > >  	spin_unlock_irqrestore(&pm_qos_lock, flags);
-> > > > >  
-> > > > > -	if (call_notifier)
-> > > > > -		blocking_notifier_call_chain(
-> > > > > -				pm_qos_array[pm_qos_class]->notifiers,
-> > > > > -					(unsigned long) extreme_value, NULL);
-> > > > > +	if (call_notifier){
-> > > > > +		atomic_long_set(&pm_qos_update_notify_work.data, pm_qos_class);
-> > > > > +		schedule_work(&pm_qos_update_notify_work);
-> > > > 
-> > > > Actually, you should use execute_in_process_context for this ... that
-> > > > way any current call from user context won't change semantics (i.e. the
-> > > > notifier will be executed before the call finishes).
-> > > 
-> > > Ah, ok. Didn't know of its existence. 
-> > > After thinking a bit, I think it is crucial for the qos-infrastructure
-> > > to provide direct notifiers. For example, any missed change in latency
-> > > could impact the system.
-> > > 
-> > > > 
-> > > > I also suspect we might need an atomic notifier chain to be called
-> > > > in-line ... things like the dma latency notifier need in-line
-> > > > notification, I can see that some android ones would at all.  However,
-> > > > this question can be deferred until an actual use case is seen.
-> > > 
-> > > We should probably only provide an atomic queue and have all users
-> > > either schedule work or be quick, as it can be crucial to get the
-> > > information out there.
-> > > 
-> > > What do you think?
+On Sun, 2010-06-06 at 16:10 -0700, mark gross wrote:
+> On Sat, Jun 05, 2010 at 02:20:14PM -0500, James Bottomley wrote:
+> > [alsa-devel says it's a moderated list, so feel free to drop before
+> > replying]
 > > 
-> > Yes, considering the use cases, I don't think we want to muck with
-> > workqueues at all, so just do two queues per constraint, one blocking
-> > and one atomic.  For a constraint  that has atomic update sites,
-> > registering a blocking notifier would be illegal and we'd give a runtime
-> > warning (we can even code a __might_sleep in there before the call).
-> > That way we preserve current semantics and permit blocking notifiers to
-> > be registered, but only if all the call sites have user context.
+> > Since every caller has to squirrel away the returned pointer anyway,
+> > they might as well supply the memory area.  This fixes a bug in a few of
+> > the call sites where the returned pointer was dereferenced without
+> > checking it for NULL (which gets returned if the kzalloc failed).
 > > 
-> I like the idea of having only atomic safe notifiers.  Is there an easy
-> way to enforce that?
+> > I'd like to hear how sound and netdev feels about this: it will add
+> > about two more pointers worth of data to struct netdev and struct
+> > snd_pcm_substream .. but I think it's worth it.  If you're OK, I'll add
+> > your acks and send through the pm tree.
+> > 
+> > This also looks to me like an android independent clean up (even though
+> > it renders the request_add atomically callable).  I also added include
+> > guards to include/linux/pm_qos_params.h
+> > 
+> > James
+> > 
+> > ---
+> > 
+> >  drivers/net/e1000e/netdev.c            |   17 ++++------
+> >  drivers/net/igbvf/netdev.c             |    9 ++---
+> >  drivers/net/wireless/ipw2x00/ipw2100.c |   12 +++---
+> >  include/linux/netdevice.h              |    2 +-
+> >  include/linux/pm_qos_params.h          |   12 +++++--
+> >  include/sound/pcm.h                    |    2 +-
+> >  kernel/pm_qos_params.c                 |   55 ++++++++++++++++---------------
+> >  sound/core/pcm_native.c                |   12 ++-----
+> >  8 files changed, 60 insertions(+), 61 deletions(-)
+> > 
+> > diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
+> > index 24507f3..47ea62f 100644
+> > --- a/drivers/net/e1000e/netdev.c
+> > +++ b/drivers/net/e1000e/netdev.c
+> > @@ -2901,10 +2901,10 @@ static void e1000_configure_rx(struct e1000_adapter *adapter)
+> >  			 * dropped transactions.
+> >  			 */
+> >  			pm_qos_update_request(
+> > -				adapter->netdev->pm_qos_req, 55);
+> > +				&adapter->netdev->pm_qos_req, 55);
+> >  		} else {
+> >  			pm_qos_update_request(
+> > -				adapter->netdev->pm_qos_req,
+> > +				&adapter->netdev->pm_qos_req,
+> >  				PM_QOS_DEFAULT_VALUE);
+> >  		}
+> >  	}
+> > @@ -3196,9 +3196,9 @@ int e1000e_up(struct e1000_adapter *adapter)
+> >  
+> >  	/* DMA latency requirement to workaround early-receive/jumbo issue */
+> >  	if (adapter->flags & FLAG_HAS_ERT)
+> > -		adapter->netdev->pm_qos_req =
+> > -			pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
+> > -				       PM_QOS_DEFAULT_VALUE);
+> > +		pm_qos_add_request(&adapter->netdev->pm_qos_req,
+> > +				   PM_QOS_CPU_DMA_LATENCY,
+> > +				   PM_QOS_DEFAULT_VALUE);
+> >  
+> >  	/* hardware has been reset, we need to reload some things */
+> >  	e1000_configure(adapter);
+> > @@ -3263,11 +3263,8 @@ void e1000e_down(struct e1000_adapter *adapter)
+> >  	e1000_clean_tx_ring(adapter);
+> >  	e1000_clean_rx_ring(adapter);
+> >  
+> > -	if (adapter->flags & FLAG_HAS_ERT) {
+> > -		pm_qos_remove_request(
+> > -			      adapter->netdev->pm_qos_req);
+> > -		adapter->netdev->pm_qos_req = NULL;
+> > -	}
+> > +	if (adapter->flags & FLAG_HAS_ERT)
+> > +		pm_qos_remove_request(&adapter->netdev->pm_qos_req);
+> >  
+> >  	/*
+> >  	 * TODO: for power management, we could drop the link and
+> > diff --git a/drivers/net/igbvf/netdev.c b/drivers/net/igbvf/netdev.c
+> > index 5e2b2a8..5da569f 100644
+> > --- a/drivers/net/igbvf/netdev.c
+> > +++ b/drivers/net/igbvf/netdev.c
+> > @@ -48,7 +48,7 @@
+> >  #define DRV_VERSION "1.0.0-k0"
+> >  char igbvf_driver_name[] = "igbvf";
+> >  const char igbvf_driver_version[] = DRV_VERSION;
+> > -struct pm_qos_request_list *igbvf_driver_pm_qos_req;
+> > +struct pm_qos_request_list igbvf_driver_pm_qos_req;
+> >  static const char igbvf_driver_string[] =
+> >  				"Intel(R) Virtual Function Network Driver";
+> >  static const char igbvf_copyright[] = "Copyright (c) 2009 Intel Corporation.";
+> > @@ -2902,8 +2902,8 @@ static int __init igbvf_init_module(void)
+> >  	printk(KERN_INFO "%s\n", igbvf_copyright);
+> >  
+> >  	ret = pci_register_driver(&igbvf_driver);
+> > -	igbvf_driver_pm_qos_req = pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
+> > -	                       PM_QOS_DEFAULT_VALUE);
+> > +	pm_qos_add_request(igbvf_driver_pm_qos_req, PM_QOS_CPU_DMA_LATENCY,
+> should be:
+> 
+> +	pm_qos_add_request(&igbvf_driver_pm_qos_req, PM_QOS_CPU_DMA_LATENCY,
 
-There's a runtime way: you put a __might_sleep() into the code if
-someone registers a blocking notifier chain.
+Yes, thanks ... must be not compiling this driver for some reason in the
+test case.
 
 James
