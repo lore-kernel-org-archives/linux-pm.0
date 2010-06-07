@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] Re: Invalid opcode on resume from STR on
- Asus P4P800-VM
-Date: Mon, 7 Jun 2010 11:17:35 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1006071115490.1332-100000__38869.4592206322$1275923928$gmane$org@iolanthe.rowland.org>
-References: <201006050029.25819.linux@rainbow-software.org>
+From: florian@mickler.org
+Subject: [PATCH v2] pm_qos: make update_request callable from
+	interrupt context
+Date: Mon,  7 Jun 2010 17:27:49 +0200
+Message-ID: <1275924469-3737-1-git-send-email-florian@mickler.org>
+References: <1275920448.2849.31.camel@mulgrave.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006050029.25819.linux@rainbow-software.org>
+In-Reply-To: <1275920448.2849.31.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,71 +18,192 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Florian Mickler <florian@mickler.org>, james.bottomley@suse.de, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 5 Jun 2010, Ondrej Zary wrote:
+We use the spinlocked notifier chain variant (struct
+atomic_notifier_head) and add an __might_sleep() to the chain for
+constraints which have non-atomic notifiers. This way we catch all
+interrupt-context-update-sites at runtime.
 
-> > > Thanks, it does not crash with "idle=halt" or "idle=poll". According to
-> > > this: http://siyobik.info/index.php?module=x86&id=215
-> > > the MWAIT instruction can be enabled/disabled in IA32_MISC_ENABLES MSR.
-> > > Kernel probably should enable it at boot and also on resume.
-> > > Here's some more info:
-> > > http://software.intel.com/en-us/forums/showthread.php?t=63654
-> >
-> > That could be the answer.  Clearly this should be handled by the
-> > arch-specific boot/setup code.  I don't know enough about it, but other
-> > people do.
-> 
-> Here's a patch that fixes the problem. I don't know how many machines will
-> it break...
-> 
-> 
-> diff -urp linux-2.6.35-rc1-git2-orig/arch/x86/include/asm/suspend_32.h linux-2.6.35-rc1-git2/arch/x86/include/asm/suspend_32.h
-> --- linux-2.6.35-rc1-git2-orig/arch/x86/include/asm/suspend_32.h	2010-05-30 22:21:02.000000000 +0200
-> +++ linux-2.6.35-rc1-git2/arch/x86/include/asm/suspend_32.h	2010-06-04 23:52:22.000000000 +0200
-> @@ -15,6 +15,7 @@ static inline int arch_prepare_suspend(v
->  struct saved_context {
->  	u16 es, fs, gs, ss;
->  	unsigned long cr0, cr2, cr3, cr4;
-> +	unsigned long misc_enable;
->  	struct desc_ptr gdt;
->  	struct desc_ptr idt;
->  	u16 ldt;
-> diff -urp linux-2.6.35-rc1-git2-orig/arch/x86/include/asm/suspend_64.h linux-2.6.35-rc1-git2/arch/x86/include/asm/suspend_64.h
-> --- linux-2.6.35-rc1-git2-orig/arch/x86/include/asm/suspend_64.h	2010-05-30 22:21:02.000000000 +0200
-> +++ linux-2.6.35-rc1-git2/arch/x86/include/asm/suspend_64.h	2010-06-04 23:52:21.000000000 +0200
-> @@ -27,6 +27,7 @@ struct saved_context {
->  	u16 ds, es, fs, gs, ss;
->  	unsigned long gs_base, gs_kernel_base, fs_base;
->  	unsigned long cr0, cr2, cr3, cr4, cr8;
-> +	unsigned long misc_enable;
->  	unsigned long efer;
->  	u16 gdt_pad;
->  	u16 gdt_limit;
-> diff -urp linux-2.6.35-rc1-git2-orig/arch/x86/power/cpu.c linux-2.6.35-rc1-git2/arch/x86/power/cpu.c
-> --- linux-2.6.35-rc1-git2-orig/arch/x86/power/cpu.c	2010-05-30 22:21:02.000000000 +0200
-> +++ linux-2.6.35-rc1-git2/arch/x86/power/cpu.c	2010-06-04 23:50:52.000000000 +0200
-> @@ -105,6 +105,7 @@ static void __save_processor_state(struc
->  	ctxt->cr4 = read_cr4();
->  	ctxt->cr8 = read_cr8();
->  #endif
-> +	rdmsrl(MSR_IA32_MISC_ENABLE, ctxt->misc_enable);
->  }
->  
->  /* Needed by apm.c */
-> @@ -152,6 +153,7 @@ static void fix_processor_context(void)
->   */
->  static void __restore_processor_state(struct saved_context *ctxt)
->  {
-> +	wrmsrl(MSR_IA32_MISC_ENABLE, ctxt->misc_enable);
->  	/*
->  	 * control registers
->  	 */
+Signed-off-by: Florian Mickler <florian@mickler.org>
+---
+ include/linux/pm_qos_params.h |    2 +-
+ kernel/pm_qos_params.c        |   54 +++++++++++++++++++++-------------------
+ 2 files changed, 29 insertions(+), 27 deletions(-)
 
-It fixes the problem on my machine!  I say go ahead and submit it.
-
-Tested-by: Alan Stern <stern@rowland.harvard.edu>
-
-Alan Stern
+diff --git a/include/linux/pm_qos_params.h b/include/linux/pm_qos_params.h
+index 8ba440e..2959aac 100644
+--- a/include/linux/pm_qos_params.h
++++ b/include/linux/pm_qos_params.h
+@@ -22,6 +22,6 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
+ void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req);
+ 
+ int pm_qos_request(int pm_qos_class);
++
+ int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
+ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
+-
+diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+index f42d3f7..da7e85e 100644
+--- a/kernel/pm_qos_params.c
++++ b/kernel/pm_qos_params.c
+@@ -63,7 +63,7 @@ static s32 min_compare(s32 v1, s32 v2);
+ 
+ struct pm_qos_object {
+ 	struct pm_qos_request_list requests;
+-	struct blocking_notifier_head *notifiers;
++	struct atomic_notifier_head *notifiers;
+ 	struct miscdevice pm_qos_power_miscdev;
+ 	char *name;
+ 	s32 default_value;
+@@ -72,7 +72,7 @@ struct pm_qos_object {
+ };
+ 
+ static struct pm_qos_object null_pm_qos;
+-static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
++static ATOMIC_NOTIFIER_HEAD(cpu_dma_lat_notifier);
+ static struct pm_qos_object cpu_dma_pm_qos = {
+ 	.requests = {LIST_HEAD_INIT(cpu_dma_pm_qos.requests.list)},
+ 	.notifiers = &cpu_dma_lat_notifier,
+@@ -82,7 +82,7 @@ static struct pm_qos_object cpu_dma_pm_qos = {
+ 	.comparitor = min_compare
+ };
+ 
+-static BLOCKING_NOTIFIER_HEAD(network_lat_notifier);
++static ATOMIC_NOTIFIER_HEAD(network_lat_notifier);
+ static struct pm_qos_object network_lat_pm_qos = {
+ 	.requests = {LIST_HEAD_INIT(network_lat_pm_qos.requests.list)},
+ 	.notifiers = &network_lat_notifier,
+@@ -93,7 +93,7 @@ static struct pm_qos_object network_lat_pm_qos = {
+ };
+ 
+ 
+-static BLOCKING_NOTIFIER_HEAD(network_throughput_notifier);
++static ATOMIC_NOTIFIER_HEAD(network_throughput_notifier);
+ static struct pm_qos_object network_throughput_pm_qos = {
+ 	.requests = {LIST_HEAD_INIT(network_throughput_pm_qos.requests.list)},
+ 	.notifiers = &network_throughput_notifier,
+@@ -103,7 +103,6 @@ static struct pm_qos_object network_throughput_pm_qos = {
+ 	.comparitor = max_compare
+ };
+ 
+-
+ static struct pm_qos_object *pm_qos_array[] = {
+ 	&null_pm_qos,
+ 	&cpu_dma_pm_qos,
+@@ -135,35 +134,30 @@ static s32 min_compare(s32 v1, s32 v2)
+ 	return min(v1, v2);
+ }
+ 
+-
+ static void update_target(int pm_qos_class)
+ {
+ 	s32 extreme_value;
++	struct pm_qos_object *obj = pm_qos_array[pm_qos_class];
+ 	struct pm_qos_request_list *node;
+ 	unsigned long flags;
+ 	int call_notifier = 0;
+ 
+ 	spin_lock_irqsave(&pm_qos_lock, flags);
+-	extreme_value = pm_qos_array[pm_qos_class]->default_value;
+-	list_for_each_entry(node,
+-			&pm_qos_array[pm_qos_class]->requests.list, list) {
+-		extreme_value = pm_qos_array[pm_qos_class]->comparitor(
+-				extreme_value, node->value);
++	extreme_value = obj->default_value;
++	list_for_each_entry(node, &obj->requests.list, list) {
++		extreme_value = obj->comparitor(extreme_value, node->value);
+ 	}
+-	if (atomic_read(&pm_qos_array[pm_qos_class]->target_value) !=
+-			extreme_value) {
++	if (atomic_read(&obj->target_value) != extreme_value) {
+ 		call_notifier = 1;
+-		atomic_set(&pm_qos_array[pm_qos_class]->target_value,
+-				extreme_value);
++		atomic_set(&obj->target_value, extreme_value);
+ 		pr_debug(KERN_ERR "new target for qos %d is %d\n", pm_qos_class,
+-			atomic_read(&pm_qos_array[pm_qos_class]->target_value));
++			atomic_read(&obj->target_value));
+ 	}
+ 	spin_unlock_irqrestore(&pm_qos_lock, flags);
+ 
+-	if (call_notifier)
+-		blocking_notifier_call_chain(
+-				pm_qos_array[pm_qos_class]->notifiers,
+-					(unsigned long) extreme_value, NULL);
++	if (call_notifier) 
++		atomic_notifier_call_chain(obj->notifiers,
++				(unsigned long) extreme_value, NULL);
+ }
+ 
+ static int register_pm_qos_misc(struct pm_qos_object *qos)
+@@ -272,6 +266,7 @@ EXPORT_SYMBOL_GPL(pm_qos_update_request);
+ 
+ /**
+  * pm_qos_remove_request - modifies an existing qos request
++ *
+  * @pm_qos_req: handle to request list element
+  *
+  * Will remove pm qos request from the list of requests and
+@@ -298,18 +293,23 @@ EXPORT_SYMBOL_GPL(pm_qos_remove_request);
+ 
+ /**
+  * pm_qos_add_notifier - sets notification entry for changes to target value
++ *
++ * Notifiers added with this function are executed in process context.
++ * They may also be scheduled for later execution if pm_qos_update_request is
++ * called from interrupt context.
++ *
+  * @pm_qos_class: identifies which qos target changes should be notified.
+  * @notifier: notifier block managed by caller.
+  *
+- * will register the notifier into a notification chain that gets called
++ * Will register the notifier into a notification chain that gets called
+  * upon changes to the pm_qos_class target value.
+  */
+ int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
+ {
+ 	int retval;
+ 
+-	retval = blocking_notifier_chain_register(
+-			pm_qos_array[pm_qos_class]->notifiers, notifier);
++	retval = atomic_notifier_chain_register(
++		pm_qos_array[pm_qos_class]->notifiers, notifier);
+ 
+ 	return retval;
+ }
+@@ -317,18 +317,19 @@ EXPORT_SYMBOL_GPL(pm_qos_add_notifier);
+ 
+ /**
+  * pm_qos_remove_notifier - deletes notification entry from chain.
++ *
+  * @pm_qos_class: identifies which qos target changes are notified.
+  * @notifier: notifier block to be removed.
+  *
+- * will remove the notifier from the notification chain that gets called
++ * Will remove the notifier from the notification chain that gets called
+  * upon changes to the pm_qos_class target value.
+  */
+ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
+ {
+ 	int retval;
+ 
+-	retval = blocking_notifier_chain_unregister(
+-			pm_qos_array[pm_qos_class]->notifiers, notifier);
++	retval = atomic_notifier_chain_unregister(
++		pm_qos_array[pm_qos_class]->notifiers, notifier);
+ 
+ 	return retval;
+ }
+@@ -381,6 +382,7 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+ 	} else
+ 		return -EINVAL;
+ 
++
+ 	pm_qos_req = (struct pm_qos_request_list *)filp->private_data;
+ 	pm_qos_update_request(pm_qos_req, value);
+ 
+-- 
+1.7.1
