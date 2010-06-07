@@ -1,15 +1,23 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [SUSPECTED SPAM] Re: Proposal for a new algorithm
-	for reading & writing a hibernation image.
-Date: Mon, 7 Jun 2010 10:49:09 +0200
-Message-ID: <201006071049.09466.rjw__46423.4833409593$1275900528$gmane$org@sisk.pl>
-References: <9rpccea67yy402c975fqru8r.1275576653521@email.android.com>
-	<201006062104.55869.rjw@sisk.pl> <4C0C843D.6030008@crca.org.au>
+From: Felipe Contreras <felipe.contreras@gmail.com>
+Subject: Re: suspend blockers & Android integration
+Date: Mon, 7 Jun 2010 13:25:53 +0300
+Message-ID: <AANLkTinajoKfVD3eBNspiuf1e5jFb2jm-OyHJbcbk4xo__29007.0407012992$1275906437$gmane$org@mail.gmail.com>
+References: <AANLkTil1NCX91bWhpXHtC88Opr29mNjdhXD9RXQ6DI0y@mail.gmail.com>
+	<AANLkTin1Za3GvfIKbcZdx6TzjIHzCvsg5uaY_Vk4nJIh@mail.gmail.com>
+	<AANLkTilQ1k78dDCYadOa1Wiyjm2nsBcRpxwdpGvYcf8z@mail.gmail.com>
+	<AANLkTin7oM3gVwHbIHWqYV8yeC6bbQ4q2jDDxAgz3DwQ@mail.gmail.com>
+	<20100606133130.GA8513@srcf.ucam.org>
+	<AANLkTimXTgZS_fZQa8hjIptJrCn756gF_xakT1IQiLWa@mail.gmail.com>
+	<20100606152946.GA11351@srcf.ucam.org>
+	<AANLkTilOq_5yUW1AIMH1qSE699gyRUTlzGPUVc4CrReY@mail.gmail.com>
+	<20100606164326.GA12570@srcf.ucam.org>
+	<AANLkTim0JD4V0RTc6CRIADypqYhQo3JYp3dJs0l7g7Ps@mail.gmail.com>
+	<20100606173146.GA13432@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C0C843D.6030008@crca.org.au>
+In-Reply-To: <20100606173146.GA13432@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,48 +27,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 07 June 2010, Nigel Cunningham wrote:
-> Hi.
-> 
-> On 07/06/10 05:04, Rafael J. Wysocki wrote:
-> > On Sunday 06 June 2010, Maxim Levitsky wrote:
-> >> On Sun, 2010-06-06 at 15:57 +0200, Rafael J. Wysocki wrote:
-> >>> On Sunday 06 June 2010, Maxim Levitsky wrote:
-> > ...
-> >>> So how TuxOnIce helps here?
-> >> Very simple.
-> >>
-> >> With swsusp, I can save 750MB (memory) + 250 Vram (vram)
-> >> With full memory save I can save (1750 MB of memory) + 250 MB of
-> >> vram....
-> >
-> > So what about being able to save 1600 MB total instead of the 2 GB
-> > (which is what we're talking about in case that's not clear)?  Would it
-> > be _that_ _much_ worse?
-> 
-> That all depends on what is in the 400MB you discard.
+2010/6/6 Matthew Garrett <mjg59@srcf.ucam.org>:
+> On Sun, Jun 06, 2010 at 07:21:49PM +0200, Vitaly Wool wrote:
+>> 2010/6/6 Matthew Garrett <mjg59@srcf.ucam.org>:
+>>
+>> > Suspend blocks prevent system suspend, not any per-device suspend.
+>>
+>> Can you suspend a device which is holding a wake lock?
+>
+> Yes. Suspend blocks are orthogonal to runtime PM.
 
-Well, they are discarded following the LRU algorithm and it's very much
-like loading a program that takes 20% of your memory upfront.
+In that sense yes, but as it has been stated before; if Android
+user-space concentrates on getting suspend blockers right, then the
+timers in user-space will not be aligned correctly, and runtime PM
+wouldn't work that great. Moreover, opportunistic suspend takes the
+device out of idle. So, as runtime PM gets better, there's a point
+where opportunistic suspend makes the situation worst.
 
-> The difference is "Just as if you'd never hibernated" vs something 
-> closer to "Just as if you'd only just started up". We can't make 
-> categorical statements because it really does depend upon what you 
-> discard and what you want to do post-resume - that is, how useful the 
-> memory you discard would have been. That's always going to vary from 
-> case to case.
+So they are _mostly_ orthogonal, but not completely, at least for the
+analysis of suspend blockers' usefulness.
 
-Not so much.
-
-Besides, it doesn't matter too much.
-
-Let me reiterate, please.  Doing serious memory management behind the back
-of the mm subsystem (and trying to do that so it doesn't notice) is wrong and
-the reason it works is by accident.  As long as you do that, I have a problem
-with TuxOnIce.
-
-Rafael
+-- 
+Felipe Contreras
