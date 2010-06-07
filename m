@@ -1,8 +1,8 @@
 From: florian@mickler.org
-Subject: [PATCH v2] pm_qos: make update_request callable from
+Subject: [PATCH v3] pm_qos: make update_request callable from
 	interrupt context
-Date: Mon,  7 Jun 2010 17:27:49 +0200
-Message-ID: <1275924469-3737-1-git-send-email-florian@mickler.org>
+Date: Mon,  7 Jun 2010 17:34:29 +0200
+Message-ID: <1275924869-3811-1-git-send-email-florian@mickler.org>
 References: <1275920448.2849.31.camel@mulgrave.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -29,24 +29,33 @@ interrupt-context-update-sites at runtime.
 
 Signed-off-by: Florian Mickler <florian@mickler.org>
 ---
- include/linux/pm_qos_params.h |    2 +-
- kernel/pm_qos_params.c        |   54 +++++++++++++++++++++-------------------
- 2 files changed, 29 insertions(+), 27 deletions(-)
+
+sorry, forgot to commit the changes of my last pass.
+
+btw, that = __might_sleep() gives an "incompatible pointer" warning. 
+
+should we care? it boots ok.
+
+include/linux/pm_qos_params.h |    3 +-
+ kernel/pm_qos_params.c        |   61 +++++++++++++++++++++++-----------------
+ 2 files changed, 36 insertions(+), 28 deletions(-)
 
 diff --git a/include/linux/pm_qos_params.h b/include/linux/pm_qos_params.h
-index 8ba440e..2959aac 100644
+index 8ba440e..c21ab20 100644
 --- a/include/linux/pm_qos_params.h
 +++ b/include/linux/pm_qos_params.h
-@@ -22,6 +22,6 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
+@@ -20,8 +20,7 @@ struct pm_qos_request_list *pm_qos_add_request(int pm_qos_class, s32 value);
+ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
+ 		s32 new_value);
  void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req);
- 
+-
  int pm_qos_request(int pm_qos_class);
 +
  int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
  int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
 -
 diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-index f42d3f7..da7e85e 100644
+index f42d3f7..5ae86c8 100644
 --- a/kernel/pm_qos_params.c
 +++ b/kernel/pm_qos_params.c
 @@ -63,7 +63,7 @@ static s32 min_compare(s32 v1, s32 v2);
@@ -152,9 +161,9 @@ index f42d3f7..da7e85e 100644
  /**
   * pm_qos_add_notifier - sets notification entry for changes to target value
 + *
-+ * Notifiers added with this function are executed in process context.
-+ * They may also be scheduled for later execution if pm_qos_update_request is
-+ * called from interrupt context.
++ * Note: There may be update sites which are called from interrupt context
++ * for a given constraint. Check pm_qos_power_init to check if the constraint
++ * in question does already have a might_sleep() added to the notifier chain.
 + *
   * @pm_qos_class: identifies which qos target changes should be notified.
   * @notifier: notifier block managed by caller.
@@ -205,5 +214,34 @@ index f42d3f7..da7e85e 100644
  	pm_qos_req = (struct pm_qos_request_list *)filp->private_data;
  	pm_qos_update_request(pm_qos_req, value);
  
+@@ -388,21 +390,28 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+ }
+ 
+ 
++static struct notifier_block nb_might_sleep = {
++	.notifier_call = __might_sleep,
++};
++
+ static int __init pm_qos_power_init(void)
+ {
+ 	int ret = 0;
+ 
+ 	ret = register_pm_qos_misc(&cpu_dma_pm_qos);
++	pm_qos_add_notifier(PM_QOS_CPU_DMA_LATENCY, &nb_might_sleep);
+ 	if (ret < 0) {
+ 		printk(KERN_ERR "pm_qos_param: cpu_dma_latency setup failed\n");
+ 		return ret;
+ 	}
+ 	ret = register_pm_qos_misc(&network_lat_pm_qos);
++	pm_qos_add_notifier(PM_QOS_NETWORK_LATENCY,&nb_might_sleep);
+ 	if (ret < 0) {
+ 		printk(KERN_ERR "pm_qos_param: network_latency setup failed\n");
+ 		return ret;
+ 	}
+ 	ret = register_pm_qos_misc(&network_throughput_pm_qos);
++	pm_qos_add_notifier(PM_QOS_NETWORK_THROUGHPUT,&nb_might_sleep);
+ 	if (ret < 0)
+ 		printk(KERN_ERR
+ 			"pm_qos_param: network_throughput setup failed\n");
 -- 
 1.7.1
