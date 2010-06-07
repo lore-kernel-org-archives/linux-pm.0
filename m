@@ -1,13 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: suspend blockers & Android integrationy
-Date: Mon, 7 Jun 2010 10:42:21 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1006071010001.1398-100000__6257.21594919941$1275921946$gmane$org@iolanthe.rowland.org>
-References: <alpine.LFD.2.00.1006070206060.2933@localhost.localdomain>
+Subject: Re: [PATCH] Re: Invalid opcode on resume from STR on
+ Asus P4P800-VM
+Date: Mon, 7 Jun 2010 11:17:35 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006071115490.1332-100000__38869.4592206322$1275923928$gmane$org@iolanthe.rowland.org>
+References: <201006050029.25819.linux@rainbow-software.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1006070206060.2933@localhost.localdomain>
+In-Reply-To: <201006050029.25819.linux@rainbow-software.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,131 +18,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: tytso@mit.edu, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Florian Mickler <florian@mickler.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 7 Jun 2010, Thomas Gleixner wrote:
+On Sat, 5 Jun 2010, Ondrej Zary wrote:
 
-> Alan,
-
-Thomas:
-
-> On Sun, 6 Jun 2010, Alan Stern wrote:
-
-> > Remember that suspend takes place in several phases, the first of which 
-> > is to freeze tasks.  The phases can be controlled individually by the 
-> > process carrying out a suspend, and there's nothing to prevent you from 
-> > stopping after the freezer phase.  Devices won't get powered down, but 
-> > Android uses aggressive runtime power management for its devices 
-> > anyway.
-> > 
-> > If you do this then the synchronization can be carried out entirely
-> > from userspace, with no need for kernel modifications such as suspend
-> > blockers. And since Android can reach essentially the same low-power
-> > state from idle as from suspend, it appears that they really don't need
-> > any kernel changes at all.
+> > > Thanks, it does not crash with "idle=halt" or "idle=poll". According to
+> > > this: http://siyobik.info/index.php?module=x86&id=215
+> > > the MWAIT instruction can be enabled/disabled in IA32_MISC_ENABLES MSR.
+> > > Kernel probably should enable it at boot and also on resume.
+> > > Here's some more info:
+> > > http://software.intel.com/en-us/forums/showthread.php?t=63654
+> >
+> > That could be the answer.  Clearly this should be handled by the
+> > arch-specific boot/setup code.  I don't know enough about it, but other
+> > people do.
 > 
-> Well there are some things to solve:
+> Here's a patch that fixes the problem. I don't know how many machines will
+> it break...
 > 
->      1) the confinement of untrusted apps 
 > 
->      2) the confinement of trusted apps firing periodic timers. 
+> diff -urp linux-2.6.35-rc1-git2-orig/arch/x86/include/asm/suspend_32.h linux-2.6.35-rc1-git2/arch/x86/include/asm/suspend_32.h
+> --- linux-2.6.35-rc1-git2-orig/arch/x86/include/asm/suspend_32.h	2010-05-30 22:21:02.000000000 +0200
+> +++ linux-2.6.35-rc1-git2/arch/x86/include/asm/suspend_32.h	2010-06-04 23:52:22.000000000 +0200
+> @@ -15,6 +15,7 @@ static inline int arch_prepare_suspend(v
+>  struct saved_context {
+>  	u16 es, fs, gs, ss;
+>  	unsigned long cr0, cr2, cr3, cr4;
+> +	unsigned long misc_enable;
+>  	struct desc_ptr gdt;
+>  	struct desc_ptr idt;
+>  	u16 ldt;
+> diff -urp linux-2.6.35-rc1-git2-orig/arch/x86/include/asm/suspend_64.h linux-2.6.35-rc1-git2/arch/x86/include/asm/suspend_64.h
+> --- linux-2.6.35-rc1-git2-orig/arch/x86/include/asm/suspend_64.h	2010-05-30 22:21:02.000000000 +0200
+> +++ linux-2.6.35-rc1-git2/arch/x86/include/asm/suspend_64.h	2010-06-04 23:52:21.000000000 +0200
+> @@ -27,6 +27,7 @@ struct saved_context {
+>  	u16 ds, es, fs, gs, ss;
+>  	unsigned long gs_base, gs_kernel_base, fs_base;
+>  	unsigned long cr0, cr2, cr3, cr4, cr8;
+> +	unsigned long misc_enable;
+>  	unsigned long efer;
+>  	u16 gdt_pad;
+>  	u16 gdt_limit;
+> diff -urp linux-2.6.35-rc1-git2-orig/arch/x86/power/cpu.c linux-2.6.35-rc1-git2/arch/x86/power/cpu.c
+> --- linux-2.6.35-rc1-git2-orig/arch/x86/power/cpu.c	2010-05-30 22:21:02.000000000 +0200
+> +++ linux-2.6.35-rc1-git2/arch/x86/power/cpu.c	2010-06-04 23:50:52.000000000 +0200
+> @@ -105,6 +105,7 @@ static void __save_processor_state(struc
+>  	ctxt->cr4 = read_cr4();
+>  	ctxt->cr8 = read_cr8();
+>  #endif
+> +	rdmsrl(MSR_IA32_MISC_ENABLE, ctxt->misc_enable);
+>  }
+>  
+>  /* Needed by apm.c */
+> @@ -152,6 +153,7 @@ static void fix_processor_context(void)
+>   */
+>  static void __restore_processor_state(struct saved_context *ctxt)
+>  {
+> +	wrmsrl(MSR_IA32_MISC_ENABLE, ctxt->misc_enable);
+>  	/*
+>  	 * control registers
+>  	 */
 
-No, these things don't need to be solved.
+It fixes the problem on my machine!  I say go ahead and submit it.
 
-The difference between our approaches is that you're trying to find a
-solution that can be used more generally, not just on Android, whereas
-I'm simply trying to find a way to help Arve and Brian accomplish what
-they want as easily as possible.
-
-(Even though some kernel developers may consider their design to be
-ill-conceived.  So long as the objectionable features are confined to
-userspace nobody will mind.  And if a few small kernel patches are
-needed, they will most likely be accepted if they aren't intrusive.)
-
-This means sticking to the "big-gun" approach of system-wide suspend or
-its equivalent, because Android's userspace is so unstructured and
-has so many widespread (perhaps even conflicting!) requirements.  And 
-of course the necessary changes to userspace should be minimal.
-
-Thus, in my proposed scheme there is no need to confine untrusted apps,
-just as there was no need to do so when using wakelocks in their
-original form.  Likewise, there is no need to worry about trusted apps
-firing periodic timers: Once processes are frozen, user timers really
-don't matter much.
-
->      Aside of that they need to shut off undesired interrupt sources,
->      but that's not a real problem to solve and probably possible
->      today already.
-
-Yes.  They may also need to shut off undesired kernel timers.  This 
-should be doable as well, and it would benefit all platforms.
-
-> #1 can be solved elegantly by cgroups. We know how to freeze the
->    cgroup timers when the need arises, but that's not a real problem
->    as all periodic timers are firing only once when the target app
->    does not handle them.
-
-That's why I said they don't matter much.
-
->    Though the cgroup based approach of freezing timers might be
->    interesting for containers c/r as well and it might be necessary to
->    emulate the suspend semantics of freezing CLOCK_MONOTONIC, but
->    that's simple to do and basically no overhead.
-
-Cgroups are not needed.  The power-manager process can simply freeze 
-all tasks other than itself.
-
-> #2 is a tad harder, as it requires to fix the trusted apps not to fire
->    timers when there is nothing to do.
-
-No; all you have to do is handle the trusted apps as though they were 
-untrusted -- just as in the original wakelock approach.
-
->    Though you can solve it with cgroups as well. The unfreeze problem
->    for real wakeups can be solved as mhelsley pointed out somewhere
->    else in this thread.
-> 
-> But that depends on user space changes ....
-
-If you handle all the apps uniformly, very few userspace changes are
-needed.
-
-> Though as we learned today that suspend blockers are the least of the
-> problems which android is facing vs. mainline and we have a plan to
-> get the drivers in we can relax a bit and think more about it.
-
-The only reason for inventing suspend blockers in the first place was
-to make system suspend reliable in the face of races with wakeup
-sources.  If system suspend doesn't run to completion, but stops after
-freezing all tasks other than the power manager, then these races can
-be handled entirely within userspace.  Hence there is no need to have
-suspend blockers at all.
-
-Assuming Arve doesn't find any fatal flaws in this approach, the issue 
-will become moot.  We can relax and _avoid_ thinking about it!  :-)
-
-> I'm not saying that we should ignore the shortcomings of todays code,
-> but in the face of hardware which perfectly goes into the same power
-> state from idle as it does from suspend we can IMNSHO safely ignore
-> the x86/ACPI/BIOS crap and the user space wreckage (see above) and
-> just focus on a sane design based on current/future hardware.
-
-You're preaching to the choir.  If the Google people want to use
-suspend blockers on ACPI-based systems ... well, we can resume the
-arguments then.  They won't be nearly as pressing.
-
-> That's nothing new, we do not go and make NOHZ/HIGHRES work on crappy
-> hardware either, even if there have been patches around to do so. We
-> do not make broken TSCs work, even if there are brute force ways to do
-> so. ....
-> 
-> It's more sane to say "Sorry, it does not work on your system" than
-> trying to make it work under all circumstances for a questionable
-> benefit and paying the price for it in terms of maintainability and/or
-> complexity.
-
-Agreed.
+Tested-by: Alan Stern <stern@rowland.harvard.edu>
 
 Alan Stern
