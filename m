@@ -1,14 +1,12 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: suspend blockers & Android integration
-Date: Mon, 7 Jun 2010 17:56:04 +0200
-Message-ID: <20100607175604.4c8f1fa4__14400.7758856334$1275926254$gmane$org@schatten.dmk.lab>
-References: <20100606152946.GA11351@srcf.ucam.org>
-	<Pine.LNX.4.44L0.1006061956510.4894-100000@netrider.rowland.org>
+From: Ondrej Zary <linux@rainbow-software.org>
+Subject: [PATCH] [RFC] Save/restore MISC_ENABLE register
+Date: Mon, 7 Jun 2010 18:14:49 +0200
+Message-ID: <201006071814.53583.linux__19001.6484972604$1275927463$gmane$org@rainbow-software.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006061956510.4894-100000@netrider.rowland.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,23 +16,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux OMAP Mailing List <linux-omap@vger.kernel.org>, tytso@mit.edu, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>, Felipe Balbi <felipe.balbi@nokia.com>, Peter@smtp1.linux-foundation.org, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: Len Brown <len.brown@intel.com>, Kernel development list <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 6 Jun 2010 20:01:56 -0400 (EDT)
-Alan Stern <stern@rowland.harvard.edu> wrote:
+Save/restore MISC_ENABLE register on suspend/resume.
+This fixes OOPS (invalid opcode) on resume from STR on Asus P4P800-VM, which
+wakes up with MWAIT disabled.
 
-> And since Android can reach essentially the same low-power
-> state from idle as from suspend, it appears that they really don't need
-> any kernel changes at all.
+Is this a correct thing to do? Is it OK on x86_64?
 
-Well, perhaps a hint to the scheduler to fall through as fast as
-possible into deepest idle?
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
-> 
-> Alan Stern
-> 
+diff -urp linux-2.6.35-rc1-git2-orig/arch/x86/include/asm/suspend_32.h linux-2.6.35-rc1-git2/arch/x86/include/asm/suspend_32.h
+--- linux-2.6.35-rc1-git2-orig/arch/x86/include/asm/suspend_32.h	2010-05-30 22:21:02.000000000 +0200
++++ linux-2.6.35-rc1-git2/arch/x86/include/asm/suspend_32.h	2010-06-04 23:52:22.000000000 +0200
+@@ -15,6 +15,7 @@ static inline int arch_prepare_suspend(v
+ struct saved_context {
+ 	u16 es, fs, gs, ss;
+ 	unsigned long cr0, cr2, cr3, cr4;
++	unsigned long misc_enable;
+ 	struct desc_ptr gdt;
+ 	struct desc_ptr idt;
+ 	u16 ldt;
+diff -urp linux-2.6.35-rc1-git2-orig/arch/x86/include/asm/suspend_64.h linux-2.6.35-rc1-git2/arch/x86/include/asm/suspend_64.h
+--- linux-2.6.35-rc1-git2-orig/arch/x86/include/asm/suspend_64.h	2010-05-30 22:21:02.000000000 +0200
++++ linux-2.6.35-rc1-git2/arch/x86/include/asm/suspend_64.h	2010-06-04 23:52:21.000000000 +0200
+@@ -27,6 +27,7 @@ struct saved_context {
+ 	u16 ds, es, fs, gs, ss;
+ 	unsigned long gs_base, gs_kernel_base, fs_base;
+ 	unsigned long cr0, cr2, cr3, cr4, cr8;
++	unsigned long misc_enable;
+ 	unsigned long efer;
+ 	u16 gdt_pad;
+ 	u16 gdt_limit;
+diff -urp linux-2.6.35-rc1-git2-orig/arch/x86/power/cpu.c linux-2.6.35-rc1-git2/arch/x86/power/cpu.c
+--- linux-2.6.35-rc1-git2-orig/arch/x86/power/cpu.c	2010-05-30 22:21:02.000000000 +0200
++++ linux-2.6.35-rc1-git2/arch/x86/power/cpu.c	2010-06-04 23:50:52.000000000 +0200
+@@ -105,6 +105,7 @@ static void __save_processor_state(struc
+ 	ctxt->cr4 = read_cr4();
+ 	ctxt->cr8 = read_cr8();
+ #endif
++	rdmsrl(MSR_IA32_MISC_ENABLE, ctxt->misc_enable);
+ }
+ 
+ /* Needed by apm.c */
+@@ -152,6 +153,7 @@ static void fix_processor_context(void)
+  */
+ static void __restore_processor_state(struct saved_context *ctxt)
+ {
++	wrmsrl(MSR_IA32_MISC_ENABLE, ctxt->misc_enable);
+ 	/*
+ 	 * control registers
+ 	 */
 
-Cheers,
-Flo
+-- 
+Ondrej Zary
