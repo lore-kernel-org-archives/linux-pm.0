@@ -1,16 +1,13 @@
-From: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: [PATCH] pm_qos: make update_request callable from
- interrupt context
-Date: Mon, 07 Jun 2010 10:20:48 -0400
-Message-ID: <1275920448.2849.31.camel@mulgrave.site>
-References: <1275913865-16277-1-git-send-email-florian@mickler.org>
-	<1275916241.2849.21.camel@mulgrave.site>
-	<20100607161034.5ece3f83@schatten.dmk.lab>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: suspend blockers & Android integrationy
+Date: Mon, 7 Jun 2010 10:42:21 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006071010001.1398-100000__6257.21594919941$1275921946$gmane$org@iolanthe.rowland.org>
+References: <alpine.LFD.2.00.1006070206060.2933@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100607161034.5ece3f83@schatten.dmk.lab>
+In-Reply-To: <alpine.LFD.2.00.1006070206060.2933@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,89 +17,131 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, markgross@thegnar.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: tytso@mit.edu, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Florian Mickler <florian@mickler.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2010-06-07 at 16:10 +0200, Florian Mickler wrote:
-> On Mon, 07 Jun 2010 09:10:40 -0400
-> James Bottomley <James.Bottomley@suse.de> wrote:
-> 
-> > > diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> > > index f42d3f7..0a67997 100644
-> > > --- a/kernel/pm_qos_params.c
-> > > +++ b/kernel/pm_qos_params.c
-> > > @@ -63,7 +63,8 @@ static s32 min_compare(s32 v1, s32 v2);
-> > >  
-> > >  struct pm_qos_object {
-> > >  	struct pm_qos_request_list requests;
-> > > -	struct blocking_notifier_head *notifiers;
-> > > +	struct atomic_notifier_head *notifiers;
-> > > +	struct blocking_notifier_head *blocking_notifiers;
-> > >  	struct miscdevice pm_qos_power_miscdev;
-> > >  	char *name;
-> > >  	s32 default_value;
-> > > @@ -72,20 +73,24 @@ struct pm_qos_object {
-> > >  };
-> > >  
-> > >  static struct pm_qos_object null_pm_qos;
-> > > -static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
-> > > +static ATOMIC_NOTIFIER_HEAD(cpu_dma_lat_notifier);
-> > > +static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_blocking_notifier);
+On Mon, 7 Jun 2010, Thomas Gleixner wrote:
+
+> Alan,
+
+Thomas:
+
+> On Sun, 6 Jun 2010, Alan Stern wrote:
+
+> > Remember that suspend takes place in several phases, the first of which 
+> > is to freeze tasks.  The phases can be controlled individually by the 
+> > process carrying out a suspend, and there's nothing to prevent you from 
+> > stopping after the freezer phase.  Devices won't get powered down, but 
+> > Android uses aggressive runtime power management for its devices 
+> > anyway.
 > > 
-> > So I think it might be better implemented by having only a single active
-> > notifier head: either blocking or atomic  because all this depends on
-> > where the callsites for the notifiers are, and the person adding the
-> > notifier should know this..  
+> > If you do this then the synchronization can be carried out entirely
+> > from userspace, with no need for kernel modifications such as suspend
+> > blockers. And since Android can reach essentially the same low-power
+> > state from idle as from suspend, it appears that they really don't need
+> > any kernel changes at all.
 > 
-> > We can add atomic notifiers to the blocking
-> > chain, just not vice versa.  The idea is that if all the add and update
-> > call sites are blocking, you just register the blocking chain and forget
-> > the atomic one.  
+> Well there are some things to solve:
 > 
-> > The only difference between atomic and blocking
-> > notifiers is whether we use a spinlock or a mutex to guard the integrity
-> > of the call chain ... if you know you always have user context at the
-> > callsites, then you can always use the mutex.
+>      1) the confinement of untrusted apps 
 > 
-> > Then, for blocking notifiers, I think in init, we can register a single
-> > notifier which just calls __might_sleep() ... that will pick up at
-> > runtime any atomic callsite.
-> 
-> I like that part. Simple and elegant :)
-> 
-> > 
-> > For atomics, you just set up an atomic call chain and leave the blocking
-> > one null.  Then we get a BUG if anyone tries to register a blocking
-> > notifier to an atomic only pm_qos_object.
-> > 
-> (Well, we can also just ignore and print a WARN() ... but I got your
-> point)
-> 
-> But I don't think I understand how you want to set up the call chains.
-> (I.e. How to decide if all call-sites are from process-context (mutex
-> allowed)? )
+>      2) the confinement of trusted apps firing periodic timers. 
 
-We don't.  Whoever creates the new pm_qos constratint decides this ...
-based on where they're putting the add and update calls.  They do this
-by either declaring a blocking or an atomic notifier chain for the
-pm_qos_object.
+No, these things don't need to be solved.
 
-> As far as I see, the locking for the notifier-chains is in the head. So
-> I have to decide before the first AddNotifier what locking I
-> want (blocking_ or atomic_notifier_head). 
+The difference between our approaches is that you're trying to find a
+solution that can be used more generally, not just on Android, whereas
+I'm simply trying to find a way to help Arve and Brian accomplish what
+they want as easily as possible.
 
-Right.  We still have the atomic and blocking pm_qos notifier
-registers ... but if you try to register an blocking notifier to a
-pm_qos_object that only supports atomic, we bug.  Conversely, if you try
-to register an atomic notifier to a pm_qos_object that supports
-blocking, we just add it to the blocking call chain ... there's no harm
-in that since an atomic notifier is only guaranteeing that it won't
-sleep, so it's irrelevant to it whether we have user context or not.
+(Even though some kernel developers may consider their design to be
+ill-conceived.  So long as the objectionable features are confined to
+userspace nobody will mind.  And if a few small kernel patches are
+needed, they will most likely be accepted if they aren't intrusive.)
 
-> Are you thinking about having it hardcoded alongside the pm_qos_object
-> instantiation? (I think that would be ok) 
+This means sticking to the "big-gun" approach of system-wide suspend or
+its equivalent, because Android's userspace is so unstructured and
+has so many widespread (perhaps even conflicting!) requirements.  And 
+of course the necessary changes to userspace should be minimal.
+
+Thus, in my proposed scheme there is no need to confine untrusted apps,
+just as there was no need to do so when using wakelocks in their
+original form.  Likewise, there is no need to worry about trusted apps
+firing periodic timers: Once processes are frozen, user timers really
+don't matter much.
+
+>      Aside of that they need to shut off undesired interrupt sources,
+>      but that's not a real problem to solve and probably possible
+>      today already.
+
+Yes.  They may also need to shut off undesired kernel timers.  This 
+should be doable as well, and it would benefit all platforms.
+
+> #1 can be solved elegantly by cgroups. We know how to freeze the
+>    cgroup timers when the need arises, but that's not a real problem
+>    as all periodic timers are firing only once when the target app
+>    does not handle them.
+
+That's why I said they don't matter much.
+
+>    Though the cgroup based approach of freezing timers might be
+>    interesting for containers c/r as well and it might be necessary to
+>    emulate the suspend semantics of freezing CLOCK_MONOTONIC, but
+>    that's simple to do and basically no overhead.
+
+Cgroups are not needed.  The power-manager process can simply freeze 
+all tasks other than itself.
+
+> #2 is a tad harder, as it requires to fix the trusted apps not to fire
+>    timers when there is nothing to do.
+
+No; all you have to do is handle the trusted apps as though they were 
+untrusted -- just as in the original wakelock approach.
+
+>    Though you can solve it with cgroups as well. The unfreeze problem
+>    for real wakeups can be solved as mhelsley pointed out somewhere
+>    else in this thread.
 > 
-> Or are you thinking about some other scheme I don't see?
+> But that depends on user space changes ....
 
-James
+If you handle all the apps uniformly, very few userspace changes are
+needed.
+
+> Though as we learned today that suspend blockers are the least of the
+> problems which android is facing vs. mainline and we have a plan to
+> get the drivers in we can relax a bit and think more about it.
+
+The only reason for inventing suspend blockers in the first place was
+to make system suspend reliable in the face of races with wakeup
+sources.  If system suspend doesn't run to completion, but stops after
+freezing all tasks other than the power manager, then these races can
+be handled entirely within userspace.  Hence there is no need to have
+suspend blockers at all.
+
+Assuming Arve doesn't find any fatal flaws in this approach, the issue 
+will become moot.  We can relax and _avoid_ thinking about it!  :-)
+
+> I'm not saying that we should ignore the shortcomings of todays code,
+> but in the face of hardware which perfectly goes into the same power
+> state from idle as it does from suspend we can IMNSHO safely ignore
+> the x86/ACPI/BIOS crap and the user space wreckage (see above) and
+> just focus on a sane design based on current/future hardware.
+
+You're preaching to the choir.  If the Google people want to use
+suspend blockers on ACPI-based systems ... well, we can resume the
+arguments then.  They won't be nearly as pressing.
+
+> That's nothing new, we do not go and make NOHZ/HIGHRES work on crappy
+> hardware either, even if there have been patches around to do so. We
+> do not make broken TSCs work, even if there are brute force ways to do
+> so. ....
+> 
+> It's more sane to say "Sorry, it does not work on your system" than
+> trying to make it work under all circumstances for a questionable
+> benefit and paying the price for it in terms of maintainability and/or
+> complexity.
+
+Agreed.
+
+Alan Stern
