@@ -1,24 +1,15 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: suspend blockers & Android integration
-Date: Mon, 7 Jun 2010 15:01:31 +0200
-Message-ID: <20100607150131.2038b802__1141.89914097569$1275915776$gmane$org@schatten.dmk.lab>
-References: <AANLkTimEwznq9c_8lkuBMxEQ-42rdvpZEqA9Y71Cu-qC@mail.gmail.com>
-	<AANLkTimKknOurmCffOpHjc1FjrP2MKf10pBwEEbLJPg_@mail.gmail.com>
-	<AANLkTil1NCX91bWhpXHtC88Opr29mNjdhXD9RXQ6DI0y@mail.gmail.com>
-	<AANLkTin1Za3GvfIKbcZdx6TzjIHzCvsg5uaY_Vk4nJIh@mail.gmail.com>
-	<AANLkTilQ1k78dDCYadOa1Wiyjm2nsBcRpxwdpGvYcf8z@mail.gmail.com>
-	<AANLkTin7oM3gVwHbIHWqYV8yeC6bbQ4q2jDDxAgz3DwQ@mail.gmail.com>
-	<20100606133130.GA8513@srcf.ucam.org>
-	<AANLkTimXTgZS_fZQa8hjIptJrCn756gF_xakT1IQiLWa@mail.gmail.com>
-	<20100606152946.GA11351@srcf.ucam.org>
-	<AANLkTilOq_5yUW1AIMH1qSE699gyRUTlzGPUVc4CrReY@mail.gmail.com>
-	<20100606164326.GA12570@srcf.ucam.org>
-	<AANLkTim0JD4V0RTc6CRIADypqYhQo3JYp3dJs0l7g7Ps@mail.gmail.com>
+From: Martin Steigerwald <Martin@lichtvoll.de>
+Subject: Re: [TuxOnIce-devel] [SUSPECTED SPAM] Re: Proposal for a
+	new algorithm for reading & writing a hibernation image.
+Date: Mon, 7 Jun 2010 15:07:49 +0200
+Message-ID: <201006071507.56259.Martin__46879.8233465806$1275916125$gmane$org@lichtvoll.de>
+References: <9rpccea67yy402c975fqru8r.1275576653521@email.android.com>
+	<201006062104.55869.rjw@sisk.pl> <4C0C843D.6030008@crca.org.au>
+	(sfid-20100607_101218_800330_88257A1C)
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============5974671091268040881=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTim0JD4V0RTc6CRIADypqYhQo3JYp3dJs0l7g7Ps@mail.gmail.com>
+In-Reply-To: <4C0C843D.6030008@crca.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,33 +17,118 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vitaly Wool <vitalywool@gmail.com>
-Cc: tytso@mit.edu, James@smtp1.linux-foundation.org, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 6 Jun 2010 19:21:49 +0200
-Vitaly Wool <vitalywool@gmail.com> wrote:
+--===============5974671091268040881==
+Content-Type: multipart/signed;
+  boundary="nextPart1336033.bEN4aNCQnZ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-> 2010/6/6 Matthew Garrett <mjg59@srcf.ucam.org>:
-> 
-> > Suspend blocks prevent system suspend, not any per-device suspend.
-> 
-> Can you suspend a device which is holding a wake lock?
-> 
-> ~Vitaly
+--nextPart1336033.bEN4aNCQnZ
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-If you look at the suspend blocker patchset, you'll see that the only
-patches adding calls to "suspend_is_blocked()" are 
+Am Montag 07 Juni 2010 schrieb Nigel Cunningham:
+> Hi.
 
-PM: Opportunistic suspend support
+Hi Nigel and Rafael, hi everyone else involved,
 
-and
+> On 07/06/10 05:04, Rafael J. Wysocki wrote:
+> > On Sunday 06 June 2010, Maxim Levitsky wrote:
+> >> On Sun, 2010-06-06 at 15:57 +0200, Rafael J. Wysocki wrote:
+> >>> On Sunday 06 June 2010, Maxim Levitsky wrote:
+> > ...
+> >=20
+> >>> So how TuxOnIce helps here?
+> >>=20
+> >> Very simple.
+> >>=20
+> >> With swsusp, I can save 750MB (memory) + 250 Vram (vram)
+> >> With full memory save I can save (1750 MB of memory) + 250 MB of
+> >> vram....
+> >=20
+> > So what about being able to save 1600 MB total instead of the 2 GB
+> > (which is what we're talking about in case that's not clear)?  Would
+> > it be _that_ _much_ worse?
+>=20
+> That all depends on what is in the 400MB you discard.
+>=20
+> The difference is "Just as if you'd never hibernated" vs something
+> closer to "Just as if you'd only just started up". We can't make
+> categorical statements because it really does depend upon what you
+> discard and what you want to do post-resume - that is, how useful the
+> memory you discard would have been. That's always going to vary from
+> case to case.
 
-PM: Abort task freezing if there is an active suspend blocker . 
+Nigel and Rafael, how about just testing it?
 
-Both are in generic suspend code and don't affect runtime pm.
+Whats needed to have 80% of the memory saved instead of 50%?
 
-Cheers,
-Flo 
+I think its important to go the next steps towards a better snapshot in=20
+mainline kernel even when you do not agree on the complete end result yet.
+
+What about
+
+=2D Rafael, you review the async write patches of Nigel. If they are good,=
+=20
+IMHO they should go in as soon as possible.
+
+=2D Nigel and/or Rafael, you look at whats needed to save 80% instead of 50=
+%=20
+of the memory and develop a patch for it
+
+
+?
+
+Then this goes into one stable kernel series and be tested in the wild.=20
+And if that approach does not suffice to give a similar experience than wit=
+h=20
+TuxOnIce one could still look further. In that case I ask you Rafael, to=20
+at least listen open-mindedly to practical experiences being told and to=20
+ideas to improve the situation.
+
+I really want to see this make some progress instead of getting stuck in=20
+discussion loops again. No offence meant - you do the all the development=20
+work! - but the time spent here IMHO is better spent on reviewing and=20
+furtherly refining the existing patches by Nigel and Jiri and developing a=
+=20
+patchset for the 80% solution which should already help a lot.
+
+Does that incremental approach sound acceptable for the time being?
+
+IMHO *any* step forward helps!
+
+Ciao,
+=2D-=20
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+
+--nextPart1336033.bEN4aNCQnZ
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkwM7yUACgkQmRvqrKWZhMdjuACeNw2R/TdbnUykRgEo9JSRN/CZ
+hHEAn1qBq0Pe0MX5cZ4KZZUjpGhw2ZVy
+=D/Wr
+-----END PGP SIGNATURE-----
+
+--nextPart1336033.bEN4aNCQnZ--
+
+--===============5974671091268040881==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============5974671091268040881==--
