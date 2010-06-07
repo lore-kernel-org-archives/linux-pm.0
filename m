@@ -1,14 +1,19 @@
-From: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: [PATCH] pm_qos: make update_request callable from
- interrupt context
-Date: Mon, 07 Jun 2010 09:10:40 -0400
-Message-ID: <1275916241.2849.21.camel@mulgrave.site>
-References: <1275913865-16277-1-git-send-email-florian@mickler.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: suspend blockers & Android integration
+Date: Mon, 07 Jun 2010 15:20:30 +0200
+Message-ID: <1275916830.1645.566.camel__15217.1073867523$1275916986$gmane$org@laptop>
+References: <1275834706.7227.545.camel@mulgrave.site>
+	<alpine.LFD.2.00.1006061725000.2933@localhost.localdomain>
+	<1275844114.7227.552.camel@mulgrave.site>
+	<20100606190525.GA20517@infradead.org>
+	<AANLkTikKx-gXCGtNo3woHLCpBoEQ7hG9Jbiq3hwUTW_w@mail.gmail.com>
+	<20100606192405.GA7559@infradead.org>
+	<AANLkTikA0ihlbehyyN-zQ3mN4WmlZJYBSRTYV8SbDhSr@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275913865-16277-1-git-send-email-florian@mickler.org>
+In-Reply-To: <AANLkTikA0ihlbehyyN-zQ3mN4WmlZJYBSRTYV8SbDhSr@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,96 +23,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: florian@mickler.org
-Cc: pm list <linux-pm@lists.linux-foundation.org>, markgross@thegnar.org
+To: Brian Swetland <swetland@google.com>
+Cc: tytso@mit.edu, Neil Brown <neilb@suse.de>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Christoph Hellwig <hch@infradead.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2010-06-07 at 14:31 +0200, florian@mickler.org wrote:
-> We introduce new atomic_notifiers and only call the (legacy) blocking
-> notifiers if there are any registered. A might_sleep() tries to
-> fence off all misuse.
-> 
-> This should make it possible to call update_request from interrupt-context
-> as long as only atomic notifiers are registered.
-> 
-> Signed-off-by: Florian Mickler <florian@mickler.org>
-> ---
->  include/linux/pm_qos_params.h |    3 +
->  kernel/pm_qos_params.c        |  114 ++++++++++++++++++++++++++++++++--------
->  2 files changed, 94 insertions(+), 23 deletions(-)
-> 
-> diff --git a/include/linux/pm_qos_params.h b/include/linux/pm_qos_params.h
-> index 8ba440e..60ed542 100644
-> --- a/include/linux/pm_qos_params.h
-> +++ b/include/linux/pm_qos_params.h
-> @@ -22,6 +22,9 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
->  void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req);
->  
->  int pm_qos_request(int pm_qos_class);
-> +
->  int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
->  int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
->  
-> +int pm_qos_add_notifier_nonblocking(int pm_qos_class, struct notifier_block *notifier);
-> +int pm_qos_remove_notifier_nonblocking(int pm_qos_class, struct notifier_block *notifier);
-> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> index f42d3f7..0a67997 100644
-> --- a/kernel/pm_qos_params.c
-> +++ b/kernel/pm_qos_params.c
-> @@ -63,7 +63,8 @@ static s32 min_compare(s32 v1, s32 v2);
->  
->  struct pm_qos_object {
->  	struct pm_qos_request_list requests;
-> -	struct blocking_notifier_head *notifiers;
-> +	struct atomic_notifier_head *notifiers;
-> +	struct blocking_notifier_head *blocking_notifiers;
->  	struct miscdevice pm_qos_power_miscdev;
->  	char *name;
->  	s32 default_value;
-> @@ -72,20 +73,24 @@ struct pm_qos_object {
->  };
->  
->  static struct pm_qos_object null_pm_qos;
-> -static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
-> +static ATOMIC_NOTIFIER_HEAD(cpu_dma_lat_notifier);
-> +static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_blocking_notifier);
+On Sun, 2010-06-06 at 12:58 -0700, Brian Swetland wrote:
+> Somebody will have to broker a deal with the frameworks/apps folks to
+> get rid of the binder.  They like it a lot.  Of course if somebody
+> built a drop-in replacement for the userspace side that didn't require
+> a kernel driver, had the same performance characteristics, solved the
+> same problems, etc, they could probably make an argument for it (or
+> just provide it as a drop-in replacement for people who want a more
+> "pure" linux underneath Android, even if we didn't pick it up). 
 
-So I think it might be better implemented by having only a single active
-notifier head: either blocking or atomic  because all this depends on
-where the callsites for the notifiers are, and the person adding the
-notifier should know this..  We can add atomic notifiers to the blocking
-chain, just not vice versa.  The idea is that if all the add and update
-call sites are blocking, you just register the blocking chain and forget
-the atomic one.  The only difference between atomic and blocking
-notifiers is whether we use a spinlock or a mutex to guard the integrity
-of the call chain ... if you know you always have user context at the
-callsites, then you can always use the mutex.
+So what's up with this Binder stuff, from what I can see its just
+yet-another-CORBA. Why does it need a kernel part at all, can't you
+simply run with a user-space ORB instead?
 
-Then, for blocking notifiers, I think in init, we can register a single
-notifier which just calls __might_sleep() ... that will pick up at
-runtime any atomic callsite.
+I really don't get why people keep re-inventing CORBA, there's some
+really nice (free) ORBs out there, like:
 
-For atomics, you just set up an atomic call chain and leave the blocking
-one null.  Then we get a BUG if anyone tries to register a blocking
-notifier to an atomic only pm_qos_object.
-
-The implementation looks fine, except:
-
-[...]
->  /**
-> + * pm_qos_add_notifier_nonblocking - sets notification entry for changes to target value
-> + *
-> + * Code executed by the notifier block may not sleep!
-> + *
-> + * @pm_qos_class: identifies which qos target changes should be notified.
-> + * @notifier: notifier block managed by caller.
-> + *
-> + * Will register the notifier into a notification chain that gets called
-> + * upon changes to the pm_qos_class target value.
-> + */
-> +int pm_qos_add_notifier_nonblocking(int pm_qos_class, struct notifier_block *notifier)
-
-Rightly or wrongly, the notifier people use atomic not nonblocking, so
-we should really stick with it to avoid confusion.
-
-James
+  http://www.cs.wustl.edu/~schmidt/TAO.html
