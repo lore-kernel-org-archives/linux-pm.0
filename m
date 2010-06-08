@@ -1,17 +1,14 @@
-From: Pedro Ribeiro <pedrib@gmail.com>
-Subject: Re: [SUSPECTED SPAM] Re: Proposal for a new algorithm
-	for reading & writing a hibernation image.
-Date: Sun, 6 Jun 2010 22:55:32 +0100
-Message-ID: <AANLkTim9CNFMMVQaghrzK3JnQlGmTewgarT01HP6cEtd__19876.4095585377$1276010176$gmane$org@mail.gmail.com>
-References: <9rpccea67yy402c975fqru8r.1275576653521@email.android.com>
-	<201006061557.20482.rjw@sisk.pl>
-	<1275839650.5331.2.camel@maxim-laptop>
-	<201006062104.55869.rjw@sisk.pl>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: [RFC] pm_qos: reimplement using plists
+Date: Tue, 08 Jun 2010 11:52:16 -0400
+Message-ID: <1276012336.4344.7.camel@mulgrave.site>
+References: <1275760688.7227.10.camel@mulgrave.site>
+	<20100606213954.GD8610@gvim.org>  <20100608133157.GA26668@gvim.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006062104.55869.rjw@sisk.pl>
+In-Reply-To: <20100608133157.GA26668@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,66 +18,144 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Nigel Cunningham <ncunningham@crca.org.au>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>, pm list <linux-pm@lists.linux-foundation.org>
+To: markgross@thegnar.org
+Cc: Linux PM <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 6 June 2010 20:04, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Sunday 06 June 2010, Maxim Levitsky wrote:
->> On Sun, 2010-06-06 at 15:57 +0200, Rafael J. Wysocki wrote:
->> > On Sunday 06 June 2010, Maxim Levitsky wrote:
-> ...
->> > So how TuxOnIce helps here?
->> Very simple.
->>
->> With swsusp, I can save 750MB (memory) + 250 Vram (vram)
->> With full memory save I can save (1750 MB of memory) + 250 MB of
->> vram....
->
+On Tue, 2010-06-08 at 06:31 -0700, mark gross wrote:
+> On Sun, Jun 06, 2010 at 02:39:54PM -0700, mark gross wrote:
+> > On Sat, Jun 05, 2010 at 12:58:08PM -0500, James Bottomley wrote:
+> > > A lot of the pm_qos extremal value handling is really duplicating what a
+> > > priority ordered list does, just in a less efficient fashion.  Simply
+> > > redoing the implementation in terms of a plist gets rid of a lot of this
+> > > junk (although there are several other strange things that could do with
+> > > tidying up, like pm_qos_request_list has to carry the pm_qos_class with
+> > > every node, simply because it doesn't get passed in to
+> > > pm_qos_update_request even though every caller knows full well what
+> > > parameter it's updating).
+> > > 
+> > > I think this redo is a win independent of android, so we should do
+> > > something like this now.
+> > > 
+> > > There is one nasty that should probably be fixed in plists not open
+> > > coded here: plist_first gives the highest priority value, but there's no
+> > > corresponding API to give the lowest (even though you can get it from
+> > > the head.nodes_list.prev) ... if the sched people are OK, I'll correct
+> > > this with the final patch set.
+> > > 
+> > > James
+> > > 
+> > > ---
+> > > 
+> > >  kernel/pm_qos_params.c |  152 +++++++++++++++++++++++-------------------------
+> > >  1 files changed, 73 insertions(+), 79 deletions(-)
+> > > 
+> > > diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+> > > index f42d3f7..241fa79 100644
+> > > --- a/kernel/pm_qos_params.c
+> > > +++ b/kernel/pm_qos_params.c
+> > > @@ -30,6 +30,7 @@
+> > >  /*#define DEBUG*/
+> 
+> snip
+> 
+> > > @@ -251,22 +244,27 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
+> > >  	unsigned long flags;
+> > >  	int pending_update = 0;
+> > >  	s32 temp;
+> > > +	struct pm_qos_object *o;
+> > >  
+> > > -	if (pm_qos_req) { /*guard against callers passing in null */
+> > > -		spin_lock_irqsave(&pm_qos_lock, flags);
+> > > -		if (new_value == PM_QOS_DEFAULT_VALUE)
+> > > -			temp = pm_qos_array[pm_qos_req->pm_qos_class]->default_value;
+> > > -		else
+> > > -			temp = new_value;
+> > > +	if (!pm_qos_req) /*guard against callers passing in null */
+> > > +		return;
+> > 
+> > need a better test to see if the pm_qos_req is in the plist or not as we
+> > move to a caller allocated design.
+> >
+> 
+> snip  
+> > >  void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req)
+> > >  {
+> > > -	unsigned long flags;
+> > > -	int qos_class;
+> > > +	struct pm_qos_object *o;
+> > >  
+> > >  	if (pm_qos_req == NULL)
+> > >  		return;
+> > >  		/* silent return to keep pcm code cleaner */
+> > 
+> > need a way to tell if the request is in the list or not so we don't
+> > crater removing a plist node that isn't in the list.
+> > 
+> snip
+> >
+> 
+> I found that e1000e will panic on rmmod because of it attempting to
+> removing of a pm_qos request that it never added.
+> 
+> This is an ugly patch, but I think its needed for a while to clean out
+> the abusers, then it can be updated to not be so noisy.
+> 
+> 
+> --mgross
+> 
+> --Signed-off-by: mark gross <markgross@thegnar.org>
+> 
+> 
+> 
+> >From fb713f95b83ea3744c31917cfd019bf3e32349b3 Mon Sep 17 00:00:00 2001
+> From: markgross <markgross@thegnar.org>
+> Date: Tue, 8 Jun 2010 06:22:01 -0700
+> Subject: [PATCH] check and complain about abuse of the api to avoid panics
+> 
+> ---
+>  kernel/pm_qos_params.c |   12 +++++++++++-
+>  1 files changed, 11 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+> index f1d3d23..4bded27 100644
+> --- a/kernel/pm_qos_params.c
+> +++ b/kernel/pm_qos_params.c
+> @@ -212,7 +212,7 @@ void pm_qos_add_request(struct pm_qos_request_list *dep,
+>  	int new_value;
+>  
+>  	if (pm_qos_request_active(dep))
+> -		return;
+> +		return; /* already in the list */
+>  
+>  	if (value == PM_QOS_DEFAULT_VALUE)
+>  		new_value = o->default_value;
+> @@ -244,6 +244,11 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
+>  
+>  	if (!pm_qos_req) /*guard against callers passing in null */
+>  		return;
+> +	if (!pm_qos_request_active(pm_qos_req)) {
+> +		WARN(true, "pm_qos: update to an unregistered request");
+> +		dump_stack();
+> +		return;
+> +	}
+>  
+>  	o = pm_qos_array[pm_qos_req->pm_qos_class];
+>  
+> @@ -279,6 +284,11 @@ void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req)
+>  	if (pm_qos_req == NULL)
+>  		return;
+>  		/* silent return to keep pcm code cleaner */
+> +	if (!pm_qos_request_active(pm_qos_req)) {
+> +		WARN(true, "pm_qos: removal an unregistered request");
+> +		dump_stack();
+> +		return;
+> +	}
 
-I am completely unaware of the technical difficulties of saving the
-whole memory vs 80% of it, but from my experience with TuxOnIce I
-fully agree with Nigel on saving the whole memory.
+Yes, that would more or less reflect current functionality.  If it's the
+intention of the API to silently ignore update and removal of
+unregistered requests, then it should probably be done silently,
+though ... otherwise we'll start to make noise where previously there
+was none.
 
-The fact is that the whole system is much more responsive than when
-using swsusp. No doubt about that, I can tell you that TuxOnIce really
-changed the way I use my computer. I only used swsusp when I really
-needed because of the lagginess starting up, and TuxOnIce changed it.
-
-I have a laptop computer which I have to shutdown every night and open
-every morning. It has 4GB of ram and I usually have 3.5 to 3.8 in use
-all the time. With TuxOnIce I can restart my work every morning in
-under 25 seconds, exactly where I left it, without any delays or
-lagginess.
-
-Its kind of hard to express in words, but really, this gave me a
-completely different view of how to use a computer. Of course you can
-compare it to S2R, but this consumes energy, no matter how little -
-this has an environmental and financial cost which will only increase
-in the future.
-
-> So what about being able to save 1600 MB total instead of the 2 GB
-> (which is what we're talking about in case that's not clear)? =A0Would it
-> be _that_ _much_ worse?
-
-No it wouldn't be much worse. But there will still be some lagginess,
-some delay, some sort of annoying disk activity compared to NO delay,
-NO lagginess, in short, you have your computer _exactly_ the way you
-left it when you left it when you hibernated. And the difference is
-noticeable.
-
->
-> Rafael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at =A0http://www.tux.org/lkml/
->
-
-
-Sorry to jump in the thread, but I just wanted to give my end user perspect=
-ive.
-
-Regards,
-Pedro
+James
