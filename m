@@ -1,15 +1,17 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: suspend blockers & Android integration
-Date: Tue, 8 Jun 2010 12:19:54 +0200
-Message-ID: <20100608121954.7e190dd2__12897.9743029506$1275992603$gmane$org@schatten.dmk.lab>
-References: <AANLkTikRSV5dFX10apUntFi4eJkRt645Iod91qrPk9gI@mail.gmail.com>
-	<Pine.LNX.4.44L0.1006072153030.27878-100000@netrider.rowland.org>
-	<AANLkTimcDzHBmgqPkCHB6pW2RZivFhmb_zk68T0I3NJY@mail.gmail.com>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: [PATCH v3] pm_qos: make update_request callable from
+ interrupt context
+Date: Tue, 08 Jun 2010 08:06:04 -0400
+Message-ID: <1275998764.9953.1.camel@mulgrave.site>
+References: <1275920448.2849.31.camel@mulgrave.site>
+	<1275924869-3811-1-git-send-email-florian@mickler.org>
+	<1275927581.13772.10.camel@mulgrave.site>
+	<20100608041340.GA23473@gvim.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTimcDzHBmgqPkCHB6pW2RZivFhmb_zk68T0I3NJY@mail.gmail.com>
+In-Reply-To: <20100608041340.GA23473@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,62 +21,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?ISO-8859-15?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Brian@smtp1.linux-foundation.org, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: markgross@thegnar.org
+Cc: florian@mickler.org, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 7 Jun 2010 20:05:56 -0700
-Arve Hj=F8nnev=E5g <arve@android.com> wrote:
-Hi,
+On Mon, 2010-06-07 at 21:13 -0700, mark gross wrote: 
+> On Mon, Jun 07, 2010 at 12:19:41PM -0400, James Bottomley wrote:
+> > On Mon, 2010-06-07 at 17:34 +0200, florian@mickler.org wrote:
+> > > We use the spinlocked notifier chain variant (struct
+> > > atomic_notifier_head) and add an __might_sleep() to the chain for
+> > > constraints which have non-atomic notifiers. This way we catch all
+> > > interrupt-context-update-sites at runtime.
+> > 
+> > Actually, I'm afraid we can't really call blocking notifiers through the
+> > atomic chain because we might end up with a contested chain call and a
+> > huge busy wait in the spinlock (especially if one of the notifiers is
+> > sleeping).
+> > 
+> > I think the pm_qos_object still needs the two notifier chains ... it's
+> > just that when set up, one must either fill an atomic or a blocking
+> > chain (leaving the other NULL).  We use the NULL to check to decide what
+> > chain to add notifiers to, and if the blocking chain is null, we refuse
+> > to add blocking notifiers (with a BUG). If the blocking chain is
+> > non-null, we register the might_sleep() notifier (actually, given the
+> > argument mismatch, you'll have to wrapper that).
+> > 
+> > James
 
-> =
+> Can't we just requiere that all notifier callbacks be atomic context
+> safe and not fart around with 2 classes of notifiers?
 
-> If you read an event that occurred after you blocked the task
-> freezing, then tasks will never get frozen again (until more events
-> occur). I think my original description was less confusing, but it
-> seems you got completely distracted by my use of block and unblock
-> suspend when referring to the user space api.
+Not unless someone rewrites the network notifier: it uses mutexes and is
+clearly assuming user context.  Perhaps they could simply be replaced
+with spinlocks but someone who understands the net code would would have
+to advise on this.
 
-Here is how I understood Alan's approach: =
-
-
-Userspace manager (UM) does:
-
-<...continuation of function A>
-5) unblock from reading a wakeup from wakeupevents-fd
-6) thaw userspace
-7) return
-</function A>
-
-[userspace sees there is an event; blocks suspend at UM; processes
-event; consume wakeupevent at UM; unblock suspend at UM;] =
-
-
-Unblocking the last suspend-blocker at the UM starts function A:
-
-<function A>
-1) non-blocking read of wakeup-events-fd (refills wakeupevents)
-2) if all wakeupevents are consumed: =
-
-	3a) freeze userspace	=
-
-   else
-	3b) /* wait for userspace to unblock
-	suspend again... this should take care of the races? */ return;
-4) blocking read of wakeupevents-fd
-<...for continuation see above>
-
-You mitigate the race by freezing and unfreezing userspace. If there
-occur wakeups between 3a) and 4) you will have frozen userspace in
-vain. =
-
-
-So I think the feasibility of this solution depends on the performance
-of freezing/thawing userspace. I can't judge that.
-
-Also I _think_ this is racefree as long as you have the UM properly
-serialized. Or did I overlook something?
-
-
-Cheers,
-Flo
+James
