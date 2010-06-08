@@ -1,17 +1,14 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH v3] pm_qos: make update_request callable from
- interrupt context
-Date: Tue, 8 Jun 2010 10:09:48 +0200
-Message-ID: <20100608100948.1b8dcdb9@schatten.dmk.lab>
-References: <1275920448.2849.31.camel@mulgrave.site>
-	<1275924869-3811-1-git-send-email-florian@mickler.org>
-	<1275927581.13772.10.camel@mulgrave.site>
-	<20100608041340.GA23473@gvim.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 0/5] ACPI / ACPICA: Fix problems related to GPE
+	reference counting
+Date: Tue, 8 Jun 2010 10:46:48 +0200
+Message-ID: <201006081046.48488.rjw__35010.5455298491$1275987799$gmane$org@sisk.pl>
+References: <201006080024.46142.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100608041340.GA23473@gvim.org>
+In-Reply-To: <201006080024.46142.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,54 +18,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: pm list <linux-pm@lists.linux-foundation.org>, James Bottomley <James.Bottomley@suse.de>, 640e9920@gmail.com
+To: Len Brown <lenb@kernel.org>
+Cc: Len Brown <len.brown@intel.com>, "Moore, Robert" <robert.moore@intel.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 7 Jun 2010 21:13:41 -0700
-mark gross <640e9920@gmail.com> wrote:
+Hi,
 
-> On Mon, Jun 07, 2010 at 12:19:41PM -0400, James Bottomley wrote:
-> > On Mon, 2010-06-07 at 17:34 +0200, florian@mickler.org wrote:
-> > > We use the spinlocked notifier chain variant (struct
-> > > atomic_notifier_head) and add an __might_sleep() to the chain for
-> > > constraints which have non-atomic notifiers. This way we catch all
-> > > interrupt-context-update-sites at runtime.
-> > 
-> > Actually, I'm afraid we can't really call blocking notifiers through the
-> > atomic chain because we might end up with a contested chain call and a
-> > huge busy wait in the spinlock (especially if one of the notifiers is
-> > sleeping).
+I decided to split this big patch into a series of smaller ones addressing one
+issue each.  I think all of the issues addressed by [2-5/5] may be regarded as
+regressions from 2.6.33, because that kernel didn't have these problems.
 
-Argh. True. The spinlock is held while calling the notifiers. 
+[1/5] - Not really a fix, but [2/5] depends on it and I don't see a reason to
+        duplicate that thing even more.
+[2/5] - Low-level GPE manipulation fix
+[3/5] - Fix possible issue with re-enabling a GPE after event handling
+[4/5] - Fix the initialization of GPEs
+[5/5] - Fix GPE sysfs interface
 
-> > 
-> > I think the pm_qos_object still needs the two notifier chains ... it's
-> > just that when set up, one must either fill an atomic or a blocking
-> > chain (leaving the other NULL).  We use the NULL to check to decide what
-> > chain to add notifiers to, and if the blocking chain is null, we refuse
-> > to add blocking notifiers (with a BUG). If the blocking chain is
-> > non-null, we register the might_sleep() notifier (actually, given the
-> > argument mismatch, you'll have to wrapper that).
-> > 
-> > James
-> Can't we just requiere that all notifier callbacks be atomic context
-> safe and not fart around with 2 classes of notifiers?
-> 
-> --mgross
+Please review, possibly apply.
 
-I think that would be conceptual right. 
-
-Under the assumption, that the qos-infrastructure is used by the
-drivers to guarantee their functioning, we can not allow a race to
-occur. 
-
-( Individual listeners of course are free to spawn or schedule work if
-they think it is safe to do so and have all races possible considered. )
-
-I'll audit the current listeners this evening and respin this patch
-without the might_sleep()'s and adapted comments.
-What do you think?
-
-Cheers,
-Flo
+Thanks,
+Rafael
