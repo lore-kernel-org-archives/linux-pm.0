@@ -1,17 +1,18 @@
 From: mark gross <640e9920@gmail.com>
-Subject: Re: PM QoS dynamic resource manager
-Date: Mon, 7 Jun 2010 20:33:33 -0700
-Message-ID: <20100608033333.GA23066@gvim.org>
-References: <alpine.DEB.2.00.1005211533530.25765@pchidamb-lnx.qualcomm.com>
-	<20100525145223.GA4974@gvim.org>
-	<AANLkTikLgu2c1GPE3glHLlaznOM59SVeCj2NHzDjyjZR@mail.gmail.com>
+Subject: Re: [RFC] pm_qos: get rid of the allocation in
+ pm_qos_add_request()
+Date: Mon, 7 Jun 2010 20:40:28 -0700
+Message-ID: <20100608034028.GB23066__34896.8090060682$1275968559$gmane$org@gvim.org>
+References: <1275765614.7227.42.camel@mulgrave.site>
+	<20100606231021.GA17031@gvim.org>
+	<1275879019.7227.564.camel@mulgrave.site>
 Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <AANLkTikLgu2c1GPE3glHLlaznOM59SVeCj2NHzDjyjZR@mail.gmail.com>
+In-Reply-To: <1275879019.7227.564.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,70 +22,129 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mike Chan <mike@android.com>
-Cc: linux-pm@lists.linux-foundation.org, mark gross <640e9920@gmail.com>, markgross@thegnar.org
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: alsa-devel@alsa-project.org, markgross@thegnar.org, Takashi Iwai <tiwai@suse.de>, netdev@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jun 07, 2010 at 05:18:25PM -0700, Mike Chan wrote:
-> On Tue, May 25, 2010 at 7:52 AM, mark gross <640e9920@gmail.com> wrote:
-> > On Fri, May 21, 2010 at 03:37:39PM -0600, Chidambaram, Praveen wrote:
-> >> Hi,
-> >>
-> >> I am looking for some extensible features for PM QoS. Specifically,
-> >> dynamic runtime parameters that my architecture could define at
-> >> runtime and the drivers can make use of.
-> >>
-> >> What are the plans in this regard?
-> >
-> > we've talked about it a few times in the past.
-> >
-> > It's come down to how do we prevent platform independent code from
-> > depending on such platform independent dynamic prarams in a sane manner.
-> >
-> > I've alway's pushed for coming up with more reasonable abstractions that
-> > could be re-used and adding them (like the bus thing) as opposed to
-> > having drivers make / use new parrameters dynamically.
-> >
+On Sun, Jun 06, 2010 at 10:50:19PM -0400, James Bottomley wrote:
+> On Sun, 2010-06-06 at 16:10 -0700, mark gross wrote:
+> > On Sat, Jun 05, 2010 at 02:20:14PM -0500, James Bottomley wrote:
+> > > [alsa-devel says it's a moderated list, so feel free to drop before
+> > > replying]
+> > > 
+> > > Since every caller has to squirrel away the returned pointer anyway,
+> > > they might as well supply the memory area.  This fixes a bug in a few of
+> > > the call sites where the returned pointer was dereferenced without
+> > > checking it for NULL (which gets returned if the kzalloc failed).
+> > > 
+> > > I'd like to hear how sound and netdev feels about this: it will add
+> > > about two more pointers worth of data to struct netdev and struct
+> > > snd_pcm_substream .. but I think it's worth it.  If you're OK, I'll add
+> > > your acks and send through the pm tree.
+> > > 
+> > > This also looks to me like an android independent clean up (even though
+> > > it renders the request_add atomically callable).  I also added include
+> > > guards to include/linux/pm_qos_params.h
+> > > 
+> > > James
+> > > 
+> > > ---
+> > > 
+> > >  drivers/net/e1000e/netdev.c            |   17 ++++------
+> > >  drivers/net/igbvf/netdev.c             |    9 ++---
+> > >  drivers/net/wireless/ipw2x00/ipw2100.c |   12 +++---
+> > >  include/linux/netdevice.h              |    2 +-
+> > >  include/linux/pm_qos_params.h          |   12 +++++--
+> > >  include/sound/pcm.h                    |    2 +-
+> > >  kernel/pm_qos_params.c                 |   55 ++++++++++++++++---------------
+> > >  sound/core/pcm_native.c                |   12 ++-----
+> > >  8 files changed, 60 insertions(+), 61 deletions(-)
+> > > 
+> > > diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
+> > > index 24507f3..47ea62f 100644
+> > > --- a/drivers/net/e1000e/netdev.c
+> > > +++ b/drivers/net/e1000e/netdev.c
+> > > @@ -2901,10 +2901,10 @@ static void e1000_configure_rx(struct e1000_adapter *adapter)
+> > >  			 * dropped transactions.
+> > >  			 */
+> > >  			pm_qos_update_request(
+> > > -				adapter->netdev->pm_qos_req, 55);
+> > > +				&adapter->netdev->pm_qos_req, 55);
+> > >  		} else {
+> > >  			pm_qos_update_request(
+> > > -				adapter->netdev->pm_qos_req,
+> > > +				&adapter->netdev->pm_qos_req,
+> > >  				PM_QOS_DEFAULT_VALUE);
+> > >  		}
+> > >  	}
+> > > @@ -3196,9 +3196,9 @@ int e1000e_up(struct e1000_adapter *adapter)
+> > >  
+> > >  	/* DMA latency requirement to workaround early-receive/jumbo issue */
+> > >  	if (adapter->flags & FLAG_HAS_ERT)
+> > > -		adapter->netdev->pm_qos_req =
+> > > -			pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
+> > > -				       PM_QOS_DEFAULT_VALUE);
+> > > +		pm_qos_add_request(&adapter->netdev->pm_qos_req,
+> > > +				   PM_QOS_CPU_DMA_LATENCY,
+> > > +				   PM_QOS_DEFAULT_VALUE);
+> > >  
+> > >  	/* hardware has been reset, we need to reload some things */
+> > >  	e1000_configure(adapter);
+> > > @@ -3263,11 +3263,8 @@ void e1000e_down(struct e1000_adapter *adapter)
+> > >  	e1000_clean_tx_ring(adapter);
+> > >  	e1000_clean_rx_ring(adapter);
+> > >  
+> > > -	if (adapter->flags & FLAG_HAS_ERT) {
+> > > -		pm_qos_remove_request(
+> > > -			      adapter->netdev->pm_qos_req);
+> > > -		adapter->netdev->pm_qos_req = NULL;
+> > > -	}
+> > > +	if (adapter->flags & FLAG_HAS_ERT)
+> > > +		pm_qos_remove_request(&adapter->netdev->pm_qos_req);
+> > >  
+> > >  	/*
+> > >  	 * TODO: for power management, we could drop the link and
+> > > diff --git a/drivers/net/igbvf/netdev.c b/drivers/net/igbvf/netdev.c
+> > > index 5e2b2a8..5da569f 100644
+> > > --- a/drivers/net/igbvf/netdev.c
+> > > +++ b/drivers/net/igbvf/netdev.c
+> > > @@ -48,7 +48,7 @@
+> > >  #define DRV_VERSION "1.0.0-k0"
+> > >  char igbvf_driver_name[] = "igbvf";
+> > >  const char igbvf_driver_version[] = DRV_VERSION;
+> > > -struct pm_qos_request_list *igbvf_driver_pm_qos_req;
+> > > +struct pm_qos_request_list igbvf_driver_pm_qos_req;
+> > >  static const char igbvf_driver_string[] =
+> > >  				"Intel(R) Virtual Function Network Driver";
+> > >  static const char igbvf_copyright[] = "Copyright (c) 2009 Intel Corporation.";
+> > > @@ -2902,8 +2902,8 @@ static int __init igbvf_init_module(void)
+> > >  	printk(KERN_INFO "%s\n", igbvf_copyright);
+> > >  
+> > >  	ret = pci_register_driver(&igbvf_driver);
+> > > -	igbvf_driver_pm_qos_req = pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
+> > > -	                       PM_QOS_DEFAULT_VALUE);
+> > > +	pm_qos_add_request(igbvf_driver_pm_qos_req, PM_QOS_CPU_DMA_LATENCY,
+> > should be:
+> > 
+> > +	pm_qos_add_request(&igbvf_driver_pm_qos_req, PM_QOS_CPU_DMA_LATENCY,
 > 
-> Would it be possible to elaborate on the bus resource ideas you had? I
-> couldn't find anything in the archives. Sounds like a similar that we
-> (Android / embedded world) are having (or will) on multiple platforms
-> (omap / msm/ tegra).
-> 
-> -- Mike
+> Yes, thanks ... must be not compiling this driver for some reason in the
+> test case.
+>
 
-Its been 5 months since the last time this basic discussion happened,
-and I'll do some searching for the thread later but;
+I think we need to do better with the file gard or fix e100e/netdev.c to
+avoid panicking when un-loading the e1000e driver.
 
-But the bus thing we did post a patch to get the code aurora idea
-included, but for some reason that patch didn't stick.
-http://lkml.org/lkml/2010/4/22/213  (I guess the details are in the
-archives)  I'm happy to re-visit it.
+I'm on the fence whether to address the e1000e brain damage, or put in
+protection from whatever is causing the crash.  (which funny enough I
+can't get a serial console to that crashing system to share it with
+you. but I'm pretty sure an un-initialized netdev->pm_qos_request is
+getting passed in (with class==0) resulting in the de-referencing of
+NULL in the update_target function.  
 
-WRT ideas I've had, that went unsupported (well, rejected) by the domain
-experts at that time, where around throttling the GPU and / or it access
-to the memory it used.
-
-Most of the ideas where around clock throttling of buses and memory.
-Things like throttling the graphics BW to whatever memory it was using,
-or clocking down the GPU when idle.  My thought was a pm_qos hint could
-be handy, but I was assured that modern hardware auto-throttled and
-didn't need this.  So I dropped it.  (At that time I also thought it
-would apply to HD audio to allow better DAC throttling.  I also dropped
-this one too for the same reasons.)
-
-One problem was what type of units to use when talking about the qos of
-the graphics was not obvious.  It needs to be something meaningful to
-be portable or provide a good abstraction.
-
-Bus bandwidth in KBS is ok for somethings but its not meaningful to an
-application that wants to request a specific minimum graphics
-performance.  As I type this I suppose a bandwidth for blts per
-second would work for the current Android graphics but for os stacks
-that more fully use the GL engine or games running on android I don't
-think that its a meaningful metric for describing GPU performance
-throttling. 
-
-what ideas do you have?  I would like to seem more pm_qos users.
+I'll be other abusers are doing something similar we'll need to guard
+again.  Would you like me to send an updated patch with some of this
+guarding in place?
 
 --mgross
+ 
