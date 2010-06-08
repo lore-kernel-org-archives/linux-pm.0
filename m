@@ -1,16 +1,16 @@
-From: mark gross <640e9920@gmail.com>
-Subject: Re: [RFC] pm_qos: reimplement using plists
-Date: Tue, 8 Jun 2010 06:31:57 -0700
-Message-ID: <20100608133157.GA26668@gvim.org>
-References: <1275760688.7227.10.camel@mulgrave.site>
-	<20100606213954.GD8610@gvim.org>
-Reply-To: markgross@thegnar.org
+From: "Chidambaram, Praveen" <pchidamb@codeaurora.org>
+Subject: Re: PM QoS dynamic resource manager
+Date: Tue, 8 Jun 2010 08:44:30 -0600 (MDT)
+Message-ID: <alpine.DEB.2.00.1006080830090.14258@pchidamb-lnx.qualcomm.com>
+References: <alpine.DEB.2.00.1005211533530.25765@pchidamb-lnx.qualcomm.com>
+	<20100525145223.GA4974@gvim.org>
+	<AANLkTikLgu2c1GPE3glHLlaznOM59SVeCj2NHzDjyjZR@mail.gmail.com>
+	<20100608033333.GA23066@gvim.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100606213954.GD8610@gvim.org>
+In-Reply-To: <20100608033333.GA23066@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,143 +21,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: markgross@thegnar.org
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, Linux PM <linux-pm@lists.linux-foundation.org>
+Cc: kheitke@codeaurora.org, mark gross <640e9920@gmail.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jun 06, 2010 at 02:39:54PM -0700, mark gross wrote:
-> On Sat, Jun 05, 2010 at 12:58:08PM -0500, James Bottomley wrote:
-> > A lot of the pm_qos extremal value handling is really duplicating what a
-> > priority ordered list does, just in a less efficient fashion.  Simply
-> > redoing the implementation in terms of a plist gets rid of a lot of this
-> > junk (although there are several other strange things that could do with
-> > tidying up, like pm_qos_request_list has to carry the pm_qos_class with
-> > every node, simply because it doesn't get passed in to
-> > pm_qos_update_request even though every caller knows full well what
-> > parameter it's updating).
-> > 
-> > I think this redo is a win independent of android, so we should do
-> > something like this now.
-> > 
-> > There is one nasty that should probably be fixed in plists not open
-> > coded here: plist_first gives the highest priority value, but there's no
-> > corresponding API to give the lowest (even though you can get it from
-> > the head.nodes_list.prev) ... if the sched people are OK, I'll correct
-> > this with the final patch set.
-> > 
-> > James
-> > 
-> > ---
-> > 
-> >  kernel/pm_qos_params.c |  152 +++++++++++++++++++++++-------------------------
-> >  1 files changed, 73 insertions(+), 79 deletions(-)
-> > 
-> > diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> > index f42d3f7..241fa79 100644
-> > --- a/kernel/pm_qos_params.c
-> > +++ b/kernel/pm_qos_params.c
-> > @@ -30,6 +30,7 @@
-> >  /*#define DEBUG*/
+> Most of the ideas where around clock throttling of buses and memory.
+> Things like throttling the graphics BW to whatever memory it was using,
+> or clocking down the GPU when idle.  My thought was a pm_qos hint could
+> be handy, but I was assured that modern hardware auto-throttled and
+> didn't need this.  So I dropped it.  (At that time I also thought it
+> would apply to HD audio to allow better DAC throttling.  I also dropped
+> this one too for the same reasons.)
 
-snip
+Yes, auto throttling by tying the Bus clock in relation to the CPU is 
+a fairly good idea, but cannot be the only solution. The drivers know 
+best their requirements and some drivers would need arbirated 
+bandwidth that no one else can encroach on.
 
-> > @@ -251,22 +244,27 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
-> >  	unsigned long flags;
-> >  	int pending_update = 0;
-> >  	s32 temp;
-> > +	struct pm_qos_object *o;
-> >  
-> > -	if (pm_qos_req) { /*guard against callers passing in null */
-> > -		spin_lock_irqsave(&pm_qos_lock, flags);
-> > -		if (new_value == PM_QOS_DEFAULT_VALUE)
-> > -			temp = pm_qos_array[pm_qos_req->pm_qos_class]->default_value;
-> > -		else
-> > -			temp = new_value;
-> > +	if (!pm_qos_req) /*guard against callers passing in null */
-> > +		return;
-> 
-> need a better test to see if the pm_qos_req is in the plist or not as we
-> move to a caller allocated design.
->
+> One problem was what type of units to use when talking about the qos of
+> the graphics was not obvious.  It needs to be something meaningful to  
+> be portable or provide a good abstraction.
 
-snip  
-> >  void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req)
-> >  {
-> > -	unsigned long flags;
-> > -	int qos_class;
-> > +	struct pm_qos_object *o;
-> >  
-> >  	if (pm_qos_req == NULL)
-> >  		return;
-> >  		/* silent return to keep pcm code cleaner */
-> 
-> need a way to tell if the request is in the list or not so we don't
-> crater removing a plist node that isn't in the list.
-> 
-snip
->
+With PM QoS you can specify one parameter. However, a single parameter 
+is quite insufficient. To specify bus bandwidth (say MBPS), we would 
+need 2 dimensional values. Buses are getting complex and the arbiters 
+that sit around them can make good decisions when they are fed the 
+right data. The clock speed is just one of them. To allocate a 
+bandwidth to a specific client, you would need to specify the amount 
+of data to be transferred and when transferred, the amount of data in 
+burst that need to be transferred would help in specifying the speed 
+for each transaction. The clock speed can be deduced by the 
+arbiter/driver from these two inputs.
 
-I found that e1000e will panic on rmmod because of it attempting to
-removing of a pm_qos request that it never added.
+> One problem was what type of units to use when talking about the qos of
+> the graphics was not obvious.  It needs to be something meaningful to
+> be portable or provide a good abstraction.
 
-This is an ugly patch, but I think its needed for a while to clean out
-the abusers, then it can be updated to not be so noisy.
+The units as we understand better are MBPS. They are something that 
+drivers can calculate before they make a request and request the 
+Bandwidth and the burst bandwidth to the arbiter.
 
+What do you think about vector data inputs?
 
---mgross
-
---Signed-off-by: mark gross <markgross@thegnar.org>
-
-
-
->From fb713f95b83ea3744c31917cfd019bf3e32349b3 Mon Sep 17 00:00:00 2001
-From: markgross <markgross@thegnar.org>
-Date: Tue, 8 Jun 2010 06:22:01 -0700
-Subject: [PATCH] check and complain about abuse of the api to avoid panics
-
----
- kernel/pm_qos_params.c |   12 +++++++++++-
- 1 files changed, 11 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-index f1d3d23..4bded27 100644
---- a/kernel/pm_qos_params.c
-+++ b/kernel/pm_qos_params.c
-@@ -212,7 +212,7 @@ void pm_qos_add_request(struct pm_qos_request_list *dep,
- 	int new_value;
- 
- 	if (pm_qos_request_active(dep))
--		return;
-+		return; /* already in the list */
- 
- 	if (value == PM_QOS_DEFAULT_VALUE)
- 		new_value = o->default_value;
-@@ -244,6 +244,11 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
- 
- 	if (!pm_qos_req) /*guard against callers passing in null */
- 		return;
-+	if (!pm_qos_request_active(pm_qos_req)) {
-+		WARN(true, "pm_qos: update to an unregistered request");
-+		dump_stack();
-+		return;
-+	}
- 
- 	o = pm_qos_array[pm_qos_req->pm_qos_class];
- 
-@@ -279,6 +284,11 @@ void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req)
- 	if (pm_qos_req == NULL)
- 		return;
- 		/* silent return to keep pcm code cleaner */
-+	if (!pm_qos_request_active(pm_qos_req)) {
-+		WARN(true, "pm_qos: removal an unregistered request");
-+		dump_stack();
-+		return;
-+	}
- 
- 	o = pm_qos_array[pm_qos_req->pm_qos_class];
- 	update_target(o, &pm_qos_req->list, 1);
--- 
-1.6.3.3
-
-
-
- 
+Thanks,
+Praveen
