@@ -1,23 +1,14 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: suspend blockers & Android integration
-Date: Mon, 7 Jun 2010 17:45:01 -0700
-Message-ID: <AANLkTilpubFRXeNgrzShBnL_EvHu9cKW8lAETIiTgMtr__44002.1989903927$1275958106$gmane$org@mail.gmail.com>
-References: <AANLkTikGDSzaENwg_0BAtsYf3ulGd_6sGPR30WsvUxMi@mail.gmail.com>
-	<alpine.LFD.2.00.1006050246350.2933@localhost.localdomain>
-	<AANLkTikU21xF49Z-_Lnrq7U7buNmqw_gyEEST8LuN24z@mail.gmail.com>
-	<alpine.LFD.2.00.1006051736040.2933@localhost.localdomain>
-	<AANLkTinD39rI47innPbGz1Gi8PsXV5HqkmaQuJ70oQ63@mail.gmail.com>
-	<alpine.LFD.2.00.1006052348200.2933@localhost.localdomain>
-	<AANLkTikmWDHYJ8wWF2cZapbkHHjV09R39I37yvQXFmor@mail.gmail.com>
-	<alpine.LFD.2.00.1006060148470.2933@localhost.localdomain>
-	<AANLkTikdM79nmARagK9gLveMWEiT6rlk44UELes1k8Ch@mail.gmail.com>
-	<alpine.LFD.2.00.1006061202351.2933@localhost.localdomain>
-	<20100606144322.GC21016@count0.beaverton.ibm.com>
+Date: Mon, 7 Jun 2010 17:57:19 -0700
+Message-ID: <AANLkTimf_nVcOZGi0x6nDtaO-FMVSLPrxDtOzQwKTB5P__21887.8908934586$1275958775$gmane$org@mail.gmail.com>
+References: <20100606152946.GA11351@srcf.ucam.org>
+	<Pine.LNX.4.44L0.1006061956510.4894-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100606144322.GC21016@count0.beaverton.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.1006061956510.4894-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,44 +18,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: tytso@mit.edu, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Felipe Balbi <felipe.balbi@nokia.com>, Arjan van de Ven <arjan@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: tytso@mit.edu, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>, Florian Mickler <florian@mickler.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jun 6, 2010 at 7:43 AM, Matt Helsley <matthltc@us.ibm.com> wrote:
-> On Sun, Jun 06, 2010 at 12:36:21PM +0200, Thomas Gleixner wrote:
->> On Sat, 5 Jun 2010, Arve Hj=F8nnev=E5g wrote:
+On Sun, Jun 6, 2010 at 5:01 PM, Alan Stern <stern@rowland.harvard.edu> wrot=
+e:
+> On Sun, 6 Jun 2010, Matthew Garrett wrote:
 >
-> <snip>
+>> The difference between idle-based suspend and opportunistic suspend is
+>> that the former will continue to wake up for timers and will never be
+>> entered if something is using CPU, whereas the latter will be entered
+>> whenever no suspend blocks are held. The problem with opportunistic
+>> suspend is that you might make the decision to suspend simultaneusly
+>> with a wakeup event being received. Suspend blocks facilitate
+>> synchronisation between the kernel and userspace to ensure that all such
+>> events have been consumed and handld appropriately.
 >
->> > events like input event go though a single thread in our system
->> > process, while other events like network packets (which are also
->> > wakeup events) goes directly to the app.
+> Remember that suspend takes place in several phases, the first of which
+> is to freeze tasks. =A0The phases can be controlled individually by the
+> process carrying out a suspend, and there's nothing to prevent you from
+> stopping after the freezer phase. =A0Devices won't get powered down, but
+> Android uses aggressive runtime power management for its devices
+> anyway.
 >
-> If you want to wake up cgroup-frozen tasks for these fds perhaps your
-> framework can fcnt(fd, F_SETOWN, <p[g]id>) to send SIGIO to a
-
-How does the framework get all the fds that are used by the apps for
-wakeup events?
-
-> userspace-suspend-blocker thread/process/process group. When IO comes in,=
- the
-> suspend blocker is signalled which then unfreezes the cgroup of the frozen
-> untrusted task. SIGIO works on pipes, fifos, sockets, ttys, and ptys --
-> many of which are precisely the kinds of things that would connect [trust=
-ed
-> and untrusted] apps. Notably absent (last I checked): inotify fds, signal=
-fd,
-> timerfd, eventfd, filesystem fds and likely more.
->
-> Incidentally, this is just to show that it's not impossible to implement
-> "wakeups" for cgroup-frozen tasks in userspace.
->
-> Cheers,
-> =A0 =A0 =A0 =A0-Matt Helsley
+> If you do this then the synchronization can be carried out entirely
+> from userspace, with no need for kernel modifications such as suspend
+> blockers. And since Android can reach essentially the same low-power
+> state from idle as from suspend, it appears that they really don't need
+> any kernel changes at all.
 >
 
-
+I don't think this is true. If you stop after the freezer phase you
+still need all the suspend blockers that are held until user-space
+consumes an event, otherwise it never gets consumed since user-space
+is frozen.
 
 -- =
 
