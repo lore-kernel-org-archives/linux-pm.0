@@ -1,14 +1,16 @@
-From: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: [RFC] pm_qos: reimplement using plists
-Date: Tue, 08 Jun 2010 11:52:16 -0400
-Message-ID: <1276012336.4344.7.camel@mulgrave.site>
-References: <1275760688.7227.10.camel@mulgrave.site>
-	<20100606213954.GD8610@gvim.org>  <20100608133157.GA26668@gvim.org>
+From: Mike Chan <mike@android.com>
+Subject: Re: PM QoS dynamic resource manager
+Date: Tue, 8 Jun 2010 11:58:33 -0700
+Message-ID: <AANLkTinGBvZm870CsjocsCV1SmQ-FCCbJLtKWR1juB1Q@mail.gmail.com>
+References: <alpine.DEB.2.00.1005211533530.25765@pchidamb-lnx.qualcomm.com>
+	<20100525145223.GA4974@gvim.org>
+	<AANLkTikLgu2c1GPE3glHLlaznOM59SVeCj2NHzDjyjZR@mail.gmail.com>
+	<20100608033333.GA23066@gvim.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100608133157.GA26668@gvim.org>
+In-Reply-To: <20100608033333.GA23066@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,143 +21,95 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: markgross@thegnar.org
-Cc: Linux PM <linux-pm@lists.linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org, mark gross <640e9920@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2010-06-08 at 06:31 -0700, mark gross wrote:
-> On Sun, Jun 06, 2010 at 02:39:54PM -0700, mark gross wrote:
-> > On Sat, Jun 05, 2010 at 12:58:08PM -0500, James Bottomley wrote:
-> > > A lot of the pm_qos extremal value handling is really duplicating what a
-> > > priority ordered list does, just in a less efficient fashion.  Simply
-> > > redoing the implementation in terms of a plist gets rid of a lot of this
-> > > junk (although there are several other strange things that could do with
-> > > tidying up, like pm_qos_request_list has to carry the pm_qos_class with
-> > > every node, simply because it doesn't get passed in to
-> > > pm_qos_update_request even though every caller knows full well what
-> > > parameter it's updating).
-> > > 
-> > > I think this redo is a win independent of android, so we should do
-> > > something like this now.
-> > > 
-> > > There is one nasty that should probably be fixed in plists not open
-> > > coded here: plist_first gives the highest priority value, but there's no
-> > > corresponding API to give the lowest (even though you can get it from
-> > > the head.nodes_list.prev) ... if the sched people are OK, I'll correct
-> > > this with the final patch set.
-> > > 
-> > > James
-> > > 
-> > > ---
-> > > 
-> > >  kernel/pm_qos_params.c |  152 +++++++++++++++++++++++-------------------------
-> > >  1 files changed, 73 insertions(+), 79 deletions(-)
-> > > 
-> > > diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> > > index f42d3f7..241fa79 100644
-> > > --- a/kernel/pm_qos_params.c
-> > > +++ b/kernel/pm_qos_params.c
-> > > @@ -30,6 +30,7 @@
-> > >  /*#define DEBUG*/
-> 
-> snip
-> 
-> > > @@ -251,22 +244,27 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
-> > >  	unsigned long flags;
-> > >  	int pending_update = 0;
-> > >  	s32 temp;
-> > > +	struct pm_qos_object *o;
-> > >  
-> > > -	if (pm_qos_req) { /*guard against callers passing in null */
-> > > -		spin_lock_irqsave(&pm_qos_lock, flags);
-> > > -		if (new_value == PM_QOS_DEFAULT_VALUE)
-> > > -			temp = pm_qos_array[pm_qos_req->pm_qos_class]->default_value;
-> > > -		else
-> > > -			temp = new_value;
-> > > +	if (!pm_qos_req) /*guard against callers passing in null */
-> > > +		return;
-> > 
-> > need a better test to see if the pm_qos_req is in the plist or not as we
-> > move to a caller allocated design.
-> >
-> 
-> snip  
-> > >  void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req)
-> > >  {
-> > > -	unsigned long flags;
-> > > -	int qos_class;
-> > > +	struct pm_qos_object *o;
-> > >  
-> > >  	if (pm_qos_req == NULL)
-> > >  		return;
-> > >  		/* silent return to keep pcm code cleaner */
-> > 
-> > need a way to tell if the request is in the list or not so we don't
-> > crater removing a plist node that isn't in the list.
-> > 
-> snip
-> >
-> 
-> I found that e1000e will panic on rmmod because of it attempting to
-> removing of a pm_qos request that it never added.
-> 
-> This is an ugly patch, but I think its needed for a while to clean out
-> the abusers, then it can be updated to not be so noisy.
-> 
-> 
+On Mon, Jun 7, 2010 at 8:33 PM, mark gross <640e9920@gmail.com> wrote:
+> On Mon, Jun 07, 2010 at 05:18:25PM -0700, Mike Chan wrote:
+>> On Tue, May 25, 2010 at 7:52 AM, mark gross <640e9920@gmail.com> wrote:
+>> > On Fri, May 21, 2010 at 03:37:39PM -0600, Chidambaram, Praveen wrote:
+>> >> Hi,
+>> >>
+>> >> I am looking for some extensible features for PM QoS. Specifically,
+>> >> dynamic runtime parameters that my architecture could define at
+>> >> runtime and the drivers can make use of.
+>> >>
+>> >> What are the plans in this regard?
+>> >
+>> > we've talked about it a few times in the past.
+>> >
+>> > It's come down to how do we prevent platform independent code from
+>> > depending on such platform independent dynamic prarams in a sane manne=
+r.
+>> >
+>> > I've alway's pushed for coming up with more reasonable abstractions th=
+at
+>> > could be re-used and adding them (like the bus thing) as opposed to
+>> > having drivers make / use new parrameters dynamically.
+>> >
+>>
+>> Would it be possible to elaborate on the bus resource ideas you had? I
+>> couldn't find anything in the archives. Sounds like a similar that we
+>> (Android / embedded world) are having (or will) on multiple platforms
+>> (omap / msm/ tegra).
+>>
+>> -- Mike
+>
+> Its been 5 months since the last time this basic discussion happened,
+> and I'll do some searching for the thread later but;
+>
+> But the bus thing we did post a patch to get the code aurora idea
+> included, but for some reason that patch didn't stick.
+> http://lkml.org/lkml/2010/4/22/213 =A0(I guess the details are in the
+> archives) =A0I'm happy to re-visit it.
+>
+
+Interesting patch, it looks like having a "system wide bus" doesn't
+easily apply to msm and tegra platforms.
+An example of some things I would like to be able to control are i2c
+and memory bus.
+
+I'm tempted to suggest adding two types memory and i2c but I'm not
+sure how future proof this will be given the growing complexity in the
+embedded hardware road-map.
+What about the possibility of registering not one but several buses?
+You could add a bus qos param, with a type enum, or bind to some
+platform_driver or bus_driver
+
+Then there's the issue of having to deal with platform specific buses,
+do you add this type to pm qos with only one user? Or have some
+platform bus types defined somewhere. The generic code of min / max
+for resource X can be useful so everyone doesn't spin their own
+resource framework in their own architecture.
+
+-- Mike
+
+> WRT ideas I've had, that went unsupported (well, rejected) by the domain
+> experts at that time, where around throttling the GPU and / or it access
+> to the memory it used.
+>
+> Most of the ideas where around clock throttling of buses and memory.
+> Things like throttling the graphics BW to whatever memory it was using,
+> or clocking down the GPU when idle. =A0My thought was a pm_qos hint could
+> be handy, but I was assured that modern hardware auto-throttled and
+> didn't need this. =A0So I dropped it. =A0(At that time I also thought it
+> would apply to HD audio to allow better DAC throttling. =A0I also dropped
+> this one too for the same reasons.)
+>
+> One problem was what type of units to use when talking about the qos of
+> the graphics was not obvious. =A0It needs to be something meaningful to
+> be portable or provide a good abstraction.
+>
+> Bus bandwidth in KBS is ok for somethings but its not meaningful to an
+> application that wants to request a specific minimum graphics
+> performance. =A0As I type this I suppose a bandwidth for blts per
+> second would work for the current Android graphics but for os stacks
+> that more fully use the GL engine or games running on android I don't
+> think that its a meaningful metric for describing GPU performance
+> throttling.
+>
+> what ideas do you have? =A0I would like to seem more pm_qos users.
+>
 > --mgross
-> 
-> --Signed-off-by: mark gross <markgross@thegnar.org>
-> 
-> 
-> 
-> >From fb713f95b83ea3744c31917cfd019bf3e32349b3 Mon Sep 17 00:00:00 2001
-> From: markgross <markgross@thegnar.org>
-> Date: Tue, 8 Jun 2010 06:22:01 -0700
-> Subject: [PATCH] check and complain about abuse of the api to avoid panics
-> 
-> ---
->  kernel/pm_qos_params.c |   12 +++++++++++-
->  1 files changed, 11 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> index f1d3d23..4bded27 100644
-> --- a/kernel/pm_qos_params.c
-> +++ b/kernel/pm_qos_params.c
-> @@ -212,7 +212,7 @@ void pm_qos_add_request(struct pm_qos_request_list *dep,
->  	int new_value;
->  
->  	if (pm_qos_request_active(dep))
-> -		return;
-> +		return; /* already in the list */
->  
->  	if (value == PM_QOS_DEFAULT_VALUE)
->  		new_value = o->default_value;
-> @@ -244,6 +244,11 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
->  
->  	if (!pm_qos_req) /*guard against callers passing in null */
->  		return;
-> +	if (!pm_qos_request_active(pm_qos_req)) {
-> +		WARN(true, "pm_qos: update to an unregistered request");
-> +		dump_stack();
-> +		return;
-> +	}
->  
->  	o = pm_qos_array[pm_qos_req->pm_qos_class];
->  
-> @@ -279,6 +284,11 @@ void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req)
->  	if (pm_qos_req == NULL)
->  		return;
->  		/* silent return to keep pcm code cleaner */
-> +	if (!pm_qos_request_active(pm_qos_req)) {
-> +		WARN(true, "pm_qos: removal an unregistered request");
-> +		dump_stack();
-> +		return;
-> +	}
-
-Yes, that would more or less reflect current functionality.  If it's the
-intention of the API to silently ignore update and removal of
-unregistered requests, then it should probably be done silently,
-though ... otherwise we'll start to make noise where previously there
-was none.
-
-James
+>
+>
