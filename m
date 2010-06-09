@@ -1,19 +1,17 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH 2/2] pm_qos: make update_request callable
- from interrupt context
-Date: Wed, 9 Jun 2010 18:48:50 +0200
-Message-ID: <20100609184850.2779b784__4743.27725028179$1276102194$gmane$org@schatten.dmk.lab>
-References: <1276074915-26879-1-git-send-email-florian@mickler.org>
-	<1276074915-26879-2-git-send-email-florian@mickler.org>
-	<alpine.LFD.2.00.1006091146010.2933@localhost.localdomain>
-	<1276087119.4343.52.camel@mulgrave.site>
-	<20100609172714.7438db1f@schatten.dmk.lab>
-	<1276097546.4343.219.camel@mulgrave.site>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: [PATCH v4] pm_qos: make update_request non blocking
+Date: Wed, 09 Jun 2010 13:05:49 -0400
+Message-ID: <1276103149.4343.350.camel__48178.7456236363$1276103209$gmane$org@mulgrave.site>
+References: <1276097381-3982-1-git-send-email-florian@mickler.org>
+	<1276097832.4343.223.camel@mulgrave.site>
+	<20100609180033.39d5b499@schatten.dmk.lab>
+	<1276099645.4343.257.camel@mulgrave.site>
+	<20100609183204.1eeca494@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276097546.4343.219.camel@mulgrave.site>
+In-Reply-To: <20100609183204.1eeca494@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,60 +21,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: markgross@thegnar.org, Frederic Weisbecker <fweisbec@gmail.com>, Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Jonathan@smtp1.linux-foundation.org, pm list <linux-pm@lists.linux-foundation.org>
+To: Florian Mickler <florian@mickler.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, Frederic Weisbecker <fweisbec@gmail.com>, markgross@thegnar.org, linville@tuxdriver.com, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 09 Jun 2010 11:32:26 -0400
-James Bottomley <James.Bottomley@suse.de> wrote:
- 
-> > > @@ -302,8 +330,12 @@ int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
-> > >  {
-> > >  	int retval;
-> > >  
-> > > +	/* someone tried to register a blocking notifier to a
-> > > +	 * qos object that only supports atomic ones */
-> > > +	BUG_ON(!pm_qos_array[pm_qos_class]->blocking_notifiers);
-> > > +
-> > >  	retval = blocking_notifier_chain_register(
-> > > -			pm_qos_array[pm_qos_class]->notifiers, notifier);
-> > > +			pm_qos_array[pm_qos_class]->blocking_notifiers, notifier);
-> > >  
-> > >  	return retval;
-> > >  }
+On Wed, 2010-06-09 at 18:32 +0200, Florian Mickler wrote:
+> On Wed, 09 Jun 2010 12:07:25 -0400
+> James Bottomley <James.Bottomley@suse.de> wrote:
+> 
+> > On Wed, 2010-06-09 at 18:00 +0200, Florian Mickler wrote:
+> > > On Wed, 09 Jun 2010 11:37:12 -0400
+> > > James Bottomley <James.Bottomley@suse.de> wrote:
+> > > 
+> > > 
+> > > > This still isn't resilient against two successive calls to update.  If
+> > > > the second one gets to schedule_work() before the work of the first one
+> > > > has finished, you'll corrupt the workqueue.
+> > > 
+> > > Sorry, I don't see it. Can you elaborate?
+> > > 
+> > > In "run_workqueue(" we do a list_del_init() which resets the
+> > > list-pointers of the workitem and only after that reset the
+> > > WORK_STRUCT_PENDING member of said structure. 
+> > > 
+> > > 
+> > > schedule_work does a queue_work_on which does a test_and_set_bit on
+> > > the WORK_STRUCT_PENDING member of the work and only queues the work
+> > > via list_add_tail in insert_work afterwards.
+> > > 
+> > > Where is my think'o? Or was this fixed while you didn't look?
+> > > 
+> > > So what _can_ happen, is that we miss a new notfication while the old
+> > > notification is still in the queue. But I don't think this is a problem.
 > > 
-> > Why not:
+> > OK, so the expression of the race is that the latest notification gets
+> > lost.  If something is tracking values, you'd really like to lose the
+> > previous one (which is now irrelevant) not the latest one.  The point is
+> > there's still a race.
 > > 
-> > 	retval = 1;
-> > 	if(pm_qos_array[pm_qos_class]->blocking_notifiers) 
-> > 		retval = blocking_notifier_chain_register(..
-> > 	else 
-> > 		WARN();
-> > 	return retval;
+> > James
 > > 
-> > That way, the offending programmer could eventually fix it, without
-> > having to reboot? 
 > 
-> Because there are no current users that will trip the BUG_ON ... and we
-> want to keep it that way.  Code doesn't go into the kernel if it BUGs on
-> boot.
+> Yeah, but for blocking notification it is not that bad. 
+
+The network latency notifier uses the value to recalculate something.
+Losing the last value will mean it's using stale data.
+
+> Doesn't using blocking notifiers mean that you need to always check
+> via pm_qos_request() to get the latest value anyways? I.e. the
+> notification is just a hint, that something changed so you can act on
+> it. But if you act (may it because of notification or because of
+> something other) then you have to get the current value anyways.
+
+Well, the network notifier assumes the notifier value is the latest ... 
+
+> I think there are 2 schemes of operation. The one which needs
+> atomic notifiers and where it would be bad if we lost any notification
+> and the other where it is just a way of doing some work in a timely
+> fashion but it isn't critical that it is done right away.
 > 
-> The point about failing hard for an abuse of a kernel API isn't to trap
-> current abusers because you fix those before you add it.  It's to
-> prevent future abuse.  If your kernel BUGs under test you tend to fix
-> the code, so it becomes impossible for anyone to add any users which
-> abuse the API in this fashion.
-> 
-> James
-> 
+> pm_qos was the second kind of operation up until now, because the
+> notifiers may have got scheduled away while blocked. 
 
-There are actually people who ignore WARN()ings when submitting code??
+Actually, no ... the current API preserves ordering semantics.  If a
+notifier sleeps and another change comes along, the update callsite will
+sleep on the notifier's mutex ... so ordering is always preserved.
 
-....thinking about it... Yes, that may be possible. 
+> I think we should allow for both kinds of operations simultaneous. But
+> as I got that pushback to the change from John Linville as I touched his
+> code, I got a bit reluctant and just have done the simple variant. :)
 
-Cheers,
-Flo
+The code I proposed does ... but it relies on the callsite supplying the
+necessary context.
 
---
-Only two things are infinite, the universe and human stupidity, and I'm
-not sure about the former. Albert Einstein 
+James
