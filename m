@@ -1,18 +1,13 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH v4] pm_qos: make update_request non blocking
-Date: Wed, 9 Jun 2010 19:31:32 +0200
-Message-ID: <20100609193132.2ac313b0__15062.9413933077$1276104850$gmane$org@schatten.dmk.lab>
-References: <1276097381-3982-1-git-send-email-florian@mickler.org>
-	<1276097832.4343.223.camel@mulgrave.site>
-	<20100609180033.39d5b499@schatten.dmk.lab>
-	<1276099645.4343.257.camel@mulgrave.site>
-	<20100609183204.1eeca494@schatten.dmk.lab>
-	<1276103149.4343.350.camel@mulgrave.site>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Timekeeping issue on aggressive suspend/resume
+Date: Wed, 9 Jun 2010 22:22:29 +0200 (CEST)
+Message-ID: <alpine.LFD.2.00.1006092206020.2933__650.320007889782$1276115119$gmane$org@localhost.localdomain>
+References: <AANLkTinIO5a1EeK6Ej2ljkuyL9zv06OMfbyiZBaxTQTd@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276103149.4343.350.camel@mulgrave.site>
+In-Reply-To: <AANLkTinIO5a1EeK6Ej2ljkuyL9zv06OMfbyiZBaxTQTd@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,63 +17,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Jonathan Corbet <corbet@lwn.net>, Frederic Weisbecker <fweisbec@gmail.com>, markgross@thegnar.org, linville@tuxdriver.com, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Suresh Rajashekara <suresh.raj+linuxomap@gmail.com>
+Cc: John Stultz <johnstul@us.ibm.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 09 Jun 2010 13:05:49 -0400
-James Bottomley <James.Bottomley@suse.de> wrote:
+On Wed, 9 Jun 2010, Suresh Rajashekara wrote:
 
-> On Wed, 2010-06-09 at 18:32 +0200, Florian Mickler wrote:
-> > Yeah, but for blocking notification it is not that bad. 
+> I have an application (running on 2.6.29-omap1) which puts an OMAP1
+> system to suspend aggressively. The system wakes up every 4 seconds
+> and stays awake for about 35 milliseconds and sleeps again for another
+> 4 seconds. This design is to save power on a battery operated device.
 > 
-> The network latency notifier uses the value to recalculate something.
-> Losing the last value will mean it's using stale data.
-
-Ah. Indeed. I didn't do my homework there. That sucks. (Btw, I know why
-you said "recalculate _something_" :) )
-
-It even fetches via pm_qos_get_request() in the middle. But obviously
-if we do not report the last value but the value before that, then this
-is bloed. 
-
-We could fix it though for all current (two) in tree users by passing
-always a negative value in to the notification. Then the network
-notifier fetches the value via pm_qos_get_request(); 
-And cpuidle ignores the value anyways. 
-
-> > 
-> > pm_qos was the second kind of operation up until now, because the
-> > notifiers may have got scheduled away while blocked. 
+> This aggressive suspend resume action seems like creating an issue to
+> other applications in the system waiting for some timeout to happen
+> (especially an application which is waiting using the mq_timedreceive
+> and is supposed to timeout every 30 seconds. It seems to wake up every
+> 90 seconds). Seems like the timekeeping is not happening properly in
+> side the kernel.
 > 
-> Actually, no ... the current API preserves ordering semantics.  If a
-> notifier sleeps and another change comes along, the update callsite will
-> sleep on the notifier's mutex ... so ordering is always preserved.
-
-Ah! Ordering. Something I didn't thought of. But still no luck for me. 
-
+> If the suspend duration is changed from 4 second to 1 second, then
+> things work somewhat better. On reducing it to 0.5 second (which was
+> our earlier design on 2.6.16-rc3), the problem seems to disappear.
 > 
-> > I think we should allow for both kinds of operations simultaneous. But
-> > as I got that pushback to the change from John Linville as I touched his
-> > code, I got a bit reluctant and just have done the simple variant. :)
-> 
-> The code I proposed does ... but it relies on the callsite supplying the
-> necessary context.
-> 
+> Is this expected?
 
-Yes, I know. It's just that if we want to have both kind's of notifiers
-we need to use a atomic_notifier chain for that constraint. And then we
-have the issue that John objected to, namely pushing all the
-schedule_work code to each of the API-Users. 
+Yes, that's caused by the fact that suspend (via sys/power/state )
+freezes the kernel internal timers and the user space visible timers
+which are based on CLOCK_MONOTONIC or jiffies (like mq_timedreceive on
+your .29 kernel). Only CLOCK_REALTIME based timers are kept correct as
+we have to align to the wall clock time.
 
-Anyway, I think your patch is better in that it is correct.
+The reason for this is, that otherwise almost all timers are expired
+when we resume and we get a thundering herd of apps and kernel
+facilities due to firing timeouts.
 
-It just doesn't solve the issue for constraints where drivers want to
-update from interrupt but notifiers want to be able to work from
-process context. 
+Another problem is that jiffies can wrap around on 32 bit systems
+during a long suspend though I don't think that's a real world problem
+as it takes between 49 to 497 days of suspend depending on the HZ
+setting. SO for your usecase it would not matter.
 
-> James
-> 
+I'm more concerned about code getting surprised by firing timers as
+the kernel has this behaviour for a long time now.
 
-Cheers,
-Flo
+Though we could change that conditionally - the default would still be
+the freeze of jiffies and CLOCK_MONOTONIC for historical compability.
+
+There will be probably some accounting issues. uptime, cpu time of the
+suspend task and some others, but that needs to be found out.
+
+Thanks,
+
+	tglx
