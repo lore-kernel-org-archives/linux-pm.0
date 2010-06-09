@@ -1,14 +1,12 @@
 From: florian@mickler.org
-Subject: [PATCH 2/2] pm_qos: make update_request callable from
-	interrupt context
-Date: Wed,  9 Jun 2010 11:15:14 +0200
-Message-ID: <1276074915-26879-2-git-send-email-florian__17516.4550696083$1276074991$gmane$org@mickler.org>
-References: <1276074915-26879-1-git-send-email-florian@mickler.org>
+Subject: [RFC PATCH 1/2] mac80211: make max_network_latency
+	notifier atomic safe
+Date: Wed,  9 Jun 2010 11:15:13 +0200
+Message-ID: <1276074915-26879-1-git-send-email-florian__30238.6640142233$1276074992$gmane$org@mickler.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276074915-26879-1-git-send-email-florian@mickler.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,179 +17,107 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: pm list <linux-pm@lists.linux-foundation.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, Frederic Weisbecker <fweisbec@gmail.com>, markgross@thegnar.org, linux-kernel@vger.kernel.org, Florian Mickler <florian@mickler.org>, james.bottomley@suse.de, Thomas Gleixner <tglx@linutronix.de>
+Cc: Rui Paulo <rpaulo@gmail.com>, markgross@thegnar.org, Jouni Malinen <j@w1.fi>, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org, Florian Mickler <florian@mickler.org>, Kalle Valo <kalle.valo@nokia.com>, james.bottomley@suse.de, Johannes Berg <johannes@sipsolutions.net>, Javier Cardona <javier@cozybit.com>, "David S. Miller" <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
-The pm_qos framework has to guarantee atomic notifications so that
-drivers can request and release constraints at all times while no races
-occur.
+In order to have the pm_qos framework be callable from interrupt
+context, all listeners have to also be callable in that context.
 
-In order to avoid implementing a secondary notification chain in which
-listeners might sleep, we demand that every listener implements it's
-notification so that it can run in interrupt context. The listener is in
-a better position to know if races are harmful or not.
+This patch schedules the update of the latency value via
+ieee80211_max_network_latency() for execution on
+the global workqueue (using schedule_work()).
+
+As there was no synchronization/locking between the listener and the
+caller of pm_qos_update_request before, there should be no new races
+uncovered by this. Although the timing probably changes.
 
 Signed-off-by: Florian Mickler <florian@mickler.org>
 ---
- kernel/pm_qos_params.c |   50 ++++++++++++++++++++++++------------------------
- 1 files changed, 25 insertions(+), 25 deletions(-)
 
-diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-index f42d3f7..d918605 100644
---- a/kernel/pm_qos_params.c
-+++ b/kernel/pm_qos_params.c
-@@ -63,7 +63,7 @@ static s32 min_compare(s32 v1, s32 v2);
+This needs some networking expertise to check the reasoning above and
+judge the implementation.
+
+ net/mac80211/ieee80211_i.h |    4 +++-
+ net/mac80211/main.c        |    5 +++--
+ net/mac80211/mlme.c        |   20 +++++++++++++++-----
+ 3 files changed, 21 insertions(+), 8 deletions(-)
+
+diff --git a/net/mac80211/ieee80211_i.h b/net/mac80211/ieee80211_i.h
+index 1a9e2da..3d2155a 100644
+--- a/net/mac80211/ieee80211_i.h
++++ b/net/mac80211/ieee80211_i.h
+@@ -851,6 +851,7 @@ struct ieee80211_local {
+ 	struct work_struct dynamic_ps_disable_work;
+ 	struct timer_list dynamic_ps_timer;
+ 	struct notifier_block network_latency_notifier;
++	struct work_struct network_latency_notifier_work;
  
- struct pm_qos_object {
- 	struct pm_qos_request_list requests;
--	struct blocking_notifier_head *notifiers;
-+	struct atomic_notifier_head *notifiers;
- 	struct miscdevice pm_qos_power_miscdev;
- 	char *name;
- 	s32 default_value;
-@@ -72,7 +72,7 @@ struct pm_qos_object {
- };
+ 	int user_power_level; /* in dBm */
+ 	int power_constr_level; /* in dBm */
+@@ -994,8 +995,9 @@ ieee80211_rx_result ieee80211_sta_rx_mgmt(struct ieee80211_sub_if_data *sdata,
+ void ieee80211_send_pspoll(struct ieee80211_local *local,
+ 			   struct ieee80211_sub_if_data *sdata);
+ void ieee80211_recalc_ps(struct ieee80211_local *local, s32 latency);
+-int ieee80211_max_network_latency(struct notifier_block *nb,
++int ieee80211_max_network_latency_notification(struct notifier_block *nb,
+ 				  unsigned long data, void *dummy);
++void ieee80211_max_network_latency(struct work_struct *w);
+ void ieee80211_sta_process_chanswitch(struct ieee80211_sub_if_data *sdata,
+ 				      struct ieee80211_channel_sw_ie *sw_elem,
+ 				      struct ieee80211_bss *bss,
+diff --git a/net/mac80211/main.c b/net/mac80211/main.c
+index 22a384d..5cded3a 100644
+--- a/net/mac80211/main.c
++++ b/net/mac80211/main.c
+@@ -607,9 +607,10 @@ int ieee80211_register_hw(struct ieee80211_hw *hw)
+ 	rtnl_unlock();
  
- static struct pm_qos_object null_pm_qos;
--static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
-+static ATOMIC_NOTIFIER_HEAD(cpu_dma_lat_notifier);
- static struct pm_qos_object cpu_dma_pm_qos = {
- 	.requests = {LIST_HEAD_INIT(cpu_dma_pm_qos.requests.list)},
- 	.notifiers = &cpu_dma_lat_notifier,
-@@ -82,7 +82,7 @@ static struct pm_qos_object cpu_dma_pm_qos = {
- 	.comparitor = min_compare
- };
- 
--static BLOCKING_NOTIFIER_HEAD(network_lat_notifier);
-+static ATOMIC_NOTIFIER_HEAD(network_lat_notifier);
- static struct pm_qos_object network_lat_pm_qos = {
- 	.requests = {LIST_HEAD_INIT(network_lat_pm_qos.requests.list)},
- 	.notifiers = &network_lat_notifier,
-@@ -93,7 +93,7 @@ static struct pm_qos_object network_lat_pm_qos = {
- };
- 
- 
--static BLOCKING_NOTIFIER_HEAD(network_throughput_notifier);
-+static ATOMIC_NOTIFIER_HEAD(network_throughput_notifier);
- static struct pm_qos_object network_throughput_pm_qos = {
- 	.requests = {LIST_HEAD_INIT(network_throughput_pm_qos.requests.list)},
- 	.notifiers = &network_throughput_notifier,
-@@ -103,7 +103,6 @@ static struct pm_qos_object network_throughput_pm_qos = {
- 	.comparitor = max_compare
- };
- 
+ 	ieee80211_led_init(local);
 -
- static struct pm_qos_object *pm_qos_array[] = {
- 	&null_pm_qos,
- 	&cpu_dma_pm_qos,
-@@ -135,35 +134,30 @@ static s32 min_compare(s32 v1, s32 v2)
- 	return min(v1, v2);
++	INIT_WORK(&local->network_latency_notifier_work,
++			ieee80211_max_network_latency);
+ 	local->network_latency_notifier.notifier_call =
+-		ieee80211_max_network_latency;
++		ieee80211_max_network_latency_notification;
+ 	result = pm_qos_add_notifier(PM_QOS_NETWORK_LATENCY,
+ 				     &local->network_latency_notifier);
+ 
+diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
+index 0839c4e..feb6134 100644
+--- a/net/mac80211/mlme.c
++++ b/net/mac80211/mlme.c
+@@ -1953,17 +1953,27 @@ void ieee80211_mlme_notify_scan_completed(struct ieee80211_local *local)
+ 	rcu_read_unlock();
  }
  
--
- static void update_target(int pm_qos_class)
+-int ieee80211_max_network_latency(struct notifier_block *nb,
+-				  unsigned long data, void *dummy)
++void ieee80211_max_network_latency(struct work_struct *w)
  {
- 	s32 extreme_value;
-+	struct pm_qos_object *obj = pm_qos_array[pm_qos_class];
- 	struct pm_qos_request_list *node;
- 	unsigned long flags;
- 	int call_notifier = 0;
+-	s32 latency_usec = (s32) data;
++	s32 latency_usec = (s32) atomic_long_read(&w->data);
+ 	struct ieee80211_local *local =
+-		container_of(nb, struct ieee80211_local,
+-			     network_latency_notifier);
++		container_of(w, struct ieee80211_local,
++			     network_latency_notifier_work);
  
- 	spin_lock_irqsave(&pm_qos_lock, flags);
--	extreme_value = pm_qos_array[pm_qos_class]->default_value;
--	list_for_each_entry(node,
--			&pm_qos_array[pm_qos_class]->requests.list, list) {
--		extreme_value = pm_qos_array[pm_qos_class]->comparitor(
--				extreme_value, node->value);
-+	extreme_value = obj->default_value;
-+	list_for_each_entry(node, &obj->requests.list, list) {
-+		extreme_value = obj->comparitor(extreme_value, node->value);
- 	}
--	if (atomic_read(&pm_qos_array[pm_qos_class]->target_value) !=
--			extreme_value) {
-+	if (atomic_read(&obj->target_value) != extreme_value) {
- 		call_notifier = 1;
--		atomic_set(&pm_qos_array[pm_qos_class]->target_value,
--				extreme_value);
-+		atomic_set(&obj->target_value, extreme_value);
- 		pr_debug(KERN_ERR "new target for qos %d is %d\n", pm_qos_class,
--			atomic_read(&pm_qos_array[pm_qos_class]->target_value));
-+			atomic_read(&obj->target_value));
- 	}
- 	spin_unlock_irqrestore(&pm_qos_lock, flags);
- 
- 	if (call_notifier)
--		blocking_notifier_call_chain(
--				pm_qos_array[pm_qos_class]->notifiers,
--					(unsigned long) extreme_value, NULL);
-+		atomic_notifier_call_chain(obj->notifiers,
-+				(unsigned long) extreme_value, NULL);
- }
- 
- static int register_pm_qos_misc(struct pm_qos_object *qos)
-@@ -272,6 +266,7 @@ EXPORT_SYMBOL_GPL(pm_qos_update_request);
- 
- /**
-  * pm_qos_remove_request - modifies an existing qos request
-+ *
-  * @pm_qos_req: handle to request list element
-  *
-  * Will remove pm qos request from the list of requests and
-@@ -298,18 +293,21 @@ EXPORT_SYMBOL_GPL(pm_qos_remove_request);
- 
- /**
-  * pm_qos_add_notifier - sets notification entry for changes to target value
-+ *
-+ * Note: The notifier has to be callable from interrupt context.
-+ *
-  * @pm_qos_class: identifies which qos target changes should be notified.
-  * @notifier: notifier block managed by caller.
-  *
-- * will register the notifier into a notification chain that gets called
-+ * Will register the notifier into a notification chain that gets called
-  * upon changes to the pm_qos_class target value.
-  */
- int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
- {
- 	int retval;
- 
--	retval = blocking_notifier_chain_register(
--			pm_qos_array[pm_qos_class]->notifiers, notifier);
-+	retval = atomic_notifier_chain_register(
-+		pm_qos_array[pm_qos_class]->notifiers, notifier);
- 
- 	return retval;
- }
-@@ -317,18 +315,19 @@ EXPORT_SYMBOL_GPL(pm_qos_add_notifier);
- 
- /**
-  * pm_qos_remove_notifier - deletes notification entry from chain.
-+ *
-  * @pm_qos_class: identifies which qos target changes are notified.
-  * @notifier: notifier block to be removed.
-  *
-- * will remove the notifier from the notification chain that gets called
-+ * Will remove the notifier from the notification chain that gets called
-  * upon changes to the pm_qos_class target value.
-  */
- int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
- {
- 	int retval;
- 
--	retval = blocking_notifier_chain_unregister(
--			pm_qos_array[pm_qos_class]->notifiers, notifier);
-+	retval = atomic_notifier_chain_unregister(
-+		pm_qos_array[pm_qos_class]->notifiers, notifier);
- 
- 	return retval;
- }
-@@ -381,6 +380,7 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
- 	} else
- 		return -EINVAL;
- 
+ 	mutex_lock(&local->iflist_mtx);
+ 	ieee80211_recalc_ps(local, latency_usec);
+ 	mutex_unlock(&local->iflist_mtx);
++}
 +
- 	pm_qos_req = (struct pm_qos_request_list *)filp->private_data;
- 	pm_qos_update_request(pm_qos_req, value);
++/* the notifier might be called from interrupt context */
++int ieee80211_max_network_latency_notification(struct notifier_block *nb,
++				  unsigned long data, void *dummy)
++{
++	struct ieee80211_local *local =
++		container_of(nb, struct ieee80211_local,
++				network_latency_notifier);
++	atomic_long_set(&local->network_latency_notifier_work.data, data);
++	schedule_work(&local->network_latency_notifier_work);
  
+ 	return 0;
+ }
 -- 
 1.7.1
