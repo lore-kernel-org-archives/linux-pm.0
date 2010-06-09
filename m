@@ -1,12 +1,14 @@
-From: florian@mickler.org
-Subject: [RFC PATCH 1/2] mac80211: make max_network_latency
-	notifier atomic safe
-Date: Wed,  9 Jun 2010 11:15:13 +0200
-Message-ID: <1276074915-26879-1-git-send-email-florian__30238.6640142233$1276074992$gmane$org@mickler.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.35-rc2-git2: Reported regressions from 2.6.34
+Date: Wed, 9 Jun 2010 11:22:35 +0200
+Message-ID: <201006091122.35304.rjw__30737.8912847073$1276075710$gmane$org@sisk.pl>
+References: <Rlf_Qjov7bG.A.a8F.I8rDMB@chimera>
+	<AANLkTiksbL1qHg7Q0A-6TbX0uUrxra4jctUoIGVk5vnE@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <AANLkTiksbL1qHg7Q0A-6TbX0uUrxra4jctUoIGVk5vnE@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,108 +18,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: pm list <linux-pm@lists.linux-foundation.org>
-Cc: Rui Paulo <rpaulo@gmail.com>, markgross@thegnar.org, Jouni Malinen <j@w1.fi>, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org, Florian Mickler <florian@mickler.org>, Kalle Valo <kalle.valo@nokia.com>, james.bottomley@suse.de, Johannes Berg <johannes@sipsolutions.net>, Javier Cardona <javier@cozybit.com>, "David S. Miller" <davem@davemloft.net>
+To: sedat.dilek@gmail.com
+Cc: DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, dmonakhov@openvz.org, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-In order to have the pm_qos framework be callable from interrupt
-context, all listeners have to also be callable in that context.
+On Wednesday 09 June 2010, Sedat Dilek wrote:
+> The patch from [1] is still missing.
+> 
+>    "cpufreq-call-nr_iowait_cpu-with-disabled-preemption.patch" from
+> Dmitry Monakhoc
+> 
+> Tested-by: Sedat Dilek <sedat.dilek@gmail.com>
+> Tested-by Maciej Rutecki <maciej.rutecki@gmail.com>
+> 
+> I have already reported this issue on LKML [2] and cpufreq ML [3].
+> 
+> - Sedat -
+> 
+> [1] http://www.spinics.net/lists/cpufreq/msg01631.html
+> [2] http://lkml.org/lkml/2010/5/31/77
+> [3] http://www.spinics.net/lists/cpufreq/msg01637.html
 
-This patch schedules the update of the latency value via
-ieee80211_max_network_latency() for execution on
-the global workqueue (using schedule_work()).
+Thanks, added.
 
-As there was no synchronization/locking between the listener and the
-caller of pm_qos_update_request before, there should be no new races
-uncovered by this. Although the timing probably changes.
-
-Signed-off-by: Florian Mickler <florian@mickler.org>
----
-
-This needs some networking expertise to check the reasoning above and
-judge the implementation.
-
- net/mac80211/ieee80211_i.h |    4 +++-
- net/mac80211/main.c        |    5 +++--
- net/mac80211/mlme.c        |   20 +++++++++++++++-----
- 3 files changed, 21 insertions(+), 8 deletions(-)
-
-diff --git a/net/mac80211/ieee80211_i.h b/net/mac80211/ieee80211_i.h
-index 1a9e2da..3d2155a 100644
---- a/net/mac80211/ieee80211_i.h
-+++ b/net/mac80211/ieee80211_i.h
-@@ -851,6 +851,7 @@ struct ieee80211_local {
- 	struct work_struct dynamic_ps_disable_work;
- 	struct timer_list dynamic_ps_timer;
- 	struct notifier_block network_latency_notifier;
-+	struct work_struct network_latency_notifier_work;
- 
- 	int user_power_level; /* in dBm */
- 	int power_constr_level; /* in dBm */
-@@ -994,8 +995,9 @@ ieee80211_rx_result ieee80211_sta_rx_mgmt(struct ieee80211_sub_if_data *sdata,
- void ieee80211_send_pspoll(struct ieee80211_local *local,
- 			   struct ieee80211_sub_if_data *sdata);
- void ieee80211_recalc_ps(struct ieee80211_local *local, s32 latency);
--int ieee80211_max_network_latency(struct notifier_block *nb,
-+int ieee80211_max_network_latency_notification(struct notifier_block *nb,
- 				  unsigned long data, void *dummy);
-+void ieee80211_max_network_latency(struct work_struct *w);
- void ieee80211_sta_process_chanswitch(struct ieee80211_sub_if_data *sdata,
- 				      struct ieee80211_channel_sw_ie *sw_elem,
- 				      struct ieee80211_bss *bss,
-diff --git a/net/mac80211/main.c b/net/mac80211/main.c
-index 22a384d..5cded3a 100644
---- a/net/mac80211/main.c
-+++ b/net/mac80211/main.c
-@@ -607,9 +607,10 @@ int ieee80211_register_hw(struct ieee80211_hw *hw)
- 	rtnl_unlock();
- 
- 	ieee80211_led_init(local);
--
-+	INIT_WORK(&local->network_latency_notifier_work,
-+			ieee80211_max_network_latency);
- 	local->network_latency_notifier.notifier_call =
--		ieee80211_max_network_latency;
-+		ieee80211_max_network_latency_notification;
- 	result = pm_qos_add_notifier(PM_QOS_NETWORK_LATENCY,
- 				     &local->network_latency_notifier);
- 
-diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index 0839c4e..feb6134 100644
---- a/net/mac80211/mlme.c
-+++ b/net/mac80211/mlme.c
-@@ -1953,17 +1953,27 @@ void ieee80211_mlme_notify_scan_completed(struct ieee80211_local *local)
- 	rcu_read_unlock();
- }
- 
--int ieee80211_max_network_latency(struct notifier_block *nb,
--				  unsigned long data, void *dummy)
-+void ieee80211_max_network_latency(struct work_struct *w)
- {
--	s32 latency_usec = (s32) data;
-+	s32 latency_usec = (s32) atomic_long_read(&w->data);
- 	struct ieee80211_local *local =
--		container_of(nb, struct ieee80211_local,
--			     network_latency_notifier);
-+		container_of(w, struct ieee80211_local,
-+			     network_latency_notifier_work);
- 
- 	mutex_lock(&local->iflist_mtx);
- 	ieee80211_recalc_ps(local, latency_usec);
- 	mutex_unlock(&local->iflist_mtx);
-+}
-+
-+/* the notifier might be called from interrupt context */
-+int ieee80211_max_network_latency_notification(struct notifier_block *nb,
-+				  unsigned long data, void *dummy)
-+{
-+	struct ieee80211_local *local =
-+		container_of(nb, struct ieee80211_local,
-+				network_latency_notifier);
-+	atomic_long_set(&local->network_latency_notifier_work.data, data);
-+	schedule_work(&local->network_latency_notifier_work);
- 
- 	return 0;
- }
--- 
-1.7.1
+Rafael
