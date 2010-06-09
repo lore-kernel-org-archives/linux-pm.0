@@ -1,14 +1,17 @@
-From: Jens Axboe <jaxboe@fusionio.com>
-Subject: Re: 2.6.35-rc2-git2: Reported regressions from 2.6.34
-Date: Wed, 09 Jun 2010 09:53:22 +0200
-Message-ID: <4C0F4872.7090909__25896.0687010132$1276095868$gmane$org@fusionio.com>
-References: <Rlf_Qjov7bG.A.a8F.I8rDMB@chimera>
-	<alpine.LFD.2.00.1006081814240.4506@i5.linux-foundation.org>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [PATCH 2/2] pm_qos: make update_request callable
+ from interrupt context
+Date: Wed, 9 Jun 2010 17:27:14 +0200
+Message-ID: <20100609172714.7438db1f__5028.33006107739$1276097395$gmane$org@schatten.dmk.lab>
+References: <1276074915-26879-1-git-send-email-florian@mickler.org>
+	<1276074915-26879-2-git-send-email-florian@mickler.org>
+	<alpine.LFD.2.00.1006091146010.2933@localhost.localdomain>
+	<1276087119.4343.52.camel@mulgrave.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1006081814240.4506@i5.linux-foundation.org>
+In-Reply-To: <1276087119.4343.52.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,72 +21,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Venkatesh Pallipadi <venki@google.com>, DRI <dri-devel@lists.sourceforge.net>, Mauro Carvalho Chehab <mchehab@redhat.com>, Eric Dumazet <eric.dumazet@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>, Carl Worth <cworth@cworth.org>, =?ISO-8859-15?Q?David_H=E4rdeman?= <david@hardeman.nu>, Linux PM List <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Kernel Testers List <kernel-testers@vger.kernel.org>, Dave Airlie <airlied@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Linux SCSI List <linux-scsi@vger.ke>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: markgross@thegnar.org, Frederic Weisbecker <fweisbec@gmail.com>, Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Jonathan@smtp1.linux-foundation.org, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2010-06-09 03:53, Linus Torvalds wrote:
->> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=16129
->> Subject	: BUG: using smp_processor_id() in preemptible [00000000] code: jbd2/sda2
->> Submitter	: Jan Kreuzer <kontrollator@gmx.de>
->> Date		: 2010-06-05 06:15 (4 days old)
-> 
-> This seems to have been introduced by
-> 
-> 	commit 7cbaef9c83e58bbd4bdd534b09052b6c5ec457d5
-> 	Author: Ingo Molnar <mingo@elte.hu>
-> 	Date:   Sat Nov 8 17:05:38 2008 +0100
-> 
-> 	    sched: optimize sched_clock() a bit
->     
-> 	    sched_clock() uses cycles_2_ns() needlessly - which is an irq-disabling
-> 	    variant of __cycles_2_ns().
->     
-> 	    Most of the time sched_clock() is called with irqs disabled already.
-> 	    The few places that call it with irqs enabled need to be updated.
->     
-> 	    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> and this seems to be one of those calling cases that need to be updated.
-> 
-> Ingo? The call trace is:
-> 
-> 	BUG: using smp_processor_id() in preemptible [00000000] code: jbd2/sda2-8/337
-> 	caller is native_sched_clock+0x3c/0x68
-> 	Pid: 337, comm: jbd2/sda2-8 Not tainted 2.6.35-rc1jan+ #4
-> 	Call Trace:
-> 	[<ffffffff812362c5>] debug_smp_processor_id+0xc9/0xe4
-> 	[<ffffffff8101059d>] native_sched_clock+0x3c/0x68
-> 	[<ffffffff8101043d>] sched_clock+0x9/0xd
-> 	[<ffffffff81212d7a>] blk_rq_init+0x97/0xa3
-> 	[<ffffffff81214d71>] get_request+0x1c4/0x2d0
-> 	[<ffffffff81214ea6>] get_request_wait+0x29/0x1a6
-> 	[<ffffffff81215537>] __make_request+0x338/0x45b
-> 	[<ffffffff812147c2>] generic_make_request+0x2bb/0x330
-> 	[<ffffffff81214909>] submit_bio+0xd2/0xef
-> 	[<ffffffff811413cb>] submit_bh+0xf4/0x116
-> 	[<ffffffff81144853>] block_write_full_page_endio+0x89/0x96
-> 	[<ffffffff81144875>] block_write_full_page+0x15/0x17
-> 	[<ffffffff8119b00a>] ext4_writepage+0x356/0x36b
-> 	[<ffffffff810e1f91>] __writepage+0x1a/0x39
-> 	[<ffffffff810e32a6>] write_cache_pages+0x20d/0x346
-> 	[<ffffffff810e3406>] generic_writepages+0x27/0x29
-> 	[<ffffffff811ca279>] journal_submit_data_buffers+0x110/0x17d
-> 	[<ffffffff811ca986>] jbd2_journal_commit_transaction+0x4cb/0x156d
-> 	[<ffffffff811d0cba>] kjournald2+0x147/0x37a
-> 
-> (from the bugzilla thing)
+On Wed, 09 Jun 2010 08:38:39 -0400
+James Bottomley <James.Bottomley@suse.de> wrote:
 
-This should be fixed by commit 28f4197e which was merged on friday.
-
->> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=16122
->> Subject	: 2.6.35-rc1: WARNING at fs/fs-writeback.c:1142 __mark_inode_dirty+0x103/0x170
->> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
->> Date		: 2010-06-04 13:18 (5 days old)
+> On Wed, 2010-06-09 at 11:46 +0200, Thomas Gleixner wrote:
+> > On Wed, 9 Jun 2010, florian@mickler.org wrote:
+> > 
+> > > The pm_qos framework has to guarantee atomic notifications so that
+> > > drivers can request and release constraints at all times while no races
+> > > occur.
+> > > 
+> > > In order to avoid implementing a secondary notification chain in which
+> > > listeners might sleep, we demand that every listener implements it's
+> > > notification so that it can run in interrupt context. The listener is in
+> > > a better position to know if races are harmful or not.
+> > 
+> > That breaks existing notifiers.
 > 
-> Jens?
+> Right ... and we don't want to do that.  Which is why I think we just
+> use blocking notifiers as they are but allow for creating atomic ones
+> which may use atomic update sites.
+> 
+> This is the solution I have in my tree ... it preserves existing
+> semantics because all the update and add sites are in user context, but
+> it allows for notifiers with purely atomic semantics and will do a
+> runtime warn if anyone tries to use them in a blocking fashion (or if
+> anyone adds an atomic update to an existing blocking notifier).
+> 
+> James
 
-Looking into this one.
 
--- 
-Jens Axboe
+> 
+> @@ -302,8 +330,12 @@ int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
+>  {
+>  	int retval;
+>  
+> +	/* someone tried to register a blocking notifier to a
+> +	 * qos object that only supports atomic ones */
+> +	BUG_ON(!pm_qos_array[pm_qos_class]->blocking_notifiers);
+> +
+>  	retval = blocking_notifier_chain_register(
+> -			pm_qos_array[pm_qos_class]->notifiers, notifier);
+> +			pm_qos_array[pm_qos_class]->blocking_notifiers, notifier);
+>  
+>  	return retval;
+>  }
+
+Why not:
+
+	retval = 1;
+	if(pm_qos_array[pm_qos_class]->blocking_notifiers) 
+		retval = blocking_notifier_chain_register(..
+	else 
+		WARN();
+	return retval;
+
+That way, the offending programmer could eventually fix it, without
+having to reboot? 
+
+> @@ -319,15 +351,41 @@ EXPORT_SYMBOL_GPL(pm_qos_add_notifier);
+
+
+The rest looks good to me. I posted another variant using
+schedule_work(). 
+
+As currently no atomic notifications are needed and critical operations
+probably have to check pm_qos_get_request manually anyway to be shure
+this would be an alternative. Whatever. 
+
+Cheers,
+Flo
