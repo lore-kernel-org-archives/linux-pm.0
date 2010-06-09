@@ -1,11 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Wakeup races, PCI, and ACPI
-Date: Wed, 9 Jun 2010 12:04:17 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1006091148320.1728-100000__4138.36771990663$1276099511$gmane$org@iolanthe.rowland.org>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: [PATCH v4] pm_qos: make update_request non blocking
+Date: Wed, 09 Jun 2010 12:07:25 -0400
+Message-ID: <1276099645.4343.257.camel__33500.2517480918$1276099753$gmane$org@mulgrave.site>
+References: <1276097381-3982-1-git-send-email-florian@mickler.org>
+	<1276097832.4343.223.camel@mulgrave.site>
+	<20100609180033.39d5b499@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20100609180033.39d5b499@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,26 +19,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-acpi@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Florian Mickler <florian@mickler.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, Frederic Weisbecker <fweisbec@gmail.com>, markgross@thegnar.org, linville@tuxdriver.com, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael:
+On Wed, 2010-06-09 at 18:00 +0200, Florian Mickler wrote:
+> On Wed, 09 Jun 2010 11:37:12 -0400
+> James Bottomley <James.Bottomley@suse.de> wrote:
+> 
+> 
+> > This still isn't resilient against two successive calls to update.  If
+> > the second one gets to schedule_work() before the work of the first one
+> > has finished, you'll corrupt the workqueue.
+> 
+> Sorry, I don't see it. Can you elaborate?
+> 
+> In "run_workqueue(" we do a list_del_init() which resets the
+> list-pointers of the workitem and only after that reset the
+> WORK_STRUCT_PENDING member of said structure. 
+> 
+> 
+> schedule_work does a queue_work_on which does a test_and_set_bit on
+> the WORK_STRUCT_PENDING member of the work and only queues the work
+> via list_add_tail in insert_work afterwards.
+> 
+> Where is my think'o? Or was this fixed while you didn't look?
+> 
+> So what _can_ happen, is that we miss a new notfication while the old
+> notification is still in the queue. But I don't think this is a problem.
 
-I see that the kacpi_notify_wq thread isn't freezable.  This means we
-are subject to a race during system sleep transitions.  If a PCI device
-is already runtime-suspended, then a PME# wakeup request could cause
-kacpi_notify_wq to attempt a runtime resume at the same time as the
-regular suspend or freeze method is running.  (The same is true for 
-non-PCI devices and ACPI-platform-specific wakeup requests.)
+OK, so the expression of the race is that the latest notification gets
+lost.  If something is tracking values, you'd really like to lose the
+previous one (which is now irrelevant) not the latest one.  The point is
+there's still a race.
 
-Can kacpi_notify_wq be made freezable?  (Are ACPI wakeup notifications 
-handled by any other workqueues?)  If not, should it call 
-pm_request_resume() instead of pm_runtime_resume()?
-
-Also, can this be handled in a way that doesn't end up losing wakeup 
-events?  For quite some time, I've been thinking that any attempt to 
-add a resume action to the pm workqueue should abort an ongoing system 
-sleep, if device_may_wakeup() is true for the device in question.
-
-Alan Stern
+James
