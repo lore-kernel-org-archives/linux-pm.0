@@ -1,20 +1,30 @@
-From: mark gross <640e9920@gmail.com>
-Subject: Re: PM QoS dynamic resource manager
-Date: Tue, 8 Jun 2010 20:05:25 -0700
-Message-ID: <20100609030525.GD26668@gvim.org>
-References: <alpine.DEB.2.00.1005211533530.25765@pchidamb-lnx.qualcomm.com>
-	<20100525145223.GA4974@gvim.org>
-	<AANLkTikLgu2c1GPE3glHLlaznOM59SVeCj2NHzDjyjZR@mail.gmail.com>
-	<20100608033333.GA23066@gvim.org>
-	<AANLkTinGBvZm870CsjocsCV1SmQ-FCCbJLtKWR1juB1Q@mail.gmail.com>
-	<4C0ECC38.2000003@codeaurora.org>
-Reply-To: markgross@thegnar.org
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: suspend blockers & Android integration
+Date: Tue, 8 Jun 2010 20:46:20 -0700 (PDT)
+Message-ID: <alpine.LFD.2.00.1006082042020.4506@i5.linux-foundation.org>
+References: <20100603193045.GA7188@elte.hu>
+	<AANLkTinQyzzeF-NOAjrAqqQXqKjFJhx85nI4uyBGRtWd@mail.gmail.com>
+	<1275653210.27810.39762.camel@twins>
+	<AANLkTinyjBa0KYfFz3_EFbC65hoQFwFINlTDYjCe-wM3@mail.gmail.com>
+	<1275731653.27810.41078.camel@twins>
+	<20100605092851.6ee15f13@infradead.org>
+	<AANLkTimEwznq9c_8lkuBMxEQ-42rdvpZEqA9Y71Cu-qC@mail.gmail.com>
+	<AANLkTimKknOurmCffOpHjc1FjrP2MKf10pBwEEbLJPg_@mail.gmail.com>
+	<AANLkTil1NCX91bWhpXHtC88Opr29mNjdhXD9RXQ6DI0y@mail.gmail.com>
+	<AANLkTin1Za3GvfIKbcZdx6TzjIHzCvsg5uaY_Vk4nJIh@mail.gmail.com>
+	<AANLkTilQ1k78dDCYadOa1Wiyjm2nsBcRpxwdpGvYcf8z@mail.gmail.com>
+	<AANLkTin7oM3gVwHbIHWqYV8yeC6bbQ4q2jDDxAgz3DwQ@mail.gmail.com>
+	<alpine.DEB.2.01.1006060305060.17462@asgard.lang.hm>
+	<AANLkTinW-X5m85rUcqP-lrEdfBikVclJWgqiWDkpxnAc@mail.gmail.com>
+	<20100606124949.539fa636@schatten.dmk.lab>
+	<alpine.DEB.2.01.1006060410050.17462@asgard.lang.hm>
+	<20100607141624.3d004db2@schatten.dmk.lab>
+	<alpine.DEB.2.01.1006081759150.17462@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4C0ECC38.2000003@codeaurora.org>
+In-Reply-To: <alpine.DEB.2.01.1006081759150.17462@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,52 +34,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Bryan Huntsman <bryanh@codeaurora.org>
-Cc: linux-pm@lists.linux-foundation.org, mark gross <640e9920@gmail.com>, markgross@thegnar.org
+To: david@lang.hm
+Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 08, 2010 at 04:03:20PM -0700, Bryan Huntsman wrote:
-> >>http://lkml.org/lkml/2010/4/22/213  (I guess the details are in the
-> >>archives)  I'm happy to re-visit it.
-> >>
-> >
-> >Interesting patch, it looks like having a "system wide bus" doesn't
-> >easily apply to msm and tegra platforms.
-> >An example of some things I would like to be able to control are i2c
-> >and memory bus.
-> >
-> >I'm tempted to suggest adding two types memory and i2c but I'm not
-> >sure how future proof this will be given the growing complexity in the
-> >embedded hardware road-map.
-> >What about the possibility of registering not one but several buses?
-> >You could add a bus qos param, with a type enum, or bind to some
-> >platform_driver or bus_driver
-> >
-> >Then there's the issue of having to deal with platform specific buses,
-> >do you add this type to pm qos with only one user? Or have some
-> >platform bus types defined somewhere. The generic code of min / max
-> >for resource X can be useful so everyone doesn't spin their own
-> >resource framework in their own architecture.
-> >
-> >-- Mike
+
+
+On Tue, 8 Jun 2010, david@lang.hm wrote:
 > 
-> Mike, one idea I'm exploring is having platform-specific busses with
-> QoS constraints specified via runtime_pm as part of the LDM.  Adding
-> dynamic class creation within pm_qos, or a type enum as you suggest,
-> would work.  However, I think this kind of behavior would fit nicely
-> within runtime_pm.
->
+> having suspend blockers inside the kernel adds significant complexity, it's
+> worth it only if the complexity buys you enough. In this case the question is
+> if the suspend blockers would extend the sleep time enough more to matter. As
+> per my other e-mail, this is an area with rapidly diminishing returns as the
+> sleep times get longer.
 
-Something like that is what Kevin Hilman was thinking too.  It would
-bring a qos concept to the LDM for each bus driver object.  Picking what
-qos parameters to use (I recommend latency and bandwidth) and how "local"
-the parameters effect of these bus_qos interfaces are.  
+Well, the counter-argument that nobody seems to have brought up is that 
+suspend blockers exist, are real code, and end up being shipped in a lot 
+of machines.
 
-They are not the same as the more global system wide pm_qos parameters,
-and they would be unlikely things ever exposed to usermode.
+That's a _big_ argument in favour of them. Certainly much bigger than 
+arguing against them based on some complexity-arguments for an alternative 
+that hasn't seen any testing at all.
 
-Yes I think something like this is inevitable and will happen.  But we
-need some good applications to roll out the idea with.  (I think.)
+IOW, I would seriously hope that this discussion was more about real code 
+that _exists_ and does what people need. It seems to have degenerated into 
+something else.
 
---mgross
- 
+Because in the end, "code talks, bullshit walks". People can complain and 
+suggest alternatives all they want, but you can't just argue. At some 
+point you need to show the code that actually solves the problem.
+
+				Linus
