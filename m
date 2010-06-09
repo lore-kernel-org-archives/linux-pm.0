@@ -1,15 +1,18 @@
 From: Florian Mickler <florian@mickler.org>
-Subject: Re: [RFC] pm_qos: reimplement using plists
-Date: Wed, 9 Jun 2010 08:38:09 +0200
-Message-ID: <20100609083809.0581fbc3@schatten.dmk.lab>
-References: <1275760688.7227.10.camel@mulgrave.site>
-	<20100606213954.GD8610@gvim.org>
-	<1275879906.7227.582.camel@mulgrave.site>
+Subject: Re: [PATCH v3] pm_qos: make update_request callable from
+ interrupt context
+Date: Wed, 9 Jun 2010 08:54:27 +0200
+Message-ID: <20100609085427.3a819e35@schatten.dmk.lab>
+References: <1275920448.2849.31.camel@mulgrave.site>
+	<1275924869-3811-1-git-send-email-florian@mickler.org>
+	<1275927581.13772.10.camel@mulgrave.site>
+	<20100608041340.GA23473@gvim.org>
+	<1275998764.9953.1.camel@mulgrave.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275879906.7227.582.camel@mulgrave.site>
+In-Reply-To: <1275998764.9953.1.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,39 +23,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: James Bottomley <James.Bottomley@suse.de>
-Cc: Linux PM <linux-pm@lists.linux-foundation.org>, markgross@thegnar.org
+Cc: pm list <linux-pm@lists.linux-foundation.org>, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 06 Jun 2010 23:05:06 -0400
+On Tue, 08 Jun 2010 08:06:04 -0400
 James Bottomley <James.Bottomley@suse.de> wrote:
 
-> On Sun, 2010-06-06 at 14:39 -0700, mark gross wrote:
-> > > @@ -251,22 +244,27 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
-> > >  	unsigned long flags;
-> > >  	int pending_update = 0;
-> > >  	s32 temp;
-> > > +	struct pm_qos_object *o;
-> > >  
-> > > -	if (pm_qos_req) { /*guard against callers passing in null */
-> > > -		spin_lock_irqsave(&pm_qos_lock, flags);
-> > > -		if (new_value == PM_QOS_DEFAULT_VALUE)
-> > > -			temp = pm_qos_array[pm_qos_req->pm_qos_class]->default_value;
-> > > -		else
-> > > -			temp = new_value;
-> > > +	if (!pm_qos_req) /*guard against callers passing in null */
-> > > +		return;
-> > 
-> > need a better test to see if the pm_qos_req is in the plist or not as we
-> > move to a caller allocated design.
+> On Mon, 2010-06-07 at 21:13 -0700, mark gross wrote: 
+> > On Mon, Jun 07, 2010 at 12:19:41PM -0400, James Bottomley wrote:
+> > > On Mon, 2010-06-07 at 17:34 +0200, florian@mickler.org wrote:
+> > > > We use the spinlocked notifier chain variant (struct
+> > > > atomic_notifier_head) and add an __might_sleep() to the chain for
+> > > > constraints which have non-atomic notifiers. This way we catch all
+> > > > interrupt-context-update-sites at runtime.
+> > > 
+> > > Actually, I'm afraid we can't really call blocking notifiers through the
+> > > atomic chain because we might end up with a contested chain call and a
+> > > huge busy wait in the spinlock (especially if one of the notifiers is
+> > > sleeping).
+> > > 
+> > > I think the pm_qos_object still needs the two notifier chains ... it's
+> > > just that when set up, one must either fill an atomic or a blocking
+> > > chain (leaving the other NULL).  We use the NULL to check to decide what
+> > > chain to add notifiers to, and if the blocking chain is null, we refuse
+> > > to add blocking notifiers (with a BUG). If the blocking chain is
+> > > non-null, we register the might_sleep() notifier (actually, given the
+> > > argument mismatch, you'll have to wrapper that).
+> > > 
+> > > James
 > 
-> This is a guard against callers passing in NULL ... which is probably
-> unnecessary ... I think oopsing on a NULL deref would be just fine for
-> that, since it would represent a programming error.
+> > Can't we just requiere that all notifier callbacks be atomic context
+> > safe and not fart around with 2 classes of notifiers?
+> 
+> Not unless someone rewrites the network notifier: it uses mutexes and is
+> clearly assuming user context.  Perhaps they could simply be replaced
+> with spinlocks but someone who understands the net code would would have
+> to advise on this.
+> 
+> James
+> 
 
-That is bad in the general case because you then depend on
-mmap_min_addr to be sufficiently large.
+What I thought about is to introduce a "scheduled_notifier_block" for
+using sleeping notifiers on atomic_notifier_chain. That notifier block
+would not execute the given function but use schedule_work() to
+schedule it. I will try to shake up an implementation for that. 
 
-I would advocate for not making the attack surface that big.
+Either way, my preferred approach would be to just use
+schedule_work in the network notifier. 
+I think that would be safe: Currently there is no synchronization
+between pm_qos_update_request caller and the ieee listener. So an
+schedule_work would change the timing, but not introduce an race that
+wasn't there before. execute_in_process_context might not be a good
+idea, because the spinlock will be held in case it's called from user
+context.
+
+
+I will do a patch for scheduling the network notifier and present it to
+the relevant people, methinks.
 
 Cheers,
 Flo
+
+p.s.: if my assumptions don't hold and it get's shot down by the
+network people, I think James' two-queues-one-used solution is
+sensible. 
