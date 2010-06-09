@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: 2.6.35-rc2-git2: Reported regressions from 2.6.34
-Date: Wed, 9 Jun 2010 10:55:38 +0200
-Message-ID: <201006091055.38462.rjw__20975.4224204973$1276073736$gmane$org@sisk.pl>
+Date: Wed, 9 Jun 2010 11:00:32 +0200
+Message-ID: <201006091100.32494.rjw__13339.2983269461$1276074071$gmane$org@sisk.pl>
 References: <Rlf_Qjov7bG.A.a8F.I8rDMB@chimera>
 	<alpine.LFD.2.00.1006081814240.4506@i5.linux-foundation.org>
-	<4C0F4872.7090909@fusionio.com>
+	<4C0EFBC1.5090401@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C0F4872.7090909@fusionio.com>
+In-Reply-To: <4C0EFBC1.5090401@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,65 +19,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jens Axboe <jaxboe@fusionio.com>
-Cc: Venkatesh Pallipadi <venki@google.com>, DRI <dri-devel@lists.sourceforge.net>, Mauro Carvalho Chehab <mchehab@redhat.com>, Eric Dumazet <eric.dumazet@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, David@smtp1.linux-foundation.org, Linux SCSI List <linux-scsi@vger.kernel.org>, Eric Anholt <eric@anholt.net>, Carl Worth <cworth@cworth.org>, =?iso-8859-15?q?H=E4rdeman?= <david@hardeman.nu>, Network Development <netdev@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, Kernel Testers List <kernel-testers@vger.ke>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Venkatesh Pallipadi <venki@google.com>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Eric Dumazet <eric.dumazet@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Network Development <netdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, David@smtp1.linux-foundation.org, Eric Anholt <eric@anholt.net>, Carl Worth <cworth@cworth.org>, =?iso-8859-15?q?H=E4rdeman?= <david@hardeman.nu>, Jens Axboe <jaxboe@fusionio.com>, Linux Wireless List <linux-wireless@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, Kernel Testers List <kernel-testers@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 09 June 2010, Jens Axboe wrote:
-> On 2010-06-09 03:53, Linus Torvalds wrote:
-> >> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=16129
-> >> Subject	: BUG: using smp_processor_id() in preemptible [00000000] code: jbd2/sda2
-> >> Submitter	: Jan Kreuzer <kontrollator@gmx.de>
-> >> Date		: 2010-06-05 06:15 (4 days old)
-> > 
-> > This seems to have been introduced by
-> > 
-> > 	commit 7cbaef9c83e58bbd4bdd534b09052b6c5ec457d5
-> > 	Author: Ingo Molnar <mingo@elte.hu>
-> > 	Date:   Sat Nov 8 17:05:38 2008 +0100
-> > 
-> > 	    sched: optimize sched_clock() a bit
-> >     
-> > 	    sched_clock() uses cycles_2_ns() needlessly - which is an irq-disabling
-> > 	    variant of __cycles_2_ns().
-> >     
-> > 	    Most of the time sched_clock() is called with irqs disabled already.
-> > 	    The few places that call it with irqs enabled need to be updated.
-> >     
-> > 	    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > 
-> > and this seems to be one of those calling cases that need to be updated.
-> > 
-> > Ingo? The call trace is:
-> > 
-> > 	BUG: using smp_processor_id() in preemptible [00000000] code: jbd2/sda2-8/337
-> > 	caller is native_sched_clock+0x3c/0x68
-> > 	Pid: 337, comm: jbd2/sda2-8 Not tainted 2.6.35-rc1jan+ #4
-> > 	Call Trace:
-> > 	[<ffffffff812362c5>] debug_smp_processor_id+0xc9/0xe4
-> > 	[<ffffffff8101059d>] native_sched_clock+0x3c/0x68
-> > 	[<ffffffff8101043d>] sched_clock+0x9/0xd
-> > 	[<ffffffff81212d7a>] blk_rq_init+0x97/0xa3
-> > 	[<ffffffff81214d71>] get_request+0x1c4/0x2d0
-> > 	[<ffffffff81214ea6>] get_request_wait+0x29/0x1a6
-> > 	[<ffffffff81215537>] __make_request+0x338/0x45b
-> > 	[<ffffffff812147c2>] generic_make_request+0x2bb/0x330
-> > 	[<ffffffff81214909>] submit_bio+0xd2/0xef
-> > 	[<ffffffff811413cb>] submit_bh+0xf4/0x116
-> > 	[<ffffffff81144853>] block_write_full_page_endio+0x89/0x96
-> > 	[<ffffffff81144875>] block_write_full_page+0x15/0x17
-> > 	[<ffffffff8119b00a>] ext4_writepage+0x356/0x36b
-> > 	[<ffffffff810e1f91>] __writepage+0x1a/0x39
-> > 	[<ffffffff810e32a6>] write_cache_pages+0x20d/0x346
-> > 	[<ffffffff810e3406>] generic_writepages+0x27/0x29
-> > 	[<ffffffff811ca279>] journal_submit_data_buffers+0x110/0x17d
-> > 	[<ffffffff811ca986>] jbd2_journal_commit_transaction+0x4cb/0x156d
-> > 	[<ffffffff811d0cba>] kjournald2+0x147/0x37a
-> > 
-> > (from the bugzilla thing)
-> 
-> This should be fixed by commit 28f4197e which was merged on friday.
+On Wednesday 09 June 2010, Mauro Carvalho Chehab wrote:
+> Em 08-06-2010 22:53, Linus Torvalds escreveu:
+> =
 
-Thanks, closed.
+> > =
 
+> >> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D16037
+> >> Subject	: NULL Pointer dereference in __ir_input_register/budget_ci_at=
+tach
+> >> Submitter	: Sean Finney <seanius@debian.org>
+> >> Date		: 2010-05-23 19:52 (17 days old)
+> > =
+
+> > Perhaps related to commit 13c24497086418010bf4f76378bcae241d7f59cd?
+> > =
+
+> > David H=E4rdeman, Mauro Carvalho Chehab added to cc.
+> =
+
+> This patch probably solves the issue:
+> =
+
+> http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dco=
+mmitdiff;h=3D84b14f181a36eea6591779156ef356f8d198bbfd
+> =
+
+> The patch were already applied upstream. I've already asked the reporter =
+to test it, via BZ.
+
+Confirmed fixed, so closing.
+
+Thanks,
 Rafael
