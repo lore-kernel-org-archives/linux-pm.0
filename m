@@ -1,16 +1,17 @@
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Florian Mickler <florian@mickler.org>
 Subject: Re: [RFC PATCH 1/2] mac80211: make max_network_latency
  notifier atomic safe
-Date: Wed, 09 Jun 2010 12:42:08 +0200
-Message-ID: <1276080128.14580.5.camel__9314.46792460537$1276080193$gmane$org@jlt3.sipsolutions.net>
+Date: Wed, 9 Jun 2010 14:16:43 +0200
+Message-ID: <20100609141643.14e9aedc__27537.6676152975$1276085992$gmane$org@schatten.dmk.lab>
 References: <1276074915-26879-1-git-send-email-florian@mickler.org>
 	<1276076287.3727.15.camel@jlt3.sipsolutions.net>
 	<20100609122050.1dd18132@schatten.dmk.lab>
+	<1276080128.14580.5.camel@jlt3.sipsolutions.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100609122050.1dd18132@schatten.dmk.lab>
+In-Reply-To: <1276080128.14580.5.camel@jlt3.sipsolutions.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,64 +21,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
+To: Johannes Berg <johannes@sipsolutions.net>
 Cc: Rui Paulo <rpaulo@gmail.com>, Javier@smtp1.linux-foundation.org, markgross@thegnar.org, Jouni Malinen <j@w1.fi>, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org, Kalle Valo <kalle.valo@nokia.com>, james.bottomley@suse.de, Thomas Gleixner <tglx@linutronix.de>, pm list <linux-pm@lists.linux-foundation.org>, Cardona <javier@cozybit.com>, "David S. Miller" <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2010-06-09 at 12:20 +0200, Florian Mickler wrote:
-> On Wed, 09 Jun 2010 11:38:07 +0200
-> Johannes Berg <johannes@sipsolutions.net> wrote:
+On Wed, 09 Jun 2010 12:42:08 +0200
+Johannes Berg <johannes@sipsolutions.net> wrote:
+
+> On Wed, 2010-06-09 at 12:20 +0200, Florian Mickler wrote:
 > 
-> > On Wed, 2010-06-09 at 11:15 +0200, florian@mickler.org wrote:
-> > > In order to have the pm_qos framework be callable from interrupt
-> > > context, all listeners have to also be callable in that context.
-> > 
-> > That makes no sense at all. Why add work structs _everywhere_ in the
-> > callees and make the API harder to use and easy to get wrong completely,
-> > instead of just adding a single work struct that will be queued from the
-> > caller and dealing with the locking complexity etc. just once.
+> > A third possibility would be to make it dependent on the
+> > type of the constraint, if blocking notifiers are allowed or not. 
+> > But that would sacrifice API consistency (update_request for one
+> > constraint is allowed to be called in interrupt context and
+> > update_request for another would be not).
+> 
+> I don't see what's wrong with the fourth possibility: Allow calling
+> pm_qos_update_request() from atomic context, but change _it_ to schedule
+> off a work that calls the blocking notifier chain. That avoids the
+> complexity in notify-API users since they have process context, and also
+> in request-API users since they can call it from any context.
+> 
+> johannes
 
+That was also my first idea, but then I thought about qos and thought
+atomic notification are necessary.
+Do you see any value in having atomic
+notification? 
 
-> There are only two listeners at the moment. I suspect that most future
-> uses of the framework need to be atomic, as the driver that
-> requests a specific quality of service probably doesn't want to get into
-> races with the provider of that service(listener). So i suspected the
-> network listener to be the special case.  
+I have the following situation before my eyes:
 
-Well even if it doesn't _want_ to race with it, a lot of drivers like
-USB drivers etc. can't really do anything without deferring to a
-workqueue.
+	Driver A gets an interrupt and needs (to service that
+	interrupt) the cpu to guarantee a latency of X because the
+	device is a bit icky.
 
-And what's the race anyway? You get one update, defer the work, and if
-another update happens inbetween you just read the new value when the
-work finally runs -- and you end up doing it only once instead of twice.
-That doesn't seem like a problem.
+Now, in that situation, if we don't immediately (without scheduling in
+between) notify the system to be in that latency-mode the driver won't
+function properly. Is this a realistic scene?
 
-> The race between service-provider and qos-requester for non-atomic
-> contextes is already there, isn't it? so, locking complexity shouldn't
-> be worse than before.
+At the moment we only have process context notification and only 2
+listeners.
 
-I have no idea how it works now? I thought you can't request an update
-from an atomic context.
+I think providing for atomic as well as "relaxed" notification could be
+useful. 
 
-However, if you request a QoS value, it is fundamentally that -- a
-request. There's no guarantee as to when or how it will be honoured.
+If atomic notification is deemed unnecessary, I have no
+problems to just use schedule_work() in update request.
+Anyway, it is probably best to split this. I.e. first make
+update_request callable from atomic contexts with doing the
+schedule_work in update_request and then
+as an add on provide for constraints_objects with atomic notifications.
 
-> But my first approach to this is seen here:
-> https://lists.linux-foundation.org/pipermail/linux-pm/2010-June/026902.html
-
-Icky too.
-
-> A third possibility would be to make it dependent on the
-> type of the constraint, if blocking notifiers are allowed or not. 
-> But that would sacrifice API consistency (update_request for one
-> constraint is allowed to be called in interrupt context and
-> update_request for another would be not).
-
-I don't see what's wrong with the fourth possibility: Allow calling
-pm_qos_update_request() from atomic context, but change _it_ to schedule
-off a work that calls the blocking notifier chain. That avoids the
-complexity in notify-API users since they have process context, and also
-in request-API users since they can call it from any context.
-
-johannes
+Flo
