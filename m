@@ -1,19 +1,14 @@
 From: Florian Mickler <florian@mickler.org>
-Subject: Re: [RFC PATCH 1/2] mac80211: make max_network_latency
- notifier atomic safe
-Date: Wed, 9 Jun 2010 17:37:40 +0200
-Message-ID: <20100609173740.3851c6a5__27049.2641990588$1276098107$gmane$org@schatten.dmk.lab>
-References: <1276074915-26879-1-git-send-email-florian@mickler.org>
-	<1276076287.3727.15.camel@jlt3.sipsolutions.net>
-	<20100609122050.1dd18132@schatten.dmk.lab>
-	<1276080128.14580.5.camel@jlt3.sipsolutions.net>
-	<20100609141643.14e9aedc@schatten.dmk.lab>
-	<1276086425.14580.14.camel@jlt3.sipsolutions.net>
+Subject: Re: [PATCH v4] pm_qos: make update_request non blocking
+Date: Wed, 9 Jun 2010 18:00:33 +0200
+Message-ID: <20100609180033.39d5b499__28304.0639864796$1276099302$gmane$org@schatten.dmk.lab>
+References: <1276097381-3982-1-git-send-email-florian@mickler.org>
+	<1276097832.4343.223.camel@mulgrave.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276086425.14580.14.camel@jlt3.sipsolutions.net>
+In-Reply-To: <1276097832.4343.223.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,52 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Rui Paulo <rpaulo@gmail.com>, Javier@smtp1.linux-foundation.org, markgross@thegnar.org, Jouni Malinen <j@w1.fi>, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org, Kalle Valo <kalle.valo@nokia.com>, james.bottomley@suse.de, Thomas Gleixner <tglx@linutronix.de>, pm list <linux-pm@lists.linux-foundation.org>, Cardona <javier@cozybit.com>, "David S. Miller" <davem@davemloft.net>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: Jonathan Corbet <corbet@lwn.net>, Frederic Weisbecker <fweisbec@gmail.com>, markgross@thegnar.org, linville@tuxdriver.com, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 09 Jun 2010 14:27:05 +0200
-Johannes Berg <johannes@sipsolutions.net> wrote:
+On Wed, 09 Jun 2010 11:37:12 -0400
+James Bottomley <James.Bottomley@suse.de> wrote:
 
-> On Wed, 2010-06-09 at 14:16 +0200, Florian Mickler wrote:
-> 
-> > That was also my first idea, but then I thought about qos and thought
-> > atomic notification are necessary.
-> > Do you see any value in having atomic notification? 
-> > 
-> > I have the following situation before my eyes:
-> > 
-> > 	Driver A gets an interrupt and needs (to service that
-> > 	interrupt) the cpu to guarantee a latency of X because the
-> > 	device is a bit icky.
-> > 
-> > Now, in that situation, if we don't immediately (without scheduling in
-> > between) notify the system to be in that latency-mode the driver won't
-> > function properly. Is this a realistic scene?
-> > 
-> > At the moment we only have process context notification and only 2
-> > listeners.
-> > 
-> > I think providing for atomic as well as "relaxed" notification could be
-> > useful. 
-> > 
-> > If atomic notification is deemed unnecessary, I have no
-> > problems to just use schedule_work() in update request.
-> > Anyway, it is probably best to split this. I.e. first make
-> > update_request callable from atomic contexts with doing the
-> > schedule_work in update_request and then
-> > as an add on provide for constraints_objects with atomic notifications.
-> 
-> Well I remember http://thread.gmane.org/gmane.linux.kernel/979935 where
-> Mark renamed things to "request" which seems to imply to me more of a
-> "please do this" than "I NEED IT NOW!!!!!".
-> 
-> johannes
 
-Yes. I just posted a version which uses schedule_work().
-Just FYI, James has also posted his version which uses either a blocking
-or an atomic notifier chain.
-http://article.gmane.org/gmane.linux.kernel/996813
+> This still isn't resilient against two successive calls to update.  If
+> the second one gets to schedule_work() before the work of the first one
+> has finished, you'll corrupt the workqueue.
+
+Sorry, I don't see it. Can you elaborate?
+
+In "run_workqueue(" we do a list_del_init() which resets the
+list-pointers of the workitem and only after that reset the
+WORK_STRUCT_PENDING member of said structure. 
+
+
+schedule_work does a queue_work_on which does a test_and_set_bit on
+the WORK_STRUCT_PENDING member of the work and only queues the work
+via list_add_tail in insert_work afterwards.
+
+Where is my think'o? Or was this fixed while you didn't look?
+
+So what _can_ happen, is that we miss a new notfication while the old
+notification is still in the queue. But I don't think this is a problem.
 
 Cheers,
 Flo
