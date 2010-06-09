@@ -1,18 +1,13 @@
 From: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: [PATCH 2/2] pm_qos: make update_request callable
- from interrupt context
-Date: Wed, 09 Jun 2010 11:32:26 -0400
-Message-ID: <1276097546.4343.219.camel__44831.1637192548$1276097739$gmane$org@mulgrave.site>
-References: <1276074915-26879-1-git-send-email-florian@mickler.org>
-	<1276074915-26879-2-git-send-email-florian@mickler.org>
-	<alpine.LFD.2.00.1006091146010.2933@localhost.localdomain>
-	<1276087119.4343.52.camel@mulgrave.site>
-	<20100609172714.7438db1f@schatten.dmk.lab>
+Subject: Re: [PATCH v4] pm_qos: make update_request non blocking
+Date: Wed, 09 Jun 2010 11:37:12 -0400
+Message-ID: <1276097832.4343.223.camel__37639.1528793194$1276097972$gmane$org@mulgrave.site>
+References: <1276097381-3982-1-git-send-email-florian@mickler.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100609172714.7438db1f@schatten.dmk.lab>
+In-Reply-To: <1276097381-3982-1-git-send-email-florian@mickler.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,77 +17,146 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, Frederic Weisbecker <fweisbec@gmail.com>, markgross@thegnar.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, pm list <linux-pm@lists.linux-foundation.org>
+To: florian@mickler.org
+Cc: Jonathan Corbet <corbet@lwn.net>, Frederic Weisbecker <fweisbec@gmail.com>, markgross@thegnar.org, linville@tuxdriver.com, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2010-06-09 at 17:27 +0200, Florian Mickler wrote:
-> On Wed, 09 Jun 2010 08:38:39 -0400
-> James Bottomley <James.Bottomley@suse.de> wrote:
+On Wed, 2010-06-09 at 17:29 +0200, florian@mickler.org wrote:
+> In order to allow drivers to use pm_qos_update_request from interrupt
+> context we call the notifiers via schedule_work().
 > 
-> > On Wed, 2010-06-09 at 11:46 +0200, Thomas Gleixner wrote:
-> > > On Wed, 9 Jun 2010, florian@mickler.org wrote:
-> > > 
-> > > > The pm_qos framework has to guarantee atomic notifications so that
-> > > > drivers can request and release constraints at all times while no races
-> > > > occur.
-> > > > 
-> > > > In order to avoid implementing a secondary notification chain in which
-> > > > listeners might sleep, we demand that every listener implements it's
-> > > > notification so that it can run in interrupt context. The listener is in
-> > > > a better position to know if races are harmful or not.
-> > > 
-> > > That breaks existing notifiers.
-> > 
-> > Right ... and we don't want to do that.  Which is why I think we just
-> > use blocking notifiers as they are but allow for creating atomic ones
-> > which may use atomic update sites.
-> > 
-> > This is the solution I have in my tree ... it preserves existing
-> > semantics because all the update and add sites are in user context, but
-> > it allows for notifiers with purely atomic semantics and will do a
-> > runtime warn if anyone tries to use them in a blocking fashion (or if
-> > anyone adds an atomic update to an existing blocking notifier).
-> > 
-> > James
+> Signed-off-by: Florian Mickler <florian@mickler.org>
+> ---
 > 
+> Well, this would be the schedule_work() alternative. 
 > 
-> > 
-> > @@ -302,8 +330,12 @@ int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
-> >  {
-> >  	int retval;
-> >  
-> > +	/* someone tried to register a blocking notifier to a
-> > +	 * qos object that only supports atomic ones */
-> > +	BUG_ON(!pm_qos_array[pm_qos_class]->blocking_notifiers);
-> > +
-> >  	retval = blocking_notifier_chain_register(
-> > -			pm_qos_array[pm_qos_class]->notifiers, notifier);
-> > +			pm_qos_array[pm_qos_class]->blocking_notifiers, notifier);
-> >  
-> >  	return retval;
-> >  }
+>  kernel/pm_qos_params.c |   47 ++++++++++++++++++++++++++++++-----------------
+>  1 files changed, 30 insertions(+), 17 deletions(-)
 > 
-> Why not:
-> 
-> 	retval = 1;
-> 	if(pm_qos_array[pm_qos_class]->blocking_notifiers) 
-> 		retval = blocking_notifier_chain_register(..
-> 	else 
-> 		WARN();
-> 	return retval;
-> 
-> That way, the offending programmer could eventually fix it, without
-> having to reboot? 
+> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+> index f42d3f7..296343a 100644
+> --- a/kernel/pm_qos_params.c
+> +++ b/kernel/pm_qos_params.c
+> @@ -40,6 +40,7 @@
+>  #include <linux/string.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/init.h>
+> +#include <linux/workqueue.h>
+>  
+>  #include <linux/uaccess.h>
+>  
+> @@ -60,11 +61,13 @@ struct pm_qos_request_list {
+>  
+>  static s32 max_compare(s32 v1, s32 v2);
+>  static s32 min_compare(s32 v1, s32 v2);
+> +static void update_notify(struct work_struct *work);
+>  
+>  struct pm_qos_object {
+>  	struct pm_qos_request_list requests;
+>  	struct blocking_notifier_head *notifiers;
+>  	struct miscdevice pm_qos_power_miscdev;
+> +	struct work_struct notify;
+>  	char *name;
+>  	s32 default_value;
+>  	atomic_t target_value;
+> @@ -72,10 +75,12 @@ struct pm_qos_object {
+>  };
+>  
+>  static struct pm_qos_object null_pm_qos;
+> +
+>  static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
+>  static struct pm_qos_object cpu_dma_pm_qos = {
+>  	.requests = {LIST_HEAD_INIT(cpu_dma_pm_qos.requests.list)},
+>  	.notifiers = &cpu_dma_lat_notifier,
+> +	.notify = __WORK_INITIALIZER(cpu_dma_pm_qos.notify, update_notify),
+>  	.name = "cpu_dma_latency",
+>  	.default_value = 2000 * USEC_PER_SEC,
+>  	.target_value = ATOMIC_INIT(2000 * USEC_PER_SEC),
+> @@ -86,6 +91,7 @@ static BLOCKING_NOTIFIER_HEAD(network_lat_notifier);
+>  static struct pm_qos_object network_lat_pm_qos = {
+>  	.requests = {LIST_HEAD_INIT(network_lat_pm_qos.requests.list)},
+>  	.notifiers = &network_lat_notifier,
+> +	.notify = __WORK_INITIALIZER(network_lat_pm_qos.notify, update_notify),
+>  	.name = "network_latency",
+>  	.default_value = 2000 * USEC_PER_SEC,
+>  	.target_value = ATOMIC_INIT(2000 * USEC_PER_SEC),
+> @@ -97,13 +103,14 @@ static BLOCKING_NOTIFIER_HEAD(network_throughput_notifier);
+>  static struct pm_qos_object network_throughput_pm_qos = {
+>  	.requests = {LIST_HEAD_INIT(network_throughput_pm_qos.requests.list)},
+>  	.notifiers = &network_throughput_notifier,
+> +	.notify = __WORK_INITIALIZER(network_throughput_pm_qos.notify,
+> +			update_notify),
+>  	.name = "network_throughput",
+>  	.default_value = 0,
+>  	.target_value = ATOMIC_INIT(0),
+>  	.comparitor = max_compare
+>  };
+>  
+> -
+>  static struct pm_qos_object *pm_qos_array[] = {
+>  	&null_pm_qos,
+>  	&cpu_dma_pm_qos,
+> @@ -135,35 +142,40 @@ static s32 min_compare(s32 v1, s32 v2)
+>  	return min(v1, v2);
+>  }
+>  
+> +static void update_notify(struct work_struct *work)
+> +{
+> +	struct pm_qos_object *obj =
+> +		container_of(work, struct pm_qos_object, notify);
+> +
+> +	s32 extreme_value = atomic_read(&obj->target_value);
+> +	blocking_notifier_call_chain(
+> +		obj->notifiers,
+> +			(unsigned long) extreme_value, NULL);
+> +}
+>  
+>  static void update_target(int pm_qos_class)
+>  {
+>  	s32 extreme_value;
+>  	struct pm_qos_request_list *node;
+> +	struct pm_qos_object *obj = pm_qos_array[pm_qos_class];
+>  	unsigned long flags;
+>  	int call_notifier = 0;
+>  
+>  	spin_lock_irqsave(&pm_qos_lock, flags);
+> -	extreme_value = pm_qos_array[pm_qos_class]->default_value;
+> -	list_for_each_entry(node,
+> -			&pm_qos_array[pm_qos_class]->requests.list, list) {
+> -		extreme_value = pm_qos_array[pm_qos_class]->comparitor(
+> -				extreme_value, node->value);
+> -	}
+> -	if (atomic_read(&pm_qos_array[pm_qos_class]->target_value) !=
+> -			extreme_value) {
+> +	extreme_value = obj->default_value;
+> +	list_for_each_entry(node, &obj->requests.list, list)
+> +		extreme_value = obj->comparitor(extreme_value, node->value);
+> +
+> +	if (atomic_read(&obj->target_value) != extreme_value) {
+>  		call_notifier = 1;
+> -		atomic_set(&pm_qos_array[pm_qos_class]->target_value,
+> -				extreme_value);
+> +		atomic_set(&obj->target_value, extreme_value);
+>  		pr_debug(KERN_ERR "new target for qos %d is %d\n", pm_qos_class,
+> -			atomic_read(&pm_qos_array[pm_qos_class]->target_value));
+> +			atomic_read(&obj->target_value));
+>  	}
+>  	spin_unlock_irqrestore(&pm_qos_lock, flags);
+>  
+>  	if (call_notifier)
+> -		blocking_notifier_call_chain(
+> -				pm_qos_array[pm_qos_class]->notifiers,
+> -					(unsigned long) extreme_value, NULL);
+> +		schedule_work(&obj->notify);
+>  }
 
-Because there are no current users that will trip the BUG_ON ... and we
-want to keep it that way.  Code doesn't go into the kernel if it BUGs on
-boot.
+This still isn't resilient against two successive calls to update.  If
+the second one gets to schedule_work() before the work of the first one
+has finished, you'll corrupt the workqueue.
 
-The point about failing hard for an abuse of a kernel API isn't to trap
-current abusers because you fix those before you add it.  It's to
-prevent future abuse.  If your kernel BUGs under test you tend to fix
-the code, so it becomes impossible for anyone to add any users which
-abuse the API in this fashion.
+The mechanisms to solve this race (refcounting a pool of structures) are
+so heavyweight that I concluded it was simpler just to have atomically
+updated pm_qos objects and enforce it ... rather than trying to allow
+blocking chains to be added to atomic sites via a workqueue.
 
 James
