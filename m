@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.35-rc2-git2: Reported regressions from 2.6.34
-Date: Wed, 9 Jun 2010 11:06:11 +0200
-Message-ID: <201006091106.11232.rjw__38434.6451996409$1276074366$gmane$org@sisk.pl>
-References: <Rlf_Qjov7bG.A.a8F.I8rDMB@chimera>
-	<alpine.LFD.2.00.1006081814240.4506@i5.linux-foundation.org>
+From: florian@mickler.org
+Subject: [PATCH 2/2] pm_qos: make update_request callable from
+	interrupt context
+Date: Wed,  9 Jun 2010 11:15:14 +0200
+Message-ID: <1276074915-26879-2-git-send-email-florian__17516.4550696083$1276074991$gmane$org@mickler.org>
+References: <1276074915-26879-1-git-send-email-florian@mickler.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1006081814240.4506@i5.linux-foundation.org>
+In-Reply-To: <1276074915-26879-1-git-send-email-florian@mickler.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,54 +18,180 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Venkatesh Pallipadi <venki@google.com>, DRI <dri-devel@lists.sourceforge.net>, Mauro Carvalho Chehab <mchehab@redhat.com>, Eric Dumazet <eric.dumazet@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Jens Axboe <jaxboe@fusionio.com>, Linux PM List <linux-pm@lists.linux-foundation.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, David@smtp1.linux-foundation.org, Linux SCSI List <linux-scsi@vger.kernel.org>, Eric Anholt <eric@anholt.net>, Carl Worth <cworth@cworth.org>, =?iso-8859-15?q?H=E4rdeman?= <david@hardeman.nu>, Network Development <netdev@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, Kernel Testers List <kernel-testers@vger.kernel.org>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, Frederic Weisbecker <fweisbec@gmail.com>, markgross@thegnar.org, linux-kernel@vger.kernel.org, Florian Mickler <florian@mickler.org>, james.bottomley@suse.de, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 09 June 2010, Linus Torvalds wrote:
-> 
-> [ Added lots of cc's to direct specific people to look at the regressions 
->   that may or may not be theirs... ]
-> 
-> On Wed, 9 Jun 2010, Rafael J. Wysocki wrote:
-> >
-> >  * Quite a few of the already reported regressions may be related to the bug
-> >    fixed by 386f40c86d6c8d5b717ef20620af1a750d0dacb4 (Revert "tty: fix a little
-> >    bug in scrup, vt.c"), so reporters please retest with this commit applied.]
-> 
-> From a quick look, most of them look unrelated to that unfortunate bug. 
-> It's hard to tell for sure, of course (memory corruption can do pretty 
-> much anything), but I'm not seeing the 07200720.. pattern at least.
-> 
-> And some of them do seem to be bisected to likely culprits and/or have 
-> patches that are claimed to have fixed them.
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=16163
-> > Subject	: [2.6.35-rc1 Regression] i915: Commit cfecde causes VGA to stay off
-> > Submitter	: David John <davidjon@xenontk.org>
-> > Date		: 2010-06-02 12:52 (7 days old)
-> > Message-ID	: <4C065423.3000202@xenontk.org>
-> > References	: http://marc.info/?l=linux-kernel&m=127548313828613&w=2
-> 
-> That has a "reverting the commit fixes it", and a confirmation from Nick 
-> Bowler.
-> 
-> Eric, Carl: should I just revert that commit? Or do you have a fix?
+The pm_qos framework has to guarantee atomic notifications so that
+drivers can request and release constraints at all times while no races
+occur.
 
-This one is reported to have been fixed already.  Closed now.
+In order to avoid implementing a secondary notification chain in which
+listeners might sleep, we demand that every listener implements it's
+notification so that it can run in interrupt context. The listener is in
+a better position to know if races are harmful or not.
 
-...
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=16104
-> > Subject	: Radeon KMS does not start after merge of the new PM-Code
-> > Submitter	: Jan Kreuzer <kontrollator@gmx.de>
-> > Date		: 2010-06-02 07:47 (7 days old)
-> 
-> This one also has a patch in Bugzilla, I think Airlie is just waiting to 
-> calm down his queue and already removed the dependency on the temperature 
-> code. DaveA?
+Signed-off-by: Florian Mickler <florian@mickler.org>
+---
+ kernel/pm_qos_params.c |   50 ++++++++++++++++++++++++------------------------
+ 1 files changed, 25 insertions(+), 25 deletions(-)
 
-This should be fixed by commit f8ed8b4c5d30b5214f185997131b06e35f6f7113, so
-closing now.
-
-Rafael
+diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+index f42d3f7..d918605 100644
+--- a/kernel/pm_qos_params.c
++++ b/kernel/pm_qos_params.c
+@@ -63,7 +63,7 @@ static s32 min_compare(s32 v1, s32 v2);
+ 
+ struct pm_qos_object {
+ 	struct pm_qos_request_list requests;
+-	struct blocking_notifier_head *notifiers;
++	struct atomic_notifier_head *notifiers;
+ 	struct miscdevice pm_qos_power_miscdev;
+ 	char *name;
+ 	s32 default_value;
+@@ -72,7 +72,7 @@ struct pm_qos_object {
+ };
+ 
+ static struct pm_qos_object null_pm_qos;
+-static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
++static ATOMIC_NOTIFIER_HEAD(cpu_dma_lat_notifier);
+ static struct pm_qos_object cpu_dma_pm_qos = {
+ 	.requests = {LIST_HEAD_INIT(cpu_dma_pm_qos.requests.list)},
+ 	.notifiers = &cpu_dma_lat_notifier,
+@@ -82,7 +82,7 @@ static struct pm_qos_object cpu_dma_pm_qos = {
+ 	.comparitor = min_compare
+ };
+ 
+-static BLOCKING_NOTIFIER_HEAD(network_lat_notifier);
++static ATOMIC_NOTIFIER_HEAD(network_lat_notifier);
+ static struct pm_qos_object network_lat_pm_qos = {
+ 	.requests = {LIST_HEAD_INIT(network_lat_pm_qos.requests.list)},
+ 	.notifiers = &network_lat_notifier,
+@@ -93,7 +93,7 @@ static struct pm_qos_object network_lat_pm_qos = {
+ };
+ 
+ 
+-static BLOCKING_NOTIFIER_HEAD(network_throughput_notifier);
++static ATOMIC_NOTIFIER_HEAD(network_throughput_notifier);
+ static struct pm_qos_object network_throughput_pm_qos = {
+ 	.requests = {LIST_HEAD_INIT(network_throughput_pm_qos.requests.list)},
+ 	.notifiers = &network_throughput_notifier,
+@@ -103,7 +103,6 @@ static struct pm_qos_object network_throughput_pm_qos = {
+ 	.comparitor = max_compare
+ };
+ 
+-
+ static struct pm_qos_object *pm_qos_array[] = {
+ 	&null_pm_qos,
+ 	&cpu_dma_pm_qos,
+@@ -135,35 +134,30 @@ static s32 min_compare(s32 v1, s32 v2)
+ 	return min(v1, v2);
+ }
+ 
+-
+ static void update_target(int pm_qos_class)
+ {
+ 	s32 extreme_value;
++	struct pm_qos_object *obj = pm_qos_array[pm_qos_class];
+ 	struct pm_qos_request_list *node;
+ 	unsigned long flags;
+ 	int call_notifier = 0;
+ 
+ 	spin_lock_irqsave(&pm_qos_lock, flags);
+-	extreme_value = pm_qos_array[pm_qos_class]->default_value;
+-	list_for_each_entry(node,
+-			&pm_qos_array[pm_qos_class]->requests.list, list) {
+-		extreme_value = pm_qos_array[pm_qos_class]->comparitor(
+-				extreme_value, node->value);
++	extreme_value = obj->default_value;
++	list_for_each_entry(node, &obj->requests.list, list) {
++		extreme_value = obj->comparitor(extreme_value, node->value);
+ 	}
+-	if (atomic_read(&pm_qos_array[pm_qos_class]->target_value) !=
+-			extreme_value) {
++	if (atomic_read(&obj->target_value) != extreme_value) {
+ 		call_notifier = 1;
+-		atomic_set(&pm_qos_array[pm_qos_class]->target_value,
+-				extreme_value);
++		atomic_set(&obj->target_value, extreme_value);
+ 		pr_debug(KERN_ERR "new target for qos %d is %d\n", pm_qos_class,
+-			atomic_read(&pm_qos_array[pm_qos_class]->target_value));
++			atomic_read(&obj->target_value));
+ 	}
+ 	spin_unlock_irqrestore(&pm_qos_lock, flags);
+ 
+ 	if (call_notifier)
+-		blocking_notifier_call_chain(
+-				pm_qos_array[pm_qos_class]->notifiers,
+-					(unsigned long) extreme_value, NULL);
++		atomic_notifier_call_chain(obj->notifiers,
++				(unsigned long) extreme_value, NULL);
+ }
+ 
+ static int register_pm_qos_misc(struct pm_qos_object *qos)
+@@ -272,6 +266,7 @@ EXPORT_SYMBOL_GPL(pm_qos_update_request);
+ 
+ /**
+  * pm_qos_remove_request - modifies an existing qos request
++ *
+  * @pm_qos_req: handle to request list element
+  *
+  * Will remove pm qos request from the list of requests and
+@@ -298,18 +293,21 @@ EXPORT_SYMBOL_GPL(pm_qos_remove_request);
+ 
+ /**
+  * pm_qos_add_notifier - sets notification entry for changes to target value
++ *
++ * Note: The notifier has to be callable from interrupt context.
++ *
+  * @pm_qos_class: identifies which qos target changes should be notified.
+  * @notifier: notifier block managed by caller.
+  *
+- * will register the notifier into a notification chain that gets called
++ * Will register the notifier into a notification chain that gets called
+  * upon changes to the pm_qos_class target value.
+  */
+ int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
+ {
+ 	int retval;
+ 
+-	retval = blocking_notifier_chain_register(
+-			pm_qos_array[pm_qos_class]->notifiers, notifier);
++	retval = atomic_notifier_chain_register(
++		pm_qos_array[pm_qos_class]->notifiers, notifier);
+ 
+ 	return retval;
+ }
+@@ -317,18 +315,19 @@ EXPORT_SYMBOL_GPL(pm_qos_add_notifier);
+ 
+ /**
+  * pm_qos_remove_notifier - deletes notification entry from chain.
++ *
+  * @pm_qos_class: identifies which qos target changes are notified.
+  * @notifier: notifier block to be removed.
+  *
+- * will remove the notifier from the notification chain that gets called
++ * Will remove the notifier from the notification chain that gets called
+  * upon changes to the pm_qos_class target value.
+  */
+ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
+ {
+ 	int retval;
+ 
+-	retval = blocking_notifier_chain_unregister(
+-			pm_qos_array[pm_qos_class]->notifiers, notifier);
++	retval = atomic_notifier_chain_unregister(
++		pm_qos_array[pm_qos_class]->notifiers, notifier);
+ 
+ 	return retval;
+ }
+@@ -381,6 +380,7 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+ 	} else
+ 		return -EINVAL;
+ 
++
+ 	pm_qos_req = (struct pm_qos_request_list *)filp->private_data;
+ 	pm_qos_update_request(pm_qos_req, value);
+ 
+-- 
+1.7.1
