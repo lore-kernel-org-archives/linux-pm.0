@@ -1,15 +1,16 @@
-From: Florian Mickler <florian@mickler.org>
+From: Johannes Berg <johannes@sipsolutions.net>
 Subject: Re: [RFC PATCH 1/2] mac80211: make max_network_latency
  notifier atomic safe
-Date: Wed, 9 Jun 2010 12:20:50 +0200
-Message-ID: <20100609122050.1dd18132__11929.6670229689$1276079069$gmane$org@schatten.dmk.lab>
+Date: Wed, 09 Jun 2010 12:42:08 +0200
+Message-ID: <1276080128.14580.5.camel__9314.46792460537$1276080193$gmane$org@jlt3.sipsolutions.net>
 References: <1276074915-26879-1-git-send-email-florian@mickler.org>
 	<1276076287.3727.15.camel@jlt3.sipsolutions.net>
+	<20100609122050.1dd18132@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276076287.3727.15.camel@jlt3.sipsolutions.net>
+In-Reply-To: <20100609122050.1dd18132@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,45 +20,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Johannes Berg <johannes@sipsolutions.net>
+To: Florian Mickler <florian@mickler.org>
 Cc: Rui Paulo <rpaulo@gmail.com>, Javier@smtp1.linux-foundation.org, markgross@thegnar.org, Jouni Malinen <j@w1.fi>, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org, Kalle Valo <kalle.valo@nokia.com>, james.bottomley@suse.de, Thomas Gleixner <tglx@linutronix.de>, pm list <linux-pm@lists.linux-foundation.org>, Cardona <javier@cozybit.com>, "David S. Miller" <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 09 Jun 2010 11:38:07 +0200
-Johannes Berg <johannes@sipsolutions.net> wrote:
-
-> On Wed, 2010-06-09 at 11:15 +0200, florian@mickler.org wrote:
-> > In order to have the pm_qos framework be callable from interrupt
-> > context, all listeners have to also be callable in that context.
+On Wed, 2010-06-09 at 12:20 +0200, Florian Mickler wrote:
+> On Wed, 09 Jun 2010 11:38:07 +0200
+> Johannes Berg <johannes@sipsolutions.net> wrote:
 > 
-> That makes no sense at all. Why add work structs _everywhere_ in the
-> callees and make the API harder to use and easy to get wrong completely,
-> instead of just adding a single work struct that will be queued from the
-> caller and dealing with the locking complexity etc. just once.
-> 
-> johannes
+> > On Wed, 2010-06-09 at 11:15 +0200, florian@mickler.org wrote:
+> > > In order to have the pm_qos framework be callable from interrupt
+> > > context, all listeners have to also be callable in that context.
+> > 
+> > That makes no sense at all. Why add work structs _everywhere_ in the
+> > callees and make the API harder to use and easy to get wrong completely,
+> > instead of just adding a single work struct that will be queued from the
+> > caller and dealing with the locking complexity etc. just once.
 
-Just to defend this approach, but I'm certainly not married to it
-(hence RFC):
 
-There are only two listeners at the moment. I suspect that most future
-uses of the framework need to be atomic, as the driver that
-requests a specific quality of service probably doesn't want to get into
-races with the provider of that service(listener). So i suspected the
-network listener to be the special case.  
+> There are only two listeners at the moment. I suspect that most future
+> uses of the framework need to be atomic, as the driver that
+> requests a specific quality of service probably doesn't want to get into
+> races with the provider of that service(listener). So i suspected the
+> network listener to be the special case.  
 
-The race between service-provider and qos-requester for non-atomic
-contextes is already there, isn't it? so, locking complexity shouldn't
-be worse than before.
+Well even if it doesn't _want_ to race with it, a lot of drivers like
+USB drivers etc. can't really do anything without deferring to a
+workqueue.
 
-But my first approach to this is seen here:
-https://lists.linux-foundation.org/pipermail/linux-pm/2010-June/026902.html
+And what's the race anyway? You get one update, defer the work, and if
+another update happens inbetween you just read the new value when the
+work finally runs -- and you end up doing it only once instead of twice.
+That doesn't seem like a problem.
 
-A third possibility would be to make it dependent on the
-type of the constraint, if blocking notifiers are allowed or not. 
-But that would sacrifice API consistency (update_request for one
-constraint is allowed to be called in interrupt context and
-update_request for another would be not).
+> The race between service-provider and qos-requester for non-atomic
+> contextes is already there, isn't it? so, locking complexity shouldn't
+> be worse than before.
 
-Cheers,
-Flo
+I have no idea how it works now? I thought you can't request an update
+from an atomic context.
+
+However, if you request a QoS value, it is fundamentally that -- a
+request. There's no guarantee as to when or how it will be honoured.
+
+> But my first approach to this is seen here:
+> https://lists.linux-foundation.org/pipermail/linux-pm/2010-June/026902.html
+
+Icky too.
+
+> A third possibility would be to make it dependent on the
+> type of the constraint, if blocking notifiers are allowed or not. 
+> But that would sacrifice API consistency (update_request for one
+> constraint is allowed to be called in interrupt context and
+> update_request for another would be not).
+
+I don't see what's wrong with the fourth possibility: Allow calling
+pm_qos_update_request() from atomic context, but change _it_ to schedule
+off a work that calls the blocking notifier chain. That avoids the
+complexity in notify-API users since they have process context, and also
+in request-API users since they can call it from any context.
+
+johannes
