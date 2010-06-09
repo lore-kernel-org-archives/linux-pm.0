@@ -1,31 +1,15 @@
-From: Felipe Contreras <felipe.contreras@gmail.com>
-Subject: Re: [PATCH 0/8] Suspend block api (version 8)
-Date: Wed, 9 Jun 2010 11:13:47 +0300
-Message-ID: <AANLkTikzGkDU1dwNYLVT6p9cPEkaMHKRuc6u0FbTBW7L__5253.6177252934$1276071280$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1005271253240.3239-100000@iolanthe.rowland.org>
-	<AANLkTilUQ2AG76nbK6LwI8_7zw0_yMSoAOr9pmuz7xrt@mail.gmail.com>
-	<201005312347.24251.rjw@sisk.pl>
-	<AANLkTilvOgSFTDFtXbjJobMZWxgfvsC97TqC7_a_NHBX@mail.gmail.com>
-	<alpine.LFD.2.00.1006011411200.2933@localhost.localdomain>
-	<AANLkTikZHmF6baP7dEXEGFE8YsbEteRjlhb5wqZX8ll1@mail.gmail.com>
-	<alpine.LFD.2.00.1006020905410.2933@localhost.localdomain>
-	<AANLkTinDm3FIrbS1jqEzW15THmr1hdd7ox0Mllm1VLjZ@mail.gmail.com>
-	<1275471561.27810.30865.camel@twins>
-	<AANLkTilLmAb2c9fQwuguzWtjcHfuTZvPUTbUx7vuwFI6@mail.gmail.com>
-	<1275474088.27810.31000.camel@twins>
-	<20100602221309.6da754e7@schatten.dmk.lab>
-	<1275550802.27810.34863.camel@twins>
-	<20100603161205.73a2b56d@schatten.dmk.lab>
-	<1275578881.27810.35995.camel@twins>
-	<AANLkTinBg9W7zeomPbpGEDWkIsfxO9OfFUC0Kq7wafFb@mail.gmail.com>
-	<20100605215604.68efc4e5@schatten.dmk.lab>
-	<AANLkTilhvUn3PfnHsJTNzhr59xrUyvGlFmnAOnub65sE@mail.gmail.com>
-	<20100605225012.771332db@schatten.dmk.lab>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.35-rc2-git2: Reported regressions from 2.6.34
+Date: Wed, 9 Jun 2010 10:55:38 +0200
+Message-ID: <201006091055.38462.rjw__20975.4224204973$1276073736$gmane$org@sisk.pl>
+References: <Rlf_Qjov7bG.A.a8F.I8rDMB@chimera>
+	<alpine.LFD.2.00.1006081814240.4506@i5.linux-foundation.org>
+	<4C0F4872.7090909@fusionio.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100605225012.771332db@schatten.dmk.lab>
+In-Reply-To: <4C0F4872.7090909@fusionio.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -35,51 +19,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, felipe.balbi@nokia.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jens Axboe <jaxboe@fusionio.com>
+Cc: Venkatesh Pallipadi <venki@google.com>, DRI <dri-devel@lists.sourceforge.net>, Mauro Carvalho Chehab <mchehab@redhat.com>, Eric Dumazet <eric.dumazet@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, David@smtp1.linux-foundation.org, Linux SCSI List <linux-scsi@vger.kernel.org>, Eric Anholt <eric@anholt.net>, Carl Worth <cworth@cworth.org>, =?iso-8859-15?q?H=E4rdeman?= <david@hardeman.nu>, Network Development <netdev@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>, Kernel Testers List <kernel-testers@vger.ke>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jun 5, 2010 at 11:50 PM, Florian Mickler <florian@mickler.org> wrote:
-> On Sat, 5 Jun 2010 23:06:03 +0300
-> Felipe Contreras <felipe.contreras@gmail.com> wrote:
->> How would such stats be calculated? I presume at regular intervals you
->> check which applications are holding suspend blockers and increase a
->> counter.
->>
->> How would you do that with the dynamic PM approach? At regular
->> intervals you check for which applications are running (not idle).
->
-> IIRC, the patches discussed have debugging infrastructure in
-> them. The kernel does the accounting.
+On Wednesday 09 June 2010, Jens Axboe wrote:
+> On 2010-06-09 03:53, Linus Torvalds wrote:
+> >> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=16129
+> >> Subject	: BUG: using smp_processor_id() in preemptible [00000000] code: jbd2/sda2
+> >> Submitter	: Jan Kreuzer <kontrollator@gmx.de>
+> >> Date		: 2010-06-05 06:15 (4 days old)
+> > 
+> > This seems to have been introduced by
+> > 
+> > 	commit 7cbaef9c83e58bbd4bdd534b09052b6c5ec457d5
+> > 	Author: Ingo Molnar <mingo@elte.hu>
+> > 	Date:   Sat Nov 8 17:05:38 2008 +0100
+> > 
+> > 	    sched: optimize sched_clock() a bit
+> >     
+> > 	    sched_clock() uses cycles_2_ns() needlessly - which is an irq-disabling
+> > 	    variant of __cycles_2_ns().
+> >     
+> > 	    Most of the time sched_clock() is called with irqs disabled already.
+> > 	    The few places that call it with irqs enabled need to be updated.
+> >     
+> > 	    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > 
+> > and this seems to be one of those calling cases that need to be updated.
+> > 
+> > Ingo? The call trace is:
+> > 
+> > 	BUG: using smp_processor_id() in preemptible [00000000] code: jbd2/sda2-8/337
+> > 	caller is native_sched_clock+0x3c/0x68
+> > 	Pid: 337, comm: jbd2/sda2-8 Not tainted 2.6.35-rc1jan+ #4
+> > 	Call Trace:
+> > 	[<ffffffff812362c5>] debug_smp_processor_id+0xc9/0xe4
+> > 	[<ffffffff8101059d>] native_sched_clock+0x3c/0x68
+> > 	[<ffffffff8101043d>] sched_clock+0x9/0xd
+> > 	[<ffffffff81212d7a>] blk_rq_init+0x97/0xa3
+> > 	[<ffffffff81214d71>] get_request+0x1c4/0x2d0
+> > 	[<ffffffff81214ea6>] get_request_wait+0x29/0x1a6
+> > 	[<ffffffff81215537>] __make_request+0x338/0x45b
+> > 	[<ffffffff812147c2>] generic_make_request+0x2bb/0x330
+> > 	[<ffffffff81214909>] submit_bio+0xd2/0xef
+> > 	[<ffffffff811413cb>] submit_bh+0xf4/0x116
+> > 	[<ffffffff81144853>] block_write_full_page_endio+0x89/0x96
+> > 	[<ffffffff81144875>] block_write_full_page+0x15/0x17
+> > 	[<ffffffff8119b00a>] ext4_writepage+0x356/0x36b
+> > 	[<ffffffff810e1f91>] __writepage+0x1a/0x39
+> > 	[<ffffffff810e32a6>] write_cache_pages+0x20d/0x346
+> > 	[<ffffffff810e3406>] generic_writepages+0x27/0x29
+> > 	[<ffffffff811ca279>] journal_submit_data_buffers+0x110/0x17d
+> > 	[<ffffffff811ca986>] jbd2_journal_commit_transaction+0x4cb/0x156d
+> > 	[<ffffffff811d0cba>] kjournald2+0x147/0x37a
+> > 
+> > (from the bugzilla thing)
+> 
+> This should be fixed by commit 28f4197e which was merged on friday.
 
-We are not talking about debugging, we are talking about stats shown
-in user-space so that users can see the offending apps. It doesn't
-matter where the accounting is done, it would be at regular intervals
-and there's nothing that prevents the dynamic PM approach to offer
-similar stats.
+Thanks, closed.
 
->> > The only difference is, that with suspend blockers, he can than
->> > dismiss the applications permission to block suspend and will not miss
->> > his job interview the next day because his phones battery run
->> > out. And also he can use the application to a certain extent.
->>
->> So the difference is between removing the app, and making it run
->> crappy. I don't think that's a strong argument in favor of suspend
->> blockers.
->>
-> If you think a little about it, it is. Because if the app wouldn't be
-> usable at all, the bug wouldn't get fixed because the user wouldn't use
-> it. Or not?
-
-I'm not sure what's your point here. One user not using a certain
-application doesn't prevent bugs to get fixed. In fact, less people
-using an app will cause less buzz, and less downloads, and less
-positive votes... which might wake up the author to think: hey, maybe
-I'm doing something wrong? Maybe I should really listen to those bug
-reports.
-
-Anyway, my point is that there's nothing special about 3rd party app
-stats with suspend blockers.
-
--- 
-Felipe Contreras
+Rafael
