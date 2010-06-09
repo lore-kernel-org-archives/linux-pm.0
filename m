@@ -1,14 +1,29 @@
-From: Bryan Huntsman <bryanh@codeaurora.org>
-Subject: Re: PM QoS dynamic resource manager
-Date: Tue, 08 Jun 2010 16:48:27 -0700
-Message-ID: <4C0ED6CB.4050709@codeaurora.org>
-References: <alpine.DEB.2.00.1005211533530.25765@pchidamb-lnx.qualcomm.com>	<20100525145223.GA4974@gvim.org>	<AANLkTikLgu2c1GPE3glHLlaznOM59SVeCj2NHzDjyjZR@mail.gmail.com>	<20100608033333.GA23066@gvim.org>	<AANLkTinGBvZm870CsjocsCV1SmQ-FCCbJLtKWR1juB1Q@mail.gmail.com>	<4C0ECC38.2000003@codeaurora.org>
-	<AANLkTimK_RwRZHcEIxSshovgQLM6SBo2kLVoxWoEFFjx@mail.gmail.com>
+From: david@lang.hm
+Subject: Re: suspend blockers & Android integration
+Date: Tue, 8 Jun 2010 18:14:56 -0700 (PDT)
+Message-ID: <alpine.DEB.2.01.1006081759150.17462__22495.7690378234$1276046197$gmane$org@asgard.lang.hm>
+References: <20100603193045.GA7188@elte.hu> <20100604083423.GD15181@elte.hu>
+	<AANLkTinQyzzeF-NOAjrAqqQXqKjFJhx85nI4uyBGRtWd@mail.gmail.com>
+	<1275653210.27810.39762.camel@twins>
+	<AANLkTinyjBa0KYfFz3_EFbC65hoQFwFINlTDYjCe-wM3@mail.gmail.com>
+	<1275731653.27810.41078.camel@twins>
+	<20100605092851.6ee15f13@infradead.org>
+	<AANLkTimEwznq9c_8lkuBMxEQ-42rdvpZEqA9Y71Cu-qC@mail.gmail.com>
+	<AANLkTimKknOurmCffOpHjc1FjrP2MKf10pBwEEbLJPg_@mail.gmail.com>
+	<AANLkTil1NCX91bWhpXHtC88Opr29mNjdhXD9RXQ6DI0y@mail.gmail.com>
+	<AANLkTin1Za3GvfIKbcZdx6TzjIHzCvsg5uaY_Vk4nJIh@mail.gmail.com>
+	<AANLkTilQ1k78dDCYadOa1Wiyjm2nsBcRpxwdpGvYcf8z@mail.gmail.com>
+	<AANLkTin7oM3gVwHbIHWqYV8yeC6bbQ4q2jDDxAgz3DwQ@mail.gmail.com>
+	<alpine.DEB.2.01.1006060305060.17462@asgard.lang.hm>
+	<AANLkTinW-X5m85rUcqP-lrEdfBikVclJWgqiWDkpxnAc@mail.gmail.com>
+	<20100606124949.539fa636@schatten.dmk.lab>
+	<alpine.DEB.2.01.1006060410050.17462@asgard.lang.hm>
+	<20100607141624.3d004db2@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTimK_RwRZHcEIxSshovgQLM6SBo2kLVoxWoEFFjx@mail.gmail.com>
+In-Reply-To: <20100607141624.3d004db2@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,44 +33,132 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mike Chan <mike@android.com>
-Cc: linux-pm@lists.linux-foundation.org, mark gross <640e9920@gmail.com>, markgross@thegnar.org
+To: Florian Mickler <florian@mickler.org>
+Cc: tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Neil Brown <neilb@suse.de>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
->> Mike, one idea I'm exploring is having platform-specific busses with QoS
->> constraints specified via runtime_pm as part of the LDM.  Adding dynamic
->> class creation within pm_qos, or a type enum as you suggest, would work.
->>  However, I think this kind of behavior would fit nicely within runtime_pm.
+On Mon, 7 Jun 2010, Florian Mickler wrote:
+
+> On Sun, 6 Jun 2010 04:14:09 -0700 (PDT)
+> david@lang.hm wrote:
+>
+>> On Sun, 6 Jun 2010, Florian Mickler wrote:
 >>
-> 
-> I'm not too familiar with the current work in runtime pm and LDM.
-> However platform specific buses sounds like a good thing, at least
-> more future proof. This works in the embedded SOC world but I'm
-> wondering what happens when you have re-configurable hardware and now
-> your same peripheral is sourcing a different bus?
+>>> On Sun, 6 Jun 2010 12:19:08 +0200
+>>> Vitaly Wool <vitalywool@gmail.com> wrote:
+>>>
+>>>> 2010/6/6  <david@lang.hm>:
+>>>>
+>>>>> as an example (taken from this thread).
+>>>>>
+>>>>> system A needs to wake up to get a battery reading, store it and go back to
+>>>>> sleep, It does so every 10 seconds. But when it does so it only runs the one
+>>>>> process and then goes back to sleep.
+>>>>>
+>>>>> system B has the same need, but wakes up every 10 minutes. but when it does
+>>>>> so it fully wakes up and this allows the mail app to power up the radio,
+>>>>> connect to the Internet and start checking for new mail before oppurtunistic
+>>>>> sleep shuts things down (causing the mail check to fail)
+>>>>>
+>>>>> System A will last considerably longer on a battery than System B.
+>>>>
+>>>> Exactly, thanks for pointing out the specific example :)
+>>>>
+>>>> ~Vitaly
+>>>
+>>> This does not affect suspend_blockers nor does suspend_blockers
+>>> interfere with that.
+>>>
+>>> Suspend_blockers allow the system to suspend ("mem">/sys/power/state
+>>> suspend), when the userspace decides that the device is not in use.
+>>>
+>>> So implementing suspend_blockers support does not impact any
+>>> optimizations done to either system A nor system B.
+>>
+>> Actually, it does.
+>>
+>> system A is what's being proposed by kernel developers, where the
+>> untrusted stuff is in a different cgroup and what puts the system to sleep
+>> is 'normal' power management. It doesn't sleep as long, but when it wakes
+>> up the untrusted stuff is still frozen, so it doesn't stay awake long, or
+>> do very much.
+>>
+>> System B is suspend blockers where you are either awake or asleep, and
+>> when you wake up you wake up fully, but oppertunistic sleep can interrupt
+>> untrusted processes at any time. The system sleeps longer (as fewer things
+>> can wake it), but when it wakes up it's fully awake.
+>>
+>> David Lang
+>
+> You say, that coming back from suspend takes the system to full power
+> (and everything runs) before it begins the descend into
+> runtime-low-power?
+> But are you referring to the fact that coming back
+> from suspend starts in the zero-idle-state (i.e. "consumes extra
+> power") or that all processes run when it is not suspended?
 
-My current thought is to have the board file enumerate the device on the 
-proper bus.  This configuration is target-specific.  Each driver would 
-register on as many buses as it needs to.  Some of the driver/bus 
-registrations would be extraneous but the driver/device binding would 
-only be possible on one bus.
+I am referring to the fact that with suspend blockers and opertunistic 
+suspend all processes start running when it's not suspended (because they 
+were all running when it was suspended)
 
-> Does runtime pm hook into pm qos similar to how cpuidle uses pm qos?
-> So the platform-specific buses would be aa pm rumtime or a pm qos
-> addition?
-> 
-> -- Mike
+If instead the system only wakes up the trusted processes to handle 
+whatever woke the system up and is then idle again, it spends less power 
+and time while awake.
 
-Not to my knowledge.  I'm considering modeling the runtime_pm 
-enhancements after pm_qos.  Meaning, there would be additional 
-add/update/remove_requirements() callbacks added to struct dev_pm_ops 
-for runtime_pm.  Instead of having a system-wide QoS sink per QoS class, 
-the requirements would be passed up the LDM tree.  This way, a bus 
-driver would be able to receive QoS constraints from all of it's devices 
-and, combined with the active state of it's children from runtime_pm, be 
-able to do some useful power management.  The entire bus could be 
-throttled or idled in this manner.  This scheme would require the SW 
-device topology to match the HW topology and not just have everything 
-hang off the platform bus.
+> Because the latter would of course (theretically) profit from the
+> framework-controlled-cgroup-freeze/thaw (with and without
+> opportunistic suspend) while the former should be a problem that
+> both opportunistic suspend as well as suspend-from-idle have. Or not?
+>
+> So, here is the question I'm asking myself: If System A were to be
+> complemented by suspend_blockers, wouldn't it still be better?
 
-- Bryan
+not neccessarily.
+
+having suspend blockers inside the kernel adds significant complexity, it's 
+worth it only if the complexity buys you enough. In this case the question 
+is if the suspend blockers would extend the sleep time enough more to 
+matter. As per my other e-mail, this is an area with rapidly diminishing 
+returns as the sleep times get longer.
+
+> With System A you could try to do a really sophisticated
+> power-management scheme and so on... but as soon as you allow 3rd-Party
+> Apps, how do you manage their cross-dependencies? I.e. you can not
+> automatically detect when App1 needs App2 to function.
+> You need to allow all 3rd-Party apps to run as a group.
+>
+> So you can perhaps partition your software stack into "untrusted
+> applications" and different groups of software with audited
+> dependencies.
+>
+> If one group interacts with another group (as will be the case at least
+> with the "untrusted applications" group) you have to have them both
+> running at the same time.
+>
+> This really gets pretty complex. Do you really think something like
+> this is better than a simple suspend? (I.e. suspend blockers or
+> having just one group)
+
+even if all you do is have two groups (trusted and untrusted), all you 
+need to do is to watch for the interaction between these two. Put the 
+third-party apps in the untrusted group.
+
+depending on what security you have available, you may be able to define 
+more, smaller groups after using the security to make sure that there is 
+no overlap between them
+
+> Suppose you implement suspend blockers with a cgroup freeze... how do
+> you implement the freeze/thaw control?
+
+I thought the answer had been provided, one of the trusted apps implements 
+the freeze/thaw, and everything happens in userspace.
+
+> Cheers,
+> Flo
+>
+> p.s.: do you see an possibility for any kind of "priority inheritance"
+> in the cgroup scheme? I don't.
+
+is there a need for it?
+
+David Lang
