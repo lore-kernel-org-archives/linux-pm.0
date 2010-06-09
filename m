@@ -1,11 +1,12 @@
-From: Carl Worth <cworth@cworth.org>
+From: Jens Axboe <jaxboe@fusionio.com>
 Subject: Re: 2.6.35-rc2-git2: Reported regressions from 2.6.34
-Date: Tue, 08 Jun 2010 19:38:11 -0700
-Message-ID: <87hbldhqwc.fsf__42011.2509899356$1276095863$gmane$org@yoom.home.cworth.org>
+Date: Wed, 09 Jun 2010 09:53:22 +0200
+Message-ID: <4C0F4872.7090909__25896.0687010132$1276095868$gmane$org@fusionio.com>
 References: <Rlf_Qjov7bG.A.a8F.I8rDMB@chimera>
 	<alpine.LFD.2.00.1006081814240.4506@i5.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4397086720093346379=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <alpine.LFD.2.00.1006081814240.4506@i5.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -15,69 +16,74 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Eric Anholt <eric@anholt.net>, Venkatesh Pallipadi <venki@google.com>, Jens
-Cc: DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Venkatesh Pallipadi <venki@google.com>, DRI <dri-devel@lists.sourceforge.net>, Mauro Carvalho Chehab <mchehab@redhat.com>, Eric Dumazet <eric.dumazet@gmail.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>, Carl Worth <cworth@cworth.org>, =?ISO-8859-15?Q?David_H=E4rdeman?= <david@hardeman.nu>, Linux PM List <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Kernel Testers List <kernel-testers@vger.kernel.org>, Dave Airlie <airlied@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Linux SCSI List <linux-scsi@vger.ke>
 List-Id: linux-pm@vger.kernel.org
 
---===============4397086720093346379==
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
+On 2010-06-09 03:53, Linus Torvalds wrote:
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=16129
+>> Subject	: BUG: using smp_processor_id() in preemptible [00000000] code: jbd2/sda2
+>> Submitter	: Jan Kreuzer <kontrollator@gmx.de>
+>> Date		: 2010-06-05 06:15 (4 days old)
+> 
+> This seems to have been introduced by
+> 
+> 	commit 7cbaef9c83e58bbd4bdd534b09052b6c5ec457d5
+> 	Author: Ingo Molnar <mingo@elte.hu>
+> 	Date:   Sat Nov 8 17:05:38 2008 +0100
+> 
+> 	    sched: optimize sched_clock() a bit
+>     
+> 	    sched_clock() uses cycles_2_ns() needlessly - which is an irq-disabling
+> 	    variant of __cycles_2_ns().
+>     
+> 	    Most of the time sched_clock() is called with irqs disabled already.
+> 	    The few places that call it with irqs enabled need to be updated.
+>     
+> 	    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> and this seems to be one of those calling cases that need to be updated.
+> 
+> Ingo? The call trace is:
+> 
+> 	BUG: using smp_processor_id() in preemptible [00000000] code: jbd2/sda2-8/337
+> 	caller is native_sched_clock+0x3c/0x68
+> 	Pid: 337, comm: jbd2/sda2-8 Not tainted 2.6.35-rc1jan+ #4
+> 	Call Trace:
+> 	[<ffffffff812362c5>] debug_smp_processor_id+0xc9/0xe4
+> 	[<ffffffff8101059d>] native_sched_clock+0x3c/0x68
+> 	[<ffffffff8101043d>] sched_clock+0x9/0xd
+> 	[<ffffffff81212d7a>] blk_rq_init+0x97/0xa3
+> 	[<ffffffff81214d71>] get_request+0x1c4/0x2d0
+> 	[<ffffffff81214ea6>] get_request_wait+0x29/0x1a6
+> 	[<ffffffff81215537>] __make_request+0x338/0x45b
+> 	[<ffffffff812147c2>] generic_make_request+0x2bb/0x330
+> 	[<ffffffff81214909>] submit_bio+0xd2/0xef
+> 	[<ffffffff811413cb>] submit_bh+0xf4/0x116
+> 	[<ffffffff81144853>] block_write_full_page_endio+0x89/0x96
+> 	[<ffffffff81144875>] block_write_full_page+0x15/0x17
+> 	[<ffffffff8119b00a>] ext4_writepage+0x356/0x36b
+> 	[<ffffffff810e1f91>] __writepage+0x1a/0x39
+> 	[<ffffffff810e32a6>] write_cache_pages+0x20d/0x346
+> 	[<ffffffff810e3406>] generic_writepages+0x27/0x29
+> 	[<ffffffff811ca279>] journal_submit_data_buffers+0x110/0x17d
+> 	[<ffffffff811ca986>] jbd2_journal_commit_transaction+0x4cb/0x156d
+> 	[<ffffffff811d0cba>] kjournald2+0x147/0x37a
+> 
+> (from the bugzilla thing)
 
---=-=-=
-Content-Transfer-Encoding: quoted-printable
+This should be fixed by commit 28f4197e which was merged on friday.
 
-On Tue, 8 Jun 2010 18:53:55 -0700 (PDT), Linus Torvalds <torvalds@linux-fou=
-ndation.org> wrote:
-> And some of them do seem to be bisected to likely culprits and/or have=20
-> patches that are claimed to have fixed them.
->=20
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D16163
-> > Subject	: [2.6.35-rc1 Regression] i915: Commit cfecde causes VGA to sta=
-y off
-> > Submitter	: David John <davidjon@xenontk.org>
-> > Date		: 2010-06-02 12:52 (7 days old)
-> > Message-ID	: <4C065423.3000202@xenontk.org>
-> > References	: http://marc.info/?l=3Dlinux-kernel&m=3D127548313828613&w=
-=3D2
->=20
-> That has a "reverting the commit fixes it", and a confirmation from Nick=
-=20
-> Bowler.
->=20
-> Eric, Carl: should I just revert that commit? Or do you have a fix?
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=16122
+>> Subject	: 2.6.35-rc1: WARNING at fs/fs-writeback.c:1142 __mark_inode_dirty+0x103/0x170
+>> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
+>> Date		: 2010-06-04 13:18 (5 days old)
+> 
+> Jens?
 
-I'm not aware of any real fix here. That commit isn't supposed to change
-much, but it clearly unmasks some broken driver code.
+Looking into this one.
 
-So reverting it for now to hide the broken code from poor users does
-seem a good plan to me, (unless Eric has any updates or alternate
-suggestions).
-
-=2DCarl
-
-=2D-=20
-carl.d.worth@intel.com
-
---=-=-=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iD8DBQFMDv6T6JDdNq8qSWgRAm2CAJ9p30+Roeli4N7Gv4rKjfxQKvMIOgCeOZfE
-GPPsJXno4b3GCgHuFmrqKk8=
-=2APO
------END PGP SIGNATURE-----
---=-=-=--
-
---===============4397086720093346379==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============4397086720093346379==--
+-- 
+Jens Axboe
