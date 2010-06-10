@@ -1,19 +1,15 @@
-From: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: [PATCH v4] pm_qos: make update_request non blocking
-Date: Thu, 10 Jun 2010 08:39:04 -0500
-Message-ID: <1276177144.27283.37.camel__1512.22368372164$1276177299$gmane$org@mulgrave.site>
-References: <1276097381-3982-1-git-send-email-florian@mickler.org>
-	<1276097832.4343.223.camel@mulgrave.site>
-	<20100609180033.39d5b499@schatten.dmk.lab>
-	<1276099645.4343.257.camel@mulgrave.site>
-	<20100609183204.1eeca494@schatten.dmk.lab>
-	<1276103149.4343.350.camel@mulgrave.site>
-	<20100610094525.0449d797@schatten.dmk.lab>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/9] PM / Hibernate: swap,
+	switch to hibernate_io_handle
+Date: Thu, 10 Jun 2010 15:55:41 +0200
+Message-ID: <20100610135541.GB4514__29432.5523348109$1276178203$gmane$org@ucw.cz>
+References: <1275468768-28229-1-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100610094525.0449d797@schatten.dmk.lab>
+Content-Disposition: inline
+In-Reply-To: <1275468768-28229-1-git-send-email-jslaby@suse.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,49 +19,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: markgross@thegnar.org, Frederic Weisbecker <fweisbec@gmail.com>, Jonathan Corbet <corbet@lwn.net>, linville@tuxdriver.com, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, jirislaby@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2010-06-10 at 09:45 +0200, Florian Mickler wrote:
-> On Wed, 09 Jun 2010 13:05:49 -0400
-> James Bottomley <James.Bottomley@suse.de> wrote:
-> > On Wed, 2010-06-09 at 18:32 +0200, Florian Mickler wrote:
-> > > On Wed, 09 Jun 2010 12:07:25 -0400
-> > > James Bottomley <James.Bottomley@suse.de> wrote:
-> > > > OK, so the expression of the race is that the latest notification gets
-> > > > lost.  If something is tracking values, you'd really like to lose the
-> > > > previous one (which is now irrelevant) not the latest one.  The point is
-> > > > there's still a race.
-> > > > 
-> > > > James
-> > > > 
-> > > 
-> > > Yeah, but for blocking notification it is not that bad. 
-> > 
-> > The network latency notifier uses the value to recalculate something.
-> > Losing the last value will mean it's using stale data.
-> 
-> Actually after pondering a bit, it is not stale data that gets
-> delivered: (Correct me if I'm wrong)
-> 
-> The update_notify() function determines the extreme value and then
-> calls the blocking_notifier_chain. 
-> 
-> But just before the update_notify() function get's called, the
-> work-structure is reset and re-queue-able. So it is possible to queue it
-> already even before the extreme_value in update_notify get's
-> determined. 
-> 
-> So the notified value is always the latest or there is another
-> notification underway.
+Hi!
 
-Well, no ... it's a race, and like all good races the winner is non
-deterministic.
+> I addressed the comments I got on the previous RFC. I left the handles
+> in place, the functions in hibernate_io_ops now works on them. Further
+> I got rid of the memory barriers and minimized global variables as much
+> as possible. Comments welcome.
 
-If the update comes in before the work queue is run, then everyone
-eventually sees the new value.  If it comes in as the chain is running,
-some notifiers see the old value and some the new.  If it comes in
-during back end processing, no-one sees the new value.
+It would be good if you carried ack-s from previous rounds, so that I
+don't have to review good patches again...
 
-James
+> Some code, which will be moved out of swap.c, will know nothing about
+> swap. There will be also other than swap writers later, so that it
+> won't make sense at all.
+> 
+> So introduce a new structure called hibernate_io_handle which
+> currently contains only a pointer to private data, but is independent
+> on I/O reader/writer actually used. Private data are swap_map_handle
+> for now.
+> 
+> This structure is allocated in _start and freed in _finish. This will
+> correspond to the later introduction of hibernate_io_ops where users
+> will do handle=start->repeat{read/write(handle)}->finish(handle).
+> I.e. they will operate on handle instead of global variables.
+> 
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+
+ ack.
+
+> +/**
+> + * hib_io_handle_alloc - allocate io handle with priv_size for private data
+> + *
+> + * @priv_size: the sie to allocate behind hibernate_io_handle for private use
+> + */
+> +static inline struct hibernate_io_handle *hib_io_handle_alloc(size_t priv_size)
+> +{
+> +	struct hibernate_io_handle *ret;
+> +	ret = kzalloc(sizeof(*ret) + priv_size, GFP_KERNEL);
+> +	if (ret)
+> +		ret->priv = ret + 1;
+
+Uhuh, why this? Aha, grabbing the pointer to priv_size-sized area at
+the end of regular struct?
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
