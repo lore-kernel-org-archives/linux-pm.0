@@ -1,19 +1,16 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/2] suspend: Move NVS save/restore code to
- generic suspend functionality
-Date: Thu, 10 Jun 2010 15:58:16 +0200
-Message-ID: <20100610135816.GG4514__31173.0668334805$1276178457$gmane$org@ucw.cz>
-References: <1275416390.3778.7.camel@maxim-laptop>
-	<201006012331.59747.rjw@sisk.pl>
-	<1275429125.5573.7.camel@maxim-laptop>
-	<201006020040.22429.rjw@sisk.pl>
-	<1275432410.6733.4.camel@maxim-laptop>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: suspend blockers & Android integration
+Date: Thu, 10 Jun 2010 14:57:15 +0100
+Message-ID: <20100610135714.GA27848__3579.48277746818$1276178566$gmane$org@sirena.org.uk>
+References: <20100603193045.GA7188@elte.hu> <201006091140.28034.rjw@sisk.pl>
+	<20100610080425.6f005dbb@notabene.brown>
+	<201006101059.44411.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1275432410.6733.4.camel@maxim-laptop>
+In-Reply-To: <201006101059.44411.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,28 +20,15 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Peter Zijlstra <peterz@infradead.org>, Felipe Contreras <felipe.contreras@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, Ingo Molnar <mingo@elte.hu>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, david@lang.hm, tytso@mit.edu, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Thu, Jun 10, 2010 at 10:59:43AM +0200, Rafael J. Wysocki wrote:
 
-> > > To be honest, I just want to get some feedback on this.
-> > > This was major issue that kept me from using otherwise prefect suspend
-> > > to ram.
-> > 
-> > I think this is a change we should try, but there is a chance it will break
-> > some systems.
-> I doubt that. BIOSes are tested against windows, and since it has this
-> behavior, all systems this patch could break wouldn't work in windows
-> ether.
-> 
-> I was doing all kinds of attempts to fix this bug, and finally I found
-> the cause for it.
+> So, for a phone-like system, where you'd generally want to simplify user space,
+> having a "power manager" in the kernel seems to make sense to me.
 
-Well... should we only do it in 'platform' hibernation mode? There are
-machines that predate windows/acpi and still should hibernate.
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I'm not clear where this requirement to simplify user space specifically
+for phones comes from - phones do have pretty substantial software
+stacks that aren't that far away to PCs.
