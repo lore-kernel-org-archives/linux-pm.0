@@ -1,11 +1,15 @@
-From: Suresh Rajashekara <suresh.raj+linuxomap@gmail.com>
-Subject: Timekeeping issue on aggressive suspend/resume
-Date: Wed, 9 Jun 2010 12:50:39 -0700
-Message-ID: <AANLkTinIO5a1EeK6Ej2ljkuyL9zv06OMfbyiZBaxTQTd__29057.9813685783$1276276681$gmane$org@mail.gmail.com>
+From: Tino Keitel <tino.keitel+xorg@tikei.de>
+Subject: Re: Suspend hangs since 2.6.34
+Date: Thu, 10 Jun 2010 08:07:04 +0200
+Message-ID: <20100610060704.GA25573__37927.3148639642$1276276699$gmane$org@mac.home>
+References: <20100609175356.GA17332@x61.home> <201006100142.13131.rjw@sisk.pl>
+	<4C108091.3060204@msgid.tls.msk.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <4C108091.3060204@msgid.tls.msk.ru>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,28 +19,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-omap@vger.kernel.org
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-I have an application (running on 2.6.29-omap1) which puts an OMAP1
-system to suspend aggressively. The system wakes up every 4 seconds
-and stays awake for about 35 milliseconds and sleeps again for another
-4 seconds. This design is to save power on a battery operated device.
+On Thu, Jun 10, 2010 at 10:05:05 +0400, Michael Tokarev wrote:
 
-This aggressive suspend resume action seems like creating an issue to
-other applications in the system waiting for some timeout to happen
-(especially an application which is waiting using the mq_timedreceive
-and is supposed to timeout every 30 seconds. It seems to wake up every
-90 seconds). Seems like the timekeeping is not happening properly in
-side the kernel.
+[...]
 
-If the suspend duration is changed from 4 second to 1 second, then
-things work somewhat better. On reducing it to 0.5 second (which was
-our earlier design on 2.6.16-rc3), the problem seems to disappear.
+> Sounds very much like the problem I have with 2.6.34 final.  Did not
+> happen with 2.6.34-rc7 which suspended just fine, but happens quite
 
-Is this expected?
+I also had this hang before -rc7.
 
-Thanks in advance,
-
-Suresh
+Regards,
+Tino
