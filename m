@@ -1,16 +1,14 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: suspend blockers & Android integration
-Date: Thu, 10 Jun 2010 20:01:36 +0100
-Message-ID: <20100610190136.GD17945__15550.7878320806$1276196897$gmane$org@opensource.wolfsonmicro.com>
-References: <20100603193045.GA7188@elte.hu> <201006101059.44411.rjw@sisk.pl>
-	<20100610135714.GA27848@sirena.org.uk>
-	<201006101746.47035.rjw@sisk.pl>
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: Suspend hangs since 2.6.34
+Date: Thu, 10 Jun 2010 17:14:24 -0400
+Message-ID: <4C1155B0.7030605@tmr.com>
+References: <20100609175356.GA17332@x61.home> <201006100142.13131.rjw@sisk.pl>
+	<4C108091.3060204@msgid.tls.msk.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201006101746.47035.rjw@sisk.pl>
+In-Reply-To: <4C108091.3060204@msgid.tls.msk.ru>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,26 +18,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Peter Zijlstra <peterz@infradead.org>, Felipe Contreras <felipe.contreras@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, Ingo Molnar <mingo@elte.hu>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, david@lang.hm, tytso@mit.edu, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Tino Keitel <tino.keitel+xorg@tikei.de>, intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 10, 2010 at 05:46:46PM +0200, Rafael J. Wysocki wrote:
-> On Thursday, June 10, 2010, Mark Brown wrote:
-> > On Thu, Jun 10, 2010 at 10:59:43AM +0200, Rafael J. Wysocki wrote:
-
-> > > So, for a phone-like system, where you'd generally want to simplify user space,
-> > > having a "power manager" in the kernel seems to make sense to me.
-
-> > I'm not clear where this requirement to simplify user space specifically
-> > for phones comes from
-
-> This isn't a requirement, but something that IMO is reasonable.
-
-> > - phones do have pretty substantial software stacks that aren't that far away
-> > to PCs.
-
-> That doesn't seem to be relevant here.
-
-Sure, that's my point - you seem to be suggesting that phones have a
-different requirement here.
+TWljaGFlbCBUb2thcmV2IHdyb3RlOgo+IDEwLjA2LjIwMTAgMDM6NDIsIFJhZmFlbCBKLiBXeXNv
+Y2tpINC/0LjRiNC10YI6Cj4+IE9uIFdlZG5lc2RheSwgSnVuZSAwOSwgMjAxMCwgVGlubyBLZWl0
+ZWwgd3JvdGU6Cj4+PiBIaSwKPj4+Cj4+PiBhcyBvZiBrZXJuZWwgMi42LjM0IEkgc29tZXRpbWVz
+IGdldCBhIHN0cmFuZ2UgaGFuZyBkdXJpbmcgc3VzcGVuZCB0bwo+Pj4gUkFNLiBBZnRlciBlY2hv
+IG1lbT4gIC9zeXMvcG93ZXIvc3RhdGUsIHRoZSBzdXNwZW5kIHNjcmlwdCBoYW5ncywgWG9yZwo+
+Pj4gZWF0cyAxMDAlIENQVSwgYW5kIHRoZSBkZXNrdG9wIGlzIGZyb3plbi4gSSBjYW4ga2lsbCB0
+aGUgc2NyaXB0IGFuZCB0aGUKPj4+IGNvbXB1dGVyIHdpbGwgdGhlbiBzdXNwZW5kIGFuZCByZXN1
+bWUgZmluZS4gVGhlIGtlcm5lbCBsb2cgc2hvd3MKPj4+IG5vdGhpbmcgaW50ZXJlc3Rpbmcgd2hl
+biB0aGUgaGFuZyBoYXBwZW5zOgo+Pj4KPj4+IHVzYmxwMDogcmVtb3ZlZAo+Pj4gdXNiY29yZTog
+ZGVyZWdpc3RlcmluZyBpbnRlcmZhY2UgZHJpdmVyIGR2Yl91c2JfdnA3MDQ1Cj4+PiBkdmItdXNi
+OiBUd2luaGFuIFVTQjIuMCBEVkItVCByZWNlaXZlciAoVHdpbmhhbkRUViBBbHBoYS9NYWdpY0Jv
+eCBJSSkKPj4+IHN1Y2Nlc3NmdWxseSBkZWluaXRpYWxpemVkIGFuZCBkaXNjb25uZWN0ZWQuCj4+
+PiBQTTogU3luY2luZyBmaWxlc3lzdGVtcyAuLi4gZG9uZS4KPiAKPiBTb3VuZHMgdmVyeSBtdWNo
+IGxpa2UgdGhlIHByb2JsZW0gSSBoYXZlIHdpdGggMi42LjM0IGZpbmFsLiAgRGlkIG5vdAo+IGhh
+cHBlbiB3aXRoIDIuNi4zNC1yYzcgd2hpY2ggc3VzcGVuZGVkIGp1c3QgZmluZSwgYnV0IGhhcHBl
+bnMgcXVpdGUKPiByZWd1bGFybHkgb24gMi42LjM0IGZpbmFsIC0gbm90IGV2ZXJ5IHN1c3BlbmQg
+YnV0IGVhY2ggMm5kIG9yIDNyZAo+IGF0dGVtcHQuICBJIHN0b3BwZWQgZG9pbmcgc3VzcGVuZC10
+by1yYW0gZHVlIHRvIHRoaXMsIGJlY2F1c2UgaXQncwo+IHVucmVsaWFibGUuICBTdXNwZW5kLXRv
+LWRpc2sgd29ya3MganVzdCBmaW5lLgo+IAo+Pj4gSXMgdGhpcyBhIGtub3duIHByb2JsZW0/Cj4+
+ClRoZXJlIGFyZSB0d28gdGhpbmdzIHlvdSBjYW4gdHJ5IGlmIHlvdSB3aXNoLCBvbmUgaXMgdG8g
+Z28gdGhlIHRleHQgY29uc29sZSAKYmVmb3JlIHN1c3BlbmQsIHRoZSBvdGhlciBpcyB0byBydW4g
+eW91ciBzeXN0ZW0gaW4gVkVTQSB2aWRlbyBtb2RlIChhc3N1bWluZyB5b3UgCmFyZSBhIGx1Y2t5
+IHBlcnNvbiBhbmQgYW55IG90aGVyIG1vZGUgaXMgc3VwcG9ydGVkKS4KCkknbSBub3QgcnVubmlu
+ZyBvbiAyLjYuMzQgZm9yIHByb2R1Y3Rpb24gKDIuNi4zMy41KSBidXQgSSBkaWQgdHJ5IHdoZW4g
+aXQgZmlyc3QgCmNhbWUgb3V0LCBhbmQgc2F3IHNvbWUgaXNzdWVzIHRoZXJlLgoKPj4gTm8sIGl0
+J3Mgbm90Lgo+Pgo+Pj4gSSBoYWQgcm9jayBzdGFibGUgc3VzcGVuZCB3aXRoIDIuMy4zMy54LiBU
+aGUKPj4+IGNvbXB1dGVyIGlzIGEgTWFjIG1pbmkgQ29yZTIgRHVvIHdpdGggaTk0NSBncmFwaGlj
+cy4gSSB1c2UgS01TLiBJIHdpbGwKPj4+IGNvbXBpbGUgYSBrZXJuZWwgd2l0aCBzdXNwZW5kIGRl
+YnVnIHRvIGdldCBtb3JlIGluZm9ybWF0aW9uIGlmIHRoZSBoYW5nCj4+PiBoYXBwZW5zIG5leHQg
+dGltZS4KPiAKPiBJdCdzIGFtZDc4MGcgYXRobG9uLWJhc2VkIG1hY2hpbmUgaGVyZSwgd2l0aCBy
+YWRlb24gZ3JhcGhpY3MsIGFsc28gd2l0aCAKPiBLTVMuCj4gCj4+IFllcywgIHBsZWFzZSB0cnkg
+dG8gZ2V0IG1vcmUgaW5mb3JtYXRpb24uCj4gCj4gR290IGl0IDspCj4gCj4gL21qdAoKCi0tIApC
+aWxsIERhdmlkc2VuIDxkYXZpZHNlbkB0bXIuY29tPgogICAiV2UgaGF2ZSBtb3JlIHRvIGZlYXIg
+ZnJvbSB0aGUgYnVuZ2xpbmcgb2YgdGhlIGluY29tcGV0ZW50IHRoYW4gZnJvbQp0aGUgbWFjaGlu
+YXRpb25zIG9mIHRoZSB3aWNrZWQuIiAgLSBmcm9tIFNsYXNoZG90CgpfX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGlu
+dXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3Vu
+ZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
