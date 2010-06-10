@@ -1,13 +1,18 @@
-From: Michael Tokarev <mjt@tls.msk.ru>
-Subject: Re: Suspend hangs since 2.6.34
-Date: Thu, 10 Jun 2010 10:05:05 +0400
-Message-ID: <4C108091.3060204__2295.16189215264$1276149967$gmane$org@msgid.tls.msk.ru>
-References: <20100609175356.GA17332@x61.home> <201006100142.13131.rjw@sisk.pl>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [PATCH v4] pm_qos: make update_request non blocking
+Date: Thu, 10 Jun 2010 09:45:25 +0200
+Message-ID: <20100610094525.0449d797__599.192819982086$1276156025$gmane$org@schatten.dmk.lab>
+References: <1276097381-3982-1-git-send-email-florian@mickler.org>
+	<1276097832.4343.223.camel@mulgrave.site>
+	<20100609180033.39d5b499@schatten.dmk.lab>
+	<1276099645.4343.257.camel@mulgrave.site>
+	<20100609183204.1eeca494@schatten.dmk.lab>
+	<1276103149.4343.350.camel@mulgrave.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006100142.13131.rjw@sisk.pl>
+In-Reply-To: <1276103149.4343.350.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,35 +22,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Tino Keitel <tino.keitel+xorg@tikei.de>, intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: Jonathan Corbet <corbet@lwn.net>, Frederic Weisbecker <fweisbec@gmail.com>, markgross@thegnar.org, linville@tuxdriver.com, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-MTAuMDYuMjAxMCAwMzo0MiwgUmFmYWVsIEouIFd5c29ja2kg0L/QuNGI0LXRgjoKPiBPbiBXZWRu
-ZXNkYXksIEp1bmUgMDksIDIwMTAsIFRpbm8gS2VpdGVsIHdyb3RlOgo+PiBIaSwKPj4KPj4gYXMg
-b2Yga2VybmVsIDIuNi4zNCBJIHNvbWV0aW1lcyBnZXQgYSBzdHJhbmdlIGhhbmcgZHVyaW5nIHN1
-c3BlbmQgdG8KPj4gUkFNLiBBZnRlciBlY2hvIG1lbT4gIC9zeXMvcG93ZXIvc3RhdGUsIHRoZSBz
-dXNwZW5kIHNjcmlwdCBoYW5ncywgWG9yZwo+PiBlYXRzIDEwMCUgQ1BVLCBhbmQgdGhlIGRlc2t0
-b3AgaXMgZnJvemVuLiBJIGNhbiBraWxsIHRoZSBzY3JpcHQgYW5kIHRoZQo+PiBjb21wdXRlciB3
-aWxsIHRoZW4gc3VzcGVuZCBhbmQgcmVzdW1lIGZpbmUuIFRoZSBrZXJuZWwgbG9nIHNob3dzCj4+
-IG5vdGhpbmcgaW50ZXJlc3Rpbmcgd2hlbiB0aGUgaGFuZyBoYXBwZW5zOgo+Pgo+PiB1c2JscDA6
-IHJlbW92ZWQKPj4gdXNiY29yZTogZGVyZWdpc3RlcmluZyBpbnRlcmZhY2UgZHJpdmVyIGR2Yl91
-c2JfdnA3MDQ1Cj4+IGR2Yi11c2I6IFR3aW5oYW4gVVNCMi4wIERWQi1UIHJlY2VpdmVyIChUd2lu
-aGFuRFRWIEFscGhhL01hZ2ljQm94IElJKQo+PiBzdWNjZXNzZnVsbHkgZGVpbml0aWFsaXplZCBh
-bmQgZGlzY29ubmVjdGVkLgo+PiBQTTogU3luY2luZyBmaWxlc3lzdGVtcyAuLi4gZG9uZS4KClNv
-dW5kcyB2ZXJ5IG11Y2ggbGlrZSB0aGUgcHJvYmxlbSBJIGhhdmUgd2l0aCAyLjYuMzQgZmluYWwu
-ICBEaWQgbm90CmhhcHBlbiB3aXRoIDIuNi4zNC1yYzcgd2hpY2ggc3VzcGVuZGVkIGp1c3QgZmlu
-ZSwgYnV0IGhhcHBlbnMgcXVpdGUKcmVndWxhcmx5IG9uIDIuNi4zNCBmaW5hbCAtIG5vdCBldmVy
-eSBzdXNwZW5kIGJ1dCBlYWNoIDJuZCBvciAzcmQKYXR0ZW1wdC4gIEkgc3RvcHBlZCBkb2luZyBz
-dXNwZW5kLXRvLXJhbSBkdWUgdG8gdGhpcywgYmVjYXVzZSBpdCdzCnVucmVsaWFibGUuICBTdXNw
-ZW5kLXRvLWRpc2sgd29ya3MganVzdCBmaW5lLgoKPj4gSXMgdGhpcyBhIGtub3duIHByb2JsZW0/
-Cj4KPiBObywgaXQncyBub3QuCj4KPj4gSSBoYWQgcm9jayBzdGFibGUgc3VzcGVuZCB3aXRoIDIu
-My4zMy54LiBUaGUKPj4gY29tcHV0ZXIgaXMgYSBNYWMgbWluaSBDb3JlMiBEdW8gd2l0aCBpOTQ1
-IGdyYXBoaWNzLiBJIHVzZSBLTVMuIEkgd2lsbAo+PiBjb21waWxlIGEga2VybmVsIHdpdGggc3Vz
-cGVuZCBkZWJ1ZyB0byBnZXQgbW9yZSBpbmZvcm1hdGlvbiBpZiB0aGUgaGFuZwo+PiBoYXBwZW5z
-IG5leHQgdGltZS4KCkl0J3MgYW1kNzgwZyBhdGhsb24tYmFzZWQgbWFjaGluZSBoZXJlLCB3aXRo
-IHJhZGVvbiBncmFwaGljcywgYWxzbyB3aXRoIEtNUy4KCj4gWWVzLCAgcGxlYXNlIHRyeSB0byBn
-ZXQgbW9yZSBpbmZvcm1hdGlvbi4KCkdvdCBpdCA7KQoKL21qdApfX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgt
-cG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0
-aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Wed, 09 Jun 2010 13:05:49 -0400
+James Bottomley <James.Bottomley@suse.de> wrote:
+> On Wed, 2010-06-09 at 18:32 +0200, Florian Mickler wrote:
+> > On Wed, 09 Jun 2010 12:07:25 -0400
+> > James Bottomley <James.Bottomley@suse.de> wrote:
+> > > OK, so the expression of the race is that the latest notification gets
+> > > lost.  If something is tracking values, you'd really like to lose the
+> > > previous one (which is now irrelevant) not the latest one.  The point is
+> > > there's still a race.
+> > > 
+> > > James
+> > > 
+> > 
+> > Yeah, but for blocking notification it is not that bad. 
+> 
+> The network latency notifier uses the value to recalculate something.
+> Losing the last value will mean it's using stale data.
+
+Actually after pondering a bit, it is not stale data that gets
+delivered: (Correct me if I'm wrong)
+
+The update_notify() function determines the extreme value and then
+calls the blocking_notifier_chain. 
+
+But just before the update_notify() function get's called, the
+work-structure is reset and re-queue-able. So it is possible to queue it
+already even before the extreme_value in update_notify get's
+determined. 
+
+So the notified value is always the latest or there is another
+notification underway.
+
+> 
+> > Doesn't using blocking notifiers mean that you need to always check
+> > via pm_qos_request() to get the latest value anyways? I.e. the
+> > notification is just a hint, that something changed so you can act on
+> > it. But if you act (may it because of notification or because of
+> > something other) then you have to get the current value anyways.
+> 
+> Well, the network notifier assumes the notifier value is the latest ... 
+> 
+> > I think there are 2 schemes of operation. The one which needs
+> > atomic notifiers and where it would be bad if we lost any notification
+> > and the other where it is just a way of doing some work in a timely
+> > fashion but it isn't critical that it is done right away.
+> > 
+> > pm_qos was the second kind of operation up until now, because the
+> > notifiers may have got scheduled away while blocked. 
+> 
+> Actually, no ... the current API preserves ordering semantics.  If a
+> notifier sleeps and another change comes along, the update callsite will
+> sleep on the notifier's mutex ... so ordering is always preserved.
+
+If my above thinkings are right, then the change in semantics is only,
+that now you can not determine by the number of notifications the
+number of update_request-calls.
+
+> 
+> James
+> 
+
+Cheers,
+Flo
