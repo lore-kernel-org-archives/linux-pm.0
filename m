@@ -1,17 +1,13 @@
-From: Neil Brown <neilb@suse.de>
-Subject: Re: suspend blockers & Android integration
-Date: Thu, 10 Jun 2010 15:10:55 +1000
-Message-ID: <20100610151055.5a0870ba__46531.8826529712$1276146777$gmane$org@notabene.brown>
-References: <AANLkTilALyvthzh8rMiDFFP_QTz_o5hxdE8tArMUonpP@mail.gmail.com>
-	<Pine.LNX.4.44L0.1006091031030.1728-100000@iolanthe.rowland.org>
-	<AANLkTil2JhBgJ27qcTARVj2wVgEltxZKPOc9Ddu4c8yY@mail.gmail.com>
-	<alpine.DEB.2.01.1006092117100.17462@asgard.lang.hm>
-	<AANLkTilrJYg-z6mbRfhhrDdhpWUYSXGQEMCGgBj24xZs@mail.gmail.com>
+From: Michael Tokarev <mjt@tls.msk.ru>
+Subject: Re: Suspend hangs since 2.6.34
+Date: Thu, 10 Jun 2010 10:05:05 +0400
+Message-ID: <4C108091.3060204__2295.16189215264$1276149967$gmane$org@msgid.tls.msk.ru>
+References: <20100609175356.GA17332@x61.home> <201006100142.13131.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTilrJYg-z6mbRfhhrDdhpWUYSXGQEMCGgBj24xZs@mail.gmail.com>
+In-Reply-To: <201006100142.13131.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,20 +17,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>
-Cc: david@lang.hm, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Tino Keitel <tino.keitel+xorg@tikei.de>, intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCA5IEp1biAyMDEwIDIxOjUxOjM4IC0wNzAwCkFydmUgSGrDuG5uZXbDpWcgPGFydmVA
-YW5kcm9pZC5jb20+IHdyb3RlOgoKPiBUaGUgY3VycmVudCB1c2VyIHNwYWNlIGludGVyZmFjZSBk
-b2VzIG5vdCByZXF1aXJlIHRoYXQgY2xpZW50cwo+IHJlZ2lzdGVyIHRoZSBmaWxlIGRlc2NyaXB0
-b3JzIHRoYXQgdGhleSBnZXQgd2FrZXVwIGV2ZW50cyBmcm9tIHdpdGgKPiBhbm90aGVyIHByb2Nl
-c3MuCj4gCgpIb3dldmVyIEkgYmVsaWV2ZSB0aGV5ICpkbyogcmVnaXN0ZXIgdGhlc2UgZmlsZSBk
-ZXNjcmlwdG9ycyB3aXRoIHRoZSBrZXJuZWwsCnZpYSBzb21lIHNvcnQgb2YgaW9jdGwgKEkgdGhp
-bmsgeW91IGhhdmUgc2FpZCB0aGF0IGlzIHRoZSBjYXNlIGZvciBpbnB1dApkZXZpY2VzIGF0IGxl
-YXN0KS4KQ2FuIHlvdSBjb25maXJtIHRoYXQ/CgpJZiB0aGF0IGlzIHRoZSBjYXNlLCBpcyBpdCBy
-ZWFsbHkgc3VjaCBhIGJpZyBjaGFuZ2UgdG8gcmVnaXN0ZXIgd2l0aCBhbm90aGVyCnByb2Nlc3Mg
-aW5zdGVhZCBvZiB3aXRoIHRoZSBrZXJuZWw/CgpUaGFua3MsCk5laWxCcm93bgoKCl9fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcg
-bGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxp
-bnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+MTAuMDYuMjAxMCAwMzo0MiwgUmFmYWVsIEouIFd5c29ja2kg0L/QuNGI0LXRgjoKPiBPbiBXZWRu
+ZXNkYXksIEp1bmUgMDksIDIwMTAsIFRpbm8gS2VpdGVsIHdyb3RlOgo+PiBIaSwKPj4KPj4gYXMg
+b2Yga2VybmVsIDIuNi4zNCBJIHNvbWV0aW1lcyBnZXQgYSBzdHJhbmdlIGhhbmcgZHVyaW5nIHN1
+c3BlbmQgdG8KPj4gUkFNLiBBZnRlciBlY2hvIG1lbT4gIC9zeXMvcG93ZXIvc3RhdGUsIHRoZSBz
+dXNwZW5kIHNjcmlwdCBoYW5ncywgWG9yZwo+PiBlYXRzIDEwMCUgQ1BVLCBhbmQgdGhlIGRlc2t0
+b3AgaXMgZnJvemVuLiBJIGNhbiBraWxsIHRoZSBzY3JpcHQgYW5kIHRoZQo+PiBjb21wdXRlciB3
+aWxsIHRoZW4gc3VzcGVuZCBhbmQgcmVzdW1lIGZpbmUuIFRoZSBrZXJuZWwgbG9nIHNob3dzCj4+
+IG5vdGhpbmcgaW50ZXJlc3Rpbmcgd2hlbiB0aGUgaGFuZyBoYXBwZW5zOgo+Pgo+PiB1c2JscDA6
+IHJlbW92ZWQKPj4gdXNiY29yZTogZGVyZWdpc3RlcmluZyBpbnRlcmZhY2UgZHJpdmVyIGR2Yl91
+c2JfdnA3MDQ1Cj4+IGR2Yi11c2I6IFR3aW5oYW4gVVNCMi4wIERWQi1UIHJlY2VpdmVyIChUd2lu
+aGFuRFRWIEFscGhhL01hZ2ljQm94IElJKQo+PiBzdWNjZXNzZnVsbHkgZGVpbml0aWFsaXplZCBh
+bmQgZGlzY29ubmVjdGVkLgo+PiBQTTogU3luY2luZyBmaWxlc3lzdGVtcyAuLi4gZG9uZS4KClNv
+dW5kcyB2ZXJ5IG11Y2ggbGlrZSB0aGUgcHJvYmxlbSBJIGhhdmUgd2l0aCAyLjYuMzQgZmluYWwu
+ICBEaWQgbm90CmhhcHBlbiB3aXRoIDIuNi4zNC1yYzcgd2hpY2ggc3VzcGVuZGVkIGp1c3QgZmlu
+ZSwgYnV0IGhhcHBlbnMgcXVpdGUKcmVndWxhcmx5IG9uIDIuNi4zNCBmaW5hbCAtIG5vdCBldmVy
+eSBzdXNwZW5kIGJ1dCBlYWNoIDJuZCBvciAzcmQKYXR0ZW1wdC4gIEkgc3RvcHBlZCBkb2luZyBz
+dXNwZW5kLXRvLXJhbSBkdWUgdG8gdGhpcywgYmVjYXVzZSBpdCdzCnVucmVsaWFibGUuICBTdXNw
+ZW5kLXRvLWRpc2sgd29ya3MganVzdCBmaW5lLgoKPj4gSXMgdGhpcyBhIGtub3duIHByb2JsZW0/
+Cj4KPiBObywgaXQncyBub3QuCj4KPj4gSSBoYWQgcm9jayBzdGFibGUgc3VzcGVuZCB3aXRoIDIu
+My4zMy54LiBUaGUKPj4gY29tcHV0ZXIgaXMgYSBNYWMgbWluaSBDb3JlMiBEdW8gd2l0aCBpOTQ1
+IGdyYXBoaWNzLiBJIHVzZSBLTVMuIEkgd2lsbAo+PiBjb21waWxlIGEga2VybmVsIHdpdGggc3Vz
+cGVuZCBkZWJ1ZyB0byBnZXQgbW9yZSBpbmZvcm1hdGlvbiBpZiB0aGUgaGFuZwo+PiBoYXBwZW5z
+IG5leHQgdGltZS4KCkl0J3MgYW1kNzgwZyBhdGhsb24tYmFzZWQgbWFjaGluZSBoZXJlLCB3aXRo
+IHJhZGVvbiBncmFwaGljcywgYWxzbyB3aXRoIEtNUy4KCj4gWWVzLCAgcGxlYXNlIHRyeSB0byBn
+ZXQgbW9yZSBpbmZvcm1hdGlvbi4KCkdvdCBpdCA7KQoKL21qdApfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgt
+cG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0
+aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
