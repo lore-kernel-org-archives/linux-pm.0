@@ -1,14 +1,15 @@
-From: Bryan Huntsman <bryanh@codeaurora.org>
-Subject: Re: PM QoS dynamic resource manager
-Date: Wed, 09 Jun 2010 18:22:39 -0700
-Message-ID: <4C103E5F.9060600@codeaurora.org>
-References: <alpine.DEB.2.00.1005211533530.25765@pchidamb-lnx.qualcomm.com>	<20100525145223.GA4974@gvim.org>	<AANLkTikLgu2c1GPE3glHLlaznOM59SVeCj2NHzDjyjZR@mail.gmail.com>	<20100608033333.GA23066@gvim.org>	<AANLkTinGBvZm870CsjocsCV1SmQ-FCCbJLtKWR1juB1Q@mail.gmail.com>	<4C0ECC38.2000003@codeaurora.org>	<20100609030525.GD26668@gvim.org>
-	<AANLkTimu7-8CZUbA2lNuYauZDoOuiBJI_v3cSIF9qqul@mail.gmail.com>
+From: david@lang.hm
+Subject: Re: suspend blockers & Android integration
+Date: Wed, 9 Jun 2010 21:21:00 -0700 (PDT)
+Message-ID: <alpine.DEB.2.01.1006092117100.17462__20512.8064765178$1276143753$gmane$org@asgard.lang.hm>
+References: <AANLkTilALyvthzh8rMiDFFP_QTz_o5hxdE8tArMUonpP@mail.gmail.com>
+	<Pine.LNX.4.44L0.1006091031030.1728-100000@iolanthe.rowland.org>
+	<AANLkTil2JhBgJ27qcTARVj2wVgEltxZKPOc9Ddu4c8yY@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTimu7-8CZUbA2lNuYauZDoOuiBJI_v3cSIF9qqul@mail.gmail.com>
+In-Reply-To: <AANLkTil2JhBgJ27qcTARVj2wVgEltxZKPOc9Ddu4c8yY@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,52 +19,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mike Chan <mike@android.com>
-Cc: linux-pm@lists.linux-foundation.org, mark gross <640e9920@gmail.com>, markgross@thegnar.org
+To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-> Are you thinking of having a (possible) pm qos constraint for each
-> struct device_driver? Or struct bus_type ? This would probably work if
-> for something like i2c. I'm not sure how this would work for memory
-> bus. If you did not want to tie memory bus performance to cpu speeds,
-> since (at least from what I"ve seen in omap / msm / tegra) there's no
-> device_driver for a memory bus clock, but I could be wrong so someone
-> correct me if I'm mistaken.
+On Wed, 9 Jun 2010, Arve Hj?nnev?g wrote:
 
-I'm imagining QoS classes similar to pm_qos.  Bandwidth, cpu latency, 
-etc.  Each driver decides what to do for each type, if anything.  This 
-gets passed up the tree and aggregated by a parent, which I think would 
-be a bus driver but could be anyone who cares.  The QoS sink, for lack 
-of a better term, decides what it wants to do with that data.  For a 
-memory bus, it would be possible to add up all bandwidth requests and 
-scale the bus clock accordingly.  It could also look at the active 
-status of it's children, decide that the bus is inactive, and completely 
-shut it off.  This is where having arch-specific bus drivers is 
-necessary.  What each QoS sink does will vary drastically from platform 
-to platform, but the input data should be somewhat consistent.  That's 
-why I'm looking into extending runtime_pm in this manner.
+>
+> The power may not see the event, the process that reads the event will
+> always see it. If the power manager is not in the poll call when the
+> event happens, the process that reads the event can read the event
+> before the power manager calls poll.
+>
 
-> Typically I've seen (on msm / tegra / omap) if cpu is running at
-> frequency X, then set mem bus clock to Y. Which leads to a bunch of
-> hacks with drivers requesting frequency X, when really they need the
-> faster memory speed.
+>
+> All input events that can wake the system are handled by one
+> user-space suspend blocker. Input devices come and go so we would need
+> to add and remove the fds dynamically.
 
-Picking the right QoS constraints will always be a problem.  It's 
-possible to abuse pm_qos today in the same manner.
 
-> Perhaps both per bus-type pm qos parameter as well as a new global
-> memory bus (per cpu for numa systems?) parameter.
-> 
-> I'm worried about trying to over-engineer a solution here for
-> non-existing (or non-interested) customers. Ideally something that
-> will fit our needs with Android on msm / omap / tegra platforms but
-> still flexible enough for non-SOC.
-> 
-> -- Mike
+>
+> For that to work the wakeup events would have to be reported to the
+> power manager in a reliable way in the first place. Passing the file
+> descriptor that the app uses to the power manager does not work for
+> this, since the app could read the event while the power manager was
+> not in the poll call and the power manager would never see it. Also,
+> existing apps don't pass their file descriptors to the power manager,
+> so it has the get the event from somewhere else.
+>
 
-In general, I share your dislike for over-engineering.  This doesn't 
-feel like that quite yet.  From a high level at least, it would seem to 
-fit in nicely with runtime_pm.  From Mark's comments it sounds like 
-others are having similar thoughts.
+why could the suspend blocker process see all events, but the power 
+manager process not see the events?
 
-- Bryan
+have the userspace talk to the power manager the way it does to the 
+suspend blocker now and what's the difference?
+
+effectivly think s/suspend blocker/power manager/ (with the power manager 
+doing all the other things that are proposed instead of grabbing the 
+wakelock), the difference should be hidden to the rest of userspace.
+
+what am I missing here?
+
+David Lang
