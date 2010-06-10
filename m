@@ -1,14 +1,14 @@
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: Suspend hangs since 2.6.34
-Date: Thu, 10 Jun 2010 17:14:24 -0400
-Message-ID: <4C1155B0.7030605@tmr.com>
-References: <20100609175356.GA17332@x61.home> <201006100142.13131.rjw@sisk.pl>
-	<4C108091.3060204@msgid.tls.msk.ru>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: suspend blockers & Android integration
+Date: Thu, 10 Jun 2010 16:02:34 -0700
+Message-ID: <AANLkTiniGxuHLeTyxBe7zZxOdYJEkFcl3akR2E_aLDi3__32683.5252381445$1276211029$gmane$org@mail.gmail.com>
+References: <AANLkTil2JhBgJ27qcTARVj2wVgEltxZKPOc9Ddu4c8yY@mail.gmail.com>
+	<Pine.LNX.4.44L0.1006101003480.1702-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C108091.3060204@msgid.tls.msk.ru>
+In-Reply-To: <Pine.LNX.4.44L0.1006101003480.1702-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,45 +18,160 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Tino Keitel <tino.keitel+xorg@tikei.de>, intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-TWljaGFlbCBUb2thcmV2IHdyb3RlOgo+IDEwLjA2LjIwMTAgMDM6NDIsIFJhZmFlbCBKLiBXeXNv
-Y2tpINC/0LjRiNC10YI6Cj4+IE9uIFdlZG5lc2RheSwgSnVuZSAwOSwgMjAxMCwgVGlubyBLZWl0
-ZWwgd3JvdGU6Cj4+PiBIaSwKPj4+Cj4+PiBhcyBvZiBrZXJuZWwgMi42LjM0IEkgc29tZXRpbWVz
-IGdldCBhIHN0cmFuZ2UgaGFuZyBkdXJpbmcgc3VzcGVuZCB0bwo+Pj4gUkFNLiBBZnRlciBlY2hv
-IG1lbT4gIC9zeXMvcG93ZXIvc3RhdGUsIHRoZSBzdXNwZW5kIHNjcmlwdCBoYW5ncywgWG9yZwo+
-Pj4gZWF0cyAxMDAlIENQVSwgYW5kIHRoZSBkZXNrdG9wIGlzIGZyb3plbi4gSSBjYW4ga2lsbCB0
-aGUgc2NyaXB0IGFuZCB0aGUKPj4+IGNvbXB1dGVyIHdpbGwgdGhlbiBzdXNwZW5kIGFuZCByZXN1
-bWUgZmluZS4gVGhlIGtlcm5lbCBsb2cgc2hvd3MKPj4+IG5vdGhpbmcgaW50ZXJlc3Rpbmcgd2hl
-biB0aGUgaGFuZyBoYXBwZW5zOgo+Pj4KPj4+IHVzYmxwMDogcmVtb3ZlZAo+Pj4gdXNiY29yZTog
-ZGVyZWdpc3RlcmluZyBpbnRlcmZhY2UgZHJpdmVyIGR2Yl91c2JfdnA3MDQ1Cj4+PiBkdmItdXNi
-OiBUd2luaGFuIFVTQjIuMCBEVkItVCByZWNlaXZlciAoVHdpbmhhbkRUViBBbHBoYS9NYWdpY0Jv
-eCBJSSkKPj4+IHN1Y2Nlc3NmdWxseSBkZWluaXRpYWxpemVkIGFuZCBkaXNjb25uZWN0ZWQuCj4+
-PiBQTTogU3luY2luZyBmaWxlc3lzdGVtcyAuLi4gZG9uZS4KPiAKPiBTb3VuZHMgdmVyeSBtdWNo
-IGxpa2UgdGhlIHByb2JsZW0gSSBoYXZlIHdpdGggMi42LjM0IGZpbmFsLiAgRGlkIG5vdAo+IGhh
-cHBlbiB3aXRoIDIuNi4zNC1yYzcgd2hpY2ggc3VzcGVuZGVkIGp1c3QgZmluZSwgYnV0IGhhcHBl
-bnMgcXVpdGUKPiByZWd1bGFybHkgb24gMi42LjM0IGZpbmFsIC0gbm90IGV2ZXJ5IHN1c3BlbmQg
-YnV0IGVhY2ggMm5kIG9yIDNyZAo+IGF0dGVtcHQuICBJIHN0b3BwZWQgZG9pbmcgc3VzcGVuZC10
-by1yYW0gZHVlIHRvIHRoaXMsIGJlY2F1c2UgaXQncwo+IHVucmVsaWFibGUuICBTdXNwZW5kLXRv
-LWRpc2sgd29ya3MganVzdCBmaW5lLgo+IAo+Pj4gSXMgdGhpcyBhIGtub3duIHByb2JsZW0/Cj4+
-ClRoZXJlIGFyZSB0d28gdGhpbmdzIHlvdSBjYW4gdHJ5IGlmIHlvdSB3aXNoLCBvbmUgaXMgdG8g
-Z28gdGhlIHRleHQgY29uc29sZSAKYmVmb3JlIHN1c3BlbmQsIHRoZSBvdGhlciBpcyB0byBydW4g
-eW91ciBzeXN0ZW0gaW4gVkVTQSB2aWRlbyBtb2RlIChhc3N1bWluZyB5b3UgCmFyZSBhIGx1Y2t5
-IHBlcnNvbiBhbmQgYW55IG90aGVyIG1vZGUgaXMgc3VwcG9ydGVkKS4KCkknbSBub3QgcnVubmlu
-ZyBvbiAyLjYuMzQgZm9yIHByb2R1Y3Rpb24gKDIuNi4zMy41KSBidXQgSSBkaWQgdHJ5IHdoZW4g
-aXQgZmlyc3QgCmNhbWUgb3V0LCBhbmQgc2F3IHNvbWUgaXNzdWVzIHRoZXJlLgoKPj4gTm8sIGl0
-J3Mgbm90Lgo+Pgo+Pj4gSSBoYWQgcm9jayBzdGFibGUgc3VzcGVuZCB3aXRoIDIuMy4zMy54LiBU
-aGUKPj4+IGNvbXB1dGVyIGlzIGEgTWFjIG1pbmkgQ29yZTIgRHVvIHdpdGggaTk0NSBncmFwaGlj
-cy4gSSB1c2UgS01TLiBJIHdpbGwKPj4+IGNvbXBpbGUgYSBrZXJuZWwgd2l0aCBzdXNwZW5kIGRl
-YnVnIHRvIGdldCBtb3JlIGluZm9ybWF0aW9uIGlmIHRoZSBoYW5nCj4+PiBoYXBwZW5zIG5leHQg
-dGltZS4KPiAKPiBJdCdzIGFtZDc4MGcgYXRobG9uLWJhc2VkIG1hY2hpbmUgaGVyZSwgd2l0aCBy
-YWRlb24gZ3JhcGhpY3MsIGFsc28gd2l0aCAKPiBLTVMuCj4gCj4+IFllcywgIHBsZWFzZSB0cnkg
-dG8gZ2V0IG1vcmUgaW5mb3JtYXRpb24uCj4gCj4gR290IGl0IDspCj4gCj4gL21qdAoKCi0tIApC
-aWxsIERhdmlkc2VuIDxkYXZpZHNlbkB0bXIuY29tPgogICAiV2UgaGF2ZSBtb3JlIHRvIGZlYXIg
-ZnJvbSB0aGUgYnVuZ2xpbmcgb2YgdGhlIGluY29tcGV0ZW50IHRoYW4gZnJvbQp0aGUgbWFjaGlu
-YXRpb25zIG9mIHRoZSB3aWNrZWQuIiAgLSBmcm9tIFNsYXNoZG90CgpfX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGlu
-dXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3Vu
-ZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+2010/6/10 Alan Stern <stern@rowland.harvard.edu>:
+> On Wed, 9 Jun 2010, Arve Hj=F8nnev=E5g wrote:
+>
+>> > I think this is where you misunderstood. =A0There is no "report wakeup
+>> > event" as such. =A0All that happens is that data becomes available to =
+be
+>> > read from the input device file. =A0However the power manager process
+>> > isn't polling the device file at this point (because a suspend blocker
+>> > is active), so it doesn't realize that the source has become active
+>> > again.
+>> >
+>>
+>> Yes this is not what I though you were suggesting. I thought you were
+>> trying to make sure the power manager sees all wakeup events. If you
+>> are only listening for wakeup events while no suspend blockers are
+>> active, why latch them?
+>
+> ...
+>
+>> If you only poll the fd after the last user-space suspend blocker is
+>> released, why do you care when the kernel wakelock could have been
+>> released? It seem the only thing it saves you is an extra poll call
+>> when two wakeup events happen at the same time and one of them is
+>> fully processed and unblocks suspend before the other event handler
+>> blocks suspend. It seems strange to remove your wakeup event from the
+>> list when a specific suspend blocker is acquired when any suspend
+>> blocker will prevent that wakeup event from being added to the list in
+>> the first place.
+>
+> ...
+>
+>> I don't think there is a need to tie the fds to anything else. If you
+>> poll the fds on the last suspend unblock call, you should get the same
+>> behaviour.
+>
+> You are quite right; there is no need to associate suspend blockers
+> with wakeup sources. =A0The power manager merely needs to poll all wakeup
+> sources whenever no suspend blockers are active. =A0I put those
+> associations in the proposal because of the line of reasoning that led
+> up to it, but they aren't necessary.
+>
+>
+>> All input events that can wake the system are handled by one
+>> user-space suspend blocker. Input devices come and go so we would need
+>> to add and remove the fds dynamically.
+>
+> Correct; the power manager would need to know whenever a wakeup-capable
+> device file was opened or closed.
+>
+>
+>> > The power manager would indeed have to know about wakeup devices that
+>> > don't need to _keep_ the system awake. =A0Here's one way to cope: Duri=
+ng
+>> > those times when no suspend blockers are active but the PM process
+>> > thinks a wakeup source is active, the PM process could poll every few
+>> > seconds to update its list of active sources. =A0At those points it co=
+uld
+>> > remove wakeup sources that have timed out.
+>> >
+>>
+>> For that to work the wakeup events would have to be reported to the
+>> power manager in a reliable way in the first place. Passing the file
+>> descriptor that the app uses to the power manager does not work for
+>> this, since the app could read the event while the power manager was
+>> not in the poll call and the power manager would never see it.
+>
+> If the app activates a suspend blocker before reading the event, this
+> doesn't matter. =A0If the app doesn't activate a suspend blocker then it
+> risks being suspended after it has read the event but before it has
+> handled the event. =A0This is equally true with wakelocks.
+>
+
+It is not the same. Using a wakelock with a timeout only has a problem
+if the app did not get a change to run and block suspend before the
+timeout expires. With the timeout values we use there is only a
+problem if the system is already unresponsive. If the driver does not
+block suspend but instead a power manager calls select or poll on a
+file descriptor while the app does a blocking read, the power manager
+can easily miss the event and suspend before the app blocks suspend.
+
+>> Also,
+>> existing apps don't pass their file descriptors to the power manager,
+>> so it has the get the event from somewhere else.
+>
+> Now you've put your finger on the key. =A0The main difference between my
+> scheme and the original wakelock scheme is that programs have to inform
+> the power manager whenever they open or close a wakeup-capable device
+> file. =A0With everything implemented inside the kernel this isn't
+> necessary, because obviously a kernel driver already knows when its
+> device file is opened or closed.
+>
+> As I said before, this additional complication in userspace is the
+> price paid for keeping stuff out of the kernel. =A0If you had implemented
+> wakelocks this way originally, you would not have needed to patch the
+> vanilla kernel and this entire stormy discussion would never have
+> occurred. =A0(But of course you couldn't have used this for the original
+> implementation of wakelocks, because back then the hardware couldn't
+> achieve the lowest power states from idle.)
+>
+>> > Obviously this proposal would complicate your userspace. =A0Not
+>> > enormously, since most of the work is confined to the power manager,
+>>
+>> No, the main problem it that it is not confined to the power manager.
+>> The power manager does not have a list of file descriptors to monitor,
+>> so we have to modify all code that handles wakeup events. This
+>> includes vendor supplied code that we don't have the source for, but,
+>> on some platforms at least, this code relies on kernel wakelocks with
+>> a timeout and could at first be handled the same way we would have to
+>> handle existing apps reading from a socket.
+>
+> Look, I never said this scheme was _better_ than wakelocks. =A0I merely
+> said that it could be used without significant modifications to the
+> kernel.
+>
+>> The suspend blocker approach is more generally useful since it
+>> supports hardware where suspend is needed. Why this argument is being
+>> ignored is very puzzling.
+>
+> Probably because people doesn't envision system suspend being used for
+> dynamic power management on that kind of hardware.
+>
+
+I'm not sure what you mean by dynamic power management here (frequency
+of suspends?), but auto suspend is already in use on x86 desktops and
+laptops. Suspend blockers can fix the race with some wakeup events
+there.
+
+>> Your solution is not immediately useful since depends on removing all
+>> periodic kernel timers and adding support to stopping the monotonic
+>> clock for set of processes that are frozen.
+>
+> The monotonic clock is indeed an issue.
+>
+> Periodic kernel timers... I don't know about them. =A0Has anyone tried to
+> measure them? =A0There are excellent reasons for trimming them when the
+> system goes into low-power idle, independent of Android. =A0This sounds
+> like the kind of thing Arjan might have worked on.
+>
+>> Your solution forces the user space interface to be more complicated,
+>> and it creates a new user space power manager that has to start before
+>> any process that handle wakeup events.
+>
+> That's right.
+>
+> Alan Stern
+>
+>
+
+
+
+-- =
+
+Arve Hj=F8nnev=E5g
