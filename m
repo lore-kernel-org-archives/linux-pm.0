@@ -1,18 +1,14 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH v4] pm_qos: make update_request non blocking
-Date: Thu, 10 Jun 2010 09:45:25 +0200
-Message-ID: <20100610094525.0449d797__599.192819982086$1276156025$gmane$org@schatten.dmk.lab>
-References: <1276097381-3982-1-git-send-email-florian@mickler.org>
-	<1276097832.4343.223.camel@mulgrave.site>
-	<20100609180033.39d5b499@schatten.dmk.lab>
-	<1276099645.4343.257.camel@mulgrave.site>
-	<20100609183204.1eeca494@schatten.dmk.lab>
-	<1276103149.4343.350.camel@mulgrave.site>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: suspend blockers & Android integration
+Date: Thu, 10 Jun 2010 10:59:43 +0200
+Message-ID: <201006101059.44411.rjw__25235.2588497617$1276160554$gmane$org@sisk.pl>
+References: <20100603193045.GA7188@elte.hu> <201006091140.28034.rjw@sisk.pl>
+	<20100610080425.6f005dbb@notabene.brown>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276103149.4343.350.camel@mulgrave.site>
+In-Reply-To: <20100610080425.6f005dbb@notabene.brown>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,70 +18,98 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Jonathan Corbet <corbet@lwn.net>, Frederic Weisbecker <fweisbec@gmail.com>, markgross@thegnar.org, linville@tuxdriver.com, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Neil Brown <neilb@suse.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Felipe Contreras <felipe.contreras@gmail.com>, Arve@smtp1.linux-foundation.org, "H. Peter Anvin" <hpa@zytor.com>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Florian Mickler <florian@mickler.org>, Ingo Molnar <mingo@elte.hu>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, david@lang.hm, tytso@mit.edu, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 09 Jun 2010 13:05:49 -0400
-James Bottomley <James.Bottomley@suse.de> wrote:
-> On Wed, 2010-06-09 at 18:32 +0200, Florian Mickler wrote:
-> > On Wed, 09 Jun 2010 12:07:25 -0400
-> > James Bottomley <James.Bottomley@suse.de> wrote:
-> > > OK, so the expression of the race is that the latest notification gets
-> > > lost.  If something is tracking values, you'd really like to lose the
-> > > previous one (which is now irrelevant) not the latest one.  The point is
-> > > there's still a race.
+On Thursday, June 10, 2010, Neil Brown wrote:
+> On Wed, 9 Jun 2010 11:40:27 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > On Wednesday 09 June 2010, Felipe Contreras wrote:
+> > > On Wed, Jun 9, 2010 at 6:46 AM, Linus Torvalds
+> > > <torvalds@linux-foundation.org> wrote:
+> > > > On Tue, 8 Jun 2010, david@lang.hm wrote:
+> > > >>
+> > > >> having suspend blockers inside the kernel adds significant complexity, it's
+> > > >> worth it only if the complexity buys you enough. In this case the question is
+> > > >> if the suspend blockers would extend the sleep time enough more to matter. As
+> > > >> per my other e-mail, this is an area with rapidly diminishing returns as the
+> > > >> sleep times get longer.
+> > > >
+> > > > Well, the counter-argument that nobody seems to have brought up is that
+> > > > suspend blockers exist, are real code, and end up being shipped in a lot
+> > > > of machines.
+> > > >
+> > > > That's a _big_ argument in favour of them. Certainly much bigger than
+> > > > arguing against them based on some complexity-arguments for an alternative
+> > > > that hasn't seen any testing at all.
+> > > >
+> > > > IOW, I would seriously hope that this discussion was more about real code
+> > > > that _exists_ and does what people need. It seems to have degenerated into
+> > > > something else.
+> > > >
+> > > > Because in the end, "code talks, bullshit walks". People can complain and
+> > > > suggest alternatives all they want, but you can't just argue. At some
+> > > > point you need to show the code that actually solves the problem.
 > > > 
-> > > James
-> > > 
+> > > That's assuming there is an actual problem, which according to all the
+> > > embedded people except android, there is not.
 > > 
-> > Yeah, but for blocking notification it is not that bad. 
-> 
-> The network latency notifier uses the value to recalculate something.
-> Losing the last value will mean it's using stale data.
-
-Actually after pondering a bit, it is not stale data that gets
-delivered: (Correct me if I'm wrong)
-
-The update_notify() function determines the extreme value and then
-calls the blocking_notifier_chain. 
-
-But just before the update_notify() function get's called, the
-work-structure is reset and re-queue-able. So it is possible to queue it
-already even before the extreme_value in update_notify get's
-determined. 
-
-So the notified value is always the latest or there is another
-notification underway.
-
-> 
-> > Doesn't using blocking notifiers mean that you need to always check
-> > via pm_qos_request() to get the latest value anyways? I.e. the
-> > notification is just a hint, that something changed so you can act on
-> > it. But if you act (may it because of notification or because of
-> > something other) then you have to get the current value anyways.
-> 
-> Well, the network notifier assumes the notifier value is the latest ... 
-> 
-> > I think there are 2 schemes of operation. The one which needs
-> > atomic notifiers and where it would be bad if we lost any notification
-> > and the other where it is just a way of doing some work in a timely
-> > fashion but it isn't critical that it is done right away.
+> > Yes, there is, but they've decided to ignore it.
 > > 
-> > pm_qos was the second kind of operation up until now, because the
-> > notifiers may have got scheduled away while blocked. 
+> > > And if there is indeed such a problem (probably not big), it might be
+> > > solved properly by the time suspend blockers are merged, or few
+> > > releases after.
+> > 
+> > Not quite.  Have you followed all of the discussion, actually?
+> > 
+> > > Whatever the solution (or workaround) is, it would be nice if it could
+> > > be used by more than just android people, and it would also be nice to
+> > > do it without introducing user-space API that *nobody* likes and might
+> > > be quickly deprecated.
+> > 
+> > I agree with Linus and I don't have that much of a problem with the API that
+> > people seem to have.  In fact the much-hated user space API is just a char
+> > device driver with 3 ioctls (that can be extended in future if need be) and
+> > the kernel API is acceptable to me. 
 > 
-> Actually, no ... the current API preserves ordering semantics.  If a
-> notifier sleeps and another change comes along, the update callsite will
-> sleep on the notifier's mutex ... so ordering is always preserved.
+> I think there is a little bit more to it than that.  It seems there is a new
+> ioctl for input/event devices to say "Any events queued here should be
+> treated as wake-up events".  There may be similar additions to other devices,
+> but I know of no details.
 
-If my above thinkings are right, then the change in semantics is only,
-that now you can not determine by the number of notifications the
-number of update_request-calls.
+That's not in the patchset as in my pull request.
 
+It is used on Android, though, and it would have been submitted separately, had
+the first patchset been merged.
+
+> I wonder if we can get a complete statement of changes to the user-space
+> API...
 > 
-> James
+> >                                       Yes, there is some overlap between it
+> > and PM QoS, but IMhO that overlap may be reduced over time (eg. by
+> > using PM QoS requirements to implement suspend blockers). 
+> > 
+> > To me, the question boils down to whether or not we're able to persuade the
+> > Android people to use any other approach (eg. by demonstrating that something
+> > else is actually better), because even if we invent a brilliant new approach,
+> > but Android ends up using its old one anyway, the net result will be as though
+> > we haven't done anything useful.
 > 
+> Yes.  There is no point unless we can meet somewhere in the middle.  I think
+> that would have to include a full suspend that freezes all processes.
+> Solutions which reject that - while quite clever - would require too much
+> change to Android user-space to be acceptable.
 
-Cheers,
-Flo
+Moreover, having thought a bit more about the "power manager in user space"
+concept I'm not sure if it really is that better than the original wakelocks
+idea.  Namely, it only repaces a kernel-based mechanism with a user space
+task doing basically the same thing, but the communication between that task
+and the other cooperating user space tasks is arguably more complicated (it
+also uses the kernel resources, although indirectly).
+
+So, for a phone-like system, where you'd generally want to simplify user space,
+having a "power manager" in the kernel seems to make sense to me.
+
+Rafael
