@@ -1,15 +1,19 @@
-From: Neil Brown <neilb@suse.de>
-Subject: Re: suspend blockers & Android integration
-Date: Thu, 10 Jun 2010 22:00:40 +1000
-Message-ID: <20100610220040.7e9eaf55__17580.374555155$1276171452$gmane$org@notabene.brown>
-References: <20100603193045.GA7188@elte.hu> <201006091140.28034.rjw@sisk.pl>
-	<20100610080425.6f005dbb@notabene.brown>
-	<201006101059.44411.rjw@sisk.pl>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: [PATCH v4] pm_qos: make update_request non blocking
+Date: Thu, 10 Jun 2010 08:39:04 -0500
+Message-ID: <1276177144.27283.37.camel__1512.22368372164$1276177299$gmane$org@mulgrave.site>
+References: <1276097381-3982-1-git-send-email-florian@mickler.org>
+	<1276097832.4343.223.camel@mulgrave.site>
+	<20100609180033.39d5b499@schatten.dmk.lab>
+	<1276099645.4343.257.camel@mulgrave.site>
+	<20100609183204.1eeca494@schatten.dmk.lab>
+	<1276103149.4343.350.camel@mulgrave.site>
+	<20100610094525.0449d797@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006101059.44411.rjw@sisk.pl>
+In-Reply-To: <20100610094525.0449d797@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,148 +23,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: david@lang.hm, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Florian Mickler <florian@mickler.org>
+Cc: markgross@thegnar.org, Frederic Weisbecker <fweisbec@gmail.com>, Jonathan Corbet <corbet@lwn.net>, linville@tuxdriver.com, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 10 Jun 2010 10:59:43 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> On Thursday, June 10, 2010, Neil Brown wrote:
-> > On Wed, 9 Jun 2010 11:40:27 +0200
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > On Wednesday 09 June 2010, Felipe Contreras wrote:
-> > > > On Wed, Jun 9, 2010 at 6:46 AM, Linus Torvalds
-> > > > <torvalds@linux-foundation.org> wrote:
-> > > > > On Tue, 8 Jun 2010, david@lang.hm wrote:
-> > > > >>
-> > > > >> having suspend blockers inside the kernel adds significant complexity, it's
-> > > > >> worth it only if the complexity buys you enough. In this case the question is
-> > > > >> if the suspend blockers would extend the sleep time enough more to matter. As
-> > > > >> per my other e-mail, this is an area with rapidly diminishing returns as the
-> > > > >> sleep times get longer.
-> > > > >
-> > > > > Well, the counter-argument that nobody seems to have brought up is that
-> > > > > suspend blockers exist, are real code, and end up being shipped in a lot
-> > > > > of machines.
-> > > > >
-> > > > > That's a _big_ argument in favour of them. Certainly much bigger than
-> > > > > arguing against them based on some complexity-arguments for an alternative
-> > > > > that hasn't seen any testing at all.
-> > > > >
-> > > > > IOW, I would seriously hope that this discussion was more about real code
-> > > > > that _exists_ and does what people need. It seems to have degenerated into
-> > > > > something else.
-> > > > >
-> > > > > Because in the end, "code talks, bullshit walks". People can complain and
-> > > > > suggest alternatives all they want, but you can't just argue. At some
-> > > > > point you need to show the code that actually solves the problem.
+On Thu, 2010-06-10 at 09:45 +0200, Florian Mickler wrote:
+> On Wed, 09 Jun 2010 13:05:49 -0400
+> James Bottomley <James.Bottomley@suse.de> wrote:
+> > On Wed, 2010-06-09 at 18:32 +0200, Florian Mickler wrote:
+> > > On Wed, 09 Jun 2010 12:07:25 -0400
+> > > James Bottomley <James.Bottomley@suse.de> wrote:
+> > > > OK, so the expression of the race is that the latest notification gets
+> > > > lost.  If something is tracking values, you'd really like to lose the
+> > > > previous one (which is now irrelevant) not the latest one.  The point is
+> > > > there's still a race.
 > > > > 
-> > > > That's assuming there is an actual problem, which according to all the
-> > > > embedded people except android, there is not.
+> > > > James
+> > > > 
 > > > 
-> > > Yes, there is, but they've decided to ignore it.
-> > > 
-> > > > And if there is indeed such a problem (probably not big), it might be
-> > > > solved properly by the time suspend blockers are merged, or few
-> > > > releases after.
-> > > 
-> > > Not quite.  Have you followed all of the discussion, actually?
-> > > 
-> > > > Whatever the solution (or workaround) is, it would be nice if it could
-> > > > be used by more than just android people, and it would also be nice to
-> > > > do it without introducing user-space API that *nobody* likes and might
-> > > > be quickly deprecated.
-> > > 
-> > > I agree with Linus and I don't have that much of a problem with the API that
-> > > people seem to have.  In fact the much-hated user space API is just a char
-> > > device driver with 3 ioctls (that can be extended in future if need be) and
-> > > the kernel API is acceptable to me. 
+> > > Yeah, but for blocking notification it is not that bad. 
 > > 
-> > I think there is a little bit more to it than that.  It seems there is a new
-> > ioctl for input/event devices to say "Any events queued here should be
-> > treated as wake-up events".  There may be similar additions to other devices,
-> > but I know of no details.
+> > The network latency notifier uses the value to recalculate something.
+> > Losing the last value will mean it's using stale data.
 > 
-> That's not in the patchset as in my pull request.
+> Actually after pondering a bit, it is not stale data that gets
+> delivered: (Correct me if I'm wrong)
 > 
-> It is used on Android, though, and it would have been submitted separately, had
-> the first patchset been merged.
-
-Very true.  But as the one cannot be used without the other, they really need
-to be considered as a package.
-
-
+> The update_notify() function determines the extreme value and then
+> calls the blocking_notifier_chain. 
 > 
-> > I wonder if we can get a complete statement of changes to the user-space
-> > API...
-> > 
-> > >                                       Yes, there is some overlap between it
-> > > and PM QoS, but IMhO that overlap may be reduced over time (eg. by
-> > > using PM QoS requirements to implement suspend blockers). 
-> > > 
-> > > To me, the question boils down to whether or not we're able to persuade the
-> > > Android people to use any other approach (eg. by demonstrating that something
-> > > else is actually better), because even if we invent a brilliant new approach,
-> > > but Android ends up using its old one anyway, the net result will be as though
-> > > we haven't done anything useful.
-> > 
-> > Yes.  There is no point unless we can meet somewhere in the middle.  I think
-> > that would have to include a full suspend that freezes all processes.
-> > Solutions which reject that - while quite clever - would require too much
-> > change to Android user-space to be acceptable.
+> But just before the update_notify() function get's called, the
+> work-structure is reset and re-queue-able. So it is possible to queue it
+> already even before the extreme_value in update_notify get's
+> determined. 
 > 
-> Moreover, having thought a bit more about the "power manager in user space"
-> concept I'm not sure if it really is that better than the original wakelocks
-> idea.  Namely, it only repaces a kernel-based mechanism with a user space
-> task doing basically the same thing, but the communication between that task
-> and the other cooperating user space tasks is arguably more complicated (it
-> also uses the kernel resources, although indirectly).
-> 
-> So, for a phone-like system, where you'd generally want to simplify user space,
-> having a "power manager" in the kernel seems to make sense to me.
->
+> So the notified value is always the latest or there is another
+> notification underway.
 
-Following that logic would we end up putting everything in the kernel?
+Well, no ... it's a race, and like all good races the winner is non
+deterministic.
 
-To my mind the advantage of having something in user-space is flexibility -
-you can refine the interfaces and behaviours without bothering the kernel.
-The reasons for putting things in the kernel are:
- - tight integration with VM or processes (the two main abstractions that the
-   kernel has to manage)
- - privileged access to devices
- - arbitration between processes with different privilege levels
+If the update comes in before the work queue is run, then everyone
+eventually sees the new value.  If it comes in as the chain is running,
+some notifiers see the old value and some the new.  If it comes in
+during back end processing, no-one sees the new value.
 
-Need-for-speed, on the other hand, is not necessarily a justification for
-going in the kernel - experience shows that we can make user-space
-interactions quite fast enough.
-
-
-The "power manager" itself is quite trivial.  It just needs something like:
-    while true
-          wait for all wake-locks to be dropped
-          activate suspend
-and for 'activate suspend' to be interruptible by something taking out a
-wake-lock.
-
-To my mind, the most interesting part of this is interruptibility.  There is
-essentially only one way to do that in Unix/Linux: signals.
-So it makes sense to have a task - with a pid - performing this loop so that
-it can be sent a signal.
-And we already have mechanisms for sending signals on all sorts of different
-events, both kernel events (fcntl(F_OWNER)), file events (FNOTIFY), and
-normal process operations (kill).
-
-If you are going to have a process (which I think you should) it makes sense
-for it to spend some time in user-space to use ipc-of-your-choice to
-communicate with other processes, and spend some time in kernel-space to be
-able to wait for in-kernel locks to be dropped, and to use signals to get out
-of kernel-space, and system calls to get into kernel space.
-
-Yes, the proposed user-space interface for suspend blocks may not be all that
-horrible.  But the fact is that you can get all the required functionality by
-just using currently existing interfaces.  Against that background, adding
-anything new should be avoided.
-
-NeilBrown
+James
