@@ -1,16 +1,17 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+From: Neil Brown <neilb@suse.de>
 Subject: Re: suspend blockers & Android integration
-Date: Wed, 9 Jun 2010 21:51:38 -0700
-Message-ID: <AANLkTilrJYg-z6mbRfhhrDdhpWUYSXGQEMCGgBj24xZs__21422.0501170077$1276145564$gmane$org@mail.gmail.com>
+Date: Thu, 10 Jun 2010 15:10:55 +1000
+Message-ID: <20100610151055.5a0870ba__46531.8826529712$1276146777$gmane$org@notabene.brown>
 References: <AANLkTilALyvthzh8rMiDFFP_QTz_o5hxdE8tArMUonpP@mail.gmail.com>
 	<Pine.LNX.4.44L0.1006091031030.1728-100000@iolanthe.rowland.org>
 	<AANLkTil2JhBgJ27qcTARVj2wVgEltxZKPOc9Ddu4c8yY@mail.gmail.com>
 	<alpine.DEB.2.01.1006092117100.17462@asgard.lang.hm>
+	<AANLkTilrJYg-z6mbRfhhrDdhpWUYSXGQEMCGgBj24xZs@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.01.1006092117100.17462@asgard.lang.hm>
+In-Reply-To: <AANLkTilrJYg-z6mbRfhhrDdhpWUYSXGQEMCGgBj24xZs@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,59 +21,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>
+Cc: david@lang.hm, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-2010/6/9  <david@lang.hm>:
-> On Wed, 9 Jun 2010, Arve Hj?nnev?g wrote:
->
->>
->> The power may not see the event, the process that reads the event will
->> always see it. If the power manager is not in the poll call when the
->> event happens, the process that reads the event can read the event
->> before the power manager calls poll.
->>
->
->>
->> All input events that can wake the system are handled by one
->> user-space suspend blocker. Input devices come and go so we would need
->> to add and remove the fds dynamically.
->
->
->>
->> For that to work the wakeup events would have to be reported to the
->> power manager in a reliable way in the first place. Passing the file
->> descriptor that the app uses to the power manager does not work for
->> this, since the app could read the event while the power manager was
->> not in the poll call and the power manager would never see it. Also,
->> existing apps don't pass their file descriptors to the power manager,
->> so it has the get the event from somewhere else.
->>
->
-> why could the suspend blocker process see all events, but the power manag=
-er
-> process not see the events?
->
-
-Because in this proposal the power manager only looks for the events
-(on the same queue) when no user space suspend blockers are active.
-
-> have the userspace talk to the power manager the way it does to the suspe=
-nd
-> blocker now and what's the difference?
->
-> effectivly think s/suspend blocker/power manager/ (with the power manager
-> doing all the other things that are proposed instead of grabbing the
-> wakelock), the difference should be hidden to the rest of userspace.
->
-> what am I missing here?
->
-
-The current user space interface does not require that clients
-register the file descriptors that they get wakeup events from with
-another process.
-
--- =
-
-Arve Hj=F8nnev=E5g
+T24gV2VkLCA5IEp1biAyMDEwIDIxOjUxOjM4IC0wNzAwCkFydmUgSGrDuG5uZXbDpWcgPGFydmVA
+YW5kcm9pZC5jb20+IHdyb3RlOgoKPiBUaGUgY3VycmVudCB1c2VyIHNwYWNlIGludGVyZmFjZSBk
+b2VzIG5vdCByZXF1aXJlIHRoYXQgY2xpZW50cwo+IHJlZ2lzdGVyIHRoZSBmaWxlIGRlc2NyaXB0
+b3JzIHRoYXQgdGhleSBnZXQgd2FrZXVwIGV2ZW50cyBmcm9tIHdpdGgKPiBhbm90aGVyIHByb2Nl
+c3MuCj4gCgpIb3dldmVyIEkgYmVsaWV2ZSB0aGV5ICpkbyogcmVnaXN0ZXIgdGhlc2UgZmlsZSBk
+ZXNjcmlwdG9ycyB3aXRoIHRoZSBrZXJuZWwsCnZpYSBzb21lIHNvcnQgb2YgaW9jdGwgKEkgdGhp
+bmsgeW91IGhhdmUgc2FpZCB0aGF0IGlzIHRoZSBjYXNlIGZvciBpbnB1dApkZXZpY2VzIGF0IGxl
+YXN0KS4KQ2FuIHlvdSBjb25maXJtIHRoYXQ/CgpJZiB0aGF0IGlzIHRoZSBjYXNlLCBpcyBpdCBy
+ZWFsbHkgc3VjaCBhIGJpZyBjaGFuZ2UgdG8gcmVnaXN0ZXIgd2l0aCBhbm90aGVyCnByb2Nlc3Mg
+aW5zdGVhZCBvZiB3aXRoIHRoZSBrZXJuZWw/CgpUaGFua3MsCk5laWxCcm93bgoKCl9fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcg
+bGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxp
+bnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
