@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Suspend hangs since 2.6.34
-Date: Thu, 10 Jun 2010 17:41:32 +0200
-Message-ID: <201006101741.32725.rjw__21075.178057845$1276184777$gmane$org@sisk.pl>
-References: <20100609175356.GA17332@x61.home> <201006100142.13131.rjw@sisk.pl>
-	<4C108091.3060204@msgid.tls.msk.ru>
+Subject: Re: suspend blockers & Android integration
+Date: Thu, 10 Jun 2010 17:44:55 +0200
+Message-ID: <201006101744.55754.rjw__10135.3607060902$1276184894$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1006101043510.1702-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C108091.3060204@msgid.tls.msk.ru>
+In-Reply-To: <Pine.LNX.4.44L0.1006101043510.1702-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,42 +17,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Tino Keitel <tino.keitel+xorg@tikei.de>, intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Peter Zijlstra <peterz@infradead.org>, Felipe Contreras <felipe.contreras@gmail.com>, Arve@smtp1.linux-foundation.org, "H. Peter Anvin" <hpa@zytor.com>, Felipe Balbi <felipe.balbi@nokia.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, Ingo Molnar <mingo@elte.hu>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, david@lang.hm, tytso@mit.edu, Brian Swetland <swetland@google.com>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1cnNkYXksIEp1bmUgMTAsIDIwMTAsIE1pY2hhZWwgVG9rYXJldiB3cm90ZToKPiAxMC4w
-Ni4yMDEwIDAzOjQyLCBSYWZhZWwgSi4gV3lzb2NraSDQv9C40YjQtdGCOgo+ID4gT24gV2VkbmVz
-ZGF5LCBKdW5lIDA5LCAyMDEwLCBUaW5vIEtlaXRlbCB3cm90ZToKPiA+PiBIaSwKPiA+Pgo+ID4+
-IGFzIG9mIGtlcm5lbCAyLjYuMzQgSSBzb21ldGltZXMgZ2V0IGEgc3RyYW5nZSBoYW5nIGR1cmlu
-ZyBzdXNwZW5kIHRvCj4gPj4gUkFNLiBBZnRlciBlY2hvIG1lbT4gIC9zeXMvcG93ZXIvc3RhdGUs
-IHRoZSBzdXNwZW5kIHNjcmlwdCBoYW5ncywgWG9yZwo+ID4+IGVhdHMgMTAwJSBDUFUsIGFuZCB0
-aGUgZGVza3RvcCBpcyBmcm96ZW4uIEkgY2FuIGtpbGwgdGhlIHNjcmlwdCBhbmQgdGhlCj4gPj4g
-Y29tcHV0ZXIgd2lsbCB0aGVuIHN1c3BlbmQgYW5kIHJlc3VtZSBmaW5lLiBUaGUga2VybmVsIGxv
-ZyBzaG93cwo+ID4+IG5vdGhpbmcgaW50ZXJlc3Rpbmcgd2hlbiB0aGUgaGFuZyBoYXBwZW5zOgo+
-ID4+Cj4gPj4gdXNibHAwOiByZW1vdmVkCj4gPj4gdXNiY29yZTogZGVyZWdpc3RlcmluZyBpbnRl
-cmZhY2UgZHJpdmVyIGR2Yl91c2JfdnA3MDQ1Cj4gPj4gZHZiLXVzYjogVHdpbmhhbiBVU0IyLjAg
-RFZCLVQgcmVjZWl2ZXIgKFR3aW5oYW5EVFYgQWxwaGEvTWFnaWNCb3ggSUkpCj4gPj4gc3VjY2Vz
-c2Z1bGx5IGRlaW5pdGlhbGl6ZWQgYW5kIGRpc2Nvbm5lY3RlZC4KPiA+PiBQTTogU3luY2luZyBm
-aWxlc3lzdGVtcyAuLi4gZG9uZS4KPiAKPiBTb3VuZHMgdmVyeSBtdWNoIGxpa2UgdGhlIHByb2Js
-ZW0gSSBoYXZlIHdpdGggMi42LjM0IGZpbmFsLiAgRGlkIG5vdAo+IGhhcHBlbiB3aXRoIDIuNi4z
-NC1yYzcgd2hpY2ggc3VzcGVuZGVkIGp1c3QgZmluZSwgYnV0IGhhcHBlbnMgcXVpdGUKPiByZWd1
-bGFybHkgb24gMi42LjM0IGZpbmFsIC0gbm90IGV2ZXJ5IHN1c3BlbmQgYnV0IGVhY2ggMm5kIG9y
-IDNyZAo+IGF0dGVtcHQuICBJIHN0b3BwZWQgZG9pbmcgc3VzcGVuZC10by1yYW0gZHVlIHRvIHRo
-aXMsIGJlY2F1c2UgaXQncwo+IHVucmVsaWFibGUuICBTdXNwZW5kLXRvLWRpc2sgd29ya3MganVz
-dCBmaW5lLgoKV2VsbCwgaXQgd291bGQgYmUgaGVscGZ1bCB0byBjaGVjayB3aGljaCBjb21taXQg
-YmV0d2VlbiAyLjYuMzQtcmM3IGFuZAoyLjYuMzQgZmluYWwgYnJva2UgdGhhdCBmb3IgeW91ICh0
-aGVyZSB3ZXJlIG5vdCB0b28gbWFueSBjb21taXRzIGJldHdlZW4gdGhlc2UKdHdvIGtlcm5lbHMs
-IHNvIGl0IHNob3VsZG4ndCBiZSB0b28gbXVjaCB3b3JrKS4KCj4gPj4gSXMgdGhpcyBhIGtub3du
-IHByb2JsZW0/Cj4gPgo+ID4gTm8sIGl0J3Mgbm90Lgo+ID4KPiA+PiBJIGhhZCByb2NrIHN0YWJs
-ZSBzdXNwZW5kIHdpdGggMi4zLjMzLnguIFRoZQo+ID4+IGNvbXB1dGVyIGlzIGEgTWFjIG1pbmkg
-Q29yZTIgRHVvIHdpdGggaTk0NSBncmFwaGljcy4gSSB1c2UgS01TLiBJIHdpbGwKPiA+PiBjb21w
-aWxlIGEga2VybmVsIHdpdGggc3VzcGVuZCBkZWJ1ZyB0byBnZXQgbW9yZSBpbmZvcm1hdGlvbiBp
-ZiB0aGUgaGFuZwo+ID4+IGhhcHBlbnMgbmV4dCB0aW1lLgo+IAo+IEl0J3MgYW1kNzgwZyBhdGhs
-b24tYmFzZWQgbWFjaGluZSBoZXJlLCB3aXRoIHJhZGVvbiBncmFwaGljcywgYWxzbyB3aXRoIEtN
-Uy4KPiAKPiA+IFllcywgIHBsZWFzZSB0cnkgdG8gZ2V0IG1vcmUgaW5mb3JtYXRpb24uCj4gCj4g
-R290IGl0IDspCgpUaGF0IHN0aWxsIGRvZXNuJ3QgcmVhbGx5IGhlbHAgdG8gZGlhZ25vc2UgdGhl
-IHByb2JsZW0uCgpSYWZhZWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5k
-YXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0
-aW5mby9saW51eC1wbQ==
+On Thursday, June 10, 2010, Alan Stern wrote:
+> On Thu, 10 Jun 2010, Rafael J. Wysocki wrote:
+> 
+> > Moreover, having thought a bit more about the "power manager in user space"
+> > concept I'm not sure if it really is that better than the original wakelocks
+> > idea.  Namely, it only repaces a kernel-based mechanism with a user space
+> > task doing basically the same thing, but the communication between that task
+> > and the other cooperating user space tasks is arguably more complicated (it
+> > also uses the kernel resources, although indirectly).
+> 
+> That is all true.  The "power manager in userspace" was meant to prove
+> a point: that this _could_ be done without invasive changes to the
+> kernel.  It wasn't necessarily meant to be a _better_ solution.
+> 
+> > So, for a phone-like system, where you'd generally want to simplify user space,
+> > having a "power manager" in the kernel seems to make sense to me.
+> 
+> This is a judgment call.  Obviously different people have different 
+> opinions.
+
+Agreed.
+
+Rafael
