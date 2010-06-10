@@ -1,15 +1,14 @@
-From: john stultz <johnstul@us.ibm.com>
+From: Suresh Rajashekara <suresh.raj+linuxomap@gmail.com>
 Subject: Re: Timekeeping issue on aggressive suspend/resume
-Date: Thu, 10 Jun 2010 12:52:48 -0700
-Message-ID: <1276199568.16089.35.camel__17356.8786857233$1276276700$gmane$org@work-vm>
+Date: Wed, 9 Jun 2010 23:34:31 -0700
+Message-ID: <AANLkTin-6XsW49ECufTLcdzaD1eK9bAxe0j7RXvPqN7p__40389.6943353631$1276276701$gmane$org@mail.gmail.com>
 References: <AANLkTinIO5a1EeK6Ej2ljkuyL9zv06OMfbyiZBaxTQTd@mail.gmail.com>
 	<alpine.LFD.2.00.1006092206020.2933@localhost.localdomain>
-	<AANLkTin-6XsW49ECufTLcdzaD1eK9bAxe0j7RXvPqN7p@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTin-6XsW49ECufTLcdzaD1eK9bAxe0j7RXvPqN7p@mail.gmail.com>
+In-Reply-To: <alpine.LFD.2.00.1006092206020.2933@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,35 +18,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Suresh Rajashekara <suresh.raj+linuxomap@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: John Stultz <johnstul@us.ibm.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2010-06-09 at 23:34 -0700, Suresh Rajashekara wrote:
-> On Wed, Jun 9, 2010 at 1:22 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > Though we could change that conditionally - the default would still be
-> > the freeze of jiffies and CLOCK_MONOTONIC for historical compability.
-> 
-> If I were to change it only for our implementation, and make all the
-> user space timers use CLOCK_REALTIME, then could you please point me
-> in a direction as to what part of the kernel I should be touching to
-> make that change?
+On Wed, Jun 9, 2010 at 1:22 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> Though we could change that conditionally - the default would still be
+> the freeze of jiffies and CLOCK_MONOTONIC for historical compability.
 
-I think Thomas was suggesting that you consider creating a option for
-where CLOCK_MONOTONIC included total_sleep_time.
+If I were to change it only for our implementation, and make all the
+user space timers use CLOCK_REALTIME, then could you please point me
+in a direction as to what part of the kernel I should be touching to
+make that change?
 
-In that case the *hack* (and this is a hack, we'll need some more
-thoughtful discussion before anything like it could make it upstream)
-would be in timekeeping_resume() to comment out the lines that update
-wall_to_monotonic and total_sleep_time.
+Earlier we faced issue with time that the application sees. It wasn't
+getting updated when we suspend and resume the system (where as the
+time inside the kernel kept updating) and hence eventually would drift
+from the actual time.
 
-It would be interesting to hear if that hack works for you, and we can
-try to come up with a better way to think about how to accommodate both
-views of how to account time over suspend.
+for eg, if I use this loop at the command prompt
 
-Thomas, might this call for a new posix clock_id, CLOCK_BOOTTIME (ie:
-CLOCK_MONOTONIC + total_sleep_time) or something that userland could use
-to set timers on?
+while date
+do
+echo mem > /sys/power/state
+done
 
-thanks
--john
+then the date command always displayed the same time, but the prints
+from the kernel (I was using the printk time information) was
+advancing as expected.
+
+I found a patch at
+https://patchwork.kernel.org/patch/50070/
+
+Though this fixed the application time update issue, there are lot of
+timers in the application which is still not working right.
+
+Could anyone please point in some direction to find the solution?
+
+Thanks,
+Suresh
