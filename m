@@ -1,20 +1,13 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH v4] pm_qos: make update_request non blocking
-Date: Thu, 10 Jun 2010 16:41:18 +0200
-Message-ID: <20100610164118.15ec7a05__30862.8487437547$1276181163$gmane$org@schatten.dmk.lab>
-References: <1276097381-3982-1-git-send-email-florian@mickler.org>
-	<1276097832.4343.223.camel@mulgrave.site>
-	<20100609180033.39d5b499@schatten.dmk.lab>
-	<1276099645.4343.257.camel@mulgrave.site>
-	<20100609183204.1eeca494@schatten.dmk.lab>
-	<1276103149.4343.350.camel@mulgrave.site>
-	<20100610094525.0449d797@schatten.dmk.lab>
-	<1276177144.27283.37.camel@mulgrave.site>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: suspend blockers & Android integration
+Date: Thu, 10 Jun 2010 10:47:31 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006101043510.1702-100000__342.904780018394$1276181392$gmane$org@iolanthe.rowland.org>
+References: <201006101059.44411.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276177144.27283.37.camel@mulgrave.site>
+In-Reply-To: <201006101059.44411.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,89 +17,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: markgross@thegnar.org, Frederic Weisbecker <fweisbec@gmail.com>, Jonathan Corbet <corbet@lwn.net>, linville@tuxdriver.com, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: david@lang.hm, Peter Zijlstra <peterz@infradead.org>, tytso@mit.edu, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 10 Jun 2010 08:39:04 -0500
-James Bottomley <James.Bottomley@suse.de> wrote:
+On Thu, 10 Jun 2010, Rafael J. Wysocki wrote:
 
-> On Thu, 2010-06-10 at 09:45 +0200, Florian Mickler wrote:
-> > On Wed, 09 Jun 2010 13:05:49 -0400
-> > James Bottomley <James.Bottomley@suse.de> wrote:
-> > > On Wed, 2010-06-09 at 18:32 +0200, Florian Mickler wrote:
-> > > > On Wed, 09 Jun 2010 12:07:25 -0400
-> > > > James Bottomley <James.Bottomley@suse.de> wrote:
-> > > > > OK, so the expression of the race is that the latest notification gets
-> > > > > lost.  If something is tracking values, you'd really like to lose the
-> > > > > previous one (which is now irrelevant) not the latest one.  The point is
-> > > > > there's still a race.
-> > > > > 
-> > > > > James
-> > > > > 
-> > > > 
-> > > > Yeah, but for blocking notification it is not that bad. 
-> > > 
-> > > The network latency notifier uses the value to recalculate something.
-> > > Losing the last value will mean it's using stale data.
-> > 
-> > Actually after pondering a bit, it is not stale data that gets
-> > delivered: (Correct me if I'm wrong)
-> > 
-> > The update_notify() function determines the extreme value and then
-> > calls the blocking_notifier_chain. 
-> > 
-> > But just before the update_notify() function get's called, the
-> > work-structure is reset and re-queue-able. So it is possible to queue it
-> > already even before the extreme_value in update_notify get's
-> > determined. 
-> > 
-> > So the notified value is always the latest or there is another
-> > notification underway.
-> 
-> Well, no ... it's a race, and like all good races the winner is non
-> deterministic.
+> Moreover, having thought a bit more about the "power manager in user space"
+> concept I'm not sure if it really is that better than the original wakelocks
+> idea.  Namely, it only repaces a kernel-based mechanism with a user space
+> task doing basically the same thing, but the communication between that task
+> and the other cooperating user space tasks is arguably more complicated (it
+> also uses the kernel resources, although indirectly).
 
-Can you point out where I'm wrong?
+That is all true.  The "power manager in userspace" was meant to prove
+a point: that this _could_ be done without invasive changes to the
+kernel.  It wasn't necessarily meant to be a _better_ solution.
 
-U1. update_request gets called
-U2. 	new extreme value gets calculated under spinlock
-U3.	notify gets queued if its WORK_PENDING_BIT is not set.
+> So, for a phone-like system, where you'd generally want to simplify user space,
+> having a "power manager" in the kernel seems to make sense to me.
 
-run_workqueue() does the following:
-R1. clears the WORK_PENDING_BIT
-R2. calls update_notify()
-R3. 	reads the current extreme value
-R4. 	notification gets called with that value		
+This is a judgment call.  Obviously different people have different 
+opinions.
 
-
-If another update_request comes to schedule_work before
-run_workqueue() has cleared the WORK_PENDING_BIT, the work will not be
-requeued, but R3 isn't yet executed. So the notifiers will get the last
-value.
-
-If another update_request comes to schedule_work() after
-run_workqueue() has cleared the WORK_PENDING_BIT, the work will be
-requeued and another update_notify will be executed later.
-
-> 
-> If the update comes in before the work queue is run, then everyone
-> eventually sees the new value.  If it comes in as the chain is running,
-> some notifiers see the old value and some the new.  If it comes in
-> during back end processing, no-one sees the new value.
-> 
-> James
-> 
-
-No, I think that is not correct. There will always be another
-update_notify()-call after the last update_request-recalculation due to
-the fact that run_workqueue() calls work_clear_pending() before calling
-the callback function of that work. 
-
-(We could even requeue the work from within that callback function if we
-wanted to keep the number of notifications the same. But then we would
-need to queue the extreme_values in the framework. I think this
-isn't needed.)
-
-Cheers,
-Flo
+Alan Stern
