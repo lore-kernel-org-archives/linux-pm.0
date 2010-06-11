@@ -1,16 +1,14 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: commit 'ACPICA: Minimize the differences between
- linux GPE code and ACPICA code base' breaks EC GPE on my system
-Date: Sat, 12 Jun 2010 00:43:35 +0300
-Message-ID: <1276292615.2617.1.camel__39449.1808409386$1276292683$gmane$org@maxim-laptop>
-References: <1276256839.4251.7.camel@maxim-laptop>
-	<1276288322.2651.4.camel@maxim-laptop> <201006112234.39747.rjw@sisk.pl>
-	<201006112259.33602.rjw@sisk.pl>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: suspend blockers & Android integration
+Date: Fri, 11 Jun 2010 15:18:44 -0700
+Message-ID: <AANLkTikEJ5pWNNg6fVNHEJqN_DA3iXWfUfKQaQyQv0mL@mail.gmail.com>
+References: <AANLkTik9xMxx8IdYkUhd-oa_ik_MjGFOff_siUztls-9@mail.gmail.com>
+	<Pine.LNX.4.44L0.1006111018190.12006-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006112259.33602.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1006111018190.12006-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,71 +18,96 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, "Moore,
-	Robert" <robert.moore@intel.com>, len.brown@intel.com
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2010-06-11 at 22:59 +0200, Rafael J. Wysocki wrote: 
-> On Friday, June 11, 2010, Rafael J. Wysocki wrote:
-> > On Friday, June 11, 2010, Maxim Levitsky wrote:
-> > > On Fri, 2010-06-11 at 21:43 +0200, Rafael J. Wysocki wrote: 
-> > > > On Friday, June 11, 2010, Rafael J. Wysocki wrote:
-> > > > > On Friday, June 11, 2010, Maxim Levitsky wrote:
-> > > > > > Just bisected it.
-> > > > > > 
-> > > > > > I also tried linux-acpi-next/test, and no change.
-> > > > > > 
-> > > > > > The sympthoms are that EC does't sent any GPEs, and therefore battery
-> > > > > > insert/removal events don't show up.
-> > > > > > 
-> > > > > > It can be see by doing 'grep  . /sys/firmware/acpi/interrupts/*'
-> > > > > > With regression the line is shown like this:
-> > > > > > 
-> > > > > > 
-> > > > > > /sys/firmware/acpi/interrupts/gpe1C:   1	enabled
-> > > > > > 
-> > > > > > Without regression it is
-> > > > > > 
-> > > > > > /sys/firmware/acpi/interrupts/gpe1C:   22889	enabled
-> > > > > > 
-> > > > > > and steadily increasing.
-> > > > > > 
-> > > > > > After suspend/resume, regression disappears.
-> > > > > 
-> > > > > Hmm.
-> > > > > 
-> > > > > Can you please apply the following patches:
-> > > > > 
-> > > > > https://patchwork.kernel.org/patch/104903/
-> > > > > https://patchwork.kernel.org/patch/104912/
-> > > > > https://patchwork.kernel.org/patch/104909/
-> > > > > https://patchwork.kernel.org/patch/104911/
-> > > > > https://patchwork.kernel.org/patch/104910/
-> > > > > 
-> > > > > on top of current -git and see if the problem is still there?
-> > > > 
-> > > > Also, regardless of whether or not this helps, please try to revert only the
-> > > > changes made by the "guilty" commit in drivers/acpi/acpica/evxface.c and see
-> > > > if that helps (this revert will conflict with the patches above, so you'll need
-> > > > to unapply them before).
-> > > > 
-> > > > Thanks,
-> > > > Rafael
-> > > > --
-> > > > To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> > > > the body of a message to majordomo@vger.kernel.org
-> > > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > 
-> > > Yes, reverting changes in 'drivers/acpi/acpica/evxface.c' do restore
-> > > correct behavior.
-> > 
-> > Good.  I think we'll need to revert them for .35, then.
-> > 
-> > I'll prepare a patch and send it to Len.
-> 
-> Can you check if the patch below fixes the issue?
-Yes it does. Thanks!
+2010/6/11 Alan Stern <stern@rowland.harvard.edu>:
+> On Thu, 10 Jun 2010, Arve Hj=F8nnev=E5g wrote:
+>
+>> > You've lost me. =A0If the power manager is sitting inside a select/pol=
+l,
+>> > how can it miss the event (given that the event will make data
+>> > available to be read on one of the descriptors being polled)?
+>> >
+>>
+>> It cannot sit inside of select/poll all the time.
+>>
+>> > Or put it another way: With wakelocks, if the app doesn't use a suspend
+>> > blocker then once it reads the event data and the timed wakelock is
+>> > deactivated, there is nothing to prevent the system from immediately
+>> > going into opportunistic suspend. =A0My scheme can fail in the same wa=
+y.
+>> > Is that what you meant?
+>> >
+>>
+>> No, if an app reads from a file descriptor and block suspend when the
+>> read call returns, then suspend is blocked while processing the data.
+>> If the driver uses a wakelock with a timeout this will fail if the
+>> thread does not get to the suspend block call before the timeout
+>> expires, but unrelated events that don't prevent the app from running
+>> will not cause any problems.
+>
+> Wait a second. =A0Maybe I have misunderstood how timeouts are supposed to
+> work with wakelocks. =A0I thought the idea was that the wakelock would be
+> released when the timeout expires or the event queue is emptied,
 
-Best regards,
-Maxim Levitsky
+That is one way to use it, and I did this so code that opened an input
+device without reading from it would not prevent suspend forever. In
+the last patchset I posted, I instead used an ioctl to enable the
+suspend blocker.
+
+> whichever comes first. =A0Now it sounds like you're saying that the
+> wakelock doesn't get released until the timeout expires, even if
+> userspace finishes processing all pending events before then.
+>
+
+For incoming network traffic we use a wakelock with a timeout to
+prevent suspend long enough for the data to make it to user-space
+since we have not added wakelocks to the network stack.
+
+>> In your scheme the user-space power
+>> manager may miss events on this file descriptor since select/poll will
+>> not see an event if the app read that event right before the power
+>> manager called select/poll.
+>
+> If the wakelock is supposed to remain active until the timeout expires
+> then you are right. =A0On the other hand, this seems like a rather
+> strange and suspicious way of handling wakelocks. =A0Why would you want
+> to do it that way?
+>
+
+We did this to avoid changing to the network stack, tty layer, etc.
+
+>> > There's one question that I don't remember ever seeing answered. =A0To
+>> > which kernel drivers do you intend to add suspend blockers?
+>> >
+>>
+>> All drivers that generate wakeup events need to either use suspend
+>> blockers directly or call into something else that does. For instance,
+>> with the patch to block suspend while input events are queued to
+>> user-space, an input driver that fully handles its events in its
+>> interrupt handler does not need any additional suspend blockers, but
+>> if the driver needs a work function or a timer to run before it
+>> reports the event it needs to block suspend until it has reported the
+>> event.
+>
+> Sure. =A0But specifically, which drivers on Android generate wakeup
+> events? =A0And which of them don't fully handle their events in their
+> interrupt handlers?
+>
+
+Keypad, network, charger, rtc, but I'm sure I forgot some.
+
+> Maybe another way to put this is: Where in the kernel do you intend to
+> add suspend blockers?
+>
+
+In addition to the drivers that enable the wakeup events, we have
+added suspend blockers to the input event code and power supply
+framework. The tty layer and network stack would also need suspend
+blockers to avoid using timeouts.
+
+-- =
+
+Arve Hj=F8nnev=E5g
