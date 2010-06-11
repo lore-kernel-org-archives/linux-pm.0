@@ -1,13 +1,13 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: suspend blockers & Android integration
-Date: Thu, 10 Jun 2010 21:21:39 -0700 (PDT)
-Message-ID: <527264.20535.qm__43814.3591782593$1276230171$gmane$org@web180316.mail.gq1.yahoo.com>
-References: <20100610135844.GH4514@ucw.cz>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: Timekeeping issue on aggressive suspend/resume
+Date: Fri, 11 Jun 2010 09:21:35 +0200
+Message-ID: <20100611092135.415c2155__18441.0164402381$1276241021$gmane$org@surf>
+References: <AANLkTinIO5a1EeK6Ej2ljkuyL9zv06OMfbyiZBaxTQTd@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100610135844.GH4514@ucw.cz>
+In-Reply-To: <AANLkTinIO5a1EeK6Ej2ljkuyL9zv06OMfbyiZBaxTQTd@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,74 +17,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>, Pavel Machek <pavel@ucw.cz>
-Cc: tytso@mit.edu, Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>, Felipe Balbi <felipe.balbi@nokia.com>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Thomas Gleixner <tglx@linutronix.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Suresh Rajashekara <suresh.raj+linuxomap@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This is a bit off the topic of Android
-flamage, but I thought it would be worth
-highlighting an example where the current
-frameworks may still have a deficiency...
-one that likewise relates to needing to
-block entry ot a system suspend state, but
-in this case user-space isn't very involved
-(just drivers coping with hardware).
+Hello Suresh,
 
-The example I wanted to re-post (I've done so
-in the past) is one where drivers ouldn't really
-do the right thing, since driver.suspend() wasn't
-quite powerful enough as a programming interface.
+On Wed, 9 Jun 2010 12:50:39 -0700
+Suresh Rajashekara <suresh.raj+linuxomap@gmail.com> wrote:
 
-The example works with USB on many ARM SoCs,
-and similar non-USB examples aren't rare.
+> I have an application (running on 2.6.29-omap1) which puts an OMAP1
+> system to suspend aggressively. The system wakes up every 4 seconds
+> and stays awake for about 35 milliseconds and sleeps again for another
+> 4 seconds. This design is to save power on a battery operated device.
+> 
+> This aggressive suspend resume action seems like creating an issue to
+> other applications in the system waiting for some timeout to happen
+> (especially an application which is waiting using the mq_timedreceive
+> and is supposed to timeout every 30 seconds. It seems to wake up every
+> 90 seconds). Seems like the timekeeping is not happening properly in
+> side the kernel.
+> 
+> If the suspend duration is changed from 4 second to 1 second, then
+> things work somewhat better. On reducing it to 0.5 second (which was
+> our earlier design on 2.6.16-rc3), the problem seems to disappear.
 
- - Want to enter a system suspend state, with
-   some USB wakeup sources.  USB peripheral
-   waken up by the host, or vice versa.
+I've done a relatively similar thing on different CPU architecture: in
+the idle loop, when the CPU is going to be idle for a sufficiently long
+period of time, I power down the CPU completely. Before that, I've
+programmed a RTC (clocked at 32 khz) to wake-up the CPU a little bit
+*before* the expiration of the next timer. When the CPU wakes-up, I
+adjust the clocksource (in this case the CPU cycle counter) to
+compensate the time spent while the CPU was off, and I reprogram the
+clockevents to make sure that the timer will actually expire at the
+correct time, also by compensating the time during which the CPU was
+off (note: when the CPU is off, the cycle counter stops incrementing,
+and the timer used as clockevents stops decrementing). This way, the
+CLOCK_MONOTONIC time continues to go forward even when the CPU is off.
+The goal was to make the "CPU is off" case just another idle state of
+the system, which should just be as transparent to the life of the
+system as other idle states. So an application that uses a periodic
+timer of say, 30 milliseconds, will see its timer actually fired every
+30 milliseconds even though the CPU goes off between each timer
+expiration (we've done measurements with a scope, and the timer rely
+expires every 30 milliseconds as expected).
 
-   NOTE ASSUMPTION:  there are multiple suspend
-   states supported by the hardware, significantly
-   different in hardware configuration Linux should
-   be able to use more than one such state... (if
-   only because their power savings differ.)  This
-can mean driver-specific knowledge about those
-various states.
+FWIW, we do not use the normal suspend/resume infrastructure for this,
+because it was way too slow (in the order of ~100ms). On the particular
+hardware we're using, it takes roughly ~1ms to go OFF, and ~2ms to
+completely wake-up, so we can very aggressively put the CPU in the OFF
+state.
 
- - The wakeup requires a particular clock to be active, so the USB controller can detect that the
-wakeup should trigger,  then issue the right signals
-triggering the non-USB parts of the system.
+However, the way we're doing the "time compensation" is quite hackish,
+and it would be great to hear Thomas Gleixner's ideas on how this
+should be implemented properly at the clocksource/clock_event_device
+level.
 
-Problem:  how does the device driver suspend()
-          method block entry to a suspend state
-          when it can't ensure that clock is
-          going to be active.  Magic return code?
+Sincerely,
 
- There are other issues here too.  (Is the target
- system suspend state one of the ones which doesn't
-allow that clock to be active?  SoC-specific calls
-might suffice for this issue.
-
- 
-
-A number of years ago, this problem was insoluble
-with the then-current Linux PM and clock frameworks.
-I've been away from this issue for quite a while
-now, but don't recall seeing its sub-problems get
-solved ... If they're now solved, I'll be glad.
-(I know Kevin's recent OMAP stuff addresses similar
-issues, but It's OMAP-specific...) 
-
-After all these thousands and thousands of emails...
-I'm not sure how much forward motion has happened.
-
-Do we at least have a clean way that a driver can
-reject a system suspend?  I've lost track of many
-issues, but maybe this could be phrased as a QOS
-constraint:  the current config of driver X needs
-clock Y active to enter the  target system suspend
-state, driver's suspend() method reports as much.  Then the entry to that system state gets blocked
-if the clock isn't enabled.
-
-(That QOS constraint should be removed when that
-driver no longer needs to issue wakeups; that's
-not quite the same as "removed by driver.resume().
+Thomas
+-- 
+Thomas Petazzoni, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
