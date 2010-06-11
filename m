@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: commit 'ACPICA: Minimize the differences between
-	linux GPE code and ACPICA code base' breaks EC GPE on my system
-Date: Fri, 11 Jun 2010 22:59:33 +0200
-Message-ID: <201006112259.33602.rjw__36480.1508178518$1276290301$gmane$org@sisk.pl>
-References: <1276256839.4251.7.camel@maxim-laptop>
-	<1276288322.2651.4.camel@maxim-laptop>
-	<201006112234.39747.rjw@sisk.pl>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [PATCH] Fix the outstanding issue with hangs on
+ insert/removal of mmc cards
+Date: Sat, 12 Jun 2010 00:03:31 +0300
+Message-ID: <1276290211.2651.6.camel__30682.1716753349$1276290424$gmane$org@maxim-laptop>
+References: <Pine.LNX.4.44L0.1006111648590.19894-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006112234.39747.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1006111648590.19894-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,109 +18,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, len.brown@intel.com, "Moore, Robert" <robert.moore@intel.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-mmc <linux-mmc@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Philip Langdale <philipl@overt.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, June 11, 2010, Rafael J. Wysocki wrote:
-> On Friday, June 11, 2010, Maxim Levitsky wrote:
-> > On Fri, 2010-06-11 at 21:43 +0200, Rafael J. Wysocki wrote: 
-> > > On Friday, June 11, 2010, Rafael J. Wysocki wrote:
-> > > > On Friday, June 11, 2010, Maxim Levitsky wrote:
-> > > > > Just bisected it.
-> > > > > 
-> > > > > I also tried linux-acpi-next/test, and no change.
-> > > > > 
-> > > > > The sympthoms are that EC does't sent any GPEs, and therefore battery
-> > > > > insert/removal events don't show up.
-> > > > > 
-> > > > > It can be see by doing 'grep  . /sys/firmware/acpi/interrupts/*'
-> > > > > With regression the line is shown like this:
-> > > > > 
-> > > > > 
-> > > > > /sys/firmware/acpi/interrupts/gpe1C:   1	enabled
-> > > > > 
-> > > > > Without regression it is
-> > > > > 
-> > > > > /sys/firmware/acpi/interrupts/gpe1C:   22889	enabled
-> > > > > 
-> > > > > and steadily increasing.
-> > > > > 
-> > > > > After suspend/resume, regression disappears.
-> > > > 
-> > > > Hmm.
-> > > > 
-> > > > Can you please apply the following patches:
-> > > > 
-> > > > https://patchwork.kernel.org/patch/104903/
-> > > > https://patchwork.kernel.org/patch/104912/
-> > > > https://patchwork.kernel.org/patch/104909/
-> > > > https://patchwork.kernel.org/patch/104911/
-> > > > https://patchwork.kernel.org/patch/104910/
-> > > > 
-> > > > on top of current -git and see if the problem is still there?
-> > > 
-> > > Also, regardless of whether or not this helps, please try to revert only the
-> > > changes made by the "guilty" commit in drivers/acpi/acpica/evxface.c and see
-> > > if that helps (this revert will conflict with the patches above, so you'll need
-> > > to unapply them before).
-> > > 
-> > > Thanks,
-> > > Rafael
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Fri, 2010-06-11 at 17:00 -0400, Alan Stern wrote: 
+> On Fri, 11 Jun 2010, Maxim Levitsky wrote:
+> 
+> > Hi,
 > > 
-> > Yes, reverting changes in 'drivers/acpi/acpica/evxface.c' do restore
-> > correct behavior.
+> > After thinking a lot about how to fix properly the hangs caused by
+> > insert/removal of mmc card during suspend/resume, and default behavior
+> > of not trusting the card persistence over suspend, I finally come to
+> > conclusion that changing the del_gendisk is wrong.
+> > 
+> > First of all there are 2 types of removal possible. First one happens
+> > when system detects that some device is gone. At that point there is
+> > really no point in syncing it.
+> > 
+> > The other type of removal is controlled removal, usually on user
+> > request. Surly we must sync the device of this request.
+> > This type of removal _shouldn't_ happen during suspend/resume
+> > transaction. The only case when it does is today to protect against user
+> > carelessness of switching the cards during suspend.
 > 
-> Good.  I think we'll need to revert them for .35, then.
+> There are other pathological cases which can cause it to happen, but 
+> they are pretty unlikely.
 > 
-> I'll prepare a patch and send it to Len.
+> > I think that it is just wrong to sync the device in suspend/resume time.
+> > At that time userspace is frozen, but also its not known which drivers
+> > are still running. They might even suspend asynchronously...
+> > So, such cases should be moved to pm-notifier, thing that my patch does
+> > for mmc.
+> > Other users should be fixed as well.
+> > 
+> > We can, in addition to that, add a temporary hack to del_gendisk with
+> > loud WARN_ON though.
+> > 
+> > If card is really removed during suspend, then we can just introduce
+> > del_gendisk_dead or something like that which will be safe to call
+> > during suspend.
+> > 
+> > I didn't do that but rather I made the card detection thread freezeable,
+> > thus eliminated the whole problem.
+> > If you remove the card during suspend, system will notice at end of
+> > resume.
+> 
+> I don't know why the mmc subsystem works differently from USB.  In USB,
+> the equivalent of UNSAFE_RESUME is a per-device flag that can be
+> controlled via sysfs (see Documentation/usb/persist.txt).  And it
+> almost always defaults to ON, i.e., the kernel assumes that if a device
+> is present before suspend and after resume it is the same device --
+> although some checking is done to try to verify this (the descriptors
+> have to remain the same).  We started out being more cautious (the
+> default was OFF), but Linus complained about it being _too_ cautious.
+I will be very happy to see the description and default value of 
+MMC_UNSAFE_RESUME changed.
 
-Can you check if the patch below fixes the issue?
+This patch fixes both cases.
 
-Rafael
+> 
+> And like you have done here, in USB the kernel thread that handles
+> registering and unregistering devices is freezable, so things never get
+> added or removed at an unsafe time.
+Very nice!
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: ACPI / ACPICA: Do not attempt to disable GPE when installing handler
-
-Commit 0f849d2cc6863c7874889ea60a871fb71399dd3f (ACPICA: Minimize
-the differences between linux GPE code and ACPICA code base)
-introduced a change attempting to disable a GPE before installing
-a handler for it in acpi_install_gpe_handler() which was incorrect.
-First, the GPE disabled by it is never enabled again (except during
-resume) which leads to battery insert/remove events not being
-reported on the Maxim Levitsky's machine.  Second, the disabled
-GPE is still reported as enabled by the sysfs interface that only
-checks its enable register's enable_for_run mask.
-
-Revert this change for now, because it causes more damage to happen
-than the bug it was supposed to fix.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-by: Maxim Levitsky <maximlevitsky@gmail.com>
----
- drivers/acpi/acpica/evxface.c |   20 +++++++++-----------
- 1 file changed, 9 insertions(+), 11 deletions(-)
-
-Index: linux-2.6/drivers/acpi/acpica/evxface.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/evxface.c
-+++ linux-2.6/drivers/acpi/acpica/evxface.c
-@@ -719,13 +720,6 @@ acpi_install_gpe_handler(acpi_handle gpe
- 	handler->context = context;
- 	handler->method_node = gpe_event_info->dispatch.method_node;
- 
--	/* Disable the GPE before installing the handler */
--
--	status = acpi_ev_disable_gpe(gpe_event_info);
--	if (ACPI_FAILURE (status)) {
--		goto unlock_and_exit;
--	}
--
- 	/* Install the handler */
- 
- 	flags = acpi_os_acquire_lock(acpi_gbl_gpe_lock);
+Best regards,
+Maxim Levitsky
