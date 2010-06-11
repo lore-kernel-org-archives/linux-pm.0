@@ -1,13 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: suspend blockers & Android integration
-Date: Fri, 11 Jun 2010 10:33:30 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1006111018190.12006-100000__10284.9765950397$1276266952$gmane$org@netrider.rowland.org>
-References: <AANLkTik9xMxx8IdYkUhd-oa_ik_MjGFOff_siUztls-9@mail.gmail.com>
+Date: Fri, 11 Jun 2010 10:42:07 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006111036030.12006-100000__1627.64676283604$1276267480$gmane$org@netrider.rowland.org>
+References: <527264.20535.qm@web180316.mail.gq1.yahoo.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTik9xMxx8IdYkUhd-oa_ik_MjGFOff_siUztls-9@mail.gmail.com>
+In-Reply-To: <527264.20535.qm@web180316.mail.gq1.yahoo.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,76 +17,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Neil Brown <neilb@suse.de>, tytso@mit.edu, Peter Zijlstra <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Felipe Balbi <felipe.balbi@nokia.com>, Florian Mickler <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM <linux-pm@lists.linux-foundation.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: tytso@mit.edu, Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 10 Jun 2010, Arve Hj=F8nnev=E5g wrote:
+On Thu, 10 Jun 2010, David Brownell wrote:
 
-> > You've lost me. =A0If the power manager is sitting inside a select/poll,
-> > how can it miss the event (given that the event will make data
-> > available to be read on one of the descriptors being polled)?
-> >
-> =
+> This is a bit off the topic of Android
+> flamage, but I thought it would be worth
+> highlighting an example where the current
+> frameworks may still have a deficiency...
+> one that likewise relates to needing to
+> block entry ot a system suspend state, but
+> in this case user-space isn't very involved
+> (just drivers coping with hardware).
+> 
+> The example I wanted to re-post (I've done so
+> in the past) is one where drivers ouldn't really
+> do the right thing, since driver.suspend() wasn't
+> quite powerful enough as a programming interface.
+> 
+> The example works with USB on many ARM SoCs,
+> and similar non-USB examples aren't rare.
+> 
+>  - Want to enter a system suspend state, with
+>    some USB wakeup sources.  USB peripheral
+>    waken up by the host, or vice versa.
+> 
+>    NOTE ASSUMPTION:  there are multiple suspend
+>    states supported by the hardware, significantly
+>    different in hardware configuration Linux should
+>    be able to use more than one such state... (if
+>    only because their power savings differ.)  This
+> can mean driver-specific knowledge about those
+> various states.
+> 
+>  - The wakeup requires a particular clock to be active, so the USB controller can detect that the
+> wakeup should trigger,  then issue the right signals
+> triggering the non-USB parts of the system.
+> 
+> Problem:  how does the device driver suspend()
+>           method block entry to a suspend state
+>           when it can't ensure that clock is
+>           going to be active.  Magic return code?
 
-> It cannot sit inside of select/poll all the time.
-> =
+At the moment, drivers aren't told what suspend state the system is
+going into.  They know the difference between suspend and hibernate,
+but the PM core doesn't tell drivers whether it's going into standby
+vs. suspend.  (Strictly speaking, those terms apply mostly to ACPI
+systems and not so much elsewhere.  What I'm talking about is the
+/sys/power/state interface, where the user can write either "standby"
+or "mem".  Drivers aren't told which was written.)
 
-> > Or put it another way: With wakelocks, if the app doesn't use a suspend
-> > blocker then once it reads the event data and the timed wakelock is
-> > deactivated, there is nothing to prevent the system from immediately
-> > going into opportunistic suspend. =A0My scheme can fail in the same way.
-> > Is that what you meant?
-> >
-> =
+>  There are other issues here too.  (Is the target
+>  system suspend state one of the ones which doesn't
+> allow that clock to be active?  SoC-specific calls
+> might suffice for this issue.
 
-> No, if an app reads from a file descriptor and block suspend when the
-> read call returns, then suspend is blocked while processing the data.
-> If the driver uses a wakelock with a timeout this will fail if the
-> thread does not get to the suspend block call before the timeout
-> expires, but unrelated events that don't prevent the app from running
-> will not cause any problems.
+I imagine platforms have to answer all such questions when they decide 
+exactly how they will implement "standby" and "mem".
 
-Wait a second.  Maybe I have misunderstood how timeouts are supposed to
-work with wakelocks.  I thought the idea was that the wakelock would be
-released when the timeout expires or the event queue is emptied,
-whichever comes first.  Now it sounds like you're saying that the
-wakelock doesn't get released until the timeout expires, even if
-userspace finishes processing all pending events before then.
+> A number of years ago, this problem was insoluble
+> with the then-current Linux PM and clock frameworks.
+> I've been away from this issue for quite a while
+> now, but don't recall seeing its sub-problems get
+> solved ... If they're now solved, I'll be glad.
+> (I know Kevin's recent OMAP stuff addresses similar
+> issues, but It's OMAP-specific...) 
+> 
+> After all these thousands and thousands of emails...
+> I'm not sure how much forward motion has happened.
 
-> In your scheme the user-space power
-> manager may miss events on this file descriptor since select/poll will
-> not see an event if the app read that event right before the power
-> manager called select/poll.
-
-If the wakelock is supposed to remain active until the timeout expires =
-
-then you are right.  On the other hand, this seems like a rather =
-
-strange and suspicious way of handling wakelocks.  Why would you want =
-
-to do it that way?
-
-> > There's one question that I don't remember ever seeing answered. =A0To
-> > which kernel drivers do you intend to add suspend blockers?
-> >
-> =
-
-> All drivers that generate wakeup events need to either use suspend
-> blockers directly or call into something else that does. For instance,
-> with the patch to block suspend while input events are queued to
-> user-space, an input driver that fully handles its events in its
-> interrupt handler does not need any additional suspend blockers, but
-> if the driver needs a work function or a timer to run before it
-> reports the event it needs to block suspend until it has reported the
-> event.
-
-Sure.  But specifically, which drivers on Android generate wakeup
-events?  And which of them don't fully handle their events in their
-interrupt handlers?
-
-Maybe another way to put this is: Where in the kernel do you intend to =
-
-add suspend blockers?
+I'm not aware of any progress.
 
 Alan Stern
