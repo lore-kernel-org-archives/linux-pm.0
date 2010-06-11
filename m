@@ -1,13 +1,16 @@
-From: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: suspend blockers & Android integration
-Date: Fri, 11 Jun 2010 16:04:35 -0500
-Message-ID: <1276290275.2862.152.camel__27176.2524535463$1276290555$gmane$org@mulgrave.site>
-References: <Pine.LNX.4.44L0.1006111638040.19894-100000@netrider.rowland.org>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: commit 'ACPICA: Minimize the differences between
+ linux GPE code and ACPICA code base' breaks EC GPE on my system
+Date: Sat, 12 Jun 2010 00:43:35 +0300
+Message-ID: <1276292615.2617.1.camel__39449.1808409386$1276292683$gmane$org@maxim-laptop>
+References: <1276256839.4251.7.camel@maxim-laptop>
+	<1276288322.2651.4.camel@maxim-laptop> <201006112234.39747.rjw@sisk.pl>
+	<201006112259.33602.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006111638040.19894-100000@netrider.rowland.org>
+In-Reply-To: <201006112259.33602.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,54 +20,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: tytso@mit.edu, Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, "Moore,
+	Robert" <robert.moore@intel.com>, len.brown@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2010-06-11 at 16:48 -0400, Alan Stern wrote:
-> On Fri, 11 Jun 2010, Mark Brown wrote:
-> 
-> > On Fri, Jun 11, 2010 at 10:46:27AM -0400, Alan Stern wrote:
-> > > On Fri, 11 Jun 2010, James Bottomley wrote:
+On Fri, 2010-06-11 at 22:59 +0200, Rafael J. Wysocki wrote: 
+> On Friday, June 11, 2010, Rafael J. Wysocki wrote:
+> > On Friday, June 11, 2010, Maxim Levitsky wrote:
+> > > On Fri, 2010-06-11 at 21:43 +0200, Rafael J. Wysocki wrote: 
+> > > > On Friday, June 11, 2010, Rafael J. Wysocki wrote:
+> > > > > On Friday, June 11, 2010, Maxim Levitsky wrote:
+> > > > > > Just bisected it.
+> > > > > > 
+> > > > > > I also tried linux-acpi-next/test, and no change.
+> > > > > > 
+> > > > > > The sympthoms are that EC does't sent any GPEs, and therefore battery
+> > > > > > insert/removal events don't show up.
+> > > > > > 
+> > > > > > It can be see by doing 'grep  . /sys/firmware/acpi/interrupts/*'
+> > > > > > With regression the line is shown like this:
+> > > > > > 
+> > > > > > 
+> > > > > > /sys/firmware/acpi/interrupts/gpe1C:   1	enabled
+> > > > > > 
+> > > > > > Without regression it is
+> > > > > > 
+> > > > > > /sys/firmware/acpi/interrupts/gpe1C:   22889	enabled
+> > > > > > 
+> > > > > > and steadily increasing.
+> > > > > > 
+> > > > > > After suspend/resume, regression disappears.
+> > > > > 
+> > > > > Hmm.
+> > > > > 
+> > > > > Can you please apply the following patches:
+> > > > > 
+> > > > > https://patchwork.kernel.org/patch/104903/
+> > > > > https://patchwork.kernel.org/patch/104912/
+> > > > > https://patchwork.kernel.org/patch/104909/
+> > > > > https://patchwork.kernel.org/patch/104911/
+> > > > > https://patchwork.kernel.org/patch/104910/
+> > > > > 
+> > > > > on top of current -git and see if the problem is still there?
+> > > > 
+> > > > Also, regardless of whether or not this helps, please try to revert only the
+> > > > changes made by the "guilty" commit in drivers/acpi/acpica/evxface.c and see
+> > > > if that helps (this revert will conflict with the patches above, so you'll need
+> > > > to unapply them before).
+> > > > 
+> > > > Thanks,
+> > > > Rafael
+> > > > --
+> > > > To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> > > > the body of a message to majordomo@vger.kernel.org
+> > > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > 
+> > > Yes, reverting changes in 'drivers/acpi/acpica/evxface.c' do restore
+> > > correct behavior.
 > > 
-> > > > The one thing that does look difficult is that these power constraints
-> > > > are device (and sometimes SoC) specific.  Expressing them in a generic
-> > > > way for the cpu govenors to make sense of might be hard.
+> > Good.  I think we'll need to revert them for .35, then.
 > > 
-> > > Doesn't the clock framework already handle this sort of thing?
-> > 
-> > The clock framework is implemented independantly for each CPU.
+> > I'll prepare a patch and send it to Len.
 > 
-> That's not an impediment, since drivers' requirements regarding which 
-> clocks remain running in which power states are necessarily 
-> platform-dependent also.
-> 
-> 
-> On Fri, 11 Jun 2010, James Bottomley wrote:
-> 
-> > Well, there are two elements to "this sort of thing":
-> > 
-> >      1. Allow a driver to request that a given clock not be turned off.
-> >      2. Make the cpuidle governors aware of a pending "don't turn off X
-> >         clock source" so they can keep the system in a state where the
-> >         clock doesn't get powered down.
-> > 
-> > As far as I can tell from the code, neither currently exists at the
-> > moment.
-> 
-> Well then, can (or should) the clock framework interact with the
-> pm-qos subsystem so that drivers don't have to worry about it?
+> Can you check if the patch below fixes the issue?
+Yes it does. Thanks!
 
-So the implementation of this seems to be a bit complex:  We could have
-clockevents_register() do a per clock pm_qos variable but then the
-cpuidle governors need to know which to listen for so they don't
-transition to a state too low for them to be active if pm_qos says keep
-them running.  Even if that gets sorted out, how would USB know which
-platform specific clock source is driving the wakeup events on its bus?
-
-How complex can SoC clocksources be?  If it's just a simple binary
-do/don't potentially stop all clocks, I think it's easy.  If SoC's have
-a hierarchical shutdown sequence, and they really need this to save
-power, then expressing that generically becomes rather problematic.
-
-James
+Best regards,
+Maxim Levitsky
