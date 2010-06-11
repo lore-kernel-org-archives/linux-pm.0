@@ -1,14 +1,15 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] Fix the outstanding issue with hangs on
-	insert/removal of mmc cards
-Date: Fri, 11 Jun 2010 12:42:47 -0700 (PDT)
-Message-ID: <536217.22740.qm__3419.1376100809$1276285505$gmane$org@web180312.mail.gq1.yahoo.com>
-References: <1276282801.8557.20.camel@maxim-laptop>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: commit 'ACPICA: Minimize the differences between
+	linux GPE code and ACPICA code base' breaks EC GPE on my system
+Date: Fri, 11 Jun 2010 21:43:54 +0200
+Message-ID: <201006112143.54654.rjw__48009.1828307652$1276285617$gmane$org@sisk.pl>
+References: <1276256839.4251.7.camel@maxim-laptop>
+	<201006112123.17706.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276282801.8557.20.camel@maxim-laptop>
+In-Reply-To: <201006112123.17706.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,42 +19,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-mmc <linux-mmc@vger.kernel.org>, Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Philip Langdale <philipl@overt.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, "Moore,
+	Robert" <robert.moore@intel.com>, len.brown@intel.com
 List-Id: linux-pm@vger.kernel.org
 
+On Friday, June 11, 2010, Rafael J. Wysocki wrote:
+> On Friday, June 11, 2010, Maxim Levitsky wrote:
+> > Just bisected it.
+> > 
+> > I also tried linux-acpi-next/test, and no change.
+> > 
+> > The sympthoms are that EC does't sent any GPEs, and therefore battery
+> > insert/removal events don't show up.
+> > 
+> > It can be see by doing 'grep  . /sys/firmware/acpi/interrupts/*'
+> > With regression the line is shown like this:
+> > 
+> > 
+> > /sys/firmware/acpi/interrupts/gpe1C:   1	enabled
+> > 
+> > Without regression it is
+> > 
+> > /sys/firmware/acpi/interrupts/gpe1C:   22889	enabled
+> > 
+> > and steadily increasing.
+> > 
+> > After suspend/resume, regression disappears.
+> 
+> Hmm.
+> 
+> Can you please apply the following patches:
+> 
+> https://patchwork.kernel.org/patch/104903/
+> https://patchwork.kernel.org/patch/104912/
+> https://patchwork.kernel.org/patch/104909/
+> https://patchwork.kernel.org/patch/104911/
+> https://patchwork.kernel.org/patch/104910/
+> 
+> on top of current -git and see if the problem is still there?
 
+Also, regardless of whether or not this helps, please try to revert only the
+changes made by the "guilty" commit in drivers/acpi/acpica/evxface.c and see
+if that helps (this revert will conflict with the patches above, so you'll need
+to unapply them before).
 
---- On Fri, 6/11/10, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
-> After thinking a lot about how to fix properly the hangs
-> caused by
-> insert/removal of mmc card during suspend/resume, and default behavior
-> of not trusting the card persistence over suspend,
-
-Right; there are two types of driver:  ones
-that can correctly report whether the card
-has been removed ... and ones that can't  That
-default behavior presumes the latter. 
-
-The MMC/SD framework doesn't know about these
-two types
-
-(For
-reference:  the easy way to do the former involves
-setting up the GPIO used for card detect as a
-(wakeup?) IRQ source.
-
-> First of all there are 2 types of removal possible. First
-> one happens
-> when system detects that some device is gone. At that point
-> there is
-> really no point in syncing it.
-
-One suggestion was syncing before suspend...
-but that would require coordinating the
-block layer and PM framework.  That seems
-like it'd be generally a wise thing to do;
-no point in losing the write cache, ever.
-
-
-> The other type of removal is controlled removal, usually on user  request.
+Thanks,
+Rafael
