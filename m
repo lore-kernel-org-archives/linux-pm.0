@@ -1,16 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: commit 'ACPICA: Minimize the differences between
-	linux GPE code and ACPICA code base' breaks EC GPE on my system
-Date: Fri, 11 Jun 2010 22:34:39 +0200
-Message-ID: <201006112234.39747.rjw__25828.5654163503$1276288738$gmane$org@sisk.pl>
-References: <1276256839.4251.7.camel@maxim-laptop>
-	<201006112143.54654.rjw@sisk.pl>
-	<1276288322.2651.4.camel@maxim-laptop>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: suspend blockers & Android integration
+Date: Fri, 11 Jun 2010 16:48:15 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006111638040.19894-100000__10731.6342335709$1276289406$gmane$org@netrider.rowland.org>
+References: <1276268539.2862.92.camel@mulgrave.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276288322.2651.4.camel@maxim-laptop>
+In-Reply-To: <1276268539.2862.92.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,65 +17,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, "Moore,
-	Robert" <robert.moore@intel.com>, len.brown@intel.com
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: tytso@mit.edu, Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, June 11, 2010, Maxim Levitsky wrote:
-> On Fri, 2010-06-11 at 21:43 +0200, Rafael J. Wysocki wrote: 
-> > On Friday, June 11, 2010, Rafael J. Wysocki wrote:
-> > > On Friday, June 11, 2010, Maxim Levitsky wrote:
-> > > > Just bisected it.
-> > > > 
-> > > > I also tried linux-acpi-next/test, and no change.
-> > > > 
-> > > > The sympthoms are that EC does't sent any GPEs, and therefore battery
-> > > > insert/removal events don't show up.
-> > > > 
-> > > > It can be see by doing 'grep  . /sys/firmware/acpi/interrupts/*'
-> > > > With regression the line is shown like this:
-> > > > 
-> > > > 
-> > > > /sys/firmware/acpi/interrupts/gpe1C:   1	enabled
-> > > > 
-> > > > Without regression it is
-> > > > 
-> > > > /sys/firmware/acpi/interrupts/gpe1C:   22889	enabled
-> > > > 
-> > > > and steadily increasing.
-> > > > 
-> > > > After suspend/resume, regression disappears.
-> > > 
-> > > Hmm.
-> > > 
-> > > Can you please apply the following patches:
-> > > 
-> > > https://patchwork.kernel.org/patch/104903/
-> > > https://patchwork.kernel.org/patch/104912/
-> > > https://patchwork.kernel.org/patch/104909/
-> > > https://patchwork.kernel.org/patch/104911/
-> > > https://patchwork.kernel.org/patch/104910/
-> > > 
-> > > on top of current -git and see if the problem is still there?
-> > 
-> > Also, regardless of whether or not this helps, please try to revert only the
-> > changes made by the "guilty" commit in drivers/acpi/acpica/evxface.c and see
-> > if that helps (this revert will conflict with the patches above, so you'll need
-> > to unapply them before).
-> > 
-> > Thanks,
-> > Rafael
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Fri, 11 Jun 2010, Mark Brown wrote:
+
+> On Fri, Jun 11, 2010 at 10:46:27AM -0400, Alan Stern wrote:
+> > On Fri, 11 Jun 2010, James Bottomley wrote:
 > 
-> Yes, reverting changes in 'drivers/acpi/acpica/evxface.c' do restore
-> correct behavior.
+> > > The one thing that does look difficult is that these power constraints
+> > > are device (and sometimes SoC) specific.  Expressing them in a generic
+> > > way for the cpu govenors to make sense of might be hard.
+> 
+> > Doesn't the clock framework already handle this sort of thing?
+> 
+> The clock framework is implemented independantly for each CPU.
 
-Good.  I think we'll need to revert them for .35, then.
+That's not an impediment, since drivers' requirements regarding which 
+clocks remain running in which power states are necessarily 
+platform-dependent also.
 
-I'll prepare a patch and send it to Len.
 
-Rafael
+On Fri, 11 Jun 2010, James Bottomley wrote:
+
+> Well, there are two elements to "this sort of thing":
+> 
+>      1. Allow a driver to request that a given clock not be turned off.
+>      2. Make the cpuidle governors aware of a pending "don't turn off X
+>         clock source" so they can keep the system in a state where the
+>         clock doesn't get powered down.
+> 
+> As far as I can tell from the code, neither currently exists at the
+> moment.
+
+Well then, can (or should) the clock framework interact with the
+pm-qos subsystem so that drivers don't have to worry about it?
+
+Alan Stern
