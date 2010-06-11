@@ -1,18 +1,21 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: PM QoS dynamic resource manager
-Date: Fri, 11 Jun 2010 19:42:46 +0530
-Message-ID: <1276265566.8214.2.camel@localhost>
-References: <alpine.DEB.2.00.1005211533530.25765@pchidamb-lnx.qualcomm.com>
-	<20100525145223.GA4974@gvim.org>
-	<AANLkTikLgu2c1GPE3glHLlaznOM59SVeCj2NHzDjyjZR@mail.gmail.com>
-	<20100608033333.GA23066@gvim.org>
-	<AANLkTinGBvZm870CsjocsCV1SmQ-FCCbJLtKWR1juB1Q@mail.gmail.com>
-	<4C0ECC38.2000003@codeaurora.org>  <20100609030525.GD26668@gvim.org>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: [PATCH v4] pm_qos: make update_request non blocking
+Date: Fri, 11 Jun 2010 09:25:52 -0500
+Message-ID: <1276266352.2862.70.camel__27219.3617806353$1276266417$gmane$org@mulgrave.site>
+References: <1276097381-3982-1-git-send-email-florian@mickler.org>
+	<1276097832.4343.223.camel@mulgrave.site>
+	<20100609180033.39d5b499@schatten.dmk.lab>
+	<1276099645.4343.257.camel@mulgrave.site>
+	<20100609183204.1eeca494@schatten.dmk.lab>
+	<1276103149.4343.350.camel@mulgrave.site>
+	<20100610094525.0449d797@schatten.dmk.lab>
+	<1276177144.27283.37.camel@mulgrave.site>
+	<20100610164118.15ec7a05@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100609030525.GD26668@gvim.org>
+In-Reply-To: <20100610164118.15ec7a05@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,25 +25,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: mark gross <640e9920@gmail.com>, linux-pm@lists.linux-foundation.org
+To: Florian Mickler <florian@mickler.org>
+Cc: markgross@thegnar.org, Frederic Weisbecker <fweisbec@gmail.com>, Jonathan Corbet <corbet@lwn.net>, linville@tuxdriver.com, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2010-06-08 at 20:05 -0700, mark gross wrote:
-> On Tue, Jun 08, 2010 at 04:03:20PM -0700, Bryan Huntsman wrote:
+On Thu, 2010-06-10 at 16:41 +0200, Florian Mickler wrote:
+> > > So the notified value is always the latest or there is another
+> > > notification underway.
 > > 
-> > Mike, one idea I'm exploring is having platform-specific busses with
-> > QoS constraints specified via runtime_pm as part of the LDM.  Adding
-> > dynamic class creation within pm_qos, or a type enum as you suggest,
-> > would work.  However, I think this kind of behavior would fit nicely
-> > within runtime_pm.
-> >
+> > Well, no ... it's a race, and like all good races the winner is non
+> > deterministic.
 > 
-> Something like that is what Kevin Hilman was thinking too.  It would
-> bring a qos concept to the LDM for each bus driver object.  
+> Can you point out where I'm wrong?
+> 
+> U1. update_request gets called
+> U2. 	new extreme value gets calculated under spinlock
+> U3.	notify gets queued if its WORK_PENDING_BIT is not set.
+> 
+> run_workqueue() does the following:
+> R1. clears the WORK_PENDING_BIT
+> R2. calls update_notify()
+> R3. 	reads the current extreme value
+> R4. 	notification gets called with that value		
+> 
+> 
+> If another update_request comes to schedule_work before
+> run_workqueue() has cleared the WORK_PENDING_BIT, the work will not be
+> requeued, but R3 isn't yet executed. So the notifiers will get the last
+> value.
 
-Yes, I definitely have some thoughts/ideas in this direction and is what
-we are doing on OMAP.  I've been on the road, so I will chime in more on
-this next week when I get back...
+So the race now only causes lost older notifications ... as long as the
+consumers are OK with that (it is an API change) then this should work.
+You're still not taking advantage of the user context passed in, though,
+so this does needlessly delay notifications for that case.
 
-Kevin
+Actually, pm_qos_remove now needs a flush_scheduled work since you don't
+want to return until the list is clear (since the next action may be to
+free the object).
+
+James
