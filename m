@@ -1,14 +1,12 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+From: James Bottomley <James.Bottomley@suse.de>
 Subject: Re: suspend blockers & Android integration
-Date: Fri, 11 Jun 2010 16:01:25 +0100
-Message-ID: <20100611150124.GG12436__8935.90290002084$1276268807$gmane$org@sirena.org.uk>
-References: <1276266502.2862.74.camel@mulgrave.site>
-	<Pine.LNX.4.44L0.1006111045340.12006-100000@netrider.rowland.org>
+Date: Fri, 11 Jun 2010 10:02:19 -0500
+Message-ID: <1276268539.2862.92.camel__6468.55666204846$1276268892$gmane$org@mulgrave.site>
+References: <Pine.LNX.4.44L0.1006111045340.12006-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.44L0.1006111045340.12006-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,16 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: tytso@mit.edu, Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, James Bottomley <James.Bottomley@suse.de>, Linux PM <linux-pm@lists.linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: tytso@mit.edu, Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 11, 2010 at 10:46:27AM -0400, Alan Stern wrote:
+On Fri, 2010-06-11 at 10:46 -0400, Alan Stern wrote:
 > On Fri, 11 Jun 2010, James Bottomley wrote:
-
+> 
+> > On Thu, 2010-06-10 at 21:21 -0700, David Brownell wrote:
+> > > Do we at least have a clean way that a driver can
+> > > reject a system suspend?  I've lost track of many
+> > > issues, but maybe this could be phrased as a QOS
+> > > constraint:  the current config of driver X needs
+> > > clock Y active to enter the  target system suspend
+> > > state, driver's suspend() method reports as much.  Then the entry to
+> > > that system state gets blocked
+> > > if the clock isn't enabled.
+> > 
+> > So in QoS modifications to android patches, the answer is "yes" ...
+> > except that the current android patch set didn't actually have this type
+> > of wakelock in it.
+> > 
+> > Android wants an idleness suspend block (or pm qos constraint) that a
+> > driver can set to prevent the system idleness power govenor from
+> > dropping into a power state too low for the driver, so in USB terms this
+> > would prevent the states that shut down the clock.  For android, it
+> > prevented shutdown of an internal i2c bus.
+> > 
 > > The one thing that does look difficult is that these power constraints
 > > are device (and sometimes SoC) specific.  Expressing them in a generic
 > > way for the cpu govenors to make sense of might be hard.
-
+> 
 > Doesn't the clock framework already handle this sort of thing?
 
-The clock framework is implemented independantly for each CPU.
+Well, there are two elements to "this sort of thing":
+
+     1. Allow a driver to request that a given clock not be turned off.
+     2. Make the cpuidle governors aware of a pending "don't turn off X
+        clock source" so they can keep the system in a state where the
+        clock doesn't get powered down.
+
+As far as I can tell from the code, neither currently exists at the
+moment.
+
+James
