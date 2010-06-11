@@ -1,13 +1,22 @@
-From: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: suspend blockers & Android integration
-Date: Fri, 11 Jun 2010 10:02:19 -0500
-Message-ID: <1276268539.2862.92.camel__6468.55666204846$1276268892$gmane$org@mulgrave.site>
-References: <Pine.LNX.4.44L0.1006111045340.12006-100000@netrider.rowland.org>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [PATCH v4] pm_qos: make update_request non blocking
+Date: Fri, 11 Jun 2010 17:49:54 +0200
+Message-ID: <20100611174954.41df0606__3316.66879724271$1276271496$gmane$org@schatten.dmk.lab>
+References: <1276097381-3982-1-git-send-email-florian@mickler.org>
+	<1276097832.4343.223.camel@mulgrave.site>
+	<20100609180033.39d5b499@schatten.dmk.lab>
+	<1276099645.4343.257.camel@mulgrave.site>
+	<20100609183204.1eeca494@schatten.dmk.lab>
+	<1276103149.4343.350.camel@mulgrave.site>
+	<20100610094525.0449d797@schatten.dmk.lab>
+	<1276177144.27283.37.camel@mulgrave.site>
+	<20100610164118.15ec7a05@schatten.dmk.lab>
+	<1276266352.2862.70.camel@mulgrave.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006111045340.12006-100000@netrider.rowland.org>
+In-Reply-To: <1276266352.2862.70.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,47 +26,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: tytso@mit.edu, Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: markgross@thegnar.org, Frederic Weisbecker <fweisbec@gmail.com>, Jonathan Corbet <corbet@lwn.net>, linville@tuxdriver.com, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2010-06-11 at 10:46 -0400, Alan Stern wrote:
-> On Fri, 11 Jun 2010, James Bottomley wrote:
+On Fri, 11 Jun 2010 09:25:52 -0500
+James Bottomley <James.Bottomley@suse.de> wrote:
+
+> On Thu, 2010-06-10 at 16:41 +0200, Florian Mickler wrote:
+> > > > So the notified value is always the latest or there is another
+> > > > notification underway.
+> > > 
+> > > Well, no ... it's a race, and like all good races the winner is non
+> > > deterministic.
+> > 
+> > Can you point out where I'm wrong?
+> > 
+> > U1. update_request gets called
+> > U2. 	new extreme value gets calculated under spinlock
+> > U3.	notify gets queued if its WORK_PENDING_BIT is not set.
+> > 
+> > run_workqueue() does the following:
+> > R1. clears the WORK_PENDING_BIT
+> > R2. calls update_notify()
+> > R3. 	reads the current extreme value
+> > R4. 	notification gets called with that value		
+> > 
+> > 
+> > If another update_request comes to schedule_work before
+> > run_workqueue() has cleared the WORK_PENDING_BIT, the work will not be
+> > requeued, but R3 isn't yet executed. So the notifiers will get the last
+> > value.
 > 
-> > On Thu, 2010-06-10 at 21:21 -0700, David Brownell wrote:
-> > > Do we at least have a clean way that a driver can
-> > > reject a system suspend?  I've lost track of many
-> > > issues, but maybe this could be phrased as a QOS
-> > > constraint:  the current config of driver X needs
-> > > clock Y active to enter the  target system suspend
-> > > state, driver's suspend() method reports as much.  Then the entry to
-> > > that system state gets blocked
-> > > if the clock isn't enabled.
-> > 
-> > So in QoS modifications to android patches, the answer is "yes" ...
-> > except that the current android patch set didn't actually have this type
-> > of wakelock in it.
-> > 
-> > Android wants an idleness suspend block (or pm qos constraint) that a
-> > driver can set to prevent the system idleness power govenor from
-> > dropping into a power state too low for the driver, so in USB terms this
-> > would prevent the states that shut down the clock.  For android, it
-> > prevented shutdown of an internal i2c bus.
-> > 
-> > The one thing that does look difficult is that these power constraints
-> > are device (and sometimes SoC) specific.  Expressing them in a generic
-> > way for the cpu govenors to make sense of might be hard.
+> So the race now only causes lost older notifications ... as long as the
+> consumers are OK with that (it is an API change) then this should work.
+> You're still not taking advantage of the user context passed in, though,
+> so this does needlessly delay notifications for that case.
+
+Right. We can use execute_in_process_context. 
+ 
+> Actually, pm_qos_remove now needs a flush_scheduled work since you don't
+> want to return until the list is clear (since the next action may be to
+> free the object).
+
+Yes. Good point, will fix. 
+
+> James
 > 
-> Doesn't the clock framework already handle this sort of thing?
 
-Well, there are two elements to "this sort of thing":
-
-     1. Allow a driver to request that a given clock not be turned off.
-     2. Make the cpuidle governors aware of a pending "don't turn off X
-        clock source" so they can keep the system in a state where the
-        clock doesn't get powered down.
-
-As far as I can tell from the code, neither currently exists at the
-moment.
-
-James
+Cheers,
+Flo
