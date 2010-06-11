@@ -1,14 +1,13 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [PATCH] Fix the outstanding issue with hangs on
- insert/removal of mmc cards
-Date: Sat, 12 Jun 2010 00:03:31 +0300
-Message-ID: <1276290211.2651.6.camel__30682.1716753349$1276290424$gmane$org@maxim-laptop>
-References: <Pine.LNX.4.44L0.1006111648590.19894-100000@netrider.rowland.org>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: suspend blockers & Android integration
+Date: Fri, 11 Jun 2010 16:04:35 -0500
+Message-ID: <1276290275.2862.152.camel__27176.2524535463$1276290555$gmane$org@mulgrave.site>
+References: <Pine.LNX.4.44L0.1006111638040.19894-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006111648590.19894-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1006111638040.19894-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,69 +18,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-mmc <linux-mmc@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Philip Langdale <philipl@overt.org>
+Cc: tytso@mit.edu, Peter Zijlstra <a.p.zijlstra@chello.nl>, Neil Brown <neilb@suse.de>, Brian Swetland <swetland@google.com>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@lists.linux-foundation.org>, Felipe Balbi <felipe.balbi@nokia.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2010-06-11 at 17:00 -0400, Alan Stern wrote: 
-> On Fri, 11 Jun 2010, Maxim Levitsky wrote:
+On Fri, 2010-06-11 at 16:48 -0400, Alan Stern wrote:
+> On Fri, 11 Jun 2010, Mark Brown wrote:
 > 
-> > Hi,
+> > On Fri, Jun 11, 2010 at 10:46:27AM -0400, Alan Stern wrote:
+> > > On Fri, 11 Jun 2010, James Bottomley wrote:
 > > 
-> > After thinking a lot about how to fix properly the hangs caused by
-> > insert/removal of mmc card during suspend/resume, and default behavior
-> > of not trusting the card persistence over suspend, I finally come to
-> > conclusion that changing the del_gendisk is wrong.
+> > > > The one thing that does look difficult is that these power constraints
+> > > > are device (and sometimes SoC) specific.  Expressing them in a generic
+> > > > way for the cpu govenors to make sense of might be hard.
 > > 
-> > First of all there are 2 types of removal possible. First one happens
-> > when system detects that some device is gone. At that point there is
-> > really no point in syncing it.
+> > > Doesn't the clock framework already handle this sort of thing?
 > > 
-> > The other type of removal is controlled removal, usually on user
-> > request. Surly we must sync the device of this request.
-> > This type of removal _shouldn't_ happen during suspend/resume
-> > transaction. The only case when it does is today to protect against user
-> > carelessness of switching the cards during suspend.
+> > The clock framework is implemented independantly for each CPU.
 > 
-> There are other pathological cases which can cause it to happen, but 
-> they are pretty unlikely.
+> That's not an impediment, since drivers' requirements regarding which 
+> clocks remain running in which power states are necessarily 
+> platform-dependent also.
 > 
-> > I think that it is just wrong to sync the device in suspend/resume time.
-> > At that time userspace is frozen, but also its not known which drivers
-> > are still running. They might even suspend asynchronously...
-> > So, such cases should be moved to pm-notifier, thing that my patch does
-> > for mmc.
-> > Other users should be fixed as well.
-> > 
-> > We can, in addition to that, add a temporary hack to del_gendisk with
-> > loud WARN_ON though.
-> > 
-> > If card is really removed during suspend, then we can just introduce
-> > del_gendisk_dead or something like that which will be safe to call
-> > during suspend.
-> > 
-> > I didn't do that but rather I made the card detection thread freezeable,
-> > thus eliminated the whole problem.
-> > If you remove the card during suspend, system will notice at end of
-> > resume.
 > 
-> I don't know why the mmc subsystem works differently from USB.  In USB,
-> the equivalent of UNSAFE_RESUME is a per-device flag that can be
-> controlled via sysfs (see Documentation/usb/persist.txt).  And it
-> almost always defaults to ON, i.e., the kernel assumes that if a device
-> is present before suspend and after resume it is the same device --
-> although some checking is done to try to verify this (the descriptors
-> have to remain the same).  We started out being more cautious (the
-> default was OFF), but Linus complained about it being _too_ cautious.
-I will be very happy to see the description and default value of 
-MMC_UNSAFE_RESUME changed.
+> On Fri, 11 Jun 2010, James Bottomley wrote:
+> 
+> > Well, there are two elements to "this sort of thing":
+> > 
+> >      1. Allow a driver to request that a given clock not be turned off.
+> >      2. Make the cpuidle governors aware of a pending "don't turn off X
+> >         clock source" so they can keep the system in a state where the
+> >         clock doesn't get powered down.
+> > 
+> > As far as I can tell from the code, neither currently exists at the
+> > moment.
+> 
+> Well then, can (or should) the clock framework interact with the
+> pm-qos subsystem so that drivers don't have to worry about it?
 
-This patch fixes both cases.
+So the implementation of this seems to be a bit complex:  We could have
+clockevents_register() do a per clock pm_qos variable but then the
+cpuidle governors need to know which to listen for so they don't
+transition to a state too low for them to be active if pm_qos says keep
+them running.  Even if that gets sorted out, how would USB know which
+platform specific clock source is driving the wakeup events on its bus?
 
-> 
-> And like you have done here, in USB the kernel thread that handles
-> registering and unregistering devices is freezable, so things never get
-> added or removed at an unsafe time.
-Very nice!
+How complex can SoC clocksources be?  If it's just a simple binary
+do/don't potentially stop all clocks, I think it's easy.  If SoC's have
+a hierarchical shutdown sequence, and they really need this to save
+power, then expressing that generically becomes rather problematic.
 
-Best regards,
-Maxim Levitsky
+James
