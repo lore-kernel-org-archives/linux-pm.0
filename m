@@ -1,14 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Suspend hangs since 2.6.34
-Date: Sun, 13 Jun 2010 13:00:49 +0200
-Message-ID: <201006131300.49997.rjw__44938.3488543846$1276427085$gmane$org@sisk.pl>
-References: <20100609175356.GA17332@x61.home> <201006100142.13131.rjw@sisk.pl>
-	<4C108091.3060204@msgid.tls.msk.ru>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [PATCH v2] MMC: fix all hangs related to mmc/sd card
+ insert/removal during suspend/resume.
+Date: Sun, 13 Jun 2010 14:27:29 +0300
+Message-ID: <1276428449.16701.0.camel__24060.8869157315$1276428546$gmane$org@maxim-laptop>
+References: <1276283791.8557.29.camel@maxim-laptop>
+	<1276283995-10812-1-git-send-email-maximlevitsky@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C108091.3060204@msgid.tls.msk.ru>
+In-Reply-To: <1276283995-10812-1-git-send-email-maximlevitsky@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,31 +19,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Tino Keitel <tino.keitel+xorg@tikei.de>, intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: linux-mmc <linux-mmc@vger.kernel.org>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Philip Langdale <philipl@overt.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1cnNkYXksIEp1bmUgMTAsIDIwMTAsIE1pY2hhZWwgVG9rYXJldiB3cm90ZToKPiAxMC4w
-Ni4yMDEwIDAzOjQyLCBSYWZhZWwgSi4gV3lzb2NraSDQv9C40YjQtdGCOgo+ID4gT24gV2VkbmVz
-ZGF5LCBKdW5lIDA5LCAyMDEwLCBUaW5vIEtlaXRlbCB3cm90ZToKPiA+PiBIaSwKPiA+Pgo+ID4+
-IGFzIG9mIGtlcm5lbCAyLjYuMzQgSSBzb21ldGltZXMgZ2V0IGEgc3RyYW5nZSBoYW5nIGR1cmlu
-ZyBzdXNwZW5kIHRvCj4gPj4gUkFNLiBBZnRlciBlY2hvIG1lbT4gIC9zeXMvcG93ZXIvc3RhdGUs
-IHRoZSBzdXNwZW5kIHNjcmlwdCBoYW5ncywgWG9yZwo+ID4+IGVhdHMgMTAwJSBDUFUsIGFuZCB0
-aGUgZGVza3RvcCBpcyBmcm96ZW4uIEkgY2FuIGtpbGwgdGhlIHNjcmlwdCBhbmQgdGhlCj4gPj4g
-Y29tcHV0ZXIgd2lsbCB0aGVuIHN1c3BlbmQgYW5kIHJlc3VtZSBmaW5lLiBUaGUga2VybmVsIGxv
-ZyBzaG93cwo+ID4+IG5vdGhpbmcgaW50ZXJlc3Rpbmcgd2hlbiB0aGUgaGFuZyBoYXBwZW5zOgo+
-ID4+Cj4gPj4gdXNibHAwOiByZW1vdmVkCj4gPj4gdXNiY29yZTogZGVyZWdpc3RlcmluZyBpbnRl
-cmZhY2UgZHJpdmVyIGR2Yl91c2JfdnA3MDQ1Cj4gPj4gZHZiLXVzYjogVHdpbmhhbiBVU0IyLjAg
-RFZCLVQgcmVjZWl2ZXIgKFR3aW5oYW5EVFYgQWxwaGEvTWFnaWNCb3ggSUkpCj4gPj4gc3VjY2Vz
-c2Z1bGx5IGRlaW5pdGlhbGl6ZWQgYW5kIGRpc2Nvbm5lY3RlZC4KPiA+PiBQTTogU3luY2luZyBm
-aWxlc3lzdGVtcyAuLi4gZG9uZS4KPiAKPiBTb3VuZHMgdmVyeSBtdWNoIGxpa2UgdGhlIHByb2Js
-ZW0gSSBoYXZlIHdpdGggMi42LjM0IGZpbmFsLiAgRGlkIG5vdAo+IGhhcHBlbiB3aXRoIDIuNi4z
-NC1yYzcgd2hpY2ggc3VzcGVuZGVkIGp1c3QgZmluZSwgYnV0IGhhcHBlbnMgcXVpdGUKPiByZWd1
-bGFybHkgb24gMi42LjM0IGZpbmFsIC0gbm90IGV2ZXJ5IHN1c3BlbmQgYnV0IGVhY2ggMm5kIG9y
-IDNyZAo+IGF0dGVtcHQuICBJIHN0b3BwZWQgZG9pbmcgc3VzcGVuZC10by1yYW0gZHVlIHRvIHRo
-aXMsIGJlY2F1c2UgaXQncwo+IHVucmVsaWFibGUuICBTdXNwZW5kLXRvLWRpc2sgd29ya3MganVz
-dCBmaW5lLgoKQ2FuIHlvdSBib3RoIHRyeSB0byBkbyAiZWNobyAwID4gL3N5cy9wb3dlci9wbV9h
-c3luYyIgYW5kIGNoZWNrIGlmIHN1c3BlbmQKd29ya3Mgd2l0aCB0aGF0PwoKUmFmYWVsCl9fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxp
-bmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3Rz
-LmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Fri, 2010-06-11 at 22:19 +0300, Maxim Levitsky wrote: 
+> If you don't use CONFIG_MMC_UNSAFE_RESUME, card will now be removed
+> in pm notified while userspace is still running.
+> Thus it will be possible to sync it propely.
+> 
+> Card detect workqueue is now freezeable, therefore a card insert/removal event will
+> wait till userspace is unfrozen.
+> 
+> Tested with and without CONFIG_MMC_UNSAFE_RESUME with suspend and hibernate.
+And I say it is now well tested.
+All attempts to hang the system failed.
+
+Best regards,
+Maxim Levitsky
