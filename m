@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH ver. 2] PM: describe kernel policy regarding
-	wakeup defaults
-Date: Sun, 13 Jun 2010 00:42:07 +0200
-Message-ID: <201006130042.08005.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1006081724060.1387-100000@iolanthe.rowland.org>
+Subject: Re: Suspend hangs since 2.6.34
+Date: Sun, 13 Jun 2010 13:00:49 +0200
+Message-ID: <201006131300.49997.rjw__44938.3488543846$1276427085$gmane$org@sisk.pl>
+References: <20100609175356.GA17332@x61.home> <201006100142.13131.rjw@sisk.pl>
+	<4C108091.3060204@msgid.tls.msk.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006081724060.1387-100000@iolanthe.rowland.org>
+In-Reply-To: <4C108091.3060204@msgid.tls.msk.ru>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,38 +18,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Tino Keitel <tino.keitel+xorg@tikei.de>, intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, June 08, 2010, Alan Stern wrote:
-> On Tue, 8 Jun 2010, Rafael J. Wysocki wrote:
-> 
-> > On Tuesday 08 June 2010, Alan Stern wrote:
-> > > This patch (as1381b) updates a comment describing the kernel's policy
-> > > toward enabling wakeup by default.
-> > > 
-> > > It also makes device_set_wakeup_capable() actually do something when
-> > > CONFIG_PM isn't enabled.  It's not clear this is necessary; however if
-> > > it isn't then device_init_wakeup() and device_can_wakeup() should also
-> > > be do-nothing routines.  Furthermore, I don't expect this change to
-> > > have any noticeable effect -- but if it does then clearly the old
-> > > behavior was wrong.
-> > > 
-> > > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> > > 
-> > > ---
-> > > 
-> > > Rafael, I don't know if you got the earlier version of this patch.  
-> > 
-> > I did.
-> > 
-> > > This one applies against 2.6.35-rc1.
-> > 
-> > I assume I should replace the old patch with this one.
-> 
-> Yes.  If nothing else, the merge will be simpler.
-
-Applied to suspend-2.6/linux-next.
-
-Rafael
+T24gVGh1cnNkYXksIEp1bmUgMTAsIDIwMTAsIE1pY2hhZWwgVG9rYXJldiB3cm90ZToKPiAxMC4w
+Ni4yMDEwIDAzOjQyLCBSYWZhZWwgSi4gV3lzb2NraSDQv9C40YjQtdGCOgo+ID4gT24gV2VkbmVz
+ZGF5LCBKdW5lIDA5LCAyMDEwLCBUaW5vIEtlaXRlbCB3cm90ZToKPiA+PiBIaSwKPiA+Pgo+ID4+
+IGFzIG9mIGtlcm5lbCAyLjYuMzQgSSBzb21ldGltZXMgZ2V0IGEgc3RyYW5nZSBoYW5nIGR1cmlu
+ZyBzdXNwZW5kIHRvCj4gPj4gUkFNLiBBZnRlciBlY2hvIG1lbT4gIC9zeXMvcG93ZXIvc3RhdGUs
+IHRoZSBzdXNwZW5kIHNjcmlwdCBoYW5ncywgWG9yZwo+ID4+IGVhdHMgMTAwJSBDUFUsIGFuZCB0
+aGUgZGVza3RvcCBpcyBmcm96ZW4uIEkgY2FuIGtpbGwgdGhlIHNjcmlwdCBhbmQgdGhlCj4gPj4g
+Y29tcHV0ZXIgd2lsbCB0aGVuIHN1c3BlbmQgYW5kIHJlc3VtZSBmaW5lLiBUaGUga2VybmVsIGxv
+ZyBzaG93cwo+ID4+IG5vdGhpbmcgaW50ZXJlc3Rpbmcgd2hlbiB0aGUgaGFuZyBoYXBwZW5zOgo+
+ID4+Cj4gPj4gdXNibHAwOiByZW1vdmVkCj4gPj4gdXNiY29yZTogZGVyZWdpc3RlcmluZyBpbnRl
+cmZhY2UgZHJpdmVyIGR2Yl91c2JfdnA3MDQ1Cj4gPj4gZHZiLXVzYjogVHdpbmhhbiBVU0IyLjAg
+RFZCLVQgcmVjZWl2ZXIgKFR3aW5oYW5EVFYgQWxwaGEvTWFnaWNCb3ggSUkpCj4gPj4gc3VjY2Vz
+c2Z1bGx5IGRlaW5pdGlhbGl6ZWQgYW5kIGRpc2Nvbm5lY3RlZC4KPiA+PiBQTTogU3luY2luZyBm
+aWxlc3lzdGVtcyAuLi4gZG9uZS4KPiAKPiBTb3VuZHMgdmVyeSBtdWNoIGxpa2UgdGhlIHByb2Js
+ZW0gSSBoYXZlIHdpdGggMi42LjM0IGZpbmFsLiAgRGlkIG5vdAo+IGhhcHBlbiB3aXRoIDIuNi4z
+NC1yYzcgd2hpY2ggc3VzcGVuZGVkIGp1c3QgZmluZSwgYnV0IGhhcHBlbnMgcXVpdGUKPiByZWd1
+bGFybHkgb24gMi42LjM0IGZpbmFsIC0gbm90IGV2ZXJ5IHN1c3BlbmQgYnV0IGVhY2ggMm5kIG9y
+IDNyZAo+IGF0dGVtcHQuICBJIHN0b3BwZWQgZG9pbmcgc3VzcGVuZC10by1yYW0gZHVlIHRvIHRo
+aXMsIGJlY2F1c2UgaXQncwo+IHVucmVsaWFibGUuICBTdXNwZW5kLXRvLWRpc2sgd29ya3MganVz
+dCBmaW5lLgoKQ2FuIHlvdSBib3RoIHRyeSB0byBkbyAiZWNobyAwID4gL3N5cy9wb3dlci9wbV9h
+c3luYyIgYW5kIGNoZWNrIGlmIHN1c3BlbmQKd29ya3Mgd2l0aCB0aGF0PwoKUmFmYWVsCl9fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxp
+bmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3Rz
+LmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
