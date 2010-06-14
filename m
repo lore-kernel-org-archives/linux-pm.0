@@ -1,17 +1,14 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: BUG: using smp_processor_id() in preemptible code:
-	s2disk
-Date: Mon, 14 Jun 2010 07:38:53 -0700
-Message-ID: <20100614073853.6fa2f91f__8918.32944839752$1276526311$gmane$org@infradead.org>
-References: <20100613203352.GA3577@swordfish>
-	<1276461183.2659.4.camel@maxim-laptop>
-	<201006140136.18652.rjw@sisk.pl>
-	<20100614140941.GA3581@swordfish.minsk.epam.com>
+From: florian@mickler.org
+Subject: [PATCH 3/3] pm_qos: only schedule work when in interrupt
+	context
+Date: Mon, 14 Jun 2010 16:46:40 +0200
+Message-ID: <1276526800-12362-3-git-send-email-florian@mickler.org>
+References: <1276266352.2862.70.camel@mulgrave.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100614140941.GA3581@swordfish.minsk.epam.com>
+In-Reply-To: <1276266352.2862.70.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,23 +18,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-pm@lists.linux-foundation.org
+To: James.Bottomley@suse.de
+Cc: markgross@thegnar.org, Frederic Weisbecker <fweisbec@gmail.com>, Jonathan Corbet <corbet@lwn.net>, linville@tuxdriver.com, linux-kernel@vger.kernel.org, Florian Mickler <florian@mickler.org>, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 14 Jun 2010 17:09:41 +0300
-Sergey Senozhatsky <sergey.senozhatsky@gmail.com> wrote:
+With this patch we only schedule the work when in interrupt context.
 
-> Hello,
-> Not sure if this simple solution is the correct one.
+Before update_request was callable from interrupt-context there was a
+1:1 relation between a change in the request-value and a notification.
+This patch restores that behaviour for all constraints that have update_request
+never called from interrupt context.
 
-it's not; the caller needs to pass in the cpu number I suspect for this
-to be really correct....
+The notifier mutex serializes calls to blocking_notifier_call_chain, so
+that we are serialized against any pending or currently executing notification.
 
-I just returned from family emergency travel and will take a look today
+Signed-off-by: Florian Mickler <florian@mickler.org>
+---
+ kernel/pm_qos_params.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
 
-
+diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+index 9346906..c06cae9 100644
+--- a/kernel/pm_qos_params.c
++++ b/kernel/pm_qos_params.c
+@@ -152,11 +152,15 @@ static s32 min_compare(s32 v1, s32 v2)
+ static void pm_qos_call_notifiers(struct pm_qos_object *o,
+ 				  unsigned long curr_value)
+ {
+-	schedule_work(&o->notify);
+-
+ 	if (o->atomic_notifiers)
+ 		atomic_notifier_call_chain(o->atomic_notifiers,
+-					   curr_value, NULL);
++				(unsigned long) curr_value, NULL);
++
++	if (in_interrupt()) 
++		schedule_work(&o->notify);
++	else 
++		blocking_notifier_call_chain(o->blocking_notifiers, 
++				(unsigned long) curr_value, NULL);
+ }
+ 
+ static void update_notify(struct work_struct *work)
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+1.7.1
