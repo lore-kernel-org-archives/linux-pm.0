@@ -1,14 +1,14 @@
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+From: Alex Deucher <alexdeucher@gmail.com>
 Subject: Re: [Regression,
 	post-2.6.34] Hibernation broken on machines with radeon/KMS and r300
-Date: Mon, 14 Jun 2010 21:51:58 +0200
-Message-ID: <AANLkTil-o-dB8f4hwM6qHTQzJ0_o5vx9TAX73gNdi9iH__29116.9540294961$1276545271$gmane$org@mail.gmail.com>
+Date: Mon, 14 Jun 2010 15:57:07 -0400
+Message-ID: <AANLkTimgktYZiepVvbOssbYk7oLAOcWbT5X8uvtifxgC__16771.3205017664$1276545491$gmane$org@mail.gmail.com>
 References: <201006141653.03879.rjw@sisk.pl>
 	<AANLkTimQ_yCV5Xdwd_D1zFM1oom2D3ZIBeSczJh4LN1T@mail.gmail.com>
 	<201006142103.54616.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <201006142103.54616.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -21,37 +21,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Dave Airlie <airlied@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-MjAxMC82LzE0IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD46Cj4gT24gTW9uZGF5LCBK
-dW5lIDE0LCAyMDEwLCBBbGV4IERldWNoZXIgd3JvdGU6Cj4+IE9uIE1vbiwgSnVuIDE0LCAyMDEw
-IGF0IDEwOjUzIEFNLCBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+IHdyb3RlOgo+PiA+
-IEFsZXgsIERhdmUsCj4+ID4KPj4gPiBJJ20gYWZyYWlkIGhpYmVybmF0aW9uIGlzIGJyb2tlbiBv
-biBhbGwgbWFjaGluZXMgdXNpbmcgcmFkZW9uL0tNUyB3aXRoIHIzMDAKPj4gPiBhZnRlciBjb21t
-aXQgY2U4ZjUzNzA5YmY0NDAxMDBjYjlkMzFiMTMwMzI5MTU1MWNmNTE3Zgo+PiA+IChkcm0vcmFk
-ZW9uL2ttcy9wbTogcmV3b3JrIHBvd2VyIG1hbmFnZW1lbnQpLiDCoEF0IGxlYXN0LCBJJ20gYWJs
-ZSB0byByZXByb2R1Y2UKPj4gPiB0aGUgc3ltcHRvbSwgd2hpY2ggaXMgdGhhdCB0aGUgbWFjaGlu
-ZSBoYW5ncyBoYXJkIGFyb3VuZCB0aGUgcG9pbnQgd2hlcmUgYW4KPj4gPiBpbWFnZSBpcyBjcmVh
-dGVkIChwcm9iYWJseSBkdXJpbmcgdGhlIGRldmljZSB0aGF3IHBoYXNlKSwgb24gdHdvIGRpZmZl
-cmVudAo+PiA+IGJveGVzIHdpdGggcjMwMCAodGhlIG91dHB1dCBvZiBsc3BjaSBmcm9tIG9uZSBv
-ZiB0aGVtIGlzIGF0dGFjaGVkIGZvcgo+PiA+IHJlZmVyZW5jZSwgdGhlIG90aGVyIG9uZSBpcyBI
-UCBueDYzMjUpLgo+PiA+Cj4+ID4gU3VzcGVuZCB0byBSQU0gYXBwZWFycyB0byB3b3JrIGZpbmUg
-YXQgbGVhc3Qgb24gb25lIG9mIHRoZSBhZmZlY3RlZCBib3hlcy4KPj4gPgo+PiA+IFVuZm9ydHVu
-YXRlbHksIHRoZSBjb21taXQgYWJvdmUgY2hhbmdlcyBhIGxvdCBvZiBjb2RlIGFuZCBpdCdzIG5v
-dCB0b28gZWFzeSB0bwo+PiA+IGZpZ3VyZSBvdXQgd2hhdCdzIHdyb25nIHdpdGggaXQgYW5kIEkg
-ZGlkbid0IGhhdmUgdGhlIHRpbWUgdG8gbG9vayBtb3JlIGludG8KPj4gPiBkZXRhaWxzIG9mIHRo
-aXMgZmFpbHVyZS4gwqBIb3dldmVyLCBpdCBsb29rcyBsaWtlIHlvdSB1c2UgLnN1c3BlbmQoKSBh
-bmQKPj4gPiAucmVzdW1lKCkgY2FsbGJhY2tzIGFzIC5mcmVlemUoKSBhbmQgLnRoYXcoKSB3aGlj
-aCBtYXkgbm90IGJlIDEwMCUgY29ycmVjdAo+PiA+IChpbiBmYWN0IGl0IGxvb2tzIGxpa2UgdGhl
-ICJsZWdhY3kiIFBDSSBzdXNwZW5kL3Jlc3VtZSBpcyB1c2VkLCB3aGljaCBpcyBub3QKPj4gPiBy
-ZWNvbW1lbmRlZCBhbnkgbW9yZSkuCj4+ID4KPj4KPj4gRG9lcyBpdCB3b3JrIGFueSBiZXR0ZXIg
-YWZ0ZXIgRGF2ZSdzIGxhc3QgZHJtIHB1bGwgcmVxdWVzdD8KPgo+IE5vcGUuIMKgVGhlIHN5bXB0
-b20gaXMgc2xpZ2h0bHkgZGlmZmVyZW50LCB0aG91Z2gsIGJlY2F1c2Ugbm93IGl0IGhhbmdzIGFm
-dGVyCj4gdHVybmluZyBvZmYgdGhlIHNjcmVlbi4KCiJKdXN0IiB0dXJuaW5nIHRoZSBzY3JlZW4g
-b2ZmIChsaWtlIGRwbXMgZm9yY2Ugb2ZmKSBvciB0dXJuaW5nIGl0IG9mZgp3aGlsZSBzdXNwZW5k
-aW5nPwoKTWF5YmUgaXQgY291bGQgYmUgd29ydGggZW5hYmxpbmcgZHJtLmRlYnVnIG9wdGlvbiBh
-bmQgbG9nZ2luZyB1c2luZwpuZXRjb25zb2xlIG9yIHNpbWlsYXIuLi4KCi0tIApSYWZhxYIKX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFp
-bGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlz
-dHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Mon, Jun 14, 2010 at 3:03 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Monday, June 14, 2010, Alex Deucher wrote:
+>> On Mon, Jun 14, 2010 at 10:53 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > Alex, Dave,
+>> >
+>> > I'm afraid hibernation is broken on all machines using radeon/KMS with=
+ r300
+>> > after commit ce8f53709bf440100cb9d31b1303291551cf517f
+>> > (drm/radeon/kms/pm: rework power management). =A0At least, I'm able to=
+ reproduce
+>> > the symptom, which is that the machine hangs hard around the point whe=
+re an
+>> > image is created (probably during the device thaw phase), on two diffe=
+rent
+>> > boxes with r300 (the output of lspci from one of them is attached for
+>> > reference, the other one is HP nx6325).
+>> >
+>> > Suspend to RAM appears to work fine at least on one of the affected bo=
+xes.
+>> >
+>> > Unfortunately, the commit above changes a lot of code and it's not too=
+ easy to
+>> > figure out what's wrong with it and I didn't have the time to look mor=
+e into
+>> > details of this failure. =A0However, it looks like you use .suspend() =
+and
+>> > .resume() callbacks as .freeze() and .thaw() which may not be 100% cor=
+rect
+>> > (in fact it looks like the "legacy" PCI suspend/resume is used, which =
+is not
+>> > recommended any more).
+>> >
+>>
+>> Does it work any better after Dave's last drm pull request?
+>
+> Nope. =A0The symptom is slightly different, though, because now it hangs =
+after
+> turning off the screen.
+>
+>> With the latest changes, pm should not be a factor unless it's explicitly
+>> enabled via sysfs.
+>
+> Well, I guess the first pm patch changed more than just pm, then.
+
+Does this patch help?
+http://lists.freedesktop.org/archives/dri-devel/2010-June/001314.html
+
+Alex
