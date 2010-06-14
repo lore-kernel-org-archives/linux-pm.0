@@ -1,14 +1,23 @@
-From: florian@mickler.org
-Subject: [PATCH 3/3] pm_qos: only schedule work when in interrupt
-	context
-Date: Mon, 14 Jun 2010 16:46:40 +0200
-Message-ID: <1276526800-12362-3-git-send-email-florian@mickler.org>
-References: <1276266352.2862.70.camel@mulgrave.site>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: [PATCH v4] pm_qos: make update_request non blocking
+Date: Mon, 14 Jun 2010 09:44:06 -0500
+Message-ID: <1276526646.5374.8.camel__195.835965178226$1276526943$gmane$org@mulgrave.site>
+References: <1276097381-3982-1-git-send-email-florian@mickler.org>
+	<1276097832.4343.223.camel@mulgrave.site>
+	<20100609180033.39d5b499@schatten.dmk.lab>
+	<1276099645.4343.257.camel@mulgrave.site>
+	<20100609183204.1eeca494@schatten.dmk.lab>
+	<1276103149.4343.350.camel@mulgrave.site>
+	<20100610094525.0449d797@schatten.dmk.lab>
+	<1276177144.27283.37.camel@mulgrave.site>
+	<20100610164118.15ec7a05@schatten.dmk.lab>
+	<1276266352.2862.70.camel@mulgrave.site>
+	<20100614163339.755a2b5b@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276266352.2862.70.camel@mulgrave.site>
+In-Reply-To: <20100614163339.755a2b5b@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,47 +27,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James.Bottomley@suse.de
-Cc: markgross@thegnar.org, Frederic Weisbecker <fweisbec@gmail.com>, Jonathan Corbet <corbet@lwn.net>, linville@tuxdriver.com, linux-kernel@vger.kernel.org, Florian Mickler <florian@mickler.org>, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Florian Mickler <florian@mickler.org>
+Cc: markgross@thegnar.org, Frederic Weisbecker <fweisbec@gmail.com>, Jonathan Corbet <corbet@lwn.net>, linville@tuxdriver.com, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-With this patch we only schedule the work when in interrupt context.
+On Mon, 2010-06-14 at 16:33 +0200, Florian Mickler wrote:
+> On Fri, 11 Jun 2010 09:25:52 -0500
+> James Bottomley <James.Bottomley@suse.de> wrote:
+> 
+> > 
+> > Actually, pm_qos_remove now needs a flush_scheduled work since you don't
+> > want to return until the list is clear (since the next action may be to
+> > free the object).
+> 
+> The work-items are allocated in the pm_qos objects (which get never
+> freed), so we should be fine there.
 
-Before update_request was callable from interrupt-context there was a
-1:1 relation between a change in the request-value and a notification.
-This patch restores that behaviour for all constraints that have update_request
-never called from interrupt context.
+That's not a safe assumption.  Once we get into drivers, timers and cpu
+ilde states, I can see these things being in modules.
 
-The notifier mutex serializes calls to blocking_notifier_call_chain, so
-that we are serialized against any pending or currently executing notification.
+Regardless, it's bad programming practise to be using something after
+the final remove is called, it certainly violates the principle of least
+surprise and would usually eventually cause problems.
 
-Signed-off-by: Florian Mickler <florian@mickler.org>
----
- kernel/pm_qos_params.c |   10 +++++++---
- 1 files changed, 7 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-index 9346906..c06cae9 100644
---- a/kernel/pm_qos_params.c
-+++ b/kernel/pm_qos_params.c
-@@ -152,11 +152,15 @@ static s32 min_compare(s32 v1, s32 v2)
- static void pm_qos_call_notifiers(struct pm_qos_object *o,
- 				  unsigned long curr_value)
- {
--	schedule_work(&o->notify);
--
- 	if (o->atomic_notifiers)
- 		atomic_notifier_call_chain(o->atomic_notifiers,
--					   curr_value, NULL);
-+				(unsigned long) curr_value, NULL);
-+
-+	if (in_interrupt()) 
-+		schedule_work(&o->notify);
-+	else 
-+		blocking_notifier_call_chain(o->blocking_notifiers, 
-+				(unsigned long) curr_value, NULL);
- }
- 
- static void update_notify(struct work_struct *work)
--- 
-1.7.1
+James
