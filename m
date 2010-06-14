@@ -1,21 +1,14 @@
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Subject: Re: BUG: using smp_processor_id() in preemptible code:
-	s2disk
-Date: Mon, 14 Jun 2010 18:17:35 +0300
-Message-ID: <20100614151735.GB3448__41853.587042033$1276529012$gmane$org@swordfish.minsk.epam.com>
-References: <20100613203352.GA3577@swordfish>
-	<1276461183.2659.4.camel@maxim-laptop>
-	<201006140136.18652.rjw@sisk.pl>
-	<20100614140941.GA3581@swordfish.minsk.epam.com>
-	<20100614073853.6fa2f91f@infradead.org>
-	<20100614145439.GA3448@swordfish.minsk.epam.com>
-	<20100614080154.7d6a71fc@infradead.org>
+From: Alex Deucher <alexdeucher@gmail.com>
+Subject: Re: [Regression,
+	post-2.6.34] Hibernation broken on machines with radeon/KMS and r300
+Date: Mon, 14 Jun 2010 12:00:29 -0400
+Message-ID: <AANLkTimQ_yCV5Xdwd_D1zFM1oom2D3ZIBeSczJh4LN1T__27921.4211310775$1276531393$gmane$org@mail.gmail.com>
+References: <201006141653.03879.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100614080154.7d6a71fc@infradead.org>
+In-Reply-To: <201006141653.03879.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,109 +18,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Dave Airlie <airlied@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On (06/14/10 08:01), Arjan van de Ven wrote:
-> > decided to patch nr_iowait_cpu instead.
-> 
-> the bug is that it needs to be
-> 
-> nr_iowait_cpu(int cpu)
-> 
+On Mon, Jun 14, 2010 at 10:53 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Alex, Dave,
+>
+> I'm afraid hibernation is broken on all machines using radeon/KMS with r3=
+00
+> after commit ce8f53709bf440100cb9d31b1303291551cf517f
+> (drm/radeon/kms/pm: rework power management). =A0At least, I'm able to re=
+produce
+> the symptom, which is that the machine hangs hard around the point where =
+an
+> image is created (probably during the device thaw phase), on two different
+> boxes with r300 (the output of lspci from one of them is attached for
+> reference, the other one is HP nx6325).
+>
+> Suspend to RAM appears to work fine at least on one of the affected boxes.
+>
+> Unfortunately, the commit above changes a lot of code and it's not too ea=
+sy to
+> figure out what's wrong with it and I didn't have the time to look more i=
+nto
+> details of this failure. =A0However, it looks like you use .suspend() and
+> .resume() callbacks as .freeze() and .thaw() which may not be 100% correct
+> (in fact it looks like the "legacy" PCI suspend/resume is used, which is =
+not
+> recommended any more).
+>
 
-Something similar to this?
+Does it work any better after Dave's last drm pull request?  With the
+latest changes, pm should not be a factor unless it's explicitly
+enabled via sysfs.
 
----
+Alex
 
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 52ff8aa..4871ed5 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -137,14 +137,17 @@ static inline int which_bucket(unsigned int duration)
- {
- 	int bucket = 0;
- 
-+	int cpu = get_cpu();
- 	/*
- 	 * We keep two groups of stats; one with no
- 	 * IO pending, one without.
- 	 * This allows us to calculate
- 	 * E(duration)|iowait
- 	 */
--	if (nr_iowait_cpu())
-+	if (nr_iowait_cpu(cpu))
- 		bucket = BUCKETS/2;
-+	
-+	put_cpu();
- 
- 	if (duration < 10)
- 		return bucket;
-@@ -169,14 +172,17 @@ static inline int which_bucket(unsigned int duration)
- static inline int performance_multiplier(void)
- {
- 	int mult = 1;
--
-+	int cpu = get_cpu();
-+	
- 	/* for higher loadavg, we are more reluctant */
- 
- 	mult += 2 * get_loadavg();
- 
- 	/* for IO wait tasks (per cpu!) we add 5x each */
--	mult += 10 * nr_iowait_cpu();
-+	mult += 10 * nr_iowait_cpu(cpu);
- 
-+	put_cpu();
-+	
- 	return mult;
- }
- 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index f118809..747fcae 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -139,7 +139,7 @@ extern int nr_processes(void);
- extern unsigned long nr_running(void);
- extern unsigned long nr_uninterruptible(void);
- extern unsigned long nr_iowait(void);
--extern unsigned long nr_iowait_cpu(void);
-+extern unsigned long nr_iowait_cpu(int cpu);
- extern unsigned long this_cpu_load(void);
- 
- 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index f8b8996..f61b48e 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2864,9 +2864,9 @@ unsigned long nr_iowait(void)
- 	return sum;
- }
- 
--unsigned long nr_iowait_cpu(void)
-+unsigned long nr_iowait_cpu(int cpu)
- {
--	struct rq *this = this_rq();
-+	struct rq *this = cpu_rq(cpu);
- 	return atomic_read(&this->nr_iowait);
- }
- 
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index 1d7b9bc..101e8aa 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -159,10 +159,12 @@ update_ts_time_stats(struct tick_sched *ts, ktime_t now, u64 *last_update_time)
- 	ktime_t delta;
- 
- 	if (ts->idle_active) {
-+		int cpu = get_cpu();
- 		delta = ktime_sub(now, ts->idle_entrytime);
- 		ts->idle_sleeptime = ktime_add(ts->idle_sleeptime, delta);
--		if (nr_iowait_cpu() > 0)
-+		if (nr_iowait_cpu(cpu) > 0)
- 			ts->iowait_sleeptime = ktime_add(ts->iowait_sleeptime, delta);
-+		put_cpu();
- 		ts->idle_entrytime = now;
- 	}
- 
+> Thanks,
+> Rafael
+>
