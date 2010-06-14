@@ -1,15 +1,16 @@
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
 Subject: Re: [PATCH v2] MMC: fix all hangs related to mmc/sd card
  insert/removal during suspend/resume.
-Date: Mon, 14 Jun 2010 16:01:06 -0700
-Message-ID: <20100614160106.bcd92997.akpm__16959.4478597448$1276556512$gmane$org@linux-foundation.org>
+Date: Tue, 15 Jun 2010 02:18:11 +0300
+Message-ID: <1276557491.7837.10.camel__5578.96689647368$1276557570$gmane$org@maxim-laptop>
 References: <1276283791.8557.29.camel@maxim-laptop>
 	<1276283995-10812-1-git-send-email-maximlevitsky@gmail.com>
+	<20100614160106.bcd92997.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276283995-10812-1-git-send-email-maximlevitsky@gmail.com>
+In-Reply-To: <20100614160106.bcd92997.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,61 +20,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-mmc <linux-mmc@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Philip Langdale <philipl@overt.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 11 Jun 2010 22:19:55 +0300
-Maxim Levitsky <maximlevitsky@gmail.com> wrote:
-
-> If you don't use CONFIG_MMC_UNSAFE_RESUME, card will now be removed
-> in pm notified while userspace is still running.
-> Thus it will be possible to sync it propely.
+On Mon, 2010-06-14 at 16:01 -0700, Andrew Morton wrote: 
+> On Fri, 11 Jun 2010 22:19:55 +0300
+> Maxim Levitsky <maximlevitsky@gmail.com> wrote:
 > 
-> Card detect workqueue is now freezeable, therefore a card insert/removal event will
-> wait till userspace is unfrozen.
+> > If you don't use CONFIG_MMC_UNSAFE_RESUME, card will now be removed
+> > in pm notified while userspace is still running.
+> > Thus it will be possible to sync it propely.
+> > 
+> > Card detect workqueue is now freezeable, therefore a card insert/removal event will
+> > wait till userspace is unfrozen.
+> > 
+> > Tested with and without CONFIG_MMC_UNSAFE_RESUME with suspend and hibernate.
+> > 
+> >
+> > ...
+> >
+> > @@ -158,6 +162,8 @@ void mmc_remove_host(struct mmc_host *host)
+> >  	device_del(&host->class_dev);
+> >  
+> >  	led_trigger_unregister_simple(host->led);
+> > +
+> > +	unregister_pm_notifier(&host->pm_notify);
+> >  }
 > 
-> Tested with and without CONFIG_MMC_UNSAFE_RESUME with suspend and hibernate.
+> This looks a little risky.  There's a window where the pm notifier
+> remains registered after we've done the device_del() and the
+> led_trigger_unregister_simple().
 > 
->
-> ...
->
-> @@ -158,6 +162,8 @@ void mmc_remove_host(struct mmc_host *host)
->  	device_del(&host->class_dev);
->  
->  	led_trigger_unregister_simple(host->led);
-> +
-> +	unregister_pm_notifier(&host->pm_notify);
->  }
+> I don't know if the code's really buggy, nor if it might become buggy
+> in the future as things evolve.  But as register_pm_notifier() is the
+> last thing we do before mmc_start_host(), I'd have though that
+> unregister_pm_notifier() should be the first thing we do after
+> mmc_stop_host()?
 
-This looks a little risky.  There's a window where the pm notifier
-remains registered after we've done the device_del() and the
-led_trigger_unregister_simple().
+Absolutely right!
 
-I don't know if the code's really buggy, nor if it might become buggy
-in the future as things evolve.  But as register_pm_notifier() is the
-last thing we do before mmc_start_host(), I'd have though that
-unregister_pm_notifier() should be the first thing we do after
-mmc_stop_host()?
 
->
-> ...
->
-> --- a/include/linux/mmc/host.h
-> +++ b/include/linux/mmc/host.h
-> @@ -124,6 +124,7 @@ struct mmc_host {
->  	unsigned int		f_min;
->  	unsigned int		f_max;
->  	u32			ocr_avail;
-> +	struct notifier_block	pm_notify;
->  
->  #define MMC_VDD_165_195		0x00000080	/* VDD voltage 1.65 - 1.95 */
->  #define MMC_VDD_20_21		0x00000100	/* VDD voltage 2.0 ~ 2.1 */
-> @@ -257,6 +258,8 @@ int mmc_card_can_sleep(struct mmc_host *host);
->  int mmc_host_enable(struct mmc_host *host);
->  int mmc_host_disable(struct mmc_host *host);
->  int mmc_host_lazy_disable(struct mmc_host *host);
-> +int mmc_pm_notify(struct notifier_block *notify_block, unsigned long, void *);
+> 
+> >
+> > ...
+> >
+> > --- a/include/linux/mmc/host.h
+> > +++ b/include/linux/mmc/host.h
+> > @@ -124,6 +124,7 @@ struct mmc_host {
+> >  	unsigned int		f_min;
+> >  	unsigned int		f_max;
+> >  	u32			ocr_avail;
+> > +	struct notifier_block	pm_notify;
+> >  
+> >  #define MMC_VDD_165_195		0x00000080	/* VDD voltage 1.65 - 1.95 */
+> >  #define MMC_VDD_20_21		0x00000100	/* VDD voltage 2.0 ~ 2.1 */
+> > @@ -257,6 +258,8 @@ int mmc_card_can_sleep(struct mmc_host *host);
+> >  int mmc_host_enable(struct mmc_host *host);
+> >  int mmc_host_disable(struct mmc_host *host);
+> >  int mmc_host_lazy_disable(struct mmc_host *host);
+> > +int mmc_pm_notify(struct notifier_block *notify_block, unsigned long, void *);
+> 
+> It's unusual to provide names for some of the arguments and to leave
+> them out for others.
+Will fix that too.
 
-It's unusual to provide names for some of the arguments and to leave
-them out for others.
+
+
+Best regards,
+Maxim Levitsky
