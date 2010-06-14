@@ -1,22 +1,17 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: [PATCH v4] pm_qos: make update_request non blocking
-Date: Mon, 14 Jun 2010 16:33:39 +0200
-Message-ID: <20100614163339.755a2b5b__30896.9357320622$1276526194$gmane$org@schatten.dmk.lab>
-References: <1276097381-3982-1-git-send-email-florian@mickler.org>
-	<1276097832.4343.223.camel@mulgrave.site>
-	<20100609180033.39d5b499@schatten.dmk.lab>
-	<1276099645.4343.257.camel@mulgrave.site>
-	<20100609183204.1eeca494@schatten.dmk.lab>
-	<1276103149.4343.350.camel@mulgrave.site>
-	<20100610094525.0449d797@schatten.dmk.lab>
-	<1276177144.27283.37.camel@mulgrave.site>
-	<20100610164118.15ec7a05@schatten.dmk.lab>
-	<1276266352.2862.70.camel@mulgrave.site>
+From: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: BUG: using smp_processor_id() in preemptible code:
+	s2disk
+Date: Mon, 14 Jun 2010 07:38:53 -0700
+Message-ID: <20100614073853.6fa2f91f__8918.32944839752$1276526311$gmane$org@infradead.org>
+References: <20100613203352.GA3577@swordfish>
+	<1276461183.2659.4.camel@maxim-laptop>
+	<201006140136.18652.rjw@sisk.pl>
+	<20100614140941.GA3581@swordfish.minsk.epam.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276266352.2862.70.camel@mulgrave.site>
+In-Reply-To: <20100614140941.GA3581@swordfish.minsk.epam.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,21 +21,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: markgross@thegnar.org, Frederic Weisbecker <fweisbec@gmail.com>, Jonathan Corbet <corbet@lwn.net>, linville@tuxdriver.com, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 11 Jun 2010 09:25:52 -0500
-James Bottomley <James.Bottomley@suse.de> wrote:
+On Mon, 14 Jun 2010 17:09:41 +0300
+Sergey Senozhatsky <sergey.senozhatsky@gmail.com> wrote:
 
-> 
-> Actually, pm_qos_remove now needs a flush_scheduled work since you don't
-> want to return until the list is clear (since the next action may be to
-> free the object).
+> Hello,
+> Not sure if this simple solution is the correct one.
 
-The work-items are allocated in the pm_qos objects (which get never
-freed), so we should be fine there.
+it's not; the caller needs to pass in the cpu number I suspect for this
+to be really correct....
 
-> 
-> James
-> 
+I just returned from family emergency travel and will take a look today
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
