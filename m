@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: BUG: using smp_processor_id() in preemptible code:
-	s2disk
-Date: Mon, 14 Jun 2010 01:36:18 +0200
-Message-ID: <201006140136.18652.rjw__7576.2705332183$1276472444$gmane$org@sisk.pl>
-References: <20100613203352.GA3577@swordfish>
-	<1276461183.2659.4.camel@maxim-laptop>
+From: Suresh Rajashekara <suresh.raj+linuxomap@gmail.com>
+Subject: Re: Timekeeping issue on aggressive suspend/resume
+Date: Mon, 14 Jun 2010 00:46:48 -0700
+Message-ID: <AANLkTikPwOWHUdqZH1S9QVh-sgjlzptAB27_hK_otQ4Y__16415.4749516912$1276501719$gmane$org@mail.gmail.com>
+References: <AANLkTinIO5a1EeK6Ej2ljkuyL9zv06OMfbyiZBaxTQTd@mail.gmail.com>
+	<alpine.LFD.2.00.1006092206020.2933@localhost.localdomain>
+	<AANLkTin-6XsW49ECufTLcdzaD1eK9bAxe0j7RXvPqN7p@mail.gmail.com>
+	<1276199568.16089.35.camel@work-vm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276461183.2659.4.camel@maxim-laptop>
+In-Reply-To: <1276199568.16089.35.camel@work-vm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,21 +20,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-pm@lists.linux-foundation.org
+To: john stultz <johnstul@us.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, June 13, 2010, Maxim Levitsky wrote:
-> On Sun, 2010-06-13 at 23:33 +0300, Sergey Senozhatsky wrote: 
-> > Hello,
-> > 
-> > .35-rc3, x86
-> > 
-> > Hit the following error today:
-> 
-> I confirm the same issue. Sorry for not reporting it earlier.
+On Thu, Jun 10, 2010 at 12:52 PM, john stultz <johnstul@us.ibm.com> wrote:
+> I think Thomas was suggesting that you consider creating a option for
+> where CLOCK_MONOTONIC included total_sleep_time.
+>
+> In that case the *hack* (and this is a hack, we'll need some more
+> thoughtful discussion before anything like it could make it upstream)
+> would be in timekeeping_resume() to comment out the lines that update
+> wall_to_monotonic and total_sleep_time.
+>
+> It would be interesting to hear if that hack works for you, and we can
+> try to come up with a better way to think about how to accommodate both
+> views of how to account time over suspend.
 
-It looks like a cpufreq issue to me, but it may be related to CPU hotplug as
-well.  I'm not sure who's been messing up with that recently, though.
+Thanks.
 
-Rafael
+I tried this fix. It seemed to help, however the accuracy of sleep
+time for the process was not quite right. A process thread which was
+supposed to wake up every (X) seconds, seemed to wake up every (X -
+delta X) seconds.
+
+Also another side effect of this change was that the system time was
+no longer in sync with the wall time.
+
+These problems were more pronounced when the suspend/wakeup cycle time
+was brought down to 0.5 seconds from 4 seconds. The periodicity of
+most of the process threads were disturbed.
+
+I decided to NOT suspend/resume the timekeeping subsystem in the
+kernel and try. It seemed to work. Every application seems to work
+fine.
+
+Now my question is; Is it safe to disable suspend/resume of the
+timekeeping subsystem? Will it have an effect (on
+functionality/performance) which may not surface in my short
+experiments?
+
+Thanks in advance,
+
+Suresh
