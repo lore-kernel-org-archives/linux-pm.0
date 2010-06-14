@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Regression,
-	post-2.6.34] Hibernation broken on machines with radeon/KMS and r300
-Date: Mon, 14 Jun 2010 21:03:54 +0200
-Message-ID: <201006142103.54616.rjw__15078.6744118252$1276542420$gmane$org@sisk.pl>
-References: <201006141653.03879.rjw@sisk.pl>
-	<AANLkTimQ_yCV5Xdwd_D1zFM1oom2D3ZIBeSczJh4LN1T@mail.gmail.com>
+From: john stultz <johnstul@us.ibm.com>
+Subject: Re: Timekeeping issue on aggressive suspend/resume
+Date: Mon, 14 Jun 2010 12:25:57 -0700
+Message-ID: <1276543557.3076.30.camel__48242.3367248431$1276543620$gmane$org@localhost.localdomain>
+References: <AANLkTinIO5a1EeK6Ej2ljkuyL9zv06OMfbyiZBaxTQTd@mail.gmail.com>
+	<alpine.LFD.2.00.1006092206020.2933@localhost.localdomain>
+	<AANLkTin-6XsW49ECufTLcdzaD1eK9bAxe0j7RXvPqN7p@mail.gmail.com>
+	<1276199568.16089.35.camel@work-vm>
+	<AANLkTikPwOWHUdqZH1S9QVh-sgjlzptAB27_hK_otQ4Y@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTimQ_yCV5Xdwd_D1zFM1oom2D3ZIBeSczJh4LN1T@mail.gmail.com>
+In-Reply-To: <AANLkTikPwOWHUdqZH1S9QVh-sgjlzptAB27_hK_otQ4Y@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +21,85 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alex Deucher <alexdeucher@gmail.com>
-Cc: linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Dave Airlie <airlied@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Suresh Rajashekara <suresh.raj+linuxomap@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 14, 2010, Alex Deucher wrote:
-> On Mon, Jun 14, 2010 at 10:53 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > Alex, Dave,
+On Mon, 2010-06-14 at 00:46 -0700, Suresh Rajashekara wrote:
+> On Thu, Jun 10, 2010 at 12:52 PM, john stultz <johnstul@us.ibm.com> wrote:
+> > I think Thomas was suggesting that you consider creating a option for
+> > where CLOCK_MONOTONIC included total_sleep_time.
 > >
-> > I'm afraid hibernation is broken on all machines using radeon/KMS with r300
-> > after commit ce8f53709bf440100cb9d31b1303291551cf517f
-> > (drm/radeon/kms/pm: rework power management).  At least, I'm able to reproduce
-> > the symptom, which is that the machine hangs hard around the point where an
-> > image is created (probably during the device thaw phase), on two different
-> > boxes with r300 (the output of lspci from one of them is attached for
-> > reference, the other one is HP nx6325).
+> > In that case the *hack* (and this is a hack, we'll need some more
+> > thoughtful discussion before anything like it could make it upstream)
+> > would be in timekeeping_resume() to comment out the lines that update
+> > wall_to_monotonic and total_sleep_time.
 > >
-> > Suspend to RAM appears to work fine at least on one of the affected boxes.
-> >
-> > Unfortunately, the commit above changes a lot of code and it's not too easy to
-> > figure out what's wrong with it and I didn't have the time to look more into
-> > details of this failure.  However, it looks like you use .suspend() and
-> > .resume() callbacks as .freeze() and .thaw() which may not be 100% correct
-> > (in fact it looks like the "legacy" PCI suspend/resume is used, which is not
-> > recommended any more).
-> >
+> > It would be interesting to hear if that hack works for you, and we can
+> > try to come up with a better way to think about how to accommodate both
+> > views of how to account time over suspend.
 > 
-> Does it work any better after Dave's last drm pull request?
+> Thanks.
+> 
+> I tried this fix. It seemed to help, however the accuracy of sleep
+> time for the process was not quite right. A process thread which was
+> supposed to wake up every (X) seconds, seemed to wake up every (X -
+> delta X) seconds.
 
-Nope.  The symptom is slightly different, though, because now it hangs after
-turning off the screen.
+Ah, the sleep time is probably too coarse (seconds). We probably need to
+increase the granularity from read_persistent_clock() and see if that
+helps (although most persistent clocks aren't very fine grained).
 
-> With the latest changes, pm should not be a factor unless it's explicitly
-> enabled via sysfs.
+> Also another side effect of this change was that the system time was
+> no longer in sync with the wall time.
 
-Well, I guess the first pm patch changed more than just pm, then.
+? This doesn't make much sense to me, as you shouldn't be manipulating
+xtime differently.
 
-Rafael
+Just to be clear, you mean the value from "date" doesn't match your
+watch after resume? 
+
+> These problems were more pronounced when the suspend/wakeup cycle time
+> was brought down to 0.5 seconds from 4 seconds. The periodicity of
+> most of the process threads were disturbed.
+> 
+> I decided to NOT suspend/resume the timekeeping subsystem in the
+> kernel and try. It seemed to work. Every application seems to work
+> fine.
+> 
+> Now my question is; Is it safe to disable suspend/resume of the
+> timekeeping subsystem? Will it have an effect (on
+> functionality/performance) which may not surface in my short
+> experiments?
+
+Well, the difficultly here is what folks actually mean by suspend. On
+some hardware it means everything is powered off, and so on resume we
+have to re-init hardware values.
+
+It seems in your case that the hardware isn't completely powered off,
+since the clocksource you're using seemed to continue counting while the
+system was suspended. 
+
+So in this case you might be ok. Your suspend seems closer to an deep
+idle state on x86. So suspending timekeeping might not be necessary.
+
+However, you're right that there may be lurking issues:
+
+1) The suspend time would have to be limited to the clocksource's
+max_idle_ns value, since after that amount of cycles have past, we might
+overflow the accumulation function, or the clocksource may have wrapped.
+
+2) If the hardware does reset the clocksource at some point during the
+suspend, you'll have odd time issues.
+
+3) You could run into some difficulty keeping close sync with an NTP
+server, as the long delays between accumulation will probably cause an
+oscillating over-shoot and over-correction.
+
+I suspect these different definitions of "suspend" on all of the
+different hardware types out there is going to be a growing problem in
+the near term. Especially as deep idle states start to power off more
+hardware and becomes closer to suspend in behavior.
+
+thanks
+-john
