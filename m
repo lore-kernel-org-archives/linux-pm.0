@@ -1,16 +1,18 @@
-From: Alex Deucher <alexdeucher@gmail.com>
-Subject: Re: [Regression,
-	post-2.6.34] Hibernation broken on machines with radeon/KMS and r300
-Date: Mon, 14 Jun 2010 15:57:07 -0400
-Message-ID: <AANLkTimgktYZiepVvbOssbYk7oLAOcWbT5X8uvtifxgC__16771.3205017664$1276545491$gmane$org@mail.gmail.com>
-References: <201006141653.03879.rjw@sisk.pl>
-	<AANLkTimQ_yCV5Xdwd_D1zFM1oom2D3ZIBeSczJh4LN1T@mail.gmail.com>
-	<201006142103.54616.rjw@sisk.pl>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Timekeeping issue on aggressive suspend/resume
+Date: Mon, 14 Jun 2010 22:21:52 +0200 (CEST)
+Message-ID: <alpine.LFD.2.00.1006142204340.4290__31143.8476237983$1276547031$gmane$org@localhost.localdomain>
+References: <AANLkTinIO5a1EeK6Ej2ljkuyL9zv06OMfbyiZBaxTQTd@mail.gmail.com>
+	<alpine.LFD.2.00.1006092206020.2933@localhost.localdomain>
+	<AANLkTin-6XsW49ECufTLcdzaD1eK9bAxe0j7RXvPqN7p@mail.gmail.com>
+	<1276199568.16089.35.camel@work-vm>
+	<AANLkTikPwOWHUdqZH1S9QVh-sgjlzptAB27_hK_otQ4Y@mail.gmail.com>
+	<1276543557.3076.30.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006142103.54616.rjw@sisk.pl>
+In-Reply-To: <1276543557.3076.30.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,55 +22,98 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Dave Airlie <airlied@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: john stultz <johnstul@us.ibm.com>
+Cc: Suresh Rajashekara <suresh.raj+linuxomap@gmail.com>, linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jun 14, 2010 at 3:03 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday, June 14, 2010, Alex Deucher wrote:
->> On Mon, Jun 14, 2010 at 10:53 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > Alex, Dave,
->> >
->> > I'm afraid hibernation is broken on all machines using radeon/KMS with=
- r300
->> > after commit ce8f53709bf440100cb9d31b1303291551cf517f
->> > (drm/radeon/kms/pm: rework power management). =A0At least, I'm able to=
- reproduce
->> > the symptom, which is that the machine hangs hard around the point whe=
-re an
->> > image is created (probably during the device thaw phase), on two diffe=
-rent
->> > boxes with r300 (the output of lspci from one of them is attached for
->> > reference, the other one is HP nx6325).
->> >
->> > Suspend to RAM appears to work fine at least on one of the affected bo=
-xes.
->> >
->> > Unfortunately, the commit above changes a lot of code and it's not too=
- easy to
->> > figure out what's wrong with it and I didn't have the time to look mor=
-e into
->> > details of this failure. =A0However, it looks like you use .suspend() =
-and
->> > .resume() callbacks as .freeze() and .thaw() which may not be 100% cor=
-rect
->> > (in fact it looks like the "legacy" PCI suspend/resume is used, which =
-is not
->> > recommended any more).
->> >
->>
->> Does it work any better after Dave's last drm pull request?
->
-> Nope. =A0The symptom is slightly different, though, because now it hangs =
-after
-> turning off the screen.
->
->> With the latest changes, pm should not be a factor unless it's explicitly
->> enabled via sysfs.
->
-> Well, I guess the first pm patch changed more than just pm, then.
+On Mon, 14 Jun 2010, john stultz wrote:
 
-Does this patch help?
-http://lists.freedesktop.org/archives/dri-devel/2010-June/001314.html
+> On Mon, 2010-06-14 at 00:46 -0700, Suresh Rajashekara wrote:
+> > On Thu, Jun 10, 2010 at 12:52 PM, john stultz <johnstul@us.ibm.com> wrote:
+> > > I think Thomas was suggesting that you consider creating a option for
+> > > where CLOCK_MONOTONIC included total_sleep_time.
+> > >
+> > > In that case the *hack* (and this is a hack, we'll need some more
+> > > thoughtful discussion before anything like it could make it upstream)
+> > > would be in timekeeping_resume() to comment out the lines that update
+> > > wall_to_monotonic and total_sleep_time.
+> > >
+> > > It would be interesting to hear if that hack works for you, and we can
+> > > try to come up with a better way to think about how to accommodate both
+> > > views of how to account time over suspend.
+> > 
+> > Thanks.
+> > 
+> > I tried this fix. It seemed to help, however the accuracy of sleep
+> > time for the process was not quite right. A process thread which was
+> > supposed to wake up every (X) seconds, seemed to wake up every (X -
+> > delta X) seconds.
+> 
+> Ah, the sleep time is probably too coarse (seconds). We probably need to
+> increase the granularity from read_persistent_clock() and see if that
+> helps (although most persistent clocks aren't very fine grained).
+> 
+> > Also another side effect of this change was that the system time was
+> > no longer in sync with the wall time.
+> 
+> ? This doesn't make much sense to me, as you shouldn't be manipulating
+> xtime differently.
+> 
+> Just to be clear, you mean the value from "date" doesn't match your
+> watch after resume? 
+> 
+> > These problems were more pronounced when the suspend/wakeup cycle time
+> > was brought down to 0.5 seconds from 4 seconds. The periodicity of
+> > most of the process threads were disturbed.
+> > 
+> > I decided to NOT suspend/resume the timekeeping subsystem in the
+> > kernel and try. It seemed to work. Every application seems to work
+> > fine.
+> > 
+> > Now my question is; Is it safe to disable suspend/resume of the
+> > timekeeping subsystem? Will it have an effect (on
+> > functionality/performance) which may not surface in my short
+> > experiments?
+> 
+> Well, the difficultly here is what folks actually mean by suspend. On
+> some hardware it means everything is powered off, and so on resume we
+> have to re-init hardware values.
+> 
+> It seems in your case that the hardware isn't completely powered off,
+> since the clocksource you're using seemed to continue counting while the
+> system was suspended. 
+> 
+> So in this case you might be ok. Your suspend seems closer to an deep
+> idle state on x86. So suspending timekeeping might not be necessary.
+> 
+> However, you're right that there may be lurking issues:
+> 
+> 1) The suspend time would have to be limited to the clocksource's
+> max_idle_ns value, since after that amount of cycles have past, we might
+> overflow the accumulation function, or the clocksource may have wrapped.
+> 
+> 2) If the hardware does reset the clocksource at some point during the
+> suspend, you'll have odd time issues.
+> 
+> 3) You could run into some difficulty keeping close sync with an NTP
+> server, as the long delays between accumulation will probably cause an
+> oscillating over-shoot and over-correction.
+> 
+> I suspect these different definitions of "suspend" on all of the
+> different hardware types out there is going to be a growing problem in
+> the near term. Especially as deep idle states start to power off more
+> hardware and becomes closer to suspend in behavior.
 
-Alex
+I don't think it's really an issue. Such hardware uses a 32.768kHz
+driven (RTC alike) clocksource/event which is never powered off and
+not affected by suspend/resume unless you run out of battery. That
+hardware provides sub second resolution (~30us) contrary to the PC
+style RTC which gives you seconds only. That's really good enough for
+timekeeping, NOHZ and even HIGHRES.
+
+The NTP sync might become an issue for real long sleep times, but
+that's an NTP problem and needs to be addressed seperately.
+
+Thanks,
+
+	tglx
