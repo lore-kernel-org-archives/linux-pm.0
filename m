@@ -1,16 +1,21 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [PATCH v2] MMC: fix all hangs related to mmc/sd card
- insert/removal during suspend/resume.
-Date: Tue, 15 Jun 2010 02:48:33 +0300
-Message-ID: <1276559313.7837.41.camel__961.464216425334$1276559374$gmane$org@maxim-laptop>
-References: <1276283791.8557.29.camel@maxim-laptop>
-	<1276283995-10812-1-git-send-email-maximlevitsky@gmail.com>
-	<20100614155157.dca38e09.akpm@linux-foundation.org>
+From: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: BUG: using smp_processor_id() in preemptible code:
+	s2disk
+Date: Mon, 14 Jun 2010 20:40:21 -0700
+Message-ID: <20100614204021.52c50cdc__30756.4518451274$1276573132$gmane$org@infradead.org>
+References: <20100613203352.GA3577@swordfish>
+	<1276461183.2659.4.camel@maxim-laptop>
+	<201006140136.18652.rjw@sisk.pl>
+	<20100614140941.GA3581@swordfish.minsk.epam.com>
+	<20100614073853.6fa2f91f@infradead.org>
+	<20100614145439.GA3448@swordfish.minsk.epam.com>
+	<20100614080154.7d6a71fc@infradead.org>
+	<20100614151735.GB3448@swordfish.minsk.epam.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100614155157.dca38e09.akpm@linux-foundation.org>
+In-Reply-To: <20100614151735.GB3448@swordfish.minsk.epam.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,39 +25,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-mmc <linux-mmc@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Philip Langdale <philipl@overt.org>
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2010-06-14 at 15:51 -0700, Andrew Morton wrote: 
-> On Fri, 11 Jun 2010 22:19:55 +0300
-> Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+On Mon, 14 Jun 2010 18:17:35 +0300
+Sergey Senozhatsky <sergey.senozhatsky@gmail.com> wrote:
+
+> On (06/14/10 08:01), Arjan van de Ven wrote:
+> > > decided to patch nr_iowait_cpu instead.
+> > 
+> > the bug is that it needs to be
+> > 
+> > nr_iowait_cpu(int cpu)
+> > 
 > 
-> > If you don't use CONFIG_MMC_UNSAFE_RESUME, card will now be removed
-> > in pm notified while userspace is still running.
-> > Thus it will be possible to sync it propely.
-> 
-> That paragraph is a disaster and I'm not sure that I understand it well
-> enough to repair it.  I think you wanted s/now/not/ and s/in/if/ and
-> s/it will be/it will not be/.  Or perhaps you didn't.
-> 
-> Please send a comprehensible replacement.
-> 
-
-Sure.
+> Something similar to this?
 
 
+yup that'll do it
 
-If you don't use CONFIG_MMC_UNSAFE_RESUME, as soon as you attempt to
-suspend, the card will be removed, therefore this patch doesn't change
-the behavior of this option.
+Acked-by: Arjan van de Ven <arjan@linux.intel.com>
 
-However the removal will be done by pm notifier, which runs while
-userspace is still not frozen and thus can freely use del_gendisk,
-without the risk of deadlock which would happen otherwise.
-
-If you do use 
-
-
-Best regards,
-Maxim Levitsky
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
