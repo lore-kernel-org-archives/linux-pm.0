@@ -1,55 +1,61 @@
-From: Nico Schottelius <nico-linux-20100614@schottelius.org>
-Subject: Re: New issues in 2.6.35-rc{1,2}
-Date: Tue, 15 Jun 2010 10:43:07 +0200
-Message-ID: <20100615084307.GC9549@schottelius.org>
-References: <20100614161904.GE31910@schottelius.org>
- <20100614164320.GA4392@a1.tnic>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Regression,
+	post-2.6.34] Hibernation broken on machines with radeon/KMS and r300
+Date: Tue, 15 Jun 2010 15:27:01 +0200
+Message-ID: <201006151527.01794.rjw__22780.3227644928$1276608599$gmane$org@sisk.pl>
+References: <201006141653.03879.rjw@sisk.pl> <201006142103.54616.rjw@sisk.pl>
+	<AANLkTil-o-dB8f4hwM6qHTQzJ0_o5vx9TAX73gNdi9iH@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="DIOMP1UsTsWJauNi"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20100614164320.GA4392@a1.tnic>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>, Nico Schottelius <nico-linux-20100614@schottelius.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.osdl.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <AANLkTil-o-dB8f4hwM6qHTQzJ0_o5vx9TAX73gNdi9iH@mail.gmail.com>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: =?utf-8?q?Rafa=C5=82_Mi=C5=82ecki?= <zajec5@gmail.com>
+Cc: linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-
---DIOMP1UsTsWJauNi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-And another one: with 2.6.35-rc2 my system freezes after
-about 5 times suspend & resume.
-
-I'm now back on 2.6.34-08528-gb3f2f6c, it seems this kernel
-reliable suspends & resumes.
-
-Although this issue is an old one, it simply "disappeared", but
-has never been solved explicitly, see thread
-"2.6.33-2.6.34-rc5 suspend issues" on lkml, from 27 Apr 2010.
-
-Cheers,
-
-Nico
-
---=20
-New PGP key: 7ED9 F7D3 6B10 81D7 0EC5  5C09 D7DC C8E4 3187 7DF0
-Please resign, if you signed 9885188C or 8D0E27A4.
-
-Currently moving *.schottelius.org to http://www.nico.schottelius.org/ ...
-
---DIOMP1UsTsWJauNi
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkwXPRsACgkQ19zI5DGHffDU4wCfSGbARbaw0DvJAxLl7+nA26wi
-WfAAoNZ/Hrvs3TS+MbouFiHQiPReNobP
-=rSH5
------END PGP SIGNATURE-----
-
---DIOMP1UsTsWJauNi--
+T24gTW9uZGF5LCBKdW5lIDE0LCAyMDEwLCBSYWZhxYIgTWnFgmVja2kgd3JvdGU6Cj4gMjAxMC82
+LzE0IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD46Cj4gPiBPbiBNb25kYXksIEp1bmUg
+MTQsIDIwMTAsIEFsZXggRGV1Y2hlciB3cm90ZToKPiA+PiBPbiBNb24sIEp1biAxNCwgMjAxMCBh
+dCAxMDo1MyBBTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPiB3cm90ZToKPiA+PiA+
+IEFsZXgsIERhdmUsCj4gPj4gPgo+ID4+ID4gSSdtIGFmcmFpZCBoaWJlcm5hdGlvbiBpcyBicm9r
+ZW4gb24gYWxsIG1hY2hpbmVzIHVzaW5nIHJhZGVvbi9LTVMgd2l0aCByMzAwCj4gPj4gPiBhZnRl
+ciBjb21taXQgY2U4ZjUzNzA5YmY0NDAxMDBjYjlkMzFiMTMwMzI5MTU1MWNmNTE3Zgo+ID4+ID4g
+KGRybS9yYWRlb24va21zL3BtOiByZXdvcmsgcG93ZXIgbWFuYWdlbWVudCkuICBBdCBsZWFzdCwg
+SSdtIGFibGUgdG8gcmVwcm9kdWNlCj4gPj4gPiB0aGUgc3ltcHRvbSwgd2hpY2ggaXMgdGhhdCB0
+aGUgbWFjaGluZSBoYW5ncyBoYXJkIGFyb3VuZCB0aGUgcG9pbnQgd2hlcmUgYW4KPiA+PiA+IGlt
+YWdlIGlzIGNyZWF0ZWQgKHByb2JhYmx5IGR1cmluZyB0aGUgZGV2aWNlIHRoYXcgcGhhc2UpLCBv
+biB0d28gZGlmZmVyZW50Cj4gPj4gPiBib3hlcyB3aXRoIHIzMDAgKHRoZSBvdXRwdXQgb2YgbHNw
+Y2kgZnJvbSBvbmUgb2YgdGhlbSBpcyBhdHRhY2hlZCBmb3IKPiA+PiA+IHJlZmVyZW5jZSwgdGhl
+IG90aGVyIG9uZSBpcyBIUCBueDYzMjUpLgo+ID4+ID4KPiA+PiA+IFN1c3BlbmQgdG8gUkFNIGFw
+cGVhcnMgdG8gd29yayBmaW5lIGF0IGxlYXN0IG9uIG9uZSBvZiB0aGUgYWZmZWN0ZWQgYm94ZXMu
+Cj4gPj4gPgo+ID4+ID4gVW5mb3J0dW5hdGVseSwgdGhlIGNvbW1pdCBhYm92ZSBjaGFuZ2VzIGEg
+bG90IG9mIGNvZGUgYW5kIGl0J3Mgbm90IHRvbyBlYXN5IHRvCj4gPj4gPiBmaWd1cmUgb3V0IHdo
+YXQncyB3cm9uZyB3aXRoIGl0IGFuZCBJIGRpZG4ndCBoYXZlIHRoZSB0aW1lIHRvIGxvb2sgbW9y
+ZSBpbnRvCj4gPj4gPiBkZXRhaWxzIG9mIHRoaXMgZmFpbHVyZS4gIEhvd2V2ZXIsIGl0IGxvb2tz
+IGxpa2UgeW91IHVzZSAuc3VzcGVuZCgpIGFuZAo+ID4+ID4gLnJlc3VtZSgpIGNhbGxiYWNrcyBh
+cyAuZnJlZXplKCkgYW5kIC50aGF3KCkgd2hpY2ggbWF5IG5vdCBiZSAxMDAlIGNvcnJlY3QKPiA+
+PiA+IChpbiBmYWN0IGl0IGxvb2tzIGxpa2UgdGhlICJsZWdhY3kiIFBDSSBzdXNwZW5kL3Jlc3Vt
+ZSBpcyB1c2VkLCB3aGljaCBpcyBub3QKPiA+PiA+IHJlY29tbWVuZGVkIGFueSBtb3JlKS4KPiA+
+PiA+Cj4gPj4KPiA+PiBEb2VzIGl0IHdvcmsgYW55IGJldHRlciBhZnRlciBEYXZlJ3MgbGFzdCBk
+cm0gcHVsbCByZXF1ZXN0Pwo+ID4KPiA+IE5vcGUuICBUaGUgc3ltcHRvbSBpcyBzbGlnaHRseSBk
+aWZmZXJlbnQsIHRob3VnaCwgYmVjYXVzZSBub3cgaXQgaGFuZ3MgYWZ0ZXIKPiA+IHR1cm5pbmcg
+b2ZmIHRoZSBzY3JlZW4uCj4gCj4gIkp1c3QiIHR1cm5pbmcgdGhlIHNjcmVlbiBvZmYgKGxpa2Ug
+ZHBtcyBmb3JjZSBvZmYpIG9yIHR1cm5pbmcgaXQgb2ZmCj4gd2hpbGUgc3VzcGVuZGluZz8KClR1
+cm5pbmcgaXQgb2ZmIHdoaWxlIHN1c3BlbmRpbmcuCgo+IE1heWJlIGl0IGNvdWxkIGJlIHdvcnRo
+IGVuYWJsaW5nIGRybS5kZWJ1ZyBvcHRpb24gYW5kIGxvZ2dpbmcgdXNpbmcKPiBuZXRjb25zb2xl
+IG9yIHNpbWlsYXIuLi4KClRoYXQgZG9lc24ndCB3b3JrIGR1cmluZyBzdXNwZW5kLCB1bmZvcnR1
+bmF0ZWx5LgoKUGVyaGFwcyBJJ2xsIHRyeSB0byB1c2UgYSBzZXJpYWwgY29uc29sZSBpZiBJIGRv
+bid0IGZ1Z3VyZSBvdXQgd2hhdCdzIHdyb25nLgoKUmFmYWVsCl9fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1w
+bUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRp
+b24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
