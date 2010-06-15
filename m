@@ -1,8 +1,8 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: BUG: using smp_processor_id() in preemptible code:
-	s2disk
-Date: Mon, 14 Jun 2010 20:40:21 -0700
-Message-ID: <20100614204021.52c50cdc__30756.4518451274$1276573132$gmane$org@infradead.org>
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Subject: [PATCH] avoid using smp_processor_id() in preemptible
+ code (nr_iowait_cpu)
+Date: Tue, 15 Jun 2010 09:19:27 +0300
+Message-ID: <20100615061927.GA3312__42241.9625138447$1276582621$gmane$org@swordfish>
 References: <20100613203352.GA3577@swordfish>
 	<1276461183.2659.4.camel@maxim-laptop>
 	<201006140136.18652.rjw@sisk.pl>
@@ -11,11 +11,13 @@ References: <20100613203352.GA3577@swordfish>
 	<20100614145439.GA3448@swordfish.minsk.epam.com>
 	<20100614080154.7d6a71fc@infradead.org>
 	<20100614151735.GB3448@swordfish.minsk.epam.com>
+	<20100614204021.52c50cdc@infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100614151735.GB3448@swordfish.minsk.epam.com>
+Content-Disposition: inline
+In-Reply-To: <20100614204021.52c50cdc@infradead.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,29 +27,142 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
 Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 14 Jun 2010 18:17:35 +0300
-Sergey Senozhatsky <sergey.senozhatsky@gmail.com> wrote:
+Fixing 
+ BUG: using smp_processor_id() in preemptible [00000000] code: s2disk/3392
+ caller is nr_iowait_cpu+0xe/0x1e
+ Pid: 3392, comm: s2disk Not tainted 2.6.35-rc3-dbg-00106-ga75e02b #2
+ Call Trace:
+ [<c1184c55>] debug_smp_processor_id+0xa5/0xbc
+ [<c10282a5>] nr_iowait_cpu+0xe/0x1e
+ [<c104ab7c>] update_ts_time_stats+0x32/0x6c
+ [<c104ac73>] get_cpu_idle_time_us+0x36/0x58
+ [<c124229b>] get_cpu_idle_time+0x12/0x74
+ [<c1242963>] cpufreq_governor_dbs+0xc3/0x2dc
+ [<c1240437>] __cpufreq_governor+0x51/0x85
+ [<c1241190>] __cpufreq_set_policy+0x10c/0x13d
+ [<c12413d3>] cpufreq_add_dev_interface+0x212/0x233
+ [<c1241b1e>] ? handle_update+0x0/0xd
+ [<c1241a18>] cpufreq_add_dev+0x34b/0x35a
+ [<c103c973>] ? schedule_delayed_work_on+0x11/0x13
+ [<c12c14db>] cpufreq_cpu_callback+0x59/0x63
+ [<c1042f39>] notifier_call_chain+0x26/0x48
+ [<c1042f7d>] __raw_notifier_call_chain+0xe/0x10
+ [<c102efb9>] __cpu_notify+0x15/0x29
+ [<c102efda>] cpu_notify+0xd/0xf
+ [<c12bfb30>] _cpu_up+0xaf/0xd2
+ [<c12b3ad4>] enable_nonboot_cpus+0x3d/0x94
+ [<c1055eef>] hibernation_snapshot+0x104/0x1a2
+ [<c1058b49>] snapshot_ioctl+0x24b/0x53e
+ [<c1028ad1>] ? sub_preempt_count+0x7c/0x89
+ [<c10ab91d>] vfs_ioctl+0x2e/0x8c
+ [<c10588fe>] ? snapshot_ioctl+0x0/0x53e
+ [<c10ac2c7>] do_vfs_ioctl+0x42f/0x45a
+ [<c10a0ba5>] ? fsnotify_modify+0x4f/0x5a
+ [<c11e9dc3>] ? tty_write+0x0/0x1d0
+ [<c10a12d6>] ? vfs_write+0xa2/0xda
+ [<c10ac333>] sys_ioctl+0x41/0x62
+ [<c10027d3>] sysenter_do_call+0x12/0x2d
 
-> On (06/14/10 08:01), Arjan van de Ven wrote:
-> > > decided to patch nr_iowait_cpu instead.
-> > 
-> > the bug is that it needs to be
-> > 
-> > nr_iowait_cpu(int cpu)
-> > 
-> 
-> Something similar to this?
+Initially fix was to use get_cpu/put_cpu in nr_iowait_cpu. However, 
+Arjan van de Ven stated that "the bug is that it needs to be nr_iowait_cpu(int cpu)".
 
+This patch introduces nr_iowait_cpu(int cpu) and changes to it callers.
 
-yup that'll do it
+Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+---
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index 52ff8aa..4871ed5 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -137,14 +137,17 @@ static inline int which_bucket(unsigned int duration)
+ {
+ 	int bucket = 0;
+ 
++	int cpu = get_cpu();
+ 	/*
+ 	 * We keep two groups of stats; one with no
+ 	 * IO pending, one without.
+ 	 * This allows us to calculate
+ 	 * E(duration)|iowait
+ 	 */
+-	if (nr_iowait_cpu())
++	if (nr_iowait_cpu(cpu))
+ 		bucket = BUCKETS/2;
++	
++	put_cpu();
+ 
+ 	if (duration < 10)
+ 		return bucket;
+@@ -169,14 +172,17 @@ static inline int which_bucket(unsigned int duration)
+ static inline int performance_multiplier(void)
+ {
+ 	int mult = 1;
+-
++	int cpu = get_cpu();
++	
+ 	/* for higher loadavg, we are more reluctant */
+ 
+ 	mult += 2 * get_loadavg();
+ 
+ 	/* for IO wait tasks (per cpu!) we add 5x each */
+-	mult += 10 * nr_iowait_cpu();
++	mult += 10 * nr_iowait_cpu(cpu);
+ 
++	put_cpu();
++	
+ 	return mult;
+ }
+ 
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index f118809..747fcae 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -139,7 +139,7 @@ extern int nr_processes(void);
+ extern unsigned long nr_running(void);
+ extern unsigned long nr_uninterruptible(void);
+ extern unsigned long nr_iowait(void);
+-extern unsigned long nr_iowait_cpu(void);
++extern unsigned long nr_iowait_cpu(int cpu);
+ extern unsigned long this_cpu_load(void);
+ 
+ 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index f8b8996..f61b48e 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2864,9 +2864,9 @@ unsigned long nr_iowait(void)
+ 	return sum;
+ }
+ 
+-unsigned long nr_iowait_cpu(void)
++unsigned long nr_iowait_cpu(int cpu)
+ {
+-	struct rq *this = this_rq();
++	struct rq *this = cpu_rq(cpu);
+ 	return atomic_read(&this->nr_iowait);
+ }
+ 
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 1d7b9bc..101e8aa 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -159,10 +159,12 @@ update_ts_time_stats(struct tick_sched *ts, ktime_t now, u64 *last_update_time)
+ 	ktime_t delta;
+ 
+ 	if (ts->idle_active) {
++		int cpu = get_cpu();
+ 		delta = ktime_sub(now, ts->idle_entrytime);
+ 		ts->idle_sleeptime = ktime_add(ts->idle_sleeptime, delta);
+-		if (nr_iowait_cpu() > 0)
++		if (nr_iowait_cpu(cpu) > 0)
+ 			ts->iowait_sleeptime = ktime_add(ts->iowait_sleeptime, delta);
++		put_cpu();
+ 		ts->idle_entrytime = now;
+ 	}
+ 
