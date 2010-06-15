@@ -1,15 +1,23 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Regression,
-	post-2.6.34] Hibernation broken on machines with radeon/KMS and r300
-Date: Tue, 15 Jun 2010 15:30:47 +0200
-Message-ID: <201006151530.47890.rjw__44953.3472572968$1276608843$gmane$org@sisk.pl>
-References: <201006141653.03879.rjw@sisk.pl> <201006142103.54616.rjw@sisk.pl>
-	<AANLkTimgktYZiepVvbOssbYk7oLAOcWbT5X8uvtifxgC@mail.gmail.com>
+From: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] avoid using smp_processor_id() in
+ preemptible code (nr_iowait_cpu)
+Date: Tue, 15 Jun 2010 07:24:35 -0700
+Message-ID: <20100615072435.5a47d850__33560.9270296574$1276611864$gmane$org@infradead.org>
+References: <20100613203352.GA3577@swordfish>
+	<1276461183.2659.4.camel@maxim-laptop>
+	<201006140136.18652.rjw@sisk.pl>
+	<20100614140941.GA3581@swordfish.minsk.epam.com>
+	<20100614073853.6fa2f91f@infradead.org>
+	<20100614145439.GA3448@swordfish.minsk.epam.com>
+	<20100614080154.7d6a71fc@infradead.org>
+	<20100614151735.GB3448@swordfish.minsk.epam.com>
+	<20100614204021.52c50cdc@infradead.org>
+	<20100615061927.GA3312@swordfish>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTimgktYZiepVvbOssbYk7oLAOcWbT5X8uvtifxgC@mail.gmail.com>
+In-Reply-To: <20100615061927.GA3312@swordfish>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,53 +27,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alex Deucher <alexdeucher@gmail.com>
-Cc: linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Dave Airlie <airlied@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 14, 2010, Alex Deucher wrote:
-> On Mon, Jun 14, 2010 at 3:03 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Monday, June 14, 2010, Alex Deucher wrote:
-> >> On Mon, Jun 14, 2010 at 10:53 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > Alex, Dave,
-> >> >
-> >> > I'm afraid hibernation is broken on all machines using radeon/KMS with r300
-> >> > after commit ce8f53709bf440100cb9d31b1303291551cf517f
-> >> > (drm/radeon/kms/pm: rework power management).  At least, I'm able to reproduce
-> >> > the symptom, which is that the machine hangs hard around the point where an
-> >> > image is created (probably during the device thaw phase), on two different
-> >> > boxes with r300 (the output of lspci from one of them is attached for
-> >> > reference, the other one is HP nx6325).
-> >> >
-> >> > Suspend to RAM appears to work fine at least on one of the affected boxes.
-> >> >
-> >> > Unfortunately, the commit above changes a lot of code and it's not too easy to
-> >> > figure out what's wrong with it and I didn't have the time to look more into
-> >> > details of this failure.  However, it looks like you use .suspend() and
-> >> > .resume() callbacks as .freeze() and .thaw() which may not be 100% correct
-> >> > (in fact it looks like the "legacy" PCI suspend/resume is used, which is not
-> >> > recommended any more).
-> >> >
-> >>
-> >> Does it work any better after Dave's last drm pull request?
-> >
-> > Nope.  The symptom is slightly different, though, because now it hangs after
-> > turning off the screen.
-> >
-> >> With the latest changes, pm should not be a factor unless it's explicitly
-> >> enabled via sysfs.
-> >
-> > Well, I guess the first pm patch changed more than just pm, then.
-> 
-> Does this patch help?
-> http://lists.freedesktop.org/archives/dri-devel/2010-June/001314.html
+On Tue, 15 Jun 2010 09:19:27 +0300
+Sergey Senozhatsky <sergey.senozhatsky@gmail.com> wrote:
+> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+> index 1d7b9bc..101e8aa 100644
+> --- a/kernel/time/tick-sched.c
+> +++ b/kernel/time/tick-sched.c
+> @@ -159,10 +159,12 @@ update_ts_time_stats(struct tick_sched *ts,
+> ktime_t now, u64 *last_update_time) ktime_t delta;
+>  
+>  	if (ts->idle_active) {
+> +		int cpu = get_cpu();
+>  		delta = ktime_sub(now, ts->idle_entrytime);
+>  		ts->idle_sleeptime = ktime_add(ts->idle_sleeptime,
+> delta);
+> -		if (nr_iowait_cpu() > 0)
+> +		if (nr_iowait_cpu(cpu) > 0)
+>  			ts->iowait_sleeptime =
+> ktime_add(ts->iowait_sleeptime, delta);
+> +		put_cpu();
+>  		ts->idle_entrytime = now;
+>  	}
 
-No, it doesn't.  I try to hibernate, everything works to the point where the
-screen goes off and the box hangs (solid).  Normally, it would turn the
-screen back on and continue with saving the image.
 
-But, since that happens with the patch above applied, I think it doesn't
-really pass the suspend phase (IOW, it probably hangs somewhere in the radeon's
-suspend routine).
+hmm this part is wrong
+you pick the current cpu, rather than the one denoted by ts.....
 
-Rafael
+they will normally be the same, except for the case where you get your
+warning...
+(and this is also why you can't move the get_cpu() inside
+nr_iowait_cpu() ... )
+
+>  
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
