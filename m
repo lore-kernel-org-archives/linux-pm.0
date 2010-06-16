@@ -1,16 +1,22 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: idle-test patches queued for upstream
-Date: Wed, 16 Jun 2010 09:53:00 +0200
-Message-ID: <20100616075259.GA1671__46616.4004909389$1276674958$gmane$org@ucw.cz>
-References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
-	<201005271045.33500.trenn@suse.de>
-	<alpine.LFD.2.00.1005272023510.24823@localhost.localdomain>
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Subject: Re: [PATCH] avoid using smp_processor_id() in
+ preemptible code (nr_iowait_cpu)
+Date: Wed, 16 Jun 2010 12:34:42 +0300
+Message-ID: <20100616093442.GA4230__5394.44862301952$1276680940$gmane$org@swordfish.minsk.epam.com>
+References: <20100614145439.GA3448@swordfish.minsk.epam.com>
+	<20100614080154.7d6a71fc@infradead.org>
+	<20100614151735.GB3448@swordfish.minsk.epam.com>
+	<20100614204021.52c50cdc@infradead.org>
+	<20100615061927.GA3312@swordfish>
+	<20100615072435.5a47d850@infradead.org>
+	<20100615145029.GB3967@swordfish.minsk.epam.com>
+	<20100615080808.6286448b@infradead.org>
+	<20100615161303.GA4102@swordfish.minsk.epam.com>
+	<20100615230541.5db5078e@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0277711527407747875=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1005272023510.24823@localhost.localdomain>
+In-Reply-To: <20100615230541.5db5078e@infradead.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,40 +24,66 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2010-05-27 20:59:07, Len Brown wrote:
-> > > ... we think we can do better than ACPI.
-> 
-> > Why exactly? Is there any info missing in the ACPI tables?
-> > Or is this just to be more independent from OEMs?
-> 
-> ACPI has a few fundmental flaws here.  One is that it reports
-> exit latency instead of break-even power duration.
-> The other is that it requires a BIOS writer to
-> get the tables right.
-> 
-> Both of these are fatal flaws.
 
-Intel is co-author of ACPI spec, right? So what about fixing those?
- 
-> > > Indeed, on my (production level commerically available) Nehalem desktop
-> > > the ACPI tables are broken and an ACPI OS idles at 100W.  With this
-> > > driver the box idles at 85W.
-> 
-> > What exactly was broken there?
-> 
-> Dell's BIOS developer botched a bug fix immediately before the system
-> went to market and disabled support for all ACPI C-states except C1.
-> After several month of shipping systems, they still were unable
-> to ship them with a fixed BIOS.
+--===============0277711527407747875==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ZGiS0Q5IWpPtfppv"
+Content-Disposition: inline
 
-I always thought that cpu vendors have ways to work with bios manufacturers...
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--ZGiS0Q5IWpPtfppv
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On (06/15/10 23:05), Arjan van de Ven wrote:
+> can we do this bit once, when the ts structure gets initialized?
+> it's not like the cpu value will ever change...
+>=20
+>=20
+Hello Arjan,
+
+Sure we can. The question is where is the "proper place"?
+for_each_possible_cpu in __init?
+
+or something like=20
+
+static DEFINE_PER_CPU(struct tick_sched, tick_cpu_sched);
+int cpu =3D get_cpu();
+&per_cpu(tick_cpu_sched, cpu)->cpu =3D cpu;
+put_cpu();
+
+
+	Sergey
+
+--ZGiS0Q5IWpPtfppv
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iJwEAQECAAYFAkwYmrIACgkQfKHnntdSXjTicQP+O7zv/3k+yZTVeijM1CkXnD0s
+aZEPwo8rydiZVEp/5aNT/6n8c+4PDkgZ8KgoGKbUu/u6t7hV08uz2rvD3skKM+UR
+3QnsiwcVq+kKVHlf80ztYTqVDLB5J0SjjPElWkixt70o2DzjKY4gDxGgB2JceJDs
+xvkPcrVuhm8obfW78x8=
+=ERuC
+-----END PGP SIGNATURE-----
+
+--ZGiS0Q5IWpPtfppv--
+
+--===============0277711527407747875==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============0277711527407747875==--
