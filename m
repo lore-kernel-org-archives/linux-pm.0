@@ -1,16 +1,16 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Subject: Re: [Regression,
-	post-2.6.34] Hibernation broken on machines with radeon/KMS and r300
-Date: Wed, 16 Jun 2010 08:11:42 +0200
-Message-ID: <201006160811.43926.linux__12215.1337833659$1276668848$gmane$org@rainbow-software.org>
-References: <201006141653.03879.rjw@sisk.pl> <201006151530.47890.rjw@sisk.pl>
-	<201006160107.54822.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: idle-test patches queued for upstream
+Date: Wed, 16 Jun 2010 09:53:00 +0200
+Message-ID: <20100616075259.GA1671__46616.4004909389$1276674958$gmane$org@ucw.cz>
+References: <1274928151-30919-1-git-send-email-lenb@kernel.org>
+	<201005271045.33500.trenn@suse.de>
+	<alpine.LFD.2.00.1005272023510.24823@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006160107.54822.rjw@sisk.pl>
 Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1005272023510.24823@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,68 +20,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 16 June 2010, Rafael J. Wysocki wrote:
-> On Tuesday, June 15, 2010, Rafael J. Wysocki wrote:
-> > On Monday, June 14, 2010, Alex Deucher wrote:
-> > > On Mon, Jun 14, 2010 at 3:03 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > > On Monday, June 14, 2010, Alex Deucher wrote:
-> > > >> On Mon, Jun 14, 2010 at 10:53 AM, Rafael J. Wysocki <rjw@sisk.pl> 
-wrote:
-> > > >> > Alex, Dave,
-> > > >> >
-> > > >> > I'm afraid hibernation is broken on all machines using radeon/KMS
-> > > >> > with r300 after commit ce8f53709bf440100cb9d31b1303291551cf517f
-> > > >> > (drm/radeon/kms/pm: rework power management).  At least, I'm able
-> > > >> > to reproduce the symptom, which is that the machine hangs hard
-> > > >> > around the point where an image is created (probably during the
-> > > >> > device thaw phase), on two different boxes with r300 (the output
-> > > >> > of lspci from one of them is attached for reference, the other one
-> > > >> > is HP nx6325).
-> > > >> >
-> > > >> > Suspend to RAM appears to work fine at least on one of the
-> > > >> > affected boxes.
-> > > >> >
-> > > >> > Unfortunately, the commit above changes a lot of code and it's not
-> > > >> > too easy to figure out what's wrong with it and I didn't have the
-> > > >> > time to look more into details of this failure.  However, it looks
-> > > >> > like you use .suspend() and .resume() callbacks as .freeze() and
-> > > >> > .thaw() which may not be 100% correct (in fact it looks like the
-> > > >> > "legacy" PCI suspend/resume is used, which is not recommended any
-> > > >> > more).
-> > > >>
-> > > >> Does it work any better after Dave's last drm pull request?
-> > > >
-> > > > Nope.  The symptom is slightly different, though, because now it
-> > > > hangs after turning off the screen.
-> > > >
-> > > >> With the latest changes, pm should not be a factor unless it's
-> > > >> explicitly enabled via sysfs.
-> > > >
-> > > > Well, I guess the first pm patch changed more than just pm, then.
-> > >
-> > > Does this patch help?
-> > > http://lists.freedesktop.org/archives/dri-devel/2010-June/001314.html
-> >
-> > No, it doesn't.  I try to hibernate, everything works to the point where
-> > the screen goes off and the box hangs (solid).  Normally, it would turn
-> > the screen back on and continue with saving the image.
-> >
-> > But, since that happens with the patch above applied, I think it doesn't
-> > really pass the suspend phase (IOW, it probably hangs somewhere in the
-> > radeon's suspend routine).
->
-> I've just verified that in fact hibernation works on HP nx6325 with
-> 2.6.35-rc3, but it takes about 55 sec. to suspend the graphics adapter in
-> the "freeze" phase.  Surprisingly enough, during suspend to RAM it works
-> normally (as well as in the "poweroff" phase of hibernation).
+On Thu 2010-05-27 20:59:07, Len Brown wrote:
+> > > ... we think we can do better than ACPI.
+> 
+> > Why exactly? Is there any info missing in the ACPI tables?
+> > Or is this just to be more independent from OEMs?
+> 
+> ACPI has a few fundmental flaws here.  One is that it reports
+> exit latency instead of break-even power duration.
+> The other is that it requires a BIOS writer to
+> get the tables right.
+> 
+> Both of these are fatal flaws.
 
-It takes 2 minutes on RV530: 
-https://bugzilla.redhat.com/show_bug.cgi?id=586522
+Intel is co-author of ACPI spec, right? So what about fixing those?
+ 
+> > > Indeed, on my (production level commerically available) Nehalem desktop
+> > > the ACPI tables are broken and an ACPI OS idles at 100W.  With this
+> > > driver the box idles at 85W.
+> 
+> > What exactly was broken there?
+> 
+> Dell's BIOS developer botched a bug fix immediately before the system
+> went to market and disabled support for all ACPI C-states except C1.
+> After several month of shipping systems, they still were unable
+> to ship them with a fixed BIOS.
 
+I always thought that cpu vendors have ways to work with bios manufacturers...
 
 -- 
-Ondrej Zary
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
