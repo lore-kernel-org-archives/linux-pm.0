@@ -1,15 +1,17 @@
-From: Alex Deucher <alexdeucher@gmail.com>
-Subject: Re: [Regression,
-	post-2.6.34] Hibernation broken on machines with radeon/KMS and r300
-Date: Wed, 16 Jun 2010 16:44:47 -0400
-Message-ID: <AANLkTinXNdWXDFhQFoeJ7j6woF4HEgUsBkH-438na6xe__12238.3217829794$1276721145$gmane$org@mail.gmail.com>
-References: <201006141653.03879.rjw@sisk.pl> <201006160107.54822.rjw@sisk.pl>
-	<201006160811.43926.linux@rainbow-software.org>
-	<201006162216.49756.rjw@sisk.pl>
+From: Sedat Dilek <sedat.dilek@googlemail.com>
+Subject: Re: 2.6.35-rc2-git2: Reported regressions from 2.6.34
+Date: Wed, 16 Jun 2010 23:00:37 +0200
+Message-ID: <AANLkTil-X5IMZMer7fHVPOMalsTJNliv-gMimzKmJ3Od__44676.7226946124$1276722183$gmane$org@mail.gmail.com>
+References: <Rlf_Qjov7bG.A.a8F.I8rDMB@chimera>
+	<AANLkTiksbL1qHg7Q0A-6TbX0uUrxra4jctUoIGVk5vnE@mail.gmail.com>
+	<201006091122.35304.rjw@sisk.pl>
+	<20100616134231.23ff30da.akpm@linux-foundation.org>
+Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=0016363107bde18e3904892bcae9
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006162216.49756.rjw@sisk.pl>
+In-Reply-To: <20100616134231.23ff30da.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,150 +21,133 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ondrej Zary <linux@rainbow-software.org>, linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Dave Airlie <airlied@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, dmonakhov@openvz.org, Linux PM List <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
---0016363107bde18e3904892bcae9
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Jun 16, 2010 at 4:16 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Wednesday, June 16, 2010, Ondrej Zary wrote:
->> On Wednesday 16 June 2010, Rafael J. Wysocki wrote:
->> > On Tuesday, June 15, 2010, Rafael J. Wysocki wrote:
->> > > On Monday, June 14, 2010, Alex Deucher wrote:
->> > > > On Mon, Jun 14, 2010 at 3:03 PM, Rafael J. Wysocki <rjw@sisk.pl> w=
-rote:
->> > > > > On Monday, June 14, 2010, Alex Deucher wrote:
->> > > > >> On Mon, Jun 14, 2010 at 10:53 AM, Rafael J. Wysocki <rjw@sisk.p=
-l>
->> wrote:
->> > > > >> > Alex, Dave,
->> > > > >> >
->> > > > >> > I'm afraid hibernation is broken on all machines using radeon=
-/KMS
->> > > > >> > with r300 after commit ce8f53709bf440100cb9d31b1303291551cf51=
-7f
->> > > > >> > (drm/radeon/kms/pm: rework power management). =A0At least, I'=
-m able
->> > > > >> > to reproduce the symptom, which is that the machine hangs har=
-d
->> > > > >> > around the point where an image is created (probably during t=
-he
->> > > > >> > device thaw phase), on two different boxes with r300 (the out=
-put
->> > > > >> > of lspci from one of them is attached for reference, the othe=
-r one
->> > > > >> > is HP nx6325).
->> > > > >> >
->> > > > >> > Suspend to RAM appears to work fine at least on one of the
->> > > > >> > affected boxes.
->> > > > >> >
->> > > > >> > Unfortunately, the commit above changes a lot of code and it'=
-s not
->> > > > >> > too easy to figure out what's wrong with it and I didn't have=
- the
->> > > > >> > time to look more into details of this failure. =A0However, i=
-t looks
->> > > > >> > like you use .suspend() and .resume() callbacks as .freeze() =
-and
->> > > > >> > .thaw() which may not be 100% correct (in fact it looks like =
-the
->> > > > >> > "legacy" PCI suspend/resume is used, which is not recommended=
- any
->> > > > >> > more).
->> > > > >>
->> > > > >> Does it work any better after Dave's last drm pull request?
->> > > > >
->> > > > > Nope. =A0The symptom is slightly different, though, because now =
-it
->> > > > > hangs after turning off the screen.
->> > > > >
->> > > > >> With the latest changes, pm should not be a factor unless it's
->> > > > >> explicitly enabled via sysfs.
->> > > > >
->> > > > > Well, I guess the first pm patch changed more than just pm, then=
-.
->> > > >
->> > > > Does this patch help?
->> > > > http://lists.freedesktop.org/archives/dri-devel/2010-June/001314.h=
-tml
->> > >
->> > > No, it doesn't. =A0I try to hibernate, everything works to the point=
- where
->> > > the screen goes off and the box hangs (solid). =A0Normally, it would=
- turn
->> > > the screen back on and continue with saving the image.
->> > >
->> > > But, since that happens with the patch above applied, I think it doe=
-sn't
->> > > really pass the suspend phase (IOW, it probably hangs somewhere in t=
-he
->> > > radeon's suspend routine).
->> >
->> > I've just verified that in fact hibernation works on HP nx6325 with
->> > 2.6.35-rc3, but it takes about 55 sec. to suspend the graphics adapter=
- in
->> > the "freeze" phase. =A0Surprisingly enough, during suspend to RAM it w=
-orks
->> > normally (as well as in the "poweroff" phase of hibernation).
->>
->> It takes 2 minutes on RV530:
->> https://bugzilla.redhat.com/show_bug.cgi?id=3D586522
->
-> Well, my second affected box appears to hang somewhere in the radeon's su=
-spend
-> routine.
-
-Does the attached patch help?
-
-Alex
-
---0016363107bde18e3904892bcae9
-Content-Type: text/x-patch; charset=US-ASCII;
-	name="0001-drm-radeon-kms-only-attempt-to-cancel-delayed-work-i.patch"
-Content-Disposition: attachment;
-	filename="0001-drm-radeon-kms-only-attempt-to-cancel-delayed-work-i.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_gaimqiy30
-
-RnJvbSA5ZDI2MDBmZDMxYzFkZGE2ZjQxZTU2OWZkOGFmZjQ1YzllNWNlNTRmIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBBbGV4IERldWNoZXIgPGFsZXhkZXVjaGVyQGdtYWlsLmNvbT4K
-RGF0ZTogV2VkLCAxNiBKdW4gMjAxMCAxNjo0MTozOCAtMDQwMApTdWJqZWN0OiBbUEFUQ0hdIGRy
-bS9yYWRlb24va21zOiBvbmx5IGF0dGVtcHQgdG8gY2FuY2VsIGRlbGF5ZWQgd29yayBpZiBwbSBt
-ZXRob2QgaXMgUE1fTUVUSE9EX0RZTlBNCgpkZWxheWVkIHdvcmsgaXMgb25seSBzY2hlZHVsZWQg
-aWYgcG0gbWV0aG9kIGlzIFBNX01FVEhPRF9EWU5QTS4KClNpZ25lZC1vZmYtYnk6IEFsZXggRGV1
-Y2hlciA8YWxleGRldWNoZXJAZ21haWwuY29tPgotLS0KIGRyaXZlcnMvZ3B1L2RybS9yYWRlb24v
-cmFkZW9uX3BtLmMgfCAgICA4ICsrKysrLS0tCiAxIGZpbGVzIGNoYW5nZWQsIDUgaW5zZXJ0aW9u
-cygrKSwgMyBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vcmFkZW9u
-L3JhZGVvbl9wbS5jIGIvZHJpdmVycy9ncHUvZHJtL3JhZGVvbi9yYWRlb25fcG0uYwppbmRleCBi
-OWFkMzY2Li4wNzUxZmM4IDEwMDY0NAotLS0gYS9kcml2ZXJzL2dwdS9kcm0vcmFkZW9uL3JhZGVv
-bl9wbS5jCisrKyBiL2RyaXZlcnMvZ3B1L2RybS9yYWRlb24vcmFkZW9uX3BtLmMKQEAgLTQwNywx
-MSArNDA3LDEyIEBAIHN0YXRpYyBzc2l6ZV90IHJhZGVvbl9zZXRfcG1fbWV0aG9kKHN0cnVjdCBk
-ZXZpY2UgKmRldiwKIAkJbXV0ZXhfdW5sb2NrKCZyZGV2LT5wbS5tdXRleCk7CiAJfSBlbHNlIGlm
-IChzdHJuY21wKCJwcm9maWxlIiwgYnVmLCBzdHJsZW4oInByb2ZpbGUiKSkgPT0gMCkgewogCQlt
-dXRleF9sb2NrKCZyZGV2LT5wbS5tdXRleCk7Ci0JCXJkZXYtPnBtLnBtX21ldGhvZCA9IFBNX01F
-VEhPRF9QUk9GSUxFOworCQlpZiAocmRldi0+cG0ucG1fbWV0aG9kID09IFBNX01FVEhPRF9EWU5Q
-TSkKKwkJCWNhbmNlbF9kZWxheWVkX3dvcmsoJnJkZXYtPnBtLmR5bnBtX2lkbGVfd29yayk7CiAJ
-CS8qIGRpc2FibGUgZHlucG0gKi8KIAkJcmRldi0+cG0uZHlucG1fc3RhdGUgPSBEWU5QTV9TVEFU
-RV9ESVNBQkxFRDsKIAkJcmRldi0+cG0uZHlucG1fcGxhbm5lZF9hY3Rpb24gPSBEWU5QTV9BQ1RJ
-T05fTk9ORTsKLQkJY2FuY2VsX2RlbGF5ZWRfd29yaygmcmRldi0+cG0uZHlucG1faWRsZV93b3Jr
-KTsKKwkJcmRldi0+cG0ucG1fbWV0aG9kID0gUE1fTUVUSE9EX1BST0ZJTEU7CiAJCW11dGV4X3Vu
-bG9jaygmcmRldi0+cG0ubXV0ZXgpOwogCX0gZWxzZSB7CiAJCURSTV9FUlJPUigiaW52YWxpZCBw
-b3dlciBtZXRob2QhXG4iKTsKQEAgLTQyOCw3ICs0MjksOCBAQCBzdGF0aWMgREVWSUNFX0FUVFIo
-cG93ZXJfbWV0aG9kLCBTX0lSVUdPIHwgU19JV1VTUiwgcmFkZW9uX2dldF9wbV9tZXRob2QsIHJh
-ZGVvbgogdm9pZCByYWRlb25fcG1fc3VzcGVuZChzdHJ1Y3QgcmFkZW9uX2RldmljZSAqcmRldikK
-IHsKIAltdXRleF9sb2NrKCZyZGV2LT5wbS5tdXRleCk7Ci0JY2FuY2VsX2RlbGF5ZWRfd29yaygm
-cmRldi0+cG0uZHlucG1faWRsZV93b3JrKTsKKwlpZiAocmRldi0+cG0ucG1fbWV0aG9kID09IFBN
-X01FVEhPRF9EWU5QTSkKKwkJY2FuY2VsX2RlbGF5ZWRfd29yaygmcmRldi0+cG0uZHlucG1faWRs
-ZV93b3JrKTsKIAltdXRleF91bmxvY2soJnJkZXYtPnBtLm11dGV4KTsKIH0KIAotLSAKMS43LjAu
-MQoK
---0016363107bde18e3904892bcae9
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---0016363107bde18e3904892bcae9--
+SG93IGRvIGNwdS1mcmVxIHJlbGF0ZWQgc3R1ZmYgZmluZCBpdHMgd2F5IGludG8gbWFpbmxpbmU/
+CklzIHRoZXJlIGEgR0lUIHJlcG9zaXRvcnkvYnJhbmNoIG9uIDxnaXQua2VybmVsLm9yZz4gd2hl
+cmUgeW91IGNhbiBwdWxsIGZyb20/CgotIFNlZGF0IC0KCk9uIFdlZCwgSnVuIDE2LCAyMDEwIGF0
+IDEwOjQyIFBNLCBBbmRyZXcgTW9ydG9uCjxha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnPiB3cm90
+ZToKPiBPbiBXZWQsIDkgSnVuIDIwMTAgMTE6MjI6MzUgKzAyMDAKPiAiUmFmYWVsIEouIFd5c29j
+a2kiIDxyandAc2lzay5wbD4gd3JvdGU6Cj4KPj4gT24gV2VkbmVzZGF5IDA5IEp1bmUgMjAxMCwg
+U2VkYXQgRGlsZWsgd3JvdGU6Cj4+ID4gVGhlIHBhdGNoIGZyb20gWzFdIGlzIHN0aWxsIG1pc3Np
+bmcuCj4+ID4KPj4gPiDCoCDCoCJjcHVmcmVxLWNhbGwtbnJfaW93YWl0X2NwdS13aXRoLWRpc2Fi
+bGVkLXByZWVtcHRpb24ucGF0Y2giIGZyb20KPj4gPiBEbWl0cnkgTW9uYWtob2MKPj4gPgo+PiA+
+IFRlc3RlZC1ieTogU2VkYXQgRGlsZWsgPHNlZGF0LmRpbGVrQGdtYWlsLmNvbT4KPj4gPiBUZXN0
+ZWQtYnkgTWFjaWVqIFJ1dGVja2kgPG1hY2llai5ydXRlY2tpQGdtYWlsLmNvbT4KPj4gPgo+PiA+
+IEkgaGF2ZSBhbHJlYWR5IHJlcG9ydGVkIHRoaXMgaXNzdWUgb24gTEtNTCBbMl0gYW5kIGNwdWZy
+ZXEgTUwgWzNdLgo+PiA+Cj4+ID4gLSBTZWRhdCAtCj4+ID4KPj4gPiBbMV0gaHR0cDovL3d3dy5z
+cGluaWNzLm5ldC9saXN0cy9jcHVmcmVxL21zZzAxNjMxLmh0bWwKPj4gPiBbMl0gaHR0cDovL2xr
+bWwub3JnL2xrbWwvMjAxMC81LzMxLzc3Cj4+ID4gWzNdIGh0dHA6Ly93d3cuc3Bpbmljcy5uZXQv
+bGlzdHMvY3B1ZnJlcS9tc2cwMTYzNy5odG1sCj4+Cj4+IFRoYW5rcywgYWRkZWQuCj4KPiBJIGp1
+c3QgbWVyZ2VkIGEgZGlmZmVyZW50IHBhdGNoIHdoY2loIHNob3VsZCBhZGRyZXNzIHRoaXM6Cj4K
+Pgo+IEZyb206IFNlcmdleSBTZW5vemhhdHNreSA8c2VyZ2V5LnNlbm96aGF0c2t5QGdtYWlsLmNv
+bT4KPgo+IEZpeAo+Cj4gwqBCVUc6IHVzaW5nIHNtcF9wcm9jZXNzb3JfaWQoKSBpbiBwcmVlbXB0
+aWJsZSBbMDAwMDAwMDBdIGNvZGU6IHMyZGlzay8zMzkyCj4gwqBjYWxsZXIgaXMgbnJfaW93YWl0
+X2NwdSsweGUvMHgxZQo+IMKgUGlkOiAzMzkyLCBjb21tOiBzMmRpc2sgTm90IHRhaW50ZWQgMi42
+LjM1LXJjMy1kYmctMDAxMDYtZ2E3NWUwMmIgIzIKPiDCoENhbGwgVHJhY2U6Cj4gwqBbPGMxMTg0
+YzU1Pl0gZGVidWdfc21wX3Byb2Nlc3Nvcl9pZCsweGE1LzB4YmMKPiDCoFs8YzEwMjgyYTU+XSBu
+cl9pb3dhaXRfY3B1KzB4ZS8weDFlCj4gwqBbPGMxMDRhYjdjPl0gdXBkYXRlX3RzX3RpbWVfc3Rh
+dHMrMHgzMi8weDZjCj4gwqBbPGMxMDRhYzczPl0gZ2V0X2NwdV9pZGxlX3RpbWVfdXMrMHgzNi8w
+eDU4Cj4gwqBbPGMxMjQyMjliPl0gZ2V0X2NwdV9pZGxlX3RpbWUrMHgxMi8weDc0Cj4gwqBbPGMx
+MjQyOTYzPl0gY3B1ZnJlcV9nb3Zlcm5vcl9kYnMrMHhjMy8weDJkYwo+IMKgWzxjMTI0MDQzNz5d
+IF9fY3B1ZnJlcV9nb3Zlcm5vcisweDUxLzB4ODUKPiDCoFs8YzEyNDExOTA+XSBfX2NwdWZyZXFf
+c2V0X3BvbGljeSsweDEwYy8weDEzZAo+IMKgWzxjMTI0MTNkMz5dIGNwdWZyZXFfYWRkX2Rldl9p
+bnRlcmZhY2UrMHgyMTIvMHgyMzMKPiDCoFs8YzEyNDFiMWU+XSA/IGhhbmRsZV91cGRhdGUrMHgw
+LzB4ZAo+IMKgWzxjMTI0MWExOD5dIGNwdWZyZXFfYWRkX2RldisweDM0Yi8weDM1YQo+IMKgWzxj
+MTAzYzk3Mz5dID8gc2NoZWR1bGVfZGVsYXllZF93b3JrX29uKzB4MTEvMHgxMwo+IMKgWzxjMTJj
+MTRkYj5dIGNwdWZyZXFfY3B1X2NhbGxiYWNrKzB4NTkvMHg2Mwo+IMKgWzxjMTA0MmYzOT5dIG5v
+dGlmaWVyX2NhbGxfY2hhaW4rMHgyNi8weDQ4Cj4gwqBbPGMxMDQyZjdkPl0gX19yYXdfbm90aWZp
+ZXJfY2FsbF9jaGFpbisweGUvMHgxMAo+IMKgWzxjMTAyZWZiOT5dIF9fY3B1X25vdGlmeSsweDE1
+LzB4MjkKPiDCoFs8YzEwMmVmZGE+XSBjcHVfbm90aWZ5KzB4ZC8weGYKPiDCoFs8YzEyYmZiMzA+
+XSBfY3B1X3VwKzB4YWYvMHhkMgo+IMKgWzxjMTJiM2FkND5dIGVuYWJsZV9ub25ib290X2NwdXMr
+MHgzZC8weDk0Cj4gwqBbPGMxMDU1ZWVmPl0gaGliZXJuYXRpb25fc25hcHNob3QrMHgxMDQvMHgx
+YTIKPiDCoFs8YzEwNThiNDk+XSBzbmFwc2hvdF9pb2N0bCsweDI0Yi8weDUzZQo+IMKgWzxjMTAy
+OGFkMT5dID8gc3ViX3ByZWVtcHRfY291bnQrMHg3Yy8weDg5Cj4gwqBbPGMxMGFiOTFkPl0gdmZz
+X2lvY3RsKzB4MmUvMHg4Ywo+IMKgWzxjMTA1ODhmZT5dID8gc25hcHNob3RfaW9jdGwrMHgwLzB4
+NTNlCj4gwqBbPGMxMGFjMmM3Pl0gZG9fdmZzX2lvY3RsKzB4NDJmLzB4NDVhCj4gwqBbPGMxMGEw
+YmE1Pl0gPyBmc25vdGlmeV9tb2RpZnkrMHg0Zi8weDVhCj4gwqBbPGMxMWU5ZGMzPl0gPyB0dHlf
+d3JpdGUrMHgwLzB4MWQwCj4gwqBbPGMxMGExMmQ2Pl0gPyB2ZnNfd3JpdGUrMHhhMi8weGRhCj4g
+wqBbPGMxMGFjMzMzPl0gc3lzX2lvY3RsKzB4NDEvMHg2Mgo+IMKgWzxjMTAwMjdkMz5dIHN5c2Vu
+dGVyX2RvX2NhbGwrMHgxMi8weDJkCj4KPiBUaGUgaW5pdGlhbCBmaXggd2FzIHRvIHVzZSBnZXRf
+Y3B1L3B1dF9jcHUgaW4gbnJfaW93YWl0X2NwdS4gwqBIb3dldmVyLAo+IEFyamFuIHN0YXRlZCB0
+aGF0ICJ0aGUgYnVnIGlzIHRoYXQgaXQgbmVlZHMgdG8gYmUgbnJfaW93YWl0X2NwdShpbnQgY3B1
+KSIuCj4KPiBUaGlzIHBhdGNoIGludHJvZHVjZXMgbnJfaW93YWl0X2NwdShpbnQgY3B1KSBhbmQg
+Y2hhbmdlcyB0byBpdCBjYWxsZXJzLgo+Cj4gYWtwbTogYWRkcmVzc2VzIGFib3V0IDMwLDAwMCww
+MDAgZGlmZmVyZW50IGJ1ZyByZXBvcnRzLgo+Cj4gU2lnbmVkLW9mZi1ieTogU2VyZ2V5IFNlbm96
+aGF0c2t5IDxzZXJnZXkuc2Vub3poYXRza3lAZ21haWwuY29tPgo+IENjOiBBcmphbiB2YW4gZGUg
+VmVuIDxhcmphbkBpbmZyYWRlYWQub3JnPgo+IENjOiAiUmFmYWVsIEouIFd5c29ja2kiIDxyandA
+c2lzay5wbD4KPiBDYzogTWF4aW0gTGV2aXRza3kgPG1heGltbGV2aXRza3lAZ21haWwuY29tPgo+
+IENjOiBMZW4gQnJvd24gPGxlbi5icm93bkBpbnRlbC5jb20+Cj4gQ2M6IFBhdmVsIE1hY2hlayA8
+cGF2ZWxAdWN3LmN6Pgo+IENjOiBKaXJpIFNsYWJ5IDxqc2xhYnlAc3VzZS5jej4KPiBTaWduZWQt
+b2ZmLWJ5OiBBbmRyZXcgTW9ydG9uIDxha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnPgo+IC0tLQo+
+Cj4gwqBkcml2ZXJzL2NwdWlkbGUvZ292ZXJub3JzL21lbnUuYyB8IMKgIDEwICsrKysrKysrLS0K
+PiDCoGluY2x1ZGUvbGludXgvc2NoZWQuaCDCoCDCoCDCoCDCoCDCoCDCoHwgwqAgwqAyICstCj4g
+wqBrZXJuZWwvc2NoZWQuYyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCB8IMKgIMKgNCArKy0t
+Cj4gwqBrZXJuZWwvdGltZS90aWNrLXNjaGVkLmMgwqAgwqAgwqAgwqAgfCDCoCDCoDQgKysrLQo+
+IMKgNCBmaWxlcyBjaGFuZ2VkLCAxNCBpbnNlcnRpb25zKCspLCA2IGRlbGV0aW9ucygtKQo+Cj4g
+ZGlmZiAtcHVOIGRyaXZlcnMvY3B1aWRsZS9nb3Zlcm5vcnMvbWVudS5jfmNwdWlkbGUtYXZvaWQt
+dXNpbmctc21wX3Byb2Nlc3Nvcl9pZC1pbi1wcmVlbXB0aWJsZS1jb2RlLW5yX2lvd2FpdF9jcHUg
+ZHJpdmVycy9jcHVpZGxlL2dvdmVybm9ycy9tZW51LmMKPiAtLS0gYS9kcml2ZXJzL2NwdWlkbGUv
+Z292ZXJub3JzL21lbnUuY35jcHVpZGxlLWF2b2lkLXVzaW5nLXNtcF9wcm9jZXNzb3JfaWQtaW4t
+cHJlZW1wdGlibGUtY29kZS1ucl9pb3dhaXRfY3B1Cj4gKysrIGEvZHJpdmVycy9jcHVpZGxlL2dv
+dmVybm9ycy9tZW51LmMKPiBAQCAtMTM3LDE1ICsxMzcsMTggQEAgc3RhdGljIGlubGluZSBpbnQg
+d2hpY2hfYnVja2V0KHVuc2lnbmVkCj4gwqB7Cj4gwqAgwqAgwqAgwqBpbnQgYnVja2V0ID0gMDsK
+Pgo+ICsgwqAgwqAgwqAgaW50IGNwdSA9IGdldF9jcHUoKTsKPiDCoCDCoCDCoCDCoC8qCj4gwqAg
+wqAgwqAgwqAgKiBXZSBrZWVwIHR3byBncm91cHMgb2Ygc3RhdHM7IG9uZSB3aXRoIG5vCj4gwqAg
+wqAgwqAgwqAgKiBJTyBwZW5kaW5nLCBvbmUgd2l0aG91dC4KPiDCoCDCoCDCoCDCoCAqIFRoaXMg
+YWxsb3dzIHVzIHRvIGNhbGN1bGF0ZQo+IMKgIMKgIMKgIMKgICogRShkdXJhdGlvbil8aW93YWl0
+Cj4gwqAgwqAgwqAgwqAgKi8KPiAtIMKgIMKgIMKgIGlmIChucl9pb3dhaXRfY3B1KCkpCj4gKyDC
+oCDCoCDCoCBpZiAobnJfaW93YWl0X2NwdShjcHUpKQo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+YnVja2V0ID0gQlVDS0VUUy8yOwo+Cj4gKyDCoCDCoCDCoCBwdXRfY3B1KCk7Cj4gKwo+IMKgIMKg
+IMKgIMKgaWYgKGR1cmF0aW9uIDwgMTApCj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqByZXR1cm4g
+YnVja2V0Owo+IMKgIMKgIMKgIMKgaWYgKGR1cmF0aW9uIDwgMTAwKQo+IEBAIC0xNjksMTMgKzE3
+MiwxNiBAQCBzdGF0aWMgaW5saW5lIGludCB3aGljaF9idWNrZXQodW5zaWduZWQKPiDCoHN0YXRp
+YyBpbmxpbmUgaW50IHBlcmZvcm1hbmNlX211bHRpcGxpZXIodm9pZCkKPiDCoHsKPiDCoCDCoCDC
+oCDCoGludCBtdWx0ID0gMTsKPiArIMKgIMKgIMKgIGludCBjcHUgPSBnZXRfY3B1KCk7Cj4KPiDC
+oCDCoCDCoCDCoC8qIGZvciBoaWdoZXIgbG9hZGF2Zywgd2UgYXJlIG1vcmUgcmVsdWN0YW50ICov
+Cj4KPiDCoCDCoCDCoCDCoG11bHQgKz0gMiAqIGdldF9sb2FkYXZnKCk7Cj4KPiDCoCDCoCDCoCDC
+oC8qIGZvciBJTyB3YWl0IHRhc2tzIChwZXIgY3B1ISkgd2UgYWRkIDV4IGVhY2ggKi8KPiAtIMKg
+IMKgIMKgIG11bHQgKz0gMTAgKiBucl9pb3dhaXRfY3B1KCk7Cj4gKyDCoCDCoCDCoCBtdWx0ICs9
+IDEwICogbnJfaW93YWl0X2NwdShjcHUpOwo+ICsKPiArIMKgIMKgIMKgIHB1dF9jcHUoKTsKPgo+
+IMKgIMKgIMKgIMKgcmV0dXJuIG11bHQ7Cj4gwqB9Cj4gZGlmZiAtcHVOIGluY2x1ZGUvbGludXgv
+c2NoZWQuaH5jcHVpZGxlLWF2b2lkLXVzaW5nLXNtcF9wcm9jZXNzb3JfaWQtaW4tcHJlZW1wdGli
+bGUtY29kZS1ucl9pb3dhaXRfY3B1IGluY2x1ZGUvbGludXgvc2NoZWQuaAo+IC0tLSBhL2luY2x1
+ZGUvbGludXgvc2NoZWQuaH5jcHVpZGxlLWF2b2lkLXVzaW5nLXNtcF9wcm9jZXNzb3JfaWQtaW4t
+cHJlZW1wdGlibGUtY29kZS1ucl9pb3dhaXRfY3B1Cj4gKysrIGEvaW5jbHVkZS9saW51eC9zY2hl
+ZC5oCj4gQEAgLTEzOSw3ICsxMzksNyBAQCBleHRlcm4gaW50IG5yX3Byb2Nlc3Nlcyh2b2lkKTsK
+PiDCoGV4dGVybiB1bnNpZ25lZCBsb25nIG5yX3J1bm5pbmcodm9pZCk7Cj4gwqBleHRlcm4gdW5z
+aWduZWQgbG9uZyBucl91bmludGVycnVwdGlibGUodm9pZCk7Cj4gwqBleHRlcm4gdW5zaWduZWQg
+bG9uZyBucl9pb3dhaXQodm9pZCk7Cj4gLWV4dGVybiB1bnNpZ25lZCBsb25nIG5yX2lvd2FpdF9j
+cHUodm9pZCk7Cj4gK2V4dGVybiB1bnNpZ25lZCBsb25nIG5yX2lvd2FpdF9jcHUoaW50IGNwdSk7
+Cj4gwqBleHRlcm4gdW5zaWduZWQgbG9uZyB0aGlzX2NwdV9sb2FkKHZvaWQpOwo+Cj4KPiBkaWZm
+IC1wdU4ga2VybmVsL3NjaGVkLmN+Y3B1aWRsZS1hdm9pZC11c2luZy1zbXBfcHJvY2Vzc29yX2lk
+LWluLXByZWVtcHRpYmxlLWNvZGUtbnJfaW93YWl0X2NwdSBrZXJuZWwvc2NoZWQuYwo+IC0tLSBh
+L2tlcm5lbC9zY2hlZC5jfmNwdWlkbGUtYXZvaWQtdXNpbmctc21wX3Byb2Nlc3Nvcl9pZC1pbi1w
+cmVlbXB0aWJsZS1jb2RlLW5yX2lvd2FpdF9jcHUKPiArKysgYS9rZXJuZWwvc2NoZWQuYwo+IEBA
+IC0yODY0LDkgKzI4NjQsOSBAQCB1bnNpZ25lZCBsb25nIG5yX2lvd2FpdCh2b2lkKQo+IMKgIMKg
+IMKgIMKgcmV0dXJuIHN1bTsKPiDCoH0KPgo+IC11bnNpZ25lZCBsb25nIG5yX2lvd2FpdF9jcHUo
+dm9pZCkKPiArdW5zaWduZWQgbG9uZyBucl9pb3dhaXRfY3B1KGludCBjcHUpCj4gwqB7Cj4gLSDC
+oCDCoCDCoCBzdHJ1Y3QgcnEgKnRoaXMgPSB0aGlzX3JxKCk7Cj4gKyDCoCDCoCDCoCBzdHJ1Y3Qg
+cnEgKnRoaXMgPSBjcHVfcnEoY3B1KTsKPiDCoCDCoCDCoCDCoHJldHVybiBhdG9taWNfcmVhZCgm
+dGhpcy0+bnJfaW93YWl0KTsKPiDCoH0KPgo+IGRpZmYgLXB1TiBrZXJuZWwvdGltZS90aWNrLXNj
+aGVkLmN+Y3B1aWRsZS1hdm9pZC11c2luZy1zbXBfcHJvY2Vzc29yX2lkLWluLXByZWVtcHRpYmxl
+LWNvZGUtbnJfaW93YWl0X2NwdSBrZXJuZWwvdGltZS90aWNrLXNjaGVkLmMKPiAtLS0gYS9rZXJu
+ZWwvdGltZS90aWNrLXNjaGVkLmN+Y3B1aWRsZS1hdm9pZC11c2luZy1zbXBfcHJvY2Vzc29yX2lk
+LWluLXByZWVtcHRpYmxlLWNvZGUtbnJfaW93YWl0X2NwdQo+ICsrKyBhL2tlcm5lbC90aW1lL3Rp
+Y2stc2NoZWQuYwo+IEBAIC0xNTksMTAgKzE1OSwxMiBAQCB1cGRhdGVfdHNfdGltZV9zdGF0cyhz
+dHJ1Y3QgdGlja19zY2hlZCAqCj4gwqAgwqAgwqAgwqBrdGltZV90IGRlbHRhOwo+Cj4gwqAgwqAg
+wqAgwqBpZiAodHMtPmlkbGVfYWN0aXZlKSB7Cj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCBpbnQg
+Y3B1ID0gZ2V0X2NwdSgpOwo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgZGVsdGEgPSBrdGltZV9z
+dWIobm93LCB0cy0+aWRsZV9lbnRyeXRpbWUpOwo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgdHMt
+PmlkbGVfc2xlZXB0aW1lID0ga3RpbWVfYWRkKHRzLT5pZGxlX3NsZWVwdGltZSwgZGVsdGEpOwo+
+IC0gwqAgwqAgwqAgwqAgwqAgwqAgwqAgaWYgKG5yX2lvd2FpdF9jcHUoKSA+IDApCj4gKyDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCBpZiAobnJfaW93YWl0X2NwdShjcHUpID4gMCkKPiDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoHRzLT5pb3dhaXRfc2xlZXB0aW1lID0ga3RpbWVfYWRk
+KHRzLT5pb3dhaXRfc2xlZXB0aW1lLCBkZWx0YSk7Cj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCBw
+dXRfY3B1KCk7Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqB0cy0+aWRsZV9lbnRyeXRpbWUgPSBu
+b3c7Cj4gwqAgwqAgwqAgwqB9Cj4KPiBfCj4KPgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMu
+bGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9t
+YWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
