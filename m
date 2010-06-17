@@ -1,22 +1,12 @@
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Subject: Re: [PATCH] cpuidle: avoid using smp_processor_id() in
- preemptible code (nr_iowait_cpu) v4
-Date: Thu, 17 Jun 2010 10:34:09 +0300
-Message-ID: <20100617073409.GA3947__35624.8858305209$1276759891$gmane$org@swordfish>
-References: <20100614145439.GA3448@swordfish.minsk.epam.com>
-	<20100614080154.7d6a71fc@infradead.org>
-	<20100614151735.GB3448@swordfish.minsk.epam.com>
-	<20100614204021.52c50cdc@infradead.org>
-	<20100615061927.GA3312@swordfish>
-	<20100615072435.5a47d850@infradead.org>
-	<20100615145029.GB3967@swordfish.minsk.epam.com>
-	<20100615080808.6286448b@infradead.org>
-	<20100617062950.GA3979@swordfish>
-	<20100616235907.eb11dfcc.akpm@linux-foundation.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] ACPI / PM: Do not enable GPEs for system wakeup
+	in advance
+Date: Thu, 17 Jun 2010 17:40:57 +0200
+Message-ID: <201006171740.57315.rjw__18270.9942957901$1276789523$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3769819113013917411=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100616235907.eb11dfcc.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,82 +14,119 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>, Arjan van de Ven <arjan@infradead.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Len Brown <len.brown@intel.com>, kernel list <linux-kernel@vger.kernel.org>, Michal Hocko <mhocko@suse.cz>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
---===============3769819113013917411==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="XsQoSWH+UP9D9v3l"
-Content-Disposition: inline
+After commit 9630bdd9b15d2f489c646d8bc04b60e53eb5ec78
+(ACPI: Use GPE reference counting to support shared GPEs) the wakeup
+enable mask bits of GPEs are set as soon as the GPEs are enabled to
+wake up the system.  Unfortunately, this leads to a regression
+reported by Michal Hocko, where a system is woken up from ACPI S5 by
+a device that is not supposed to do that, because the wakeup enable
+mask bit of this device's GPE is always set when
+acpi_enter_sleep_state() calls acpi_hw_enable_all_wakeup_gpes(),
+although it should only be set if the device is supposed to wake up
+the system from the target state.
 
+To work around this issue, rework the ACPI power management code so
+that GPEs are not enabled to wake up the system upfront, but only
+during a system state transition when the target state of the system
+is known.  [Of course, this means that the reference counting of
+"wakeup" GPEs doesn't really make sense and it is sufficient to
+set/unset the wakeup mask bits for them during system sleep
+transitions.  This will allow us to simplify the GPE handling code
+quite a bit, but that change is too intrusive for 2.6.35.]
 
---XsQoSWH+UP9D9v3l
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Fixes https://bugzilla.kernel.org/show_bug.cgi?id=15951
 
-On (06/16/10 23:59), Andrew Morton wrote:
-> [..] if someone runs
-> update_ts_time_stats() before the initcalls then conceivably the
-> `swapper' process's accounting will go a little bit wrong, but I doubt
-> it.
->=20
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-and-tested-by: Michal Hocko <mhocko@suse.cz>
+---
+Hi Len,
 
-That was the sing that scared me - update_ts_time_stats call before init.=
-=20
-Having ".cpu =3D cpu" in tick_get_tick_sched guarantees correct .cpu and...=
-=20
-and it sucks.
+This is on top of the GPE fixes I send before that are in your tree.
 
-> Still, it'd be better to do it earlier, I guess.  tick_init() is called
-> super-early and that would be a good place.  tick_init() is presently a
-> no-op if !CONFIG_GENERIC_CLOCKEVENTS, but all this code depends on
-> CONFIG_GENERIC_CLOCKEVENTS anwyay.
->=20
-> So how does this look?  If "OK" then would you be able to test it please?
->=20
->
-I'll test it in 2 hours. Thanks.
+Please apply.
 
-=20
-> [ Sigh.  The field tick_sched.cpu shouldn't even exist on
->   uniprocessor builds.  Ifdeffing it away is trivial and a bit messy,
->   but it's still only a partial solution.  Passing the `cpu' argument
->   to nr_iowait_cpu() will generate additional code, and it's unneeded
->   on uniprocessor builds.]
->=20
->=20
-You're right.
+Rafael
+---
+ drivers/acpi/button.c |    4 ++--
+ drivers/acpi/wakeup.c |   20 +++++++-------------
+ 2 files changed, 9 insertions(+), 15 deletions(-)
 
-
-	Sergey
-
---XsQoSWH+UP9D9v3l
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iJwEAQECAAYFAkwZz/EACgkQfKHnntdSXjR7WAP9GowE9kwn3FxH3pv1ZtoNiQOd
-ZDd35HjkqBq17kqLjVAev0Ui8D44ASHQVDBO5QBPnr7YwkZ+81zT8+MxqVQzN/b7
-d1Qnmra2/68LOILU8SNKTGwFG2TZxOJ5KeLYUGnN/BD3jsGLXT/+/dixwPJU05lM
-/i6QwU/5wv6JcMAUTFQ=
-=Mvzn
------END PGP SIGNATURE-----
-
---XsQoSWH+UP9D9v3l--
-
---===============3769819113013917411==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============3769819113013917411==--
+Index: linux-2.6/drivers/acpi/button.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/button.c
++++ linux-2.6/drivers/acpi/button.c
+@@ -425,7 +425,7 @@ static int acpi_button_add(struct acpi_d
+ 		/* Button's GPE is run-wake GPE */
+ 		acpi_enable_gpe(device->wakeup.gpe_device,
+ 				device->wakeup.gpe_number,
+-				ACPI_GPE_TYPE_WAKE_RUN);
++				ACPI_GPE_TYPE_RUNTIME);
+ 		device->wakeup.run_wake_count++;
+ 		device->wakeup.state.enabled = 1;
+ 	}
+@@ -449,7 +449,7 @@ static int acpi_button_remove(struct acp
+ 	if (device->wakeup.flags.valid) {
+ 		acpi_disable_gpe(device->wakeup.gpe_device,
+ 				device->wakeup.gpe_number,
+-				ACPI_GPE_TYPE_WAKE_RUN);
++				ACPI_GPE_TYPE_RUNTIME);
+ 		device->wakeup.run_wake_count--;
+ 		device->wakeup.state.enabled = 0;
+ 	}
+Index: linux-2.6/drivers/acpi/wakeup.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/wakeup.c
++++ linux-2.6/drivers/acpi/wakeup.c
+@@ -64,16 +64,13 @@ void acpi_enable_wakeup_device(u8 sleep_
+ 		struct acpi_device *dev =
+ 			container_of(node, struct acpi_device, wakeup_list);
+ 
+-		if (!dev->wakeup.flags.valid)
+-			continue;
+-
+-		if ((!dev->wakeup.state.enabled && !dev->wakeup.prepare_count)
++		if (!dev->wakeup.flags.valid || !dev->wakeup.state.enabled
+ 		    || sleep_state > (u32) dev->wakeup.sleep_state)
+ 			continue;
+ 
+ 		/* The wake-up power should have been enabled already. */
+-		acpi_set_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
+-				ACPI_GPE_ENABLE);
++		acpi_enable_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
++				ACPI_GPE_TYPE_WAKE);
+ 	}
+ }
+ 
+@@ -96,6 +93,8 @@ void acpi_disable_wakeup_device(u8 sleep
+ 		    || (sleep_state > (u32) dev->wakeup.sleep_state))
+ 			continue;
+ 
++		acpi_disable_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
++				ACPI_GPE_TYPE_WAKE);
+ 		acpi_disable_wakeup_device_power(dev);
+ 	}
+ }
+@@ -109,13 +108,8 @@ int __init acpi_wakeup_device_init(void)
+ 		struct acpi_device *dev = container_of(node,
+ 						       struct acpi_device,
+ 						       wakeup_list);
+-		/* In case user doesn't load button driver */
+-		if (!dev->wakeup.flags.always_enabled ||
+-		    dev->wakeup.state.enabled)
+-			continue;
+- 		acpi_enable_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
+- 				ACPI_GPE_TYPE_WAKE);
+-		dev->wakeup.state.enabled = 1;
++		if (dev->wakeup.flags.always_enabled)
++			dev->wakeup.state.enabled = 1;
+ 	}
+ 	mutex_unlock(&acpi_device_lock);
+ 	return 0;
