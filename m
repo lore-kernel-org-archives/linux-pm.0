@@ -1,56 +1,126 @@
-From: Victor Lowther <victor.lowther@gmail.com>
-Subject: Re: [linux-pm] RFC: /sys/power/policy_preference
-Date: Thu, 17 Jun 2010 17:23:35 -0500
-Message-ID: <AANLkTimWfE0WXr558sOnjZFptxpP4k6IvMWriR3seIKu@mail.gmail.com>
-References: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
-	<0F1C0B07-60D6-405B-890B-F9C320820CA5@gmail.com>
-	<alpine.LFD.2.00.1006171500260.4214@localhost.localdomain>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: PM QoS dynamic resource manager
+Date: Thu, 17 Jun 2010 15:32:23 -0700
+Message-ID: <87zkytffyg.fsf@deeprootsystems.com>
+References: <alpine.DEB.2.00.1005211533530.25765@pchidamb-lnx.qualcomm.com>
+	<20100525145223.GA4974@gvim.org>
+	<AANLkTikLgu2c1GPE3glHLlaznOM59SVeCj2NHzDjyjZR@mail.gmail.com>
+	<20100608033333.GA23066@gvim.org>
+	<AANLkTinGBvZm870CsjocsCV1SmQ-FCCbJLtKWR1juB1Q@mail.gmail.com>
+	<4C0ECC38.2000003@codeaurora.org> <20100609030525.GD26668@gvim.org>
+	<1276265566.8214.2.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.1006171500260.4214@localhost.localdomain>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1276265566.8214.2.camel@localhost> (Kevin Hilman's message of
+	"Fri\, 11 Jun 2010 19\:42\:46 +0530")
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: markgross@thegnar.org
+Cc: mark gross <640e9920@gmail.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 17, 2010 at 2:02 PM, Len Brown <lenb@kernel.org> wrote:
->
->> On Jun 16, 2010, at 4:05 PM, Len Brown <lenb@kernel.org> wrote:
->>
->> > Create /sys/power/policy_preference, giving user-space
->> > the ability to express its preference for kernel based
->> > power vs. performance decisions in a single place.
+Kevin Hilman <khilman@deeprootsystems.com> writes:
+
+> On Tue, 2010-06-08 at 20:05 -0700, mark gross wrote:
+>> On Tue, Jun 08, 2010 at 04:03:20PM -0700, Bryan Huntsman wrote:
+>> > 
+>> > Mike, one idea I'm exploring is having platform-specific busses with
+>> > QoS constraints specified via runtime_pm as part of the LDM.  Adding
+>> > dynamic class creation within pm_qos, or a type enum as you suggest,
+>> > would work.  However, I think this kind of behavior would fit nicely
+>> > within runtime_pm.
 >> >
->> > This gives kernel sub-systems and drivers a central place
->> > to discover this system-wide policy preference.
->> > It also allows user-space to not have to be updated
->> > every time a sub-system or driver adds a new power/perf knob.
->>
->> I would prefer documenting all the current knobs and adding them to =
-pm-utils
->> so that pm-powersave knows about and can manage them. Once that is d=
-one,
->> creating arbitrary powersave levels should be fairly simple.
+>> 
+>> Something like that is what Kevin Hilman was thinking too.  It would
+>> bring a qos concept to the LDM for each bus driver object.  
 >
->
-> The idea here is to not require user-space to need updating
-> whenever a future knob is invented. =A0We can do a great job
-> at documenting the past, but a poor job of documenting the future:-)
+> Yes, I definitely have some thoughts/ideas in this direction and is what
+> we are doing on OMAP.  I've been on the road, so I will chime in more on
+> this next week when I get back...
 
-Well, I would suggest that the habit of not documenting what is
-happening with power management in the kernel needs to change, then.
+[apologies for the delay, travel has made it difficult to keep up with mail]
 
-Having the documentation and example code for how to tweak the various
-power management settings from userspace is inherently more flexible
-than trying to expose a single knob from the kernel to userspace for
-power management, with little loss of flexibility.
-> cheers,
-> Len Brown, Intel Open Source Technolgy Center
->
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+So below is an overview of how we are managing device-specific
+latency/throughput on OMAP.  We are currently managing in an
+OMAP-specific way, but I certainly see the value in generalizing this
+into something managed at the 'struct device' level.
+
+So this is obviously being used for device-specific constraints, but
+on OMAP, we're also modeling the internal bus(ses) as special
+"omap_device(s)" and we use constraints the bus "devices" for
+throughput.
+
+Bryan mentioned aggregating the constraints up to some parent where
+platform-specific decisions can be made, and I am totally in support
+of that.  On OMAP, we're aggregating the device latency constraints at
+the time of a device idle (triggered by pm_runtime_idle().)  More
+details on that in the below overview.
+
+It would be great if we could all get together at one of the
+conferences this year to talk through some of our ideas in more
+detail.  I plan to be at ELC Europe (October in UK) and Linux Plumbers
+(Nov in Boston) with a remote possibility of making it to LinuxCon
+(Aug in Boston, which includes a PM mini-summit on Monday.)
+
+
+-------------------------------------------------------------------
+
+What we currently have in OMAP is a layer called omap_device.  A
+struct omap_device contains a platform_device which contains a struct
+device.
+
+In the omap_device layer, each omap_device tracks it's actual wakeup
+latency and also has a configurable maximum wakeup latency.  Drivers
+or subsystems can set and change the maximum wakeup latency
+dynamically, and the actual wakeup latency can be manually set when
+the omap_device is registered (based on HW specs), or can be
+dyamically measured at runtime (since we know how reliable said HW
+specs can be.)
+
+On OMAP, drivers usage of runtime PM will eventually trickle down to
+calling omap_device_enable() or omap_device_idle().  These calls in
+the omap_device API make the final decisions based comparing the
+actual and requested wakeup latencies.
+
+For example, runtime_pm_idle() will eventually call omap_device_idle()
+for an omap_device.  In omap_device_idle(), if the wakeup latency of
+that device is less than the currently requested maximum, the
+'deactivate' hook for that latency level is called (which leads to the
+HW-level magic to disable that device at the HW level.)  And of
+course, if the wakeup latency for that device is longer than the
+currently requested maximum, the deactivate hooks is not called.
+Similarily on enable, if the devices current wakeup latency already
+meets the requested maximum, nothing needs to change.  If it doesn't
+the 'activate' hook is called so that it can meet the requested
+maximum.
+
+Thats a brief summary, but is a bit of an oversimplification.  The
+actual omap_device code supports multiple latency levels
+per-omap_device.  In both the _enable() and _idle() paths, the various
+levels are traversed until one is found which meets the maximum wakeup
+latency requirements.
+
+Why would a device want multiple per-device latency levels?  As an
+simple example, one level might simply be disabling the devices
+clocks.  Another might also disable the PLL generating those clocks.
+Another might be turning off the voltage regulator supplying power to
+that device, etc. etc.  For each latency level, there are
+configurable, platform-specific, activate and deactivate hooks that
+can be used to do the actual work.
+
+I hope that helps explain things, and feel free to peruse the code.
+It's currently in mainline and part of the OMAP arch-specific code:
+
+   arch/arm/plat-omap/omap_device.c
+   arch/arm/plat-omap/include/plat/omap_device.h
+
+Kevin
