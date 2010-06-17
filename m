@@ -1,20 +1,16 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: PM QoS dynamic resource manager
-Date: Thu, 17 Jun 2010 15:32:23 -0700
-Message-ID: <87zkytffyg.fsf@deeprootsystems.com>
-References: <alpine.DEB.2.00.1005211533530.25765@pchidamb-lnx.qualcomm.com>
-	<20100525145223.GA4974@gvim.org>
-	<AANLkTikLgu2c1GPE3glHLlaznOM59SVeCj2NHzDjyjZR@mail.gmail.com>
-	<20100608033333.GA23066@gvim.org>
-	<AANLkTinGBvZm870CsjocsCV1SmQ-FCCbJLtKWR1juB1Q@mail.gmail.com>
-	<4C0ECC38.2000003@codeaurora.org> <20100609030525.GD26668@gvim.org>
-	<1276265566.8214.2.camel@localhost>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: [PATCH 3/3] pm_qos: only schedule work when in
+ interrupt context
+Date: Thu, 17 Jun 2010 18:02:25 -0500
+Message-ID: <1276815745.7398.359.camel__4504.05838569186$1276815800$gmane$org@mulgrave.site>
+References: <1276266352.2862.70.camel@mulgrave.site>
+	<1276526800-12362-3-git-send-email-florian@mickler.org>
+	<20100615192347.761f427a@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276265566.8214.2.camel@localhost> (Kevin Hilman's message of
-	"Fri\, 11 Jun 2010 19\:42\:46 +0530")
+In-Reply-To: <20100615192347.761f427a@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,103 +20,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: mark gross <640e9920@gmail.com>, linux-pm@lists.linux-foundation.org
+To: Florian Mickler <florian@mickler.org>
+Cc: markgross@thegnar.org, Frederic Weisbecker <fweisbec@gmail.com>, Jonathan Corbet <corbet@lwn.net>, linville@tuxdriver.com, linux-kernel@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Kevin Hilman <khilman@deeprootsystems.com> writes:
+On Tue, 2010-06-15 at 19:23 +0200, Florian Mickler wrote:
+> Hi James!
+> 
+> On Mon, 14 Jun 2010 16:46:40 +0200
+> florian@mickler.org wrote:
+> 
+> > With this patch we only schedule the work when in interrupt context.
+> > 
+> > Before update_request was callable from interrupt-context there was a
+> > 1:1 relation between a change in the request-value and a notification.
+> > This patch restores that behaviour for all constraints that have update_request
+> > never called from interrupt context.
+> > 
+> > The notifier mutex serializes calls to blocking_notifier_call_chain, so
+> > that we are serialized against any pending or currently executing notification.
+> > 
+> > Signed-off-by: Florian Mickler <florian@mickler.org>
+> > ---
+> >  kernel/pm_qos_params.c |   10 +++++++---
+> >  1 files changed, 7 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+> > index 9346906..c06cae9 100644
+> > --- a/kernel/pm_qos_params.c
+> > +++ b/kernel/pm_qos_params.c
+> > @@ -152,11 +152,15 @@ static s32 min_compare(s32 v1, s32 v2)
+> >  static void pm_qos_call_notifiers(struct pm_qos_object *o,
+> >  				  unsigned long curr_value)
+> >  {
+> > -	schedule_work(&o->notify);
+> > -
+> >  	if (o->atomic_notifiers)
+> >  		atomic_notifier_call_chain(o->atomic_notifiers,
+> > -					   curr_value, NULL);
+> > +				(unsigned long) curr_value, NULL);
+> > +
+> > +	if (in_interrupt()) 
+> > +		schedule_work(&o->notify);
+> > +	else 
+> > +		blocking_notifier_call_chain(o->blocking_notifiers, 
+> > +				(unsigned long) curr_value, NULL);
+> >  }
+> >  
+> >  static void update_notify(struct work_struct *work)
+> 
+> What about this? Is this ok? I don't know if it is benign to use
+> in_interrupt() here. I took this idea from the
+> execute_in_process_context() implementation. 
 
-> On Tue, 2010-06-08 at 20:05 -0700, mark gross wrote:
->> On Tue, Jun 08, 2010 at 04:03:20PM -0700, Bryan Huntsman wrote:
->> > 
->> > Mike, one idea I'm exploring is having platform-specific busses with
->> > QoS constraints specified via runtime_pm as part of the LDM.  Adding
->> > dynamic class creation within pm_qos, or a type enum as you suggest,
->> > would work.  However, I think this kind of behavior would fit nicely
->> > within runtime_pm.
->> >
->> 
->> Something like that is what Kevin Hilman was thinking too.  It would
->> bring a qos concept to the LDM for each bus driver object.  
->
-> Yes, I definitely have some thoughts/ideas in this direction and is what
-> we are doing on OMAP.  I've been on the road, so I will chime in more on
-> this next week when I get back...
+I think it will work ... but I still think it's over complex given the
+listed requirements (android seems to only want atomic notifiers from
+atomic contexts).
 
-[apologies for the delay, travel has made it difficult to keep up with mail]
+> If this is ok, should I rebase them on your two pm_qos patches (plists
+> and the kzalloc removal)? 
 
-So below is an overview of how we are managing device-specific
-latency/throughput on OMAP.  We are currently managing in an
-OMAP-specific way, but I certainly see the value in generalizing this
-into something managed at the 'struct device' level.
+Well, I would say yes.  However, for more impartial advice, I'd wait and
+see what the pm maintainers want.
 
-So this is obviously being used for device-specific constraints, but
-on OMAP, we're also modeling the internal bus(ses) as special
-"omap_device(s)" and we use constraints the bus "devices" for
-throughput.
+> Did you already thought about some debugging stuff that would suffice
+> the android needs? I kind of thought about either registerieng some
+> notifier callback or using the perf/tracing infrastructure. 
+> But I have not looked into it yet.
 
-Bryan mentioned aggregating the constraints up to some parent where
-platform-specific decisions can be made, and I am totally in support
-of that.  On OMAP, we're aggregating the device latency constraints at
-the time of a device idle (triggered by pm_runtime_idle().)  More
-details on that in the below overview.
+I was just going to try the conversion when the wakelocks stuff was
+finally in and see if it worked in an android kernel.
 
-It would be great if we could all get together at one of the
-conferences this year to talk through some of our ideas in more
-detail.  I plan to be at ELC Europe (October in UK) and Linux Plumbers
-(Nov in Boston) with a remote possibility of making it to LinuxCon
-(Aug in Boston, which includes a PM mini-summit on Monday.)
-
-
--------------------------------------------------------------------
-
-What we currently have in OMAP is a layer called omap_device.  A
-struct omap_device contains a platform_device which contains a struct
-device.
-
-In the omap_device layer, each omap_device tracks it's actual wakeup
-latency and also has a configurable maximum wakeup latency.  Drivers
-or subsystems can set and change the maximum wakeup latency
-dynamically, and the actual wakeup latency can be manually set when
-the omap_device is registered (based on HW specs), or can be
-dyamically measured at runtime (since we know how reliable said HW
-specs can be.)
-
-On OMAP, drivers usage of runtime PM will eventually trickle down to
-calling omap_device_enable() or omap_device_idle().  These calls in
-the omap_device API make the final decisions based comparing the
-actual and requested wakeup latencies.
-
-For example, runtime_pm_idle() will eventually call omap_device_idle()
-for an omap_device.  In omap_device_idle(), if the wakeup latency of
-that device is less than the currently requested maximum, the
-'deactivate' hook for that latency level is called (which leads to the
-HW-level magic to disable that device at the HW level.)  And of
-course, if the wakeup latency for that device is longer than the
-currently requested maximum, the deactivate hooks is not called.
-Similarily on enable, if the devices current wakeup latency already
-meets the requested maximum, nothing needs to change.  If it doesn't
-the 'activate' hook is called so that it can meet the requested
-maximum.
-
-Thats a brief summary, but is a bit of an oversimplification.  The
-actual omap_device code supports multiple latency levels
-per-omap_device.  In both the _enable() and _idle() paths, the various
-levels are traversed until one is found which meets the maximum wakeup
-latency requirements.
-
-Why would a device want multiple per-device latency levels?  As an
-simple example, one level might simply be disabling the devices
-clocks.  Another might also disable the PLL generating those clocks.
-Another might be turning off the voltage regulator supplying power to
-that device, etc. etc.  For each latency level, there are
-configurable, platform-specific, activate and deactivate hooks that
-can be used to do the actual work.
-
-I hope that helps explain things, and feel free to peruse the code.
-It's currently in mainline and part of the OMAP arch-specific code:
-
-   arch/arm/plat-omap/omap_device.c
-   arch/arm/plat-omap/include/plat/omap_device.h
-
-Kevin
+James
