@@ -1,86 +1,59 @@
-From: Victor Lowther <victor.lowther@gmail.com>
-Subject: Re: [linux-pm] RFC: /sys/power/policy_preference
-Date: Thu, 17 Jun 2010 11:14:50 -0500
-Message-ID: <0F1C0B07-60D6-405B-890B-F9C320820CA5@gmail.com>
+From: Len Brown <lenb@kernel.org>
+Subject: RE: [linux-pm] RFC: /sys/power/policy_preference
+Date: Thu, 17 Jun 2010 15:00:15 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1006171445010.4214@localhost.localdomain>
 References: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
-Mime-Version: 1.0 (iPhone Mail 7D11)
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+ <D32AB456855CBD4987499F68AFA421F4299A56E336@NOK-EUMSG-02.mgdnok.nokia.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-reply-to: <D32AB456855CBD4987499F68AFA421F4299A56E336@NOK-EUMSG-02.mgdnok.nokia.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Igor.Stoppa@nokia.com
+Cc: linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, 17 Jun 2010, Igor.Stoppa@nokia.com wrote:
 
+> i do understand that you are mostly targetting acpi based systems,
+> but even there, based on static leaks, it might not be always true
+> that lower frequencies are correlated to higher power savings
+> (or maybe i have misunderstood your draft - i am not so fluent in acpi)
 
+Right, my assertion is that ondemand deals only with P-states,
+where, by defintion, the deeper the P-state the lower the voltage,
+the higher the efficiency.
 
+I assume that ondemand is not used to enable T-states
+where the clock is throttled w/o lowering the voltage.
+I put a note to try to make that clear under
+max_powersave:
 
-On Jun 16, 2010, at 4:05 PM, Len Brown <lenb@kernel.org> wrote:
+"ondemand: min P-state (do not invoke T-states)"
 
-> Create /sys/power/policy_preference, giving user-space
-> the ability to express its preference for kernel based
-> power vs. performance decisions in a single place.
->
-> This gives kernel sub-systems and drivers a central place
-> to discover this system-wide policy preference.
-> It also allows user-space to not have to be updated
-> every time a sub-system or driver adds a new power/perf knob.
+Of course it is also possible for a processor to do a poor job
+implementing P-states and a great job optimizing idle states
+such that race to idle were always a win.  However, on such
+a processor it would make more sense to simply disable P-states.
 
-I would prefer documenting all the current knobs and adding them to pm- 
-utils so that pm-powersave knows about and can manage them. Once that  
-is done, creating arbitrary powersave levels should be fairly simple.
+> > it is likely
+> > that some users would want to use "powersave" when on
+> > battery and perhaps shift to "performance" on A/C.
+> 
+> if we consider also the thermal envelope and the fact that "performance"
+> might steal power from a charging battery, even ton A/C it might not be 
+> possible to settle down in one state permanently.
+> 
+> Or do you expect other mechanisms to intervene?
 
-> policy_preference has 5 levels, from max_performance
-> through max_powersave.  Here is how 4 parts of the kernel
-> might respond to those 5 levels:
->
-> max_performance (unwilling to sacrifice any performance)
->    scheduler: default (optimized for performance)
->    cpuidle: disable all C-states except polling mode
->    ondemand: disable all P-states except max perf
->    msr_ia32_energy_perf_bias: 0 of 15
->
-> performance (care primarily about performance)
->    scheduler: default (optimized for performance)
->    cpuidle: enable all C-states subject to QOS
->    ondemand: all P-states, using no bias
->    msr_ia32_energy_perf_bias: 3 of 15
->
-> balanced (default)
->    scheduler: enable sched_mc_power_savings
->    cpuidle: enable all C-states subject to QOS
->    ondemand: all P-states, powersave_bias=5
->    msr_ia32_energy_perf_bias: 7 of 15
->
-> powersave (can sacrifice measurable performance)
->    scheduler: enable sched_smt_power_savings
->    cpuidle: enable all C-states, subject to QOS
->    ondemand: disable turbo mode, powersave_bias=10
->    msr_ia32_energy_perf_bias: 11 of 15
->
-> max_powersave (can sacrifice significant performance)
->    scheduler: enable sched_smt_power_savings
->    cpuidle: enable all C-states, subject to QOS
->    ondemand: min P-state (do not invoke T-states)
->    msr_ia32_energy_perf_bias: 15 of 15
->
-> Note that today Linux is typically operating in the mode
-> called "performance" above, rather than "balanced",
-> which is proposed to be the default.  While a system
-> should work well if left in "balanced" mode, it is likely
-> that some users would want to use "powersave" when on
-> battery and perhaps shift to "performance" on A/C.
->
-> Please let me know what you think.
->
-> thanks,
-> Len Brown, Intel Open Source Technology Center
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+Typical laptop BIOS commonly implement a scheme where
+they maximize performance on AC and bias towards saving energy
+on DC.
+
+That, of course, is just one example use-model.
+Here Linux user-space can choose whatever policy
+makes sense for them at run-time.
+
+cheers,
+-Len Brown, Intel Open Source Technology Center
+
