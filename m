@@ -1,156 +1,56 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH 2/2] mmc: make sdhci work with ricoh mmc
-	controller
-Date: Fri, 18 Jun 2010 00:23:34 +0300
-Message-ID: <1276809814-28683-2-git-send-email-maximlevitsky__35194.8701347739$1276810077$gmane$org@gmail.com>
-References: <1276809695.28201.13.camel@maxim-laptop>
+From: Victor Lowther <victor.lowther@gmail.com>
+Subject: Re: [linux-pm] RFC: /sys/power/policy_preference
+Date: Thu, 17 Jun 2010 17:23:35 -0500
+Message-ID: <AANLkTimWfE0WXr558sOnjZFptxpP4k6IvMWriR3seIKu@mail.gmail.com>
+References: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
+	<0F1C0B07-60D6-405B-890B-F9C320820CA5@gmail.com>
+	<alpine.LFD.2.00.1006171500260.4214@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276809695.28201.13.camel@maxim-laptop>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-mmc <linux-mmc@vger.kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andrew de Quincey <adq_dvb@lidskialf.net>, Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Philip Langdale <philipl@overt.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.1006171500260.4214@localhost.localdomain>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The current way of disabling it is not well tested by vendor
-and has all kinds of bugs that show up on resume from ram/disk.
-A very good example is a dead SDHCI controller.
+On Thu, Jun 17, 2010 at 2:02 PM, Len Brown <lenb@kernel.org> wrote:
+>
+>> On Jun 16, 2010, at 4:05 PM, Len Brown <lenb@kernel.org> wrote:
+>>
+>> > Create /sys/power/policy_preference, giving user-space
+>> > the ability to express its preference for kernel based
+>> > power vs. performance decisions in a single place.
+>> >
+>> > This gives kernel sub-systems and drivers a central place
+>> > to discover this system-wide policy preference.
+>> > It also allows user-space to not have to be updated
+>> > every time a sub-system or driver adds a new power/perf knob.
+>>
+>> I would prefer documenting all the current knobs and adding them to =
+pm-utils
+>> so that pm-powersave knows about and can manage them. Once that is d=
+one,
+>> creating arbitrary powersave levels should be fairly simple.
+>
+>
+> The idea here is to not require user-space to need updating
+> whenever a future knob is invented. =A0We can do a great job
+> at documenting the past, but a poor job of documenting the future:-)
 
-Old way of disabling is still supported by
-continuing to use CONFIG_MMC_RICOH_MMC.
+Well, I would suggest that the habit of not documenting what is
+happening with power management in the kernel needs to change, then.
 
-Based on 'http://list.drzeus.cx/pipermail/sdhci-devel/2007-December/002085.html'
-Therefore most of the credit for this goes to Andrew de Quincey
-
-CC: Andrew de Quincey <adq_dvb@lidskialf.net>
-
-Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
-Acked-by: Philip Langdale <philipl@overt.org>
----
- drivers/mmc/host/sdhci-pci.c |   41 +++++++++++++++++++++++++++++++++++++++++
- drivers/mmc/host/sdhci.c     |    3 ++-
- drivers/mmc/host/sdhci.h     |    4 ++++
- 3 files changed, 47 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/mmc/host/sdhci-pci.c b/drivers/mmc/host/sdhci-pci.c
-index 65483fd..e021431 100644
---- a/drivers/mmc/host/sdhci-pci.c
-+++ b/drivers/mmc/host/sdhci-pci.c
-@@ -17,6 +17,7 @@
- #include <linux/pci.h>
- #include <linux/dma-mapping.h>
- #include <linux/slab.h>
-+#include <linux/device.h>
- 
- #include <linux/mmc/host.h>
- 
-@@ -84,7 +85,30 @@ static int ricoh_probe(struct sdhci_pci_chip *chip)
- 	if (chip->pdev->subsystem_vendor == PCI_VENDOR_ID_SAMSUNG ||
- 	    chip->pdev->subsystem_vendor == PCI_VENDOR_ID_SONY)
- 		chip->quirks |= SDHCI_QUIRK_NO_CARD_NO_RESET;
-+	return 0;
-+}
-+
-+static int ricoh_mmc_probe_slot(struct sdhci_pci_slot *slot)
-+{
-+	slot->host->caps =
-+		((0x21 << SDHCI_TIMEOUT_CLK_SHIFT)
-+			& SDHCI_TIMEOUT_CLK_MASK) |
-+
-+		((0x21 << SDHCI_CLOCK_BASE_SHIFT)
-+			& SDHCI_CLOCK_BASE_MASK) |
- 
-+		SDHCI_TIMEOUT_CLK_UNIT |
-+		SDHCI_CAN_VDD_330 |
-+		SDHCI_CAN_DO_SDMA;
-+	return 0;
-+}
-+
-+static int ricoh_mmc_resume(struct sdhci_pci_chip *chip)
-+{
-+	/* Apply a delay to allow controller to settle */
-+	/* Otherwise it becomes confused if card state changed
-+		during suspend */
-+	msleep(500);
- 	return 0;
- }
- 
-@@ -95,6 +119,15 @@ static const struct sdhci_pci_fixes sdhci_ricoh = {
- 			  SDHCI_QUIRK_CLOCK_BEFORE_RESET,
- };
- 
-+static const struct sdhci_pci_fixes sdhci_ricoh_mmc = {
-+	.probe_slot	= ricoh_mmc_probe_slot,
-+	.resume		= ricoh_mmc_resume,
-+	.quirks		= SDHCI_QUIRK_32BIT_DMA_ADDR |
-+			  SDHCI_QUIRK_CLOCK_BEFORE_RESET |
-+			  SDHCI_QUIRK_NO_CARD_NO_RESET |
-+			  SDHCI_QUIRK_MISSING_CAPS
-+};
-+
- static const struct sdhci_pci_fixes sdhci_ene_712 = {
- 	.quirks		= SDHCI_QUIRK_SINGLE_POWER_WRITE |
- 			  SDHCI_QUIRK_BROKEN_DMA,
-@@ -374,6 +407,14 @@ static const struct pci_device_id pci_ids[] __devinitdata = {
- 	},
- 
- 	{
-+		.vendor         = PCI_VENDOR_ID_RICOH,
-+		.device         = 0x843,
-+		.subvendor      = PCI_ANY_ID,
-+		.subdevice      = PCI_ANY_ID,
-+		.driver_data    = (kernel_ulong_t)&sdhci_ricoh_mmc,
-+	},
-+
-+	{
- 		.vendor		= PCI_VENDOR_ID_ENE,
- 		.device		= PCI_DEVICE_ID_ENE_CB712_SD,
- 		.subvendor	= PCI_ANY_ID,
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index c6d1bd8..483b78e 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -1687,7 +1687,8 @@ int sdhci_add_host(struct sdhci_host *host)
- 			host->version);
- 	}
- 
--	caps = sdhci_readl(host, SDHCI_CAPABILITIES);
-+	caps = (host->quirks & SDHCI_QUIRK_MISSING_CAPS) ? host->caps :
-+		sdhci_readl(host, SDHCI_CAPABILITIES);
- 
- 	if (host->quirks & SDHCI_QUIRK_FORCE_DMA)
- 		host->flags |= SDHCI_USE_SDMA;
-diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index c846813..b1839a3 100644
---- a/drivers/mmc/host/sdhci.h
-+++ b/drivers/mmc/host/sdhci.h
-@@ -240,6 +240,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN		(1<<25)
- /* Controller cannot support End Attribute in NOP ADMA descriptor */
- #define SDHCI_QUIRK_NO_ENDATTR_IN_NOPDESC		(1<<26)
-+/* Controller is missing device caps. Use caps provided by host */
-+#define SDHCI_QUIRK_MISSING_CAPS			(1<<27)
- 
- 	int			irq;		/* Device IRQ */
- 	void __iomem *		ioaddr;		/* Mapped address */
-@@ -292,6 +294,8 @@ struct sdhci_host {
- 
- 	struct timer_list	timer;		/* Timer for timeouts */
- 
-+	unsigned int		caps;		/* Alternative capabilities */
-+
- 	unsigned long		private[0] ____cacheline_aligned;
- };
- 
--- 
-1.7.0.4
+Having the documentation and example code for how to tweak the various
+power management settings from userspace is inherently more flexible
+than trying to expose a single knob from the kernel to userspace for
+power management, with little loss of flexibility.
+> cheers,
+> Len Brown, Intel Open Source Technolgy Center
+>
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
