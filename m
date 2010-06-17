@@ -1,92 +1,63 @@
-From: Mike Chan <mike@android.com>
-Subject: Re: RFC: /sys/power/policy_preference
-Date: Thu, 17 Jun 2010 13:48:11 -0700
-Message-ID: <AANLkTilkblF0tfSnvLdVZVOi0r-dc32uAMuaiUlKesdn@mail.gmail.com>
-References: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: [PATCH] Two fixes for my mmc/sd cardreader
+Date: Fri, 18 Jun 2010 00:21:35 +0300
+Message-ID: <1276809695.28201.13.camel__25660.6951974847$1276809763$gmane$org@maxim-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-mmc <linux-mmc@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Philip Langdale <philipl@overt.org>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 16, 2010 at 2:05 PM, Len Brown <lenb@kernel.org> wrote:
-> Create /sys/power/policy_preference, giving user-space
-> the ability to express its preference for kernel based
-> power vs. performance decisions in a single place.
->
-> This gives kernel sub-systems and drivers a central place
-> to discover this system-wide policy preference.
-> It also allows user-space to not have to be updated
-> every time a sub-system or driver adds a new power/perf knob.
->
+Hi,
 
-This might be ok as a convince feature for userspace, but if that is
-the sole intention, is 5 states enough? Are these values sufficient? I
-can say at least for Android this will probably won't be as useful
-(but perhaps on your platforms it makes sense).
+These are 2 fixes for my card reader.
 
-As for a place for subsystems and drivers to check for what
-performance mode you're in, do my driver how to check two places now?
-Whats stopping someone from overriding cpufreq, or cpuidle? I might be
-confused here (if I am someone please correct me) but isn't this
-somewhat along he lines of pm runtime / pm qos if drivers want to
-check what power / performance state the system is in?
 
--- Mike
+First patch fixes old issue with system hand on suspend to disk/ram with
+mmc card inserted.
+I updated description, and pm notification registration order.
+I think this patch can an should go to 2.6.35, because it fixes long
+standing and nasty regression.
 
-> policy_preference has 5 levels, from max_performance
-> through max_powersave. =A0Here is how 4 parts of the kernel
-> might respond to those 5 levels:
->
-> max_performance (unwilling to sacrifice any performance)
-> =A0 =A0 =A0 =A0scheduler: default (optimized for performance)
-> =A0 =A0 =A0 =A0cpuidle: disable all C-states except polling mode
-> =A0 =A0 =A0 =A0ondemand: disable all P-states except max perf
-> =A0 =A0 =A0 =A0msr_ia32_energy_perf_bias: 0 of 15
->
-> performance (care primarily about performance)
-> =A0 =A0 =A0 =A0scheduler: default (optimized for performance)
-> =A0 =A0 =A0 =A0cpuidle: enable all C-states subject to QOS
-> =A0 =A0 =A0 =A0ondemand: all P-states, using no bias
-> =A0 =A0 =A0 =A0msr_ia32_energy_perf_bias: 3 of 15
->
-> balanced (default)
-> =A0 =A0 =A0 =A0scheduler: enable sched_mc_power_savings
-> =A0 =A0 =A0 =A0cpuidle: enable all C-states subject to QOS
-> =A0 =A0 =A0 =A0ondemand: all P-states, powersave_bias=3D5
-> =A0 =A0 =A0 =A0msr_ia32_energy_perf_bias: 7 of 15
->
-> powersave (can sacrifice measurable performance)
-> =A0 =A0 =A0 =A0scheduler: enable sched_smt_power_savings
-> =A0 =A0 =A0 =A0cpuidle: enable all C-states, subject to QOS
-> =A0 =A0 =A0 =A0ondemand: disable turbo mode, powersave_bias=3D10
-> =A0 =A0 =A0 =A0msr_ia32_energy_perf_bias: 11 of 15
->
-> max_powersave (can sacrifice significant performance)
-> =A0 =A0 =A0 =A0scheduler: enable sched_smt_power_savings
-> =A0 =A0 =A0 =A0cpuidle: enable all C-states, subject to QOS
-> =A0 =A0 =A0 =A0ondemand: min P-state (do not invoke T-states)
-> =A0 =A0 =A0 =A0msr_ia32_energy_perf_bias: 15 of 15
->
-> Note that today Linux is typically operating in the mode
-> called "performance" above, rather than "balanced",
-> which is proposed to be the default. =A0While a system
-> should work well if left in "balanced" mode, it is likely
-> that some users would want to use "powersave" when on
-> battery and perhaps shift to "performance" on A/C.
->
-> Please let me know what you think.
->
-> thanks,
-> Len Brown, Intel Open Source Technology Center
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kerne=
-l" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at =A0http://www.tux.org/lkml/
->
+The second patch is a result of my work trying to understand why my card
+reader sometimes dies on resume.
+This reader has a special MMC function which steals MMC cards, and until
+now had no driver. A way to disable it was found, and while it works, it
+has (at least here) a side effect of killing the controller on resume
+from ram/disk (and it happens often, and doesn't depend of whether card
+was in slot or not during suspend).
+
+Fortunately it turned out that MMC part is _almost_ standard SDHCI
+controller.
+This patch adds support for this device to standard sdhci driver.
+Unfortunately, this support still contais small hack.
+It waits 1/2 of a second on resume before initializing the controller.
+Not doing so, and resuming with MMC card present results in confused
+controller. It is not dead though. A card reinsert makes it work again
+with all cards.
+Yet the 1st patch is must for this because otherwise mmc core seeing
+that controller doesn't respond, removes the card, therefore hangs the
+system.
+It doesn't happen when I wait these 1/2 of second though.
+
+I think that this patch is also ok for 2.6.35, because it only adds new
+functionality.
+You are free to disable MMC controller using the same
+CONFIG_MMC_RICOH_MMC.
+
+If you don't disable it though, instead of full lack of functionality
+you will get full featured MMC controller.
+
+Best regards,
+Maxim Levitsky
