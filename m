@@ -1,181 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] DRM / radeon / KMS: Fix hibernation regression
-	related to radeon PM (was: Re: [Regression,
-	post-2.6.34] Hibernation broken on machines with radeon/KMS and r300)
-Date: Fri, 18 Jun 2010 01:02:27 +0200
-Message-ID: <201006180102.27658.rjw__8751.60397631607$1276815934$gmane$org@sisk.pl>
-References: <201006141653.03879.rjw@sisk.pl> <201006172114.19033.rjw@sisk.pl>
-	<AANLkTimRQLDDyIB0LIE018gR24s593rkMyTvDuF1ntJT@mail.gmail.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [linux-pm] RFC: /sys/power/policy_preference
+Date: Fri, 18 Jun 2010 01:56:27 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1006180149120.7628@localhost.localdomain>
+References: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
+ <0F1C0B07-60D6-405B-890B-F9C320820CA5@gmail.com>
+ <alpine.LFD.2.00.1006171500260.4214@localhost.localdomain>
+ <AANLkTimWfE0WXr558sOnjZFptxpP4k6IvMWriR3seIKu@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTimRQLDDyIB0LIE018gR24s593rkMyTvDuF1ntJT@mail.gmail.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@redhat.com>
-Cc: Ondrej Zary <linux@rainbow-software.org>, linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1548819180-1276840588=:7628"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-reply-to: <AANLkTimWfE0WXr558sOnjZFptxpP4k6IvMWriR3seIKu@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Victor Lowther <victor.lowther@gmail.com>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-There is a regression from 2.6.34 related to the recent radeon power
-management changes, caused by attempting to cancel a delayed work
-item that's never been scheduled.  However, the code as is has some
-other issues potentially leading to visible problems.
+--8323328-1548819180-1276840588=:7628
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-First, the mutex around cancel_delayed_work() in radeon_pm_suspend()
-doesn't really serve any purpose, because cancel_delayed_work() only
-tries to delete the work's timer.  Moreover, it doesn't prevent the
-work handler from running, so the handler can do some wrong things if
-it wins the race and in that case it will rearm itself to do some
-more wrong things going forward.  So, I think it's better to wait for
-the handler to return in case it's already been queued up for
-execution.  Also, it should be prevented from rearming itself in that
-case.
+On Thu, 17 Jun 2010, Victor Lowther wrote:
 
-Second, in radeon_set_pm_method() the cancel_delayed_work() is not
-sufficient to prevent the work handler from running and queing up
-itself for the next run (the failure scenario is that
-cancel_delayed_work() returns 0, so the handler is run, it waits on
-the mutex and then rearms itself after the mutex has been released),
-so again the work handler should be prevented from rearming itself in
-that case..
+> > The idea here is to not require user-space to need updating
+> > whenever a future knob is invented.  We can do a great job
+> > at documenting the past, but a poor job of documenting the future:-)
+> 
+> Well, I would suggest that the habit of not documenting what is
+> happening with power management in the kernel needs to change, then.
 
-Finally, there's a potential deadlock in radeon_pm_fini(), because
-cancel_delayed_work_sync() is called under rdev->pm.mutex, but the
-work handler tries to acquire the same mutex (if it wins the race).
+Actually some of the knobs I showed in the examples
+have been documented for *years*, yet are ignored
+by user-space today.  I don't want to insult user-space
+programmers, but the reality is that simpler is usually better.
 
-Fix the issues described above.
+> Having the documentation and example code for how to tweak the various
+> power management settings from userspace is inherently more flexible
+> than trying to expose a single knob from the kernel to userspace for
+> power management, with little loss of flexibility.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reviewed-by: Alex Deucher <alexdeucher@gmail.com>
----
- drivers/gpu/drm/radeon/radeon.h    |    3 +-
- drivers/gpu/drm/radeon/radeon_pm.c |   41 ++++++++++++++++++++++++++++++-------
- 2 files changed, 36 insertions(+), 8 deletions(-)
+Yes, the ultimate in flexibility is to update user-space whenever
+some new driver or new knob appears in the kernel.  I'm not proposing
+that ability be taken away.  I'm proposing that in many cases it
+is unnecessary.
 
-Index: linux-2.6/drivers/gpu/drm/radeon/radeon_pm.c
-===================================================================
---- linux-2.6.orig/drivers/gpu/drm/radeon/radeon_pm.c
-+++ linux-2.6/drivers/gpu/drm/radeon/radeon_pm.c
-@@ -397,13 +397,20 @@ static ssize_t radeon_set_pm_method(stru
- 		rdev->pm.dynpm_planned_action = DYNPM_ACTION_DEFAULT;
- 		mutex_unlock(&rdev->pm.mutex);
- 	} else if (strncmp("profile", buf, strlen("profile")) == 0) {
-+		bool flush_wq = false;
-+
- 		mutex_lock(&rdev->pm.mutex);
--		rdev->pm.pm_method = PM_METHOD_PROFILE;
-+		if (rdev->pm.pm_method == PM_METHOD_DYNPM) {
-+			cancel_delayed_work(&rdev->pm.dynpm_idle_work);
-+			flush_wq = true;
-+		}
- 		/* disable dynpm */
- 		rdev->pm.dynpm_state = DYNPM_STATE_DISABLED;
- 		rdev->pm.dynpm_planned_action = DYNPM_ACTION_NONE;
--		cancel_delayed_work(&rdev->pm.dynpm_idle_work);
-+		rdev->pm.pm_method = PM_METHOD_PROFILE;
- 		mutex_unlock(&rdev->pm.mutex);
-+		if (flush_wq)
-+			flush_workqueue(rdev->wq);
- 	} else {
- 		DRM_ERROR("invalid power method!\n");
- 		goto fail;
-@@ -418,9 +425,18 @@ static DEVICE_ATTR(power_method, S_IRUGO
- 
- void radeon_pm_suspend(struct radeon_device *rdev)
- {
-+	bool flush_wq = false;
-+
- 	mutex_lock(&rdev->pm.mutex);
--	cancel_delayed_work(&rdev->pm.dynpm_idle_work);
-+	if (rdev->pm.pm_method == PM_METHOD_DYNPM) {
-+		cancel_delayed_work(&rdev->pm.dynpm_idle_work);
-+		if (rdev->pm.dynpm_state == DYNPM_STATE_ACTIVE)
-+			rdev->pm.dynpm_state = DYNPM_STATE_SUSPENDED;
-+		flush_wq = true;
-+	}
- 	mutex_unlock(&rdev->pm.mutex);
-+	if (flush_wq)
-+		flush_workqueue(rdev->wq);
- }
- 
- void radeon_pm_resume(struct radeon_device *rdev)
-@@ -432,6 +448,12 @@ void radeon_pm_resume(struct radeon_devi
- 	rdev->pm.current_sclk = rdev->clock.default_sclk;
- 	rdev->pm.current_mclk = rdev->clock.default_mclk;
- 	rdev->pm.current_vddc = rdev->pm.power_state[rdev->pm.default_power_state_index].clock_info[0].voltage.voltage;
-+	if (rdev->pm.pm_method == PM_METHOD_DYNPM
-+	    && rdev->pm.dynpm_state == DYNPM_STATE_SUSPENDED) {
-+		rdev->pm.dynpm_state = DYNPM_STATE_ACTIVE;
-+		queue_delayed_work(rdev->wq, &rdev->pm.dynpm_idle_work,
-+					msecs_to_jiffies(RADEON_IDLE_LOOP_MS));
-+	}
- 	mutex_unlock(&rdev->pm.mutex);
- 	radeon_pm_compute_clocks(rdev);
- }
-@@ -486,6 +508,8 @@ int radeon_pm_init(struct radeon_device
- void radeon_pm_fini(struct radeon_device *rdev)
- {
- 	if (rdev->pm.num_power_states > 1) {
-+		bool flush_wq = false;
-+
- 		mutex_lock(&rdev->pm.mutex);
- 		if (rdev->pm.pm_method == PM_METHOD_PROFILE) {
- 			rdev->pm.profile = PM_PROFILE_DEFAULT;
-@@ -493,13 +517,16 @@ void radeon_pm_fini(struct radeon_device
- 			radeon_pm_set_clocks(rdev);
- 		} else if (rdev->pm.pm_method == PM_METHOD_DYNPM) {
- 			/* cancel work */
--			cancel_delayed_work_sync(&rdev->pm.dynpm_idle_work);
-+			cancel_delayed_work(&rdev->pm.dynpm_idle_work);
-+			flush_wq = true;
- 			/* reset default clocks */
- 			rdev->pm.dynpm_state = DYNPM_STATE_DISABLED;
- 			rdev->pm.dynpm_planned_action = DYNPM_ACTION_DEFAULT;
- 			radeon_pm_set_clocks(rdev);
- 		}
- 		mutex_unlock(&rdev->pm.mutex);
-+		if (flush_wq)
-+			flush_workqueue(rdev->wq);
- 
- 		device_remove_file(rdev->dev, &dev_attr_power_profile);
- 		device_remove_file(rdev->dev, &dev_attr_power_method);
-@@ -720,12 +747,12 @@ static void radeon_dynpm_idle_work_handl
- 			radeon_pm_get_dynpm_state(rdev);
- 			radeon_pm_set_clocks(rdev);
- 		}
-+
-+		queue_delayed_work(rdev->wq, &rdev->pm.dynpm_idle_work,
-+					msecs_to_jiffies(RADEON_IDLE_LOOP_MS));
- 	}
- 	mutex_unlock(&rdev->pm.mutex);
- 	ttm_bo_unlock_delayed_workqueue(&rdev->mman.bdev, resched);
--
--	queue_delayed_work(rdev->wq, &rdev->pm.dynpm_idle_work,
--					msecs_to_jiffies(RADEON_IDLE_LOOP_MS));
- }
- 
- /*
-Index: linux-2.6/drivers/gpu/drm/radeon/radeon.h
-===================================================================
---- linux-2.6.orig/drivers/gpu/drm/radeon/radeon.h
-+++ linux-2.6/drivers/gpu/drm/radeon/radeon.h
-@@ -619,7 +619,8 @@ enum radeon_dynpm_state {
- 	DYNPM_STATE_DISABLED,
- 	DYNPM_STATE_MINIMUM,
- 	DYNPM_STATE_PAUSED,
--	DYNPM_STATE_ACTIVE
-+	DYNPM_STATE_ACTIVE,
-+	DYNPM_STATE_SUSPENDED,
- };
- enum radeon_dynpm_action {
- 	DYNPM_ACTION_NONE,
+The idea is to have the ability to add something to the 
+kernel and avoid the need to make any change to user-space.
+
+thanks,
+-Len Brown, Intel Open Source Technology Center
+
+--8323328-1548819180-1276840588=:7628--
