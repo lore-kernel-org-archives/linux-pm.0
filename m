@@ -1,14 +1,15 @@
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] DRM / radeon / PM: Do not evict VRAM during
 	freeze phase of hibernation
-Date: Fri, 18 Jun 2010 22:42:32 +0200
-Message-ID: <AANLkTim0QKSs9nrBnl847XhdM9YiKBEyNATPCscgcT5M__17120.2885955156$1276893842$gmane$org@mail.gmail.com>
+Date: Sat, 19 Jun 2010 01:19:33 +0200
+Message-ID: <201006190119.33759.rjw__33193.198478739$1276903368$gmane$org@sisk.pl>
 References: <201006182221.57333.rjw@sisk.pl>
+	<AANLkTim0QKSs9nrBnl847XhdM9YiKBEyNATPCscgcT5M@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006182221.57333.rjw@sisk.pl>
+In-Reply-To: <AANLkTim0QKSs9nrBnl847XhdM9YiKBEyNATPCscgcT5M@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,18 +19,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: =?utf-8?q?Rafa=C5=82_Mi=C5=82ecki?= <zajec5@gmail.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Dave Airlie <airlied@redhat.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>
 List-Id: linux-pm@vger.kernel.org
 
-MjAxMC82LzE4IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD46Cj4gRnJvbTogUmFmYWVs
-IEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPgoKVGhhbmtzIGZvciB5b3UgcmVjZW50IGludm9sdmVt
-ZW50IGluIHJhZGVvbiBkcml2ZXIhIEkgY2FuIHNlZSB5b3UgdXNlZAp3YXkgc2hvcnRlciBjb21t
-aXQgdGl0bGUgdGhpcyB0aW1lIDspIEp1c3QgYXMgYSBtaW5vciBub3RlLCBtYXliZSB5b3UKY291
-bGQgZm9sbG93IHByZWZpeC1zdHlsZSB3ZSB1c2VkIHRvIHNlZSBhcm91bmQ/IExpa2Ugc2ltcGxl
-CiJkcm0vcmFkZW9uL3BtIj8gT3IgZXZlbnR1YWxseSBzb21ldGhpbmcgZGlmZmVyZW50IGluc3Rl
-YWQgb2YgInBtIiB0bwptYXRjaCBkaWZmZXJlbmNlIGJldHdlZW4gcy9yIGFuZCBwbSBhcyBlbmdp
-bmUvbWVtb3J5L3ZvbHRhZ2Ugb3BzLgoKLS0gCkdyZWV0aW5ncywKUmFmYcWCCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlz
-dApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4
-LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+T24gRnJpZGF5LCBKdW5lIDE4LCAyMDEwLCBSYWZhxYIgTWnFgmVja2kgd3JvdGU6Cj4gMjAxMC82
+LzE4IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD46Cj4gPiBGcm9tOiBSYWZhZWwgSi4g
+V3lzb2NraSA8cmp3QHNpc2sucGw+Cj4gCj4gVGhhbmtzIGZvciB5b3UgcmVjZW50IGludm9sdmVt
+ZW50IGluIHJhZGVvbiBkcml2ZXIhCgpXZWxsLCBJJ20ganVzdCB0cnlpbmcgdG8gYWRkcmVzcyB0
+aGUgaXNzdWVzIEkgc2VlIG9uIG15IHRlc3QgYm94ZXMuCgo+IEkgY2FuIHNlZSB5b3UgdXNlZCB3
+YXkgc2hvcnRlciBjb21taXQgdGl0bGUgdGhpcyB0aW1lIDspIEp1c3QgYXMgYSBtaW5vcgo+IG5v
+dGUsIG1heWJlIHlvdSBjb3VsZCBmb2xsb3cgcHJlZml4LXN0eWxlIHdlIHVzZWQgdG8gc2VlIGFy
+b3VuZD8gTGlrZSBzaW1wbGUKPiAiZHJtL3JhZGVvbi9wbSI/IE9yIGV2ZW50dWFsbHkgc29tZXRo
+aW5nIGRpZmZlcmVudCBpbnN0ZWFkIG9mICJwbSIgdG8KPiBtYXRjaCBkaWZmZXJlbmNlIGJldHdl
+ZW4gcy9yIGFuZCBwbSBhcyBlbmdpbmUvbWVtb3J5L3ZvbHRhZ2Ugb3BzLgoKU3VyZSwgSSBjYW4g
+dXNlIHdoYXRldmVyIGlzIHN1aXRhYmxlIHRvIHlvdSBndXlzLgoKVGhhbmtzLApSYWZhZWwKX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFp
+bGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlz
+dHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
