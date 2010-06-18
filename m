@@ -1,55 +1,80 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [linux-pm] RFC: /sys/power/policy_preference
-Date: Fri, 18 Jun 2010 01:56:27 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.1006180149120.7628@localhost.localdomain>
+Subject: Re: RFC: /sys/power/policy_preference
+Date: Fri, 18 Jun 2010 02:25:01 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1006180156460.7628@localhost.localdomain>
 References: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
- <0F1C0B07-60D6-405B-890B-F9C320820CA5@gmail.com>
- <alpine.LFD.2.00.1006171500260.4214@localhost.localdomain>
- <AANLkTimWfE0WXr558sOnjZFptxpP4k6IvMWriR3seIKu@mail.gmail.com>
+ <AANLkTilkblF0tfSnvLdVZVOi0r-dc32uAMuaiUlKesdn@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1548819180-1276840588=:7628"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-reply-to: <AANLkTimWfE0WXr558sOnjZFptxpP4k6IvMWriR3seIKu@mail.gmail.com>
+In-reply-to: <AANLkTilkblF0tfSnvLdVZVOi0r-dc32uAMuaiUlKesdn@mail.gmail.com>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Victor Lowther <victor.lowther@gmail.com>
-Cc: Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+To: Mike Chan <mike@android.com>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, 17 Jun 2010, Mike Chan wrote:
 
---8323328-1548819180-1276840588=:7628
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-
-On Thu, 17 Jun 2010, Victor Lowther wrote:
-
-> > The idea here is to not require user-space to need updating
-> > whenever a future knob is invented.  We can do a great job
-> > at documenting the past, but a poor job of documenting the future:-)
+> On Wed, Jun 16, 2010 at 2:05 PM, Len Brown <lenb@kernel.org> wrote:
+> > Create /sys/power/policy_preference, giving user-space
+> > the ability to express its preference for kernel based
+> > power vs. performance decisions in a single place.
+> >
+> > This gives kernel sub-systems and drivers a central place
+> > to discover this system-wide policy preference.
+> > It also allows user-space to not have to be updated
+> > every time a sub-system or driver adds a new power/perf knob.
+> >
 > 
-> Well, I would suggest that the habit of not documenting what is
-> happening with power management in the kernel needs to change, then.
+> This might be ok as a convince feature for userspace, but if that is
+> the sole intention, is 5 states enough?
+>
+> Are these values sufficient? I
+> can say at least for Android this will probably won't be as useful
+> (but perhaps on your platforms it makes sense).
 
-Actually some of the knobs I showed in the examples
-have been documented for *years*, yet are ignored
-by user-space today.  I don't want to insult user-space
-programmers, but the reality is that simpler is usually better.
+Honestly, my first thought was to use 100 values -- a percentage.
+But I got quickly taked out of it by people much wiser than me.
 
-> Having the documentation and example code for how to tweak the various
-> power management settings from userspace is inherently more flexible
-> than trying to expose a single knob from the kernel to userspace for
-> power management, with little loss of flexibility.
+Consider that the vendors that are cleaning Linux's clock
+on laptops seem quite content with 3 values at the user-interface.
+So one might argue that 5 levels is already 66% more complexity
+than needed:-)
 
-Yes, the ultimate in flexibility is to update user-space whenever
-some new driver or new knob appears in the kernel.  I'm not proposing
-that ability be taken away.  I'm proposing that in many cases it
-is unnecessary.
+Some suggested special case states, eg for HPC.
+But those needs didn't fit into this simple power vs performance
+continuum, and every consumer of this interface needs to undertand
+every state, so adding special states would be a mistake.
 
-The idea is to have the ability to add something to the 
-kernel and avoid the need to make any change to user-space.
+The folks that do HPC and the folks that do embedded devices
+are smart enough to tune their systems without using this
+rather blunt instrument.  They should continue to do so,
+and this mechanism should not get in their way.
+
+For example, if this mechanism is used to update powersave_bias
+inside ondemand, but at the same time somebody tunes powersave_bias
+by hand, the by-hand tuning must win.
+
+> As for a place for subsystems and drivers to check for what
+> performance mode you're in, do my driver how to check two places now?
+> Whats stopping someone from overriding cpufreq, or cpuidle? I might be
+> confused here (if I am someone please correct me) but isn't this
+> somewhat along he lines of pm runtime / pm qos if drivers want to
+> check what power / performance state the system is in?
+
+pm runtime and pm qos are much bigger hammers, and this
+mechanism is intended to complement them, not replace them.
+
+Simply stated, this mechanism is intended just to give
+a global hint of the user's power vs. performance preference
+at a given time.  There are places in the kernel and drivers
+where power vs performance decisions are made with zero
+concept of user preference, and this hint can help there.
+
+Other parts of the kernel don't care, or have sufficient
+information to make informed decisions, and thus they
+simply wouldn't need to make use of this hint.
 
 thanks,
--Len Brown, Intel Open Source Technology Center
+Len Brown, Intel Open Source Technology Center
 
---8323328-1548819180-1276840588=:7628--
