@@ -1,16 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] DRM / radeon / KMS: Fix hibernation
-	regression related to radeon PM (was: Re: [Regression,
-	post-2.6.34] Hibernation broken on machines with radeon/KMS and r300)
-Date: Fri, 18 Jun 2010 16:47:08 +0200
-Message-ID: <201006181647.08916.rjw__41323.6926928677$1276872666$gmane$org@sisk.pl>
-References: <201006141653.03879.rjw@sisk.pl> <201006180102.27658.rjw@sisk.pl>
-	<AANLkTinBTc7DEJd9PywNuD5HeIZhqHY4ePK3w78OwVJ4@mail.gmail.com>
+Subject: [PATCH] PCI / PM: Do not use native PCIe PME by default
+Date: Fri, 18 Jun 2010 17:04:22 +0200
+Message-ID: <201006181704.22550.rjw__11655.4622342393$1276873692$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinBTc7DEJd9PywNuD5HeIZhqHY4ePK3w78OwVJ4@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,20 +15,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matt Turner <mattst88@gmail.com>
-Cc: linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, June 18, 2010, Matt Turner wrote:
-> On Thu, Jun 17, 2010 at 7:02 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-...
-> > http://lists.freedesktop.org/mailman/listinfo/dri-devel
-> 
-> Probably want to shorten the commit title a bit.
-
-In fact the title is just "DRM / radeon / KMS: Fix hibernation regression
-related to radeon PM", the rest is to preserve the context.
-
-Thanks,
-Rafael
+RnJvbTogUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPgoKQ29tbWl0IGM3ZjQ4NjU2N2Mx
+ZDBhY2QyZTQxNjZjNDcwNjk4MzViOWY3NWU3N2IKKFBDSSBQTTogUENJZSBQTUUgcm9vdCBwb3J0
+IHNlcnZpY2UgZHJpdmVyKSBjYXVzZXMgdGhlIG5hdGl2ZSBQQ0llClBNRSBzaWduYWxpbmcgdG8g
+YmUgdXNlZCBieSBkZWZhdWx0LCBpZiB0aGUgQklPUyBhbGxvd3MgdGhlIGtlcm5lbCB0bwpjb250
+cm9sIHRoZSBzdGFuZGFyZCBjb25maWd1cmF0aW9uIHJlZ2lzdGVycyBvZiBQQ0llIHJvb3QgcG9y
+dHMuCkhvd2V2ZXIsIHRoZSBuYXRpdmUgUENJZSBQTUUgaXMgY291cGxlZCB0byB0aGUgbmF0aXZl
+IFBDSWUgaG90cGx1ZwphbmQgY2FsbGluZyBwY2llX3BtZV9hY3BpX3NldHVwKCkgbWFrZXMgc29t
+ZSBCSU9TZXMgZXhwZWN0IHRoYXQKdGhlIG5hdGl2ZSBQQ0llIGhvdHBsdWcgd2lsbCBiZSB1c2Vk
+IGFzIHdlbGwuICBUaGF0LCBpbiB0dXJuLCBjYXVzZXMKcHJvYmxlbXMgdG8gYXBwZWFyIG9uIHN5
+c3RlbXMgd2hlcmUgdGhlIFBDSWUgaG90cGx1ZyBkcml2ZXIgaXMgbm90CmxvYWRlZC4gIFRoZSB1
+c3VhbCBzeW1wdG9tLCBhcyByZXBvcnRlZCBieSBKYXJvc2xhdiBLYW1lbsOtayBhbmQKb3RoZXJz
+LCBpcyB0aGF0IHRoZSBBQ1BJIEdQRSBhc3NvY2lhdGVkIHdpdGggUENJZSBob3RwbHVnIGtlZXBz
+CmZpcmluZyBjb250aW51b3VzbHkgY2F1c2luZyBrYWNwaWQgdG8gdGFrZSBzdWJzdGFudGlhbCBw
+ZXJjZW50YWdlCm9mIENQVSB0aW1lLgoKVG8gd29yayBhcm91bmQgdGhpcyBpc3N1ZSwgY2hhbmdl
+IHRoZSBkZWZhdWx0IHNvIHRoYXQgdGhlIG5hdGl2ZQpQQ0llIFBNRSBzaWduYWxpbmcgaXMgb25s
+eSB1c2VkIGlmIGRpcmVjdGx5IHJlcXVlc3RlZCB3aXRoIHRoZSBoZWxwCm9mIHRoZSBwY2llX3Bt
+ZT0gY29tbWFuZCBsaW5lIHN3aXRjaC4KCkZpeGVzIGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9y
+Zy9zaG93X2J1Zy5jZ2k/aWQ9MTU5MjQgLCB3aGljaCBpcwphIGxpc3RlZCByZWdyZXNzaW9uIGZy
+b20gMi42LjMzLgoKU2lnbmVkLW9mZi1ieTogUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBs
+PgpSZXBvcnRlZC1ieTogSmFyb3NsYXYgS2FtZW7DrWsgPGphcm9zbGF2QGthbWVuaWsuY3o+ClRl
+c3RlZC1ieTogQW50b25pIEdyenltYWxhIDxhbnRla2dyenltYWxhQGdtYWlsLmNvbT4gCi0tLQog
+RG9jdW1lbnRhdGlvbi9rZXJuZWwtcGFyYW1ldGVycy50eHQgfCAgICA0ICsrKy0KIGRyaXZlcnMv
+cGNpL3BjaWUvcG1lL3BjaWVfcG1lLmMgICAgIHwgICAxOSArKysrKysrKysrKysrLS0tLS0tCiAy
+IGZpbGVzIGNoYW5nZWQsIDE2IGluc2VydGlvbnMoKyksIDcgZGVsZXRpb25zKC0pCgpJbmRleDog
+bGludXgtMi42L2RyaXZlcnMvcGNpL3BjaWUvcG1lL3BjaWVfcG1lLmMKPT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0g
+bGludXgtMi42Lm9yaWcvZHJpdmVycy9wY2kvcGNpZS9wbWUvcGNpZV9wbWUuYworKysgbGludXgt
+Mi42L2RyaXZlcnMvcGNpL3BjaWUvcG1lL3BjaWVfcG1lLmMKQEAgLTM0LDcgKzM0LDcgQEAKICAq
+IGJlaW5nIHJlZ2lzdGVyZWQuICBDb25zZXF1ZW50bHksIHRoZSBpbnRlcnJ1cHQtYmFzZWQgUENJ
+ZSBQTUUgc2lnbmFsaW5nIHdpbGwKICAqIG5vdCBiZSB1c2VkIGJ5IGFueSBQQ0llIHJvb3QgcG9y
+dHMgaW4gdGhhdCBjYXNlLgogICovCi1zdGF0aWMgYm9vbCBwY2llX3BtZV9kaXNhYmxlZDsKK3N0
+YXRpYyBib29sIHBjaWVfcG1lX2Rpc2FibGVkID0gdHJ1ZTsKIAogLyoKICAqIFRoZSBQQ0kgRXhw
+cmVzcyBCYXNlIFNwZWNpZmljYXRpb24gMi4wLCBTZWN0aW9uIDYuMS44LCBzdGF0ZXMgdGhlIGZv
+bGxvd2luZzoKQEAgLTY0LDEyICs2NCwxOSBAQCBib29sIHBjaWVfcG1lX21zaV9kaXNhYmxlZDsK
+IAogc3RhdGljIGludCBfX2luaXQgcGNpZV9wbWVfc2V0dXAoY2hhciAqc3RyKQogewotCWlmICgh
+c3RyY21wKHN0ciwgIm9mZiIpKQotCQlwY2llX3BtZV9kaXNhYmxlZCA9IHRydWU7Ci0JZWxzZSBp
+ZiAoIXN0cmNtcChzdHIsICJmb3JjZSIpKQorCWlmICghc3RybmNtcChzdHIsICJhdXRvIiwgNCkp
+CisJCXBjaWVfcG1lX2Rpc2FibGVkID0gZmFsc2U7CisJZWxzZSBpZiAoIXN0cm5jbXAoc3RyLCAi
+Zm9yY2UiLCA1KSkKIAkJcGNpZV9wbWVfZm9yY2VfZW5hYmxlID0gdHJ1ZTsKLQllbHNlIGlmICgh
+c3RyY21wKHN0ciwgIm5vbXNpIikpCi0JCXBjaWVfcG1lX21zaV9kaXNhYmxlZCA9IHRydWU7CisK
+KwlzdHIgPSBzdHJjaHIoc3RyLCAnLCcpOworCWlmIChzdHIpIHsKKwkJc3RyKys7CisJCXN0ciAr
+PSBzdHJzcG4oc3RyLCAiIFx0Iik7CisJCWlmICgqc3RyICYmICFzdHJjbXAoc3RyLCAibm9tc2ki
+KSkKKwkJCXBjaWVfcG1lX21zaV9kaXNhYmxlZCA9IHRydWU7CisJfQorCiAJcmV0dXJuIDE7CiB9
+CiBfX3NldHVwKCJwY2llX3BtZT0iLCBwY2llX3BtZV9zZXR1cCk7CkluZGV4OiBsaW51eC0yLjYv
+RG9jdW1lbnRhdGlvbi9rZXJuZWwtcGFyYW1ldGVycy50eHQKPT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgt
+Mi42Lm9yaWcvRG9jdW1lbnRhdGlvbi9rZXJuZWwtcGFyYW1ldGVycy50eHQKKysrIGxpbnV4LTIu
+Ni9Eb2N1bWVudGF0aW9uL2tlcm5lbC1wYXJhbWV0ZXJzLnR4dApAQCAtMjA0OCw3ICsyMDQ4LDkg
+QEAgYW5kIGlzIGJldHdlZW4gMjU2IGFuZCA0MDk2IGNoYXJhY3RlcnMuIAogCQkJV0FSTklORzog
+Rm9yY2luZyBBU1BNIG9uIG1heSBjYXVzZSBzeXN0ZW0gbG9ja3Vwcy4KIAogCXBjaWVfcG1lPQlb
+UENJRSxQTV0gTmF0aXZlIFBDSWUgUE1FIHNpZ25hbGluZyBvcHRpb25zOgotCQlvZmYJRG8gbm90
+IHVzZSBuYXRpdmUgUENJZSBQTUUgc2lnbmFsaW5nLgorCQkJRm9ybWF0OiB7YXV0b3xmb3JjZX1b
+LG5vbXNpXQorCQlhdXRvCVVzZSBuYXRpdmUgUENJZSBQTUUgc2lnbmFsaW5nIGlmIHRoZSBCSU9T
+IGFsbG93cyB0aGUKKwkJCWtlcm5lbCB0byBjb250cm9sIFBDSWUgY29uZmlnIHJlZ2lzdGVycyBv
+ZiByb290IHBvcnRzLgogCQlmb3JjZQlVc2UgbmF0aXZlIFBDSWUgUE1FIHNpZ25hbGluZyBldmVu
+IGlmIHRoZSBCSU9TIHJlZnVzZXMKIAkJCXRvIGFsbG93IHRoZSBrZXJuZWwgdG8gY29udHJvbCB0
+aGUgcmVsZXZhbnQgUENJZSBjb25maWcKIAkJCXJlZ2lzdGVycy4KX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4
+LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRh
+dGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
