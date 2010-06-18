@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
-	suspend
-Date: Mon, 21 Jun 2010 11:23:33 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1006211111060.1687-100000__31527.9380920858$1277134065$gmane$org@iolanthe.rowland.org>
-References: <20100621073233.3f874ad0@schatten.dmk.lab>
+From: Dave Airlie <airlied@redhat.com>
+Subject: Re: [PATCH] DRM / radeon / PM: Do not evict VRAM during
+ freeze phase of hibernation
+Date: Sat, 19 Jun 2010 07:08:16 +1000
+Message-ID: <1276895296.6513.3.camel__15050.8441999138$1277134458$gmane$org@t60prh>
+References: <201006182221.57333.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100621073233.3f874ad0@schatten.dmk.lab>
+In-Reply-To: <201006182221.57333.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,65 +18,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ondrej Zary <linux@rainbow-software.org>, linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Alex Deucher <alexdeucher@gmail.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 21 Jun 2010, Florian Mickler wrote:
-
-> On Sun, 20 Jun 2010 22:23:38 -0400 (EDT)
-> Alan Stern <stern@rowland.harvard.edu> wrote:
-
-> > This is the race I was talking about:
-> > 
-> > > > What happens if an event arrives just before you read
-> > > > /sys/power/wakeup_count, but the userspace consumer doesn't realize
-> > > > there is a new unprocessed event until after the power manager checks
-> > > > it?
-> > 
-> > > I think this is not the kernel's problem.  In this approach the kernel makes it
-> > > possible for the user space to avoid the race.  Whether or not the user space
-> > > will use this opportunity is a different matter.
-> > 
-> > It is _not_ possible for userspace to avoid this race.  Help from the 
-> > kernel is needed.
+On Fri, 2010-06-18 at 22:21 +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> It is possible if every (relevant) userspace program implements a
-> callback for the powermanager to check if one of it's wakeup-sources
-> got activated.
-> 
-> That way the powermanager would read /sys/power/wakeup_count, then do
-> the roundtrip to all it's registered users and only then suspend. 
-> 
-> This turns the suspend_blockers concept around. Instead of actively
-> signaling the suspend_blockers, the userspace programs only answer
-> "yes/no" when asked.  (i.e. polling?) 
+> I have recently noticed a 55 sec. delay during the "device freeze"
+> phase of hibernation on my test-bed HP nx6325.  Due to the 100%
+> reproducibility of it I was able to narrow it down to
+> radeon_suspend_kms() and then it turned out that the delay occured
+> somewhere in radeon_bo_evict_vram().  However, it doesn't seem really
+> necessary or even very useful to me to evict VRAM at this particular
+> point, because we're going to create an image and bring the device
+> back to the fully functional state in a little while.  Thus, I think
+> the VRAM evicition can be skipped for state.event == PM_EVENT_FREEZE,
+> which makes the delay go away.
 
-In the end you would want to have communication in both directions:  
-suspend blockers _and_ callbacks.  Polling is bad if done too often.  
-But I think the idea is a good one.
+I'm not 100% sure of the hibernate sequencing and its early in the
+morning, but we want to evict VRAM before image building so we can have
+the contents of VRAM in the image so we can restore them on resume. Does
+this just avoid evicting them a second time after we created the image?
 
-In fact, you don't need a "yes/no" response.  Programs merely need a
-chance to activate a new suspend blocker if a wakeup source was
-recently activated before they acknowledge the poll.
-
-> You _can not_ implement userspace suspend blockers with this approach,
-> as it is vital for every userspace program to get scheduled and check
-> it's wakeup-source (if even possible) before you know that the right
-> parties have won the race.
-
-I'm not sure what you mean.  Certainly you can take a userspace 
-suspend-blocker implementation of the sort discussed before (where 
-programs communicate their needs to a central power-manager process) 
-and add this callback mechanism on top.
-
-There is still at least one loophole to be closed: Android's
-timer-based wakelocks.  These include cases where the Android
-developers didn't add enough wakelocks to cover the entire path from
-kernel-event to userspace-handler, so they punted and relied on a timer
-to decide when the wakelock should be deactivated.  (There may be other
-cases too; I didn't follow the original discussion very closely.)  
-It's not clear whether these things can be handled already in Rafael's
-scheme with your addition, or whether something new is needed.
-
-Alan Stern
+Dave.
