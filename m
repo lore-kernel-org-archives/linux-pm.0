@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] DRM / radeon / PM: Do not evict VRAM during
 	freeze phase of hibernation
-Date: Sat, 19 Jun 2010 14:53:58 +0200
-Message-ID: <201006191453.58379.rjw__23993.2350269102$1276952224$gmane$org@sisk.pl>
+Date: Sat, 19 Jun 2010 15:21:07 +0200
+Message-ID: <201006191521.07731.rjw__24088.0198580728$1276953826$gmane$org@sisk.pl>
 References: <201006182221.57333.rjw@sisk.pl> <201006190123.00694.rjw@sisk.pl>
 	<1276904995.6513.7.camel@t60prh>
 Mime-Version: 1.0
@@ -52,28 +52,14 @@ On Saturday, June 19, 2010, Dave Airlie wrote:
 > On the machine you have its most likely not going to show up unless you
 > are running a 3D app or something across suspend, since currently X
 > re-exposes most apps on VT switch, so they just redraw.
+> 
+> Was it always this slow? you can see how many objects are in vram using
+> debugfs (/sys/kernel/debug/dri/0/radeon_vram_mm),
 
-Yes.  Moreover, hibernation is always done after a VT switch.  That's why
-I said I thought the eviction wasn't necessary in the changelog.
+It says there are 32768 objects and about 9000 of them are in use.
 
-BTW, I have three different test boxes with radeon hardware and the
-$subject patch is not a problem on any of them.
+> it sounds like the TTM eviction process is blocking on something,
 
-> Was it always this slow?
-
-Nope.  It definitely is a regression, although I'm not sure what's the last
-good kernel.
-
-> you can see how many objects are in vram using
-> debugfs (/sys/kernel/debug/dri/0/radeon_vram_mm), it sounds like the TTM
-> eviction process is blocking on something,
-
-Yup.
-
-> we shouldn't be using any UC/WC memory on that machine so I can't imagine
-> the new pool allocator stuff would get in the way. Maybe its the lack of
-> GFP_USER, (Jerome posted a patch).
-
-Can you give me a pointer to that patch, please?
+ttm_bo_force_list_clean() blocks for more than 5 seconds in some iterations.
 
 Rafael
