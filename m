@@ -1,65 +1,70 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] DRM / radeon / PM: Do not evict VRAM during
-	freeze phase of hibernation
-Date: Sat, 19 Jun 2010 15:21:07 +0200
-Message-ID: <201006191521.07731.rjw__24088.0198580728$1276953826$gmane$org@sisk.pl>
-References: <201006182221.57333.rjw@sisk.pl> <201006190123.00694.rjw@sisk.pl>
-	<1276904995.6513.7.camel@t60prh>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [linux-pm] RFC: /sys/power/policy_preference
+Date: Sat, 19 Jun 2010 20:47:41 +0530
+Message-ID: <20100619151741.GA18201@dirshya.in.ibm.com>
+References: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
+ <0F1C0B07-60D6-405B-890B-F9C320820CA5@gmail.com>
+Reply-To: svaidy@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276904995.6513.7.camel@t60prh>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dave Airlie <airlied@redhat.com>
-Cc: Ondrej Zary <linux@rainbow-software.org>, linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Alex Deucher <alexdeucher@gmail.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=iso-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <0F1C0B07-60D6-405B-890B-F9C320820CA5@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Victor Lowther <victor.lowther@gmail.com>
+Cc: Len Brown <lenb@kernel.org>, Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, June 19, 2010, Dave Airlie wrote:
-> On Sat, 2010-06-19 at 01:23 +0200, Rafael J. Wysocki wrote:
-> > On Friday, June 18, 2010, Dave Airlie wrote:
-> > > On Fri, 2010-06-18 at 22:21 +0200, Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > I have recently noticed a 55 sec. delay during the "device freeze"
-> > > > phase of hibernation on my test-bed HP nx6325.  Due to the 100%
-> > > > reproducibility of it I was able to narrow it down to
-> > > > radeon_suspend_kms() and then it turned out that the delay occured
-> > > > somewhere in radeon_bo_evict_vram().  However, it doesn't seem really
-> > > > necessary or even very useful to me to evict VRAM at this particular
-> > > > point, because we're going to create an image and bring the device
-> > > > back to the fully functional state in a little while.  Thus, I think
-> > > > the VRAM evicition can be skipped for state.event == PM_EVENT_FREEZE,
-> > > > which makes the delay go away.
-> > > 
-> > > I'm not 100% sure of the hibernate sequencing and its early in the
-> > > morning, but we want to evict VRAM before image building so we can have
-> > > the contents of VRAM in the image so we can restore them on resume. Does
-> > > this just avoid evicting them a second time after we created the image?
-> > 
-> > No, it's the first time, before creating the image, but I didn't seen any
-> > difference on resume with and without the patch, so I thought it was a good
-> > idea. :-)
+* Victor Lowther <victor.lowther@gmail.com> [2010-06-17 11:14:50]:
+
 > 
-> On the machine you have its most likely not going to show up unless you
-> are running a 3D app or something across suspend, since currently X
-> re-exposes most apps on VT switch, so they just redraw.
 > 
-> Was it always this slow? you can see how many objects are in vram using
-> debugfs (/sys/kernel/debug/dri/0/radeon_vram_mm),
+> 
+> 
+> On Jun 16, 2010, at 4:05 PM, Len Brown <lenb@kernel.org> wrote:
+> 
+> >Create /sys/power/policy_preference, giving user-space
+> >the ability to express its preference for kernel based
+> >power vs. performance decisions in a single place.
+> >
+> >This gives kernel sub-systems and drivers a central place
+> >to discover this system-wide policy preference.
+> >It also allows user-space to not have to be updated
+> >every time a sub-system or driver adds a new power/perf knob.
+> 
+> I would prefer documenting all the current knobs and adding them to
+> pm-utils so that pm-powersave knows about and can manage them. Once
+> that is done, creating arbitrary powersave levels should be fairly
+> simple.
 
-It says there are 32768 objects and about 9000 of them are in use.
+Hi Len,
 
-> it sounds like the TTM eviction process is blocking on something,
+Reading through this thread, I prefer the above recommendation.  We
+have three main dimensions of (power savings) control (cpufreq,
+cpuidle and scheduler) and you are combining them into a single policy
+in the kernel.  The challenges are as follows:
 
-ttm_bo_force_list_clean() blocks for more than 5 seconds in some iterations.
+* Number of policies will always limit flexibility
+* More dimensions of control will be added in future and your
+  intention is to transparently include them within these defined
+  polices
+* Even with the current implementations, power savings and performance
+  impact widely vary based on system topology and workload.  There is
+  no easy method to define modes such that one mode will _always_
+  consume less power than the other
+* Each subsystem can override the policy settings and create more
+  combinations anyway
 
-Rafael
+Your argument is that these modes can serve as a good default and allow
+the user to tune the knobs directly for more sophisticated policies.
+But in that case all kernel subsystem should default to the balanced
+policy and let the user tweak individual subsystems for other modes.
+
+On the other hand having the policy definitions in user space allows
+us to create more flexible policies by considering higher level
+factors like workload behavior, utilization, platform features,
+power/thermal constraints etc.
+
+--Vaidy
+
+[snip]
