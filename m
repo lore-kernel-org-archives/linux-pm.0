@@ -1,13 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: wait_for_completion_interruptible does not wait !!
-Date: Sun, 20 Jun 2010 11:52:42 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1006201120210.22272-100000__46702.215265441$1277049227$gmane$org@netrider.rowland.org>
-References: <AANLkTikPOcNZk5ISX2WDHSmsPDw_a5_3Ic3owAbO4o0y@mail.gmail.com>
+Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
+	suspend
+Date: Sun, 20 Jun 2010 12:28:29 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006201153420.22272-100000__995.984106748615$1277051359$gmane$org@netrider.rowland.org>
+References: <201006200005.35771.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikPOcNZk5ISX2WDHSmsPDw_a5_3Ic3owAbO4o0y@mail.gmail.com>
+In-Reply-To: <201006200005.35771.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,90 +18,122 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Suresh Rajashekara <suresh.raj+linuxomap@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 19 Jun 2010, Suresh Rajashekara wrote:
+On Sun, 20 Jun 2010, Rafael J. Wysocki wrote:
 
-> I have an application which calls the ioctl of the codec driver to
-> know the status of the headset.
+> Hi,
 > 
-> The ioctl waits on a completion variable (using
-> wait_for_completion_interruptible).
+> One of the arguments during the suspend blockers discussion was that the
+> mainline kernel didn't contain any mechanisms allowing it to avoid losing
+> wakeup events during system suspend.
 > 
-> The variable is completed in the interrupt handler, which happens on
-> headset insertion/removal. Once the variable is completed, the ioctl
-> returns (with appropriate value in the argument) and the application
-> decides what to do with the event.
+> Generally, there are two problems in that area.  First, if a wakeup event
+> occurs exactly at the same time when /sys/power/state is being written to,
+> the even may be delivered to user space right before the freezing of it,
+> in which case the user space consumer of the event may not be able to process
+> it before the system is suspended.
 
-What happens if the variable is completed while nobody is waiting for
-it?  The next time somebody tries to wait, won't the wait terminate
-immediately?
+Indeed, the same problem arises if the event isn't delivered to
+userspace until after userspace is frozen.  Of course, the underlying
+issue here is that the kernel has no direct way to know when userspace
+has finished processing an event.  Userspace would have to tell it,
+which generally would mean rewriting some large number of user
+programs.
 
-> Once done handling the event, the application then calls the ioctl
-> once again (bascially it polls the audio driver) to know the status of
-> the headset. The call is blocked until the headset status changes.
+>  Second, if a wakeup event occurs after user
+> space has been frozen and that event is not a wakeup interrupt, the kernel will
+> not react to it and the system will be suspended.
+
+I don't quite understand what you mean here.  "Reacting" to an event
+involves more than one action.  The kernel has to tell the hardware to
+stop generating the wakeup signal, and it has to handle the event
+somehow.
+
+If the kernel doesn't tell the hardware to stop generating the wakeup 
+signal, the signal will continue to be active until the system goes to 
+sleep.  At that point it will cause the system to wake up immediately,
+so there won't be any problem.
+
+The real problem arises when the hardware stops generating the wakeup
+signal but the kernel suspends before it finishes handling the event.  
+For example, an interrupt handler might receive the event and start
+processing it by calling pm_request_resume() -- but if the pm workqueue
+thread is already frozen then the processing won't finish until
+something else wakes the system up.  (IMO this is a potential bug which
+could be fixed without too much effort.)
+
+> The following patch illustrates my idea of how these two problems may be
+> addressed.  It introduces a new global sysfs attribute,
+> /sys/power/wakeup_count, associated with a running counter of wakeup events
+> and a helper function, pm_wakeup_event(), that may be used by kernel subsystems
+> to increment the wakeup events counter.
+
+In what way is this better than suspend blockers?
+
+> /sys/power/wakeup_count may be read from or written to by user space.  Reads
+> will always succeed and return the current value of the wakeup events counter.
+> Writes, however, will only succeed if the written number is equal to the
+> current value of the wakeup events counter.  If a write is successful, it will
+> cause the kernel to save the current value of the wakeup events counter and
+> to compare the saved number with the current value of the counter at certain
+> points of the subsequent suspend (or hibernate) sequence.  If the two values
+> don't match, the suspend will be aborted just as though a wakeup interrupt
+> happened.  Reading from /sys/power/wakeup_count again will turn that mechanism
+> off.
 > 
-> I am running the system on linux-2.6.29 on a OMAP1 based board. All
-> this works well when the OMAP is awake.
+> The assumption is that there's a user space power manager that will first
+> read from /sys/power/wakeup_count.  Then it will check all user space consumers
+> of wakeup events known to it for unprocessed events.
+
+What happens if an event arrives just before you read
+/sys/power/wakeup_count, but the userspace consumer doesn't realize
+there is a new unprocessed event until after the power manager checks
+it?  Your plan is missing a critical step: the "handoff" whereby 
+responsibility for handling an event passes from the kernel to 
+userspace.
+
+With suspend blockers, this handoff occurs when an event queue is 
+emptied and its associate suspend blocker is deactivated.  Or with some 
+kinds of events for which the Android people have not written an 
+explicit handoff, it occurs when a timer expires (timed suspend 
+blockers).
+
+>  If there are any, it will
+> wait for them to be processed and repeat.  In turn, if there are not any,
+> it will try to write to /sys/power/wakeup_count and if the write is successful,
+> it will write to /sys/power/state to start suspend, so if any wakeup events
+> accur past that point, they will be noticed by the kernel and will eventually
+> cause the suspend to be aborted.
+
+This shares with the other alternatives posted recently the need for a
+central power-manager process.  And like in-kernel suspend blockers, it
+requires changes to wakeup-capable drivers (the wakeup-events counter
+has to be incremented).
+
+One advantage of the suspend-blocker approach is that it essentially
+uses a single tool to handle both kinds of races (event not fully
+handled by the kernel, or event not fully handled by userspace).  
+Things aren't quite this simple, because of the need for a special API
+to implement userspace suspend blockers, but this does avoid the need
+for a power-manager process.
+
+> In addition to the above, the patch adds a wakeup events counter to the
+> power member of struct device and makes these per-device wakeup event counters
+> available via sysfs, so that it's possible to check the activity of various
+> wakeup event sources within the kernel.
 > 
-> The problem starts when we suspend the OMAP. The moment we suspend,
-> the wait_for_completion_interruptible is interrupted and the ioctl
-> returns.
-
-Of course.  That's how processes that are blocked in the kernel are
-given a chance to enter the freezer.
-
-> Application ends up thinking that the headset was either
-> removed/inserted.
-
-It should not think that.  There are other reasons why an ioctl might
-return early, such as a genuine signal or two status changes occurring
-before the ioctl starts (the next two ioctls will both return
-immediately, but the first one will contain the final status and the
-second won't contain any status change).
-
-For this to work correctly, the kernel should accumulate a bitmap of
-status changes as they occur.  When an ioctl returns, it should provide
-the bitmap of all the status changes that have occurred since the last
-ioctl (and it should clear the status-change bitmap) along with the
-current status.  Otherwise the application has no way to know about
-changes that occur between ioctl calls.
-
-> Our system does an aggressive sleep (wakes up every
-> 500 ms and sleeps again) and hence the application gets the event of
-> headset every 500 ms.
-
-What's wrong with that?  It should be smart enough to realize that most
-of these events aren't actual status changes.
-
-> I tried wait_for_completion instead, but now the kernel refuses to suspend.
+> To illustrate how subsystems can use pm_wakeup_event(), I added it to the
+> PCI runtime PM wakeup-handling code.
 > 
-> I have tried wait queues and mutexs with no success.
+> At the moment the patch only contains code changes (ie. no documentation),
+> but I'm going to add comments etc. if people like the idea.
 > 
-> Could anyone please point me how I can resolve this issue? Is there
-> any construct which can block inside the kernel during suspend/resume?
+> Please tell me what you think.
 
-Yes: The freezer.
-
-> Can there be a blocking call active while we suspend?
-
-Yes, in theory.  In practice it's not a good idea, since the call 
-wouldn't be able to distinguish between an actual signal and the onset 
-of a suspend.  You might end up with a call that ignores all signals 
-and hence cannot be interrupted.
-
-> Ideally I would resort to a method in which I would signal the process
-> when there is a headset event, but I am not free to change the
-> application. Its a legacy application and I have to make the kernel
-> work for it.
-
-It's not clear that anything needs to be fixed, except possibly the
-application.  Hint: See the SA_RESTART flag for sigaction(2).
-
-It also sounds like the application's design may be fundamentally
-broken.  Certain kinds of defects cannot be worked around in the
-kernel.
+While this isn't a bad idea, I don't see how it is superior to the 
+other alternatives that have been proposed.
 
 Alan Stern
