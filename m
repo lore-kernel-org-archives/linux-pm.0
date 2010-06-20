@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
-	suspend
-Date: Sun, 20 Jun 2010 14:49:14 +0200
-Message-ID: <201006201449.14754.rjw__2352.73396033353$1277038384$gmane$org@sisk.pl>
-References: <201006200005.35771.rjw@sisk.pl> <20100620055254.GA21994@gvim.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: wait_for_completion_interruptible does not wait !!
+Date: Sun, 20 Jun 2010 11:52:42 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006201120210.22272-100000__46702.215265441$1277049227$gmane$org@netrider.rowland.org>
+References: <AANLkTikPOcNZk5ISX2WDHSmsPDw_a5_3Ic3owAbO4o0y@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100620055254.GA21994@gvim.org>
+In-Reply-To: <AANLkTikPOcNZk5ISX2WDHSmsPDw_a5_3Ic3owAbO4o0y@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,220 +17,90 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, linux-pm@lists.linux-foundation.org
+To: Suresh Rajashekara <suresh.raj+linuxomap@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, June 20, 2010, mark gross wrote:
-> On Sun, Jun 20, 2010 at 12:05:35AM +0200, Rafael J. Wysocki wrote:
-> > Hi,
-> > 
-> > One of the arguments during the suspend blockers discussion was that the
-> > mainline kernel didn't contain any mechanisms allowing it to avoid losing
-> > wakeup events during system suspend.
-> > 
-> > Generally, there are two problems in that area.  First, if a wakeup event
-> > occurs exactly at the same time when /sys/power/state is being written to,
-> > the even may be delivered to user space right before the freezing of it,
-> > in which case the user space consumer of the event may not be able to process
-> yes this is racy.  souldn't the wakeup event handers/driver force a user
-> mode ACK before they stop failing suspend attempts? 
+On Sat, 19 Jun 2010, Suresh Rajashekara wrote:
 
-I'm not sure what you mean.  There are wake-up events without any user space
-consumers, like wake-on-LAN.
-
-> > it before the system is suspended.  Second, if a wakeup event occurs after user
-> > space has been frozen and that event is not a wakeup interrupt, the kernel will
-> > not react to it and the system will be suspended.
+> I have an application which calls the ioctl of the codec driver to
+> know the status of the headset.
 > 
-> If its not a wakeup interrupt is it not fair to allow the suspend to
-> happen even if its handler's are "in flight" at suspend time?
-
-A wakeup event need not be an interrupt, or at least there are interrupts that
-have other meanings, like ACPI SCI.
-
-> > The following patch illustrates my idea of how these two problems may be
-> > addressed.  It introduces a new global sysfs attribute,
-> > /sys/power/wakeup_count, associated with a running counter of wakeup events
-> > and a helper function, pm_wakeup_event(), that may be used by kernel subsystems
-> > to increment the wakeup events counter.
-> > 
-> > /sys/power/wakeup_count may be read from or written to by user space.  Reads
-> > will always succeed and return the current value of the wakeup events counter.
-> > Writes, however, will only succeed if the written number is equal to the
-> > current value of the wakeup events counter.  If a write is successful, it will
-> > cause the kernel to save the current value of the wakeup events counter and
-> > to compare the saved number with the current value of the counter at certain
-> > points of the subsequent suspend (or hibernate) sequence.  If the two values
-> > don't match, the suspend will be aborted just as though a wakeup interrupt
-> > happened.  Reading from /sys/power/wakeup_count again will turn that mechanism
-> > off.
+> The ioctl waits on a completion variable (using
+> wait_for_completion_interruptible).
 > 
-> why would you want to turn it off?
+> The variable is completed in the interrupt handler, which happens on
+> headset insertion/removal. Once the variable is completed, the ioctl
+> returns (with appropriate value in the argument) and the application
+> decides what to do with the event.
 
-In some cases I may want to suspend/hibernate losing some wakeup events,
-like for example in the case of emergency hibernation on critical battery.
+What happens if the variable is completed while nobody is waiting for
+it?  The next time somebody tries to wait, won't the wait terminate
+immediately?
 
-> > The assumption is that there's a user space power manager that will first
-> > read from /sys/power/wakeup_count.  Then it will check all user space consumers
-> > of wakeup events known to it for unprocessed events.  If there are any, it will
-> > wait for them to be processed and repeat.  In turn, if there are not any,
-> > it will try to write to /sys/power/wakeup_count and if the write is successful,
-> > it will write to /sys/power/state to start suspend, so if any wakeup events
-> > accur past that point, they will be noticed by the kernel and will eventually
-> > cause the suspend to be aborted.
-> > 
-> > In addition to the above, the patch adds a wakeup events counter to the
-> > power member of struct device and makes these per-device wakeup event counters
-> > available via sysfs, so that it's possible to check the activity of various
-> > wakeup event sources within the kernel.
-> > 
-> > To illustrate how subsystems can use pm_wakeup_event(), I added it to the
-> > PCI runtime PM wakeup-handling code.
-> > 
-> > At the moment the patch only contains code changes (ie. no documentation),
-> > but I'm going to add comments etc. if people like the idea.
-> > 
-> > Please tell me what you think.
-> > 
-> > Rafael
-> > 
-> > ---
-> >  drivers/base/power/Makefile     |    2 -
-> >  drivers/base/power/main.c       |    1 
-> >  drivers/base/power/power.h      |    3 +
-> >  drivers/base/power/sysfs.c      |    9 ++++
-> >  drivers/base/power/wakeup.c     |   74 ++++++++++++++++++++++++++++++++++++++++
-> >  drivers/pci/pci-acpi.c          |    2 +
-> >  drivers/pci/pcie/pme/pcie_pme.c |    2 +
-> >  include/linux/pm.h              |    6 +++
-> >  kernel/power/hibernate.c        |   14 ++++---
-> >  kernel/power/main.c             |   24 ++++++++++++
-> >  kernel/power/power.h            |    6 +++
-> >  kernel/power/suspend.c          |    2 -
-> >  12 files changed, 138 insertions(+), 7 deletions(-)
-> > 
-> > Index: linux-2.6/kernel/power/main.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/power/main.c
-> > +++ linux-2.6/kernel/power/main.c
-> > @@ -204,6 +204,28 @@ static ssize_t state_store(struct kobjec
-> >  
-> >  power_attr(state);
-> >  
-> > +static ssize_t wakeup_count_show(struct kobject *kobj,
-> > +				struct kobj_attribute *attr,
-> > +				char *buf)
-> > +{
-> > +	return sprintf(buf, "%lu\n", pm_get_wakeup_count());
-> > +}
-> > +
-> > +static ssize_t wakeup_count_store(struct kobject *kobj,
-> > +				struct kobj_attribute *attr,
-> > +				const char *buf, size_t n)
-> > +{
-> > +	unsigned long val;
-> > +
-> > +	if (sscanf(buf, "%lu", &val) == 1) {
-> > +		if (pm_save_wakeup_count(val))
-> > +			return n;
-> > +	}
-> > +	return -EINVAL;
-> > +}
-> > +
-> > +power_attr(wakeup_count);
-> > +
-> >  #ifdef CONFIG_PM_TRACE
-> >  int pm_trace_enabled;
-> >  
-> > @@ -236,6 +258,7 @@ static struct attribute * g[] = {
-> >  #endif
-> >  #ifdef CONFIG_PM_SLEEP
-> >  	&pm_async_attr.attr,
-> > +	&wakeup_count_attr.attr,
-> >  #ifdef CONFIG_PM_DEBUG
-> >  	&pm_test_attr.attr,
-> >  #endif
-> > @@ -266,6 +289,7 @@ static int __init pm_init(void)
-> >  	int error = pm_start_workqueue();
-> >  	if (error)
-> >  		return error;
-> > +	pm_wakeup_events_init();
-> >  	power_kobj = kobject_create_and_add("power", NULL);
-> >  	if (!power_kobj)
-> >  		return -ENOMEM;
-> > Index: linux-2.6/drivers/base/power/wakeup.c
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6/drivers/base/power/wakeup.c
-> > @@ -0,0 +1,74 @@
-> > +
-> > +#include <linux/device.h>
-> > +#include <linux/pm.h>
-> > +
-> > +static unsigned long event_count;
-> > +static unsigned long saved_event_count;
+> Once done handling the event, the application then calls the ioctl
+> once again (bascially it polls the audio driver) to know the status of
+> the headset. The call is blocked until the headset status changes.
 > 
-> what about over flow issues?
-
-There's no issue AFAICS.  It only matters if the value is different from the
-previous one after incrementation.
-
-> > +static bool events_check_enabled;
-> > +static spinlock_t events_lock;
-> > +
-> > +void pm_wakeup_events_init(void)
-> > +{
-> > +	spin_lock_init(&events_lock);
-> > +}
-> > +
-> > +void pm_wakeup_event(struct device *dev)
-> > +{
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&events_lock, flags);
-> > +	event_count++;
-> should event_count be an atomic type so we can not bother with taking
-> the evnets_lock?
-
-The lock is there, because two counters are incremented at the same time.
-Also, in some other places the counter is accessed along with the enable
-flag, so there are two operations that need to be done in the same critical
-section.
-
-> > +	if (dev)
-> > +		dev->power.wakeup_count++;
-> > +	spin_unlock_irqrestore(&events_lock, flags);
-> > +}
-> > +
-> > +bool pm_check_wakeup_events(bool enable)
-> > +{
-> > +	unsigned long flags;
-> > +	bool ret;
-> > +
-> > +	spin_lock_irqsave(&events_lock, flags);
-> > +	ret = !events_check_enabled || (event_count == saved_event_count);
-> I'm not getting the events_check_enbled flag yet.
-
-I tells the PM core whether or not to check wakeup events during suspend.
-The checking is only enabled after a successful write to
-/sys/power/wakeup_count, it is disabled by reads and by the final check right
-before the system enters suspend.  [That's because the "saved" value from
-the previous suspend should not be used for checking wakeup events during
-the next one.]
-
-> > +	events_check_enabled = enable;
-> I'm not sure if this is the right thing depending on all the different
-> ways the boolians are interacting with eachother.
+> I am running the system on linux-2.6.29 on a OMAP1 based board. All
+> this works well when the OMAP is awake.
 > 
-> Which is a red flag to me.  This code is confusing.
+> The problem starts when we suspend the OMAP. The moment we suspend,
+> the wait_for_completion_interruptible is interrupted and the ioctl
+> returns.
 
-Well, I could use check_wakeup_events() and
-check_and_disable_wakeup_events() (the latter is only necessary for the final
-check), but I'm not sure if that's going to be better.
+Of course.  That's how processes that are blocked in the kernel are
+given a chance to enter the freezer.
 
-> I'll look at it some more when I'm fresh tomorrow.
+> Application ends up thinking that the headset was either
+> removed/inserted.
 
-Thanks for the comments.
+It should not think that.  There are other reasons why an ioctl might
+return early, such as a genuine signal or two status changes occurring
+before the ioctl starts (the next two ioctls will both return
+immediately, but the first one will contain the final status and the
+second won't contain any status change).
 
-Rafael
+For this to work correctly, the kernel should accumulate a bitmap of
+status changes as they occur.  When an ioctl returns, it should provide
+the bitmap of all the status changes that have occurred since the last
+ioctl (and it should clear the status-change bitmap) along with the
+current status.  Otherwise the application has no way to know about
+changes that occur between ioctl calls.
+
+> Our system does an aggressive sleep (wakes up every
+> 500 ms and sleeps again) and hence the application gets the event of
+> headset every 500 ms.
+
+What's wrong with that?  It should be smart enough to realize that most
+of these events aren't actual status changes.
+
+> I tried wait_for_completion instead, but now the kernel refuses to suspend.
+> 
+> I have tried wait queues and mutexs with no success.
+> 
+> Could anyone please point me how I can resolve this issue? Is there
+> any construct which can block inside the kernel during suspend/resume?
+
+Yes: The freezer.
+
+> Can there be a blocking call active while we suspend?
+
+Yes, in theory.  In practice it's not a good idea, since the call 
+wouldn't be able to distinguish between an actual signal and the onset 
+of a suspend.  You might end up with a call that ignores all signals 
+and hence cannot be interrupted.
+
+> Ideally I would resort to a method in which I would signal the process
+> when there is a headset event, but I am not free to change the
+> application. Its a legacy application and I have to make the kernel
+> work for it.
+
+It's not clear that anything needs to be fixed, except possibly the
+application.  Hint: See the SA_RESTART flag for sigaction(2).
+
+It also sounds like the application's design may be fundamentally
+broken.  Certain kinds of defects cannot be worked around in the
+kernel.
+
+Alan Stern
