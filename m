@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.35-rc3: Reported regressions from 2.6.34
-Date: Mon, 21 Jun 2010 20:56:08 +0200
-Message-ID: <201006212056.09000.rjw__47874.1474952132$1277146872$gmane$org@sisk.pl>
-References: <lc60d4toGTL.A.QzD._LpHMB@chimera>
-	<20100621135857.GA21159@elliptictech.com>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [PATCH] Two fixes for my mmc/sd cardreader
+Date: Mon, 21 Jun 2010 22:21:44 +0300
+Message-ID: <1277148104.4241.1.camel__12774.6169492186$1277148159$gmane$org@maxim-laptop>
+References: <1276809695.28201.13.camel@maxim-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100621135857.GA21159@elliptictech.com>
+In-Reply-To: <1276809695.28201.13.camel@maxim-laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,21 +17,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nick Bowler <nbowler@elliptictech.com>
-Cc: DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: linux-mmc <linux-mmc@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Philip Langdale <philipl@overt.org>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 21, 2010, Nick Bowler wrote:
-> On 00:11 Mon 21 Jun     , Rafael J. Wysocki wrote:
-> > If you know of any other unresolved regressions from 2.6.34, please let us
-> > know either and we'll add them to the list.  Also, please let us know
-> > if any of the entries below are invalid.
+On Fri, 2010-06-18 at 00:21 +0300, Maxim Levitsky wrote: 
+> Hi,
 > 
-> Didn't see this one in the list:
+> These are 2 fixes for my card reader.
 > 
->   Why is kslowd accumulating so much CPU time?
->   http://thread.gmane.org/gmane.linux.kernel/996907
-
-Thanks, I'm going to add it to the list.
-
-Rafael
+> 
+> First patch fixes old issue with system hand on suspend to disk/ram with
+> mmc card inserted.
+> I updated description, and pm notification registration order.
+> I think this patch can an should go to 2.6.35, because it fixes long
+> standing and nasty regression.
+> 
+> The second patch is a result of my work trying to understand why my card
+> reader sometimes dies on resume.
+> This reader has a special MMC function which steals MMC cards, and until
+> now had no driver. A way to disable it was found, and while it works, it
+> has (at least here) a side effect of killing the controller on resume
+> from ram/disk (and it happens often, and doesn't depend of whether card
+> was in slot or not during suspend).
+> 
+> Fortunately it turned out that MMC part is _almost_ standard SDHCI
+> controller.
+> This patch adds support for this device to standard sdhci driver.
+> Unfortunately, this support still contais small hack.
+> It waits 1/2 of a second on resume before initializing the controller.
+> Not doing so, and resuming with MMC card present results in confused
+> controller. It is not dead though. A card reinsert makes it work again
+> with all cards.
+> Yet the 1st patch is must for this because otherwise mmc core seeing
+> that controller doesn't respond, removes the card, therefore hangs the
+> system.
+> It doesn't happen when I wait these 1/2 of second though.
+> 
+> I think that this patch is also ok for 2.6.35, because it only adds new
+> functionality.
+> You are free to disable MMC controller using the same
+> CONFIG_MMC_RICOH_MMC.
+> 
+> If you don't disable it though, instead of full lack of functionality
+> you will get full featured MMC controller.
+> 
+> Best regards,
+> Maxim Levitsky
+> 
+> 
+> 
+ping
