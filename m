@@ -1,72 +1,149 @@
-From: Dipankar Sarma <dipankar@in.ibm.com>
-Subject: Re: [linux-pm] RFC: /sys/power/policy_preference
-Date: Tue, 22 Jun 2010 01:40:56 +0530
-Message-ID: <20100621201056.GE27750@in.ibm.com>
-References: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
-Reply-To: dipankar@in.ibm.com
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [PATCH 1/2] MMC: fix all hangs related to mmc/sd
+ card insert/removal during suspend/resume.
+Date: Mon, 21 Jun 2010 23:14:21 +0300
+Message-ID: <1277151261.5409.30.camel__41993.3792356916$1277151399$gmane$org@maxim-laptop>
+References: <1276809695.28201.13.camel@maxim-laptop>
+	<1276809814-28683-1-git-send-email-maximlevitsky@gmail.com>
+	<4C1FC5BC.20008@nokia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <4C1FC5BC.20008@nokia.com>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Cc: linux-mmc <linux-mmc@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Philip Langdale <philipl@overt.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 16, 2010 at 05:05:26PM -0400, Len Brown wrote:
-> Create /sys/power/policy_preference, giving user-space
-> the ability to express its preference for kernel based
-> power vs. performance decisions in a single place.
+On Mon, 2010-06-21 at 23:04 +0300, Adrian Hunter wrote: 
+> ext Maxim Levitsky wrote:
+> > If you don't use CONFIG_MMC_UNSAFE_RESUME, as soon as you attempt to
+> > suspend, the card will be removed, therefore this patch doesn't change
+> > the behavior of this option.
+> > 
+> > However the removal will be done by pm notifier, which runs while
+> > userspace is still not frozen and thus can freely use del_gendisk,
+> > without the risk of deadlock which would happen otherwise.
+> > 
+> > 
+> > Card detect workqueue is now freezeable,
+> > therefore if you do use CONFIG_MMC_UNSAFE_RESUME,
+> > and remove the card during suspend, the removal will be
+> > detected as soon as userspace is unfrozen, again at the moment
+> > it is safe to call del_gendisk.
+> > 
+> > Tested with and without CONFIG_MMC_UNSAFE_RESUME with suspend and hibernate.
+> > 
+> > Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+> > ---
+> >  drivers/mmc/core/core.c  |   54 +++++++++++++++++++++++++++------------------
+> >  drivers/mmc/core/host.c  |    6 +++++
+> >  include/linux/mmc/host.h |    3 ++
+> >  3 files changed, 41 insertions(+), 22 deletions(-)
+> > 
+> > diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+> > index 569e94d..0cba53a 100644
+> > --- a/drivers/mmc/core/core.c
+> > +++ b/drivers/mmc/core/core.c
+> > @@ -1259,26 +1259,11 @@ int mmc_suspend_host(struct mmc_host *host)
+> >  
+> >  	if (host->caps & MMC_CAP_DISABLE)
+> >  		cancel_delayed_work(&host->disable);
+> > -	cancel_delayed_work(&host->detect);
+> > -	mmc_flush_scheduled_work();
+> >  
+> >  	mmc_bus_get(host);
+> >  	if (host->bus_ops && !host->bus_dead) {
+> >  		if (host->bus_ops->suspend)
+> >  			err = host->bus_ops->suspend(host);
+> > -		if (err == -ENOSYS || !host->bus_ops->resume) {
+> > -			/*
+> > -			 * We simply "remove" the card in this case.
+> > -			 * It will be redetected on resume.
+> > -			 */
+> > -			if (host->bus_ops->remove)
+> > -				host->bus_ops->remove(host);
+> > -			mmc_claim_host(host);
+> > -			mmc_detach_bus(host);
+> > -			mmc_release_host(host);
+> > -			host->pm_flags = 0;
+> > -			err = 0;
+> > -		}
+> >  	}
+> >  	mmc_bus_put(host);
+> >  
+> > @@ -1310,12 +1295,6 @@ int mmc_resume_host(struct mmc_host *host)
+> >  			printk(KERN_WARNING "%s: error %d during resume "
+> >  					    "(card was removed?)\n",
+> >  					    mmc_hostname(host), err);
+> > -			if (host->bus_ops->remove)
+> > -				host->bus_ops->remove(host);
+> > -			mmc_claim_host(host);
+> > -			mmc_detach_bus(host);
+> > -			mmc_release_host(host);
+> > -			/* no need to bother upper layers */
+> >  			err = 0;
+> >  		}
+> >  	}
+> > @@ -1330,6 +1309,37 @@ int mmc_resume_host(struct mmc_host *host)
+> >  	return err;
+> >  }
+> >  
+> > +/* Do the card removal on suspend if card is assumed removeable
+> > + * Do that in pm notifier while userspace isn't yet frozen, so we will be able
+> > +   to sync the card.
+> > +*/
+> > +int mmc_pm_notify(struct notifier_block *notify_block,
+> > +					unsigned long mode, void *unused)
+> > +{
+> > +	struct mmc_host *host = container_of(
+> > +		notify_block, struct mmc_host, pm_notify);
+> > +
+> > +
+> > +	switch (mode) {
+> > +	case PM_HIBERNATION_PREPARE:
+> > +	case PM_SUSPEND_PREPARE:
+> > +
+> > +		if (!host->bus_ops || host->bus_ops->suspend)
+> > +			break;
+> > +
+> > +		if (host->bus_ops->remove)
+> > +			host->bus_ops->remove(host);
+> > +		mmc_claim_host(host);
+> > +		mmc_detach_bus(host);
+> > +		mmc_release_host(host);
+> > +		host->pm_flags = 0;
+> > +		break;
 > 
-> policy_preference has 5 levels, from max_performance
-> through max_powersave.  Here is how 4 parts of the kernel
-> might respond to those 5 levels:
-
-In theory this makes sense. We have been toying with something
-like this, but the difficulty is that outside of benchmarking
-environment, it is hard to figure out what mode to set when.
-Also, the impact could be different for different workloads.
-We should probably have a broader discussion around this
-with data - I will share some measurements on impact
-of such power modes.
-
-
-> max_performance (unwilling to sacrifice any performance)
-> 	scheduler: default (optimized for performance)
-> 	cpuidle: disable all C-states except polling mode
-> 	ondemand: disable all P-states except max perf
-> 	msr_ia32_energy_perf_bias: 0 of 15
-> 
-> performance (care primarily about performance)
-> 	scheduler: default (optimized for performance)
-> 	cpuidle: enable all C-states subject to QOS
-> 	ondemand: all P-states, using no bias
-> 	msr_ia32_energy_perf_bias: 3 of 15
-> 
-> balanced (default)
-> 	scheduler: enable sched_mc_power_savings
-> 	cpuidle: enable all C-states subject to QOS
-> 	ondemand: all P-states, powersave_bias=5
-> 	msr_ia32_energy_perf_bias: 7 of 15
-
-Would there be sufficient difference between performance
-and balanced ?
-
+> Is it possible that you receive PM_SUSPEND_PREPARE
+> but there is no suspend and therefore no resume
+> and therefore the card is removed but not detected
+> again?
+This is very good point.
+The solution is to kick mmc detection thread from this notifier.
+on resume.
+I update the patch.
 
 > 
-> powersave (can sacrifice measurable performance)
-> 	scheduler: enable sched_smt_power_savings
-> 	cpuidle: enable all C-states, subject to QOS
-> 	ondemand: disable turbo mode, powersave_bias=10
-> 	msr_ia32_energy_perf_bias: 11 of 15
-> 
-> max_powersave (can sacrifice significant performance)
-> 	scheduler: enable sched_smt_power_savings
-> 	cpuidle: enable all C-states, subject to QOS
-> 	ondemand: min P-state (do not invoke T-states)
-> 	msr_ia32_energy_perf_bias: 15 of 15
+> Is it possible that you are racing with kmmcd and the
+> card is added after you receive PM_SUSPEND_PREPARE but
+> before kmmcd is frozen?
+This is unlikely but valid race.
+I afraid I don't know nice way to solve it right now.
+I can add some ad-hoc variable to tell interrupt handler not to kick the
+detection workqueue after suspend notifier was called.
+
+I wish there was a generic freeze_workqueue function.
 
 
-Thanks
-Dipankar
+Best regards,
+Maxim Levitsky
