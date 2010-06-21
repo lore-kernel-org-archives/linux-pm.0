@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
 	suspend
-Date: Mon, 21 Jun 2010 23:58:05 +0200
-Message-ID: <201006212358.05755.rjw__2942.30851945958$1277157634$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1006202154260.29532-100000@netrider.rowland.org>
+Date: Mon, 21 Jun 2010 18:18:02 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006211814370.1687-100000__20148.4383120716$1277158733$gmane$org@iolanthe.rowland.org>
+References: <20100621223841.1cf1942d@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006202154260.29532-100000@netrider.rowland.org>
+In-Reply-To: <20100621223841.1cf1942d@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,74 +18,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Florian Mickler <florian@mickler.org>
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 21, 2010, Alan Stern wrote:
-> On Sun, 20 Jun 2010, Rafael J. Wysocki wrote:
-> 
-> > > > Generally, there are two problems in that area.  First, if a wakeup event
-> > > > occurs exactly at the same time when /sys/power/state is being written to,
-> > > > the even may be delivered to user space right before the freezing of it,
-> > > > in which case the user space consumer of the event may not be able to process
-> > > > it before the system is suspended.
-> > > 
-> > > Indeed, the same problem arises if the event isn't delivered to
-> > > userspace until after userspace is frozen.
-> > 
-> > In that case the kernel should abort the suspend so that the event can be
-> > delivered to the user space.
-> 
-> Yes.
-> 
-> > > Of course, the underlying issue here is that the kernel has no direct way
-> > > to know when userspace has finished processing an event.  Userspace would
-> > > have to tell it, which generally would mean rewriting some large number of user
-> > > programs.
-> > 
-> > I'm not sure of that.  If the kernel doesn't initiate suspend, it doesn't
-> > really need to know whether or not user space has already consumed the event.
-> 
-> That's true.  But it only shifts the onus: When a userspace program has 
-> finished processing an event, it has to tell the power-manager process.  
-> Clearly this sort of thing is unavoidable, one way or another.
+On Mon, 21 Jun 2010, Florian Mickler wrote:
 
-That's correct, but there already are multiple ways to communicate things
-between user space processes, while we would need new interfaces to
-pass that information between user space and the kernel.  That makes quite
-some difference.
-
-> > > > The following patch illustrates my idea of how these two problems may be
-> > > > addressed.  It introduces a new global sysfs attribute,
-> > > > /sys/power/wakeup_count, associated with a running counter of wakeup events
-> > > > and a helper function, pm_wakeup_event(), that may be used by kernel subsystems
-> > > > to increment the wakeup events counter.
-> > > 
-> > > In what way is this better than suspend blockers?
-> > 
-> > It doesn't add any new framework and it doesn't require the users of
-> > pm_wakeup_event() to "unblock" suspend, so it is simpler.  It also doesn't add
-> > the user space interface that caused so much opposition to appear.
+> > In the end you would want to have communication in both directions:  
+> > suspend blockers _and_ callbacks.  Polling is bad if done too often.  
+> > But I think the idea is a good one.
 > 
-> Okay.  A quick comparison shows that in your proposal:
+> Actually, I'm not so shure. 
 > 
-> 	There's no need to register and unregister suspend blockers.
-> 	But instead you create the equivalent of a suspend blocker
-> 	inside every struct device.
+> 1. you have to roundtrip whereas in the suspend_blocker scheme you have
+> active annotations (i.e. no further action needed) 
 
-Not really.  That thing is for statistics purposes only and it's not essential
-from the functionality POV.  But you know that. :-)
+That's why it's best to use both.  The normal case is that programs
+activate and deactivate blockers by sending one-way messages to the PM
+process.  The exceptional case is when the PM process is about to
+initiate a suspend; that's when it does the round-trip polling.  Since
+the only purpose of the polling is to avoid a race, 90% of the time it
+will succeed.
 
-> 	Drivers (or subsystems) don't have to activate suspend 
-> 	blockers.  But instead they have to call pm_wakeup_event().
->
-> 	Drivers don't have to deactivate suspend blockers.  You don't
-> 	have anything equivalent, and as a result your scheme is 
-> 	subject to the race described below.
+> 2. it may not be possible for a user to determine if a wake-event is
+> in-flight. you would have to somehow pass the wake-event-number with
+> it, so that the userspace process could ack it properly without
+> confusion. Or... I don't know of anything else... 
+> 
+> 	1. userspace-manager (UM) reads a number (42). 
+> 
+> 	2. it questions userspace program X: is it ok to suspend?
+> 
+> 	[please fill in how userspace program X determines to block
+> 	suspend]
+> 
+> 	3a. UM's roundtrip ends and it proceeds to write "42" to the
+> 	kernel [suspending]
+> 	3b. UM's roundtrip ends and it aborts suspend, because a
+> 	(userspace-)suspend-blocker got activated
+> 
+> I'm not shure how the userspace program could determine that there is a
+> wake-event in flight. Perhaps by storing the number of last wake-event.
+> But then you need per-wake-event-counters... :|
 
-The original one without user space variant of suspend blockers is subject to
-it as well, because the kernel doesn't know when the user space consumer is
-going to finish processing the event.
+Rafael seems to think timeouts will fix this.  I'm not so sure.
 
-Rafael
+> Do you have some thoughts about the wake-event-in-flight detection?
+
+Not really, except for something like the original wakelock scheme in
+which the kernel tells the PM core when an event is over.
+
+Alan Stern
