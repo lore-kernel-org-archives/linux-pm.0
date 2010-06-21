@@ -1,15 +1,14 @@
-From: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [PATCH 1/9] PM / Hibernate: swap,
-	switch to hibernate_io_handle
-Date: Tue, 22 Jun 2010 07:58:51 +1000
-Message-ID: <4C1FE09B.9040703__12810.2527153262$1277157621$gmane$org@crca.org.au>
-References: <1275468768-28229-1-git-send-email-jslaby@suse.cz>
-	<4C1205DC.1080200@crca.org.au> <4C1F8366.70306@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
+	suspend
+Date: Mon, 21 Jun 2010 23:58:05 +0200
+Message-ID: <201006212358.05755.rjw__2942.30851945958$1277157634$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1006202154260.29532-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C1F8366.70306@gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.1006202154260.29532-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +18,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Jiri.
+On Monday, June 21, 2010, Alan Stern wrote:
+> On Sun, 20 Jun 2010, Rafael J. Wysocki wrote:
+> 
+> > > > Generally, there are two problems in that area.  First, if a wakeup event
+> > > > occurs exactly at the same time when /sys/power/state is being written to,
+> > > > the even may be delivered to user space right before the freezing of it,
+> > > > in which case the user space consumer of the event may not be able to process
+> > > > it before the system is suspended.
+> > > 
+> > > Indeed, the same problem arises if the event isn't delivered to
+> > > userspace until after userspace is frozen.
+> > 
+> > In that case the kernel should abort the suspend so that the event can be
+> > delivered to the user space.
+> 
+> Yes.
+> 
+> > > Of course, the underlying issue here is that the kernel has no direct way
+> > > to know when userspace has finished processing an event.  Userspace would
+> > > have to tell it, which generally would mean rewriting some large number of user
+> > > programs.
+> > 
+> > I'm not sure of that.  If the kernel doesn't initiate suspend, it doesn't
+> > really need to know whether or not user space has already consumed the event.
+> 
+> That's true.  But it only shifts the onus: When a userspace program has 
+> finished processing an event, it has to tell the power-manager process.  
+> Clearly this sort of thing is unavoidable, one way or another.
 
-On 22/06/10 01:21, Jiri Slaby wrote:
-> On 06/11/2010 11:46 AM, Nigel Cunningham wrote:
->> On 02/06/10 18:52, Jiri Slaby wrote:
->>> I addressed the comments I got on the previous RFC. I left the handles
->>> in place, the functions in hibernate_io_ops now works on them. Further
->>> I got rid of the memory barriers and minimized global variables as much
->>> as possible. Comments welcome.
->>
->> I would like to hear the arguments for using these handles. I understand
->> there may have been some previous discussion, but am unable to find it.
->>
->> It seems far more sensible to me to not pass around a handle that
->> virtually nothing actually uses, and instead store and utilise the state
->> in the place where it is actually useful. If we had more than one struct
->> hibernate_io_handle in use at a time, I could understand going this way.
->> As it stands, however...
+That's correct, but there already are multiple ways to communicate things
+between user space processes, while we would need new interfaces to
+pass that information between user space and the kernel.  That makes quite
+some difference.
+
+> > > > The following patch illustrates my idea of how these two problems may be
+> > > > addressed.  It introduces a new global sysfs attribute,
+> > > > /sys/power/wakeup_count, associated with a running counter of wakeup events
+> > > > and a helper function, pm_wakeup_event(), that may be used by kernel subsystems
+> > > > to increment the wakeup events counter.
+> > > 
+> > > In what way is this better than suspend blockers?
+> > 
+> > It doesn't add any new framework and it doesn't require the users of
+> > pm_wakeup_event() to "unblock" suspend, so it is simpler.  It also doesn't add
+> > the user space interface that caused so much opposition to appear.
+> 
+> Okay.  A quick comparison shows that in your proposal:
+> 
+> 	There's no need to register and unregister suspend blockers.
+> 	But instead you create the equivalent of a suspend blocker
+> 	inside every struct device.
+
+Not really.  That thing is for statistics purposes only and it's not essential
+from the functionality POV.  But you know that. :-)
+
+> 	Drivers (or subsystems) don't have to activate suspend 
+> 	blockers.  But instead they have to call pm_wakeup_event().
 >
-> Hi, it I added that based on this: http://lkml.org/lkml/2010/3/24/458
+> 	Drivers don't have to deactivate suspend blockers.  You don't
+> 	have anything equivalent, and as a result your scheme is 
+> 	subject to the race described below.
 
-Okay; thanks.
+The original one without user space variant of suspend blockers is subject to
+it as well, because the kernel doesn't know when the user space consumer is
+going to finish processing the event.
 
-Looking at Pavel's comment is confusing. The variable you were adding 
-isn't "global static" (that's a contradiction in terms anyway). Its 
-scope is the file level.
-
-Since the data is only used in this file, your change makes perfect 
-sense to me.
-
-Rafael, Pavel: care to discuss this further?
-
-Nigel
+Rafael
