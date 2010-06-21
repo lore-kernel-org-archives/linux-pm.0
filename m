@@ -1,17 +1,16 @@
-From: mark gross <640e9920@gmail.com>
-Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
-	suspend
-Date: Sun, 20 Jun 2010 23:13:45 -0700
-Message-ID: <20100621061345.GF9735__43401.8912994818$1277100893$gmane$org@gvim.org>
-References: <201006202350.27143.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.1006202154260.29532-100000@netrider.rowland.org>
-Reply-To: markgross@thegnar.org
+From: Jerome Glisse <glisse@freedesktop.org>
+Subject: Re: [PATCH] DRM / radeon / PM: Do not evict VRAM during
+ freeze phase of hibernation
+Date: Mon, 21 Jun 2010 09:57:41 +0200
+Message-ID: <20100621075741.GB2350__13957.215115852$1277107167$gmane$org@barney.localdomain>
+References: <201006182221.57333.rjw@sisk.pl> <1276904995.6513.7.camel@t60prh>
+	<201006191453.58379.rjw@sisk.pl> <201006200143.06059.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1006202154260.29532-100000@netrider.rowland.org>
+In-Reply-To: <201006200143.06059.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,162 +20,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Dave Airlie <airlied@redhat.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jun 20, 2010 at 10:23:38PM -0400, Alan Stern wrote:
-> On Sun, 20 Jun 2010, Rafael J. Wysocki wrote:
-> 
-> > > > Generally, there are two problems in that area.  First, if a wakeup event
-> > > > occurs exactly at the same time when /sys/power/state is being written to,
-> > > > the even may be delivered to user space right before the freezing of it,
-> > > > in which case the user space consumer of the event may not be able to process
-> > > > it before the system is suspended.
+On Sun, Jun 20, 2010 at 01:43:05AM +0200, Rafael J. Wysocki wrote:
+> On Saturday, June 19, 2010, Rafael J. Wysocki wrote:
+> > On Saturday, June 19, 2010, Dave Airlie wrote:
+> > > On Sat, 2010-06-19 at 01:23 +0200, Rafael J. Wysocki wrote:
+> > > > On Friday, June 18, 2010, Dave Airlie wrote:
+> > > > > On Fri, 2010-06-18 at 22:21 +0200, Rafael J. Wysocki wrote:
+> > > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > > 
+> > > > > > I have recently noticed a 55 sec. delay during the "device freeze"
+> > > > > > phase of hibernation on my test-bed HP nx6325.  Due to the 100%
+> > > > > > reproducibility of it I was able to narrow it down to
+> > > > > > radeon_suspend_kms() and then it turned out that the delay occured
+> > > > > > somewhere in radeon_bo_evict_vram().  However, it doesn't seem really
+> > > > > > necessary or even very useful to me to evict VRAM at this particular
+> > > > > > point, because we're going to create an image and bring the device
+> > > > > > back to the fully functional state in a little while.  Thus, I think
+> > > > > > the VRAM evicition can be skipped for state.event == PM_EVENT_FREEZE,
+> > > > > > which makes the delay go away.
+> > > > > 
+> > > > > I'm not 100% sure of the hibernate sequencing and its early in the
+> > > > > morning, but we want to evict VRAM before image building so we can have
+> > > > > the contents of VRAM in the image so we can restore them on resume. Does
+> > > > > this just avoid evicting them a second time after we created the image?
+> > > > 
+> > > > No, it's the first time, before creating the image, but I didn't seen any
+> > > > difference on resume with and without the patch, so I thought it was a good
+> > > > idea. :-)
 > > > 
-> > > Indeed, the same problem arises if the event isn't delivered to
-> > > userspace until after userspace is frozen.
+> > > On the machine you have its most likely not going to show up unless you
+> > > are running a 3D app or something across suspend, since currently X
+> > > re-exposes most apps on VT switch, so they just redraw.
 > > 
-> > In that case the kernel should abort the suspend so that the event can be
-> > delivered to the user space.
-> 
-> Yes.
-> 
-> > > Of course, the underlying issue here is that the kernel has no direct way
-> > > to know when userspace has finished processing an event.  Userspace would
-> > > have to tell it, which generally would mean rewriting some large number of user
-> > > programs.
+> > Yes.  Moreover, hibernation is always done after a VT switch.  That's why
+> > I said I thought the eviction wasn't necessary in the changelog.
 > > 
-> > I'm not sure of that.  If the kernel doesn't initiate suspend, it doesn't
-> > really need to know whether or not user space has already consumed the event.
-> 
-> That's true.  But it only shifts the onus: When a userspace program has 
-> finished processing an event, it has to tell the power-manager process.  
-> Clearly this sort of thing is unavoidable, one way or another.
-> 
-> > > > The following patch illustrates my idea of how these two problems may be
-> > > > addressed.  It introduces a new global sysfs attribute,
-> > > > /sys/power/wakeup_count, associated with a running counter of wakeup events
-> > > > and a helper function, pm_wakeup_event(), that may be used by kernel subsystems
-> > > > to increment the wakeup events counter.
-> > > 
-> > > In what way is this better than suspend blockers?
+> > BTW, I have three different test boxes with radeon hardware and the
+> > $subject patch is not a problem on any of them.
 > > 
-> > It doesn't add any new framework and it doesn't require the users of
-> > pm_wakeup_event() to "unblock" suspend, so it is simpler.  It also doesn't add
-> > the user space interface that caused so much opposition to appear.
-> 
-> Okay.  A quick comparison shows that in your proposal:
-> 
-> 	There's no need to register and unregister suspend blockers.
-> 	But instead you create the equivalent of a suspend blocker
-> 	inside every struct device.
-> 
-> 	Drivers (or subsystems) don't have to activate suspend 
-> 	blockers.  But instead they have to call pm_wakeup_event().
-> 
-> 	Drivers don't have to deactivate suspend blockers.  You don't
-> 	have anything equivalent, and as a result your scheme is 
-> 	subject to the race described below.
-> 
-> 	There are no userspace suspend blockers and no opportunistic
-> 	suspend.  Instead a power-manager process takes care of 
-> 	initiating or preventing suspends as needed.
-> 
-> In short, you have eliminated the userspace part of the suspend blocker 
-> approach just as in some of the proposals posted earlier, and you have 
-> replaced the in-kernel suspend blockers with new data in struct device 
-> and a new PM API.  On the whole, it doesn't seem very different from 
-> the in-kernel part of suspend blockers.  The most notable difference is 
-> the name: pm_wake_event() vs. suspend_blocker_activate(), or whatever 
-> it ended up being called.
-> 
-> This is the race I was talking about:
-
-Your confused about what problem this patch attempts to solve.  There is
-a pm_qos patch in the works to address the suspend blocker
-functionality.
-http://lists.linux-foundation.org/pipermail/linux-pm/2010-June/026760.html
-
---mgross
-
-
-
-> 
-> > > What happens if an event arrives just before you read
-> > > /sys/power/wakeup_count, but the userspace consumer doesn't realize
-> > > there is a new unprocessed event until after the power manager checks
-> > > it?
-> 
-> > I think this is not the kernel's problem.  In this approach the kernel makes it
-> > possible for the user space to avoid the race.  Whether or not the user space
-> > will use this opportunity is a different matter.
-> 
-> It is _not_ possible for userspace to avoid this race.  Help from the 
-> kernel is needed.
-> 
-> > >  Your plan is missing a critical step: the "handoff" whereby 
-> > > responsibility for handling an event passes from the kernel to 
-> > > userspace.
-> 
-> > > With suspend blockers, this handoff occurs when an event queue is 
-> > > emptied and its associate suspend blocker is deactivated.  Or with some 
-> > > kinds of events for which the Android people have not written an 
-> > > explicit handoff, it occurs when a timer expires (timed suspend 
-> > > blockers).
+> > > Was it always this slow?
 > > 
-> > Well, quite frankly, I don't see any difference here.  In either case there is
-> > a possibility for user space to mess up things and the kernel can't really help
-> > that.
-> 
-> With suspend blockers, there is also the possibility for userspace to 
-> handle races correctly.  But with your scheme there isn't -- that's the 
-> difference.
-> 
-> > > This shares with the other alternatives posted recently the need for a
-> > > central power-manager process.  And like in-kernel suspend blockers, it
-> > > requires changes to wakeup-capable drivers (the wakeup-events counter
-> > > has to be incremented).
+> > Nope.  It definitely is a regression, although I'm not sure what's the last
+> > good kernel.
 > > 
-> > It doesn't really require changes to drivers, but to code that knows of wakeup
-> > events, like the PCI runtime wakeup code.
+> > > you can see how many objects are in vram using
+> > > debugfs (/sys/kernel/debug/dri/0/radeon_vram_mm), it sounds like the TTM
+> > > eviction process is blocking on something,
 > 
-> Just like in-kernel suspend blockers.
+> I did some more debug work (the _total_ lack of comments inside of the
+> relevant radeon and ttm code makes this a next-to-impossible task, though)
+> and found that all of the delays (up to 5 seconds) happen inside of
+> ttm_bo_move_accel_cleanup() called from radeon_move_blit(), where the "new"
+> memory type is TTL_PL_TT and the "old" one is TTL_PL_VRAM.  The preceding
+> radeon_copy() always returns 0.
 > 
-> >  Moreover, it doesn't require kernel
-> > subsystems to know or even care when it is reasonable to allow suspend to
-> > happen.  The only thing they need to do is to call pm_wakeup_event() whenever
-> > they see a wakeup event.
+> Please let me know if you need more information.
 > 
-> That's just semantics.  Obviously a wakeup event should prevent suspend
-> from happening, so if subsystems know or care about one then they know
-> or care about the other.
-> 
-> >  I don't really think it is too much of a requirement
-> > (and quite frnakly I can't imagine anything simpler than that).
-> 
-> This is because you have omitted the part about allowing suspends again
-> (or if you prefer, about notifying the PM core that a wakeup event has
-> been handed off to userspace).  As a result of leaving this out, you
-> haven't eliminated all the races.
-> 
-> > Yes, it does, but I have an idea about how to implement such a power manager
-> > and I'm going to actually try it.
-> 
-> A logical design would be to use dbus for disseminating PM-related 
-> information.  Does your idea work that way?
-> 
-> > I don't think any of the approaches that don't use suspend blockers allows
-> > one to avoid the race between the process that writes to /sys/power/state
-> > and a wakeup event happening at the same time.  They attempt to address another
-> > issue, which is how to prevent untrusted user space processes from keeping the
-> > system out of idle, but that is a different story.
-> 
-> Well, there was one approach that didn't use suspend blockers and did 
-> solve the race: the original wakelocks proposal.  Of course, that was 
-> just suspend blockers under a different name.  One could make a very 
-> good case that your scheme is also suspend blockers under a different 
-> name (and with an important part missing).
-> 
-> Alan Stern
-> 
+> Thanks,
+> Rafael
+
+Can you confirm that this is trigger by first radeon_bo_evict_vram in
+radeon_suspend_kms() ? Also can you check if irq is enabled (put some
+debug in the irq handler of your gpu). My guess is that irq are stop
+(likely stop before radeon suspend callback) and that we endup waiting
+that the fence timeout expire in radeon_fence_wait().
+
+Cheers,
+Jerome
