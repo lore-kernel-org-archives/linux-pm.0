@@ -1,16 +1,17 @@
-From: Jerome Glisse <glisse@freedesktop.org>
-Subject: Re: [PATCH] DRM / radeon / PM: Do not evict VRAM during
- freeze phase of hibernation
-Date: Mon, 21 Jun 2010 09:57:41 +0200
-Message-ID: <20100621075741.GB2350__13957.215115852$1277107167$gmane$org@barney.localdomain>
-References: <201006182221.57333.rjw@sisk.pl> <1276904995.6513.7.camel@t60prh>
-	<201006191453.58379.rjw@sisk.pl> <201006200143.06059.rjw@sisk.pl>
+From: tytso@mit.edu
+Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
+	suspend
+Date: Mon, 21 Jun 2010 08:10:58 -0400
+Message-ID: <20100621121058.GF6199__33295.051920186$1277122351$gmane$org@thunk.org>
+References: <201006202350.27143.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.1006202154260.29532-100000@netrider.rowland.org>
+	<20100621061345.GF9735@gvim.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201006200143.06059.rjw@sisk.pl>
+In-Reply-To: <20100621061345.GF9735@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,74 +21,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Dave Airlie <airlied@redhat.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>
+To: markgross@thegnar.org
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jun 20, 2010 at 01:43:05AM +0200, Rafael J. Wysocki wrote:
-> On Saturday, June 19, 2010, Rafael J. Wysocki wrote:
-> > On Saturday, June 19, 2010, Dave Airlie wrote:
-> > > On Sat, 2010-06-19 at 01:23 +0200, Rafael J. Wysocki wrote:
-> > > > On Friday, June 18, 2010, Dave Airlie wrote:
-> > > > > On Fri, 2010-06-18 at 22:21 +0200, Rafael J. Wysocki wrote:
-> > > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > > > 
-> > > > > > I have recently noticed a 55 sec. delay during the "device freeze"
-> > > > > > phase of hibernation on my test-bed HP nx6325.  Due to the 100%
-> > > > > > reproducibility of it I was able to narrow it down to
-> > > > > > radeon_suspend_kms() and then it turned out that the delay occured
-> > > > > > somewhere in radeon_bo_evict_vram().  However, it doesn't seem really
-> > > > > > necessary or even very useful to me to evict VRAM at this particular
-> > > > > > point, because we're going to create an image and bring the device
-> > > > > > back to the fully functional state in a little while.  Thus, I think
-> > > > > > the VRAM evicition can be skipped for state.event == PM_EVENT_FREEZE,
-> > > > > > which makes the delay go away.
-> > > > > 
-> > > > > I'm not 100% sure of the hibernate sequencing and its early in the
-> > > > > morning, but we want to evict VRAM before image building so we can have
-> > > > > the contents of VRAM in the image so we can restore them on resume. Does
-> > > > > this just avoid evicting them a second time after we created the image?
-> > > > 
-> > > > No, it's the first time, before creating the image, but I didn't seen any
-> > > > difference on resume with and without the patch, so I thought it was a good
-> > > > idea. :-)
-> > > 
-> > > On the machine you have its most likely not going to show up unless you
-> > > are running a 3D app or something across suspend, since currently X
-> > > re-exposes most apps on VT switch, so they just redraw.
-> > 
-> > Yes.  Moreover, hibernation is always done after a VT switch.  That's why
-> > I said I thought the eviction wasn't necessary in the changelog.
-> > 
-> > BTW, I have three different test boxes with radeon hardware and the
-> > $subject patch is not a problem on any of them.
-> > 
-> > > Was it always this slow?
-> > 
-> > Nope.  It definitely is a regression, although I'm not sure what's the last
-> > good kernel.
-> > 
-> > > you can see how many objects are in vram using
-> > > debugfs (/sys/kernel/debug/dri/0/radeon_vram_mm), it sounds like the TTM
-> > > eviction process is blocking on something,
-> 
-> I did some more debug work (the _total_ lack of comments inside of the
-> relevant radeon and ttm code makes this a next-to-impossible task, though)
-> and found that all of the delays (up to 5 seconds) happen inside of
-> ttm_bo_move_accel_cleanup() called from radeon_move_blit(), where the "new"
-> memory type is TTL_PL_TT and the "old" one is TTL_PL_VRAM.  The preceding
-> radeon_copy() always returns 0.
-> 
-> Please let me know if you need more information.
-> 
-> Thanks,
-> Rafael
+So where are we at this point?
 
-Can you confirm that this is trigger by first radeon_bo_evict_vram in
-radeon_suspend_kms() ? Also can you check if irq is enabled (put some
-debug in the irq handler of your gpu). My guess is that irq are stop
-(likely stop before radeon suspend callback) and that we endup waiting
-that the fence timeout expire in radeon_fence_wait().
+Discussion had completely died down for a while, and it's picked up
+again, but it's not clear to me that we're any closer to reaching
+consensus.
 
-Cheers,
-Jerome
+There's been one proposal that we simply merge in a set of no-op
+inline functions for suspend blockers, just so we can get let the
+drivers go in (assuming that Greg K-H believes this is still a
+problem), but with an automatical removal of N months (N to be
+decided, say 9 or 12 or 18 months).
+
+My concern is that if we do that, we will have simply kicked the ball
+down the road for N months.  Another approach is to simply merge in
+no-op functions and not leave any kind of deprecation schedule.
+That's sort of an implicit admission of the fact that we may not reach
+consensus on this issue.  Or we could simply ship the patches as-is to
+Linus after he gets back from vacation and ask him for a thumbs up or
+thumbs down vote, which might settle things once and for all.
+
+How do we go forward from here?
+
+					- Ted
