@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: David Brownell <david-b@pacbell.net>
 Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
 	suspend
-Date: Sun, 20 Jun 2010 22:33:01 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1006202223440.29532-100000__11537.352045025$1277087713$gmane$org@netrider.rowland.org>
-References: <20100620225810.GB9735@gvim.org>
+Date: Sun, 20 Jun 2010 21:04:22 -0700 (PDT)
+Message-ID: <799617.66764.qm@web180304.mail.gq1.yahoo.com>
+References: <Pine.LNX.4.44L0.1006202223440.29532-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100620225810.GB9735@gvim.org>
+In-Reply-To: <Pine.LNX.4.44L0.1006202223440.29532-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,66 +18,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: markgross@thegnar.org, Alan Stern <stern@rowland.harvard.edu>
+Cc: Neil Brown <neilb@suse.de>, linux-pm@lists.linux-foundation.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mark gross <640e9920@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 20 Jun 2010, mark gross wrote:
 
-> > Indeed, the same problem arises if the event isn't delivered to
-> > userspace until after userspace is frozen.  Of course, the underlying
-> > issue here is that the kernel has no direct way to know when userspace
-> > has finished processing an event.  Userspace would have to tell it,
-> > which generally would mean rewriting some large number of user
-> > programs.
-> 
-> Suspend blockers don't solve this, and the large number of user programs
-> isn't a big number.  /me thinks its 1 or 2 services.
+> > > Indeed, the same problem arises if the event
+> isn't delivered to
+> > > userspace until after userspace is frozen.
 
-On Android, perhaps.  What about on other systems?
+Can we put this more directly:  the problem is
+that the *SYSTEM ISN'T FULLY SUSPENDED* when the
+hardware wake event triggers?  (Where "*SYSTEM*
+includes userspace not just kernel.  In fact the
+overall system is built from many subsystems,
+some in the kernel and some in userspace.
 
-> > In what way is this better than suspend blockers?
-> 
-> 1) I don't think suspend blockers really solve or effectively articulate
-> the suspend wake event race problem.
+At the risk of being prematurely general:  I'd
+point out that these subsystems probably have
+sequencing requirements.  kernel-then-user is
+a degenerate case, and surely oversimplified.
+There are other examples, e.g. between kernel
+subsystems...  Like needing to suspend a PMIC
+before the bus it uses, where that bus uses
+a task to manage request/response protocols.
+(Think I2C or SPI.)
 
-Why not?
+This is like the __init/__exit sequencing mess...
 
-> 2) the partial solution suspend blocker offer for the suspend race is
-> tightly bound to the suspend blocker implementation and not useful in
-> more general contexts.
+In terms of userspace event delivery, I'd say
+it's a bug in the event mechanism if taking the
+next step in suspension drops any event.  It
+should be queued, not lost...  As a rule the
+hardware queuing works (transparently)...
 
-I don't understand.  Can you explain further?
+> Of course, the underlying
+> > > issue here is that the kernel has no direct way
+> to know when userspace
+> > > has finished processing an event.
 
-> > One advantage of the suspend-blocker approach is that it essentially
-> > uses a single tool to handle both kinds of races (event not fully
-> > handled by the kernel, or event not fully handled by userspace).  
-> > Things aren't quite this simple, because of the need for a special API
-> > to implement userspace suspend blockers, but this does avoid the need
-> > for a power-manager process.
-> 
-> I don't think suspend-blocker handles both kinds of races as well as you
-> seem to think.
 
-Can you give any counterexamples?
-
->  A single tool that conflates multiple kernel facilities
-> is not an advantage.  It limits applications outside of the scope of
-> doing it the "android way".
-
-I don't see that necessarily as a drawback.  You might just as well say
-that the entire Linux kernel limits applications to doing things the
-"Unix" way.  Often have fewer choices is an advantage.
-
-> Where do you get the idea that there isn't a need for a centralized PM
-> process in Android?  Thats not true.
-
-I didn't get that idea from anywhere.  Sorry if I gave the wrong
-impression -- I meant that non-Android systems would need to implement
-a centralized power-manager process, along with all the necessary
-changes to other programs.
-
-(Incidentally, even on Android the centralized PM process does not 
-handle _all_ of the userspace/kernel wakelock interactions.)
-
-Alan Stern
+Again said more directly:  there's no current
+mechanism to coordinate subsystems.  Userspace
+can't communicate "I'm ready" to kernel, and
+vice versa.  (a few decades ago, APM could do
+that ... we dropped such mechanisms though, and
+I'm fairly sure APM's implementation was holey.)
