@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
- suspend
-Date: Mon, 21 Jun 2010 11:06:27 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1006211055090.1687-100000__11767.0107553296$1277133099$gmane$org@iolanthe.rowland.org>
-References: <799617.66764.qm@web180304.mail.gq1.yahoo.com>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH 1/9] PM / Hibernate: swap,
+	switch to hibernate_io_handle
+Date: Mon, 21 Jun 2010 17:21:10 +0200
+Message-ID: <4C1F8366.70306__21663.8072314256$1277133815$gmane$org@gmail.com>
+References: <1275468768-28229-1-git-send-email-jslaby@suse.cz>
+	<4C1205DC.1080200@crca.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <799617.66764.qm@web180304.mail.gq1.yahoo.com>
+In-Reply-To: <4C1205DC.1080200@crca.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,78 +19,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: mark gross <640e9920@gmail.com>, markgross@thegnar.org, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 20 Jun 2010, David Brownell wrote:
-
-> Can we put this more directly:  the problem is
-> that the *SYSTEM ISN'T FULLY SUSPENDED* when the
-> hardware wake event triggers?  (Where "*SYSTEM*
-> includes userspace not just kernel.  In fact the
-> overall system is built from many subsystems,
-> some in the kernel and some in userspace.
-
-Indeed, the system may not even be partially suspended when the wake 
-event triggers.
-
-> At the risk of being prematurely general:  I'd
-> point out that these subsystems probably have
-> sequencing requirements.  kernel-then-user is
-> a degenerate case, and surely oversimplified.
-> There are other examples, e.g. between kernel
-> subsystems...  Like needing to suspend a PMIC
-> before the bus it uses, where that bus uses
-> a task to manage request/response protocols.
-> (Think I2C or SPI.)
+On 06/11/2010 11:46 AM, Nigel Cunningham wrote:
+> On 02/06/10 18:52, Jiri Slaby wrote:
+>> I addressed the comments I got on the previous RFC. I left the handles
+>> in place, the functions in hibernate_io_ops now works on them. Further
+>> I got rid of the memory barriers and minimized global variables as much
+>> as possible. Comments welcome.
 > 
-> This is like the __init/__exit sequencing mess...
+> I would like to hear the arguments for using these handles. I understand
+> there may have been some previous discussion, but am unable to find it.
 > 
-> In terms of userspace event delivery, I'd say
-> it's a bug in the event mechanism if taking the
-> next step in suspension drops any event.  It
-> should be queued, not lost...  As a rule the
-> hardware queuing works (transparently)...
+> It seems far more sensible to me to not pass around a handle that
+> virtually nothing actually uses, and instead store and utilise the state
+> in the place where it is actually useful. If we had more than one struct
+> hibernate_io_handle in use at a time, I could understand going this way.
+> As it stands, however...
 
-There may be a misunderstanding here...  People talk about events
-getting lost, but what they (usually) mean is that the event isn't
-actually _dropped_ -- rather, it fails to trigger a wakeup or to
-prevent a suspend.  When something else causes the system to resume
-later on, the event will be delivered normally.
+Hi, it I added that based on this: http://lkml.org/lkml/2010/3/24/458
 
-This means that the problem is not one of sequencing.  The problem is 
-twofold:
-
-	To recognize when a wakeup event has occurred and therefore
-	it is not now safe to allow the system to suspend;
-
-	And to recognize when a wakeup event has been completely
-	handled and therefore it is once again safe to allow the system 
-	to suspend.
-
-> > Of course, the underlying
-> > > > issue here is that the kernel has no direct way
-> > to know when userspace
-> > > > has finished processing an event.
-> 
-> 
-> Again said more directly:  there's no current
-> mechanism to coordinate subsystems.  Userspace
-> can't communicate "I'm ready" to kernel, and
-> vice versa.  (a few decades ago, APM could do
-> that ... we dropped such mechanisms though, and
-> I'm fairly sure APM's implementation was holey.)
-
-Yes, that's a better way of putting it.  And it's not just a matter of
-"userspace communicating with the kernel", because userspace is not
-monolithic.  There has to be a way for one user process to communicate
-this information to another (I like Florian's idea).  Of course, the
-kernel doesn't have to worry about those details.
-
-If one accepts a scheme in which all the suspend initiations and
-cancellations are carried out by a single process (a power-manager
-process), then the difficulties of communication and coordination
-between the kernel and userspace are minimized.
-
-Alan Stern
+-- 
+js
