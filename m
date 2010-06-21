@@ -1,15 +1,14 @@
-From: Dave Airlie <airlied@redhat.com>
-Subject: Re: [PATCH] DRM / radeon / PM: Do not evict VRAM during
- freeze phase of hibernation
-Date: Sat, 19 Jun 2010 09:49:55 +1000
-Message-ID: <1276904995.6513.7.camel__39308.7282930084$1277134572$gmane$org@t60prh>
-References: <201006182221.57333.rjw@sisk.pl>
-	<1276895296.6513.3.camel@t60prh>  <201006190123.00694.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
+	suspend
+Date: Mon, 21 Jun 2010 11:57:21 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006211125470.1687-100000__45123.7898356796$1277135912$gmane$org@iolanthe.rowland.org>
+References: <20100621055522.GE9735@gvim.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006190123.00694.rjw@sisk.pl>
+In-Reply-To: <20100621055522.GE9735@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,44 +18,141 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ondrej Zary <linux@rainbow-software.org>, linux-kernel@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Alex Deucher <alexdeucher@gmail.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: markgross@thegnar.org
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2010-06-19 at 01:23 +0200, Rafael J. Wysocki wrote:
-> On Friday, June 18, 2010, Dave Airlie wrote:
-> > On Fri, 2010-06-18 at 22:21 +0200, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > I have recently noticed a 55 sec. delay during the "device freeze"
-> > > phase of hibernation on my test-bed HP nx6325.  Due to the 100%
-> > > reproducibility of it I was able to narrow it down to
-> > > radeon_suspend_kms() and then it turned out that the delay occured
-> > > somewhere in radeon_bo_evict_vram().  However, it doesn't seem really
-> > > necessary or even very useful to me to evict VRAM at this particular
-> > > point, because we're going to create an image and bring the device
-> > > back to the fully functional state in a little while.  Thus, I think
-> > > the VRAM evicition can be skipped for state.event == PM_EVENT_FREEZE,
-> > > which makes the delay go away.
+On Sun, 20 Jun 2010, mark gross wrote:
+
+> > > 1) I don't think suspend blockers really solve or effectively articulate
+> > > the suspend wake event race problem.
 > > 
-> > I'm not 100% sure of the hibernate sequencing and its early in the
-> > morning, but we want to evict VRAM before image building so we can have
-> > the contents of VRAM in the image so we can restore them on resume. Does
-> > this just avoid evicting them a second time after we created the image?
+> > Why not?
 > 
-> No, it's the first time, before creating the image, but I didn't seen any
-> difference on resume with and without the patch, so I thought it was a good
-> idea. :-)
+> For starters the suspend block patch is about suspend blocking, at least
+> at first before competing ideas starting coming out and this race issue
+> was offered up as an excuse to not consider the alternative ideas, then
+> suddenly suspend blocking became a wake event notification mechanism
+> implementation that was baked into the implementation.  The arguments
+> are still a blur and irritating to recall / look up again.
 
-On the machine you have its most likely not going to show up unless you
-are running a 3D app or something across suspend, since currently X
-re-exposes most apps on VT switch, so they just redraw.
+I get the feeling you didn't fully absorb the intent of the original
+wakelock patches.  Right from the start they were about fixing a race
+in system suspend: The system may go to sleep even though a pending
+wakeup event should have blocked or prevented the suspend.  In
+particular that means notifying the PM core about wakeup events, when
+they occur, and when the system may once again be allowed to suspend.
 
-Was it always this slow? you can see how many objects are in vram using
-debugfs (/sys/kernel/debug/dri/0/radeon_vram_mm), it sounds like the TTM
-eviction process is blocking on something, we shouldn't be using any
-UC/WC memory on that machine so I can't imagine the new pool allocator
-stuff would get in the way. Maybe its the lack of GFP_USER, (Jerome
-posted a patch).
+The userspace parts of the original patches did cloud the issue,
+admittedly.  But the purpose of the in-kernel parts has always been
+clear.
 
-Dave.
+> But, the point I'm trying to make is that wake event serialization /
+> event handling suddenly became a big FUD-pie tightly bound to a specific
+> feature for suspend blocking (or was is auto suspending?  Its a magical
+> solution to all the PM problems in the kernel.  I'm being sarcastic.)  
+> 
+> Its much better to call out the issue and provide a clean targeted
+> solution to it without binding it to some other solution to a different
+> problem.
+
+That's exactly what the wakelock patches did:  They called out the
+issue of the system suspending even while there were pending wakeup
+events, they provided a targeted solution, and it wasn't bound to
+another solution to a different problem.
+
+Indeed, if you go back through the (I agree, irritating) threads on
+this topic, you'll see that the FUD and other issues were all
+introduced by other kernel developers, mainly because they didn't like
+the idea of using system suspend as a mechanism for dynamic power
+management.
+
+> > > I don't think suspend-blocker handles both kinds of races as well as you
+> > > seem to think.
+> > 
+> > Can you give any counterexamples?
+> 
+> I knew you'd ask such a thing.  Do you have any correctness proofs of it
+> working right?
+
+If you want, sure.  But what you think "working right" means may not be 
+the same as what I think.
+
+> Lets consider the RIL incoming call race:
+
+"RIL"?
+
+> 1) user mode initiates an "opportunistic suspend" or whatever we call
+> this these days by writing to some sys interface.
+
+Okay.
+
+> 2) a call comes in (multi-threaded cpu) just after the write.
+
+Right.  Presumably we want the suspend to be delayed until the call 
+can be handled by a user programm, yes?
+
+> 3) the caif driver grabs a blocker, stopping the in flight suspend in the
+> nick of time.  But, when should it release it without racing?  How does
+> one implement that kernel code such that its portable to non-android user
+> mode stacks? 
+
+I don't know anything about the caif driver so I can't answer this
+question in detail.  Here's the general idea: Somehow the kernel has to
+notify userspace that an incoming call has arrived.  Whatever driver or
+subsystem sends that notification should release the suspend blocker
+once userspace indicates that the notification has been received (for
+example, by reading all the data in an input event queue).  That's true
+for both Android and non-Android.
+
+In some cases there may not be any mechanism for userspace to tell the 
+kernel when a notification has been received.  For thoses cases, the 
+Android people used timer-based blockers.  This is not necessarily the 
+best approach but they seem happy with it.  Others might prefer to add 
+an explicit "notification received" mechanism.
+
+Still others take the view that since suspends are initiated by 
+userspace anyway, it's not necessary to tell the kernel when suspend is 
+safe again.  Just tell the user process responsible for initiating 
+suspends.
+
+> > >  A single tool that conflates multiple kernel facilities
+> > > is not an advantage.  It limits applications outside of the scope of
+> > > doing it the "android way".
+> > 
+> > I don't see that necessarily as a drawback.  You might just as well say
+> > that the entire Linux kernel limits applications to doing things the
+> > "Unix" way.  Often have fewer choices is an advantage.
+> 
+> I disagree with your analogy.  One problem one solution with minimal
+> coupling to other implementation details is nice.  Two problems with one
+> solution dependent on the system wide architecture bound to a user mode
+> PM design is fragile and not portable.
+
+I assume the "two problems" you refer to are: telling the PM core that 
+the kernel has a wakeup event in progress, and telling the PM core that 
+userspace has a wakeup event in progress.  To me these don't seem to be 
+vastly different problems, and having a single solution for both 
+doesn't seem out of line.
+
+The fact that this is bound to a user-mode PM design was inevitable, 
+given the whole idea was to overcome weaknesses in the system suspend 
+implementation and that implementation already is driven by userspace.
+
+> > (Incidentally, even on Android the centralized PM process does not 
+> > handle _all_ of the userspace/kernel wakelock interactions.)
+> >
+> 
+> Yeah, I've been told that too.  I've grepped for where the wake_unlock
+> sysfs interfaces are hit from user mode android (eclair) and I would
+> like some help in identifying those guys. Maybe its in the FroYo code I
+> don't get to look at yet?
+> 
+> There is libhardware_legacy/power/power.c and  an out of tree kernel
+> broadcom bcm4329 driver under hardware/broadcom but that doesn't count
+> as it looks like a kernel driver to me.
+
+I don't know -- I have never looked at the Android userspace.  No doubt 
+Arve can provide some examples.
+
+Alan Stern
