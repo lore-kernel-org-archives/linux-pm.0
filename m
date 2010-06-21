@@ -2,7 +2,7 @@ From: Florian Mickler <florian@mickler.org>
 Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
 	suspend
 Date: Mon, 21 Jun 2010 14:26:58 +0200
-Message-ID: <20100621142658.365493ae__9163.31216362796$1277123396$gmane$org@schatten.dmk.lab>
+Message-ID: <20100621142658.365493ae__792.081320151006$1277123506$gmane$org@schatten.dmk.lab>
 References: <201006202350.27143.rjw@sisk.pl>
 	<Pine.LNX.4.44L0.1006202154260.29532-100000@netrider.rowland.org>
 	<20100621061345.GF9735@gvim.org> <20100621121058.GF6199@thunk.org>
@@ -21,8 +21,8 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: tytso@mit.edu, Linux-pm@smtp1.linux-foundation.org, mark gross <640e9920@gmail.com>, markgross@thegnar.org, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.osdl.org
+Cc: linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 On Mon, 21 Jun 2010 13:22:34 +0100
