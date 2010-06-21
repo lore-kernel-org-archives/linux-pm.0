@@ -1,14 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
 	suspend
-Date: Mon, 21 Jun 2010 12:01:09 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1006211158200.1687-100000__24131.7472573884$1277136196$gmane$org@iolanthe.rowland.org>
-References: <20100621061345.GF9735@gvim.org>
+Date: Mon, 21 Jun 2010 12:54:44 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006211244140.1687-100000__40120.5579554245$1277139336$gmane$org@iolanthe.rowland.org>
+References: <20100621073233.3f874ad0@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100621061345.GF9735@gvim.org>
+In-Reply-To: <20100621073233.3f874ad0@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,25 +18,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
+To: Florian Mickler <florian@mickler.org>
 Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 20 Jun 2010, mark gross wrote:
+On Mon, 21 Jun 2010, Florian Mickler wrote:
 
-> Your confused about what problem this patch attempts to solve.
+> > > > What happens if an event arrives just before you read
+> > > > /sys/power/wakeup_count, but the userspace consumer doesn't realize
+> > > > there is a new unprocessed event until after the power manager checks
+> > > > it?
+> > 
+> > > I think this is not the kernel's problem.  In this approach the kernel makes it
+> > > possible for the user space to avoid the race.  Whether or not the user space
+> > > will use this opportunity is a different matter.
+> > 
+> > It is _not_ possible for userspace to avoid this race.  Help from the 
+> > kernel is needed.
+> 
+> It is possible if every (relevant) userspace program implements a
+> callback for the powermanager to check if one of it's wakeup-sources
+> got activated.
+> 
+> That way the powermanager would read /sys/power/wakeup_count, then do
+> the roundtrip to all it's registered users and only then suspend. 
 
-I don't think so.  Rafael's description was pretty clear.
+After further thought, there's still a race:
 
->  There is
-> a pm_qos patch in the works to address the suspend blocker
-> functionality.
-> http://lists.linux-foundation.org/pipermail/linux-pm/2010-June/026760.html
+	A wakeup event arrives.
 
-No.  That patch addresses something _similar_ to the suspend blocker
-functionality.  The fact remains, though, that pm_qos is not used
-during system suspend (the /sys/power/state interface), hence changes
-to pm_qos won't solve the system-suspend problems that suspend blockers 
-do solve.
+	The kernel increments /sys/power/wakeup_count and starts
+	processing the event.
+
+	The power-manager process reads /sys/power/wakeup_count.
+
+	The power-manager process polls the relevant programs and
+	they all say no events are pending.
+
+	The power-manager process successfully writes 
+	/sys/power/wakeup_count.
+
+	The power-manager process initiates a suspend.
+
+	...  Hours later ...
+
+	The system wakes up.
+
+	The kernel finishes its internal processing of the event and
+	sends a notification to a user program.
+
+The problem here is that the power-manager process can't tell when the
+kernel has finished processing an event.  This is true both for events
+that need to propagate to userspace and for events that are handled
+entirely by the kernel.
+
+This is a reflection of the two distinct pieces of information that we 
+need to keep track of:
+
+	A wakeup event has arrived, so it's no longer safe to suspend.
+
+	Wakeup events are no longer pending, so it's once again
+	safe to suspend.
+
+The wakeup_count interface tracks the first, but in this scheme nothing 
+tracks the second.
 
 Alan Stern
