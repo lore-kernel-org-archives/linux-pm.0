@@ -1,17 +1,14 @@
-From: mark gross <640e9920@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
 	suspend
-Date: Sun, 20 Jun 2010 16:13:42 -0700
-Message-ID: <20100620231342.GC9735__19093.5627594174$1277075659$gmane$org@gvim.org>
-References: <201006200005.35771.rjw@sisk.pl> <20100620055254.GA21994@gvim.org>
-	<201006201449.14754.rjw@sisk.pl>
-Reply-To: markgross@thegnar.org
+Date: Sun, 20 Jun 2010 22:23:38 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006202154260.29532-100000__40126.2077539743$1277087161$gmane$org@netrider.rowland.org>
+References: <201006202350.27143.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201006201449.14754.rjw@sisk.pl>
+In-Reply-To: <201006202350.27143.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,245 +19,149 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: mark gross <640e9920@gmail.com>, markgross@thegnar.org, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jun 20, 2010 at 02:49:14PM +0200, Rafael J. Wysocki wrote:
-> On Sunday, June 20, 2010, mark gross wrote:
-> > On Sun, Jun 20, 2010 at 12:05:35AM +0200, Rafael J. Wysocki wrote:
-> > > Hi,
-> > > 
-> > > One of the arguments during the suspend blockers discussion was that the
-> > > mainline kernel didn't contain any mechanisms allowing it to avoid losing
-> > > wakeup events during system suspend.
-> > > 
+On Sun, 20 Jun 2010, Rafael J. Wysocki wrote:
+
 > > > Generally, there are two problems in that area.  First, if a wakeup event
 > > > occurs exactly at the same time when /sys/power/state is being written to,
 > > > the even may be delivered to user space right before the freezing of it,
 > > > in which case the user space consumer of the event may not be able to process
-> > yes this is racy.  souldn't the wakeup event handers/driver force a user
-> > mode ACK before they stop failing suspend attempts? 
-> 
-> I'm not sure what you mean.  There are wake-up events without any user space
-> consumers, like wake-on-LAN.
-
-I was thinking about the incoming call scenario.  The 3G modem starts
-ringing and the we don't want the suspend to happen again until user
-mode ACKs the call (answer or ignore)
-
-however; you are right about events without user mode consumers.  I
-forgot about those.
- 
-> > > it before the system is suspended.  Second, if a wakeup event occurs after user
-> > > space has been frozen and that event is not a wakeup interrupt, the kernel will
-> > > not react to it and the system will be suspended.
+> > > it before the system is suspended.
 > > 
-> > If its not a wakeup interrupt is it not fair to allow the suspend to
-> > happen even if its handler's are "in flight" at suspend time?
+> > Indeed, the same problem arises if the event isn't delivered to
+> > userspace until after userspace is frozen.
 > 
-> A wakeup event need not be an interrupt, or at least there are interrupts that
-> have other meanings, like ACPI SCI.
+> In that case the kernel should abort the suspend so that the event can be
+> delivered to the user space.
 
-true, but who desides if such a thing is a wakeup event?  And how does
-that polocy get generalized in a platform portable way?
+Yes.
 
-(I don't think this is an issue for this current patch, its just a
-nagging issue to me in general with all this PM stuff)
+> > Of course, the underlying issue here is that the kernel has no direct way
+> > to know when userspace has finished processing an event.  Userspace would
+> > have to tell it, which generally would mean rewriting some large number of user
+> > programs.
+> 
+> I'm not sure of that.  If the kernel doesn't initiate suspend, it doesn't
+> really need to know whether or not user space has already consumed the event.
 
+That's true.  But it only shifts the onus: When a userspace program has 
+finished processing an event, it has to tell the power-manager process.  
+Clearly this sort of thing is unavoidable, one way or another.
 
 > > > The following patch illustrates my idea of how these two problems may be
 > > > addressed.  It introduces a new global sysfs attribute,
 > > > /sys/power/wakeup_count, associated with a running counter of wakeup events
 > > > and a helper function, pm_wakeup_event(), that may be used by kernel subsystems
 > > > to increment the wakeup events counter.
-> > > 
-> > > /sys/power/wakeup_count may be read from or written to by user space.  Reads
-> > > will always succeed and return the current value of the wakeup events counter.
-> > > Writes, however, will only succeed if the written number is equal to the
-> > > current value of the wakeup events counter.  If a write is successful, it will
-> > > cause the kernel to save the current value of the wakeup events counter and
-> > > to compare the saved number with the current value of the counter at certain
-> > > points of the subsequent suspend (or hibernate) sequence.  If the two values
-> > > don't match, the suspend will be aborted just as though a wakeup interrupt
-> > > happened.  Reading from /sys/power/wakeup_count again will turn that mechanism
-> > > off.
 > > 
-> > why would you want to turn it off?
+> > In what way is this better than suspend blockers?
 > 
-> In some cases I may want to suspend/hibernate losing some wakeup events,
-> like for example in the case of emergency hibernation on critical battery.
+> It doesn't add any new framework and it doesn't require the users of
+> pm_wakeup_event() to "unblock" suspend, so it is simpler.  It also doesn't add
+> the user space interface that caused so much opposition to appear.
 
-Or a user directed explicit suspend request.  your right.
- 
-> > > The assumption is that there's a user space power manager that will first
-> > > read from /sys/power/wakeup_count.  Then it will check all user space consumers
-> > > of wakeup events known to it for unprocessed events.  If there are any, it will
-> > > wait for them to be processed and repeat.  In turn, if there are not any,
-> > > it will try to write to /sys/power/wakeup_count and if the write is successful,
-> > > it will write to /sys/power/state to start suspend, so if any wakeup events
-> > > accur past that point, they will be noticed by the kernel and will eventually
-> > > cause the suspend to be aborted.
-> > > 
-> > > In addition to the above, the patch adds a wakeup events counter to the
-> > > power member of struct device and makes these per-device wakeup event counters
-> > > available via sysfs, so that it's possible to check the activity of various
-> > > wakeup event sources within the kernel.
-> > > 
-> > > To illustrate how subsystems can use pm_wakeup_event(), I added it to the
-> > > PCI runtime PM wakeup-handling code.
-> > > 
-> > > At the moment the patch only contains code changes (ie. no documentation),
-> > > but I'm going to add comments etc. if people like the idea.
-> > > 
-> > > Please tell me what you think.
-> > > 
-> > > Rafael
-> > > 
-> > > ---
-> > >  drivers/base/power/Makefile     |    2 -
-> > >  drivers/base/power/main.c       |    1 
-> > >  drivers/base/power/power.h      |    3 +
-> > >  drivers/base/power/sysfs.c      |    9 ++++
-> > >  drivers/base/power/wakeup.c     |   74 ++++++++++++++++++++++++++++++++++++++++
-> > >  drivers/pci/pci-acpi.c          |    2 +
-> > >  drivers/pci/pcie/pme/pcie_pme.c |    2 +
-> > >  include/linux/pm.h              |    6 +++
-> > >  kernel/power/hibernate.c        |   14 ++++---
-> > >  kernel/power/main.c             |   24 ++++++++++++
-> > >  kernel/power/power.h            |    6 +++
-> > >  kernel/power/suspend.c          |    2 -
-> > >  12 files changed, 138 insertions(+), 7 deletions(-)
-> > > 
-> > > Index: linux-2.6/kernel/power/main.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/kernel/power/main.c
-> > > +++ linux-2.6/kernel/power/main.c
-> > > @@ -204,6 +204,28 @@ static ssize_t state_store(struct kobjec
-> > >  
-> > >  power_attr(state);
-> > >  
-> > > +static ssize_t wakeup_count_show(struct kobject *kobj,
-> > > +				struct kobj_attribute *attr,
-> > > +				char *buf)
-> > > +{
-> > > +	return sprintf(buf, "%lu\n", pm_get_wakeup_count());
-> > > +}
-> > > +
-> > > +static ssize_t wakeup_count_store(struct kobject *kobj,
-> > > +				struct kobj_attribute *attr,
-> > > +				const char *buf, size_t n)
-> > > +{
-> > > +	unsigned long val;
-> > > +
-> > > +	if (sscanf(buf, "%lu", &val) == 1) {
-> > > +		if (pm_save_wakeup_count(val))
-> > > +			return n;
-> > > +	}
-> > > +	return -EINVAL;
-> > > +}
-> > > +
-> > > +power_attr(wakeup_count);
-> > > +
-> > >  #ifdef CONFIG_PM_TRACE
-> > >  int pm_trace_enabled;
-> > >  
-> > > @@ -236,6 +258,7 @@ static struct attribute * g[] = {
-> > >  #endif
-> > >  #ifdef CONFIG_PM_SLEEP
-> > >  	&pm_async_attr.attr,
-> > > +	&wakeup_count_attr.attr,
-> > >  #ifdef CONFIG_PM_DEBUG
-> > >  	&pm_test_attr.attr,
-> > >  #endif
-> > > @@ -266,6 +289,7 @@ static int __init pm_init(void)
-> > >  	int error = pm_start_workqueue();
-> > >  	if (error)
-> > >  		return error;
-> > > +	pm_wakeup_events_init();
-> > >  	power_kobj = kobject_create_and_add("power", NULL);
-> > >  	if (!power_kobj)
-> > >  		return -ENOMEM;
-> > > Index: linux-2.6/drivers/base/power/wakeup.c
-> > > ===================================================================
-> > > --- /dev/null
-> > > +++ linux-2.6/drivers/base/power/wakeup.c
-> > > @@ -0,0 +1,74 @@
-> > > +
-> > > +#include <linux/device.h>
-> > > +#include <linux/pm.h>
-> > > +
-> > > +static unsigned long event_count;
-> > > +static unsigned long saved_event_count;
-> > 
-> > what about over flow issues?
-> 
-> There's no issue AFAICS.  It only matters if the value is different from the
-> previous one after incrementation.
-> 
-> > > +static bool events_check_enabled;
-> > > +static spinlock_t events_lock;
-> > > +
-> > > +void pm_wakeup_events_init(void)
-> > > +{
-> > > +	spin_lock_init(&events_lock);
-> > > +}
-> > > +
-> > > +void pm_wakeup_event(struct device *dev)
-> > > +{
-> > > +	unsigned long flags;
-> > > +
-> > > +	spin_lock_irqsave(&events_lock, flags);
-> > > +	event_count++;
-> > should event_count be an atomic type so we can not bother with taking
-> > the evnets_lock?
-> 
-> The lock is there, because two counters are incremented at the same time.
-> Also, in some other places the counter is accessed along with the enable
-> flag, so there are two operations that need to be done in the same critical
-> section.
+Okay.  A quick comparison shows that in your proposal:
 
-ok, I was thinking there is only one counter that needs locking, and one
-global value writen too from user mode that didn't need locking.  
+	There's no need to register and unregister suspend blockers.
+	But instead you create the equivalent of a suspend blocker
+	inside every struct device.
 
-> 
-> > > +	if (dev)
-> > > +		dev->power.wakeup_count++;
-> > > +	spin_unlock_irqrestore(&events_lock, flags);
-> > > +}
-> > > +
-> > > +bool pm_check_wakeup_events(bool enable)
-> > > +{
-> > > +	unsigned long flags;
-> > > +	bool ret;
-> > > +
-> > > +	spin_lock_irqsave(&events_lock, flags);
-> > > +	ret = !events_check_enabled || (event_count == saved_event_count);
-> > I'm not getting the events_check_enbled flag yet.
-> 
-> I tells the PM core whether or not to check wakeup events during suspend.
-> The checking is only enabled after a successful write to
-> /sys/power/wakeup_count, it is disabled by reads and by the final check right
-> before the system enters suspend.  [That's because the "saved" value from
-> the previous suspend should not be used for checking wakeup events during
-> the next one.]
-> 
-> > > +	events_check_enabled = enable;
-> > I'm not sure if this is the right thing depending on all the different
-> > ways the boolians are interacting with eachother.
-> > 
-> > Which is a red flag to me.  This code is confusing.
-> 
-> Well, I could use check_wakeup_events() and
-> check_and_disable_wakeup_events() (the latter is only necessary for the final
-> check), but I'm not sure if that's going to be better.
+	Drivers (or subsystems) don't have to activate suspend 
+	blockers.  But instead they have to call pm_wakeup_event().
 
-I'm not sure either what you have is growing on me anyway.
+	Drivers don't have to deactivate suspend blockers.  You don't
+	have anything equivalent, and as a result your scheme is 
+	subject to the race described below.
 
- 
-> > I'll look at it some more when I'm fresh tomorrow.
+	There are no userspace suspend blockers and no opportunistic
+	suspend.  Instead a power-manager process takes care of 
+	initiating or preventing suspends as needed.
+
+In short, you have eliminated the userspace part of the suspend blocker 
+approach just as in some of the proposals posted earlier, and you have 
+replaced the in-kernel suspend blockers with new data in struct device 
+and a new PM API.  On the whole, it doesn't seem very different from 
+the in-kernel part of suspend blockers.  The most notable difference is 
+the name: pm_wake_event() vs. suspend_blocker_activate(), or whatever 
+it ended up being called.
+
+This is the race I was talking about:
+
+> > What happens if an event arrives just before you read
+> > /sys/power/wakeup_count, but the userspace consumer doesn't realize
+> > there is a new unprocessed event until after the power manager checks
+> > it?
+
+> I think this is not the kernel's problem.  In this approach the kernel makes it
+> possible for the user space to avoid the race.  Whether or not the user space
+> will use this opportunity is a different matter.
+
+It is _not_ possible for userspace to avoid this race.  Help from the 
+kernel is needed.
+
+> >  Your plan is missing a critical step: the "handoff" whereby 
+> > responsibility for handling an event passes from the kernel to 
+> > userspace.
+
+> > With suspend blockers, this handoff occurs when an event queue is 
+> > emptied and its associate suspend blocker is deactivated.  Or with some 
+> > kinds of events for which the Android people have not written an 
+> > explicit handoff, it occurs when a timer expires (timed suspend 
+> > blockers).
 > 
-> Thanks for the comments.
+> Well, quite frankly, I don't see any difference here.  In either case there is
+> a possibility for user space to mess up things and the kernel can't really help
+> that.
 
-I still need to look more at the patch.
+With suspend blockers, there is also the possibility for userspace to 
+handle races correctly.  But with your scheme there isn't -- that's the 
+difference.
 
---mgross
+> > This shares with the other alternatives posted recently the need for a
+> > central power-manager process.  And like in-kernel suspend blockers, it
+> > requires changes to wakeup-capable drivers (the wakeup-events counter
+> > has to be incremented).
+> 
+> It doesn't really require changes to drivers, but to code that knows of wakeup
+> events, like the PCI runtime wakeup code.
+
+Just like in-kernel suspend blockers.
+
+>  Moreover, it doesn't require kernel
+> subsystems to know or even care when it is reasonable to allow suspend to
+> happen.  The only thing they need to do is to call pm_wakeup_event() whenever
+> they see a wakeup event.
+
+That's just semantics.  Obviously a wakeup event should prevent suspend
+from happening, so if subsystems know or care about one then they know
+or care about the other.
+
+>  I don't really think it is too much of a requirement
+> (and quite frnakly I can't imagine anything simpler than that).
+
+This is because you have omitted the part about allowing suspends again
+(or if you prefer, about notifying the PM core that a wakeup event has
+been handed off to userspace).  As a result of leaving this out, you
+haven't eliminated all the races.
+
+> Yes, it does, but I have an idea about how to implement such a power manager
+> and I'm going to actually try it.
+
+A logical design would be to use dbus for disseminating PM-related 
+information.  Does your idea work that way?
+
+> I don't think any of the approaches that don't use suspend blockers allows
+> one to avoid the race between the process that writes to /sys/power/state
+> and a wakeup event happening at the same time.  They attempt to address another
+> issue, which is how to prevent untrusted user space processes from keeping the
+> system out of idle, but that is a different story.
+
+Well, there was one approach that didn't use suspend blockers and did 
+solve the race: the original wakelocks proposal.  Of course, that was 
+just suspend blockers under a different name.  One could make a very 
+good case that your scheme is also suspend blockers under a different 
+name (and with an important part missing).
+
+Alan Stern
