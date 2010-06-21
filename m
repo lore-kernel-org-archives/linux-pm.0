@@ -1,14 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
-	suspend
-Date: Mon, 21 Jun 2010 23:18:02 +0200
-Message-ID: <201006212318.03001.rjw__14640.7599248507$1277155323$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1006211244140.1687-100000@iolanthe.rowland.org>
+From: Tino Keitel <tino.keitel@tikei.de>
+Subject: Re: Suspend hangs since 2.6.34
+Date: Mon, 21 Jun 2010 23:32:24 +0200
+Message-ID: <20100621213224.GA5723__42867.2457267114$1277155996$gmane$org@mac.home>
+References: <20100609175356.GA17332@x61.home> <201006100142.13131.rjw@sisk.pl>
+	<20100620225601.GA15589@x61.home> <201006212124.09076.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006211244140.1687-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <201006212124.09076.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,85 +19,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 21, 2010, Alan Stern wrote:
-> On Mon, 21 Jun 2010, Florian Mickler wrote:
-> 
-> > > > > What happens if an event arrives just before you read
-> > > > > /sys/power/wakeup_count, but the userspace consumer doesn't realize
-> > > > > there is a new unprocessed event until after the power manager checks
-> > > > > it?
-> > > 
-> > > > I think this is not the kernel's problem.  In this approach the kernel makes it
-> > > > possible for the user space to avoid the race.  Whether or not the user space
-> > > > will use this opportunity is a different matter.
-> > > 
-> > > It is _not_ possible for userspace to avoid this race.  Help from the 
-> > > kernel is needed.
+On Mon, Jun 21, 2010 at 21:24:08 +0200, Rafael J. Wysocki wrote:
+> On Monday, June 21, 2010, Tino Keitel wrote:
+> > Hi,
 > > 
-> > It is possible if every (relevant) userspace program implements a
-> > callback for the powermanager to check if one of it's wakeup-sources
-> > got activated.
+> > this nasty bug did not appear after I enabled suspend debugging first,
+> > but now it did:
 > > 
-> > That way the powermanager would read /sys/power/wakeup_count, then do
-> > the roundtrip to all it's registered users and only then suspend. 
+> > 2010-06-20_22:40:31.22927 kern.info: usbcore: deregistering interface driver dvb_usb_vp7045
+> > 2010-06-20_22:40:31.24960 kern.debug: usb 1-6: __pm_runtime_resume()!
+> > 2010-06-20_22:40:31.24968 kern.debug: usb 1-6: __pm_runtime_resume() returns 1!
+> > 2010-06-20_22:40:31.24969 kern.debug: PM: Removing info for No Bus:dvb0.frontend0
+> > 2010-06-20_22:40:31.24971 kern.debug: PM: Removing info for No Bus:dvb0.net0
+> > 2010-06-20_22:40:31.24972 kern.debug: PM: Removing info for No Bus:dvb0.demux0
+> > 2010-06-20_22:40:31.24973 kern.debug: PM: Removing info for No Bus:dvb0.dvr0
+> > 2010-06-20_22:40:31.24974 kern.info: dvb-usb: Twinhan USB2.0 DVB-T receiver (TwinhanDTV Alpha/MagicBox II) successfully deinitialized and disconnected.
+> > 2010-06-20_22:40:32.26675 kern.info: PM: Syncing filesystems ... done.
+> > 2010-06-20_22:40:32.39011 kern.debug: PM: Preparing system for mem sleep
+> > 
+> > When I killed the suspend script which hung at the echo mem >
+> > /sys/power/state line, the computer suspended. After wakeup, the kernel
+> >  log lines after the line above look like this:
+> > 
+> > 2010-06-20_22:49:10.28745 kern.warn: Freezing user space processes ... (elapsed 0.02 seconds) done.
+> > 2010-06-20_22:49:10.28748 kern.warn: Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+> > 2010-06-20_22:49:10.28748 kern.debug: PM: Entering mem sleep
+> > 2010-06-20_22:49:10.28749 kern.warn: Suspending console(s) (use no_console_suspend to debug)
+> > 
+> > I also attached the full kernel log since the boot.
 > 
-> After further thought, there's still a race:
-> 
-> 	A wakeup event arrives.
-> 
-> 	The kernel increments /sys/power/wakeup_count and starts
-> 	processing the event.
-> 
-> 	The power-manager process reads /sys/power/wakeup_count.
+> Hmm.  It looks like a USB problem, then.
 
-You assume that these two steps will occur instantaneously one after the other,
-while there may be (and in fact there should be) a delay between them.
+Just FYI: The dvb-usb message is generated when the driver for the
+DVB-T USB receiver is unloaded. I unload it because I had issues after
+resume if I did not unload it.
 
-I would make the power manager wait for certain time after reading
-/sys/power/wakeup_count and if no wakeup events are reported to it within
-that time, to write to /sys/power/wakeup_count.
-
-The length of the time to wait would be system-dependent in general, but I'd
-also allow the event consumers to influence it (like when an application knows
-it will process things for 10 minutes going forward, so it tells the power
-manager to wait for at least 10 minutes before attempting to suspend).
-
-> 	The power-manager process polls the relevant programs and
-> 	they all say no events are pending.
-> 
-> 	The power-manager process successfully writes 
-> 	/sys/power/wakeup_count.
-> 
-> 	The power-manager process initiates a suspend.
-> 
-> 	...  Hours later ...
-> 
-> 	The system wakes up.
-> 
-> 	The kernel finishes its internal processing of the event and
-> 	sends a notification to a user program.
-> 
-> The problem here is that the power-manager process can't tell when the
-> kernel has finished processing an event.  This is true both for events
-> that need to propagate to userspace and for events that are handled
-> entirely by the kernel.
-> 
-> This is a reflection of the two distinct pieces of information that we 
-> need to keep track of:
-> 
-> 	A wakeup event has arrived, so it's no longer safe to suspend.
-> 
-> 	Wakeup events are no longer pending, so it's once again
-> 	safe to suspend.
-> 
-> The wakeup_count interface tracks the first, but in this scheme nothing 
-> tracks the second.
-
-Which I don't think is really necessary, because we'll need to use timeouts
-anyway, at least for events that have no user space consumers.
-
-Rafael
+Regards,
+Tino
