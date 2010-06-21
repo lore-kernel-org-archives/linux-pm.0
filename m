@@ -1,15 +1,15 @@
 From: Jiri Slaby <jirislaby@gmail.com>
 Subject: Re: [PATCH 1/9] PM / Hibernate: swap,
 	switch to hibernate_io_handle
-Date: Mon, 21 Jun 2010 17:21:10 +0200
-Message-ID: <4C1F8366.70306__21663.8072314256$1277133815$gmane$org@gmail.com>
+Date: Mon, 21 Jun 2010 17:23:23 +0200
+Message-ID: <4C1F83EB.8060703__8121.38752448863$1277133945$gmane$org@gmail.com>
 References: <1275468768-28229-1-git-send-email-jslaby@suse.cz>
-	<4C1205DC.1080200@crca.org.au>
+	<20100610135541.GB4514@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C1205DC.1080200@crca.org.au>
+In-Reply-To: <20100610135541.GB4514@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,27 +19,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <ncunningham@crca.org.au>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/11/2010 11:46 AM, Nigel Cunningham wrote:
-> On 02/06/10 18:52, Jiri Slaby wrote:
->> I addressed the comments I got on the previous RFC. I left the handles
->> in place, the functions in hibernate_io_ops now works on them. Further
->> I got rid of the memory barriers and minimized global variables as much
->> as possible. Comments welcome.
-> 
-> I would like to hear the arguments for using these handles. I understand
-> there may have been some previous discussion, but am unable to find it.
-> 
-> It seems far more sensible to me to not pass around a handle that
-> virtually nothing actually uses, and instead store and utilise the state
-> in the place where it is actually useful. If we had more than one struct
-> hibernate_io_handle in use at a time, I could understand going this way.
-> As it stands, however...
+On 06/10/2010 03:55 PM, Pavel Machek wrote:
+> It would be good if you carried ack-s from previous rounds, so that I
+> don't have to review good patches again...
 
-Hi, it I added that based on this: http://lkml.org/lkml/2010/3/24/458
+Hi, previously ACKed patches were merged already. These were much
+rewritten and their original versions were rather NACKed. Otherwise I
+transfer ACKs indeed.
+
+>> +/**
+>> + * hib_io_handle_alloc - allocate io handle with priv_size for private data
+>> + *
+>> + * @priv_size: the sie to allocate behind hibernate_io_handle for private use
+>> + */
+>> +static inline struct hibernate_io_handle *hib_io_handle_alloc(size_t priv_size)
+>> +{
+>> +	struct hibernate_io_handle *ret;
+>> +	ret = kzalloc(sizeof(*ret) + priv_size, GFP_KERNEL);
+>> +	if (ret)
+>> +		ret->priv = ret + 1;
+> 
+> Uhuh, why this? Aha, grabbing the pointer to priv_size-sized area at
+> the end of regular struct?
+
+Yes, exactly, any more transparent way to do it?
 
 -- 
 js
