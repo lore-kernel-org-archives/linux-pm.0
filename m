@@ -1,15 +1,17 @@
-From: Florian Mickler <florian@mickler.org>
+From: mark gross <640e9920@gmail.com>
 Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
 	suspend
-Date: Mon, 21 Jun 2010 07:32:33 +0200
-Message-ID: <20100621073233.3f874ad0__26206.6265721389$1277098447$gmane$org@schatten.dmk.lab>
-References: <201006202350.27143.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.1006202154260.29532-100000@netrider.rowland.org>
+Date: Sun, 20 Jun 2010 22:55:22 -0700
+Message-ID: <20100621055522.GE9735__25220.1726929799$1277099850$gmane$org@gvim.org>
+References: <20100620225810.GB9735@gvim.org>
+	<Pine.LNX.4.44L0.1006202223440.29532-100000@netrider.rowland.org>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006202154260.29532-100000@netrider.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1006202223440.29532-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,75 +22,118 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: mark gross <640e9920@gmail.com>, markgross@thegnar.org, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 20 Jun 2010 22:23:38 -0400 (EDT)
-Alan Stern <stern@rowland.harvard.edu> wrote:
+On Sun, Jun 20, 2010 at 10:33:01PM -0400, Alan Stern wrote:
+> On Sun, 20 Jun 2010, mark gross wrote:
+> 
+> > > Indeed, the same problem arises if the event isn't delivered to
+> > > userspace until after userspace is frozen.  Of course, the underlying
+> > > issue here is that the kernel has no direct way to know when userspace
+> > > has finished processing an event.  Userspace would have to tell it,
+> > > which generally would mean rewriting some large number of user
+> > > programs.
+> > 
+> > Suspend blockers don't solve this, and the large number of user programs
+> > isn't a big number.  /me thinks its 1 or 2 services.
+> 
+> On Android, perhaps.  What about on other systems?
 
-> On Sun, 20 Jun 2010, Rafael J. Wysocki wrote:
+This is just speculation but, I would expect other systems would have
+the graphics, input, telephony, and any PM services wake_count / wake
+event ware.  
 
+I can't imagine (at the moment) anything else that would care.
+
+> 
 > > > In what way is this better than suspend blockers?
 > > 
-> > It doesn't add any new framework and it doesn't require the users of
-> > pm_wakeup_event() to "unblock" suspend, so it is simpler.  It also doesn't add
-> > the user space interface that caused so much opposition to appear.
+> > 1) I don't think suspend blockers really solve or effectively articulate
+> > the suspend wake event race problem.
 > 
-> Okay.  A quick comparison shows that in your proposal:
-> 
-> 	There's no need to register and unregister suspend blockers.
-> 	But instead you create the equivalent of a suspend blocker
-> 	inside every struct device.
-> 
-> 	Drivers (or subsystems) don't have to activate suspend 
-> 	blockers.  But instead they have to call pm_wakeup_event().
-> 
-> 	Drivers don't have to deactivate suspend blockers.  You don't
-> 	have anything equivalent, and as a result your scheme is 
-> 	subject to the race described below.
-> 
-> 	There are no userspace suspend blockers and no opportunistic
-> 	suspend.  Instead a power-manager process takes care of 
-> 	initiating or preventing suspends as needed.
-> 
-> In short, you have eliminated the userspace part of the suspend blocker 
-> approach just as in some of the proposals posted earlier, and you have 
-> replaced the in-kernel suspend blockers with new data in struct device 
-> and a new PM API.  On the whole, it doesn't seem very different from 
-> the in-kernel part of suspend blockers.  The most notable difference is 
-> the name: pm_wake_event() vs. suspend_blocker_activate(), or whatever 
-> it ended up being called.
-> 
-> This is the race I was talking about:
-> 
-> > > What happens if an event arrives just before you read
-> > > /sys/power/wakeup_count, but the userspace consumer doesn't realize
-> > > there is a new unprocessed event until after the power manager checks
-> > > it?
-> 
-> > I think this is not the kernel's problem.  In this approach the kernel makes it
-> > possible for the user space to avoid the race.  Whether or not the user space
-> > will use this opportunity is a different matter.
-> 
-> It is _not_ possible for userspace to avoid this race.  Help from the 
-> kernel is needed.
+> Why not?
 
-It is possible if every (relevant) userspace program implements a
-callback for the powermanager to check if one of it's wakeup-sources
-got activated.
+For starters the suspend block patch is about suspend blocking, at least
+at first before competing ideas starting coming out and this race issue
+was offered up as an excuse to not consider the alternative ideas, then
+suddenly suspend blocking became a wake event notification mechanism
+implementation that was baked into the implementation.  The arguments
+are still a blur and irritating to recall / look up again.
 
-That way the powermanager would read /sys/power/wakeup_count, then do
-the roundtrip to all it's registered users and only then suspend. 
+But, the point I'm trying to make is that wake event serialization /
+event handling suddenly became a big FUD-pie tightly bound to a specific
+feature for suspend blocking (or was is auto suspending?  Its a magical
+solution to all the PM problems in the kernel.  I'm being sarcastic.)  
 
-This turns the suspend_blockers concept around. Instead of actively
-signaling the suspend_blockers, the userspace programs only answer
-"yes/no" when asked.  (i.e. polling?) 
+Its much better to call out the issue and provide a clean targeted
+solution to it without binding it to some other solution to a different
+problem.
 
-You _can not_ implement userspace suspend blockers with this approach,
-as it is vital for every userspace program to get scheduled and check
-it's wakeup-source (if even possible) before you know that the right
-parties have won the race.
+> 
+> > 2) the partial solution suspend blocker offer for the suspend race is
+> > tightly bound to the suspend blocker implementation and not useful in
+> > more general contexts.
+> 
+> I don't understand.  Can you explain further?
+> 
+> > > One advantage of the suspend-blocker approach is that it essentially
+> > > uses a single tool to handle both kinds of races (event not fully
+> > > handled by the kernel, or event not fully handled by userspace).  
+> > > Things aren't quite this simple, because of the need for a special API
+> > > to implement userspace suspend blockers, but this does avoid the need
+> > > for a power-manager process.
+> > 
+> > I don't think suspend-blocker handles both kinds of races as well as you
+> > seem to think.
+> 
+> Can you give any counterexamples?
 
+I knew you'd ask such a thing.  Do you have any correctness proofs of it
+working right?
 
-Cheers,
-Flo
+Lets consider the RIL incoming call race:
+1) user mode initiates an "opportunistic suspend" or whatever we call
+this these days by writing to some sys interface.
+2) a call comes in (multi-threaded cpu) just after the write.
+3) the caif driver grabs a blocker, stopping the in flight suspend in the
+nick of time.  But, when should it release it without racing?  How does
+one implement that kernel code such that its portable to non-android user
+mode stacks? 
+
+> 
+> >  A single tool that conflates multiple kernel facilities
+> > is not an advantage.  It limits applications outside of the scope of
+> > doing it the "android way".
+> 
+> I don't see that necessarily as a drawback.  You might just as well say
+> that the entire Linux kernel limits applications to doing things the
+> "Unix" way.  Often have fewer choices is an advantage.
+
+I disagree with your analogy.  One problem one solution with minimal
+coupling to other implementation details is nice.  Two problems with one
+solution dependent on the system wide architecture bound to a user mode
+PM design is fragile and not portable.
+ 
+> > Where do you get the idea that there isn't a need for a centralized PM
+> > process in Android?  Thats not true.
+> 
+> I didn't get that idea from anywhere.  Sorry if I gave the wrong
+> impression -- I meant that non-Android systems would need to implement
+> a centralized power-manager process, along with all the necessary
+> changes to other programs.
+> 
+> (Incidentally, even on Android the centralized PM process does not 
+> handle _all_ of the userspace/kernel wakelock interactions.)
+>
+
+Yeah, I've been told that too.  I've grepped for where the wake_unlock
+sysfs interfaces are hit from user mode android (eclair) and I would
+like some help in identifying those guys. Maybe its in the FroYo code I
+don't get to look at yet?
+
+There is libhardware_legacy/power/power.c and  an out of tree kernel
+broadcom bcm4329 driver under hardware/broadcom but that doesn't count
+as it looks like a kernel driver to me.
+
+--mgross 
