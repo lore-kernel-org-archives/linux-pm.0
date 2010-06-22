@@ -1,15 +1,14 @@
-From: Adrian Hunter <adrian.hunter@nokia.com>
-Subject: Re: [PATCH 1/2] MMC: fix all hangs related to mmc/sd
- card insert/removal during suspend/resume.
-Date: Mon, 21 Jun 2010 23:04:12 +0300
-Message-ID: <4C1FC5BC.20008__49561.8208348334$1277228097$gmane$org@nokia.com>
-References: <1276809695.28201.13.camel@maxim-laptop>
-	<1276809814-28683-1-git-send-email-maximlevitsky@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
+	suspend
+Date: Tue, 22 Jun 2010 15:55:50 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006221508390.1322-100000__1234.48059098354$1277237757$gmane$org@iolanthe.rowland.org>
+References: <201006221735.10467.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1276809814-28683-1-git-send-email-maximlevitsky@gmail.com>
+In-Reply-To: <201006221735.10467.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,199 +18,175 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-mmc <linux-mmc@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Philip Langdale <philipl@overt.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-ext Maxim Levitsky wrote:
-> If you don't use CONFIG_MMC_UNSAFE_RESUME, as soon as you attempt to
-> suspend, the card will be removed, therefore this patch doesn't change
-> the behavior of this option.
-> 
-> However the removal will be done by pm notifier, which runs while
-> userspace is still not frozen and thus can freely use del_gendisk,
-> without the risk of deadlock which would happen otherwise.
-> 
-> 
-> Card detect workqueue is now freezeable,
-> therefore if you do use CONFIG_MMC_UNSAFE_RESUME,
-> and remove the card during suspend, the removal will be
-> detected as soon as userspace is unfrozen, again at the moment
-> it is safe to call del_gendisk.
-> 
-> Tested with and without CONFIG_MMC_UNSAFE_RESUME with suspend and hibernate.
-> 
-> Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
-> ---
->  drivers/mmc/core/core.c  |   54 +++++++++++++++++++++++++++------------------
->  drivers/mmc/core/host.c  |    6 +++++
->  include/linux/mmc/host.h |    3 ++
->  3 files changed, 41 insertions(+), 22 deletions(-)
-> 
-> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-> index 569e94d..0cba53a 100644
-> --- a/drivers/mmc/core/core.c
-> +++ b/drivers/mmc/core/core.c
-> @@ -1259,26 +1259,11 @@ int mmc_suspend_host(struct mmc_host *host)
->  
->  	if (host->caps & MMC_CAP_DISABLE)
->  		cancel_delayed_work(&host->disable);
-> -	cancel_delayed_work(&host->detect);
-> -	mmc_flush_scheduled_work();
->  
->  	mmc_bus_get(host);
->  	if (host->bus_ops && !host->bus_dead) {
->  		if (host->bus_ops->suspend)
->  			err = host->bus_ops->suspend(host);
-> -		if (err == -ENOSYS || !host->bus_ops->resume) {
-> -			/*
-> -			 * We simply "remove" the card in this case.
-> -			 * It will be redetected on resume.
-> -			 */
-> -			if (host->bus_ops->remove)
-> -				host->bus_ops->remove(host);
-> -			mmc_claim_host(host);
-> -			mmc_detach_bus(host);
-> -			mmc_release_host(host);
-> -			host->pm_flags = 0;
-> -			err = 0;
-> -		}
->  	}
->  	mmc_bus_put(host);
->  
-> @@ -1310,12 +1295,6 @@ int mmc_resume_host(struct mmc_host *host)
->  			printk(KERN_WARNING "%s: error %d during resume "
->  					    "(card was removed?)\n",
->  					    mmc_hostname(host), err);
-> -			if (host->bus_ops->remove)
-> -				host->bus_ops->remove(host);
-> -			mmc_claim_host(host);
-> -			mmc_detach_bus(host);
-> -			mmc_release_host(host);
-> -			/* no need to bother upper layers */
->  			err = 0;
->  		}
->  	}
-> @@ -1330,6 +1309,37 @@ int mmc_resume_host(struct mmc_host *host)
->  	return err;
->  }
->  
-> +/* Do the card removal on suspend if card is assumed removeable
-> + * Do that in pm notifier while userspace isn't yet frozen, so we will be able
-> +   to sync the card.
-> +*/
-> +int mmc_pm_notify(struct notifier_block *notify_block,
-> +					unsigned long mode, void *unused)
-> +{
-> +	struct mmc_host *host = container_of(
-> +		notify_block, struct mmc_host, pm_notify);
-> +
-> +
-> +	switch (mode) {
-> +	case PM_HIBERNATION_PREPARE:
-> +	case PM_SUSPEND_PREPARE:
-> +
-> +		if (!host->bus_ops || host->bus_ops->suspend)
-> +			break;
-> +
-> +		if (host->bus_ops->remove)
-> +			host->bus_ops->remove(host);
-> +		mmc_claim_host(host);
-> +		mmc_detach_bus(host);
-> +		mmc_release_host(host);
-> +		host->pm_flags = 0;
-> +		break;
+On Tue, 22 Jun 2010, Rafael J. Wysocki wrote:
 
-Is it possible that you receive PM_SUSPEND_PREPARE
-but there is no suspend and therefore no resume
-and therefore the card is removed but not detected
-again?
+> On Tuesday, June 22, 2010, Alan Stern wrote:
+> > On Tue, 22 Jun 2010, Rafael J. Wysocki wrote:
+> > 
+> > > Having reconsidered that I think there's more to it.
+> > > 
+> > > Take the PCI subsystem as an example, specifically pcie_pme_handle_request().
+> > > This is the place where wakeup events are started, but it has no idea about
+> > > how they are going to be handled.  Thus in the suspend blocker scheme it would
+> > > need to activate a blocker, but it wouldn't be able to release it.  So, it
+> > > seems, we would need to associate a suspend blocker with each PCIe device
+> > > that can generate wakeup events and require all drivers of such devices to
+> > > deal with a blocker activated by someone else (PCIe PME driver in this
+> > > particular case).  That sounds cumbersome to say the least.
+> > 
+> > Maybe this means pcie_pme_handle_request() isn't a good place to note
+> > the arrival of a wakeup event.  Doing it in the individual driver might
+> > work out better.
+> 
+> But it this case there will be an open window in which suspend may be started
+> after the wakeup event is signaled, but before the PM core is told about it.
 
-Is it possible that you are racing with kmmcd and the
-card is added after you receive PM_SUSPEND_PREPARE but
-before kmmcd is frozen?
+That's true but it doesn't matter, assuming the suspend can't progress 
+during this window.
 
-> +
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->  EXPORT_SYMBOL(mmc_resume_host);
+> > The problem in your example is that pcie_pme_handle_request() has no 
+> > idea about the nature or extent of the critical section to follow.
+> 
+> Exactly.
 >  
->  #endif
-> @@ -1338,7 +1348,7 @@ static int __init mmc_init(void)
->  {
->  	int ret;
->  
-> -	workqueue = create_singlethread_workqueue("kmmcd");
-> +	workqueue = create_freezeable_workqueue("kmmcd");
->  	if (!workqueue)
->  		return -ENOMEM;
->  
-> diff --git a/drivers/mmc/core/host.c b/drivers/mmc/core/host.c
-> index 4735390..8a631c8 100644
-> --- a/drivers/mmc/core/host.c
-> +++ b/drivers/mmc/core/host.c
-> @@ -17,6 +17,7 @@
->  #include <linux/pagemap.h>
->  #include <linux/leds.h>
->  #include <linux/slab.h>
-> +#include <linux/suspend.h>
->  
->  #include <linux/mmc/host.h>
->  
-> @@ -85,6 +86,8 @@ struct mmc_host *mmc_alloc_host(int extra, struct device *dev)
->  	init_waitqueue_head(&host->wq);
->  	INIT_DELAYED_WORK(&host->detect, mmc_rescan);
->  	INIT_DELAYED_WORK_DEFERRABLE(&host->disable, mmc_host_deeper_disable);
-> +	host->pm_notify.notifier_call = mmc_pm_notify;
-> +
->  
->  	/*
->  	 * By default, hosts do not support SGIO or large requests.
-> @@ -133,6 +136,7 @@ int mmc_add_host(struct mmc_host *host)
->  #endif
->  
->  	mmc_start_host(host);
-> +	register_pm_notifier(&host->pm_notify);
->  
->  	return 0;
->  }
-> @@ -149,6 +153,7 @@ EXPORT_SYMBOL(mmc_add_host);
->   */
->  void mmc_remove_host(struct mmc_host *host)
->  {
-> +	unregister_pm_notifier(&host->pm_notify);
->  	mmc_stop_host(host);
->  
->  #ifdef CONFIG_DEBUG_FS
-> @@ -158,6 +163,7 @@ void mmc_remove_host(struct mmc_host *host)
->  	device_del(&host->class_dev);
->  
->  	led_trigger_unregister_simple(host->led);
-> +
->  }
->  
->  EXPORT_SYMBOL(mmc_remove_host);
-> diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-> index f65913c..b45812d 100644
-> --- a/include/linux/mmc/host.h
-> +++ b/include/linux/mmc/host.h
-> @@ -124,6 +124,7 @@ struct mmc_host {
->  	unsigned int		f_min;
->  	unsigned int		f_max;
->  	u32			ocr_avail;
-> +	struct notifier_block	pm_notify;
->  
->  #define MMC_VDD_165_195		0x00000080	/* VDD voltage 1.65 - 1.95 */
->  #define MMC_VDD_20_21		0x00000100	/* VDD voltage 2.0 ~ 2.1 */
-> @@ -257,6 +258,8 @@ int mmc_card_can_sleep(struct mmc_host *host);
->  int mmc_host_enable(struct mmc_host *host);
->  int mmc_host_disable(struct mmc_host *host);
->  int mmc_host_lazy_disable(struct mmc_host *host);
-> +int mmc_pm_notify(struct notifier_block *notify_block, unsigned long, void *);
-> +
->  
->  static inline void mmc_set_disable_delay(struct mmc_host *host,
->  					 unsigned int disable_delay)
+> > Therefore it's not in a good position to mark the beginning of the 
+> > critical section, even though it is in an excellent position to mark 
+> > the receipt of a wakeup event.
+> 
+> I think we have no choice but to regard the detection of a wakeup event as the
+> beginning of a "suspend critical section".
+
+Receipt of a wakeup event triggers a whole series of function calls,
+including calls to the resume methods of every driver.  The system
+should be designed so that the next suspend can't begin until those
+function calls complete.  For example, the next suspend certainly can't
+begin before the resume methods all complete.  Given that premise, any
+one of those functions could serve as the start of a suspend critical
+section.
+
+> > > Moreover, even if we do that, it still doesn't solve the entire problem,
+> > > because the event may need to be delivered to user space and processed by it.
+> > > While a driver can check if user space has already read the event, it has
+> > > no way to detect whether or not it has finished processing it.  In fact,
+> > > processing an event may involve an interaction with a (human) user and there's
+> > > no general way by which software can figure out when the user considers the
+> > > event as processed.
+> > 
+> > Is this the kernel's problem?  Once userspace has read the event, we
+> > can safely say that the kernel's critical section is over.  Perhaps a
+> > userspace critical section has begun, perhaps not; either way, it's no
+> > longer the kernel's responsibility.
+> 
+> Well, I agree here, but in the suspend blockers world it is the kernel
+> responsibility, because the kernel contains the power manager part.
+
+In the suspend blockers world (or at least, in Android's version of the
+suspend blockers world), userspace would activate another suspend
+blocker before reading the event.  The kernel's critical section could
+then end safely once the event was read.
+
+> > > So, even if we can say when the kernel has finished processing the event
+> > > (although that would be complicated in the PCIe case above), I don't think
+> > > it's generally possible to ensure that the entire processing of a wakeup event
+> > > has been completed.  This leads to the question whether or not it is worth
+> > > trying to detect the ending of the processing of a wakeup event.
+> > 
+> > As Arve pointed out, in some cases it definitely is worthwhile (the
+> > gpio keypad matrix example).  In other cases there may be no reasonable
+> > way to tell.  That doesn't mean we have to give up entirely.
+> 
+> Well, I'm not sure, because that really depends on the hardware and bus in
+> question.  The necessary condition seems to be that the event be detected
+> and handled entirely by the same functional unit (eg. a device driver) within
+> the kernel and such that it is able to detect whether or not user space has
+> acquired the event information.  That doesn't seem to be a common case to me.
+
+It's hard to say how common this is without having a list of possible
+wakeup sources.  And of course, that list will differ from one platform
+to another.
+
+> > > Now, going back to the $subject patch, I didn't really think it would be
+> > > suitable for opportunistic suspend, so let's focus on the "forced" suspend
+> > > instead.  It still has the problem that wakeup events occuring while
+> > > /sys/power/state is written to (or even slightly before) should cause the
+> > > system to cancel the suspend, but they generally won't.  With the patch
+> > > applied that can be avoided by (a) reading from /sys/power/wakeup_count,
+> > > (b) waiting for certain time (such that if a suspend event is not entirely
+> > > processed within that time, it's worth suspending and waking up the
+> > > system again) and (c) writing to /sys/power/wakeup_count right before writing
+> > > to /sys/power/state (where the latter is only done if the former succeeds).
+> > 
+> > In other words, you could detect if a critical section begins after the 
+> > user process has decided to initiate a suspend.  Yes, that's so.
+> 
+> Generally yes, although I think it will also detect "critical sections"
+> starting exactly at the moment the suspend is started.  Which in fact is the
+> purpose of the patch.
+
+Well, the moment the suspend is started _does_ occur after the user 
+process decides to initiate a suspend.  Hence critical sections 
+starting exactly at that moment would indeed be detected.
+
+> > So I'm not opposed to the new function.  But it doesn't solve the 
+> > entire problem of avoiding suspends during critical sections.
+> 
+> Surely not and it isn't my goal at this point.
+> 
+> I think there are a few different issues that the suspend blockers (or
+> wakelocks) framework attempts to address in one bit hammer.  To me, they are
+> at least (1) deciding when to suspend, (2) detecting events that should make
+> us avoid suspending (or abort suspend if already started), (3) preventing
+> "untrusted" processes from making the system use too much energy.
+> 
+> IMO it's better to treat them as different issues and try to address them
+> separately.
+
+Certainly (3) needs to be addressed separately.  It should be handled 
+completely within userspace, if at all possible.
+
+(1) and (2) are closely related.  In fact, a reasonable criterion for 
+(1) might be: Suspend whenever it is allowed.  Then (2) becomes: What 
+sorts of things should disallow suspend, and for how long?
+
+
+Evidently part of the problem here is that for a very long time
+(predating the existence of Linux), people have been using a bad
+abstraction.  We talk about "wakeup events", but an event occupies only
+a single moment in time.  If the computer happens to be asleep at that
+moment then it wakes up, fine.  But if it was already awake, then once
+the moment is passed there's no reason not to suspend -- even if only
+1 microsecond has elapsed.  Likewise, if an event causes the computer
+to wake up, then once the computer is awake the moment is over and
+there's nothing to prevent the computer from immediately going back to
+sleep.
+
+Instead of talking about events, we should be talking about procedures
+or sections: something that happens over a non-zero period of time.  
+But people have never thought in terms of wakeup procedures or suspend
+critical sections, and so the kernel isn't designed to accomodate them.  
+We may know when they begin, but we often have only a cloudy idea of
+when they end.
+
+Historically, people have mostly had in mind that the answer to (1)
+would be: Suspend whenever the user tells the computer to suspend.  In
+that kind of setting, (2) doesn't matter: When the user tells the
+machine to suspend, it should obey.
+
+But when we start to consider energy conservation and autonomous (or
+opportunistic) suspend, things become more complex.  This is why, for
+example, the USB subsystem has a user-selectable autosuspend delay.  
+It's not an ideal solution, but it does prevent us from thrashing
+between suspending and resuming a device over and over if it gets used
+repeatedly during a short period of time.
+
+
+We can design mechanisms until we are blue in the face (some of us may
+be blue already!), but until we remedy this weakness in our thinking we
+won't know how to apply them.  Which means people won't be able to
+agree on a single correct approach.
+
+Alan Stern
