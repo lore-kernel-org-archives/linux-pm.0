@@ -1,17 +1,14 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [PATCH 1/2] MMC: fix all hangs related to mmc/sd
- card insert/removal during suspend/resume.
-Date: Wed, 23 Jun 2010 00:17:30 +0300
-Message-ID: <1277241450.10907.4.camel__13670.6565077931$1277241511$gmane$org@maxim-laptop>
-References: <1276809695.28201.13.camel@maxim-laptop>
-	<201006212226.15859.rjw@sisk.pl>
-	<1277165029.7793.10.camel@maxim-laptop>
-	<201006221119.06210.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [update] Re: [RFC][PATCH] PM: Avoid losing wakeup
+	events during suspend
+Date: Tue, 22 Jun 2010 23:41:15 +0200
+Message-ID: <201006222341.15605.rjw__18540.9550824717$1277243123$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1006221623130.1322-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006221119.06210.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1006221623130.1322-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,163 +18,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-mmc <linux-mmc@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Adrian Hunter <adrian.hunter@nokia.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Philip Langdale <philipl@overt.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2010-06-22 at 11:19 +0200, Rafael J. Wysocki wrote: 
-> On Tuesday, June 22, 2010, Maxim Levitsky wrote:
-> > On Mon, 2010-06-21 at 22:26 +0200, Rafael J. Wysocki wrote: 
-> > > On Monday, June 21, 2010, Maxim Levitsky wrote:
-> > > > On Mon, 2010-06-21 at 23:04 +0300, Adrian Hunter wrote: 
-> > > > > ext Maxim Levitsky wrote:
-> > > > > > If you don't use CONFIG_MMC_UNSAFE_RESUME, as soon as you attempt to
-> > > > > > suspend, the card will be removed, therefore this patch doesn't change
-> > > > > > the behavior of this option.
-> > > > > > 
-> > > > > > However the removal will be done by pm notifier, which runs while
-> > > > > > userspace is still not frozen and thus can freely use del_gendisk,
-> > > > > > without the risk of deadlock which would happen otherwise.
-> > > > > > 
-> > > > > > 
-> > > > > > Card detect workqueue is now freezeable,
-> > > > > > therefore if you do use CONFIG_MMC_UNSAFE_RESUME,
-> > > > > > and remove the card during suspend, the removal will be
-> > > > > > detected as soon as userspace is unfrozen, again at the moment
-> > > > > > it is safe to call del_gendisk.
-> > > > > > 
-> > > > > > Tested with and without CONFIG_MMC_UNSAFE_RESUME with suspend and hibernate.
-> > > > > > 
-> > > > > > Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
-> > > > > > ---
-> > > > > >  drivers/mmc/core/core.c  |   54 +++++++++++++++++++++++++++------------------
-> > > > > >  drivers/mmc/core/host.c  |    6 +++++
-> > > > > >  include/linux/mmc/host.h |    3 ++
-> > > > > >  3 files changed, 41 insertions(+), 22 deletions(-)
-> > > > > > 
-> > > > > > diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-> > > > > > index 569e94d..0cba53a 100644
-> > > > > > --- a/drivers/mmc/core/core.c
-> > > > > > +++ b/drivers/mmc/core/core.c
-> > > > > > @@ -1259,26 +1259,11 @@ int mmc_suspend_host(struct mmc_host *host)
-> > > > > >  
-> > > > > >  	if (host->caps & MMC_CAP_DISABLE)
-> > > > > >  		cancel_delayed_work(&host->disable);
-> > > > > > -	cancel_delayed_work(&host->detect);
-> > > > > > -	mmc_flush_scheduled_work();
-> > > > > >  
-> > > > > >  	mmc_bus_get(host);
-> > > > > >  	if (host->bus_ops && !host->bus_dead) {
-> > > > > >  		if (host->bus_ops->suspend)
-> > > > > >  			err = host->bus_ops->suspend(host);
-> > > > > > -		if (err == -ENOSYS || !host->bus_ops->resume) {
-> > > > > > -			/*
-> > > > > > -			 * We simply "remove" the card in this case.
-> > > > > > -			 * It will be redetected on resume.
-> > > > > > -			 */
-> > > > > > -			if (host->bus_ops->remove)
-> > > > > > -				host->bus_ops->remove(host);
-> > > > > > -			mmc_claim_host(host);
-> > > > > > -			mmc_detach_bus(host);
-> > > > > > -			mmc_release_host(host);
-> > > > > > -			host->pm_flags = 0;
-> > > > > > -			err = 0;
-> > > > > > -		}
-> > > > > >  	}
-> > > > > >  	mmc_bus_put(host);
-> > > > > >  
-> > > > > > @@ -1310,12 +1295,6 @@ int mmc_resume_host(struct mmc_host *host)
-> > > > > >  			printk(KERN_WARNING "%s: error %d during resume "
-> > > > > >  					    "(card was removed?)\n",
-> > > > > >  					    mmc_hostname(host), err);
-> > > > > > -			if (host->bus_ops->remove)
-> > > > > > -				host->bus_ops->remove(host);
-> > > > > > -			mmc_claim_host(host);
-> > > > > > -			mmc_detach_bus(host);
-> > > > > > -			mmc_release_host(host);
-> > > > > > -			/* no need to bother upper layers */
-> > > > > >  			err = 0;
-> > > > > >  		}
-> > > > > >  	}
-> > > > > > @@ -1330,6 +1309,37 @@ int mmc_resume_host(struct mmc_host *host)
-> > > > > >  	return err;
-> > > > > >  }
-> > > > > >  
-> > > > > > +/* Do the card removal on suspend if card is assumed removeable
-> > > > > > + * Do that in pm notifier while userspace isn't yet frozen, so we will be able
-> > > > > > +   to sync the card.
-> > > > > > +*/
-> > > > > > +int mmc_pm_notify(struct notifier_block *notify_block,
-> > > > > > +					unsigned long mode, void *unused)
-> > > > > > +{
-> > > > > > +	struct mmc_host *host = container_of(
-> > > > > > +		notify_block, struct mmc_host, pm_notify);
-> > > > > > +
-> > > > > > +
-> > > > > > +	switch (mode) {
-> > > > > > +	case PM_HIBERNATION_PREPARE:
-> > > > > > +	case PM_SUSPEND_PREPARE:
-> > > > > > +
-> > > > > > +		if (!host->bus_ops || host->bus_ops->suspend)
-> > > > > > +			break;
-> > > > > > +
-> > > > > > +		if (host->bus_ops->remove)
-> > > > > > +			host->bus_ops->remove(host);
-> > > > > > +		mmc_claim_host(host);
-> > > > > > +		mmc_detach_bus(host);
-> > > > > > +		mmc_release_host(host);
-> > > > > > +		host->pm_flags = 0;
-> > > > > > +		break;
-> > > > > 
-> > > > > Is it possible that you receive PM_SUSPEND_PREPARE
-> > > > > but there is no suspend and therefore no resume
-> > > > > and therefore the card is removed but not detected
-> > > > > again?
-> > > > This is very good point.
-> > > > The solution is to kick mmc detection thread from this notifier.
-> > > > on resume.
-> > > > I update the patch.
-> > > > 
-> > > > > 
-> > > > > Is it possible that you are racing with kmmcd and the
-> > > > > card is added after you receive PM_SUSPEND_PREPARE but
-> > > > > before kmmcd is frozen?
-> > > > This is unlikely but valid race.
-> > > > I afraid I don't know nice way to solve it right now.
-> > > > I can add some ad-hoc variable to tell interrupt handler not to kick the
-> > > > detection workqueue after suspend notifier was called.
-> > > > 
-> > > > I wish there was a generic freeze_workqueue function.
-> > > 
-> > > There are freezable workqueues that are automatically frozen during suspend
-> > > by the process freezer.  However, at the moment they need to be singlethread
-> > > and I'm not sure if using one in this particular case is appropriate.
+On Tuesday, June 22, 2010, Alan Stern wrote:
+> On Tue, 22 Jun 2010, Rafael J. Wysocki wrote:
+> 
+> > Anyway, below's an update that addresses this particular case.
 > > 
-> > I *do* use freezable  work-queue.
+> > It adds two more functions, pm_wakeup_begin() and pm_wakeup_end()
+> > that play similar roles to suspend_block() and suspend_unblock(), but they
+> > don't operate on suspend blocker objects.  Instead, the first of them increases
+> > a counter of events in progress and the other one decreases this counter.
+> > Together they have the same effect as pm_wakeup_event(), but the counter
+> > of wakeup events in progress they operate on is also checked by
+> > pm_check_wakeup_events().
+> > 
+> > Thus there are two ways kernel subsystems can signal wakeup events.  First,
+> > if the event is not explicitly handed over to user space and "instantaneous",
+> > they can simply call pm_wakeup_event() and be done with it.  Second, if the
+> > event is going to be delivered to user space, the subsystem that processes
+> > the event can call pm_wakeup_begin() right when the event is detected and
+> > pm_wakeup_end() when it's been handed over to user space.
 > 
-> I overlooked that, sorry.
+> Or if the event is going to be handled entirely in the kernel but over
+> a prolonged period of time.
 > 
-> > However since this is pm notifier, it is called before userspace and the
-> > workqueue is frozen.
-> > Therefore I would like manually to freeze the workqueue from the pm
-> > notifier.
+> > Please tell me what you think.
 > 
-> No, that won't work.  You need to find an alternative solution.  I guess you
-> may insert a work item that's going to sleep until a condition is
-> satisfied (analogous to a workqueue barrier) and wait for it to 
-This screams to be done in generic way.
-Something like suspend_workqueue() and resume_workqueue();
+> I like it a lot.  It addresses the main weakness in the earlier 
+> version.  With this, you could essentially duplicate the in-kernel part 
+> of the wakelocks/suspend blockers stuff.  All except the timed 
+> wakelocks -- you might want to consider adding a 
+> pm_wakeup_begin_timeout() convenience routine.
 
-In addition to that I just found that .suspend function sometimes can
-return -ENOSYS, which triggers card removal. I wrongly remove that chunk
-of code.
+That may be added in future quite easily if it really turns out to be necessary.
+IIRC Arve said Android only used timeouts in user space wakelocks, not in the
+kernel ones.
 
-To make the thing picture perfect I would have to invest more time to
-it, I will do so as soon as I finish my exams.
+> Here's another possible enhancement (if you can figure out a way to do
+> it without too much effort): After a suspend begins, keep track of the
+> first wakeup event you get.  Then when the suspend is aborted, print a
+> log message saying why and indicating which device was responsible for
+> the wakeup.
 
-Meanwhile the current patch already fixes all but corner cases or rather
-nasty hang on suspend with any MMC/SD card inserted.
+Good idea, but I'd prefer to add it in a separate patch not to complicate
+things too much to start with.
 
+> One little thing: You have the PCI subsystem call pm_wakeup_event().  
+> If the driver then wants to call pm_wakeup_begin(), the event will get 
+> counted twice.  I guess this doesn't matter much, but it does seem 
+> peculiar.
 
-Best regards,
-Maxim Levitsky
+Knowing that the PCI core has increased the wakeup count of its device, a
+PCI driver may simply use pm_wakeup_begin(NULL) and that will only cause
+the main counter to be increased in the end.  Which kind of makes sense,
+because in that case there really is a sequence of events.  First, the PCI core
+detects a wakeup signal and requests wakeup so that the driver has a chance
+to access the device and get the event information from it (although at this
+point it is not known whether or not the driver will need to do that).  Second,
+the driver requests that the system stay in the working state, because it needs
+time to process the event data and (presumably) hand it over to user space.
+The device has only signaled wakeup once, though, and that should be recorded.
+
+BTW, I thought I would make pm_get_wakeup_count() and pm_save_wakeup_count()
+fail if they are called when events_in_progress is nonzero.  For
+pm_save_wakeup_count() that's pretty obvious (I think) and it also kind of
+makes sense for pm_get_wakeup_count(), because that will tell the reader of
+/sys/power/wakeup_count that the value is going to change immediately so it
+should really try again.
+
+Rafael
