@@ -1,17 +1,19 @@
 From: mark gross <640e9920@gmail.com>
 Subject: Re: [RFC][PATCH] PM: Avoid losing wakeup events during
 	suspend
-Date: Tue, 22 Jun 2010 16:00:36 -0700
-Message-ID: <20100622230036.GA15420@gvim.org>
-References: <Pine.LNX.4.44L0.1006211814370.1687-100000@iolanthe.rowland.org>
-	<201006220040.41524.rjw@sisk.pl> <201006221221.53801.rjw@sisk.pl>
+Date: Tue, 22 Jun 2010 16:22:38 -0700
+Message-ID: <20100622232238.GA15442__40395.1201042675$1277249083$gmane$org@gvim.org>
+References: <20100621055522.GE9735@gvim.org>
+	<Pine.LNX.4.44L0.1006211125470.1687-100000@iolanthe.rowland.org>
+	<20100622015837.GC12795@gvim.org>
+	<20100622081803.4d472542@schatten.dmk.lab>
 Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201006221221.53801.rjw@sisk.pl>
+In-Reply-To: <20100622081803.4d472542@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,119 +23,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Florian Mickler <florian@mickler.org>
+Cc: 640e9920@gmail.com, markgross@thegnar.org, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 22, 2010 at 12:21:53PM +0200, Rafael J. Wysocki wrote:
-> On Tuesday, June 22, 2010, Rafael J. Wysocki wrote:
-> > On Tuesday, June 22, 2010, Alan Stern wrote:
-> > > On Mon, 21 Jun 2010, Florian Mickler wrote:
-> > > 
-> > > > > In the end you would want to have communication in both directions:  
-> > > > > suspend blockers _and_ callbacks.  Polling is bad if done too often.  
-> > > > > But I think the idea is a good one.
-> > > > 
-> > > > Actually, I'm not so shure. 
-> > > > 
-> > > > 1. you have to roundtrip whereas in the suspend_blocker scheme you have
-> > > > active annotations (i.e. no further action needed) 
-> > > 
-> > > That's why it's best to use both.  The normal case is that programs
-> > > activate and deactivate blockers by sending one-way messages to the PM
-> > > process.  The exceptional case is when the PM process is about to
-> > > initiate a suspend; that's when it does the round-trip polling.  Since
-> > > the only purpose of the polling is to avoid a race, 90% of the time it
-> > > will succeed.
-> > > 
-> > > > 2. it may not be possible for a user to determine if a wake-event is
-> > > > in-flight. you would have to somehow pass the wake-event-number with
-> > > > it, so that the userspace process could ack it properly without
-> > > > confusion. Or... I don't know of anything else... 
-> > > > 
-> > > > 	1. userspace-manager (UM) reads a number (42). 
-> > > > 
-> > > > 	2. it questions userspace program X: is it ok to suspend?
-> > > > 
-> > > > 	[please fill in how userspace program X determines to block
-> > > > 	suspend]
-> > > > 
-> > > > 	3a. UM's roundtrip ends and it proceeds to write "42" to the
-> > > > 	kernel [suspending]
-> > > > 	3b. UM's roundtrip ends and it aborts suspend, because a
-> > > > 	(userspace-)suspend-blocker got activated
-> > > > 
-> > > > I'm not shure how the userspace program could determine that there is a
-> > > > wake-event in flight. Perhaps by storing the number of last wake-event.
-> > > > But then you need per-wake-event-counters... :|
-> > > 
-> > > Rafael seems to think timeouts will fix this.  I'm not so sure.
-> > > 
-> > > > Do you have some thoughts about the wake-event-in-flight detection?
-> > > 
-> > > Not really, except for something like the original wakelock scheme in
-> > > which the kernel tells the PM core when an event is over.
+On Tue, Jun 22, 2010 at 08:18:03AM +0200, Florian Mickler wrote:
+> On Mon, 21 Jun 2010 18:58:37 -0700
+> mark gross <640e9920@gmail.com> wrote:
+> 
+> 
+> > wrong.  They are about 1) adding opportunistic suspend, and 2) adding
+> > critical sections to block suspend.  
 > > 
-> > But the kernel doesn't really know that, so it really can't tell the PM core
-> > anything useful.  What happens with suspend blockers is that a kernel subsystem
-> > cooperates with a user space consumer of the event to get the story straight.
-> > 
-> > However, that will only work if the user space is not buggy and doesn't crash,
-> > for example, before releasing the suspend blocker it's holding.
+> > No race issues where ever talked about until alternative solutions
+> > where put up.
 > 
-> Having reconsidered that I think there's more to it.
+> The whole and only reason to even define the term "critical sections" is
+> when you need to define "a race". Or vice versa. A race is prevented by
+> defining critical sections and protecting these against concurrent
+> access.
 > 
-> Take the PCI subsystem as an example, specifically pcie_pme_handle_request().
-> This is the place where wakeup events are started, but it has no idea about
-> how they are going to be handled.  Thus in the suspend blocker scheme it would
-> need to activate a blocker, but it wouldn't be able to release it.  So, it
-> seems, we would need to associate a suspend blocker with each PCIe device
-> that can generate wakeup events and require all drivers of such devices to
-> deal with a blocker activated by someone else (PCIe PME driver in this
-> particular case).  That sounds cumbersome to say the least.
+> [..snip..]
 > 
-> Moreover, even if we do that, it still doesn't solve the entire problem,
-> because the event may need to be delivered to user space and processed by it.
-> While a driver can check if user space has already read the event, it has
-> no way to detect whether or not it has finished processing it.  In fact,
-> processing an event may involve an interaction with a (human) user and there's
-> no general way by which software can figure out when the user considers the
-> event as processed.
+> [some rant that alan is not familiar with android userspace..]
 > 
-> It looks like user space suspend blockers only help in some special cases
-> when the user space processing of a wakeup event is simple enough, but I don't
-> think they help in general.  For an extreme example, a user may want to wake up
-> a system using wake-on-LAN to log into it, do some work and log out, so
-> effectively the initial wakeup event has not been processed entirely until the
-> user finally logs out of the system.  Now, after the system wakeup (resulting
-> from the wake-on-LAN signal) we need to give the user some time to log in, but
-> if the user doesn't do that in certain time, it may be reasonable to suspend
-> and let the user wake up the system again. 
-> 
-> Similar situation takes place when the system is woken up by a lid switch.
-> Evidently, the user has opened the laptop lid to do something, but we don't
-> even know what the user is going to do, so there's no way we can say when
-> the wakeup event is finally processed.
-> 
-> So, even if we can say when the kernel has finished processing the event
-> (although that would be complicated in the PCIe case above), I don't think
-> it's generally possible to ensure that the entire processing of a wakeup event
-> has been completed.  This leads to the question whether or not it is worth
-> trying to detect the ending of the processing of a wakeup event.
-> 
-> Now, going back to the $subject patch, I didn't really think it would be
-> suitable for opportunistic suspend, so let's focus on the "forced" suspend
-> instead.  It still has the problem that wakeup events occuring while
-> /sys/power/state is written to (or even slightly before) should cause the
-> system to cancel the suspend, but they generally won't.  With the patch
-> applied that can be avoided by (a) reading from /sys/power/wakeup_count,
-> (b) waiting for certain time (such that if a suspend event is not entirely
-> processed within that time, it's worth suspending and waking up the
-> system again) and (c) writing to /sys/power/wakeup_count right before writing
-> to /sys/power/state (where the latter is only done if the former succeeds).
->
-This is what thought was the problem your idea as trying to deal with.
+> Are you suggesting that only android developers are supposed to talk
+> about this? 
+
+of course not.  I'm just getting frustrated with having android-isms
+tossed in my face as we try to discuss the merits of the ideas, only to
+find that the are getting tossed around by someone not familiar with
+Android.
+
+Sorry about that.  I was having a bad day.
 
 --mgross
 
- 
+
+
+
+> 
+> This is a pretty basic thing. It has only to do with system suspend.
+> (And using system suspend aggressively)
+> 
+> > 
+> > --mgross
+> > 
+> 
+> Cheers,
+> Flo
