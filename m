@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/2] MMC: fix all hangs related to mmc/sd
-	card insert/removal during suspend/resume.
-Date: Wed, 23 Jun 2010 02:16:59 +0200
-Message-ID: <201006230216.59894.rjw__10370.7626149573$1277252483$gmane$org@sisk.pl>
-References: <1276809695.28201.13.camel@maxim-laptop>
-	<201006222353.21349.rjw@sisk.pl>
-	<20100622152006.d0ec0cef.akpm@linux-foundation.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [update] Re: [RFC][PATCH] PM: Avoid losing wakeup
+ events during suspend
+Date: Tue, 22 Jun 2010 22:12:16 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006222203070.10376-100000__29436.2143650234$1277259189$gmane$org@netrider.rowland.org>
+References: <201006222341.15605.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100622152006.d0ec0cef.akpm@linux-foundation.org>
+In-Reply-To: <201006222341.15605.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,63 +18,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mmc <linux-mmc@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Adrian Hunter <adrian.hunter@nokia.com>, Philip Langdale <philipl@overt.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, June 23, 2010, Andrew Morton wrote:
-> On Tue, 22 Jun 2010 23:53:21 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > On Tuesday, June 22, 2010, Maxim Levitsky wrote:
-> > > On Tue, 2010-06-22 at 11:19 +0200, Rafael J. Wysocki wrote: 
-> > > > On Tuesday, June 22, 2010, Maxim Levitsky wrote:
-> > > > > On Mon, 2010-06-21 at 22:26 +0200, Rafael J. Wysocki wrote: 
-> > ...
-> > > > > I *do* use freezable  work-queue.
-> > > > 
-> > > > I overlooked that, sorry.
-> > > > 
-> > > > > However since this is pm notifier, it is called before userspace and the
-> > > > > workqueue is frozen.
-> > > > > Therefore I would like manually to freeze the workqueue from the pm
-> > > > > notifier.
-> > > > 
-> > > > No, that won't work.  You need to find an alternative solution.  I guess you
-> > > > may insert a work item that's going to sleep until a condition is
-> > > > satisfied (analogous to a workqueue barrier) and wait for it to 
-> > > This screams to be done in generic way.
-> > > Something like suspend_workqueue() and resume_workqueue();
-> > 
-> > Well, there was no need for that until now. :-)
-> > 
-> > > In addition to that I just found that .suspend function sometimes can
-> > > return -ENOSYS, which triggers card removal. I wrongly remove that chunk
-> > > of code.
-> > > 
-> > > To make the thing picture perfect I would have to invest more time to
-> > > it, I will do so as soon as I finish my exams.
-> > > 
-> > > Meanwhile the current patch already fixes all but corner cases or rather
-> > > nasty hang on suspend with any MMC/SD card inserted.
-> > 
-> > OK
-> > 
-> > I think Andrew has already taken [2/2].
-> 
-> I took them both, but I need to come back to this discussion to work
-> out what to do with them now.
+On Tue, 22 Jun 2010, Rafael J. Wysocki wrote:
 
-I think they are worth merging.  At least they shouldn't break things and
-Maxim has already promised to clean up that code in future.
-
-> > Andrew, who's maintaining MMC now?
+> > > Please tell me what you think.
+> > 
+> > I like it a lot.  It addresses the main weakness in the earlier 
+> > version.  With this, you could essentially duplicate the in-kernel part 
+> > of the wakelocks/suspend blockers stuff.  All except the timed 
+> > wakelocks -- you might want to consider adding a 
+> > pm_wakeup_begin_timeout() convenience routine.
 > 
-> Pierre stopped doing it, so I'm now pretending to.
+> That may be added in future quite easily if it really turns out to be necessary.
+> IIRC Arve said Android only used timeouts in user space wakelocks, not in the
+> kernel ones.
+
+Didn't we agree that timeouts would be needed for Wake-on-LAN?
+
+> > Here's another possible enhancement (if you can figure out a way to do
+> > it without too much effort): After a suspend begins, keep track of the
+> > first wakeup event you get.  Then when the suspend is aborted, print a
+> > log message saying why and indicating which device was responsible for
+> > the wakeup.
 > 
-> I actually pretend to maintain a huge number of subsystems and should
-> sprinkle akpms all over MAINTAINERS so stuff doesn't get lost.
+> Good idea, but I'd prefer to add it in a separate patch not to complicate
+> things too much to start with.
 
-I see.
+Okay.  Another thing to be considered later is whether there should be
+a way to write to /sys/power/state that would block until the active
+wakeup count drops to 0.  On the other hand polling maybe once per
+second wouldn't be so bad.  It would happen only when the kernel had
+some events outstanding and userspace didn't.
 
-If you have anything PM-related, I can handle that too.
+One thing that stands out is the new spinlock.  It could potentially be
+a big source of contention.  Any wakeup-enabled device is liable to
+need it during every interrupt.  Do you think this could cause a
+noticeable slowdown?
+
+> > One little thing: You have the PCI subsystem call pm_wakeup_event().  
+> > If the driver then wants to call pm_wakeup_begin(), the event will get 
+> > counted twice.  I guess this doesn't matter much, but it does seem 
+> > peculiar.
+> 
+> Knowing that the PCI core has increased the wakeup count of its device, a
+> PCI driver may simply use pm_wakeup_begin(NULL) and that will only cause
+> the main counter to be increased in the end.  Which kind of makes sense,
+> because in that case there really is a sequence of events.  First, the PCI core
+> detects a wakeup signal and requests wakeup so that the driver has a chance
+> to access the device and get the event information from it (although at this
+> point it is not known whether or not the driver will need to do that).  Second,
+> the driver requests that the system stay in the working state, because it needs
+> time to process the event data and (presumably) hand it over to user space.
+> The device has only signaled wakeup once, though, and that should be recorded.
+
+Okay, that works.  Although if anybody wanted to keep track of timing
+statistics, the results wouldn't be as effective since the start and
+end times would not be associated with the device.
+
+> BTW, I thought I would make pm_get_wakeup_count() and pm_save_wakeup_count()
+> fail if they are called when events_in_progress is nonzero.  For
+> pm_save_wakeup_count() that's pretty obvious (I think) and it also kind of
+> makes sense for pm_get_wakeup_count(), because that will tell the reader of
+> /sys/power/wakeup_count that the value is going to change immediately so it
+> should really try again.
+
+Sensible.
+
+Alan Stern
