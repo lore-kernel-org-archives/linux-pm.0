@@ -1,9 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [update] Re: [RFC][PATCH] PM: Avoid losing wakeup
- events during suspend
-Date: Thu, 24 Jun 2010 10:45:09 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1006241037080.1654-100000__42494.406985543$1277390928$gmane$org@iolanthe.rowland.org>
-References: <4C2368C8.7020708@mit.edu>
+	events during suspend
+Date: Thu, 24 Jun 2010 16:48:46 +0200
+Message-ID: <201006241648.46448.rjw__38956.0878662907$1277391299$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1006220952290.1631-100000@iolanthe.rowland.org>
+	<201006222159.28081.rjw__37084.1419128284$1277237903$gmane$org@sisk.pl>
+	<4C2368C8.7020708@mit.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -22,8 +24,43 @@ To: Andy Lutomirski <luto@mit.edu>
 Cc: mark gross <640e9920@gmail.com>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 24 Jun 2010, Andy Lutomirski wrote:
-
+On Thursday, June 24, 2010, Andy Lutomirski wrote:
+> Rafael J. Wysocki wrote:
+> > On Tuesday, June 22, 2010, Rafael J. Wysocki wrote:
+> >> On Tuesday, June 22, 2010, Alan Stern wrote:
+> >>> On Tue, 22 Jun 2010, Rafael J. Wysocki wrote:
+> > ... 
+> >>>> So, even if we can say when the kernel has finished processing the event
+> >>>> (although that would be complicated in the PCIe case above), I don't think
+> >>>> it's generally possible to ensure that the entire processing of a wakeup event
+> >>>> has been completed.  This leads to the question whether or not it is worth
+> >>>> trying to detect the ending of the processing of a wakeup event.
+> >>> As Arve pointed out, in some cases it definitely is worthwhile (the
+> >>> gpio keypad matrix example).  In other cases there may be no reasonable
+> >>> way to tell.  That doesn't mean we have to give up entirely.
+> >> Well, I'm not sure, because that really depends on the hardware and bus in
+> >> question.  The necessary condition seems to be that the event be detected
+> >> and handled entirely by the same functional unit (eg. a device driver) within
+> >> the kernel and such that it is able to detect whether or not user space has
+> >> acquired the event information.  That doesn't seem to be a common case to me.
+> > 
+> > Anyway, below's an update that addresses this particular case.
+> > 
+> > It adds two more functions, pm_wakeup_begin() and pm_wakeup_end()
+> > that play similar roles to suspend_block() and suspend_unblock(), but they
+> > don't operate on suspend blocker objects.  Instead, the first of them increases
+> > a counter of events in progress and the other one decreases this counter.
+> > Together they have the same effect as pm_wakeup_event(), but the counter
+> > of wakeup events in progress they operate on is also checked by
+> > pm_check_wakeup_events().
+> > 
+> > Thus there are two ways kernel subsystems can signal wakeup events.  First,
+> > if the event is not explicitly handed over to user space and "instantaneous",
+> > they can simply call pm_wakeup_event() and be done with it.  Second, if the
+> > event is going to be delivered to user space, the subsystem that processes
+> > the event can call pm_wakeup_begin() right when the event is detected and
+> > pm_wakeup_end() when it's been handed over to user space.
+> 
 > How does userspace handle this without races?  (I don't see an example 
 > in a driver that talks to userspace in your code...)
 > 
@@ -35,27 +72,11 @@ On Thu, 24 Jun 2010, Andy Lutomirski wrote:
 > pm_wakeup_end() before the userspace program has a chance to tell the 
 > suspend manager not to sleep.
 
-The assumption is that the user program will poll the evdev device.  
-When the poll indicates data is available, the program will tell the 
-userspace power manager not to go to sleep before reading the data.  
-This avoids the race.
+That basically is what /sys/power/wakeup_count is for.  The power manager is
+supposed to first read from it (that will block if there are any events in
+progress in the last, recently posted, version of the patch), obtain ACKs from
+user space event consumers known to it, then write to
+/sys/power/wakeup_count (that will fail if there were any wakeup events in the
+meantime) and write to /sys/power/state only if that was successful.
 
-> One possibility would be for poll to report that events are pending 
-> without calling pm_wakeup_end(), giving userspace a chance to prevent 
-> itself from suspending before actually reading the event.
-
-Exactly.  The critical section doesn't end until the events have been 
-read.  Polling alone doesn't affect the critical section.
-
-> (Also, should "echo mem >/sys/power/state" be different from "echo 
-> mem_respect_suspend_blockers >/sys/power/state?"  If I physically press 
-> the suspend key on my laptop, I want it to go to sleep even though I'm 
-> still holding the Fn key that was part of the suspend hotkey.)
-
-With Rafael's scheme, the difference is not in the write to
-/sys/power/state but rather in the write to /sys/power/wakeup_count.  
-If the power manager program doesn't write to /sys/power/wakeup_count
-first then /sys/power/state takes effect immediately, just as it does
-now.
-
-Alan Stern
+Rafael
