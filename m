@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/9] PM / Hibernate: user,
-	implement user_ops writer
-Date: Thu, 24 Jun 2010 18:27:34 +0200
-Message-ID: <201006241827.34871.rjw__33908.1630729654$1277397121$gmane$org@sisk.pl>
-References: <1275468768-28229-1-git-send-email-jslaby@suse.cz>
-	<1275468768-28229-3-git-send-email-jslaby@suse.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [update 2] Re: [RFC][PATCH] PM: Avoid losing wakeup
+ events during suspend
+Date: Thu, 24 Jun 2010 13:09:27 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006241257410.1654-100000__8717.15275939113$1277399553$gmane$org@iolanthe.rowland.org>
+References: <201006241819.25055.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275468768-28229-3-git-send-email-jslaby@suse.cz>
+In-Reply-To: <201006241819.25055.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,282 +18,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, jirislaby@gmail.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, June 02, 2010, Jiri Slaby wrote:
-> Switch /dev/snapshot writer to hibernate_io_ops approach so that we
-> can do whatever we want with snapshot processing code. All the later
-> code changes will be transparent and needn't care about different
-> readers/writers.
+On Thu, 24 Jun 2010, Rafael J. Wysocki wrote:
 
-Well.  I don't want image data to undergo _any_ transformations within the
-kernel before going to s2disk.  In fact, s2disk is supposed to do whatever it
-wants with the image data (that are supposed to be _raw_ image data).
-
-So, I don't think we need to "switch" /dev/snapshot to anything adding
-complexity in the process.
-
-> In this patch only writer is implemented -- for better bisectability
-> if something breaks. (The development was easier too, because one
-> could break only one part, not both.)
+> > This is slightly different from the wakelock design.  Each call to
+> > pm_stay_awake() must be paired with a call to pm_relax(), allowing one
+> > device to have multiple concurrent critical sections, whereas calls to
+> > pm_wakeup_event() must not be paired with anything.  With wakelocks,
+> > you couldn't have multiple pending events for the same device.
 > 
-> Also, when using this interface, switch to the ops on open/release,
-> so they are used.
+> You could, but you needed to define multiple wakelocks for the same device for
+> this purpose.
+
+Yeah, okay, but who's going to do that?
+
+> > I'm not sure which model is better in practice.  No doubt the Android people 
+> > will prefer their way.
 > 
-> There are explicit barriers protecting to_do_buffer, because it is
-> all done in a producer-consumer fashion:
-> PRODUCER (snapshot layer)
-> 1) to_do_buffer is set
-> 2) set TODO bit
-> 3) wake CONSUMER
-> 4) wait for TODO bit _clear_
+> I suppose so.
+
+It may not make a significant difference in the end.  You can always
+emulate the wakelock approach by not calling pm_stay_awake() when you
+know there is an earlier call still pending.
+
+> > This requires you to define an explicit PCI_WAKEUP_COOLDOWN delay.  I 
+> > think that's okay; I had to do something similar with USB and SCSI.  
+> > (And I still think it would be a good idea to prevent workqueue threads 
+> > from freezing until their queues are empty.)
 > 
-> CONSUMER (fops->read)
-> 1) wait for TODO bit
-> 2) pass to_do_buffer to userspace
-> 3) clear TODO bit
-> 4) wake PRODUCER
+> I guess you mean the freezable ones?
+
+Yes.  The unfreezable workqueue threads don't have to worry about 
+getting frozen while their queues are non-empty.  :-)
+
+>  I'm not sure if that helps a lot, because
+> new work items may still be added after the workqueue thread has been frozen.
+
+That's not the point.  If a wakeup handler queues a work item (for
+example, by calling pm_request_resume) then it wouldn't need to guess a
+timeout.  The work item would be guaranteed to run before the system
+could suspend again.
+
+> > Instead of allocating the work structures dynamically, would you be 
+> > better off using a memory pool?
 > 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> ---
->  kernel/power/user.c |  140 ++++++++++++++++++++++++++++++++++++++++++++++++---
->  1 files changed, 132 insertions(+), 8 deletions(-)
-> 
-> diff --git a/kernel/power/user.c b/kernel/power/user.c
-> index e819e17..b4610c3 100644
-> --- a/kernel/power/user.c
-> +++ b/kernel/power/user.c
-> @@ -23,6 +23,8 @@
->  #include <linux/console.h>
->  #include <linux/cpu.h>
->  #include <linux/freezer.h>
-> +#include <linux/mutex.h>
-> +#include <linux/wait.h>
->  #include <scsi/scsi_scan.h>
->  
->  #include <asm/uaccess.h>
-> @@ -61,10 +63,93 @@ static struct snapshot_data {
->  	char frozen;
->  	char ready;
->  	char platform_support;
-> +	struct hibernate_io_ops *prev_ops;
->  } snapshot_state;
->  
->  atomic_t snapshot_device_available = ATOMIC_INIT(1);
->  
-> +static struct {
-> +	void *buffer; /* buffer to pass through */
-> +	struct workqueue_struct *worker; /* the thread initiating read/write */
-> +	wait_queue_head_t wait; /* wait for buffer */
-> +	wait_queue_head_t done; /* read/write done? */
-> +	struct mutex lock; /* protection for buffer */
-> +
-> +#define TODO_WORK	1
-> +#define TODO_FINISH	2
-> +#define TODO_CLOSED	3
-> +#define TODO_ERROR	4
-> +	DECLARE_BITMAP(flags, 10); /* TODO_* flags defined above */
-> +} to_do;
-> +
-> +static unsigned long user_free_space(void)
-> +{
-> +	return ~0UL; /* we have no idea, maybe we will fail later */
-> +}
-> +
-> +static struct hibernate_io_handle *user_writer_start(void)
-> +{
-> +	return hib_io_handle_alloc(0) ? : ERR_PTR(-ENOMEM);
-> +}
-> +
-> +static int user_write_page(struct hibernate_io_handle *io_handle, void *buf,
-> +		struct bio **bio_chain)
-> +{
-> +	int err = 0;
-> +
-> +	if (test_bit(TODO_CLOSED, to_do.flags))
-> +		return -EIO;
-> +
-> +	mutex_lock(&to_do.lock);
-> +	to_do.buffer = buf;
-> +	mutex_unlock(&to_do.lock);
-> +	set_bit(TODO_WORK, to_do.flags);
-> +	wake_up_interruptible(&to_do.wait);
-> +
-> +	wait_event(to_do.done, !test_bit(TODO_WORK, to_do.flags) ||
-> +			(err = test_bit(TODO_CLOSED, to_do.flags)));
-> +
-> +	return err ? -EIO : 0;
-> +}
-> +
-> +static int user_writer_finish(struct hibernate_io_handle *io_handle,
-> +		unsigned int flags, int error)
-> +{
-> +	int err = 0;
-> +
-> +	if (error)
-> +		set_bit(TODO_ERROR, to_do.flags);
-> +	set_bit(TODO_FINISH, to_do.flags);
-> +	wake_up_interruptible(&to_do.wait);
-> +
-> +	wait_event(to_do.done, !test_bit(TODO_FINISH, to_do.flags) ||
-> +			(err = test_bit(TODO_CLOSED, to_do.flags)));
-> +
-> +	if (!error && err)
-> +		error = -EIO;
-> +
-> +	return error;
-> +}
-> +
-> +struct hibernate_io_ops user_ops = {
-> +	.free_space = user_free_space,
-> +
-> +	.writer_start = user_writer_start,
-> +	.writer_finish = user_writer_finish,
-> +	.write_page = user_write_page,
-> +};
-> +
-> +static void snapshot_writer(struct work_struct *work)
-> +{
-> +	int ret;
-> +
-> +	ret = swsusp_write(0);
-> +	if (ret)
-> +		printk(KERN_ERR "PM: write failed with %d\n", ret);
-> +}
-> +
-> +static DECLARE_WORK(snapshot_writer_w, snapshot_writer);
-> +
->  static int snapshot_open(struct inode *inode, struct file *filp)
->  {
->  	struct snapshot_data *data;
-> @@ -115,9 +200,17 @@ static int snapshot_open(struct inode *inode, struct file *filp)
->  	}
->  	if (error)
->  		atomic_inc(&snapshot_device_available);
-> +	else {
-> +		data->prev_ops = hibernate_io_ops;
-> +		hibernate_io_ops = &user_ops;
-> +	}
->  	data->frozen = 0;
->  	data->ready = 0;
->  	data->platform_support = 0;
-> +	memset(to_do.flags, 0, sizeof(*to_do.flags));
-> +	init_waitqueue_head(&to_do.wait);
-> +	init_waitqueue_head(&to_do.done);
-> +	mutex_init(&to_do.lock);
->  
->   Unlock:
->  	mutex_unlock(&pm_mutex);
-> @@ -131,6 +224,10 @@ static int snapshot_release(struct inode *inode, struct file *filp)
->  
->  	mutex_lock(&pm_mutex);
->  
-> +	set_bit(TODO_CLOSED, to_do.flags);
-> +	wake_up(&to_do.done);
-> +	flush_workqueue(to_do.worker);
-> +
->  	swsusp_free();
->  	free_basic_memory_bitmaps();
->  	data = filp->private_data;
-> @@ -139,6 +236,7 @@ static int snapshot_release(struct inode *inode, struct file *filp)
->  		thaw_processes();
->  	pm_notifier_call_chain(data->mode == O_WRONLY ?
->  			PM_POST_HIBERNATION : PM_POST_RESTORE);
-> +	hibernate_io_ops = data->prev_ops;
->  	atomic_inc(&snapshot_device_available);
->  
->  	mutex_unlock(&pm_mutex);
-> @@ -152,6 +250,7 @@ static ssize_t snapshot_read(struct file *filp, char __user *buf,
->  	struct snapshot_data *data;
->  	ssize_t res;
->  	loff_t pg_offp = *offp & ~PAGE_MASK;
-> +	int fin = 0;
->  
->  	mutex_lock(&pm_mutex);
->  
-> @@ -161,18 +260,31 @@ static ssize_t snapshot_read(struct file *filp, char __user *buf,
->  		goto Unlock;
->  	}
->  	if (!pg_offp) { /* on page boundary? */
-> -		res = snapshot_read_next(&data->handle);
+> Well, it would be kind of equivalent to defining my own slab cache for that,
+> wouldn't it?
 
-I really don't understand why you're willing to do this.  In the s2disk case we
-have an image in memory and we only want to trasfer it to user space
-page-by-page, where user space decides when each page is going to be
-transferred.  snapshot_read_next() is for that and while you can modify it
-however you like, I don't think it's really worth it.
+I suppose so.  It would make the GFP_ATOMIC allocations a little more 
+reliable.
 
-> -		if (res <= 0)
-> +		res = wait_event_interruptible(to_do.wait,
-> +			test_bit(TODO_WORK, to_do.flags) ||
-> +			(fin = test_and_clear_bit(TODO_FINISH, to_do.flags)));
-> +		if (res)
->  			goto Unlock;
-> -	} else {
-> -		res = PAGE_SIZE - pg_offp;
-> +		if (test_bit(TODO_ERROR, to_do.flags)) {
-> +			res = -EIO;
-> +			goto Unlock;
-> +		}
-> +		if (fin)
-> +			goto wake;
->  	}
-> +	res = PAGE_SIZE - pg_offp;
->  
-> -	res = simple_read_from_buffer(buf, count, &pg_offp,
-> -			data_of(data->handle), res);
-> +	mutex_lock(&to_do.lock);
-> +	res = simple_read_from_buffer(buf, count, &pg_offp, to_do.buffer, res);
-> +	mutex_unlock(&to_do.lock);
->  	if (res > 0)
->  		*offp += res;
->  
-> +	if (!(pg_offp & ~PAGE_MASK)) {
-> +		clear_bit(TODO_WORK, to_do.flags);
-> +wake:
-> +		wake_up(&to_do.done);
-> +	}
->   Unlock:
->  	mutex_unlock(&pm_mutex);
->  
-> @@ -278,8 +390,11 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
->  		error = hibernation_snapshot(data->platform_support);
->  		if (!error)
->  			error = put_user(in_suspend, (int __user *)arg);
-> -		if (!error)
-> +		if (!error) {
-> +			if (in_suspend)
-> +				queue_work(to_do.worker, &snapshot_writer_w);
->  			data->ready = 1;
-> +		}
->  		break;
->  
->  	case SNAPSHOT_ATOMIC_RESTORE:
-> @@ -473,7 +588,16 @@ static struct miscdevice snapshot_device = {
->  
->  static int __init snapshot_device_init(void)
->  {
-> -	return misc_register(&snapshot_device);
-> +	int ret;
-> +
-> +	to_do.worker = create_singlethread_workqueue("suspend_worker");
-> +	if (!to_do.worker)
-> +		return -ENOMEM;
-> +
-> +	ret = misc_register(&snapshot_device);
-> +	if (ret)
-> +		destroy_workqueue(to_do.worker);
-> +	return ret;
->  };
->  
->  device_initcall(snapshot_device_init);
-
-And using a special workqueue for this purpose is seriously over the top IMnshO.
-
-Why don't you just regard s2disk as a special case and don't touch it
-(or modify it only so much to prevent it from getting in the way)?
-
-Rafael
+Alan Stern
