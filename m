@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [update 2] Re: [RFC][PATCH] PM: Avoid losing wakeup
-	events during suspend
-Date: Fri, 25 Jun 2010 01:06:41 +0200
-Message-ID: <201006250106.41855.rjw__5984.88098844445$1277421018$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1006241257410.1654-100000@iolanthe.rowland.org>
+Subject: [PATCH 3/6] ACPI / EC: Drop suspend and resume routines
+Date: Fri, 25 Jun 2010 01:20:38 +0200
+Message-ID: <201006250120.38554.rjw__37196.3441408754$1277422214$gmane$org@sisk.pl>
+References: <201006250117.45148.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006241257410.1654-100000@iolanthe.rowland.org>
+In-Reply-To: <201006250117.45148.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,57 +17,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+Cc: len.brown@intel.com, "Lin, Ming M" <ming.m.lin@intel.com>, "Moore,
+	Robert" <robert.moore@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Alexey Starikovskiy <astarikovskiy@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, June 24, 2010, Alan Stern wrote:
-> On Thu, 24 Jun 2010, Rafael J. Wysocki wrote:
-> 
-> > > This is slightly different from the wakelock design.  Each call to
-> > > pm_stay_awake() must be paired with a call to pm_relax(), allowing one
-> > > device to have multiple concurrent critical sections, whereas calls to
-> > > pm_wakeup_event() must not be paired with anything.  With wakelocks,
-> > > you couldn't have multiple pending events for the same device.
-> > 
-> > You could, but you needed to define multiple wakelocks for the same device for
-> > this purpose.
-> 
-> Yeah, okay, but who's going to do that?
-> 
-> > > I'm not sure which model is better in practice.  No doubt the Android people 
-> > > will prefer their way.
-> > 
-> > I suppose so.
-> 
-> It may not make a significant difference in the end.  You can always
-> emulate the wakelock approach by not calling pm_stay_awake() when you
-> know there is an earlier call still pending.
-> 
-> > > This requires you to define an explicit PCI_WAKEUP_COOLDOWN delay.  I 
-> > > think that's okay; I had to do something similar with USB and SCSI.  
-> > > (And I still think it would be a good idea to prevent workqueue threads 
-> > > from freezing until their queues are empty.)
-> > 
-> > I guess you mean the freezable ones?
-> 
-> Yes.  The unfreezable workqueue threads don't have to worry about 
-> getting frozen while their queues are non-empty.  :-)
-> 
-> >  I'm not sure if that helps a lot, because
-> > new work items may still be added after the workqueue thread has been frozen.
-> 
-> That's not the point.  If a wakeup handler queues a work item (for
-> example, by calling pm_request_resume) then it wouldn't need to guess a
-> timeout.  The work item would be guaranteed to run before the system
-> could suspend again.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-You seem to be referring to the PM workqueue specifically.  Perhaps it would be
-better to special-case it and stop it by adding a barrier work during suspend
-instead of just freezing?  Then, it wouldn't need to be singlethread any more.
+The suspend and resume routines provided by the EC driver are not
+really necessary, because the handler of the GPE disabled by them
+is not going to be executed after suspend_device_irqs() and before
+resume_device_irqs() anyway.
 
-Still, I think the timeout is necessary anyway in case the driver simply
-doesn't handle the event and user space needs time to catch up.  Unfortunately,
-the PCI wakeup code doesn't know what happens next in advance.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/ec.c |   18 ------------------
+ 1 file changed, 18 deletions(-)
 
-Rafael
+Index: linux-2.6/drivers/acpi/ec.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/ec.c
++++ linux-2.6/drivers/acpi/ec.c
+@@ -1088,22 +1088,6 @@ error:
+ 	return -ENODEV;
+ }
+ 
+-static int acpi_ec_suspend(struct acpi_device *device, pm_message_t state)
+-{
+-	struct acpi_ec *ec = acpi_driver_data(device);
+-	/* Stop using the GPE, but keep it reference counted. */
+-	acpi_set_gpe(NULL, ec->gpe, ACPI_GPE_DISABLE);
+-	return 0;
+-}
+-
+-static int acpi_ec_resume(struct acpi_device *device)
+-{
+-	struct acpi_ec *ec = acpi_driver_data(device);
+-	/* Enable the GPE again, but don't reference count it once more. */
+-	acpi_set_gpe(NULL, ec->gpe, ACPI_GPE_ENABLE);
+-	return 0;
+-}
+-
+ static struct acpi_driver acpi_ec_driver = {
+ 	.name = "ec",
+ 	.class = ACPI_EC_CLASS,
+@@ -1111,8 +1095,6 @@ static struct acpi_driver acpi_ec_driver
+ 	.ops = {
+ 		.add = acpi_ec_add,
+ 		.remove = acpi_ec_remove,
+-		.suspend = acpi_ec_suspend,
+-		.resume = acpi_ec_resume,
+ 		},
+ };
+ 
