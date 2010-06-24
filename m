@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [update] Re: [RFC][PATCH] PM: Avoid losing wakeup
+Subject: Re: [update 2] Re: [RFC][PATCH] PM: Avoid losing wakeup
 	events during suspend
-Date: Thu, 24 Jun 2010 16:48:46 +0200
-Message-ID: <201006241648.46448.rjw__38956.0878662907$1277391299$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1006220952290.1631-100000@iolanthe.rowland.org>
-	<201006222159.28081.rjw__37084.1419128284$1277237903$gmane$org@sisk.pl>
-	<4C2368C8.7020708@mit.edu>
+Date: Thu, 24 Jun 2010 17:06:44 +0200
+Message-ID: <201006241706.45094.rjw__25194.9031990536$1277392298$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1006231038510.1617-100000@iolanthe.rowland.org>
+	<201006240017.58665.rjw@sisk.pl> <201006241513.06116.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C2368C8.7020708@mit.edu>
+In-Reply-To: <201006241513.06116.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,63 +19,85 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andy Lutomirski <luto@mit.edu>
-Cc: mark gross <640e9920@gmail.com>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, June 24, 2010, Andy Lutomirski wrote:
-> Rafael J. Wysocki wrote:
-> > On Tuesday, June 22, 2010, Rafael J. Wysocki wrote:
-> >> On Tuesday, June 22, 2010, Alan Stern wrote:
-> >>> On Tue, 22 Jun 2010, Rafael J. Wysocki wrote:
-> > ... 
-> >>>> So, even if we can say when the kernel has finished processing the event
-> >>>> (although that would be complicated in the PCIe case above), I don't think
-> >>>> it's generally possible to ensure that the entire processing of a wakeup event
-> >>>> has been completed.  This leads to the question whether or not it is worth
-> >>>> trying to detect the ending of the processing of a wakeup event.
-> >>> As Arve pointed out, in some cases it definitely is worthwhile (the
-> >>> gpio keypad matrix example).  In other cases there may be no reasonable
-> >>> way to tell.  That doesn't mean we have to give up entirely.
-> >> Well, I'm not sure, because that really depends on the hardware and bus in
-> >> question.  The necessary condition seems to be that the event be detected
-> >> and handled entirely by the same functional unit (eg. a device driver) within
-> >> the kernel and such that it is able to detect whether or not user space has
-> >> acquired the event information.  That doesn't seem to be a common case to me.
+On Thursday, June 24, 2010, Rafael J. Wysocki wrote:
+> On Thursday, June 24, 2010, Rafael J. Wysocki wrote:
+> > On Wednesday, June 23, 2010, Alan Stern wrote:
+> > > On Wed, 23 Jun 2010, Rafael J. Wysocki wrote:
+> > > 
+> > > > > Didn't we agree that timeouts would be needed for Wake-on-LAN?
+> > > > 
+> > > > Yes, we did, but in the WoL case the timeout will have to be used by the user
+> > > > space rather than the kernel IMO.
+> > > 
+> > > The kernel will still have to specify some small initial timeout.  Just 
+> > > long enough for userspace to realize what has happened and start its 
+> > > own critical section.
+> > > 
+> > > > It would make sense to add a timeout argument to pm_wakeup_event() that would
+> > > > make the system stay in the working state long enough for the driver wakeup
+> > > > code to start in the PCIe case.  I think pm_wakeup_event() mght just increment
+> > > > events_in_progress and the timer might simply decrement it.
+> > > 
+> > > Hmm.  I was thinking about a similar problem with the USB hub driver.
+> > > 
+> > > Maybe a better answer for this particular issue is to change the
+> > > workqueue code.  Don't allow a work thread to enter the freezer until
+> > > its queue is empty.  Then you wouldn't need a timeout.
+> > > 
+> > > > So, maybe it's just better to have pm_wakeup_event(dev, timeout) that will
+> > > > increment events_in_progress and set up a timer and pm_wakeup_commit(dev) that
+> > > > will delete the timer, decrement events_in_progress and increment event_count
+> > > > (unless the timer has already expired before).
+> > > > 
+> > > > That would cost us a (one more) timer in struct dev_pm_info, but it would
+> > > > allow us to cover all of the cases identified so far.  So, if a wakeup event is
+> > > > handled within one functional unit that both detects it and delivers it to
+> > > > user space, it would call pm_wakeup_event(dev, 0) (ie. infinite timeout) at the
+> > > > beginning and then pm_wakeup_commit(dev) when it's done with the event.
+> > > > If a wakeup event it's just detected by one piece of code and is going to
+> > > > be handled by another, the first one could call pm_wakeup_event(dev, tm) and
+> > > > allow the other one to call pm_wakeup_commit(dev) when it's done.  However,
+> > > > calling pm_wakeup_commit(dev) is not mandatory, so the second piece of code
+> > > > (eg. a PCI driver) doesn't really need to do anything in the simplest case.
+> > > 
+> > > You have to handle the case where pm_wakeup_commit() gets called after
+> > > the timer expires (it should do nothing).
 > > 
-> > Anyway, below's an update that addresses this particular case.
+> > Yup.
 > > 
-> > It adds two more functions, pm_wakeup_begin() and pm_wakeup_end()
-> > that play similar roles to suspend_block() and suspend_unblock(), but they
-> > don't operate on suspend blocker objects.  Instead, the first of them increases
-> > a counter of events in progress and the other one decreases this counter.
-> > Together they have the same effect as pm_wakeup_event(), but the counter
-> > of wakeup events in progress they operate on is also checked by
-> > pm_check_wakeup_events().
+> > > And what happens if the device gets a second wakeup event before the timer
+> > > for the first one expires?
 > > 
-> > Thus there are two ways kernel subsystems can signal wakeup events.  First,
-> > if the event is not explicitly handed over to user space and "instantaneous",
-> > they can simply call pm_wakeup_event() and be done with it.  Second, if the
-> > event is going to be delivered to user space, the subsystem that processes
-> > the event can call pm_wakeup_begin() right when the event is detected and
-> > pm_wakeup_end() when it's been handed over to user space.
+> > Good question.  I don't have an answer to it at the moment, but it seems to
+> > arise from using a single timer for all events.
+> > 
+> > It looks like it's simpler to make pm_wakeup_event() allocate a timer for each
+> > event and make the timer function remove it.  That would cause suspend to
+> > be blocked until the timer expires without a way to cancel it earlier, though.
 > 
-> How does userspace handle this without races?  (I don't see an example 
-> in a driver that talks to userspace in your code...)
+> So, I decided to try this after all.
 > 
-> For example, if I push a button on my keyboard, the driver calls 
-> pm_wakeup_begin().  Then userspace reads the key from the evdev device 
-> and tells the userspace suspend manager not to go to sleep.
+> Below is a new version of the patch.  It introduces pm_stay_awake(dev) and
+> pm_relax() that play the roles of the "old" pm_wakeup_begin() and
+> pm_wakeup_end().
 > 
-> But there's a race: the keyboard driver (or input subsystem) could call 
-> pm_wakeup_end() before the userspace program has a chance to tell the 
-> suspend manager not to sleep.
+> pm_wakeup_event() now takes an extra timeout argument and uses it for
+> deferred execution of pm_relax().  So, one can either use the
+> pm_stay_awake(dev) / pm_relax() pair, or use pm_wakeup_event(dev, timeout)
+> if the ending is under someone else's control.
+> 
+> In addition to that, pm_get_wakeup_count() blocks until events_in_progress is
+> zero.
+> 
+> Please tell me what you think.
 
-That basically is what /sys/power/wakeup_count is for.  The power manager is
-supposed to first read from it (that will block if there are any events in
-progress in the last, recently posted, version of the patch), obtain ACKs from
-user space event consumers known to it, then write to
-/sys/power/wakeup_count (that will fail if there were any wakeup events in the
-meantime) and write to /sys/power/state only if that was successful.
+Ah, one piece is missing.  Namely, the waiting /sys/power/wakeup_count reader
+needs to be woken up when events_in_progress goes down to zero.
+
+I'll send a new version with this bug fixed later today.
 
 Rafael
