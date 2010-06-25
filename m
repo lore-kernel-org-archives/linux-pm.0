@@ -1,13 +1,15 @@
-From: Dave Jones <davej@redhat.com>
-Subject: RFC: Don't enable both cpuidle governors when NO_HZ is
-	enabled.
-Date: Thu, 24 Jun 2010 23:52:54 -0400
-Message-ID: <20100625035254.GA25695@redhat.com>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: [update 2] Re: [RFC][PATCH] PM: Avoid losing wakeup
+ events during suspend
+Date: Fri, 25 Jun 2010 08:40:56 +0200
+Message-ID: <20100625084056.188ba96d__39184.5508981079$1277448162$gmane$org@schatten.dmk.lab>
+References: <201006241819.25055.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.1006241257410.1654-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1006241257410.1654-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,32 +19,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Does this patch make sense ?
+On Thu, 24 Jun 2010 13:09:27 -0400 (EDT)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-I noticed we setup both governors during boot..
+> > > This requires you to define an explicit PCI_WAKEUP_COOLDOWN delay.  I 
+> > > think that's okay; I had to do something similar with USB and SCSI.  
+> > > (And I still think it would be a good idea to prevent workqueue threads 
+> > > from freezing until their queues are empty.)
 
- kernel: [    3.387035] cpuidle: using governor ladder
- kernel: [    3.391541] cpuidle: using governor menu
+I'm not that familiar with the freezer, but couldn't it be
+deadlocky if the work depends on some already frozen part?
 
-which seems wasteful.
+What about a new work-type that calls
+pm_relax() after executing it's workfunction and executing
+pm_stay_awake() on enqueue?
 
-With this patch, we configure either ladder, or menu, depending on
-whether NO_HZ is set.
 
-Signed-off-by: Dave Jones <davej@redhat.com>
-
---- linux-2.6.34.noarch/drivers/cpuidle/Kconfig~	2010-06-24 23:48:08.000000000 -0400
-+++ linux-2.6.34.noarch/drivers/cpuidle/Kconfig	2010-06-24 23:48:13.000000000 -0400
-@@ -11,7 +11,7 @@ config CPU_IDLE
- 
- config CPU_IDLE_GOV_LADDER
- 	bool
--	depends on CPU_IDLE
-+	depends on CPU_IDLE && !NO_HZ
- 	default y
- 
- config CPU_IDLE_GOV_MENU
+Cheers,
+Flo
