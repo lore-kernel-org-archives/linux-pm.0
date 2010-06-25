@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 8/9] PM / Hibernate: dealign swsusp_info
-Date: Fri, 25 Jun 2010 15:54:46 +0200
-Message-ID: <201006251554.46466.rjw__23378.545131027$1277474217$gmane$org@sisk.pl>
+Subject: Re: [PATCH 9/9] PM / Hibernate: move non-swap code to
+	image.c
+Date: Fri, 25 Jun 2010 15:55:12 +0200
+Message-ID: <201006251555.13125.rjw__35970.3011032709$1277474241$gmane$org@sisk.pl>
 References: <1275468768-28229-1-git-send-email-jslaby@suse.cz>
-	<1275468768-28229-8-git-send-email-jslaby@suse.cz>
+	<1275468768-28229-9-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1275468768-28229-8-git-send-email-jslaby@suse.cz>
+In-Reply-To: <1275468768-28229-9-git-send-email-jslaby@suse.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,31 +24,17 @@ Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, jirislaby
 List-Id: linux-pm@vger.kernel.org
 
 On Wednesday, June 02, 2010, Jiri Slaby wrote:
-> From: Jiri Slaby <jirislaby@gmail.com>
-> 
-> Now there is no need to have swsusp_info page aligned thanks to chunk
-> i/o support. We may add more info after it on the very same page.
-> Later...
+> Now, when all the swap-independent code was separated, it's time to
+> move it into a separate file called image.c. Although snapshot.c is
+> image related too, we want to move the snapshot.c code to mm/,
+> because it is rather a memory management so that mm people won't
+> forget about hibernation. Hence we don't pollute snapshot.c with
+> image processing here.
 
-OK
+Makes sense.
 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 > ---
->  kernel/power/power.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/power/power.h b/kernel/power/power.h
-> index 6e2e796..1fdbfe7 100644
-> --- a/kernel/power/power.h
-> +++ b/kernel/power/power.h
-> @@ -12,7 +12,7 @@ struct swsusp_info {
->  	unsigned long		image_pages;
->  	unsigned long		pages;
->  	unsigned long		size;
-> -} __attribute__((aligned(PAGE_SIZE)));
-> +};
->  
->  #ifdef CONFIG_HIBERNATION
->  #ifdef CONFIG_ARCH_HIBERNATION_HEADER
-> 
+
+Rafael
