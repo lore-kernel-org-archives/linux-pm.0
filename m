@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [update 2] Re: [RFC][PATCH] PM: Avoid losing wakeup
-	events during suspend
-Date: Fri, 25 Jun 2010 15:28:19 +0200
-Message-ID: <201006251528.19898.rjw__24289.0395726592$1277472697$gmane$org@sisk.pl>
-References: <201006241819.25055.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.1006241257410.1654-100000@iolanthe.rowland.org>
-	<20100625084056.188ba96d@schatten.dmk.lab>
+Subject: Re: [PATCH 4/9] PM / Hibernate: user,
+	implement user_ops reader
+Date: Fri, 25 Jun 2010 15:37:06 +0200
+Message-ID: <201006251537.06601.rjw__40781.9855878644$1277473157$gmane$org@sisk.pl>
+References: <1275468768-28229-1-git-send-email-jslaby@suse.cz>
+	<1275468768-28229-4-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100625084056.188ba96d@schatten.dmk.lab>
+In-Reply-To: <1275468768-28229-4-git-send-email-jslaby@suse.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,31 +19,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, jirislaby@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, June 25, 2010, Florian Mickler wrote:
-> On Thu, 24 Jun 2010 13:09:27 -0400 (EDT)
-> Alan Stern <stern@rowland.harvard.edu> wrote:
+On Wednesday, June 02, 2010, Jiri Slaby wrote:
+> Switch /dev/snapshot writer to hibernate_io_ops approach so that we
+> can do whatever we want with snapshot processing code. All the later
+> code changes will be transparent and needn't care about different
+> readers/writers.
 > 
-> > > > This requires you to define an explicit PCI_WAKEUP_COOLDOWN delay.  I 
-> > > > think that's okay; I had to do something similar with USB and SCSI.  
-> > > > (And I still think it would be a good idea to prevent workqueue threads 
-> > > > from freezing until their queues are empty.)
+> In this patch only reader is implemented, writer was done previously.
 > 
-> I'm not that familiar with the freezer, but couldn't it be
-> deadlocky if the work depends on some already frozen part?
+> It works similarly to writer, CONSUMER here is snapshot layer,
+> PRODUCER is fops->write.
 
-No, in the case of freezable workqueues (which is the one we're discussing)
-they generally can't depend on anything freezable, because it's never known
-which freezable tasks will be frozen first.
+Here, I have pretty much the same comment as for [3/9].  I don't really think
+it's necessary or even useful to change the s2disk code paths.
 
-> What about a new work-type that calls
-> pm_relax() after executing it's workfunction and executing
-> pm_stay_awake() on enqueue?
-
-That might be useful., although it doesn't really help here, because there
-still is a window between queuing up a work item and executing it.
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> ---
 
 Rafael
