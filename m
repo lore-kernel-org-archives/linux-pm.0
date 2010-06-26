@@ -1,119 +1,90 @@
-From: Andy Lutomirski <amluto@gmail.com>
-Subject: Re: [update] Re: [RFC][PATCH] PM: Avoid losing wakeup
-	events during suspend
-Date: Thu, 24 Jun 2010 11:21:54 -0400
-Message-ID: <5CBFA89B-B49D-4FEC-A8DC-2F7E672542EF__21210.3172009394$1277523518$gmane$org@gmail.com>
-References: <Pine.LNX.4.44L0.1006220952290.1631-100000@iolanthe.rowland.org>
-	<201006222159.28081.rjw__37084.1419128284$1277237903$gmane$org@sisk.pl>
-	<4C2368C8.7020708@mit.edu> <201006241648.46448.rjw@sisk.pl>
-Mime-Version: 1.0 (iPhone Mail 7D11)
+From: Victor Lowther <victor.lowther@gmail.com>
+Subject: Experimental power saving profile support branch in
+	pm-utils
+Date: Fri, 25 Jun 2010 23:44:22 -0500
+Message-ID: <AANLkTin4YfM8qqEAxzqa9J8KZYa2L12BcgK5BdkosMPh@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006241648.46448.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andy Lutomirski <luto@mit.edu>, mark gross <640e9920@gmail.com>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Arve@smtp1.linux-foundation.org" <Arve@smtp1.linux-foundation.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Return-path: <pm-utils-bounces+gcfp-pm-utils=m.gmane.org@lists.freedesktop.org>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/pm-utils>,
+	<mailto:pm-utils-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/pm-utils>
+List-Post: <mailto:pm-utils@lists.freedesktop.org>
+List-Help: <mailto:pm-utils-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/pm-utils>,
+	<mailto:pm-utils-request@lists.freedesktop.org?subject=subscribe>
+Sender: pm-utils-bounces+gcfp-pm-utils=m.gmane.org@lists.freedesktop.org
+Errors-To: pm-utils-bounces+gcfp-pm-utils=m.gmane.org@lists.freedesktop.org
+To: pm-utils <pm-utils@lists.freedesktop.org>, devkit-devel@lists.freedesktop.org, Linux Power Management List <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
+The latest release of pm-utils (1.4.0) added some default hooks for
+helping conserve power.  Based on the recent thread on linux-pm
+proposing a /sys/power/policy_preference knob, I decided to implement
+support for setting powersave profiles in pm-utils.  From the git
+logs:
 
+Add support for powersave policies.
 
-On Jun 24, 2010, at 10:48 AM, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+    A powersave policy is a pm-utils configuration file that the pm-powersave
+    command treats specially.  You can use it to define various levels of power
+    savings available to a system by changing the environment variables the
+    power.d hooks run with, and by blacklisting any hooks you do not want to
+    use at any given level.
 
-> On Thursday, June 24, 2010, Andy Lutomirski wrote:
->> Rafael J. Wysocki wrote:
->>> On Tuesday, June 22, 2010, Rafael J. Wysocki wrote:
->>>> On Tuesday, June 22, 2010, Alan Stern wrote:
->>>>> On Tue, 22 Jun 2010, Rafael J. Wysocki wrote:
->>> ...
->>>>>> So, even if we can say when the kernel has finished processing  
->>>>>> the event
->>>>>> (although that would be complicated in the PCIe case above), I  
->>>>>> don't think
->>>>>> it's generally possible to ensure that the entire processing of  
->>>>>> a wakeup event
->>>>>> has been completed.  This leads to the question whether or not  
->>>>>> it is worth
->>>>>> trying to detect the ending of the processing of a wakeup event.
->>>>> As Arve pointed out, in some cases it definitely is worthwhile  
->>>>> (the
->>>>> gpio keypad matrix example).  In other cases there may be no  
->>>>> reasonable
->>>>> way to tell.  That doesn't mean we have to give up entirely.
->>>> Well, I'm not sure, because that really depends on the hardware  
->>>> and bus in
->>>> question.  The necessary condition seems to be that the event be  
->>>> detected
->>>> and handled entirely by the same functional unit (eg. a device  
->>>> driver) within
->>>> the kernel and such that it is able to detect whether or not user  
->>>> space has
->>>> acquired the event information.  That doesn't seem to be a common  
->>>> case to me.
->>>
->>> Anyway, below's an update that addresses this particular case.
->>>
->>> It adds two more functions, pm_wakeup_begin() and pm_wakeup_end()
->>> that play similar roles to suspend_block() and suspend_unblock(),  
->>> but they
->>> don't operate on suspend blocker objects.  Instead, the first of  
->>> them increases
->>> a counter of events in progress and the other one decreases this  
->>> counter.
->>> Together they have the same effect as pm_wakeup_event(), but the  
->>> counter
->>> of wakeup events in progress they operate on is also checked by
->>> pm_check_wakeup_events().
->>>
->>> Thus there are two ways kernel subsystems can signal wakeup  
->>> events.  First,
->>> if the event is not explicitly handed over to user space and  
->>> "instantaneous",
->>> they can simply call pm_wakeup_event() and be done with it.   
->>> Second, if the
->>> event is going to be delivered to user space, the subsystem that  
->>> processes
->>> the event can call pm_wakeup_begin() right when the event is  
->>> detected and
->>> pm_wakeup_end() when it's been handed over to user space.
->>
->> How does userspace handle this without races?  (I don't see an  
->> example
->> in a driver that talks to userspace in your code...)
->>
->> For example, if I push a button on my keyboard, the driver calls
->> pm_wakeup_begin().  Then userspace reads the key from the evdev  
->> device
->> and tells the userspace suspend manager not to go to sleep.
->>
->> But there's a race: the keyboard driver (or input subsystem) could  
->> call
->> pm_wakeup_end() before the userspace program has a chance to tell the
->> suspend manager not to sleep.
->
-> That basically is what /sys/power/wakeup_count is for.  The power  
-> manager is
-> supposed to first read from it (that will block if there are any  
-> events in
-> progress in the last, recently posted, version of the patch), obtain  
-> ACKs from
-> user space event consumers known to it, then write to
-> /sys/power/wakeup_count (that will fail if there were any wakeup  
-> events in the
-> meantime) and write to /sys/power/state only if that was successful.
+    pm-powersave will look in /etc/pm/powersave and /usr/lib/pm-utils/powersave
+    in that order, and policy settings override any other variables or hook
+    overrides set via other methods. If no policies are in use, pm-powersave
+    considers itself to be in the default policy, and will fall back to the
+    usual settings for the powersave hooks.
 
-That sounds a good deal more complicated than the poll, block suspend,  
-read, unblock approach, but I guess that as long as both work, the  
-kernel doesn't really have to care.
+    You can set a powersave policy with
 
+    pm-powersave --(ac|battery)-policy=<policy>
 
->
-> Rafael
+    or
+
+    pm-powersave --(ac|battery)-policy <policy>
+
+    Setting a policy in this fashion does not actually apply the policy.
+
+    You can get the current powersave policy by running
+
+    pm-powersave --(ac|battery)-policy
+
+    You can list all the policies with
+
+    pm-powersave --list-policies
+
+    Policies should not know or care about the actual power source the system
+    is using -- it is expected that some users will want to use the same policy
+    no matter what power source is being used.
+
+    The "default" policy is shorthand for the way pm-powersave will behave
+    in the absence of a defined policy for either the ac or battery
+power states.
+    When on AC power, it will set everything back to the kernel defaults.
+    On battery power, it will tune things according to the powersave
+hook defaults.
+
+    If you want to apply a powersave policy directly, just run
+
+    pm-powersave <policyname>
+
+    and the policy you passed will be immediatly applied without changing the
+    preferred policy for the current power state.
+
+You can get the branch that implements this from
+http://cgit.freedesktop.org/pm-utils/ in the powersave-policies
+branch.
+
+If there is a power savings knob that we should handle but do not,
+please either send a patch to the pm-utils mailing list or email me
+directly.
+
+If there are any ideas about setting good cross-distro defaults, I am
+interested about them.
+
+Regards,
+   Victor Lowther
