@@ -1,12 +1,14 @@
-From: David Brownell <david-b@pacbell.net>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH] PM: Make it possible to avoid wakeup events
-	from being lost
-Date: Sat, 26 Jun 2010 09:54:00 -0700 (PDT)
-Message-ID: <18366.69939.qm__46546.9190422029$1277571310$gmane$org@web180315.mail.gq1.yahoo.com>
+ from being lost
+Date: Sat, 26 Jun 2010 13:14:54 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006261258140.22018-100000__17387.9772345119$1277572631$gmane$org@netrider.rowland.org>
+References: <18366.69939.qm@web180315.mail.gq1.yahoo.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <18366.69939.qm@web180315.mail.gq1.yahoo.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,71 +18,104 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: mark gross <640e9920@gmail.com>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, linux-pci@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Arve@smtp1.linux-foundation.org
+To: David Brownell <david-b@pacbell.net>
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, linux-pci@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Florian Mickler <florian@mickler.org>, Arve@smtp1.linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-This is a repeat of an issue I posted before, but
-which for some reason I never saw email back ...
+On Sat, 26 Jun 2010, David Brownell wrote:
 
-basically, I think the notion of counting wakeup
-events seems dubious on common hardware, so the
-focus might perhaps better be placed on ensuring
-userspace just receives events rather than
-trying to track events which in one context ended
-up being wakeup events.=A0 (That's simpler, and the
-system is by definition awake if it can handle any
-events at all.)
+> This is a repeat of an issue I posted before, but
+> which for some reason I never saw email back ...
 
-Thing is, "wakeup" is, for e.g. most ARMs, just a hardware attribute of wha=
-t's otherwise a routine
-event, which happens in other contexts and needs
-to be handled consistently .... nothing special
-about having woken the system too, the result ought to
-be the same regardless (from the user P.O.V.) ...=A0 (Common Examples inclu=
-de SoC peripheral IRQs that can wake the system (including GPIO and other t=
-ypes
-of external IRQ signal.)
+I replied to one of your emails on this topic.  Maybe you didn't see =
 
-BRIEFLY:  if that event doesn't arrive reliably,
-it's an issue regardless of wakeup:  either TX from
-kernel, or RX in userspace. Such bugs would need to
-be fixed.  Having them fixed will help the wakeup scenarios too of course.
+the reply.
 
-(The raciness issues might boil down to something as simple as not letting =
-userspace know about transition events to/from suspend states, but that iss=
-ue
-ought to be cleanly separable; ISTR other messages on the suspend blocker t=
-hreads have shown how to work with such clean factoring.)
+> basically, I think the notion of counting wakeup
+> events seems dubious on common hardware, so the
+> focus might perhaps better be placed on ensuring
+> userspace just receives events rather than
+> trying to track events which in one context ended
+> up being wakeup events.=A0 (That's simpler, and the
+> system is by definition awake if it can handle any
+> events at all.)
 
+I disagree.  There's no question that userspace will eventually receive =
 
+these events.  The question is whether they will be received in a =
 
-So trying to track whether a given event is what
-woke the system will often be implausible, since
-several such events might each have fired (one
-or more concurrent wakeup sources, even ... it
-could be indeterminate which one[s] happened.)
-And the event could fire without being a wakeup.
+timely manner.
 
-Yes, there are a few cases (like USB remote wakeup
-signaling and some PCI mechanisms, plus a few BIOS
-assisted situations) where certain events may be
-identifiable as wakeup sources, perhaps runtime not
-system-wide).=A0 But the common case just includes
-an event, not the ability to know that event had
-the "woke whole system from low power state"
-side effect too.
+The "counting" isn't meant as a way of keeping track of the absolute
+number of these events.  It's more like a technique for seeing how many
+remain outstanding at any time.
 
+> Thing is, "wakeup" is, for e.g. most ARMs, just a hardware attribute of w=
+hat's otherwise a routine
+> event, which happens in other contexts and needs
+> to be handled consistently .... nothing special
+> about having woken the system too, the result ought to
+> be the same regardless (from the user P.O.V.) ...=A0 (Common Examples inc=
+lude SoC peripheral IRQs that can wake the system (including GPIO and other=
+ types
+> of external IRQ signal.)
 
+There's nothing wrong with that.  All these routine events may qualify
+as "wakeup" events.  The real deciding factor is whether the event
+should cause tasks to be unfrozen (if they have already been frozen by
+the PM core).  If yes then it is a "wakeup" event; otherwise it isn't.
 
+> BRIEFLY:  if that event doesn't arrive reliably,
+> it's an issue regardless of wakeup:  either TX from
+> kernel, or RX in userspace. Such bugs would need to
+> be fixed.  Having them fixed will help the wakeup scenarios too of course.
 
-> +=A0=A0=A0 =A0=A0=A0 The
-> /sys/power/wakeup_count file allows user space to avoid
-> +=A0=A0=A0 =A0=A0=A0 losing wakeup events
-> when transitioning the system into a sleep
-> +=A0=A0=A0 =A0=A0=A0 state.=A0 Reading
-> from it returns the current number of registered
-> +=A0=A0=A0 =A0=A0=A0 wakeup events and it
-> blocks if some wakeup events are being
-> +=A0=A0=A0 =A0=A0=A0 processed at the
-> time the file is read from.=A0
+That is irrelevant to the topic at hand.  We know that these events =
+
+arrive; what we don't know is that they will properly block tasks =
+
+from being frozen (or will unfreeze them if they are already frozen).
+
+> (The raciness issues might boil down to something as simple as not lettin=
+g userspace know about transition events to/from suspend states, but that i=
+ssue
+> ought to be cleanly separable; ISTR other messages on the suspend blocker=
+ threads have shown how to work with such clean factoring.)
+> =
+
+> =
+
+> =
+
+> So trying to track whether a given event is what
+> woke the system will often be implausible, since
+> several such events might each have fired (one
+> or more concurrent wakeup sources, even ... it
+> could be indeterminate which one[s] happened.)
+> And the event could fire without being a wakeup.
+
+It doesn't matter which event(s) woke the system, and Rafael's patch =
+
+doesn't try to track this.
+
+> Yes, there are a few cases (like USB remote wakeup
+> signaling and some PCI mechanisms, plus a few BIOS
+> assisted situations) where certain events may be
+> identifiable as wakeup sources, perhaps runtime not
+> system-wide).=A0 But the common case just includes
+> an event, not the ability to know that event had
+> the "woke whole system from low power state"
+> side effect too.
+
+> > +=A0=A0=A0 =A0=A0=A0 The
+> > /sys/power/wakeup_count file allows user space to avoid
+> > +=A0=A0=A0 =A0=A0=A0 losing wakeup events
+> > when transitioning the system into a sleep
+> > +=A0=A0=A0 =A0=A0=A0 state.=A0 Reading
+
+This could have been phrased better:  The /sys/power/wakeup_count file
+allows user space to put the system into a sleep state conditionally
+subject to the arrival of concurrent wakeup events, which will either
+block the sleep transition or cause it to fail.
+
+Alan Stern
