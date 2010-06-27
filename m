@@ -1,14 +1,14 @@
-From: Suresh Rajashekara <suresh.raj+linuxomap@gmail.com>
-Subject: Re: wait_for_completion_interruptible does not wait !!
-Date: Sat, 26 Jun 2010 21:08:07 -0700
-Message-ID: <AANLkTiktmoiyX4c8x1XtJ353sv0flV5NqIQrptrDXPnM__6809.70071484825$1277611771$gmane$org@mail.gmail.com>
-References: <AANLkTikPOcNZk5ISX2WDHSmsPDw_a5_3Ic3owAbO4o0y@mail.gmail.com>
-	<Pine.LNX.4.44L0.1006201120210.22272-100000@netrider.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: Make it possible to avoid wakeup events
+ from being lost
+Date: Sun, 27 Jun 2010 11:50:05 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006271142190.3772-100000__33669.6030026816$1277653875$gmane$org@netrider.rowland.org>
+References: <201006261514.13491.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006201120210.22272-100000@netrider.rowland.org>
+In-Reply-To: <201006261514.13491.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,58 +18,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: vivin uthappa <vivinuthappa@gmail.com>, Sudhakar R <sudhakar.raj@gmail.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, linux-pci@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Florian Mickler <florian@mickler.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jun 20, 2010 at 8:52 AM, Alan Stern <stern@rowland.harvard.edu> wro=
-te:
->
-> What happens if the variable is completed while nobody is waiting for
-> it? =A0The next time somebody tries to wait, won't the wait terminate
-> immediately?
->
+On Sat, 26 Jun 2010, Rafael J. Wysocki wrote:
 
-Haven't tested it but will reply with the answer once I get a chance to tes=
-t it.
+> +void pm_relax(void)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&events_lock, flags);
+> +	if (events_in_progress) {
+> +		event_count++;
+> +		if (!--events_in_progress)
+> +			wake_up_all(&events_wait_queue);
+> +	}
+> +	spin_unlock_irqrestore(&events_lock, flags);
+> +}
 
+> +bool pm_get_wakeup_count(unsigned long *count)
+> +{
+> +	bool ret;
+> +
+> +	spin_lock_irq(&events_lock);
+> +	if (capable(CAP_SYS_ADMIN))
+> +		events_check_enabled = false;
+> +
+> +	if (events_in_progress) {
+> +		DEFINE_WAIT(wait);
+> +
+> +		do {
+> +			prepare_to_wait(&events_wait_queue, &wait,
+> +					TASK_INTERRUPTIBLE);
+> +			if (!events_in_progress)
+> +				break;
+> +			spin_unlock_irq(&events_lock);
+> +
+> +			schedule();
+> +
+> +			spin_lock_irq(&events_lock);
+> +		} while (!signal_pending(current));
+> +		finish_wait(&events_wait_queue, &wait);
+> +	}
+> +	*count = event_count;
+> +	ret = !events_in_progress;
+> +	spin_unlock_irq(&events_lock);
+> +	return ret;
+> +}
 
->> I tried wait_for_completion instead, but now the kernel refuses to suspe=
-nd.
->>
->> I have tried wait queues and mutexs with no success.
->>
->> Could anyone please point me how I can resolve this issue? Is there
->> any construct which can block inside the kernel during suspend/resume?
->
-> Yes: The freezer.
->
->> Can there be a blocking call active while we suspend?
->
-> Yes, in theory. =A0In practice it's not a good idea, since the call
-> wouldn't be able to distinguish between an actual signal and the onset
-> of a suspend. =A0You might end up with a call that ignores all signals
-> and hence cannot be interrupted.
->
+Here's a thought.  Presumably pm_relax() will end up getting called a 
+lot more often than pm_get_wakeup_count().  Instead of using a wait 
+queue, you could make pm_get_wakeup_count() poll at 100-ms intervals.  
+The total overhead would be smaller.
 
-Just for the information of others on the list, here is what we did to
-solve this issue, we designed a freezer-friendly wrapper around
-wait_for_completion_interruptible()
+Here's another thought.  If event_count and events_in_progress were 
+atomic_t then the new spinlock wouldn't be needed at all.  (But you 
+would need an appropriate pair of memory barriers, to guarantee that 
+when a writer decrements events_in_progress to 0 and increments 
+event_count, a reader won't see events_in_progress == 0 without also 
+seeing the incremented event_count.)  Overall, this may not be a
+significant improvement.
 
-<SNIP>
-#define wait_for_completion_freezable(ptr_completion)           \
-({                                                              \
-   int __retval;                                                \
-   do {                                                         \
-       __retval =3D wait_for_completion_interruptible(            \
-                       ptr_completion);                         \
-       if (__retval && !freezing(current))                      \
-           break;                                               \
-   } while (try_to_freeze());                                   \
-   __retval;                                                    \
-})
-
-</SNIP>
-
-Thanks
-Suresh
+Alan Stern
