@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: David Brownell <david-b@pacbell.net>
 Subject: Re: [PATCH] PM: Make it possible to avoid wakeup events
- from being lost
-Date: Sat, 26 Jun 2010 15:58:23 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1006261550400.24010-100000__32157.3629430079$1277582373$gmane$org@netrider.rowland.org>
-References: <201006262021.42966.rjw@sisk.pl>
+	from being lost
+Date: Sat, 26 Jun 2010 19:43:39 -0700 (PDT)
+Message-ID: <323677.5124.qm__24259.6858916388$1277606693$gmane$org@web180313.mail.gq1.yahoo.com>
+References: <Pine.LNX.4.44L0.1006261258140.22018-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006262021.42966.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1006261258140.22018-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,34 +18,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, linux-pci@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, linux-pci@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Florian Mickler <florian@mickler.org>, Arve@smtp1.linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 26 Jun 2010, Rafael J. Wysocki wrote:
 
-> On Saturday, June 26, 2010, Alan Stern wrote:
-> > On Sat, 26 Jun 2010, David Brownell wrote:
-> ... 
-> > > > +        The
-> > > > /sys/power/wakeup_count file allows user space to avoid
-> > > > +        losing wakeup events
-> > > > when transitioning the system into a sleep
-> > > > +        state.  Reading
-> > 
-> > This could have been phrased better:  The /sys/power/wakeup_count file
-> > allows user space to put the system into a sleep state conditionally
-> > subject to the arrival of concurrent wakeup events, which will either
-> > block the sleep transition or cause it to fail.
-> 
-> I'll chage this in the final version.  Thanks!
+> > This is a repeat of an issue I posted before, but
+> > which for some reason I never saw email back ...
+> =
 
-Even this should be simplified, if possible.  Maybe something like: ...  
-put the system into a sleep state while taking into account the
-concurrent arrival of wakeup events ...
+> I replied to one of your emails on this topic.=A0 Maybe you didn't see th=
+e reply.
 
-I tried to put the word "reliably" in there, but it didn't seem to fit.  
-After all, the current /sys/power/state is already very reliable about 
-putting the system to sleep!
+I guess not; I'll see if there's some message
+buried in a too-much-email folder.)
+> =
 
-Alan Stern
+> > basically, I think the notion of counting wakeup
+> > events seems dubious on common hardware, ...
+> I disagree.=A0
+> =
+
+> The "counting" isn't meant as a way of keeping track of the absolute
+> number of these events.=A0 It's more like a technique  for seeing how many
+> remain outstanding at any time.
+
+But if you can't count them with any
+reliability, you can't know *that* either... so
+there must be a a problem with that model.
