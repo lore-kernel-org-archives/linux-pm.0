@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: Make it possible to avoid wakeup events
- from being lost
-Date: Sat, 26 Jun 2010 23:06:59 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1006262254060.28065-100000__19381.6041959964$1277608071$gmane$org@netrider.rowland.org>
-References: <323677.5124.qm@web180313.mail.gq1.yahoo.com>
+From: Suresh Rajashekara <suresh.raj+linuxomap@gmail.com>
+Subject: Re: wait_for_completion_interruptible does not wait !!
+Date: Sat, 26 Jun 2010 21:08:07 -0700
+Message-ID: <AANLkTiktmoiyX4c8x1XtJ353sv0flV5NqIQrptrDXPnM__6809.70071484825$1277611771$gmane$org@mail.gmail.com>
+References: <AANLkTikPOcNZk5ISX2WDHSmsPDw_a5_3Ic3owAbO4o0y@mail.gmail.com>
+	<Pine.LNX.4.44L0.1006201120210.22272-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <323677.5124.qm@web180313.mail.gq1.yahoo.com>
+In-Reply-To: <Pine.LNX.4.44L0.1006201120210.22272-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,45 +18,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, linux-pci@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Florian Mickler <florian@mickler.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: vivin uthappa <vivinuthappa@gmail.com>, Sudhakar R <sudhakar.raj@gmail.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 26 Jun 2010, David Brownell wrote:
+On Sun, Jun 20, 2010 at 8:52 AM, Alan Stern <stern@rowland.harvard.edu> wro=
+te:
+>
+> What happens if the variable is completed while nobody is waiting for
+> it? =A0The next time somebody tries to wait, won't the wait terminate
+> immediately?
+>
 
-> > > basically, I think the notion of counting wakeup
-> > > events seems dubious on common hardware, ...
-> > I disagree.=A0
-> > =
+Haven't tested it but will reply with the answer once I get a chance to tes=
+t it.
 
-> > The "counting" isn't meant as a way of keeping track of the absolute
-> > number of these events.=A0 It's more like a technique  for seeing how m=
-any
-> > remain outstanding at any time.
-> =
 
-> But if you can't count them with any
-> reliability, you can't know *that* either... so
-> there must be a a problem with that model.
+>> I tried wait_for_completion instead, but now the kernel refuses to suspe=
+nd.
+>>
+>> I have tried wait queues and mutexs with no success.
+>>
+>> Could anyone please point me how I can resolve this issue? Is there
+>> any construct which can block inside the kernel during suspend/resume?
+>
+> Yes: The freezer.
+>
+>> Can there be a blocking call active while we suspend?
+>
+> Yes, in theory. =A0In practice it's not a good idea, since the call
+> wouldn't be able to distinguish between an actual signal and the onset
+> of a suspend. =A0You might end up with a call that ignores all signals
+> and hence cannot be interrupted.
+>
 
-Why do you say we can't count them with any reliability?
+Just for the information of others on the list, here is what we did to
+solve this issue, we designed a freezer-friendly wrapper around
+wait_for_completion_interruptible()
 
-Or, let's put it another way: You'll grant that we can count _some_ set
-of events.  Given that, you'll probably also grant that we can keep
-track of their number reliably enough to know when the count has
-dropped to 0.  Then this becomes a question of how closely does the set
-of events we can count match up with the set of "wakeup" events?
+<SNIP>
+#define wait_for_completion_freezable(ptr_completion)           \
+({                                                              \
+   int __retval;                                                \
+   do {                                                         \
+       __retval =3D wait_for_completion_interruptible(            \
+                       ptr_completion);                         \
+       if (__retval && !freezing(current))                      \
+           break;                                               \
+   } while (try_to_freeze());                                   \
+   __retval;                                                    \
+})
 
-In fact, it doesn't have to match up perfectly.  There may be a few
-wakeup events where we don't really care if one of them occurs while
-the system is going to sleep and the sleep isn't delayed or aborted.  =
+</SNIP>
 
-(Although by definition this is never _supposed_ to happen, there may
-be cases where we just don't care.)  The other possibility is
-relatively harmless too: an event that wouldn't wake up a sleeping
-system nevertheless can delay or abort a suspend-in-progress.
-
-So overall I don't see a problem with this.  Do you have any especially
-pernicious failure modes in mind?
-
-Alan Stern
+Thanks
+Suresh
