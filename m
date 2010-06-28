@@ -1,13 +1,14 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 4/6] ACPI / EC: Do not use acpi_set_gpe
-Date: Mon, 28 Jun 2010 14:21:51 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.1006281421480.16755__42555.804437916$1277749402$gmane$org@localhost.localdomain>
-References: <201006250117.45148.rjw@sisk.pl> <201006250121.42506.rjw@sisk.pl>
+Subject: Re: [PATCH 5/6] ACPI / ACPICA: Use low-level GPE enable
+ during GPE block initialization
+Date: Mon, 28 Jun 2010 14:25:34 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1006281425310.16755__7166.8051569306$1277749606$gmane$org@localhost.localdomain>
+References: <201006250117.45148.rjw@sisk.pl> <201006250122.38904.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <201006250121.42506.rjw@sisk.pl>
+In-reply-to: <201006250122.38904.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
