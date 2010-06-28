@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [update] Re: [PATCH] PM: Make it possible to avoid
-	wakeup events from being lost
-Date: Mon, 28 Jun 2010 23:19:27 +0200
-Message-ID: <201006282319.27758.rjw__21809.2315401465$1277760205$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1006281517100.1977-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH 3/3] pm_qos: get rid of the allocation in
+	pm_qos_add_request()
+Date: Mon, 28 Jun 2010 23:59:17 +0200
+Message-ID: <201006282359.18045.rjw__5671.05657323754$1277762491$gmane$org@sisk.pl>
+References: <1277746434.10879.191.camel@mulgrave.site>
+	<1277747088.10879.201.camel@mulgrave.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006281517100.1977-100000@iolanthe.rowland.org>
+In-Reply-To: <1277747088.10879.201.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,34 +19,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, linux-pci@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pm@lists.linux-foundation.org
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: Takashi Iwai <tiwai@suse.de>, netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 28, 2010, Alan Stern wrote:
-> On Mon, 28 Jun 2010, Rafael J. Wysocki wrote:
+On Monday, June 28, 2010, James Bottomley wrote:
+> Since every caller has to squirrel away the returned pointer anyway,
+> they might as well supply the memory area.  This fixes a bug in a few of
+> the call sites where the returned pointer was dereferenced without
+> checking it for NULL (which gets returned if the kzalloc failed).
 > 
-> > Below is the patch I'd like to add to suspend-2.6/linux-next.
-> > 
-> > Rafael
-> > 
-> > ---
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > Subject: PM: Make it possible to avoid wakeup events from being lost
-> > 
-> > One of the arguments during the suspend blockers discussion was that
-> > the mainline kernel didn't contain any mechanisms making it possible
-> > to avoid losing wakeup events during system suspend.
+> I'd like to hear how sound and netdev feels about this: it will add
+> about two more pointers worth of data to struct netdev and struct
+> snd_pcm_substream .. but I think it's worth it.  If you're OK, I'll add
+> your acks and send through the pm tree.
 > 
-> I don't see anything more to complain about in the patch.  :-)
-
-Great! :-)
-
-> You probably should change the title and the first paragraph of the 
-> description to avoid saying that events can get lost.  Like:
+> This also looks to me like an android independent clean up (even though
+> it renders the request_add atomically callable).  I also added include
+> guards to include/linux/pm_qos_params.h
 > 
-> PM: Make it possible to avoid races between wakeup and system sleep
+> cc: netdev@vger.kernel.org
+> cc: Takashi Iwai <tiwai@suse.de>
+> Signed-off-by: James Bottomley <James.Bottomley@suse.de>
 
-I will, thanks!
+I like all of the patches in this series, thanks a lot for doing this!
 
+I guess it might be worth sending a CC to the LKML next round so that people
+can see [1/3] (I don't expect any objections, but anyway it would be nice).
+
+Thanks,
 Rafael
