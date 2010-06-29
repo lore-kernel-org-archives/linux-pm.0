@@ -1,17 +1,16 @@
-From: mark gross <640e9920@gmail.com>
-Subject: Re: [PATCH] PM: Make it possible to avoid wakeup events
- from being lost
-Date: Mon, 28 Jun 2010 21:43:32 -0700
-Message-ID: <20100629044332.GD6250__25856.3838121065$1277786648$gmane$org@gvim.org>
-References: <201006261514.13491.rjw@sisk.pl> <20100627222804.GA5522@gvim.org>
-	<201006281450.11285.rjw@sisk.pl>
-Reply-To: markgross@thegnar.org
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 3/3] pm_qos: get rid of the allocation in
+	pm_qos_add_request()
+Date: Tue, 29 Jun 2010 11:20:37 +0200
+Message-ID: <201006291120.37710.rjw__24632.1848979735$1277803434$gmane$org@sisk.pl>
+References: <1277746434.10879.191.camel@mulgrave.site>
+	<201006282359.18045.rjw@sisk.pl>
+	<1277763049.10879.204.camel@mulgrave.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201006281450.11285.rjw@sisk.pl>
+In-Reply-To: <1277763049.10879.204.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,74 +20,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: mark gross <640e9920@gmail.com>, markgross@thegnar.org, Neil Brown <neilb@suse.de>, linux-pci@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Florian Mickler <florian@mickler.org>, linux-pm@lists.linux-foundation.org
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: Takashi Iwai <tiwai@suse.de>, netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jun 28, 2010 at 02:50:10PM +0200, Rafael J. Wysocki wrote:
-> On Monday, June 28, 2010, mark gross wrote:
-> > Looks good to me!
+On Tuesday, June 29, 2010, James Bottomley wrote:
+> On Mon, 2010-06-28 at 23:59 +0200, Rafael J. Wysocki wrote:
+> > On Monday, June 28, 2010, James Bottomley wrote:
+> > > Since every caller has to squirrel away the returned pointer anyway,
+> > > they might as well supply the memory area.  This fixes a bug in a few of
+> > > the call sites where the returned pointer was dereferenced without
+> > > checking it for NULL (which gets returned if the kzalloc failed).
+> > > 
+> > > I'd like to hear how sound and netdev feels about this: it will add
+> > > about two more pointers worth of data to struct netdev and struct
+> > > snd_pcm_substream .. but I think it's worth it.  If you're OK, I'll add
+> > > your acks and send through the pm tree.
+> > > 
+> > > This also looks to me like an android independent clean up (even though
+> > > it renders the request_add atomically callable).  I also added include
+> > > guards to include/linux/pm_qos_params.h
+> > > 
+> > > cc: netdev@vger.kernel.org
+> > > cc: Takashi Iwai <tiwai@suse.de>
+> > > Signed-off-by: James Bottomley <James.Bottomley@suse.de>
+> > 
+> > I like all of the patches in this series, thanks a lot for doing this!
+> > 
+> > I guess it might be worth sending a CC to the LKML next round so that people
+> > can see [1/3] (I don't expect any objections, but anyway it would be nice).
 > 
-> Great, thanks!  May I add your "Acked-by" to the patch, then?
-yes.
+> I cc'd the latest owners of plist.h ... although Daniel Walker has
+> apparently since left MontaVista, Thomas Gleixner is still current ...
+> and he can speak for the RT people, who are the primary plist users.
+> 
+> I can do another round and cc lkml, I was just hoping this would be the
+> last revision.
 
-Acked-by: markgross <markgross@thegnar.org>
+OK, let's see if there's any feedback on [3/3] from netdev and Takashi.
+If there's none, I'll just put the series into my linux-next branch.
 
---mgross
- 
-> Rafael
-> 
-> 
-> > On Sat, Jun 26, 2010 at 03:14:13PM +0200, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > One of the arguments during the suspend blockers discussion was that
-> > > the mainline kernel didn't contain any mechanisms making it possible
-> > > to avoid losing wakeup events during system suspend.
-> > > 
-> > > Generally, there are two problems in that area.  First, if a wakeup
-> > > event occurs exactly when /sys/power/state is being written to, it
-> > > may be delivered to user space right before the freezer kicks in, so
-> > > the user space consumer of the event may not be able to process it
-> > > before the system is suspended.  Second, if a wakeup event occurs
-> > > after user space has been frozen, it is not generally guaranteed that
-> > > the ongoing transition of the system into a sleep state will be
-> > > aborted.
-> > > 
-> > > To address these issues introduce a new global sysfs attribute,
-> > > /sys/power/wakeup_count, associated with a running counter of wakeup
-> > > events and three helper functions, pm_stay_awake(), pm_relax(), and
-> > > pm_wakeup_event(), that may be used by kernel subsystems to control
-> > > the behavior of this attribute and to request the PM core to abort
-> > > system transitions into a sleep state already in progress.
-> > > 
-> > > The /sys/power/wakeup_count file may be read from or written to by
-> > > user space.  Reads will always succeed (unless interrupted by a
-> > > signal) and return the current value of the wakeup events counter.
-> > > Writes, however, will only succeed if the written number is equal to
-> > > the current value of the wakeup events counter.  If a write is
-> > > successful, it will cause the kernel to save the current value of the
-> > > wakeup events counter and to abort the subsequent system transition
-> > > into a sleep state if any wakeup events are reported after the write
-> > > has returned.
-> > > 
-> > > [The assumption is that before writing to /sys/power/state user space
-> > > will first read from /sys/power/wakeup_count.  Next, user space
-> > > consumers of wakeup events will have a chance to acknowledge or
-> > > veto the upcoming system transition to a sleep state.  Finally, if
-> > > the transition is allowed to proceed, /sys/power/wakeup_count will
-> > > be written to and if that succeeds, /sys/power/state will be written
-> > > to as well.  Still, if any wakeup events are reported to the PM core
-> > > by kernel subsystems after that point, the transition will be
-> > > aborted.]
-> > > 
-> > > Additionally, put a wakeup events counter into struct dev_pm_info and
-> > > make these per-device wakeup event counters available via sysfs,
-> > > so that it's possible to check the activity of various wakeup event
-> > > sources within the kernel.
-> > > 
-> > > To illustrate how subsystems can use pm_wakeup_event(), make the
-> > > low-level PCI runtime PM wakeup-handling code use it.
-> > > 
-> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > ---
+Rafael
