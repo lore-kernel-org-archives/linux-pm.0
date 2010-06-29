@@ -1,11 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Stable inclusion request - NVS changes from Matthew
-Date: Tue, 29 Jun 2010 11:28:43 +0200
-Message-ID: <201006291128.44099.rjw__1573.85656280002$1277803862$gmane$org@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: Make it possible to avoid wakeup events
+ from being lost
+Date: Tue, 29 Jun 2010 15:57:24 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006291533130.1314-100000__7831.08348628065$1277841516$gmane$org@iolanthe.rowland.org>
+References: <53596.65110.qm@web180310.mail.gq1.yahoo.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <53596.65110.qm@web180310.mail.gq1.yahoo.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,22 +18,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <greg@kroah.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, stable@kernel.org
+To: David Brownell <david-b@pacbell.net>
+Cc: mark gross <640e9920@gmail.com>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, linux-pci@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Arve@smtp1.linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Greg,
+On Mon, 28 Jun 2010, David Brownell wrote:
 
-Please include
+> Did someone post the canonical driver changes
+> to make use of this?
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=dd4c4f17d722ffeb2515bf781400675a30fcead7
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=2a6b69765ad794389f2fc3e14a0afa1a995221c2
+No, not really.  The patch itself contains an example (PCI) but it 
+doesn't demonstrate the full range of possible usages.
 
-(in this order) into the next 2.6.34.y release (and possibly older maintained
--stable kernels where they apply).
+>  Something like
+> 
+>   suspend() { /* if wake-enabled, up count */ }
+>   resume() { /* if upcounted, downcount */ }
+> 
+> is what first comes to mind.. expecting that
+> the suspend/resume methods in the driver are
+> already doing the right things for enabling
+> and later disabling the "system wake" behavior
+> on the various relevant hardware events...
 
-The first one requires a little fixup in kernel/power/Makefile , but apart from
-this they apply to 2.6.34 just fine.
+The PCI example looks like this:
 
-Thanks,
-Rafael
+	resume()
+	{
+		...
+		if (device_may_wakeup(dev))
+			pm_wakeup_event(dev, TIMEOUT_GUESS);
+		...
+	}
+
+where TIMEOUT_GUESS is an estimate of how long to wait before allowing 
+the system to sleep.
+
+For things like keyboards, an example would go more like this:
+
+	irq_handler()
+	{
+		...
+		if (key-press event occurred) {
+			...
+			if (input queue is empty)
+				pm_stay_awake(dev);
+			add event to input queue;
+			...
+		}
+		...
+	}
+
+	read_queue()
+	{
+		...
+		send queued data to userspace
+		if (input queue is empty)
+			pm_relax();
+		...
+	}
+
+I left out the device_may_wakeup tests; things become rather 
+complicated if you can have more than one keyboard feeding the same 
+input queue and some of them are wakeup-enabled while others aren't.
+
+Clearly the appropriate changes will depend on the subsystem and the
+kind of event.  They may also end up depending on the platform; perhaps
+this will be used only on relatively small systems like an Android
+phone.
+
+Alan Stern
