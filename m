@@ -1,14 +1,12 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] PM: Make it possible to avoid wakeup events
-	from being lost
-Date: Mon, 28 Jun 2010 16:28:29 -0700 (PDT)
-Message-ID: <53596.65110.qm__7805.49947307936$1277767761$gmane$org@web180310.mail.gq1.yahoo.com>
-References: <201006280159.10885.rjw@sisk.pl>
+From: Nathaniel Felsen <nfelsen@gmail.com>
+Subject: test acpi with acpi_fakekey and acpi_listen ... am I
+	missing something ?
+Date: Mon, 28 Jun 2010 19:33:32 -0700
+Message-ID: <AANLkTinPUiVWLMLoQ8xroaNl9jnhHMlASBfAuMROEHgP@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201006280159.10885.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,18 +16,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: mark gross <640e9920@gmail.com>, Florian Mickler <florian@mickler.org>, Neil Brown <neilb@suse.de>, linux-pci@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Arve@smtp1.linux-foundation.org, linux-pm@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Did someone post the canonical driver changes
-to make use of this?  Something like
+Hi,
+I'm trying to write an application that would execute a certain action
+before the computers goes to sleep and after it wakes up.
+I saw the man of apcid and that socket /var/run/acpid.socket (I'm
+using ubuntu 10.4).
+In my various test, I never get anything sent to that socket so I'd
+like to test it independently from my application.
+I saw the commands acpi_fakekey and acpi_listen
+On 1 terminal I run:
+sudo acpi_listen -c 1  (I know the sudo isn't really necessary
+normally)
 
-  suspend() { /* if wake-enabled, up count */ }
-  resume() { /* if upcounted, downcount */ }
+On another term I tried tones of command around
+sudo acpi_fakekey KEY_VOLUMEUP
 
-is what first comes to mind.. expecting that
-the suspend/resume methods in the driver are
-already doing the right things for enabling
-and later disabling the "system wake" behavior
-on the various relevant hardware events...
+where I would change KEY_VOLUMEUP for some other value....
+
+In my testing I never got anything in acpi_listen. It never quit, it
+never printed anything....
+
+Am I missing something or the acpi isn't working on my computer ???
+Let me know if you have some suggestion on how to troubleshoot my issue
+
+acpi_listen -v
+acpid-1.0.10
+
+Nat
