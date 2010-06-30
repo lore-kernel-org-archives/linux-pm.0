@@ -1,18 +1,13 @@
-From: mark gross <640e9920@gmail.com>
-Subject: Re: [update] Re: [PATCH] PM: Make it possible to avoid
- wakeup events from being lost
-Date: Wed, 30 Jun 2010 06:47:50 -0700
-Message-ID: <20100630134750.GA16978__47808.2792753868$1277905733$gmane$org@gvim.org>
-References: <Pine.LNX.4.44L0.1006281006360.1977-100000@iolanthe.rowland.org>
-	<201006282101.54041.rjw@sisk.pl>
-	<20100630091038.6af2a53b@schatten.dmk.lab>
-Reply-To: markgross@thegnar.org
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: About run time power management in linux
+Date: Wed, 30 Jun 2010 10:23:41 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1006301019140.1707-100000@iolanthe.rowland.org>
+References: <BLU102-W77098297EEED290634D10EBCC0@phx.gbl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100630091038.6af2a53b@schatten.dmk.lab>
+In-Reply-To: <BLU102-W77098297EEED290634D10EBCC0@phx.gbl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,39 +17,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, linux-pci@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pm@lists.linux-foundation.org
+To: Raj Kumar <rajkumar278@hotmail.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 30, 2010 at 09:10:38AM +0200, Florian Mickler wrote:
-> Hi Rafael!
-> 
-> On Mon, 28 Jun 2010 21:01:53 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > On Monday, June 28, 2010, Alan Stern wrote:
-> > > On Mon, 28 Jun 2010, Rafael J. Wysocki wrote:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > Subject: PM: Make it possible to avoid wakeup events from being lost
-> 
-> I have nothing substantial to add, but just wanted to let you know that
-> this approach seems like a good alternative to me. As far as I can see
-> the userspace suspend-blocker interface could be expressed in terms of
-> this kernel facility which brings android closer to mainline.
-> 
-> The only thing I haven't thought through yet is the 'maintain a discrete
-> set of constraints' vs 'just increment a number' thing. Especially if
-> what we loose in information through that (in comparison to 'the other
-> approach') is made up for by easier in-kernel-API.  I _think_ if there
-> is any need for in-kernel-accounting (i don't know that) it could be
-> retro-fitted by using the trace event infrastructure?
+Please fix your email client to wrap lines after about 72 columns and 
+not to insert excess blank lines.
 
-Adding ftracing hooks and some less invasive partial state or trace
-support to this and pm_qos is likely the next order of business.
+On Wed, 30 Jun 2010, Raj Kumar wrote:
 
---mgross
-
+> Hi,
 > 
-> Cheers,
-> Flo
+> I am working in power management. I have few questions about run time power management which was merged in linux 2.6.32 kernel onwards. 
+> 
+>  
+> 
+> Since the run time power management defines that when idle, suspend and resume will be scheduled, now the thing is from device driver perspective, 
+> 
+>  
+> 
+> it is bus driver that will suspend and resume its devices. but what from driver perspective driver needs to implement means as run time power management 
+> 
+>  
+> 
+> has also helper functions which will tell PM core that when to call various callbacks for suspend and resume for drivers (device, bus). 
+> 
+>  
+> 
+> But it might be case when the whole bus is not idle and still some drivers can be put into low power mode. 
+> 
+>  
+> 
+> Then does bus driver will be responsible for invoking the driver's suspend and resume (run time) or PM core will do that ? 
+
+The PM core will invoke the bus driver's runtime_idle, runtime_suspend,
+and runtime_resume callback functions.  These functions are then
+responsible for invoking the device driver's suspend and resume 
+routines.
+
+Alan Stern
