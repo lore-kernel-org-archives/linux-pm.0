@@ -1,13 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [REGRESSION] usb devices don't wake up the system
-Date: Thu, 1 Jul 2010 01:40:08 +0200
-Message-ID: <201007010140.08158.rjw@sisk.pl>
-References: <1277940699.4138.29.camel@localhost.localdomain>
+Subject: Re: [update] Re: [PATCH] PM: Make it possible to avoid
+	wakeup events from being lost
+Date: Thu, 1 Jul 2010 01:52:03 +0200
+Message-ID: <201007010152.03869.rjw__36068.301605019$1277942107$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1006301535450.1707-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1277940699.4138.29.camel@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.44L0.1006301535450.1707-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,101 +18,146 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, linux-pci@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 01, 2010, Maxim Levitsky wrote:
-> Hi,
+On Wednesday, June 30, 2010, Alan Stern wrote:
+> On Wed, 30 Jun 2010, Rafael J. Wysocki wrote:
 > 
+> > > Since there's no longer any way to cancel a call to pm_wakeup_event()  
+> > > or close the "no suspend" period early, there is no need to use
+> > > dynamically-allocated delayed_work structures.  You can make do with a
+> > > single static timer; always keep it set to expire at the latest time
+> > > passed to pm_wakeup_event().
+> > 
+> > The decremenations of events_in_progress wouldn't be balanced with
+> > incrementations this way.  Or do you have any clever way of dealing with
+> > that in mind?
 > 
-> This is my desktop, and I don't use it much.
-> I updated the kernel from 2.6.33 to 2.6.35-rc3, and my usb mouse (usb
-> 1.1 of course) doesn't wake the system anymore.
+> Keep track of the current expiration time in a static variable called
+> wakeup_timeout, and use 0 to indicate there is no timeout.
 
-Please wait for 2.6.35-rc4 to appear and see if there's any difference.
+I invented a slightly different version in the meantime, which is appended
+as a patch on top of the original one (I don't want to modify the original
+patch, since it's been reviewed already by several people and went to my
+linux-next branch).
 
-> I used (and still do) to enable wakeup via /proc/acpi/wakeup.
+> In pm_wakeup_event() (everything protected by the spinlock):
 > 
+> 	unsigned long new_timeout = jiffies + msecs_to_jiffies(msecs);
+> 	if (new_timeout == 0)
+> 		new_timeout = 1;
 > 
-> maxim@MAIN:~$ cat bin/system/wake_all 
-> #! /bin/bash
+> 	++event_count;
+> 	if (!wakeup_timeout || time_after(new_timeout, wakeup_timeout)) {
+> 		if (!wakeup_timeout)
+> 			++events_in_progress;
+> 		wakeup_timeout = new_timeout;
+> 		mod_timer(&wakeup_timer, wakeup_timeout);
+> 	}
 > 
-> echo "UHC1" > /proc/acpi/wakeup		# ICH8 UHCI1
-> echo "UHC2" > /proc/acpi/wakeup		# ICH8 UHCI2
-> echo "UHC3" > /proc/acpi/wakeup		# ICH8 UHCI3
-> echo "UHC4" > /proc/acpi/wakeup		# ICH8 UHCI4
-> echo "UHC5" > /proc/acpi/wakeup		# ICH8 UHCI5
+> In the timer routine:
 > 
-> echo "ILAN" > /proc/acpi/wakeup		# ICH8 internal (lan/azal//EHCI)
-> echo "P32" >  /proc/acpi/wakeup 	# ICH8 external (PCI/PCI express)
-> echo "UAR1" > /proc/acpi/wakeup		# SUPERIO (UART/Sleep button)
+> 	if (wakeup_timeout && time_before_eq(wakeup_timeout, jiffies)) {
+> 		--events_in_progres;
+> 		wakeup_timeout = 0;
+> 	}
+> 
 
-That shouldn't be necessary.
+---
+ drivers/base/power/wakeup.c |   47 +++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 36 insertions(+), 11 deletions(-)
 
-> I checked, and it looks like power/wakeup attributes are enabled:
-> 
-> root@MAIN:/sys/bus/pci/devices/0000:00:1d.0# cat power/wakeup 
-> enabled
-> root@MAIN:/sys/bus/pci/devices/0000:00:1d.0# cd usb5/
-> root@MAIN:/sys/bus/pci/devices/0000:00:1d.0/usb5# cat power/wakeup 
-> enabled
-> root@MAIN:/sys/bus/pci/devices/0000:00:1d.0/usb5# cd 5-1/
-> root@MAIN:/sys/bus/pci/devices/0000:00:1d.0/usb5/5-1# cat power/wakeup 
-> enabled <--- this I set manually to enabled, didn't help
-> root@MAIN:/sys/bus/pci/devices/0000:00:1d.0/usb5/5-1# cat id
-> idProduct  idVendor   
-> root@MAIN:/sys/bus/pci/devices/0000:00:1d.0/usb5/5-1# cat idVendor 
-> 1241
-> root@MAIN:/sys/bus/pci/devices/0000:00:1d.0/usb5/5-1# lsusb
-> Bus 007 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> Bus 006 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> Bus 005 Device 003: ID 06a3:ff52 Saitek PLC Cyborg 3D Rumble Force Joystick
-> Bus 005 Device 002: ID 1241:1166 Belkin MI-2150 Trust Mouse
-> Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-> Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-> root@MAIN:/sys/bus/pci/devices/0000:00:1d.0/usb5/5-1# 
-> 
-> maxim@MAIN:~$ cat /proc/acpi/wakeup 
-> Device	S-state	  Status   Sysfs node
-> SLPB	  S4	*enabled   
-> P32	  S4	*enabled   pci:0000:00:1e.0
-> UAR1	  S4	*enabled   pnp:00:0a
-> ILAN	  S4	*enabled   pci:0000:00:19.0
-> PEGP	  S4	*enabled   
-> PEX0	  S4	*enabled   pci:0000:00:1c.0
-> PEX1	  S4	*enabled   pci:0000:00:1c.1
-> PEX2	  S4	*enabled   pci:0000:00:1c.2
-> PEX3	  S4	*enabled   pci:0000:00:1c.3
-> PEX4	  S4	*enabled   pci:0000:00:1c.4
-> PEX5	  S4	*enabled   
-> UHC1	  S3	*enabled   pci:0000:00:1d.0
-> UHC2	  S3	*enabled   pci:0000:00:1d.1
-> UHC3	  S3	*enabled   pci:0000:00:1d.2
-> UHC4	  S3	*enabled   
-> EHCI	  S3	*enabled   pci:0000:00:1d.7
-> EHC2	  S3	*enabled   pci:0000:00:1a.7
-> UH42	  S3	*enabled   pci:0000:00:1a.0
-> UHC5	  S3	*enabled   pci:0000:00:1a.1
-> AZAL	  S3	*enabled   pci:0000:00:1b.0
-> 
-> 
-> maxim@MAIN:~$ lsusb -t
-> /:  Bus 07.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
-> /:  Bus 06.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
-> /:  Bus 05.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
->     |__ Port 1: Dev 2, If 0, Class=HID, Driver=usbhid, 1.5M
->     |__ Port 2: Dev 3, If 0, Class=HID, Driver=usbhid, 1.5M
-> /:  Bus 04.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
-> /:  Bus 03.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
-> /:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=ehci_hcd/6p, 480M
-> /:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=ehci_hcd/4p, 480M
-> 
-> 
-> 
-> I don't have much time now for testing, but will try my best to do so.
-
-Rafael
+Index: linux-2.6/drivers/base/power/wakeup.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/wakeup.c
++++ linux-2.6/drivers/base/power/wakeup.c
+@@ -9,6 +9,7 @@
+ #include <linux/device.h>
+ #include <linux/slab.h>
+ #include <linux/sched.h>
++#include <linux/ktime.h>
+ #include <linux/capability.h>
+ #include <linux/suspend.h>
+ #include <linux/pm.h>
+@@ -28,6 +29,12 @@ static unsigned long events_in_progress;
+ 
+ static DEFINE_SPINLOCK(events_lock);
+ 
++static void pm_wakeup_timer_fn(unsigned long data);
++
++static DEFINE_TIMER(events_timer, pm_wakeup_timer_fn, 0, 0);
++static unsigned long events_timer_expires;
++static unsigned long delayed_count;
++
+ /*
+  * The functions below use the observation that each wakeup event starts a
+  * period in which the system should not be suspended.  The moment this period
+@@ -103,17 +110,23 @@ void pm_relax(void)
+ }
+ 
+ /**
+- * pm_wakeup_work_fn - Deferred closing of a wakeup event.
++ * pm_wakeup_timer_fn - Deferred closing of a wakeup event.
+  *
+  * Execute pm_relax() for a wakeup event detected in the past and free the
+  * work item object used for queuing up the work.
+  */
+-static void pm_wakeup_work_fn(struct work_struct *work)
++static void pm_wakeup_timer_fn(unsigned long data)
+ {
+-	struct delayed_work *dwork = to_delayed_work(work);
++	unsigned long flags;
+ 
+-	pm_relax();
+-	kfree(dwork);
++	spin_lock_irqsave(&events_lock, flags);
++	if (events_timer_expires && time_after(jiffies, events_timer_expires)) {
++		events_in_progress -= delayed_count;
++		event_count += delayed_count;
++		delayed_count = 0;
++		events_timer_expires = 0;
++	}
++	spin_unlock_irqrestore(&events_lock, flags);
+ }
+ 
+ /**
+@@ -132,19 +145,31 @@ static void pm_wakeup_work_fn(struct wor
+ void pm_wakeup_event(struct device *dev, unsigned int msec)
+ {
+ 	unsigned long flags;
+-	struct delayed_work *dwork;
+-
+-	dwork = msec ? kzalloc(sizeof(*dwork), GFP_ATOMIC) : NULL;
+ 
+ 	spin_lock_irqsave(&events_lock, flags);
+ 	if (dev)
+ 		dev->power.wakeup_count++;
+ 
+-	if (dwork) {
+-		INIT_DELAYED_WORK(dwork, pm_wakeup_work_fn);
+-		schedule_delayed_work(dwork, msecs_to_jiffies(msec));
++	if (msec) {
++		ktime_t kt;
++		struct timespec ts;
++		unsigned long expires;
++
++		kt = ktime_get();
++		kt = ktime_add_ns(kt, msec * NSEC_PER_MSEC);
++		ts = ktime_to_timespec(kt);
++		expires = timespec_to_jiffies(&ts);
++		if (!expires)
++			expires = 1;
++
++		if (!events_timer_expires
++		    || time_after(expires, events_timer_expires)) {
++			mod_timer(&events_timer, expires);
++			events_timer_expires = expires;
++		}
+ 
+ 		events_in_progress++;
++		delayed_count++;
+ 	} else {
+ 		event_count++;
+ 	}
