@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/5] ACPI / Sleep: Do not allocate memory for
-	saving NVS in advance
-Date: Fri, 2 Jul 2010 00:11:21 +0200
-Message-ID: <201007020011.22118.rjw__9241.44449313662$1278022670$gmane$org@sisk.pl>
+Subject: [PATCH 3/5] ACPI / Wakeup: Simplify enabling of wakeup
+	devices
+Date: Fri, 2 Jul 2010 00:13:26 +0200
+Message-ID: <201007020013.27000.rjw__12603.3675893725$1278022671$gmane$org@sisk.pl>
 References: <201007020010.13755.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,41 +24,148 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-We only can try to allocate memory for saving the NVS region if it
-is known that the target system sleep state is valid.  Otherwise
-we will leak memory if suspend_nvs_alloc() is successful and the
-target state is invalid, because suspend_nvs_free() will not be
-called in that case.
+To simplify the enabling of wakeup devices during system suspend and
+hibernation, merge acpi_enable_wakeup_device_prep() with
+acpi_disable_wakeup_device() and remove unnecessary (and no longer
+valid) comments from the latter.  Rename acpi_enable_wakeup_device()
+to acpi_enable_wakeup_devices() and acpi_disable_wakeup_device()
+to acpi_disable_wakeup_devices(), because these functions usually
+operate on multiple device objects.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/sleep.c |    9 ++-------
- 1 file changed, 2 insertions(+), 7 deletions(-)
+ drivers/acpi/sleep.c  |    5 ++---
+ drivers/acpi/sleep.h  |    5 ++---
+ drivers/acpi/wakeup.c |   50 +++++++++++---------------------------------------
+ 3 files changed, 15 insertions(+), 45 deletions(-)
 
+Index: linux-2.6/drivers/acpi/wakeup.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/wakeup.c
++++ linux-2.6/drivers/acpi/wakeup.c
+@@ -21,46 +21,18 @@
+ ACPI_MODULE_NAME("wakeup_devices")
+ 
+ /**
+- * acpi_enable_wakeup_device_prep - Prepare wake-up devices.
++ * acpi_enable_wakeup_devices - Enable wake-up device GPEs.
+  * @sleep_state: ACPI system sleep state.
+  *
+- * Enable all wake-up devices' power, unless the requested system sleep state is
+- * too deep.
++ * Enable wakeup device power of devices with the state.enable flag set and set
++ * the wakeup enable mask bits in the GPE registers that correspond to wakeup
++ * devices.
+  */
+-void acpi_enable_wakeup_device_prep(u8 sleep_state)
++void acpi_enable_wakeup_devices(u8 sleep_state)
+ {
+ 	struct list_head *node, *next;
+ 
+ 	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+-		struct acpi_device *dev = container_of(node,
+-						       struct acpi_device,
+-						       wakeup_list);
+-
+-		if (!dev->wakeup.flags.valid || !dev->wakeup.state.enabled
+-		    || (sleep_state > (u32) dev->wakeup.sleep_state))
+-			continue;
+-
+-		acpi_enable_wakeup_device_power(dev, sleep_state);
+-	}
+-}
+-
+-/**
+- * acpi_enable_wakeup_device - Enable wake-up device GPEs.
+- * @sleep_state: ACPI system sleep state.
+- *
+- * Enable all wake-up devices' GPEs, with the assumption that
+- * acpi_disable_all_gpes() was executed before, so we don't need to disable any
+- * GPEs here.
+- */
+-void acpi_enable_wakeup_device(u8 sleep_state)
+-{
+-	struct list_head *node, *next;
+-
+-	/* 
+-	 * Caution: this routine must be invoked when interrupt is disabled 
+-	 * Refer ACPI2.0: P212
+-	 */
+-	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+ 		struct acpi_device *dev =
+ 			container_of(node, struct acpi_device, wakeup_list);
+ 
+@@ -69,6 +41,9 @@ void acpi_enable_wakeup_device(u8 sleep_
+ 		    || sleep_state > (u32) dev->wakeup.sleep_state)
+ 			continue;
+ 
++		if (dev->wakeup.state.enabled)
++			acpi_enable_wakeup_device_power(dev, sleep_state);
++
+ 		/* The wake-up power should have been enabled already. */
+ 		acpi_gpe_wakeup(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
+ 				ACPI_GPE_ENABLE);
+@@ -76,13 +51,10 @@ void acpi_enable_wakeup_device(u8 sleep_
+ }
+ 
+ /**
+- * acpi_disable_wakeup_device - Disable devices' wakeup capability.
++ * acpi_disable_wakeup_devices - Disable devices' wakeup capability.
+  * @sleep_state: ACPI system sleep state.
+- *
+- * This function only affects devices with wakeup.state.enabled set, which means
+- * that it reverses the changes made by acpi_enable_wakeup_device_prep().
+  */
+-void acpi_disable_wakeup_device(u8 sleep_state)
++void acpi_disable_wakeup_devices(u8 sleep_state)
+ {
+ 	struct list_head *node, *next;
+ 
+@@ -92,7 +64,7 @@ void acpi_disable_wakeup_device(u8 sleep
+ 
+ 		if (!dev->wakeup.flags.valid
+ 		    || !(dev->wakeup.state.enabled || dev->wakeup.prepare_count)
+-		    || (sleep_state > (u32) dev->wakeup.sleep_state))
++		    || sleep_state > (u32) dev->wakeup.sleep_state)
+ 			continue;
+ 
+ 		acpi_gpe_wakeup(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
+Index: linux-2.6/drivers/acpi/sleep.h
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep.h
++++ linux-2.6/drivers/acpi/sleep.h
+@@ -2,9 +2,8 @@
+ extern u8 sleep_states[];
+ extern int acpi_suspend(u32 state);
+ 
+-extern void acpi_enable_wakeup_device_prep(u8 sleep_state);
+-extern void acpi_enable_wakeup_device(u8 sleep_state);
+-extern void acpi_disable_wakeup_device(u8 sleep_state);
++extern void acpi_enable_wakeup_devices(u8 sleep_state);
++extern void acpi_disable_wakeup_devices(u8 sleep_state);
+ 
+ extern struct list_head acpi_wakeup_device_list;
+ extern struct mutex acpi_device_lock;
 Index: linux-2.6/drivers/acpi/sleep.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/sleep.c
 +++ linux-2.6/drivers/acpi/sleep.c
-@@ -195,20 +195,15 @@ static u32 acpi_suspend_states[] = {
- static int acpi_suspend_begin(suspend_state_t pm_state)
- {
- 	u32 acpi_state = acpi_suspend_states[pm_state];
--	int error = 0;
--
--	error = suspend_nvs_alloc();
--
--	if (error)
--		return error;
-+	int error = -ENOSYS;
- 
- 	if (sleep_states[acpi_state]) {
- 		acpi_target_sleep_state = acpi_state;
- 		acpi_sleep_tts_switch(acpi_target_sleep_state);
-+		error = suspend_nvs_alloc();
- 	} else {
- 		printk(KERN_ERR "ACPI does not support this state: %d\n",
- 			pm_state);
--		error = -ENOSYS;
- 	}
- 	return error;
+@@ -73,8 +73,7 @@ static int acpi_sleep_prepare(u32 acpi_s
+ #endif
+ 	printk(KERN_INFO PREFIX "Preparing to enter system sleep state S%d\n",
+ 		acpi_state);
+-	acpi_enable_wakeup_device_prep(acpi_state);
+-	acpi_enable_wakeup_device(acpi_state);
++	acpi_enable_wakeup_devices(acpi_state);
+ 	acpi_enter_sleep_state_prep(acpi_state);
+ 	return 0;
  }
+@@ -154,7 +153,7 @@ static void acpi_pm_finish(void)
+ 
+ 	printk(KERN_INFO PREFIX "Waking up from system sleep state S%d\n",
+ 		acpi_state);
+-	acpi_disable_wakeup_device(acpi_state);
++	acpi_disable_wakeup_devices(acpi_state);
+ 	acpi_leave_sleep_state(acpi_state);
+ 
+ 	/* reset firmware waking vector */
