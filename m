@@ -1,13 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Runtime PM status sysfs attribute
-Date: Thu, 1 Jul 2010 23:13:41 +0200
-Message-ID: <201007012313.41826.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1007011621190.1303-100000@iolanthe.rowland.org>
+Subject: [PATCH 2/3] PM / Hibernate: Fix snapshot error code path
+Date: Thu, 1 Jul 2010 23:59:24 +0200
+Message-ID: <201007012359.25051.rjw__2619.35692183233$1278021785$gmane$org@sisk.pl>
+References: <201007012356.44690.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1007011621190.1303-100000@iolanthe.rowland.org>
+In-Reply-To: <201007012356.44690.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,33 +18,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 01, 2010, Alan Stern wrote:
-> On Thu, 1 Jul 2010, Dominik Brodowski wrote:
-> 
-> > Alan,
-> > 
-> > On Thu, Jul 01, 2010 at 01:16:31PM -0400, Alan Stern wrote:
-> > > As runtime PM becomes more and more popular, it seems likely that 
-> > > people will want to know whether or not their devices are getting 
-> > > suspended.  Or if not people, then programs like powertop.
-> > > 
-> > > For that reason, it seems to make sense to build the runtime_status
-> > > sysfs attribute even when CONFIG_PM_ADVANCED_DEBUG isn't enabled.  Do
-> > > you agree?
-> > 
-> > good idea; haven't looked at any dependencies yet, though...
-> 
-> Reading through the code shows there is a drawback: For subsystems that
-> don't implement runtime PM, devices will always show up as "suspended".  
-> That's not going to be very useful, unfortunately.
-> 
-> Still, for subsystems that _do_ implement runtime PM, there doesn't 
-> seem to be any other way to learn the current status of a device.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Perhaps we can rework the attribute to show "unknown" for devices that
-have power.disable_depth > 0 ?
+There is an inconsistency between hibernation_platform_enter()
+and hibernation_snapshot(), because the latter calls
+hibernation_ops->end() after failing hibernation_ops->begin(), while
+the former doesn't do that.  Make hibernation_snapshot() behave in
+the same way as hibernation_platform_enter() in that respect.
 
-Rafael
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/hibernate.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6/kernel/power/hibernate.c
+===================================================================
+--- linux-2.6.orig/kernel/power/hibernate.c
++++ linux-2.6/kernel/power/hibernate.c
+@@ -330,7 +330,7 @@ int hibernation_snapshot(int platform_mo
+ 
+ 	error = platform_begin(platform_mode);
+ 	if (error)
+-		return error;
++		goto Close;
+ 
+ 	/* Preallocate image memory before shutting down devices. */
+ 	error = hibernate_preallocate_memory();
