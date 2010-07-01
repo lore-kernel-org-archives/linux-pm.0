@@ -1,15 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [REGRESSION] usb devices don't wake up the system
-Date: Thu, 1 Jul 2010 23:07:37 +0200
-Message-ID: <201007012307.38086.rjw@sisk.pl>
-References: <1277940699.4138.29.camel@localhost.localdomain>
-	<201007012058.20758.rjw@sisk.pl>
-	<1278017083.7029.4.camel@localhost.localdomain>
+Subject: Re: Runtime PM status sysfs attribute
+Date: Thu, 1 Jul 2010 23:13:41 +0200
+Message-ID: <201007012313.41826.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.1007011621190.1303-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1278017083.7029.4.camel@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.44L0.1007011621190.1303-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,48 +17,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 01, 2010, Maxim Levitsky wrote:
-> On Thu, 2010-07-01 at 20:58 +0200, Rafael J. Wysocki wrote:
-> > On Thursday, July 01, 2010, Maxim Levitsky wrote:
-> > > On Thu, 2010-07-01 at 01:40 +0200, Rafael J. Wysocki wrote:
-> > > > On Thursday, July 01, 2010, Maxim Levitsky wrote:
-> > > > > Hi,
-> > > > > 
-> > > > > 
-> > > > > This is my desktop, and I don't use it much.
-> > > > > I updated the kernel from 2.6.33 to 2.6.35-rc3, and my usb mouse (usb
-> > > > > 1.1 of course) doesn't wake the system anymore.
-> > > > 
-> > > > Please wait for 2.6.35-rc4 to appear and see if there's any difference.
-> > > Why should I?
-> > > I always compile from git.
-> > 
-> > Well, you didn't say that.
-> > 
-> > > Just pulled Linus' tree, and nothing changed.
-> > 
-> > If you have an Ethernet adapter in that box and you can set up for Wake-on-LAN,
-> > please check if that works.
+On Thursday, July 01, 2010, Alan Stern wrote:
+> On Thu, 1 Jul 2010, Dominik Brodowski wrote:
 > 
-> Ethernet adapter (e1000e) is broken by another regression (wol maybe
-> still works...) ;-)
-
-Well, what exactly do you mean by broken?  It definitely works in my test box.
-
-> I test this, and probably bisect the problem anyway.
-
-It may not be necessary if the WoL test fails.
-
-> Note that wakeup from PS/2 keyboard does work.
-> (And it doesn't is I don't turn flags in /proc/acpi/wakeup...)
+> > Alan,
+> > 
+> > On Thu, Jul 01, 2010 at 01:16:31PM -0400, Alan Stern wrote:
+> > > As runtime PM becomes more and more popular, it seems likely that 
+> > > people will want to know whether or not their devices are getting 
+> > > suspended.  Or if not people, then programs like powertop.
+> > > 
+> > > For that reason, it seems to make sense to build the runtime_status
+> > > sysfs attribute even when CONFIG_PM_ADVANCED_DEBUG isn't enabled.  Do
+> > > you agree?
+> > 
+> > good idea; haven't looked at any dependencies yet, though...
 > 
-> Me thinks about doing a dual-bisect for both regressions at same
-> time....
+> Reading through the code shows there is a drawback: For subsystems that
+> don't implement runtime PM, devices will always show up as "suspended".  
+> That's not going to be very useful, unfortunately.
+> 
+> Still, for subsystems that _do_ implement runtime PM, there doesn't 
+> seem to be any other way to learn the current status of a device.
 
-If you have the time for that ...
+Perhaps we can rework the attribute to show "unknown" for devices that
+have power.disable_depth > 0 ?
 
 Rafael
