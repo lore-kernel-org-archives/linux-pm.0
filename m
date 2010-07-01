@@ -1,13 +1,14 @@
-From: Raj Kumar <rajkumar278@hotmail.com>
-Subject: Re: About run time power management in linux
-Date: Thu, 1 Jul 2010 19:24:14 +0530
-Message-ID: <BLU102-W760DF7F1EFCA2517505ABEBCD0@phx.gbl>
-References: <BLU102-W15580CBC32130E58FED981EBCC0@phx.gbl>,
-	<Pine.LNX.4.44L0.1006301225040.1707-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [update] Re: [PATCH] PM: Make it possible to avoid
+ wakeup events from being lost
+Date: Thu, 1 Jul 2010 09:58:12 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1007010953060.1596-100000__13893.7839343727$1277993039$gmane$org@iolanthe.rowland.org>
+References: <201007010152.03869.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2514773772379988683=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1006301225040.1707-100000@iolanthe.rowland.org>
+In-Reply-To: <201007010152.03869.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,202 +16,88 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: stern@rowland.harvard.edu
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, linux-pci@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Florian Mickler <florian@mickler.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
---===============2514773772379988683==
-Content-Type: multipart/alternative;
-	boundary="_3d0c54ea-72ab-4964-af2f-33b1cf0d3772_"
+On Thu, 1 Jul 2010, Rafael J. Wysocki wrote:
 
---_3d0c54ea-72ab-4964-af2f-33b1cf0d3772_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+> I invented a slightly different version in the meantime, which is appended
+> as a patch on top of the original one (I don't want to modify the original
+> patch, since it's been reviewed already by several people and went to my
+> linux-next branch).
 
+>  /**
+> - * pm_wakeup_work_fn - Deferred closing of a wakeup event.
+> + * pm_wakeup_timer_fn - Deferred closing of a wakeup event.
+>   *
+>   * Execute pm_relax() for a wakeup event detected in the past and free the
+>   * work item object used for queuing up the work.
+>   */
+> -static void pm_wakeup_work_fn(struct work_struct *work)
+> +static void pm_wakeup_timer_fn(unsigned long data)
+>  {
+> -	struct delayed_work *dwork = to_delayed_work(work);
+> +	unsigned long flags;
+>  
+> -	pm_relax();
+> -	kfree(dwork);
+> +	spin_lock_irqsave(&events_lock, flags);
+> +	if (events_timer_expires && time_after(jiffies, events_timer_expires)) {
 
-=20
+Should be time_after_eq.
 
-Hi Alan=2C
+> +		events_in_progress -= delayed_count;
+> +		event_count += delayed_count;
+> +		delayed_count = 0;
+> +		events_timer_expires = 0;
+> +	}
+> +	spin_unlock_irqrestore(&events_lock, flags);
+>  }
+>  
+>  /**
+> @@ -132,19 +145,31 @@ static void pm_wakeup_work_fn(struct wor
+>  void pm_wakeup_event(struct device *dev, unsigned int msec)
+>  {
+>  	unsigned long flags;
+> -	struct delayed_work *dwork;
+> -
+> -	dwork = msec ? kzalloc(sizeof(*dwork), GFP_ATOMIC) : NULL;
+>  
+>  	spin_lock_irqsave(&events_lock, flags);
+>  	if (dev)
+>  		dev->power.wakeup_count++;
+>  
+> -	if (dwork) {
+> -		INIT_DELAYED_WORK(dwork, pm_wakeup_work_fn);
+> -		schedule_delayed_work(dwork, msecs_to_jiffies(msec));
+> +	if (msec) {
+> +		ktime_t kt;
+> +		struct timespec ts;
+> +		unsigned long expires;
+> +
+> +		kt = ktime_get();
+> +		kt = ktime_add_ns(kt, msec * NSEC_PER_MSEC);
+> +		ts = ktime_to_timespec(kt);
+> +		expires = timespec_to_jiffies(&ts);
 
-=20
+Is this somehow better than jiffies + msecs_to_jiffies(msec)?
 
-I have seen in run time power management helper functions. I have some ques=
-tions during deep sleep modes
+> +		if (!expires)
+> +			expires = 1;
+> +
+> +		if (!events_timer_expires
+> +		    || time_after(expires, events_timer_expires)) {
+> +			mod_timer(&events_timer, expires);
+> +			events_timer_expires = expires;
+> +		}
+>  
+>  		events_in_progress++;
+> +		delayed_count++;
+>  	} else {
+>  		event_count++;
+>  	}
 
-and runtime sleep modes.
-
-=20
-
-1) I have seen the code and found that when System wants to go to suspend (=
-deep sleep mode)=2C it has to check for
-
-pm_runtime_barrier which inturn sees if there is a pending runtime resume t=
-hen it will not allow system to supend.
-
-So it means system suspend can not be done forcefully if the some periphera=
-l jobs are running=2C correct?
-
-=20
-
-2) it means when System deep sleep is going on=2C run time suspend will nev=
-er come to peripheral as it checks for usage counter and
-
-if it is zero then it will ask try again.
-
-=20
-
-3) if run time suspend is going on=2C  Then if system wants to go into deep=
- sleep mode=2C it will wait for run time suspend to finish and then=20
-
-gracefully do the shutdown. correct?
-
-=20
-
-4) Is it mandatory for peripheral driver but not the bus driver to implemen=
-t runtime_idle operation?
-
-=20
-
-RegardsRaj
-
-=20
-
-=20
-
-=20
-
-=20
-
-=20
-
-=20
-
-=20
-
-=20
-
-=20
-
-
-=20
-> Date: Wed=2C 30 Jun 2010 12:25:21 -0400
-> From: stern@rowland.harvard.edu
-> To: rajkumar278@hotmail.com
-> CC: linux-pm@lists.linux-foundation.org
-> Subject: RE: [linux-pm] About run time power management in linux
->=20
-> On Wed=2C 30 Jun 2010=2C Raj Kumar wrote:
->=20
-> > Hi Alan=2C
-> >=20
-> >=20
-> >=20
-> > First thanks for reply. ok as also seems to be in runtime.c=2C if devic=
-e wants to suspend and resume
-> >=20
-> >=20
-> >=20
-> > then device will call helper functions for pm core like pm_runtime_susp=
-end and pm_runtime_resume=2C
-> >=20
-> >=20
-> >=20
-> > which internally calls the runtime_resume of the bus and which in turn =
-calls the runtime_resume of the driver.
-> >=20
-> >=20
-> >=20
-> > correct ?
->=20
-> Yes.
->=20
-> Alan Stern
->=20
- 		 	   		  =
-
---_3d0c54ea-72ab-4964-af2f-33b1cf0d3772_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<style><!--
-.hmmessage P
-{
-margin:0px=3B
-padding:0px
-}
-body.hmmessage
-{
-font-size: 10pt=3B
-font-family:Tahoma
-}
---></style>
-</head>
-<body class=3D'hmmessage'>
-&nbsp=3B<BR>
-Hi Alan=2C<BR>
-&nbsp=3B<BR>
-I have seen in&nbsp=3Brun time power management helper functions. I have so=
-me questions during deep sleep modes<BR>
-and runtime sleep modes.<BR>
-&nbsp=3B<BR>
-1)&nbsp=3BI have seen the code and found that when System wants to go to su=
-spend (deep sleep mode)=2C it has to check for<BR>
-pm_runtime_barrier which inturn sees if there is a pending runtime resume t=
-hen it will not allow system to supend.<BR>
-So it means system suspend can not be done forcefully&nbsp=3Bif the&nbsp=3B=
-some peripheral jobs are running=2C correct?<BR>
-&nbsp=3B<BR>
-2) it means when System deep sleep is going on=2C run time suspend will nev=
-er come&nbsp=3Bto peripheral as it checks for usage counter and<BR>
-if it is zero then it will ask try again.<BR>
-&nbsp=3B<BR>
-3) if run time suspend is going on=2C &nbsp=3BThen if system wants to go in=
-to deep sleep mode=2C it will wait for run time suspend to finish and then =
-<BR>
-gracefully do the shutdown. correct?<BR>
-&nbsp=3B<BR>
-4) Is it mandatory for peripheral driver but not the bus driver to implemen=
-t runtime_idle operation?<BR>
-&nbsp=3B<BR>
-RegardsRaj<BR>
-&nbsp=3B<BR>
-&nbsp=3B<BR>
-&nbsp=3B<BR>
-&nbsp=3B<BR>
-&nbsp=3B<BR>
-&nbsp=3B<BR>
-&nbsp=3B<BR>
-&nbsp=3B<BR>
-&nbsp=3B<BR>
-<BR>&nbsp=3B<BR>&gt=3B Date: Wed=2C 30 Jun 2010 12:25:21 -0400<BR>&gt=3B Fr=
-om: stern@rowland.harvard.edu<BR>&gt=3B To: rajkumar278@hotmail.com<BR>&gt=
-=3B CC: linux-pm@lists.linux-foundation.org<BR>&gt=3B Subject: RE: [linux-p=
-m] About run time power management in linux<BR>&gt=3B <BR>&gt=3B On Wed=2C =
-30 Jun 2010=2C Raj Kumar wrote:<BR>&gt=3B <BR>&gt=3B &gt=3B Hi Alan=2C<BR>&=
-gt=3B &gt=3B <BR>&gt=3B &gt=3B <BR>&gt=3B &gt=3B <BR>&gt=3B &gt=3B First th=
-anks for reply. ok as also seems to be in runtime.c=2C if device wants to s=
-uspend and resume<BR>&gt=3B &gt=3B <BR>&gt=3B &gt=3B <BR>&gt=3B &gt=3B <BR>=
-&gt=3B &gt=3B then device will call helper functions for pm core like pm_ru=
-ntime_suspend and pm_runtime_resume=2C<BR>&gt=3B &gt=3B <BR>&gt=3B &gt=3B <=
-BR>&gt=3B &gt=3B <BR>&gt=3B &gt=3B which internally calls the runtime_resum=
-e of the bus and which in turn calls the runtime_resume of the driver.<BR>&=
-gt=3B &gt=3B <BR>&gt=3B &gt=3B <BR>&gt=3B &gt=3B <BR>&gt=3B &gt=3B correct =
-?<BR>&gt=3B <BR>&gt=3B Yes.<BR>&gt=3B <BR>&gt=3B Alan Stern<BR>&gt=3B <BR> =
-		 	   		  </body>
-</html>=
-
---_3d0c54ea-72ab-4964-af2f-33b1cf0d3772_--
-
---===============2514773772379988683==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============2514773772379988683==--
+Alan Stern
