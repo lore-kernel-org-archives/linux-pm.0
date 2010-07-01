@@ -1,14 +1,13 @@
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [REGRESSION] usb devices don't wake up the system
-Date: Thu, 01 Jul 2010 03:28:41 +0300
-Message-ID: <1277944121.3994.1.camel@localhost.localdomain>
-References: <1277940699.4138.29.camel@localhost.localdomain>
-	<201007010140.08158.rjw@sisk.pl>
+From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+Subject: Re: Additional fix : (was [v2]printk: fix delayed
+ messages from CPU hotplug events)
+Date: Thu, 1 Jul 2010 09:57:52 +0530
+Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02C5E41803__9178.82323633439$1277958558$gmane$org@dbde02.ent.ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201007010140.08158.rjw@sisk.pl>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,110 +17,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Kevin Cernekee <cernekee@gmail.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+Cc: King - ARM Linux <linux@arm.linux.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Russell@smtp1.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2010-07-01 at 01:40 +0200, Rafael J. Wysocki wrote:
-> On Thursday, July 01, 2010, Maxim Levitsky wrote:
-> > Hi,
-> > 
-> > 
-> > This is my desktop, and I don't use it much.
-> > I updated the kernel from 2.6.33 to 2.6.35-rc3, and my usb mouse (usb
-> > 1.1 of course) doesn't wake the system anymore.
-> 
-> Please wait for 2.6.35-rc4 to appear and see if there's any difference.
-Why should I?
-I always compile from git.
-Just pulled Linus' tree, and nothing changed.
+(Adding linux-pm@lists.linux-foundation.org)
 
-Best regards,
-	Maxim Levitsky
-
-
+> -----Original Message-----
+> From: Shilimkar, Santosh
+> Sent: Tuesday, June 29, 2010 2:22 PM
+> To: 'Kevin Cernekee'
+> Cc: linux-kernel@vger.kernel.org; Russell King - ARM Linux
+> Subject: Additional fix : (was [v2]printk: fix delayed messages from CPU
+> hotplug events)
 > 
-> > I used (and still do) to enable wakeup via /proc/acpi/wakeup.
-> > 
-> > 
-> > maxim@MAIN:~$ cat bin/system/wake_all 
-> > #! /bin/bash
-> > 
-> > echo "UHC1" > /proc/acpi/wakeup		# ICH8 UHCI1
-> > echo "UHC2" > /proc/acpi/wakeup		# ICH8 UHCI2
-> > echo "UHC3" > /proc/acpi/wakeup		# ICH8 UHCI3
-> > echo "UHC4" > /proc/acpi/wakeup		# ICH8 UHCI4
-> > echo "UHC5" > /proc/acpi/wakeup		# ICH8 UHCI5
-> > 
-> > echo "ILAN" > /proc/acpi/wakeup		# ICH8 internal (lan/azal//EHCI)
-> > echo "P32" >  /proc/acpi/wakeup 	# ICH8 external (PCI/PCI express)
-> > echo "UAR1" > /proc/acpi/wakeup		# SUPERIO (UART/Sleep button)
+> Hi,
 > 
-> That shouldn't be necessary.
+> I have faced similar issue as what is being described in below with
+> latest kernel.
 > 
-> > I checked, and it looks like power/wakeup attributes are enabled:
-> > 
-> > root@MAIN:/sys/bus/pci/devices/0000:00:1d.0# cat power/wakeup 
-> > enabled
-> > root@MAIN:/sys/bus/pci/devices/0000:00:1d.0# cd usb5/
-> > root@MAIN:/sys/bus/pci/devices/0000:00:1d.0/usb5# cat power/wakeup 
-> > enabled
-> > root@MAIN:/sys/bus/pci/devices/0000:00:1d.0/usb5# cd 5-1/
-> > root@MAIN:/sys/bus/pci/devices/0000:00:1d.0/usb5/5-1# cat power/wakeup 
-> > enabled <--- this I set manually to enabled, didn't help
-> > root@MAIN:/sys/bus/pci/devices/0000:00:1d.0/usb5/5-1# cat id
-> > idProduct  idVendor   
-> > root@MAIN:/sys/bus/pci/devices/0000:00:1d.0/usb5/5-1# cat idVendor 
-> > 1241
-> > root@MAIN:/sys/bus/pci/devices/0000:00:1d.0/usb5/5-1# lsusb
-> > Bus 007 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> > Bus 006 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> > Bus 005 Device 003: ID 06a3:ff52 Saitek PLC Cyborg 3D Rumble Force Joystick
-> > Bus 005 Device 002: ID 1241:1166 Belkin MI-2150 Trust Mouse
-> > Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> > Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> > Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-> > Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-> > Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-> > root@MAIN:/sys/bus/pci/devices/0000:00:1d.0/usb5/5-1# 
-> > 
-> > maxim@MAIN:~$ cat /proc/acpi/wakeup 
-> > Device	S-state	  Status   Sysfs node
-> > SLPB	  S4	*enabled   
-> > P32	  S4	*enabled   pci:0000:00:1e.0
-> > UAR1	  S4	*enabled   pnp:00:0a
-> > ILAN	  S4	*enabled   pci:0000:00:19.0
-> > PEGP	  S4	*enabled   
-> > PEX0	  S4	*enabled   pci:0000:00:1c.0
-> > PEX1	  S4	*enabled   pci:0000:00:1c.1
-> > PEX2	  S4	*enabled   pci:0000:00:1c.2
-> > PEX3	  S4	*enabled   pci:0000:00:1c.3
-> > PEX4	  S4	*enabled   pci:0000:00:1c.4
-> > PEX5	  S4	*enabled   
-> > UHC1	  S3	*enabled   pci:0000:00:1d.0
-> > UHC2	  S3	*enabled   pci:0000:00:1d.1
-> > UHC3	  S3	*enabled   pci:0000:00:1d.2
-> > UHC4	  S3	*enabled   
-> > EHCI	  S3	*enabled   pci:0000:00:1d.7
-> > EHC2	  S3	*enabled   pci:0000:00:1a.7
-> > UH42	  S3	*enabled   pci:0000:00:1a.0
-> > UHC5	  S3	*enabled   pci:0000:00:1a.1
-> > AZAL	  S3	*enabled   pci:0000:00:1b.0
-> > 
-> > 
-> > maxim@MAIN:~$ lsusb -t
-> > /:  Bus 07.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
-> > /:  Bus 06.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
-> > /:  Bus 05.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
-> >     |__ Port 1: Dev 2, If 0, Class=HID, Driver=usbhid, 1.5M
-> >     |__ Port 2: Dev 3, If 0, Class=HID, Driver=usbhid, 1.5M
-> > /:  Bus 04.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
-> > /:  Bus 03.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
-> > /:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=ehci_hcd/6p, 480M
-> > /:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=ehci_hcd/4p, 480M
-> > 
-> > 
-> > 
-> > I don't have much time now for testing, but will try my best to do so.
+> ------------------------------------------------
+> https://patchwork.kernel.org/patch/103347/
 > 
-> Rafael
+> When a secondary CPU is being brought up, it is not uncommon for
+> printk() to be invoked when cpu_online(smp_processor_id()) == 0.  The
+> case that I witnessed personally was on MIPS:
+> 
+> http://lkml.org/lkml/2010/5/30/4
+> 
+> If (can_use_console() == 0), printk() will spool its output to log_buf
+> and it will be visible in "dmesg", but that output will NOT be echoed to
+> the console until somebody calls release_console_sem() from a CPU that
+> is online.  Therefore, the boot time messages from the new CPU can get
+> stuck in "limbo" for a long time, and might suddenly appear on the
+> screen when a completely unrelated event (e.g. "eth0: link is down")
+> occurs.
+> 
+> This patch modifies the console code so that any pending messages are
+> automatically flushed out to the console whenever a CPU hotplug
+> operation completes successfully or aborts.
+> 
+> -----------------------------------------------
+> 
+> Above patch fixes only half of the problem. I mean the cpu online
+> path prints are coming on the console.
+> 
+> But similar problem also exist if there are prints in the cpu offline
+> path. I got that fixed by adding below patch on top of you patch.
+> 
+> diff --git a/kernel/printk.c b/kernel/printk.c
+> index d370b74..f4d7352 100644
+> --- a/kernel/printk.c
+> +++ b/kernel/printk.c
+> @@ -982,6 +982,9 @@ static int __cpuinit console_cpu_notify(struct
+> notifier_bloc
+>         switch (action) {
+>         case CPU_ONLINE:
+>         case CPU_UP_CANCELED:
+> +       case CPU_DEAD:
+> +       case CPU_DYING:
+> +       case CPU_DOWN_FAILED:
+>                 if (try_acquire_console_sem() == 0)
+>                         release_console_sem();
+>         }
+> 
+> 
+> 
+> Regards
+> Santosh
