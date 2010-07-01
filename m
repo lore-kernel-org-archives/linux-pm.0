@@ -1,14 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [update] Re: [PATCH] PM: Make it possible to avoid
- wakeup events from being lost
-Date: Thu, 1 Jul 2010 09:58:12 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1007010953060.1596-100000__13893.7839343727$1277993039$gmane$org@iolanthe.rowland.org>
-References: <201007010152.03869.rjw@sisk.pl>
+Subject: Re: About run time power management in linux
+Date: Thu, 1 Jul 2010 10:03:46 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1007011000340.1596-100000@iolanthe.rowland.org>
+References: <BLU102-W760DF7F1EFCA2517505ABEBCD0@phx.gbl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201007010152.03869.rjw@sisk.pl>
+In-Reply-To: <BLU102-W760DF7F1EFCA2517505ABEBCD0@phx.gbl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,86 +17,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, linux-pci@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Florian Mickler <florian@mickler.org>, linux-pm@lists.linux-foundation.org
+To: Raj Kumar <rajkumar278@hotmail.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 1 Jul 2010, Rafael J. Wysocki wrote:
+On Thu, 1 Jul 2010, Raj Kumar wrote:
 
-> I invented a slightly different version in the meantime, which is appended
-> as a patch on top of the original one (I don't want to modify the original
-> patch, since it's been reviewed already by several people and went to my
-> linux-next branch).
-
->  /**
-> - * pm_wakeup_work_fn - Deferred closing of a wakeup event.
-> + * pm_wakeup_timer_fn - Deferred closing of a wakeup event.
->   *
->   * Execute pm_relax() for a wakeup event detected in the past and free the
->   * work item object used for queuing up the work.
->   */
-> -static void pm_wakeup_work_fn(struct work_struct *work)
-> +static void pm_wakeup_timer_fn(unsigned long data)
->  {
-> -	struct delayed_work *dwork = to_delayed_work(work);
-> +	unsigned long flags;
+> Hi Alan,
+> 
 >  
-> -	pm_relax();
-> -	kfree(dwork);
-> +	spin_lock_irqsave(&events_lock, flags);
-> +	if (events_timer_expires && time_after(jiffies, events_timer_expires)) {
-
-Should be time_after_eq.
-
-> +		events_in_progress -= delayed_count;
-> +		event_count += delayed_count;
-> +		delayed_count = 0;
-> +		events_timer_expires = 0;
-> +	}
-> +	spin_unlock_irqrestore(&events_lock, flags);
->  }
+> 
+> I have seen in run time power management helper functions. I have some questions during deep sleep modes
+> 
+> and runtime sleep modes.
+> 
 >  
->  /**
-> @@ -132,19 +145,31 @@ static void pm_wakeup_work_fn(struct wor
->  void pm_wakeup_event(struct device *dev, unsigned int msec)
->  {
->  	unsigned long flags;
-> -	struct delayed_work *dwork;
-> -
-> -	dwork = msec ? kzalloc(sizeof(*dwork), GFP_ATOMIC) : NULL;
->  
->  	spin_lock_irqsave(&events_lock, flags);
->  	if (dev)
->  		dev->power.wakeup_count++;
->  
-> -	if (dwork) {
-> -		INIT_DELAYED_WORK(dwork, pm_wakeup_work_fn);
-> -		schedule_delayed_work(dwork, msecs_to_jiffies(msec));
-> +	if (msec) {
-> +		ktime_t kt;
-> +		struct timespec ts;
-> +		unsigned long expires;
-> +
-> +		kt = ktime_get();
-> +		kt = ktime_add_ns(kt, msec * NSEC_PER_MSEC);
-> +		ts = ktime_to_timespec(kt);
-> +		expires = timespec_to_jiffies(&ts);
+> 
+> 1) I have seen the code and found that when System wants to go to suspend (deep sleep mode), it has to check for
+> 
+> pm_runtime_barrier which inturn sees if there is a pending runtime resume then it will not allow system to supend.
+> 
+> So it means system suspend can not be done forcefully if the some peripheral jobs are running, correct?
 
-Is this somehow better than jiffies + msecs_to_jiffies(msec)?
+Yes.  The system suspend will have to wait until the runtime PM 
+activity is finished.
 
-> +		if (!expires)
-> +			expires = 1;
-> +
-> +		if (!events_timer_expires
-> +		    || time_after(expires, events_timer_expires)) {
-> +			mod_timer(&events_timer, expires);
-> +			events_timer_expires = expires;
-> +		}
->  
->  		events_in_progress++;
-> +		delayed_count++;
->  	} else {
->  		event_count++;
->  	}
+> 2) it means when System deep sleep is going on, run time suspend will never come to peripheral as it checks for usage counter and
+> 
+> if it is zero then it will ask try again.
+
+Basically yes, although you have the reason backward.  If the usage 
+count is _non-zero_ then runtime suspend won't occur.
+
+> 3) if run time suspend is going on,  Then if system wants to go into deep sleep mode, it will wait for run time suspend to finish and then 
+> 
+> gracefully do the shutdown. correct?
+
+Yes.
+
+> 4) Is it mandatory for peripheral driver but not the bus driver to implement runtime_idle operation?
+
+None of these are mandatory; it all depends on the bus subsystem.  
+Some subsystems don't implement runtime PM at all.
 
 Alan Stern
