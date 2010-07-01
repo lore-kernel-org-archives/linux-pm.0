@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/5] ACPI / Sleep: Rework enabling wakeup devices
-Date: Fri, 2 Jul 2010 00:12:26 +0200
-Message-ID: <201007020012.27005.rjw__11441.3941083059$1278022670$gmane$org@sisk.pl>
+Subject: [PATCH 1/5] ACPI / Sleep: Do not allocate memory for
+	saving NVS in advance
+Date: Fri, 2 Jul 2010 00:11:21 +0200
+Message-ID: <201007020011.22118.rjw__9241.44449313662$1278022670$gmane$org@sisk.pl>
 References: <201007020010.13755.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,55 +24,41 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-There is no reason why acpi_enable_wakeup_device() should be called
-with interrupts disabled, because it doesn't access hardware.  Thus
-it is possible to move it next to acpi_enable_wakeup_device_prep()
-and make the ACPI suspend, hibernate and poweroff code more
-straightforward.
+We only can try to allocate memory for saving the NVS region if it
+is known that the target system sleep state is valid.  Otherwise
+we will leak memory if suspend_nvs_alloc() is successful and the
+target state is invalid, because suspend_nvs_free() will not be
+called in that case.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/sleep.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/acpi/sleep.c |    9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
 Index: linux-2.6/drivers/acpi/sleep.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/sleep.c
 +++ linux-2.6/drivers/acpi/sleep.c
-@@ -70,10 +70,11 @@ static int acpi_sleep_prepare(u32 acpi_s
+@@ -195,20 +195,15 @@ static u32 acpi_suspend_states[] = {
+ static int acpi_suspend_begin(suspend_state_t pm_state)
+ {
+ 	u32 acpi_state = acpi_suspend_states[pm_state];
+-	int error = 0;
+-
+-	error = suspend_nvs_alloc();
+-
+-	if (error)
+-		return error;
++	int error = -ENOSYS;
  
+ 	if (sleep_states[acpi_state]) {
+ 		acpi_target_sleep_state = acpi_state;
+ 		acpi_sleep_tts_switch(acpi_target_sleep_state);
++		error = suspend_nvs_alloc();
+ 	} else {
+ 		printk(KERN_ERR "ACPI does not support this state: %d\n",
+ 			pm_state);
+-		error = -ENOSYS;
  	}
- 	ACPI_FLUSH_CPU_CACHE();
--	acpi_enable_wakeup_device_prep(acpi_state);
- #endif
- 	printk(KERN_INFO PREFIX "Preparing to enter system sleep state S%d\n",
- 		acpi_state);
-+	acpi_enable_wakeup_device_prep(acpi_state);
-+	acpi_enable_wakeup_device(acpi_state);
- 	acpi_enter_sleep_state_prep(acpi_state);
- 	return 0;
+ 	return error;
  }
-@@ -233,7 +234,6 @@ static int acpi_suspend_enter(suspend_st
- 	}
- 
- 	local_irq_save(flags);
--	acpi_enable_wakeup_device(acpi_state);
- 	switch (acpi_state) {
- 	case ACPI_STATE_S1:
- 		barrier();
-@@ -437,7 +437,6 @@ static int acpi_hibernation_enter(void)
- 	ACPI_FLUSH_CPU_CACHE();
- 
- 	local_irq_save(flags);
--	acpi_enable_wakeup_device(ACPI_STATE_S4);
- 	/* This shouldn't return.  If it returns, we have a problem */
- 	status = acpi_enter_sleep_state(ACPI_STATE_S4);
- 	/* Reprogram control registers and execute _BFS */
-@@ -682,7 +681,6 @@ static void acpi_power_off(void)
- 	/* acpi_sleep_prepare(ACPI_STATE_S5) should have already been called */
- 	printk(KERN_DEBUG "%s called\n", __func__);
- 	local_irq_disable();
--	acpi_enable_wakeup_device(ACPI_STATE_S5);
- 	acpi_enter_sleep_state(ACPI_STATE_S5);
- }
- 
