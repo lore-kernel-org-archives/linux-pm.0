@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [update] Re: [PATCH] PM: Make it possible to avoid
-	wakeup events from being lost
-Date: Thu, 1 Jul 2010 23:05:31 +0200
-Message-ID: <201007012305.31380.rjw__12675.9507380941$1278018550$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1007011627030.1303-100000@iolanthe.rowland.org>
+Subject: Re: [REGRESSION] usb devices don't wake up the system
+Date: Thu, 1 Jul 2010 23:07:37 +0200
+Message-ID: <201007012307.38086.rjw@sisk.pl>
+References: <1277940699.4138.29.camel@localhost.localdomain>
+	<201007012058.20758.rjw@sisk.pl>
+	<1278017083.7029.4.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1007011627030.1303-100000@iolanthe.rowland.org>
+In-Reply-To: <1278017083.7029.4.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,52 +19,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: mark gross <640e9920@gmail.com>, Neil Brown <neilb@suse.de>, linux-pci@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arve@smtp1.linux-foundation.org, Florian Mickler <florian@mickler.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pm@lists.linux-foundation.org
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 01, 2010, Alan Stern wrote:
-> On Thu, 1 Jul 2010, Rafael J. Wysocki wrote:
-> 
-> > > > +	if (msec) {
-> > > > +		ktime_t kt;
-> > > > +		struct timespec ts;
-> > > > +		unsigned long expires;
-> > > > +
-> > > > +		kt = ktime_get();
-> > > > +		kt = ktime_add_ns(kt, msec * NSEC_PER_MSEC);
-> > > > +		ts = ktime_to_timespec(kt);
-> > > > +		expires = timespec_to_jiffies(&ts);
-> > > 
-> > > Is this somehow better than jiffies + msecs_to_jiffies(msec)?
+On Thursday, July 01, 2010, Maxim Levitsky wrote:
+> On Thu, 2010-07-01 at 20:58 +0200, Rafael J. Wysocki wrote:
+> > On Thursday, July 01, 2010, Maxim Levitsky wrote:
+> > > On Thu, 2010-07-01 at 01:40 +0200, Rafael J. Wysocki wrote:
+> > > > On Thursday, July 01, 2010, Maxim Levitsky wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > 
+> > > > > This is my desktop, and I don't use it much.
+> > > > > I updated the kernel from 2.6.33 to 2.6.35-rc3, and my usb mouse (usb
+> > > > > 1.1 of course) doesn't wake the system anymore.
+> > > > 
+> > > > Please wait for 2.6.35-rc4 to appear and see if there's any difference.
+> > > Why should I?
+> > > I always compile from git.
 > > 
-> > I'm not sure about overflows.  That said, the "+" version is used in many
-> > places, so there's no problem I think.
+> > Well, you didn't say that.
+> > 
+> > > Just pulled Linus' tree, and nothing changed.
+> > 
+> > If you have an Ethernet adapter in that box and you can set up for Wake-on-LAN,
+> > please check if that works.
 > 
-> Hmm.  NSEC_PER_MSEC must be one million, right?  So if msec referred to
-> anything above 4 seconds (which seems unlikely but not impossible), the
-> multiplication would overflow on a 32-bit machine.
+> Ethernet adapter (e1000e) is broken by another regression (wol maybe
+> still works...) ;-)
+
+Well, what exactly do you mean by broken?  It definitely works in my test box.
+
+> I test this, and probably bisect the problem anyway.
+
+It may not be necessary if the WoL test fails.
+
+> Note that wakeup from PS/2 keyboard does work.
+> (And it doesn't is I don't turn flags in /proc/acpi/wakeup...)
 > 
-> Apart from that, the main difference between the two patches lies in
-> when the events are counted, i.e., whether event_count gets incremented
-> at the start or when the timer expires.  I can't see that it matters 
-> much either way.
+> Me thinks about doing a dual-bisect for both regressions at same
+> time....
 
-Well, your version doesn't require the additional static variable and
-generally takes fewer lines of code. :-)
-
-> > Index: linux-2.6/drivers/base/power/wakeup.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/base/power/wakeup.c
-> > +++ linux-2.6/drivers/base/power/wakeup.c
-> > @@ -9,6 +9,7 @@
-> >  #include <linux/device.h>
-> >  #include <linux/slab.h>
-> >  #include <linux/sched.h>
-> > +#include <linux/ktime.h>
-> 
-> This isn't needed any more.
-
-Right, I've dropped this line.
+If you have the time for that ...
 
 Rafael
