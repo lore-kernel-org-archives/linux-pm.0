@@ -1,12 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/3] ACPI / ACPICA: Avoid executing _PRW twice
-	for all devices
-Date: Mon, 5 Jul 2010 00:56:22 +0200
-Message-ID: <201007050056.22705.rjw__10113.2725169466$1278284701$gmane$org@sisk.pl>
+Subject: [PATCH 3/3] ACPI / ACPICA: Fail acpi_gpe_wakeup() if
+	ACPI_GPE_CAN_WAKE is unset
+Date: Mon, 5 Jul 2010 01:01:36 +0200
+Message-ID: <201007050101.36941.rjw__17157.1910068907$1278284701$gmane$org@sisk.pl>
+References: <201007050056.22705.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201007050056.22705.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,27 +23,28 @@ Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@list
 	Robert" <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Following our recent IRC discussion I thought I'd bite the bullet and prepare
-a patch to remove the execution of _PRW from ACPICA and there it goes.
+Make acpi_gpe_wakeup() return error code for GPEs whose
+ACPI_GPE_CAN_WAKE flag is not set.  This way acpi_gpe_wakeup() will
+only wake for the GPEs reported by the host OS as "wakeup" ones with
+the help of acpi_gpe_can_wake().
 
-The series is on top of the patch I sent a couple of days ago:
-https://patchwork.kernel.org/patch/110076/
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/acpica/evxfevnt.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-[1/3] - Drops the code to walk the namespace in search of _PRW and adds
-        acpi_gpe_can_wake() so that the host OS can disable wakeup GPEs
-        previously enabled unconditionally by the ACPICA initialization code.
-        This basically reproduces the current behavior except that the GPEs
-        are temporarily enabled before acpi_bus_extract_wakeup_device_power_package()
-        runs for all devices with _PRW referring to them.
-
-[2/3] - Simplifies code in acpi_ev_initialize_gpe_block(), which only is a
-        cosmetic thing, but worth doing IMO.
-
-[3/3] - Changes acpi_gpe_wakeup() to return error code for the GPEs whose
-        ACPI_GPE_CAN_WAKE flags are not set.
-
-Please apply.
-
-Rafael
+Index: linux-2.6/drivers/acpi/acpica/evxfevnt.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/acpica/evxfevnt.c
++++ linux-2.6/drivers/acpi/acpica/evxfevnt.c
+@@ -236,7 +236,7 @@ acpi_status acpi_gpe_wakeup(acpi_handle 
+ 	/* Ensure that we have a valid GPE number */
+ 
+ 	gpe_event_info = acpi_ev_get_gpe_event_info(gpe_device, gpe_number);
+-	if (!gpe_event_info) {
++	if (!gpe_event_info || !(gpe_event_info->flags & ACPI_GPE_CAN_WAKE)) {
+ 		status = AE_BAD_PARAMETER;
+ 		goto unlock_and_exit;
+ 	}
