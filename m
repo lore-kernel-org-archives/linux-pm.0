@@ -1,14 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/3] ACPI / ACPICA: Simplify
-	acpi_ev_initialize_gpe_block()
-Date: Mon, 5 Jul 2010 01:00:49 +0200
-Message-ID: <201007050100.49823.rjw__35281.5739614472$1278284699$gmane$org@sisk.pl>
-References: <201007050056.22705.rjw@sisk.pl>
+Subject: [PATCH 0/3] ACPI / ACPICA: Avoid executing _PRW twice
+	for all devices
+Date: Mon, 5 Jul 2010 00:56:22 +0200
+Message-ID: <201007050056.22705.rjw__10113.2725169466$1278284701$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201007050056.22705.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,53 +21,27 @@ Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@list
 	Robert" <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi,
 
-Simplify the main loop in acpi_ev_initialize_gpe_block() by
-rearranging code and removing the "enabled" label that is not
-necessary any more.
+Following our recent IRC discussion I thought I'd bite the bullet and prepare
+a patch to remove the execution of _PRW from ACPICA and there it goes.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/acpica/evgpeblk.c |   21 ++++++++-------------
- 1 file changed, 8 insertions(+), 13 deletions(-)
+The series is on top of the patch I sent a couple of days ago:
+https://patchwork.kernel.org/patch/110076/
 
-Index: linux-2.6/drivers/acpi/acpica/evgpeblk.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/evgpeblk.c
-+++ linux-2.6/drivers/acpi/acpica/evgpeblk.c
-@@ -472,26 +472,21 @@ acpi_ev_initialize_gpe_block(struct acpi
- 			gpe_event_info = &gpe_block->event_info[gpe_index];
- 			gpe_number = gpe_index + gpe_block->block_base_number;
- 
--			/*
--			 * If the GPE has already been enabled for runtime
--			 * signaling, make sure it remains enabled, but do not
--			 * increment its reference counter.
--			 */
--			if (gpe_event_info->runtime_count) {
--				status = acpi_ev_enable_gpe(gpe_event_info);
--				goto enabled;
--			}
--
- 			/* Ignore GPEs that have no corresponding _Lxx/_Exx method */
- 
- 			if (!(gpe_event_info->flags & ACPI_GPE_DISPATCH_METHOD)) {
- 				continue;
- 			}
- 
--			/* Enable this GPE */
-+			/*
-+			 * If the GPE has already been enabled for runtime
-+			 * signaling, make sure it remains enabled, but do not
-+			 * increment its reference counter.
-+			 */
-+			status = gpe_event_info->runtime_count ?
-+				acpi_ev_enable_gpe(gpe_event_info) :
-+				acpi_enable_gpe(gpe_device, gpe_number);
- 
--			status = acpi_enable_gpe(gpe_device, gpe_number);
-- enabled:
- 			if (ACPI_FAILURE(status)) {
- 				ACPI_EXCEPTION((AE_INFO, status,
- 						"Could not enable GPE 0x%02X",
+[1/3] - Drops the code to walk the namespace in search of _PRW and adds
+        acpi_gpe_can_wake() so that the host OS can disable wakeup GPEs
+        previously enabled unconditionally by the ACPICA initialization code.
+        This basically reproduces the current behavior except that the GPEs
+        are temporarily enabled before acpi_bus_extract_wakeup_device_power_package()
+        runs for all devices with _PRW referring to them.
+
+[2/3] - Simplifies code in acpi_ev_initialize_gpe_block(), which only is a
+        cosmetic thing, but worth doing IMO.
+
+[3/3] - Changes acpi_gpe_wakeup() to return error code for the GPEs whose
+        ACPI_GPE_CAN_WAKE flags are not set.
+
+Please apply.
+
+Rafael
