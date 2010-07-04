@@ -1,48 +1,26 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [REGRESSION] usb devices don't wake up the system
-Date: Sun, 4 Jul 2010 08:51:33 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1007040848250.16841-100000@netrider.rowland.org>
-References: <1278196923.14606.4.camel@localhost.localdomain>
+From: Victor Lowther <victor.lowther@gmail.com>
+Subject: pm-utils 1.3.1 and pm-utils 1.4.1 released
+Date: Sun, 4 Jul 2010 10:21:21 -0500
+Message-ID: <AANLkTil4j1XpoH80wnLk52qYzIHraUj0VNpEVDIwZmrT@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1278196923.14606.4.camel@localhost.localdomain>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+Return-path: <pm-utils-bounces+gcfp-pm-utils=m.gmane.org@lists.freedesktop.org>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/pm-utils>,
+	<mailto:pm-utils-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/pm-utils>
+List-Post: <mailto:pm-utils@lists.freedesktop.org>
+List-Help: <mailto:pm-utils-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/pm-utils>,
+	<mailto:pm-utils-request@lists.freedesktop.org?subject=subscribe>
+Sender: pm-utils-bounces+gcfp-pm-utils=m.gmane.org@lists.freedesktop.org
+Errors-To: pm-utils-bounces+gcfp-pm-utils=m.gmane.org@lists.freedesktop.org
+To: pm-utils <pm-utils@lists.freedesktop.org>, devkit-devel@lists.freedesktop.org, Linux Power Management List <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 4 Jul 2010, Maxim Levitsky wrote:
-
-> > Alan. thanks for saving me from another bisect...
-> > latest git tip works again.
-> 
-> I mean, I think that
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=48826626263d4a61d06fd8c5805da31f925aefa0
-> 
-> fixed the problem.
-
-Ah, yes.  Well, I can't claim a lot of credit for that because I'm the 
-person who introduced the regression in the first place!  But at least 
-it's working okay now.
-
-> > (of course I need to explicitly enable power/wakeup on the mouse), but I
-> > can live with that.)
-> > 
-> > 
-> > I want to note that I still need to enable wakeup in /power/acpi/wakeup
-> > to make USB mouse wakeup the system.
-> > This isn't a regression, but I thought that I don't need that anymore.
-
-You shouldn't.  Which setting in /proc/acpi/wakeup needs to be enabled?
-
-Alan Stern
+pm-utils 1.3.1 and 1.4.1 have been released.  They include a rewritten
+on_ac_power that queries sysfs directly for whether the system is on
+AC power or not to avoid a deadlock with upower on resume and explicit
+support in the configure script for generating the manpages.
+1.3.1 also includes the file locking and manpage fixes that were
+applied to the 1.4 series in development.
