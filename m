@@ -1,13 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: About run time power management in linux
-Date: Mon, 5 Jul 2010 09:51:55 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1007050947290.568-100000@netrider.rowland.org>
-References: <BLU102-W532408CF4DA1EA7664EDAEBB10@phx.gbl>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: [PATCH 3/3] pm_qos: get rid of the allocation in
+ pm_qos_add_request()
+Date: Mon, 05 Jul 2010 09:02:48 -0500
+Message-ID: <1278338568.2850.1.camel__49395.4090671197$1278338640$gmane$org@mulgrave.site>
+References: <1277746434.10879.191.camel@mulgrave.site>
+	<1277747088.10879.201.camel@mulgrave.site>
+	<s5hvd8ubfcz.wl%tiwai@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BLU102-W532408CF4DA1EA7664EDAEBB10@phx.gbl>
+In-Reply-To: <s5hvd8ubfcz.wl%tiwai@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,47 +20,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Raj Kumar <rajkumar278@hotmail.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Takashi Iwai <tiwai@suse.de>
+Cc: netdev@vger.kernel.org, Linux PM <linux-pm@lists.linux-foundation.org>, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 5 Jul 2010, Raj Kumar wrote:
+On Mon, 2010-07-05 at 08:41 +0200, Takashi Iwai wrote:
+> sorry for the late reply, as I've been on vacation in the last week
+> (and shut off mails intentionally :)
 
-> 
-> Hi Alan,
-> 
->  
-> 
-> I have few more questions about run time power management:
-> 
->  
-> 
-> 1) Please correct me if i am wrong. If there is a bus driver that is managing various power domains,
-> 
-> and suppose this domain has some child devices. 
-> 
->  
-> 
-> Then child has to inform run time Power management core i am idle and i want to go to get suspended,
+Envy forbids me from saying that's OK.
 
-Strictly speaking, the child device doesn't do this -- its driver does.
-
-> then run time pm core will notify the bus driver of child and then bus driver calls the corresponding child's
+> At Mon, 28 Jun 2010 12:44:48 -0500,
+> James Bottomley wrote:
+> > 
+> > Since every caller has to squirrel away the returned pointer anyway,
+> > they might as well supply the memory area.  This fixes a bug in a few of
+> > the call sites where the returned pointer was dereferenced without
+> > checking it for NULL (which gets returned if the kzalloc failed).
+> > 
+> > I'd like to hear how sound and netdev feels about this: it will add
+> > about two more pointers worth of data to struct netdev and struct
+> > snd_pcm_substream .. but I think it's worth it.  If you're OK, I'll add
+> > your acks and send through the pm tree.
+> > 
+> > This also looks to me like an android independent clean up (even though
+> > it renders the request_add atomically callable).  I also added include
+> > guards to include/linux/pm_qos_params.h
 > 
->  
+> I like the patch very well, too.
+> But, just wondering...
 > 
-> suspend. right?
-
-Right.  In fact, that's true even when the bus driver manages only a 
-single power domain.
-
-> 2) run time power management can be done at device "type" and "class". But what does mean of this device
+> > @@ -262,6 +260,11 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
+> >  	if (!pm_qos_req) /*guard against callers passing in null */
+> >  		return;
+> >  
+> > +	if (pm_qos_request_active(pm_qos_req)) {
+> > +		WARN(1, KERN_ERR "pm_qos_update_request() called for unknown object\n");
+> > +		return;
+> > +	}
+> > +
 > 
-> type. what use cases are defined for run time power management for device "type"?
+> Is this correct...?  Shouldn't it be a negative check?
 
-Here are a couple of examples.  In the USB subsystem there are two
-"types": devices and interfaces.  In the SCSI subsystem there are three
-"types": hosts, targets, and LUNs.  Each type generally needs to do 
-runtime power management differently.
+Yes, it should be a negative check ... I'll update the patch.  I guess
+this still means that no-one has managed to test it on a functional
+system ...
 
-Alan Stern
+James
