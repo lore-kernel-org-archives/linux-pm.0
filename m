@@ -1,19 +1,13 @@
-From: mark gross <markgross@thegnar.org>
-Subject: Re: [PATCH 3/3] pm_qos: get rid of the allocation in
- pm_qos_add_request()
-Date: Mon, 5 Jul 2010 12:16:42 -0700
-Message-ID: <20100705191642.GA1693__9160.37252541191$1278357562$gmane$org@gvim.org>
-References: <1277746434.10879.191.camel@mulgrave.site>
-	<1277747088.10879.201.camel@mulgrave.site>
-	<s5hvd8ubfcz.wl%tiwai@suse.de>
-	<1278338568.2850.1.camel@mulgrave.site>
-Reply-To: markgross@thegnar.org
+From: Valdis.Kletnieks@vt.edu
+Subject: mmotm 2010-07-01 pm_get_wakeup_count() declaration
+Date: Mon, 05 Jul 2010 16:35:36 -0400
+Message-ID: <74766.1278362136__18400.067909579$1278362320$gmane$org@localhost>
+References: <201007011948.o61JmnT2022795@imap1.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============7887194883585351199=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1278338568.2850.1.camel@mulgrave.site>
+In-Reply-To: Your message of "Thu, 01 Jul 2010 12:19:51 PDT."
+	<201007011948.o61JmnT2022795@imap1.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,85 +15,58 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Takashi Iwai <tiwai@suse.de>, netdev@vger.kernel.org, Linux PM <linux-pm@lists.linux-foundation.org>, markgross@thegnar.org
+To: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 05, 2010 at 09:02:48AM -0500, James Bottomley wrote:
-> On Mon, 2010-07-05 at 08:41 +0200, Takashi Iwai wrote:
-> > sorry for the late reply, as I've been on vacation in the last week
-> > (and shut off mails intentionally :)
-> 
-> Envy forbids me from saying that's OK.
-> 
-> > At Mon, 28 Jun 2010 12:44:48 -0500,
-> > James Bottomley wrote:
-> > > 
-> > > Since every caller has to squirrel away the returned pointer anyway,
-> > > they might as well supply the memory area.  This fixes a bug in a few of
-> > > the call sites where the returned pointer was dereferenced without
-> > > checking it for NULL (which gets returned if the kzalloc failed).
-> > > 
-> > > I'd like to hear how sound and netdev feels about this: it will add
-> > > about two more pointers worth of data to struct netdev and struct
-> > > snd_pcm_substream .. but I think it's worth it.  If you're OK, I'll add
-> > > your acks and send through the pm tree.
-> > > 
-> > > This also looks to me like an android independent clean up (even though
-> > > it renders the request_add atomically callable).  I also added include
-> > > guards to include/linux/pm_qos_params.h
-> > 
-> > I like the patch very well, too.
-> > But, just wondering...
-> > 
-> > > @@ -262,6 +260,11 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
-> > >  	if (!pm_qos_req) /*guard against callers passing in null */
-> > >  		return;
-> > >  
-> > > +	if (pm_qos_request_active(pm_qos_req)) {
-> > > +		WARN(1, KERN_ERR "pm_qos_update_request() called for unknown object\n");
-> > > +		return;
-> > > +	}
-> > > +
-> > 
-> > Is this correct...?  Shouldn't it be a negative check?
-> 
-> Yes, it should be a negative check ... I'll update the patch.  I guess
-> this still means that no-one has managed to test it on a functional
-> system ...
-> 
+--===============7887194883585351199==
+Content-Type: multipart/signed; boundary="==_Exmh_1278362136_4495P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
 
-well I guess that explains the warning I got on my back port of this
-patch.
+--==_Exmh_1278362136_4495P
+Content-Type: text/plain; charset=us-ascii
+
+On Thu, 01 Jul 2010 12:19:51 PDT, akpm@linux-foundation.org said:
+> The mm-of-the-moment snapshot 2010-07-01-12-19 has been uploaded to
+
+Not sure who to blame for the commit, it was in the linux-next.patch and I'm
+too lazy to pull down the git tree and dig it out.
+
+  CC      kernel/power/main.o
+kernel/power/main.c: In function 'wakeup_count_show':
+kernel/power/main.c:241: error: implicit declaration of function 'pm_get_wakeup_count'
+kernel/power/main.c: In function 'wakeup_count_store':
+kernel/power/main.c:251: error: implicit declaration of function 'pm_save_wakeup_count'
+make[2]: *** [kernel/power/main.o] Error 1
+
+Problem is that declaration in include/linux/suspend.h is wrapped in
+a #ifdef CONFIG_PM_SLEEP, but the usage in kernel/power/main.c isn't. So
+it dies a horrid death if your config doesn't include PM_SLEEP.
+
+--==_Exmh_1278362136_4495P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFMMkIYcC3lWbTT17ARAiK5AKCFH+wKqddKak0q92FzUIvIrk/rrwCgqGLf
+nPAv8+nNsZ/iUjxjvKKh/j8=
+=Ubv5
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1278362136_4495P--
 
 
-[   62.944788] ------------[ cut here ]------------                                        
-[   62.944788] WARNING: at kernel/pm_qos_params.c:266                                      
-pm_qos_update_request+0x21/0x46)                                                           
-[   62.944788] pm_qos_update_request() called for unknown object                           
-[   62.944788] Modules linked in: mrst_sspi cfspi_slave chnl_chr                           
-caif_chr chnl_net caf                                                                      
-[   62.944788] Pid: 91, comm: mrst/0 Tainted: G        W  2.6.31.6-mrst
-#30                
-[   62.944788] Call Trace:                                                                 
-[   62.944788]  [<c0145b2e>] ? pm_qos_update_request+0x21/0x46                             
-[   62.944788]  [<c012fff3>] warn_slowpath_common+0x60/0x77                                
-[   62.944788]  [<c013003e>] warn_slowpath_fmt+0x24/0x27                                   
-[   62.944788]  [<c0145b2e>] pm_qos_update_request+0x21/0x46                               
-[   62.944788]  [<c03029f2>] int_transfer_complete_work+0x19/0x65                          
-[   62.944788]  [<c013f02a>] worker_thread+0x153/0x1df                                     
-[   62.944788]  [<c03029d9>] ? int_transfer_complete_work+0x0/0x65                         
-[   62.944788]  [<c0141df1>] ? autoremove_wake_function+0x0/0x30                           
-[   62.944788]  [<c0141c7c>] kthread+0x64/0x69                                             
-[   62.944788]  [<c013eed7>] ? worker_thread+0x0/0x1df                                     
-[   62.944788]  [<c0141c18>] ? kthread+0x0/0x69                                            
-[   62.944788]  [<c01034df>] kernel_thread_helper+0x7/0x10                                 
-[   62.944788] ---[ end trace 1723851b79e06c5d ]---                                        
-[   62.944788] ------------[ cut here ]------------                                        
-[   62.944788] WARNING: at kernel/pm_qos_params.c:266          
+--===============7887194883585351199==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Sorry, I've been swamped by work and personal things the past 2 weeks.
 
---mgross
+--===============7887194883585351199==--
