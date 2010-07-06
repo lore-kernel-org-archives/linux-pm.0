@@ -1,14 +1,14 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 0/3] ACPI / ACPICA: Avoid executing _PRW
- twice for all devices
-Date: Tue, 06 Jul 2010 18:20:48 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.1007061812250.10181__43108.5831755356$1278454958$gmane$org@localhost.localdomain>
-References: <201007050056.22705.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [REGRESSION] usb devices don't wake up the system
+Date: Wed, 7 Jul 2010 01:05:09 +0200
+Message-ID: <201007070105.10082.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.1007061300580.1327-100000@iolanthe.rowland.org>
+	<1278449506.3793.8.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <201007050056.22705.rjw@sisk.pl>
+In-Reply-To: <1278449506.3793.8.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,12 +18,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, "Moore,
-	Robert" <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-series applied to acpi-test
+On Tuesday, July 06, 2010, Maxim Levitsky wrote:
+> Ok, it seems that recent changes really did made /proc/acpi/wakeup
+> unnecessary.
+> 
+...
+> 
+> I also think that I shouldn't need to set wakeup to enabled on usb
+> controller. This should be done automaticly as soon as I set 'enabled'
+> on usb device.
 
-thanks,
-Len Brown, Intel Open Source Technology Center
+That would probably require us to redesign things so that wakeup reference
+counters are used instead of the should_wakeup bit.
+
+Rafael
