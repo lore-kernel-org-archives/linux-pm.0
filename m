@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: mmotm 2010-07-01 pm_get_wakeup_count() declaration
-Date: Tue, 6 Jul 2010 20:06:13 +0200
-Message-ID: <201007062006.13931.rjw__43807.3551086292$1278439737$gmane$org@sisk.pl>
-References: <201007011948.o61JmnT2022795@imap1.linux-foundation.org>
-	<201007052243.55551.rjw@sisk.pl> <2755.1278383075@localhost>
+Subject: Re: [PATCH 1/5] ACPI / Sleep: Do not allocate memory for
+	saving NVS in advance
+Date: Tue, 6 Jul 2010 20:12:34 +0200
+Message-ID: <201007062012.34965.rjw__44822.8893838406$1278440170$gmane$org@sisk.pl>
+References: <201007020010.13755.rjw@sisk.pl> <201007020011.22118.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <2755.1278383075@localhost>
+In-Reply-To: <201007020011.22118.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,40 +18,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Valdis.Kletnieks@vt.edu
-Cc: Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, July 06, 2010, Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 05 Jul 2010 22:43:55 +0200, "Rafael J. Wysocki" said:
-> > On Monday, July 05, 2010, Valdis.Kletnieks@vt.edu wrote:
-> > > On Thu, 01 Jul 2010 12:19:51 PDT, akpm@linux-foundation.org said:
-> > > > The mm-of-the-moment snapshot 2010-07-01-12-19 has been uploaded to
-> > > 
-> > > Not sure who to blame for the commit, it was in the linux-next.patch and I'm
-> > > too lazy to pull down the git tree and dig it out.
-> > > 
-> > >   CC      kernel/power/main.o
-> > > kernel/power/main.c: In function 'wakeup_count_show':
-> > > kernel/power/main.c:241: error: implicit declaration of function 'pm_get_wakeup_count'
-> > > kernel/power/main.c: In function 'wakeup_count_store':
-> > > kernel/power/main.c:251: error: implicit declaration of function 'pm_save_wakeup_count'
-> > > make[2]: *** [kernel/power/main.o] Error 1
-> > > 
-> > > Problem is that declaration in include/linux/suspend.h is wrapped in
-> > > a #ifdef CONFIG_PM_SLEEP, but the usage in kernel/power/main.c isn't. So
-> > > it dies a horrid death if your config doesn't include PM_SLEEP.
-> > 
-> > Yeah, sorry.  I'm in the process of fixing it up.
+On Friday, July 02, 2010, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> I threw in some ad-crock #ifdef to get past that one, and hit
-> another one, same basic issue but include/linux/pm.h this time:
+> We only can try to allocate memory for saving the NVS region if it
+> is known that the target system sleep state is valid.  Otherwise
+> we will leak memory if suspend_nvs_alloc() is successful and the
+> target state is invalid, because suspend_nvs_free() will not be
+> called in that case.
 > 
->   CC      drivers/base/power/sysfs.o
-> drivers/base/power/sysfs.c: In function 'wakeup_count_show':
-> drivers/base/power/sysfs.c:152: error: 'struct dev_pm_info' has no member named 'wakeup_count'
-> make[3]: *** [drivers/base/power/sysfs.o] Error 1
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-This also should be fixed in linux-next now.
+Well, the $subject patch doesn't cover a real problem where the suspending
+of devices fails (or suspend is tested in the "devices" mode) and
+acpi_pm_finish() is not called at all.  So, the appended patch should be used
+instead.
 
 Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: ACPI / Sleep: Free NVS copy if suspending of devices fails
+
+If suspending of devices fails or system suspend is tested in the
+"devices" mode, the memory allocated for storing a copy of the ACPI
+NVS area will not be freed, because acpi_pm_finish() is not called
+in that case.  Fix this by moving the suspend_nvs_free() call to
+acpi_pm_end().
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/sleep.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/drivers/acpi/sleep.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep.c
++++ linux-2.6/drivers/acpi/sleep.c
+@@ -145,7 +145,6 @@ static void acpi_pm_finish(void)
+ {
+ 	u32 acpi_state = acpi_target_sleep_state;
+ 
+-	suspend_nvs_free();
+ 	acpi_ec_unblock_transactions();
+ 
+ 	if (acpi_state == ACPI_STATE_S0)
+@@ -167,6 +166,7 @@ static void acpi_pm_finish(void)
+  */
+ static void acpi_pm_end(void)
+ {
++	suspend_nvs_free();
+ 	/*
+ 	 * This is necessary in case acpi_pm_finish() is not called during a
+ 	 * failing transition to a sleep state.
