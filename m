@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/5] ACPI / Sleep: Do not allocate memory for
-	saving NVS in advance
-Date: Tue, 6 Jul 2010 20:12:34 +0200
-Message-ID: <201007062012.34965.rjw__44822.8893838406$1278440170$gmane$org@sisk.pl>
-References: <201007020010.13755.rjw@sisk.pl> <201007020011.22118.rjw@sisk.pl>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [REGRESSION] usb devices don't wake up the system
+Date: Tue, 06 Jul 2010 23:51:46 +0300
+Message-ID: <1278449506.3793.8.camel@localhost.localdomain>
+References: <Pine.LNX.4.44L0.1007061300580.1327-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201007020011.22118.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1007061300580.1327-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,60 +17,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, July 02, 2010, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> We only can try to allocate memory for saving the NVS region if it
-> is known that the target system sleep state is valid.  Otherwise
-> we will leak memory if suspend_nvs_alloc() is successful and the
-> target state is invalid, because suspend_nvs_free() will not be
-> called in that case.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Ok, it seems that recent changes really did made /proc/acpi/wakeup
+unnecessary.
 
-Well, the $subject patch doesn't cover a real problem where the suspending
-of devices fails (or suspend is tested in the "devices" mode) and
-acpi_pm_finish() is not called at all.  So, the appended patch should be used
-instead.
 
-Rafael
+Let me explain from beginning the current situation:
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: ACPI / Sleep: Free NVS copy if suspending of devices fails
+1. Indeed if I enable manually wakeup on both usb controller, wakeup
+works.
 
-If suspending of devices fails or system suspend is tested in the
-"devices" mode, the memory allocated for storing a copy of the ACPI
-NVS area will not be freed, because acpi_pm_finish() is not called
-in that case.  Fix this by moving the suspend_nvs_free() call to
-acpi_pm_end().
+usb controller = /sys/devices/pci0000:00/0000:00:1a.0/power/wakeup
+usb device = /sys/devices/pci0000:00/0000:00:1a.0/usb2/2-2/power/wakeup
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/sleep.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+UDEV rule to set wakeup on usb controller works:
 
-Index: linux-2.6/drivers/acpi/sleep.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep.c
-+++ linux-2.6/drivers/acpi/sleep.c
-@@ -145,7 +145,6 @@ static void acpi_pm_finish(void)
- {
- 	u32 acpi_state = acpi_target_sleep_state;
- 
--	suspend_nvs_free();
- 	acpi_ec_unblock_transactions();
- 
- 	if (acpi_state == ACPI_STATE_S0)
-@@ -167,6 +166,7 @@ static void acpi_pm_finish(void)
-  */
- static void acpi_pm_end(void)
- {
-+	suspend_nvs_free();
- 	/*
- 	 * This is necessary in case acpi_pm_finish() is not called during a
- 	 * failing transition to a sleep state.
+SUBSYSTEM=="pci", DRIVER=="uhci_hcd", ATTR{power/wakeup}="enabled"
+SUBSYSTEM=="pci", DRIVER=="ehci_hcd", ATTR{power/wakeup}="enabled"
+
+
+UDEV rule to set wakeup on device itself just doesn't work, even though
+udev executes it:
+
+ACTION=="add", ENV{DEVTYPE}=="usb_device", ATTR{power/wakeup}="enabled"
+
+I did try to add my usb id for mouse like you did. It of course doesn't
+help.
+
+I also found that above rule, *sometimes* works, but very rarely, so
+indeed something else sets it. I strongly suspect its kernel.
+
+I also think that I shouldn't need to set wakeup to enabled on usb
+controller. This should be done automaticly as soon as I set 'enabled'
+on usb device.
+
+
+Best regards,
+	Maxim Levitsky
