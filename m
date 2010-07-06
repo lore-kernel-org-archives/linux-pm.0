@@ -1,14 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH ver. 2] PM: make runtime_status attribute not
-	debug-only
-Date: Tue, 6 Jul 2010 09:58:49 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1007060957410.2447-100000@iolanthe.rowland.org>
-References: <201007022114.41645.rjw@sisk.pl>
+Subject: Re: [REGRESSION] usb devices don't wake up the system
+Date: Tue, 6 Jul 2010 11:17:06 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1007061106450.1327-100000@iolanthe.rowland.org>
+References: <1278258282.3571.10.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201007022114.41645.rjw@sisk.pl>
+In-Reply-To: <1278258282.3571.10.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,105 +17,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Dominik Brodowski <linux@dominikbrodowski.net>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch (as1404b) makes the runtime_status sysfs attribute available
-even in the absence of CONFIG_PM_ADVANCED_DEBUG, and it changes the
-routine to display "unsupported" when runtime PM is disabled for a
-device.  Although not strictly 100% accurate, this will almost always
-be correct.
+On Sun, 4 Jul 2010, Maxim Levitsky wrote:
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Acked-by: Dominik Brodowski <linux@dominikbrodowski.net>
+> > > > I want to note that I still need to enable wakeup in /power/acpi/wakeup
+> > > > to make USB mouse wakeup the system.
+> > > > This isn't a regression, but I thought that I don't need that anymore.
+> > 
+> > You shouldn't.  Which setting in /proc/acpi/wakeup needs to be enabled?
+> 
+> The wakeup GPE for UHCI controller which is connected to the mouse.
 
----
+I have no idea why you need that.  It's not necessary on my system:
 
-Index: usb-2.6/drivers/base/power/sysfs.c
-===================================================================
---- usb-2.6.orig/drivers/base/power/sysfs.c
-+++ usb-2.6/drivers/base/power/sysfs.c
-@@ -108,6 +108,38 @@ static ssize_t control_store(struct devi
- }
- 
- static DEVICE_ATTR(control, 0644, control_show, control_store);
-+
-+static ssize_t rtpm_status_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	const char *p;
-+
-+	if (dev->power.runtime_error) {
-+		p = "error\n";
-+	} else if (dev->power.disable_depth) {
-+		p = "unsupported\n";
-+	} else {
-+		switch (dev->power.runtime_status) {
-+		case RPM_SUSPENDED:
-+			p = "suspended\n";
-+			break;
-+		case RPM_SUSPENDING:
-+			p = "suspending\n";
-+			break;
-+		case RPM_RESUMING:
-+			p = "resuming\n";
-+			break;
-+		case RPM_ACTIVE:
-+			p = "active\n";
-+			break;
-+		default:
-+			return -EIO;
-+		}
-+	}
-+	return sprintf(buf, p);
-+}
-+
-+static DEVICE_ATTR(runtime_status, 0444, rtpm_status_show, NULL);
- #endif
- 
- static ssize_t
-@@ -172,27 +204,8 @@ static ssize_t rtpm_enabled_show(struct 
- 	return sprintf(buf, "enabled\n");
- }
- 
--static ssize_t rtpm_status_show(struct device *dev,
--				struct device_attribute *attr, char *buf)
--{
--	if (dev->power.runtime_error)
--		return sprintf(buf, "error\n");
--	switch (dev->power.runtime_status) {
--	case RPM_SUSPENDED:
--		return sprintf(buf, "suspended\n");
--	case RPM_SUSPENDING:
--		return sprintf(buf, "suspending\n");
--	case RPM_RESUMING:
--		return sprintf(buf, "resuming\n");
--	case RPM_ACTIVE:
--		return sprintf(buf, "active\n");
--	}
--	return -EIO;
--}
--
- static DEVICE_ATTR(runtime_usage, 0444, rtpm_usagecount_show, NULL);
- static DEVICE_ATTR(runtime_active_kids, 0444, rtpm_children_show, NULL);
--static DEVICE_ATTR(runtime_status, 0444, rtpm_status_show, NULL);
- static DEVICE_ATTR(runtime_enabled, 0444, rtpm_enabled_show, NULL);
- 
- #endif
-@@ -228,6 +241,7 @@ static DEVICE_ATTR(async, 0644, async_sh
- static struct attribute * power_attrs[] = {
- #ifdef CONFIG_PM_RUNTIME
- 	&dev_attr_control.attr,
-+	&dev_attr_runtime_status.attr,
- #endif
- 	&dev_attr_wakeup.attr,
- #ifdef CONFIG_PM_ADVANCED_DEBUG
-@@ -235,7 +249,6 @@ static struct attribute * power_attrs[] 
- #ifdef CONFIG_PM_RUNTIME
- 	&dev_attr_runtime_usage.attr,
- 	&dev_attr_runtime_active_kids.attr,
--	&dev_attr_runtime_status.attr,
- 	&dev_attr_runtime_enabled.attr,
- #endif
- #endif
+$ cat /proc/acpi/wakeup 
+Device  S-state   Status   Sysfs node
+P0P4      S4     disabled  pci:0000:00:1e.0
+MC97      S4     disabled  
+USB1      S4     disabled  pci:0000:00:1d.0
+USB2      S4     disabled  pci:0000:00:1d.1
+USB3      S4     disabled  pci:0000:00:1d.2
+USB4      S4     disabled  pci:0000:00:1d.3
+EUSB      S4     disabled  pci:0000:00:1d.7
+PS2K      S4     enabled   pnp:00:09
+PS2M      S4     enabled   pnp:00:0a
+GBEN      S4     disabled  
+
+> Also, I tried to enable wakeup on the USB mouse using udev rule.
+> 
+> I did that rule for a test (very broad for testing):
+> 
+> SUBSYSTEM=="usb", ACTION=="add", ATTR{power/wakeup}="enabled"
+> 
+> I found that running udevd --debug confirms that it writes that attribute 
+> (Log of mouse attach attached :-). (I connected  it to different port now)
+> 
+> According to the log, udev does write 'enabled' to
+> /sys/devices/pci0000:00/0000:00:1a.0/usb3/3-2/power/wakeup
+> 
+> but:
+> 
+> maxim@MAIN:~$ cat /sys/devices/pci0000:00/0000:00:1a.0/usb3/3-2/power/wakeup
+> disabled
+> 
+> 
+> This looks like kernel bug.
+
+I don't think so.  I tried essentially the same experiment, under 
+vanilla 2.6.35-rc4:
+
+$ cat /etc/udev/rules.d/80-local.rules 
+ACTION=="add", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="45e/84/*", ATTR{power/wakeup}="enabled"
+
+(045e and 0084 are the vendor and product IDs for my Microsoft USB 
+optical mouse)
+
+$ cat /sys/devices/pci0000:00/0000:00:1d.3/usb8/8-2/power/wakeup
+enabled
+
+So if the attribute ends up set to "disabled", it's probably because
+some other program on your machine is changing it.  This isn't the
+kernel's fault.
+
+> I am not against the default of disabled wakeup, it fact I welcome that, 
+> but I think that udev rule should work to enable it back.
+
+It does, on my system.  With that rule in place and after manually 
+doing:
+
+# echo enabled >/sys/devices/pci0000:00/0000:00:1d.3/power/wakeup
+
+the mouse does indeed cause the computer to wakeup from suspend.  (But 
+as I mentioned before, it requires double-clicking.)
+
+Alan Stern
