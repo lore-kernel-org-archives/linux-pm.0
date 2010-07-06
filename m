@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/3] pm_qos: get rid of the allocation in
-	pm_qos_add_request()
-Date: Mon, 5 Jul 2010 23:07:07 +0200
-Message-ID: <201007052307.07655.rjw__19281.5311173492$1278364170$gmane$org@sisk.pl>
-References: <1277746434.10879.191.camel@mulgrave.site>
-	<s5hvd8ubfcz.wl%tiwai@suse.de>
-	<1278338568.2850.1.camel@mulgrave.site>
+From: Valdis.Kletnieks@vt.edu
+Subject: Re: mmotm 2010-07-01 pm_get_wakeup_count() declaration
+Date: Mon, 05 Jul 2010 22:24:35 -0400
+Message-ID: <2755.1278383075__4603.44013195044$1278383301$gmane$org@localhost>
+References: <201007011948.o61JmnT2022795@imap1.linux-foundation.org>
+	<74766.1278362136@localhost> <201007052243.55551.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============4624147928238740973=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1278338568.2850.1.camel@mulgrave.site>
+In-Reply-To: Your message of "Mon, 05 Jul 2010 22:43:55 +0200."
+	<201007052243.55551.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,58 +16,74 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Takashi Iwai <tiwai@suse.de>, netdev@vger.kernel.org, James Bottomley <James.Bottomley@suse.de>, markgross@thegnar.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, July 05, 2010, James Bottomley wrote:
-> On Mon, 2010-07-05 at 08:41 +0200, Takashi Iwai wrote:
-> > sorry for the late reply, as I've been on vacation in the last week
-> > (and shut off mails intentionally :)
-> 
-> Envy forbids me from saying that's OK.
-> 
-> > At Mon, 28 Jun 2010 12:44:48 -0500,
-> > James Bottomley wrote:
-> > > 
-> > > Since every caller has to squirrel away the returned pointer anyway,
-> > > they might as well supply the memory area.  This fixes a bug in a few of
-> > > the call sites where the returned pointer was dereferenced without
-> > > checking it for NULL (which gets returned if the kzalloc failed).
-> > > 
-> > > I'd like to hear how sound and netdev feels about this: it will add
-> > > about two more pointers worth of data to struct netdev and struct
-> > > snd_pcm_substream .. but I think it's worth it.  If you're OK, I'll add
-> > > your acks and send through the pm tree.
-> > > 
-> > > This also looks to me like an android independent clean up (even though
-> > > it renders the request_add atomically callable).  I also added include
-> > > guards to include/linux/pm_qos_params.h
+--===============4624147928238740973==
+Content-Type: multipart/signed; boundary="==_Exmh_1278383075_2695P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+
+--==_Exmh_1278383075_2695P
+Content-Type: text/plain; charset=us-ascii
+
+On Mon, 05 Jul 2010 22:43:55 +0200, "Rafael J. Wysocki" said:
+> On Monday, July 05, 2010, Valdis.Kletnieks@vt.edu wrote:
+> > On Thu, 01 Jul 2010 12:19:51 PDT, akpm@linux-foundation.org said:
+> > > The mm-of-the-moment snapshot 2010-07-01-12-19 has been uploaded to
 > > 
-> > I like the patch very well, too.
-> > But, just wondering...
+> > Not sure who to blame for the commit, it was in the linux-next.patch and I'm
+> > too lazy to pull down the git tree and dig it out.
 > > 
-> > > @@ -262,6 +260,11 @@ void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
-> > >  	if (!pm_qos_req) /*guard against callers passing in null */
-> > >  		return;
-> > >  
-> > > +	if (pm_qos_request_active(pm_qos_req)) {
-> > > +		WARN(1, KERN_ERR "pm_qos_update_request() called for unknown object\n");
-> > > +		return;
-> > > +	}
-> > > +
+> >   CC      kernel/power/main.o
+> > kernel/power/main.c: In function 'wakeup_count_show':
+> > kernel/power/main.c:241: error: implicit declaration of function 'pm_get_wakeup_count'
+> > kernel/power/main.c: In function 'wakeup_count_store':
+> > kernel/power/main.c:251: error: implicit declaration of function 'pm_save_wakeup_count'
+> > make[2]: *** [kernel/power/main.o] Error 1
 > > 
-> > Is this correct...?  Shouldn't it be a negative check?
+> > Problem is that declaration in include/linux/suspend.h is wrapped in
+> > a #ifdef CONFIG_PM_SLEEP, but the usage in kernel/power/main.c isn't. So
+> > it dies a horrid death if your config doesn't include PM_SLEEP.
 > 
-> Yes, it should be a negative check ... I'll update the patch.
+> Yeah, sorry.  I'm in the process of fixing it up.
 
-I've already fixed it in my tree.
+I threw in some ad-crock #ifdef to get past that one, and hit
+another one, same basic issue but include/linux/pm.h this time:
 
-> I guess this still means that no-one has managed to test it on a functional
-> system ...
+  CC      drivers/base/power/sysfs.o
+drivers/base/power/sysfs.c: In function 'wakeup_count_show':
+drivers/base/power/sysfs.c:152: error: 'struct dev_pm_info' has no member named 'wakeup_count'
+make[3]: *** [drivers/base/power/sysfs.o] Error 1
 
-Well, it's been for a while in linux-next ...
 
-Rafael
+
+
+
+--==_Exmh_1278383075_2695P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFMMpPjcC3lWbTT17ARAn9iAKCPhhVJOK+6Kfegx1rgtfabw0lrQACeNV9W
+rPHrJDs9D644n/JPKiA2JNw=
+=9kNE
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1278383075_2695P--
+
+
+--===============4624147928238740973==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============4624147928238740973==--
