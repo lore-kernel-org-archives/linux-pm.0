@@ -1,12 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Resend][PATCH 0/4] ACPI: Avoid executing _PRW twice for
-	all devices
-Date: Thu, 8 Jul 2010 00:41:38 +0200
-Message-ID: <201007080041.38627.rjw__39693.6337733225$1278542988$gmane$org@sisk.pl>
+Subject: [Resend][PATCH 1/4] ACPI: Fix bogus GPE test in
+	acpi_bus_set_run_wake_flags()
+Date: Thu, 8 Jul 2010 00:42:51 +0200
+Message-ID: <201007080042.52019.rjw__354.61518350548$1278543114$gmane$org@sisk.pl>
+References: <201007080041.38627.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201007080041.38627.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,29 +23,31 @@ Cc: Len Brown <len.brown@intel.com>, Lin Ming <ming.m.lin@intel.com>, "Moore,
 	Robert" <robert.moore@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The following patches have already been sent once and (except for [1/4]) they
-have been in your test branch for some time, but they stopped applying after
-the previous ACPICA changes were merged.  So, here they go again,
-rebased on top of your test branch.
+When we check if a GPE can be used for runtime signaling, we only
+search the FADT GPE blocks, which is incorrect, becuase the GPE
+may be located elsewhere.  We really should be using the GPE device
+information previously returned by _PRW here, so make that happen.
 
-[1/4] - Fixes a test supposed to check if a GPE has a method or handler.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/scan.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-[2/4] - Drops the code walikng the namespace in search of _PRW and adds
-        acpi_gpe_can_wake() so that the host OS can disable wakeup GPEs
-        previously enabled unconditionally by the ACPICA initialization code.
-        This basically reproduces the current behavior except that the GPEs
-        are temporarily enabled befor
-        acpi_bus_extract_wakeup_device_power_package()
-        runs for all devices with _PRW referring to them.
-
-[3/4] - Simplifies code in acpi_ev_initialize_gpe_block(), which only is a
-        cosmetic thing, but worth doing IMO.
-
-[4/4] - Changes acpi_gpe_wakeup() to return error code for the GPEs whose
-        ACPI_GPE_CAN_WAKE flags are not set.
-
-Please apply.
-
-Rafael
+Index: linux-2.6/drivers/acpi/scan.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/scan.c
++++ linux-2.6/drivers/acpi/scan.c
+@@ -764,8 +764,9 @@ static void acpi_bus_set_run_wake_flags(
+ 		return;
+ 	}
+ 
+-	status = acpi_get_gpe_status(NULL, device->wakeup.gpe_number,
+-					&event_status);
++	status = acpi_get_gpe_status(device->wakeup.gpe_device,
++					device->wakeup.gpe_number,
++						&event_status);
+ 	if (status == AE_OK)
+ 		device->wakeup.flags.run_wake =
+ 				!!(event_status & ACPI_EVENT_FLAG_HANDLE);
