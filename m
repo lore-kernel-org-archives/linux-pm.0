@@ -1,15 +1,13 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 3/5] ACPI / Wakeup: Simplify enabling of
- wakeup devices
-Date: Tue, 06 Jul 2010 22:13:19 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.1007062213160.2700__33722.7673190229$1278468893$gmane$org@localhost.localdomain>
-References: <201007020010.13755.rjw@sisk.pl> <201007020013.27000.rjw@sisk.pl>
-	<201007070117.16557.rjw@sisk.pl>
+Subject: Re: [PATCH 5/5] ACPI / Sleep: Drop acpi_suspend_finish()
+Date: Tue, 06 Jul 2010 22:14:38 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1007062214340.2700@localhost.localdomain>
+References: <201007020010.13755.rjw@sisk.pl> <201007020014.57877.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <201007070117.16557.rjw@sisk.pl>
+In-reply-to: <201007020014.57877.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
