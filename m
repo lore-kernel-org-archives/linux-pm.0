@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/3] ACPI / ACPICA: Avoid executing _PRW
-	twice for all devices
-Date: Wed, 7 Jul 2010 01:59:54 +0200
-Message-ID: <201007070159.55147.rjw__24305.3744816736$1278460958$gmane$org@sisk.pl>
-References: <201007050056.22705.rjw@sisk.pl>
-	<alpine.LFD.2.00.1007061812250.10181@localhost.localdomain>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 3/5] ACPI / Wakeup: Simplify enabling of
+ wakeup devices
+Date: Tue, 06 Jul 2010 22:13:19 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1007062213160.2700__33722.7673190229$1278468893$gmane$org@localhost.localdomain>
+References: <201007020010.13755.rjw@sisk.pl> <201007020013.27000.rjw@sisk.pl>
+	<201007070117.16557.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1007061812250.10181@localhost.localdomain>
+In-reply-to: <201007070117.16557.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,17 +19,11 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@lists.linux-foundation.org>, "Moore,
-	Robert" <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, July 07, 2010, Len Brown wrote:
-> series applied to acpi-test
+applied
 
-Thanks!
-
-Please also apply https://patchwork.kernel.org/patch/110076/ which is related
-to this series.
-
-Rafael
+thanks,
+Len Brown, Intel Open Source Technology Center
