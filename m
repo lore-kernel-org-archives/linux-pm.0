@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: 2.6.35-rc4-git3: Reported regressions from 2.6.34
-Date: Fri, 9 Jul 2010 23:35:50 +0200
-Message-ID: <201007092335.50486.rjw__16604.4665420943$1278711559$gmane$org@sisk.pl>
+Date: Fri, 9 Jul 2010 23:42:18 +0200
+Message-ID: <201007092342.18286.rjw__15026.5491138727$1278711964$gmane$org@sisk.pl>
 References: <-IGZ64uxA6G.A.P0H.bLmNMB@chimera>
-	<AANLkTiknnzWyVpqnPCpyiEVHLgkewd0zaGzLInABRe2G@mail.gmail.com>
-	<20100709020440.GJ6405@nowhere>
+	<20100709081239.4eb8fddd@virtuousgeek.org>
+	<20100709160408.GU30043@gamma.logic.tuwien.ac.at>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100709020440.GJ6405@nowhere>
+In-Reply-To: <20100709160408.GU30043@gamma.logic.tuwien.ac.at>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,42 +19,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jens Axboe <axboe@kernel.dk>, Shawn Starr <shawn.starr@rogers.com>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Patrick McHardy <kaber@trash.net>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "David S. Miller" <davem@davemloft.net>, Linux ACPI <linux-acpi@vger.kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, Dave Airlie <airlied@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Norbert Preining <preining@logic.at>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, July 09, 2010, Frederic Weisbecker wrote:
-> On Thu, Jul 08, 2010 at 06:34:25PM -0700, Linus Torvalds wrote:
-> > On Thu, Jul 8, 2010 at 4:33 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=16284
-> > > Subject         : Hitting WARN_ON in hw_breakpoint code
-> > > Submitter       : Paul Mackerras <paulus@samba.org>
-> > > Date            : 2010-06-23 12:57 (16 days old)
-> > > Message-ID      : <20100623125740.GA3368@brick.ozlabs.ibm.com>
-> > > References      : http://marc.info/?l=linux-kernel&m=127729789113432&w=2
+On Friday, July 09, 2010, Norbert Preining wrote:
+> Hi Jesse,
+> 
+> (stripping some people from Cc, hopefully not too many)
+> 
+> On Fr, 09 Jul 2010, Jesse Barnes wrote:
+> > > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=16179
+> > > > Subject         : 2.6.35-rc2 completely hosed on intel gfx?
+> > > > Submitter       : Norbert Preining <preining@logic.at>
+> > > > Date            : 2010-06-06 11:55 (33 days old)
+> > > > Message-ID      : <20100606115534.GA9399@gamma.logic.tuwien.ac.at>
+> > > > References      : http://marc.info/?l=linux-kernel&m=127582534931581&w=2  
+> > > 
+> > > Hmm. That one is the vt.c bug coupled with another problem, which in
+> > > turn got opened as a separate bugzilla entry:
+> > > 
+> > >    http://bugzilla.kernel.org/show_bug.cgi?id=16252
+> > > 
+> > > which in turn then got closed. I dunno.
 > > 
-> > This has "I have a fix, will post it very soon." in the thread from
-> > Frederic, but I'm not seeing anything else. Frederic?
+> > Yeah, this is weird.  Norbert, do you still see this?  Have you tried
+> > to bisect it?
 > 
+> I wrote in my last comment of this bug that in *most* of the cases
+> the 
+> 	echo "mem" > /sys/power/state
+> works perfectly, and I'm using it permanently now.
 > 
+> The problem seems to be in combination with some pm-utils scripts.
+> I still haven't been able to pin-point the actual pm-utils script that
+> causes the problem, since that is something not 100% reproducible.
 > 
-> Right. In fact it wasn't a regression. The per task breakpoint reservation
-> design was broken from the beginning and this warning has revealed the
-> problem. This only touched perf, and it did since perf support breakpoints.
-> Fortunately ptrace wasn't concerned by this problem, even not by side effects
-> of this.
+> Futhermore, *once* (only once!) the echo mem > method failed as written in
+> the bug report with :
+> [16273.....] PM: resume of devices complete after 2115.046 msecs
+> [16273.....] Restarting tasks ... done
+> [16273.....] video LNXVIDEO:00: Restoring backlight state
+> hanging here, but only once, not any time again.
 > 
-> The fix is invasive as it's a rewrite of a (little) part of the breakpoint
-> reservation. And since the symptom is only a warning and also breakpoints
-> never released from the constraint table (just a counter, no memory leak),
-> the fix is headed for 2.6.36.
+> It is hard to say what the culprit is, some new pm-utils script maybe,
+> since it happens even when I switch pm-utils to use the kernel method
+> (echo mem) to suspend, and not uswsusp (s2ram prog).
 > 
-> It is ready in tip:/perf/core:
+> I would suggest keeping that bug closed until I have found the pm-utils
+> or a specific culprit, then I can reopen it or open a new bug.
 > 
-> http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=commitdiff;h=45a73372efe4a63f44aa2e1125d4a777c2fdc8d8
-> 
-> I think this ticket can be safely closed.
+> (more disturbing are iwlagn bugs, they are a PITA without any progress)
 
 OK, closing.
 
+Thanks,
 Rafael
