@@ -1,13 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] pm: Add runtime PM statistics to sysfs
-Date: Fri, 9 Jul 2010 11:11:06 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1007091106070.1582-100000__489.117767620151$1278688314$gmane$org@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.1007091056510.1582-100000@iolanthe.rowland.org>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: 2.6.35-rc4-git3: Reported regressions from 2.6.34
+Date: Fri, 9 Jul 2010 08:12:39 -0700
+Message-ID: <20100709081239.4eb8fddd__5295.32274599678$1278688548$gmane$org@virtuousgeek.org>
+References: <-IGZ64uxA6G.A.P0H.bLmNMB@chimera>
+	<AANLkTiknnzWyVpqnPCpyiEVHLgkewd0zaGzLInABRe2G@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1007091056510.1582-100000@iolanthe.rowland.org>
+In-Reply-To: <AANLkTiknnzWyVpqnPCpyiEVHLgkewd0zaGzLInABRe2G@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,59 +18,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bandiello <enban@postal.uv.es>, Frederic Weisbecker <fweisbec@gmail.com>, Maciej Rutecki <maciej.rutecki@gmail.com>, Linux SCSI List <linux-scsi@vger.kernel.org>, Enrico@smtp1.linux-foundation.org, Linux ACPI <linux-acpi@vger.kernel.org>, Dave@smtp1.linux-foundation.org, Airlie <airlied@redhat.com>, List <linux-pm@lists.linux-foundation.org>, DRI <dri-devel@lists.sourceforge.net>, Norbert Preining <preining@logic.at>, Al Viro <viro@zeniv.linux.org.uk>, Jens Axboe <axboe@kernel.dk>, Kernel Testers List <kernel-testers@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "David S. Miller" <davem@davemloft.net>, Linux@smtp1.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 9 Jul 2010, Alan Stern wrote:
-
-> On Thu, 8 Jul 2010, Arjan van de Ven wrote:
-> 
-> > From: Arjan van de Ven <arjan@linux.intel.com>
-> > Subject: pm: Add runtime PM statistics to sysfs
-> > 
-> > In order for PowerTOP to be able to report how well the new runtime PM is working
-> > for the various drivers, the kernel needs to export some basic statistics in sysfs.
-> > 
-> > This patch adds two sysfs files in the runtime PM domain that expose the
-> > total time a device has been active, and the time a device has been suspended.
-> > 
-> > With this PowerTOP can compute the activity percentage
-> > 
-> > Active %age = 100 * (delta active) / (delta active + delta suspended)
-> > 
-> > and present the information to the user.
-> > 
-> > I've written the PowerTOP code (slated for version 1.12) already, and the output looks
-> > like this:
-> > 
-> > Runtime Device Power Management statistics
-> > Active  Device name
-> >  10.0%	06:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8101E/RTL8102E
-> 
-> 
-> > @@ -411,6 +433,7 @@ int __pm_runtime_resume(struct device *dev, bool from_wq)
-> >  	}
-> >  
-> >  	if (retval) {
-> > +		update_pm_runtime_accounting(dev);
-> >  		dev->power.runtime_status = RPM_SUSPENDED;
-> >  		pm_runtime_cancel_pending(dev);
-> >  	} else {
-> 
-> This line was added in the wrong place.  It belongs either before the 
-> "if (retval) {" or after the "} else {".
-
-Whoops, sorry, my mistake.  It doesn't belong here at all.  It belongs 
-considerably earlier in the function, before the line:
-
-	dev->power.runtime_status = RPM_RESUMING;
-
-This is because update_pm_runtime_accounting() doesn't take into 
-account the existence of the RPM_RESUMING and RPM_SUSPENDING states; it 
-treats them all the same as RPM_ACTIVE.
-
-Also, it looks like you forgot to add a call in 
-__pm_runtime_set_status().
-
-Alan Stern
+T24gVGh1LCA4IEp1bCAyMDEwIDE4OjM0OjI1IC0wNzAwCkxpbnVzIFRvcnZhbGRzIDx0b3J2YWxk
+c0BsaW51eC1mb3VuZGF0aW9uLm9yZz4gd3JvdGU6Cgo+ID4gQnVnLUVudHJ5IMKgIMKgIMKgIDog
+aHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTE2MzA3Cj4gPiBTdWJq
+ZWN0IMKgIMKgIMKgIMKgIDogaTkxNSBpbiBrZXJuZWwgMi42LjM1LXJjMywgaGlnaCBudW1iZXIg
+b2Ygd2FrZXVwcwo+ID4gU3VibWl0dGVyIMKgIMKgIMKgIDogRW5yaWNvIEJhbmRpZWxsbyA8ZW5i
+YW5AcG9zdGFsLnV2LmVzPgo+ID4gRGF0ZSDCoCDCoCDCoCDCoCDCoCDCoDogMjAxMC0wNi0yNiAx
+Njo1NyAoMTMgZGF5cyBvbGQpCj4gPiBNZXNzYWdlLUlEIMKgIMKgIMKgOiA8NEMyNjMxN0EuNTA3
+MDMwOUBwb3N0YWwudXYuZXM+Cj4gPiBSZWZlcmVuY2VzIMKgIMKgIMKgOiBodHRwOi8vbWFyYy5p
+bmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyNzc1NzQwMzQwNDI1OSZ3PTIgIAo+IAo+IEkgZG9uJ3Qg
+dGhpbmsgYW55Ym9keSBub3RpY2VkIHRoaXMgb25lLiBKZXNzZT8KCk9oIEkgaGFkbid0IHNlZW4g
+dGhhdC4uLiAgRW5yaWNvLCBjYW4geW91IGJpc2VjdCB0aGlzIGlzc3VlPyAgSXQgY291bGQKYmUg
+c29tZSBzcHVyaW91cyBob3RwbHVnIGV2ZW50cyBvciBwb3NzaWJseSBhIHN0dWNrIHZibGFuayBp
+bnRlcnJ1cHQuLi4KCj4gPiBCdWctRW50cnkgwqAgwqAgwqAgOiBodHRwOi8vYnVnemlsbGEua2Vy
+bmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTYyNjUKPiA+IFN1YmplY3QgwqAgwqAgwqAgwqAgOiBX
+aHkgaXMga3Nsb3dkIGFjY3VtdWxhdGluZyBzbyBtdWNoIENQVSB0aW1lPwo+ID4gU3VibWl0dGVy
+IMKgIMKgIMKgIDogVGhlb2RvcmUgVHMnbyA8dHl0c29AbWl0LmVkdT4KPiA+IERhdGUgwqAgwqAg
+wqAgwqAgwqAgwqA6IDIwMTAtMDYtMDkgMTg6MzYgKDMwIGRheXMgb2xkKQo+ID4gRmlyc3QtQmFk
+LUNvbW1pdDogaHR0cDovL2dpdC5rZXJuZWwub3JnL2xpbnVzL2ZiZjgxNzYyZTM4NWQzZDQ1YWNh
+ZDA1N2I2NTRkNTY5NzJhY2Y1OGMKPiA+IE1lc3NhZ2UtSUQgwqAgwqAgwqA6IDxFMU9NUTg4LTAw
+MDJhMS1HYkBjbG9zdXJlLnRodW5rLm9yZz4KPiA+IFJlZmVyZW5jZXMgwqAgwqAgwqA6IGh0dHA6
+Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI3NjEwODU3ODE5MDMzJnc9NCAgCj4gCj4g
+RGF2ZSwgSmVzc2U/CgpJIGhhdmVuJ3QgbG9va2VkIGF0IHRoZSBzd2l0Y2hhYmxlIGdyYXBoaWNz
+IHN0dWZmLCBob3BlZnVsbHkgRGF2ZSBoYXMKYW4gaWRlYSBoZXJlLgoKPiBGaXhlZCBieSBjb21t
+aXQgZjQ5ODVkYzcxNGQ3Lgo+IAo+ID4gQnVnLUVudHJ5IMKgIMKgIMKgIDogaHR0cDovL2J1Z3pp
+bGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTE2MjI4Cj4gPiBTdWJqZWN0IMKgIMKgIMKg
+IMKgIDogQlVHL2Jvb3QgZmFpbHVyZSBvbiBEZWxsIFByZWNpc2lvbiBUMzUwMCAocGNpL2FoY2lf
+c3RvcF9lbmdpbmUpCj4gPiBTdWJtaXR0ZXIgwqAgwqAgwqAgOiBCcmlhbiBCbG9uaWFyeiA8cGh1
+bmdlMEBob3RtYWlsLmNvbT4KPiA+IERhdGUgwqAgwqAgwqAgwqAgwqAgwqA6IDIwMTAtMDYtMTYg
+MTc6NTcgKDIzIGRheXMgb2xkKQo+ID4gSGFuZGxlZC1CeSDCoCDCoCDCoDogQmpvcm4gSGVsZ2Fh
+cyA8Ympvcm4uaGVsZ2Fhc0BocC5jb20+ICAKPiAKPiBUaGlzIGhhcyBhIGJ1dHQtdWdseSBzdWdn
+ZXN0ZWQgcGF0Y2ggdGhhdCBjZXJ0YWlubHkgd29uJ3QgYmUgYXBwbGllZC4KPiBJIHNhdyB0aGUg
+dGhyZWFkLCBidXQgbG9zdCBzaWdodCBvZiBpdC4gSmVzc2UsIGRpZCB0aGF0IGVuZCB1cCB3aXRo
+Cj4gc29tZSByZXNvbHV0aW9uPwoKSSdsbCBmb2xsb3cgdXAgd2l0aCBZaW5naGFpLCB3ZSB3ZXJl
+IHByZXR0eSBjbGVhciBhYm91dCB3aGF0IHdlIHdhbnRlZApmcm9tIHRoYXQgcGF0Y2guCgo+ID4g
+QnVnLUVudHJ5IMKgIMKgIMKgIDogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcu
+Y2dpP2lkPTE2MTc5Cj4gPiBTdWJqZWN0IMKgIMKgIMKgIMKgIDogMi42LjM1LXJjMiBjb21wbGV0
+ZWx5IGhvc2VkIG9uIGludGVsIGdmeD8KPiA+IFN1Ym1pdHRlciDCoCDCoCDCoCA6IE5vcmJlcnQg
+UHJlaW5pbmcgPHByZWluaW5nQGxvZ2ljLmF0Pgo+ID4gRGF0ZSDCoCDCoCDCoCDCoCDCoCDCoDog
+MjAxMC0wNi0wNiAxMTo1NSAoMzMgZGF5cyBvbGQpCj4gPiBNZXNzYWdlLUlEIMKgIMKgIMKgOiA8
+MjAxMDA2MDYxMTU1MzQuR0E5Mzk5QGdhbW1hLmxvZ2ljLnR1d2llbi5hYy5hdD4KPiA+IFJlZmVy
+ZW5jZXMgwqAgwqAgwqA6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI3NTgy
+NTM0OTMxNTgxJnc9MiAgCj4gCj4gSG1tLiBUaGF0IG9uZSBpcyB0aGUgdnQuYyBidWcgY291cGxl
+ZCB3aXRoIGFub3RoZXIgcHJvYmxlbSwgd2hpY2ggaW4KPiB0dXJuIGdvdCBvcGVuZWQgYXMgYSBz
+ZXBhcmF0ZSBidWd6aWxsYSBlbnRyeToKPiAKPiAgICBodHRwOi8vYnVnemlsbGEua2VybmVsLm9y
+Zy9zaG93X2J1Zy5jZ2k/aWQ9MTYyNTIKPiAKPiB3aGljaCBpbiB0dXJuIHRoZW4gZ290IGNsb3Nl
+ZC4gSSBkdW5uby4KClllYWgsIHRoaXMgaXMgd2VpcmQuICBOb3JiZXJ0LCBkbyB5b3Ugc3RpbGwg
+c2VlIHRoaXM/ICBIYXZlIHlvdSB0cmllZAp0byBiaXNlY3QgaXQ/CgoKLS0gCkplc3NlIEJhcm5l
+cywgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIKX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4
+LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRh
+dGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
