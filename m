@@ -1,7 +1,7 @@
 From: Frederic Weisbecker <fweisbec@gmail.com>
 Subject: Re: 2.6.35-rc4-git3: Reported regressions from 2.6.34
-Date: Fri, 9 Jul 2010 04:04:42 +0200
-Message-ID: <20100709020440.GJ6405__46950.3218461343$1278641242$gmane$org@nowhere>
+Date: Fri, 9 Jul 2010 04:56:30 +0200
+Message-ID: <20100709025628.GK6405__31770.2050474056$1278644350$gmane$org@nowhere>
 References: <-IGZ64uxA6G.A.P0H.bLmNMB@chimera>
 	<AANLkTiknnzWyVpqnPCpyiEVHLgkewd0zaGzLInABRe2G@mail.gmail.com>
 Mime-Version: 1.0
@@ -26,37 +26,43 @@ List-Id: linux-pm@vger.kernel.org
 On Thu, Jul 08, 2010 at 06:34:25PM -0700, Linus Torvalds wrote:
 > On Thu, Jul 8, 2010 at 4:33 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > > Bug-Entry =A0 =A0 =A0 : http://bugzilla.kernel.org/show_bug.cgi?id=3D16=
-284
-> > Subject =A0 =A0 =A0 =A0 : Hitting WARN_ON in hw_breakpoint code
-> > Submitter =A0 =A0 =A0 : Paul Mackerras <paulus@samba.org>
-> > Date =A0 =A0 =A0 =A0 =A0 =A0: 2010-06-23 12:57 (16 days old)
-> > Message-ID =A0 =A0 =A0: <20100623125740.GA3368@brick.ozlabs.ibm.com>
-> > References =A0 =A0 =A0: http://marc.info/?l=3Dlinux-kernel&m=3D12772978=
-9113432&w=3D2
+334
+> > Subject =A0 =A0 =A0 =A0 : reiserfs locking (v2)
+> > Submitter =A0 =A0 =A0 : Sergey Senozhatsky <sergey.senozhatsky@gmail.co=
+m>
+> > Date =A0 =A0 =A0 =A0 =A0 =A0: 2010-07-02 9:34 (7 days old)
+> > Message-ID =A0 =A0 =A0: <20100702093451.GA3973@swordfish.minsk.epam.com>
+> > References =A0 =A0 =A0: http://marc.info/?l=3Dlinux-kernel&m=3D12780630=
+6303590&w=3D2
 > =
 
-> This has "I have a fix, will post it very soon." in the thread from
-> Frederic, but I'm not seeing anything else. Frederic?
+> Frederic? Al? I assume this is some late fallout from the BKL removal
+> ages ago.. It's the old filldir-vs-mmap crud, but normally it should
+> be impossible to trigger because the inode for a directory should
+> never be mmap'able, so we should never have the same i_mutex lock used
+> for both mmap and for filldir protection.
+> =
+
+> We saw some of that oddity long ago, I wonder if it's lockdep being
+> confused about some inodes.
 
 
 
-Right. In fact it wasn't a regression. The per task breakpoint reservation
-design was broken from the beginning and this warning has revealed the
-problem. This only touched perf, and it did since perf support breakpoints.
-Fortunately ptrace wasn't concerned by this problem, even not by side effec=
-ts
-of this.
+I think it has been there from the beginning. At least it was there before
+the reiserfs bkl removal in .32.
 
-The fix is invasive as it's a rewrite of a (little) part of the breakpoint
-reservation. And since the symptom is only a warning and also breakpoints
-never released from the constraint table (just a counter, no memory leak),
-the fix is headed for 2.6.36.
 
-It is ready in tip:/perf/core:
+Indeed the readdir <-> unmap/release inversion problem can not happen.
+But Al said that can happen between write and release. (Although I don't see
+where write takes the inode mutex).
 
-http://git.kernel.org/?p=3Dlinux/kernel/git/tip/linux-2.6-tip.git;a=3Dcommi=
-tdiff;h=3D45a73372efe4a63f44aa2e1125d4a777c2fdc8d8
+He also highlighted the fact that reiserfs refcounting based on i_count
+was totally broken.
 
-I think this ticket can be safely closed.
+He has a fix the whole in the vfs tree, in the for-next branch on commit
+6c2bdaf089a3876226893fab00dd83596c465ad2
+"Fix reiserfs_file_release()"
 
-Thanks.
+No more uses of the i_mutex on release after that, nor i_count, but a priva=
+te
+openers refcount and a tailpack mutex per reiserfs inode.
