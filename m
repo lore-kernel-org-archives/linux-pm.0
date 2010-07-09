@@ -1,14 +1,13 @@
-From: Arjan van de Ven <arjan@infradead.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH] pm: Add runtime PM statistics to sysfs
-Date: Fri, 9 Jul 2010 04:22:56 -0700
-Message-ID: <20100709042256.56e4b82f__35935.4400462054$1278674431$gmane$org@infradead.org>
+Date: Fri, 9 Jul 2010 11:00:27 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1007091056510.1582-100000__39611.6410768174$1278687701$gmane$org@iolanthe.rowland.org>
 References: <20100708224837.6a18995b@infradead.org>
-	<AANLkTinJSHiDbAZJ6ga3AGNoZEFzyVPSrHkEocxa8M6N@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinJSHiDbAZJ6ga3AGNoZEFzyVPSrHkEocxa8M6N@mail.gmail.com>
+In-Reply-To: <20100708224837.6a18995b@infradead.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,37 +17,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ming Lei <tom.leiming@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
 Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCA5IEp1bCAyMDEwIDE1OjA0OjU5ICswODAwCk1pbmcgTGVpIDx0b20ubGVpbWluZ0Bn
-bWFpbC5jb20+IHdyb3RlOgoKPiAyMDEwLzcvOSBBcmphbiB2YW4gZGUgVmVuIDxhcmphbkBpbmZy
-YWRlYWQub3JnPjoKPiA+IEZyb206IEFyamFuIHZhbiBkZSBWZW4gPGFyamFuQGxpbnV4LmludGVs
-LmNvbT4KPiA+IGRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3BtLmggYi9pbmNsdWRlL2xpbnV4
-L3BtLmgKPiA+IGluZGV4IDhlMjU4YzcuLmRjYTU5N2YgMTAwNjQ0Cj4gPiAtLS0gYS9pbmNsdWRl
-L2xpbnV4L3BtLmgKPiA+ICsrKyBiL2luY2x1ZGUvbGludXgvcG0uaAo+ID4gQEAgLTQ3Niw5ICs0
-NzYsMTUgQEAgc3RydWN0IGRldl9wbV9pbmZvIHsKPiA+IMKgIMKgIMKgIMKgZW51bSBycG1fcmVx
-dWVzdCDCoCDCoCDCoCDCoHJlcXVlc3Q7Cj4gPiDCoCDCoCDCoCDCoGVudW0gcnBtX3N0YXR1cyDC
-oCDCoCDCoCDCoCBydW50aW1lX3N0YXR1czsKPiA+IMKgIMKgIMKgIMKgaW50IMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIHJ1bnRpbWVfZXJyb3I7Cj4gPiArIMKgIMKgIMKgIHVuc2lnbmVk
-IGxvbmcgwqAgwqAgwqAgwqAgwqAgYWN0aXZlX2ppZmZpZXM7Cj4gPiArIMKgIMKgIMKgIHVuc2ln
-bmVkIGxvbmcgwqAgwqAgwqAgwqAgwqAgc3VzcGVuZGVkX2ppZmZpZXM7Cj4gPiArIMKgIMKgIMKg
-IHVuc2lnbmVkIGxvbmcgwqAgwqAgwqAgwqAgwqAgYWNjb3VudGluZ190aW1lc3RhbXA7Cj4gPiDC
-oCNlbmRpZgo+ID4gwqB9Owo+IAo+IFVTQiBzdWJzeXN0ZW0gaGFzIGltcGxlbWVudGVkIHRoZSBm
-dW5jdGlvbiBhbHJlYWR5LCBhbmQgb25seSB0d28KPiB2YXJpYWJsZXMgYXJlIGVub3VnaCB0byBk
-byB0aGUgc3RhdGlzdGljcy4gU3VnZ2VzdCB5b3UgdG8gbWFrZSBhCj4gcmVmZXJlbmNlIHRvIHVz
-YiBpbXBsZW1lbnRhdGlvbiwgbWF5YmUgc2l6ZW9mKHVuc2lnbmVkIGxvbmcpIGJ5dGVzCj4gcGVy
-IGRldmljZSBjYW4gYmUgc2F2ZWQuCj4gCgpJIGRpZCBsb29rIGF0IHRoZSBVU0IgaW1wbGVtZW50
-YXRpb24sIGFuZCBpdCBpcyB2ZXJ5IGNsZXZlci4gQnV0IGl0J3MKbW9yZSBjb21wbGV4IGF0IHRo
-ZSBzYW1lIHRpbWUsIGJlY2F1c2UgeW91IG5vIGxvbmdlciBjYW4ganVzdCByZWFkIG91dAp0aGUg
-dGltZSBzdGFtcHMsIHlvdSBuZWVkIHRvIGxvb2sgYXQgdGhlIGN1cnJlbnQgZGV2aWNlIHN0YXRl
-IGVhY2ggdGltZQp0byBlaXRoZXIgc3VidHJhY3QgamlmZmllcyBvciBub3QuIAoKYnkgaGF2aW5n
-IHRoZSB0aW1lc3RhbXAgYXMgYSBzZXBhcmF0ZSB2YXJpYWJsZSBhbGwgdGhlIGNvZGUgZ2V0cwph
-IGxvdCBzaW1wbGVyLi4uLi4gc29tZXRpbWVzIHNpbXBsZSBvdmVyIGNsZXZlciBpcyB0aGUgcmln
-aHQgdGhpbmcgdG8KZG8uCgoKLS0gCkFyamFuIHZhbiBkZSBWZW4gCUludGVsIE9wZW4gU291cmNl
-IFRlY2hub2xvZ3kgQ2VudHJlCkZvciBkZXZlbG9wbWVudCwgZGlzY3Vzc2lvbiBhbmQgdGlwcyBm
-b3IgcG93ZXIgc2F2aW5ncywgCnZpc2l0IGh0dHA6Ly93d3cubGVzc3dhdHRzLm9yZwpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5n
-IGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Thu, 8 Jul 2010, Arjan van de Ven wrote:
+
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Subject: pm: Add runtime PM statistics to sysfs
+> 
+> In order for PowerTOP to be able to report how well the new runtime PM is working
+> for the various drivers, the kernel needs to export some basic statistics in sysfs.
+> 
+> This patch adds two sysfs files in the runtime PM domain that expose the
+> total time a device has been active, and the time a device has been suspended.
+> 
+> With this PowerTOP can compute the activity percentage
+> 
+> Active %age = 100 * (delta active) / (delta active + delta suspended)
+> 
+> and present the information to the user.
+> 
+> I've written the PowerTOP code (slated for version 1.12) already, and the output looks
+> like this:
+> 
+> Runtime Device Power Management statistics
+> Active  Device name
+>  10.0%	06:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8101E/RTL8102E
+
+
+> @@ -411,6 +433,7 @@ int __pm_runtime_resume(struct device *dev, bool from_wq)
+>  	}
+>  
+>  	if (retval) {
+> +		update_pm_runtime_accounting(dev);
+>  		dev->power.runtime_status = RPM_SUSPENDED;
+>  		pm_runtime_cancel_pending(dev);
+>  	} else {
+
+This line was added in the wrong place.  It belongs either before the 
+"if (retval) {" or after the "} else {".
+
+Alan Stern
