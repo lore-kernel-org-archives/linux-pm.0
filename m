@@ -1,15 +1,14 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.35-rc4-git3: Reported regressions from 2.6.34
-Date: Fri, 9 Jul 2010 09:11:31 +0200
-Message-ID: <20100709071131.GB10743__24898.8798623488$1278659614$gmane$org@elte.hu>
-References: <-IGZ64uxA6G.A.P0H.bLmNMB@chimera>
-	<AANLkTiknnzWyVpqnPCpyiEVHLgkewd0zaGzLInABRe2G@mail.gmail.com>
+From: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] pm: Add runtime PM statistics to sysfs
+Date: Fri, 9 Jul 2010 04:22:56 -0700
+Message-ID: <20100709042256.56e4b82f__35935.4400462054$1278674431$gmane$org@infradead.org>
+References: <20100708224837.6a18995b@infradead.org>
+	<AANLkTinJSHiDbAZJ6ga3AGNoZEFzyVPSrHkEocxa8M6N@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTiknnzWyVpqnPCpyiEVHLgkewd0zaGzLInABRe2G@mail.gmail.com>
+In-Reply-To: <AANLkTinJSHiDbAZJ6ga3AGNoZEFzyVPSrHkEocxa8M6N@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,55 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>, "Paul E. McKenney" <paulmck@us.ibm.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Jens Axboe <axboe@kernel.dk>, DRI <dri-devel@lists.sourceforge.net>, Linux SCSI List <linux-scsi@vger.kernel.org>, Patrick McHardy <kaber@trash.net>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "David S. Miller" <davem@davemloft.net>, Linux ACPI <linux-acpi@vger.kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, Frederic Weisbecker <fweisbec@gmail.com>, Dave Airlie <airlied@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Shawn Starr <shawn.starr@rogers.com>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.c>
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> > Bug-Entry ? ? ? : http://bugzilla.kernel.org/show_bug.cgi?id=16346
-> > Subject ? ? ? ? : 2.6.35-rc3-git8 - include/linux/fdtable.h:88 invoked rcu_dereference_check() without protection!
-> > Submitter ? ? ? : Miles Lane <miles.lane@gmail.com>
-> > Date ? ? ? ? ? ?: 2010-07-04 22:04 (5 days old)
-> > Message-ID ? ? ?: <AANLkTinof0k28rk4rMr66aubxcRL2rFa5ZEArj1lqD3o@mail.gmail.com>
-> > References ? ? ?: http://marc.info/?l=linux-kernel&m=127828107815930&w=2
-> 
-> I'm not entirely sure if these RCU proving things should count as 
-> regressions.
-
-Generally not - and we've delayed at least one more complex (cgroups) fix to 
-v2.6.36 because the patch itself was riskier than the warning.
-
-Still most of the warning fixes turned out to be simple, so we merged the 
-very-low-risk ones and right now we seem to be on top of them.
-
-But in general the default rule is that we delay these fixes to v2.6.36.
-
-> Sure, the option to enable RCU proving is new, but the things it reports 
-> about generally are not new - and they are usually not even bugs in the 
-> sense that they necessarily cause any real problems.
-> 
-> That particular one is in the single-thread optimizated case for fget_light, ie
-> 
->         if (likely((atomic_read(&files->count) == 1))) {
->                 file = fcheck_files(files, fd);
-> 
-> where I think it should be entirely safe in all ways without any locking. So 
-> I think it's a false positive too.
-
-Yeah, it's a bit like with lockdep (and it's a bit like with compiler warning 
-fixes): we had to punch through a large stack of false positives that 
-accumulated in the past 10 years.
-
-( Because real bugs eventually get fixed, while false positives always just
-  accumulate. So almost by definition we always start with a very assymetric
-  collection of warnings and a large stack of false positives. )
-
-Having said that, it appears we got most of the false positives and are 
-beginning to be in a more representative equilibrium now. If v2.6.35 isnt 
-going to be warning-free then v2.6.36 certainly will be and new warnings will 
-have a much higher likelyhood of being real (and new) bugs (not just 
-accumulated false-positives).
-
-	Ingo
+T24gRnJpLCA5IEp1bCAyMDEwIDE1OjA0OjU5ICswODAwCk1pbmcgTGVpIDx0b20ubGVpbWluZ0Bn
+bWFpbC5jb20+IHdyb3RlOgoKPiAyMDEwLzcvOSBBcmphbiB2YW4gZGUgVmVuIDxhcmphbkBpbmZy
+YWRlYWQub3JnPjoKPiA+IEZyb206IEFyamFuIHZhbiBkZSBWZW4gPGFyamFuQGxpbnV4LmludGVs
+LmNvbT4KPiA+IGRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3BtLmggYi9pbmNsdWRlL2xpbnV4
+L3BtLmgKPiA+IGluZGV4IDhlMjU4YzcuLmRjYTU5N2YgMTAwNjQ0Cj4gPiAtLS0gYS9pbmNsdWRl
+L2xpbnV4L3BtLmgKPiA+ICsrKyBiL2luY2x1ZGUvbGludXgvcG0uaAo+ID4gQEAgLTQ3Niw5ICs0
+NzYsMTUgQEAgc3RydWN0IGRldl9wbV9pbmZvIHsKPiA+IMKgIMKgIMKgIMKgZW51bSBycG1fcmVx
+dWVzdCDCoCDCoCDCoCDCoHJlcXVlc3Q7Cj4gPiDCoCDCoCDCoCDCoGVudW0gcnBtX3N0YXR1cyDC
+oCDCoCDCoCDCoCBydW50aW1lX3N0YXR1czsKPiA+IMKgIMKgIMKgIMKgaW50IMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIHJ1bnRpbWVfZXJyb3I7Cj4gPiArIMKgIMKgIMKgIHVuc2lnbmVk
+IGxvbmcgwqAgwqAgwqAgwqAgwqAgYWN0aXZlX2ppZmZpZXM7Cj4gPiArIMKgIMKgIMKgIHVuc2ln
+bmVkIGxvbmcgwqAgwqAgwqAgwqAgwqAgc3VzcGVuZGVkX2ppZmZpZXM7Cj4gPiArIMKgIMKgIMKg
+IHVuc2lnbmVkIGxvbmcgwqAgwqAgwqAgwqAgwqAgYWNjb3VudGluZ190aW1lc3RhbXA7Cj4gPiDC
+oCNlbmRpZgo+ID4gwqB9Owo+IAo+IFVTQiBzdWJzeXN0ZW0gaGFzIGltcGxlbWVudGVkIHRoZSBm
+dW5jdGlvbiBhbHJlYWR5LCBhbmQgb25seSB0d28KPiB2YXJpYWJsZXMgYXJlIGVub3VnaCB0byBk
+byB0aGUgc3RhdGlzdGljcy4gU3VnZ2VzdCB5b3UgdG8gbWFrZSBhCj4gcmVmZXJlbmNlIHRvIHVz
+YiBpbXBsZW1lbnRhdGlvbiwgbWF5YmUgc2l6ZW9mKHVuc2lnbmVkIGxvbmcpIGJ5dGVzCj4gcGVy
+IGRldmljZSBjYW4gYmUgc2F2ZWQuCj4gCgpJIGRpZCBsb29rIGF0IHRoZSBVU0IgaW1wbGVtZW50
+YXRpb24sIGFuZCBpdCBpcyB2ZXJ5IGNsZXZlci4gQnV0IGl0J3MKbW9yZSBjb21wbGV4IGF0IHRo
+ZSBzYW1lIHRpbWUsIGJlY2F1c2UgeW91IG5vIGxvbmdlciBjYW4ganVzdCByZWFkIG91dAp0aGUg
+dGltZSBzdGFtcHMsIHlvdSBuZWVkIHRvIGxvb2sgYXQgdGhlIGN1cnJlbnQgZGV2aWNlIHN0YXRl
+IGVhY2ggdGltZQp0byBlaXRoZXIgc3VidHJhY3QgamlmZmllcyBvciBub3QuIAoKYnkgaGF2aW5n
+IHRoZSB0aW1lc3RhbXAgYXMgYSBzZXBhcmF0ZSB2YXJpYWJsZSBhbGwgdGhlIGNvZGUgZ2V0cwph
+IGxvdCBzaW1wbGVyLi4uLi4gc29tZXRpbWVzIHNpbXBsZSBvdmVyIGNsZXZlciBpcyB0aGUgcmln
+aHQgdGhpbmcgdG8KZG8uCgoKLS0gCkFyamFuIHZhbiBkZSBWZW4gCUludGVsIE9wZW4gU291cmNl
+IFRlY2hub2xvZ3kgQ2VudHJlCkZvciBkZXZlbG9wbWVudCwgZGlzY3Vzc2lvbiBhbmQgdGlwcyBm
+b3IgcG93ZXIgc2F2aW5ncywgCnZpc2l0IGh0dHA6Ly93d3cubGVzc3dhdHRzLm9yZwpfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5n
+IGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5s
+aW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
