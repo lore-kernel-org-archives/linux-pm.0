@@ -1,33 +1,33 @@
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-Subject: Re: HDD not suspending properly / dead on resume
-Date: Mon, 12 Jul 2010 17:35:06 +0200
-Message-ID: <201007121735.07244.maciej.rutecki@gmail.com>
-References: <201007091750.05020.stephan.diestelhorst@amd.com>
-Reply-To: maciej.rutecki@gmail.com
+From: Thomas Weber <weber@corscience.de>
+Subject: [PATCH] idle: intel_idle: Change mode 755 => 644
+Date: Mon, 12 Jul 2010 08:56:43 +0200
+Message-ID: <1278917804-4456-1-git-send-email-weber__979.109135414724$1278949114$gmane$org@corscience.de>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <201007091750.05020.stephan.diestelhorst@amd.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: Stephan Diestelhorst <stephan.diestelhorst@amd.com>
-Cc: Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-pm@lists.osdl.org, stephan.diestelhorst@gmail.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: lenb@kernel.org
+Cc: Thomas Weber <weber@corscience.de>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On pi=C4=85tek, 9 lipca 2010 o 17:50:04 Stephan Diestelhorst wrote:
-> Hi,
->   I have n issue with suepnd to RAM and I/O load on a disk. Symptoms
-> are that the disk does not respond to requests when woken up, produci=
-ng
-> only I/O errors on all tested kernels (newest 2.6.35-rc4 (Ubuntu
-> mainline PPA build)):
->=20
+Remove execution permission from source file.
 
-I created a Bugzilla entry at=20
-https://bugzilla.kernel.org/show_bug.cgi?id=3D16370
-for your bug report, please add your address to the CC list in there, t=
-hanks!
+Signed-off-by: Thomas Weber <weber@corscience.de>
+---
+ 0 files changed, 0 insertions(+), 0 deletions(-)
+ mode change 100755 => 100644 drivers/idle/intel_idle.c
 
---=20
-Maciej Rutecki
-http://www.maciek.unixy.pl
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+old mode 100755
+new mode 100644
+-- 
+1.7.1
