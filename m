@@ -1,49 +1,33 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH v2] pm: Add runtime PM statistics
-Date: Sun, 11 Jul 2010 22:16:46 -0700
-Message-ID: <20100711221646.35f11b70__6371.43615535951$1278911658$gmane$org@infradead.org>
-References: <20100710095254.5ab7291c@infradead.org>
-	<201007112326.07541.rjw@sisk.pl>
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+Subject: Re: HDD not suspending properly / dead on resume
+Date: Mon, 12 Jul 2010 17:35:06 +0200
+Message-ID: <201007121735.07244.maciej.rutecki@gmail.com>
+References: <201007091750.05020.stephan.diestelhorst@amd.com>
+Reply-To: maciej.rutecki@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201007112326.07541.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Alan@smtp1.linux-foundation.org
+Content-Type: Text/Plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <201007091750.05020.stephan.diestelhorst@amd.com>
+Sender: linux-ide-owner@vger.kernel.org
+To: Stephan Diestelhorst <stephan.diestelhorst@amd.com>
+Cc: Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-pm@lists.osdl.org, stephan.diestelhorst@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 11 Jul 2010 23:26:07 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On pi=C4=85tek, 9 lipca 2010 o 17:50:04 Stephan Diestelhorst wrote:
+> Hi,
+>   I have n issue with suepnd to RAM and I/O load on a disk. Symptoms
+> are that the disk does not respond to requests when woken up, produci=
+ng
+> only I/O errors on all tested kernels (newest 2.6.35-rc4 (Ubuntu
+> mainline PPA build)):
+>=20
 
-> > +
-> >  static DEVICE_ATTR(runtime_usage, 0444, rtpm_usagecount_show,
-> > NULL); static DEVICE_ATTR(runtime_active_kids, 0444,
-> > rtpm_children_show, NULL); static DEVICE_ATTR(runtime_status, 0444,
-> > rtpm_status_show, NULL); +static DEVICE_ATTR(runtime_active_time,
-> > 0444, rtpm_active_time_show, NULL); +static
-> > DEVICE_ATTR(runtime_suspended_time, 0444, rtpm_suspended_time_show,
-> > NULL); static DEVICE_ATTR(runtime_enabled, 0444, rtpm_enabled_show,
-> > NULL);
-> 
-> On a second thought, "active_time" and "suspended_time" should be
-> sufficient (ie. the "runtime_" prefix is not really necessary).
+I created a Bugzilla entry at=20
+https://bugzilla.kernel.org/show_bug.cgi?id=3D16370
+for your bug report, please add your address to the CC list in there, t=
+hanks!
 
-it's not necessary but it's consistent with the others... so yes
-I can change it but then it's no longer consistent naming.. are you sure
-you want this changed?
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+--=20
+Maciej Rutecki
+http://www.maciek.unixy.pl
