@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Resend][PATCH 0/4] ACPI: Avoid executing _PRW twice
-	for all devices
-Date: Mon, 12 Jul 2010 21:35:40 +0200
-Message-ID: <201007122135.40204.rjw__31816.5568788119$1278965421$gmane$org@sisk.pl>
-References: <201007080041.38627.rjw@sisk.pl>
-	<alpine.LFD.2.00.1007121434040.25332@localhost.localdomain>
+Subject: Re: [PATCH v2] pm: Add runtime PM statistics
+Date: Tue, 13 Jul 2010 23:28:28 +0200
+Message-ID: <201007132328.28853.rjw__40721.6880390935$1279058475$gmane$org@sisk.pl>
+References: <20100710095254.5ab7291c@infradead.org>
+	<201007112326.07541.rjw@sisk.pl>
+	<20100711221646.35f11b70@infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.1007121434040.25332@localhost.localdomain>
+In-Reply-To: <20100711221646.35f11b70@infradead.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,22 +19,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Len Brown <len.brown@intel.com>, Lin Ming <ming.m.lin@intel.com>, "Moore,
-	Robert" <robert.moore@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, July 12, 2010, Len Brown wrote:
+On Monday, July 12, 2010, Arjan van de Ven wrote:
+> On Sun, 11 Jul 2010 23:26:07 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> > [3/4] - Simplifies code in acpi_ev_initialize_gpe_block(), which only is a
-> >         cosmetic thing, but worth doing IMO.
+> > > +
+> > >  static DEVICE_ATTR(runtime_usage, 0444, rtpm_usagecount_show,
+> > > NULL); static DEVICE_ATTR(runtime_active_kids, 0444,
+> > > rtpm_children_show, NULL); static DEVICE_ATTR(runtime_status, 0444,
+> > > rtpm_status_show, NULL); +static DEVICE_ATTR(runtime_active_time,
+> > > 0444, rtpm_active_time_show, NULL); +static
+> > > DEVICE_ATTR(runtime_suspended_time, 0444, rtpm_suspended_time_show,
+> > > NULL); static DEVICE_ATTR(runtime_enabled, 0444, rtpm_enabled_show,
+> > > NULL);
+> > 
+> > On a second thought, "active_time" and "suspended_time" should be
+> > sufficient (ie. the "runtime_" prefix is not really necessary).
 > 
-> FYI, this one had a white-space issue on the line with the "enabled:" 
-> label -- the patch was missing some tabs and spaces that were in the tree;
-> but that was the only problem with it.
-> 
-> > Please apply.
+> it's not necessary but it's consistent with the others... so yes
+> I can change it but then it's no longer consistent naming.. are you sure
+> you want this changed?
 
-Thanks!
+No, you're right, sorry.
+
+But can you rebase your patch on top of linux-next, please, and move the
+definitions of the new attributes next to 'control' and 'runtime_status' (so
+that they don't depend on 'debug')?
 
 Rafael
