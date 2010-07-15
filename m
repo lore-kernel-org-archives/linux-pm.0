@@ -1,16 +1,12 @@
-From: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: Warnings from PM QoS plist usage
-Date: Thu, 15 Jul 2010 19:02:33 +0200
-Message-ID: <1279213353.21982.54.camel@mulgrave.site>
-References: <20100714093510.GC5933@sirena.org.uk>
-	<1279174378.21982.52.camel@mulgrave.site>
-	<20100715162811.GA17100@rakim.wolfsonmicro.main>
-	<201007151858.47087.rjw@sisk.pl>
+From: Ai Li <aili@codeaurora.org>
+Subject: [PATCH] cpuidle: extend cpuidle and menu governor to
+	handle dynamic states
+Date: Thu, 15 Jul 2010 14:30:25 -0600
+Message-ID: <1279225825-31069-1-git-send-email-aili__38231.5262374052$1279226042$gmane$org@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201007151858.47087.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,42 +16,170 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, mark gross <markgross@thegnar.org>
+To: akpm@linux-foundation.org, dwalker@codeaurora.org
+Cc: len.brown@intel.com, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, mingo@elte.hu, arjan@linux.intel.com, shemminger@vyatta.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2010-07-15 at 18:58 +0200, Rafael J. Wysocki wrote:
-> On Thursday, July 15, 2010, Mark Brown wrote:
-> > On Thu, Jul 15, 2010 at 08:12:58AM +0200, James Bottomley wrote:
-> > > On Wed, 2010-07-14 at 10:35 +0100, Mark Brown wrote:
-> > 
-> > > > > I've not looked at the PM QoS code at all so I don't know what the
-> > > > > appropriate place to fix this is - do we perhaps want to fix the debug
-> > > > > code to cope with no locks?  Looking at the plist.h code it seems fairly
-> > > > > clear that there's currently no expectation that users should use
-> > > > > _PLIST_INIT_HEAD() directly.
-> > 
-> > > Sorry ... I just wasn't sure what it wanted without reading through the
-> > > plist code more ... and also that debug item is hidden by
-> > > CONFIG_DEBUG_RT_MUTEXES, which is why I couldn't enable it.
-> > 
-> > Ah, yes - I missed the existing spinlock.
-> > 
-> > > This should fix the warning.
-> > 
-> > It does indeed - thanks!
-> > 
-> > Tested-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> 
-> Thanks for testing.
-> 
-> James, I hope it's appropriate to add your sign-off to the patch?
+On some SoC chips, HW resources may be in use during any particular idle
+period.  As a consequence, the cpuidle states that the SoC is safe to
+enter can change from idle period to idle period.  In addition, the
+latency and threshold of each cpuidle state can vary, depending on the
+operating condition when the CPU becomes idle, e.g. the current cpu
+frequency, the current state of the HW blocks, etc.
 
-Certainly
+cpuidle core and the menu governor, in the current form, are geared
+towards cpuidle states that are static, i.e. the availabiltiy of the
+states, their latencies, their thresholds are non-changing during run
+time.  cpuidle does not provide any hook that cpuidle drivers can use
+to adjust those values on the fly for the current idle period before the
+menu governor selects the target cpuidle state.
 
-Signed-off-by: James Bottomley <James.Bottomley@suse.de>
+This patch extends cpuidle core and the menu governor to handle states
+that are dynamic.  There are three additions in the patch and the patch
+maintains backwards-compatibility with existing cpuidle drivers.
 
-Although I'd advise just folding it into the plist patch since it's not
-gone upstream yet.
+1) add prepare() to struct cpuidle_device.  A cpuidle driver can hook
+into the callback and the menu governor will call prepare() in
+menu_select().  The callback gives the cpuidle driver a chance to update
+the dynamic information of the cpuidle states for the current idle
+period, e.g. state availability, latencies, thresholds, power values,
+etc.
 
-James
+2) add CPUIDLE_FLAG_IGNORE as one of the state flags.  In the prepare()
+function, a cpuidle driver can set/clear the flag to indicate to the
+menu governor whether a cpuidle state should be ignored, i.e. not
+available, during the current idle period.
+
+3) add compare_power bit to struct cpuidle_device.  The menu governor
+currently assumes that the cpuidle states are arranged in the order of
+increasing latency, threshold, and power savings.  This is true or can
+be made true for static states.  Once the state parameters are dynamic,
+the latencies, thresholds, and power savings for the cpuidle states can
+increase or decrease by different amounts from idle period to idle
+period.  So the assumption of increasing latency, threshold, and power
+savings from Cn to C(n+1) can no longer be guaranteed.
+
+It can be straight forward to calculate the power consumption of each
+available state for the predicted idle period.  The menu governor then
+selects the state that has the lowest power consumption and that still
+satisfies all other critieria.  When the compare_power bit is true, the
+menu governor uses the power_usage fields to find the lowest power
+state instead of relying on the above assumption.
+
+Signed-off-by: Ai Li <aili@codeaurora.org>
+---
+ drivers/cpuidle/governors/menu.c |   59 +++++++++++++++++++++++++++++--------
+ include/linux/cpuidle.h          |    4 ++
+ 2 files changed, 50 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index 1b12870..b3854cc 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -271,6 +271,9 @@ static int menu_select(struct cpuidle_device *dev)
+ 
+ 	detect_repeating_patterns(data);
+ 
++	if (dev->prepare)
++		dev->prepare(dev, data->predicted_us);
++
+ 	/*
+ 	 * We want to default to C1 (hlt), not to busy polling
+ 	 * unless the timer is happening really really soon.
+@@ -278,19 +281,49 @@ static int menu_select(struct cpuidle_device *dev)
+ 	if (data->expected_us > 5)
+ 		data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
+ 
+-
+-	/* find the deepest idle state that satisfies our constraints */
+-	for (i = CPUIDLE_DRIVER_STATE_START; i < dev->state_count; i++) {
+-		struct cpuidle_state *s = &dev->states[i];
+-
+-		if (s->target_residency > data->predicted_us)
+-			break;
+-		if (s->exit_latency > latency_req)
+-			break;
+-		if (s->exit_latency * multiplier > data->predicted_us)
+-			break;
+-		data->exit_us = s->exit_latency;
+-		data->last_state_idx = i;
++	if (dev->compare_power) {
++		/* find the idle state with the lowest power while satisfying
++		 * our constraints
++		 */
++		unsigned int power_usage = (unsigned int) ~0UL;
++
++		for (i = CPUIDLE_DRIVER_STATE_START; i < dev->state_count; i++) {
++			struct cpuidle_state *s = &dev->states[i];
++
++			if (s->flags & CPUIDLE_FLAG_IGNORE)
++				continue;
++			if (s->target_residency > data->predicted_us)
++				continue;
++			if (s->exit_latency > latency_req)
++				continue;
++			if (s->exit_latency * multiplier > data->predicted_us)
++				continue;
++
++			if (s->power_usage < power_usage) {
++				power_usage = s->power_usage;
++				data->exit_us = s->exit_latency;
++				data->last_state_idx = i;
++			}
++		}
++	} else {
++		/* find the deepest idle state that satisfies our
++		 * constraints
++		 */
++		for (i = CPUIDLE_DRIVER_STATE_START; i < dev->state_count; i++) {
++			struct cpuidle_state *s = &dev->states[i];
++
++			if (s->flags & CPUIDLE_FLAG_IGNORE)
++				continue;
++
++			if (s->target_residency > data->predicted_us)
++				break;
++			if (s->exit_latency > latency_req)
++				break;
++			if (s->exit_latency * multiplier > data->predicted_us)
++				break;
++			data->exit_us = s->exit_latency;
++			data->last_state_idx = i;
++		}
+ 	}
+ 
+ 	return data->last_state_idx;
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 55215cc..4406670 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -52,6 +52,7 @@ struct cpuidle_state {
+ #define CPUIDLE_FLAG_SHALLOW	(0x20) /* low latency, minimal savings */
+ #define CPUIDLE_FLAG_BALANCED	(0x40) /* medium latency, moderate savings */
+ #define CPUIDLE_FLAG_DEEP	(0x80) /* high latency, large savings */
++#define CPUIDLE_FLAG_IGNORE	(0x100) /* ignore during this idle period */
+ 
+ #define CPUIDLE_DRIVER_FLAGS_MASK (0xFFFF0000)
+ 
+@@ -84,6 +85,7 @@ struct cpuidle_state_kobj {
+ struct cpuidle_device {
+ 	unsigned int		registered:1;
+ 	unsigned int		enabled:1;
++	unsigned int		compare_power:1;
+ 	unsigned int		cpu;
+ 
+ 	int			last_residency;
+@@ -97,6 +99,8 @@ struct cpuidle_device {
+ 	struct completion	kobj_unregister;
+ 	void			*governor_data;
+ 	struct cpuidle_state	*safe_state;
++
++	int (*prepare)		(struct cpuidle_device *dev, int idle_us);
+ };
+ 
+ DECLARE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
+-- 
+1.5.6.3
+
+Employee of Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum
