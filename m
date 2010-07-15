@@ -1,42 +1,31 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [RFC][PATCH 1/1] ARM: Add initial hibernation support
-Date: Thu, 15 Jul 2010 09:41:18 +0100
-Message-ID: <20100715084118.GB26212__29714.7146579393$1279183368$gmane$org@n2100.arm.linux.org.uk>
-References: <1277908081-17195-1-git-send-email-Hiroshi.DOYU@nokia.com>
-	<1277908081-17195-2-git-send-email-Hiroshi.DOYU@nokia.com>
-	<20100714132255.GB3103@ucw.cz>
-	<20100715.083450.193689911.Hiroshi.DOYU@nokia.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bugme-new] [Bug 16396] New: [bisected] resume from suspend freezes system
+Date: Thu, 15 Jul 2010 10:45:47 +0200
+Message-ID: <201007151045.47302.rjw@sisk.pl>
+References: <bug-16396-10286@https.bugzilla.kernel.org/> <20100714194555.2b23d803.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100715.083450.193689911.Hiroshi.DOYU@nokia.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Cc: Yoshiya.Hirase@nokia.com, teerth@ti.com, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20100714194555.2b23d803.akpm@linux-foundation.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>, Matthew Garrett <mjg@redhat.com>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 15, 2010 at 08:34:50AM +0300, Hiroshi DOYU wrote:
-> Russell, would it be possible to put this into your next merge queue?
+On Thursday, July 15, 2010, Andrew Morton wrote:
+> On Thu, 15 Jul 2010 02:32:43 GMT bugzilla-daemon@bugzilla.kernel.org wrote:
+> 
+> > https://bugzilla.kernel.org/show_bug.cgi?id=16396
+> 
+> post-2.6.34 regression, bisected to an ACPi commit from Matthew.
 
-I think it needs quite a bit of rework - I certainly don't like all
-those CP15 register accesses there - that's asking for lots of ifdefs
-to spring up as more CPUs are supported.
+Well, that's something I was afraid of.
 
-Eg, what about ensuring that state such as iWMMXt on PXA CPUs is
-properly restored?
+So, the theory that we'll be fine if we do what Windows does really doesn't
+match reality.
 
-We already have code which knows what needs to be saved across a
-power-off transition - its what we use for our normal suspend/resume
-functionality, so we should look at re-using that code for hibernate
-as well.  We really don't want to be maintaining two sets of code
-doing the same thing.
+Matthew, Len, any ideas?
+
+Rafael
