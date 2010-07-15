@@ -1,15 +1,16 @@
-From: Marek Vasut <marek.vasut@gmail.com>
-Subject: Re: [RFC][PATCH 1/1] ARM: Add initial hibernation support
-Date: Thu, 15 Jul 2010 08:04:06 +0200
-Message-ID: <201007150804.06217.marek.vasut__21438.8826316737$1279210680$gmane$org@gmail.com>
-References: <201007150648.50521.marek.vasut@gmail.com>
-	<201007150756.11817.marek.vasut@gmail.com>
-	<20100715.090028.189718162.Hiroshi.DOYU@nokia.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: Warnings from PM QoS plist usage
+Date: Thu, 15 Jul 2010 17:28:11 +0100
+Message-ID: <20100715162811.GA17100@rakim.wolfsonmicro.main>
+References: <20100714093510.GC5933@sirena.org.uk>
+	<20100714093558.GD5933@sirena.org.uk>
+	<1279174378.21982.52.camel@mulgrave.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100715.090028.189718162.Hiroshi.DOYU@nokia.com>
+Content-Disposition: inline
+In-Reply-To: <1279174378.21982.52.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,57 +20,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Cc: Yoshiya.Hirase@nokia.com, teerth@ti.com, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: linux-pm@lists.linux-foundation.org, mark gross <markgross@thegnar.org>
 List-Id: linux-pm@vger.kernel.org
 
-Dne =C8t 15. =E8ervence 2010 08:00:28 Hiroshi DOYU napsal(a):
-> From: ext Marek Vasut <marek.vasut@gmail.com>
-> Subject: Re: [RFC][PATCH 1/1] ARM: Add initial hibernation support
-> Date: Thu, 15 Jul 2010 07:56:11 +0200
-> =
+On Thu, Jul 15, 2010 at 08:12:58AM +0200, James Bottomley wrote:
+> On Wed, 2010-07-14 at 10:35 +0100, Mark Brown wrote:
 
-> > Dne =C8t 15. =E8ervence 2010 07:39:31 Hiroshi DOYU napsal(a):
-> >> From: ext Marek Vasut <marek.vasut@gmail.com>
-> >> Subject: Re: [RFC][PATCH 1/1] ARM: Add initial hibernation support
-> >> Date: Thu, 15 Jul 2010 06:48:50 +0200
-> >> =
+> > > I've not looked at the PM QoS code at all so I don't know what the
+> > > appropriate place to fix this is - do we perhaps want to fix the debug
+> > > code to cope with no locks?  Looking at the plist.h code it seems fairly
+> > > clear that there's currently no expectation that users should use
+> > > _PLIST_INIT_HEAD() directly.
 
-> >> > Dne St 30. =E8ervna 2010 16:28:01 Hiroshi DOYU napsal(a):
-> >> >> From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-> >> >> =
+> Sorry ... I just wasn't sure what it wanted without reading through the
+> plist code more ... and also that debug item is hidden by
+> CONFIG_DEBUG_RT_MUTEXES, which is why I couldn't enable it.
 
-> >> >> Hibernation (a.k.a: Suspend-To-Disk) support for ARM
-> >> >> =
+Ah, yes - I missed the existing spinlock.
 
-> >> >> Based on the original work from Romit and Raghu at TI. The original
-> >> >> patch(*1) was sent to LOML by Teerth Reddy <teerth@ti.com>
-> >> >> =
+> This should fix the warning.
 
-> >> >> *1: https://patchwork.kernel.org/patch/96442/
-> >> >> =
+It does indeed - thanks!
 
-> >> >> Signed-off-by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-> >> > =
-
-> >> > Hey, can this also run on pre-v7 arms ? Or is there something I miss=
-ed
-> >> > that'd make that impossible?
-> >> =
-
-> >> What I verified is with OMAP3(Cortex A8) based board.
-> >> =
-
-> >> cp15 part has to be modified, but it might work without this part
-> >> itself, I guess.
-> > =
-
-> > I see ... do I need any special support on the bootloader or userland
-> > side ?
-> =
-
-> No, I don't think so. The resuming boot could set up most of states
-> basically.
-
-I'll test it on xscale/pxa270 ... if it works, I can test on various pxa3xx=
- too.
+Tested-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
