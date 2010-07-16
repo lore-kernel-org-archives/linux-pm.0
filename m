@@ -1,15 +1,16 @@
-From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Subject: Re: [RFC][PATCH 1/1] ARM: Add initial hibernation support
-Date: Fri, 16 Jul 2010 12:18:23 +0300 (EEST)
-Message-ID: <20100716.121823.226797826.Hiroshi.DOYU__36066.6241882884$1279272024$gmane$org@nokia.com>
-References: <20100715.120807.39160135.Hiroshi.DOYU@nokia.com>
-	<20100716075243.GB16124@n2100.arm.linux.org.uk>
-	<EAF47CD23C76F840A9E7FCE10091EFAB02C6127BF3@dbde02.ent.ti.com>
+From: "Ai Li" <aili@codeaurora.org>
+Subject: Re: [PATCH] cpuidle: extend cpuidle and menu governor to
+	handle dynamic states
+Date: Fri, 16 Jul 2010 11:25:27 -0600
+Message-ID: <000001cb250b$e2813e60$a783bb20$__10750.0797989362$1279301400$gmane$org@org>
+References: <1279225825-31069-1-git-send-email-aili@codeaurora.org>
+	<4C3FDAF1.7030107@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <EAF47CD23C76F840A9E7FCE10091EFAB02C6127BF3@dbde02.ent.ti.com>
+In-Reply-To: <4C3FDAF1.7030107@linux.intel.com>
+Content-Language: en-us
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,67 +20,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: santosh.shilimkar@ti.com
-Cc: linux@arm.linux.org.uk, Yoshiya.Hirase@nokia.com, teerth@ti.com, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: 'Arjan van de Ven' <arjan@linux.intel.com>
+Cc: len.brown@intel.com, dwalker@codeaurora.org, mingo@elte.hu, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org, shemminger@vyatta.com
 List-Id: linux-pm@vger.kernel.org
 
-From: "ext Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-Subject: RE: [RFC][PATCH 1/1] ARM: Add initial hibernation support
-Date: Fri, 16 Jul 2010 10:48:00 +0200
+> > +	if (dev->prepare)
+> > +		dev->prepare(dev, data->predicted_us);
+> >
+> 
+> I don't like the idea of passing predicted_us here.
+> the states and their updates should be independent of how long we
+> think we'll be idle;
 
-> Hiroshi,
->> -----Original Message-----
->> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
->> owner@vger.kernel.org] On Behalf Of Russell King - ARM Linux
->> Sent: Friday, July 16, 2010 1:23 PM
->> To: Hiroshi DOYU
->> Cc: linux-arm-kernel@lists.infradead.org; pavel@ucw.cz;
->> khilman@deeprootsystems.com; Reddy, Teerth; linux-pm@lists.linux-
->> foundation.org; Yoshiya.Hirase@nokia.com; linux-omap@vger.kernel.org
->> Subject: Re: [RFC][PATCH 1/1] ARM: Add initial hibernation support
->> 
->> On Thu, Jul 15, 2010 at 12:08:07PM +0300, Hiroshi DOYU wrote:
->> > From: ext Russell King - ARM Linux <linux@arm.linux.org.uk>
->> > Subject: Re: [RFC][PATCH 1/1] ARM: Add initial hibernation support
->> > Date: Thu, 15 Jul 2010 10:41:18 +0200
->> >
->> > > On Thu, Jul 15, 2010 at 08:34:50AM +0300, Hiroshi DOYU wrote:
->> > >> Russell, would it be possible to put this into your next merge queue?
->> > >
->> > > I think it needs quite a bit of rework - I certainly don't like all
->> > > those CP15 register accesses there - that's asking for lots of ifdefs
->> > > to spring up as more CPUs are supported.
->> > >
->> > > Eg, what about ensuring that state such as iWMMXt on PXA CPUs is
->> > > properly restored?
->> >
->> > Right. This arch specific part can be something like
->> > "suspend-v[3-7].S" to accomodate those differences
->> 
->> It's not quite that simple - things like iWMMXt aren't part of the ARM
->> arch specs.
->> 
->> > > We already have code which knows what needs to be saved across a
->> > > power-off transition - its what we use for our normal suspend/resume
->> > > functionality, so we should look at re-using that code for hibernate
->> > > as well.  We really don't want to be maintaining two sets of code
->> > > doing the same thing.
->> >
->> > Could you explain which code you're refering for the existing one?
->> 
->> The code which handles saving state for the existing suspend/resume
->> support.  This code already saves the necessary state from CP15 and
->> any other state which needs to be saved prior to putting the system
->> into low power mode.
->> 
->> Every machine class which supports suspend today has their own chunk
->> of code which does this, normally called something like sleep.S
->> 
-> When this getting developed in TI, we had one more concern about handling
-> the trustzone part for the CP15 resgiters.
-> This patch will hang on restoration on some devices implementing trustzone.
+The power_usage value, total or average, would depend on how long the
+predicted idle period is.  On our SoCs, a cpuidle state has three
+stages: entry stage, low power stage, and exit stage.  Entry and exit
+stages consume more power than the low power stage but have fixed
+durations, irrespective how long the idle period is.  As the
+predicted idle period changes, the entry and exit duration stay the
+same but the low power duration changes, resulting in different total
+or average power for the idle period.
 
-Thanks for the info.
 
-I think that this trustzone issue and PXA part can be revisited later
-once the basic stuff is accepted.
+> Also I would like the cpuidle code, not the governor, to call this
+> prepare function.
+> The need to call ->prepare is governor independent....
+
+I agree that it would be cleaner to call ->prepare from the cpuidle
+code.  But if we need values calculated in the governor's select
+function, I'm not sure what is the best way to do that from cpuidle
+code.
+
+ 
+> + if (dev->compare_power) {
+> 
+> I'm not a big fan of this as a flag; either we always do this,
+> which I
+> can understand, or we sort things, which is also fine with me.
+> Doing this condition like this.... not a fan.
+
+One of the concerns I have is backwards compatibility.  As far as I
+know, none of the current cpuidle drivers use the power_usage field.
+If we always do compare_power, those drivers would break until
+someone with technical device knowledge update the drivers to specify
+power...  I could derive fake power_usage numbers by default, using
+the cstate index position.  That seems kind of hacky but it would
+remove the need for the compare_power flag and retain the current
+behavior when cpuidle drivers do not provide their own power numbers.
+
+~Ai
+
+Employee of Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum
