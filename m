@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Warnings from PM QoS plist usage
-Date: Mon, 19 Jul 2010 03:43:24 +0200
-Message-ID: <201007190343.24736.rjw@sisk.pl>
-References: <20100714093510.GC5933@sirena.org.uk>
-	<201007151858.47087.rjw@sisk.pl>
-	<1279213353.21982.54.camel@mulgrave.site>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: PM QoS dynamic resource manager
+Date: Mon, 19 Jul 2010 08:38:33 +0200
+Message-ID: <1279521513.2820.11.camel@mulgrave.site>
+References: <alpine.DEB.2.00.1005211533530.25765@pchidamb-lnx.qualcomm.com>
+	<20100718125742.GA2253@gvim.org>
+	<1279465406.2820.9.camel@mulgrave.site>
+	<201007190346.12681.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1279213353.21982.54.camel@mulgrave.site>
+In-Reply-To: <201007190346.12681.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,45 +20,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: linux-pm@lists.linux-foundation.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, mark gross <markgross@thegnar.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Huntsman, Bryan" <bryanh@quicinc.com>, linux-pm@lists.linux-foundation.org, mark gross <640e9920@gmail.com>, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 15, 2010, James Bottomley wrote:
-> On Thu, 2010-07-15 at 18:58 +0200, Rafael J. Wysocki wrote:
-> > On Thursday, July 15, 2010, Mark Brown wrote:
-> > > On Thu, Jul 15, 2010 at 08:12:58AM +0200, James Bottomley wrote:
-> > > > On Wed, 2010-07-14 at 10:35 +0100, Mark Brown wrote:
+On Mon, 2010-07-19 at 03:46 +0200, Rafael J. Wysocki wrote:
+> On Sunday, July 18, 2010, James Bottomley wrote:
+> > On Sun, 2010-07-18 at 05:57 -0700, mark gross wrote:
+> > > On Thu, Jun 17, 2010 at 10:57:46PM -0700, Huntsman, Bryan wrote:
+> > > > > It would be great if we could all get together at one of the
+> > > > > conferences this year to talk through some of our ideas in more
+> > > > > detail.  I plan to be at ELC Europe (October in UK) and Linux Plumbers
+> > > > > (Nov in Boston) with a remote possibility of making it to LinuxCon
+> > > > > (Aug in Boston, which includes a PM mini-summit on Monday.)
+> > > > 
+> > > > I'm planning on attending LinuxCon and Plumbers.  I'll also be up at
+> > > > the Symposium.  A meetup at the PM mini-summit would be great if Mike
+> > > > and Brian S can make it.  Thanks.
+> > > > 
+> > > > - Bryan
 > > > 
-> > > > > > I've not looked at the PM QoS code at all so I don't know what the
-> > > > > > appropriate place to fix this is - do we perhaps want to fix the debug
-> > > > > > code to cope with no locks?  Looking at the plist.h code it seems fairly
-> > > > > > clear that there's currently no expectation that users should use
-> > > > > > _PLIST_INIT_HEAD() directly.
+> > > I will be going to plumbers I think a working session to get this type
+> > > of generalization of qos-like ideas into the LDM would be an interesting
+> > > thing to try to do.  I won't be able to lead or drive this topic
+> > > however.  one of you guys need to make the proposal for the working
+> > > session.
 > > > 
-> > > > Sorry ... I just wasn't sure what it wanted without reading through the
-> > > > plist code more ... and also that debug item is hidden by
-> > > > CONFIG_DEBUG_RT_MUTEXES, which is why I couldn't enable it.
+> > > http://www.linuxplumbersconf.org/2010/07/07/linux-plumbers-conference-call-for-working-sessions-submissions
 > > > 
-> > > Ah, yes - I missed the existing spinlock.
-> > > 
-> > > > This should fix the warning.
-> > > 
-> > > It does indeed - thanks!
-> > > 
-> > > Tested-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> > > oh, we are running up against a July 19 deadline.
 > > 
-> > Thanks for testing.
-> > 
-> > James, I hope it's appropriate to add your sign-off to the patch?
+> > For working sessions, this isn't quite true ... the 19 July deadline is
+> > only for Refereed Presentations (i.e. the standard conference talks).
+> > The deadline for Working Sessions (Or MicroConferences) is up to the MC
+> > Session Leader
 > 
-> Certainly
-> 
-> Signed-off-by: James Bottomley <James.Bottomley@suse.de>
-> 
-> Although I'd advise just folding it into the plist patch since it's not
-> gone upstream yet.
+> OK, how do I figure out who's the one for the PM MC?
 
-Done.
+They're supposed to have Track Lead as their excerpt ... apparently
+Matthew Garrett (who's the Session Leader) doesn't.
 
-Rafael
+James
