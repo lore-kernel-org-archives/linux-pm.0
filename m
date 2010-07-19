@@ -1,66 +1,42 @@
-From: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: PM QoS dynamic resource manager
-Date: Sun, 18 Jul 2010 17:03:26 +0200
-Message-ID: <1279465406.2820.9.camel@mulgrave.site>
-References: <alpine.DEB.2.00.1005211533530.25765@pchidamb-lnx.qualcomm.com>
-	<20100525145223.GA4974@gvim.org>
-	<AANLkTikLgu2c1GPE3glHLlaznOM59SVeCj2NHzDjyjZR@mail.gmail.com>
-	<20100608033333.GA23066@gvim.org>
-	<AANLkTinGBvZm870CsjocsCV1SmQ-FCCbJLtKWR1juB1Q@mail.gmail.com>
-	<4C0ECC38.2000003@codeaurora.org> <20100609030525.GD26668@gvim.org>
-	<1276265566.8214.2.camel@localhost>
-	<87zkytffyg.fsf@deeprootsystems.com>
-	<ED35FE86DA24A84894C93FF3B8C47D8C300D002E9F@NASANEXMB11.na.qualcomm.com>
-	<20100718125742.GA2253@gvim.org>
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [Bugme-new] [Bug 16396] New: [bisected] resume from suspend
+ freezes system
+Date: Mon, 19 Jul 2010 03:25:41 +0300
+Message-ID: <1279499141.17672.10.camel@localhost.localdomain>
+References: <bug-16396-10286@https.bugzilla.kernel.org/>
+	 <20100714194555.2b23d803.akpm@linux-foundation.org>
+	 <201007151045.47302.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100718125742.GA2253@gvim.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: "Huntsman, Bryan" <bryanh@quicinc.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, mark gross <640e9920@gmail.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <201007151045.47302.rjw@sisk.pl>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>, Matthew Garrett <mjg@redhat.com>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2010-07-18 at 05:57 -0700, mark gross wrote:
-> On Thu, Jun 17, 2010 at 10:57:46PM -0700, Huntsman, Bryan wrote:
-> > > It would be great if we could all get together at one of the
-> > > conferences this year to talk through some of our ideas in more
-> > > detail.  I plan to be at ELC Europe (October in UK) and Linux Plumbers
-> > > (Nov in Boston) with a remote possibility of making it to LinuxCon
-> > > (Aug in Boston, which includes a PM mini-summit on Monday.)
+On Thu, 2010-07-15 at 10:45 +0200, Rafael J. Wysocki wrote:
+> On Thursday, July 15, 2010, Andrew Morton wrote:
+> > On Thu, 15 Jul 2010 02:32:43 GMT bugzilla-daemon@bugzilla.kernel.org wrote:
 > > 
-> > I'm planning on attending LinuxCon and Plumbers.  I'll also be up at
-> > the Symposium.  A meetup at the PM mini-summit would be great if Mike
-> > and Brian S can make it.  Thanks.
+> > > https://bugzilla.kernel.org/show_bug.cgi?id=16396
 > > 
-> > - Bryan
+> > post-2.6.34 regression, bisected to an ACPi commit from Matthew.
 > 
-> I will be going to plumbers I think a working session to get this type
-> of generalization of qos-like ideas into the LDM would be an interesting
-> thing to try to do.  I won't be able to lead or drive this topic
-> however.  one of you guys need to make the proposal for the working
-> session.
+> Well, that's something I was afraid of.
 > 
-> http://www.linuxplumbersconf.org/2010/07/07/linux-plumbers-conference-call-for-working-sessions-submissions
+> So, the theory that we'll be fine if we do what Windows does really doesn't
+> match reality.
 > 
-> oh, we are running up against a July 19 deadline.
+> Matthew, Len, any ideas?
 
-For working sessions, this isn't quite true ... the 19 July deadline is
-only for Refereed Presentations (i.e. the standard conference talks).
-The deadline for Working Sessions (Or MicroConferences) is up to the MC
-Session Leader (although in practise, the earlier you submit, the better
-your chances) reflecting the fact that Linux is fast moving and things
-may change at the last minute.  If you want a separate MC on PM_QOS,
-then submit now ... we only have slots for about 12 MCs at plumbers, and
-once those are filled we won't really be able to add additional ones.
+One idea would be to see when exactly windows saves the NVS.
+Maybe it does that earlier (that it relative to _PTS, device suspend,
+etc...)
 
-James
+Maybe this system run Win7, and MS fixed that bug?
+
+Best regards,
+	Maxim Levitsky
+
