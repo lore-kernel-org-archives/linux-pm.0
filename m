@@ -1,18 +1,12 @@
 From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: PM QoS dynamic resource manager
-Date: Mon, 19 Jul 2010 14:50:37 +0100
-Message-ID: <20100719135037.GA15785@srcf.ucam.org>
-References: <alpine.DEB.2.00.1005211533530.25765@pchidamb-lnx.qualcomm.com>
-	<20100718125742.GA2253@gvim.org>
-	<1279465406.2820.9.camel@mulgrave.site>
-	<201007190346.12681.rjw@sisk.pl>
-	<1279521513.2820.11.camel@mulgrave.site>
+Subject: Power management minisummit at LPC
+Date: Mon, 19 Jul 2010 14:55:52 +0100
+Message-ID: <20100719135552.GB15785__29549.7529012666$1279548031$gmane$org@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1279521513.2820.11.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,19 +16,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: "Huntsman, Bryan" <bryanh@quicinc.com>, linux-pm@lists.linux-foundation.org, mark gross <640e9920@gmail.com>, markgross@thegnar.org
+To: linux-pm@lists.linux-foundation.org
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 19, 2010 at 08:38:33AM +0200, James Bottomley wrote:
+I'm running a power management session at the Linux Plumbers Conference 
+this year. Unlike most traditional conferences where the aim is to 
+present new solutions, LPC focuses on discussing the problems that we 
+haven't completely solved yet.
 
-> They're supposed to have Track Lead as their excerpt ... apparently
-> Matthew Garrett (who's the Session Leader) doesn't.
+This has been an especially interesting year in the field. We've landed 
+the infrastructure for generic runtime power management, glued that into 
+PCI and started implementing that at the driver level. pm_qos is being 
+reworked to improve performance and scalability as we start seeing more 
+drivers that need to express their own constraints. And, of course, we 
+had the wakelock/suspend blockers conversation that didn't end in a 
+terribly satisfactory manner, although Rafael is now working on an 
+implementation that presents equivalent functionality with a different 
+userspace API. Runtime full-system suspend isn't solved yet either - the 
+current cpuidle-based solution doesn't work well on multicore systems. 
+And maybe we could be more aggressive still by looking at reclocking 
+more system components on the fly even if the existing interfaces don't 
+allow that. Do we have all the hooks we need to identify which system 
+resources are being used? Are we doing the best we can in terms of 
+avoiding trading off performance for power savings?
 
-Sorry about that - I've updated it.
-
-I'll send out a mail about the kind of things I think would be helpful 
-to discuss at Plumbers.
+Head to 
+http://www.linuxplumbersconf.org/2010/ocw/events/LPC2010MC/proposals to 
+add a suggestion for a topic to be discussed at the miniconference. It's 
+also possible to submit a proposal for the main presentation tyou have 
+menrelated that you think would be appropriate for a wider audience, 
+then please propose it there as well.
 
 -- 
 Matthew Garrett | mjg59@srcf.ucam.org
