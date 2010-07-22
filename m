@@ -1,19 +1,10 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH/RFC] Runtime PM: ARM: subarch-specific
-	extensions of pdev_archdata
-Date: Thu, 22 Jul 2010 17:06:16 +0900
-Message-ID: <AANLkTinBqc11oE2SOmvXbFHmlgvZ21LngXNWkSHiJmRK__3985.3505128578$1279786050$gmane$org@mail.gmail.com>
-References: <1253670648-28610-1-git-send-email-khilman@deeprootsystems.com>
-	<f17812d70909222153y4a0e4fc2n496ea2e6caaac847@mail.gmail.com>
-	<19129.63264.653666.70492@pilspetsen.it.uu.se>
-	<4ABAAF1D.6090907@deeprootsystems.com>
-	<f17812d70909231630i20f64328k8d604c3436094b85@mail.gmail.com>
-	<87k4yhagv4.fsf@deeprootsystems.com>
+From: Raj Kumar <rajkumar278@hotmail.com>
+Subject: Questions about run time power management
+Date: Fri, 23 Jul 2010 02:53:34 +0530
+Message-ID: <BLU102-W10EC41B7844B167719657CEBA20@phx.gbl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============0807237169780492175=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87k4yhagv4.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,49 +12,110 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: linux-pm@lists.linux-foundation.org, Mikael Pettersson <mikpe@it.uu.se>, Eric Miao <eric.y.miao@gmail.com>, linux-arm-kernel@lists.infradead.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 27, 2009 at 8:13 AM, Kevin Hilman
-<khilman@deeprootsystems.com> wrote:
-> Eric Miao <eric.y.miao@gmail.com> writes:
->> On Thu, Sep 24, 2009 at 7:28 AM, Kevin Hilman
->> <khilman@deeprootsystems.com> wrote:
->>> Mikael Pettersson wrote:
->>>> Eric Miao writes:
->>>> =A0> On Wed, Sep 23, 2009 at 9:50 AM, Kevin Hilman
->>>> =A0> <khilman@deeprootsystems.com> wrote:
->>>> =A0> > On ARM platforms, power management can be very platform specifi=
-c.
->>>> =A0> > This patch allows ARM subarches to extend the platform_device
->>>> =A0> > pdev_archdata for each subarch by creating a new struct pdev_ma=
-chdata
->>>> =A0> > and allowing each subarch to customize it as needed.
+--===============0807237169780492175==
+Content-Type: multipart/alternative;
+	boundary="_6333b5bd-38b2-4aec-80e1-7d940c8644f5_"
 
-[snip]
+--_6333b5bd-38b2-4aec-80e1-7d940c8644f5_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> OK, after no further comments, sending this patch to the patch system.
 
-Hi Kevin,
 
-Thanks for your work on this. I found this patch marked as superseeded
-in the tracker here:
 
-http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=3D5773/1
+Hi=2C
 
-I'd now like to use struct pdev_archdata myself on mach-shmobile, so
-almost a year later I wonder why this patch didn't make it.
 
-I realize that you use struct omap_device instead of struct
-pdev_archdata. I prefer not to wrap if possible. This because I'd like
-to reuse already existing drivers and PM code with the SuperH
-architecture.
+I am implementing the run time power management in my drivers. So i have th=
+e following
+questions:
 
-Do you remember what happened with this patch?
 
-Cheers,
+1) I am using the work queue approach for run time power management=2C Now =
+the thing is
+when the device is idle and it notifies the run time power management via h=
+elper function
+pm_request_idle=2C and at the same time if resume is done then in that case=
+ does the runtime power management
+cancels the idle and does not invoke any callback like runtime_suspend of d=
+river?=20
 
-/ magnus
+
+2) like as mentioned in run time power management document=2C when the usag=
+e_count of device
+reaches zero=2C is there any run time power management thread in background=
+ that will immediately suspends
+the device or it is again via helper functions. It seems from the code that=
+ usage_count is zero and suspended
+via helper functions. Is it correct?
+
+
+3) The third question is more specific about platform bus usage? can the ch=
+ar device driver use platform bus?
+can char device register as platform device?
+
+
+Regards
+raj
+
+
+
+
+    =20
+=20
+ 		 	   		  =
+
+--_6333b5bd-38b2-4aec-80e1-7d940c8644f5_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style><!--
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Tahoma
+}
+--></style>
+</head>
+<body class=3D'hmmessage'>
+<br><BR>Hi=2C<BR><br><BR>I am implementing the run time power management in=
+ my drivers. So i have the following<BR>questions:<BR><br><BR>1) I am using=
+ the work queue approach for run time power management=2C Now the thing is<=
+BR>when the device is idle and it notifies the run time power management vi=
+a helper function<BR>pm_request_idle=2C and at the same time if resume is d=
+one then in that case does the runtime power management<BR>cancels the idle=
+ and does not invoke any callback like runtime_suspend of driver? <BR><br><=
+BR>2) like as mentioned in run time power management document=2C when the u=
+sage_count of device<BR>reaches zero=2C is there any run time power managem=
+ent thread in background that will immediately suspends<BR>the device or it=
+ is again via helper functions. It seems from the code that usage_count is =
+zero and suspended<BR>via helper functions. Is it correct?<BR><br><BR>3) Th=
+e third question is more specific about platform bus usage? can the char de=
+vice driver use platform bus?<BR>can char device register as platform devic=
+e?<BR><br><BR>Regards<BR>raj<BR><br><BR><br><BR>=A0 =A0 =A0<BR>=A0<BR> 		 	=
+   		  </body>
+</html>=
+
+--_6333b5bd-38b2-4aec-80e1-7d940c8644f5_--
+
+--===============0807237169780492175==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============0807237169780492175==--
