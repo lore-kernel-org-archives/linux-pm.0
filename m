@@ -1,12 +1,19 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ACPI / Sleep: Allow the NVS saving to be skipped
-	during suspend to RAM
-Date: Wed, 21 Jul 2010 00:35:02 +0200
-Message-ID: <201007210035.02688.rjw__10820.9360776984$1279667666$gmane$org@sisk.pl>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH/RFC] Runtime PM: ARM: subarch-specific
+	extensions of pdev_archdata
+Date: Thu, 22 Jul 2010 17:06:16 +0900
+Message-ID: <AANLkTinBqc11oE2SOmvXbFHmlgvZ21LngXNWkSHiJmRK__3985.3505128578$1279786050$gmane$org@mail.gmail.com>
+References: <1253670648-28610-1-git-send-email-khilman@deeprootsystems.com>
+	<f17812d70909222153y4a0e4fc2n496ea2e6caaac847@mail.gmail.com>
+	<19129.63264.653666.70492@pilspetsen.it.uu.se>
+	<4ABAAF1D.6090907@deeprootsystems.com>
+	<f17812d70909231630i20f64328k8d604c3436094b85@mail.gmail.com>
+	<87k4yhagv4.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <87k4yhagv4.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,166 +23,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Len Brown <len.brown@intel.com>, tomas m <tmezzadra@gmail.com>, Linux-kernel <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: linux-pm@lists.linux-foundation.org, Mikael Pettersson <mikpe@it.uu.se>, Eric Miao <eric.y.miao@gmail.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Tue, Oct 27, 2009 at 8:13 AM, Kevin Hilman
+<khilman@deeprootsystems.com> wrote:
+> Eric Miao <eric.y.miao@gmail.com> writes:
+>> On Thu, Sep 24, 2009 at 7:28 AM, Kevin Hilman
+>> <khilman@deeprootsystems.com> wrote:
+>>> Mikael Pettersson wrote:
+>>>> Eric Miao writes:
+>>>> =A0> On Wed, Sep 23, 2009 at 9:50 AM, Kevin Hilman
+>>>> =A0> <khilman@deeprootsystems.com> wrote:
+>>>> =A0> > On ARM platforms, power management can be very platform specifi=
+c.
+>>>> =A0> > This patch allows ARM subarches to extend the platform_device
+>>>> =A0> > pdev_archdata for each subarch by creating a new struct pdev_ma=
+chdata
+>>>> =A0> > and allowing each subarch to customize it as needed.
 
-Commit 2a6b69765ad794389f2fc3e14a0afa1a995221c2
-(ACPI: Store NVS state even when entering suspend to RAM) caused the
-ACPI suspend code to save the NVS area during suspend and restore it
-during resume unconditionally, although it is known that some systems
-need to use acpi_sleep=s4_nonvs for hibernation to work.  To allow
-the affected systems to avoid saving and restoring the NVS area
-during suspend to RAM and resume, introduce kernel command line
-option acpi_sleep=nonvs and make acpi_sleep=s4_nonvs work as its
-alias temporarily (add acpi_sleep=s4_nonvs to the feature removal
-file).
+[snip]
 
-Addresses https://bugzilla.kernel.org/show_bug.cgi?id=16396 .
+> OK, after no further comments, sending this patch to the patch system.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-and-tested-by: tomas m <tmezzadra@gmail.com>
----
- Documentation/feature-removal-schedule.txt |    8 ++++++
- Documentation/kernel-parameters.txt        |    4 +--
- arch/x86/kernel/acpi/sleep.c               |    4 ++-
- drivers/acpi/sleep.c                       |   35 ++++++++++++++---------------
- include/linux/acpi.h                       |    2 -
- 5 files changed, 31 insertions(+), 22 deletions(-)
+Hi Kevin,
 
-Index: linux-2.6/drivers/acpi/sleep.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep.c
-+++ linux-2.6/drivers/acpi/sleep.c
-@@ -82,6 +82,20 @@ static int acpi_sleep_prepare(u32 acpi_s
- static u32 acpi_target_sleep_state = ACPI_STATE_S0;
- 
- /*
-+ * The ACPI specification wants us to save NVS memory regions during hibernation
-+ * and to restore them during the subsequent resume.  Windows does that also for
-+ * suspend to RAM.  However, it is known that this mechanism does not work on
-+ * all machines, so we allow the user to disable it with the help of the
-+ * 'acpi_sleep=nonvs' kernel command line option.
-+ */
-+static bool nvs_nosave;
-+
-+void __init acpi_nvs_nosave(void)
-+{
-+	nvs_nosave = true;
-+}
-+
-+/*
-  * ACPI 1.0 wants us to execute _PTS before suspending devices, so we allow the
-  * user to request that behavior by using the 'acpi_old_suspend_ordering'
-  * kernel command line option that causes the following variable to be set.
-@@ -204,8 +218,7 @@ static int acpi_suspend_begin(suspend_st
- 	u32 acpi_state = acpi_suspend_states[pm_state];
- 	int error = 0;
- 
--	error = suspend_nvs_alloc();
--
-+	error = nvs_nosave ? 0 : suspend_nvs_alloc();
- 	if (error)
- 		return error;
- 
-@@ -389,20 +402,6 @@ static struct dmi_system_id __initdata a
- #endif /* CONFIG_SUSPEND */
- 
- #ifdef CONFIG_HIBERNATION
--/*
-- * The ACPI specification wants us to save NVS memory regions during hibernation
-- * and to restore them during the subsequent resume.  However, it is not certain
-- * if this mechanism is going to work on all machines, so we allow the user to
-- * disable this mechanism using the 'acpi_sleep=s4_nonvs' kernel command line
-- * option.
-- */
--static bool s4_no_nvs;
--
--void __init acpi_s4_no_nvs(void)
--{
--	s4_no_nvs = true;
--}
--
- static unsigned long s4_hardware_signature;
- static struct acpi_table_facs *facs;
- static bool nosigcheck;
-@@ -416,7 +415,7 @@ static int acpi_hibernation_begin(void)
- {
- 	int error;
- 
--	error = s4_no_nvs ? 0 : suspend_nvs_alloc();
-+	error = nvs_nosave ? 0 : suspend_nvs_alloc();
- 	if (!error) {
- 		acpi_target_sleep_state = ACPI_STATE_S4;
- 		acpi_sleep_tts_switch(acpi_target_sleep_state);
-@@ -500,7 +499,7 @@ static int acpi_hibernation_begin_old(vo
- 	error = acpi_sleep_prepare(ACPI_STATE_S4);
- 
- 	if (!error) {
--		if (!s4_no_nvs)
-+		if (!nvs_nosave)
- 			error = suspend_nvs_alloc();
- 		if (!error)
- 			acpi_target_sleep_state = ACPI_STATE_S4;
-Index: linux-2.6/arch/x86/kernel/acpi/sleep.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/sleep.c
-+++ linux-2.6/arch/x86/kernel/acpi/sleep.c
-@@ -158,8 +158,10 @@ static int __init acpi_sleep_setup(char 
- 		if (strncmp(str, "s4_nohwsig", 10) == 0)
- 			acpi_no_s4_hw_signature();
- 		if (strncmp(str, "s4_nonvs", 8) == 0)
--			acpi_s4_no_nvs();
-+			acpi_nvs_nosave();
- #endif
-+		if (strncmp(str, "nonvs", 5) == 0)
-+			acpi_nvs_nosave();
- 		if (strncmp(str, "old_ordering", 12) == 0)
- 			acpi_old_suspend_ordering();
- 		str = strchr(str, ',');
-Index: linux-2.6/include/linux/acpi.h
-===================================================================
---- linux-2.6.orig/include/linux/acpi.h
-+++ linux-2.6/include/linux/acpi.h
-@@ -253,7 +253,7 @@ int acpi_resources_are_enforced(void);
- #ifdef CONFIG_PM_SLEEP
- void __init acpi_no_s4_hw_signature(void);
- void __init acpi_old_suspend_ordering(void);
--void __init acpi_s4_no_nvs(void);
-+void __init acpi_nvs_nosave(void);
- #endif /* CONFIG_PM_SLEEP */
- 
- struct acpi_osc_context {
-Index: linux-2.6/Documentation/kernel-parameters.txt
-===================================================================
---- linux-2.6.orig/Documentation/kernel-parameters.txt
-+++ linux-2.6/Documentation/kernel-parameters.txt
-@@ -254,8 +254,8 @@ and is between 256 and 4096 characters. 
- 			control method, with respect to putting devices into
- 			low power states, to be enforced (the ACPI 2.0 ordering
- 			of _PTS is used by default).
--			s4_nonvs prevents the kernel from saving/restoring the
--			ACPI NVS memory during hibernation.
-+			nonvs prevents the kernel from saving/restoring the
-+			ACPI NVS memory during suspend/hibernation and resume.
- 			sci_force_enable causes the kernel to set SCI_EN directly
- 			on resume from S1/S3 (which is against the ACPI spec,
- 			but some broken systems don't work without it).
-Index: linux-2.6/Documentation/feature-removal-schedule.txt
-===================================================================
---- linux-2.6.orig/Documentation/feature-removal-schedule.txt
-+++ linux-2.6/Documentation/feature-removal-schedule.txt
-@@ -647,3 +647,11 @@ Who:	Stefan Richter <stefanr@s5r6.in-ber
- 
- ----------------------------
- 
-+What:	The acpi_sleep=s4_nonvs command line option
-+When:	2.6.37
-+Files:	arch/x86/kernel/acpi/sleep.c
-+Why:	superseded by acpi_sleep=nonvs
-+Who:	Rafael J. Wysocki <rjw@sisk.pl>
-+
-+----------------------------
-+
+Thanks for your work on this. I found this patch marked as superseeded
+in the tracker here:
+
+http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=3D5773/1
+
+I'd now like to use struct pdev_archdata myself on mach-shmobile, so
+almost a year later I wonder why this patch didn't make it.
+
+I realize that you use struct omap_device instead of struct
+pdev_archdata. I prefer not to wrap if possible. This because I'd like
+to reuse already existing drivers and PM code with the SuperH
+architecture.
+
+Do you remember what happened with this patch?
+
+Cheers,
+
+/ magnus
