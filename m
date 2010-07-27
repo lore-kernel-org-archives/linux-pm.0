@@ -1,14 +1,13 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH] PCI / PCIe: Ask BIOS for control of all
-	native	services simultaneously
-Date: Tue, 27 Jul 2010 18:18:42 +0100
-Message-ID: <20100727171842.GB7324__49595.4923019328$1280251198$gmane$org@srcf.ucam.org>
+	native services simultaneously
+Date: Tue, 27 Jul 2010 20:31:15 +0200
+Message-ID: <201007272031.15517.rjw__5976.76411639458$1280255761$gmane$org@sisk.pl>
 References: <201007250105.23610.rjw@sisk.pl> <4C4E2BBD.7080003@jp.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <4C4E2BBD.7080003@jp.fujitsu.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,51 +19,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: linux-pci@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+Cc: linux-pci@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 27, 2010 at 09:43:41AM +0900, Kenji Kaneshige wrote:
+On Tuesday, July 27, 2010, Kenji Kaneshige wrote:
+> Hi,
+> 
+> If I understand your patch correctly, the PCIe port services work
+> only when firmware grants all the controls for port services with
+> your patch. Correct?
+
+Yes, that's correct.
 
 > I think this will break PCIe services currently working. For example,
 > firmware doesn't grant PCIe AER control on my hardware. On the other
 > hand, firmware grants PCIe native hot-plug control on the same machine.
-> So I think PCIe hot-plug will not work with your patch. Another example,
-> what would happen on the platform that doesn't have any PCIe hot-plug
-> slot? I guess firmware doesn't grant PCIe native hot-plug control on
+> So I think PCIe hot-plug will not work with your patch.
+
+It won't, but the question is if it should.  Namely, PCIe native hot-plug
+requires control of the PCIe capability structure, which is also used for
+AER, so the BIOS granting control of the PCIe capability structure and
+not granting control of AER is arguably broken.
+
+> Another example, what would happen on the platform that doesn't have any PCIe
+> hot-plug slot? I guess firmware doesn't grant PCIe native hot-plug control on
 > that environment. So I think all the other PCIe port services would
 > not work on such platform.
 
-I've done some more testing of this and found that my intial belief 
-(supported by Microsoft's documentation...) that all PCIe support had to 
-be handed over for any to be used is incorrect. It turns out that the 
-firmware must support native hotplug, native power management and PCI 
-express capability structure control - ie, SHPC and AER aren't required.
+You would be surprised. :-)
 
-However, if any of the other flags are missing then Windows doesn't use 
-any PCIe functionality on the system. That's the behaviour we wish to 
-duplicate.
-
+> My suggestion is that
+> 
 > (1) Query all controls for PCIe port services and see what controls
->     will be granted to OS by firmware.
+>      will be granted to OS by firmware.
+
+We do that already.
+
 > (2) Request all the controls acquired in step (1) at the same time.
+
+Yes, we can do that, although it would complicate things quite a bit and I'm
+not sure that's _really_ necessary, given that all of the native services
+require access to the PCIe capability structure and once _that_ is granted,
+the BIOS has no reason not to grant any other bits.
+
 > (3) Create PCIe port services for those controls.
->
+
+I don't really think (3) is necessary in that case.  It should be OK not to
+load a service driver, in which case the service will simply be disabled.
+
 > What do you think about this?
+> 
+> I think there is still a problem that needs to be addressed. The problem
+> is that if ACPIPHP (ACPI based hot-plug driver) is required for PCIe hot-
+> plug, all the PCIe port services needs to be disabled. I don't think it
+> is acceptable for ACPIPHP users.
 
-I think we need to do:
+I'm not sure what you mean.  The $subject patch (rather the last version of it
+at https://patchwork.kernel.org/patch/114127/) doesn't change the existing
+behavior in that respect other than PCIeHP will not be enabled without PME and
+possibly AER.
 
-(1) Query all controls and see what will be granted
-(2) If any of bits 0, 2 and 4 are unsupported, disable all PCIe support 
-via _OSC
-(3) Ask for the set of supported bits & 0x1d
+Certainly, though, our current behavior is wrong, since all of the port service
+drivers request OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL on their own, which leads
+to problems in real systems.
 
-> I think there is still a problem that needs to be addressed. The 
-> problem is that if ACPIPHP (ACPI based hot-plug driver) is required 
-> for PCIe hot- plug, all the PCIe port services needs to be disabled. I 
-> don't think it is acceptable for ACPIPHP users.
-
-I believe that that's the only way Windows will work on their system, 
-which generally implies that that's how the machine was intended to run.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Thanks,
+Rafael
