@@ -1,14 +1,13 @@
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH] PCI / PCIe: Ask BIOS for control of all
- native services simultaneously
-Date: Wed, 28 Jul 2010 12:39:15 +0900
-Message-ID: <4C4FA663.9090204__40555.2264805467$1280329062$gmane$org@jp.fujitsu.com>
-References: <201007250105.23610.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Questions about run time power management
+Date: Wed, 28 Jul 2010 11:32:39 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1007281124100.1744-100000@iolanthe.rowland.org>
+References: <BLU102-W87DD2A0042EBCEDB9C141EBA80@phx.gbl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201007250105.23610.rjw@sisk.pl>
+In-Reply-To: <BLU102-W87DD2A0042EBCEDB9C141EBA80@phx.gbl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,38 +17,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pci@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
+To: Raj Kumar <rajkumar278@hotmail.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Wed, 28 Jul 2010, Raj Kumar wrote:
 
-(2010/07/25 8:05), Rafael J. Wysocki wrote:
-> It turns out that asking ACPI BIOS, through _OSC, for control of each
-> PCIe port native service individually sometimes confuses the BIOS if
-> one sevice is requested while the others are not (eg. requesting
-> control of the native PCIe PME without requesting control of the
-> native PCIe hot-plug at the same time leads to interrupt storms on
-> some systems).
+> Hi ALan,
+> 
+>  
+> 
+> 1) As you mentioned that -EBUSY code is appropriate, But if the
+> 
+> device started doing activities during that time then it is not appropriate
+> 
+> to check every time if device is idle.
+> 
+>  
+> 
+> Because if -EBUSY is returned, then workqueue thread will check again and again
+> 
+> that if the device is idle.
+> 
+>  
+> 
+>         if (notify)
+>                 __pm_runtime_idle(dev);
+> 
+> 
+> That is notify flag will be true. right?
 
-Then why not invent quirks or something for such systems?
+Yes.  But the thread won't check again and again; it will check only
+once.  Your runtime_idle callback will know that the device is busy,
+and therefore it won't schedule another suspend on the workqueue.  Not 
+until the device really becomes idle again.
 
-IMHO it sounds like a BIOS bug since it should grant PME control to
-OS only when both of PME and pciehp (plus PCIe caps) are requested
-at same time.
+> 2) The 2nd thing is use case of deep sleep state i.e. system suspend.
+> 
+>  
+> 
+> Suppose device is active and its run time status is active. Now when the system suspend 
+> 
+> happens, it will increment usage_counter of device in power management framework,
+> 
+>  
+> 
+> now at that time since clocks and power are enabled, So what will device do?
 
-Did you confirm that the system also confuses when pciehp is requested
-without requesting PME?
-e.g. assume that some BIOS might behave:
-  _OSC(pciehp)         =>  OK
-  _OSC(PME)            =>  NG (bugs on shared interrupt?)
-  _OSC(pciehp|PME)     =>  OK
-  _OSC(SHPC)           =>  OK
-  _OSC(pciehp|SHPC)    =>  NG (must choose one, not both)
-  _OSC(AER|SHPC)       =>  OK
+It will continue running normally until the driver's suspend callback
+is invoked.
 
-I don't doubt that handling of _OSC needs some improvement...
+> My point is when system suspend comes to device and device is doing activities at that time,
+> 
+> if the device will ask run time power management to shut its clock off and make it suspended,
+> 
+>  
+> 
+> and then it respond to system suspend????
 
+The _device_ doesn't do any of these things; the _driver_ does them.
 
-Thanks,
-H.Seto
+During system suspend, the driver has to shut off the clock and suspend
+the device.  It can't do these things by using runtime PM calls; it has
+to do them some other way.
+
+> Run time power management will not do at the time as its usage counter is already increased,
+> 
+>  
+> 
+> Right? so what about this use case when this kind of overlapping occurs?
+
+Right.  During system suspend, the driver has to do its job without
+using runtime PM.
+
+Alan Stern
