@@ -1,94 +1,67 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] SATA / AHCI: Do not play with the link PM during suspend to RAM (was: Re: HDD not suspending properly / dead on resume)
-Date: Wed, 28 Jul 2010 23:50:09 +0200
-Message-ID: <201007282350.09676.rjw@sisk.pl>
-References: <201007091750.05020.stephan.diestelhorst@amd.com> <201007100850.36889.stephan.diestelhorst@gmail.com> <4C384580.2080507@kernel.org>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] PCI / PCIe: Ask BIOS for control of all
+ native services at once (v4)
+Date: Wed, 28 Jul 2010 14:43:58 -0700
+Message-ID: <20100728144358.5e2c12ce__3279.97375648028$1280353984$gmane$org@virtuousgeek.org>
+References: <201007282323.56351.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <4C384580.2080507@kernel.org>
-Sender: linux-ide-owner@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: Stephan Diestelhorst <stephan.diestelhorst@gmail.com>, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-pm@lists.osdl.org, stephan.diestelhorst@amd.com
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201007282323.56351.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, Kenji@smtp1.linux-foundation.org, linux-pci@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kaneshige <kaneshige.kenji@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, July 10, 2010, Tejun Heo wrote:
-> On 07/10/2010 08:50 AM, Stephan Diestelhorst wrote:
-> >> I have a box where this problem is kind of reproducible, but it happens _very_
-> >> rarely.  Also I can't reproduce it on demand running suspend-resume in a tight
-> >> loop.  Are you able to reproduce it more regurarly?
-> > 
-> > For me it is much more reproducible. If I run multiple direct writing
-> > dd-s to the disk in question I trigger it rather reliably (~75% or
-> > higher). See the attached script from an earlier email.
-> > Maybe that helps triggering your case more reliabl, too?
-> 
-> Can you please try the following git tree?
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git libata-irq-expect
+On Wed, 28 Jul 2010 23:23:56 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-That didn't help, but the appended patch fixes the problem for me.
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> PCIe port service drivers ask the BIOS, through _OSC, for control of
+> the services they handle.  Unfortunately, each of them individually
+> asks for control of the PCIe capability structure and if that is
+> granted, some BIOSes expect that the other PCIe port services will be
+> configured and handled by the kernel as well.  If that is not the
+> case (eg. one of the PCIe port service drivers is not loaded), the
+> BIOS may be confused and may cause the system as a whole to misbehave
+> (eg. on one of such systems enabling the native PCIe PME service
+> without loading the native PCIe hot-plug service driver causes a
+> storm of ACPI notify requests to appear).
+> 
+> For this reason rework the PCIe port driver so that (1) it checks
+> which native PCIe port services can be enabled, according to the
+> BIOS, and (2) it requests control of all these services
+> simultaneously.  In particular, this causes pcie_portdrv_probe() to
+> fail if the BIOS refuses to grant control of the PCIe capability
+> structure, which means that no native PCIe port services can be
+> enabled for the PCIe root complex the given port belongs to.
+> 
+> Make it possible to override this behavior using a new command line
+> switch pcie_ports= that can be set to 'auto' (ask the BIOS, the
+> default), 'native' (use the PCIe native services regardless of the
+> BIOS response to the control request), or 'compat' (do not use the
+> PCIe native services at all).
+> 
+> Accordingly, rework the existing PCIe port service drivers so that
+> they don't request control of the services directly.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+
+Kenji-san, are you ok with this version?  I would like to get your ack
+(and ideally your tested-by) for this one since it affects
+functionality you need.
 
 Thanks,
-Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: SATA / AHCI: Do not play with the link PM during suspend to RAM
-
-My Acer Ferrari One occasionally loses communication with the disk
-(which in fact is an Intel SSD) during suspend to RAM.  The symptom
-is that the IDENTIFY command times out during suspend and the device
-is dropped by the kernel, so it is not available during resume and
-the system is unuseable as a result.  The failure is not readily
-reproducible, although it happens once every several suspends and
-it always happens after the disk has been shut down by the SCSI
-layer's suspend routine.
-
-I was able to track this issue down to the link PM manipulations
-carried out by ata_host_suspend(), which probably means that the
-SSD's firmware is not implemented correctly.  However, the AHCI
-driver, which is used on the affected box, doesn't really need to do
-anything with the link PM during suspend to RAM, because the whole
-controller is going to be put into D3 by ata_pci_device_do_suspend()
-immediately and it will undergo full reset during the subsequent
-resume anyway.  For this reason, make the AHCI driver avoid calling
-ata_host_suspend() during suspend to RAM which fixes the problem and
-makes sense as a general optimization.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/ata/ahci.c |   11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/ata/ahci.c
-===================================================================
---- linux-2.6.orig/drivers/ata/ahci.c
-+++ linux-2.6/drivers/ata/ahci.c
-@@ -595,6 +595,7 @@ static int ahci_pci_device_suspend(struc
- 	struct ahci_host_priv *hpriv = host->private_data;
- 	void __iomem *mmio = hpriv->mmio;
- 	u32 ctl;
-+	int rc = 0;
- 
- 	if (mesg.event & PM_EVENT_SUSPEND &&
- 	    hpriv->flags & AHCI_HFLAG_NO_SUSPEND) {
-@@ -614,7 +615,15 @@ static int ahci_pci_device_suspend(struc
- 		readl(mmio + HOST_CTL); /* flush */
- 	}
- 
--	return ata_pci_device_suspend(pdev, mesg);
-+	if (mesg.event == PM_EVENT_SUSPEND)
-+		pdev->dev.power.power_state = mesg;
-+	else
-+		rc = ata_host_suspend(host, mesg);
-+
-+	if (!rc)
-+		ata_pci_device_do_suspend(pdev, mesg);
-+
-+	return rc;
- }
- 
- static int ahci_pci_device_resume(struct pci_dev *pdev)
+-- 
+Jesse Barnes, Intel Open Source Technology Center
