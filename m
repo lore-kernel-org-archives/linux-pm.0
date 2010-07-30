@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 6/7] ACPI / PCI: Do not preserve _OSC control
-	bits returned by a query
-Date: Sat, 31 Jul 2010 00:36:46 +0200
-Message-ID: <201007310036.46769.rjw__19975.5712099888$1280531008$gmane$org@sisk.pl>
+Subject: [PATCH 1/7] ACPI / PCI: Make acpi_pci_run_osc() use
+	capbuf to return the result
+Date: Sat, 31 Jul 2010 00:24:09 +0200
+Message-ID: <201007310024.10174.rjw__38745.0905786411$1280531125$gmane$org@sisk.pl>
 References: <201007310020.56546.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,67 +24,80 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-All of the remaining callers of acpi_pci_osc_control_set() either
-use acpi_pci_root_osc_query() right before calling it, like
-pcie_port_acpi_setup(), or ask for control of one feature only,
-like acpi_get_hp_hw_control_from_firmware().  Thus there is no
-reason to preserve the _OSC control bits returned by an _OSC query
-and the osc_control_qry and osc_queried fields of struct
-acpi_pci_root are not necessary any more.  Remove them and modify the
-code that uses them accordingly.
+There is no reason why acpi_pci_run_osc() should use a separate
+argument to return the _OSC result, since there is a place for it
+in the buffer passed via capbuf, as none of the callers needs to
+preserve the original contents of that buffer, so drop the third
+argument of acpi_pci_run_osc() and modify the callers accordingly.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/pci_root.c |   15 ---------------
- include/acpi/acpi_bus.h |    3 ---
- 2 files changed, 18 deletions(-)
+ drivers/acpi/pci_root.c |   17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
 Index: linux-2.6/drivers/acpi/pci_root.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/pci_root.c
 +++ linux-2.6/drivers/acpi/pci_root.c
-@@ -247,10 +247,8 @@ static acpi_status acpi_pci_query_osc(st
- 	status = acpi_pci_run_osc(root->device->handle, capbuf);
+@@ -206,8 +206,7 @@ static void acpi_pci_bridge_scan(struct 
+ 
+ static u8 pci_osc_uuid_str[] = "33DB4D5B-1FF7-401C-9657-7441C03DD766";
+ 
+-static acpi_status acpi_pci_run_osc(acpi_handle handle,
+-				    const u32 *capbuf, u32 *retval)
++static acpi_status acpi_pci_run_osc(acpi_handle handle, u32 *capbuf)
+ {
+ 	struct acpi_osc_context context = {
+ 		.uuid_str = pci_osc_uuid_str,
+@@ -219,7 +218,7 @@ static acpi_status acpi_pci_run_osc(acpi
+ 
+ 	status = acpi_run_osc(handle, &context);
  	if (ACPI_SUCCESS(status)) {
- 		root->osc_support_set = support;
--		root->osc_control_qry = capbuf[OSC_CONTROL_TYPE];
- 		if (control)
- 			*control = capbuf[OSC_CONTROL_TYPE];
--		root->osc_queried = 1;
+-		*retval = *((u32 *)(context.ret.pointer + 8));
++		capbuf[OSC_CONTROL_TYPE] = ((u32 *)context.ret.pointer)[2];
+ 		kfree(context.ret.pointer);
  	}
  	return status;
- }
-@@ -433,19 +431,6 @@ acpi_status acpi_pci_osc_control_set(acp
- 	if ((root->osc_control_set & control_req) == control_req)
- 		goto out;
+@@ -228,7 +227,7 @@ static acpi_status acpi_pci_run_osc(acpi
+ static acpi_status acpi_pci_query_osc(struct acpi_pci_root *root, u32 flags)
+ {
+ 	acpi_status status;
+-	u32 support_set, result, capbuf[3];
++	u32 support_set, capbuf[3];
  
--	/* Need to query controls first before requesting them */
--	if (!root->osc_queried) {
--		status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
--		if (ACPI_FAILURE(status))
--			goto out;
--	}
--	if ((root->osc_control_qry & control_req) != control_req) {
--		printk(KERN_DEBUG
--		       "Firmware did not grant requested _OSC control\n");
--		status = AE_SUPPORT;
--		goto out;
--	}
--
+ 	/* do _OSC query for all possible controls */
+ 	support_set = root->osc_support_set | (flags & OSC_PCI_SUPPORT_MASKS);
+@@ -236,10 +235,10 @@ static acpi_status acpi_pci_query_osc(st
+ 	capbuf[OSC_SUPPORT_TYPE] = support_set;
+ 	capbuf[OSC_CONTROL_TYPE] = OSC_PCI_CONTROL_MASKS;
+ 
+-	status = acpi_pci_run_osc(root->device->handle, capbuf, &result);
++	status = acpi_pci_run_osc(root->device->handle, capbuf);
+ 	if (ACPI_SUCCESS(status)) {
+ 		root->osc_support_set = support_set;
+-		root->osc_control_qry = result;
++		root->osc_control_qry = capbuf[OSC_CONTROL_TYPE];
+ 		root->osc_queried = 1;
+ 	}
+ 	return status;
+@@ -373,7 +372,7 @@ EXPORT_SYMBOL_GPL(acpi_get_pci_dev);
+ acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags)
+ {
+ 	acpi_status status;
+-	u32 control_req, result, capbuf[3];
++	u32 control_req, capbuf[3];
+ 	acpi_handle tmp;
+ 	struct acpi_pci_root *root;
+ 
+@@ -410,9 +409,9 @@ acpi_status acpi_pci_osc_control_set(acp
  	capbuf[OSC_QUERY_TYPE] = 0;
  	capbuf[OSC_SUPPORT_TYPE] = root->osc_support_set;
  	capbuf[OSC_CONTROL_TYPE] = root->osc_control_set | control_req;
-Index: linux-2.6/include/acpi/acpi_bus.h
-===================================================================
---- linux-2.6.orig/include/acpi/acpi_bus.h
-+++ linux-2.6/include/acpi/acpi_bus.h
-@@ -377,9 +377,6 @@ struct acpi_pci_root {
- 
- 	u32 osc_support_set;	/* _OSC state of support bits */
- 	u32 osc_control_set;	/* _OSC state of control bits */
--	u32 osc_control_qry;	/* the latest _OSC query result */
--
--	u32 osc_queried:1;	/* has _OSC control been queried? */
- };
- 
- /* helper */
+-	status = acpi_pci_run_osc(handle, capbuf, &result);
++	status = acpi_pci_run_osc(handle, capbuf);
+ 	if (ACPI_SUCCESS(status))
+-		root->osc_control_set = result;
++		root->osc_control_set = capbuf[OSC_CONTROL_TYPE];
+ out:
+ 	mutex_unlock(&osc_lock);
+ 	return status;
