@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 7/7] ACPI / PCI: Reorder checks in
-	acpi_pci_osc_control_set()
-Date: Sat, 31 Jul 2010 00:37:36 +0200
-Message-ID: <201007310037.36543.rjw__28298.414409119$1280530761$gmane$org@sisk.pl>
+Subject: [PATCH 5/7] PCI / PCIe: Remove the port driver module
+	exit routine
+Date: Sat, 31 Jul 2010 00:35:13 +0200
+Message-ID: <201007310035.14232.rjw__8682.72338198057$1280530778$gmane$org@sisk.pl>
 References: <201007310020.56546.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,42 +23,28 @@ Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, linux-pci@vger.kernel.org, A
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PCI / PCIe: Remove the port driver module exit routine
 
-Make acpi_pci_osc_control_set() attempt to find the handle of the
-_OSC object under the given PCI root bridge object after verifying
-that its second argument is correct and that there is a struct
-acpi_pci_root object for the given root bridge handle.  This is
-more logical than the old code and it matches the code ordering
-in acpi_pci_root_osc_query().
+The PCIe port driver's module exit routine is never used, so drop it.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/pci_root.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/pci/pcie/portdrv_pci.c |    7 -------
+ 1 file changed, 7 deletions(-)
 
-Index: linux-2.6/drivers/acpi/pci_root.c
+Index: linux-2.6/drivers/pci/pcie/portdrv_pci.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/pci_root.c
-+++ linux-2.6/drivers/acpi/pci_root.c
-@@ -414,10 +414,6 @@ acpi_status acpi_pci_osc_control_set(acp
- 	acpi_handle tmp;
- 	struct acpi_pci_root *root;
+--- linux-2.6.orig/drivers/pci/pcie/portdrv_pci.c
++++ linux-2.6/drivers/pci/pcie/portdrv_pci.c
+@@ -345,11 +345,4 @@ static int __init pcie_portdrv_init(void
+ 	return retval;
+ }
  
--	status = acpi_get_handle(handle, "_OSC", &tmp);
--	if (ACPI_FAILURE(status))
--		return status;
+-static void __exit pcie_portdrv_exit(void)
+-{
+-	pci_unregister_driver(&pcie_portdriver);
+-	pcie_port_bus_unregister();
+-}
 -
- 	control_req = (flags & OSC_PCI_CONTROL_MASKS);
- 	if (!control_req)
- 		return AE_TYPE;
-@@ -426,6 +422,10 @@ acpi_status acpi_pci_osc_control_set(acp
- 	if (!root)
- 		return AE_NOT_EXIST;
- 
-+	status = acpi_get_handle(handle, "_OSC", &tmp);
-+	if (ACPI_FAILURE(status))
-+		return status;
-+
- 	mutex_lock(&osc_lock);
- 	/* No need to evaluate _OSC if the control was already granted. */
- 	if ((root->osc_control_set & control_req) == control_req)
+ module_init(pcie_portdrv_init);
+-module_exit(pcie_portdrv_exit);
