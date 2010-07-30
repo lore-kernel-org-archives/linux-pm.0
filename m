@@ -1,12 +1,14 @@
-From: Ai Li <aili@codeaurora.org>
-Subject: [PATCH v3] cpuidle: extend cpuidle and menu governor to
-	handle dynamic states
-Date: Fri, 30 Jul 2010 09:49:11 -0600
-Message-ID: <1280504951-27812-1-git-send-email-aili__49666.5210965604$1280505085$gmane$org@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 7/7] ACPI / PCI: Reorder checks in
+	acpi_pci_osc_control_set()
+Date: Sat, 31 Jul 2010 00:37:36 +0200
+Message-ID: <201007310037.36543.rjw__28298.414409119$1280530761$gmane$org@sisk.pl>
+References: <201007310020.56546.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201007310020.56546.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,191 +18,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: akpm@linux-foundation.org, dwalker@codeaurora.org
-Cc: len.brown@intel.com, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, mingo@elte.hu, arjan@linux.intel.com, shemminger@vyatta.com
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, linux-pci@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On some SoC chips, HW resources may be in use during any particular idle
-period.  As a consequence, the cpuidle states that the SoC is safe to
-enter can change from idle period to idle period.  In addition, the
-latency and threshold of each cpuidle state can vary, depending on the
-operating condition when the CPU becomes idle, e.g. the current cpu
-frequency, the current state of the HW blocks, etc.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-cpuidle core and the menu governor, in the current form, are geared
-towards cpuidle states that are static, i.e. the availabiltiy of the
-states, their latencies, their thresholds are non-changing during run
-time.  cpuidle does not provide any hook that cpuidle drivers can use
-to adjust those values on the fly for the current idle period before the
-menu governor selects the target cpuidle state.
+Make acpi_pci_osc_control_set() attempt to find the handle of the
+_OSC object under the given PCI root bridge object after verifying
+that its second argument is correct and that there is a struct
+acpi_pci_root object for the given root bridge handle.  This is
+more logical than the old code and it matches the code ordering
+in acpi_pci_root_osc_query().
 
-This patch extends cpuidle core and the menu governor to handle states
-that are dynamic.  There are three additions in the patch and the patch
-maintains backwards-compatibility with existing cpuidle drivers.
-
-1) add prepare() to struct cpuidle_device.  A cpuidle driver can hook
-into the callback and cpuidle will call prepare() before calling the
-governor's select function.  The callback gives the cpuidle driver a
-chance to update the dynamic information of the cpuidle states for the
-current idle period, e.g. state availability, latencies, thresholds,
-power values, etc.
-
-2) add CPUIDLE_FLAG_IGNORE as one of the state flags.  In the prepare()
-function, a cpuidle driver can set/clear the flag to indicate to the
-menu governor whether a cpuidle state should be ignored, i.e. not
-available, during the current idle period.
-
-3) add power_specified bit to struct cpuidle_device.  The menu governor
-currently assumes that the cpuidle states are arranged in the order of
-increasing latency, threshold, and power savings.  This is true or can
-be made true for static states.  Once the state parameters are dynamic,
-the latencies, thresholds, and power savings for the cpuidle states can
-increase or decrease by different amounts from idle period to idle
-period.  So the assumption of increasing latency, threshold, and power
-savings from Cn to C(n+1) can no longer be guaranteed.
-
-It can be straight forward to calculate the power consumption of each
-available state and to specify it in power_usage for the idle period.
-Using the power_usage fields, the menu governor then selects the state
-that has the lowest power consumption and that still satisfies all other
-critieria.  The power_specified bit defaults to 0.  For existing cpuidle
-drivers, cpuidle detects that power_specified is 0 and fills in a dummy
-set of power_usage values.
-
-Signed-off-by: Ai Li <aili@codeaurora.org>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/cpuidle/cpuidle.c        |   31 +++++++++++++++++++++++++++++++
- drivers/cpuidle/governors/menu.c |   23 ++++++++++++++++-------
- include/linux/cpuidle.h          |    4 ++++
- 3 files changed, 51 insertions(+), 7 deletions(-)
+ drivers/acpi/pci_root.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 1994885..c335d57 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -74,6 +74,17 @@ static void cpuidle_idle_call(void)
- 	 */
- 	hrtimer_peek_ahead_timers();
- #endif
-+
-+	/*
-+	 * Call the device's prepare function before calling the
-+	 * governor's select function.  ->prepare gives the device's
-+	 * cpuidle driver a chance to update any dynamic information
-+	 * of its cpuidle states for the current idle period, e.g.
-+	 * state availability, latencies, residencies, etc.
-+	 */
-+	if (dev->prepare)
-+		dev->prepare(dev);
-+
- 	/* ask the governor for the next state */
- 	next_state = cpuidle_curr_governor->select(dev);
- 	if (need_resched()) {
-@@ -282,6 +293,26 @@ static int __cpuidle_register_device(struct cpuidle_device *dev)
+Index: linux-2.6/drivers/acpi/pci_root.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/pci_root.c
++++ linux-2.6/drivers/acpi/pci_root.c
+@@ -414,10 +414,6 @@ acpi_status acpi_pci_osc_control_set(acp
+ 	acpi_handle tmp;
+ 	struct acpi_pci_root *root;
  
- 	poll_idle_init(dev);
- 
-+	/*
-+	 * cpuidle driver should set the dev->power_specified bit
-+	 * before registering the device if the driver provides
-+	 * power_usage numbers.
-+	 *
-+	 * For those devices whose ->power_specified is not set,
-+	 * we fill in power_usage with decreasing values as the
-+	 * cpuidle code has an implicit assumption that state Cn
-+	 * uses less power than C(n-1).
-+	 *
-+	 * With CONFIG_ARCH_HAS_CPU_RELAX, C0 is already assigned
-+	 * an power value of -1.  So we use -2, -3, etc, for other
-+	 * c-states.
-+	 */
-+	if (!dev->power_specified) {
-+		int i;
-+		for (i = CPUIDLE_DRIVER_STATE_START; i < dev->state_count; i++)
-+			dev->states[i].power_usage = -1 - i;
-+	}
-+
- 	per_cpu(cpuidle_devices, dev->cpu) = dev;
- 	list_add(&dev->device_list, &cpuidle_detected_devices);
- 	if ((ret = cpuidle_add_sysfs(sys_dev))) {
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 1b12870..c2408bb 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -234,6 +234,7 @@ static int menu_select(struct cpuidle_device *dev)
- {
- 	struct menu_device *data = &__get_cpu_var(menu_devices);
- 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
-+	unsigned int power_usage = -1;
- 	int i;
- 	int multiplier;
- 
-@@ -278,19 +279,27 @@ static int menu_select(struct cpuidle_device *dev)
- 	if (data->expected_us > 5)
- 		data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
- 
+-	status = acpi_get_handle(handle, "_OSC", &tmp);
+-	if (ACPI_FAILURE(status))
+-		return status;
 -
--	/* find the deepest idle state that satisfies our constraints */
-+	/*
-+	 * Find the idle state with the lowest power while satisfying
-+	 * our constraints.
-+	 */
- 	for (i = CPUIDLE_DRIVER_STATE_START; i < dev->state_count; i++) {
- 		struct cpuidle_state *s = &dev->states[i];
+ 	control_req = (flags & OSC_PCI_CONTROL_MASKS);
+ 	if (!control_req)
+ 		return AE_TYPE;
+@@ -426,6 +422,10 @@ acpi_status acpi_pci_osc_control_set(acp
+ 	if (!root)
+ 		return AE_NOT_EXIST;
  
-+		if (s->flags & CPUIDLE_FLAG_IGNORE)
-+			continue;
- 		if (s->target_residency > data->predicted_us)
--			break;
-+			continue;
- 		if (s->exit_latency > latency_req)
--			break;
-+			continue;
- 		if (s->exit_latency * multiplier > data->predicted_us)
--			break;
--		data->exit_us = s->exit_latency;
--		data->last_state_idx = i;
-+			continue;
++	status = acpi_get_handle(handle, "_OSC", &tmp);
++	if (ACPI_FAILURE(status))
++		return status;
 +
-+		if (s->power_usage < power_usage) {
-+			power_usage = s->power_usage;
-+			data->last_state_idx = i;
-+			data->exit_us = s->exit_latency;
-+		}
- 	}
- 
- 	return data->last_state_idx;
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 55215cc..36ca972 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -52,6 +52,7 @@ struct cpuidle_state {
- #define CPUIDLE_FLAG_SHALLOW	(0x20) /* low latency, minimal savings */
- #define CPUIDLE_FLAG_BALANCED	(0x40) /* medium latency, moderate savings */
- #define CPUIDLE_FLAG_DEEP	(0x80) /* high latency, large savings */
-+#define CPUIDLE_FLAG_IGNORE	(0x100) /* ignore during this idle period */
- 
- #define CPUIDLE_DRIVER_FLAGS_MASK (0xFFFF0000)
- 
-@@ -84,6 +85,7 @@ struct cpuidle_state_kobj {
- struct cpuidle_device {
- 	unsigned int		registered:1;
- 	unsigned int		enabled:1;
-+	unsigned int		power_specified:1;
- 	unsigned int		cpu;
- 
- 	int			last_residency;
-@@ -97,6 +99,8 @@ struct cpuidle_device {
- 	struct completion	kobj_unregister;
- 	void			*governor_data;
- 	struct cpuidle_state	*safe_state;
-+
-+	int (*prepare)		(struct cpuidle_device *dev);
- };
- 
- DECLARE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
--- 
-1.5.6.3
-
-Employee of Qualcomm Innovation Center, Inc.
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum
+ 	mutex_lock(&osc_lock);
+ 	/* No need to evaluate _OSC if the control was already granted. */
+ 	if ((root->osc_control_set & control_req) == control_req)
