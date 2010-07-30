@@ -1,18 +1,15 @@
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: [PATCH] portdrv: Don't take control of AER if not
-	required
-Date: Fri, 30 Jul 2010 17:47:20 +0900
-Message-ID: <4C529198.1050904__26492.5678763122$1280479963$gmane$org@jp.fujitsu.com>
-References: <201007282323.56351.rjw@sisk.pl>
-	<20100728144358.5e2c12ce@virtuousgeek.org>
-	<4C510B90.9070302@jp.fujitsu.com> <201007291745.39285.rjw@sisk.pl>
-	<4C526A85.3070902@jp.fujitsu.com> <4C526E3E.3000600@jp.fujitsu.com>
-	<4C526FDC.6050800@jp.fujitsu.com> <4C529086.9090600@jp.fujitsu.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PCI / PCIe: Ask BIOS for control of all
+	native services at once (v4)
+Date: Fri, 30 Jul 2010 13:50:50 +0200
+Message-ID: <201007301350.51226.rjw__30709.8680445508$1280491061$gmane$org@sisk.pl>
+References: <201007282323.56351.rjw@sisk.pl> <201007291745.39285.rjw@sisk.pl>
+	<4C526A85.3070902@jp.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C529086.9090600@jp.fujitsu.com>
+In-Reply-To: <4C526A85.3070902@jp.fujitsu.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,101 +20,144 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-OS cannot handle AER when:
- - !CONFIG_PCIEAER
- - option pci=noaer is specified
- - MSIs are globally disabled (by quirk for the chipset etc.)
+On Friday, July 30, 2010, Kenji Kaneshige wrote:
+> (2010/07/30 0:45), Rafael J. Wysocki wrote:
+> > On Thursday, July 29, 2010, Kenji Kaneshige wrote:
+> >> (2010/07/29 6:43), Jesse Barnes wrote:
+> >>> On Wed, 28 Jul 2010 23:23:56 +0200
+> >>> "Rafael J. Wysocki"<rjw@sisk.pl>   wrote:
+> >>>
+> >>>> From: Rafael J. Wysocki<rjw@sisk.pl>
+> >>>>
+> >>>> PCIe port service drivers ask the BIOS, through _OSC, for control of
+> >>>> the services they handle.  Unfortunately, each of them individually
+> >>>> asks for control of the PCIe capability structure and if that is
+> >>>> granted, some BIOSes expect that the other PCIe port services will be
+> >>>> configured and handled by the kernel as well.  If that is not the
+> >>>> case (eg. one of the PCIe port service drivers is not loaded), the
+> >>>> BIOS may be confused and may cause the system as a whole to misbehave
+> >>>> (eg. on one of such systems enabling the native PCIe PME service
+> >>>> without loading the native PCIe hot-plug service driver causes a
+> >>>> storm of ACPI notify requests to appear).
+> >>>>
+> >>>> For this reason rework the PCIe port driver so that (1) it checks
+> >>>> which native PCIe port services can be enabled, according to the
+> >>>> BIOS, and (2) it requests control of all these services
+> >>>> simultaneously.  In particular, this causes pcie_portdrv_probe() to
+> >>>> fail if the BIOS refuses to grant control of the PCIe capability
+> >>>> structure, which means that no native PCIe port services can be
+> >>>> enabled for the PCIe root complex the given port belongs to.
+> >>>>
+> >>>> Make it possible to override this behavior using a new command line
+> >>>> switch pcie_ports= that can be set to 'auto' (ask the BIOS, the
+> >>>> default), 'native' (use the PCIe native services regardless of the
+> >>>> BIOS response to the control request), or 'compat' (do not use the
+> >>>> PCIe native services at all).
+> >>>>
+> >>>> Accordingly, rework the existing PCIe port service drivers so that
+> >>>> they don't request control of the services directly.
+> >>>>
+> >>>> Signed-off-by: Rafael J. Wysocki<rjw@sisk.pl>
+> >>>> ---
+> >>>
+> >>> Kenji-san, are you ok with this version?  I would like to get your ack
+> >>> (and ideally your tested-by) for this one since it affects
+> >>> functionality you need.
+> >>>
+> >>
+> >> Hi Jesse, Rafael,
+> >>
+> >> I've just started reviewing the latest version of the patch. I have good
+> >> impression about this version so far. Please give me a few days for deeper
+> >> review. And I've booked the test machine for this patch in next week. I'll
+> >> try to test the patch and send you the result as soon as I can.
+> >>
+> >> Here are two comments I have so far.
+> >>
+> >> Though it is not directly related to Rafael's patch, I found one problem
+> >> in _OSC query handling while reviewing this patch. Currently, all the
+> >> _OSC controls are queried at the same time in acpi_pci_osc_support() and
+> >> the result is preserved for later acpi_pci_osc_control_set() call. But
+> >> query result can vary depending on the combination of requested controls.
+> >
+> > In principle it can, but acpi_pci_query_osc() asks for all aplicable control
+> > bits, in which case the formware can only clear those bits in the response if
+> > the corresponding features are unsupported.  Doing otherwise would be in
+> > violation of Section 6.2.9.1. of ACPI spec 3.0b, the following in particular:
+> >
+> > "If any bits in the Control Field are returned cleared (masked to zero) by the _OSC control method,
+> > the respective feature is designated unsupported by the platform and must not be enabled by the OS."
+> >
+> 
+> My concern is as follows.
+> 
+> For easy, assume as follows:
+> - all the _OSC controls are A, B, C
+> -B depends on C.
+> - When requesting A, B and C, all A, B and C are granted to OS.
+> - When requesting A, B, only A is granted to OS.
 
-In such cases don't request AER control via _OSC.
+That's why we should always ask for A, B, C at the same time.
 
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
----
- drivers/pci/pci.h               |    2 ++
- drivers/pci/pcie/aer/aerdrv.c   |    9 ++++++---
- drivers/pci/pcie/portdrv_acpi.c |    5 ++++-
- drivers/pci/pcie/portdrv_core.c |    2 ++
- 4 files changed, 14 insertions(+), 4 deletions(-)
+> Current linux queries all A, B and C at the boot time and preserve the
+> result (all A, B and C can be granted to OS). Here, if a service driver
+> requests A and B using acpi_pci_osc_control_set(),
 
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index f8077b3..d09d4f3 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -130,8 +130,10 @@ static inline void pci_msi_init_pci_dev(struct pci_dev *dev) { }
- 
- #ifdef CONFIG_PCIEAER
- void pci_no_aer(void);
-+bool pci_aer_available(void);
- #else
- static inline void pci_no_aer(void) { }
-+static inline bool pci_aer_available(void) { return false; }
- #endif
- 
- static inline int pci_no_d1d2(struct pci_dev *dev)
-diff --git a/drivers/pci/pcie/aer/aerdrv.c b/drivers/pci/pcie/aer/aerdrv.c
-index 484cc55..4fbec91 100644
---- a/drivers/pci/pcie/aer/aerdrv.c
-+++ b/drivers/pci/pcie/aer/aerdrv.c
-@@ -67,6 +67,11 @@ static struct pcie_port_service_driver aerdriver = {
- 
- static int pcie_aer_disable;
- 
-+bool pci_aer_available(void)
-+{
-+	return !pcie_aer_disable && pci_msi_enabled();
-+}
-+
- void pci_no_aer(void)
- {
- 	pcie_aer_disable = 1;	/* has priority over 'forceload' */
-@@ -411,9 +416,7 @@ static void aer_error_resume(struct pci_dev *dev)
-  */
- static int __init aer_service_init(void)
- {
--	if (pcie_aer_disable)
--		return -ENXIO;
--	if (!pci_msi_enabled())
-+	if (!pci_aer_available())
- 		return -ENXIO;
- 	return pcie_port_service_register(&aerdriver);
- }
-diff --git a/drivers/pci/pcie/portdrv_acpi.c b/drivers/pci/pcie/portdrv_acpi.c
-index a957de2..c8814b9 100644
---- a/drivers/pci/pcie/portdrv_acpi.c
-+++ b/drivers/pci/pcie/portdrv_acpi.c
-@@ -16,6 +16,7 @@
- #include <linux/pcieport_if.h>
- 
- #include "aer/aerdrv.h"
-+#include "../pci.h"
- 
- /**
-  * pcie_port_acpi_setup - Request the BIOS to release control of PCIe services.
-@@ -48,7 +49,9 @@ int pcie_port_acpi_setup(struct pci_dev *port, int *srv_mask)
- 		   OSC_PCI_EXPRESS_PME_CONTROL |
- 		   OSC_PCI_EXPRESS_AER_CONTROL);
- 
--	if (pcie_aer_get_firmware_first(port)) {
-+	if (!pci_aer_available()) {
-+		request &= ~OSC_PCI_EXPRESS_AER_CONTROL;
-+	} else if (pcie_aer_get_firmware_first(port)) {
- 		dev_dbg(&port->dev, "PCIe errors handled by BIOS.\n");
- 		request &= ~OSC_PCI_EXPRESS_AER_CONTROL;
- 	}
-diff --git a/drivers/pci/pcie/portdrv_core.c b/drivers/pci/pcie/portdrv_core.c
-index 8e96bd4..8e26025 100644
---- a/drivers/pci/pcie/portdrv_core.c
-+++ b/drivers/pci/pcie/portdrv_core.c
-@@ -246,6 +246,8 @@ static int get_port_device_capability(struct pci_dev *dev)
- 			return 0;
- 	} else {
- 		cap_mask = PCIE_PORT_SERVICE_MASK;
-+		if (!pci_aer_available())
-+			cap_mask &= ~PCIE_PORT_SERVICE_AER;
- 	}
- 
- 	pos = pci_pcie_cap(dev);
--- 
-1.7.2
+Service drivers should not use acpi_pci_osc_control_set().  That's why the
+current code is wrong.
+
+> acpi_pci_osc_control_set() checks if both of those controls can be granted
+> to OS. The expected result here is only A can be granted to OS, but current
+> linux judges both of them can be granted because linux does this check by
+> seeing preserved result.
+> As a result, acpi_pci_osc_control_set() evaluates _OSC with query flag
+> cleared to request A and B. Since the control B returned cleared,
+> acpi_pci_osc_control() returns error to the service driver. As a result,
+> control A is granted to OS even though there is no driver to handle the
+> control A.
+
+That indeed is a bug in the current code.  With the $subject patch, though
+(without your modifications), that will never happen.
+
+> >> So I think query result must not be preserved. Since Rafael's patch uses
+> >> query result, this problem should be fixed at the same time. I'll try to
+> >> make a patch for this and update Rafael's patch if needed.
+> >
+> > It would be sufficient to change acpi_pci_osc_control_get(), introduced
+> > by my patch, to call acpi_pci_query_osc() unconditionally, but as I said above,
+> > I don't think it's necessary.
+> 
+> I made a patch for this and updated your patch slightly. I'll send them soon.
+> 
+> >
+> >> I think the following changes should be done in the separated patch. I
+> >> guess this change is for the BIOS which enables hotplug interrupt at when
+> >> _OSC is evaluated with native hot-plug control. Right?
+> >
+> > Yes, it is.
+> >
+> >> Anyway, it should be separated patch with appropriate description.
+> >
+> > But the $subject patch does analogous things for AER and PCIe PME.  Do you
+> > think they also should be introduced by separate patches?
+> 
+> I think the following changes in your patch should be introduced by
+> separate patches.
+> 
+>   - optimizing the checks in acpi_pci_osc_control_set()
+
+I don't think that is necessary.
+
+>   - Disabling hot-plug interrupt
+
+OK, but what exactly is the difference between that and disabling the PME
+interrupt?  It is done for the same reason.
+
+>   - Removing module_exit()
+
+OK
+
+Rafael
