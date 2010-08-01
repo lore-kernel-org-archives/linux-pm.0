@@ -1,18 +1,19 @@
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Sun, 1 Aug 2010 12:12:28 -0700
-Message-ID: <20100801191228.GL2470__23163.0907081582$1280690036$gmane$org@linux.vnet.ibm.com>
+Date: Sun, 1 Aug 2010 12:27:08 -0700
+Message-ID: <20100801192708.GM2470__43735.618182882$1280690915$gmane$org@linux.vnet.ibm.com>
 References: <20100731175841.GA9367@linux.vnet.ibm.com>
 	<20100731215214.2543c07e@infradead.org>
 	<20100801054816.GI2470@linux.vnet.ibm.com>
-	<20100731230101.7cc1d8c7@infradead.org>
+	<alpine.DEB.1.10.1008010812450.24755@uplift.swm.pp.se>
+	<alpine.DEB.1.10.1008010838430.24755@uplift.swm.pp.se>
 Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20100731230101.7cc1d8c7@infradead.org>
+In-Reply-To: <alpine.DEB.1.10.1008010838430.24755@uplift.swm.pp.se>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,95 +23,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
+To: Mikael Abrahamsson <swmike@swm.pp.se>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jul 31, 2010 at 11:01:01PM -0700, Arjan van de Ven wrote:
-> On Sat, 31 Jul 2010 22:48:16 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On Sun, Aug 01, 2010 at 08:49:43AM +0200, Mikael Abrahamsson wrote:
+> On Sun, 1 Aug 2010, Mikael Abrahamsson wrote:
 > 
-> > On Sat, Jul 31, 2010 at 09:52:14PM -0700, Arjan van de Ven wrote:
-> > > On Sat, 31 Jul 2010 10:58:42 -0700
-> > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > o	"Power-aware application" are applications that are
-> > > > permitted to acquire suspend blockers on Android.  Verion 8 of the
-> > > > 	suspend-blocker patch seems to use group permissions to
-> > > > determine which applications are classified as power aware.
-> > > > 
-> > > > 	More generally, power-aware applications seem to be those
-> > > > that have permission to exert some control over the system's
-> > > > 	power state.
-> > > 
-> > > I don't like the term "Power aware application". An application is
-> > > well behaved or it isn't. "aware" has nothing to do with it.
-> > 
-> > Applications are often complex enough to be aware of some things,
-> > naive about others, well behaved in some ways, and ill-behaved in
-> > others. This has been the case for some decades now, so it should not
-> > come as a surprise.
+> >it's just that mobile (low power) wasn't the intended target of
+> >the application when it was written, and this commonly shows.
+
+Good points in both this and your earlier post!!!
+
+> I have another aspect I just thought about. I work for a telephony
+> company. We provide Internet connectivity throught various means,
+> DSL, Ethernet to the Home, mobile etc.
 > 
-> I do not like the term "aware". At all.
-> It implies "awareness", and implies it does things based on the power
-> circumstances.
+> For ETTH and DSL, network usage is pretty straight forward, you send
+> packets, they get delivered pretty quickly with low marginal cost
+> per packet. For mobile, this is not quite so simple. Mobile networks
+> are designed for terminal/UE (user equipment) to use low power, so
+> they go down in low power state after a while. Let's take the case
+> of 3G/HSPA:
 > 
-> It's about *behaving well*. (not polling, not having activity when
-> there is nothing to do etc etc). Not about being aware that power
-> matters.
+> After a short while (second) of idleness (no packets being sent),
+> the mobile network negotiates away the high speed resources (the one
+> that enables multimegabit/s transfers) and tries to give it to
+> someone else. After approximately 30 seconds, the terminal goes to
+> "idle", meaning it has no network resources at all. Next time it
+> wants to send something (or the network wants to deliver something
+> to it), network resources need to be negotiated again. This can take
+> 1-2 seconds and uses battery power of course. It also consumes
+> resources in the operator network (because mobility control units
+> need to talk to base stations, tunnels need to be re-negotiated
+> etc).
 > 
-> I can write a very shitty application that polls all the time and
-> otherwise keeps the CPU and system busy, but it'll be aware that power
-> matters.. it just doesn't behave accordingly.
+> Anyhow, my point is that not only is there a benefit in having
+> multiple applications wake up at the same time for power reasons
+> within the device, there is also a point in having coordination of
+> their network access. If a device is running 3 IM programs at the
+> same time, it'd be beneficial if they were coordinated in their
+> communication with their Internet servers. Same goes for the "check
+> for new email" application. If they all were optimized to only wake
+> up the network connectivity once every 180 seconds instead of doing
+> it when the individual application felt like it, power and other
+> resources would be saved by all involved parties.
 
-I understand that you would prefer that we group applications into
-"good" and "bad" categories, but then again, I suspect that most of us
-understood that before you posted this message.  Given your significant
-and well-appreciated contributions to power efficiency over the past
-several years, I must confess to be quite disappointed that you failed
-to do more than to simply restate your preference.
+This is a good point.  Within some limits, the timer-aggregation
+changes that have gone into Linux can handle this, but I am not sure
+whether or not 180 seconds is within the reasonable boundaries for
+timer jitter.
 
-However, your words below are much more to the point, so I will respond
-to them.
+Of course, the timers might be synchronized upon wakeup after a
+sufficiently long suspension, but they would not necessarily stay
+synchronized without the help of some other mechanism, such as the
+afore-mentioned timer-aggregation changes.
 
-> > The choice between power-aware and power-naive will depend on who is
-> > available to do the programming and how valuable power-awareness is
-> > for the application in question.  Given that people who program
-> > PC-class applications are much more common than are people who
-> > program with energy efficiency in mind, the power-naive choice will
-> > be attractive in many cases.
-> 
-> I'm not sure I buy that.
-> 4 years ago.. yes.
-> Today.. with PowerTOP and co out there for a long time?
-> I don't believe that anymore. Most of our open source PC apps are
-> actually very well behaving in the power sense.
-> Yes an occasional bug slips in, and then gets fixed quickly.
-> (speaking as someone who does this sort of work for a Linux
-> distribution... yes bugs happen on a whole distro level, but they're
-> also not all that common, and get fixed quickly)
-
-I agree that much progress has been made over the past four years.
-My laptop's battery life has increased substantially, with roughly half
-of the increase due to software changes.  Taken over all the laptops and
-PCs out there, this indeed adds up to substantial and valuable savings.
-
-So, yes, you have done quite well.
-
-However, your reliance on application-by-application fixes, while good
-up to a point, is worrisome longer term.  The reason for my concern is
-that computing history has not been kind to those who fail to vigorously
-automate.  The Android guys have offered up one way of automating power
-efficiency.  There might be better ways, but their approach does at
-the very least deserve a fair hearing -- and no one who read the recent
-LKML discussion of their approach could possibly mistake it for anything
-resembling a fair hearing.
-
-And yes, I do understand and appreciate your contributions in the form of
-things like timer aggregation, which does automate the otherwise-tricky
-task of coordinating power usage across unrelated applications, at
-least in some important cases.  But power efficiency will likely require
-multiple approaches, especially if the Linux stack is to approach the
-power efficiencies provided by dedicated devices.
-
-							Thanx, Paul
+						Thanx, Paul
