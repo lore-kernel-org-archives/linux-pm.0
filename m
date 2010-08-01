@@ -1,7 +1,7 @@
-From: Arjan van de Ven <arjan@infradead.org>
+From: Mikael Abrahamsson <swmike@swm.pp.se>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Sat, 31 Jul 2010 23:01:01 -0700
-Message-ID: <20100731230101.7cc1d8c7__18703.25089335$1280642506$gmane$org@infradead.org>
+Date: Sun, 1 Aug 2010 08:24:43 +0200 (CEST)
+Message-ID: <alpine.DEB.1.10.1008010812450.24755__21432.8714101159$1280643935$gmane$org@uplift.swm.pp.se>
 References: <20100731175841.GA9367@linux.vnet.ibm.com>
 	<20100731215214.2543c07e@infradead.org>
 	<20100801054816.GI2470@linux.vnet.ibm.com>
@@ -19,70 +19,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paulmck@linux.vnet.ibm.com
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 31 Jul 2010 22:48:16 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On Sat, 31 Jul 2010, Paul E. McKenney wrote:
 
-> On Sat, Jul 31, 2010 at 09:52:14PM -0700, Arjan van de Ven wrote:
-> > On Sat, 31 Jul 2010 10:58:42 -0700
-> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > o	"Power-aware application" are applications that are
-> > > permitted to acquire suspend blockers on Android.  Verion 8 of the
-> > > 	suspend-blocker patch seems to use group permissions to
-> > > determine which applications are classified as power aware.
-> > > 
-> > > 	More generally, power-aware applications seem to be those
-> > > that have permission to exert some control over the system's
-> > > 	power state.
-> > 
-> > I don't like the term "Power aware application". An application is
-> > well behaved or it isn't. "aware" has nothing to do with it.
-> 
-> Applications are often complex enough to be aware of some things,
-> naive about others, well behaved in some ways, and ill-behaved in
-> others. This has been the case for some decades now, so it should not
-> come as a surprise.
+> available to do the programming and how valuable power-awareness is for 
+> the application in question.  Given that people who program PC-class 
+> applications are much more common than are people who program with 
+> energy efficiency in mind, the power-naive choice will be attractive in 
+> many cases.
 
-I do not like the term "aware". At all.
-It implies "awareness", and implies it does things based on the power
-circumstances.
+I own a Nokia N900. Some applications are ported straight from regular 
+Linux and they're definitely power-naive, as they have little or no 
+optimization for mobile. I agree that this is not "sloppy" or "bad", it's 
+just that mobile (low power) wasn't the intended target of the application 
+when it was written, and this commonly shows.
 
-It's about *behaving well*. (not polling, not having activity when
-there is nothing to do etc etc). Not about being aware that power
-matters.
+Just like some people will burn CPU cycles by writing their application in 
+a high-level language because it requires fewer man-hours and that you get 
+thousands of cpu-hours for the cost of a man-hour programming the thing 
+(often by externalising the true cost of power which makes power even less 
+of a problem), not caring much about power is rational behaviour when 
+creating an application for pc.
 
-I can write a very shitty application that polls all the time and
-otherwise keeps the CPU and system busy, but it'll be aware that power
-matters.. it just doesn't behave accordingly.
+Just look at flash ads, they consume huge amounts of power and they 
+commonly never stop. I imagine that the power used by PCs around the world 
+displaying web pages with advertising with the monitor in power-save mode 
+(powered down) can be counted in gigawatts. When I need my battery to last 
+on my laptop I make sure I don't have any unneccessary tabs enabled 
+because it seriously affects my battery time. I think laptop users would 
+benefit from more power optimized applications as well, so if the OS could 
+do the same for laptop/desktop use as well (spending less time on programs 
+updating display when the display is off), I think there are real world 
+benefits for every desktop/laptop/mobile user.
 
-
-
-> 
-> The choice between power-aware and power-naive will depend on who is
-> available to do the programming and how valuable power-awareness is
-> for the application in question.  Given that people who program
-> PC-class applications are much more common than are people who
-> program with energy efficiency in mind, the power-naive choice will
-> be attractive in many cases.
-
-I'm not sure I buy that.
-4 years ago.. yes.
-Today.. with PowerTOP and co out there for a long time?
-I don't believe that anymore. Most of our open source PC apps are
-actually very well behaving in the power sense.
-Yes an occasional bug slips in, and then gets fixed quickly.
-(speaking as someone who does this sort of work for a Linux
-distribution... yes bugs happen on a whole distro level, but they're
-also not all that common, and get fixed quickly)
-
-
-
+If nothing else, it's environmentally friendly.
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Mikael Abrahamsson    email: swmike@swm.pp.se
