@@ -1,16 +1,12 @@
-From: Mikael Abrahamsson <swmike@swm.pp.se>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Sun, 1 Aug 2010 08:49:43 +0200 (CEST)
-Message-ID: <alpine.DEB.1.10.1008010838430.24755__24805.8737641715$1280645434$gmane$org@uplift.swm.pp.se>
-References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<20100731215214.2543c07e@infradead.org>
-	<20100801054816.GI2470@linux.vnet.ibm.com>
-	<alpine.DEB.1.10.1008010812450.24755@uplift.swm.pp.se>
+From: Willi Mann <foss-ml@wm1.at>
+Subject: another software suspend issue,
+	seems to be caused by i915/KMS
+Date: Sun, 01 Aug 2010 11:49:51 +0200
+Message-ID: <i33g00$ros$1@dough.gmane.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.1008010812450.24755@uplift.swm.pp.se>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,45 +16,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 1 Aug 2010, Mikael Abrahamsson wrote:
+Hi!
 
-> it's just that mobile (low power) wasn't the intended target of the 
-> application when it was written, and this commonly shows.
+On my Thinkpad T500 with Debian-compiled kernel 2.6.35~rc6-1~experimental.1, 
+I still get OOpses on suspend. 
 
-I have another aspect I just thought about. I work for a telephony 
-company. We provide Internet connectivity throught various means, DSL, 
-Ethernet to the Home, mobile etc.
+The following OOPS has been found be using the platform method. I had to 
+hard-reboot as SysRQ didn't work. (although I have also seen similar suspend 
+OOPSes where it worked). The suspend has been initiated by echo disk > 
+/sys/power/state from virtual terminal. 
 
-For ETTH and DSL, network usage is pretty straight forward, you send 
-packets, they get delivered pretty quickly with low marginal cost per 
-packet. For mobile, this is not quite so simple. Mobile networks are 
-designed for terminal/UE (user equipment) to use low power, so they go 
-down in low power state after a while. Let's take the case of 3G/HSPA:
+http://wserver.wm1.at/~willi/linux/suspend_issue/suspend_error.jpg
 
-After a short while (second) of idleness (no packets being sent), the 
-mobile network negotiates away the high speed resources (the one that 
-enables multimegabit/s transfers) and tries to give it to someone else. 
-After approximately 30 seconds, the terminal goes to "idle", meaning it 
-has no network resources at all. Next time it wants to send something (or 
-the network wants to deliver something to it), network resources need to 
-be negotiated again. This can take 1-2 seconds and uses battery power of 
-course. It also consumes resources in the operator network (because 
-mobility control units need to talk to base stations, tunnels need to be 
-re-negotiated etc).
+However, I don't get the same OOPS every time, and the problem does not 
+occur at every suspend. I haven't managed to get more than one suspend 
+successfully finished (since a cold-boot). Particularly, it seems that if 
+the first suspend succeeds, the problem always occurs at the second attempt. 
 
-Anyhow, my point is that not only is there a benefit in having multiple 
-applications wake up at the same time for power reasons within the device, 
-there is also a point in having coordination of their network access. If a 
-device is running 3 IM programs at the same time, it'd be beneficial if 
-they were coordinated in their communication with their Internet servers. 
-Same goes for the "check for new email" application. If they all were 
-optimized to only wake up the network connectivity once every 180 seconds 
-instead of doing it when the individual application felt like it, power 
-and other resources would be saved by all involved parties.
+Also note that if I initiated the suspend from X, I often got a blank screen 
+(except for a blinking cursor) instead of the OOPS. (The fact that the 
+screen was blank could also be related to the fact that when tested from X, 
+I hadn't raised the log levels)
 
--- 
-Mikael Abrahamsson    email: swmike@swm.pp.se
+When I disable the i915 module (I renamed it), I can't reproduce the 
+problem.
+
+lspci -v -s 00:02.0:
+00:02.0 VGA compatible controller: Intel Corporation Mobile 4 Series Chipset 
+Integrated Graphics Controller (rev 07) (prog-if 00 [VGA controller])
+        Subsystem: Lenovo Device 2114
+        Flags: bus master, fast devsel, latency 0, IRQ 48
+        Memory at f4400000 (64-bit, non-prefetchable) [size=4M]
+        Memory at d0000000 (64-bit, prefetchable) [size=256M]
+        I/O ports at 1800 [size=8]
+        Expansion ROM at <unassigned> [disabled]
+        Capabilities: [90] MSI: Enable+ Count=1/1 Maskable- 64bit-
+        Capabilities: [d0] Power Management version 3
+        Kernel driver in use: i915
+
+Please let me know what additional infos are required to resolve this 
+problem. 
+
+WM 
