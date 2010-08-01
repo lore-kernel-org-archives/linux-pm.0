@@ -1,19 +1,13 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Sun, 1 Aug 2010 12:27:08 -0700
-Message-ID: <20100801192708.GM2470__43735.618182882$1280690915$gmane$org@linux.vnet.ibm.com>
-References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<20100731215214.2543c07e@infradead.org>
-	<20100801054816.GI2470@linux.vnet.ibm.com>
-	<alpine.DEB.1.10.1008010812450.24755@uplift.swm.pp.se>
-	<alpine.DEB.1.10.1008010838430.24755@uplift.swm.pp.se>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: 2.6.35-rc6-git6: Reported regressions from 2.6.34
+Date: Sun, 01 Aug 2010 14:39:20 -0500
+Message-ID: <4C55CD68.1020401__11514.3445008018$1280691594$gmane$org@lwfinger.net>
+References: <2dWFdr9kTFM.A.P0D.spXVMB@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.1008010838430.24755@uplift.swm.pp.se>
+In-Reply-To: <2dWFdr9kTFM.A.P0D.spXVMB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,60 +17,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mikael Abrahamsson <swmike@swm.pp.se>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 01, 2010 at 08:49:43AM +0200, Mikael Abrahamsson wrote:
-> On Sun, 1 Aug 2010, Mikael Abrahamsson wrote:
+On 08/01/2010 08:46 AM, Rafael J. Wysocki wrote:
+> This message contains a list of some regressions from 2.6.34,
+> for which there are no fixes in the mainline known to the tracking team.
+> If any of them have been fixed already, please let us know.
 > 
-> >it's just that mobile (low power) wasn't the intended target of
-> >the application when it was written, and this commonly shows.
-
-Good points in both this and your earlier post!!!
-
-> I have another aspect I just thought about. I work for a telephony
-> company. We provide Internet connectivity throught various means,
-> DSL, Ethernet to the Home, mobile etc.
+> If you know of any other unresolved regressions from 2.6.34, please let us
+> know either and we'll add them to the list.  Also, please let us know
+> if any of the entries below are invalid.
 > 
-> For ETTH and DSL, network usage is pretty straight forward, you send
-> packets, they get delivered pretty quickly with low marginal cost
-> per packet. For mobile, this is not quite so simple. Mobile networks
-> are designed for terminal/UE (user equipment) to use low power, so
-> they go down in low power state after a while. Let's take the case
-> of 3G/HSPA:
-> 
-> After a short while (second) of idleness (no packets being sent),
-> the mobile network negotiates away the high speed resources (the one
-> that enables multimegabit/s transfers) and tries to give it to
-> someone else. After approximately 30 seconds, the terminal goes to
-> "idle", meaning it has no network resources at all. Next time it
-> wants to send something (or the network wants to deliver something
-> to it), network resources need to be negotiated again. This can take
-> 1-2 seconds and uses battery power of course. It also consumes
-> resources in the operator network (because mobility control units
-> need to talk to base stations, tunnels need to be re-negotiated
-> etc).
-> 
-> Anyhow, my point is that not only is there a benefit in having
-> multiple applications wake up at the same time for power reasons
-> within the device, there is also a point in having coordination of
-> their network access. If a device is running 3 IM programs at the
-> same time, it'd be beneficial if they were coordinated in their
-> communication with their Internet servers. Same goes for the "check
-> for new email" application. If they all were optimized to only wake
-> up the network connectivity once every 180 seconds instead of doing
-> it when the individual application felt like it, power and other
-> resources would be saved by all involved parties.
+> Each entry from the list will be sent additionally in an automatic reply
+> to this message with CCs to the people involved in reporting and handling
+> the issue.
 
-This is a good point.  Within some limits, the timer-aggregation
-changes that have gone into Linux can handle this, but I am not sure
-whether or not 180 seconds is within the reasonable boundaries for
-timer jitter.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=16312
+> Subject		: WARNING: at fs/fs-writeback.c:1127 __mark_inode_dirty
+> Submitter	: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+> Date		: 2010-06-28 9:40 (35 days old)
+> Message-ID	: <AANLkTin24fr5O4_q5Xbo9Y_NKkEmtcp6Hgmr9_4qXaFz@mail.gmail.com>
+> References	: http://marc.info/?l=linux-kernel&m=127771804806465&w=2
+> Handled-By	: Jan Kara <jack@suse.cz>
+> Patch		: https://bugzilla.kernel.org/attachment.cgi?id=27272
 
-Of course, the timers might be synchronized upon wakeup after a
-sufficiently long suspension, but they would not necessarily stay
-synchronized without the help of some other mechanism, such as the
-afore-mentioned timer-aggregation changes.
+I am beginning to think that Bug 16312 is not the same as Bug 16122. Even with
+the patches from 16312, I still get warnings as below:
 
-						Thanx, Paul
+[   11.728776] ------------[ cut here ]------------
+[   11.728787] WARNING: at fs/fs-writeback.c:964 __mark_inode_dirty+0x10f/0x1a0()
+[   11.728790] Hardware name: HP Pavilion dv2700 Notebook PC
+[   11.728792] Modules linked in: loop(+) dm_mod ide_cd_mod cdrom
+snd_hda_codec_conexant ide_pci_generic arc4 ecb b43 rng_core mac80211
+snd_hda_intel r8712u(C) cfg80211 snd_hda_codec amd74xx snd_pcm sg ide_core
+rfkill led_class snd_timer ssb mmc_core pcmcia snd joydev k8temp hwmon
+i2c_nforce2 pcmcia_core forcedeth serio_raw snd_page_alloc i2c_core battery ac
+button ext4 mbcache jbd2 crc16 ohci_hcd sd_mod ehci_hcd usbcore fan processor
+ahci libahci libata scsi_mod thermal
+[   11.728854] Pid: 2449, comm: udisks-part-id Tainted: G         C
+2.6.35-rc6-realtek+ #15
+[   11.728857] Call Trace:
+[   11.728865]  [<ffffffff8104608a>] warn_slowpath_common+0x7a/0xb0
+[   11.728869]  [<ffffffff810460d5>] warn_slowpath_null+0x15/0x20
+[   11.728874]  [<ffffffff81129d5f>] __mark_inode_dirty+0x10f/0x1a0
+[   11.728879]  [<ffffffff8111e07d>] touch_atime+0x12d/0x170
+[   11.728885]  [<ffffffff810cab91>] generic_file_aio_read+0x5c1/0x720
+[   11.728890]  [<ffffffff81107ca2>] do_sync_read+0xd2/0x110
+[   11.728896]  [<ffffffff81077e7d>] ? trace_hardirqs_on+0xd/0x10
+[   11.728900]  [<ffffffff811083c3>] vfs_read+0xb3/0x170
+[   11.728906]  [<ffffffff81002d1c>] ? sysret_check+0x27/0x62
+[   11.728909]  [<ffffffff811084cc>] sys_read+0x4c/0x80
+[   11.728914]  [<ffffffff81002ceb>] system_call_fastpath+0x16/0x1b
+[   11.728917] ---[ end trace 32e16cacad33229f ]---
+[   11.728919] bdi-block not registered
+
+The warnings do not occur with every boot and appear to be some kind of race
+condition.
+
+Larry
