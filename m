@@ -1,13 +1,18 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.35-rc6-git6: Reported regressions from 2.6.34
-Date: Sun, 1 Aug 2010 11:01:04 -0700
-Message-ID: <AANLkTimcH7+Bq1UEbaSU7SQpzArPgmSLegiqE13V8=CF__21520.9235590466$1280685762$gmane$org@mail.gmail.com>
-References: <2dWFdr9kTFM.A.P0D.spXVMB@chimera>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Sun, 1 Aug 2010 12:12:28 -0700
+Message-ID: <20100801191228.GL2470__23163.0907081582$1280690036$gmane$org@linux.vnet.ibm.com>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<20100731215214.2543c07e@infradead.org>
+	<20100801054816.GI2470@linux.vnet.ibm.com>
+	<20100731230101.7cc1d8c7@infradead.org>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <2dWFdr9kTFM.A.P0D.spXVMB@chimera>
+Content-Disposition: inline
+In-Reply-To: <20100731230101.7cc1d8c7@infradead.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,96 +22,95 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <jaxboe@fusionio.com>, Tejun Heo <tj@kernel.org>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 1, 2010 at 6:46 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=3D16400
-> Subject         : 2.6.35-rc5 inconsistent lock state
-> Submitter       : Martin Pirker <lkml.collector@gmail.com>
-> Date            : 2010-07-14 20:33 (19 days old)
-> Message-ID      : <AANLkTikDF0TL6OyPVCzPlUTwxFehcrETn3ysgSSeTq92@mail.gma=
-il.com>
-> References      : http://marc.info/?l=3Dlinux-kernel&m=3D127913961025267&=
-w=3D2
+On Sat, Jul 31, 2010 at 11:01:01PM -0700, Arjan van de Ven wrote:
+> On Sat, 31 Jul 2010 22:48:16 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > On Sat, Jul 31, 2010 at 09:52:14PM -0700, Arjan van de Ven wrote:
+> > > On Sat, 31 Jul 2010 10:58:42 -0700
+> > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > o	"Power-aware application" are applications that are
+> > > > permitted to acquire suspend blockers on Android.  Verion 8 of the
+> > > > 	suspend-blocker patch seems to use group permissions to
+> > > > determine which applications are classified as power aware.
+> > > > 
+> > > > 	More generally, power-aware applications seem to be those
+> > > > that have permission to exert some control over the system's
+> > > > 	power state.
+> > > 
+> > > I don't like the term "Power aware application". An application is
+> > > well behaved or it isn't. "aware" has nothing to do with it.
+> > 
+> > Applications are often complex enough to be aware of some things,
+> > naive about others, well behaved in some ways, and ill-behaved in
+> > others. This has been the case for some decades now, so it should not
+> > come as a surprise.
+> 
+> I do not like the term "aware". At all.
+> It implies "awareness", and implies it does things based on the power
+> circumstances.
+> 
+> It's about *behaving well*. (not polling, not having activity when
+> there is nothing to do etc etc). Not about being aware that power
+> matters.
+> 
+> I can write a very shitty application that polls all the time and
+> otherwise keeps the CPU and system busy, but it'll be aware that power
+> matters.. it just doesn't behave accordingly.
 
-This has a proposed patch. I don't know what the status of it is, though. J=
-ens?
+I understand that you would prefer that we group applications into
+"good" and "bad" categories, but then again, I suspect that most of us
+understood that before you posted this message.  Given your significant
+and well-appreciated contributions to power efficiency over the past
+several years, I must confess to be quite disappointed that you failed
+to do more than to simply restate your preference.
 
-   http://marc.info/?l=3Dlinux-kernel&m=3D127950018204029&w=3D2
+However, your words below are much more to the point, so I will respond
+to them.
 
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=3D16393
-> Subject         : kernel BUG at fs/block_dev.c:765!
-> Submitter       : Markus Trippelsdorf <markus@trippelsdorf.de>
-> Date            : 2010-07-14 13:52 (19 days old)
-> Message-ID      : <20100714135217.GA1797@arch.tripp.de>
-> References      : http://marc.info/?l=3Dlinux-kernel&m=3D127911564213748&=
-w=3D2
+> > The choice between power-aware and power-naive will depend on who is
+> > available to do the programming and how valuable power-awareness is
+> > for the application in question.  Given that people who program
+> > PC-class applications are much more common than are people who
+> > program with energy efficiency in mind, the power-naive choice will
+> > be attractive in many cases.
+> 
+> I'm not sure I buy that.
+> 4 years ago.. yes.
+> Today.. with PowerTOP and co out there for a long time?
+> I don't believe that anymore. Most of our open source PC apps are
+> actually very well behaving in the power sense.
+> Yes an occasional bug slips in, and then gets fixed quickly.
+> (speaking as someone who does this sort of work for a Linux
+> distribution... yes bugs happen on a whole distro level, but they're
+> also not all that common, and get fixed quickly)
 
-This one is interesting. And I think I perhaps see where it's coming from.
+I agree that much progress has been made over the past four years.
+My laptop's battery life has increased substantially, with roughly half
+of the increase due to software changes.  Taken over all the laptops and
+PCs out there, this indeed adds up to substantial and valuable savings.
 
-bd_start_claiming() (through bd_prepare_to_claim()) has two separate
-success cases: either there was no holder (bd_claiming is NULL) or the
-new holder was already claiming it (bd_claiming =3D=3D holder).
+So, yes, you have done quite well.
 
-Note in particular the case of the holder _already_ holding it. What happen=
-s is:
+However, your reliance on application-by-application fixes, while good
+up to a point, is worrisome longer term.  The reason for my concern is
+that computing history has not been kind to those who fail to vigorously
+automate.  The Android guys have offered up one way of automating power
+efficiency.  There might be better ways, but their approach does at
+the very least deserve a fair hearing -- and no one who read the recent
+LKML discussion of their approach could possibly mistake it for anything
+resembling a fair hearing.
 
- - bd_start_claiming() succeeds because we had _already_ claimed it
-with the same holder
+And yes, I do understand and appreciate your contributions in the form of
+things like timer aggregation, which does automate the otherwise-tricky
+task of coordinating power usage across unrelated applications, at
+least in some important cases.  But power efficiency will likely require
+multiple approaches, especially if the Linux stack is to approach the
+power efficiencies provided by dedicated devices.
 
- - then some error happens, and we call bd_abort_claiming(), which
-does whole->bd_claiming =3D NULL;
-
- - the original holder thinks it still holds the bd, but it has been releas=
-ed!
-
- - a new claimer comes in, and succeeds because bd_claiming is now NULL.
-
- - we now have two "owners" of the bd, but bd_claiming only points to
-the second one.
-
-I think bd_start_claiming() needs to do some kind of refcount for the
-nested holder case, and bd_abort_claiming() needs to decrement the
-refcount and only clear the bd_claiming field when it goes down to
-zero.
-
-I dunno. Maybe there's something else going on, but it does look
-suspicious, and the above would explain the BUG_ON().
-
-Tejun, Jens?
-
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=3D16369
-> Subject         : Yet another 2.6.35 regression (AGP)?
-> Submitter       : Woody Suwalski <terraluna977@gmail.com>
-> Date            : 2010-07-09 14:21 (24 days old)
-> Message-ID      : <4C373084.8000503@gmail.com>
-> References      : http://marc.info/?l=3Dlinux-kernel&m=3D127868797119254&=
-w=3D2
-
-Should hopefully be fixed by commit e7b96f28c58c ("agp/intel: Use the
-correct mask to detect i830 aperture size.")
-
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=3D16365
-> Subject         : kernel BUG at fs/btrfs/extent-tree.c:1353
-> Submitter       : Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
-> Date            : 2010-07-08 14:27 (25 days old)
-> Message-ID      : <201007081627.24654.johannes.hirte@fem.tu-ilmenau.de>
-> References      : http://marc.info/?l=3Dlinux-kernel&m=3D127859960725931&=
-w=3D2
-
-This one is reportedly fixed by commit 83ba7b071f30 ("writeback:
-simplify the write back thread queue")
-
-> Bug-Entry =A0 =A0 =A0 : http://bugzilla.kernel.org/show_bug.cgi?id=3D16215
-> Subject =A0 =A0 =A0 =A0 : sysfs: cannot create duplicate filename '/class=
-/net/bnep0'
-> Submitter =A0 =A0 =A0 : Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-> Date =A0 =A0 =A0 =A0 =A0 =A0: 2010-06-15 14:55 (48 days old)
-> Handled-By =A0 =A0 =A0: Eric W. Biederman <ebiederm@xmission.com>
-
-Fixed by commit 24b1442d01ae155ea716dfb94ed21605541c317d.
-
-                             Linus
+							Thanx, Paul
