@@ -1,13 +1,18 @@
-From: David Brownell <david-b@pacbell.net>
+From: "Ted Ts'o" <tytso@mit.edu>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Sun, 1 Aug 2010 15:38:34 -0700 (PDT)
-Message-ID: <866453.87809.qm__38401.9341123805$1280702364$gmane$org@web180313.mail.gq1.yahoo.com>
-References: <Pine.LNX.4.44L0.1008011810300.22928-100000@netrider.rowland.org>
+Date: Sun, 1 Aug 2010 16:40:26 -0400
+Message-ID: <20100801204026.GH31324__28998.1251502924$1280702656$gmane$org@thunk.org>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<20100731215214.2543c07e@infradead.org>
+	<20100801054816.GI2470@linux.vnet.ibm.com>
+	<20100731230101.7cc1d8c7@infradead.org>
+	<20100801191228.GL2470@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1008011810300.22928-100000@netrider.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <20100801191228.GL2470@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,18 +22,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Alan Stern <stern@rowland.harvard.edu>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-> > > I should have made a stronger point:
-> "power-aware" is _not_ a good
-> > > term for these applications.=A0
+On Sun, Aug 01, 2010 at 12:12:28PM -0700, Paul E. McKenney wrote:
+> 
+> I understand that you would prefer that we group applications into
+> "good" and "bad" categories, but then again, I suspect that most of us
+> understood that before you posted this message.  Given your significant
+> and well-appreciated contributions to power efficiency over the past
+> several years, I must confess to be quite disappointed that you failed
+> to do more than to simply restate your preference.
 
-Strongly disagree.  The whole point is that they
-ARE VERY MUCH AWARE and interact with a power
-policy to achieve goals.
+Paul, I very much agree with what you stated later, with respect to
+doubting whether the whack-a-mole approach to application fixups is
+workable.  Given how many applications screw up using fsync()
+correctly, to the extent that XFS, ext4, and btrfs all had to agree on
+a common hueristics to deal with the fact that application programmers
+are aggressively ignorant, and outnumber the file system developers, I
+too doubt the general strategy of relying only on application
+programmers to do the right thing.  That's not to say that we
+shouldn't give up on trying to influence application programmers ---
+but relying on that as the only strategy seems to depart from the path
+of wisdom.
 
-Like refusing to power down active subsystems,
-or actively powering down inactive ones.
-Q.E.D. ... "aware".
+There is however a much bigger point, which is that it's unfortunately
+black and white to talk about applications being "good" and "bad".  In
+fact, it's a continuing point of concern I have with the whole qos
+approach to power management.  In fact, power is often something that
+needs to trade off against performance.  For example, an application
+could aggressively prefetch e-mail messages or web pages that a user
+_might_ view --- or it could aggressively pre-resolve DNS queries,
+etc, which might make perfect sense when the device is hooked up to AC
+mains, but which I might not want to do on when I only have 800mWh
+worth of battery --- however, if I'm using a laptop with 94,000mWh,
+maybe I'd be happy if the application was a bit more profligate.
+
+So for Arjan to claim that all applications will be held to the same
+standard, whether they are hooked up to the AC mains, or are limited
+to 800mWh of battery, or 94,000 mWh worth of power, is vastly
+oversimplifying the problem.  Of *course* if I'm writing an
+application that will be running in a cloud data center, I'm going to
+care about power.  But I may have different tradeoffs about what might
+considered acceptible when considering the qualify of user experience
+I'm delivering to the end-user when I'm connected to AC mains, versus
+a cell phone battery, versus a 6-cell laptop battery.
+
+This brings me back to a major problem I have with the pm_qos approach
+to power management.  It assumes that applications know best, and that
+they should be free to tell pm_qos subsystem whether they need 0ms
+latency for wireless.  Right now, I can't even query the pm_qos
+subsystem to see which application is responsible for keeping the
+wireless on 100% of the time!  And even if I could find out, maybe
+some power management framework should be allowed to give a override
+to the application's wishes.  OK, maybe the Opera web browser is
+requesting the very best wireless QOS because it wants to beat Chrome
+on some silly potato benchmark --- well, it's ***stupid*** to say that
+my power management should be a one-size-fits all because applications
+should be always as power efficient as possible whether they are
+connected to AC mains or I have a 800mWh cell phone battery.  Worse
+yet, it's stupid to say that the application should have the last
+word.  Darn it, *I* own the mobile device, and I (or my proxy, which
+might be the Android OS, or some power manage daemon) should be able
+to say, "I don't care what the application claimed it wanted for power
+QOS --- it's not getting more than 100ms wireless latency, and that's
+final."
+
+And note that this is something that might even change over time, or
+depending on circumstances.  Maybe normally I might be willing to let
+the application be profilgate with power, so that web pages render a
+bit faster than they might otherwise --- but if I'm on an American
+Airlines flight which has retrofitted its power jacks to use an AC
+plug, and I only have a DC adaptor, and my laptop batteries are worn
+out and only have half their endurance as they used to, I might want
+to use a more stringent pm_qos than I might otherwise normally allow.
+
+          	      		       	       - Ted
