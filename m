@@ -1,7 +1,7 @@
-From: david@lang.hm
+From: Florian Mickler <florian@mickler.org>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Sun, 1 Aug 2010 22:06:34 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008012153300.25170@asgard.lang.hm>
+Date: Mon, 2 Aug 2010 07:34:00 +0200
+Message-ID: <20100802073400.68a6edd7__28742.5739727498$1280727323$gmane$org@schatten.dmk.lab>
 References: <20100731175841.GA9367@linux.vnet.ibm.com>
 	<20100731215214.2543c07e@infradead.org>
 	<20100801054816.GI2470@linux.vnet.ibm.com>
@@ -25,10 +25,13 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Arjan van de Ven <arjan@infradead.org>
-Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
+Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 1 Aug 2010, Arjan van de Ven wrote:
+Hi,
+
+On Sun, 1 Aug 2010 21:05:48 -0700
+Arjan van de Ven <arjan@infradead.org> wrote:
 
 > I'm a little worried that this whole "I need to block suspend" is
 > temporary. Yes today there is silicon from ARM and Intel where suspend
@@ -38,18 +41,9 @@ On Sun, 1 Aug 2010, Arjan van de Ven wrote:
 > controller issue more than anything else). I'm pretty sure the ARM guys
 > will not be far behind.
 
-remember that this 'block suspend' is really 'block overriding the fact 
-that there are still runable processes and suspending anyway"
+I think that the only thing that really matters (longterm) with suspend
+is that processes don't get scheduled anymore when the system is
+suspended.
 
-having it labeled as 'suspend blocker' or even 'wakelock' makes it sound 
-as if it blocks any attempt to suspend, and I'm not sure that's what's 
-really intended. Itsounds like the normal syspend process would continue 
-to work, just this 'ignore if these other apps are busy' mode of operation 
-would not work.
-
-which makes me wonder, would it be possible to tell the normal idle 
-detection mechanism to ignore specific processes when deciding if it 
-should suspend or not? how about only considering processes in one cgroup 
-when deciding to suspend and ignoring all others?
-
-David Lang
+Cheers,
+Flo
