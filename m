@@ -1,23 +1,15 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Mon, 2 Aug 2010 07:09:33 -0700
-Message-ID: <20100802140933.GB2405__37004.5735421174$1280758349$gmane$org@linux.vnet.ibm.com>
+Date: Mon, 2 Aug 2010 16:08:57 +0200
+Message-ID: <201008021608.57483.rjw__2782.65049350939$1280758349$gmane$org@sisk.pl>
 References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<20100731215214.2543c07e@infradead.org>
-	<20100801054816.GI2470@linux.vnet.ibm.com>
-	<20100731230101.7cc1d8c7@infradead.org>
-	<20100801191228.GL2470@linux.vnet.ibm.com>
-	<20100801204026.GH31324@thunk.org>
-	<20100802030304.GU2470@linux.vnet.ibm.com>
 	<20100801210548.23f77ff6@infradead.org>
-	<alpine.DEB.2.00.1008012153300.25170@asgard.lang.hm>
-Reply-To: paulmck@linux.vnet.ibm.com
+	<20100802122726.GA6247@thunk.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1008012153300.25170@asgard.lang.hm>
+In-Reply-To: <20100802122726.GA6247@thunk.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,57 +19,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Ted Ts'o <tytso@mit.edu>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 01, 2010 at 10:06:34PM -0700, david@lang.hm wrote:
-> On Sun, 1 Aug 2010, Arjan van de Ven wrote:
+On Monday, August 02, 2010, Ted Ts'o wrote:
+> On Sun, Aug 01, 2010 at 09:05:48PM -0700, Arjan van de Ven wrote:
+> > I'm a little worried that this whole "I need to block suspend" is
+> > temporary. Yes today there is silicon from ARM and Intel where suspend
+> > is a heavy operation, yet at the same time it's not all THAT heavy
+> > anymore.... 
 > 
-> >I'm a little worried that this whole "I need to block suspend" is
-> >temporary. Yes today there is silicon from ARM and Intel where suspend
-> >is a heavy operation, yet at the same time it's not all THAT heavy
-> >anymore.... at least on the Intel side it's good enough to use pretty
-> >much all the time (when the screen is off for now, but that's a memory
-> >controller issue more than anything else). I'm pretty sure the ARM guys
-> >will not be far behind.
+> Part of the problem here may also be a naming problem.  There are
+> multiple reasons why you might want to block suspend, and it goes far
+> beyond what the CPU can do.
 > 
-> remember that this 'block suspend' is really 'block overriding the
-> fact that there are still runable processes and suspending anyway"
+> Let's give another example, from the laptop world.  If you close the
+> the MacBook, it "suspends".  That is, all processes stop, and the CPU
+> enters a sleep state.  Sounds just like Linux's suspend-to-ram, right?
 > 
-> having it labeled as 'suspend blocker' or even 'wakelock' makes it
-> sound as if it blocks any attempt to suspend, and I'm not sure
-> that's what's really intended. Itsounds like the normal syspend
-> process would continue to work, just this 'ignore if these other
-> apps are busy' mode of operation would not work.
+> Except for the fact that if you insert a USB cable connected to a
+> iPod/iPad/iPhone, the CPU wakes up, and iTunes will do a sync, and
+> then the machine goes back to sleep.  And if the Mail application is
+> in the middle of manipulating the IMAP mailbox, it will be allowed to
+> finish what it is doing, and then the system goes to sleep.
+
+I _think_ you can implement that with the current kernel's interfaces and
+an suitable power manager in user space.  At least you should be.
+
+The question really boils down to where the "power manager" activity should be
+located.  Should it be in the kernel or in user space?  Or is it better to have
+a "collective power manager", like in the wakelocks case?  Moreover, what
+should the power manager be responsible for and what the kernel's role should
+be in deciding what "power" state to go into?
+
+> So in the case of both the MacBook, where the user has closed the
+> laptop, and in the case of Cell Phone, where the user has pushed the
+> button saying he/she's done working with the application, the _normal_
+> thing to do force all processes to go to sleep, and then let the CPU
+> go to sleep.
 > 
-> which makes me wonder, would it be possible to tell the normal idle
-> detection mechanism to ignore specific processes when deciding if it
-> should suspend or not? how about only considering processes in one
-> cgroup when deciding to suspend and ignoring all others?
+> But, you may have applications that are specially privileged so they
+> can ignore the user command to suspend the machine.
 
-Why not flesh this out and compare it to the draft requirements?
-(I expect to be sending another version by end of day Pacific Time.)
+I frankly don't think it's legitimate to overrule the user.  If the user tells
+us "suspend" and specifies a set of devices that can be used for wakeup, we
+should follow, possibly monitoring the wakeup devices for events.
 
-The biggest issue I see right off-hand is that a straightforward
-implementation of your idea would require moving processes from one
-cgroup to another when acquiring or releasing a suspend blocker, which
-from what I understand would be way to heavyweight.  On the other hand,
-if acquiring and releasing a suspend blocker does not move the process
-from one cgroup to another, then you need something very like the
-suspend-blocker mechanism to handle those processes that are permitted
-to acquire suspend blockers, and which are thus not a member of the
-cgroup in question.
+However, that doesn't apply 100% to the cell phone case, because on cell phones
+the software is actually owned by the device vendor and/or the network operator
+and they may want to have a mechanism to overrule the person using the phone.
+That is a more general issue, though.
 
-That said, I did see some hint from the Android guys that it -might-
-be possible to leverage cgroups in the way that you suggest might help
-save power during times when suspend was blocked but (for example) the
-screen was turned off.  The idea would be to freeze the cgroup whenever
-the screen blanked, even if suspend was blocked.  The biggest issue
-here is that any process that can hold a suspend blocker must never to
-an unconditional wait on any process in this cgroup.  Seems to me that
-this should be possible in theory, but the devil would be in the details.
+> Maybe it's an iTunes-like situation, where in response to some hardware
+> interrupt, it's allowed to wake up, do its thing, and then go back to sleep,
+> allowing the hardware to go back to sleep.  Maybe it's a mail
+> application that wants to wakeup every 15 minutes, suck down any new
+> mail, and then go back to sleep.  The suspend blocker is a way to
+> achieve this --- and this has nothing to do with chip technology, but
+> with a specific use case.
 
-If I am misunderstanding your proposal, please enlighten me!
+Assuming that your "power manager activity" will be a collective one, along the
+Android lines.  Still, in principle, you can obtain a functionally equivalent
+behavior with the help of a power manager in user space.
 
-							Thanx, Paul
+Thanks,
+Rafael
