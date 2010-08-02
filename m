@@ -1,11 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/8] ACPI / PCI / PCIe: Rework _OSC handling (v2)
-Date: Mon, 2 Aug 2010 23:51:31 +0200
-Message-ID: <201008022351.31406.rjw__15391.2926944487$1280788390$gmane$org@sisk.pl>
+Subject: [PATCH 1/8] ACPI / PCI: Introduce
+	acpi_pci_osc_control_query()
+Date: Mon, 2 Aug 2010 23:53:04 +0200
+Message-ID: <201008022353.04353.rjw__31897.6724207916$1280788391$gmane$org@sisk.pl>
+References: <201008022351.31406.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201008022351.31406.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,34 +22,125 @@ To: Jesse Barnes <jbarnes@virtuousgeek.org>
 Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, linux-pci@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-This is the second iteration of the patchset based on
-https://patchwork.kernel.org/patch/114917/ and the comments I received on that
-patch.  Hopefully, I took all of the comments into account this time.
+Introduce a function allowing the caller to obtain a mask of _OSC
+control bits the BIOS will allow the kernel to control for a given
+PCI root bridge.
 
-[1/8] - Introduce acpi_pci_osc_control_query() allowing the caller to get a
-        mask of _OSC control bits the BIOS allows the kernel to control
-        for a given PCI root bridge.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/pci_root.c |   58 ++++++++++++++++++++++++++++++++++++++++--------
+ include/linux/acpi.h    |    1 
+ 2 files changed, 50 insertions(+), 9 deletions(-)
 
-[2/8] - Introduce pci_aer_available() allowing the caller to check if the
-        AER service driver should be enabled.
-
-[3/8] - Introduce kernel command line switch pcie_ports=.
-
-[4/8] - Rework the PCIe port driver to request _OSC control for all serives at
-        once.
-
-[5/8] - Disable PCIe port services (that might be enabled by the BIOS) during
-        initialization.
-
-[6/8] - Remove the PCIe port driver modules exit function.
-
-[7/8] - Rework acpi_pci_osc_control_set() so that it doesn't use cached
-        result of a query and remove the fields of struct acpi_pci_root that
-       aren't used any more.
-
-[8/8] - Reorder checks in acpi_pci_osc_control_set()
-
-Thanks,
-Rafael
+Index: linux-2.6/drivers/acpi/pci_root.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/pci_root.c
++++ linux-2.6/drivers/acpi/pci_root.c
+@@ -225,21 +225,32 @@ static acpi_status acpi_pci_run_osc(acpi
+ 	return status;
+ }
+ 
+-static acpi_status acpi_pci_query_osc(struct acpi_pci_root *root, u32 flags)
++static acpi_status acpi_pci_query_osc(struct acpi_pci_root *root,
++					u32 support,
++					u32 *control)
+ {
+ 	acpi_status status;
+-	u32 support_set, result, capbuf[3];
++	u32 result, capbuf[3];
++
++	support &= OSC_PCI_SUPPORT_MASKS;
++	support |= root->osc_support_set;
+ 
+-	/* do _OSC query for all possible controls */
+-	support_set = root->osc_support_set | (flags & OSC_PCI_SUPPORT_MASKS);
+ 	capbuf[OSC_QUERY_TYPE] = OSC_QUERY_ENABLE;
+-	capbuf[OSC_SUPPORT_TYPE] = support_set;
+-	capbuf[OSC_CONTROL_TYPE] = OSC_PCI_CONTROL_MASKS;
++	capbuf[OSC_SUPPORT_TYPE] = support;
++	if (control) {
++		*control &= OSC_PCI_CONTROL_MASKS;
++		capbuf[OSC_CONTROL_TYPE] = *control;
++	} else {
++		/* Run _OSC query for all possible controls. */
++		capbuf[OSC_CONTROL_TYPE] = OSC_PCI_CONTROL_MASKS;
++	}
+ 
+ 	status = acpi_pci_run_osc(root->device->handle, capbuf, &result);
+ 	if (ACPI_SUCCESS(status)) {
+-		root->osc_support_set = support_set;
++		root->osc_support_set = support;
+ 		root->osc_control_qry = result;
++		if (control)
++			*control = result;
+ 		root->osc_queried = 1;
+ 	}
+ 	return status;
+@@ -254,7 +265,7 @@ static acpi_status acpi_pci_osc_support(
+ 	if (ACPI_FAILURE(status))
+ 		return status;
+ 	mutex_lock(&osc_lock);
+-	status = acpi_pci_query_osc(root, flags);
++	status = acpi_pci_query_osc(root, flags, NULL);
+ 	mutex_unlock(&osc_lock);
+ 	return status;
+ }
+@@ -363,6 +374,35 @@ out:
+ }
+ EXPORT_SYMBOL_GPL(acpi_get_pci_dev);
+ 
++ /**
++ * acpi_pci_osc_control_query - Get the _OSC bits the kernel can control.
++ * @handle: ACPI handle of a PCI root bridge (or PCIe Root Complex).
++ * @ctrl_mask: Mask of _OSC bits to query and the place to put the result into.
++ **/
++acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *ctrl_mask)
++{
++	acpi_status status;
++	acpi_handle tmp;
++	struct acpi_pci_root *root;
++
++	if (!ctrl_mask || !(*ctrl_mask & OSC_PCI_CONTROL_MASKS))
++		return AE_BAD_PARAMETER;
++
++	root = acpi_pci_find_root(handle);
++	if (!root)
++		return AE_NOT_EXIST;
++
++	status = acpi_get_handle(handle, "_OSC", &tmp);
++	if (ACPI_FAILURE(status))
++		return status;
++
++	mutex_lock(&osc_lock);
++	status = acpi_pci_query_osc(root, root->osc_support_set, ctrl_mask);
++	mutex_unlock(&osc_lock);
++
++	return status;
++}
++
+ /**
+  * acpi_pci_osc_control_set - commit requested control to Firmware
+  * @handle: acpi_handle for the target ACPI object
+@@ -396,7 +436,7 @@ acpi_status acpi_pci_osc_control_set(acp
+ 
+ 	/* Need to query controls first before requesting them */
+ 	if (!root->osc_queried) {
+-		status = acpi_pci_query_osc(root, root->osc_support_set);
++		status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
+ 		if (ACPI_FAILURE(status))
+ 			goto out;
+ 	}
+Index: linux-2.6/include/linux/acpi.h
+===================================================================
+--- linux-2.6.orig/include/linux/acpi.h
++++ linux-2.6/include/linux/acpi.h
+@@ -305,6 +305,7 @@ acpi_status acpi_run_osc(acpi_handle han
+ 				OSC_PCI_EXPRESS_AER_CONTROL |		\
+ 				OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL)
+ 
++extern acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *mask);
+ extern acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags);
+ extern void acpi_early_init(void);
+ 
