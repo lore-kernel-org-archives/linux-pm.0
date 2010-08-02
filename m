@@ -1,7 +1,7 @@
-From: "Ted Ts'o" <tytso@mit.edu>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Mon, 2 Aug 2010 08:27:26 -0400
-Message-ID: <20100802122726.GA6247__49733.2067149275$1280752097$gmane$org@thunk.org>
+Date: Mon, 2 Aug 2010 07:00:27 -0700
+Message-ID: <20100802140027.GA2405__28104.1526388892$1280757723$gmane$org@linux.vnet.ibm.com>
 References: <20100731175841.GA9367@linux.vnet.ibm.com>
 	<20100731215214.2543c07e@infradead.org>
 	<20100801054816.GI2470@linux.vnet.ibm.com>
@@ -10,6 +10,7 @@ References: <20100731175841.GA9367@linux.vnet.ibm.com>
 	<20100801204026.GH31324@thunk.org>
 	<20100802030304.GU2470@linux.vnet.ibm.com>
 	<20100801210548.23f77ff6@infradead.org>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -26,43 +27,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Arjan van de Ven <arjan@infradead.org>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
+Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
 List-Id: linux-pm@vger.kernel.org
 
 On Sun, Aug 01, 2010 at 09:05:48PM -0700, Arjan van de Ven wrote:
+> On Sun, 1 Aug 2010 20:03:04 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > on application programmers to do the right thing.  That's not to
+> > > say that we shouldn't give up on trying to influence application
+> > > programmers --- but relying on that as the only strategy seems to
+> > > depart from the path of wisdom.
+> > 
+> > Unless someone can reliably automate whacking the moles, history is
+> > not on the side of the mole-whackers.  I won't say that such
+> > automation is impossible, but only because of all the "impossible"
+> > things in my lifetime that have turned out to be possible.
+> 
+> we have a few things going for us here though
+> 
+> 1) It's easy to programatically detect the problems
+>   1a) so programmers can detect issues before they ship software,
+>   unlike the fsync() thing Ted mentions. History is showing this is at
+>   least relatively successful in open source, but not with Adobe's
+>   proprietary software such as Flash
+> 2) Users can be made aware of what the bad guys are
+> 3) The business models of many of the mobile apps gives programmers a
+>    strong incentive to ship well behaving. The moment your first and
+>    second review of your app read "this app was identified as reducing
+>    battery life a lot"... your revenues will not go beyond the $1.98..
+>    ... assuming these first two guys didn't refund their app.
+> 
+> Since we can detect who the bad guys are, we can also automatically
+> quarantine them for the common cases..... which is good news.
+
+Unless of course the app reducing battery life a lot does something
+that users like better than the increment in battery life.
+
 > I'm a little worried that this whole "I need to block suspend" is
 > temporary. Yes today there is silicon from ARM and Intel where suspend
 > is a heavy operation, yet at the same time it's not all THAT heavy
-> anymore.... 
+> anymore.... at least on the Intel side it's good enough to use pretty
+> much all the time (when the screen is off for now, but that's a memory
+> controller issue more than anything else). I'm pretty sure the ARM guys
+> will not be far behind.
 
-Part of the problem here may also be a naming problem.  There are
-multiple reasons why you might want to block suspend, and it goes far
-beyond what the CPU can do.
+Heh!  One could make the "might be temporary" argument against any new
+feature, including the ones that you are proposing.  For but one example,
+I very well remember being told by many people in many communities that
+SMP was temporary -- Moore's-Law increases in clock frequency would soon
+mean that even the biggest systems would be uniprocessors.
 
-Let's give another example, from the laptop world.  If you close the
-the MacBook, it "suspends".  That is, all processes stop, and the CPU
-enters a sleep state.  Sounds just like Linux's suspend-to-ram, right?
+If by "memory controller" you are referring to the need to save state
+for cache SRAMs and perhaps also DRAM, then yes, I agree that some of
+the most difficult low-power-state tradeoffs involve these devices.
 
-Except for the fact that if you insert a USB cable connected to a
-iPod/iPad/iPhone, the CPU wakes up, and iTunes will do a sync, and
-then the machine goes back to sleep.  And if the Mail application is
-in the middle of manipulating the IMAP mailbox, it will be allowed to
-finish what it is doing, and then the system goes to sleep.
-
-So in the case of both the MacBook, where the user has closed the
-laptop, and in the case of Cell Phone, where the user has pushed the
-button saying he/she's done working with the application, the _normal_
-thing to do force all processes to go to sleep, and then let the CPU
-go to sleep.
-
-But, you may have applications that are specially privileged so they
-can ignore the user command to suspend the machine.  Maybe it's an
-iTunes-like situation, where in response to some hardware interrupt,
-it's allowed to wake up, do its thing, and then go back to sleep,
-allowing the hardware to go back to sleep.  Maybe it's a mail
-application that wants to wakeup every 15 minutes, suck down any new
-mail, and then go back to sleep.  The suspend blocker is a way to
-achieve this --- and this has nothing to do with chip technology, but
-with a specific use case.
-
-						- Ted
+							Thanx, Paul
