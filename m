@@ -1,14 +1,14 @@
 From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [PATCH 4/7] PCI / PCIe: Disable PCIe port services
- during port initialization
-Date: Mon, 02 Aug 2010 18:21:03 +0900
-Message-ID: <4C568DFF.3090708__11653.9033166648$1280740928$gmane$org@jp.fujitsu.com>
-References: <201007310020.56546.rjw@sisk.pl> <201007310034.20027.rjw@sisk.pl>
+Subject: Re: [PATCH 5/7] PCI / PCIe: Remove the port driver
+	module exit routine
+Date: Mon, 02 Aug 2010 18:21:56 +0900
+Message-ID: <4C568E34.5080206__20388.405401218$1280741082$gmane$org@jp.fujitsu.com>
+References: <201007310020.56546.rjw@sisk.pl> <201007310035.14232.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201007310034.20027.rjw@sisk.pl>
+In-Reply-To: <201007310035.14232.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,72 +22,36 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-(2010/07/31 7:34), Rafael J. Wysocki wrote:
+(2010/07/31 7:35), Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: PCI / PCIe: Disable PCIe port services during port initialization
+> Subject: PCI / PCIe: Remove the port driver module exit routine
 > 
-> In principle PCIe port services may be enabled by the BIOS, so it's
-> better to disable them during port initialization to avoid spurious
-> events from being generated.
+> The PCIe port driver's module exit routine is never used, so drop it.
 > 
 > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 > ---
->  drivers/pci/pcie/portdrv_core.c |   29 ++++++++++++++++++++++++++---
->  1 file changed, 26 insertions(+), 3 deletions(-)
+>  drivers/pci/pcie/portdrv_pci.c |    7 -------
+>  1 file changed, 7 deletions(-)
 > 
-> Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
+> Index: linux-2.6/drivers/pci/pcie/portdrv_pci.c
 > ===================================================================
-> --- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
-> +++ linux-2.6/drivers/pci/pcie/portdrv_core.c
-> @@ -256,20 +256,43 @@ static int get_port_device_capability(st
->  	/* Hot-Plug Capable */
->  	if ((cap_mask & PCIE_PORT_SERVICE_HP) && (reg16 & PCI_EXP_FLAGS_SLOT)) {
->  		pci_read_config_dword(dev, pos + PCI_EXP_SLTCAP, &reg32);
-> -		if (reg32 & PCI_EXP_SLTCAP_HPC)
-> +		if (reg32 & PCI_EXP_SLTCAP_HPC) {
->  			services |= PCIE_PORT_SERVICE_HP;
-> +			/*
-> +			 * Disable hot-plug interrupts in case they have been
-> +			 * enabled by the BIOS and the hot-plug service driver
-> +			 * is not loaded.
-> +			 */
-> +			pos += PCI_EXP_SLTCTL;
-> +			pci_read_config_word(dev, pos, &reg16);
-> +			reg16 &= ~(PCI_EXP_SLTCTL_CCIE | PCI_EXP_SLTCTL_HPIE);
-> +			pci_write_config_word(dev, pos, reg16);
-> +		}
->  	}
->  	/* AER capable */
->  	if ((cap_mask & PCIE_PORT_SERVICE_AER)
-> -	    && pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR))
-> +	    && pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR)) {
->  		services |= PCIE_PORT_SERVICE_AER;
-> +		/*
-> +		 * Disable AER on this port in case it's been enabled by the
-> +		 * BIOS (the AER service driver will enable it when necessary).
-> +		 */
-> +		pci_disable_pcie_error_reporting(dev);
-> +	}
->  	/* VC support */
->  	if (pci_find_ext_capability(dev, PCI_EXT_CAP_ID_VC))
->  		services |= PCIE_PORT_SERVICE_VC;
->  	/* Root ports are capable of generating PME too */
->  	if ((cap_mask & PCIE_PORT_SERVICE_PME)
-> -	    && dev->pcie_type == PCI_EXP_TYPE_ROOT_PORT)
-> +	    && dev->pcie_type == PCI_EXP_TYPE_ROOT_PORT) {
->  		services |= PCIE_PORT_SERVICE_PME;
-> +		/*
-> +		 * Disable PME interrupt on this port in case it's been enabled
-> +		 * by the BIOS (the PME service driver will enable it when
-> +		 * necessary).
-> +		 */
-> +		pcie_pme_interrupt_enable(dev, false);
-> +	}
->  
->  	return services;
+> --- linux-2.6.orig/drivers/pci/pcie/portdrv_pci.c
+> +++ linux-2.6/drivers/pci/pcie/portdrv_pci.c
+> @@ -345,11 +345,4 @@ static int __init pcie_portdrv_init(void
+>  	return retval;
 >  }
-> 
+>  
+> -static void __exit pcie_portdrv_exit(void)
+> -{
+> -	pci_unregister_driver(&pcie_portdriver);
+> -	pcie_port_bus_unregister();
+> -}
+> -
+>  module_init(pcie_portdrv_init);
+> -module_exit(pcie_portdrv_exit);
 
-I believe that comments described well are always welcomed.
+This is exactly Kaneshige-san's [6/6].
+
+And it seems that this patch can be applied alone.
 
 Reviewed-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
