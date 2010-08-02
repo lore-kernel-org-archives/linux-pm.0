@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Tue, 3 Aug 2010 00:40:20 +0200
-Message-ID: <201008030040.20704.rjw@sisk.pl>
-References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<201008022333.32623.rjw@sisk.pl>
-	<20100802222752.GI2405@linux.vnet.ibm.com>
+Subject: [PATCH 3/8] PCI / PCIe: Introduce commad line switch for
+	disabling port services
+Date: Mon, 2 Aug 2010 23:55:36 +0200
+Message-ID: <201008022355.36378.rjw__4327.89259725741$1280789937$gmane$org@sisk.pl>
+References: <201008022351.31406.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100802222752.GI2405@linux.vnet.ibm.com>
+In-Reply-To: <201008022351.31406.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,55 +18,96 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paulmck@linux.vnet.ibm.com
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, linux-pci@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, August 03, 2010, Paul E. McKenney wrote:
-> On Mon, Aug 02, 2010 at 11:33:32PM +0200, Rafael J. Wysocki wrote:
-> > On Monday, August 02, 2010, Paul E. McKenney wrote:
-> > > On Mon, Aug 02, 2010 at 03:52:20PM +0200, Rafael J. Wysocki wrote:
-> > > > On Monday, August 02, 2010, Paul E. McKenney wrote:
-> > > > > On Sun, Aug 01, 2010 at 03:47:08PM -0700, Arjan van de Ven wrote:
-> > > > > > On Sun, 1 Aug 2010 12:12:28 -0700
-> > > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > > ...
-> > > > > > Another one: freezing whole cgroups..... we have that today. it
-> > > > > > actually works quite well.... of course the hard part is the decision
-> > > > > > what to put in which cgroup, and at what frequency and duration you let
-> > > > > > cgroups run.
-> > > > > 
-> > > > > Indeed, the Android guys seemed to be quite excited by cgroup freezing
-> > > > > until they thought about the application-classification problem.
-> > > > > Seems like it should be easy for some types of applications, but I do
-> > > > > admit that apps can have non-trivial and non-obvious dependencies.
-> > > > 
-> > > > This isn't more difficult than deciding which applications will be allowed to
-> > > > use wakelocks (in the wakelocks world).  It actually seems to be pretty much
-> > > > equivalent to me. :-)
-> > > 
-> > > If I understand correctly, the problem they were concerned about was
-> > > instead "given that a certain set of apps are permitted to use wakelocks,
-> > > which of the other apps can safely be frozen when the display blanks
-> > > itself."
-> > 
-> > I _think_ the problem should be reformulated as "which of the other apps
-> > can be safely frozen without causing the wakelocks-using ones to have
-> > problems" instead (the particular scenario is that one of the wakelocks-using
-> > apps may need one of the other apps to process something and therefore the
-> > other app cannot be frozen; however, that may be resolved by thawing all of
-> > the other apps in such situations IMO).
-> 
-> I agree that your statement is equivalent to mine.  From what I can see,
-> the current Android code resolves this by not freezing any app while
-> a wakelock is held.
-> 
-> Just out of curiosity, how are you detecting the situation in order to
-> decide when to thaw the apps in the cgroup?
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Well, in fact I would only be able to talk about that theoretically, as I'm
-currently not involved in any project using cgroups for power management.
-I have considered that, but I haven't tried to implement it.
+Introduce kernel command line switch pcie_ports= allowing one to
+disable all of the native PCIe port services, so that PCIe ports
+are treated like PCI-to-PCI bridges.
 
-Thanks,
-Rafael
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ Documentation/kernel-parameters.txt |    4 ++++
+ drivers/pci/pcie/portdrv.h          |    2 ++
+ drivers/pci/pcie/portdrv_core.c     |    3 +++
+ drivers/pci/pcie/portdrv_pci.c      |   15 +++++++++++++++
+ 4 files changed, 24 insertions(+)
+
+Index: linux-2.6/drivers/pci/pcie/portdrv_pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/portdrv_pci.c
++++ linux-2.6/drivers/pci/pcie/portdrv_pci.c
+@@ -29,6 +29,18 @@ MODULE_AUTHOR(DRIVER_AUTHOR);
+ MODULE_DESCRIPTION(DRIVER_DESC);
+ MODULE_LICENSE("GPL");
+ 
++/* If this switch is set, PCIe port native services should not be enabled. */
++bool pcie_ports_disabled;
++
++static int __init pcie_port_setup(char *str)
++{
++	if (!strncmp(str, "compat", 6))
++		pcie_ports_disabled = true;
++
++	return 1;
++}
++__setup("pcie_ports=", pcie_port_setup);
++
+ /* global data */
+ 
+ static int pcie_portdrv_restore_config(struct pci_dev *dev)
+@@ -301,6 +313,9 @@ static int __init pcie_portdrv_init(void
+ {
+ 	int retval;
+ 
++	if (pcie_ports_disabled)
++		return -EACCES;
++
+ 	dmi_check_system(pcie_portdrv_dmi_table);
+ 
+ 	retval = pcie_port_bus_register();
+Index: linux-2.6/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.orig/Documentation/kernel-parameters.txt
++++ linux-2.6/Documentation/kernel-parameters.txt
+@@ -2047,6 +2047,10 @@ and is between 256 and 4096 characters. 
+ 		force	Enable ASPM even on devices that claim not to support it.
+ 			WARNING: Forcing ASPM on may cause system lockups.
+ 
++	pcie_ports=	[PCIE] PCIe ports handling:
++		compat	Treat PCIe ports as PCI-to-PCI bridges, disable the PCIe
++			ports driver.
++
+ 	pcie_pme=	[PCIE,PM] Native PCIe PME signaling options:
+ 			Format: {auto|force}[,nomsi]
+ 		auto	Use native PCIe PME signaling if the BIOS allows the
+Index: linux-2.6/drivers/pci/pcie/portdrv.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/portdrv.h
++++ linux-2.6/drivers/pci/pcie/portdrv.h
+@@ -20,6 +20,8 @@
+ 
+ #define get_descriptor_id(type, service) (((type - 4) << 4) | service)
+ 
++extern bool pcie_ports_disabled;
++
+ extern struct bus_type pcie_port_bus_type;
+ extern int pcie_port_device_register(struct pci_dev *dev);
+ #ifdef CONFIG_PM
+Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
++++ linux-2.6/drivers/pci/pcie/portdrv_core.c
+@@ -494,6 +494,9 @@ static void pcie_port_shutdown_service(s
+  */
+ int pcie_port_service_register(struct pcie_port_service_driver *new)
+ {
++	if (pcie_ports_disabled)
++		return -ENODEV;
++
+ 	new->driver.name = (char *)new->name;
+ 	new->driver.bus = &pcie_port_bus_type;
+ 	new->driver.probe = pcie_port_probe_service;
