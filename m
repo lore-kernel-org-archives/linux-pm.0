@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Mon, 2 Aug 2010 23:33:32 +0200
-Message-ID: <201008022333.32623.rjw__34783.8538735688$1280786772$gmane$org@sisk.pl>
-References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<201008021552.20505.rjw@sisk.pl>
-	<20100802203609.GG2405@linux.vnet.ibm.com>
+Subject: [PATCH 2/8] PCI / PCIe/ AER: Introduce
+	pci_aer_available()
+Date: Mon, 2 Aug 2010 23:54:46 +0200
+Message-ID: <201008022354.46369.rjw__42948.6857065514$1280787856$gmane$org@sisk.pl>
+References: <201008022351.31406.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100802203609.GG2405@linux.vnet.ibm.com>
+In-Reply-To: <201008022351.31406.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,69 +18,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paulmck@linux.vnet.ibm.com
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, linux-pci@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, August 02, 2010, Paul E. McKenney wrote:
-> On Mon, Aug 02, 2010 at 03:52:20PM +0200, Rafael J. Wysocki wrote:
-> > On Monday, August 02, 2010, Paul E. McKenney wrote:
-> > > On Sun, Aug 01, 2010 at 03:47:08PM -0700, Arjan van de Ven wrote:
-> > > > On Sun, 1 Aug 2010 12:12:28 -0700
-> > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > ...
-> > > > Another one: freezing whole cgroups..... we have that today. it
-> > > > actually works quite well.... of course the hard part is the decision
-> > > > what to put in which cgroup, and at what frequency and duration you let
-> > > > cgroups run.
-> > > 
-> > > Indeed, the Android guys seemed to be quite excited by cgroup freezing
-> > > until they thought about the application-classification problem.
-> > > Seems like it should be easy for some types of applications, but I do
-> > > admit that apps can have non-trivial and non-obvious dependencies.
-> > 
-> > This isn't more difficult than deciding which applications will be allowed to
-> > use wakelocks (in the wakelocks world).  It actually seems to be pretty much
-> > equivalent to me. :-)
-> 
-> If I understand correctly, the problem they were concerned about was
-> instead "given that a certain set of apps are permitted to use wakelocks,
-> which of the other apps can safely be frozen when the display blanks
-> itself."
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-I _think_ the problem should be reformulated as "which of the other apps
-can be safely frozen without causing the wakelocks-using ones to have
-problems" instead (the particular scenario is that one of the wakelocks-using
-apps may need one of the other apps to process something and therefore the
-other app cannot be frozen; however, that may be resolved by thawing all of
-the other apps in such situations IMO).
+Introduce a function allowing the caller to check if PCIe AER should
+be enabled.
 
-> > > > on the suspend blockers for drivers; the linux device runtime PM is
-> > > > effectively doing the same things; it allows drivers to suspend/resume
-> > > > individually (with a very nice API/programming model I should say) based
-> > > > on usage. And it works on a tree level, so that it's relatively easy
-> > > > to do things like "I want to go to <this magic deep idle state>, but
-> > > > only if <this set of devices is suspended already>". This is obviously
-> > > > an important functionality for all low power devices, ARM or x86. 
-> > > > Suspend blockers had this functionality as part of what it did (they do
-> > > > more obviously) but I'd wager that the current Linux infrastructure is
-> > > > outright nicer. 
-> > > 
-> > > This is what Rafael has been working on?
-> > 
-> > If you mean the runtime PM framework, then yes, I've been working on it.
-> > 
-> > > Of course, the Android guys also want to pay attention to which apps
-> > > are running as well as to the state of devices on the system.
-> > 
-> > In fact the runtime PM framework is also important to Android, because it
-> > can be used in there, for example, to implement the "early suspend" thing
-> > I referred to in one of my previous messages in this thread.
-> 
-> Now we just need to convince the Android guys of that.  ;-)
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/pci.h             |    2 ++
+ drivers/pci/pcie/aer/aerdrv.c |    9 ++++++---
+ 2 files changed, 8 insertions(+), 3 deletions(-)
 
-I believe there's no need for that, as we were talking about that a few months
-ago.
-
-Thanks,
-Rafael
+Index: linux-2.6/drivers/pci/pci.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -131,8 +131,10 @@ static inline void pci_msi_init_pci_dev(
+ 
+ #ifdef CONFIG_PCIEAER
+ void pci_no_aer(void);
++bool pci_aer_available(void);
+ #else
+ static inline void pci_no_aer(void) { }
++static inline bool pci_aer_available(void) { return false; }
+ #endif
+ 
+ static inline int pci_no_d1d2(struct pci_dev *dev)
+Index: linux-2.6/drivers/pci/pcie/aer/aerdrv.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/aer/aerdrv.c
++++ linux-2.6/drivers/pci/pcie/aer/aerdrv.c
+@@ -72,6 +72,11 @@ void pci_no_aer(void)
+ 	pcie_aer_disable = 1;	/* has priority over 'forceload' */
+ }
+ 
++bool pci_aer_available(void)
++{
++	return !pcie_aer_disable && pci_msi_enabled();
++}
++
+ static int set_device_error_reporting(struct pci_dev *dev, void *data)
+ {
+ 	bool enable = *((bool *)data);
+@@ -411,9 +416,7 @@ static void aer_error_resume(struct pci_
+  */
+ static int __init aer_service_init(void)
+ {
+-	if (pcie_aer_disable)
+-		return -ENXIO;
+-	if (!pci_msi_enabled())
++	if (pci_aer_available())
+ 		return -ENXIO;
+ 	return pcie_port_service_register(&aerdriver);
+ }
