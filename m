@@ -1,18 +1,16 @@
-From: James Bottomley <James.Bottomley@suse.de>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Sun, 01 Aug 2010 18:30:44 -0500
-Message-ID: <1280705444.25620.62.camel__2833.97973184965$1280705495$gmane$org@mulgrave.site>
-References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<20100731215214.2543c07e@infradead.org>
-	<20100801054816.GI2470@linux.vnet.ibm.com>
-	<20100731230101.7cc1d8c7@infradead.org>
-	<20100801191228.GL2470@linux.vnet.ibm.com>
-	<20100801204026.GH31324@thunk.org>
+Date: Sun, 1 Aug 2010 17:28:02 -0700
+Message-ID: <20100802002802.GP2470__27032.4527788491$1280708951$gmane$org@linux.vnet.ibm.com>
+References: <20100801201117.GO2470@linux.vnet.ibm.com>
+	<Pine.LNX.4.44L0.1008011810300.22928-100000@netrider.rowland.org>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100801204026.GH31324@thunk.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1008011810300.22928-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,63 +20,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ted Ts'o <tytso@mit.edu>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2010-08-01 at 16:40 -0400, Ted Ts'o wrote:
-> This brings me back to a major problem I have with the pm_qos approach
-> to power management.  It assumes that applications know best, and that
-> they should be free to tell pm_qos subsystem whether they need 0ms
-> latency for wireless.
+On Sun, Aug 01, 2010 at 06:16:57PM -0400, Alan Stern wrote:
+> On Sun, 1 Aug 2010, Paul E. McKenney wrote:
+> 
+> > > I should have made a stronger point: "power-aware" is _not_ a good
+> > > term for these applications.  "power-enabled" would be better but
+> > > still not ideal.  Maybe "power-permitted"?  The definition is that
+> > > they are _permitted_ to do something (acquire suspend blockers), not
+> > > that they actually _do_ something.
+> > 
+> > How about "PM-driving applications", as Rafael suggested?
+> 
+> Perhaps.  But it's a little misleading, since what these applications
+> are permitted to do is to _prevent_ the system from going to low power.  
+> So in a real sense they don't drive PM -- they block it.  (Indeed,
+> that's what inspired the name "suspend blocker".)  Of course, the same 
+> objection applies to "power-permitted".
 
-Um, so this behaviour is isomorphic to the suspend block case for the
-applications.  I think everyone agrees that suspend block isn't optimal,
-but we were prepared to use it as a starting point given the lack of
-enthusiasm in android for the more innovative approaches that have been
-proposed.
+Good point, but for the moment I would like to keep the number of
+classes of applications down to a dull roar, and so am proposing
+one class for applications that either actively control device/system
+power/sleep or prevent changes in same.
 
->   Right now, I can't even query the pm_qos
-> subsystem to see which application is responsible for keeping the
-> wireless on 100% of the time!
+I am of course open to improvements in the "PM-driving applications"
+name.  ;-)
 
-That's hardly a fair criticism: this is easily fixable but the people
-looking into it have other calls on their time. At least you got some of
-the basic problems (like init from atomic context and sort efficiency)
-fixed this time around.  If some large organisation actually cared
-enough to contribute code, we might be moving faster ....
+> > > I was agreeing with the requirement but disagreeing with the reason
+> > > given for it.  Even when buffers are large enough that the danger of
+> > > overrunning them is infinitesimal, delays in input event delivery are
+> > > still undesirable.
+> > > 
+> > > Besides, the Android kernel doesn't vary its behavior based on whether
+> > > the recipient is power-permitted or power-naive; it _always_ delivers
+> > > input events in a timely fashion.
+> > 
+> > True, the difference between the two classes of applications is in
+> > whether or not the application is permitted to process the event.
+> > 
+> > I added "and to minimize response latencies" to the requirement.
+> > Does that capture it?
+> 
+> Yes.
 
->   And even if I could find out, maybe
-> some power management framework should be allowed to give a override
-> to the application's wishes.  OK, maybe the Opera web browser is
-> requesting the very best wireless QOS because it wants to beat Chrome
-> on some silly potato benchmark --- well, it's ***stupid*** to say that
-> my power management should be a one-size-fits all because applications
-> should be always as power efficient as possible whether they are
-> connected to AC mains or I have a 800mWh cell phone battery.  Worse
-> yet, it's stupid to say that the application should have the last
-> word.  Darn it, *I* own the mobile device, and I (or my proxy, which
-> might be the Android OS, or some power manage daemon) should be able
-> to say, "I don't care what the application claimed it wanted for power
-> QOS --- it's not getting more than 100ms wireless latency, and that's
-> final."
+Very good!!!
 
-That's why you present the user with choices and report on the outcomes.
-At the end of the day the choice becomes binary: if the mobile optimised
-browser burns you battery on the power meter, users will either
-uninstall and move on to the next browser or deny the current browser
-the ability to block suspend.
+> > > > But leaving that aside, I thought that Arve and Brian explicitly
+> > > > stated this as a requirement on power-aware applications -- one of the
+> > > > responsibilities that came with the power to block suspend.
+> > > 
+> > > No.  There are _no_ requirements on power-permitted (or power-aware if
+> > > you prefer) applications, other than that the user decides to give it
+> > > the appropriate permission.
+> > > 
+> > > Internally, of course, Android may enforce this rule on their own
+> > > software.  But it has no force in regard to external applications.
+> > 
+> > So should this be moved to a new "ANDROID POLICY" section or some such?
+> 
+> Or DESIRED BEHAVIOR, or some such.
 
-> And note that this is something that might even change over time, or
-> depending on circumstances.  Maybe normally I might be willing to let
-> the application be profilgate with power, so that web pages render a
-> bit faster than they might otherwise --- but if I'm on an American
-> Airlines flight which has retrofitted its power jacks to use an AC
-> plug, and I only have a DC adaptor, and my laptop batteries are worn
-> out and only have half their endurance as they used to, I might want
-> to use a more stringent pm_qos than I might otherwise normally allow.
+SUGGESTED USAGE?
 
-Right, but this comes back to the axes of control.  They have to be
-presented to the user in a simple but meaningful manner.
-
-James
+							Thanx, Paul
