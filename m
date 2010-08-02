@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 7/8] ACPI / PCI: Do not preserve _OSC control
-	bits returned by a query (v2)
-Date: Mon, 2 Aug 2010 23:59:32 +0200
-Message-ID: <201008022359.33177.rjw__46971.2414815605$1280787979$gmane$org@sisk.pl>
+Subject: [PATCH 5/8] PCI / PCIe: Disable PCIe port services
+	during port initialization
+Date: Mon, 2 Aug 2010 23:57:20 +0200
+Message-ID: <201008022357.20281.rjw__43471.1844697178$1280788098$gmane$org@sisk.pl>
 References: <201008022351.31406.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,68 +24,64 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-All of the remaining callers of acpi_pci_osc_control_set() either
-use acpi_pci_root_osc_query() right before it, like
-pcie_port_acpi_setup(), or ask for control of one feature only,
-like acpi_get_hp_hw_control_from_firmware().  Thus there is no
-reason to preserve the _OSC control bits returned by an _OSC query
-and the osc_control_qry and osc_queried fields of struct
-acpi_pci_root are not necessary any more.  Remove them and modify the
-code that uses them accordingly.
+In principle PCIe port services may be enabled by the BIOS, so it's
+better to disable them during port initialization to avoid spurious
+events from being generated.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Reviewed-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 ---
- drivers/acpi/pci_root.c |   15 ---------------
- include/acpi/acpi_bus.h |    3 ---
- 2 files changed, 18 deletions(-)
+ drivers/pci/pcie/portdrv_core.c |   29 ++++++++++++++++++++++++++---
+ 1 file changed, 26 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/drivers/acpi/pci_root.c
+Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/pci_root.c
-+++ linux-2.6/drivers/acpi/pci_root.c
-@@ -248,10 +248,8 @@ static acpi_status acpi_pci_query_osc(st
- 	status = acpi_pci_run_osc(root->device->handle, capbuf, &result);
- 	if (ACPI_SUCCESS(status)) {
- 		root->osc_support_set = support;
--		root->osc_control_qry = result;
- 		if (control)
- 			*control = result;
--		root->osc_queried = 1;
+--- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
++++ linux-2.6/drivers/pci/pcie/portdrv_core.c
+@@ -256,20 +256,43 @@ static int get_port_device_capability(st
+ 	/* Hot-Plug Capable */
+ 	if ((cap_mask & PCIE_PORT_SERVICE_HP) && (reg16 & PCI_EXP_FLAGS_SLOT)) {
+ 		pci_read_config_dword(dev, pos + PCI_EXP_SLTCAP, &reg32);
+-		if (reg32 & PCI_EXP_SLTCAP_HPC)
++		if (reg32 & PCI_EXP_SLTCAP_HPC) {
+ 			services |= PCIE_PORT_SERVICE_HP;
++			/*
++			 * Disable hot-plug interrupts in case they have been
++			 * enabled by the BIOS and the hot-plug service driver
++			 * is not loaded.
++			 */
++			pos += PCI_EXP_SLTCTL;
++			pci_read_config_word(dev, pos, &reg16);
++			reg16 &= ~(PCI_EXP_SLTCTL_CCIE | PCI_EXP_SLTCTL_HPIE);
++			pci_write_config_word(dev, pos, reg16);
++		}
  	}
- 	return status;
+ 	/* AER capable */
+ 	if ((cap_mask & PCIE_PORT_SERVICE_AER)
+-	    && pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR))
++	    && pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR)) {
+ 		services |= PCIE_PORT_SERVICE_AER;
++		/*
++		 * Disable AER on this port in case it's been enabled by the
++		 * BIOS (the AER service driver will enable it when necessary).
++		 */
++		pci_disable_pcie_error_reporting(dev);
++	}
+ 	/* VC support */
+ 	if (pci_find_ext_capability(dev, PCI_EXT_CAP_ID_VC))
+ 		services |= PCIE_PORT_SERVICE_VC;
+ 	/* Root ports are capable of generating PME too */
+ 	if ((cap_mask & PCIE_PORT_SERVICE_PME)
+-	    && dev->pcie_type == PCI_EXP_TYPE_ROOT_PORT)
++	    && dev->pcie_type == PCI_EXP_TYPE_ROOT_PORT) {
+ 		services |= PCIE_PORT_SERVICE_PME;
++		/*
++		 * Disable PME interrupt on this port in case it's been enabled
++		 * by the BIOS (the PME service driver will enable it when
++		 * necessary).
++		 */
++		pcie_pme_interrupt_enable(dev, false);
++	}
+ 
+ 	return services;
  }
-@@ -434,19 +432,6 @@ acpi_status acpi_pci_osc_control_set(acp
- 	if ((root->osc_control_set & control_req) == control_req)
- 		goto out;
- 
--	/* Need to query controls first before requesting them */
--	if (!root->osc_queried) {
--		status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
--		if (ACPI_FAILURE(status))
--			goto out;
--	}
--	if ((root->osc_control_qry & control_req) != control_req) {
--		printk(KERN_DEBUG
--		       "Firmware did not grant requested _OSC control\n");
--		status = AE_SUPPORT;
--		goto out;
--	}
--
- 	capbuf[OSC_QUERY_TYPE] = 0;
- 	capbuf[OSC_SUPPORT_TYPE] = root->osc_support_set;
- 	capbuf[OSC_CONTROL_TYPE] = root->osc_control_set | control_req;
-Index: linux-2.6/include/acpi/acpi_bus.h
-===================================================================
---- linux-2.6.orig/include/acpi/acpi_bus.h
-+++ linux-2.6/include/acpi/acpi_bus.h
-@@ -377,9 +377,6 @@ struct acpi_pci_root {
- 
- 	u32 osc_support_set;	/* _OSC state of support bits */
- 	u32 osc_control_set;	/* _OSC state of control bits */
--	u32 osc_control_qry;	/* the latest _OSC query result */
--
--	u32 osc_queried:1;	/* has _OSC control been queried? */
- };
- 
- /* helper */
