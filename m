@@ -1,15 +1,23 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Mon, 2 Aug 2010 15:52:20 +0200
-Message-ID: <201008021552.20505.rjw__12439.2183417969$1280758313$gmane$org@sisk.pl>
+Date: Mon, 2 Aug 2010 07:09:33 -0700
+Message-ID: <20100802140933.GB2405__37004.5735421174$1280758349$gmane$org@linux.vnet.ibm.com>
 References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<20100801154708.19817b75@infradead.org>
-	<20100802011006.GS2470@linux.vnet.ibm.com>
+	<20100731215214.2543c07e@infradead.org>
+	<20100801054816.GI2470@linux.vnet.ibm.com>
+	<20100731230101.7cc1d8c7@infradead.org>
+	<20100801191228.GL2470@linux.vnet.ibm.com>
+	<20100801204026.GH31324@thunk.org>
+	<20100802030304.GU2470@linux.vnet.ibm.com>
+	<20100801210548.23f77ff6@infradead.org>
+	<alpine.DEB.2.00.1008012153300.25170@asgard.lang.hm>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100802011006.GS2470@linux.vnet.ibm.com>
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1008012153300.25170@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,50 +27,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paulmck@linux.vnet.ibm.com
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: david@lang.hm
+Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, August 02, 2010, Paul E. McKenney wrote:
-> On Sun, Aug 01, 2010 at 03:47:08PM -0700, Arjan van de Ven wrote:
-> > On Sun, 1 Aug 2010 12:12:28 -0700
-> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-...
-> > Another one: freezing whole cgroups..... we have that today. it
-> > actually works quite well.... of course the hard part is the decision
-> > what to put in which cgroup, and at what frequency and duration you let
-> > cgroups run.
+On Sun, Aug 01, 2010 at 10:06:34PM -0700, david@lang.hm wrote:
+> On Sun, 1 Aug 2010, Arjan van de Ven wrote:
 > 
-> Indeed, the Android guys seemed to be quite excited by cgroup freezing
-> until they thought about the application-classification problem.
-> Seems like it should be easy for some types of applications, but I do
-> admit that apps can have non-trivial and non-obvious dependencies.
-
-This isn't more difficult than deciding which applications will be allowed to
-use wakelocks (in the wakelocks world).  It actually seems to be pretty much
-equivalent to me. :-)
-
-> > on the suspend blockers for drivers; the linux device runtime PM is
-> > effectively doing the same things; it allows drivers to suspend/resume
-> > individually (with a very nice API/programming model I should say) based
-> > on usage. And it works on a tree level, so that it's relatively easy
-> > to do things like "I want to go to <this magic deep idle state>, but
-> > only if <this set of devices is suspended already>". This is obviously
-> > an important functionality for all low power devices, ARM or x86. 
-> > Suspend blockers had this functionality as part of what it did (they do
-> > more obviously) but I'd wager that the current Linux infrastructure is
-> > outright nicer. 
+> >I'm a little worried that this whole "I need to block suspend" is
+> >temporary. Yes today there is silicon from ARM and Intel where suspend
+> >is a heavy operation, yet at the same time it's not all THAT heavy
+> >anymore.... at least on the Intel side it's good enough to use pretty
+> >much all the time (when the screen is off for now, but that's a memory
+> >controller issue more than anything else). I'm pretty sure the ARM guys
+> >will not be far behind.
 > 
-> This is what Rafael has been working on?
+> remember that this 'block suspend' is really 'block overriding the
+> fact that there are still runable processes and suspending anyway"
+> 
+> having it labeled as 'suspend blocker' or even 'wakelock' makes it
+> sound as if it blocks any attempt to suspend, and I'm not sure
+> that's what's really intended. Itsounds like the normal syspend
+> process would continue to work, just this 'ignore if these other
+> apps are busy' mode of operation would not work.
+> 
+> which makes me wonder, would it be possible to tell the normal idle
+> detection mechanism to ignore specific processes when deciding if it
+> should suspend or not? how about only considering processes in one
+> cgroup when deciding to suspend and ignoring all others?
 
-If you mean the runtime PM framework, then yes, I've been working on it.
+Why not flesh this out and compare it to the draft requirements?
+(I expect to be sending another version by end of day Pacific Time.)
 
-> Of course, the Android guys also want to pay attention to which apps
-> are running as well as to the state of devices on the system.
+The biggest issue I see right off-hand is that a straightforward
+implementation of your idea would require moving processes from one
+cgroup to another when acquiring or releasing a suspend blocker, which
+from what I understand would be way to heavyweight.  On the other hand,
+if acquiring and releasing a suspend blocker does not move the process
+from one cgroup to another, then you need something very like the
+suspend-blocker mechanism to handle those processes that are permitted
+to acquire suspend blockers, and which are thus not a member of the
+cgroup in question.
 
-In fact the runtime PM framework is also important to Android, because it
-can be used in there, for example, to implement the "early suspend" thing
-I referred to in one of my previous messages in this thread.
+That said, I did see some hint from the Android guys that it -might-
+be possible to leverage cgroups in the way that you suggest might help
+save power during times when suspend was blocked but (for example) the
+screen was turned off.  The idea would be to freeze the cgroup whenever
+the screen blanked, even if suspend was blocked.  The biggest issue
+here is that any process that can hold a suspend blocker must never to
+an unconditional wait on any process in this cgroup.  Seems to me that
+this should be possible in theory, but the devil would be in the details.
 
-Thanks,
-Rafael
+If I am misunderstanding your proposal, please enlighten me!
+
+							Thanx, Paul
