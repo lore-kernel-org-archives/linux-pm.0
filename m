@@ -1,27 +1,14 @@
-From: david@lang.hm
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Mon, 2 Aug 2010 02:06:55 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008020200450.25170@asgard.lang.hm>
-References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<20100731215214.2543c07e@infradead.org>
-	<20100801054816.GI2470@linux.vnet.ibm.com>
-	<20100731230101.7cc1d8c7@infradead.org>
-	<20100801191228.GL2470@linux.vnet.ibm.com>
-	<20100801204026.GH31324@thunk.org>
-	<20100802030304.GU2470@linux.vnet.ibm.com>
-	<20100801210548.23f77ff6@infradead.org>
-	<alpine.DEB.2.00.1008012153300.25170@asgard.lang.hm>
-	<20100802074429.73a9dfd9@schatten.dmk.lab>
-	<alpine.DEB.2.00.1008012303160.25170@asgard.lang.hm>
-	<20100802084003.1c4c2bdb@schatten.dmk.lab>
-	<20100802085332.23dd22f6@schatten.dmk.lab>
-	<alpine.DEB.2.00.1008012355210.25170@asgard.lang.hm>
-	<20100802092347.692dac32@schatten.dmk.lab>
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Subject: Re: [PATCH 1/7] ACPI / PCI: Make acpi_pci_run_osc() use
+ capbuf to return the result
+Date: Mon, 02 Aug 2010 18:16:05 +0900
+Message-ID: <4C568CD5.6000801__13517.4638395712$1280740704$gmane$org@jp.fujitsu.com>
+References: <201007310020.56546.rjw@sisk.pl> <201007310024.10174.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100802092347.692dac32@schatten.dmk.lab>
+In-Reply-To: <201007310024.10174.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -31,103 +18,101 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: Ted     Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2 Aug 2010, Florian Mickler wrote:
+(2010/07/31 7:24), Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> There is no reason why acpi_pci_run_osc() should use a separate
+> argument to return the _OSC result, since there is a place for it
+> in the buffer passed via capbuf, as none of the callers needs to
+> preserve the original contents of that buffer, so drop the third
+> argument of acpi_pci_run_osc() and modify the callers accordingly.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
 
-> On Mon, 2 Aug 2010 00:02:04 -0700 (PDT)
-> david@lang.hm wrote:
->
->> On Mon, 2 Aug 2010, Florian Mickler wrote:
->>
->>> On Mon, 2 Aug 2010 08:40:03 +0200
->>> Florian Mickler <florian@mickler.org> wrote:
->>>
->>>> On Sun, 1 Aug 2010 23:06:08 -0700 (PDT)
->>>> david@lang.hm wrote:
->>>>
->>>>> On Mon, 2 Aug 2010, Florian Mickler wrote:
->>>>>
->>>>>> On Sun, 1 Aug 2010 22:06:34 -0700 (PDT)
->>>>>> david@lang.hm wrote:
->>>>>>
->>>>>>> On Sun, 1 Aug 2010, Arjan van de Ven wrote:
->>>>>>>
->>>>>>>> I'm a little worried that this whole "I need to block suspend" is
->>>>>>>> temporary. Yes today there is silicon from ARM and Intel where suspend
->>>>>>>> is a heavy operation, yet at the same time it's not all THAT heavy
->>>>>>>> anymore.... at least on the Intel side it's good enough to use pretty
->>>>>>>> much all the time (when the screen is off for now, but that's a memory
->>>>>>>> controller issue more than anything else). I'm pretty sure the ARM guys
->>>>>>>> will not be far behind.
->>>>>>>
->>>>>>> remember that this 'block suspend' is really 'block overriding the fact
->>>>>>> that there are still runable processes and suspending anyway"
->>>>>>>
->>>>>>> having it labeled as 'suspend blocker' or even 'wakelock' makes it sound
->>>>>>> as if it blocks any attempt to suspend, and I'm not sure that's what's
->>>>>>> really intended. Itsounds like the normal syspend process would continue
->>>>>>> to work, just this 'ignore if these other apps are busy' mode of operation
->>>>>>> would not work.
->>>>>>>
->>>>>>> which makes me wonder, would it be possible to tell the normal idle
->>>>>>> detection mechanism to ignore specific processes when deciding if it
->>>>>>> should suspend or not? how about only considering processes in one cgroup
->>>>>>> when deciding to suspend and ignoring all others?
->>>>>>>
->>>>>>> David Lang
->>>>>>
->>>>>> We then get again to the "runnable tasks" problem that was
->>>>>> discussed earlier... the system get's "deadlock-prone" if a subset of
->>>>>> tasks is not run.
->>>>>> Interprocess dependencies are not so easy to get right in general.
->>>>>
->>>>> I'm not suggesting that you don't run the 'untrusted' tasks, just that you
->>>>> don't consider them when deciding if the system can suspend or not. if the
->>>>> system is awake, everything runs, if the system is idle (except for the
->>>>> activity of the 'untrusted' tasks) you suspend normally.
->>>>>
->>> b) you can't use cgroup for other purposes anymore. I.e. if you want to
->>> have 2 groups that each only have half of the memory available, how
->>> would you then integrate the cgroup-ignore-for-idle-approach with this?
->>
->> two answers to this
->>
->> 1. does this matter? do you really need to combine this 'suspend, even if
->> there are processes trying to run' with other cgroup limitations?
->>
->> 2. who says that this must be limited to one cgroup? a cgroup can have
->> several different flags/limits set on it, so why can't one of them be this
->> 'ignore for suspend' flag?
->>
->> these seem like simple issues, what I don't know is if it's possible for
->> the process that controlls suspend to follow such a flag without major
->> surgury on it's innards (if it can, this seems like a easy win, but I can
->> imagine internal designs where the software just knows that _something_ is
->> trying to run and would have a very hard time figuring out what)
->>
->> David Lang
->
-> Well, i fear it becomes some sort of parallel-tree structure...
-> If you want a cgroups-partitioning for one kind of attribute you now
-> need 2 containers for every possible stamping of that attribute... one
-> being flagged with 'ignore-for-suspend-decision' and one without that
-> flag.
-> Do you see what I'm getting at, or do I need more coffee and it is
-> irelevant to this concept?
+I think this change is not significant for later patches.
+Can we skip?
 
-yes, it could mean a doubleing in the number of cgroups that you need on a 
-system. and if there are other features like this you can end up in a 
-geometric explosion in the number of cgroups.
+Thanks,
+H.Seto
 
-in practice I question if there is likely to be a need for this sort of 
-thing on a system that's complex enough to use cgroups for other purposes.
-
-in particular, in this case the 'ignore for syspend' flag is not going to 
-be set for programs that are trusted to be well behaved. Such programs are 
-unlikely to be placed under other restraints (because they _are_ trusted 
-to be well behaved)
-
-David Lang
+>  drivers/acpi/pci_root.c |   17 ++++++++---------
+>  1 file changed, 8 insertions(+), 9 deletions(-)
+> 
+> Index: linux-2.6/drivers/acpi/pci_root.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/acpi/pci_root.c
+> +++ linux-2.6/drivers/acpi/pci_root.c
+> @@ -206,8 +206,7 @@ static void acpi_pci_bridge_scan(struct 
+>  
+>  static u8 pci_osc_uuid_str[] = "33DB4D5B-1FF7-401C-9657-7441C03DD766";
+>  
+> -static acpi_status acpi_pci_run_osc(acpi_handle handle,
+> -				    const u32 *capbuf, u32 *retval)
+> +static acpi_status acpi_pci_run_osc(acpi_handle handle, u32 *capbuf)
+>  {
+>  	struct acpi_osc_context context = {
+>  		.uuid_str = pci_osc_uuid_str,
+> @@ -219,7 +218,7 @@ static acpi_status acpi_pci_run_osc(acpi
+>  
+>  	status = acpi_run_osc(handle, &context);
+>  	if (ACPI_SUCCESS(status)) {
+> -		*retval = *((u32 *)(context.ret.pointer + 8));
+> +		capbuf[OSC_CONTROL_TYPE] = ((u32 *)context.ret.pointer)[2];
+>  		kfree(context.ret.pointer);
+>  	}
+>  	return status;
+> @@ -228,7 +227,7 @@ static acpi_status acpi_pci_run_osc(acpi
+>  static acpi_status acpi_pci_query_osc(struct acpi_pci_root *root, u32 flags)
+>  {
+>  	acpi_status status;
+> -	u32 support_set, result, capbuf[3];
+> +	u32 support_set, capbuf[3];
+>  
+>  	/* do _OSC query for all possible controls */
+>  	support_set = root->osc_support_set | (flags & OSC_PCI_SUPPORT_MASKS);
+> @@ -236,10 +235,10 @@ static acpi_status acpi_pci_query_osc(st
+>  	capbuf[OSC_SUPPORT_TYPE] = support_set;
+>  	capbuf[OSC_CONTROL_TYPE] = OSC_PCI_CONTROL_MASKS;
+>  
+> -	status = acpi_pci_run_osc(root->device->handle, capbuf, &result);
+> +	status = acpi_pci_run_osc(root->device->handle, capbuf);
+>  	if (ACPI_SUCCESS(status)) {
+>  		root->osc_support_set = support_set;
+> -		root->osc_control_qry = result;
+> +		root->osc_control_qry = capbuf[OSC_CONTROL_TYPE];
+>  		root->osc_queried = 1;
+>  	}
+>  	return status;
+> @@ -373,7 +372,7 @@ EXPORT_SYMBOL_GPL(acpi_get_pci_dev);
+>  acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags)
+>  {
+>  	acpi_status status;
+> -	u32 control_req, result, capbuf[3];
+> +	u32 control_req, capbuf[3];
+>  	acpi_handle tmp;
+>  	struct acpi_pci_root *root;
+>  
+> @@ -410,9 +409,9 @@ acpi_status acpi_pci_osc_control_set(acp
+>  	capbuf[OSC_QUERY_TYPE] = 0;
+>  	capbuf[OSC_SUPPORT_TYPE] = root->osc_support_set;
+>  	capbuf[OSC_CONTROL_TYPE] = root->osc_control_set | control_req;
+> -	status = acpi_pci_run_osc(handle, capbuf, &result);
+> +	status = acpi_pci_run_osc(handle, capbuf);
+>  	if (ACPI_SUCCESS(status))
+> -		root->osc_control_set = result;
+> +		root->osc_control_set = capbuf[OSC_CONTROL_TYPE];
+>  out:
+>  	mutex_unlock(&osc_lock);
+>  	return status;
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
