@@ -1,18 +1,20 @@
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Sun, 1 Aug 2010 18:11:48 -0700
-Message-ID: <20100802011148.GT2470__40915.063073817$1280711559$gmane$org@linux.vnet.ibm.com>
+Date: Sun, 1 Aug 2010 20:03:04 -0700
+Message-ID: <20100802030304.GU2470__19198.3651872308$1280718254$gmane$org@linux.vnet.ibm.com>
 References: <20100731175841.GA9367@linux.vnet.ibm.com>
 	<20100731215214.2543c07e@infradead.org>
 	<20100801054816.GI2470@linux.vnet.ibm.com>
-	<1280704593.25620.48.camel@mulgrave.site>
+	<20100731230101.7cc1d8c7@infradead.org>
+	<20100801191228.GL2470@linux.vnet.ibm.com>
+	<20100801204026.GH31324@thunk.org>
 Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1280704593.25620.48.camel@mulgrave.site>
+In-Reply-To: <20100801204026.GH31324@thunk.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,67 +24,95 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Ted Ts'o <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, arve@android.com, mjg59@srcf.ucam.o
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 01, 2010 at 06:16:33PM -0500, James Bottomley wrote:
-> On Sat, 2010-07-31 at 22:48 -0700, Paul E. McKenney wrote:
-> > On Sat, Jul 31, 2010 at 09:52:14PM -0700, Arjan van de Ven wrote:
-> > > On Sat, 31 Jul 2010 10:58:42 -0700
-> > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > o	"Power-aware application" are applications that are permitted
-> > > > 	to acquire suspend blockers on Android.  Verion 8 of the
-> > > > 	suspend-blocker patch seems to use group permissions to
-> > > > determine which applications are classified as power aware.
-> > > > 
-> > > > 	More generally, power-aware applications seem to be those that
-> > > > 	have permission to exert some control over the system's
-> > > > 	power state.
-> > > 
-> > > I don't like the term "Power aware application". An application is well
-> > > behaved or it isn't. "aware" has nothing to do with it.
+On Sun, Aug 01, 2010 at 04:40:26PM -0400, Ted Ts'o wrote:
+> On Sun, Aug 01, 2010 at 12:12:28PM -0700, Paul E. McKenney wrote:
 > > 
-> > Applications are often complex enough to be aware of some things, naive
-> > about others, well behaved in some ways, and ill-behaved in others.
-> > This has been the case for some decades now, so it should not come as
-> > a surprise.
-> > 
-> > I am of course open to suggestions for alternatives to the term "power
-> > aware application", but most definitely not to obfuscating the difference
-> > between power awareness (or whatever name one wishes to call it) and
-> > the overall quality of the application, whatever "quality" might mean
-> > in a given context.
+> > I understand that you would prefer that we group applications into
+> > "good" and "bad" categories, but then again, I suspect that most of us
+> > understood that before you posted this message.  Given your significant
+> > and well-appreciated contributions to power efficiency over the past
+> > several years, I must confess to be quite disappointed that you failed
+> > to do more than to simply restate your preference.
 > 
-> So the reason everyone's having trouble with this definition is that it
-> actually conflates two separate axes of power management.
-> 
-> There are good and bad applications in the power sense ... burns less vs
-> burns more.
-> 
-> And there are user mandated vs user optional processes ...
-> necessary/wanted vs unnecessary/unwanted.
-> 
-> What android actually does is reward well written applications because
-> they "just work" and they don't have to be power aware at all ...
-> they're usually event driven and split into the android
-> provider/consumer model.
-> 
-> Badly written applications that are not suspend block aware get shut
-> down (by system suspend) when the screen turns off, so they're also
-> power/suspend unaware.
-> 
-> Applications that want to present the user with a choice in android are
-> power/suspend aware because the only way they get to present the choice
-> is via suspend blockers.
-> 
-> The "power problem" always devolves to resolving a set of choices around
-> a given set of control axes.  The problem is that the set of control
-> axes isn't unique and doesn't have a well agreed upon selection.  This
-> makes it hard to make definitive terminology because you have to pick
-> the set of axes (implicitly or explicitly) before defining terms ...
+> Paul, I very much agree with what you stated later, with respect to
+> doubting whether the whack-a-mole approach to application fixups is
+> workable.  Given how many applications screw up using fsync()
+> correctly, to the extent that XFS, ext4, and btrfs all had to agree on
+> a common hueristics to deal with the fact that application programmers
+> are aggressively ignorant, and outnumber the file system developers, I
+> too doubt the general strategy of relying only on application
+> programmers to do the right thing.  That's not to say that we
+> shouldn't give up on trying to influence application programmers ---
+> but relying on that as the only strategy seems to depart from the path
+> of wisdom.
 
-That does seem to be about the size of it...  :-/
+Unless someone can reliably automate whacking the moles, history is not
+on the side of the mole-whackers.  I won't say that such automation
+is impossible, but only because of all the "impossible" things in my
+lifetime that have turned out to be possible.
+
+And I agree that multiple approaches are likely to be needed here.
+
+> There is however a much bigger point, which is that it's unfortunately
+> black and white to talk about applications being "good" and "bad".  In
+> fact, it's a continuing point of concern I have with the whole qos
+> approach to power management.  In fact, power is often something that
+> needs to trade off against performance.  For example, an application
+> could aggressively prefetch e-mail messages or web pages that a user
+> _might_ view --- or it could aggressively pre-resolve DNS queries,
+> etc, which might make perfect sense when the device is hooked up to AC
+> mains, but which I might not want to do on when I only have 800mWh
+> worth of battery --- however, if I'm using a laptop with 94,000mWh,
+> maybe I'd be happy if the application was a bit more profligate.
+> 
+> So for Arjan to claim that all applications will be held to the same
+> standard, whether they are hooked up to the AC mains, or are limited
+> to 800mWh of battery, or 94,000 mWh worth of power, is vastly
+> oversimplifying the problem.  Of *course* if I'm writing an
+> application that will be running in a cloud data center, I'm going to
+> care about power.  But I may have different tradeoffs about what might
+> considered acceptible when considering the qualify of user experience
+> I'm delivering to the end-user when I'm connected to AC mains, versus
+> a cell phone battery, versus a 6-cell laptop battery.
+
+And depending on how badly you need the application to run.  "Find me
+the nearest source of AC power!"  "Sorry, can't do that because that app
+is too poorly behaved to run when the battery is nearly exhausted."  ;-)
+
+Arjan did suggest taking user preferences into account, but we will see.
+
+> This brings me back to a major problem I have with the pm_qos approach
+> to power management.  It assumes that applications know best, and that
+> they should be free to tell pm_qos subsystem whether they need 0ms
+> latency for wireless.  Right now, I can't even query the pm_qos
+> subsystem to see which application is responsible for keeping the
+> wireless on 100% of the time!  And even if I could find out, maybe
+> some power management framework should be allowed to give a override
+> to the application's wishes.  OK, maybe the Opera web browser is
+> requesting the very best wireless QOS because it wants to beat Chrome
+> on some silly potato benchmark --- well, it's ***stupid*** to say that
+> my power management should be a one-size-fits all because applications
+> should be always as power efficient as possible whether they are
+> connected to AC mains or I have a 800mWh cell phone battery.  Worse
+> yet, it's stupid to say that the application should have the last
+> word.  Darn it, *I* own the mobile device, and I (or my proxy, which
+> might be the Android OS, or some power manage daemon) should be able
+> to say, "I don't care what the application claimed it wanted for power
+> QOS --- it's not getting more than 100ms wireless latency, and that's
+> final."
+> 
+> And note that this is something that might even change over time, or
+> depending on circumstances.  Maybe normally I might be willing to let
+> the application be profilgate with power, so that web pages render a
+> bit faster than they might otherwise --- but if I'm on an American
+> Airlines flight which has retrofitted its power jacks to use an AC
+> plug, and I only have a DC adaptor, and my laptop batteries are worn
+> out and only have half their endurance as they used to, I might want
+> to use a more stringent pm_qos than I might otherwise normally allow.
+
+Agreed!
 
 							Thanx, Paul
