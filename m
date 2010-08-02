@@ -1,20 +1,21 @@
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Sun, 1 Aug 2010 20:03:04 -0700
-Message-ID: <20100802030304.GU2470__19198.3651872308$1280718254$gmane$org@linux.vnet.ibm.com>
+Date: Sun, 1 Aug 2010 20:04:33 -0700
+Message-ID: <20100802030433.GV2470__2444.17700819231$1280718328$gmane$org@linux.vnet.ibm.com>
 References: <20100731175841.GA9367@linux.vnet.ibm.com>
 	<20100731215214.2543c07e@infradead.org>
 	<20100801054816.GI2470@linux.vnet.ibm.com>
-	<20100731230101.7cc1d8c7@infradead.org>
-	<20100801191228.GL2470@linux.vnet.ibm.com>
-	<20100801204026.GH31324@thunk.org>
+	<alpine.DEB.1.10.1008010812450.24755@uplift.swm.pp.se>
+	<alpine.DEB.1.10.1008010838430.24755@uplift.swm.pp.se>
+	<20100801192708.GM2470@linux.vnet.ibm.com>
+	<20100801154904.243bc390@infradead.org>
 Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20100801204026.GH31324@thunk.org>
+In-Reply-To: <20100801154904.243bc390@infradead.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,95 +25,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ted Ts'o <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, arve@android.com, mjg59@srcf.ucam.o
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Mikael Abrahamsson <swmike@swm.pp.se>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 01, 2010 at 04:40:26PM -0400, Ted Ts'o wrote:
-> On Sun, Aug 01, 2010 at 12:12:28PM -0700, Paul E. McKenney wrote:
+On Sun, Aug 01, 2010 at 03:49:04PM -0700, Arjan van de Ven wrote:
+> On Sun, 1 Aug 2010 12:27:08 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > On Sun, Aug 01, 2010 at 08:49:43AM +0200, Mikael Abrahamsson wrote:
+> > > On Sun, 1 Aug 2010, Mikael Abrahamsson wrote:
+> > > 
+> > > >it's just that mobile (low power) wasn't the intended target of
+> > > >the application when it was written, and this commonly shows.
 > > 
-> > I understand that you would prefer that we group applications into
-> > "good" and "bad" categories, but then again, I suspect that most of us
-> > understood that before you posted this message.  Given your significant
-> > and well-appreciated contributions to power efficiency over the past
-> > several years, I must confess to be quite disappointed that you failed
-> > to do more than to simply restate your preference.
+> > Good points in both this and your earlier post!!!
+> > 
+> > > I have another aspect I just thought about. I work for a telephony
+> > > company. We provide Internet connectivity throught various means,
+> > > DSL, Ethernet to the Home, mobile etc.
+> > > 
+> > > For ETTH and DSL, network usage is pretty straight forward, you send
+> > > packets, they get delivered pretty quickly with low marginal cost
+> > > per packet. For mobile, this is not quite so simple. Mobile networks
+> > > are designed for terminal/UE (user equipment) to use low power, so
+> > > they go down in low power state after a while. Let's take the case
+> > > of 3G/HSPA:
+> > > 
+> > > After a short while (second) of idleness (no packets being sent),
+> > > the mobile network negotiates away the high speed resources (the one
+> > > that enables multimegabit/s transfers) and tries to give it to
+> > > someone else. After approximately 30 seconds, the terminal goes to
+> > > "idle", meaning it has no network resources at all. Next time it
+> > > wants to send something (or the network wants to deliver something
+> > > to it), network resources need to be negotiated again. This can take
+> > > 1-2 seconds and uses battery power of course. It also consumes
+> > > resources in the operator network (because mobility control units
+> > > need to talk to base stations, tunnels need to be re-negotiated
+> > > etc).
+> > > 
+> > > Anyhow, my point is that not only is there a benefit in having
+> > > multiple applications wake up at the same time for power reasons
+> > > within the device, there is also a point in having coordination of
+> > > their network access. If a device is running 3 IM programs at the
+> > > same time, it'd be beneficial if they were coordinated in their
+> > > communication with their Internet servers. Same goes for the "check
+> > > for new email" application. If they all were optimized to only wake
+> > > up the network connectivity once every 180 seconds instead of doing
+> > > it when the individual application felt like it, power and other
+> > > resources would be saved by all involved parties.
+> > 
+> > This is a good point.  Within some limits, the timer-aggregation
+> > changes that have gone into Linux can handle this, but I am not sure
+> > whether or not 180 seconds is within the reasonable boundaries for
+> > timer jitter.
 > 
-> Paul, I very much agree with what you stated later, with respect to
-> doubting whether the whack-a-mole approach to application fixups is
-> workable.  Given how many applications screw up using fsync()
-> correctly, to the extent that XFS, ext4, and btrfs all had to agree on
-> a common hueristics to deal with the fact that application programmers
-> are aggressively ignorant, and outnumber the file system developers, I
-> too doubt the general strategy of relying only on application
-> programmers to do the right thing.  That's not to say that we
-> shouldn't give up on trying to influence application programmers ---
-> but relying on that as the only strategy seems to depart from the path
-> of wisdom.
-
-Unless someone can reliably automate whacking the moles, history is not
-on the side of the mole-whackers.  I won't say that such automation
-is impossible, but only because of all the "impossible" things in my
-lifetime that have turned out to be possible.
-
-And I agree that multiple approaches are likely to be needed here.
-
-> There is however a much bigger point, which is that it's unfortunately
-> black and white to talk about applications being "good" and "bad".  In
-> fact, it's a continuing point of concern I have with the whole qos
-> approach to power management.  In fact, power is often something that
-> needs to trade off against performance.  For example, an application
-> could aggressively prefetch e-mail messages or web pages that a user
-> _might_ view --- or it could aggressively pre-resolve DNS queries,
-> etc, which might make perfect sense when the device is hooked up to AC
-> mains, but which I might not want to do on when I only have 800mWh
-> worth of battery --- however, if I'm using a laptop with 94,000mWh,
-> maybe I'd be happy if the application was a bit more profligate.
+> this is why operating systems for mobile devices offer heartbeat
+> services... where apps subscribe to and do background work like
+> checking email at "convenient" times.
 > 
-> So for Arjan to claim that all applications will be held to the same
-> standard, whether they are hooked up to the AC mains, or are limited
-> to 800mWh of battery, or 94,000 mWh worth of power, is vastly
-> oversimplifying the problem.  Of *course* if I'm writing an
-> application that will be running in a cloud data center, I'm going to
-> care about power.  But I may have different tradeoffs about what might
-> considered acceptible when considering the qualify of user experience
-> I'm delivering to the end-user when I'm connected to AC mains, versus
-> a cell phone battery, versus a 6-cell laptop battery.
+> I'm not sure if the OS you use on your desktop has one, but MeeGo and
+> Maemo and I'm pretty sure Android and most other mobile Linux OSes have
+> one. It's a higher level activity alignment layer, well above the
+> kernel.
 
-And depending on how badly you need the application to run.  "Find me
-the nearest source of AC power!"  "Sorry, can't do that because that app
-is too poorly behaved to run when the battery is nearly exhausted."  ;-)
-
-Arjan did suggest taking user preferences into account, but we will see.
-
-> This brings me back to a major problem I have with the pm_qos approach
-> to power management.  It assumes that applications know best, and that
-> they should be free to tell pm_qos subsystem whether they need 0ms
-> latency for wireless.  Right now, I can't even query the pm_qos
-> subsystem to see which application is responsible for keeping the
-> wireless on 100% of the time!  And even if I could find out, maybe
-> some power management framework should be allowed to give a override
-> to the application's wishes.  OK, maybe the Opera web browser is
-> requesting the very best wireless QOS because it wants to beat Chrome
-> on some silly potato benchmark --- well, it's ***stupid*** to say that
-> my power management should be a one-size-fits all because applications
-> should be always as power efficient as possible whether they are
-> connected to AC mains or I have a 800mWh cell phone battery.  Worse
-> yet, it's stupid to say that the application should have the last
-> word.  Darn it, *I* own the mobile device, and I (or my proxy, which
-> might be the Android OS, or some power manage daemon) should be able
-> to say, "I don't care what the application claimed it wanted for power
-> QOS --- it's not getting more than 100ms wireless latency, and that's
-> final."
-> 
-> And note that this is something that might even change over time, or
-> depending on circumstances.  Maybe normally I might be willing to let
-> the application be profilgate with power, so that web pages render a
-> bit faster than they might otherwise --- but if I'm on an American
-> Airlines flight which has retrofitted its power jacks to use an AC
-> plug, and I only have a DC adaptor, and my laptop batteries are worn
-> out and only have half their endurance as they used to, I might want
-> to use a more stringent pm_qos than I might otherwise normally allow.
-
-Agreed!
+Thank you, good to know!
 
 							Thanx, Paul
