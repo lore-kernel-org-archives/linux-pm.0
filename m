@@ -1,18 +1,14 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Mon, 2 Aug 2010 15:27:52 -0700
-Message-ID: <20100802222752.GI2405__44508.8743152612$1280788402$gmane$org@linux.vnet.ibm.com>
-References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<201008021552.20505.rjw@sisk.pl>
-	<20100802203609.GG2405@linux.vnet.ibm.com>
-	<201008022333.32623.rjw@sisk.pl>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 8/8] ACPI / PCI: Reorder checks in
+	acpi_pci_osc_control_set()
+Date: Tue, 3 Aug 2010 00:00:44 +0200
+Message-ID: <201008030000.44558.rjw__19823.43681525$1280788403$gmane$org@sisk.pl>
+References: <201008022351.31406.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201008022333.32623.rjw@sisk.pl>
+In-Reply-To: <201008022351.31406.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,78 +18,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, linux-pci@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 02, 2010 at 11:33:32PM +0200, Rafael J. Wysocki wrote:
-> On Monday, August 02, 2010, Paul E. McKenney wrote:
-> > On Mon, Aug 02, 2010 at 03:52:20PM +0200, Rafael J. Wysocki wrote:
-> > > On Monday, August 02, 2010, Paul E. McKenney wrote:
-> > > > On Sun, Aug 01, 2010 at 03:47:08PM -0700, Arjan van de Ven wrote:
-> > > > > On Sun, 1 Aug 2010 12:12:28 -0700
-> > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > ...
-> > > > > Another one: freezing whole cgroups..... we have that today. it
-> > > > > actually works quite well.... of course the hard part is the decision
-> > > > > what to put in which cgroup, and at what frequency and duration you let
-> > > > > cgroups run.
-> > > > 
-> > > > Indeed, the Android guys seemed to be quite excited by cgroup freezing
-> > > > until they thought about the application-classification problem.
-> > > > Seems like it should be easy for some types of applications, but I do
-> > > > admit that apps can have non-trivial and non-obvious dependencies.
-> > > 
-> > > This isn't more difficult than deciding which applications will be allowed to
-> > > use wakelocks (in the wakelocks world).  It actually seems to be pretty much
-> > > equivalent to me. :-)
-> > 
-> > If I understand correctly, the problem they were concerned about was
-> > instead "given that a certain set of apps are permitted to use wakelocks,
-> > which of the other apps can safely be frozen when the display blanks
-> > itself."
-> 
-> I _think_ the problem should be reformulated as "which of the other apps
-> can be safely frozen without causing the wakelocks-using ones to have
-> problems" instead (the particular scenario is that one of the wakelocks-using
-> apps may need one of the other apps to process something and therefore the
-> other app cannot be frozen; however, that may be resolved by thawing all of
-> the other apps in such situations IMO).
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-I agree that your statement is equivalent to mine.  From what I can see,
-the current Android code resolves this by not freezing any app while
-a wakelock is held.
+Make acpi_pci_osc_control_set() attempt to find the handle of the
+_OSC object under the given PCI root bridge object after verifying
+that its second argument is correct and that there is a struct
+acpi_pci_root object for the given root bridge handle.  This is
+more logical than the old code and it matches the code ordering
+in acpi_pci_osc_control_query().
 
-Just out of curiosity, how are you detecting the situation in order to
-decide when to thaw the apps in the cgroup?
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reviewed-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+---
+ drivers/acpi/pci_root.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-> > > > > on the suspend blockers for drivers; the linux device runtime PM is
-> > > > > effectively doing the same things; it allows drivers to suspend/resume
-> > > > > individually (with a very nice API/programming model I should say) based
-> > > > > on usage. And it works on a tree level, so that it's relatively easy
-> > > > > to do things like "I want to go to <this magic deep idle state>, but
-> > > > > only if <this set of devices is suspended already>". This is obviously
-> > > > > an important functionality for all low power devices, ARM or x86. 
-> > > > > Suspend blockers had this functionality as part of what it did (they do
-> > > > > more obviously) but I'd wager that the current Linux infrastructure is
-> > > > > outright nicer. 
-> > > > 
-> > > > This is what Rafael has been working on?
-> > > 
-> > > If you mean the runtime PM framework, then yes, I've been working on it.
-> > > 
-> > > > Of course, the Android guys also want to pay attention to which apps
-> > > > are running as well as to the state of devices on the system.
-> > > 
-> > > In fact the runtime PM framework is also important to Android, because it
-> > > can be used in there, for example, to implement the "early suspend" thing
-> > > I referred to in one of my previous messages in this thread.
-> > 
-> > Now we just need to convince the Android guys of that.  ;-)
-> 
-> I believe there's no need for that, as we were talking about that a few months
-> ago.
-
-Here is hoping...
-
-							Thanx, Paul
+Index: linux-2.6/drivers/acpi/pci_root.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/pci_root.c
++++ linux-2.6/drivers/acpi/pci_root.c
+@@ -415,10 +415,6 @@ acpi_status acpi_pci_osc_control_set(acp
+ 	acpi_handle tmp;
+ 	struct acpi_pci_root *root;
+ 
+-	status = acpi_get_handle(handle, "_OSC", &tmp);
+-	if (ACPI_FAILURE(status))
+-		return status;
+-
+ 	control_req = (flags & OSC_PCI_CONTROL_MASKS);
+ 	if (!control_req)
+ 		return AE_TYPE;
+@@ -427,6 +423,10 @@ acpi_status acpi_pci_osc_control_set(acp
+ 	if (!root)
+ 		return AE_NOT_EXIST;
+ 
++	status = acpi_get_handle(handle, "_OSC", &tmp);
++	if (ACPI_FAILURE(status))
++		return status;
++
+ 	mutex_lock(&osc_lock);
+ 	/* No need to evaluate _OSC if the control was already granted. */
+ 	if ((root->osc_control_set & control_req) == control_req)
