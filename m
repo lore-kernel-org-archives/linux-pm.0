@@ -1,14 +1,20 @@
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [PATCH 7/7] ACPI / PCI: Reorder checks in
-	acpi_pci_osc_control_set()
-Date: Mon, 02 Aug 2010 18:23:55 +0900
-Message-ID: <4C568EAB.5040600__25008.5893123925$1280741322$gmane$org@jp.fujitsu.com>
-References: <201007310020.56546.rjw@sisk.pl> <201007310037.36543.rjw@sisk.pl>
+From: "Ted Ts'o" <tytso@mit.edu>
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Mon, 2 Aug 2010 08:12:41 -0400
+Message-ID: <20100802121241.GE27573__23735.3729237386$1280751300$gmane$org@thunk.org>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<20100731215214.2543c07e@infradead.org>
+	<20100801054816.GI2470@linux.vnet.ibm.com>
+	<20100731230101.7cc1d8c7@infradead.org>
+	<20100801191228.GL2470@linux.vnet.ibm.com>
+	<20100801204026.GH31324@thunk.org>
+	<1280705444.25620.62.camel@mulgrave.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201007310037.36543.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <1280705444.25620.62.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,55 +24,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-(2010/07/31 7:37), Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Sun, Aug 01, 2010 at 06:30:44PM -0500, James Bottomley wrote:
+> On Sun, 2010-08-01 at 16:40 -0400, Ted Ts'o wrote:
+> > This brings me back to a major problem I have with the pm_qos approach
+> > to power management.  It assumes that applications know best, and that
+> > they should be free to tell pm_qos subsystem whether they need 0ms
+> > latency for wireless.
 > 
-> Make acpi_pci_osc_control_set() attempt to find the handle of the
-> _OSC object under the given PCI root bridge object after verifying
-> that its second argument is correct and that there is a struct
-> acpi_pci_root object for the given root bridge handle.  This is
-> more logical than the old code and it matches the code ordering
-> in acpi_pci_root_osc_query().
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/acpi/pci_root.c |    8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> Index: linux-2.6/drivers/acpi/pci_root.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/acpi/pci_root.c
-> +++ linux-2.6/drivers/acpi/pci_root.c
-> @@ -414,10 +414,6 @@ acpi_status acpi_pci_osc_control_set(acp
->  	acpi_handle tmp;
->  	struct acpi_pci_root *root;
->  
-> -	status = acpi_get_handle(handle, "_OSC", &tmp);
-> -	if (ACPI_FAILURE(status))
-> -		return status;
-> -
->  	control_req = (flags & OSC_PCI_CONTROL_MASKS);
->  	if (!control_req)
->  		return AE_TYPE;
-> @@ -426,6 +422,10 @@ acpi_status acpi_pci_osc_control_set(acp
->  	if (!root)
->  		return AE_NOT_EXIST;
->  
-> +	status = acpi_get_handle(handle, "_OSC", &tmp);
-> +	if (ACPI_FAILURE(status))
-> +		return status;
-> +
->  	mutex_lock(&osc_lock);
->  	/* No need to evaluate _OSC if the control was already granted. */
->  	if ((root->osc_control_set & control_req) == control_req)
-> 
+> Um, so this behaviour is isomorphic to the suspend block case for the
+> applications.  I think everyone agrees that suspend block isn't optimal,
+> but we were prepared to use it as a starting point given the lack of
+> enthusiasm in android for the more innovative approaches that have been
+> proposed.
 
-Description is better than Kaneshige-san's [3/6].
+Um, yes, that was deliberate.  For some people I think people have
+gotten hypersensitive about suspend blockers, to the point that I
+think sometimes minds get closed automatically to say that suspend
+blockers or their requirements are evil/not really a requirement, so I
+decided to use another example other than scheduler control in the
+hopes of pointing out (a) there is a more general problem, and (b)
+application knows best is not enough, and (c) Arjan's claim that we
+don't need to do anything because all applications should be written
+to be "power optimized" and it shouldn't matter whether they are
+connected to the AC mains or not is a vast oversimplification.
 
-And it seems that this patch can be applied alone too.
+> That's why you present the user with choices and report on the outcomes.
+> At the end of the day the choice becomes binary: if the mobile optimised
+> browser burns you battery on the power meter, users will either
+> uninstall and move on to the next browser or deny the current browser
+> the ability to block suspend.
 
-Reviewed-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Or they may decide to drop the device which has much worse battery
+lifetime in favor of the hardware that seems to do a much better job
+of controlling power overall... which is why if the Nokia folks want
+to claim that suspend blockers are no good, it's probably not going to
+change what ships with Android, and may be better power management
+strategy win.  :-)
+
+> Right, but this comes back to the axes of control.  They have to be
+> presented to the user in a simple but meaningful manner.
+
+In the general case, at least for today, I think it's useful if
+applications are told, "you are on AC mains", "you are on cell phone
+battery", "you are on a laptop battery".  And from a user's
+perspective, I suspect if you are wanting something simple but
+meaningful, it's probably a single linear scale ranging between
+"performance optimized" and "power optimized", with maybe 1-3
+points in between.
+
+Advanced users will want a much finer level of control, though --- I
+can imagine having a number of different sliders that control the
+tradeoff between power vs. performance on a number of different
+scales: networking, GPS performance, scheduler control, schreen
+brightness, etc.
+
+Android phones have a very simplified version of this widget, which
+allows you to toggle GPS on/off, bluetooth on/off, etc.  And the GPS
+toggle is a good example of what I'm talking about.  If you disable
+the GPS, then even if the application wants to use GPS, tough luck; it
+will have to settle for the less precise cell tower triangulation
+method.  Again, it's the _user_ who gets the final say, not the
+application --- and that's as it should be.
+
+						- Ted
