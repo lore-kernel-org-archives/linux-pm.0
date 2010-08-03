@@ -1,14 +1,19 @@
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Subject: Re: [PATCH 7/8] ACPI / PCI: Do not preserve _OSC control
- bits returned by a query (v2)
-Date: Tue, 03 Aug 2010 13:52:43 +0900
-Message-ID: <4C57A09B.9070206__7339.72154926068$1280811467$gmane$org@jp.fujitsu.com>
-References: <201008022351.31406.rjw@sisk.pl> <201008022359.33177.rjw@sisk.pl>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Mon, 2 Aug 2010 21:56:10 -0700
+Message-ID: <AANLkTi=a-1hn_oL=i-=RKK9xOur+4mQjTRut+aiXtYkE__45067.0063881718$1280811590$gmane$org@mail.gmail.com>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<20100731215214.2543c07e@infradead.org>
+	<20100801054816.GI2470@linux.vnet.ibm.com>
+	<20100731230101.7cc1d8c7@infradead.org>
+	<20100801191228.GL2470@linux.vnet.ibm.com>
+	<20100801154708.19817b75@infradead.org>
+	<20100802011006.GS2470@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201008022359.33177.rjw@sisk.pl>
+In-Reply-To: <20100802011006.GS2470@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,69 +23,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: paulmck@linux.vnet.ibm.com
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-(2010/08/03 6:59), Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki<rjw@sisk.pl>
+On Sun, Aug 1, 2010 at 6:10 PM, Paul E. McKenney
+<paulmck@linux.vnet.ibm.com> wrote:
+> On Sun, Aug 01, 2010 at 03:47:08PM -0700, Arjan van de Ven wrote:
+...
+>> Another one: freezing whole cgroups..... we have that today. it
+>> actually works quite well.... of course the hard part is the decision
+>> what to put in which cgroup, and at what frequency and duration you let
+>> cgroups run.
 >
-> All of the remaining callers of acpi_pci_osc_control_set() either
-> use acpi_pci_root_osc_query() right before it, like
-> pcie_port_acpi_setup(), or ask for control of one feature only,
-> like acpi_get_hp_hw_control_from_firmware().  Thus there is no
-> reason to preserve the _OSC control bits returned by an _OSC query
-> and the osc_control_qry and osc_queried fields of struct
-> acpi_pci_root are not necessary any more.  Remove them and modify the
-> code that uses them accordingly.
+> Indeed, the Android guys seemed to be quite excited by cgroup freezing
+> until they thought about the application-classification problem.
+> Seems like it should be easy for some types of applications, but I do
+> admit that apps can have non-trivial and non-obvious dependencies.
 >
-> Signed-off-by: Rafael J. Wysocki<rjw@sisk.pl>
-> Reviewed-by: Hidetoshi Seto<seto.hidetoshi@jp.fujitsu.com>
-> ---
->   drivers/acpi/pci_root.c |   15 ---------------
->   include/acpi/acpi_bus.h |    3 ---
->   2 files changed, 18 deletions(-)
->
-> Index: linux-2.6/drivers/acpi/pci_root.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/acpi/pci_root.c
-> +++ linux-2.6/drivers/acpi/pci_root.c
-> @@ -248,10 +248,8 @@ static acpi_status acpi_pci_query_osc(st
->   	status = acpi_pci_run_osc(root->device->handle, capbuf,&result);
->   	if (ACPI_SUCCESS(status)) {
->   		root->osc_support_set = support;
-> -		root->osc_control_qry = result;
->   		if (control)
->   			*control = result;
-> -		root->osc_queried = 1;
->   	}
->   	return status;
->   }
-> @@ -434,19 +432,6 @@ acpi_status acpi_pci_osc_control_set(acp
->   	if ((root->osc_control_set&  control_req) == control_req)
->   		goto out;
->
-> -	/* Need to query controls first before requesting them */
-> -	if (!root->osc_queried) {
-> -		status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
-> -		if (ACPI_FAILURE(status))
-> -			goto out;
-> -	}
-> -	if ((root->osc_control_qry&  control_req) != control_req) {
-> -		printk(KERN_DEBUG
-> -		       "Firmware did not grant requested _OSC control\n");
-> -		status = AE_SUPPORT;
-> -		goto out;
-> -	}
 
-I think acpi_pci_osc_control_set() still need to query before commit
-to ensure all the requested controls are granted to OS.
+The dependencies is what made this solution uninteresting to us. For
+instance, we currently use cgroup scheduling to reduce the impact of
+some background tasks, but we occasionally saw a watchdog restart of
+the system process were critical services were waiting on a kernel
+mutex owned by a background task for more than 20 seconds. If we froze
+a cgroup instead, we would not hit this particular problem since tasks
+cannot be frozen while executing kernel code the same way they can be
+preempted, but nothing prevents a task from being frozen while holding
+a user-space resource.
 
-So the code needs to be
+-- =
 
-	status = acpi_pci_query_osc(root, root->osc_support_set, &control_req);
-	if (ACPI_FAILURE(status))
-		goto out;
-
-Thanks,
-Kenji Kaneshige
+Arve Hj=F8nnev=E5g
