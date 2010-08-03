@@ -1,7 +1,7 @@
-From: Paul Menage <menage@google.com>
+From: david@lang.hm
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Mon, 2 Aug 2010 21:41:17 -0700
-Message-ID: <AANLkTinGjktpuNi8062BQPegr4mofF6bx2EfBAsbOhCe__5842.69730975411$1280810608$gmane$org@mail.gmail.com>
+Date: Mon, 2 Aug 2010 21:44:44 -0700 (PDT)
+Message-ID: <alpine.DEB.2.00.1008022121430.6545__31488.1678823896$1280810837$gmane$org@asgard.lang.hm>
 References: <20100731175841.GA9367@linux.vnet.ibm.com>
 	<20100731215214.2543c07e@infradead.org>
 	<20100801054816.GI2470@linux.vnet.ibm.com>
@@ -11,18 +11,14 @@ References: <20100731175841.GA9367@linux.vnet.ibm.com>
 	<20100802030304.GU2470@linux.vnet.ibm.com>
 	<20100801210548.23f77ff6@infradead.org>
 	<alpine.DEB.2.00.1008012153300.25170@asgard.lang.hm>
-	<20100802074429.73a9dfd9@schatten.dmk.lab>
-	<alpine.DEB.2.00.1008012303160.25170@asgard.lang.hm>
-	<20100802084003.1c4c2bdb@schatten.dmk.lab>
-	<20100802085332.23dd22f6@schatten.dmk.lab>
-	<alpine.DEB.2.00.1008012355210.25170@asgard.lang.hm>
-	<20100802092347.692dac32@schatten.dmk.lab>
-	<alpine.DEB.2.00.1008020200450.25170@asgard.lang.hm>
+	<20100802140933.GB2405@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008021627290.29820@asgard.lang.hm>
+	<AANLkTi=1kBuyPS_P+eNLcnRu1mJH6BzpzQW_sENZuL1L@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1008020200450.25170@asgard.lang.hm>
+In-Reply-To: <AANLkTi=1kBuyPS_P+eNLcnRu1mJH6BzpzQW_sENZuL1L@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -32,24 +28,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, Florian Mickler <florian@mickler.org>, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 2, 2010 at 2:06 AM,  <david@lang.hm> wrote:
+On Mon, 2 Aug 2010, Arve Hj?nnev?g wrote:
+
+> On Mon, Aug 2, 2010 at 5:08 PM,  <david@lang.hm> wrote:
+>> On Mon, 2 Aug 2010, Paul E. McKenney wrote:
+>>
+>>
+>> you are close, but I think what I'm proposing is actually simpler (assuming
+>> that the scheduler can be configured to generate the appropriate stats)
+>>
+>> my thought was not to move applications between cgroups as they
+>> aquire/release the suspend-block lock, bur rather to say that any
+>> application that you would trust to get the suspend-block lock should be in
+>> cgroup A while all other applications are in cgroup B
+>>
+>> when you are deciding if the system shoudl go to sleep because it is idle,
+>> ignore the activity of all applications in cgroup B
+>>
+>> if cgroup A applications are busy, the system is not idle and should not
+>> suspend.
+>>
 >
-> yes, it could mean a doubleing in the number of cgroups that you need on a
-> system. and if there are other features like this you can end up in a
-> geometric explosion in the number of cgroups.
+> Triggering suspend from idle has been suggested before. However, idle
+> is not a signal that it is safe to suspend since timers stop in
+> suspend (or the code could temporarily be waiting on a non-wakeup
+> interrupt). If you add suspend blockers or wakelocks to prevent
+> suspend while events you care about are pending, then it does not make
+> a lot of sense to prevent suspend just because the cpu is not idle.
 
-No, it would be additive - you can mount different subsystems on
-separate hierarchies. So if you had X divisions for memory, Y
-divisions for CPU and Z divisions for suspend-blocking (where Z=2,
-probably?) you could mount three separate hierarchies and have X+Y+Z
-complexity, not X*Y*Z.
+isn't this a matter of making the suspend decision look at what timers 
+have been set to expire in the near future and/or tweaking how long the 
+system needs to be idle before going to sleep?
 
-(Not that I have a strong opinion on whether cgroups is an appropriate
-mechanism for solving this problem - just that the problem you forsee
-shouldn't occur in practice).
+to properly do a good job at suspending hyperagressivly you need to look 
+at when you need to wake back up (after all, if you are only going to 
+sleep for 1 second, it makes no sense to try and enter a sleep state that 
+takes .5 seconds to get into and .6 seconds to get out of, you need to 
+pick a lighter power saving mode)
 
-Paul
+if you really want to have the application be able to say 'I am ready for 
+you to go to sleep NOW and I don't want any chance of waking back up until 
+the system is ready for me to do so' it may be possible to have a special 
+dev file that when a program attempts to read from it the program is 
+considered to have been idle forever (expiring any 'delay since last 
+activity' timers that are running for that process) and when the device 
+wakes back up (or after a little bit of time if the device decides not to 
+go back to sleep), allow the return from the blocking call to allow the 
+app to continue running.
+
+but I am not sure that something like that is needed. I think just 
+checking for timers that are due to expire 'soon' and tweaking how long 
+the system must be 'idle' before it decides to go to sleep should be good 
+enough.
+
+David Lang
