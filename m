@@ -1,14 +1,15 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: Re: Nigel's current for-rafael queue
-Date: Tue, 03 Aug 2010 17:00:57 +1000
-Message-ID: <4C57BEA9.9020504__23599.7407966808$1280819035$gmane$org@tuxonice.net>
-References: <1275481160-31150-1-git-send-email-nigel@tuxonice.net>
-	<20100803065543.GF3344@ucw.cz>
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Subject: Re: [PATCH 7/8] ACPI / PCI: Do not preserve _OSC control
+ bits returned by a query (v2)
+Date: Tue, 03 Aug 2010 16:13:06 +0900
+Message-ID: <4C57C182.7060407__48548.5114892528$1280819660$gmane$org@jp.fujitsu.com>
+References: <201008022351.31406.rjw@sisk.pl> <201008022359.33177.rjw@sisk.pl>
+	<4C57A09B.9070206@jp.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100803065543.GF3344@ucw.cz>
+In-Reply-To: <4C57A09B.9070206@jp.fujitsu.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,30 +19,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
-
-On 03/08/10 16:55, Pavel Machek wrote:
-> On Wed 2010-06-02 22:18:59, Nigel Cunningham wrote:
->> Hi all.
+(2010/08/03 13:52), Kenji Kaneshige wrote:
+> (2010/08/03 6:59), Rafael J. Wysocki wrote:
+>> @@ -434,19 +432,6 @@ acpi_status acpi_pci_osc_control_set(acp
+>>       if ((root->osc_control_set&  control_req) == control_req)
+>>           goto out;
 >>
->> Here is my current patch queue.
->>
->> Taken together, the patches implement the separation of low level
->> block i/o into a separate file, switch from using swap_map_pages
->> to extents stores prior to the 'header' page and implement fully
->> asynchronous (rather than batched I/O). I have only run it under
->> VMware so far, but would estimate a doubling in speed due to the
->> async i/o.
->
-> Do you have any numbers from real hw? Could similar speedup be
-> accomplished by just increasing the batch size?
+>> -    /* Need to query controls first before requesting them */
+>> -    if (!root->osc_queried) {
+>> -        status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
+>> -        if (ACPI_FAILURE(status))
+>> -            goto out;
+>> -    }
+>> -    if ((root->osc_control_qry&  control_req) != control_req) {
+>> -        printk(KERN_DEBUG
+>> -               "Firmware did not grant requested _OSC control\n");
+>> -        status = AE_SUPPORT;
+>> -        goto out;
+>> -    }
+> 
+> I think acpi_pci_osc_control_set() still need to query before commit
+> to ensure all the requested controls are granted to OS.
+> 
+> So the code needs to be
+> 
+>     status = acpi_pci_query_osc(root, root->osc_support_set, &control_req);
+>     if (ACPI_FAILURE(status))
+>         goto out;
 
-Yeah. I've been thinking I should really prepend a patch that lets you 
-get the stats post-resume - unless you guys have some trick to enable 
-you to read them that I haven't noticed yet :)
+Hum, since acpi_status acpi_pci_osc_control_set() is an exported
+function, we cannot be too careful here. 
 
-Nigel
+OTOH, I think this second query should be done in caller too,
+i.e. pcie_port_acpi_setup() in patch [4/8].
+
+Now:
+  pcie_port_acpi_setup()
+  {
+    flags = A|B|C|D;
+    acpi_pci_osc_control_query(handle, &flags);
+    /* note: flags might be changed after query */
+    acpi_pci_osc_control_set(handle, flags);
+  }
+
+Strictly, it could be like:
+
+New:
+  pcie_port_acpi_setup()
+  {
+    flags = A|B|C|D;
+    do {
+      pre_flags = flags;
+      acpi_pci_osc_control_query(handle, &flags);
+    } while (flags && pre_flags != flags);
+    if (flags)
+      acpi_pci_osc_control_set(handle, flags);
+  }
+
+IMHO these checks are kind of preventive guard for corner cases,
+and I suppose it can be implemented by an incremental patch later.
+
+
+Thanks,
+H.Seto
