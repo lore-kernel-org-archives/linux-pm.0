@@ -1,14 +1,23 @@
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [PATCH 4/8] PCI / PCIe: Ask BIOS for control of all
- native services at once (v6)
-Date: Tue, 03 Aug 2010 10:14:08 +0900
-Message-ID: <4C576D60.1070404__46505.6342458867$1280798269$gmane$org@jp.fujitsu.com>
-References: <201008022351.31406.rjw@sisk.pl> <201008022356.31166.rjw@sisk.pl>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Mon, 2 Aug 2010 20:21:55 -0700
+Message-ID: <AANLkTi=1kBuyPS_P+eNLcnRu1mJH6BzpzQW_sENZuL1L__32518.7023533092$1280805785$gmane$org@mail.gmail.com>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<20100731215214.2543c07e@infradead.org>
+	<20100801054816.GI2470@linux.vnet.ibm.com>
+	<20100731230101.7cc1d8c7@infradead.org>
+	<20100801191228.GL2470@linux.vnet.ibm.com>
+	<20100801204026.GH31324@thunk.org>
+	<20100802030304.GU2470@linux.vnet.ibm.com>
+	<20100801210548.23f77ff6@infradead.org>
+	<alpine.DEB.2.00.1008012153300.25170@asgard.lang.hm>
+	<20100802140933.GB2405@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008021627290.29820@asgard.lang.hm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201008022356.31166.rjw@sisk.pl>
+In-Reply-To: <alpine.DEB.2.00.1008021627290.29820@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,43 +27,104 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
+To: david@lang.hm
+Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-(2010/08/03 6:56), Rafael J. Wysocki wrote:
-> +int pcie_port_acpi_setup(struct pci_dev *port, int *srv_mask)
-> +{
-> +	acpi_status status;
-> +	acpi_handle handle;
-> +	u32 flags;
-> +
-> +	if (acpi_pci_disabled)
-> +		return 0;
-> +
-> +	handle = acpi_find_root_bridge_handle(port);
-> +	if (!handle)
-> +		return -EINVAL;
-> +
-> +	flags = OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL
-> +		| OSC_PCI_EXPRESS_NATIVE_HP_CONTROL
-> +		| OSC_PCI_EXPRESS_PME_CONTROL;
-> +
-> +	if (pcie_aer_get_firmware_first(port))
-> +		dev_dbg(&port->dev, "PCIe errors handled by BIOS.\n");
-> +	else if (pci_aer_available())
-> +		flags |= OSC_PCI_EXPRESS_AER_CONTROL;
+On Mon, Aug 2, 2010 at 5:08 PM,  <david@lang.hm> wrote:
+> On Mon, 2 Aug 2010, Paul E. McKenney wrote:
+>
+>> On Sun, Aug 01, 2010 at 10:06:34PM -0700, david@lang.hm wrote:
+>>>
+>>> On Sun, 1 Aug 2010, Arjan van de Ven wrote:
+>>>
+>>>> I'm a little worried that this whole "I need to block suspend" is
+>>>> temporary. Yes today there is silicon from ARM and Intel where suspend
+>>>> is a heavy operation, yet at the same time it's not all THAT heavy
+>>>> anymore.... at least on the Intel side it's good enough to use pretty
+>>>> much all the time (when the screen is off for now, but that's a memory
+>>>> controller issue more than anything else). I'm pretty sure the ARM guys
+>>>> will not be far behind.
+>>>
+>>> remember that this 'block suspend' is really 'block overriding the
+>>> fact that there are still runable processes and suspending anyway"
+>>>
+>>> having it labeled as 'suspend blocker' or even 'wakelock' makes it
+>>> sound as if it blocks any attempt to suspend, and I'm not sure
+>>> that's what's really intended. Itsounds like the normal syspend
+>>> process would continue to work, just this 'ignore if these other
+>>> apps are busy' mode of operation would not work.
+>>>
+>>> which makes me wonder, would it be possible to tell the normal idle
+>>> detection mechanism to ignore specific processes when deciding if it
+>>> should suspend or not? how about only considering processes in one
+>>> cgroup when deciding to suspend and ignoring all others?
+>>
+>> Why not flesh this out and compare it to the draft requirements?
+>> (I expect to be sending another version by end of day Pacific Time.)
+>>
+>> The biggest issue I see right off-hand is that a straightforward
+>> implementation of your idea would require moving processes from one
+>> cgroup to another when acquiring or releasing a suspend blocker, which
+>> from what I understand would be way to heavyweight. =A0On the other hand,
+>> if acquiring and releasing a suspend blocker does not move the process
+>> from one cgroup to another, then you need something very like the
+>> suspend-blocker mechanism to handle those processes that are permitted
+>> to acquire suspend blockers, and which are thus not a member of the
+>> cgroup in question.
+>>
+>> That said, I did see some hint from the Android guys that it -might-
+>> be possible to leverage cgroups in the way that you suggest might help
+>> save power during times when suspend was blocked but (for example) the
+>> screen was turned off. =A0The idea would be to freeze the cgroup whenever
+>> the screen blanked, even if suspend was blocked. =A0The biggest issue
+>> here is that any process that can hold a suspend blocker must never to
+>> an unconditional wait on any process in this cgroup. =A0Seems to me that
+>> this should be possible in theory, but the devil would be in the details.
+>>
+>> If I am misunderstanding your proposal, please enlighten me!
+>
+> you are close, but I think what I'm proposing is actually simpler (assumi=
+ng
+> that the scheduler can be configured to generate the appropriate stats)
+>
+> my thought was not to move applications between cgroups as they
+> aquire/release the suspend-block lock, bur rather to say that any
+> application that you would trust to get the suspend-block lock should be =
+in
+> cgroup A while all other applications are in cgroup B
+>
+> when you are deciding if the system shoudl go to sleep because it is idle,
+> ignore the activity of all applications in cgroup B
+>
+> if cgroup A applications are busy, the system is not idle and should not
+> suspend.
+>
 
-Is the debug message necessary even when AER is not available?
-At least current code doesn't output such strings when pci=noaer,
-since AER service driver is not loaded.
+Triggering suspend from idle has been suggested before. However, idle
+is not a signal that it is safe to suspend since timers stop in
+suspend (or the code could temporarily be waiting on a non-wakeup
+interrupt). If you add suspend blockers or wakelocks to prevent
+suspend while events you care about are pending, then it does not make
+a lot of sense to prevent suspend just because the cpu is not idle.
 
-if (pci_aer_available()) {
-	if (pcie_aer_get_firmware_first(port))
-		dev_dbg(&port->dev, "PCIe errors handled by BIOS.\n");
-	else
-		flags |= OSC_PCI_EXPRESS_AER_CONTROL;
-}
+> this requires that the applications in cgroup A actually go idle as oppos=
+ed
+> to simply releaseing the suspend-block lock, but it would mean that there
+> are no application changes required for to move a system from the status
+> "even if it's busy, go ahead ans suspend" to "this application is importa=
+nt,
+> don't suspend if it's got work to do", it would just be classifying the
+> application in one cgroup or the other.
+>
+> This assumes that an application that you would trust to hold the
+> suspend-block lock is going to be well behaved (if it isn't, how can you
+> trust it to not grab the lock inappropriatly?)
+>
+> David Lang
+>
 
-Thanks,
-H.Seto
+
+-- =
+
+Arve Hj=F8nnev=E5g
