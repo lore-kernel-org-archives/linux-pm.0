@@ -1,15 +1,15 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Tue, 3 Aug 2010 15:08:54 -0700
-Message-ID: <AANLkTinJ2jy18bAS-=abtDLaQWVmQdK1Oq105FcNDNyJ__20733.1160935157$1280873393$gmane$org@mail.gmail.com>
+Date: Tue, 3 Aug 2010 15:23:00 -0700
+Message-ID: <AANLkTim474Yp=MP3EX9pabc9XO8Q-McCns207SLPYuUb__6229.69153705544$1280874235$gmane$org@mail.gmail.com>
 References: <20100731175841.GA9367@linux.vnet.ibm.com>
 	<AANLkTi=hoGF7egpyB9sLKJoXv5aiGrxfa9_5iH-96SA=@mail.gmail.com>
-	<1280851338.2774.30.camel@mulgrave.site>
+	<20100803154112.GE2407@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1280851338.2774.30.camel@mulgrave.site>
+In-Reply-To: <20100803154112.GE2407@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,60 +19,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
+To: paulmck@linux.vnet.ibm.com
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-2010/8/3 James Bottomley <James.Bottomley@suse.de>:
-> On Mon, 2010-08-02 at 21:18 -0700, Arve Hj=F8nnev=E5g wrote:
->> > o =A0 =A0 =A0 A power-aware application must be able to efficiently co=
-mmunicate
->> > =A0 =A0 =A0 =A0its needs to the system, so that such communication can=
- be
->> > =A0 =A0 =A0 =A0performed on hot code paths. =A0Communication via open(=
-) and
->> > =A0 =A0 =A0 =A0close() is considered too slow, but communication via i=
-octl()
->> > =A0 =A0 =A0 =A0is acceptable.
->> >
+2010/8/3 Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
+> On Mon, Aug 02, 2010 at 09:18:27PM -0700, Arve Hj=F8nnev=E5g wrote:
+>> On Sat, Jul 31, 2010 at 10:58 AM, Paul E. McKenney
+>> <paulmck@linux.vnet.ibm.com> wrote:
+...
+>> > o =A0 =A0 =A0 Statistics of the power-control actions taken by power-a=
+ware
+>> > =A0 =A0 =A0 =A0applications must be provided, and must be keyed off of=
+ program
+>> > =A0 =A0 =A0 =A0name.
 >>
->> The problem with using open and close to prevent an allow suspend is
->> not that it is too slow but that it interferes with collecting stats.
+>> We don't key the stats off the program name, but having useful
+>> statistics is critical too us. The current code in linux-next does not
+>> appear to allow this (I'm referring to pm_stay_awake here, etc not
+>> pm-qos.)
 >
-> Please elaborate on this. =A0I expect the pm-qos stats interface will
-> collect stats across user open/close because that's how it currently
-> works. =A0What's the problem?
->
-
-The pm-qos interface creates the request object in open and destroys
-it in release just like the suspend blocker interface. We need stats
-for each client which is lost if you free the object every time you
-unblock suspend.
-
-Or are you talking about user space opening and closing the stats
-interface (which does not cause any problems)?
-
->> The wakelock code has a sysfs interface that allow you to use a
->> open/write/close sequence to block or unblock suspend. There is no
->> limit to the amount of kernel memory that a process can consume with
->> this interface, so the suspend blocker patchset uses a /dev interface
->> with ioctls to block or unblock suspend and it destroys the kernel
->> object when the file descriptor is closed.
->
-> This is an implementation detail only.
-
-There is no way fix it without changing the user space visible
-behavior of the API. The kernel does not know when it is safe to free
-the objects.
-
->=A0The pm-qos objects are long
-> lived, so their stats would be too. =A0I would guess that explicit stat
-> clearing might be a useful option.
+> OK, maybe I was confused earlier. =A0So you do not track statistics via
+> the device being open throughout the application's lifetime?
 >
 
-Which pm-qos objects are you referring to? The struct pm_qos_object
-that backs each pm-qos class is long lived (I don't know why this is
-named pm_qos_object), but we need stats in struct pm_qos_request_list.
+The suspend blocker patchset does track statistics while the device is
+open, but it it not keyed of the program name. The name is passed from
+user-space and a single process can have the device open several
+times. The wakelock interface that we currently use just creates a new
+object every time it sees a new name and never frees it.
+
+...
+>> > o =A0 =A0 =A0 If no power-aware or power-optimized application are ind=
+icating
+>> > =A0 =A0 =A0 =A0a need for the system to remain operating, the system i=
+s permitted
+>> > =A0 =A0 =A0 =A0(even encouraged!) to suspend all execution, even if po=
+wer-naive
+>> > =A0 =A0 =A0 =A0applications are runnable. =A0(This requirement did app=
+ear to be
+>> > =A0 =A0 =A0 =A0somewhat controversial.)
+>>
+>> I would say it should suspend even if power aware applications are
+>> runnable. Most applications do not exclusively perform critical work.
+>
+> The point being that a power-aware application does not block suspend
+> -unless- it holds a suspend blocker, correct?
+
+Yes.
+
+>
+> Or am I missing some other subtlety?
+
+No.
+
+...
+>> > o =A0 =A0 =A0 Any initialization of the API that controls the system p=
+ower
+>> > =A0 =A0 =A0 =A0state must be unconditional, so as to be free from fail=
+ure.
+>> > =A0 =A0 =A0 =A0(I don't currently understand how this relates, probabl=
+y due to
+>> > =A0 =A0 =A0 =A0my current insufficient understanding of the proposed p=
+atch set.)
+>>
+>> Unconditional initialization makes it easier to add suspend blockers
+>> to existing kernel code since you don't have to add new failure exit
+>> paths. It is not a strong requirement.
+>
+> Ah, that makes more sense! =A0I moved this to a new "NICE-TO-HAVES"
+> section. =A0I also changed the last parenthesized sentence to read
+> "Such unconditional initialization reduces the intrusiveness of the
+> the Android patchset." =A0Does that work?
+>
+
+Sure.
+
+
 
 -- =
 
