@@ -1,23 +1,16 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [PATCH/RFC] Runtime PM: ARM: subarch-specific
-	extensions of pdev_archdata
-Date: Tue, 03 Aug 2010 09:16:00 -0700
-Message-ID: <87k4o7r7sv.fsf__35826.1748021052$1280860884$gmane$org@deeprootsystems.com>
-References: <1253670648-28610-1-git-send-email-khilman@deeprootsystems.com>
-	<f17812d70909222153y4a0e4fc2n496ea2e6caaac847@mail.gmail.com>
-	<19129.63264.653666.70492@pilspetsen.it.uu.se>
-	<4ABAAF1D.6090907@deeprootsystems.com>
-	<f17812d70909231630i20f64328k8d604c3436094b85@mail.gmail.com>
-	<87k4yhagv4.fsf@deeprootsystems.com>
-	<AANLkTinBqc11oE2SOmvXbFHmlgvZ21LngXNWkSHiJmRK@mail.gmail.com>
-	<34dc79dc-0868-4401-9fa5-c7134f6d4485@email.android.com>
-	<AANLkTikHUcgBcTmv+=NrYMwgn-UC_Q0Vv3ytfuJbkyRB@mail.gmail.com>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Tue, 3 Aug 2010 08:41:12 -0700
+Message-ID: <20100803154112.GE2407__41327.0298777663$1280861595$gmane$org@linux.vnet.ibm.com>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<AANLkTi=hoGF7egpyB9sLKJoXv5aiGrxfa9_5iH-96SA=@mail.gmail.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikHUcgBcTmv+=NrYMwgn-UC_Q0Vv3ytfuJbkyRB@mail.gmail.com>
-	(Magnus Damm's message of "Mon, 26 Jul 2010 10:51:44 +0900")
+Content-Disposition: inline
+In-Reply-To: <AANLkTi=hoGF7egpyB9sLKJoXv5aiGrxfa9_5iH-96SA=@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,95 +20,246 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: Grant Likely <grant.likely@secretlab.ca>, linux-pm@lists.linux-foundation.org, Mikael Pettersson <mikpe@it.uu.se>, Eric Miao <eric.y.miao@gmail.com>, linux-arm-kernel@lists.infradead.org
+To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-Magnus Damm <magnus.damm@gmail.com> writes:
+On Mon, Aug 02, 2010 at 09:18:27PM -0700, Arve Hj=F8nnev=E5g wrote:
+> On Sat, Jul 31, 2010 at 10:58 AM, Paul E. McKenney
+> <paulmck@linux.vnet.ibm.com> wrote:
+> ...
 
-> On Sun, Jul 25, 2010 at 5:24 AM, Grant Likely <grant.likely@secretlab.ca>=
- wrote:
->> "Magnus Damm" <magnus.damm@gmail.com> wrote:
->>>On Tue, Oct 27, 2009 at 8:13 AM, Kevin Hilman
->>><khilman@deeprootsystems.com> wrote:
->>>> Eric Miao <eric.y.miao@gmail.com> writes:
->>>>> On Thu, Sep 24, 2009 at 7:28 AM, Kevin Hilman
->>>>> <khilman@deeprootsystems.com> wrote:
->>>>>> Mikael Pettersson wrote:
->>>>>>> Eric Miao writes:
->>>>>>> =A0> On Wed, Sep 23, 2009 at 9:50 AM, Kevin Hilman
->>>>>>> =A0> <khilman@deeprootsystems.com> wrote:
->>>>>>> =A0> > On ARM platforms, power management can be very platform spec=
-ific.
->>>>>>> =A0> > This patch allows ARM subarches to extend the platform_device
->>>>>>> =A0> > pdev_archdata for each subarch by creating a new struct pdev=
-_machdata
->>>>>>> =A0> > and allowing each subarch to customize it as needed.
->
->>>Do you remember what happened with this patch?
->>
->> I don't have all the details in front of me because I'm on my phone,
->> but I advised against pdev_archdata because it is
->> multiplatform-unfriendly.
->
-> Ok, I did not expect that. =3D) But after thinking a bit it does make
-> sense. I wonder what my options are. I'm not so fond of the idea to
-> wrap the platform devices - that's not more multi-platform friendly,
-> is it?
+First, thank you very much for your review and feedback!
 
-[sorry for the lag, been on vacation]
+> > REQUIREMENTS
+> >
+> > o =A0 =A0 =A0 Reduce the system's power consumption in order to (1) ext=
+end
+> > =A0 =A0 =A0 =A0battery life and (2) preserve state until AC power can b=
+e obtained.
+> >
+> > o =A0 =A0 =A0 It is necessary to be able to use power-naive application=
+s.
+> > =A0 =A0 =A0 =A0Many of these applications were designed for use in PC p=
+latforms
+> > =A0 =A0 =A0 =A0where power consumption has historically not been of gre=
+at
+> > =A0 =A0 =A0 =A0concern, due to either (1) the availability of AC power =
+or (2)
+> > =A0 =A0 =A0 =A0relatively undemanding laptop battery-lifetime expectati=
+ons. =A0The
+> > =A0 =A0 =A0 =A0system must be capable of running these power-naive appl=
+ications
+> > =A0 =A0 =A0 =A0without requiring that these applications be modified, a=
+nd must
+> > =A0 =A0 =A0 =A0be capable of reasonable power efficiency even when powe=
+r-naive
+> > =A0 =A0 =A0 =A0applications are available.
+> >
+> > o =A0 =A0 =A0 If the display is powered off, there is no need to run any
+> > =A0 =A0 =A0 =A0application whose only effect is to update the display.
+> >
+> > =A0 =A0 =A0 =A0Although one could simply block such an application when=
+ it next
+> > =A0 =A0 =A0 =A0tries to access the display, it appears that it is highly
+> > =A0 =A0 =A0 =A0desirable that the application also be prevented from
+> > =A0 =A0 =A0 =A0consuming power computing anything that will not be disp=
+layed.
+> > =A0 =A0 =A0 =A0Furthermore, whatever mechanism is used must operate on
+> > =A0 =A0 =A0 =A0power-naive applications that do not use blocking system=
+ calls.
+> >
+> > o =A0 =A0 =A0 In order to avoid overrunning hardware and/or kernel buff=
+ers,
+> > =A0 =A0 =A0 =A0input events must be delivered to the corresponding appl=
+ication
+> > =A0 =A0 =A0 =A0in a timely fashion. =A0The application might or might n=
+ot be
+> > =A0 =A0 =A0 =A0required to actually process the events in a timely fash=
+ion,
+> > =A0 =A0 =A0 =A0depending on the specific application.
+> >
+> > =A0 =A0 =A0 =A0In particular, if user input that would prevent the syst=
+em
+> > =A0 =A0 =A0 =A0from entering a low-power state is received while the sy=
+stem is
+> > =A0 =A0 =A0 =A0transitioning into a low-power state, the system must tr=
+ansition
+> > =A0 =A0 =A0 =A0back out of the low-power state so that it can hand the =
+user
+> > =A0 =A0 =A0 =A0input off to the corresponding application.
+> >
+> > o =A0 =A0 =A0 If a power-aware application receives user input, then th=
+at
+> > =A0 =A0 =A0 =A0application must be given the opportunity to process that
+> > =A0 =A0 =A0 =A0input.
+> >
+> > o =A0 =A0 =A0 A power-aware application must be able to efficiently com=
+municate
+> > =A0 =A0 =A0 =A0its needs to the system, so that such communication can =
+be
+> > =A0 =A0 =A0 =A0performed on hot code paths. =A0Communication via open()=
+ and
+> > =A0 =A0 =A0 =A0close() is considered too slow, but communication via io=
+ctl()
+> > =A0 =A0 =A0 =A0is acceptable.
+> =
 
-Wrapping is more multi-platform friendly because only platform-specific
-code accesses the wrapped code.  It's also logically consistent as =
+> The problem with using open and close to prevent an allow suspend is
+> not that it is too slow but that it interferes with collecting stats.
+> The wakelock code has a sysfs interface that allow you to use a
+> open/write/close sequence to block or unblock suspend. There is no
+> limit to the amount of kernel memory that a process can consume with
+> this interface, so the suspend blocker patchset uses a /dev interface
+> with ioctls to block or unblock suspend and it destroys the kernel
+> object when the file descriptor is closed.
 
-a struct device is contained by a platform_device which is then
-contained by an omap_device (in our case.)   Only OMAP-specific code
-ever knows about or touches that layer.
+Ah, I missed this point.  What I am doing to adjust is to strike the
+above requirement, and to add verbiage to the "statistics" requirement
+about using ioctl() to implement suspend-blocker operations, so that the
+statistics can be tracked based on the device being open throughout the
+application's lifetime.
 
-> How about using devres and platform bus notifiers?
+> > o =A0 =A0 =A0 Power-naive applications must be prohibited from controll=
+ing
+> > =A0 =A0 =A0 =A0the system power state. =A0One acceptable approach is th=
+rough
+> > =A0 =A0 =A0 =A0use of group permissions on a special power-control devi=
+ce.
+> >
+> > o =A0 =A0 =A0 Statistics of the power-control actions taken by power-aw=
+are
+> > =A0 =A0 =A0 =A0applications must be provided, and must be keyed off of =
+program
+> > =A0 =A0 =A0 =A0name.
+> =
 
-That seems fine too, and probably better if the amount of data/code you need
-is small.  In the OMAP case, it's rather complicated so it's cleaner
-IMHO to keep it in a separate omap_device layer and struct.
+> We don't key the stats off the program name, but having useful
+> statistics is critical too us. The current code in linux-next does not
+> appear to allow this (I'm referring to pm_stay_awake here, etc not
+> pm-qos.)
 
-> For a Runtime PM prototype using devres (instead of pdev_archdata or
-> wrapping) look here:
-> https://patchwork.kernel.org/patch/113605/
->
-> To make it work with modules I propose adding a driver bind event:
-> https://patchwork.kernel.org/patch/113865/
->
-> Looks pretty multi-platform friendly to me. Any suggestions?
+OK, maybe I was confused earlier.  So you do not track statistics via
+the device being open throughout the application's lifetime?
 
-Your patches look multi-platform friendly, but there are still some
-outstanding issues with making runtime PM support multi-platform
-friendly that are not direclty related to the above patches.
+I am not familiar with pm_stay_awake(), but will take a look at it.
 
-1) weak symbols
+> > o =A0 =A0 =A0 Power-aware applications can make use of power-naive infr=
+astructure.
+> > =A0 =A0 =A0 =A0This means that a power-aware application must have some=
+ way,
+> > =A0 =A0 =A0 =A0whether explicit or implicit, to ensure that any power-n=
+aive
+> > =A0 =A0 =A0 =A0infrastructure is permitted to run when a power-aware ap=
+plication
+> > =A0 =A0 =A0 =A0needs it to run.
+> >
+> > o =A0 =A0 =A0 When a power-aware application is preventing the system f=
+rom
+> > =A0 =A0 =A0 =A0shutting down, and is also waiting on a power-naive appl=
+ication,
+> > =A0 =A0 =A0 =A0the power-aware application must set a timeout to handle
+> > =A0 =A0 =A0 =A0the possibility that the power-naive application might h=
+alt
+> > =A0 =A0 =A0 =A0or otherwise fail. =A0(Such timeouts are also used to li=
+mit the
+> > =A0 =A0 =A0 =A0number of kernel modifications required.)
+> =
 
-We need to change the overriding of weak symbols into some form of
-register/unregister so multiple platforms in the same kernel could work.
-That's the easy one.   =
+> wake-lock/suspend-blocker timeouts have nothing to do with the timeout
+> used by applications when waiting for a response from a less trusted
+> application.
 
+OK, I moved this to a new "SUGGESTED USAGE" section and removed the
+last (parenthesized) sentence.
 
-2) custom vs. platform bus.
+> > o =A0 =A0 =A0 If no power-aware or power-optimized application are indi=
+cating
+> > =A0 =A0 =A0 =A0a need for the system to remain operating, the system is=
+ permitted
+> > =A0 =A0 =A0 =A0(even encouraged!) to suspend all execution, even if pow=
+er-naive
+> > =A0 =A0 =A0 =A0applications are runnable. =A0(This requirement did appe=
+ar to be
+> > =A0 =A0 =A0 =A0somewhat controversial.)
+> =
 
-The other issue under discussion between Grant & myself[1] has been the
-use of a custom bus instead of the platform bus.  Following your lead,
-(and preferring that option) I continued to use the platform_bus since
-I only need to override a few of the dev_pm_ops functions.
+> I would say it should suspend even if power aware applications are
+> runnable. Most applications do not exclusively perform critical work.
 
-However, Grant is not happy about overriding the platform_bus.  He would
-rather see each platform create a custom bus with it's own PM methods.
+The point being that a power-aware application does not block suspend
+-unless- it holds a suspend blocker, correct?
 
-In this thread[1], I did a quick and dirty proof of concept to show that
-it is possible, but quite frankly, I still much prefer continuing to use
-the platform_bus since it is mostly identical.  =
+Or am I missing some other subtlety?
 
+> > o =A0 =A0 =A0 Transition to low-power state must be efficient. =A0In pa=
+rticular,
+> > =A0 =A0 =A0 =A0methods based on repeated attempts to suspend are consid=
+ered to
+> > =A0 =A0 =A0 =A0be too inefficient to be useful.
+> =
 
-After I catch up on the rest of my mail, I will get back to this topic.
+> It must be power-efficient. Repeated attempts to suspend will kill the
+> idle battery life.
 
-Kevin
+Good point!  I changed "Transition to low-power state must be efficient"
+to instead read "Transition to low-power state must be power-efficient."
 
-[1] http://lists.infradead.org/pipermail/linux-arm-kernel/2010-June/018925.=
-html
+> > o =A0 =A0 =A0 Individual peripherals and CPUs must still use standard
+> > =A0 =A0 =A0 =A0power-conservation measures, for example, transitioning =
+CPUs into
+> > =A0 =A0 =A0 =A0low-power states on idle and powering down peripheral de=
+vices
+> > =A0 =A0 =A0 =A0and hardware accelerators that have not been recently us=
+ed.
+> >
+> > o =A0 =A0 =A0 The API that controls the system power state must be
+> > =A0 =A0 =A0 =A0accessible both from Android's Java replacement, from
+> > =A0 =A0 =A0 =A0userland C code, and from kernel C code (both process
+> > =A0 =A0 =A0 =A0level and irq code, but not NMI handlers).
+> >
+> > o =A0 =A0 =A0 Any initialization of the API that controls the system po=
+wer
+> > =A0 =A0 =A0 =A0state must be unconditional, so as to be free from failu=
+re.
+> > =A0 =A0 =A0 =A0(I don't currently understand how this relates, probably=
+ due to
+> > =A0 =A0 =A0 =A0my current insufficient understanding of the proposed pa=
+tch set.)
+> =
+
+> Unconditional initialization makes it easier to add suspend blockers
+> to existing kernel code since you don't have to add new failure exit
+> paths. It is not a strong requirement.
+
+Ah, that makes more sense!  I moved this to a new "NICE-TO-HAVES"
+section.  I also changed the last parenthesized sentence to read
+"Such unconditional initialization reduces the intrusiveness of the
+the Android patchset."  Does that work?
+
+> > o =A0 =A0 =A0 The API that controls the system power state must operate
+> > =A0 =A0 =A0 =A0correctly on SMP systems of modest size. =A0(My guess is=
+ that
+> > =A0 =A0 =A0 =A0"modest" means up to four CPUs, maybe up to eight CPUs.)
+> >
+> > o =A0 =A0 =A0 Any QoS-based solution must take display and user-input
+> > =A0 =A0 =A0 =A0state into account. =A0In other words, the QoS must be
+> > =A0 =A0 =A0 =A0expressed as a function of the display and the user-input
+> > =A0 =A0 =A0 =A0states.
+> >
+> > o =A0 =A0 =A0 Transitioning to extremely low power states requires savi=
+ng
+> > =A0 =A0 =A0 =A0and restoring DRAM and/or cache SRAM state, which in its=
+elf
+> > =A0 =A0 =A0 =A0consumes significant energy. =A0The power savings must t=
+herefore
+> > =A0 =A0 =A0 =A0be balanced against the energy consumed in the state
+> > =A0 =A0 =A0 =A0transitions.
+> >
+> > o =A0 =A0 =A0 The current Android userspace API must be supported in or=
+der
+> > =A0 =A0 =A0 =A0to support existing device software.
+
+Thank you again for looking this over and for your comments!!!
+
+							Thanx, Paul
