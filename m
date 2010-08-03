@@ -1,7 +1,7 @@
 From: Florian Mickler <florian@mickler.org>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Tue, 3 Aug 2010 13:25:03 +0200
-Message-ID: <20100803132503.2a174695__49277.7305226356$1280834792$gmane$org@schatten.dmk.lab>
+Date: Tue, 3 Aug 2010 13:26:33 +0200
+Message-ID: <20100803132633.7cb720df__15195.9472721957$1280834983$gmane$org@schatten.dmk.lab>
 References: <20100731175841.GA9367@linux.vnet.ibm.com>
 	<20100731215214.2543c07e@infradead.org>
 	<20100801054816.GI2470@linux.vnet.ibm.com>
@@ -15,12 +15,15 @@ References: <20100731175841.GA9367@linux.vnet.ibm.com>
 	<alpine.DEB.2.00.1008012303160.25170@asgard.lang.hm>
 	<20100802084003.1c4c2bdb@schatten.dmk.lab>
 	<20100802085332.23dd22f6@schatten.dmk.lab>
-	<AANLkTikqMg+Syf3YooE9PtWD-S2nRemVcOitivUFU3OG@mail.gmail.com>
+	<alpine.DEB.2.00.1008012355210.25170@asgard.lang.hm>
+	<20100802092347.692dac32@schatten.dmk.lab>
+	<alpine.DEB.2.00.1008020200450.25170@asgard.lang.hm>
+	<AANLkTinGjktpuNi8062BQPegr4mofF6bx2EfBAsbOhCe@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikqMg+Syf3YooE9PtWD-S2nRemVcOitivUFU3OG@mail.gmail.com>
+In-Reply-To: <AANLkTinGjktpuNi8062BQPegr4mofF6bx2EfBAsbOhCe@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -34,43 +37,28 @@ To: Paul Menage <menage@google.com>
 Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-On Mon, 2 Aug 2010 21:38:12 -0700
+On Mon, 2 Aug 2010 21:41:17 -0700
 Paul Menage <menage@google.com> wrote:
 
-> On Sun, Aug 1, 2010 at 11:53 PM, Florian Mickler <florian@mickler.org> wrote:
+> On Mon, Aug 2, 2010 at 2:06 AM,  <david@lang.hm> wrote:
 > >
-> > Thinking about it.. I don't know much about cgroups, but I think a
-> > process can only be in one cgroup at a time.
+> > yes, it could mean a doubleing in the number of cgroups that you need on a
+> > system. and if there are other features like this you can end up in a
+> > geometric explosion in the number of cgroups.
 > 
-> A thread can only be in one cgroup in each hierarchy at one time. You
-> can mount multiple cgroups hierarchies, with different resource
-> controllers on different hierarchies.
+> No, it would be additive - you can mount different subsystems on
+> separate hierarchies. So if you had X divisions for memory, Y
+> divisions for CPU and Z divisions for suspend-blocking (where Z=2,
+> probably?) you could mount three separate hierarchies and have X+Y+Z
+> complexity, not X*Y*Z.
 > 
-> >
-> > b) you can't use cgroup for other purposes anymore. I.e. if you want to
-> > have 2 groups that each only have half of the memory available, how
-> > would you then integrate the cgroup-ignore-for-idle-approach with this?
-> 
-> You could mount the subsystem that provides the "ignore-for-idle"
-> support on one hierarchy, and partition the trusted/untrusted
-> processes that way, and the memory controller subsystem on a different
-> hierarchy, with whatever split you wanted for memory controls.
+> (Not that I have a strong opinion on whether cgroups is an appropriate
+> mechanism for solving this problem - just that the problem you forsee
+> shouldn't occur in practice).
 > 
 > Paul
 
-Thank you for the clarification. That renders my original objections
-more or less void. 
-
-I've still got some doubts about the flexibility of this approach (think
-an open system with arbitrary software components). But with a userspace
-manager that sorts processes into the groups this may be a possible
-solution. 
-
-But we should probably concentrate first on the requirements now. If we
-have a set of requirements everyone can agree too, we may be on our way
-to get a solution.
+Ah yes, mea culpa. I've got this wrong.
 
 Cheers,
 Flo
