@@ -1,14 +1,14 @@
 From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [PATCH 2/8] PCI / PCIe/ AER: Introduce
-	pci_aer_available()
-Date: Tue, 03 Aug 2010 09:46:42 +0900
-Message-ID: <4C5766F2.4010605__29.0384203710303$1280796523$gmane$org@jp.fujitsu.com>
-References: <201008022351.31406.rjw@sisk.pl> <201008022354.46369.rjw@sisk.pl>
+Subject: Re: [PATCH 4/8] PCI / PCIe: Ask BIOS for control of all
+ native services at once (v6)
+Date: Tue, 03 Aug 2010 10:14:08 +0900
+Message-ID: <4C576D60.1070404__46505.6342458867$1280798269$gmane$org@jp.fujitsu.com>
+References: <201008022351.31406.rjw@sisk.pl> <201008022356.31166.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201008022354.46369.rjw@sisk.pl>
+In-Reply-To: <201008022356.31166.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,50 +22,39 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-(2010/08/03 6:54), Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Introduce a function allowing the caller to check if PCIe AER should
-> be enabled.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
-(snip)
-> Index: linux-2.6/drivers/pci/pcie/aer/aerdrv.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/pcie/aer/aerdrv.c
-> +++ linux-2.6/drivers/pci/pcie/aer/aerdrv.c
-> @@ -72,6 +72,11 @@ void pci_no_aer(void)
->  	pcie_aer_disable = 1;	/* has priority over 'forceload' */
->  }
->  
-> +bool pci_aer_available(void)
+(2010/08/03 6:56), Rafael J. Wysocki wrote:
+> +int pcie_port_acpi_setup(struct pci_dev *port, int *srv_mask)
 > +{
-> +	return !pcie_aer_disable && pci_msi_enabled();
-> +}
+> +	acpi_status status;
+> +	acpi_handle handle;
+> +	u32 flags;
 > +
->  static int set_device_error_reporting(struct pci_dev *dev, void *data)
->  {
->  	bool enable = *((bool *)data);
-> @@ -411,9 +416,7 @@ static void aer_error_resume(struct pci_
->   */
->  static int __init aer_service_init(void)
->  {
-> -	if (pcie_aer_disable)
-> -		return -ENXIO;
-> -	if (!pci_msi_enabled())
-> +	if (pci_aer_available())
->  		return -ENXIO;
->  	return pcie_port_service_register(&aerdriver);
->  }
+> +	if (acpi_pci_disabled)
+> +		return 0;
+> +
+> +	handle = acpi_find_root_bridge_handle(port);
+> +	if (!handle)
+> +		return -EINVAL;
+> +
+> +	flags = OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL
+> +		| OSC_PCI_EXPRESS_NATIVE_HP_CONTROL
+> +		| OSC_PCI_EXPRESS_PME_CONTROL;
+> +
+> +	if (pcie_aer_get_firmware_first(port))
+> +		dev_dbg(&port->dev, "PCIe errors handled by BIOS.\n");
+> +	else if (pci_aer_available())
+> +		flags |= OSC_PCI_EXPRESS_AER_CONTROL;
 
-Breaking a big lump into small pieces often makes things clear.
-You should return error when AER is _NOT_ available.
+Is the debug message necessary even when AER is not available?
+At least current code doesn't output such strings when pci=noaer,
+since AER service driver is not loaded.
 
-if (!pci_aer_available())
-	return -ENXIO;
-
-Be careful...
+if (pci_aer_available()) {
+	if (pcie_aer_get_firmware_first(port))
+		dev_dbg(&port->dev, "PCIe errors handled by BIOS.\n");
+	else
+		flags |= OSC_PCI_EXPRESS_AER_CONTROL;
+}
 
 Thanks,
 H.Seto
