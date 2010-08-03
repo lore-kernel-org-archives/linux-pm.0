@@ -1,25 +1,50 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Power management minisummit at Linux Plumbers Conference (November
-	3-5)
-Date: Tue, 3 Aug 2010 19:27:46 +0100
-Message-ID: <20100803182746.GA32276@srcf.ucam.org>
+From: James Bottomley <James.Bottomley@suse.de>
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Tue, 03 Aug 2010 11:02:18 -0500
+Message-ID: <1280851338.2774.30.camel__125.880438327108$1280860695$gmane$org@mulgrave.site>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<AANLkTi=hoGF7egpyB9sLKJoXv5aiGrxfa9_5iH-96SA=@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: linux-pm@lists.osdl.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <AANLkTi=hoGF7egpyB9sLKJoXv5aiGrxfa9_5iH-96SA=@mail.gmail.com>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-I'm planning on finalising the schedule for the power management 
-minisummit at the Linux Plumbers Conference by the end of this week. If 
-anyone has topics that they'd like to discuss (or be discussed, if you 
-can't make it) then please let me know or register at 
-http://www.linuxplumbersconf.org/2010/ocw/events/proposals/ and file a 
-proposal there. We're likely to be concentrating on userspace/kernel 
-interaction rather than pure kernel topics, so if you've got anything to 
-say about how we can handle application requirements without 
-compromising on our power savings then we'd love to hear from you.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+T24gTW9uLCAyMDEwLTA4LTAyIGF0IDIxOjE4IC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
+Ogo+ID4gbyAgICAgICBBIHBvd2VyLWF3YXJlIGFwcGxpY2F0aW9uIG11c3QgYmUgYWJsZSB0byBl
+ZmZpY2llbnRseSBjb21tdW5pY2F0ZQo+ID4gICAgICAgIGl0cyBuZWVkcyB0byB0aGUgc3lzdGVt
+LCBzbyB0aGF0IHN1Y2ggY29tbXVuaWNhdGlvbiBjYW4gYmUKPiA+ICAgICAgICBwZXJmb3JtZWQg
+b24gaG90IGNvZGUgcGF0aHMuICBDb21tdW5pY2F0aW9uIHZpYSBvcGVuKCkgYW5kCj4gPiAgICAg
+ICAgY2xvc2UoKSBpcyBjb25zaWRlcmVkIHRvbyBzbG93LCBidXQgY29tbXVuaWNhdGlvbiB2aWEg
+aW9jdGwoKQo+ID4gICAgICAgIGlzIGFjY2VwdGFibGUuCj4gPgo+IAo+IFRoZSBwcm9ibGVtIHdp
+dGggdXNpbmcgb3BlbiBhbmQgY2xvc2UgdG8gcHJldmVudCBhbiBhbGxvdyBzdXNwZW5kIGlzCj4g
+bm90IHRoYXQgaXQgaXMgdG9vIHNsb3cgYnV0IHRoYXQgaXQgaW50ZXJmZXJlcyB3aXRoIGNvbGxl
+Y3Rpbmcgc3RhdHMuCgpQbGVhc2UgZWxhYm9yYXRlIG9uIHRoaXMuICBJIGV4cGVjdCB0aGUgcG0t
+cW9zIHN0YXRzIGludGVyZmFjZSB3aWxsCmNvbGxlY3Qgc3RhdHMgYWNyb3NzIHVzZXIgb3Blbi9j
+bG9zZSBiZWNhdXNlIHRoYXQncyBob3cgaXQgY3VycmVudGx5CndvcmtzLiAgV2hhdCdzIHRoZSBw
+cm9ibGVtPwoKPiBUaGUgd2FrZWxvY2sgY29kZSBoYXMgYSBzeXNmcyBpbnRlcmZhY2UgdGhhdCBh
+bGxvdyB5b3UgdG8gdXNlIGEKPiBvcGVuL3dyaXRlL2Nsb3NlIHNlcXVlbmNlIHRvIGJsb2NrIG9y
+IHVuYmxvY2sgc3VzcGVuZC4gVGhlcmUgaXMgbm8KPiBsaW1pdCB0byB0aGUgYW1vdW50IG9mIGtl
+cm5lbCBtZW1vcnkgdGhhdCBhIHByb2Nlc3MgY2FuIGNvbnN1bWUgd2l0aAo+IHRoaXMgaW50ZXJm
+YWNlLCBzbyB0aGUgc3VzcGVuZCBibG9ja2VyIHBhdGNoc2V0IHVzZXMgYSAvZGV2IGludGVyZmFj
+ZQo+IHdpdGggaW9jdGxzIHRvIGJsb2NrIG9yIHVuYmxvY2sgc3VzcGVuZCBhbmQgaXQgZGVzdHJv
+eXMgdGhlIGtlcm5lbAo+IG9iamVjdCB3aGVuIHRoZSBmaWxlIGRlc2NyaXB0b3IgaXMgY2xvc2Vk
+LgoKVGhpcyBpcyBhbiBpbXBsZW1lbnRhdGlvbiBkZXRhaWwgb25seS4gIFRoZSBwbS1xb3Mgb2Jq
+ZWN0cyBhcmUgbG9uZwpsaXZlZCwgc28gdGhlaXIgc3RhdHMgd291bGQgYmUgdG9vLiAgSSB3b3Vs
+ZCBndWVzcyB0aGF0IGV4cGxpY2l0IHN0YXQKY2xlYXJpbmcgbWlnaHQgYmUgYSB1c2VmdWwgb3B0
+aW9uLgoKSmFtZXMKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlv
+bi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZv
+L2xpbnV4LXBt
