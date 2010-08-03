@@ -1,11 +1,15 @@
 From: Matthias Hopf <mhopf@suse.de>
-Subject: [PATCH] ACPI / PM: Traverse video_device_list for
+Subject: Re: [PATCH] ACPI / PM: Traverse video_device_list for
 	backlight	restoration
-Date: Tue, 3 Aug 2010 12:05:05 +0200
-Message-ID: <20100803100505.GA26948__38289.6944684491$1280848302$gmane$org@suse.de>
+Date: Tue, 3 Aug 2010 12:11:57 +0200
+Message-ID: <20100803101157.GA29721__16552.3762851537$1280848315$gmane$org@suse.de>
+References: <20100803100505.GA26948@suse.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7019024163682059695=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <20100803100505.GA26948@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -13,64 +17,40 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, Matthew Garrett <mjg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Julia Lawall <julia@dik>
 Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============7019024163682059695==
-Content-Type: text/x-patch; charset=us-ascii
-Content-Disposition: attachment; filename="0001-ACPI-PM-Traverse-video_device_list-for-backlight.patch"
+A bit of background about this patch:
 
-.bind_info in active_list[] is NULL by construction - and used to determine
-the acpi_video_device pointer during backlight restoration during resume.
 
-Using the list instead fixes backlight restoration for systems where the BIOS
-doesn't do this by itself already.
+acpi_video_bus_get_devices() explicitly calls acpi_video_device_enumerate()
+before acpi_video_bus_get_one_device(), which does acpi_video_device_bind().
 
-Signed-off-by: Matthias Hopf <mhopf@suse.de>
----
- drivers/acpi/video.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+In _enumerate(), active_list[] is created, with .bind_info explicitly set to
+NULL, while the related .bind_info entry in video_device_list is set to the
+acpi_video_device ptr in _bind().
 
-diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-index 9865d46..887ac2b 100644
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -2346,7 +2346,6 @@ static int acpi_video_resume(struct notifier_block *nb,
- {
- 	struct acpi_video_bus *video;
- 	struct acpi_video_device *video_device;
--	int i;
- 
- 	switch (val) {
- 	case PM_HIBERNATION_PREPARE:
-@@ -2359,11 +2358,12 @@ static int acpi_video_resume(struct notifier_block *nb,
- 
- 	dev_info(&video->device->dev, "Restoring backlight state\n");
- 
--	for (i = 0; i < video->attached_count; i++) {
--		video_device = video->attached_array[i].bind_info;
-+	mutex_lock(&video->device_list_lock);
-+	list_for_each_entry(video_device, &video->video_device_list, entry) {
- 		if (video_device && video_device->backlight)
- 			acpi_video_set_brightness(video_device->backlight);
- 	}
-+	mutex_unlock(&video->device_list_lock);
- 
- 	return NOTIFY_OK;
- }
+The .bind_info is later used in acpi_video_resume() to re-set the backlight
+- but it's only evaluated on the active_list[], on which all .bind_info are
+NULL by construction.  This results in backlight not being restored, if the
+BIOS doesn't do this by itself already.
+
+
+The patch resolves this by replacing the active_list[] traversal by a
+video_device_list traversal, but due to the nature of the issue I'm unsure
+whether the original issue isn't of more principal quality.  I don't understand
+why the list is (partially) transformed into an array in the first place,
+especially as both the array *and* the list are used in the code...
+
+
+Thanks
+
+Matthias
+
 -- 
-1.6.0.2
-
-
---===============7019024163682059695==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============7019024163682059695==--
+Matthias Hopf <mhopf@suse.de>      __        __   __
+Maxfeldstr. 5 / 90409 Nuernberg   (_   | |  (_   |__          mat@mshopf.de
+Phone +49-911-74053-715           __)  |_|  __)  |__  R & D   www.mshopf.de
