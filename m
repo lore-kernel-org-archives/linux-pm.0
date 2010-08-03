@@ -1,84 +1,79 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] SATA / AHCI: Do not play with the link PM during suspend to RAM (was: Re: HDD not suspending properly / dead on resume)
-Date: Tue, 3 Aug 2010 23:13:13 +0200
-Message-ID: <201008032313.13381.rjw@sisk.pl>
-References: <201007091750.05020.stephan.diestelhorst@amd.com> <201008022338.05195.rjw@sisk.pl> <201008031036.51012.stephan.diestelhorst@amd.com>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Tue, 3 Aug 2010 15:08:54 -0700
+Message-ID: <AANLkTinJ2jy18bAS-=abtDLaQWVmQdK1Oq105FcNDNyJ__20733.1160935157$1280873393$gmane$org@mail.gmail.com>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<AANLkTi=hoGF7egpyB9sLKJoXv5aiGrxfa9_5iH-96SA=@mail.gmail.com>
+	<1280851338.2774.30.camel@mulgrave.site>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <201008031036.51012.stephan.diestelhorst@amd.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: Stephan Diestelhorst <stephan.diestelhorst@amd.com>
-Cc: Tejun Heo <tj@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1280851338.2774.30.camel@mulgrave.site>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, August 03, 2010, Stephan Diestelhorst wrote:
-> On Monday 02 August 2010, 23:38:05 Rafael J. Wysocki wrote:
-> > On Monday, August 02, 2010, Stephan Diestelhorst wrote:
-> > > On Wednesday 28 July 2010, 23:50:09 Rafael J. Wysocki wrote:
-> > > > On Saturday, July 10, 2010, Tejun Heo wrote:
-> > > > > On 07/10/2010 08:50 AM, Stephan Diestelhorst wrote:
-> > > > > >> I have a box where this problem is kind of reproducible, but it happens _very_
-> > > > > >> rarely.  Also I can't reproduce it on demand running suspend-resume in a tight
-> > > > > >> loop.  Are you able to reproduce it more regurarly?
-> > > > > > 
-> > > > > > For me it is much more reproducible. If I run multiple direct writing
-> > > > > > dd-s to the disk in question I trigger it rather reliably (~75% or
-> > > > > > higher). See the attached script from an earlier email.
-> > > > > > Maybe that helps triggering your case more reliabl, too?
-> > > > > 
-> > > > That didn't help, but the appended patch fixes the problem for me.
-> > > 
-> > > <snip>
-> > > 
-> > > Sorry for taking ages. Vacation and catching up after it are to blame,
-> > > as is me forgetting to build a proper initrd...
-> > > 
-> > > Thanks for the patch! It certainly changes behaviour, however, in a
-> > > very strange way for me. With your patch my machine does not suspend
-> > > to ram anymore (a simple echo mem > /proc/sys/state blocks), and
-> > > nothing happens in dmesg if there is a lot of write I/O while
-> > > suspending. (A number of parallel dd's with oflag=direct)
-> > > 
-> > > If I stop the I/O, the system eventually goes into suspend to RAM.
-> > > However, that takes a while, after the I/O has stopped, and also
-> > > from "Preparing system for suspend" log entry until it is actually
-> > > done.
-> > > 
-> > > Is this intentional?
-> > 
-> > It surely isn't.
-> > 
-> > > Let me know how I can debug this further!
-> > > Ideally I'd like to be able to suspend the machine under I/O load,
-> > > too. (E.g. during a compile job.)
-> > > 
-> > > Can you reproduce this at your end, too?
-> > 
-> > Well, I didn't try suspending with a number of parallel dd's with oflag=direct
-> > in the background, but otherwise I'm not reproducing the issue with
-> > the patch applied.
-> 
-> Mhmhm, I have tried to reproduce my issue again, and also added some
-> dev_printk's around your code to understand where the delay is
-> happening.
-> 
-> However, I have not been able to reproduce the issue (with and without
-> the debug output) anymore, and I am happy to report that for now your
-> patch helps.
+2010/8/3 James Bottomley <James.Bottomley@suse.de>:
+> On Mon, 2010-08-02 at 21:18 -0700, Arve Hj=F8nnev=E5g wrote:
+>> > o =A0 =A0 =A0 A power-aware application must be able to efficiently co=
+mmunicate
+>> > =A0 =A0 =A0 =A0its needs to the system, so that such communication can=
+ be
+>> > =A0 =A0 =A0 =A0performed on hot code paths. =A0Communication via open(=
+) and
+>> > =A0 =A0 =A0 =A0close() is considered too slow, but communication via i=
+octl()
+>> > =A0 =A0 =A0 =A0is acceptable.
+>> >
+>>
+>> The problem with using open and close to prevent an allow suspend is
+>> not that it is too slow but that it interferes with collecting stats.
+>
+> Please elaborate on this. =A0I expect the pm-qos stats interface will
+> collect stats across user open/close because that's how it currently
+> works. =A0What's the problem?
+>
 
-Good.
+The pm-qos interface creates the request object in open and destroys
+it in release just like the suspend blocker interface. We need stats
+for each client which is lost if you free the object every time you
+unblock suspend.
 
-What you might be seeing is that the patch generally changes the timing of
-suspend and since it is done asynchronously by default the change might trigger
-an independent bug that was sensitive to timing.
+Or are you talking about user space opening and closing the stats
+interface (which does not cause any problems)?
 
-> I'd like to keep this under observation for a little while longer, though.
+>> The wakelock code has a sysfs interface that allow you to use a
+>> open/write/close sequence to block or unblock suspend. There is no
+>> limit to the amount of kernel memory that a process can consume with
+>> this interface, so the suspend blocker patchset uses a /dev interface
+>> with ioctls to block or unblock suspend and it destroys the kernel
+>> object when the file descriptor is closed.
+>
+> This is an implementation detail only.
 
-You can try to remove the noise produced by asynchronous suspend from the
-picture by dong "echo 0 > /sys/power/pm_async" (just once after bootup).
+There is no way fix it without changing the user space visible
+behavior of the API. The kernel does not know when it is safe to free
+the objects.
 
-Thanks,
-Rafael
+>=A0The pm-qos objects are long
+> lived, so their stats would be too. =A0I would guess that explicit stat
+> clearing might be a useful option.
+>
+
+Which pm-qos objects are you referring to? The struct pm_qos_object
+that backs each pm-qos class is long lived (I don't know why this is
+named pm_qos_object), but we need stats in struct pm_qos_request_list.
+
+-- =
+
+Arve Hj=F8nnev=E5g
