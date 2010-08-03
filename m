@@ -1,22 +1,11 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Tue, 3 Aug 2010 07:11:13 -0700
-Message-ID: <20100803141113.GD2407__11043.7787640423$1280844757$gmane$org@linux.vnet.ibm.com>
-References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<20100731215214.2543c07e@infradead.org>
-	<20100801054816.GI2470@linux.vnet.ibm.com>
-	<20100731230101.7cc1d8c7@infradead.org>
-	<20100801191228.GL2470@linux.vnet.ibm.com>
-	<20100801154708.19817b75@infradead.org>
-	<20100802011006.GS2470@linux.vnet.ibm.com>
-	<AANLkTi=a-1hn_oL=i-=RKK9xOur+4mQjTRut+aiXtYkE@mail.gmail.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Matthias Hopf <mhopf@suse.de>
+Subject: [PATCH] ACPI / PM: Traverse video_device_list for
+	backlight	restoration
+Date: Tue, 3 Aug 2010 12:05:05 +0200
+Message-ID: <20100803100505.GA26948__38289.6944684491$1280848302$gmane$org@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============7019024163682059695=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTi=a-1hn_oL=i-=RKK9xOur+4mQjTRut+aiXtYkE@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,38 +13,64 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, Matthew Garrett <mjg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Julia Lawall <julia@dik>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 02, 2010 at 09:56:10PM -0700, Arve Hj=F8nnev=E5g wrote:
-> On Sun, Aug 1, 2010 at 6:10 PM, Paul E. McKenney
-> <paulmck@linux.vnet.ibm.com> wrote:
-> > On Sun, Aug 01, 2010 at 03:47:08PM -0700, Arjan van de Ven wrote:
-> ...
-> >> Another one: freezing whole cgroups..... we have that today. it
-> >> actually works quite well.... of course the hard part is the decision
-> >> what to put in which cgroup, and at what frequency and duration you let
-> >> cgroups run.
-> >
-> > Indeed, the Android guys seemed to be quite excited by cgroup freezing
-> > until they thought about the application-classification problem.
-> > Seems like it should be easy for some types of applications, but I do
-> > admit that apps can have non-trivial and non-obvious dependencies.
-> =
+--===============7019024163682059695==
+Content-Type: text/x-patch; charset=us-ascii
+Content-Disposition: attachment; filename="0001-ACPI-PM-Traverse-video_device_list-for-backlight.patch"
 
-> The dependencies is what made this solution uninteresting to us. For
-> instance, we currently use cgroup scheduling to reduce the impact of
-> some background tasks, but we occasionally saw a watchdog restart of
-> the system process were critical services were waiting on a kernel
-> mutex owned by a background task for more than 20 seconds. If we froze
-> a cgroup instead, we would not hit this particular problem since tasks
-> cannot be frozen while executing kernel code the same way they can be
-> preempted, but nothing prevents a task from being frozen while holding
-> a user-space resource.
+.bind_info in active_list[] is NULL by construction - and used to determine
+the acpi_video_device pointer during backlight restoration during resume.
 
-Excellent point -- I had completely missed this failure mode!!!
+Using the list instead fixes backlight restoration for systems where the BIOS
+doesn't do this by itself already.
 
-							Thanx, Paul
+Signed-off-by: Matthias Hopf <mhopf@suse.de>
+---
+ drivers/acpi/video.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+index 9865d46..887ac2b 100644
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -2346,7 +2346,6 @@ static int acpi_video_resume(struct notifier_block *nb,
+ {
+ 	struct acpi_video_bus *video;
+ 	struct acpi_video_device *video_device;
+-	int i;
+ 
+ 	switch (val) {
+ 	case PM_HIBERNATION_PREPARE:
+@@ -2359,11 +2358,12 @@ static int acpi_video_resume(struct notifier_block *nb,
+ 
+ 	dev_info(&video->device->dev, "Restoring backlight state\n");
+ 
+-	for (i = 0; i < video->attached_count; i++) {
+-		video_device = video->attached_array[i].bind_info;
++	mutex_lock(&video->device_list_lock);
++	list_for_each_entry(video_device, &video->video_device_list, entry) {
+ 		if (video_device && video_device->backlight)
+ 			acpi_video_set_brightness(video_device->backlight);
+ 	}
++	mutex_unlock(&video->device_list_lock);
+ 
+ 	return NOTIFY_OK;
+ }
+-- 
+1.6.0.2
+
+
+--===============7019024163682059695==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============7019024163682059695==--
