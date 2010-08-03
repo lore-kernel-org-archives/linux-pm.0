@@ -1,24 +1,14 @@
-From: david@lang.hm
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Mon, 2 Aug 2010 21:44:44 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008022121430.6545__31488.1678823896$1280810837$gmane$org@asgard.lang.hm>
-References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<20100731215214.2543c07e@infradead.org>
-	<20100801054816.GI2470@linux.vnet.ibm.com>
-	<20100731230101.7cc1d8c7@infradead.org>
-	<20100801191228.GL2470@linux.vnet.ibm.com>
-	<20100801204026.GH31324@thunk.org>
-	<20100802030304.GU2470@linux.vnet.ibm.com>
-	<20100801210548.23f77ff6@infradead.org>
-	<alpine.DEB.2.00.1008012153300.25170@asgard.lang.hm>
-	<20100802140933.GB2405@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008021627290.29820@asgard.lang.hm>
-	<AANLkTi=1kBuyPS_P+eNLcnRu1mJH6BzpzQW_sENZuL1L@mail.gmail.com>
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: Re: [PATCH 0/8] ACPI / PCI / PCIe: Rework _OSC handling
+	(v2)
+Date: Tue, 03 Aug 2010 13:51:16 +0900
+Message-ID: <4C57A044.2020706__33373.4957072467$1280811230$gmane$org@jp.fujitsu.com>
+References: <201008022351.31406.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=1kBuyPS_P+eNLcnRu1mJH6BzpzQW_sENZuL1L@mail.gmail.com>
+In-Reply-To: <201008022351.31406.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,61 +18,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2 Aug 2010, Arve Hj?nnev?g wrote:
-
-> On Mon, Aug 2, 2010 at 5:08 PM,  <david@lang.hm> wrote:
->> On Mon, 2 Aug 2010, Paul E. McKenney wrote:
->>
->>
->> you are close, but I think what I'm proposing is actually simpler (assuming
->> that the scheduler can be configured to generate the appropriate stats)
->>
->> my thought was not to move applications between cgroups as they
->> aquire/release the suspend-block lock, bur rather to say that any
->> application that you would trust to get the suspend-block lock should be in
->> cgroup A while all other applications are in cgroup B
->>
->> when you are deciding if the system shoudl go to sleep because it is idle,
->> ignore the activity of all applications in cgroup B
->>
->> if cgroup A applications are busy, the system is not idle and should not
->> suspend.
->>
+(2010/08/03 6:51), Rafael J. Wysocki wrote:
+> Hi,
 >
-> Triggering suspend from idle has been suggested before. However, idle
-> is not a signal that it is safe to suspend since timers stop in
-> suspend (or the code could temporarily be waiting on a non-wakeup
-> interrupt). If you add suspend blockers or wakelocks to prevent
-> suspend while events you care about are pending, then it does not make
-> a lot of sense to prevent suspend just because the cpu is not idle.
+> This is the second iteration of the patchset based on
+> https://patchwork.kernel.org/patch/114917/ and the comments I received on that
+> patch.  Hopefully, I took all of the comments into account this time.
+>
+> [1/8] - Introduce acpi_pci_osc_control_query() allowing the caller to get a
+>          mask of _OSC control bits the BIOS allows the kernel to control
+>          for a given PCI root bridge.
+>
+> [2/8] - Introduce pci_aer_available() allowing the caller to check if the
+>          AER service driver should be enabled.
+>
+> [3/8] - Introduce kernel command line switch pcie_ports=.
+>
+> [4/8] - Rework the PCIe port driver to request _OSC control for all serives at
+>          once.
+>
+> [5/8] - Disable PCIe port services (that might be enabled by the BIOS) during
+>          initialization.
+>
+> [6/8] - Remove the PCIe port driver modules exit function.
+>
+> [7/8] - Rework acpi_pci_osc_control_set() so that it doesn't use cached
+>          result of a query and remove the fields of struct acpi_pci_root that
+>         aren't used any more.
+>
+> [8/8] - Reorder checks in acpi_pci_osc_control_set()
+>
 
-isn't this a matter of making the suspend decision look at what timers 
-have been set to expire in the near future and/or tweaking how long the 
-system needs to be idle before going to sleep?
+Hi Rafael,
 
-to properly do a good job at suspending hyperagressivly you need to look 
-at when you need to wake back up (after all, if you are only going to 
-sleep for 1 second, it makes no sense to try and enter a sleep state that 
-takes .5 seconds to get into and .6 seconds to get out of, you need to 
-pick a lighter power saving mode)
+I'm sorry for delayed responding.
 
-if you really want to have the application be able to say 'I am ready for 
-you to go to sleep NOW and I don't want any chance of waking back up until 
-the system is ready for me to do so' it may be possible to have a special 
-dev file that when a program attempts to read from it the program is 
-considered to have been idle forever (expiring any 'delay since last 
-activity' timers that are running for that process) and when the device 
-wakes back up (or after a little bit of time if the device decides not to 
-go back to sleep), allow the return from the blocking call to allow the 
-app to continue running.
+Your latest patchset looks much clearer than mine.
+I have comments on [1/8] and [7/8]. I'll send comment for each patch.
 
-but I am not sure that something like that is needed. I think just 
-checking for timers that are due to expire 'soon' and tweaking how long 
-the system must be 'idle' before it decides to go to sleep should be good 
-enough.
-
-David Lang
+Thanks,
+Kenji Kaneshige
