@@ -1,45 +1,40 @@
-From: Mike Turquette <mturquette@ti.com>
-Subject: Re: [linux-pm] Power management minisummit at Linux Plumbers Conference
- (November	3-5)
-Date: Tue, 03 Aug 2010 15:30:56 -0500
-Message-ID: <4C587C80.3040207@ti.com>
-References: <20100803182746.GA32276@srcf.ucam.org>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [linux-pm] Power management minisummit at Linux Plumbers
+	Conference (November 3-5)
+Date: Tue, 3 Aug 2010 21:34:31 +0100
+Message-ID: <20100803203431.GA2969@srcf.ucam.org>
+References: <20100803182746.GA32276@srcf.ucam.org> <4C587C80.3040207@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20100803182746.GA32276@srcf.ucam.org>
+Content-Disposition: inline
+In-Reply-To: <4C587C80.3040207@ti.com>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Mike Turquette <mturquette@ti.com>
 Cc: "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Matthew Garrett wrote:
-> I'm planning on finalising the schedule for the power management 
-> minisummit at the Linux Plumbers Conference by the end of this week. If 
-> anyone has topics that they'd like to discuss (or be discussed, if you 
-> can't make it) then please let me know or register at 
-> http://www.linuxplumbersconf.org/2010/ocw/events/proposals/ and file a 
+On Tue, Aug 03, 2010 at 03:30:56PM -0500, Mike Turquette wrote:
 
-That link did not really work for me, but I think I found the right 
-place after a few clicks.
+> That link did not really work for me, but I think I found the right  
+> place after a few clicks.
 
-> proposal there. We're likely to be concentrating on userspace/kernel 
-> interaction rather than pure kernel topics, so if you've got anything to 
-> say about how we can handle application requirements without 
-> compromising on our power savings then we'd love to hear from you.
+Oops! The link should have been 
+http://www.linuxplumbersconf.org/2010/ocw/events/LPC2010MC/proposals .
 
-Just FYI, I proposed a discussion on the issues that create such a large 
-power gap between a CPUIdle-only system and a system with suspend (with 
-the assumption that the lowest C-state can be hit by both).
+> Just FYI, I proposed a discussion on the issues that create such a large  
+> power gap between a CPUIdle-only system and a system with suspend (with  
+> the assumption that the lowest C-state can be hit by both).
+>
+> I don't really want to present a formal lecture on it, but it would be  
+> nice to discuss with the group what can be done to shrink that gap a  
+> little in kernel space (badly behaving timers in platform-independent  
+> code) and in userspace (power-aware timers, coalescing timers, etc).
 
-I don't really want to present a formal lecture on it, but it would be 
-nice to discuss with the group what can be done to shrink that gap a 
-little in kernel space (badly behaving timers in platform-independent 
-code) and in userspace (power-aware timers, coalescing timers, etc).
+That sounds great. The idea is to be fairly discussion-oriented, perhaps 
+with a short presentation to cover the outline of the issue, so this 
+kind of topic is ideal.
 
-This is not intended to be another suspend-blocker discussion, but more 
-of a discussion on what it takes to get CPUIdle to be more effective.
-
-Regards,
-Mike
+Thanks,
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
