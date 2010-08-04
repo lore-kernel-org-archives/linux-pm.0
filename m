@@ -1,15 +1,16 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: Re: 2.6.35 Regression: Ages spent discarding blocks that
- weren't used!
-Date: Wed, 04 Aug 2010 19:16:55 +1000
-Message-ID: <4C593007.7040708__5512.29481720856$1280913551$gmane$org@tuxonice.net>
-References: <4C58C528.4000606@tuxonice.net>
-	<4C592BFE.7070701@s5r6.in-berlin.de>
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: Re: [PATCH 7/8] ACPI / PCI: Do not preserve _OSC control
+ bits returned by a query (v2)
+Date: Wed, 04 Aug 2010 18:23:01 +0900
+Message-ID: <4C593175.9070603__14887.8698274077$1280913941$gmane$org@jp.fujitsu.com>
+References: <201008022351.31406.rjw@sisk.pl> <4C57C182.7060407@jp.fujitsu.com>
+	<201008031133.37471.rjw@sisk.pl> <201008032302.33778.rjw@sisk.pl>
+	<4C58FE9A.1040607@jp.fujitsu.com> <4C5927CB.4070705@jp.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C592BFE.7070701@s5r6.in-berlin.de>
+In-Reply-To: <4C5927CB.4070705@jp.fujitsu.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,156 +20,149 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
-
-On 04/08/10 18:59, Stefan Richter wrote:
-> (adding Cc: linux-scsi)
+(2010/08/04 17:41), Hidetoshi Seto wrote:
+> (2010/08/04 14:46), Kenji Kaneshige wrote:
+>> (2010/08/04 6:02), Rafael J. Wysocki wrote:
+>>> On Tuesday, August 03, 2010, Rafael J. Wysocki wrote:
+>>>> On Tuesday, August 03, 2010, Hidetoshi Seto wrote:
+>>>>> (2010/08/03 13:52), Kenji Kaneshige wrote:
+>>>>>> (2010/08/03 6:59), Rafael J. Wysocki wrote:
+>>>>>>> @@ -434,19 +432,6 @@ acpi_status acpi_pci_osc_control_set(acp
+>>>>>>>         if ((root->osc_control_set&    control_req) == control_req)
+>>>>>>>             goto out;
+>>>>>>>
+>>>>>>> -    /* Need to query controls first before requesting them */
+>>>>>>> -    if (!root->osc_queried) {
+>>>>>>> -        status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
+>>>>>>> -        if (ACPI_FAILURE(status))
+>>>>>>> -            goto out;
+>>>>>>> -    }
+>>>>>>> -    if ((root->osc_control_qry&    control_req) != control_req) {
+>>>>>>> -        printk(KERN_DEBUG
+>>>>>>> -               "Firmware did not grant requested _OSC control\n");
+>>>>>>> -        status = AE_SUPPORT;
+>>>>>>> -        goto out;
+>>>>>>> -    }
+>>>>>>
+>>>>>> I think acpi_pci_osc_control_set() still need to query before commit
+>>>>>> to ensure all the requested controls are granted to OS.
+>>>>>>
+>>>>>> So the code needs to be
+>>>>>>
+>>>>>>       status = acpi_pci_query_osc(root, root->osc_support_set,&control_req);
+>>>>>>       if (ACPI_FAILURE(status))
+>>>>>>           goto out;
+>>>>>
+>>
+>> Sorry, that should have been
+>>
+>>      query = control_req;
+>>      status = acpi_pci_query_osc(root, root->osc_support_set,&query);
+>>      if (ACPI_FAILURE(status))
+>>          goto out;
+>>      if ((query&  control_req) != control_req) {
+>>          printk_(KERN_DEBUG
+>>              "Firmware did not grant requested _OSC control\n");
+>>          status = AE_SUPPORT;
+>>          goto out;
+>>      }
+>>
+>> I know current pcie_port_acpi_setup() queries the requesting controls
+>> before acpi_pci_osc_control_set() and only one control is requested
+>> in the other code. However, I think acpi_pci_osc_control_set() still
+>> need to query the requested controls to ensure all the requested
+>> controls, in case someone calls this function without querying the
+>> requesting controls. In other words, I think it must be ensured that
+>> any controls are never granted to OS when acpi_pci_osc_control_set()
+>> returns error.
 >
-> Nigel Cunningham wrote:
->> I've just given hibernation a go under 2.6.35, and at first I thought
->> there was some sort of hang in freezing processes. The computer sat
->> there for aaaaaages, apparently doing nothing. Switched from TuxOnIce to
->> swsusp to see if it was specific to my code but no - the problem was
->> there too. I used the nifty new kdb support to get a backtrace, which was:
->>
->> get_swap_page_of_type
->> discard_swap_cluster
->> blk_dev_issue_discard
->> wait_for_completion
->>
->> Adding a printk in discard swap cluster gives the following:
->>
->> [   46.758330] Discarding 256 pages from bdev 800003 beginning at page 640377.
->> [   47.003363] Discarding 256 pages from bdev 800003 beginning at page 640633.
->> [   47.246514] Discarding 256 pages from bdev 800003 beginning at page 640889.
->>
->> ...
->>
->> [  221.877465] Discarding 256 pages from bdev 800003 beginning at page 826745.
->> [  222.121284] Discarding 256 pages from bdev 800003 beginning at page 827001.
->> [  222.365908] Discarding 256 pages from bdev 800003 beginning at page 827257.
->> [  222.610311] Discarding 256 pages from bdev 800003 beginning at page 827513.
->>
->> So allocating 4GB of swap on my SSD now takes 176 seconds instead of
->> virtually no time at all. (This code is completely unchanged from 2.6.34).
->>
->> I have a couple of questions:
->>
->> 1) As far as I can see, there haven't been any changes in mm/swapfile.c
->> that would cause this slowdown, so something in the block layer has
->> (from my point of view) regressed. Is this a known issue?
+> I think the following patch is what you mean.
+
+Thank you! Yes, it is what I meant.
+And the patch looks good to me.
+
+Thanks,
+Kenji Kaneshige
+
+
+
 >
-> Perhaps ATA TRIM is enabled for this SSD in 2.6.35 but not in 2.6.34?
-> Or the discard code has been changed to issue many moderately sized ATA
-> TRIMs instead of a single huge one, and the former was much more optimal
-> for your particular SSD?
-
-Mmmm. Wonder how I tell. Something in dmesg or hdparm -I?
-
-ata3.00: ATA-8: ARSSD56GBP, 1916, max UDMA/133
-ata3.00: 500118192 sectors, multi 1: LBA48 NCQ (depth 31/32), AA
-ata3.00: configured for UDMA/133
-scsi 2:0:0:0: Direct-Access     ATA      ARSSD56GBP       1916 PQ: 0 ANSI: 5
-sd 2:0:0:0: Attached scsi generic sg1 type 0
-sd 2:0:0:0: [sda] 500118192 512-byte logical blocks: (256 GB/238 GiB)
-sd 2:0:0:0: [sda] Write Protect is off
-sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't 
-support DPO or FUA
-sda: sda1 sda2 sda3 sda4
-sd 2:0:0:0: [sda] Attached SCSI disk
-
-/dev/sda:
-
-ATA device, with non-removable media
-	Model Number:       ARSSD56GBP
-	Serial Number:      DC2210200F1B40015
-	Firmware Revision:  1916
-Standards:
-	Supported: 8 7 6 5
-	Likely used: 8
-Configuration:
-	Logical		max	current
-	cylinders	16383	16383
-	heads		16	16
-	sectors/track	63	63
-	--
-	CHS current addressable sectors:   16514064
-	LBA    user addressable sectors:  268435455
-	LBA48  user addressable sectors:  500118192
-	Logical  Sector size:                   512 bytes
-	Physical Sector size:                   512 bytes
-	device size with M = 1024*1024:      244198 MBytes
-	device size with M = 1000*1000:      256060 MBytes (256 GB)
-	cache/buffer size  = unknown
-	Nominal Media Rotation Rate: Solid State Device
-Capabilities:
-	LBA, IORDY(can be disabled)
-	Queue depth: 32
-	Standby timer values: spec'd by Standard, no device specific minimum
-	R/W multiple sector transfer: Max = 1	Current = 1
-	DMA: mdma0 mdma1 mdma2 udma0 udma1 udma2 udma3 udma4 udma5 *udma6
-	     Cycle time: min=120ns recommended=120ns
-	PIO: pio0 pio1 pio2 pio3 pio4
-	     Cycle time: no flow control=120ns  IORDY flow control=120ns
-Commands/features:
-	Enabled	Supported:
-	   *	SMART feature set
-	    	Security Mode feature set
-	   *	Power Management feature set
-	   *	Write cache
-	   *	Look-ahead
-	   *	Host Protected Area feature set
-	   *	WRITE_BUFFER command
-	   *	READ_BUFFER command
-	   *	DOWNLOAD_MICROCODE
-	    	SET_MAX security extension
-	   *	48-bit Address feature set
-	   *	Device Configuration Overlay feature set
-	   *	Mandatory FLUSH_CACHE
-	   *	FLUSH_CACHE_EXT
-	   *	SMART self-test
-	   *	General Purpose Logging feature set
-	   *	Gen1 signaling speed (1.5Gb/s)
-	   *	Gen2 signaling speed (3.0Gb/s)
-	   *	Native Command Queueing (NCQ)
-	   *	Phy event counters
-	   *	DMA Setup Auto-Activate optimization
-	    	Device-initiated interface power management
-	   *	Software settings preservation
-	   *	Data Set Management determinate TRIM supported
-Security:
-		supported
-	not	enabled
-	not	locked
-		frozen
-	not	expired: security count
-	not	supported: enhanced erase
-Checksum: correct
-
-
->> 2) Why are we calling discard_swap_cluster anyway? The swap was unused
->> and we're allocating it. I could understand calling it when freeing
->> swap, but when allocating?
+> And... (Continue to next post)
 >
-> At the moment when the administrator creates swap space, the kernel can
-> assume that he has no use anymore for the data that may have existed
-> previously at this space.  Hence instruct the SSD's flash translation
-> layer to return all these blocks to the list of unused logical blocks
-> which do not have to be read and backed up whenever another logical
-> block within the same erase block is written to.
+> Thanks,
+> H.Seto
 >
-> However, I am surprised that this is done every time (?) when preparing
-> for hibernation.
-
-It's not hibernation per se. The discard code is called from a few 
-places in swapfile.c in (afaict from a quick scan) both swap allocation 
-and free paths.
-
-Regards,
-
-Nigel
+> =====
+>
+> From: Rafael J. Wysocki<rjw@sisk.pl>
+> Subject: ACPI / PCI: Do not preserve _OSC control bits returned by a query (v3)
+>
+> All of the remaining callers of acpi_pci_osc_control_set() either
+> use acpi_pci_root_osc_query() right before it, like
+> pcie_port_acpi_setup(), or ask for control of one feature only,
+> like acpi_get_hp_hw_control_from_firmware().  Thus there is no
+> reason to preserve the _OSC control bits returned by an _OSC query
+> and the osc_control_qry and osc_queried fields of struct
+> acpi_pci_root are not necessary any more.  Remove them and modify the
+> code that uses them accordingly.
+>
+> [v3: HS: keep query in acpi_pci_osc_control_set]
+>
+> Signed-off-by: Rafael J. Wysocki<rjw@sisk.pl>
+> Signed-off-by: Hidetoshi Seto<seto.hidetoshi@jp.fujitsu.com>
+> ---
+>   drivers/acpi/pci_root.c |   13 +++++--------
+>   include/acpi/acpi_bus.h |    3 ---
+>   2 files changed, 5 insertions(+), 11 deletions(-)
+>
+> diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
+> index d3110d6..ec03c19 100644
+> --- a/drivers/acpi/pci_root.c
+> +++ b/drivers/acpi/pci_root.c
+> @@ -248,10 +248,8 @@ static acpi_status acpi_pci_query_osc(struct acpi_pci_root *root,
+>   	status = acpi_pci_run_osc(root->device->handle, capbuf,&result);
+>   	if (ACPI_SUCCESS(status)) {
+>   		root->osc_support_set = support;
+> -		root->osc_control_qry = result;
+>   		if (control)
+>   			*control = result;
+> -		root->osc_queried = 1;
+>   	}
+>   	return status;
+>   }
+> @@ -438,12 +436,11 @@ acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags)
+>   		goto out;
+>
+>   	/* Need to query controls first before requesting them */
+> -	if (!root->osc_queried) {
+> -		status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
+> -		if (ACPI_FAILURE(status))
+> -			goto out;
+> -	}
+> -	if ((root->osc_control_qry&  control_req) != control_req) {
+> +	result = control_req;
+> +	status = acpi_pci_query_osc(root, root->osc_support_set,&result);
+> +	if (ACPI_FAILURE(status))
+> +		goto out;
+> +	if ((result&  control_req) != control_req) {
+>   		printk(KERN_DEBUG
+>   		       "Firmware did not grant requested _OSC control\n");
+>   		status = AE_SUPPORT;
+> diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+> index baacd98..4de84ce 100644
+> --- a/include/acpi/acpi_bus.h
+> +++ b/include/acpi/acpi_bus.h
+> @@ -377,9 +377,6 @@ struct acpi_pci_root {
+>
+>   	u32 osc_support_set;	/* _OSC state of support bits */
+>   	u32 osc_control_set;	/* _OSC state of control bits */
+> -	u32 osc_control_qry;	/* the latest _OSC query result */
+> -
+> -	u32 osc_queried:1;	/* has _OSC control been queried? */
+>   };
+>
+>   /* helper */
