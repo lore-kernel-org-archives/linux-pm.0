@@ -1,28 +1,16 @@
-From: david@lang.hm
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Wed, 4 Aug 2010 00:42:58 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008040027140.25170@asgard.lang.hm>
-References: <20100801210548.23f77ff6@infradead.org>
-	<alpine.DEB.2.00.1008012153300.25170@asgard.lang.hm>
-	<20100802140933.GB2405@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008021627290.29820@asgard.lang.hm>
-	<AANLkTi=1kBuyPS_P+eNLcnRu1mJH6BzpzQW_sENZuL1L@mail.gmail.com>
-	<alpine.DEB.2.00.1008022121430.6545@asgard.lang.hm>
-	<AANLkTikhcYzNp8CPp8cqrV7Ey5CLMWu1sJTNxUtEi2as@mail.gmail.com>
-	<alpine.DEB.2.00.1008022203470.6545@asgard.lang.hm>
-	<AANLkTinFT5jq4nUhUpzS5S4TVDQGj0S7RtRgxNhsz2UF@mail.gmail.com>
-	<alpine.DEB.2.00.1008031611100.6545@asgard.lang.hm>
-	<20100804001015.GJ2407@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008031723530.6545@asgard.lang.hm>
-	<AANLkTinjH0C0bSK=Y2wKASnbJFsR2BN303xBXkaHbmRC@mail.gmail.com>
-	<alpine.DEB.2.00.1008032111350.25170@asgard.lang.hm>
-	<AANLkTi=O++qfY7zz5rErqWQn0n4Tj7dfxQNcytjwiP4q@mail.gmail.com>
-	<alpine.DEB.2.00.1008032312440.25170@asgard.lang.hm>
-	<AANLkTikyD94wqWZTWA23K=zvN3RpKB6dDRrvFSv9szMg@mail.gmail.com>
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Subject: Re: [PATCH 7/8] ACPI / PCI: Do not preserve _OSC control
+ bits returned by a query (v2)
+Date: Wed, 04 Aug 2010 17:41:47 +0900
+Message-ID: <4C5927CB.4070705__14914.4681905911$1280911516$gmane$org@jp.fujitsu.com>
+References: <201008022351.31406.rjw@sisk.pl> <4C57C182.7060407@jp.fujitsu.com>
+	<201008031133.37471.rjw@sisk.pl> <201008032302.33778.rjw@sisk.pl>
+	<4C58FE9A.1040607@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="680960-2146013949-1280907779=:25170"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikyD94wqWZTWA23K=zvN3RpKB6dDRrvFSv9szMg@mail.gmail.com>
+In-Reply-To: <4C58FE9A.1040607@jp.fujitsu.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -32,281 +20,141 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel <linux-kernel@vger.kernel.org>, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---680960-2146013949-1280907779=:25170
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id o747hZSl015870
-
-On Wed, 4 Aug 2010, Arve Hj?nnev?g wrote:
-
-> 2010/8/3  <david@lang.hm>:
->> On Tue, 3 Aug 2010, Arve Hj?nnev?g wrote:
->>
->>> 2010/8/3 =A0<david@lang.hm>:
->>>>
->>>> On Tue, 3 Aug 2010, Arve Hj?nnev?g wrote:
->>>>
->>>> in this case, another reason you would consider using suspend over i=
-dle
->>>> is
->>>> that you can suspend until the next timer that your privilaged
->>>> applications
->>>> have set, and skip timers set by the non-privilaged applications,
->>>> resulting
->>>> in more time asleep.
->>>
->>> Without wakelock or suspend blockers this can still break since a
->>> privileged application may be waiting on a resource held by a
->>> non-privileged application.
->>
->> since the non-privilaged application is never frozen when a privilaged
->> application is running, I'm not sure how you would get this to happen =
-that
->> wouldn't also be a problem with wakelocks.
->
-> With wakelocks we annotate that we have important work to do, until
-> that work is accomplished we do not suspend. If you modify the idle
-> code ignore some processes' timers the system may get stuck in idle
-> while waiting for a non-privileged application to release a resource.
-
-if you don't have a wakelock the system could go into suspend under the=20
-exact same conditions. If the privilaged program wants to be sure of=20
-preventing this, all it needs to do is to set of timer to take action=20
-before the timeout.
-
->>
->> if you want to have a privilaged application keep the system awake whi=
-le it
->> waits for a non-privilaged application, all it would need to do is to =
-set a
->> timer near enough in the future that it's considered 'awake' all the t=
-ime.
->> this will cost a context switch every timeout period (for the applicat=
-ion to
->> check that it's still waiting and set the next timer), but that's pret=
-ty
->> cheap.
->
-> No, this will kill your idle power.
-
-you are only doing this every several seconds to prevent the system from=20
-suspending.
-
-it's possible that I'm making false assumptions about how quickly you wan=
-t=20
-to go into full suspend mode.
-
-if a user is doing nothing that would warrent wakelocks, but has an=20
-unprivilaged application running (a dancing cows game), and is doing=20
-nothing other than occasionally hitting a button, how short is the timeou=
-t=20
-that you would set that would have the system go into suspend? (i.e. how=20
-frequently must the user do something to keep the system awake)
-
-or let's use a better example, the user has an unprivilaged book-reader=20
-application, how quickly must they change pages to prevent the system fro=
-m=20
-suspending?
-
-I'm figuring that these times are in the 1-5 minute range.
-
-therefor the timeout period I am mentioning above could easily be one=20
-wakeup every 40-50 seconds.
-
-that is not going to kill your idle power.
-
-is my assumption about the length of the timeout incorrect?
-
->>
->> one thing this would destroy is the stats currently built around the
->> wakelock, but since they would be replaced by stats of exactly the typ=
-e of
->> thing that powertop was written to deal with, I don't see this as a pr=
-oblem
->> (powertop would just have to learn a mode where it ignores the
->> non-privilaged tasks).consolodating tools is a good thing.
->>
->>>>>>> There may well be others.
->>>>>>>
->>>>>>> Whether these distinctions are a good thing or a bad thing is one=
- of
->>>>>>> the topics of this discussion. ?But the distinctions themselves a=
-re
->>>>>>> certainly very real, from what I can see.
->>>>>>>
->>>>>>> Or am I missing your point?
+(2010/08/04 14:46), Kenji Kaneshige wrote:
+> (2010/08/04 6:02), Rafael J. Wysocki wrote:
+>> On Tuesday, August 03, 2010, Rafael J. Wysocki wrote:
+>>> On Tuesday, August 03, 2010, Hidetoshi Seto wrote:
+>>>> (2010/08/03 13:52), Kenji Kaneshige wrote:
+>>>>> (2010/08/03 6:59), Rafael J. Wysocki wrote:
+>>>>>> @@ -434,19 +432,6 @@ acpi_status acpi_pci_osc_control_set(acp
+>>>>>>        if ((root->osc_control_set&   control_req) == control_req)
+>>>>>>            goto out;
 >>>>>>
->>>>>> these big distinction that I see as significant seem to be in the
->>>>>> decision
->>>>>> of when to go into the different states, and the difference betwee=
-n the
->>>>>> states ?themselves seem to be less significant (and either very cl=
-ose
->>>>>> to,
->>>>>> or
->>>>>> within the variation that already exists for power saving modes)
->>>>>>
->>>>>> If I'm right bout this, then it would seem to simplify the concept=
- and
->>>>>> change it from some really foreign android-only thing into a speci=
-al
->>>>>> case
->>>>>> variation of existing core concepts.
+>>>>>> -    /* Need to query controls first before requesting them */
+>>>>>> -    if (!root->osc_queried) {
+>>>>>> -        status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
+>>>>>> -        if (ACPI_FAILURE(status))
+>>>>>> -            goto out;
+>>>>>> -    }
+>>>>>> -    if ((root->osc_control_qry&   control_req) != control_req) {
+>>>>>> -        printk(KERN_DEBUG
+>>>>>> -               "Firmware did not grant requested _OSC control\n");
+>>>>>> -        status = AE_SUPPORT;
+>>>>>> -        goto out;
+>>>>>> -    }
 >>>>>
->>>>> Suspend is not an android only concept. The android extensions just
->>>>> allow us to aggressively use suspend without loosing (or delaying)
->>>>> wakeup events. On the hardware that we shipped we can enter the sam=
-e
->>>>> power mode from idle as we do in suspend, but we still use suspend
->>>>> primarily because it stops the monotonic clock and all the timers t=
-hat
->>>>> use it. Changing suspend to behave more like an idle mode, which se=
-ems
->>>>> to be what you are suggesting, would not buy us anything.
->>>>
->>>> Ok, If I am understanding you correctly I think this is an important
->>>> point.
->>>>
->>>> What Android calls suspend is not what other linux distros call susp=
-end,
->>>> it's just a low-power mode with different wakeup rules.
->>>>
->>>> Is this correct?
->>>>
->>>
->>> No. Android suspend is Linux suspend. We just enter it more frequentl=
-y.
->>
->> In Linux, a full suspend normally takes the system down to a mode that=
- can't
->> be reached by the normal idle mechnism (including powering down
->> peripherals). It also takes significantly different actions to wake up=
-. What
->> you are describing seems much milder than that.
->
-> We use the normal suspend sequence. The shipping hardware we have just
-> don't need to do lot
->
->>
->>>> If this is the case it seems even more so that the android suspend s=
-hould
->>>> be
->>>> addressed by tieing into the power management/idle stuff rather than=
- the
->>>> suspend/hibernate side of things
->>>>
->>>> is the reason you want to stop the onotonic clock and the timers bec=
-ause
->>>> the
->>>> applications need to be fooled into thinking no time has passed?
->>>>
->>>
->>> Yes, but this is not an Android extension, it is part of the normal
->>> Linux suspend sequence.
->>
->> no, as noted by others in this thread, normal linux suspend/resume mod=
-ifies
->> the clock to show that time has passed since the suspend happened.
->>
->
-> The monotonic clock always stops. There are a few different ways to
-> maintain the realtime clock and we use one of them.
->
->>>> or is it to prevent extranious wakeups?
->>>>
->>> That too.
->>
->> as noted above, this sounds like it's configurable.
->>
->>>> or is it to save additional power?
->>>>
->>> No (assuming you are asking about the clock), the actual hardware
->>> clock (on msm) stops even in idle but it is resynchronized on wakeup
->>> with a clock that never stops when used from idle.
->>
->> so I'm left not understanding the huge desire to stop the monotonic cl=
-ock.
->>
->
-> If you ignore the timers and don't stop the clock they are based on,
-> you break a lot of apps when you resume (watchdogs and timeouts
-> trigger). If you don't ignore timers, you can't sleep very long with
-> existing software.
-
-if you can stop the clocks they are based on, you could also shift them=20
-into the future. but in any case, significant changes in time can cause=20
-problems for suspended apps (if nothing else, broken network connections=20
-because the machines elsewhere timed you out)
-
->>>>>> you have many different power saving modes, the daemon (or kernel =
-code)
->>>>>> that
->>>>>> is determining which mode to go into would need different logic
->>>>>> (including,
->>>>>> but not limited to the ability to be able to ignore one or more cg=
-roups
->>>>>> of
->>>>>> processes). different power saving modes have different trade-offs=
-, and
->>>>>> some
->>>>>> of them power down different peripherals (which is always a platfo=
-rm
->>>>>> specific, if not system specific set of trade-offs)
->>>>>>
+>>>>> I think acpi_pci_osc_control_set() still need to query before commit
+>>>>> to ensure all the requested controls are granted to OS.
 >>>>>
->>>>> The hardware specific idle hook can (and does) decide to go into an=
-y
->>>>> power state from idle that does not disrupt any active devices.
+>>>>> So the code needs to be
+>>>>>
+>>>>>      status = acpi_pci_query_osc(root, root->osc_support_set,&control_req);
+>>>>>      if (ACPI_FAILURE(status))
+>>>>>          goto out;
 >>>>
->>>> This I know is an Andoid specific thing. On other platforms power st=
-ates
->>>> very definantly can make user visible changes.
->>>
->>> How is this Android specific?
->>
->> you are stating that this must be suspend because low-power idle must =
-be
->> transparent to the user.
->
-> It must be transparent to the rest of the system.
->
->>
->> I am saying that on Linux, low-power idle commonly is not transparent =
-to the
->> user, so the requirement for it to be transparent (therefor putting th=
-e
->> suspend into a different category) is an Android only requirement.
->>
->
-> I'm am not talking about minor latencies. If you have a platform that
-> for instance turns off you screen dma when entering idle, it is broken
-> whether is running Android or not. If it does the same in suspend it
-> is not a problem.
+> 
+> Sorry, that should have been
+> 
+>     query = control_req;
+>     status = acpi_pci_query_osc(root, root->osc_support_set, &query);
+>     if (ACPI_FAILURE(status))
+>         goto out;
+>     if ((query & control_req) != control_req) {
+>         printk_(KERN_DEBUG
+>             "Firmware did not grant requested _OSC control\n");
+>         status = AE_SUPPORT;
+>         goto out;
+>     }
+> 
+> I know current pcie_port_acpi_setup() queries the requesting controls
+> before acpi_pci_osc_control_set() and only one control is requested
+> in the other code. However, I think acpi_pci_osc_control_set() still
+> need to query the requested controls to ensure all the requested
+> controls, in case someone calls this function without querying the
+> requesting controls. In other words, I think it must be ensured that
+> any controls are never granted to OS when acpi_pci_osc_control_set()
+> returns error.
 
-This isn't sounding quite right to me. I've seen too many discussions=20
-about things like idle and USB devices/hubs/drives/etc getting powered=20
-down for power savings modes to make me readily accept that everything=20
-must be as transparent as you imply. Just the case of drive spin-down=20
-shows that it's possible to do things that would be considered=20
-destructive, but you have to have a flag and wake-up path to recover=20
-within a 'reasonable' amount of time (I guess that this could be=20
-'transparent' if that only implies that things must work eventually, whic=
-h=20
-isn't what I read into the statement)
+I think the following patch is what you mean.
 
-David Lang
---680960-2146013949-1280907779=:25170
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+And... (Continue to next post)
 
+Thanks,
+H.Seto
 
---680960-2146013949-1280907779=:25170--
+=====
+
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: ACPI / PCI: Do not preserve _OSC control bits returned by a query (v3)
+
+All of the remaining callers of acpi_pci_osc_control_set() either
+use acpi_pci_root_osc_query() right before it, like
+pcie_port_acpi_setup(), or ask for control of one feature only,
+like acpi_get_hp_hw_control_from_firmware().  Thus there is no
+reason to preserve the _OSC control bits returned by an _OSC query
+and the osc_control_qry and osc_queried fields of struct
+acpi_pci_root are not necessary any more.  Remove them and modify the
+code that uses them accordingly.
+
+[v3: HS: keep query in acpi_pci_osc_control_set]
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+---
+ drivers/acpi/pci_root.c |   13 +++++--------
+ include/acpi/acpi_bus.h |    3 ---
+ 2 files changed, 5 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
+index d3110d6..ec03c19 100644
+--- a/drivers/acpi/pci_root.c
++++ b/drivers/acpi/pci_root.c
+@@ -248,10 +248,8 @@ static acpi_status acpi_pci_query_osc(struct acpi_pci_root *root,
+ 	status = acpi_pci_run_osc(root->device->handle, capbuf, &result);
+ 	if (ACPI_SUCCESS(status)) {
+ 		root->osc_support_set = support;
+-		root->osc_control_qry = result;
+ 		if (control)
+ 			*control = result;
+-		root->osc_queried = 1;
+ 	}
+ 	return status;
+ }
+@@ -438,12 +436,11 @@ acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags)
+ 		goto out;
+ 
+ 	/* Need to query controls first before requesting them */
+-	if (!root->osc_queried) {
+-		status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
+-		if (ACPI_FAILURE(status))
+-			goto out;
+-	}
+-	if ((root->osc_control_qry & control_req) != control_req) {
++	result = control_req;
++	status = acpi_pci_query_osc(root, root->osc_support_set, &result);
++	if (ACPI_FAILURE(status))
++		goto out;
++	if ((result & control_req) != control_req) {
+ 		printk(KERN_DEBUG
+ 		       "Firmware did not grant requested _OSC control\n");
+ 		status = AE_SUPPORT;
+diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+index baacd98..4de84ce 100644
+--- a/include/acpi/acpi_bus.h
++++ b/include/acpi/acpi_bus.h
+@@ -377,9 +377,6 @@ struct acpi_pci_root {
+ 
+ 	u32 osc_support_set;	/* _OSC state of support bits */
+ 	u32 osc_control_set;	/* _OSC state of control bits */
+-	u32 osc_control_qry;	/* the latest _OSC query result */
+-
+-	u32 osc_queried:1;	/* has _OSC control been queried? */
+ };
+ 
+ /* helper */
+-- 
+1.7.2
