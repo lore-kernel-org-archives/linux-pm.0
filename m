@@ -1,16 +1,15 @@
-From: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Wed, 04 Aug 2010 00:00:27 -0400
-Message-ID: <1280894427.11045.293.camel__29968.3188939982$1280894499$gmane$org@mulgrave.site>
-References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<AANLkTi=hoGF7egpyB9sLKJoXv5aiGrxfa9_5iH-96SA=@mail.gmail.com>
-	<1280851338.2774.30.camel@mulgrave.site>
-	<AANLkTinJ2jy18bAS-=abtDLaQWVmQdK1Oq105FcNDNyJ@mail.gmail.com>
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: Re: [PATCH 1/8] ACPI / PCI: Introduce
+	acpi_pci_osc_control_query()
+Date: Wed, 04 Aug 2010 13:28:29 +0900
+Message-ID: <4C58EC6D.4050902__3023.29669143564$1280896369$gmane$org@jp.fujitsu.com>
+References: <201008022351.31406.rjw@sisk.pl> <4C57A346.6020003@jp.fujitsu.com>
+	<201008031127.12117.rjw@sisk.pl> <201008032258.40838.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinJ2jy18bAS-=abtDLaQWVmQdK1Oq105FcNDNyJ@mail.gmail.com>
+In-Reply-To: <201008032258.40838.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,62 +19,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCAyMDEwLTA4LTAzIGF0IDE1OjA4IC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
-Ogo+IDIwMTAvOC8zIEphbWVzIEJvdHRvbWxleSA8SmFtZXMuQm90dG9tbGV5QHN1c2UuZGU+Ogo+
-ID4gT24gTW9uLCAyMDEwLTA4LTAyIGF0IDIxOjE4IC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdy
-b3RlOgo+ID4+ID4gbyAgICAgICBBIHBvd2VyLWF3YXJlIGFwcGxpY2F0aW9uIG11c3QgYmUgYWJs
-ZSB0byBlZmZpY2llbnRseSBjb21tdW5pY2F0ZQo+ID4+ID4gICAgICAgIGl0cyBuZWVkcyB0byB0
-aGUgc3lzdGVtLCBzbyB0aGF0IHN1Y2ggY29tbXVuaWNhdGlvbiBjYW4gYmUKPiA+PiA+ICAgICAg
-ICBwZXJmb3JtZWQgb24gaG90IGNvZGUgcGF0aHMuICBDb21tdW5pY2F0aW9uIHZpYSBvcGVuKCkg
-YW5kCj4gPj4gPiAgICAgICAgY2xvc2UoKSBpcyBjb25zaWRlcmVkIHRvbyBzbG93LCBidXQgY29t
-bXVuaWNhdGlvbiB2aWEgaW9jdGwoKQo+ID4+ID4gICAgICAgIGlzIGFjY2VwdGFibGUuCj4gPj4g
-Pgo+ID4+Cj4gPj4gVGhlIHByb2JsZW0gd2l0aCB1c2luZyBvcGVuIGFuZCBjbG9zZSB0byBwcmV2
-ZW50IGFuIGFsbG93IHN1c3BlbmQgaXMKPiA+PiBub3QgdGhhdCBpdCBpcyB0b28gc2xvdyBidXQg
-dGhhdCBpdCBpbnRlcmZlcmVzIHdpdGggY29sbGVjdGluZyBzdGF0cy4KPiA+Cj4gPiBQbGVhc2Ug
-ZWxhYm9yYXRlIG9uIHRoaXMuICBJIGV4cGVjdCB0aGUgcG0tcW9zIHN0YXRzIGludGVyZmFjZSB3
-aWxsCj4gPiBjb2xsZWN0IHN0YXRzIGFjcm9zcyB1c2VyIG9wZW4vY2xvc2UgYmVjYXVzZSB0aGF0
-J3MgaG93IGl0IGN1cnJlbnRseQo+ID4gd29ya3MuICBXaGF0J3MgdGhlIHByb2JsZW0/Cj4gPgo+
-IAo+IFRoZSBwbS1xb3MgaW50ZXJmYWNlIGNyZWF0ZXMgdGhlIHJlcXVlc3Qgb2JqZWN0IGluIG9w
-ZW4gYW5kIGRlc3Ryb3lzCj4gaXQgaW4gcmVsZWFzZSBqdXN0IGxpa2UgdGhlIHN1c3BlbmQgYmxv
-Y2tlciBpbnRlcmZhY2UuIFdlIG5lZWQgc3RhdHMKPiBmb3IgZWFjaCBjbGllbnQgd2hpY2ggaXMg
-bG9zdCBpZiB5b3UgZnJlZSB0aGUgb2JqZWN0IGV2ZXJ5IHRpbWUgeW91Cj4gdW5ibG9jayBzdXNw
-ZW5kLgoKPyByaWdodCBhdCB0aGUgbW9tZW50IGl0IGRvZXNuJ3QgZG8gc3RhdHMuICBJIGRvbid0
-IHNlZSB3aHkgYWRkaW5nIGEgcGVyCnBpZCBvciBwZXIgbmFtZSBzdGF0IGNvdW50IG9uIHRoZSBs
-b25nIGxpdmVkIG9iamVjdCB3b24ndCB3b3JrIGhlcmUuCgo+IE9yIGFyZSB5b3UgdGFsa2luZyBh
-Ym91dCB1c2VyIHNwYWNlIG9wZW5pbmcgYW5kIGNsb3NpbmcgdGhlIHN0YXRzCj4gaW50ZXJmYWNl
-ICh3aGljaCBkb2VzIG5vdCBjYXVzZSBhbnkgcHJvYmxlbXMpPwoKVGhlcmUgaXMgbm8gc3RhdCBp
-bnRlcmZhY2UgeWV0OyBpdCdzIGZvciB1cyB0byBkZWZpbmUuCgo+ID4+IFRoZSB3YWtlbG9jayBj
-b2RlIGhhcyBhIHN5c2ZzIGludGVyZmFjZSB0aGF0IGFsbG93IHlvdSB0byB1c2UgYQo+ID4+IG9w
-ZW4vd3JpdGUvY2xvc2Ugc2VxdWVuY2UgdG8gYmxvY2sgb3IgdW5ibG9jayBzdXNwZW5kLiBUaGVy
-ZSBpcyBubwo+ID4+IGxpbWl0IHRvIHRoZSBhbW91bnQgb2Yga2VybmVsIG1lbW9yeSB0aGF0IGEg
-cHJvY2VzcyBjYW4gY29uc3VtZSB3aXRoCj4gPj4gdGhpcyBpbnRlcmZhY2UsIHNvIHRoZSBzdXNw
-ZW5kIGJsb2NrZXIgcGF0Y2hzZXQgdXNlcyBhIC9kZXYgaW50ZXJmYWNlCj4gPj4gd2l0aCBpb2N0
-bHMgdG8gYmxvY2sgb3IgdW5ibG9jayBzdXNwZW5kIGFuZCBpdCBkZXN0cm95cyB0aGUga2VybmVs
-Cj4gPj4gb2JqZWN0IHdoZW4gdGhlIGZpbGUgZGVzY3JpcHRvciBpcyBjbG9zZWQuCj4gPgo+ID4g
-VGhpcyBpcyBhbiBpbXBsZW1lbnRhdGlvbiBkZXRhaWwgb25seS4KPiAKPiBUaGVyZSBpcyBubyB3
-YXkgZml4IGl0IHdpdGhvdXQgY2hhbmdpbmcgdGhlIHVzZXIgc3BhY2UgdmlzaWJsZQo+IGJlaGF2
-aW9yIG9mIHRoZSBBUEkuIFRoZSBrZXJuZWwgZG9lcyBub3Qga25vdyB3aGVuIGl0IGlzIHNhZmUg
-dG8gZnJlZQo+IHRoZSBvYmplY3RzLgoKVGhleSdyZSBmcmVlZCBvbiBkZXN0cnVjdGlvbiBvZiB0
-aGUgbG9uZyBsaXZlZCBrZXJuZWwgb2JqZWN0IG9yIG9uIHVzZXIKc3BhY2UgY2xlYXIgcmVxdWVz
-dC4gIFN1cmVseSB0aGF0J3MgZGVmaW5pdGl2ZSBlbm91Z2g/Cgo+ID4gVGhlIHBtLXFvcyBvYmpl
-Y3RzIGFyZSBsb25nCj4gPiBsaXZlZCwgc28gdGhlaXIgc3RhdHMgd291bGQgYmUgdG9vLiAgSSB3
-b3VsZCBndWVzcyB0aGF0IGV4cGxpY2l0IHN0YXQKPiA+IGNsZWFyaW5nIG1pZ2h0IGJlIGEgdXNl
-ZnVsIG9wdGlvbi4KPiA+Cj4gCj4gV2hpY2ggcG0tcW9zIG9iamVjdHMgYXJlIHlvdSByZWZlcnJp
-bmcgdG8/IFRoZSBzdHJ1Y3QgcG1fcW9zX29iamVjdAo+IHRoYXQgYmFja3MgZWFjaCBwbS1xb3Mg
-Y2xhc3MgaXMgbG9uZyBsaXZlZCAoSSBkb24ndCBrbm93IHdoeSB0aGlzIGlzCj4gbmFtZWQgcG1f
-cW9zX29iamVjdCksIGJ1dCB3ZSBuZWVkIHN0YXRzIGluIHN0cnVjdCBwbV9xb3NfcmVxdWVzdF9s
-aXN0LgoKQWN0dWFsbHksIHdoeSBub3QgdHdvIHNlcGFyYXRlIGxpc3RzPyAgb25lIGZvciB0aGUg
-cmVxdWVzdCBhbmQgb25lIGZvcgp0aGUgc3RhdHM/CgpPSywgc28gSSdtIHRpcmVkIGFuZCBJJ3Zl
-IGhhZCBhIGxvbmcgZmxpZ2h0IHRvIGdldCB0byB3aGVyZSBJIGFtLCBzbyBJCm1heSBiZSBhIGJp
-dCBqYWRlZCwgYnV0IHRoaXMgaXNuJ3QgZnVja2luZyByb2NrZXQgc2NpZW5jZSB0aGUgcXVlc3Rp
-b24KaXMgaG93IGRvIHdlIGltcGxlbWVudCB3aGF0IHlvdSB3YW50IG9uIHdoYXQgd2UgaGF2ZSAu
-Li4gdGhlcmUgbG9va3MgdG8KYmUgbXVsdGlwbGUgdXNlZnVsIHNvbHV0aW9ucyAuLi4gd2UganVz
-dCBoYXZlIHRvIHBpY2sgb25lIGFuZCBhZ3JlZSBvbgppdCAodGhhdCdzIHN0YW5kYXJkIG9wZW4g
-c291cmNlKS4KCkphbWVzCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5k
-YXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0
-aW5mby9saW51eC1wbQ==
+(2010/08/04 5:58), Rafael J. Wysocki wrote:
+> On Tuesday, August 03, 2010, Rafael J. Wysocki wrote:
+>> On Tuesday, August 03, 2010, Kenji Kaneshige wrote:
+>>> (2010/08/03 6:53), Rafael J. Wysocki wrote:
+>>>> From: Rafael J. Wysocki<rjw@sisk.pl>
+>>>
+>>> <snip.>
+>>>
+>>>> +	mutex_lock(&osc_lock);
+>>>> +	status = acpi_pci_query_osc(root, root->osc_support_set, ctrl_mask);
+>>>> +	mutex_unlock(&osc_lock);
+>>>> +
+>>>
+>>> One more comment here.
+>>>
+>>> I think we can skip acpi_pci_query_osc() if all of queried controls are
+>>> already granted to OS. Please see below
+>>>
+>>> 	mutex_lock(&osc_lock);
+>>> 	if ((root->osc_control_set&  *ctrl_mask) == *ctrl_mask) {
+>>> 		*ctrl_mask = root->osc_control_set;
+>>> 		goto out;
+>>> 	}
+>>> 	status = acpi_pci_query_osc(root, root->osc_support_set, ctrl_mask);
+>>> 	mutex_unlock(&osc_lock);
+>>> out:
+>>
+>> Well I guess you mean:
+>>
+>>   	mutex_lock(&osc_lock);
+>>   	if ((root->osc_control_set&  *ctrl_mask) != *ctrl_mask)
+>>   		status = acpi_pci_query_osc(root, root->osc_support_set, ctrl_mask);
+>>   	mutex_unlock(&osc_lock);
+>>
+>> Otherwise we would return with the mutex held. :-)
+>
+
+Oops... sorry...
+
+> Updated patch is appended, please tell me what you think.
+
+Looks good to me. The below (in your updated patch) was what I wanted to mean
+
+> +	mutex_lock(&osc_lock);
+> +	if ((*mask & root->osc_control_set) == *mask)
+> +		*mask = root->osc_control_set;
+> +	else
+> +		status = acpi_pci_query_osc(root, root->osc_support_set, mask);
+> +	mutex_unlock(&osc_lock);
+
+Thanks,
+Kenji Kaneshige
