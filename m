@@ -1,23 +1,19 @@
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH/RFC] Runtime PM: ARM: subarch-specific
-	extensions of pdev_archdata
-Date: Wed, 4 Aug 2010 16:54:59 -0600
-Message-ID: <AANLkTinv2ZpLaRYEN+FVwuX1QTK_+568K8BckVp_tx=K__43766.1018957899$1280962737$gmane$org@mail.gmail.com>
-References: <1253670648-28610-1-git-send-email-khilman@deeprootsystems.com>
-	<f17812d70909222153y4a0e4fc2n496ea2e6caaac847@mail.gmail.com>
-	<19129.63264.653666.70492@pilspetsen.it.uu.se>
-	<4ABAAF1D.6090907@deeprootsystems.com>
-	<f17812d70909231630i20f64328k8d604c3436094b85@mail.gmail.com>
-	<87k4yhagv4.fsf@deeprootsystems.com>
-	<AANLkTinBqc11oE2SOmvXbFHmlgvZ21LngXNWkSHiJmRK@mail.gmail.com>
-	<34dc79dc-0868-4401-9fa5-c7134f6d4485@email.android.com>
-	<AANLkTikHUcgBcTmv+=NrYMwgn-UC_Q0Vv3ytfuJbkyRB@mail.gmail.com>
-	<87k4o7r7sv.fsf@deeprootsystems.com>
+From: david@lang.hm
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Wed, 4 Aug 2010 15:56:42 -0700 (PDT)
+Message-ID: <alpine.DEB.2.00.1008041554580.6545__18138.124611187$1280962820$gmane$org@asgard.lang.hm>
+References: <20100801054816.GI2470@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008041124580.6545@asgard.lang.hm>
+	<20100804185520.GA2417@srcf.ucam.org>
+	<201008042251.08266.rjw@sisk.pl>
+	<20100804205654.GA4986@srcf.ucam.org>
+	<alpine.DEB.2.00.1008041529530.6545@asgard.lang.hm>
+	<AANLkTimRZc2B1=ic-0jrGBX7ahCu=NCoQadCOePGDmh9@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87k4o7r7sv.fsf@deeprootsystems.com>
+In-Reply-To: <AANLkTimRZc2B1=ic-0jrGBX7ahCu=NCoQadCOePGDmh9@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,108 +23,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Eric Miao <eric.y.miao@gmail.com>, linux-pm@lists.linux-foundation.org, Mikael Pettersson <mikpe@it.uu.se>, linux-arm-kernel@lists.infradead.org
+To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 3, 2010 at 10:16 AM, Kevin Hilman
-<khilman@deeprootsystems.com> wrote:
-> Magnus Damm <magnus.damm@gmail.com> writes:
->
->> On Sun, Jul 25, 2010 at 5:24 AM, Grant Likely <grant.likely@secretlab.ca=
-> wrote:
->>> "Magnus Damm" <magnus.damm@gmail.com> wrote:
->>>>On Tue, Oct 27, 2009 at 8:13 AM, Kevin Hilman
->>>><khilman@deeprootsystems.com> wrote:
->>>>> Eric Miao <eric.y.miao@gmail.com> writes:
->>>>>> On Thu, Sep 24, 2009 at 7:28 AM, Kevin Hilman
->>>>>> <khilman@deeprootsystems.com> wrote:
->>>>>>> Mikael Pettersson wrote:
->>>>>>>> Eric Miao writes:
->>>>>>>> =A0> On Wed, Sep 23, 2009 at 9:50 AM, Kevin Hilman
->>>>>>>> =A0> <khilman@deeprootsystems.com> wrote:
->>>>>>>> =A0> > On ARM platforms, power management can be very platform spe=
-cific.
->>>>>>>> =A0> > This patch allows ARM subarches to extend the platform_devi=
-ce
->>>>>>>> =A0> > pdev_archdata for each subarch by creating a new struct pde=
-v_machdata
->>>>>>>> =A0> > and allowing each subarch to customize it as needed.
+On Wed, 4 Aug 2010, Arve Hj?nnev?g wrote:
+
+> On Wed, Aug 4, 2010 at 3:31 PM,  <david@lang.hm> wrote:
+>> On Wed, 4 Aug 2010, Matthew Garrett wrote:
 >>
->>>>Do you remember what happened with this patch?
+>>> On Wed, Aug 04, 2010 at 10:51:07PM +0200, Rafael J. Wysocki wrote:
+>>>>
+>>>> On Wednesday, August 04, 2010, Matthew Garrett wrote:
+>>>>>
+>>>>> No! And that's precisely the issue. Android's existing behaviour could
+>>>>> be entirely implemented in the form of binary that manually triggers
+>>>>> suspend when (a) the screen is off and (b) no userspace applications
+>>>>> have indicated that the system shouldn't sleep, except for the wakeup
+>>>>> event race. Imagine the following:
+>>>>>
+>>>>> 1) The policy timeout is about to expire. No applications are holding
+>>>>> wakelocks. The system will suspend providing nothing takes a wakelock.
+>>>>> 2) A network packet arrives indicating an incoming SIP call
+>>>>> 3) The VOIP application takes a wakelock and prevents the phone from
+>>>>> suspending while the call is in progress
+>>>>>
+>>>>> What stops the system going to sleep between (2) and (3)? cgroups don't,
+>>>>> because the voip app is an otherwise untrusted application that you've
+>>>>> just told the scheduler to ignore.
+>>>>
+>>>> I _think_ you can use the just-merged /sys/power/wakeup_count mechanism
+>>>> to
+>>>> avoid the race (if pm_wakeup_event() is called at 2)).
 >>>
->>> I don't have all the details in front of me because I'm on my phone,
->>> but I advised against pdev_archdata because it is
->>> multiplatform-unfriendly.
+>>> Yes, I think that solves the problem. The only question then is whether
+>>> it's preferable to use cgroups or suspend fully, which is pretty much up
+>>> to the implementation. In other words, is there a reason we're still
+>>> having this conversation? :) It'd be good to have some feedback from
+>>> Google as to whether this satisfies their functional requirements.
 >>
->> Ok, I did not expect that. =3D) But after thinking a bit it does make
->> sense. I wonder what my options are. I'm not so fond of the idea to
->> wrap the platform devices - that's not more multi-platform friendly,
->> is it?
->
-> [sorry for the lag, been on vacation]
->
-> Wrapping is more multi-platform friendly because only platform-specific
-> code accesses the wrapped code. =A0It's also logically consistent as
-> a struct device is contained by a platform_device which is then
-> contained by an omap_device (in our case.) =A0 Only OMAP-specific code
-> ever knows about or touches that layer.
-
-(I just noticed this; will also reply on the other thread so it is
-recorded in the public record) But it is also really dangerous;
-particularly in the case of dynamically allocated platform_devices.
-When handed a random platform_device pointer, you have absolutely *no*
-idea whether or not it is valid to dereference a pointer at a lower
-address from the platform_device pointer.  It is very likely that
-there will be other code in the system that will register
-platform_devices without the omap_device wrapper.
-
->> How about using devres and platform bus notifiers?
->
-> That seems fine too, and probably better if the amount of data/code you n=
-eed
-> is small. =A0In the OMAP case, it's rather complicated so it's cleaner
-> IMHO to keep it in a separate omap_device layer and struct.
-
-but it is safe
-
->> For a Runtime PM prototype using devres (instead of pdev_archdata or
->> wrapping) look here:
->> https://patchwork.kernel.org/patch/113605/
+>> the proposal that I nade was not to use cgroups to freeze some processes and
+>> not others, but to use cgroups to decide to ignore some processes when
+>> deciding if the system is idle, stop everything or nothing. cgroups are just
+>> a way of easily grouping processes (and their children) into different
+>> groups.
 >>
->> To make it work with modules I propose adding a driver bind event:
->> https://patchwork.kernel.org/patch/113865/
->>
->> Looks pretty multi-platform friendly to me. Any suggestions?
 >
-> Your patches look multi-platform friendly, but there are still some
-> outstanding issues with making runtime PM support multi-platform
-> friendly that are not direclty related to the above patches.
->
-> 1) weak symbols
->
-> We need to change the overriding of weak symbols into some form of
-> register/unregister so multiple platforms in the same kernel could work.
-> That's the easy one.
->
-> 2) custom vs. platform bus.
->
-> The other issue under discussion between Grant & myself[1] has been the
-> use of a custom bus instead of the platform bus. =A0Following your lead,
-> (and preferring that option) I continued to use the platform_bus since
-> I only need to override a few of the dev_pm_ops functions.
->
-> However, Grant is not happy about overriding the platform_bus. =A0He would
-> rather see each platform create a custom bus with it's own PM methods.
->
-> In this thread[1], I did a quick and dirty proof of concept to show that
-> it is possible, but quite frankly, I still much prefer continuing to use
-> the platform_bus since it is mostly identical.
+> That does not avoid the dependency problem. A process may be waiting
+> on a resource that a process you ignore owns. I you ignore the process
+> that owns the resource and enter idle when it is ready to run (or
+> waiting on a timer), you are still effectively blocking the other
+> process.
 
-I quite possibly could be convinced that the devres approach is the
-RightThing to do.  It neatly sidesteps the issue I see with the
-omap_device container approach.  I'd need to see a prototype to be
-sure.
+and if you don't have a wakelock the same thing will happen. If you expect 
+the process to take a while you can set a timeout to wake up every 30 
+seconds or so and wait again, this would be enough to prevent you from 
+going to sleep (or am I misunderstanding how long before you go into 
+suspend without a wakelock set, see my other e-mail for the full question)
 
-Cheers,
-g.
+David Lang
