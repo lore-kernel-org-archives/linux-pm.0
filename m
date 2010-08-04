@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Wed, 4 Aug 2010 13:47:25 +0200
-Message-ID: <201008041347.25595.rjw__31439.4141002142$1280922619$gmane$org@sisk.pl>
-References: <20100801210548.23f77ff6@infradead.org>
-	<AANLkTikyD94wqWZTWA23K=zvN3RpKB6dDRrvFSv9szMg@mail.gmail.com>
-	<alpine.DEB.2.00.1008040027140.25170@asgard.lang.hm>
+Subject: Re: [PATCH 7/8] ACPI / PCI: Do not preserve _OSC control
+	bits returned by a query (v2)
+Date: Wed, 4 Aug 2010 14:15:23 +0200
+Message-ID: <201008041415.23248.rjw@sisk.pl>
+References: <201008022351.31406.rjw@sisk.pl> <4C59284F.9080808@jp.fujitsu.com>
+	<4C593547.2040700@jp.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1008040027140.25170@asgard.lang.hm>
+In-Reply-To: <4C593547.2040700@jp.fujitsu.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,80 +19,104 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel <linux-kernel@vger.kernel.org>, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: linux-pci@vger.kernel.org, Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, August 04, 2010, david@lang.hm wrote:
-> On Wed, 4 Aug 2010, Arve Hj?nnev?g wrote:
+On Wednesday, August 04, 2010, Kenji Kaneshige wrote:
+> (2010/08/04 17:43), Hidetoshi Seto wrote:
+> > (2010/08/04 14:46), Kenji Kaneshige wrote:
+> >> By the way, I think it is getting confusing regarding who query the
+> >> controls. IMO, querying controls to ensure all the requested controls
+> >> are granted to OS should be done in acpi_pci_osc_control_set(), as
+> >> I said above. On the other hand, PCIe port driver need to query
+> >> controls for other reason... Now I think it might be better to change
+> >> acpi_pci_osc_control_set() like below instead of introducing
+> >> acpi_pci_osc_control_query().
+> >>
+> >> acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 *flags)
+> >> {
+> >>      ...
+> >>      query = control_req;
+> >>      status = acpi_pci_query_osc(root, root->osc_support_set,&query);
+> >>      if (ACPI_FAILURE(status))
+> >>          goto out;
+> >>      if ((query&  control_req) != control_req) {
+> >>          printk_(KERN_DEBUG
+> >>              "Firmware did not grant requested _OSC control\n");
+> >>          status = AE_SUPPORT;
+> >>          *flags = (query&  control_req);
+> >>          goto out;
+> >>      }
+> >>      ...
+> >> }
+> >>
+> >> And do as follows in pcie_port_acpi_setup()
+> >>
+> >>      status = acpi_pci_osc_control_set(handle,&flags);
+> >>      if (status == AE_SUPPORT)  {
+> >>          /* 2nd try */
+> >>          status = acpi_pci_osc_control_set(handle,&flags);
+> >>      }
+> >>      if (ACPI_FAILURE(status)) {
+> >>      ...
+> >>
+> >> What do you think about this?
+> > 
+> > I think it makes sense, though some minor cares are required.
+> > 
+> > Does this incremental patch (apply after [8/8]) looks good?
+> > If it is OK, I'll test these 8+1 patches within the next 2days.
+> > 
+> > Thanks,
+> > H.Seto
+> > 
+> > =====
+> > Subject: ACPI/PCI: Unify acpi_pci_osc_control_*()
+> > 
+> > Now AE_SUPPORT of acpi_pci_osc_control_set() tells not only
+> > that query fails with the requested control bits but also that
+> > the result of query is stored into the pointed place.
+> > 
+> > This allow user to retry acpi_pci_osc_control_set() with the
+> > result of query.
+> > 
+> > Signed-off-by: Hidetoshi Seto<seto.hidetoshi@jp.fujitsu.com>
+> > ---
+> >   drivers/acpi/pci_root.c          |   54 +++++++++++--------------------------
+> >   drivers/pci/hotplug/acpi_pcihp.c |    2 +-
+> >   drivers/pci/pcie/portdrv_acpi.c  |   23 +++++++---------
+> >   include/linux/acpi.h             |    3 +-
+> >   4 files changed, 28 insertions(+), 54 deletions(-)
 > 
-> > 2010/8/3  <david@lang.hm>:
-> >> On Tue, 3 Aug 2010, Arve Hj?nnev?g wrote:
-> >>
-> >>> 2010/8/3  <david@lang.hm>:
-> >>>>
-> >>>> On Tue, 3 Aug 2010, Arve Hj?nnev?g wrote:
-...
-> >>>>> The hardware specific idle hook can (and does) decide to go into any
-> >>>>> power state from idle that does not disrupt any active devices.
-> >>>>
-> >>>> This I know is an Andoid specific thing. On other platforms power states
-> >>>> very definantly can make user visible changes.
-
-It would be much better if you gave specific examples.  Because, for instance,
-I'm not sure what platforms you have in mind.
-
-> >>> How is this Android specific?
-> >>
-> >> you are stating that this must be suspend because low-power idle must be
-> >> transparent to the user.
-> >
-> > It must be transparent to the rest of the system.
-> >
-> >>
-> >> I am saying that on Linux, low-power idle commonly is not transparent to the
-> >> user, so the requirement for it to be transparent (therefor putting the
-> >> suspend into a different category) is an Android only requirement.
-> >>
-> >
-> > I'm am not talking about minor latencies. If you have a platform that
-> > for instance turns off you screen dma when entering idle, it is broken
-> > whether is running Android or not. If it does the same in suspend it
-> > is not a problem.
+> <snip.>
 > 
-> This isn't sounding quite right to me. I've seen too many discussions 
-> about things like idle and USB devices/hubs/drives/etc getting powered 
-> down for power savings modes to make me readily accept that everything 
-> must be as transparent as you imply. Just the case of drive spin-down 
-> shows that it's possible to do things that would be considered 
-> destructive, but you have to have a flag and wake-up path to recover 
-> within a 'reasonable' amount of time (I guess that this could be 
-> 'transparent' if that only implies that things must work eventually, which 
-> isn't what I read into the statement)
+> >   /**
+> >    * acpi_pci_osc_control_set - commit requested control to Firmware
+> >    * @handle: acpi_handle for the target ACPI object
+> > @@ -411,14 +379,17 @@ acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *mask)
+> >    *
+> >    * Attempt to take control from Firmware on requested control bits.
+> >    **/
+> 
+> Updating description of this function would be appreciated.
+> 
+> <snip.>
+> 
+> > @@ -452,7 +427,10 @@ acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags)
+> >   	capbuf[OSC_CONTROL_TYPE] = root->osc_control_set | control_req;
+> >   	status = acpi_pci_run_osc(handle, capbuf,&result);
+> >   	if (ACPI_SUCCESS(status))
+> > -		root->osc_control_set = result;
+> > +		root->osc_control_set = *flags = result;
+> 
+> I don't think we need to update *flags here, though it depends on the design
+> of this function interface.
+> IMHO, updating *flags only when AE_SUPPORT is returned is easy to understand.
 
-Well, consider a single character device and suppose there is an application
-talking to the driver using read(), write(), ioctl(), whatever.  Now suppose
-you want to put the device into a low-power state such that the device can't
-do the I/O in that state.  You need to ensure that the app won't be able to
-reach the device while in that state and you can (1) arrange things so that
-the device is put into the full-power state whenever the app tries to access
-it and (2) "freeze" the app so that it won't try to access the device being in
-the low-power state.
-
-Generally speaking (1) is what idle (and any other form of runtime PM) does and
-(2) is what suspend does with respect to the whole system.
-
-In the suspend case, when you have frozen all applications, you can
-sequentially disable all interrupts except for a few selected ("wakeup") ones
-in a safe way.   By disabling them, you ensure that the CPU will only be
-"revived" by a limited set of events and that allows the system to stay
-low-power for extended time intervals.
-
-To achieve the same result in the "idle" case, you'll need to have a mechanism
-to disable interrupts (except for the "wakeup" ones) avoiding synchronization
-problems (eg. situations in which task A, blocked on a "suspended" device
-access, holds a mutex waited for by task B that needs to run so that we can
-"suspend" another device).  That, however, is a difficult problem.
+I think the patch is correct.  We should update *flags in any case so that the
+caller can check what's the full mask of granted controls even if it asked for
+fewer control bits.
 
 Thanks,
 Rafael
