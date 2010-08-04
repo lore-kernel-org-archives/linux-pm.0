@@ -1,15 +1,26 @@
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Subject: Re: [PATCH 7/8] ACPI / PCI: Do not preserve _OSC control
- bits returned by a query (v2)
-Date: Wed, 04 Aug 2010 14:46:02 +0900
-Message-ID: <4C58FE9A.1040607__18469.1522423693$1280900829$gmane$org@jp.fujitsu.com>
-References: <201008022351.31406.rjw@sisk.pl> <4C57C182.7060407@jp.fujitsu.com>
-	<201008031133.37471.rjw@sisk.pl> <201008032302.33778.rjw@sisk.pl>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Wed, 4 Aug 2010 07:46:28 +0200
+Message-ID: <20100804074628.4acc0ed2__559.732275042002$1280900903$gmane$org@schatten.dmk.lab>
+References: <20100801210548.23f77ff6@infradead.org>
+	<alpine.DEB.2.00.1008012153300.25170@asgard.lang.hm>
+	<20100802140933.GB2405@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008021627290.29820@asgard.lang.hm>
+	<AANLkTi=1kBuyPS_P+eNLcnRu1mJH6BzpzQW_sENZuL1L@mail.gmail.com>
+	<alpine.DEB.2.00.1008022121430.6545@asgard.lang.hm>
+	<AANLkTikhcYzNp8CPp8cqrV7Ey5CLMWu1sJTNxUtEi2as@mail.gmail.com>
+	<alpine.DEB.2.00.1008022203470.6545@asgard.lang.hm>
+	<AANLkTinFT5jq4nUhUpzS5S4TVDQGj0S7RtRgxNhsz2UF@mail.gmail.com>
+	<alpine.DEB.2.00.1008031611100.6545@asgard.lang.hm>
+	<20100804001015.GJ2407@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008031723530.6545@asgard.lang.hm>
+	<AANLkTinjH0C0bSK=Y2wKASnbJFsR2BN303xBXkaHbmRC@mail.gmail.com>
+	<alpine.DEB.2.00.1008032111350.25170@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201008032302.33778.rjw@sisk.pl>
+In-Reply-To: <alpine.DEB.2.00.1008032111350.25170@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,105 +30,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+To: david@lang.hm
+Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, "Paul E.
+	McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-(2010/08/04 6:02), Rafael J. Wysocki wrote:
-> On Tuesday, August 03, 2010, Rafael J. Wysocki wrote:
->> On Tuesday, August 03, 2010, Hidetoshi Seto wrote:
->>> (2010/08/03 13:52), Kenji Kaneshige wrote:
->>>> (2010/08/03 6:59), Rafael J. Wysocki wrote:
->>>>> @@ -434,19 +432,6 @@ acpi_status acpi_pci_osc_control_set(acp
->>>>>        if ((root->osc_control_set&   control_req) == control_req)
->>>>>            goto out;
->>>>>
->>>>> -    /* Need to query controls first before requesting them */
->>>>> -    if (!root->osc_queried) {
->>>>> -        status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
->>>>> -        if (ACPI_FAILURE(status))
->>>>> -            goto out;
->>>>> -    }
->>>>> -    if ((root->osc_control_qry&   control_req) != control_req) {
->>>>> -        printk(KERN_DEBUG
->>>>> -               "Firmware did not grant requested _OSC control\n");
->>>>> -        status = AE_SUPPORT;
->>>>> -        goto out;
->>>>> -    }
->>>>
->>>> I think acpi_pci_osc_control_set() still need to query before commit
->>>> to ensure all the requested controls are granted to OS.
->>>>
->>>> So the code needs to be
->>>>
->>>>      status = acpi_pci_query_osc(root, root->osc_support_set,&control_req);
->>>>      if (ACPI_FAILURE(status))
->>>>          goto out;
->>>
+Hi,
 
-Sorry, that should have been
+On Tue, 3 Aug 2010 21:47:49 -0700 (PDT)
+david@lang.hm wrote:
 
-	query = control_req;
-	status = acpi_pci_query_osc(root, root->osc_support_set, &query);
-	if (ACPI_FAILURE(status))
-		goto out;
-	if ((query & control_req) != control_req) {
-		printk_(KERN_DEBUG
-			"Firmware did not grant requested _OSC control\n");
-		status = AE_SUPPORT;
-		goto out;
-	}
+> > Suspend is not an android only concept. The android extensions just
+> > allow us to aggressively use suspend without loosing (or delaying)
+> > wakeup events. On the hardware that we shipped we can enter the same
+> > power mode from idle as we do in suspend, but we still use suspend
+> > primarily because it stops the monotonic clock and all the timers that
+> > use it. Changing suspend to behave more like an idle mode, which seems
+> > to be what you are suggesting, would not buy us anything.
+> 
+> Ok, If I am understanding you correctly I think this is an important 
+> point.
+> 
+> What Android calls suspend is not what other linux distros call suspend, 
+> it's just a low-power mode with different wakeup rules.
+> 
+> Is this correct?
 
-I know current pcie_port_acpi_setup() queries the requesting controls
-before acpi_pci_osc_control_set() and only one control is requested
-in the other code. However, I think acpi_pci_osc_control_set() still
-need to query the requested controls to ensure all the requested
-controls, in case someone calls this function without querying the
-requesting controls. In other words, I think it must be ensured that
-any controls are never granted to OS when acpi_pci_osc_control_set()
-returns error.
-
->>>>      status = acpi_pci_query_osc(root, root->osc_support_set,&control_req);
->>>>      if (ACPI_FAILURE(status))
->>>>          goto out;
-
-By the way, I think it is getting confusing regarding who query the
-controls. IMO, querying controls to ensure all the requested controls
-are granted to OS should be done in acpi_pci_osc_control_set(), as
-I said above. On the other hand, PCIe port driver need to query
-controls for other reason... Now I think it might be better to change
-acpi_pci_osc_control_set() like below instead of introducing
-acpi_pci_osc_control_query().
-
-acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 *flags)
-{
-	...
-	query = control_req;
-	status = acpi_pci_query_osc(root, root->osc_support_set, &query);
-	if (ACPI_FAILURE(status))
-		goto out;
-	if ((query & control_req) != control_req) {
-		printk_(KERN_DEBUG
-			"Firmware did not grant requested _OSC control\n");
-		status = AE_SUPPORT;
-		*flags = (query & control_req);
-		goto out;
-	}
-	...
-}
-
-And do as follows in pcie_port_acpi_setup()
-
-	status = acpi_pci_osc_control_set(handle, &flags);
-	if (status == AE_SUPPORT)  {
-		/* 2nd try */
-		status = acpi_pci_osc_control_set(handle, &flags);
-	}
-	if (ACPI_FAILURE(status)) {
-	...
-
-What do you think about this?
+I think my laptop (x86-64) uses the same notion of suspend as Android.
+I am confused now. Android 'suspend' is equivalent to 
+'echo "mem" > /sys/power/state' 
+ 
+Which distros call it "low-power mode with different wakeup rules"?
+Gentoo doesnt. In KDE/Gnome it's also called suspend or suspend-to-ram
+iirc. 
 
 
-Thanks,
-Kenji Kaneshige
+
+Cheers,
+Flo
