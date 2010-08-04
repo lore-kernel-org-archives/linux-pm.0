@@ -1,25 +1,23 @@
-From: Florian Mickler <florian@mickler.org>
+From: Olivier Galibert <galibert@pobox.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Wed, 4 Aug 2010 08:12:09 +0200
-Message-ID: <20100804081209.37aa1095__40951.5687767$1280902389$gmane$org@schatten.dmk.lab>
-References: <20100801210548.23f77ff6@infradead.org>
-	<alpine.DEB.2.00.1008012153300.25170@asgard.lang.hm>
-	<20100802140933.GB2405@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008021627290.29820@asgard.lang.hm>
-	<AANLkTi=1kBuyPS_P+eNLcnRu1mJH6BzpzQW_sENZuL1L@mail.gmail.com>
-	<alpine.DEB.2.00.1008022121430.6545@asgard.lang.hm>
+Date: Wed, 4 Aug 2010 08:28:04 +0200
+Message-ID: <20100804062804.GA43413__1155.83383380926$1280903421$gmane$org@dspnet.fr>
+References: <alpine.DEB.2.00.1008022121430.6545@asgard.lang.hm>
 	<AANLkTikhcYzNp8CPp8cqrV7Ey5CLMWu1sJTNxUtEi2as@mail.gmail.com>
 	<alpine.DEB.2.00.1008022203470.6545@asgard.lang.hm>
 	<AANLkTinFT5jq4nUhUpzS5S4TVDQGj0S7RtRgxNhsz2UF@mail.gmail.com>
 	<alpine.DEB.2.00.1008031611100.6545@asgard.lang.hm>
 	<20100804001015.GJ2407@linux.vnet.ibm.com>
-	<20100803205758.21fcf372@infradead.org>
-	<alpine.DEB.2.00.1008032148210.25170@asgard.lang.hm>
+	<alpine.DEB.2.00.1008031723530.6545@asgard.lang.hm>
+	<AANLkTinjH0C0bSK=Y2wKASnbJFsR2BN303xBXkaHbmRC@mail.gmail.com>
+	<20100804045813.GA33951@dspnet.fr>
+	<AANLkTi=pwyidtK7aebRwZ+SsJCSS-6t=6cFffdvcKKnx@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1008032148210.25170@asgard.lang.hm>
+Content-Disposition: inline
+In-Reply-To: <AANLkTi=pwyidtK7aebRwZ+SsJCSS-6t=6cFffdvcKKnx@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,71 +27,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, Arve@smtp1.linux-foundation.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
+Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel <linux-kernel@vger.kernel.org>, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 3 Aug 2010 21:55:07 -0700 (PDT)
-david@lang.hm wrote:
-
-> On Tue, 3 Aug 2010, Arjan van de Ven wrote:
-> 
-> > On Tue, 3 Aug 2010 17:10:15 -0700
-> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> >>
-> >> OK, I'll bite...
-> >>
-> >>> From an Android perspective, the differences are as follows:
-> >>
-> >> 1.	Deep idle states are entered only if there are no runnable
-> >> tasks. In contrast, opportunistic suspend can happen even when there
-> >> 	are tasks that are ready, willing, and able to run.
+On Tue, Aug 03, 2010 at 11:03:15PM -0700, Arve Hj=F8nnev=E5g wrote:
+> 2010/8/3 Olivier Galibert <galibert@pobox.com>:
+> > On Tue, Aug 03, 2010 at 08:39:22PM -0700, Arve Hj=F8nnev=E5g wrote:
+> >> If you just program the alarm you will wake up see that the monotonic
+> >> clock has not advanced and set the alarm another n seconds into the
+> >> future. Or are proposing that suspend should be changed to keep the
+> >> monotonic clock running?
 > >
-> > for "system suspend", this is an absolutely valid statement.
-> > for "use suspend as idle state", it's not so clearly valid.
-> > (but this is sort of a separate problem, basically the "when do we
-> > freeze the tasks that we don't like for power reasons" problem,
-> > which in first order is independent on what kind of idle power state
-> > you pick, and discussed extensively elsewhere in this thread)
-> 
-> note that what I'm speculating about would never freeze some of the tasks, 
-> it would run everything if anything is run, but it would not consider the 
-> actions of some of the programs when deciding if it can shutdown.
-> 
-> so if you have all your privilaged applications in long sleeps, but still 
-> have your bouncing cows running, peggng the CPU, making noise, and 
-> updating the screen, the system would decide the system is 'idle' and go 
-> into the 'suspend' low power state until there is a wake activity.
-> 
-> but if you have a privilaged application doing other stuff (say you are 
-> talking on the phone, have a GPS mapping program running and giving you 
-> directions, etc), the bouncing cows would continue to run and there would 
-> never be an attempt to freeze them while leaving the other stuff active.
-> 
-> David Lang
+> > You're supposed to fix the clock after you wake up. =A0That's part of
+> > the cost of going suspend.
+> =
 
-I think the only difference between your proposition and the
-current android practice is that in your scheme the partition is along
-the process/task boundary (i.e. good apps vs bad apps) whereas the
-android looks at actions or events or ... let's call it "stuff" and
-blocks suspend whenever "stuff" needs to be done. 
+> I'm not sure what you are referring to. The generic Linux timekeeping
+> code makes sure the monotonic clock stops while the system is
+> suspended regardless of what values the (hardware specific)
+> clocksource returns.
 
-The main thing is that even an process that is allowed to block suspend
-doesn't do so all the time. Only when it is critical that "stuff" get's
-done right away. 
+That just means the android-like suspend should not act in that
+specific area the same as the generic suspend to ram.  Which is not
+entirely surprising.  In any case, it's not "keep the monotonic clock
+running", which would cost power.  It's fix it up afterwards, using
+the same means you already do but perhaps at a higher level currently.
+People don't want to see the wrong time of the day just because the
+phone went to suspend.  Laptop STR is different in perception because
+it shuts down things people don't want to see shutdown just by being
+idle, namely wifi connectivity.
 
-One way to make an application work the same way with your scheme (as
-I understand it) on android could be to split the
-application into an "blocker" part, that is not part of the
-"ignore-cgroup" (the "trusted" part) and another one that is in the
-"ignore-cgroup" (the "untrusted" part). Whenever the untrusted part
-needs to block suspend it notices the "trusted" part via ipc and the
-trusted part goes into some sort of "activity loop". This looks kind of
-stupid. But I bet it is what application developers are going to do if
-there is no provision for a flexible runtime enable/disable "suspend
-blocker".
+If your next polling timer is in half an hour and the screen/touchpad
+are off, you want to go as low in power as possible until then, and
+that's the deepest level of idle you can find that responds to alarms
+which may happen to be called suspend.  But from a user point of view,
+it's just another idle level.  And from a power management code/policy
+decisions point of view, it should be the same.
 
-hmmm... 
-
-Cheers,
-Flo
+  OG.
