@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Thu, 5 Aug 2010 01:33:00 +0200
-Message-ID: <201008050133.01169.rjw__25119.6098085076$1280966980$gmane$org@sisk.pl>
-References: <20100801054816.GI2470@linux.vnet.ibm.com>
-	<20100804231003.GL24163@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008041616160.6545@asgard.lang.hm>
+Subject: Re: [PATCH 1/8] ACPI / PCI: Introduce
+	acpi_pci_osc_control_query()
+Date: Thu, 5 Aug 2010 01:37:14 +0200
+Message-ID: <201008050137.15082.rjw__15778.4397634261$1280966987$gmane$org@sisk.pl>
+References: <201008022351.31406.rjw@sisk.pl> <201008032258.40838.rjw@sisk.pl>
+	<4C58EC6D.4050902@jp.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1008041616160.6545@asgard.lang.hm>
+In-Reply-To: <4C58EC6D.4050902@jp.fujitsu.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,88 +19,205 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, Arve@smtp1.linux-foundation.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, August 05, 2010, david@lang.hm wrote:
-> On Wed, 4 Aug 2010, Paul E. McKenney wrote:
-> 
-> > On Wed, Aug 04, 2010 at 03:56:42PM -0700, david@lang.hm wrote:
-> >> On Wed, 4 Aug 2010, Arve Hj?nnev?g wrote:
-> >>
-> >>> On Wed, Aug 4, 2010 at 3:31 PM,  <david@lang.hm> wrote:
-> >>>> On Wed, 4 Aug 2010, Matthew Garrett wrote:
-> >>>>
-> >>>>> On Wed, Aug 04, 2010 at 10:51:07PM +0200, Rafael J. Wysocki wrote:
-> >>>>>>
-> >>>>>> On Wednesday, August 04, 2010, Matthew Garrett wrote:
-> >>>>>>>
-> >>>>>>> No! And that's precisely the issue. Android's existing behaviour could
-> >>>>>>> be entirely implemented in the form of binary that manually triggers
-> >>>>>>> suspend when (a) the screen is off and (b) no userspace applications
-> >>>>>>> have indicated that the system shouldn't sleep, except for the wakeup
-> >>>>>>> event race. Imagine the following:
-> >>>>>>>
-> >>>>>>> 1) The policy timeout is about to expire. No applications are holding
-> >>>>>>> wakelocks. The system will suspend providing nothing takes a wakelock.
-> >>>>>>> 2) A network packet arrives indicating an incoming SIP call
-> >>>>>>> 3) The VOIP application takes a wakelock and prevents the phone from
-> >>>>>>> suspending while the call is in progress
-> >>>>>>>
-> >>>>>>> What stops the system going to sleep between (2) and (3)? cgroups don't,
-> >>>>>>> because the voip app is an otherwise untrusted application that you've
-> >>>>>>> just told the scheduler to ignore.
-> >>>>>>
-> >>>>>> I _think_ you can use the just-merged /sys/power/wakeup_count mechanism
-> >>>>>> to
-> >>>>>> avoid the race (if pm_wakeup_event() is called at 2)).
-> >>>>>
-> >>>>> Yes, I think that solves the problem. The only question then is whether
-> >>>>> it's preferable to use cgroups or suspend fully, which is pretty much up
-> >>>>> to the implementation. In other words, is there a reason we're still
-> >>>>> having this conversation? :) It'd be good to have some feedback from
-> >>>>> Google as to whether this satisfies their functional requirements.
-> >>>>
-> >>>> the proposal that I nade was not to use cgroups to freeze some processes and
-> >>>> not others, but to use cgroups to decide to ignore some processes when
-> >>>> deciding if the system is idle, stop everything or nothing. cgroups are just
-> >>>> a way of easily grouping processes (and their children) into different
-> >>>> groups.
+On Wednesday, August 04, 2010, Kenji Kaneshige wrote:
+> (2010/08/04 5:58), Rafael J. Wysocki wrote:
+> > On Tuesday, August 03, 2010, Rafael J. Wysocki wrote:
+> >> On Tuesday, August 03, 2010, Kenji Kaneshige wrote:
+> >>> (2010/08/03 6:53), Rafael J. Wysocki wrote:
+> >>>> From: Rafael J. Wysocki<rjw@sisk.pl>
 > >>>
-> >>> That does not avoid the dependency problem. A process may be waiting
-> >>> on a resource that a process you ignore owns. I you ignore the process
-> >>> that owns the resource and enter idle when it is ready to run (or
-> >>> waiting on a timer), you are still effectively blocking the other
-> >>> process.
+> >>> <snip.>
+> >>>
+> >>>> +	mutex_lock(&osc_lock);
+> >>>> +	status = acpi_pci_query_osc(root, root->osc_support_set, ctrl_mask);
+> >>>> +	mutex_unlock(&osc_lock);
+> >>>> +
+> >>>
+> >>> One more comment here.
+> >>>
+> >>> I think we can skip acpi_pci_query_osc() if all of queried controls are
+> >>> already granted to OS. Please see below
+> >>>
+> >>> 	mutex_lock(&osc_lock);
+> >>> 	if ((root->osc_control_set&  *ctrl_mask) == *ctrl_mask) {
+> >>> 		*ctrl_mask = root->osc_control_set;
+> >>> 		goto out;
+> >>> 	}
+> >>> 	status = acpi_pci_query_osc(root, root->osc_support_set, ctrl_mask);
+> >>> 	mutex_unlock(&osc_lock);
+> >>> out:
 > >>
-> >> and if you don't have a wakelock the same thing will happen. If you
-> >> expect the process to take a while you can set a timeout to wake up
-> >> every 30 seconds or so and wait again, this would be enough to
-> >> prevent you from going to sleep (or am I misunderstanding how long
-> >> before you go into suspend without a wakelock set, see my other
-> >> e-mail for the full question)
+> >> Well I guess you mean:
+> >>
+> >>   	mutex_lock(&osc_lock);
+> >>   	if ((root->osc_control_set&  *ctrl_mask) != *ctrl_mask)
+> >>   		status = acpi_pci_query_osc(root, root->osc_support_set, ctrl_mask);
+> >>   	mutex_unlock(&osc_lock);
+> >>
+> >> Otherwise we would return with the mutex held. :-)
 > >
-> > The difference between the Android scheme and your proposal is that the
-> > Android scheme freezes -all- the processes, not just a subset of them.
-> > Therefore, in the Android scheme, the case of one process attempting to
-> > acquire a resource held by a frozen process.  In contrast, any scheme
-> > that attempts to freeze only a subset of the processes must somehow
-> > either avoid or properly handle the situation where a frozen process is
-> > holding a resource that a running process is trying to acquire.
 > 
-> My proposal would never freeze a subset of processes.
+> Oops... sorry...
 > 
-> what my proposal:
+> > Updated patch is appended, please tell me what you think.
 > 
-> only consider the activity of a subset of processes when deciding if we 
-> should suspend or not. If the decision is to suspend, freeze everything.
+> Looks good to me. The below (in your updated patch) was what I wanted to mean
+> 
+> > +	mutex_lock(&osc_lock);
+> > +	if ((*mask & root->osc_control_set) == *mask)
+> > +		*mask = root->osc_control_set;
+> > +	else
+> > +		status = acpi_pci_query_osc(root, root->osc_support_set, mask);
+> > +	mutex_unlock(&osc_lock);
 
-That alone doesn't allow you to handle the race Matthew was referring to
-(ie. wakeup event happening right after you've decided to suspend).
+OK
 
-A mechanism of making a decision alone is not sufficient, you also need a
-mechanism to avoid races between wakeup events and suspend process.
+However, I think we can put the looping into that function so that the caller
+doesn't have to loop.
+
+The patch below implements that.
 
 Thanks,
 Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: ACPI / PCI: Introduce acpi_pci_osc_control_query() (v3)
+
+Introduce a function allowing the caller to obtain a mask of _OSC
+control bits the BIOS will allow the kernel to control for a given
+PCI root bridge.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/pci_root.c |   71 +++++++++++++++++++++++++++++++++++++++++-------
+ include/linux/acpi.h    |    1 
+ 2 files changed, 63 insertions(+), 9 deletions(-)
+
+Index: linux-2.6/drivers/acpi/pci_root.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/pci_root.c
++++ linux-2.6/drivers/acpi/pci_root.c
+@@ -225,21 +225,32 @@ static acpi_status acpi_pci_run_osc(acpi
+ 	return status;
+ }
+ 
+-static acpi_status acpi_pci_query_osc(struct acpi_pci_root *root, u32 flags)
++static acpi_status acpi_pci_query_osc(struct acpi_pci_root *root,
++					u32 support,
++					u32 *control)
+ {
+ 	acpi_status status;
+-	u32 support_set, result, capbuf[3];
++	u32 result, capbuf[3];
++
++	support &= OSC_PCI_SUPPORT_MASKS;
++	support |= root->osc_support_set;
+ 
+-	/* do _OSC query for all possible controls */
+-	support_set = root->osc_support_set | (flags & OSC_PCI_SUPPORT_MASKS);
+ 	capbuf[OSC_QUERY_TYPE] = OSC_QUERY_ENABLE;
+-	capbuf[OSC_SUPPORT_TYPE] = support_set;
+-	capbuf[OSC_CONTROL_TYPE] = OSC_PCI_CONTROL_MASKS;
++	capbuf[OSC_SUPPORT_TYPE] = support;
++	if (control) {
++		*control &= OSC_PCI_CONTROL_MASKS;
++		capbuf[OSC_CONTROL_TYPE] = *control | root->osc_control_set;
++	} else {
++		/* Run _OSC query for all possible controls. */
++		capbuf[OSC_CONTROL_TYPE] = OSC_PCI_CONTROL_MASKS;
++	}
+ 
+ 	status = acpi_pci_run_osc(root->device->handle, capbuf, &result);
+ 	if (ACPI_SUCCESS(status)) {
+-		root->osc_support_set = support_set;
++		root->osc_support_set = support;
+ 		root->osc_control_qry = result;
++		if (control)
++			*control = result;
+ 		root->osc_queried = 1;
+ 	}
+ 	return status;
+@@ -254,7 +265,7 @@ static acpi_status acpi_pci_osc_support(
+ 	if (ACPI_FAILURE(status))
+ 		return status;
+ 	mutex_lock(&osc_lock);
+-	status = acpi_pci_query_osc(root, flags);
++	status = acpi_pci_query_osc(root, flags, NULL);
+ 	mutex_unlock(&osc_lock);
+ 	return status;
+ }
+@@ -363,6 +374,48 @@ out:
+ }
+ EXPORT_SYMBOL_GPL(acpi_get_pci_dev);
+ 
++ /**
++ * acpi_pci_osc_control_query - Get the _OSC bits the kernel can control.
++ * @handle: ACPI handle of a PCI root bridge (or PCIe Root Complex).
++ * @mask: Mask of _OSC bits to query and the place to put the result into.
++ **/
++acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *mask)
++{
++	struct acpi_pci_root *root;
++	acpi_handle tmp;
++	acpi_status status = AE_OK;
++	u32 ctrl = *mask;
++
++	if (!ctrl || !(ctrl & OSC_PCI_CONTROL_MASKS))
++		return AE_BAD_PARAMETER;
++
++	root = acpi_pci_find_root(handle);
++	if (!root)
++		return AE_NOT_EXIST;
++
++	status = acpi_get_handle(handle, "_OSC", &tmp);
++	if (ACPI_FAILURE(status))
++		return status;
++
++	mutex_lock(&osc_lock);
++
++	*mask |= root->osc_control_set;
++	if ((ctrl & root->osc_control_set) == ctrl)
++		goto out;
++
++	while (*mask && *mask != ctrl) {
++		ctrl = *mask;
++		status = acpi_pci_query_osc(root, root->osc_support_set, mask);
++		if (ACPI_FAILURE(status))
++			break;
++	}
++
++ out:
++	mutex_unlock(&osc_lock);
++
++	return status;
++}
++
+ /**
+  * acpi_pci_osc_control_set - commit requested control to Firmware
+  * @handle: acpi_handle for the target ACPI object
+@@ -396,7 +449,7 @@ acpi_status acpi_pci_osc_control_set(acp
+ 
+ 	/* Need to query controls first before requesting them */
+ 	if (!root->osc_queried) {
+-		status = acpi_pci_query_osc(root, root->osc_support_set);
++		status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
+ 		if (ACPI_FAILURE(status))
+ 			goto out;
+ 	}
+Index: linux-2.6/include/linux/acpi.h
+===================================================================
+--- linux-2.6.orig/include/linux/acpi.h
++++ linux-2.6/include/linux/acpi.h
+@@ -305,6 +305,7 @@ acpi_status acpi_run_osc(acpi_handle han
+ 				OSC_PCI_EXPRESS_AER_CONTROL |		\
+ 				OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL)
+ 
++extern acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *mask);
+ extern acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags);
+ extern void acpi_early_init(void);
+ 
