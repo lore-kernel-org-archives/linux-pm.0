@@ -1,24 +1,18 @@
-From: david@lang.hm
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Wed, 4 Aug 2010 15:42:12 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008041537450.6545__21721.4666343809$1280962085$gmane$org@asgard.lang.hm>
-References: <20100731230101.7cc1d8c7@infradead.org>
-	<20100801191228.GL2470@linux.vnet.ibm.com>
-	<20100801154708.19817b75@infradead.org>
-	<20100802011006.GS2470@linux.vnet.ibm.com>
-	<AANLkTi=a-1hn_oL=i-=RKK9xOur+4mQjTRut+aiXtYkE@mail.gmail.com>
-	<20100803183447.0275c134@infradead.org>
-	<20100804163216.GB24163@linux.vnet.ibm.com>
-	<20100804163509.GA31523@srcf.ucam.org>
-	<20100804204208.GA21452@elf.ucw.cz>
-	<20100804205159.GH24163@linux.vnet.ibm.com>
-	<20100804211513.GC21452@elf.ucw.cz>
-	<20100804233924.5303d19a@schatten.dmk.lab>
+Date: Wed, 4 Aug 2010 15:51:34 -0700
+Message-ID: <AANLkTimRZc2B1=ic-0jrGBX7ahCu=NCoQadCOePGDmh9__749.901080462401$1280962402$gmane$org@mail.gmail.com>
+References: <20100801054816.GI2470@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008041124580.6545@asgard.lang.hm>
+	<20100804185520.GA2417@srcf.ucam.org>
+	<201008042251.08266.rjw@sisk.pl>
+	<20100804205654.GA4986@srcf.ucam.org>
+	<alpine.DEB.2.00.1008041529530.6545@asgard.lang.hm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100804233924.5303d19a@schatten.dmk.lab>
+In-Reply-To: <alpine.DEB.2.00.1008041529530.6545@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,69 +22,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: david@lang.hm
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 4 Aug 2010, Florian Mickler wrote:
-
-> On Wed, 4 Aug 2010 23:15:13 +0200
-> Pavel Machek <pavel@ucw.cz> wrote:
+On Wed, Aug 4, 2010 at 3:31 PM,  <david@lang.hm> wrote:
+> On Wed, 4 Aug 2010, Matthew Garrett wrote:
 >
->> Hi!
->>
->>>>>> If this doesn't work for the Android folks for whatever reason, another
->>>>>> approach would be to do the freeze in user code, which could track
->>>>>> whether any user-level resources (pthread mutexes, SysV semas, whatever)
->>>>>> where held, and do the freeze on a thread-by-thread basis within each
->>>>>> "victim" application as the threads reach safe points.
->>>>>
->>>>> The main problem I see with the cgroups solution is that it doesn't seem
->>>>> to do anything to handle avoiding loss of wakeup events.
+>> On Wed, Aug 04, 2010 at 10:51:07PM +0200, Rafael J. Wysocki wrote:
+>>>
+>>> On Wednesday, August 04, 2010, Matthew Garrett wrote:
 >>>>
->>>> In different message, Arve said they are actually using low-power idle
->>>> to emulate suspend on Android.
+>>>> No! And that's precisely the issue. Android's existing behaviour could
+>>>> be entirely implemented in the form of binary that manually triggers
+>>>> suspend when (a) the screen is off and (b) no userspace applications
+>>>> have indicated that the system shouldn't sleep, except for the wakeup
+>>>> event race. Imagine the following:
+>>>>
+>>>> 1) The policy timeout is about to expire. No applications are holding
+>>>> wakelocks. The system will suspend providing nothing takes a wakelock.
+>>>> 2) A network packet arrives indicating an incoming SIP call
+>>>> 3) The VOIP application takes a wakelock and prevents the phone from
+>>>> suspending while the call is in progress
+>>>>
+>>>> What stops the system going to sleep between (2) and (3)? cgroups don'=
+t,
+>>>> because the voip app is an otherwise untrusted application that you've
+>>>> just told the scheduler to ignore.
 >>>
->>> Hello, Pavel,
->>>
->>> Could you please point me at this message?
+>>> I _think_ you can use the just-merged /sys/power/wakeup_count mechanism
+>>> to
+>>> avoid the race (if pm_wakeup_event() is called at 2)).
 >>
->> AFAICT, this tells us that idle and suspend is the same hardware state
->> on current Android hardware:
->> 								Pavel
->>
->> Message-ID: <AANLkTinjH0C0bSK=Y2wKASnbJFsR2BN303xBXkaHbmRC@mail.gmail.com>
->>
->> Arve said:
->>
->> If you just program the alarm you will wake up see that the monotonic
->> clock has not advanced and set the alarm another n seconds into the
->> future. Or are proposing that suspend should be changed to keep the
->> monotonic clock running? If you are, why? We can enter the same
->> hardware states from idle, and modifying suspend to wake up more often
->> would increase the average power consumption in suspend, not improve
->> it for idle. In other words, if suspend wakes up as often as idle, why
->> use suspend?
->>
->>
+>> Yes, I think that solves the problem. The only question then is whether
+>> it's preferable to use cgroups or suspend fully, which is pretty much up
+>> to the implementation. In other words, is there a reason we're still
+>> having this conversation? :) It'd be good to have some feedback from
+>> Google as to whether this satisfies their functional requirements.
 >
-> They always told us from the beginning, that on the msm platform they
-> reach the same powerlevel from suspend and idle. They still get gains
-> from using opportunistic suspend.
+> the proposal that I nade was not to use cgroups to freeze some processes =
+and
+> not others, but to use cgroups to decide to ignore some processes when
+> deciding if the system is idle, stop everything or nothing. cgroups are j=
+ust
+> a way of easily grouping processes (and their children) into different
+> groups.
+>
 
-Yes, you will always get gains if you shutdown while there is still work 
-to do.
+That does not avoid the dependency problem. A process may be waiting
+on a resource that a process you ignore owns. I you ignore the process
+that owns the resource and enter idle when it is ready to run (or
+waiting on a timer), you are still effectively blocking the other
+process.
 
-the question I am raising is.
+-- =
 
-If, instead of doing opportunistic suspend (with wakelocks to keep things 
-awake, requiring explicit application code changes to implement), how 
-close would you be able to get if instead you just were able to tell the 
-system to ignore some processes when considering if the system can sleep 
-or not?
-
-With badly written 'trusted' apps you will have poor power useage, but 
-with badly written apps grabbing wakelocks inappropriately you will have 
-poor power useage.
-
-David Lang
+Arve Hj=F8nnev=E5g
