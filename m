@@ -1,23 +1,16 @@
-From: Arjan van de Ven <arjan@infradead.org>
+From: James Bottomley <James.Bottomley@suse.de>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Tue, 3 Aug 2010 20:57:58 -0700
-Message-ID: <20100803205758.21fcf372__5469.58365380323$1280894334$gmane$org@infradead.org>
-References: <20100801210548.23f77ff6@infradead.org>
-	<alpine.DEB.2.00.1008012153300.25170@asgard.lang.hm>
-	<20100802140933.GB2405@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008021627290.29820@asgard.lang.hm>
-	<AANLkTi=1kBuyPS_P+eNLcnRu1mJH6BzpzQW_sENZuL1L@mail.gmail.com>
-	<alpine.DEB.2.00.1008022121430.6545@asgard.lang.hm>
-	<AANLkTikhcYzNp8CPp8cqrV7Ey5CLMWu1sJTNxUtEi2as@mail.gmail.com>
-	<alpine.DEB.2.00.1008022203470.6545@asgard.lang.hm>
-	<AANLkTinFT5jq4nUhUpzS5S4TVDQGj0S7RtRgxNhsz2UF@mail.gmail.com>
-	<alpine.DEB.2.00.1008031611100.6545@asgard.lang.hm>
-	<20100804001015.GJ2407@linux.vnet.ibm.com>
+Date: Wed, 04 Aug 2010 00:00:27 -0400
+Message-ID: <1280894427.11045.293.camel__29968.3188939982$1280894499$gmane$org@mulgrave.site>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<AANLkTi=hoGF7egpyB9sLKJoXv5aiGrxfa9_5iH-96SA=@mail.gmail.com>
+	<1280851338.2774.30.camel@mulgrave.site>
+	<AANLkTinJ2jy18bAS-=abtDLaQWVmQdK1Oq105FcNDNyJ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100804001015.GJ2407@linux.vnet.ibm.com>
+In-Reply-To: <AANLkTinJ2jy18bAS-=abtDLaQWVmQdK1Oq105FcNDNyJ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,73 +20,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paulmck@linux.vnet.ibm.com
-Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
+To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 3 Aug 2010 17:10:15 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> OK, I'll bite...
-> 
-> >From an Android perspective, the differences are as follows:
-> 
-> 1.	Deep idle states are entered only if there are no runnable
-> tasks. In contrast, opportunistic suspend can happen even when there
-> 	are tasks that are ready, willing, and able to run.
-
-for "system suspend", this is an absolutely valid statement.
-for "use suspend as idle state", it's not so clearly valid.
-(but this is sort of a separate problem, basically the "when do we
-freeze the tasks that we don't like for power reasons" problem,
-which in first order is independent on what kind of idle power state
-you pick, and discussed extensively elsewhere in this thread)
-
-> 
-> 2.	There can be a set of input events that do not bring the
-> system out of suspend, but which would bring the system out of a deep
-> 	idle state.  For example, I believe that it was stated that
-> one of the Android-based smartphones ignores touchscreen input while
-> 	suspended, but pays attention to it while in deep idle states.
-
-I would argue that this is both a hardware specific issue, but also a
-policy issue. From the user point of view, screen off with idle and
-screen off with suspend aren't all that different (if my phone would
-decide to idle rather than suspend because some app blocks suspend... I
-wouldn't expect a difference in behavior when I touch the screen).
-"Screen off -> don't honor touch after a bit" is almost an independent,
-but very real, policy problem (and a forced one in suspend, I'll grant
-you that). I could even argue that the policy decision "we don't care
-about the touch screen input" is a pre-condition for entering suspend
-(or in android speak, caring for touch screen input/having the touch
-screen path active would be a suspend blocker)
-
-> 
-> 3.	The system comes out of a deep idle state when a timer
-> 	expires.  In contrast, timers cannot expire while the
-> 	system is suspended.  (This one is debatable: some people
-> 	argue that timers are subject to jitter, and the suspend
-> 	case for timers is the same as that for deep idle states,
-> 	but with unbounded timer jitter.  Others disagree.  The
-> 	resulting discussions have produced much heat, but little
-> 	light.  Such is life.)
-
-I'll debate it even harder in that it's platform specific whether
-timers can get the system out of suspend or not. Clearly on the Android
-platform in question that's not the case, but for some of the Intel
-phone silicon for example, timers CAN be wake sources to get you out of
-suspend just fine. It just depend on which exact hw you talk about.
-Generally, even if the fast timers aren't wake up sources, there'll be
-some sort of alarm thing that you can pre-wake.. but yes you are right
-in saying that's rather lame. 
-Either way, it's not a general property of suspend, but a property of
-suspend on the specific platform in question.
-
-
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+T24gVHVlLCAyMDEwLTA4LTAzIGF0IDE1OjA4IC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdyb3Rl
+Ogo+IDIwMTAvOC8zIEphbWVzIEJvdHRvbWxleSA8SmFtZXMuQm90dG9tbGV5QHN1c2UuZGU+Ogo+
+ID4gT24gTW9uLCAyMDEwLTA4LTAyIGF0IDIxOjE4IC0wNzAwLCBBcnZlIEhqw7hubmV2w6VnIHdy
+b3RlOgo+ID4+ID4gbyAgICAgICBBIHBvd2VyLWF3YXJlIGFwcGxpY2F0aW9uIG11c3QgYmUgYWJs
+ZSB0byBlZmZpY2llbnRseSBjb21tdW5pY2F0ZQo+ID4+ID4gICAgICAgIGl0cyBuZWVkcyB0byB0
+aGUgc3lzdGVtLCBzbyB0aGF0IHN1Y2ggY29tbXVuaWNhdGlvbiBjYW4gYmUKPiA+PiA+ICAgICAg
+ICBwZXJmb3JtZWQgb24gaG90IGNvZGUgcGF0aHMuICBDb21tdW5pY2F0aW9uIHZpYSBvcGVuKCkg
+YW5kCj4gPj4gPiAgICAgICAgY2xvc2UoKSBpcyBjb25zaWRlcmVkIHRvbyBzbG93LCBidXQgY29t
+bXVuaWNhdGlvbiB2aWEgaW9jdGwoKQo+ID4+ID4gICAgICAgIGlzIGFjY2VwdGFibGUuCj4gPj4g
+Pgo+ID4+Cj4gPj4gVGhlIHByb2JsZW0gd2l0aCB1c2luZyBvcGVuIGFuZCBjbG9zZSB0byBwcmV2
+ZW50IGFuIGFsbG93IHN1c3BlbmQgaXMKPiA+PiBub3QgdGhhdCBpdCBpcyB0b28gc2xvdyBidXQg
+dGhhdCBpdCBpbnRlcmZlcmVzIHdpdGggY29sbGVjdGluZyBzdGF0cy4KPiA+Cj4gPiBQbGVhc2Ug
+ZWxhYm9yYXRlIG9uIHRoaXMuICBJIGV4cGVjdCB0aGUgcG0tcW9zIHN0YXRzIGludGVyZmFjZSB3
+aWxsCj4gPiBjb2xsZWN0IHN0YXRzIGFjcm9zcyB1c2VyIG9wZW4vY2xvc2UgYmVjYXVzZSB0aGF0
+J3MgaG93IGl0IGN1cnJlbnRseQo+ID4gd29ya3MuICBXaGF0J3MgdGhlIHByb2JsZW0/Cj4gPgo+
+IAo+IFRoZSBwbS1xb3MgaW50ZXJmYWNlIGNyZWF0ZXMgdGhlIHJlcXVlc3Qgb2JqZWN0IGluIG9w
+ZW4gYW5kIGRlc3Ryb3lzCj4gaXQgaW4gcmVsZWFzZSBqdXN0IGxpa2UgdGhlIHN1c3BlbmQgYmxv
+Y2tlciBpbnRlcmZhY2UuIFdlIG5lZWQgc3RhdHMKPiBmb3IgZWFjaCBjbGllbnQgd2hpY2ggaXMg
+bG9zdCBpZiB5b3UgZnJlZSB0aGUgb2JqZWN0IGV2ZXJ5IHRpbWUgeW91Cj4gdW5ibG9jayBzdXNw
+ZW5kLgoKPyByaWdodCBhdCB0aGUgbW9tZW50IGl0IGRvZXNuJ3QgZG8gc3RhdHMuICBJIGRvbid0
+IHNlZSB3aHkgYWRkaW5nIGEgcGVyCnBpZCBvciBwZXIgbmFtZSBzdGF0IGNvdW50IG9uIHRoZSBs
+b25nIGxpdmVkIG9iamVjdCB3b24ndCB3b3JrIGhlcmUuCgo+IE9yIGFyZSB5b3UgdGFsa2luZyBh
+Ym91dCB1c2VyIHNwYWNlIG9wZW5pbmcgYW5kIGNsb3NpbmcgdGhlIHN0YXRzCj4gaW50ZXJmYWNl
+ICh3aGljaCBkb2VzIG5vdCBjYXVzZSBhbnkgcHJvYmxlbXMpPwoKVGhlcmUgaXMgbm8gc3RhdCBp
+bnRlcmZhY2UgeWV0OyBpdCdzIGZvciB1cyB0byBkZWZpbmUuCgo+ID4+IFRoZSB3YWtlbG9jayBj
+b2RlIGhhcyBhIHN5c2ZzIGludGVyZmFjZSB0aGF0IGFsbG93IHlvdSB0byB1c2UgYQo+ID4+IG9w
+ZW4vd3JpdGUvY2xvc2Ugc2VxdWVuY2UgdG8gYmxvY2sgb3IgdW5ibG9jayBzdXNwZW5kLiBUaGVy
+ZSBpcyBubwo+ID4+IGxpbWl0IHRvIHRoZSBhbW91bnQgb2Yga2VybmVsIG1lbW9yeSB0aGF0IGEg
+cHJvY2VzcyBjYW4gY29uc3VtZSB3aXRoCj4gPj4gdGhpcyBpbnRlcmZhY2UsIHNvIHRoZSBzdXNw
+ZW5kIGJsb2NrZXIgcGF0Y2hzZXQgdXNlcyBhIC9kZXYgaW50ZXJmYWNlCj4gPj4gd2l0aCBpb2N0
+bHMgdG8gYmxvY2sgb3IgdW5ibG9jayBzdXNwZW5kIGFuZCBpdCBkZXN0cm95cyB0aGUga2VybmVs
+Cj4gPj4gb2JqZWN0IHdoZW4gdGhlIGZpbGUgZGVzY3JpcHRvciBpcyBjbG9zZWQuCj4gPgo+ID4g
+VGhpcyBpcyBhbiBpbXBsZW1lbnRhdGlvbiBkZXRhaWwgb25seS4KPiAKPiBUaGVyZSBpcyBubyB3
+YXkgZml4IGl0IHdpdGhvdXQgY2hhbmdpbmcgdGhlIHVzZXIgc3BhY2UgdmlzaWJsZQo+IGJlaGF2
+aW9yIG9mIHRoZSBBUEkuIFRoZSBrZXJuZWwgZG9lcyBub3Qga25vdyB3aGVuIGl0IGlzIHNhZmUg
+dG8gZnJlZQo+IHRoZSBvYmplY3RzLgoKVGhleSdyZSBmcmVlZCBvbiBkZXN0cnVjdGlvbiBvZiB0
+aGUgbG9uZyBsaXZlZCBrZXJuZWwgb2JqZWN0IG9yIG9uIHVzZXIKc3BhY2UgY2xlYXIgcmVxdWVz
+dC4gIFN1cmVseSB0aGF0J3MgZGVmaW5pdGl2ZSBlbm91Z2g/Cgo+ID4gVGhlIHBtLXFvcyBvYmpl
+Y3RzIGFyZSBsb25nCj4gPiBsaXZlZCwgc28gdGhlaXIgc3RhdHMgd291bGQgYmUgdG9vLiAgSSB3
+b3VsZCBndWVzcyB0aGF0IGV4cGxpY2l0IHN0YXQKPiA+IGNsZWFyaW5nIG1pZ2h0IGJlIGEgdXNl
+ZnVsIG9wdGlvbi4KPiA+Cj4gCj4gV2hpY2ggcG0tcW9zIG9iamVjdHMgYXJlIHlvdSByZWZlcnJp
+bmcgdG8/IFRoZSBzdHJ1Y3QgcG1fcW9zX29iamVjdAo+IHRoYXQgYmFja3MgZWFjaCBwbS1xb3Mg
+Y2xhc3MgaXMgbG9uZyBsaXZlZCAoSSBkb24ndCBrbm93IHdoeSB0aGlzIGlzCj4gbmFtZWQgcG1f
+cW9zX29iamVjdCksIGJ1dCB3ZSBuZWVkIHN0YXRzIGluIHN0cnVjdCBwbV9xb3NfcmVxdWVzdF9s
+aXN0LgoKQWN0dWFsbHksIHdoeSBub3QgdHdvIHNlcGFyYXRlIGxpc3RzPyAgb25lIGZvciB0aGUg
+cmVxdWVzdCBhbmQgb25lIGZvcgp0aGUgc3RhdHM/CgpPSywgc28gSSdtIHRpcmVkIGFuZCBJJ3Zl
+IGhhZCBhIGxvbmcgZmxpZ2h0IHRvIGdldCB0byB3aGVyZSBJIGFtLCBzbyBJCm1heSBiZSBhIGJp
+dCBqYWRlZCwgYnV0IHRoaXMgaXNuJ3QgZnVja2luZyByb2NrZXQgc2NpZW5jZSB0aGUgcXVlc3Rp
+b24KaXMgaG93IGRvIHdlIGltcGxlbWVudCB3aGF0IHlvdSB3YW50IG9uIHdoYXQgd2UgaGF2ZSAu
+Li4gdGhlcmUgbG9va3MgdG8KYmUgbXVsdGlwbGUgdXNlZnVsIHNvbHV0aW9ucyAuLi4gd2UganVz
+dCBoYXZlIHRvIHBpY2sgb25lIGFuZCBhZ3JlZSBvbgppdCAodGhhdCdzIHN0YW5kYXJkIG9wZW4g
+c291cmNlKS4KCkphbWVzCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5k
+YXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0
+aW5mby9saW51eC1wbQ==
