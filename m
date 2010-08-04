@@ -1,24 +1,22 @@
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Wed, 4 Aug 2010 16:06:37 -0700
-Message-ID: <20100804230637.GK24163__49981.1556459919$1280963252$gmane$org@linux.vnet.ibm.com>
-References: <20100803183447.0275c134@infradead.org>
-	<20100804163216.GB24163@linux.vnet.ibm.com>
-	<20100804163509.GA31523@srcf.ucam.org>
+Date: Wed, 4 Aug 2010 16:10:03 -0700
+Message-ID: <20100804231003.GL24163__465.167922857468$1280963605$gmane$org@linux.vnet.ibm.com>
+References: <20100801054816.GI2470@linux.vnet.ibm.com>
 	<alpine.DEB.2.00.1008041124580.6545@asgard.lang.hm>
 	<20100804185520.GA2417@srcf.ucam.org>
-	<alpine.DEB.2.00.1008041207260.6545@asgard.lang.hm>
-	<20100804192115.GA2946@srcf.ucam.org>
-	<alpine.DEB.2.00.1008041222280.6545@asgard.lang.hm>
-	<20100804200857.GF24163@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008041521180.6545@asgard.lang.hm>
+	<201008042251.08266.rjw@sisk.pl>
+	<20100804205654.GA4986@srcf.ucam.org>
+	<alpine.DEB.2.00.1008041529530.6545@asgard.lang.hm>
+	<AANLkTimRZc2B1=ic-0jrGBX7ahCu=NCoQadCOePGDmh9@mail.gmail.com>
+	<alpine.DEB.2.00.1008041554580.6545@asgard.lang.hm>
 Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1008041521180.6545@asgard.lang.hm>
+In-Reply-To: <alpine.DEB.2.00.1008041554580.6545@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -32,12 +30,16 @@ To: david@lang.hm
 Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 04, 2010 at 03:29:25PM -0700, david@lang.hm wrote:
-> On Wed, 4 Aug 2010, Paul E. McKenney wrote:
-> >On Wed, Aug 04, 2010 at 12:29:36PM -0700, david@lang.hm wrote:
+On Wed, Aug 04, 2010 at 03:56:42PM -0700, david@lang.hm wrote:
+> On Wed, 4 Aug 2010, Arve Hj?nnev?g wrote:
+> 
+> >On Wed, Aug 4, 2010 at 3:31 PM,  <david@lang.hm> wrote:
 > >>On Wed, 4 Aug 2010, Matthew Garrett wrote:
-> >>>On Wed, Aug 04, 2010 at 12:15:59PM -0700, david@lang.hm wrote:
-> >>>>On Wed, 4 Aug 2010, Matthew Garrett wrote:
+> >>
+> >>>On Wed, Aug 04, 2010 at 10:51:07PM +0200, Rafael J. Wysocki wrote:
+> >>>>
+> >>>>On Wednesday, August 04, 2010, Matthew Garrett wrote:
+> >>>>>
 > >>>>>No! And that's precisely the issue. Android's existing behaviour could
 > >>>>>be entirely implemented in the form of binary that manually triggers
 > >>>>>suspend when (a) the screen is off and (b) no userspace applications
@@ -54,128 +56,41 @@ On Wed, Aug 04, 2010 at 03:29:25PM -0700, david@lang.hm wrote:
 > >>>>>because the voip app is an otherwise untrusted application that you've
 > >>>>>just told the scheduler to ignore.
 > >>>>
-> >>>>Even in the current implementation (wakelocks), Since the VOIP
-> >>>>application isn't allowed to take a wakelock, wouldn't the system go to
-> >>>>sleep immediatly anyway, even if the application gets the packet and
-> >>>>starts the call? What would ever raise the wakelock to keep the phone
-> >>>>from sleeping in the middle of the call?
+> >>>>I _think_ you can use the just-merged /sys/power/wakeup_count mechanism
+> >>>>to
+> >>>>avoid the race (if pm_wakeup_event() is called at 2)).
 > >>>
-> >>>There's two parts of that. The first is that the voip application is
-> >>>allowed to take a wakelock - but that doesn't mean that you trust it the
-> >>>rest of the time.
+> >>>Yes, I think that solves the problem. The only question then is whether
+> >>>it's preferable to use cgroups or suspend fully, which is pretty much up
+> >>>to the implementation. In other words, is there a reason we're still
+> >>>having this conversation? :) It'd be good to have some feedback from
+> >>>Google as to whether this satisfies their functional requirements.
 > >>
-> >>why would you trust it to take a wakelock, but not trust it the rest
-> >>of the time?
-> >>
-> >>in my proposal I'm saying that if you would trust the application to
-> >>take a wakelock, you instead trust it to be sane in the rest of it's
-> >>power activity (avoiding polling, etc) and so you consider it for
-> >>sleep decisions.
+> >>the proposal that I nade was not to use cgroups to freeze some processes and
+> >>not others, but to use cgroups to decide to ignore some processes when
+> >>deciding if the system is idle, stop everything or nothing. cgroups are just
+> >>a way of easily grouping processes (and their children) into different
+> >>groups.
 > >
-> >The word "trust" does not appear to be helping here.  ;-)
-> >
-> >The VOIP application acquires a suspend blocker when it needs to prevent
-> >the system from suspending, and releases that suspend blocker when it
-> >can tolerate the system suspending.  It is important to note that while
-> >the VOIP application holds the suspend blocker, the system won't suspend
-> >even if it is completely idle (for example, if the VOIP application uses
-> >blocking system calls, during the time that the VOIP application is
-> >waiting for its next event).
+> >That does not avoid the dependency problem. A process may be waiting
+> >on a resource that a process you ignore owns. I you ignore the process
+> >that owns the resource and enter idle when it is ready to run (or
+> >waiting on a timer), you are still effectively blocking the other
+> >process.
 > 
-> In the terminology I have been using, the VOIP sofware is then
-> trusted to take the wakelock appropriately, and I'm then saying it
-> would be in the trusted cgroup
+> and if you don't have a wakelock the same thing will happen. If you
+> expect the process to take a while you can set a timeout to wake up
+> every 30 seconds or so and wait again, this would be enough to
+> prevent you from going to sleep (or am I misunderstanding how long
+> before you go into suspend without a wakelock set, see my other
+> e-mail for the full question)
 
-Understood, but...
-
-> >>>The second is that the incoming network packet causes
-> >>>the kernel to take a wakelock that will be released once userspace has
-> >>>processed the network packet. This ensures that at least one wakelock is
-> >>>held for the entire relevant period of time.
-> >>
-> >>how do you determine that userspace has processed the network packet
-> >>so that the kernel can release the wakelock (or is this one of the
-> >>cases where there is a timer related to the wakelock)
-> >
-> >There are two cases:
-> >
-> >1.	The application is permitted to acquire suspend blockers.
-> >	In this case, the application would acquire a suspend blocker
-> >	before reading the input.  It would then read the input (at
-> >	which point the kernel releases its suspend blocker), do any
-> >	needed processing, and finally release the suspend blocker.
-> >
-> >	So in this case, the system knows that the application is
-> >	done processing the input when that application releases
-> >	its suspend blocker.
-> 
-> in my proposal, the application is trusted to take the wakelock, so
-> it would be trusted to not use the CPU wildly inappropriatly and so
-> it running would make the system active and so it would not sleep.
-
-... here you seem to be assuming that "trusted to properly use a wakelock"
-implies "coded to optimize power usage when not holding a wakelock."
-But this does not necessarily follow.
-
-> >2.	The application is prohibited from acquiring suspend blockers.
-> >	In this case, the system might well be suspended before the
-> >	application has a chance to do more than read the input.
-> >
-> >	But the application will get a chance to process the input
-> >	when the next input event is directed to it.
-> 
-> In this case  the system would go ahead and suspend, but the next
-> time the sustem wakes up for any reason, this application would
-> continue to run and process the input
-
-Yep, that is in fact what I said.  ;-)
-
-> >>two things here,
-> >>
-> >>on the dirty networks that I see as common, refusing to sleep if
-> >>network packets are arriving will mean that you never go to sleep.
-> >>
-> >>secondly, nothing stops the code doing the idle/suspend decision
-> >>from considering network activity. I would be surprised if there
-> >>weren't already options to support this today.
-> >
-> >I don't know about the general networking case for Android, but the
-> >example of downloading was discussed some time back.  The application
-> >doing the download acquires a suspend blocker, which it releases once
-> >the download is complete (or once a timeout expires, if I remember
-> >correctly).  In this particular case, the network packets were not
-> >bringing the device out of suspend.
-> 
-> it would seem reasonable to say that if a packet arrives for an
-> existing connection (which the kernel does know) it is considered
-> activity for purposes of sleeping.
-
-That would be up to the people creating the system in question.  In
-some cases, they might (as you say) want every packet arriving to
-wake up the system, in other cases they might not.  We should not
-be taking that design decision away from them.
-
-> I don't know if you would care enough to try and say that packets
-> for untrusted apps  network connections don't keep the system awake,
-> or just allow them to (after all, keypresses going to untrusted apps
-> do keep the system awake)
-
-Again, this is up to the people creating the system in question.  On
-some Android systems, there is a particular button you have to press
-to wake the system up after it has suspended itself.
-
-> >There might well be other cases where networking packets -do- bring
-> >the system out of suspend, but I must leave this to someone who knows
-> >more about Android than do I.
-> 
-> this would be the normal wake-on-lan type of functionality that
-> exists without Android.
-
-Although this wake-on-LAN functionality applies only to special
-wake-up packets, not to normal packets, right?
+The difference between the Android scheme and your proposal is that the
+Android scheme freezes -all- the processes, not just a subset of them.
+Therefore, in the Android scheme, the case of one process attempting to
+acquire a resource held by a frozen process.  In contrast, any scheme
+that attempts to freeze only a subset of the processes must somehow
+either avoid or properly handle the situation where a frozen process is
+holding a resource that a running process is trying to acquire.
 
 							Thanx, Paul
-
-> The primary thing that I was getting at was the other things above.
-> 
-> David Lang
