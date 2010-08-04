@@ -1,18 +1,23 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+From: david@lang.hm
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Wed, 4 Aug 2010 15:51:34 -0700
-Message-ID: <AANLkTimRZc2B1=ic-0jrGBX7ahCu=NCoQadCOePGDmh9__749.901080462401$1280962402$gmane$org@mail.gmail.com>
+Date: Wed, 4 Aug 2010 15:54:16 -0700 (PDT)
+Message-ID: <alpine.DEB.2.00.1008041543030.6545__10742.1851753772$1280962565$gmane$org@asgard.lang.hm>
 References: <20100801054816.GI2470@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008041124580.6545@asgard.lang.hm>
-	<20100804185520.GA2417@srcf.ucam.org>
-	<201008042251.08266.rjw@sisk.pl>
-	<20100804205654.GA4986@srcf.ucam.org>
-	<alpine.DEB.2.00.1008041529530.6545@asgard.lang.hm>
+	<20100731230101.7cc1d8c7@infradead.org>
+	<20100801191228.GL2470@linux.vnet.ibm.com>
+	<20100801154708.19817b75@infradead.org>
+	<20100802011006.GS2470@linux.vnet.ibm.com>
+	<AANLkTi=a-1hn_oL=i-=RKK9xOur+4mQjTRut+aiXtYkE@mail.gmail.com>
+	<20100803183447.0275c134@infradead.org>
+	<20100804163216.GB24163@linux.vnet.ibm.com>
+	<20100804163509.GA31523@srcf.ucam.org>
+	<20100804204208.GA21452@elf.ucw.cz>
+	<20100804204839.GA4743@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1008041529530.6545@asgard.lang.hm>
+In-Reply-To: <20100804204839.GA4743@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,59 +27,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
+To: Matthew Garrett <mjg59@srcf.ucam.org>
 Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 4, 2010 at 3:31 PM,  <david@lang.hm> wrote:
-> On Wed, 4 Aug 2010, Matthew Garrett wrote:
->
->> On Wed, Aug 04, 2010 at 10:51:07PM +0200, Rafael J. Wysocki wrote:
->>>
->>> On Wednesday, August 04, 2010, Matthew Garrett wrote:
->>>>
->>>> No! And that's precisely the issue. Android's existing behaviour could
->>>> be entirely implemented in the form of binary that manually triggers
->>>> suspend when (a) the screen is off and (b) no userspace applications
->>>> have indicated that the system shouldn't sleep, except for the wakeup
->>>> event race. Imagine the following:
->>>>
->>>> 1) The policy timeout is about to expire. No applications are holding
->>>> wakelocks. The system will suspend providing nothing takes a wakelock.
->>>> 2) A network packet arrives indicating an incoming SIP call
->>>> 3) The VOIP application takes a wakelock and prevents the phone from
->>>> suspending while the call is in progress
->>>>
->>>> What stops the system going to sleep between (2) and (3)? cgroups don'=
-t,
->>>> because the voip app is an otherwise untrusted application that you've
->>>> just told the scheduler to ignore.
->>>
->>> I _think_ you can use the just-merged /sys/power/wakeup_count mechanism
->>> to
->>> avoid the race (if pm_wakeup_event() is called at 2)).
->>
->> Yes, I think that solves the problem. The only question then is whether
->> it's preferable to use cgroups or suspend fully, which is pretty much up
->> to the implementation. In other words, is there a reason we're still
->> having this conversation? :) It'd be good to have some feedback from
->> Google as to whether this satisfies their functional requirements.
->
-> the proposal that I nade was not to use cgroups to freeze some processes =
-and
-> not others, but to use cgroups to decide to ignore some processes when
-> deciding if the system is idle, stop everything or nothing. cgroups are j=
-ust
-> a way of easily grouping processes (and their children) into different
-> groups.
->
+On Wed, 4 Aug 2010, Matthew Garrett wrote:
 
-That does not avoid the dependency problem. A process may be waiting
-on a resource that a process you ignore owns. I you ignore the process
-that owns the resource and enter idle when it is ready to run (or
-waiting on a timer), you are still effectively blocking the other
-process.
+> On Wed, Aug 04, 2010 at 10:42:08PM +0200, Pavel Machek wrote:
+>
+>> This came like a bit of a shock to me ("why do they make it so complex
+>> then"), but... it also means that as soon as you are able to stop
+>> "unwanted" processing, you can just leave normal cpuidle mechanisms to
+>> deal with the rest...
+>
+> How do you differentiate between "unwanted" and "wanted" processing in
+> the same task in a race-free manner?
 
--- =
+how much do you care? (not from a theoretical point of view, but from a 
+practical point of view, how much difference does it make)
 
-Arve Hj=F8nnev=E5g
+how much "unwanted" processing would you allow a process to do before 
+shutting down?
+
+how likely are apps that you would trust to just assert "I know better 
+than the system or the user how important I am, don't you dare sleep now" 
+that do this properly, but then do other processing that you really don't 
+want to have happen? (I expect that if the authors of those apps ever ran 
+into this case, they would just add another wakelock to prevent it)
+
+
+If the only things you have running are apps that are trusted to take the 
+wakelock, are you really going to sleep any more frequently with the 
+wakelock infrastructure than you would with just idle detection? (this can 
+be tested today by just stubbing out the wakelock checks so they have no 
+effect on sleeping)
+
+
+David Lang
