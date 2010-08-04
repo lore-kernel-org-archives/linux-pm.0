@@ -1,15 +1,19 @@
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Subject: Re: 2.6.35 Regression: Ages spent discarding blocks that
-	weren't used!
-Date: Wed, 04 Aug 2010 14:02:10 -0400
-Message-ID: <yq17hk6qmsd.fsf__33658.3769917071$1280956833$gmane$org@sermon.lab.mkp.net>
-References: <4C58C528.4000606@tuxonice.net> <4C5960B0.7020003@teksavvy.com>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Wed, 4 Aug 2010 14:15:21 -0700
+Message-ID: <20100804211521.GI24163__20400.9512941868$1280957257$gmane$org@linux.vnet.ibm.com>
+References: <20100801054816.GI2470@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008041124580.6545@asgard.lang.hm>
+	<20100804185520.GA2417@srcf.ucam.org>
+	<201008042251.08266.rjw@sisk.pl>
+	<20100804205654.GA4986@srcf.ucam.org>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C5960B0.7020003@teksavvy.com> (Mark Lord's message of "Wed, 04
-	Aug 2010 08:44:32 -0400")
+Content-Disposition: inline
+In-Reply-To: <20100804205654.GA4986@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,25 +23,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Lord <kernel@teksavvy.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
->>>>> "Mark" == Mark Lord <kernel@teksavvy.com> writes:
+On Wed, Aug 04, 2010 at 09:56:55PM +0100, Matthew Garrett wrote:
+> On Wed, Aug 04, 2010 at 10:51:07PM +0200, Rafael J. Wysocki wrote:
+> > On Wednesday, August 04, 2010, Matthew Garrett wrote:
+> > > No! And that's precisely the issue. Android's existing behaviour could 
+> > > be entirely implemented in the form of binary that manually triggers 
+> > > suspend when (a) the screen is off and (b) no userspace applications 
+> > > have indicated that the system shouldn't sleep, except for the wakeup 
+> > > event race. Imagine the following:
+> > > 
+> > > 1) The policy timeout is about to expire. No applications are holding 
+> > > wakelocks. The system will suspend providing nothing takes a wakelock.
+> > > 2) A network packet arrives indicating an incoming SIP call
+> > > 3) The VOIP application takes a wakelock and prevents the phone from 
+> > > suspending while the call is in progress
+> > > 
+> > > What stops the system going to sleep between (2) and (3)? cgroups don't, 
+> > > because the voip app is an otherwise untrusted application that you've 
+> > > just told the scheduler to ignore.
+> > 
+> > I _think_ you can use the just-merged /sys/power/wakeup_count mechanism to
+> > avoid the race (if pm_wakeup_event() is called at 2)).
+> 
+> Yes, I think that solves the problem. The only question then is whether 
+> it's preferable to use cgroups or suspend fully, which is pretty much up 
+> to the implementation. In other words, is there a reason we're still 
+> having this conversation? :) It'd be good to have some feedback from 
+> Google as to whether this satisfies their functional requirements.
 
-Mark> Looks to me like more and more things are using the block discard
-Mark> functionality, and as predicted it is slowing things down
-Mark> enormously.
+The issue with cgroup freezer as currently defined is that it can freeze
+processes that hold user-level resources (pthread mutexes, SysV semas,
+...).  If some non-frozen process attempts to acquire that resource, you
+get a hang.  There might be some ways to work around this, for example,
+Arjan suggests momentarily unfreezing periodically, and I suggested doing
+the freeze in user-space code, but we don't know if either of these will
+really do what is required.
 
-Mark> The problem is that we still only discard tiny bits (a single
-Mark> range still??)  per TRIM command, rather than batching larger
-Mark> ranges and larger numbers of ranges into single TRIM commands.
+Also, I believe that Android's use of cgroups would be in addition to
+suspending fully rather than instead of.  Freezing a subset of the
+applications allows cutting power drain from output-only apps when
+the screen blanks but where some app such as a download needs to keep
+the system active.  They still would need to suspend once the download
+completes.
 
-Mark> That's a very poor implementation, especially when things start
-Mark> enabling it by default.  Eg. the swap code, mke2fs, etc..
+But we do need to hear from the Android guys on these points.
 
-I'm working on aggregation.  But it's harder than we initially
-thought...
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+							Thanx, Paul
