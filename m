@@ -1,24 +1,23 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Tue, 3 Aug 2010 20:39:22 -0700
-Message-ID: <AANLkTinjH0C0bSK=Y2wKASnbJFsR2BN303xBXkaHbmRC__43516.2546033554$1280893215$gmane$org@mail.gmail.com>
-References: <20100801210548.23f77ff6@infradead.org>
-	<alpine.DEB.2.00.1008012153300.25170@asgard.lang.hm>
-	<20100802140933.GB2405@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008021627290.29820@asgard.lang.hm>
-	<AANLkTi=1kBuyPS_P+eNLcnRu1mJH6BzpzQW_sENZuL1L@mail.gmail.com>
-	<alpine.DEB.2.00.1008022121430.6545@asgard.lang.hm>
-	<AANLkTikhcYzNp8CPp8cqrV7Ey5CLMWu1sJTNxUtEi2as@mail.gmail.com>
-	<alpine.DEB.2.00.1008022203470.6545@asgard.lang.hm>
-	<AANLkTinFT5jq4nUhUpzS5S4TVDQGj0S7RtRgxNhsz2UF@mail.gmail.com>
-	<alpine.DEB.2.00.1008031611100.6545@asgard.lang.hm>
-	<20100804001015.GJ2407@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008031723530.6545@asgard.lang.hm>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH/RFC] Runtime PM: ARM: subarch-specific
+	extensions of pdev_archdata
+Date: Wed, 4 Aug 2010 12:56:17 +0900
+Message-ID: <AANLkTi=RTigcf-p=GFncAQ2ZjP=4qjDPXjnMmTO_u6tL__35838.1834267222$1280894282$gmane$org@mail.gmail.com>
+References: <1253670648-28610-1-git-send-email-khilman@deeprootsystems.com>
+	<f17812d70909222153y4a0e4fc2n496ea2e6caaac847@mail.gmail.com>
+	<19129.63264.653666.70492@pilspetsen.it.uu.se>
+	<4ABAAF1D.6090907@deeprootsystems.com>
+	<f17812d70909231630i20f64328k8d604c3436094b85@mail.gmail.com>
+	<87k4yhagv4.fsf@deeprootsystems.com>
+	<AANLkTinBqc11oE2SOmvXbFHmlgvZ21LngXNWkSHiJmRK@mail.gmail.com>
+	<34dc79dc-0868-4401-9fa5-c7134f6d4485@email.android.com>
+	<AANLkTikHUcgBcTmv+=NrYMwgn-UC_Q0Vv3ytfuJbkyRB@mail.gmail.com>
+	<87k4o7r7sv.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1008031723530.6545@asgard.lang.hm>
+In-Reply-To: <87k4o7r7sv.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,188 +27,139 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel <linux-kernel@vger.kernel.org>, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Grant Likely <grant.likely@secretlab.ca>, linux-pm@lists.linux-foundation.org, Mikael Pettersson <mikpe@it.uu.se>, Eric Miao <eric.y.miao@gmail.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 3, 2010 at 5:51 PM,  <david@lang.hm> wrote:
-> On Tue, 3 Aug 2010, Paul E. McKenney wrote:
->
->> On Tue, Aug 03, 2010 at 04:19:25PM -0700, david@lang.hm wrote:
->>>
->>> On Tue, 3 Aug 2010, Arve Hj?nnev?g wrote:
->>>
->>>> 2010/8/2 =A0<david@lang.hm>:
->>>>>
->>>>> so what is the fundamental difference between deciding to go into
->>>>> low-power
->>>>> idle modes to wake up back up on a given point in the future and
->>>>> deciding
->>>>> that you are going to be idle for so long that you may as well suspend
->>>>> until
->>>>> there is user input?
->>>>>
->>>>
->>>> Low power idle modes are supposed to be transparent. Suspend stops the
->>>> monotonic clock, ignores ready threads and switches over to a separate
->>>> set of wakeup events/interrupts. We don't suspend until there is user
->>>> input, we suspend until there is a wakeup event (user-input, incoming
->>>> network data/phone-calls, alarms etc..).
->>>
->>> s/user input/wakeup event/ and my question still stands.
->>>
->>> low power modes are not transparent to the user in all cases (if the
->>> screen backlight dimms/shuts off a user reading something will
->>> notice, if the system switches to a lower clock speed it can impact
->>> user response time, etc) The system is making it's best guess as to
->>> how to best srve the user by sacraficing some capibilities to save
->>> power now so that the power can be available later.
->>>
->>> as I see it, suspending until a wakeup event (button press, incoming
->>> call, alarm, etc) is just another datapoint along the same path.
->>>
->>> If the system could not wake itself up to respond to user input,
->>> phone call, alarm, etc and needed the power button pressed to wake
->>> up (or shut down to the point where the battery could be removed and
->>> reinstalled a long time later), I would see things moving into a
->>> different category, but as long as the system has the ability to
->>> wake itself up later (and is still consuming power) I see the
->>> suspend as being in the same category as the other low-power modes
->>> (it's just more expensive to go in and out of)
->>>
->>>
->>> why should the suspend be put into a different category from the
->>> other low-power states?
+On Wed, Aug 4, 2010 at 1:16 AM, Kevin Hilman
+<khilman@deeprootsystems.com> wrote:
+> Magnus Damm <magnus.damm@gmail.com> writes:
+>> On Sun, Jul 25, 2010 at 5:24 AM, Grant Likely <grant.likely@secretlab.ca=
+> wrote:
+>>> "Magnus Damm" <magnus.damm@gmail.com> wrote:
+>>>>On Tue, Oct 27, 2009 at 8:13 AM, Kevin Hilman
+>>>><khilman@deeprootsystems.com> wrote:
+>>>>> Eric Miao <eric.y.miao@gmail.com> writes:
+>>>>>> On Thu, Sep 24, 2009 at 7:28 AM, Kevin Hilman
+>>>>>> <khilman@deeprootsystems.com> wrote:
+>>>>>>> Mikael Pettersson wrote:
+>>>>>>>> Eric Miao writes:
+>>>>>>>> =A0> On Wed, Sep 23, 2009 at 9:50 AM, Kevin Hilman
+>>>>>>>> =A0> <khilman@deeprootsystems.com> wrote:
+>>>>>>>> =A0> > On ARM platforms, power management can be very platform spe=
+cific.
+>>>>>>>> =A0> > This patch allows ARM subarches to extend the platform_devi=
+ce
+>>>>>>>> =A0> > pdev_archdata for each subarch by creating a new struct pde=
+v_machdata
+>>>>>>>> =A0> > and allowing each subarch to customize it as needed.
 >>
->> OK, I'll bite...
->
-> thanks, this is not intended to be a trap.
->
->> From an Android perspective, the differences are as follows:
+>>>>Do you remember what happened with this patch?
+>>>
+>>> I don't have all the details in front of me because I'm on my phone,
+>>> but I advised against pdev_archdata because it is
+>>> multiplatform-unfriendly.
 >>
->> 1. =A0 =A0 =A0Deep idle states are entered only if there are no runnable=
- tasks.
->> =A0 =A0 =A0 =A0In contrast, opportunistic suspend can happen even when t=
-here
->> =A0 =A0 =A0 =A0are tasks that are ready, willing, and able to run.
+>> Ok, I did not expect that. =3D) But after thinking a bit it does make
+>> sense. I wonder what my options are. I'm not so fond of the idea to
+>> wrap the platform devices - that's not more multi-platform friendly,
+>> is it?
 >
-> Ok, this is a complication to what I'm proposing (and seems a little odd,
-> but I can see how it can work), but not neccessarily a major problem. it
-> depends on exactly how the decision is made to go into low power states
-> and/or suspend. If this is done by an application that is able to look at
-> either all activity or ignore one cgroup of processes at different times =
-in
-> it's calculations than this would work.
+> [sorry for the lag, been on vacation]
 >
->> 2. =A0 =A0 =A0There can be a set of input events that do not bring the s=
-ystem
->> =A0 =A0 =A0 =A0out of suspend, but which would bring the system out of a=
- deep
->> =A0 =A0 =A0 =A0idle state. =A0For example, I believe that it was stated =
-that one
->> =A0 =A0 =A0 =A0of the Android-based smartphones ignores touchscreen inpu=
-t while
->> =A0 =A0 =A0 =A0suspended, but pays attention to it while in deep idle st=
-ates.
+> Wrapping is more multi-platform friendly because only platform-specific
+> code accesses the wrapped code. =A0It's also logically consistent as
+> a struct device is contained by a platform_device which is then
+> contained by an omap_device (in our case.) =A0 Only OMAP-specific code
+> ever knows about or touches that layer.
+
+Sure, as long as all platform devices are wrapped into omap_device
+then I see no problem. I guess my worries are about mixing platform
+devices and omap_device on the same system. The answer to that may
+simply be "don't". =3D)
+
+For the mixed case my main concern is the use of to_omap_device() on a
+struct platform device which may or may not be an omap_device. You
+have your magic check in omap_device_is_valid() so i guess that's ok,
+but compared to the rest of the driver model this extended level of
+wrapping does not come with any pointer for class/type/bus. Platform
+devices all use the platform_bus_type symbol for device->bus, so in
+theory it's possible to check the bus type before going from struct
+device to struct platform_device using to_platform_device(). In the
+wrapped platform device case you first have to speculate using
+container_of() and then check for magic. Seems a bit hackish to me. I
+prefer the other way around, check wrapping type first then use
+container_of().
+
+I guess the question is if it's really needed to differentiate between
+platform devices and omap devices, and I guess the only place where it
+may be a problem is the runtime pm code. Perhaps thanks to the weak
+symbols, sorry about that...
+
+>> How about using devres and platform bus notifiers?
+[snip]
+
+> Your patches look multi-platform friendly, but there are still some
+> outstanding issues with making runtime PM support multi-platform
+> friendly that are not direclty related to the above patches.
+
+I agree!
+
+> 1) weak symbols
 >
-> I see this as simply being a matter of what devices are still enabled at =
-the
-> different power savings levels. At one level the touchscreen is still
-> powered, while at another level it isn't, and at yet another level you ha=
-ve
-> to hit the power soft-button. This isn't fundamentally different from
-> powering off a USB peripheral that the system decides is idle (and then n=
-ot
-> seeing input from it until something else wakes the system)
+> We need to change the overriding of weak symbols into some form of
+> register/unregister so multiple platforms in the same kernel could work.
+> That's the easy one.
 
-The touchscreen on android devices is powered down long before we
-suspend, so that is not a good example. There is still a significant
-difference between suspend and idle though. In idle all interrupts
-work, in suspend only interrupts that the driver has called
-enable_irq_wake on will work (on platforms that support it).
+Yeah. Perhaps it's possible to reuse part of the pm_generic_... functions.
 
+> 2) custom vs. platform bus.
 >
->> 3. =A0 =A0 =A0The system comes out of a deep idle state when a timer
->> =A0 =A0 =A0 =A0expires. =A0In contrast, timers cannot expire while the
->> =A0 =A0 =A0 =A0system is suspended. =A0(This one is debatable: some peop=
-le
->> =A0 =A0 =A0 =A0argue that timers are subject to jitter, and the suspend
->> =A0 =A0 =A0 =A0case for timers is the same as that for deep idle states,
->> =A0 =A0 =A0 =A0but with unbounded timer jitter. =A0Others disagree. =A0T=
-he
->> =A0 =A0 =A0 =A0resulting discussions have produced much heat, but little
->> =A0 =A0 =A0 =A0light. =A0Such is life.)
+> The other issue under discussion between Grant & myself[1] has been the
+> use of a custom bus instead of the platform bus. =A0Following your lead,
+> (and preferring that option) I continued to use the platform_bus since
+> I only need to override a few of the dev_pm_ops functions.
 >
-> if you have the ability to wake for an alarm, you have the ability to wake
-> for a timer (if from no other method than to set the alarm to when the ti=
-mer
-> tick would go off)
+> However, Grant is not happy about overriding the platform_bus. =A0He would
+> rather see each platform create a custom bus with it's own PM methods.
 >
-
-If you just program the alarm you will wake up see that the monotonic
-clock has not advanced and set the alarm another n seconds into the
-future. Or are proposing that suspend should be changed to keep the
-monotonic clock running? If you are, why? We can enter the same
-hardware states from idle, and modifying suspend to wake up more often
-would increase the average power consumption in suspend, not improve
-it for idle. In other words, if suspend wakes up as often as idle, why
-use suspend?
-
->> There may well be others.
->>
->> Whether these distinctions are a good thing or a bad thing is one of
->> the topics of this discussion. =A0But the distinctions themselves are
->> certainly very real, from what I can see.
->>
->> Or am I missing your point?
+> In this thread[1], I did a quick and dirty proof of concept to show that
+> it is possible, but quite frankly, I still much prefer continuing to use
+> the platform_bus since it is mostly identical.
 >
-> these big distinction that I see as significant seem to be in the decision
-> of when to go into the different states, and the difference between the
-> states =A0themselves seem to be less significant (and either very close t=
-o, or
-> within the variation that already exists for power saving modes)
->
-> If I'm right bout this, then it would seem to simplify the concept and
-> change it from some really foreign android-only thing into a special case
-> variation of existing core concepts.
+> [1] http://lists.infradead.org/pipermail/linux-arm-kernel/2010-June/01892=
+5.html
 
-Suspend is not an android only concept. The android extensions just
-allow us to aggressively use suspend without loosing (or delaying)
-wakeup events. On the hardware that we shipped we can enter the same
-power mode from idle as we do in suspend, but we still use suspend
-primarily because it stops the monotonic clock and all the timers that
-use it. Changing suspend to behave more like an idle mode, which seems
-to be what you are suggesting, would not buy us anything.
+Thanks for the pointer. I've been thinking of using a custom bus as
+well, but from my point of view it's always looked like a lot of
+coding without any clear benefit. I understand the idea of wanting to
+use a single binary on a wide range of systems, and solving that seems
+like a good plan.
 
->
-> you have many different power saving modes, the daemon (or kernel code) t=
-hat
-> is determining which mode to go into would need different logic (includin=
-g,
-> but not limited to the ability to be able to ignore one or more cgroups of
-> processes). different power saving modes have different trade-offs, and s=
-ome
-> of them power down different peripherals (which is always a platform
-> specific, if not system specific set of trade-offs)
->
+I'm not sure if a custom bus is the best idea. I wouldn't mind being
+able to create platform bus instances though. Or custom buses using
+some kind of platform bus library. A lot of drivers use the platform
+bus, so there has to be a very good reason to move away from that IMO.
+A new bus type seems a bit overkill to me though, what we need from my
+point of view is:
 
-The hardware specific idle hook can (and does) decide to go into any
-power state from idle that does not disrupt any active devices.
+1) Mach/Plat hardware configuration data for platform devices
+-> Can be kept in struct pdev_archdata (clock and power domain configuratio=
+n)
+-> Can be kept in a wrapped structure (clock and power domain configuration)
+-> Use clkdev tables to handle the device name to clock translation
+-> Power domain configuration without wrapping/pdev_archdata, not sure
 
-> This all depends on the ability for the code that decides to switch power
-> modes (including to trigger suspend) to be able to see things in sufficie=
-nt
-> detail to be able to do different things depending on the class of progra=
-ms.
-> I don't know enough about this code to know if this is the case or not, I
-> really wish that someone familiar with the power saving code could either
-> confirm that this is possible, or state that it's not possible (or at lea=
-st,
-> not without major surgery)
->
+2) Mach/Plat runtime data for each platform device
+-> Data can be kept in the wrapped data structure or struct pdev_archdata
+-> Could be solved by bus notifiers and dynamic allocation using devres
 
+3) Mach/Plat specific runtime PM
+-> Need to move away from weak symbols to register/unregister interface
+-> Struct pdev_archdata could perhaps point out a per-mach/plat dev_pm_ops?
 
+Any ideas?
 
--- =
+Cheers,
 
-Arve Hj=F8nnev=E5g
+/ magnus
