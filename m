@@ -1,23 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Wed, 4 Aug 2010 23:15:13 +0200
-Message-ID: <20100804211513.GC21452__7455.00919078967$1280957424$gmane$org@elf.ucw.cz>
-References: <20100731230101.7cc1d8c7@infradead.org>
-	<20100801191228.GL2470@linux.vnet.ibm.com>
-	<20100801154708.19817b75@infradead.org>
-	<20100802011006.GS2470@linux.vnet.ibm.com>
-	<AANLkTi=a-1hn_oL=i-=RKK9xOur+4mQjTRut+aiXtYkE@mail.gmail.com>
-	<20100803183447.0275c134@infradead.org>
-	<20100804163216.GB24163@linux.vnet.ibm.com>
-	<20100804163509.GA31523@srcf.ucam.org>
-	<20100804204208.GA21452@elf.ucw.cz>
-	<20100804205159.GH24163@linux.vnet.ibm.com>
+Date: Wed, 4 Aug 2010 23:31:14 +0200
+Message-ID: <201008042331.14851.rjw__42747.1590847292$1280957621$gmane$org@sisk.pl>
+References: <20100801054816.GI2470@linux.vnet.ibm.com>
+	<20100804205654.GA4986@srcf.ucam.org>
+	<20100804211521.GI24163@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100804205159.GH24163@linux.vnet.ibm.com>
+In-Reply-To: <20100804211521.GI24163@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,46 +19,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, Arve@smtp1.linux-foundation.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> > > > If this doesn't work for the Android folks for whatever reason, another
-> > > > approach would be to do the freeze in user code, which could track
-> > > > whether any user-level resources (pthread mutexes, SysV semas, whatever)
-> > > > where held, and do the freeze on a thread-by-thread basis within each
-> > > > "victim" application as the threads reach safe points.
+On Wednesday, August 04, 2010, Paul E. McKenney wrote:
+> On Wed, Aug 04, 2010 at 09:56:55PM +0100, Matthew Garrett wrote:
+> > On Wed, Aug 04, 2010 at 10:51:07PM +0200, Rafael J. Wysocki wrote:
+> > > On Wednesday, August 04, 2010, Matthew Garrett wrote:
+> > > > No! And that's precisely the issue. Android's existing behaviour could 
+> > > > be entirely implemented in the form of binary that manually triggers 
+> > > > suspend when (a) the screen is off and (b) no userspace applications 
+> > > > have indicated that the system shouldn't sleep, except for the wakeup 
+> > > > event race. Imagine the following:
+> > > > 
+> > > > 1) The policy timeout is about to expire. No applications are holding 
+> > > > wakelocks. The system will suspend providing nothing takes a wakelock.
+> > > > 2) A network packet arrives indicating an incoming SIP call
+> > > > 3) The VOIP application takes a wakelock and prevents the phone from 
+> > > > suspending while the call is in progress
+> > > > 
+> > > > What stops the system going to sleep between (2) and (3)? cgroups don't, 
+> > > > because the voip app is an otherwise untrusted application that you've 
+> > > > just told the scheduler to ignore.
 > > > 
-> > > The main problem I see with the cgroups solution is that it doesn't seem 
-> > > to do anything to handle avoiding loss of wakeup events.
+> > > I _think_ you can use the just-merged /sys/power/wakeup_count mechanism to
+> > > avoid the race (if pm_wakeup_event() is called at 2)).
 > > 
-> > In different message, Arve said they are actually using low-power idle
-> > to emulate suspend on Android.
+> > Yes, I think that solves the problem. The only question then is whether 
+> > it's preferable to use cgroups or suspend fully, which is pretty much up 
+> > to the implementation. In other words, is there a reason we're still 
+> > having this conversation? :) It'd be good to have some feedback from 
+> > Google as to whether this satisfies their functional requirements.
 > 
-> Hello, Pavel,
+> The issue with cgroup freezer as currently defined is that it can freeze
+> processes that hold user-level resources (pthread mutexes, SysV semas,
+> ...).  If some non-frozen process attempts to acquire that resource, you
+> get a hang.  There might be some ways to work around this, for example,
+> Arjan suggests momentarily unfreezing periodically, and I suggested doing
+> the freeze in user-space code, but we don't know if either of these will
+> really do what is required.
 > 
-> Could you please point me at this message?
+> Also, I believe that Android's use of cgroups would be in addition to
+> suspending fully rather than instead of.  Freezing a subset of the
+> applications allows cutting power drain from output-only apps when
+> the screen blanks but where some app such as a download needs to keep
+> the system active.  They still would need to suspend once the download
+> completes.
 
-AFAICT, this tells us that idle and suspend is the same hardware state
-on current Android hardware:
-								Pavel
+One can argue that once the download has been completed, the cpuidle framework
+should make the system reduce its energy consumption to the level achievable
+by using suspend.
 
-Message-ID: <AANLkTinjH0C0bSK=Y2wKASnbJFsR2BN303xBXkaHbmRC@mail.gmail.com>
+However, the problem is the cpuidle framework only deals with CPUs right
+now (at least generally) and there's a problem of the interrupt sources that
+allow the monotonic clock to advance and are deactivated during suspend
+(which allows more energy to be saved, because periodic timers are then
+effectively disabled).
 
-Arve said:
+So, it seems, system suspend is necessary to maximize energy savings
+as long as the cpuidle framework cannot take care of I/O devices and interrupt
+sources in general.
 
-If you just program the alarm you will wake up see that the monotonic
-clock has not advanced and set the alarm another n seconds into the
-future. Or are proposing that suspend should be changed to keep the
-monotonic clock running? If you are, why? We can enter the same
-hardware states from idle, and modifying suspend to wake up more often
-would increase the average power consumption in suspend, not improve
-it for idle. In other words, if suspend wakes up as often as idle, why
-use suspend?
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks,
+Rafael
