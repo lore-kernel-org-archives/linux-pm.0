@@ -1,17 +1,15 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Tue, 3 Aug 2010 22:43:19 -0700
-Message-ID: <AANLkTikn4NhRW8v7CFfo7Yb6+-pmun+DiArGJdkq_vYr__5658.01752168245$1280900726$gmane$org@mail.gmail.com>
-References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<AANLkTi=hoGF7egpyB9sLKJoXv5aiGrxfa9_5iH-96SA=@mail.gmail.com>
-	<1280851338.2774.30.camel@mulgrave.site>
-	<AANLkTinJ2jy18bAS-=abtDLaQWVmQdK1Oq105FcNDNyJ@mail.gmail.com>
-	<1280894427.11045.293.camel@mulgrave.site>
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: Re: [PATCH 7/8] ACPI / PCI: Do not preserve _OSC control
+ bits returned by a query (v2)
+Date: Wed, 04 Aug 2010 14:46:02 +0900
+Message-ID: <4C58FE9A.1040607__18469.1522423693$1280900829$gmane$org@jp.fujitsu.com>
+References: <201008022351.31406.rjw@sisk.pl> <4C57C182.7060407@jp.fujitsu.com>
+	<201008031133.37471.rjw@sisk.pl> <201008032302.33778.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1280894427.11045.293.camel@mulgrave.site>
+In-Reply-To: <201008032302.33778.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,111 +19,105 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-2010/8/3 James Bottomley <James.Bottomley@suse.de>:
-> On Tue, 2010-08-03 at 15:08 -0700, Arve Hj=F8nnev=E5g wrote:
->> 2010/8/3 James Bottomley <James.Bottomley@suse.de>:
->> > On Mon, 2010-08-02 at 21:18 -0700, Arve Hj=F8nnev=E5g wrote:
->> >> > o =A0 =A0 =A0 A power-aware application must be able to efficiently=
- communicate
->> >> > =A0 =A0 =A0 =A0its needs to the system, so that such communication =
-can be
->> >> > =A0 =A0 =A0 =A0performed on hot code paths. =A0Communication via op=
-en() and
->> >> > =A0 =A0 =A0 =A0close() is considered too slow, but communication vi=
-a ioctl()
->> >> > =A0 =A0 =A0 =A0is acceptable.
->> >> >
->> >>
->> >> The problem with using open and close to prevent an allow suspend is
->> >> not that it is too slow but that it interferes with collecting stats.
->> >
->> > Please elaborate on this. =A0I expect the pm-qos stats interface will
->> > collect stats across user open/close because that's how it currently
->> > works. =A0What's the problem?
->> >
->>
->> The pm-qos interface creates the request object in open and destroys
->> it in release just like the suspend blocker interface. We need stats
->> for each client which is lost if you free the object every time you
->> unblock suspend.
->
-> ? right at the moment it doesn't do stats. =A0I don't see why adding a per
-> pid or per name stat count on the long lived object won't work here.
->
->> Or are you talking about user space opening and closing the stats
->> interface (which does not cause any problems)?
->
-> There is no stat interface yet; it's for us to define.
->
+(2010/08/04 6:02), Rafael J. Wysocki wrote:
+> On Tuesday, August 03, 2010, Rafael J. Wysocki wrote:
+>> On Tuesday, August 03, 2010, Hidetoshi Seto wrote:
+>>> (2010/08/03 13:52), Kenji Kaneshige wrote:
+>>>> (2010/08/03 6:59), Rafael J. Wysocki wrote:
+>>>>> @@ -434,19 +432,6 @@ acpi_status acpi_pci_osc_control_set(acp
+>>>>>        if ((root->osc_control_set&   control_req) == control_req)
+>>>>>            goto out;
+>>>>>
+>>>>> -    /* Need to query controls first before requesting them */
+>>>>> -    if (!root->osc_queried) {
+>>>>> -        status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
+>>>>> -        if (ACPI_FAILURE(status))
+>>>>> -            goto out;
+>>>>> -    }
+>>>>> -    if ((root->osc_control_qry&   control_req) != control_req) {
+>>>>> -        printk(KERN_DEBUG
+>>>>> -               "Firmware did not grant requested _OSC control\n");
+>>>>> -        status = AE_SUPPORT;
+>>>>> -        goto out;
+>>>>> -    }
+>>>>
+>>>> I think acpi_pci_osc_control_set() still need to query before commit
+>>>> to ensure all the requested controls are granted to OS.
+>>>>
+>>>> So the code needs to be
+>>>>
+>>>>      status = acpi_pci_query_osc(root, root->osc_support_set,&control_req);
+>>>>      if (ACPI_FAILURE(status))
+>>>>          goto out;
+>>>
 
-Then I don't know what you are asking. This specific requirement was
-about the userspace interface to block and unblock suspend. The
-existing pm-qos interface to update pm-qos requests is similar to the
-user space suspend blocker interface (it has the same object
-lifetime).
+Sorry, that should have been
 
->> >> The wakelock code has a sysfs interface that allow you to use a
->> >> open/write/close sequence to block or unblock suspend. There is no
->> >> limit to the amount of kernel memory that a process can consume with
->> >> this interface, so the suspend blocker patchset uses a /dev interface
->> >> with ioctls to block or unblock suspend and it destroys the kernel
->> >> object when the file descriptor is closed.
->> >
->> > This is an implementation detail only.
->>
->> There is no way fix it without changing the user space visible
->> behavior of the API. The kernel does not know when it is safe to free
->> the objects.
->
-> They're freed on destruction of the long lived kernel object or on user
-> space clear request. =A0Surely that's definitive enough?
->
+	query = control_req;
+	status = acpi_pci_query_osc(root, root->osc_support_set, &query);
+	if (ACPI_FAILURE(status))
+		goto out;
+	if ((query & control_req) != control_req) {
+		printk_(KERN_DEBUG
+			"Firmware did not grant requested _OSC control\n");
+		status = AE_SUPPORT;
+		goto out;
+	}
 
-What is a user-space clear request? Clearing all stats. Deleting a
-suspend blocker? Unblocking suspend?
+I know current pcie_port_acpi_setup() queries the requesting controls
+before acpi_pci_osc_control_set() and only one control is requested
+in the other code. However, I think acpi_pci_osc_control_set() still
+need to query the requested controls to ensure all the requested
+controls, in case someone calls this function without querying the
+requesting controls. In other words, I think it must be ensured that
+any controls are never granted to OS when acpi_pci_osc_control_set()
+returns error.
 
-The android wakelock interface to userspace creates new wakelocks
-every time it sees a new name. This was rejected on this list because
-it does not put any limit on the amount of kernel memory used as a
-result of calls from user space.
+>>>>      status = acpi_pci_query_osc(root, root->osc_support_set,&control_req);
+>>>>      if (ACPI_FAILURE(status))
+>>>>          goto out;
 
->> > The pm-qos objects are long
->> > lived, so their stats would be too. =A0I would guess that explicit stat
->> > clearing might be a useful option.
->> >
->>
->> Which pm-qos objects are you referring to? The struct pm_qos_object
->> that backs each pm-qos class is long lived (I don't know why this is
->> named pm_qos_object), but we need stats in struct pm_qos_request_list.
->
-> Actually, why not two separate lists? =A0one for the request and one for
-> the stats?
->
-Why do you want to do another lookup? Is there a reason you don't want
-stats in pm_qos_request_list?
+By the way, I think it is getting confusing regarding who query the
+controls. IMO, querying controls to ensure all the requested controls
+are granted to OS should be done in acpi_pci_osc_control_set(), as
+I said above. On the other hand, PCIe port driver need to query
+controls for other reason... Now I think it might be better to change
+acpi_pci_osc_control_set() like below instead of introducing
+acpi_pci_osc_control_query().
 
-> OK, so I'm tired and I've had a long flight to get to where I am, so I
-> may be a bit jaded, but this isn't fucking rocket science the question
-> is how do we implement what you want on what we have ... there looks to
-> be multiple useful solutions ... we just have to pick one and agree on
-> it (that's standard open source).
->
+acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 *flags)
+{
+	...
+	query = control_req;
+	status = acpi_pci_query_osc(root, root->osc_support_set, &query);
+	if (ACPI_FAILURE(status))
+		goto out;
+	if ((query & control_req) != control_req) {
+		printk_(KERN_DEBUG
+			"Firmware did not grant requested _OSC control\n");
+		status = AE_SUPPORT;
+		*flags = (query & control_req);
+		goto out;
+	}
+	...
+}
 
-I don't think adding stats to pm-qos is hard. It is not as easy as the
-wakelock/suspend blocker interface since the number of possible
-request values is unknown, but we could for instance have stats on
-default vs non-default request values. However, it is not at all clear
-that switching our code to the pm-qos interface would make it
-acceptable for mainline inclusion. The main objections to the last
-suspend blocker patchset seemed to be that we should not use suspend
-at all. There are also some new api in linux-next that try to solve
-the same problem in an non android compatible way. Are drivers
-supposed to use both this interface and pm-qos to prevent suspend?
+And do as follows in pcie_port_acpi_setup()
 
--- =
+	status = acpi_pci_osc_control_set(handle, &flags);
+	if (status == AE_SUPPORT)  {
+		/* 2nd try */
+		status = acpi_pci_osc_control_set(handle, &flags);
+	}
+	if (ACPI_FAILURE(status)) {
+	...
 
-Arve Hj=F8nnev=E5g
+What do you think about this?
+
+
+Thanks,
+Kenji Kaneshige
