@@ -1,24 +1,17 @@
 From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Tue, 3 Aug 2010 22:22:55 -0700
-Message-ID: <AANLkTikr6CW5AP9=ZVvyMUar39tPX2QcJbY3a4EFDEkN__308.193165301596$1280899423$gmane$org@mail.gmail.com>
-References: <20100801210548.23f77ff6@infradead.org>
-	<alpine.DEB.2.00.1008012153300.25170@asgard.lang.hm>
-	<20100802140933.GB2405@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008021627290.29820@asgard.lang.hm>
-	<AANLkTi=1kBuyPS_P+eNLcnRu1mJH6BzpzQW_sENZuL1L@mail.gmail.com>
-	<alpine.DEB.2.00.1008022121430.6545@asgard.lang.hm>
-	<AANLkTikhcYzNp8CPp8cqrV7Ey5CLMWu1sJTNxUtEi2as@mail.gmail.com>
-	<alpine.DEB.2.00.1008022203470.6545@asgard.lang.hm>
-	<AANLkTinFT5jq4nUhUpzS5S4TVDQGj0S7RtRgxNhsz2UF@mail.gmail.com>
-	<alpine.DEB.2.00.1008031611100.6545@asgard.lang.hm>
-	<20100804001015.GJ2407@linux.vnet.ibm.com>
-	<20100803205758.21fcf372@infradead.org>
+Date: Tue, 3 Aug 2010 22:43:19 -0700
+Message-ID: <AANLkTikn4NhRW8v7CFfo7Yb6+-pmun+DiArGJdkq_vYr__5658.01752168245$1280900726$gmane$org@mail.gmail.com>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<AANLkTi=hoGF7egpyB9sLKJoXv5aiGrxfa9_5iH-96SA=@mail.gmail.com>
+	<1280851338.2774.30.camel@mulgrave.site>
+	<AANLkTinJ2jy18bAS-=abtDLaQWVmQdK1Oq105FcNDNyJ@mail.gmail.com>
+	<1280894427.11045.293.camel@mulgrave.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100803205758.21fcf372@infradead.org>
+In-Reply-To: <1280894427.11045.293.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,78 +21,110 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 3, 2010 at 8:57 PM, Arjan van de Ven <arjan@infradead.org> wrot=
-e:
-> On Tue, 3 Aug 2010 17:10:15 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+2010/8/3 James Bottomley <James.Bottomley@suse.de>:
+> On Tue, 2010-08-03 at 15:08 -0700, Arve Hj=F8nnev=E5g wrote:
+>> 2010/8/3 James Bottomley <James.Bottomley@suse.de>:
+>> > On Mon, 2010-08-02 at 21:18 -0700, Arve Hj=F8nnev=E5g wrote:
+>> >> > o =A0 =A0 =A0 A power-aware application must be able to efficiently=
+ communicate
+>> >> > =A0 =A0 =A0 =A0its needs to the system, so that such communication =
+can be
+>> >> > =A0 =A0 =A0 =A0performed on hot code paths. =A0Communication via op=
+en() and
+>> >> > =A0 =A0 =A0 =A0close() is considered too slow, but communication vi=
+a ioctl()
+>> >> > =A0 =A0 =A0 =A0is acceptable.
+>> >> >
+>> >>
+>> >> The problem with using open and close to prevent an allow suspend is
+>> >> not that it is too slow but that it interferes with collecting stats.
+>> >
+>> > Please elaborate on this. =A0I expect the pm-qos stats interface will
+>> > collect stats across user open/close because that's how it currently
+>> > works. =A0What's the problem?
+>> >
 >>
->> OK, I'll bite...
->>
->> >From an Android perspective, the differences are as follows:
->>
->> 1. =A0 =A0Deep idle states are entered only if there are no runnable
->> tasks. In contrast, opportunistic suspend can happen even when there
->> =A0 =A0 =A0 are tasks that are ready, willing, and able to run.
+>> The pm-qos interface creates the request object in open and destroys
+>> it in release just like the suspend blocker interface. We need stats
+>> for each client which is lost if you free the object every time you
+>> unblock suspend.
 >
-> for "system suspend", this is an absolutely valid statement.
-> for "use suspend as idle state", it's not so clearly valid.
-> (but this is sort of a separate problem, basically the "when do we
-> freeze the tasks that we don't like for power reasons" problem,
-> which in first order is independent on what kind of idle power state
-> you pick, and discussed extensively elsewhere in this thread)
+> ? right at the moment it doesn't do stats. =A0I don't see why adding a per
+> pid or per name stat count on the long lived object won't work here.
 >
->>
->> 2. =A0 =A0There can be a set of input events that do not bring the
->> system out of suspend, but which would bring the system out of a deep
->> =A0 =A0 =A0 idle state. =A0For example, I believe that it was stated that
->> one of the Android-based smartphones ignores touchscreen input while
->> =A0 =A0 =A0 suspended, but pays attention to it while in deep idle state=
-s.
+>> Or are you talking about user space opening and closing the stats
+>> interface (which does not cause any problems)?
 >
-> I would argue that this is both a hardware specific issue, but also a
-> policy issue. From the user point of view, screen off with idle and
-> screen off with suspend aren't all that different (if my phone would
-> decide to idle rather than suspend because some app blocks suspend... I
-> wouldn't expect a difference in behavior when I touch the screen).
-> "Screen off -> don't honor touch after a bit" is almost an independent,
-> but very real, policy problem (and a forced one in suspend, I'll grant
-> you that). I could even argue that the policy decision "we don't care
-> about the touch screen input" is a pre-condition for entering suspend
-> (or in android speak, caring for touch screen input/having the touch
-> screen path active would be a suspend blocker)
->
->>
->> 3. =A0 =A0The system comes out of a deep idle state when a timer
->> =A0 =A0 =A0 expires. =A0In contrast, timers cannot expire while the
->> =A0 =A0 =A0 system is suspended. =A0(This one is debatable: some people
->> =A0 =A0 =A0 argue that timers are subject to jitter, and the suspend
->> =A0 =A0 =A0 case for timers is the same as that for deep idle states,
->> =A0 =A0 =A0 but with unbounded timer jitter. =A0Others disagree. =A0The
->> =A0 =A0 =A0 resulting discussions have produced much heat, but little
->> =A0 =A0 =A0 light. =A0Such is life.)
->
-> I'll debate it even harder in that it's platform specific whether
-> timers can get the system out of suspend or not. Clearly on the Android
-> platform in question that's not the case, but for some of the Intel
-> phone silicon for example, timers CAN be wake sources to get you out of
-> suspend just fine. It just depend on which exact hw you talk about.
-> Generally, even if the fast timers aren't wake up sources, there'll be
-> some sort of alarm thing that you can pre-wake.. but yes you are right
-> in saying that's rather lame.
-> Either way, it's not a general property of suspend, but a property of
-> suspend on the specific platform in question.
+> There is no stat interface yet; it's for us to define.
 >
 
-I disagree. On the msm platform the low level timer that brings us out
-of the low power state is the same for idle and suspend. The
-difference is where which kernel api the request comes from. In idle,
-the next event on the clockevents device is usually the first event.
-In suspend the generic kernel timekeeping code cancels this event and
-the rtc wakeup event remains.
+Then I don't know what you are asking. This specific requirement was
+about the userspace interface to block and unblock suspend. The
+existing pm-qos interface to update pm-qos requests is similar to the
+user space suspend blocker interface (it has the same object
+lifetime).
+
+>> >> The wakelock code has a sysfs interface that allow you to use a
+>> >> open/write/close sequence to block or unblock suspend. There is no
+>> >> limit to the amount of kernel memory that a process can consume with
+>> >> this interface, so the suspend blocker patchset uses a /dev interface
+>> >> with ioctls to block or unblock suspend and it destroys the kernel
+>> >> object when the file descriptor is closed.
+>> >
+>> > This is an implementation detail only.
+>>
+>> There is no way fix it without changing the user space visible
+>> behavior of the API. The kernel does not know when it is safe to free
+>> the objects.
+>
+> They're freed on destruction of the long lived kernel object or on user
+> space clear request. =A0Surely that's definitive enough?
+>
+
+What is a user-space clear request? Clearing all stats. Deleting a
+suspend blocker? Unblocking suspend?
+
+The android wakelock interface to userspace creates new wakelocks
+every time it sees a new name. This was rejected on this list because
+it does not put any limit on the amount of kernel memory used as a
+result of calls from user space.
+
+>> > The pm-qos objects are long
+>> > lived, so their stats would be too. =A0I would guess that explicit stat
+>> > clearing might be a useful option.
+>> >
+>>
+>> Which pm-qos objects are you referring to? The struct pm_qos_object
+>> that backs each pm-qos class is long lived (I don't know why this is
+>> named pm_qos_object), but we need stats in struct pm_qos_request_list.
+>
+> Actually, why not two separate lists? =A0one for the request and one for
+> the stats?
+>
+Why do you want to do another lookup? Is there a reason you don't want
+stats in pm_qos_request_list?
+
+> OK, so I'm tired and I've had a long flight to get to where I am, so I
+> may be a bit jaded, but this isn't fucking rocket science the question
+> is how do we implement what you want on what we have ... there looks to
+> be multiple useful solutions ... we just have to pick one and agree on
+> it (that's standard open source).
+>
+
+I don't think adding stats to pm-qos is hard. It is not as easy as the
+wakelock/suspend blocker interface since the number of possible
+request values is unknown, but we could for instance have stats on
+default vs non-default request values. However, it is not at all clear
+that switching our code to the pm-qos interface would make it
+acceptable for mainline inclusion. The main objections to the last
+suspend blocker patchset seemed to be that we should not use suspend
+at all. There are also some new api in linux-next that try to solve
+the same problem in an non android compatible way. Are drivers
+supposed to use both this interface and pm-qos to prevent suspend?
 
 -- =
 
