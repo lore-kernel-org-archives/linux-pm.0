@@ -1,8 +1,8 @@
 From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 Subject: Re: [PATCH 7/8] ACPI / PCI: Do not preserve _OSC control
  bits returned by a query (v2)
-Date: Wed, 04 Aug 2010 17:41:47 +0900
-Message-ID: <4C5927CB.4070705__14914.4681905911$1280911516$gmane$org@jp.fujitsu.com>
+Date: Wed, 04 Aug 2010 17:43:59 +0900
+Message-ID: <4C59284F.9080808__34878.2871537425$1280911627$gmane$org@jp.fujitsu.com>
 References: <201008022351.31406.rjw@sisk.pl> <4C57C182.7060407@jp.fujitsu.com>
 	<201008031133.37471.rjw@sisk.pl> <201008032302.33778.rjw@sisk.pl>
 	<4C58FE9A.1040607@jp.fujitsu.com>
@@ -25,40 +25,17 @@ Cc: linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, Jesse Barnes
 List-Id: linux-pm@vger.kernel.org
 
 (2010/08/04 14:46), Kenji Kaneshige wrote:
-> (2010/08/04 6:02), Rafael J. Wysocki wrote:
->> On Tuesday, August 03, 2010, Rafael J. Wysocki wrote:
->>> On Tuesday, August 03, 2010, Hidetoshi Seto wrote:
->>>> (2010/08/03 13:52), Kenji Kaneshige wrote:
->>>>> (2010/08/03 6:59), Rafael J. Wysocki wrote:
->>>>>> @@ -434,19 +432,6 @@ acpi_status acpi_pci_osc_control_set(acp
->>>>>>        if ((root->osc_control_set&   control_req) == control_req)
->>>>>>            goto out;
->>>>>>
->>>>>> -    /* Need to query controls first before requesting them */
->>>>>> -    if (!root->osc_queried) {
->>>>>> -        status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
->>>>>> -        if (ACPI_FAILURE(status))
->>>>>> -            goto out;
->>>>>> -    }
->>>>>> -    if ((root->osc_control_qry&   control_req) != control_req) {
->>>>>> -        printk(KERN_DEBUG
->>>>>> -               "Firmware did not grant requested _OSC control\n");
->>>>>> -        status = AE_SUPPORT;
->>>>>> -        goto out;
->>>>>> -    }
->>>>>
->>>>> I think acpi_pci_osc_control_set() still need to query before commit
->>>>> to ensure all the requested controls are granted to OS.
->>>>>
->>>>> So the code needs to be
->>>>>
->>>>>      status = acpi_pci_query_osc(root, root->osc_support_set,&control_req);
->>>>>      if (ACPI_FAILURE(status))
->>>>>          goto out;
->>>>
+> By the way, I think it is getting confusing regarding who query the
+> controls. IMO, querying controls to ensure all the requested controls
+> are granted to OS should be done in acpi_pci_osc_control_set(), as
+> I said above. On the other hand, PCIe port driver need to query
+> controls for other reason... Now I think it might be better to change
+> acpi_pci_osc_control_set() like below instead of introducing
+> acpi_pci_osc_control_query().
 > 
-> Sorry, that should have been
-> 
+> acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 *flags)
+> {
+>     ...
 >     query = control_req;
 >     status = acpi_pci_query_osc(root, root->osc_support_set, &query);
 >     if (ACPI_FAILURE(status))
@@ -67,94 +44,211 @@ List-Id: linux-pm@vger.kernel.org
 >         printk_(KERN_DEBUG
 >             "Firmware did not grant requested _OSC control\n");
 >         status = AE_SUPPORT;
+>         *flags = (query & control_req);
 >         goto out;
 >     }
+>     ...
+> }
 > 
-> I know current pcie_port_acpi_setup() queries the requesting controls
-> before acpi_pci_osc_control_set() and only one control is requested
-> in the other code. However, I think acpi_pci_osc_control_set() still
-> need to query the requested controls to ensure all the requested
-> controls, in case someone calls this function without querying the
-> requesting controls. In other words, I think it must be ensured that
-> any controls are never granted to OS when acpi_pci_osc_control_set()
-> returns error.
+> And do as follows in pcie_port_acpi_setup()
+> 
+>     status = acpi_pci_osc_control_set(handle, &flags);
+>     if (status == AE_SUPPORT)  {
+>         /* 2nd try */
+>         status = acpi_pci_osc_control_set(handle, &flags);
+>     }
+>     if (ACPI_FAILURE(status)) {
+>     ...
+> 
+> What do you think about this?
 
-I think the following patch is what you mean.
+I think it makes sense, though some minor cares are required.
 
-And... (Continue to next post)
+Does this incremental patch (apply after [8/8]) looks good?
+If it is OK, I'll test these 8+1 patches within the next 2days.
 
 Thanks,
 H.Seto
 
 =====
+Subject: ACPI/PCI: Unify acpi_pci_osc_control_*()
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: ACPI / PCI: Do not preserve _OSC control bits returned by a query (v3)
+Now AE_SUPPORT of acpi_pci_osc_control_set() tells not only
+that query fails with the requested control bits but also that
+the result of query is stored into the pointed place.
 
-All of the remaining callers of acpi_pci_osc_control_set() either
-use acpi_pci_root_osc_query() right before it, like
-pcie_port_acpi_setup(), or ask for control of one feature only,
-like acpi_get_hp_hw_control_from_firmware().  Thus there is no
-reason to preserve the _OSC control bits returned by an _OSC query
-and the osc_control_qry and osc_queried fields of struct
-acpi_pci_root are not necessary any more.  Remove them and modify the
-code that uses them accordingly.
+This allow user to retry acpi_pci_osc_control_set() with the
+result of query.
 
-[v3: HS: keep query in acpi_pci_osc_control_set]
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 ---
- drivers/acpi/pci_root.c |   13 +++++--------
- include/acpi/acpi_bus.h |    3 ---
- 2 files changed, 5 insertions(+), 11 deletions(-)
+ drivers/acpi/pci_root.c          |   54 +++++++++++--------------------------
+ drivers/pci/hotplug/acpi_pcihp.c |    2 +-
+ drivers/pci/pcie/portdrv_acpi.c  |   23 +++++++---------
+ include/linux/acpi.h             |    3 +-
+ 4 files changed, 28 insertions(+), 54 deletions(-)
 
 diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
-index d3110d6..ec03c19 100644
+index 061e6f4..9a288df 100644
 --- a/drivers/acpi/pci_root.c
 +++ b/drivers/acpi/pci_root.c
-@@ -248,10 +248,8 @@ static acpi_status acpi_pci_query_osc(struct acpi_pci_root *root,
- 	status = acpi_pci_run_osc(root->device->handle, capbuf, &result);
- 	if (ACPI_SUCCESS(status)) {
- 		root->osc_support_set = support;
--		root->osc_control_qry = result;
- 		if (control)
- 			*control = result;
--		root->osc_queried = 1;
- 	}
- 	return status;
+@@ -372,38 +372,6 @@ out:
  }
-@@ -438,12 +436,11 @@ acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags)
+ EXPORT_SYMBOL_GPL(acpi_get_pci_dev);
+ 
+- /**
+- * acpi_pci_osc_control_query - Get the _OSC bits the kernel can control.
+- * @handle: ACPI handle of a PCI root bridge (or PCIe Root Complex).
+- * @mask: Mask of _OSC bits to query and the place to put the result into.
+- **/
+-acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *mask)
+-{
+-	struct acpi_pci_root *root;
+-	acpi_handle tmp;
+-	acpi_status status = AE_OK;
+-
+-	if (!mask || !(*mask & OSC_PCI_CONTROL_MASKS))
+-		return AE_BAD_PARAMETER;
+-
+-	root = acpi_pci_find_root(handle);
+-	if (!root)
+-		return AE_NOT_EXIST;
+-
+-	status = acpi_get_handle(handle, "_OSC", &tmp);
+-	if (ACPI_FAILURE(status))
+-		return status;
+-
+-	mutex_lock(&osc_lock);
+-	if ((*mask & root->osc_control_set) == *mask)
+-		*mask = root->osc_control_set;
+-	else
+-		status = acpi_pci_query_osc(root, root->osc_support_set, mask);
+-	mutex_unlock(&osc_lock);
+-
+-	return status;
+-}
+-
+ /**
+  * acpi_pci_osc_control_set - commit requested control to Firmware
+  * @handle: acpi_handle for the target ACPI object
+@@ -411,14 +379,17 @@ acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *mask)
+  *
+  * Attempt to take control from Firmware on requested control bits.
+  **/
+-acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags)
++acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 *flags)
+ {
+ 	acpi_status status;
+ 	u32 control_req, result, capbuf[3];
+ 	acpi_handle tmp;
+ 	struct acpi_pci_root *root;
+ 
+-	control_req = (flags & OSC_PCI_CONTROL_MASKS);
++	if (!flags)
++		return AE_BAD_PARAMETER;
++
++	control_req = (*flags & OSC_PCI_CONTROL_MASKS);
+ 	if (!control_req)
+ 		return AE_TYPE;
+ 
+@@ -432,8 +403,10 @@ acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags)
+ 
+ 	mutex_lock(&osc_lock);
+ 	/* No need to evaluate _OSC if the control was already granted. */
+-	if ((root->osc_control_set & control_req) == control_req)
++	if ((root->osc_control_set & control_req) == control_req) {
++		*flags = root->osc_control_set;
  		goto out;
++	}
  
  	/* Need to query controls first before requesting them */
--	if (!root->osc_queried) {
--		status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
--		if (ACPI_FAILURE(status))
--			goto out;
--	}
--	if ((root->osc_control_qry & control_req) != control_req) {
-+	result = control_req;
-+	status = acpi_pci_query_osc(root, root->osc_support_set, &result);
-+	if (ACPI_FAILURE(status))
-+		goto out;
-+	if ((result & control_req) != control_req) {
- 		printk(KERN_DEBUG
- 		       "Firmware did not grant requested _OSC control\n");
+ 	result = control_req;
+@@ -441,8 +414,10 @@ acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags)
+ 	if (ACPI_FAILURE(status))
+ 		goto out;
+ 	if ((result & control_req) != control_req) {
+-		printk(KERN_DEBUG
+-		       "Firmware did not grant requested _OSC control\n");
++		printk(KERN_DEBUG PREFIX
++		       "Firmware did not grant requested _OSC control: %x/%x\n",
++		       control_req, result);
++		*flags = result;
  		status = AE_SUPPORT;
-diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
-index baacd98..4de84ce 100644
---- a/include/acpi/acpi_bus.h
-+++ b/include/acpi/acpi_bus.h
-@@ -377,9 +377,6 @@ struct acpi_pci_root {
+ 		goto out;
+ 	}
+@@ -452,7 +427,10 @@ acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags)
+ 	capbuf[OSC_CONTROL_TYPE] = root->osc_control_set | control_req;
+ 	status = acpi_pci_run_osc(handle, capbuf, &result);
+ 	if (ACPI_SUCCESS(status))
+-		root->osc_control_set = result;
++		root->osc_control_set = *flags = result;
++	else
++		printk(KERN_WARNING FW_BUG PREFIX
++		       "_OSC did not grant controls that passed query\n");
+ out:
+ 	mutex_unlock(&osc_lock);
+ 	return status;
+diff --git a/drivers/pci/hotplug/acpi_pcihp.c b/drivers/pci/hotplug/acpi_pcihp.c
+index 12ea415..675181d 100644
+--- a/drivers/pci/hotplug/acpi_pcihp.c
++++ b/drivers/pci/hotplug/acpi_pcihp.c
+@@ -358,7 +358,7 @@ int acpi_get_hp_hw_control_from_firmware(struct pci_dev *pdev, u32 flags)
+ 		acpi_get_name(handle, ACPI_FULL_PATHNAME, &string);
+ 		dbg("Trying to get hotplug control for %s\n",
+ 				(char *)string.pointer);
+-		status = acpi_pci_osc_control_set(handle, flags);
++		status = acpi_pci_osc_control_set(handle, &flags);
+ 		if (ACPI_SUCCESS(status))
+ 			goto got_one;
+ 		if (status == AE_SUPPORT)
+diff --git a/drivers/pci/pcie/portdrv_acpi.c b/drivers/pci/pcie/portdrv_acpi.c
+index a07a70e..764d0b3 100644
+--- a/drivers/pci/pcie/portdrv_acpi.c
++++ b/drivers/pci/pcie/portdrv_acpi.c
+@@ -55,20 +55,17 @@ int pcie_port_acpi_setup(struct pci_dev *port, int *srv_mask)
+ 			flags |= OSC_PCI_EXPRESS_AER_CONTROL;
+ 	}
  
- 	u32 osc_support_set;	/* _OSC state of support bits */
- 	u32 osc_control_set;	/* _OSC state of control bits */
--	u32 osc_control_qry;	/* the latest _OSC query result */
+-	status = acpi_pci_osc_control_query(handle, &flags);
+-	if (ACPI_FAILURE(status)) {
+-		dev_dbg(&port->dev, "ACPI _OSC query failed (code %d)\n",
+-			status);
+-		return -ENODEV;
++retry:
++	status = acpi_pci_osc_control_set(handle, &flags);
++	if (status == AE_SUPPORT) {
++		if (!(flags & OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL)) {
++			dev_dbg(&port->dev, "BIOS refuses to grant control of "
++				"PCIe Capability Structure\n");
++			return -EACCES;
++		}
++		if (flags & ~OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL)
++			goto retry;
+ 	}
 -
--	u32 osc_queried:1;	/* has _OSC control been queried? */
- };
+-	if (!(flags & OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL)) {
+-		dev_dbg(&port->dev, "BIOS refuses to grant control of PCIe "
+-			"Capability Structure\n");
+-		return -EACCES;
+-	}
+-
+-	status = acpi_pci_osc_control_set(handle, flags);
+ 	if (ACPI_FAILURE(status)) {
+ 		dev_dbg(&port->dev, "ACPI _OSC request failed (code %d)\n",
+ 			status);
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index a9afe9c..1b5aac6 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -305,8 +305,7 @@ acpi_status acpi_run_osc(acpi_handle handle, struct acpi_osc_context *context);
+ 				OSC_PCI_EXPRESS_AER_CONTROL |		\
+ 				OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL)
  
- /* helper */
+-extern acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *mask);
+-extern acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags);
++extern acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 *flags);
+ extern void acpi_early_init(void);
+ 
+ #else	/* !CONFIG_ACPI */
 -- 
 1.7.2
