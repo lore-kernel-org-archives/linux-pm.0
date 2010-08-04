@@ -1,20 +1,12 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Tue, 3 Aug 2010 18:34:47 -0700
-Message-ID: <20100803183447.0275c134__43474.3150872693$1280885740$gmane$org@infradead.org>
-References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<20100731215214.2543c07e@infradead.org>
-	<20100801054816.GI2470@linux.vnet.ibm.com>
-	<20100731230101.7cc1d8c7@infradead.org>
-	<20100801191228.GL2470@linux.vnet.ibm.com>
-	<20100801154708.19817b75@infradead.org>
-	<20100802011006.GS2470@linux.vnet.ibm.com>
-	<AANLkTi=a-1hn_oL=i-=RKK9xOur+4mQjTRut+aiXtYkE@mail.gmail.com>
+From: Nigel Cunningham <nigel@tuxonice.net>
+Subject: 2.6.35 Regression: Ages spent discarding blocks that
+	weren't used!
+Date: Wed, 04 Aug 2010 11:40:56 +1000
+Message-ID: <4C58C528.4000606__16918.892824515$1280886190$gmane$org@tuxonice.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=a-1hn_oL=i-=RKK9xOur+4mQjTRut+aiXtYkE@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,29 +16,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk
+To: LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCAyIEF1ZyAyMDEwIDIxOjU2OjEwIC0wNzAwCkFydmUgSGrDuG5uZXbDpWcgPGFydmVA
-YW5kcm9pZC5jb20+IHdyb3RlOgoKPiA+IG5vbi1vYnZpb3VzIGRlcGVuZGVuY2llcy4KPiA+Cj4g
-Cj4gVGhlIGRlcGVuZGVuY2llcyBpcyB3aGF0IG1hZGUgdGhpcyBzb2x1dGlvbiB1bmludGVyZXN0
-aW5nIHRvIHVzLiBGb3IKPiBpbnN0YW5jZSwgd2UgY3VycmVudGx5IHVzZSBjZ3JvdXAgc2NoZWR1
-bGluZyB0byByZWR1Y2UgdGhlIGltcGFjdCBvZgo+IHNvbWUgYmFja2dyb3VuZCB0YXNrcywgYnV0
-IHdlIG9jY2FzaW9uYWxseSBzYXcgYSB3YXRjaGRvZyByZXN0YXJ0IG9mCj4gdGhlIHN5c3RlbSBw
-cm9jZXNzIHdlcmUgY3JpdGljYWwgc2VydmljZXMgd2VyZSB3YWl0aW5nIG9uIGEga2VybmVsCj4g
-bXV0ZXggb3duZWQgYnkgYSBiYWNrZ3JvdW5kIHRhc2sgZm9yIG1vcmUgdGhhbiAyMCBzZWNvbmRz
-LiBJZiB3ZSBmcm96ZQo+IGEgY2dyb3VwIGluc3RlYWQsIHdlIHdvdWxkIG5vdCBoaXQgdGhpcyBw
-YXJ0aWN1bGFyIHByb2JsZW0gc2luY2UgdGFza3MKPiBjYW5ub3QgYmUgZnJvemVuIHdoaWxlIGV4
-ZWN1dGluZyBrZXJuZWwgY29kZSB0aGUgc2FtZSB3YXkgdGhleSBjYW4gYmUKPiBwcmVlbXB0ZWQs
-IGJ1dCBub3RoaW5nIHByZXZlbnRzIGEgdGFzayBmcm9tIGJlaW5nIGZyb3plbiB3aGlsZSBob2xk
-aW5nCj4gYSB1c2VyLXNwYWNlIHJlc291cmNlLgo+IAoKCm9uZSBvZiB0aGUgc29sdXRpb25zIHdl
-J3JlIGxvb2tpbmcgYXQgdG8gc29sdmUgdGhpcyBpcyB0byB1bmZyZWV6ZSB0aGUKY2dyb3VwIG9u
-IGEgcmVndWxhciBiYXNpcyAoc2F5LCBldmVyeSAxNSB0byAzMCBzZWNvbmRzKSBicmllZmx5IHRv
-IGF2b2lkCnRoaXMga2luZCBvZiBkZWFkbG9jay4uLgoKCgotLSAKQXJqYW4gdmFuIGRlIFZlbiAJ
-SW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50cmUKRm9yIGRldmVsb3BtZW50LCBkaXNj
-dXNzaW9uIGFuZCB0aXBzIGZvciBwb3dlciBzYXZpbmdzLCAKdmlzaXQgaHR0cDovL3d3dy5sZXNz
-d2F0dHMub3JnCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-CmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
-ZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGlu
-dXgtcG0=
+Hi all.
+
+I've just given hibernation a go under 2.6.35, and at first I thought 
+there was some sort of hang in freezing processes. The computer sat 
+there for aaaaaages, apparently doing nothing. Switched from TuxOnIce to 
+swsusp to see if it was specific to my code but no - the problem was 
+there too. I used the nifty new kdb support to get a backtrace, which was:
+
+get_swap_page_of_type
+discard_swap_cluster
+blk_dev_issue_discard
+wait_for_completion
+
+Adding a printk in discard swap cluster gives the following:
+
+[   46.758330] Discarding 256 pages from bdev 800003 beginning at page 
+640377.
+[   47.003363] Discarding 256 pages from bdev 800003 beginning at page 
+640633.
+[   47.246514] Discarding 256 pages from bdev 800003 beginning at page 
+640889.
+
+...
+
+[  221.877465] Discarding 256 pages from bdev 800003 beginning at page 
+826745.
+[  222.121284] Discarding 256 pages from bdev 800003 beginning at page 
+827001.
+[  222.365908] Discarding 256 pages from bdev 800003 beginning at page 
+827257.
+[  222.610311] Discarding 256 pages from bdev 800003 beginning at page 
+827513.
+
+So allocating 4GB of swap on my SSD now takes 176 seconds instead of 
+virtually no time at all. (This code is completely unchanged from 2.6.34).
+
+I have a couple of questions:
+
+1) As far as I can see, there haven't been any changes in mm/swapfile.c 
+that would cause this slowdown, so something in the block layer has 
+(from my point of view) regressed. Is this a known issue?
+
+2) Why are we calling discard_swap_cluster anyway? The swap was unused 
+and we're allocating it. I could understand calling it when freeing 
+swap, but when allocating?
+
+Regards,
+
+Nigel
