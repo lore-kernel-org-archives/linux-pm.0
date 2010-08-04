@@ -1,24 +1,16 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+From: david@lang.hm
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Wed, 4 Aug 2010 11:39:34 -0700
-Message-ID: <20100804183933.GD24163__12816.4812959314$1280947315$gmane$org@linux.vnet.ibm.com>
-References: <alpine.DEB.2.00.1008021627290.29820@asgard.lang.hm>
-	<AANLkTi=1kBuyPS_P+eNLcnRu1mJH6BzpzQW_sENZuL1L@mail.gmail.com>
-	<alpine.DEB.2.00.1008022121430.6545@asgard.lang.hm>
-	<AANLkTikhcYzNp8CPp8cqrV7Ey5CLMWu1sJTNxUtEi2as@mail.gmail.com>
-	<alpine.DEB.2.00.1008022203470.6545@asgard.lang.hm>
-	<AANLkTinFT5jq4nUhUpzS5S4TVDQGj0S7RtRgxNhsz2UF@mail.gmail.com>
-	<alpine.DEB.2.00.1008031611100.6545@asgard.lang.hm>
-	<20100804001015.GJ2407@linux.vnet.ibm.com>
-	<20100803205758.21fcf372@infradead.org>
-	<AANLkTikr6CW5AP9=ZVvyMUar39tPX2QcJbY3a4EFDEkN@mail.gmail.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+Date: Wed, 4 Aug 2010 11:51:09 -0700 (PDT)
+Message-ID: <alpine.DEB.2.00.1008041130550.6545@asgard.lang.hm>
+References: <20100801210548.23f77ff6@infradead.org>
+	<AANLkTikyD94wqWZTWA23K=zvN3RpKB6dDRrvFSv9szMg@mail.gmail.com>
+	<alpine.DEB.2.00.1008040027140.25170@asgard.lang.hm>
+	<201008041347.25595.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTikr6CW5AP9=ZVvyMUar39tPX2QcJbY3a4EFDEkN@mail.gmail.com>
+In-Reply-To: <201008041347.25595.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,83 +20,104 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
-Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel <linux-kernel@vger.kernel.org>, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 03, 2010 at 10:22:55PM -0700, Arve Hj=F8nnev=E5g wrote:
-> On Tue, Aug 3, 2010 at 8:57 PM, Arjan van de Ven <arjan@infradead.org> wr=
-ote:
-> > On Tue, 3 Aug 2010 17:10:15 -0700
-> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> >>
-> >> OK, I'll bite...
-> >>
-> >> >From an Android perspective, the differences are as follows:
-> >>
-> >> 1. =A0 =A0Deep idle states are entered only if there are no runnable
-> >> tasks. In contrast, opportunistic suspend can happen even when there
-> >> =A0 =A0 =A0 are tasks that are ready, willing, and able to run.
-> >
-> > for "system suspend", this is an absolutely valid statement.
-> > for "use suspend as idle state", it's not so clearly valid.
-> > (but this is sort of a separate problem, basically the "when do we
-> > freeze the tasks that we don't like for power reasons" problem,
-> > which in first order is independent on what kind of idle power state
-> > you pick, and discussed extensively elsewhere in this thread)
-> >
-> >>
-> >> 2. =A0 =A0There can be a set of input events that do not bring the
-> >> system out of suspend, but which would bring the system out of a deep
-> >> =A0 =A0 =A0 idle state. =A0For example, I believe that it was stated t=
-hat
-> >> one of the Android-based smartphones ignores touchscreen input while
-> >> =A0 =A0 =A0 suspended, but pays attention to it while in deep idle sta=
-tes.
-> >
-> > I would argue that this is both a hardware specific issue, but also a
-> > policy issue. From the user point of view, screen off with idle and
-> > screen off with suspend aren't all that different (if my phone would
-> > decide to idle rather than suspend because some app blocks suspend... I
-> > wouldn't expect a difference in behavior when I touch the screen).
-> > "Screen off -> don't honor touch after a bit" is almost an independent,
-> > but very real, policy problem (and a forced one in suspend, I'll grant
-> > you that). I could even argue that the policy decision "we don't care
-> > about the touch screen input" is a pre-condition for entering suspend
-> > (or in android speak, caring for touch screen input/having the touch
-> > screen path active would be a suspend blocker)
-> >
-> >>
-> >> 3. =A0 =A0The system comes out of a deep idle state when a timer
-> >> =A0 =A0 =A0 expires. =A0In contrast, timers cannot expire while the
-> >> =A0 =A0 =A0 system is suspended. =A0(This one is debatable: some people
-> >> =A0 =A0 =A0 argue that timers are subject to jitter, and the suspend
-> >> =A0 =A0 =A0 case for timers is the same as that for deep idle states,
-> >> =A0 =A0 =A0 but with unbounded timer jitter. =A0Others disagree. =A0The
-> >> =A0 =A0 =A0 resulting discussions have produced much heat, but little
-> >> =A0 =A0 =A0 light. =A0Such is life.)
-> >
-> > I'll debate it even harder in that it's platform specific whether
-> > timers can get the system out of suspend or not. Clearly on the Android
-> > platform in question that's not the case, but for some of the Intel
-> > phone silicon for example, timers CAN be wake sources to get you out of
-> > suspend just fine. It just depend on which exact hw you talk about.
-> > Generally, even if the fast timers aren't wake up sources, there'll be
-> > some sort of alarm thing that you can pre-wake.. but yes you are right
-> > in saying that's rather lame.
-> > Either way, it's not a general property of suspend, but a property of
-> > suspend on the specific platform in question.
-> >
-> =
+On Wed, 4 Aug 2010, Rafael J. Wysocki wrote:
 
-> I disagree. On the msm platform the low level timer that brings us out
-> of the low power state is the same for idle and suspend. The
-> difference is where which kernel api the request comes from. In idle,
-> the next event on the clockevents device is usually the first event.
-> In suspend the generic kernel timekeeping code cancels this event and
-> the rtc wakeup event remains.
+> On Wednesday, August 04, 2010, david@lang.hm wrote:
+>> On Wed, 4 Aug 2010, Arve Hj?nnev?g wrote:
+>>
+>>> 2010/8/3  <david@lang.hm>:
+>>>> On Tue, 3 Aug 2010, Arve Hj?nnev?g wrote:
+>>>>
+>>>>> 2010/8/3  <david@lang.hm>:
+>>>>>>
+>>>>>> On Tue, 3 Aug 2010, Arve Hj?nnev?g wrote:
+> ...
+>>>>>>> The hardware specific idle hook can (and does) decide to go into any
+>>>>>>> power state from idle that does not disrupt any active devices.
+>>>>>>
+>>>>>> This I know is an Andoid specific thing. On other platforms power states
+>>>>>> very definantly can make user visible changes.
+>
+> It would be much better if you gave specific examples.  Because, for instance,
+> I'm not sure what platforms you have in mind.
 
-OK, good point.  This choice of kernel APIs governs what I was calling
-"policy".
+I gave examples in other messages that included dimming/turning off the 
+screen and  spinning down the disk among others.
 
-							Thanx, Paul
+the definition of 'transparently' was then clarified to not mean 
+transparent to the user, but transparent (except for possibly delays) to 
+the applications (they may have to wait for the disk to spin up for 
+example)
+
+>>>>> How is this Android specific?
+>>>>
+>>>> you are stating that this must be suspend because low-power idle must be
+>>>> transparent to the user.
+>>>
+>>> It must be transparent to the rest of the system.
+>>>
+>>>>
+>>>> I am saying that on Linux, low-power idle commonly is not transparent to the
+>>>> user, so the requirement for it to be transparent (therefor putting the
+>>>> suspend into a different category) is an Android only requirement.
+>>>>
+>>>
+>>> I'm am not talking about minor latencies. If you have a platform that
+>>> for instance turns off you screen dma when entering idle, it is broken
+>>> whether is running Android or not. If it does the same in suspend it
+>>> is not a problem.
+>>
+>> This isn't sounding quite right to me. I've seen too many discussions
+>> about things like idle and USB devices/hubs/drives/etc getting powered
+>> down for power savings modes to make me readily accept that everything
+>> must be as transparent as you imply. Just the case of drive spin-down
+>> shows that it's possible to do things that would be considered
+>> destructive, but you have to have a flag and wake-up path to recover
+>> within a 'reasonable' amount of time (I guess that this could be
+>> 'transparent' if that only implies that things must work eventually, which
+>> isn't what I read into the statement)
+>
+> Well, consider a single character device and suppose there is an application
+> talking to the driver using read(), write(), ioctl(), whatever.  Now suppose
+> you want to put the device into a low-power state such that the device can't
+> do the I/O in that state.  You need to ensure that the app won't be able to
+> reach the device while in that state and you can (1) arrange things so that
+> the device is put into the full-power state whenever the app tries to access
+> it and (2) "freeze" the app so that it won't try to access the device being in
+> the low-power state.
+>
+> Generally speaking (1) is what idle (and any other form of runtime PM) does and
+> (2) is what suspend does with respect to the whole system.
+
+makes sense
+
+> In the suspend case, when you have frozen all applications, you can
+> sequentially disable all interrupts except for a few selected ("wakeup") ones
+> in a safe way.   By disabling them, you ensure that the CPU will only be
+> "revived" by a limited set of events and that allows the system to stay
+> low-power for extended time intervals.
+
+the benifit of this will depend on what wakeups you are able to avoid by 
+putting the hardware to sleep. Depending on the hardware, this may be not 
+matter that much.
+
+In addition, there are input devices like a touchscreen that could be 
+disabled even short of a full suspend, as long as there is some way to get 
+them reactivated.
+
+> To achieve the same result in the "idle" case, you'll need to have a mechanism
+> to disable interrupts (except for the "wakeup" ones) avoiding synchronization
+> problems (eg. situations in which task A, blocked on a "suspended" device
+> access, holds a mutex waited for by task B that needs to run so that we can
+> "suspend" another device).  That, however, is a difficult problem.
+
+I would say that the difficulty of the problem depends on the hardware and 
+how much userspace interaction is needed. If the kernel can disable the 
+hardware in the driver (so that it can wake it up again when accessed by 
+an application) it would seem that this isn't a problem.
+
+David Lang
