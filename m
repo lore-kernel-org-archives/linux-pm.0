@@ -1,24 +1,23 @@
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH/RFC] Runtime PM: ARM: subarch-specific
-	extensions of pdev_archdata
-Date: Wed, 4 Aug 2010 17:10:40 -0600
-Message-ID: <AANLkTintoVDFHxmbuj_YHj5e4PzK7j6-SzdWqFKDLjkE__14782.9424161047$1280963890$gmane$org@mail.gmail.com>
-References: <1253670648-28610-1-git-send-email-khilman@deeprootsystems.com>
-	<f17812d70909222153y4a0e4fc2n496ea2e6caaac847@mail.gmail.com>
-	<19129.63264.653666.70492@pilspetsen.it.uu.se>
-	<4ABAAF1D.6090907@deeprootsystems.com>
-	<f17812d70909231630i20f64328k8d604c3436094b85@mail.gmail.com>
-	<87k4yhagv4.fsf@deeprootsystems.com>
-	<AANLkTinBqc11oE2SOmvXbFHmlgvZ21LngXNWkSHiJmRK@mail.gmail.com>
-	<34dc79dc-0868-4401-9fa5-c7134f6d4485@email.android.com>
-	<AANLkTikHUcgBcTmv+=NrYMwgn-UC_Q0Vv3ytfuJbkyRB@mail.gmail.com>
-	<87k4o7r7sv.fsf@deeprootsystems.com>
-	<AANLkTi=RTigcf-p=GFncAQ2ZjP=4qjDPXjnMmTO_u6tL@mail.gmail.com>
+From: david@lang.hm
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Wed, 4 Aug 2010 16:15:59 -0700 (PDT)
+Message-ID: <alpine.DEB.2.00.1008041608580.6545__45288.262240547$1280963924$gmane$org@asgard.lang.hm>
+References: <20100803183447.0275c134@infradead.org>
+	<20100804163216.GB24163@linux.vnet.ibm.com>
+	<20100804163509.GA31523@srcf.ucam.org>
+	<alpine.DEB.2.00.1008041124580.6545@asgard.lang.hm>
+	<20100804185520.GA2417@srcf.ucam.org>
+	<alpine.DEB.2.00.1008041207260.6545@asgard.lang.hm>
+	<20100804192115.GA2946@srcf.ucam.org>
+	<alpine.DEB.2.00.1008041222280.6545@asgard.lang.hm>
+	<20100804200857.GF24163@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008041521180.6545@asgard.lang.hm>
+	<20100804230637.GK24163@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=RTigcf-p=GFncAQ2ZjP=4qjDPXjnMmTO_u6tL@mail.gmail.com>
+In-Reply-To: <20100804230637.GK24163@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,183 +27,131 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, Mikael Pettersson <mikpe@it.uu.se>, Eric Miao <eric.y.miao@gmail.com>, linux-arm-kernel@lists.infradead.org
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 3, 2010 at 9:56 PM, Magnus Damm <magnus.damm@gmail.com> wrote:
-> On Wed, Aug 4, 2010 at 1:16 AM, Kevin Hilman
-> <khilman@deeprootsystems.com> wrote:
->> Magnus Damm <magnus.damm@gmail.com> writes:
->>> On Sun, Jul 25, 2010 at 5:24 AM, Grant Likely <grant.likely@secretlab.c=
-a> wrote:
->>>> "Magnus Damm" <magnus.damm@gmail.com> wrote:
->>>>>On Tue, Oct 27, 2009 at 8:13 AM, Kevin Hilman
->>>>><khilman@deeprootsystems.com> wrote:
->>>>>> Eric Miao <eric.y.miao@gmail.com> writes:
->>>>>>> On Thu, Sep 24, 2009 at 7:28 AM, Kevin Hilman
->>>>>>> <khilman@deeprootsystems.com> wrote:
->>>>>>>> Mikael Pettersson wrote:
->>>>>>>>> Eric Miao writes:
->>>>>>>>> =A0> On Wed, Sep 23, 2009 at 9:50 AM, Kevin Hilman
->>>>>>>>> =A0> <khilman@deeprootsystems.com> wrote:
->>>>>>>>> =A0> > On ARM platforms, power management can be very platform sp=
-ecific.
->>>>>>>>> =A0> > This patch allows ARM subarches to extend the platform_dev=
-ice
->>>>>>>>> =A0> > pdev_archdata for each subarch by creating a new struct pd=
-ev_machdata
->>>>>>>>> =A0> > and allowing each subarch to customize it as needed.
->>>
->>>>>Do you remember what happened with this patch?
+On Wed, 4 Aug 2010, Paul E. McKenney wrote:
+
+> On Wed, Aug 04, 2010 at 03:29:25PM -0700, david@lang.hm wrote:
+>> On Wed, 4 Aug 2010, Paul E. McKenney wrote:
+>>> On Wed, Aug 04, 2010 at 12:29:36PM -0700, david@lang.hm wrote:
+>>>> On Wed, 4 Aug 2010, Matthew Garrett wrote:
+>>>>>
+>>>>> There's two parts of that. The first is that the voip application is
+>>>>> allowed to take a wakelock - but that doesn't mean that you trust it the
+>>>>> rest of the time.
 >>>>
->>>> I don't have all the details in front of me because I'm on my phone,
->>>> but I advised against pdev_archdata because it is
->>>> multiplatform-unfriendly.
+>>>> why would you trust it to take a wakelock, but not trust it the rest
+>>>> of the time?
+>>>>
+>>>> in my proposal I'm saying that if you would trust the application to
+>>>> take a wakelock, you instead trust it to be sane in the rest of it's
+>>>> power activity (avoiding polling, etc) and so you consider it for
+>>>> sleep decisions.
 >>>
->>> Ok, I did not expect that. =3D) But after thinking a bit it does make
->>> sense. I wonder what my options are. I'm not so fond of the idea to
->>> wrap the platform devices - that's not more multi-platform friendly,
->>> is it?
+>>> The word "trust" does not appear to be helping here.  ;-)
+>>>
+>>> The VOIP application acquires a suspend blocker when it needs to prevent
+>>> the system from suspending, and releases that suspend blocker when it
+>>> can tolerate the system suspending.  It is important to note that while
+>>> the VOIP application holds the suspend blocker, the system won't suspend
+>>> even if it is completely idle (for example, if the VOIP application uses
+>>> blocking system calls, during the time that the VOIP application is
+>>> waiting for its next event).
 >>
->> [sorry for the lag, been on vacation]
+>> In the terminology I have been using, the VOIP sofware is then
+>> trusted to take the wakelock appropriately, and I'm then saying it
+>> would be in the trusted cgroup
+>
+> Understood, but...
+>
+>> it would be trusted to not use the CPU wildly inappropriatly and so
+>> it running would make the system active and so it would not sleep.
+>
+> ... here you seem to be assuming that "trusted to properly use a wakelock"
+> implies "coded to optimize power usage when not holding a wakelock."
+> But this does not necessarily follow.
+
+I am saying that 'trusted to use a wakelock' does imply 'trusted to not 
+waste power'
+
+I am sure that there are apps that do not manage power effectivly, but I 
+don't expect that giving those same developers wakelock power will make 
+them do much better. I expect that any time they discover the system going 
+to sleep on them, they will just add another wakelock to keep it awake. If 
+they were the type to carefully consider what was really important and 
+what wasn't, I would expect them to write fairly power efficiant code in 
+the first place.
+
+>>> 2.	The application is prohibited from acquiring suspend blockers.
+>>> 	In this case, the system might well be suspended before the
+>>> 	application has a chance to do more than read the input.
+>>>
+>>> 	But the application will get a chance to process the input
+>>> 	when the next input event is directed to it.
 >>
->> Wrapping is more multi-platform friendly because only platform-specific
->> code accesses the wrapped code. =A0It's also logically consistent as
->> a struct device is contained by a platform_device which is then
->> contained by an omap_device (in our case.) =A0 Only OMAP-specific code
->> ever knows about or touches that layer.
+>> In this case  the system would go ahead and suspend, but the next
+>> time the sustem wakes up for any reason, this application would
+>> continue to run and process the input
 >
-> Sure, as long as all platform devices are wrapped into omap_device
-> then I see no problem. I guess my worries are about mixing platform
-> devices and omap_device on the same system. The answer to that may
-> simply be "don't". =3D)
+> Yep, that is in fact what I said.  ;-)
 
-yes
+so the systems are pretty much equivalent from this point of view.
 
-> For the mixed case my main concern is the use of to_omap_device() on a
-> struct platform device which may or may not be an omap_device. You
-> have your magic check in omap_device_is_valid() so i guess that's ok,
-> but compared to the rest of the driver model this extended level of
-> wrapping does not come with any pointer for class/type/bus. Platform
-> devices all use the platform_bus_type symbol for device->bus, so in
-> theory it's possible to check the bus type before going from struct
-> device to struct platform_device using to_platform_device().
-
-Yes, this is guaranteed safe.
-
-> In the
-> wrapped platform device case you first have to speculate using
-> container_of() and then check for magic. Seems a bit hackish to me. I
-> prefer the other way around, check wrapping type first then use
-> container_of().
-
-Not just hackish.  Dangerous.
-
-> I guess the question is if it's really needed to differentiate between
-> platform devices and omap devices, and I guess the only place where it
-> may be a problem is the runtime pm code. Perhaps thanks to the weak
-> symbols, sorry about that...
->
->>> How about using devres and platform bus notifiers?
-> [snip]
->
->> Your patches look multi-platform friendly, but there are still some
->> outstanding issues with making runtime PM support multi-platform
->> friendly that are not direclty related to the above patches.
->
-> I agree!
->
->> 1) weak symbols
+>>>> two things here,
+>>>>
+>>>> on the dirty networks that I see as common, refusing to sleep if
+>>>> network packets are arriving will mean that you never go to sleep.
+>>>>
+>>>> secondly, nothing stops the code doing the idle/suspend decision
+>>>> from considering network activity. I would be surprised if there
+>>>> weren't already options to support this today.
+>>>
+>>> I don't know about the general networking case for Android, but the
+>>> example of downloading was discussed some time back.  The application
+>>> doing the download acquires a suspend blocker, which it releases once
+>>> the download is complete (or once a timeout expires, if I remember
+>>> correctly).  In this particular case, the network packets were not
+>>> bringing the device out of suspend.
 >>
->> We need to change the overriding of weak symbols into some form of
->> register/unregister so multiple platforms in the same kernel could work.
->> That's the easy one.
+>> it would seem reasonable to say that if a packet arrives for an
+>> existing connection (which the kernel does know) it is considered
+>> activity for purposes of sleeping.
 >
-> Yeah. Perhaps it's possible to reuse part of the pm_generic_... functions.
+> That would be up to the people creating the system in question.  In
+> some cases, they might (as you say) want every packet arriving to
+> wake up the system, in other cases they might not.  We should not
+> be taking that design decision away from them.
+
+well, if you have the kernel take a wakelock when the packet arrives, you 
+are doing the equivalent thing.
+
+>> I don't know if you would care enough to try and say that packets
+>> for untrusted apps  network connections don't keep the system awake,
+>> or just allow them to (after all, keypresses going to untrusted apps
+>> do keep the system awake)
 >
->> 2) custom vs. platform bus.
+> Again, this is up to the people creating the system in question.  On
+> some Android systems, there is a particular button you have to press
+> to wake the system up after it has suspended itself.
+
+note that here I am talking about thigns that will keep the system awake, 
+not wake it up after it suspends.
+
+>>> There might well be other cases where networking packets -do- bring
+>>> the system out of suspend, but I must leave this to someone who knows
+>>> more about Android than do I.
 >>
->> The other issue under discussion between Grant & myself[1] has been the
->> use of a custom bus instead of the platform bus. =A0Following your lead,
->> (and preferring that option) I continued to use the platform_bus since
->> I only need to override a few of the dev_pm_ops functions.
->>
->> However, Grant is not happy about overriding the platform_bus. =A0He wou=
-ld
->> rather see each platform create a custom bus with it's own PM methods.
->>
->> In this thread[1], I did a quick and dirty proof of concept to show that
->> it is possible, but quite frankly, I still much prefer continuing to use
->> the platform_bus since it is mostly identical.
->>
->> [1] http://lists.infradead.org/pipermail/linux-arm-kernel/2010-June/0189=
-25.html
+>> this would be the normal wake-on-lan type of functionality that
+>> exists without Android.
 >
-> Thanks for the pointer. I've been thinking of using a custom bus as
-> well, but from my point of view it's always looked like a lot of
-> coding without any clear benefit. I understand the idea of wanting to
-> use a single binary on a wide range of systems, and solving that seems
-> like a good plan.
->
-> I'm not sure if a custom bus is the best idea. I wouldn't mind being
-> able to create platform bus instances though.
+> Although this wake-on-LAN functionality applies only to special
+> wake-up packets, not to normal packets, right?
 
-The only problem with multiple platform_bus instances would be that
-drivers intended to work on both would need to be registered twice;
-once on the regular platform bus, and once on the custom bus.  All the
-rest of the code would be shared, but it probably still doesn't
-reflect the model that you're shooting for.
+that's not my understanding. my understanding (which could be flawed) is 
+that wake-on-lan programs your IP into the NIC and if the NIC sees traffic 
+for you it will wake you up. I've never had a reason to use it, so I could 
+easily be mistaken.
 
-However, on the flipside the question must be asked; are you trying to
-describe inherent bus-type behaviour that the plaform bus does not
-address?  ie. is the OMAP bus fundamentally different from a normal
-'dumb' bus?  What is the real count of device drivers that will need
-to be registered on the platform bus and the omap bus (or sh, etc)?  A
-modified platform bus type instance may require duplicate driver
-registrations, but it is also potentially a lot less complex for a
-reader to understand what is going on (ie. the runtime-pm calls are
-explicit instead of being indirect through a bus notifier).
-
-> Or custom buses using
-> some kind of platform bus library. A lot of drivers use the platform
-> bus, so there has to be a very good reason to move away from that IMO.
-> A new bus type seems a bit overkill to me though, what we need from my
-> point of view is:
-
-bus types are cheep, especially when the code is shared.
-
-> 1) Mach/Plat hardware configuration data for platform devices
-> -> Can be kept in struct pdev_archdata (clock and power domain configurat=
-ion)
-
-Careful.  putting mach/plat specific stuff into pdev_archdata is
-multiplatform unfriendly.  I think pdev_archdata should be restricted
-to arch-specific stuff.
-
-> -> Can be kept in a wrapped structure (clock and power domain configurati=
-on)
-> -> Use clkdev tables to handle the device name to clock translation
-> -> Power domain configuration without wrapping/pdev_archdata, not sure
->
-> 2) Mach/Plat runtime data for each platform device
-> -> Data can be kept in the wrapped data structure or struct pdev_archdata
-> -> Could be solved by bus notifiers and dynamic allocation using devres
->
-> 3) Mach/Plat specific runtime PM
-> -> Need to move away from weak symbols to register/unregister interface
-> -> Struct pdev_archdata could perhaps point out a per-mach/plat dev_pm_op=
-s?
-
-registerable per-mach/plat ops structures sound sane.  However, I
-think we can do better since this is not an arch-specific problem.
-Already ARM and SH needs a solution, and I can see it being applicable
-to the other embedded archs too.  I'd like to see a non-arch-specific
-solution.
-
-g.
-
--- =
-
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+David Lang
