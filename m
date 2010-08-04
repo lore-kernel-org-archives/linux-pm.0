@@ -1,17 +1,22 @@
-From: david@lang.hm
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Wed, 4 Aug 2010 15:31:17 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008041529530.6545__7888.62458798594$1280961133$gmane$org@asgard.lang.hm>
-References: <20100801054816.GI2470@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008041124580.6545@asgard.lang.hm>
-	<20100804185520.GA2417@srcf.ucam.org>
-	<201008042251.08266.rjw@sisk.pl>
-	<20100804205654.GA4986@srcf.ucam.org>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH/RFC] Runtime PM: ARM: subarch-specific
+	extensions of pdev_archdata
+Date: Wed, 4 Aug 2010 16:41:30 -0600
+Message-ID: <AANLkTinWqKz977p+-d7pxjqCUn82JLeAk_EQ0TjOGNWr__34019.887893419$1280961886$gmane$org@mail.gmail.com>
+References: <1253670648-28610-1-git-send-email-khilman@deeprootsystems.com>
+	<f17812d70909222153y4a0e4fc2n496ea2e6caaac847@mail.gmail.com>
+	<19129.63264.653666.70492@pilspetsen.it.uu.se>
+	<4ABAAF1D.6090907@deeprootsystems.com>
+	<f17812d70909231630i20f64328k8d604c3436094b85@mail.gmail.com>
+	<87k4yhagv4.fsf@deeprootsystems.com>
+	<AANLkTinBqc11oE2SOmvXbFHmlgvZ21LngXNWkSHiJmRK@mail.gmail.com>
+	<34dc79dc-0868-4401-9fa5-c7134f6d4485@email.android.com>
+	<AANLkTikHUcgBcTmv+=NrYMwgn-UC_Q0Vv3ytfuJbkyRB@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100804205654.GA4986@srcf.ucam.org>
+In-Reply-To: <AANLkTikHUcgBcTmv+=NrYMwgn-UC_Q0Vv3ytfuJbkyRB@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,43 +26,96 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, Eric Miao <eric.y.miao@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 4 Aug 2010, Matthew Garrett wrote:
+[cc'ing gregkh w.r.t. the bus notifiers in modules bit at the bottom]
 
-> On Wed, Aug 04, 2010 at 10:51:07PM +0200, Rafael J. Wysocki wrote:
->> On Wednesday, August 04, 2010, Matthew Garrett wrote:
->>> No! And that's precisely the issue. Android's existing behaviour could
->>> be entirely implemented in the form of binary that manually triggers
->>> suspend when (a) the screen is off and (b) no userspace applications
->>> have indicated that the system shouldn't sleep, except for the wakeup
->>> event race. Imagine the following:
->>>
->>> 1) The policy timeout is about to expire. No applications are holding
->>> wakelocks. The system will suspend providing nothing takes a wakelock.
->>> 2) A network packet arrives indicating an incoming SIP call
->>> 3) The VOIP application takes a wakelock and prevents the phone from
->>> suspending while the call is in progress
->>>
->>> What stops the system going to sleep between (2) and (3)? cgroups don't,
->>> because the voip app is an otherwise untrusted application that you've
->>> just told the scheduler to ignore.
->>
->> I _think_ you can use the just-merged /sys/power/wakeup_count mechanism to
->> avoid the race (if pm_wakeup_event() is called at 2)).
+On Sun, Jul 25, 2010 at 7:51 PM, Magnus Damm <magnus.damm@gmail.com> wrote:
+> On Sun, Jul 25, 2010 at 5:24 AM, Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
+>> "Magnus Damm" <magnus.damm@gmail.com> wrote:
+>>>On Tue, Oct 27, 2009 at 8:13 AM, Kevin Hilman
+>>><khilman@deeprootsystems.com> wrote:
+>>>> Eric Miao <eric.y.miao@gmail.com> writes:
+>>>>> On Thu, Sep 24, 2009 at 7:28 AM, Kevin Hilman
+>>>>> <khilman@deeprootsystems.com> wrote:
+>>>>>> Mikael Pettersson wrote:
+>>>>>>> Eric Miao writes:
+>>>>>>> =A0> On Wed, Sep 23, 2009 at 9:50 AM, Kevin Hilman
+>>>>>>> =A0> <khilman@deeprootsystems.com> wrote:
+>>>>>>> =A0> > On ARM platforms, power management can be very platform spec=
+ific.
+>>>>>>> =A0> > This patch allows ARM subarches to extend the platform_device
+>>>>>>> =A0> > pdev_archdata for each subarch by creating a new struct pdev=
+_machdata
+>>>>>>> =A0> > and allowing each subarch to customize it as needed.
 >
-> Yes, I think that solves the problem. The only question then is whether
-> it's preferable to use cgroups or suspend fully, which is pretty much up
-> to the implementation. In other words, is there a reason we're still
-> having this conversation? :) It'd be good to have some feedback from
-> Google as to whether this satisfies their functional requirements.
+>>>Do you remember what happened with this patch?
+>>
+>> I don't have all the details in front of me because I'm on my phone, but=
+ I advised against pdev_archdata because it is multiplatform-unfriendly.
+>
+> Ok, I did not expect that. =3D) But after thinking a bit it does make
+> sense. I wonder what my options are. I'm not so fond of the idea to
+> wrap the platform devices - that's not more multi-platform friendly,
+> is it?
+>
+> How about using devres and platform bus notifiers?
 
-the proposal that I nade was not to use cgroups to freeze some processes 
-and not others, but to use cgroups to decide to ignore some processes when 
-deciding if the system is idle, stop everything or nothing. cgroups are 
-just a way of easily grouping processes (and their children) into 
-different groups.
+I think bus notifiers are appropriate.  I hadn't thought of using
+devres to attach additional behaviour, but looking at your prototype
+it seems to be sane.
 
-David Lang
+> For a Runtime PM prototype using devres (instead of pdev_archdata or
+> wrapping) look here:
+> https://patchwork.kernel.org/patch/113605/
+
+While I'm looking at this patch; some thoughts off the top of my head:
+
+The static symbols should still be prefixed with 'sh_pm_runtime_' or
+something similar.  There is a risk of things like
+"platform_bus_notify" colliding with things defined in the global
+namespace.
+
+Looking at he '#else' clause of CONFIG_PM_RUNTIME triggered a warning
+flag.  If the runtime PM stuff was as a module as suggested below,
+then the drivers would get probed before the clock is enabled... Maybe
+I'm misunderstanding it though because I see that the .c file is not
+set up to be a module.
+
+Also, that particular implementation is rather non-discriminant; and
+every platform_device would get this binding regardless of what the
+actual attachment to the system is.  For example, ASoC makes use of
+platform devices to bind together an audio complex, but those devices
+represent a set of connections, not an actual devices.  It probably
+wouldn't be appropriate to have bus-specific runtime pm hooks on ASoC
+devices.  But I understand that this is an early prototype and I
+understand the intent.
+
+> To make it work with modules I propose adding a driver bind event:
+> https://patchwork.kernel.org/patch/113865/
+>
+> Looks pretty multi-platform friendly to me. Any suggestions?
+
+The idea sane to me (haven't dug deeply enough to comment on the
+implementation, but I suspect that there is a race condition in the
+implementation which could cause drivers getting both BIND and BOUND
+notifications).  I think it is entirely desirable for notifiers to be
+informed of already existing drivers.
+
+I had posted a somewhat related patch earlier, but never pursued it
+because I found a different way around (and I was a little worried
+about the race condition).  My patch to the approach of sending add
+and bind events for each driver that is already registered/bound when
+a new notifier is registered.  Here's the patch and the comments:
+
+http://patchwork.ozlabs.org/patch/24152/
+
+g.
+
+-- =
+
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
