@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
 Date: Wed, 4 Aug 2010 22:51:07 +0200
-Message-ID: <201008042251.08266.rjw__6037.0716885247$1280955425$gmane$org@sisk.pl>
+Message-ID: <201008042251.08266.rjw__18069.236764177$1280955524$gmane$org@sisk.pl>
 References: <20100801054816.GI2470@linux.vnet.ibm.com>
 	<alpine.DEB.2.00.1008041124580.6545@asgard.lang.hm>
 	<20100804185520.GA2417@srcf.ucam.org>
