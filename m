@@ -1,10 +1,8 @@
-From: Brian Swetland <swetland@google.com>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Thu, 5 Aug 2010 11:20:46 -0700
-Message-ID: <AANLkTinTBaJ7Re8E4DVmZcDAUsceUf+9jV7r67Ks=t2n__43036.1321931288$1281035630$gmane$org@mail.gmail.com>
-References: <AANLkTimRZc2B1=ic-0jrGBX7ahCu=NCoQadCOePGDmh9@mail.gmail.com>
-	<alpine.DEB.2.00.1008041554580.6545@asgard.lang.hm>
-	<AANLkTingom2AKfMu0EbfdfLiMnHo+buy1e4=PBENf3Vi@mail.gmail.com>
+Date: Thu, 5 Aug 2010 11:21:11 -0700
+Message-ID: <20100805182111.GK2447__40526.5321409844$1281035655$gmane$org@linux.vnet.ibm.com>
+References: <AANLkTingom2AKfMu0EbfdfLiMnHo+buy1e4=PBENf3Vi@mail.gmail.com>
 	<alpine.DEB.2.00.1008041620010.6545@asgard.lang.hm>
 	<20100804233013.GN24163@linux.vnet.ibm.com>
 	<alpine.DEB.2.00.1008041643490.6545@asgard.lang.hm>
@@ -13,13 +11,14 @@ References: <AANLkTimRZc2B1=ic-0jrGBX7ahCu=NCoQadCOePGDmh9@mail.gmail.com>
 	<20100805004802.GP24163@linux.vnet.ibm.com>
 	<alpine.DEB.2.00.1008042208350.25170@asgard.lang.hm>
 	<20100805151211.GA10080@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008050832010.25170@asgard.lang.hm>
-	<AANLkTi=Yyyc-hOPbkJtsnKCVzncnFq8DPnonmyckekwm@mail.gmail.com>
+	<20100805160912.GA28689@sirena.org.uk>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=Yyyc-hOPbkJtsnKCVzncnFq8DPnonmyckekwm@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20100805160912.GA28689@sirena.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,43 +28,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: kevin granade <kevin.granade@gmail.com>
-Cc: david@lang.hm, peterz@infradead.org, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBBdWcgNSwgMjAxMCBhdCAxMToxMyBBTSwga2V2aW4gZ3JhbmFkZSA8a2V2aW4uZ3Jh
-bmFkZUBnbWFpbC5jb20+IHdyb3RlOgo+IElJUkMsIHRoaXMgd2FzIGEgbWFqb3IgcG9pbnQgb2Yg
-dGhlaXIgKEFuZHJvaWQncykgcG93ZXIgbWFuYWdlbWVudAo+IHBvbGljeS4gwqBVc2VyIGlucHV0
-IG9mIGFueSBraW5kIHdvdWxkIHJlc2V0IHRoZSAiZGlzcGxheSBhY3RpdmUiCj4gdGltZW91dCwg
-d2hpY2ggaXMgdGhlIHByaW1hcnkgdGhpbmcga2VlcGluZyByYW5kb20gdW50cnVzdGVkCj4gdXNl
-ci1mYWNpbmcgcHJvZ3JhbXMgZnJvbSBiZWluZyBzdXNwZW5kZWQgd2hpbGUgaW4gdXNlLiDCoFRo
-ZXkgc2VlbWVkCj4gdG8gY29uc2lkZXIgdGhpcyB0byBiZSBhIHNwZWNpYWwgY2FzZSBpbiB0aGVp
-ciBwb2xpY3ksIGJ1dCBmcm9tIHRoZQo+IGtlcm5lbCdzIHBvaW50IG9mIHZpZXcgaXQgaXMganVz
-dCBhbm90aGVyIHN1c3BlbmQgYmxvY2tlciBiZWluZyBoZWxkLgoKVGhlIGRpc3BsYXkgYmVpbmcg
-b24gc2hvdWxkIG5vdCBwcmV2ZW50IHN1c3BlbmQgdW5sZXNzIHRoZSBwYXJ0aWN1bGFyCnBsYXRm
-b3JtIGlzIGluY2FwYWJsZSBvZiBzdXNwZW5kaW5nIHdoaWxlIHRoZSBkaXNwbGF5IGlzIG9uLgoK
-PiBJJ20gbm90IHN1cmUgdGhpcyBpcyB0aGUgYmVzdCB1c2UgY2FzZSB0byBsb29rIGF0IHRob3Vn
-aCwgYmVjYXVzZQo+IHNpbmNlIGl0IGlzIHVzZXItZmFjaW5nLCB0aGUgdGltZW91dCBkdXJhdGlv
-bnMgYXJlIG9uIGEgZGlmZmVyZW50Cj4gc2NhbGUgdGhhbiB0aGUgb25lcyB0aGV5IGFyZSByZWFs
-bHkgd29ycmllZCBhYm91dC4gwqBJIHRoaW5rIGFub3RoZXIKPiBjYXRlZ29yeSBvZiB1c2UgY2Fz
-ZSB0aGF0IHRoZXkgYXJlIHdvcnJpZWQgYWJvdXQgaXM6Cj4KPiAoaW4gc3VzcGVuZCkgLT4gd2Fr
-ZXVwIGR1ZSB0byBuZXR3b3JrIC0+IHByb2Nlc3MgbmV0d29yayBhY3Rpdml0eSAtPiBzdXNwZW5k
-Cj4KPiBvciBhbiBleGFtcGxlIHRoYXQgaGFzIGJlZW4gbWVudGlvbmVkIHByZXZpb3VzbHk6Cj4K
-PiAoaW4gc3VzcGVuZCkgLT4gd2FrZXVwIGR1ZSB0byBhbGFybSBmb3IgYXVkaW8gcHJvY2Vzc2lu
-ZyAtPiBwcm9jZXNzCj4gYmF0Y2ggb2YgYXVkaW8gLT4gc3VzcGVuZAo+Cj4gSW4gYm90aCBvZiB0
-aGVzZSBjYXNlcywgdGhlIGRpc3BsYXkgbWF5IG5ldmVyIHBvd2VyIG9uIChwaG9uZSBtaWdodAo+
-IGJlZXAgdG8gaW5kaWNhdGUgdHh0IG1lc3NhZ2Ugb3IgZW1haWwsIGF1ZGlvIGp1c3Qga2VlcHMg
-cGxheWluZyksIHNvCj4gdGhlIG1hZ25pdHVkZSBvZiB0aGUgInRpbWVvdXQiIGZvciBzdXNwZW5k
-aW5nIGFnYWluIHNob3VsZCBiZSB2ZXJ5Cj4gc21hbGwuIMKgU3BlY2lmaWNhbGx5LCB0aGV5IGRv
-bid0IHdhbnQgdGhlcmUgdG8gYmUgYSB0aW1lb3V0IGF0IGFsbCwgc28KPiBhcyBsaXR0bGUgdGlt
-ZSBhcyBwb3NzaWJsZSB0aW1lIGlzIHNwZW50IG91dCBvZiBzdXNwZW5kIGluIGFkZGl0aW9uIHRv
-Cj4gdGhlIHRpbWUgcmVxdWlyZWQgdG8gaGFuZGxlIHRoZSBldmVudCB0aGF0IGNhdXNlZCB3YWtl
-dXAuCgpZZWFoLCB3ZSBtdWNoIHByZWZlciB0aGUgd2FrZWxvY2sgbW9kZWwgd2hlcmUgdGhlIG1v
-bWVudCB0aGUgcmVzb3VyY2UKKHN5c3RlbS1uZWVkaW5nLXRvLW5vdC1iZS1zdXNwZW5kZWQpIGlz
-IHJlbGVhc2VkIHdlIHJldHVybiB0byB0aGUKbG93ZXN0IHBvd2VyIHN0YXRlLCByYXRoZXIgdGhh
-biB3YWl0aW5nIGZvciBhIHRpbWVyIHRvIGV4cGlyZSAoYW5kL29yCmJ1cm5pbmcgY3ljbGVzIHBv
-bGxpbmcgZm9yICJjYW4gd2Ugc3VzcGVuZCB5ZXQ/IiB3aGVuIHdlJ3JlIGRlZmluaXRlbHkKbm90
-IHJlYWR5IHRvIHN1c3BlbmQpLgoKQnJpYW4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxp
-bnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFp
-bG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Thu, Aug 05, 2010 at 05:09:17PM +0100, Mark Brown wrote:
+> On Thu, Aug 05, 2010 at 08:12:11AM -0700, Paul E. McKenney wrote:
+> > On Wed, Aug 04, 2010 at 10:18:40PM -0700, david@lang.hm wrote:
+> 
+> > > as for intramentation, the key tool to use to see why a system isn't
+> > > going to sleep would be powertop, just like on other linux systems.
+> 
+> > Powertop is indeed an extremely valuable tool, but I am not certain
+> > that it really provides the information that the Android guys need.
+> > If I understand Arve's and Brian's posts, here is the scenario that they
+> > are trying to detect:
+> 
+> > o	Some PM-driving application has a bug in which it fails to
+> > 	release a wakelock, thus blocking suspend indefinitely.
+> 
+> > o	This PM-driving application, otherwise being a good citizen,
+> > 	blocks.
+> 
+> > o	There are numerous power-oblivious apps running, consuming
+> > 	significant CPU.
+> 
+> Or otherwise doing something power hungry.
+> 
+> > What the Android developers need to know is that the trusted application
+> > is wrongly holding a wakelock.  Won't powertop instead tell them about
+> > all the power-oblivious apps?
+> 
+> Right, and this isn't just information for developers - Android handsets
+> expose this information to end users (so they can indentify any badly
+> behaved applications they have installed or otherwise modify their
+> handset usage if they are disappointed by their battery life).  That
+> said, powertop and similar applications could always be extended to also
+> include data from wakelocks.
+
+Good point!!!  Of course, powertop would need to interact with Android's
+user-level daemon for this to work, but perhaps this could be arranged.
+(There is a user-level daemon in Android that acquires kernel-level
+suspend blockers on behalf of applications, so a naive mod to powertop
+would just finger the user-level daemon.)
+
+							Thanx, Paul
