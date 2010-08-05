@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/8] ACPI / PCI: Introduce
-	acpi_pci_osc_control_query()
-Date: Thu, 5 Aug 2010 01:37:14 +0200
-Message-ID: <201008050137.15082.rjw__15778.4397634261$1280966987$gmane$org@sisk.pl>
-References: <201008022351.31406.rjw@sisk.pl> <201008032258.40838.rjw@sisk.pl>
-	<4C58EC6D.4050902@jp.fujitsu.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Thu, 5 Aug 2010 02:10:40 +0200
+Message-ID: <201008050210.40995.rjw@sisk.pl>
+References: <20100801210548.23f77ff6@infradead.org>
+	<201008050126.20812.rjw@sisk.pl>
+	<alpine.DEB.2.00.1008041634560.6545@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C58EC6D.4050902@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.1008041634560.6545@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,205 +19,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+To: david@lang.hm
+Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, swetland@google.com, linux-kernel <linux-kernel@vger.kernel.org>, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, August 04, 2010, Kenji Kaneshige wrote:
-> (2010/08/04 5:58), Rafael J. Wysocki wrote:
-> > On Tuesday, August 03, 2010, Rafael J. Wysocki wrote:
-> >> On Tuesday, August 03, 2010, Kenji Kaneshige wrote:
-> >>> (2010/08/03 6:53), Rafael J. Wysocki wrote:
-> >>>> From: Rafael J. Wysocki<rjw@sisk.pl>
-> >>>
-> >>> <snip.>
-> >>>
-> >>>> +	mutex_lock(&osc_lock);
-> >>>> +	status = acpi_pci_query_osc(root, root->osc_support_set, ctrl_mask);
-> >>>> +	mutex_unlock(&osc_lock);
-> >>>> +
-> >>>
-> >>> One more comment here.
-> >>>
-> >>> I think we can skip acpi_pci_query_osc() if all of queried controls are
-> >>> already granted to OS. Please see below
-> >>>
-> >>> 	mutex_lock(&osc_lock);
-> >>> 	if ((root->osc_control_set&  *ctrl_mask) == *ctrl_mask) {
-> >>> 		*ctrl_mask = root->osc_control_set;
-> >>> 		goto out;
-> >>> 	}
-> >>> 	status = acpi_pci_query_osc(root, root->osc_support_set, ctrl_mask);
-> >>> 	mutex_unlock(&osc_lock);
-> >>> out:
+On Thursday, August 05, 2010, david@lang.hm wrote:
+> On Thu, 5 Aug 2010, Rafael J. Wysocki wrote:
+> 
+> > On Thursday, August 05, 2010, david@lang.hm wrote:
+> >> On Wed, 4 Aug 2010, Rafael J. Wysocki wrote:
 > >>
-> >> Well I guess you mean:
+> >>> Subject: Re: Attempted summary of suspend-blockers LKML thread
+> >>>
+> >>> On Wednesday, August 04, 2010, david@lang.hm wrote:
+> >>>> On Wed, 4 Aug 2010, Rafael J. Wysocki wrote:
+> >>>>> In the suspend case, when you have frozen all applications, you can
+> >>>>> sequentially disable all interrupts except for a few selected ("wakeup") ones
+> >>>>> in a safe way.   By disabling them, you ensure that the CPU will only be
+> >>>>> "revived" by a limited set of events and that allows the system to stay
+> >>>>> low-power for extended time intervals.
+> >>>>
+> >>>> the benifit of this will depend on what wakeups you are able to avoid by
+> >>>> putting the hardware to sleep. Depending on the hardware, this may be not
+> >>>> matter that much.
+> >>>
+> >>> That's correct, but evidently it does make a difference with the hardware
+> >>> Android commonly runs on.
 > >>
-> >>   	mutex_lock(&osc_lock);
-> >>   	if ((root->osc_control_set&  *ctrl_mask) != *ctrl_mask)
-> >>   		status = acpi_pci_query_osc(root, root->osc_support_set, ctrl_mask);
-> >>   	mutex_unlock(&osc_lock);
-> >>
-> >> Otherwise we would return with the mutex held. :-)
+> >> Ok, but is there a way to put some of this to sleep without involving a
+> >> full suspend?
 > >
+> > Technically, maybe, but we have no generic infrastructure in the kernel for that.
+> > There may be SoC-specific implementations, but nothing general enough.
 > 
-> Oops... sorry...
-> 
-> > Updated patch is appended, please tell me what you think.
-> 
-> Looks good to me. The below (in your updated patch) was what I wanted to mean
-> 
-> > +	mutex_lock(&osc_lock);
-> > +	if ((*mask & root->osc_control_set) == *mask)
-> > +		*mask = root->osc_control_set;
-> > +	else
-> > +		status = acpi_pci_query_osc(root, root->osc_support_set, mask);
-> > +	mutex_unlock(&osc_lock);
+> well, I know that we have specific cases of this (drive spin-down, cpu 
+> speed, display backlight for a few examples), is it worth trying to define 
+> a generic way to do this sort of thing? or should it be left as a 
+> per-device thing (with per-device knobs to control it)
 
-OK
+The ability to put specific devices into low-power states in certain
+well-defined situations is clearly not sufficient.  For one example, usually
+you can easily put an Ethernet adapter into a low-power state when the network
+cable is detached from it.  It is not clear, however, what criteria should be
+used for deciding to put that adapter into the low-power state when the cable
+is attached to it (and open() has been called).
 
-However, I think we can put the looping into that function so that the caller
-doesn't have to loop.
+To mimic suspend you'll have to be able to put _all_ devices into low-power
+states and shut down the interrupts that allow the monotonic clock to advance.
+That's much more than simple runtime power management of selected devices.
 
-The patch below implements that.
+> I thought I had seen discussion on how to define such a generic power 
+> management interface, and I thought the results had been acceptable.
+
+If you have a pointer to that discussion, I'm interested. :-)
 
 Thanks,
 Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: ACPI / PCI: Introduce acpi_pci_osc_control_query() (v3)
-
-Introduce a function allowing the caller to obtain a mask of _OSC
-control bits the BIOS will allow the kernel to control for a given
-PCI root bridge.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/pci_root.c |   71 +++++++++++++++++++++++++++++++++++++++++-------
- include/linux/acpi.h    |    1 
- 2 files changed, 63 insertions(+), 9 deletions(-)
-
-Index: linux-2.6/drivers/acpi/pci_root.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/pci_root.c
-+++ linux-2.6/drivers/acpi/pci_root.c
-@@ -225,21 +225,32 @@ static acpi_status acpi_pci_run_osc(acpi
- 	return status;
- }
- 
--static acpi_status acpi_pci_query_osc(struct acpi_pci_root *root, u32 flags)
-+static acpi_status acpi_pci_query_osc(struct acpi_pci_root *root,
-+					u32 support,
-+					u32 *control)
- {
- 	acpi_status status;
--	u32 support_set, result, capbuf[3];
-+	u32 result, capbuf[3];
-+
-+	support &= OSC_PCI_SUPPORT_MASKS;
-+	support |= root->osc_support_set;
- 
--	/* do _OSC query for all possible controls */
--	support_set = root->osc_support_set | (flags & OSC_PCI_SUPPORT_MASKS);
- 	capbuf[OSC_QUERY_TYPE] = OSC_QUERY_ENABLE;
--	capbuf[OSC_SUPPORT_TYPE] = support_set;
--	capbuf[OSC_CONTROL_TYPE] = OSC_PCI_CONTROL_MASKS;
-+	capbuf[OSC_SUPPORT_TYPE] = support;
-+	if (control) {
-+		*control &= OSC_PCI_CONTROL_MASKS;
-+		capbuf[OSC_CONTROL_TYPE] = *control | root->osc_control_set;
-+	} else {
-+		/* Run _OSC query for all possible controls. */
-+		capbuf[OSC_CONTROL_TYPE] = OSC_PCI_CONTROL_MASKS;
-+	}
- 
- 	status = acpi_pci_run_osc(root->device->handle, capbuf, &result);
- 	if (ACPI_SUCCESS(status)) {
--		root->osc_support_set = support_set;
-+		root->osc_support_set = support;
- 		root->osc_control_qry = result;
-+		if (control)
-+			*control = result;
- 		root->osc_queried = 1;
- 	}
- 	return status;
-@@ -254,7 +265,7 @@ static acpi_status acpi_pci_osc_support(
- 	if (ACPI_FAILURE(status))
- 		return status;
- 	mutex_lock(&osc_lock);
--	status = acpi_pci_query_osc(root, flags);
-+	status = acpi_pci_query_osc(root, flags, NULL);
- 	mutex_unlock(&osc_lock);
- 	return status;
- }
-@@ -363,6 +374,48 @@ out:
- }
- EXPORT_SYMBOL_GPL(acpi_get_pci_dev);
- 
-+ /**
-+ * acpi_pci_osc_control_query - Get the _OSC bits the kernel can control.
-+ * @handle: ACPI handle of a PCI root bridge (or PCIe Root Complex).
-+ * @mask: Mask of _OSC bits to query and the place to put the result into.
-+ **/
-+acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *mask)
-+{
-+	struct acpi_pci_root *root;
-+	acpi_handle tmp;
-+	acpi_status status = AE_OK;
-+	u32 ctrl = *mask;
-+
-+	if (!ctrl || !(ctrl & OSC_PCI_CONTROL_MASKS))
-+		return AE_BAD_PARAMETER;
-+
-+	root = acpi_pci_find_root(handle);
-+	if (!root)
-+		return AE_NOT_EXIST;
-+
-+	status = acpi_get_handle(handle, "_OSC", &tmp);
-+	if (ACPI_FAILURE(status))
-+		return status;
-+
-+	mutex_lock(&osc_lock);
-+
-+	*mask |= root->osc_control_set;
-+	if ((ctrl & root->osc_control_set) == ctrl)
-+		goto out;
-+
-+	while (*mask && *mask != ctrl) {
-+		ctrl = *mask;
-+		status = acpi_pci_query_osc(root, root->osc_support_set, mask);
-+		if (ACPI_FAILURE(status))
-+			break;
-+	}
-+
-+ out:
-+	mutex_unlock(&osc_lock);
-+
-+	return status;
-+}
-+
- /**
-  * acpi_pci_osc_control_set - commit requested control to Firmware
-  * @handle: acpi_handle for the target ACPI object
-@@ -396,7 +449,7 @@ acpi_status acpi_pci_osc_control_set(acp
- 
- 	/* Need to query controls first before requesting them */
- 	if (!root->osc_queried) {
--		status = acpi_pci_query_osc(root, root->osc_support_set);
-+		status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
- 		if (ACPI_FAILURE(status))
- 			goto out;
- 	}
-Index: linux-2.6/include/linux/acpi.h
-===================================================================
---- linux-2.6.orig/include/linux/acpi.h
-+++ linux-2.6/include/linux/acpi.h
-@@ -305,6 +305,7 @@ acpi_status acpi_run_osc(acpi_handle han
- 				OSC_PCI_EXPRESS_AER_CONTROL |		\
- 				OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL)
- 
-+extern acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *mask);
- extern acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags);
- extern void acpi_early_init(void);
- 
