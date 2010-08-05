@@ -1,7 +1,7 @@
-From: kevin granade <kevin.granade@gmail.com>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Thu, 5 Aug 2010 13:13:31 -0500
-Message-ID: <AANLkTi=Yyyc-hOPbkJtsnKCVzncnFq8DPnonmyckekwm__1642.93594793907$1281032077$gmane$org@mail.gmail.com>
+Date: Thu, 5 Aug 2010 11:20:46 -0700
+Message-ID: <AANLkTinTBaJ7Re8E4DVmZcDAUsceUf+9jV7r67Ks=t2n__43036.1321931288$1281035630$gmane$org@mail.gmail.com>
 References: <AANLkTimRZc2B1=ic-0jrGBX7ahCu=NCoQadCOePGDmh9@mail.gmail.com>
 	<alpine.DEB.2.00.1008041554580.6545@asgard.lang.hm>
 	<AANLkTingom2AKfMu0EbfdfLiMnHo+buy1e4=PBENf3Vi@mail.gmail.com>
@@ -14,11 +14,12 @@ References: <AANLkTimRZc2B1=ic-0jrGBX7ahCu=NCoQadCOePGDmh9@mail.gmail.com>
 	<alpine.DEB.2.00.1008042208350.25170@asgard.lang.hm>
 	<20100805151211.GA10080@linux.vnet.ibm.com>
 	<alpine.DEB.2.00.1008050832010.25170@asgard.lang.hm>
+	<AANLkTi=Yyyc-hOPbkJtsnKCVzncnFq8DPnonmyckekwm@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1008050832010.25170@asgard.lang.hm>
+In-Reply-To: <AANLkTi=Yyyc-hOPbkJtsnKCVzncnFq8DPnonmyckekwm@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,217 +29,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: kevin granade <kevin.granade@gmail.com>
+Cc: david@lang.hm, peterz@infradead.org, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 5, 2010 at 10:46 AM,  <david@lang.hm> wrote:
-> On Thu, 5 Aug 2010, Paul E. McKenney wrote:
->
->> On Wed, Aug 04, 2010 at 10:18:40PM -0700, david@lang.hm wrote:
->>>
->>> On Wed, 4 Aug 2010, Paul E. McKenney wrote:
->>>>
->>>> On Wed, Aug 04, 2010 at 05:25:53PM -0700, david@lang.hm wrote:
->>>>>
->>>>> On Wed, 4 Aug 2010, Paul E. McKenney wrote:
->>
->> [ . . . ]
->>
->>>>>> The music player is an interesting example. =A0It would be idle most
->>>>>> of the time, given that audio output doesn't consume very much CPU.
->>>>>> So you would not want to suspend the system just because there were
->>>>>> no runnable processes. =A0In contrast, allowing the music player to
->>>>>> hold a wake lock lets the system know that it would not be appropria=
-te
->>>>>> to suspend.
->>>>>>
->>>>>> Or am I misunderstanding what you are proposing?
->>>>>
->>>>> the system would need to be idle for 'long enough' (configurable)
->>>>> before deciding to suspend, so as long as 'long enough' is longer
->>>>> than the music player is idle this would not be a problem.
->>>>
->>>> From a user standpoint, having the music player tell the system when
->>>> it is OK to suspend (e.g., when the user has paused playback) seems
->>>> a lot nicer than having configurable timeouts that need tweaking.
->>>
->>> every system that I have seen has a configurable "sleep if it's idle
->>> for this long" knob. On the iphone (work issue, I didn't want it)
->>> that I am currently using it can be configured from 1 min to 5 min.
->>>
->>> this is the sort of timeout I am talking about.
->>>
->>> with something in the multi-minute range for the 'do a full suspend'
->>> doing a wakeup every few 10s of seconds is perfectly safe.
->>
->> Ah, I was assuming -much- shorter "do full suspend" timeouts.
->>
->> My (possibly incorrect) assumption is based on the complaint that led
->> to my implementing RCU_FAST_NO_HZ. =A0A (non-Android) embedded person was
->> quite annoyed (to put it mildly) at the earlier version of RCU because
->> it prevented the system from entering the power-saving dyntick-idle mode,
->> not for minutes, or even for seconds, but for a handful of -milliseconds=
--.
->> This was my first hint that "energy efficiency" means something complete=
-ly
->> different in embedded systems than it does in the servers that I am
->> used to.
->>
->> But I must defer to the Android guys on this -- who knows, perhaps
->> multi-minute delays to enter full-suspend mode are OK for them.
->
-> if the system was looking at all applications I would agree that the time=
-out
-> should be much shorter.
->
-> I have a couple devices that are able to have the display usable, even if
-> the CPU is asleep (the OLPC and the Kindle, two different display
-> technologies). With these devices I would like to see the suspend happen =
-so
-> fast that it can suspend between keystrokes.
->
-> however, in the case of Android I think the timeouts have to end up being
-> _much_ longer. Otherwise you have the problem of loading an untrusted book
-> reader app on the device and the device suspends while you are reading the
-> page.
->
-> currently Android works around this by having a wakelock held whenever the
-> display is on. This seems backwards to me, the display should be on becau=
-se
-> the system is not suspended, not the system is prevented from suspending
-> because the display is on.
->
-> Rather than having the display be on causing a wavelock to be held (with =
-the
-> code that is controls the display having a timeout for how long it leaves
-> the display on), I would invert this and have the timeout be based on sys=
-tem
-> activity, and when it decides the system is not active, turn off the disp=
-lay
-> (along with other things as it suspends)
-
-IIRC, this was a major point of their (Android's) power management
-policy.  User input of any kind would reset the "display active"
-timeout, which is the primary thing keeping random untrusted
-user-facing programs from being suspended while in use.  They seemed
-to consider this to be a special case in their policy, but from the
-kernel's point of view it is just another suspend blocker being held.
-
-I'm not sure this is the best use case to look at though, because
-since it is user-facing, the timeout durations are on a different
-scale than the ones they are really worried about.  I think another
-category of use case that they are worried about is:
-
-(in suspend) -> wakeup due to network -> process network activity -> suspend
-
-or an example that has been mentioned previously:
-
-(in suspend) -> wakeup due to alarm for audio processing -> process
-batch of audio -> suspend
-
-In both of these cases, the display may never power on (phone might
-beep to indicate txt message or email, audio just keeps playing), so
-the magnitude of the "timeout" for suspending again should be very
-small.  Specifically, they don't want there to be a timeout at all, so
-as little time as possible time is spent out of suspend in addition to
-the time required to handle the event that caused wakeup.
-
->
->>>>>>> if the backlight being on holds the wakelock, it would seem that
->>>>>>> almost every other use of the wakelock could (and probably should)
->>>>>>> be replaced by something that tickles the display to stay on longer.
->>>>>>
->>>>>> The problem with this approach is that the display consumes quite a
->>>>>> bit of power, so you don't want to leave it on unnecessarily. =A0So =
-if
->>>>>> the system is doing something (for example, playing music) that does
->>>>>> not require the display, you really want the display to be off.
->>>>>
->>>>> what percentage (and types) of apps are really useful with the
->>>>> display off. I think that there are relativly few apps that you
->>>>> really want to keep running if the display is off.
->>>>
->>>> The length of time those apps are running is the governing factor
->>>> for battery life, and not the number of such apps, right?
->>>
->>> correct, but the number of such apps indicates the scope of the problem.
->>
->> The number of such apps certainly indicates the amount of effort required
->> to modify them, if required. =A0Is that what you are getting at?
->
-> yes.
->
->>>> From another e-mail tonight it sounds like almost everything
->>>> already talks
->>>
->>> to a userspace daemon, so if "(the power management service in the
->>> system_server, possibly the media_server and the radio interface
->>> glue)" (plus possibly some kernel activity) are the only things
->>> looked at when considering if it's safe to sleep or not, all of
->>> these can (or already do) do 'something' every few seconds, making
->>> this problem sound significantly smaller than it sounded like
->>> before.
->>>
->>> Android could even keep it's user-space API between the system power
->>> daemon and the rest of userspace the same if they want to.
->>>
->>> over time, additional apps could be considered 'trusted' (or flagged
->>> that way by the user) and not have to interact with the power daemon
->>> to keep things alive.
->>
->> Hmmm... =A0Isn't it the "trusted" (AKA PM-driving) apps that interact wi=
-th
->> the power daemon via suspend blockers, rather than the other way around?
->
-> I was looking at it from a kernel point of view, "trusted" (AKA PM-drivin=
-g)
-> apps are ones that have permission to grab the wakelock. Any app/daemon t=
-hat
-> is so trusted can communicate with anything else in userspace as part of
-> making it's decision on whento take the wakelock, but those other
-> applications would not qualify as "trusted" in my eyes.
->
->>> as for intramentation, the key tool to use to see why a system isn't
->>> going to sleep would be powertop, just like on other linux systems.
->>
->> Powertop is indeed an extremely valuable tool, but I am not certain
->> that it really provides the information that the Android guys need.
->> If I understand Arve's and Brian's posts, here is the scenario that they
->> are trying to detect:
->>
->> o =A0 =A0 =A0 Some PM-driving application has a bug in which it fails to
->> =A0 =A0 =A0 =A0release a wakelock, thus blocking suspend indefinitely.
->>
->> o =A0 =A0 =A0 This PM-driving application, otherwise being a good citize=
-n,
->> =A0 =A0 =A0 =A0blocks.
->>
->> o =A0 =A0 =A0 There are numerous power-oblivious apps running, consuming
->> =A0 =A0 =A0 =A0significant CPU.
->>
->> What the Android developers need to know is that the trusted application
->> is wrongly holding a wakelock. =A0Won't powertop instead tell them about
->> all the power-oblivious apps?
->
-> in my proposal (without a wakelock), powertop would tell you what
-> applications are running and setting timers. If we can modify the
-> kernel/suspend decision code to only look at processes in one cgroup when
-> deciding if the system should go to sleep, a similar modification to
-> poewrtop should let you only show stats on the "trusted" applications.
->
-> If you have a userspace power management daemon that accepts requests from
-> untrusted programs and does something to keep the system from sleeping
-> (either taking a wakelock or setting a 'short' timer), it needs to keep t=
-he
-> records of this itself because otherwise all the kernel will see (with
-> either powertop or wakelock reporting) is that the power management daemon
-> is what kept the system from sleeping.
->
-> David Lang
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at =A0http://www.tux.org/lkml/
->
+T24gVGh1LCBBdWcgNSwgMjAxMCBhdCAxMToxMyBBTSwga2V2aW4gZ3JhbmFkZSA8a2V2aW4uZ3Jh
+bmFkZUBnbWFpbC5jb20+IHdyb3RlOgo+IElJUkMsIHRoaXMgd2FzIGEgbWFqb3IgcG9pbnQgb2Yg
+dGhlaXIgKEFuZHJvaWQncykgcG93ZXIgbWFuYWdlbWVudAo+IHBvbGljeS4gwqBVc2VyIGlucHV0
+IG9mIGFueSBraW5kIHdvdWxkIHJlc2V0IHRoZSAiZGlzcGxheSBhY3RpdmUiCj4gdGltZW91dCwg
+d2hpY2ggaXMgdGhlIHByaW1hcnkgdGhpbmcga2VlcGluZyByYW5kb20gdW50cnVzdGVkCj4gdXNl
+ci1mYWNpbmcgcHJvZ3JhbXMgZnJvbSBiZWluZyBzdXNwZW5kZWQgd2hpbGUgaW4gdXNlLiDCoFRo
+ZXkgc2VlbWVkCj4gdG8gY29uc2lkZXIgdGhpcyB0byBiZSBhIHNwZWNpYWwgY2FzZSBpbiB0aGVp
+ciBwb2xpY3ksIGJ1dCBmcm9tIHRoZQo+IGtlcm5lbCdzIHBvaW50IG9mIHZpZXcgaXQgaXMganVz
+dCBhbm90aGVyIHN1c3BlbmQgYmxvY2tlciBiZWluZyBoZWxkLgoKVGhlIGRpc3BsYXkgYmVpbmcg
+b24gc2hvdWxkIG5vdCBwcmV2ZW50IHN1c3BlbmQgdW5sZXNzIHRoZSBwYXJ0aWN1bGFyCnBsYXRm
+b3JtIGlzIGluY2FwYWJsZSBvZiBzdXNwZW5kaW5nIHdoaWxlIHRoZSBkaXNwbGF5IGlzIG9uLgoK
+PiBJJ20gbm90IHN1cmUgdGhpcyBpcyB0aGUgYmVzdCB1c2UgY2FzZSB0byBsb29rIGF0IHRob3Vn
+aCwgYmVjYXVzZQo+IHNpbmNlIGl0IGlzIHVzZXItZmFjaW5nLCB0aGUgdGltZW91dCBkdXJhdGlv
+bnMgYXJlIG9uIGEgZGlmZmVyZW50Cj4gc2NhbGUgdGhhbiB0aGUgb25lcyB0aGV5IGFyZSByZWFs
+bHkgd29ycmllZCBhYm91dC4gwqBJIHRoaW5rIGFub3RoZXIKPiBjYXRlZ29yeSBvZiB1c2UgY2Fz
+ZSB0aGF0IHRoZXkgYXJlIHdvcnJpZWQgYWJvdXQgaXM6Cj4KPiAoaW4gc3VzcGVuZCkgLT4gd2Fr
+ZXVwIGR1ZSB0byBuZXR3b3JrIC0+IHByb2Nlc3MgbmV0d29yayBhY3Rpdml0eSAtPiBzdXNwZW5k
+Cj4KPiBvciBhbiBleGFtcGxlIHRoYXQgaGFzIGJlZW4gbWVudGlvbmVkIHByZXZpb3VzbHk6Cj4K
+PiAoaW4gc3VzcGVuZCkgLT4gd2FrZXVwIGR1ZSB0byBhbGFybSBmb3IgYXVkaW8gcHJvY2Vzc2lu
+ZyAtPiBwcm9jZXNzCj4gYmF0Y2ggb2YgYXVkaW8gLT4gc3VzcGVuZAo+Cj4gSW4gYm90aCBvZiB0
+aGVzZSBjYXNlcywgdGhlIGRpc3BsYXkgbWF5IG5ldmVyIHBvd2VyIG9uIChwaG9uZSBtaWdodAo+
+IGJlZXAgdG8gaW5kaWNhdGUgdHh0IG1lc3NhZ2Ugb3IgZW1haWwsIGF1ZGlvIGp1c3Qga2VlcHMg
+cGxheWluZyksIHNvCj4gdGhlIG1hZ25pdHVkZSBvZiB0aGUgInRpbWVvdXQiIGZvciBzdXNwZW5k
+aW5nIGFnYWluIHNob3VsZCBiZSB2ZXJ5Cj4gc21hbGwuIMKgU3BlY2lmaWNhbGx5LCB0aGV5IGRv
+bid0IHdhbnQgdGhlcmUgdG8gYmUgYSB0aW1lb3V0IGF0IGFsbCwgc28KPiBhcyBsaXR0bGUgdGlt
+ZSBhcyBwb3NzaWJsZSB0aW1lIGlzIHNwZW50IG91dCBvZiBzdXNwZW5kIGluIGFkZGl0aW9uIHRv
+Cj4gdGhlIHRpbWUgcmVxdWlyZWQgdG8gaGFuZGxlIHRoZSBldmVudCB0aGF0IGNhdXNlZCB3YWtl
+dXAuCgpZZWFoLCB3ZSBtdWNoIHByZWZlciB0aGUgd2FrZWxvY2sgbW9kZWwgd2hlcmUgdGhlIG1v
+bWVudCB0aGUgcmVzb3VyY2UKKHN5c3RlbS1uZWVkaW5nLXRvLW5vdC1iZS1zdXNwZW5kZWQpIGlz
+IHJlbGVhc2VkIHdlIHJldHVybiB0byB0aGUKbG93ZXN0IHBvd2VyIHN0YXRlLCByYXRoZXIgdGhh
+biB3YWl0aW5nIGZvciBhIHRpbWVyIHRvIGV4cGlyZSAoYW5kL29yCmJ1cm5pbmcgY3ljbGVzIHBv
+bGxpbmcgZm9yICJjYW4gd2Ugc3VzcGVuZCB5ZXQ/IiB3aGVuIHdlJ3JlIGRlZmluaXRlbHkKbm90
+IHJlYWR5IHRvIHN1c3BlbmQpLgoKQnJpYW4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxp
+bnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFp
+bG1hbi9saXN0aW5mby9saW51eC1wbQ==
