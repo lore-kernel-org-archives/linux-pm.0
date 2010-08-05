@@ -1,7 +1,7 @@
 From: Florian Mickler <florian@mickler.org>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Thu, 5 Aug 2010 07:33:59 +0200
-Message-ID: <20100805073359.4cb791c0__12822.6854642437$1280986507$gmane$org@schatten.dmk.lab>
+Date: Thu, 5 Aug 2010 07:56:29 +0200
+Message-ID: <20100805075629.07d5d88d__38508.0655258664$1280987848$gmane$org@schatten.dmk.lab>
 References: <20100801054816.GI2470@linux.vnet.ibm.com>
 	<alpine.DEB.2.00.1008041124580.6545@asgard.lang.hm>
 	<20100804185520.GA2417@srcf.ucam.org>
@@ -11,11 +11,12 @@ References: <20100801054816.GI2470@linux.vnet.ibm.com>
 	<AANLkTimRZc2B1=ic-0jrGBX7ahCu=NCoQadCOePGDmh9@mail.gmail.com>
 	<alpine.DEB.2.00.1008041554580.6545@asgard.lang.hm>
 	<20100804231003.GL24163@linux.vnet.ibm.com>
+	<20100805073359.4cb791c0@schatten.dmk.lab>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100804231003.GL24163@linux.vnet.ibm.com>
+In-Reply-To: <20100805073359.4cb791c0@schatten.dmk.lab>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,92 +26,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paulmck@linux.vnet.ibm.com
-Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Florian Mickler <florian@mickler.org>
+Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, Arve@smtp1.linux-foundation.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 4 Aug 2010 16:10:03 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On Thu, 5 Aug 2010 07:33:59 +0200
+Florian Mickler <florian@mickler.org> wrote:
 
-> On Wed, Aug 04, 2010 at 03:56:42PM -0700, david@lang.hm wrote:
-> > On Wed, 4 Aug 2010, Arve Hj?nnev?g wrote:
-> > 
-> > >On Wed, Aug 4, 2010 at 3:31 PM,  <david@lang.hm> wrote:
-> > >>On Wed, 4 Aug 2010, Matthew Garrett wrote:
-> > >>
-> > >>>On Wed, Aug 04, 2010 at 10:51:07PM +0200, Rafael J. Wysocki wrote:
-> > >>>>
-> > >>>>On Wednesday, August 04, 2010, Matthew Garrett wrote:
-> > >>>>>
-> > >>>>>No! And that's precisely the issue. Android's existing behaviour could
-> > >>>>>be entirely implemented in the form of binary that manually triggers
-> > >>>>>suspend when (a) the screen is off and (b) no userspace applications
-> > >>>>>have indicated that the system shouldn't sleep, except for the wakeup
-> > >>>>>event race. Imagine the following:
-> > >>>>>
-> > >>>>>1) The policy timeout is about to expire. No applications are holding
-> > >>>>>wakelocks. The system will suspend providing nothing takes a wakelock.
-> > >>>>>2) A network packet arrives indicating an incoming SIP call
-> > >>>>>3) The VOIP application takes a wakelock and prevents the phone from
-> > >>>>>suspending while the call is in progress
-> > >>>>>
-> > >>>>>What stops the system going to sleep between (2) and (3)? cgroups don't,
-> > >>>>>because the voip app is an otherwise untrusted application that you've
-> > >>>>>just told the scheduler to ignore.
-> > >>>>
-> > >>>>I _think_ you can use the just-merged /sys/power/wakeup_count mechanism
-> > >>>>to
-> > >>>>avoid the race (if pm_wakeup_event() is called at 2)).
-> > >>>
-> > >>>Yes, I think that solves the problem. The only question then is whether
-> > >>>it's preferable to use cgroups or suspend fully, which is pretty much up
-> > >>>to the implementation. In other words, is there a reason we're still
-> > >>>having this conversation? :) It'd be good to have some feedback from
-> > >>>Google as to whether this satisfies their functional requirements.
-> > >>
-> > >>the proposal that I nade was not to use cgroups to freeze some processes and
-> > >>not others, but to use cgroups to decide to ignore some processes when
-> > >>deciding if the system is idle, stop everything or nothing. cgroups are just
-> > >>a way of easily grouping processes (and their children) into different
-> > >>groups.
-> > >
-> > >That does not avoid the dependency problem. A process may be waiting
-> > >on a resource that a process you ignore owns. I you ignore the process
-> > >that owns the resource and enter idle when it is ready to run (or
-> > >waiting on a timer), you are still effectively blocking the other
-> > >process.
-> > 
-> > and if you don't have a wakelock the same thing will happen. If you
-> > expect the process to take a while you can set a timeout to wake up
-> > every 30 seconds or so and wait again, this would be enough to
-> > prevent you from going to sleep (or am I misunderstanding how long
-> > before you go into suspend without a wakelock set, see my other
-> > e-mail for the full question)
+> On Wed, 4 Aug 2010 16:10:03 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+
 > 
-> The difference between the Android scheme and your proposal is that the
-> Android scheme freezes -all- the processes, not just a subset of them.
-> Therefore, in the Android scheme, the case of one process attempting to
-> acquire a resource held by a frozen process.  In contrast, any scheme
-> that attempts to freeze only a subset of the processes must somehow
-> either avoid or properly handle the situation where a frozen process is
-> holding a resource that a running process is trying to acquire.
+> No no. In the David-Lang-CGroup-Scheme[1](tm?) suspend-from-idle
+> is used. For idle decision a certain subset of tasks is ignored. 
 > 
-> 							Thanx, Paul
+> Where suspend is prevented by the trusted
+> process in android-world taking a wakelock, here it would just prevent
+> the system from going idle by arming timers.
+> 
+> This would be pretty equivalent to the suspend-blocker scheme and not
+> introduce new userspace api. But the downside is, as Arve pointed out,
+> that now one can not get full-idle-power-leverage while suspend
+> is blocked. 
+> 
+> [1] http://permalink.gmane.org/gmane.linux.kernel/1018452  and
+> following 
+> 
+> 
+> Cheers,
+> Flo
+> 
 
-No no. In the David-Lang-CGroup-Scheme[1](tm?) suspend-from-idle
-is used. For idle decision a certain subset of tasks is ignored. 
+There are a few downsides that got mentioned already in reponse..  I got
+a little lagged behind. 
 
-Where suspend is prevented by the trusted
-process in android-world taking a wakelock, here it would just prevent
-the system from going idle by arming timers.
+There are upsides to this approach like not
+having a special purpose userspace api, conceptually integrating
+suspend into the idle mechanism .. 
 
-This would be pretty equivalent to the suspend-blocker scheme and not
-introduce new userspace api. But the downside is, as Arve pointed out,
-that now one can not get full-idle-power-leverage while suspend
-is blocked. 
+Short summary of the cons that got mentioned:
 
-[1] http://permalink.gmane.org/gmane.linux.kernel/1018452  and
-following 
+  -  applications need to resort to polling to keep the system
+	out of idle (->  system will never be fully idle)
+
+  -  the race between deciding to suspend and becoming active
+	again is not handled
+
+  -  no special statistics available
+
+  -  the timers of the ignored applications will behave unexpected
+	(as the monotonic clock is not stopped)... while applications
+	have already to cope with network-loss, other side effects of
+	suspend without monotonic clock stopped are to be expected...
 
 
 Cheers,
