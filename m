@@ -1,23 +1,15 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Thu, 5 Aug 2010 17:09:17 +0100
-Message-ID: <20100805160912.GA28689__5097.91530571437$1281027305$gmane$org@sirena.org.uk>
-References: <alpine.DEB.2.00.1008041554580.6545@asgard.lang.hm>
-	<AANLkTingom2AKfMu0EbfdfLiMnHo+buy1e4=PBENf3Vi@mail.gmail.com>
-	<alpine.DEB.2.00.1008041620010.6545@asgard.lang.hm>
-	<20100804233013.GN24163@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008041643490.6545@asgard.lang.hm>
-	<20100805001716.GO24163@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008041722060.6545@asgard.lang.hm>
-	<20100805004802.GP24163@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008042208350.25170@asgard.lang.hm>
-	<20100805151211.GA10080@linux.vnet.ibm.com>
+Date: Thu, 5 Aug 2010 17:34:06 +0200
+Message-ID: <201008051734.06736.rjw__35044.7426936173$1281027307$gmane$org@sisk.pl>
+References: <20100801054816.GI2470@linux.vnet.ibm.com>
+	<201008050220.51805.rjw@sisk.pl>
+	<AANLkTikK+OCrg8Jx5SpTbg6iFDX12MKZrTsdOr4mRJN0@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100805151211.GA10080@linux.vnet.ibm.com>
+In-Reply-To: <AANLkTikK+OCrg8Jx5SpTbg6iFDX12MKZrTsdOr4mRJN0@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,39 +19,125 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 05, 2010 at 08:12:11AM -0700, Paul E. McKenney wrote:
-> On Wed, Aug 04, 2010 at 10:18:40PM -0700, david@lang.hm wrote:
+On Thursday, August 05, 2010, Arve Hj=F8nnev=E5g wrote:
+> 2010/8/4 Rafael J. Wysocki <rjw@sisk.pl>:
+> > On Thursday, August 05, 2010, Arve Hj=F8nnev=E5g wrote:
+> >> On Wed, Aug 4, 2010 at 1:56 PM, Matthew Garrett <mjg59@srcf.ucam.org> =
+wrote:
+> >> > On Wed, Aug 04, 2010 at 10:51:07PM +0200, Rafael J. Wysocki wrote:
+> >> >> On Wednesday, August 04, 2010, Matthew Garrett wrote:
+> >> >> > No! And that's precisely the issue. Android's existing behaviour =
+could
+> >> >> > be entirely implemented in the form of binary that manually trigg=
+ers
+> >> >> > suspend when (a) the screen is off and (b) no userspace applicati=
+ons
+> >> >> > have indicated that the system shouldn't sleep, except for the wa=
+keup
+> >> >> > event race. Imagine the following:
+> >> >> >
+> >> >> > 1) The policy timeout is about to expire. No applications are hol=
+ding
+> >> >> > wakelocks. The system will suspend providing nothing takes a wake=
+lock.
+> >> >> > 2) A network packet arrives indicating an incoming SIP call
+> >> >> > 3) The VOIP application takes a wakelock and prevents the phone f=
+rom
+> >> >> > suspending while the call is in progress
+> >> >> >
+> >> >> > What stops the system going to sleep between (2) and (3)? cgroups=
+ don't,
+> >> >> > because the voip app is an otherwise untrusted application that y=
+ou've
+> >> >> > just told the scheduler to ignore.
+> >> >>
+> >> >> I _think_ you can use the just-merged /sys/power/wakeup_count mecha=
+nism to
+> >> >> avoid the race (if pm_wakeup_event() is called at 2)).
+> >> >
+> >> > Yes, I think that solves the problem. The only question then is whet=
+her
+> >>
+> >> How? By passing a timeout to pm_wakeup_event when the network driver
+> >> gets the packet or by passing 0. If you pass a timeout it is the same
+> >> as using a wakelock with a timeout and should work (assuming the
+> >> timeout you picked is long enough). If you don't pass a timeout it
+> >> does not work, since the packet may not be visible to user-space yet.
+> >
+> > Alternatively, pm_stay_awake() / pm_relax() can be used.
+> >
+> =
 
-> > as for intramentation, the key tool to use to see why a system isn't
-> > going to sleep would be powertop, just like on other linux systems.
+> Which makes the driver and/or network stack changes identical to using
+> wakelocks, right?
 
-> Powertop is indeed an extremely valuable tool, but I am not certain
-> that it really provides the information that the Android guys need.
-> If I understand Arve's and Brian's posts, here is the scenario that they
-> are trying to detect:
+Please refer to the Matthew's response.
 
-> o	Some PM-driving application has a bug in which it fails to
-> 	release a wakelock, thus blocking suspend indefinitely.
+> >> > it's preferable to use cgroups or suspend fully, which is pretty muc=
+h up
+> >> > to the implementation. In other words, is there a reason we're still
+> >>
+> >> I have seen no proposed way to use cgroups that will work. If you
+> >> leave some processes running while other processes are frozen you run
+> >> into problems when a frozen process holds a resource that a running
+> >> process needs.
+> >>
+> >>
+> >> > having this conversation? :) It'd be good to have some feedback from
+> >> > Google as to whether this satisfies their functional requirements.
+> >> >
+> >>
+> >> That is "this"? The merged code? If so, no it does not satisfy our
+> >> requirements. The in kernel api, while offering similar functionality
+> >> to the wakelock interface, does not use any handles which makes it
+> >> impossible to get reasonable stats (You don't know which pm_stay_awake
+> >> request pm_relax is reverting).
+> >
+> > Why is that a problem (out of curiosity)?
+> >
+> =
 
-> o	This PM-driving application, otherwise being a good citizen,
-> 	blocks.
+> Not having stats or not knowing what pm_relax is undoing? We need
+> stats to be able to debug the system.
 
-> o	There are numerous power-oblivious apps running, consuming
-> 	significant CPU.
+You have the stats in struct device and they are available via sysfs.
+I suppose they are insufficient, but I'd like to know why exactly.
 
-Or otherwise doing something power hungry.
+> If the system does not suspend
+> at all or is awake for too long, the wakelock stats tells us which
+> component is at fault. Since pm_stay_awake and pm_relax does not
+> operate on a handle, you cannot determine how long it prevented
+> suspend for.
 
-> What the Android developers need to know is that the trusted application
-> is wrongly holding a wakelock.  Won't powertop instead tell them about
-> all the power-oblivious apps?
+Well, if you need that, you can add a counter of "completed events" into
+struct dev_pm_info and a function similar to pm_relax() that
+will update that counter.  I don't think anyone will object to that change.
 
-Right, and this isn't just information for developers - Android handsets
-expose this information to end users (so they can indentify any badly
-behaved applications they have installed or otherwise modify their
-handset usage if they are disappointed by their battery life).  That
-said, powertop and similar applications could always be extended to also
-include data from wakelocks.
+> >> The proposed in user-space interface
+> >> of calling into every process that receives wakeup events before every
+> >> suspend call
+> >
+> > Well,  you don't really need to do that.
+> >
+> =
+
+> Only if the driver blocks suspend until user-space has read the event.
+> This means that for android to work we need to block suspend when
+> input events are not processed, but a system using your scheme needs a
+> pm_wakeup_event call when the input event is queued. How to you switch
+> between them? Do we add separate ioctls in the input device to enable
+> each scheme? If someone has a single threaded user space power manager
+> that also reads input event it will deadlock if you block suspend
+> until it reads the input events since you block when reading the wake
+> count.
+
+Well, until someone actually tries to implement a power manager in user spa=
+ce
+it's a bit vague.
+
+Thanks,
+Rafael
