@@ -1,15 +1,19 @@
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [PATCH 7/8] ACPI / PCI: Do not preserve _OSC control
- bits returned by a query (v2)
-Date: Thu, 05 Aug 2010 12:40:25 +0900
-Message-ID: <4C5A32A9.6010008__33268.2373039008$1280979747$gmane$org@jp.fujitsu.com>
-References: <201008022351.31406.rjw@sisk.pl> <4C5927CB.4070705@jp.fujitsu.com>
-	<201008041229.19848.rjw@sisk.pl> <201008050151.27501.rjw@sisk.pl>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Wed, 4 Aug 2010 20:59:34 -0700
+Message-ID: <20100805035934.GA2491__5808.48649046874$1280980833$gmane$org@linux.vnet.ibm.com>
+References: <20100801054816.GI2470@linux.vnet.ibm.com>
+	<20100804205654.GA4986@srcf.ucam.org>
+	<AANLkTi=fH=XqJ0QgaMwPr5efacWAFo5h0khD7RjL4n8L@mail.gmail.com>
+	<201008050220.51805.rjw@sisk.pl>
+	<AANLkTikK+OCrg8Jx5SpTbg6iFDX12MKZrTsdOr4mRJN0@mail.gmail.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201008050151.27501.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <AANLkTikK+OCrg8Jx5SpTbg6iFDX12MKZrTsdOr4mRJN0@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,211 +23,141 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
+Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-(2010/08/05 8:51), Rafael J. Wysocki wrote:
-> On Wednesday, August 04, 2010, Rafael J. Wysocki wrote:
->> On Wednesday, August 04, 2010, Hidetoshi Seto wrote:
->>> (2010/08/04 14:46), Kenji Kaneshige wrote:
->>>> (2010/08/04 6:02), Rafael J. Wysocki wrote:
->>>>> On Tuesday, August 03, 2010, Rafael J. Wysocki wrote:
->>>>>> On Tuesday, August 03, 2010, Hidetoshi Seto wrote:
->>>>>>> (2010/08/03 13:52), Kenji Kaneshige wrote:
->>>>>>>> (2010/08/03 6:59), Rafael J. Wysocki wrote:
->>>>>>>>> @@ -434,19 +432,6 @@ acpi_status acpi_pci_osc_control_set(acp
->>>>>>>>>        if ((root->osc_control_set&   control_req) == control_req)
->>>>>>>>>            goto out;
->>>>>>>>>
->>>>>>>>> -    /* Need to query controls first before requesting them */
->>>>>>>>> -    if (!root->osc_queried) {
->>>>>>>>> -        status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
->>>>>>>>> -        if (ACPI_FAILURE(status))
->>>>>>>>> -            goto out;
->>>>>>>>> -    }
->>>>>>>>> -    if ((root->osc_control_qry&   control_req) != control_req) {
->>>>>>>>> -        printk(KERN_DEBUG
->>>>>>>>> -               "Firmware did not grant requested _OSC control\n");
->>>>>>>>> -        status = AE_SUPPORT;
->>>>>>>>> -        goto out;
->>>>>>>>> -    }
->>>>>>>>
->>>>>>>> I think acpi_pci_osc_control_set() still need to query before commit
->>>>>>>> to ensure all the requested controls are granted to OS.
->>>>>>>>
->>>>>>>> So the code needs to be
->>>>>>>>
->>>>>>>>      status = acpi_pci_query_osc(root, root->osc_support_set,&control_req);
->>>>>>>>      if (ACPI_FAILURE(status))
->>>>>>>>          goto out;
->>>>>>>
->>>>
->>>> Sorry, that should have been
->>>>
->>>>     query = control_req;
->>>>     status = acpi_pci_query_osc(root, root->osc_support_set, &query);
->>>>     if (ACPI_FAILURE(status))
->>>>         goto out;
->>>>     if ((query & control_req) != control_req) {
->>>>         printk_(KERN_DEBUG
->>>>             "Firmware did not grant requested _OSC control\n");
->>>>         status = AE_SUPPORT;
->>>>         goto out;
->>>>     }
->>>>
->>>> I know current pcie_port_acpi_setup() queries the requesting controls
->>>> before acpi_pci_osc_control_set() and only one control is requested
->>>> in the other code. However, I think acpi_pci_osc_control_set() still
->>>> need to query the requested controls to ensure all the requested
->>>> controls, in case someone calls this function without querying the
->>>> requesting controls. In other words, I think it must be ensured that
->>>> any controls are never granted to OS when acpi_pci_osc_control_set()
->>>> returns error.
->>>
->>> I think the following patch is what you mean.
->>>
->>> And... (Continue to next post)
->>>
->>> Thanks,
->>> H.Seto
->>
->> OK, I'll repalce my 7/8 with the patch below.
-> 
-> Actually, having reconsidered that, I don't think this approach is valid.
-> 
-> First, it has the problem that if acpi_pci_osc_control_set() returns error
-> code, the caller doesn't really know whether the query failed, or the final
-> request failed.  Arguably, it won't matter for the majority of callers, but
-> some of them might be interested in knowing that in principle.
+On Wed, Aug 04, 2010 at 06:02:28PM -0700, Arve Hj=F8nnev=E5g wrote:
+> 2010/8/4 Rafael J. Wysocki <rjw@sisk.pl>:
+> > On Thursday, August 05, 2010, Arve Hj=F8nnev=E5g wrote:
+> >> On Wed, Aug 4, 2010 at 1:56 PM, Matthew Garrett <mjg59@srcf.ucam.org> =
+wrote:
+> >> > On Wed, Aug 04, 2010 at 10:51:07PM +0200, Rafael J. Wysocki wrote:
+> >> >> On Wednesday, August 04, 2010, Matthew Garrett wrote:
+> >> >> > No! And that's precisely the issue. Android's existing behaviour =
+could
+> >> >> > be entirely implemented in the form of binary that manually trigg=
+ers
+> >> >> > suspend when (a) the screen is off and (b) no userspace applicati=
+ons
+> >> >> > have indicated that the system shouldn't sleep, except for the wa=
+keup
+> >> >> > event race. Imagine the following:
+> >> >> >
+> >> >> > 1) The policy timeout is about to expire. No applications are hol=
+ding
+> >> >> > wakelocks. The system will suspend providing nothing takes a wake=
+lock.
+> >> >> > 2) A network packet arrives indicating an incoming SIP call
+> >> >> > 3) The VOIP application takes a wakelock and prevents the phone f=
+rom
+> >> >> > suspending while the call is in progress
+> >> >> >
+> >> >> > What stops the system going to sleep between (2) and (3)? cgroups=
+ don't,
+> >> >> > because the voip app is an otherwise untrusted application that y=
+ou've
+> >> >> > just told the scheduler to ignore.
+> >> >>
+> >> >> I _think_ you can use the just-merged /sys/power/wakeup_count mecha=
+nism to
+> >> >> avoid the race (if pm_wakeup_event() is called at 2)).
+> >> >
+> >> > Yes, I think that solves the problem. The only question then is whet=
+her
+> >>
+> >> How? By passing a timeout to pm_wakeup_event when the network driver
+> >> gets the packet or by passing 0. If you pass a timeout it is the same
+> >> as using a wakelock with a timeout and should work (assuming the
+> >> timeout you picked is long enough). If you don't pass a timeout it
+> >> does not work, since the packet may not be visible to user-space yet.
+> >
+> > Alternatively, pm_stay_awake() / pm_relax() can be used.
+> =
 
-Ugh... there are only 2 callers now and both of them are in the majority.
-I don't think it is a time to take care of an invisible minority who might
-require acpi_pci_osc_raw() to complete its work.
+> Which makes the driver and/or network stack changes identical to using
+> wakelocks, right?
 
-> 
-> Second, the callers that call acpi_pci_osc_control_query() before
-> acpi_pci_osc_control_set() don't need the additional query inside
-> of acpi_pci_osc_control_set().
+Arve, you say that like it is a bad thing.  ;-)
 
-So we can recommend all of callers not to call acpi_pci_osc_control_query()
-before acpi_pci_osc_control_set().
+Seriously, the hope is that Rafael's implementation is useful to other
+projects in addition to Android.  And, all else being equal, the more
+people who need a given facility, the more likely that facility is to
+make it to mainline, right?
 
-I suppose that almost all of "the majority" just want to set fixed set of
-controls and they will just return error when fails anyway.
+And yes, I see you call out some additional things that Android needs,
+but hopefully this gap can be closed one way or another.
 
-> 
-> Therefore I'd prefer to have two separate functions, one for querying and the
-> other for requesting control.  Then, we can provide a helper that calls the
-> both of them for the callers of acpi_pci_osc_control_set() that don't need
-> to call acpi_pci_osc_control_query() directly by themselves.
+							Thanx, Paul
 
-I'm afraid the "two" is not enough for the minority.
+> >> > it's preferable to use cgroups or suspend fully, which is pretty muc=
+h up
+> >> > to the implementation. In other words, is there a reason we're still
+> >>
+> >> I have seen no proposed way to use cgroups that will work. If you
+> >> leave some processes running while other processes are frozen you run
+> >> into problems when a frozen process holds a resource that a running
+> >> process needs.
+> >>
+> >>
+> >> > having this conversation? :) It'd be good to have some feedback from
+> >> > Google as to whether this satisfies their functional requirements.
+> >> >
+> >>
+> >> That is "this"? The merged code? If so, no it does not satisfy our
+> >> requirements. The in kernel api, while offering similar functionality
+> >> to the wakelock interface, does not use any handles which makes it
+> >> impossible to get reasonable stats (You don't know which pm_stay_awake
+> >> request pm_relax is reverting).
+> >
+> > Why is that a problem (out of curiosity)?
+> >
+> =
 
-Therefore I don't think it is a time to prepare for such an inexistent
-minor usage.
+> Not having stats or not knowing what pm_relax is undoing? We need
+> stats to be able to debug the system. If the system does not suspend
+> at all or is awake for too long, the wakelock stats tells us which
+> component is at fault. Since pm_stay_awake and pm_relax does not
+> operate on a handle, you cannot determine how long it prevented
+> suspend for.
+> =
 
-> 
-> Given that acpi_pci_osc_control_query() is introduced by
-> https://patchwork.kernel.org/patch/117176/ , the helper may be implemented
-> like in the appended patch.
-> 
-> After that patch, the $subject patch can be applied without any modifications
-> to remove the no-longer-used fields in struct acpi_pci_root.
-> 
-> Thanks,
-> Rafael
-> 
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: ACPI / PCI: Introduce function for requesting _OSC controls safely
-> 
-> Calling raw acpi_pci_osc_control_set() is generally unsafe, because
-> it may return error code even if control of some requested features
-> have been granted by the BIOS.  For this reason the callers of
-> acpi_pci_osc_control_set() should call acpi_pci_osc_control_query()
-> before it to make sure that the BIOS is willing to grant control of
-> the requested features.
-> 
-> Introduce helper function acpi_pci_osc_control_set_safe() allowing
-> a caller of acpi_pci_osc_control_set() who is not interested in
-> the control bits returned by acpi_pci_osc_control_query() to
-> request control of _OSC features in a safe way.
-> 
-> Make acpi_get_hp_hw_control_from_firmware() use the new function.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/acpi/pci_root.c          |   24 ++++++++++++++++++++++++
->  drivers/pci/hotplug/acpi_pcihp.c |    2 +-
->  include/linux/acpi.h             |    1 +
->  3 files changed, 26 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/drivers/acpi/pci_root.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/acpi/pci_root.c
-> +++ linux-2.6/drivers/acpi/pci_root.c
-> @@ -472,6 +472,30 @@ out:
->  }
->  EXPORT_SYMBOL(acpi_pci_osc_control_set);
->  
-> +/**
-> + * acpi_pci_osc_control_set_safe - Query and set _OSC control bit mask.
-> + * @handle: ACPI handle of a PCI root bridge (or PCIe Root Complex).
-> + * @flags: Mask of _OSC bits to query and set.
-> + *
-> + * Check if the BIOS is willing to grant control of the features represented
-> + * by @flags and request control of these features from it.
-> + **/
-> +acpi_status acpi_pci_osc_control_set_safe(acpi_handle handle, u32 flags)
-> +{
-> +	acpi_status status;
-> +	u32 ctrl = flags;
-> +
-> +	status = acpi_pci_osc_control_query(handle, &flags);
-> +	if (ACPI_FAILURE(status))
-> +		return status;
-> +	if ((ctrl & flags) != ctrl)
-> +		return AE_SUPPORT;
-> +
-> +	status = acpi_pci_osc_control_set(handle, flags);
-> +	return status;
-> +}
-> +EXPORT_SYMBOL(acpi_pci_osc_control_set_safe);
-> +
->  static int __devinit acpi_pci_root_add(struct acpi_device *device)
->  {
->  	unsigned long long segment, bus;
-> Index: linux-2.6/drivers/pci/hotplug/acpi_pcihp.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/hotplug/acpi_pcihp.c
-> +++ linux-2.6/drivers/pci/hotplug/acpi_pcihp.c
-> @@ -358,7 +358,7 @@ int acpi_get_hp_hw_control_from_firmware
->  		acpi_get_name(handle, ACPI_FULL_PATHNAME, &string);
->  		dbg("Trying to get hotplug control for %s\n",
->  				(char *)string.pointer);
-> -		status = acpi_pci_osc_control_set(handle, flags);
-> +		status = acpi_pci_osc_control_set_safe(handle, flags);
->  		if (ACPI_SUCCESS(status))
->  			goto got_one;
->  		if (status == AE_SUPPORT)
-> Index: linux-2.6/include/linux/acpi.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/acpi.h
-> +++ linux-2.6/include/linux/acpi.h
-> @@ -307,6 +307,7 @@ acpi_status acpi_run_osc(acpi_handle han
->  
->  extern acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *mask);
->  extern acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags);
-> +extern acpi_status acpi_pci_osc_control_set_safe(acpi_handle handle, u32 flags);
->  extern void acpi_early_init(void);
->  
->  #else	/* !CONFIG_ACPI */
-> 
-> 
+> >> The proposed in user-space interface
+> >> of calling into every process that receives wakeup events before every
+> >> suspend call
+> >
+> > Well, =A0you don't really need to do that.
+> >
+> =
 
-So I'd like to say NAK against this patch, sorry.
+> Only if the driver blocks suspend until user-space has read the event.
+> This means that for android to work we need to block suspend when
+> input events are not processed, but a system using your scheme needs a
+> pm_wakeup_event call when the input event is queued. How to you switch
+> between them? Do we add separate ioctls in the input device to enable
+> each scheme? If someone has a single threaded user space power manager
+> that also reads input event it will deadlock if you block suspend
+> until it reads the input events since you block when reading the wake
+> count.
+> =
 
+> >> is also not compatible with existing apps.
+> >
+> > Thanks,
+> > Rafael
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at =A0http://www.tux.org/lkml/
+> >
+> =
 
-Thanks,
-H.Seto
+> =
+
+> =
+
+> -- =
+
+> Arve Hj=F8nnev=E5g
