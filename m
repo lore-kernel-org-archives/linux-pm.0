@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/8] ACPI / PCI: Introduce
-	acpi_pci_osc_control_query()
-Date: Fri, 6 Aug 2010 01:46:15 +0200
-Message-ID: <201008060146.15558.rjw__37416.2352331497$1281052602$gmane$org@sisk.pl>
-References: <201008022351.31406.rjw@sisk.pl> <4C58EC6D.4050902@jp.fujitsu.com>
-	<201008050137.15082.rjw@sisk.pl>
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH v2] pm: Add runtime PM statistics
+Date: Thu, 05 Aug 2010 16:59:51 -0700
+Message-ID: <4C5B5077.1060901__38708.3330927$1281052991$gmane$org@linux.intel.com>
+References: <20100710095254.5ab7291c@infradead.org>	<201007112326.07541.rjw@sisk.pl>	<20100711221646.35f11b70@infradead.org>	<201007132328.28853.rjw@sisk.pl>
+	<4C3F2CEF.2090404@linux.intel.com>
+	<87bp9gpryb.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201008050137.15082.rjw@sisk.pl>
+In-Reply-To: <87bp9gpryb.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,215 +19,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-pci@vger.kernel.org, Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, August 05, 2010, Rafael J. Wysocki wrote:
-> On Wednesday, August 04, 2010, Kenji Kaneshige wrote:
-> > (2010/08/04 5:58), Rafael J. Wysocki wrote:
-> > > On Tuesday, August 03, 2010, Rafael J. Wysocki wrote:
-> > >> On Tuesday, August 03, 2010, Kenji Kaneshige wrote:
-> > >>> (2010/08/03 6:53), Rafael J. Wysocki wrote:
-> > >>>> From: Rafael J. Wysocki<rjw@sisk.pl>
-> > >>>
-> > >>> <snip.>
-> > >>>
-> > >>>> +	mutex_lock(&osc_lock);
-> > >>>> +	status = acpi_pci_query_osc(root, root->osc_support_set, ctrl_mask);
-> > >>>> +	mutex_unlock(&osc_lock);
-> > >>>> +
-> > >>>
-> > >>> One more comment here.
-> > >>>
-> > >>> I think we can skip acpi_pci_query_osc() if all of queried controls are
-> > >>> already granted to OS. Please see below
-> > >>>
-> > >>> 	mutex_lock(&osc_lock);
-> > >>> 	if ((root->osc_control_set&  *ctrl_mask) == *ctrl_mask) {
-> > >>> 		*ctrl_mask = root->osc_control_set;
-> > >>> 		goto out;
-> > >>> 	}
-> > >>> 	status = acpi_pci_query_osc(root, root->osc_support_set, ctrl_mask);
-> > >>> 	mutex_unlock(&osc_lock);
-> > >>> out:
-> > >>
-> > >> Well I guess you mean:
-> > >>
-> > >>   	mutex_lock(&osc_lock);
-> > >>   	if ((root->osc_control_set&  *ctrl_mask) != *ctrl_mask)
-> > >>   		status = acpi_pci_query_osc(root, root->osc_support_set, ctrl_mask);
-> > >>   	mutex_unlock(&osc_lock);
-> > >>
-> > >> Otherwise we would return with the mutex held. :-)
-> > >
-> > 
-> > Oops... sorry...
-> > 
-> > > Updated patch is appended, please tell me what you think.
-> > 
-> > Looks good to me. The below (in your updated patch) was what I wanted to mean
-> > 
-> > > +	mutex_lock(&osc_lock);
-> > > +	if ((*mask & root->osc_control_set) == *mask)
-> > > +		*mask = root->osc_control_set;
-> > > +	else
-> > > +		status = acpi_pci_query_osc(root, root->osc_support_set, mask);
-> > > +	mutex_unlock(&osc_lock);
-> 
-> OK
-> 
-> However, I think we can put the looping into that function so that the caller
-> doesn't have to loop.
-> 
-> The patch below implements that.
+On 8/5/2010 4:20 PM, Kevin Hilman wrote:
+> Arjan van de Ven<arjan@linux.intel.com>  writes:
+>
+>    
+>> +
+>> +/**
+>> + * update_pm_runtime_accounting - Update the time accounting of power
+>> states
+>> + * @dev: Device to update the accounting for
+>> + *
+>> + * In order to be able to have time accounting of the various power states
+>> + * (as used by programs such as PowerTOP to show the effectiveness of
+>> runtime
+>> + * PM), we need to track the time spent in each state.
+>> + * update_pm_runtime_accounting must be called each time before the
+>> + * runtime_status field is updated, to account the time in the old state
+>> + * correctly.
+>> + */
+>> +void update_pm_runtime_accounting(struct device *dev)
+>> +{
+>> +    unsigned long now = jiffies;
+>> +    int delta;
+>> +
+>> +    delta = now - dev->power.accounting_timestamp;
+>> +
+>> +    if (delta<  0)
+>> +        delta = 0;
+>> +
+>> +    dev->power.accounting_timestamp = now;
+>> +
+>> +    if (dev->power.disable_depth>  0)
+>> +        return;
+>> +
+>> +    if (dev->power.runtime_status == RPM_SUSPENDED)
+>> +        dev->power.suspended_jiffies += delta;
+>> +    else
+>> +        dev->power.active_jiffies += delta;
+>> +}
+>>      
+> By using jiffies, I think we might miss events in drivers that are doing
+> runtime PM transitions in short bursts.  On embedded systems with slow
+> HZ, there could potentially be lots of transitions between ticks.
+>
+> It would be nicer to use clocksource-based time so transitions between
+> jiffies could still be factored into the accounting.
+>    
 
-The patch below is incorrect, sorry.  Please disregard it.
+you're absolutely right that the current mechanism is more "sampling 
+accuracy" (similar to most /proc info that shows up with top and such).
 
-Thanks,
-Rafael
+on the "slow HZ".. there is no more valid reason to not set HZ to 
+1000... so we'll get 1 msec sampling rate basically.
 
-
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: ACPI / PCI: Introduce acpi_pci_osc_control_query() (v3)
-> 
-> Introduce a function allowing the caller to obtain a mask of _OSC
-> control bits the BIOS will allow the kernel to control for a given
-> PCI root bridge.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/acpi/pci_root.c |   71 +++++++++++++++++++++++++++++++++++++++++-------
->  include/linux/acpi.h    |    1 
->  2 files changed, 63 insertions(+), 9 deletions(-)
-> 
-> Index: linux-2.6/drivers/acpi/pci_root.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/acpi/pci_root.c
-> +++ linux-2.6/drivers/acpi/pci_root.c
-> @@ -225,21 +225,32 @@ static acpi_status acpi_pci_run_osc(acpi
->  	return status;
->  }
->  
-> -static acpi_status acpi_pci_query_osc(struct acpi_pci_root *root, u32 flags)
-> +static acpi_status acpi_pci_query_osc(struct acpi_pci_root *root,
-> +					u32 support,
-> +					u32 *control)
->  {
->  	acpi_status status;
-> -	u32 support_set, result, capbuf[3];
-> +	u32 result, capbuf[3];
-> +
-> +	support &= OSC_PCI_SUPPORT_MASKS;
-> +	support |= root->osc_support_set;
->  
-> -	/* do _OSC query for all possible controls */
-> -	support_set = root->osc_support_set | (flags & OSC_PCI_SUPPORT_MASKS);
->  	capbuf[OSC_QUERY_TYPE] = OSC_QUERY_ENABLE;
-> -	capbuf[OSC_SUPPORT_TYPE] = support_set;
-> -	capbuf[OSC_CONTROL_TYPE] = OSC_PCI_CONTROL_MASKS;
-> +	capbuf[OSC_SUPPORT_TYPE] = support;
-> +	if (control) {
-> +		*control &= OSC_PCI_CONTROL_MASKS;
-> +		capbuf[OSC_CONTROL_TYPE] = *control | root->osc_control_set;
-> +	} else {
-> +		/* Run _OSC query for all possible controls. */
-> +		capbuf[OSC_CONTROL_TYPE] = OSC_PCI_CONTROL_MASKS;
-> +	}
->  
->  	status = acpi_pci_run_osc(root->device->handle, capbuf, &result);
->  	if (ACPI_SUCCESS(status)) {
-> -		root->osc_support_set = support_set;
-> +		root->osc_support_set = support;
->  		root->osc_control_qry = result;
-> +		if (control)
-> +			*control = result;
->  		root->osc_queried = 1;
->  	}
->  	return status;
-> @@ -254,7 +265,7 @@ static acpi_status acpi_pci_osc_support(
->  	if (ACPI_FAILURE(status))
->  		return status;
->  	mutex_lock(&osc_lock);
-> -	status = acpi_pci_query_osc(root, flags);
-> +	status = acpi_pci_query_osc(root, flags, NULL);
->  	mutex_unlock(&osc_lock);
->  	return status;
->  }
-> @@ -363,6 +374,48 @@ out:
->  }
->  EXPORT_SYMBOL_GPL(acpi_get_pci_dev);
->  
-> + /**
-> + * acpi_pci_osc_control_query - Get the _OSC bits the kernel can control.
-> + * @handle: ACPI handle of a PCI root bridge (or PCIe Root Complex).
-> + * @mask: Mask of _OSC bits to query and the place to put the result into.
-> + **/
-> +acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *mask)
-> +{
-> +	struct acpi_pci_root *root;
-> +	acpi_handle tmp;
-> +	acpi_status status = AE_OK;
-> +	u32 ctrl = *mask;
-> +
-> +	if (!ctrl || !(ctrl & OSC_PCI_CONTROL_MASKS))
-> +		return AE_BAD_PARAMETER;
-> +
-> +	root = acpi_pci_find_root(handle);
-> +	if (!root)
-> +		return AE_NOT_EXIST;
-> +
-> +	status = acpi_get_handle(handle, "_OSC", &tmp);
-> +	if (ACPI_FAILURE(status))
-> +		return status;
-> +
-> +	mutex_lock(&osc_lock);
-> +
-> +	*mask |= root->osc_control_set;
-> +	if ((ctrl & root->osc_control_set) == ctrl)
-> +		goto out;
-> +
-> +	while (*mask && *mask != ctrl) {
-> +		ctrl = *mask;
-> +		status = acpi_pci_query_osc(root, root->osc_support_set, mask);
-> +		if (ACPI_FAILURE(status))
-> +			break;
-> +	}
-> +
-> + out:
-> +	mutex_unlock(&osc_lock);
-> +
-> +	return status;
-> +}
-> +
->  /**
->   * acpi_pci_osc_control_set - commit requested control to Firmware
->   * @handle: acpi_handle for the target ACPI object
-> @@ -396,7 +449,7 @@ acpi_status acpi_pci_osc_control_set(acp
->  
->  	/* Need to query controls first before requesting them */
->  	if (!root->osc_queried) {
-> -		status = acpi_pci_query_osc(root, root->osc_support_set);
-> +		status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
->  		if (ACPI_FAILURE(status))
->  			goto out;
->  	}
-> Index: linux-2.6/include/linux/acpi.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/acpi.h
-> +++ linux-2.6/include/linux/acpi.h
-> @@ -305,6 +305,7 @@ acpi_status acpi_run_osc(acpi_handle han
->  				OSC_PCI_EXPRESS_AER_CONTROL |		\
->  				OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL)
->  
-> +extern acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *mask);
->  extern acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags);
->  extern void acpi_early_init(void);
->  
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
-> 
-> 
+the problem with a more accurate clocksource is that it's expensive. And 
+more... the path to such clocksource itself might be subject to power 
+management ;-)
