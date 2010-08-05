@@ -1,24 +1,15 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Wed, 4 Aug 2010 17:17:16 -0700
-Message-ID: <20100805001716.GO24163__36349.0293537781$1280967492$gmane$org@linux.vnet.ibm.com>
-References: <20100804185520.GA2417@srcf.ucam.org>
-	<201008042251.08266.rjw@sisk.pl>
+Date: Thu, 5 Aug 2010 02:20:51 +0200
+Message-ID: <201008050220.51805.rjw__23427.9258795597$1280967847$gmane$org@sisk.pl>
+References: <20100801054816.GI2470@linux.vnet.ibm.com>
 	<20100804205654.GA4986@srcf.ucam.org>
-	<alpine.DEB.2.00.1008041529530.6545@asgard.lang.hm>
-	<AANLkTimRZc2B1=ic-0jrGBX7ahCu=NCoQadCOePGDmh9@mail.gmail.com>
-	<alpine.DEB.2.00.1008041554580.6545@asgard.lang.hm>
-	<AANLkTingom2AKfMu0EbfdfLiMnHo+buy1e4=PBENf3Vi@mail.gmail.com>
-	<alpine.DEB.2.00.1008041620010.6545@asgard.lang.hm>
-	<20100804233013.GN24163@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008041643490.6545@asgard.lang.hm>
-Reply-To: paulmck@linux.vnet.ibm.com
+	<AANLkTi=fH=XqJ0QgaMwPr5efacWAFo5h0khD7RjL4n8L@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1008041643490.6545@asgard.lang.hm>
+In-Reply-To: <AANLkTi=fH=XqJ0QgaMwPr5efacWAFo5h0khD7RjL4n8L@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,58 +19,82 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 04, 2010 at 04:49:22PM -0700, david@lang.hm wrote:
-> On Wed, 4 Aug 2010, Paul E. McKenney wrote:
-> 
-> >On Wed, Aug 04, 2010 at 04:23:43PM -0700, david@lang.hm wrote:
-> >>On Wed, 4 Aug 2010, Arve Hj?nnev?g wrote:
+On Thursday, August 05, 2010, Arve Hj=F8nnev=E5g wrote:
+> On Wed, Aug 4, 2010 at 1:56 PM, Matthew Garrett <mjg59@srcf.ucam.org> wro=
+te:
+> > On Wed, Aug 04, 2010 at 10:51:07PM +0200, Rafael J. Wysocki wrote:
+> >> On Wednesday, August 04, 2010, Matthew Garrett wrote:
+> >> > No! And that's precisely the issue. Android's existing behaviour cou=
+ld
+> >> > be entirely implemented in the form of binary that manually triggers
+> >> > suspend when (a) the screen is off and (b) no userspace applications
+> >> > have indicated that the system shouldn't sleep, except for the wakeup
+> >> > event race. Imagine the following:
+> >> >
+> >> > 1) The policy timeout is about to expire. No applications are holding
+> >> > wakelocks. The system will suspend providing nothing takes a wakeloc=
+k.
+> >> > 2) A network packet arrives indicating an incoming SIP call
+> >> > 3) The VOIP application takes a wakelock and prevents the phone from
+> >> > suspending while the call is in progress
+> >> >
+> >> > What stops the system going to sleep between (2) and (3)? cgroups do=
+n't,
+> >> > because the voip app is an otherwise untrusted application that you'=
+ve
+> >> > just told the scheduler to ignore.
 > >>
-> >>>
-> >>>We suspend as soon as no wakelocks are held. There is no delay.
-> >>
-> >>So, if I have a bookreader app that is not allowed to get the
-> >>wakelock, and nothing else is running, the system will suspend
-> >>immediatly after I click a button to go to the next page? it will
-> >>not stay awake to give me a chance to read the page at all?
-> >>
-> >>how can any application run without wakelock privilages?
+> >> I _think_ you can use the just-merged /sys/power/wakeup_count mechanis=
+m to
+> >> avoid the race (if pm_wakeup_event() is called at 2)).
 > >
-> >Isn't a wakelock held as long as the display is lit, so that the
-> >system would continue running as long as the page was visible?
-> 
-> what holds this wakelock, and what sort of timeout does it have?
-> (and why could that same timeout be used in other ways instead)
+> > Yes, I think that solves the problem. The only question then is whether
+> =
 
-I defer to the Android guys on what exactly holds the display's
-wakelock.  The timeout is the display-blank timeout.
+> How? By passing a timeout to pm_wakeup_event when the network driver
+> gets the packet or by passing 0. If you pass a timeout it is the same
+> as using a wakelock with a timeout and should work (assuming the
+> timeout you picked is long enough). If you don't pass a timeout it
+> does not work, since the packet may not be visible to user-space yet.
 
-> how many apps really need to keep running after the screen blanks?
-> there are a few (audio output apps, including music player and
-> Navigation directions), but I don't have see a problem with them
-> being marked as the 'trusted' apps to pay attention instead.
+Alternatively, pm_stay_awake() / pm_relax() can be used.
 
-Downloading is another.
+> > it's preferable to use cgroups or suspend fully, which is pretty much up
+> > to the implementation. In other words, is there a reason we're still
+> =
 
-The music player is an interesting example.  It would be idle most
-of the time, given that audio output doesn't consume very much CPU.
-So you would not want to suspend the system just because there were
-no runnable processes.  In contrast, allowing the music player to
-hold a wake lock lets the system know that it would not be appropriate
-to suspend.
+> I have seen no proposed way to use cgroups that will work. If you
+> leave some processes running while other processes are frozen you run
+> into problems when a frozen process holds a resource that a running
+> process needs.
+> =
 
-Or am I misunderstanding what you are proposing?
+> =
 
-> if the backlight being on holds the wakelock, it would seem that
-> almost every other use of the wakelock could (and probably should)
-> be replaced by something that tickles the display to stay on longer.
+> > having this conversation? :) It'd be good to have some feedback from
+> > Google as to whether this satisfies their functional requirements.
+> >
+> =
 
-The problem with this approach is that the display consumes quite a
-bit of power, so you don't want to leave it on unnecessarily.  So if
-the system is doing something (for example, playing music) that does
-not require the display, you really want the display to be off.
+> That is "this"? The merged code? If so, no it does not satisfy our
+> requirements. The in kernel api, while offering similar functionality
+> to the wakelock interface, does not use any handles which makes it
+> impossible to get reasonable stats (You don't know which pm_stay_awake
+> request pm_relax is reverting).
 
-							Thanx, Paul
+Why is that a problem (out of curiosity)?
+
+> The proposed in user-space interface
+> of calling into every process that receives wakeup events before every
+> suspend call
+
+Well,  you don't really need to do that.
+
+> is also not compatible with existing apps.
+
+Thanks,
+Rafael
