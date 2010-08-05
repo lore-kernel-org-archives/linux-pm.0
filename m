@@ -1,24 +1,25 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Thu, 5 Aug 2010 08:12:11 -0700
-Message-ID: <20100805151211.GA10080__45549.7733703398$1281021283$gmane$org@linux.vnet.ibm.com>
-References: <AANLkTimRZc2B1=ic-0jrGBX7ahCu=NCoQadCOePGDmh9@mail.gmail.com>
-	<alpine.DEB.2.00.1008041554580.6545@asgard.lang.hm>
-	<AANLkTingom2AKfMu0EbfdfLiMnHo+buy1e4=PBENf3Vi@mail.gmail.com>
-	<alpine.DEB.2.00.1008041620010.6545@asgard.lang.hm>
-	<20100804233013.GN24163@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008041643490.6545@asgard.lang.hm>
-	<20100805001716.GO24163@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008041722060.6545@asgard.lang.hm>
-	<20100805004802.GP24163@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008042208350.25170@asgard.lang.hm>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH/RFC] Runtime PM: ARM: subarch-specific
+	extensions of pdev_archdata
+Date: Thu, 05 Aug 2010 08:19:19 -0700
+Message-ID: <87mxt11408.fsf__5175.47100685096$1281021756$gmane$org@deeprootsystems.com>
+References: <1253670648-28610-1-git-send-email-khilman@deeprootsystems.com>
+	<f17812d70909222153y4a0e4fc2n496ea2e6caaac847@mail.gmail.com>
+	<19129.63264.653666.70492@pilspetsen.it.uu.se>
+	<4ABAAF1D.6090907@deeprootsystems.com>
+	<f17812d70909231630i20f64328k8d604c3436094b85@mail.gmail.com>
+	<87k4yhagv4.fsf@deeprootsystems.com>
+	<AANLkTinBqc11oE2SOmvXbFHmlgvZ21LngXNWkSHiJmRK@mail.gmail.com>
+	<34dc79dc-0868-4401-9fa5-c7134f6d4485@email.android.com>
+	<AANLkTikHUcgBcTmv+=NrYMwgn-UC_Q0Vv3ytfuJbkyRB@mail.gmail.com>
+	<87k4o7r7sv.fsf@deeprootsystems.com>
+	<AANLkTinv2ZpLaRYEN+FVwuX1QTK_+568K8BckVp_tx=K@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1008042208350.25170@asgard.lang.hm>
+In-Reply-To: <AANLkTinv2ZpLaRYEN+FVwuX1QTK_+568K8BckVp_tx=K@mail.gmail.com>
+	(Grant Likely's message of "Wed, 4 Aug 2010 16:54:59 -0600")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,118 +29,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Eric Miao <eric.y.miao@gmail.com>, linux-pm@lists.linux-foundation.org, Mikael Pettersson <mikpe@it.uu.se>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 04, 2010 at 10:18:40PM -0700, david@lang.hm wrote:
-> On Wed, 4 Aug 2010, Paul E. McKenney wrote:
-> >On Wed, Aug 04, 2010 at 05:25:53PM -0700, david@lang.hm wrote:
-> >>On Wed, 4 Aug 2010, Paul E. McKenney wrote:
+Grant Likely <grant.likely@secretlab.ca> writes:
 
-[ . . . ]
+> On Tue, Aug 3, 2010 at 10:16 AM, Kevin Hilman
+> <khilman@deeprootsystems.com> wrote:
+>> Magnus Damm <magnus.damm@gmail.com> writes:
+>>
+>>> On Sun, Jul 25, 2010 at 5:24 AM, Grant Likely <grant.likely@secretlab.c=
+a> wrote:
+>>>> "Magnus Damm" <magnus.damm@gmail.com> wrote:
+>>>>>On Tue, Oct 27, 2009 at 8:13 AM, Kevin Hilman
+>>>>><khilman@deeprootsystems.com> wrote:
+>>>>>> Eric Miao <eric.y.miao@gmail.com> writes:
+>>>>>>> On Thu, Sep 24, 2009 at 7:28 AM, Kevin Hilman
+>>>>>>> <khilman@deeprootsystems.com> wrote:
+>>>>>>>> Mikael Pettersson wrote:
+>>>>>>>>> Eric Miao writes:
+>>>>>>>>> =A0> On Wed, Sep 23, 2009 at 9:50 AM, Kevin Hilman
+>>>>>>>>> =A0> <khilman@deeprootsystems.com> wrote:
+>>>>>>>>> =A0> > On ARM platforms, power management can be very platform sp=
+ecific.
+>>>>>>>>> =A0> > This patch allows ARM subarches to extend the platform_dev=
+ice
+>>>>>>>>> =A0> > pdev_archdata for each subarch by creating a new struct pd=
+ev_machdata
+>>>>>>>>> =A0> > and allowing each subarch to customize it as needed.
+>>>
+>>>>>Do you remember what happened with this patch?
+>>>>
+>>>> I don't have all the details in front of me because I'm on my phone,
+>>>> but I advised against pdev_archdata because it is
+>>>> multiplatform-unfriendly.
+>>>
+>>> Ok, I did not expect that. =3D) But after thinking a bit it does make
+>>> sense. I wonder what my options are. I'm not so fond of the idea to
+>>> wrap the platform devices - that's not more multi-platform friendly,
+>>> is it?
+>>
+>> [sorry for the lag, been on vacation]
+>>
+>> Wrapping is more multi-platform friendly because only platform-specific
+>> code accesses the wrapped code. =A0It's also logically consistent as
+>> a struct device is contained by a platform_device which is then
+>> contained by an omap_device (in our case.) =A0 Only OMAP-specific code
+>> ever knows about or touches that layer.
+>
+> (I just noticed this; will also reply on the other thread so it is
+> recorded in the public record) But it is also really dangerous;
+> particularly in the case of dynamically allocated platform_devices.
+> When handed a random platform_device pointer, you have absolutely *no*
+> idea whether or not it is valid to dereference a pointer at a lower
+> address from the platform_device pointer.  It is very likely that
+> there will be other code in the system that will register
+> platform_devices without the omap_device wrapper.
+>
+>>> How about using devres and platform bus notifiers?
+>>
+>> That seems fine too, and probably better if the amount of data/code you =
+need
+>> is small. =A0In the OMAP case, it's rather complicated so it's cleaner
+>> IMHO to keep it in a separate omap_device layer and struct.
+>
+> but it is safe
+>
 
-> >>>The music player is an interesting example.  It would be idle most
-> >>>of the time, given that audio output doesn't consume very much CPU.
-> >>>So you would not want to suspend the system just because there were
-> >>>no runnable processes.  In contrast, allowing the music player to
-> >>>hold a wake lock lets the system know that it would not be appropriate
-> >>>to suspend.
-> >>>
-> >>>Or am I misunderstanding what you are proposing?
-> >>
-> >>the system would need to be idle for 'long enough' (configurable)
-> >>before deciding to suspend, so as long as 'long enough' is longer
-> >>than the music player is idle this would not be a problem.
-> >
-> >From a user standpoint, having the music player tell the system when
-> >it is OK to suspend (e.g., when the user has paused playback) seems
-> >a lot nicer than having configurable timeouts that need tweaking.
-> 
-> every system that I have seen has a configurable "sleep if it's idle
-> for this long" knob. On the iphone (work issue, I didn't want it)
-> that I am currently using it can be configured from 1 min to 5 min.
-> 
-> this is the sort of timeout I am talking about.
-> 
-> with something in the multi-minute range for the 'do a full suspend'
-> doing a wakeup every few 10s of seconds is perfectly safe.
+/me is beaten into submission.  ;)
 
-Ah, I was assuming -much- shorter "do full suspend" timeouts.
+OK, it would not be too much work to move the OMAP implementation to
+devres + notifiers either.  I can give it a spin.
 
-My (possibly incorrect) assumption is based on the complaint that led
-to my implementing RCU_FAST_NO_HZ.  A (non-Android) embedded person was
-quite annoyed (to put it mildly) at the earlier version of RCU because
-it prevented the system from entering the power-saving dyntick-idle mode,
-not for minutes, or even for seconds, but for a handful of -milliseconds-.
-This was my first hint that "energy efficiency" means something completely
-different in embedded systems than it does in the servers that I am
-used to.
-
-But I must defer to the Android guys on this -- who knows, perhaps
-multi-minute delays to enter full-suspend mode are OK for them.
-
-> >>>>if the backlight being on holds the wakelock, it would seem that
-> >>>>almost every other use of the wakelock could (and probably should)
-> >>>>be replaced by something that tickles the display to stay on longer.
-> >>>
-> >>>The problem with this approach is that the display consumes quite a
-> >>>bit of power, so you don't want to leave it on unnecessarily.  So if
-> >>>the system is doing something (for example, playing music) that does
-> >>>not require the display, you really want the display to be off.
-> >>
-> >>what percentage (and types) of apps are really useful with the
-> >>display off. I think that there are relativly few apps that you
-> >>really want to keep running if the display is off.
-> >
-> >The length of time those apps are running is the governing factor
-> >for battery life, and not the number of such apps, right?
-> 
-> correct, but the number of such apps indicates the scope of the problem.
-
-The number of such apps certainly indicates the amount of effort required
-to modify them, if required.  Is that what you are getting at?
-
-> >From another e-mail tonight it sounds like almost everything
-> >already talks
-> 
-> to a userspace daemon, so if "(the power management service in the
-> system_server, possibly the media_server and the radio interface
-> glue)" (plus possibly some kernel activity) are the only things
-> looked at when considering if it's safe to sleep or not, all of
-> these can (or already do) do 'something' every few seconds, making
-> this problem sound significantly smaller than it sounded like
-> before.
-> 
-> Android could even keep it's user-space API between the system power
-> daemon and the rest of userspace the same if they want to.
-> 
-> over time, additional apps could be considered 'trusted' (or flagged
-> that way by the user) and not have to interact with the power daemon
-> to keep things alive.
-
-Hmmm...  Isn't it the "trusted" (AKA PM-driving) apps that interact with
-the power daemon via suspend blockers, rather than the other way around?
-
-> as for intramentation, the key tool to use to see why a system isn't
-> going to sleep would be powertop, just like on other linux systems.
-
-Powertop is indeed an extremely valuable tool, but I am not certain
-that it really provides the information that the Android guys need.
-If I understand Arve's and Brian's posts, here is the scenario that they
-are trying to detect:
-
-o	Some PM-driving application has a bug in which it fails to
-	release a wakelock, thus blocking suspend indefinitely.
-
-o	This PM-driving application, otherwise being a good citizen,
-	blocks.
-
-o	There are numerous power-oblivious apps running, consuming
-	significant CPU.
-
-What the Android developers need to know is that the trusted application
-is wrongly holding a wakelock.  Won't powertop instead tell them about
-all the power-oblivious apps?
-
-							Thanx, Paul
+Kevin
