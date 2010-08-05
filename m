@@ -1,19 +1,23 @@
-From: Brian Swetland <swetland@google.com>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Wed, 4 Aug 2010 19:46:56 -0700
-Message-ID: <AANLkTim9jaCb3NyRwsLNv5thGKOqpbWX_5vL8TPrtA0b__10439.6361079582$1280976463$gmane$org@mail.gmail.com>
-References: <20100801054816.GI2470@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008041124580.6545@asgard.lang.hm>
-	<20100804185520.GA2417@srcf.ucam.org>
-	<201008042251.08266.rjw@sisk.pl>
-	<20100804205654.GA4986@srcf.ucam.org>
-	<AANLkTi=fH=XqJ0QgaMwPr5efacWAFo5h0khD7RjL4n8L@mail.gmail.com>
-	<20100805023939.GA2987@linux.vnet.ibm.com>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH/RFC] Runtime PM: ARM: subarch-specific
+	extensions of pdev_archdata
+Date: Thu, 5 Aug 2010 11:53:18 +0900
+Message-ID: <AANLkTi=hZDgg5CNPG2jq5JQSO=JDHFBDP3uV5E7=q45O__13814.2874501229$1280976848$gmane$org@mail.gmail.com>
+References: <1253670648-28610-1-git-send-email-khilman@deeprootsystems.com>
+	<f17812d70909222153y4a0e4fc2n496ea2e6caaac847@mail.gmail.com>
+	<19129.63264.653666.70492@pilspetsen.it.uu.se>
+	<4ABAAF1D.6090907@deeprootsystems.com>
+	<f17812d70909231630i20f64328k8d604c3436094b85@mail.gmail.com>
+	<87k4yhagv4.fsf@deeprootsystems.com>
+	<AANLkTinBqc11oE2SOmvXbFHmlgvZ21LngXNWkSHiJmRK@mail.gmail.com>
+	<34dc79dc-0868-4401-9fa5-c7134f6d4485@email.android.com>
+	<AANLkTikHUcgBcTmv+=NrYMwgn-UC_Q0Vv3ytfuJbkyRB@mail.gmail.com>
+	<AANLkTinWqKz977p+-d7pxjqCUn82JLeAk_EQ0TjOGNWr@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100805023939.GA2987@linux.vnet.ibm.com>
+In-Reply-To: <AANLkTinWqKz977p+-d7pxjqCUn82JLeAk_EQ0TjOGNWr@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,46 +27,85 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paulmck@linux.vnet.ibm.com
-Cc: david@lang.hm, peterz@infradead.org, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, Eric Miao <eric.y.miao@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-MjAxMC84LzQgUGF1bCBFLiBNY0tlbm5leSA8cGF1bG1ja0BsaW51eC52bmV0LmlibS5jb20+Ogo+
-IE9uIFdlZCwgQXVnIDA0LCAyMDEwIGF0IDAzOjA4OjMzUE0gLTA3MDAsIEFydmUgSGrDuG5uZXbD
-pWcgd3JvdGU6Cj4+IE9uIFdlZCwgQXVnIDQsIDIwMTAgYXQgMTo1NiBQTSwgTWF0dGhldyBHYXJy
-ZXR0IDxtamc1OUBzcmNmLnVjYW0ub3JnPiB3cm90ZToKPgo+IFsgLiAuIC4gXQo+Cj4+ID4gaGF2
-aW5nIHRoaXMgY29udmVyc2F0aW9uPyA6KSBJdCdkIGJlIGdvb2QgdG8gaGF2ZSBzb21lIGZlZWRi
-YWNrIGZyb20KPj4gPiBHb29nbGUgYXMgdG8gd2hldGhlciB0aGlzIHNhdGlzZmllcyB0aGVpciBm
-dW5jdGlvbmFsIHJlcXVpcmVtZW50cy4KPj4KPj4gVGhhdCBpcyAidGhpcyI/IFRoZSBtZXJnZWQg
-Y29kZT8gSWYgc28sIG5vIGl0IGRvZXMgbm90IHNhdGlzZnkgb3VyCj4+IHJlcXVpcmVtZW50cy4g
-VGhlIGluIGtlcm5lbCBhcGksIHdoaWxlIG9mZmVyaW5nIHNpbWlsYXIgZnVuY3Rpb25hbGl0eQo+
-PiB0byB0aGUgd2FrZWxvY2sgaW50ZXJmYWNlLCBkb2VzIG5vdCB1c2UgYW55IGhhbmRsZXMgd2hp
-Y2ggbWFrZXMgaXQKPj4gaW1wb3NzaWJsZSB0byBnZXQgcmVhc29uYWJsZSBzdGF0cyAoWW91IGRv
-bid0IGtub3cgd2hpY2ggcG1fc3RheV9hd2FrZQo+PiByZXF1ZXN0IHBtX3JlbGF4IGlzIHJldmVy
-dGluZykuIFRoZSBwcm9wb3NlZCBpbiB1c2VyLXNwYWNlIGludGVyZmFjZQo+PiBvZiBjYWxsaW5n
-IGludG8gZXZlcnkgcHJvY2VzcyB0aGF0IHJlY2VpdmVzIHdha2V1cCBldmVudHMgYmVmb3JlIGV2
-ZXJ5Cj4+IHN1c3BlbmQgY2FsbCBpcyBhbHNvIG5vdCBjb21wYXRpYmxlIHdpdGggZXhpc3Rpbmcg
-YXBwcy4KPgo+IEkgc2hvdWxkIGhhdmUgYXNrZWQgdGhpcyBlYXJsaWVyLi4uIMKgV2hhdCBleGFj
-dGx5IGFyZSB0aGUgYXBwcycKPiBjb21wYXRpYmlsaXR5IGNvbnN0cmFpbnRzPyDCoFNvdXJjZS1s
-ZXZlbCBBUElzPyDCoEJ5dGUtY29kZSBjbGFzcy1saWJyYXJ5Cj4gaW52b2NhdGlvbnM/IMKgQy9D
-KysgZHluYW1pYyBsaW5raW5nPyDCoEMvQysrIHN0YXRpYyBsaW5raW5nIChpbiBvdGhlcgo+IHdv
-cmRzLCBzeXNjYWxsKT8KCkZvciBKYXZhL0RhbHZpayBhcHBzLCB0aGUgd2FrZWxvY2sgQVBJIGlz
-IHBlcnR0eSBoaWdoIGxldmVsIC0tIGl0CnRhbGtzIHRvIGEgc2VydmljZSB2aWEgUlBDIChCaW5k
-ZXIpIHRoYXQgYWN0dWFsbHkgaW50ZXJhY3RzIHdpdGggdGhlCmtlcm5lbC4gIENoYW5naW5nIHRo
-ZSBiYXNpYyBrZXJuZWw8LT51c2Vyc3BhY2UgaW50ZXJmYWNlICh3aXRoaW4KcmVhc29uKSBpcyBu
-b3QgdW50aGlua2FibGUuICBGb3IgZXhhbXBsZSwgQXJ2ZSdzIHN1c3BlbmRfYmxvY2tlciBwYXRj
-aApwcm92aWRlcyBhIGRldmljZSBpbnRlcmZhY2UgcmF0aGVyIHRoYW4gdGhlIHByb2MgaW50ZXJm
-YWNlIHRoZSBvbGRlcgp3YWtlbG9jayBwYXRjaGVzIHVzZS4gIFdlJ2QgaGF2ZSB0byBtYWtlIHNv
-bWUgdXNlcnNwYWNlIGNoYW5nZXMgdG8Kc3VwcG9ydCB0aGF0IGJ1dCB0aGV5J3JlIHByZXR0eSBs
-b3cgbGV2ZWwgYW5kIG1pbm9yLgoKSW4gdGhlIGN1cnJlbnQgbW9kZWwsIG9ubHkgYSBmZXcgcHJv
-Y2Vzc2VzIG5lZWQgdG8gc3BlY2lmaWNhbGx5CmludGVyYWN0IHdpdGggdGhlIGtlcm5lbCAodGhl
-IHBvd2VyIG1hbmFnZW1lbnQgc2VydmljZSBpbiB0aGUKc3lzdGVtX3NlcnZlciwgcG9zc2libHkg
-dGhlIG1lZGlhX3NlcnZlciBhbmQgdGhlIHJhZGlvIGludGVyZmFjZQpnbHVlKS4gIEEgbW9kZWwg
-d2hlcmUgZXZlcnkgcHJvY2VzcyBuZWVkcyB0byBoYXZlIGEgYnVuY2ggb2YKaW5zdHJ1bWVudGF0
-aW9uIGlzIG5vdCB2ZXJ5IGRlc2lyYWJsZSBmcm9tIG91ciBwb2ludCBvZiB2aWV3LiAgV2UKZGVm
-aW5pdGVseSBkbyBuZWVkIHJlYXNvbmFibGUgc3RhdGlzdGljcyBpbiBvcmRlciB0byBlbmFibGUg
-ZGVidWdnaW5nCmFuZCB0byBlbmFibGUgcmVwb3J0aW5nIHRvIGVuZHVzZXJzICh0aHJvdWdoIHRo
-ZSBCYXR0ZXJ5IFVzYWdlIFVJKQp3aGF0J3Mga2VlcGluZyB0aGUgZGV2aWNlIGF3YWtlLgoKQnJp
-YW4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgt
-cG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBz
-Oi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Thu, Aug 5, 2010 at 7:41 AM, Grant Likely <grant.likely@secretlab.ca> wr=
+ote:
+> [cc'ing gregkh w.r.t. the bus notifiers in modules bit at the bottom]
+>
+> On Sun, Jul 25, 2010 at 7:51 PM, Magnus Damm <magnus.damm@gmail.com> wrot=
+e:
+>> How about using devres and platform bus notifiers?
+>
+> I think bus notifiers are appropriate. =A0I hadn't thought of using
+> devres to attach additional behaviour, but looking at your prototype
+> it seems to be sane.
+>
+>> For a Runtime PM prototype using devres (instead of pdev_archdata or
+>> wrapping) look here:
+>> https://patchwork.kernel.org/patch/113605/
+>
+> While I'm looking at this patch; some thoughts off the top of my head:
+>
+> The static symbols should still be prefixed with 'sh_pm_runtime_' or
+> something similar. =A0There is a risk of things like
+> "platform_bus_notify" colliding with things defined in the global
+> namespace.
+
+Sure, avoiding colliding with the global name space makes sense!
+
+> Looking at he '#else' clause of CONFIG_PM_RUNTIME triggered a warning
+> flag. =A0If the runtime PM stuff was as a module as suggested below,
+> then the drivers would get probed before the clock is enabled... Maybe
+> I'm misunderstanding it though because I see that the .c file is not
+> set up to be a module.
+
+Oh, I didn't intend to allow the Runtime PM code to be a module. Sorry
+for the unclear wording, I meant to support being notified before the
+probe() at insmod time for platform drivers built as modules.
+
+> Also, that particular implementation is rather non-discriminant; and
+> every platform_device would get this binding regardless of what the
+> actual attachment to the system is. =A0For example, ASoC makes use of
+> platform devices to bind together an audio complex, but those devices
+> represent a set of connections, not an actual devices. =A0It probably
+> wouldn't be appropriate to have bus-specific runtime pm hooks on ASoC
+> devices. =A0But I understand that this is an early prototype and I
+> understand the intent.
+
+The Runtime PM code for SH-Mobile ARM does not differentiate between
+various types of platform devices. The code relies on clkdev doing the
+matching. So if there is no clkdev mapping for the platform device
+then nothing is done. Perhaps the generic runtime pm hooks should be
+called for that case instead.
+
+>> To make it work with modules I propose adding a driver bind event:
+>> https://patchwork.kernel.org/patch/113865/
+>>
+>> Looks pretty multi-platform friendly to me. Any suggestions?
+>
+> The idea sane to me (haven't dug deeply enough to comment on the
+> implementation, but I suspect that there is a race condition in the
+> implementation which could cause drivers getting both BIND and BOUND
+> notifications). =A0I think it is entirely desirable for notifiers to be
+> informed of already existing drivers.
+
+Hm, I have not seen any race myself, but the registered bus notifiers
+will receive all kinds of events - ie both BIND and BOUND.
+
+> I had posted a somewhat related patch earlier, but never pursued it
+> because I found a different way around (and I was a little worried
+> about the race condition). =A0My patch to the approach of sending add
+> and bind events for each driver that is already registered/bound when
+> a new notifier is registered. =A0Here's the patch and the comments:
+>
+> http://patchwork.ozlabs.org/patch/24152/
+
+That patch makes sense for code built as modules. I do my best to
+avoid that situation by just allowing the code to be built-in. =3D)
+
+Thanks for your comments!
+
+/ magnus
