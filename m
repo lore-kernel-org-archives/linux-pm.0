@@ -1,7 +1,7 @@
-From: david@lang.hm
+From: Brian Swetland <swetland@google.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Thu, 5 Aug 2010 15:09:32 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008051453450.30632__4910.40639249167$1281047941$gmane$org@asgard.lang.hm>
+Date: Thu, 5 Aug 2010 15:16:51 -0700
+Message-ID: <AANLkTikCCeMG=DAQ04xqkvqH9tngBWyBA5VQTD4_15xU__25274.0811127753$1281048322$gmane$org@mail.gmail.com>
 References: <alpine.DEB.2.00.1008041620010.6545@asgard.lang.hm>
 	<20100804233013.GN24163@linux.vnet.ibm.com>
 	<alpine.DEB.2.00.1008041643490.6545@asgard.lang.hm>
@@ -14,10 +14,12 @@ References: <alpine.DEB.2.00.1008041620010.6545@asgard.lang.hm>
 	<AANLkTi=Yyyc-hOPbkJtsnKCVzncnFq8DPnonmyckekwm@mail.gmail.com>
 	<20100805203102.GN2447@linux.vnet.ibm.com>
 	<AANLkTimaaLSwVusJ=w5-QptoauBnHH0JvCvmWUr0y+KD@mail.gmail.com>
+	<alpine.DEB.2.00.1008051453450.30632@asgard.lang.hm>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="680960-1374493777-1281046173=:30632"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTimaaLSwVusJ=w5-QptoauBnHH0JvCvmWUr0y+KD@mail.gmail.com>
+In-Reply-To: <alpine.DEB.2.00.1008051453450.30632@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,152 +29,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: kevin granade <kevin.granade@gmail.com>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: david@lang.hm
+Cc: kevin granade <kevin.granade@gmail.com>, peterz@infradead.org, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---680960-1374493777-1281046173=:30632
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id o75Maiow005461
-
-On Thu, 5 Aug 2010, kevin granade wrote:
-
-> On Thu, Aug 5, 2010 at 3:31 PM, Paul E. McKenney
-> <paulmck@linux.vnet.ibm.com> wrote:
->> On Thu, Aug 05, 2010 at 01:13:31PM -0500, kevin granade wrote:
->>> On Thu, Aug 5, 2010 at 10:46 AM, =A0<david@lang.hm> wrote:
->>>> On Thu, 5 Aug 2010, Paul E. McKenney wrote:
->>>>
->>>>>
->>>>> [ . . . ]
->>>>>
->>>>>
->>>>> My (possibly incorrect) assumption is based on the complaint that l=
-ed
->>>>> to my implementing RCU_FAST_NO_HZ. =A0A (non-Android) embedded pers=
-on was
->>>>> quite annoyed (to put it mildly) at the earlier version of RCU beca=
-use
->>>>> it prevented the system from entering the power-saving dyntick-idle=
- mode,
->>>>> not for minutes, or even for seconds, but for a handful of -millise=
-conds-.
->>>>> This was my first hint that "energy efficiency" means something com=
-pletely
->>>>> different in embedded systems than it does in the servers that I am
->>>>> used to.
->>>>>
->>>>> But I must defer to the Android guys on this -- who knows, perhaps
->>>>> multi-minute delays to enter full-suspend mode are OK for them.
->>>>
->>>> if the system was looking at all applications I would agree that the=
- timeout
->>>> should be much shorter.
->>>>
->>>> I have a couple devices that are able to have the display usable, ev=
-en if
->>>> the CPU is asleep (the OLPC and the Kindle, two different display
->>>> technologies). With these devices I would like to see the suspend ha=
-ppen so
->>>> fast that it can suspend between keystrokes.
->>>>
->>>> however, in the case of Android I think the timeouts have to end up =
-being
->>>> _much_ longer. Otherwise you have the problem of loading an untruste=
-d book
->>>> reader app on the device and the device suspends while you are readi=
-ng the
->>>> page.
->>>>
->>>> currently Android works around this by having a wakelock held whenev=
-er the
->>>> display is on. This seems backwards to me, the display should be on =
-because
->>>> the system is not suspended, not the system is prevented from suspen=
-ding
->>>> because the display is on.
->>>>
->>>> Rather than having the display be on causing a wavelock to be held (=
-with the
->>>> code that is controls the display having a timeout for how long it l=
-eaves
->>>> the display on), I would invert this and have the timeout be based o=
-n system
->>>> activity, and when it decides the system is not active, turn off the=
- display
->>>> (along with other things as it suspends)
->>>
->>> IIRC, this was a major point of their (Android's) power management
->>> policy. =A0User input of any kind would reset the "display active"
->>> timeout, which is the primary thing keeping random untrusted
->>> user-facing programs from being suspended while in use. =A0They seeme=
-d
->>> to consider this to be a special case in their policy, but from the
->>> kernel's point of view it is just another suspend blocker being held.
->>>
->>> I'm not sure this is the best use case to look at though, because
->>> since it is user-facing, the timeout durations are on a different
->>> scale than the ones they are really worried about. =A0I think another
->>> category of use case that they are worried about is:
->>>
->>> (in suspend) -> wakeup due to network -> process network activity -> =
-suspend
->>>
->>> or an example that has been mentioned previously:
->>>
->>> (in suspend) -> wakeup due to alarm for audio processing -> process
->>> batch of audio -> suspend
->>>
->>> In both of these cases, the display may never power on (phone might
->>> beep to indicate txt message or email, audio just keeps playing), so
->>> the magnitude of the "timeout" for suspending again should be very
->>> small. =A0Specifically, they don't want there to be a timeout at all,=
- so
->>> as little time as possible time is spent out of suspend in addition t=
-o
->>> the time required to handle the event that caused wakeup.
->>
->> It would be good to get some sort of range for the "timeout". =A0In th=
-e
->> audio-output case, my understanding that the spacing between bursts of
->> audio-processing activity is measured in some hundreds of milliseconds=
-,
->> in which case one would want the delays until suspend to be on the
->> millisecond scale. =A0But does Android really suspend between bursts o=
-f
->> audio processing while playing music? =A0Very cool if so! =A0;-)
->
-> Oops, yea that's actually a really bad example, that's probably
-> something that would be handled by low-power states.  I think the
-> incoming text message example is a good one though.  There seemed to
-> be a focus on user-interaction scale time scales, and I wanted to
-> point out that there are also very short duration time scales to
-> consider as well.
-
-good point, but I do think the short time scales are less common than=20
-people think.
-
-I'd love to get good examples of them
-
-on my iphone when a text message arrives the phone displays an alert for=20
-user-interaction times (it even lights the display to show who the messag=
-e=20
-is from, and optionally a preview of the message)
-
-so what would wake a phone up from suspend where the phone should go back=
-=20
-to sleep in under a second?
-
-David Lang
---680960-1374493777-1281046173=:30632
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-
---680960-1374493777-1281046173=:30632--
+T24gVGh1LCBBdWcgNSwgMjAxMCBhdCAzOjA5IFBNLCAgPGRhdmlkQGxhbmcuaG0+IHdyb3RlOgo+
+PiBPb3BzLCB5ZWEgdGhhdCdzIGFjdHVhbGx5IGEgcmVhbGx5IGJhZCBleGFtcGxlLCB0aGF0J3Mg
+cHJvYmFibHkKPj4gc29tZXRoaW5nIHRoYXQgd291bGQgYmUgaGFuZGxlZCBieSBsb3ctcG93ZXIg
+c3RhdGVzLiDCoEkgdGhpbmsgdGhlCj4+IGluY29taW5nIHRleHQgbWVzc2FnZSBleGFtcGxlIGlz
+IGEgZ29vZCBvbmUgdGhvdWdoLiDCoFRoZXJlIHNlZW1lZCB0bwo+PiBiZSBhIGZvY3VzIG9uIHVz
+ZXItaW50ZXJhY3Rpb24gc2NhbGUgdGltZSBzY2FsZXMsIGFuZCBJIHdhbnRlZCB0bwo+PiBwb2lu
+dCBvdXQgdGhhdCB0aGVyZSBhcmUgYWxzbyB2ZXJ5IHNob3J0IGR1cmF0aW9uIHRpbWUgc2NhbGVz
+IHRvCj4+IGNvbnNpZGVyIGFzIHdlbGwuCj4KPiBnb29kIHBvaW50LCBidXQgSSBkbyB0aGluayB0
+aGUgc2hvcnQgdGltZSBzY2FsZXMgYXJlIGxlc3MgY29tbW9uIHRoYW4gcGVvcGxlCj4gdGhpbmsu
+Cj4KPiBJJ2QgbG92ZSB0byBnZXQgZ29vZCBleGFtcGxlcyBvZiB0aGVtCj4KPiBvbiBteSBpcGhv
+bmUgd2hlbiBhIHRleHQgbWVzc2FnZSBhcnJpdmVzIHRoZSBwaG9uZSBkaXNwbGF5cyBhbiBhbGVy
+dCBmb3IKPiB1c2VyLWludGVyYWN0aW9uIHRpbWVzIChpdCBldmVuIGxpZ2h0cyB0aGUgZGlzcGxh
+eSB0byBzaG93IHdobyB0aGUgbWVzc2FnZQo+IGlzIGZyb20sIGFuZCBvcHRpb25hbGx5IGEgcHJl
+dmlldyBvZiB0aGUgbWVzc2FnZSkKPgo+IHNvIHdoYXQgd291bGQgd2FrZSBhIHBob25lIHVwIGZy
+b20gc3VzcGVuZCB3aGVyZSB0aGUgcGhvbmUgc2hvdWxkIGdvIGJhY2sgdG8KPiBzbGVlcCBpbiB1
+bmRlciBhIHNlY29uZD8KCkhlcmUgYXJlIHNvbWUgcmVhbC13b3JsZCBleGFtcGxlcyBmcm9tIHNo
+aXBwZWQgYW5kcm9pZCBkZXZpY2VzOgotIGJhdHRlcnkgZ2F1Z2luZyBoYXBwZW5zIGV2ZXJ5IDEw
+IG1pbnV0ZXMsIG5lZWQgdG8gd2FrZSBsb25nIGVub3VnaAp0byBjaGF0dGVyIHdpdGggdGhlIDF3
+IGludGVyZmFjZSBhbmQgbWFrZSBzdXJlIHRoZSBiYXR0ZXJ5IGlzIG5vdApleHBsb2RpbmcKLSBh
+bHdheXMgb24gbWFpbC9pbS9jYWxlbmRhci9ldGMgc3luYyBvZnRlbiBoYXMgbmV0d29yayBldmVu
+dHMgdGhhdApoYXBwZW4gZXZlcnkgNS0xMCBtaW51dGVzIHdoaWNoIGNhdXNlIGRldmljZXMgdG8g
+YnJpZWZseSB3YWtlIHVwIGFuZApyZXR1cm4gdG8gc2xlZXAKLSBncHMgdHJhY2tlciBhcHAgbWln
+aHQgd2FrZSBldmVyeSBjb3VwbGUgbWludXRlcyBvciBldmVyeSBuIGdwcwpldmVudHMgdG8gbG9n
+IGxvY2F0aW9uCi0gbG93IHBvd2VyIGF1ZGlvIHN1YnN5c3RlbXMgY2FuIHdha2UgeW91IHVwIGV2
+ZXJ5IDEtNCBzZWNvbmRzIChwY20pCm9yIDEtNCBtaW51dGVzIChtcDMpIHRvIGZldGNoIG1vcmUg
+ZGF0YQoKQnJpYW4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24u
+b3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9s
+aW51eC1wbQ==
