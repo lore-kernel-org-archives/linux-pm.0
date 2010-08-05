@@ -1,8 +1,8 @@
 From: Magnus Damm <magnus.damm@gmail.com>
 Subject: Re: [PATCH/RFC] Runtime PM: ARM: subarch-specific
 	extensions of pdev_archdata
-Date: Thu, 5 Aug 2010 11:53:18 +0900
-Message-ID: <AANLkTi=hZDgg5CNPG2jq5JQSO=JDHFBDP3uV5E7=q45O__13814.2874501229$1280976848$gmane$org@mail.gmail.com>
+Date: Thu, 5 Aug 2010 12:07:53 +0900
+Message-ID: <AANLkTimUeFf_Z5pi3x7PWNb0YpooxPb3aN1cmtv1XjQx__8475.15866994417$1280977728$gmane$org@mail.gmail.com>
 References: <1253670648-28610-1-git-send-email-khilman@deeprootsystems.com>
 	<f17812d70909222153y4a0e4fc2n496ea2e6caaac847@mail.gmail.com>
 	<19129.63264.653666.70492@pilspetsen.it.uu.se>
@@ -12,12 +12,14 @@ References: <1253670648-28610-1-git-send-email-khilman@deeprootsystems.com>
 	<AANLkTinBqc11oE2SOmvXbFHmlgvZ21LngXNWkSHiJmRK@mail.gmail.com>
 	<34dc79dc-0868-4401-9fa5-c7134f6d4485@email.android.com>
 	<AANLkTikHUcgBcTmv+=NrYMwgn-UC_Q0Vv3ytfuJbkyRB@mail.gmail.com>
-	<AANLkTinWqKz977p+-d7pxjqCUn82JLeAk_EQ0TjOGNWr@mail.gmail.com>
+	<87k4o7r7sv.fsf@deeprootsystems.com>
+	<AANLkTi=RTigcf-p=GFncAQ2ZjP=4qjDPXjnMmTO_u6tL@mail.gmail.com>
+	<AANLkTintoVDFHxmbuj_YHj5e4PzK7j6-SzdWqFKDLjkE@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinWqKz977p+-d7pxjqCUn82JLeAk_EQ0TjOGNWr@mail.gmail.com>
+In-Reply-To: <AANLkTintoVDFHxmbuj_YHj5e4PzK7j6-SzdWqFKDLjkE@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,84 +30,109 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, Eric Miao <eric.y.miao@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-pm@lists.linux-foundation.org, Mikael Pettersson <mikpe@it.uu.se>, Eric Miao <eric.y.miao@gmail.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 5, 2010 at 7:41 AM, Grant Likely <grant.likely@secretlab.ca> wr=
+On Thu, Aug 5, 2010 at 8:10 AM, Grant Likely <grant.likely@secretlab.ca> wr=
 ote:
-> [cc'ing gregkh w.r.t. the bus notifiers in modules bit at the bottom]
->
-> On Sun, Jul 25, 2010 at 7:51 PM, Magnus Damm <magnus.damm@gmail.com> wrot=
-e:
->> How about using devres and platform bus notifiers?
->
-> I think bus notifiers are appropriate. =A0I hadn't thought of using
-> devres to attach additional behaviour, but looking at your prototype
-> it seems to be sane.
->
->> For a Runtime PM prototype using devres (instead of pdev_archdata or
->> wrapping) look here:
->> https://patchwork.kernel.org/patch/113605/
->
-> While I'm looking at this patch; some thoughts off the top of my head:
->
-> The static symbols should still be prefixed with 'sh_pm_runtime_' or
-> something similar. =A0There is a risk of things like
-> "platform_bus_notify" colliding with things defined in the global
-> namespace.
-
-Sure, avoiding colliding with the global name space makes sense!
-
-> Looking at he '#else' clause of CONFIG_PM_RUNTIME triggered a warning
-> flag. =A0If the runtime PM stuff was as a module as suggested below,
-> then the drivers would get probed before the clock is enabled... Maybe
-> I'm misunderstanding it though because I see that the .c file is not
-> set up to be a module.
-
-Oh, I didn't intend to allow the Runtime PM code to be a module. Sorry
-for the unclear wording, I meant to support being notified before the
-probe() at insmod time for platform drivers built as modules.
-
-> Also, that particular implementation is rather non-discriminant; and
-> every platform_device would get this binding regardless of what the
-> actual attachment to the system is. =A0For example, ASoC makes use of
-> platform devices to bind together an audio complex, but those devices
-> represent a set of connections, not an actual devices. =A0It probably
-> wouldn't be appropriate to have bus-specific runtime pm hooks on ASoC
-> devices. =A0But I understand that this is an early prototype and I
-> understand the intent.
-
-The Runtime PM code for SH-Mobile ARM does not differentiate between
-various types of platform devices. The code relies on clkdev doing the
-matching. So if there is no clkdev mapping for the platform device
-then nothing is done. Perhaps the generic runtime pm hooks should be
-called for that case instead.
-
->> To make it work with modules I propose adding a driver bind event:
->> https://patchwork.kernel.org/patch/113865/
+> On Tue, Aug 3, 2010 at 9:56 PM, Magnus Damm <magnus.damm@gmail.com> wrote:
+>> On Wed, Aug 4, 2010 at 1:16 AM, Kevin Hilman
+>> <khilman@deeprootsystems.com> wrote:
+>>> 2) custom vs. platform bus.
+>>>
+>>> The other issue under discussion between Grant & myself[1] has been the
+>>> use of a custom bus instead of the platform bus. =A0Following your lead,
+>>> (and preferring that option) I continued to use the platform_bus since
+>>> I only need to override a few of the dev_pm_ops functions.
+>>>
+>>> However, Grant is not happy about overriding the platform_bus. =A0He wo=
+uld
+>>> rather see each platform create a custom bus with it's own PM methods.
+>>>
+>>> In this thread[1], I did a quick and dirty proof of concept to show that
+>>> it is possible, but quite frankly, I still much prefer continuing to use
+>>> the platform_bus since it is mostly identical.
+>>>
+>>> [1] http://lists.infradead.org/pipermail/linux-arm-kernel/2010-June/018=
+925.html
 >>
->> Looks pretty multi-platform friendly to me. Any suggestions?
+>> Thanks for the pointer. I've been thinking of using a custom bus as
+>> well, but from my point of view it's always looked like a lot of
+>> coding without any clear benefit. I understand the idea of wanting to
+>> use a single binary on a wide range of systems, and solving that seems
+>> like a good plan.
+>>
+>> I'm not sure if a custom bus is the best idea. I wouldn't mind being
+>> able to create platform bus instances though.
 >
-> The idea sane to me (haven't dug deeply enough to comment on the
-> implementation, but I suspect that there is a race condition in the
-> implementation which could cause drivers getting both BIND and BOUND
-> notifications). =A0I think it is entirely desirable for notifiers to be
-> informed of already existing drivers.
+> The only problem with multiple platform_bus instances would be that
+> drivers intended to work on both would need to be registered twice;
+> once on the regular platform bus, and once on the custom bus. =A0All the
+> rest of the code would be shared, but it probably still doesn't
+> reflect the model that you're shooting for.
 
-Hm, I have not seen any race myself, but the registered bus notifiers
-will receive all kinds of events - ie both BIND and BOUND.
+Do they really have to be registered twice? With the current driver
+model yes, but perhaps it's possible to adjust the platform bus to
+allow device<->driver matching across buses somehow. I would prefer to
+register drivers only once.
 
-> I had posted a somewhat related patch earlier, but never pursued it
-> because I found a different way around (and I was a little worried
-> about the race condition). =A0My patch to the approach of sending add
-> and bind events for each driver that is already registered/bound when
-> a new notifier is registered. =A0Here's the patch and the comments:
+> However, on the flipside the question must be asked; are you trying to
+> describe inherent bus-type behaviour that the plaform bus does not
+> address? =A0ie. is the OMAP bus fundamentally different from a normal
+> 'dumb' bus? =A0What is the real count of device drivers that will need
+> to be registered on the platform bus and the omap bus (or sh, etc)? =A0A
+> modified platform bus type instance may require duplicate driver
+> registrations, but it is also potentially a lot less complex for a
+> reader to understand what is going on (ie. the runtime-pm calls are
+> explicit instead of being indirect through a bus notifier).
+
+I suspect that Runtime PM is the main reason why people all of a
+sudden need to extend the platform bus. =3D)
+
+>> Or custom buses using
+>> some kind of platform bus library. A lot of drivers use the platform
+>> bus, so there has to be a very good reason to move away from that IMO.
+>> A new bus type seems a bit overkill to me though, what we need from my
+>> point of view is:
 >
-> http://patchwork.ozlabs.org/patch/24152/
+> bus types are cheep, especially when the code is shared.
 
-That patch makes sense for code built as modules. I do my best to
-avoid that situation by just allowing the code to be built-in. =3D)
+Agreed!
 
-Thanks for your comments!
+>> 1) Mach/Plat hardware configuration data for platform devices
+>> -> Can be kept in struct pdev_archdata (clock and power domain configura=
+tion)
+>
+> Careful. =A0putting mach/plat specific stuff into pdev_archdata is
+> multiplatform unfriendly. =A0I think pdev_archdata should be restricted
+> to arch-specific stuff.
+
+Not sure if it has to be multiplatform-unfriendly. You could have one
+structure per mach/plat inside pdev_archdata. That aside, code and
+data should of course be shared as much as possible.
+
+>> -> Can be kept in a wrapped structure (clock and power domain configurat=
+ion)
+>> -> Use clkdev tables to handle the device name to clock translation
+>> -> Power domain configuration without wrapping/pdev_archdata, not sure
+>>
+>> 2) Mach/Plat runtime data for each platform device
+>> -> Data can be kept in the wrapped data structure or struct pdev_archdata
+>> -> Could be solved by bus notifiers and dynamic allocation using devres
+>>
+>> 3) Mach/Plat specific runtime PM
+>> -> Need to move away from weak symbols to register/unregister interface
+>> -> Struct pdev_archdata could perhaps point out a per-mach/plat dev_pm_o=
+ps?
+>
+> registerable per-mach/plat ops structures sound sane. =A0However, I
+> think we can do better since this is not an arch-specific problem.
+> Already ARM and SH needs a solution, and I can see it being applicable
+> to the other embedded archs too. =A0I'd like to see a non-arch-specific
+> solution.
+
+Yes, a more generic solution would be nice!
+
+Cheers,
 
 / magnus
