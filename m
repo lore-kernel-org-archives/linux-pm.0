@@ -1,16 +1,18 @@
-From: david@lang.hm
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Thu, 5 Aug 2010 06:28:00 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008050622590.25170__32239.4867813729$1281019047$gmane$org@asgard.lang.hm>
-References: <20100801054816.GI2470@linux.vnet.ibm.com>
-	<201008050133.01169.rjw@sisk.pl>
-	<alpine.DEB.2.00.1008041650470.6545@asgard.lang.hm>
-	<201008050215.14319.rjw@sisk.pl>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread,
+	take two
+Date: Thu, 5 Aug 2010 07:40:12 -0700
+Message-ID: <20100805144012.GE2447@linux.vnet.ibm.com>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<20100804195704.GA23681@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008050616340.25170@asgard.lang.hm>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201008050215.14319.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1008050616340.25170@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,58 +22,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: david@lang.hm
+Cc: tytso@mit.edu, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 5 Aug 2010, Rafael J. Wysocki wrote:
+On Thu, Aug 05, 2010 at 06:18:42AM -0700, david@lang.hm wrote:
+> On Wed, 4 Aug 2010, Paul E. McKenney wrote:
+> 
+> >Continuing to rush in where angels fear to tread...
+> 
+> here here :-)
+> 
+> >o	"PM-driving application" are applications that are permitted
+> >	to acquire suspend blockers on Android.  Verion 8 of the
+> >	suspend-blocker patch seems to use group permissions to determine
+> >	which applications are classified as power aware.  More generally,
+> >	PM-driving applications seem to be those that have permission
+> >	to exert some control over the system's sleep state.
+> >
+> >	Note that an application might be power-oblivious on one Android
+> >	device and PM-driving on another, depending on whether the user
+> >	allows that application to acquire suspend blockers.  The
+> >	classification might even change over time.  For example, a
+> >	user might give an application PM-driving status initially,
+> >	but change his or her mind after some experience with that
+> >	application.
+> 
+> One thing that I think it's important to document here is
+> theinformation that Brian provided in response to your question
+> about how many (or actually how few) applications fall into this
+> catefory
 
-> On Thursday, August 05, 2010, david@lang.hm wrote:
->> On Thu, 5 Aug 2010, Rafael J. Wysocki wrote:
->>
->>> On Thursday, August 05, 2010, david@lang.hm wrote:
->>>>
->>>> My proposal would never freeze a subset of processes.
->>>>
->>>> what my proposal:
->>>>
->>>> only consider the activity of a subset of processes when deciding if we
->>>> should suspend or not. If the decision is to suspend, freeze everything.
->>>
->>> That alone doesn't allow you to handle the race Matthew was referring to
->>> (ie. wakeup event happening right after you've decided to suspend).
->>>
->>> A mechanism of making a decision alone is not sufficient, you also need a
->>> mechanism to avoid races between wakeup events and suspend process.
->>>
->>
->> I thought you just posted that there was a new feature that would be able
->> to abort the suspend and so that race was closed.
->
-> Yes, you can use that for this purpose, but then you'd need a user space
-> power manager who would decide whether or not to suspend.  Then, however,
-> the problem boils down to setting up appropriate communication between the
-> power manager and the other applications in user space (ie. the kernel
-> doesn't need to be involved in that at all).
+Agreed!!!  I have added this, and it will appear in the next version.
 
-This race sounds like it's generic across all platforms and not an Android 
-specific problem. Android is just more sensitive to it as they do a 
-suspend more frequently.
+							Thanx, Paul
 
-one thought on this, as a generic solution to the problem would it be 
-possible for the suspend controller (whatever it is) to do the 
-following
-
-1. decide to suspend
-
-2. setup monitors for the wake events
-
-3. double check if it still wants to suspend
-
-this way you don't pay the overhead of the wake monitors while you are 
-running normally, but if one hits while you are suspending you wake up 
-again as quickly as you can (which could involve aborting the suspend and 
-backing out, or going fully into suspend and waking up immediatly, 
-depending on which is better/easier at the time you get the wakeup)
-
-David Lang
+> David Lang
+> 
+> Quote:
+> 
+> >I should have asked this earlier...  What exactly are the apps'
+> >compatibility constraints?  Source-level APIs?  Byte-code class-library
+> >invocations?  C/C++ dynamic linking?  C/C++ static linking (in other
+> >words, syscall)?
+> 
+> For Java/Dalvik apps, the wakelock API is pertty high level -- it
+> talks to a service via RPC (Binder) that actually interacts with the
+> kernel.  Changing the basic kernel<->userspace interface (within
+> reason) is not unthinkable.  For example, Arve's suspend_blocker patch
+> provides a device interface rather than the proc interface the older
+> wakelock patches use.  We'd have to make some userspace changes to
+> support that but they're pretty low level and minor.
+> 
+> In the current model, only a few processes need to specifically
+> interact with the kernel (the power management service in the
+> system_server, possibly the media_server and the radio interface
+> glue).  A model where every process needs to have a bunch of
+> instrumentation is not very desirable from our point of view.  We
+> definitely do need reasonable statistics in order to enable debugging
+> and to enable reporting to endusers (through the Battery Usage UI)
+> what's keeping the device awake.
+> 
+> Brian
+> 
