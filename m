@@ -1,22 +1,15 @@
-From: Florian Mickler <florian@mickler.org>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Thu, 5 Aug 2010 07:56:29 +0200
-Message-ID: <20100805075629.07d5d88d__38508.0655258664$1280987848$gmane$org@schatten.dmk.lab>
-References: <20100801054816.GI2470@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008041124580.6545@asgard.lang.hm>
-	<20100804185520.GA2417@srcf.ucam.org>
-	<201008042251.08266.rjw@sisk.pl>
-	<20100804205654.GA4986@srcf.ucam.org>
-	<alpine.DEB.2.00.1008041529530.6545@asgard.lang.hm>
-	<AANLkTimRZc2B1=ic-0jrGBX7ahCu=NCoQadCOePGDmh9@mail.gmail.com>
-	<alpine.DEB.2.00.1008041554580.6545@asgard.lang.hm>
-	<20100804231003.GL24163@linux.vnet.ibm.com>
-	<20100805073359.4cb791c0@schatten.dmk.lab>
+From: Nigel Cunningham <nigel@tuxonice.net>
+Subject: Re: 2.6.35 Regression: Ages spent discarding blocks that
+ weren't used!
+Date: Thu, 05 Aug 2010 16:28:12 +1000
+Message-ID: <4C5A59FC.1030304__39691.2464210347$1280989744$gmane$org@tuxonice.net>
+References: <4C58C528.4000606@tuxonice.net>	<4C5960B0.7020003@teksavvy.com>	<4C59DA16.4020500@tuxonice.net>
+	<AANLkTik_PH-7T7OFtzaCtPbAHE6pqnYMUsjP25KtsRnR@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100805073359.4cb791c0@schatten.dmk.lab>
+In-Reply-To: <AANLkTik_PH-7T7OFtzaCtPbAHE6pqnYMUsjP25KtsRnR@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,59 +19,97 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Florian Mickler <florian@mickler.org>
-Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, Arve@smtp1.linux-foundation.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Hugh Dickins <hughd@google.com>
+Cc: Mark Lord <kernel@teksavvy.com>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 5 Aug 2010 07:33:59 +0200
-Florian Mickler <florian@mickler.org> wrote:
+Hi Hugh.
 
-> On Wed, 4 Aug 2010 16:10:03 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+Thanks for the email.
 
-> 
-> No no. In the David-Lang-CGroup-Scheme[1](tm?) suspend-from-idle
-> is used. For idle decision a certain subset of tasks is ignored. 
-> 
-> Where suspend is prevented by the trusted
-> process in android-world taking a wakelock, here it would just prevent
-> the system from going idle by arming timers.
-> 
-> This would be pretty equivalent to the suspend-blocker scheme and not
-> introduce new userspace api. But the downside is, as Arve pointed out,
-> that now one can not get full-idle-power-leverage while suspend
-> is blocked. 
-> 
-> [1] http://permalink.gmane.org/gmane.linux.kernel/1018452  and
-> following 
-> 
-> 
-> Cheers,
-> Flo
-> 
+On 05/08/10 13:58, Hugh Dickins wrote:
+> On Wed, Aug 4, 2010 at 2:22 PM, Nigel Cunningham<nigel@tuxonice.net>  wrote:
+>> On 04/08/10 22:44, Mark Lord wrote:
+>>>
+>>> Looks to me like more and more things are using the block discard
+>>> functionality, and as predicted it is slowing things down enormously.
+>>>
+>>> The problem is that we still only discard tiny bits (a single range
+>>> still??)
+>>> per TRIM command, rather than batching larger ranges and larger numbers
+>>> of ranges into single TRIM commands.
+>>>
+>>> That's a very poor implementation, especially when things start enabling
+>>> it by default. Eg. the swap code, mke2fs, etc..
+>>>
+>>> Ugh.
+>
+> swap has been discarding since 2.6.29, on one 1MB range at a time.
+> There's been no significant change at the swap end since then, but I
+> guess more devices have been announcing themselves as nonrotational
+> and supporting discard, and the implementation lower down has gone
+> through a number of changes.
 
-There are a few downsides that got mentioned already in reponse..  I got
-a little lagged behind. 
+Okay; that's good to know.
 
-There are upsides to this approach like not
-having a special purpose userspace api, conceptually integrating
-suspend into the idle mechanism .. 
+>>
+>> I was hoping for a nice quick and simple answer. Since I haven't got one,
+>> I'll try to find time to do a git bisect. I think I'll also look at the swap
+>> code more carefully and see if it's doing the sensible thing. I can't (at
+>> the moment) see the logic behind calling discard when allocating swap. At
+>> freeing time makes much more sense to me.
+>
+> I agree it would make more sense to discard swap when freeing rather
+> than when allocating, I wish we could.  But at the freeing point we're
+> often holding a page_table spinlock at an outer level, and it's just
+> one page we're given to free.  Freeing is an operation you want to be
+> comfortable doing when you're short of resources, whereas discard is a
+> kind of I/O operation which needs resources.
+>
+> It happens that in the allocation path, there was already a place at
+> which we scanned for a cluster of 1MB free (I'm thinking of 4kB pages
+> when I say 1MB), so that was the neatest point at which to site the
+> discard - though even there we have to be careful about racing
+> allocations.
 
-Short summary of the cons that got mentioned:
+Makes sense when you put it like that :)
 
-  -  applications need to resort to polling to keep the system
-	out of idle (->  system will never be fully idle)
+I know it's a bit messier, but would it be possible for us to modify the 
+behaviour depending on the reason for the allocation? (No page_table 
+spinlock holding when we're hibernating).
 
-  -  the race between deciding to suspend and becoming active
-	again is not handled
+The issue isn't as noticable with [u]swsusp at the moment because 
+they're allocating swap as the image is being written. If my current set 
+of patches for Rafael get accepted, that will change (swap will be 
+preallocated).
 
-  -  no special statistics available
+TuxOnIce always allocates all available storage since there's (usually) 
+virtually zero cost of doing so and it then doesn't matter how much the 
+drivers allocate when we do the atomic copy, or how good a compression 
+ratio is achieved. That's what I'm aiming for in my patches for [u]swsusp.
 
-  -  the timers of the ignored applications will behave unexpected
-	(as the monotonic clock is not stopped)... while applications
-	have already to cope with network-loss, other side effects of
-	suspend without monotonic clock stopped are to be expected...
+> I did once try to go back and get it to work when freeing instead of
+> allocating, gathering the swap slots up then freeing when convenient.
+> It was messy, didn't work very well, and didn't show an improvement in
+> performance (on what we were testing at the time).
 
+For one or two at a time, I can see that would be the case. If it is 
+possible to do the discard of pages used for hibernation after we're 
+finished reading the image, that would be good. Even better would be to 
+only do the discard for pages that were actually used and just do a 
+simple free for ones that were only allocated.
 
-Cheers,
-Flo
+Of course I'm talking in ideals without having an intimate knowledge of 
+the swap allocation code or exactly how ugly the above would make it :)
+
+> I've not been able to test swap, with SSDs, for several months: that's
+> a dreadful regression you've found, thanks a lot for reporting it:
+> I'll be very interested to hear where you locate the cause.  If it
+> needs changes to the way swap does discard, so be it.
+
+I'm traveling to the US on Saturday and have apparently been given one 
+of those nice seats with power, so I'll try and get the bisection done then.
+
+TTFN
+
+Nigel
