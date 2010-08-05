@@ -1,24 +1,23 @@
-From: Brian Swetland <swetland@google.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Thu, 5 Aug 2010 08:15:35 -0700
-Message-ID: <AANLkTinOkBvKKtrvb_ZYTPzAU9r24yXVPfcbSGqHUUji__41614.7850141444$1281024918$gmane$org@mail.gmail.com>
-References: <20100803183447.0275c134@infradead.org>
-	<20100804163216.GB24163@linux.vnet.ibm.com>
-	<20100804163509.GA31523@srcf.ucam.org>
-	<alpine.DEB.2.00.1008041124580.6545@asgard.lang.hm>
-	<20100804185520.GA2417@srcf.ucam.org>
-	<alpine.DEB.2.00.1008041207260.6545@asgard.lang.hm>
-	<20100804192115.GA2946@srcf.ucam.org>
-	<alpine.DEB.2.00.1008041222280.6545@asgard.lang.hm>
-	<20100804195723.GA3553@srcf.ucam.org>
-	<alpine.DEB.2.00.1008041508040.6545@asgard.lang.hm>
-	<20100805133811.GA20565@srcf.ucam.org>
-	<alpine.DEB.2.00.1008050724110.25170@asgard.lang.hm>
+Date: Thu, 5 Aug 2010 17:09:17 +0100
+Message-ID: <20100805160912.GA28689__5097.91530571437$1281027305$gmane$org@sirena.org.uk>
+References: <alpine.DEB.2.00.1008041554580.6545@asgard.lang.hm>
+	<AANLkTingom2AKfMu0EbfdfLiMnHo+buy1e4=PBENf3Vi@mail.gmail.com>
+	<alpine.DEB.2.00.1008041620010.6545@asgard.lang.hm>
+	<20100804233013.GN24163@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008041643490.6545@asgard.lang.hm>
+	<20100805001716.GO24163@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008041722060.6545@asgard.lang.hm>
+	<20100805004802.GP24163@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008042208350.25170@asgard.lang.hm>
+	<20100805151211.GA10080@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1008050724110.25170@asgard.lang.hm>
+Content-Disposition: inline
+In-Reply-To: <20100805151211.GA10080@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,33 +27,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 5, 2010 at 7:34 AM,  <david@lang.hm> wrote:
->
-> for example, if you want to abort the suspend because there is network
-> activity, you can check the packet count of your network interface, decide
-> to go to sleep, setup the network interface to raise a 'wake me up'
-> interrupt (because you have decided in a userspace policy that you want
-> this), and then check to see if the packet count has changed. If it has,
-> abort the suspend, if not continue the suspend and once you are suspended if
-> the 'wake me up' interrupt is set you will wake back up.
->
-> there are probably cleaner/better ways of doing this than the simple logic
-> that I'm listing, but why wouldn't the simple logic provide the correct
-> result?
+On Thu, Aug 05, 2010 at 08:12:11AM -0700, Paul E. McKenney wrote:
+> On Wed, Aug 04, 2010 at 10:18:40PM -0700, david@lang.hm wrote:
 
-If your network interrupt happens before the network driver's
-suspend() hook is called this works -- the check in the suspend hook
-observes the change and returns an abort status.
+> > as for intramentation, the key tool to use to see why a system isn't
+> > going to sleep would be powertop, just like on other linux systems.
 
-If your network interrupt happens after the suspend() hook is called
-this does not work -- the event comes after your opportunity to abort
-suspend has happened, your interrupt handler processed it, set the
-flag, but the system proceeds to suspend anyway, missing the event.
+> Powertop is indeed an extremely valuable tool, but I am not certain
+> that it really provides the information that the Android guys need.
+> If I understand Arve's and Brian's posts, here is the scenario that they
+> are trying to detect:
 
-The wakelock/suspendblock mechanism avoids races like the above.
+> o	Some PM-driving application has a bug in which it fails to
+> 	release a wakelock, thus blocking suspend indefinitely.
 
-Brian
+> o	This PM-driving application, otherwise being a good citizen,
+> 	blocks.
+
+> o	There are numerous power-oblivious apps running, consuming
+> 	significant CPU.
+
+Or otherwise doing something power hungry.
+
+> What the Android developers need to know is that the trusted application
+> is wrongly holding a wakelock.  Won't powertop instead tell them about
+> all the power-oblivious apps?
+
+Right, and this isn't just information for developers - Android handsets
+expose this information to end users (so they can indentify any badly
+behaved applications they have installed or otherwise modify their
+handset usage if they are disappointed by their battery life).  That
+said, powertop and similar applications could always be extended to also
+include data from wakelocks.
