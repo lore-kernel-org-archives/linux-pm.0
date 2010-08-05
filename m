@@ -1,15 +1,18 @@
-From: Hugh Dickins <hughd@google.com>
-Subject: Re: 2.6.35 Regression: Ages spent discarding blocks that
-	weren't used!
-Date: Wed, 4 Aug 2010 20:58:46 -0700
-Message-ID: <AANLkTik_PH-7T7OFtzaCtPbAHE6pqnYMUsjP25KtsRnR__21685.5532642969$1281023735$gmane$org@mail.gmail.com>
-References: <4C58C528.4000606@tuxonice.net> <4C5960B0.7020003@teksavvy.com>
-	<4C59DA16.4020500@tuxonice.net>
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+Subject: Re: [PATCH RESEND block#for-2.6.36] block_dev: always
+ serialize exclusive open attempts
+Date: Thu, 5 Aug 2010 11:17:04 +0200
+Message-ID: <20100805091704.GA1772__15732.1483515718$1281023817$gmane$org@arch.tripp.de>
+References: <2dWFdr9kTFM.A.P0D.spXVMB@chimera>
+	<AANLkTimcH7+Bq1UEbaSU7SQpzArPgmSLegiqE13V8=CF@mail.gmail.com>
+	<4C56F30D.3020304@kernel.org> <4C598E6B.7050405@gmail.com>
+	<4C5A7E33.3060101@fusionio.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C59DA16.4020500@tuxonice.net>
+Content-Disposition: inline
+In-Reply-To: <4C5A7E33.3060101@fusionio.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,60 +22,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@tuxonice.net>
-Cc: Mark Lord <kernel@teksavvy.com>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Jens Axboe <jaxboe@fusionio.com>
+Cc: Tejun Heo <htejun@gmail.com>, Linux SCSI List <linux-scsi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, "stable@kernel.org" <stable@kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 4, 2010 at 2:22 PM, Nigel Cunningham <nigel@tuxonice.net> wrote:
-> On 04/08/10 22:44, Mark Lord wrote:
->>
->> Looks to me like more and more things are using the block discard
->> functionality, and as predicted it is slowing things down enormously.
->>
->> The problem is that we still only discard tiny bits (a single range
->> still??)
->> per TRIM command, rather than batching larger ranges and larger numbers
->> of ranges into single TRIM commands.
->>
->> That's a very poor implementation, especially when things start enabling
->> it by default. Eg. the swap code, mke2fs, etc..
->>
->> Ugh.
+On Thu, Aug 05, 2010 at 11:02:43AM +0200, Jens Axboe wrote:
+> On 2010-08-04 17:59, Tejun Heo wrote:
+> > bd_prepare_to_claim() incorrectly allowed multiple attempts for
+> > exclusive open to progress in parallel if the attempting holders are
+> > identical.  This triggered BUG_ON() as reported in the following bug.
+> > =
 
-swap has been discarding since 2.6.29, on one 1MB range at a time.
-There's been no significant change at the swap end since then, but I
-guess more devices have been announcing themselves as nonrotational
-and supporting discard, and the implementation lower down has gone
-through a number of changes.
+> >   https://bugzilla.kernel.org/show_bug.cgi?id=3D16393
+> > =
 
->
-> I was hoping for a nice quick and simple answer. Since I haven't got one,
-> I'll try to find time to do a git bisect. I think I'll also look at the swap
-> code more carefully and see if it's doing the sensible thing. I can't (at
-> the moment) see the logic behind calling discard when allocating swap. At
-> freeing time makes much more sense to me.
+> > __bd_abort_claiming() is used to finish claiming blocks and doesn't
+> > work if multiple openers are inside a claiming block.  Allowing
+> > multiple parallel open attempts to continue doesn't gain anything as
+> > those are serialized down in the call chain anyway.  Fix it by always
+> > allowing only single open attempt in a claiming block.
+> > =
 
-I agree it would make more sense to discard swap when freeing rather
-than when allocating, I wish we could.  But at the freeing point we're
-often holding a page_table spinlock at an outer level, and it's just
-one page we're given to free.  Freeing is an operation you want to be
-comfortable doing when you're short of resources, whereas discard is a
-kind of I/O operation which needs resources.
+> > This problem can easily be reproduced by adding a delay after
+> > bd_prepare_to_claim() and attempting to mount two partitions of a
+> > disk.
+> > =
 
-It happens that in the allocation path, there was already a place at
-which we scanned for a cluster of 1MB free (I'm thinking of 4kB pages
-when I say 1MB), so that was the neatest point at which to site the
-discard - though even there we have to be careful about racing
-allocations.
+> > stable: only applicable to v2.6.35
+> > =
 
-I did once try to go back and get it to work when freeing instead of
-allocating, gathering the swap slots up then freeing when convenient.
-It was messy, didn't work very well, and didn't show an improvement in
-performance (on what we were testing at the time).
+> > Signed-off-by: Tejun Heo <tj@kernel.org>
+> > Reported-by: Markus Trippelsdorf <markus@trippelsdorf.de>
+> > Cc: stable@kernel.org
+> =
 
-I've not been able to test swap, with SSDs, for several months: that's
-a dreadful regression you've found, thanks a lot for reporting it:
-I'll be very interested to hear where you locate the cause.  If it
-needs changes to the way swap does discard, so be it.
+> Thanks Tejun, applied.
 
-Hugh
+It's already in mainline:
+e75aa85892b2ee78c79edac720868cbef16e62eb
+
+-- =
+
+=BBA man who doesn't know he is in prison can never escape.=AB
+William S. Burroughs
