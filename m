@@ -1,20 +1,19 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Wed, 4 Aug 2010 19:39:39 -0700
-Message-ID: <20100805023939.GA2987__37556.4191178002$1280976032$gmane$org@linux.vnet.ibm.com>
+Date: Wed, 4 Aug 2010 19:46:56 -0700
+Message-ID: <AANLkTim9jaCb3NyRwsLNv5thGKOqpbWX_5vL8TPrtA0b__10439.6361079582$1280976463$gmane$org@mail.gmail.com>
 References: <20100801054816.GI2470@linux.vnet.ibm.com>
 	<alpine.DEB.2.00.1008041124580.6545@asgard.lang.hm>
 	<20100804185520.GA2417@srcf.ucam.org>
 	<201008042251.08266.rjw@sisk.pl>
 	<20100804205654.GA4986@srcf.ucam.org>
 	<AANLkTi=fH=XqJ0QgaMwPr5efacWAFo5h0khD7RjL4n8L@mail.gmail.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	<20100805023939.GA2987@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTi=fH=XqJ0QgaMwPr5efacWAFo5h0khD7RjL4n8L@mail.gmail.com>
+In-Reply-To: <20100805023939.GA2987@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,31 +23,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
-Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: david@lang.hm, peterz@infradead.org, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 04, 2010 at 03:08:33PM -0700, Arve Hj=F8nnev=E5g wrote:
-> On Wed, Aug 4, 2010 at 1:56 PM, Matthew Garrett <mjg59@srcf.ucam.org> wro=
-te:
-
-[ . . . ]
-
-> > having this conversation? :) It'd be good to have some feedback from
-> > Google as to whether this satisfies their functional requirements.
-> =
-
-> That is "this"? The merged code? If so, no it does not satisfy our
-> requirements. The in kernel api, while offering similar functionality
-> to the wakelock interface, does not use any handles which makes it
-> impossible to get reasonable stats (You don't know which pm_stay_awake
-> request pm_relax is reverting). The proposed in user-space interface
-> of calling into every process that receives wakeup events before every
-> suspend call is also not compatible with existing apps.
-
-I should have asked this earlier...  What exactly are the apps'
-compatibility constraints?  Source-level APIs?  Byte-code class-library
-invocations?  C/C++ dynamic linking?  C/C++ static linking (in other
-words, syscall)?
-
-							Thanx, Paul
+MjAxMC84LzQgUGF1bCBFLiBNY0tlbm5leSA8cGF1bG1ja0BsaW51eC52bmV0LmlibS5jb20+Ogo+
+IE9uIFdlZCwgQXVnIDA0LCAyMDEwIGF0IDAzOjA4OjMzUE0gLTA3MDAsIEFydmUgSGrDuG5uZXbD
+pWcgd3JvdGU6Cj4+IE9uIFdlZCwgQXVnIDQsIDIwMTAgYXQgMTo1NiBQTSwgTWF0dGhldyBHYXJy
+ZXR0IDxtamc1OUBzcmNmLnVjYW0ub3JnPiB3cm90ZToKPgo+IFsgLiAuIC4gXQo+Cj4+ID4gaGF2
+aW5nIHRoaXMgY29udmVyc2F0aW9uPyA6KSBJdCdkIGJlIGdvb2QgdG8gaGF2ZSBzb21lIGZlZWRi
+YWNrIGZyb20KPj4gPiBHb29nbGUgYXMgdG8gd2hldGhlciB0aGlzIHNhdGlzZmllcyB0aGVpciBm
+dW5jdGlvbmFsIHJlcXVpcmVtZW50cy4KPj4KPj4gVGhhdCBpcyAidGhpcyI/IFRoZSBtZXJnZWQg
+Y29kZT8gSWYgc28sIG5vIGl0IGRvZXMgbm90IHNhdGlzZnkgb3VyCj4+IHJlcXVpcmVtZW50cy4g
+VGhlIGluIGtlcm5lbCBhcGksIHdoaWxlIG9mZmVyaW5nIHNpbWlsYXIgZnVuY3Rpb25hbGl0eQo+
+PiB0byB0aGUgd2FrZWxvY2sgaW50ZXJmYWNlLCBkb2VzIG5vdCB1c2UgYW55IGhhbmRsZXMgd2hp
+Y2ggbWFrZXMgaXQKPj4gaW1wb3NzaWJsZSB0byBnZXQgcmVhc29uYWJsZSBzdGF0cyAoWW91IGRv
+bid0IGtub3cgd2hpY2ggcG1fc3RheV9hd2FrZQo+PiByZXF1ZXN0IHBtX3JlbGF4IGlzIHJldmVy
+dGluZykuIFRoZSBwcm9wb3NlZCBpbiB1c2VyLXNwYWNlIGludGVyZmFjZQo+PiBvZiBjYWxsaW5n
+IGludG8gZXZlcnkgcHJvY2VzcyB0aGF0IHJlY2VpdmVzIHdha2V1cCBldmVudHMgYmVmb3JlIGV2
+ZXJ5Cj4+IHN1c3BlbmQgY2FsbCBpcyBhbHNvIG5vdCBjb21wYXRpYmxlIHdpdGggZXhpc3Rpbmcg
+YXBwcy4KPgo+IEkgc2hvdWxkIGhhdmUgYXNrZWQgdGhpcyBlYXJsaWVyLi4uIMKgV2hhdCBleGFj
+dGx5IGFyZSB0aGUgYXBwcycKPiBjb21wYXRpYmlsaXR5IGNvbnN0cmFpbnRzPyDCoFNvdXJjZS1s
+ZXZlbCBBUElzPyDCoEJ5dGUtY29kZSBjbGFzcy1saWJyYXJ5Cj4gaW52b2NhdGlvbnM/IMKgQy9D
+KysgZHluYW1pYyBsaW5raW5nPyDCoEMvQysrIHN0YXRpYyBsaW5raW5nIChpbiBvdGhlcgo+IHdv
+cmRzLCBzeXNjYWxsKT8KCkZvciBKYXZhL0RhbHZpayBhcHBzLCB0aGUgd2FrZWxvY2sgQVBJIGlz
+IHBlcnR0eSBoaWdoIGxldmVsIC0tIGl0CnRhbGtzIHRvIGEgc2VydmljZSB2aWEgUlBDIChCaW5k
+ZXIpIHRoYXQgYWN0dWFsbHkgaW50ZXJhY3RzIHdpdGggdGhlCmtlcm5lbC4gIENoYW5naW5nIHRo
+ZSBiYXNpYyBrZXJuZWw8LT51c2Vyc3BhY2UgaW50ZXJmYWNlICh3aXRoaW4KcmVhc29uKSBpcyBu
+b3QgdW50aGlua2FibGUuICBGb3IgZXhhbXBsZSwgQXJ2ZSdzIHN1c3BlbmRfYmxvY2tlciBwYXRj
+aApwcm92aWRlcyBhIGRldmljZSBpbnRlcmZhY2UgcmF0aGVyIHRoYW4gdGhlIHByb2MgaW50ZXJm
+YWNlIHRoZSBvbGRlcgp3YWtlbG9jayBwYXRjaGVzIHVzZS4gIFdlJ2QgaGF2ZSB0byBtYWtlIHNv
+bWUgdXNlcnNwYWNlIGNoYW5nZXMgdG8Kc3VwcG9ydCB0aGF0IGJ1dCB0aGV5J3JlIHByZXR0eSBs
+b3cgbGV2ZWwgYW5kIG1pbm9yLgoKSW4gdGhlIGN1cnJlbnQgbW9kZWwsIG9ubHkgYSBmZXcgcHJv
+Y2Vzc2VzIG5lZWQgdG8gc3BlY2lmaWNhbGx5CmludGVyYWN0IHdpdGggdGhlIGtlcm5lbCAodGhl
+IHBvd2VyIG1hbmFnZW1lbnQgc2VydmljZSBpbiB0aGUKc3lzdGVtX3NlcnZlciwgcG9zc2libHkg
+dGhlIG1lZGlhX3NlcnZlciBhbmQgdGhlIHJhZGlvIGludGVyZmFjZQpnbHVlKS4gIEEgbW9kZWwg
+d2hlcmUgZXZlcnkgcHJvY2VzcyBuZWVkcyB0byBoYXZlIGEgYnVuY2ggb2YKaW5zdHJ1bWVudGF0
+aW9uIGlzIG5vdCB2ZXJ5IGRlc2lyYWJsZSBmcm9tIG91ciBwb2ludCBvZiB2aWV3LiAgV2UKZGVm
+aW5pdGVseSBkbyBuZWVkIHJlYXNvbmFibGUgc3RhdGlzdGljcyBpbiBvcmRlciB0byBlbmFibGUg
+ZGVidWdnaW5nCmFuZCB0byBlbmFibGUgcmVwb3J0aW5nIHRvIGVuZHVzZXJzICh0aHJvdWdoIHRo
+ZSBCYXR0ZXJ5IFVzYWdlIFVJKQp3aGF0J3Mga2VlcGluZyB0aGUgZGV2aWNlIGF3YWtlLgoKQnJp
+YW4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgt
+cG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBz
+Oi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
