@@ -1,7 +1,7 @@
 From: david@lang.hm
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Thu, 5 Aug 2010 13:26:18 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008051312220.23543__40800.279324367$1281043450$gmane$org@asgard.lang.hm>
+Date: Thu, 5 Aug 2010 13:30:08 -0700 (PDT)
+Message-ID: <alpine.DEB.2.00.1008051326260.23543__28390.4560412795$1281043526$gmane$org@asgard.lang.hm>
 References: <AANLkTimRZc2B1=ic-0jrGBX7ahCu=NCoQadCOePGDmh9@mail.gmail.com>
 	<alpine.DEB.2.00.1008041554580.6545@asgard.lang.hm>
 	<AANLkTingom2AKfMu0EbfdfLiMnHo+buy1e4=PBENf3Vi@mail.gmail.com>
@@ -15,11 +15,11 @@ References: <AANLkTimRZc2B1=ic-0jrGBX7ahCu=NCoQadCOePGDmh9@mail.gmail.com>
 	<20100805151211.GA10080@linux.vnet.ibm.com>
 	<alpine.DEB.2.00.1008050832010.25170@asgard.lang.hm>
 	<AANLkTi=Yyyc-hOPbkJtsnKCVzncnFq8DPnonmyckekwm@mail.gmail.com>
+	<AANLkTinTBaJ7Re8E4DVmZcDAUsceUf+9jV7r67Ks=t2n@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="680960-112343616-1281040208=:23543"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=Yyyc-hOPbkJtsnKCVzncnFq8DPnonmyckekwm@mail.gmail.com>
+In-Reply-To: <AANLkTinTBaJ7Re8E4DVmZcDAUsceUf+9jV7r67Ks=t2n@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,97 +29,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: kevin granade <kevin.granade@gmail.com>
-Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Brian Swetland <swetland@google.com>
+Cc: kevin granade <kevin.granade@gmail.com>, peterz@infradead.org, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 5 Aug 2010, kevin granade wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> On Thu, Aug 5, 2010 at 10:46 AM,  <david@lang.hm> wrote:
->> On Thu, 5 Aug 2010, Paul E. McKenney wrote:
+--680960-112343616-1281040208=:23543
+Content-Type: TEXT/PLAIN; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id o75LNx6J025610
+
+On Thu, 5 Aug 2010, Brian Swetland wrote:
+
+> On Thu, Aug 5, 2010 at 11:13 AM, kevin granade <kevin.granade@gmail.com=
+> wrote:
+>> IIRC, this was a major point of their (Android's) power management
+>> policy. =C2=A0User input of any kind would reset the "display active"
+>> timeout, which is the primary thing keeping random untrusted
+>> user-facing programs from being suspended while in use. =C2=A0They see=
+med
+>> to consider this to be a special case in their policy, but from the
+>> kernel's point of view it is just another suspend blocker being held.
+>
+> The display being on should not prevent suspend unless the particular
+> platform is incapable of suspending while the display is on.
+
+if that is the case, I'll go back to my question about the untrusted=20
+reader app.
+
+what is it that will prevent the system from going to sleep while I am=20
+reading the page?
+
+>> I'm not sure this is the best use case to look at though, because
+>> since it is user-facing, the timeout durations are on a different
+>> scale than the ones they are really worried about. =C2=A0I think anoth=
+er
+>> category of use case that they are worried about is:
 >>
->>> On Wed, Aug 04, 2010 at 10:18:40PM -0700, david@lang.hm wrote:
->>>>
->>>> On Wed, 4 Aug 2010, Paul E. McKenney wrote:
->>>>>
->>>>> On Wed, Aug 04, 2010 at 05:25:53PM -0700, david@lang.hm wrote:
->>>>>>
->>>>>> On Wed, 4 Aug 2010, Paul E. McKenney wrote:
->>>
->>> [ . . . ]
->>>
->> however, in the case of Android I think the timeouts have to end up being
->> _much_ longer. Otherwise you have the problem of loading an untrusted book
->> reader app on the device and the device suspends while you are reading the
->> page.
+>> (in suspend) -> wakeup due to network -> process network activity -> s=
+uspend
 >>
->> currently Android works around this by having a wakelock held whenever the
->> display is on. This seems backwards to me, the display should be on because
->> the system is not suspended, not the system is prevented from suspending
->> because the display is on.
+>> or an example that has been mentioned previously:
 >>
->> Rather than having the display be on causing a wavelock to be held (with the
->> code that is controls the display having a timeout for how long it leaves
->> the display on), I would invert this and have the timeout be based on system
->> activity, and when it decides the system is not active, turn off the display
->> (along with other things as it suspends)
+>> (in suspend) -> wakeup due to alarm for audio processing -> process
+>> batch of audio -> suspend
+>>
+>> In both of these cases, the display may never power on (phone might
+>> beep to indicate txt message or email, audio just keeps playing), so
+>> the magnitude of the "timeout" for suspending again should be very
+>> small. =C2=A0Specifically, they don't want there to be a timeout at al=
+l, so
+>> as little time as possible time is spent out of suspend in addition to
+>> the time required to handle the event that caused wakeup.
 >
-> IIRC, this was a major point of their (Android's) power management
-> policy.  User input of any kind would reset the "display active"
-> timeout, which is the primary thing keeping random untrusted
-> user-facing programs from being suspended while in use.  They seemed
-> to consider this to be a special case in their policy, but from the
-> kernel's point of view it is just another suspend blocker being held.
->
-> I'm not sure this is the best use case to look at though, because
-> since it is user-facing, the timeout durations are on a different
-> scale than the ones they are really worried about.  I think another
-> category of use case that they are worried about is:
->
-> (in suspend) -> wakeup due to network -> process network activity -> suspend
->
-> or an example that has been mentioned previously:
->
-> (in suspend) -> wakeup due to alarm for audio processing -> process
-> batch of audio -> suspend
+> Yeah, we much prefer the wakelock model where the moment the resource
+> (system-needing-to-not-be-suspended) is released we return to the
+> lowest power state, rather than waiting for a timer to expire (and/or
+> burning cycles polling for "can we suspend yet?" when we're definitely
+> not ready to suspend).
 
-when you suspend the audio will shut off, so it's sleep ->wake -> sleep, 
-not suspend
-
-> In both of these cases, the display may never power on (phone might
-> beep to indicate txt message or email, audio just keeps playing), so
-> the magnitude of the "timeout" for suspending again should be very
-> small.  Specifically, they don't want there to be a timeout at all, so
-> as little time as possible time is spent out of suspend in addition to
-> the time required to handle the event that caused wakeup.
-
-it really depnds on the frequency of the wakeups.
-
-if you get a network packet once every 5 min and need to wake to process 
-it, staying awake for 20 seconds after finishing procesing is FAR more 
-significant than if you get a network packet once every hour. It's not 
-just the factor of 20 that simple math would indicate because the time in 
-suspend eats power as well.
-
-I don't know real numbers, so these are made up for this example
-
-if suspend (with the cell live to receive packets) is 10ma average current 
-and full power is 500ma average current
-
-packets every 5 min with .1 sec wake time will eat ~13maH per hour
-
-packets every 5 min with 10 second wake time will eat ~37maH per hour
-
-packets every hour with .1 sec wake time will eat ~10maH per hour
-
-packets every hour with 10 sec wake time will eat ~11maH per hour
-
-so if you have frequent wakeups, staying awake 100 times as long will cut 
-your battery life to 1/3 what it was before.
-
-if your wakeups are rare, it's about a 10% hit to stay awake 100 times as 
-long.
-
-there is a lot of room for tuning the timeouts here.
+at the micro level it is definantly better for power, but at the macro=20
+level I don't think it needs to make much difference in the overall=20
+battery life of the device. To borrow a phrase, I think you may be into=20
+premature optimization of power :-)
 
 David Lang
+--680960-112343616-1281040208=:23543
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+
+
+--680960-112343616-1281040208=:23543--
