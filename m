@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/10] PCI / PCIe: Introduce commad line switch
-	for disabling port services
-Date: Fri, 6 Aug 2010 03:07:33 +0200
-Message-ID: <201008060307.33492.rjw__20134.0146865279$1281057841$gmane$org@sisk.pl>
+Subject: [PATCH 1/10] ACPI / PCI: Introduce function for querying
+	PCI root _OSC
+Date: Fri, 6 Aug 2010 03:05:19 +0200
+Message-ID: <201008060305.19383.rjw__7494.8635338389$1281058010$gmane$org@sisk.pl>
 References: <201008060303.51224.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,90 +24,141 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Introduce kernel command line switch pcie_ports= allowing one to
-disable all of the native PCIe port services, so that PCIe ports
-are treated like PCI-to-PCI bridges.
+Introduce a function allowing the caller to obtain a mask of _OSC
+control bits the BIOS will allow the kernel to control for a given
+PCI root bridge.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- Documentation/kernel-parameters.txt |    4 ++++
- drivers/pci/pcie/portdrv.h          |    2 ++
- drivers/pci/pcie/portdrv_core.c     |    3 +++
- drivers/pci/pcie/portdrv_pci.c      |   15 +++++++++++++++
- 4 files changed, 24 insertions(+)
+ drivers/acpi/pci_root.c |   77 +++++++++++++++++++++++++++++++++++++++++-------
+ include/linux/acpi.h    |    1 
+ 2 files changed, 67 insertions(+), 11 deletions(-)
 
-Index: linux-2.6/drivers/pci/pcie/portdrv_pci.c
+Index: linux-2.6/drivers/acpi/pci_root.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/pcie/portdrv_pci.c
-+++ linux-2.6/drivers/pci/pcie/portdrv_pci.c
-@@ -29,6 +29,18 @@ MODULE_AUTHOR(DRIVER_AUTHOR);
- MODULE_DESCRIPTION(DRIVER_DESC);
- MODULE_LICENSE("GPL");
+--- linux-2.6.orig/drivers/acpi/pci_root.c
++++ linux-2.6/drivers/acpi/pci_root.c
+@@ -225,22 +225,35 @@ static acpi_status acpi_pci_run_osc(acpi
+ 	return status;
+ }
  
-+/* If this switch is set, PCIe port native services should not be enabled. */
-+bool pcie_ports_disabled;
+-static acpi_status acpi_pci_query_osc(struct acpi_pci_root *root, u32 flags)
++static acpi_status acpi_pci_query_osc(struct acpi_pci_root *root,
++					u32 support,
++					u32 *control)
+ {
+ 	acpi_status status;
+-	u32 support_set, result, capbuf[3];
++	u32 result, capbuf[3];
 +
-+static int __init pcie_port_setup(char *str)
++	support &= OSC_PCI_SUPPORT_MASKS;
++	support |= root->osc_support_set;
+ 
+-	/* do _OSC query for all possible controls */
+-	support_set = root->osc_support_set | (flags & OSC_PCI_SUPPORT_MASKS);
+ 	capbuf[OSC_QUERY_TYPE] = OSC_QUERY_ENABLE;
+-	capbuf[OSC_SUPPORT_TYPE] = support_set;
+-	capbuf[OSC_CONTROL_TYPE] = OSC_PCI_CONTROL_MASKS;
++	capbuf[OSC_SUPPORT_TYPE] = support;
++	if (control) {
++		*control &= OSC_PCI_CONTROL_MASKS;
++		capbuf[OSC_CONTROL_TYPE] = *control | root->osc_control_set;
++	} else {
++		/* Run _OSC query for all possible controls. */
++		capbuf[OSC_CONTROL_TYPE] = OSC_PCI_CONTROL_MASKS;
++	}
+ 
+ 	status = acpi_pci_run_osc(root->device->handle, capbuf, &result);
+ 	if (ACPI_SUCCESS(status)) {
+-		root->osc_support_set = support_set;
+-		root->osc_control_qry = result;
+-		root->osc_queried = 1;
++		root->osc_support_set = support;
++		if (control) {
++			*control = result;
++		} else {
++			root->osc_control_qry = result;
++			root->osc_queried = 1;
++		}
+ 	}
+ 	return status;
+ }
+@@ -254,7 +267,7 @@ static acpi_status acpi_pci_osc_support(
+ 	if (ACPI_FAILURE(status))
+ 		return status;
+ 	mutex_lock(&osc_lock);
+-	status = acpi_pci_query_osc(root, flags);
++	status = acpi_pci_query_osc(root, flags, NULL);
+ 	mutex_unlock(&osc_lock);
+ 	return status;
+ }
+@@ -363,6 +376,48 @@ out:
+ }
+ EXPORT_SYMBOL_GPL(acpi_get_pci_dev);
+ 
++ /**
++ * acpi_pci_osc_control_query - Get the _OSC bits the kernel can control.
++ * @handle: ACPI handle of a PCI root bridge (or PCIe Root Complex).
++ * @mask: Mask of _OSC bits to query and the place to put the result into.
++ **/
++acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *mask)
 +{
-+	if (!strncmp(str, "compat", 6))
-+		pcie_ports_disabled = true;
++	struct acpi_pci_root *root;
++	acpi_handle tmp;
++	acpi_status status = AE_OK;
++	u32 ctrl = *mask;
 +
-+	return 1;
++	if (!(ctrl & OSC_PCI_CONTROL_MASKS))
++		return AE_BAD_PARAMETER;
++
++	root = acpi_pci_find_root(handle);
++	if (!root)
++		return AE_NOT_EXIST;
++
++	status = acpi_get_handle(handle, "_OSC", &tmp);
++	if (ACPI_FAILURE(status))
++		return status;
++
++	mutex_lock(&osc_lock);
++
++	*mask |= root->osc_control_set;
++	if ((ctrl & root->osc_control_set) == ctrl)
++		goto out;
++
++	for (ctrl = 0; *mask != ctrl; ctrl = *mask) {
++		status = acpi_pci_query_osc(root, root->osc_support_set, mask);
++		if (ACPI_FAILURE(status))
++			break;
++	}
++
++ out:
++	mutex_unlock(&osc_lock);
++
++	return status;
 +}
-+__setup("pcie_ports=", pcie_port_setup);
++EXPORT_SYMBOL(acpi_pci_osc_control_query);
 +
- /* global data */
+ /**
+  * acpi_pci_osc_control_set - commit requested control to Firmware
+  * @handle: acpi_handle for the target ACPI object
+@@ -396,7 +451,7 @@ acpi_status acpi_pci_osc_control_set(acp
  
- static int pcie_portdrv_restore_config(struct pci_dev *dev)
-@@ -301,6 +313,9 @@ static int __init pcie_portdrv_init(void
- {
- 	int retval;
- 
-+	if (pcie_ports_disabled)
-+		return -EACCES;
-+
- 	dmi_check_system(pcie_portdrv_dmi_table);
- 
- 	retval = pcie_port_bus_register();
-Index: linux-2.6/Documentation/kernel-parameters.txt
+ 	/* Need to query controls first before requesting them */
+ 	if (!root->osc_queried) {
+-		status = acpi_pci_query_osc(root, root->osc_support_set);
++		status = acpi_pci_query_osc(root, root->osc_support_set, NULL);
+ 		if (ACPI_FAILURE(status))
+ 			goto out;
+ 	}
+Index: linux-2.6/include/linux/acpi.h
 ===================================================================
---- linux-2.6.orig/Documentation/kernel-parameters.txt
-+++ linux-2.6/Documentation/kernel-parameters.txt
-@@ -2047,6 +2047,10 @@ and is between 256 and 4096 characters. 
- 		force	Enable ASPM even on devices that claim not to support it.
- 			WARNING: Forcing ASPM on may cause system lockups.
+--- linux-2.6.orig/include/linux/acpi.h
++++ linux-2.6/include/linux/acpi.h
+@@ -305,6 +305,7 @@ acpi_status acpi_run_osc(acpi_handle han
+ 				OSC_PCI_EXPRESS_AER_CONTROL |		\
+ 				OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL)
  
-+	pcie_ports=	[PCIE] PCIe ports handling:
-+		compat	Treat PCIe ports as PCI-to-PCI bridges, disable the PCIe
-+			ports driver.
-+
- 	pcie_pme=	[PCIE,PM] Native PCIe PME signaling options:
- 			Format: {auto|force}[,nomsi]
- 		auto	Use native PCIe PME signaling if the BIOS allows the
-Index: linux-2.6/drivers/pci/pcie/portdrv.h
-===================================================================
---- linux-2.6.orig/drivers/pci/pcie/portdrv.h
-+++ linux-2.6/drivers/pci/pcie/portdrv.h
-@@ -20,6 +20,8 @@
++extern acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *mask);
+ extern acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags);
+ extern void acpi_early_init(void);
  
- #define get_descriptor_id(type, service) (((type - 4) << 4) | service)
- 
-+extern bool pcie_ports_disabled;
-+
- extern struct bus_type pcie_port_bus_type;
- extern int pcie_port_device_register(struct pci_dev *dev);
- #ifdef CONFIG_PM
-Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
-+++ linux-2.6/drivers/pci/pcie/portdrv_core.c
-@@ -494,6 +494,9 @@ static void pcie_port_shutdown_service(s
-  */
- int pcie_port_service_register(struct pcie_port_service_driver *new)
- {
-+	if (pcie_ports_disabled)
-+		return -ENODEV;
-+
- 	new->driver.name = (char *)new->name;
- 	new->driver.bus = &pcie_port_bus_type;
- 	new->driver.probe = pcie_port_probe_service;
