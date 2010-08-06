@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/10] ACPI / PCI / PCIe: Rework _OSC handling
-	(v3)
-Date: Fri, 6 Aug 2010 12:42:33 +0200
-Message-ID: <201008061242.33319.rjw__9844.28326269171$1281091462$gmane$org@sisk.pl>
-References: <201008060303.51224.rjw@sisk.pl> <4C5B80A4.2050503@jp.fujitsu.com>
+Subject: Re: [PATCH 4/8] PCI / PCIe: Ask BIOS for control of all
+	native services at once (v6)
+Date: Fri, 6 Aug 2010 12:47:23 +0200
+Message-ID: <201008061247.23581.rjw@sisk.pl>
+References: <201008022351.31406.rjw@sisk.pl> <201008022356.31166.rjw@sisk.pl>
+	<4C5B6660.9030507@jp.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C5B80A4.2050503@jp.fujitsu.com>
+In-Reply-To: <4C5B6660.9030507@jp.fujitsu.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,118 +20,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-First of all, thanks for the detailed review!
-
 On Friday, August 06, 2010, Hidetoshi Seto wrote:
-> (2010/08/06 10:03), Rafael J. Wysocki wrote:
-> > Hi,
-> > 
-> > This is the 3rd iteration of the patchset based on
-> > https://patchwork.kernel.org/patch/114917/ and the comments I received on that
-> > patch and the previous two iterations of this patchset.
-> > 
-> > The patches below do not make the intermediate step to put an unconditional
-> > _OSC query into acpi_pci_osc_control_set(), but the final result is quite
-> > similar to the 2nd iteration with https://patchwork.kernel.org/patch/116976/
-> > applied on top.
-> > 
-> > [1/10] - Introduce acpi_pci_osc_control_query() allowing the caller to get a
-> >          mask of _OSC control bits the BIOS allows the kernel to control
-> >          for a given PCI root bridge.  This version repeats _OSC queries until
-> >          the BIOS doesn't mask any requested bits.
+> Rafael,
 > 
-> This contains 2 parts:
->  1-A) change acpi_status acpi_pci_query_osc() to take support and *control
->  1-B) introduce acpi_pci_osc_control_query()
+> I found that following 2 hunks break kernel build with O= option. 
 > 
-> and I'd like to kill 1-B since it is removed soon by patch [10/10].
-
-OK
-
-> > [2/10] - Introduce pci_aer_available() allowing the caller to check if the
-> >          AER service driver should be enabled.
-> > 
-> > [3/10] - Introduce kernel command line switch pcie_ports=.
+> (2010/08/03 6:56), Rafael J. Wysocki wrote:
+> > Index: linux-2.6/drivers/pci/pcie/Makefile
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/pci/pcie/Makefile
+> > +++ linux-2.6/drivers/pci/pcie/Makefile
+> > @@ -6,10 +6,11 @@
+> >  obj-$(CONFIG_PCIEASPM)		+= aspm.o
+> >  
+> >  pcieportdrv-y			:= portdrv_core.o portdrv_pci.o portdrv_bus.o
+> > +pcieportdrv-$(CONFIG_ACPI)	+= portdrv_acpi.o
+> >  
+> >  obj-$(CONFIG_PCIEPORTBUS)	+= pcieportdrv.o
+> >  
+> >  # Build PCI Express AER if needed
+> >  obj-$(CONFIG_PCIEAER)		+= aer/
+> >  
+> > -obj-$(CONFIG_PCIE_PME) += pme/
+> > +obj-$(CONFIG_PCIE_PME) += pme/pcie_pme.o
 > 
-> These 2 are prep for following big changes.
+> and
 > 
-> > 
-> > [4/10] - Rework the PCIe port driver to request _OSC control for all serives at
-> >          once.
-> > 
-> > [5/10] - Disable PCIe port services (that might be enabled by the BIOS) during
-> >          initialization.
+> > Index: linux-2.6/drivers/pci/pcie/pme/Makefile
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/pci/pcie/pme/Makefile
+> > +++ /dev/null
+> > @@ -1,8 +0,0 @@
+> > -#
+> > -# Makefile for PCI-Express Root Port PME signaling driver
+> > -#
+> > -
+> > -obj-$(CONFIG_PCIE_PME) += pmedriver.o
+> > -
+> > -pmedriver-objs := pcie_pme.o
+> > -pmedriver-$(CONFIG_ACPI) += pcie_pme_acpi.o
 > 
-> These 2 are core part to solve the issue.
+> $ make -j12 O=../gitbuild/
+>   GEN     /home/seto/gitbuild/Makefile
+>   CHK     include/linux/version.h
+>   Using /home/seto/GIT-linux as source for kernel
+>   CHK     include/generated/utsrelease.h
+>   CALL    /home/seto/GIT-linux/scripts/checksyscalls.sh
+>   CHK     include/generated/compile.h
+>   CC      drivers/pci/pcie/pme/pcie_pme.o
+> Assembler messages:
+> Fatal error: can't create drivers/pci/pcie/pme/.tmp_pcie_pme.o: No such file or directory
+> make[4]: *** [drivers/pci/pcie/pme/pcie_pme.o] Error 2
+> make[3]: *** [drivers/pci/pcie] Error 2
+> make[2]: *** [drivers/pci] Error 2
+> make[1]: *** [drivers] Error 2
+> make: *** [sub-make] Error 2
+> $
 > 
-> > 
-> > [6/10] - Remove the PCIe port driver modules exit function.
-> 
-> This is a cleanup. There is no reason to keep this in the series.
+> It seems that the error is because directory pme/ is not created
+> in the working tree.
 
-OK, I'll drop it.
+Hmm.  That seems to be correct, but I'm not sure how to resolve it.
 
-> > [7/10] - Make PCI hotplug code query _OSC before requesting control of _OSC
-> >          features.
-> 
-> Needless since removed soon by patch [10/10].
+If I move pcie_pme.c to pcie/ in the same patch, the changes in that file
+will not be clearly visible.
 
-OK
+Perhaps I'll add a separate patch that will remove the Makefile from
+pme/ and move pcie_pme.c to pcie/.
 
-> > [8/10] - Rework acpi_pci_osc_control_set() so that it doesn't use cached
-> >         result of a query and remove the fields of struct acpi_pci_root that
-> >         aren't used any more.
-> 
-> This also contains 2 parts:
->  8-A: don't use cached result
->  8-B: remove query in acpi_pci_osc_control_set()
-> 
-> I think 8-B is not required since query relives in patch [10/10].
-
-OK
- 
-> > [9/10] - Reorder checks in acpi_pci_osc_control_set().
-> 
-> A minor cleanup can be out of the series.
-
-OK, I'll drop it.
- 
-> > [10/10] - Merge acpi_pci_osc_control_set() with acpi_pci_osc_control_query().
-> 
-> This removes many badness in this series.
-> I think we should have this improved acpi_pci_osc_control_set() before [4/10].
-
-OK
-
-> > Comments welcome.
-> 
-> I recommend you to rearrange the order of patches in this series.
->
-> 1. Misc cleanups
->    [6/10]
->    [9/10]
-> 2. Prep1: prepare small parts
->    [2/10]
->    [3/10]
-> 3. Prep2: improve acpi_pci_osc_control_set()
->    [1-A]
->    [8-A]
->    [10/10]
-> 4. Main
->    [4/10]
->    [5/10]
-
-OK, I'll do that.
-
-Probably, though, I will only be able to do it after I get back from LinuxCon.
-At least I really won't be able to test the patches during the conference. :-)
- 
-> I think there is no objections to 4 patches from the first ([6,9,2,3/10]).
-
-OK, thanks.
-
-Best,
+Thanks,
 Rafael
