@@ -1,11 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/10] ACPI / PCI / PCIe: Rework _OSC handling (v3)
-Date: Fri, 6 Aug 2010 03:03:51 +0200
-Message-ID: <201008060303.51224.rjw__24055.1844043241$1281057721$gmane$org@sisk.pl>
+Subject: [PATCH 3/10] PCI / PCIe: Introduce commad line switch
+	for disabling port services
+Date: Fri, 6 Aug 2010 03:07:33 +0200
+Message-ID: <201008060307.33492.rjw__20134.0146865279$1281057841$gmane$org@sisk.pl>
+References: <201008060303.51224.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201008060303.51224.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,51 +18,96 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-This is the 3rd iteration of the patchset based on
-https://patchwork.kernel.org/patch/114917/ and the comments I received on that
-patch and the previous two iterations of this patchset.
+Introduce kernel command line switch pcie_ports= allowing one to
+disable all of the native PCIe port services, so that PCIe ports
+are treated like PCI-to-PCI bridges.
 
-The patches below do not make the intermediate step to put an unconditional
-_OSC query into acpi_pci_osc_control_set(), but the final result is quite
-similar to the 2nd iteration with https://patchwork.kernel.org/patch/116976/
-applied on top.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ Documentation/kernel-parameters.txt |    4 ++++
+ drivers/pci/pcie/portdrv.h          |    2 ++
+ drivers/pci/pcie/portdrv_core.c     |    3 +++
+ drivers/pci/pcie/portdrv_pci.c      |   15 +++++++++++++++
+ 4 files changed, 24 insertions(+)
 
-[1/10] - Introduce acpi_pci_osc_control_query() allowing the caller to get a
-         mask of _OSC control bits the BIOS allows the kernel to control
-         for a given PCI root bridge.  This version repeats _OSC queries until
-         the BIOS doesn't mask any requested bits.
-
-[2/10] - Introduce pci_aer_available() allowing the caller to check if the
-         AER service driver should be enabled.
-
-[3/10] - Introduce kernel command line switch pcie_ports=.
-
-[4/10] - Rework the PCIe port driver to request _OSC control for all serives at
-         once.
-
-[5/10] - Disable PCIe port services (that might be enabled by the BIOS) during
-         initialization.
-
-[6/10] - Remove the PCIe port driver modules exit function.
-
-[7/10] - Make PCI hotplug code query _OSC before requesting control of _OSC
-         features.
-
-[8/10] - Rework acpi_pci_osc_control_set() so that it doesn't use cached
-        result of a query and remove the fields of struct acpi_pci_root that
-        aren't used any more.
-
-[9/10] - Reorder checks in acpi_pci_osc_control_set().
-
-[10/10] - Merge acpi_pci_osc_control_set() with acpi_pci_osc_control_query().
-
-Comments welcome.
-
-Thanks,
-Rafael
+Index: linux-2.6/drivers/pci/pcie/portdrv_pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/portdrv_pci.c
++++ linux-2.6/drivers/pci/pcie/portdrv_pci.c
+@@ -29,6 +29,18 @@ MODULE_AUTHOR(DRIVER_AUTHOR);
+ MODULE_DESCRIPTION(DRIVER_DESC);
+ MODULE_LICENSE("GPL");
+ 
++/* If this switch is set, PCIe port native services should not be enabled. */
++bool pcie_ports_disabled;
++
++static int __init pcie_port_setup(char *str)
++{
++	if (!strncmp(str, "compat", 6))
++		pcie_ports_disabled = true;
++
++	return 1;
++}
++__setup("pcie_ports=", pcie_port_setup);
++
+ /* global data */
+ 
+ static int pcie_portdrv_restore_config(struct pci_dev *dev)
+@@ -301,6 +313,9 @@ static int __init pcie_portdrv_init(void
+ {
+ 	int retval;
+ 
++	if (pcie_ports_disabled)
++		return -EACCES;
++
+ 	dmi_check_system(pcie_portdrv_dmi_table);
+ 
+ 	retval = pcie_port_bus_register();
+Index: linux-2.6/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.orig/Documentation/kernel-parameters.txt
++++ linux-2.6/Documentation/kernel-parameters.txt
+@@ -2047,6 +2047,10 @@ and is between 256 and 4096 characters. 
+ 		force	Enable ASPM even on devices that claim not to support it.
+ 			WARNING: Forcing ASPM on may cause system lockups.
+ 
++	pcie_ports=	[PCIE] PCIe ports handling:
++		compat	Treat PCIe ports as PCI-to-PCI bridges, disable the PCIe
++			ports driver.
++
+ 	pcie_pme=	[PCIE,PM] Native PCIe PME signaling options:
+ 			Format: {auto|force}[,nomsi]
+ 		auto	Use native PCIe PME signaling if the BIOS allows the
+Index: linux-2.6/drivers/pci/pcie/portdrv.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/portdrv.h
++++ linux-2.6/drivers/pci/pcie/portdrv.h
+@@ -20,6 +20,8 @@
+ 
+ #define get_descriptor_id(type, service) (((type - 4) << 4) | service)
+ 
++extern bool pcie_ports_disabled;
++
+ extern struct bus_type pcie_port_bus_type;
+ extern int pcie_port_device_register(struct pci_dev *dev);
+ #ifdef CONFIG_PM
+Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
++++ linux-2.6/drivers/pci/pcie/portdrv_core.c
+@@ -494,6 +494,9 @@ static void pcie_port_shutdown_service(s
+  */
+ int pcie_port_service_register(struct pcie_port_service_driver *new)
+ {
++	if (pcie_ports_disabled)
++		return -ENODEV;
++
+ 	new->driver.name = (char *)new->name;
+ 	new->driver.bus = &pcie_port_bus_type;
+ 	new->driver.probe = pcie_port_probe_service;
