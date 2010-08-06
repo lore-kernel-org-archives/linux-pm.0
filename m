@@ -1,15 +1,23 @@
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [PATCH v2] pm: Add runtime PM statistics
-Date: Thu, 05 Aug 2010 16:59:51 -0700
-Message-ID: <4C5B5077.1060901__38708.3330927$1281052991$gmane$org@linux.intel.com>
-References: <20100710095254.5ab7291c@infradead.org>	<201007112326.07541.rjw@sisk.pl>	<20100711221646.35f11b70@infradead.org>	<201007132328.28853.rjw@sisk.pl>
-	<4C3F2CEF.2090404@linux.intel.com>
-	<87bp9gpryb.fsf@deeprootsystems.com>
+From: Brian Swetland <swetland@google.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Thu, 5 Aug 2010 17:13:14 -0700
+Message-ID: <AANLkTinatKEBfHhMnKc5wbys13P81PKWSc+nxccgHe-Y__10374.8925067068$1281053689$gmane$org@mail.gmail.com>
+References: <alpine.DEB.2.00.1008041722060.6545@asgard.lang.hm>
+	<20100805004802.GP24163@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008042208350.25170@asgard.lang.hm>
+	<20100805151211.GA10080@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008050832010.25170@asgard.lang.hm>
+	<AANLkTi=Yyyc-hOPbkJtsnKCVzncnFq8DPnonmyckekwm@mail.gmail.com>
+	<20100805203102.GN2447@linux.vnet.ibm.com>
+	<AANLkTimaaLSwVusJ=w5-QptoauBnHH0JvCvmWUr0y+KD@mail.gmail.com>
+	<alpine.DEB.2.00.1008051453450.30632@asgard.lang.hm>
+	<AANLkTikCCeMG=DAQ04xqkvqH9tngBWyBA5VQTD4_15xU@mail.gmail.com>
+	<20100805230304.GQ2447@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87bp9gpryb.fsf@deeprootsystems.com>
+In-Reply-To: <20100805230304.GQ2447@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,63 +27,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: david@lang.hm, peterz@infradead.org, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, kevin granade <kevin.granade@gmail.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 8/5/2010 4:20 PM, Kevin Hilman wrote:
-> Arjan van de Ven<arjan@linux.intel.com>  writes:
+On Thu, Aug 5, 2010 at 4:03 PM, Paul E. McKenney
+<paulmck@linux.vnet.ibm.com> wrote:
+>> > so what would wake a phone up from suspend where the phone should go back to
+>> > sleep in under a second?
+>>
+>> Here are some real-world examples from shipped android devices:
+>> - battery gauging happens every 10 minutes, need to wake long enough
+>> to chatter with the 1w interface and make sure the battery is not
+>> exploding
+>> - always on mail/im/calendar/etc sync often has network events that
+>> happen every 5-10 minutes which cause devices to briefly wake up and
+>> return to sleep
+>> - gps tracker app might wake every couple minutes or every n gps
+>> events to log location
+>> - low power audio subsystems can wake you up every 1-4 seconds (pcm)
+>> or 1-4 minutes (mp3) to fetch more data
 >
->    
->> +
->> +/**
->> + * update_pm_runtime_accounting - Update the time accounting of power
->> states
->> + * @dev: Device to update the accounting for
->> + *
->> + * In order to be able to have time accounting of the various power states
->> + * (as used by programs such as PowerTOP to show the effectiveness of
->> runtime
->> + * PM), we need to track the time spent in each state.
->> + * update_pm_runtime_accounting must be called each time before the
->> + * runtime_status field is updated, to account the time in the old state
->> + * correctly.
->> + */
->> +void update_pm_runtime_accounting(struct device *dev)
->> +{
->> +    unsigned long now = jiffies;
->> +    int delta;
->> +
->> +    delta = now - dev->power.accounting_timestamp;
->> +
->> +    if (delta<  0)
->> +        delta = 0;
->> +
->> +    dev->power.accounting_timestamp = now;
->> +
->> +    if (dev->power.disable_depth>  0)
->> +        return;
->> +
->> +    if (dev->power.runtime_status == RPM_SUSPENDED)
->> +        dev->power.suspended_jiffies += delta;
->> +    else
->> +        dev->power.active_jiffies += delta;
->> +}
->>      
-> By using jiffies, I think we might miss events in drivers that are doing
-> runtime PM transitions in short bursts.  On embedded systems with slow
-> HZ, there could potentially be lots of transitions between ticks.
+> Interesting!
 >
-> It would be nicer to use clocksource-based time so transitions between
-> jiffies could still be factored into the accounting.
->    
+> So for an mp3 playback, does an Android suspend between data fetches?
 
-you're absolutely right that the current mechanism is more "sampling 
-accuracy" (similar to most /proc info that shows up with top and such).
+It can if the latency is long enough (which is why I point out low
+power audio which is usually high latency).  For low latency (system
+sounds, etc) 10-25ms between buffers it's not practical to fully
+suspend but we will go to the lowest power state in idle if possible.
 
-on the "slow HZ".. there is no more valid reason to not set HZ to 
-1000... so we'll get 1 msec sampling rate basically.
-
-the problem with a more accurate clocksource is that it's expensive. And 
-more... the path to such clocksource itself might be subject to power 
-management ;-)
+Brian
