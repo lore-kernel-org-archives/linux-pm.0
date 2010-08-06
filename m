@@ -1,14 +1,15 @@
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [PATCH 0/10] ACPI / PCI / PCIe: Rework _OSC handling
-	(v3)
-Date: Fri, 06 Aug 2010 12:25:24 +0900
-Message-ID: <4C5B80A4.2050503__49074.0863876001$1281065269$gmane$org@jp.fujitsu.com>
-References: <201008060303.51224.rjw@sisk.pl>
+From: Nigel Cunningham <nigel@tuxonice.net>
+Subject: Re: 2.6.35 Regression: Ages spent discarding blocks that
+ weren't used!
+Date: Fri, 06 Aug 2010 14:40:58 +1000
+Message-ID: <4C5B925A.5000409__11713.111974723$1281069805$gmane$org@tuxonice.net>
+References: <4C58C528.4000606@tuxonice.net>	<4C5960B0.7020003@teksavvy.com>	<4C59DA16.4020500@tuxonice.net>	<AANLkTik_PH-7T7OFtzaCtPbAHE6pqnYMUsjP25KtsRnR@mail.gmail.com>	<4C5A59FC.1030304@tuxonice.net>
+	<AANLkTi=NMHkKduZzsLiiYt3=w8++8epb5aGrqv7V3-vB@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201008060303.51224.rjw@sisk.pl>
+In-Reply-To: <AANLkTi=NMHkKduZzsLiiYt3=w8++8epb5aGrqv7V3-vB@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,104 +19,116 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+To: Hugh Dickins <hughd@google.com>
+Cc: Mark Lord <kernel@teksavvy.com>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-(2010/08/06 10:03), Rafael J. Wysocki wrote:
-> Hi,
-> 
-> This is the 3rd iteration of the patchset based on
-> https://patchwork.kernel.org/patch/114917/ and the comments I received on that
-> patch and the previous two iterations of this patchset.
-> 
-> The patches below do not make the intermediate step to put an unconditional
-> _OSC query into acpi_pci_osc_control_set(), but the final result is quite
-> similar to the 2nd iteration with https://patchwork.kernel.org/patch/116976/
-> applied on top.
-> 
-> [1/10] - Introduce acpi_pci_osc_control_query() allowing the caller to get a
->          mask of _OSC control bits the BIOS allows the kernel to control
->          for a given PCI root bridge.  This version repeats _OSC queries until
->          the BIOS doesn't mask any requested bits.
+Hi.
 
-This contains 2 parts:
- 1-A) change acpi_status acpi_pci_query_osc() to take support and *control
- 1-B) introduce acpi_pci_osc_control_query()
+On 06/08/10 11:15, Hugh Dickins wrote:
+> On Wed, Aug 4, 2010 at 11:28 PM, Nigel Cunningham<nigel@tuxonice.net>  wrote:
+>> On 05/08/10 13:58, Hugh Dickins wrote:
+>>> I agree it would make more sense to discard swap when freeing rather
+>>> than when allocating, I wish we could.  But at the freeing point we're
+>>> often holding a page_table spinlock at an outer level, and it's just
+>>> one page we're given to free.  Freeing is an operation you want to be
+>>> comfortable doing when you're short of resources, whereas discard is a
+>>> kind of I/O operation which needs resources.
 
-and I'd like to kill 1-B since it is removed soon by patch [10/10].
+The more I think about this, the more it seems to me that doing the 
+discard at allocation time is just wrong. How about a strategy in which 
+you do the discard immediately if resources permit, or flag it as in 
+need of doing (at a future swap free of that page or swap off time) if 
+things are too pressured at the moment? I haven't put thought into what 
+data structures could be used for that - just want to ask for now if 
+you'd be happy with the idea of looking into a strategy like that.
 
-> 
-> [2/10] - Introduce pci_aer_available() allowing the caller to check if the
->          AER service driver should be enabled.
-> 
-> [3/10] - Introduce kernel command line switch pcie_ports=.
+>>> It happens that in the allocation path, there was already a place at
+>>> which we scanned for a cluster of 1MB free (I'm thinking of 4kB pages
+>>> when I say 1MB), so that was the neatest point at which to site the
+>>> discard - though even there we have to be careful about racing
+>>> allocations.
+>>
+>> Makes sense when you put it like that :)
+>>
+>> I know it's a bit messier, but would it be possible for us to modify the
+>> behaviour depending on the reason for the allocation? (No page_table
+>> spinlock holding when we're hibernating).
+>
+> But if we moved it to the swap free, it would occur in the swap free
+> (if any) _prior_ to hibernating, when testing for hibernation would
+> just say "no".
 
-These 2 are prep for following big changes.
+I see what you mean. I'm not so worried by that because if we're having 
+to free swap in order to hibernate, things are going to be slow anyway 
+and discards aren't going to stand out nearly so much.
 
-> 
-> [4/10] - Rework the PCIe port driver to request _OSC control for all serives at
->          once.
-> 
-> [5/10] - Disable PCIe port services (that might be enabled by the BIOS) during
->          initialization.
+I'm much more concerned by the fact that we're currently doing discards 
+for swap that wasn't even being used. If I reboot, swapon and then 
+hibernate without having touched swap so far, I still get the 'hit' on 
+the whole 4GB. I don't think we should be storing on disk a "this hasn't 
+been used since last discarded" flag, so I'm looking for other solutions.
 
-These 2 are core part to solve the issue.
+>>> I did once try to go back and get it to work when freeing instead of
+>>> allocating, gathering the swap slots up then freeing when convenient.
+>>> It was messy, didn't work very well, and didn't show an improvement in
+>>> performance (on what we were testing at the time).
+>
+> When I tried gathering together the frees, there were just too many
+> short extents to make the discards worth doing that  way.
 
-> 
-> [6/10] - Remove the PCIe port driver modules exit function.
+Okay.
 
-This is a cleanup. There is no reason to keep this in the series.
+>> For one or two at a time, I can see that would be the case. If it is
+>> possible to do the discard of pages used for hibernation after we're
+>> finished reading the image, that would be good. Even better would be to only
+>> do the discard for pages that were actually used and just do a simple free
+>> for ones that were only allocated.
+>
+> There are optimizations which could be done e.g. we discard the whole
+> of swap at swapon time, then re-discard each 1MB as we begin to
+> allocate from it.  Clearly that has a certain stupidity to it!  But
+> the initial discard of the whole of swap should be efficient and worth
+> doing.  We could keep track of which swap pages have already been
+> discarded since last used, but that would take up another... it's not
+> immediately clear to me whether it's another value or another bit of
+> the swap count.
+>
+> We could provide an interface for hibernation, to do a minimal number
+> of maximal range discards to suit hibernation (but we need to be very
+> careful about ongoing allocation, as in another thread).
+>
+> But are these things worth doing?  I think not.  Discard is supposed
+> to be helping not hindering: if the device only supports discard in a
+> way that's so inefficient, we'd do better to blacklist it as not
+> supporting discard at all.  My suspicion is that your SSD is of that
+> kind: that it used not to be recognized as supporting discard, but now
+> in 2.6.35 it is so recognized.  However, that's just a suspicion: let
+> me not slander your SSD when it may be my code or someone else's to
+> blame: needs testing.
 
-> 
-> [7/10] - Make PCI hotplug code query _OSC before requesting control of _OSC
->          features.
+I've done the bisect now - spent the time today instead of on the place, 
+and it took me to fbbf055692aeb25c54c49d9ca84532de836fbba0. This is 
+Christoph's Hellwig's patch "block: fix DISCARD_BARRIER requests".
 
-Needless since removed soon by patch [10/10].
+Could the problem be that we're using DISCARD_FL_BARRIER too much? (I'm 
+still looking at the code here, so am writing without having thought 
+everything through _really_ carefully.
 
-> 
-> [8/10] - Rework acpi_pci_osc_control_set() so that it doesn't use cached
->         result of a query and remove the fields of struct acpi_pci_root that
->         aren't used any more.
+>> Of course I'm talking in ideals without having an intimate knowledge of the
+>> swap allocation code or exactly how ugly the above would make it :)
+>>
+>>> I've not been able to test swap, with SSDs, for several months: that's
+>>> a dreadful regression you've found, thanks a lot for reporting it:
+>>> I'll be very interested to hear where you locate the cause.  If it
+>>> needs changes to the way swap does discard, so be it.
+>>
+>> I'm traveling to the US on Saturday and have apparently been given one of
+>> those nice seats with power, so I'll try and get the bisection done then.
+>
+> That would be helpful, but displays greater dedication than I'd offer myself!
 
-This also contains 2 parts:
- 8-A: don't use cached result
- 8-B: remove query in acpi_pci_osc_control_set()
+Done without an airplane now. I don't have to be credited with too much 
+dedication! :)
 
-I think 8-B is not required since query relives in patch [10/10].
-
-> 
-> [9/10] - Reorder checks in acpi_pci_osc_control_set().
-
-A minor cleanup can be out of the series.
-
-> 
-> [10/10] - Merge acpi_pci_osc_control_set() with acpi_pci_osc_control_query().
-
-This removes many badness in this series.
-I think we should have this improved acpi_pci_osc_control_set() before [4/10].
-
-> 
-> Comments welcome.
-
-I recommend you to rearrange the order of patches in this series.
-
-1. Misc cleanups
-   [6/10]
-   [9/10]
-2. Prep1: prepare small parts
-   [2/10]
-   [3/10]
-3. Prep2: improve acpi_pci_osc_control_set()
-   [1-A]
-   [8-A]
-   [10/10]
-4. Main
-   [4/10]
-   [5/10]
-
-I think there is no objections to 4 patches from the first ([6,9,2,3/10]).
-
-
-Thanks,
-H.Seto
+Nigel
