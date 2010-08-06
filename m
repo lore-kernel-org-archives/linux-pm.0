@@ -1,17 +1,14 @@
-From: Hugh Dickins <hughd@google.com>
-Subject: Re: 2.6.35 Regression: Ages spent discarding blocks that
-	weren't used!
-Date: Thu, 5 Aug 2010 18:15:52 -0700
-Message-ID: <AANLkTi=NMHkKduZzsLiiYt3=w8++8epb5aGrqv7V3-vB__9060.49178815938$1281057489$gmane$org@mail.gmail.com>
-References: <4C58C528.4000606@tuxonice.net> <4C5960B0.7020003@teksavvy.com>
-	<4C59DA16.4020500@tuxonice.net>
-	<AANLkTik_PH-7T7OFtzaCtPbAHE6pqnYMUsjP25KtsRnR@mail.gmail.com>
-	<4C5A59FC.1030304@tuxonice.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 2/10] PCI / PCIe/ AER: Introduce
+	pci_aer_available()
+Date: Fri, 6 Aug 2010 03:06:43 +0200
+Message-ID: <201008060306.43717.rjw__18903.710138011$1281057604$gmane$org@sisk.pl>
+References: <201008060303.51224.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C5A59FC.1030304@tuxonice.net>
+In-Reply-To: <201008060303.51224.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,78 +18,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@tuxonice.net>
-Cc: Mark Lord <kernel@teksavvy.com>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBBdWcgNCwgMjAxMCBhdCAxMToyOCBQTSwgTmlnZWwgQ3VubmluZ2hhbSA8bmlnZWxA
-dHV4b25pY2UubmV0PiB3cm90ZToKPiBPbiAwNS8wOC8xMCAxMzo1OCwgSHVnaCBEaWNraW5zIHdy
-b3RlOgo+PiBJIGFncmVlIGl0IHdvdWxkIG1ha2UgbW9yZSBzZW5zZSB0byBkaXNjYXJkIHN3YXAg
-d2hlbiBmcmVlaW5nIHJhdGhlcgo+PiB0aGFuIHdoZW4gYWxsb2NhdGluZywgSSB3aXNoIHdlIGNv
-dWxkLiDCoEJ1dCBhdCB0aGUgZnJlZWluZyBwb2ludCB3ZSdyZQo+PiBvZnRlbiBob2xkaW5nIGEg
-cGFnZV90YWJsZSBzcGlubG9jayBhdCBhbiBvdXRlciBsZXZlbCwgYW5kIGl0J3MganVzdAo+PiBv
-bmUgcGFnZSB3ZSdyZSBnaXZlbiB0byBmcmVlLiDCoEZyZWVpbmcgaXMgYW4gb3BlcmF0aW9uIHlv
-dSB3YW50IHRvIGJlCj4+IGNvbWZvcnRhYmxlIGRvaW5nIHdoZW4geW91J3JlIHNob3J0IG9mIHJl
-c291cmNlcywgd2hlcmVhcyBkaXNjYXJkIGlzIGEKPj4ga2luZCBvZiBJL08gb3BlcmF0aW9uIHdo
-aWNoIG5lZWRzIHJlc291cmNlcy4KPj4KPj4gSXQgaGFwcGVucyB0aGF0IGluIHRoZSBhbGxvY2F0
-aW9uIHBhdGgsIHRoZXJlIHdhcyBhbHJlYWR5IGEgcGxhY2UgYXQKPj4gd2hpY2ggd2Ugc2Nhbm5l
-ZCBmb3IgYSBjbHVzdGVyIG9mIDFNQiBmcmVlIChJJ20gdGhpbmtpbmcgb2YgNGtCIHBhZ2VzCj4+
-IHdoZW4gSSBzYXkgMU1CKSwgc28gdGhhdCB3YXMgdGhlIG5lYXRlc3QgcG9pbnQgYXQgd2hpY2gg
-dG8gc2l0ZSB0aGUKPj4gZGlzY2FyZCAtIHRob3VnaCBldmVuIHRoZXJlIHdlIGhhdmUgdG8gYmUg
-Y2FyZWZ1bCBhYm91dCByYWNpbmcKPj4gYWxsb2NhdGlvbnMuCj4KPiBNYWtlcyBzZW5zZSB3aGVu
-IHlvdSBwdXQgaXQgbGlrZSB0aGF0IDopCj4KPiBJIGtub3cgaXQncyBhIGJpdCBtZXNzaWVyLCBi
-dXQgd291bGQgaXQgYmUgcG9zc2libGUgZm9yIHVzIHRvIG1vZGlmeSB0aGUKPiBiZWhhdmlvdXIg
-ZGVwZW5kaW5nIG9uIHRoZSByZWFzb24gZm9yIHRoZSBhbGxvY2F0aW9uPyAoTm8gcGFnZV90YWJs
-ZQo+IHNwaW5sb2NrIGhvbGRpbmcgd2hlbiB3ZSdyZSBoaWJlcm5hdGluZykuCgpCdXQgaWYgd2Ug
-bW92ZWQgaXQgdG8gdGhlIHN3YXAgZnJlZSwgaXQgd291bGQgb2NjdXIgaW4gdGhlIHN3YXAgZnJl
-ZQooaWYgYW55KSBfcHJpb3JfIHRvIGhpYmVybmF0aW5nLCB3aGVuIHRlc3RpbmcgZm9yIGhpYmVy
-bmF0aW9uIHdvdWxkCmp1c3Qgc2F5ICJubyIuCgo+PiBJIGRpZCBvbmNlIHRyeSB0byBnbyBiYWNr
-IGFuZCBnZXQgaXQgdG8gd29yayB3aGVuIGZyZWVpbmcgaW5zdGVhZCBvZgo+PiBhbGxvY2F0aW5n
-LCBnYXRoZXJpbmcgdGhlIHN3YXAgc2xvdHMgdXAgdGhlbiBmcmVlaW5nIHdoZW4gY29udmVuaWVu
-dC4KPj4gSXQgd2FzIG1lc3N5LCBkaWRuJ3Qgd29yayB2ZXJ5IHdlbGwsIGFuZCBkaWRuJ3Qgc2hv
-dyBhbiBpbXByb3ZlbWVudCBpbgo+PiBwZXJmb3JtYW5jZSAob24gd2hhdCB3ZSB3ZXJlIHRlc3Rp
-bmcgYXQgdGhlIHRpbWUpLgoKV2hlbiBJIHRyaWVkIGdhdGhlcmluZyB0b2dldGhlciB0aGUgZnJl
-ZXMsIHRoZXJlIHdlcmUganVzdCB0b28gbWFueQpzaG9ydCBleHRlbnRzIHRvIG1ha2UgdGhlIGRp
-c2NhcmRzIHdvcnRoIGRvaW5nIHRoYXQgIHdheS4KCj4KPiBGb3Igb25lIG9yIHR3byBhdCBhIHRp
-bWUsIEkgY2FuIHNlZSB0aGF0IHdvdWxkIGJlIHRoZSBjYXNlLiBJZiBpdCBpcwo+IHBvc3NpYmxl
-IHRvIGRvIHRoZSBkaXNjYXJkIG9mIHBhZ2VzIHVzZWQgZm9yIGhpYmVybmF0aW9uIGFmdGVyIHdl
-J3JlCj4gZmluaXNoZWQgcmVhZGluZyB0aGUgaW1hZ2UsIHRoYXQgd291bGQgYmUgZ29vZC4gRXZl
-biBiZXR0ZXIgd291bGQgYmUgdG8gb25seQo+IGRvIHRoZSBkaXNjYXJkIGZvciBwYWdlcyB0aGF0
-IHdlcmUgYWN0dWFsbHkgdXNlZCBhbmQganVzdCBkbyBhIHNpbXBsZSBmcmVlCj4gZm9yIG9uZXMg
-dGhhdCB3ZXJlIG9ubHkgYWxsb2NhdGVkLgoKVGhlcmUgYXJlIG9wdGltaXphdGlvbnMgd2hpY2gg
-Y291bGQgYmUgZG9uZSBlLmcuIHdlIGRpc2NhcmQgdGhlIHdob2xlCm9mIHN3YXAgYXQgc3dhcG9u
-IHRpbWUsIHRoZW4gcmUtZGlzY2FyZCBlYWNoIDFNQiBhcyB3ZSBiZWdpbiB0bwphbGxvY2F0ZSBm
-cm9tIGl0LiAgQ2xlYXJseSB0aGF0IGhhcyBhIGNlcnRhaW4gc3R1cGlkaXR5IHRvIGl0ISAgQnV0
-CnRoZSBpbml0aWFsIGRpc2NhcmQgb2YgdGhlIHdob2xlIG9mIHN3YXAgc2hvdWxkIGJlIGVmZmlj
-aWVudCBhbmQgd29ydGgKZG9pbmcuICBXZSBjb3VsZCBrZWVwIHRyYWNrIG9mIHdoaWNoIHN3YXAg
-cGFnZXMgaGF2ZSBhbHJlYWR5IGJlZW4KZGlzY2FyZGVkIHNpbmNlIGxhc3QgdXNlZCwgYnV0IHRo
-YXQgd291bGQgdGFrZSB1cCBhbm90aGVyLi4uIGl0J3Mgbm90CmltbWVkaWF0ZWx5IGNsZWFyIHRv
-IG1lIHdoZXRoZXIgaXQncyBhbm90aGVyIHZhbHVlIG9yIGFub3RoZXIgYml0IG9mCnRoZSBzd2Fw
-IGNvdW50LgoKV2UgY291bGQgcHJvdmlkZSBhbiBpbnRlcmZhY2UgZm9yIGhpYmVybmF0aW9uLCB0
-byBkbyBhIG1pbmltYWwgbnVtYmVyCm9mIG1heGltYWwgcmFuZ2UgZGlzY2FyZHMgdG8gc3VpdCBo
-aWJlcm5hdGlvbiAoYnV0IHdlIG5lZWQgdG8gYmUgdmVyeQpjYXJlZnVsIGFib3V0IG9uZ29pbmcg
-YWxsb2NhdGlvbiwgYXMgaW4gYW5vdGhlciB0aHJlYWQpLgoKQnV0IGFyZSB0aGVzZSB0aGluZ3Mg
-d29ydGggZG9pbmc/ICBJIHRoaW5rIG5vdC4gIERpc2NhcmQgaXMgc3VwcG9zZWQKdG8gYmUgaGVs
-cGluZyBub3QgaGluZGVyaW5nOiBpZiB0aGUgZGV2aWNlIG9ubHkgc3VwcG9ydHMgZGlzY2FyZCBp
-biBhCndheSB0aGF0J3Mgc28gaW5lZmZpY2llbnQsIHdlJ2QgZG8gYmV0dGVyIHRvIGJsYWNrbGlz
-dCBpdCBhcyBub3QKc3VwcG9ydGluZyBkaXNjYXJkIGF0IGFsbC4gIE15IHN1c3BpY2lvbiBpcyB0
-aGF0IHlvdXIgU1NEIGlzIG9mIHRoYXQKa2luZDogdGhhdCBpdCB1c2VkIG5vdCB0byBiZSByZWNv
-Z25pemVkIGFzIHN1cHBvcnRpbmcgZGlzY2FyZCwgYnV0IG5vdwppbiAyLjYuMzUgaXQgaXMgc28g
-cmVjb2duaXplZC4gIEhvd2V2ZXIsIHRoYXQncyBqdXN0IGEgc3VzcGljaW9uOiBsZXQKbWUgbm90
-IHNsYW5kZXIgeW91ciBTU0Qgd2hlbiBpdCBtYXkgYmUgbXkgY29kZSBvciBzb21lb25lIGVsc2Un
-cyB0bwpibGFtZTogbmVlZHMgdGVzdGluZy4KCj4KPiBPZiBjb3Vyc2UgSSdtIHRhbGtpbmcgaW4g
-aWRlYWxzIHdpdGhvdXQgaGF2aW5nIGFuIGludGltYXRlIGtub3dsZWRnZSBvZiB0aGUKPiBzd2Fw
-IGFsbG9jYXRpb24gY29kZSBvciBleGFjdGx5IGhvdyB1Z2x5IHRoZSBhYm92ZSB3b3VsZCBtYWtl
-IGl0IDopCj4KPj4gSSd2ZSBub3QgYmVlbiBhYmxlIHRvIHRlc3Qgc3dhcCwgd2l0aCBTU0RzLCBm
-b3Igc2V2ZXJhbCBtb250aHM6IHRoYXQncwo+PiBhIGRyZWFkZnVsIHJlZ3Jlc3Npb24geW91J3Zl
-IGZvdW5kLCB0aGFua3MgYSBsb3QgZm9yIHJlcG9ydGluZyBpdDoKPj4gSSdsbCBiZSB2ZXJ5IGlu
-dGVyZXN0ZWQgdG8gaGVhciB3aGVyZSB5b3UgbG9jYXRlIHRoZSBjYXVzZS4gwqBJZiBpdAo+PiBu
-ZWVkcyBjaGFuZ2VzIHRvIHRoZSB3YXkgc3dhcCBkb2VzIGRpc2NhcmQsIHNvIGJlIGl0Lgo+Cj4g
-SSdtIHRyYXZlbGluZyB0byB0aGUgVVMgb24gU2F0dXJkYXkgYW5kIGhhdmUgYXBwYXJlbnRseSBi
-ZWVuIGdpdmVuIG9uZSBvZgo+IHRob3NlIG5pY2Ugc2VhdHMgd2l0aCBwb3dlciwgc28gSSdsbCB0
-cnkgYW5kIGdldCB0aGUgYmlzZWN0aW9uIGRvbmUgdGhlbi4KClRoYXQgd291bGQgYmUgaGVscGZ1
-bCwgYnV0IGRpc3BsYXlzIGdyZWF0ZXIgZGVkaWNhdGlvbiB0aGFuIEknZCBvZmZlciBteXNlbGYh
-CgpIdWdoCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxp
-bnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpo
-dHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgt
-cG0=
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+Introduce a function allowing the caller to check whether to try to
+enable PCIe AER.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/pci.h             |    2 ++
+ drivers/pci/pcie/aer/aerdrv.c |    9 ++++++---
+ 2 files changed, 8 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/drivers/pci/pci.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -131,8 +131,10 @@ static inline void pci_msi_init_pci_dev(
+ 
+ #ifdef CONFIG_PCIEAER
+ void pci_no_aer(void);
++bool pci_aer_available(void);
+ #else
+ static inline void pci_no_aer(void) { }
++static inline bool pci_aer_available(void) { return false; }
+ #endif
+ 
+ static inline int pci_no_d1d2(struct pci_dev *dev)
+Index: linux-2.6/drivers/pci/pcie/aer/aerdrv.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/aer/aerdrv.c
++++ linux-2.6/drivers/pci/pcie/aer/aerdrv.c
+@@ -72,6 +72,11 @@ void pci_no_aer(void)
+ 	pcie_aer_disable = 1;	/* has priority over 'forceload' */
+ }
+ 
++bool pci_aer_available(void)
++{
++	return !pcie_aer_disable && pci_msi_enabled();
++}
++
+ static int set_device_error_reporting(struct pci_dev *dev, void *data)
+ {
+ 	bool enable = *((bool *)data);
+@@ -411,9 +416,7 @@ static void aer_error_resume(struct pci_
+  */
+ static int __init aer_service_init(void)
+ {
+-	if (pcie_aer_disable)
+-		return -ENXIO;
+-	if (!pci_msi_enabled())
++	if (!pci_aer_available())
+ 		return -ENXIO;
+ 	return pcie_port_service_register(&aerdriver);
+ }
