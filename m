@@ -1,27 +1,23 @@
 From: david@lang.hm
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Fri, 6 Aug 2010 01:07:47 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008060106260.30564@asgard.lang.hm>
-References: <alpine.DEB.2.00.1008041722060.6545@asgard.lang.hm>
+Date: Fri, 6 Aug 2010 01:29:57 -0700 (PDT)
+Message-ID: <alpine.DEB.2.00.1008060111240.30564__17480.4777642295$1281083561$gmane$org@asgard.lang.hm>
+References: <20100804233013.GN24163@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008041643490.6545@asgard.lang.hm>
+	<20100805001716.GO24163@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008041722060.6545@asgard.lang.hm>
 	<20100805004802.GP24163@linux.vnet.ibm.com>
 	<alpine.DEB.2.00.1008042208350.25170@asgard.lang.hm>
 	<20100805151211.GA10080@linux.vnet.ibm.com>
 	<alpine.DEB.2.00.1008050832010.25170@asgard.lang.hm>
 	<AANLkTi=Yyyc-hOPbkJtsnKCVzncnFq8DPnonmyckekwm@mail.gmail.com>
-	<20100805203102.GN2447@linux.vnet.ibm.com>
-	<AANLkTimaaLSwVusJ=w5-QptoauBnHH0JvCvmWUr0y+KD@mail.gmail.com>
-	<alpine.DEB.2.00.1008051453450.30632@asgard.lang.hm>
-	<AANLkTikCCeMG=DAQ04xqkvqH9tngBWyBA5VQTD4_15xU@mail.gmail.com>
-	<20100805230304.GQ2447@linux.vnet.ibm.com>
-	<AANLkTinatKEBfHhMnKc5wbys13P81PKWSc+nxccgHe-Y@mail.gmail.com>
-	<alpine.DEB.2.00.1008051715520.30632@asgard.lang.hm>
-	<AANLkTikOuY-q42mDRmxc-9W0uLeJeW-hiFG26WrV7CfU@mail.gmail.com>
-	<alpine.DEB.2.00.1008051800360.25170@asgard.lang.hm>
-	<AANLkTimWqFkDWvGwVGWD94488gs+CXgpB9juwM5G11ud@mail.gmail.com>
+	<alpine.DEB.2.00.1008051312220.23543@asgard.lang.hm>
+	<20100805231936.GS2447@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="680960-1185624910-1281082068=:30564"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTimWqFkDWvGwVGWD94488gs+CXgpB9juwM5G11ud@mail.gmail.com>
+In-Reply-To: <20100805231936.GS2447@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -31,71 +27,140 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, kevin granade <kevin.granade@gmail.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, kevin granade <kevin.granade@gmail.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, 5 Aug 2010, Paul E. McKenney wrote:
 
---680960-1185624910-1281082068=:30564
-Content-Type: TEXT/PLAIN; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id o7688Dc5006318
-
-On Thu, 5 Aug 2010, Brian Swetland wrote:
-
-> On Thu, Aug 5, 2010 at 6:01 PM,  <david@lang.hm> wrote:
->> On Thu, 5 Aug 2010, Brian Swetland wrote:
->>> On Thu, Aug 5, 2010 at 5:16 PM, =C2=A0<david@lang.hm> wrote:
->>>>>>
->>>>>> So for an mp3 playback, does an Android suspend between data fetch=
-es?
->>>>>
->>>>> It can if the latency is long enough (which is why I point out low
->>>>> power audio which is usually high latency). =C2=A0For low latency (=
-system
->>>>> sounds, etc) 10-25ms between buffers it's not practical to fully
->>>>> suspend but we will go to the lowest power state in idle if possibl=
-e.
+> On Thu, Aug 05, 2010 at 01:26:18PM -0700, david@lang.hm wrote:
+>> On Thu, 5 Aug 2010, kevin granade wrote:
+>>
+>>> On Thu, Aug 5, 2010 at 10:46 AM,  <david@lang.hm> wrote:
+>>>> On Thu, 5 Aug 2010, Paul E. McKenney wrote:
 >>>>
->>>> the playback is able to continue even with all the clocks stopped? t=
-hat
->>>> surprises me. I would hav expected it to be able to sleep while play=
-ing
->>>> audio, but not do a full suspend.
+>>>>> On Wed, Aug 04, 2010 at 10:18:40PM -0700, david@lang.hm wrote:
+>>>>>>
+>>>>>> On Wed, 4 Aug 2010, Paul E. McKenney wrote:
+>>>>>>>
+>>>>>>> On Wed, Aug 04, 2010 at 05:25:53PM -0700, david@lang.hm wrote:
+>>>>>>>>
+>>>>>>>> On Wed, 4 Aug 2010, Paul E. McKenney wrote:
+>>>>>
+>>>>> [ . . . ]
+>>>>>
+>>>> however, in the case of Android I think the timeouts have to end up being
+>>>> _much_ longer. Otherwise you have the problem of loading an untrusted book
+>>>> reader app on the device and the device suspends while you are reading the
+>>>> page.
+>>>>
+>>>> currently Android works around this by having a wakelock held whenever the
+>>>> display is on. This seems backwards to me, the display should be on because
+>>>> the system is not suspended, not the system is prevented from suspending
+>>>> because the display is on.
+>>>>
+>>>> Rather than having the display be on causing a wavelock to be held (with the
+>>>> code that is controls the display having a timeout for how long it leaves
+>>>> the display on), I would invert this and have the timeout be based on system
+>>>> activity, and when it decides the system is not active, turn off the display
+>>>> (along with other things as it suspends)
 >>>
->>> Obviously not all clocks are stopped (the DSP and codec are powered
->>> and clocked, for example), but yeah we can clock gate and power gate
->>> the cpu and most other peripherals while audio is playing on a number
->>> of ARM SoC designs available today (and the past few years).
+>>> IIRC, this was a major point of their (Android's) power management
+>>> policy.  User input of any kind would reset the "display active"
+>>> timeout, which is the primary thing keeping random untrusted
+>>> user-facing programs from being suspended while in use.  They seemed
+>>> to consider this to be a special case in their policy, but from the
+>>> kernel's point of view it is just another suspend blocker being held.
+>>>
+>>> I'm not sure this is the best use case to look at though, because
+>>> since it is user-facing, the timeout durations are on a different
+>>> scale than the ones they are really worried about.  I think another
+>>> category of use case that they are worried about is:
+>>>
+>>> (in suspend) -> wakeup due to network -> process network activity -> suspend
+>>>
+>>> or an example that has been mentioned previously:
+>>>
+>>> (in suspend) -> wakeup due to alarm for audio processing -> process
+>>> batch of audio -> suspend
 >>
->> does this then mean that you have multiple variations of suspend?
+>> when you suspend the audio will shut off, so it's sleep ->wake ->
+>> sleep, not suspend
 >>
->> for example, one where the audio stuff is left powered, and one where =
-it
->> isn't?
+>>> In both of these cases, the display may never power on (phone might
+>>> beep to indicate txt message or email, audio just keeps playing), so
+>>> the magnitude of the "timeout" for suspending again should be very
+>>> small.  Specifically, they don't want there to be a timeout at all, so
+>>> as little time as possible time is spent out of suspend in addition to
+>>> the time required to handle the event that caused wakeup.
+>>
+>> it really depnds on the frequency of the wakeups.
+>>
+>> if you get a network packet once every 5 min and need to wake to
+>> process it, staying awake for 20 seconds after finishing procesing
+>> is FAR more significant than if you get a network packet once every
+>> hour. It's not just the factor of 20 that simple math would indicate
+>> because the time in suspend eats power as well.
+>>
+>> I don't know real numbers, so these are made up for this example
+>>
+>> if suspend (with the cell live to receive packets) is 10ma average
+>> current and full power is 500ma average current
+>>
+>> packets every 5 min with .1 sec wake time will eat ~13maH per hour
+>>
+>> packets every 5 min with 10 second wake time will eat ~37maH per hour
+>>
+>> packets every hour with .1 sec wake time will eat ~10maH per hour
+>>
+>> packets every hour with 10 sec wake time will eat ~11maH per hour
+>>
+>> so if you have frequent wakeups, staying awake 100 times as long
+>> will cut your battery life to 1/3 what it was before.
+>>
+>> if your wakeups are rare, it's about a 10% hit to stay awake 100
+>> times as long.
+>>
+>> there is a lot of room for tuning the timeouts here.
 >
-> While the cpu (and the bulk of the system) is suspended, it's not
-> uncommon for some peripherals to continue to operate -- for example a
-> cellular radio, gps, low power audio playback, etc.  Details will vary
-> depending on the SoC and board design.  It's not so much a different
-> suspend mode (the system is still suspended), just a matter of whether
-> a peripheral can operate independently (and if it is lower power for
-> it to do so).
+> Especially given different scenarios, for example, audio playback
+> when the device is in airplane mode.  ;-)
 
-this helps, but isn't quite what I was trying to ask.
+hmm, I've been thinking and talking in terms of two classes of cgroups, 
+trusted and untrusted. I wonder if it would be possible to set timeouts 
+for each cgroup instead)
 
-on a given piece of hardware, does suspend always leave the same=20
-peripherals on, or do you sometimes power more things down than other=20
-times when suspending?
+the system would go to sleep IFF all cgroups have been idle longer than 
+the idle time (with -1 idle time being 'ignore this cgroup')
+
+if this could be done you could set longer times for things designed for 
+user-interaction than you do for other purposes.
+
+you could set media to 0 idle time (so that as soon as it finishes 
+processing the system can sleep until the next timer)
+
+to do this, the code making the decision would have to be able to find out 
+the following fairly cheaply.
+
+1. for this cgroup, what was the last time something ran
+
+2. for this cgroup, what is the next timer set
+
+it would be nice to get network traffic/connection stats.
+
+so two questions.
+
+first, what else would you need to get accumulated for the cgroup
+
+second, is there a fairly easy way to have these stats available?
+
+for the 'last time it ran' stat, this seems like you could have a per-cpu 
+variable per cgroup that's fairly cheap to update, but you would need to 
+take a global lock to read accuratly (the lock may be expensive enough 
+that it's worth trying to read the variables from the other cpu without a 
+lock, just to see if it's remotely possible to sleep/suspend)
+
+with timers, is it possible to have multiple timer wheels (one per 
+cgroup)?
 
 David Lang
---680960-1185624910-1281082068=:30564
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-
---680960-1185624910-1281082068=:30564--
