@@ -1,25 +1,17 @@
-From: david@lang.hm
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Thu, 5 Aug 2010 18:01:24 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008051800360.25170@asgard.lang.hm>
-References: <alpine.DEB.2.00.1008041722060.6545@asgard.lang.hm>
-	<20100805004802.GP24163@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008042208350.25170@asgard.lang.hm>
-	<20100805151211.GA10080@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008050832010.25170@asgard.lang.hm>
-	<AANLkTi=Yyyc-hOPbkJtsnKCVzncnFq8DPnonmyckekwm@mail.gmail.com>
-	<20100805203102.GN2447@linux.vnet.ibm.com>
-	<AANLkTimaaLSwVusJ=w5-QptoauBnHH0JvCvmWUr0y+KD@mail.gmail.com>
-	<alpine.DEB.2.00.1008051453450.30632@asgard.lang.hm>
-	<AANLkTikCCeMG=DAQ04xqkvqH9tngBWyBA5VQTD4_15xU@mail.gmail.com>
-	<20100805230304.GQ2447@linux.vnet.ibm.com>
-	<AANLkTinatKEBfHhMnKc5wbys13P81PKWSc+nxccgHe-Y@mail.gmail.com>
-	<alpine.DEB.2.00.1008051715520.30632@asgard.lang.hm>
-	<AANLkTikOuY-q42mDRmxc-9W0uLeJeW-hiFG26WrV7CfU@mail.gmail.com>
+From: Hugh Dickins <hughd@google.com>
+Subject: Re: 2.6.35 Regression: Ages spent discarding blocks that
+	weren't used!
+Date: Thu, 5 Aug 2010 18:15:52 -0700
+Message-ID: <AANLkTi=NMHkKduZzsLiiYt3=w8++8epb5aGrqv7V3-vB__9060.49178815938$1281057489$gmane$org@mail.gmail.com>
+References: <4C58C528.4000606@tuxonice.net> <4C5960B0.7020003@teksavvy.com>
+	<4C59DA16.4020500@tuxonice.net>
+	<AANLkTik_PH-7T7OFtzaCtPbAHE6pqnYMUsjP25KtsRnR@mail.gmail.com>
+	<4C5A59FC.1030304@tuxonice.net>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="680960-349699584-1281056485=:25170"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikOuY-q42mDRmxc-9W0uLeJeW-hiFG26WrV7CfU@mail.gmail.com>
+In-Reply-To: <4C5A59FC.1030304@tuxonice.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,53 +21,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, kevin granade <kevin.granade@gmail.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Nigel Cunningham <nigel@tuxonice.net>
+Cc: Mark Lord <kernel@teksavvy.com>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---680960-349699584-1281056485=:25170
-Content-Type: TEXT/PLAIN; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id o7612Qo1026352
-
-On Thu, 5 Aug 2010, Brian Swetland wrote:
-
-> On Thu, Aug 5, 2010 at 5:16 PM,  <david@lang.hm> wrote:
->>>>
->>>> So for an mp3 playback, does an Android suspend between data fetches=
-?
->>>
->>> It can if the latency is long enough (which is why I point out low
->>> power audio which is usually high latency). =C2=A0For low latency (sy=
-stem
->>> sounds, etc) 10-25ms between buffers it's not practical to fully
->>> suspend but we will go to the lowest power state in idle if possible.
->>
->> the playback is able to continue even with all the clocks stopped? tha=
-t
->> surprises me. I would hav expected it to be able to sleep while playin=
-g
->> audio, but not do a full suspend.
->
-> Obviously not all clocks are stopped (the DSP and codec are powered
-> and clocked, for example), but yeah we can clock gate and power gate
-> the cpu and most other peripherals while audio is playing on a number
-> of ARM SoC designs available today (and the past few years).
-
-does this then mean that you have multiple variations of suspend?
-
-for example, one where the audio stuff is left powered, and one where it=20
-isn't?
-
-David Lang
---680960-349699584-1281056485=:25170
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-
---680960-349699584-1281056485=:25170--
+T24gV2VkLCBBdWcgNCwgMjAxMCBhdCAxMToyOCBQTSwgTmlnZWwgQ3VubmluZ2hhbSA8bmlnZWxA
+dHV4b25pY2UubmV0PiB3cm90ZToKPiBPbiAwNS8wOC8xMCAxMzo1OCwgSHVnaCBEaWNraW5zIHdy
+b3RlOgo+PiBJIGFncmVlIGl0IHdvdWxkIG1ha2UgbW9yZSBzZW5zZSB0byBkaXNjYXJkIHN3YXAg
+d2hlbiBmcmVlaW5nIHJhdGhlcgo+PiB0aGFuIHdoZW4gYWxsb2NhdGluZywgSSB3aXNoIHdlIGNv
+dWxkLiDCoEJ1dCBhdCB0aGUgZnJlZWluZyBwb2ludCB3ZSdyZQo+PiBvZnRlbiBob2xkaW5nIGEg
+cGFnZV90YWJsZSBzcGlubG9jayBhdCBhbiBvdXRlciBsZXZlbCwgYW5kIGl0J3MganVzdAo+PiBv
+bmUgcGFnZSB3ZSdyZSBnaXZlbiB0byBmcmVlLiDCoEZyZWVpbmcgaXMgYW4gb3BlcmF0aW9uIHlv
+dSB3YW50IHRvIGJlCj4+IGNvbWZvcnRhYmxlIGRvaW5nIHdoZW4geW91J3JlIHNob3J0IG9mIHJl
+c291cmNlcywgd2hlcmVhcyBkaXNjYXJkIGlzIGEKPj4ga2luZCBvZiBJL08gb3BlcmF0aW9uIHdo
+aWNoIG5lZWRzIHJlc291cmNlcy4KPj4KPj4gSXQgaGFwcGVucyB0aGF0IGluIHRoZSBhbGxvY2F0
+aW9uIHBhdGgsIHRoZXJlIHdhcyBhbHJlYWR5IGEgcGxhY2UgYXQKPj4gd2hpY2ggd2Ugc2Nhbm5l
+ZCBmb3IgYSBjbHVzdGVyIG9mIDFNQiBmcmVlIChJJ20gdGhpbmtpbmcgb2YgNGtCIHBhZ2VzCj4+
+IHdoZW4gSSBzYXkgMU1CKSwgc28gdGhhdCB3YXMgdGhlIG5lYXRlc3QgcG9pbnQgYXQgd2hpY2gg
+dG8gc2l0ZSB0aGUKPj4gZGlzY2FyZCAtIHRob3VnaCBldmVuIHRoZXJlIHdlIGhhdmUgdG8gYmUg
+Y2FyZWZ1bCBhYm91dCByYWNpbmcKPj4gYWxsb2NhdGlvbnMuCj4KPiBNYWtlcyBzZW5zZSB3aGVu
+IHlvdSBwdXQgaXQgbGlrZSB0aGF0IDopCj4KPiBJIGtub3cgaXQncyBhIGJpdCBtZXNzaWVyLCBi
+dXQgd291bGQgaXQgYmUgcG9zc2libGUgZm9yIHVzIHRvIG1vZGlmeSB0aGUKPiBiZWhhdmlvdXIg
+ZGVwZW5kaW5nIG9uIHRoZSByZWFzb24gZm9yIHRoZSBhbGxvY2F0aW9uPyAoTm8gcGFnZV90YWJs
+ZQo+IHNwaW5sb2NrIGhvbGRpbmcgd2hlbiB3ZSdyZSBoaWJlcm5hdGluZykuCgpCdXQgaWYgd2Ug
+bW92ZWQgaXQgdG8gdGhlIHN3YXAgZnJlZSwgaXQgd291bGQgb2NjdXIgaW4gdGhlIHN3YXAgZnJl
+ZQooaWYgYW55KSBfcHJpb3JfIHRvIGhpYmVybmF0aW5nLCB3aGVuIHRlc3RpbmcgZm9yIGhpYmVy
+bmF0aW9uIHdvdWxkCmp1c3Qgc2F5ICJubyIuCgo+PiBJIGRpZCBvbmNlIHRyeSB0byBnbyBiYWNr
+IGFuZCBnZXQgaXQgdG8gd29yayB3aGVuIGZyZWVpbmcgaW5zdGVhZCBvZgo+PiBhbGxvY2F0aW5n
+LCBnYXRoZXJpbmcgdGhlIHN3YXAgc2xvdHMgdXAgdGhlbiBmcmVlaW5nIHdoZW4gY29udmVuaWVu
+dC4KPj4gSXQgd2FzIG1lc3N5LCBkaWRuJ3Qgd29yayB2ZXJ5IHdlbGwsIGFuZCBkaWRuJ3Qgc2hv
+dyBhbiBpbXByb3ZlbWVudCBpbgo+PiBwZXJmb3JtYW5jZSAob24gd2hhdCB3ZSB3ZXJlIHRlc3Rp
+bmcgYXQgdGhlIHRpbWUpLgoKV2hlbiBJIHRyaWVkIGdhdGhlcmluZyB0b2dldGhlciB0aGUgZnJl
+ZXMsIHRoZXJlIHdlcmUganVzdCB0b28gbWFueQpzaG9ydCBleHRlbnRzIHRvIG1ha2UgdGhlIGRp
+c2NhcmRzIHdvcnRoIGRvaW5nIHRoYXQgIHdheS4KCj4KPiBGb3Igb25lIG9yIHR3byBhdCBhIHRp
+bWUsIEkgY2FuIHNlZSB0aGF0IHdvdWxkIGJlIHRoZSBjYXNlLiBJZiBpdCBpcwo+IHBvc3NpYmxl
+IHRvIGRvIHRoZSBkaXNjYXJkIG9mIHBhZ2VzIHVzZWQgZm9yIGhpYmVybmF0aW9uIGFmdGVyIHdl
+J3JlCj4gZmluaXNoZWQgcmVhZGluZyB0aGUgaW1hZ2UsIHRoYXQgd291bGQgYmUgZ29vZC4gRXZl
+biBiZXR0ZXIgd291bGQgYmUgdG8gb25seQo+IGRvIHRoZSBkaXNjYXJkIGZvciBwYWdlcyB0aGF0
+IHdlcmUgYWN0dWFsbHkgdXNlZCBhbmQganVzdCBkbyBhIHNpbXBsZSBmcmVlCj4gZm9yIG9uZXMg
+dGhhdCB3ZXJlIG9ubHkgYWxsb2NhdGVkLgoKVGhlcmUgYXJlIG9wdGltaXphdGlvbnMgd2hpY2gg
+Y291bGQgYmUgZG9uZSBlLmcuIHdlIGRpc2NhcmQgdGhlIHdob2xlCm9mIHN3YXAgYXQgc3dhcG9u
+IHRpbWUsIHRoZW4gcmUtZGlzY2FyZCBlYWNoIDFNQiBhcyB3ZSBiZWdpbiB0bwphbGxvY2F0ZSBm
+cm9tIGl0LiAgQ2xlYXJseSB0aGF0IGhhcyBhIGNlcnRhaW4gc3R1cGlkaXR5IHRvIGl0ISAgQnV0
+CnRoZSBpbml0aWFsIGRpc2NhcmQgb2YgdGhlIHdob2xlIG9mIHN3YXAgc2hvdWxkIGJlIGVmZmlj
+aWVudCBhbmQgd29ydGgKZG9pbmcuICBXZSBjb3VsZCBrZWVwIHRyYWNrIG9mIHdoaWNoIHN3YXAg
+cGFnZXMgaGF2ZSBhbHJlYWR5IGJlZW4KZGlzY2FyZGVkIHNpbmNlIGxhc3QgdXNlZCwgYnV0IHRo
+YXQgd291bGQgdGFrZSB1cCBhbm90aGVyLi4uIGl0J3Mgbm90CmltbWVkaWF0ZWx5IGNsZWFyIHRv
+IG1lIHdoZXRoZXIgaXQncyBhbm90aGVyIHZhbHVlIG9yIGFub3RoZXIgYml0IG9mCnRoZSBzd2Fw
+IGNvdW50LgoKV2UgY291bGQgcHJvdmlkZSBhbiBpbnRlcmZhY2UgZm9yIGhpYmVybmF0aW9uLCB0
+byBkbyBhIG1pbmltYWwgbnVtYmVyCm9mIG1heGltYWwgcmFuZ2UgZGlzY2FyZHMgdG8gc3VpdCBo
+aWJlcm5hdGlvbiAoYnV0IHdlIG5lZWQgdG8gYmUgdmVyeQpjYXJlZnVsIGFib3V0IG9uZ29pbmcg
+YWxsb2NhdGlvbiwgYXMgaW4gYW5vdGhlciB0aHJlYWQpLgoKQnV0IGFyZSB0aGVzZSB0aGluZ3Mg
+d29ydGggZG9pbmc/ICBJIHRoaW5rIG5vdC4gIERpc2NhcmQgaXMgc3VwcG9zZWQKdG8gYmUgaGVs
+cGluZyBub3QgaGluZGVyaW5nOiBpZiB0aGUgZGV2aWNlIG9ubHkgc3VwcG9ydHMgZGlzY2FyZCBp
+biBhCndheSB0aGF0J3Mgc28gaW5lZmZpY2llbnQsIHdlJ2QgZG8gYmV0dGVyIHRvIGJsYWNrbGlz
+dCBpdCBhcyBub3QKc3VwcG9ydGluZyBkaXNjYXJkIGF0IGFsbC4gIE15IHN1c3BpY2lvbiBpcyB0
+aGF0IHlvdXIgU1NEIGlzIG9mIHRoYXQKa2luZDogdGhhdCBpdCB1c2VkIG5vdCB0byBiZSByZWNv
+Z25pemVkIGFzIHN1cHBvcnRpbmcgZGlzY2FyZCwgYnV0IG5vdwppbiAyLjYuMzUgaXQgaXMgc28g
+cmVjb2duaXplZC4gIEhvd2V2ZXIsIHRoYXQncyBqdXN0IGEgc3VzcGljaW9uOiBsZXQKbWUgbm90
+IHNsYW5kZXIgeW91ciBTU0Qgd2hlbiBpdCBtYXkgYmUgbXkgY29kZSBvciBzb21lb25lIGVsc2Un
+cyB0bwpibGFtZTogbmVlZHMgdGVzdGluZy4KCj4KPiBPZiBjb3Vyc2UgSSdtIHRhbGtpbmcgaW4g
+aWRlYWxzIHdpdGhvdXQgaGF2aW5nIGFuIGludGltYXRlIGtub3dsZWRnZSBvZiB0aGUKPiBzd2Fw
+IGFsbG9jYXRpb24gY29kZSBvciBleGFjdGx5IGhvdyB1Z2x5IHRoZSBhYm92ZSB3b3VsZCBtYWtl
+IGl0IDopCj4KPj4gSSd2ZSBub3QgYmVlbiBhYmxlIHRvIHRlc3Qgc3dhcCwgd2l0aCBTU0RzLCBm
+b3Igc2V2ZXJhbCBtb250aHM6IHRoYXQncwo+PiBhIGRyZWFkZnVsIHJlZ3Jlc3Npb24geW91J3Zl
+IGZvdW5kLCB0aGFua3MgYSBsb3QgZm9yIHJlcG9ydGluZyBpdDoKPj4gSSdsbCBiZSB2ZXJ5IGlu
+dGVyZXN0ZWQgdG8gaGVhciB3aGVyZSB5b3UgbG9jYXRlIHRoZSBjYXVzZS4gwqBJZiBpdAo+PiBu
+ZWVkcyBjaGFuZ2VzIHRvIHRoZSB3YXkgc3dhcCBkb2VzIGRpc2NhcmQsIHNvIGJlIGl0Lgo+Cj4g
+SSdtIHRyYXZlbGluZyB0byB0aGUgVVMgb24gU2F0dXJkYXkgYW5kIGhhdmUgYXBwYXJlbnRseSBi
+ZWVuIGdpdmVuIG9uZSBvZgo+IHRob3NlIG5pY2Ugc2VhdHMgd2l0aCBwb3dlciwgc28gSSdsbCB0
+cnkgYW5kIGdldCB0aGUgYmlzZWN0aW9uIGRvbmUgdGhlbi4KClRoYXQgd291bGQgYmUgaGVscGZ1
+bCwgYnV0IGRpc3BsYXlzIGdyZWF0ZXIgZGVkaWNhdGlvbiB0aGFuIEknZCBvZmZlciBteXNlbGYh
+CgpIdWdoCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxp
+bnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpo
+dHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgt
+cG0=
