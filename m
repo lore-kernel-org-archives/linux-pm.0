@@ -1,134 +1,36 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: Re: 2.6.35 Regression: Ages spent discarding blocks that
- weren't used!
-Date: Fri, 06 Aug 2010 14:40:58 +1000
-Message-ID: <4C5B925A.5000409__11713.111974723$1281069805$gmane$org@tuxonice.net>
-References: <4C58C528.4000606@tuxonice.net>	<4C5960B0.7020003@teksavvy.com>	<4C59DA16.4020500@tuxonice.net>	<AANLkTik_PH-7T7OFtzaCtPbAHE6pqnYMUsjP25KtsRnR@mail.gmail.com>	<4C5A59FC.1030304@tuxonice.net>
-	<AANLkTi=NMHkKduZzsLiiYt3=w8++8epb5aGrqv7V3-vB@mail.gmail.com>
+From: Stephan Diestelhorst <stephan.diestelhorst@amd.com>
+Subject: Re: [PATCH] SATA / AHCI: Do not play with the link PM during suspend to RAM
+Date: Fri, 6 Aug 2010 08:30:50 +0200
+Message-ID: <201008060830.50889.stephan.diestelhorst@amd.com>
+References: <201007091750.05020.stephan.diestelhorst@amd.com> <4C52DF50.80009@kernel.org> <4C5AE1E2.6070601@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=NMHkKduZzsLiiYt3=w8++8epb5aGrqv7V3-vB@mail.gmail.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Hugh Dickins <hughd@google.com>
-Cc: Mark Lord <kernel@teksavvy.com>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <4C5AE1E2.6070601@gmail.com>
+Sender: linux-ide-owner@vger.kernel.org
+To: Tejun Heo <htejun@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Hi Tejun,
 
-On 06/08/10 11:15, Hugh Dickins wrote:
-> On Wed, Aug 4, 2010 at 11:28 PM, Nigel Cunningham<nigel@tuxonice.net>  wrote:
->> On 05/08/10 13:58, Hugh Dickins wrote:
->>> I agree it would make more sense to discard swap when freeing rather
->>> than when allocating, I wish we could.  But at the freeing point we're
->>> often holding a page_table spinlock at an outer level, and it's just
->>> one page we're given to free.  Freeing is an operation you want to be
->>> comfortable doing when you're short of resources, whereas discard is a
->>> kind of I/O operation which needs resources.
+On Thursday 05 August 2010, 18:08:02 Tejun Heo wrote:
+> Can you please try the following patch and see whether the problem
+> goes away?
+<snip>
 
-The more I think about this, the more it seems to me that doing the 
-discard at allocation time is just wrong. How about a strategy in which 
-you do the discard immediately if resources permit, or flag it as in 
-need of doing (at a future swap free of that page or swap off time) if 
-things are too pressured at the moment? I haven't put thought into what 
-data structures could be used for that - just want to ask for now if 
-you'd be happy with the idea of looking into a strategy like that.
+to which revision does the patch apply? I didn't get it to apply
+cleanly to Linus' kernel HEAD or the 2.6.34 stable tag. Maybe I am
+missing something, since I am a git-n00b (use Mercurial all the time)?
 
->>> It happens that in the allocation path, there was already a place at
->>> which we scanned for a cluster of 1MB free (I'm thinking of 4kB pages
->>> when I say 1MB), so that was the neatest point at which to site the
->>> discard - though even there we have to be careful about racing
->>> allocations.
->>
->> Makes sense when you put it like that :)
->>
->> I know it's a bit messier, but would it be possible for us to modify the
->> behaviour depending on the reason for the allocation? (No page_table
->> spinlock holding when we're hibernating).
->
-> But if we moved it to the swap free, it would occur in the swap free
-> (if any) _prior_ to hibernating, when testing for hibernation would
-> just say "no".
+Thanks,
+  Stephan
+-- 
+Stephan Diestelhorst, AMD Operating System Research Center
+stephan.diestelhorst@amd.com, Tel. +49 (0)351 448 356 719
 
-I see what you mean. I'm not so worried by that because if we're having 
-to free swap in order to hibernate, things are going to be slow anyway 
-and discards aren't going to stand out nearly so much.
+Advanced Micro Devices GmbH Einsteinring 24 85609 Dornach
+General Managers: Alberto Bozzo, Andrew Bowd
+Registration: Dornach, Landkr. Muenchen; Registerger. Muenchen, HRB Nr. 43632
 
-I'm much more concerned by the fact that we're currently doing discards 
-for swap that wasn't even being used. If I reboot, swapon and then 
-hibernate without having touched swap so far, I still get the 'hit' on 
-the whole 4GB. I don't think we should be storing on disk a "this hasn't 
-been used since last discarded" flag, so I'm looking for other solutions.
-
->>> I did once try to go back and get it to work when freeing instead of
->>> allocating, gathering the swap slots up then freeing when convenient.
->>> It was messy, didn't work very well, and didn't show an improvement in
->>> performance (on what we were testing at the time).
->
-> When I tried gathering together the frees, there were just too many
-> short extents to make the discards worth doing that  way.
-
-Okay.
-
->> For one or two at a time, I can see that would be the case. If it is
->> possible to do the discard of pages used for hibernation after we're
->> finished reading the image, that would be good. Even better would be to only
->> do the discard for pages that were actually used and just do a simple free
->> for ones that were only allocated.
->
-> There are optimizations which could be done e.g. we discard the whole
-> of swap at swapon time, then re-discard each 1MB as we begin to
-> allocate from it.  Clearly that has a certain stupidity to it!  But
-> the initial discard of the whole of swap should be efficient and worth
-> doing.  We could keep track of which swap pages have already been
-> discarded since last used, but that would take up another... it's not
-> immediately clear to me whether it's another value or another bit of
-> the swap count.
->
-> We could provide an interface for hibernation, to do a minimal number
-> of maximal range discards to suit hibernation (but we need to be very
-> careful about ongoing allocation, as in another thread).
->
-> But are these things worth doing?  I think not.  Discard is supposed
-> to be helping not hindering: if the device only supports discard in a
-> way that's so inefficient, we'd do better to blacklist it as not
-> supporting discard at all.  My suspicion is that your SSD is of that
-> kind: that it used not to be recognized as supporting discard, but now
-> in 2.6.35 it is so recognized.  However, that's just a suspicion: let
-> me not slander your SSD when it may be my code or someone else's to
-> blame: needs testing.
-
-I've done the bisect now - spent the time today instead of on the place, 
-and it took me to fbbf055692aeb25c54c49d9ca84532de836fbba0. This is 
-Christoph's Hellwig's patch "block: fix DISCARD_BARRIER requests".
-
-Could the problem be that we're using DISCARD_FL_BARRIER too much? (I'm 
-still looking at the code here, so am writing without having thought 
-everything through _really_ carefully.
-
->> Of course I'm talking in ideals without having an intimate knowledge of the
->> swap allocation code or exactly how ugly the above would make it :)
->>
->>> I've not been able to test swap, with SSDs, for several months: that's
->>> a dreadful regression you've found, thanks a lot for reporting it:
->>> I'll be very interested to hear where you locate the cause.  If it
->>> needs changes to the way swap does discard, so be it.
->>
->> I'm traveling to the US on Saturday and have apparently been given one of
->> those nice seats with power, so I'll try and get the bisection done then.
->
-> That would be helpful, but displays greater dedication than I'd offer myself!
-
-Done without an airplane now. I don't have to be credited with too much 
-dedication! :)
-
-Nigel
