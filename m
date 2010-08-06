@@ -1,19 +1,23 @@
-From: Hugh Dickins <hughd@google.com>
-Subject: Re: 2.6.35 Regression: Ages spent discarding blocks that
-	weren't used!
-Date: Fri, 6 Aug 2010 15:07:25 -0700
-Message-ID: <AANLkTinU24v6Mty54YL3gv3M5S+4jdN5vHD54KknchAG__10400.933356914$1281132648$gmane$org@mail.gmail.com>
-References: <4C58C528.4000606@tuxonice.net> <4C5960B0.7020003@teksavvy.com>
-	<4C59DA16.4020500@tuxonice.net>
-	<AANLkTik_PH-7T7OFtzaCtPbAHE6pqnYMUsjP25KtsRnR@mail.gmail.com>
-	<4C5A59FC.1030304@tuxonice.net>
-	<AANLkTi=NMHkKduZzsLiiYt3=w8++8epb5aGrqv7V3-vB@mail.gmail.com>
-	<4C5B925A.5000409@tuxonice.net>
+From: david@lang.hm
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Fri, 6 Aug 2010 15:12:43 -0700 (PDT)
+Message-ID: <alpine.DEB.2.00.1008061500060.30564__12100.7350892343$1281132918$gmane$org@asgard.lang.hm>
+References: <20100805001716.GO24163@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008041722060.6545@asgard.lang.hm>
+	<20100805004802.GP24163@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008042208350.25170@asgard.lang.hm>
+	<20100805151211.GA10080@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008050832010.25170@asgard.lang.hm>
+	<AANLkTi=Yyyc-hOPbkJtsnKCVzncnFq8DPnonmyckekwm@mail.gmail.com>
+	<alpine.DEB.2.00.1008051312220.23543@asgard.lang.hm>
+	<20100805231936.GS2447@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008060111240.30564@asgard.lang.hm>
+	<20100806172409.GI2432@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C5B925A.5000409@tuxonice.net>
+In-Reply-To: <20100806172409.GI2432@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,69 +27,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@tuxonice.net>
-Cc: Christoph Hellwig <hch@infradead.org>, Mark Lord <kernel@teksavvy.com>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, kevin granade <kevin.granade@gmail.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBBdWcgNSwgMjAxMCBhdCA5OjQwIFBNLCBOaWdlbCBDdW5uaW5naGFtIDxuaWdlbEB0
-dXhvbmljZS5uZXQ+IHdyb3RlOgo+IE9uIDA2LzA4LzEwIDExOjE1LCBIdWdoIERpY2tpbnMgd3Jv
-dGU6Cj4+IE9uIFdlZCwgQXVnIDQsIDIwMTAgYXQgMTE6MjggUE0sIE5pZ2VsIEN1bm5pbmdoYW08
-bmlnZWxAdHV4b25pY2UubmV0Pgo+PiDCoHdyb3RlOgo+Pj4+PiBPbiAwNS8wOC8xMCAxMzo1OCwg
-SHVnaCBEaWNraW5zIHdyb3RlOgo+Pj4+Cj4+Pj4gSSBhZ3JlZSBpdCB3b3VsZCBtYWtlIG1vcmUg
-c2Vuc2UgdG8gZGlzY2FyZCBzd2FwIHdoZW4gZnJlZWluZyByYXRoZXIKPj4+PiB0aGFuIHdoZW4g
-YWxsb2NhdGluZywgSSB3aXNoIHdlIGNvdWxkLiDCoEJ1dCBhdCB0aGUgZnJlZWluZyBwb2ludCB3
-ZSdyZQo+Pj4+IG9mdGVuIGhvbGRpbmcgYSBwYWdlX3RhYmxlIHNwaW5sb2NrIGF0IGFuIG91dGVy
-IGxldmVsLCBhbmQgaXQncyBqdXN0Cj4+Pj4gb25lIHBhZ2Ugd2UncmUgZ2l2ZW4gdG8gZnJlZS4g
-wqBGcmVlaW5nIGlzIGFuIG9wZXJhdGlvbiB5b3Ugd2FudCB0byBiZQo+Pj4+IGNvbWZvcnRhYmxl
-IGRvaW5nIHdoZW4geW91J3JlIHNob3J0IG9mIHJlc291cmNlcywgd2hlcmVhcyBkaXNjYXJkIGlz
-IGEKPj4+PiBraW5kIG9mIEkvTyBvcGVyYXRpb24gd2hpY2ggbmVlZHMgcmVzb3VyY2VzLgo+Cj4g
-VGhlIG1vcmUgSSB0aGluayBhYm91dCB0aGlzLCB0aGUgbW9yZSBpdCBzZWVtcyB0byBtZSB0aGF0
-IGRvaW5nIHRoZSBkaXNjYXJkCj4gYXQgYWxsb2NhdGlvbiB0aW1lIGlzIGp1c3Qgd3JvbmcuIEhv
-dyBhYm91dCBhIHN0cmF0ZWd5IGluIHdoaWNoIHlvdSBkbyB0aGUKPiBkaXNjYXJkIGltbWVkaWF0
-ZWx5IGlmIHJlc291cmNlcyBwZXJtaXQsIG9yIGZsYWcgaXQgYXMgaW4gbmVlZCBvZiBkb2luZyAo
-YXQKPiBhIGZ1dHVyZSBzd2FwIGZyZWUgb2YgdGhhdCBwYWdlIG9yIHN3YXAgb2ZmIHRpbWUpIGlm
-IHRoaW5ncyBhcmUgdG9vCj4gcHJlc3N1cmVkIGF0IHRoZSBtb21lbnQ/IEkgaGF2ZW4ndCBwdXQg
-dGhvdWdodCBpbnRvIHdoYXQgZGF0YSBzdHJ1Y3R1cmVzCj4gY291bGQgYmUgdXNlZCBmb3IgdGhh
-dCAtIGp1c3Qgd2FudCB0byBhc2sgZm9yIG5vdyBpZiB5b3UnZCBiZSBoYXBweSB3aXRoIHRoZQo+
-IGlkZWEgb2YgbG9va2luZyBpbnRvIGEgc3RyYXRlZ3kgbGlrZSB0aGF0LgoKV2UncmUgZ29pbmcg
-cm91bmQgaW4gY2lyY2xlcyBoZXJlLiAgSSBoYXZlIGFscmVhZHkgYWdyZWVkIHdpdGggeW91CnRo
-YXQgZG9pbmcgaXQgYXQgc3dhcCBmcmVlIHRpbWUgc2VlbXMgbW9yZSBuYXR1cmFsLCBidXQgZXhw
-bGFpbmVkIHRoYXQKdGhlcmUgYXJlIGltcGxlbWVudGF0aW9uIGRpZmZpY3VsdGllcyB0aGVyZSwg
-c28gZG9pbmcgaXQgYXQgYWxsb2NhdGlvbgp0aW1lIHByb3ZlZCBib3RoIG11Y2ggbGVzcyBtZXNz
-eSBhbmQgbW9yZSBlZmZpY2llbnQuICBJIGNhbiBpbWFnaW5lCmFkdmFuY2VzIHRoYXQgd291bGQg
-c3dheSBtZSB0byBwdXR0aW5nIGluIG1vcmUgZWZmb3J0IHRoZXJlCihkdXBsaWNhdGluZyB0aGUg
-c2NhbiBmb3IgYSBmcmVlIDFNQiBldmVyeSB0aW1lIGEgcGFnZSBvZiBzd2FwIGlzCmZyZWVkPyBk
-b2Vzbid0IHNvdW5kIGVmZmljaWVudCB0byBtZSwgYnV0IGlmIGl0IHNhdmVzIHVzIGZyb20gYW4K
-aW5lZmZpY2llbmN5IG9mIHRvbyBtYW55IG9yIHRvbyBsYXRlIGRpc2NhcmRzLCBwZXJoYXBzIGl0
-IGNvdWxkIHdvcmsKb3V0KS4gIEhvd2V2ZXIsIGEgcmVjZW50bHkgaW50cm9kdWNlZCByZWdyZXNz
-aW9uIGRvZXMgbm90IG1ha2UgYQpzdHJvbmcgY2FzZSBmb3IgYWRkaW5nIGluIGhhY2tzIC0gbm90
-IHlldCBhbnl3YXkuCgo+IEkndmUgZG9uZSB0aGUgYmlzZWN0IG5vdyAtIHNwZW50IHRoZSB0aW1l
-IHRvZGF5IGluc3RlYWQgb2Ygb24gdGhlIHBsYWNlLCBhbmQKClRoYXQncyBncmVhdCwgbWFueSB0
-aGFua3MhCgo+IGl0IHRvb2sgbWUgdG8gZmJiZjA1NTY5MmFlYjI1YzU0YzQ5ZDljYTg0NTMyZGU4
-MzZmYmJhMC4gVGhpcyBpcyBDaHJpc3RvcGgncwo+IEhlbGx3aWcncyBwYXRjaCAiYmxvY2s6IGZp
-eCBESVNDQVJEX0JBUlJJRVIgcmVxdWVzdHMiLgoKVGhhdCdzCiAgICBibG9jazogZml4IERJU0NB
-UkRfQkFSUklFUiByZXF1ZXN0cwoKICAgIEZpbGVzeXN0ZW1zIGFzc3VtZSB0aGF0IERJU0NBUkRf
-QkFSUklFUiBhcmUgZnVsbCBiYXJyaWVycywgc28gdGhhdCB0aGV5CiAgICBkb24ndCBoYXZlIHRv
-IHRyYWNrIGluLXByb2dyZXNzIGRpc2NhcmQgb3BlcmF0aW9uIHdoZW4gc3VibWl0dGluZyBuZXcg
-SS9PLgogICAgQnV0IGN1cnJlbnRseSB3ZSBvbmx5IHRyZWF0IHRoZW0gYXMgZWxldmF0b3IgYmFy
-cmllcnMsIHdoaWNoIGRvbid0CiAgICBhY3R1YWxseSBkbyB0aGUgbmVzc2VjYXJ5IHF1ZXVlIGRy
-YWlucy4KCndoZXJlIHRoZSBkaXNjYXJkIGJhcnJpZXIgY2hhbmdlcyBmcm9tIFJFUV9TT0ZUQkFS
-UklFUiB0byBSRVFfSEFSREJBUlJJRVIuCgpJZiBSRVFfU09GVEJBUlJJRVIgbWVhbnMgdGhhdCB0
-aGUgZGV2aWNlIGlzIHN0aWxsIGZyZWUgdG8gcmVvcmRlciBhCndyaXRlLCB3aGljaCB3YXMgaXNz
-dWVkIGFmdGVyIGRpc2NhcmQgY29tcGxldGlvbiB3YXMgcmVwb3J0ZWQsIGJlZm9yZQp0aGUgZGlz
-Y2FyZCAoc28gbGF0ZXIgZGlzY2FyZGluZyB0aGUgZGF0YSB3cml0dGVuKSwgdGhlbiBjZXJ0YWlu
-bHkgSQphZ3JlZSB3aXRoIENocmlzdG9waCAobm93IENjJ2VkKSB0aGF0IHRoZSBSRVFfSEFSREJB
-UlJJRVIgaXMKdW5hdm9pZGFibGUgdGhlcmU7IGJ1dCBpZiBub3QsIHRoZW4gaXQncyBub3QgbmVl
-ZGVkIGZvciB0aGUgc3dhcCBjYXNlLgogSSBob3BlIHRvIGdhaW4gYSBsaXR0bGUgbW9yZSBlbmxp
-Z2h0ZW5tZW50IG9uIHN1Y2ggYmFycmllcnMgc2hvcnRseS4KCldoYXQgZG9lcyBzZWVtIG92ZXIg
-dGhlIHRvcCB0byBtZSwgaXMgZm9yIG1tL3N3YXBmaWxlLmMncwpibGtkZXZfaXNzdWVfZGlzY2Fy
-ZCgpcyB0byBiZSBhc2tpbmcgZm9yIGJvdGggQkxLREVWX0lGTF9XQUlUIGFuZApCTEtERVZfSUZM
-X0JBUlJJRVI6IHRob3NlIHN3YXAgZGlzY2FyZHMgd2VyZSBvcmlnaW5hbGx5IHdyaXR0ZW4ganVz
-dAp0byB1c2UgYmFycmllcnMsIHdpdGhvdXQgbmVlZGluZyB0byB3YWl0IGZvciBjb21wbGV0aW9u
-IGluIHRoZXJlLiAgSSdkCmJlIGludGVyZXN0ZWQgdG8gaGVhciBpZiBjdXR0aW5nIG91dCB0aGUg
-QkxLREVWX0lGTF9XQUlUcyBtYWtlcyB0aGUKc3dhcCBkaXNjYXJkcyBiZWhhdmUgYWNjZXB0YWJs
-eSBhZ2FpbiBmb3IgeW91IC0gYnV0IHVuZGVyc3RhbmQgdGhhdAp5b3Ugd29uJ3QgaGF2ZSBhIGNo
-YW5jZSB0byB0cnkgdGhhdCB1bnRpbCBsYXRlciBuZXh0IHdlZWsuCgpUaGFua3MsCkh1Z2gKX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFp
-bGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlz
-dHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Fri, 6 Aug 2010, Paul E. McKenney wrote:
+
+> On Fri, Aug 06, 2010 at 01:29:57AM -0700, david@lang.hm wrote:
+>> On Thu, 5 Aug 2010, Paul E. McKenney wrote:
+>>
+>>> On Thu, Aug 05, 2010 at 01:26:18PM -0700, david@lang.hm wrote:
+>>>> On Thu, 5 Aug 2010, kevin granade wrote:
+>>>>
+>>>>> On Thu, Aug 5, 2010 at 10:46 AM,  <david@lang.hm> wrote:
+>>>>>> On Thu, 5 Aug 2010, Paul E. McKenney wrote:
+>>>>>>
+>>>>>>> On Wed, Aug 04, 2010 at 10:18:40PM -0700, david@lang.hm wrote:
+>>>>>>>>
+>>>>>>>> On Wed, 4 Aug 2010, Paul E. McKenney wrote:
+>>>>>>>>>
+>>>>>>>>> On Wed, Aug 04, 2010 at 05:25:53PM -0700, david@lang.hm wrote:
+>>>>>>>>>>
+>>>>>>>>>> On Wed, 4 Aug 2010, Paul E. McKenney wrote:
+>>>>>>>
+>>>>>>> [ . . . ]
+>>>>>>>
+>>
+>> it would be nice to get network traffic/connection stats.
+>>
+>> so two questions.
+>>
+>> first, what else would you need to get accumulated for the cgroup
+>>
+>> second, is there a fairly easy way to have these stats available?
+>>
+>> for the 'last time it ran' stat, this seems like you could have a
+>> per-cpu variable per cgroup that's fairly cheap to update, but you
+>> would need to take a global lock to read accuratly (the lock may be
+>> expensive enough that it's worth trying to read the variables from
+>> the other cpu without a lock, just to see if it's remotely possible
+>> to sleep/suspend)
+>>
+>> with timers, is it possible to have multiple timer wheels (one per
+>> cgroup)?
+>
+> I apologize in advance for what I am about to write, but...
+>
+> If you continue in this vein, you are likely to make suspend blockers
+> look very simple and natural.  ;-)
+
+if that's the case then they should be implemented :-)
+
+on the other hand, this may be something that's desirable for 
+idle-low-power as well.
+
+David Lang
