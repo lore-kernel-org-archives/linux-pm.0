@@ -1,15 +1,23 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 4/8] PCI / PCIe: Ask BIOS for control of all
-	native services at once (v6)
-Date: Fri, 6 Aug 2010 12:47:23 +0200
-Message-ID: <201008061247.23581.rjw@sisk.pl>
-References: <201008022351.31406.rjw@sisk.pl> <201008022356.31166.rjw@sisk.pl>
-	<4C5B6660.9030507@jp.fujitsu.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Fri, 6 Aug 2010 13:30:48 +0100
+Message-ID: <20100806123047.GE31326__12445.8913262517$1281098055$gmane$org@sirena.org.uk>
+References: <AANLkTi=Yyyc-hOPbkJtsnKCVzncnFq8DPnonmyckekwm@mail.gmail.com>
+	<20100805203102.GN2447@linux.vnet.ibm.com>
+	<AANLkTimaaLSwVusJ=w5-QptoauBnHH0JvCvmWUr0y+KD@mail.gmail.com>
+	<alpine.DEB.2.00.1008051453450.30632@asgard.lang.hm>
+	<AANLkTikCCeMG=DAQ04xqkvqH9tngBWyBA5VQTD4_15xU@mail.gmail.com>
+	<20100805230304.GQ2447@linux.vnet.ibm.com>
+	<AANLkTinatKEBfHhMnKc5wbys13P81PKWSc+nxccgHe-Y@mail.gmail.com>
+	<alpine.DEB.2.00.1008051715520.30632@asgard.lang.hm>
+	<AANLkTikOuY-q42mDRmxc-9W0uLeJeW-hiFG26WrV7CfU@mail.gmail.com>
+	<alpine.DEB.2.00.1008051800360.25170@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C5B6660.9030507@jp.fujitsu.com>
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1008051800360.25170@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,77 +27,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org
+To: david@lang.hm
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, kevin granade <kevin.granade@gmail.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, August 06, 2010, Hidetoshi Seto wrote:
-> Rafael,
-> 
-> I found that following 2 hunks break kernel build with O= option. 
-> 
-> (2010/08/03 6:56), Rafael J. Wysocki wrote:
-> > Index: linux-2.6/drivers/pci/pcie/Makefile
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/pci/pcie/Makefile
-> > +++ linux-2.6/drivers/pci/pcie/Makefile
-> > @@ -6,10 +6,11 @@
-> >  obj-$(CONFIG_PCIEASPM)		+= aspm.o
-> >  
-> >  pcieportdrv-y			:= portdrv_core.o portdrv_pci.o portdrv_bus.o
-> > +pcieportdrv-$(CONFIG_ACPI)	+= portdrv_acpi.o
-> >  
-> >  obj-$(CONFIG_PCIEPORTBUS)	+= pcieportdrv.o
-> >  
-> >  # Build PCI Express AER if needed
-> >  obj-$(CONFIG_PCIEAER)		+= aer/
-> >  
-> > -obj-$(CONFIG_PCIE_PME) += pme/
-> > +obj-$(CONFIG_PCIE_PME) += pme/pcie_pme.o
-> 
-> and
-> 
-> > Index: linux-2.6/drivers/pci/pcie/pme/Makefile
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/pci/pcie/pme/Makefile
-> > +++ /dev/null
-> > @@ -1,8 +0,0 @@
-> > -#
-> > -# Makefile for PCI-Express Root Port PME signaling driver
-> > -#
-> > -
-> > -obj-$(CONFIG_PCIE_PME) += pmedriver.o
-> > -
-> > -pmedriver-objs := pcie_pme.o
-> > -pmedriver-$(CONFIG_ACPI) += pcie_pme_acpi.o
-> 
-> $ make -j12 O=../gitbuild/
->   GEN     /home/seto/gitbuild/Makefile
->   CHK     include/linux/version.h
->   Using /home/seto/GIT-linux as source for kernel
->   CHK     include/generated/utsrelease.h
->   CALL    /home/seto/GIT-linux/scripts/checksyscalls.sh
->   CHK     include/generated/compile.h
->   CC      drivers/pci/pcie/pme/pcie_pme.o
-> Assembler messages:
-> Fatal error: can't create drivers/pci/pcie/pme/.tmp_pcie_pme.o: No such file or directory
-> make[4]: *** [drivers/pci/pcie/pme/pcie_pme.o] Error 2
-> make[3]: *** [drivers/pci/pcie] Error 2
-> make[2]: *** [drivers/pci] Error 2
-> make[1]: *** [drivers] Error 2
-> make: *** [sub-make] Error 2
-> $
-> 
-> It seems that the error is because directory pme/ is not created
-> in the working tree.
+On Thu, Aug 05, 2010 at 06:01:24PM -0700, david@lang.hm wrote:
+> On Thu, 5 Aug 2010, Brian Swetland wrote:
 
-Hmm.  That seems to be correct, but I'm not sure how to resolve it.
+>> Obviously not all clocks are stopped (the DSP and codec are powered
+>> and clocked, for example), but yeah we can clock gate and power gate
+>> the cpu and most other peripherals while audio is playing on a number
+>> of ARM SoC designs available today (and the past few years).
 
-If I move pcie_pme.c to pcie/ in the same patch, the changes in that file
-will not be clearly visible.
+> does this then mean that you have multiple variations of suspend?
 
-Perhaps I'll add a separate patch that will remove the Makefile from
-pme/ and move pcie_pme.c to pcie/.
+> for example, one where the audio stuff is left powered, and one where it  
+> isn't?
 
-Thanks,
-Rafael
+This was the core of the issue I was raising in the last thread about
+this (the one following the rename to suspend blockers).  Essentially
+what happens in a mainline context is that some subsystems can with
+varying degress of optionality ignore some or all of the instruction to
+suspend and keep bits of the system alive during suspend.
+
+Those that stay alive will either have per subsystem handling or will be
+outside the direct control of the kernel entirely (the modem is a good
+example of the latter case in many systems - in terms of the software
+it's essentially a parallel computer that's sitting in the system rather
+than a perhiperal of the AP).
