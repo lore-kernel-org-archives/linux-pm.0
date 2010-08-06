@@ -1,7 +1,7 @@
-From: david@lang.hm
+From: Brian Swetland <swetland@google.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Thu, 5 Aug 2010 17:16:44 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008051715520.30632__3480.31667895174$1281053928$gmane$org@asgard.lang.hm>
+Date: Thu, 5 Aug 2010 17:22:10 -0700
+Message-ID: <AANLkTikOuY-q42mDRmxc-9W0uLeJeW-hiFG26WrV7CfU__7590.37036118588$1281054324$gmane$org@mail.gmail.com>
 References: <alpine.DEB.2.00.1008041722060.6545@asgard.lang.hm>
 	<20100805004802.GP24163@linux.vnet.ibm.com>
 	<alpine.DEB.2.00.1008042208350.25170@asgard.lang.hm>
@@ -14,11 +14,12 @@ References: <alpine.DEB.2.00.1008041722060.6545@asgard.lang.hm>
 	<AANLkTikCCeMG=DAQ04xqkvqH9tngBWyBA5VQTD4_15xU@mail.gmail.com>
 	<20100805230304.GQ2447@linux.vnet.ibm.com>
 	<AANLkTinatKEBfHhMnKc5wbys13P81PKWSc+nxccgHe-Y@mail.gmail.com>
+	<alpine.DEB.2.00.1008051715520.30632@asgard.lang.hm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinatKEBfHhMnKc5wbys13P81PKWSc+nxccgHe-Y@mail.gmail.com>
+In-Reply-To: <alpine.DEB.2.00.1008051715520.30632@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,40 +29,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Swetland <swetland@google.com>
+To: david@lang.hm
 Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, kevin granade <kevin.granade@gmail.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 5 Aug 2010, Brian Swetland wrote:
-
-> On Thu, Aug 5, 2010 at 4:03 PM, Paul E. McKenney
-> <paulmck@linux.vnet.ibm.com> wrote:
->>>> so what would wake a phone up from suspend where the phone should go back to
->>>> sleep in under a second?
->>>
->>> Here are some real-world examples from shipped android devices:
->>> - battery gauging happens every 10 minutes, need to wake long enough
->>> to chatter with the 1w interface and make sure the battery is not
->>> exploding
->>> - always on mail/im/calendar/etc sync often has network events that
->>> happen every 5-10 minutes which cause devices to briefly wake up and
->>> return to sleep
->>> - gps tracker app might wake every couple minutes or every n gps
->>> events to log location
->>> - low power audio subsystems can wake you up every 1-4 seconds (pcm)
->>> or 1-4 minutes (mp3) to fetch more data
->>
->> Interesting!
->>
->> So for an mp3 playback, does an Android suspend between data fetches?
->
-> It can if the latency is long enough (which is why I point out low
-> power audio which is usually high latency).  For low latency (system
-> sounds, etc) 10-25ms between buffers it's not practical to fully
-> suspend but we will go to the lowest power state in idle if possible.
-
-the playback is able to continue even with all the clocks stopped? that 
-surprises me. I would hav expected it to be able to sleep while playing 
-audio, but not do a full suspend.
-
-David Lang
+T24gVGh1LCBBdWcgNSwgMjAxMCBhdCA1OjE2IFBNLCAgPGRhdmlkQGxhbmcuaG0+IHdyb3RlOgo+
+Pj4KPj4+IFNvIGZvciBhbiBtcDMgcGxheWJhY2ssIGRvZXMgYW4gQW5kcm9pZCBzdXNwZW5kIGJl
+dHdlZW4gZGF0YSBmZXRjaGVzPwo+Pgo+PiBJdCBjYW4gaWYgdGhlIGxhdGVuY3kgaXMgbG9uZyBl
+bm91Z2ggKHdoaWNoIGlzIHdoeSBJIHBvaW50IG91dCBsb3cKPj4gcG93ZXIgYXVkaW8gd2hpY2gg
+aXMgdXN1YWxseSBoaWdoIGxhdGVuY3kpLiDCoEZvciBsb3cgbGF0ZW5jeSAoc3lzdGVtCj4+IHNv
+dW5kcywgZXRjKSAxMC0yNW1zIGJldHdlZW4gYnVmZmVycyBpdCdzIG5vdCBwcmFjdGljYWwgdG8g
+ZnVsbHkKPj4gc3VzcGVuZCBidXQgd2Ugd2lsbCBnbyB0byB0aGUgbG93ZXN0IHBvd2VyIHN0YXRl
+IGluIGlkbGUgaWYgcG9zc2libGUuCj4KPiB0aGUgcGxheWJhY2sgaXMgYWJsZSB0byBjb250aW51
+ZSBldmVuIHdpdGggYWxsIHRoZSBjbG9ja3Mgc3RvcHBlZD8gdGhhdAo+IHN1cnByaXNlcyBtZS4g
+SSB3b3VsZCBoYXYgZXhwZWN0ZWQgaXQgdG8gYmUgYWJsZSB0byBzbGVlcCB3aGlsZSBwbGF5aW5n
+Cj4gYXVkaW8sIGJ1dCBub3QgZG8gYSBmdWxsIHN1c3BlbmQuCgpPYnZpb3VzbHkgbm90IGFsbCBj
+bG9ja3MgYXJlIHN0b3BwZWQgKHRoZSBEU1AgYW5kIGNvZGVjIGFyZSBwb3dlcmVkCmFuZCBjbG9j
+a2VkLCBmb3IgZXhhbXBsZSksIGJ1dCB5ZWFoIHdlIGNhbiBjbG9jayBnYXRlIGFuZCBwb3dlciBn
+YXRlCnRoZSBjcHUgYW5kIG1vc3Qgb3RoZXIgcGVyaXBoZXJhbHMgd2hpbGUgYXVkaW8gaXMgcGxh
+eWluZyBvbiBhIG51bWJlcgpvZiBBUk0gU29DIGRlc2lnbnMgYXZhaWxhYmxlIHRvZGF5IChhbmQg
+dGhlIHBhc3QgZmV3IHllYXJzKS4KCkJyaWFuCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5s
+aW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21h
+aWxtYW4vbGlzdGluZm8vbGludXgtcG0=
