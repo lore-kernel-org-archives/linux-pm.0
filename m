@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 6/10] PCI / PCIe: Remove the port driver module
-	exit routine
-Date: Fri, 6 Aug 2010 03:10:20 +0200
-Message-ID: <201008060310.20754.rjw__12344.9107901708$1281058258$gmane$org@sisk.pl>
+Subject: [PATCH 7/10] PCI / Hot-plug: Query _OSC before
+	requesting controls
+Date: Fri, 6 Aug 2010 03:11:33 +0200
+Message-ID: <201008060311.33359.rjw__44923.4737469398$1281058376$gmane$org@sisk.pl>
 References: <201008060303.51224.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,30 +22,38 @@ To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 Cc: linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The PCIe port driver's module exit routine is never used, so drop it.
+It generally is unsafe to call acpi_pci_osc_control_set() without
+checking what _OSC bits the BIOS is willing to grant control of,
+because control of some _OSC bits may be granted even if
+acpi_pci_osc_control_set() returns AE_SUPPORT.  Therefore make
+acpi_get_hp_hw_control_from_firmware() use
+acpi_pci_osc_control_query() to check if the BIOS will grant
+OSC_SHPC_NATIVE_HP_CONTROL before calling acpi_pci_osc_control_set().
 
-Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reviewed-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 ---
- drivers/pci/pcie/portdrv_pci.c |    7 -------
- 1 file changed, 7 deletions(-)
+ drivers/pci/hotplug/acpi_pcihp.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/drivers/pci/pcie/portdrv_pci.c
+Index: linux-2.6/drivers/pci/hotplug/acpi_pcihp.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/pcie/portdrv_pci.c
-+++ linux-2.6/drivers/pci/pcie/portdrv_pci.c
-@@ -343,11 +343,4 @@ static int __init pcie_portdrv_init(void
- 	return retval;
- }
- 
--static void __exit pcie_portdrv_exit(void)
--{
--	pci_unregister_driver(&pcie_portdriver);
--	pcie_port_bus_unregister();
--}
--
- module_init(pcie_portdrv_init);
--module_exit(pcie_portdrv_exit);
+--- linux-2.6.orig/drivers/pci/hotplug/acpi_pcihp.c
++++ linux-2.6/drivers/pci/hotplug/acpi_pcihp.c
+@@ -358,11 +358,13 @@ int acpi_get_hp_hw_control_from_firmware
+ 		acpi_get_name(handle, ACPI_FULL_PATHNAME, &string);
+ 		dbg("Trying to get hotplug control for %s\n",
+ 				(char *)string.pointer);
++		status = acpi_pci_osc_control_query(handle, &flags);
++		if (ACPI_FAILURE(status)
++		    || !(flags & OSC_SHPC_NATIVE_HP_CONTROL))
++			goto no_control;
+ 		status = acpi_pci_osc_control_set(handle, flags);
+ 		if (ACPI_SUCCESS(status))
+ 			goto got_one;
+-		if (status == AE_SUPPORT)
+-			goto no_control;
+ 		kfree(string.pointer);
+ 		string = (struct acpi_buffer){ ACPI_ALLOCATE_BUFFER, NULL };
+ 	}
