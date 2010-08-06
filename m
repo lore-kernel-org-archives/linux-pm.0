@@ -1,14 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 10/10] ACPI / PCI: Merge
-	acpi_pci_osc_control_{query|set}()
-Date: Fri, 6 Aug 2010 03:15:40 +0200
-Message-ID: <201008060315.40437.rjw__43250.2938820564$1281058650$gmane$org@sisk.pl>
-References: <201008060303.51224.rjw@sisk.pl>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Thu, 5 Aug 2010 18:29:27 -0700
+Message-ID: <AANLkTinQD3ggLFVd2KvX95U2B_j=ZJquZgiBGieukJ+r__40578.3283211806$1281058770$gmane$org@mail.gmail.com>
+References: <20100801054816.GI2470@linux.vnet.ibm.com>
+	<201008051734.06736.rjw@sisk.pl>
+	<AANLkTi=kDx440MrLnQEcT46b3gkahU5ZGc0oWrWF-D2g@mail.gmail.com>
+	<201008060141.46109.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201008060303.51224.rjw@sisk.pl>
+In-Reply-To: <201008060141.46109.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,199 +20,252 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: linux-pci@vger.kernel.org, linux-pm@lists.linux-foundation.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+2010/8/5 Rafael J. Wysocki <rjw@sisk.pl>:
+> On Friday, August 06, 2010, Arve Hj=F8nnev=E5g wrote:
+>> 2010/8/5 Rafael J. Wysocki <rjw@sisk.pl>:
+>> > On Thursday, August 05, 2010, Arve Hj=F8nnev=E5g wrote:
+>> >> 2010/8/4 Rafael J. Wysocki <rjw@sisk.pl>:
+>> >> > On Thursday, August 05, 2010, Arve Hj=F8nnev=E5g wrote:
+>> >> >> On Wed, Aug 4, 2010 at 1:56 PM, Matthew Garrett <mjg59@srcf.ucam.o=
+rg> wrote:
+>> >> >> > On Wed, Aug 04, 2010 at 10:51:07PM +0200, Rafael J. Wysocki wrot=
+e:
+>> >> >> >> On Wednesday, August 04, 2010, Matthew Garrett wrote:
+>> >> >> >> > No! And that's precisely the issue. Android's existing behavi=
+our could
+>> >> >> >> > be entirely implemented in the form of binary that manually t=
+riggers
+>> >> >> >> > suspend when (a) the screen is off and (b) no userspace appli=
+cations
+>> >> >> >> > have indicated that the system shouldn't sleep, except for th=
+e wakeup
+>> >> >> >> > event race. Imagine the following:
+>> >> >> >> >
+>> >> >> >> > 1) The policy timeout is about to expire. No applications are=
+ holding
+>> >> >> >> > wakelocks. The system will suspend providing nothing takes a =
+wakelock.
+>> >> >> >> > 2) A network packet arrives indicating an incoming SIP call
+>> >> >> >> > 3) The VOIP application takes a wakelock and prevents the pho=
+ne from
+>> >> >> >> > suspending while the call is in progress
+>> >> >> >> >
+>> >> >> >> > What stops the system going to sleep between (2) and (3)? cgr=
+oups don't,
+>> >> >> >> > because the voip app is an otherwise untrusted application th=
+at you've
+>> >> >> >> > just told the scheduler to ignore.
+>> >> >> >>
+>> >> >> >> I _think_ you can use the just-merged /sys/power/wakeup_count m=
+echanism to
+>> >> >> >> avoid the race (if pm_wakeup_event() is called at 2)).
+>> >> >> >
+>> >> >> > Yes, I think that solves the problem. The only question then is =
+whether
+>> >> >>
+>> >> >> How? By passing a timeout to pm_wakeup_event when the network driv=
+er
+>> >> >> gets the packet or by passing 0. If you pass a timeout it is the s=
+ame
+>> >> >> as using a wakelock with a timeout and should work (assuming the
+>> >> >> timeout you picked is long enough). If you don't pass a timeout it
+>> >> >> does not work, since the packet may not be visible to user-space y=
+et.
+>> >> >
+>> >> > Alternatively, pm_stay_awake() / pm_relax() can be used.
+>> >> >
+>> >>
+>> >> Which makes the driver and/or network stack changes identical to using
+>> >> wakelocks, right?
+>> >
+>> > Please refer to the Matthew's response.
+>> >
+>> >> >> > it's preferable to use cgroups or suspend fully, which is pretty=
+ much up
+>> >> >> > to the implementation. In other words, is there a reason we're s=
+till
+>> >> >>
+>> >> >> I have seen no proposed way to use cgroups that will work. If you
+>> >> >> leave some processes running while other processes are frozen you =
+run
+>> >> >> into problems when a frozen process holds a resource that a running
+>> >> >> process needs.
+>> >> >>
+>> >> >>
+>> >> >> > having this conversation? :) It'd be good to have some feedback =
+from
+>> >> >> > Google as to whether this satisfies their functional requirement=
+s.
+>> >> >> >
+>> >> >>
+>> >> >> That is "this"? The merged code? If so, no it does not satisfy our
+>> >> >> requirements. The in kernel api, while offering similar functional=
+ity
+>> >> >> to the wakelock interface, does not use any handles which makes it
+>> >> >> impossible to get reasonable stats (You don't know which pm_stay_a=
+wake
+>> >> >> request pm_relax is reverting).
+>> >> >
+>> >> > Why is that a problem (out of curiosity)?
+>> >> >
+>> >>
+>> >> Not having stats or not knowing what pm_relax is undoing? We need
+>> >> stats to be able to debug the system.
+>> >
+>> > You have the stats in struct device and they are available via sysfs.
+>> > I suppose they are insufficient, but I'd like to know why exactly.
+>> >
+>>
+>> Our wakelock stats currently have
+>> (name,)count,expire_count,wake_count,active_since,total_time,sleep_time,=
+max_time
+>> and last_change. Not all of these are equally important (total_time is
+>> most important followed by active_since), but you only have count.
+>> Also as discussed before, many wakelocks/suspendblockers are not
+>> associated with a struct device.
+>
+> OK
+>
+> How much of that is used in practice and what for exactly?
 
-The both of the existing callers of acpi_pci_osc_control_query()
-and acpi_pci_osc_control_set() have the same structure, such that
-acpi_pci_osc_control_query() is called first for certain mask of
-control bits, then the mask returned by it is tested against a given
-subset of the queried control bits and if that test is successful,
-acpi_pci_osc_control_set() is run for the mask of control bits
-returned by acpi_pci_osc_control_query().  Thus it is possible to
-move the initial query as well as the subsequent test to
-acpi_pci_osc_control_set() and simplify its callers.
+count, tells you how many times the wakelock was activated. If a
+wakelock prevented suspend for a long time a large count tells you it
+handled a lot of events while a small count tells you it took a long
+time to process the events, or the wakelock was not released properly.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/pci_root.c          |   75 ++++++++++++++-------------------------
- drivers/pci/hotplug/acpi_pcihp.c |    9 ++--
- drivers/pci/pcie/portdrv_acpi.c  |   16 +-------
- include/linux/acpi.h             |    4 +-
- 4 files changed, 36 insertions(+), 68 deletions(-)
+expire_count, tells you how many times the timeout expired. For the
+input event wakelock in the android kernel (which has a timeout) an
+expire count that matches the count tells you that someone opened an
+input device but is not reading from it (this has happened several
+times).
 
-Index: linux-2.6/drivers/acpi/pci_root.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/pci_root.c
-+++ linux-2.6/drivers/acpi/pci_root.c
-@@ -372,21 +372,35 @@ out:
- }
- EXPORT_SYMBOL_GPL(acpi_get_pci_dev);
- 
-- /**
-- * acpi_pci_osc_control_query - Get the _OSC bits the kernel can control.
-+/**
-+ * acpi_pci_osc_control_set - Request control of PCI root _OSC features.
-  * @handle: ACPI handle of a PCI root bridge (or PCIe Root Complex).
-- * @mask: Mask of _OSC bits to query and the place to put the result into.
-+ * @mask: Mask of _OSC bits to request control of, place to store control mask.
-+ * @req: Mask of _OSC bits the control of is essential to the caller.
-+ *
-+ * Run _OSC query for @mask and if that is successful, compare the returned
-+ * mask of control bits with @req.  If all of the @req bits are set in the
-+ * returned mask, run _OSC request for it.
-+ *
-+ * The variable at the @mask address may be modified regardless of whether or
-+ * not the function returns success.  On success it will contain the mask of
-+ * _OSC bits the BIOS has granted control of, but its contents are meaningless
-+ * on failure.
-  **/
--acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *mask)
-+acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 *mask, u32 req)
- {
- 	struct acpi_pci_root *root;
-+	acpi_status status;
-+	u32 ctrl, flags, capbuf[3];
- 	acpi_handle tmp;
--	acpi_status status = AE_OK;
--	u32 ctrl = *mask;
- 
--	if (!(ctrl & OSC_PCI_CONTROL_MASKS))
-+	if (!mask)
- 		return AE_BAD_PARAMETER;
- 
-+	ctrl = *mask & OSC_PCI_CONTROL_MASKS;
-+	if ((ctrl & req) != req)
-+		return AE_TYPE;
-+
- 	root = acpi_pci_find_root(handle);
- 	if (!root)
- 		return AE_NOT_EXIST;
-@@ -404,53 +418,20 @@ acpi_status acpi_pci_osc_control_query(a
- 	for (ctrl = 0; *mask != ctrl; ctrl = *mask) {
- 		status = acpi_pci_query_osc(root, root->osc_support_set, mask);
- 		if (ACPI_FAILURE(status))
--			break;
-+			goto out;
- 	}
- 
-- out:
--	mutex_unlock(&osc_lock);
--
--	return status;
--}
--EXPORT_SYMBOL(acpi_pci_osc_control_query);
--
--/**
-- * acpi_pci_osc_control_set - commit requested control to Firmware
-- * @handle: acpi_handle for the target ACPI object
-- * @flags: driver's requested control bits
-- *
-- * Attempt to take control from Firmware on requested control bits.
-- **/
--acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags)
--{
--	acpi_status status;
--	u32 control_req, result, capbuf[3];
--	acpi_handle tmp;
--	struct acpi_pci_root *root;
--
--	control_req = (flags & OSC_PCI_CONTROL_MASKS);
--	if (!control_req)
--		return AE_TYPE;
--
--	root = acpi_pci_find_root(handle);
--	if (!root)
--		return AE_NOT_EXIST;
--
--	status = acpi_get_handle(handle, "_OSC", &tmp);
--	if (ACPI_FAILURE(status))
--		return status;
--
--	mutex_lock(&osc_lock);
--	/* No need to evaluate _OSC if the control was already granted. */
--	if ((root->osc_control_set & control_req) == control_req)
-+	if ((ctrl & req) != req) {
-+		status = AE_SUPPORT;
- 		goto out;
-+	}
- 
- 	capbuf[OSC_QUERY_TYPE] = 0;
- 	capbuf[OSC_SUPPORT_TYPE] = root->osc_support_set;
--	capbuf[OSC_CONTROL_TYPE] = root->osc_control_set | control_req;
--	status = acpi_pci_run_osc(handle, capbuf, &result);
-+	capbuf[OSC_CONTROL_TYPE] = ctrl;
-+	status = acpi_pci_run_osc(handle, capbuf, mask);
- 	if (ACPI_SUCCESS(status))
--		root->osc_control_set = result;
-+		root->osc_control_set = *mask;
- out:
- 	mutex_unlock(&osc_lock);
- 	return status;
-Index: linux-2.6/include/linux/acpi.h
-===================================================================
---- linux-2.6.orig/include/linux/acpi.h
-+++ linux-2.6/include/linux/acpi.h
-@@ -305,8 +305,8 @@ acpi_status acpi_run_osc(acpi_handle han
- 				OSC_PCI_EXPRESS_AER_CONTROL |		\
- 				OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL)
- 
--extern acpi_status acpi_pci_osc_control_query(acpi_handle handle, u32 *mask);
--extern acpi_status acpi_pci_osc_control_set(acpi_handle handle, u32 flags);
-+extern acpi_status acpi_pci_osc_control_set(acpi_handle handle,
-+					     u32 *mask, u32 req);
- extern void acpi_early_init(void);
- 
- #else	/* !CONFIG_ACPI */
-Index: linux-2.6/drivers/pci/pcie/portdrv_acpi.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pcie/portdrv_acpi.c
-+++ linux-2.6/drivers/pci/pcie/portdrv_acpi.c
-@@ -55,20 +55,8 @@ int pcie_port_acpi_setup(struct pci_dev 
- 			flags |= OSC_PCI_EXPRESS_AER_CONTROL;
- 	}
- 
--	status = acpi_pci_osc_control_query(handle, &flags);
--	if (ACPI_FAILURE(status)) {
--		dev_dbg(&port->dev, "ACPI _OSC query failed (code %d)\n",
--			status);
--		return -ENODEV;
--	}
--
--	if (!(flags & OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL)) {
--		dev_dbg(&port->dev, "BIOS refuses to grant control of PCIe "
--			"Capability Structure\n");
--		return -EACCES;
--	}
--
--	status = acpi_pci_osc_control_set(handle, flags);
-+	status = acpi_pci_osc_control_set(handle, &flags,
-+					OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL);
- 	if (ACPI_FAILURE(status)) {
- 		dev_dbg(&port->dev, "ACPI _OSC request failed (code %d)\n",
- 			status);
-Index: linux-2.6/drivers/pci/hotplug/acpi_pcihp.c
-===================================================================
---- linux-2.6.orig/drivers/pci/hotplug/acpi_pcihp.c
-+++ linux-2.6/drivers/pci/hotplug/acpi_pcihp.c
-@@ -358,13 +358,12 @@ int acpi_get_hp_hw_control_from_firmware
- 		acpi_get_name(handle, ACPI_FULL_PATHNAME, &string);
- 		dbg("Trying to get hotplug control for %s\n",
- 				(char *)string.pointer);
--		status = acpi_pci_osc_control_query(handle, &flags);
--		if (ACPI_FAILURE(status)
--		    || !(flags & OSC_SHPC_NATIVE_HP_CONTROL))
--			goto no_control;
--		status = acpi_pci_osc_control_set(handle, flags);
-+		status = acpi_pci_osc_control_set(handle, &flags,
-+						OSC_SHPC_NATIVE_HP_CONTROL);
- 		if (ACPI_SUCCESS(status))
- 			goto got_one;
-+		if (status == AE_SUPPORT)
-+			goto no_control;
- 		kfree(string.pointer);
- 		string = (struct acpi_buffer){ ACPI_ALLOCATE_BUFFER, NULL };
- 	}
+wake_count, tells you that this is the first wakelock that was
+acquired in the resume path. This is currently less useful than I
+would like on the Nexus One since it is usually "SMD_RPCCALL" which
+does not tell me a lot.
+
+active_since, tells you how long a a still active wakelock has been
+active. If someone activated a wakelock and never released it, it will
+be obvious here.
+
+total_time, total time the wake lock has been active. This one should
+be obvious.
+
+sleep_time, total time the wake lock has been active when the screen was of=
+f.
+
+max_time, longest time the wakelock was active uninterrupted. This
+used less often, but the battery on a device was draining fast, but
+the problem went away before looking at the stats this will show if a
+wakelock was active for a long time.
+
+
+>
+> Do you _really_ have to debug the wakelocks in drivers that much?
+>
+
+Wake locks in drivers sometimes need to be debugged. If the api has no
+accountability, then these problems would take forever to fix.
+
+>> >> If the system does not suspend
+>> >> at all or is awake for too long, the wakelock stats tells us which
+>> >> component is at fault. Since pm_stay_awake and pm_relax does not
+>> >> operate on a handle, you cannot determine how long it prevented
+>> >> suspend for.
+>> >
+>> > Well, if you need that, you can add a counter of "completed events" in=
+to
+>>
+>> We need more than that (see above).
+>>
+>> > struct dev_pm_info and a function similar to pm_relax() that
+>> > will update that counter. =A0I don't think anyone will object to that =
+change.
+>> >
+>>
+>> What about adding a handle that is passed to all three functions?
+>
+> I don't think that will fly at this point.
+>
+
+Why not? I think allowing drivers to modify a global reference count
+with no accountability is a terrible idea.
+
+>> >> >> The proposed in user-space interface
+>> >> >> of calling into every process that receives wakeup events before e=
+very
+>> >> >> suspend call
+>> >> >
+>> >> > Well, =A0you don't really need to do that.
+>> >> >
+>> >>
+>> >> Only if the driver blocks suspend until user-space has read the event.
+>> >> This means that for android to work we need to block suspend when
+>> >> input events are not processed, but a system using your scheme needs a
+>> >> pm_wakeup_event call when the input event is queued. How to you switch
+>> >> between them? Do we add separate ioctls in the input device to enable
+>> >> each scheme? If someone has a single threaded user space power manager
+>> >> that also reads input event it will deadlock if you block suspend
+>> >> until it reads the input events since you block when reading the wake
+>> >> count.
+>> >
+>> > Well, until someone actually tries to implement a power manager in use=
+r space
+>> > it's a bit vague.
+>> >
+>>
+>> Not having clear rules for what the drivers should do is a problem.
+>> The comments in your code seem to advocate using timeouts instead of
+>> overlapping pm_stay_awake/pm_relax sections. I find this
+>> recommendation strange given all the opposition to
+>> wakelock/suspendblocker timeouts.
+>
+> There's no recommendation either way.
+
+I'm referring to this paragraph:
+
+  * Second, a wakeup event may be detected by one functional unit and proce=
+ssed
+  * by another one.  In that case the unit that has detected it cannot real=
+ly
+  * "close" the "no suspend" period associated with it, unless it knows in
+  * advance what's going to happen to the event during processing.  This
+  * knowledge, however, may not be available to it, so it can simply
+specify time
+  * to wait before the system can be suspended and pass it as the second
+  * argument of pm_wakeup_event().
+
+>
+>> But more importantly, calling
+>> pm_wakeup_event with a timeout of 0 is incompatible with the android
+>> user space code,
+>
+> Which I don't find really relevant, sorry.
+>
+>> and I would prefer that the kernel interfaces would
+>> encourage drivers to block suspend until user space has consumed the
+>> event, which works for the android user space, instead of just long
+>> enough to work with a hypothetical user space power manager.
+>
+> Well, that are your personal preferences, which I respect. =A0I also have=
+ some
+> personal preferences that are not necessarily followed by the kernel code.
+>
+> Thanks,
+> Rafael
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at =A0http://www.tux.org/lkml/
+>
+
+
+
+-- =
+
+Arve Hj=F8nnev=E5g
