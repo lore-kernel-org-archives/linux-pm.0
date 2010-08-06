@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 9/10] ACPI / PCI: Reorder checks in
-	acpi_pci_osc_control_set()
-Date: Fri, 6 Aug 2010 03:13:38 +0200
-Message-ID: <201008060313.38590.rjw__35635.375037282$1281058922$gmane$org@sisk.pl>
+Subject: [PATCH 5/10] PCI / PCIe: Disable PCIe port services
+	during port initialization
+Date: Fri, 6 Aug 2010 03:09:11 +0200
+Message-ID: <201008060309.11255.rjw__28570.2512054288$1281058923$gmane$org@sisk.pl>
 References: <201008060303.51224.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,42 +24,64 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Make acpi_pci_osc_control_set() attempt to find the handle of the
-_OSC object under the given PCI root bridge object after verifying
-that its second argument is correct and that there is a struct
-acpi_pci_root object for the given root bridge handle.  This is
-more logical than the old code and it matches the code ordering
-in acpi_pci_osc_control_query().
+In principle PCIe port services may be enabled by the BIOS, so it's
+better to disable them during port initialization to avoid spurious
+events from being generated.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Reviewed-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 ---
- drivers/acpi/pci_root.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/pci/pcie/portdrv_core.c |   29 ++++++++++++++++++++++++++---
+ 1 file changed, 26 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/drivers/acpi/pci_root.c
+Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/pci_root.c
-+++ linux-2.6/drivers/acpi/pci_root.c
-@@ -428,10 +428,6 @@ acpi_status acpi_pci_osc_control_set(acp
- 	acpi_handle tmp;
- 	struct acpi_pci_root *root;
+--- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
++++ linux-2.6/drivers/pci/pcie/portdrv_core.c
+@@ -256,20 +256,43 @@ static int get_port_device_capability(st
+ 	/* Hot-Plug Capable */
+ 	if ((cap_mask & PCIE_PORT_SERVICE_HP) && (reg16 & PCI_EXP_FLAGS_SLOT)) {
+ 		pci_read_config_dword(dev, pos + PCI_EXP_SLTCAP, &reg32);
+-		if (reg32 & PCI_EXP_SLTCAP_HPC)
++		if (reg32 & PCI_EXP_SLTCAP_HPC) {
+ 			services |= PCIE_PORT_SERVICE_HP;
++			/*
++			 * Disable hot-plug interrupts in case they have been
++			 * enabled by the BIOS and the hot-plug service driver
++			 * is not loaded.
++			 */
++			pos += PCI_EXP_SLTCTL;
++			pci_read_config_word(dev, pos, &reg16);
++			reg16 &= ~(PCI_EXP_SLTCTL_CCIE | PCI_EXP_SLTCTL_HPIE);
++			pci_write_config_word(dev, pos, reg16);
++		}
+ 	}
+ 	/* AER capable */
+ 	if ((cap_mask & PCIE_PORT_SERVICE_AER)
+-	    && pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR))
++	    && pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR)) {
+ 		services |= PCIE_PORT_SERVICE_AER;
++		/*
++		 * Disable AER on this port in case it's been enabled by the
++		 * BIOS (the AER service driver will enable it when necessary).
++		 */
++		pci_disable_pcie_error_reporting(dev);
++	}
+ 	/* VC support */
+ 	if (pci_find_ext_capability(dev, PCI_EXT_CAP_ID_VC))
+ 		services |= PCIE_PORT_SERVICE_VC;
+ 	/* Root ports are capable of generating PME too */
+ 	if ((cap_mask & PCIE_PORT_SERVICE_PME)
+-	    && dev->pcie_type == PCI_EXP_TYPE_ROOT_PORT)
++	    && dev->pcie_type == PCI_EXP_TYPE_ROOT_PORT) {
+ 		services |= PCIE_PORT_SERVICE_PME;
++		/*
++		 * Disable PME interrupt on this port in case it's been enabled
++		 * by the BIOS (the PME service driver will enable it when
++		 * necessary).
++		 */
++		pcie_pme_interrupt_enable(dev, false);
++	}
  
--	status = acpi_get_handle(handle, "_OSC", &tmp);
--	if (ACPI_FAILURE(status))
--		return status;
--
- 	control_req = (flags & OSC_PCI_CONTROL_MASKS);
- 	if (!control_req)
- 		return AE_TYPE;
-@@ -440,6 +436,10 @@ acpi_status acpi_pci_osc_control_set(acp
- 	if (!root)
- 		return AE_NOT_EXIST;
- 
-+	status = acpi_get_handle(handle, "_OSC", &tmp);
-+	if (ACPI_FAILURE(status))
-+		return status;
-+
- 	mutex_lock(&osc_lock);
- 	/* No need to evaluate _OSC if the control was already granted. */
- 	if ((root->osc_control_set & control_req) == control_req)
+ 	return services;
+ }
