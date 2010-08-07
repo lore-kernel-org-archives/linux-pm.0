@@ -1,19 +1,23 @@
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Sat, 7 Aug 2010 08:07:24 -0700
-Message-ID: <20100807150724.GC19600__41455.8204975494$1281193709$gmane$org@linux.vnet.ibm.com>
-References: <20100805230304.GQ2447@linux.vnet.ibm.com>
-	<20100807001431.GA3252@opensource.wolfsonmicro.com>
-	<alpine.DEB.2.00.1008061741460.30564@asgard.lang.hm>
-	<201008071101.25384.rjw@sisk.pl>
-	<alpine.DEB.2.00.1008070247590.30564@asgard.lang.hm>
+Subject: Re: Attempted summary of suspend-blockers LKML thread,
+	take three
+Date: Sat, 7 Aug 2010 08:32:25 -0700
+Message-ID: <20100807153225.GD19600__31795.5851591707$1281195588$gmane$org@linux.vnet.ibm.com>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<20100804195704.GA23681@linux.vnet.ibm.com>
+	<20100806225453.GA3947@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008061651530.30564@asgard.lang.hm>
+	<AANLkTikyRhtfX4R3x_NDgHnXssmfVuhjC5PbhRZ0a7su@mail.gmail.com>
+	<alpine.DEB.2.00.1008062010510.30564@asgard.lang.hm>
+	<20100807061558.GA28087@thunk.org>
+	<alpine.DEB.2.00.1008070206010.30564@asgard.lang.hm>
 Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1008070247590.30564@asgard.lang.hm>
+In-Reply-To: <alpine.DEB.2.00.1008070206010.30564@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,126 +28,190 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: david@lang.hm
-Cc: peterz@infradead.org, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, kevin granade <kevin.granade@gmail.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Aug 07, 2010 at 03:00:48AM -0700, david@lang.hm wrote:
-> On Sat, 7 Aug 2010, Rafael J. Wysocki wrote:
+On Sat, Aug 07, 2010 at 02:38:35AM -0700, david@lang.hm wrote:
+> On Sat, 7 Aug 2010, Ted Ts'o wrote:
 > 
-> >On Saturday, August 07, 2010, david@lang.hm wrote:
-> >>On Sat, 7 Aug 2010, Mark Brown wrote:
+> >On Fri, Aug 06, 2010 at 08:14:09PM -0700, david@lang.hm wrote:
 > >>
-> >>>On Fri, Aug 06, 2010 at 04:35:59PM -0700, david@lang.hm wrote:
-> >>>>On Fri, 6 Aug 2010, Paul E. McKenney wrote:
-> >...
-> >>What we want to have happen in an ideal world is
+> >>that description sounds far more like normal sleep power management
+> >>that suspending. especially since they want to set timers to wake
+> >>the system up and the defining characteristic of suspend (according
+> >>to this thread) is that timers don't fire while suspended.
 > >>
-> >>when the storage isn't needed (between reads) the storage should shutdown
-> >>to as low a power state as possible.
+> >>as I am seeing it, there are two reasons why this don't "just work"
 > >>
-> >>when the CPU isn't needed (between decoding bursts) the CPU and as much of
-> >>the system as possible (potentially including some banks of RAM) should
-> >>shutdown to as low a power state as possible.
+> >>1. sleeping can't currently save as much power as suspending
 > >
-> >Unfortunately, the criteria for "not being needed" are not really
-> >straightforward and one of the wakelocks' roles is to work around this issue.
-> 
-> if you can ignore the activity caused by the other "unimportant"
-> processes in the system, why is this much different then just the
-> one process running, in which case standard power management sleeps
-> work pretty well.
-
-But isn't the whole point of wakelocks to permit developers to easily
-and efficiently identify which processes are "unimportant" at a given
-point in time, thereby allowing them to be ignored?
-
-I understand your position -- you believe that PM-driving applications
-should be written to remain idle any time that they aren't doing something
-"important".  This is a reasonable position to take, but it is also
-reasonable to justify your position.  Exactly -why- is this better?
-Here is my evaluation:
-
-o	You might not need suspend blockers.  This is not totally clear,
-	and won't be until you actually build a system based
-	on your design.
-
-o	You will be requiring that developers of PM-driving applications
-	deal with more code that must be very carefully coded and
-	validated.  This requirement forces the expenditure of lots
-	of people time to save a very small amount of very inexpensive
-	memory (that occupied by the suspend-blocker code).
-
-Keep in mind that there was a similar decision in the -rt kernel.
-One choice was similar to your proposal: all code paths must call
-schedule() sufficiently frequently.  The other choice was to allow
-almost all code paths to be preempted, which resembles suspend blockers
-(preempt_disable() being analogous to acquiring a suspend blocker,
-and preempt_enable() being analogous to releasing a suspend blocker).
-
-Then as now, there was much debate.  The choice then was preemption.
-One big reason was that the choice of preemption reduced the amount of
-real-time-aware code from the entire kernel to only that part of the
-kernel that disabled preemption, which turned out to greatly simplify
-the job of meeting aggressive scheduling-latency goals.  This experience
-does add some serious precedent against your position.  So, what do you
-believe is different in the energy-efficiency case?
-
-> >>today there are two ways of this happening, via the idle approach (on
-> >>everything except Android), or via suspend (on Android)
-> >>
-> >>Given that many platforms cannot go to into suspend while still playing
-> >>audio, the idle approach is not going to be able to be eliminated (and in
-> >>fact will be the most common approach to be used/deugged in terms of the
-> >>types of platforms), it seems to me that there may be a significant amount
-> >>of value in seeing if there is a way to change Android to use this
-> >>approach as well instead of having two different systems competing to do
-> >>the same job.
+> >No, I don't think that's the case at all.  The key thing here is that
+> >*most* applications don't need to be modified to use suspend locks,
+> >because even though they might be in an event loop, when the user user
+> >turns off the display, the user generally doesn't want it doing things
+> >on their behalf.
 > >
-> >There is a fundamental obstacle to that, though.  Namely, the Android
-> >developers say that the idle-based approach doesn't lead to sufficient energy
-> >savings due to periodic timers and "polling applications".
+> >Again, take for example the Mac Book, since Apple has gotten this
+> >right for most users' use cases.  When you close the lid, you even if
+> >the application is under the misguided belief that it should be
+> >checking every five seconds to see whether or not the web page has
+> >reloaded --- actually, that's not what you want.  You probably want
+> >the application to be forcibly put to sleep.  So the whole point of
+> >the suspend blocker design is that you don't have to modify most
+> >applications; they just simply get put to sleep when you close the
+> >MacBook lid, or, in the case of the Android device, you push the
+> >button that turns off the screen.
 > 
-> polling applications can be solved by deciding that they aren't
-> going to be allowed to affect the power management decision (don't
-> consider their CPU useage when deciding to go to sleep, don't
-> consider their timers when deciding when to wake back up)
+> this doesn't require wakelocks or anything else new. all it takes is
+> setting the policy that you don't want anything to run when the lid
+> is closed and a switch to detect the lid being closed. Laptops have
+> been doing this for years.
 
-Agreed, and the focus is on how one decides which applications need
-to be considered.  After all, the activity of a highly optimized
-audio-playback application looks exactly like that of a stupid polling
-application -- they both periodically consume some CPU.  But this is
-something that you and the Android guys are actually agreeing about.
-You are only arguing about exactly what mechanism should be used to
-make this determination.  The Android guys want suspend blockers, and
-you want to extend cgroups.
+Please re-read Ted's paragraph above, but carefully this time.  You will
+then see that the desired policy is -not- "you don't want anything to
+run when the lid is closed."
 
-So I believe that the next step for you is to implement your approach
-so that it can be compared in terms of energy efficiency, code size,
-intrusiveness, performance, and compatibility with existing code.
-
-> >Technically that
-> >boils down to the interrupt sources that remain active in the idle-based case
-> >and that are shut down during suspend.  If you found a way to deactivate all of
-> >them from the idle context in a non-racy fashion, that would probably satisfy
-> >the Android's needs too.
+> >So the reason why this doesn't work is that power management for small
+> >mobile devices *is* different from power management for laptops and
+> >data center servers, and if you want a rich application ecosystem,
+> >it's best if you don't require them to be specially tuned to use the
+> >absolute minimum power.  (And that means waking up every 30 seconds
+> >might be too much; as Brian and Arve have pointed out, with the G1 in
+> >airplane mode, the CPU might be waking up once every half hour or more
+> >--- and at that rate, powertop will be waking up the CPU more than
+> >Android system would be doing so.)
 > 
-> well, we already have similar capibility for other peripherals (I
-> keep pointing to drive spin down as an example), the key to avoiding
-> the races seems to be in the drivers supporting this.
+> note that nothing that I have proposed would wake up a sleeping
+> system. the 'every several seconds' thing that I proposed was that
+> on a system that's fully awake, busy and doesn't want to sleep,
+> there would be a context switch periodically by a privilaged process
+> so that the system would not end up deciding it was idle and halt
+> everything. Now that I think about this more, it's not needed if you
+> want to override this to keep everything running for a significant
+> amount of time, just change the power saving mode from "sleep if a
+> privilaged task isn't running" to "disable suspend". This can be
+> done today by changing the right sysfs value. normal privilaged
+> processes would never need to do this, only gatekeeper daemons that
+> want to let unprivilaged processes run even if no privilaged
+> processes want to run would need to do this (i.e. in the current
+> system, whatever process controls the screen would probably be
+> right)
+> 
+> >So the real key here is to take most applications, which may be
+> >written using techniques that might be considered well written from a
+> >laptop point of view, but not for a cell phone, and not require
+> >modifications.  Even though the application writer might think it's
+> >doing well by waking up every 15 seconds, if the laptop lid is down,
+> >or if the screen is off, for **most** applications, it should be
+> >forcibly put to sleep.
+> >
+> >It's only the rare applications that should really be allowed to run
+> >while screen is off.  And it's only those applications that need
+> >modifications to use suspend blocker.  From your earlier comments, it
+> >seems that this is the key point which you are missing.  (No doubt,
+> >some of these applications that do need to know about suspend blockers
+> >are important ones; ones that make sure the battery isn't about to
+> >blow up, or ones which silently wake up every 10-15 minutes to pull
+> >down fresh mail for you from your mail server.  But those applications
+> >are the exception, not the rule.)
+> 
+> the question is what it takes to make an application privilaged like this.
+> 
+> what I proposed was to make it possible for the user/admin to select
+> what applications are allowed to keep the system awake.
 
-The difference is that the CPU stays active in the drive spin down
-case -- if the drive turns out to be needed, the CPU can spin it up.
-The added complication in the suspend case is that the CPU goes away,
-so that you must more carefully plan for all of the power-up cases.
+The Android guys do the same.
 
-> the fact that Android is making it possible for suspend to
-> selectivly avoid disabling them makes me think that a lot of the
-> work needed to make this happen has probably been done. look at what
-> would happen in a suspend if it decided to leave everything else on
-> and just disable the one thing, that should e the same thing that
-> happens if you are just disabling that one thing for idle sleep.
+> wakelocks require that the application developer decide that they
+> want to keep the system awake as well as the user/admin
 
-We already covered the differences between suspend and idle, now
-didn't we?  ;-)
+Whereas you require that the application developer redesign/rewrite
+applications to decide when to keep the system awake, e.g., by carefully
+determining when to idle themselves.  The difference is that the Android
+developer need only release a suspend blocker.  In contrast, you are
+requiring that the developer rewrite all the code that follows the point
+where the Android developer would release a suspend blocker.
+
+Your way seems to require that the developer do more work for the
+same result.  Why?
+
+Now, I do agree that a safe way to freeze the power-oblivious applications
+could be valuable, as it might reduce power consumption while the
+screen was blanked but while a PM-driving application was holding a
+suspend blocker.  However, as we have discussed, you have to be very
+careful not to freeze any app holding a user-level resource.
+
+> take your example of a mail client waking up every 15 min.
+> 
+> with Android it needs to be privilaged to grab the wakelock while
+> fetching the mail, it also needs to use a privilaged API to set the
+> wakeups to wake it up at those times.
+> 
+> with what I proposed all you need to do is to tag the application as
+> power privilaged and then if the application sleeps for 15 min
+> between doing thing the system will wake up every 15 min, work for a
+> short time, then go back to sleep.
+> 
+> 
+> if you want to put everything to sleep when the screen blanks,
+> that's trivial to do.
+> 
+> the fun starts when you want to say that there are some things you
+> don't want to put to sleep.
+
+Which is in fact a critical requirement that you appear to have been
+ignoring in your words above.
+
+> do you let some processes run while halting others?
+>   in which case how do you prevent deadlocks?
+>     on the other hand, sleeping again is simple, you sleep when
+> there is nothing more to run
+> or do you let wasteful processes run while you are awake?
+>   this avoids deadlocks, but how do you decide when to sleep again?
+> 
+> 
+> Android approaches this by requiring that any program that a user
+> may want to keep running must be modified to use wakelocks.
+> 
+> My suggestion was that the system ignore other processes when
+> deciding if the system is idle enough to put to sleep.
+
+But your suggestion seems to require quite a bit more coding effort for
+little gain.  The Android developer can just release a suspend blocker,
+and in contrast, a developer using your proposal needs to rewrite all
+the code following the point at which the Android developer released the
+suspend blocker.  So why are you saying that your is approach better?  ;-)
+
+> Yes the Android approach works reasonably well on the phones where
+> everything must currently be custom developed anyway (due to screen
+> and UI constraints), but as Android starts getting used on laptops
+> and other larger devices is that really still the right approach? or
+> would it be better to have something that could use standard
+> software in the privilaged mode?
+> 
+> to use your example of a mail client, why should someone not be able
+> to use fetchmail to get their mail instead of requiring that
+> fetchmail be modified to use wavelocks (or a substatute written)?
+> 
+> 
+> 
+> the theoretical best approach would probably look nothing like
+> either of these. Instead it would probably either
+> 
+> forbid privilaged processes from having blocking dependancies on
+> unprivilaged processes (you can then just halt the unprivilaged
+> processes when you blank the screen and let idle sleep deal with the
+> privilged processes)
+> 
+> or
+> 
+> use something like priority inheritance through userspace so that if
+> a privilaged process blocks on something where it's waiting for an
+> unprivilaged process, that unprivilaged process gets woken up and
+> allowed to run until it unblocks the privilaged process.
+> 
+> both of these have been deemed too hard
+
+And for good reason.
 
 							Thanx, Paul
