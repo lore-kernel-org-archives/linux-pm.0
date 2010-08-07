@@ -1,17 +1,14 @@
 From: david@lang.hm
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Sat, 7 Aug 2010 13:36:26 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008071330500.30564@asgard.lang.hm>
-References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008062010510.30564@asgard.lang.hm>
-	<20100807061558.GA28087@thunk.org> <201008071111.05585.rjw@sisk.pl>
-	<7F55B423-3F07-4DF7-B958-7380FDD53545@mit.edu>
+Date: Sat, 7 Aug 2010 14:01:52 -0700 (PDT)
+Message-ID: <alpine.DEB.2.00.1008071338480.30564__44480.769072152$1281215086$gmane$org@asgard.lang.hm>
+References: <Pine.LNX.4.44L0.1008070857120.20673-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <7F55B423-3F07-4DF7-B958-7380FDD53545@mit.edu>
+In-Reply-To: <Pine.LNX.4.44L0.1008070857120.20673-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,45 +18,167 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Theodore Tso <tytso@mit.edu>
-Cc: peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, swmike@swm.pp.se, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: tytso@mit.edu, peterz@infradead.org, swetland@google.com, Kernel development list <linux-kernel@vger.kernel.org>, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, swmike@swm.pp.se, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 7 Aug 2010, Theodore Tso wrote:
+On Sat, 7 Aug 2010, Alan Stern wrote:
 
-> On Aug 7, 2010, at 5:11 AM, Rafael J. Wysocki wrote:
+> On Fri, 6 Aug 2010 david@lang.hm wrote:
 >
->> But in principle that need not mean suspending the entire system.
->> To get applications out of the way, you need to freeze user space.
->> However, that's not sufficient, because in addition to that you need to
->> prevent deactivate the majority of interrupt sources to avoid waking up the
->> CPU (from C-states) too often.
+>>>> 1. the ability to decide to suspend while there are still some
+>>>> 'unimportant' apps running.
+>>>
+>>> While this may be true in some literal sense, it certainly is not the
+>>> best way to view the situation.  Linux already has the ability to
+>>> suspend (or to decide to suspend) whenever you want.  What Android has
+>>> added is the ability to suspend conditionally, based on whether or not
+>>> some applications or drivers want to keep the system running.
+>>
+>> Ok, aside from possibly drivers, what' stopping this from being done on a
+>> valilla system today?
+>
+> Nothing much.  Mainly just the fact that Rafael's code is so new.  It
+> hasn't yet been integrated into the drivers that should use it.
 
-> True, but again, consider the MacBook.  If you plug in an iPod, the 
-> machine will wake up for *just* long enough to let the iTunes sync the 
-> iPod, but once its done, the machine goes back to sleep again 
-> immediately.  I doubt MacOS has something called a "suspend blocker" 
-> which prevents the machine from sleeping until iTunes finished, which 
-> when released, allows the machine to suspend again immediately.  But 
-> neither did I see any evidence that it took 30 seconds for some kludgy 
-> polling process to decide that iTunes was done, and to allow the MacBook 
-> to go back to sleep.
+makes sense.
 
-nobody has proposed a polling process to decide the system can suspend, 
-what I proposed was to have idle detection decide the system can suspend, 
-which would mean that if you don't want the system to suspend you have to 
-do something to keep it from being idle.
+>>> Furthermore, this statement leaves out the primary purpose of
+>>> wakelocks: to avoid races between suspending and wakeup events.  And it
+>>> also ignores a very important distinction: the difference between
+>>> drivers and applications.  Wakelocks are used by both, but it has been
+>>> shown that only the wakelocks used by drivers need to be implemented in
+>>> the kernel -- the others can be implemented entirely in userspace.
+>>
+>> Ok, this is the first I've heard in this discussion that wakelocks would
+>> not be available to userspace. In fact it was explicitly stated that
+>> userspace applications called IOCTLs to get/release the wakelock.
+>
+> Android's wakelock implementation does make wakelocks available to
+> userspace.  In Rafael's approach there is nothing comparable.  Instead
+> "userspace wakelock"-equivalents have to be handled by a power manager
+> program.
 
-At the time I didn't know that Android always disabled suspend for the 
-entire time the display was on, so I made the assumption that timouts had 
-to be long enough for input events to keep the system awake, which would 
-put them on the order of 30 seconds or longer.
+And the question to the Android people is if they consider this acceptable 
+or think that this means that the vanilla can't support them.
 
-If all that is wanted is to disable the suspend for the entire time the 
-backlight is on you don't need wakelocks, and you don't need a privilaged 
-thread waking up, all you need is to tell the power management system not 
-to suspend through the existing mechanism. you could create a new 
-mechanism (wakelock) to pass the same information, but what is the 
-advantage of doing so?
+>> many of my objections (voiced in another thread) about Android specific
+>> features are not relavent if the wakelock in userspace is just part of
+>> that application framework and not tied into the kernel.
+>>
+>>> All of these issues are addressed by Raphael's new wakeup_events code.
+>>
+>> Ok, then why is there still discussion about wakelocks at all if Raphael
+>> has implemnetd the needed kernel functionality and userspace is Android
+>> SDK specific?
+>
+> This thread started when Paul posted his list of requirements for
+> Android power management (or power management in general).  It wasn't
+> really specific to wakelocks, but people brought them up when
+> discussing how those requirements are currently being met.
+>
+> In fact, it seems to me that _you_ are the person most responsible for
+> prolonging this discussion.
+
+I'll admit to that, but it seems like there is still new information 
+comeing up about the requirements, as well as the current implementation.
+
+>>>> If these two features were available, I think that the rest of what they
+>>>> are looking for could be built up without requireing other changes.
+>>>
+>>> They already _are_ available.  Admittedly, only since quite recently.
+>>> (Rafael's new code was accepted during the 2.6.36 merge window.)
+>>
+>> Do Brian and Arve agree that this solves their problem?
+>
+> I think you should ask them instead of asking me.
+
+Since they are following this thread, this was intended to be asking them 
+torespond.
+
+>> to be fair, there have been numerous complaints about suspend being
+>> separate from deep sleep long before Android. Linus' blow-up that resulted
+>> in Hibernation and Suspend being separated from each other is a case in
+>> point. He was making the point that there shouldn't be a difference
+>> between the deepest sleep and suspend.
+>
+> This may be controversial, but I think Rafael will agree when I say
+> that (in this one respect) Linus was wrong.  Separating hibernation
+> from suspend makes sense, and I agree that the differences between
+> deepest idle and suspend should be minimized.  But to get rid of them
+> altogether would be wrong (and probably not possible anyway).
+
+if you thing the differences should be minimized, why do you think that 
+getting rid of them would be wrong?
+
+I know that Rafael disagrees with Linus, because he has not implemented 
+what Linus suggested.
+
+>> As deep sleep gains the ability to use even less power and as suspend
+>> gains the ability to leave things on sometimes, the difference between
+>> them is dissapearing. I wouldn't be at all surprised to see them start
+>> overlaping soon. So it's not that I think Android should use deep sleeps
+>> instead of suspend, but rather that suspend should just be the deepest
+>> sleep, one mechanism instead of two.
+>
+> I disagree.  There are critical differences between them:
+>
+> 	Suspend uses the freezer and idle doesn't.
+>
+> 	Suspend generally forces devices to go into their low-power
+> 	states immediately, whereas idle tends to leave unused devices
+> 	at full power for some time before going to low power (to
+> 	minimize average latency).
+
+this sounds like policy, not capability.
+
+> 	Overall, suspend generally has longer latency than idle.  (This
+> 	varies among platforms.)
+
+even different idle modes have different latency
+
+> 	The set of wakeup sources (including timers) is different.
+
+I agree that they are different, but don't they also vary within sleep or 
+suspend as well?
+
+> 	On some systems, suspend uses platform-specific mechanisms to
+> 	go into lower power states than are available to idle.
+
+the exact mechanism to go into low-power states is platform specific to 
+start with (there are some very popular platforms admittedly, like the PC 
+ACPI modes)
+
+as I see it
+
+Sleep
+
+a policy engine to decide when to sleep, how deeply to sleep, what to 
+disable, what will wake you up (this includes taking into account desired 
+latency, and the amount of power/time needed to get in and out of the 
+various modes)
+
+platform specific mechanisms for transitioning in and out of the modes.
+
+
+Suspend
+
+a policy engine to decide when to suspend, what to leave enabled when you 
+supend, what will wake you i[
+
+platform specific mechanisms for transition in and out of suspend. I view 
+use of the freezer to be one of these mechansims.
+
+
+Somewhere amoung this mess are things like spinning down drives, disabling 
+inactive network interfaces, etc. I don't knwo if those are run from the 
+sleep policy engine, or if there is a third policy engine to decide these 
+things.
+
+
+why should there be multiple different policy engines making power 
+management decisions? it seems to me like these policy engines can and 
+should be merged, with the resulting engine able to trigger all the 
+existing mechanisms for transitioning between modes.
 
 David Lang
