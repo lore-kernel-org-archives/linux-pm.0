@@ -1,8 +1,9 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+From: david@lang.hm
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Fri, 6 Aug 2010 17:36:42 -0700
-Message-ID: <20100807003642.GQ2432__5791.65217136524$1281141459$gmane$org@linux.vnet.ibm.com>
-References: <AANLkTinatKEBfHhMnKc5wbys13P81PKWSc+nxccgHe-Y@mail.gmail.com>
+Date: Fri, 6 Aug 2010 18:00:34 -0700 (PDT)
+Message-ID: <alpine.DEB.2.00.1008061741460.30564@asgard.lang.hm>
+References: <20100805230304.GQ2447@linux.vnet.ibm.com>
+	<AANLkTinatKEBfHhMnKc5wbys13P81PKWSc+nxccgHe-Y@mail.gmail.com>
 	<alpine.DEB.2.00.1008051715520.30632@asgard.lang.hm>
 	<AANLkTikOuY-q42mDRmxc-9W0uLeJeW-hiFG26WrV7CfU@mail.gmail.com>
 	<alpine.DEB.2.00.1008051800360.25170@asgard.lang.hm>
@@ -12,12 +13,10 @@ References: <AANLkTinatKEBfHhMnKc5wbys13P81PKWSc+nxccgHe-Y@mail.gmail.com>
 	<20100806181832.GJ2432@linux.vnet.ibm.com>
 	<alpine.DEB.2.00.1008061517130.30564@asgard.lang.hm>
 	<20100807001431.GA3252@opensource.wolfsonmicro.com>
-Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <20100807001431.GA3252@opensource.wolfsonmicro.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -29,73 +28,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: david@lang.hm, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, kevin granade <kevin.granade@gmail.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, kevin granade <kevin.granade@gmail.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Aug 07, 2010 at 01:14:32AM +0100, Mark Brown wrote:
+On Sat, 7 Aug 2010, Mark Brown wrote:
+
 > On Fri, Aug 06, 2010 at 04:35:59PM -0700, david@lang.hm wrote:
-> > On Fri, 6 Aug 2010, Paul E. McKenney wrote:
-> 
-> Guys, please try to cut unneeded text from the quotes - it makes it much
-> easier to find the new text.
-> 
-> >>> Well, not really from the Linux point of view.  It's not massively
-> >>> different to something like keeping an ethernet controller sufficiently
-> >>> alive to allow it to provide wake on LAN functionality while the system
-> 
-> >> The wake-on-LAN and the lights-out management systems are indeed
-> >> interesting examples, and actually pretty good ones.  The reason I
-> >> excluded them is that they don't do any application processing -- their
-> >> only purpose is the care and feeding of the system itself.  In contrast,
-> >> the embedded processors are able to do significant applications processing
-> >> (e.g., play back music) while any CPUs are completely shut down and most
-> >> of the memory is powered down as well.
-> 
-> This isn't a particularly meaningful distinction, things like the LoM
-> systems on servers are generally at least as capable as things like the
-> DSPs doing tasks like offloaded MP3 decode and often provide useful
-> services in themselves (like system monitoring).  It's really just
-> semantics to treat them differently to something like a cellular modem -
-> at a high level they're both just independant processors ticking away
-> without the application processor.
-
-I agree that a smartphone's cellular modem can be argued to be very
-similar to wake-on-LAN.  The smartphone applications that seem to me
-to be very different from wake-on-LAN are things like audio playback,
-where the system is providing service to the user during the time that
-it is suspended.
-
-> > one other significant issue is that on the PC, things like wake-on-LAN,  
-> > lights out management cards, etc require nothing from the main system  
-> > other than power. If they do something, they are sending the signal to 
-> > the chipset, which then wakes the system up. they don't interact with the 
-> > main processor/memory/etc at all.
-> 
-> I don't see that it makes much difference what gets kept alive - at the
-> end of the day the point is that we're making a decision to keep bits of
-> the system alive over suspend.
-
-The distinction is whether or not the system is perceived to be actively
-doing something useful while it is suspended.  Yes, this is subjective,
-but the distinction is still important.
-
-> > So as I see it, we need to do one of two things.
-> 
-> > 1. change the suspend definition to allow for some things to not be  
-> > suspended
-> 
+>> On Fri, 6 Aug 2010, Paul E. McKenney wrote:
+>
+>> So as I see it, we need to do one of two things.
+>
+>> 1. change the suspend definition to allow for some things to not be
+>> suspended
+>
 > This is essentially what's already happening.
-
-The time-of-day clock is certainly a case in point here.  ;-)
-
-							Thanx, Paul
-
-> > 2. change the sleep/low-power mode definition to have a more standardized 
-> > way of turning things off, and extend it to allow clocks to be turned off 
-> > as well (today we have things able to be turned off, drive spin-down for  
-> > example, but per comments in this thread it's all one-off methods)
-> 
+>
+>> 2. change the sleep/low-power mode definition to have a more standardized
+>> way of turning things off, and extend it to allow clocks to be turned off
+>> as well (today we have things able to be turned off, drive spin-down for
+>> example, but per comments in this thread it's all one-off methods)
+>
 > Currently things like clock trees are frequently managed orthogonaly to
 > the system power state to at least some extent anyway - for example,
 > perfectly normal wake events like button presses will often require
 > clocks for things like debouncing.
+
+I recognise that #1 is essentially what Android is already doing.
+
+I'm asking the question, "Is this what Linux should be doing?
+
+Personally, I think that suspend should be treated much more like a 
+low-power state and much less like hibernation than it currently is (I 
+believe that Linus has also voiced this opinion). And I think that the 
+situation with Android suspending while audio is playing between busts of 
+CPU activity is a perfect example.
+
+for the moment, forget the problem of other apps that may be running, and 
+consider a system that's just running a media player.
+
+the media player needs bursts of CPU to decode the media so that the 
+output device can access it (via DMA or something like that)
+
+the media player needs bursts of I/O to read the encoded program source 
+from storage.
+
+What we want to have happen in an ideal world is
+
+when the storage isn't needed (between reads) the storage should shutdown 
+to as low a power state as possible.
+
+when the CPU isn't needed (between decoding bursts) the CPU and as much of 
+the system as possible (potentially including some banks of RAM) should 
+shutdown to as low a power state as possible.
+
+
+today there are two ways of this happening, via the idle approach (on 
+everything except Android), or via suspend (on Android)
+
+Given that many platforms cannot go to into suspend while still playing 
+audio, the idle approach is not going to be able to be eliminated (and in 
+fact will be the most common approach to be used/deugged in terms of the 
+types of platforms), it seems to me that there may be a significant amount 
+of value in seeing if there is a way to change Android to use this 
+approach as well instead of having two different systems competing to do 
+the same job.
+
+David Lang
