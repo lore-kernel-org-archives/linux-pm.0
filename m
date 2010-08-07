@@ -1,25 +1,12 @@
-From: Brian Swetland <swetland@google.com>
-Subject: Re: Attempted summary of suspend-blockers LKML thread,
-	take three
-Date: Mon, 9 Aug 2010 12:32:21 -0700
-Message-ID: <AANLkTimEQ9PMZ+D-U2M-SuejcuHhGk=_MrkFLBx9WtoC__9325.18622507832$1281382400$gmane$org@mail.gmail.com>
-References: <20100806225453.GA3947@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008061651530.30564@asgard.lang.hm>
-	<AANLkTikyRhtfX4R3x_NDgHnXssmfVuhjC5PbhRZ0a7su@mail.gmail.com>
-	<alpine.DEB.2.00.1008062010510.30564@asgard.lang.hm>
-	<20100807061558.GA28087@thunk.org>
-	<AANLkTi=sMVjya9CH6UoZwJCXJTDRgBhnPXmApU_RHVTi@mail.gmail.com>
-	<20100808155719.GB3635@thunk.org>
-	<AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
-	<20100808213821.GD3635@thunk.org>
-	<20100809112453.77210acc@lxorguk.ukuu.org.uk>
-	<20100809181638.GI3026@linux.vnet.ibm.com>
-	<20100809201822.441905f7@lxorguk.ukuu.org.uk>
+From: Namhyung Kim <namhyung@gmail.com>
+Subject: [PATCH] ACPI: add missing __percpu markup in
+	arch/x86/kernel/acpi/cstate.c
+Date: Sun,  8 Aug 2010 02:17:29 +0900
+Message-ID: <1281201449-31158-1-git-send-email-namhyung__17438.0897464745$1281386920$gmane$org@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100809201822.441905f7@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,45 +16,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, swmike@swm.pp.se, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, arjan@infradead.org
+To: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org
+Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBBdWcgOSwgMjAxMCBhdCAxMjoxOCBQTSwgQWxhbiBDb3ggPGFsYW5AbHhvcmd1ay51
-a3V1Lm9yZy51az4gd3JvdGU6Cj4+IEJ1dCB3b3VsZG4ndCBhbiBvZmZpY2Ugc3VpdGUgcnVuIGFz
-IGEgcG93ZXItb2JsaXZpb3VzIGFwcGxpY2F0aW9uIG9uIGFuCj4+IEFuZHJvaWQgZGV2aWNlPyDC
-oEFmdGVyIGFsbCwgb2ZmaWNlIGFwcGxpY2F0aW9ucyBkbyBub3QgbmVlZCB0byBydW4gd2hlbgo+
-Cj4gSSB3YXMgd2FpdGluZyBmb3Igc29lbW9uZSB0byBsZWFwIGRvd24gdGhlIHBpdCBJIGR1ZyDC
-oE9mZmljZSBzdWl0ZXMgaGF2ZQo+IHNvbWUgcXVpdGUgaW1wb3J0YW50IGJhY2tncm91bmQgYWN0
-aXZpdGllcy4gQ29uc2lkZXIgdGhlIGNhc2Ugb2YgYSBwb3dlcgo+IG9ibGl2aW91cyBPcGVuIE9m
-ZmljZS4gWW91IHR5cGUgYSBjcml0aWNhbCBkb2N1bWVudCwgeW91IHN1c3BlbmQsIHlvdXIKPiBw
-aG9uZSBiYXR0ZXJ5IGRpZXMgYSBiaXQgbGF0ZXIsIHlvdSBsb3N0IHlvdXIgZG9jdW1lbnQuIE9m
-ZmljZSBzdWl0ZXMgZG8KPiB0aW1lZCBiYWNraW5nIHVwIGFzIG9uZSBzaW1wbGUgb2J2aW91cyBl
-eGFtcGxlLiBUaGF0IGNvdWxkIGJlY29tZSBhIHBvd2VyCj4gYXdhcmUgYmVoYXZpb3VyIGJ1dCB0
-aGUgdHJ1ZWx5IHBvd2VyIG9ibGl2aW91cyBvZmZpY2Ugc3VpdGUgaXMgYSBteXRoLgo+Cj4+IHRo
-ZSBzY3JlZW4gaXMgdHVybmVkIG9mZiwgc28gdGhlc2UgdGhlIGFwcGxpY2F0aW9ucyBkbyBub3Qg
-bmVlZCB0byB1c2UKPj4gc3VzcGVuZCBibG9ja2Vycy4gwqBUaGF0IHNhaWQsIEkgY291bGQgZWFz
-aWx5IGltYWdpbmUgdGhhdCBzaWduaWZpY2FudAo+PiB3b3JrIHdvdWxkIGJlIHJlcXVpcmVkIHRv
-IG1ha2UgT3Blbk9mZmljZSBydW4gb24gQW5kcm9pZCwgbm90IGR1ZSB0bwo+PiBzdXNwZW5kIGJs
-b2NrZXJzLCBidXQgcmF0aGVyIGR1ZSB0byBBbmRyb2lkJ3MgdW51c3VhbCB1c2VyIHNwYWNlLgo+
-Cj4gWW91IGFyZSB0aWdodGx5IGxpbmtpbmcgc3VzcGVuZCBibG9ja2VycyB3aXRoIEFuZHJvaWQu
-IElmIHRoZXkgd2VyZSBhCj4gc2Vuc2libGUgZ2VuZXJhbCBzb2x1dGlvbiB0aGV5IHdvdWxkIGJl
-IGdlbmVyaWMgbm90IHRpZWQgY2xvc2VseSB0bwo+IEFuZHJvaWQKCkRvZXNuJ3QgdGhlIHNhbWUg
-cHJvYmxlbSBleGlzdCBvbiBteSBsaW51eCBsYXB0b3A/ICBJIHdyaXRlIG91dCBteQptYW5pZmVz
-dG8gaW4gb3BlbiBvZmZpY2UsIGNsb3NlIHRoZSBsaWQgb2YgbXkgbGFwdG9wLCB0aGUgc3lzdGVt
-CnN1c3BlbmRzIGJlZm9yZSBteSBodWdlIGRvY3VtZW50IGZpbmlzaGVzIHdyaXRpbmcgb3V0LCBs
-YXRlciBteQpiYXR0ZXJ5IGRpZXMgb3IgSSBmb29saXNobHkgcmVtb3ZlIGl0IG9yIHdoYXRub3Qu
-Li4gIHRoZSBtYWluCmRpZmZlcmVuY2Ugc2VlbXMgdG8gYmUgdGhhdCBsYXB0b3BzLCB3aXRoIHRo
-ZWlyIGJpZyAnb2wgYmF0dGVyaWVzLCBhcmUKbGVzcyBhZ2dyZXNzaXZlIGFib3V0IHBvd2VyIG1h
-bmFnZW1lbnQgYW5kIHRoZSByZXN1bHQgaXMgd2lkZXIgd2luZG93cwpiZWZvcmUgYW5kIGxlc3Mg
-ZnJlcXVlbnQgd2FrZXVwcyBmcm9tIHN1c3BlbmQgYW5kIHRodXMgYmV0dGVyIG9kZHMgYXQKbWlz
-c2luZyB0aGUgcmFjZSBjb25kaXRpb24uCgpBcyBBcnZlIGhhcyBwb2ludGVkIG91dCBwcmV2aW91
-c2x5LCB0aGVyZSBhcmUgYSBudW1iZXIgb2YgdXNlcyBmb3IKc3VzcGVuZCBibG9ja2VycywgZXZl
-biBvbiBwbHVnZ2VkLWludG8tdGhlLXdhbGwgc3lzdGVtcyAtLSB0YWtlIGhpcwpleGFtcGxlIG9m
-IHdhbnRpbmcgaGlzIG15dGh0diBiYWNrZW5kIHRvIHBvd2VyIGRvd24gd2hlbiBub3QgYnVzeSwg
-YnV0Cm5ldmVyIHBvd2VyIGRvd24gd2hlbiBoZSBoYXBwZW5zIHRvIGJlIHVzaW5nIGl0IG9uIGNv
-bnNvbGUsIG9yIGlzc3Vlcwp3aXRoIG11bHRpcGxlIHNlcnZpY2VzIHRoYXQgd2FudCB0byB3YWtl
-IHVwIGFuZCBrZWVwIHRoZSBkZXZpY2UgYXdha2UKd2hpbGUgd29ya2luZy4KCkJyaWFuCl9fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxp
-bmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3Rz
-LmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+cpu_cstate_entry is a percpu pointer but was missing __percpu markup.
+Add it.
+
+Signed-off-by: Namhyung Kim <namhyung@gmail.com>
+---
+ arch/x86/kernel/acpi/cstate.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
+index fb7a5f0..fb16f17 100644
+--- a/arch/x86/kernel/acpi/cstate.c
++++ b/arch/x86/kernel/acpi/cstate.c
+@@ -61,7 +61,7 @@ struct cstate_entry {
+ 		unsigned int ecx;
+ 	} states[ACPI_PROCESSOR_MAX_POWER];
+ };
+-static struct cstate_entry *cpu_cstate_entry;	/* per CPU ptr */
++static struct cstate_entry __percpu *cpu_cstate_entry;	/* per CPU ptr */
+ 
+ static short mwait_supported[ACPI_PROCESSOR_MAX_POWER];
+ 
+-- 
+1.7.0.4
