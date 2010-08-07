@@ -1,23 +1,14 @@
-From: "Ted Ts'o" <tytso@mit.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Sat, 7 Aug 2010 02:28:28 -0400
-Message-ID: <20100807062828.GB28087__29814.2982683659$1281162575$gmane$org@thunk.org>
-References: <alpine.DEB.2.00.1008051715520.30632@asgard.lang.hm>
-	<AANLkTikOuY-q42mDRmxc-9W0uLeJeW-hiFG26WrV7CfU@mail.gmail.com>
-	<alpine.DEB.2.00.1008051800360.25170@asgard.lang.hm>
-	<20100806123047.GE31326@sirena.org.uk>
-	<20100806172226.GH2432@linux.vnet.ibm.com>
-	<20100806173325.GA25367@rakim.wolfsonmicro.main>
-	<20100806181832.GJ2432@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008061517130.30564@asgard.lang.hm>
-	<20100807001431.GA3252@opensource.wolfsonmicro.com>
-	<alpine.DEB.2.00.1008061741460.30564@asgard.lang.hm>
+Date: Sat, 7 Aug 2010 10:49:37 +0200
+Message-ID: <201008071049.38237.rjw__42190.2904440232$1281183251$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1008061505070.9303-100000@netrider.rowland.org>
+	<201008070004.43923.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1008061741460.30564@asgard.lang.hm>
+In-Reply-To: <201008070004.43923.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,47 +18,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, kevin granade <kevin.granade@gmail.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 06, 2010 at 06:00:34PM -0700, david@lang.hm wrote:
-> 
-> today there are two ways of this happening, via the idle approach
-> (on everything except Android), or via suspend (on Android)
-> 
+On Saturday, August 07, 2010, Rafael J. Wysocki wrote:
+> On Friday, August 06, 2010, Alan Stern wrote:
+> > On Thu, 5 Aug 2010, Arve Hj=F8nnev=E5g wrote:
+> ...
+> > But what sorts of things qualify as wakeup events?  Right now, the code
+> > handles only events coming by way of the PME# signal (or its platform
+> > equivalent).  But that signal usually gets activated only when a PCI
+> > device is in a low-power mode; if the device is at full power then it
+> > simply generates an IRQ.  It's the same event, but reported to the
+> > kernel in a different way.  So consider...
+> > =
 
-Most other devices use a lot more power at idle; in some cases it's
-because the hardware just isn't as power optimized (why bother, when
-you have 94,000 mWh of power at your disposal with a 6 cell laptop
-battery, as opposed to the 800-1000 mWh that you might have on a cell
-phone battery).  In other cases, it's because the kernel and the
-low-level software stack (never mind the applications) are waking up
-the CPU too darned often --- in other words, idle simply isn't idle
-enough.
+> > Case 1: The system is suspending and the PCI device has already been
+> > 	placed in D3hot when an event occurs.  PME# is activated,
+> > 	the wakeup event is reported, the suspend is aborted, and the =
 
-So you may want to consider whether part of the problem is that
-general purpose Linux systems need a radical redesign to get power
-utilization down to those sorts of levels --- where the CPU might only
-be waking up once every half-hour or so, and then only do actual
-useful work.
+> > 	system won't try to suspend again for at least 100 ms.  Good.
+> > =
 
-Can you get there by assuming that every single application is
-competently written?  In an idle approach, you have to.  That way lies
-Maemo, where installing just one bad application will cut your battery
-life time by a factor of 2-3.  You could try stopping processes by
-using kill -STOP, but this at that point, you've moved into Android
-strategy of "suspend".  And the only question is what is the most
-efficient way to allow the system to run when there is true work that
-needs to be done, and how to avoid deadlocks by stopping processes
-that might be holding user space locks --- and to administer when and
-how to suspend the processes.
+> > Case 2: The system is running normally and the PCI device is at full
+> > 	power when an event occurs.  PME# isn't activated and =
 
-Sure, you could do someting amazing complicated using cgroups, and
-user space processes that have to wake up the CPU every 30 seconds to
-see if it's safe to suspend the system --- but why not just use the
-system which is being used by 200,000 new phones every day?  It's
-simple and it works.  And unlike Maemo, untrustworthy applications
-don't end up chewing up your battery lifetime.
+> > 	pm_wakeup_event doesn't get called.  Then when the system
+> > 	tries to suspend 25 ms later, there's nothing to prevent it
+> > 	even though the event is still being processed.  Bad.
+> > =
 
-						- Ted
+> > In case 2 the race has not been resolved.  It seems to me that the =
+
+> > only proper solution is to call pm_wakeup_event for _every_ PCI =
+
+> > interrupt.  This may be too much to add to a hot path, but what's the =
+
+> > alternative?
+> =
+
+> Arguably not every PCI interrupt should be regarded as a wakeup event, so
+> I think we can simply say in the cases when that's necessary the driver s=
+hould
+> be responsible for using pm_wakeup_event() or pm_stay_awake() / pm_relax(=
+) as
+> appropriate.
+> =
+
+> My patch only added it to the bus-level code which covered the PME-based
+> wakeup events that _cannot_ be handled by device drivers.
+
+Also please note that it depends a good deal on the definition of a "wakeup
+event".  Under the definition used when my patch was being developed, ie. t=
+hat
+wakeup events are the events that would wake up the system from a sleep sta=
+te,
+PCI interrupts cannot be wakeup events, unless the given device remains in =
+the
+full power state although the system has been suspended (standard PCI devic=
+es
+are not allowed to generate signals except for PME from low-power states).
+
+Thanks,
+Rafael
