@@ -1,17 +1,15 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Sat, 7 Aug 2010 03:23:32 -0700
-Message-ID: <AANLkTim-a6qHL_Xo+iVUW4p79EMMRssa0-AqZenNSYJr__44433.0761362382$1281183254$gmane$org@mail.gmail.com>
-References: <AANLkTinQD3ggLFVd2KvX95U2B_j=ZJquZgiBGieukJ+r@mail.gmail.com>
-	<Pine.LNX.4.44L0.1008061505070.9303-100000@netrider.rowland.org>
-	<AANLkTinS_UyhRNMnViK_4aA4ve3thHhLthC+OM7cUMZc@mail.gmail.com>
-	<201008071044.37486.rjw@sisk.pl>
-	<AANLkTinebiC=9Xd-D_sOwmvA8w_YPWMdhTYz2NRbZ7jH@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Attempted summary of suspend-blockers LKML thread,
+	take three
+Date: Sat, 7 Aug 2010 11:12:35 +0200
+Message-ID: <201008071112.35790.rjw__27901.4892098077$1281183255$gmane$org@sisk.pl>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<20100807061558.GA28087@thunk.org> <201008071111.05585.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinebiC=9Xd-D_sOwmvA8w_YPWMdhTYz2NRbZ7jH@mail.gmail.com>
+In-Reply-To: <201008071111.05585.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,34 +19,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Ted Ts'o <tytso@mit.edu>
+Cc: david@lang.hm, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, swmike@swm.pp.se, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-2010/8/7 Arve Hj=F8nnev=E5g <arve@android.com>:
-> 2010/8/7 Rafael J. Wysocki <rjw@sisk.pl>:
->> On Saturday, August 07, 2010, Arve Hj=F8nnev=E5g wrote:
->>> 2010/8/6 Alan Stern <stern@rowland.harvard.edu>:
->>> > On Thu, 5 Aug 2010, Arve Hj=F8nnev=E5g wrote:
-...
->>> >> total_time, total time the wake lock has been active. This one should
->>> >> be obvious.
->>> >
->>> > Also easily added.
->>> >
->>> Only with a handle passed to all the calls.
->>
->> Well, I'm kind of tired of this "my solution is the only acceptable one"
->> mindset. =A0IMHO, it's totally counter productive.
->>
->
-> How do you propose to track how long a driver has blocked suspend when
-> you have an unblock call that takes no arguments.
->
+On Saturday, August 07, 2010, Rafael J. Wysocki wrote:
+> On Saturday, August 07, 2010, Ted Ts'o wrote:
+> > On Fri, Aug 06, 2010 at 08:14:09PM -0700, david@lang.hm wrote:
+> > > 
+> > > that description sounds far more like normal sleep power management
+> > > that suspending. especially since they want to set timers to wake
+> > > the system up and the defining characteristic of suspend (according
+> > > to this thread) is that timers don't fire while suspended.
+> > > 
+> > > as I am seeing it, there are two reasons why this don't "just work"
+> > > 
+> > > 1. sleeping can't currently save as much power as suspending
+> > 
+> > No, I don't think that's the case at all.  The key thing here is that
+> > *most* applications don't need to be modified to use suspend locks,
+> > because even though they might be in an event loop, when the user user
+> > turns off the display, the user generally doesn't want it doing things
+> > on their behalf.
+> > 
+> > Again, take for example the Mac Book, since Apple has gotten this
+> > right for most users' use cases.  When you close the lid, you even if
+> > the application is under the misguided belief that it should be
+> > checking every five seconds to see whether or not the web page has
+> > reloaded --- actually, that's not what you want.  You probably want
+> > the application to be forcibly put to sleep.  So the whole point of
+> > the suspend blocker design is that you don't have to modify most
+> > applications; they just simply get put to sleep when you close the
+> > MacBook lid, or, in the case of the Android device, you push the
+> > button that turns off the screen.
+> 
+> But in principle that need not mean suspending the entire system.
+> To get applications out of the way, you need to freeze user space.
+> However, that's not sufficient, because in addition to that you need to
+> prevent deactivate the majority of interrupt sources to avoid waking up the
+> CPU (from C-states) too often.
 
-Also, I did not not see a response to my question about why you don't
-want to pass a handle.
+s/prevent deactivate/deactivate/
 
--- =
-
-Arve Hj=F8nnev=E5g
+Rafael
