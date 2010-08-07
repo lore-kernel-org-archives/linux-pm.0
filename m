@@ -1,22 +1,15 @@
-From: david@lang.hm
-Subject: Re: Attempted summary of suspend-blockers LKML thread,
-	take three
-Date: Sat, 7 Aug 2010 14:20:02 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008071403000.30564@asgard.lang.hm>
-References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<20100804195704.GA23681@linux.vnet.ibm.com>
-	<20100806225453.GA3947@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008061651530.30564@asgard.lang.hm>
-	<AANLkTikyRhtfX4R3x_NDgHnXssmfVuhjC5PbhRZ0a7su@mail.gmail.com>
-	<alpine.DEB.2.00.1008062010510.30564@asgard.lang.hm>
-	<20100807061558.GA28087@thunk.org>
-	<alpine.DEB.2.00.1008070206010.30564@asgard.lang.hm>
-	<20100807153225.GD19600@linux.vnet.ibm.com>
+From: Nigel Cunningham <nigel@tuxonice.net>
+Subject: Re: 2.6.35 Regression: Ages spent discarding blocks that
+ weren't used!
+Date: Sun, 08 Aug 2010 08:47:50 +1000
+Message-ID: <4C5DE296.6080509__34170.8976579413$1281221344$gmane$org@tuxonice.net>
+References: <4C58C528.4000606@tuxonice.net>	<4C5960B0.7020003@teksavvy.com>	<4C59DA16.4020500@tuxonice.net>	<AANLkTik_PH-7T7OFtzaCtPbAHE6pqnYMUsjP25KtsRnR@mail.gmail.com>	<4C5A59FC.1030304@tuxonice.net>	<AANLkTi=NMHkKduZzsLiiYt3=w8++8epb5aGrqv7V3-vB@mail.gmail.com>	<4C5B925A.5000409@tuxonice.net>
+	<AANLkTinU24v6Mty54YL3gv3M5S+4jdN5vHD54KknchAG@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100807153225.GD19600@linux.vnet.ibm.com>
+In-Reply-To: <AANLkTinU24v6Mty54YL3gv3M5S+4jdN5vHD54KknchAG@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,118 +19,81 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
+To: Hugh Dickins <hughd@google.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Mark Lord <kernel@teksavvy.com>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 7 Aug 2010, Paul E. McKenney wrote:
+Hi.
 
-> On Sat, Aug 07, 2010 at 02:38:35AM -0700, david@lang.hm wrote:
->> On Sat, 7 Aug 2010, Ted Ts'o wrote:
+On 07/08/10 08:07, Hugh Dickins wrote:
+> On Thu, Aug 5, 2010 at 9:40 PM, Nigel Cunningham<nigel@tuxonice.net>  wrote:
+>> On 06/08/10 11:15, Hugh Dickins wrote:
+>>> On Wed, Aug 4, 2010 at 11:28 PM, Nigel Cunningham<nigel@tuxonice.net>
+>>>   wrote:
+>>>>>> On 05/08/10 13:58, Hugh Dickins wrote:
+>>>>>
+>>>>> I agree it would make more sense to discard swap when freeing rather
+>>>>> than when allocating, I wish we could.  But at the freeing point we're
+>>>>> often holding a page_table spinlock at an outer level, and it's just
+>>>>> one page we're given to free.  Freeing is an operation you want to be
+>>>>> comfortable doing when you're short of resources, whereas discard is a
+>>>>> kind of I/O operation which needs resources.
 >>
->>> On Fri, Aug 06, 2010 at 08:14:09PM -0700, david@lang.hm wrote:
->>
->>> So the real key here is to take most applications, which may be
->>> written using techniques that might be considered well written from a
->>> laptop point of view, but not for a cell phone, and not require
->>> modifications.  Even though the application writer might think it's
->>> doing well by waking up every 15 seconds, if the laptop lid is down,
->>> or if the screen is off, for **most** applications, it should be
->>> forcibly put to sleep.
->>>
->>> It's only the rare applications that should really be allowed to run
->>> while screen is off.  And it's only those applications that need
->>> modifications to use suspend blocker.  From your earlier comments, it
->>> seems that this is the key point which you are missing.  (No doubt,
->>> some of these applications that do need to know about suspend blockers
->>> are important ones; ones that make sure the battery isn't about to
->>> blow up, or ones which silently wake up every 10-15 minutes to pull
->>> down fresh mail for you from your mail server.  But those applications
->>> are the exception, not the rule.)
->>
->> the question is what it takes to make an application privilaged like this.
->>
->> what I proposed was to make it possible for the user/admin to select
->> what applications are allowed to keep the system awake.
+>> The more I think about this, the more it seems to me that doing the discard
+>> at allocation time is just wrong. How about a strategy in which you do the
+>> discard immediately if resources permit, or flag it as in need of doing (at
+>> a future swap free of that page or swap off time) if things are too
+>> pressured at the moment? I haven't put thought into what data structures
+>> could be used for that - just want to ask for now if you'd be happy with the
+>> idea of looking into a strategy like that.
 >
-> The Android guys do the same.
+> We're going round in circles here.  I have already agreed with you
+> that doing it at swap free time seems more natural, but explained that
+> there are implementation difficulties there, so doing it at allocation
+> time proved both much less messy and more efficient.  I can imagine
+> advances that would sway me to putting in more effort there
+> (duplicating the scan for a free 1MB every time a page of swap is
+> freed? doesn't sound efficient to me, but if it saves us from an
+> inefficiency of too many or too late discards, perhaps it could work
+> out).  However, a recently introduced regression does not make a
+> strong case for adding in hacks - not yet anyway.
+
+Okay; sorry.
+
+>> I've done the bisect now - spent the time today instead of on the place, and
 >
->> wakelocks require that the application developer decide that they
->> want to keep the system awake as well as the user/admin
+> That's great, many thanks!
 >
-> Whereas you require that the application developer redesign/rewrite
-> applications to decide when to keep the system awake, e.g., by carefully
-> determining when to idle themselves.  The difference is that the Android
-> developer need only release a suspend blocker.  In contrast, you are
-> requiring that the developer rewrite all the code that follows the point
-> where the Android developer would release a suspend blocker.
+>> it took me to fbbf055692aeb25c54c49d9ca84532de836fbba0. This is Christoph's
+>> Hellwig's patch "block: fix DISCARD_BARRIER requests".
 >
-> Your way seems to require that the developer do more work for the
-> same result.  Why?
-
-portability, and the fact that it will save more power even when the 
-system is prevented from suspending.
-
->> take your example of a mail client waking up every 15 min.
->>
->> with Android it needs to be privilaged to grab the wakelock while
->> fetching the mail, it also needs to use a privilaged API to set the
->> wakeups to wake it up at those times.
->>
->> with what I proposed all you need to do is to tag the application as
->> power privilaged and then if the application sleeps for 15 min
->> between doing thing the system will wake up every 15 min, work for a
->> short time, then go back to sleep.
->>
->>
->> if you want to put everything to sleep when the screen blanks,
->> that's trivial to do.
->>
->> the fun starts when you want to say that there are some things you
->> don't want to put to sleep.
+> That's
+>      block: fix DISCARD_BARRIER requests
 >
-> Which is in fact a critical requirement that you appear to have been
-> ignoring in your words above.
-
-I admit that the way I wrote this is confusing, but I don't think I am 
-ignoring this requirement. the example above was how an application that 
-the system is not wanting to put to sleep would run with the two 
-mechansims.
-
->> do you let some processes run while halting others?
->>   in which case how do you prevent deadlocks?
->>     on the other hand, sleeping again is simple, you sleep when
->> there is nothing more to run
->> or do you let wasteful processes run while you are awake?
->>   this avoids deadlocks, but how do you decide when to sleep again?
->>
->>
->> Android approaches this by requiring that any program that a user
->> may want to keep running must be modified to use wakelocks.
->>
->> My suggestion was that the system ignore other processes when
->> deciding if the system is idle enough to put to sleep.
+>      Filesystems assume that DISCARD_BARRIER are full barriers, so that they
+>      don't have to track in-progress discard operation when submitting new I/O.
+>      But currently we only treat them as elevator barriers, which don't
+>      actually do the nessecary queue drains.
 >
-> But your suggestion seems to require quite a bit more coding effort for
-> little gain.  The Android developer can just release a suspend blocker,
-> and in contrast, a developer using your proposal needs to rewrite all
-> the code following the point at which the Android developer released the
-> suspend blocker.  So why are you saying that your is approach better?  ;-)
+> where the discard barrier changes from REQ_SOFTBARRIER to REQ_HARDBARRIER.
+>
+> If REQ_SOFTBARRIER means that the device is still free to reorder a
+> write, which was issued after discard completion was reported, before
+> the discard (so later discarding the data written), then certainly I
+> agree with Christoph (now Cc'ed) that the REQ_HARDBARRIER is
+> unavoidable there; but if not, then it's not needed for the swap case.
+>   I hope to gain a little more enlightenment on such barriers shortly.
+>
+> What does seem over the top to me, is for mm/swapfile.c's
+> blkdev_issue_discard()s to be asking for both BLKDEV_IFL_WAIT and
+> BLKDEV_IFL_BARRIER: those swap discards were originally written just
+> to use barriers, without needing to wait for completion in there.  I'd
+> be interested to hear if cutting out the BLKDEV_IFL_WAITs makes the
+> swap discards behave acceptably again for you - but understand that
+> you won't have a chance to try that until later next week.
 
-no, the coder needs to make his code not do unnessasary things. Even with 
-a wakelock this is needed for the system to be able to use lower power 
-modes while the system is not going to do a suspend anyway.
+Well, I've just arrived at the hotel, and I want to delay going to bed 
+until a 'proper' hour local time, so I expect I'll do it this evening - 
+especially a one liner like that. Might even give it a go now...
 
-I am say that if the coder does that, the coder should not also have to 
-code in wakelocks.
-
-I want it to be as easy as possible to port applications between mobile 
-platforms. On most platforms wakelocks are not needed because standard 
-idle/sleep/suspend mechanisms are good enough. Android allows other 
-applications to run that confuse the idle/sleep/suspend mechanisms, so 
-something needs to be done to cut through the confusion. Android does this 
-by creating a new API to control this, I'm suggesting that there should be 
-a way to tell the system to ignore the other applications so that the 
-existing mechanisms can make good decisions again.
-
-David Lang
+Nigel
