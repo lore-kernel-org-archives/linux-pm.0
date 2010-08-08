@@ -1,23 +1,19 @@
-From: Brian Swetland <swetland@google.com>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Sun, 8 Aug 2010 11:02:21 -0700
-Message-ID: <AANLkTim4dH2p3KXB1wUi793y7darf1xzfXV0bm34gFQu__29267.8521400832$1281292905$gmane$org@mail.gmail.com>
+Date: Sun, 8 Aug 2010 11:07:49 -0700
+Message-ID: <20100808180749.GG19600__973.851551725779$1281292910$gmane$org@linux.vnet.ibm.com>
 References: <20100731175841.GA9367@linux.vnet.ibm.com>
 	<20100804195704.GA23681@linux.vnet.ibm.com>
 	<20100806225453.GA3947@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008061651530.30564@asgard.lang.hm>
-	<AANLkTikyRhtfX4R3x_NDgHnXssmfVuhjC5PbhRZ0a7su@mail.gmail.com>
-	<alpine.DEB.2.00.1008062010510.30564@asgard.lang.hm>
-	<20100807061558.GA28087@thunk.org>
-	<AANLkTi=sMVjya9CH6UoZwJCXJTDRgBhnPXmApU_RHVTi@mail.gmail.com>
-	<20100808155719.GB3635@thunk.org>
-	<AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
+	<AANLkTik3qF2yScLJiDBWLN5=Ez0FsvbOo0M76WbOAGvO@mail.gmail.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <AANLkTik3qF2yScLJiDBWLN5=Ez0FsvbOo0M76WbOAGvO@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,63 +24,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, swmike@swm.pp.se, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
+Cc: david@lang.hm, tytso@mit.edu, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuLCBBdWcgOCwgMjAxMCBhdCAxMDo0MCBBTSwgRmVsaXBlIENvbnRyZXJhcwo8ZmVsaXBl
-LmNvbnRyZXJhc0BnbWFpbC5jb20+IHdyb3RlOgo+PiBUaGlzIGdvZXMgYmFjayB0byB5b3VyIGZp
-cnN0IGFzc2VydGlvbiB0aGF0IHRoZXJlIGFyZSAqbWFueSoKPj4gYXBwbGljYXRpb25zIHRoYXQg
-bmVlZCB0byBydW4gaW4gdGhlIGJhY2tncm91bmQuIMKgSSBqdXN0IGRvbid0IHRoaW5rCj4+IHRo
-YXQncyB0cnVlLiDCoFRoZXJlIHdpbGwgYmUgYSBmZXcsIGFuZCBwcm9iYWJseSBtb3JlIHRoYW4g
-anVzdCB0aGUKPj4gcmVzdHJpY3RlZCBzZXQgYWxsb3dlZCAoYW5kIHByb2dyYW1tZWQpIGJ5IEFw
-cGxlLiDCoEJ1dCBub3QgKm1hbnkqLgo+Cj4gVGhlIGFyZ3VtZW50IGluIGZhdm9yIG9mIHN1c3Bl
-bmQgYmxvY2tlcnMgaXMgdGhhdCB5b3UgY291bGQgdGFrZQo+IGFwcGxpY2F0aW9ucyB0aGF0IGFy
-ZSBub3QgZGVzaWduZWQgZm9yIGVtYmVkZGVkLCBhbmQgbWFrZSB0aGVtIHJ1biBvbgo+IGFuIGVt
-YmVkZGVkIGRldmljZSB3aXRob3V0IGRyYWluaW5nIGV4Y2Vzc2l2ZSBiYXR0ZXJ5IGxpZmU7IHRo
-b3NlCj4gYXBwbGljYXRpb25zIHdvdWxkIGhhdmUgdG8gYmUgYmFja2dyb3VuZCBzZXJ2aWNlcyBu
-b3QgY29uZmxpY3Rpbmcgd2l0aAo+IEFuZHJvaWQncyBkZXNpZ24uCj4KPiBJIGFncmVlIHRoZXJl
-IHByb2JhYmx5IHdvdWxkIG5vdCBiZSB0aGF0IG1hbnkgYmFja2dyb3VuZCBhcHBzLCBhbmQKPiBw
-cm9iYWJseSBldmVuIGxlc3MgcG9ydGVkIGJhY2tncm91bmQgYXBwcywgYnV0IHRoYXQgaXMgYWN0
-dWFsbHkgYW4KPiBhcmd1bWVudCBhZ2FpbnN0IHN1c3BlbmQgYmxvY2tlcnMuCj4KPiBUaGUgcmVz
-dCBvZiB0aGUgYXBwcyAoVUkgYXBwcyksIGNhbm5vdCBiZSBwb3J0ZWQsIGJ1dCBoYXZlIHRvIGJl
-Cj4gd3JpdHRlbiBzcGVjaWZpY2FsbHkgZm9yIEFuZHJvaWQsIGFuZCB0aGVyZWZvcmUgc2hvdWxk
-IGhhdmUgUE0gaW4KPiBtaW5kLCBhbmQgbm90IHJlcXVpcmUgc3VzcGVuZCBibG9ja2VycyB0byBo
-YXZlIGdvb2QgcG93ZXIgdXNhZ2UuCgpJIHRoaW5rIHRoZXJlJ3Mgc29tZSBjb25mdXNpb24gaGVy
-ZS4KClRoZSBkZWZhdWx0IG9wZXJhdGluZyBtb2RlIGZvciBBbmRyb2lkIGlzIHRvIGFnZ3Jlc3Np
-dmVseSByZWFjaCB0aGUKbG93ZXN0IHBvc3NpYmxlIHBvd2VyIHN0YXRlICh0eXBpY2FsbHkgZnVs
-bCBzdXNwZW5kKS4gIHN1c3BlbmQKYmxvY2tlcnMgYXJlIHVzZWQgYnkgYXBwbGljYXRpb25zIHRv
-IGluZm9ybSB0aGUgc3lzdGVtIHRoYXQgdGhleSBhcmUKY3VycmVudGx5IGRvaW5nIHdvcmsgd2hp
-Y2ggcmVxdWlyZXMgaW1tZWRpYXRlIHByb2Nlc3NpbmcsIHNvIHRoZQpzeXN0ZW0gd2lsbCBhdm9p
-ZCBmdWxseSBzdXNwZW5kaW5nIHVudGlsIHRoYXQgd29yayBpcyBkb25lLiAgWW91IGNvdWxkCnRo
-aW5rIG9mIGl0IGFzIHNldHRpbmcgeW91ciBsYXB0b3AgcG93ZXIgbWFuYWdlbWVudCBzZXR0aW5n
-cyB0byBiZQoiYmxhbmsgc2NyZWVuIGFmdGVyIDYwIHNlY29uZHMsIHBvd2VyIGRvd24gNSBzZWNv
-bmRzIGFmdGVyIGJsYW5raW5nIiwKZXhjZXB0IHRoYXQgdGhlcmUncyBhbHNvIGEgbWVjaGFuaXNt
-IGZvciBhcHBzIHRvIGhvbGQgb2ZmIG9uIHRoYXQKcG93ZXIgZG93biBpZiB0aGV5J3JlIGRvaW5n
-IGltcG9ydGFudCB3b3JrLCBhbmQgYSBsb3QgbW9yZSB3YXlzIHRvCndha2V1cCBiZXlvbmQgb3Bl
-bmluZyB0aGUgbGlkIG9yIHB1c2hpbmcgdGhlIHBvd2VyIGJ1dHRvbi4KClN0cmFpZ2h0LWZvcndh
-cmQgVUkgYXBwcyBkb24ndCBhY3R1YWxseSByZXF1aXJlIG11Y2ggc3BlY2lhbCBoYW5kbGluZwot
-LSBpdCdzIHByZWZlcmFibGUgdGhhdCB0aGV5IGRvIGJ1c3ktd2FpdCBvbiB0aGluZ3MsIGJ1dCBl
-dmVuIHdoZW4KcG93ZXIgaXMgbm90IGFuIGlzc3VlLCB3YXN0aW5nIGNwdSBzcGlubmluZyBuZWVk
-bGVzc2x5IGlzIGZyb3duZWQKdXBvbiwgc28gdGhpcyBpc24ndCBhIHNwZWNpYWwgcmVxdWVzdC4g
-IFRoZXJlJ3Mgbm90aGluZyBzdG9wcGluZwpzb21lYm9keSBmcm9tIHdyaXRpbmcgYW4gQW5kcm9p
-ZCBhcHAgdGhhdCBhY3RzIGFzIGEgYnJpZGdlIHRvIFgxMSBhcHBzCihlbWJlZGRpbmcgYW4gWCBz
-ZXJ2ZXIsIGV0YykgYW5kIG1ha2luZyBpdCBwb3NzaWJsZSBmb3IgbmF0aXZlIFgxMQphcHBzIHRv
-IGNvZXhpc3Qgd2l0aCB0aGUgQW5kcm9pZCBjb21wb3NpdGlvbiBtb2RlbC4gIEknbSBhIGxpdHRs
-ZQpzdXJwcmlzZWQgbm9ib2R5IGhhcyBkb25lIHNvLCBhY3R1YWxseS4gIEkgZmlndXJlZCAqc29t
-ZWJvZHkqIHdvdWxkCmRlY2lkZSB0aGF0IHRoZXkgbGlrZSB0aGVpciBwaG9uZSBidXQgYWJzb2x1
-dGVseSBuZWVkIHRvIHJ1biB4Y2xvY2sgb3IKc29tZXRoaW5nIGxvY2FsbHkgYXMgYSBmaXJzdCBj
-bGFzcyBhcHAuCgpUaGUgQW5kcm9pZCBhcHAgbW9kZWwgZG9lcyBzYXkgdGhhdCBpZiB5b3UncmUg
-bm90IGluIHRoZSBmb3JlZ3JvdW5kCihmcm9tIGEgVUkgc3RhbmRwb2ludCkgeW91IHNob3VsZCBz
-YXZlIHlvdXIgc3RhdGUsIGFzIHlvdSBtYXkgYmUKdGVybWluYXRlZCBpZiB0aGUgc3lzdGVtIHJ1
-bnMgbG93IG9uIHJlc291cmNlcy4gIFRoZSBzeXN0ZW0gb25seSBkb2VzCnRoaXMgd2hlbiBpdCBo
-YXMgdG8gLS0gZ2VuZXJhbGx5IHdoZW4gd2UgYm90dG9tIG91dCBvbiBtZW1vcnkuICBPbgpkZXZp
-Y2VzIHdpdGggc3VmZmljaWVudCBtZW1vcnksIGl0J3MgcXVpdGUgY29tbW9uIGZvciBtYW55IGFw
-cHMgdG8KcmVtYWluIHJlc2lkZW50IGZvciBkYXlzLXdlZWtzIC0tIEkndmUgc2VlbiBhcyBtYW55
-IGFzIDQ1LTUwIGFwcHMKcnVubmluZyBvbiBteSBuZXh1cyBvbmUuCgpJIGFtIGEgbGl0dGxlIHB1
-enpsZWQgYnkgdGhlIGFzc2VydGlvbiB0aGF0IEFuZHJvaWQgbGFza3MgInRydWUKbXVsdGl0YXNr
-aW5nIiwgYnV0IHRoYXQncyBhbm90aGVyIGRpc2N1c3Npb24gZW50aXJlbHkuICBXZSBjZXJ0YWlu
-bHkKZG9uJ3QgbGFjayBmb3IgbWFueSBjb25jdXJyZW50IHByb2Nlc3NlcyBhbmQgdGhyZWFkcy4u
-LgoKQnJpYW4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
-bGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3Jn
-Cmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51
-eC1wbQ==
+On Sun, Aug 08, 2010 at 03:40:28PM +0300, Felipe Contreras wrote:
+> On Sat, Aug 7, 2010 at 1:54 AM, Paul E. McKenney
+> <paulmck@linux.vnet.ibm.com> wrote:
+> > o =A0 =A0 =A0 "Ill-behaved application" AKA "untrusted application" AKA
+> > =A0 =A0 =A0 =A0"crappy application".
+> =
+
+> > o =A0 =A0 =A0 "PM-driving application" are applications that are permit=
+ted
+> > =A0 =A0 =A0 =A0to acquire suspend blockers on Android.
+> =
+
+> These definitions are wrong.
+
+Indeed they are, given the way you quoted small portions of them.  ;-)
+
+> 1) There are trusted applications that misbehave (the user clicks Yes
+> when asked about PM permissions)
+
+These would be buggy PM-driving applications.  Of course, any type of
+application might have bugs, including PM-driving applications.
+
+> 2) There are untrusted applications that are power optimized (The user
+> clicks No)
+
+I did indeed exclude this category by saying "power-optimized applications
+are those PM-driving applications that have been aggressively tuned
+to reduce power consumption."  The reason I excluded this case is that
+that there are a number of cases where removing the PM-driving attribute
+could destroy the power optimization.
+
+If you have an example power-optimized application that retains its
+power-optimized property despite lacking PM-driving privileges, please
+put it forward.  In doing so, please keep two things in mind:
+
+1.	The definition of power-optimized is more aggressive than many
+	people are used to -- look at http://lkml.org/lkml/2010/8/4/409
+	and search for "POWER-OPTIMIZED APPLICATIONS".
+
+2.	In a number of the implementations that do not use suspend blockers,
+	-all- applications are in effect PM-driving applications.
+	So it is quite possible that different people are using subtly
+	different flavors of the "PM-driving applications" definition.
+
+	For example, an Android person might consider a application to
+	be PM-driving only if it is permitted to use suspend blockers,
+	while a Maemo person might consider an application to be
+	PM-driving if it had permission to invoke pm_qos functions.
+	If these two hypothetical people each try to apply their
+	definition of PM-driving to each others' platforms, they will
+	likely have severe problems communicating with each other,
+	right?  ;-)
+
+But if you do have a good example, perhaps I will need to change my
+definition of power-optimized application.
+
+> The proponents of suspend blockers in user-space have tried to ignore
+> this fact, but the truth is that PM permissions and power optimization
+> are orthogonal to each other.
+
+In fact, you might have noticed that the proponents of each platform
+have been quite persistent in shouting past each other from the warmth
+and security of their own particular viewpoints.  ;-)
+
+							Thanx, Paul
