@@ -1,23 +1,14 @@
-From: Felipe Contreras <felipe.contreras@gmail.com>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Sun, 8 Aug 2010 16:35:13 +0300
-Message-ID: <AANLkTinTfKRfAUJqggcK9Cgo9BTXfqMjJ2SXZS=D1bmT__47277.2739398808$1281274561$gmane$org@mail.gmail.com>
-References: <alpine.DEB.2.00.1008051715520.30632@asgard.lang.hm>
-	<AANLkTikOuY-q42mDRmxc-9W0uLeJeW-hiFG26WrV7CfU@mail.gmail.com>
-	<alpine.DEB.2.00.1008051800360.25170@asgard.lang.hm>
-	<20100806123047.GE31326@sirena.org.uk>
-	<20100806172226.GH2432@linux.vnet.ibm.com>
-	<20100806173325.GA25367@rakim.wolfsonmicro.main>
-	<20100806181832.GJ2432@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008061517130.30564@asgard.lang.hm>
-	<20100807001431.GA3252@opensource.wolfsonmicro.com>
-	<alpine.DEB.2.00.1008061741460.30564@asgard.lang.hm>
-	<20100807062828.GB28087@thunk.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Attempted summary of suspend-blockers LKML thread,
+	take three
+Date: Sun, 8 Aug 2010 11:36:11 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1008081119370.4706-100000__33927.5962244303$1281281865$gmane$org@netrider.rowland.org>
+References: <alpine.DEB.2.00.1008071338480.30564@asgard.lang.hm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100807062828.GB28087@thunk.org>
+In-Reply-To: <alpine.DEB.2.00.1008071338480.30564@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,86 +18,117 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ted Ts'o <tytso@mit.edu>, david@lang.hm, Mark Brown <broonie@opensource.wolfsonmicro.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Brian Swetland <swet>
+To: david@lang.hm
+Cc: tytso@mit.edu, peterz@infradead.org, swetland@google.com, Kernel development list <linux-kernel@vger.kernel.org>, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, swmike@swm.pp.se, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gU2F0LCBBdWcgNywgMjAxMCBhdCA5OjI4IEFNLCBUZWQgVHMnbyA8dHl0c29AbWl0LmVkdT4g
-d3JvdGU6Cj4gT24gRnJpLCBBdWcgMDYsIDIwMTAgYXQgMDY6MDA6MzRQTSAtMDcwMCwgZGF2aWRA
-bGFuZy5obSB3cm90ZToKPj4KPj4gdG9kYXkgdGhlcmUgYXJlIHR3byB3YXlzIG9mIHRoaXMgaGFw
-cGVuaW5nLCB2aWEgdGhlIGlkbGUgYXBwcm9hY2gKPj4gKG9uIGV2ZXJ5dGhpbmcgZXhjZXB0IEFu
-ZHJvaWQpLCBvciB2aWEgc3VzcGVuZCAob24gQW5kcm9pZCkKPgo+IE1vc3Qgb3RoZXIgZGV2aWNl
-cyB1c2UgYSBsb3QgbW9yZSBwb3dlciBhdCBpZGxlOyBpbiBzb21lIGNhc2VzIGl0J3MKPiBiZWNh
-dXNlIHRoZSBoYXJkd2FyZSBqdXN0IGlzbid0IGFzIHBvd2VyIG9wdGltaXplZCAod2h5IGJvdGhl
-ciwgd2hlbgo+IHlvdSBoYXZlIDk0LDAwMCBtV2ggb2YgcG93ZXIgYXQgeW91ciBkaXNwb3NhbCB3
-aXRoIGEgNiBjZWxsIGxhcHRvcAo+IGJhdHRlcnksIGFzIG9wcG9zZWQgdG8gdGhlIDgwMC0xMDAw
-IG1XaCB0aGF0IHlvdSBtaWdodCBoYXZlIG9uIGEgY2VsbAo+IHBob25lIGJhdHRlcnkpLiDCoElu
-IG90aGVyIGNhc2VzLCBpdCdzIGJlY2F1c2UgdGhlIGtlcm5lbCBhbmQgdGhlCj4gbG93LWxldmVs
-IHNvZnR3YXJlIHN0YWNrIChuZXZlciBtaW5kIHRoZSBhcHBsaWNhdGlvbnMpIGFyZSB3YWtpbmcg
-dXAKPiB0aGUgQ1BVIHRvbyBkYXJuZWQgb2Z0ZW4gLS0tIGluIG90aGVyIHdvcmRzLCBpZGxlIHNp
-bXBseSBpc24ndCBpZGxlCj4gZW5vdWdoLgo+Cj4gU28geW91IG1heSB3YW50IHRvIGNvbnNpZGVy
-IHdoZXRoZXIgcGFydCBvZiB0aGUgcHJvYmxlbSBpcyB0aGF0Cj4gZ2VuZXJhbCBwdXJwb3NlIExp
-bnV4IHN5c3RlbXMgbmVlZCBhIHJhZGljYWwgcmVkZXNpZ24gdG8gZ2V0IHBvd2VyCj4gdXRpbGl6
-YXRpb24gZG93biB0byB0aG9zZSBzb3J0cyBvZiBsZXZlbHMgLS0tIHdoZXJlIHRoZSBDUFUgbWln
-aHQgb25seQo+IGJlIHdha2luZyB1cCBvbmNlIGV2ZXJ5IGhhbGYtaG91ciBvciBzbywgYW5kIHRo
-ZW4gb25seSBkbyBhY3R1YWwKPiB1c2VmdWwgd29yay4KPgo+IENhbiB5b3UgZ2V0IHRoZXJlIGJ5
-IGFzc3VtaW5nIHRoYXQgZXZlcnkgc2luZ2xlIGFwcGxpY2F0aW9uIGlzCj4gY29tcGV0ZW50bHkg
-d3JpdHRlbj8gwqBJbiBhbiBpZGxlIGFwcHJvYWNoLCB5b3UgaGF2ZSB0by4gwqBUaGF0IHdheSBs
-aWVzCj4gTWFlbW8sIHdoZXJlIGluc3RhbGxpbmcganVzdCBvbmUgYmFkIGFwcGxpY2F0aW9uIHdp
-bGwgY3V0IHlvdXIgYmF0dGVyeQo+IGxpZmUgdGltZSBieSBhIGZhY3RvciBvZiAyLTMuCgpFeGFj
-dGx5IHRoZSBzYW1lIGhhcHBlbnMgb24gQW5kcm9pZC4KCkluc3RhbGwgb25lIGJhZCBhcHBsaWNh
-dGlvbiwgYSByZXF1ZXN0IGZvciBQTSBwZXJtaXNzaW9ucyBpcyBtYWRlLCB5b3UKY2xpY2sgWWVz
-LiBUaGVyZSdzIG5vIGRpZmZlcmVuY2UgYXQgYWxsLgoKPiBZb3UgY291bGQgdHJ5IHN0b3BwaW5n
-IHByb2Nlc3NlcyBieQo+IHVzaW5nIGtpbGwgLVNUT1AsIGJ1dCB0aGlzIGF0IHRoYXQgcG9pbnQs
-IHlvdSd2ZSBtb3ZlZCBpbnRvIEFuZHJvaWQKPiBzdHJhdGVneSBvZiAic3VzcGVuZCIuIMKgQW5k
-IHRoZSBvbmx5IHF1ZXN0aW9uIGlzIHdoYXQgaXMgdGhlIG1vc3QKPiBlZmZpY2llbnQgd2F5IHRv
-IGFsbG93IHRoZSBzeXN0ZW0gdG8gcnVuIHdoZW4gdGhlcmUgaXMgdHJ1ZSB3b3JrIHRoYXQKPiBu
-ZWVkcyB0byBiZSBkb25lLCBhbmQgaG93IHRvIGF2b2lkIGRlYWRsb2NrcyBieSBzdG9wcGluZyBw
-cm9jZXNzZXMKPiB0aGF0IG1pZ2h0IGJlIGhvbGRpbmcgdXNlciBzcGFjZSBsb2NrcyAtLS0gYW5k
-IHRvIGFkbWluaXN0ZXIgd2hlbiBhbmQKPiBob3cgdG8gc3VzcGVuZCB0aGUgcHJvY2Vzc2VzLgoK
-Tm8uIFlvdSBhcmUgYXNzdW1pbmcgdGhhdCBQTSBwZXJtaXNzaW9ucyB3aWxsIGJlIG1hZ2ljYWxs
-eSBzZXQKYXBwcm9wcmlhdGVseTsgdGhhdCdzIG5vdCB0aGUgY2FzZS4KCjEpIEluc3RhbGwgYSBi
-YWQgYXBwbGljYXRpb24gdGhhdCByZXF1ZXN0cyBQTSBwZXJtaXNzaW9ucyBhbmQgaXMgZ3JhbnRl
-ZCB0aG9zZQoKSW4gdGhpcyBjYXNlIHlvdSd2ZSBnYWluZWQgbm90aGluZyB3aXRoIHVzZXItc3Bh
-Y2Ugc3VzcGVuZCBibG9ja2Vycy4KCjIpIEluc3RhbGwgYSBnb29kIGFwcGxpY2F0aW9uIHRoYXQg
-aXMgbm90IHJlcXVlc3RpbmcgUE0gcGVybWlzc2lvbnMKKG9yIGlzIGRlbmllZCB0aGVtKQoKSW1h
-Z2luZSB0aGlzIGFwcGxpY2F0aW9uIHJlcXVpcmVzIGV4cGVuc2l2ZSBpbml0aWFsaXphdGlvbiwg
-YnV0CmFmdGVyd2FyZHMgaXQgb25seSBuZWVkcyB0byBzZW5kIGEgc21hbGwgcGFja2V0IGVhY2gg
-bWludXRlIHRvIGEKc2VydmVyLiBJZiB0aGlzIGFwcGxpY2F0aW9uIGZvcmdldHMgdG8gcmVxdWVz
-dCBQTSBwZXJtaXNzaW9uIChvciBpcwpkZW5pZWQgdGhlbSksIHRoZW4gaXQgbWlnaHQgbWlzcyB0
-aGUgMSBtaW51dGUgbWFyaywgYW5kIHdvdWxkIGhhdmUgdG8KcmUtaW5pdGlhbGl6ZSB3aGVuIGEg
-dHJ1c3RlZCBhcHAgc3RhcnRzIHNvbWUgd29yay4KCkluIHRoaXMgY2FzZSBzdXNwZW5kIGJsb2Nr
-ZXJzIGNhdXNlIG1vcmUgYmF0dGVyeSBkcmFpbiAoYW5kIHRoZQphcHBsaWNhdGlvbiB0byBiZWhh
-dmUgcG9vcmx5KS4KCgpUaGVyZSdzIG9ubHkgb25lIGNhc2Ugd2hlbiBzdXNwZW5kIGJsb2NrZXJz
-IG1pZ2h0IGFjdHVhbGx5IGhlbHA6CmEpIFRoZSBhcHBsaWNhdGlvbiBpcyBiYWRseSB3cml0dGVu
-IChtb3N0IHByb2JhYmx5IGEgVUkgYXBwIGRyYXdpbmcKd2hlbiBpdCBzaG91bGRuJ3QsIHdoaWNo
-IGluY2lkZW50YWxseSBpcyBub3QgYSBwcm9ibGVtIGluIEFuZHJvaWQKc2luY2UgaXQncyBub3Qg
-bXVsdGktdGFza2luZykKYikgVGhlIGFwcGxpY2F0aW9uIGlzIGVpdGhlciBub3QgcmVxdWVzdGlu
-Zywgb3IgZGVuaWVkIFBNIHBlcm1pc3Npb25zCmMpIFRoZSBhcHBsaWNhdGlvbiBpcyBub3QgYWZm
-ZWN0ZWQgdG9vIGJhZGx5IGlmIGl0J3Mgbm90IHJ1bm5pbmcgYWxsCnRoZSB0aW1lIChwaWdneS1i
-YWNraW5nIG9uIHRydXN0ZWQgYXBwcyBpcyBvaykKCkZvciB0aGF0IGl0J3MgbXVjaCBiZXR0ZXIg
-dG8gaGF2ZSBhIGRpZmZlcmVudCBzdHJhdGVneTogYWxsCmFwcGxpY2F0aW9ucyBhcmUgdHJ1c3Rl
-ZCwgYmFkIGFwcGxpY2F0aW9ucyBtdXN0IGJlIG1hbnVhbGx5IHRhZ2dlZC4KQWxzbywgaW5zdGVh
-ZCBvZiBoYXZpbmcgZWFjaCBhbmQgZXZlcnkgdXNlciBmaWd1cmUgb3V0IHdoaWNoIGFyZSB0aGUK
-YmFkIGFwcHMsIHN1Y2ggaW5mb3JtYXRpb24gaXMgbW9yZSBwZXJ0aW5lbnQgaW4gdGhlIGFwcCBz
-dG9yZSwgd2hlcmUKdXNlcnMgY291bGQgdm90ZSB3aGVuIGFuIGFwcCBpcyBiYWQgUE0tdXNlIG9y
-IG5vdDsgY3Jvd2Qtc291cmNpbmcgdGhlCnByb2JsZW0uCgpCdXQgZ3Vlc3Mgd2hhdDsgb25jZSB5
-b3UgaGF2ZSBhbiBhcHAgc3RvcmUgc3lzdGVtIHRoYXQgY2FuIGRldGVjdCB3aGVuCmFuIGFwcGxp
-Y2F0aW9uIGlzIGJhZGx5IHdyaXR0ZW4sIHdoeSB3b3VsZCB5b3UgZXhwb3NlIHRoZSB1c2VycyB0
-bwpzdWNoIGJhZCBhcHBzPwoKSW4gTWFlbW8sIDNyZCBwYXJ0eSBhcHBsaWNhdGlvbnMgaGF2ZSB0
-byBnbyB0cm91Z2ggYSBjb21tdW5pdHkgcmV2aWV3CihtYWVtby5vcmcgZXh0cmFzIHRlc3Rpbmcp
-IGJlZm9yZSB0aGV5IGdvIGludG8gdGhlIG1haW4gcmVwb3NpdG9yeSwKYW5kIHRoaXMgd2F5IGJh
-ZCBhcHBsaWNhdGlvbnMgKGZ1bmN0aW9uYWxpdHkgb3IgUE0td2lzZSkgZG9uJ3QgbWFrZSBpdAp0
-byB0aGUgZ2VuZXJhbCBwdWJsaWMuCgpBbHNvLCBvbiBtb2JpbGUgcGhvbmVzIGluIGdlbmVyYWwg
-dGhlcmUgYXJlIDMga2luZHMgb2YgYXBwbGljYXRpb25zLgoxKSBkZXNrdG9wIHdpZGdldHM6IGJ5
-IGZhciB0aGUgb25lcyB3aXRoIHRoZSBtb3N0IGRhbmdlciBvZiBkcmF3aW5nIHRoZSBiYXR0ZXJ5
-CjIpIGZvcmVncm91bmQgVUkgYXBwczogYWxzbyBoYXZlIHNvbWUgZGFuZ2VyLCBidXQgb25seSBv
-bgptdWx0aS10YXNraW5nIHN5c3RlbXMgKG5vdCBBbmRyb2lkKQozKSBiYWNrZ3JvdW5kIHNlcnZp
-Y2VzOiB1c3VhbGx5IGRvbid0IGRvIHVubmVjZXNzYXJ5IHdvcmsKClN1c3BlbmQgYmxvY2tlcnMg
-YXJlIG1vc3RseSB1c2VmdWwgZm9yIDEpLCBidXQgZGVza3RvcCB3aWRnZXRzIGFyZQpwbGF0Zm9y
-bS1zcGVjaWZpYywgc28gdGhleSBhcmUgd3JpdHRlbiBmb3IgZW1iZWRkZWQgYW55d2F5LCBhbmQg
-aWYgeW91CmFyZSB3cml0aW5nIGZvciBlbWJlZGRlZCwgdGhlcmUncyBubyBwb2ludCBpbiByZWx5
-aW5nIG9uCnN1c3BlbmQtYmxvY2tlcnM7IGp1c3Qgd3JpdGUgaXQgUE0gb3B0aW1pemVkLgoKLS0g
-CkZlbGlwZSBDb250cmVyYXMKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5k
-YXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0
-aW5mby9saW51eC1wbQ==
+On Sat, 7 Aug 2010 david@lang.hm wrote:
+
+> > This may be controversial, but I think Rafael will agree when I say
+> > that (in this one respect) Linus was wrong.  Separating hibernation
+> > from suspend makes sense, and I agree that the differences between
+> > deepest idle and suspend should be minimized.  But to get rid of them
+> > altogether would be wrong (and probably not possible anyway).
+> 
+> if you thing the differences should be minimized, why do you think that 
+> getting rid of them would be wrong?
+
+Actually I meant that _attempting_ to get rid of them would be wrong,
+because it would be a futile attempt to carry out an impossible task.
+
+> >> As deep sleep gains the ability to use even less power and as suspend
+> >> gains the ability to leave things on sometimes, the difference between
+> >> them is dissapearing. I wouldn't be at all surprised to see them start
+> >> overlaping soon. So it's not that I think Android should use deep sleeps
+> >> instead of suspend, but rather that suspend should just be the deepest
+> >> sleep, one mechanism instead of two.
+> >
+> > I disagree.  There are critical differences between them:
+> >
+> > 	Suspend uses the freezer and idle doesn't.
+> >
+> > 	Suspend generally forces devices to go into their low-power
+> > 	states immediately, whereas idle tends to leave unused devices
+> > 	at full power for some time before going to low power (to
+> > 	minimize average latency).
+> 
+> this sounds like policy, not capability.
+
+It isn't.  Suspend does not have the capability to leave a device at
+full power for 100 ms and then switch it to low power if it hasn't been
+used in that time.  (Or, it requires special hardware support to be
+able to do this.)  Idle does have this capability.
+
+> > 	Overall, suspend generally has longer latency than idle.  (This
+> > 	varies among platforms.)
+> 
+> even different idle modes have different latency
+
+But the difference between idle and suspend can be orders of magnitude 
+larger.  That makes it qualitatively different, not just quantitatively 
+different.
+
+> > 	The set of wakeup sources (including timers) is different.
+> 
+> I agree that they are different, but don't they also vary within sleep or 
+> suspend as well?
+
+Suspend _is_ a form of sleep.  (The other form is hibernation.)  It's 
+true that the set of wakeup sources can be customized to some extent.  
+But in the usual implementations, timers are never a wakeup source for 
+suspend whereas they always are for idle.
+
+> > 	On some systems, suspend uses platform-specific mechanisms to
+> > 	go into lower power states than are available to idle.
+> 
+> the exact mechanism to go into low-power states is platform specific to 
+> start with (there are some very popular platforms admittedly, like the PC 
+> ACPI modes)
+
+Sure, the mechanism is platform-specific.  That doesn't change the fact
+that ACPI systems can achieve lower power usage with suspend than they
+can with idle.
+
+> as I see it
+> 
+> Sleep
+
+Do you mean "idle" or "deep-idle" rather than "sleep"?
+
+> a policy engine to decide when to sleep, how deeply to sleep, what to 
+> disable, what will wake you up (this includes taking into account desired 
+> latency, and the amount of power/time needed to get in and out of the 
+> various modes)
+> 
+> platform specific mechanisms for transitioning in and out of the modes.
+> 
+> 
+> Suspend
+> 
+> a policy engine to decide when to suspend, what to leave enabled when you 
+> supend, what will wake you i[
+
+Suspend is initiated entirely by userspace, not by the kernel.  
+Wakelocks provide a means for the kernel to delay or cancel a suspend 
+request, not to initiate one.
+
+> platform specific mechanisms for transition in and out of suspend. I view 
+> use of the freezer to be one of these mechansims.
+
+The freezer is not platform specific.
+
+> Somewhere amoung this mess are things like spinning down drives, disabling 
+> inactive network interfaces, etc. I don't knwo if those are run from the 
+> sleep policy engine, or if there is a third policy engine to decide these 
+> things.
+> 
+> 
+> why should there be multiple different policy engines making power 
+> management decisions? it seems to me like these policy engines can and 
+> should be merged, with the resulting engine able to trigger all the 
+> existing mechanisms for transitioning between modes.
+
+There are multiple policy engines because one of them is in the kernel 
+and the other is in userspace.  I don't see how you can merge the two.
+
+Alan Stern
