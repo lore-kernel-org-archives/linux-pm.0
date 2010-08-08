@@ -1,23 +1,18 @@
 From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Sun, 8 Aug 2010 17:08:10 +0100
-Message-ID: <20100808160810.GA7968__19286.9116123349$1281291398$gmane$org@srcf.ucam.org>
-References: <alpine.DEB.2.00.1008051800360.25170@asgard.lang.hm>
-	<20100806123047.GE31326@sirena.org.uk>
-	<20100806172226.GH2432@linux.vnet.ibm.com>
-	<20100806173325.GA25367@rakim.wolfsonmicro.main>
-	<20100806181832.GJ2432@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008061517130.30564@asgard.lang.hm>
-	<20100807001431.GA3252@opensource.wolfsonmicro.com>
-	<alpine.DEB.2.00.1008061741460.30564@asgard.lang.hm>
-	<20100807062828.GB28087@thunk.org>
-	<AANLkTinTfKRfAUJqggcK9Cgo9BTXfqMjJ2SXZS=D1bmT@mail.gmail.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread,
+	take three
+Date: Sun, 8 Aug 2010 17:17:09 +0100
+Message-ID: <20100808161709.GB7968__42192.4824979671$1281291633$gmane$org@srcf.ucam.org>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008062010510.30564@asgard.lang.hm>
+	<20100807061558.GA28087@thunk.org> <201008071111.05585.rjw@sisk.pl>
+	<7F55B423-3F07-4DF7-B958-7380FDD53545@mit.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <AANLkTinTfKRfAUJqggcK9Cgo9BTXfqMjJ2SXZS=D1bmT@mail.gmail.com>
+In-Reply-To: <7F55B423-3F07-4DF7-B958-7380FDD53545@mit.edu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,25 +22,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: david@lang.hm, kevin granade <kevin.granade@gmail.com>, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Theodore Tso <tytso@MIT.EDU>
+Cc: david@lang.hm, menage@google.com, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, swmike@swm.pp.se, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 08, 2010 at 04:35:13PM +0300, Felipe Contreras wrote:
+On Sat, Aug 07, 2010 at 10:46:59AM -0400, Theodore Tso wrote:
 
-> appropriately; that's not the case.
-> 
-> 1) Install a bad application that requests PM permissions and is granted those
-> 
-> In this case you've gained nothing with user-space suspend blockers.
+> True, but again, consider the MacBook.  If you plug in an iPod, the 
+> machine will wake up for *just* long enough to let the iTunes sync the 
+> iPod, but once its done, the machine goes back to sleep again 
+> immediately.  I doubt MacOS has something called a "suspend blocker" 
+> which prevents the machine from sleeping until iTunes finished, which 
+> when released, allows the machine to suspend again immediately.  But 
+> neither did I see any evidence that it took 30 seconds for some kludgy 
+> polling process to decide that iTunes was done, and to allow the 
+> MacBook to go back to sleep.  Clearly, the MacBook allows some 
+> interrupts through, and some USB insert events through, but clearly 
+> not all.  (Inserting a USB drive doesn't wake up the laptop; at least, 
+> not for long.)
 
-It's clearly possible for a pathological Android application to destroy 
-the power management policy. But to do that, the author would have to 
-explicitly take a wakelock. That's difficult to do by accident. The 
-various failure modes that exist in a non-wakelock world can be 
-triggered in a wide variety of ways by accident. A sufficiently 
-reductionist viewpoint will equate the two situations, but in the real 
-world they're clearly different.
+On the contrary, I suspect that it's precisely equivalent to userspace 
+suspend blockers. There's no way to conditionalise USB wakeups - the 
+system comes up when you plug or unplug any USB device. The system is 
+then fully awake and I'd *guess* that ipods are magically exempted in 
+some way, with itunes sending a signal when it's complete in order to 
+allow the suspend policy daemon to trigger a suspend again.
+
+> Can we do something as smooth with a Linux desktop?  And if not, why 
+> not?  (Oh yeah, and wasn't this supposed to be the year of the Linux 
+> Desktop?  :-)
+
+gnome-power-manager supports applications inhibiting suspend, but right 
+now I suspect that it'll never deal with the case where you resume with 
+the lid closed. It's a simple matter of coding, though.
 
 -- 
 Matthew Garrett | mjg59@srcf.ucam.org
