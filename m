@@ -1,13 +1,23 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Sun, 8 Aug 2010 19:25:42 +0200
-Message-ID: <201008081925.42664.rjw__4282.80900600857$1281292735$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1008070926260.20673-100000@netrider.rowland.org>
+From: Brian Swetland <swetland@google.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread,
+	take three
+Date: Sun, 8 Aug 2010 11:02:21 -0700
+Message-ID: <AANLkTim4dH2p3KXB1wUi793y7darf1xzfXV0bm34gFQu__29267.8521400832$1281292905$gmane$org@mail.gmail.com>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<20100804195704.GA23681@linux.vnet.ibm.com>
+	<20100806225453.GA3947@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008061651530.30564@asgard.lang.hm>
+	<AANLkTikyRhtfX4R3x_NDgHnXssmfVuhjC5PbhRZ0a7su@mail.gmail.com>
+	<alpine.DEB.2.00.1008062010510.30564@asgard.lang.hm>
+	<20100807061558.GA28087@thunk.org>
+	<AANLkTi=sMVjya9CH6UoZwJCXJTDRgBhnPXmApU_RHVTi@mail.gmail.com>
+	<20100808155719.GB3635@thunk.org>
+	<AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1008070926260.20673-100000@netrider.rowland.org>
+In-Reply-To: <AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,53 +27,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, swmike@swm.pp.se, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, August 07, 2010, Alan Stern wrote:
-> On Sat, 7 Aug 2010, Rafael J. Wysocki wrote:
-> 
-> > > Arguably not every PCI interrupt should be regarded as a wakeup event, so
-> > > I think we can simply say in the cases when that's necessary the driver should
-> > > be responsible for using pm_wakeup_event() or pm_stay_awake() / pm_relax() as
-> > > appropriate.
-> > > 
-> > > My patch only added it to the bus-level code which covered the PME-based
-> > > wakeup events that _cannot_ be handled by device drivers.
-> 
-> In other words, your bus-level changes were a necessary but not
-> sufficient start.  I can buy that.
-> 
-> > Also please note that it depends a good deal on the definition of a "wakeup
-> > event".  Under the definition used when my patch was being developed, ie. that
-> > wakeup events are the events that would wake up the system from a sleep state,
-> > PCI interrupts cannot be wakeup events, unless the given device remains in the
-> > full power state although the system has been suspended (standard PCI devices
-> > are not allowed to generate signals except for PME from low-power states).
-> 
-> Um, what do you mean by "event"?  Let's take a concrete example.  
-> Suppose you have a system where you want USB plug or unplug events to
-> cause a wakeup.  This is relevant to the discussion at hand if your USB
-> host controller is a PCI device.
-> 
-> By your reckoning, a plug or unplug event that occurs while the system
-> is asleep would be a wakeup event by definition.  And yet you say that
-> the same plug or unplug event occurring while the controller was at
-> full power would not count as a wakeup event?  And in particular, it 
-> should not prevent the system from suspending before the event can be
-> fully processed?  That doesn't make sense.  The same event is the same 
-> event, regardless of the context in which it occurs.  If it is treated 
-> as a wakeup event in context then it should be treated as a wakeup 
-> event in other contexts too.
-
-In this example the event is not a PCI interrupt itself, which is a consqeuence
-of the event, but the USB plug-unplug.  So, whoever detects the plug-unplug
-should use pm_stay_awake() or pm_wakeup_event().  That may be an
-interrupt handler of a PCI USB controller, so if that is the case, the
-controller driver probably should use one of these functions in its interrupt
-handler.  Still, that by no measn implies that _every_ PCI interrupt should in
-principle be regarded as a wakeup event.
-
-Thanks,
-Rafael
+T24gU3VuLCBBdWcgOCwgMjAxMCBhdCAxMDo0MCBBTSwgRmVsaXBlIENvbnRyZXJhcwo8ZmVsaXBl
+LmNvbnRyZXJhc0BnbWFpbC5jb20+IHdyb3RlOgo+PiBUaGlzIGdvZXMgYmFjayB0byB5b3VyIGZp
+cnN0IGFzc2VydGlvbiB0aGF0IHRoZXJlIGFyZSAqbWFueSoKPj4gYXBwbGljYXRpb25zIHRoYXQg
+bmVlZCB0byBydW4gaW4gdGhlIGJhY2tncm91bmQuIMKgSSBqdXN0IGRvbid0IHRoaW5rCj4+IHRo
+YXQncyB0cnVlLiDCoFRoZXJlIHdpbGwgYmUgYSBmZXcsIGFuZCBwcm9iYWJseSBtb3JlIHRoYW4g
+anVzdCB0aGUKPj4gcmVzdHJpY3RlZCBzZXQgYWxsb3dlZCAoYW5kIHByb2dyYW1tZWQpIGJ5IEFw
+cGxlLiDCoEJ1dCBub3QgKm1hbnkqLgo+Cj4gVGhlIGFyZ3VtZW50IGluIGZhdm9yIG9mIHN1c3Bl
+bmQgYmxvY2tlcnMgaXMgdGhhdCB5b3UgY291bGQgdGFrZQo+IGFwcGxpY2F0aW9ucyB0aGF0IGFy
+ZSBub3QgZGVzaWduZWQgZm9yIGVtYmVkZGVkLCBhbmQgbWFrZSB0aGVtIHJ1biBvbgo+IGFuIGVt
+YmVkZGVkIGRldmljZSB3aXRob3V0IGRyYWluaW5nIGV4Y2Vzc2l2ZSBiYXR0ZXJ5IGxpZmU7IHRo
+b3NlCj4gYXBwbGljYXRpb25zIHdvdWxkIGhhdmUgdG8gYmUgYmFja2dyb3VuZCBzZXJ2aWNlcyBu
+b3QgY29uZmxpY3Rpbmcgd2l0aAo+IEFuZHJvaWQncyBkZXNpZ24uCj4KPiBJIGFncmVlIHRoZXJl
+IHByb2JhYmx5IHdvdWxkIG5vdCBiZSB0aGF0IG1hbnkgYmFja2dyb3VuZCBhcHBzLCBhbmQKPiBw
+cm9iYWJseSBldmVuIGxlc3MgcG9ydGVkIGJhY2tncm91bmQgYXBwcywgYnV0IHRoYXQgaXMgYWN0
+dWFsbHkgYW4KPiBhcmd1bWVudCBhZ2FpbnN0IHN1c3BlbmQgYmxvY2tlcnMuCj4KPiBUaGUgcmVz
+dCBvZiB0aGUgYXBwcyAoVUkgYXBwcyksIGNhbm5vdCBiZSBwb3J0ZWQsIGJ1dCBoYXZlIHRvIGJl
+Cj4gd3JpdHRlbiBzcGVjaWZpY2FsbHkgZm9yIEFuZHJvaWQsIGFuZCB0aGVyZWZvcmUgc2hvdWxk
+IGhhdmUgUE0gaW4KPiBtaW5kLCBhbmQgbm90IHJlcXVpcmUgc3VzcGVuZCBibG9ja2VycyB0byBo
+YXZlIGdvb2QgcG93ZXIgdXNhZ2UuCgpJIHRoaW5rIHRoZXJlJ3Mgc29tZSBjb25mdXNpb24gaGVy
+ZS4KClRoZSBkZWZhdWx0IG9wZXJhdGluZyBtb2RlIGZvciBBbmRyb2lkIGlzIHRvIGFnZ3Jlc3Np
+dmVseSByZWFjaCB0aGUKbG93ZXN0IHBvc3NpYmxlIHBvd2VyIHN0YXRlICh0eXBpY2FsbHkgZnVs
+bCBzdXNwZW5kKS4gIHN1c3BlbmQKYmxvY2tlcnMgYXJlIHVzZWQgYnkgYXBwbGljYXRpb25zIHRv
+IGluZm9ybSB0aGUgc3lzdGVtIHRoYXQgdGhleSBhcmUKY3VycmVudGx5IGRvaW5nIHdvcmsgd2hp
+Y2ggcmVxdWlyZXMgaW1tZWRpYXRlIHByb2Nlc3NpbmcsIHNvIHRoZQpzeXN0ZW0gd2lsbCBhdm9p
+ZCBmdWxseSBzdXNwZW5kaW5nIHVudGlsIHRoYXQgd29yayBpcyBkb25lLiAgWW91IGNvdWxkCnRo
+aW5rIG9mIGl0IGFzIHNldHRpbmcgeW91ciBsYXB0b3AgcG93ZXIgbWFuYWdlbWVudCBzZXR0aW5n
+cyB0byBiZQoiYmxhbmsgc2NyZWVuIGFmdGVyIDYwIHNlY29uZHMsIHBvd2VyIGRvd24gNSBzZWNv
+bmRzIGFmdGVyIGJsYW5raW5nIiwKZXhjZXB0IHRoYXQgdGhlcmUncyBhbHNvIGEgbWVjaGFuaXNt
+IGZvciBhcHBzIHRvIGhvbGQgb2ZmIG9uIHRoYXQKcG93ZXIgZG93biBpZiB0aGV5J3JlIGRvaW5n
+IGltcG9ydGFudCB3b3JrLCBhbmQgYSBsb3QgbW9yZSB3YXlzIHRvCndha2V1cCBiZXlvbmQgb3Bl
+bmluZyB0aGUgbGlkIG9yIHB1c2hpbmcgdGhlIHBvd2VyIGJ1dHRvbi4KClN0cmFpZ2h0LWZvcndh
+cmQgVUkgYXBwcyBkb24ndCBhY3R1YWxseSByZXF1aXJlIG11Y2ggc3BlY2lhbCBoYW5kbGluZwot
+LSBpdCdzIHByZWZlcmFibGUgdGhhdCB0aGV5IGRvIGJ1c3ktd2FpdCBvbiB0aGluZ3MsIGJ1dCBl
+dmVuIHdoZW4KcG93ZXIgaXMgbm90IGFuIGlzc3VlLCB3YXN0aW5nIGNwdSBzcGlubmluZyBuZWVk
+bGVzc2x5IGlzIGZyb3duZWQKdXBvbiwgc28gdGhpcyBpc24ndCBhIHNwZWNpYWwgcmVxdWVzdC4g
+IFRoZXJlJ3Mgbm90aGluZyBzdG9wcGluZwpzb21lYm9keSBmcm9tIHdyaXRpbmcgYW4gQW5kcm9p
+ZCBhcHAgdGhhdCBhY3RzIGFzIGEgYnJpZGdlIHRvIFgxMSBhcHBzCihlbWJlZGRpbmcgYW4gWCBz
+ZXJ2ZXIsIGV0YykgYW5kIG1ha2luZyBpdCBwb3NzaWJsZSBmb3IgbmF0aXZlIFgxMQphcHBzIHRv
+IGNvZXhpc3Qgd2l0aCB0aGUgQW5kcm9pZCBjb21wb3NpdGlvbiBtb2RlbC4gIEknbSBhIGxpdHRs
+ZQpzdXJwcmlzZWQgbm9ib2R5IGhhcyBkb25lIHNvLCBhY3R1YWxseS4gIEkgZmlndXJlZCAqc29t
+ZWJvZHkqIHdvdWxkCmRlY2lkZSB0aGF0IHRoZXkgbGlrZSB0aGVpciBwaG9uZSBidXQgYWJzb2x1
+dGVseSBuZWVkIHRvIHJ1biB4Y2xvY2sgb3IKc29tZXRoaW5nIGxvY2FsbHkgYXMgYSBmaXJzdCBj
+bGFzcyBhcHAuCgpUaGUgQW5kcm9pZCBhcHAgbW9kZWwgZG9lcyBzYXkgdGhhdCBpZiB5b3UncmUg
+bm90IGluIHRoZSBmb3JlZ3JvdW5kCihmcm9tIGEgVUkgc3RhbmRwb2ludCkgeW91IHNob3VsZCBz
+YXZlIHlvdXIgc3RhdGUsIGFzIHlvdSBtYXkgYmUKdGVybWluYXRlZCBpZiB0aGUgc3lzdGVtIHJ1
+bnMgbG93IG9uIHJlc291cmNlcy4gIFRoZSBzeXN0ZW0gb25seSBkb2VzCnRoaXMgd2hlbiBpdCBo
+YXMgdG8gLS0gZ2VuZXJhbGx5IHdoZW4gd2UgYm90dG9tIG91dCBvbiBtZW1vcnkuICBPbgpkZXZp
+Y2VzIHdpdGggc3VmZmljaWVudCBtZW1vcnksIGl0J3MgcXVpdGUgY29tbW9uIGZvciBtYW55IGFw
+cHMgdG8KcmVtYWluIHJlc2lkZW50IGZvciBkYXlzLXdlZWtzIC0tIEkndmUgc2VlbiBhcyBtYW55
+IGFzIDQ1LTUwIGFwcHMKcnVubmluZyBvbiBteSBuZXh1cyBvbmUuCgpJIGFtIGEgbGl0dGxlIHB1
+enpsZWQgYnkgdGhlIGFzc2VydGlvbiB0aGF0IEFuZHJvaWQgbGFza3MgInRydWUKbXVsdGl0YXNr
+aW5nIiwgYnV0IHRoYXQncyBhbm90aGVyIGRpc2N1c3Npb24gZW50aXJlbHkuICBXZSBjZXJ0YWlu
+bHkKZG9uJ3QgbGFjayBmb3IgbWFueSBjb25jdXJyZW50IHByb2Nlc3NlcyBhbmQgdGhyZWFkcy4u
+LgoKQnJpYW4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+bGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3Jn
+Cmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51
+eC1wbQ==
