@@ -1,14 +1,22 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Ted Ts'o" <tytso@mit.edu>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Sun, 8 Aug 2010 11:36:11 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1008081119370.4706-100000__33927.5962244303$1281281865$gmane$org@netrider.rowland.org>
-References: <alpine.DEB.2.00.1008071338480.30564@asgard.lang.hm>
+Date: Sun, 8 Aug 2010 11:57:19 -0400
+Message-ID: <20100808155719.GB3635__4851.2929505252$1281291160$gmane$org@thunk.org>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<20100804195704.GA23681@linux.vnet.ibm.com>
+	<20100806225453.GA3947@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008061651530.30564@asgard.lang.hm>
+	<AANLkTikyRhtfX4R3x_NDgHnXssmfVuhjC5PbhRZ0a7su@mail.gmail.com>
+	<alpine.DEB.2.00.1008062010510.30564@asgard.lang.hm>
+	<20100807061558.GA28087@thunk.org>
+	<AANLkTi=sMVjya9CH6UoZwJCXJTDRgBhnPXmApU_RHVTi@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1008071338480.30564@asgard.lang.hm>
+Content-Disposition: inline
+In-Reply-To: <AANLkTi=sMVjya9CH6UoZwJCXJTDRgBhnPXmApU_RHVTi@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,117 +26,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: tytso@mit.edu, peterz@infradead.org, swetland@google.com, Kernel development list <linux-kernel@vger.kernel.org>, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, swmike@swm.pp.se, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: david@lang.hm, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, swmike@swm.pp.se, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 7 Aug 2010 david@lang.hm wrote:
-
-> > This may be controversial, but I think Rafael will agree when I say
-> > that (in this one respect) Linus was wrong.  Separating hibernation
-> > from suspend makes sense, and I agree that the differences between
-> > deepest idle and suspend should be minimized.  But to get rid of them
-> > altogether would be wrong (and probably not possible anyway).
+On Sun, Aug 08, 2010 at 03:53:52PM +0300, Felipe Contreras wrote:
 > 
-> if you thing the differences should be minimized, why do you think that 
-> getting rid of them would be wrong?
+> You are overgeneralizing; there are many applications that run in the
+> background, and you want to keep them running even when the display is
+> off.
 
-Actually I meant that _attempting_ to get rid of them would be wrong,
-because it would be a futile attempt to carry out an impossible task.
+Really?  How many do you really expect will be running at the same
+time on a mobile platform with a 800-1000 mWh battery?  And what
+percentage of the applications that might be in a Android or Moblin or
+Maemo app store will have things running in the background?  10%?
+20%?  50%?  80%?
 
-> >> As deep sleep gains the ability to use even less power and as suspend
-> >> gains the ability to leave things on sometimes, the difference between
-> >> them is dissapearing. I wouldn't be at all surprised to see them start
-> >> overlaping soon. So it's not that I think Android should use deep sleeps
-> >> instead of suspend, but rather that suspend should just be the deepest
-> >> sleep, one mechanism instead of two.
-> >
-> > I disagree.  There are critical differences between them:
-> >
-> > 	Suspend uses the freezer and idle doesn't.
-> >
-> > 	Suspend generally forces devices to go into their low-power
-> > 	states immediately, whereas idle tends to leave unused devices
-> > 	at full power for some time before going to low power (to
-> > 	minimize average latency).
-> 
-> this sounds like policy, not capability.
+> You seen to be concentrating on UI-only applications, for those it's
+> worth noting that Android provides separate mechanisms for power
+> saving. Since Android doesn't have true multi-tasking, the
+> applications must serialize their states so that the next time they
+> are opened they seem to have not been closed. So, the current active
+> UI application can be closed while turning off the display, and
+> re-opened later.
 
-It isn't.  Suspend does not have the capability to leave a device at
-full power for 100 ms and then switch it to low power if it hasn't been
-used in that time.  (Or, it requires special hardware support to be
-able to do this.)  Idle does have this capability.
+Actually in practice, the process or processes which comprise current
+active UI application generally won't actually be killed when you turn
+off the display.  It *might* happen, if one of the rare backround
+applications needs more memory than is available without closing some
+of the more recently open applications.  In practice, the last 2-3
+most recently used applications are still loaded in memory so you can
+switch back and forth between them simply and easily.  It is true they
+have to be ready to be killed at any time in case their memory is
+needed for the currently active application, but that generally does't
+happen right away.  The design is to keep this transparent to the user
+so the user does't have to keep track of how many apps currently
+running on the system.
 
-> > 	Overall, suspend generally has longer latency than idle.  (This
-> > 	varies among platforms.)
-> 
-> even different idle modes have different latency
+In any case, the key thing to keep in mind is that when you deal with
+extreme power savings, very often you end up making compromises that
+probably make sense for other reasons anyway (such as the small screen
+size).  It's not at all clear that supporting generalized
+multi-tasking applications makes sense just from a screen real-estate
+issue and user experience POV, never mind battery lifetime.
 
-But the difference between idle and suspend can be orders of magnitude 
-larger.  That makes it qualitatively different, not just quantitatively 
-different.
+> User-space suspend blockers are relevant for background services, and
+> as it has been discussed before; suspend blockers (not activating
+> them) might actually degrade power usage.
 
-> > 	The set of wakeup sources (including timers) is different.
-> 
-> I agree that they are different, but don't they also vary within sleep or 
-> suspend as well?
+Yes, absolutely.  Note though that with the iPhone, Apple has decided
+that the only background services that will be allowed is audio, VOIP,
+location/navigation, and push notifications.  iOS developers don't get
+access to anything else, and the argument is that nothing else is
+really *needed*.  Android is more flexible in that it allows for
+non-Apple developers to create new background services, but it's not
+clear how many you really *need*.
 
-Suspend _is_ a form of sleep.  (The other form is hibernation.)  It's 
-true that the set of wakeup sources can be customized to some extent.  
-But in the usual implementations, timers are never a wakeup source for 
-suspend whereas they always are for idle.
+This goes back to your first assertion that there are *many*
+applications that need to run in the background.  I just don't think
+that's true.  There will be a few, and probably more than just the
+restricted set allowed (and programmed) by Apple.  But not *many*.
 
-> > 	On some systems, suspend uses platform-specific mechanisms to
-> > 	go into lower power states than are available to idle.
-> 
-> the exact mechanism to go into low-power states is platform specific to 
-> start with (there are some very popular platforms admittedly, like the PC 
-> ACPI modes)
+						- Ted
 
-Sure, the mechanism is platform-specific.  That doesn't change the fact
-that ACPI systems can achieve lower power usage with suspend than they
-can with idle.
-
-> as I see it
-> 
-> Sleep
-
-Do you mean "idle" or "deep-idle" rather than "sleep"?
-
-> a policy engine to decide when to sleep, how deeply to sleep, what to 
-> disable, what will wake you up (this includes taking into account desired 
-> latency, and the amount of power/time needed to get in and out of the 
-> various modes)
-> 
-> platform specific mechanisms for transitioning in and out of the modes.
-> 
-> 
-> Suspend
-> 
-> a policy engine to decide when to suspend, what to leave enabled when you 
-> supend, what will wake you i[
-
-Suspend is initiated entirely by userspace, not by the kernel.  
-Wakelocks provide a means for the kernel to delay or cancel a suspend 
-request, not to initiate one.
-
-> platform specific mechanisms for transition in and out of suspend. I view 
-> use of the freezer to be one of these mechansims.
-
-The freezer is not platform specific.
-
-> Somewhere amoung this mess are things like spinning down drives, disabling 
-> inactive network interfaces, etc. I don't knwo if those are run from the 
-> sleep policy engine, or if there is a third policy engine to decide these 
-> things.
-> 
-> 
-> why should there be multiple different policy engines making power 
-> management decisions? it seems to me like these policy engines can and 
-> should be merged, with the resulting engine able to trigger all the 
-> existing mechanisms for transitioning between modes.
-
-There are multiple policy engines because one of them is in the kernel 
-and the other is in userspace.  I don't see how you can merge the two.
-
-Alan Stern
+P.S.  Although you won't see Apple admitting it, their "fast app
+switching" is basically what Android has had all along, and most
+mobile developers are quite happy to call this multi-tasking.  Yes,
+it's not the same as trying to compile the kernel using "make -j 16"
+in the background.  But are you really going to do that on a cell
+phone battery?  I think not.
