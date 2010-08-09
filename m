@@ -1,9 +1,11 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Mon, 9 Aug 2010 11:54:47 -0700
-Message-ID: <20100809185447.GL3026@linux.vnet.ibm.com>
-References: <AANLkTikyRhtfX4R3x_NDgHnXssmfVuhjC5PbhRZ0a7su@mail.gmail.com>
+Date: Mon, 9 Aug 2010 20:18:22 +0100
+Message-ID: <20100809201822.441905f7__37180.5070703433$1281380855$gmane$org@lxorguk.ukuu.org.uk>
+References: <20100806225453.GA3947@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008061651530.30564@asgard.lang.hm>
+	<AANLkTikyRhtfX4R3x_NDgHnXssmfVuhjC5PbhRZ0a7su@mail.gmail.com>
 	<alpine.DEB.2.00.1008062010510.30564@asgard.lang.hm>
 	<20100807061558.GA28087@thunk.org>
 	<AANLkTi=sMVjya9CH6UoZwJCXJTDRgBhnPXmApU_RHVTi@mail.gmail.com>
@@ -12,14 +14,11 @@ References: <AANLkTikyRhtfX4R3x_NDgHnXssmfVuhjC5PbhRZ0a7su@mail.gmail.com>
 	<20100808213821.GD3635@thunk.org>
 	<20100809112453.77210acc@lxorguk.ukuu.org.uk>
 	<20100809181638.GI3026@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008091122220.23481@asgard.lang.hm>
-Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1008091122220.23481@asgard.lang.hm>
+In-Reply-To: <20100809181638.GI3026@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,68 +28,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
+To: paulmck@linux.vnet.ibm.com
+Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 09, 2010 at 11:28:02AM -0700, david@lang.hm wrote:
-> On Mon, 9 Aug 2010, Paul E. McKenney wrote:
-> 
-> >On Mon, Aug 09, 2010 at 11:24:53AM +0100, Alan Cox wrote:
-> >
-> >[ . . . ]
-> >
-> >>>would agree that in the ideal world, it would be nice if you could
-> >>>have applications that make the correct performance/battery
-> >>>utilization tradeoff for devices running on 800 mWh batteries, 94,000
-> >>>mWh batteries, and while running on the AC mains.  But I don't believe
-> >>>that it's likely to be true, and if you want to try to beat up on
-> >>>application writers one at a time to be power optimized --- as far as
-> >>>I'm concerned, that's an argument *for* suspend blockers, since I'm
-> >>>not big believer in plans that begin, "First, you command the tides of
-> >>>the sea to go back", King Canute style.  :-)
-> >>
-> >>Suspend blockers drive the system policy part way into the apps, that in
-> >>turn makes the apps very vulnerable to change in their environment because
-> >>you've specialised them. I am sure that in the Android world it's
-> >>considered fine, and that the marketing and business people even like
-> >>this binding together - but it doesn't generalise and will blow up in
-> >>people's faces in the future.
-> >>
-> >>To consider your tide analogy - suspend blockers is like trying to
-> >>program the waves individually. Show me a suspend blocker aware open
-> >>office patch 8)
-> >
-> >But wouldn't an office suite run as a power-oblivious application on an
-> >Android device?  After all, office applications do not need to run when
-> >the screen is turned off, so these the applications do not need to use
-> >suspend blockers.  That said, I could easily imagine that significant
-> >work would be required to make OpenOffice run on Android, not due to
-> >suspend blockers, but rather due to Android's unusual user space.
-> 
-> pick your application if you don't like the example.
+> But wouldn't an office suite run as a power-oblivious application on an
+> Android device?  After all, office applications do not need to run when
 
-I like the office-suite example just fine.
+I was waiting for soemone to leap down the pit I dug  Office suites have
+some quite important background activities. Consider the case of a power
+oblivious Open Office. You type a critical document, you suspend, your
+phone battery dies a bit later, you lost your document. Office suites do
+timed backing up as one simple obvious example. That could become a power
+aware behaviour but the truely power oblivious office suite is a myth.
 
-> but also, which android system should the applicaton be written for?
-> the phone with a 800maH battery or a larger device with a 94,000maH
-> battery?
+> the screen is turned off, so these the applications do not need to use
+> suspend blockers.  That said, I could easily imagine that significant
+> work would be required to make OpenOffice run on Android, not due to
+> suspend blockers, but rather due to Android's unusual user space.
 
-Does battery size make a difference in this particular case?
+You are tightly linking suspend blockers with Android. If they were a
+sensible general solution they would be generic not tied closely to
+Android
 
-> well bahaved applications (not doing unnecessary wakeups, etc) are
-> well bahaved, no matter what system they are on
+Some of the other bad assumptions being made in this discussion:
 
-Yep.  Your point being what exactly?  That all applications should be
-required to be power-optimized, and that any technology that automates
-energy efficiency should be rejected out of hand?  If so, please justify
-your position.
+- That the phone is special. Todays Android phones are up with the PC's
+  of some years back (but with better graphics and more faster storage),
+  in a few more generations of the technology what will they look like ?
+  I'm sure that within a few years there will be people playing Warcraft
+  or similar on their phone in the train.
 
->                                                 (explicitly setting
-> allowable timer fuzz is linux specific, but will again help on any
-> system)
+- That Android will continue to tbe offering the same services in future
+  as today. If it does it'll go the way of PalmOS and Symbian. Equally
+  you can't just bust all the apps as it changes
 
-Setting aside the question of how timer fuzz will help on non-Linux
-systems if timer fuzz is specific to Linux...
+As devices get more complex and varied you cannot afford to put the
+detailed awareness of platform behaviour in the applications. It
+doesn't scale. Android developers are haivng enough fun coping with all
+the OS variants, customisations and new phones - and thats far less
+variety than PC hardware. Generally the PC app folks are not having the
+same level of problem - so ask why ?
 
-							Thanx, Paul
+> On devices that do not have suspend blockers, a normal application runs
+> in a manner similar to a hypothetical Android application that acquires
+> a suspend blocker when it starts and holds that suspend blocker until
+> it exits.  In contrast with Android, this situation requires that each
+> and every application be carefully written to avoid battery drain,
+> which I suspect is what Ted is getting at with his King Canute analogy.
+
+Which is flawed and not the case. The same argument could be made for
+multi-tasking
+
+DOS	"Each application implements its own internal
+	multitasking/polling if needed"
+
+Windows 3.x	"Each application has an event loop and is built
+in a certain way" (the 'suspend blocker' mentality)
+
+Real OS		"The scheduler operates in a manner which prevents
+CPU hogs breaking the system or abusing it sufficiently to threaten its
+functionality"
+
+The same applies to power. Only the OS has the big picture and can hide
+the hardware and general policy variety from the application.
+
+OpenOffice runs on netbooks, laptops, servers, even big non x86 boxes. It
+runs on virtual machines, it runs in power sensitive environments, it
+runs in thermally constrained environments, it runs in I/O constrained
+environments, it runs in latency constrained environments etc etc
+
+All the same code, true some work has been done to make it behave
+politely but the rest is down to the OS doing its job - deploying the
+resources available while considering and obeying the constraints
+present, in a manner which makes best use of the resources to achieve the
+policy goals of the system.
+
+And not unsurprisingly that all starts to look like Stafford Beer's good
+old viable systems model.
+
+Alan
