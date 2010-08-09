@@ -1,15 +1,14 @@
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Subject: Re: [PATCH 7/10] PCI / Hot-plug: Query _OSC before
-	requesting controls
-Date: Mon, 09 Aug 2010 10:22:18 +0900
-Message-ID: <4C5F584A.3050009__33762.4679356397$1281317137$gmane$org@jp.fujitsu.com>
-References: <201008060303.51224.rjw@sisk.pl> <201008060311.33359.rjw@sisk.pl>
-	<4C5B7181.3010602@jp.fujitsu.com> <201008061234.46493.rjw@sisk.pl>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Sun, 8 Aug 2010 21:52:17 -0700
+Message-ID: <AANLkTimgJUAW9TU37XE4BqYWf3yCWvg-vgk3E0YLqcm9__43125.9526209489$1281329621$gmane$org@mail.gmail.com>
+References: <AANLkTinebiC=9Xd-D_sOwmvA8w_YPWMdhTYz2NRbZ7jH@mail.gmail.com>
+	<Pine.LNX.4.44L0.1008081507510.6810-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201008061234.46493.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1008081507510.6810-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,75 +18,187 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pci@vger.kernel.org, Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-(2010/08/06 19:34), Rafael J. Wysocki wrote:
-> On Friday, August 06, 2010, Hidetoshi Seto wrote:
->> (2010/08/06 10:11), Rafael J. Wysocki wrote:
->>> From: Rafael J. Wysocki<rjw@sisk.pl>
->>>
->>> It generally is unsafe to call acpi_pci_osc_control_set() without
->>> checking what _OSC bits the BIOS is willing to grant control of,
->>> because control of some _OSC bits may be granted even if
->>> acpi_pci_osc_control_set() returns AE_SUPPORT.  Therefore make
->>> acpi_get_hp_hw_control_from_firmware() use
->>> acpi_pci_osc_control_query() to check if the BIOS will grant
->>> OSC_SHPC_NATIVE_HP_CONTROL before calling acpi_pci_osc_control_set().
->>>
->>> Signed-off-by: Rafael J. Wysocki<rjw@sisk.pl>
->>> ---
->>>   drivers/pci/hotplug/acpi_pcihp.c |    6 ++++--
->>>   1 file changed, 4 insertions(+), 2 deletions(-)
->>>
->>> Index: linux-2.6/drivers/pci/hotplug/acpi_pcihp.c
->>> ===================================================================
->>> --- linux-2.6.orig/drivers/pci/hotplug/acpi_pcihp.c
->>> +++ linux-2.6/drivers/pci/hotplug/acpi_pcihp.c
->>> @@ -358,11 +358,13 @@ int acpi_get_hp_hw_control_from_firmware
->>>   		acpi_get_name(handle, ACPI_FULL_PATHNAME,&string);
->>>   		dbg("Trying to get hotplug control for %s\n",
->>>   				(char *)string.pointer);
->>> +		status = acpi_pci_osc_control_query(handle,&flags);
->>> +		if (ACPI_FAILURE(status)
->>> +		    || !(flags&  OSC_SHPC_NATIVE_HP_CONTROL))
->>> +			goto no_control;
->>>   		status = acpi_pci_osc_control_set(handle, flags);
->>>   		if (ACPI_SUCCESS(status))
->>>   			goto got_one;
->>> -		if (status == AE_SUPPORT)
->>> -			goto no_control;
->>>   		kfree(string.pointer);
->>>   		string = (struct acpi_buffer){ ACPI_ALLOCATE_BUFFER, NULL };
->>>   	}
+2010/8/8 Alan Stern <stern@rowland.harvard.edu>:
+> On Sat, 7 Aug 2010, Arve Hj=F8nnev=E5g wrote:
+>
+>> The suspend blockers I added I my suspend blocker patchset were not
+>> directly associated with a device.
+>
+> For the benefit of those who don't remember the details of that
+> patchset, can you list again the suspend blockers/wakelocks that aren't
+> directly associated with a device? =A0(No need to mention things coming
+> from userspace -- those are obviously unrelated to any device.)
+
+Other than the user space interface and the internal main suspend
+blocker that patchset modified evdev, and added suspend blocking work.
+
+>
+>> The evdev changes could be modified
+>> to share a device, but it would give less detail since a separate
+>> queue is created for each client that opens the device.
+>
+> I don't understand enough about how the input layer works. =A0Does it
+> create a new queue each time an input device file is opened? =A0And each
+> input event gets added to all of the queues? =A0And each queue gets a
+> corresponding wakelock?
+>
+Yes, yes and yes.
+
+> If these surmises are right then I can see how relying on devices alone
+> wouldn't give enough information. =A0There could be two separate programs
+> both reading input events, and you wouldn't know which one was
+> responsible for failing to drain its queue.
+>
+We don't know which one now either since we don't give them unique
+names, but we know that one of them is not reading (and it is usually
+not the normal input path).
+
+>> The suspend
+>> blocking work api would have to change so the caller to passes a
+>> device in, which I think would make that api less flexible.
+>
+> Maybe. =A0There aren't enough examples coded up yet to be sure. =A0At this
+> point we could easily make the device argument required instead of
+> optional, and we could add a device argument to pm_relax.
+>
+I think that would be a good start. I can create dummy devices for now
+where I don't already have a device.
+
+>> Mostly the
+>> problem is that we need separate stats for wakelocks created by a
+>> single driver. For instance we will still need a user-space interface
+>> to block suspend on android devices (lower level services than the
+>> power manager need to block suspend), with the stats in the device
+>> struct we have to create a new device for every wakelock user space
+>> creates in the kernel.
+>
+> In the scheme we're talking about, the suspend-blocking interface for
+> uesrspace would be located entirely in the power manager. =A0Hence it
+> could maintain all the necessary statistics, without involving the
+> kernel. =A0During early stages of system startup, before the power
+> manager is running, lower-level services would not be able to block
+> suspend. =A0This wouldn't matter because at those times the system simply
+> would not ever suspend -- because suspends have to be initiated by the
+> power manager.
+
+If we do that, a low level process could try to block suspend while
+the power manager is not running. Then the power manager could start
+and decide to suspend not knowing that a low level process wanted to
+block suspend.
+
+>
+>> There is also the issue of reading the stats. It is a lot easier to
+>> read a single stats file, than looping though every device on the
+>> system (when most of the devices never block suspend).
+>
+> I agree, it should be possible to simplify this and perhaps at the same
+> time avoid adding all the wakeup-related fields to every device
+> structure.
+>
+>> >> > Does Android use any kernel-internal wakelocks both with a timer and
+>> >> > with active cancellation?
+>> >> >
+>> >>
+>> >> I don't know if they are all kernel-internal but these drivers appear
+>> >> to use timeouts and active cancellation on the same wakelock:
+>> >> wifi driver, mmc core, alarm driver, evdev (suspend blocker version
+>> >> removes the timeout).
+>
+> Roughly speaking, what do the timings work out to be? =A0That is, how
+> long are the timeouts for these wakelocks, how long does it usually
+> take for one of them to be actively cancelled, and what percentage of
+> them end up timing out?
+>
+The evdev timeout is a few seconds, and never timeout unless user
+space is misbehaving. I don't know how the wifi and mmc wakelocks are
+used. The alarm driver uses a 1 or 2 second timeout to abort suspend
+when an alarm is set to close to program an rtc alarm. I think this
+one is cancelled when the alarm triggers, and the timeout only handles
+the case where the client cancelled the alarm before it trigger, but I
+don't remember for sure.
+
+>> >> The wakelock code has an active flag. If we want to keep the
+>> >> pm_stay_wake nesting (which I would argue against), we would need an
+>> >> active count. It would also require a handle, which is a change Rafael
+>> >> said would not fly.
+>
+> Never mind the handles for now. =A0As for the nesting, we effectively
+> don't have it when the pm_wakeup_event interface is used. =A0The
+> pm_stay_awake/pm_relax interface _is_ nested, but since that interface
+> isn't used anywhere yet, we can't say whether it really should be
+> nested or not. =A0Maybe we'll find out in the end that it shouldn't be.
+>
+
+You cannot easily mix timeouts, cancellations and nesting.
+Wakelocks/suspend blockers allow you to mix timeouts and
+cancellations.
+
+> Consider an input event queue as a typical case. =A0You would call
+> pm_stay_awake when an item is added to an empty queue, and you would
+> call pm_relax when the last item is removed from a queue. =A0The nesting
+> count would never be > 1, so it wouldn't make any difference either
+> way.
+>
+
+The cleanup is a little simpler when you don't nest and there is less
+chance that a missed edge case prevents suspend forever (we had a few
+of those bugs in our userspace code that used nested wakelocks). If
+the above is all you do, then you block suspend forever if someone
+closes an non-empty input device.
+
+>> >> >> sleep_time, total time the wake lock has been active when the scre=
+en was off.
+>> >> >
+>> >> > Not applicable to general systems. =A0Is there anything like it that
+>> >> > _would_ apply in general?
+>> >> >
+>> >>
+>> >> The screen off is how it is used on android, the stats is keyed of
+>> >> what user space wrote to /sys/power/state. If "on" was written the
+>> >> sleep time is not updated.
+>
+> I guess we could keep track of pm_stay_awake or pm_wakeup_event calls
+> made between a read and write of /sys/power/wakeup_count (i.e., while
+> events_check_enabled is set). =A0Would that be roughly equivalent?
+>
+Roughly, yes. (or even just while blocking the read from
+/sys/power/wakeup_count).
+
+>> >> The merged user space interface makes this unclear to me. When I first
+>> >> used suspend on android I had a power manager process that opened all
+>> >> the input devices and reset a screen off timeout every time there was
+>> >> an input event. If the input layer uses pm_stay_awake to block suspend
+>> >> when the queue is not empty, this will deadlock with the current
+>> >> interface since reading the wake count will block forever if an input
+>> >> event occurred right after the power manager decides to suspend.
+>> >
+>> > No, in that case suspend will be aborted, IIUC.
+>> >
 >>
->> This breaks fallback mechanism for OSHP, doesn't it?
+>> How? Your pm_get_wakeup_count function loops until events_in_progress be=
+comes 0.
 >
-> Hmm, well.  Can you please elaborate a bit?
+> The problem is that the same task is reading /sys/power/wakeup_count
+> (thus waiting for an input event queue to drain) and also reading an
+> input event queue. =A0Clearly this will result in deadlock, but there
+> must be a reasonably simple way around it. =A0For example, carry out
+> those two activities in separate threads.
 >
-> I guess you mean that the last two statements should be executed if
-> acpi_pci_osc_control_query() returns error code, is that correct?
->
+Yes, but my point is that user-space code that is safe if the driver
+does not block suspend until the queue is empty becomes unsafe if it
+does. Also note that it is not enough to just use two separate threads
+for this, the thread that reads /sys/power/wakeup_count cannot hold a
+lock while reading, or directly provide the user space wakelock api.
 
-On legacy platform, firmware provides OSHP method instead of _OSC method
-to grant native hot-plug control to OS. For this reason, current code
-evaluates OSHP method if _OSC evaluation failed with error code other
-than AE_SUPPORT (ex. "AE_NOT_FOUND" would be returned on the legacy
-platform that provides OSHP instead of _OSC).
+I do think it is possible to use this api and provide a user space
+wakelock api (by having a dedicated thread that suspends), but it is
+more complicated than using the asynchronous wakelock/suspend blocker
+api.
 
-So I think Hidetoshi meant that
+-- =
 
->>> +		status = acpi_pci_osc_control_query(handle,&flags);
->>> +		if (ACPI_FAILURE(status)
->>> +		    || !(flags&  OSC_SHPC_NATIVE_HP_CONTROL))
->>> +			goto no_control;
-
-should be
-
-	status = acpi_pci_osc_control_query(handle,&flags);
-	if (status == AE_SUPPORT)
-		goto no_control;
-
-Thanks,
-Kenji Kaneshige
+Arve Hj=F8nnev=E5g
