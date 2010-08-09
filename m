@@ -1,24 +1,15 @@
-From: "Ted Ts'o" <tytso@mit.edu>
-Subject: Re: Attempted summary of suspend-blockers LKML thread,
-	take three
-Date: Sun, 8 Aug 2010 17:38:21 -0400
-Message-ID: <20100808213821.GD3635__43895.4694000587$1281303604$gmane$org@thunk.org>
-References: <20100731175841.GA9367@linux.vnet.ibm.com>
-	<20100804195704.GA23681@linux.vnet.ibm.com>
-	<20100806225453.GA3947@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008061651530.30564@asgard.lang.hm>
-	<AANLkTikyRhtfX4R3x_NDgHnXssmfVuhjC5PbhRZ0a7su@mail.gmail.com>
-	<alpine.DEB.2.00.1008062010510.30564@asgard.lang.hm>
-	<20100807061558.GA28087@thunk.org>
-	<AANLkTi=sMVjya9CH6UoZwJCXJTDRgBhnPXmApU_RHVTi@mail.gmail.com>
-	<20100808155719.GB3635@thunk.org>
-	<AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: Re: [PATCH 7/10] PCI / Hot-plug: Query _OSC before
+	requesting controls
+Date: Mon, 09 Aug 2010 10:22:18 +0900
+Message-ID: <4C5F584A.3050009__33762.4679356397$1281317137$gmane$org@jp.fujitsu.com>
+References: <201008060303.51224.rjw@sisk.pl> <201008060311.33359.rjw@sisk.pl>
+	<4C5B7181.3010602@jp.fujitsu.com> <201008061234.46493.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
+In-Reply-To: <201008061234.46493.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,75 +19,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: david@lang.hm, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, swmike@swm.pp.se, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pci@vger.kernel.org, Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 08, 2010 at 08:40:28PM +0300, Felipe Contreras wrote:
-> 
-> My guess is you haven't used a truly multi-tasking device like the
-> N900; now that I've got used to it, I consider that functionality
-> *essential*.
+(2010/08/06 19:34), Rafael J. Wysocki wrote:
+> On Friday, August 06, 2010, Hidetoshi Seto wrote:
+>> (2010/08/06 10:11), Rafael J. Wysocki wrote:
+>>> From: Rafael J. Wysocki<rjw@sisk.pl>
+>>>
+>>> It generally is unsafe to call acpi_pci_osc_control_set() without
+>>> checking what _OSC bits the BIOS is willing to grant control of,
+>>> because control of some _OSC bits may be granted even if
+>>> acpi_pci_osc_control_set() returns AE_SUPPORT.  Therefore make
+>>> acpi_get_hp_hw_control_from_firmware() use
+>>> acpi_pci_osc_control_query() to check if the BIOS will grant
+>>> OSC_SHPC_NATIVE_HP_CONTROL before calling acpi_pci_osc_control_set().
+>>>
+>>> Signed-off-by: Rafael J. Wysocki<rjw@sisk.pl>
+>>> ---
+>>>   drivers/pci/hotplug/acpi_pcihp.c |    6 ++++--
+>>>   1 file changed, 4 insertions(+), 2 deletions(-)
+>>>
+>>> Index: linux-2.6/drivers/pci/hotplug/acpi_pcihp.c
+>>> ===================================================================
+>>> --- linux-2.6.orig/drivers/pci/hotplug/acpi_pcihp.c
+>>> +++ linux-2.6/drivers/pci/hotplug/acpi_pcihp.c
+>>> @@ -358,11 +358,13 @@ int acpi_get_hp_hw_control_from_firmware
+>>>   		acpi_get_name(handle, ACPI_FULL_PATHNAME,&string);
+>>>   		dbg("Trying to get hotplug control for %s\n",
+>>>   				(char *)string.pointer);
+>>> +		status = acpi_pci_osc_control_query(handle,&flags);
+>>> +		if (ACPI_FAILURE(status)
+>>> +		    || !(flags&  OSC_SHPC_NATIVE_HP_CONTROL))
+>>> +			goto no_control;
+>>>   		status = acpi_pci_osc_control_set(handle, flags);
+>>>   		if (ACPI_SUCCESS(status))
+>>>   			goto got_one;
+>>> -		if (status == AE_SUPPORT)
+>>> -			goto no_control;
+>>>   		kfree(string.pointer);
+>>>   		string = (struct acpi_buffer){ ACPI_ALLOCATE_BUFFER, NULL };
+>>>   	}
+>>
+>> This breaks fallback mechanism for OSHP, doesn't it?
+>
+> Hmm, well.  Can you please elaborate a bit?
+>
+> I guess you mean that the last two statements should be executed if
+> acpi_pci_osc_control_query() returns error code, is that correct?
+>
 
-I've used an N800, and I wasn't impressed; if anything, the fact that
-I have to worry about manually killing off applications when memory
-gets low, I actually thought it was incredibly sucky.  It was a
-miniature, badly done laptop.
+On legacy platform, firmware provides OSHP method instead of _OSC method
+to grant native hot-plug control to OS. For this reason, current code
+evaluates OSHP method if _OSC evaluation failed with error code other
+than AE_SUPPORT (ex. "AE_NOT_FOUND" would be returned on the legacy
+platform that provides OSHP instead of _OSC).
 
-Maybe the N900 is different, but the bigger question is what do you
-mean by "multi-tasking"?  Definitions are critical here, which is why
-Paul was so careful in his definitions section of his document.
+So I think Hidetoshi meant that
 
-Do you mean:
+>>> +		status = acpi_pci_osc_control_query(handle,&flags);
+>>> +		if (ACPI_FAILURE(status)
+>>> +		    || !(flags&  OSC_SHPC_NATIVE_HP_CONTROL))
+>>> +			goto no_control;
 
-  * allowing multiple processes running at the same time?
-  * allowing some applications to be able to update mail, play audio,
-    upload location information so your friends know where you are?
-  * allowing arbitrary applications that users can interact with
-    simultaneously (which implies a window manager, the need to have
-    the concept of window focus for keyboard input), etc?
+should be
 
-or something else?
+	status = acpi_pci_osc_control_query(handle,&flags);
+	if (status == AE_SUPPORT)
+		goto no_control;
 
-> The argument in favor of suspend blockers is that you could take
-> applications that are not designed for embedded, and make them run on
-> an embedded device without draining excessive battery life; those
-> applications would have to be background services not conflicting with
-> Android's design.
-> 
-> I agree there probably would not be that many background apps, and
-> probably even less ported background apps, but that is actually an
-> argument against suspend blockers.
-> 
-> The rest of the apps (UI apps), cannot be ported, but have to be
-> written specifically for Android, and therefore should have PM in
-> mind, and not require suspend blockers to have good power usage.
-
-If you are using a GUI framework which is optimized for a single-
-application-focus-at-a-time UI that isn't GNOME or KDE, then that will
-require the applications to be written.  However, that's not because
-of suspend-blockers.
-
-If you assume a GUI framework which is flexible enough --- maybe Qt
-falls into this category, maybe not --- for the rest of the
-applications, they don't need to *know* about suspend blockers, and
-they certainly do't have to be rewritten or modified specifically for
-suspend blockers.  So if your argument is that applications that don't
-need bacground services (which you've admitted comprises majority of
-applicatios) need to be modified or written specifically to support
-suspend blockers, that's simply not true.  They don't need to be
-modified at all.
-
-As far as whether they *should* require suspend blockers to be in the
-kernel to get power usage that is suitable for cell phone batteries, I
-would agree that in the ideal world, it would be nice if you could
-have applications that make the correct performance/battery
-utilization tradeoff for devices running on 800 mWh batteries, 94,000
-mWh batteries, and while running on the AC mains.  But I don't believe
-that it's likely to be true, and if you want to try to beat up on
-application writers one at a time to be power optimized --- as far as
-I'm concerned, that's an argument *for* suspend blockers, since I'm
-not big believer in plans that begin, "First, you command the tides of
-the sea to go back", King Canute style.  :-)
-
-						- Ted
+Thanks,
+Kenji Kaneshige
