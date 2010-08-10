@@ -1,16 +1,25 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: Attempted summary of suspend-blockers LKML thread
-Date: Mon, 9 Aug 2010 21:28:04 -0700
-Message-ID: <AANLkTi=UApkc7_qeeXikP7kAnYW2TOXvVQu91UiBr2LV__15783.1763536253$1281414571$gmane$org@mail.gmail.com>
-References: <AANLkTinQD3ggLFVd2KvX95U2B_j=ZJquZgiBGieukJ+r@mail.gmail.com>
-	<201008082117.39082.rjw@sisk.pl>
-	<AANLkTimncsuARHeavMCHL4imEOVXMomTJoDQns4-wq5o@mail.gmail.com>
-	<201008100453.11958.rjw@sisk.pl>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread,
+	take three
+Date: Mon, 9 Aug 2010 21:45:41 -0700
+Message-ID: <20100810044541.GA2817__25026.6566560187$1281415621$gmane$org@linux.vnet.ibm.com>
+References: <AANLkTikyRhtfX4R3x_NDgHnXssmfVuhjC5PbhRZ0a7su@mail.gmail.com>
+	<alpine.DEB.2.00.1008062010510.30564@asgard.lang.hm>
+	<20100807061558.GA28087@thunk.org>
+	<AANLkTi=sMVjya9CH6UoZwJCXJTDRgBhnPXmApU_RHVTi@mail.gmail.com>
+	<20100808155719.GB3635@thunk.org>
+	<AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
+	<20100808213821.GD3635@thunk.org>
+	<20100809112453.77210acc@lxorguk.ukuu.org.uk>
+	<20100809181638.GI3026@linux.vnet.ibm.com>
+	<20100809201822.441905f7@lxorguk.ukuu.org.uk>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201008100453.11958.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <20100809201822.441905f7@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,132 +29,185 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-2010/8/9 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Monday, August 09, 2010, Arve Hj=F8nnev=E5g wrote:
->> 2010/8/8 Rafael J. Wysocki <rjw@sisk.pl>:
->> > On Saturday, August 07, 2010, Arve Hj=F8nnev=E5g wrote:
->> >> 2010/8/7 Arve Hj=F8nnev=E5g <arve@android.com>:
->> >> > 2010/8/7 Rafael J. Wysocki <rjw@sisk.pl>:
->> >> >> On Saturday, August 07, 2010, Arve Hj=F8nnev=E5g wrote:
->> >> >>> 2010/8/6 Alan Stern <stern@rowland.harvard.edu>:
->> >> >>> > On Thu, 5 Aug 2010, Arve Hj=F8nnev=E5g wrote:
->> >> ...
->> >> >>> >> total_time, total time the wake lock has been active. This one=
- should
->> >> >>> >> be obvious.
->> >> >>> >
->> >> >>> > Also easily added.
->> >> >>> >
->> >> >>> Only with a handle passed to all the calls.
->> >> >>
->> >> >> Well, I'm kind of tired of this "my solution is the only acceptabl=
-e one"
->> >> >> mindset. =A0IMHO, it's totally counter productive.
->> >> >>
->> >> >
->> >> > How do you propose to track how long a driver has blocked suspend w=
-hen
->> >> > you have an unblock call that takes no arguments.
->> >> >
->> >>
->> >> Also, I did not not see a response to my question about why you don't
->> >> want to pass a handle.
->> >
->> > It doesn't really matter what I personally want. =A0In fact, I'm not t=
-otally
->> > opposed to that idea, although there are disadvantages (eg. a "handle"
->> > would really mean a pointer to an object with certain life cycle that =
-needs to
->> > be managed by the caller and it's not that clear to me who should mana=
-ge the
->> > objects that the PCI wakeup code would pass to pm_wakeup_event(), for =
-one
->>
->> Wouldn't a single global handle work for the way you are handling pci
->> wakeup events?
->
-> Not really, because I'd like to know the number of wakeups associated with
-> the given device.
->
+On Mon, Aug 09, 2010 at 08:18:22PM +0100, Alan Cox wrote:
+> > But wouldn't an office suite run as a power-oblivious application on an
+> > Android device?  After all, office applications do not need to run when
+> 
+> I was waiting for soemone to leap down the pit I dug  Office suites have
+> some quite important background activities. Consider the case of a power
+> oblivious Open Office. You type a critical document, you suspend, your
+> phone battery dies a bit later, you lost your document. Office suites do
+> timed backing up as one simple obvious example. That could become a power
+> aware behaviour but the truely power oblivious office suite is a myth.
 
-For debugging purposes right? I'm not sure automatically counting
-wakeup events from pm_stay_awake and pm_wakeup_event is the best way
-to do this. To avoid race conditions these calls have to be made for
-every event that could also be a wakeup event, which means the actual
-wakeup event easily gets lost in the noise. This is why I had a
-separate wakeup count that only increments on the fist call to
-wake_lock after each suspend, but this did not work that well either.
+It is a sad day on LKML when we are busy digging pits for each other.
+On the other hand, I have seen far sadder days, and the pit you dug
+happens to lead somewhere useful.  As Brian noted in his reply, the
+situation you call out can occur with manual suspend-to-RAM already:
+the fact is that this is a design choice.  You could indeed make a
+PM-driving office application if you wished, or run the same application
+as a power-oblivious application.  There is a slight difference in the
+contract with the user.  Of course, it is quite clear which one -you-
+prefer, but preferences can vary.
 
->> It looked like you just reset a global timeout every time a pci wakeup e=
-vent
->> occurs.
->
-> We bump up the per-device counter of wakeup events in addition to that.
->
->> > example). =A0I sent a pull request for your original patchset to Linus=
- after all. :-)
->> >
->> > I said I didn't think "it would fly", meaning that I was afraid the ot=
-her kernel
->> > developers wouldn't like that change.
->> >
->> > The reason why I think so is that you'd like to add a whole new infras=
-tructure
->> > whose only purpose would be debugging that would only be useful to sys=
-tems
->> > using opportunistic suspend. =A0That, however, is only Android right n=
-ow and it
->> > cannot use the mainline kernel for other reasons, so basically we woul=
-d add
->> > infrastructure that's useful to no one.
->> >
->>
->> I'm not sure what you mean by this. The debugging is useful for anyone
->> using the api, not just Android, and a handle is also needed to mix
->> timeouts and pm_relax.
->
-> The purpose of the debugging would be to be able to figure out why the sy=
-stem
-> is staying in the working state, which is only relevant for systems that =
-use
-> opportunistic suspend.
->
+> > the screen is turned off, so these the applications do not need to use
+> > suspend blockers.  That said, I could easily imagine that significant
+> > work would be required to make OpenOffice run on Android, not due to
+> > suspend blockers, but rather due to Android's unusual user space.
+> 
+> You are tightly linking suspend blockers with Android. If they were a
+> sensible general solution they would be generic not tied closely to
+> Android
 
-Only if the drivers do not have bugs. A driver calling pm_say_awake
-without a matching pm_relax call will prevent any race free suspend
-from succeeding.
+Android is certainly where suspend blockers originated, and is to the best
+of my knowledge is still the only platform that uses them.  But there is
+a first user of every new mechanism, and for some time that first user
+will by definition be the only user of that mechanism.  So the fact
+that Android is most probably the only user of suspend blockers does
+not prove anything about whether or not suspend blockers are sensible.
 
-> If opportunistic suspend isn't used, it makes sense to ask which
-> device caused suspend (initiated by the user) to be aborted and for this
-> purpose it is sufficient to count wakeup events associated with each
-> device (you need to preserve the pre-suspend values of these counters, but
-> that can be done by a user space power manager just fine).
->
->> The handle can be the device, but some drivers need several handles per
->> device.
->
-> That depends on how precise the collected debug information should be and
-> that, in turn, depends on what it's going to be used for.
->
+> Some of the other bad assumptions being made in this discussion:
+> 
+> - That the phone is special. Todays Android phones are up with the PC's
+>   of some years back (but with better graphics and more faster storage),
+>   in a few more generations of the technology what will they look like ?
+>   I'm sure that within a few years there will be people playing Warcraft
+>   or similar on their phone in the train.
 
-It is not just debug information. Drivers that mix wake_lock_timeout
-and wake_unlock do not map to the current api.
+Indeed, people have played games on their cellphones for some years.
+Not sure whether any of the games resembles World of Warcraft, but they
+probably soon will.  If so, perhaps they will make use of significant
+hardware acceleration -- most other embedded systems do so.
 
-> Anyway, as I said I'm not opposed to the idea of using a special type of
-> objects for collecting debug information on wakeup events, so please free=
- to
-> submit patches modifying the current mainline kernel code in that directi=
-on.
->
+But that doesn't guarantee that solutions developed for PCs and laptops
+will be optimal (or even usable) on cellphones.  Sufficient difference
+in scale can easily change the form of the optimal solution, so you
+have not yet made your case.  (For that matter, you also haven't proven
+that adoption of suspend blockers or something like them depends on the
+assumption that cellphones are special.)
 
-How do you prefer to handle your pci wakeup events? Add a handle to
-every device or pci device? Or use a global handle to avoid the race
-and report wakeup events for debugging separately?
+> - That Android will continue to tbe offering the same services in future
+>   as today. If it does it'll go the way of PalmOS and Symbian. Equally
+>   you can't just bust all the apps as it changes
 
--- =
+I hope that no one is arguing that Android will remain unchanged, just
+as I hope no one would argue that Linux will remain unchanged.  In fact,
+I am quite confident that both Linux and Android will continue to change.
+So exactly what point were you attempting to make here?
 
-Arve Hj=F8nnev=E5g
+As to busting all apps, lthough there have been situations where busting
+all the apps turned out to be the right thing to do, I agree that these
+situations are extremely rare.  Such situations are usually associated
+with the emergence of a new high-volume platform.
+
+> As devices get more complex and varied you cannot afford to put the
+> detailed awareness of platform behaviour in the applications. It
+> doesn't scale. Android developers are haivng enough fun coping with all
+> the OS variants, customisations and new phones - and thats far less
+> variety than PC hardware. Generally the PC app folks are not having the
+> same level of problem - so ask why ?
+
+>From what I can see, the Android developers are suffering less than
+the PC developers were suffering when the PC was the same age that
+Android is now.  For that matter, suspend blockers don't put detailed
+awareness of platform behavior into apps.  You must look to the heavily
+power-optimized apps to find that kind of awareness.
+
+> > On devices that do not have suspend blockers, a normal application runs
+> > in a manner similar to a hypothetical Android application that acquires
+> > a suspend blocker when it starts and holds that suspend blocker until
+> > it exits.  In contrast with Android, this situation requires that each
+> > and every application be carefully written to avoid battery drain,
+> > which I suspect is what Ted is getting at with his King Canute analogy.
+> 
+> Which is flawed and not the case.
+
+Hmmm...  Exactly which part do you consider flawed?  Let's take it
+one sentence at a time.  The devices that I know of that lack suspend
+blockers also lack opportunistic suspend.  Therefore, all applications on
+such devices run as would an application that acquired a suspend blocker
+when it started and did not release that suspend blocker until it exited.
+Pretty straightforward.
+
+As for the first part of the second sentence, you yourself have argued
+that each and every application should be carefully written to avoid
+battery drain (or, equivalently, to promote energy efficiency), so
+presumably the flaw does not reside there.  That leaves the second
+half of that sentence, for which we both must defer to Ted.  But Ted's
+intended meaning of his King Canute analogy does not affect the argument
+as to whether or not suspend blockers (or, again, something like them)
+are useful.
+
+>                                   The same argument could be made for
+> multi-tasking
+> 
+> DOS	"Each application implements its own internal
+> 	multitasking/polling if needed"
+> 
+> Windows 3.x	"Each application has an event loop and is built
+> in a certain way" (the 'suspend blocker' mentality)
+> 
+> Real OS		"The scheduler operates in a manner which prevents
+> CPU hogs breaking the system or abusing it sufficiently to threaten its
+> functionality"
+
+I really do like this progression.  I will return to it further down.
+
+> The same applies to power. Only the OS has the big picture and can hide
+> the hardware and general policy variety from the application.
+
+The OS can be said to possess the full picture only if the applications
+communicate their portion of the picture to the OS.  Linux has quite a
+few APIs devoted to this sort of communication, many of them mandated
+by POSIX.  Some people are proposing suspend blockers (or something like
+them) as another member of this set of APIs.
+
+> OpenOffice runs on netbooks, laptops, servers, even big non x86 boxes. It
+> runs on virtual machines, it runs in power sensitive environments, it
+> runs in thermally constrained environments, it runs in I/O constrained
+> environments, it runs in latency constrained environments etc etc
+
+And there are numerous environments in which it will not run.  So what?
+
+> All the same code, true some work has been done to make it behave
+> politely but the rest is down to the OS doing its job - deploying the
+> resources available while considering and obeying the constraints
+> present, in a manner which makes best use of the resources to achieve the
+> policy goals of the system.
+
+And if the work has not been done on the application, and if there is
+nothing like suspend blockers, the OS cannot do its job.  So how exactly
+does this support your position?
+
+Which brings us to the progression from DOS to Windows 3.x to Real
+OS.  Why can the Real OS's scheduler can operate "in a manner which
+prevents CPU hogs from breaking the system or abusing it sufficiently
+to threaten its functionality" while still allowing applications with
+special requirements to operate correctly?  One reason is the advent
+of any number of APIs that communicate special properties of specific
+applications to the OS, including the old nice() system call, POSIX
+realtime, numerous facilities to communicate application properties to
+the VM system, and so on.
+
+Given this context, are you sure that suspend blockers are not the next
+step in the Real OS progression?  Or some QoS mechanism that subsumes
+suspend blockers?  However, there is a lot of negative experience
+around general-purpose QoS mechanisms -- you have to be quite careful
+in order to avoid spending more energy computing QoS than you would
+otherwise spend on the application's computations.  The usual way out of
+this trap is to abandon generality in favor of exploiting the commonly
+occurring special cases.  For all I know, raw suspend blockers might be
+the appropriate special case.
+
+> And not unsurprisingly that all starts to look like Stafford Beer's good
+> old viable systems model.
+
+Hmmm...  I do like "Absolutum Obsoletum", especially if it really does
+translate to "If it works it's out of date."  However, I am not at all
+convinced that it supports your position!  ;-)
+
+							Thanx, Paul
