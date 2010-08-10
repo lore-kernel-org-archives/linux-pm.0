@@ -1,25 +1,15 @@
-From: david@lang.hm
-Subject: Re: Attempted summary of suspend-blockers LKML thread,
-	take three
-Date: Mon, 9 Aug 2010 18:17:05 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008091812520.23481__26565.8525786877$1281403226$gmane$org@asgard.lang.hm>
-References: <20100806225453.GA3947@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008061651530.30564@asgard.lang.hm>
-	<AANLkTikyRhtfX4R3x_NDgHnXssmfVuhjC5PbhRZ0a7su@mail.gmail.com>
-	<alpine.DEB.2.00.1008062010510.30564@asgard.lang.hm>
-	<20100807061558.GA28087@thunk.org>
-	<AANLkTi=sMVjya9CH6UoZwJCXJTDRgBhnPXmApU_RHVTi@mail.gmail.com>
-	<20100808155719.GB3635@thunk.org>
-	<AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
-	<20100808213821.GD3635@thunk.org>
-	<20100809112453.77210acc@lxorguk.ukuu.org.uk>
-	<20100809181638.GI3026@linux.vnet.ibm.com>
-	<20100809201822.441905f7@lxorguk.ukuu.org.uk>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Attempted summary of suspend-blockers LKML thread
+Date: Tue, 10 Aug 2010 04:53:11 +0200
+Message-ID: <201008100453.11958.rjw__23508.8169378743$1281411019$gmane$org@sisk.pl>
+References: <AANLkTinQD3ggLFVd2KvX95U2B_j=ZJquZgiBGieukJ+r@mail.gmail.com>
+	<201008082117.39082.rjw@sisk.pl>
+	<AANLkTimncsuARHeavMCHL4imEOVXMomTJoDQns4-wq5o@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100809201822.441905f7@lxorguk.ukuu.org.uk>
+In-Reply-To: <AANLkTimncsuARHeavMCHL4imEOVXMomTJoDQns4-wq5o@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,30 +19,106 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, swmike@swm.pp.se, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, arjan@infradead.org
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: david@lang.hm, peterz@infradead.org, swetland@google.com, linux-kernel@vger.kernel.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 9 Aug 2010, Alan Cox wrote:
+On Monday, August 09, 2010, Arve Hj=F8nnev=E5g wrote:
+> 2010/8/8 Rafael J. Wysocki <rjw@sisk.pl>:
+> > On Saturday, August 07, 2010, Arve Hj=F8nnev=E5g wrote:
+> >> 2010/8/7 Arve Hj=F8nnev=E5g <arve@android.com>:
+> >> > 2010/8/7 Rafael J. Wysocki <rjw@sisk.pl>:
+> >> >> On Saturday, August 07, 2010, Arve Hj=F8nnev=E5g wrote:
+> >> >>> 2010/8/6 Alan Stern <stern@rowland.harvard.edu>:
+> >> >>> > On Thu, 5 Aug 2010, Arve Hj=F8nnev=E5g wrote:
+> >> ...
+> >> >>> >> total_time, total time the wake lock has been active. This one =
+should
+> >> >>> >> be obvious.
+> >> >>> >
+> >> >>> > Also easily added.
+> >> >>> >
+> >> >>> Only with a handle passed to all the calls.
+> >> >>
+> >> >> Well, I'm kind of tired of this "my solution is the only acceptable=
+ one"
+> >> >> mindset.  IMHO, it's totally counter productive.
+> >> >>
+> >> >
+> >> > How do you propose to track how long a driver has blocked suspend wh=
+en
+> >> > you have an unblock call that takes no arguments.
+> >> >
+> >>
+> >> Also, I did not not see a response to my question about why you don't
+> >> want to pass a handle.
+> >
+> > It doesn't really matter what I personally want.  In fact, I'm not tota=
+lly
+> > opposed to that idea, although there are disadvantages (eg. a "handle"
+> > would really mean a pointer to an object with certain life cycle that n=
+eeds to
+> > be managed by the caller and it's not that clear to me who should manag=
+e the
+> > objects that the PCI wakeup code would pass to pm_wakeup_event(), for o=
+ne
+> =
 
->> But wouldn't an office suite run as a power-oblivious application on an
->> Android device?  After all, office applications do not need to run when
->
-> I was waiting for soemone to leap down the pit I dug  Office suites have
-> some quite important background activities. Consider the case of a power
-> oblivious Open Office. You type a critical document, you suspend, your
-> phone battery dies a bit later, you lost your document. Office suites do
-> timed backing up as one simple obvious example. That could become a power
-> aware behaviour but the truely power oblivious office suite is a myth.
+> Wouldn't a single global handle work for the way you are handling pci
+> wakeup events?
 
-this is a good example of why the office suite should be a privilaged 
-application. If the system were to consider it privilaged, it could 
-wake up when the timer is scheduled to fire to save the document.
+Not really, because I'd like to know the number of wakeups associated with
+the given device.
 
-the office suite probably has a periodic timer that would fire every 10 
-min no matter what, but if there was a reason to change it, it could be 
-modified to only setup the timer when the document is changed. If no 
-changes can take place because the system is asleep, the timer never gets 
-setup.
+> It looked like you just reset a global timeout every time a pci wakeup ev=
+ent
+> occurs.
 
-David Lang
+We bump up the per-device counter of wakeup events in addition to that.
+
+> > example).  I sent a pull request for your original patchset to Linus af=
+ter all. :-)
+> >
+> > I said I didn't think "it would fly", meaning that I was afraid the oth=
+er kernel
+> > developers wouldn't like that change.
+> >
+> > The reason why I think so is that you'd like to add a whole new infrast=
+ructure
+> > whose only purpose would be debugging that would only be useful to syst=
+ems
+> > using opportunistic suspend.  That, however, is only Android right now =
+and it
+> > cannot use the mainline kernel for other reasons, so basically we would=
+ add
+> > infrastructure that's useful to no one.
+> >
+> =
+
+> I'm not sure what you mean by this. The debugging is useful for anyone
+> using the api, not just Android, and a handle is also needed to mix
+> timeouts and pm_relax.
+
+The purpose of the debugging would be to be able to figure out why the syst=
+em
+is staying in the working state, which is only relevant for systems that use
+opportunistic suspend.
+
+If opportunistic suspend isn't used, it makes sense to ask which
+device caused suspend (initiated by the user) to be aborted and for this
+purpose it is sufficient to count wakeup events associated with each
+device (you need to preserve the pre-suspend values of these counters, but
+that can be done by a user space power manager just fine).
+
+> The handle can be the device, but some drivers need several handles per
+> device.
+
+That depends on how precise the collected debug information should be and
+that, in turn, depends on what it's going to be used for.
+
+Anyway, as I said I'm not opposed to the idea of using a special type of
+objects for collecting debug information on wakeup events, so please free to
+submit patches modifying the current mainline kernel code in that direction.
+
+Thanks,
+Rafael
