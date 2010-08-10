@@ -1,24 +1,20 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: Attempted summary of suspend-blockers LKML thread,
-	take three
-Date: Tue, 10 Aug 2010 15:55:52 +0100
-Message-ID: <20100810145552.GA13798__4941.16836130178$1281452248$gmane$org@srcf.ucam.org>
-References: <20100808155719.GB3635@thunk.org>
-	<AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
-	<20100808213821.GD3635@thunk.org>
-	<20100809112453.77210acc@lxorguk.ukuu.org.uk>
-	<20100809181638.GI3026@linux.vnet.ibm.com>
-	<20100809201822.441905f7@lxorguk.ukuu.org.uk>
-	<20100810044541.GA2817@linux.vnet.ibm.com>
-	<20100810093849.138e2318@lxorguk.ukuu.org.uk>
-	<20100810141107.GA12873@srcf.ucam.org>
-	<20100810154026.75efa370@lxorguk.ukuu.org.uk>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: PM QoS dynamic resource manager
+Date: Tue, 10 Aug 2010 09:24:57 -0700
+Message-ID: <AANLkTi=s3fowR=qd_tm61Tgxq2XBStbCK8-erpDiZ+ay@mail.gmail.com>
+References: <alpine.DEB.2.00.1005211533530.25765@pchidamb-lnx.qualcomm.com>
+	<20100525145223.GA4974@gvim.org>
+	<AANLkTikLgu2c1GPE3glHLlaznOM59SVeCj2NHzDjyjZR@mail.gmail.com>
+	<20100608033333.GA23066@gvim.org>
+	<AANLkTinGBvZm870CsjocsCV1SmQ-FCCbJLtKWR1juB1Q@mail.gmail.com>
+	<4C0ECC38.2000003@codeaurora.org> <20100609030525.GD26668@gvim.org>
+	<1276265566.8214.2.camel@localhost>
+	<87zkytffyg.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100810154026.75efa370@lxorguk.ukuu.org.uk>
+In-Reply-To: <87zkytffyg.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,68 +24,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: david@lang.hm, menage@google.com, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, swmike@swm.pp.se, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, arjan@infradead.org
+To: markgross@thegnar.org
+Cc: mark gross <640e9920@gmail.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 10, 2010 at 03:40:26PM +0100, Alan Cox wrote:
-> > > Losing data is a design choice ? The application set a timer, the OS
-> > > shouldn't be ignoring it in that situation. It might want to delay it, it
-> > > might want to warn the user its hogging things it shouldnt (powertop,
-> > > battery usage monitors in Android etc)
-> > 
-> > So we should remove explicit system suspend from the kernel?
-> 
-> Explicit suspend is user triggered - in the laptop case its a bit
-> different. I don't btw like the fact that a laptop explicit suspend
-> doesn't end up as a dbus "save data" and openoffice save (or it didn't
-> last time I looked which is a while ago).
+On Thu, Jun 17, 2010 at 3:32 PM, Kevin Hilman
+<khilman@deeprootsystems.com> wrote:
+> Kevin Hilman <khilman@deeprootsystems.com> writes:
+>
+>> On Tue, 2010-06-08 at 20:05 -0700, mark gross wrote:
+>>> On Tue, Jun 08, 2010 at 04:03:20PM -0700, Bryan Huntsman wrote:
+>>> >
+>>> > Mike, one idea I'm exploring is having platform-specific busses with
+>>> > QoS constraints specified via runtime_pm as part of the LDM. =A0Adding
+>>> > dynamic class creation within pm_qos, or a type enum as you suggest,
+>>> > would work. =A0However, I think this kind of behavior would fit nicely
+>>> > within runtime_pm.
+>>> >
+>>>
+>>> Something like that is what Kevin Hilman was thinking too. =A0It would
+>>> bring a qos concept to the LDM for each bus driver object.
+>>
 
-It's not inherently user triggered. Machines typically have an idle 
-timeout that triggers suspend. This differs from the Android 
-opportunistic suspend approach only in that the timeout is significantly 
-larger, primarily due to the greater latency involved.
+[...]
 
-> > There's a clear and absolute difference between system suspend and 
-> > entering the same hardware state from the idle loop. That difference is 
-> > that processes aren't scheduled until an explicit wakeup event occurs. 
-> > Android is entirely capable of entering the same low power state at idle 
-> > (it's done with a hardcoded idle loop on Qualcomm, cpuidle on omap), but 
-> > if you have more than 0 scheduling wakeups a second then your power draw 
-> > is going to be greater. 
-> 
-> And nothing stops you also implementing a 'forced' suspend, although you
-> can do that nicely by simply stopping the process group that contains the
-> stuff you don't want to stop suspend and dropping into suspend when you
-> idle.
+> It would be great if we could all get together at one of the
+> conferences this year to talk through some of our ideas in more
+> detail. =A0I plan to be at ELC Europe (October in UK) and Linux Plumbers
+> (Nov in Boston) with a remote possibility of making it to LinuxCon
+> (Aug in Boston, which includes a PM mini-summit on Monday.)
 
-We've already had the discussion about this resulting in potential 
-deadlocks if there's any intercommunication between the trusted and 
-untrusted apps, and if untrusted apps can be the consumers of wakeup 
-events then you still end up with the wake event race condition. If we 
-want to avoid the case where system suspend can cause wakeup events to 
-be lost, we're pretty much required to implement something like suspend 
-blocks (and, in fact, Rafael's implementation of this is already 
-mainline).
+FYI... I've added a proposal to the PM mini-conf at Plumbers to have
+more detailed discussion on per-device constraints:
 
-> > I agree that we should be targetting 0 wakeups per second. I don't agree 
-> > that it's realistic to insist that a use model that assumes imperfect 
-> > software is an invalid use model.
-> 
-> No argument.
-> 
-> The question is what applications should be expressing to the kernel
-> which is not tied to assumptions like 'suspend mode' and which is generic.
-> 
-> We don't have xfs stuff for example splattered all over userspace and in
-> lots of drivers - we have generic interfaces. That way user community A
-> doesn't have to care about user community B's choices, and JFFS flash fs
-> people don't offend big data centre people and vice versa.
+   http://www.linuxplumbersconf.org/2010/ocw/events/LPC2010MC/proposals
 
-I wholeheartedly agree. But nobody has yet provided a generic approach 
-to avoiding the loss of wakeup events, and that's an issue you can hit 
-whenever you use full-system suspend - it's not a problem that's unique 
-to Android.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Kevin
