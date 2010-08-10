@@ -1,12 +1,24 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: [PATCH] PM: runtime PM + idle: allow usage when
-	interrupts are disabled
-Date: Tue, 10 Aug 2010 09:54:21 -0700
-Message-ID: <1281459261-30829-1-git-send-email-khilman__47135.0258369513$1281459459$gmane$org@deeprootsystems.com>
+From: david@lang.hm
+Subject: Re: Attempted summary of suspend-blockers LKML thread,
+	take three
+Date: Tue, 10 Aug 2010 11:07:20 -0700 (PDT)
+Message-ID: <alpine.DEB.2.00.1008101057090.23481@asgard.lang.hm>
+References: <20100807061558.GA28087@thunk.org>
+	<AANLkTi=sMVjya9CH6UoZwJCXJTDRgBhnPXmApU_RHVTi@mail.gmail.com>
+	<20100808155719.GB3635@thunk.org>
+	<AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
+	<20100808213821.GD3635@thunk.org>
+	<20100809112453.77210acc@lxorguk.ukuu.org.uk>
+	<20100809181638.GI3026@linux.vnet.ibm.com>
+	<20100809201822.441905f7@lxorguk.ukuu.org.uk>
+	<20100810044541.GA2817@linux.vnet.ibm.com>
+	<20100810093849.138e2318@lxorguk.ukuu.org.uk>
+	<20100810141107.GA12873@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20100810141107.GA12873@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,255 +28,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-omap@vger.kernel.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: menage@google.com, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, swmike@swm.pp.se, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-When using runtime PM in combination with CPUidle, the runtime PM
-transtions of some devices may be triggered during the idle path.
-Late in the idle sequence, interrupts will likely be disabled when
-runtime PM for these devices is initiated.
+On Tue, 10 Aug 2010, Matthew Garrett wrote:
 
-Currently, the runtime PM core assumes methods are called with
-interrupts enabled.  However, if it is called with interrupts
-disabled, the internal locking unconditionally enables interrupts, for
-example:
+> On Tue, Aug 10, 2010 at 09:38:49AM +0100, Alan Cox wrote:
+>>> Hmmm...  Exactly which part do you consider flawed?  Let's take it
+>>> one sentence at a time.  The devices that I know of that lack suspend
+>>> blockers also lack opportunistic suspend.  Therefore, all applications on
+>>> such devices run as would an application that acquired a suspend blocker
+>>> when it started and did not release that suspend blocker until it exited.
+>>> Pretty straightforward.
+>>
+>> What do you mean by "opportunistic suspend", lots of systems drop into
+>> lowest power states whenever they can. "Suspend is different" is a bit of
+>> Android religion that I am dubious has any basis in reality as seen from
+>> the application end of the universe.
+>>
+>> You may also wish to review the earlier parts of the discussion where it
+>> was explicitly stated by several developers that they were using
+>> "suspend" type modes as power states already and not using suspend
+>> blockers. So it's being done, today on ARM and your statement is directly
+>> contradicting the code. Modern ARM processors and x86 MID devices can
+>> suspend and resume extremely fast (fast enough that the fact Linux x86
+>> rewriting all the SMP alternatives on suspend/resume is a measurable
+>> problem). If this same property doesn't end up on big PC boxes in time
+>> then I'd be very surprised. At that point the openoffice with suspend
+>> blockers or oracle with suspend blockers question becomes rather relevant.
+>
+> There's a clear and absolute difference between system suspend and
+> entering the same hardware state from the idle loop. That difference is
+> that processes aren't scheduled until an explicit wakeup event occurs.
+> Android is entirely capable of entering the same low power state at idle
+> (it's done with a hardcoded idle loop on Qualcomm, cpuidle on omap), but
+> if you have more than 0 scheduling wakeups a second then your power draw
+> is going to be greater.
+>
+> I agree that we should be targetting 0 wakeups per second. I don't agree
+> that it's realistic to insist that a use model that assumes imperfect
+> software is an invalid use model.
 
-pm_runtime_put_sync()
-    __pm_runtime_put()
-        pm_runtime_idle()
-            spin_lock_irq()
-            __pm_runtime_idle()
-                spin_unlock_irq()   <--- interrupts unconditionally enabled
-                dev->bus->pm->runtime_idle()
-                spin_lock_irq()
-             spin_unlock_irq()
+If the primary difference between sleep and suspend is not scheduling 
+processes, instead of messing with oppurtinistic suspend/suspend 
+blockers/wakelocks/etc, why not just 'temporarily' change the timer fuzz 
+value to a very large value (say an hour). That would still let things 
+like openoffice saves ahve a fair chance to trigger before the battery 
+died completely, but would wake the system so infrequently that it will be 
+effectivly the same as a full suspend.
 
-Unconditionally enabling interrupts late in the idle sequence is not
-desired behavior.  To fix, use the save/restore versions of the
-spinlock API.
-
-Reported-by: Partha Basak <p-basak2@ti.com>
-Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
----
-RFC: I'm not crazy about having the 'flags' in struct dev_pm_info, but
-since the locks are taken and released in separate functions, this
-seems better than changing the function APIs to pass around the flags.
-
- drivers/base/power/runtime.c |   68 ++++++++++++++++++++++-------------------
- include/linux/pm.h           |    1 +
- 2 files changed, 37 insertions(+), 32 deletions(-)
-
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index b78c401..0caaef1 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -80,24 +80,24 @@ static int __pm_runtime_idle(struct device *dev)
- 	dev->power.idle_notification = true;
- 
- 	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_idle) {
--		spin_unlock_irq(&dev->power.lock);
-+		spin_unlock_irqrestore(&dev->power.lock, dev->power.lock_flags);
- 
- 		dev->bus->pm->runtime_idle(dev);
- 
--		spin_lock_irq(&dev->power.lock);
-+		spin_lock_irqsave(&dev->power.lock, dev->power.lock_flags);
- 	} else if (dev->type && dev->type->pm && dev->type->pm->runtime_idle) {
--		spin_unlock_irq(&dev->power.lock);
-+		spin_unlock_irqrestore(&dev->power.lock, dev->power.lock_flags);
- 
- 		dev->type->pm->runtime_idle(dev);
- 
--		spin_lock_irq(&dev->power.lock);
-+		spin_lock_irqsave(&dev->power.lock, dev->power.lock_flags);
- 	} else if (dev->class && dev->class->pm
- 	    && dev->class->pm->runtime_idle) {
--		spin_unlock_irq(&dev->power.lock);
-+		spin_unlock_irqrestore(&dev->power.lock, dev->power.lock_flags);
- 
- 		dev->class->pm->runtime_idle(dev);
- 
--		spin_lock_irq(&dev->power.lock);
-+		spin_lock_irqsave(&dev->power.lock, dev->power.lock_flags);
- 	}
- 
- 	dev->power.idle_notification = false;
-@@ -115,9 +115,9 @@ int pm_runtime_idle(struct device *dev)
- {
- 	int retval;
- 
--	spin_lock_irq(&dev->power.lock);
-+	spin_lock_irqsave(&dev->power.lock, dev->power.lock_flags);
- 	retval = __pm_runtime_idle(dev);
--	spin_unlock_irq(&dev->power.lock);
-+	spin_unlock_irqrestore(&dev->power.lock, dev->power.lock_flags);
- 
- 	return retval;
- }
-@@ -226,11 +226,13 @@ int __pm_runtime_suspend(struct device *dev, bool from_wq)
- 			if (dev->power.runtime_status != RPM_SUSPENDING)
- 				break;
- 
--			spin_unlock_irq(&dev->power.lock);
-+			spin_unlock_irqrestore(&dev->power.lock,
-+					       dev->power.lock_flags);
- 
- 			schedule();
- 
--			spin_lock_irq(&dev->power.lock);
-+			spin_lock_irqsave(&dev->power.lock,
-+					  dev->power.lock_flags);
- 		}
- 		finish_wait(&dev->power.wait_queue, &wait);
- 		goto repeat;
-@@ -240,27 +242,27 @@ int __pm_runtime_suspend(struct device *dev, bool from_wq)
- 	dev->power.deferred_resume = false;
- 
- 	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend) {
--		spin_unlock_irq(&dev->power.lock);
-+		spin_unlock_irqrestore(&dev->power.lock, dev->power.lock_flags);
- 
- 		retval = dev->bus->pm->runtime_suspend(dev);
- 
--		spin_lock_irq(&dev->power.lock);
-+		spin_lock_irqsave(&dev->power.lock, dev->power.lock_flags);
- 		dev->power.runtime_error = retval;
- 	} else if (dev->type && dev->type->pm
- 	    && dev->type->pm->runtime_suspend) {
--		spin_unlock_irq(&dev->power.lock);
-+		spin_unlock_irqrestore(&dev->power.lock, dev->power.lock_flags);
- 
- 		retval = dev->type->pm->runtime_suspend(dev);
- 
--		spin_lock_irq(&dev->power.lock);
-+		spin_lock_irqsave(&dev->power.lock, dev->power.lock_flags);
- 		dev->power.runtime_error = retval;
- 	} else if (dev->class && dev->class->pm
- 	    && dev->class->pm->runtime_suspend) {
--		spin_unlock_irq(&dev->power.lock);
-+		spin_unlock_irqrestore(&dev->power.lock, dev->power.lock_flags);
- 
- 		retval = dev->class->pm->runtime_suspend(dev);
- 
--		spin_lock_irq(&dev->power.lock);
-+		spin_lock_irqsave(&dev->power.lock, dev->power.lock_flags);
- 		dev->power.runtime_error = retval;
- 	} else {
- 		retval = -ENOSYS;
-@@ -296,11 +298,11 @@ int __pm_runtime_suspend(struct device *dev, bool from_wq)
- 		__pm_runtime_idle(dev);
- 
- 	if (parent && !parent->power.ignore_children) {
--		spin_unlock_irq(&dev->power.lock);
-+		spin_unlock_irqrestore(&dev->power.lock, dev->power.lock_flags);
- 
- 		pm_request_idle(parent);
- 
--		spin_lock_irq(&dev->power.lock);
-+		spin_lock_irqsave(&dev->power.lock, dev->power.lock_flags);
- 	}
- 
-  out:
-@@ -317,9 +319,9 @@ int pm_runtime_suspend(struct device *dev)
- {
- 	int retval;
- 
--	spin_lock_irq(&dev->power.lock);
-+	spin_lock_irqsave(&dev->power.lock, dev->power.lock_flags);
- 	retval = __pm_runtime_suspend(dev, false);
--	spin_unlock_irq(&dev->power.lock);
-+	spin_unlock_irqrestore(&dev->power.lock, dev->power.lock_flags);
- 
- 	return retval;
- }
-@@ -381,11 +383,13 @@ int __pm_runtime_resume(struct device *dev, bool from_wq)
- 			    && dev->power.runtime_status != RPM_SUSPENDING)
- 				break;
- 
--			spin_unlock_irq(&dev->power.lock);
-+			spin_unlock_irqrestore(&dev->power.lock,
-+					       dev->power.lock_flags);
- 
- 			schedule();
- 
--			spin_lock_irq(&dev->power.lock);
-+			spin_lock_irqsave(&dev->power.lock,
-+					  dev->power.lock_flags);
- 		}
- 		finish_wait(&dev->power.wait_queue, &wait);
- 		goto repeat;
-@@ -423,27 +427,27 @@ int __pm_runtime_resume(struct device *dev, bool from_wq)
- 	__update_runtime_status(dev, RPM_RESUMING);
- 
- 	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_resume) {
--		spin_unlock_irq(&dev->power.lock);
-+		spin_unlock_irqrestore(&dev->power.lock, dev->power.lock_flags);
- 
- 		retval = dev->bus->pm->runtime_resume(dev);
- 
--		spin_lock_irq(&dev->power.lock);
-+		spin_lock_irqsave(&dev->power.lock, dev->power.lock_flags);
- 		dev->power.runtime_error = retval;
- 	} else if (dev->type && dev->type->pm
- 	    && dev->type->pm->runtime_resume) {
--		spin_unlock_irq(&dev->power.lock);
-+		spin_unlock_irqrestore(&dev->power.lock, dev->power.lock_flags);
- 
- 		retval = dev->type->pm->runtime_resume(dev);
- 
--		spin_lock_irq(&dev->power.lock);
-+		spin_lock_irqsave(&dev->power.lock, dev->power.lock_flags);
- 		dev->power.runtime_error = retval;
- 	} else if (dev->class && dev->class->pm
- 	    && dev->class->pm->runtime_resume) {
--		spin_unlock_irq(&dev->power.lock);
-+		spin_unlock_irqrestore(&dev->power.lock, dev->power.lock_flags);
- 
- 		retval = dev->class->pm->runtime_resume(dev);
- 
--		spin_lock_irq(&dev->power.lock);
-+		spin_lock_irqsave(&dev->power.lock, dev->power.lock_flags);
- 		dev->power.runtime_error = retval;
- 	} else {
- 		retval = -ENOSYS;
-@@ -464,11 +468,11 @@ int __pm_runtime_resume(struct device *dev, bool from_wq)
- 
-  out:
- 	if (parent) {
--		spin_unlock_irq(&dev->power.lock);
-+		spin_unlock_irqrestore(&dev->power.lock, dev->power.lock_flags);
- 
- 		pm_runtime_put(parent);
- 
--		spin_lock_irq(&dev->power.lock);
-+		spin_lock_irqsave(&dev->power.lock, dev->power.lock_flags);
- 	}
- 
- 	dev_dbg(dev, "__pm_runtime_resume() returns %d!\n", retval);
-@@ -484,9 +488,9 @@ int pm_runtime_resume(struct device *dev)
- {
- 	int retval;
- 
--	spin_lock_irq(&dev->power.lock);
-+	spin_lock_irqsave(&dev->power.lock, dev->power.lock_flags);
- 	retval = __pm_runtime_resume(dev, false);
--	spin_unlock_irq(&dev->power.lock);
-+	spin_unlock_irqrestore(&dev->power.lock, dev->power.lock_flags);
- 
- 	return retval;
- }
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 52e8c55..8515153 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -465,6 +465,7 @@ struct dev_pm_info {
- 	struct work_struct	work;
- 	wait_queue_head_t	wait_queue;
- 	spinlock_t		lock;
-+	unsigned long           lock_flags;
- 	atomic_t		usage_count;
- 	atomic_t		child_count;
- 	unsigned int		disable_depth:3;
--- 
-1.7.2.1
+David Lang
