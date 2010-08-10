@@ -1,24 +1,13 @@
-From: david@lang.hm
-Subject: Re: Attempted summary of suspend-blockers LKML thread,
-	take three
-Date: Tue, 10 Aug 2010 11:18:35 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008101115130.23481__5983.14255844361$1281464518$gmane$org@asgard.lang.hm>
-References: <20100808155719.GB3635@thunk.org>
-	<AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
-	<20100808213821.GD3635@thunk.org>
-	<20100809112453.77210acc@lxorguk.ukuu.org.uk>
-	<20100809181638.GI3026@linux.vnet.ibm.com>
-	<20100809201822.441905f7@lxorguk.ukuu.org.uk>
-	<20100810044541.GA2817@linux.vnet.ibm.com>
-	<20100810093849.138e2318@lxorguk.ukuu.org.uk>
-	<20100810141107.GA12873@srcf.ucam.org>
-	<alpine.DEB.2.00.1008101057090.23481@asgard.lang.hm>
-	<20100810181320.GA17472@srcf.ucam.org>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: Fan runs full speed after S3 sometimes (regression)
+Date: Tue, 10 Aug 2010 20:39:44 +0200
+Message-ID: <4C619CF0.30609__33371.8287329704$1281465631$gmane$org@gmail.com>
+References: <4C613619.30309@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100810181320.GA17472@srcf.ucam.org>
+In-Reply-To: <4C613619.30309@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,33 +17,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: menage@google.com, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, swmike@swm.pp.se, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
+To: linux-acpi@vger.kernel.org
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 10 Aug 2010, Matthew Garrett wrote:
+On 08/10/2010 01:20 PM, Jiri Slaby wrote:
+> Hi,
+> 
+> till I was running on 2.6.34-rc5-mm1 (mmotm) and earlier everything was
+> fine. Now, I'm running 2.6.35-rc6-mm1 (.35-rc5-mm1 was the same) and
+> sometimes when the computer (desktop) returns from S3, the CPU fan is
+> running at full speed making a big noise.
 
-> On Tue, Aug 10, 2010 at 11:07:20AM -0700, david@lang.hm wrote:
->
->> If the primary difference between sleep and suspend is not scheduling
->> processes, instead of messing with oppurtinistic suspend/suspend
->> blockers/wakelocks/etc, why not just 'temporarily' change the timer fuzz
->> value to a very large value (say an hour). That would still let things
->> like openoffice saves ahve a fair chance to trigger before the battery
->> died completely, but would wake the system so infrequently that it will
->> be effectivly the same as a full suspend.
->
-> Because it only affects processes that sleep. It's a question of how
-> much pathology you want to be able to tolerate.
+Just to add, full power cycle is needed to get rid of that. Warm reboot
+is not enough.
 
-Standard system stats will show you hogs like this. The Android people 
-claim that wakelock stats will let the user identify processes that 
-prevent the system from suspending properly and then remove them. If this 
-is the case, a process that never sleeps will be even easier to identify 
-and even more obvious an offender.
-
-If that isn't enough, then you can go back to the other idea I advanced, 
-having some way to tell the system not to consider some processes when 
-trying to decide if the system should sleep or not.
-
-David Lang
+> I don't know how to debug that. Bisection is out of question -- it
+> happens once in 10 or 20 cases. There are no fan entries in /sys.
+> 
+> The load is as follows:
+> $ while :; do cat /proc/loadavg; sleep 3; done
+> 0.37 0.33 0.32 1/325 21358
+> 0.42 0.34 0.32 1/325 21362
+> 0.42 0.34 0.32 1/326 21366
+> 0.38 0.33 0.32 1/330 21386
+> 0.38 0.33 0.32 1/331 21391
+> 0.35 0.33 0.32 1/331 21394
+> 0.32 0.32 0.32 1/331 21397
+> 0.32 0.32 0.32 1/331 21400
+> 0.30 0.32 0.32 1/331 21403
+> ...
+> 
+> I can boot into 34-rc5 to compare that if this is of relevance.
+> 
+> 290 kB kernel log since boot over several S3 sleep till now where the
+> fan is noisy:
+> http://www.fi.muni.cz/~xslaby/sklad/panics/boot.msg-fan_fullspeed
+> 
+> Should you need DSDT, it's there too:
+> http://www.fi.muni.cz/~xslaby/sklad/panics/DSDT
+> 
+> Any ideas what could have caused this?
+> 
+> thanks,
+-- 
+js
