@@ -1,24 +1,24 @@
-From: david@lang.hm
+From: Felipe Contreras <felipe.contreras@gmail.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Tue, 10 Aug 2010 20:00:53 -0700 (PDT)
-Message-ID: <alpine.DEB.2.00.1008101947550.23481@asgard.lang.hm>
-References: <20100808155719.GB3635@thunk.org>
+Date: Wed, 11 Aug 2010 19:57:32 +0300
+Message-ID: <AANLkTinNc1SWmz8pE_4k6vThxQCJfCR_UqV6OM=OsJOf__39715.1645542637$1281545937$gmane$org@mail.gmail.com>
+References: <20100731175841.GA9367@linux.vnet.ibm.com>
+	<20100804195704.GA23681@linux.vnet.ibm.com>
+	<20100806225453.GA3947@linux.vnet.ibm.com>
+	<alpine.DEB.2.00.1008061651530.30564@asgard.lang.hm>
+	<AANLkTikyRhtfX4R3x_NDgHnXssmfVuhjC5PbhRZ0a7su@mail.gmail.com>
+	<alpine.DEB.2.00.1008062010510.30564@asgard.lang.hm>
+	<20100807061558.GA28087@thunk.org>
+	<AANLkTi=sMVjya9CH6UoZwJCXJTDRgBhnPXmApU_RHVTi@mail.gmail.com>
+	<20100808155719.GB3635@thunk.org>
 	<AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
 	<20100808213821.GD3635@thunk.org>
-	<20100809112453.77210acc@lxorguk.ukuu.org.uk>
-	<20100809181638.GI3026@linux.vnet.ibm.com>
-	<20100809201822.441905f7@lxorguk.ukuu.org.uk>
-	<20100810044541.GA2817@linux.vnet.ibm.com>
-	<20100810093849.138e2318@lxorguk.ukuu.org.uk>
-	<20100811004223.GH2379@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008101821280.23481@asgard.lang.hm>
-	<20100811022131.GA2587@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100811022131.GA2587@linux.vnet.ibm.com>
+In-Reply-To: <20100808213821.GD3635@thunk.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,129 +28,97 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
+To: Ted Ts'o <tytso@mit.edu>, Felipe Contreras <felipe.contreras@gmail.com>, david@lang.hm, Brian Swetland <swetland@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 10 Aug 2010, Paul E. McKenney wrote:
-
-> Subject: Re: Attempted summary of suspend-blockers LKML thread, take three
-> 
-> On Tue, Aug 10, 2010 at 06:28:39PM -0700, david@lang.hm wrote:
->> On Tue, 10 Aug 2010, Paul E. McKenney wrote:
->>
->>> On Tue, Aug 10, 2010 at 09:38:49AM +0100, Alan Cox wrote:
->>>>> situation you call out can occur with manual suspend-to-RAM already:
->>>>> the fact is that this is a design choice.  You could indeed make a
->>>>
->>>> Losing data is a design choice ? The application set a timer, the OS
->>>> shouldn't be ignoring it in that situation. It might want to delay it, it
->>>> might want to warn the user its hogging things it shouldnt (powertop,
->>>> battery usage monitors in Android etc)
->>>
->>> Hmmm...  Let's put the two approaches side by side so that we can compare
->>> them more easily:
->>>
->>> 	Opportunistic Suspend		Idle + Timer Jitter
->>>
->>> 	Set timer			Set timer
->>> 	Suspend				OS delays timer
->>> 	Resume				OS continues delaying timer
->>> 	Timer fires			Timer fires
->>>
->>> These two cases look quite similar to me.
->>>
->>> But as you say, the battery can run out.  So let's add that to the
->>> comparison:
->>>
->>> 	Opportunistic Suspend		Idle + Timer Jitter
->>>
->>> 	Set timer			Set timer
->>> 	Suspend				OS delays timer
->>> 	Battery runs out		Battery runs out
->>> 	Data loss			Data loss
->>>
->>> The two cases still look quite similar.  You might note, quite correctly,
->>> that the time between suspend and resume might be quite a bit longer than
->>> the typical time that the OS delays a timer.  But the power consumption
->>> on some platforms is quite a bit lower in the suspend case than it is
->>> in the delayed-timer case.
->>
->> it has been stated that the android can hit the exact same power
->> state either with sleep or suspend, and that the same clock can wake
->> it up (it appears as a timer expiring for sleep, or an alarm for
->> suspend, but it's the same clock firing the signal)
->>
->> so in at least some cases the hardware supports doing both with
->> equal efficiency.
->
-> It indeed has been so stated.  But in this section we were discussing
-> data loss, not hardware power-state capabilities.
-
-you specifically stated that suspend would use less power. I am pointing 
-out that ther is info posed in this thread to say that's not always the 
-case.
-
-in either case it is possible for the system to wake up again later to let 
-the timer fire and the application save it's work. It's arguably easier 
-in the idle case as it doesn't require application modification
-
-for example
-
-Idle + Timer Jitter
-set timer
-OS sets timer jitter to 1 hour
-system sleeps for 1 hour with no wakeups
-timer fires, applications wake and process data
-system sleeps (for 1 hour or more with no wakeups)
-  (repeat as needed until battery runs out)
-
-much less chance for data loss as there is _far_ more of a chance that the 
-timer
-
-waking up once per hour for a short time is not going to make a noticable 
-difference in your total battery life of a cell phone due to the 
-significant idle power draw needed for the cell circuitry. On something 
-like a e-reader with no radio link and a month-long idle time it could 
-make a difference.
-
-note that this is with a badly written app running that is trying to 
-wakeup repeatedly. If the app is well behaved and only schedule a timer 
-when they will have work to do, they may not schedule a timer at all after 
-the data is saved, and so would have the data safe and just as long a 
-standby time.
-
->>>>> But that doesn't guarantee that solutions developed for PCs and laptops
->>>>> will be optimal (or even usable) on cellphones.  Sufficient difference
->>>>
->>>> Your cellphone is to all intents a laptop from ten years ago, it even has
->>>> a similar display resolution and internet availability. The underlying
->>>> difference between the two is solely form factor - the laptop had a
->>>> better keyboard.
->>>
->>> There are similarities and differences.  You have called out some of
->>> the similarities.  Differences include the more-aggressive hardware
->>> power management on cellphones, the greater number and variety of
->>> hardware accelerators on cellphones, battery capacity, and, as you say,
->>> physical size.  People currently use cellphones differently than they
->>> do laptops or desktops.  The usage might converge, but we will see.
->>> There is as much reason to expect increasing specialization as there
->>> is to expect increasing convergence.
->>
->> You are talking about Android as if it was a cell phone only thing,
->> it's not. there are shipping tablets (and I believe netbooks, i.e.
->> laptops) running andoid.
->
-> I was talking about cellphones.  But yes, Android (and thus suspend
-> blockers) are used for tablets as well as cellphones, thank you for
-> reminding me!
-
-the fact that it's used there means that you can't argue that it's 
-difference because cell phones are so different (unless you are saying 
-that Android is really not appropriate for those uses)
-
-On the other hand, lots of things are used in places where it is 
-inappropriate, Windows CE is used on phones, tablets, etc but I think most 
-people would say that the use of windows there isn't appropriate.
-
-David Lang
+T24gTW9uLCBBdWcgOSwgMjAxMCBhdCAxMjozOCBBTSwgVGVkIFRzJ28gPHR5dHNvQG1pdC5lZHU+
+IHdyb3RlOgo+IE9uIFN1biwgQXVnIDA4LCAyMDEwIGF0IDA4OjQwOjI4UE0gKzAzMDAsIEZlbGlw
+ZSBDb250cmVyYXMgd3JvdGU6Cj4+Cj4+IE15IGd1ZXNzIGlzIHlvdSBoYXZlbid0IHVzZWQgYSB0
+cnVseSBtdWx0aS10YXNraW5nIGRldmljZSBsaWtlIHRoZQo+PiBOOTAwOyBub3cgdGhhdCBJJ3Zl
+IGdvdCB1c2VkIHRvIGl0LCBJIGNvbnNpZGVyIHRoYXQgZnVuY3Rpb25hbGl0eQo+PiAqZXNzZW50
+aWFsKi4KPgo+IEkndmUgdXNlZCBhbiBOODAwLCBhbmQgSSB3YXNuJ3QgaW1wcmVzc2VkOyBpZiBh
+bnl0aGluZywgdGhlIGZhY3QgdGhhdAo+IEkgaGF2ZSB0byB3b3JyeSBhYm91dCBtYW51YWxseSBr
+aWxsaW5nIG9mZiBhcHBsaWNhdGlvbnMgd2hlbiBtZW1vcnkKPiBnZXRzIGxvdywgSSBhY3R1YWxs
+eSB0aG91Z2h0IGl0IHdhcyBpbmNyZWRpYmx5IHN1Y2t5LiDCoEl0IHdhcyBhCj4gbWluaWF0dXJl
+LCBiYWRseSBkb25lIGxhcHRvcC4KPgo+IE1heWJlIHRoZSBOOTAwIGlzIGRpZmZlcmVudCwgYnV0
+IHRoZSBiaWdnZXIgcXVlc3Rpb24gaXMgd2hhdCBkbyB5b3UKPiBtZWFuIGJ5ICJtdWx0aS10YXNr
+aW5nIj8gwqBEZWZpbml0aW9ucyBhcmUgY3JpdGljYWwgaGVyZSwgd2hpY2ggaXMgd2h5Cj4gUGF1
+bCB3YXMgc28gY2FyZWZ1bCBpbiBoaXMgZGVmaW5pdGlvbnMgc2VjdGlvbiBvZiBoaXMgZG9jdW1l
+bnQuCgpZZXMsIHRoZSBOOTAwIGlzIGRyYXN0aWNhbGx5IGRpZmZlcmVudCwgZm9yIHN0YXJ0ZXJz
+LCBpdCBoYXMgYW4gYWN0dWFsCndpbmRvdyBtYW5hZ2VyLgoKQnkgbXVsdGktdGFza2luZyBJIG1l
+YW4gbWUgKHRoZSB1c2VyKSBiZWluZyBhYmxlIHRvIHBlcmZvcm0gbXVsdGlwbGUKdGFza3MgYXQg
+dGhlIHNhbWUgdGltZS4KCkZvciBleGFtcGxlOiB3cml0aW5nIGFuIGVtYWlsLCB3aGlsZSBicm93
+c2luZyB0aGUgd2ViLCB3aGlsZSBoYXZpbmcgSU0KY29udmVyc2F0aW9ucy4gT2J2aW91c2x5IG5v
+dCBleGFjdGx5IGF0IHRoZSBzYW1lIHRpbWU7IHN0YXJ0IHdyaXRpbmcKYW4gZW1haWwsIGdvIGJy
+b3dzZSBmb3Igc29tZSB1cmwsIGNvcHksIGFuc3dlciBhIHBlbmRpbmcgSU0gbWVzc2FnZSwKZ28g
+YmFjayB0byB0aGUgbWFpbCwgcGFzdGUuCgo+PiBUaGUgYXJndW1lbnQgaW4gZmF2b3Igb2Ygc3Vz
+cGVuZCBibG9ja2VycyBpcyB0aGF0IHlvdSBjb3VsZCB0YWtlCj4+IGFwcGxpY2F0aW9ucyB0aGF0
+IGFyZSBub3QgZGVzaWduZWQgZm9yIGVtYmVkZGVkLCBhbmQgbWFrZSB0aGVtIHJ1biBvbgo+PiBh
+biBlbWJlZGRlZCBkZXZpY2Ugd2l0aG91dCBkcmFpbmluZyBleGNlc3NpdmUgYmF0dGVyeSBsaWZl
+OyB0aG9zZQo+PiBhcHBsaWNhdGlvbnMgd291bGQgaGF2ZSB0byBiZSBiYWNrZ3JvdW5kIHNlcnZp
+Y2VzIG5vdCBjb25mbGljdGluZyB3aXRoCj4+IEFuZHJvaWQncyBkZXNpZ24uCj4+Cj4+IEkgYWdy
+ZWUgdGhlcmUgcHJvYmFibHkgd291bGQgbm90IGJlIHRoYXQgbWFueSBiYWNrZ3JvdW5kIGFwcHMs
+IGFuZAo+PiBwcm9iYWJseSBldmVuIGxlc3MgcG9ydGVkIGJhY2tncm91bmQgYXBwcywgYnV0IHRo
+YXQgaXMgYWN0dWFsbHkgYW4KPj4gYXJndW1lbnQgYWdhaW5zdCBzdXNwZW5kIGJsb2NrZXJzLgo+
+Pgo+PiBUaGUgcmVzdCBvZiB0aGUgYXBwcyAoVUkgYXBwcyksIGNhbm5vdCBiZSBwb3J0ZWQsIGJ1
+dCBoYXZlIHRvIGJlCj4+IHdyaXR0ZW4gc3BlY2lmaWNhbGx5IGZvciBBbmRyb2lkLCBhbmQgdGhl
+cmVmb3JlIHNob3VsZCBoYXZlIFBNIGluCj4+IG1pbmQsIGFuZCBub3QgcmVxdWlyZSBzdXNwZW5k
+IGJsb2NrZXJzIHRvIGhhdmUgZ29vZCBwb3dlciB1c2FnZS4KPgo+IElmIHlvdSBhcmUgdXNpbmcg
+YSBHVUkgZnJhbWV3b3JrIHdoaWNoIGlzIG9wdGltaXplZCBmb3IgYSBzaW5nbGUtCj4gYXBwbGlj
+YXRpb24tZm9jdXMtYXQtYS10aW1lIFVJIHRoYXQgaXNuJ3QgR05PTUUgb3IgS0RFLCB0aGVuIHRo
+YXQgd2lsbAo+IHJlcXVpcmUgdGhlIGFwcGxpY2F0aW9ucyB0byBiZSB3cml0dGVuLiDCoEhvd2V2
+ZXIsIHRoYXQncyBub3QgYmVjYXVzZQo+IG9mIHN1c3BlbmQtYmxvY2tlcnMuCgpMZXQncyBjb25j
+ZW50cmF0ZTsgQW5kcm9pZCBpcyB0aGUgb25seSBtb2JpbGUgcGxhdGZvcm0gdGhhdCBoYXMKZXhw
+cmVzc2VkIGludGVyZXN0ZWQgaW4gc3VzcGVuZCBibG9ja2Vycy4gVUkgYXBwbGljYXRpb25zIGlu
+IEFuZHJvaWQKYXJlIHdyaXR0ZW4gc3BlY2lmaWNhbGx5IGZvciBBbmRyb2lkLiBQZXJpb2QuCgpP
+dGhlciBwbGF0Zm9ybXMsIHN1Y2ggYXMgTWVlR28sIHJlbHkgb24gUXQgQVBJLCBub3Qgc3VzcGVu
+ZCBibG9ja2Vycy4KCj4gSWYgeW91IGFzc3VtZSBhIEdVSSBmcmFtZXdvcmsgd2hpY2ggaXMgZmxl
+eGlibGUgZW5vdWdoIC0tLSBtYXliZSBRdAo+IGZhbGxzIGludG8gdGhpcyBjYXRlZ29yeSwgbWF5
+YmUgbm90IC0tLSBmb3IgdGhlIHJlc3Qgb2YgdGhlCj4gYXBwbGljYXRpb25zLCB0aGV5IGRvbid0
+IG5lZWQgdG8gKmtub3cqIGFib3V0IHN1c3BlbmQgYmxvY2tlcnMsIGFuZAo+IHRoZXkgY2VydGFp
+bmx5IGRvJ3QgaGF2ZSB0byBiZSByZXdyaXR0ZW4gb3IgbW9kaWZpZWQgc3BlY2lmaWNhbGx5IGZv
+cgo+IHN1c3BlbmQgYmxvY2tlcnMuIMKgU28gaWYgeW91ciBhcmd1bWVudCBpcyB0aGF0IGFwcGxp
+Y2F0aW9ucyB0aGF0IGRvbid0Cj4gbmVlZCBiYWNncm91bmQgc2VydmljZXMgKHdoaWNoIHlvdSd2
+ZSBhZG1pdHRlZCBjb21wcmlzZXMgbWFqb3JpdHkgb2YKPiBhcHBsaWNhdGlvcykgbmVlZCB0byBi
+ZSBtb2RpZmllZCBvciB3cml0dGVuIHNwZWNpZmljYWxseSB0byBzdXBwb3J0Cj4gc3VzcGVuZCBi
+bG9ja2VycywgdGhhdCdzIHNpbXBseSBub3QgdHJ1ZS4gwqBUaGV5IGRvbid0IG5lZWQgdG8gYmUK
+PiBtb2RpZmllZCBhdCBhbGwuCgpUaGF0J3Mgbm90IG15IGFyZ3VtZW50IGF0IGFsbC4gSSB3YXMg
+dGFsa2luZyBhYm91dCBhIGNvdW50ZXItYXJndW1lbnQKdG8gInN1c3BlbmQgYmxvY2tlcnMgbWFr
+ZSBwb3J0aW5nIGRlc2t0b3AgYXBwcyBlYXNlciIuCgpBbmRyb2lkJ3MgVUkgYXBwbGljYXRpb25z
+IGFyZSB1bmltcG9ydGFudCBoZXJlIGJlY2F1c2UgdGhleSBoYXZlIG5vdApiZWVuIHBvcnRlZCBm
+cm9tIHRoZSBkZXNrdG9wIHJlYWxtOyB0aGV5IHdlcmUgZGVzaWduZWQgc3BlY2lmaWNhbGx5CmZv
+ciBBbmRyb2lkLCBpbmNsdWRpbmcgYWxsIGl0cyBQTSBjYXBhYmlsaXRpZXMuCgpUaGUgb25seSBy
+ZWxldmFudCBhcHBsaWNhdGlvbnMgYXJlIHRoZSBvbmVzIGRlc2lnbmVkIGZvciB0aGUgZGVza3Rv
+cAp0aGF0IGFyZSBwb3J0ZWQgdG8gQW5kcm9pZCwgYW5kIHRodXMgbWlnaHQgbWFrZSBhc3N1bXB0
+aW9ucyB0aGF0IGh1cnQKYmF0dGVyeSBsaWZlLiBUaGVzZSBhcmUgYmFja2dyb3VuZCBzZXJ2aWNl
+cy4KCklmIHlvdSBhcmUgc2F5aW5nIHRoYXQgdGhlcmUgYXJlIGZldyBiYWNrZ3JvdW5kIGFwcHMs
+IHRoZW4gdGhhdCdzIGFuCmFyZ3VtZW50IGFnYWluc3Qgc3VzcGVuZCBibG9ja2VyczoKIDEpIGZl
+dyBhcHBsaWNhdGlvbnMgY2FuIGJlIHBvcnRlZAogMikgdGhlIGZldyBhcHBsaWNhdGlvbnMgdGhh
+dCBjYW4gYmUgcG9ydGVkLCBiZWluZyBiYWNrZ3JvdW5kCnNlcnZpY2VzLCBtaWdodCBtaXNzIHRp
+bWVycyBhbmQgYmVoYXZlIHdvcnN0IHRoYW4gX3dpdGhvdXRfIHN1c3BlbmQKYmxvY2tlcnMKCj4g
+QXMgZmFyIGFzIHdoZXRoZXIgdGhleSAqc2hvdWxkKiByZXF1aXJlIHN1c3BlbmQgYmxvY2tlcnMg
+dG8gYmUgaW4gdGhlCj4ga2VybmVsIHRvIGdldCBwb3dlciB1c2FnZSB0aGF0IGlzIHN1aXRhYmxl
+IGZvciBjZWxsIHBob25lIGJhdHRlcmllcywgSQo+IHdvdWxkIGFncmVlIHRoYXQgaW4gdGhlIGlk
+ZWFsIHdvcmxkLCBpdCB3b3VsZCBiZSBuaWNlIGlmIHlvdSBjb3VsZAo+IGhhdmUgYXBwbGljYXRp
+b25zIHRoYXQgbWFrZSB0aGUgY29ycmVjdCBwZXJmb3JtYW5jZS9iYXR0ZXJ5Cj4gdXRpbGl6YXRp
+b24gdHJhZGVvZmYgZm9yIGRldmljZXMgcnVubmluZyBvbiA4MDAgbVdoIGJhdHRlcmllcywgOTQs
+MDAwCj4gbVdoIGJhdHRlcmllcywgYW5kIHdoaWxlIHJ1bm5pbmcgb24gdGhlIEFDIG1haW5zLiDC
+oEJ1dCBJIGRvbid0IGJlbGlldmUKPiB0aGF0IGl0J3MgbGlrZWx5IHRvIGJlIHRydWUsIGFuZCBp
+ZiB5b3Ugd2FudCB0byB0cnkgdG8gYmVhdCB1cCBvbgo+IGFwcGxpY2F0aW9uIHdyaXRlcnMgb25l
+IGF0IGEgdGltZSB0byBiZSBwb3dlciBvcHRpbWl6ZWQgLS0tIGFzIGZhciBhcwo+IEknbSBjb25j
+ZXJuZWQsIHRoYXQncyBhbiBhcmd1bWVudCAqZm9yKiBzdXNwZW5kIGJsb2NrZXJzLCBzaW5jZSBJ
+J20KPiBub3QgYmlnIGJlbGlldmVyIGluIHBsYW5zIHRoYXQgYmVnaW4sICJGaXJzdCwgeW91IGNv
+bW1hbmQgdGhlIHRpZGVzIG9mCj4gdGhlIHNlYSB0byBnbyBiYWNrIiwgS2luZyBDYW51dGUgc3R5
+bGUuIMKgOi0pCgpQb3dlciBpcyBqdXN0IGxpa2UgYW55IG90aGVyIHJlc291cmNlLCB3aHkgYXJl
+IGRlc2t0b3AgYXBwbGljYXRpb25zCm5vdCB1c2luZyAxMDAlIENQVSwgb3IgMTAwJSBvZiBtZW1v
+cnk/IEJlY2F1c2UgaWYgdGhleSBkaWQgbm9ib2R5CndvdWxkIGJlIHVzaW5nIHRoZW0uIFRoZXJl
+J3MgYSBzb2NpYWwgcHJlc3N1cmUgdG8gdXNlIGxlc3MgcmVzb3VyY2VzLApvciBhdCBsZWFzdCBs
+ZXNzIHJlc291cmNlcyB0aGFuIHRoZSBjb21wZXRlbmNlLiBJZiBhbiBhcHBsaWNhdGlvbiB1c2Vz
+CnRvbyBtdWNoIGJhdHRlcnkgdGltZSBub2JvZHkgd291bGQgdXNlIGl0LCB1bmxlc3MgcGVyaGFw
+cyBpZiB0aGUKZnVuY3Rpb25hbGl0eSBpcyB0b28gZ29vZCBhbmQgdGhlcmUgYXJlIG5vIGFsdGVy
+bmF0aXZlcy4KCkkgYmVsaWV2ZSBzb2NpYWwgZm9yY2VzIGFscmVhZHkgZGVhbCB3aXRoIHRoaXMg
+cHJvYmxlbSwgYWxsIHdlIG5lZWQgdG8KZG8gaXMgcHJvdmlkZSBiZXR0ZXIgdG9vbHMsIG5vdCBw
+YXRyb25pemUgdXNlci1zcGFjZSBhcHBsaWNhdGlvbnMuCgotLSAKRmVsaXBlIENvbnRyZXJhcwpf
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBt
+YWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9s
+aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
