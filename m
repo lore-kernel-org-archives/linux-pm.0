@@ -1,8 +1,8 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+From: Felipe Contreras <felipe.contreras@gmail.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Wed, 11 Aug 2010 20:43:02 +0100
-Message-ID: <20100811194301.GA14509__13706.0251589448$1281555875$gmane$org@sirena.org.uk>
+Date: Wed, 11 Aug 2010 23:00:42 +0300
+Message-ID: <AANLkTik7Po9OuKC-QBZ=E83J70sU_ewNi+nNWgcjjLXd__17270.1492593207$1281556892$gmane$org@mail.gmail.com>
 References: <20100807061558.GA28087@thunk.org>
 	<AANLkTi=sMVjya9CH6UoZwJCXJTDRgBhnPXmApU_RHVTi@mail.gmail.com>
 	<20100808155719.GB3635@thunk.org>
@@ -12,13 +12,13 @@ References: <20100807061558.GA28087@thunk.org>
 	<20100809181638.GI3026@linux.vnet.ibm.com>
 	<20100809201822.441905f7@lxorguk.ukuu.org.uk>
 	<20100810044541.GA2817@linux.vnet.ibm.com>
-	<AANLkTing0RpAoYstVs1G5v-eZ0q6qGjrGiphUvBdOsaS@mail.gmail.com>
+	<20100810093849.138e2318@lxorguk.ukuu.org.uk>
+	<20100811004223.GH2379@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTing0RpAoYstVs1G5v-eZ0q6qGjrGiphUvBdOsaS@mail.gmail.com>
+In-Reply-To: <20100811004223.GH2379@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,27 +28,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: peterz@infradead.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, galibert@pobox.com, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, James.Bottomley@suse.de, tglx@linutronix.de, swmike@swm.pp.se, david@lang.hm, Ted Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, menage@google.com, arjan@infradead.org
+To: paulmck@linux.vnet.ibm.com
+Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 11, 2010 at 10:25:04PM +0300, Felipe Contreras wrote:
-> On Tue, Aug 10, 2010 at 7:45 AM, Paul E. McKenney
-
-> > Android is certainly where suspend blockers originated, and is to the best
-> > of my knowledge is still the only platform that uses them. ??But there is
-> > a first user of every new mechanism, and for some time that first user
-> > will by definition be the only user of that mechanism. ??So the fact
-> > that Android is most probably the only user of suspend blockers does
-> > not prove anything about whether or not suspend blockers are sensible.
-
-> No, it's the fact that *nobody* else has said: hey, that looks like a
-> good idea, we should use that in our mobile platform (or any
-> platform).
-
-I don't think lack of external adoption is a terribly useful data point
-either way at the minute.  While the feature is controversial a lot of
-the OSs will probably hold off on it (because it's effort to handle out
-of tree stuff and folks are really busy) and there's not that many out
-there which support random externally written packages (which is the
-major push for exporting the feature to userspace) in the first place.
+T24gV2VkLCBBdWcgMTEsIDIwMTAgYXQgMzo0MiBBTSwgUGF1bCBFLiBNY0tlbm5leQo8cGF1bG1j
+a0BsaW51eC52bmV0LmlibS5jb20+IHdyb3RlOgo+IE9uIFR1ZSwgQXVnIDEwLCAyMDEwIGF0IDA5
+OjM4OjQ5QU0gKzAxMDAsIEFsYW4gQ294IHdyb3RlOgo+PiBZb3UgbWF5IGFsc28gd2lzaCB0byBy
+ZXZpZXcgdGhlIGVhcmxpZXIgcGFydHMgb2YgdGhlIGRpc2N1c3Npb24gd2hlcmUgaXQKPj4gd2Fz
+IGV4cGxpY2l0bHkgc3RhdGVkIGJ5IHNldmVyYWwgZGV2ZWxvcGVycyB0aGF0IHRoZXkgd2VyZSB1
+c2luZwo+PiAic3VzcGVuZCIgdHlwZSBtb2RlcyBhcyBwb3dlciBzdGF0ZXMgYWxyZWFkeSBhbmQg
+bm90IHVzaW5nIHN1c3BlbmQKPj4gYmxvY2tlcnMuIFNvIGl0J3MgYmVpbmcgZG9uZSwgdG9kYXkg
+b24gQVJNIGFuZCB5b3VyIHN0YXRlbWVudCBpcyBkaXJlY3RseQo+PiBjb250cmFkaWN0aW5nIHRo
+ZSBjb2RlLiBNb2Rlcm4gQVJNIHByb2Nlc3NvcnMgYW5kIHg4NiBNSUQgZGV2aWNlcyBjYW4KPj4g
+c3VzcGVuZCBhbmQgcmVzdW1lIGV4dHJlbWVseSBmYXN0IChmYXN0IGVub3VnaCB0aGF0IHRoZSBm
+YWN0IExpbnV4IHg4Ngo+PiByZXdyaXRpbmcgYWxsIHRoZSBTTVAgYWx0ZXJuYXRpdmVzIG9uIHN1
+c3BlbmQvcmVzdW1lIGlzIGEgbWVhc3VyYWJsZQo+PiBwcm9ibGVtKS4gSWYgdGhpcyBzYW1lIHBy
+b3BlcnR5IGRvZXNuJ3QgZW5kIHVwIG9uIGJpZyBQQyBib3hlcyBpbiB0aW1lCj4+IHRoZW4gSSdk
+IGJlIHZlcnkgc3VycHJpc2VkLiBBdCB0aGF0IHBvaW50IHRoZSBvcGVub2ZmaWNlIHdpdGggc3Vz
+cGVuZAo+PiBibG9ja2VycyBvciBvcmFjbGUgd2l0aCBzdXNwZW5kIGJsb2NrZXJzIHF1ZXN0aW9u
+IGJlY29tZXMgcmF0aGVyIHJlbGV2YW50Lgo+Cj4gSGVyZSBpcyB0aGUgbGlzdCBvZiBwcm9wZXJ0
+aWVzIGRpc3Rpbmd1aXNoaW5nIGlkbGUgZnJvbSBzdXNwZW5kOgo+Cj4gMS4gwqAgwqAgwqBJZGxl
+IHN0YXRlcyBhcmUgZW50ZXJlZCBieSBhIGdpdmVuIENQVSBvbmx5IHRoZXJlIGFyZSBubyBydW5u
+YWJsZQo+IMKgIMKgIMKgIMKgdGFza3MgZm9yIHRoYXQgQ1BVLiDCoEluIGNvbnRyYXN0LCBvcHBv
+cnR1bmlzdGljIHN1c3BlbmQgY2FuCj4gwqAgwqAgwqAgwqBoYWx0IHRoZSBlbnRpcmUgc3lzdGVt
+IGV2ZW4gd2hlbiB0aGVyZSBhcmUgdGFza3MgdGhhdCBhcmUgcmVhZHksCj4gwqAgwqAgwqAgwqB3
+aWxsaW5nLCBhbmQgYWJsZSB0byBydW4uIMKgKEJ1dCBwbGVhc2Ugbm90ZSB0aGF0IHRoaXMgbWln
+aHQgbm90Cj4gwqAgwqAgwqAgwqBhcHBseSB0byByZWFsLXRpbWUgdGFza3MuKQoKQnV0IGlmIHRo
+ZXJlIGFyZSBubyBydW5uYWJsZSB0YXNrcyAod2hpY2ggaXMgdGhlIHRhcmdldCksIHRoZXkgYmVo
+YXZlIHRoZSBzYW1lLgoKPiAyLiDCoCDCoCDCoFRoZXJlIGNhbiBiZSBhIHNldCBvZiBpbnB1dCBl
+dmVudHMgdGhhdCBkbyBub3QgYnJpbmcgdGhlIHN5c3RlbQo+IMKgIMKgIMKgIMKgb3V0IG9mIHN1
+c3BlbmQsIGJ1dCB3aGljaCB3b3VsZCBicmluZyB0aGUgc3lzdGVtIG91dCBvZiBpZGxlLgo+IMKg
+IMKgIMKgIMKgRXhhY3RseSB3aGljaCBldmVudHMgYXJlIGluIHRoaXMgc2V0IGRlcGVuZHMgYm90
+aCBvbiBoYXJkd2FyZQo+IMKgIMKgIMKgIMKgY2FwYWJpbGl0aWVzIGFuZCBvbiB0aGUgcGxhdGZv
+cm0vYXBwbGljYXRpb24gcG9saWN5LiDCoEZvciBleGFtcGxlLAo+IMKgIMKgIMKgIMKgb24gb25l
+IG9mIHRoZSBBbmRyb2lkLWJhc2VkIHNtYXJ0cGhvbmVzLCB0b3VjaHNjcmVlbiBpbnB1dCBpcwo+
+IMKgIMKgIMKgIMKgaWdub3JlZCB3aGVuIHRoZSBzeXN0ZW0gaXMgc3VzcGVuZGVkLCBidXQgaXMg
+aGFuZGxlZCB3aGVuIGlkbGUuCgpBbmQgaW4gTjkwMCB0b3VjaGluZyB0aGUgc2NyZWVuIGRvZXNu
+J3QgYnJpbmcgdGhlIGRldmljZSBvdXQgb2YgaWRsZSwKSSBndWVzcyBiZWNhdXNlIGl0J3Mgb2Zm
+LgoKV2hhdCBkZXZpY2VzIGRvIHdoYXQgb24gd2hpY2ggY2lyY3Vtc3RhbmNlcyBvbiB3aGF0IHBs
+YXRmb3JtIGlzCmNvbXBsZXRlbHkgaXJyZWxldmFudC4KCj4gMy4gwqAgwqAgwqBUaGUgc3lzdGVt
+IGNvbWVzIG91dCBvZiBpZGxlIHdoZW4gYSB0aW1lciBleHBpcmVzLiDCoEluIGNvbnRyYXN0LAo+
+IMKgIMKgIMKgIMKgdGltZXJzIG1pZ2h0IG9yIG1pZ2h0IG5vdCBicmluZyB0aGUgc3lzdGVtIG91
+dCBvZiBzdXNwZW5kLAo+IMKgIMKgIMKgIMKgZGVwZW5kaW5nIG9uIGJvdGggaGFyZHdhcmUgY2Fw
+YWJpbGl0aWVzIGFuZCBwbGF0Zm9ybS9hcHBsaWNhdGlvbgo+IMKgIMKgIMKgIMKgcG9saWN5LgoK
+SXNuJ3QgdGhpcyBzb2x2ZWQgYnkgcmFuZ2UgdGltZXJzPwoKPiA0LiDCoCDCoCDCoFN1c3BlbmQg
+Z2VuZXJhbGx5IGZvcmNlcyBkZXZpY2VzIHRvIGdvIGludG8gdGhlaXIgbG93LXBvd2VyCj4gwqAg
+wqAgwqAgwqBzdGF0ZXMgaW1tZWRpYXRlbHkuIMKgSW4gY29udHJhc3QsIGlkbGUgZ2VuZXJhbGx5
+IGxlYXZlcyB1bnVzZWQKPiDCoCDCoCDCoCDCoGRldmljZXMgYXQgZnVsbCBwb3dlciwgcmVseWlu
+ZyBvbiB0aW1lcnMgdG8gc2h1dCBkb3duIHRoZXNlCj4gwqAgwqAgwqAgwqBkZXZpY2VzLiDCoElk
+bGUgdGh1cyBoYXMgc2hvcnRlciBhdmVyYWdlIHdha2V1cCBsYXRlbmNpZXMsIGJ1dAo+IMKgIMKg
+IMKgIMKgd29yc2UgZW5lcmd5IGVmZmljaWVuY3kuCgpPbmx5IGlmIHlvdSBtYWtlIHRoZXNlIGFz
+c3VtcHRpb25zCiAxKSBBbGwgdGhlIGFwcGxpY2F0aW9ucyB1c2Ugc3VzcGVuZC1ibG9ja2VycyBv
+bmx5IHdoZW4gdGhleSBhYnNvbHV0ZWx5IG11c3QKIDIpIFRoZSB1c2VyIGhhcyBnaXZlbiB0aGUg
+cmlnaHQgYXBwbGljYXRpb25zIHRoZSByaWdodCBhY2Nlc3MKCklmIG5vdCwgeW91J2xsIHNlZSBt
+dWNoIHdvcnN0IGVuZXJneSBlZmZpY2llbmN5LiBTbyBpbiB0aGVvcnkgbWF5YmUsCmJ1dCBpbiBw
+cmFjdGljZSB5b3UgY2FuJ3Qgc2F5IHRoYXQuCgotLSAKRmVsaXBlIENvbnRyZXJhcwpfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5n
+IGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5s
+aW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
