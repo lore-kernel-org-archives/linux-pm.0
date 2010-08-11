@@ -1,25 +1,11 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: Attempted summary of suspend-blockers LKML thread,
-	take three
-Date: Tue, 10 Aug 2010 19:21:31 -0700
-Message-ID: <20100811022131.GA2587__36178.1644904569$1281493427$gmane$org@linux.vnet.ibm.com>
-References: <20100808155719.GB3635@thunk.org>
-	<AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
-	<20100808213821.GD3635@thunk.org>
-	<20100809112453.77210acc@lxorguk.ukuu.org.uk>
-	<20100809181638.GI3026@linux.vnet.ibm.com>
-	<20100809201822.441905f7@lxorguk.ukuu.org.uk>
-	<20100810044541.GA2817@linux.vnet.ibm.com>
-	<20100810093849.138e2318@lxorguk.ukuu.org.uk>
-	<20100811004223.GH2379@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008101821280.23481@asgard.lang.hm>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: "Geoffrey Hausheer" <w4ry27fpn4@snkmail.com>
+Subject: Increased idle power on Atom netbook with 2.6.35 and
+	intel_idle
+Date: Tue, 10 Aug 2010 19:27:55 -0700
+Message-ID: <5563-1281493676-58384@sneakemail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============4436035254414525051=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1008101821280.23481@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,111 +13,243 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: david@lang.hm
-Cc: Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 10, 2010 at 06:28:39PM -0700, david@lang.hm wrote:
-> On Tue, 10 Aug 2010, Paul E. McKenney wrote:
-> 
-> >On Tue, Aug 10, 2010 at 09:38:49AM +0100, Alan Cox wrote:
-> >>>situation you call out can occur with manual suspend-to-RAM already:
-> >>>the fact is that this is a design choice.  You could indeed make a
-> >>
-> >>Losing data is a design choice ? The application set a timer, the OS
-> >>shouldn't be ignoring it in that situation. It might want to delay it, it
-> >>might want to warn the user its hogging things it shouldnt (powertop,
-> >>battery usage monitors in Android etc)
-> >
-> >Hmmm...  Let's put the two approaches side by side so that we can compare
-> >them more easily:
-> >
-> >	Opportunistic Suspend		Idle + Timer Jitter
-> >
-> >	Set timer			Set timer
-> >	Suspend				OS delays timer
-> >	Resume				OS continues delaying timer
-> >	Timer fires			Timer fires
-> >
-> >These two cases look quite similar to me.
-> >
-> >But as you say, the battery can run out.  So let's add that to the
-> >comparison:
-> >
-> >	Opportunistic Suspend		Idle + Timer Jitter
-> >
-> >	Set timer			Set timer
-> >	Suspend				OS delays timer
-> >	Battery runs out		Battery runs out
-> >	Data loss			Data loss
-> >
-> >The two cases still look quite similar.  You might note, quite correctly,
-> >that the time between suspend and resume might be quite a bit longer than
-> >the typical time that the OS delays a timer.  But the power consumption
-> >on some platforms is quite a bit lower in the suspend case than it is
-> >in the delayed-timer case.
-> 
-> it has been stated that the android can hit the exact same power
-> state either with sleep or suspend, and that the same clock can wake
-> it up (it appears as a timer expiring for sleep, or an alarm for
-> suspend, but it's the same clock firing the signal)
-> 
-> so in at least some cases the hardware supports doing both with
-> equal efficiency.
+--===============4436035254414525051==
+Content-Type: multipart/alternative; boundary=0016364d1d1d52f849048d82ffe5
 
-It indeed has been so stated.  But in this section we were discussing
-data loss, not hardware power-state capabilities.
+--0016364d1d1d52f849048d82ffe5
+Content-Type: text/plain; charset=ISO-8859-1
 
-> >>>But that doesn't guarantee that solutions developed for PCs and laptops
-> >>>will be optimal (or even usable) on cellphones.  Sufficient difference
-> >>
-> >>Your cellphone is to all intents a laptop from ten years ago, it even has
-> >>a similar display resolution and internet availability. The underlying
-> >>difference between the two is solely form factor - the laptop had a
-> >>better keyboard.
-> >
-> >There are similarities and differences.  You have called out some of
-> >the similarities.  Differences include the more-aggressive hardware
-> >power management on cellphones, the greater number and variety of
-> >hardware accelerators on cellphones, battery capacity, and, as you say,
-> >physical size.  People currently use cellphones differently than they
-> >do laptops or desktops.  The usage might converge, but we will see.
-> >There is as much reason to expect increasing specialization as there
-> >is to expect increasing convergence.
-> 
-> You are talking about Android as if it was a cell phone only thing,
-> it's not. there are shipping tablets (and I believe netbooks, i.e.
-> laptops) running andoid.
+I'm running UNR 10.04 on an Asus AspireOne 532h (Atom N450 1.66GHz w/ SMT).
+ Due to some intermittent problems with suspend, I'd upgraded to a 2.6.34
+and then recently to a 2.6.35 kernel.
+I noticed that I could get my idle power (as reported by ACPI) down to 5.5W
+idle with a stock 2.6.34 kernel (the test I ran below didn't get it quite
+that low), but I have only been able to get down to 6.8W or so using 2.6.35
+(despite having increased the time spent in sleep states).  I found that
+with stock 2.6.35 the kernel would only go into C2, so I switched to using
+intel_idle, which added C4 state, but power didn't change much.
+I also tried disabling smt and that added about 1.5W to idle power (despite
+even further reducing the wakeups-per-second below 10)
+Is there any way to further identify where the power is being spent, or to
+figure out what is casuing the increased power consumption?  On my netbook,
+the difference between 5.5W and 6.8 is ~1.5 hours (of course my average
+usage will be somewhat higher, but even when playing a movie, the difference
+is 7.1W vs 7.9W (still almost an hour of difference)
 
-I was talking about cellphones.  But yes, Android (and thus suspend
-blockers) are used for tablets as well as cellphones, thank you for
-reminding me!
+Here are some powertop numbers (computer completely idle, same power
+management settings applied, no wireless, lowest brightness:
 
-> >>>As to busting all apps, lthough there have been situations where busting
-> >>>all the apps turned out to be the right thing to do, I agree that these
-> >>>situations are extremely rare.  Such situations are usually associated
-> >>>with the emergence of a new high-volume platform.
-> >>
-> >>Like Microsoft Windows 16bit co-operative multi-tasking ? It's rarely
-> >>right. It's merely that in certain cases the value in the market is large
-> >>enough that it can be used as a big stick to beat people into doing lots
-> >>of usually wasted work.
-> >
-> >Interesting choice of example.  I do well remember the Sequent hardware
-> >guys' frustration when the old printer driver would monopolize the desktop
-> >while printing their large documents.  The fact was that Microsoft's
-> >co-operative multi-tasking required all applications to be well behaved,
-> >just as does your approach to power efficiency.
-> 
-> and wakelocks require all applications that can take a wakelock be
-> well behaved. and applications that do nt take a wakelock directly
-> cannot expect to run unless something else takes a wakelock on their
-> behalf
+2.6.32 (with ubuntu patches applied) SMT enabled:
 
-Almost.  Suspend blockers require that only those portions of a PM-driving
-application that hold a suspend blocker be carefully written to avoid
-wasting power.
+Cn                Avg residency
+C0 (cpu running)        ( 0.3%)
+polling           0.0ms ( 0.0%)
+C1 halt           0.0ms ( 0.0%)
+C2                1.2ms ( 0.0%)
+C3               30.0ms (99.7%)
+P-states (frequencies)
+  1.67 Ghz     0.0%
+  1333 Mhz     0.0%
+  1000 Mhz   100.0%
+Disk accesses:
+Wakeups-from-idle per second : 33.5     interval: 20.0s
+Power usage (ACPI estimate): 6.4W (7.8 hours)
+Top causes for wakeups:
+  25.5% ( 13.2)   [acpi] <interrupt>
+  18.1% (  9.3)   [kernel scheduler] Load balancing tick
+  17.9% (  9.2)   [kernel core] hrtimer_start (tick_sched_timer)
+  10.1% (  5.2)   events/0
+   8.0% (  4.2)   Xorg
+   4.5% (  2.4)   [Rescheduling interrupts] <kernel IPI>
+   4.1% (  2.1)   [extra timer interrupt]
 
-							Thanx, Paul
+2.6.34 stock kernel (smt enabled)
+Cn                Avg residency
+C0 (cpu running)        ( 0.3%)
+polling           0.0ms ( 0.0%)
+C1 halt           0.0ms ( 0.0%)
+C2                0.4ms ( 0.0%)
+C3               37.0ms (99.7%)
+P-states (frequencies)
+  1.67 Ghz     0.0%
+  1333 Mhz     0.0%
+  1000 Mhz   100.0%
+Wakeups-from-idle per second : 27.9     interval: 20.0s
+Power usage (ACPI estimate): 6.1W (8.4 hours)
+Top causes for wakeups:
+  27.0% ( 11.1)   [kernel scheduler] Load balancing tick
+  15.7% (  6.5)   [Rescheduling interrupts] <kernel IPI>
+  12.7% (  5.2)   [kernel core] hrtimer_start (tick_sched_timer)
+  10.7% (  4.4)   [acpi] <interrupt>
+  10.0% (  4.1)   Xorg
+   7.2% (  3.0)   [extra timer interrupt]
+
+2.6.35 stock kernel (intel_idle):
+C0 (cpu running)        ( 0.1%)
+polling           0.0ms ( 0.0%)
+C1 mwait          0.0ms ( 0.0%)
+C2 mwait          0.4ms ( 0.0%)
+C4 mwait         55.1ms (99.8%)
+P-states (frequencies)
+  1.67 Ghz     0.3%
+  1333 Mhz     0.0%
+  1000 Mhz    99.7%
+Disk accesses:
+Wakeups-from-idle per second : 19.1     interval: 20.0s
+Power usage (ACPI estimate): 7.0W (8.1 hours)
+Top causes for wakeups:
+  24.4% (  4.8)   [kernel scheduler] Load balancing tick
+  22.6% (  4.5)   [kernel core] hrtimer_start (tick_sched_timer)
+  20.4% (  4.0)   Xorg
+   9.8% (  1.9)   gnome-terminal
+
+Here is the same 2.6.35 kernel after disabling cpu1 (via echo 0 >
+/sys/devices/system/cpu/cpu1/online ):
+Cn                Avg residency
+C0 (cpu running)        ( 0.3%)
+polling           0.0ms ( 0.0%)
+C1 mwait          0.0ms ( 0.0%)
+C2 mwait          3.2ms ( 0.0%)
+C4 mwait        103.8ms (99.7%)
+P-states (frequencies)
+  1.67 Ghz     1.7%
+  1333 Mhz     0.0%
+  1000 Mhz    98.3%
+Disk accesses:
+Wakeups-from-idle per second :  9.8     interval: 20.0s
+Power usage (ACPI estimate): 8.3W (6.8 hours)
+Top causes for wakeups:
+  28.4% (  4.5)   [kernel core] hrtimer_start (tick_sched_timer)
+  25.9% (  4.0)   Xorg
+
+turning of the virtual CPU1 drastically reduced the number of "load
+balancing ticks" and gave me substantial time in C4 (103ms vs 55ms) but
+power jumped substantially.
+
+Anyhow, I have no idea how to proceed.  I have managed to get the cpu into
+lower sleep-states for longer periods of time, but my power reported by ACPI
+has been negatively affected.
+
+Thanks,
+..Geoff
+
+--0016364d1d1d52f849048d82ffe5
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+I&#39;m running UNR 10.04 on an Asus AspireOne 532h (Atom N450 1.66GHz w/ S=
+MT). =A0Due to some intermittent problems with suspend, I&#39;d upgraded to=
+ a 2.6.34 and then recently to a 2.6.35 kernel.<div>I noticed that I could =
+get my idle power (as reported by ACPI) down to 5.5W idle with a stock 2.6.=
+34 kernel (the test I ran below didn&#39;t get it quite that low), but I ha=
+ve only been able to get down to 6.8W or so using 2.6.35 (despite having in=
+creased the time spent in sleep states). =A0I found that with stock 2.6.35 =
+the kernel would only go into C2, so I switched to using intel_idle, which =
+added C4 state, but power didn&#39;t change much.</div>
+
+<div>I also tried disabling smt and that added about 1.5W to idle power (de=
+spite even further reducing the wakeups-per-second below 10)</div><div>Is t=
+here any way to further identify where the power is being spent, or to figu=
+re out what is casuing the increased power consumption? =A0On my netbook, t=
+he difference between 5.5W and 6.8 is ~1.5 hours (of course my average usag=
+e will be somewhat higher, but even when playing a movie, the difference is=
+ 7.1W vs 7.9W (still almost an hour of difference)</div>
+
+<div><br></div><div>Here are some powertop numbers (computer completely idl=
+e, same power management settings applied, no wireless, lowest brightness:<=
+/div><div><br></div><div>2.6.32 (with ubuntu patches applied) SMT enabled:<=
+/div>
+
+<div><br></div><div><div>Cn =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0Avg residency</d=
+iv><div>C0 (cpu running) =A0 =A0 =A0 =A0( 0.3%)</div><div>polling =A0 =A0 =
+=A0 =A0 =A0 0.0ms ( 0.0%)</div><div>C1 halt =A0 =A0 =A0 =A0 =A0 0.0ms ( 0.0=
+%)</div><div>C2 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A01.2ms ( 0.0%)</div>
+
+<div>C3 =A0 =A0 =A0 =A0 =A0 =A0 =A0 30.0ms (99.7%)</div><div>P-states (freq=
+uencies)</div><div>=A0=A01.67 Ghz =A0 =A0 0.0%</div><div>=A0=A01333 Mhz =A0=
+ =A0 0.0%</div><div>=A0=A01000 Mhz =A0 100.0%</div><div>Disk accesses:</div=
+><div>Wakeups-from-idle per second : 33.5 =A0 =A0 interval: 20.0s</div>
+
+<div>Power usage (ACPI estimate): 6.4W (7.8 hours)</div><div>Top causes for=
+ wakeups:</div><div>=A0=A025.5% ( 13.2) =A0 [acpi] &lt;interrupt&gt;</div><=
+div>=A0=A018.1% ( =A09.3) =A0 [kernel scheduler] Load balancing tick</div><=
+div>=A0=A017.9% ( =A09.2) =A0 [kernel core] hrtimer_start (tick_sched_timer=
+)</div>
+
+<div>=A0=A010.1% ( =A05.2) =A0 events/0</div><div>=A0=A0 8.0% ( =A04.2) =A0=
+ Xorg</div><div>=A0=A0 4.5% ( =A02.4) =A0 [Rescheduling interrupts] &lt;ker=
+nel IPI&gt;</div><div>=A0=A0 4.1% ( =A02.1) =A0 [extra timer interrupt]</di=
+v><div><br></div></div><div>
+
+2.6.34 stock kernel (smt enabled)</div><div><div>Cn =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0Avg residency</div><div>C0 (cpu running) =A0 =A0 =A0 =A0( 0.3%)</di=
+v><div>polling =A0 =A0 =A0 =A0 =A0 0.0ms ( 0.0%)</div><div>C1 halt =A0 =A0 =
+=A0 =A0 =A0 0.0ms ( 0.0%)</div><div>C2 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A00.4ms=
+ ( 0.0%)</div>
+
+<div>C3 =A0 =A0 =A0 =A0 =A0 =A0 =A0 37.0ms (99.7%)</div><div>P-states (freq=
+uencies)</div><div>=A0=A01.67 Ghz =A0 =A0 0.0%</div><div>=A0=A01333 Mhz =A0=
+ =A0 0.0%</div><div>=A0=A01000 Mhz =A0 100.0%</div><div>Wakeups-from-idle p=
+er second : 27.9 =A0 =A0 interval: 20.0s</div>
+
+<div>Power usage (ACPI estimate): 6.1W (8.4 hours)</div><div>Top causes for=
+ wakeups:</div><div>=A0=A027.0% ( 11.1) =A0 [kernel scheduler] Load balanci=
+ng tick</div><div>=A0=A015.7% ( =A06.5) =A0 [Rescheduling interrupts] &lt;k=
+ernel IPI&gt;</div>
+
+<div>=A0=A012.7% ( =A05.2) =A0 [kernel core] hrtimer_start (tick_sched_time=
+r)</div><div>=A0=A010.7% ( =A04.4) =A0 [acpi] &lt;interrupt&gt;</div><div>=
+=A0=A010.0% ( =A04.1) =A0 Xorg</div><div>=A0=A0 7.2% ( =A03.0) =A0 [extra t=
+imer interrupt]</div></div><div>
+
+<br></div><div>2.6.35 stock kernel (intel_idle):</div><div><div>C0 (cpu run=
+ning) =A0 =A0 =A0 =A0( 0.1%)</div><div>polling =A0 =A0 =A0 =A0 =A0 0.0ms ( =
+0.0%)</div><div>C1 mwait =A0 =A0 =A0 =A0 =A00.0ms ( 0.0%)</div><div>C2 mwai=
+t =A0 =A0 =A0 =A0 =A00.4ms ( 0.0%)</div>
+<div>C4 mwait =A0 =A0 =A0 =A0 55.1ms (99.8%)</div><div>P-states (frequencie=
+s)</div><div>=A0=A01.67 Ghz =A0 =A0 0.3%</div><div>=A0=A01333 Mhz =A0 =A0 0=
+..0%</div><div>=A0=A01000 Mhz =A0 =A099.7%</div><div>Disk accesses:</div><di=
+v>Wakeups-from-idle per second : 19.1 =A0 =A0 interval: 20.0s</div>
+<div>Power usage (ACPI estimate): 7.0W (8.1 hours)</div><div>Top causes for=
+ wakeups:</div><div>=A0=A024.4% ( =A04.8) =A0 [kernel scheduler] Load balan=
+cing tick</div><div>=A0=A022.6% ( =A04.5) =A0 [kernel core] hrtimer_start (=
+tick_sched_timer)</div>
+<div>=A0=A020.4% ( =A04.0) =A0 Xorg</div><div>=A0=A0 9.8% ( =A01.9) =A0 gno=
+me-terminal</div></div><div><br></div><div>Here is the same 2.6.35 kernel a=
+fter disabling cpu1 (via=A0echo 0 &gt; /sys/devices/system/cpu/cpu1/online =
+):</div><div><div>
+Cn =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0Avg residency</div><div>C0 (cpu running) =
+=A0 =A0 =A0 =A0( 0.3%)</div><div>polling =A0 =A0 =A0 =A0 =A0 0.0ms ( 0.0%)<=
+/div><div>C1 mwait =A0 =A0 =A0 =A0 =A00.0ms ( 0.0%)</div><div>C2 mwait =A0 =
+=A0 =A0 =A0 =A03.2ms ( 0.0%)</div><div>C4 mwait =A0 =A0 =A0 =A0103.8ms (99.=
+7%)</div>
+<div>P-states (frequencies)</div><div>=A0=A01.67 Ghz =A0 =A0 1.7%</div><div=
+>=A0=A01333 Mhz =A0 =A0 0.0%</div><div>=A0=A01000 Mhz =A0 =A098.3%</div><di=
+v>Disk accesses:</div><div>Wakeups-from-idle per second : =A09.8 =A0 =A0 in=
+terval: 20.0s</div><div>Power usage (ACPI estimate): 8.3W (6.8 hours)</div>
+<div>Top causes for wakeups:</div><div>=A0=A028.4% ( =A04.5) =A0 [kernel co=
+re] hrtimer_start (tick_sched_timer)</div><div>=A0=A025.9% ( =A04.0) =A0 Xo=
+rg</div></div><div><br></div><div>turning of the virtual CPU1 drastically r=
+educed the number of &quot;load balancing ticks&quot; and gave me substanti=
+al time in C4 (103ms vs 55ms) but power jumped substantially.</div>
+<div><br></div><div>Anyhow, I have no idea how to proceed. =A0I have manage=
+d to get the cpu into lower sleep-states for longer periods of time, but my=
+ power reported by ACPI has been negatively affected.</div><div><br></div>
+<div>Thanks,</div><div>.Geoff</div>
+
+--0016364d1d1d52f849048d82ffe5--
+
+--===============4436035254414525051==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============4436035254414525051==--
