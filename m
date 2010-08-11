@@ -1,8 +1,8 @@
-From: Brian Swetland <swetland@google.com>
+From: Felipe Contreras <felipe.contreras@gmail.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Wed, 11 Aug 2010 14:37:55 -0700
-Message-ID: <AANLkTinOb5PsrLbMzbYVqqx=6n-yPNRCYgOf4fM5KdXJ__47774.68593461$1281562725$gmane$org@mail.gmail.com>
+Date: Thu, 12 Aug 2010 01:03:46 +0300
+Message-ID: <AANLkTimAKwDPYZeCj_UEyXf-6DxLg8=Zi-=tFKzzgvQi__32356.2701618814$1281564282$gmane$org@mail.gmail.com>
 References: <20100806225453.GA3947@linux.vnet.ibm.com>
 	<alpine.DEB.2.00.1008061651530.30564@asgard.lang.hm>
 	<AANLkTikyRhtfX4R3x_NDgHnXssmfVuhjC5PbhRZ0a7su@mail.gmail.com>
@@ -15,11 +15,12 @@ References: <20100806225453.GA3947@linux.vnet.ibm.com>
 	<AANLkTinNc1SWmz8pE_4k6vThxQCJfCR_UqV6OM=OsJOf@mail.gmail.com>
 	<20100811193106.GB24435@thunk.org>
 	<AANLkTinBrp1iHWAi=vk_eaEHMs+Xcub6rg8PgT_LK2c9@mail.gmail.com>
+	<AANLkTinOb5PsrLbMzbYVqqx=6n-yPNRCYgOf4fM5KdXJ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinBrp1iHWAi=vk_eaEHMs+Xcub6rg8PgT_LK2c9@mail.gmail.com>
+In-Reply-To: <AANLkTinOb5PsrLbMzbYVqqx=6n-yPNRCYgOf4fM5KdXJ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,37 +30,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Felipe Contreras <felipe.contreras@gmail.com>
+To: Brian Swetland <swetland@google.com>
 Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, swmike@swm.pp.se, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 11, 2010 at 2:25 PM, Felipe Contreras
-<felipe.contreras@gmail.com> wrote:
-> Now, only Android has decided to use suspend blockers, that's a
-> *fact*, and I wanted to narrow the discussion to Android in order to
-> make it easier to understand that Android doesn't need suspend
-> blockers, once we have agreed that, then I'd gladly discuss it's
-> merits outside Android.
-
-On behalf of the Android folks, we don't agree with this.  If you're
-going to wait until we suddenly change our minds, I think you're going
-to be in for a long wait.
-
-> I argued to you that suspend-blockers are not required in Android, and
-> suddenly you decide we should agree to disagree without arguing back?
-> Well, suit yourself. I still maintain that suspend-blockers is just an
-> expensive workaround, and in some cases actually degrades power
-> consumption; the right solution is much more sophisticated.
-
-Once "the right solution" exists and solves our problems, we'll
-certainly look into switching over to it.  I've yet to see a proposal
-in all this arguing that appears to me to be an improvement over what
-we have today with suspend blockers.  I find the "don't do what you're
-doing because someday, somebody will do it better" to be an
-uncompelling argument.
-
-Given your opinion that Android lacks multitasking (what? really?) and
-various other strange statements about the platform, I'm likely to be
-taking your suggestions with generous helping of skepticism.
-
-Brian
+T24gVGh1LCBBdWcgMTIsIDIwMTAgYXQgMTI6MzcgQU0sIEJyaWFuIFN3ZXRsYW5kIDxzd2V0bGFu
+ZEBnb29nbGUuY29tPiB3cm90ZToKPiBPbiBXZWQsIEF1ZyAxMSwgMjAxMCBhdCAyOjI1IFBNLCBG
+ZWxpcGUgQ29udHJlcmFzCj4gPGZlbGlwZS5jb250cmVyYXNAZ21haWwuY29tPiB3cm90ZToKPj4g
+Tm93LCBvbmx5IEFuZHJvaWQgaGFzIGRlY2lkZWQgdG8gdXNlIHN1c3BlbmQgYmxvY2tlcnMsIHRo
+YXQncyBhCj4+ICpmYWN0KiwgYW5kIEkgd2FudGVkIHRvIG5hcnJvdyB0aGUgZGlzY3Vzc2lvbiB0
+byBBbmRyb2lkIGluIG9yZGVyIHRvCj4+IG1ha2UgaXQgZWFzaWVyIHRvIHVuZGVyc3RhbmQgdGhh
+dCBBbmRyb2lkIGRvZXNuJ3QgbmVlZCBzdXNwZW5kCj4+IGJsb2NrZXJzLCBvbmNlIHdlIGhhdmUg
+YWdyZWVkIHRoYXQsIHRoZW4gSSdkIGdsYWRseSBkaXNjdXNzIGl0J3MKPj4gbWVyaXRzIG91dHNp
+ZGUgQW5kcm9pZC4KPgo+IE9uIGJlaGFsZiBvZiB0aGUgQW5kcm9pZCBmb2xrcywgd2UgZG9uJ3Qg
+YWdyZWUgd2l0aCB0aGlzLiDCoElmIHlvdSdyZQo+IGdvaW5nIHRvIHdhaXQgdW50aWwgd2Ugc3Vk
+ZGVubHkgY2hhbmdlIG91ciBtaW5kcywgSSB0aGluayB5b3UncmUgZ29pbmcKPiB0byBiZSBpbiBm
+b3IgYSBsb25nIHdhaXQuCgpJJ20gc3VyZSBhcyBhIHRlYW0gdGhhdCdzIHRoZSBjYXNlLCBidXQg
+eW91IGNhbid0IGtub3cgd2hhdCdzIGluIHRoZQptaW5kIG9mIGV2ZXJ5b25lIGF0IEdvb2dsZSAo
+bm90IEFuZHJvaWQpLgoKPj4gSSBhcmd1ZWQgdG8geW91IHRoYXQgc3VzcGVuZC1ibG9ja2VycyBh
+cmUgbm90IHJlcXVpcmVkIGluIEFuZHJvaWQsIGFuZAo+PiBzdWRkZW5seSB5b3UgZGVjaWRlIHdl
+IHNob3VsZCBhZ3JlZSB0byBkaXNhZ3JlZSB3aXRob3V0IGFyZ3VpbmcgYmFjaz8KPj4gV2VsbCwg
+c3VpdCB5b3Vyc2VsZi4gSSBzdGlsbCBtYWludGFpbiB0aGF0IHN1c3BlbmQtYmxvY2tlcnMgaXMg
+anVzdCBhbgo+PiBleHBlbnNpdmUgd29ya2Fyb3VuZCwgYW5kIGluIHNvbWUgY2FzZXMgYWN0dWFs
+bHkgZGVncmFkZXMgcG93ZXIKPj4gY29uc3VtcHRpb247IHRoZSByaWdodCBzb2x1dGlvbiBpcyBt
+dWNoIG1vcmUgc29waGlzdGljYXRlZC4KPgo+IE9uY2UgInRoZSByaWdodCBzb2x1dGlvbiIgZXhp
+c3RzIGFuZCBzb2x2ZXMgb3VyIHByb2JsZW1zLCB3ZSdsbAo+IGNlcnRhaW5seSBsb29rIGludG8g
+c3dpdGNoaW5nIG92ZXIgdG8gaXQuIMKgSSd2ZSB5ZXQgdG8gc2VlIGEgcHJvcG9zYWwKPiBpbiBh
+bGwgdGhpcyBhcmd1aW5nIHRoYXQgYXBwZWFycyB0byBtZSB0byBiZSBhbiBpbXByb3ZlbWVudCBv
+dmVyIHdoYXQKPiB3ZSBoYXZlIHRvZGF5IHdpdGggc3VzcGVuZCBibG9ja2Vycy4gwqBJIGZpbmQg
+dGhlICJkb24ndCBkbyB3aGF0IHlvdSdyZQo+IGRvaW5nIGJlY2F1c2Ugc29tZWRheSwgc29tZWJv
+ZHkgd2lsbCBkbyBpdCBiZXR0ZXIiIHRvIGJlIGFuCj4gdW5jb21wZWxsaW5nIGFyZ3VtZW50LgoK
+VGhhdCB3YXMgbm90IGFuIGFyZ3VtZW50LCBpdCB3YXMgYW4gb3Bpbmlvbi4gSWYgeW91IHdhbnQg
+YW4gYXJndW1lbnQKZ28gYmFjayB0byByZWFkIHRoaXMgb25lOgpodHRwOi8vYXJ0aWNsZS5nbWFu
+ZS5vcmcvZ21hbmUubGludXgua2VybmVsLzEwMjE4MzQKCj4gR2l2ZW4geW91ciBvcGluaW9uIHRo
+YXQgQW5kcm9pZCBsYWNrcyBtdWx0aXRhc2tpbmcgKHdoYXQ/IHJlYWxseT8pCgpUaGlzIGlzIHdo
+YXQgSSdtIHRhbGtpbmcgYWJvdXQgd2hlbiBJIHNheSBtdWx0aS10YXNraW5nLCBBbmRyb2lkCmNl
+cnRhaW5seSBkb2Vzbid0IGhhdmUgYW55dGhpbmcgcmVtb3RlbHkgbGlrZSB0aGF0OgpodHRwOi8v
+d3d3LnlvdXR1YmUuY29tL3dhdGNoP3Y9N2VtdlVCcEVrYlUKCi0tIApGZWxpcGUgQ29udHJlcmFz
+Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBt
+IG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczov
+L2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
