@@ -1,20 +1,24 @@
-From: Brian Swetland <swetland@google.com>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Thu, 12 Aug 2010 12:19:34 -0700
-Message-ID: <AANLkTimjfU2zu4reEVdOwWwtFHPQ33_Gna6xS2XHRG-h__9393.76547835327$1281640826$gmane$org@mail.gmail.com>
-References: <AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
-	<Pine.LNX.4.44L0.1008120733130.21006-100000@netrider.rowland.org>
-	<AANLkTinMwt27wuDUh32F36wpoC54Syzp1_nK9UCxYmEK@mail.gmail.com>
-	<20100812125248.GA2763@thunk.org>
-	<AANLkTin4=qpDWEKLwes_af6mSCW+ED7v-fWzD34JywU1@mail.gmail.com>
-	<20100812182128.GC2763@thunk.org>
-	<AANLkTinZ_gViUjVmEbkmour3BC=PcchJDARs4GaCuQwO@mail.gmail.com>
+Date: Thu, 12 Aug 2010 21:27:39 +0200
+Message-ID: <20100812192739.GA11390__41103.257580153$1281641307$gmane$org@isilmar-3.linta.de>
+References: <20100812010612.GL2516@linux.vnet.ibm.com>
+	<AANLkTinVV1NVHFPeO0p_e2pCtNwTNB932q9tbu9MMD3_@mail.gmail.com>
+	<20100812034435.GA7403@linux.vnet.ibm.com>
+	<AANLkTi=RD=eM_gpc7FfRq0923sUbARmZ2+4-m+fLibYC@mail.gmail.com>
+	<E3F3D3E1-4DF7-47E3-895D-95F6BC22CCC4@mit.edu>
+	<AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
+	<20100812140903.GB11362@sirena.org.uk>
+	<AANLkTik=K2znpgiHVgA1oD5Znrmm0Gx45ajfoQ7AwG3F@mail.gmail.com>
+	<AANLkTi=9v0o5pQ6s=sjjnk0udmrBAiy4wD+h2vrn_h8=@mail.gmail.com>
+	<AANLkTiniku7rqkio-T6f9tL_adJSrDKfU33wFEEkeMVH@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinZ_gViUjVmEbkmour3BC=PcchJDARs4GaCuQwO@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <AANLkTiniku7rqkio-T6f9tL_adJSrDKfU33wFEEkeMVH@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,46 +29,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, swmike@swm.pp.se, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
+Cc: david@lang.hm, menage@google.com, Theodore Tso <tytso@mit.edu>, arjan@infradead.org, peterz@infradead.org, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, galibert@pobox.com, linux-kernel@vger.kernel.org, florian@mickler.org, James.Bottomley@suse.de, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, swmike@swm.pp.se
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 12, 2010 at 12:05 PM, Felipe Contreras
-<felipe.contreras@gmail.com> wrote:
-> On Thu, Aug 12, 2010 at 9:21 PM, Ted Ts'o <tytso@mit.edu> wrote:
->> On Thu, Aug 12, 2010 at 07:46:03PM +0300, Felipe Contreras wrote:
->>
->>> All the Android community had to do is push the drivers *without*
->>> suspend blockers, then the Android kernel wouldn't be so different and
->>> thus wouldn't be considered a fork. AFAIU the kernel side wakelocks
->>> are already in the kernel, so there's no excuse not to merge the
->>> drivers.
->>
->> What's there is not good enough, because it's missing the statistics
->> and reporting so that badly behaved kernel and userspace drivers that
->> take wakelocks can be found.
->
-> You don't need to have all the code merged in, hell, you only needed
-> wakelock stubs.
->
-> You should take the point of view of the community as a whole, and
-> forget about Android for a second; the important thing is to bring the
-> code-bases closer, and that means merging the drivers. For that, you
-> don't need anything extra.
+Felipe,
 
-Stubs would be 100% fine by me.  Previous discussion has indicated
-that they are not acceptable without some firm timeline for removal.
-I don't think I can commit to a firm removal timeline while we're
-still making almost no forward progress.
+> If you think suspend blockers are useful for you, great, use them. I
+> just don't see why they should be merged if nobody is going to use
+> them but you.
 
-If we don't have to commit to yanking them back out in two releases or
-whatnot, then awesome, let's drop some stubs in and off we go,
-worrying about merging drivers that everyone agrees they want.
+Aren't there many drivers in the kernel sources which are only used by very
+few users? Android is used by million users, albeit on one platform, but I
+don't see this to be a valid reason to keep this functionality out of the
+kernel.
 
-Question though -- has every feature ever added to the kernel been a
-feature that there's pre-existing usage of?  Seems like a chicken and
-egg problem.  Also, some people seem to think there's value in being
-able to build kernels "out of the box" that work with the Android
-userspace -- given that there are a few devices out there that have
-that userspace on 'em.
-
-Brian
+Best,
+	Dominik
