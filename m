@@ -1,11 +1,9 @@
-From: Felipe Contreras <felipe.contreras@gmail.com>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Thu, 12 Aug 2010 04:25:21 +0300
-Message-ID: <AANLkTinVV1NVHFPeO0p_e2pCtNwTNB932q9tbu9MMD3___44053.6033631817$1281576518$gmane$org@mail.gmail.com>
-References: <20100807061558.GA28087@thunk.org>
-	<AANLkTi=sMVjya9CH6UoZwJCXJTDRgBhnPXmApU_RHVTi@mail.gmail.com>
-	<20100808155719.GB3635@thunk.org>
+Date: Wed, 11 Aug 2010 20:44:35 -0700
+Message-ID: <20100812034435.GA7403__30658.7782725275$1281584789$gmane$org@linux.vnet.ibm.com>
+References: <20100808155719.GB3635@thunk.org>
 	<AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
 	<20100808213821.GD3635@thunk.org>
 	<20100809112453.77210acc@lxorguk.ukuu.org.uk>
@@ -14,11 +12,14 @@ References: <20100807061558.GA28087@thunk.org>
 	<20100811222854.GJ2516@linux.vnet.ibm.com>
 	<AANLkTimahmGikeai8QnAxCy45deT00-6T7h-eA-NqL4G@mail.gmail.com>
 	<20100812010612.GL2516@linux.vnet.ibm.com>
+	<AANLkTinVV1NVHFPeO0p_e2pCtNwTNB932q9tbu9MMD3_@mail.gmail.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100812010612.GL2516@linux.vnet.ibm.com>
+Content-Disposition: inline
+In-Reply-To: <AANLkTinVV1NVHFPeO0p_e2pCtNwTNB932q9tbu9MMD3_@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,50 +29,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paulmck@linux.vnet.ibm.com
+To: Felipe Contreras <felipe.contreras@gmail.com>
 Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBBdWcgMTIsIDIwMTAgYXQgNDowNiBBTSwgUGF1bCBFLiBNY0tlbm5leQo8cGF1bG1j
-a0BsaW51eC52bmV0LmlibS5jb20+IHdyb3RlOgo+IE9uIFRodSwgQXVnIDEyLCAyMDEwIGF0IDAz
-OjI4OjAwQU0gKzAzMDAsIEZlbGlwZSBDb250cmVyYXMgd3JvdGU6Cj4+IE9uIFRodSwgQXVnIDEy
-LCAyMDEwIGF0IDE6MjggQU0sIFBhdWwgRS4gTWNLZW5uZXkKPj4gPHBhdWxtY2tAbGludXgudm5l
-dC5pYm0uY29tPiB3cm90ZToKPj4gPiBPbiBXZWQsIEF1ZyAxMSwgMjAxMCBhdCAxMDoxODo1MVBN
-ICswMzAwLCBGZWxpcGUgQ29udHJlcmFzIHdyb3RlOgo+PiA+PiBPbiBNb24sIEF1ZyA5LCAyMDEw
-IGF0IDk6MTYgUE0sIFBhdWwgRS4gTWNLZW5uZXkKPj4gPj4gPHBhdWxtY2tAbGludXgudm5ldC5p
-Ym0uY29tPiB3cm90ZToKPj4gPj4gPiBCdXQgd291bGRuJ3QgYW4gb2ZmaWNlIHN1aXRlIHJ1biBh
-cyBhIHBvd2VyLW9ibGl2aW91cyBhcHBsaWNhdGlvbiBvbiBhbgo+PiA+PiA+IEFuZHJvaWQgZGV2
-aWNlPyDCoEFmdGVyIGFsbCwgb2ZmaWNlIGFwcGxpY2F0aW9ucyBkbyBub3QgbmVlZCB0byBydW4g
-d2hlbgo+PiA+PiA+IHRoZSBzY3JlZW4gaXMgdHVybmVkIG9mZiwgc28gdGhlc2UgdGhlIGFwcGxp
-Y2F0aW9ucyBkbyBub3QgbmVlZCB0byB1c2UKPj4gPj4gPiBzdXNwZW5kIGJsb2NrZXJzLgo+PiA+
-Pgo+PiA+PiBJZGVhbGx5IHRoZSBzeXN0ZW0gd291bGQgYmUgc3VzcGVuZGVkIGV2ZW4gd2hlbiB0
-aGUgc2NyZWVuIGlzIG9uLiBJZgo+PiA+PiB0aGVyZSBhcmUgbm8gInRydXN0ZWQiIGFwcGxpY2F0
-aW9ucyBydW5uaW5nIGF0IHRoZSBzYW1lIHRpbWUsIHRoZW4KPj4gPj4gb3Blbm9mZmljZSB3b3Vs
-ZG4ndCBsb2FkIGF0IGFsbC4gUmlnaHQ/Cj4+ID4KPj4gPiBNeSB1bmRlcnN0YW5kaW5nIGlzIHRo
-YXQgQW5kcm9pZCBzeXN0ZW1zIGluIGZhY3QgZG8gbm90IHN1c3BlbmQgd2hlbgo+PiA+IHRoZSBz
-Y3JlZW4gaXMgb24sIGFuZCB0aGF0IG1vc3QgKHBlcmhhcHMgYWxsKSBvdGhlciBzeXN0ZW1zIGRv
-IG5vdAo+PiA+IG9wcG9ydHVuaXN0aWNhbGx5IHN1c3BlbmQgYXQgYWxsLiDCoFRoZXJlIGhhcyBi
-ZWVuIHNvbWUgc3BlY3VsYXRpb24gYWJvdXQKPj4gPiB3aGF0IGEgaHlwb3RoZXRpY2FsIEFuZHJv
-aWQgaGF2aW5nIGEgbm9uLXZvbGF0aWxlIGRpc3BsYXkgbWlnaHQgZG8sCj4+ID4gYnV0IGFzIGZh
-ciBhcyBJIGtub3csIHRoaXMgaXMganVzdCBzcGVjdWxhdGlvbi4KPj4KPj4gSSBoYXZlIGEgZGVz
-a3RvcCBzeXN0ZW0gaW4gbWluZC4gSWYgb3Bwb3J0dW5pc3RpYyBzdXNwZW5kIGlzIG9ubHkKPj4g
-dHJpZ2dlcmVkIHdoZW4gdGhlIGRpc3BsYXkgaXMgb2ZmLCB0aGVuIGl0J3Mgbm8gZ29vZCBmb3Ig
-bm9ybWFsIHVzYWdlLAo+PiBhbmQgdGhlcmVmb3JlIGR5bmFtaWMgUEMgbmVlZHMgdG8gZ2V0IGl0
-cyBhY3QgdG9nZXRoZXIuLi4gc3BlY2lhbGx5Cj4+IGZvciBsYXB0b3BzLgo+Cj4gSWYgSSB1bmRl
-cnN0YW5kIHlvdSBjb3JyZWN0bHksIHlvdSBhcmUgc2F5aW5nIHRoYXQgYm90aCBvcHBvcnR1bmlz
-dGljCj4gc3VzcGVuZCBhbmQgZHluYW1pYyBwb3dlciBjb250cm9sIHNob3VsZCBiZSB1c2VkIHRv
-Z2V0aGVyLCB3aXRoIGR5bmFtaWMKPiBwb3dlciBjb250cm9sIGJlaW5nIHVzZWQgZm9yIHNob3J0
-IG5vbi1idXN5IHBlcmlvZHMgKGFzIGluIGJldHdlZW4KPiBrZXlzdHJva2VzKSBhbmQgb3Bwb3J0
-dW5pc3RpYyBzdXNwZW5kIGJlaW5nIHVzZWQgZm9yIGxvbmdlciBub24tYnVzeQo+IHBlcmlvZHMg
-KGFzIGluIHdoaWxlIGdyYWJiaW5nIGEgY29mZmVlKS4gwqBUaGF0IGNvbWJpbmF0aW9uIG9mIHVz
-YWdlCj4gc291bmRzIHByb21pc2luZyB0byBtZS4KCk5vLiBJbiB0aGUgZnV0dXJlIHg4NiB3aWxs
-IGJlIGZpeGVkLCBidXQgZm9yIG5vdyBsZXQncyBpbWFnaW5lIGFuIEFSTSBsYXB0b3AuCgo+IFRo
-YXQgc2FpZCwgSSBkb24ndCBrbm93IHRoYXQgYW55b25lIGhhcyByZWFsbHkgc2F0IGRvd24gYW5k
-IHRob3VnaHQKPiB0aHJvdWdoIGhvdyBvbmUgbWlnaHQgYXBwbHkgc3VzcGVuZCBibG9ja2VycyB0
-byBhIGRlc2t0b3Agc3lzdGVtLgo+IEkgc3VzcGVjdCB0aGF0IHRoZXJlIGFyZSBzZXZlcmFsIHdh
-eXMgdG8gZ28gYWJvdXQgaXQuCgpUaGluayBpbiB0ZXJtcyBvZiBhbiBBUk0gbGFwdG9wLiBXaGF0
-IGdvb2QgaXMgb3Bwb3J0dW5pc3RpYyBzdXNwZW5kIGlmCml0J3Mgbm90IGdvaW5nIHRvIGhlbHAg
-d2hlbiB0aGUgbGFwdG9wIGlzIGJlaW5nIHVzZWQ/CgotLSAKRmVsaXBlIENvbnRyZXJhcwpfX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWls
-aW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0
-cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Thu, Aug 12, 2010 at 04:25:21AM +0300, Felipe Contreras wrote:
+> On Thu, Aug 12, 2010 at 4:06 AM, Paul E. McKenney
+> <paulmck@linux.vnet.ibm.com> wrote:
+> > On Thu, Aug 12, 2010 at 03:28:00AM +0300, Felipe Contreras wrote:
+> >> On Thu, Aug 12, 2010 at 1:28 AM, Paul E. McKenney
+> >> <paulmck@linux.vnet.ibm.com> wrote:
+> >> > On Wed, Aug 11, 2010 at 10:18:51PM +0300, Felipe Contreras wrote:
+> >> >> On Mon, Aug 9, 2010 at 9:16 PM, Paul E. McKenney
+> >> >> <paulmck@linux.vnet.ibm.com> wrote:
+> >> >> > But wouldn't an office suite run as a power-oblivious application=
+ on an
+> >> >> > Android device? =A0After all, office applications do not need to =
+run when
+> >> >> > the screen is turned off, so these the applications do not need t=
+o use
+> >> >> > suspend blockers.
+> >> >>
+> >> >> Ideally the system would be suspended even when the screen is on. If
+> >> >> there are no "trusted" applications running at the same time, then
+> >> >> openoffice wouldn't load at all. Right?
+> >> >
+> >> > My understanding is that Android systems in fact do not suspend when
+> >> > the screen is on, and that most (perhaps all) other systems do not
+> >> > opportunistically suspend at all. =A0There has been some speculation=
+ about
+> >> > what a hypothetical Android having a non-volatile display might do,
+> >> > but as far as I know, this is just speculation.
+> >>
+> >> I have a desktop system in mind. If opportunistic suspend is only
+> >> triggered when the display is off, then it's no good for normal usage,
+> >> and therefore dynamic PC needs to get its act together... specially
+> >> for laptops.
+> >
+> > If I understand you correctly, you are saying that both opportunistic
+> > suspend and dynamic power control should be used together, with dynamic
+> > power control being used for short non-busy periods (as in between
+> > keystrokes) and opportunistic suspend being used for longer non-busy
+> > periods (as in while grabbing a coffee). =A0That combination of usage
+> > sounds promising to me.
+> =
+
+> No. In the future x86 will be fixed, but for now let's imagine an ARM lap=
+top.
+
+Hmmm...  OK...
+
+> > That said, I don't know that anyone has really sat down and thought
+> > through how one might apply suspend blockers to a desktop system.
+> > I suspect that there are several ways to go about it.
+> =
+
+> Think in terms of an ARM laptop. What good is opportunistic suspend if
+> it's not going to help when the laptop is being used?
+
+For when the laptop is not being used, presumably.
+
+							Thanx, Paul
