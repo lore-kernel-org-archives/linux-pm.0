@@ -1,24 +1,24 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
+From: Felipe Contreras <felipe.contreras@gmail.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Thu, 12 Aug 2010 21:27:39 +0200
-Message-ID: <20100812192739.GA11390__41103.257580153$1281641307$gmane$org@isilmar-3.linta.de>
-References: <20100812010612.GL2516@linux.vnet.ibm.com>
+Date: Thu, 12 Aug 2010 22:34:47 +0300
+Message-ID: <AANLkTim1U6QpRyfwYCq2uRA=7-a8ryfDrzv5VCqmHnyB__11476.3421043337$1281641747$gmane$org@mail.gmail.com>
+References: <20100809181638.GI3026@linux.vnet.ibm.com>
+	<AANLkTikwHaKpLdRdxmZj6JDJnsZ+o-jzbVcXhRW3Jmd9@mail.gmail.com>
+	<20100811222854.GJ2516@linux.vnet.ibm.com>
+	<AANLkTimahmGikeai8QnAxCy45deT00-6T7h-eA-NqL4G@mail.gmail.com>
+	<20100812010612.GL2516@linux.vnet.ibm.com>
 	<AANLkTinVV1NVHFPeO0p_e2pCtNwTNB932q9tbu9MMD3_@mail.gmail.com>
 	<20100812034435.GA7403@linux.vnet.ibm.com>
 	<AANLkTi=RD=eM_gpc7FfRq0923sUbARmZ2+4-m+fLibYC@mail.gmail.com>
 	<E3F3D3E1-4DF7-47E3-895D-95F6BC22CCC4@mit.edu>
 	<AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
-	<20100812140903.GB11362@sirena.org.uk>
-	<AANLkTik=K2znpgiHVgA1oD5Znrmm0Gx45ajfoQ7AwG3F@mail.gmail.com>
-	<AANLkTi=9v0o5pQ6s=sjjnk0udmrBAiy4wD+h2vrn_h8=@mail.gmail.com>
-	<AANLkTiniku7rqkio-T6f9tL_adJSrDKfU33wFEEkeMVH@mail.gmail.com>
+	<20100812174303.GD2524@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTiniku7rqkio-T6f9tL_adJSrDKfU33wFEEkeMVH@mail.gmail.com>
+In-Reply-To: <20100812174303.GD2524@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,20 +28,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: david@lang.hm, menage@google.com, Theodore Tso <tytso@mit.edu>, arjan@infradead.org, peterz@infradead.org, Brian Swetland <swetland@google.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, galibert@pobox.com, linux-kernel@vger.kernel.org, florian@mickler.org, James.Bottomley@suse.de, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, swmike@swm.pp.se
+To: paulmck@linux.vnet.ibm.com
+Cc: david@lang.hm, Theodore Tso <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Felipe,
-
-> If you think suspend blockers are useful for you, great, use them. I
-> just don't see why they should be merged if nobody is going to use
-> them but you.
-
-Aren't there many drivers in the kernel sources which are only used by very
-few users? Android is used by million users, albeit on one platform, but I
-don't see this to be a valid reason to keep this functionality out of the
-kernel.
-
-Best,
-	Dominik
+T24gVGh1LCBBdWcgMTIsIDIwMTAgYXQgODo0MyBQTSwgUGF1bCBFLiBNY0tlbm5leQo8cGF1bG1j
+a0BsaW51eC52bmV0LmlibS5jb20+IHdyb3RlOgo+IE9uIFRodSwgQXVnIDEyLCAyMDEwIGF0IDAy
+OjExOjIyUE0gKzAzMDAsIEZlbGlwZSBDb250cmVyYXMgd3JvdGU6Cj4+IFNvIGZhciwgbm9ib2R5
+IGhhcyByZWZ1dGVkIHRoZXNlOgo+PiDCoDEpIG9wcG9ydHVuaXN0aWMgc3VzcGVuZCBuZWVkcyBh
+IGdvb2QgYmVoYXZlZCB1c2VyLXNwYWNlIHRvIHdvcmsgcHJvcGVybHkKPgo+IEFzIGRvZXMgZHlu
+YW1pYyBwb3dlciBtYW5hZ2VtZW50LgoKVGh1cyByZW1haW5zIHVucmVmdXRlZC4KCj4+IMKgMikg
+aWYgc3VzcGVuZCBibG9ja2VycyBhcmUgZW5hYmxlZCBpbiBhIHN5c3RlbSwgKmFsbCogdXNlci1z
+cGFjZSBtdXN0Cj4+IGltcGxlbWVudCB0aGVtIHRvIHdvcmsgY29ycmVjdGx5Cj4KPiBSZWFsbHk/
+IMKgRnJvbSB3aGF0IEkgY2FuIHNlZSwgb25seSBQTS1kcml2aW5nIGFwcGxpY2F0aW9ucyBuZWVk
+IHRvIHVzZQo+IHN1c3BlbmQgYmxvY2tlcnMuCgoiUE0tZHJpdmluZyBhcHBsaWNhdGlvbnMiIGlz
+IGEgbmV3IGludmVudGlvbiwgc28gaG93IGRvIHlvdSBrbm93IGlmIGFuCmFwcGxpY2F0aW9uIGJl
+bG9uZ3MgdG8gdGhpcyBjYXRlZ29yeSBvciBub3Q/IFNvbWUgYXBwbGljYXRpb24gbWlnaHQgYmUK
+bm9uLVBNLWRyaXZpbmcgbW9zdCBvZiB0aGUgdGltZSwgYnV0IHN1ZGRlbmx5IGJlY29tZSBQTS1k
+cml2aW5nLiBXZWxsLAp5b3UgaGF2ZSB0byBhbmFseXplICphbGwqIG9mIHRoZW0uCgpUaGluayBh
+Ym91dCB0aGlzLi4uIGlzIGJhc2ggYSBQTSBkcml2aW5nIGFwcGxpY2F0aW9uPyBObywgYnV0IHdo
+YXQgaWYKeW91IHJ1bjogJ3NsZWVwIDM2MDAgJiYgYWxhcm0uc2gnLgoKUGVyaGFwcyBJIHNob3Vs
+ZCByZXdyaXRlIHRoYXQgYXM6CjIpIGlmIHN1c3BlbmQgYmxvY2tlcnMgYXJlIGVuYWJsZWQgaW4g
+dGhlIHN5c3RlbTsgKmFsbCogdXNlci1zcGFjZSBpcyBhZmZlY3RlZAoKPj4gwqAzKSBpbXBsZW1l
+bnRpbmcgc3VzcGVuZCBibG9ja2VycyBpbiB1c2VyLXNwYWNlIGlzIG5vdCBhIHN0cmFpZ2h0LWZv
+cndhcmQgdGFzawo+Cj4gRm9ydHVuYXRlbHksIGV4cGVyaWVuY2UgdGh1cyBmYXIgaGFzIHNob3du
+IHRoYXQgb25seSBhIHNtYWxsIGZyYWN0aW9uIG9mCj4gYXBwbGljYXRpb25zIG5lZWQgdG8gdXNl
+IHN1c3BlbmQgYmxvY2tlcnMuCgpXcm9uZy4gV2UgZG9uJ3QgaGF2ZSBhbnkgZXhwZXJpZW5jZSBv
+biB0aGF0IGF0IGFsbCBvbiB0eXBpY2FsIGxpbnV4CmVjb3N5c3RlbXMgKHJlbWVtYmVyIHRoYXQg
+QW5kcm9pZCdzIHVzZXItc3BhY2UgaXMgdmVyeSBzcGVjaWFsKS4KCj4+IFNvLCBhcyB0aGUgbGVu
+Z3RoIG9mIHRoaXMgdGhyZWFkIGhhcyBzaG93biwgdGhlIGJlbmVmaXRzIG9mCj4+IG9wcG9ydHVu
+aXN0aWMgc3VzcGVuZCBhcmUgKmR1YmlvdXMqIGF0IGJlc3QsIGFuZCBtb3JlIGxpa2VseSBub3Qg
+d29ydGgKPj4gdGhlIGNoYW5nZXMgbmVlZGVkIGluIHVzZXItc3BhY2Ugd2hpY2ggZXZlbnR1YWxs
+eSB3aWxsIGdldCBwcmV0dHkKPj4gY2xvc2UgdG8gd2hhdCBzdXNwZW5kIGJsb2NrZXJzIGNhbiBh
+Y2hpZXZlIGV2ZW4gaW4gaWRlYWwgY2lyY3Vtc3RhbmNlcwo+PiBieSBqdXN0IGRvaW5nIGR5bmFt
+aWMgUE0uCj4KPiBUaGUgbGVuZ3RoIG9mIHRoaXMgdGhyZWFkIChhbmQgdGhlIG9uZXMgcHJlY2Vk
+aW5nIGl0KSBpcyBtb3N0bHkgZHVlIHRvCj4gcGVvcGxlIHRhbGtpbmcgcGFzdCBlYWNoIG90aGVy
+LgoKUGVyaGFwcyBoYWxmIG9mIHRoZSB0aHJlYWQsIG9yIGV2ZW4gb25lIHF1YXJ0ZXIgb2YgdGhl
+IHRocmVhZCBjYW4gYmUKYXR0cmlidXRlZCB0byB0aGF0LCBidXQgc3RpbGwgdGhlIHJlc3QgSSB0
+aGluayBpdCdzIGJlY2F1c2UgcGVvcGxlCmtlZXAgcHVzaGluZyBpbiwgYW5kIHBlb3BsZSBrZWVw
+IHB1c2hpbmcgb3V0LgoKPiBGb3IgZXhhbXBsZSwgdGhlIEFuZHJvaWQgZm9sa3Mgc2VlbSB0bwo+
+IGJlbGlldmUgdGhhdCBpdCBpcyBpbXBvcnRhbnQgdGhhdCByZWxhdGl2ZWx5IHVuc2tpbGxlZCBw
+ZW9wbGUgYmUgYWJsZQo+IHRvIHdyaXRlIHNpbXBsZSBhcHBzLCBhbmQgdGhhdCB0aGUgc3lzdGVt
+IG5ldmVydGhlbGVzcyBiZSBhYmxlIHRvIHJ1bgo+IHRoZXNlIGFwcHMgaW4gYSByZWxhdGl2ZWx5
+IGVuZXJneSBlZmZpY2llbnQgbWFubmVyLiDCoFlvdXIgcHJvcG9zYWxzIGRvCj4gbm90IGFkZHJl
+c3MgdGhpcyBpc3N1ZS4gwqBUaGlzIG1pZ2h0IGJlIGJlY2F1c2UgeW91IGFyZSBub3QgYXdhcmUg
+b2YKPiB0aGlzIGRlc2lyZSwgYmVjYXVzZSB5b3UgYXJlIG5vdCBhd2FyZSBvZiB0aGUgY29tcHV0
+aW5nIGhpc3RvcnkgdGhhdAo+IGFyZ3VlcyBpbiBmYXZvciBvZiB0aGlzIHJlcXVpcmVtZW50LCBv
+ciBiZWNhdXNlIHlvdSBzaW1wbHkgZG9uJ3QgbGlrZQo+IHRoaXMgcmVxdWlyZW1lbnQuIMKgV2hh
+dGV2ZXIgdGhlIHJlYXNvbiwgdW50aWwgeW91IGZhY2UgdGhpcyByZXF1aXJlbWVudAo+IGhlYWQg
+b24sIGVpdGhlciBhZGRyZXNzaW5nIGl0IG9yIHByb3ZpbmcgdGhhdCBpdCBuZWVkIG5vdCBiZSBh
+ZGRyZXNzZWQsCj4geW91IHdpbGwgY29udGludWUgdG8gYmUgdGFsa2luZyBwYXN0IHRoZSBBbmRy
+b2lkIGZvbGtzLgoKVGhpcyAicmVxdWlyZW1lbnQiIGlzIHNwZWNpZmljIHRvIEFuZHJvaWQncyB1
+c2VyLXNwYWNlLCBpc24ndCBpdD8KCk5vdCBVYnVudHUsIG5vdCBGZWRvcmEsIG5vdCBNZWVHbywg
+bm90IGFueW9uZSB3aXRoIGEgdHlwaWNhbAp1c2VyLXNwYWNlIHNlZW1zIHRvIGJlIGhhdmluZyB0
+aGlzIHByb2JsZW0uIEkgY2FuIGFyZ3VlIHRvIHlvdSB0aGF0CnRoaXMgcHJvYmxlbSBjYW4gYmUg
+c29sdmVkIGluIGVhc2llciB3YXlzLCBidXQgaW5zdGVhZCBJIHdpbGwgYXJndWUKdGhhdCBwZXJo
+YXBzIHdlIHNob3VsZCB3YWl0IGZvciBzb21lYm9keSBiZXNpZGVzIEFuZHJvaWQgdG8gY29tcGxh
+aW4KYWJvdXQgaXQgYmVmb3JlIHByb3ZpZGluZyBhICJzb2x1dGlvbiIuIEJlY2F1c2UgYWZ0ZXIg
+YWxsLCB3aGF0IGdvb2QKaXMgYSAic29sdXRpb24iIHByb3ZpZGVkIGJ5IHRoZSBrZXJuZWwsIGlm
+IHRoZSB1c2VyLXNwYWNlIGlzIG5vdCBnb2luZwp0byB1c2UgaXQsIGV2ZXIuCgotLSAKRmVsaXBl
+IENvbnRyZXJhcwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+XwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5v
+cmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xp
+bnV4LXBt
