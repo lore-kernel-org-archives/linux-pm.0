@@ -1,25 +1,24 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+From: Felipe Contreras <felipe.contreras@gmail.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Thu, 12 Aug 2010 10:43:03 -0700
-Message-ID: <20100812174303.GD2524__22373.7367931337$1281635056$gmane$org@linux.vnet.ibm.com>
-References: <20100809181638.GI3026@linux.vnet.ibm.com>
-	<AANLkTikwHaKpLdRdxmZj6JDJnsZ+o-jzbVcXhRW3Jmd9@mail.gmail.com>
-	<20100811222854.GJ2516@linux.vnet.ibm.com>
-	<AANLkTimahmGikeai8QnAxCy45deT00-6T7h-eA-NqL4G@mail.gmail.com>
-	<20100812010612.GL2516@linux.vnet.ibm.com>
-	<AANLkTinVV1NVHFPeO0p_e2pCtNwTNB932q9tbu9MMD3_@mail.gmail.com>
-	<20100812034435.GA7403@linux.vnet.ibm.com>
-	<AANLkTi=RD=eM_gpc7FfRq0923sUbARmZ2+4-m+fLibYC@mail.gmail.com>
-	<E3F3D3E1-4DF7-47E3-895D-95F6BC22CCC4@mit.edu>
-	<AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+Date: Thu, 12 Aug 2010 20:52:22 +0300
+Message-ID: <AANLkTi=51cFa0t5ZYj2CMiauuW80ZWTrm1tQkn63Et0F__42968.5564864942$1281635692$gmane$org@mail.gmail.com>
+References: <20100808213821.GD3635@thunk.org>
+	<20100809112453.77210acc@lxorguk.ukuu.org.uk>
+	<20100809181638.GI3026@linux.vnet.ibm.com>
+	<20100809201822.441905f7@lxorguk.ukuu.org.uk>
+	<20100810044541.GA2817@linux.vnet.ibm.com>
+	<20100810093849.138e2318@lxorguk.ukuu.org.uk>
+	<20100811004223.GH2379@linux.vnet.ibm.com>
+	<AANLkTik7Po9OuKC-QBZ=E83J70sU_ewNi+nNWgcjjLXd@mail.gmail.com>
+	<20100811221258.GI2516@linux.vnet.ibm.com>
+	<AANLkTi=fJjM=uWeV+L66ajM9rhrL0t1OO-C7ThNRdbae@mail.gmail.com>
+	<20100812161935.GC2524@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
+In-Reply-To: <20100812161935.GC2524@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,71 +28,149 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: david@lang.hm, Theodore Tso <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
+To: paulmck@linux.vnet.ibm.com
+Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 12, 2010 at 02:11:22PM +0300, Felipe Contreras wrote:
-> On Thu, Aug 12, 2010 at 1:47 PM, Theodore Tso <tytso@mit.edu> wrote:
-> > One thing I'm not clear on --- what's your goal? =A0 Is your goal to ke=
-ep suspend-blockers out of the kernel? =A0 Is it to try to convince the and=
-roid team suspend-blockers are a bad idea and to change Android to not use =
-them? =A0Is it to push some other agenda? =A0Is it to discourage the Androi=
-d team from trying to waste more time trying to get suspend-blockers (or eq=
-uivalent functionality) from being added into the kernel?
-> =
-
-> My goal is to shine light. I've heard many invalid arguments in favor
-> of suspend blockers, I want to shut them down.
-> =
-
-> In my mind it's crystal clear that independently of what opportunistic
-> suspend is supposed to be fixing, the fact of the matter is that it's
-> not a silver bullet as it's claimed to be.
-
-The question is not whether suspend blockers are a silver bullet (in my
-opinion there are no silver bullets), but rather whether or not suspend
-blockers are useful.
-
-> So far, nobody has refuted these:
->  1) opportunistic suspend needs a good behaved user-space to work properly
-
-As does dynamic power management.
-
->  2) if suspend blockers are enabled in a system, *all* user-space must
-> implement them to work correctly
-
-Really?  From what I can see, only PM-driving applications need to use
-suspend blockers.
-
->  3) implementing suspend blockers in user-space is not a straight-forward=
- task
-
-Fortunately, experience thus far has shown that only a small fraction of
-applications need to use suspend blockers.  (Or perhaps you are instead
-saying that the implementation of the suspend-blocker infrastructure
-itself is not straightforward?  It is not clear from your words.)
-
->  4) there's a point where sleeping (not doing work) has diminished returns
-
-This one I agree with.
-
-> So, as the length of this thread has shown, the benefits of
-> opportunistic suspend are *dubious* at best, and more likely not worth
-> the changes needed in user-space which eventually will get pretty
-> close to what suspend blockers can achieve even in ideal circumstances
-> by just doing dynamic PM.
-
-The length of this thread (and the ones preceding it) is mostly due to
-people talking past each other.  For example, the Android folks seem to
-believe that it is important that relatively unskilled people be able
-to write simple apps, and that the system nevertheless be able to run
-these apps in a relatively energy efficient manner.  Your proposals do
-not address this issue.  This might be because you are not aware of
-this desire, because you are not aware of the computing history that
-argues in favor of this requirement, or because you simply don't like
-this requirement.  Whatever the reason, until you face this requirement
-head on, either addressing it or proving that it need not be addressed,
-you will continue to be talking past the Android folks.
-
-							Thanx, Paul
+T24gVGh1LCBBdWcgMTIsIDIwMTAgYXQgNzoxOSBQTSwgUGF1bCBFLiBNY0tlbm5leQo8cGF1bG1j
+a0BsaW51eC52bmV0LmlibS5jb20+IHdyb3RlOgo+IE9uIFRodSwgQXVnIDEyLCAyMDEwIGF0IDAz
+OjE3OjI5QU0gKzAzMDAsIEZlbGlwZSBDb250cmVyYXMgd3JvdGU6Cj4+IEFueXdheSwgQWxhbiB3
+YXMgcGljdHVyaW5nIGEgaHlwb3RoZXRpY2FsIHBvaW50IGluIHRpbWUgd2hlbiB4ODYgY2FuCj4+
+IHN1c3BlbmQvcmVzdW1lIGFzIGZhc3QgYXMgQVJNLCBhbmQgdGh1cyB0aGUgcXVlc3Rpb24gb2Yg
+d2hldGhlciBvciBub3QKPj4gdG8gZW5hYmxlIHN1c3BlbmQtYmxvY2tlcnMgaW4gYSBzeXN0ZW0g
+dGhhdCBydW5zIG9wZW5vZmZpY2UgYmVjb21lcwo+PiByZWxldmFudC4gSWYgYXBwbGljYXRpb25z
+IGhhdmUgYmVlbiBmaXhlZCBieSB0aGF0IHRpbWUgdG8gbm90IHdha2UgdGhlCj4+IHN5c3RlbSB1
+bm5lY2Vzc2FyaWx5LCBhcyBtYW55IG9mIHRoZW0gaGF2ZSBhbHJlYWR5IGJlZW4gdGFua3MgdG8g
+dG9vbHMKPj4gbGlrZSBwb3dlcnRvcCwgdGhlbiBzdXNwZW5kLWJsb2NrZXJzIHdvdWxkIG5vdCBt
+YWtlIHRoYXQgbXVjaCBvZiBhCj4+IGRpZmZlcmVuY2UsIHRoZXJlZm9yZSB0aGUgZWZmb3J0IHJl
+cXVpcmVkIHRvIGltcGxlbWVudAo+PiBzdXNwZW5kLWJsb2NrZXJzIHByb3Blcmx5IG9uIGFsbCBh
+cHBsaWNhdGlvbnMgaW4gdGhlIHN5c3RlbSwgaW5jbHVkaW5nCj4+IG9wZW5vZmZpY2UgbWlnaHQg
+bm90IGJlIHdvcnRoIHRoZSBnYWluLgo+Cj4gT25lIG1vcmUgdGltZSwgdGhpcyB0aW1lIHdpdGgg
+ZmVlbGluZy4gwqA7LSkKPgo+IMKgIMKgIMKgIMKgT25seSBQTS1kcml2aW5nIGFwcGxpY2F0aW9u
+cyBuZWVkIGNvbmNlcm4gdGhlbXNlbHZlcyB3aXRoIHN1c3BlbmQKPiDCoCDCoCDCoCDCoGJsb2Nr
+ZXJzLCBhbmQgZXhwZXJpZW5jZSB0aHVzIGZhciBpbmRpY2F0ZXMgdGhhdCBQTS1kcml2aW5nCj4g
+wqAgwqAgwqAgwqBhcHBsaWNhdGlvbnMgYXJlIGEgdmVyeSBzbWFsbCBmcmFjdGlvbiBvZiB0aGUg
+dG90YWwuCgpUaGVyZSdzIG5vIGV4cGVyaWVuY2Ugb24gdGhpcy4gSGF2ZSB5b3UgdHJpZWQgdG8g
+cnVuIGEgc21hbGwgZGViaWFuCnN5c3RlbSB3aXRoIHN1c3BlbmQgYmxvY2tlcnMgZW5hYmxlZD8g
+SSBjYW4gaW1hZ2UgYXQgbGVhc3QgYWxsIGNyb24KZGFlbW9ucyBuZWVkIG1vZGlmaWNhdGlvbnMs
+IHByb2JhYmx5IGRidXMsIGxpbmtzLCBsZnRwLCB3Z2V0LCByc3luYwphbmQgYSBidW5jaCBvZiBh
+cHBsaWNhdGlvbnMgdGhhdCBkb3dubG9hZCBkYXRhIHRvby4KCkl0J3MgZWFzeSB0byBzcGVjdWxh
+dGUgb25lIHdheSBvciB0aGUgb3RoZXIsIGJ1dCB0aGUgZmFjdCBvZiB0aGUKbWF0dGVyIGlzIHRo
+YXQgd2UgZG9uJ3QgcmVhbGx5IGtub3cgaG93IG1hbnkgY2hhbmdlcyBhcmUgbmVlZGVkIGluCm9y
+ZGVyIHRvIGhhdmUgYSBmdW5jdGlvbmFsIHN5c3RlbSB0aGF0IGFjdHVhbGx5IGJlbmVmaXRzIGZy
+b20gc3VzcGVuZApibG9ja2Vycy4KCldoYXQgd2Uga25vdyBpcyB0aGF0IGlmIGFuIGFwcGxpY2F0
+aW9uIGlzIG5vdCBhbmFseXplZCB0byBzZWUgaWYgaXQKbmVlZHMgc3VzcGVuZCBibG9ja2Vycywg
+YW5kIGltcGxlbWVudCB0aGVtIGlmIG5lZWRlZCwgaXQgbWlnaHQgZ2V0CmJyb2tlbi4KCj4+ID4g
+QXBwYXJlbnRseSBkaWZmZXJlbnQgcGVvcGxlIGluIHRoaXMgZGViYXRlIGhhdmUgZGlmZmVyZW50
+IHRhcmdldHMuCj4+Cj4+IEkgcmVtZW1iZXIgY2xlYXJseSBBbmRyb2lkIHBlb3BsZSBleHBsYWlu
+aW5nIHRoYXQgZHluYW1pYyBQTSBpcwo+PiBvcnRob2dvbmFsIHRvIHN1c3BlbmQtYmxvY2tlcnM7
+IGlmIGEgc3VzcGVuZCBpcyBibG9ja2VkLCB5b3Ugc3RpbGwKPj4gd2FudCBkeW5hbWljIFBNIHRv
+IHJlYWNoIHRoZSBsb3dlciBwb3dlciBzdGF0ZS4gVGhlcmVmb3JlIHRoZSB0YXJnZXQKPj4gb2Yg
+bm90IGhhdmluZyB1bm5lZWRlZCBydW5uYWJsZSB0YXNrcyBpcyBzaGFyZWQgYnkgQW5kcm9pZCBm
+b2xrcy4KPgo+IEFuZCBJIGhhdmUgbm90IHNlZW4gYW55b25lIGFyZ3VlIHRoYXQgc3VzcGVuZCBi
+bG9ja2VycyBhcmUgYSByZXBsYWNlbWVudAo+IGZvciBkeW5hbWljIHBvd2VyIG1hbmFnZW1lbnQu
+CgpUaGF0J3MgZXhhY3RseSB3aGF0IEknbSBzYXlpbmc6IHRoZXkgYXJlIG9ydGhvZ29uYWwuCgo+
+IEluIGNvbnRyYXN0LCB5b3UgYXJlIGFkdm9jYXRpbmcgZHluYW1pYyBwb3dlciBtYW5hZ2VtZW50
+IHRvIHRoZSBleGNsdXNpb24KPiBvZiBvdGhlciBtZWNoYW5pc21zLgoKICogaWYgZHluYW1pYyBQ
+TSB3YXMgcGVyZmVjdCwgc3BlbmQtYmxvY2tlcnMgd291bGQgKm5vdCogYmUgbm90IG5lZWRlZAog
+KiBpZiBzdXNwZW5kLWJsb2NrZXJzIHdlcmUgcGVyZmVjdCwgZHluYW1pYyAqd2lsbCogc3RpbGwg
+YmUgbmVlZGVkCgpBbGwgSSBzYWlkIGluIHRoYXQgc2VudGVuY2UgeW91IGFyZSByZXBseWluZyBp
+cyB0aGF0IGR5bmFtaWMgUE0gd2lsbAppbXByb3ZlOyBpdCdzIGEgc2hhcmVkIGdvYWwgb2YgZXZl
+cnlvbmUuCgo+PiBJT1cuIEFsYW4gd2Fzbid0IHRhbGtpbmcgYWJvdXQgaWRsZSB2cyBzdXNwZW5k
+IG9uIHRoZSBzYW1lIGRldmljZSwgaGUKPj4gd2FzIHRhbGtpbmcgYWJvdXQgb3Bwb3J0dW5pc3Rp
+YyBzdXNwZW5kIHZzIGR5bmFtaWMgUE0uCj4KPiBUaGUgbW9zdCBjb252aW5jaW5nIGNvbXBhcmlz
+b25zIHdpbGwgYmUgb2Ygc3VzcGVuZCB2cy4gaWRsZSBvbiB0aGUKPiBzYW1lIGRldmljZS4gwqBJ
+ZiBtdWx0aXBsZSBkZXZpY2VzIGFyZSBpbnZvbHZlZCwgdGhlbiB0aGUgbW9zdCBjb252aW5jaW5n
+Cj4gZXhwZXJpbWVudHMgd291bGQgY29tcGFyZSBzdXNwZW5kIHZzLiBpZGxlIHNlcGFyYXRlbHkg
+b24gZWFjaCBkZXZpY2UuCj4KPiBTbywgYXJlIHlvdSBzdXJlIHRoYXQgeW91IGFyZSBjb3JyZWN0
+bHkgaW50ZXJwcmV0aW5nIEFsYW4ncyB3b3Jkcz8KClRoZSBwb2ludCB5b3UgYXJlIHRyeWluZyB0
+byBoaWdobGlnaHQgaXMgdG8gd2hpY2ggZXZlbnRzIHRoZSBzeXN0ZW0KcmVhY3RzLCB0aGF0IGhh
+cyBub3RoaW5nIHRvIGRvIHdpdGggZHluYW1pYyBQTSB2cyBvcHBvcnR1bmlzdGljCnN1c3BlbmQu
+Cgo+IEFnYWluLCBJIGFtIGluIG5vIHdheSBhcmd1aW5nIGZvciBzdXNwZW5kIGJsb2NrZXJzIHRv
+IHRoZSBleGNsdXNpb24gb2YKPiBvdGhlciBhcHByb2FjaGVzLiDCoEhlY2ssIEkgYW0gbW9zdGx5
+IGp1c3QgdHJ5aW5nIHRvIGdldCBhIGNsZWFyIHN0YXRlbWVudAo+IG9mIHRoZSBwcm9ibGVtLiDC
+oEluIGNvbnRyYXN0LCB5b3UgZG8gc2VlbSB0byBiZSBhZHZvY2F0aW5nIGZvciBkeW5hbWljCj4g
+cG93ZXIgbWFuYWdlbWVudCB0byB0aGUgZXhjbHVzaW9uIG9mIG90aGVyIGFwcHJvYWNoZXMuCgpX
+aGF0IHlvdSBhcmUgZG9pbmcgaXMgY29weSBwYXN0aW5nIGEgZGVmaW5pdGlvbiBvZiB3aGF0IGlz
+Cm9wcG9ydHVuaXN0aWMgc3VzcGVuZCBhbmQgbWFraW5nIGl0IHBhc3MgYXMgYW4gYWR2YW50YWdl
+LgoKVGhpcyBwYXJ0aWN1bGFyIHBvaW50ICgzLikgaXMgbm90IGFuIGFkdmFudGFnZSwgb3ZlciBk
+eW5hbWljIFBNLCBpdCdzCmp1c3QgYSBkaWZmZXJlbmNlLgoKPj4gTm8sIEkgdGhpbmsgYm90aCAo
+Zm9yIG9wcG9ydHVuaXN0aWMgc3VzcGVuZCBhbmQgZHluYW1pYyBQTSkgYXJlCj4+IGNvbXBsZXRl
+bHkgcmVhc29uYWJsZS4gQnV0IHRoaW5rIGFnYWluOyBpZiB5b3UgaGF2ZSB0aGUgYXNzdW1wdGlv
+bnMKPj4gbWV0IG9uIGJvdGgsIHRoZW4gYm90aCB3b3JrIGZpbmUsIGlmIHlvdSBkb24ndCBtZWV0
+IHRoZW0sIHRoZW4gYm90aAo+PiBkb24ndCB3b3JrIGNvcnJlY3RseS4KPgo+IFRoYXQgaXMgdHJ1
+ZSBvZiBhbnkgYXJ0aWZhY3QsIHNvZnR3YXJlIG9yIG90aGVyd2lzZTogaWYgeW91IGRvbid0IG1l
+ZXQgdGhlCj4gYXNzdW1wdGlvbnMgaW5oZXJlbnQgaW4gaXRzIGRlc2lnbiBhbmQgY29uc3RydWN0
+aW9uLCB0aGUgYXJ0aWZhY3QgbWlnaHQKPiBmYWlsLgoKWy4uLl0KCj7CoFRoZXJlIGlzCj4gYSB2
+ZXJ5IHJlYWwgZGlmZmVyZW5jZSBiZXR3ZWVuIHRob3NlIHR3byB0YXNrcy4KCkkndmUgY3V0IG1v
+c3Qgb2YgeW91ciBleHBsYW5hdGlvbi4gSWYgSSB1bmRlcnN0YW5kIGNvcnJlY3RseSB3aGF0IHlv
+dQphcmUgc2F5aW5nIGlzIHRoYXQgc3VzcGVuZCBibG9ja2VycyBhcmUgaGFyZGVyIHRvIGdldCB3
+cm9uZy4gSSBhZ3JlZSwKYnV0IG15IHBvaW50IGFnYWluc3QgNC4gcmVtYWlucyB0aGUgc2FtZTog
+c3VzcGVuZC1ibG9ja2VycyBkb24ndAphdXRvbWF0aWNhbGx5IGdldCB5b3UgbW9yZSBlZmZpY2ll
+bnQgcG93ZXIgdXNhZ2UuCgo+IFNvIGFyZSB5b3Ugc3VyZSB0aGF0IGR5bmFtaWMgcG93ZXIgbWFu
+YWdlbWVudCB3aWxsIHR1cm4gb3V0IHRvIGJlCj4gdGhlIHJpZ2h0IHRvb2wgZm9yIGV2ZXJ5IGpv
+YiBvdXQgdGhlcmU/IMKgSWYgc28sIG9uIHdoYXQgZ3JvdW5kcz8KCkkgZG9uJ3QgdW5kZXJzdGFu
+ZCB0aGlzIHF1ZXN0aW9uLiBEeW5hbWljIFBNIGlzIG5lZWRlZCByZWdhcmRsZXNzLiBXZQphcmUg
+ZGlzY3Vzc2luZyB5b3VyIHBvaW50IDQgd2hlcmUgeW91IHNheSBzdXNwZW5kIGJsb2NrZXJzIGlu
+ZXZpdGFibHkKbGVhZCB0byBtb3JlIGVmZmljaWVudCBwb3dlciB1c2FnZSAoSSBzYXkgbm90IG5l
+Y2Vzc2FyaWx5KS4KCj4+IE15IHBvaW50IGlzIHRoYXQgc3VzcGVuZC1ibG9ja2VycyBkb24ndCBt
+YWdpY2FsbHkgcmVkdWNlIHBvd2VyIHVzYWdlLAo+PiBqdXN0IGxpa2UgZHluYW1pYyBQTSwgaXQg
+ZGVwZW5kcyBvbiB3aGF0IHVzZXItc3BhY2UgYWN0dWFsbHkgZG9lcy4gWW91Cj4+IG1hZGUgaXQg
+bG9vayBhcyBpdCAqYWx3YXlzKiByZWFjaGVkIGJldHRlciBlbmVyZ3kgZWZmaWNpZW5jeS4KPgo+
+IEkgZG8/IMKgUmVhbGx5Pz8/IMKgRXhhY3RseSB3aGF0IGRpZCBJIHNheSB0byBnaXZlIHlvdSB0
+aGF0IGltcHJlc3Npb24/CgpIZXJlJ3MgeW91ciBwb2ludCA0IGFnYWluOgoKPiA+PiA+IDQuICAg
+ICAgU3VzcGVuZCBnZW5lcmFsbHkgZm9yY2VzIGRldmljZXMgdG8gZ28gaW50byB0aGVpciBsb3ct
+cG93ZXIKPiA+PiA+ICAgICAgICBzdGF0ZXMgaW1tZWRpYXRlbHkuICBJbiBjb250cmFzdCwgaWRs
+ZSBnZW5lcmFsbHkgbGVhdmVzIHVudXNlZAo+ID4+ID4gICAgICAgIGRldmljZXMgYXQgZnVsbCBw
+b3dlciwgcmVseWluZyBvbiB0aW1lcnMgdG8gc2h1dCBkb3duIHRoZXNlCj4gPj4gPiAgICAgICAg
+ZGV2aWNlcy4gIElkbGUgdGh1cyBoYXMgc2hvcnRlciBhdmVyYWdlIHdha2V1cCBsYXRlbmNpZXMs
+IGJ1dAo+ID4+ID4gICAgICAgIHdvcnNlIGVuZXJneSBlZmZpY2llbmN5LgoKUmVtb3ZlICJidXQg
+d29yc2UgZW5lcmd5IGVmZmljaWVuY3kiIGFuZCBJIHRoaW5rIHRoYXQgcG9pbnQgd291bGQgYmUK
+Y29ycmVjdCwgYWxiZWl0IGl0J3Mgbm90IHJlYWxseSBhbiBhcmd1bWVudCBpbiBmYXZvciBvZiBv
+cHBvcnR1bmlzdGljCnN1c3BlbmQuCgo+PiA+IEl0IHNlZW1zIHRvIG1lIHRoYXQgdGhlIHNhbWUg
+c29jaWFsLWVuZ2luZWVyaW5nIGFwcHJvYWNoZXMgd29yayBpbgo+PiA+IGJvdGggY2FzZXMuCj4+
+Cj4+IFllcywgYnV0IGlmIGR5bmFtaWMgUE0gd29ya3MgYXMgYWR2ZXJ0aXNlZCwgeW91IGRvbid0
+IG5lZWQKPj4gb3Bwb3J0dW5pc3RpYyBzdXNwZW5kLgo+Cj4gRm9yIGR5bmFtaWMgcG93ZXIgbWFu
+YWdlbWVudCB0byB0b3RhbGx5IGVsaW1pbmF0ZSB0aGUgbmVlZCBmb3Igc29tZXRoaW5nCj4gbGlr
+ZSBzdXNwZW5kIGJsb2NrZXJzLCB5b3UgYXJlIGhhdmluZyB0byBtYWtlIHNvbWUgYnJhdmUgYXNz
+dW1wdGlvbnMuCj4gWWVzLCBkeW5hbWljIHBvd2VyIG1hbmFnZW1lbnQgaXMgcXVpdGUgdXNlZnVs
+LCBidXQgdGhlcmUgaXMgYSBiaWcKPiBkaWZmZXJlbmNlIGJldHdlZW4gc29tZXRoaW5nIGJlaW5n
+IHVzZWZ1bCBhbmQgc29tZXRoaW5nIGRvaW5nIGV2ZXJ5dGhpbmcKPiBmb3IgZXZlcnlvbmUuIMKg
+WW91IGhhdmUgbm90IHlldCBjb252aW5jZWQgbWUgdGhhdCBkeW5hbWljIHBvd2VyIG1hbmFnZW1l
+bnQKPiB3aWxsIG1ha2UgaXQgdG8gdGhlICJkb2luZyBldmVyeXRoaW5nIGZvciBldmVyeW9uZSIg
+c3RhZ2UuCgpBcyBpdCBoYXMgYmVlbiBleHBsYWluZWQgYmVmb3JlLCB0aGVyZSdzIGEgc3dlZXQt
+c3BvdCBvZiBpZGxlbmVzczoKaHR0cDovL2FydGljbGUuZ21hbmUub3JnL2dtYW5lLmxpbnV4Lmtl
+cm5lbC85OTU1MjUKaHR0cDovL2FydGljbGUuZ21hbmUub3JnL2dtYW5lLmxpbnV4LnBvcnRzLmFy
+bS5vbWFwLzM3OTgyCgpEbyB5b3UgYWdyZWUgdGhhdCB0aGVyZSdzIHN1Y2ggYSB0aGluZywgYW5k
+IGlmIHNvLCBkbyB5b3UgYWdyZWUgdGhhdAp0aGUgYmVuZWZpdHMgb2Ygb3Bwb3J0dW5pc3RpYyBz
+dXNwZW5kIGFyZSBtdWNoIGxlc3Mgb25jZSB0aGF0IHBvaW50IGlzCnJlYWNoZWQ/Cgo+PiA+PiBJ
+ZiBub3QsIHlvdSdsbCBzZWUgbXVjaCB3b3JzdCBlbmVyZ3kgZWZmaWNpZW5jeS4gU28gaW4gdGhl
+b3J5IG1heWJlLAo+PiA+PiBidXQgaW4gcHJhY3RpY2UgeW91IGNhbid0IHNheSB0aGF0Lgo+PiA+
+Cj4+ID4gUmVhbGx5PyDCoFdoYXQgbWFrZXMgeW91IHNheSB0aGF0Pwo+Pgo+PiBGb3Igc3RhcnRl
+cnMgYW4gYXBwbGljYXRpb24gbWlnaHQgYmUgaG9sZGluZyB0aGUgd2FrZWxvY2sgbW9yZSB0aGFu
+IGl0Cj4+IHNob3VsZCwgYWxzbywgYW4gYXBwbGljYXRpb24gbWlnaHQgbWlzcyBhIHRpbWVyIGR1
+ZSB0byBub3QgaGF2aW5nIFBNCj4+IHBlcm1pc3Npb25zIHRvIGhvbGQgdGhlIGxvY2ssIGFuZCB0
+aHVzIG1pZ2h0IG5lZWQgYW4gZXhwZW5zaXZlCj4+IGluaXRpYWxpemF0aW9uIHdoZW4gaXQgcnVu
+cyBhZ2Fpbi4KPgo+IEp1c3QgYXMgYW4gYXBwbGljYXRpb24gbWlnaHQgcnVuIGNvbnRpbnVvdXNs
+eSB3aXRob3V0IGJsb2NraW5nLCB3aGljaAo+IHdvdWxkIGRlZmVhdCB0aGUgZHluYW1pYyBwb3dl
+ciBtYW5hZ2VtZW50IHNjaGVtZSB0aGF0IGhhdmUgdGh1cyBmYXIgYmVlbgo+IHB1dCBmb3J3YXJk
+LiDCoEFuZCBqdXN0IGFzIGFuIGFwcGxpY2F0aW9uIG1pZ2h0IG1pc3MgYSB0aW1lciBkdWUgdG8K
+PiBkeW5hbWljIHBvd2VyIG1hbmFnZW1lbnQgaGF2aW5nIGRlY2lkZWQgdGhhdCBpdCBkaWRuJ3Qg
+bmVlZCB0aGF0IHRpbWVyCj4gdG8gZmlyZSBhdCB0aGUgZGVzaXJlZCB0aW1lLgoKWW91IGFyZSBt
+YWtpbmcgdGhpcyBkaXNjdXNzaW9uIGVudHJvcGljLCBjb25jZW50cmF0ZSBvbiB3aGF0IEkgc2Fp
+ZDoKPj4+PiBJZiBub3QsIHlvdSdsbCBzZWUgbXVjaCB3b3JzdCBlbmVyZ3kgZWZmaWNpZW5jeS4g
+U28gaW4gdGhlb3J5IG1heWJlLAo+Pj4+IGJ1dCBpbiBwcmFjdGljZSB5b3UgY2FuJ3Qgc2F5IHRo
+YXQuCgpJIGp1c3QgcHJvdmVkIHRvIHlvdSB0aGF0IGluIGNlcnRhaW4gY2FzZXMgb3Bwb3J0dW5p
+c3RpYyBzdXNwZW5kIG1pZ2h0CmFjdHVhbGx5IGh1cnQuIFRodXMgeW91IHNob3VsZCBhY2NlcHQg
+bXkgcHJlbWlzZSB0aGF0IHlvdSBjYW4ndCBzYXkKdGhhdCBpbiBwcmFjdGljZSBvcHBvcnR1bmlz
+dGljIHN1c3BlbmQgX2Fsd2F5c18gbGVhZHMgdG8gYmV0dGVyCnJlc3VsdHMsIGJlY2F1c2UgdGhh
+dCdzIG5vdCB0aGUgY2FzZS4KCkFuZCBpbiBvcmRlciB0byB0cnkgdG8gYXZvaWQgZ29pbmcgYmFj
+ayB0byB0aGUgc2FtZSBwb2ludHM6CiAxKSB5ZXMsIHRoZXJlIGFyZSBhZHZhbnRhZ2VzIG9mIG9w
+cG9ydHVuaXN0aWMgc3VzcGVuZAogMikgeWVzLCB0aGVyZSBhcmUgY2FzZXMgd2hlcmUgaXQgd29y
+a3MgYXMgaXQgc2hvdWxkCiAzKSBubywgaXQncyBub3QgYSBzaWx2ZXIgYnVsbGV0IHRoYXQgd2ls
+bCBpbmV2aXRhYmx5IGltcHJvdmUgcG93ZXIgdXNhZ2UKIDQpIG5vLCB3ZSBjYW4ndCBzYXkgYW55
+dGhpbmcgYWJvdXQgd2hhdCBvcHBvcnR1bmlzdGljIHN1c3BlbmQgbWVhbnMgaW4gcHJhY3RpY2UK
+Ci0tIApGZWxpcGUgQ29udHJlcmFzCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1m
+b3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4v
+bGlzdGluZm8vbGludXgtcG0=
