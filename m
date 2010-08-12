@@ -1,19 +1,25 @@
-From: "Ted Ts'o" <tytso@mit.edu>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Thu, 12 Aug 2010 14:21:28 -0400
-Message-ID: <20100812182128.GC2763__48361.3766068176$1281637365$gmane$org@thunk.org>
-References: <AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
-	<Pine.LNX.4.44L0.1008120733130.21006-100000@netrider.rowland.org>
-	<AANLkTinMwt27wuDUh32F36wpoC54Syzp1_nK9UCxYmEK@mail.gmail.com>
-	<20100812125248.GA2763@thunk.org>
-	<AANLkTin4=qpDWEKLwes_af6mSCW+ED7v-fWzD34JywU1@mail.gmail.com>
+Date: Thu, 12 Aug 2010 11:38:51 -0700
+Message-ID: <20100812183851.GH2524__22425.2352295027$1281638476$gmane$org@linux.vnet.ibm.com>
+References: <20100809181638.GI3026@linux.vnet.ibm.com>
+	<20100809201822.441905f7@lxorguk.ukuu.org.uk>
+	<20100810044541.GA2817@linux.vnet.ibm.com>
+	<20100810093849.138e2318@lxorguk.ukuu.org.uk>
+	<20100811004223.GH2379@linux.vnet.ibm.com>
+	<AANLkTik7Po9OuKC-QBZ=E83J70sU_ewNi+nNWgcjjLXd@mail.gmail.com>
+	<20100811221258.GI2516@linux.vnet.ibm.com>
+	<AANLkTi=fJjM=uWeV+L66ajM9rhrL0t1OO-C7ThNRdbae@mail.gmail.com>
+	<20100812161935.GC2524@linux.vnet.ibm.com>
+	<AANLkTi=51cFa0t5ZYj2CMiauuW80ZWTrm1tQkn63Et0F@mail.gmail.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <AANLkTin4=qpDWEKLwes_af6mSCW+ED7v-fWzD34JywU1@mail.gmail.com>
+In-Reply-To: <AANLkTi=51cFa0t5ZYj2CMiauuW80ZWTrm1tQkn63Et0F@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,33 +30,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: david@lang.hm, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, swmike@swm.pp.se, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
+Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 12, 2010 at 07:46:03PM +0300, Felipe Contreras wrote:
+On Thu, Aug 12, 2010 at 08:52:22PM +0300, Felipe Contreras wrote:
+> On Thu, Aug 12, 2010 at 7:19 PM, Paul E. McKenney
+> <paulmck@linux.vnet.ibm.com> wrote:
 
-> All the Android community had to do is push the drivers *without*
-> suspend blockers, then the Android kernel wouldn't be so different and
-> thus wouldn't be considered a fork. AFAIU the kernel side wakelocks
-> are already in the kernel, so there's no excuse not to merge the
-> drivers.
+[ . . . ]  (For now, anyway. I might respond to the rest later.)
 
-What's there is not good enough, because it's missing the statistics
-and reporting so that badly behaved kernel and userspace drivers that
-take wakelocks can be found.
+> >> My point is that suspend-blockers don't magically reduce power usage,
+> >> just like dynamic PM, it depends on what user-space actually does. You
+> >> made it look as it *always* reached better energy efficiency.
+> >
+> > I do? =A0Really??? =A0Exactly what did I say to give you that impressio=
+n?
+> =
 
-I have a similar problem with the whole pm_qos subsystem, as I've said
-earlier.  If some badly behaved application claims to want 0us
-wireless latency, and keeps the radio on all the time, there is no way
-for me to find out which is the badly behaved application --- even
-though I'm the owner of the laptop, and at the end of the day *I*
-should be able to say, no, battery lifetime is more important than
-what the application might think is its "minimum wireless latency".
-Not only can I not override the application, I can't even find out
-which application is at fault!   ***FAIL***
+> Here's your point 4 again:
+> =
 
-In some ways, this is exactly the same problem as the "which badly
-Maemo application is causing my causing my N770 to have its battery
-laptop drop in half?".
+> > >> > 4.      Suspend generally forces devices to go into their low-power
+> > >> >        states immediately.  In contrast, idle generally leaves unu=
+sed
+> > >> >        devices at full power, relying on timers to shut down these
+> > >> >        devices.  Idle thus has shorter average wakeup latencies, b=
+ut
+> > >> >        worse energy efficiency.
+> =
 
-     	 	     	   	    	- Ted
+> Remove "but worse energy efficiency" and I think that point would be
+> correct,
+
+Now this is much more like it!!!  Thank you!!!
+
+You are quite correct, my last sentence does in fact assume that suspend
+will always have lower power consumption than does the deepest idle state.
+This of course sentence must be fixed.  How about the following, which
+makes this assumption explicit, and adds words ("often", "might") that
+indicate that one's mileage might vary?
+
+	4.	Suspend generally forces devices to go into their
+		low-power states immediately.  In contrast, idle generally
+		leaves unused devices at full power, relying on timers
+		to shut down these devices.  Idle thus often has shorter
+		average wakeup latencies, but on systems where suspend
+		can use deeper sleep states than can idle, idle might
+		have worse energy efficiency.
+
+>          albeit it's not really an argument in favor of opportunistic
+> suspend.
+
+It never was intended to be an argument of any kind.  It was instead
+supposed to help clarify the difference between idle and suspend, in
+response to people stating that there is no difference between suspend
+and idle.  If my mistake in the wording of the last sentence made you
+think otherwise, please accept my apologies.
+
+[ . . . ]  (For now, anyway. I might respond to the rest later.)
+
+							Thanx, Paul
