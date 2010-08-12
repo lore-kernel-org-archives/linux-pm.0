@@ -1,29 +1,25 @@
-From: Brian Swetland <swetland@google.com>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Wed, 11 Aug 2010 18:03:00 -0700
-Message-ID: <AANLkTikxRsggbUKRnPXh5pnaP8M7iTXBunNt4BDUZbyF__22881.9629563533$1281575112$gmane$org@mail.gmail.com>
-References: <20100806225453.GA3947@linux.vnet.ibm.com>
-	<alpine.DEB.2.00.1008061651530.30564@asgard.lang.hm>
-	<AANLkTikyRhtfX4R3x_NDgHnXssmfVuhjC5PbhRZ0a7su@mail.gmail.com>
-	<alpine.DEB.2.00.1008062010510.30564@asgard.lang.hm>
-	<20100807061558.GA28087@thunk.org>
+Date: Wed, 11 Aug 2010 18:06:12 -0700
+Message-ID: <20100812010612.GL2516__889.428394339298$1281575375$gmane$org@linux.vnet.ibm.com>
+References: <20100807061558.GA28087@thunk.org>
 	<AANLkTi=sMVjya9CH6UoZwJCXJTDRgBhnPXmApU_RHVTi@mail.gmail.com>
 	<20100808155719.GB3635@thunk.org>
 	<AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
 	<20100808213821.GD3635@thunk.org>
-	<AANLkTinNc1SWmz8pE_4k6vThxQCJfCR_UqV6OM=OsJOf@mail.gmail.com>
-	<20100811193106.GB24435@thunk.org>
-	<AANLkTinBrp1iHWAi=vk_eaEHMs+Xcub6rg8PgT_LK2c9@mail.gmail.com>
-	<AANLkTinOb5PsrLbMzbYVqqx=6n-yPNRCYgOf4fM5KdXJ@mail.gmail.com>
-	<AANLkTimAKwDPYZeCj_UEyXf-6DxLg8=Zi-=tFKzzgvQi@mail.gmail.com>
-	<AANLkTimwdJgAUHNgUDwagDhBd2MtEoSbt7rFa2dPkm2c@mail.gmail.com>
-	<AANLkTinWmZZHd6uRRY-RRj_qu5P-3BjY8LRWrpRwFncH@mail.gmail.com>
+	<20100809112453.77210acc@lxorguk.ukuu.org.uk>
+	<20100809181638.GI3026@linux.vnet.ibm.com>
+	<AANLkTikwHaKpLdRdxmZj6JDJnsZ+o-jzbVcXhRW3Jmd9@mail.gmail.com>
+	<20100811222854.GJ2516@linux.vnet.ibm.com>
+	<AANLkTimahmGikeai8QnAxCy45deT00-6T7h-eA-NqL4G@mail.gmail.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinWmZZHd6uRRY-RRj_qu5P-3BjY8LRWrpRwFncH@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <AANLkTimahmGikeai8QnAxCy45deT00-6T7h-eA-NqL4G@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -34,46 +30,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, swmike@swm.pp.se, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, tglx@linutronix.de, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
+Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 11, 2010 at 5:46 PM, Felipe Contreras
-<felipe.contreras@gmail.com> wrote:
-> On Thu, Aug 12, 2010 at 1:12 AM, Brian Swetland <swetland@google.com> wrote:
->> On Wed, Aug 11, 2010 at 3:03 PM, Felipe Contreras
->> <felipe.contreras@gmail.com> wrote:
->>> This is what I'm talking about when I say multi-tasking, Android
->>> certainly doesn't have anything remotely like that:
->>> http://www.youtube.com/watch?v=7emvUBpEkbU
->>
->> Home + pick app -> switch to the app in whatever state it was in.
->
-> If the app stops running, that's *fake* multi-tasking, and doesn't
-> match my experience; I can't remember the details, but I tested it on
-> a Nexus One, and the item I was looking at was gone, I had to scroll
-> again.
+On Thu, Aug 12, 2010 at 03:28:00AM +0300, Felipe Contreras wrote:
+> On Thu, Aug 12, 2010 at 1:28 AM, Paul E. McKenney
+> <paulmck@linux.vnet.ibm.com> wrote:
+> > On Wed, Aug 11, 2010 at 10:18:51PM +0300, Felipe Contreras wrote:
+> >> On Mon, Aug 9, 2010 at 9:16 PM, Paul E. McKenney
+> >> <paulmck@linux.vnet.ibm.com> wrote:
+> >> > But wouldn't an office suite run as a power-oblivious application on=
+ an
+> >> > Android device? =A0After all, office applications do not need to run=
+ when
+> >> > the screen is turned off, so these the applications do not need to u=
+se
+> >> > suspend blockers.
+> >>
+> >> Ideally the system would be suspended even when the screen is on. If
+> >> there are no "trusted" applications running at the same time, then
+> >> openoffice wouldn't load at all. Right?
+> >
+> > My understanding is that Android systems in fact do not suspend when
+> > the screen is on, and that most (perhaps all) other systems do not
+> > opportunistically suspend at all. =A0There has been some speculation ab=
+out
+> > what a hypothetical Android having a non-volatile display might do,
+> > but as far as I know, this is just speculation.
+> =
 
-That'd be surprise.  Last I checked I was able to launch 40-50 apps on
-N1 before we even started getting low on memory and the system won't
-kill apps off unless we completely bottom out on memory.  It's
-possible that some app might do the wrong thing when going to the
-background and back to the foreground but that'd be an app bug.
+> I have a desktop system in mind. If opportunistic suspend is only
+> triggered when the display is off, then it's no good for normal usage,
+> and therefore dynamic PC needs to get its act together... specially
+> for laptops.
 
-> Also, I cannot go to last.fm on the browser, play some music, and do
-> other stuff at the same time, can I?
+If I understand you correctly, you are saying that both opportunistic
+suspend and dynamic power control should be used together, with dynamic
+power control being used for short non-busy periods (as in between
+keystrokes) and opportunistic suspend being used for longer non-busy
+periods (as in while grabbing a coffee).  That combination of usage
+sounds promising to me.
 
-I'm not sure off the top of my head if the browser will keep
-music/flash playing on pages when it's not the foreground app, but you
-can certainly run something like Pandora (or a number of other
-streaming music apps) in the background and play streaming music while
-you do other stuff.  There's no reason the browser *couldn't* do this
-as well.
+That said, I don't know that anyone has really sat down and thought
+through how one might apply suspend blockers to a desktop system.
+I suspect that there are several ways to go about it.
 
-> Anyway, what you do in Android is your problem. The point is that in
-> Linux we need good PM *with* multi-tasking (not really an argument
-> against opportunistic suspend, I think, but a clarification from Ted's
-> comment)
-
-Well I'm glad we agree that multitasking and PM are important.
-
-Brian
+							Thanx, Paul
