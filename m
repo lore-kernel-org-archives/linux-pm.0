@@ -1,25 +1,26 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+From: Felipe Contreras <felipe.contreras@gmail.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Thu, 12 Aug 2010 11:38:51 -0700
-Message-ID: <20100812183851.GH2524__22425.2352295027$1281638476$gmane$org@linux.vnet.ibm.com>
+Date: Thu, 12 Aug 2010 22:00:27 +0300
+Message-ID: <AANLkTiniku7rqkio-T6f9tL_adJSrDKfU33wFEEkeMVH__39018.2874085896$1281639776$gmane$org@mail.gmail.com>
 References: <20100809181638.GI3026@linux.vnet.ibm.com>
-	<20100809201822.441905f7@lxorguk.ukuu.org.uk>
-	<20100810044541.GA2817@linux.vnet.ibm.com>
-	<20100810093849.138e2318@lxorguk.ukuu.org.uk>
-	<20100811004223.GH2379@linux.vnet.ibm.com>
-	<AANLkTik7Po9OuKC-QBZ=E83J70sU_ewNi+nNWgcjjLXd@mail.gmail.com>
-	<20100811221258.GI2516@linux.vnet.ibm.com>
-	<AANLkTi=fJjM=uWeV+L66ajM9rhrL0t1OO-C7ThNRdbae@mail.gmail.com>
-	<20100812161935.GC2524@linux.vnet.ibm.com>
-	<AANLkTi=51cFa0t5ZYj2CMiauuW80ZWTrm1tQkn63Et0F@mail.gmail.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	<AANLkTikwHaKpLdRdxmZj6JDJnsZ+o-jzbVcXhRW3Jmd9@mail.gmail.com>
+	<20100811222854.GJ2516@linux.vnet.ibm.com>
+	<AANLkTimahmGikeai8QnAxCy45deT00-6T7h-eA-NqL4G@mail.gmail.com>
+	<20100812010612.GL2516@linux.vnet.ibm.com>
+	<AANLkTinVV1NVHFPeO0p_e2pCtNwTNB932q9tbu9MMD3_@mail.gmail.com>
+	<20100812034435.GA7403@linux.vnet.ibm.com>
+	<AANLkTi=RD=eM_gpc7FfRq0923sUbARmZ2+4-m+fLibYC@mail.gmail.com>
+	<E3F3D3E1-4DF7-47E3-895D-95F6BC22CCC4@mit.edu>
+	<AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
+	<20100812140903.GB11362@sirena.org.uk>
+	<AANLkTik=K2znpgiHVgA1oD5Znrmm0Gx45ajfoQ7AwG3F@mail.gmail.com>
+	<AANLkTi=9v0o5pQ6s=sjjnk0udmrBAiy4wD+h2vrn_h8=@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTi=51cFa0t5ZYj2CMiauuW80ZWTrm1tQkn63Et0F@mail.gmail.com>
+In-Reply-To: <AANLkTi=9v0o5pQ6s=sjjnk0udmrBAiy4wD+h2vrn_h8=@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,64 +30,93 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
+To: Brian Swetland <swetland@google.com>
+Cc: peterz@infradead.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, galibert@pobox.com, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, James.Bottomley@suse.de, tglx@linutronix.de, swmike@swm.pp.se, david@lang.hm, Theodore Tso <tytso@mit.edu>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, menage@google.com, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 12, 2010 at 08:52:22PM +0300, Felipe Contreras wrote:
-> On Thu, Aug 12, 2010 at 7:19 PM, Paul E. McKenney
-> <paulmck@linux.vnet.ibm.com> wrote:
+Hi Brian,
 
-[ . . . ]  (For now, anyway. I might respond to the rest later.)
+On Thu, Aug 12, 2010 at 8:33 PM, Brian Swetland <swetland@google.com> wrote:
+> On Thu, Aug 12, 2010 at 9:57 AM, Felipe Contreras
+> <felipe.contreras@gmail.com> wrote:
+>>
+>> Correct, but still a considerable amount of changes would need to be
+>> done, which _nobody_ has expressed any intention to do.
+>>
+>> Besides, IMO a good mobile platform would share as much as possible
+>> with desktop software. Say, the improvements Nokia has endorsed on the
+>> Telepathy IM framework can only help the people already using it on
+>> the desktop.
+>>
+>> However, personally, if I ever have to do './configure
+>> --enable-suspend-blockers', I would think that something that just
+>> doesn't belong has creped by to user-space. I don't see why there
+>> should something particularly different between mobile phones and
+>> laptops, and I think this has been already expressed over, and over.
+>
+> So, because you feel that phones should be little laptops you oppose
+> providing (optional!) support for environments that take a different
+> view to that?
 
-> >> My point is that suspend-blockers don't magically reduce power usage,
-> >> just like dynamic PM, it depends on what user-space actually does. You
-> >> made it look as it *always* reached better energy efficiency.
-> >
-> > I do? =A0Really??? =A0Exactly what did I say to give you that impressio=
-n?
-> =
+Look. I'll share with you a little experience.
 
-> Here's your point 4 again:
-> =
+For years I've been working on a piece of software to access
+Microsoft's WLM IM service on linux. I have high quality standards for
+my software, so I optimized algorithms and bandwith, I used valgrind
+to find memory leaks, OProfile for performance bottlenecks, and so on.
+All this on a laptop.
 
-> > >> > 4.      Suspend generally forces devices to go into their low-power
-> > >> >        states immediately.  In contrast, idle generally leaves unu=
-sed
-> > >> >        devices at full power, relying on timers to shut down these
-> > >> >        devices.  Idle thus has shorter average wakeup latencies, b=
-ut
-> > >> >        worse energy efficiency.
-> =
+When I ported this code to the N900 it just worked, not more-or-less;
+perfectly. I could stay online the whole day without the battery
+running out, and I didn't have to make *any* change.
 
-> Remove "but worse energy efficiency" and I think that point would be
-> correct,
+Then at some point people started complaining about battery usage, but
+lo and behold, on the desktop people started reporting too much
+bandwith/cpu usage as well. I tried on my laptop, and was able to
+reproduce, and fix (bug related to daylight savings time).
 
-Now this is much more like it!!!  Thank you!!!
+For years people have been trying to unify certain KDE/GNOME code, and
+freedesktop.org was born. Now the same technologies are used by Nokia
+on Maemo, and now MeeGo (DBus, Telepathy, GStreamer, tracker, etc.),
+so the optimizations done for mobile benefit everyone; desktop power
+usage also improves.
 
-You are quite correct, my last sentence does in fact assume that suspend
-will always have lower power consumption than does the deepest idle state.
-This of course sentence must be fixed.  How about the following, which
-makes this assumption explicit, and adds words ("often", "might") that
-indicate that one's mileage might vary?
+So, yeah, I think the fact that my laptop and phone share the same
+software is great, and that improvements in one benefit the other.
 
-	4.	Suspend generally forces devices to go into their
-		low-power states immediately.  In contrast, idle generally
-		leaves unused devices at full power, relying on timers
-		to shut down these devices.  Idle thus often has shorter
-		average wakeup latencies, but on systems where suspend
-		can use deeper sleep states than can idle, idle might
-		have worse energy efficiency.
+> I think that we're still a ways away from a world where we can treat
+> mobile devices the same as laptops and get reasonable user
+> experiences.
 
->          albeit it's not really an argument in favor of opportunistic
-> suspend.
+Why do you keep ignoring the N900? It has a lot of components that
+come directly from the linux ecosystem and people are having more than
+reasonable experiences (some are ecstatic).
 
-It never was intended to be an argument of any kind.  It was instead
-supposed to help clarify the difference between idle and suspend, in
-response to people stating that there is no difference between suspend
-and idle.  If my mistake in the wording of the last sentence made you
-think otherwise, please accept my apologies.
+> I think it's unfortunate if the attitude here is "wait
+> and someday it won't matter", especially because I'm skeptical that
+> we're likely to hit that "someday" any time soon.
 
-[ . . . ]  (For now, anyway. I might respond to the rest later.)
+Nobody is waiting for anything. There's hard work all over the place
+to improve power usage.
 
-							Thanx, Paul
+If you think suspend blockers are useful for you, great, use them. I
+just don't see why they should be merged if nobody is going to use
+them but you. But maybe you are right, and maybe dynamic PM alone
+never reaches the same levers of performance, then people would ask
+for it to be merged, and it will. No biggie.
+
+In the meantime, it would be wise to remember that this is not
+Nokia/Intel vs Google. Nokia has invested a great deal in dynamic PM,
+and those changes have benefited Android products directly (I even
+remember somebody from Google directly thanking Nokia for that), and
+that will continue. So we are on the same team.
+
+And finally, if they don't get merged, I hope you don't see that as a
+loss. At the very least I think you got a lot of review comments from
+the most qualified experts in the world _free of charge_, and as a
+result the code should be more robust.
+
+Cheers.
+
+-- 
+Felipe Contreras
