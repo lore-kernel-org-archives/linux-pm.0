@@ -1,21 +1,24 @@
-From: Hugh Dickins <hughd@google.com>
-Subject: Re: 2.6.35 Regression: Ages spent discarding blocks that
-	weren't used!
-Date: Fri, 13 Aug 2010 11:15:38 -0700
-Message-ID: <AANLkTik5osZR12nZVVvJY7LimiUZtBdZcnDi4VYNXhwr__28814.4866623499$1281723512$gmane$org@mail.gmail.com>
-References: <4C58C528.4000606@tuxonice.net> <4C5960B0.7020003@teksavvy.com>
-	<4C59DA16.4020500@tuxonice.net>
-	<AANLkTik_PH-7T7OFtzaCtPbAHE6pqnYMUsjP25KtsRnR@mail.gmail.com>
-	<4C5A59FC.1030304@tuxonice.net>
-	<AANLkTi=NMHkKduZzsLiiYt3=w8++8epb5aGrqv7V3-vB@mail.gmail.com>
-	<4C5B925A.5000409@tuxonice.net>
-	<AANLkTinU24v6Mty54YL3gv3M5S+4jdN5vHD54KknchAG@mail.gmail.com>
-	<20100813115424.GA24737@infradead.org>
+From: "Ted Ts'o" <tytso@mit.edu>
+Subject: Re: Attempted summary of suspend-blockers LKML thread,
+ take three
+Date: Fri, 13 Aug 2010 15:08:01 -0400
+Message-ID: <20100813190801.GB26950__44277.9024866924$1281726560$gmane$org@thunk.org>
+References: <AANLkTi=RD=eM_gpc7FfRq0923sUbARmZ2+4-m+fLibYC@mail.gmail.com>
+	<E3F3D3E1-4DF7-47E3-895D-95F6BC22CCC4@mit.edu>
+	<AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
+	<20100812174303.GD2524@linux.vnet.ibm.com>
+	<AANLkTim1U6QpRyfwYCq2uRA=7-a8ryfDrzv5VCqmHnyB@mail.gmail.com>
+	<20100813152254.GD2511@linux.vnet.ibm.com>
+	<AANLkTimdpgC2DBn1pS2OG35+_06-L6TZ9Q_nb+C6Yeqv@mail.gmail.com>
+	<20100813155738.GA11507@isilmar-3.linta.de>
+	<AANLkTikN2zKcLtFJ6EdBU=iqT78bZKt_rKQoPNBRXJHj@mail.gmail.com>
+	<1281719489.8407.17.camel@mulgrave.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100813115424.GA24737@infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1281719489.8407.17.camel@mulgrave.site>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,59 +28,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Christoph Hellwig <hch@infradead.org>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>, LKML <linux-kernel@vger.kernel.org>, James Bottomley <James.Bottomley@hansenpartnership.com>, Mark Lord <kernel@teksavvy.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: david@lang.hm, arjan@infradead.org, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, galibert@pobox.com, florian@mickler.org, tglx@linutronix.de, menage@google.com, paulmck@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, swmike@swm.pp.se
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBBdWcgMTMsIDIwMTAgYXQgNDo1NCBBTSwgQ2hyaXN0b3BoIEhlbGx3aWcgPGhjaEBp
-bmZyYWRlYWQub3JnPiB3cm90ZToKPiBPbiBGcmksIEF1ZyAwNiwgMjAxMCBhdCAwMzowNzoyNVBN
-IC0wNzAwLCBIdWdoIERpY2tpbnMgd3JvdGU6Cj4+IElmIFJFUV9TT0ZUQkFSUklFUiBtZWFucyB0
-aGF0IHRoZSBkZXZpY2UgaXMgc3RpbGwgZnJlZSB0byByZW9yZGVyIGEKPj4gd3JpdGUsIHdoaWNo
-IHdhcyBpc3N1ZWQgYWZ0ZXIgZGlzY2FyZCBjb21wbGV0aW9uIHdhcyByZXBvcnRlZCwgYmVmb3Jl
-Cj4+IHRoZSBkaXNjYXJkIChzbyBsYXRlciBkaXNjYXJkaW5nIHRoZSBkYXRhIHdyaXR0ZW4pLCB0
-aGVuIGNlcnRhaW5seSBJCj4+IGFncmVlIHdpdGggQ2hyaXN0b3BoIChub3cgQ2MnZWQpIHRoYXQg
-dGhlIFJFUV9IQVJEQkFSUklFUiBpcwo+PiB1bmF2b2lkYWJsZSB0aGVyZTsgYnV0IGlmIG5vdCwg
-dGhlbiBpdCdzIG5vdCBuZWVkZWQgZm9yIHRoZSBzd2FwIGNhc2UuCj4+IMKgSSBob3BlIHRvIGdh
-aW4gYSBsaXR0bGUgbW9yZSBlbmxpZ2h0ZW5tZW50IG9uIHN1Y2ggYmFycmllcnMgc2hvcnRseS4K
-Pgo+IFJFUV9TT0ZUQkFSUklFUiBpcyBpbmRlZWQgcHVyZWx5IGEgcmVvcmRlcmluZyBiYXJyaWVy
-IGluc2lkZSB0aGUgYmxvY2sKPiBlbGV2YXRvci4KPgo+PiBXaGF0IGRvZXMgc2VlbSBvdmVyIHRo
-ZSB0b3AgdG8gbWUsIGlzIGZvciBtbS9zd2FwZmlsZS5jJ3MKPj4gYmxrZGV2X2lzc3VlX2Rpc2Nh
-cmQoKXMgdG8gYmUgYXNraW5nIGZvciBib3RoIEJMS0RFVl9JRkxfV0FJVCBhbmQKPj4gQkxLREVW
-X0lGTF9CQVJSSUVSOiB0aG9zZSBzd2FwIGRpc2NhcmRzIHdlcmUgb3JpZ2luYWxseSB3cml0dGVu
-IGp1c3QKPj4gdG8gdXNlIGJhcnJpZXJzLCB3aXRob3V0IG5lZWRpbmcgdG8gd2FpdCBmb3IgY29t
-cGxldGlvbiBpbiB0aGVyZS4gwqBJJ2QKPj4gYmUgaW50ZXJlc3RlZCB0byBoZWFyIGlmIGN1dHRp
-bmcgb3V0IHRoZSBCTEtERVZfSUZMX1dBSVRzIG1ha2VzIHRoZQo+PiBzd2FwIGRpc2NhcmRzIGJl
-aGF2ZSBhY2NlcHRhYmx5IGFnYWluIGZvciB5b3UgLSBidXQgdW5kZXJzdGFuZCB0aGF0Cj4+IHlv
-dSB3b24ndCBoYXZlIGEgY2hhbmNlIHRvIHRyeSB0aGF0IHVudGlsIGxhdGVyIG5leHQgd2Vlay4K
-Pgo+IFRoYXQgZG9lcyBpbmRlZWQgbG9vayBpbmNvcnJlY3QgdG8gbWUuIMKgQW55IGtpbmQgb2Yg
-ZXhwbGljaXQgd2FpdHMKPiB1c3VhbGx5IG1lYW4gdGhlIGNhbGxlciBwcm92aWRlcyBvcmRlcmlu
-Zy4gwqBHZXR0aW5nIHJpZCBvZgo+IEJMS0RFVl9JRkxfQkFSUklFUiBpbiB0aGUgc3dhcCBjb2Rl
-IEFTQVAgd291bGQgaW5kZWVkIGJlIGJlbmVmaWNpYWwKPiBnaXZlbiB0aGF0IHdlIGFyZSB0cnlp
-bmcgdG8gZ2V0IHJpZCBvZiBoYXJkIGJhcnJpZXJzIGNvbXBsZXRlbHkgc29vbi4KPiBBdWRpdGlu
-ZyB0aGUgZXhpc3RpbmcgYmxrZGV2X2lzc3VlX2Rpc2NhcmQgY2FsbGVycyBpbiBmaWxlc3lzdGVt
-cwo+IGlzIGhpZ2ggb24gdGhlIHRvZG8gbGlzdCBmb3IgbWUuCgpZZXMuCgpBYm92ZSBJIHdhcyBz
-dWdnZXN0aW5nIGZvciBOaWdlbCB0byBleHBlcmltZW50IHdpdGggY3V0dGluZyBvdXQgc3dhcApk
-aXNjYXJkJ3MgQkxLREVWX0lGTF9XQUlUcyAtIGFuZCB0aGUgcmVzdWx0cyBvZiBjdXR0aW5nIHRo
-b3NlIG91dCBidXQKbGVhdmluZyBpdHMgQkxLREVWX0lGTF9CQVJSSUVScyB3b3VsZCBzdGlsbCBi
-ZSBpbnRlcmVzdGluZy4gIEJ1dCBhZnRlcgpkaWdlc3RpbmcgdGhlIExTRiBkaXNjdXNzaW9uIGFu
-ZCB0aGUgZW1haWwgdGhyZWFkIHRoYXQgbGVkIHVwIHRvIGl0LCBJCmNhbWUgdG8gdGhlIHNhbWUg
-Y29uY2x1c2lvbiBhcyB5b3UsIHRoYXQgZ29pbmcgZm9yd2FyZCB3ZSB3YW50IHRvIGtlZXAKaXRz
-IEJMS0RFVl9JRkxfV0FJVHMgKHN3YXBmaWxlLmMgYWxyZWFkeSBwcm92aWRlcyBhbGwgdGhlIG90
-aGVyCnN5bmNocm9uaXphdGlvbiBmb3IgdGhhdCB0byBmaXQgaW50byAtIHRoaW5ncyBsaWtlIG5l
-dmVyIGZyZWVpbmcgc3dhcAp3aGlsZSBpdHMgc3RpbGwgdW5kZXIgd3JpdGViYWNrKSBhbmQgc2lt
-cGx5IHJlbW92ZSBpdHMKQkxLREVWX0lGTF9CQVJSSUVScy4KCkhvd2V2ZXIsIEkgYW0gc3RpbGwg
-bm90IHF1aXRlIHN1cmUgdGhhdCB3ZSBjYW4gYWxyZWFkeSBtYWtlIHRoYXQKY2hhbmdlIGZvciAy
-LjYuMzUgKC1zdGFibGUpLiAgQ2FuIHlvdSByZWFzc3VyZSBtZSBvbiB0aGUgcXVlc3Rpb24gSQpy
-YWlzZSBhYm92ZTogaWYgd2UgaXNzdWUgYSBkaXNjYXJkIHRvIGEgZGV2aWNlIHdpdGggY2FjaGUs
-IHdhaXQgZm9yCiJjb21wbGV0aW9uIiwgdGhlbiBpc3N1ZSBhIHdyaXRlIGludG8gdGhlIGFyZWEg
-c3Bhbm5lZCBieSB0aGF0CmRpc2NhcmQsIGNhbiB3ZSBiZSBjZXJ0YWluIHRoYXQgdGhlIHdyaXRl
-IHRvIGJhY2tpbmcgc3RvcmUgd2lsbCBub3QgYmUKcmVvcmRlcmVkIGJlZm9yZSB0aGUgZGlzY2Fy
-ZCBvZiBiYWNraW5nIHN0b3JlICh1bmxlc3MgdGhlIGRldmljZSBpcwpqdXN0IGJyb2tlbik/ICBX
-aXRob3V0IGEgIFJFUV9IQVJEQkFSUklFUiBpbiB0aGUgMi42LjM1IHNjaGVtZT8gIEl0CnNlZW1z
-IGEgdmVyeSByZWFzb25hYmxlIGFzc3VtcHRpb24gdG8gbWUsIGJ1dCBJJ20gbGVhcm5pbmcgbm90
-IHRvCmRlcGVuZCB1cG9uIHJlYXNvbmFibGUgYXNzdW1wdGlvbnMgaGVyZS4gIChCeSB0aGUgd2F5
-LCBpdCBkb2Vzbid0Cm1hdHRlciBhdCBhbGwgd2hldGhlciB3cml0ZXMgbm90IHNwYW5uZWQgYnkg
-dGhlIGRpc2NhcmQgcGFzcyBpdCBvcgpub3QuKQoKSHVnaApfX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1A
-bGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9u
-Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Fri, Aug 13, 2010 at 01:11:29PM -0400, James Bottomley wrote:
+> 
+> The facts are that suspend blockers identifies a race within our suspend
+> to ram system that permeates from top to bottom (that's from server to
+> mobile).  The problem is that resume events are racy with respect to
+> suspend and vice versa.  This manifests itself most annoyingly on my
+> laptop in the "double suspend" case: where I suspend with a pending
+> suspend event, my laptop will resume and then immediately re-suspend
+> (leading me to kick myself and remind myself to check it stayed up
+> before pushing unsuspend and walking away).  The other annoying case is
+> that if I accidentally close the lid before presenting, I have to wait
+> until the system is fully down before pressing resume.
+
+This is all true, but it's also only one aspect of the problem.  I
+agree with you that this is the part of the problem which affects
+Linux at all scales, from Cloud servers in a data center that want to
+suspend themselves when there's no work to do (and then fail to
+respond to the WOL packet) to mobile platforms that are suspending
+much more frequently.
+
+However, it doesn't follow that this is the _only_ problem that the
+Android folks might be interested in solving.  Opportunistic suspend
+is a different part of the problem space, which is generally believed
+by the Android developers as being far more efficient than a
+user-space suspend manager.  Rafael has stated his complete
+unwillingness to deal with this part of the problem.  OK, so that
+probably means that for Android, it will have to be an out-of-tree
+kernel patch.
+
+The question, then, is whether a solution which addresses the only
+part of the problem which Rafael is interested in dealing with at this
+point, is sufficient such that (a) the kernel-level opportunistic
+suspend can be done as an out-of-tree patch, while simultaneously (b)
+allowing device drivers for Android devices can utilize Rafael's
+interfaces to solve the race design bug currently found in our suspend
+subsystem, while (c) requiring minimal changes to the Android
+userspace, and (d) providing all of the statistics and debugging
+functionality required by the Android userspace.
+
+If we can engineer a solution which meets (a), (b), (c), and (d)
+above, then everyone will be happy.
+
+					- Ted
