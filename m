@@ -1,8 +1,8 @@
-From: "Ted Ts'o" <tytso@mit.edu>
+From: Brian Swetland <swetland@google.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
  take three
-Date: Fri, 13 Aug 2010 15:08:01 -0400
-Message-ID: <20100813190801.GB26950__44277.9024866924$1281726560$gmane$org@thunk.org>
+Date: Fri, 13 Aug 2010 12:29:08 -0700
+Message-ID: <AANLkTi=SZoRmQyBm0Gs1kp-4nTrDy-ktmWppwgneQghG@mail.gmail.com>
 References: <AANLkTi=RD=eM_gpc7FfRq0923sUbARmZ2+4-m+fLibYC@mail.gmail.com>
 	<E3F3D3E1-4DF7-47E3-895D-95F6BC22CCC4@mit.edu>
 	<AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
@@ -13,12 +13,12 @@ References: <AANLkTi=RD=eM_gpc7FfRq0923sUbARmZ2+4-m+fLibYC@mail.gmail.com>
 	<20100813155738.GA11507@isilmar-3.linta.de>
 	<AANLkTikN2zKcLtFJ6EdBU=iqT78bZKt_rKQoPNBRXJHj@mail.gmail.com>
 	<1281719489.8407.17.camel@mulgrave.site>
+	<20100813190801.GB26950@thunk.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1281719489.8407.17.camel@mulgrave.site>
+In-Reply-To: <20100813190801.GB26950@thunk.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,50 +28,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: david@lang.hm, arjan@infradead.org, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, galibert@pobox.com, florian@mickler.org, tglx@linutronix.de, menage@google.com, paulmck@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, swmike@swm.pp.se
+To: Ted Ts'o <tytso@mit.edu>, James Bottomley <James.Bottomley@suse.de>, Felipe Contreras <felipe.contreras@gmail.com>, paulmck@linux.vnet.ibm.com, david@lang.hm, peterz@in
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 13, 2010 at 01:11:29PM -0400, James Bottomley wrote:
-> 
-> The facts are that suspend blockers identifies a race within our suspend
-> to ram system that permeates from top to bottom (that's from server to
-> mobile).  The problem is that resume events are racy with respect to
-> suspend and vice versa.  This manifests itself most annoyingly on my
-> laptop in the "double suspend" case: where I suspend with a pending
-> suspend event, my laptop will resume and then immediately re-suspend
-> (leading me to kick myself and remind myself to check it stayed up
-> before pushing unsuspend and walking away).  The other annoying case is
-> that if I accidentally close the lid before presenting, I have to wait
-> until the system is fully down before pressing resume.
-
-This is all true, but it's also only one aspect of the problem.  I
-agree with you that this is the part of the problem which affects
-Linux at all scales, from Cloud servers in a data center that want to
-suspend themselves when there's no work to do (and then fail to
-respond to the WOL packet) to mobile platforms that are suspending
-much more frequently.
-
-However, it doesn't follow that this is the _only_ problem that the
-Android folks might be interested in solving.  Opportunistic suspend
-is a different part of the problem space, which is generally believed
-by the Android developers as being far more efficient than a
-user-space suspend manager.  Rafael has stated his complete
-unwillingness to deal with this part of the problem.  OK, so that
-probably means that for Android, it will have to be an out-of-tree
-kernel patch.
-
-The question, then, is whether a solution which addresses the only
-part of the problem which Rafael is interested in dealing with at this
-point, is sufficient such that (a) the kernel-level opportunistic
-suspend can be done as an out-of-tree patch, while simultaneously (b)
-allowing device drivers for Android devices can utilize Rafael's
-interfaces to solve the race design bug currently found in our suspend
-subsystem, while (c) requiring minimal changes to the Android
-userspace, and (d) providing all of the statistics and debugging
-functionality required by the Android userspace.
-
-If we can engineer a solution which meets (a), (b), (c), and (d)
-above, then everyone will be happy.
-
-					- Ted
+T24gRnJpLCBBdWcgMTMsIDIwMTAgYXQgMTI6MDggUE0sIFRlZCBUcydvIDx0eXRzb0BtaXQuZWR1
+PiB3cm90ZToKPiBPbiBGcmksIEF1ZyAxMywgMjAxMCBhdCAwMToxMToyOVBNIC0wNDAwLCBKYW1l
+cyBCb3R0b21sZXkgd3JvdGU6Cj4+Cj4+IFRoZSBmYWN0cyBhcmUgdGhhdCBzdXNwZW5kIGJsb2Nr
+ZXJzIGlkZW50aWZpZXMgYSByYWNlIHdpdGhpbiBvdXIgc3VzcGVuZAo+PiB0byByYW0gc3lzdGVt
+IHRoYXQgcGVybWVhdGVzIGZyb20gdG9wIHRvIGJvdHRvbSAodGhhdCdzIGZyb20gc2VydmVyIHRv
+Cj4+IG1vYmlsZSkuIMKgVGhlIHByb2JsZW0gaXMgdGhhdCByZXN1bWUgZXZlbnRzIGFyZSByYWN5
+IHdpdGggcmVzcGVjdCB0bwo+PiBzdXNwZW5kIGFuZCB2aWNlIHZlcnNhLiDCoFRoaXMgbWFuaWZl
+c3RzIGl0c2VsZiBtb3N0IGFubm95aW5nbHkgb24gbXkKPj4gbGFwdG9wIGluIHRoZSAiZG91Ymxl
+IHN1c3BlbmQiIGNhc2U6IHdoZXJlIEkgc3VzcGVuZCB3aXRoIGEgcGVuZGluZwo+PiBzdXNwZW5k
+IGV2ZW50LCBteSBsYXB0b3Agd2lsbCByZXN1bWUgYW5kIHRoZW4gaW1tZWRpYXRlbHkgcmUtc3Vz
+cGVuZAo+PiAobGVhZGluZyBtZSB0byBraWNrIG15c2VsZiBhbmQgcmVtaW5kIG15c2VsZiB0byBj
+aGVjayBpdCBzdGF5ZWQgdXAKPj4gYmVmb3JlIHB1c2hpbmcgdW5zdXNwZW5kIGFuZCB3YWxraW5n
+IGF3YXkpLiDCoFRoZSBvdGhlciBhbm5veWluZyBjYXNlIGlzCj4+IHRoYXQgaWYgSSBhY2NpZGVu
+dGFsbHkgY2xvc2UgdGhlIGxpZCBiZWZvcmUgcHJlc2VudGluZywgSSBoYXZlIHRvIHdhaXQKPj4g
+dW50aWwgdGhlIHN5c3RlbSBpcyBmdWxseSBkb3duIGJlZm9yZSBwcmVzc2luZyByZXN1bWUuCj4K
+PiBUaGlzIGlzIGFsbCB0cnVlLCBidXQgaXQncyBhbHNvIG9ubHkgb25lIGFzcGVjdCBvZiB0aGUg
+cHJvYmxlbS4gwqBJCj4gYWdyZWUgd2l0aCB5b3UgdGhhdCB0aGlzIGlzIHRoZSBwYXJ0IG9mIHRo
+ZSBwcm9ibGVtIHdoaWNoIGFmZmVjdHMKPiBMaW51eCBhdCBhbGwgc2NhbGVzLCBmcm9tIENsb3Vk
+IHNlcnZlcnMgaW4gYSBkYXRhIGNlbnRlciB0aGF0IHdhbnQgdG8KPiBzdXNwZW5kIHRoZW1zZWx2
+ZXMgd2hlbiB0aGVyZSdzIG5vIHdvcmsgdG8gZG8gKGFuZCB0aGVuIGZhaWwgdG8KPiByZXNwb25k
+IHRvIHRoZSBXT0wgcGFja2V0KSB0byBtb2JpbGUgcGxhdGZvcm1zIHRoYXQgYXJlIHN1c3BlbmRp
+bmcKPiBtdWNoIG1vcmUgZnJlcXVlbnRseS4KPgo+IEhvd2V2ZXIsIGl0IGRvZXNuJ3QgZm9sbG93
+IHRoYXQgdGhpcyBpcyB0aGUgX29ubHlfIHByb2JsZW0gdGhhdCB0aGUKPiBBbmRyb2lkIGZvbGtz
+IG1pZ2h0IGJlIGludGVyZXN0ZWQgaW4gc29sdmluZy4gwqBPcHBvcnR1bmlzdGljIHN1c3BlbmQK
+PiBpcyBhIGRpZmZlcmVudCBwYXJ0IG9mIHRoZSBwcm9ibGVtIHNwYWNlLCB3aGljaCBpcyBnZW5l
+cmFsbHkgYmVsaWV2ZWQKPiBieSB0aGUgQW5kcm9pZCBkZXZlbG9wZXJzIGFzIGJlaW5nIGZhciBt
+b3JlIGVmZmljaWVudCB0aGFuIGEKPiB1c2VyLXNwYWNlIHN1c3BlbmQgbWFuYWdlci4gwqBSYWZh
+ZWwgaGFzIHN0YXRlZCBoaXMgY29tcGxldGUKPiB1bndpbGxpbmduZXNzIHRvIGRlYWwgd2l0aCB0
+aGlzIHBhcnQgb2YgdGhlIHByb2JsZW0uIMKgT0ssIHNvIHRoYXQKPiBwcm9iYWJseSBtZWFucyB0
+aGF0IGZvciBBbmRyb2lkLCBpdCB3aWxsIGhhdmUgdG8gYmUgYW4gb3V0LW9mLXRyZWUKPiBrZXJu
+ZWwgcGF0Y2guCj4KPiBUaGUgcXVlc3Rpb24sIHRoZW4sIGlzIHdoZXRoZXIgYSBzb2x1dGlvbiB3
+aGljaCBhZGRyZXNzZXMgdGhlIG9ubHkKPiBwYXJ0IG9mIHRoZSBwcm9ibGVtIHdoaWNoIFJhZmFl
+bCBpcyBpbnRlcmVzdGVkIGluIGRlYWxpbmcgd2l0aCBhdCB0aGlzCj4gcG9pbnQsIGlzIHN1ZmZp
+Y2llbnQgc3VjaCB0aGF0IChhKSB0aGUga2VybmVsLWxldmVsIG9wcG9ydHVuaXN0aWMKPiBzdXNw
+ZW5kIGNhbiBiZSBkb25lIGFzIGFuIG91dC1vZi10cmVlIHBhdGNoLCB3aGlsZSBzaW11bHRhbmVv
+dXNseSAoYikKPiBhbGxvd2luZyBkZXZpY2UgZHJpdmVycyBmb3IgQW5kcm9pZCBkZXZpY2VzIGNh
+biB1dGlsaXplIFJhZmFlbCdzCj4gaW50ZXJmYWNlcyB0byBzb2x2ZSB0aGUgcmFjZSBkZXNpZ24g
+YnVnIGN1cnJlbnRseSBmb3VuZCBpbiBvdXIgc3VzcGVuZAo+IHN1YnN5c3RlbSwgd2hpbGUgKGMp
+IHJlcXVpcmluZyBtaW5pbWFsIGNoYW5nZXMgdG8gdGhlIEFuZHJvaWQKPiB1c2Vyc3BhY2UsIGFu
+ZCAoZCkgcHJvdmlkaW5nIGFsbCBvZiB0aGUgc3RhdGlzdGljcyBhbmQgZGVidWdnaW5nCj4gZnVu
+Y3Rpb25hbGl0eSByZXF1aXJlZCBieSB0aGUgQW5kcm9pZCB1c2Vyc3BhY2UuCj4KPiBJZiB3ZSBj
+YW4gZW5naW5lZXIgYSBzb2x1dGlvbiB3aGljaCBtZWV0cyAoYSksIChiKSwgKGMpLCBhbmQgKGQp
+Cj4gYWJvdmUsIHRoZW4gZXZlcnlvbmUgd2lsbCBiZSBoYXBweS4KCkFydmUncyBzdXNwZW5kIGJs
+b2NrZXJzIHBhdGNoIHN0YWNrIGFjdHVhbGx5IHNlcGFyYXRlcyB0aGUgY29yZQpmdW5jdGlvbmFs
+aXR5IChhYmlsaXR5IGZvciBkcml2ZXJzIHRvIGRlbGF5IHN1c3BlbmQgd2hpbGUgZG9pbmcgd29y
+awpzdXNwZW5kIHdvdWxkIGludGVyZmVyZSB3aXRoKSwgZnJvbSB0aGUgYWJpbGl0eSB0byBob2xk
+IHN1c3BlbmQKYmxvY2tlcnMgZnJvbSB1c2Vyc3BhY2UgKGEgc2VwYXJhdGUsIHNtYWxsZXIgcGF0
+Y2ggYnVpbGRpbmcgb24gdGhlCmNvcmUgZnVuY3Rpb25hbGl0eSkuCgpCcmlhbgpfX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxp
+c3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51
+eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
