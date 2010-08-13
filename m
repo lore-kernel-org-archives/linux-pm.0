@@ -1,17 +1,24 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
-	take three
-Date: Thu, 12 Aug 2010 21:37:21 -0700
-Message-ID: <AANLkTinMmVdAVaCFXyDZpVRmZ9FCWYhtdeM=o4hdoZnT__25608.050885103$1281674393$gmane$org@mail.gmail.com>
-References: <AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
-	<AANLkTimjfU2zu4reEVdOwWwtFHPQ33_Gna6xS2XHRG-h@mail.gmail.com>
-	<20100812125712.48b7fc26@virtuousgeek.org>
-	<201008130528.21887.rjw@sisk.pl>
+ take three
+Date: Fri, 13 Aug 2010 11:30:33 +0100
+Message-ID: <20100813113033.4bf911b6@lxorguk.ukuu.org.uk>
+References: <AANLkTimahmGikeai8QnAxCy45deT00-6T7h-eA-NqL4G@mail.gmail.com>
+	<20100812010612.GL2516@linux.vnet.ibm.com>
+	<AANLkTinVV1NVHFPeO0p_e2pCtNwTNB932q9tbu9MMD3_@mail.gmail.com>
+	<20100812034435.GA7403@linux.vnet.ibm.com>
+	<AANLkTi=RD=eM_gpc7FfRq0923sUbARmZ2+4-m+fLibYC@mail.gmail.com>
+	<E3F3D3E1-4DF7-47E3-895D-95F6BC22CCC4@mit.edu>
+	<AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
+	<20100812174303.GD2524@linux.vnet.ibm.com>
+	<AANLkTim1U6QpRyfwYCq2uRA=7-a8ryfDrzv5VCqmHnyB@mail.gmail.com>
+	<AANLkTinNxZoMab=tG9KXJ9n_nxB1dXHkfk-7xUMWXACW@mail.gmail.com>
+	<20100812195224.GA6370@comet.dominikbrodowski.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201008130528.21887.rjw@sisk.pl>
+In-Reply-To: <20100812195224.GA6370@comet.dominikbrodowski.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,158 +28,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: peterz@infradead.org, Felipe Contreras <felipe.contreras@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, galibert@pobox.com, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, James.Bottomley@suse.de, tglx@linutronix.de, swmike@swm.pp.se, david@lang.hm, Ted Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, menage@google.com, arjan@infradead.org
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: david@lang.hm, Theodore Tso <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, galibert@pobox.com, florian@mickler.org, James.Bottomley@suse.de, tglx@linutronix.de, menage@google.com, paulmck@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, arjan@infradead.org, swmike@swm.pp.se
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 12, 2010 at 8:28 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday, August 12, 2010, Jesse Barnes wrote:
->> On Thu, 12 Aug 2010 12:19:34 -0700
->> Brian Swetland <swetland@google.com> wrote:
->> > Question though -- has every feature ever added to the kernel been a
->> > feature that there's pre-existing usage of? =A0Seems like a chicken and
->> > egg problem. =A0Also, some people seem to think there's value in being
->> > able to build kernels "out of the box" that work with the Android
->> > userspace -- given that there are a few devices out there that have
->> > that userspace on 'em.
->>
->> We generally try to merge new features like this along with code that
->> uses said feature, but there are always exceptions. =A0We've merged code
->> one release or more before the new code gets used for example, which is
->> fine IMO. =A0What we don't want to see is some new drop of code added and
->> abandoned, but you already knew that.
->>
->> At any rate, if Felipe is the only one arguing against including
->> suspend blockers in the kernel, you're probably in good shape. =A0Based
->> on my (rather cursory I admit) evaluation of this thread, it seems like
->> reasonable people agree that there's a place for a suspend blocker like
->> API in the kernel, and that dynamic power management is also highly
->> desirable. =A0So where's the git pull request already? :)
->
-> In fact my patch going in that direction has been merged already and that
-> code will likely be extended to cover some needs and cases I didn't have =
-in
-> mind when I was preparing it.
->
-> However, having discussed the whole issue for many times and reconsidered=
- it
-> thoroughly, I think that it's inappropriate to identify the suspend block=
-ers
-> (or wakelocks) framework with the opportunistic suspend feature as propos=
-ed in
-> the original submission of the "suspend blockers" patchset. =A0IMO they r=
-eally
-> are not the same thing and while the suspend blockers framework is used by
-> Android to implement opportunistic suspend, I don't really believe this i=
-s the
-> right approach.
->
+> I guess I don't, either -- there are some parts of the kernel used by only a
+> handful of users... and here we speak about million users...
 
-Can you clarify this? Do you not believe using opportunistic suspend
-is the right approach, or do you not believe linking suspend blockers
-with opportunistic suspend is the right approach?
+Because in general the bits for a small user base don't leak out into
+other bits of the kernel. It's a much higher barrier if you want to
+affect other people's code because it is asking everyone else to help
+maintain stuff they don't need.
 
-> We really need something similar to suspend blockers to avoid races betwe=
-en
-> a suspend process and wakeup events, but it isn't necessary to provide us=
-er
-> space with an interface allowing it to use these things directly. =A0Such=
- an
-> interface is only necessary in the specific implementation in which the s=
-ystem
-> is suspended as soon as the number of "active" suspend blockers goes down=
- to
-> zero.
-
-I don't think what you are saying here is correct. When you decide to
-suspend has no impact on whether a user space interface to block
-suspend is needed. The last suspend blocker patchset had this
-interface as a separate patch and the reasons for providing it have
-not changed with your interface. Android need the user space interface
-because low level services that handle wakeup events are started
-before the user space power manager. The other reason to have this
-interface in the mainline kernel is to provide a safe way to handle
-wakeup events on linux regardless of which user space power manager is
-used on the system. For instance some devices have a user space
-battery monitor, and there would be no need for this code to be
-android specific if the kernel provided all the functionality it
-needs.
-
-> =A0Arguably, though, this isn't the only possible way to implement a
-> mechanism allowing the system to be suspended automatically when it appea=
-rs
-> to be inactive.
->
-> Namely, one can use a user space power manager for this purpose and actua=
-lly
-> the OLPC project has been doing that successfully for some time, which cl=
-early
-> demonstrates that the Android approach to this problem is not the only one
-> possible. =A0Moreover, the kernel's system suspend (or hibernate for that=
- matter)
-> code has not been designed to be started from within the kernel. =A0It's =
-been
-> designed to allow a privileged user space process to request the kernel to
-> put the system into a sleep state at any given time regardless of what the
-> other user space processes are doing. =A0While it can be started from wit=
-hin the
-> kernel, this isn't particularly nice and, in the Android case, starting i=
-t from
-> within the kernel requires permission from multiple user space processes
-> (given by not taking suspend blockers these processes are allowed to use).
->
-
-Why is starting suspend from within the kernel not nice? Personally I
-think reentering suspend from within the kernel is nicer than being
-forced to wake up a user space thread for events that are fully
-handled within the kernel (for instance the battery monitor on the
-Nexus One).
-
-> Since, quite clearly, user space input is necessary to make the decision
-> whether or not to suspend the system, I think it is more appropriate to a=
-llow
-> user space to start the entire operation and provide the kernel with a me=
-ans
-> to abort it in the case of a wakeup event. =A0Then, user space will be ab=
-le to
-> use arbitrary heuristics in deciding whether or not to suspend the system,
-> possibly taking some kernel's input into account.
->
-When we don't need these heuristics, this is just a burden.
-
-> I'm not against the very idea of automatic system suspend, which IMO is a
-> legitimate and reasonable thing to do in many usage scenarios, but I don't
-> think that the kernel is the right place to start a suspend process. =A0F=
-or this
-> reason I'm not going to take any code trying to start a suspend process f=
-rom
-> within the kernel, regardless of that code's purpose, unless somebody mak=
-es a
-> really convincing case for that to me (basically proving the need for suc=
-h a
-> solution).
-
-There is no absolute need to start the suspend process from within the
-kernel, but it makes the user space code much simpler for what we
-need.
-
->=A0That said I'm willing to accept patches adding or improving code
-> that will help us to avoid races between system suspend, initiated by user
-> space, and wakeup events detected by the kernel.
->
-> I hope that makes things clear.
->
-> Thanks,
-> Rafael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at =A0http://www.tux.org/lkml/
->
-
-
-
--- =
-
-Arve Hj=F8nnev=E5g
+That's not to say sometimes its not the right choice, but I still find it
+remarkable that nobody else but Android seems to want it,.
+Alan
