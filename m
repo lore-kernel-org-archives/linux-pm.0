@@ -1,11 +1,9 @@
-From: Felipe Contreras <felipe.contreras@gmail.com>
+From: Dominik Brodowski <linux@dominikbrodowski.net>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Fri, 13 Aug 2010 18:40:28 +0300
-Message-ID: <AANLkTimdpgC2DBn1pS2OG35+_06-L6TZ9Q_nb+C6Yeqv__6425.32498245618$1281714082$gmane$org@mail.gmail.com>
-References: <20100811222854.GJ2516@linux.vnet.ibm.com>
-	<AANLkTimahmGikeai8QnAxCy45deT00-6T7h-eA-NqL4G@mail.gmail.com>
-	<20100812010612.GL2516@linux.vnet.ibm.com>
+Date: Fri, 13 Aug 2010 17:57:38 +0200
+Message-ID: <20100813155738.GA11507__14955.5423799486$1281715153$gmane$org@isilmar-3.linta.de>
+References: <20100812010612.GL2516@linux.vnet.ibm.com>
 	<AANLkTinVV1NVHFPeO0p_e2pCtNwTNB932q9tbu9MMD3_@mail.gmail.com>
 	<20100812034435.GA7403@linux.vnet.ibm.com>
 	<AANLkTi=RD=eM_gpc7FfRq0923sUbARmZ2+4-m+fLibYC@mail.gmail.com>
@@ -14,11 +12,13 @@ References: <20100811222854.GJ2516@linux.vnet.ibm.com>
 	<20100812174303.GD2524@linux.vnet.ibm.com>
 	<AANLkTim1U6QpRyfwYCq2uRA=7-a8ryfDrzv5VCqmHnyB@mail.gmail.com>
 	<20100813152254.GD2511@linux.vnet.ibm.com>
+	<AANLkTimdpgC2DBn1pS2OG35+_06-L6TZ9Q_nb+C6Yeqv@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100813152254.GD2511@linux.vnet.ibm.com>
+Content-Disposition: inline
+In-Reply-To: <AANLkTimdpgC2DBn1pS2OG35+_06-L6TZ9Q_nb+C6Yeqv@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,61 +28,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paulmck@linux.vnet.ibm.com
-Cc: david@lang.hm, Theodore Tso <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: david@lang.hm, Theodore Tso <tytso@mit.edu>, arjan@infradead.org, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, galibert@pobox.com, florian@mickler.org, James.Bottomley@suse.de, tglx@linutronix.de, menage@google.com, paulmck@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, swmike@swm.pp.se
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBBdWcgMTMsIDIwMTAgYXQgNjoyMiBQTSwgUGF1bCBFLiBNY0tlbm5leQo8cGF1bG1j
-a0BsaW51eC52bmV0LmlibS5jb20+IHdyb3RlOgo+IE9uIFRodSwgQXVnIDEyLCAyMDEwIGF0IDEw
-OjM0OjQ3UE0gKzAzMDAsIEZlbGlwZSBDb250cmVyYXMgd3JvdGU6Cj4+ICJQTS1kcml2aW5nIGFw
-cGxpY2F0aW9ucyIgaXMgYSBuZXcgaW52ZW50aW9uLCBzbyBob3cgZG8geW91IGtub3cgaWYgYW4K
-Pj4gYXBwbGljYXRpb24gYmVsb25ncyB0byB0aGlzIGNhdGVnb3J5IG9yIG5vdD8gU29tZSBhcHBs
-aWNhdGlvbiBtaWdodCBiZQo+PiBub24tUE0tZHJpdmluZyBtb3N0IG9mIHRoZSB0aW1lLCBidXQg
-c3VkZGVubHkgYmVjb21lIFBNLWRyaXZpbmcuIFdlbGwsCj4+IHlvdSBoYXZlIHRvIGFuYWx5emUg
-KmFsbCogb2YgdGhlbS4KPgo+IEEgUE0tZHJpdmluZyBhcHBsaWNhdGlvbiBpcyBvbmUgdGhhdCBl
-eGVydHMgY29udHJvbCBvdmVyIHRoZSBzeXN0ZW0ncwo+IHBvd2VyIHN0YXRlLiDCoEluIHRoZSBj
-YXNlIG9mIEFuZHJvaWQsIGEgUE0tZHJpdmluZyBhcHBsaWNhdGlvbiBpcyBvbmUKPiB0aGF0IGlz
-IHBlcm1pdHRlZCB0byBhY3F1aXJlIHN1c3BlbmQgYmxvY2tlcnMuCgpJIGFscmVhZHkgbWVudGlv
-bmVkIHRoYXQgYSAiUE0tZHJpdmluZyBhcHBsaWNhdGlvbiIgbWlnaHQgbm90IGhhdmUKc3VzcGVu
-ZC1ibG9ja2VyczsgYmVjYXVzZSB0aGUgdXNlciBkZW5pZWQgdGhlbSwgb3IgYmVjYXVzZSB0aGUK
-ZGV2ZWxvcGVyIGZvcmdvdCB0aGVtLgoKPj4gVGhpbmsgYWJvdXQgdGhpcy4uLiBpcyBiYXNoIGEg
-UE0gZHJpdmluZyBhcHBsaWNhdGlvbj8gTm8sIGJ1dCB3aGF0IGlmCj4+IHlvdSBydW46ICdzbGVl
-cCAzNjAwICYmIGFsYXJtLnNoJy4KPgo+IFRoYXQgaXMgYW4gZXhjZWxsZW50IGV4YW1wbGUsIGFz
-IGl0IGFwcGxpZXMgZXF1YWxseSB0byBkeW5hbWljIHBvd2VyCj4gbWFuYWdlbWVudC4gwqBCeSBo
-b3cgbXVjaCBhcmUgeW91IGFsbG93ZWQgdG8gZGVsYXkgdGhlIHdha2V1cD8KCkh1aD8gQ2VydGFp
-bmx5IG5vdCBkYXlzLCB3aGljaCBpZiBBbmRyb2lkIGd1eXMgYXJlIHJpZ2h0LCBtaWdodCBiZSBo
-b3cKbXVjaCB0aGUgdGFzayB3aWxsIGJlIGRlbGF5ZWQuCgo+PiBQZXJoYXBzIEkgc2hvdWxkIHJl
-d3JpdGUgdGhhdCBhczoKPj4gMikgaWYgc3VzcGVuZCBibG9ja2VycyBhcmUgZW5hYmxlZCBpbiB0
-aGUgc3lzdGVtOyAqYWxsKiB1c2VyLXNwYWNlIGlzIGFmZmVjdGVkCj4KPiBUaGF0IGlzIHNwZWN1
-bGF0aW9uIG9uIHlvdXIgcGFydC4KCk5vdCByZWFsbHkuIFNheSB5b3UgaGF2ZSAxMDAgcGFja2Fn
-ZXMgaW4geW91ciBzeXN0ZW0sIGhvdyBkbyB5b3Uga25vdwp3aGljaCBvbmVzIHdvdWxkIGJlIFBN
-LWRyaXZpbmc/IENhbiB5b3UgZ3JlcCBmb3Igc29tZXRoaW5nLCBvciBzZWUgaWYKdGhleSBvcGVu
-IGNlcnRhaW4gZmlsZT8gTm8sIHlvdSBoYXZlIHRvIGFuYWx5emUgdGhlbSBvbmUgYnkgb25lOyB0
-aGV5CiphbGwqIGFyZSBhZmZlY3RlZCwgYWx0aG91Z2ggbm90IGFsbCBtaWdodCByZXF1aXJlIG1v
-ZGlmaWNhdGlvbnMuCgpCdXQgYXNzdW1pbmcgSSdtIHdyb25nLCB0aGF0J3MgcHJlY2lzZWx5IHRo
-ZSByZWFzb24gd2h5IGEgcHJhY3RpY2FsCmV4ZXJjaXNlIHdvdWxkIGhlbHAuCgo+PiBUaGlzICJy
-ZXF1aXJlbWVudCIgaXMgc3BlY2lmaWMgdG8gQW5kcm9pZCdzIHVzZXItc3BhY2UsIGlzbid0IGl0
-Pwo+Cj4gVGhhdCBpcyB5b3VyIHNwZWN1bGF0aW9uLgoKV2hpY2ggaXMgd2h5IHdlIG5lZWQgc29t
-ZXRoaW5nIHByYWN0aWNhbC4KCj4+IE5vdCBVYnVudHUsIG5vdCBGZWRvcmEsIG5vdCBNZWVHbywg
-bm90IGFueW9uZSB3aXRoIGEgdHlwaWNhbAo+PiB1c2VyLXNwYWNlIHNlZW1zIHRvIGJlIGhhdmlu
-ZyB0aGlzIHByb2JsZW0uIEkgY2FuIGFyZ3VlIHRvIHlvdSB0aGF0Cj4+IHRoaXMgcHJvYmxlbSBj
-YW4gYmUgc29sdmVkIGluIGVhc2llciB3YXlzLCBidXQgaW5zdGVhZCBJIHdpbGwgYXJndWUKPj4g
-dGhhdCBwZXJoYXBzIHdlIHNob3VsZCB3YWl0IGZvciBzb21lYm9keSBiZXNpZGVzIEFuZHJvaWQg
-dG8gY29tcGxhaW4KPj4gYWJvdXQgaXQgYmVmb3JlIHByb3ZpZGluZyBhICJzb2x1dGlvbiIuIEJl
-Y2F1c2UgYWZ0ZXIgYWxsLCB3aGF0IGdvb2QKPj4gaXMgYSAic29sdXRpb24iIHByb3ZpZGVkIGJ5
-IHRoZSBrZXJuZWwsIGlmIHRoZSB1c2VyLXNwYWNlIGlzIG5vdCBnb2luZwo+PiB0byB1c2UgaXQs
-IGV2ZXIuCj4KPiBBdCB0aGlzIHBvaW50IGluIHRoZSBkaXNjdXNzaW9uLCBJIGFtIHF1aXRlIHBy
-ZXBhcmVkIHRvIGJlbGlldmUgdGhhdCB5b3UKPiB3aWxsIGF2b2lkIHVzaW5nIHN1c3BlbmQgYmxv
-Y2tlcnMsIGFuZCB0aGF0IHlvdSB3aWxsIGZ1cnRoZXIgZG8gZXZlcnl0aGluZwo+IGluIHlvdXIg
-cG93ZXIgdG8gcHJldmVudCBhbnlvbmUgZWxzZSBmcm9tIHVzaW5nIHN1c3BlbmQgYmxvY2tlcnMu
-IMKgOy0pCgpJJ20gbm90IHR5aW5nIGFueWJvZHkncyBoYW5kcy4KCkhvdyBhcmUgcGVvcGxlIHVz
-aW5nIHJlYWwtdGltZSBsaW51eCBpZiBpdCdzIG5vdCBvbiBtYWlubGluZT8gV2VsbCwKZHV1aCwg
-eW91IGFwcGx5IHRoZSBwYXRjaGVzLiBJZiBzYXkgRmVkb3JhIHdhcyBpbnRlcmVzdGVkIG9uIGl0
-LCB0aGV5CmNvdWxkIGFwcGx5IHRoZSBwYXRjaGVzLCBhbmQgc2VlIGZvciB0aGVtc2VsdmVzLiBQ
-ZW9wbGUgZG8gdGhhdCBhbGwKdGhlIHRpbWUsIHdpdGggdGhlIG1tIHRyZWUsIHdpdGggQ29uIEtv
-bGl2YSdzIHBhdGNoZXMsIGV0Yy4gT25jZQpwZW9wbGUgYXJlIGhhcHB5IHdpdGggdGhlIHJlc3Vs
-dHMsIHRoaW5ncyBnZXQgbWVyZ2VkLiBXaHkgc2hvdWxkIHRoaXMKYmUgYW55IGRpZmZlcmVudD8K
-Ci0tIApGZWxpcGUgQ29udHJlcmFzCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1m
-b3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4v
-bGlzdGluZm8vbGludXgtcG0=
+> >> Not Ubuntu, not Fedora, not MeeGo, not anyone with a typical
+> >> user-space seems to be having this problem. I can argue to you that
+> >> this problem can be solved in easier ways, but instead I will argue
+> >> that perhaps we should wait for somebody besides Android to complain
+> >> about it before providing a "solution". Because after all, what good
+> >> is a "solution" provided by the kernel, if the user-space is not going
+> >> to use it, ever.
+> >
+> > At this point in the discussion, I am quite prepared to believe that you
+> > will avoid using suspend blockers, and that you will further do everyth=
+ing
+> > in your power to prevent anyone else from using suspend blockers. =A0;-)
+> =
+
+> I'm not tying anybody's hands.
+> =
+
+> How are people using real-time linux if it's not on mainline? Well,
+> duuh, you apply the patches. If say Fedora was interested on it, they
+> could apply the patches, and see for themselves. People do that all
+> the time, with the mm tree, with Con Koliva's patches, etc. Once
+> people are happy with the results, things get merged. Why should this
+> be any different?
+
+Because millions of users are happy -- with Android, including suspend
+blockers.
+
+Best,
+	Dominik
