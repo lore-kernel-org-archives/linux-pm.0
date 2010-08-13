@@ -1,25 +1,21 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: Attempted summary of suspend-blockers LKML thread,
-	take three
-Date: Fri, 13 Aug 2010 10:13:19 -0700
-Message-ID: <20100813171319.GL2511__15296.1963009604$1281719656$gmane$org@linux.vnet.ibm.com>
-References: <20100810044541.GA2817@linux.vnet.ibm.com>
-	<20100810093849.138e2318@lxorguk.ukuu.org.uk>
-	<20100811004223.GH2379@linux.vnet.ibm.com>
-	<AANLkTik7Po9OuKC-QBZ=E83J70sU_ewNi+nNWgcjjLXd@mail.gmail.com>
-	<20100811221258.GI2516@linux.vnet.ibm.com>
-	<AANLkTi=fJjM=uWeV+L66ajM9rhrL0t1OO-C7ThNRdbae@mail.gmail.com>
-	<20100812161935.GC2524@linux.vnet.ibm.com>
-	<AANLkTi=51cFa0t5ZYj2CMiauuW80ZWTrm1tQkn63Et0F@mail.gmail.com>
-	<20100813151451.GC2511@linux.vnet.ibm.com>
-	<AANLkTimGHYZ4ndznJY-vjBb164xMSiGMeoJs=9=baSFi@mail.gmail.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Hugh Dickins <hughd@google.com>
+Subject: Re: 2.6.35 Regression: Ages spent discarding blocks that
+	weren't used!
+Date: Fri, 13 Aug 2010 11:15:38 -0700
+Message-ID: <AANLkTik5osZR12nZVVvJY7LimiUZtBdZcnDi4VYNXhwr__28814.4866623499$1281723512$gmane$org@mail.gmail.com>
+References: <4C58C528.4000606@tuxonice.net> <4C5960B0.7020003@teksavvy.com>
+	<4C59DA16.4020500@tuxonice.net>
+	<AANLkTik_PH-7T7OFtzaCtPbAHE6pqnYMUsjP25KtsRnR@mail.gmail.com>
+	<4C5A59FC.1030304@tuxonice.net>
+	<AANLkTi=NMHkKduZzsLiiYt3=w8++8epb5aGrqv7V3-vB@mail.gmail.com>
+	<4C5B925A.5000409@tuxonice.net>
+	<AANLkTinU24v6Mty54YL3gv3M5S+4jdN5vHD54KknchAG@mail.gmail.com>
+	<20100813115424.GA24737@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTimGHYZ4ndznJY-vjBb164xMSiGMeoJs=9=baSFi@mail.gmail.com>
+In-Reply-To: <20100813115424.GA24737@infradead.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,35 +25,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
+To: Christoph Hellwig <hch@infradead.org>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>, LKML <linux-kernel@vger.kernel.org>, James Bottomley <James.Bottomley@hansenpartnership.com>, Mark Lord <kernel@teksavvy.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 13, 2010 at 06:28:27PM +0300, Felipe Contreras wrote:
-> On Fri, Aug 13, 2010 at 6:14 PM, Paul E. McKenney
-> <paulmck@linux.vnet.ibm.com> wrote:
-> > On Thu, Aug 12, 2010 at 08:52:22PM +0300, Felipe Contreras wrote:
-> >> =A04) no, we can't say anything about what opportunistic suspend means=
- in practice
-> >
-> > Here I disagree. =A0The Android folks have used it for quite some time.
-> > We might not be able to apply their experience directly to other softwa=
-re
-> > stacks, but we should nevertheless be able to learn quite a bit from it.
-> =
-
-> So when it comes to practice you are relying solely on what Android peopl=
-e say.
-
-So when it comes to practice with suspend blockers, only the Android
-people have any experience, so theirs is the only experience with
-suspend blockers that there is to rely on.  ;-)  ;-)  ;-)
-
-> If it's true that it's easy to spot the "PM-driving applications",
-> then it shouldn't be hard for a guy from the Android team to assemble
-> a basic typical system (X.org, dbus, etc.) with suspend-blockers in a
-> couple of days.
-
-I am happy to let the Android guys determine the best use for their time.
-
-							Thanx, Paul
+T24gRnJpLCBBdWcgMTMsIDIwMTAgYXQgNDo1NCBBTSwgQ2hyaXN0b3BoIEhlbGx3aWcgPGhjaEBp
+bmZyYWRlYWQub3JnPiB3cm90ZToKPiBPbiBGcmksIEF1ZyAwNiwgMjAxMCBhdCAwMzowNzoyNVBN
+IC0wNzAwLCBIdWdoIERpY2tpbnMgd3JvdGU6Cj4+IElmIFJFUV9TT0ZUQkFSUklFUiBtZWFucyB0
+aGF0IHRoZSBkZXZpY2UgaXMgc3RpbGwgZnJlZSB0byByZW9yZGVyIGEKPj4gd3JpdGUsIHdoaWNo
+IHdhcyBpc3N1ZWQgYWZ0ZXIgZGlzY2FyZCBjb21wbGV0aW9uIHdhcyByZXBvcnRlZCwgYmVmb3Jl
+Cj4+IHRoZSBkaXNjYXJkIChzbyBsYXRlciBkaXNjYXJkaW5nIHRoZSBkYXRhIHdyaXR0ZW4pLCB0
+aGVuIGNlcnRhaW5seSBJCj4+IGFncmVlIHdpdGggQ2hyaXN0b3BoIChub3cgQ2MnZWQpIHRoYXQg
+dGhlIFJFUV9IQVJEQkFSUklFUiBpcwo+PiB1bmF2b2lkYWJsZSB0aGVyZTsgYnV0IGlmIG5vdCwg
+dGhlbiBpdCdzIG5vdCBuZWVkZWQgZm9yIHRoZSBzd2FwIGNhc2UuCj4+IMKgSSBob3BlIHRvIGdh
+aW4gYSBsaXR0bGUgbW9yZSBlbmxpZ2h0ZW5tZW50IG9uIHN1Y2ggYmFycmllcnMgc2hvcnRseS4K
+Pgo+IFJFUV9TT0ZUQkFSUklFUiBpcyBpbmRlZWQgcHVyZWx5IGEgcmVvcmRlcmluZyBiYXJyaWVy
+IGluc2lkZSB0aGUgYmxvY2sKPiBlbGV2YXRvci4KPgo+PiBXaGF0IGRvZXMgc2VlbSBvdmVyIHRo
+ZSB0b3AgdG8gbWUsIGlzIGZvciBtbS9zd2FwZmlsZS5jJ3MKPj4gYmxrZGV2X2lzc3VlX2Rpc2Nh
+cmQoKXMgdG8gYmUgYXNraW5nIGZvciBib3RoIEJMS0RFVl9JRkxfV0FJVCBhbmQKPj4gQkxLREVW
+X0lGTF9CQVJSSUVSOiB0aG9zZSBzd2FwIGRpc2NhcmRzIHdlcmUgb3JpZ2luYWxseSB3cml0dGVu
+IGp1c3QKPj4gdG8gdXNlIGJhcnJpZXJzLCB3aXRob3V0IG5lZWRpbmcgdG8gd2FpdCBmb3IgY29t
+cGxldGlvbiBpbiB0aGVyZS4gwqBJJ2QKPj4gYmUgaW50ZXJlc3RlZCB0byBoZWFyIGlmIGN1dHRp
+bmcgb3V0IHRoZSBCTEtERVZfSUZMX1dBSVRzIG1ha2VzIHRoZQo+PiBzd2FwIGRpc2NhcmRzIGJl
+aGF2ZSBhY2NlcHRhYmx5IGFnYWluIGZvciB5b3UgLSBidXQgdW5kZXJzdGFuZCB0aGF0Cj4+IHlv
+dSB3b24ndCBoYXZlIGEgY2hhbmNlIHRvIHRyeSB0aGF0IHVudGlsIGxhdGVyIG5leHQgd2Vlay4K
+Pgo+IFRoYXQgZG9lcyBpbmRlZWQgbG9vayBpbmNvcnJlY3QgdG8gbWUuIMKgQW55IGtpbmQgb2Yg
+ZXhwbGljaXQgd2FpdHMKPiB1c3VhbGx5IG1lYW4gdGhlIGNhbGxlciBwcm92aWRlcyBvcmRlcmlu
+Zy4gwqBHZXR0aW5nIHJpZCBvZgo+IEJMS0RFVl9JRkxfQkFSUklFUiBpbiB0aGUgc3dhcCBjb2Rl
+IEFTQVAgd291bGQgaW5kZWVkIGJlIGJlbmVmaWNpYWwKPiBnaXZlbiB0aGF0IHdlIGFyZSB0cnlp
+bmcgdG8gZ2V0IHJpZCBvZiBoYXJkIGJhcnJpZXJzIGNvbXBsZXRlbHkgc29vbi4KPiBBdWRpdGlu
+ZyB0aGUgZXhpc3RpbmcgYmxrZGV2X2lzc3VlX2Rpc2NhcmQgY2FsbGVycyBpbiBmaWxlc3lzdGVt
+cwo+IGlzIGhpZ2ggb24gdGhlIHRvZG8gbGlzdCBmb3IgbWUuCgpZZXMuCgpBYm92ZSBJIHdhcyBz
+dWdnZXN0aW5nIGZvciBOaWdlbCB0byBleHBlcmltZW50IHdpdGggY3V0dGluZyBvdXQgc3dhcApk
+aXNjYXJkJ3MgQkxLREVWX0lGTF9XQUlUcyAtIGFuZCB0aGUgcmVzdWx0cyBvZiBjdXR0aW5nIHRo
+b3NlIG91dCBidXQKbGVhdmluZyBpdHMgQkxLREVWX0lGTF9CQVJSSUVScyB3b3VsZCBzdGlsbCBi
+ZSBpbnRlcmVzdGluZy4gIEJ1dCBhZnRlcgpkaWdlc3RpbmcgdGhlIExTRiBkaXNjdXNzaW9uIGFu
+ZCB0aGUgZW1haWwgdGhyZWFkIHRoYXQgbGVkIHVwIHRvIGl0LCBJCmNhbWUgdG8gdGhlIHNhbWUg
+Y29uY2x1c2lvbiBhcyB5b3UsIHRoYXQgZ29pbmcgZm9yd2FyZCB3ZSB3YW50IHRvIGtlZXAKaXRz
+IEJMS0RFVl9JRkxfV0FJVHMgKHN3YXBmaWxlLmMgYWxyZWFkeSBwcm92aWRlcyBhbGwgdGhlIG90
+aGVyCnN5bmNocm9uaXphdGlvbiBmb3IgdGhhdCB0byBmaXQgaW50byAtIHRoaW5ncyBsaWtlIG5l
+dmVyIGZyZWVpbmcgc3dhcAp3aGlsZSBpdHMgc3RpbGwgdW5kZXIgd3JpdGViYWNrKSBhbmQgc2lt
+cGx5IHJlbW92ZSBpdHMKQkxLREVWX0lGTF9CQVJSSUVScy4KCkhvd2V2ZXIsIEkgYW0gc3RpbGwg
+bm90IHF1aXRlIHN1cmUgdGhhdCB3ZSBjYW4gYWxyZWFkeSBtYWtlIHRoYXQKY2hhbmdlIGZvciAy
+LjYuMzUgKC1zdGFibGUpLiAgQ2FuIHlvdSByZWFzc3VyZSBtZSBvbiB0aGUgcXVlc3Rpb24gSQpy
+YWlzZSBhYm92ZTogaWYgd2UgaXNzdWUgYSBkaXNjYXJkIHRvIGEgZGV2aWNlIHdpdGggY2FjaGUs
+IHdhaXQgZm9yCiJjb21wbGV0aW9uIiwgdGhlbiBpc3N1ZSBhIHdyaXRlIGludG8gdGhlIGFyZWEg
+c3Bhbm5lZCBieSB0aGF0CmRpc2NhcmQsIGNhbiB3ZSBiZSBjZXJ0YWluIHRoYXQgdGhlIHdyaXRl
+IHRvIGJhY2tpbmcgc3RvcmUgd2lsbCBub3QgYmUKcmVvcmRlcmVkIGJlZm9yZSB0aGUgZGlzY2Fy
+ZCBvZiBiYWNraW5nIHN0b3JlICh1bmxlc3MgdGhlIGRldmljZSBpcwpqdXN0IGJyb2tlbik/ICBX
+aXRob3V0IGEgIFJFUV9IQVJEQkFSUklFUiBpbiB0aGUgMi42LjM1IHNjaGVtZT8gIEl0CnNlZW1z
+IGEgdmVyeSByZWFzb25hYmxlIGFzc3VtcHRpb24gdG8gbWUsIGJ1dCBJJ20gbGVhcm5pbmcgbm90
+IHRvCmRlcGVuZCB1cG9uIHJlYXNvbmFibGUgYXNzdW1wdGlvbnMgaGVyZS4gIChCeSB0aGUgd2F5
+LCBpdCBkb2Vzbid0Cm1hdHRlciBhdCBhbGwgd2hldGhlciB3cml0ZXMgbm90IHNwYW5uZWQgYnkg
+dGhlIGRpc2NhcmQgcGFzcyBpdCBvcgpub3QuKQoKSHVnaApfX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1A
+bGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9u
+Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
