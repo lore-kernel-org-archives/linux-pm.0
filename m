@@ -1,21 +1,25 @@
-From: Christoph Hellwig <hch@infradead.org>
-Subject: Re: 2.6.35 Regression: Ages spent discarding blocks that
- weren't used!
-Date: Fri, 13 Aug 2010 07:54:24 -0400
-Message-ID: <20100813115424.GA24737__18917.3562605449$1281700543$gmane$org@infradead.org>
-References: <4C58C528.4000606@tuxonice.net> <4C5960B0.7020003@teksavvy.com>
-	<4C59DA16.4020500@tuxonice.net>
-	<AANLkTik_PH-7T7OFtzaCtPbAHE6pqnYMUsjP25KtsRnR@mail.gmail.com>
-	<4C5A59FC.1030304@tuxonice.net>
-	<AANLkTi=NMHkKduZzsLiiYt3=w8++8epb5aGrqv7V3-vB@mail.gmail.com>
-	<4C5B925A.5000409@tuxonice.net>
-	<AANLkTinU24v6Mty54YL3gv3M5S+4jdN5vHD54KknchAG@mail.gmail.com>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread,
+	take three
+Date: Fri, 13 Aug 2010 07:42:36 -0700
+Message-ID: <20100813144236.GB2511__20447.3833473914$1281710655$gmane$org@linux.vnet.ibm.com>
+References: <20100812010612.GL2516@linux.vnet.ibm.com>
+	<AANLkTinVV1NVHFPeO0p_e2pCtNwTNB932q9tbu9MMD3_@mail.gmail.com>
+	<20100812034435.GA7403@linux.vnet.ibm.com>
+	<AANLkTi=RD=eM_gpc7FfRq0923sUbARmZ2+4-m+fLibYC@mail.gmail.com>
+	<E3F3D3E1-4DF7-47E3-895D-95F6BC22CCC4@mit.edu>
+	<AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
+	<20100812174303.GD2524@linux.vnet.ibm.com>
+	<AANLkTim1U6QpRyfwYCq2uRA=7-a8ryfDrzv5VCqmHnyB@mail.gmail.com>
+	<AANLkTinNxZoMab=tG9KXJ9n_nxB1dXHkfk-7xUMWXACW@mail.gmail.com>
+	<AANLkTin3H0o+WQocUYjUcPGRpkRqK9H2LJ0OwHXFNBdj@mail.gmail.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <AANLkTinU24v6Mty54YL3gv3M5S+4jdN5vHD54KknchAG@mail.gmail.com>
+In-Reply-To: <AANLkTin3H0o+WQocUYjUcPGRpkRqK9H2LJ0OwHXFNBdj@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,32 +29,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Hugh Dickins <hughd@google.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Mark Lord <kernel@teksavvy.com>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: david@lang.hm, Theodore Tso <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 06, 2010 at 03:07:25PM -0700, Hugh Dickins wrote:
-> If REQ_SOFTBARRIER means that the device is still free to reorder a
-> write, which was issued after discard completion was reported, before
-> the discard (so later discarding the data written), then certainly I
-> agree with Christoph (now Cc'ed) that the REQ_HARDBARRIER is
-> unavoidable there; but if not, then it's not needed for the swap case.
->  I hope to gain a little more enlightenment on such barriers shortly.
+On Fri, Aug 13, 2010 at 01:58:12PM +0300, Felipe Contreras wrote:
+> On Thu, Aug 12, 2010 at 10:48 PM, Brian Swetland <swetland@google.com> wr=
+ote:
+> > On Thu, Aug 12, 2010 at 12:34 PM, Felipe Contreras
+> > <felipe.contreras@gmail.com> wrote:
+> >>
+> >> Not Ubuntu, not Fedora, not MeeGo, not anyone with a typical
+> >> user-space seems to be having this problem. I can argue to you that
+> >> this problem can be solved in easier ways, but instead I will argue
+> >> that perhaps we should wait for somebody besides Android to complain
+> >> about it before providing a "solution". Because after all, what good
+> >> is a "solution" provided by the kernel, if the user-space is not going
+> >> to use it, ever.
+> >
+> > I'm curious, when does Android count as a user of the kernel? =A0I
+> > gather that volume of sales or users doesn't count. =A0Do we have to
+> > include some percentage of "desktop" Linux?
+> =
 
-REQ_SOFTBARRIER is indeed purely a reordering barrier inside the block
-elevator.
+> You are *one* user of the kernel. Let's suppose Android wasn't using
+> suspend-blockers, and there was another equally successful linux
+> mobile platform, Foobingo, and they were using them, and they were the
+> only ones interested on implementing them.
+> =
 
-> What does seem over the top to me, is for mm/swapfile.c's
-> blkdev_issue_discard()s to be asking for both BLKDEV_IFL_WAIT and
-> BLKDEV_IFL_BARRIER: those swap discards were originally written just
-> to use barriers, without needing to wait for completion in there.  I'd
-> be interested to hear if cutting out the BLKDEV_IFL_WAITs makes the
-> swap discards behave acceptably again for you - but understand that
-> you won't have a chance to try that until later next week.
+> What does that change? Nothing. They still need to convince the
+> community that what they are proposing to be merged is actually
+> useful, and somebody will use it. If not, they can just keep the patch
+> for themselves until they do. I don't see the big deal.
 
-That does indeed look incorrect to me.  Any kind of explicit waits
-usually mean the caller provides ordering.  Getting rid of
-BLKDEV_IFL_BARRIER in the swap code ASAP would indeed be beneficial
-given that we are trying to get rid of hard barriers completely soon.
-Auditing the existing blkdev_issue_discard callers in filesystems
-is high on the todo list for me.
+So the current users of the Linux kernel are the following?
+
+o	GNU/Linux
+o	Android
+
+Do any other distributions or devices with unusual user-space layouts
+qualify?
+
+							Thanx, Paul
+
+> > If we're an undesirable second-class citizen, why do people care that
+> > "android is forking the kernel"?
+> =
+
+> Nobody has expressed anything remotely like that (that you are a
+> second-class citizen). Why makes you think so? Lots of people get
+> patches denied. Like Nokia's u_char driver, which is *way* less
+> controversial than this one.
+> =
+
+> -- =
+
+> Felipe Contreras
