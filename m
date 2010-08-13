@@ -1,24 +1,17 @@
-From: Felipe Contreras <felipe.contreras@gmail.com>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
- take three
-Date: Fri, 13 Aug 2010 19:19:33 +0300
-Message-ID: <AANLkTikN2zKcLtFJ6EdBU=iqT78bZKt_rKQoPNBRXJHj__48153.8532687866$1281716419$gmane$org@mail.gmail.com>
-References: <20100812010612.GL2516@linux.vnet.ibm.com>
-	<AANLkTinVV1NVHFPeO0p_e2pCtNwTNB932q9tbu9MMD3_@mail.gmail.com>
-	<20100812034435.GA7403@linux.vnet.ibm.com>
-	<AANLkTi=RD=eM_gpc7FfRq0923sUbARmZ2+4-m+fLibYC@mail.gmail.com>
-	<E3F3D3E1-4DF7-47E3-895D-95F6BC22CCC4@mit.edu>
-	<AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
-	<20100812174303.GD2524@linux.vnet.ibm.com>
-	<AANLkTim1U6QpRyfwYCq2uRA=7-a8ryfDrzv5VCqmHnyB@mail.gmail.com>
-	<20100813152254.GD2511@linux.vnet.ibm.com>
-	<AANLkTimdpgC2DBn1pS2OG35+_06-L6TZ9Q_nb+C6Yeqv@mail.gmail.com>
-	<20100813155738.GA11507@isilmar-3.linta.de>
+	take three
+Date: Fri, 13 Aug 2010 09:20:20 -0700
+Message-ID: <20100813092020.41290f1f__16383.4341605709$1281716507$gmane$org@virtuousgeek.org>
+References: <AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
+	<AANLkTimjfU2zu4reEVdOwWwtFHPQ33_Gna6xS2XHRG-h@mail.gmail.com>
+	<20100812125712.48b7fc26@virtuousgeek.org>
+	<201008130528.21887.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100813155738.GA11507@isilmar-3.linta.de>
+In-Reply-To: <201008130528.21887.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,37 +21,91 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Felipe Contreras <felipe.contreras@gmail.com>, paulmck@linux.vnet.ibm.com, david@lang.hm, Theodore Tso <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@goo>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: peterz@infradead.org, Felipe Contreras <felipe.contreras@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, galibert@pobox.com, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, James.Bottomley@suse.de, tglx@linutronix.de, swmike@swm.pp.se, david@lang.hm, Ted Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, menage@google.com, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBBdWcgMTMsIDIwMTAgYXQgNjo1NyBQTSwgRG9taW5payBCcm9kb3dza2kKPGxpbnV4
-QGRvbWluaWticm9kb3dza2kubmV0PiB3cm90ZToKPj4gPj4gTm90IFVidW50dSwgbm90IEZlZG9y
-YSwgbm90IE1lZUdvLCBub3QgYW55b25lIHdpdGggYSB0eXBpY2FsCj4+ID4+IHVzZXItc3BhY2Ug
-c2VlbXMgdG8gYmUgaGF2aW5nIHRoaXMgcHJvYmxlbS4gSSBjYW4gYXJndWUgdG8geW91IHRoYXQK
-Pj4gPj4gdGhpcyBwcm9ibGVtIGNhbiBiZSBzb2x2ZWQgaW4gZWFzaWVyIHdheXMsIGJ1dCBpbnN0
-ZWFkIEkgd2lsbCBhcmd1ZQo+PiA+PiB0aGF0IHBlcmhhcHMgd2Ugc2hvdWxkIHdhaXQgZm9yIHNv
-bWVib2R5IGJlc2lkZXMgQW5kcm9pZCB0byBjb21wbGFpbgo+PiA+PiBhYm91dCBpdCBiZWZvcmUg
-cHJvdmlkaW5nIGEgInNvbHV0aW9uIi4gQmVjYXVzZSBhZnRlciBhbGwsIHdoYXQgZ29vZAo+PiA+
-PiBpcyBhICJzb2x1dGlvbiIgcHJvdmlkZWQgYnkgdGhlIGtlcm5lbCwgaWYgdGhlIHVzZXItc3Bh
-Y2UgaXMgbm90IGdvaW5nCj4+ID4+IHRvIHVzZSBpdCwgZXZlci4KPj4gPgo+PiA+IEF0IHRoaXMg
-cG9pbnQgaW4gdGhlIGRpc2N1c3Npb24sIEkgYW0gcXVpdGUgcHJlcGFyZWQgdG8gYmVsaWV2ZSB0
-aGF0IHlvdQo+PiA+IHdpbGwgYXZvaWQgdXNpbmcgc3VzcGVuZCBibG9ja2VycywgYW5kIHRoYXQg
-eW91IHdpbGwgZnVydGhlciBkbyBldmVyeXRoaW5nCj4+ID4gaW4geW91ciBwb3dlciB0byBwcmV2
-ZW50IGFueW9uZSBlbHNlIGZyb20gdXNpbmcgc3VzcGVuZCBibG9ja2Vycy4gwqA7LSkKPj4KPj4g
-SSdtIG5vdCB0eWluZyBhbnlib2R5J3MgaGFuZHMuCj4+Cj4+IEhvdyBhcmUgcGVvcGxlIHVzaW5n
-IHJlYWwtdGltZSBsaW51eCBpZiBpdCdzIG5vdCBvbiBtYWlubGluZT8gV2VsbCwKPj4gZHV1aCwg
-eW91IGFwcGx5IHRoZSBwYXRjaGVzLiBJZiBzYXkgRmVkb3JhIHdhcyBpbnRlcmVzdGVkIG9uIGl0
-LCB0aGV5Cj4+IGNvdWxkIGFwcGx5IHRoZSBwYXRjaGVzLCBhbmQgc2VlIGZvciB0aGVtc2VsdmVz
-LiBQZW9wbGUgZG8gdGhhdCBhbGwKPj4gdGhlIHRpbWUsIHdpdGggdGhlIG1tIHRyZWUsIHdpdGgg
-Q29uIEtvbGl2YSdzIHBhdGNoZXMsIGV0Yy4gT25jZQo+PiBwZW9wbGUgYXJlIGhhcHB5IHdpdGgg
-dGhlIHJlc3VsdHMsIHRoaW5ncyBnZXQgbWVyZ2VkLiBXaHkgc2hvdWxkIHRoaXMKPj4gYmUgYW55
-IGRpZmZlcmVudD8KPgo+IEJlY2F1c2UgbWlsbGlvbnMgb2YgdXNlcnMgYXJlIGhhcHB5IC0tIHdp
-dGggQW5kcm9pZCwgaW5jbHVkaW5nIHN1c3BlbmQKPiBibG9ja2Vycy4KCkkgZXhwbGljaXRseSBz
-YWlkIHNvbWVib2R5IGJlc2lkZXMgQW5kcm9pZCwgc3BlY2lmaWNhbGx5LCBzb21lYm9keQp3aXRo
-IGEgdHlwaWNhbCBsaW51eCBlY29zeXN0ZW0uIFlvdSBhcmUgbm90IGFkZHJlc3NpbmcgdGhlIGFy
-Z3VtZW50IGF0CmhhbmQsIHRoYXQgbm9ib2R5IGVsc2Ugd2FudHMgdG8gdGFja2xlIHRoZSBpc3N1
-ZSB0aGlzIHdheSwgdGh1cyBvbmx5Cm1ha2luZyB0aGUgZGlzY3Vzc2lvbiBtb3JlIGRpZmZpY3Vs
-dC4KCi0tIApGZWxpcGUgQ29udHJlcmFzCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51
-eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxt
-YW4vbGlzdGluZm8vbGludXgtcG0=
+On Fri, 13 Aug 2010 05:28:21 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> On Thursday, August 12, 2010, Jesse Barnes wrote:
+> > On Thu, 12 Aug 2010 12:19:34 -0700
+> > Brian Swetland <swetland@google.com> wrote:
+> > > Question though -- has every feature ever added to the kernel been a
+> > > feature that there's pre-existing usage of?  Seems like a chicken and
+> > > egg problem.  Also, some people seem to think there's value in being
+> > > able to build kernels "out of the box" that work with the Android
+> > > userspace -- given that there are a few devices out there that have
+> > > that userspace on 'em.
+> > 
+> > We generally try to merge new features like this along with code that
+> > uses said feature, but there are always exceptions.  We've merged code
+> > one release or more before the new code gets used for example, which is
+> > fine IMO.  What we don't want to see is some new drop of code added and
+> > abandoned, but you already knew that.
+> > 
+> > At any rate, if Felipe is the only one arguing against including
+> > suspend blockers in the kernel, you're probably in good shape.  Based
+> > on my (rather cursory I admit) evaluation of this thread, it seems like
+> > reasonable people agree that there's a place for a suspend blocker like
+> > API in the kernel, and that dynamic power management is also highly
+> > desirable.  So where's the git pull request already? :)
+> 
+> In fact my patch going in that direction has been merged already and that
+> code will likely be extended to cover some needs and cases I didn't have in
+> mind when I was preparing it.
+
+Yeah, I like what you've done with dynamic power management, really
+good stuff (the approach is very similar to the one I used for vblank
+interrupt management in the drm layer).
+
+Ted's point about providing the user with a way of knowing which apps
+are blocking things is a good one though, and doesn't seem too hard to
+add.  It might even be possible to do it largely with scripts wrapping
+fuser and such.
+
+> However, having discussed the whole issue for many times and reconsidered it
+> thoroughly, I think that it's inappropriate to identify the suspend blockers
+> (or wakelocks) framework with the opportunistic suspend feature as proposed in
+> the original submission of the "suspend blockers" patchset.  IMO they really
+> are not the same thing and while the suspend blockers framework is used by
+> Android to implement opportunistic suspend, I don't really believe this is the
+> right approach.
+> 
+> We really need something similar to suspend blockers to avoid races between
+> a suspend process and wakeup events, but it isn't necessary to provide user
+> space with an interface allowing it to use these things directly.  Such an
+> interface is only necessary in the specific implementation in which the system
+> is suspended as soon as the number of "active" suspend blockers goes down to
+> zero.  Arguably, though, this isn't the only possible way to implement a
+> mechanism allowing the system to be suspended automatically when it appears
+> to be inactive.
+> 
+> Namely, one can use a user space power manager for this purpose and actually
+> the OLPC project has been doing that successfully for some time, which clearly
+> demonstrates that the Android approach to this problem is not the only one
+> possible.  Moreover, the kernel's system suspend (or hibernate for that matter)
+> code has not been designed to be started from within the kernel.  It's been
+> designed to allow a privileged user space process to request the kernel to
+> put the system into a sleep state at any given time regardless of what the
+> other user space processes are doing.  While it can be started from within the
+> kernel, this isn't particularly nice and, in the Android case, starting it from
+> within the kernel requires permission from multiple user space processes
+> (given by not taking suspend blockers these processes are allowed to use).
+
+Yes, I see your point.  But I actually think this is a fairly minor
+distinction.  In one case, a privileged app decides when to suspend the
+system, in the other case, one or more of several privileged apps
+decide when a suspend should not be allowed to occur.  It's just a
+matter of where you want to put the code and where you want the
+complexity.  In general, we try to keep such complexity out of the
+kernel, but not always; there are compelling cases for putting
+complexity in the kernel to provide uniformity and flexibility (e.g.
+application state save/restore vs. system-wide checkpoints, the former
+preserves the "if it can be done outside the kernel, it should be",
+while the latter provides much greater flexibility and avoids the need
+to port applications to potentially incompatible or unportable state
+saves/restore libraries).
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
