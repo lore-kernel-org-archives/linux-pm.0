@@ -1,24 +1,22 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Felipe Contreras <felipe.contreras@gmail.com>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Fri, 13 Aug 2010 11:57:51 +0100
-Message-ID: <20100813115751.3bbbafbd@lxorguk.ukuu.org.uk>
-References: <20100808155719.GB3635@thunk.org>
-	<AANLkTinM5e2HGOFavODPZNzZx4KshDSjsvKN4pLpGGgr@mail.gmail.com>
-	<20100808213821.GD3635@thunk.org>
-	<20100809112453.77210acc@lxorguk.ukuu.org.uk>
-	<20100809181638.GI3026@linux.vnet.ibm.com>
-	<AANLkTikwHaKpLdRdxmZj6JDJnsZ+o-jzbVcXhRW3Jmd9@mail.gmail.com>
-	<20100811222854.GJ2516@linux.vnet.ibm.com>
-	<AANLkTimahmGikeai8QnAxCy45deT00-6T7h-eA-NqL4G@mail.gmail.com>
-	<20100812010612.GL2516@linux.vnet.ibm.com>
-	<AANLkTinVV1NVHFPeO0p_e2pCtNwTNB932q9tbu9MMD3_@mail.gmail.com>
-	<20100812034435.GA7403@linux.vnet.ibm.com>
+Date: Fri, 13 Aug 2010 14:09:03 +0300
+Message-ID: <AANLkTinbsXEk7YL31Q2GHHjeVRHGgpm0mpLzDBY1Ob4z__43096.7212924317$1281697796$gmane$org@mail.gmail.com>
+References: <AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
+	<Pine.LNX.4.44L0.1008120733130.21006-100000@netrider.rowland.org>
+	<AANLkTinMwt27wuDUh32F36wpoC54Syzp1_nK9UCxYmEK@mail.gmail.com>
+	<20100812125248.GA2763@thunk.org>
+	<AANLkTin4=qpDWEKLwes_af6mSCW+ED7v-fWzD34JywU1@mail.gmail.com>
+	<20100812182128.GC2763@thunk.org>
+	<AANLkTinZ_gViUjVmEbkmour3BC=PcchJDARs4GaCuQwO@mail.gmail.com>
+	<AANLkTimjfU2zu4reEVdOwWwtFHPQ33_Gna6xS2XHRG-h@mail.gmail.com>
+	<20100812125712.48b7fc26@virtuousgeek.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100812034435.GA7403@linux.vnet.ibm.com>
+In-Reply-To: <20100812125712.48b7fc26@virtuousgeek.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,18 +26,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paulmck@linux.vnet.ibm.com
-Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, arjan@infradead.org
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: peterz@infradead.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, galibert@pobox.com, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, James.Bottomley@suse.de, tglx@linutronix.de, swmike@swm.pp.se, david@lang.hm, Ted Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, menage@google.com, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-> > Think in terms of an ARM laptop. What good is opportunistic suspend if
-> > it's not going to help when the laptop is being used?
-> 
-> For when the laptop is not being used, presumably.
-
-Or in time between keystrokes for most of the platform (backlight
-excepted). The Intel MID x86 devices are at the point that suspend/resume
-time on x86 is being hurt by the kernel rewriting smp alternatives as we
-go from 2 processors live to 1 and back.
-
-Alan
+T24gVGh1LCBBdWcgMTIsIDIwMTAgYXQgMTA6NTcgUE0sIEplc3NlIEJhcm5lcyA8amJhcm5lc0B2
+aXJ0dW91c2dlZWsub3JnPiB3cm90ZToKPiBPbiBUaHUsIDEyIEF1ZyAyMDEwIDEyOjE5OjM0IC0w
+NzAwCj4gQnJpYW4gU3dldGxhbmQgPHN3ZXRsYW5kQGdvb2dsZS5jb20+IHdyb3RlOgo+PiBRdWVz
+dGlvbiB0aG91Z2ggLS0gaGFzIGV2ZXJ5IGZlYXR1cmUgZXZlciBhZGRlZCB0byB0aGUga2VybmVs
+IGJlZW4gYQo+PiBmZWF0dXJlIHRoYXQgdGhlcmUncyBwcmUtZXhpc3RpbmcgdXNhZ2Ugb2Y/IMKg
+U2VlbXMgbGlrZSBhIGNoaWNrZW4gYW5kCj4+IGVnZyBwcm9ibGVtLiDCoEFsc28sIHNvbWUgcGVv
+cGxlIHNlZW0gdG8gdGhpbmsgdGhlcmUncyB2YWx1ZSBpbiBiZWluZwo+PiBhYmxlIHRvIGJ1aWxk
+IGtlcm5lbHMgIm91dCBvZiB0aGUgYm94IiB0aGF0IHdvcmsgd2l0aCB0aGUgQW5kcm9pZAo+PiB1
+c2Vyc3BhY2UgLS0gZ2l2ZW4gdGhhdCB0aGVyZSBhcmUgYSBmZXcgZGV2aWNlcyBvdXQgdGhlcmUg
+dGhhdCBoYXZlCj4+IHRoYXQgdXNlcnNwYWNlIG9uICdlbS4KPgo+IFdlIGdlbmVyYWxseSB0cnkg
+dG8gbWVyZ2UgbmV3IGZlYXR1cmVzIGxpa2UgdGhpcyBhbG9uZyB3aXRoIGNvZGUgdGhhdAo+IHVz
+ZXMgc2FpZCBmZWF0dXJlLCBidXQgdGhlcmUgYXJlIGFsd2F5cyBleGNlcHRpb25zLiDCoFdlJ3Zl
+IG1lcmdlZCBjb2RlCj4gb25lIHJlbGVhc2Ugb3IgbW9yZSBiZWZvcmUgdGhlIG5ldyBjb2RlIGdl
+dHMgdXNlZCBmb3IgZXhhbXBsZSwgd2hpY2ggaXMKPiBmaW5lIElNTy4gwqBXaGF0IHdlIGRvbid0
+IHdhbnQgdG8gc2VlIGlzIHNvbWUgbmV3IGRyb3Agb2YgY29kZSBhZGRlZCBhbmQKPiBhYmFuZG9u
+ZWQsIGJ1dCB5b3UgYWxyZWFkeSBrbmV3IHRoYXQuCgpJZiBBbmRyb2lkIGd1eXMgcHJvdmlkZWQg
+YSBiYXJlIG1pbmltYWwgRGViaWFuIHN5c3RlbSB3aXRoIHN1c3BlbmQKYmxvY2tlcnMgdGhhdCBw
+ZW9wbGUgY2FuIHRha2UgYSBsb29rIGF0IGFuZCB0cnksIEkgdGhpbmsgdGhhdCB3b3VsZCBiZQph
+IGdvb2QgcHJvb2Ygb2YgY29uY2VwdC4gQW5kIGEgYmFyZSBtaW5pbXVtIHRvIGdldCB0aGUgcGF0
+Y2hlcyBtZXJnZWQuCgo+IEF0IGFueSByYXRlLCBpZiBGZWxpcGUgaXMgdGhlIG9ubHkgb25lIGFy
+Z3VpbmcgYWdhaW5zdCBpbmNsdWRpbmcKPiBzdXNwZW5kIGJsb2NrZXJzIGluIHRoZSBrZXJuZWws
+IHlvdSdyZSBwcm9iYWJseSBpbiBnb29kIHNoYXBlLiDCoEJhc2VkCj4gb24gbXkgKHJhdGhlciBj
+dXJzb3J5IEkgYWRtaXQpIGV2YWx1YXRpb24gb2YgdGhpcyB0aHJlYWQsIGl0IHNlZW1zIGxpa2UK
+PiByZWFzb25hYmxlIHBlb3BsZSBhZ3JlZSB0aGF0IHRoZXJlJ3MgYSBwbGFjZSBmb3IgYSBzdXNw
+ZW5kIGJsb2NrZXIgbGlrZQo+IEFQSSBpbiB0aGUga2VybmVsLCBhbmQgdGhhdCBkeW5hbWljIHBv
+d2VyIG1hbmFnZW1lbnQgaXMgYWxzbyBoaWdobHkKPiBkZXNpcmFibGUuIMKgU28gd2hlcmUncyB0
+aGUgZ2l0IHB1bGwgcmVxdWVzdCBhbHJlYWR5PyA6KQoKSSBjZXJ0YWlubHkgaGF2ZSBiZWVuIHRo
+ZSBtb3JlIHZvY2FsIHJlY2VudGx5LCBidXQgaWYgdGhhdCdzIGNvbmZ1c2luZwp5b3UsIEkgY2Fu
+IHNodXQgdXAgYW5kIGxldCBvdGhlcnMgZG8gdGhlIGFyZ3VtZW50YXRpb24uIEkgcmVtZW1iZXIg
+YXQKbGVhc3QgQWxhbiBDb3gsIEFsYW4gU3Rlcm4sIFRob21hcyBHbGVpeG5lciwgS2V2aW4gSGls
+bWFuLCBGZWxpcGUKQmFsYmksIFRvbnkgTGluZGdyZW4sIGFuZCBJZ29yIFN0b3BhIGFnYWluc3Qg
+dGhlbS4KCi0tIApGZWxpcGUgQ29udHJlcmFzCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5s
+aW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21h
+aWxtYW4vbGlzdGluZm8vbGludXgtcG0=
