@@ -1,22 +1,21 @@
-From: Felipe Contreras <felipe.contreras@gmail.com>
-Subject: Re: Attempted summary of suspend-blockers LKML thread,
-	take three
-Date: Fri, 13 Aug 2010 14:09:03 +0300
-Message-ID: <AANLkTinbsXEk7YL31Q2GHHjeVRHGgpm0mpLzDBY1Ob4z__43096.7212924317$1281697796$gmane$org@mail.gmail.com>
-References: <AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
-	<Pine.LNX.4.44L0.1008120733130.21006-100000@netrider.rowland.org>
-	<AANLkTinMwt27wuDUh32F36wpoC54Syzp1_nK9UCxYmEK@mail.gmail.com>
-	<20100812125248.GA2763@thunk.org>
-	<AANLkTin4=qpDWEKLwes_af6mSCW+ED7v-fWzD34JywU1@mail.gmail.com>
-	<20100812182128.GC2763@thunk.org>
-	<AANLkTinZ_gViUjVmEbkmour3BC=PcchJDARs4GaCuQwO@mail.gmail.com>
-	<AANLkTimjfU2zu4reEVdOwWwtFHPQ33_Gna6xS2XHRG-h@mail.gmail.com>
-	<20100812125712.48b7fc26@virtuousgeek.org>
+From: Christoph Hellwig <hch@infradead.org>
+Subject: Re: 2.6.35 Regression: Ages spent discarding blocks that
+ weren't used!
+Date: Fri, 13 Aug 2010 07:54:24 -0400
+Message-ID: <20100813115424.GA24737__18917.3562605449$1281700543$gmane$org@infradead.org>
+References: <4C58C528.4000606@tuxonice.net> <4C5960B0.7020003@teksavvy.com>
+	<4C59DA16.4020500@tuxonice.net>
+	<AANLkTik_PH-7T7OFtzaCtPbAHE6pqnYMUsjP25KtsRnR@mail.gmail.com>
+	<4C5A59FC.1030304@tuxonice.net>
+	<AANLkTi=NMHkKduZzsLiiYt3=w8++8epb5aGrqv7V3-vB@mail.gmail.com>
+	<4C5B925A.5000409@tuxonice.net>
+	<AANLkTinU24v6Mty54YL3gv3M5S+4jdN5vHD54KknchAG@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100812125712.48b7fc26@virtuousgeek.org>
+Content-Disposition: inline
+In-Reply-To: <AANLkTinU24v6Mty54YL3gv3M5S+4jdN5vHD54KknchAG@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,42 +25,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: peterz@infradead.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, galibert@pobox.com, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, James.Bottomley@suse.de, tglx@linutronix.de, swmike@swm.pp.se, david@lang.hm, Ted Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, menage@google.com, arjan@infradead.org
+To: Hugh Dickins <hughd@google.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Mark Lord <kernel@teksavvy.com>, LKML <linux-kernel@vger.kernel.org>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBBdWcgMTIsIDIwMTAgYXQgMTA6NTcgUE0sIEplc3NlIEJhcm5lcyA8amJhcm5lc0B2
-aXJ0dW91c2dlZWsub3JnPiB3cm90ZToKPiBPbiBUaHUsIDEyIEF1ZyAyMDEwIDEyOjE5OjM0IC0w
-NzAwCj4gQnJpYW4gU3dldGxhbmQgPHN3ZXRsYW5kQGdvb2dsZS5jb20+IHdyb3RlOgo+PiBRdWVz
-dGlvbiB0aG91Z2ggLS0gaGFzIGV2ZXJ5IGZlYXR1cmUgZXZlciBhZGRlZCB0byB0aGUga2VybmVs
-IGJlZW4gYQo+PiBmZWF0dXJlIHRoYXQgdGhlcmUncyBwcmUtZXhpc3RpbmcgdXNhZ2Ugb2Y/IMKg
-U2VlbXMgbGlrZSBhIGNoaWNrZW4gYW5kCj4+IGVnZyBwcm9ibGVtLiDCoEFsc28sIHNvbWUgcGVv
-cGxlIHNlZW0gdG8gdGhpbmsgdGhlcmUncyB2YWx1ZSBpbiBiZWluZwo+PiBhYmxlIHRvIGJ1aWxk
-IGtlcm5lbHMgIm91dCBvZiB0aGUgYm94IiB0aGF0IHdvcmsgd2l0aCB0aGUgQW5kcm9pZAo+PiB1
-c2Vyc3BhY2UgLS0gZ2l2ZW4gdGhhdCB0aGVyZSBhcmUgYSBmZXcgZGV2aWNlcyBvdXQgdGhlcmUg
-dGhhdCBoYXZlCj4+IHRoYXQgdXNlcnNwYWNlIG9uICdlbS4KPgo+IFdlIGdlbmVyYWxseSB0cnkg
-dG8gbWVyZ2UgbmV3IGZlYXR1cmVzIGxpa2UgdGhpcyBhbG9uZyB3aXRoIGNvZGUgdGhhdAo+IHVz
-ZXMgc2FpZCBmZWF0dXJlLCBidXQgdGhlcmUgYXJlIGFsd2F5cyBleGNlcHRpb25zLiDCoFdlJ3Zl
-IG1lcmdlZCBjb2RlCj4gb25lIHJlbGVhc2Ugb3IgbW9yZSBiZWZvcmUgdGhlIG5ldyBjb2RlIGdl
-dHMgdXNlZCBmb3IgZXhhbXBsZSwgd2hpY2ggaXMKPiBmaW5lIElNTy4gwqBXaGF0IHdlIGRvbid0
-IHdhbnQgdG8gc2VlIGlzIHNvbWUgbmV3IGRyb3Agb2YgY29kZSBhZGRlZCBhbmQKPiBhYmFuZG9u
-ZWQsIGJ1dCB5b3UgYWxyZWFkeSBrbmV3IHRoYXQuCgpJZiBBbmRyb2lkIGd1eXMgcHJvdmlkZWQg
-YSBiYXJlIG1pbmltYWwgRGViaWFuIHN5c3RlbSB3aXRoIHN1c3BlbmQKYmxvY2tlcnMgdGhhdCBw
-ZW9wbGUgY2FuIHRha2UgYSBsb29rIGF0IGFuZCB0cnksIEkgdGhpbmsgdGhhdCB3b3VsZCBiZQph
-IGdvb2QgcHJvb2Ygb2YgY29uY2VwdC4gQW5kIGEgYmFyZSBtaW5pbXVtIHRvIGdldCB0aGUgcGF0
-Y2hlcyBtZXJnZWQuCgo+IEF0IGFueSByYXRlLCBpZiBGZWxpcGUgaXMgdGhlIG9ubHkgb25lIGFy
-Z3VpbmcgYWdhaW5zdCBpbmNsdWRpbmcKPiBzdXNwZW5kIGJsb2NrZXJzIGluIHRoZSBrZXJuZWws
-IHlvdSdyZSBwcm9iYWJseSBpbiBnb29kIHNoYXBlLiDCoEJhc2VkCj4gb24gbXkgKHJhdGhlciBj
-dXJzb3J5IEkgYWRtaXQpIGV2YWx1YXRpb24gb2YgdGhpcyB0aHJlYWQsIGl0IHNlZW1zIGxpa2UK
-PiByZWFzb25hYmxlIHBlb3BsZSBhZ3JlZSB0aGF0IHRoZXJlJ3MgYSBwbGFjZSBmb3IgYSBzdXNw
-ZW5kIGJsb2NrZXIgbGlrZQo+IEFQSSBpbiB0aGUga2VybmVsLCBhbmQgdGhhdCBkeW5hbWljIHBv
-d2VyIG1hbmFnZW1lbnQgaXMgYWxzbyBoaWdobHkKPiBkZXNpcmFibGUuIMKgU28gd2hlcmUncyB0
-aGUgZ2l0IHB1bGwgcmVxdWVzdCBhbHJlYWR5PyA6KQoKSSBjZXJ0YWlubHkgaGF2ZSBiZWVuIHRo
-ZSBtb3JlIHZvY2FsIHJlY2VudGx5LCBidXQgaWYgdGhhdCdzIGNvbmZ1c2luZwp5b3UsIEkgY2Fu
-IHNodXQgdXAgYW5kIGxldCBvdGhlcnMgZG8gdGhlIGFyZ3VtZW50YXRpb24uIEkgcmVtZW1iZXIg
-YXQKbGVhc3QgQWxhbiBDb3gsIEFsYW4gU3Rlcm4sIFRob21hcyBHbGVpeG5lciwgS2V2aW4gSGls
-bWFuLCBGZWxpcGUKQmFsYmksIFRvbnkgTGluZGdyZW4sIGFuZCBJZ29yIFN0b3BhIGFnYWluc3Qg
-dGhlbS4KCi0tIApGZWxpcGUgQ29udHJlcmFzCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21h
-aWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Fri, Aug 06, 2010 at 03:07:25PM -0700, Hugh Dickins wrote:
+> If REQ_SOFTBARRIER means that the device is still free to reorder a
+> write, which was issued after discard completion was reported, before
+> the discard (so later discarding the data written), then certainly I
+> agree with Christoph (now Cc'ed) that the REQ_HARDBARRIER is
+> unavoidable there; but if not, then it's not needed for the swap case.
+>  I hope to gain a little more enlightenment on such barriers shortly.
+
+REQ_SOFTBARRIER is indeed purely a reordering barrier inside the block
+elevator.
+
+> What does seem over the top to me, is for mm/swapfile.c's
+> blkdev_issue_discard()s to be asking for both BLKDEV_IFL_WAIT and
+> BLKDEV_IFL_BARRIER: those swap discards were originally written just
+> to use barriers, without needing to wait for completion in there.  I'd
+> be interested to hear if cutting out the BLKDEV_IFL_WAITs makes the
+> swap discards behave acceptably again for you - but understand that
+> you won't have a chance to try that until later next week.
+
+That does indeed look incorrect to me.  Any kind of explicit waits
+usually mean the caller provides ordering.  Getting rid of
+BLKDEV_IFL_BARRIER in the swap code ASAP would indeed be beneficial
+given that we are trying to get rid of hard barriers completely soon.
+Auditing the existing blkdev_issue_discard callers in filesystems
+is high on the todo list for me.
