@@ -1,23 +1,25 @@
-From: Christoph Hellwig <hch@infradead.org>
-Subject: Re: 2.6.35 Regression: Ages spent discarding blocks that
- weren't used!
-Date: Sat, 14 Aug 2010 07:43:53 -0400
-Message-ID: <20100814114353.GA7929__36913.2767933936$1281786312$gmane$org@infradead.org>
-References: <4C58C528.4000606@tuxonice.net> <4C5960B0.7020003@teksavvy.com>
-	<4C59DA16.4020500@tuxonice.net>
-	<AANLkTik_PH-7T7OFtzaCtPbAHE6pqnYMUsjP25KtsRnR@mail.gmail.com>
-	<4C5A59FC.1030304@tuxonice.net>
-	<AANLkTi=NMHkKduZzsLiiYt3=w8++8epb5aGrqv7V3-vB@mail.gmail.com>
-	<4C5B925A.5000409@tuxonice.net>
-	<AANLkTinU24v6Mty54YL3gv3M5S+4jdN5vHD54KknchAG@mail.gmail.com>
-	<20100813115424.GA24737@infradead.org>
-	<AANLkTik5osZR12nZVVvJY7LimiUZtBdZcnDi4VYNXhwr@mail.gmail.com>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread,
+	take three
+Date: Sat, 14 Aug 2010 08:10:48 -0700
+Message-ID: <20100814151048.GA2461__14820.6833204769$1281798849$gmane$org@linux.vnet.ibm.com>
+References: <20100809181638.GI3026@linux.vnet.ibm.com>
+	<AANLkTikwHaKpLdRdxmZj6JDJnsZ+o-jzbVcXhRW3Jmd9@mail.gmail.com>
+	<20100811222854.GJ2516@linux.vnet.ibm.com>
+	<AANLkTimahmGikeai8QnAxCy45deT00-6T7h-eA-NqL4G@mail.gmail.com>
+	<20100812010612.GL2516@linux.vnet.ibm.com>
+	<AANLkTinVV1NVHFPeO0p_e2pCtNwTNB932q9tbu9MMD3_@mail.gmail.com>
+	<20100812034435.GA7403@linux.vnet.ibm.com>
+	<20100813115751.3bbbafbd@lxorguk.ukuu.org.uk>
+	<20100813152912.GE2511@linux.vnet.ibm.com>
+	<20100814073843.GA27430@elf.ucw.cz>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <AANLkTik5osZR12nZVVvJY7LimiUZtBdZcnDi4VYNXhwr@mail.gmail.com>
+In-Reply-To: <20100814073843.GA27430@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,29 +29,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Hugh Dickins <hughd@google.com>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>, Mark Lord <kernel@teksavvy.com>, pm list <linux-pm@lists.linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 13, 2010 at 11:15:38AM -0700, Hugh Dickins wrote:
-> However, I am still not quite sure that we can already make that
-> change for 2.6.35 (-stable).  Can you reassure me on the question I
-> raise above: if we issue a discard to a device with cache, wait for
-> "completion", then issue a write into the area spanned by that
-> discard, can we be certain that the write to backing store will not be
-> reordered before the discard of backing store (unless the device is
-> just broken)?  Without a  REQ_HARDBARRIER in the 2.6.35 scheme?  It
-> seems a very reasonable assumption to me, but I'm learning not to
-> depend upon reasonable assumptions here.  (By the way, it doesn't
-> matter at all whether writes not spanned by the discard pass it or
-> not.)
+On Sat, Aug 14, 2010 at 09:38:44AM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > > > > Think in terms of an ARM laptop. What good is opportunistic suspend if
+> > > > > it's not going to help when the laptop is being used?
+> > > > 
+> > > > For when the laptop is not being used, presumably.
+> > > 
+> > > Or in time between keystrokes for most of the platform (backlight
+> > > excepted). The Intel MID x86 devices are at the point that suspend/resume
+> > > time on x86 is being hurt by the kernel rewriting smp alternatives as we
+> > > go from 2 processors live to 1 and back.
+> > 
+> > Given that you are talking about going from 2 processors to 1 and back,
+> > I would guess that you are not actually talking about suspend/resume,
+> > which is a system-wide thing rather than a CPU-by-CPU thing.  I am not
+> > sure whether you are using CPU hotplug or invoking SMP alternatives once
+> > all but one CPU is idle.
+> 
+> When entering system suspend, we disable non-boot-CPUs to simplify
+> locking. We reenable them when going out of suspend.
 
-Neither the SCSI (SPC and SBC) make the cache part of the protocol
-except for the commands to commit them to non-volatile storage, so
-even when reordering the backing device write it must still not
-reorder them vs notified completion.  That's nothing specific to
-discard, e.g. when a write was notified as complete a new read must
-come from the cache even if it hasn't been commited to the backing
-device.  Now I can't guarantee that all cheap SSD firmware
-implementations gets thus right for TRIM, but if one is really
-that buggy we need to blacklist it.
+Thank you for the info, Pavel!
+
+So once you are down to one CPU, the last CPU shuts the system off,
+itself included?  Or does the last CPU "run" in a deep idle state
+throughout suspend?  (My guess is the former, and I am also curious
+whether the cache SRAMs are powered off, etc.  But figured I should ask
+rather than guessing.)
+
+							Thanx, Paul
