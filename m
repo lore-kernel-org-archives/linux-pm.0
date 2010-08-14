@@ -1,19 +1,23 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Attempted summary of suspend-blockers LKML thread,
-	take three
-Date: Sat, 14 Aug 2010 12:41:30 +0200
-Message-ID: <20100814104130.GA29894__39036.5836480216$1281782629$gmane$org@elf.ucw.cz>
-References: <AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
-	<AANLkTimjfU2zu4reEVdOwWwtFHPQ33_Gna6xS2XHRG-h@mail.gmail.com>
-	<20100812125712.48b7fc26@virtuousgeek.org>
-	<201008130528.21887.rjw@sisk.pl>
-	<AANLkTinMmVdAVaCFXyDZpVRmZ9FCWYhtdeM=o4hdoZnT@mail.gmail.com>
+From: Christoph Hellwig <hch@infradead.org>
+Subject: Re: 2.6.35 Regression: Ages spent discarding blocks that
+ weren't used!
+Date: Sat, 14 Aug 2010 07:43:53 -0400
+Message-ID: <20100814114353.GA7929__36913.2767933936$1281786312$gmane$org@infradead.org>
+References: <4C58C528.4000606@tuxonice.net> <4C5960B0.7020003@teksavvy.com>
+	<4C59DA16.4020500@tuxonice.net>
+	<AANLkTik_PH-7T7OFtzaCtPbAHE6pqnYMUsjP25KtsRnR@mail.gmail.com>
+	<4C5A59FC.1030304@tuxonice.net>
+	<AANLkTi=NMHkKduZzsLiiYt3=w8++8epb5aGrqv7V3-vB@mail.gmail.com>
+	<4C5B925A.5000409@tuxonice.net>
+	<AANLkTinU24v6Mty54YL3gv3M5S+4jdN5vHD54KknchAG@mail.gmail.com>
+	<20100813115424.GA24737@infradead.org>
+	<AANLkTik5osZR12nZVVvJY7LimiUZtBdZcnDi4VYNXhwr@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <AANLkTinMmVdAVaCFXyDZpVRmZ9FCWYhtdeM=o4hdoZnT@mail.gmail.com>
+In-Reply-To: <AANLkTik5osZR12nZVVvJY7LimiUZtBdZcnDi4VYNXhwr@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,55 +27,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: peterz@infradead.org, Felipe Contreras <felipe.contreras@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, galibert@pobox.com, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, James.Bottomley@suse.de, tglx@linutronix.de, swmike@swm.pp.se, david@lang.hm, Ted Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, menage@google.com, arjan@infradead.org
+To: Hugh Dickins <hughd@google.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>, Mark Lord <kernel@teksavvy.com>, pm list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Fri, Aug 13, 2010 at 11:15:38AM -0700, Hugh Dickins wrote:
+> However, I am still not quite sure that we can already make that
+> change for 2.6.35 (-stable).  Can you reassure me on the question I
+> raise above: if we issue a discard to a device with cache, wait for
+> "completion", then issue a write into the area spanned by that
+> discard, can we be certain that the write to backing store will not be
+> reordered before the discard of backing store (unless the device is
+> just broken)?  Without a  REQ_HARDBARRIER in the 2.6.35 scheme?  It
+> seems a very reasonable assumption to me, but I'm learning not to
+> depend upon reasonable assumptions here.  (By the way, it doesn't
+> matter at all whether writes not spanned by the discard pass it or
+> not.)
 
-> > =A0Arguably, though, this isn't the only possible way to implement a
-> > mechanism allowing the system to be suspended automatically when it app=
-ears
-> > to be inactive.
-> >
-> > Namely, one can use a user space power manager for this purpose and act=
-ually
-> > the OLPC project has been doing that successfully for some time, which =
-clearly
-> > demonstrates that the Android approach to this problem is not the only =
-one
-> > possible. =A0Moreover, the kernel's system suspend (or hibernate for th=
-at matter)
-> > code has not been designed to be started from within the kernel. =A0It'=
-s been
-> > designed to allow a privileged user space process to request the kernel=
- to
-> > put the system into a sleep state at any given time regardless of what =
-the
-> > other user space processes are doing. =A0While it can be started from w=
-ithin the
-> > kernel, this isn't particularly nice and, in the Android case, starting=
- it from
-> > within the kernel requires permission from multiple user space processes
-> > (given by not taking suspend blockers these processes are allowed to us=
-e).
-> >
-> =
-
-> Why is starting suspend from within the kernel not nice? Personally I
-> think reentering suspend from within the kernel is nicer than being
-> forced to wake up a user space thread for events that are fully
-> handled within the kernel (for instance the battery monitor on the
-> Nexus One).
-
-For events that are fully handled within the kernel -- like battery
-monitor on Zaurus/spitz -- doing wakeup all the way to the userspace
-is not neccessary. But that's implementenation detail with no impact
-on user/kernel interface, and we are doing that today. (Or were doing
-that few releases ago; charging is broken on spitz just now).
-									Pavel
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Neither the SCSI (SPC and SBC) make the cache part of the protocol
+except for the commands to commit them to non-volatile storage, so
+even when reordering the backing device write it must still not
+reorder them vs notified completion.  That's nothing specific to
+discard, e.g. when a write was notified as complete a new read must
+come from the cache even if it hasn't been commited to the backing
+device.  Now I can't guarantee that all cheap SSD firmware
+implementations gets thus right for TRIM, but if one is really
+that buggy we need to blacklist it.
