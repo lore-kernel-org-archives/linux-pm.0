@@ -1,24 +1,19 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Sat, 14 Aug 2010 09:59:24 +0200
-Message-ID: <20100814075923.GC27430@elf.ucw.cz>
+Date: Sat, 14 Aug 2010 12:41:30 +0200
+Message-ID: <20100814104130.GA29894__39036.5836480216$1281782629$gmane$org@elf.ucw.cz>
 References: <AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
-	<Pine.LNX.4.44L0.1008120733130.21006-100000@netrider.rowland.org>
-	<AANLkTinMwt27wuDUh32F36wpoC54Syzp1_nK9UCxYmEK@mail.gmail.com>
-	<20100812125248.GA2763@thunk.org>
-	<AANLkTin4=qpDWEKLwes_af6mSCW+ED7v-fWzD34JywU1@mail.gmail.com>
-	<20100812182128.GC2763@thunk.org>
-	<AANLkTinZ_gViUjVmEbkmour3BC=PcchJDARs4GaCuQwO@mail.gmail.com>
 	<AANLkTimjfU2zu4reEVdOwWwtFHPQ33_Gna6xS2XHRG-h@mail.gmail.com>
 	<20100812125712.48b7fc26@virtuousgeek.org>
-	<AANLkTinbsXEk7YL31Q2GHHjeVRHGgpm0mpLzDBY1Ob4z@mail.gmail.com>
+	<201008130528.21887.rjw@sisk.pl>
+	<AANLkTinMmVdAVaCFXyDZpVRmZ9FCWYhtdeM=o4hdoZnT@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <AANLkTinbsXEk7YL31Q2GHHjeVRHGgpm0mpLzDBY1Ob4z@mail.gmail.com>
+In-Reply-To: <AANLkTinMmVdAVaCFXyDZpVRmZ9FCWYhtdeM=o4hdoZnT@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,36 +23,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: peterz@infradead.org, Jesse Barnes <jbarnes@virtuousgeek.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, galibert@pobox.com, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, James.Bottomley@suse.de, tglx@linutronix.de, swmike@swm.pp.se, david@lang.hm, Ted Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, menage@google.com, arjan@infradead.org
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: peterz@infradead.org, Felipe Contreras <felipe.contreras@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, galibert@pobox.com, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, James.Bottomley@suse.de, tglx@linutronix.de, swmike@swm.pp.se, david@lang.hm, Ted Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, menage@google.com, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> >> Question though -- has every feature ever added to the kernel been a
-> >> feature that there's pre-existing usage of? =A0Seems like a chicken and
-> >> egg problem. =A0Also, some people seem to think there's value in being
-> >> able to build kernels "out of the box" that work with the Android
-> >> userspace -- given that there are a few devices out there that have
-> >> that userspace on 'em.
+> > =A0Arguably, though, this isn't the only possible way to implement a
+> > mechanism allowing the system to be suspended automatically when it app=
+ears
+> > to be inactive.
 > >
-> > We generally try to merge new features like this along with code that
-> > uses said feature, but there are always exceptions. =A0We've merged code
-> > one release or more before the new code gets used for example, which is
-> > fine IMO. =A0What we don't want to see is some new drop of code added a=
-nd
-> > abandoned, but you already knew that.
+> > Namely, one can use a user space power manager for this purpose and act=
+ually
+> > the OLPC project has been doing that successfully for some time, which =
+clearly
+> > demonstrates that the Android approach to this problem is not the only =
+one
+> > possible. =A0Moreover, the kernel's system suspend (or hibernate for th=
+at matter)
+> > code has not been designed to be started from within the kernel. =A0It'=
+s been
+> > designed to allow a privileged user space process to request the kernel=
+ to
+> > put the system into a sleep state at any given time regardless of what =
+the
+> > other user space processes are doing. =A0While it can be started from w=
+ithin the
+> > kernel, this isn't particularly nice and, in the Android case, starting=
+ it from
+> > within the kernel requires permission from multiple user space processes
+> > (given by not taking suspend blockers these processes are allowed to us=
+e).
+> >
 > =
 
-> If Android guys provided a bare minimal Debian system with suspend
-> blockers that people can take a look at and try, I think that would be
-> a good proof of concept. And a bare minimum to get the patches merged.
+> Why is starting suspend from within the kernel not nice? Personally I
+> think reentering suspend from within the kernel is nicer than being
+> forced to wake up a user space thread for events that are fully
+> handled within the kernel (for instance the battery monitor on the
+> Nexus One).
 
-Yes, that would certainly help.
-
-I guess this is the major point -- as suspend blockers seem very
-suitable for android, they don't seem suitable for anyone else...
-
+For events that are fully handled within the kernel -- like battery
+monitor on Zaurus/spitz -- doing wakeup all the way to the userspace
+is not neccessary. But that's implementenation detail with no impact
+on user/kernel interface, and we are doing that today. (Or were doing
+that few releases ago; charging is broken on spitz just now).
+									Pavel
 -- =
 
 (english) http://www.livejournal.com/~pavelmachek
