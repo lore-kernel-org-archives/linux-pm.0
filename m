@@ -1,14 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: runtime PM + idle: allow usage when
- interrupts are disabled
-Date: Fri, 13 Aug 2010 21:15:37 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1008132112090.24267-100000__925.772384698753$1281748689$gmane$org@netrider.rowland.org>
-References: <1281459261-30829-1-git-send-email-khilman@deeprootsystems.com>
+From: Neil Brown <neilb@suse.de>
+Subject: Re: Attempted summary of suspend-blockers LKML thread,
+	take three
+Date: Sat, 14 Aug 2010 13:18:45 +1000
+Message-ID: <20100814131845.58544209__41096.6014642783$1281756012$gmane$org@notabene>
+References: <AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
+	<201008130528.21887.rjw@sisk.pl>
+	<AANLkTinMmVdAVaCFXyDZpVRmZ9FCWYhtdeM=o4hdoZnT@mail.gmail.com>
+	<201008131707.03484.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1281459261-30829-1-git-send-email-khilman@deeprootsystems.com>
+In-Reply-To: <201008131707.03484.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,41 +21,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: peterz@infradead.org, Felipe Contreras <felipe.contreras@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, galibert@pobox.com, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, James.Bottomley@suse.de, tglx@linutronix.de, swmike@swm.pp.se, david@lang.hm, Ted Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, menage@google.com, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 10 Aug 2010, Kevin Hilman wrote:
+On Fri, 13 Aug 2010 17:07:02 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> When using runtime PM in combination with CPUidle, the runtime PM
-> transtions of some devices may be triggered during the idle path.
-> Late in the idle sequence, interrupts will likely be disabled when
-> runtime PM for these devices is initiated.
+> > 
+> > There is no absolute need to start the suspend process from within the
+> > kernel, but it makes the user space code much simpler for what we
+> > need.  
 > 
-> Currently, the runtime PM core assumes methods are called with
-> interrupts enabled.  However, if it is called with interrupts
-> disabled, the internal locking unconditionally enables interrupts, for
-> example:
-
-...
-
-> Unconditionally enabling interrupts late in the idle sequence is not
-> desired behavior.  To fix, use the save/restore versions of the
-> spinlock API.
+> I'm entirely aware of that.  Still, I think user space is the right place to
+> initiate system suspend.
 > 
-> Reported-by: Partha Basak <p-basak2@ti.com>
-> Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
-> ---
-> RFC: I'm not crazy about having the 'flags' in struct dev_pm_info, but
-> since the locks are taken and released in separate functions, this
-> seems better than changing the function APIs to pass around the flags.
 
-There are restrictions on what you're allowed to do with the flags, but 
-I don't remember exactly what they are.
+For what it's worth - I completely agree.
 
-In any case, I don't really like this change.  It seems that we would 
-be better off preventing the runtime PM calls from occurring in the 
-first place while interrupts are disabled.  In fact, it's hard to see 
-what could cause this to happen at all.
+Clearly there is no a lot of unanimity on this, and so lots of room to
+experiment with different approaches.  It's best if we leave as much as
+possible of that experimentation in user-space - just have the kernel do what
+cannot be done elsewhere.
 
-Alan Stern
+NeilBrown
