@@ -1,46 +1,111 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: Attempted summary of suspend-blockers LKML thread,
-	take three
-Date: Sat, 14 Aug 2010 11:15:43 -0700 (PDT)
-Message-ID: <302795.95811.qm__37377.2443891086$1281809917$gmane$org@web180309.mail.gq1.yahoo.com>
-References: <20100814095351.6a996187@infradead.org>
+From: Len Brown <lenb@kernel.org>
+Subject: [git pull request] idle patches for Linux-2.6.36.merge
+Date: Sun, 15 Aug 2010 01:19:01 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1008150117460.2294@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100814095351.6a996187@infradead.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paulmck@linux.vnet.ibm.com, Arjan van de Ven <arjan@infradead.org>
-Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, swmike@swm.pp.se
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Linus,
+
+please pull from: 
+
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.git idle-release
+
+This will update the files shown below.
+
+thanks!
+
+--
+Len Brown
+Intel Open Source Technology Center
 
 
---- On Sat, 8/14/10, Arjan van de Ven <arjan@infradead.org> wrote:
+ps. individual patches are available on linux-pm@lists.linux-foundation.org
+and a consolidated plain patch is available here:
+http://ftp.kernel.org/pub/linux/kernel/people/lenb/idle/patches/2.6.34/idle-release-2.6.34.diff.gz
 
+ drivers/idle/Kconfig      |    3 +--
+ drivers/idle/intel_idle.c |   45 ++-------------------------------------------
+ 2 files changed, 3 insertions(+), 45 deletions(-)
 
-> however I think you're making an assumption
-> that there is a real difference between a deep idle state and "off"....
-> 
-> For modern x86 hardware, that assumption isn't
-> really valid.
+through these commits:
 
-For ARM processors it's not unrealistic.  THey
-tend to have idle states that place constraints on
-peripherals and clocks which allow peripherals to run independently of CPUs.
+Arjan van de Ven (1):
+      intel_idle: recognize Lincroft Atom Processor
 
-I recall for example various processors that allow
-USB to continue operating in one or more idle states, if the right clocks are active (and RAM).
-Similarly with some other peripherals.  It may be
-desirable to have I/O active while CPUs are idle.
+Len Brown (4):
+      intel_idle: delete power_policy modparam, and choose substate functions
+      intel_idle: add support for Westmere-EX
+      intel_idle: disable module support
+      intel_idle: no longer EXPERIMENTAL
 
-Not all low power states map to x86/ACPI models;
-and Linux hasn't accomodated that reality well.
+with this log:
+
+commit 4725fd3ce970c27a1678fb0809bfc7c2f4ac3e4f
+Author: Arjan van de Ven <arjan@linux.intel.com>
+Date:   Wed Jul 21 23:42:25 2010 -0400
+
+    intel_idle: recognize Lincroft Atom Processor
+    
+    Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 5a5e28daea69652505ac07eb5fbda4d7f0534926
+Author: Len Brown <len.brown@intel.com>
+Date:   Sat Aug 14 14:44:08 2010 -0400
+
+    intel_idle: no longer EXPERIMENTAL
+    
+    This is a fully supported driver.
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 6ce9cd8669fa1195fdc21643370e34523c7ac988
+Author: Len Brown <len.brown@intel.com>
+Date:   Sat Aug 14 14:40:36 2010 -0400
+
+    intel_idle: disable module support
+    
+    Right now the module capability is cauing more trouble
+    than it is worth.  At least one distro built intel_idle as a module
+    where it lost the init race with ACPI, making it useless.
+    
+    Make intel_idle bool so that if you select it, you will use it.
+    
+    We can restore module capability after cpuidle is enhanced
+    to handle run-time changing of idle drivers.
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit ec67a2ba360d4874b1158e6e87fe1e859b0c9117
+Author: Len Brown <len.brown@intel.com>
+Date:   Mon Jul 26 23:40:19 2010 -0400
+
+    intel_idle: add support for Westmere-EX
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 0394c6676e3fa48587fbe4821390d3264672c530
+Author: Len Brown <len.brown@intel.com>
+Date:   Fri Jul 23 16:04:46 2010 -0400
+
+    intel_idle: delete power_policy modparam, and choose substate functions
+    
+    The idea behind power policy was that it would start off as a modparam,
+    and then hook into the new "global" in-kernel power vs energy tunable.
+    But that tunable isn't happening, so delete the hook here.
+    
+    With the policy hook gone, the sub-state choice functions
+    do not do anything useful, so delete them from the critical path.
+    
+    To handle sub-states in the future, we will advertise them
+    with dedicated cpuidle_state entries.  That is necessary
+    because some of the sub-states will have substantially different
+    properties than their peer sub-states.
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
