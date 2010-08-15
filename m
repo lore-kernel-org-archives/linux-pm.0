@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 5/5] intel_idle: recognize Lincroft Atom Processor
-Date: Sun, 15 Aug 2010 01:22:05 -0400
-Message-ID: <4725fd3ce970c27a1678fb0809bfc7c2f4ac3e4f.1281849655.git.len.brown__13860.5606196963$1281849794$gmane$org@intel.com>
+Subject: [PATCH 2/5] intel_idle: add support for Westmere-EX
+Date: Sun, 15 Aug 2010 01:22:02 -0400
+Message-ID: <ec67a2ba360d4874b1158e6e87fe1e859b0c9117.1281849655.git.len.brown@intel.com>
 References: <1281849725-7379-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -20,28 +20,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Arjan van de Ven <arjan@linux.intel.com>
+From: Len Brown <len.brown@intel.com>
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
  drivers/idle/intel_idle.c |    1 +
  1 files changed, 1 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 97655ed..b1909fb 100755
+index 6d43bc3..97655ed 100755
 --- a/drivers/idle/intel_idle.c
 +++ b/drivers/idle/intel_idle.c
-@@ -265,6 +265,7 @@ static int intel_idle_probe(void)
- 		break;
+@@ -256,6 +256,7 @@ static int intel_idle_probe(void)
+ 	case 0x1E:	/* Core i7 and i5 Processor - Lynnfield Jasper Forest */
+ 	case 0x1F:	/* Core i7 and i5 Processor - Nehalem */
+ 	case 0x2E:	/* Nehalem-EX Xeon */
++	case 0x2F:	/* Westmere-EX Xeon */
+ 		lapic_timer_reliable_states = (1 << 1);	 /* C1 */
  
- 	case 0x1C:	/* 28 - Atom Processor */
-+	case 0x26:	/* 38 - Lincroft Atom Processor */
- 		lapic_timer_reliable_states = (1 << 2) | (1 << 1); /* C2, C1 */
- 		cpuidle_state_table = atom_cstates;
- 		break;
+ 	case 0x25:	/* Westmere */
 -- 
 1.7.2.1.95.g3d045
