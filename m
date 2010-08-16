@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Attempted summary of suspend-blockers LKML thread,
-	take three
-Date: Mon, 16 Aug 2010 23:11:27 +0200
-Message-ID: <201008162311.27584.rjw__6412.45989031649$1281993248$gmane$org@sisk.pl>
-References: <AANLkTi=RD=eM_gpc7FfRq0923sUbARmZ2+4-m+fLibYC@mail.gmail.com>
-	<20100813190801.GB26950@thunk.org>
-	<1281746599.16747.11.camel@mulgrave.site>
+Subject: Re: [PATCH] PM: runtime PM + idle: allow usage when
+	interrupts are disabled
+Date: Mon, 16 Aug 2010 23:18:03 +0200
+Message-ID: <201008162318.03923.rjw__2406.99997307292$1281993598$gmane$org@sisk.pl>
+References: <1281459261-30829-1-git-send-email-khilman@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1281746599.16747.11.camel@mulgrave.site>
+In-Reply-To: <1281459261-30829-1-git-send-email-khilman@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,67 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: david@lang.hm, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, swmike@swm.pp.se, galibert@pobox.com, florian@mickler.org, linux-pm@lists.linux-foundation.org, tglx@linutronix.de, paulmck@linux.vnet.ibm.com, menage@google.com, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, August 14, 2010, James Bottomley wrote:
-> On Fri, 2010-08-13 at 15:08 -0400, Ted Ts'o wrote: 
-> > On Fri, Aug 13, 2010 at 01:11:29PM -0400, James Bottomley wrote:
-> > > 
-> > > The facts are that suspend blockers identifies a race within our suspend
-> > > to ram system that permeates from top to bottom (that's from server to
-> > > mobile).  The problem is that resume events are racy with respect to
-> > > suspend and vice versa.  This manifests itself most annoyingly on my
-> > > laptop in the "double suspend" case: where I suspend with a pending
-> > > suspend event, my laptop will resume and then immediately re-suspend
-> > > (leading me to kick myself and remind myself to check it stayed up
-> > > before pushing unsuspend and walking away).  The other annoying case is
-> > > that if I accidentally close the lid before presenting, I have to wait
-> > > until the system is fully down before pressing resume.
-> > 
-> > This is all true, but it's also only one aspect of the problem.  I
-> > agree with you that this is the part of the problem which affects
-> > Linux at all scales, from Cloud servers in a data center that want to
-> > suspend themselves when there's no work to do (and then fail to
-> > respond to the WOL packet) to mobile platforms that are suspending
-> > much more frequently.
-> > 
-> > However, it doesn't follow that this is the _only_ problem that the
-> > Android folks might be interested in solving.  Opportunistic suspend
-> > is a different part of the problem space, which is generally believed
-> > by the Android developers as being far more efficient than a
-> > user-space suspend manager.  Rafael has stated his complete
-> > unwillingness to deal with this part of the problem.  OK, so that
-> > probably means that for Android, it will have to be an out-of-tree
-> > kernel patch.
+On Tuesday, August 10, 2010, Kevin Hilman wrote:
+> When using runtime PM in combination with CPUidle, the runtime PM
+> transtions of some devices may be triggered during the idle path.
+> Late in the idle sequence, interrupts will likely be disabled when
+> runtime PM for these devices is initiated.
 > 
-> OK, so I tried desperately to avoid the question of whether
-> opportunistic suspend is a good way of managing power.  However, it
-> seems to me that it is in use by several systems (android, olpc, etc).
-> I'll defer the question of whether it's better in user space or kernel
-> space to Rafael's investigations  ...  but I will point out that the
-> kernel space patch, once the suspend blockers issue is taken care of
-> looks like a single patch to one file, so should be locally containable
-> and should allow upstream to be useful as the driver base again.
+> Currently, the runtime PM core assumes methods are called with
+> interrupts enabled.  However, if it is called with interrupts
+> disabled, the internal locking unconditionally enables interrupts, for
+> example:
 > 
-> > The question, then, is whether a solution which addresses the only
-> > part of the problem which Rafael is interested in dealing with at this
-> > point, is sufficient such that (a) the kernel-level opportunistic
-> > suspend can be done as an out-of-tree patch, while simultaneously (b)
-> > allowing device drivers for Android devices can utilize Rafael's
-> > interfaces to solve the race design bug currently found in our suspend
-> > subsystem, while (c) requiring minimal changes to the Android
-> > userspace, and (d) providing all of the statistics and debugging
-> > functionality required by the Android userspace.
-> > 
-> > If we can engineer a solution which meets (a), (b), (c), and (d)
-> > above, then everyone will be happy.
-> 
-> That's my goal.
+> pm_runtime_put_sync()
 
-In fact, we (which means basically Alan Stern and me at this point) are working
-with Arve on this right now.
+Please don't use that from interrupt context.  There's pm_runtime_put()
+exactly for this purpose that puts the _idle() call into a workqueue.
+
+>     __pm_runtime_put()
+>         pm_runtime_idle()
+>             spin_lock_irq()
+>             __pm_runtime_idle()
+>                 spin_unlock_irq()   <--- interrupts unconditionally enabled
+
+That's because __pm_runtime_idle() has to be called from process context.
+
+>                 dev->bus->pm->runtime_idle()
+>                 spin_lock_irq()
+>              spin_unlock_irq()
 
 Thanks,
 Rafael
