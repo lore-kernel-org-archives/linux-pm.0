@@ -1,24 +1,15 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: Attempted summary of suspend-blockers LKML thread,
-	take three
-Date: Mon, 16 Aug 2010 17:09:11 +0100
-Message-ID: <20100816160911.GA3479__16808.2199445509$1281975060$gmane$org@srcf.ucam.org>
-References: <20100811222854.GJ2516@linux.vnet.ibm.com>
-	<AANLkTimahmGikeai8QnAxCy45deT00-6T7h-eA-NqL4G@mail.gmail.com>
-	<20100812010612.GL2516@linux.vnet.ibm.com>
-	<AANLkTinVV1NVHFPeO0p_e2pCtNwTNB932q9tbu9MMD3_@mail.gmail.com>
-	<20100812034435.GA7403@linux.vnet.ibm.com>
-	<20100813115751.3bbbafbd@lxorguk.ukuu.org.uk>
-	<20100813152912.GE2511@linux.vnet.ibm.com>
-	<20100814073843.GA27430@elf.ucw.cz>
-	<20100814151048.GA2461@linux.vnet.ibm.com>
-	<20100814095351.6a996187@infradead.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] : Bug fix in generic runtime pm APIs
+Date: Mon, 16 Aug 2010 20:54:21 +0200
+Message-ID: <201008162054.21274.rjw__14689.0929238454$1281985076$gmane$org@sisk.pl>
+References: <E0D41E29EB0DAC4E9F3FF173962E9E940270AE9715@dbde02.ent.ti.com>
+	<4C693E82.9000503@ti.com>
+	<E0D41E29EB0DAC4E9F3FF173962E9E940270BE1011@dbde02.ent.ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20100814095351.6a996187@infradead.org>
+In-Reply-To: <E0D41E29EB0DAC4E9F3FF173962E9E940270BE1011@dbde02.ent.ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,23 +19,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: david@lang.hm, menage@google.com, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, swmike@swm.pp.se
+To: "Kalliguddi, Hema" <hemahk@ti.com>
+Cc: linux-pm@lists.linux-foundation.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Aug 14, 2010 at 09:53:51AM -0700, Arjan van de Ven wrote:
-
-> they tend to go "off".
+On Monday, August 16, 2010, Kalliguddi, Hema wrote:
+> Hi,
+>  
+> >> -----Original Message-----
+> >> From: Kalliguddi, Hema
+> >> Sent: Friday, August 13, 2010 7:08 PM
+> >> To: Cousson, Benoit
+> >> Cc: linux-omap@vger.kernel.org; Tony Lindgren; Kevin Hilman; 
+> >Paul.Walmsley[paul@pwsan.com]
+> >> Subject: RE: [PATCH] : Bug fix in generic runtime pm APIs
+> >>
+> >> Hi,
+> >>
+> >>> -----Original Message-----
+> >>> From: Cousson, Benoit
+> >>> Sent: Friday, August 13, 2010 6:29 PM
+> >>> To: Kalliguddi, Hema
+> >>> Cc: linux-omap@vger.kernel.org; Tony Lindgren; Kevin Hilman;
+> >>> Paul.Walmsley[paul@pwsan.com]
+> >>> Subject: Re: [PATCH] : Bug fix in generic runtime pm APIs
+> >>>
+> >>> Hi Hema,
+> >>>
+> >>> On 8/13/2010 2:31 PM, Kalliguddi, Hema wrote:
+> >>>> From: Hema HK<hemahk@ti.com>
+> >>>>
+> >>>> pm_generic_runtime_resume/pm_generic_runtime_suspend api
+> >>> should return zero if
+> >>>> driver has not implemented runtime_suspend or runtime_resume apis.
+> >>>
+> >>> Why? Could you elaborate?
+> >>>
+> >> I don't have runtime_suspend and runtime_resume APIs 
+> >implemented in the usb driver.
+> >> When runtime_pm_get_sync is called there is a -22 as return value.
+> >
+> >It is still not clear why it is related to the following patch?
+> >Can you explain in what context you observe that?
 > 
-> however I think you're making an assumption that there is a
-> real difference between a deep idle state and "off"....
+> Sorry. It is not related o following commit. It is related to 
+> http://git.kernel.org/?p=linux/kernel/git/khilman/linux-omap-pm.git;a=commit;h=1ebda92e47879750c739f6125ab11632a8f6f713
 > 
-> For modern x86 hardware, that assumption isn't really valid.
-> (other than a very very small sram that stores register content in the
-> idle case)
+> In this pm_generic_runtime_resume() API returns -EINVAL if there is no 
+> runtime_resume and runtime_suspend APIs implemented by driver.
+> 
+> I observe this issue when I call runtime_pm_get_sync api in the driver and check for the return value.
+> The return value is -22 because there is no runtime_resume API implemented in the USB driver.
+> 
+> >
+> >> Is not it is valid if there is no runtime_suspend and 
+> >runtime_resume implemented by drivers/device?
+> >> Why should this API returns -EINVAL if there is no 
+> >runtime_resume and runtime_suspend APIs ?
+> >
+> >Good question, you should maybe ask the original author, who is Rafael.
+> >
+> 
+> Rafael,
+> 
+> Is it mandatory to implement the runtime_suspend and runtime_resume APIs in the driver
+> even if there is nothing to done in the APIs?
 
-Really? I thought the TSC stopped in suspend. Does having a package go 
-into C6 mean that the RAM goes into self-refresh?
+That depends on the bus type routines.  If your bus type uses the generic
+ones then yes, it is.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Thanks,
+Rafael
