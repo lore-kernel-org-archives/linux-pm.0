@@ -1,18 +1,24 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: Attempted summary of suspend-blockers LKML thread,
 	take three
-Date: Mon, 16 Aug 2010 08:16:55 -0700
-Message-ID: <20100816081655.3e9e29f7__47322.1014174216$1281971899$gmane$org@virtuousgeek.org>
-References: <AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
-	<Pine.LNX.4.44L0.1008120733130.21006-100000@netrider.rowland.org>
-	<AANLkTinMwt27wuDUh32F36wpoC54Syzp1_nK9UCxYmEK@mail.gmail.com>
-	<20100812125248.GA2763@thunk.org>
-	<20100814075000.GB27430@elf.ucw.cz>
+Date: Mon, 16 Aug 2010 17:09:11 +0100
+Message-ID: <20100816160911.GA3479__16808.2199445509$1281975060$gmane$org@srcf.ucam.org>
+References: <20100811222854.GJ2516@linux.vnet.ibm.com>
+	<AANLkTimahmGikeai8QnAxCy45deT00-6T7h-eA-NqL4G@mail.gmail.com>
+	<20100812010612.GL2516@linux.vnet.ibm.com>
+	<AANLkTinVV1NVHFPeO0p_e2pCtNwTNB932q9tbu9MMD3_@mail.gmail.com>
+	<20100812034435.GA7403@linux.vnet.ibm.com>
+	<20100813115751.3bbbafbd@lxorguk.ukuu.org.uk>
+	<20100813152912.GE2511@linux.vnet.ibm.com>
+	<20100814073843.GA27430@elf.ucw.cz>
+	<20100814151048.GA2461@linux.vnet.ibm.com>
+	<20100814095351.6a996187@infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100814075000.GB27430@elf.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <20100814095351.6a996187@infradead.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,77 +28,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: peterz@infradead.org, Felipe Contreras <felipe.contreras@gmail.com>, Cox <alan@lxorguk.ukuu.org.uk>, galibert@pobox.com, Alan@smtp1.linux-foundation.org, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, James.Bottomley@suse.de, tglx@linutronix.de, swmike@swm.pp.se, david@lang.hm, Ted Ts'o <tytso@mit.edu>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, menage@google.com, arjan@infradead.org
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: david@lang.hm, menage@google.com, Ted Ts'o <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, swmike@swm.pp.se
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 14 Aug 2010 09:50:00 +0200
-Pavel Machek <pavel@ucw.cz> wrote:
+On Sat, Aug 14, 2010 at 09:53:51AM -0700, Arjan van de Ven wrote:
 
-> On Thu 2010-08-12 08:52:49, Ted Ts'o wrote:
-> > On Thu, Aug 12, 2010 at 03:28:01PM +0300, Felipe Contreras wrote:
-> > > 
-> > > The question is why are we adding a user-space API that:
-> > >  1) no user-space beside Android has expresses interest in implementing
-> > >  2) is dubious whether the benefits are worth the pain for non-Android
-> > > user-space
-> > >  3) will become less and less attractive as dynamic PM gets closer to
-> > > the sweet-spot, and then surpass it
-> > >  4) Android can keep in a separate tree until it's clear in the linux
-> > > community that it's useful (if it ever happens)
-> > 
-> > So, Felipe,
-> > 
-> > Do you believe you speak for all of LKML?
-> > 
-> > Are you willing to tell ZDNet and the Slashdot fanboys that it's OK
-> > for Suspend blockers to live in a separate tree, and it's not a case
-> > of OMG!  Google is forking the kernel?
-> > 
-> > If you could speak out a passionately on those forums as you have
-> > here, that would be great.
+> they tend to go "off".
 > 
-> Ted, what is going on here? Are you suggesting people disagreeing with
-> Google patches suddenly have to do advocacy for Google?
+> however I think you're making an assumption that there is a
+> real difference between a deep idle state and "off"....
 > 
-> And yes, for the record Felipe speaks for me pretty well.
-> 
-> Normal path of merging stuff to the kernel is
-> 
-> "Google develops it, then modifies it to address the review comments,
-> then it is merged, then it is deployed".
+> For modern x86 hardware, that assumption isn't really valid.
+> (other than a very very small sram that stores register content in the
+> idle case)
 
-Pavel, you should know better than this.  You've been working on Linux
-long enough to know that development doesn't happen this way.
-
-It's far more common (and prudent, business-wise) for companies to
-develop changes against upstream Linux, ship them, and then try to get
-them or something like them integrated upstream.  This often works
-fine, but big problems arise when either the company in question
-doesn't bother to ever push upstream (Linux loses out on support for a
-given feature or hardware) or ships changes that have very little
-chance of getting upstream (we end up with a fork).
-
-> Unfortunately what Google did here is:
-> 
-> "Google develops it behind the closed door, then deploys it. When
-> asked for changes, Google expects someone else to create system
-> compatible with their existing solution, or else their patches being
-> merged."
-
-Although it would have been nice for Google to work more directly with
-upstream on their suspend blockers for Android, I don't think they
-could have made their product development cycle a slave to the politics
-of upstream development.
-
-Fortunately in this case the problem doesn't seem to be fatal.  We've
-already established that the userland API portion of suspend blockers
-could be implemented in userspace with a bit more work, given that the
-kernel problems with suspend/resume and events are addressed.
-Hopefully Google is already developing a prototype userspace
-implementation to make sure it's workable; being able to build stock
-upstream kernels for my Droid and its Android userspace sure would be
-nice.
+Really? I thought the TSC stopped in suspend. Does having a package go 
+into C6 mean that the RAM goes into self-refresh?
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Matthew Garrett | mjg59@srcf.ucam.org
