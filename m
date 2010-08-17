@@ -1,41 +1,90 @@
-From: Bryan Huntsman <bryanh@codeaurora.org>
-Subject: Re: [linux-pm] Notes from the Boston Linux Power	Management	Mini-summit
- - August 9th, 2010
-Date: Mon, 16 Aug 2010 18:09:17 -0700
-Message-ID: <4C69E13D.3020809@codeaurora.org>
-References: <alpine.LFD.2.00.1008150134180.7641@localhost.localdomain> <20100816144914.GB10354@sirena.org.uk>
+From: Neil Brown <neilb@suse.de>
+Subject: Re: Attempted summary of suspend-blockers LKML thread,
+	take three
+Date: Tue, 17 Aug 2010 17:08:58 +1000
+Message-ID: <20100817170858.3c3385f7__10269.0227017321$1282029032$gmane$org@notabene>
+References: <AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
+	<Pine.LNX.4.44L0.1008120733130.21006-100000@netrider.rowland.org>
+	<AANLkTinMwt27wuDUh32F36wpoC54Syzp1_nK9UCxYmEK@mail.gmail.com>
+	<20100812125248.GA2763@thunk.org>
+	<20100814075000.GB27430@elf.ucw.cz>
+	<20100816081655.3e9e29f7@virtuousgeek.org>
+	<20100817002032.GD21182@thunk.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20100816144914.GB10354@sirena.org.uk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Len Brown <lenb@kernel.org>, Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20100817002032.GD21182@thunk.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Ted Ts'o <tytso@mit.edu>
+Cc: peterz@infradead.org, Felipe Contreras <felipe.contreras@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, galibert@pobox.com, florian@mickler.org, linux-pm@lists.linux-foundation.org, paulmck@linux.vnet.ibm.com, James.Bottomley@suse.de, tglx@linutronix.de, swmike@swm.pp.se, david@lang.hm, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, menage@google.com, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Mark Brown wrote:
-> On Sun, Aug 15, 2010 at 01:36:33AM -0400, Len Brown wrote:
+On Mon, 16 Aug 2010 20:20:32 -0400
+Ted Ts'o <tytso@mit.edu> wrote:
+
+> On Mon, Aug 16, 2010 at 08:16:55AM -0700, Jesse Barnes wrote:
+> > Fortunately in this case the problem doesn't seem to be fatal.  We've
+> > already established that the userland API portion of suspend blockers
+> > could be implemented in userspace with a bit more work, given that the
+> > kernel problems with suspend/resume and events are addressed.
+> > Hopefully Google is already developing a prototype userspace
+> > implementation to make sure it's workable; being able to build stock
+> > upstream kernels for my Droid and its Android userspace sure would be
+> > nice.
 > 
->> A gap:
->>
->> On OMAP, bus control is independent of CPU frequency control,
->> so cpufreq and cpuidle don't quite fit the bill.
->>
->> Perhaps a "bus-idle" analogous to "cpu-idle" may be appropriate?
+> You know, you don't have to wait for the Android engineers to do this
+> work.  You (or others who want to be able to use stock upstream kernel
+> with Android devices) could just as easily try to do the "bit more
+> work" yourselves --- that is, do the open souce thing and scratch
+> one's own itch.
 > 
-> FWIW this applies to a bunch of other embedded processors too - OMAP
-> isn't particularly unique here, though it's one of the furthest along in
-> terms of exploting this in mainline Linux.
+> After all, Rafael is saying he's refusing to accept patches (or
+> implement) in-kernel oppunsitic suspend for upstream unless it's
+> proven to him that a userspace implementation isn't sufficient.  It
+> might be just as fair for the Android userspace upstream to refuse to
+> accept (or engineer) userspace changes unless it is proven that the
+> userspace version of opporunistic suspend is just as good as the
+> in-kernel version which is successfully been deployed in millions and
+> millions of shipping units today...
 
-This capability would benefit MSM as well.  We're looking into a 
-soc-specific implementation using Pat Pannuto's "pseudo" platform bus 
-extensions (discussed here http://lkml.org/lkml/2010/8/10/389).  After 
-we have something working, I would be curious to see if some common 
-functionality could be extracted into a more generic mechanism.
+Reminds me of the one of the first questions asked in a murder investigation
+(or so they say on TV)
+   Cui Bono??
 
-- Bryan
+Who benefits?  Does Android benefit more by being able to use a standard
+kernel, or does Linux benefit more by being able to run Android without
+modification.
 
--- 
-Sent by an employee of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+Currently it seems that only the lawyers^Wpeople who like arguing on lkml are
+gaining anything.
+
+Maybe this is the first real fork of Linux - google might be rich enough to
+persist with it.
+
+> 
+> Speaking personally, it's not clear to me how waking up a userspace
+> suspend daemon and waiting for it to get scheduled will result in
+> better power savings than simply handling it in the kernel, but as
+> soon as someone is willing to do the work, we can find out for sure
+> who is right.
+
+I'm surprised at this comment Ted!
+Power saving is not the single supreme goal, yet you make it sound like it is.
+
+It should be no surprise to anyone if the most maintainable solution uses a
+little more power than the most highly optimised solution.  I think most of
+us would still prefer the more maintainable solution.  However, if google
+sees a market opportunity for the minor optimisation of suspend-from-kernel
+rather than suspend-from-user-space, then it would seem they are welcome to
+it.
+
+NeilBrown
