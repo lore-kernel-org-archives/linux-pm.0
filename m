@@ -1,45 +1,60 @@
-From: Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] SATA / AHCI: Do not play with the link PM during suspend
- to RAM
-Date: Tue, 17 Aug 2010 13:29:05 +0200
-Message-ID: <4C6A7281.3030804@gmail.com>
-References: <201007091750.05020.stephan.diestelhorst@amd.com> <201008171132.56431.stephan.diestelhorst@amd.com> <4C6A6145.7020707@gmail.com> <201008171319.25080.rjw@sisk.pl>
+From: Igor Stoppa <igor.stoppa@nokia.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread,
+ take three
+Date: Tue, 17 Aug 2010 15:07:07 +0300
+Message-ID: <1282046827.13642.1119.camel@vimes.research.nokia.com>
+References: <AANLkTi=RD=eM_gpc7FfRq0923sUbARmZ2+4-m+fLibYC@mail.gmail.com>
+	<20100813190801.GB26950@thunk.org>
+	<1281746599.16747.11.camel@mulgrave.site>
+	<201008162311.27584.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <201008171319.25080.rjw@sisk.pl>
-Sender: linux-ide-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephan Diestelhorst <stephan.diestelhorst@amd.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, Stephan Diestelhorst <stephan.diestelhorst@gmail.com>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201008162311.27584.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "ext Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "david@lang.hm" <david@lang.hm>, "menage@google.com" <menage@google.com>, Ted Ts'o <tytso@mit.edu>, "arjan@infradead.org" <arjan@infradead.org>, "peterz@infradead.org" <peterz@infradead.org>, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "galibert@pobox.com" <galibert@pobox.com>, "florian@mickler.org" <florian@mickler.org>, James Bottomley <James.Bottomley@suse.de>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>, "tglx@linutronix.de" <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, "swmike@swm.pp.se" <swmike@swm.pp.se>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+Hi,
+On Mon, 2010-08-16 at 23:11 +0200, ext Rafael J. Wysocki wrote:
+> On Saturday, August 14, 2010, James Bottomley wrote:
 
-On 08/17/2010 01:19 PM, Rafael J. Wysocki wrote:
-> Well, I wonder what the real reason for doing the link power management
-> thing at this particular point in the suspend code path is.  It just seems to
-> disable the link power management, but then the controller is put into a
-> low-power state and is reset from scratch during resume, so I'm not quite
-> sure how skipping that code could possibly lead to any problems.
+<snip>
 
-Stranger things have happened in the ATA la-la land. :-) Also, it
-makes non-lpm and lpm cases leave the controller and device in
-different states when it goes to sleep, which _really_ bothers me.
-Combined with the timing dependent nature of DIPM, I worry this might
-lead to very obscure issues and would much prefer to make sure
-everything is in fixed, known, fully powered state before committing
-to any major operations.  I might be paranoid tho.  I'll think more
-about it.
+> > > The question, then, is whether a solution which addresses the only
+> > > part of the problem which Rafael is interested in dealing with at this
+> > > point, is sufficient such that (a) the kernel-level opportunistic
+> > > suspend can be done as an out-of-tree patch, while simultaneously (b)
+> > > allowing device drivers for Android devices can utilize Rafael's
+> > > interfaces to solve the race design bug currently found in our suspend
+> > > subsystem, while (c) requiring minimal changes to the Android
+> > > userspace, and (d) providing all of the statistics and debugging
+> > > functionality required by the Android userspace.
+> > > 
+> > > If we can engineer a solution which meets (a), (b), (c), and (d)
+> > > above, then everyone will be happy.
+> > 
+> > That's my goal.
+> 
+> In fact, we (which means basically Alan Stern and me at this point) are working
+> with Arve on this right now.
 
-> Perhaps we could move the link PM manipulation to the prepare stage
-> of suspend?
+At least for (d) we - Nokia - would be also interested as well to
+contribute, see [1].
 
-Yeah, one possibility is that the devices misbehave if they receive
-LPM commands while suspended.  Does commenting out sd_suspend resolve
-the issue too?
+In general it should help with keeping the solution more generic.
 
-Thanks.
+cheers, igor
 
--- 
-tejun
+[1]
+https://lists.linux-foundation.org/pipermail/linux-pm/2010-August/028248.html
