@@ -1,55 +1,79 @@
-From: Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] SATA / AHCI: Do not play with the link PM during suspend
- to RAM
-Date: Wed, 18 Aug 2010 08:12:24 +0200
-Message-ID: <4C6B79C8.7080602@gmail.com>
-References: <201007091750.05020.stephan.diestelhorst@amd.com> <4C6A6145.7020707@gmail.com> <201008171229.28917.stephan.diestelhorst@amd.com> <201008171251.29441.stephan.diestelhorst@amd.com> <4C6AA50F.3090801@gmail.com> <AANLkTin2XPHXL_o9hHz9f4beTYEx+isX+PaFRkMMiYHQ@mail.gmail.com>
+From: Florian Mickler <florian@mickler.org>
+Subject: Re: Wakeup-events implementation
+Date: Wed, 18 Aug 2010 09:04:04 +0200
+Message-ID: <20100818090404.12bc7d1d@schatten.dmk.lab>
+References: <AANLkTikqWLShBVVB9-wCngO2ajrrgt-Nkmt_Bmys7b7w@mail.gmail.com>
+	<Pine.LNX.4.44L0.1008171109030.1656-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <AANLkTin2XPHXL_o9hHz9f4beTYEx+isX+PaFRkMMiYHQ@mail.gmail.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: Stephan Diestelhorst <stephan.diestelhorst@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, stephan.diestelhorst@amd.com
+Content-Type: text/plain; charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.1008171109030.1656-100000@iolanthe.rowland.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: list <linux-pm@lists.linux-foundation.org>, Linux-pm@smtp1.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+On Tue, 17 Aug 2010 11:53:53 -0400 (EDT)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-On 08/17/2010 11:28 PM, Stephan Diestelhorst wrote:
-> 2010/8/17 Tejun Heo <htejun@gmail.com>:
->> On 08/17/2010 12:51 PM, Stephan Diestelhorst wrote:
->>> I *think* I have applied the patch correctly. Please find a copy of
->>> "git show" in the build directory attached. This should be the right
->>> thing, shouldn't it?
->>
->>> Maybe I forgot to speify a particular debug option / verbosity?
->>
->>> I've also confirmed that the "XXX ahci_set_ipm" is present in
->>> libahci.ko. So either I've screwed up badly when compiling the initrd,
->>> the code is not executed or the printout does not make it into any
->>> logfile anymore.
->>
->> Yeah, that's weird.  You're enabling IPM, right?
-> 
-> Erm... Honestly, I have no clue. What is IPM? How do I enable it? This is a
-> Kubuntu Lucid 10.04 distribution, and I have not touched too much. In
-> particular, the kernels have been from upstream git, just with the Ubuntu config
-> copied over.
-> 
-> Maybe it is just not enabled? I am guessing that IPM might be IDE power
-> management? Or intelligent, integrated? Google turns up this email thread
-> as one of the first hits and nothing else conclusive.
+> Also, I frankly have to wonder why you demand such a large amount of
+> detailed debugging about the kernel's wakeup/wakelock subsystem (as
+> opposed to userspace wakelocks).  Yes, it's clear that if something
+> goes wrong then you will drain your phone's battery in a few hours
+> rather than a few days.  But what if something goes wrong with the VM
+> subsystem, or the RF subsystem, or the keypad driver?  The device would
+> crash immediately or at best become almost totally unusable.  These are
+> much worse scenarios than losing some battery life -- have you added
+> comparable quantities of debugging to those other parts of the kernel?
+> =
 
-It's interface power management, also called link power management.
-You can check whether it's enabled by
+> In addition, you retain all these debugging facilities in your
+> production builds, not just in the debug kernels.  Doesn't this seem
+> excessive?
+> =
 
-$ cat /sys/class/scsi_host/host0/link_power_management_policy
 
-If it says max_performance, it's disabled.  If it says anything else,
-it's enabled.
+There is a theory about risk analysis and follow-up costs... i don't have
+anything concrete at hand but the main idea is that if you develop for
+example some monitoring for a production line of a pharmaceutical
+product, you have to take into consideration all possible
+failure-modes, the associated risk (likelihood * impact)
+ and the likelihood of detecting these failures before shipping.
 
-Thanks.
+A failure mode that is fatal (->high risk), and is not detectable
+before shipping is bad and a sign that you probably shouldn't produce
+at all.
 
--- 
-tejun
+A failure mode that is fatal (->high risk) but is detectable in all
+cases before shipping=A0is not such a big problem. =
+
+
+With battery powered devices, you have failure-modes (run-time not
+optimal) that is not easily detectable before shipping. This is the
+worst kind of failure-mode because you don't know if it will happen or
+not. =
+
+
+The risk of this failure mode (non-optimal runtime) is bad also, because
+for mobile devices the runtime is critical and the fact that we talk
+about millions of devices will turn this up with a non-negligible =
+
+probability.
+ =
+
+So I totally understand that the android people want all the debugging
+they can get to make non-optimal runtime as visible as a broken vm or a
+not functioning keypad. After all, runtime is critical for mobile
+devices.
+
+Cheers,
+Flo
