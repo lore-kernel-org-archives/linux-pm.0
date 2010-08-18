@@ -1,31 +1,55 @@
-From: Bryan Huntsman <bryanh@codeaurora.org>
-Subject: Re: [linux-pm] Wakelocks Rebooted - Power management for embedded
- devices
-Date: Tue, 17 Aug 2010 18:48:57 -0700
-Message-ID: <4C6B3C09.7010809@codeaurora.org>
-References: <1282034436.13642.1115.camel@vimes.research.nokia.com> <201008171550.06753.rjw@sisk.pl>
+From: Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] SATA / AHCI: Do not play with the link PM during suspend
+ to RAM
+Date: Wed, 18 Aug 2010 08:12:24 +0200
+Message-ID: <4C6B79C8.7080602@gmail.com>
+References: <201007091750.05020.stephan.diestelhorst@amd.com> <4C6A6145.7020707@gmail.com> <201008171229.28917.stephan.diestelhorst@amd.com> <201008171251.29441.stephan.diestelhorst@amd.com> <4C6AA50F.3090801@gmail.com> <AANLkTin2XPHXL_o9hHz9f4beTYEx+isX+PaFRkMMiYHQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <201008171550.06753.rjw@sisk.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Igor Stoppa <igor.stoppa@nokia.com>, linux-pm@lists.linux-foundation.org, Linux-pm mailing list <linux-pm@lists.osdl.org>, kernel list <linux-kernel@vger.kernel.org>
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <AANLkTin2XPHXL_o9hHz9f4beTYEx+isX+PaFRkMMiYHQ@mail.gmail.com>
+Sender: linux-ide-owner@vger.kernel.org
+To: Stephan Diestelhorst <stephan.diestelhorst@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, stephan.diestelhorst@amd.com
 List-Id: linux-pm@vger.kernel.org
 
->> * I would welcome people from silicon companies to participate in the
->> discussion, since they have the best understanding of the real impact of
->> a certain power saving implementation on the SoC performance.
+Hello,
+
+On 08/17/2010 11:28 PM, Stephan Diestelhorst wrote:
+> 2010/8/17 Tejun Heo <htejun@gmail.com>:
+>> On 08/17/2010 12:51 PM, Stephan Diestelhorst wrote:
+>>> I *think* I have applied the patch correctly. Please find a copy of
+>>> "git show" in the build directory attached. This should be the right
+>>> thing, shouldn't it?
+>>
+>>> Maybe I forgot to speify a particular debug option / verbosity?
+>>
+>>> I've also confirmed that the "XXX ahci_set_ipm" is present in
+>>> libahci.ko. So either I've screwed up badly when compiling the initrd,
+>>> the code is not executed or the printout does not make it into any
+>>> logfile anymore.
+>>
+>> Yeah, that's weird.  You're enabling IPM, right?
 > 
-> Yes, it would be nice to have some input from the hardware folks.
+> Erm... Honestly, I have no clue. What is IPM? How do I enable it? This is a
+> Kubuntu Lucid 10.04 distribution, and I have not touched too much. In
+> particular, the kernels have been from upstream git, just with the Ubuntu config
+> copied over.
+> 
+> Maybe it is just not enabled? I am guessing that IPM might be IDE power
+> management? Or intelligent, integrated? Google turns up this email thread
+> as one of the first hits and nothing else conclusive.
 
-Speaking for the Qualcomm MSM folks, we definitely would like to be more 
-active in power management discussions.  I'm hoping to get some of our 
-power experts to attend LPC this year.
+It's interface power management, also called link power management.
+You can check whether it's enabled by
 
-- Bryan
+$ cat /sys/class/scsi_host/host0/link_power_management_policy
+
+If it says max_performance, it's disabled.  If it says anything else,
+it's enabled.
+
+Thanks.
 
 -- 
-Sent by an employee of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+tejun
