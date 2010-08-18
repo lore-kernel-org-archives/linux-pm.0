@@ -1,13 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Wakeup-events implementation
-Date: Wed, 18 Aug 2010 21:17:19 +0200
-Message-ID: <201008182117.19220.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1008181032020.1671-100000@iolanthe.rowland.org>
+From: Paul Fox <pgf@laptop.org>
+Subject: OLPC's power manager
+Date: Wed, 18 Aug 2010 17:36:41 -0400
+Message-ID: <5418.1282167401@foxharp.boston.ma.us>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1008181032020.1671-100000@iolanthe.rowland.org>
+Content-ID: <5415.1282167401.1@foxharp.boston.ma.us>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,229 +16,138 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, August 18, 2010, Alan Stern wrote:
-> On Tue, 17 Aug 2010, Arve Hj=F8nnev=E5g wrote:
-> =
+rafael asked me about OLPC's power management daemon at linuxcon, and
+since people keep mentioning user-level suspend managers, and since
+we have an example of one, this seems like a good time to summarize
+what we currently deploy on the OLPC XO laptops.  our daemon
+("powerd") certainly isn't perfect, but in daily use it works pretty
+well, and has been able to adapt to new needs as well as it can, given
+current limitations in the drivers and our hardware.
 
-> > We don't uncover all bugs during testing before we ship. For instance
-> > the bug could be triggered by a 3db party app, and there is value in
-> > making the system as robust as possible to both driver and user space
-> > bugs.
-> =
+design goals:
+    - fully support XO power saving capabilities, including
+	- system in S3 with display active
+	- wake-on-wlan, and keeping autonomous mesh active during S3
 
-> By that argument, all in-kernel wakelocks should always have a timeout.
-> =
+    - no X11 dependency, including for the (minimal) splash-screen UI.
 
-> What happens if somebody puts down their phone and then puts something =
+    - minimal hal/udev/dbus dependency (largely because my background
+	is in the embedded world, but also simply to reduce unnecessary
+	dependencies).
 
-> on top of it, in such a way that one of the keypad buttons is =
+operation:
+    - events are communicated to the daemon via a named pipe.
 
-> depressed?  If the keypad driver's wakelock doesn't have a timeout then =
+    - user "idleness" is indicated by 4 events:  3 successive idle
+	events, and an "active again" event.  these events are
+	provided by an ancillary system daemon which already monitors
+	all user input in order to support other XO-specific keyboard
+	features.
 
-> the battery would drain quickly.
-> =
+    - the three configurable user-idle timers can be configured to dim
+	the screen, turn off the screen, and enter S3 state, in any
+	order (well, "dim" after "screen off" doesn't make much
+	sense).  three different sets of timers are selected,
+	depending on whether the laptop is externally powered, is on
+	battery, or is being used in "ebook" configuration.
 
-> > >> > Wakeup events that don't reach user space should not need user spa=
-ce
-> > >> > support to reenter suspend.
-> > >>
-> > >> That's debatable.  For example, consider a Wake-On-LAN magic packet.
-> > >> It generally doesn't go anywhere -- it gets dropped once the system =
-is
-> > >> awake.
-> > >
-> > > Yes.  I think every event that would wake up a sleeping system should=
- result
-> > > in unfreezing user space.
-> =
+    - a fourth timer allows for automatic shutdown when the system has
+	been suspended for "long enough".
 
-> In fact they do -- there's almost no way to avoid it.  However, =
+    - the major power inputs -- battery levels, external power
+	insertion, the power button, lid switch, ebook-mode switch --
+	are also communicated by events.
 
-> unfreezing userspace is different from sending a wakeup event to =
+    - wakeups can come from all the usual sources -- keyboard, lid,
+	power subsystem, wlan, etc.  due to h/w limitations, USB ports
+	are unpowered during suspend, and can't cause wakeups.
 
-> userspace.
-> =
+    - a "hard" suspend can be forced with the power button or by
+	closing the lid.  when in this state, those are the only two
+	configured wakeup events.
 
-> The question is whether the kernel should automatically try to
-> re-suspend following a wakeup for which no information was sent to
-> userspace (e.g., WOL).  The alternative, of course, is that the kernel
-> does not try to re-suspend until a power-manager program tells it to.  =
+inhibiting suspend:
+    - applications inhibit suspend by creating pid-named files, or by
+	touching the modtime on a single well-known file -- either
+	will work.  powerd will refuse to do an automatic suspend if
+	any pid-named files exist, or if the touch-file has been
+	touched recently enough.  (abandoned pid-named files are
+	detected and removed, so programs can be wrapped with "touch
+	$$; exec foo" to make them suspend-inhibiting.)
 
-> To me this seems more flexible and general (the PM program can always =
+    - in addition, suspend can be inhibited by:
+	- the presence of certain USB devices (by class, vendor, or
+	    product ID)
+	- elevated CPU activity
+	- camera in use
+	- VT i/o (mostly a developer convenience)
+	- network activity (certain classes of traffic, as detected by
+	    custom iptables rules)
 
-> start a new suspend, whereas there's no way to prevent an automatic =
+current behavior:
+    - current default configuration (on XO-1.5) is fairly aggressive,
+	and puts the system to sleep, leaving the display active, if
+	there has been no user input after 15 seconds.  the display
+	will wake and dim after 3 minutes of inactivity, and will wake
+	and blank after 7 minutes.  the system will shut down after
+	sleeping for 4 hours, unless on external power.
 
-> in-kernel re-suspend).
+    - suspend won't occur if certain types of network traffic have
+	been seen within the previous 5 seconds.  (most outgoing, and
+	some incoming packets)
 
-I agree.
+    - suspend won't occur if the CPU is more than 15% utilized.  many
+	of the XO's important applications are user-created animations
+	(written in Scratch or Etoys), or user-created music, etc. 
+	it's important not to interrupt those when in progress.
 
-> > >> Let's say the interrupt handlers responsible for invoking
-> > >> pm_request_resume use non-nesting calls.  This may happen several
-> > >> times, depending on the wakeup and interrupt delivery mechanism, but
-> > >> the end result is that the counter is incremented only once.  When t=
-he
-> > >> pm_runtime_resume call ends, pm_relax does a single decrement.
-> > >>
-> > >> Meanwhile, the driver uses nesting calls.  It can increment the coun=
-ter
-> > >> as much as it wants, and it has to perform an equal number of
-> > >> decrements.  The key point is that pm_request_resume never gets call=
-ed
-> > >> while the driver has any outstanding pm_stay_awake requests.  Hence =
-the
-> > >> non-nesting calls never got "lost", since the first one is always ma=
-de
-> > >> while the counter is 0.
-> > >>
-> > =
+logging:
+    - to facilitate power optimization, most power-affecting events
+	are logged.  we've thought about possible mechanisms to
+	retrieve these logs, but haven't implemented anything.  (we
+	do request the logs when problematic laptops are reported in
+	the field.)
 
-> > It sounds as if you are saying that the two drivers don't interfere
-> > because one of them always gets there first. In your example if
-> > another interrupt occurs before the second driver still has released
-> > all its references on the counter, the interrupt will (incorrectly)
-> > not increment the count.
-> =
+experience:
+    - we rarely, but definitely, see the suspend vs.  wakeup event
+	race.  since most of our wakeups are user-initiated, usually
+	this just means an extra keystroke.  missed wlan wakeups are
+	worse.  the race is narrowed as much as possible by rechecking
+	the input queue as late as possible, but obviously any kernel
+	mechanism(s) which helped close this hole would help.
 
-> That's right -- one of them always gets there first.  You're also right
-> to suspect that this is an unusual situation.  It arises with USB root
-> hubs because a root hub is the only child of its parent controller
-> device, and the only reason a controller would generate a wakeup
-> request is because the root hub needs to wake up.
-> =
+    - the inhibit heuristics are simple, but simplistic:  staying
+	awake because the cpu is "busy", or because we've seen TCP
+	traffic in the 5 seconds prior to suspend, are both error
+	prone decisions.  few apps have been made suspend-aware -- if
+	we did more of that, the accuracy of the heuristics wouldn't
+	be as critical.
 
-> This means that a root-hub wakeup can be signalled in two different =
+    - since suspends usually happen with an expected wakeup time, they
+	are invoked via "rtcwake -m mem".  this makes rtc wakeups
+	unavailable for other applications.  XO 1.5 has an additional
+	wakeup timer implemented in the EC, which we could potentially
+	use instead.
 
-> ways:
-> =
+    - with the support of a few small helper daemons (that handle user
+	and power input monitoring) which are written in C, powerd is
+	implemented in bourne shell, 99% of which is posix compliant. 
+	(the use of the -t option to the read builtin is the one
+	exception.)  there's no doubt that there are some tasks that
+	would be better implemented in a different language, but
+	there's something to be said for fast prototyping and ease of
+	maintenance.  the use of shell also makes one more part of the
+	laptop "transparent", which fits with its educational role.
 
-> 	If the controller is in low-power then the controller sends its
-> 	wakeup request.  The controller's driver sets the controller
-> 	back to full power, sees that the root hub has needs attention,
-> 	and calls pm_request_resume for the root hub.
-> =
 
-> 	If the controller isn't in low-power then the root hub simply
-> 	generates an IRQ.  The interrupt handler calls =
+repo is here:
+    http://dev.laptop.org/git/users/pgf/powerd
+and the keyboard/touchpad monitor is here:
+    http://dev.laptop.org/git/users/pgf/olpc-kbdshim/
 
-> 	pm_request_resume for the root hub.
-> =
-
-> Depending on how the timing works out, both can occur: The controller
-> gets set to full power and then the IRQ line is signalled before the PM
-> workqueue gets around to resuming the root hub.  I have seen this
-> happen while testing my computer.
-> =
-
-> With a little care, I could avoid calling pm_stay_awake twice.  The =
-
-> code already sets a bitflag before queuing the resume request, and I =
-
-> could use test_and_set_bit instead.  If I did then the non-nesting =
-
-> calls wouldn't be needed at all.  And that was the only case I could
-> think of where the two types of calls might need to be mixed.
-
-That means one corner case less to worry about, good. :-)
-
-> > > I actually like the idea of having two levels of calls, ie. pm_stay_a=
-wake(dev)
-> > > calling something like __pm_stay_awake(handle), where the handle is r=
-ead from
-> > > struct dev_pm_info.  And analogously for pm_relax().
-> > >
-> > > Then, the object associated with the handle might be created when the=
- device
-> > > is enabled to wake up and destroyed when it's disabled to do that.
-> > >
-> > =
-
-> > When multiple drivers use the same device, who creates and destroys the=
- handle?
-> =
-
-> The primary driver (i.e., the one bound to the device) would use the
-> device's handle.  Other drivers would create and use their own separate
-> wakeup structures.
-> =
-
-> But if all the calls are of the "nesting" sort then there's not really
-> any need for multiple structures, other than to help identify which
-> driver is misbehaving when a problem occurs.
-
-Still, IMO we can do that if it would help to narrow the gap between the
-Android kernel and the mainline.
-
-> > Typically a driver puts a wakelock in the state that it already
-> > allocates for each device, so you have a handle for each device/driver
-> > combo that needs to block suspend.
-> =
-
-> You didn't answer my question about which devices have more than one =
-
-> associated wakelock in Android.  Those would be the only cases where =
-
-> the device/driver combo matters.
-> =
-
-> Also, why does Android's MMC core have its own wakelock instead of
-> using a per-device wakelock?
-> =
-
-> > >> Allocating these wakeup structures for all possible wakeup sources
-> > >> would be a big waste.
-> > >
-> > > Indeed.
-> > >
-> > >> On the other hand, a driver generally doesn't
-> > >> know until a suspend starts whether or not its devices should be
-> > >> enabled for wakeup.
-> > =
-
-> > Why? How is the driver notified on suspend that it needs to be enabled
-> > for wakeup.
-> =
-
-> The driver's (or bus subsystem's) suspend routine calls
-> device_may_wakeup(dev) to see whether it should enable dev's wakeup
-> mechanism.  The value returned by device_may_wakeup can change at
-> almost any time, since it is set by userspace.
-> =
-
-> > >> That makes things difficult, especially if you
-> > >> contemplate having multiple structures for each device.  Have you
-> > >> really sat down and thought about what wakelocks would be needed on a
-> > >> general system such as a desktop or laptop machine?
-> > =
-
-> > No, I don't know what wakelocks are needed on a general system, but
-> > you need code to turn the wakeup events on and off events anyway, so I
-> > assume allocating a handle for the wakeup event is possible.
-> =
-
-> Yes.  However system suspend is generally not a good time to go around =
-
-> allocating new structures; memory tends to be tight then.
-
-Well, that's what I wanted to do originally in pm_stay_awake(), but you
-convinced me it was avoidable. :-)
-
-> I suppose it might be acceptable to do this during the "prepare" phase of
-> system suspend.
-
-I generally think it would make sense to allocate a structure, call it stru=
-ct
-wakeup_source for now, for each device or whatever part of the system that =
-we
-want to treat as a wakeup source and put all of the statistics in there.
-
-For devices it would be pretty straightforward, the structure is allocated =
-as
-soon as the device is enabled to wakeup and freed when it is disabled.  In =
-the
-other cases it would have to depend on the usage scenario, I guess.
-
-Rafael
+paul
+=---------------------
+ paul fox, pgf@laptop.org
