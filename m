@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [Regression,
 	2.6.36-rc1] ath9k resume problem on Acer Ferrari One
-Date: Thu, 19 Aug 2010 22:17:14 +0200
-Message-ID: <201008192217.14774.rjw__41476.3732151643$1282251144$gmane$org@sisk.pl>
-References: <201008190001.11342.rjw@sisk.pl> <4C6D3D5C.7010504@kernel.org>
-	<4C6D3E49.7080601@gmail.com>
+Date: Thu, 19 Aug 2010 23:07:24 +0200
+Message-ID: <201008192307.24867.rjw__10144.5985529155$1282252265$gmane$org@sisk.pl>
+References: <201008190001.11342.rjw@sisk.pl> <201008192231.01722.rjw@sisk.pl>
+	<20100819204216.GD14497@tux>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C6D3E49.7080601@gmail.com>
+In-Reply-To: <20100819204216.GD14497@tux>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,18 +19,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <htejun@gmail.com>
-Cc: ath9k-devel@venema.h4ckr.net, Luis Rodriguez <lrodriguez@atheros.com>, linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: "ath9k-devel@venema.h4ckr.net" <ath9k-devel@venema.h4ckr.net>, "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Luis Rodriguez <Luis.Rodriguez@atheros.com>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, August 19, 2010, Tejun Heo wrote:
-> Oh, can you also please attach log of the BUG()?
+On Thursday, August 19, 2010, Luis R. Rodriguez wrote:
+> On Thu, Aug 19, 2010 at 01:31:01PM -0700, Rafael J. Wysocki wrote:
+> > On Thursday, August 19, 2010, Tejun Heo wrote:
+> > > Hello,
+> > > 
+> > > On 08/19/2010 04:05 PM, Rafael J. Wysocki wrote:
+> > > > On Thursday, August 19, 2010, Tejun Heo wrote:
+> > > >> Hello, Rafael.
+> > > >>
+> > > >> On 08/19/2010 12:01 AM, Rafael J. Wysocki wrote:
+> > > >>> While testing 2.6.36-rc1 (with a couple of fixes on top) I noticed
+> > > >>> that the ath9k driver didn't work after resume from suspend to RAM.
+> > > >>> An attempt to unload the driver using rmmod caused the BUG_ON() in
+> > > >>> kernel/workqueue.c:2844 to trigger.
+> > > >>
+> > > >> That BUG_ON() triggers if destroy_workqueue() is called while work
+> > > >> items are still pending on the workqueue.  Can you please trigger
+> > > >> stack traces after resume and post it?
+> > > > 
+> > > > Do you mean sysrq-t?
+> > > 
+> > > Yeah, I'm a bit confused regarding what's going on.  I thought the
+> > > most likely cause is thawing failing to kick a frozen workqueue into
+> > > working state but then flush_workqueue() which is called from
+> > > destroy_workqueue() should have hung too, that is, unless
+> > > flush_workqueue() is broken too.  If flush_workqueue() is not broken,
+> > > then it could be that workqueue itself isn't at fault and works are
+> > > being scheduled and executed fine for the workqueue ath9k is using but
+> > > the driver doesn't work for another reason.
+> > > 
+> > > Also, the BUG_ON() being triggered means either flush_workqueue() is
+> > > broken or the driver is failing to stop works on the workqueue from
+> > > being requeued before calling destroy_workqueue().  So, finding out
+> > > the followings would be great,
+> > > 
+> > > * While the driver isn't working, do a sysrq-t and see whether any
+> > >   worker is executing a work for ath9k.
+> > > 
+> > > * Repeat it several times and see whether the work is stuck or making
+> > >   progress and/or executing on different workers.
+> > 
+> > Actaully, I'm unable to reproduce the resume issue with current mainline
+> > (HEAD = 763008c4357b73c8d18396dfd8d79dc58fa3f99d), so I guess it either is
+> > a race (or another timing issue), or it's been fixed by one of the patches on
+> > top of -rc1.
+> > 
+> > I'll let you know if I see it again.
+> 
+> To be clear, this is a non-issue now until further notice, ACK?
 
-That's difficult, because I have no way to collect it after it's happened.
+Yep.
 
-I can try to convert it to WARN_ON or rewrite the call trace by hand.
-
-Or I may try to make a photo. :-)
-
-Thanks,
 Rafael
