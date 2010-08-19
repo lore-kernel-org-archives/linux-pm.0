@@ -1,49 +1,73 @@
-From: Stephan Diestelhorst <stephan.diestelhorst@amd.com>
-Subject: Re: [PATCH] SATA / AHCI: Do not play with the link PM during suspend to RAM
-Date: Thu, 19 Aug 2010 18:23:57 +0200
-Message-ID: <201008191823.57915.stephan.diestelhorst@amd.com>
-References: <201007091750.05020.stephan.diestelhorst@amd.com> <AANLkTin2XPHXL_o9hHz9f4beTYEx+isX+PaFRkMMiYHQ@mail.gmail.com> <4C6B79C8.7080602@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Regression,
+	2.6.36-rc1] ath9k resume problem on Acer Ferrari One
+Date: Thu, 19 Aug 2010 22:31:01 +0200
+Message-ID: <201008192231.01722.rjw__42979.2838906453$1282250020$gmane$org@sisk.pl>
+References: <201008190001.11342.rjw@sisk.pl> <201008191605.08053.rjw@sisk.pl>
+	<4C6D3D5C.7010504@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <4C6B79C8.7080602@gmail.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: Tejun Heo <htejun@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, Stephan Diestelhorst <stephan.diestelhorst@gmail.com>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <4C6D3D5C.7010504@kernel.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Tejun Heo <tj@kernel.org>
+Cc: ath9k-devel@venema.h4ckr.net, Luis Rodriguez <lrodriguez@atheros.com>, linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Tejun,
-
-On Wednesday 18 August 2010, 08:12:24 Tejun Heo wrote:
-> On 08/17/2010 11:28 PM, Stephan Diestelhorst wrote:
-> > 2010/8/17 Tejun Heo <htejun@gmail.com>:
-> >> On 08/17/2010 12:51 PM, Stephan Diestelhorst wrote:
-> >>> I've also confirmed that the "XXX ahci_set_ipm" is present in
-> >>> libahci.ko. So either I've screwed up badly when compiling the initrd,
-> >>> the code is not executed or the printout does not make it into any
-> >>> logfile anymore.
+On Thursday, August 19, 2010, Tejun Heo wrote:
+> Hello,
+> 
+> On 08/19/2010 04:05 PM, Rafael J. Wysocki wrote:
+> > On Thursday, August 19, 2010, Tejun Heo wrote:
+> >> Hello, Rafael.
 > >>
-> >> Yeah, that's weird.  You're enabling IPM, right?
->
-> You can check whether it's enabled by
+> >> On 08/19/2010 12:01 AM, Rafael J. Wysocki wrote:
+> >>> While testing 2.6.36-rc1 (with a couple of fixes on top) I noticed
+> >>> that the ath9k driver didn't work after resume from suspend to RAM.
+> >>> An attempt to unload the driver using rmmod caused the BUG_ON() in
+> >>> kernel/workqueue.c:2844 to trigger.
+> >>
+> >> That BUG_ON() triggers if destroy_workqueue() is called while work
+> >> items are still pending on the workqueue.  Can you please trigger
+> >> stack traces after resume and post it?
+> > 
+> > Do you mean sysrq-t?
 > 
-> $ cat /sys/class/scsi_host/host0/link_power_management_policy
+> Yeah, I'm a bit confused regarding what's going on.  I thought the
+> most likely cause is thawing failing to kick a frozen workqueue into
+> working state but then flush_workqueue() which is called from
+> destroy_workqueue() should have hung too, that is, unless
+> flush_workqueue() is broken too.  If flush_workqueue() is not broken,
+> then it could be that workqueue itself isn't at fault and works are
+> being scheduled and executed fine for the workqueue ath9k is using but
+> the driver doesn't work for another reason.
 > 
-> If it says max_performance, it's disabled.  If it says anything else,
-> it's enabled.
+> Also, the BUG_ON() being triggered means either flush_workqueue() is
+> broken or the driver is failing to stop works on the workqueue from
+> being requeued before calling destroy_workqueue().  So, finding out
+> the followings would be great,
+> 
+> * While the driver isn't working, do a sysrq-t and see whether any
+>   worker is executing a work for ath9k.
+> 
+> * Repeat it several times and see whether the work is stuck or making
+>   progress and/or executing on different workers.
 
-It says "max_performance", I have not touched anyhting. So it has been
-like that all the time. Would this explain why your patch did not show
-the debug printout?
+Actaully, I'm unable to reproduce the resume issue with current mainline
+(HEAD = 763008c4357b73c8d18396dfd8d79dc58fa3f99d), so I guess it either is
+a race (or another timing issue), or it's been fixed by one of the patches on
+top of -rc1.
+
+I'll let you know if I see it again.
 
 Thanks,
-  Stephan
--- 
-Stephan Diestelhorst, AMD Operating System Research Center
-stephan.diestelhorst@amd.com, Tel. +49 (0)351 448 356 719
-
-Advanced Micro Devices GmbH Einsteinring 24 85609 Dornach
-General Managers: Alberto Bozzo, Andrew Bowd
-Registration: Dornach, Landkr. Muenchen; Registerger. Muenchen, HRB Nr. 43632
-
+Rafael
