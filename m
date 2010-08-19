@@ -1,14 +1,16 @@
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [Regression,
-	2.6.36-rc1] ath9k resume problem on Acer Ferrari One
-Date: Wed, 18 Aug 2010 18:00:47 -0700
-Message-ID: <AANLkTi=S3JE=1J9xQtBAN5hHTqGSfohi4vL82iZHMWp+__13938.8374555439$1282229153$gmane$org@mail.gmail.com>
-References: <201008190001.11342.rjw@sisk.pl>
+From: "Basak, Partha" <p-basak2@ti.com>
+Subject: Re: [PATCH] PM: runtime PM + idle: allow usage when
+ interrupts are disabled
+Date: Thu, 19 Aug 2010 16:32:23 +0530
+Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301E82ACD17__31779.6766678386$1282229295$gmane$org@dbde02.ent.ti.com>
+References: <1281459261-30829-1-git-send-email-khilman@deeprootsystems.com>
+	<201008162318.03923.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201008190001.11342.rjw@sisk.pl>
+In-Reply-To: <201008162318.03923.rjw@sisk.pl>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,27 +20,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ath9k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Kevin Hilman <khilman@deeprootsystems.com>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Ming@smtp1.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBBdWcgMTgsIDIwMTAgYXQgMzowMSBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0Bz
-aXNrLnBsPiB3cm90ZToKPiBIaSwKPgo+IFdoaWxlIHRlc3RpbmcgMi42LjM2LXJjMSAod2l0aCBh
-IGNvdXBsZSBvZiBmaXhlcyBvbiB0b3ApCgpXaGljaCBjb3VwbGUgb2YgZml4ZXM/Cgo+IEkgbm90
-aWNlZCB0aGF0IHRoZSBhdGg5awo+IGRyaXZlciBkaWRuJ3Qgd29yayBhZnRlciByZXN1bWUgZnJv
-bSBzdXNwZW5kIHRvIFJBTS4KClRvIHJ1bGUgb3V0IGlmIGl0cyBhbiBhdGg5ayBpc3N1ZSB5b3Ug
-Y2FuIHRyeQpjb21wYXQtd2lyZWxlc3MtMi42LjM2LXJjMSBmcm9tIGhlcmU6CgpodHRwOi8vd2ly
-ZWxlc3Mua2VybmVsLm9yZy9lbi91c2Vycy9Eb3dubG9hZC9zdGFibGUvCgphbmQgaW5zdGFsbCBp
-dCBvbiBhbiBvbGRlciBrZXJuZWwsIHlvdSBjYW4gdXNlIC4vc2NyaXB0cy9kcml2ZXItc2VsZWN0
-CnRvIG9ubHkgZW5hYmxlIGF0aDlrIHRvIGNvbXBpbGUuCgpJJ3ZlIGJlZW4gdXNpbmcgcG0tc3Vz
-cGVuZCBvbiB0aGlzIHJlbGVhc2UgZm9yIGEgZmV3IGRheXMgbm93IHdpdGhvdXQKYW55IGlzc3Vl
-IGJ1dCBJIGFtIHVzaW5nIGFuIEFSOTAwMyBjaGlwc2V0LiBXaGF0IGNoaXBzZXQgYXJlIHlvdQp1
-c2luZz8gQ2FuIHlvdSBwcm92aWRlIHRoZSBkbWVzZyBvdXRwdXQgdXBvbiBtb2R1bGUgbG9hZD8K
-Cj4gwqBBbiBhdHRlbXB0IHRvIHVubG9hZCB0aGUKPiBkcml2ZXIgdXNpbmcgcm1tb2QgY2F1c2Vk
-IHRoZSBCVUdfT04oKSBpbiBrZXJuZWwvd29ya3F1ZXVlLmM6Mjg0NCB0byB0cmlnZ2VyLgoKVGhh
-dCdzIGEgYnVnLCBhIHJlZ3Jlc3Npb24gbGlrZWx5LgoKPiBJIHdvbmRlciBpZiB0aGF0IHJlZ3Jl
-c3Npb24gaXMgYSByZXN1bHQgb2YgdGhlIHJlY2VudCB3b3JrcXVldWUgY2hhbmdlcz8KClllYWgg
-dmVyeSBsaWtlbHkuCgogIEx1aXMKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZv
-dW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9s
-aXN0aW5mby9saW51eC1wbQ==
+
+
+> -----Original Message-----
+> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
+> owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
+> Sent: Tuesday, August 17, 2010 2:48 AM
+> To: Kevin Hilman
+> Cc: linux-pm@lists.linux-foundation.org; linux-omap@vger.kernel.org; Alan
+> Stern; Ming Lei
+> Subject: Re: [linux-pm] [PATCH] PM: runtime PM + idle: allow usage when
+> interrupts are disabled
+> 
+> On Tuesday, August 10, 2010, Kevin Hilman wrote:
+> > When using runtime PM in combination with CPUidle, the runtime PM
+> > transtions of some devices may be triggered during the idle path.
+> > Late in the idle sequence, interrupts will likely be disabled when
+> > runtime PM for these devices is initiated.
+> >
+> > Currently, the runtime PM core assumes methods are called with
+> > interrupts enabled.  However, if it is called with interrupts
+> > disabled, the internal locking unconditionally enables interrupts, for
+> > example:
+> >
+> > pm_runtime_put_sync()
+> 
+> Please don't use that from interrupt context.  There's pm_runtime_put()
+> exactly for this purpose that puts the _idle() call into a workqueue.
+
+Rafael, we execute this little before executing idle instruction with interrupts locked. So, we cannot call pm_runtime_put() as we want it to take effect immediately.
+Kevin??
+
+> 
+> >     __pm_runtime_put()
+> >         pm_runtime_idle()
+> >             spin_lock_irq()
+> >             __pm_runtime_idle()
+> >                 spin_unlock_irq()   <--- interrupts unconditionally
+> enabled
+> 
+> That's because __pm_runtime_idle() has to be called from process context.
+> 
+> >                 dev->bus->pm->runtime_idle()
+> >                 spin_lock_irq()
+> >              spin_unlock_irq()
+> 
+> Thanks,
+> Rafael
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
