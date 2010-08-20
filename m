@@ -1,14 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: runtime PM + idle: allow usage when
- interrupts are disabled
-Date: Fri, 20 Aug 2010 10:14:01 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1008201006430.1716-100000__37734.5624300235$1282313697$gmane$org@iolanthe.rowland.org>
-References: <87lj82gujm.fsf@deeprootsystems.com>
+Subject: Re: Wakeup-events implementation
+Date: Fri, 20 Aug 2010 11:04:42 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1008201051490.1716-100000@iolanthe.rowland.org>
+References: <AANLkTi=AA+LMjo+M+funMd51JY1AGSW9=Lo-rrYu07Eg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87lj82gujm.fsf@deeprootsystems.com>
+In-Reply-To: <AANLkTi=AA+LMjo+M+funMd51JY1AGSW9=Lo-rrYu07Eg@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,42 +17,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 19 Aug 2010, Kevin Hilman wrote:
+On Thu, 19 Aug 2010, Arve Hj=F8nnev=E5g wrote:
 
-> > In any case, I don't really like this change.  It seems that we would
-> > be better off preventing the runtime PM calls from occurring in the
-> > first place while interrupts are disabled.  
-> 
-> Why? 
+> > Okay. =A0Nevertheless, you maintain debugging info in case a driver bug
+> > causes a wakelock not to be released. =A0If the wakelocks all had
+> > timeouts then a bug of that sort wouldn't be able to affect battery
+> > life very much. =A0So why not add the timeouts?
+> >
+> =
 
-Because that's how the Runtime PM framework was designed.  Drivers 
-expect interrupts to be enabled when their runtime PM callbacks are 
-invoked.  And the framework internally depends on it as well.
+> Because we can't. I just described how the keypad driver would break
+> we just add a timeout to its wakelock. Other drivers, like the usb
+> gadget driver may need to block suspend for an extended time period.
 
-> > In fact, it's hard to see what could cause this to happen at all.
-> 
-> As I mentioned in the changelog, this happens when trying to use runtime
-> PM in combination with CPUidle.  As has been suggested elsewhere[1],
-> there is a need to do runtime PM on some devices in combination with CPU
-> idle transitions managed by CPUidle.  However, late in the idle path,
-> at the time we want to manage these IO devices, interrupts are disabled.
+Some wakelocks can't use timeouts because they may have to be held for =
 
-Then it isn't really feasible to use the runtime PM framework for those 
-devices.  Not unless the framework is extended with new functions meant 
-to be used without interrupts enabled (in which case it doesn't seem to 
-matter much whether you are in process context or not).
+extended periods.  But the others could have timeouts.
 
-> Currently, on OMAP, we are already managing the power state of certain
-> IO devices along with CPUidle transitions using more brute force
-> methods.  IMO, using runtime PM for this would be a much cleaner
-> approach.  The only obstacle is the assumption that the API must be
-> called with interrupts enabled.
+> > How much degradation do you think you would observe if in-kernel
+> > wakelocks _always_ used timeouts alone and _never_ were cancelled?
+> >
+> =
 
-That's a big obstacle.  Why can't you manage these devices earlier, 
-while interrupts are still enabled?
+> I don't think that is an option. We have kernel wakelocks that need to
+> be held while the device is in a specific state.
+
+Yes, but what about all the others?  What I'm getting at is whether
+it's feasible for each wakelock to be exclusively used either with
+timeouts or cancellations, but never both.
+
+> > In theory this is insufficient -- it doesn't handle the case where one
+> > MMC device is enabled for wakeup and another isn't. =A0I assume you don=
+'t
+> > really care about this (especially since Android phones aren't likely
+> > to have more than one MMC device capable of generating wakeup events).
+> >
+> =
+
+> I'm not sure what you mean by insufficient here. If it not optimal if
+> you also have work that does not need to prevent suspend, but it
+> should still work correctly.
+
+Yeah, that's what I meant.  You would end up blocking suspends =
+
+unnecessarily.  It's okay if it doesn't happen very often.
+
+> >> It would be better to allocate the structure when user space changes
+> >> the setting. If you wait until suspend before blocking suspend you may
+> >> have passed the event on already.
+> >
+> > That will work for the structure directly associated with the device.
+> > Additional structures allocated by the drivers have to be handled
+> > differently, because the drivers aren't notified when the wakeup-enable
+> > setting is changed.
+> >
+> =
+
+> I'm not convinced that is it sufficient to detect that a device is
+> wakeup-enabled on suspend.
+
+It isn't.
+
+>  However it is not a problem I have tried to
+> solve since we have only used static wakeup sources.
+
+Well, we may need to solve it eventually.  One possible solution is to =
+
+imitate what you're doing with MMC: Use a single per-driver wakelock =
+
+instead of separate wakelocks for each driver/device combination.  I =
+
+don't know if that would work for all the cases, though.
 
 Alan Stern
