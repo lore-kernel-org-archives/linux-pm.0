@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/10] ACPI / PCI: Reorder checks in
-	acpi_pci_osc_control_set()
-Date: Sat, 21 Aug 2010 01:52:37 +0200
-Message-ID: <201008210152.37415.rjw__7442.75051770291$1282349319$gmane$org@sisk.pl>
+Subject: [PATCH 2/10] PCI / PCIe: Introduce commad line switch
+	for disabling port services
+Date: Sat, 21 Aug 2010 01:51:44 +0200
+Message-ID: <201008210151.44353.rjw__43053.3664919951$1282349439$gmane$org@sisk.pl>
 References: <201008060303.51224.rjw@sisk.pl> <201008210149.39576.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,41 +24,90 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Make acpi_pci_osc_control_set() attempt to find the handle of the
-_OSC object under the given PCI root bridge object after verifying
-that its second argument is correct and that there is a struct
-acpi_pci_root object for the given root bridge handle, which is
-more logical than the old code.
+Introduce kernel command line switch pcie_ports= allowing one to
+disable all of the native PCIe port services, so that PCIe ports
+are treated like PCI-to-PCI bridges.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reviewed-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 ---
- drivers/acpi/pci_root.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ Documentation/kernel-parameters.txt |    4 ++++
+ drivers/pci/pcie/portdrv.h          |    2 ++
+ drivers/pci/pcie/portdrv_core.c     |    3 +++
+ drivers/pci/pcie/portdrv_pci.c      |   15 +++++++++++++++
+ 4 files changed, 24 insertions(+)
 
-Index: linux-2.6/drivers/acpi/pci_root.c
+Index: linux-2.6/drivers/pci/pcie/portdrv_pci.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/pci_root.c
-+++ linux-2.6/drivers/acpi/pci_root.c
-@@ -378,10 +378,6 @@ acpi_status acpi_pci_osc_control_set(acp
- 	acpi_handle tmp;
- 	struct acpi_pci_root *root;
+--- linux-2.6.orig/drivers/pci/pcie/portdrv_pci.c
++++ linux-2.6/drivers/pci/pcie/portdrv_pci.c
+@@ -29,6 +29,18 @@ MODULE_AUTHOR(DRIVER_AUTHOR);
+ MODULE_DESCRIPTION(DRIVER_DESC);
+ MODULE_LICENSE("GPL");
  
--	status = acpi_get_handle(handle, "_OSC", &tmp);
--	if (ACPI_FAILURE(status))
--		return status;
--
- 	control_req = (flags & OSC_PCI_CONTROL_MASKS);
- 	if (!control_req)
- 		return AE_TYPE;
-@@ -390,6 +386,10 @@ acpi_status acpi_pci_osc_control_set(acp
- 	if (!root)
- 		return AE_NOT_EXIST;
- 
-+	status = acpi_get_handle(handle, "_OSC", &tmp);
-+	if (ACPI_FAILURE(status))
-+		return status;
++/* If this switch is set, PCIe port native services should not be enabled. */
++bool pcie_ports_disabled;
 +
- 	mutex_lock(&osc_lock);
- 	/* No need to evaluate _OSC if the control was already granted. */
- 	if ((root->osc_control_set & control_req) == control_req)
++static int __init pcie_port_setup(char *str)
++{
++	if (!strncmp(str, "compat", 6))
++		pcie_ports_disabled = true;
++
++	return 1;
++}
++__setup("pcie_ports=", pcie_port_setup);
++
+ /* global data */
+ 
+ static int pcie_portdrv_restore_config(struct pci_dev *dev)
+@@ -301,6 +313,9 @@ static int __init pcie_portdrv_init(void
+ {
+ 	int retval;
+ 
++	if (pcie_ports_disabled)
++		return -EACCES;
++
+ 	dmi_check_system(pcie_portdrv_dmi_table);
+ 
+ 	retval = pcie_port_bus_register();
+Index: linux-2.6/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.orig/Documentation/kernel-parameters.txt
++++ linux-2.6/Documentation/kernel-parameters.txt
+@@ -1974,6 +1974,10 @@ and is between 256 and 4096 characters. 
+ 		force	Enable ASPM even on devices that claim not to support it.
+ 			WARNING: Forcing ASPM on may cause system lockups.
+ 
++	pcie_ports=	[PCIE] PCIe ports handling:
++		compat	Treat PCIe ports as PCI-to-PCI bridges, disable the PCIe
++			ports driver.
++
+ 	pcie_pme=	[PCIE,PM] Native PCIe PME signaling options:
+ 			Format: {auto|force}[,nomsi]
+ 		auto	Use native PCIe PME signaling if the BIOS allows the
+Index: linux-2.6/drivers/pci/pcie/portdrv.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/portdrv.h
++++ linux-2.6/drivers/pci/pcie/portdrv.h
+@@ -20,6 +20,8 @@
+ 
+ #define get_descriptor_id(type, service) (((type - 4) << 4) | service)
+ 
++extern bool pcie_ports_disabled;
++
+ extern struct bus_type pcie_port_bus_type;
+ extern int pcie_port_device_register(struct pci_dev *dev);
+ #ifdef CONFIG_PM
+Index: linux-2.6/drivers/pci/pcie/portdrv_core.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/portdrv_core.c
++++ linux-2.6/drivers/pci/pcie/portdrv_core.c
+@@ -494,6 +494,9 @@ static void pcie_port_shutdown_service(s
+  */
+ int pcie_port_service_register(struct pcie_port_service_driver *new)
+ {
++	if (pcie_ports_disabled)
++		return -ENODEV;
++
+ 	new->driver.name = (char *)new->name;
+ 	new->driver.bus = &pcie_port_bus_type;
+ 	new->driver.probe = pcie_port_probe_service;
