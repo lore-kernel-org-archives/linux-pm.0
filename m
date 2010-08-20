@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Fan runs full speed after S3 sometimes (regression)
-Date: Sat, 21 Aug 2010 01:30:03 +0200
-Message-ID: <201008210130.03280.rjw__6598.49859443984$1282347106$gmane$org@sisk.pl>
-References: <4C613619.30309@gmail.com> <20100820063107.GB1607@ucw.cz>
-	<4C6E233A.5000209@gmail.com>
+Subject: Re: [PATCH 1/2] PM: Compress hibernation image with LZO
+Date: Sat, 21 Aug 2010 01:32:58 +0200
+Message-ID: <201008210132.58393.rjw@sisk.pl>
+References: <1281407348.2618.52.camel@shrek.rexursive.com>
+	<1282211375.17635.96.camel@shrek.rexursive.com>
+	<1282216262.17635.127.camel@shrek.rexursive.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C6E233A.5000209@gmail.com>
+In-Reply-To: <1282216262.17635.127.camel@shrek.rexursive.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,42 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-acpi@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Bojan Smojver <bojan@rexursive.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, August 20, 2010, Jiri Slaby wrote:
-> On 08/20/2010 08:31 AM, Pavel Machek wrote:
-> > On Tue 2010-08-10 20:39:44, Jiri Slaby wrote:
-> >> On 08/10/2010 01:20 PM, Jiri Slaby wrote:
-> >>> Hi,
-> >>>
-> >>> till I was running on 2.6.34-rc5-mm1 (mmotm) and earlier everything was
-> >>> fine. Now, I'm running 2.6.35-rc6-mm1 (.35-rc5-mm1 was the same) and
-> >>> sometimes when the computer (desktop) returns from S3, the CPU fan is
-> >>> running at full speed making a big noise.
-> >>
-> >> Just to add, full power cycle is needed to get rid of that. Warm reboot
-> >> is not enough.
-> > 
-> > Seems like bios problem... Update bios?
+On Thursday, August 19, 2010, Bojan Smojver wrote:
+> On Thu, 2010-08-19 at 19:49 +1000, Bojan Smojver wrote:
+> > I still have to see about Kconfig selects. Will
+> > get back to you on this 
 > 
-> I don't think so, it had been working for more than 2 years before this
-> issue appeared.
+> For instance, we have this:
+> ---------------------
+> config JFFS2_LZO
+>         bool "JFFS2 LZO compression support" if JFFS2_COMPRESSION_OPTIONS
+>         select LZO_COMPRESS
+>         select LZO_DECOMPRESS
+>         depends on JFFS2_FS
+>         default n
+>         help
+>           minilzo-based compression. Generally works better than Zlib.
 > 
-> >>> I don't know how to debug that. Bisection is out of question -- it
-> >>> happens once in 10 or 20 cases. There are no fan entries in /sys.
-> > 
-> > Well, doing 20 suspends in a row from a script should not be too bad.
-> 
-> 20 is just a guess. I haven't seen it for pretty few days until the day
-> before yesterday. And it looks like CPU1 is brought up a half way. When
-> the fan was at full speed I tried:
-> echo 0 > /sys/devices/system/cpu/cpu1/online
-> and whole system freezed. Otherwise this commands succeeds.
-> 
-> I'll load a crash kernel prior turning the CPU off next time.
+>           This feature was added in July, 2007. Say 'N' if you need
+>           compatibility with older bootloaders or kernels.
+> ---------------------
 
-You can also try to use RTC wakealarm to run suspend/resume in a tight loop.
+Actually I think it's preferable to select CRYPTO_LZO that will then select
+everything as necessary.
 
+Thanks,
 Rafael
