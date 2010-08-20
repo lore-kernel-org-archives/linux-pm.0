@@ -1,15 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/2] PM: Compress hibernation image with LZO
-Date: Sat, 21 Aug 2010 01:36:26 +0200
-Message-ID: <201008210136.27065.rjw@sisk.pl>
-References: <1281407348.2618.52.camel@shrek.rexursive.com>
-	<1282211375.17635.96.camel@shrek.rexursive.com>
-	<1282306269.3120.9.camel@shrek.rexursive.com>
+Subject: [PATCH 0/10] ACPI / PCI / PCIe: Rework _OSC handling (v4)
+Date: Sat, 21 Aug 2010 01:49:39 +0200
+Message-ID: <201008210149.39576.rjw__23175.0808925883$1282348955$gmane$org@sisk.pl>
+References: <201008060303.51224.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1282306269.3120.9.camel@shrek.rexursive.com>
+In-Reply-To: <201008060303.51224.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,54 +17,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Bojan Smojver <bojan@rexursive.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, August 20, 2010, Bojan Smojver wrote:
-> On Thu, 2010-08-19 at 19:49 +1000, Bojan Smojver wrote:
-> > Not tested, but here it is
-> 
-> This one is tested with both nocompress option passed to the kernel and
-> without. Only one minor change compared to the previous patch -
-> calculation in enough_swap() also takes into account the compress v.
-> nocompress.
+Hi,
+ 
+This is the 4th iteration of the patchset based on
+https://patchwork.kernel.org/patch/114917/ and the comments I received on that
+patch and the previous three iterations of this patchset.
+ 
+[1/10] - Introduce pci_aer_available() allowing the caller to check if the
+         AER service driver should be enabled.
+ 
+[2/10] - Introduce kernel command line switch pcie_ports=.
+ 
+[3/10] - Reorder checks in acpi_pci_osc_control_set().
 
-OK, it generally looks good.
+[4/10] - Make acpi_pci_query_osc() return control bits obtained from the BIOS.
 
->  Documentation/power/swsusp.txt |    3 +-
->  kernel/power/Kconfig           |    2 +
->  kernel/power/hibernate.c       |   10 ++
->  kernel/power/power.h           |    1 +
->  kernel/power/swap.c            |  288 +++++++++++++++++++++++++++++++++++++++-
->  5 files changed, 296 insertions(+), 8 deletions(-)
-> 
-> diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
-> index 9d60ab7..986dcf5 100644
-> --- a/Documentation/power/swsusp.txt
-> +++ b/Documentation/power/swsusp.txt
-> @@ -66,7 +66,8 @@ swsusp saves the state of the machine into active swaps and then reboots or
->  powerdowns.  You must explicitly specify the swap partition to resume from with
->  ``resume='' kernel option. If signature is found it loads and restores saved
->  state. If the option ``noresume'' is specified as a boot parameter, it skips
-> -the resuming.
-> +the resuming. If the option ``nocompress'' is specified as a boot parameter, it
-> +saves hibernation image without compression.
->  
->  In the meantime while the system is suspended you should not add/remove any
->  of the hardware, write to the filesystems, etc.
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index ca6066a..cb57eb9 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -137,6 +137,8 @@ config SUSPEND_FREEZER
->  config HIBERNATION
->  	bool "Hibernation (aka 'suspend to disk')"
->  	depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
-> +	select LZO_COMPRESS
-> +	select LZO_DECOMPRESS
+[5/10] - Do not cache _OSC query results.
 
-As I wrote, I think it's better to select CRYPTO_LZO here.
+[6/10] - Negotiate _OSC control bits before requesting control from the BIOS.
 
+[7/10] - Rework the PCIe port driver to request _OSC control for all serives at
+          once (that also affects ASPM now, Matthew please check).
+
+[8/10] - Disable PCIe port services (that might be enabled by the BIOS) during
+          initialization.
+
+[9/10] - Move the PCIe PME code to drivers/pci/pcie/.
+
+[10/10] - Remove the PCIe port driver modules exit function.
+
+Comments welcome.
+ 
 Thanks,
 Rafael
