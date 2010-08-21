@@ -1,15 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Fan runs full speed after S3 sometimes (regression)
-Date: Sat, 21 Aug 2010 19:05:51 +0200
-Message-ID: <20100821170551.GA27159__42317.3765339472$1282410547$gmane$org@elf.ucw.cz>
-References: <4C613619.30309@gmail.com> <4C619CF0.30609@gmail.com>
-	<20100820063107.GB1607@ucw.cz> <4C6E233A.5000209@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 7/10] PCI / PCIe: Ask BIOS for control of all
+	native services at once (v7)
+Date: Sat, 21 Aug 2010 22:02:38 +0200
+Message-ID: <201008212202.39084.rjw__27974.3948289708$1282421125$gmane$org@sisk.pl>
+References: <201008060303.51224.rjw@sisk.pl> <201008210149.39576.rjw@sisk.pl>
+	<201008210156.45644.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4C6E233A.5000209@gmail.com>
+In-Reply-To: <201008210156.45644.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,41 +19,87 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-acpi@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> >>> till I was running on 2.6.34-rc5-mm1 (mmotm) and earlier everything was
-> >>> fine. Now, I'm running 2.6.35-rc6-mm1 (.35-rc5-mm1 was the same) and
-> >>> sometimes when the computer (desktop) returns from S3, the CPU fan is
-> >>> running at full speed making a big noise.
-> >>
-> >> Just to add, full power cycle is needed to get rid of that. Warm reboot
-> >> is not enough.
-> > 
-> > Seems like bios problem... Update bios?
+On Saturday, August 21, 2010, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> I don't think so, it had been working for more than 2 years before this
-> issue appeared.
-
-Well; if it survives warm reboot, then it looks like BIOS problem...
-
-> >>> I don't know how to debug that. Bisection is out of question -- it
-> >>> happens once in 10 or 20 cases. There are no fan entries in /sys.
-> > 
-> > Well, doing 20 suspends in a row from a script should not be too bad.
+> PCIe port service drivers ask the BIOS, through _OSC, for control of
+> the services they handle.  Unfortunately, each of them individually
+> asks for control of the PCIe capability structure and if that is
+> granted, some BIOSes expect that the other PCIe port services will be
+> configured and handled by the kernel as well.  If that is not the
+> case (eg. one of the PCIe port service drivers is not loaded), the
+> BIOS may be confused and may cause the system as a whole to misbehave
+> (eg. on one of such systems enabling the native PCIe PME service
+> without loading the native PCIe hot-plug service driver causes a
+> storm of ACPI notify requests to appear).
 > 
-> 20 is just a guess. I haven't seen it for pretty few days until the day
-> before yesterday. And it looks like CPU1 is brought up a half way. When
-> the fan was at full speed I tried:
-> echo 0 > /sys/devices/system/cpu/cpu1/online
-> and whole system freezed. Otherwise this commands succeeds.
+> For this reason rework the PCIe port driver so that (1) it checks
+> which native PCIe port services can be enabled, according to the
+> BIOS, and (2) it requests control of all these services
+> simultaneously.  In particular, this causes pcie_portdrv_probe() to
+> fail if the BIOS refuses to grant control of the PCIe capability
+> structure, which means that no native PCIe port services can be
+> enabled for the PCIe root complex the given port belongs to.
+> 
+> Make it possible to override this behavior using 'pcie_ports=native'
+> (use the PCIe native services regardless of the BIOS response to the
+> control request), or 'pcie_ports=compat' (do not use the PCIe native
+> services at all).
+> 
+> Accordingly, rework the existing PCIe port service drivers so that
+> they don't request control of the services directly.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
 
-Ok, so this looks like the kernel problem, on the other hand. Two
-different problems?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Well, yesterday I thought the old changelog would be fine, but I guess I was
+too tired, because I really should have changed it.  Below is the new
+changelong, but the patch itself is unmodified.
+
+Thanks,
+Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PCI / PCIe: Ask BIOS for control of all native services at once (v7)
+
+After commit 852972acff8f10f3a15679be2059bb94916cba5d (ACPI: Disable
+ASPM if the platform won't provide _OSC control for PCIe) control of
+the PCIe Capability Structure is unconditionally requested by
+acpi_pci_root_add(), which in principle may cause problems to
+happen in two ways.  First, the BIOS may refuse to give control of
+the PCIe Capability Structure if it is not asked for any of the
+_OSC features depending on it at the same time.  Second, the BIOS may
+assume that control of the _OSC features depending on the PCIe
+Capability Structure will be requested in the future and may behave
+incorrectly if that doesn't happen.  For this reason, control of
+the PCIe Capability Structure should always be requested along with
+control of any other _OSC features that may depend on it (ie. PCIe
+native PME, PCIe native hot-plug, PCIe AER).
+
+Rework the PCIe port driver so that (1) it checks which native PCIe
+port services can be enabled, according to the BIOS, and (2) it
+requests control of all these services simultaneously.  In
+particular, this causes pcie_portdrv_probe() to fail if the BIOS
+refuses to grant control of the PCIe Capability Structure, which
+means that no native PCIe port services can be enabled for the PCIe
+Root Complex the given port belongs to.  If that happens, ASPM is
+disabled to avoid problems with mishandling it by the part of the
+PCIe hierarchy for which control of the PCIe Capability Structure
+has not been received.
+
+Make it possible to override this behavior using 'pcie_ports=native'
+(use the PCIe native services regardless of the BIOS response to the
+control request), or 'pcie_ports=compat' (do not use the PCIe native
+services at all).
+
+Accordingly, rework the existing PCIe port service drivers so that
+they don't request control of the services directly.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ 
