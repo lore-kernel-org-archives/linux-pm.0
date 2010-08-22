@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Nigel Cunningham <nigel@tuxonice.net>
 Subject: Re: [PATCH 1/2] PM: Compress hibernation image with LZO
-Date: Sun, 22 Aug 2010 21:47:22 +0200
-Message-ID: <201008222147.22784.rjw@sisk.pl>
+Date: Mon, 23 Aug 2010 07:52:48 +1000
+Message-ID: <4C719C30.4060902@tuxonice.net>
 References: <1281407348.2618.52.camel@shrek.rexursive.com>
 	<1282211375.17635.96.camel@shrek.rexursive.com>
-	<4C6F6EFF.3040308@tuxonice.net>
+	<4C6F6EFF.3040308@tuxonice.net> <201008222147.22784.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C6F6EFF.3040308@tuxonice.net>
+In-Reply-To: <201008222147.22784.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,30 +19,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@tuxonice.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, August 21, 2010, Nigel Cunningham wrote:
-> Hi.
-> 
-> Sorry for being slow to reply, but to my mind, having two copies of the 
-> whole save and load routines is just plain ugly and makes 
-> maintainability a nightmare.
+Hi.
 
-Well, how much code is actually duplicated by having separate
-routines for with and without compression?  I don't think it's too much.
+On 23/08/10 05:47, Rafael J. Wysocki wrote:
+> On Saturday, August 21, 2010, Nigel Cunningham wrote:
+>> Hi.
+>>
+>> Sorry for being slow to reply, but to my mind, having two copies of the
+>> whole save and load routines is just plain ugly and makes
+>> maintainability a nightmare.
+>
+> Well, how much code is actually duplicated by having separate
+> routines for with and without compression?  I don't think it's too much.
+>
+>> Every time I've thought there's been a problem with compression or
+>> decompression, it has turned out to be a problem in my code instead.
+>> Let's not waste time and effort duplicating code unnecessarily.
+>
+> Having two separate functions for image saving/restoring, depending on cartain
+> condition, is not wrong in principle as long as they are sufficiently different.
+> So going back to the previous question, aren't they?
+>
+> An alternative is to put several conditionals into a sensitive piece of code,
+> which I'd rather prefer to avoid.
 
-> Every time I've thought there's been a problem with compression or 
-> decompression, it has turned out to be a problem in my code instead. 
-> Let's not waste time and effort duplicating code unnecessarily.
+I understand that it's better to have them separate if you have them 
+both. What I'm arguing is that it's pointless to have the two versions 
+in the first place. We don't normally add options to disable 
+improvements, and there's no need to do so this time.
 
-Having two separate functions for image saving/restoring, depending on cartain
-condition, is not wrong in principle as long as they are sufficiently different.
-So going back to the previous question, aren't they?
+Regards,
 
-An alternative is to put several conditionals into a sensitive piece of code,
-which I'd rather prefer to avoid.
-
-Thanks,
-Rafael
+Nigel
