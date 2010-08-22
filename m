@@ -1,12 +1,15 @@
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
-Subject: [PATCH] kzalloc params swapped in pm_qos_power_open
-Date: Sun, 22 Aug 2010 15:35:44 +0100
-Message-ID: <20100822143544.GC23310@gallifrey>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/2] PM: Compress hibernation image with LZO
+Date: Sun, 22 Aug 2010 21:23:16 +0200
+Message-ID: <201008222123.16826.rjw@sisk.pl>
+References: <1281407348.2618.52.camel@shrek.rexursive.com>
+	<201008210136.27065.rjw@sisk.pl>
+	<1282365609.2671.9.camel@shrek.rexursive.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <1282365609.2671.9.camel@shrek.rexursive.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,36 +19,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: James.Bottomley@suse.de, mark.gross@intel.com
+To: Bojan Smojver <bojan@rexursive.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-  I was playing with sparse and it looks like it spotted that
-the kzalloc in pm_qos_power_open in the current Linus's git tree
-seems to have its parameters swapped. I've got a patch below,
-I've only build tested it.
+On Saturday, August 21, 2010, Bojan Smojver wrote:
+> On Sat, 2010-08-21 at 01:36 +0200, Rafael J. Wysocki wrote:
+> > As I wrote, I think it's better to select CRYPTO_LZO here.
+> 
+> This does a different thing, as I understand it. It brings in a crypto 
+> API, which we neither need nor use (we just use compress/decompress from
+> LZO library).
+> 
+> All the other systems I quoted in the other e-mail select this directly,
+> because they don't need the crypto API either. So, I reckon we should do
+> the same - it is simpler and brings in less stuff, which is always
+> better.
+> 
+> But, if you say this is how it has to be, then we'll do that.
 
-Signed-off-by: David Alan Gilbert <linux@treblig.org>
----
-**BUILD TESTED ONLY** (against current git)
+Well, I looked at the code in the meantime and it apparently is sufficient to
+select LZO_COMPRESS and LZO_DECOMPRESS.
 
-diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-index 996a4de..71dcc21 100644
---- a/kernel/pm_qos_params.c
-+++ b/kernel/pm_qos_params.c
-@@ -348,7 +348,7 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
- 
-        pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
-        if (pm_qos_class >= 0) {
--               struct pm_qos_request_list *req = kzalloc(GFP_KERNEL, sizeof(*req));
-+               struct pm_qos_request_list *req = kzalloc(sizeof(*req), GFP_KERNEL);
-                if (!req)
-                        return -ENOMEM;
- 
-
--- 
- -----Open up your eyes, open up your mind, open up your code -------   
-/ Dr. David Alan Gilbert    |       Running GNU/Linux       | Happy  \ 
-\ gro.gilbert @ treblig.org |                               | In Hex /
- \ _________________________|_____ http://www.treblig.org   |_______/
+Thanks,
+Rafael
