@@ -1,15 +1,14 @@
-From: Bojan Smojver <bojan@rexursive.com>
-Subject: Re: [PATCH 1/2] PM: Compress hibernation image with LZO
-Date: Mon, 23 Aug 2010 08:33:53 +1000
-Message-ID: <1282516434.23359.0.camel@shrek.rexursive.com>
-References: <1281407348.2618.52.camel@shrek.rexursive.com>
-	<1282306269.3120.9.camel@shrek.rexursive.com>
-	<201008210136.27065.rjw@sisk.pl>  <201008222129.14250.rjw@sisk.pl>
+From: "Gross, Mark" <mark.gross@intel.com>
+Subject: Re: [PATCH] kzalloc params swapped in pm_qos_power_open
+Date: Sun, 22 Aug 2010 16:34:11 -0700
+Message-ID: <CA1BBBBC9359F04AA639128AC0D5D1E9B44FEF51@orsmsx502.amr.corp.intel.com>
+References: <20100822143544.GC23310@gallifrey>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201008222129.14250.rjw@sisk.pl>
+In-Reply-To: <20100822143544.GC23310@gallifrey>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,16 +18,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Dr. David Alan Gilbert" <linux@treblig.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+Cc: "James.Bottomley@suse.de" <James.Bottomley@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2010-08-22 at 21:29 +0200, Rafael J. Wysocki wrote:
-> Since LZO compression is hardcoded into your code, perhaps you can
-> rename save_image_cmp() to save_image_lzo() (and analogously in the
-> other places)? 
+Your right. :(
 
-Good point. Will change.
+Its working by luck, GFP_KERNEL (= 0x10|0x40|0x80 = 0xD0 = 208 ) is not too big and not too small.
 
--- 
-Bojan
+acked-by: mark gross <markgross@thegnar.org>
+
+--mark
+
+
+
+>-----Original Message-----
+>From: Dr. David Alan Gilbert [mailto:linux@treblig.org]
+>Sent: Sunday, August 22, 2010 7:36 AM
+>To: linux-pm@lists.linux-foundation.org
+>Cc: James.Bottomley@suse.de; Gross, Mark
+>Subject: [PATCH] kzalloc params swapped in pm_qos_power_open
+>
+>Hi,
+>  I was playing with sparse and it looks like it spotted that
+>the kzalloc in pm_qos_power_open in the current Linus's git tree
+>seems to have its parameters swapped. I've got a patch below,
+>I've only build tested it.
+>
+>Signed-off-by: David Alan Gilbert <linux@treblig.org>
+>---
+>**BUILD TESTED ONLY** (against current git)
+>
+>diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+>index 996a4de..71dcc21 100644
+>--- a/kernel/pm_qos_params.c
+>+++ b/kernel/pm_qos_params.c
+>@@ -348,7 +348,7 @@ static int pm_qos_power_open(struct inode *inode,
+>struct file *filp)
+>
+>        pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
+>        if (pm_qos_class >= 0) {
+>-               struct pm_qos_request_list *req = kzalloc(GFP_KERNEL,
+>sizeof(*req));
+>+               struct pm_qos_request_list *req = kzalloc(sizeof(*req),
+>GFP_KERNEL);
+>                if (!req)
+>                        return -ENOMEM;
+>
+>
+>--
+> -----Open up your eyes, open up your mind, open up your code -------
+>/ Dr. David Alan Gilbert    |       Running GNU/Linux       | Happy  \
+>\ gro.gilbert @ treblig.org |                               | In Hex /
+> \ _________________________|_____ http://www.treblig.org   |_______/
