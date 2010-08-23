@@ -1,11 +1,13 @@
-From: H.Christ-T.Strieder@t-online.de
-Subject: Cache and Hibernation
-Date: 23 Aug 2010 20:51 GMT
-Message-ID: <1One15-02NwJM0@fwd08.aul.t-online.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Cache and Hibernation
+Date: Mon, 23 Aug 2010 23:33:38 +0200
+Message-ID: <201008232333.38632.rjw@sisk.pl>
+References: <1One15-02NwJM0@fwd08.aul.t-online.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1One15-02NwJM0@fwd08.aul.t-online.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,13 +18,16 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
+Cc: H.Christ-T.Strieder@t-online.de
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+On Monday, August 23, 2010, H.Christ-T.Strieder@t-online.de wrote:
+> Hello,
+> 
+> I have a question concerned to the hibernation mode.
+> What happens with the Cache when the system does the hibernation mode.
+> Is the content of the Cache suspended and resumed after system restarts or is it deleted?
 
-I have a question concerned to the hibernation mode.
-What happens with the Cache when the system does the hibernation mode.
-Is the content of the Cache suspended and resumed after system restarts or is it deleted?
+Do you mean CPU cache or page cache?  Or some other cache?
 
-Thanks in advance 
-Thomas Strieder
+Rafael
