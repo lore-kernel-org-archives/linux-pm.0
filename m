@@ -1,62 +1,44 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM: runtime PM + idle: allow usage when
- interrupts are disabled
-Date: Mon, 23 Aug 2010 09:18:45 +0200
-Message-ID: <20100823071845.GA5685__28307.6712782078$1282548129$gmane$org@ucw.cz>
-References: <1281459261-30829-1-git-send-email-khilman@deeprootsystems.com>
-	<Pine.LNX.4.44L0.1008132112090.24267-100000@netrider.rowland.org>
+From: Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] SATA / AHCI: Do not play with the link PM during suspend
+ to RAM
+Date: Mon, 23 Aug 2010 14:03:40 +0200
+Message-ID: <4C72639C.6090108@gmail.com>
+References: <201007091750.05020.stephan.diestelhorst@amd.com> <AANLkTin2XPHXL_o9hHz9f4beTYEx+isX+PaFRkMMiYHQ@mail.gmail.com> <4C6B79C8.7080602@gmail.com> <201008191823.57915.stephan.diestelhorst@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1008132112090.24267-100000@netrider.rowland.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <201008191823.57915.stephan.diestelhorst@amd.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Stephan Diestelhorst <stephan.diestelhorst@amd.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, Stephan Diestelhorst <stephan.diestelhorst@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+Hello, sorry about the delay.
 
-> > When using runtime PM in combination with CPUidle, the runtime PM
-> > transtions of some devices may be triggered during the idle path.
-> > Late in the idle sequence, interrupts will likely be disabled when
-> > runtime PM for these devices is initiated.
-> > 
-> > Currently, the runtime PM core assumes methods are called with
-> > interrupts enabled.  However, if it is called with interrupts
-> > disabled, the internal locking unconditionally enables interrupts, for
-> > example:
-> 
-> ...
-> 
-> > Unconditionally enabling interrupts late in the idle sequence is not
-> > desired behavior.  To fix, use the save/restore versions of the
-> > spinlock API.
-> > 
-> > Reported-by: Partha Basak <p-basak2@ti.com>
-> > Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
-> > ---
-> > RFC: I'm not crazy about having the 'flags' in struct dev_pm_info, but
-> > since the locks are taken and released in separate functions, this
-> > seems better than changing the function APIs to pass around the flags.
-> 
-> There are restrictions on what you're allowed to do with the flags, but 
-> I don't remember exactly what they are.
+On 08/19/2010 06:23 PM, Stephan Diestelhorst wrote:
+> It says "max_performance", I have not touched anyhting. So it has been
+> like that all the time. Would this explain why your patch did not show
+> the debug printout?
 
-There used to be 'flags must local variable, and enable/disable must
-happen in same function' restriction on sparc. Not sure if it is still
-present. Ask davem?
-									Pavel
+Hmm... okay.  Yeah, if you haven't been using IPM at all, there won't
+be any debug messages but at the same time the posted patch should
+have had the same effect as Rafael's patch as IPM path isn't traveled
+at all.  Can you please check the followings?
+
+* You're actually running the correct patched kernel and modules.  It
+  probably is a good idea to add a printk message.  ie. Apply the
+  patch and add a printk() in ata_host_request_pm() in libata-core.c
+  and make sure the debug messages appears.
+
+* Rafael's patch actually fixes the problem.  If you haven't been
+  using IPM at all, Rafael's patch and mine should behave exactly the
+  same (ie. no IPM operation at all during suspend/resume).  It could
+  be that you're seeing a different issue.
+
+Rafael, can you please test my patch and see how your case behaves?
+
+Thanks.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+tejun
