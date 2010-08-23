@@ -1,44 +1,64 @@
-From: Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] SATA / AHCI: Do not play with the link PM during suspend
- to RAM
-Date: Mon, 23 Aug 2010 14:03:40 +0200
-Message-ID: <4C72639C.6090108@gmail.com>
-References: <201007091750.05020.stephan.diestelhorst@amd.com> <AANLkTin2XPHXL_o9hHz9f4beTYEx+isX+PaFRkMMiYHQ@mail.gmail.com> <4C6B79C8.7080602@gmail.com> <201008191823.57915.stephan.diestelhorst@amd.com>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH] PM: runtime PM + idle: allow usage when
+	interrupts are disabled
+Date: Mon, 23 Aug 2010 08:22:02 -0700
+Message-ID: <8762z11hid.fsf__28452.0332272679$1282577008$gmane$org@deeprootsystems.com>
+References: <Pine.LNX.4.44L0.1008201006430.1716-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <201008191823.57915.stephan.diestelhorst@amd.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stephan Diestelhorst <stephan.diestelhorst@amd.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, Stephan Diestelhorst <stephan.diestelhorst@gmail.com>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.1008201006430.1716-100000@iolanthe.rowland.org>
+	(Alan Stern's message of "Fri, 20 Aug 2010 10:14:01 -0400 (EDT)")
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello, sorry about the delay.
+Alan Stern <stern@rowland.harvard.edu> writes:
 
-On 08/19/2010 06:23 PM, Stephan Diestelhorst wrote:
-> It says "max_performance", I have not touched anyhting. So it has been
-> like that all the time. Would this explain why your patch did not show
-> the debug printout?
+> On Thu, 19 Aug 2010, Kevin Hilman wrote:
+>
+>> > In any case, I don't really like this change.  It seems that we would
+>> > be better off preventing the runtime PM calls from occurring in the
+>> > first place while interrupts are disabled.  
+>> 
+>> Why? 
+>
+> Because that's how the Runtime PM framework was designed.  Drivers 
+> expect interrupts to be enabled when their runtime PM callbacks are 
+> invoked.  And the framework internally depends on it as well.
+>
+>> > In fact, it's hard to see what could cause this to happen at all.
+>> 
+>> As I mentioned in the changelog, this happens when trying to use runtime
+>> PM in combination with CPUidle.  As has been suggested elsewhere[1],
+>> there is a need to do runtime PM on some devices in combination with CPU
+>> idle transitions managed by CPUidle.  However, late in the idle path,
+>> at the time we want to manage these IO devices, interrupts are disabled.
+>
+> Then it isn't really feasible to use the runtime PM framework for those 
+> devices.  Not unless the framework is extended with new functions meant 
+> to be used without interrupts enabled (in which case it doesn't seem to 
+> matter much whether you are in process context or not).
+>
+>> Currently, on OMAP, we are already managing the power state of certain
+>> IO devices along with CPUidle transitions using more brute force
+>> methods.  IMO, using runtime PM for this would be a much cleaner
+>> approach.  The only obstacle is the assumption that the API must be
+>> called with interrupts enabled.
+>
+> That's a big obstacle.  Why can't you manage these devices earlier, 
+> while interrupts are still enabled?
 
-Hmm... okay.  Yeah, if you haven't been using IPM at all, there won't
-be any debug messages but at the same time the posted patch should
-have had the same effect as Rafael's patch as IPM path isn't traveled
-at all.  Can you please check the followings?
+Indeed, that's a good question.  I'm exploring this more thoroughly now.
 
-* You're actually running the correct patched kernel and modules.  It
-  probably is a good idea to add a printk message.  ie. Apply the
-  patch and add a printk() in ata_host_request_pm() in libata-core.c
-  and make sure the debug messages appears.
-
-* Rafael's patch actually fixes the problem.  If you haven't been
-  using IPM at all, Rafael's patch and mine should behave exactly the
-  same (ie. no IPM operation at all during suspend/resume).  It could
-  be that you're seeing a different issue.
-
-Rafael, can you please test my patch and see how your case behaves?
-
-Thanks.
-
--- 
-tejun
+Kevin
