@@ -1,44 +1,28 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] SATA / AHCI: Do not play with the link PM during suspend to RAM
-Date: Mon, 23 Aug 2010 20:58:33 +0200
-Message-ID: <201008232058.33542.rjw@sisk.pl>
-References: <201007091750.05020.stephan.diestelhorst@amd.com> <201008191823.57915.stephan.diestelhorst@amd.com> <4C72639C.6090108@gmail.com>
+From: H.Christ-T.Strieder@t-online.de
+Subject: Cache and Hibernation
+Date: 23 Aug 2010 20:51 GMT
+Message-ID: <1One15-02NwJM0@fwd08.aul.t-online.de>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <4C72639C.6090108@gmail.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: Tejun Heo <htejun@gmail.com>
-Cc: Stephan Diestelhorst <stephan.diestelhorst@amd.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, Stephan Diestelhorst <stephan.diestelhorst@gmail.com>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, August 23, 2010, Tejun Heo wrote:
-> Hello, sorry about the delay.
-> 
-> On 08/19/2010 06:23 PM, Stephan Diestelhorst wrote:
-> > It says "max_performance", I have not touched anyhting. So it has been
-> > like that all the time. Would this explain why your patch did not show
-> > the debug printout?
-> 
-> Hmm... okay.  Yeah, if you haven't been using IPM at all, there won't
-> be any debug messages but at the same time the posted patch should
-> have had the same effect as Rafael's patch as IPM path isn't traveled
-> at all.  Can you please check the followings?
-> 
-> * You're actually running the correct patched kernel and modules.  It
->   probably is a good idea to add a printk message.  ie. Apply the
->   patch and add a printk() in ata_host_request_pm() in libata-core.c
->   and make sure the debug messages appears.
-> 
-> * Rafael's patch actually fixes the problem.  If you haven't been
->   using IPM at all, Rafael's patch and mine should behave exactly the
->   same (ie. no IPM operation at all during suspend/resume).  It could
->   be that you're seeing a different issue.
-> 
-> Rafael, can you please test my patch and see how your case behaves?
+Hello,
 
-This one: http://lkml.org/lkml/2010/8/5/328 ?
+I have a question concerned to the hibernation mode.
+What happens with the Cache when the system does the hibernation mode.
+Is the content of the Cache suspended and resumed after system restarts or is it deleted?
 
-Rafael
+Thanks in advance 
+Thomas Strieder
