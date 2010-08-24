@@ -1,105 +1,61 @@
-From: Raj Kumar <rajkumar278@hotmail.com>
-Subject: Re: Runtime power management during system resume
-Date: Tue, 24 Aug 2010 20:47:58 +0530
-Message-ID: <BLU102-W5B0F0352A72D47CBA27CFEB830@phx.gbl>
-References: <BLU102-W1030ED196ED7B94722F2A7EB830@phx.gbl>,
-	<Pine.LNX.4.44L0.1008241029000.1652-100000@iolanthe.rowland.org>
+From: Stephan Diestelhorst <stephan.diestelhorst@amd.com>
+Subject: Re: [PATCH] SATA / AHCI: Do not play with the link PM during suspend to RAM
+Date: Tue, 24 Aug 2010 18:11:22 +0200
+Message-ID: <201008241811.22991.stephan.diestelhorst@amd.com>
+References: <201007091750.05020.stephan.diestelhorst@amd.com> <4C72639C.6090108@gmail.com> <201008241807.23519.stephan.diestelhorst@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1008241029000.1652-100000@iolanthe.rowland.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: stern@rowland.harvard.edu, linux-pm@lists.linux-foundation.org
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <201008241807.23519.stephan.diestelhorst@amd.com>
+Sender: linux-ide-owner@vger.kernel.org
+To: Tejun Heo <htejun@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tuesday 24 August 2010 18:07:23 Stephan Diestelhorst wrote:
+> On Monday 23 August 2010 14:03:40 Tejun Heo wrote:
+> > On 08/19/2010 06:23 PM, Stephan Diestelhorst wrote:
+> > > It says "max_performance", I have not touched anyhting. So it has been
+> > > like that all the time. Would this explain why your patch did not show
+> > > the debug printout?
+> > 
+> > Hmm... okay.  Yeah, if you haven't been using IPM at all, there won't
+> > be any debug messages but at the same time the posted patch should
+> > have had the same effect as Rafael's patch as IPM path isn't traveled
+> > at all.  Can you please check the followings?
+> > 
+> > * You're actually running the correct patched kernel and modules.  It
+> >   probably is a good idea to add a printk message.  ie. Apply the
+> >   patch and add a printk() in ata_host_request_pm() in libata-core.c
+> >   and make sure the debug messages appears.
+> 
+> Did that. Actually also added some printks to the XXX function, called
 
- 
-Hi,
- 
-My question is:
- 
-1) When the system suspends, it invokes pm_runtime_put_sync when complete
-callback is called which will again trigger to put device idle
- 
-means in runtime power management core, the device status is set to RPM_SUSPENDED.
-right?
- 
-2) As you also said that during system resume, it does not increment the power_usage
-counter,
- 
-that is ok, driver will increase the power_usage counter...
- 
-But will driver also set the state to RPM_ACTIVE means pm_runtime_set_active
- 
-right?
- 
- 
-3) During hibernation, if the driver is registered using platform_driver_register...
- 
-When the system hibernates, will power management core call suspend, resume?
- 
-right?
- 
-Regards,
-Raj
- 
- 
- 
- 
- 
- 
+I meant ahci_dev_config() in libahci.c . Darn quick trigger finger ;-)
+
+> early during boot. Output confirms that your patch is loaded. And even
+> on the first resume the machine dies.
+> 
+> > * Rafael's patch actually fixes the problem.  If you haven't been
+> >   using IPM at all, Rafael's patch and mine should behave exactly the
+> >   same (ie. no IPM operation at all during suspend/resume).  It could
+> >   be that you're seeing a different issue.
+> 
+> That next on my list...
+> 
+> Many thanks!
+> 
+> Stephan
+> 
+> 
 
 
-----------------------------------------
-> Date: Tue, 24 Aug 2010 10:30:25 -0400
-> From: stern@rowland.harvard.edu
-> To: rajkumar278@hotmail.com
-> CC: linux-kernel@vger.kernel.org
-> Subject: Re: Runtime power management during system resume
->
-> On Tue, 24 Aug 2010, Raj Kumar wrote:
->
->> Hi Alan,
->>
->> I have implemented the run time power management in my drivers. I have one
->> issue regarding System resume.
->>
->> When the system sleep is triggered as it is mentioned that Power management
->> core will increment the power_usage counter during prepare and decrements when complete
->> is called.
->>
->> Now I have few questions:
->>
->> 1) When the system resume is done, it does not increase the power_usage counter.
->> right?
->
-> That's right.
->
->> So Does then the driver need to update the power_usage counter with run time power management
->> core and again set it to active means RPM_ACTIVE?
->
-> Read section 6 of Documentation/power/runtime_pm.h. It explains this.
->
->> 2) Suppose device is active, means its power_usage counter is already one, Now during system
->> sleep, does the driver first suspend it with run time power management core and then continue
->> System suspend?
->
-> No.
->
->> 3) Because I have seen the code of power management core and I did not see the that during
->> system suspend, run time power management status is updated means RPM_SUSPENDED.
->> right?
->
-> I don't understand your question.
->
-> Alan Stern
-> 		 	   		  
+-- 
+Stephan Diestelhorst, AMD Operating System Research Center
+stephan.diestelhorst@amd.com, Tel. +49 (0)351 448 356 719
+
+Advanced Micro Devices GmbH Einsteinring 24 85609 Dornach
+General Managers: Alberto Bozzo, Andrew Bowd
+Registration: Dornach, Landkr. Muenchen; Registerger. Muenchen, HRB Nr. 43632
+
