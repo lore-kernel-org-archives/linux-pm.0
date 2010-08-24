@@ -1,15 +1,14 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH 1/10] PCI / PCIe/ AER: Introduce
-	pci_aer_available()
-Date: Tue, 24 Aug 2010 13:49:04 -0700
-Message-ID: <20100824134904.1cd9bdde__4415.69127510792$1282683012$gmane$org@virtuousgeek.org>
-References: <201008060303.51224.rjw@sisk.pl> <201008210149.39576.rjw@sisk.pl>
-	<201008210150.52589.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] kzalloc params swapped in pm_qos_power_open
+Date: Tue, 24 Aug 2010 22:19:50 +0200
+Message-ID: <201008242219.50803.rjw@sisk.pl>
+References: <20100822143544.GC23310@gallifrey>
+	<CA1BBBBC9359F04AA639128AC0D5D1E9B44FEF51@orsmsx502.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201008210150.52589.rjw@sisk.pl>
+In-Reply-To: <CA1BBBBC9359F04AA639128AC0D5D1E9B44FEF51@orsmsx502.amr.corp.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,21 +18,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>, linux-pci@vger.kernel.org, Maling List <linux-acpi@vger.kernel.org>, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org, ACPI@smtp1.linux-foundation.org, Matthew Garrett <mjg@redhat.com>
+To: "Gross, Mark" <mark.gross@intel.com>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "James.Bottomley@suse.de" <James.Bottomley@suse.de>, "Dr. David Alan Gilbert" <linux@treblig.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 21 Aug 2010 01:50:52 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Monday, August 23, 2010, Gross, Mark wrote:
+> Your right. :(
 > 
-> Introduce a function allowing the caller to check whether to try to
-> enable PCIe AER.
+> Its working by luck, GFP_KERNEL (= 0x10|0x40|0x80 = 0xD0 = 208 ) is not too big and not too small.
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> acked-by: mark gross <markgross@thegnar.org>
 
-Applied this series to my for-linus branch, thanks.
+Applied to suspend-2.6/pm-fixes, I'll ask Linus to pull it after a day or two
+in linux-next.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Thanks,
+Rafael
+
+
+> >-----Original Message-----
+> >From: Dr. David Alan Gilbert [mailto:linux@treblig.org]
+> >Sent: Sunday, August 22, 2010 7:36 AM
+> >To: linux-pm@lists.linux-foundation.org
+> >Cc: James.Bottomley@suse.de; Gross, Mark
+> >Subject: [PATCH] kzalloc params swapped in pm_qos_power_open
+> >
+> >Hi,
+> >  I was playing with sparse and it looks like it spotted that
+> >the kzalloc in pm_qos_power_open in the current Linus's git tree
+> >seems to have its parameters swapped. I've got a patch below,
+> >I've only build tested it.
+> >
+> >Signed-off-by: David Alan Gilbert <linux@treblig.org>
+> >---
+> >**BUILD TESTED ONLY** (against current git)
+> >
+> >diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+> >index 996a4de..71dcc21 100644
+> >--- a/kernel/pm_qos_params.c
+> >+++ b/kernel/pm_qos_params.c
+> >@@ -348,7 +348,7 @@ static int pm_qos_power_open(struct inode *inode,
+> >struct file *filp)
+> >
+> >        pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
+> >        if (pm_qos_class >= 0) {
+> >-               struct pm_qos_request_list *req = kzalloc(GFP_KERNEL,
+> >sizeof(*req));
+> >+               struct pm_qos_request_list *req = kzalloc(sizeof(*req),
+> >GFP_KERNEL);
+> >                if (!req)
+> >                        return -ENOMEM;
+> >
+> >
+> >--
+> > -----Open up your eyes, open up your mind, open up your code -------
+> >/ Dr. David Alan Gilbert    |       Running GNU/Linux       | Happy  \
+> >\ gro.gilbert @ treblig.org |                               | In Hex /
+> > \ _________________________|_____ http://www.treblig.org   |_______/
+> 
+> 
