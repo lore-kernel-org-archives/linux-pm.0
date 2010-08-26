@@ -1,42 +1,64 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] PM QoS fixes for 2.6.36
-Date: Thu, 26 Aug 2010 22:06:53 +0200
-Message-ID: <201008262206.53748.rjw__29397.7635949433$1282853520$gmane$org@sisk.pl>
+Subject: Re: [PATCH] SATA / AHCI: Do not play with the link PM during suspend to RAM
+Date: Fri, 27 Aug 2010 01:09:36 +0200
+Message-ID: <201008270109.36687.rjw@sisk.pl>
+References: <201007091750.05020.stephan.diestelhorst@amd.com> <4C7376BE.5040006@gmail.com> <201008242239.43249.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Saravana Kannan <skannan@codeaurora.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Dr. David Alan Gilbert" <linux@treblig.org>, markgross@thegnar.org
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <201008242239.43249.rjw@sisk.pl>
+Sender: linux-ide-owner@vger.kernel.org
+To: Tejun Heo <htejun@gmail.com>
+Cc: Stephan Diestelhorst <stephan.diestelhorst@amd.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, Stephan Diestelhorst <stephan.diestelhorst@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Tuesday, August 24, 2010, Rafael J. Wysocki wrote:
+> On Tuesday, August 24, 2010, Tejun Heo wrote:
+> > On 08/23/2010 08:58 PM, Rafael J. Wysocki wrote:
+> > > On Monday, August 23, 2010, Tejun Heo wrote:
+> > >> Hello, sorry about the delay.
+> > >>
+> > >> On 08/19/2010 06:23 PM, Stephan Diestelhorst wrote:
+> > >>> It says "max_performance", I have not touched anyhting. So it has been
+> > >>> like that all the time. Would this explain why your patch did not show
+> > >>> the debug printout?
+> > >>
+> > >> Hmm... okay.  Yeah, if you haven't been using IPM at all, there won't
+> > >> be any debug messages but at the same time the posted patch should
+> > >> have had the same effect as Rafael's patch as IPM path isn't traveled
+> > >> at all.  Can you please check the followings?
+> > >>
+> > >> * You're actually running the correct patched kernel and modules.  It
+> > >>   probably is a good idea to add a printk message.  ie. Apply the
+> > >>   patch and add a printk() in ata_host_request_pm() in libata-core.c
+> > >>   and make sure the debug messages appears.
+> > >>
+> > >> * Rafael's patch actually fixes the problem.  If you haven't been
+> > >>   using IPM at all, Rafael's patch and mine should behave exactly the
+> > >>   same (ie. no IPM operation at all during suspend/resume).  It could
+> > >>   be that you're seeing a different issue.
+> > >>
+> > >> Rafael, can you please test my patch and see how your case behaves?
+> > > 
+> > > This one: http://lkml.org/lkml/2010/8/5/328 ?
+> > 
+> > Yeap, that one.  I can prep a test git branch if necessary.
+> 
+> No need to, but it's going to take a few days to verify on my box.
 
-Please pull two PM QoS fixes for 2.6.36 from:
+Well, no luck.  I was able to reproduce the issue on my box with this patch
+applied on top of 2.6.32-rc2.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git pm-fixes
+Which probably means that the link power management is not really involved
+here and seems to turn up this statement:
 
-They fix a kzalloc() call with swapped arguments and a kerneldoc comment
-that doesn't match the code it describes any more after the last PM QoS
-update.
+rc = ata_host_request_pm(host, mesg, 0, ATA_EHI_QUIET, 1);
 
+in ata_host_suspend() as the culprit.
 
- kernel/pm_qos_params.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+Does it make sense?
 
----------------
-
-David Alan Gilbert (1):
-      PM QoS: Fix kzalloc() parameters swapped in pm_qos_power_open()
-
-Saravana Kannan (1):
-      PM QoS: Fix inline documentation.
+Thanks,
+Rafael
