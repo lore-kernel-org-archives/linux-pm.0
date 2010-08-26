@@ -1,57 +1,42 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] SATA / AHCI: Do not play with the link PM during suspend to RAM
-Date: Thu, 26 Aug 2010 20:24:35 +0200
-Message-ID: <201008262024.35551.rjw@sisk.pl>
-References: <201007091750.05020.stephan.diestelhorst@amd.com> <201008241811.22991.stephan.diestelhorst@amd.com> <201008261815.34574.stephan.diestelhorst@amd.com>
+Subject: [GIT PULL] PM QoS fixes for 2.6.36
+Date: Thu, 26 Aug 2010 22:06:53 +0200
+Message-ID: <201008262206.53748.rjw__29397.7635949433$1282853520$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <201008261815.34574.stephan.diestelhorst@amd.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: Stephan Diestelhorst <stephan.diestelhorst@amd.com>
-Cc: Tejun Heo <htejun@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, Stephan Diestelhorst <stephan.diestelhorst@gmail.com>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Saravana Kannan <skannan@codeaurora.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Dr. David Alan Gilbert" <linux@treblig.org>, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, August 26, 2010, Stephan Diestelhorst wrote:
-> On Tuesday 24 August 2010 18:11:22 Stephan Diestelhorst wrote:
-> > On Tuesday 24 August 2010 18:07:23 Stephan Diestelhorst wrote:
-> > > On Monday 23 August 2010 14:03:40 Tejun Heo wrote:
-> > > > On 08/19/2010 06:23 PM, Stephan Diestelhorst wrote:
-> > > > > It says "max_performance", I have not touched anyhting. So it has been
-> > > > > like that all the time. Would this explain why your patch did not show
-> > > > > the debug printout?
-> > > > 
-> > > > Hmm... okay.  Yeah, if you haven't been using IPM at all, there won't
-> > > > be any debug messages but at the same time the posted patch should
-> > > > have had the same effect as Rafael's patch as IPM path isn't traveled
-> > > > at all.  Can you please check the followings?
-> > > > 
-> [...]
-> > > > * Rafael's patch actually fixes the problem.  If you haven't been
-> > > >   using IPM at all, Rafael's patch and mine should behave exactly the
-> > > >   same (ie. no IPM operation at all during suspend/resume).  It could
-> > > >   be that you're seeing a different issue.
-> > > 
-> > > That next on my list...
-> 
-> Just did the following: Rebased Rafaels patch to 2.6.35 and tried it
-> again (with added prints to make sure I am running the right one) and
-> did >10 suspend to ram / resume cycles under I/O write load. All of
-> them worked fine (for comparison: your patch resulted in RO HDD at
-> first attempt).
-> 
-> (I had some extra prints around the suspend functions changed in
->  Rafael's patch, tried with and without, no change--works flawlessly.)
-> 
-> What do you make of this?
+Hi Linus,
 
-I think my patch actually does more than the Tejun's one.  I need to have a
-deeper look at them both.
+Please pull two PM QoS fixes for 2.6.36 from:
 
-I'm still testing the Tejun's patch on my system where I was able to reproduce
-the problem, but so far it's been working.
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git pm-fixes
 
-Thanks,
-Rafael
+They fix a kzalloc() call with swapped arguments and a kerneldoc comment
+that doesn't match the code it describes any more after the last PM QoS
+update.
+
+
+ kernel/pm_qos_params.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
+
+---------------
+
+David Alan Gilbert (1):
+      PM QoS: Fix kzalloc() parameters swapped in pm_qos_power_open()
+
+Saravana Kannan (1):
+      PM QoS: Fix inline documentation.
