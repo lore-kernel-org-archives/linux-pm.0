@@ -1,15 +1,16 @@
-From: Toralf =?iso-8859-2?q?F=F6rster?= <toralf.foerster@gmx.de>
-Subject: Re: v2.6.36-rc2-373-g29cfcdd complaints after the 2nd
-	suspend2ram
-Date: Mon, 30 Aug 2010 20:28:13 +0200
-Message-ID: <201008302028.13853.toralf.foerster@gmx.de>
-References: <201008300946.38558.toralf.foerster@gmx.de>
-	<201008301921.54312.rjw@sisk.pl>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [RFC][PATCH 1/1] ARM: Add initial hibernation support
+Date: Mon, 30 Aug 2010 15:23:42 -0700
+Message-ID: <1283207022.11841.110.camel__12725.7321648814$1283207154$gmane$org@localhost>
+References: <20100715084118.GB26212@n2100.arm.linux.org.uk>
+	<20100715.120807.39160135.Hiroshi.DOYU@nokia.com>
+	<20100716075243.GB16124@n2100.arm.linux.org.uk>
+	<20100716.121034.193687021.Hiroshi.DOYU@nokia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201008301921.54312.rjw@sisk.pl>
+In-Reply-To: <20100716.121034.193687021.Hiroshi.DOYU@nokia.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,35 +20,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: tj@kernel.org, linux-pm@lists.linux-foundation.org
+To: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+Cc: linux@arm.linux.org.uk, Yoshiya.Hirase@nokia.com, teerth@ti.com, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, 2010-07-16 at 12:10 +0300, Hiroshi DOYU wrote:
+> From: ext Russell King - ARM Linux <linux@arm.linux.org.uk>
+> Subject: Re: [RFC][PATCH 1/1] ARM: Add initial hibernation support
+> Date: Fri, 16 Jul 2010 09:52:44 +0200
+> 
+> > On Thu, Jul 15, 2010 at 12:08:07PM +0300, Hiroshi DOYU wrote:
+> >> From: ext Russell King - ARM Linux <linux@arm.linux.org.uk>
+> >> Subject: Re: [RFC][PATCH 1/1] ARM: Add initial hibernation support
+> >> Date: Thu, 15 Jul 2010 10:41:18 +0200
+> >> 
+> >> > On Thu, Jul 15, 2010 at 08:34:50AM +0300, Hiroshi DOYU wrote:
+> >> >> Russell, would it be possible to put this into your next merge queue?
+> >> > 
+> >> > I think it needs quite a bit of rework - I certainly don't like all
+> >> > those CP15 register accesses there - that's asking for lots of ifdefs
+> >> > to spring up as more CPUs are supported.
+> >> >
+> >> > Eg, what about ensuring that state such as iWMMXt on PXA CPUs is
+> >> > properly restored?
+> >> 
+> >> Right. This arch specific part can be something like
+> >> "suspend-v[3-7].S" to accomodate those differences
+> > 
+> > It's not quite that simple - things like iWMMXt aren't part of the ARM
+> > arch specs.
+> >
+> >> > We already have code which knows what needs to be saved across a
+> >> > power-off transition - its what we use for our normal suspend/resume
+> >> > functionality, so we should look at re-using that code for hibernate
+> >> > as well.  We really don't want to be maintaining two sets of code
+> >> > doing the same thing.
+> >> 
+> >> Could you explain which code you're refering for the existing one?
+> > 
+> > The code which handles saving state for the existing suspend/resume
+> > support.  This code already saves the necessary state from CP15 and
+> > any other state which needs to be saved prior to putting the system
+> > into low power mode.
+> > 
+> > Every machine class which supports suspend today has their own chunk
+> > of code which does this, normally called something like sleep.S
+> 
+> Ok, it seems to be the way to try to make use of the existing one for
+> suspend-to-ram with some modifications.
 
-Rafael J. Wysocki wrote at 19:21:54
-> On Monday, August 30, 2010, Toralf F=F6rster wrote:
-> > Hell,o
-> > =
+[sorry to be late to the party here]
 
-> > after I made 2 times in a row a
-> > "$> sync; echo mem > /sys/power/state"
-> > at my ThinkPad T400 the kernel shows the message shown in the attached
-> > photo (no syslog message to post, sry) . The .config file is attached
-> > too.
-> =
+At least on OMAP, we already have everything needed to save/restore
+context for off-mode transitions handled in the suspend (and idle)
+paths.  So, at least in terms of context save/restore, there should be
+minimal changes needed there.
 
-> This looks like a problem with freezing a workqueue.
-> =
-
-> Does the box hang after showing this trace?
-> =
-
-
-Yes - indeed.
-
--- =
-
-MfG/Kind regards
-Toralf F=F6rster
-
-pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+Kevin
