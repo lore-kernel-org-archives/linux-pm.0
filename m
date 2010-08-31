@@ -1,16 +1,11 @@
-From: Toralf =?iso-8859-2?q?F=F6rster?= <toralf.foerster@gmx.de>
-Subject: Re: v2.6.36-rc2-373-g29cfcdd complaints after the 2nd
-	suspend2ram
-Date: Tue, 31 Aug 2010 20:11:22 +0200
-Message-ID: <201008312011.22937.toralf.foerster@gmx.de>
-References: <201008300946.38558.toralf.foerster@gmx.de>
-	<201008302028.13853.toralf.foerster@gmx.de>
-	<4C7CB570.9010607@kernel.org>
+From: Martin Steigerwald <Martin@lichtvoll.de>
+Subject: Bug 17571 - blk/ata-sff/unknown-boot-option related
+	backtrace on resume with TuxOnIce
+Date: Tue, 31 Aug 2010 21:40:41 +0200
+Message-ID: <201008312140.51242.Martin__32723.8712845885$1283283731$gmane$org@lichtvoll.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============7466839999036650210=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C7CB570.9010607@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,29 +13,80 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
+To: tuxonice-devel@tuxonice.net
 Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+--===============7466839999036650210==
+Content-Type: multipart/signed;
+  boundary="nextPart4451559.4buckCxIlP";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-Tejun Heo wrote at 09:55:28
-
-> Can you please pull from the following branch and see whether the
-> problem is resolved?
-> =
-
->   git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git for-linus
-> =
-
-> Thanks.
-Helps - issue went away.
+--nextPart4451559.4buckCxIlP
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
 
--- =
+Hi Nigel, hi Raphael, hi Linux-PM team,
 
-MfG/Kind regards
-Toralf F=F6rster
+I reported this in this in the mainline kernel bugzilla tough it may well=20
+be a TuxOnIce bug for three reasons:=20
 
-pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+1) The backtrace looks pretty generic, no toi* symbols at least in the=20
+last part shown on the screen.
+
+2) bugzilla.tuxonice.net timed out. Okay, that not that good reason.
+
+3) Raphaels interest in TuxOnIce bugs.
+
+Linux-PM folks, feel free to ignore this unless Nigel thinks its not a=20
+TuxOnIce problem.
+
+
+
+Bug 17571 -  blk/ata-sff/unknown-boot-option related backtrace on resume=20
+with TuxOnIce
+
+I am testing 2.6.35.4 with TuxOnIce 3.2-rc1 on my ThinkPad T23.
+
+After I few hibernation cycles I now got a backtrace on resume. I tried=20
+twice before discarding the image.
+
+I don't know yet, whether it happens regularily. I am attaching a=20
+screenshot of the backtrace.
+
+https://bugzilla.kernel.org/show_bug.cgi?id=3D17571
+
+Ciao,
+=2D-=20
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+
+--nextPart4451559.4buckCxIlP
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkx9WroACgkQmRvqrKWZhMe2VwCfWRHBwYycaH7dASz9+zBoEA3r
+zSwAnRxIhnST5kPOc/gqooAB/0EihnBF
+=uaax
+-----END PGP SIGNATURE-----
+
+--nextPart4451559.4buckCxIlP--
+
+--===============7466839999036650210==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============7466839999036650210==--
