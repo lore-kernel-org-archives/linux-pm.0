@@ -1,16 +1,25 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [RFC][PATCH 1/1] ARM: Add initial hibernation support
-Date: Mon, 30 Aug 2010 15:23:42 -0700
-Message-ID: <1283207022.11841.110.camel__12725.7321648814$1283207154$gmane$org@localhost>
-References: <20100715084118.GB26212@n2100.arm.linux.org.uk>
-	<20100715.120807.39160135.Hiroshi.DOYU@nokia.com>
-	<20100716075243.GB16124@n2100.arm.linux.org.uk>
-	<20100716.121034.193687021.Hiroshi.DOYU@nokia.com>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: Attempted summary of suspend-blockers LKML thread,
+	take three
+Date: Mon, 30 Aug 2010 17:04:37 -0700
+Message-ID: <20100831000437.GS2420__2051.40239927477$1283213250$gmane$org@linux.vnet.ibm.com>
+References: <20100812034435.GA7403@linux.vnet.ibm.com>
+	<AANLkTi=RD=eM_gpc7FfRq0923sUbARmZ2+4-m+fLibYC@mail.gmail.com>
+	<E3F3D3E1-4DF7-47E3-895D-95F6BC22CCC4@mit.edu>
+	<AANLkTikcoWfmL-XfYbFeYdVtU9GC6_LtVSSB2H6GcedA@mail.gmail.com>
+	<20100812174303.GD2524@linux.vnet.ibm.com>
+	<AANLkTim1U6QpRyfwYCq2uRA=7-a8ryfDrzv5VCqmHnyB@mail.gmail.com>
+	<AANLkTinNxZoMab=tG9KXJ9n_nxB1dXHkfk-7xUMWXACW@mail.gmail.com>
+	<AANLkTin3H0o+WQocUYjUcPGRpkRqK9H2LJ0OwHXFNBdj@mail.gmail.com>
+	<20100813144236.GB2511@linux.vnet.ibm.com>
+	<20100828085135.GA2711@ucw.cz>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100716.121034.193687021.Hiroshi.DOYU@nokia.com>
+Content-Disposition: inline
+In-Reply-To: <20100828085135.GA2711@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,60 +29,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Cc: linux@arm.linux.org.uk, Yoshiya.Hirase@nokia.com, teerth@ti.com, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: david@lang.hm, Theodore Tso <tytso@mit.edu>, peterz@infradead.org, Brian Swetland <swetland@google.com>, Felipe Contreras <felipe.contreras@gmail.com>, linux-kernel@vger.kernel.org, James.Bottomley@suse.de, galibert@pobox.com, florian@mickler.org, menage@google.com, linux-pm@lists.linux-foundation.org, swmike@swm.pp.se, tglx@linutronix.de, Alan Cox <alan@lxorguk.ukuu.org.uk>, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2010-07-16 at 12:10 +0300, Hiroshi DOYU wrote:
-> From: ext Russell King - ARM Linux <linux@arm.linux.org.uk>
-> Subject: Re: [RFC][PATCH 1/1] ARM: Add initial hibernation support
-> Date: Fri, 16 Jul 2010 09:52:44 +0200
+On Sat, Aug 28, 2010 at 10:51:35AM +0200, Pavel Machek wrote:
+> Hi!
 > 
-> > On Thu, Jul 15, 2010 at 12:08:07PM +0300, Hiroshi DOYU wrote:
-> >> From: ext Russell King - ARM Linux <linux@arm.linux.org.uk>
-> >> Subject: Re: [RFC][PATCH 1/1] ARM: Add initial hibernation support
-> >> Date: Thu, 15 Jul 2010 10:41:18 +0200
-> >> 
-> >> > On Thu, Jul 15, 2010 at 08:34:50AM +0300, Hiroshi DOYU wrote:
-> >> >> Russell, would it be possible to put this into your next merge queue?
-> >> > 
-> >> > I think it needs quite a bit of rework - I certainly don't like all
-> >> > those CP15 register accesses there - that's asking for lots of ifdefs
-> >> > to spring up as more CPUs are supported.
-> >> >
-> >> > Eg, what about ensuring that state such as iWMMXt on PXA CPUs is
-> >> > properly restored?
-> >> 
-> >> Right. This arch specific part can be something like
-> >> "suspend-v[3-7].S" to accomodate those differences
+> > > You are *one* user of the kernel. Let's suppose Android wasn't using
+> > > suspend-blockers, and there was another equally successful linux
+> > > mobile platform, Foobingo, and they were using them, and they were the
+> > > only ones interested on implementing them.
+> > > 
+> > > What does that change? Nothing. They still need to convince the
+> > > community that what they are proposing to be merged is actually
+> > > useful, and somebody will use it. If not, they can just keep the patch
+> > > for themselves until they do. I don't see the big deal.
 > > 
-> > It's not quite that simple - things like iWMMXt aren't part of the ARM
-> > arch specs.
-> >
-> >> > We already have code which knows what needs to be saved across a
-> >> > power-off transition - its what we use for our normal suspend/resume
-> >> > functionality, so we should look at re-using that code for hibernate
-> >> > as well.  We really don't want to be maintaining two sets of code
-> >> > doing the same thing.
-> >> 
-> >> Could you explain which code you're refering for the existing one?
+> > So the current users of the Linux kernel are the following?
 > > 
-> > The code which handles saving state for the existing suspend/resume
-> > support.  This code already saves the necessary state from CP15 and
-> > any other state which needs to be saved prior to putting the system
-> > into low power mode.
+> > o	GNU/Linux
+> > o	Android
 > > 
-> > Every machine class which supports suspend today has their own chunk
-> > of code which does this, normally called something like sleep.S
+> > Do any other distributions or devices with unusual user-space layouts
+> > qualify?
 > 
-> Ok, it seems to be the way to try to make use of the existing one for
-> suspend-to-ram with some modifications.
+> QTembedded distros are somehow similar to android (one big binary).
+> 
+> Then there's minor stuff, like webOS and Motorola A1200...
 
-[sorry to be late to the party here]
+It does sounds like there is some variety, then.  Thank you for the info!
 
-At least on OMAP, we already have everything needed to save/restore
-context for off-mode transitions handled in the suspend (and idle)
-paths.  So, at least in terms of context save/restore, there should be
-minimal changes needed there.
-
-Kevin
+							Thanx, Paul
