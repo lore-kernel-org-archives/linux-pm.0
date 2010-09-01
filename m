@@ -1,15 +1,16 @@
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [Bisected Regression in 2.6.35] A full tmpfs
-	filesystem causeshibernation to hang
-Date: Wed,  1 Sep 2010 09:48:51 +0900 (JST)
-Message-ID: <20100901093219.9744.A69D9226__22450.5504979335$1283302212$gmane$org@jp.fujitsu.com>
-References: <20100830083704.5231.A69D9226@jp.fujitsu.com>
-	<4C7BE25B.1020504@superonline.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: v2.6.36-rc2-373-g29cfcdd complaints after the 2nd
+ suspend2ram
+Date: Wed, 01 Sep 2010 11:00:12 +0200
+Message-ID: <4C7E161C.6000407@kernel.org>
+References: <201008300946.38558.toralf.foerster@gmx.de>
+	<201008302028.13853.toralf.foerster@gmx.de>
+	<4C7CB570.9010607@kernel.org> <201008312214.48665.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C7BE25B.1020504@superonline.com>
+In-Reply-To: <201008312214.48665.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,58 +20,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "M. Vefa Bicakci" <bicave@superonline.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kosaki.motohiro@jp.fujitsu.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: =?ISO-8859-2?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-> === 8< ===
-> PM: Marking nosave pages: ...0009f000 - ...000100000
-> PM: basic memory bitmaps created
-> PM: Syncing filesystems ... done
-> Freezing user space processes ... (elapsed 0.01 seconds) done.
-> Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
-> PM: Preallocating image memory...
-> shrink_all_memory start
-> PM: shrink memory: pass=1, req:310171 reclaimed:15492 free:360936
-> PM: shrink memory: pass=2, req:294679 reclaimed:28864 free:373981
-> PM: shrink memory: pass=3, req:265815 reclaimed:60311 free:405374
-> PM: shrink memory: pass=4, req:205504 reclaimed:97870 free:443024
-> PM: shrink memory: pass=5, req:107634 reclaimed:146948 free:492141
-> shrink_all_memory: req:107634 reclaimed:146948 free:492141
-> PM: preallocate_image_highmem 556658 278329
-> PM: preallocate_image_memory 103139 103139
-> PM: preallocate_highmem_fraction 183908 556658 760831 -> 183908
-> === >8 ===
+Hello, Rafael.
 
-Rafael, this log mean hibernate_preallocate_memory() has a bug.
-It allocate memory as following order.
- 1. preallocate_image_highmem()  (i.e. __GFP_HIGHMEM)
- 2. preallocate_image_memory()   (i.e. GFP_KERNEL)
- 3. preallocate_highmem_fraction (i.e. __GFP_HIGHMEM)
- 4. preallocate_image_memory()   (i.e. GFP_KERNEL)
+On 08/31/2010 10:14 PM, Rafael J. Wysocki wrote:
+>> Can you please pull from the following branch and see whether the
+>> problem is resolved?
+>>
+>>   git://git.kernel.org/pub/scm/linux/kernel/git/tj/wq.git for-linus
+> 
+> Which commit in there is the suspected fix?
 
-But, please imazine following scenario (as Vefa's scenario).
- - system has 3GB memory. 1GB is normal. 2GB is highmem.
- - all normal memory is free
- - 1.5GB memory of highmem are used for tmpfs. rest 500MB is free.
-
-At that time, hibernate_preallocate_memory() works as following.
-
-1. call preallocate_image_highmem(1GB)
-2. call preallocate_image_memory(500M)		total 1.5GB allocated
-3. call preallocate_highmem_fraction(660M)	total 2.2GB allocated
-
-then, all of normal zone memory was exhaust. next preallocate_image_memory()
-makes OOM, and oom_killer_disabled makes infinite loop.
-(oom_killer_disabled careless is vmscan bug. I'll fix it soon)
-
-The problem is, alloc_pages(__GFP_HIGHMEM) -> alloc_pages(GFP_KERNEL) is
-wrong order. alloc_pages(__GFP_HIGHMEM) may allocate page from lower zone.
-then, next alloc_pages(GFP_KERNEL) lead to OOM.
-
-Please consider alloc_pages(GFP_KERNEL) -> alloc_pages(__GFP_HIGHMEM) order.
-Even though vmscan fix can avoid infinite loop, OOM situation might makes
-big slow down on highmem machine. It seems no good.
-
+Commit 8a2e8e5dec7e29c56a46ba176c664ab6a3d04118 (workqueue: fix
+cwq->nr_active underflow).  The symptom described in the patch
+description is different but nr_active is used for workqueue freezing
+and can definitely lead to malfunction during freeze.  I've sent pull
+request to Linus yesterday.
 
 Thanks.
+
+-- 
+tejun
