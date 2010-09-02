@@ -1,41 +1,33 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Tejun Heo <htejun@gmail.com>
 Subject: Re: [PATCH] libata: skip EH autopsy and recovery during suspend
-Date: Thu, 2 Sep 2010 22:28:07 +0200
-Message-ID: <201009022228.07626.rjw@sisk.pl>
-References: <201007091750.05020.stephan.diestelhorst@amd.com> <201009022216.45303.rjw@sisk.pl> <4C800829.9040802@gmail.com>
+Date: Thu, 02 Sep 2010 22:33:53 +0200
+Message-ID: <4C800A31.3050401@gmail.com>
+References: <201007091750.05020.stephan.diestelhorst@amd.com> <201009022216.45303.rjw@sisk.pl> <4C800829.9040802@gmail.com> <201009022228.07626.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <4C800829.9040802@gmail.com>
+In-Reply-To: <201009022228.07626.rjw@sisk.pl>
 Sender: linux-ide-owner@vger.kernel.org
-To: Tejun Heo <htejun@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Stephan Diestelhorst <stephan.diestelhorst@amd.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, Stephan Diestelhorst <stephan.diestelhorst@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, September 02, 2010, Tejun Heo wrote:
-> Hello,
-> 
-> On 09/02/2010 10:16 PM, Rafael J. Wysocki wrote:
-> > Putting the issue at hand aside, I'm not really sure if using SCSI EH for
-> > suspending the controller is a good idea.  It seems overly complicated and
-> > it doesn't match the new PCI suspend model with separate ->suspend(),
-> > ->freeze() and ->poweroff() callbacks.  Moreover, the passing of pm_message_t
-> > back and forth doesn't make things clear either.
-> > 
-> > Would it be possible to rework this thing entirely at one point?
-> 
-> Well, I think I would need more than that to rework the whole thing.
-> There are a lot of benefits in sharing the same path between probing /
-> error handling and suspend/resuming.  ATA has a lot of quirks which
-> have to be dealt with and it will be very fragile to scatter handling
-> logics over multiple separate paths.  We definitely can try to make
-> the plumbing from power management easier to follow.
+Hello,
 
-That would be very nice.  In particular, I'd like to get rid of the
-pm_message_t thing if possible.  And I'd like to avoid putting the
-controller into D3 before creating hibernation image. :-)
+On 09/02/2010 10:28 PM, Rafael J. Wysocki wrote:
+> That would be very nice.  In particular, I'd like to get rid of the
+> pm_message_t thing if possible.  And I'd like to avoid putting the
+> controller into D3 before creating hibernation image. :-)
 
-Thanks,
-Rafael
+Oh, yeah, things like that can definitely be changed, but I think it
+would still need to be piped through EH.  That's how the queue gets
+quiesced for those special operations and resume is basically probing,
+so it doesn't make much sense to split them.  Please let me know how
+it should work from power management POV and I'll be happy to convert
+libata to fit the new behavior.
+
+Thanks.
+
+-- 
+tejun
