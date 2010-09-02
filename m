@@ -1,29 +1,86 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] libata: skip EH autopsy and recovery during suspend
-Date: Thu, 2 Sep 2010 22:11:26 +0200
-Message-ID: <201009022211.26783.rjw@sisk.pl>
-References: <201007091750.05020.stephan.diestelhorst@amd.com> <4C7F7649.3010409@gmail.com> <201009021633.22869.stephan.diestelhorst@amd.com>
+Subject: Re: [PATCH] PM: Prevent waiting forever on asynchronous
+	resume after abort
+Date: Thu, 2 Sep 2010 21:46:03 +0200
+Message-ID: <201009022146.03359.rjw__48500.554476823$1283458544$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1009020946580.1513-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <201009021633.22869.stephan.diestelhorst@amd.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stephan Diestelhorst <stephan.diestelhorst@amd.com>
-Cc: Tejun Heo <htejun@gmail.com>, Stephan Diestelhorst <stephan.diestelhorst@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.1009020946580.1513-100000@iolanthe.rowland.org>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Colin Cross <ccross@android.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, September 02, 2010, Stephan Diestelhorst wrote:
-> On Thursday 02 September 2010, 12:02:49 Tejun Heo wrote:
-> > For some mysterious reason, certain hardware reacts badly to usual EH
-> > actions while the system is going for suspend.  As the devices won't
-> > be needed until the system is resumed, ask EH to skip usual autopsy
-> > and recovery and proceed directly to suspend.
+On Thursday, September 02, 2010, Alan Stern wrote:
+> On Wed, 1 Sep 2010, Colin Cross wrote:
 > 
-> Thanks Tejun for this patch. Will test in a second!
+> > Only wait on a parent device during resume if the parent device is
+> > suspended.
+> > 
+> > Consider three drivers, A, B, and C.  The parent of A is C, and C
+> > has async_suspend set.  On boot, C->power.completion is initialized
+> > to 0.
+> > 
+> > During the first suspend:
+> > suspend_devices_and_enter(...)
+> >  dpm_resume(...)
+> >   device_suspend(A)
+> >   device_suspend(B) returns error, aborts suspend
+> >  dpm_resume_end(...)
+> >    dpm_resume(...)
+> >     device_resume(A)
+> >      dpm_wait(A->parent == C)
+> >       wait_for_completion(C->power.completion)
+> > 
+> > The wait_for_completion will never complete, because
+> > complete_all(C->power.completion) will only be called from
+> > device_suspend(C) or device_resume(C), neither of which is called
+> > if suspend is aborted before C.
+> 
+> This would work okay if C->power.completion had been initialized to the 
+> completed state during boot, right?
+> 
+> > After a successful suspend->resume cycle, where B doesn't abort
+> > suspend, C->power.completion is left in the completed state by the
+> > call to device_resume(C), and the same call path will work if B
+> > aborts suspend.
+> > 
+> > Signed-off-by: Colin Cross <ccross@android.com>
+> > ---
+> >  drivers/base/power/main.c |    3 ++-
+> >  1 files changed, 2 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> > index cb784a0..e159910 100644
+> > --- a/drivers/base/power/main.c
+> > +++ b/drivers/base/power/main.c
+> > @@ -526,7 +526,8 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+> >  	TRACE_DEVICE(dev);
+> >  	TRACE_RESUME(0);
+> >  
+> > -	dpm_wait(dev->parent, async);
+> > +	if (dev->parent && dev->parent->power.status >= DPM_OFF)
+> > +		dpm_wait(dev->parent, async);
+> >  	device_lock(dev);
+> >  
+> >  	dev->power.status = DPM_RESUMING;
+> 
+> I think it would be better to change device_pm_init() and add a 
+> complete_all().
 
-I'll wait, then, because it takes a couple of days to reproduce it on my machine.
+I agree.
 
-Thanks,
+Who's writing the patch?
+
 Rafael
