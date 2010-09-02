@@ -1,90 +1,81 @@
-From: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH] libata: skip EH autopsy and recovery during suspend
-Date: Thu, 02 Sep 2010 12:02:49 +0200
-Message-ID: <4C7F7649.3010409@gmail.com>
-References: <201007091750.05020.stephan.diestelhorst@amd.com> <4C7376BE.5040006@gmail.com> <201008242239.43249.rjw@sisk.pl> <201008270109.36687.rjw@sisk.pl> <4C7F6931.4050707@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: Prevent waiting forever on asynchronous
+ resume after abort
+Date: Thu, 2 Sep 2010 09:50:14 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1009020946580.1513-100000__2803.63656715981$1283435569$gmane$org@iolanthe.rowland.org>
+References: <1283396052-3620-1-git-send-email-ccross@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <4C7F6931.4050707@gmail.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephan Diestelhorst <stephan.diestelhorst@amd.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, Stephan Diestelhorst <stephan.diestelhorst@gmail.com>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1283396052-3620-1-git-send-email-ccross@android.com>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Colin Cross <ccross@android.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-For some mysterious reason, certain hardware reacts badly to usual EH
-actions while the system is going for suspend.  As the devices won't
-be needed until the system is resumed, ask EH to skip usual autopsy
-and recovery and proceed directly to suspend.
+On Wed, 1 Sep 2010, Colin Cross wrote:
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
-Can you please verify this one?
+> Only wait on a parent device during resume if the parent device is
+> suspended.
+> 
+> Consider three drivers, A, B, and C.  The parent of A is C, and C
+> has async_suspend set.  On boot, C->power.completion is initialized
+> to 0.
+> 
+> During the first suspend:
+> suspend_devices_and_enter(...)
+>  dpm_resume(...)
+>   device_suspend(A)
+>   device_suspend(B) returns error, aborts suspend
+>  dpm_resume_end(...)
+>    dpm_resume(...)
+>     device_resume(A)
+>      dpm_wait(A->parent == C)
+>       wait_for_completion(C->power.completion)
+> 
+> The wait_for_completion will never complete, because
+> complete_all(C->power.completion) will only be called from
+> device_suspend(C) or device_resume(C), neither of which is called
+> if suspend is aborted before C.
 
-Thanks.
+This would work okay if C->power.completion had been initialized to the 
+completed state during boot, right?
 
- drivers/ata/libata-core.c |   14 +++++++++++++-
- drivers/ata/libata-eh.c   |    4 ++++
- include/linux/libata.h    |    1 +
- 3 files changed, 18 insertions(+), 1 deletion(-)
+> After a successful suspend->resume cycle, where B doesn't abort
+> suspend, C->power.completion is left in the completed state by the
+> call to device_resume(C), and the same call path will work if B
+> aborts suspend.
+> 
+> Signed-off-by: Colin Cross <ccross@android.com>
+> ---
+>  drivers/base/power/main.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index cb784a0..e159910 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -526,7 +526,8 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+>  	TRACE_DEVICE(dev);
+>  	TRACE_RESUME(0);
+>  
+> -	dpm_wait(dev->parent, async);
+> +	if (dev->parent && dev->parent->power.status >= DPM_OFF)
+> +		dpm_wait(dev->parent, async);
+>  	device_lock(dev);
+>  
+>  	dev->power.status = DPM_RESUMING;
 
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 9ceb493..92cd5f3 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -5427,6 +5427,7 @@ static int ata_host_request_pm(struct ata_host *host, pm_message_t mesg,
-  */
- int ata_host_suspend(struct ata_host *host, pm_message_t mesg)
- {
-+	unsigned int ehi_flags = ATA_EHI_QUIET;
- 	int rc;
+I think it would be better to change device_pm_init() and add a 
+complete_all().
 
- 	/*
-@@ -5435,7 +5436,18 @@ int ata_host_suspend(struct ata_host *host, pm_message_t mesg)
- 	 */
- 	ata_lpm_enable(host);
-
--	rc = ata_host_request_pm(host, mesg, 0, ATA_EHI_QUIET, 1);
-+	/*
-+	 * On some hardware, device fails to respond after spun down
-+	 * for suspend.  As the device won't be used before being
-+	 * resumed, we don't need to touch the device.  Ask EH to skip
-+	 * the usual stuff and proceed directly to suspend.
-+	 *
-+	 * http://thread.gmane.org/gmane.linux.ide/46764
-+	 */
-+	if (mesg.event == PM_EVENT_SUSPEND)
-+		ehi_flags |= ATA_EHI_NO_AUTOPSY | ATA_EHI_NO_RECOVERY;
-+
-+	rc = ata_host_request_pm(host, mesg, 0, ehi_flags, 1);
- 	if (rc == 0)
- 		host->dev->power.power_state = mesg;
- 	return rc;
-diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
-index 0108731..95838b3 100644
---- a/drivers/ata/libata-eh.c
-+++ b/drivers/ata/libata-eh.c
-@@ -3242,6 +3242,10 @@ static int ata_eh_skip_recovery(struct ata_link *link)
- 	if (link->flags & ATA_LFLAG_DISABLED)
- 		return 1;
-
-+	/* skip if explicitly requested */
-+	if (ehc->i.flags & ATA_EHI_NO_RECOVERY)
-+		return 1;
-+
- 	/* thaw frozen port and recover failed devices */
- 	if ((ap->pflags & ATA_PFLAG_FROZEN) || ata_link_nr_enabled(link))
- 		return 0;
-diff --git a/include/linux/libata.h b/include/linux/libata.h
-index 89115f8..d1ef41b 100644
---- a/include/linux/libata.h
-+++ b/include/linux/libata.h
-@@ -335,6 +335,7 @@ enum {
- 	ATA_EHI_HOTPLUGGED	= (1 << 0),  /* could have been hotplugged */
- 	ATA_EHI_NO_AUTOPSY	= (1 << 2),  /* no autopsy */
- 	ATA_EHI_QUIET		= (1 << 3),  /* be quiet */
-+	ATA_EHI_NO_RECOVERY	= (1 << 4),  /* no recovery */
-
- 	ATA_EHI_DID_SOFTRESET	= (1 << 16), /* already soft-reset this port */
- 	ATA_EHI_DID_HARDRESET	= (1 << 17), /* already soft-reset this port */
+Alan Stern
