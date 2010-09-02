@@ -1,89 +1,29 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bisected Regression in 2.6.35] A full tmpfs
-	filesystem causeshibernation to hang
-Date: Thu, 2 Sep 2010 21:57:18 +0200
-Message-ID: <201009022157.18561.rjw__48358.6337803446$1283457792$gmane$org@sisk.pl>
-References: <20100901093219.9744.A69D9226@jp.fujitsu.com>
-	<201009020002.25113.rjw@sisk.pl>
-	<20100902091010.D050.A69D9226@jp.fujitsu.com>
+Subject: Re: [PATCH] libata: skip EH autopsy and recovery during suspend
+Date: Thu, 2 Sep 2010 22:11:26 +0200
+Message-ID: <201009022211.26783.rjw@sisk.pl>
+References: <201007091750.05020.stephan.diestelhorst@amd.com> <4C7F7649.3010409@gmail.com> <201009021633.22869.stephan.diestelhorst@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100902091010.D050.A69D9226@jp.fujitsu.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-pm@lists.linux-foundation.org, "M. Vefa Bicakci" <bicave@superonline.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <201009021633.22869.stephan.diestelhorst@amd.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Stephan Diestelhorst <stephan.diestelhorst@amd.com>
+Cc: Tejun Heo <htejun@gmail.com>, Stephan Diestelhorst <stephan.diestelhorst@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, September 02, 2010, KOSAKI Motohiro wrote:
-> > On Wednesday, September 01, 2010, KOSAKI Motohiro wrote:
-> > > > === 8< ===
-> > > > PM: Marking nosave pages: ...0009f000 - ...000100000
-> > > > PM: basic memory bitmaps created
-> > > > PM: Syncing filesystems ... done
-> > > > Freezing user space processes ... (elapsed 0.01 seconds) done.
-> > > > Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
-> > > > PM: Preallocating image memory...
-> > > > shrink_all_memory start
-> > > > PM: shrink memory: pass=1, req:310171 reclaimed:15492 free:360936
-> > > > PM: shrink memory: pass=2, req:294679 reclaimed:28864 free:373981
-> > > > PM: shrink memory: pass=3, req:265815 reclaimed:60311 free:405374
-> > > > PM: shrink memory: pass=4, req:205504 reclaimed:97870 free:443024
-> > > > PM: shrink memory: pass=5, req:107634 reclaimed:146948 free:492141
-> > > > shrink_all_memory: req:107634 reclaimed:146948 free:492141
-> > > > PM: preallocate_image_highmem 556658 278329
-> > > > PM: preallocate_image_memory 103139 103139
-> > > > PM: preallocate_highmem_fraction 183908 556658 760831 -> 183908
-> > > > === >8 ===
-> > > 
-> > > Rafael, this log mean hibernate_preallocate_memory() has a bug.
-> > 
-> > Well, it works as designed ...
-> > 
-> > > It allocate memory as following order.
-> > >  1. preallocate_image_highmem()  (i.e. __GFP_HIGHMEM)
-> > >  2. preallocate_image_memory()   (i.e. GFP_KERNEL)
-> > >  3. preallocate_highmem_fraction (i.e. __GFP_HIGHMEM)
-> > >  4. preallocate_image_memory()   (i.e. GFP_KERNEL)
-> > > 
-> > > But, please imazine following scenario (as Vefa's scenario).
-> > >  - system has 3GB memory. 1GB is normal. 2GB is highmem.
-> > >  - all normal memory is free
-> > >  - 1.5GB memory of highmem are used for tmpfs. rest 500MB is free.
-> > 
-> > Indeed, that's a memory allocation pattern I didn't anticipate.
-> > 
-> > > At that time, hibernate_preallocate_memory() works as following.
-> > > 
-> > > 1. call preallocate_image_highmem(1GB)
-> > > 2. call preallocate_image_memory(500M)		total 1.5GB allocated
-> > > 3. call preallocate_highmem_fraction(660M)	total 2.2GB allocated
-> > > 
-> > > then, all of normal zone memory was exhaust. next preallocate_image_memory()
-> > > makes OOM, and oom_killer_disabled makes infinite loop.
-> > > (oom_killer_disabled careless is vmscan bug. I'll fix it soon)
-> > 
-> > So, it looks like the problem will go away if we check if there are any normal
-> > pages to allocate from before calling the last preallocate_image_memory()?
-> > 
-> > Like in the patch below, perhaps?
+On Thursday, September 02, 2010, Stephan Diestelhorst wrote:
+> On Thursday 02 September 2010, 12:02:49 Tejun Heo wrote:
+> > For some mysterious reason, certain hardware reacts badly to usual EH
+> > actions while the system is going for suspend.  As the devices won't
+> > be needed until the system is resumed, ask EH to skip usual autopsy
+> > and recovery and proceed directly to suspend.
 > 
-> Looks like fine. but I have one question. hibernate_preallocate_memory() call
-> preallocate_image_memory() two times. Why do you only care latter one?
-> former one seems similar risk.
+> Thanks Tejun for this patch. Will test in a second!
 
-The first one is mandatory, ie. if we can't allocate the requested number of
-pages at this point, we fail the entire hibernation.  In that case the
-performance hit doesn't matter.
+I'll wait, then, because it takes a couple of days to reproduce it on my machine.
 
 Thanks,
 Rafael
