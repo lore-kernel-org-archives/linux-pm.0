@@ -1,41 +1,38 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: Prevent waiting forever on asynchronous
- resume after abort
-Date: Thu, 2 Sep 2010 16:45:25 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1009021642320.1311-100000__1864.88984986699$1283460367$gmane$org@iolanthe.rowland.org>
-References: <AANLkTi=s3_kFvRY9Afzku82gUgW7YKYXDBZvTkxQsMP8@mail.gmail.com>
+From: Stephan Diestelhorst <stephan.diestelhorst@gmail.com>
+Subject: Re: [PATCH] libata: skip EH autopsy and recovery during suspend
+Date: Thu, 2 Sep 2010 22:52:56 +0200
+Message-ID: <AANLkTi==kpbcJQ9E_MMfs9Ohu_O4vNsf8T7NK1z+iAwn@mail.gmail.com>
+References: <201007091750.05020.stephan.diestelhorst@amd.com>
+	<4C7F6931.4050707@gmail.com>
+	<4C7F7649.3010409@gmail.com>
+	<201009021633.22869.stephan.diestelhorst@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=s3_kFvRY9Afzku82gUgW7YKYXDBZvTkxQsMP8@mail.gmail.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@android.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <201009021633.22869.stephan.diestelhorst@amd.com>
+Sender: linux-ide-owner@vger.kernel.org
+To: Tejun Heo <htejun@gmail.com>, Stephan Diestelhorst <stephan.diestelhorst@amd.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2 Sep 2010, Colin Cross wrote:
+On Thu, Sep 2, 2010 at 4:33 PM, Stephan Diestelhorst
+<stephan.diestelhorst@amd.com> wrote:
+> On Thursday 02 September 2010, 12:02:49 Tejun Heo wrote:
+>> For some mysterious reason, certain hardware reacts badly to usual E=
+H
+>> actions while the system is going for suspend. =A0As the devices won=
+'t
+>> be needed until the system is resumed, ask EH to skip usual autopsy
+>> and recovery and proceed directly to suspend.
+>
+> Thanks Tejun for this patch. Will test in a second!
 
-> >> I think it would be better to change device_pm_init() and add a
-> >> complete_all().
-> >
-> > I agree.
-> That would work, and was my first solution, but it increases the
-> reliance on the completion variable being left completed between state
-> transitions, which is undocumented and unnecessary.  It seems more
-> straightforward to me to only wait on the parent if the parent is
-> suspended.
+Applied, compiled and worked for the 5 iterations I managed to test it.
+Much better than your previous patch, thanks a lot! I'd give it some mo=
+re spins
+tomorrow, though.
 
-How about calling complete_all() from within dpm_prepare() as well?  
-Then it will get initialized properly at the beginning of every sleep 
-transition.
 
-Alan Stern
+Thanks,
+  Stephan
