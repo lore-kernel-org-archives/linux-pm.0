@@ -1,42 +1,41 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: Prevent waiting forever on asynchronous
- resume after abort
-Date: Thu, 2 Sep 2010 16:27:31 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1009021626110.1311-100000__29513.1248575219$1283459351$gmane$org@iolanthe.rowland.org>
-References: <201009022146.03359.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] libata: skip EH autopsy and recovery during suspend
+Date: Thu, 2 Sep 2010 22:28:07 +0200
+Message-ID: <201009022228.07626.rjw@sisk.pl>
+References: <201007091750.05020.stephan.diestelhorst@amd.com> <201009022216.45303.rjw@sisk.pl> <4C800829.9040802@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201009022146.03359.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Colin Cross <ccross@android.com>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <4C800829.9040802@gmail.com>
+Sender: linux-ide-owner@vger.kernel.org
+To: Tejun Heo <htejun@gmail.com>
+Cc: Stephan Diestelhorst <stephan.diestelhorst@amd.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, Stephan Diestelhorst <stephan.diestelhorst@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2 Sep 2010, Rafael J. Wysocki wrote:
-
-> On Thursday, September 02, 2010, Alan Stern wrote:
-> > On Wed, 1 Sep 2010, Colin Cross wrote:
+On Thursday, September 02, 2010, Tejun Heo wrote:
+> Hello,
+> 
+> On 09/02/2010 10:16 PM, Rafael J. Wysocki wrote:
+> > Putting the issue at hand aside, I'm not really sure if using SCSI EH for
+> > suspending the controller is a good idea.  It seems overly complicated and
+> > it doesn't match the new PCI suspend model with separate ->suspend(),
+> > ->freeze() and ->poweroff() callbacks.  Moreover, the passing of pm_message_t
+> > back and forth doesn't make things clear either.
 > > 
-> > > Only wait on a parent device during resume if the parent device is
-> > > suspended.
-
-> > I think it would be better to change device_pm_init() and add a 
-> > complete_all().
+> > Would it be possible to rework this thing entirely at one point?
 > 
-> I agree.
-> 
-> Who's writing the patch?
+> Well, I think I would need more than that to rework the whole thing.
+> There are a lot of benefits in sharing the same path between probing /
+> error handling and suspend/resuming.  ATA has a lot of quirks which
+> have to be dealt with and it will be very fragile to scatter handling
+> logics over multiple separate paths.  We definitely can try to make
+> the plumbing from power management easier to follow.
 
-I was hoping that Colin would.  But I can do it if he doesn't want to.
+That would be very nice.  In particular, I'd like to get rid of the
+pm_message_t thing if possible.  And I'd like to avoid putting the
+controller into D3 before creating hibernation image. :-)
 
-Alan Stern
+Thanks,
+Rafael
