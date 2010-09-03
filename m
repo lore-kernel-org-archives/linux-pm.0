@@ -1,15 +1,14 @@
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [Bisected Regression in 2.6.35] A full tmpfs
-	filesystem causeshibernation to hang
-Date: Fri,  3 Sep 2010 10:53:32 +0900 (JST)
-Message-ID: <20100903105216.B65C.A69D9226__19506.3558327549$1283478886$gmane$org@jp.fujitsu.com>
-References: <20100903085756.B657.A69D9226@jp.fujitsu.com>
-	<201009030307.34057.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: Prevent waiting forever on asynchronous
+ resume after abort
+Date: Thu, 2 Sep 2010 22:42:23 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1009022233030.19022-100000__47557.1075840437$1283481887$gmane$org@netrider.rowland.org>
+References: <AANLkTikug=+ztLCJbxYiyx1U_whLkQ9zsYvEMbV9JyJi@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201009030307.34057.rjw@sisk.pl>
+In-Reply-To: <AANLkTikug=+ztLCJbxYiyx1U_whLkQ9zsYvEMbV9JyJi@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,48 +18,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, "M. Vefa Bicakci" <bicave@superonline.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kosaki.motohiro@jp.fujitsu.com
+To: Colin Cross <ccross@android.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> On Friday, September 03, 2010, KOSAKI Motohiro wrote:
-> > Hello,
-> > 
-> > > > > > Like in the patch below, perhaps?
-> > > > > 
-> > > > > Looks like fine. but I have one question. hibernate_preallocate_memory() call
-> > > > > preallocate_image_memory() two times. Why do you only care latter one?
-> > > > > former one seems similar risk.
-> > > > 
-> > > > The first one is mandatory, ie. if we can't allocate the requested number of
-> > > > pages at this point, we fail the entire hibernation.  In that case the
-> > > > performance hit doesn't matter.
-> > > 
-> > > IOW, your patch at http://lkml.org/lkml/2010/9/2/262 is still necessary to
-> > > protect against the infinite loop in that case.
-> > 
-> > As far as I understand, we need distinguish two allocation failure.
-> >   1) failure because no enough memory
-> > 	-> yes, hibernation should fail
-> >  2) failure because already allocated enough lower zone memory
-> > 	-> why should we fail?
-> > 
-> > If the system has a lot of memory, scenario (2) is happen frequently than (1).
-> > I think we need check alloc_highmem and alloc_normal variable and call
-> > preallocate_image_highmem() again instead preallocate_image_memory()
-> > if we've alread allocated enough lots normal memory.
-> > 
-> > nit?
-> 
-> Actually I thought about that, but we don't really see hibernation fail for
-> this reason.  In all of the tests I carried out the requested 50% of highmem
-> had been allocated before allocations from the normal zone started to be
-> made, even if highmem was 100% full at that point.  So this appears to be
-> a theoretical issue and covering it would require us to change the algorithm
-> entirely (eg. it doesn't make sense to call preallocate_highmem_fraction() down
-> the road if that happens).
+On Thu, 2 Sep 2010, Colin Cross wrote:
 
-ok, thanks. probably I've catched your point. please feel free to use my reviewed-by
-for your fix.
+> > Well, in fact that was used in one version of the patchset that introdu=
+ced
+> > asynchronous suspend-resume, but it was rejected by Linus, because it w=
+as
+> > based on non-standard synchronization. =A0The Linus' argument, that I a=
+greed
+> > with, was that standard snychronization constructs, such as locks or
+> > completions, were guaranteed to work accross different architectures an=
+d thus
+> > were simply _safer_ to use than open-coded synchronization that you see=
+m to be
+> > preferring.
+> If I'm reading the right thread, that was using rwlocks, not
+> conditions.
 
-thanks.
+No, the thread talked about rwsems, not rwlocks.  And that's not what =
+
+Linus didn't like -- indeed, using rwsems was his idea.  He didn't like =
+
+non-standard open-coded synchronization.
+
+>  wait_on_condition looks just as cross-architecture as
+> completions, and is almost as simple.
+
+Do you mean wait_event?  It doesn't include the synchronization that =
+
+completions have.
+
+> I look at it like this:  Are you waiting for something to complete, or
+> are you waiting for something to be in a specific state?  Completion
+> works great if you know that you will only want to wait after it
+> starts.  That's not true for an aborted suspend - you may call
+> dpm_wait on a device that has never started resuming, because it never
+> suspended.  You can use a completion, and make sure it's state is
+> right for all the corner cases, but at the end of the day that's not
+> what you mean.  What you mean is "wait on the device to be resumed",
+> and that's a condition, not a simple completion event.
+> =
+
+> > Completions simply allowed us to get the desired behavior with the least
+> > effort and that's why we used them.
+> I'm happy with the end result, but I may submit a patch that converts
+> the completions to conditions for discussion.
+
+Be sure to add memory barriers at the appropriate places.  That's what =
+
+Linus was complaining about in the earlier approach.
+
+Alan Stern
