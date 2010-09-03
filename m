@@ -1,80 +1,77 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: Prevent waiting forever on asynchronous
- resume after abort
-Date: Fri, 3 Sep 2010 10:04:14 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1009030953060.1548-100000__21873.9396463663$1283522793$gmane$org@iolanthe.rowland.org>
-References: <AANLkTindhyovNphyCfnSuqN8KogZ0APdWyL7T=vYHHPF@mail.gmail.com>
+Subject: Re: [linux-pm] [PATCH] libata: skip EH autopsy and recovery during
+ suspend
+Date: Fri, 3 Sep 2010 10:16:03 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1009031006510.1548-100000@iolanthe.rowland.org>
+References: <4C80B81F.8090803@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTindhyovNphyCfnSuqN8KogZ0APdWyL7T=vYHHPF@mail.gmail.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@android.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <4C80B81F.8090803@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tejun Heo <htejun@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, Stephan Diestelhorst <stephan.diestelhorst@gmail.com>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Stephan Diestelhorst <stephan.diestelhorst@amd.com>, Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@lst.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2 Sep 2010, Colin Cross wrote:
+On Fri, 3 Sep 2010, Tejun Heo wrote:
 
-> You're right, wait_event would be much worse.
+> > Tejun, I'm planning to make a few changes to the block layer and the
+> > SCSI core in order to implement delayed autosuspend.  These changes
+> > will affect system sleep too, so you may need to know about them.
+> > 
+> > Each request_queue structure will have an rpm_status variable that gets
+> > updated as the corresponding device is suspended or resumed.  When the
+> > status is SUSPENDING or RESUMING, requests will not be sent from the
+> > request_queue to the driver unless they have cmd_type set to
+> > REQ_TYPE_PM_SUSPEND or REQ_TYPE_PM_RESUME (actually I may combine those
+> > two into a single REQ_TYPE_PM type).  If other types of request are
+> > added to the queue when the status isn't ACTIVE, they will cause a
+> > runtime resume to be started.
+> > 
+> > Initially this will affect only drivers using the SCSI layer.  
+> > Commands sent during error handling won't be affected though, because
+> > the SCSI error handler doesn't use requests or queues -- it sends
+> > commands directly to the lower-level driver.
+> > 
+> > Does that all sound okay to you?
 > 
-> I think there's another race condition during suspend.  If an
-> asynchronous device calls device_pm_wait_for_dev on a device that
-> hasn't had device_suspend called on it yet, power.completion will
-> still be set from initialization or the last time it completed resume,
-> and it won't wait.
+> Hmm... I can't really tell much without looking at the actual patch
+> but I'm a bit doubtful about using REQ_TYPE_* for suspend/resumes,
+> well, for that matter, for any other purpose than actual IO requests.
+> The current REQ_TYPE_PM_* are only used by ide and it's really messy.
 
-That can't happen in a properly-designed system.  It would mean the 
-async device didn't suspend because it was waiting for a device which 
-was registered before it -- and that would deadlock even if you used 
-synchronous suspend.
+Yes.  I'm hoping that these changes will help simplify IDE, but I 
+haven't looked at it yet.
 
-> Assuming that problem is fixed somehow, there's also a deadlock
-> possibility.  Consider 3 devices.  A, B, and C, registered in that
-> order.  A is async, and the suspend handler calls
-> device_pm_wait_for_dev(C).  B's suspend handler returns an error.  A's
-> suspend handler is now stuck waiting on C->power.completion, but
-> device_suspend(C) will never be called.
+> Those special requests are very difficult to use in generic manner.
+> ie. How should remapping / cloning drivers like md, dm and loopback
+> handle them?
 
-Why not?  The normal suspend order is last-to-first, so C will be 
-suspended before B.
+They should never need to handle them.  These requests get used only
+for preparing a device to change power modes.  Logical devices don't
+need them, only physical devices do.  For example, you can't put a
+logical RAID device into low-power mode; all you can do is put the
+underlying physical drives into low power.
 
-> There are also an unhandled edge condition - what is the expected
-> behavior for a call to device_pm_wait_for_dev on a device if the
-> suspend handler for that device returns an error?  Currently, the
-> calling device will continue as if the target device had suspended.
+>  They end up just being a mechanism for specific low
+> level drivers to feed certain requests back to themselves to implement
+> suspend/resume sequence and as there's no clear defined common usage,
+> the meaning of those flags becomes ambiguous and confusing depending
+> on drivers and so on.
 
-It looks like __device_suspend needs to set async_error.  Which means 
-async_suspend doesn't need to set it.  This is indeed a bug.
+With my changes there now will be a clear defined usage.
 
-> What about splitting power.completion into two flags,
-> power.suspend_complete and power.resume_complete?
-> power.resume_complete is initialized to 1, because the devices start
-> resumed.  Clear power.suspend_complete for all devices at the
-> beginning of dpm_suspend, and clear power.resume_complete for any
-> device that is suspended at the beginning of dpm_resume.  The
-> semantics of each flag is then always clear.  Any time between the
-> beginning and end of dpm_suspend, waiting on any device's
-> power.suspend_complete will block until that device is in suspend.
-> Any time between the beginning and end of dpm_resume, waiting on
-> power.resume_complete will block IFF the device is suspended.
+> Another issue is that power management is probably better handled as a
+> sub problem of generic IO exception handling.  If you throw in
+> hot[un]plugs and transport errors and consider what should happen when
+> those events happen together, things get hairy if power management is
+> not well integrated with the usual exceptionn handling.
 
-How are you going to wait for these things?  With wait_event?  Didn't 
-you say above that it would be worse than using completions?
-
-> A solution to the 2nd and 3rd problems would still be needed - a way
-> to abort drivers that call device_pm_wait_for_dev when suspend is
-> aborted, and a return value to tell them the device being waited on is
-> not suspended.
-
-No solutions are needed.  See above.
+I don't see why.  Power management is not exceptional.  The relation
+with hot [un]plug is already taken care of.  Transport error recovery
+will block runtime power management if it occurs while the device is at
+full power; it is an issue only if it occurs during a power transition.  
+The SCSI error handler should work okay since it doesn't send commands
+through the block layer.
 
 Alan Stern
