@@ -1,15 +1,11 @@
-From: Colin Cross <ccross@android.com>
-Subject: Re: [PATCH] PM: Prevent waiting forever on asynchronous
-	resume after abort
-Date: Fri, 3 Sep 2010 09:48:00 -0700
-Message-ID: <AANLkTi=gANgv=_PFTqNKy1vDddhYKZJ9nOKhvhOBJwqE__31150.9274681613$1283552289$gmane$org@mail.gmail.com>
-References: <AANLkTindhyovNphyCfnSuqN8KogZ0APdWyL7T=vYHHPF@mail.gmail.com>
-	<Pine.LNX.4.44L0.1009030953060.1548-100000@iolanthe.rowland.org>
+From: Tom Lyon <pugs@cisco.com>
+Subject: question about driver's runtime_suspend
+Date: Fri, 3 Sep 2010 15:20:19 -0700
+Message-ID: <201009031520.19452.pugs@cisco.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1009030953060.1548-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,77 +15,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: rjw@sisk.pl, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 3, 2010 at 7:04 AM, Alan Stern <stern@rowland.harvard.edu> wrot=
-e:
-> On Thu, 2 Sep 2010, Colin Cross wrote:
->
->> You're right, wait_event would be much worse.
->>
->> I think there's another race condition during suspend. =A0If an
->> asynchronous device calls device_pm_wait_for_dev on a device that
->> hasn't had device_suspend called on it yet, power.completion will
->> still be set from initialization or the last time it completed resume,
->> and it won't wait.
->
-> That can't happen in a properly-designed system. =A0It would mean the
-> async device didn't suspend because it was waiting for a device which
-> was registered before it -- and that would deadlock even if you used
-> synchronous suspend.
-I see - from the earlier thread, if devices need to break the tree
-model for suspend, they still have to follow the list ordering.
+Hi. I am looking at supporting the new PM stuff in my VFIO "driver" - which 
+allows user level drivers for PCI* devices.
 
->> Assuming that problem is fixed somehow, there's also a deadlock
->> possibility. =A0Consider 3 devices. =A0A, B, and C, registered in that
->> order. =A0A is async, and the suspend handler calls
->> device_pm_wait_for_dev(C). =A0B's suspend handler returns an error. =A0A=
-'s
->> suspend handler is now stuck waiting on C->power.completion, but
->> device_suspend(C) will never be called.
->
-> Why not? =A0The normal suspend order is last-to-first, so C will be
-> suspended before B.
-Reverse A and C, but then the earlier comment applies.
+When runtime_suspend is invoked, is it allowed to sleep while determining 
+whether the device can be suspended?  If not, does returning -EAGAIN mean that 
+it will be called again after some interval? 
 
->> There are also an unhandled edge condition - what is the expected
->> behavior for a call to device_pm_wait_for_dev on a device if the
->> suspend handler for that device returns an error? =A0Currently, the
->> calling device will continue as if the target device had suspended.
->
-> It looks like __device_suspend needs to set async_error. =A0Which means
-> async_suspend doesn't need to set it. =A0This is indeed a bug.
-Is this sufficient?  The waiting device will complete its suspend
-handler, and then be resumed, but the waited-on device never
-suspended.  Are drivers expected to handle that case?
+I would like to notify the user level that a suspend is desired, and then wait 
+for it to tell the vfio driver whether or not the suspend is OK.
 
->> What about splitting power.completion into two flags,
->> power.suspend_complete and power.resume_complete?
->> power.resume_complete is initialized to 1, because the devices start
->> resumed. =A0Clear power.suspend_complete for all devices at the
->> beginning of dpm_suspend, and clear power.resume_complete for any
->> device that is suspended at the beginning of dpm_resume. =A0The
->> semantics of each flag is then always clear. =A0Any time between the
->> beginning and end of dpm_suspend, waiting on any device's
->> power.suspend_complete will block until that device is in suspend.
->> Any time between the beginning and end of dpm_resume, waiting on
->> power.resume_complete will block IFF the device is suspended.
->
-> How are you going to wait for these things? =A0With wait_event? =A0Didn't
-> you say above that it would be worse than using completions?
-I'd have to complete them on errors to abort any waiters, which would
-complicate the meaning of the completion flags, but keep the rules
-above about the same.
-
->> A solution to the 2nd and 3rd problems would still be needed - a way
->> to abort drivers that call device_pm_wait_for_dev when suspend is
->> aborted, and a return value to tell them the device being waited on is
->> not suspended.
->
-> No solutions are needed. =A0See above.
->
-> Alan Stern
->
->
+Thanks for any help.
