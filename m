@@ -1,58 +1,85 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: hibernation hangs with ATA errors (lockup_detector
-	bug)
-Date: Fri, 03 Sep 2010 10:35:04 +0200
-Message-ID: <4C80B338.6020701__43384.2714214281$1283503061$gmane$org@gmail.com>
-References: <4C03C608.1040600@gmail.com> <20100601135004.GP15159@redhat.com>
-	<4C051D44.7040203@gmail.com> <20100602184459.GA15159@redhat.com>
-	<4C0B3E94.6020506@gmail.com>
+From: Tejun Heo <htejun@gmail.com>
+Subject: Re: [linux-pm] [PATCH] libata: skip EH autopsy and recovery during
+ suspend
+Date: Fri, 03 Sep 2010 10:55:59 +0200
+Message-ID: <4C80B81F.8090803@gmail.com>
+References: <Pine.LNX.4.44L0.1009021646510.1311-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C0B3E94.6020506@gmail.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Don Zickus <dzickus@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1009021646510.1311-100000@iolanthe.rowland.org>
+Sender: linux-ide-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, Stephan Diestelhorst <stephan.diestelhorst@gmail.com>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Stephan Diestelhorst <stephan.diestelhorst@amd.com>, Jens Axboe <axboe@kernel.dk>, Christoph Hellwig <hch@lst.de>
 List-Id: linux-pm@vger.kernel.org
 
-On 06/06/2010 08:22 AM, Jiri Slaby wrote:
-> On 06/02/2010 08:44 PM, Don Zickus wrote:
->> --- a/kernel/watchdog.c
->> +++ b/kernel/watchdog.c
->> @@ -550,8 +550,7 @@ cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
->>  		break;
->>  	case CPU_ONLINE:
->>  	case CPU_ONLINE_FROZEN:
->> -		if (watchdog_enable(hotcpu))
->> -			return NOTIFY_BAD;
->> +		watchdog_enable(hotcpu)
+cc'ing Jens and Christoph and quoting whole body for them.
+
+On 09/02/2010 11:01 PM, Alan Stern wrote:
+> On Thu, 2 Sep 2010, Tejun Heo wrote:
 > 
-> This fixes the problem indeed.
+>> Hello,
+>>
+>> On 09/02/2010 10:28 PM, Rafael J. Wysocki wrote:
+>>> That would be very nice.  In particular, I'd like to get rid of the
+>>> pm_message_t thing if possible.  And I'd like to avoid putting the
+>>> controller into D3 before creating hibernation image. :-)
+> 
+> Ultimately I don't think it will be possible to get rid of pm_message_t
+> throughout the entire kernel.  Not just because it's a legacy thing
+> spread all over the place, but because it sometimes is genuinely
+> useful.  In situations where there are only minimal differences between
+> the various suspend/resume paths, it makes a lot of sense to call a
+> single function and tell it which type of operation to perform.
+> 
+>> Oh, yeah, things like that can definitely be changed, but I think it
+>> would still need to be piped through EH.  That's how the queue gets
+>> quiesced for those special operations and resume is basically probing,
+>> so it doesn't make much sense to split them.  Please let me know how
+>> it should work from power management POV and I'll be happy to convert
+>> libata to fit the new behavior.
+> 
+> Tejun, I'm planning to make a few changes to the block layer and the
+> SCSI core in order to implement delayed autosuspend.  These changes
+> will affect system sleep too, so you may need to know about them.
+> 
+> Each request_queue structure will have an rpm_status variable that gets
+> updated as the corresponding device is suspended or resumed.  When the
+> status is SUSPENDING or RESUMING, requests will not be sent from the
+> request_queue to the driver unless they have cmd_type set to
+> REQ_TYPE_PM_SUSPEND or REQ_TYPE_PM_RESUME (actually I may combine those
+> two into a single REQ_TYPE_PM type).  If other types of request are
+> added to the queue when the status isn't ACTIVE, they will cause a
+> runtime resume to be started.
+> 
+> Initially this will affect only drivers using the SCSI layer.  
+> Commands sent during error handling won't be affected though, because
+> the SCSI error handler doesn't use requests or queues -- it sends
+> commands directly to the lower-level driver.
+> 
+> Does that all sound okay to you?
 
-Hi, was this fixed somehow? I still use this hunk and don't know if it
-is needed:
---- a/kernel/watchdog.c
-+++ b/kernel/watchdog.c
-@@ -524,7 +524,7 @@ cpu_callback(struct notifier_block *nfb, unsigned
-long action, void *hcpu)
-                break;
-        case CPU_ONLINE:
-        case CPU_ONLINE_FROZEN:
--               err = watchdog_enable(hotcpu);
-+               watchdog_enable(hotcpu);
-                break;
- #ifdef CONFIG_HOTPLUG_CPU
-        case CPU_UP_CANCELED:
+Hmm... I can't really tell much without looking at the actual patch
+but I'm a bit doubtful about using REQ_TYPE_* for suspend/resumes,
+well, for that matter, for any other purpose than actual IO requests.
+The current REQ_TYPE_PM_* are only used by ide and it's really messy.
 
-thanks,
+Those special requests are very difficult to use in generic manner.
+ie. How should remapping / cloning drivers like md, dm and loopback
+handle them?  They end up just being a mechanism for specific low
+level drivers to feed certain requests back to themselves to implement
+suspend/resume sequence and as there's no clear defined common usage,
+the meaning of those flags becomes ambiguous and confusing depending
+on drivers and so on.
+
+Another issue is that power management is probably better handled as a
+sub problem of generic IO exception handling.  If you throw in
+hot[un]plugs and transport errors and consider what should happen when
+those events happen together, things get hairy if power management is
+not well integrated with the usual exceptionn handling.
+
+Thanks.
+
 -- 
-js
+tejun
