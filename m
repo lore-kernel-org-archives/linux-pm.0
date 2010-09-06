@@ -1,15 +1,11 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] tracing, perf: add more power related events
-Date: Mon, 6 Sep 2010 14:00:05 +0200
-Message-ID: <201009061400.05637.trenn__29791.9379118413$1283774474$gmane$org@suse.de>
-References: <AANLkTikvbn3+JPc7pnGZk-H4B71MHTu+-vjuzfJw_7PC@mail.gmail.com>
-	<201009061243.00479.trenn@suse.de>
-	<AANLkTik8_ixOcFy=c4hPZknyUqPYB+2hzQTNK9wVok4q@mail.gmail.com>
+From: Ohad Ben-Cohen <ohad@wizery.com>
+Subject: generic runtime pm callbacks
+Date: Mon, 6 Sep 2010 15:32:09 +0300
+Message-ID: <AANLkTikJ5sSQzZ8XL_04_VqzKKPZBRHGtMAQvdz9bfOS__21430.9545154267$1283776412$gmane$org@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTik8_ixOcFy=c4hPZknyUqPYB+2hzQTNK9wVok4q@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,22 +15,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jean Pihet <jean.pihet@newoldbits.com>
-Cc: Len Brown <len.brown@intel.com>, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, discuss@lesswatts.org, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>, arjan@infradead.org
+To: linux-pm@lists.linux-foundation.org
+Cc: linux-mmc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 06 September 2010 13:27:13 Jean Pihet wrote:
-> On Mon, Sep 6, 2010 at 12:42 PM, Thomas Renninger <trenn@suse.de> wrote:
-...
-> In order to reach an efficient low power mode you
-> need to ensure that all clocks in a clock domain are idled or cut off
-> (automatically by the HW or with the intervention of SW drivers).
-> 
-> The HW complexity requires the tracing of all those clocks/power
-> states, that is why new events are proposed.
-Hm, but if the HW can switch clocks behind your back, how do you
-realize that to throw a perf clock power event then?
-Theoretically you need to poll to keep track of HW switching the
-clocks?
+I'm adding Runtime PM support to the SDIO subsystem, and was planning
+to use the generic runtime pm handlers.
 
-    Thomas
+Those handlers return -EINVAL if the driver didn't explicitly define
+the runtime pm handlers:
+
+That may result in some drivers defining nop handlers, just to return
+0 (in case there's nothing else they need to do).
+
+Do we want that ?
+
+Alternatively, we may want to allow drivers to enable Runtime PM (by
+taking the appropriate action for their subsystem, e.g. calling
+put_noidle in probe and get_noresume in remove), but still not define
+any runtime pm handlers (implicitly always returning a success), with
+something like:
+
+diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_=
+ops.
+index 304c831..531762a 100644
+--- a/drivers/base/power/generic_ops.c
++++ b/drivers/base/power/generic_ops.c
+@@ -49,7 +49,7 @@ int pm_generic_runtime_suspend(struct device *dev)
+=A0 =A0 =A0 =A0const struct dev_pm_ops *pm =3D dev->driver ? dev->driver->p=
+m : NULL;
+=A0 =A0 =A0 =A0int ret;
+
+- =A0 =A0 =A0 ret =3D pm && pm->runtime_suspend ? pm->runtime_suspend(dev) =
+: -EINVAL;
++ =A0 =A0 =A0 ret =3D pm && pm->runtime_suspend ? pm->runtime_suspend(dev) =
+: 0;
+
+=A0 =A0 =A0 =A0return ret;
+=A0}
+@@ -68,7 +68,7 @@ int pm_generic_runtime_resume(struct device *dev)
+=A0 =A0 =A0 =A0const struct dev_pm_ops *pm =3D dev->driver ? dev->driver->p=
+m : NULL;
+=A0 =A0 =A0 =A0int ret;
+
+- =A0 =A0 =A0 ret =3D pm && pm->runtime_resume ? pm->runtime_resume(dev) : =
+-EINVAL;
++ =A0 =A0 =A0 ret =3D pm && pm->runtime_resume ? pm->runtime_resume(dev) : =
+0;
+
+=A0 =A0 =A0 =A0return ret;
+=A0}
+
+What do you think ?
+
+Please note that the generic pm_generic_runtime_idle handler does
+allow drivers not to explicitly define a runtime_idle handler.
+
+Thanks,
+Ohad.
