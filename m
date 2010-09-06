@@ -1,11 +1,15 @@
-From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Subject: T.O.I for the boot-up time reduction
-Date: Mon, 06 Sep 2010 12:59:32 +0300 (EEST)
-Message-ID: <20100906.125932.52163247.Hiroshi.DOYU__8276.68264178119$1283767378$gmane$org@nokia.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] tracing, perf: add more power related events
+Date: Mon, 6 Sep 2010 12:42:59 +0200
+Message-ID: <201009061243.00479.trenn__5964.08821079439$1283769874$gmane$org@suse.de>
+References: <AANLkTikvbn3+JPc7pnGZk-H4B71MHTu+-vjuzfJw_7PC@mail.gmail.com>
+	<20100904081801.GA19876@elte.hu>
+	<AANLkTinrRoi6y1fKUevu2O-Diac5B2r8RftTWUigQZOh@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <AANLkTinrRoi6y1fKUevu2O-Diac5B2r8RftTWUigQZOh@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,79 +19,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: tuxonice-devel@tuxonice.net
-Cc: linux-pm@lists.linux-foundation.org, Yoshiya.Hirase@nokia.com
+To: Jean Pihet <jean.pihet@newoldbits.com>, discuss@lesswatts.org, linux-pm@lists.linux-foundation.org
+Cc: Len Brown <len.brown@intel.com>, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@linux.intel.com>, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Monday 06 September 2010 10:56:50 Jean Pihet wrote:
+> Hi,
+> 
+> Thanks for the feedback!
+> 
+> > On Friday 03 September 2010 21:55:55 Ingo Molnar wrote:
+> >Well, the patch that got posted:
+> >
+> > [PATCH] tracing, perf: add more power related events
+> >
+> >Only adds tracepoints to power.h, but doesnt actually use them anywhere
+> >...
+> >
+> >Is there a companion patch i missed?
+> I will re-start a thread with the full patch and with both lkml and
+> linux-omap in Cc.
+discuss@lesswatts.org and linux-pm@lists.linux-foundation.org
+are also lists where people could be interested in such stuff.
 
-I tried T.O.I for the ARM based reference platform, TI OMAP3, with the
-ARM hibernation patch(*1). It works quite reliably as below:
+Could you explain a bit what these ARM specific power domains are then, please.
 
-...
-[    7.282806] Post atomic.
-[    7.285369] Reading caches...
-[    8.328247] ...20%...40%...60%...80%
-[    8.862762] Waited for i/o due to throughput_throttle 35 times.
-[    8.869934] Cleaning up...
-[    8.876373] Restarting all filesystems ...
-[    8.919616] Restarting tasks ... Restarting tasks ... done.
-[    9.096862] TuxOnIce debugging info:
-[    9.096893] - TuxOnIce core  : 3.1.1.1
-[    9.096893] - Compiler vers. : 4.3
-[    9.096893] - Attempt number : 1
-[    9.096893] - Parameters     : 0 667648 0 0 -2 0
-[    9.096923] - Overall expected compression percentage: 0.
-[    9.096923] - Compressor is 'lzo'.
-[    9.096923]   Compressed 180785152 bytes into 56154335 (68 percent compression).
-[    9.096923] - Block I/O active.
-[    9.096923]   Used 13840 pages from swap on /dev/...
-[    9.096923] - Max outstanding reads 752. Max writes 221.
-[    9.096954]   Memory_needed: 1024 x (4096 + 200 + 72) = 4472832 bytes.
-[    9.096954]   Free mem throttle point reached 0.
-[    9.096954] - Swap Allocator enabled.
-[    9.096954]   Swap available for image: 105984 pages.
-[    9.096954] - I/O speed: Write 27 MB/s, Read 26 MB/s.
-[    9.096984] - Extra pages    : 0 used/2000.
-[    9.096984] - Result         : Succeeded.
-...
+One idea I had after seeing these:
+Would it make sense to additionally add one or several device power perf event(s)?
+bluetooth, wireless, usb, cameras, whatever, could register it by name,
+like you've done it with the power domains.
+E.g. I had a problem with 2.6.31 where bluetooth was powered up/activated at
+boot time, while it got activated ondemand before. Cost me some Watts and quite
+some time to find that out.
+Showing perf power events when bluetooth gets activated and put into lower power
+states again (and the same for other devices), sounds like a good idea?
 
-Now it boots at ~9 [sec] and I am trying to reduce the resuming time
-as much as possible, and I set the following:
-
-(a) echo 100 > /proc/sys/vm/swappiness
-(b) echo -2 > /sys/power/tuxonice/image_size_limit
-(c) Apply the followin patch to call shrink_all_memory(ULONG_MAX)
---- a/kernel/power/tuxonice_prepare_image.c
-+++ b/kernel/power/tuxonice_prepare_image.c
-@@ -982,7 +982,7 @@ static void eat_memory(void)
-
-	if (amount_wanted > 0 && !test_result_state(TOI_ABORTED) &&
-			image_size_limit != -1) {
--               unsigned long request = amount_wanted + 50;
-+               unsigned long request = ULONG_MAX;
-
-		toi_prepare_status(CLEAR_BAR,
-				"Seeking to free %ldMB of memory.",
-
-I think that most of resuming time is spent on extracting image from
-disk and I am sure that reducing the image size could make the boot-up
-time/resuming time much shorter. I understand that smaller page cache
-makes application less responsive, but from total user experience POV,
-still shorter boot-up time may have some advantage over such
-responsiveness. The ealier UI shows up the better experience. So I
-would like ask experts here about the following questions:
-
-1, Any other (T.O.I) parameters to make the image size smaller?
-   Now I do "drop_pagecache()", "shrink_all_memory(ULONG_MAX)" and compression.
-2, Any other (T.O.I) parameters to make I/O speed faster?
-3, Does "swappiness = 100" make the resume faster?
-4, Could multiple swap partitions on different storage make I/O speed
-   faster?
-
-I'm looking for any possibility to reduce the boot-up/resuming time
-with T.O.I. Any comment/idea would be appreciated.
-
-  Hiroshi DOYU
-
-*1: http://www.spinics.net/lists/linux-omap/msg32850.html
+     Thomas
