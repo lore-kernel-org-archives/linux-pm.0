@@ -1,15 +1,15 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: generic runtime pm callbacks
-Date: Mon, 6 Sep 2010 15:59:51 +0100
-Message-ID: <20100906145951.GI10367__11521.2345881902$1283785271$gmane$org@rakim.wolfsonmicro.main>
-References: <20100906132241.GH8381@sirena.org.uk>
-	<Pine.LNX.4.44L0.1009061025300.14908-100000@netrider.rowland.org>
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [Discuss] Speedstep on Celeron SU2300 - 20% more
+ battery	lifetime on Windows
+Date: Mon, 06 Sep 2010 08:47:28 -0700
+Message-ID: <4C850D10.2050801__44543.0340515033$1283788117$gmane$org@linux.intel.com>
+References: <AANLkTiktJ5Xgnsmq2je7T3Yc5Sf53Bu8vWMM1XT1V_vm@mail.gmail.com>	<201009020152.37466.trenn@suse.de>	<AANLkTi=WDEA+prG26g5R9oG1uZ7cNgaMrYDtug_LM7bY@mail.gmail.com>
+	<201009061035.03727.trenn@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1009061025300.14908-100000@netrider.rowland.org>
+In-Reply-To: <201009061035.03727.trenn@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,30 +19,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, linux-mmc@vger.kernel.org
+To: Thomas Renninger <trenn@suse.de>
+Cc: discuss@lesswatts.org, linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org, cpufreq@vger.kernel.org, Tiago Marques <tiagomnm@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Sep 06, 2010 at 10:30:05AM -0400, Alan Stern wrote:
+  On 9/6/2010 1:35 AM, Thomas Renninger wrote:
+> Hi,
+>
+> I am adding lesswatts.org and linux-pm list.
+> I expect you found out why you do not get frequency/P- states and it
+> seem to be correct. On these lists, people can help you further
+> to find out Linux vs Windows battery drain differences.
+>
+> If you have the same backlight settings, I expect C-state or graphics
+> card must be the reason. There is nothing else than CPU or GPU
+> that drains so much energy for being the reason of
+> 20% more battery life time.
+> Which graphics card and driver do you use (for nvidia/ati, trying the
+> binary one for comparison, might show a big difference on a recent
+> card)?
+> Which C-state driver do you use (there is an acpi and intel_idle one
+> with latest kernels):
+> cat /sys/devices/system/cpu/cpuidle/current_driver
+> I hope to be able to provide a c-state tool soon, for now you have to
+> go through:
+> cat /sys/devices/system/cpu/cpu*/cpuidle/state*
+> to check which and how often/efficient C-states are used.
 
-> The real issue with USB interfaces is that they are only logical
-> sub-devices; they can't be power-managed separately from their parent.  
-> Indeed, the runtime_suspend and runtime_resume callbacks for interfaces
-> always return 0 immediately without doing anything, and the
-> runtime_idle callback always calls pm_runtime_suspend.
+powertop will tell you exactly this
 
-
-> So why not tell the PM core about this behavior?  Let's put a
-> "no_callbacks" flag in dev_pm_info.  When this flag is set the core
-> won't bother invoking the runtime callbacks; it can always assume
-> success.  More importantly, an asynchronous request may never need to
-> use the workqueue:
-
-...
-
-> Does that look like what you're talking about?
-
-That'd cover my use case, though it would still be nice to have the
-flexibility to just omit individual callbacks in the same way that it's
-possible to do so with regular suspend and resume (eg, if you only have
-to restore some state after the bus has suspended your device).
+(and the next version will provide much much more detail)
