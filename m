@@ -1,13 +1,11 @@
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: Important news regarding the two different patches
-Date: Tue,  7 Sep 2010 10:58:50 +0900 (JST)
-Message-ID: <20100907104218.C8EF.A69D9226__89.2742457383022$1283824867$gmane$org@jp.fujitsu.com>
-References: <201009062043.37819.rjw@sisk.pl> <4C8596B1.6010005@superonline.com>
+From: Willi Mann <foss-ml@wm1.at>
+Subject: CONFIG_PM_VERBOSE causing system lockup
+Date: Tue, 07 Sep 2010 11:23:45 +0200
+Message-ID: <i650b3$h98$1@dough.gmane.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C8596B1.6010005@superonline.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,68 +15,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "M. Vefa Bicakci" <bicave@superonline.com>
-Cc: linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kosaki.motohiro@jp.fujitsu.com
+To: linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-> Hello,
-> 
-> When I apply both of the patches, then I don't get any hangs with
-> hibernation. However, I do get another problem, which I am not sure
-> is related or not. I should note that I haven't experienced this
-> with only the vmscan.c patch, but maybe I haven't repeated my test
-> enough times.
-> 
-> One test consists of an automated run of 7 hibernate/thaw cycles. 
-> 
-> Here's what I got in dmesg in two of the iterations in one test.
-> Sorry for the long e-mail and the long lines.
-> 
-> === 8< ===
-> [  166.512085] PM: Hibernation mode set to 'reboot'
-> [  166.516503] PM: Marking nosave pages: 000000000009f000 - 0000000000100000
-> [  166.517654] PM: Basic memory bitmaps created
-> [  166.518781] PM: Syncing filesystems ... done.
-> [  166.546308] Freezing user space processes ... (elapsed 0.01 seconds) done.
-> [  166.559596] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
-> [  166.571649] PM: Preallocating image memory... 
-> [  185.712457] iwl3945: page allocation failure. order:0, mode:0xd0
-> [  185.714564] Pid: 1225, comm: iwl3945 Not tainted 2.6.35.4-test-mm5v2-vmscan+snapshot-dirty #7
-> [  185.715741] Call Trace:
-> [  185.716853]  [<c019aa67>] ? __alloc_pages_nodemask+0x577/0x630
-> [  185.718126]  [<f8a562c5>] ? iwl3945_rx_allocate+0x75/0x240 [iwl3945]
-> [  185.719379]  [<c03f0516>] ? schedule+0x356/0x730
-> [  185.720556]  [<f8a56d50>] ? iwl3945_rx_replenish+0x20/0x50 [iwl3945]
-> [  185.721914]  [<f8a56dbc>] ? iwl3945_bg_rx_replenish+0x3c/0x50 [iwl3945]
-> [  185.723929]  [<c014b167>] ? worker_thread+0x117/0x1f0
-> [  185.725745]  [<f8a56d80>] ? iwl3945_bg_rx_replenish+0x0/0x50 [iwl3945]
-> [  185.727097]  [<c014ebd0>] ? autoremove_wake_function+0x0/0x40
-> [  185.728468]  [<c014b050>] ? worker_thread+0x0/0x1f0
-> [  185.730235]  [<c014e854>] ? kthread+0x74/0x80
-> [  185.731601]  [<c014e7e0>] ? kthread+0x0/0x80
-> [  185.732919]  [<c0103cb6>] ? kernel_thread_helper+0x6/0x10
+Hi!
 
-Hm, interesting.
+For trying to test my software suspend issue I reported a month ago with 
+kernel 2.6.36-rc3, I enabled CONFIG_PM_VERBOSE. Unfortunately, this causes a 
+complete system lockup when I execute
 
-Rafael's patch seems works intentionally. preallocate much much memory and
-release over allocated memory. But on your system, iwl3945 allocate memory 
-concurrently. If it try to allocate before the hibernation code release 
-extra memory, It may get allocation failure.
+dpkg-reconfigure linux-image-2.6.36-rc3
 
-So, I'm not sure wich behavior is desired.
-  1) preallocate enough much memory
-	pros) hibernate faster
-	cons) failure risk of network card memory allocation
-  2) preallocate small memory
-	pros) hibernate slower
-	cons) don't makes network card memory allocation
+I discovered this by accident. I guess other commands causing serious amount 
+of hard disk access could trigger the same, but I didn't test. 
 
-But, I wonder why this kernel thread is not frozen. afaik, hibernation
-doesn't need network capability. Is this really intentional?
+I logged the following via netconsole, but kernel messages are written to 
+both /var/log/syslog and /var/log/kern.log too. (I could imagine that this 
+causes the problem). They are also written to local console as I've set log 
+level 8 for the console. The last page of the screen before it freezes only 
+contains the messages from the log. I tried to issue SysRQ-commands, but 
+that doesn't cause any reaction. 
 
-Rafael, Could you please explain the design of hibernation and your
-intention?
+http://wserver.wm1.at/~willi/linux/config_pm_verbose/suspend-hang2.log.gz
 
-Vefa, note: this allocation failure doesn't makes any problem. this mean
-network card can't receive one network packet. But while hibernation,
-we always can't receive network patchet. so no problem.
+Any ideas how to solve this problem?
+
+WM
