@@ -1,16 +1,13 @@
 From: Jean Pihet <jean.pihet@newoldbits.com>
 Subject: Re: [PATCH] tracing, perf: add more power related events
-Date: Tue, 7 Sep 2010 09:28:56 +0200
-Message-ID: <AANLkTik08ezo2ui-P7mSqSt4VR6wzWYH0hAyNTZALbi0__20598.750425461$1283869957$gmane$org@mail.gmail.com>
-References: <AANLkTikvbn3+JPc7pnGZk-H4B71MHTu+-vjuzfJw_7PC@mail.gmail.com>
-	<201009061243.00479.trenn@suse.de>
-	<AANLkTik8_ixOcFy=c4hPZknyUqPYB+2hzQTNK9wVok4q@mail.gmail.com>
-	<201009061400.05637.trenn@suse.de>
+Date: Tue, 7 Sep 2010 10:01:35 +0200
+Message-ID: <AANLkTi=PKARrwQhiFuXnMgNpJHUe=zS4GeXVMxfOcNOR__32805.5529542782$1283870076$gmane$org@mail.gmail.com>
+References: <AANLkTinUmbSUUuxUzc8++pcb9gd1CZFdyTQFrveTBXyV@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201009061400.05637.trenn@suse.de>
+In-Reply-To: <AANLkTinUmbSUUuxUzc8++pcb9gd1CZFdyTQFrveTBXyV@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,41 +17,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: Len Brown <len.brown@intel.com>, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, discuss@lesswatts.org, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>, arjan@infradead.org
+To: Thomas Renninger <trenn@suse.de>, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel>
+Cc: discuss@lesswatts.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Thomas,
+Here is some more information about the patch:
 
-On Mon, Sep 6, 2010 at 2:00 PM, Thomas Renninger <trenn@suse.de> wrote:
-> On Monday 06 September 2010 13:27:13 Jean Pihet wrote:
->> On Mon, Sep 6, 2010 at 12:42 PM, Thomas Renninger <trenn@suse.de> wrote:
-> ...
->> In order to reach an efficient low power mode you
->> need to ensure that all clocks in a clock domain are idled or cut off
->> (automatically by the HW or with the intervention of SW drivers).
->>
->> The HW complexity requires the tracing of all those clocks/power
->> states, that is why new events are proposed.
-> Hm, but if the HW can switch clocks behind your back, how do you
-> realize that to throw a perf clock power event then?
-Such clocks are automatically shut off when there is no activity on
-the module, this allows the system to reach a lower power state. All
-that is needed is to ensure the modules are correctly configured to
-shut off unneeded clocks automatically.
+Initial discussion on LKML: cf.
+http://marc.info/?l=linux-kernel&m=128195697205096&w=4,
+PM debug and profiling wiki page with rationale, todo, patches, tools
+screenshots ...:
+http://omappedia.org/wiki/Power_Management_Debug_and_Profiling
 
-> Theoretically you need to poll to keep track of HW switching the
-> clocks?
-No. I would not poll hundreds of clocks.
-Furthermore there is no event to be thrown away, in the case the
-reached power mode is not 'deep' enough you need a trace point showing
-what blocked the transition. There is still work to do to achieve
-that, it is coming soon.
-
+On Tue, Sep 7, 2010 at 9:21 AM, Jean Pihet <jean.pihet@newoldbits.com> wrote:
+> Hi,
 >
-> =A0 =A0Thomas
->
-
-Note: a re-spin of the patch has been sent on a new thread.
+> Here is a patch proposal for adding new trace events for power management.
+> Note: thread restarted after the initial discussions on LKML.
+Sorry the thread did not get restarted because I am using the same
+e-mail subject.
 
 Jean
