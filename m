@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/2] PM: Compress hibernation image with LZO
-Date: Thu, 9 Sep 2010 01:45:25 +0200
-Message-ID: <201009090145.25489.rjw@sisk.pl>
-References: <1281407348.2618.52.camel@shrek.rexursive.com>
-	<1282516434.23359.0.camel@shrek.rexursive.com>
-	<1282520861.23359.1.camel@shrek.rexursive.com>
+Subject: Re: [PATCH] PM: lenient generic runtime pm callbacks
+Date: Thu, 9 Sep 2010 01:46:18 +0200
+Message-ID: <201009090146.18786.rjw@sisk.pl>
+References: <1283811642-18837-1-git-send-email-ohad@wizery.com>
+	<20100908105551.GB1219@rakim.wolfsonmicro.main>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1282520861.23359.1.camel@shrek.rexursive.com>
+In-Reply-To: <20100908105551.GB1219@rakim.wolfsonmicro.main>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,28 +18,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Bojan Smojver <bojan@rexursive.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, August 23, 2010, Bojan Smojver wrote:
-> On Mon, 2010-08-23 at 08:33 +1000, Bojan Smojver wrote:
-> > Good point. Will change.
+On Wednesday, September 08, 2010, Mark Brown wrote:
+> On Tue, Sep 07, 2010 at 01:20:42AM +0300, Ohad Ben-Cohen wrote:
+> > Allow drivers, that belong to subsystems which use the generic
+> > runtime pm callbacks, not to define runtime pm suspend/resume handlers,
+> > by implicitly assuming success in such cases.
+> > 
+> > This is needed to eliminate nop handlers that would otherwise be
+> > necessary by drivers which enable runtime pm, but don't need
+> > to do anything when their devices are runtime-suspended/resumed.
+> > 
+> > Signed-off-by: Ohad Ben-Cohen <ohad@wizery.com>
 > 
-> Here you go:
+> Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 > 
->  Documentation/power/swsusp.txt |    3 +-
->  kernel/power/Kconfig           |    2 +
->  kernel/power/hibernate.c       |   10 ++
->  kernel/power/power.h           |    1 +
->  kernel/power/swap.c            |  289 +++++++++++++++++++++++++++++++++++++++-
->  5 files changed, 297 insertions(+), 8 deletions(-)
+> As I said previously this would also remove some dummy suspend functions
+> I need for some MFDs.
 
-OK
-
-I applied this patch to suspend-2.6/linux-next
-(http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=shortlog;h=refs/heads/linux-next)
-but with some modifications, so please double check.
+Applied to suspend-2.6/linux-next.
 
 Thanks,
 Rafael
