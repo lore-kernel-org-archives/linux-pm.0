@@ -1,11 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] PM fixes for 2.6.36
-Date: Sat, 11 Sep 2010 22:47:15 +0200
-Message-ID: <201009112247.15602.rjw__31390.8987831839$1284238136$gmane$org@sisk.pl>
+Subject: [PATCH] PM / Hibernate: Make default image size depend
+	on total RAM size (was: Re: PATCH: PM / Hibernate: Avoid
+	hitting OOM ...)
+Date: Sun, 12 Sep 2010 00:27:06 +0200
+Message-ID: <201009120027.06470.rjw__8489.7184199237$1284244160$gmane$org@sisk.pl>
+References: <201009062043.37819.rjw@sisk.pl> <4C8BC68B.8050002@superonline.com>
+	<201009112106.07687.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201009112106.07687.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,38 +20,114 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Colin Cross <ccross@android.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, mark gross <markgross@thegnar.org>
+To: "M. Vefa Bicakci" <bicave@superonline.com>
+Cc: linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Saturday, September 11, 2010, Rafael J. Wysocki wrote:
+> On Saturday, September 11, 2010, M. Vefa Bicakci wrote:
+...
+> > 
+> > I would be glad to test that patch as well, to see if it brings speed-ups.
+> > Actually, I might test hibernation with a larger value written to
+> > /sys/power/image_size when I have time.
+> 
+> I think that would improve things, as it probably is impossible to reduce the
+> image size to 500 MB on your system.
+> 
+> Anyway, I'll let you know when the patch is ready.
 
-Please pull power management fixes for 2.6.36 from:
+OK, please try the patch below on top of the previous one and see if it makes
+hibernation run faster on your system.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git pm-fixes
+Thanks,
+Rafael
 
-They include:
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM / Hibernate: Make default image size depend on total RAM size
 
- * Device suspend error code path fix related to asynchronous suspend/resume
-   from Colin Cross.
+The default hibernation image size is currently hard coded and euqal
+to 500 MB, which is not a reasonable default on many contemporary
+systems.  Make it equal 2/5 of the total RAM size (this is slightly
+below the maximum, i.e. 1/2 of the total RAM size, and seems to be
+generally suitable).
 
- * PM QoS fix from Mark Gross.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ Documentation/power/interface.txt |    2 +-
+ kernel/power/main.c               |    1 +
+ kernel/power/power.h              |    9 ++++++++-
+ kernel/power/snapshot.c           |    7 ++++++-
+ 4 files changed, 16 insertions(+), 3 deletions(-)
 
- * Hibernate fix affecting systems with lots of highmem.
-
-
- drivers/base/power/main.c |    1 +
- kernel/pm_qos_params.c    |    4 ++-
- kernel/power/snapshot.c   |   85 ++++++++++++++++++++++++++++++++++----------
- 3 files changed, 69 insertions(+), 21 deletions(-)
-
----------------
-
-Colin Cross (1):
-      PM: Prevent waiting forever on asynchronous resume after failing suspend
-
-Rafael J. Wysocki (1):
-      PM / Hibernate: Avoid hitting OOM during preallocation of memory
-
-mark gross (1):
-      PM QoS: Correct pr_debug() misuse and improve parameter checks
+Index: linux-2.6/kernel/power/snapshot.c
+===================================================================
+--- linux-2.6.orig/kernel/power/snapshot.c
++++ linux-2.6/kernel/power/snapshot.c
+@@ -46,7 +46,12 @@ static void swsusp_unset_page_forbidden(
+  * size will not exceed N bytes, but if that is impossible, it will
+  * try to create the smallest image possible.
+  */
+-unsigned long image_size = 500 * 1024 * 1024;
++unsigned long image_size;
++
++void __init hibernate_image_size_init(void)
++{
++	image_size = ((totalram_pages * 2) / 5) * PAGE_SIZE;
++}
+ 
+ /* List of PBEs needed for restoring the pages that were allocated before
+  * the suspend and included in the suspend image, but have also been
+Index: linux-2.6/kernel/power/power.h
+===================================================================
+--- linux-2.6.orig/kernel/power/power.h
++++ linux-2.6/kernel/power/power.h
+@@ -14,6 +14,9 @@ struct swsusp_info {
+ } __attribute__((aligned(PAGE_SIZE)));
+ 
+ #ifdef CONFIG_HIBERNATION
++/* kernel/power/snapshot.c */
++extern void __init hibernate_image_size_init(void);
++
+ #ifdef CONFIG_ARCH_HIBERNATION_HEADER
+ /* Maximum size of architecture specific data in a hibernation header */
+ #define MAX_ARCH_HEADER_SIZE	(sizeof(struct new_utsname) + 4)
+@@ -49,7 +52,11 @@ static inline char *check_image_kernel(s
+ extern int hibernation_snapshot(int platform_mode);
+ extern int hibernation_restore(int platform_mode);
+ extern int hibernation_platform_enter(void);
+-#endif
++
++#else /* !CONFIG_HIBERNATION */
++
++static inline void hibernate_image_size_init(void) {}
++#endif /* !CONFIG_HIBERNATION */
+ 
+ extern int pfn_is_nosave(unsigned long);
+ 
+Index: linux-2.6/kernel/power/main.c
+===================================================================
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -321,6 +321,7 @@ static int __init pm_init(void)
+ 	int error = pm_start_workqueue();
+ 	if (error)
+ 		return error;
++	hibernate_image_size_init();
+ 	power_kobj = kobject_create_and_add("power", NULL);
+ 	if (!power_kobj)
+ 		return -ENOMEM;
+Index: linux-2.6/Documentation/power/interface.txt
+===================================================================
+--- linux-2.6.orig/Documentation/power/interface.txt
++++ linux-2.6/Documentation/power/interface.txt
+@@ -57,7 +57,7 @@ smallest image possible.  In particular,
+ suspend image will be as small as possible.
+ 
+ Reading from this file will display the current image size limit, which
+-is set to 500 MB by default.
++is set to 2/5 of available RAM by default.
+ 
+ /sys/power/pm_trace controls the code which saves the last PM event point in
+ the RTC across reboots, so that you can debug a machine that just hangs
