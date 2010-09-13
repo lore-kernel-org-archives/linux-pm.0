@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: wacom + runtime PM = AA deadlock
-Date: Mon, 13 Sep 2010 11:17:54 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1009131114050.1315-100000__27887.9741010771$1284391335$gmane$org@iolanthe.rowland.org>
-References: <201009131656.18199.oneukum@suse.de>
+From: "M. Vefa Bicakci" <bicave@superonline.com>
+Subject: Re: [PATCH] PM / Hibernate: Make default image size
+	depend on totalRAM size
+Date: Mon, 13 Sep 2010 11:40:27 -0400
+Message-ID: <4C8E45EB.8030408__2985.71311072937$1284392511$gmane$org@superonline.com>
+References: <201009062043.37819.rjw@sisk.pl> <4C8BC68B.8050002@superonline.com>
+	<201009112106.07687.rjw@sisk.pl> <201009120027.06470.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201009131656.18199.oneukum@suse.de>
+In-Reply-To: <201009120027.06470.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,24 +19,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: pingc@wacom.com, Dmitry Torokhov <dtor@mail.ru>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org, linux-pm <linux-pm@lists.linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 13 Sep 2010, Oliver Neukum wrote:
-
-> PM in this driver looks broken. Please try this.
+On 11/09/10 06:27 PM, Rafael J. Wysocki wrote:
+> On Saturday, September 11, 2010, Rafael J. Wysocki wrote:
+>> On Saturday, September 11, 2010, M. Vefa Bicakci wrote:
+> ...
+>>>
+>>> I would be glad to test that patch as well, to see if it brings speed-ups.
+>>> Actually, I might test hibernation with a larger value written to
+>>> /sys/power/image_size when I have time.
+>>
+>> I think that would improve things, as it probably is impossible to reduce the
+>> image size to 500 MB on your system.
+>>
+>> Anyway, I'll let you know when the patch is ready.
 > 
-> In short you want to drop the PM reference and depend on remote
-> wakeup and busy marking for this driver. Currently it gets a reference
-> on every open() but never drops it.
-> 
-> For locking you depend on the PM core's internal lock. You simply
-> make sure you have a PM reference during open() and close()
+> OK, please try the patch below on top of the previous one and see if it makes
+> hibernation run faster on your system.
 
-Is there any point in resuming the device during close() just in order
-to kill the interrupt URB?  It seems counterproductive -- if the device 
-had been suspended then there wouldn't be any interrupt URB to kill in 
-the first place.
+Dear Rafael Wysocki,
 
-Alan Stern
+I think I have good news. I took a clean 2.6.35.4 tree, and first applied
+the latest version of your larger snapshot.c patch, and then the patch you
+appended to your final e-mail in this thread.
+
+Here is a comparison of the timings from a kernel without your patch, and
+one with it.
+
+=== 8< ===
+Sep 11 10:22:24 debian kernel: [  499.968989] PM: Allocated 2531300 kbytes in 52.66 seconds (48.06 MB/s)
+Sep 11 10:44:08 debian kernel: [  764.379131] PM: Allocated 2531308 kbytes in 143.41 seconds (17.65 MB/s)
+Sep 11 10:48:41 debian kernel: [  920.626386] PM: Allocated 2531300 kbytes in 66.44 seconds (38.09 MB/s)
+Sep 11 10:53:37 debian kernel: [ 1092.919140] PM: Allocated 2531316 kbytes in 81.28 seconds (31.14 MB/s)
+...
+Sep 13 01:26:09 debian kernel: [   94.948054] PM: Allocated 1804008 kbytes in 28.72 seconds (62.81 MB/s)
+Sep 13 01:29:58 debian kernel: [  176.678880] PM: Allocated 1803992 kbytes in 34.44 seconds (52.38 MB/s)
+Sep 13 01:33:48 debian kernel: [  253.336405] PM: Allocated 1804000 kbytes in 27.35 seconds (65.95 MB/s)
+=== >8 ===
+
+I didn't have your latest patch applied on September 11, and it was applied
+last night.
+
+It looks like there is a good improvement. I think the data rates look
+faster on Sept. 13 because the kernel spent less time "thinking" less
+while compacting the memory image. (I don't think I have changed anything
+in my configuration that could affect the data rates that much.)
+
+Is it possible to have these patches applied to the 2.6.35 tree so that
+the regression I reported is fixed? Should I e-mail Greg Kroah-Hartman
+about this?
+
+Once again, thank a lot to you, Kosaki Motohiro and Minchan Kim!
+
+M. Vefa Bicakci
+
+> [snip patch]
