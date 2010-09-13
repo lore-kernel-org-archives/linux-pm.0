@@ -1,15 +1,15 @@
-From: "M. Vefa Bicakci" <bicave@superonline.com>
-Subject: Re: [PATCH] PM / Hibernate: Make default image size
-	depend on totalRAM size
-Date: Mon, 13 Sep 2010 11:40:27 -0400
-Message-ID: <4C8E45EB.8030408__2985.71311072937$1284392511$gmane$org@superonline.com>
-References: <201009062043.37819.rjw@sisk.pl> <4C8BC68B.8050002@superonline.com>
-	<201009112106.07687.rjw@sisk.pl> <201009120027.06470.rjw@sisk.pl>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: wacom + runtime PM = AA deadlock
+Date: Mon, 13 Sep 2010 10:10:47 -0700
+Message-ID: <20100913171046.GA23116__40968.6594074175$1284399644$gmane$org@core.coreip.homeip.net>
+References: <4C8E180D.4020309@suse.cz>
+ <201009131656.18199.oneukum@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201009120027.06470.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <201009131656.18199.oneukum@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,61 +19,146 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Oliver Neukum <oneukum@suse.de>
+Cc: pingc@wacom.com, Jiri Slaby <jslaby@suse.cz>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-input@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11/09/10 06:27 PM, Rafael J. Wysocki wrote:
-> On Saturday, September 11, 2010, Rafael J. Wysocki wrote:
->> On Saturday, September 11, 2010, M. Vefa Bicakci wrote:
-> ...
->>>
->>> I would be glad to test that patch as well, to see if it brings speed-ups.
->>> Actually, I might test hibernation with a larger value written to
->>> /sys/power/image_size when I have time.
->>
->> I think that would improve things, as it probably is impossible to reduce the
->> image size to 500 MB on your system.
->>
->> Anyway, I'll let you know when the patch is ready.
+On Mon, Sep 13, 2010 at 04:56:17PM +0200, Oliver Neukum wrote:
+> Am Montag, 13. September 2010, 14:24:45 schrieb Jiri Slaby:
+> > Hi,
+> > 
+> > by mistake when runtime PM is enabled by default for input devices, X
+> > hangs on wacom open:
+> > [<ffffffff814a00ea>] mutex_lock+0x1a/0x40
+> > [<ffffffffa02bc94b>] wacom_resume+0x3b/0x90 [wacom]
+> > [<ffffffff81327a32>] usb_resume_interface+0xd2/0x190
+> > [<ffffffff81327b5d>] usb_resume_both+0x6d/0x110
+> > [<ffffffff81327c24>] usb_runtime_resume+0x24/0x40
+> > [<ffffffff8130a2cf>] __pm_runtime_resume+0x26f/0x450
+> > [<ffffffff8130a23a>] __pm_runtime_resume+0x1da/0x450
+> > [<ffffffff8130a53a>] pm_runtime_resume+0x2a/0x50
+> > [<ffffffff81328176>] usb_autopm_get_interface+0x26/0x60
+> > [<ffffffffa02bc626>] wacom_open+0x36/0x90 [wacom]
+> > 
+> > wacom_open took wacom->lock and calls usb_autopm_get_interface which in
+> > turn calls wacom_resume which tries to aquire the lock again.
+> > 
+> > More details (dmesg including) at:
+> > https://bugzilla.novell.com/show_bug.cgi?id=638506
+> > 
+> > Any ideas how to fix that properly?
 > 
-> OK, please try the patch below on top of the previous one and see if it makes
-> hibernation run faster on your system.
+> PM in this driver looks broken. Please try this.
+> 
+> In short you want to drop the PM reference and depend on remote
+> wakeup and busy marking for this driver. Currently it gets a reference
+> on every open() but never drops it.
+> 
+> For locking you depend on the PM core's internal lock. You simply
+> make sure you have a PM reference during open() and close()
+> 
+> 	Regards
+> 		Oliver
+> diff --git a/drivers/input/tablet/wacom_sys.c b/drivers/input/tablet/wacom_sys.c
+> index 42ba369..e399a8a 100644
+> --- a/drivers/input/tablet/wacom_sys.c
+> +++ b/drivers/input/tablet/wacom_sys.c
+> @@ -121,6 +121,7 @@ static int wacom_open(struct input_dev *dev)
+>  
+>  	wacom->open = true;
+>  	wacom->intf->needs_remote_wakeup = 1;
+> +	usb_autopm_put_interface(wacom->intf);
+>  
+>  	mutex_unlock(&wacom->lock);
+>  	return 0;
+> @@ -129,11 +130,15 @@ static int wacom_open(struct input_dev *dev)
+>  static void wacom_close(struct input_dev *dev)
+>  {
+>  	struct wacom *wacom = input_get_drvdata(dev);
+> +	int r;
+>  
+>  	mutex_lock(&wacom->lock);
+> -	usb_kill_urb(wacom->irq);
+> +	r = usb_autopm_get_interface(wacom->intf);
+>  	wacom->open = false;
+>  	wacom->intf->needs_remote_wakeup = 0;
+> +	usb_kill_urb(wacom->irq);
+> +	if (!r)
+> +		usb_autopm_put_interface(wacom->intf);
+>  	mutex_unlock(&wacom->lock);
+>  }
+>  
+> @@ -573,7 +578,10 @@ static int wacom_resume(struct usb_interface *intf)
+>  	struct wacom_features *features = &wacom->wacom_wac.features;
+>  	int rv;
+>  
+> -	mutex_lock(&wacom->lock);
+> +	/*
+> +	 * no locking against open needed
+> +	 * as open holds a power reference
+> +	 */
 
-Dear Rafael Wysocki,
+Hmm, wacom_open may hold power reference, but what about close? Anyways,
+isn't below enough?
 
-I think I have good news. I took a clean 2.6.35.4 tree, and first applied
-the latest version of your larger snapshot.c patch, and then the patch you
-appended to your final e-mail in this thread.
+I think this introduces significant change in behavior though - before
+we did not do usb_autopm_put_interface() on successful open, basically
+disabling autopm facilities, right?
 
-Here is a comparison of the timings from a kernel without your patch, and
-one with it.
+-- 
+Dmitry
 
-=== 8< ===
-Sep 11 10:22:24 debian kernel: [  499.968989] PM: Allocated 2531300 kbytes in 52.66 seconds (48.06 MB/s)
-Sep 11 10:44:08 debian kernel: [  764.379131] PM: Allocated 2531308 kbytes in 143.41 seconds (17.65 MB/s)
-Sep 11 10:48:41 debian kernel: [  920.626386] PM: Allocated 2531300 kbytes in 66.44 seconds (38.09 MB/s)
-Sep 11 10:53:37 debian kernel: [ 1092.919140] PM: Allocated 2531316 kbytes in 81.28 seconds (31.14 MB/s)
-...
-Sep 13 01:26:09 debian kernel: [   94.948054] PM: Allocated 1804008 kbytes in 28.72 seconds (62.81 MB/s)
-Sep 13 01:29:58 debian kernel: [  176.678880] PM: Allocated 1803992 kbytes in 34.44 seconds (52.38 MB/s)
-Sep 13 01:33:48 debian kernel: [  253.336405] PM: Allocated 1804000 kbytes in 27.35 seconds (65.95 MB/s)
-=== >8 ===
 
-I didn't have your latest patch applied on September 11, and it was applied
-last night.
+Input: wacom - fix pm locking
 
-It looks like there is a good improvement. I think the data rates look
-faster on Sept. 13 because the kernel spent less time "thinking" less
-while compacting the memory image. (I don't think I have changed anything
-in my configuration that could affect the data rates that much.)
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-Is it possible to have these patches applied to the 2.6.35 tree so that
-the regression I reported is fixed? Should I e-mail Greg Kroah-Hartman
-about this?
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
 
-Once again, thank a lot to you, Kosaki Motohiro and Minchan Kim!
+ drivers/input/tablet/wacom_sys.c |   21 ++++++++++-----------
+ 1 files changed, 10 insertions(+), 11 deletions(-)
 
-M. Vefa Bicakci
 
-> [snip patch]
+diff --git a/drivers/input/tablet/wacom_sys.c b/drivers/input/tablet/wacom_sys.c
+index 1e3af29..2806b2d 100644
+--- a/drivers/input/tablet/wacom_sys.c
++++ b/drivers/input/tablet/wacom_sys.c
+@@ -103,27 +103,26 @@ static void wacom_sys_irq(struct urb *urb)
+ static int wacom_open(struct input_dev *dev)
+ {
+ 	struct wacom *wacom = input_get_drvdata(dev);
++	int retval;
+ 
+-	mutex_lock(&wacom->lock);
+-
+-	wacom->irq->dev = wacom->usbdev;
+-
+-	if (usb_autopm_get_interface(wacom->intf) < 0) {
+-		mutex_unlock(&wacom->lock);
++	if (usb_autopm_get_interface(wacom->intf) < 0)
+ 		return -EIO;
+-	}
++
++	mutex_lock(&wacom->lock);
+ 
+ 	if (usb_submit_urb(wacom->irq, GFP_KERNEL)) {
+-		usb_autopm_put_interface(wacom->intf);
+-		mutex_unlock(&wacom->lock);
+-		return -EIO;
++		retval = -EIO;
++		goto out;
+ 	}
+ 
+ 	wacom->open = true;
+ 	wacom->intf->needs_remote_wakeup = 1;
+ 
++out:
+ 	mutex_unlock(&wacom->lock);
+-	return 0;
++	usb_autopm_put_interface(wacom->intf);
++
++	return retval;
+ }
+ 
+ static void wacom_close(struct input_dev *dev)
