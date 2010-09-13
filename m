@@ -1,7 +1,7 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Oliver Neukum <oneukum@suse.de>
 Subject: Re: wacom + runtime PM = AA deadlock
-Date: Mon, 13 Sep 2010 10:25:38 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1009131019370.1584-100000__35593.8434637666$1284388022$gmane$org@iolanthe.rowland.org>
+Date: Mon, 13 Sep 2010 16:56:17 +0200
+Message-ID: <201009131656.18199.oneukum__28345.6267360181$1284389815$gmane$org@suse.de>
 References: <4C8E180D.4020309@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,11 +18,10 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Jiri Slaby <jslaby@suse.cz>
-Cc: pingc@wacom.com, Dmitry Torokhov <dtor@mail.ru>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org, linux-pm <linux-pm@lists.linux-foundation.org>
+Cc: Dmitry Torokhov <dtor@mail.ru>, pingc@wacom.com, linux-pm <linux-pm@lists.linux-foundation.org>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 13 Sep 2010, Jiri Slaby wrote:
-
+Am Montag, 13. September 2010, 14:24:45 schrieb Jiri Slaby:
 > Hi,
 > 
 > by mistake when runtime PM is enabled by default for input devices, X
@@ -46,12 +45,64 @@ On Mon, 13 Sep 2010, Jiri Slaby wrote:
 > 
 > Any ideas how to fix that properly?
 
-One possibility is for wacom_open simply not to acquire the lock until
-after the usb_autopm_get_interface call returns.  And why does
-wacom_open have that assignment to wacom->irq->dev?  The value was
-already set in wacom_probe.
+PM in this driver looks broken. Please try this.
 
-BTW, does anybody know why wacom_open calls usb_autopm_get_interface 
-but wacom_close doesn't call usb_autopm_put_interface?
+In short you want to drop the PM reference and depend on remote
+wakeup and busy marking for this driver. Currently it gets a reference
+on every open() but never drops it.
 
-Alan Stern
+For locking you depend on the PM core's internal lock. You simply
+make sure you have a PM reference during open() and close()
+
+	Regards
+		Oliver
+diff --git a/drivers/input/tablet/wacom_sys.c b/drivers/input/tablet/wacom_sys.c
+index 42ba369..e399a8a 100644
+--- a/drivers/input/tablet/wacom_sys.c
++++ b/drivers/input/tablet/wacom_sys.c
+@@ -121,6 +121,7 @@ static int wacom_open(struct input_dev *dev)
+ 
+ 	wacom->open = true;
+ 	wacom->intf->needs_remote_wakeup = 1;
++	usb_autopm_put_interface(wacom->intf);
+ 
+ 	mutex_unlock(&wacom->lock);
+ 	return 0;
+@@ -129,11 +130,15 @@ static int wacom_open(struct input_dev *dev)
+ static void wacom_close(struct input_dev *dev)
+ {
+ 	struct wacom *wacom = input_get_drvdata(dev);
++	int r;
+ 
+ 	mutex_lock(&wacom->lock);
+-	usb_kill_urb(wacom->irq);
++	r = usb_autopm_get_interface(wacom->intf);
+ 	wacom->open = false;
+ 	wacom->intf->needs_remote_wakeup = 0;
++	usb_kill_urb(wacom->irq);
++	if (!r)
++		usb_autopm_put_interface(wacom->intf);
+ 	mutex_unlock(&wacom->lock);
+ }
+ 
+@@ -573,7 +578,10 @@ static int wacom_resume(struct usb_interface *intf)
+ 	struct wacom_features *features = &wacom->wacom_wac.features;
+ 	int rv;
+ 
+-	mutex_lock(&wacom->lock);
++	/*
++	 * no locking against open needed
++	 * as open holds a power reference
++	 */
+ 
+ 	/* switch to wacom mode first */
+ 	wacom_query_tablet_data(intf, features);
+@@ -583,8 +591,6 @@ static int wacom_resume(struct usb_interface *intf)
+ 	else
+ 		rv = 0;
+ 
+-	mutex_unlock(&wacom->lock);
+-
+ 	return rv;
+ }
+ 
