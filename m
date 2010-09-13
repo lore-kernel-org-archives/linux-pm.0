@@ -1,13 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: wacom + runtime PM = AA deadlock
-Date: Tue, 14 Sep 2010 10:01:14 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1009140954180.1648-100000__40542.3262659044$1284473123$gmane$org@iolanthe.rowland.org>
-References: <201009141013.19704.oneukum@suse.de>
+From: Ike Panhc <ike.pan@canonical.com>
+Subject: intel_idle
+Date: Mon, 13 Sep 2010 16:25:51 +0800
+Message-ID: <4C8DE00F.7070801__16246.7876951725$1284477062$gmane$org@canonical.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201009141013.19704.oneukum@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,30 +15,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: pingc@wacom.com, Dmitry Torokhov <dtor@mail.ru>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org, linux-pm <linux-pm@lists.linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>
+To: linux-pm@lists.linux-foundation.org
+Cc: Len Brown <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 14 Sep 2010, Oliver Neukum wrote:
+Hi,
 
-> Am Montag, 13. September 2010, 22:02:16 schrieb Alan Stern:
-> > > > Is there any point in resuming the device during close() just in order
-> > > > to kill the interrupt URB?  It seems counterproductive -- if the device 
-> > > > had been suspended then there wouldn't be any interrupt URB to kill in 
-> > > > the first place.
-> > > 
-> > > Suppose the device does not support remote wakeup. It would never
-> > > be autosuspended while it is open, but simply resetting the flag
-> > > would never reach the PM layer.
-> > 
-> > Whoops, that's right.  I didn't see the assignment to 
-> > needs_remote_wakeup.
-> 
-> Should I have used usb_autopm_get_interface_no_resume()?
+I test myself which says when CONFIG_CPU_IDLE=y, Lenovo ideapad S10-3 can
+not boot. The CPU is Atom N450, and I also find the report[2] that says intel_idle
+works fine with N450.
 
-That actually would work.  It's a good idea.  The only drawback (not a
-big one) is that if the device _was_ suspended with remote wakeup
-enabled, doing this wouldn't turn off remote wakeup.  I think that
-doesn't matter.
+I do not have much knowledge about intel_idle. is there any similar report that on
+some machine intel_idle halt the system or any suggestion for next step debug?
 
-Alan Stern
+
+[1] http://launchpad.net/bugs/634702
+[2] http://www.spinics.net/lists/linux-pm/msg21334.html
