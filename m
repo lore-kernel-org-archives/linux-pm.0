@@ -1,14 +1,14 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] tracing, perf: add more power related events
-Date: Sat, 18 Sep 2010 00:26:58 +0200
-Message-ID: <201009180026.59482.trenn__19878.4387590878$1284762618$gmane$org@suse.de>
-References: <AANLkTinUmbSUUuxUzc8++pcb9gd1CZFdyTQFrveTBXyV@mail.gmail.com>
-	<201009171736.14170.trenn@suse.de> <20100917162412.GB3341@elte.hu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: PM / Wakeup: Introduce wakeup source objects and
+	event statistics (v2)
+Date: Sat, 18 Sep 2010 00:26:36 +0200
+Message-ID: <201009180026.37013.rjw__44899.6687461205$1284762729$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1009171000100.1589-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100917162412.GB3341@elte.hu>
+In-Reply-To: <Pine.LNX.4.44L0.1009171000100.1589-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,23 +18,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Len Brown <len.brown@intel.com>, linux-trace-users@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Jean Pihet <jean.pihet@newoldbits.com>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, discuss@lesswatts.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, arjan@infradead.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Arve@smtp1.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 17 September 2010 18:24:12 Ingo Molnar wrote:
+On Friday, September 17, 2010, Alan Stern wrote:
+> On Fri, 17 Sep 2010, Rafael J. Wysocki wrote:
 > 
-> * Thomas Renninger <trenn@suse.de> wrote:
+> > > Was doing some experiments with this on OMAP, and found a minor
+> > > cut-and-paste bug in the Documentation file:
+> > > 
+> > > [...]
+> > > 
+> > > > +What:		/sys/devices/.../power/wakeup_max_time_ms
+> > > > +Date:		September 2010
+> > > > +Contact:	Rafael J. Wysocki <rjw@sisk.pl>
+> > > > +Description:
+> > > > +		The /sys/devices/.../wakeup_max_time_ms attribute contains
+> > > > +		the maximum time of processing a single wakeup event associated
+> > > > +		with the device, in milliseconds.  This attribute is read-only.
+> > > > +		If the device is not enabled to wake up the system from sleep
+> > > > +		states, this attribute is empty.
+> > > > +
+> > > > +What:		/sys/devices/.../power/wakeup_max_time_ms
+> > >                                                       ^^^
+> > > s/max/last/ for this one.
+> > 
+> > Ah, thanks a lot.
 > 
-> > On Friday 17 September 2010 16:24:59 Ingo Molnar wrote:
+> There was another copy & paste errors in that file, a 
+> "wakeup_active_count" that should be "wakeup_hit_count".
 
-> [ You dont even have to document it, as good code is self-explanatory ;-) ]
-I recently posted a patch exporting some things through /sys/kernel/debug/...
-Greg complained that a file for Documentation/ABI/{testing,stable}/* is missing
-and I fully agree.
-If different userspace apps should make use of this (in above case nobody
-than my debug userspace tool will...) and this should be called something like an API,
-it should be documented and if something changes, it should
-first be marked deprecated, etc.
+Indeed, fixed now.
 
-     Thomas
+Thanks,
+Rafael
