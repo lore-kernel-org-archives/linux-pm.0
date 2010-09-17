@@ -1,15 +1,15 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] tracing, perf: add more power related events
-Date: Fri, 17 Sep 2010 15:08:45 +0200
-Message-ID: <201009171508.46471.trenn__3499.54263442687$1284729001$gmane$org@suse.de>
-References: <AANLkTinUmbSUUuxUzc8++pcb9gd1CZFdyTQFrveTBXyV@mail.gmail.com>
-	<20100909075403.GA10798@elte.hu>
-	<AANLkTimCy8pB6JZ2bkGutTou8-oXc1yjweqCxVrLw=Kk@mail.gmail.com>
+From: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: Improving High-Load Performance with the Ondemand
+ Governor [PATCH ATTACHED]
+Date: Fri, 17 Sep 2010 06:46:00 -0700
+Message-ID: <20100917064600.5d478658__47870.4158253551$1284731157$gmane$org@infradead.org>
+References: <4C88EF04.1030908@verisign.com> <4C928094.7080207@verisign.com>
+	<201009171125.44403.trenn@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTimCy8pB6JZ2bkGutTou8-oXc1yjweqCxVrLw=Kk@mail.gmail.com>
+In-Reply-To: <201009171125.44403.trenn@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,79 +19,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jean Pihet <jean.pihet@newoldbits.com>
-Cc: Len Brown <len.brown@intel.com>, linux-trace-users@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, discuss@lesswatts.org, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, linux-pm@lists.linux-foundation.org, arjan@infradead.org
+To: Thomas Renninger <trenn@suse.de>
+Cc: discuss@lesswatts.org, linux-pm@lists.linux-foundation.org, David C Niemi <dniemi@verisign.com>, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Fri, 17 Sep 2010 11:25:44 +0200
+Thomas Renninger <trenn@suse.de> wrote:
 
-I had a quick look at this and it's amazing how broken
-the whole power event tracing interfaces are.
-It's not your fault, Jean, they always were and adding your stuff is 
-fine.
+> On the Opteron or Xeon system? That would mean that reducing frequency
+> from OS still is an important power consumption knob even on latest
+> Westmere systems.
 
-Some questions, maybe I've overseen something:
+it is for staying out of the turbo range. the turbo range is not power
+efficient (but good for performance)
 
-Why does this event:
-DEFINE_EVENT(power, power_frequency,
-exist and takes a C-/P-state, now also an S-state type as argument?
+below turbo, the actual impact is a LOT less....
 
-It should be named more generic, like:
-DEFINE_EVENT(power, power_switch,
-then it could get invoked when any P-/C-/S-/X- state
-switch happened.
-
-What kind of hack is this:
-TRACE_EVENT(power_end,
-showing up as:
-power_end: dummy=65535
-What ends here?
-I know it's a workaround/hack for userspace apps to be
-able to detect leaving of a sleep state, but how would someone
-know or how would someone describe this in a proper API documentation?
-Apropos documentation..., are the power trace events documented 
-somewhere?
-
-At least the state should still be passed, then the _start/_end thing 
-can be reused by something else than C-states.
-
-I can't see the use of having _start/_end events at all.
-You are always in a state, having one:
-power_switch
-as suggested above, is enough to track everything.
-
-Examples:
-
-Today's C-state tracking:
-power_start: type=1 state=1  -> C1 entered
-power_end: dummy=65535       -> C-state left
-power_start: type=1 state=2  -> C2 entered
-power_end: dummy=65535       -> C-state left
-would then be:
-power_switch: type=1 state=1  -> C1 entered
-power_switch: type=1 state=0  -> C0 entered -> means C1 left...
-power_switch: type=1 state=2  -> C2 entered
-power_switch: type=1 state=0  -> C0 entered -> means C2 left...
-...
-
-Todays P-state tracking:
-power_frequency: type=2 state=125000000     -> P-state change to 125 MHz
-power_frequency: type=2 state=90000000      -> P-state change to 90 MHz
-would then be:
-power_switch: type=2 state=125000000       -> P-state change to 125 MHz
-power_switch: type=2 state=90000000        -> P-state change to 90 MHz
-
-The S-state and T-state tracking would fit into that without 
-modification.
-Thinking one step further, a possibility to track D-states would
-need an additional field, a pointer to the device, best a sysfs path
-or similar.
-
-Jean, I do not think tracing the S-state with power_start is a
-good idea. Best would be the power_frequency gets renamed (yes, breaks
-userspace, but those have to be adjusted) and used for P- and S-
-state tracking (and C-state tracking as well, but this would need
-additional userspace modifications).
-How do you track when the S-states end?
-
-        Thomas
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
