@@ -1,16 +1,18 @@
-From: Nishanth Menon <nm@ti.com>
+From: "Aguirre, Sergio" <saaguirre@ti.com>
 Subject: Re: [PATCH] opp: introduce library for device-specific
 	OPPs
-Date: Fri, 17 Sep 2010 10:59:06 -0500
-Message-ID: <4C93904A.9000109__9264.5468343564$1284744533$gmane$org@ti.com>
-References: <1284686973-13993-1-git-send-email-nm@ti.com>
-	<AANLkTin2fBriymD7p-YfhPL24hMfYttsZBdighCSJxV2@mail.gmail.com>
-	<4C9383C8.4020608@ti.com>
+Date: Fri, 17 Sep 2010 11:11:45 -0500
+Message-ID: <A24693684029E5489D1D202277BE89447260B27A__19844.7843933993$1284744540$gmane$org@dlee02.ent.ti.com>
+References: <[PATCH 1/4] OMAP: introduce OPP layer for device-specific OPPs>
+	<1284686973-13993-1-git-send-email-nm@ti.com>
+	<A24693684029E5489D1D202277BE89447260B073@dlee02.ent.ti.com>
+	<4C93898B.2070606@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C9383C8.4020608@ti.com>
+In-Reply-To: <4C93898B.2070606@ti.com>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,114 +22,349 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: Phil Carmody <ext-phil.2.carmody@nokia.com>, linux-doc <linux-doc@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, "Chikkature Rajashekar,
-	Madhusudhan" <madhu.cr@ti.com>, "Aguirre,
-	Sergio" <saaguirre@ti.com>, Andi Kleen <ak@linux.intel.com>, Len@smtp1.linux-foundation.org, linux-pm <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>, Brown <len.brown@intel.com>, Eduardo Valentin <eduardo.valentin@nokia.com>, linux-omap <linux-omap@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-arm <linux-arm-kernel@lists.infradead.org>, "Granados
-	Dorado, Roberto" <x0095451@ti.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, lkml <linux-kernel@vger.kernel.org>, Romit Dasgupta <ro.mit@ti.com>
+To: "Menon, Nishanth" <nm@ti.com>
+Cc: Phil Carmody <ext-phil.2.carmody@nokia.com>, linux-doc <linux-doc@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Matthew@smtp1.linux-foundation.org, "Chikkature Rajashekar, Madhusudhan" <madhu.cr@ti.com>, Andi Kleen <ak@linux.intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Garrett <mjg@redhat.com>, Tero@smtp1.linux-foundation.org, Len Brown <len.brown@intel.com>, Eduardo Valentin <eduardo.valentin@nokia.com>, linux-omap <linux-omap@vger.kernel.org>, "Gopinath, Thara" <thara@ti.com>, linux-arm <linux-arm-kernel@lists.infradead.org>, Linus Walleij <linus.walleij@stericsson.com>, "Granados Dorado,
+	Roberto" <x0095451@ti.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, lkml <linux-kernel@v>
 List-Id: linux-pm@vger.kernel.org
 
-Nishanth Menon had written, on 09/17/2010 10:05 AM, the following:
-> Linus Walleij had written, on 09/17/2010 08:41 AM, the following:
->> 2010/9/17 Nishanth Menon <nm@ti.com>:
->>
->>> diff --git a/Documentation/power/00-INDEX b/Documentation/power/00-INDEX
->>> index fb742c2..45e9d4a 100644
->>> --- a/Documentation/power/00-INDEX
->>> +++ b/Documentation/power/00-INDEX
->>> @@ -14,6 +14,8 @@ interface.txt
->>>        - Power management user interface in /sys/power
->>>  notifiers.txt
->>>        - Registering suspend notifiers in device drivers
->>> +opp.txt
->>> +       - Operating Performance Point library
->>>  pci.txt
->>>        - How the PCI Subsystem Does Power Management
->> Hm you add the documentation to the index but not the documentation
->> itself (easy slip) would you mind posting it?
-> ouch.. Sorry.. I realized that I missed adding MAINTAINER entry as 
-> well.. v2 coming up..
+Hi Nishanth,
+
+> -----Original Message-----
+> From: Menon, Nishanth
+> Sent: Friday, September 17, 2010 10:30 AM
+> To: Aguirre, Sergio
+> Cc: linux-arm; lkml; Len Brown; Pavel Machek; Rafael J. Wysocki; Randy
+> Dunlap; Jesse Barnes; Matthew Garrett; H. Peter Anvin; Andrew Morton;
+> Benjamin Herrenschmidt; Martin K. Petersen; Andi Kleen; linux-pm; linux-
+> doc; linux-omap; Cousson, Benoit; Chikkature Rajashekar, Madhusudhan; Phil
+> Carmody; Granados Dorado, Roberto; Shilimkar, Santosh; Tero Kristo;
+> Eduardo Valentin; Paul Walmsley; Romit Dasgupta; Premi, Sanjeev; Gopinath,
+> Thara; Sripathy, Vishwanath; Linus Walleij; Kevin Hilman
+> Subject: Re: [PATCH] opp: introduce library for device-specific OPPs
+> 
+> Aguirre, Sergio had written, on 09/17/2010 09:09 AM, the following:
+> > Hi Nishanth,
+> thanks for the review.. comments below..
 > 
 
-while the review goes on, I will till end of the day before posting a v2 
-will collated comments, here is the opp.txt documentation for the same.. 
-apologies on missing in my v1..
+You're welcome!
 
-OPP Layer
-==============
-SOCs have a standard set of tuples consisting of frequency and
-voltage pairs that the device will support per voltage domain. This
-is called Operating Performance Point or OPP. The actual definitions
-of OPP varies over silicon within the same family of devices.
-For a specific domain, you can have a set of {frequency, voltage}
-pairs. As the kernel boots and more information is available, a set
-of these are activated based on the precise nature of device the kernel
-boots up on. It is interesting to remember that each IP which belongs
-to a voltage domain may define their own set of OPPs on top of this.
+My responses below.
 
-OPP layer of its own depends on silicon specific implementation and
-board specific data to finalize on the final set of OPPs available
-in a system
+> 
+> [...]
+> >> diff --git a/include/linux/opp.h b/include/linux/opp.h
+> >> new file mode 100644
+> >> index 0000000..94a552b
+> >> --- /dev/null
+> >> +++ b/include/linux/opp.h
+> >> @@ -0,0 +1,136 @@
+> >> +/*
+> >> + * Generic OPP Interface
+> >> + *
+> >> + * Copyright (C) 2009-2010 Texas Instruments Incorporated.
+> >> + *   Nishanth Menon
+> >> + *   Romit Dasgupta <romit@ti.com>
+> >> + * Copyright (C) 2009 Deep Root Systems, LLC.
+> >> + *   Kevin Hilman
+> >
+> > Just curious why only Romit's e-mail address is there, and not Kevin's
+> or
+> > yours...
+> 
+> personal choice I guess, Romit prefered his email id added Kevin and I
+> did not.
 
-OPP layer organizes the data internally using device pointers representing
-individual voltage domains.
+OK. No problem then :)
 
-NOTE:
-a) the OPP layer implementation expects to be used in multiple contexts
-based on SOC implementation and recommends locking schemes appropriate to
-the usage of SOC.
-b) All pointer returns are expected to be handled by standard error checks
-such as IS_ERR() and appropriate actions taken by the caller.
-c) Dependency of OPP layer is on CONFIG_PM as certain SOCs such as Texas
-Instrument's OMAP support have frameworks to optionally boot at a certain
-opp without needing cpufreq.
+> 
+> [...]
+> 
+> >> diff --git a/lib/opp.c b/lib/opp.c
+> >> new file mode 100644
+> >> index 0000000..650c8c3
+> >> --- /dev/null
+> >> +++ b/lib/opp.c
+> >> @@ -0,0 +1,440 @@
+> >> +/*
+> >> + * Generic OPP Interface
+> [...]
+> >> +
+> >> +/**
+> >> + * struct device_opp - Device opp structure
+> >> + * @node:    list node
+> >> + * @dev:     device handle
+> >> + * @opp_list:        list of opps
+> >> + * @opp_count:       num opps
+> >> + * @enabled_opp_count:       how many opps are actually enabled
+> >> + *
+> >> + * This is an internal datastructure maintaining the link to
+> >> + * opps attached to a domain device. This structure is not
+> >> + * meant to be shared with users as it private to opp layer.
+> >
+> > "... as it is private ..."
+> thanks. will fix.
+> [..]
+> >> +/**
+> >> + * opp_get_voltage() - Gets the voltage corresponding to an opp
+> >> + * @opp:     opp for which voltage has to be returned for
+> >> + *
+> >> + * Return voltage in micro volt corresponding to the opp, else
+> >> + * return 0
+> >> + */
+> >> +unsigned long opp_get_voltage(const struct opp *opp)
+> >> +{
+> >> +     if (unlikely(!opp || IS_ERR(opp)) || !opp->enabled) {
+> >> +             pr_err("%s: Invalid parameters being passed\n",
+> __func__);
+> >> +             return 0;
+> >
+> > Shouldn't the case for !opp->enabled just return 0, without error
+> reporting.
+> >
+> > IMHO, having an OPP disabled is not really a bug in params, and
+> returning this, will misinform the user.. I think.
+> >
+> > What do you think?
+> 
+> I think we discussed it a little earlier in the chain
+> http://marc.info/?t=128152609200064&r=1&w=2
+> the operations of get_freq and get_voltage dont make sense to be used on
+> a disabled OPP. if we are using it so, we need to report an error to the
+> user and log it for debugging.
+> 
+> The intent is as follows:
+> a) find_freq_exact is the function to use for finding the opp which is
+> disabled (without the opp pointer, you cant query voltage and frequency
+> anyways).
+> b) to query this, you need to know the opp frequency anyways, so it
+> makes no usage sense for get_freq or get_voltage to be able to be using
+> a disabled opp.
 
-Initial list initialization:
----------------------------
-The SOC implementation calls the following function to add opp per
-domain device.
+Ok. I understand now.
 
-1. opp_add - add a new OPP - NOTE: use struct opp_def and define
-the custom OPP with OPP_DEF for usage.
+> 
+> Do we think it makes sense to add this info to the documentation as well?
 
-Query functions:
-----------------
-Search for OPPs for various cases:
-2. opp_find_freq_exact - exact search function
-3. opp_find_freq_floor - round_up search function
-4. opp_find_freq_ceil - round_down search function
+Yeah, I think that would be good to see explained in the docs.
 
-OPP modifier functions:
-----------------------
-This allows opp layer users to add customized OPPs or change the table
-for any need they may have
-5. opp_enable - enable a disabled OPP
-6. opp_disable - disable an enabled OPP
+> 
+> >
+> >> +     }
+> >> +
+> >> +     return opp->u_volt;
+> >> +}
+> >> +
+> >> +/**
+> >> + * opp_get_freq() - Gets the frequency corresponding to an opp
+> >> + * @opp:     opp for which frequency has to be returned for
+> >> + *
+> >> + * Return frequency in hertz corresponding to the opp, else
+> >> + * return 0
+> >> + */
+> >> +unsigned long opp_get_freq(const struct opp *opp)
+> >> +{
+> >> +     if (unlikely(!opp || IS_ERR(opp)) || !opp->enabled) {
+> >> +             pr_err("%s: Invalid parameters being passed\n",
+> __func__);
+> >> +             return 0;
+> >
+> > Similarly here.
+> commented above.
 
-OPP Data retrieval functions:
-----------------------------
-The following sets of functions are useful for drivers to retrieve
-data stored in opp layer for various functions.
-7. opp_get_voltage - retrieve voltage for an opp
-9. opp_get_freq - get the frequency for an opp
-8. opp_get_opp_count - get number of opps enabled for a domain
+Ok.
 
-Cpufreq table generation:
-------------------------
-9. opp_init_cpufreq_table - this translates the OPP layer's internal
-OPP arrangement into a table understood and operated upon by the
-cpufreq layer.
+> 
+> >
+> >> +     }
+> >> +
+> >> +     return opp->rate;
+> >> +}
+> >> +
+> >> +/**
+> >> + * opp_get_opp_count() - Get number of opps enabled in the opp list
+> >> + * @dev:     device for which we do this operation
+> >> + *
+> >> + * This functions returns the number of opps if there are any OPPs
+> >
+> > "This function returns.."
+> Thanks. will fix in v2 post.
+> 
+> >
+> >> enabled,
+> >> + * else returns corresponding error value.
+> >> + */
+> >> +int opp_get_opp_count(struct device *dev)
+> >> +{
+> >> +     struct device_opp *dev_opp;
+> >> +
+> >> +     dev_opp = find_device_opp(dev);
+> >> +     if (IS_ERR(dev_opp))
+> >> +             return -ENODEV;
+> >> +
+> >> +     return dev_opp->enabled_opp_count;
+> >> +}
+> >> +
+> >> +/**
+> >> + * opp_find_freq_exact() - search for an exact frequency
+> >> + * @dev:     device for which we do this operation
+> >> + * @freq:    frequency to search for
+> >> + * @enabled: enabled/disabled OPP to search for
+> >> + *
+> >> + * Searches for exact match in the opp list and returns handle to the
+> >> matching
+> >> + * opp if found, else returns ERR_PTR in case of error and should be
+> >> handled
+> >> + * using IS_ERR.
+> >> + *
+> >> + * Note: enabled is a modifier for the search. if enabled=true, then
+> the
+> >> match
+> >> + * is for exact matching frequency and is enabled. if false, the match
+> is
+> >> for
+> >> + * exact frequency which is disabled.
+> >
+> > That enabled var is ignored, which makes this explanation mismatch with
+> the code behavior.
+> >
+> > Am I missing something?
+> ouch.. you are correct.. it is a mistake that got introduced in one of
+> the merges we did.. the matching check
+> if (temp_opp->enabled && temp_opp->rate == freq) {
+> should have been
+> if (temp_opp->enabled == enabled && temp_opp->rate == freq) {
+> 
+> Thanks for catching it.
+> 
+> >
+> >> + */
+> >> +struct opp *opp_find_freq_exact(struct device *dev,
+> >> +                                  unsigned long freq, bool enabled)
+> >> +{
+> >> +     struct device_opp *dev_opp;
+> >> +     struct opp *temp_opp, *opp = ERR_PTR(-ENODEV);
+> >> +
+> >> +     dev_opp = find_device_opp(dev);
+> >> +     if (IS_ERR(dev_opp))
+> >> +             return opp;
+> >> +
+> >> +     list_for_each_entry(temp_opp, &dev_opp->opp_list, node) {
+> >> +             if (temp_opp->enabled && temp_opp->rate == freq) {
+> >> +                     opp = temp_opp;
+> >> +                     break;
+> >> +             }
+> >> +     }
+> >> +
+> >> +     return opp;
+> >> +}
+> >> +
+> >> +/**
+> >> + * opp_find_freq_ceil() - Search for an rounded ceil freq
+> >> + * @dev:     device for which we do this operation
+> >> + * @freq:    Start frequency
+> >> + *
+> >> + * Search for the matching ceil *enabled* OPP from a starting freq
+> >> + * for a domain.
+> >> + *
+> >> + * Returns *opp and *freq is populated with the match, else
+> >> + * returns NULL opp if no match, else returns ERR_PTR in case of
+> error.
+> >
+> > By looking at the code below, I don't think returning NULL is a
+> possibility.
+> yet another documentation error.. thanks for catching.
+> ERR_PTR(-ENODEV) is returned instead of NULL..
+> 
+> how about "
+> Returns *opp and *freq is populated with the match if found, else
+> returns ERR_PTR in case of error and should be handled using IS_ERR.
+> 
+> "
 
-Data Structures:
----------------
-struct opp * is a handle structure whose internals are known only
-to the OPP layer and is meant to hide the complexity away from users of
-opp layer.
+I'll say:
 
-struct opp_def * is the definitions that users can interface with
-opp layer and is meant to define one OPP for a domain device.
+"Returns matching *opp and refreshes *freq accordingly"
+
+But is a matter of taste of words. :)
 
 
--- 
+> >
+> >> + *
+> >> + * Example usages:
+> >> + *   * find match/next highest available frequency *
+> >> + *   freq = 350000;
+> >> + *   opp = opp_find_freq_ceil(dev, &freq))
+> >> + *   if (IS_ERR(opp))
+> >> + *           pr_err("unable to find a higher frequency\n");
+> >> + *   else
+> >> + *           pr_info("match freq = %ld\n", freq);
+> >> + *
+> >> + *   * print all supported frequencies in ascending order *
+> >> + *   freq = 0; * Search for the lowest enabled frequency *
+> >> + *   while (!IS_ERR(opp = opp_find_freq_ceil(OPP_MPU, &freq)) {
+> >> + *           pr_info("freq = %ld\n", freq);
+> >> + *           freq++; * for next higher match *
+> >> + *   }
+> >> + */
+> >> +struct opp *opp_find_freq_ceil(struct device *dev, unsigned long
+> *freq)
+> >> +{
+> >> +     struct device_opp *dev_opp;
+> >> +     struct opp *temp_opp, *opp = ERR_PTR(-ENODEV);
+> >> +
+> >> +     dev_opp = find_device_opp(dev);
+> >> +     if (IS_ERR(dev_opp))
+> >> +             return opp;
+> >> +
+> >> +     list_for_each_entry(temp_opp, &dev_opp->opp_list, node) {
+> >> +             if (temp_opp->enabled && temp_opp->rate >= *freq) {
+> >
+> > What if freq contains a NULL pointer?
+> thanks.. good catch.. should have checked for dev and freq on entry..
+> added in the to be posted v2
+> 
+> >
+> >> +                     opp = temp_opp;
+> >> +                     *freq = opp->rate;
+> >> +                     break;
+> >> +             }
+> >> +     }
+> >> +
+> >> +     return opp;
+> >> +}
+> >> +
+> >> +/**
+> >> + * opp_find_freq_floor() - Search for an rounded floor freq
+> >
+> > "... Search for a rounded floor ..."
+> Thanks.. will fix in v2.
+> 
+> >
+> >> + * @dev:     device for which we do this operation
+> >> + * @freq:    Start frequency
+> >> + *
+> >> + * Search for the matching floor *enabled* OPP from a starting freq
+> >> + * for a domain.
+> >> + *
+> >> + * Returns *opp and *freq is populated with the next match, else
+> >> + * returns NULL opp if no match, else returns ERR_PTR in case of
+> error.
+> >
+> > Similar comment about opp not being ever NULL as the function above.
+> 
+> Suggest replacing with:
+> Returns *opp and *freq is populated with the match if found, else
+> returns ERR_PTR in case of error and should be handled using IS_ERR.
+
+Same comment as above.
+
 Regards,
-Nishanth Menon
+Sergio
+
+> 
+> [..]
+> 
+> --
+> Regards,
+> Nishanth Menon
