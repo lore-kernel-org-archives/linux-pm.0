@@ -1,15 +1,15 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: Re: your mail
-Date: Sat, 18 Sep 2010 17:56:06 +0200
-Message-ID: <20100918155606.GA16269@isilmar-3.linta.de>
-References: <BLU102-W16DEFB6CCB93D518FD5745EB7C0@phx.gbl>
-	<Pine.LNX.4.44L0.1009181135000.10856-100000@netrider.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] opp: introduce library for device-specific
+	OPPs
+Date: Sat, 18 Sep 2010 20:41:41 +0200
+Message-ID: <201009182041.41675.rjw__6089.06293423406$1284835436$gmane$org@sisk.pl>
+References: <[PATCH 1/4] OMAP: introduce OPP layer for device-specific OPPs>
+	<201009180107.51664.rjw@sisk.pl> <4C93FAD1.80108@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1009181135000.10856-100000@netrider.rowland.org>
+In-Reply-To: <4C93FAD1.80108@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,29 +19,82 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Raj Kumar <rajkumar278@hotmail.com>, linux-pm@lists.linux-foundation.org
+To: Nishanth Menon <nm@ti.com>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-omap <linux-omap@vger.kernel.org>, Paul Walmsley <paul@pwsan.com>, K
+Cc: Andrew Morton <akpm@linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>, linux-arm <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Raj,
+[Trimming the CC list.]
 
-On Sat, Sep 18, 2010 at 11:36:16AM -0400, Alan Stern wrote:
-> > I have question regarding the CPU frequency subsystem through which the frequency of the CPU is scaled.
+On Saturday, September 18, 2010, Nishanth Menon wrote:
+> Rafael J. Wysocki had written, on 09/17/2010 06:07 PM, the following:
+...
 > > 
-> > e.g. If we have device driver (X device contains processor) that wants to scale its own processor based
+> > Apart from this, it might be a good idea to help callers a bit and actually
+> > introduce some sort of locking into the framework.
+> in OMAP implementation we have need to use these apis from irq_locked 
+> contexts as well..  lock implementation will prevent thier necessary 
+> usage.
+
+Why so?  You can use spin_lock_irqsave/spin_unclock_irqrestore  to
+avoid that.
+
+> instead we have implemented lock mechanisms in higher layers and 
+> ensured that the opp table does not change once created - the rest of 
+> them are query functions - the risk is on opp_enable/disable.
+
+OK, but this way you practically make the users of the framework duplicate
+some code for the locking purposes.  This is kind of suboptimal, and error
+prone too.
+
+> >> In terms of the lifetime rules on the nodes in the list:
+> >> The list is expected to be maintained once created, entries are expected 
+> >> to be added optimally and not expected to be destroyed, the choice of 
+> >> list implementation was for reducing the complexity of the code itself 
+> >> and not yet meant as a mechanism to dynamically add and delete nodes on 
+> >> the fly.. Essentially, it was intended for the SOC framework to ensure 
+> >> it plugs in the OPP entries optimally and not create a humongous list of 
+> >> all possible OPPs for all families of the vendor SOCs - even though it 
+> >> is possible to use the OPP layer so - it just wont be smart to do so 
+> >> considering list scan latencies on hot paths such as cpufreq transitions 
+> >> or idle transitions.
 > > 
-> > upon the workload, (DVFS driver for this processor is implemented and registered with cpufreq subsystem)
-> > 
-> > then X device driver when detects waorkload,  Can this X device driver call policy governor APIS for scaling clock or
-> > 
-> > this X device driver can directly calls DVFS driver APIs directly?
+> > If the list nodes are not supposed to be added and removed dynamically,
+> > it probably would make sense to create data structures containing
+> > the "available" OPPs only, once they are known, and simply free the object
+> > representing the other ones.
+> I covered the usage in my reply here: 
+> http://marc.info/?l=linux-arm-kernel&m=128476570300466&w=2
+> but to repeat, the list is dynamic during initialization but remains 
+> static after initialization based on SOC framework implementation - this 
+> is best implemented with a list (we had started with an original array 
+> implementation which evolved to the current list implementation 
+> http://marc.info/?l=linux-omap&m=125912217718770&w=2)
 
-Best would be to register a cpufreq policy notifier,
-(cpufreq_register_notifier()), and then call cpufreq_update_policy()
-whenever the "X device driver" needs to modify its frequency constraints.
+Well, my point is, since the _final_ set of OPPs doesn't really change, there's
+no need to use a list for storing it in principle.
 
-In addition, it would be best to discuss this on the cpufreq mailing list at
+Your current algorithm seems to be:
+(1) Create a list of all _possible_ OPPs.
+(2) Mark the ones that can actually be used on the given hardware as
+    "available".
+(3) Whenever we need to find an OPP to use, browse the entire list.
 
-cpufreq@vger.kernel.org
+This isn't optimal, because the OPPs that are not marked as "available" in (2)
+will never be used, although they _will_ be inspected while browsing the list.
+So, I think a better algorithm would be:
+(1) Create a list of all possible OPPs.
+(2) Drop the nonavailable OPPs from the list.
+(3) Whenever we need to find an OPP to use, browse the entire list.
 
-Best,
-	Dominik
+But then, it may be better to simply move the list we get in (2) into an
+array, because the browsing is going to require fewer memory accesses in
+that case (also, an array would use less memory than the list).  So, perhaps,
+it's better to change the algorithm even further:
+(1) Create a list of all possible OPPs.
+(2) Drop the nonavailable OPPs from the list.
+(3) Move the list we got in (2) into a sorted array.
+(4) Whenever we need to find an OPP to use, browse the array
+     (perhaps using binary search).
+
+Thanks,
+Rafael
