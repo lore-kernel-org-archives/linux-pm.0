@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] opp: introduce library for device-specific
-	OPPs
-Date: Sat, 18 Sep 2010 20:41:41 +0200
-Message-ID: <201009182041.41675.rjw__6089.06293423406$1284835436$gmane$org@sisk.pl>
-References: <[PATCH 1/4] OMAP: introduce OPP layer for device-specific OPPs>
-	<201009180107.51664.rjw@sisk.pl> <4C93FAD1.80108@ti.com>
+From: Greg KH <gregkh@suse.de>
+Subject: [072/123] sched: Make wakeup side and atomic variants of
+	completion API irq safe
+Date: Sat, 18 Sep 2010 11:58:36 -0700
+Message-ID: <20100918185958.963057726@clark.site>
+References: <20100918185724.290702750@clark.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4C93FAD1.80108@ti.com>
+Content-Disposition: inline;
+	filename=sched-make-wakeup-side-and-atomic-variants-of-completion-api-irq-safe.patch
+In-Reply-To: <20100918190024.GA14388@kroah.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,82 +20,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nishanth Menon <nm@ti.com>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-omap <linux-omap@vger.kernel.org>, Paul Walmsley <paul@pwsan.com>, K
-Cc: Andrew Morton <akpm@linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>, linux-arm <linux-arm-kernel@lists.infradead.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>, David Chinner <david@fromorbit.com>, stable-review@kernel.org, Lachlan McIlroy <lachlan@sgi.com>, pm list <linux-pm@lists.linux-foundation.org>, akpm@linux-foundation.org, torvalds@linux-foundation.org, Ingo Molnar <mingo@elte.hu>, alan@lxorguk.ukuu.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-[Trimming the CC list.]
+From: Rafael J.Wysocki <rjw@sisk.pl>
 
-On Saturday, September 18, 2010, Nishanth Menon wrote:
-> Rafael J. Wysocki had written, on 09/17/2010 06:07 PM, the following:
-...
-> > 
-> > Apart from this, it might be a good idea to help callers a bit and actually
-> > introduce some sort of locking into the framework.
-> in OMAP implementation we have need to use these apis from irq_locked 
-> contexts as well..  lock implementation will prevent thier necessary 
-> usage.
+commit 7539a3b3d1f892dd97eaf094134d7de55c13befe upstream
 
-Why so?  You can use spin_lock_irqsave/spin_unclock_irqrestore  to
-avoid that.
+Alan Stern noticed that all the wakeup side (and atomic) variants of the
+completion APIs should be irq safe, but the newly introduced
+completion_done() and try_wait_for_completion() aren't. The use of the
+irq unsafe variants in IRQ contexts can cause crashes/hangs.
 
-> instead we have implemented lock mechanisms in higher layers and 
-> ensured that the opp table does not change once created - the rest of 
-> them are query functions - the risk is on opp_enable/disable.
+Fix the problem by making them use spin_lock_irqsave() and
+spin_lock_irqrestore().
 
-OK, but this way you practically make the users of the framework duplicate
-some code for the locking purposes.  This is kind of suboptimal, and error
-prone too.
+Reported-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: David Chinner <david@fromorbit.com>
+Cc: Lachlan McIlroy <lachlan@sgi.com>
+LKML-Reference: <200912130007.30541.rjw@sisk.pl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ kernel/sched.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-> >> In terms of the lifetime rules on the nodes in the list:
-> >> The list is expected to be maintained once created, entries are expected 
-> >> to be added optimally and not expected to be destroyed, the choice of 
-> >> list implementation was for reducing the complexity of the code itself 
-> >> and not yet meant as a mechanism to dynamically add and delete nodes on 
-> >> the fly.. Essentially, it was intended for the SOC framework to ensure 
-> >> it plugs in the OPP entries optimally and not create a humongous list of 
-> >> all possible OPPs for all families of the vendor SOCs - even though it 
-> >> is possible to use the OPP layer so - it just wont be smart to do so 
-> >> considering list scan latencies on hot paths such as cpufreq transitions 
-> >> or idle transitions.
-> > 
-> > If the list nodes are not supposed to be added and removed dynamically,
-> > it probably would make sense to create data structures containing
-> > the "available" OPPs only, once they are known, and simply free the object
-> > representing the other ones.
-> I covered the usage in my reply here: 
-> http://marc.info/?l=linux-arm-kernel&m=128476570300466&w=2
-> but to repeat, the list is dynamic during initialization but remains 
-> static after initialization based on SOC framework implementation - this 
-> is best implemented with a list (we had started with an original array 
-> implementation which evolved to the current list implementation 
-> http://marc.info/?l=linux-omap&m=125912217718770&w=2)
-
-Well, my point is, since the _final_ set of OPPs doesn't really change, there's
-no need to use a list for storing it in principle.
-
-Your current algorithm seems to be:
-(1) Create a list of all _possible_ OPPs.
-(2) Mark the ones that can actually be used on the given hardware as
-    "available".
-(3) Whenever we need to find an OPP to use, browse the entire list.
-
-This isn't optimal, because the OPPs that are not marked as "available" in (2)
-will never be used, although they _will_ be inspected while browsing the list.
-So, I think a better algorithm would be:
-(1) Create a list of all possible OPPs.
-(2) Drop the nonavailable OPPs from the list.
-(3) Whenever we need to find an OPP to use, browse the entire list.
-
-But then, it may be better to simply move the list we get in (2) into an
-array, because the browsing is going to require fewer memory accesses in
-that case (also, an array would use less memory than the list).  So, perhaps,
-it's better to change the algorithm even further:
-(1) Create a list of all possible OPPs.
-(2) Drop the nonavailable OPPs from the list.
-(3) Move the list we got in (2) into a sorted array.
-(4) Whenever we need to find an OPP to use, browse the array
-     (perhaps using binary search).
-
-Thanks,
-Rafael
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5947,14 +5947,15 @@ EXPORT_SYMBOL(wait_for_completion_killab
+  */
+ bool try_wait_for_completion(struct completion *x)
+ {
++	unsigned long flags;
+ 	int ret = 1;
+ 
+-	spin_lock_irq(&x->wait.lock);
++	spin_lock_irqsave(&x->wait.lock, flags);
+ 	if (!x->done)
+ 		ret = 0;
+ 	else
+ 		x->done--;
+-	spin_unlock_irq(&x->wait.lock);
++	spin_unlock_irqrestore(&x->wait.lock, flags);
+ 	return ret;
+ }
+ EXPORT_SYMBOL(try_wait_for_completion);
+@@ -5969,12 +5970,13 @@ EXPORT_SYMBOL(try_wait_for_completion);
+  */
+ bool completion_done(struct completion *x)
+ {
++	unsigned long flags;
+ 	int ret = 1;
+ 
+-	spin_lock_irq(&x->wait.lock);
++	spin_lock_irqsave(&x->wait.lock, flags);
+ 	if (!x->done)
+ 		ret = 0;
+-	spin_unlock_irq(&x->wait.lock);
++	spin_unlock_irqrestore(&x->wait.lock, flags);
+ 	return ret;
+ }
+ EXPORT_SYMBOL(completion_done);
