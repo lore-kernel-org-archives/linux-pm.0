@@ -1,16 +1,17 @@
-From: Nishanth Menon <nm@ti.com>
+From: Kevin Hilman <khilman@deeprootsystems.com>
 Subject: Re: [PATCH] opp: introduce library for device-specific
 	OPPs
-Date: Fri, 17 Sep 2010 18:33:37 -0500
-Message-ID: <4C93FAD1.80108@ti.com>
-References: <[PATCH 1/4] OMAP: introduce OPP layer for device-specific OPPs>
-	<20100917121958.1dbb57af.akpm@linux-foundation.org>
-	<4C93DC4E.5020506@ti.com> <201009180107.51664.rjw@sisk.pl>
+Date: Fri, 17 Sep 2010 17:37:06 -0700
+Message-ID: <87hbhnq43x.fsf__14100.979807745$1284770297$gmane$org@deeprootsystems.com>
+References: <1284686973-13993-1-git-send-email-nm@ti.com>
+	<20100917153643.GC29739@sirena.org.uk> <4C938EE2.1010307@ti.com>
+	<20100917155937.GB29596@rakim.wolfsonmicro.main>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201009180107.51664.rjw@sisk.pl>
+In-Reply-To: <20100917155937.GB29596@rakim.wolfsonmicro.main> (Mark Brown's
+	message of "Fri, 17 Sep 2010 16:59:37 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,134 +21,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Phil Carmody <ext-phil.2.carmody@nokia.com>, linux-doc <linux-doc@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Matthew@smtp1.linux-foundation.org, "Chikkature Rajashekar, Madhusudhan" <madhu.cr@ti.com>, "Aguirre,
-	Sergio" <saaguirre@ti.com>, Benjamin@smtp1.linux-foundation.org, Andi Kleen <ak@linux.intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>, Eduardo Valentin <eduardo.valentin@nokia.com>, linux-omap <linux-omap@vger.kernel.org>, "Gopinath, Thara" <thara@ti.com>, linux-arm <linux-arm-kernel@lists.infradead.org>, Linus Walleij <linus.walleij@stericsson.com>, "Granados Dorado,
-	Roberto" <x0095451@ti.com>, "Martin K. Petersen" <martin.peterse>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Phil Carmody <ext-phil.2.carmody@nokia.com>, Linus Walleij <linus.walleij@stericsson.com>, lkml <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-omap <linux-omap@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-arm <linux-arm-kernel@lists.infradead.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki had written, on 09/17/2010 06:07 PM, the following:
-> On Friday, September 17, 2010, Nishanth Menon wrote:
->> Andrew Morton had written, on 09/17/2010 02:19 PM, the following:
->>> On Thu, 16 Sep 2010 20:29:33 -0500
->>> Nishanth Menon <nm@ti.com> wrote:
->>>
->> [...]
->>>>  Documentation/power/00-INDEX |    2 +
->>>>  include/linux/opp.h          |  136 +++++++++++++
->>>>  kernel/power/Kconfig         |   14 ++
->>>>  lib/Makefile                 |    2 +
->>>>  lib/opp.c                    |  440 ++++++++++++++++++++++++++++++++++++++++++
->>> ./lib/ is an unusual place to put a driver-like thing such as this. 
->>> The lib/ directory is mainly for generic kernel-wide support things. 
->>> I'd suggest that ./drivers/opp/ would be a better place.
->> we had an interesting debate on this topic on the the thread starting
->> http://marc.info/?l=linux-arm-kernel&m=128465710624421&w=2
->>
->> It really does not provide any driver like feature here. it is just a 
->> bunch of helper functions which any SOC framework can use to build up to 
->> implement either:
->> a) cpufreq implementation with various OPPs
->> b) bootup in a specific opp in a set of supported OPPs and stay there 
->> (e.g. mpurate support on OMAP platforms)
-> 
-> Generally, some files under drivers/base/power contain helper functions of
-> similar nature.  You can put it in there, as far as I'm concerned.
-Ack. thanks for the suggestion. it looks like a good place to me too. 
-will do it as part of v2.
+[trimmed Cc list a bit, as vger bounced my last reply due to header too long]
 
-> 
->> I had considered putting it in drivers/power, but it looks to contain 
->> mostly regulator stuff, the other alternative would be to include it in 
->> kernel/power or as Kevin H, Linus W and you mention drivers/opp
->>
->> Personally, I dont have a strong feeling about it as long as it is 
->> reusable across SOCs and am hoping to hear some alignment :).
->>
->>>> ...
->>>>
->>>> +/*
->>>> + * Initialization wrapper used to define an OPP.
->>>> + * To point at the end of a terminator of a list of OPPs,
->>>> + * use OPP_DEF(0, 0, 0)
->>>> + */
->>>> +#define OPP_DEF(_enabled, _freq, _uv)	\
->>>> +{						\
->>>> +	.enabled	= _enabled,		\
->>>> +	.freq		= _freq,		\
->>>> +	.u_volt		= _uv,			\
->>>> +}
->>> OPP_DEF is a somewhat atypical name.  OPP_INITIALIZER would be more
->>> conventional.
->> Thanks. will incorporate this in v2 of my patchset.
->>
->>> However OPP_DEF has no usage in this patch so perhaps this can be
->>> removed?
->> there were a few OMAP followon patches from
->> http://marc.info/?l=linux-omap&m=128152135801634&w=2
->> which will actually use this for OMAP3 platform.
-> 
-> Still, the $subject patch doesn't use it.  So perhaps add it in a separate patch?
-was hoping to align on the approach with v2, the follow on OMAP patch
-https://patchwork.kernel.org/patch/183742/ will post with needed changes 
-be part of Kevin's thread for OMAP3 if we are ok with it, or Do we want 
-to see it in this series as reference?
+Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
 
-> 
->>>> +static LIST_HEAD(dev_opp_list);
->>> There's no locking for this list.  That's OK under some circumstances,
->>> but I do think there should be a comment here explaining this apparent
->>> bug: why is no locking needed, what are the lifetime rules for entries
->>> on this list.
->> Locking:
->> arrgh.. my bad.. I had documented it in the missing and later on posted 
->> opp.txt http://marc.info/?l=linux-arm-kernel&m=128473931626114&w=2
->>
->> The OPP layer implementation expects to be used in multiple contexts
->> (including calls from interrupt locked context) based on SOC framework 
->> implementation. It is recommended to use appropriate locking schemes 
->> within the SOC framework itself.
-> 
-> That should be stated directly in the kerneldoc comments.  The requirement
-> that the caller is supposed to ensure suitable locking is by no means
-> a trivial one.
-Agreed. thanks for pointing this out. I have done this as part of v2 of 
-my patch. will post in a few hrs.
+> On Fri, Sep 17, 2010 at 10:53:06AM -0500, Nishanth Menon wrote:
+>> Mark Brown had written, on 09/17/2010 10:36 AM, the following:
+>
+>> >It might be clearer to use some term other than enabled in the code -
+>> >when reading I wasn't immediately sure if enabled meant that it was
+>> >available to be selected or if it was the active operating point.  How
+>> >about 'allowed' (though I'm not 100% happy with that)?
+>
+>> ;).. The opp is enabled or disabled if it is populated, it is
+>> implicit as being available but not enabled- how about active? this
+>> would change the opp_enable/disable functions to opp_activate,
+>> opp_deactivate..
+>
+>> Recommendations folks?
+>
+> The enable/disable thing wasn't so noticable in the API itself, it was
+> in the data structures that I found it confusing - the core has a
+> different idea about what's going on with the system as a whole compared
+> to the decision that an individual device is taking.
 
-> 
-> Apart from this, it might be a good idea to help callers a bit and actually
-> introduce some sort of locking into the framework.
-in OMAP implementation we have need to use these apis from irq_locked 
-contexts as well.. lock implementation will prevent thier necessary 
-usage. instead we have implemented lock mechanisms in higher layers and 
-ensured that the opp table does not change once created - the rest of 
-them are query functions - the risk is on opp_enable/disable.
+Can you clarify your confusion here?  I don't follow the problem you're
+raising.
 
-> 
->> In terms of the lifetime rules on the nodes in the list:
->> The list is expected to be maintained once created, entries are expected 
->> to be added optimally and not expected to be destroyed, the choice of 
->> list implementation was for reducing the complexity of the code itself 
->> and not yet meant as a mechanism to dynamically add and delete nodes on 
->> the fly.. Essentially, it was intended for the SOC framework to ensure 
->> it plugs in the OPP entries optimally and not create a humongous list of 
->> all possible OPPs for all families of the vendor SOCs - even though it 
->> is possible to use the OPP layer so - it just wont be smart to do so 
->> considering list scan latencies on hot paths such as cpufreq transitions 
->> or idle transitions.
-> 
-> If the list nodes are not supposed to be added and removed dynamically,
-> it probably would make sense to create data structures containing
-> the "available" OPPs only, once they are known, and simply free the object
-> representing the other ones.
-I covered the usage in my reply here: 
-http://marc.info/?l=linux-arm-kernel&m=128476570300466&w=2
-but to repeat, the list is dynamic during initialization but remains 
-static after initialization based on SOC framework implementation - this 
-is best implemented with a list (we had started with an original array 
-implementation which evolved to the current list implementation 
-http://marc.info/?l=linux-omap&m=125912217718770&w=2)
+The enabled flag in the internal data structure is set to true when
+opp_enable() is called and set to false when opp_disable() is called.
+I'm not sure
 
--- 
-Regards,
-Nishanth Menon
+At least as we're currently using it, this API has know knowlege of what
+OPP is currently active on the system.  IOW, it has no idea what the
+current frequency/voltage a given device is set to.  It's intended more
+like an OPP database with some convience functions to search through the
+OPPs and to make OPPs available (or not.)  The users of this API (in our
+case, CPUfreq and voltage scaling code) are the ones which
+keep track of which OPP is actually in use.
+
+As I write this, I agree with what Phil pointed out; that 'available' is
+probably the right name for this flag, instead of 'enabled.'
+
+>> >When reading the description I'd expected to see some facility to
+>> >trigger selection of an active operating point in the library (possibly
+>> >as a separate call since you might have a bunch of operating points
+>> >being updated in quick succession) but it looks like that needs to be
+>> >supplied externally at the minute?
+>
+>> The intent is we use the opp_search* functions to pick up the opp
+>> and enable/activate it and disable/deactivate it.
+>
+> Sure, I get that bit.  What I meant was that I was expecting something
+> that would say that changes had been made to the enabled/disabled sets
+> and that it'd be a good idea to rescan, especially for cases where the
+> devices change their requirements but the OPPs need to be done over a
+> larger block.
+
+I guess you're thinking of notifiers, so if the list of available OPPs
+changes, a driver could (re)search to see if a more optimal OPP was
+available?
+
+Certainly sounds possible, but not sure how useful in practice.  OPP
+change decisions are not very often, so any OPP database updates may not
+affect a device OPP change currently in progress, but would take effect
+the next time that device makes an OPP change.
+
+Either way, this is something that could easily be added if it seems
+useful.
+
+Kevin
