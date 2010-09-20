@@ -1,14 +1,13 @@
-From: Sedat Dilek <sedat.dilek@googlemail.com>
-Subject: Re: 2.6.36-rc4-git5: Reported regressions from 2.6.35
-Date: Mon, 20 Sep 2010 21:19:58 +0200
-Message-ID: <AANLkTinLR0Js0ueVOGEkbs27d4FEH14c=1wuhUqPsiHx__35270.8833445378$1285013631$gmane$org@mail.gmail.com>
-References: <1fwtoy8sG5H.A.veG.9D7lMB@chimera>
-Reply-To: sedat.dilek@gmail.com
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM: Fix signed/unsigned warning
+Date: Mon, 20 Sep 2010 21:27:24 +0200
+Message-ID: <201009202127.24691.rjw__29578.8220399574$1285013632$gmane$org@sisk.pl>
+References: <8136c24e8aaf577b86dfdfc40b0d01e6@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1fwtoy8sG5H.A.veG.9D7lMB@chimera>
+In-Reply-To: <8136c24e8aaf577b86dfdfc40b0d01e6@localhost>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,42 +17,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, harn-solo@gmx.de, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Kevin Cernekee <cernekee@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgUmFmYWVsLAoKY2FuIHlvdSBwbGVhc2UgYWRkIHRoZSBmb2xsb3dpbmcsIFRoYW5rcyBpbiBh
-ZHZhbmNlLgo+IEJ1Zy1FbnRyeSAgICAgICA6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3No
-b3dfYnVnLmNnaT9pZD0xODg3Mgo+IFN1YmplY3QgICAgICAgICA6IFJhZGVvbiBLTVMgcjEwMCBh
-bmQgU1RSIHByb2JsZW1zCj4gU3VibWl0dGVyICAgICAgIDogUmljaGFyZCBNaXR0ZW5kb3JmZXIg
-PGRlbGlzdEBnbXgubmV0Pgo+IERhdGUgICAgICAgICAgICA6IDIwMTAtMDktMTcgMTg6MjYgKDQg
-ZGF5cyBvbGQpCj4gTWVzc2FnZS1JRCAgICAgIDogPDIwMTAwOTE3MjAyNjQ3LmFhNGI2MzAwLmRl
-bGlzdEBnbXgubmV0Pgo+IFJlZmVyZW5jZXMgICAgICA6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGlu
-dXgta2VybmVsJm09MTI4NDc0ODAyODA5Nzc5Jnc9MgoKT24gTW9uLCBTZXAgMjAsIDIwMTAgYXQg
-ODo0NyBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPiB3cm90ZToKPiBUaGlzIG1l
-c3NhZ2UgY29udGFpbnMgYSBsaXN0IG9mIHNvbWUgcmVncmVzc2lvbnMgZnJvbSAyLjYuMzUsCj4g
-Zm9yIHdoaWNoIHRoZXJlIGFyZSBubyBmaXhlcyBpbiB0aGUgbWFpbmxpbmUga25vd24gdG8gdGhl
-IHRyYWNraW5nIHRlYW0uCj4gSWYgYW55IG9mIHRoZW0gaGF2ZSBiZWVuIGZpeGVkIGFscmVhZHks
-IHBsZWFzZSBsZXQgdXMga25vdy4KPgo+IElmIHlvdSBrbm93IG9mIGFueSBvdGhlciB1bnJlc29s
-dmVkIHJlZ3Jlc3Npb25zIGZyb20gMi42LjM1LCBwbGVhc2UgbGV0IHVzCj4ga25vdyBlaXRoZXIg
-YW5kIHdlJ2xsIGFkZCB0aGVtIHRvIHRoZSBsaXN0LiDCoEFsc28sIHBsZWFzZSBsZXQgdXMga25v
-dwo+IGlmIGFueSBvZiB0aGUgZW50cmllcyBiZWxvdyBhcmUgaW52YWxpZC4KPgo+IEVhY2ggZW50
-cnkgZnJvbSB0aGUgbGlzdCB3aWxsIGJlIHNlbnQgYWRkaXRpb25hbGx5IGluIGFuIGF1dG9tYXRp
-YyByZXBseQo+IHRvIHRoaXMgbWVzc2FnZSB3aXRoIENDcyB0byB0aGUgcGVvcGxlIGludm9sdmVk
-IGluIHJlcG9ydGluZyBhbmQgaGFuZGxpbmcKPiB0aGUgaXNzdWUuCj4KPgo+IExpc3RlZCByZWdy
-ZXNzaW9ucyBzdGF0aXN0aWNzOgo+Cj4gwqBEYXRlIMKgIMKgIMKgIMKgIMKgVG90YWwgwqBQZW5k
-aW5nIMKgVW5yZXNvbHZlZAo+IMKgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLQo+IMKgMjAxMC0wOS0yMCDCoCDCoCDCoCAzOCDCoCDCoCDCoCAxNSDCoCDCoCDCoCDCoCDC
-oDE1Cj4gwqAyMDEwLTA5LTEyIMKgIMKgIMKgIDI4IMKgIMKgIMKgIDE0IMKgIMKgIMKgIMKgIMKg
-MTMKPiDCoDIwMTAtMDgtMzAgwqAgwqAgwqAgMjEgwqAgwqAgwqAgMTYgwqAgwqAgwqAgwqAgwqAx
-NQo+Cj4KPiBVbnJlc29sdmVkIHJlZ3Jlc3Npb25zCgpIaSBSYWZhZWwsCgpjYW4geW91IHBsZWFz
-ZSBhZGQgdGhlIGZvbGxvd2luZyBCdWcsIFRoYW5rcyBpbiBhZHZhbmNlLgoKQnVnLUVudHJ5ICAg
-ICAgIDogaHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xNjE0MApT
-dWJqZWN0ICAgICAgICAgOiBTdXNwZW5kIFRvIFJBTS8gUmVzdW1lIGJyb2tlbiAtIFJhZGVvbiBL
-TVMgb24gUlYyNTAKU3VibWl0dGVyICAgICAgIDogTWljaGFlbCBMb25nIDxoYXJuLXNvbG9AZ214
-LmRlPgpEYXRlICAgICAgICAgICAgOiAyMDEwLTA2LTA2IDA5OjUyCk1lc3NhZ2UtSUQgICAgICA6
-ID8/PwpSZWZlcmVuY2VzICAgICAgOiA/Pz8KCldoYXQgaXMgd2l0aCAiUmVncmVzc2lvbjoJTm8i
-IGluIHRoZSBCUj8gQ2hhbmdlPwoKUmVnYXJkcywKLSBTZWRhdCAtCl9fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51
-eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5k
-YXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Monday, September 20, 2010, Kevin Cernekee wrote:
+> Seen on MIPS32, gcc 4.4.3, 2.6.36-rc4:
+> 
+> drivers/base/power/main.c: In function 'dpm_show_time':
+> drivers/base/power/main.c:415: warning: comparison of distinct pointer types lacks a cast
+> 
+> do_div() takes unsigned parameters:
+> 
+> uint32_t do_div(uint64_t *n, uint32_t base);
+> 
+> Using an unsigned variable for usecs64 should not cause any problems,
+> because calltime >= starttime .
+> 
+> Signed-off-by: Kevin Cernekee <cernekee@gmail.com>
+
+OK, I'm going to apply it.
+
+Thanks,
+Rafael
+
+
+> ---
+>  drivers/base/power/main.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 276d5a7..db67719 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -407,7 +407,7 @@ static void pm_dev_err(struct device *dev, pm_message_t state, char *info,
+>  static void dpm_show_time(ktime_t starttime, pm_message_t state, char *info)
+>  {
+>  	ktime_t calltime;
+> -	s64 usecs64;
+> +	u64 usecs64;
+>  	int usecs;
+>  
+>  	calltime = ktime_get();
+> 
