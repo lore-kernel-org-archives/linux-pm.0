@@ -1,15 +1,15 @@
 From: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 1/2] PM / Wakeup: Introduce wakeup source
- objects and event statistics (v3)
-Date: Mon, 20 Sep 2010 11:59:08 -0700
-Message-ID: <20100920185908.GA29380__10750.5137836144$1285012989$gmane$org@suse.de>
-References: <201009201957.40995.rjw@sisk.pl> <201009201959.10070.rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] PM: Fix potential issue with failing
+ asynchronous suspend
+Date: Mon, 20 Sep 2010 11:59:29 -0700
+Message-ID: <20100920185929.GB29380__36027.1419318908$1285013001$gmane$org@suse.de>
+References: <201009201957.40995.rjw@sisk.pl> <201009202000.45147.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201009201959.10070.rjw@sisk.pl>
+In-Reply-To: <201009202000.45147.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,32 +20,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Colin Cross <ccross@android.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Sep 20, 2010 at 07:59:09PM +0200, Rafael J. Wysocki wrote:
+On Mon, Sep 20, 2010 at 08:00:44PM +0200, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: PM / Wakeup: Introduce wakeup source objects and event statistics (v3)
+> Subject: PM: Fix potential issue with failing asynchronous suspend
 > 
-> Introduce struct wakeup_source for representing system wakeup sources
-> within the kernel and for collecting statistics related to them.
-> Make the recently introduced helper functions pm_wakeup_event(),
-> pm_stay_awake() and pm_relax() use struct wakeup_source objects
-> internally, so that wakeup statistics associated with wakeup devices
-> can be collected and reported in a consistent way (the definition of
-> pm_relax() is changed, which is harmless, because this function is
-> not called directly by anyone yet).  Introduce new wakeup-related
-> sysfs device attributes in /sys/devices/.../power for reporting the
-> device wakeup statistics.
+> There is a potential issue with the asynchronous suspend code that
+> a device driver suspending asynchronously may not notice that it
+> should back off.  There are two failing scenarions, (1) when the
+> driver is waiting for a driver suspending synchronously to complete
+> and that second driver returns error code, in which case async_error
+> won't be set and the waiting driver will continue suspending and (2)
+> after the driver has called device_pm_wait_for_dev() and the waited
+> for driver returns error code, in which case the caller of
+> device_pm_wait_for_dev() will not know that there was an error and
+> will continue suspending.
 > 
-> Change the global wakeup events counters event_count and
-> events_in_progress into atomic variables, so that it is not necessary
-> to acquire a global spinlock in pm_wakeup_event(), pm_stay_awake()
-> and pm_relax(), which should allow us to avoid lock contention in
-> these functions on SMP systems with many wakeup devices.
+> To fix this issue make __device_suspend() set async_error, so
+> async_suspend() doesn't need to set it any more, and make
+> device_pm_wait_for_dev() return async_error, so that its callers
+> can check whether or not they should continue suspending.
 > 
+> No more changes are necessary, since device_pm_wait_for_dev() in
+> not used by any drivers' suspend routines.
+> 
+> Reported-by: Colin Cross <ccross@android.com>
 > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
 Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-Nice job!
