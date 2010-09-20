@@ -1,15 +1,12 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [stable] Stable inclusion request
-Date: Thu, 23 Sep 2010 11:28:56 -0700
-Message-ID: <20100923182856.GN23040@kroah.com>
-References: <201009121932.28753.rjw@sisk.pl> <20100912174445.GA3328@kroah.com>
-	<201009121952.27115.rjw@sisk.pl>
+From: Kevin Cernekee <cernekee@gmail.com>
+Subject: [PATCH] PM: Fix signed/unsigned warning
+Date: Mon, 20 Sep 2010 11:33:32 -0700
+Message-ID: <8136c24e8aaf577b86dfdfc40b0d01e6__43232.6533868492$1285273337$gmane$org@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201009121952.27115.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,34 +16,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, stable@kernel.org
+To: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Sep 12, 2010 at 07:52:26PM +0200, Rafael J. Wysocki wrote:
-> On Sunday, September 12, 2010, Greg KH wrote:
-> > On Sun, Sep 12, 2010 at 07:32:28PM +0200, Rafael J. Wysocki wrote:
-> > > Hi,
-> > > 
-> > > Please add the following commit:
-> > > 
-> > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=152e1d592071c8b312bb898bc1118b64e4aea535
-> > > 
-> > > to the 2.6.35.y -stable tree.
-> > > 
-> > > It shouldn't be necessary in any other -stable trees that are being maintained
-> > > currently.
-> > 
-> > Ok, I'll queue it up this week, thanks for letting me know.
-> 
-> Thanks a lot!
-> 
-> Actually, I think this one should be included in 2.6.35.y as well:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=6715045ddc7472a22be5e49d4047d2d89b391f45
-> 
-> (it shouldn't be necessary in the other currently maintained -stable trees).
+Seen on MIPS32, gcc 4.4.3, 2.6.36-rc4:
 
-Both are now queued up, thanks.
+drivers/base/power/main.c: In function 'dpm_show_time':
+drivers/base/power/main.c:415: warning: comparison of distinct pointer types lacks a cast
 
-greg k-h
+do_div() takes unsigned parameters:
+
+uint32_t do_div(uint64_t *n, uint32_t base);
+
+Using an unsigned variable for usecs64 should not cause any problems,
+because calltime >= starttime .
+
+Signed-off-by: Kevin Cernekee <cernekee@gmail.com>
+---
+ drivers/base/power/main.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 276d5a7..db67719 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -407,7 +407,7 @@ static void pm_dev_err(struct device *dev, pm_message_t state, char *info,
+ static void dpm_show_time(ktime_t starttime, pm_message_t state, char *info)
+ {
+ 	ktime_t calltime;
+-	s64 usecs64;
++	u64 usecs64;
+ 	int usecs;
+ 
+ 	calltime = ktime_get();
+-- 
+1.7.0.4
