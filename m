@@ -1,12 +1,20 @@
-From: Kevin Cernekee <cernekee@gmail.com>
-Subject: [PATCH] PM: Fix signed/unsigned warning
-Date: Mon, 20 Sep 2010 11:33:32 -0700
-Message-ID: <8136c24e8aaf577b86dfdfc40b0d01e6__43232.6533868492$1285273337$gmane$org@localhost>
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] tracing, perf: add more power related events
+Date: Wed, 22 Sep 2010 14:15:55 -0400
+Message-ID: <1285179355.26872.27.camel__27671.8841087588$1285273361$gmane$org@gandalf.stny.rr.com>
+References: <AANLkTinUmbSUUuxUzc8++pcb9gd1CZFdyTQFrveTBXyV@mail.gmail.com>
+	<201009171736.14170.trenn@suse.de>	<20100917162412.GB3341@elte.hu>
+	<201009180026.59482.trenn@suse.de>
+	<AANLkTimMAr9kEzybFGai3qGyXx36v055iPpXq_C1vW8C@mail.gmail.com>
+	<4C9A21AD.1000800@linux.intel.com>
+	<AANLkTim6B+Je=LykgJb9=0vK5Br1rkft619BRJkBcHdP@mail.gmail.com>
+	<4C9A2FB3.105@linux.intel.com> <1285173835.2275.1026.camel@laptop>
+	<4C9A37AE.2010509@linux.intel.com> <1285176629.2275.1033.camel@laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <1285176629.2275.1033.camel@laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,39 +24,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Len Brown <len.brown@intel.com>, Jean Pihet <jean.pihet@newoldbits.com>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Seen on MIPS32, gcc 4.4.3, 2.6.36-rc4:
+On Wed, 2010-09-22 at 19:30 +0200, Peter Zijlstra wrote:
+> On Wed, 2010-09-22 at 10:06 -0700, Arjan van de Ven wrote:
+> 
 
-drivers/base/power/main.c: In function 'dpm_show_time':
-drivers/base/power/main.c:415: warning: comparison of distinct pointer types lacks a cast
+> That said, I really didn't read this discussion much, but your stance
+> seems to be that any tracepoint you use must stay valid, and I object to
+> that.
 
-do_div() takes unsigned parameters:
+We could add a TRACE_EVENT_ABI() as Ingo has been suggesting. If
+anything, it could mean that the given tracepoint will always have the
+same name. And perhaps the data it holds will always be there, but may
+also be extended.
 
-uint32_t do_div(uint64_t *n, uint32_t base);
+> 
+> What will do you do when we include a new scheduling policy and all the
+> scheduler tracepoints need to change? (yes that's really going to
+> happen)
 
-Using an unsigned variable for usecs64 should not cause any problems,
-because calltime >= starttime .
+The tracepoint sched_switch should stay the same. We may add more data,
+but the comm, pid, prio => comm, pid, prio, I don't see going away.
 
-Signed-off-by: Kevin Cernekee <cernekee@gmail.com>
----
- drivers/base/power/main.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> I'm not going to carry double tracepoints, and I'm not going to not
+> merge that policy. 
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 276d5a7..db67719 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -407,7 +407,7 @@ static void pm_dev_err(struct device *dev, pm_message_t state, char *info,
- static void dpm_show_time(ktime_t starttime, pm_message_t state, char *info)
- {
- 	ktime_t calltime;
--	s64 usecs64;
-+	u64 usecs64;
- 	int usecs;
- 
- 	calltime = ktime_get();
--- 
-1.7.0.4
+Not sure what you mean by "double tracepoints"
+
+-- Steve
