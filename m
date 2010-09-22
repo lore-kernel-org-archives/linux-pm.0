@@ -1,20 +1,15 @@
-From: Peter Zijlstra <peterz@infradead.org>
+From: Thomas Renninger <trenn@suse.de>
 Subject: Re: [PATCH] tracing, perf: add more power related events
-Date: Wed, 22 Sep 2010 20:30:33 +0200
-Message-ID: <1285180233.2275.1038.camel__21265.6071213589$1285180344$gmane$org@laptop>
-References: <20100917162412.GB3341@elte.hu> <201009180026.59482.trenn@suse.de>
-	<AANLkTimMAr9kEzybFGai3qGyXx36v055iPpXq_C1vW8C@mail.gmail.com>
-	<4C9A21AD.1000800@linux.intel.com>
-	<AANLkTim6B+Je=LykgJb9=0vK5Br1rkft619BRJkBcHdP@mail.gmail.com>
-	<4C9A2FB3.105@linux.intel.com> <1285173835.2275.1026.camel@laptop>
-	<4C9A37AE.2010509@linux.intel.com> <1285176629.2275.1033.camel@laptop>
-	<1285179355.26872.27.camel@gandalf.stny.rr.com>
-	<20100922182356.GB9058@elte.hu>
+Date: Wed, 22 Sep 2010 20:34:07 +0200
+Message-ID: <201009222034.08706.trenn__31206.138947937$1285180664$gmane$org@suse.de>
+References: <AANLkTinUmbSUUuxUzc8++pcb9gd1CZFdyTQFrveTBXyV@mail.gmail.com>
+	<201009221957.57845.trenn@suse.de>
+	<4C9A473F.1060301@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100922182356.GB9058@elte.hu>
+In-Reply-To: <4C9A473F.1060301@linux.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,26 +19,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Len Brown <len.brown@intel.com>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, arjan@infradead.org
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Len Brown <len.brown@intel.com>, linux-trace-users@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Jean Pihet <jean.pihet@newoldbits.com>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2010-09-22 at 20:23 +0200, Ingo Molnar wrote:
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
+On Wednesday 22 September 2010 20:13:19 Arjan van de Ven wrote:
+>   On 9/22/2010 10:57 AM, Thomas Renninger wrote:
+> > On Wed
+> >> unfortunately this code is changing a userspace ABI... we really
+> >> shouldn't do that if we can avoid it,
+> >> and here we can avoid it.
 > 
-> > We could add a TRACE_EVENT_ABI() as Ingo has been suggesting. [...]
-> 
-> That would be rather useful.
-> 
-> We could still be flexible about experimental tracepoints (they dont 
-> hurt), but apps should stick to ABI bits - or at least not complain when 
-> non-ABI tracepoints change for good reasons. (arbitrary, avoidable 
-> changes are still bad obviously, regardless of the type of the 
-> tracepoint)
-> 
-> We'd be more stringent with marking tracepoints an ABI.
-> 
-> So yes, this would be lovely to have.
+> [do you really need to get personal?]
+Is that personal already?
+But discussing details makes more sense and I have to appologize for
+the needless comment.
 
-Why? As long as we mandate that apps need to fully parse the format
-stuff anyway, it doesn't buy us much.
+> (but I've been traveling too much in the last few weeks and have been 
+> rather overwhelmed in mail as a result)
+Yes, time is short.
+Sorry about that one. And thanks for your input, even your time is 
+probably shorter than mine,
+
+      Thomas
