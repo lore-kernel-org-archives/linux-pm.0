@@ -1,7 +1,7 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH] tracing, perf: add more power related events
-Date: Wed, 22 Sep 2010 18:43:55 +0200
-Message-ID: <1285173835.2275.1026.camel__14952.0872896121$1285173998$gmane$org@laptop>
+Date: Wed, 22 Sep 2010 18:47:43 +0200
+Message-ID: <1285174063.2275.1028.camel__3335.93769833005$1285174200$gmane$org@laptop>
 References: <AANLkTinUmbSUUuxUzc8++pcb9gd1CZFdyTQFrveTBXyV@mail.gmail.com>
 	<201009171736.14170.trenn@suse.de>	<20100917162412.GB3341@elte.hu>
 	<201009180026.59482.trenn@suse.de>
@@ -24,27 +24,12 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Len Brown <len.brown@intel.com>, Jean Pihet <jean.pihet@newoldbits.com>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, linux-pm@lists.linux-foundation.org, discuss@lesswatts.org, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, arjan@infradead.org
+Cc: Len Brown <len.brown@intel.com>, Jean Pihet <jean.pihet@newoldbits.com>, LKML <linux-kernel@vger.kernel.org>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 On Wed, 2010-09-22 at 09:32 -0700, Arjan van de Ven wrote:
-> > What are the apps that are using it? I know about builtin-timechart,
-> > pytimechart. Is powertop using this as well?
-> 
-> powertop 2.x codebase is as well.
-> 
-> and a bunch of tools we have internal here at Intel.
-> 
-> the thing with ABIs is that you don't know how many users you have.. at 
-> least here you know the lower bound is 3 different tools that are open 
-> source.
-> .... and likely many local tools that aren't.
 
-These tools should be smart enough to look up the tracepoint name, fail
-it its not available, read the tracepoint format, again fail if not
-compatible.
+Also, please don't cross-post to subscriber only lists, that's annoying
+as hell.
 
-I really object to treating tracepoints as ABI and being tied to any
-implementation details due to that.
-
-Tools really should be flexible and allow for change.
+(removed the discuss@lesswatts list)
