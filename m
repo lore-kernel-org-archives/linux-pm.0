@@ -1,13 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC 0/7] Runtime PM updates for autosuspend
-Date: Fri, 24 Sep 2010 00:44:45 +0200
-Message-ID: <201009240044.45720.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1009231702340.1667-100000@iolanthe.rowland.org>
+Subject: [RFC][PATCH] PM / Hibernate: Make some boot messages
+	look less scary
+Date: Fri, 24 Sep 2010 00:56:41 +0200
+Message-ID: <201009240056.41308.rjw__9052.98865768618$1285282682$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1009231702340.1667-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,52 +16,95 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, September 23, 2010, Alan Stern wrote:
-> Rafael and Greg:
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM / Hibernate: Make some boot messages look less scary
 
-Hi,
+The hibernate resume code checks if there is an image to resume from
+on every boot and, if the kernel is built with CONFIG_PM_DEBUG set
+and the image is not present, it prints some scary messages
+suggesting there was a boot error of some sort.  Apparently, some
+users are confused by them, so make them look less scary and adjust
+the other hibernate resume debug messages to match them.
 
-> The following series of emails contains my proposed patches for the
-> runtime PM core, leading up to a general "autosuspend" implementation.  
-> This is going to be one of those difficult cross-subsystem things,
-> because the first patch in the series affects sysfs whereas the rest
-> affect PM.  (In addition, there are two other patches I'm not going to
-> include here that update USB to take advantage of the new PM
-> facilities.  Ultimately there will be changes to the SCSI, block, and
-> IDE layers as well -- they're not written yet.)
-> 
-> We can decide on the best plan for merging these later on.  For now I 
-> would simply like to post them for review and comments.  These are not 
-> yet necessarily in final form, but I think they are pretty close.  They 
-> apply on top of 2.6.36-rc5.
-> 
-> Alan Stern
-> 
-> 
-> 1/7:	Add sysfs_merge_group() and sysfs_unmerge_group() routines
-> 	for later use by PM and USB.
-> 
-> 2/7:	Move the runtime PM accounting routines away from the functions
-> 	that do the actual work.
-> 
-> 3/7:	Replace runtime PM boolean arguments with bitflags.
-> 
-> 4/7:	Merge the synchronous and asynchronous runtime PM routines.
-> 
-> 5/7:	Regroup the public entry points for runtime PM into three
-> 	simple functions.
-> 
-> 6/7:	Add the "no_callbacks" flag.
-> 
-> 7/7:	Implement autosuspend.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/hibernate.c |   12 ++++++------
+ kernel/power/swap.c      |    4 ++--
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-The series generally looks good to me, except for a few comments, mostly
-related to the names of various things I sent in my replies to the specific
-patches.
-
-Thanks,
-Rafael
+Index: linux-2.6/kernel/power/swap.c
+===================================================================
+--- linux-2.6.orig/kernel/power/swap.c
++++ linux-2.6/kernel/power/swap.c
+@@ -929,13 +929,13 @@ put:
+ 		if (error)
+ 			blkdev_put(hib_resume_bdev, FMODE_READ);
+ 		else
+-			pr_debug("PM: Signature found, resuming\n");
++			pr_debug("PM: Image signature found, resuming\n");
+ 	} else {
+ 		error = PTR_ERR(hib_resume_bdev);
+ 	}
+ 
+ 	if (error)
+-		pr_debug("PM: Error %d checking image file\n", error);
++		pr_debug("PM: Image not found (code %d)\n", error);
+ 
+ 	return error;
+ }
+Index: linux-2.6/kernel/power/hibernate.c
+===================================================================
+--- linux-2.6.orig/kernel/power/hibernate.c
++++ linux-2.6/kernel/power/hibernate.c
+@@ -708,7 +708,7 @@ static int software_resume(void)
+ 		goto Unlock;
+ 	}
+ 
+-	pr_debug("PM: Checking image partition %s\n", resume_file);
++	pr_debug("PM: Checking hibernation image partition %s\n", resume_file);
+ 
+ 	/* Check if the device is there */
+ 	swsusp_resume_device = name_to_dev_t(resume_file);
+@@ -733,10 +733,10 @@ static int software_resume(void)
+ 	}
+ 
+  Check_image:
+-	pr_debug("PM: Resume from partition %d:%d\n",
++	pr_debug("PM: Hibernation image partition %d:%d present\n",
+ 		MAJOR(swsusp_resume_device), MINOR(swsusp_resume_device));
+ 
+-	pr_debug("PM: Checking hibernation image.\n");
++	pr_debug("PM: Looking for hibernation image.\n");
+ 	error = swsusp_check();
+ 	if (error)
+ 		goto Unlock;
+@@ -768,14 +768,14 @@ static int software_resume(void)
+ 		goto Done;
+ 	}
+ 
+-	pr_debug("PM: Reading hibernation image.\n");
++	pr_debug("PM: Loading hibernation image.\n");
+ 
+ 	error = swsusp_read(&flags);
+ 	swsusp_close(FMODE_READ);
+ 	if (!error)
+ 		hibernation_restore(flags & SF_PLATFORM_MODE);
+ 
+-	printk(KERN_ERR "PM: Restore failed, recovering.\n");
++	printk(KERN_ERR "PM: Failed to load hibernation image, recovering.\n");
+ 	swsusp_free();
+ 	thaw_processes();
+  Done:
+@@ -788,7 +788,7 @@ static int software_resume(void)
+ 	/* For success case, the suspend path will release the lock */
+  Unlock:
+ 	mutex_unlock(&pm_mutex);
+-	pr_debug("PM: Resume from disk failed.\n");
++	pr_debug("PM: Hibernation image not present or could not be loaded.\n");
+ 	return error;
+ close_finish:
+ 	swsusp_close(FMODE_READ);
