@@ -1,22 +1,11 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] tracing, perf: add more power related events
-Date: Wed, 22 Sep 2010 14:36:14 -0400
-Message-ID: <1285180574.26872.51.camel__31999.7455030263$1285273371$gmane$org@gandalf.stny.rr.com>
-References: <AANLkTinUmbSUUuxUzc8++pcb9gd1CZFdyTQFrveTBXyV@mail.gmail.com>
-	<201009171736.14170.trenn@suse.de>	<20100917162412.GB3341@elte.hu>
-	<201009180026.59482.trenn@suse.de>
-	<AANLkTimMAr9kEzybFGai3qGyXx36v055iPpXq_C1vW8C@mail.gmail.com>
-	<4C9A21AD.1000800@linux.intel.com>
-	<AANLkTim6B+Je=LykgJb9=0vK5Br1rkft619BRJkBcHdP@mail.gmail.com>
-	<4C9A2FB3.105@linux.intel.com> <1285173835.2275.1026.camel@laptop>
-	<4C9A37AE.2010509@linux.intel.com> <1285176629.2275.1033.camel@laptop>
-	<1285179355.26872.27.camel@gandalf.stny.rr.com>
-	<1285180000.2275.1036.camel@laptop>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: [RFC 0/7] Runtime PM updates for autosuspend
+Date: Thu, 23 Sep 2010 17:22:53 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1009231702340.1667-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1285180000.2275.1036.camel@laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,61 +15,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Len Brown <len.brown@intel.com>, Jean Pihet <jean.pihet@newoldbits.com>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, arjan@infradead.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2010-09-22 at 20:26 +0200, Peter Zijlstra wrote:
-> On Wed, 2010-09-22 at 14:15 -0400, Steven Rostedt wrote:
-> > On Wed, 2010-09-22 at 19:30 +0200, Peter Zijlstra wrote:
-> > > On Wed, 2010-09-22 at 10:06 -0700, Arjan van de Ven wrote:
-> > > 
-> > 
-> > > That said, I really didn't read this discussion much, but your stance
-> > > seems to be that any tracepoint you use must stay valid, and I object to
-> > > that.
-> > 
-> > We could add a TRACE_EVENT_ABI() as Ingo has been suggesting. If
-> > anything, it could mean that the given tracepoint will always have the
-> > same name. And perhaps the data it holds will always be there, but may
-> > also be extended.
-> 
-> I still don't see why you need TRACE_EVENT_ABI for that, if its the same
-> name and the format can be extended you get the same results with what
-> we've got. Apps need to read/parse the format thing anyway.
+Rafael and Greg:
 
-Just a marker that these trace points are being used by apps.
+The following series of emails contains my proposed patches for the
+runtime PM core, leading up to a general "autosuspend" implementation.  
+This is going to be one of those difficult cross-subsystem things,
+because the first patch in the series affects sysfs whereas the rest
+affect PM.  (In addition, there are two other patches I'm not going to
+include here that update USB to take advantage of the new PM
+facilities.  Ultimately there will be changes to the SCSI, block, and
+IDE layers as well -- they're not written yet.)
 
-> 
-> > > 
-> > > What will do you do when we include a new scheduling policy and all the
-> > > scheduler tracepoints need to change? (yes that's really going to
-> > > happen)
-> > 
-> > The tracepoint sched_switch should stay the same. We may add more data,
-> > but the comm, pid, prio => comm, pid, prio, I don't see going away.
-> 
-> Right, it would need additional fields. Preferably not only at the end.
+We can decide on the best plan for merging these later on.  For now I 
+would simply like to post them for review and comments.  These are not 
+yet necessarily in final form, but I think they are pretty close.  They 
+apply on top of 2.6.36-rc5.
 
-Why not at the end? The tools should easily be able to represent them in
-anyway they want. The print-fmt field helps in this regard too.
+Alan Stern
 
-But then again, we present the fields in the data. The tools should use
-a parse library (which a generic one will soon be out too). This way, we
-don't need them at the "end" but the parsing tools could find the fields
-no matter where they are in the record.
 
-> 
-> > > I'm not going to carry double tracepoints, and I'm not going to not
+1/7:	Add sysfs_merge_group() and sysfs_unmerge_group() routines
+	for later use by PM and USB.
 
-"not going to not" eeek! double negative!
+2/7:	Move the runtime PM accounting routines away from the functions
+	that do the actual work.
 
-> > > merge that policy. 
-> > 
-> > Not sure what you mean by "double tracepoints"
-> 
-> Two different tracepoints in the same location.
+3/7:	Replace runtime PM boolean arguments with bitflags.
 
-Agreed, that is wrong to have.
+4/7:	Merge the synchronous and asynchronous runtime PM routines.
 
--- Steve
+5/7:	Regroup the public entry points for runtime PM into three
+	simple functions.
+
+6/7:	Add the "no_callbacks" flag.
+
+7/7:	Implement autosuspend.
