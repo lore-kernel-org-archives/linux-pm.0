@@ -1,20 +1,11 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] tracing, perf: add more power related events
-Date: Wed, 22 Sep 2010 14:15:55 -0400
-Message-ID: <1285179355.26872.27.camel__27671.8841087588$1285273361$gmane$org@gandalf.stny.rr.com>
-References: <AANLkTinUmbSUUuxUzc8++pcb9gd1CZFdyTQFrveTBXyV@mail.gmail.com>
-	<201009171736.14170.trenn@suse.de>	<20100917162412.GB3341@elte.hu>
-	<201009180026.59482.trenn@suse.de>
-	<AANLkTimMAr9kEzybFGai3qGyXx36v055iPpXq_C1vW8C@mail.gmail.com>
-	<4C9A21AD.1000800@linux.intel.com>
-	<AANLkTim6B+Je=LykgJb9=0vK5Br1rkft619BRJkBcHdP@mail.gmail.com>
-	<4C9A2FB3.105@linux.intel.com> <1285173835.2275.1026.camel@laptop>
-	<4C9A37AE.2010509@linux.intel.com> <1285176629.2275.1033.camel@laptop>
+From: matt mooney <mfm@muteddisk.com>
+Subject: [PATCH 01/20] kernel: change to new flag variable
+Date: Wed, 22 Sep 2010 23:49:45 -0700
+Message-ID: <1285224585-29457-1-git-send-email-mfm__23873.4965133064$1285273369$gmane$org@muteddisk.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1285176629.2275.1033.camel@laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,35 +15,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Len Brown <len.brown@intel.com>, Jean Pihet <jean.pihet@newoldbits.com>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, arjan@infradead.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2010-09-22 at 19:30 +0200, Peter Zijlstra wrote:
-> On Wed, 2010-09-22 at 10:06 -0700, Arjan van de Ven wrote:
-> 
+Replace EXTRA_CFLAGS with ccflags-y.
 
-> That said, I really didn't read this discussion much, but your stance
-> seems to be that any tracepoint you use must stay valid, and I object to
-> that.
+Signed-off-by: matt mooney <mfm@muteddisk.com>
+---
+ kernel/gcov/Makefile  |    2 +-
+ kernel/power/Makefile |    4 +---
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
-We could add a TRACE_EVENT_ABI() as Ingo has been suggesting. If
-anything, it could mean that the given tracepoint will always have the
-same name. And perhaps the data it holds will always be there, but may
-also be extended.
-
-> 
-> What will do you do when we include a new scheduling policy and all the
-> scheduler tracepoints need to change? (yes that's really going to
-> happen)
-
-The tracepoint sched_switch should stay the same. We may add more data,
-but the comm, pid, prio => comm, pid, prio, I don't see going away.
-
-> 
-> I'm not going to carry double tracepoints, and I'm not going to not
-> merge that policy. 
-
-Not sure what you mean by "double tracepoints"
-
--- Steve
+diff --git a/kernel/gcov/Makefile b/kernel/gcov/Makefile
+index 3f76100..e97ca59 100644
+--- a/kernel/gcov/Makefile
++++ b/kernel/gcov/Makefile
+@@ -1,3 +1,3 @@
+-EXTRA_CFLAGS := -DSRCTREE='"$(srctree)"' -DOBJTREE='"$(objtree)"'
++ccflags-y := -DSRCTREE='"$(srctree)"' -DOBJTREE='"$(objtree)"'
+ 
+ obj-$(CONFIG_GCOV_KERNEL) := base.o fs.o gcc_3_4.o
+diff --git a/kernel/power/Makefile b/kernel/power/Makefile
+index f9063c6..0f98685 100644
+--- a/kernel/power/Makefile
++++ b/kernel/power/Makefile
+@@ -1,7 +1,5 @@
+ 
+-ifeq ($(CONFIG_PM_DEBUG),y)
+-EXTRA_CFLAGS	+=	-DDEBUG
+-endif
++ccflags-$(CONFIG_PM_DEBUG)	:= -DDEBUG
+ 
+ obj-$(CONFIG_PM)		+= main.o
+ obj-$(CONFIG_PM_SLEEP)		+= console.o
+-- 
+1.7.2.1
