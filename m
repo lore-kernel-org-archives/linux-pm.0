@@ -1,13 +1,15 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] idle: intel_idle: Change mode 755 => 644
-Date: Thu, 23 Sep 2010 13:32:49 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.1009231332460.30002__41164.7266395905$1285263389$gmane$org@localhost.localdomain>
-References: <1278917804-4456-1-git-send-email-weber@corscience.de>
+Subject: Re: [PATCH] ACPI: add missing __percpu markup in
+ arch/x86/kernel/acpi/cstate.c
+Date: Thu, 23 Sep 2010 13:35:03 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1009231334590.30002__10406.5558095046$1285263394$gmane$org@localhost.localdomain>
+References: <1281201449-31158-1-git-send-email-namhyung@gmail.com>
+	<4C5DB519.6090804@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1278917804-4456-1-git-send-email-weber@corscience.de>
+In-reply-to: <4C5DB519.6090804@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,8 +19,8 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Weber <weber@corscience.de>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: Len Brown <len.brown@intel.com>, Namhyung Kim <namhyung@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 applied
