@@ -1,8 +1,7 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH 1/7] sysfs: add sysfs_merge_group and
-	sysfs_unmerge_group
-Date: Fri, 24 Sep 2010 16:38:45 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1009241632260.1287-100000__49189.5178020515$1285360770$gmane$org@iolanthe.rowland.org>
+Subject: [PATCH 2/7] PM: move code in power/runtime.c
+Date: Fri, 24 Sep 2010 16:38:58 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1009241635160.1287-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,123 +16,109 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch (as1420) adds sysfs_merge_group() and sysfs_unmerge_group()
-functions, allowing drivers easily to add and remove sets of
-attributes to a pre-existing attribute group directory.
+This patch (as1421) moves the PM runtime accounting subroutines up to
+the beginning of runtime.c, taking them out of the middle of the
+functions that do the actual work.  No operational changes.
 
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
 ---
 
-For LKML readers: The remaining patches in this series affect 
-only the PM core, whereas this one affects sysfs and is therefore of 
-more general interest.  That's why I'm CC-ing LKML on just this 1/7 
-patch.
-
-
-Index: usb-2.6/fs/sysfs/group.c
+Index: usb-2.6/drivers/base/power/runtime.c
 ===================================================================
---- usb-2.6.orig/fs/sysfs/group.c
-+++ usb-2.6/fs/sysfs/group.c
-@@ -148,6 +148,65 @@ void sysfs_remove_group(struct kobject *
- 	sysfs_put(sd);
- }
+--- usb-2.6.orig/drivers/base/power/runtime.c
++++ usb-2.6/drivers/base/power/runtime.c
+@@ -15,6 +15,44 @@ static int __pm_request_idle(struct devi
+ static int __pm_request_resume(struct device *dev);
  
-+/**
-+ * sysfs_merge_group - merge files into a pre-existing attribute group.
-+ * @kobj:	The kobject containing the group.
-+ * @grp:	The files to create and the attribute group they belong to.
+ /**
++ * update_pm_runtime_accounting - Update the time accounting of power states
++ * @dev: Device to update the accounting for
 + *
-+ * This function returns an error if the group doesn't exist or any of the
-+ * files already exist in that group, in which case none of the new files
-+ * are created.
++ * In order to be able to have time accounting of the various power states
++ * (as used by programs such as PowerTOP to show the effectiveness of runtime
++ * PM), we need to track the time spent in each state.
++ * update_pm_runtime_accounting must be called each time before the
++ * runtime_status field is updated, to account the time in the old state
++ * correctly.
 + */
-+int sysfs_merge_group(struct kobject *kobj,
-+		       const struct attribute_group *grp)
++void update_pm_runtime_accounting(struct device *dev)
 +{
-+	struct sysfs_dirent *dir_sd;
-+	int error = 0;
-+	struct attribute *const *attr;
-+	int i;
++	unsigned long now = jiffies;
++	int delta;
 +
-+	if (grp)
-+		dir_sd = sysfs_get_dirent(kobj->sd, NULL, grp->name);
++	delta = now - dev->power.accounting_timestamp;
++
++	if (delta < 0)
++		delta = 0;
++
++	dev->power.accounting_timestamp = now;
++
++	if (dev->power.disable_depth > 0)
++		return;
++
++	if (dev->power.runtime_status == RPM_SUSPENDED)
++		dev->power.suspended_jiffies += delta;
 +	else
-+		dir_sd = sysfs_get(kobj->sd);
-+	if (!dir_sd)
-+		return -ENOENT;
-+
-+	for ((i = 0, attr = grp->attrs); *attr && !error; (++i, ++attr))
-+		error = sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
-+	if (error) {
-+		while (--i >= 0)
-+			sysfs_hash_and_remove(dir_sd, NULL, (*--attr)->name);
-+	}
-+	sysfs_put(dir_sd);
-+
-+	return error;
++		dev->power.active_jiffies += delta;
 +}
-+EXPORT_SYMBOL_GPL(sysfs_merge_group);
++
++static void __update_runtime_status(struct device *dev, enum rpm_status status)
++{
++	update_pm_runtime_accounting(dev);
++	dev->power.runtime_status = status;
++}
 +
 +/**
-+ * sysfs_unmerge_group - remove files from a pre-existing attribute group.
-+ * @kobj:	The kobject containing the group.
-+ * @grp:	The files to remove and the attribute group they belong to.
-+ */
-+void sysfs_unmerge_group(struct kobject *kobj,
-+		       const struct attribute_group *grp)
-+{
-+	struct sysfs_dirent *dir_sd;
-+	struct attribute *const *attr;
-+
-+	if (grp)
-+		dir_sd = sysfs_get_dirent(kobj->sd, NULL, grp->name);
-+	else
-+		dir_sd = sysfs_get(kobj->sd);
-+	if (dir_sd) {
-+		for (attr = grp->attrs; *attr; ++attr)
-+			sysfs_hash_and_remove(dir_sd, NULL, (*attr)->name);
-+		sysfs_put(dir_sd);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(sysfs_unmerge_group);
-+
- 
- EXPORT_SYMBOL_GPL(sysfs_create_group);
- EXPORT_SYMBOL_GPL(sysfs_update_group);
-Index: usb-2.6/include/linux/sysfs.h
-===================================================================
---- usb-2.6.orig/include/linux/sysfs.h
-+++ usb-2.6/include/linux/sysfs.h
-@@ -164,6 +164,10 @@ int sysfs_add_file_to_group(struct kobje
- 			const struct attribute *attr, const char *group);
- void sysfs_remove_file_from_group(struct kobject *kobj,
- 			const struct attribute *attr, const char *group);
-+int sysfs_merge_group(struct kobject *kobj,
-+		       const struct attribute_group *grp);
-+void sysfs_unmerge_group(struct kobject *kobj,
-+		       const struct attribute_group *grp);
- 
- void sysfs_notify(struct kobject *kobj, const char *dir, const char *attr);
- void sysfs_notify_dirent(struct sysfs_dirent *sd);
-@@ -302,6 +306,17 @@ static inline void sysfs_remove_file_fro
- {
+  * pm_runtime_deactivate_timer - Deactivate given device's suspend timer.
+  * @dev: Device to handle.
+  */
+@@ -123,45 +161,6 @@ int pm_runtime_idle(struct device *dev)
  }
+ EXPORT_SYMBOL_GPL(pm_runtime_idle);
  
-+static inline int sysfs_merge_group(struct kobject *kobj,
-+		       const struct attribute_group *grp)
-+{
-+	return 0;
-+}
-+
-+static inline void sysfs_unmerge_group(struct kobject *kobj,
-+		       const struct attribute_group *grp)
-+{
-+}
-+
- static inline void sysfs_notify(struct kobject *kobj, const char *dir,
- 				const char *attr)
- {
+-
+-/**
+- * update_pm_runtime_accounting - Update the time accounting of power states
+- * @dev: Device to update the accounting for
+- *
+- * In order to be able to have time accounting of the various power states
+- * (as used by programs such as PowerTOP to show the effectiveness of runtime
+- * PM), we need to track the time spent in each state.
+- * update_pm_runtime_accounting must be called each time before the
+- * runtime_status field is updated, to account the time in the old state
+- * correctly.
+- */
+-void update_pm_runtime_accounting(struct device *dev)
+-{
+-	unsigned long now = jiffies;
+-	int delta;
+-
+-	delta = now - dev->power.accounting_timestamp;
+-
+-	if (delta < 0)
+-		delta = 0;
+-
+-	dev->power.accounting_timestamp = now;
+-
+-	if (dev->power.disable_depth > 0)
+-		return;
+-
+-	if (dev->power.runtime_status == RPM_SUSPENDED)
+-		dev->power.suspended_jiffies += delta;
+-	else
+-		dev->power.active_jiffies += delta;
+-}
+-
+-static void __update_runtime_status(struct device *dev, enum rpm_status status)
+-{
+-	update_pm_runtime_accounting(dev);
+-	dev->power.runtime_status = status;
+-}
+-
+ /**
+  * __pm_runtime_suspend - Carry out run-time suspend of given device.
+  * @dev: Device to suspend.
