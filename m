@@ -1,17 +1,13 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: hibernation hangs with ATA errors (lockup_detector
-	bug)
-Date: Fri, 24 Sep 2010 18:10:02 +0300
-Message-ID: <4C9CBF4A.9060302__21752.116099424$1285341222$gmane$org@gmail.com>
-References: <4C03C608.1040600@gmail.com> <20100601135004.GP15159@redhat.com>
-	<4C051D44.7040203@gmail.com> <20100602184459.GA15159@redhat.com>
-	<4C0B3E94.6020506@gmail.com> <4C80B338.6020701@gmail.com>
-	<20100903135613.GV4879@redhat.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: runtime_pm_get_sync() from ISR with IRQs disabled?
+Date: Fri, 24 Sep 2010 11:13:21 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1009241104540.1744-100000__26461.7538465702$1285341254$gmane$org@iolanthe.rowland.org>
+References: <8762xwnh00.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100903135613.GV4879@redhat.com>
+In-Reply-To: <8762xwnh00.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,34 +17,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Don Zickus <dzickus@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Partha Basak <p-basak2@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 09/03/2010 04:56 PM, Don Zickus wrote:
-> On Fri, Sep 03, 2010 at 10:35:04AM +0200, Jiri Slaby wrote:
->> On 06/06/2010 08:22 AM, Jiri Slaby wrote:
->>> On 06/02/2010 08:44 PM, Don Zickus wrote:
->>>> --- a/kernel/watchdog.c
->>>> +++ b/kernel/watchdog.c
->>>> @@ -550,8 +550,7 @@ cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
->>>>  		break;
->>>>  	case CPU_ONLINE:
->>>>  	case CPU_ONLINE_FROZEN:
->>>> -		if (watchdog_enable(hotcpu))
->>>> -			return NOTIFY_BAD;
->>>> +		watchdog_enable(hotcpu)
->>>
->>> This fixes the problem indeed.
->>
->> Hi, was this fixed somehow? I still use this hunk and don't know if it
->> is needed:
+On Thu, 23 Sep 2010, Kevin Hilman wrote:
+
+> Hello,
 > 
-> I have to go re-review the problem again.  I might have forgot to bring it
-> in.  Thanks for reminding me!
+> Looking for advice for a little runtime PM dilemma...
+> 
+> After some inactivity, a driver decides to supend iteslf using
+> pm_runtime_put_sync().
+> 
+> The device is now suspended, it's ->runtime_suspend() method has
+> disabled its clock, so its registers cannot be accessed anymore.
+> 
+> Now, as interrupts are still enabled, an interrupt for this device might
+> still arrive.  For example, if this device is a wakeup source, its
+> ->runtime_suspend() method may not have masked its interrupt.
 
-Reminder #2 :). Any updates?
+Right.
 
-thanks,
--- 
-js
+> So, the IRQ fires, and the drivers ISR is called.  The driver wants to
+> access the device registers, but since it has been runtime suspended,
+> it's registers are not available.
+> 
+> The first reflex would be to simply do a pm_runtime_get_sync() in the
+> ISR, however this is not safe if the ISR is an IRQs-disabled handler (as
+> is the case for me, where the problematic handler is chained handler
+> used for demuxing GPIO IRQs.)
+
+An ISR shouldn't call pm_runtime_get_sync() in any case.
+
+> So, what is the "right" thing to do here?
+
+You should call pm_runtime_get(), turn off the interrupt source, and
+return.  Then your resume routine should check for an outstanding
+interrupt or wakeup request and handle it (the easiest way may be 
+simply to call the ISR).
+
+> A quick hack would be to for the drivers ISR to do a
+> pm_runtime_get_noresume() and directly call the its ->runtime_resume()
+> method, then do its normal stuff, followed by a pm_runtime_put() at the
+> end of the ISR.
+> 
+> Is this an acceptable hack given that it's only needed for the
+> increasingly rare cases of ISRs with interrupts disabled?
+> 
+> Or should we think of making a version of _get_sync() that is safe for
+> IRQs disabled contexts like this where we know the device is already
+> RPM_SUSPENDED?
+> 
+> Any advice appreciated...
+
+You're trying to fight the runtime-PM design instead of using it as it 
+was intended.  We already have an API for starting a resume from 
+interrupt context, and that's what you should use.
+
+Alan Stern
