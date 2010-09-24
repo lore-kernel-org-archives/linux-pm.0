@@ -1,13 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: runtime_pm_get_sync() from ISR with IRQs disabled?
-Date: Fri, 24 Sep 2010 16:27:25 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1009241547010.1287-100000__17528.240584261$1285360182$gmane$org@iolanthe.rowland.org>
-References: <87ocbnas5v.fsf@deeprootsystems.com>
+Subject: Re: [RFC 0/7] Runtime PM updates for autosuspend
+Date: Fri, 24 Sep 2010 16:38:30 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1009241631250.1287-100000@iolanthe.rowland.org>
+References: <201009242206.18131.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87ocbnas5v.fsf@deeprootsystems.com>
+In-Reply-To: <201009242206.18131.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,77 +17,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Partha Basak <p-basak2@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 24 Sep 2010, Kevin Hilman wrote:
+On Fri, 24 Sep 2010, Rafael J. Wysocki wrote:
 
-> >> So, what is the "right" thing to do here?
-> >
-> > You should call pm_runtime_get(), turn off the interrupt source, and
-> > return.  Then your resume routine should check for an outstanding
-> > interrupt or wakeup request and handle it (the easiest way may be 
-> > simply to call the ISR).
+> On Friday, September 24, 2010, Alan Stern wrote:
+> > On Fri, 24 Sep 2010, Rafael J. Wysocki wrote:
+> > 
+> > > On Thursday, September 23, 2010, Alan Stern wrote:
+> > > > Rafael and Greg:
+> > > 
+> > > Hi,
+> > > 
+> > > > The following series of emails contains my proposed patches for the
+> > > > runtime PM core, leading up to a general "autosuspend" implementation.  
+> > > > This is going to be one of those difficult cross-subsystem things,
+> > > > because the first patch in the series affects sysfs whereas the rest
+> > > > affect PM.  (In addition, there are two other patches I'm not going to
+> > > > include here that update USB to take advantage of the new PM
+> > > > facilities.  Ultimately there will be changes to the SCSI, block, and
+> > > > IDE layers as well -- they're not written yet.)
+> > > > 
+> > > > We can decide on the best plan for merging these later on.  For now I 
+> > > > would simply like to post them for review and comments.  These are not 
+> > > > yet necessarily in final form, but I think they are pretty close.  They 
+> > > > apply on top of 2.6.36-rc5.
+> > > > 
+> > > > Alan Stern
+> > > > 
+> > > > 
+> > > > 1/7:	Add sysfs_merge_group() and sysfs_unmerge_group() routines
+> > > > 	for later use by PM and USB.
+> > > > 
+> > > > 2/7:	Move the runtime PM accounting routines away from the functions
+> > > > 	that do the actual work.
+> > > > 
+> > > > 3/7:	Replace runtime PM boolean arguments with bitflags.
+> > > > 
+> > > > 4/7:	Merge the synchronous and asynchronous runtime PM routines.
+> > > > 
+> > > > 5/7:	Regroup the public entry points for runtime PM into three
+> > > > 	simple functions.
+> > > > 
+> > > > 6/7:	Add the "no_callbacks" flag.
+> > > > 
+> > > > 7/7:	Implement autosuspend.
+> > > 
+> > > The series generally looks good to me, except for a few comments, mostly
+> > > related to the names of various things I sent in my replies to the specific
+> > > patches.
+> > 
+> > Your points were all well taken.  I'll revise the patches and submit
+> > them.  Do you think it's too late for them to appear in the next merge
+> > window?
 > 
-> For a "normal" device driver, your solution makes complete sense.  The
-> only catch is that it introduces potentically significant latency in the
-> interrupt handling and it requires the interrupt source to be masked,
-> potentially loosing other interrupts, while waiting for the runtime PM
-> workqueue to schedule.  For chained handlers in particular, this means
-> that *all* interrupts managed by the chained handler would be masked for
-> this additional time.  Not good.
+> No, it's not.  I actually would like to push them for .37.
 
-Masking an interrupt source doesn't cause any interrupts to be lost, if 
-you mask it at a time when you couldn't handle the interrupts anyway.
-
-> The problematic device for me as an on-chip GPIO controller, and the ISR
-> in question is a chained handler (run with interrupts disabled) which
-> does the GPIO demux and then dispatches to the actual ISR.  Following the
-> above approach means that all GPIO interrupts (in that bank) would be
-> masked until ->runtime_resume() is called.  For a GPIO bank with
-> multiple edge-triggered IRQs, masked IRQs for that amount of time could
-> mean several missed interrupts while waiting.
-
-Wait a minute, you're confusing me.  I take it that the GPIO controller
-is the device being runtime suspended, right?  And you said that while
-it is suspended you can't access its registers.  So then how can you
-mask it?  
-
-Do you mean that you have to mask the entire IRQ line because there's
-no way to turn off the interrupt-request source in the GPIO controller?  
-That's different from what you wrote above.
-
->  Hoever, this isn't a
-> major concern as we don't (currently) have IRQF_DISABLED handlers hooked
-> up to GPIO IRQs (that I know of.)
-
-Isn't IRQF_DISABLED on its way out, anyway?
-
-> It may seem like I'm trying to fight the design, but I'm actually trying
-> to find ways to use it.  I want to use the API (and we're using it
-> successfully in most of our drivers now.)  The problem is only in a few
-> of these corner cases where using it introduces significant changes from
-> previous behavior like introducing long, unbounded windows for missed
-> interrupts.
-
-Assuming the problem of missed interrupts didn't exist, would you still 
-be unhappy about the latency issue?
-
-In the general case there's no way to avoid it.  Even though a device
-like your GPIO controller may be able to return to full power very
-quickly, the fact that it was suspended may have led the PM core to
-suspend its parent as well.  And the parent may be slow to resume,
-requiring a full process context.
-
-It seems as though what you really need is a way to tell the PM core 
-that your device can change its power state quickly with no need for a 
-process context.  Given that, pm_runtime_get() could invoke your 
-runtime_resume callback directly; you wouldn't have to wait for the 
-workqueue.  (Unless your device had a suspended parent that _did_ need 
-a long time to resume.)
-
-Would that solve your problem?  It seems like a reasonable sort of 
-feature to add.
+Okay, here they come.  I'll skip the 0/7 message; this thread can serve 
+in its place.
 
 Alan Stern
