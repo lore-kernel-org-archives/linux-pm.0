@@ -1,14 +1,12 @@
 From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: runtime_pm_get_sync() from ISR with IRQs disabled?
-Date: Fri, 24 Sep 2010 14:52:44 -0700
-Message-ID: <87lj6q3j2r.fsf__25631.3443220735$1285365222$gmane$org@deeprootsystems.com>
-References: <Pine.LNX.4.44L0.1009241547010.1287-100000@iolanthe.rowland.org>
+Subject: RFC: mixing device idle and CPUidle or non-atomic idle
+	notifiers
+Date: Fri, 24 Sep 2010 16:44:46 -0700
+Message-ID: <87iq1uwvtd.fsf__23831.0388442644$1285371949$gmane$org@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1009241547010.1287-100000@iolanthe.rowland.org>
-	(Alan Stern's message of "Fri, 24 Sep 2010 16:27:25 -0400 (EDT)")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,128 +16,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Partha Basak <p-basak2@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+Now that we have runtime PM for devices, I'm exploring ways of how to
+couple the runtime PM of certain devices with CPUidle transitions.
+Ideally, CPUidle should only manage CPU idle states, and device idle
+states would be managed separately using runtime PM.  However, there are
+cases where the device idle transistions need to be coordinated with CPU
+idle transistions.  This is already a proposed topic for the PM
+mini-conf at Plumbers'[1], so this RFC is to get the discussion started.
 
-> On Fri, 24 Sep 2010, Kevin Hilman wrote:
->
->> >> So, what is the "right" thing to do here?
->> >
->> > You should call pm_runtime_get(), turn off the interrupt source, and
->> > return.  Then your resume routine should check for an outstanding
->> > interrupt or wakeup request and handle it (the easiest way may be 
->> > simply to call the ISR).
->> 
->> For a "normal" device driver, your solution makes complete sense.  The
->> only catch is that it introduces potentically significant latency in the
->> interrupt handling and it requires the interrupt source to be masked,
->> potentially loosing other interrupts, while waiting for the runtime PM
->> workqueue to schedule.  For chained handlers in particular, this means
->> that *all* interrupts managed by the chained handler would be masked for
->> this additional time.  Not good.
->
-> Masking an interrupt source doesn't cause any interrupts to be lost, if 
-> you mask it at a time when you couldn't handle the interrupts anyway.
+In the wild west (before runtime PM), we managed these special cases on
+OMAP by having some special hacks^Whooks for certain drivers that were
+called during idle.  When these devices are converted to using runtime
+PM, ideally we'd like initiate device runtime PM transitions for these
+devices somehow coordinated with CPU idle transitions.
 
-Sure, but the "mask in ISR, handle in ->runtime_resume()" proposal
-would keeping them masked while we actually could be handling them.
+So, I started to explore how to coordinate device runtime PM transitions
+with CPU idle transitions.
 
-Even in our current GPIO code, we have a tiny (but bounded) window where
-we might miss an edge-triggered GPIO interrupt while we're still
-detecting the previous one.  However, this is a very small window in an
-interrupts-disabled chained handler.  
+One of the fundamental problems is that by the time CPUidle is entered,
+interrupts are already disabled, and runtime PM cannot be used from
+interrupts disabled context (c.f. thread on linux-pm[1].)
 
->> The problematic device for me as an on-chip GPIO controller, and the ISR
->> in question is a chained handler (run with interrupts disabled) which
->> does the GPIO demux and then dispatches to the actual ISR.  Following the
->> above approach means that all GPIO interrupts (in that bank) would be
->> masked until ->runtime_resume() is called.  For a GPIO bank with
->> multiple edge-triggered IRQs, masked IRQs for that amount of time could
->> mean several missed interrupts while waiting.
->
-> Wait a minute, you're confusing me.  I take it that the GPIO controller
-> is the device being runtime suspended, right?  
+So that led me down the path of exploring whether we really need to have
+interrupts disabled during the early part of CPUidle.  It seems to me
+that during the time when the governor is selecting a state, and when
+the platform-specific code is checking for device/bus activity,
+interrupts do not really need to be disabled yet.  At least, I didn't
+come up with a good reason why they need to be disabled so early, hence
+the RFC.
 
-Right.
+Here's a simplified version how it works today:
 
-> And you said that while it is suspended you can't access its
-> registers.  So then how can you mask it?
+/* arch/arm/kernel/process.c, arch/x86/kernel/process_*.c */
+cpu_idle()  
+    local_irq_disable()    
+    pm_idle()  --> cpuidle_idle_call()
 
-The interrupt to be masked would be the main GPIO bank IRQ (for the
-chained handler) and it would be masked at the IRQ controller, which
-is not (yet) suspended.
+cpuidle_idle_call()
+    dev->prepare()
+    target_state = governor->select()  /* selects next state */
+    target_state->enter()
+        /* the ->enter hook must enable IRQs before returning */
 
-> Do you mean that you have to mask the entire IRQ line because there's
-> no way to turn off the interrupt-request source in the GPIO controller?  
+As a quick hack, I just (re)enabled interrupts in our CPUidle
+->prepare() hook (they're later disabled again before the core idle is
+run.)  This allowed the calling of device-specific idle functions which
+then use runtime PM and thus allows device-specific idle to be
+coordinated with the CPU idle.
 
-Right. Because in order to determine the exact interrupt source, you
-have to access the GPIO controller registers and figure out which GPIO
-in the GPIO bank was the source.  And then, the only way to turn off the
-source is to know which device is connected to that IRQ, and disable it
-via the driver for that device (e.g. network driver using a GPIO IRQ.)
+So back to the main question... do we really need interrupts disabled so
+early in the idle path? 
 
-IOW, When the bank IRQ fires, all we know is that (at least) one of the 32
-GPIOs in the GPIO bank has an interrupt pending.  In order to determine
-which one it was, we have to read GPIO controller registers, but we
-can't do that until ->runtime_resume().  In order for the bank IRQ not
-to continually re-fire, it would have to be kept masked until
-the ISR is triggered from ->runtime_resume().
+I'm sure I'm missing something obvious about why this can't work, but
+it's Friday and my brain prefers to think about beer rather than
+CPUidle.
 
-> That's different from what you wrote above.
+Or, as another potential option...
 
-Right, I should have said the GPIO bank IRQ needs to be masked instead
-of all GPIOs in the bank need to be masked.
-
->>  Hoever, this isn't a
->> major concern as we don't (currently) have IRQF_DISABLED handlers hooked
->> up to GPIO IRQs (that I know of.)
->
-> Isn't IRQF_DISABLED on its way out, anyway?
-
-Yes, that's why it's not really a concern.
-
->> It may seem like I'm trying to fight the design, but I'm actually trying
->> to find ways to use it.  I want to use the API (and we're using it
->> successfully in most of our drivers now.)  The problem is only in a few
->> of these corner cases where using it introduces significant changes from
->> previous behavior like introducing long, unbounded windows for missed
->> interrupts.
->
-> Assuming the problem of missed interrupts didn't exist, would you still 
-> be unhappy about the latency issue?
-
-Yes.
-
-> In the general case there's no way to avoid it.  Even though a device
-> like your GPIO controller may be able to return to full power very
-> quickly, the fact that it was suspended may have led the PM core to
-> suspend its parent as well.  And the parent may be slow to resume,
-> requiring a full process context.
-
-In the general case, I agree.
-
-> It seems as though what you really need is a way to tell the PM core 
-> that your device can change its power state quickly with no need for a 
-> process context.  Given that, pm_runtime_get() could invoke your 
-> runtime_resume callback directly; you wouldn't have to wait for the 
-> workqueue.  (Unless your device had a suspended parent that _did_ need 
-> a long time to resume.)
->
-> Would that solve your problem?  It seems like a reasonable sort of 
-> feature to add.
-
-Yes, that would definitely solve the problem, and is basically the
-hack/workaround I'm using locally:
-
-  pm_runtime_get_noresume()
-  dev->pm->runtime_resume()
-  /* handle IRQ */
-  pm_runtime_put();
-
-because I know this on-chip device is 1) already suspended, 2) has no
-runtime PM capable parents and 3) not runtime_resume'd elsewhere.
+I just discovered that x86_64 has an atomic idle_notifier called just
+before idle (c.f. arch/x86/kernel/process_64.c.)  However this is also
+done with interrupts disabled, so using this has the same problems with
+interrupts disabled.  But, what about adding an additional notifier
+chain that happens with interrupts still enabled....  hmm, will
+ponder that over that beer...
 
 Kevin
+
+[1] http://www.linuxplumbersconf.org/2010/ocw/proposals/717
+[1] https://lists.linux-foundation.org/pipermail/linux-pm/2010-August/028124.html
