@@ -1,11 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH 7/7] PM: implement autosuspend
-Date: Fri, 24 Sep 2010 16:39:56 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1009241637130.1287-100000@iolanthe.rowland.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH v4] power: introduce library for
+	device-specific OPPs
+Date: Fri, 24 Sep 2010 16:26:21 -0500
+Message-ID: <4C9D177D.6090708__16007.7405781069$1285363808$gmane$org@ti.com>
+References: <1285332640-16736-1-git-send-email-nm@ti.com>
+	<20100924193742.GJ2375@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20100924193742.GJ2375@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,794 +19,505 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-omap <linux-omap@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, linux-arm <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch (as1427) implements the "autosuspend" facility for runtime
-PM.  A few new fields are added to the dev_pm_info structure and
-several new PM helper functions are defined, for telling the PM core
-whether or not a device uses autosuspend, for setting the autosuspend
-delay, and for marking periods of device activity.
+Paul E. McKenney had written, on 09/24/2010 02:37 PM, the following:
+[...]
+> 
+> Looks like a good start!!!  Some questions and suggestions about RCU
+Thanks for the review.. few comments below..
+> usage interspersed below.
+> 
+>                                                         Thanx, Paul
+[...]
+>> +
+>> +/**
+>> + * find_device_opp() - find device_opp struct using device pointer
+>> + * @dev:     device pointer used to lookup device OPPs
+>> + *
+>> + * Search list of device OPPs for one containing matching device. Does a RCU
+>> + * reader operation to grab the pointer needed.
+>> + *
+>> + * Returns pointer to 'struct device_opp' if found, otherwise -ENODEV or
+>> + * -EINVAL based on type of error.
+>> + */
+>> +static struct device_opp *find_device_opp(struct device *dev)
+>> +{
+>> +     struct device_opp *tmp_dev_opp, *dev_opp = ERR_PTR(-ENODEV);
+>> +
+>> +     if (unlikely(!dev || IS_ERR(dev))) {
+>> +             pr_err("%s: Invalid parameters being passed\n", __func__);
+>> +             return ERR_PTR(-EINVAL);
+>> +     }
+>> +
+>> +     rcu_read_lock();
+>> +     list_for_each_entry_rcu(tmp_dev_opp, &dev_opp_list, node) {
+>> +             if (tmp_dev_opp->dev == dev) {
+>> +                     dev_opp = tmp_dev_opp;
+>> +                     break;
+>> +             }
+>> +     }
+>> +     rcu_read_unlock();
+> 
+> What prevents the structure pointed to by dev_opp from being freed
+> at this point?  We are no longer in an RCU read-side critical section,
+> so RCU grace periods starting during the above RCU read-side critical
+> section can now end.
 
-Drivers that do not want to use autosuspend can continue using the
-same helper functions as before; their behavior will not change.  In
-addition, drivers supporting autosuspend can also call the old helper
-functions to get the old behavior.
+dev_opp is never freed in the implementation -> it represents domains, 
+only adds with list_add_rcu() is done -> wont the usage be safe then? or 
+I being blind?
 
-The details are all explained in Documentation/power/runtime_pm.txt
-and Documentation/ABI/testing/sysfs-devices-power.
+the reason why we dont free is coz of the following: dev_opp represents 
+voltage domains in opp library. SoC frameworks are required to register 
+only those voltage domain opp that are required. by allowing a free 
+logic, I knew it'd have complicated the implementation way beyond what 
+we needed it to be.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> 
+> Here is an example sequence of events that I am worried about:
+> 
+> o       CPU 1 enters find_device_opp(), and pick up a pointer to
+>         a given device opp.
+> 
+> o       CPU 2 executes opp_set_availability(), replacing that same
+>         device opp with a new one.  It then calls synchronize_rcu()
+>         which blocks waiting for CPU 1 to exit its RCU read-side
+>         critical section.
+> 
+> o       CPU 1 exits its RCU read-side critical section, arriving at
+>         this point in the code.
+> 
+> o       CPU 2's synchronize_rcu() is now permitted to return, executing
+>         the kfree(), which frees up the memory that CPU 1's dev_opp
+>         pointer references.
+> 
+> o       This newly freed memory is allocated for some other structure
+>         by CPU 3.  CPU 1 and CPU 3 are now trying to use the same
+>         memory for two different structures, and nothing good can
+>         possibly come of this.  The kernel dies a brutal and nasty
+>         death.
+> 
+> One way to fix this is to have the caller do rcu_read_lock() before
+> calling find_device_opp(), and to do rcu_read_unlock() only after the
+> caller has finished using the pointer that find_device_opp() returns.
+> This works well unless the caller needs to do some blocking operation
+> before it gets done using the pointer.
+> 
+> Another approach is for find_device_opp() to use a reference count on
+> the structure, and for opp_set_availability() to avoid freeing the
+> structure unless/until the reference counter drops to zero.
+> 
+> There are other approaches as well, please feel free to take a look
+> at Documentation/RCU/rcuref.txt for more info on using reference
+> counting and RCU.
+thx. I probably should read yet again if I got my understanding of usage 
+right..
 
----
+> 
+[...]
+>> +
+>> +/**
+>> + * opp_find_freq_exact() - search for an exact frequency
+>> + * @dev:             device for which we do this operation
+>> + * @freq:            frequency to search for
+>> + * @is_available:    true/false - match for available opp
+>> + *
+>> + * Searches for exact match in the opp list and returns pointer to the matching
+>> + * opp if found, else returns ERR_PTR in case of error and should be handled
+>> + * using IS_ERR.
+>> + *
+>> + * Note: available is a modifier for the search. if available=true, then the
+>> + * match is for exact matching frequency and is available in the stored OPP
+>> + * table. if false, the match is for exact frequency which is not available.
+>> + *
+>> + * This provides a mechanism to enable an opp which is not available currently
+>> + * or the opposite as well.
+>> + *
+>> + * Locking: RCU reader.
+>> + */
+>> +struct opp *opp_find_freq_exact(struct device *dev,
+>> +                                  unsigned long freq, bool available)
+>> +{
+>> +     struct device_opp *dev_opp;
+>> +     struct opp *temp_opp, *opp = ERR_PTR(-ENODEV);
+>> +
+>> +     dev_opp = find_device_opp(dev);
+>> +     if (IS_ERR(dev_opp))
+>> +             return opp;
+>> +
+>> +     rcu_read_lock();
+>> +     list_for_each_entry_rcu(temp_opp, &dev_opp->opp_list, node) {
+>> +             if (temp_opp->available == available &&
+>> +                             temp_opp->rate == freq) {
+>> +                     opp = temp_opp;
+>> +                     break;
+>> +             }
+>> +     }
+>> +     rcu_read_unlock();
+> 
+> But this one sadly has the same problem that find_device_opp() does.
+is the concern about opp OR about dev_opp here? I am guessing opp..
+> 
+>> +     return opp;
+>> +}
+>> +
+>> +/**
+>> + * opp_find_freq_ceil() - Search for an rounded ceil freq
+>> + * @dev:     device for which we do this operation
+>> + * @freq:    Start frequency
+>> + *
+>> + * Search for the matching ceil *available* OPP from a starting freq
+>> + * for a device.
+>> + *
+>> + * Returns matching *opp and refreshes *freq accordingly, else returns
+>> + * ERR_PTR in case of error and should be handled using IS_ERR.
+>> + *
+>> + * Locking: RCU reader.
+>> + */
+>> +struct opp *opp_find_freq_ceil(struct device *dev, unsigned long *freq)
+>> +{
+>> +     struct device_opp *dev_opp;
+>> +     struct opp *temp_opp, *opp = ERR_PTR(-ENODEV);
+>> +
+>> +     if (!dev || !freq) {
+>> +             pr_err("%s: invalid param dev=%p freq=%p\n", __func__,
+>> +                             dev, freq);
+>> +             return ERR_PTR(-EINVAL);
+>> +     }
+>> +
+>> +     dev_opp = find_device_opp(dev);
+>> +     if (IS_ERR(dev_opp))
+>> +             return opp;
+>> +
+>> +     rcu_read_lock();
+>> +     list_for_each_entry_rcu(temp_opp, &dev_opp->opp_list, node) {
+>> +             if (temp_opp->available && temp_opp->rate >= *freq) {
+>> +                     opp = temp_opp;
+>> +                     *freq = opp->rate;
+>> +                     break;
+>> +             }
+>> +     }
+>> +     rcu_read_unlock();
+> 
+> And this one also has the same problem that find_device_opp() does.
+guessing opp ptr here.. am I right? if it is about device_opp, it is not 
+going to be freed as I mentioned above - at least we dont give an 
+function to update(hence free) it.
 
-Index: usb-2.6/include/linux/pm.h
-===================================================================
---- usb-2.6.orig/include/linux/pm.h
-+++ usb-2.6/include/linux/pm.h
-@@ -444,6 +444,9 @@ enum rpm_status {
-  *
-  * RPM_REQ_SUSPEND	Run the device bus type's ->runtime_suspend() callback
-  *
-+ * RPM_REQ_AUTOSUSPEND	Same as RPM_REQ_SUSPEND, but not until the device has
-+ *			been inactive for as long as power.autosuspend_delay
-+ *
-  * RPM_REQ_RESUME	Run the device bus type's ->runtime_resume() callback
-  */
- 
-@@ -451,6 +454,7 @@ enum rpm_request {
- 	RPM_REQ_NONE = 0,
- 	RPM_REQ_IDLE,
- 	RPM_REQ_SUSPEND,
-+	RPM_REQ_AUTOSUSPEND,
- 	RPM_REQ_RESUME,
- };
- 
-@@ -481,9 +485,13 @@ struct dev_pm_info {
- 	unsigned int		run_wake:1;
- 	unsigned int		runtime_auto:1;
- 	unsigned int		no_callbacks:1;
-+	unsigned int		use_autosuspend:1;
-+	unsigned int		timer_autosuspends:1;
- 	enum rpm_request	request;
- 	enum rpm_status		runtime_status;
- 	int			runtime_error;
-+	int			autosuspend_delay;
-+	unsigned long		last_busy;
- 	unsigned long		active_jiffies;
- 	unsigned long		suspended_jiffies;
- 	unsigned long		accounting_timestamp;
-Index: usb-2.6/include/linux/pm_runtime.h
-===================================================================
---- usb-2.6.orig/include/linux/pm_runtime.h
-+++ usb-2.6/include/linux/pm_runtime.h
-@@ -12,12 +12,15 @@
- #include <linux/device.h>
- #include <linux/pm.h>
- 
-+#include <linux/jiffies.h>
-+
- /* Runtime PM flag argument bits */
- #define RPM_ASYNC		0x01	/* Request is asynchronous */
- #define RPM_NOWAIT		0x02	/* Don't wait for concurrent
- 					    state change */
- #define RPM_GET_PUT		0x04	/* Increment/decrement the
- 					    usage_count */
-+#define RPM_AUTO		0x08	/* Use autosuspend_delay */
- 
- #ifdef CONFIG_PM_RUNTIME
- 
-@@ -37,6 +40,9 @@ extern int pm_generic_runtime_idle(struc
- extern int pm_generic_runtime_suspend(struct device *dev);
- extern int pm_generic_runtime_resume(struct device *dev);
- extern void pm_runtime_no_callbacks(struct device *dev);
-+extern void __pm_runtime_use_autosuspend(struct device *dev, bool use);
-+extern void pm_runtime_set_autosuspend_delay(struct device *dev, int delay);
-+extern unsigned long pm_runtime_autosuspend_expiration(struct device *dev);
- 
- static inline bool pm_children_suspended(struct device *dev)
- {
-@@ -74,6 +80,11 @@ static inline bool pm_runtime_suspended(
- 	return dev->power.runtime_status == RPM_SUSPENDED;
- }
- 
-+static inline void pm_runtime_mark_last_busy(struct device *dev)
-+{
-+	ACCESS_ONCE(dev->power.last_busy) = jiffies;
-+}
-+
- #else /* !CONFIG_PM_RUNTIME */
- 
- static inline int __pm_runtime_idle(struct device *dev, int rpmflags)
-@@ -113,6 +124,14 @@ static inline int pm_generic_runtime_sus
- static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
- static inline void pm_runtime_no_callbacks(struct device *dev) {}
- 
-+static inline void pm_runtime_mark_last_busy(struct device *dev) {}
-+static inline void __pm_runtime_use_autosuspend(struct device *dev,
-+						bool use) {}
-+static inline void pm_runtime_set_autosuspend_delay(struct device *dev,
-+						int delay) {}
-+static inline unsigned long pm_runtime_autosuspend_expiration(
-+				struct device *dev) { return 0; }
-+
- #endif /* !CONFIG_PM_RUNTIME */
- 
- static inline int pm_runtime_idle(struct device *dev)
-@@ -125,6 +144,11 @@ static inline int pm_runtime_suspend(str
- 	return __pm_runtime_suspend(dev, 0);
- }
- 
-+static inline int pm_runtime_autosuspend(struct device *dev)
-+{
-+	return __pm_runtime_suspend(dev, RPM_AUTO);
-+}
-+
- static inline int pm_runtime_resume(struct device *dev)
- {
- 	return __pm_runtime_resume(dev, 0);
-@@ -155,11 +179,22 @@ static inline int pm_runtime_put(struct 
- 	return __pm_runtime_idle(dev, RPM_GET_PUT | RPM_ASYNC);
- }
- 
-+static inline int pm_runtime_put_autosuspend(struct device *dev)
-+{
-+	return __pm_runtime_suspend(dev,
-+	    RPM_GET_PUT | RPM_ASYNC | RPM_AUTO);
-+}
-+
- static inline int pm_runtime_put_sync(struct device *dev)
- {
- 	return __pm_runtime_idle(dev, RPM_GET_PUT);
- }
- 
-+static inline int pm_runtime_put_sync_autosuspend(struct device *dev)
-+{
-+	return __pm_runtime_suspend(dev, RPM_GET_PUT | RPM_AUTO);
-+}
-+
- static inline int pm_runtime_set_active(struct device *dev)
- {
- 	return __pm_runtime_set_status(dev, RPM_ACTIVE);
-@@ -175,4 +210,14 @@ static inline void pm_runtime_disable(st
- 	__pm_runtime_disable(dev, true);
- }
- 
-+static inline void pm_runtime_use_autosuspend(struct device *dev)
-+{
-+	__pm_runtime_use_autosuspend(dev, true);
-+}
-+
-+static inline void pm_runtime_dont_use_autosuspend(struct device *dev)
-+{
-+	__pm_runtime_use_autosuspend(dev, false);
-+}
-+
- #endif
-Index: usb-2.6/drivers/base/power/runtime.c
-===================================================================
---- usb-2.6.orig/drivers/base/power/runtime.c
-+++ usb-2.6/drivers/base/power/runtime.c
-@@ -9,7 +9,6 @@
- 
- #include <linux/sched.h>
- #include <linux/pm_runtime.h>
--#include <linux/jiffies.h>
- #include "power.h"
- 
- static int rpm_resume(struct device *dev, int rpmflags);
-@@ -79,6 +78,53 @@ static void pm_runtime_cancel_pending(st
- 	dev->power.request = RPM_REQ_NONE;
- }
- 
-+/*
-+ * pm_runtime_autosuspend_expiration - Get a device's autosuspend-delay expiration time.
-+ * @dev: Device to handle.
-+ *
-+ * Compute the autosuspend-delay expiration time based on the device's
-+ * power.last_busy time.  If the delay has already expired or is disabled
-+ * (negative) or the power.use_autosuspend flag isn't set, return 0.
-+ * Otherwise return the expiration time in jiffies (adjusted to be nonzero).
-+ *
-+ * This function may be called either with or without dev->power.lock held.
-+ * Either way it can be racy, since power.last_busy may be updated at any time.
-+ */
-+unsigned long pm_runtime_autosuspend_expiration(struct device *dev)
-+{
-+	int autosuspend_delay;
-+	long elapsed;
-+	unsigned long last_busy;
-+	unsigned long expires = 0;
-+
-+	if (!dev->power.use_autosuspend)
-+		goto out;
-+
-+	autosuspend_delay = ACCESS_ONCE(dev->power.autosuspend_delay);
-+	if (autosuspend_delay < 0)
-+		goto out;
-+
-+	last_busy = ACCESS_ONCE(dev->power.last_busy);
-+	elapsed = jiffies - last_busy;
-+	if (elapsed < 0)
-+		goto out;	/* jiffies has wrapped around. */
-+
-+	/*
-+	 * If the autosuspend_delay is >= 1 second, align the timer by rounding
-+	 * up to the nearest second.
-+	 */
-+	expires = last_busy + msecs_to_jiffies(autosuspend_delay);
-+	if (autosuspend_delay >= 1000)
-+		expires = round_jiffies(expires);
-+	expires += !expires;
-+	if (elapsed >= expires - last_busy)
-+		expires = 0;	/* Already expired. */
-+
-+ out:
-+	return expires;
-+}
-+EXPORT_SYMBOL_GPL(pm_runtime_autosuspend_expiration);
-+
- /**
-  * rpm_check_suspend_allowed - Test whether a device may be suspended.
-  * @dev: Device to test.
-@@ -234,6 +280,32 @@ static int rpm_suspend(struct device *de
- 	if (retval)
- 		goto out;
- 
-+	/* If the autosuspend_delay time hasn't expired yet, reschedule. */
-+	if ((rpmflags & RPM_AUTO)
-+	    && dev->power.runtime_status != RPM_SUSPENDING) {
-+		unsigned long expires = pm_runtime_autosuspend_expiration(dev);
-+
-+		if (expires != 0) {
-+			/* Pending requests need to be canceled. */
-+			dev->power.request = RPM_REQ_NONE;
-+
-+			/*
-+			 * Optimization: If the timer is already running and is
-+			 * set to expire at or before the autosuspend delay,
-+			 * avoid the overhead of resetting it.  Just let it
-+			 * expire; pm_suspend_timer_fn() will take care of the
-+			 * rest.
-+			 */
-+			if (!(dev->power.timer_expires && time_before_eq(
-+			    dev->power.timer_expires, expires))) {
-+				dev->power.timer_expires = expires;
-+				mod_timer(&dev->power.suspend_timer, expires);
-+			}
-+			dev->power.timer_autosuspends = 1;
-+			goto out;
-+		}
-+	}
-+
- 	/* Other scheduled or pending requests need to be canceled. */
- 	pm_runtime_cancel_pending(dev);
- 
-@@ -268,7 +340,8 @@ static int rpm_suspend(struct device *de
- 
- 	/* Carry out an asynchronous or a synchronous suspend. */
- 	if (rpmflags & RPM_ASYNC) {
--		dev->power.request = RPM_REQ_SUSPEND;
-+		dev->power.request = (rpmflags & RPM_AUTO) ?
-+		    RPM_REQ_AUTOSUSPEND : RPM_REQ_SUSPEND;
- 		if (!dev->power.request_pending) {
- 			dev->power.request_pending = true;
- 			queue_work(pm_wq, &dev->power.work);
-@@ -383,8 +456,15 @@ static int rpm_resume(struct device *dev
- 	if (retval)
- 		goto out;
- 
--	/* Other scheduled or pending requests need to be canceled. */
--	pm_runtime_cancel_pending(dev);
-+	/*
-+	 * Other scheduled or pending requests need to be canceled.  Small
-+	 * optimization: If an autosuspend timer is running, leave it running
-+	 * rather than cancelling it now only to restart it again in the near
-+	 * future.
-+	 */
-+	dev->power.request = RPM_REQ_NONE;
-+	if (!dev->power.timer_autosuspends)
-+		pm_runtime_deactivate_timer(dev);
- 
- 	if (dev->power.runtime_status == RPM_ACTIVE) {
- 		retval = 1;
-@@ -568,6 +648,9 @@ static void pm_runtime_work(struct work_
- 	case RPM_REQ_SUSPEND:
- 		rpm_suspend(dev, RPM_NOWAIT);
- 		break;
-+	case RPM_REQ_AUTOSUSPEND:
-+		rpm_suspend(dev, RPM_NOWAIT | RPM_AUTO);
-+		break;
- 	case RPM_REQ_RESUME:
- 		rpm_resume(dev, RPM_NOWAIT);
- 		break;
-@@ -595,7 +678,8 @@ static void pm_suspend_timer_fn(unsigned
- 	/* If 'expire' is after 'jiffies' we've been called too early. */
- 	if (expires > 0 && !time_after(expires, jiffies)) {
- 		dev->power.timer_expires = 0;
--		rpm_suspend(dev, RPM_ASYNC);
-+		rpm_suspend(dev, dev->power.timer_autosuspends ?
-+		    (RPM_ASYNC | RPM_AUTO) : RPM_ASYNC);
- 	}
- 
- 	spin_unlock_irqrestore(&dev->power.lock, flags);
-@@ -627,6 +711,7 @@ int pm_schedule_suspend(struct device *d
- 
- 	dev->power.timer_expires = jiffies + msecs_to_jiffies(delay);
- 	dev->power.timer_expires += !dev->power.timer_expires;
-+	dev->power.timer_autosuspends = 0;
- 	mod_timer(&dev->power.suspend_timer, dev->power.timer_expires);
- 
-  out:
-@@ -670,7 +755,9 @@ EXPORT_SYMBOL_GPL(__pm_runtime_idle);
-  * @dev: Device to suspend.
-  * @rpmflags: Flag bits.
-  *
-- * Carry out a suspend, either synchronous or asynchronous.
-+ * If the RPM_GET_PUT flag is set, decrement the device's usage count and
-+ * return immediately if it is larger than zero.  Then carry out a suspend,
-+ * either synchronous or asynchronous.
-  *
-  * This routine may be called in atomic context if the RPM_ASYNC flag is set.
-  */
-@@ -679,6 +766,11 @@ int __pm_runtime_suspend(struct device *
- 	unsigned long flags;
- 	int retval;
- 
-+	if (rpmflags & RPM_GET_PUT) {
-+		if (!atomic_dec_and_test(&dev->power.usage_count))
-+			return 0;
-+	}
-+
- 	spin_lock_irqsave(&dev->power.lock, flags);
- 	retval = rpm_suspend(dev, rpmflags);
- 	spin_unlock_irqrestore(&dev->power.lock, flags);
-@@ -980,7 +1072,7 @@ void pm_runtime_allow(struct device *dev
- 
- 	dev->power.runtime_auto = true;
- 	if (atomic_dec_and_test(&dev->power.usage_count))
--		rpm_idle(dev, 0);
-+		rpm_idle(dev, RPM_AUTO);
- 
-  out:
- 	spin_unlock_irq(&dev->power.lock);
-@@ -1007,6 +1099,86 @@ void pm_runtime_no_callbacks(struct devi
- EXPORT_SYMBOL_GPL(pm_runtime_no_callbacks);
- 
- /**
-+ * update_autosuspend - Handle a change to a device's autosuspend settings.
-+ * @dev: Device to handle.
-+ * @old_delay: The former autosuspend_delay value.
-+ * @old_use: The former use_autosuspend value.
-+ *
-+ * Prevent runtime suspend if the new delay is negative and use_autosuspend is
-+ * set; otherwise allow it.  Send an idle notification if suspends are allowed.
-+ *
-+ * This function must be called under dev->power.lock with interrupts disabled.
-+ */
-+static void update_autosuspend(struct device *dev, int old_delay, int old_use)
-+{
-+	int delay = dev->power.autosuspend_delay;
-+
-+	/* Should runtime suspend be prevented now? */
-+	if (dev->power.use_autosuspend && delay < 0) {
-+
-+		/* If it used to be allowed then prevent it. */
-+		if (!old_use || old_delay >= 0) {
-+			atomic_inc(&dev->power.usage_count);
-+			rpm_resume(dev, 0);
-+		}
-+	}
-+
-+	/* Runtime suspend should be allowed now. */
-+	else {
-+
-+		/* If it used to be prevented then allow it. */
-+		if (old_use && old_delay < 0)
-+			atomic_dec(&dev->power.usage_count);
-+
-+		/* Maybe we can autosuspend now. */
-+		rpm_idle(dev, RPM_AUTO);
-+	}
-+}
-+
-+/**
-+ * pm_runtime_set_autosuspend_delay - Set a device's autosuspend_delay value.
-+ * @dev: Device to handle.
-+ * @delay: Value of the new delay in milliseconds.
-+ *
-+ * Set the device's power.autosuspend_delay value.  If it changes to negative
-+ * and the power.use_autosuspend flag is set, prevent run-time suspends.  If it
-+ * changes the other way, allow run-time suspends.
-+ */
-+void pm_runtime_set_autosuspend_delay(struct device *dev, int delay)
-+{
-+	int old_delay, old_use;
-+
-+	spin_lock_irq(&dev->power.lock);
-+	old_delay = dev->power.autosuspend_delay;
-+	old_use = dev->power.use_autosuspend;
-+	dev->power.autosuspend_delay = delay;
-+	update_autosuspend(dev, old_delay, old_use);
-+	spin_unlock_irq(&dev->power.lock);
-+}
-+EXPORT_SYMBOL_GPL(pm_runtime_set_autosuspend_delay);
-+
-+/**
-+ * __pm_runtime_use_autosuspend - Set a device's use_autosuspend flag.
-+ * @dev: Device to handle.
-+ * @use: New value for use_autosuspend.
-+ *
-+ * Set the device's power.use_autosuspend flag, and allow or prevent run-time
-+ * suspends as needed.
-+ */
-+void __pm_runtime_use_autosuspend(struct device *dev, bool use)
-+{
-+	int old_delay, old_use;
-+
-+	spin_lock_irq(&dev->power.lock);
-+	old_delay = dev->power.autosuspend_delay;
-+	old_use = dev->power.use_autosuspend;
-+	dev->power.use_autosuspend = use;
-+	update_autosuspend(dev, old_delay, old_use);
-+	spin_unlock_irq(&dev->power.lock);
-+}
-+EXPORT_SYMBOL_GPL(__pm_runtime_use_autosuspend);
-+
-+/**
-  * pm_runtime_init - Initialize run-time PM fields in given device object.
-  * @dev: Device object to initialize.
-  */
-Index: usb-2.6/drivers/base/power/sysfs.c
-===================================================================
---- usb-2.6.orig/drivers/base/power/sysfs.c
-+++ usb-2.6/drivers/base/power/sysfs.c
-@@ -75,6 +75,18 @@
-  *	attribute is set to "enabled" by bus type code or device drivers and in
-  *	that cases it should be safe to leave the default value.
-  *
-+ *	autosuspend_delay_ms - Report/change a device's autosuspend_delay value
-+ *
-+ *	Some drivers don't want to carry out a runtime suspend as soon as a
-+ *	device becomes idle; they want it always to remain idle for some period
-+ *	of time before suspending it.  This period is the autosuspend_delay
-+ *	value (expressed in milliseconds) and it can be controlled by the user.
-+ *	If the value is negative then the device will never be runtime
-+ *	suspended.
-+ *
-+ *	NOTE: The autosuspend_delay_ms attribute and the autosuspend_delay
-+ *	value are used only if the driver calls pm_runtime_use_autosuspend().
-+ *
-  *	wakeup_count - Report the number of wakeup events related to the device
-  */
- 
-@@ -173,6 +185,33 @@ static ssize_t rtpm_status_show(struct d
- }
- 
- static DEVICE_ATTR(runtime_status, 0444, rtpm_status_show, NULL);
-+
-+static ssize_t autosuspend_delay_ms_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	if (!dev->power.use_autosuspend)
-+		return -EIO;
-+	return sprintf(buf, "%d\n", dev->power.autosuspend_delay);
-+}
-+
-+static ssize_t autosuspend_delay_ms_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t n)
-+{
-+	long delay;
-+
-+	if (!dev->power.use_autosuspend)
-+		return -EIO;
-+
-+	if (strict_strtol(buf, 10, &delay) != 0 || delay != (int) delay)
-+		return -EINVAL;
-+
-+	pm_runtime_set_autosuspend_delay(dev, delay);
-+	return n;
-+}
-+
-+static DEVICE_ATTR(autosuspend_delay_ms, 0644, autosuspend_delay_ms_show,
-+		autosuspend_delay_ms_store);
-+
- #endif
- 
- static ssize_t
-@@ -311,6 +350,7 @@ static struct attribute *runtime_attrs[]
- 	&dev_attr_control.attr,
- 	&dev_attr_runtime_suspended_time.attr,
- 	&dev_attr_runtime_active_time.attr,
-+	&dev_attr_autosuspend_delay_ms.attr,
- 	NULL,
- };
- static struct attribute_group pm_runtime_attr_group = {
-Index: usb-2.6/Documentation/ABI/testing/sysfs-devices-power
-===================================================================
---- usb-2.6.orig/Documentation/ABI/testing/sysfs-devices-power
-+++ usb-2.6/Documentation/ABI/testing/sysfs-devices-power
-@@ -77,3 +77,21 @@ Description:
- 		devices this attribute is set to "enabled" by bus type code or
- 		device drivers and in that cases it should be safe to leave the
- 		default value.
-+
-+What:		/sys/devices/.../power/autosuspend_delay_ms
-+Date:		September 2010
-+Contact:	Alan Stern <stern@rowland.harvard.edu>
-+Description:
-+		The /sys/devices/.../power/autosuspend_delay_ms attribute
-+		contains the autosuspend delay value (in milliseconds).  Some
-+		drivers do not want their device to suspend as soon as it
-+		becomes idle at run time; they want the device to remain
-+		inactive for a certain minimum period of time first.  That
-+		period is called the autosuspend delay.  Negative values will
-+		prevent the device from being suspended at run time (similar
-+		to writing "on" to the power/control attribute).  Values >=
-+		1000 will cause the autosuspend timer expiration to be rounded
-+		up to the nearest second.
-+
-+		Not all drivers support this attribute.  If it isn't supported,
-+		attempts to read or write it will yield I/O errors.
-Index: usb-2.6/Documentation/power/runtime_pm.txt
-===================================================================
---- usb-2.6.orig/Documentation/power/runtime_pm.txt
-+++ usb-2.6/Documentation/power/runtime_pm.txt
-@@ -158,7 +158,8 @@ rules:
-     to execute it, the other callbacks will not be executed for the same device.
- 
-   * A request to execute ->runtime_resume() will cancel any pending or
--    scheduled requests to execute the other callbacks for the same device.
-+    scheduled requests to execute the other callbacks for the same device,
-+    except for scheduled autosuspends.
- 
- 3. Run-time PM Device Fields
- 
-@@ -166,7 +167,7 @@ The following device run-time PM fields 
- defined in include/linux/pm.h:
- 
-   struct timer_list suspend_timer;
--    - timer used for scheduling (delayed) suspend request
-+    - timer used for scheduling (delayed) suspend and autosuspend requests
- 
-   unsigned long timer_expires;
-     - timer expiration time, in jiffies (if this is different from zero, the
-@@ -236,6 +237,23 @@ defined in include/linux/pm.h:
-       Section 8); it may be modified only by the pm_runtime_no_callbacks()
-       helper function
- 
-+  unsigned int use_autosuspend;
-+    - indicates that the device's driver supports delayed autosuspend (see
-+      Section 9); it may be modified only by the
-+      pm_runtime{_dont}_use_autosuspend() helper functions
-+
-+  unsigned int timer_autosuspends;
-+    - indicates that the PM core should attempt to carry out an autosuspend
-+      when the timer expires rather than a normal suspend
-+
-+  int autosuspend_delay;
-+    - the delay time (in milliseconds) to be used for autosuspend
-+
-+  unsigned long last_busy;
-+    - the time (in jiffies) when the pm_runtime_mark_last_busy() helper
-+      function was last called for this device; used in calculating inactivity
-+      periods for autosuspend
-+
- All of the above fields are members of the 'power' member of 'struct device'.
- 
- 4. Run-time PM Device Helper Functions
-@@ -261,6 +279,12 @@ drivers/base/power/runtime.c and include
-       error code on failure, where -EAGAIN or -EBUSY means it is safe to attempt
-       to suspend the device again in future
- 
-+  int pm_runtime_autosuspend(struct device *dev);
-+    - same as pm_runtime_suspend() except that the autosuspend delay is taken
-+      into account; if pm_runtime_autosuspend_expiration() says the delay has
-+      not yet expired then an autosuspend is scheduled for the appropriate time
-+      and 0 is returned
-+
-   int pm_runtime_resume(struct device *dev);
-     - execute the subsystem-level resume callback for the device; returns 0 on
-       success, 1 if the device's run-time PM status was already 'active' or
-@@ -273,6 +297,11 @@ drivers/base/power/runtime.c and include
-       device (the request is represented by a work item in pm_wq); returns 0 on
-       success or error code if the request has not been queued up
- 
-+  int pm_request_autosuspend(struct device *dev);
-+    - schedule the execution of the subsystem-level suspend callback for the
-+      device when the autosuspend delay has expired; if the delay has already
-+      expired then the work item is queued up immediately
-+
-   int pm_schedule_suspend(struct device *dev, unsigned int delay);
-     - schedule the execution of the subsystem-level suspend callback for the
-       device in future, where 'delay' is the time to wait before queuing up a
-@@ -304,12 +333,20 @@ drivers/base/power/runtime.c and include
-     - decrement the device's usage counter
- 
-   int pm_runtime_put(struct device *dev);
--    - decrement the device's usage counter, run pm_request_idle(dev) and return
--      its result
-+    - decrement the device's usage counter; if the result is 0 then run
-+      pm_request_idle(dev) and return its result
-+
-+  int pm_runtime_put_autosuspend(struct device *dev);
-+    - decrement the device's usage counter; if the result is 0 then run
-+      pm_request_autosuspend(dev) and return its result
- 
-   int pm_runtime_put_sync(struct device *dev);
--    - decrement the device's usage counter, run pm_runtime_idle(dev) and return
--      its result
-+    - decrement the device's usage counter; if the result is 0 then run
-+      pm_runtime_idle(dev) and return its result
-+
-+  int pm_runtime_put_sync_autosuspend(struct device *dev);
-+    - decrement the device's usage counter; if the result is 0 then run
-+      pm_runtime_autosuspend(dev) and return its result
- 
-   void pm_runtime_enable(struct device *dev);
-     - enable the run-time PM helper functions to run the device bus type's
-@@ -360,19 +397,46 @@ drivers/base/power/runtime.c and include
-       PM attributes from /sys/devices/.../power (or prevent them from being
-       added when the device is registered)
- 
-+  void pm_runtime_mark_last_busy(struct device *dev);
-+    - set the power.last_busy field to the current time
-+
-+  void pm_runtime_use_autosuspend(struct device *dev);
-+    - set the power.use_autosuspend flag, enabling autosuspend delays
-+
-+  void pm_runtime_dont_use_autosuspend(struct device *dev);
-+    - clear the power.use_autosuspend flag, disabling autosuspend delays
-+
-+  void pm_runtime_set_autosuspend_delay(struct device *dev, int delay);
-+    - set the power.autosuspend_delay value to 'delay' (expressed in
-+      milliseconds); if 'delay' is negative then run-time suspends are
-+      prevented
-+
-+  unsigned long pm_runtime_autosuspend_expiration(struct device *dev);
-+    - calculate the time when the current autosuspend delay period will expire,
-+      based on power.last_busy and power.autosuspend_delay; if the delay time
-+      is 1000 ms or larger then the expiration time is rounded up to the
-+      nearest second; returns 0 if the delay period has already expired or
-+      power.use_autosuspend isn't set, otherwise returns the expiration time
-+      in jiffies
-+
- It is safe to execute the following helper functions from interrupt context:
- 
- pm_request_idle()
-+pm_request_autosuspend()
- pm_schedule_suspend()
- pm_request_resume()
- pm_runtime_get_noresume()
- pm_runtime_get()
- pm_runtime_put_noidle()
- pm_runtime_put()
-+pm_runtime_put_autosuspend()
-+pm_runtime_enable()
- pm_suspend_ignore_children()
- pm_runtime_set_active()
- pm_runtime_set_suspended()
--pm_runtime_enable()
-+pm_runtime_suspended()
-+pm_runtime_mark_last_busy()
-+pm_runtime_autosuspend_expiration()
- 
- 5. Run-time PM Initialization, Device Probing and Removal
- 
-@@ -561,3 +625,115 @@ As a consequence, the PM core will never
- or driver about run-time power changes.  Instead, the driver for the device's
- parent must take responsibility for telling the device's driver when the
- parent's power state changes.
-+
-+9. Autosuspend, or automatically-delayed suspends
-+
-+Changing a device's power state isn't free; it requires both time and energy.
-+A device should be put in a low-power state only when there's some reason to
-+think it will remain in that state for a substantial time.  A common heuristic
-+says that a device which hasn't been used for a while is liable to remain
-+unused; following this advice, drivers should not allow devices to be suspended
-+at run-time until they have been inactive for some minimum period.  Even when
-+the heuristic ends up being non-optimal, it will still prevent devices from
-+"bouncing" too rapidly between low-power and full-power states.
-+
-+The term "autosuspend" is an historical remnant.  It doesn't mean that the
-+device is automatically suspended (the subsystem or driver still has to call
-+the appropriate PM routines); rather it means that run-time suspends will
-+automatically be delayed until the desired period of inactivity has elapsed.
-+
-+Inactivity is determined based on the power.last_busy field.  Drivers should
-+call pm_runtime_mark_last_busy() to update this field after carrying out I/O,
-+typically just before calling pm_runtime_put_autosuspend().  The desired length
-+of the inactivity period is a matter of policy.  Subsystems can set this length
-+initially by calling pm_runtime_set_autosuspend_delay(), but after device
-+registration the length should be controlled by user space, using the
-+/sys/devices/.../power/autosuspend_delay_ms attribute.
-+
-+In order to use autosuspend, subsystems or drivers must call
-+pm_runtime_use_autosuspend() (preferably before registering the device), and
-+thereafter they should use the various *_autosuspend() helper functions instead
-+of the non-autosuspend counterparts:
-+
-+	Instead of: pm_runtime_suspend    use: pm_runtime_autosuspend;
-+	Instead of: pm_schedule_suspend   use: pm_request_autosuspend;
-+	Instead of: pm_runtime_put        use: pm_runtime_put_autosuspend;
-+	Instead of: pm_runtime_put_sync   use: pm_runtime_put_sync_autosuspend.
-+
-+Drivers may also continue to use the non-autosuspend helper functions; they
-+will behave normally, not taking the autosuspend delay into account.
-+Similarly, if the power.use_autosuspend field isn't set then the autosuspend
-+helper functions will behave just like the non-autosuspend counterparts.
-+
-+The implementation is well suited for asynchronous use in interrupt contexts.
-+However such use inevitably involves races, because the PM core can't
-+synchronize ->runtime_suspend() callbacks with the arrival of I/O requests.
-+This synchronization must be handled by the driver, using its private lock.
-+Here is a schematic pseudo-code example:
-+
-+	foo_read_or_write(struct foo_priv *foo, void *data)
-+	{
-+		lock(&foo->private_lock);
-+		add_request_to_io_queue(foo, data);
-+		if (foo->num_pending_requests++ == 0)
-+			pm_runtime_get(&foo->dev);
-+		if (!foo->is_suspended)
-+			foo_process_next_request(foo);
-+		unlock(&foo->private_lock);
-+	}
-+
-+	foo_io_completion(struct foo_priv *foo, void *req)
-+	{
-+		lock(&foo->private_lock);
-+		if (--foo->num_pending_requests == 0) {
-+			pm_runtime_mark_last_busy(&foo->dev);
-+			pm_runtime_put_autosuspend(&foo->dev);
-+		} else {
-+			foo_process_next_request(foo);
-+		}
-+		unlock(&foo->private_lock);
-+		/* Send req result back to the user ... */
-+	}
-+
-+	int foo_runtime_suspend(struct device *dev)
-+	{
-+		struct foo_priv foo = container_of(dev, ...);
-+		int ret = 0;
-+
-+		lock(&foo->private_lock);
-+		if (foo->num_pending_requests > 0) {
-+			ret = -EBUSY;
-+		} else {
-+			/* ... suspend the device ... */
-+			foo->is_suspended = 1;
-+		}
-+		unlock(&foo->private_lock);
-+		return ret;
-+	}
-+
-+	int foo_runtime_resume(struct device *dev)
-+	{
-+		struct foo_priv foo = container_of(dev, ...);
-+
-+		lock(&foo->private_lock);
-+		/* ... resume the device ... */
-+		foo->is_suspended = 0;
-+		pm_runtime_mark_last_busy(&foo->dev);
-+		if (foo->num_pending_requests > 0)
-+			foo_process_requests(foo);
-+		unlock(&foo->private_lock);
-+		return 0;
-+	}
-+
-+The important point is that after foo_io_completion() asks for an autosuspend,
-+the foo_runtime_suspend() callback may race with foo_read_or_write().
-+Therefore foo_runtime_suspend() has to check whether there are any pending I/O
-+requests (while holding the private lock) before allowing the suspend to
-+proceed.
-+
-+In addition, the power.autosuspend_delay field can be changed by user space at
-+any time.  If a driver cares about this, it can call
-+pm_runtime_autosuspend_expiration() from within the ->runtime_suspend()
-+callback while holding its private lock.  If the function returns a nonzero
-+value then the delay has not yet expired and the callback should return
-+-EAGAIN.
+> 
+>> +     return opp;
+>> +}
+>> +
+>> +/**
+>> + * opp_find_freq_floor() - Search for a rounded floor freq
+>> + * @dev:     device for which we do this operation
+>> + * @freq:    Start frequency
+>> + *
+>> + * Search for the matching floor *available* OPP from a starting freq
+>> + * for a device.
+>> + *
+>> + * Returns matching *opp and refreshes *freq accordingly, else returns
+>> + * ERR_PTR in case of error and should be handled using IS_ERR.
+>> + *
+>> + * Locking: RCU reader.
+>> + */
+>> +struct opp *opp_find_freq_floor(struct device *dev, unsigned long *freq)
+>> +{
+>> +     struct device_opp *dev_opp;
+>> +     struct opp *temp_opp, *opp = ERR_PTR(-ENODEV);
+>> +
+>> +     if (!dev || !freq) {
+>> +             pr_err("%s: invalid param dev=%p freq=%p\n", __func__,
+>> +                             dev, freq);
+>> +             return ERR_PTR(-EINVAL);
+>> +     }
+>> +
+>> +     dev_opp = find_device_opp(dev);
+>> +     if (IS_ERR(dev_opp))
+>> +             return opp;
+>> +
+>> +     rcu_read_lock();
+>> +     list_for_each_entry_rcu(temp_opp, &dev_opp->opp_list, node) {
+>> +             if (temp_opp->available) {
+>> +                     /* go to the next node, before choosing prev */
+>> +                     if (temp_opp->rate > *freq)
+>> +                             break;
+>> +                     else
+>> +                             opp = temp_opp;
+>> +             }
+>> +     }
+>> +     if (!IS_ERR(opp))
+>> +             *freq = opp->rate;
+>> +     rcu_read_unlock();
+> 
+> As does this one.
+guessing opp ptr here.. am I right?
+
+> 
+>> +     return opp;
+>> +}
+>> +
+>> +/**
+>> + * opp_add()  - Add an OPP table from a table definitions
+>> + * @dev:     device for which we do this operation
+>> + * @freq:    Frequency in Hz for this OPP
+>> + * @u_volt:  Voltage in uVolts for this OPP
+>> + *
+>> + * This function adds an opp definition to the opp list and returns status.
+>> + * The opp is made available by default and it can be controlled using
+>> + * opp_enable/disable functions.
+>> + *
+>> + * Locking: RCU, mutex
+>> + */
+>> +int opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+>> +{
+>> +     struct device_opp *tmp_dev_opp, *dev_opp = NULL;
+>> +     struct opp *opp, *new_opp;
+>> +     struct list_head *head;
+>> +
+>> +     /* Check for existing list for 'dev' */
+>> +     rcu_read_lock();
+>> +     list_for_each_entry_rcu(tmp_dev_opp, &dev_opp_list, node) {
+>> +             if (dev == tmp_dev_opp->dev) {
+>> +                     dev_opp = tmp_dev_opp;
+>> +                     break;
+>> +             }
+>> +     }
+>> +     rcu_read_unlock();
+>> +
+>> +     /* allocate new OPP node */
+>> +     new_opp = kzalloc(sizeof(struct opp), GFP_KERNEL);
+>> +     if (!new_opp) {
+>> +             pr_warning("%s: unable to allocate new opp node\n",
+>> +                     __func__);
+>> +             return -ENOMEM;
+>> +     }
+>> +
+>> +     if (!dev_opp) {
+>> +             /* Allocate a new device OPP table */
+>> +             dev_opp = kzalloc(sizeof(struct device_opp), GFP_KERNEL);
+>> +             if (!dev_opp) {
+>> +                     kfree(new_opp);
+>> +                     pr_warning("%s: unable to allocate device structure\n",
+>> +                             __func__);
+>> +                     return -ENOMEM;
+>> +             }
+>> +
+>> +             dev_opp->dev = dev;
+>> +             INIT_LIST_HEAD(&dev_opp->opp_list);
+>> +             mutex_init(&dev_opp->lock);
+>> +
+>> +             /* Secure the device list modification */
+>> +             mutex_lock(&dev_opp_list_lock);
+>> +             list_add_rcu(&dev_opp->node, &dev_opp_list);
+>> +             mutex_unlock(&dev_opp_list_lock);
+>> +             synchronize_rcu();
+> 
+> You do not need to wait for an RCU grace period when adding objects, only
+> between removing them and freeing them.
+ouch.. my bad.. thx.. will fix
+
+> 
+>> +     }
+>> +
+>> +     /* populate the opp table */
+>> +     new_opp->dev_opp = dev_opp;
+>> +     new_opp->rate = freq;
+>> +     new_opp->u_volt = u_volt;
+>> +     new_opp->available = true;
+>> +
+>> +     /* make the dev_opp modification safe */
+>> +     mutex_lock(&dev_opp->lock);
+>> +
+>> +     rcu_read_lock();
+>> +     /* Insert new OPP in order of increasing frequency */
+>> +     head = &dev_opp->opp_list;
+>> +     list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
+>> +             if (new_opp->rate < opp->rate)
+>> +                     break;
+>> +             else
+>> +                     head = &opp->node;
+>> +     }
+>> +     rcu_read_unlock();
+>> +
+>> +     list_add_rcu(&new_opp->node, head);
+>> +     mutex_unlock(&dev_opp->lock);
+>> +     synchronize_rcu();
+> 
+> Ditto.
+thx.. will fix.
+
+> 
+>> +     return 0;
+>> +}
+>> +
+>> +/**
+>> + * opp_set_availability() - helper to set the availability of an opp
+>> + * @opp:             Pointer to opp
+>> + * @availability_req:        availability status requested for this opp
+>> + *
+>> + * Set the availability of an OPP with an RCU operation, opp_{enable,disable}
+>> + * share a common logic which is isolated here.
+>> + *
+>> + * Returns -EINVAL for bad pointers, -ENOMEM if no memory available for the
+>> + * copy operation, returns 0 if no modifcation was done OR modification was
+>> + * successful.
+>> + */
+>> +static int opp_set_availability(struct opp *opp, bool availability_req)
+>> +{
+>> +     struct opp *new_opp, *tmp_opp;
+>> +     bool is_available;
+>> +
+>> +     if (unlikely(!opp || IS_ERR(opp))) {
+>> +             pr_err("%s: Invalid parameters being passed\n", __func__);
+>> +             return -EINVAL;
+>> +     }
+>> +
+>> +     new_opp = kmalloc(sizeof(struct opp), GFP_KERNEL);
+>> +     if (!new_opp) {
+>> +             pr_warning("%s: unable to allocate opp\n", __func__);
+>> +             return -ENOMEM;
+>> +     }
+>> +
+>> +     mutex_lock(&opp->dev_opp->lock);
+>> +
+>> +     rcu_read_lock();
+>> +     tmp_opp = rcu_dereference(opp);
+>> +     is_available = tmp_opp->available;
+>> +     rcu_read_unlock();
+>> +
+>> +     /* Is update really needed? */
+>> +     if (is_available == availability_req) {
+>> +             mutex_unlock(&opp->dev_opp->lock);
+>> +             kfree(tmp_opp);
+>> +             return 0;
+>> +     }
+>> +
+>> +     *new_opp = *opp;
+>> +     new_opp->available = availability_req;
+>> +     list_replace_rcu(&opp->node, &new_opp->node);
+>> +
+>> +     mutex_unlock(&opp->dev_opp->lock);
+>> +     synchronize_rcu();
+> 
+> If you decide to rely on reference counts to fix the problem in
+> find_device_opp(), you will need to check the reference counts here.
+> Again, please see Documentation/RCU/rcuref.txt.
+
+Does the original point about not needing to free dev_opp resolve this?
+
+> 
+>> +     kfree(opp);
+>> +
+>> +     return 0;
+>> +}
+>> +
+>> +/**
+>> + * opp_enable() - Enable a specific OPP
+>> + * @opp:     Pointer to opp
+>> + *
+>> + * Enables a provided opp. If the operation is valid, this returns 0, else the
+>> + * corresponding error value. It is meant to be used for users an OPP available
+>> + * after being temporarily made unavailable with opp_disable.
+>> + *
+>> + * Locking: RCU, mutex
+> 
+> By "Locking: RCU", you presumably don't mean that the caller must do
+> an rcu_read_lock() -- this would result in a synchronize_rcu() being
+> invoked in an RCU read-side critical section, which is illegal.
+aye..thx. I will make it more verbose. Does the following sound right?
+
+Locking used internally: RCU copy-update and read_lock used, mutex
+
+and for the readers:
+
+Locking used internally: RCU read_lock used
+
+or do we need to go all verbatim about the implementation here?
+
+I intended the user to know the context in which they can call it, for 
+example, since mutex is used, dont think of using this in interrupt 
+context. since read_locks are already used, dont need to double lock 
+it.. opp library takes care of it's own exclusivity.
+
+> 
+>> + */
+>> +int opp_enable(struct opp *opp)
+>> +{
+>> +     return opp_set_availability(opp, true);
+>> +}
+>> +
+>> +/**
+>> + * opp_disable() - Disable a specific OPP
+>> + * @opp:     Pointer to opp
+>> + *
+>> + * Disables a provided opp. If the operation is valid, this returns
+>> + * 0, else the corresponding error value. It is meant to be a temporary
+>> + * control by users to make this OPP not available until the circumstances are
+>> + * right to make it available again (with a call to opp_enable).
+>> + *
+>> + * Locking: RCU, mutex
+> 
+> Ditto.  (And similar feedback applies elsewhere.)
+> 
+>> + */
+>> +int opp_disable(struct opp *opp)
+>> +{
+>> +     return opp_set_availability(opp, false);
+>> +}
+>> +
+>> +#ifdef CONFIG_CPU_FREQ
+>> +/**
+>> + * opp_init_cpufreq_table() - create a cpufreq table for a device
+>> + * @dev:     device for which we do this operation
+>> + * @table:   Cpufreq table returned back to caller
+>> + *
+>> + * Generate a cpufreq table for a provided device- this assumes that the
+>> + * opp list is already initialized and ready for usage.
+>> + *
+>> + * This function allocates required memory for the cpufreq table. It is
+>> + * expected that the caller does the required maintenance such as freeing
+>> + * the table as required.
+>> + *
+>> + * WARNING: It is  important for the callers to ensure refreshing their copy of
+>> + * the table if any of the mentioned functions have been invoked in the interim.
+>> + *
+>> + * Locking: RCU reader
+>> + */
+>> +void opp_init_cpufreq_table(struct device *dev,
+>> +                         struct cpufreq_frequency_table **table)
+>> +{
+>> +     struct device_opp *dev_opp;
+>> +     struct opp *opp;
+>> +     struct cpufreq_frequency_table *freq_table;
+>> +     int i = 0;
+>> +
+>> +     dev_opp = find_device_opp(dev);
+>> +     if (IS_ERR(dev_opp)) {
+>> +             pr_warning("%s: unable to find device\n", __func__);
+>> +             return;
+>> +     }
+>> +
+>> +     freq_table = kzalloc(sizeof(struct cpufreq_frequency_table) *
+>> +                          (opp_get_opp_count(dev) + 1), GFP_ATOMIC);
+>> +     if (!freq_table) {
+>> +             pr_warning("%s: failed to allocate frequency table\n",
+>> +                        __func__);
+>> +             return;
+> 
+> How does the caller tell that the allocation failed?  Should the caller
+> set the pointer passed in through the "table" argument to NULL before
+> calling this function?  Or should this function set *table to NULL
+> before returning in this case?
+
+Good catch. Thanks. I would rather change the return to int and pass 
+proper errors to caller so that they can handle it appropriately.
+
+
+[...]
+-- 
+Regards,
+Nishanth Menon
