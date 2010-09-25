@@ -1,16 +1,15 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: Re: [PATCH 05/22] Hibernation: Switch to preallocating
-	swap.
-Date: Sun, 26 Sep 2010 07:32:37 +1000
-Message-ID: <4C9E6A75.8090702__11219.6382521235$1285450400$gmane$org@tuxonice.net>
-References: <1285388224-10012-1-git-send-email-nigel@tuxonice.net>
-	<1285388224-10012-6-git-send-email-nigel@tuxonice.net>
-	<201009252324.39445.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC 1/7] sysfs: add sysfs_merge_group and
+	sysfs_unmerge_group
+Date: Sat, 25 Sep 2010 23:43:18 +0200
+Message-ID: <201009252343.19073.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.1009231712410.1667-100000@iolanthe.rowland.org>
+	<201009242205.03382.rjw@sisk.pl> <20100924202018.GA19024@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201009252324.39445.rjw@sisk.pl>
+In-Reply-To: <20100924202018.GA19024@kroah.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,159 +19,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: Greg KH <greg@kroah.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Morning.
+On Friday, September 24, 2010, Greg KH wrote:
+> On Fri, Sep 24, 2010 at 10:05:03PM +0200, Rafael J. Wysocki wrote:
+> > On Friday, September 24, 2010, Greg KH wrote:
+> > > On Thu, Sep 23, 2010 at 05:23:08PM -0400, Alan Stern wrote:
+> > > > This patch (as1420) adds sysfs_merge_group() and sysfs_unmerge_group()
+> > > > functions, allowing drivers easily to add and remove sets of
+> > > > attributes to a pre-existing attribute group directory.
+> > > > 
+> > > > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> > > 
+> > > Looks good to me:
+> > > 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > > 
+> > > Rafael, this will go through your tree, right?
+> > 
+> > Yes, it will, if that's fine with you.
+> 
+> Fine with me, merge away :)
 
-On 26/09/10 07:24, Rafael J. Wysocki wrote:
-> On Saturday, September 25, 2010, Nigel Cunningham wrote:
->> Switch from allocating swap as the image is written to allocating
->> storage prior to writing the image.
->
-> Hmm, I think I know what the patch does, but I don't really understand the
-> changelog.  Care to explain/fix?
+Thanks, I appled this patch to suspend-2.6/linux-next.
 
-Sure. I was a little terse, wasn't I? :)
-
-Prior to this patch, we allocated swap as we were writing the image. 
-This patch changes things so that we instead allocate all the swap we'll 
-need prior to starting to write the image. It lays groundwork for later 
-patches that switch from doing I/O in batches.
-
-Regards,
-
-Nigel
-
-> Thanks,
-> Rafael
->
->
->> Signed-off-by: Nigel Cunningham<nigel@tuxonice.net>
->> ---
->>   kernel/power/swap.c |   62 ++++++++++++++++++++++++++++++--------------------
->>   1 files changed, 37 insertions(+), 25 deletions(-)
->>
->> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
->> index cebf91c..bebd2cf 100644
->> --- a/kernel/power/swap.c
->> +++ b/kernel/power/swap.c
->> @@ -202,6 +202,33 @@ int alloc_swapdev_blocks(int needed)
->>   }
->>
->>   /**
->> + *	allocate_swap - Allocate enough swap to save the image.
->> + *
->> + *	Calculates the number of swap pages actually needed and seeks
->> + *	to allocate that many from the resume partition. Returns TRUE
->> + *	or FALSE to indicate whether we got enough storage.
->> + */
->> +
->> +static int allocate_swap(unsigned int nr_pages)
->> +{
->> +	unsigned int free_swap = count_swap_pages(root_swap, 1);
->> +
->> +	nr_pages += DIV_ROUND_UP(nr_pages, MAP_PAGE_ENTRIES);
->> +
->> +	pr_debug("PM: Free swap pages: %u\n", free_swap);
->> +	if (free_swap<  nr_pages)
->> +		return 0;
->> +
->> +	if (alloc_swapdev_blocks(nr_pages)<  nr_pages) {
->> +		free_all_swap_pages(root_swap);
->> +		return 0;
->> +	}
->> +
->> +	reset_storage_pos();
->> +	return 1;
->> +}
->> +
->> +/**
->>    *	free_all_swap_pages - free swap pages allocated for saving image data.
->>    *	It also frees the extents used to register which swap entries had been
->>    *	allocated.
->> @@ -324,7 +351,7 @@ static void release_swap_writer(struct swap_map_handle *handle)
->>   	handle->cur = NULL;
->>   }
->>
->> -static int get_swap_writer(struct swap_map_handle *handle)
->> +static int get_swap_writer(struct swap_map_handle *handle, unsigned long pages)
->>   {
->>   	int ret;
->>
->> @@ -340,7 +367,12 @@ static int get_swap_writer(struct swap_map_handle *handle)
->>   		ret = -ENOMEM;
->>   		goto err_close;
->>   	}
->> -	handle->cur_swap = alloc_swapdev_block(root_swap);
->> +	if (!allocate_swap(pages)) {
->> +		printk(KERN_ERR "PM: Not enough free swap\n");
->> +		ret = -ENOSPC;
->> +		goto err_close;
->> +	}
->> +	handle->cur_swap = next_swapdev_block();
->>   	if (!handle->cur_swap) {
->>   		ret = -ENOSPC;
->>   		goto err_rel;
->> @@ -363,7 +395,7 @@ static int swap_write_page(struct swap_map_handle *handle, void *buf,
->>
->>   	if (!handle->cur)
->>   		return -EINVAL;
->> -	offset = alloc_swapdev_block(root_swap);
->> +	offset = next_swapdev_block();
->>   	error = write_page(buf, offset, bio_chain);
->>   	if (error)
->>   		return error;
->> @@ -372,7 +404,7 @@ static int swap_write_page(struct swap_map_handle *handle, void *buf,
->>   		error = hib_wait_on_bio_chain(bio_chain);
->>   		if (error)
->>   			goto out;
->> -		offset = alloc_swapdev_block(root_swap);
->> +		offset = next_swapdev_block();
->>   		if (!offset)
->>   			return -ENOSPC;
->>   		handle->cur->next_swap = offset;
->> @@ -463,21 +495,6 @@ static int save_image(struct swap_map_handle *handle,
->>   }
->>
->>   /**
->> - *	enough_swap - Make sure we have enough swap to save the image.
->> - *
->> - *	Returns TRUE or FALSE after checking the total amount of swap
->> - *	space avaiable from the resume partition.
->> - */
->> -
->> -static int enough_swap(unsigned int nr_pages)
->> -{
->> -	unsigned int free_swap = count_swap_pages(root_swap, 1);
->> -
->> -	pr_debug("PM: Free swap pages: %u\n", free_swap);
->> -	return free_swap>  nr_pages + PAGES_FOR_IO;
->> -}
->> -
->> -/**
->>    *	swsusp_write - Write entire image and metadata.
->>    *	@flags: flags to pass to the "boot" kernel in the image header
->>    *
->> @@ -496,16 +513,11 @@ int swsusp_write(unsigned int flags)
->>   	int error;
->>
->>   	pages = snapshot_get_image_size();
->> -	error = get_swap_writer(&handle);
->> +	error = get_swap_writer(&handle, pages);
->>   	if (error) {
->>   		printk(KERN_ERR "PM: Cannot get swap writer\n");
->>   		return error;
->>   	}
->> -	if (!enough_swap(pages)) {
->> -		printk(KERN_ERR "PM: Not enough free swap\n");
->> -		error = -ENOSPC;
->> -		goto out_finish;
->> -	}
->>   	memset(&snapshot, 0, sizeof(struct snapshot_handle));
->>   	error = snapshot_read_next(&snapshot);
->>   	if (error<  PAGE_SIZE) {
->>
->
->
+Rafael
