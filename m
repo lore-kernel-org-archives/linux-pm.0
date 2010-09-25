@@ -1,155 +1,89 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [git pull request] idle patches for 2.6.36-rc6
-Date: Fri, 01 Oct 2010 01:36:03 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.1010010134120.7033@localhost.localdomain>
+From: Martin Steigerwald <Martin@lichtvoll.de>
+Subject: Re: Nigel's current for-rafael queue
+Date: Sat, 25 Sep 2010 17:04:41 +0200
+Message-ID: <201009251704.50186.Martin__48050.2576487654$1285927839$gmane$org@lichtvoll.de>
+References: <1285388224-10012-1-git-send-email-nigel@tuxonice.net>
+	(sfid-20100925_095715_038909_A9814B83)
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Power Management List <linux-pm@lists.osdl.org>
+Content-Type: multipart/mixed; boundary="===============1855651790497212980=="
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1285388224-10012-1-git-send-email-nigel@tuxonice.net>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
+Cc: LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+--===============1855651790497212980==
+Content-Type: multipart/signed;
+  boundary="nextPart4127678.rHa97IMe2R";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-please pull from: 
+--nextPart4127678.rHa97IMe2R
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.git idle-release
+Am Samstag 25 September 2010 schrieb Nigel Cunningham:
+> Hi Rafael.
 
-Two regressio fixes for those cutting over to intel_idle from acpi_idle,
-both are candidates for 2.6.35.stable.
+Hi Nigel,
+=20
+> Please find attached a slightly updated version of the patchset I sent
+> a few months ago. The main change is that I've prepended and additional
+> patch which lets the user see the speed at which the image is being
+> read and written. This is accomplished by recording the MB/s in a
+> single byte in the image header, and using a couple of __nosavedata
+> variables to get the data back through the atomic restore. I realise
+> the char limits us to 255MB/s at the moment. In future patches, I
+> intend to address this by storing the data in a 'proper' image header
+> (it's a real problem - TuxOnIce reads and writes on the same set up at
+> speeds around 250MB/s).
 
-First, if you have a Lenovo S10-3 netbook, you could not boot.
-Second, intel_idle was not as quiet as acpi_idle on multi-core.
-Plus some low risk fluff patches to get out of the way.
+I like to help by testing these. Is it sufficient to check out your latest=
+=20
+tuxonice tree, checkout branch for-rafael and switch the hibernate script=20
+to TryMethod disk.conf?
 
-This will update the files shown below.
+Thanks,
+=2D-=20
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
 
-thanks!
+--nextPart4127678.rHa97IMe2R
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkyeD4oACgkQmRvqrKWZhMcgLwCeM/lEmXqxTzd9HDXzA9TKGpoK
+sOEAmwV6unoKnH80BkrtAMhQfLdJcIwD
+=ndGy
+-----END PGP SIGNATURE-----
+
+--nextPart4127678.rHa97IMe2R--
 --
-Len Brown
-Intel Open Source Technology Center
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+
+--===============1855651790497212980==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 
-ps. individual patches are available on linux-pm@lists.linux-foundation.org
-and a consolidated plain patch is available here:
-http://ftp.kernel.org/pub/linux/kernel/people/lenb/idle/patches/2.6.36/idle-release-2.6.36-rc6.diff.gz
-
- drivers/acpi/processor_driver.c  |    2 +-
- drivers/cpuidle/governors/menu.c |    2 +-
- drivers/idle/intel_idle.c        |   20 +++++++++++++++-----
- drivers/pci/quirks.c             |   20 ++++++++++++++++++++
- include/linux/cpuidle.h          |    1 +
- 5 files changed, 38 insertions(+), 7 deletions(-)
- mode change 100755 => 100644 drivers/idle/intel_idle.c
-
-through these commits:
-
-Len Brown (2):
-      intel_idle: PCI quirk to prevent Lenovo Ideapad s10-3 boot hang
-      acpi_idle: add missing \n to printk
-
-Lucas De Marchi (1):
-      cpuidle: Fix typos
-
-Namhyung Kim (1):
-      intel_idle: add missing __percpu markup
-
-Suresh Siddha (1):
-      intel_idle: Voluntary leave_mm before entering deeper
-
-Thomas Weber (1):
-      intel_idle: Change mode 755 => 644
-
-with this log:
-
-commit 6110a1f43c27b516e16d5ce8860fca50748c2a87
-Author: Suresh Siddha <suresh.b.siddha@intel.com>
-Date:   Thu Sep 30 21:19:07 2010 -0400
-
-    intel_idle: Voluntary leave_mm before entering deeper
-    
-    Avoid TLB flush IPIs for the cores in deeper c-states by voluntary leave_mm()
-    before entering into that state. CPUs tend to flush TLB in those c-states
-    anyways.
-    
-    acpi_idle does this with C3-type states, but it was not caried over
-    when intel_idle was introduced.  intel_idle can apply it
-    to C-states in addition to those that ACPI might export as C3...
-    
-    Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 9587a678fa56ea6d7f39b048f24f5d03a89bf9b3
-Merge: e9a64ed 4731fdc
-Author: Len Brown <len.brown@intel.com>
-Date:   Tue Sep 28 23:30:58 2010 -0400
-
-    Merge branch 'meego-7093' into idle-release
-
-commit e9a64ed4994db04c9963495b03d8a86538e3ad55
-Author: Len Brown <len.brown@intel.com>
-Date:   Fri Sep 24 20:50:02 2010 -0400
-
-    acpi_idle: add missing \n to printk
-    
-    otherwise, these two lines print as one:
-    
-    ACPI: acpi_idle yielding to intel_idle
-    ACPI: SSDT 3f5d8741 00203 (v02 PmRef  Cpu0Ist 00003000 INTL 20050624)
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 3265eba0bed7645cacd5e2cb3614d504b5ac29e6
-Author: Namhyung Kim <namhyung@gmail.com>
-Date:   Sun Aug 8 03:10:03 2010 +0900
-
-    intel_idle: add missing __percpu markup
-    
-    intel_idle_cpuidle_devices is a percpu pointer
-    but was missing __percpu markup.
-    
-    Signed-off-by: Namhyung Kim <namhyung@gmail.com>
-    Acked-by: Tejun Heo <tj@kernel.org>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 68f160125f0655c21a1c9f896ddff97d98012cb0
-Author: Thomas Weber <weber@corscience.de>
-Date:   Mon Jul 12 08:56:43 2010 +0200
-
-    intel_idle: Change mode 755 => 644
-    
-    Remove execution permission from source file.
-    
-    Signed-off-by: Thomas Weber <weber@corscience.de>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 20e3341bb138bc9860adea4d76707470357b76ab
-Author: Lucas De Marchi <lucas.de.marchi@gmail.com>
-Date:   Tue Sep 7 12:53:49 2010 -0400
-
-    cpuidle: Fix typos
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 4731fdcf6f7bdab3e369a3f844d4ea4d4017284d
-Author: Len Brown <len.brown@intel.com>
-Date:   Fri Sep 24 21:02:27 2010 -0400
-
-    intel_idle: PCI quirk to prevent Lenovo Ideapad s10-3 boot hang
-    
-    When the Lenovo Ideapad S10-3 is booted with HT enabled,
-    it hits a boot hang in the intel_idle driver.
-    
-    This occurs when entering ATM-C4 for the first time,
-    unless BM_STS is first cleared.
-    
-    acpi_idle doesn't see this because it first checks
-    and clears BM_STS, but it would hit the same hang
-    if that check were disabled.
-    
-    http://bugs.meego.com/show_bug.cgi?id=7093
-    https://bugs.launchpad.net/ubuntu/+source/linux/+bug/634702
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
+--===============1855651790497212980==--
