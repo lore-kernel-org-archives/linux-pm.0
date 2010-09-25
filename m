@@ -1,7 +1,8 @@
 From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 16/22] Remove first_sector from swap_map_handle
-Date: Sat, 25 Sep 2010 14:16:58 +1000
-Message-ID: <1285388224-10012-17-git-send-email-nigel__42847.0367369757$1285389152$gmane$org@tuxonice.net>
+Subject: [PATCH 15/22] Hibernation: Use block extents for reading
+	image
+Date: Sat, 25 Sep 2010 14:16:57 +1000
+Message-ID: <1285388224-10012-16-git-send-email-nigel__27720.6079954796$1285389236$gmane$org@tuxonice.net>
 References: <1285388224-10012-1-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -20,48 +21,35 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-Remove the 'first_sector' variable from the swap_map_handle
-struct. It will continue to be used whereas the other members
-of the struct will be deleted in a following patch.
+Switch from using swap map pages to using block extents for
+knowing where the next page needs to be read from.
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 ---
- kernel/power/block_io.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ kernel/power/block_io.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/kernel/power/block_io.c b/kernel/power/block_io.c
-index f2bc044..e6709db 100644
+index 89601d3..f2bc044 100644
 --- a/kernel/power/block_io.c
 +++ b/kernel/power/block_io.c
-@@ -140,10 +140,10 @@ struct swap_map_page {
- struct swap_map_handle {
- 	struct swap_map_page *cur;
- 	sector_t cur_swap;
--	sector_t first_sector;
- 	unsigned int k;
- };
+@@ -332,7 +332,7 @@ int swap_read_page(void *buf, int sync)
  
-+static sector_t first_sector;
- static struct swap_map_handle handle;
- 
- extern struct hib_extent_state sector_extents;
-@@ -159,7 +159,7 @@ unsigned int hib_bio_overhead(unsigned int nr_pages)
- /* Get the first sector of the image proper, for storing in the signature */
- sector_t hib_get_first_sector(void)
- {
--	return handle.first_sector;
-+	return first_sector;
- }
- 
- /**
-@@ -213,7 +213,7 @@ int hib_bio_prepare_write(void)
- 		return result;
- 	}
- 
--	handle.first_sector = hib_extent_current(&sector_extents);
-+	first_sector = hib_extent_current(&sector_extents);
- 
- 	result = hib_extents_store(&sector_extents);
- 	result2 = hib_flush_write_buffer();
+ 	if (!handle.cur)
+ 		return -EINVAL;
+-	offset = handle.cur->entries[handle.k];
++	offset = hib_extent_next(&sector_extents);
+ 	if (!offset)
+ 		return -EFAULT;
+ 	error = hib_bio_read_page(offset, buf, sync);
+@@ -341,7 +341,7 @@ int swap_read_page(void *buf, int sync)
+ 	if (++handle.k >= MAP_PAGE_ENTRIES) {
+ 		error = hib_wait_on_bio_chain();
+ 		handle.k = 0;
+-		offset = handle.cur->next_swap;
++		offset = hib_extent_next(&sector_extents);
+ 		if (!offset)
+ 			release_swap_reader();
+ 		else if (!error)
 -- 
 1.7.0.4
