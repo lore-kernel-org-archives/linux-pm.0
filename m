@@ -1,13 +1,13 @@
-From: Martin Steigerwald <Martin@lichtvoll.de>
-Subject: Re: Nigel's current for-rafael queue
-Date: Sat, 25 Sep 2010 17:04:41 +0200
-Message-ID: <201009251704.50186.Martin__17753.33307819$1285427227$gmane$org@lichtvoll.de>
-References: <1285388224-10012-1-git-send-email-nigel@tuxonice.net>
-	(sfid-20100925_095715_038909_A9814B83)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: intel_idle (Lenovo ideapad S10-3)
+Date: Sat, 25 Sep 2010 12:09:11 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1009251201150.17910__26320.6305484802$1285431142$gmane$org@localhost.localdomain>
+References: <4C8DE00F.7070801@canonical.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6816454140543402107=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1285388224-10012-1-git-send-email-nigel@tuxonice.net>
+In-reply-to: <4C8DE00F.7070801@canonical.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,70 +15,26 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: Ike Panhc <ike.pan@canonical.com>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============6816454140543402107==
-Content-Type: multipart/signed;
-  boundary="nextPart4127678.rHa97IMe2R";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
 
---nextPart4127678.rHa97IMe2R
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+> I test myself which says when CONFIG_CPU_IDLE=y, Lenovo ideapad S10-3 can
+> not boot. The CPU is Atom N450, and I also find the report[2] that says intel_idle
+> works fine with N450.
+> 
+> I do not have much knowledge about intel_idle. is there any similar report that on
+> some machine intel_idle halt the system or any suggestion for next step debug?
+> 
+> 
+> [1] http://launchpad.net/bugs/634702
+> [2] http://www.spinics.net/lists/linux-pm/msg21334.html
 
-Am Samstag 25 September 2010 schrieb Nigel Cunningham:
-> Hi Rafael.
+Please test the fix here:
+http://bugs.meego.com/show_bug.cgi?id=7093
 
-Hi Nigel,
-=20
-> Please find attached a slightly updated version of the patchset I sent
-> a few months ago. The main change is that I've prepended and additional
-> patch which lets the user see the speed at which the image is being
-> read and written. This is accomplished by recording the MB/s in a
-> single byte in the image header, and using a couple of __nosavedata
-> variables to get the data back through the atomic restore. I realise
-> the char limits us to 255MB/s at the moment. In future patches, I
-> intend to address this by storing the data in a 'proper' image header
-> (it's a real problem - TuxOnIce reads and writes on the same set up at
-> speeds around 250MB/s).
-
-I like to help by testing these. Is it sufficient to check out your latest=
-=20
-tuxonice tree, checkout branch for-rafael and switch the hibernate script=20
-to TryMethod disk.conf?
-
-Thanks,
-=2D-=20
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
-
---nextPart4127678.rHa97IMe2R
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkyeD4oACgkQmRvqrKWZhMcgLwCeM/lEmXqxTzd9HDXzA9TKGpoK
-sOEAmwV6unoKnH80BkrtAMhQfLdJcIwD
-=ndGy
------END PGP SIGNATURE-----
-
---nextPart4127678.rHa97IMe2R--
-
---===============6816454140543402107==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============6816454140543402107==--
+thanks,
+-Len
