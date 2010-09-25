@@ -1,90 +1,65 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: RFC: mixing device idle and CPUidle or non-atomic idle
-	notifiers
-Date: Fri, 24 Sep 2010 16:44:46 -0700
-Message-ID: <87iq1uwvtd.fsf__23831.0388442644$1285371949$gmane$org@deeprootsystems.com>
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH] intel_idle: PCI quirk to prevent Lenovo Ideapad s10-3 boot hang
+Date: Fri, 24 Sep 2010 21:26:31 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1009242122390.8641@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pci-owner@vger.kernel.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Linux Power Management List <linux-pm@lists.osdl.org>
+Cc: linux-pci@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Now that we have runtime PM for devices, I'm exploring ways of how to
-couple the runtime PM of certain devices with CPUidle transitions.
-Ideally, CPUidle should only manage CPU idle states, and device idle
-states would be managed separately using runtime PM.  However, there are
-cases where the device idle transistions need to be coordinated with CPU
-idle transistions.  This is already a proposed topic for the PM
-mini-conf at Plumbers'[1], so this RFC is to get the discussion started.
+From: Len Brown <len.brown@intel.com>
 
-In the wild west (before runtime PM), we managed these special cases on
-OMAP by having some special hacks^Whooks for certain drivers that were
-called during idle.  When these devices are converted to using runtime
-PM, ideally we'd like initiate device runtime PM transitions for these
-devices somehow coordinated with CPU idle transitions.
+When the Lenovo Ideapad S10-3 is booted with HT enabled,
+it hits a boot hang in the intel_idle driver.
 
-So, I started to explore how to coordinate device runtime PM transitions
-with CPU idle transitions.
+This occurs when entering ATM-C4 for the first time,
+unless BM_STS is first cleared.
 
-One of the fundamental problems is that by the time CPUidle is entered,
-interrupts are already disabled, and runtime PM cannot be used from
-interrupts disabled context (c.f. thread on linux-pm[1].)
+acpi_idle doesn't see this because it first checks
+and clears BM_STS, but it would hit the same hang
+if that check were disabled.
 
-So that led me down the path of exploring whether we really need to have
-interrupts disabled during the early part of CPUidle.  It seems to me
-that during the time when the governor is selecting a state, and when
-the platform-specific code is checking for device/bus activity,
-interrupts do not really need to be disabled yet.  At least, I didn't
-come up with a good reason why they need to be disabled so early, hence
-the RFC.
+http://bugs.meego.com/show_bug.cgi?id=7093
+https://bugs.launchpad.net/ubuntu/+source/linux/+bug/634702
 
-Here's a simplified version how it works today:
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ drivers/pci/quirks.c |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+), 0 deletions(-)
 
-/* arch/arm/kernel/process.c, arch/x86/kernel/process_*.c */
-cpu_idle()  
-    local_irq_disable()    
-    pm_idle()  --> cpuidle_idle_call()
-
-cpuidle_idle_call()
-    dev->prepare()
-    target_state = governor->select()  /* selects next state */
-    target_state->enter()
-        /* the ->enter hook must enable IRQs before returning */
-
-As a quick hack, I just (re)enabled interrupts in our CPUidle
-->prepare() hook (they're later disabled again before the core idle is
-run.)  This allowed the calling of device-specific idle functions which
-then use runtime PM and thus allows device-specific idle to be
-coordinated with the CPU idle.
-
-So back to the main question... do we really need interrupts disabled so
-early in the idle path? 
-
-I'm sure I'm missing something obvious about why this can't work, but
-it's Friday and my brain prefers to think about beer rather than
-CPUidle.
-
-Or, as another potential option...
-
-I just discovered that x86_64 has an atomic idle_notifier called just
-before idle (c.f. arch/x86/kernel/process_64.c.)  However this is also
-done with interrupts disabled, so using this has the same problems with
-interrupts disabled.  But, what about adding an additional notifier
-chain that happens with interrupts still enabled....  hmm, will
-ponder that over that beer...
-
-Kevin
-
-[1] http://www.linuxplumbersconf.org/2010/ocw/proposals/717
-[1] https://lists.linux-foundation.org/pipermail/linux-pm/2010-August/028124.html
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index 197e38f..a8dbf2e 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -155,6 +155,26 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_NEC,	PCI_DEVICE_ID_NEC_CBUS_2,	quirk_isa_d
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_NEC,	PCI_DEVICE_ID_NEC_CBUS_3,	quirk_isa_dma_hangs);
+ 
+ /*
++ * Intel NM10 "TigerPoint" LPC PM1a_STS.BM_STS must be clear
++ * for some HT machines to use C4 w/o hanging.
++ */
++static void __devinit quirk_tigerpoint_bm_sts(struct pci_dev *dev)
++{
++	u32 pmbase;
++	u16 pm1a;
++
++	pci_read_config_dword(dev, 0x40, &pmbase);
++	pmbase = pmbase & 0xff80;
++	pm1a = inw(pmbase);
++
++	if (pm1a & 0x10) {
++		dev_info(&dev->dev, FW_BUG "TigerPoint LPC.BM_STS cleared\n");
++		outw(0x10, pmbase);
++	}
++}
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TGP_LPC, quirk_tigerpoint_bm_sts);
++
++/*
+  *	Chipsets where PCI->PCI transfers vanish or hang
+  */
+ static void __devinit quirk_nopcipci(struct pci_dev *dev)
+-- 
+1.7.3
