@@ -1,7 +1,8 @@
 From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 22/22] Hibernation: Remove now-empty routines.
-Date: Sat, 25 Sep 2010 14:17:04 +1000
-Message-ID: <1285388224-10012-23-git-send-email-nigel__27736.4539834254$1285388379$gmane$org@tuxonice.net>
+Subject: [PATCH 08/22] Hibernation: Iterate over sectors not swap
+	entries.
+Date: Sat, 25 Sep 2010 14:16:50 +1000
+Message-ID: <1285388224-10012-9-git-send-email-nigel__8132.78642385757$1285388408$gmane$org@tuxonice.net>
 References: <1285388224-10012-1-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -20,143 +21,94 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-release_swap_writer and release_swap_reader are now empty functions.
-Remove them and clean up callers (including swap_reader_finish, which
-just called release_swap_reader).
+Record sectors in extents when allocating storage, and use the
+sector numbers instead of swap offsets as we write the image. If
+we then store these sector extents at the start of the image (as
+following patches will do), we can drop the index pages that are
+interspersed with the image, do fully asynchronous I/O (which
+should give a speed boost) and perhaps also remove some of the
+duplication in the paths for reading and writing pages.
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 ---
- kernel/power/block_io.c |   36 ++++--------------------------------
- kernel/power/block_io.h |    2 --
- kernel/power/swap.c     |    9 ---------
- 3 files changed, 4 insertions(+), 43 deletions(-)
+ kernel/power/swap.c |   25 ++++++++++---------------
+ 1 files changed, 10 insertions(+), 15 deletions(-)
 
-diff --git a/kernel/power/block_io.c b/kernel/power/block_io.c
-index f452650..fc2e05d 100644
---- a/kernel/power/block_io.c
-+++ b/kernel/power/block_io.c
-@@ -172,28 +172,19 @@ static int write_page(void *buf, sector_t offset, int sync)
- 	return hib_bio_write_page(offset, src, sync);
- }
- 
--void release_swap_writer(void)
--{
--}
--
- int hib_bio_prepare_write(void)
- {
- 	int result, result2;
- 
- 	result = hib_prepare_buffer();
--	if (result) {
--		release_swap_writer();
-+	if (result)
- 		return result;
--	}
- 
- 	first_sector = hib_extent_current(&sector_extents);
- 
- 	result = hib_extents_store(&sector_extents);
- 	result2 = hib_flush_write_buffer();
- 
--	if (result || result2)
--		release_swap_writer();
--
- 	return result ? result : result2;
- }
- 
-@@ -211,38 +202,19 @@ int flush_swap_writer(void)
- 	return 0;
- }
- 
--/**
-- *	The following functions allow us to read data using a swap map
-- *	in a file-alike way
-- */
--
--void release_swap_reader(void)
--{
--}
--
- int get_swap_reader(unsigned int *flags_p, sector_t first_page)
- {
- 	int error;
- 
- 	error = hib_prepare_buffer();
--	if (error) {
--		release_swap_reader();
-+	if (error)
- 		return error;
--	}
- 
- 	/* Bootstrap reading the extents */
- 	error = hib_bio_read_page(first_page, hib_ppio_buffer, 1);
--	if (error) {
--		release_swap_reader();
--		hib_free_buffer();
--		return error;
--	}
- 
--	error = hib_extents_load(&sector_extents, 1);
--
--	if (error) {
--		release_swap_reader();
--	}
-+	if (!error)
-+		error = hib_extents_load(&sector_extents, 1);
- 
- 	hib_free_buffer();
- 	return error;
-diff --git a/kernel/power/block_io.h b/kernel/power/block_io.h
-index 1482060..228fe58 100644
---- a/kernel/power/block_io.h
-+++ b/kernel/power/block_io.h
-@@ -14,12 +14,10 @@ void hib_wait_on_bio_chain(void);
- unsigned int hib_bio_overhead(unsigned int nr_pages);
- sector_t hib_get_first_sector(void);
- extern struct hib_extent_state sector_extents;
--void release_swap_writer(void);
- int hib_bio_prepare_write(void);
- int flush_swap_writer(void);
- int swap_write_page(void *buf, int sync);
- int get_swap_reader(unsigned int *flags_p, sector_t first_page);
--void release_swap_reader(void);
- int swap_read_page(void *buf, int sync);
- int hib_flush_write_buffer(void);
- 
 diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index d3e5939..5669f92 100644
+index da2439d..0c87522 100644
 --- a/kernel/power/swap.c
 +++ b/kernel/power/swap.c
-@@ -223,7 +223,6 @@ static int swap_writer_finish(unsigned int flags, int error)
+@@ -77,14 +77,7 @@ struct swsusp_header {
+ static struct swsusp_header *swsusp_header;
  
- 	if (error)
- 		free_all_swap_pages(root_swap);
--	release_swap_writer();
- 	swsusp_close(FMODE_WRITE);
+ static struct hib_extent_state swap_extents;
+-
+-static sector_t next_swapdev_block(void)
+-{
+-	unsigned long res = hib_extent_next(&swap_extents);
+-	if (res)
+-		res = swapdev_block(root_swap, res);
+-	return res;
+-}
++static struct hib_extent_state sector_extents;
  
- 	return error;
-@@ -312,13 +311,6 @@ out_finish:
- 	return error;
+ /**
+  *	alloc_swapdev_block - allocate a swap page and register that it has
+@@ -93,14 +86,16 @@ static sector_t next_swapdev_block(void)
+ 
+ sector_t alloc_swapdev_block(int swap)
+ {
+-	unsigned long offset;
++	unsigned long offset, sector;
+ 
+ 	offset = swp_offset(get_swap_page_of_type(swap));
+ 	if (offset) {
+-		if (hib_extents_insert(&swap_extents, offset))
++		sector = swapdev_block(swap, offset);
++		if (hib_extents_insert(&swap_extents, offset) ||
++		    hib_extents_insert(&sector_extents, sector))
+ 			swap_free(swp_entry(swap, offset));
+ 		else
+-			return swapdev_block(swap, offset);
++			return sector;
+ 	}
+ 	return 0;
+ }
+@@ -141,7 +136,7 @@ static int allocate_swap(unsigned int nr_pages)
+ 		return 0;
+ 	}
+ 
+-	hib_reset_extent_pos(&swap_extents);
++	hib_reset_extent_pos(&sector_extents);
+ 	return 1;
  }
  
--static int swap_reader_finish(void)
--{
--	release_swap_reader();
--
--	return 0;
--}
--
- /**
-  *	load_image - load the image using the swap map handle
-  *	@handle and the snapshot handle @snapshot
-@@ -397,7 +389,6 @@ int swsusp_read(unsigned int *flags_p)
- 		error = swap_read_page(header, 1);
- 	if (!error)
- 		error = load_image(&snapshot, header->pages - 1);
--	swap_reader_finish();
- end:
- 	if (!error)
- 		pr_debug("PM: Image successfully loaded\n");
+@@ -283,7 +278,7 @@ static int get_swap_writer(struct swap_map_handle *handle, unsigned long pages)
+ 		ret = -ENOSPC;
+ 		goto err_close;
+ 	}
+-	handle->cur_swap = next_swapdev_block();
++	handle->cur_swap = hib_extent_next(&sector_extents);
+ 	if (!handle->cur_swap) {
+ 		ret = -ENOSPC;
+ 		goto err_rel;
+@@ -306,7 +301,7 @@ static int swap_write_page(struct swap_map_handle *handle, void *buf,
+ 
+ 	if (!handle->cur)
+ 		return -EINVAL;
+-	offset = next_swapdev_block();
++	offset = hib_extent_next(&sector_extents);
+ 	error = write_page(buf, offset, bio_chain);
+ 	if (error)
+ 		return error;
+@@ -315,7 +310,7 @@ static int swap_write_page(struct swap_map_handle *handle, void *buf,
+ 		error = hib_wait_on_bio_chain(bio_chain);
+ 		if (error)
+ 			goto out;
+-		offset = next_swapdev_block();
++		offset = hib_extent_next(&sector_extents);
+ 		if (!offset)
+ 			return -ENOSPC;
+ 		handle->cur->next_swap = offset;
 -- 
 1.7.0.4
