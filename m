@@ -1,8 +1,7 @@
 From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 08/22] Hibernation: Iterate over sectors not swap
-	entries.
-Date: Sat, 25 Sep 2010 14:16:50 +1000
-Message-ID: <1285388224-10012-9-git-send-email-nigel__8132.78642385757$1285388408$gmane$org@tuxonice.net>
+Subject: [PATCH 05/22] Hibernation: Switch to preallocating swap.
+Date: Sat, 25 Sep 2010 14:16:47 +1000
+Message-ID: <1285388224-10012-6-git-send-email-nigel__26383.277148898$1285388410$gmane$org@tuxonice.net>
 References: <1285388224-10012-1-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,94 +20,132 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-Record sectors in extents when allocating storage, and use the
-sector numbers instead of swap offsets as we write the image. If
-we then store these sector extents at the start of the image (as
-following patches will do), we can drop the index pages that are
-interspersed with the image, do fully asynchronous I/O (which
-should give a speed boost) and perhaps also remove some of the
-duplication in the paths for reading and writing pages.
+Switch from allocating swap as the image is written to allocating
+storage prior to writing the image.
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 ---
- kernel/power/swap.c |   25 ++++++++++---------------
- 1 files changed, 10 insertions(+), 15 deletions(-)
+ kernel/power/swap.c |   62 ++++++++++++++++++++++++++++++--------------------
+ 1 files changed, 37 insertions(+), 25 deletions(-)
 
 diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index da2439d..0c87522 100644
+index cebf91c..bebd2cf 100644
 --- a/kernel/power/swap.c
 +++ b/kernel/power/swap.c
-@@ -77,14 +77,7 @@ struct swsusp_header {
- static struct swsusp_header *swsusp_header;
- 
- static struct hib_extent_state swap_extents;
--
--static sector_t next_swapdev_block(void)
--{
--	unsigned long res = hib_extent_next(&swap_extents);
--	if (res)
--		res = swapdev_block(root_swap, res);
--	return res;
--}
-+static struct hib_extent_state sector_extents;
+@@ -202,6 +202,33 @@ int alloc_swapdev_blocks(int needed)
+ }
  
  /**
-  *	alloc_swapdev_block - allocate a swap page and register that it has
-@@ -93,14 +86,16 @@ static sector_t next_swapdev_block(void)
++ *	allocate_swap - Allocate enough swap to save the image.
++ *
++ *	Calculates the number of swap pages actually needed and seeks
++ *	to allocate that many from the resume partition. Returns TRUE
++ *	or FALSE to indicate whether we got enough storage.
++ */
++
++static int allocate_swap(unsigned int nr_pages)
++{
++	unsigned int free_swap = count_swap_pages(root_swap, 1);
++
++	nr_pages += DIV_ROUND_UP(nr_pages, MAP_PAGE_ENTRIES);
++
++	pr_debug("PM: Free swap pages: %u\n", free_swap);
++	if (free_swap < nr_pages)
++		return 0;
++
++	if (alloc_swapdev_blocks(nr_pages) < nr_pages) {
++		free_all_swap_pages(root_swap);
++		return 0;
++	}
++
++	reset_storage_pos();
++	return 1;
++}
++
++/**
+  *	free_all_swap_pages - free swap pages allocated for saving image data.
+  *	It also frees the extents used to register which swap entries had been
+  *	allocated.
+@@ -324,7 +351,7 @@ static void release_swap_writer(struct swap_map_handle *handle)
+ 	handle->cur = NULL;
+ }
  
- sector_t alloc_swapdev_block(int swap)
+-static int get_swap_writer(struct swap_map_handle *handle)
++static int get_swap_writer(struct swap_map_handle *handle, unsigned long pages)
  {
--	unsigned long offset;
-+	unsigned long offset, sector;
+ 	int ret;
  
- 	offset = swp_offset(get_swap_page_of_type(swap));
- 	if (offset) {
--		if (hib_extents_insert(&swap_extents, offset))
-+		sector = swapdev_block(swap, offset);
-+		if (hib_extents_insert(&swap_extents, offset) ||
-+		    hib_extents_insert(&sector_extents, sector))
- 			swap_free(swp_entry(swap, offset));
- 		else
--			return swapdev_block(swap, offset);
-+			return sector;
- 	}
- 	return 0;
- }
-@@ -141,7 +136,7 @@ static int allocate_swap(unsigned int nr_pages)
- 		return 0;
- 	}
- 
--	hib_reset_extent_pos(&swap_extents);
-+	hib_reset_extent_pos(&sector_extents);
- 	return 1;
- }
- 
-@@ -283,7 +278,7 @@ static int get_swap_writer(struct swap_map_handle *handle, unsigned long pages)
- 		ret = -ENOSPC;
+@@ -340,7 +367,12 @@ static int get_swap_writer(struct swap_map_handle *handle)
+ 		ret = -ENOMEM;
  		goto err_close;
  	}
--	handle->cur_swap = next_swapdev_block();
-+	handle->cur_swap = hib_extent_next(&sector_extents);
+-	handle->cur_swap = alloc_swapdev_block(root_swap);
++	if (!allocate_swap(pages)) {
++		printk(KERN_ERR "PM: Not enough free swap\n");
++		ret = -ENOSPC;
++		goto err_close;
++	}
++	handle->cur_swap = next_swapdev_block();
  	if (!handle->cur_swap) {
  		ret = -ENOSPC;
  		goto err_rel;
-@@ -306,7 +301,7 @@ static int swap_write_page(struct swap_map_handle *handle, void *buf,
+@@ -363,7 +395,7 @@ static int swap_write_page(struct swap_map_handle *handle, void *buf,
  
  	if (!handle->cur)
  		return -EINVAL;
--	offset = next_swapdev_block();
-+	offset = hib_extent_next(&sector_extents);
+-	offset = alloc_swapdev_block(root_swap);
++	offset = next_swapdev_block();
  	error = write_page(buf, offset, bio_chain);
  	if (error)
  		return error;
-@@ -315,7 +310,7 @@ static int swap_write_page(struct swap_map_handle *handle, void *buf,
+@@ -372,7 +404,7 @@ static int swap_write_page(struct swap_map_handle *handle, void *buf,
  		error = hib_wait_on_bio_chain(bio_chain);
  		if (error)
  			goto out;
--		offset = next_swapdev_block();
-+		offset = hib_extent_next(&sector_extents);
+-		offset = alloc_swapdev_block(root_swap);
++		offset = next_swapdev_block();
  		if (!offset)
  			return -ENOSPC;
  		handle->cur->next_swap = offset;
+@@ -463,21 +495,6 @@ static int save_image(struct swap_map_handle *handle,
+ }
+ 
+ /**
+- *	enough_swap - Make sure we have enough swap to save the image.
+- *
+- *	Returns TRUE or FALSE after checking the total amount of swap
+- *	space avaiable from the resume partition.
+- */
+-
+-static int enough_swap(unsigned int nr_pages)
+-{
+-	unsigned int free_swap = count_swap_pages(root_swap, 1);
+-
+-	pr_debug("PM: Free swap pages: %u\n", free_swap);
+-	return free_swap > nr_pages + PAGES_FOR_IO;
+-}
+-
+-/**
+  *	swsusp_write - Write entire image and metadata.
+  *	@flags: flags to pass to the "boot" kernel in the image header
+  *
+@@ -496,16 +513,11 @@ int swsusp_write(unsigned int flags)
+ 	int error;
+ 
+ 	pages = snapshot_get_image_size();
+-	error = get_swap_writer(&handle);
++	error = get_swap_writer(&handle, pages);
+ 	if (error) {
+ 		printk(KERN_ERR "PM: Cannot get swap writer\n");
+ 		return error;
+ 	}
+-	if (!enough_swap(pages)) {
+-		printk(KERN_ERR "PM: Not enough free swap\n");
+-		error = -ENOSPC;
+-		goto out_finish;
+-	}
+ 	memset(&snapshot, 0, sizeof(struct snapshot_handle));
+ 	error = snapshot_read_next(&snapshot);
+ 	if (error < PAGE_SIZE) {
 -- 
 1.7.0.4
