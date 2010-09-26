@@ -1,18 +1,18 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: Re: [TuxOnIce-devel] [PATCH] Hibernate: Implement
- readahead when resuming
-Date: Sun, 26 Sep 2010 08:37:49 +1000
-Message-ID: <4C9E79BD.4030003__26672.0424908728$1285454314$gmane$org@tuxonice.net>
-References: <1285416056-9735-1-git-send-email-nigel@tuxonice.net>
-	<201009252158.28439.Martin@lichtvoll.de>
-	<4C9E68A9.6090603@tuxonice.net>
-	(sfid-20100925_235951_865640_006D16F6)
-	<201009260011.04070.Martin@lichtvoll.de>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH v4] power: introduce library for
+	device-specific OPPs
+Date: Sat, 25 Sep 2010 17:56:36 -0700
+Message-ID: <20100926005636.GB3396__26641.8582330973$1285462720$gmane$org@linux.vnet.ibm.com>
+References: <1285332640-16736-1-git-send-email-nm@ti.com>
+	<20100924193742.GJ2375@linux.vnet.ibm.com>
+	<201009252255.20933.rjw@sisk.pl>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201009260011.04070.Martin@lichtvoll.de>
+Content-Disposition: inline
+In-Reply-To: <201009252255.20933.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,154 +22,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Martin Steigerwald <Martin@lichtvoll.de>
-Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nishanth Menon <nm@ti.com>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-omap <linux-omap@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, linux-arm <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+On Sat, Sep 25, 2010 at 10:55:20PM +0200, Rafael J. Wysocki wrote:
+> On Friday, September 24, 2010, Paul E. McKenney wrote:
+> > On Fri, Sep 24, 2010 at 07:50:40AM -0500, Nishanth Menon wrote:
+> ...
+> > 
+> > Looks like a good start!!!  Some questions and suggestions about RCU
+> > usage interspersed below.
+> ...
+> > > + * Locking: RCU reader.
+> > > + */
+> > > +int opp_get_opp_count(struct device *dev)
+> > > +{
+> > > +	struct device_opp *dev_opp;
+> > > +	struct opp *temp_opp;
+> > > +	int count = 0;
+> > > +
+> > > +	dev_opp = find_device_opp(dev);
+> > > +	if (IS_ERR(dev_opp))
+> > > +		return PTR_ERR(dev_opp);
+> > > +
+> > > +	rcu_read_lock();
+> > > +	list_for_each_entry_rcu(temp_opp, &dev_opp->opp_list, node) {
+> > > +		if (temp_opp->available)
+> > > +			count++;
+> > > +	}
+> > > +	rcu_read_unlock();
+> > 
+> > This one is OK as well.  You are returning a count, so if all of the
+> > counted structures are freed at this point, no problem.  The count was
+> > valid when it was accumulated, and the fact that it might now be obsolete
+> > is (usually) not a problem.
+> 
+> However, it looks like it should run rcu_read_lock() before calling
+> find_device_opp(dev), shouldn't it?
 
-On 26/09/10 08:10, Martin Steigerwald wrote:
-> Hi Nigel.
->
-> Am Samstag 25 September 2010 schrieb Nigel Cunningham:
->> On 26/09/10 05:58, Martin Steigerwald wrote:
->>> Am Samstag 25 September 2010 schrieb Martin Steigerwald:
->>>> Hi Nigel and Rafael,
->>>>
->>>> Am Samstag 25 September 2010 schrieb Nigel Cunningham:
->>>>> Add support for submitting reads before they're needed. This
->>>>> greatly improves the speed of resuming:
->>>>>
->>>>> From
->>>>>
->>>>> PM: Image read at 66 MB/s.
->>>>>
->>>>> to
->>>>>
->>>>> PM: Image read at 229 MB/s.
->>>>>
->>>>> ...and removes the need for the sync_read flag.
->>>>
->>>> So
->>>>
->>>> martin@shambhala:~/Computer/Shambhala/Kernel/2.6.36/tuxonice-head>
->>>> git branch -av | grep for-rafael
->>>> * for-rafael                      d4e7490 Hibernate: Implement
->>>> readahead when resuming
->>>>
->>>>     remotes/origin/for-rafael       d4e7490 Hibernate: Implement
->>>>
->>>> readahead when resuming
->>>
->>> [...]
->>>
->>>> basically seems to work.
->>>
->>> [...]
->>>
->>>> I tried 5 times:
->>>>
->>>> - one with just kdm started worked nicely and really rather fast!
->>>>
->>>> - four with a full blown KDE 4.5.1 session with OpenGL compositing
->>>>
->>>>     - one seemed to hang prior to reinitializing the Radeon KMS DRM
->>>>     setup - three other worked just fine
->>>>
->>>> I do not think that the hang is related to your changes, Nigel. The
->>>> kernel remained stuck at the lower initial resolution and didn't
->>>> seem to initialize the radeon KMS framebuffers at 1400x1050
->>>> properly. I didn't see this with 2.6.35 and userspace software
->>>> suspend.
->>>
->>> I am not so sure anymore.
->>>
->>> I got another one of these hangs with the 2.6.36-rc5 mentioned above.
->>> See IMG_3871.jpg for the exact display were it hung. I was able to
->>> switch view with Alt-F1 or something like that. And then got
->>> IMG_3873.jpg. But nothing happened anymore. Find these on:
->>>
->>> http://martin-steigerwald.de/tmp/tuxonice/hang-after-resume-with-pm-
->>> patches-for-rafael/
->>>
->>> I now tried in kernel suspend to disk with
->>>
->>> martin@shambhala:~>   cat /proc/version
->>> Linux version 2.6.35.5-tp42-vmembase-0-pm-avoid-oom-dirty
->>> (martin@shambhala) (gcc version 4.4.5 20100728 (prerelease) (Debian
->>> 4.4.4-8) ) #4 PREEMPT Sat Sep 25 13:29:53 CEST 2010
->>>
->>> which doesn't contain your patches, Nigel, for about 5 or 6 times and
->>> I did not see that hang.
->>>
->>> So maybe something in your patches, even if just the debug output I
->>> mentioned, or something in 2.6.36-rc5 triggers that hang.
->>>
->>> I will test 2.6.35.5 for a bit longer to make sure that there is no
->>> hang on resume prior to loading. I need to reboot this one now too,
->>> cause after one of the resume attempts USB stopped working with:
->>>
->>> Sep 25 21:36:47 shambhala kernel: usb 1-3: New USB device found,
->>> idVendor=1307, idProduct=0330
->>> Sep 25 21:36:47 shambhala kernel: usb 1-3: New USB device strings:
->>> Mfr=1, Product=2, SerialNumber=3
->>> Sep 25 21:36:47 shambhala kernel: usb 1-3: Product: Mass Storage
->>> Device Sep 25 21:36:47 shambhala kernel: usb 1-3: Manufacturer:
->>> Generic Sep 25 21:36:47 shambhala kernel: usb 1-3: SerialNumber:
->>> 00000000000006 Sep 25 21:36:47 shambhala kernel: scsi3 : usb-storage
->>> 1-3:1.0 Sep 25 21:36:48 shambhala kernel: BUG: unable to handle
->>> kernel NULL pointer dereference at 0000002c
->>> Sep 25 21:36:48 shambhala kernel: IP: [<c125b5de>]
->>> cfq_get_queue+0x33e/0x550
->>> Sep 25 21:36:48 shambhala kernel: *pde = 00000000
->>> Sep 25 21:36:48 shambhala kernel: Oops: 0000 [#1] PREEMPT
-> [...]
->>> exited with preempt_count 1
->>>
->>> Maybe the USB system has an powermanagement related issue that in
->>> kernel suspend triggers more easily than userspace software suspend?
->>> I didn't see this one before. But well, this is a bug I will report
->>> in
->>> bugzilla.kernel.org.
->>>
->>> Ciao,
->>
->> Okay. Can you try without the last patch, and confirm that it's
->> reliable (albeit slower) then?
->
-> Well as I told already (later on) the USB problem seems to be related to
-> my testing of systemd in Debian - I do not get how this could be the case,
-> but it works, when I remove init=/bin/systemd. I think I will report this
-> as a kernel bug nonetheless, cause when I apply that "userspace shouldn't
-> be able to let the kernel oops" paradigm then its a kernel bug.
->
-> Should I test without the readahead patch regarding whether that hang
-> after resume, prior to activating Radeon KMS framebuffer is fixed as well?
+Indeed it does appear that you are right -- good catch!!!
 
-Yes, please. I only whipped up the readahead patch last night. Since 
-it's single threaded, there's a lot less to go wrong compared to 
-TuxOnIce, but it's still possible that there's some bug I haven't 
-noticed yet. It would be good to be able to see it's definitely that patch.
-
-> I am a bit unsure on what to test next. My current thoughts are:
->
-> - Test whether 2.6.35.5 is stable with unpatched in kernel suspend.
-> Currently in progress. Cause before that I only know its stable with
-> userspace software suspend.
->
-> - Apply your patches on top of 2.6.35.5 and test that.
->    - If that works, it appears to be a problem introduced by 2.6.36-rc5
->      - Then I'd possibly test 2.6.36-rc5 with unpatched in kernel suspend.
->    - If that doesn't work, it appears to be an issue with your patches
->      - Then I test without readahead patch.
->
-> Tell me when you have any different suggestions.
->
-> Ciao,
-
-I'd start with 2.6.36-rc5 unpatched, and only fall back to 2.6.35 if 
-that's unreliable.
-
-Regards,
-
-Nigel
+							Thanx, Paul
