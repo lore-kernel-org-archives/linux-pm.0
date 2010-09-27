@@ -1,17 +1,11 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: Re: [TuxOnIce-devel] Swsusp patches applied to
-	suspend-2.6#linux-next
-Date: Mon, 27 Sep 2010 19:57:41 +1000
-Message-ID: <4CA06A95.7040303__41861.4706527025$1285581506$gmane$org@tuxonice.net>
-References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
-	<20100927080000.GA7032@wrars-comp.wrarsdomain>
-	<4CA055EF.6050608@tuxonice.net>
-	<20100927093826.GA6904@wrars-comp.wrarsdomain>
+From: tom.leiming@gmail.com
+Subject: [PATCH] PM: runtime: add missed pm_request_autosuspend
+Date: Mon, 27 Sep 2010 18:54:24 +0800
+Message-ID: <1285584864-10972-1-git-send-email-tom.leiming@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100927093826.GA6904@wrars-comp.wrarsdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,34 +15,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrey Rahmatullin <wrar@altlinux.org>
-Cc: Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: rjw@sisk.pl, stern@rowland.harvard.edu
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+From: Ming Lei <tom.leiming@gmail.com>
 
-On 27/09/10 19:38, Andrey Rahmatullin wrote:
-> On Mon, Sep 27, 2010 at 06:29:35PM +1000, Nigel Cunningham wrote:
->>>> As discussed, here are the patches, modified to apply against your current
->>>> linux-next tree. A new first patch splits compression support out into its
->>>> own file, removing the need to have two versions of the load_image and
->>>> save_image routines, minimising the changes to the remainder of the
->>>> patches and making things cleaner than would otherwise be the case.
->>>>
->>>> On my laptop, single-threaded compression actually slows writing down from
->>>> 175MB/s to around 100-120MB/s (depending on how well the image compresses).
->>>> Reading speed improves from 218MB/s to around 245MB/s. I expect that
->>>> multithreaded writing would bring the writing (and reading) speeds back
->>>> up. It's on my swsusp to do list :)
->>> Works here.
->>
->> Ah. You're too fast for me :)
->>
->> What sort of speeds are you seeing?
-> Well, I don't see any 'PM: Image read at' etc in the kernel logs after
-> resuming (in for-rafael tree).
+Commit 5789bdd542c6bfbb662915c67bffc14198aa5dda
+[PM / Runtime: Implement autosuspend support] introduces
+"autosuspend" facility for runtime PM, but misses
+helper function of pm_request_autosuspend, so add it.
 
-You need CONFIG_PM_DEBUG enabled for that. Perhaps I should remove that 
-requirement.
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+---
+ include/linux/pm_runtime.h |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-Nigel
+diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+index 99ed1aa..3ec2358 100644
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -164,6 +164,11 @@ static inline int pm_request_resume(struct device *dev)
+ 	return __pm_runtime_resume(dev, RPM_ASYNC);
+ }
+ 
++static inline int pm_request_autosuspend(struct device *dev)
++{
++	return __pm_runtime_suspend(dev, RPM_ASYNC | RPM_AUTO);
++}
++
+ static inline int pm_runtime_get(struct device *dev)
+ {
+ 	return __pm_runtime_resume(dev, RPM_GET_PUT | RPM_ASYNC);
+-- 
+1.6.2.5
