@@ -1,8 +1,7 @@
 From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 14/23] Hibernation: Store block extents at start
-	of image
-Date: Mon, 27 Sep 2010 15:43:49 +1000
-Message-ID: <1285566238-10966-15-git-send-email-nigel__2265.14159371636$1285567022$gmane$org@tuxonice.net>
+Subject: [PATCH 18/23] Hibernation: Remove swap_map_pages
+Date: Mon, 27 Sep 2010 15:43:53 +1000
+Message-ID: <1285566238-10966-19-git-send-email-nigel__33.2520147368953$1285567023$gmane$org@tuxonice.net>
 References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,228 +20,144 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds support for storing the list of extents being
-used at the start of the image, prior to the header, in
-preparation for switching from using swap map pages to these
-extents, then removing the swap map pages.
+Stop storing swap_map pages in the image. This removes the need
+for a wait_on_bio_chain every MAP_PAGE_ENTRIES pages and thus
+allows the whole image to be written using async I/O.
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 ---
- kernel/power/block_io.c |   59 ++++++++++++++++++++++++++++++++-----
- kernel/power/extents.c  |   75 +++++++++++++++++++++++++++++++++++++++++++++++
- kernel/power/extents.h  |    5 +++
- 3 files changed, 131 insertions(+), 8 deletions(-)
+ kernel/power/block_io.c |   61 +++-------------------------------------------
+ 1 files changed, 4 insertions(+), 57 deletions(-)
 
 diff --git a/kernel/power/block_io.c b/kernel/power/block_io.c
-index bf6129b..89601d3 100644
+index 24b6db5..b068b5a 100644
 --- a/kernel/power/block_io.c
 +++ b/kernel/power/block_io.c
-@@ -14,6 +14,7 @@
+@@ -156,7 +156,6 @@ struct swap_map_page {
  
- #include "power.h"
- #include "extents.h"
-+#include "block_io.h"
+ struct swap_map_handle {
+ 	struct swap_map_page *cur;
+-	sector_t cur_swap;
+ 	unsigned int k;
+ };
  
- static struct bio *bio_chain;
- 
-@@ -150,7 +151,9 @@ extern struct hib_extent_state sector_extents;
+@@ -168,8 +167,7 @@ extern struct hib_extent_state sector_extents;
  /* Calculate the overhead needed for storing n pages */
  unsigned int hib_bio_overhead(unsigned int nr_pages)
  {
--	return DIV_ROUND_UP(nr_pages, MAP_PAGE_ENTRIES);
-+	return DIV_ROUND_UP(nr_pages, MAP_PAGE_ENTRIES) +
-+	       DIV_ROUND_UP(hib_extents_storage_needed(&sector_extents),
-+			PAGE_SIZE);
+-	return DIV_ROUND_UP(nr_pages, MAP_PAGE_ENTRIES) +
+-	       DIV_ROUND_UP(hib_extents_storage_needed(&sector_extents),
++	return DIV_ROUND_UP(hib_extents_storage_needed(&sector_extents),
+ 			PAGE_SIZE);
  }
  
- /* Get the first sector of the image proper, for storing in the signature */
-@@ -197,21 +200,34 @@ void release_swap_writer(void)
- 
- int hib_bio_prepare_write(void)
- {
-+	int result, result2;
-+
- 	handle.cur = (struct swap_map_page *)get_zeroed_page(GFP_KERNEL);
- 
- 	if (!handle.cur)
- 		return -ENOMEM;
+@@ -235,12 +233,8 @@ int hib_bio_prepare_write(void)
+ 	result = hib_extents_store(&sector_extents);
+ 	result2 = hib_flush_write_buffer();
  
 -	handle.cur_swap = hib_extent_next(&sector_extents);
--
--	if (!handle.cur_swap) {
-+	result = hib_prepare_buffer();
-+	if (result) {
- 		release_swap_writer();
--		return -ENOSPC;
-+		return result;
- 	}
- 
-+	handle.first_sector = hib_extent_current(&sector_extents);
-+
-+	result = hib_extents_store(&sector_extents);
-+	result2 = hib_flush_write_buffer();
-+
-+	handle.cur_swap = hib_extent_next(&sector_extents);
  	handle.k = 0;
--	handle.first_sector = handle.cur_swap;
--	return 0;
-+
-+	if (!handle.cur_swap)
-+		result = -ENOSPC;
-+
-+	if (result || result2)
-+		release_swap_writer();
-+
-+	return result ? result : result2;
- }
+ 
+-	if (!handle.cur_swap)
+-		result = -ENOSPC;
+-
+ 	if (result || result2)
+ 		release_swap_writer();
+ 
+@@ -249,41 +243,17 @@ int hib_bio_prepare_write(void)
  
  int swap_write_page(void *buf, int sync)
-@@ -268,6 +284,7 @@ void release_swap_reader(void)
+ {
+-	int error = 0;
+ 	sector_t offset;
+ 
+ 	if (!handle.cur)
+ 		return -EINVAL;
+ 	offset = hib_extent_next(&sector_extents);
+-	error = write_page(buf, offset, sync);
+-	if (error)
+-		return error;
+-	handle.cur->entries[handle.k++] = offset;
+-	if (handle.k >= MAP_PAGE_ENTRIES) {
+-		error = hib_wait_on_bio_chain();
+-		if (error)
+-			goto out;
+-		offset = hib_extent_next(&sector_extents);
+-		if (!offset)
+-			return -ENOSPC;
+-		handle.cur->next_swap = offset;
+-		error = write_page(handle.cur, handle.cur_swap, 1);
+-		if (error)
+-			goto out;
+-		memset(handle.cur, 0, PAGE_SIZE);
+-		handle.cur_swap = offset;
+-		handle.k = 0;
+-	}
+- out:
+-	return error;
++	return write_page(buf, offset, sync);
+ }
+ 
+ int flush_swap_writer(void)
+ {
+-	if (handle.cur && handle.cur_swap)
+-		return write_page(handle.cur, handle.cur_swap, 1);
+-	else
+-		return -EINVAL;
++	return hib_wait_on_bio_chain();
+ }
+ 
+ /**
+@@ -301,7 +271,6 @@ void release_swap_reader(void)
  int get_swap_reader(unsigned int *flags_p, sector_t first_page)
  {
  	int error;
-+	sector_t offset;
+-	sector_t offset;
  
  	handle.cur = (struct swap_map_page *)get_zeroed_page(__GFP_WAIT | __GFP_HIGH);
  	if (!handle.cur)
-@@ -278,8 +295,34 @@ int get_swap_reader(unsigned int *flags_p, sector_t first_page)
- 		release_swap_reader();
+@@ -330,41 +299,19 @@ int get_swap_reader(unsigned int *flags_p, sector_t first_page)
  		return error;
  	}
-+
-+	error = hib_prepare_buffer();
-+	if (error) {
-+		release_swap_reader();
-+		return error;
-+	}
-+
- 	handle.k = 0;
--	return 0;
-+
-+	/* Bootstrap reading the extents */
-+	memcpy(hib_ppio_buffer, handle.cur, PAGE_SIZE);
-+	error = hib_extents_load(&sector_extents, 1);
-+
-+	if (error) {
-+		release_swap_reader();
-+		return error;
-+	}
-+
-+	offset = hib_extent_next(&sector_extents);
-+
-+	/* Now read the first swap_map_page */
-+	error = hib_bio_read_page(offset, handle.cur, 1);
-+	if (error) {
-+		release_swap_reader();
-+		return error;
-+	}
-+
-+	return error;
+ 
+-	offset = hib_extent_next(&sector_extents);
+-
+-	/* Now read the first swap_map_page */
+-	error = hib_bio_read_page(offset, handle.cur, 1);
+-	if (error) {
+-		release_swap_reader();
+-		return error;
+-	}
+-
+ 	return error;
  }
  
  int swap_read_page(void *buf, int sync)
-diff --git a/kernel/power/extents.c b/kernel/power/extents.c
-index 172322d..75d2fb4 100644
---- a/kernel/power/extents.c
-+++ b/kernel/power/extents.c
-@@ -14,6 +14,7 @@
- 
- #include <linux/slab.h>
- #include "extents.h"
-+#include "block_io.h"
- 
- int hib_extents_empty(struct hib_extent_state *pos)
  {
-@@ -123,3 +124,77 @@ void hib_extents_clear(struct hib_extent_state *pos)
- 		kfree(ext);
- 	}
+ 	sector_t offset;
+-	int error;
+ 
+ 	if (!handle.cur)
+ 		return -EINVAL;
+ 	offset = hib_extent_next(&sector_extents);
+ 	if (!offset)
+ 		return -EFAULT;
+-	error = hib_bio_read_page(offset, buf, sync);
+-	if (error)
+-		return error;
+-	if (++handle.k >= MAP_PAGE_ENTRIES) {
+-		error = hib_wait_on_bio_chain();
+-		handle.k = 0;
+-		offset = hib_extent_next(&sector_extents);
+-		if (!offset)
+-			release_swap_reader();
+-		else if (!error)
+-			error = hib_bio_read_page(offset, handle.cur, 1);
+-	}
+-	return error;
++	return hib_bio_read_page(offset, buf, sync);
  }
-+
-+int hib_extents_storage_needed(struct hib_extent_state *pos)
-+{
-+	return sizeof(int) + pos->num_extents * 2 * sizeof(unsigned long);
-+}
-+
-+int hib_extents_store(struct hib_extent_state *pos)
-+{
-+	struct rb_node *node;
-+	struct hib_extent *ext;
-+	int ret = hib_write_buffer((char *) &pos->num_extents, sizeof(int));
-+
-+	if (hib_extents_empty(pos))
-+		return 0;
-+
-+	node = rb_first(&pos->root);
-+	while (node) {
-+		ext = container_of(node, struct hib_extent, node);
-+		ret = hib_write_buffer((char *) &ext->start,
-+				2 * sizeof(unsigned long));
-+		if (ret)
-+			return ret;
-+		node = rb_next(node);
-+	}
-+
-+	return 0;
-+}
-+
-+int hib_extents_load(struct hib_extent_state *pos, int bootstrap)
-+{
-+	struct rb_node **new = &(pos->root.rb_node);
-+	struct rb_node *parent = NULL;
-+	struct hib_extent *existing, *adding;
-+	int i;
-+	int ret = hib_read_buffer((char *) &pos->num_extents, sizeof(int));
-+
-+	if (!pos->num_extents)
-+		return 0;
-+
-+	for (i = 0; i < pos->num_extents; i++) {
-+		adding = kzalloc(sizeof(struct hib_extent), GFP_KERNEL);
-+		if (!adding)
-+			return -ENOMEM;
-+
-+		ret = hib_read_buffer((char *) &adding->start,
-+				2 * sizeof(unsigned long));
-+		if (ret)
-+			return ret;
-+
-+		/*
-+		 * No need for some of the checks from inserting above -
-+		 * they were done when preparing the image.
-+		 */
-+		while (*new) {
-+			existing = container_of(*new, struct hib_extent, node);
-+			parent = *new;
-+			if (adding->end < existing->start)
-+				new = &((*new)->rb_left);
-+			else
-+				new = &((*new)->rb_right);
-+		}
-+		rb_link_node(&adding->node, parent, new);
-+		rb_insert_color(&adding->node, &pos->root);
-+
-+		if (bootstrap && !i) {
-+			hib_reset_extent_pos(&sector_extents);
-+
-+			/* We have already read the first page */
-+			hib_extent_next(&sector_extents);
-+		}
-+	}
-+
-+	return 0;
-+}
-diff --git a/kernel/power/extents.h b/kernel/power/extents.h
-index 0b69b8e..4288f9e 100644
---- a/kernel/power/extents.h
-+++ b/kernel/power/extents.h
-@@ -33,3 +33,8 @@ unsigned long hib_extent_next(struct hib_extent_state *pos);
- int hib_extents_insert(struct hib_extent_state *pos, unsigned long value);
- void hib_extents_clear(struct hib_extent_state *pos);
- int hib_extents_empty(struct hib_extent_state *pos);
-+
-+/* Serialisation support */
-+int hib_extents_storage_needed(struct hib_extent_state *pos);
-+int hib_extents_store(struct hib_extent_state *pos);
-+int hib_extents_load(struct hib_extent_state *pos, int bootstrap);
+ 
+ /* Part Page I/O functions */
 -- 
 1.7.0.4
