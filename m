@@ -1,17 +1,14 @@
-From: Tiago Marques <tiagomnm@gmail.com>
-Subject: Re: Speedstep on Celeron SU2300 - 20% more battery
-	lifetime on Windows
-Date: Sun, 3 Oct 2010 16:56:40 +0100
-Message-ID: <AANLkTin0TfOsjhXC2EHcT_1p7YhzdYCgsqhHmHx85xba__45851.1151410223$1286121472$gmane$org@mail.gmail.com>
-References: <AANLkTiktJ5Xgnsmq2je7T3Yc5Sf53Bu8vWMM1XT1V_vm@mail.gmail.com>
-	<AANLkTi==7HGa9OKUDq4cpexPpdPMKVgcXqONFL+UqmRe@mail.gmail.com>
-	<20100907152246.GA12326@srcf.ucam.org>
-	<201009071843.55783.trenn@suse.de>
+From: Nigel Cunningham <nigel@tuxonice.net>
+Subject: [PATCH 05/23] Hibernation: Add mass swap allocation
+	routine
+Date: Mon, 27 Sep 2010 15:43:40 +1000
+Message-ID: <1285566238-10966-6-git-send-email-nigel__39164.422118529$1286126282$gmane$org@tuxonice.net>
+References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201009071843.55783.trenn@suse.de>
+In-Reply-To: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,60 +18,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org, cpufreq@vger.kernel.org, discuss@lesswatts.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBTZXAgNywgMjAxMCBhdCA1OjQzIFBNLCBUaG9tYXMgUmVubmluZ2VyIDx0cmVubkBz
-dXNlLmRlPiB3cm90ZToKPiBPbiBUdWVzZGF5IDA3IFNlcHRlbWJlciAyMDEwIDE3OjIyOjQ2IE1h
-dHRoZXcgR2FycmV0dCB3cm90ZToKPj4gT24gTW9uLCBTZXAgMDYsIDIwMTAgYXQgMTA6NDc6NThQ
-TSArMDEwMCwgVGlhZ28gTWFycXVlcyB3cm90ZToKPj4KPj4gPiBZZXMsIGJ1dCBzaG91bGRuJ3Qg
-aXQgZGV0ZWN0IFAtU3RhdGVzIHdpdGggZGlmZmVyZW50IHZvbHRhZ2VzLCBhcyBpbgo+PiA+IHdp
-bmRvd3M/IChldmVuIGFzIHN0dXBpZCBhcyB0aGlzIHNvdW5kcykgSSBzdXJlIGxvdmVkIHRvIGdl
-dCBpdCBhbHdheXMKPj4gPiBzdHVjayBhdCB0aGUgbG93ZXIgY2xvY2ssIGdpdmVuIHRoYXQgSSB1
-c3VhbGx5IHBlcmZvcm0gbWFpbnRlbmFuY2Ugb24KPj4gPiBQQ3MgSSBoaWdobHkgZG91YnQgdGhl
-IGZhbiB3b3VsZCBnZXQgZHVzdCBjbG9nZ2VkIHRvIHRoZSBwb2ludCBvZgo+PiA+IHRha2luZyB0
-aGUgQ1BVIHRvIHRlbXBlcmF0dXJlcyB0aGF0IHdvdWxkIGNhdXNlIHByb2JsZW1zLgo+PiA+IFRo
-aXMgbG9va3MgbGlrZSBpdCBkb2Vzbid0IHN1cHBvcnQgU3BlZWRzdGVwIGV2ZW4gdGhvdWdoIElu
-dGVsIHNheXMgaXQKPj4gPiBkb2VzIGJ1dCB0aGUgZmFjdCBpcyB0aGF0IFdpbmRvd3MgY2FuIHdv
-cmsgd2l0aCB0d28gdm9sdGFnZXMsIHdoaWNoCj4+ID4gYWx3YXlzIGltcHJvdmVzIHBvd2VyLgo+
-Pgo+PiBJZiB0aGVyZSdzIG9ubHkgb25lIGZyZXF1ZW5jeSB0aGVuIHRoZXJlJ3Mgbm8gcmVhc29u
-IHRvIGhhdmUgbXVsdGlwbGUKPj4gdm9sdGFnZXMgLSB0aGUgdm9sdGFnZSB3aWxsIGFscmVhZHkg
-YmUgYXQgdGhlIG1pbmltdW0gcG9zc2libGUgZm9yIHRoZQo+PiBjb3JlIHRvIGJlIHN0YWJsZSBh
-dCB0aGF0IGZyZXF1ZW5jeS4gRW50ZXJpbmcgQzQgd2lsbCB0eXBpY2FsbHkgcmVzdWx0Cj4+IGlu
-IHRoZSB2b2x0YWdlIGRyb3BwaW5nIGFzIHBhcnRzIG9mIHRoZSBjb3JlIGFyZSBkaXNhYmxlZC4K
-Pj4KPj4gRG9lcyB5b3VyIGNoaXAgaGF2ZSB0aGUgImVzdCIgZmxhZyBpbiAvcHJvYy9jcHVpbmZv
-PyBJZiBub3QsIGl0IGRvZXNuJ3QKPj4gc3VwcG9ydCBzcGVlZHN0ZXAuCj4gVGhhdCBpcyBzb21l
-d2hhdCBzdHJhbmdlLiBUaGVzZSBDUFVzIHNob3cgZXN0IHN1cHBvcnQgaW4gY3B1aW5mbywgYWxz
-bwo+IGNvbXBhcmUgd2l0aCAobm90IG9ubHkgYWJvdXQgSFAsIGJ1dCBhbHNvIG90aGVyIE9FTXMp
-Ogo+IFtCdWcgMTYwNzJdIFtIUCBQYXZpbGlvbiBkbTEtMTExMGV2XSBDcHVmcmVxIGRvZXNuJ3Qg
-d29yayBhdCBhbGwgKCBJbnRlbCBDZWxlcm9uIFUyMzAwICkKPiBodHRwczovL2J1Z3ppbGxhLmtl
-cm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTE2MDcyCj4KPiBCdXQgVGlhZ28gZGlnZ2VkIG91dCBh
-biBJbnRlbCBzcGVjIHdoaWNoIHNheXMgdGhhdCB0aGUgU1UgcHJvY2Vzc29ycyBkbyBvbmx5Cj4g
-cnVuIGF0IG9uZSBmcmVxOgo+IGh0dHA6Ly93d3cuaW50ZWwuY29tL2Rlc2lnbi9tb2JpbGUvZGF0
-YXNodHMvMzIxMTExLnBkZgo+IHBhZ2UgMzAsIG5vdGUgMTAsIGF0IHRoZSB0b3Agb2YgdGhlIHBh
-Z2UuCj4KPiBJIGNvdWxkIGltYWdpbmUgY3B1aWQgc2hvdWxkIG5vdCBleHBvcnQgZXN0IGNhcGFi
-aWxpdGllcyBmb3IgdGhlc2UgYW5kCj4gY3B1ZnJlcSBkcml2ZXJzIHNob3VsZCBub3QgY29tcGxh
-aW4gdGhhdCBhbiBlc3QgY2FwYWJsZSBDUFUgaXMgZm91bmQgZm9yCj4gd2hpY2ggbm8gZnJlcXVl
-bmNpZXMgZ2V0IGV4cG9ydGVkLCBidXQgcHJvYmFibHkgb25seSBJbnRlbCBjYW4gdGVsbCBmb3IK
-PiBzdXJlLgoKSSdkIGxvdmUgaW5wdXQgb24gdGhpcywgYmVjYXVzZSB3aXRoIHRoZSBsb3dlciB2
-b2x0YWdlIGJlaW5nIHRoZXJlIEkKY291bGQgcHJvYmFibHkgZ2V0IGF3YXkgd2l0aCB1c2luZyBp
-dCBldmVuIGluIGxvYWQgdXNhZ2Ugc2luY2UgSSB0ZW5kCnRvIGtlZXAgdmVudHMgY2xlYW4gYW5k
-IHRlbXBlcmF0dXJlcyBoZXJlIGFyZW4ndCBoaWdoLiBjb3JldGVtcCBpcwpzaG93aW5nIG1lIGFy
-b3VuZCA2MMK6QyBpbiBsb2FkLiBUbyBtZSwgaGF2aW5nIGEgbG93ZXIgdm9sdGFnZSB3aGVuIHRo
-ZQpDUFUgaGFzIHRvIGNvbWUgb3V0IG9mIEM0IGludG8gQzAgaXMgYW4gYWR2YW50YWdlLCBvbmUg
-d2hpY2ggSSBob3BlIHRvCm1lYXN1cmUuIFdoZW4gaGF2aW5nIHRoZSBDUFUgcnVuIGF0IEMwIGlu
-IGxpZ2h0IGxvYWRzKDw1MCUpIHdvdWxkIGFsc28KYmUgdXNlZnVsIHRvIGhhdmUgdGhlIGxvd2Vy
-IHZvbHRhZ2UgdGhlcmUsIGtpY2tpbmcgaXQgdXAgd2hlbiB0aGUgdHdvCmNvcmVzIGFyZSArODAl
-IHRvIGtlZXAgc3RhYmlsaXR5IGluIGNoZWNrIHdpdGggdGhlIHRlbXBlcmF0dXJlIHJpc2UoaWYK
-bmVlZGVkLi4uKS4gT3IgYW0gSSBjb21wbGV0ZWx5IHdyb25nIGFuZCB3aGVuIGhhdmluZyA1MCUg
-bG9hZCB0aGUgQ1BVCmFsc28gZG9lcyBhIGxvdCBvZiBDNCBpZGxpbmc/CgpUaGUgb25seSByZWFz
-b24gSSB0b29rIHRoZSBwbHVuZ2Ugd2l0aCBhIENlbGVyb24gcHJvY2Vzc29yLCBiZXNpZGVzCmJl
-aW5nIHRoZSBvbmx5IG9uZSBhdmFpbGFibGUgaW4gdGhlIERNMSBhcm91bmQgaGVyZSwgd2FzIHRo
-YXQgaXQKc3VwcG9ydGVkIEVJU1QuIEkgd291bGQgbm90IGdldCBvbmUgbGFwdG9wIHdpdGhvdXQg
-aXQsIHNvIGxldCdzIHNheSBJCndhcyBhIGJpdCBwZXJwbGV4ZWQgd2hlbiBJIHRyaWVkIHRvIGdl
-dCBpdCB0byBydW4gYW5kIGZhaWxlZC4KCkJlc3QgcmVnYXJkcywKVGlhZ28KCgo+Cj4gwqAgwqAg
-VGhvbWFzCj4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
-bGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3Jn
-Cmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51
-eC1wbQ==
+Add a routine to allocate swap from a device en masse. This is only
+for use by the in-kernel implementation, not uswsusp.
+
+Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
+---
+ kernel/power/swap.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 25090ed..e597756 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -169,6 +169,19 @@ sector_t alloc_swapdev_block(int swap)
+ 	return 0;
+ }
+ 
++int alloc_swapdev_blocks(int needed)
++{
++	int i;
++
++	for (i = 0; i < needed; i++) {
++		sector_t res = alloc_swapdev_block(root_swap);
++		if (!res)
++			break;
++	}
++
++	return i;
++}
++
+ /**
+  *	free_all_swap_pages - free swap pages allocated for saving image data.
+  *	It also frees the extents used to register which swap entries had been
+-- 
+1.7.0.4
+
