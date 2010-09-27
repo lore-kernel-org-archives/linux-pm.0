@@ -1,14 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Nigel Cunningham <nigel@tuxonice.net>
 Subject: Re: [PATCH 02/23] Record & display i/o speed post resume.
-Date: Mon, 27 Sep 2010 22:49:59 +0200
-Message-ID: <201009272249.59966.rjw__34167.5258976922$1285620994$gmane$org@sisk.pl>
+Date: Tue, 28 Sep 2010 07:05:45 +1000
+Message-ID: <4CA10729.5010001__44912.6763189726$1285621594$gmane$org@tuxonice.net>
 References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
 	<201009272206.20020.rjw@sisk.pl> <4CA0FDE8.3000601@tuxonice.net>
+	<201009272249.59966.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4CA0FDE8.3000601@tuxonice.net>
+In-Reply-To: <201009272249.59966.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,129 +19,138 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@tuxonice.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, September 27, 2010, Nigel Cunningham wrote:
-> Hi.
-> 
-> On 28/09/10 06:06, Rafael J. Wysocki wrote:
-> > On Monday, September 27, 2010, Nigel Cunningham wrote:
-> >> Record the speed at which the image is written and read, and
-> >> display it to the user post-resume.
-> >>
-> >> Signed-off-by: Nigel Cunningham<nigel@tuxonice.net>
-> >> ---
-> >>   kernel/power/hibernate.c |   11 ++++++++++-
-> >>   kernel/power/power.h     |    3 ++-
-> >>   kernel/power/swap.c      |   14 +++++++++++---
-> >>   3 files changed, 23 insertions(+), 5 deletions(-)
-> >>
-> >> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> >> index 6c9c9dc..0cd1f05 100644
-> >> --- a/kernel/power/hibernate.c
-> >> +++ b/kernel/power/hibernate.c
-> >> @@ -212,7 +212,7 @@ static void platform_recover(int platform_mode)
-> >>    *	@msg -		introductory message to print
-> >>    */
-> >>
-> >> -void swsusp_show_speed(struct timeval *start, struct timeval *stop,
-> >> +int swsusp_show_speed(struct timeval *start, struct timeval *stop,
-> >>   			unsigned nr_pages, char *msg)
-> >>   {
-> >>   	s64 elapsed_centisecs64;
-> >> @@ -231,6 +231,7 @@ void swsusp_show_speed(struct timeval *start, struct timeval *stop,
-> >>   			msg, k,
-> >>   			centisecs / 100, centisecs % 100,
-> >>   			kps / 1000, (kps % 1000) / 10);
-> >> +	return kps / 1000;
-> >>   }
-> >>
-> >>   /**
-> >> @@ -648,6 +649,14 @@ int hibernate(void)
-> >>   			power_down();
-> >>   	} else {
-> >>   		pr_debug("PM: Image restored successfully.\n");
-> >> +		if (write_speed)
-> >> +			pr_debug("PM: Image written at %u MB/s.\n",
-> >> +					(u8) write_speed);
-> >> +		write_speed = 0;
-> >> +		if (read_speed)
-> >> +			pr_debug("PM: Image read at %u MB/s.\n",
-> >> +					(u8) read_speed);
-> >> +		read_speed = 0;
-> >>   	}
-> >>
-> >>    Thaw:
-> >> diff --git a/kernel/power/power.h b/kernel/power/power.h
-> >> index 03634be..22f8607 100644
-> >> --- a/kernel/power/power.h
-> >> +++ b/kernel/power/power.h
-> >> @@ -53,6 +53,7 @@ extern int hibernation_snapshot(int platform_mode);
-> >>   extern int hibernation_restore(int platform_mode);
-> >>   extern int hibernation_platform_enter(void);
-> >>
-> >> +extern char __nosavedata write_speed, read_speed;
-> >>   #else /* !CONFIG_HIBERNATION */
-> >>
-> >>   static inline void hibernate_image_size_init(void) {}
-> >> @@ -161,7 +162,7 @@ extern int hib_wait_on_bio_chain(struct bio **bio_chain);
-> >>
-> >>   struct timeval;
-> >>   /* kernel/power/swsusp.c */
-> >> -extern void swsusp_show_speed(struct timeval *, struct timeval *,
-> >> +extern int swsusp_show_speed(struct timeval *, struct timeval *,
-> >>   				unsigned int, char *);
-> >>
-> >>   #ifdef CONFIG_SUSPEND
-> >> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-> >> index 3c01105..caf4db8 100644
-> >> --- a/kernel/power/swap.c
-> >> +++ b/kernel/power/swap.c
-> >> @@ -45,7 +45,8 @@ struct swap_map_page {
-> >>   };
-> >>
-> >>   struct swsusp_header {
-> >> -	char reserved[PAGE_SIZE - 20 - sizeof(sector_t) - sizeof(int)];
-> >> +	char reserved[PAGE_SIZE - 21 - sizeof(sector_t) - sizeof(int)];
-> >> +	char write_speed;
-> >>   	sector_t image;
-> >>   	unsigned int flags;	/* Flags to pass to the "boot" kernel */
-> >>   	char	orig_sig[10];
-> >> @@ -161,6 +162,7 @@ int swsusp_swap_in_use(void)
-> >>
-> >>   static unsigned short root_swap = 0xffff;
-> >>   struct block_device *hib_resume_bdev;
-> >> +char __nosavedata write_speed, read_speed;
-> >
-> > I really should have noticed that earlier, but I don't really like __nosavedata
-> > being used here.  In fact, it shouldn't be used at all any more, because it's
-> > meaningless on x86_64.
-> 
-> Really? Okay. When did that change?
+Hi.
 
-Well, some time ago, looks like in 2007, but the files changed and were moving
-around, so it's hard to say exactly.
+On 28/09/10 06:49, Rafael J. Wysocki wrote:
+> On Monday, September 27, 2010, Nigel Cunningham wrote:
+>> Hi.
+>>
+>> On 28/09/10 06:06, Rafael J. Wysocki wrote:
+>>> On Monday, September 27, 2010, Nigel Cunningham wrote:
+>>>> Record the speed at which the image is written and read, and
+>>>> display it to the user post-resume.
+>>>>
+>>>> Signed-off-by: Nigel Cunningham<nigel@tuxonice.net>
+>>>> ---
+>>>>    kernel/power/hibernate.c |   11 ++++++++++-
+>>>>    kernel/power/power.h     |    3 ++-
+>>>>    kernel/power/swap.c      |   14 +++++++++++---
+>>>>    3 files changed, 23 insertions(+), 5 deletions(-)
+>>>>
+>>>> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+>>>> index 6c9c9dc..0cd1f05 100644
+>>>> --- a/kernel/power/hibernate.c
+>>>> +++ b/kernel/power/hibernate.c
+>>>> @@ -212,7 +212,7 @@ static void platform_recover(int platform_mode)
+>>>>     *	@msg -		introductory message to print
+>>>>     */
+>>>>
+>>>> -void swsusp_show_speed(struct timeval *start, struct timeval *stop,
+>>>> +int swsusp_show_speed(struct timeval *start, struct timeval *stop,
+>>>>    			unsigned nr_pages, char *msg)
+>>>>    {
+>>>>    	s64 elapsed_centisecs64;
+>>>> @@ -231,6 +231,7 @@ void swsusp_show_speed(struct timeval *start, struct timeval *stop,
+>>>>    			msg, k,
+>>>>    			centisecs / 100, centisecs % 100,
+>>>>    			kps / 1000, (kps % 1000) / 10);
+>>>> +	return kps / 1000;
+>>>>    }
+>>>>
+>>>>    /**
+>>>> @@ -648,6 +649,14 @@ int hibernate(void)
+>>>>    			power_down();
+>>>>    	} else {
+>>>>    		pr_debug("PM: Image restored successfully.\n");
+>>>> +		if (write_speed)
+>>>> +			pr_debug("PM: Image written at %u MB/s.\n",
+>>>> +					(u8) write_speed);
+>>>> +		write_speed = 0;
+>>>> +		if (read_speed)
+>>>> +			pr_debug("PM: Image read at %u MB/s.\n",
+>>>> +					(u8) read_speed);
+>>>> +		read_speed = 0;
+>>>>    	}
+>>>>
+>>>>     Thaw:
+>>>> diff --git a/kernel/power/power.h b/kernel/power/power.h
+>>>> index 03634be..22f8607 100644
+>>>> --- a/kernel/power/power.h
+>>>> +++ b/kernel/power/power.h
+>>>> @@ -53,6 +53,7 @@ extern int hibernation_snapshot(int platform_mode);
+>>>>    extern int hibernation_restore(int platform_mode);
+>>>>    extern int hibernation_platform_enter(void);
+>>>>
+>>>> +extern char __nosavedata write_speed, read_speed;
+>>>>    #else /* !CONFIG_HIBERNATION */
+>>>>
+>>>>    static inline void hibernate_image_size_init(void) {}
+>>>> @@ -161,7 +162,7 @@ extern int hib_wait_on_bio_chain(struct bio **bio_chain);
+>>>>
+>>>>    struct timeval;
+>>>>    /* kernel/power/swsusp.c */
+>>>> -extern void swsusp_show_speed(struct timeval *, struct timeval *,
+>>>> +extern int swsusp_show_speed(struct timeval *, struct timeval *,
+>>>>    				unsigned int, char *);
+>>>>
+>>>>    #ifdef CONFIG_SUSPEND
+>>>> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+>>>> index 3c01105..caf4db8 100644
+>>>> --- a/kernel/power/swap.c
+>>>> +++ b/kernel/power/swap.c
+>>>> @@ -45,7 +45,8 @@ struct swap_map_page {
+>>>>    };
+>>>>
+>>>>    struct swsusp_header {
+>>>> -	char reserved[PAGE_SIZE - 20 - sizeof(sector_t) - sizeof(int)];
+>>>> +	char reserved[PAGE_SIZE - 21 - sizeof(sector_t) - sizeof(int)];
+>>>> +	char write_speed;
+>>>>    	sector_t image;
+>>>>    	unsigned int flags;	/* Flags to pass to the "boot" kernel */
+>>>>    	char	orig_sig[10];
+>>>> @@ -161,6 +162,7 @@ int swsusp_swap_in_use(void)
+>>>>
+>>>>    static unsigned short root_swap = 0xffff;
+>>>>    struct block_device *hib_resume_bdev;
+>>>> +char __nosavedata write_speed, read_speed;
+>>>
+>>> I really should have noticed that earlier, but I don't really like __nosavedata
+>>> being used here.  In fact, it shouldn't be used at all any more, because it's
+>>> meaningless on x86_64.
+>>
+>> Really? Okay. When did that change?
+>
+> Well, some time ago, looks like in 2007, but the files changed and were moving
+> around, so it's hard to say exactly.
 
-> > I'm not sure how to implement that without __nosavedata, but please don't
-> > use it.  Sorry aboiut that.
-> 
-> Well then, for now, let's drop that patch then. At least it's got us the 
-> numbers we needed to see these patches are useful. Longer term, I'll do 
-> what I do in TuxOnIce and allocate a page while writing the image, store 
-> it's location in the image header and use it the transfer information 
-> from the boot kernel to the resumed kernel. (Essentially the same thing, 
-> except without the special section).
+Hmm. Really failed to notice that one, didn't I? :)
 
-The problem is that on x86_64 the boot kernel may be completely different
-from the image kernel (different version, different configuration), so there is
-no guarantee that your page frame allocated while writing the image would be
-available to the boot kernel (it may contain the kernel code, for example).
+>>> I'm not sure how to implement that without __nosavedata, but please don't
+>>> use it.  Sorry aboiut that.
+>>
+>> Well then, for now, let's drop that patch then. At least it's got us the
+>> numbers we needed to see these patches are useful. Longer term, I'll do
+>> what I do in TuxOnIce and allocate a page while writing the image, store
+>> it's location in the image header and use it the transfer information
+>> from the boot kernel to the resumed kernel. (Essentially the same thing,
+>> except without the special section).
+>
+> The problem is that on x86_64 the boot kernel may be completely different
+> from the image kernel (different version, different configuration), so there is
+> no guarantee that your page frame allocated while writing the image would be
+> available to the boot kernel (it may contain the kernel code, for example).
+>
+> You'd really need to replace one of the image pages with  something prepared
+> while the image was being read.  For that, you'd need to allocate a page before
+> creating the image and pass its PFN in the image header.
 
-You'd really need to replace one of the image pages with  something prepared
-while the image was being read.  For that, you'd need to allocate a page before
-creating the image and pass its PFN in the image header.
+Yes - that's what I'm doing. Maybe that's why the __nosavedata changes 
+you mentioned above haven't bitten me.
 
-Thanks,
-Rafael
+Regards,
+
+Nigel
