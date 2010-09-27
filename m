@@ -1,7 +1,8 @@
 From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 03/23] Hibernation: Swap iteration functions.
-Date: Mon, 27 Sep 2010 15:43:38 +1000
-Message-ID: <1285566238-10966-4-git-send-email-nigel__36574.2361908362$1285566347$gmane$org@tuxonice.net>
+Subject: [PATCH 05/23] Hibernation: Add mass swap allocation
+	routine
+Date: Mon, 27 Sep 2010 15:43:40 +1000
+Message-ID: <1285566238-10966-6-git-send-email-nigel__14230.3970562809$1285566350$gmane$org@tuxonice.net>
 References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -20,66 +21,37 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-Add the data structure 'storage_position' and routines that allow
-a caller to iterate over swap in sector order. Note that calling
-reset_storage_pos only resets the position. next_swapdev_block
-must also be called to get the address of the first (and subsequent
-sectors).
+Add a routine to allocate swap from a device en masse. This is only
+for use by the in-kernel implementation, not uswsusp.
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 ---
- kernel/power/swap.c |   39 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 39 insertions(+), 0 deletions(-)
+ kernel/power/swap.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
 
 diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index caf4db8..4e5f6e3 100644
+index 25090ed..e597756 100644
 --- a/kernel/power/swap.c
 +++ b/kernel/power/swap.c
-@@ -68,6 +68,45 @@ struct swsusp_extent {
+@@ -169,6 +169,19 @@ sector_t alloc_swapdev_block(int swap)
+ 	return 0;
+ }
  
- static struct rb_root swsusp_extents = RB_ROOT;
- 
-+struct storage_position {
-+	struct rb_node *node;
-+	struct swsusp_extent *cur_ext;
-+	unsigned long offset;
-+};
-+
-+static struct storage_position pos;
-+
-+static void reset_storage_pos(void)
++int alloc_swapdev_blocks(int needed)
 +{
-+	pos.node = rb_first(&swsusp_extents);
++	int i;
 +
-+	if (!pos.node) {
-+		pos.cur_ext = NULL;
-+		pos.offset = 0;
-+		return;
++	for (i = 0; i < needed; i++) {
++		sector_t res = alloc_swapdev_block(root_swap);
++		if (!res)
++			break;
 +	}
 +
-+	pos.cur_ext = container_of(pos.node, struct swsusp_extent, node);
-+	pos.offset = pos.cur_ext->start;
++	return i;
 +}
 +
-+static sector_t next_swapdev_block(void)
-+{
-+	if (!pos.node)
-+		return 0;
-+
-+	if (pos.cur_ext->end >= pos.offset)
-+		return pos.offset++;
-+
-+	pos.node = rb_next(pos.node);
-+	if (!pos.node)
-+		return 0;
-+
-+	pos.cur_ext = container_of(pos.node, struct swsusp_extent, node);
-+	pos.offset = pos.cur_ext->start;
-+	return pos.offset;
-+}
-+
- static int swsusp_extents_insert(unsigned long swap_offset)
- {
- 	struct rb_node **new = &(swsusp_extents.rb_node);
+ /**
+  *	free_all_swap_pages - free swap pages allocated for saving image data.
+  *	It also frees the extents used to register which swap entries had been
 -- 
 1.7.0.4
