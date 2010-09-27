@@ -1,11 +1,11 @@
 From: Andrey Rahmatullin <wrar@altlinux.org>
 Subject: Re: [TuxOnIce-devel] Swsusp patches applied to
 	suspend-2.6#linux-next
-Date: Mon, 27 Sep 2010 12:59:46 +0600
-Message-ID: <20100927065946.GR7007@wrars-comp.wrarsdomain>
+Date: Mon, 27 Sep 2010 14:00:00 +0600
+Message-ID: <20100927080000.GA7032__29802.3682008081$1285574507$gmane$org@wrars-comp.wrarsdomain>
 References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3302568350740532480=="
+Content-Type: multipart/mixed; boundary="===============0615665045990726618=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -23,13 +23,13 @@ Cc: Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kern
 List-Id: linux-pm@vger.kernel.org
 
 
---===============3302568350740532480==
+--===============0615665045990726618==
 Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="JKGvNdIvrY8Ovf7Z"
+	protocol="application/pgp-signature"; boundary="3MwIy2ne0vdjdPXF"
 Content-Disposition: inline
 
 
---JKGvNdIvrY8Ovf7Z
+--3MwIy2ne0vdjdPXF
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
@@ -49,34 +49,34 @@ On Mon, Sep 27, 2010 at 03:43:35PM +1000, Nigel Cunningham wrote:
 > Reading speed improves from 218MB/s to around 245MB/s. I expect that
 > multithreaded writing would bring the writing (and reading) speeds back
 > up. It's on my swsusp to do list :)
-Can I test this patchset by just building for-rafael branch?
+Works here.
 
 --=20
 WBR, wRAR (ALT Linux Team)
 
---JKGvNdIvrY8Ovf7Z
+--3MwIy2ne0vdjdPXF
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQEcBAEBCAAGBQJMoEDiAAoJEOih81koZvPBl2sH/21DTU2gd+94cJz9RItfSv8z
-PGoMGXWCfOlxzJZCMfrWLSKjHe49jzhSC5F1/pAavYN9NDVjmPQm7IzP9KeFFSZO
-tkkc2+yrlUzaTXZLUbzCr6FammsvkKqCBt1cICj1u+PNAQjm+iwRr3sFnt1Ti9go
-hVDIDPT6+xvOqQI9NiYmv5d22f8aoJ6wtXf8q9jSrZz3eQskjmxc7a8vQEI/lfZa
-etIuLkQ0BBbi3bEb11SPqqlbAJZJJgICiedmLDhERD1v5hXOamakLBtQlRbwCHB7
-bS7euD5oza/3/nzDtRJFteeDVabDbAHdtzcoFWPFOslbsLs2ZX+HNJSgDJlVCmc=
-=ArQv
+iQEcBAEBCAAGBQJMoE8AAAoJEOih81koZvPByRcH/0p+Z0mB2viGwS8KLednRRVx
+t4Woi5+s3PM/i2Tc7wKVG3qEgYSxqzj7Qrm+kaYX7dq/udtv+f486/30ZKBA3IJW
+L5Ibxyz3QZ0FEBzsj19xJgRkP/Q6ffR6+1ffNGo6BUMJtSeRgoiMfB595cs5fyab
+BhNWG3Cn2szZvCC61lyvIEYjyxyGb/tVNg3u+GHUxoXcEgoMmupTpTJ3A1q3Vv1W
+WyshvhlDgo0tq6J6OW4tQ22i/VyzF3Ox0pO5QsBfbW9hkXIIRP5o9hYLPzHTtp0Z
+dJ5+3BDKwdSM8zrD4eN+yysYRBwT46/uRdDlV2YlcJHTceAEl3ghPHQU56NijbE=
+=fh0k
 -----END PGP SIGNATURE-----
 
---JKGvNdIvrY8Ovf7Z--
+--3MwIy2ne0vdjdPXF--
 
---===============3302568350740532480==
+--===============0615665045990726618==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============3302568350740532480==--
+--===============0615665045990726618==--
