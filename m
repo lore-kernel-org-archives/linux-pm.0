@@ -1,17 +1,14 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: Re: [TuxOnIce-devel] Swsusp patches applied to
-	suspend-2.6#linux-next
-Date: Mon, 27 Sep 2010 21:39:14 +1000
-Message-ID: <4CA08262.7090707__21352.8361906812$1285587595$gmane$org@tuxonice.net>
-References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
-	<20100927080000.GA7032@wrars-comp.wrarsdomain>
-	<4CA055EF.6050608@tuxonice.net>
-	<20100927111631.GA6759@wrars-comp.wrarsdomain>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: runtime: add missed
+	pm_request_autosuspend
+Date: Mon, 27 Sep 2010 09:54:45 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1009270953010.1751-100000@iolanthe.rowland.org>
+References: <1285584864-10972-1-git-send-email-tom.leiming@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100927111631.GA6759@wrars-comp.wrarsdomain>
+In-Reply-To: <1285584864-10972-1-git-send-email-tom.leiming@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,27 +18,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrey Rahmatullin <wrar@altlinux.org>
-Cc: Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+On Mon, 27 Sep 2010 tom.leiming@gmail.com wrote:
 
-On 27/09/10 21:16, Andrey Rahmatullin wrote:
-> On Mon, Sep 27, 2010 at 06:29:35PM +1000, Nigel Cunningham wrote:
->>>> On my laptop, single-threaded compression actually slows writing down from
->>>> 175MB/s to around 100-120MB/s (depending on how well the image compresses).
->>>> Reading speed improves from 218MB/s to around 245MB/s. I expect that
->>>> multithreaded writing would bring the writing (and reading) speeds back
->>>> up. It's on my swsusp to do list :)
->>> Works here.
->> What sort of speeds are you seeing?
-> [  343.549378] PM: Image written at 107 MB/s.
-> [  343.549379] PM: Image read at 205 MB/s.
-> Latest ToI (on .35; with the lzo compressor; no clue about
-> multithreadedness, though there are 4 CPUs here): I/O speed: Write 166
-> MB/s, Read 192 MB/s.
+> From: Ming Lei <tom.leiming@gmail.com>
+> 
+> Commit 5789bdd542c6bfbb662915c67bffc14198aa5dda
+> [PM / Runtime: Implement autosuspend support] introduces
+> "autosuspend" facility for runtime PM, but misses
+> helper function of pm_request_autosuspend, so add it.
 
-Cool. Thanks!
+I didn't add the helper function because I couldn't think of any 
+places where it would be needed.  Do you have an example?
 
-Nigel
+
+> --- a/include/linux/pm_runtime.h
+> +++ b/include/linux/pm_runtime.h
+> @@ -164,6 +164,11 @@ static inline int pm_request_resume(struct device *dev)
+>  	return __pm_runtime_resume(dev, RPM_ASYNC);
+>  }
+>  
+> +static inline int pm_request_autosuspend(struct device *dev)
+> +{
+> +	return __pm_runtime_suspend(dev, RPM_ASYNC | RPM_AUTO);
+> +}
+> +
+>  static inline int pm_runtime_get(struct device *dev)
+>  {
+>  	return __pm_runtime_resume(dev, RPM_GET_PUT | RPM_ASYNC);
+> 
+
+This isn't good enough.  If you provide the function then you have to 
+update the documentation file too.
+
+Alan Stern
