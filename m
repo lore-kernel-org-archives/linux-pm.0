@@ -1,13 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: runtime_pm_get_sync() from ISR with IRQs disabled?
-Date: Mon, 27 Sep 2010 22:00:49 +0200
-Message-ID: <201009272200.49330.rjw__19704.4248845943$1285617818$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1009270955080.1751-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH 02/23] Record & display i/o speed post resume.
+Date: Mon, 27 Sep 2010 22:06:19 +0200
+Message-ID: <201009272206.20020.rjw__30726.1424758055$1285618059$gmane$org@sisk.pl>
+References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
+	<1285566238-10966-3-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1009270955080.1751-100000@iolanthe.rowland.org>
+In-Reply-To: <1285566238-10966-3-git-send-email-nigel@tuxonice.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,47 +18,103 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Partha Basak <p-basak2@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: Nigel Cunningham <nigel@tuxonice.net>
+Cc: Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, September 27, 2010, Alan Stern wrote:
-> On Fri, 24 Sep 2010, Rafael J. Wysocki wrote:
+On Monday, September 27, 2010, Nigel Cunningham wrote:
+> Record the speed at which the image is written and read, and
+> display it to the user post-resume.
 > 
-> > On Friday, September 24, 2010, Kevin Hilman wrote:
-> > > Alan Stern <stern@rowland.harvard.edu> writes:
-> > > 
-> > > > On Thu, 23 Sep 2010, Kevin Hilman wrote:
-> > ...
-> > > >
-> > > > You're trying to fight the runtime-PM design instead of using it as it 
-> > > > was intended.  We already have an API for starting a resume from 
-> > > > interrupt context, and that's what you should use.
-> > > 
-> > > It may seem like I'm trying to fight the design, but I'm actually trying
-> > > to find ways to use it.  I want to use the API (and we're using it
-> > > successfully in most of our drivers now.)  The problem is only in a few
-> > > of these corner cases where using it introduces significant changes from
-> > > previous behavior like introducing long, unbounded windows for missed
-> > > interrupts.
-> > 
-> > This really sounds to me like you need _noirq() runtime PM callbacks
-> > and some framework around them.
-> > 
-> > I'm not fundamentally against that, but it will require some time to introduce,
-> > if we decide that it's really necessary.
-> > 
-> > I need to think a bit more about that, thanks for the example.
+> Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
+> ---
+>  kernel/power/hibernate.c |   11 ++++++++++-
+>  kernel/power/power.h     |    3 ++-
+>  kernel/power/swap.c      |   14 +++++++++++---
+>  3 files changed, 23 insertions(+), 5 deletions(-)
 > 
-> How about adding another flag to the dev_pm_info structure, to indicate 
-> that the runtime callbacks may be called in interrupt context?
-> 
-> Maybe that will lead to problems I haven't thought of.  But if it seems 
-> okay to you, I can code it up easily enough.
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index 6c9c9dc..0cd1f05 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -212,7 +212,7 @@ static void platform_recover(int platform_mode)
+>   *	@msg -		introductory message to print
+>   */
+>  
+> -void swsusp_show_speed(struct timeval *start, struct timeval *stop,
+> +int swsusp_show_speed(struct timeval *start, struct timeval *stop,
+>  			unsigned nr_pages, char *msg)
+>  {
+>  	s64 elapsed_centisecs64;
+> @@ -231,6 +231,7 @@ void swsusp_show_speed(struct timeval *start, struct timeval *stop,
+>  			msg, k,
+>  			centisecs / 100, centisecs % 100,
+>  			kps / 1000, (kps % 1000) / 10);
+> +	return kps / 1000;
+>  }
+>  
+>  /**
+> @@ -648,6 +649,14 @@ int hibernate(void)
+>  			power_down();
+>  	} else {
+>  		pr_debug("PM: Image restored successfully.\n");
+> +		if (write_speed)
+> +			pr_debug("PM: Image written at %u MB/s.\n",
+> +					(u8) write_speed);
+> +		write_speed = 0;
+> +		if (read_speed)
+> +			pr_debug("PM: Image read at %u MB/s.\n",
+> +					(u8) read_speed);
+> +		read_speed = 0;
+>  	}
+>  
+>   Thaw:
+> diff --git a/kernel/power/power.h b/kernel/power/power.h
+> index 03634be..22f8607 100644
+> --- a/kernel/power/power.h
+> +++ b/kernel/power/power.h
+> @@ -53,6 +53,7 @@ extern int hibernation_snapshot(int platform_mode);
+>  extern int hibernation_restore(int platform_mode);
+>  extern int hibernation_platform_enter(void);
+>  
+> +extern char __nosavedata write_speed, read_speed;
+>  #else /* !CONFIG_HIBERNATION */
+>  
+>  static inline void hibernate_image_size_init(void) {}
+> @@ -161,7 +162,7 @@ extern int hib_wait_on_bio_chain(struct bio **bio_chain);
+>  
+>  struct timeval;
+>  /* kernel/power/swsusp.c */
+> -extern void swsusp_show_speed(struct timeval *, struct timeval *,
+> +extern int swsusp_show_speed(struct timeval *, struct timeval *,
+>  				unsigned int, char *);
+>  
+>  #ifdef CONFIG_SUSPEND
+> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+> index 3c01105..caf4db8 100644
+> --- a/kernel/power/swap.c
+> +++ b/kernel/power/swap.c
+> @@ -45,7 +45,8 @@ struct swap_map_page {
+>  };
+>  
+>  struct swsusp_header {
+> -	char reserved[PAGE_SIZE - 20 - sizeof(sector_t) - sizeof(int)];
+> +	char reserved[PAGE_SIZE - 21 - sizeof(sector_t) - sizeof(int)];
+> +	char write_speed;
+>  	sector_t image;
+>  	unsigned int flags;	/* Flags to pass to the "boot" kernel */
+>  	char	orig_sig[10];
+> @@ -161,6 +162,7 @@ int swsusp_swap_in_use(void)
+>  
+>  static unsigned short root_swap = 0xffff;
+>  struct block_device *hib_resume_bdev;
+> +char __nosavedata write_speed, read_speed;
 
-Hmm.  I was thinking about adding a new RPM_ flag for that, like RPM_FASTPATH,
-telling the PM core to assume the callbacks will not sleep and that the call
-might be from interrupt handler.
+I really should have noticed that earlier, but I don't really like __nosavedata
+being used here.  In fact, it shouldn't be used at all any more, because it's
+meaningless on x86_64.
 
-Thanks,
+I'm not sure how to implement that without __nosavedata, but please don't
+use it.  Sorry aboiut that.
+
 Rafael
