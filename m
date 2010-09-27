@@ -1,57 +1,35 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: runtime: add missed
-	pm_request_autosuspend
-Date: Mon, 27 Sep 2010 09:54:45 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1009270953010.1751-100000@iolanthe.rowland.org>
-References: <1285584864-10972-1-git-send-email-tom.leiming@gmail.com>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] intel_idle: PCI quirk to prevent Lenovo Ideapad s10-3
+	boot hang
+Date: Mon, 27 Sep 2010 14:57:35 +0100
+Message-ID: <20100927135735.GA856@srcf.ucam.org>
+References: <alpine.LFD.2.00.1009242122390.8641@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1285584864-10972-1-git-send-email-tom.leiming@gmail.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ming Lei <tom.leiming@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1009242122390.8641@localhost.localdomain>
+Sender: linux-pci-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>, linux-pci@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 27 Sep 2010 tom.leiming@gmail.com wrote:
-
-> From: Ming Lei <tom.leiming@gmail.com>
+On Fri, Sep 24, 2010 at 09:26:31PM -0400, Len Brown wrote:
+> From: Len Brown <len.brown@intel.com>
 > 
-> Commit 5789bdd542c6bfbb662915c67bffc14198aa5dda
-> [PM / Runtime: Implement autosuspend support] introduces
-> "autosuspend" facility for runtime PM, but misses
-> helper function of pm_request_autosuspend, so add it.
-
-I didn't add the helper function because I couldn't think of any 
-places where it would be needed.  Do you have an example?
-
-
-> --- a/include/linux/pm_runtime.h
-> +++ b/include/linux/pm_runtime.h
-> @@ -164,6 +164,11 @@ static inline int pm_request_resume(struct device *dev)
->  	return __pm_runtime_resume(dev, RPM_ASYNC);
->  }
->  
-> +static inline int pm_request_autosuspend(struct device *dev)
-> +{
-> +	return __pm_runtime_suspend(dev, RPM_ASYNC | RPM_AUTO);
-> +}
-> +
->  static inline int pm_runtime_get(struct device *dev)
->  {
->  	return __pm_runtime_resume(dev, RPM_GET_PUT | RPM_ASYNC);
+> When the Lenovo Ideapad S10-3 is booted with HT enabled,
+> it hits a boot hang in the intel_idle driver.
 > 
+> This occurs when entering ATM-C4 for the first time,
+> unless BM_STS is first cleared.
+> 
+> acpi_idle doesn't see this because it first checks
+> and clears BM_STS, but it would hit the same hang
+> if that check were disabled.
 
-This isn't good enough.  If you provide the function then you have to 
-update the documentation file too.
+If there's hardware that expects BM_STS to be cleared, and if we've 
+previously always cleared BM_STS, shouldn't intel_idle be doing the same 
+thing?
 
-Alan Stern
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
