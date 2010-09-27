@@ -1,15 +1,15 @@
 From: Nigel Cunningham <nigel@tuxonice.net>
 Subject: Re: [TuxOnIce-devel] Swsusp patches applied to
 	suspend-2.6#linux-next
-Date: Mon, 27 Sep 2010 18:28:17 +1000
-Message-ID: <4CA055A1.6060405__8683.74854694611$1285576138$gmane$org@tuxonice.net>
+Date: Mon, 27 Sep 2010 18:29:35 +1000
+Message-ID: <4CA055EF.6050608__41035.2415674881$1285576214$gmane$org@tuxonice.net>
 References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
-	<20100927065946.GR7007@wrars-comp.wrarsdomain>
+	<20100927080000.GA7032@wrars-comp.wrarsdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100927065946.GR7007@wrars-comp.wrarsdomain>
+In-Reply-To: <20100927080000.GA7032@wrars-comp.wrarsdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,7 +25,7 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi.
 
-On 27/09/10 16:59, Andrey Rahmatullin wrote:
+On 27/09/10 18:00, Andrey Rahmatullin wrote:
 > On Mon, Sep 27, 2010 at 03:43:35PM +1000, Nigel Cunningham wrote:
 >> Hi again Rafael.
 >>
@@ -40,13 +40,11 @@ On 27/09/10 16:59, Andrey Rahmatullin wrote:
 >> Reading speed improves from 218MB/s to around 245MB/s. I expect that
 >> multithreaded writing would bring the writing (and reading) speeds back
 >> up. It's on my swsusp to do list :)
-> Can I test this patchset by just building for-rafael branch?
+> Works here.
 
-I don't have it available on git at the moment, but since you're 
-interested, I'll address that...
+Ah. You're too fast for me :)
 
-Okay. There's a new suspend-next branch in the tuxonice-head tree that 
-has what you're after.
+What sort of speeds are you seeing?
 
 Regards,
 
