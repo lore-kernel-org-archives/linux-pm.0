@@ -1,14 +1,12 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: runtime: add missed
-	pm_request_autosuspend
-Date: Mon, 27 Sep 2010 10:41:23 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1009271038410.1751-100000@iolanthe.rowland.org>
-References: <AANLkTi=aacUWSx-Z73pRyb=iXbpEG=vMhpvp-YNy8hFN@mail.gmail.com>
+From: Rajendra Nayak <rnayak@ti.com>
+Subject: [PATCH] I2C: runtime: Fix checks which make legacy
+	suspend to never get called
+Date: Mon, 27 Sep 2010 21:16:00 +0530
+Message-ID: <1285602360-21180-1-git-send-email-rnayak__5499.92866949669$1285602468$gmane$org@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=aacUWSx-Z73pRyb=iXbpEG=vMhpvp-YNy8hFN@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,59 +16,105 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ming Lei <tom.leiming@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: linux-i2c@vger.kernel.org
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Ben Dooks <ben-linux@fluff.org>, Jean Delvare <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 27 Sep 2010, Ming Lei wrote:
+For devices which are not adapted to runtime PM a call to
+pm_runtime_suspended always returns true.
 
-> 2010/9/27 Alan Stern <stern@rowland.harvard.edu>:
-> > On Mon, 27 Sep 2010 tom.leiming@gmail.com wrote:
-> >
-> >> From: Ming Lei <tom.leiming@gmail.com>
-> >>
-> >> Commit 5789bdd542c6bfbb662915c67bffc14198aa5dda
-> >> [PM / Runtime: Implement autosuspend support] introduces
-> >> "autosuspend" facility for runtime PM, but misses
-> >> helper function of pm_request_autosuspend, so add it.
-> >
-> > I didn't add the helper function because I couldn't think of any
-> > places where it would be needed. =A0Do you have an example?
-> =
+Hence the pm_runtime_suspended checks below prevent legacy
+suspend from getting called.
 
-> I add the helper function since there are the function descriptions
-> more than more in the documentation file of runtime_pm.txt, so I
-> think it is missed.
-> =
+So do a pm_runtime_suspended check only for devices with a
+dev_pm_ops populated (which hence do not rely on the legacy
+suspend)
 
-> >
-> >> --- a/include/linux/pm_runtime.h
-> >> +++ b/include/linux/pm_runtime.h
-> >> @@ -164,6 +164,11 @@ static inline int pm_request_resume(struct device=
- *dev)
-> >> =A0 =A0 =A0 return __pm_runtime_resume(dev, RPM_ASYNC);
-> >> =A0}
-> >>
-> >> +static inline int pm_request_autosuspend(struct device *dev)
-> >> +{
-> >> + =A0 =A0 return __pm_runtime_suspend(dev, RPM_ASYNC | RPM_AUTO);
-> >> +}
-> >> +
-> >> =A0static inline int pm_runtime_get(struct device *dev)
-> >> =A0{
-> >> =A0 =A0 =A0 return __pm_runtime_resume(dev, RPM_GET_PUT | RPM_ASYNC);
-> >>
-> >
-> > This isn't good enough. =A0If you provide the function then you have to
-> > update the documentation file too.
-> =
+Signed-off-by: Rajendra Nayak <rnayak@ti.com>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Ben Dooks <ben-linux@fluff.org>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Jean Delvare <khali@linux-fr.org>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>
+---
+ drivers/i2c/i2c-core.c |   44 ++++++++++++++++++++++++--------------------
+ 1 files changed, 24 insertions(+), 20 deletions(-)
 
-> You have updated the documentation file already in your patch, :-)
-
-Oops!  You're right.  My mistake, I apologize.  Guess I changed my mind =
-
-about it and then forgot partway through.  :-)
-
-Yes, the function should be added.
-
-Alan Stern
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index 6649176..712086f 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -197,11 +197,12 @@ static int i2c_device_pm_suspend(struct device *dev)
+ {
+ 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+ 
+-	if (pm_runtime_suspended(dev))
+-		return 0;
+-
+-	if (pm)
+-		return pm->suspend ? pm->suspend(dev) : 0;
++	if (pm) {
++		if (pm_runtime_suspended(dev))
++			return 0;
++		else
++			return pm->suspend ? pm->suspend(dev) : 0;
++	}
+ 
+ 	return i2c_legacy_suspend(dev, PMSG_SUSPEND);
+ }
+@@ -229,11 +230,12 @@ static int i2c_device_pm_freeze(struct device *dev)
+ {
+ 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+ 
+-	if (pm_runtime_suspended(dev))
+-		return 0;
+-
+-	if (pm)
+-		return pm->freeze ? pm->freeze(dev) : 0;
++	if (pm) {
++		if (pm_runtime_suspended(dev))
++			return 0;
++		else
++			return pm->freeze ? pm->freeze(dev) : 0;
++	}
+ 
+ 	return i2c_legacy_suspend(dev, PMSG_FREEZE);
+ }
+@@ -242,11 +244,12 @@ static int i2c_device_pm_thaw(struct device *dev)
+ {
+ 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+ 
+-	if (pm_runtime_suspended(dev))
+-		return 0;
+-
+-	if (pm)
+-		return pm->thaw ? pm->thaw(dev) : 0;
++	if (pm) {
++		if (pm_runtime_suspended(dev))
++			return 0;
++		else
++			return pm->thaw ? pm->thaw(dev) : 0;
++	}
+ 
+ 	return i2c_legacy_resume(dev);
+ }
+@@ -255,11 +258,12 @@ static int i2c_device_pm_poweroff(struct device *dev)
+ {
+ 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+ 
+-	if (pm_runtime_suspended(dev))
+-		return 0;
+-
+-	if (pm)
+-		return pm->poweroff ? pm->poweroff(dev) : 0;
++	if (pm) {
++		if (pm_runtime_suspended(dev))
++			return 0;
++		else
++			return pm->poweroff ? pm->poweroff(dev) : 0;
++	}
+ 
+ 	return i2c_legacy_suspend(dev, PMSG_HIBERNATE);
+ }
+-- 
+1.7.0.4
