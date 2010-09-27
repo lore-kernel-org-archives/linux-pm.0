@@ -1,19 +1,17 @@
-From: Don Zickus <dzickus@redhat.com>
-Subject: Re: hibernation hangs with ATA errors (lockup_detector
-	bug)
-Date: Mon, 27 Sep 2010 10:21:49 -0400
-Message-ID: <20100927142149.GV26290__805.1666002304$1285597453$gmane$org@redhat.com>
-References: <4C03C608.1040600@gmail.com> <20100601135004.GP15159@redhat.com>
-	<4C051D44.7040203@gmail.com> <20100602184459.GA15159@redhat.com>
-	<4C0B3E94.6020506@gmail.com> <4C80B338.6020701@gmail.com>
-	<20100903135613.GV4879@redhat.com> <4C9CBF4A.9060302@gmail.com>
-	<20100924191946.GS26290@redhat.com> <4C9E4DDB.6070503@gmail.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH v4] power: introduce library for
+	device-specific OPPs
+Date: Mon, 27 Sep 2010 09:25:30 -0500
+Message-ID: <4CA0A95A.4000408__29949.131064541$1285597583$gmane$org@ti.com>
+References: <1285332640-16736-1-git-send-email-nm@ti.com>
+	<20100924193742.GJ2375@linux.vnet.ibm.com>
+	<201009252255.20933.rjw@sisk.pl>
+	<20100926005636.GB3396@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4C9E4DDB.6070503@gmail.com>
+In-Reply-To: <20100926005636.GB3396@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,22 +21,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+To: "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-omap <linux-omap@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, linux-arm <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Sep 25, 2010 at 10:30:35PM +0300, Jiri Slaby wrote:
-> On 09/24/2010 10:19 PM, Don Zickus wrote:
-> > Actually there seems to have been some clean up in the cpu hotplug error
-> > handling code.  Could you remove that snippet of code and see if the
-> > problem still happens?
+Paul E. McKenney had written, on 09/25/2010 07:56 PM, the following:
+> On Sat, Sep 25, 2010 at 10:55:20PM +0200, Rafael J. Wysocki wrote:
+>> On Friday, September 24, 2010, Paul E. McKenney wrote:
+>>> On Fri, Sep 24, 2010 at 07:50:40AM -0500, Nishanth Menon wrote:
+>> ...
+>>> Looks like a good start!!!  Some questions and suggestions about RCU
+>>> usage interspersed below.
+>> ...
+>>>> + * Locking: RCU reader.
+>>>> + */
+>>>> +int opp_get_opp_count(struct device *dev)
+>>>> +{
+>>>> +	struct device_opp *dev_opp;
+>>>> +	struct opp *temp_opp;
+>>>> +	int count = 0;
+>>>> +
+>>>> +	dev_opp = find_device_opp(dev);
+>>>> +	if (IS_ERR(dev_opp))
+>>>> +		return PTR_ERR(dev_opp);
+>>>> +
+>>>> +	rcu_read_lock();
+>>>> +	list_for_each_entry_rcu(temp_opp, &dev_opp->opp_list, node) {
+>>>> +		if (temp_opp->available)
+>>>> +			count++;
+>>>> +	}
+>>>> +	rcu_read_unlock();
+>>> This one is OK as well.  You are returning a count, so if all of the
+>>> counted structures are freed at this point, no problem.  The count was
+>>> valid when it was accumulated, and the fact that it might now be obsolete
+>>> is (usually) not a problem.
+>> However, it looks like it should run rcu_read_lock() before calling
+>> find_device_opp(dev), shouldn't it?
 > 
-> The thing is I don't remember what problems exactly I had. From the
-> description I wrote, I cannot reproduce it anymore :).
+> Indeed it does appear that you are right -- good catch!!!
 > 
-> thanks for looking into that,
+> 							Thanx, Paul
+dev_opp as discussed before is safe as it is never freed 
+(find_device_opp uses it's own rcu_read_lock, the rcu_read_lock in this 
+context is for the opp list. what am I missing?
 
-ok. :-)  Let me know if it pops up again.
+ack on Paul's comments w.r.t risk on opp structures itself.. will look 
+to fix that in v5.
 
-Cheers,
-Don
+-- 
+Regards,
+Nishanth Menon
