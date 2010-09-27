@@ -1,7 +1,7 @@
 From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 04/23] Hibernation: Move root_swap declaration.
-Date: Mon, 27 Sep 2010 15:43:39 +1000
-Message-ID: <1285566238-10966-5-git-send-email-nigel__2721.41999234936$1285566345$gmane$org@tuxonice.net>
+Subject: [PATCH 03/23] Hibernation: Swap iteration functions.
+Date: Mon, 27 Sep 2010 15:43:38 +1000
+Message-ID: <1285566238-10966-4-git-send-email-nigel__36574.2361908362$1285566347$gmane$org@tuxonice.net>
 References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -20,34 +20,66 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-Move the declaration of root_swap in preparation for the
-next patch.
+Add the data structure 'storage_position' and routines that allow
+a caller to iterate over swap in sector order. Note that calling
+reset_storage_pos only resets the position. next_swapdev_block
+must also be called to get the address of the first (and subsequent
+sectors).
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 ---
- kernel/power/swap.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ kernel/power/swap.c |   39 +++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 39 insertions(+), 0 deletions(-)
 
 diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 4e5f6e3..25090ed 100644
+index caf4db8..4e5f6e3 100644
 --- a/kernel/power/swap.c
 +++ b/kernel/power/swap.c
-@@ -44,6 +44,8 @@ struct swap_map_page {
- 	sector_t next_swap;
- };
+@@ -68,6 +68,45 @@ struct swsusp_extent {
  
-+static unsigned short root_swap = 0xffff;
+ static struct rb_root swsusp_extents = RB_ROOT;
+ 
++struct storage_position {
++	struct rb_node *node;
++	struct swsusp_extent *cur_ext;
++	unsigned long offset;
++};
 +
- struct swsusp_header {
- 	char reserved[PAGE_SIZE - 21 - sizeof(sector_t) - sizeof(int)];
- 	char write_speed;
-@@ -199,7 +201,6 @@ int swsusp_swap_in_use(void)
-  * General things
-  */
- 
--static unsigned short root_swap = 0xffff;
- struct block_device *hib_resume_bdev;
- char __nosavedata write_speed, read_speed;
- 
++static struct storage_position pos;
++
++static void reset_storage_pos(void)
++{
++	pos.node = rb_first(&swsusp_extents);
++
++	if (!pos.node) {
++		pos.cur_ext = NULL;
++		pos.offset = 0;
++		return;
++	}
++
++	pos.cur_ext = container_of(pos.node, struct swsusp_extent, node);
++	pos.offset = pos.cur_ext->start;
++}
++
++static sector_t next_swapdev_block(void)
++{
++	if (!pos.node)
++		return 0;
++
++	if (pos.cur_ext->end >= pos.offset)
++		return pos.offset++;
++
++	pos.node = rb_next(pos.node);
++	if (!pos.node)
++		return 0;
++
++	pos.cur_ext = container_of(pos.node, struct swsusp_extent, node);
++	pos.offset = pos.cur_ext->start;
++	return pos.offset;
++}
++
+ static int swsusp_extents_insert(unsigned long swap_offset)
+ {
+ 	struct rb_node **new = &(swsusp_extents.rb_node);
 -- 
 1.7.0.4
