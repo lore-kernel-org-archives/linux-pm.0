@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] tracing, perf: add more power related events
-Date: Wed, 29 Sep 2010 00:05:51 +0200
-Message-ID: <201009290005.51644.rjw__37998.68661813$1285711631$gmane$org@sisk.pl>
-References: <AANLkTinUmbSUUuxUzc8++pcb9gd1CZFdyTQFrveTBXyV@mail.gmail.com>
-	<201009282322.16291.rjw@sisk.pl>
-	<AANLkTin7yoSArdMTMSxKyamMP-dk7bubPiCEgWGb6RCc@mail.gmail.com>
+Subject: Re: [PATCH] PM: runtime: add missed
+	pm_request_autosuspend
+Date: Wed, 29 Sep 2010 00:14:42 +0200
+Message-ID: <201009290014.42718.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.1009271038410.1751-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTin7yoSArdMTMSxKyamMP-dk7bubPiCEgWGb6RCc@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.1009271038410.1751-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,34 +18,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jean Pihet <jean.pihet@newoldbits.com>
-Cc: Len Brown <len.brown@intel.com>, linux-trace-users@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, arjan@infradead.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, September 28, 2010, Jean Pihet wrote:
-> Hi,
+On Monday, September 27, 2010, Alan Stern wrote:
+> On Mon, 27 Sep 2010, Ming Lei wrote:
 > 
-> On Tue, Sep 28, 2010 at 11:22 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Tuesday, September 28, 2010, Jean Pihet wrote:
-> >> Hi,
-> >
-> > Hi,
-> >
-> >> Here is what I am proposing, in reply to all your comments:
-> >>
-> >> 1) rename the events to match Thomas's proposal:
-> >>    power:power_cpu_cstate
-> >>    power:power_cpu_pstate
-> >>    power:power_cpu_sstate
-> >
-> > If that sstate thing is going to mean "suspend", then please drop it.
-> > "Suspend" is not a state, let alone a CPU state.  It is a procedure by which
-> > the (entire) system is put into a sleep state (that is not confined to CPUs).
+> > 2010/9/27 Alan Stern <stern@rowland.harvard.edu>:
+> > > On Mon, 27 Sep 2010 tom.leiming@gmail.com wrote:
+> > >
+> > >> From: Ming Lei <tom.leiming@gmail.com>
+> > >>
+> > >> Commit 5789bdd542c6bfbb662915c67bffc14198aa5dda
+> > >> [PM / Runtime: Implement autosuspend support] introduces
+> > >> "autosuspend" facility for runtime PM, but misses
+> > >> helper function of pm_request_autosuspend, so add it.
+> > >
+> > > I didn't add the helper function because I couldn't think of any
+> > > places where it would be needed.  Do you have an example?
+> > 
+> > I add the helper function since there are the function descriptions
+> > more than more in the documentation file of runtime_pm.txt, so I
+> > think it is missed.
+> > 
+> > >
+> > >> --- a/include/linux/pm_runtime.h
+> > >> +++ b/include/linux/pm_runtime.h
+> > >> @@ -164,6 +164,11 @@ static inline int pm_request_resume(struct device *dev)
+> > >>       return __pm_runtime_resume(dev, RPM_ASYNC);
+> > >>  }
+> > >>
+> > >> +static inline int pm_request_autosuspend(struct device *dev)
+> > >> +{
+> > >> +     return __pm_runtime_suspend(dev, RPM_ASYNC | RPM_AUTO);
+> > >> +}
+> > >> +
+> > >>  static inline int pm_runtime_get(struct device *dev)
+> > >>  {
+> > >>       return __pm_runtime_resume(dev, RPM_GET_PUT | RPM_ASYNC);
+> > >>
+> > >
+> > > This isn't good enough.  If you provide the function then you have to
+> > > update the documentation file too.
+> > 
+> > You have updated the documentation file already in your patch, :-)
 > 
-> Since suspend is tied to the power management of the system, is it ok
-> to rename it to e.g. power:system_suspend?
+> Oops!  You're right.  My mistake, I apologize.  Guess I changed my mind 
+> about it and then forgot partway through.  :-)
+> 
+> Yes, the function should be added.
 
-I think so.
+I applied the patch to suspend-2.6/linux-next.
 
 Thanks,
 Rafael
