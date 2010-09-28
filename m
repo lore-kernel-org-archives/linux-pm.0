@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] I2C: runtime: Fix checks which make legacy
-	suspend to never get called
-Date: Tue, 28 Sep 2010 23:45:26 +0200
-Message-ID: <201009282345.26363.rjw__37427.6326424026$1285710403$gmane$org@sisk.pl>
-References: <1285602360-21180-1-git-send-email-rnayak@ti.com>
+Subject: Re: [RFC][PATCH] PM / Hibernate: Make some boot messages
+	look less scary
+Date: Tue, 28 Sep 2010 23:51:28 +0200
+Message-ID: <201009282351.28392.rjw__22216.0180951052$1285710772$gmane$org@sisk.pl>
+References: <201009240056.41308.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1285602360-21180-1-git-send-email-rnayak@ti.com>
+In-Reply-To: <201009240056.41308.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,110 +18,100 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Rajendra Nayak <rnayak@ti.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>, Jean Delvare <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org
+To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, September 27, 2010, Rajendra Nayak wrote:
-> For devices which are not adapted to runtime PM a call to
-> pm_runtime_suspended always returns true.
+On Friday, September 24, 2010, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: PM / Hibernate: Make some boot messages look less scary
 > 
-> Hence the pm_runtime_suspended checks below prevent legacy
-> suspend from getting called.
+> The hibernate resume code checks if there is an image to resume from
+> on every boot and, if the kernel is built with CONFIG_PM_DEBUG set
+> and the image is not present, it prints some scary messages
+> suggesting there was a boot error of some sort.  Apparently, some
+> users are confused by them, so make them look less scary and adjust
+> the other hibernate resume debug messages to match them.
 > 
-> So do a pm_runtime_suspended check only for devices with a
-> dev_pm_ops populated (which hence do not rely on the legacy
-> suspend)
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Makes sense.
+OK, no one was objecting, so I applied this patch to suspend-2.6/linux-next.
 
-> Signed-off-by: Rajendra Nayak <rnayak@ti.com>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
 
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-
-> Cc: Ben Dooks <ben-linux@fluff.org>
-> Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> Cc: Jean Delvare <khali@linux-fr.org>
-> Cc: Kevin Hilman <khilman@deeprootsystems.com>
 > ---
->  drivers/i2c/i2c-core.c |   44 ++++++++++++++++++++++++--------------------
->  1 files changed, 24 insertions(+), 20 deletions(-)
+>  kernel/power/hibernate.c |   12 ++++++------
+>  kernel/power/swap.c      |    4 ++--
+>  2 files changed, 8 insertions(+), 8 deletions(-)
 > 
-> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> index 6649176..712086f 100644
-> --- a/drivers/i2c/i2c-core.c
-> +++ b/drivers/i2c/i2c-core.c
-> @@ -197,11 +197,12 @@ static int i2c_device_pm_suspend(struct device *dev)
->  {
->  	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> Index: linux-2.6/kernel/power/swap.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/power/swap.c
+> +++ linux-2.6/kernel/power/swap.c
+> @@ -929,13 +929,13 @@ put:
+>  		if (error)
+>  			blkdev_put(hib_resume_bdev, FMODE_READ);
+>  		else
+> -			pr_debug("PM: Signature found, resuming\n");
+> +			pr_debug("PM: Image signature found, resuming\n");
+>  	} else {
+>  		error = PTR_ERR(hib_resume_bdev);
+>  	}
 >  
-> -	if (pm_runtime_suspended(dev))
-> -		return 0;
-> -
-> -	if (pm)
-> -		return pm->suspend ? pm->suspend(dev) : 0;
-> +	if (pm) {
-> +		if (pm_runtime_suspended(dev))
-> +			return 0;
-> +		else
-> +			return pm->suspend ? pm->suspend(dev) : 0;
-> +	}
+>  	if (error)
+> -		pr_debug("PM: Error %d checking image file\n", error);
+> +		pr_debug("PM: Image not found (code %d)\n", error);
 >  
->  	return i2c_legacy_suspend(dev, PMSG_SUSPEND);
+>  	return error;
 >  }
-> @@ -229,11 +230,12 @@ static int i2c_device_pm_freeze(struct device *dev)
->  {
->  	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> Index: linux-2.6/kernel/power/hibernate.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/power/hibernate.c
+> +++ linux-2.6/kernel/power/hibernate.c
+> @@ -708,7 +708,7 @@ static int software_resume(void)
+>  		goto Unlock;
+>  	}
 >  
-> -	if (pm_runtime_suspended(dev))
-> -		return 0;
-> -
-> -	if (pm)
-> -		return pm->freeze ? pm->freeze(dev) : 0;
-> +	if (pm) {
-> +		if (pm_runtime_suspended(dev))
-> +			return 0;
-> +		else
-> +			return pm->freeze ? pm->freeze(dev) : 0;
-> +	}
+> -	pr_debug("PM: Checking image partition %s\n", resume_file);
+> +	pr_debug("PM: Checking hibernation image partition %s\n", resume_file);
 >  
->  	return i2c_legacy_suspend(dev, PMSG_FREEZE);
->  }
-> @@ -242,11 +244,12 @@ static int i2c_device_pm_thaw(struct device *dev)
->  {
->  	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>  	/* Check if the device is there */
+>  	swsusp_resume_device = name_to_dev_t(resume_file);
+> @@ -733,10 +733,10 @@ static int software_resume(void)
+>  	}
 >  
-> -	if (pm_runtime_suspended(dev))
-> -		return 0;
-> -
-> -	if (pm)
-> -		return pm->thaw ? pm->thaw(dev) : 0;
-> +	if (pm) {
-> +		if (pm_runtime_suspended(dev))
-> +			return 0;
-> +		else
-> +			return pm->thaw ? pm->thaw(dev) : 0;
-> +	}
+>   Check_image:
+> -	pr_debug("PM: Resume from partition %d:%d\n",
+> +	pr_debug("PM: Hibernation image partition %d:%d present\n",
+>  		MAJOR(swsusp_resume_device), MINOR(swsusp_resume_device));
 >  
->  	return i2c_legacy_resume(dev);
->  }
-> @@ -255,11 +258,12 @@ static int i2c_device_pm_poweroff(struct device *dev)
->  {
->  	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> -	pr_debug("PM: Checking hibernation image.\n");
+> +	pr_debug("PM: Looking for hibernation image.\n");
+>  	error = swsusp_check();
+>  	if (error)
+>  		goto Unlock;
+> @@ -768,14 +768,14 @@ static int software_resume(void)
+>  		goto Done;
+>  	}
 >  
-> -	if (pm_runtime_suspended(dev))
-> -		return 0;
-> -
-> -	if (pm)
-> -		return pm->poweroff ? pm->poweroff(dev) : 0;
-> +	if (pm) {
-> +		if (pm_runtime_suspended(dev))
-> +			return 0;
-> +		else
-> +			return pm->poweroff ? pm->poweroff(dev) : 0;
-> +	}
+> -	pr_debug("PM: Reading hibernation image.\n");
+> +	pr_debug("PM: Loading hibernation image.\n");
 >  
->  	return i2c_legacy_suspend(dev, PMSG_HIBERNATE);
->  }
-> 
+>  	error = swsusp_read(&flags);
+>  	swsusp_close(FMODE_READ);
+>  	if (!error)
+>  		hibernation_restore(flags & SF_PLATFORM_MODE);
+>  
+> -	printk(KERN_ERR "PM: Restore failed, recovering.\n");
+> +	printk(KERN_ERR "PM: Failed to load hibernation image, recovering.\n");
+>  	swsusp_free();
+>  	thaw_processes();
+>   Done:
+> @@ -788,7 +788,7 @@ static int software_resume(void)
+>  	/* For success case, the suspend path will release the lock */
+>   Unlock:
+>  	mutex_unlock(&pm_mutex);
+> -	pr_debug("PM: Resume from disk failed.\n");
+> +	pr_debug("PM: Hibernation image not present or could not be loaded.\n");
+>  	return error;
+>  close_finish:
+>  	swsusp_close(FMODE_READ);
