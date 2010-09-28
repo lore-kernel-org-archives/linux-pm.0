@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM / Hibernate: Make some boot messages
-	look less scary
-Date: Tue, 28 Sep 2010 23:51:28 +0200
-Message-ID: <201009282351.28392.rjw__22216.0180951052$1285710772$gmane$org@sisk.pl>
-References: <201009240056.41308.rjw@sisk.pl>
+Subject: Re: [PATCH] tracing, perf: add more power related events
+Date: Wed, 29 Sep 2010 00:05:18 +0200
+Message-ID: <201009290005.18704.rjw__21169.5466343828$1285711599$gmane$org@sisk.pl>
+References: <AANLkTinUmbSUUuxUzc8++pcb9gd1CZFdyTQFrveTBXyV@mail.gmail.com>
+	<201009282322.16291.rjw@sisk.pl> <4CA261F4.5070803@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201009240056.41308.rjw@sisk.pl>
+In-Reply-To: <4CA261F4.5070803@linux.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,100 +18,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Len Brown <len.brown@intel.com>, linux-trace-users@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Jean Pihet <jean.pihet@newoldbits.com>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, September 24, 2010, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: PM / Hibernate: Make some boot messages look less scary
+On Tuesday, September 28, 2010, Arjan van de Ven wrote:
+>   On 9/28/2010 2:22 PM, Rafael J. Wysocki wrote:
+> > On Tuesday, September 28, 2010, Jean Pihet wrote:
+> >> Hi,
+> > Hi,
+> >
+> >> Here is what I am proposing, in reply to all your comments:
+> >>
+> >> 1) rename the events to match Thomas's proposal:
+> >>     power:power_cpu_cstate
+> >>     power:power_cpu_pstate
+> >>     power:power_cpu_sstate
+> > If that sstate thing is going to mean "suspend", then please drop it.
+> > "Suspend" is not a state, let alone a CPU state.  It is a procedure by which
+> > the (entire) system is put into a sleep state (that is not confined to CPUs).
 > 
-> The hibernate resume code checks if there is an image to resume from
-> on every boot and, if the kernel is built with CONFIG_PM_DEBUG set
-> and the image is not present, it prints some scary messages
-> suggesting there was a boot error of some sort.  Apparently, some
-> users are confused by them, so make them look less scary and adjust
-> the other hibernate resume debug messages to match them.
+> there are also non-suspend S states, like S0i1 and S0i3 (supported in 
+> the current Intel "Moorestown" platform)
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> so it's slightly more complex than "just" suspend :)
 
-OK, no one was objecting, so I applied this patch to suspend-2.6/linux-next.
-
-
-> ---
->  kernel/power/hibernate.c |   12 ++++++------
->  kernel/power/swap.c      |    4 ++--
->  2 files changed, 8 insertions(+), 8 deletions(-)
-> 
-> Index: linux-2.6/kernel/power/swap.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/swap.c
-> +++ linux-2.6/kernel/power/swap.c
-> @@ -929,13 +929,13 @@ put:
->  		if (error)
->  			blkdev_put(hib_resume_bdev, FMODE_READ);
->  		else
-> -			pr_debug("PM: Signature found, resuming\n");
-> +			pr_debug("PM: Image signature found, resuming\n");
->  	} else {
->  		error = PTR_ERR(hib_resume_bdev);
->  	}
->  
->  	if (error)
-> -		pr_debug("PM: Error %d checking image file\n", error);
-> +		pr_debug("PM: Image not found (code %d)\n", error);
->  
->  	return error;
->  }
-> Index: linux-2.6/kernel/power/hibernate.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/hibernate.c
-> +++ linux-2.6/kernel/power/hibernate.c
-> @@ -708,7 +708,7 @@ static int software_resume(void)
->  		goto Unlock;
->  	}
->  
-> -	pr_debug("PM: Checking image partition %s\n", resume_file);
-> +	pr_debug("PM: Checking hibernation image partition %s\n", resume_file);
->  
->  	/* Check if the device is there */
->  	swsusp_resume_device = name_to_dev_t(resume_file);
-> @@ -733,10 +733,10 @@ static int software_resume(void)
->  	}
->  
->   Check_image:
-> -	pr_debug("PM: Resume from partition %d:%d\n",
-> +	pr_debug("PM: Hibernation image partition %d:%d present\n",
->  		MAJOR(swsusp_resume_device), MINOR(swsusp_resume_device));
->  
-> -	pr_debug("PM: Checking hibernation image.\n");
-> +	pr_debug("PM: Looking for hibernation image.\n");
->  	error = swsusp_check();
->  	if (error)
->  		goto Unlock;
-> @@ -768,14 +768,14 @@ static int software_resume(void)
->  		goto Done;
->  	}
->  
-> -	pr_debug("PM: Reading hibernation image.\n");
-> +	pr_debug("PM: Loading hibernation image.\n");
->  
->  	error = swsusp_read(&flags);
->  	swsusp_close(FMODE_READ);
->  	if (!error)
->  		hibernation_restore(flags & SF_PLATFORM_MODE);
->  
-> -	printk(KERN_ERR "PM: Restore failed, recovering.\n");
-> +	printk(KERN_ERR "PM: Failed to load hibernation image, recovering.\n");
->  	swsusp_free();
->  	thaw_processes();
->   Done:
-> @@ -788,7 +788,7 @@ static int software_resume(void)
->  	/* For success case, the suspend path will release the lock */
->   Unlock:
->  	mutex_unlock(&pm_mutex);
-> -	pr_debug("PM: Resume from disk failed.\n");
-> +	pr_debug("PM: Hibernation image not present or could not be loaded.\n");
->  	return error;
->  close_finish:
->  	swsusp_close(FMODE_READ);
+That's exactly why I used the conditional above. :-)
