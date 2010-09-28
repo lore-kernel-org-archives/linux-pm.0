@@ -1,90 +1,395 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: runtime_pm_get_sync() from ISR with IRQs disabled?
-Date: Tue, 28 Sep 2010 10:55:32 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1009281033230.17050-100000__18376.4345747933$1285685891$gmane$org@iolanthe.rowland.org>
-References: <201009272309.22530.rjw@sisk.pl>
+From: Len Brown <lenb@kernel.org>
+Subject: x86_energy_perf_policy.c
+Date: Tue, 28 Sep 2010 12:17:06 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1009281143070.14962@localhost.localdomain>
+References: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201009272309.22530.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Partha Basak <p-basak2@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-reply-to: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linux Power Management List <linux-pm@lists.osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, x86@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 27 Sep 2010, Rafael J. Wysocki wrote:
+/* In June, I proposed /sys/power/policy_preference
+to consolidate the knobs that user-space needs to turn
+to tell the kernel its performance/energy preference.
 
-> On Monday, September 27, 2010, Alan Stern wrote:
-> > On Mon, 27 Sep 2010, Rafael J. Wysocki wrote:
-> > 
-> > > > How about adding another flag to the dev_pm_info structure, to indicate 
-> > > > that the runtime callbacks may be called in interrupt context?
-> > > > 
-> > > > Maybe that will lead to problems I haven't thought of.  But if it seems 
-> > > > okay to you, I can code it up easily enough.
-> > > 
-> > > Hmm.  I was thinking about adding a new RPM_ flag for that, like RPM_FASTPATH,
-> > > telling the PM core to assume the callbacks will not sleep and that the call
-> > > might be from interrupt handler.
-> > 
-> > That might appear more flexible, but is there any advantage to it?  
-> > That is, would there be a situation where the driver knows that the 
-> > next callback won't sleep but in general the callback might sleep 
-> > sometimes?  It doesn't seem very likely.
-> 
-> A flag in dev_pm_info, when set, would always make the PM core behave as
-> though the call was made from interrupt context, even if it really wasn't,
-> while the RPM_ flag would allow the driver to tell it to do that when it's
-> really necessary.  The driver always knows which calls are made from an
-> interrupt handler. :-)
+The feedback I got was that user-space doesn't want the
+kernel to consolidate anything, but instead wants the
+kernel to expose everything and user-space will be able
+to keep up with new devices and hooks, as long as
+they are sufficiently documented.
 
-On Mon, 27 Sep 2010, Kevin Hilman wrote:
+I think that past history and the current state of affairs
+suggests that user-space will come up short, but who am I to judge?
 
-> For flexibility, I like the RPM_FASTPATH approach.
-> 
-> At least in the drivers I'm currently tinkering with, most of the
-> callers can sleep.  It's only the occasional callback triggered from the
-> ISR that can't sleep.
-> 
-> During this "normal" (non-ISR) usage, there might very well be
-> concurrent or pending requests, some of which might have to sleep.  So,
-> I think it's best to have the fastpath settable on a per-caller basis.
+So here is a utility to implement the user-space
+approach for Intel's new ENERGY_PERFR_BIAS MSR.
+(You'll see it on some Westmere, and all Sandy Bridge processors)
 
-The RPM_FASTPATH approach turns out not to be viable.  It clearly
-implies that some calls will be made with the flag and some calls will
-be made without.  This can lead to incorrect behavior.
+The utility translates the words "powersave",
+"normal", or "performance" into the right bits for
+this register, and scribbles on /dev/cpu/*/msr,
+as appropriate.
 
-Here's what can happen.  Suppose the device is at low power and CPU 1
-calls pm_runtime_resume without using the new flag.  An instant later,
-a remote wakeup interrupt arrives and the interrupt handler on CPU 2
-calls pm_runtime_resume with the new flag set.
+I'll be delighted to re-implement this in a different way
+if consensus emerges that a better way exists.
 
-Since CPU 1 has changed the status to RPM_RESUMING, CPU 2 has to wait
-until the resume has completed, and since CPU 2 is in_interrupt, it has
-to busy-wait.  But the process it's waiting for is running on CPU 1
-with interrupts enabled and so can block for an arbitrarily long time.
+thanks,
+Len Brown
+Intel Open Source Technology Center
+*/
 
-This example shows that if _any_ resume callbacks are made in_interrupt
-then they _all_ have to be made with interrupts disabled.  The same
-sort of reasoning applies to suspend callbacks (replace RPM_RESUMING 
-above with RPM_SUSPENDING).
+/*
+ * x86_energy_perf_policy -- set the energy versus performance
+ * policy preference bias on recent X86 processors.
+ */
+/*
+ * Copyright (c) 2010, Intel Corporation.
+ * Len Brown <len.brown@intel.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 
-Given this, I see no point in adding a special per-call flag.
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/resource.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <sys/time.h>
+#include <stdlib.h>
 
-There's another advantage to using a per-device flag.  Not all resume
-calls are initiated by the driver; the PM core has to start a resume on
-its own when rpm_resume sees that the device's parent is suspended.  
-When this happens, the nested resume can be carried out with interrupts
-disabled if the parent's driver supports it -- and the PM core won't
-know that unless there's a flag for it in dev_pm_info.
+unsigned int verbose;		/* set with -v */
+unsigned int read_only;		/* set with -r */
+char *progname;
+unsigned long long new_bias;
+int cpu = -1;
 
-Alan Stern
+/*
+ * Usage:
+ *
+ * -c cpu: limit action to a single CPU (default is all CPUs)
+ * -v: verbose output (can invoke more than once)
+ * -r: read-only, don't change any settings
+ *
+ *  performance
+ *	Performance is paramount.
+ *	Unwilling to sacrafice any performance
+ *	for the sake of energy saving. (hardware default)
+ *
+ *  normal
+ *	Can tolerate minor performance compromise
+ *	for potentially significant energy savings.
+ *	(reasonable default for most desktops and servers)
+ *
+ *  powersave
+ *	Can tolerate significant performance hit
+ *	to maximize energy savings.
+ *
+ * n
+ * 	a numerical value to write to the underlying MSR.
+ */
+void usage(void)
+{
+	printf("%s: [-c cpu] [-v] "
+		"(-r | 'performance' | 'normal' | 'powersave' | n)\n",
+		progname);
+}
+
+/*
+ * MSR_IA32_ENERGY_PERF_BIAS allows software to convey
+ * its policy for the relative importance of performance
+ * versus energy savings.
+ *
+ * The hardware uses this information in model-specific ways
+ * when it must choose trade-offs between performance and
+ * energy consumption.
+ *
+ * This policy hint does not supercede Processor Performance states
+ * (P-states) or CPU Idle power states (C-states), but allows
+ * software to have influence where it has been unable to
+ * express a preference in the past.
+ *
+ * For example, this setting may tell the hardware how
+ * aggressively or conservatively to control frequency
+ * in the "turbo range" above the explicitly OS-controlled
+ * P-state frequency range.  It may also tell the hardware
+ * how aggressively is should enter the OS requestec C-states.
+ *
+ * The support for this feature is indicated by CPUID.06H.ECX.bit3
+ * per the Intel Architectures Software Developer's Manual.
+ */
+
+#define MSR_IA32_ENERGY_PERF_BIAS	0x000001b0
+
+#define	BIAS_PERFORMANCE		0
+#define BIAS_BALANCE			6
+#define	BIAS_POWERSAVE			15
+
+cmdline(int argc, char **argv) {
+	int opt;
+
+	progname = argv[0];
+
+	while((opt = getopt(argc, argv, "+rvc:")) != -1) {
+		switch (opt) {
+		case 'c':
+			cpu = atoi(optarg);
+			break;
+		case 'r':
+			read_only = 1;
+			break;
+		case 'v':
+			verbose++;
+			break;
+		default:
+			usage();
+			exit(-1);
+		}
+	}
+	/* if -r, then should be no additional optind */
+	if (read_only && (argc > optind)) {
+		usage();
+		exit(-1);
+	}
+
+	/*
+	 * if no -r , then must be one additional optind
+	 */
+	if (!read_only) {
+
+		if (argc != optind + 1 ) {
+			printf("must supply -r or policy param\n");
+			usage();
+			exit(-1);
+			}
+
+		if (!strcmp("performance", argv[optind])) {
+			new_bias = BIAS_PERFORMANCE;
+		} else if (!strcmp("normal", argv[optind])) {
+			new_bias = BIAS_BALANCE;
+		} else if (!strcmp("powersave", argv[optind])) {
+			new_bias = BIAS_POWERSAVE;
+		} else {
+			new_bias = atoll(argv[optind]);
+			if (new_bias > BIAS_POWERSAVE) {
+				usage();
+				exit(-1);
+			}
+		}
+		printf("new_bias 0x%016llx\n", new_bias);
+	}
+}
+
+/*
+ * validate_cpuid()
+ * returns on success, quietly exits on failure (make verbose with -v)
+ */
+void validate_cpuid(void) {
+	unsigned int eax, ebx, ecx, edx, max_level;
+	char brand[16];
+	unsigned int fms, family, model, stepping, ht_capable;
+
+	eax = ebx = ecx = edx = 0;
+
+	asm("cpuid" : "=a" (max_level), "=b" (ebx), "=c" (ecx), "=d" (edx) : "a" (0));
+
+	sprintf(brand, "%.4s%.4s%.4s", &ebx, &edx, &ecx);
+
+	if (strncmp(brand, "GenuineIntel", 12)) {
+		if (verbose) printf("CPUID: %s != GenuineIntel\n",
+			brand);
+		exit(-1);
+	}
+
+	asm("cpuid" : "=a" (fms), "=c" (ecx), "=d" (edx) : "a" (1) : "ebx");
+	family = (fms >> 8) & 0xf;
+	model = (fms >> 4) & 0xf;
+	stepping = fms & 0xf;
+	if (family == 6 || family == 0xf)
+		model += ((fms >> 16) & 0xf) << 4;
+
+	if (verbose > 1)
+		printf("CPUID %s %d levels family:model:stepping "
+			"0x%x:%x:%x (%d:%d:%d)\n",
+			brand, max_level, family, model, stepping, family, model, stepping);
+
+	if (!(edx & (1 << 5))) {
+		if (verbose)
+			printf("CPUID: no MSR\n");
+		exit(-1);
+	}
+
+ 	/*
+ 	 * Support for MSR_IA32_ENERGY_PERF_BIAS is indicated by CPUID.06H.ECX.bit3
+ 	 */
+	asm("cpuid" : "=a" (eax), "=b" (ebx), "=c" (ecx), "=d" (edx) : "a" (6));
+	if (verbose) printf("CPUID.06H.ECX: 0x%x\n", ecx);
+	if (!(ecx & (1 << 3))) {
+		if (verbose)
+			printf("CPUID: No MSR_IA32_ENERGY_PERF_BIAS\n");
+		exit(-1);
+	}
+	return;	/* success */
+}
+
+check_dev_msr() {
+	struct stat sb;
+
+	if (stat("/dev/cpu/0/msr", &sb)) {
+		printf("no /dev/cpu/0/msr\n");
+		printf("Try \"# modprobe msr\"\n");
+		exit(-5);
+	}
+}
+
+unsigned long long get_msr(int cpu, int offset)
+{
+	unsigned long long msr;
+	char msr_path[32];
+	int retval;
+	int fd;
+
+	sprintf(msr_path, "/dev/cpu/%d/msr", cpu);
+	fd = open(msr_path, O_RDONLY);
+	if (fd < 0) {
+		perror(msr_path);
+		exit(-1);
+	}
+
+	retval = pread(fd, &msr, sizeof msr, offset);
+
+	if (retval != sizeof msr) {
+		printf("pread cpu%d 0x%x = %d\n", cpu, offset, retval);
+		exit(-2);
+	}
+	close(fd);
+	return msr;
+}
+
+unsigned long long  put_msr(int cpu, unsigned long long new_msr, int offset)
+{
+	unsigned long long old_msr;
+	char msr_path[32];
+	int retval;
+	int fd;
+
+	sprintf(msr_path, "/dev/cpu/%d/msr", cpu);
+	fd = open(msr_path, O_RDWR);
+	if (fd < 0) {
+		perror(msr_path);
+		exit(-1);
+	}
+
+	retval = pread(fd, &old_msr, sizeof old_msr, offset);
+	if (retval != sizeof old_msr) {
+		perror("pwrite");
+		printf("pread cpu%d 0x%x = %d\n", cpu, offset, retval);
+		exit(-2);
+	}
+
+	retval = pwrite(fd, &new_msr, sizeof new_msr, offset);
+	if (retval != sizeof new_msr) {
+		perror("pwrite");
+		printf("pwrite cpu%d 0x%x = %d\n", cpu, offset, retval);
+		exit(-2);
+	}
+
+	close(fd);
+
+	return old_msr;
+}
+
+void print_msr(int cpu)
+{
+	printf("cpu%d: 0x%016llx\n", cpu, get_msr(cpu, MSR_IA32_ENERGY_PERF_BIAS));
+}
+
+void update_msr(int cpu)
+{
+	unsigned long long previous_msr;
+
+	previous_msr = put_msr(cpu, new_bias, MSR_IA32_ENERGY_PERF_BIAS);
+
+	if (verbose)
+		printf("cpu%d  msr0x%x 0x%016llx -> 0x%016llx\n",
+			cpu, MSR_IA32_ENERGY_PERF_BIAS, previous_msr, new_bias);
+
+	return;
+}
+
+char *proc_stat = "/proc/stat";
+/*
+ * run func() on every cpu in /dev/cpu
+ */
+void for_every_cpu(void (func)(int)) {
+	FILE *fp;
+	int cpu_count;
+	int retval;
+
+	fp = fopen(proc_stat, "r");
+	if (fp == NULL) {
+		perror(proc_stat);
+		exit(-1);
+	}
+
+	retval = fscanf(fp, "cpu %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d\n");
+	if (retval != 0) {
+		perror("/proc/stat format");
+		exit(-1);
+	}
+
+	for (cpu_count = 0; ;cpu_count++) {
+		int cpu;
+
+		retval = fscanf(fp, "cpu%u %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d\n", &cpu);
+		if (retval != 1)
+			return;
+
+		func(cpu);
+	}
+	fclose(fp);
+}
+
+int main(int argc, char **argv)
+{
+	cmdline(argc, argv);
+
+	if (verbose > 1)
+		printf("x86_energy_perf_policy Aug 2, 2010"
+				" - Len Brown <lenb@kernel.org>\n");
+	if (verbose > 1 && !read_only)
+		printf("new_bias %lld\n", new_bias);
+
+	validate_cpuid();
+	check_dev_msr();
+
+	if (cpu != -1) {
+		if (read_only)
+			print_msr(cpu);
+		else
+			update_msr(cpu);
+	} else {
+		if (read_only) {
+			for_every_cpu(print_msr);
+		} else {
+			for_every_cpu(update_msr);
+		}
+	}
+		
+	return 0;
+}
