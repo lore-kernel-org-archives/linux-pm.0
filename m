@@ -1,13 +1,15 @@
-From: Martin Steigerwald <Martin@lichtvoll.de>
-Subject: Re: [TuxOnIce-devel] Nigel's current for-rafael queue
-Date: Tue, 28 Sep 2010 21:45:37 +0200
-Message-ID: <201009282145.46948.Martin__33345.6905362711$1285703210$gmane$org@lichtvoll.de>
-References: <1285388224-10012-1-git-send-email-nigel@tuxonice.net>
-	(sfid-20100925_095651_884433_67642C74)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] tracing, perf: add more power related events
+Date: Tue, 28 Sep 2010 23:22:15 +0200
+Message-ID: <201009282322.16291.rjw__22749.6395390064$1285709068$gmane$org@sisk.pl>
+References: <AANLkTinUmbSUUuxUzc8++pcb9gd1CZFdyTQFrveTBXyV@mail.gmail.com>
+	<201009222049.18154.rjw@sisk.pl>
+	<AANLkTinJU5+s_1S6i4GpRuiOfsAPiL9UFtrxCCbtoumt@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3388483287195462120=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1285388224-10012-1-git-send-email-nigel@tuxonice.net>
+In-Reply-To: <AANLkTinJU5+s_1S6i4GpRuiOfsAPiL9UFtrxCCbtoumt@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,85 +17,63 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-Cc: Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: Jean Pihet <jean.pihet@newoldbits.com>
+Cc: Len Brown <len.brown@intel.com>, linux-trace-users@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
---===============3388483287195462120==
-Content-Type: multipart/signed;
-  boundary="nextPart1949636.cTmNjiBp7y";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+On Tuesday, September 28, 2010, Jean Pihet wrote:
+> Hi,
 
---nextPart1949636.cTmNjiBp7y
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Am Samstag 25 September 2010 schrieb Nigel Cunningham:
-> Hi Rafael.
+> Here is what I am proposing, in reply to all your comments:
+> 
+> 1) rename the events to match Thomas's proposal:
+>    power:power_cpu_cstate
+>    power:power_cpu_pstate
+>    power:power_cpu_sstate
 
-Hi Nigel,
+If that sstate thing is going to mean "suspend", then please drop it.
+"Suspend" is not a state, let alone a CPU state.  It is a procedure by which
+the (entire) system is put into a sleep state (that is not confined to CPUs).
 
-> Please find attached a slightly updated version of the patchset I sent
-> a few months ago. The main change is that I've prepended and additional
-> patch which lets the user see the speed at which the image is being
-> read and written. This is accomplished by recording the MB/s in a
-> single byte in the image header, and using a couple of __nosavedata
-> variables to get the data back through the atomic restore. I realise
-> the char limits us to 255MB/s at the moment. In future patches, I
-> intend to address this by storing the data in a 'proper' image header
-> (it's a real problem - TuxOnIce reads and writes on the same set up at
-> speeds around 250MB/s).
->=20
-> Results on my Dell XPS M1530, which has an SSD hard drive are:
+>    ...
+> 
+> 2) introduce a new Kconfig option CONFIG_DEPRECATED_POWER_EVENTS and
+> conditionally map a subset of the new events to the old ones for
+> backward compatibility with the existing user apps. The apps should be
+> converted to the new API asap,
+> 
+> 3) update documentation
 
-I found one issue with this patchset or more precise I think with the=20
-state of in-kernel-suspend before:
+Sounds reasonable.
 
-I accidentally booted a kernel without your patches and it didn't seem to=20
-stop on the hibernation image from the kernel with your patches. Well I=20
-let my laptop unattended for a little while, so when there has been a=20
-(short) timeout, I might have missed that message.
+> Other remarks here below:
+> 
+> On Wed, Sep 22, 2010 at 8:49 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> ...
+> > This POWER_SSTATE thing seems to be totally artificial and omap-specific.
+> >
+> > Why do you want it to be done this way?
+> >
+> > Or is the ACPI handling added in the ACPI patch?  In which case, why don't you
+> > put that power_switch_state(POWER_SSTATE, 1, 0, cpu) into
+> > kernel/power/suspend.c:suspend_enter() (and analogously for
+> > power_switch_state(POWER_SSTATE, 0, 0, cpu)).
+> The ACPI code is not using the SSTATE event.
+> Indeed inserting a tracepoint at
+> kernel/power/suspend.c:suspend_enter() is more generic. I will correct
+> this.
 
-I lost a hibernation image this way which caused successful journal replay=
-=20
-on my Ext4 filesystems.=20
+OK
 
-Does a kernel without your patches offer to reboot into the correct kernel,=
-=20
-then it finds a hibernation image from a kernel with your patches?
+> > Moreover, why is the cpu argument necessary for POWER_SSTATE at all?
+> The cpu_id parameter is present in all events prototypes. This is not
+> needed. I will correct this.
 
-If not, I think for the future it should give a warning with a quite high=20
-timeout, and offer to reboot into the right kernel.
+OK
 
-Ciao,
-=2D-=20
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
-
---nextPart1949636.cTmNjiBp7y
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkyiReIACgkQmRvqrKWZhMedSwCgtODcl0S2Mwv+qlU3V8KfA3YY
-b9oAn1eAPwnsmKX9+yVndhWpGD6A9AkB
-=CyH4
------END PGP SIGNATURE-----
-
---nextPart1949636.cTmNjiBp7y--
-
---===============3388483287195462120==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============3388483287195462120==--
+Thanks,
+Rafael
