@@ -1,15 +1,14 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 4/5] intel_idle: add missing __percpu markup
-Date: Tue, 28 Sep 2010 23:53:06 -0400
-Message-ID: <3265eba0bed7645cacd5e2cb3614d504b5ac29e6.1285732130.git.len.brown@intel.com>
-References: <1285732387-18629-1-git-send-email-lenb@kernel.org>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] tracing, perf: add more power related events
+Date: Wed, 29 Sep 2010 09:49:33 +0200
+Message-ID: <201009290949.34245.trenn__17569.102618336$1285746653$gmane$org@suse.de>
+References: <AANLkTinUmbSUUuxUzc8++pcb9gd1CZFdyTQFrveTBXyV@mail.gmail.com>
+	<201009282322.16291.rjw@sisk.pl> <4CA261F4.5070803@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1285732387-18629-1-git-send-email-lenb@kernel.org>
-In-reply-to: <4731fdcf6f7bdab3e369a3f844d4ea4d4017284d.1285732130.git.len.brown@intel.com>
-References: <4731fdcf6f7bdab3e369a3f844d4ea4d4017284d.1285732130.git.len.brown@intel.com>
+In-Reply-To: <4CA261F4.5070803@linux.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,34 +18,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, Namhyung Kim <namhyung@gmail.com>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Len Brown <len.brown@intel.com>, linux-trace-users@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, linux-perf-users@vger.kernel.org, Jean Pihet <jean.pihet@newoldbits.com>, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, linux-pm@lists.linux-foundation.org, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Namhyung Kim <namhyung@gmail.com>
+On Tuesday 28 September 2010 23:45:24 Arjan van de Ven wrote:
+>   On 9/28/2010 2:22 PM, Rafael J. Wysocki wrote:
+> > On Tuesday, September 28, 2010, Jean Pihet wrote:
+> >> Hi,
+> > Hi,
+> >
+> >> Here is what I am proposing, in reply to all your comments:
+> >>
+> >> 1) rename the events to match Thomas's proposal:
+> >>     power:power_cpu_cstate
+> >>     power:power_cpu_pstate
+> >>     power:power_cpu_sstate
+I'd not name it that X86/ACPI specific.
+    power:processor_sleep
+    power:processor_frequency
+    power:system_suspend
+This would map with X86/ACPI c/p/s states but the name would
+also match fine with ARM and other archs.
 
-intel_idle_cpuidle_devices is a percpu pointer
-but was missing __percpu markup.
+> > If that sstate thing is going to mean "suspend", then please drop
+> > it.
+> > "Suspend" is not a state, let alone a CPU state.  It is a procedure
+> > by which the (entire) system is put into a sleep state (that is not
+> > confined to CPUs).
+> 
+> there are also non-suspend S states, like S0i1 and S0i3 (supported in 
+> the current Intel "Moorestown" platform)
+> 
+> so it's slightly more complex than "just" suspend :)
+Something specific for this arch could get introduced, similar as
+Jean did for the ARM specifics, e.g.:
+power:moorestown_suspend
+Intel probably invented three names for this new technique, one
+might fit as an event name?
+Depending whether extra info needs passed through this event it
+could also use
+    power:system_suspend
+and pass a suspend state of #define S0i1 0x100, #define S0i2 0x101...
 
-Signed-off-by: Namhyung Kim <namhyung@gmail.com>
-Acked-by: Tejun Heo <tj@kernel.org>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/idle/intel_idle.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I try to find time to come up with another cleanup patch.
+I also want to look at perf timechart then where I remember some ugly
+hacks with C-state accounting and the broken state_start, state_end and 
+frequency_switch events. Hope it won't get too ugly and perf timechart 
+can support both, the old and the cleaned up events for a while.
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index a10152b..96bf380 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -83,7 +83,7 @@ static unsigned int mwait_substates;
- /* Reliable LAPIC Timer States, bit 1 for C1 etc.  */
- static unsigned int lapic_timer_reliable_states;
- 
--static struct cpuidle_device *intel_idle_cpuidle_devices;
-+static struct cpuidle_device __percpu *intel_idle_cpuidle_devices;
- static int intel_idle(struct cpuidle_device *dev, struct cpuidle_state *state);
- 
- static struct cpuidle_state *cpuidle_state_table;
--- 
-1.7.3.2.g9027fa
+    Thomas
