@@ -1,14 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM / Hibernate: Modify signature used
-	to mark swap
-Date: Thu, 30 Sep 2010 00:02:03 +0200
-Message-ID: <201009300002.03412.rjw@sisk.pl>
-References: <201009292313.23601.rjw@sisk.pl> <4CA3ADED.6090908@tuxonice.net>
+Subject: [RFC][PATCH] PM: Allow wakeup events to abort freezing
+	of tasks
+Date: Thu, 30 Sep 2010 00:16:50 +0200
+Message-ID: <201009300016.50128.rjw__6735.32698206163$1285798722$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4CA3ADED.6090908@tuxonice.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,59 +16,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@tuxonice.net>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, September 29, 2010, Nigel Cunningham wrote:
-> Hi.
-> 
-> On 30/09/10 07:13, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki<rjw@sisk.pl>
-> > Subject: PM / Hibernate: Modify signature used to mark swap
-> >
-> > Since we are adding compression to the kernel's hibernate code,
-> > change signature used by it to mark swap spaces, so that earlier
-> > kernels don't attempt to restore compressed images they cannot
-> > handle.
-> >
-> > Signed-off-by: Rafael J. Wysocki<rjw@sisk.pl>
-> > ---
-> >   kernel/power/swap.c |    6 +++---
-> >   1 file changed, 3 insertions(+), 3 deletions(-)
-> >
-> > Index: linux-2.6/kernel/power/swap.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/power/swap.c
-> > +++ linux-2.6/kernel/power/swap.c
-> > @@ -29,7 +29,7 @@
-> >
-> >   #include "power.h"
-> >
-> > -#define SWSUSP_SIG	"S1SUSPEND"
-> > +#define HIBERNATE_SIG	"LINHIB0001"
-> >
-> >   /*
-> >    *	The swap map is a data structure used for keeping track of each page
-> > @@ -195,7 +195,7 @@ static int mark_swapfiles(struct swap_ma
-> >   	if (!memcmp("SWAP-SPACE",swsusp_header->sig, 10) ||
-> >   	    !memcmp("SWAPSPACE2",swsusp_header->sig, 10)) {
-> >   		memcpy(swsusp_header->orig_sig,swsusp_header->sig, 10);
-> 
-> if no compression
-> 
-> > -		memcpy(swsusp_header->sig,SWSUSP_SIG, 10);
-> 
-> else
-> 
-> > +		memcpy(swsusp_header->sig, HIBERNATE_SIG, 10);
-> 
-> ??
-
-I thought about that, but we'll need to drop the old signature when the image
-format changes (I think it will after your patch series) anyway.  And the
-benefit is not really worth it IMO (it only affects people using the in-kernel
-hibernation on x86-64).
-
-Thanks,
-Rafael
+RnJvbTogUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPgpTdWJqZWN0OiBQTTogQWxsb3cg
+d2FrZXVwIGV2ZW50cyB0byBhYm9ydCBmcmVlemluZyBvZiB0YXNrcwoKSWYgdGhlcmUgaXMgYSB3
+YWtldXAgZXZlbnQgZHVyaW5nIHRoZSBmcmVlemluZyBvZiB0YXNrcywgc3VzcGVuZCBvcgpoaWJl
+cm5hdGlvbiB3aWxsIGZhaWwgYW55d2F5LiAgU2luY2UgdHJ5X3RvX2ZyZWV6ZV90YXNrcygpIGNh
+biB0YWtlCnVwIHRvIDIwIHNlY29uZHMgdG8gY29tcGxldGUgb3IgZmFpbCwgYWJvcnRpbmcgaXQg
+YXMgc29vbiBhcyBhIHdha2V1cApldmVudCBpcyBkZXRlY3RlZCBpbXByb3ZlcyB0aGUgd29yc3Qg
+Y2FzZSB3YWtldXAgbGF0ZW5jeS4KCkJhc2VkIG9uIGEgcGF0Y2ggZnJvbSBBcnZlIEhqw7hubmV2
+w6VnLgoKU2lnbmVkLW9mZi1ieTogUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPgotLS0K
+IGtlcm5lbC9wb3dlci9wcm9jZXNzLmMgfCAgIDExICsrKysrKysrKy0tCiAxIGZpbGUgY2hhbmdl
+ZCwgOSBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQoKSW5kZXg6IGxpbnV4LTIuNi9rZXJu
+ZWwvcG93ZXIvcHJvY2Vzcy5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2tlcm5lbC9w
+b3dlci9wcm9jZXNzLmMKKysrIGxpbnV4LTIuNi9rZXJuZWwvcG93ZXIvcHJvY2Vzcy5jCkBAIC00
+MCw2ICs0MCw3IEBAIHN0YXRpYyBpbnQgdHJ5X3RvX2ZyZWV6ZV90YXNrcyhib29sIHNpZ18KIAlz
+dHJ1Y3QgdGltZXZhbCBzdGFydCwgZW5kOwogCXU2NCBlbGFwc2VkX2NzZWNzNjQ7CiAJdW5zaWdu
+ZWQgaW50IGVsYXBzZWRfY3NlY3M7CisJYm9vbCB3YWtldXAgPSBmYWxzZTsKIAogCWRvX2dldHRp
+bWVvZmRheSgmc3RhcnQpOwogCkBAIC03OCw2ICs3OSwxMSBAQCBzdGF0aWMgaW50IHRyeV90b19m
+cmVlemVfdGFza3MoYm9vbCBzaWdfCiAJCWlmICghdG9kbyB8fCB0aW1lX2FmdGVyKGppZmZpZXMs
+IGVuZF90aW1lKSkKIAkJCWJyZWFrOwogCisJCWlmICghcG1fY2hlY2tfd2FrZXVwX2V2ZW50cygp
+KSB7CisJCQl3YWtldXAgPSB0cnVlOworCQkJYnJlYWs7CisJCX0KKwogCQkvKgogCQkgKiBXZSBu
+ZWVkIHRvIHJldHJ5LCBidXQgZmlyc3QgZ2l2ZSB0aGUgZnJlZXppbmcgdGFza3Mgc29tZQogCQkg
+KiB0aW1lIHRvIGVudGVyIHRoZSByZWdyaWdlcmF0b3IuCkBAIC05Nyw4ICsxMDMsOSBAQCBzdGF0
+aWMgaW50IHRyeV90b19mcmVlemVfdGFza3MoYm9vbCBzaWdfCiAJCSAqIGJ1dCBpdCBjbGVhbnMg
+dXAgbGVmdG92ZXIgUEZfRlJFRVpFIHJlcXVlc3RzLgogCQkgKi8KIAkJcHJpbnRrKCJcbiIpOwot
+CQlwcmludGsoS0VSTl9FUlIgIkZyZWV6aW5nIG9mIHRhc2tzIGZhaWxlZCBhZnRlciAlZC4lMDJk
+IHNlY29uZHMgIgorCQlwcmludGsoS0VSTl9FUlIgIkZyZWV6aW5nIG9mIHRhc2tzICVzIGFmdGVy
+ICVkLiUwMmQgc2Vjb25kcyAiCiAJCSAgICAgICAiKCVkIHRhc2tzIHJlZnVzaW5nIHRvIGZyZWV6
+ZSwgd3FfYnVzeT0lZCk6XG4iLAorCQkgICAgICAgd2FrZXVwID8gImFib3J0ZWQiIDogImZhaWxl
+ZCIsCiAJCSAgICAgICBlbGFwc2VkX2NzZWNzIC8gMTAwLCBlbGFwc2VkX2NzZWNzICUgMTAwLAog
+CQkgICAgICAgdG9kbyAtIHdxX2J1c3ksIHdxX2J1c3kpOwogCkBAIC0xMDcsNyArMTE0LDcgQEAg
+c3RhdGljIGludCB0cnlfdG9fZnJlZXplX3Rhc2tzKGJvb2wgc2lnXwogCQlyZWFkX2xvY2soJnRh
+c2tsaXN0X2xvY2spOwogCQlkb19lYWNoX3RocmVhZChnLCBwKSB7CiAJCQl0YXNrX2xvY2socCk7
+Ci0JCQlpZiAoZnJlZXppbmcocCkgJiYgIWZyZWV6ZXJfc2hvdWxkX3NraXAocCkpCisJCQlpZiAo
+IXdha2V1cCAmJiBmcmVlemluZyhwKSAmJiAhZnJlZXplcl9zaG91bGRfc2tpcChwKSkKIAkJCQlz
+Y2hlZF9zaG93X3Rhc2socCk7CiAJCQljYW5jZWxfZnJlZXppbmcocCk7CiAJCQl0YXNrX3VubG9j
+ayhwKTsKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGlu
+dXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0
+dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1w
+bQ==
