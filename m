@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
 Subject: idle patches for 2.6.36-rc6
-Date: Tue, 28 Sep 2010 23:47:48 -0400
-Message-ID: <1285732073-18445-1-git-send-email-lenb@kernel.org>
+Date: Tue, 28 Sep 2010 23:49:34 -0400
+Message-ID: <1285732179-18537-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,8 +19,8 @@ To: linux-pm@lists.linux-foundation.org
 Cc: --suppress-from@localhost.localdomain
 List-Id: linux-pm@vger.kernel.org
 
-Here is my idle queue for 2.6.36-rc6,
-please let me know if you have troubles with any of these patches.
+Here is my idle queue for 2.6.36-rc6
+Please let me know if you have troubles with any of these patches.
 
 thanks,
 Len Brown, Intel Open Source Technology Center
