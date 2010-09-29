@@ -1,15 +1,14 @@
-From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: Re: [PATCH] tracing, perf: add more power related events
-Date: Wed, 29 Sep 2010 11:25:43 +0200
-Message-ID: <AANLkTikmcMZhJh348vcVkPwWRyXot8m+==484tY=cEkD__31954.512515995$1285752572$gmane$org@mail.gmail.com>
-References: <AANLkTinUmbSUUuxUzc8++pcb9gd1CZFdyTQFrveTBXyV@mail.gmail.com>
-	<201009282322.16291.rjw@sisk.pl> <4CA261F4.5070803@linux.intel.com>
-	<201009290949.34245.trenn@suse.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] PM / Hibernate / x86: Change
+	RESTORE_MAGIC on x86_64
+Date: Wed, 29 Sep 2010 12:58:05 +0200
+Message-ID: <201009291258.06048.rjw__21426.4917107814$1285758133$gmane$org@sisk.pl>
+References: <201009290112.11363.rjw@sisk.pl> <4CA27A01.1080606@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201009290949.34245.trenn@suse.de>
+In-Reply-To: <4CA27A01.1080606@zytor.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,76 +18,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: Len Brown <len.brown@intel.com>, linux-trace-users@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, linux-perf-users@vger.kernel.org, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, linux-pm@lists.linux-foundation.org, arjan@infradead.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Wednesday, September 29, 2010, H. Peter Anvin wrote:
+> On 09/28/2010 04:12 PM, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > On x86_64 the configuration and version of the kernel that
+> > hibernates and creates a system image may be different from the
+> > configuration and version of the boot kernel that loads the image.
+> > So long as both these kernels are built with the same value of
+> > RESTORE_MAGIC, the image created by one of them should be
+> > successfully loaded and restored by the other one.
+> > 
+> > It wasn't necessary to modify RESTORE_MAGIC in the past, but now
+> > that we are adding compression to the in-kernel hibernate code,
+> > change the value of RESTORE_MAGIC so that earlier kernels don't
+> > try to load compressed images they can't handle.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  arch/x86/power/hibernate_64.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > Index: linux-2.6/arch/x86/power/hibernate_64.c
+> > ===================================================================
+> > --- linux-2.6.orig/arch/x86/power/hibernate_64.c
+> > +++ linux-2.6/arch/x86/power/hibernate_64.c
+> > @@ -137,7 +137,7 @@ struct restore_data_record {
+> >  	unsigned long magic;
+> >  };
+> >  
+> > -#define RESTORE_MAGIC	0x0123456789ABCDEFUL
+> > +#define RESTORE_MAGIC	0x0123456789ABCDF0UL
+> >  
+> 
+> Two issues with this:
+> 
+> a) shouldn't we only set this when the image is actually compressed?
 
-On Wed, Sep 29, 2010 at 9:49 AM, Thomas Renninger <trenn@suse.de> wrote:
-> On Tuesday 28 September 2010 23:45:24 Arjan van de Ven wrote:
->> =A0 On 9/28/2010 2:22 PM, Rafael J. Wysocki wrote:
->> > On Tuesday, September 28, 2010, Jean Pihet wrote:
->> >> Hi,
->> > Hi,
->> >
->> >> Here is what I am proposing, in reply to all your comments:
->> >>
->> >> 1) rename the events to match Thomas's proposal:
->> >> =A0 =A0 power:power_cpu_cstate
->> >> =A0 =A0 power:power_cpu_pstate
->> >> =A0 =A0 power:power_cpu_sstate
-> I'd not name it that X86/ACPI specific.
-> =A0 =A0power:processor_sleep
-> =A0 =A0power:processor_frequency
-> =A0 =A0power:system_suspend
-> This would map with X86/ACPI c/p/s states but the name would
-> also match fine with ARM and other archs.
-Good for me!
+Well, in fact, this is a workaround, because the compression happens in a
+different layer.  However, that other layer doesn't have any compatibility
+checks (at least on x86-64), other than seeing that the image metadata
+don't make sense at one point.
 
->
->> > If that sstate thing is going to mean "suspend", then please drop
->> > it.
->> > "Suspend" is not a state, let alone a CPU state. =A0It is a procedure
->> > by which the (entire) system is put into a sleep state (that is not
->> > confined to CPUs).
->>
->> there are also non-suspend S states, like S0i1 and S0i3 (supported in
->> the current Intel "Moorestown" platform)
->>
->> so it's slightly more complex than "just" suspend :)
-> Something specific for this arch could get introduced, similar as
-> Jean did for the ARM specifics, e.g.:
-> power:moorestown_suspend
-I would not introduce arch specific events. Your other proposal below
-is more generic.
+> b) using systematic magics like this is pessimal in terms of collision
+> avoidance.  It's much better to use a true random number.
+> 
+> Hence, I propose:
+> 
+> : anacreon 95 ; ranpwd -xc 16
+> 0x4ddedd3236f1e6e1
 
-> Intel probably invented three names for this new technique, one
-> might fit as an event name?
-> Depending whether extra info needs passed through this event it
-> could also use
-> =A0 =A0power:system_suspend
-> and pass a suspend state of #define S0i1 0x100, #define S0i2 0x101...
-I am OK with that.
-
->
-> I try to find time to come up with another cleanup patch.
-> I also want to look at perf timechart then where I remember some ugly
-> hacks with C-state accounting and the broken state_start, state_end and
-> frequency_switch events. Hope it won't get too ugly and perf timechart
-> can support both, the old and the cleaned up events for a while.
-About pytimechart, I think it should be updated with the support for
-the new events only. The current version is not perfect but supports
-the current events correctly. I am planning to celan up and upgrade
-that tool when the new API is out.
-
-If that could force people to upgrade to the new events API asap...
-
->
-> =A0 =A0Thomas
->
-I know you want to see real code. Let me come with a respin of the
-patch asap (it is a matter of days).
+Fine with me, although I don't expect it will be necessary to do that in
+the future.
 
 Thanks,
-Jean
+Rafael
