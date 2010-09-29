@@ -1,15 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM / Hibernate / x86: Change
-	RESTORE_MAGIC on x86_64
-Date: Wed, 29 Sep 2010 22:05:45 +0200
-Message-ID: <201009292205.45724.rjw__32946.1074820303$1285790860$gmane$org@sisk.pl>
-References: <201009290112.11363.rjw@sisk.pl> <4CA27A01.1080606@zytor.com>
-	<201009291258.06048.rjw@sisk.pl>
+Subject: [RFC][PATCH] PM / Hibernate: Modify signature used to
+	mark swap
+Date: Wed, 29 Sep 2010 23:13:23 +0200
+Message-ID: <201009292313.23601.rjw__37533.0468909398$1285794956$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201009291258.06048.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,55 +16,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, September 29, 2010, Rafael J. Wysocki wrote:
-> On Wednesday, September 29, 2010, H. Peter Anvin wrote:
-> > On 09/28/2010 04:12 PM, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > On x86_64 the configuration and version of the kernel that
-> > > hibernates and creates a system image may be different from the
-> > > configuration and version of the boot kernel that loads the image.
-> > > So long as both these kernels are built with the same value of
-> > > RESTORE_MAGIC, the image created by one of them should be
-> > > successfully loaded and restored by the other one.
-> > > 
-> > > It wasn't necessary to modify RESTORE_MAGIC in the past, but now
-> > > that we are adding compression to the in-kernel hibernate code,
-> > > change the value of RESTORE_MAGIC so that earlier kernels don't
-> > > try to load compressed images they can't handle.
-> > > 
-> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > ---
-> > >  arch/x86/power/hibernate_64.c |    2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > 
-> > > Index: linux-2.6/arch/x86/power/hibernate_64.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/arch/x86/power/hibernate_64.c
-> > > +++ linux-2.6/arch/x86/power/hibernate_64.c
-> > > @@ -137,7 +137,7 @@ struct restore_data_record {
-> > >  	unsigned long magic;
-> > >  };
-> > >  
-> > > -#define RESTORE_MAGIC	0x0123456789ABCDEFUL
-> > > +#define RESTORE_MAGIC	0x0123456789ABCDF0UL
-> > >  
-> > 
-> > Two issues with this:
-> > 
-> > a) shouldn't we only set this when the image is actually compressed?
-> 
-> Well, in fact, this is a workaround, because the compression happens in a
-> different layer.  However, that other layer doesn't have any compatibility
-> checks (at least on x86-64), other than seeing that the image metadata
-> don't make sense at one point.
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM / Hibernate: Modify signature used to mark swap
 
-Sorry, I was wrong.  This patch shouldn't be necessary, I'll send another one
-that only touches things in kernel/power.
+Since we are adding compression to the kernel's hibernate code,
+change signature used by it to mark swap spaces, so that earlier
+kernels don't attempt to restore compressed images they cannot
+handle.
 
-Thanks,
-Rafael
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/swap.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/kernel/power/swap.c
+===================================================================
+--- linux-2.6.orig/kernel/power/swap.c
++++ linux-2.6/kernel/power/swap.c
+@@ -29,7 +29,7 @@
+ 
+ #include "power.h"
+ 
+-#define SWSUSP_SIG	"S1SUSPEND"
++#define HIBERNATE_SIG	"LINHIB0001"
+ 
+ /*
+  *	The swap map is a data structure used for keeping track of each page
+@@ -195,7 +195,7 @@ static int mark_swapfiles(struct swap_ma
+ 	if (!memcmp("SWAP-SPACE",swsusp_header->sig, 10) ||
+ 	    !memcmp("SWAPSPACE2",swsusp_header->sig, 10)) {
+ 		memcpy(swsusp_header->orig_sig,swsusp_header->sig, 10);
+-		memcpy(swsusp_header->sig,SWSUSP_SIG, 10);
++		memcpy(swsusp_header->sig, HIBERNATE_SIG, 10);
+ 		swsusp_header->image = handle->first_sector;
+ 		swsusp_header->flags = flags;
+ 		error = hib_bio_write_page(swsusp_resume_block,
+@@ -916,7 +916,7 @@ int swsusp_check(void)
+ 		if (error)
+ 			goto put;
+ 
+-		if (!memcmp(SWSUSP_SIG, swsusp_header->sig, 10)) {
++		if (!memcmp(HIBERNATE_SIG, swsusp_header->sig, 10)) {
+ 			memcpy(swsusp_header->sig, swsusp_header->orig_sig, 10);
+ 			/* Reset swap signature now */
+ 			error = hib_bio_write_page(swsusp_resume_block,
