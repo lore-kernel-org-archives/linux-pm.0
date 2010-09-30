@@ -1,227 +1,44 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: add synchronous runtime interface for
-	interrupt handlers
-Date: Fri, 1 Oct 2010 00:02:19 +0200
-Message-ID: <201010010002.19204.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1009301420520.1314-100000@iolanthe.rowland.org>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] intel_idle: PCI quirk to prevent Lenovo Ideapad s10-3 boot
+ hang
+Date: Thu, 30 Sep 2010 18:14:35 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1009301810380.7033@localhost.localdomain>
+References: <alpine.LFD.2.00.1009242122390.8641@localhost.localdomain>
+ <20100927135735.GA856@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1009301420520.1314-100000@iolanthe.rowland.org>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-reply-to: <20100927135735.GA856@srcf.ucam.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>, linux-pci@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, September 30, 2010, Alan Stern wrote:
-> This patch (as1431) adds a synchronous runtime-PM interface suitable
-> for use in interrupt handlers.  Four new helper functions are defined:
+> > When the Lenovo Ideapad S10-3 is booted with HT enabled,
+> > it hits a boot hang in the intel_idle driver.
+> > 
+> > This occurs when entering ATM-C4 for the first time,
+> > unless BM_STS is first cleared.
+> > 
+> > acpi_idle doesn't see this because it first checks
+> > and clears BM_STS, but it would hit the same hang
+> > if that check were disabled.
 > 
-> 	pm_runtime_suspend_irq(), pm_runtime_resume_irq(),
-> 	pm_runtime_get_sync_irq(), pm_runtime_put_sync_irq(),
-> 
-> together with pm_runtime_callbacks_in_irq(), which subsystems use to
-> tell the PM core that the runtime callbacks should be invoked with
-> interrupts disabled.
+> If there's hardware that expects BM_STS to be cleared, and if we've 
+> previously always cleared BM_STS, shouldn't intel_idle be doing the same 
+> thing?
 
-BTW, I like some changes made by your patch that aren't really related to
-the issue at hand, so I think the patch below can be applied regardless of
-the other changes, unless I made a mistake I can see now.
+No, we don't always clear BM_STS with acpi_idle --
+we check (and clear) that bit only if the acpi tables
+tell us to do so.
 
-Thanks,
-Rafael
+BM_STS is a status bit, not a control bit.
+It is a surprise that the NM10 chip-set requires that it be cleared --
+apparently once at boot time.
 
+No, I don't want intel_idle to know about this chip-set quirk,
+and I don't want to add an IO access to the idle hot path
+if we can possibly avoid it.
 
----
- drivers/base/power/runtime.c |  123 +++++++++++++++++--------------------------
- 1 file changed, 51 insertions(+), 72 deletions(-)
-
-Index: linux-2.6/drivers/base/power/runtime.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/runtime.c
-+++ linux-2.6/drivers/base/power/runtime.c
-@@ -153,6 +153,27 @@ static int rpm_check_suspend_allowed(str
- 	return retval;
- }
- 
-+/**
-+ * rpm_callback - Run a given runtime PM callback for a given device.
-+ * @cb: Runtime PM callback to run.
-+ * @dev: Device to run the callback for.
-+ */
-+static int rpm_callback(int (*cb)(struct device *), struct device *dev)
-+	__releases(&dev->power.lock) __acquires(&dev->power.lock)
-+{
-+	int retval;
-+
-+	if (!cb)
-+		return -ENOSYS;
-+
-+	spin_unlock_irq(&dev->power.lock);
-+
-+	retval = cb(dev);
-+
-+	spin_lock_irq(&dev->power.lock);
-+
-+	return retval;
-+}
- 
- /**
-  * rpm_idle - Notify device bus type if the device can be suspended.
-@@ -167,8 +188,8 @@ static int rpm_check_suspend_allowed(str
-  * This function must be called under dev->power.lock with interrupts disabled.
-  */
- static int rpm_idle(struct device *dev, int rpmflags)
--	__releases(&dev->power.lock) __acquires(&dev->power.lock)
- {
-+	int (*callback)(struct device *);
- 	int retval;
- 
- 	retval = rpm_check_suspend_allowed(dev);
-@@ -214,26 +235,16 @@ static int rpm_idle(struct device *dev, 
- 
- 	dev->power.idle_notification = true;
- 
--	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_idle) {
--		spin_unlock_irq(&dev->power.lock);
--
--		dev->bus->pm->runtime_idle(dev);
--
--		spin_lock_irq(&dev->power.lock);
--	} else if (dev->type && dev->type->pm && dev->type->pm->runtime_idle) {
--		spin_unlock_irq(&dev->power.lock);
--
--		dev->type->pm->runtime_idle(dev);
--
--		spin_lock_irq(&dev->power.lock);
--	} else if (dev->class && dev->class->pm
--	    && dev->class->pm->runtime_idle) {
--		spin_unlock_irq(&dev->power.lock);
-+	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_idle)
-+		callback = dev->bus->pm->runtime_idle;
-+	else if (dev->type && dev->type->pm && dev->type->pm->runtime_idle)
-+		callback = dev->type->pm->runtime_idle;
-+	else if (dev->class && dev->class->pm)
-+		callback = dev->class->pm->runtime_idle;
-+	else
-+		callback = NULL;
- 
--		dev->class->pm->runtime_idle(dev);
--
--		spin_lock_irq(&dev->power.lock);
--	}
-+	rpm_callback(callback, dev);
- 
- 	dev->power.idle_notification = false;
- 	wake_up_all(&dev->power.wait_queue);
-@@ -261,6 +272,7 @@ static int rpm_idle(struct device *dev, 
- static int rpm_suspend(struct device *dev, int rpmflags)
- 	__releases(&dev->power.lock) __acquires(&dev->power.lock)
- {
-+	int (*callback)(struct device *);
- 	struct device *parent = NULL;
- 	bool notify = false;
- 	int retval;
-@@ -351,33 +363,16 @@ static int rpm_suspend(struct device *de
- 
- 	__update_runtime_status(dev, RPM_SUSPENDING);
- 
--	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend) {
--		spin_unlock_irq(&dev->power.lock);
--
--		retval = dev->bus->pm->runtime_suspend(dev);
--
--		spin_lock_irq(&dev->power.lock);
--		dev->power.runtime_error = retval;
--	} else if (dev->type && dev->type->pm
--	    && dev->type->pm->runtime_suspend) {
--		spin_unlock_irq(&dev->power.lock);
--
--		retval = dev->type->pm->runtime_suspend(dev);
--
--		spin_lock_irq(&dev->power.lock);
--		dev->power.runtime_error = retval;
--	} else if (dev->class && dev->class->pm
--	    && dev->class->pm->runtime_suspend) {
--		spin_unlock_irq(&dev->power.lock);
--
--		retval = dev->class->pm->runtime_suspend(dev);
--
--		spin_lock_irq(&dev->power.lock);
--		dev->power.runtime_error = retval;
--	} else {
--		retval = -ENOSYS;
--	}
-+	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend)
-+		callback = dev->bus->pm->runtime_suspend;
-+	else if (dev->type && dev->type->pm && dev->type->pm->runtime_suspend)
-+		callback = dev->type->pm->runtime_suspend;
-+	else if (dev->class && dev->class->pm)
-+		callback = dev->class->pm->runtime_suspend;
-+	else
-+		callback = NULL;
- 
-+	retval = rpm_callback(callback, dev);
- 	if (retval) {
- 		__update_runtime_status(dev, RPM_ACTIVE);
- 		dev->power.deferred_resume = 0;
-@@ -443,6 +438,7 @@ static int rpm_suspend(struct device *de
- static int rpm_resume(struct device *dev, int rpmflags)
- 	__releases(&dev->power.lock) __acquires(&dev->power.lock)
- {
-+	int (*callback)(struct device *);
- 	struct device *parent = NULL;
- 	int retval = 0;
- 
-@@ -563,33 +559,16 @@ static int rpm_resume(struct device *dev
- 
- 	__update_runtime_status(dev, RPM_RESUMING);
- 
--	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_resume) {
--		spin_unlock_irq(&dev->power.lock);
--
--		retval = dev->bus->pm->runtime_resume(dev);
--
--		spin_lock_irq(&dev->power.lock);
--		dev->power.runtime_error = retval;
--	} else if (dev->type && dev->type->pm
--	    && dev->type->pm->runtime_resume) {
--		spin_unlock_irq(&dev->power.lock);
--
--		retval = dev->type->pm->runtime_resume(dev);
--
--		spin_lock_irq(&dev->power.lock);
--		dev->power.runtime_error = retval;
--	} else if (dev->class && dev->class->pm
--	    && dev->class->pm->runtime_resume) {
--		spin_unlock_irq(&dev->power.lock);
--
--		retval = dev->class->pm->runtime_resume(dev);
--
--		spin_lock_irq(&dev->power.lock);
--		dev->power.runtime_error = retval;
--	} else {
--		retval = -ENOSYS;
--	}
-+	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_resume)
-+		callback = dev->bus->pm->runtime_resume;
-+	else if (dev->type && dev->type->pm && dev->type->pm->runtime_resume)
-+		callback = dev->type->pm->runtime_resume;
-+	else if (dev->class && dev->class->pm)
-+		callback = dev->class->pm->runtime_resume;
-+	else
-+		callback = NULL;
- 
-+	retval = rpm_callback(callback, dev);
- 	if (retval) {
- 		__update_runtime_status(dev, RPM_SUSPENDED);
- 		pm_runtime_cancel_pending(dev);
+thanks,
+Len Brown, Intel Open Source Technology Center
