@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 01/23] Hibernation: Split compression support
-	out.
-Date: Sat, 2 Oct 2010 00:15:10 +0200
-Message-ID: <201010020015.10749.rjw__46603.6516511396$1285971498$gmane$org@sisk.pl>
-References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
-	<201010012328.09892.rjw@sisk.pl> <4CA65684.1050500@tuxonice.net>
+Subject: [PATCH] PM / Runtime: Reduce code duplication in core
+	helper functions (was: Re: [PATCH] PM: add synchronous ...)
+Date: Sat, 2 Oct 2010 00:37:55 +0200
+Message-ID: <201010020037.55277.rjw__46321.0440394052$1285972856$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1010011011380.1813-100000@iolanthe.rowland.org>
+	<201010012314.38089.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4CA65684.1050500@tuxonice.net>
+In-Reply-To: <201010012314.38089.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,46 +19,238 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@tuxonice.net>
-Cc: Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, October 01, 2010, Nigel Cunningham wrote:
-> Hi Rafael.
-
-Hi,
-
-> On 02/10/10 07:28, Rafael J. Wysocki wrote:
-> > On Monday, September 27, 2010, Nigel Cunningham wrote:
-> >> Hi.
-> >>
-> >> On 28/09/10 06:27, Rafael J. Wysocki wrote:
-> >>> On Monday, September 27, 2010, Nigel Cunningham wrote:
-> > ...
-> >>> This one doesn't really good to me.  What I'd prefer would be to have a
-> >>> structure of "swap operations" pointers like ->start(), ->write_data(),
-> >>> ->read_data(), and ->finish() that will point to the functions in this file
-> >>> (if compression is to be used) or to the "old" swap_write_page()/swap_read_page()
-> >>> otherwise.  That would reduce the number of the
-> >>> (flags&   SF_NOCOMPRESS_MODE) checks quite substantially and will likely result
-> >>> in code that's easier to follow.
-> >>
-> >> Me too. I was heading in that direction, but not doing it in one step.
-> >> I'll happily change that.
-> >
-> > I'm still waiting for the reworked patch.  If you can submit it in a few days
-> > and it looks good, I'll include it into the pull request for 2.6.37.
+On Friday, October 01, 2010, Rafael J. Wysocki wrote:
+> On Friday, October 01, 2010, Alan Stern wrote:
+> > On Fri, 1 Oct 2010, Rafael J. Wysocki wrote:
+> > 
+> > > On Thursday, September 30, 2010, Alan Stern wrote:
+> > > > This patch (as1431) adds a synchronous runtime-PM interface suitable
+> > > > for use in interrupt handlers.  Four new helper functions are defined:
+> > > > 
+> > > > 	pm_runtime_suspend_irq(), pm_runtime_resume_irq(),
+> > > > 	pm_runtime_get_sync_irq(), pm_runtime_put_sync_irq(),
+> > > > 
+> > > > together with pm_runtime_callbacks_in_irq(), which subsystems use to
+> > > > tell the PM core that the runtime callbacks should be invoked with
+> > > > interrupts disabled.
+> > > 
+> > > BTW, I like some changes made by your patch that aren't really related to
+> > > the issue at hand, so I think the patch below can be applied regardless of
+> > > the other changes, unless I made a mistake I can see now.
+> > 
+> > It looks like a good change, but you forgot to preserve the assignments 
+> > to dev->power.runtime_error.
 > 
-> Sorry for the delay.
+> That's correct and there's a difference betwee _idle and the other cases
+> because of that.  I'll send updated patch with a changelog shortly.
 
-No biggie.
-
-> Would you be happy if, rather than reworking that patch and modifying 
-> other patches that are affected, I added a new patch to the end of the 
-> series?
-
-Not really.  That would make it difficult for other people to follow the
-changes.  Let's do things in the right order from the start. :-)
+Appended as promised.
 
 Thanks,
 Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM / Runtime: Reduce code duplication in core helper functions
+
+Reduce code duplication in rpm_idle(), rpm_suspend() and rpm_resume()
+by using local pointers to store callback addresses and moving some
+duplicated code into a separate function.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/runtime.c |  122 +++++++++++++++++++------------------------
+ 1 file changed, 54 insertions(+), 68 deletions(-)
+
+Index: linux-2.6/drivers/base/power/runtime.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/runtime.c
++++ linux-2.6/drivers/base/power/runtime.c
+@@ -153,7 +153,6 @@ static int rpm_check_suspend_allowed(str
+ 	return retval;
+ }
+ 
+-
+ /**
+  * rpm_idle - Notify device bus type if the device can be suspended.
+  * @dev: Device to notify the bus type about.
+@@ -167,8 +166,8 @@ static int rpm_check_suspend_allowed(str
+  * This function must be called under dev->power.lock with interrupts disabled.
+  */
+ static int rpm_idle(struct device *dev, int rpmflags)
+-	__releases(&dev->power.lock) __acquires(&dev->power.lock)
+ {
++	int (*callback)(struct device *);
+ 	int retval;
+ 
+ 	retval = rpm_check_suspend_allowed(dev);
+@@ -214,23 +213,19 @@ static int rpm_idle(struct device *dev, 
+ 
+ 	dev->power.idle_notification = true;
+ 
+-	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_idle) {
+-		spin_unlock_irq(&dev->power.lock);
+-
+-		dev->bus->pm->runtime_idle(dev);
+-
+-		spin_lock_irq(&dev->power.lock);
+-	} else if (dev->type && dev->type->pm && dev->type->pm->runtime_idle) {
+-		spin_unlock_irq(&dev->power.lock);
+-
+-		dev->type->pm->runtime_idle(dev);
++	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_idle)
++		callback = dev->bus->pm->runtime_idle;
++	else if (dev->type && dev->type->pm && dev->type->pm->runtime_idle)
++		callback = dev->type->pm->runtime_idle;
++	else if (dev->class && dev->class->pm)
++		callback = dev->class->pm->runtime_idle;
++	else
++		callback = NULL;
+ 
+-		spin_lock_irq(&dev->power.lock);
+-	} else if (dev->class && dev->class->pm
+-	    && dev->class->pm->runtime_idle) {
++	if (callback) {
+ 		spin_unlock_irq(&dev->power.lock);
+ 
+-		dev->class->pm->runtime_idle(dev);
++		callback(dev);
+ 
+ 		spin_lock_irq(&dev->power.lock);
+ 	}
+@@ -243,6 +238,29 @@ static int rpm_idle(struct device *dev, 
+ }
+ 
+ /**
++ * rpm_callback - Run a given runtime PM callback for a given device.
++ * @cb: Runtime PM callback to run.
++ * @dev: Device to run the callback for.
++ */
++static int rpm_callback(int (*cb)(struct device *), struct device *dev)
++	__releases(&dev->power.lock) __acquires(&dev->power.lock)
++{
++	int retval;
++
++	if (!cb)
++		return -ENOSYS;
++
++	spin_unlock_irq(&dev->power.lock);
++
++	retval = cb(dev);
++
++	spin_lock_irq(&dev->power.lock);
++	dev->power.runtime_error = retval;
++
++	return retval;
++}
++
++/**
+  * rpm_suspend - Carry out run-time suspend of given device.
+  * @dev: Device to suspend.
+  * @rpmflags: Flag bits.
+@@ -261,6 +279,7 @@ static int rpm_idle(struct device *dev, 
+ static int rpm_suspend(struct device *dev, int rpmflags)
+ 	__releases(&dev->power.lock) __acquires(&dev->power.lock)
+ {
++	int (*callback)(struct device *);
+ 	struct device *parent = NULL;
+ 	bool notify = false;
+ 	int retval;
+@@ -351,33 +370,16 @@ static int rpm_suspend(struct device *de
+ 
+ 	__update_runtime_status(dev, RPM_SUSPENDING);
+ 
+-	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend) {
+-		spin_unlock_irq(&dev->power.lock);
+-
+-		retval = dev->bus->pm->runtime_suspend(dev);
+-
+-		spin_lock_irq(&dev->power.lock);
+-		dev->power.runtime_error = retval;
+-	} else if (dev->type && dev->type->pm
+-	    && dev->type->pm->runtime_suspend) {
+-		spin_unlock_irq(&dev->power.lock);
+-
+-		retval = dev->type->pm->runtime_suspend(dev);
+-
+-		spin_lock_irq(&dev->power.lock);
+-		dev->power.runtime_error = retval;
+-	} else if (dev->class && dev->class->pm
+-	    && dev->class->pm->runtime_suspend) {
+-		spin_unlock_irq(&dev->power.lock);
+-
+-		retval = dev->class->pm->runtime_suspend(dev);
+-
+-		spin_lock_irq(&dev->power.lock);
+-		dev->power.runtime_error = retval;
+-	} else {
+-		retval = -ENOSYS;
+-	}
++	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend)
++		callback = dev->bus->pm->runtime_suspend;
++	else if (dev->type && dev->type->pm && dev->type->pm->runtime_suspend)
++		callback = dev->type->pm->runtime_suspend;
++	else if (dev->class && dev->class->pm)
++		callback = dev->class->pm->runtime_suspend;
++	else
++		callback = NULL;
+ 
++	retval = rpm_callback(callback, dev);
+ 	if (retval) {
+ 		__update_runtime_status(dev, RPM_ACTIVE);
+ 		dev->power.deferred_resume = 0;
+@@ -443,6 +445,7 @@ static int rpm_suspend(struct device *de
+ static int rpm_resume(struct device *dev, int rpmflags)
+ 	__releases(&dev->power.lock) __acquires(&dev->power.lock)
+ {
++	int (*callback)(struct device *);
+ 	struct device *parent = NULL;
+ 	int retval = 0;
+ 
+@@ -563,33 +566,16 @@ static int rpm_resume(struct device *dev
+ 
+ 	__update_runtime_status(dev, RPM_RESUMING);
+ 
+-	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_resume) {
+-		spin_unlock_irq(&dev->power.lock);
+-
+-		retval = dev->bus->pm->runtime_resume(dev);
+-
+-		spin_lock_irq(&dev->power.lock);
+-		dev->power.runtime_error = retval;
+-	} else if (dev->type && dev->type->pm
+-	    && dev->type->pm->runtime_resume) {
+-		spin_unlock_irq(&dev->power.lock);
+-
+-		retval = dev->type->pm->runtime_resume(dev);
+-
+-		spin_lock_irq(&dev->power.lock);
+-		dev->power.runtime_error = retval;
+-	} else if (dev->class && dev->class->pm
+-	    && dev->class->pm->runtime_resume) {
+-		spin_unlock_irq(&dev->power.lock);
+-
+-		retval = dev->class->pm->runtime_resume(dev);
+-
+-		spin_lock_irq(&dev->power.lock);
+-		dev->power.runtime_error = retval;
+-	} else {
+-		retval = -ENOSYS;
+-	}
++	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_resume)
++		callback = dev->bus->pm->runtime_resume;
++	else if (dev->type && dev->type->pm && dev->type->pm->runtime_resume)
++		callback = dev->type->pm->runtime_resume;
++	else if (dev->class && dev->class->pm)
++		callback = dev->class->pm->runtime_resume;
++	else
++		callback = NULL;
+ 
++	retval = rpm_callback(callback, dev);
+ 	if (retval) {
+ 		__update_runtime_status(dev, RPM_SUSPENDED);
+ 		pm_runtime_cancel_pending(dev);
