@@ -1,176 +1,155 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: Re: [PATCH] Hibernate: Implement readahead when resuming
-Date: Sun, 26 Sep 2010 07:18:28 +1000
-Message-ID: <4C9E6724.5000300__44590.100987307$1285896959$gmane$org@tuxonice.net>
-References: <1285416056-9735-1-git-send-email-nigel@tuxonice.net>
-	<1285416056-9735-2-git-send-email-nigel@tuxonice.net>
-	(sfid-20100925_155139_503661_B410FD8E)
-	<201009252102.52401.Martin@lichtvoll.de>
+From: Len Brown <lenb@kernel.org>
+Subject: [git pull request] idle patches for 2.6.36-rc6
+Date: Fri, 01 Oct 2010 01:36:03 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1010010134120.7033@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201009252102.52401.Martin@lichtvoll.de>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Martin Steigerwald <Martin@lichtvoll.de>
-Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Power Management List <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Hi Linus,
 
-On 26/09/10 05:02, Martin Steigerwald wrote:
-> Hi Nigel and Rafael,
->
-> Am Samstag 25 September 2010 schrieb Nigel Cunningham:
->> Add support for submitting reads before they're needed. This greatly
->> improves the speed of resuming:
->>
->> From
->>
->> PM: Image read at 66 MB/s.
->>
->> to
->>
->> PM: Image read at 229 MB/s.
->>
->> ...and removes the need for the sync_read flag.
->
-> So
->
-> martin@shambhala:~/Computer/Shambhala/Kernel/2.6.36/tuxonice-head>  git
-> branch -av | grep for-rafael
-> * for-rafael                      d4e7490 Hibernate: Implement readahead
-> when resuming
->    remotes/origin/for-rafael       d4e7490 Hibernate: Implement readahead
-> when resuming
->
-> martin@shambhala:~>  cat /proc/version
-> Linux version 2.6.36-rc5-tp42-hibernate-accel-vmembase-0-00135-gd4e7490-
-> dirty (martin@shambhala) (gcc version 4.4.5 20100728 (prerelease) (Debian
-> 4.4.4-8) ) #1 PREEMPT Sat Sep 25 18:02:02 CEST 2010
->
-> basically seems to work.
->
-> But
->
->> Signed-off-by: Nigel Cunningham<nigel@tuxonice.net>
->> ---
->>   kernel/power/block_io.c |   97
->> ++++++++++++++++++++++++++++++++++++++++++++--- kernel/power/power.h
->>   |    4 --
->>   kernel/power/snapshot.c |    5 --
->>   kernel/power/swap.c     |    2 -
->>   4 files changed, 91 insertions(+), 17 deletions(-)
->>
->> diff --git a/kernel/power/block_io.c b/kernel/power/block_io.c
->> index fc2e05d..5a13f80 100644
->> --- a/kernel/power/block_io.c
->> +++ b/kernel/power/block_io.c
-> [...]
->> +	if (!offset) {
->> +		printk("Offset zero - no more readahead.\n");
->> +		more_readahead =3D 0;
->> +		return 0;
->> +	}
->> +
->> +	printk("(1) Submitting readahead of sector %llu to page %p.\n",
->> +			offset, ra_page);
->
-> and
->
->> +	if (!readahead_list_head) {
->> +		printk("No readahead left. Returning -EFAULT.\n");
->>   		return -EFAULT;
->> -	return hib_bio_read_page(offset, buf, sync);
->> +	}
->> +
->> +	printk("Waiting on readahead of page %p.\n", readahead_list_head);
->
-> should be made optional - activatable via a debug switch - before this
-> gets merged, cause it displays a lots of these on resuming which takes
-> some time in itself.
+please pull from: 
 
-Oh, I'm sorry. I completely forgot about that debugging code. Removed =
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.git idle-release
 
-now. (Note that I'm rebasing and modifying this branch like a patch =
+Two regressio fixes for those cutting over to intel_idle from acpi_idle,
+both are candidates for 2.6.35.stable.
 
-series, so you will get conflicts when you pull updates).
+First, if you have a Lenovo S10-3 netbook, you could not boot.
+Second, intel_idle was not as quiet as acpi_idle on multi-core.
+Plus some low risk fluff patches to get out of the way.
 
-> I tried 5 times:
->
-> - one with just kdm started worked nicely and really rather fast!
->
-> - four with a full blown KDE 4.5.1 session with OpenGL compositing
->    - one seemed to hang prior to reinitializing the Radeon KMS DRM setup
->    - three other worked just fine
->
-> I do not think that the hang is related to your changes, Nigel. The kernel
-> remained stuck at the lower initial resolution and didn't seem to
-> initialize the radeon KMS framebuffers at 1400x1050 properly. I didn't see
-> this with 2.6.35 and userspace software suspend.
->
-> Writing and reading seems to be way faster than with userspace software
-> suspend, I didn't compare with unpatched in kernel suspend. But I do not
-> seem to get any numbers printed:
->
-> shambhala:~>  grep "Image read" /var/log/syslog
-> shambhala:~#1>  dmesg | grep "Image read"
-> shambhala:~#1>  dmesg | grep "Image writ"
-> shambhala:~#1>  grep "Image writ" /var/log/syslog
-> shambhala:~#1>
+This will update the files shown below.
 
-It uses pr_debug. Do you have CONFIG_PM_DEBUG=3Dy?
+thanks!
 
-> The machine seems to return more quickly to an usable state. Does in
-> kernel suspend save larger images? I am especially surprised as I use
-> compression with userspace software suspend which I thought should speed
-> up writing the image. It feels that in kernel suspend with patches from
-> you, Nigel, seems to outdo userspace software suspend by quite some
-> margin.
+--
+Len Brown
+Intel Open Source Technology Center
 
-All I have changed at the moment is how the image is saved. With these =
 
-patches, swap is being allocated prior to saving the image (which =
+ps. individual patches are available on linux-pm@lists.linux-foundation.org
+and a consolidated plain patch is available here:
+http://ftp.kernel.org/pub/linux/kernel/people/lenb/idle/patches/2.6.36/idle-release-2.6.36-rc6.diff.gz
 
-shouldn't itself make a huge difference in speed), and the image is =
+ drivers/acpi/processor_driver.c  |    2 +-
+ drivers/cpuidle/governors/menu.c |    2 +-
+ drivers/idle/intel_idle.c        |   20 +++++++++++++++-----
+ drivers/pci/quirks.c             |   20 ++++++++++++++++++++
+ include/linux/cpuidle.h          |    1 +
+ 5 files changed, 38 insertions(+), 7 deletions(-)
+ mode change 100755 => 100644 drivers/idle/intel_idle.c
 
-stored in a slightly different format which lets us not have to do i/o =
+through these commits:
 
-in batches. In addition (with this last patch), we submit the reads =
+Len Brown (2):
+      intel_idle: PCI quirk to prevent Lenovo Ideapad s10-3 boot hang
+      acpi_idle: add missing \n to printk
 
-before we need them.
+Lucas De Marchi (1):
+      cpuidle: Fix typos
 
-> I have a quite high setting for userspace software suspend image size:
->
->    1 # /etc/uswsusp.conf(8) -- Configuration file for s2disk/s2both=B7
->    2 resume device =3D /dev/sda2
->    3 compress =3D y
->    4 early writeout =3D y
->    5 image size =3D 1500
->    6 shutdown method =3D halt
->
-> Still the machine crawls on resume for about 30 seconds or a minute before
-> coming into a usable state. With patched in kernel suspend this wait for
-> responsivity seems to have cut down to about 10-15 seconds.
->
-> Please note: I didn't actually measure anything of this, this is just
-> subjective impressions so far. Before measuring, I think I should disable
-> those debug outputs I mentioned above ;).
->
-> The ThinkPad T42 I am testing on has 2 GiB RAM. Swap is about 4 GB.
->
-> No long term observations so far. I will report how it goes.
->
-> Thanks,
+Namhyung Kim (1):
+      intel_idle: add missing __percpu markup
 
-Thank you!
+Suresh Siddha (1):
+      intel_idle: Voluntary leave_mm before entering deeper
 
-Nigel
+Thomas Weber (1):
+      intel_idle: Change mode 755 => 644
+
+with this log:
+
+commit 6110a1f43c27b516e16d5ce8860fca50748c2a87
+Author: Suresh Siddha <suresh.b.siddha@intel.com>
+Date:   Thu Sep 30 21:19:07 2010 -0400
+
+    intel_idle: Voluntary leave_mm before entering deeper
+    
+    Avoid TLB flush IPIs for the cores in deeper c-states by voluntary leave_mm()
+    before entering into that state. CPUs tend to flush TLB in those c-states
+    anyways.
+    
+    acpi_idle does this with C3-type states, but it was not caried over
+    when intel_idle was introduced.  intel_idle can apply it
+    to C-states in addition to those that ACPI might export as C3...
+    
+    Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 9587a678fa56ea6d7f39b048f24f5d03a89bf9b3
+Merge: e9a64ed 4731fdc
+Author: Len Brown <len.brown@intel.com>
+Date:   Tue Sep 28 23:30:58 2010 -0400
+
+    Merge branch 'meego-7093' into idle-release
+
+commit e9a64ed4994db04c9963495b03d8a86538e3ad55
+Author: Len Brown <len.brown@intel.com>
+Date:   Fri Sep 24 20:50:02 2010 -0400
+
+    acpi_idle: add missing \n to printk
+    
+    otherwise, these two lines print as one:
+    
+    ACPI: acpi_idle yielding to intel_idle
+    ACPI: SSDT 3f5d8741 00203 (v02 PmRef  Cpu0Ist 00003000 INTL 20050624)
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 3265eba0bed7645cacd5e2cb3614d504b5ac29e6
+Author: Namhyung Kim <namhyung@gmail.com>
+Date:   Sun Aug 8 03:10:03 2010 +0900
+
+    intel_idle: add missing __percpu markup
+    
+    intel_idle_cpuidle_devices is a percpu pointer
+    but was missing __percpu markup.
+    
+    Signed-off-by: Namhyung Kim <namhyung@gmail.com>
+    Acked-by: Tejun Heo <tj@kernel.org>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 68f160125f0655c21a1c9f896ddff97d98012cb0
+Author: Thomas Weber <weber@corscience.de>
+Date:   Mon Jul 12 08:56:43 2010 +0200
+
+    intel_idle: Change mode 755 => 644
+    
+    Remove execution permission from source file.
+    
+    Signed-off-by: Thomas Weber <weber@corscience.de>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 20e3341bb138bc9860adea4d76707470357b76ab
+Author: Lucas De Marchi <lucas.de.marchi@gmail.com>
+Date:   Tue Sep 7 12:53:49 2010 -0400
+
+    cpuidle: Fix typos
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 4731fdcf6f7bdab3e369a3f844d4ea4d4017284d
+Author: Len Brown <len.brown@intel.com>
+Date:   Fri Sep 24 21:02:27 2010 -0400
+
+    intel_idle: PCI quirk to prevent Lenovo Ideapad s10-3 boot hang
+    
+    When the Lenovo Ideapad S10-3 is booted with HT enabled,
+    it hits a boot hang in the intel_idle driver.
+    
+    This occurs when entering ATM-C4 for the first time,
+    unless BM_STS is first cleared.
+    
+    acpi_idle doesn't see this because it first checks
+    and clears BM_STS, but it would hit the same hang
+    if that check were disabled.
+    
+    http://bugs.meego.com/show_bug.cgi?id=7093
+    https://bugs.launchpad.net/ubuntu/+source/linux/+bug/634702
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
