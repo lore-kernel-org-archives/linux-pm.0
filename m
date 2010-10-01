@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Allow wakeup events to abort
-	freezing of tasks
-Date: Fri, 1 Oct 2010 23:24:29 +0200
-Message-ID: <201010012324.29283.rjw__8842.97768720916$1285968352$gmane$org@sisk.pl>
-References: <201009300016.50128.rjw@sisk.pl> <20100930142903.GA1442@ucw.cz>
+Subject: Re: [PATCH 01/23] Hibernation: Split compression support
+	out.
+Date: Fri, 1 Oct 2010 23:28:09 +0200
+Message-ID: <201010012328.09892.rjw__26939.2232913107$1285968576$gmane$org@sisk.pl>
+References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
+	<201009272227.42779.rjw@sisk.pl> <4CA0FF42.2020608@tuxonice.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20100930142903.GA1442@ucw.cz>
+In-Reply-To: <4CA0FF42.2020608@tuxonice.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,24 +19,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Nigel Cunningham <nigel@tuxonice.net>
+Cc: Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, September 30, 2010, Pavel Machek wrote:
-> On Thu 2010-09-30 00:16:50, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > Subject: PM: Allow wakeup events to abort freezing of tasks
-> > 
-> > If there is a wakeup event during the freezing of tasks, suspend or
-> > hibernation will fail anyway.  Since try_to_freeze_tasks() can take
-> > up to 20 seconds to complete or fail, aborting it as soon as a wakeup
-> > event is detected improves the worst case wakeup latency.
-> > 
-> > Based on a patch from Arve Hj??nnev??g.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+On Monday, September 27, 2010, Nigel Cunningham wrote:
+> Hi.
 > 
-> Ack.
+> On 28/09/10 06:27, Rafael J. Wysocki wrote:
+> > On Monday, September 27, 2010, Nigel Cunningham wrote:
+...
+> > This one doesn't really good to me.  What I'd prefer would be to have a
+> > structure of "swap operations" pointers like ->start(), ->write_data(),
+> > ->read_data(), and ->finish() that will point to the functions in this file
+> > (if compression is to be used) or to the "old" swap_write_page()/swap_read_page()
+> > otherwise.  That would reduce the number of the
+> > (flags&  SF_NOCOMPRESS_MODE) checks quite substantially and will likely result
+> > in code that's easier to follow.
+> 
+> Me too. I was heading in that direction, but not doing it in one step. 
+> I'll happily change that.
 
-Thanks!
+I'm still waiting for the reworked patch.  If you can submit it in a few days
+and it looks good, I'll include it into the pull request for 2.6.37.
+
+Thanks,
+Rafael
