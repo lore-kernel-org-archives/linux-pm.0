@@ -1,14 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: add synchronous runtime interface for
- interrupt handlers
-Date: Fri, 1 Oct 2010 10:28:59 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1010011012560.1813-100000__33082.6979050927$1285943488$gmane$org@iolanthe.rowland.org>
-References: <201010010041.26326.rjw@sisk.pl>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Perf: Power events/tracepoints cleanups
+Date: Fri,  1 Oct 2010 17:04:22 +0200
+Message-ID: <1285945464-10884-1-git-send-email-trenn__36767.6798640334$1285945529$gmane$org@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201010010041.26326.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,55 +15,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+To: linux-trace-users@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-perf-users@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com, rjw@sisk.pl, jean.pihet@ne
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 1 Oct 2010, Rafael J. Wysocki wrote:
+This is the outcome from the thread:
+Subject: [PATCH] tracing, perf: add more power related events
 
-> > >  If RPM_IRQ is not set, but
-> > > power.callbacks_in_irq is set, we should fall back to the normal behavior
-> > > (ie. do not avoid sleeping).
-> > 
-> > By "do not avoid sleeping", do you mean that 
-> > 
-> > 	(1) the helper functions should be allowed to sleep, or
-> > 
-> > 	(2) the callbacks should be invoked with interrupts enabled?
-> > 
-> > The patch already does (1).  By contrast, (2) isn't safe.  It means
-> > there is a risk of having one thread do a busy-wait with interrupts
-> > disabled, waiting for another thread that can sleep.
-> 
-> In my opinion the _irq operations should really be one-shot, without
-> any looping, waking up parents etc.  I mean, if the parent is not RPM_ACTIVE,
-> the _irq resume should immediately fail and analogously for the _irq
-> suspend.  And so on.  As simple as reasonably possible.
+-> The interfaces won't be fix. There may be a library at some time
+   which may abstract versions or similar.
 
-But what if the device's own status is currently SUSPENDING or
-RESUMING?  Do you want to fail when that happens, instead of waiting
-for the concurrent operation to finish?  There's no way to prevent this
-on SMP systems, because a wakeup request can arrive while a
-software-initiated resume is in progress.
+-> ARM people want to make use of several power event tracepoints and
+   it came out they are wrongly defined, in a rather unusable way.
+   Better fix and clean this up now, before more and more tools depend
+   on them.
 
-> > Going further, I'm still a little dubious about the whole point of
-> > having idle notifications at all.  I don't see why the PM core can't
-> > notify a subsystem that a device is idle just by calling the
-> > runtime_suspend routine.
-> 
-> Well, calling _idle is like saying "I think this device may be idle, please
-> consider suspending it", while calling _suspend is like saying "suspend
-> this device unless you can't".  I think that's enough of a difference to
-> have separate _idle.
+-> The perf userspace cleanups show that it's rather easy for userspace
+   to adapt to the new trace ponts.
 
-> A subsystem or a driver may want to schedule the suspend with a timeout
-> if _idle is called instead of just suspending synchronously.  The r8169 driver
-> actually does something similar (although a bit more complicated).
+Ingo: This is against latest Linus master branch, can you push these if
+      Jean is fine with them.
 
-What you are describing is basically what autosuspend was intended to
-accomplish (that is, formalizing the difference between "the device
-just became idle, you should consider when to suspend it" and "the
-device has been idle for a sufficiently long time, please suspend it
-now").  Would the r8169 driver be simplified if it used autosuspend?
+Thanks,
 
-Alan Stern
+        Thomas
