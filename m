@@ -1,15 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH] PM: Allow wakeup events to abort
- freezing of tasks
-Date: Thu, 30 Sep 2010 16:29:06 +0200
-Message-ID: <20100930142903.GA1442__13532.7028962367$1285941792$gmane$org@ucw.cz>
-References: <201009300016.50128.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: add synchronous runtime interface for
+ interrupt handlers
+Date: Fri, 1 Oct 2010 10:12:39 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1010011011380.1813-100000__20211.4649968737$1285942494$gmane$org@iolanthe.rowland.org>
+References: <201010010002.19204.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201009300016.50128.rjw@sisk.pl>
+In-Reply-To: <201010010002.19204.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,24 +19,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 2010-09-30 00:16:50, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: PM: Allow wakeup events to abort freezing of tasks
-> 
-> If there is a wakeup event during the freezing of tasks, suspend or
-> hibernation will fail anyway.  Since try_to_freeze_tasks() can take
-> up to 20 seconds to complete or fail, aborting it as soon as a wakeup
-> event is detected improves the worst case wakeup latency.
-> 
-> Based on a patch from Arve Hj??nnev??g.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+On Fri, 1 Oct 2010, Rafael J. Wysocki wrote:
 
-Ack.
+> On Thursday, September 30, 2010, Alan Stern wrote:
+> > This patch (as1431) adds a synchronous runtime-PM interface suitable
+> > for use in interrupt handlers.  Four new helper functions are defined:
+> > 
+> > 	pm_runtime_suspend_irq(), pm_runtime_resume_irq(),
+> > 	pm_runtime_get_sync_irq(), pm_runtime_put_sync_irq(),
+> > 
+> > together with pm_runtime_callbacks_in_irq(), which subsystems use to
+> > tell the PM core that the runtime callbacks should be invoked with
+> > interrupts disabled.
+> 
+> BTW, I like some changes made by your patch that aren't really related to
+> the issue at hand, so I think the patch below can be applied regardless of
+> the other changes, unless I made a mistake I can see now.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+It looks like a good change, but you forgot to preserve the assignments 
+to dev->power.runtime_error.
+
+Alan Stern
