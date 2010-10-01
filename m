@@ -1,16 +1,16 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: Re: [PATCH 01/23] Hibernation: Split compression support
-	out.
-Date: Sat, 02 Oct 2010 07:45:40 +1000
-Message-ID: <4CA65684.1050500__1788.19402722201$1285969581$gmane$org@tuxonice.net>
-References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
-	<201009272227.42779.rjw@sisk.pl> <4CA0FF42.2020608@tuxonice.net>
-	<201010012328.09892.rjw@sisk.pl>
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH 1/2] PERF(kernel): Cleanup power events
+Date: Fri, 01 Oct 2010 14:47:35 -0700
+Message-ID: <4CA656F7.70703__32944.9050747373$1285969710$gmane$org@linux.intel.com>
+References: <1285945464-10884-1-git-send-email-trenn@suse.de>	
+	<1285945464-10884-2-git-send-email-trenn@suse.de>	
+	<4CA60385.6040405@linux.intel.com>
+	<1285969466.6750.18.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201010012328.09892.rjw@sisk.pl>
+In-Reply-To: <1285969466.6750.18.camel@gandalf.stny.rr.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,39 +20,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, jean.pihet@newoldbits.com, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, linux-pm@lists.linux-foundation.org, mingo@elte.hu
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael.
-
-On 02/10/10 07:28, Rafael J. Wysocki wrote:
-> On Monday, September 27, 2010, Nigel Cunningham wrote:
->> Hi.
->>
->> On 28/09/10 06:27, Rafael J. Wysocki wrote:
->>> On Monday, September 27, 2010, Nigel Cunningham wrote:
-> ...
->>> This one doesn't really good to me.  What I'd prefer would be to have a
->>> structure of "swap operations" pointers like ->start(), ->write_data(),
->>> ->read_data(), and ->finish() that will point to the functions in this file
->>> (if compression is to be used) or to the "old" swap_write_page()/swap_read_page()
->>> otherwise.  That would reduce the number of the
->>> (flags&   SF_NOCOMPRESS_MODE) checks quite substantially and will likely result
->>> in code that's easier to follow.
->>
->> Me too. I was heading in that direction, but not doing it in one step.
->> I'll happily change that.
+  On 10/1/2010 2:44 PM, Steven Rostedt wrote:
 >
-> I'm still waiting for the reworked patch.  If you can submit it in a few days
-> and it looks good, I'll include it into the pull request for 2.6.37.
+> What ABI is broken? Trace points have not been declared an ABI. They
+> expose too much of the internals of the system to be considered one. Any
+> tool that can not cope with a tracepoint change is fundamentally broken.
 
-Sorry for the delay.
+what you are saying that any tool using tracepoints is fundamentally 
+broken...
 
-Would you be happy if, rather than reworking that patch and modifying 
-other patches that are affected, I added a new patch to the end of the 
-series?
-
-Regards,
-
-Nigel
+these tracepoints are used to get information for tools that do power 
+analysis (like powertop).
+while the absence of these named tracepoints does not cause a crash; 
+these tools have no longer
+any useful function left at that point.
