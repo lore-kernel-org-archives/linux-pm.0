@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] PM: add synchronous runtime interface for
 	interrupt handlers
-Date: Fri, 1 Oct 2010 23:14:37 +0200
-Message-ID: <201010012314.38089.rjw__38771.6748555706$1285967893$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1010011011380.1813-100000@iolanthe.rowland.org>
+Date: Fri, 1 Oct 2010 23:23:47 +0200
+Message-ID: <201010012323.47697.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.1010011012560.1813-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1010011011380.1813-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1010011012560.1813-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,26 +25,65 @@ List-Id: linux-pm@vger.kernel.org
 On Friday, October 01, 2010, Alan Stern wrote:
 > On Fri, 1 Oct 2010, Rafael J. Wysocki wrote:
 > 
-> > On Thursday, September 30, 2010, Alan Stern wrote:
-> > > This patch (as1431) adds a synchronous runtime-PM interface suitable
-> > > for use in interrupt handlers.  Four new helper functions are defined:
+> > > >  If RPM_IRQ is not set, but
+> > > > power.callbacks_in_irq is set, we should fall back to the normal behavior
+> > > > (ie. do not avoid sleeping).
 > > > 
-> > > 	pm_runtime_suspend_irq(), pm_runtime_resume_irq(),
-> > > 	pm_runtime_get_sync_irq(), pm_runtime_put_sync_irq(),
+> > > By "do not avoid sleeping", do you mean that 
 > > > 
-> > > together with pm_runtime_callbacks_in_irq(), which subsystems use to
-> > > tell the PM core that the runtime callbacks should be invoked with
-> > > interrupts disabled.
+> > > 	(1) the helper functions should be allowed to sleep, or
+> > > 
+> > > 	(2) the callbacks should be invoked with interrupts enabled?
+> > > 
+> > > The patch already does (1).  By contrast, (2) isn't safe.  It means
+> > > there is a risk of having one thread do a busy-wait with interrupts
+> > > disabled, waiting for another thread that can sleep.
 > > 
-> > BTW, I like some changes made by your patch that aren't really related to
-> > the issue at hand, so I think the patch below can be applied regardless of
-> > the other changes, unless I made a mistake I can see now.
+> > In my opinion the _irq operations should really be one-shot, without
+> > any looping, waking up parents etc.  I mean, if the parent is not RPM_ACTIVE,
+> > the _irq resume should immediately fail and analogously for the _irq
+> > suspend.  And so on.  As simple as reasonably possible.
 > 
-> It looks like a good change, but you forgot to preserve the assignments 
-> to dev->power.runtime_error.
+> But what if the device's own status is currently SUSPENDING or
+> RESUMING?  Do you want to fail when that happens, instead of waiting
+> for the concurrent operation to finish?
 
-That's correct and there's a difference betwee _idle and the other cases
-because of that.  I'll send updated patch with a changelog shortly.
+Yes.  IMO an _irq() suspend should only be allowed if the status is RPM_ACTIVE
+and an _irq() resume should fail if the status is not RPM_SUSPENDED.  The
+error code returned should depend on the situation, though.
+
+> There's no way to prevent this
+> on SMP systems, because a wakeup request can arrive while a
+> software-initiated resume is in progress.
+
+I know that. :-)
+
+> > > Going further, I'm still a little dubious about the whole point of
+> > > having idle notifications at all.  I don't see why the PM core can't
+> > > notify a subsystem that a device is idle just by calling the
+> > > runtime_suspend routine.
+> > 
+> > Well, calling _idle is like saying "I think this device may be idle, please
+> > consider suspending it", while calling _suspend is like saying "suspend
+> > this device unless you can't".  I think that's enough of a difference to
+> > have separate _idle.
+> 
+> > A subsystem or a driver may want to schedule the suspend with a timeout
+> > if _idle is called instead of just suspending synchronously.  The r8169 driver
+> > actually does something similar (although a bit more complicated).
+> 
+> What you are describing is basically what autosuspend was intended to
+> accomplish (that is, formalizing the difference between "the device
+> just became idle, you should consider when to suspend it" and "the
+> device has been idle for a sufficiently long time, please suspend it
+> now").  Would the r8169 driver be simplified if it used autosuspend?
+
+At the moment it suspends when the network cable is removed from the device
+and the hack I mentioned is used during the resume after the cable has been
+reinserted (it checks if the cable is still there and schedules suspend if not).
+
+If we removed the immediate idle notification after a successful resume, it
+might need to be reworked slightly.
 
 Thanks,
 Rafael
