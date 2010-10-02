@@ -1,16 +1,17 @@
-From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: Re: [PATCH 4/4] perf: provide a DEPRECTAED power trace
-	API to user space
-Date: Mon, 4 Oct 2010 18:47:55 +0200
-Message-ID: <AANLkTikxEFiAQM8JkP4YwL2nB+vhNTDTGR9exJ367XsT__36559.1781134301$1286210948$gmane$org@mail.gmail.com>
-References: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
-	<1286205661-24448-5-git-send-email-jean.pihet@newoldbits.com>
-	<20101004161051.GF16489@redhat.com>
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Subject: Re: [PATCH 1/2] PERF(kernel): Cleanup power events
+Date: Sat, 2 Oct 2010 12:50:07 -0400
+Message-ID: <20101002165006.GA22389__48909.9903185435$1286216402$gmane$org@Krystal>
+References: <1285945464-10884-1-git-send-email-trenn@suse.de>
+	<1285969466.6750.18.camel@gandalf.stny.rr.com>
+	<4CA656F7.70703@linux.intel.com> <201010020243.09928.trenn@suse.de>
+	<4CA704D2.3040505@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101004161051.GF16489@redhat.com>
+Content-Disposition: inline
+In-Reply-To: <4CA704D2.3040505@linux.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,66 +21,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Jean Pihet <j-pihet@ti.com>, Peter Zijlstra <peterz@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, mathieu.desnoyers@efficios.com, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, arjan@linux.intel.com, mingo@elte.hu
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, jean.pihet@newoldbits.com, Steven Rostedt <rostedt@goodmis.org>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, linux-pm@lists.linux-foundation.org, mingo@elte.hu
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+* Arjan van de Ven (arjan@linux.intel.com) wrote:
+>  On 10/1/2010 5:43 PM, Thomas Renninger wrote:
+>> On Friday 01 October 2010 11:47:35 pm Arjan van de Ven wrote:
+>>>    On 10/1/2010 2:44 PM, Steven Rostedt wrote:
+>> ...
+>>> these tracepoints are used to get information for tools that do power
+>>> analysis (like powertop).
+>> I just had a look at the very latest git code of powertop:
+>> git://git.moblin.org/powertop
+>> File system tracepoints are used, but the affected power events seem *not* to
+>> be used yet.
+>> Looks like the right time to get this cleaned up.
+>
+> you're looking at the old powertop.
+>
+>> If you know of any other code making use of these, please point me to the
+>> code, I'd like to analyze whether this would be as easy to adjust as the
+>> perf timechart code was.
+>
+> I think you are making the fundamentally incorrect assumption that all  
+> users of these are open source.
+> Sorry, not the whole world is open source.
 
-On Mon, Oct 4, 2010 at 6:10 PM, Frank Ch. Eigler <fche@redhat.com> wrote:
-> Hi -
->
->> Provide a CONFIG_DEPRECATED_POWER_EVENT_TRACING =A0option in order
->> to provide backward compatibility with the user space tracing tools.
->
-> This is clever:
->
->> +/* Map new events trace points calls to old ones */
->> +#define trace_processor_idle(state, cpu_id) =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 =A0\
->> + =A0 =A0 do { =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
->> + =A0 =A0 =A0 =A0 =A0 =A0 if (state !=3D 0) =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 \
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 trace_power_start(POWER_CSTATE=
-, state, cpu_id); \
->> + =A0 =A0 =A0 =A0 =A0 =A0 else =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 trace_power_end(cpu_id); =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
->> + =A0 =A0 } while (0)
->
-> but with this code, are the new tracepoints firing at all? =A0In other
-> words, does this backward-compatibility config option effectively
-> disable the newer ones? =A0If so, this is probably avoidable.
-Yes the events are fired. In fact with the CONFIG option defined the
-trace_processor_* trace points are not defined, only the macro remaps
-them (at compile time) to the old ones.
+I think that looking at the current open source users is a reasonably thorough
+effort. Closed source software should be able to adapt, and at the very least be
+able to print a warning if it does not find the tracepoints it is looking for.
 
-> Instead of redirecting the new tracepoint calls to these macros, an
-> alternative may intercept (un)registration for the old tracepoint
-> names, and map them to (un)registration of the real tracepoints. =A0See
-> how syscall tracepoints map to a special (un)registration callback in
-> include/trace/events/syscalls.h (syscall_*regfunc). =A0Instead of
-> setting a TIF flag, the new functions can call
-> register_processor_idle() et al., and their respective callbacks can
-> call the backward-compatibility tracepoints.
->
-> The starting point would be to recast the power_start, power_end,
-> power_frequency tracepoints via TRACE_EVENT_FN() instead of
-> TRACE_EVENT().
-That could be done but it is not easy to do. In fact the power.h is
-included and parsed multiple times in order to generate the trace
-points prototype function _and_ the trace generation code. Please
-check 'include/trace/ftrace.h' which is really smart but rather
-complicated.
+The fact that this interface should not be expected to be cast in stone has been
+heavily publicized since its creation. It simply exposes too much information
+about the kernel internals to stay fixed. The userspace tools unable to cope
+with that should therefore be considered as broken and fixed.
 
-I am aiming at simple to read and maintainable code. Furthermore the
-code is going to be removed soon or later.
+About the tracepoint stable "ABI", I'd be very cautious about providing this
+kind of guarantee too soon, e.g. before time have shown that the names and
+fields chosen were actually right. This power event cleanup is actually a very
+good example of a case where some more thought was needed before these
+tracepoints can be made a "stable ABI". If we choose to start providing this
+kind of stability guarantee for some tracepoints at some point, I propose that
+we deal with changes to these tracepoints with a "deprecation" process, which
+would leave both the old and new ABIs for 1-2 kernel versions and print a
+warning when a program is using the old ABI. But I would not bother adding
+overhead to the current tracepoint cleanup by giving ABI stability guarantees
+that we clearly and repeatedly stated did not exist.
 
-Thanks for the suggestion!
+Thank you,
 
->
-> - FChE
->
-Jean
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Operating System Efficiency R&D Consultant
+EfficiOS Inc.
+http://www.efficios.com
