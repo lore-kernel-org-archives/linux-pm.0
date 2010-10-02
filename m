@@ -1,13 +1,15 @@
 From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 07/22] Hibernation: Generic extents support.
-Date: Sat, 25 Sep 2010 14:16:49 +1000
-Message-ID: <1285388224-10012-8-git-send-email-nigel__250.365844886069$1286050977$gmane$org@tuxonice.net>
-References: <1285388224-10012-1-git-send-email-nigel@tuxonice.net>
+Subject: Re: [RFC][PATCH] PM / Hibernate: Modify signature used
+	to mark swap
+Date: Sun, 03 Oct 2010 07:44:53 +1100
+Message-ID: <4CA799C5.3060106@tuxonice.net>
+References: <201009292313.23601.rjw@sisk.pl> <4CA3ADED.6090908@tuxonice.net>
+	<201009300002.03412.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1285388224-10012-1-git-send-email-nigel@tuxonice.net>
+In-Reply-To: <201009300002.03412.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,376 +19,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Separate out the extent storage and manipulation into a separate
-file and make them more generic, so we can also use extents for
-recording what sectors are used and (later) support multiple
-storage devices more easily.
+Hi.
 
-Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
----
- kernel/power/Makefile  |    2 +-
- kernel/power/extents.c |  125 ++++++++++++++++++++++++++++++++++++++++++++++++
- kernel/power/extents.h |   35 +++++++++++++
- kernel/power/swap.c    |  117 +++++---------------------------------------
- 4 files changed, 175 insertions(+), 104 deletions(-)
- create mode 100644 kernel/power/extents.c
- create mode 100644 kernel/power/extents.h
+On 30/09/10 08:02, Rafael J. Wysocki wrote:
+> On Wednesday, September 29, 2010, Nigel Cunningham wrote:
+>> Hi.
+>>
+>> On 30/09/10 07:13, Rafael J. Wysocki wrote:
+>>> From: Rafael J. Wysocki<rjw@sisk.pl>
+>>> Subject: PM / Hibernate: Modify signature used to mark swap
+>>>
+>>> Since we are adding compression to the kernel's hibernate code,
+>>> change signature used by it to mark swap spaces, so that earlier
+>>> kernels don't attempt to restore compressed images they cannot
+>>> handle.
+>>>
+>>> Signed-off-by: Rafael J. Wysocki<rjw@sisk.pl>
+>>> ---
+>>>    kernel/power/swap.c |    6 +++---
+>>>    1 file changed, 3 insertions(+), 3 deletions(-)
+>>>
+>>> Index: linux-2.6/kernel/power/swap.c
+>>> ===================================================================
+>>> --- linux-2.6.orig/kernel/power/swap.c
+>>> +++ linux-2.6/kernel/power/swap.c
+>>> @@ -29,7 +29,7 @@
+>>>
+>>>    #include "power.h"
+>>>
+>>> -#define SWSUSP_SIG	"S1SUSPEND"
+>>> +#define HIBERNATE_SIG	"LINHIB0001"
+>>>
+>>>    /*
+>>>     *	The swap map is a data structure used for keeping track of each page
+>>> @@ -195,7 +195,7 @@ static int mark_swapfiles(struct swap_ma
+>>>    	if (!memcmp("SWAP-SPACE",swsusp_header->sig, 10) ||
+>>>    	    !memcmp("SWAPSPACE2",swsusp_header->sig, 10)) {
+>>>    		memcpy(swsusp_header->orig_sig,swsusp_header->sig, 10);
+>>
+>> if no compression
+>>
+>>> -		memcpy(swsusp_header->sig,SWSUSP_SIG, 10);
+>>
+>> else
+>>
+>>> +		memcpy(swsusp_header->sig, HIBERNATE_SIG, 10);
+>>
+>> ??
+>
+> I thought about that, but we'll need to drop the old signature when the image
+> format changes (I think it will after your patch series) anyway.  And the
+> benefit is not really worth it IMO (it only affects people using the in-kernel
+> hibernation on x86-64).
 
-diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-index f9063c6..df24cab 100644
---- a/kernel/power/Makefile
-+++ b/kernel/power/Makefile
-@@ -9,7 +9,7 @@ obj-$(CONFIG_FREEZER)		+= process.o
- obj-$(CONFIG_SUSPEND)		+= suspend.o
- obj-$(CONFIG_PM_TEST_SUSPEND)	+= suspend_test.o
- obj-$(CONFIG_HIBERNATION)	+= hibernate.o snapshot.o swap.o user.o \
--				   block_io.o
-+				   block_io.o extents.o
- obj-$(CONFIG_SUSPEND_NVS)	+= nvs.o
- 
- obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
-diff --git a/kernel/power/extents.c b/kernel/power/extents.c
-new file mode 100644
-index 0000000..172322d
---- /dev/null
-+++ b/kernel/power/extents.c
-@@ -0,0 +1,125 @@
-+/*
-+ * linux/kernel/power/extents.c
-+ *
-+ * This file provides functions for storing and using a series of
-+ * extents.
-+ *
-+ * Copyright (C) 1998,2001-2005 Pavel Machek <pavel@suse.cz>
-+ * Copyright (C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
-+ * Copyright (C) 2010 Nigel Cunningham <nigel@tuxonice.net>
-+ *
-+ * This file is released under the GPLv2.
-+ *
-+ */
-+
-+#include <linux/slab.h>
-+#include "extents.h"
-+
-+int hib_extents_empty(struct hib_extent_state *pos)
-+{
-+	return RB_EMPTY_ROOT(&pos->root);
-+}
-+
-+void hib_reset_extent_pos(struct hib_extent_state *pos)
-+{
-+	if (hib_extents_empty(pos))
-+		return;
-+
-+	pos->node = rb_first(&pos->root);
-+
-+	if (!pos->node) {
-+		pos->cur_ext = NULL;
-+		pos->offset = 0;
-+		return;
-+	}
-+
-+	pos->cur_ext = container_of(pos->node, struct hib_extent, node);
-+	pos->offset = pos->cur_ext->start;
-+}
-+
-+unsigned long hib_extent_current(struct hib_extent_state *pos)
-+{
-+	return (pos->node) ? pos->offset : 0;
-+}
-+
-+unsigned long hib_extent_next(struct hib_extent_state *pos)
-+{
-+	if (!pos->node)
-+		return 0;
-+
-+	if (pos->cur_ext->end >= pos->offset)
-+		return pos->offset++;
-+
-+	pos->node = rb_next(pos->node);
-+	if (!pos->node)
-+		return 0;
-+
-+	pos->cur_ext = container_of(pos->node, struct hib_extent, node);
-+	pos->offset = pos->cur_ext->start;
-+	return pos->offset;
-+}
-+
-+int hib_extents_insert(struct hib_extent_state *pos, unsigned long value)
-+{
-+	struct rb_node **new = &(pos->root.rb_node);
-+	struct rb_node *parent = NULL;
-+	struct hib_extent *ext;
-+
-+	/* Figure out where to put the new node */
-+	while (*new) {
-+		ext = container_of(*new, struct hib_extent, node);
-+		parent = *new;
-+		if (value < ext->start) {
-+			/* Try to merge */
-+			if (value == ext->start - 1) {
-+				ext->start--;
-+				return 0;
-+			}
-+			new = &((*new)->rb_left);
-+		} else if (value > ext->end) {
-+			/* Try to merge */
-+			if (value == ext->end + 1) {
-+				ext->end++;
-+				return 0;
-+			}
-+			new = &((*new)->rb_right);
-+		} else {
-+			/* It already is in the tree */
-+			return -EINVAL;
-+		}
-+	}
-+	/* Add the new node and rebalance the tree. */
-+	ext = kzalloc(sizeof(struct hib_extent), GFP_KERNEL);
-+	if (!ext)
-+		return -ENOMEM;
-+
-+	ext->start = value;
-+	ext->end = value;
-+	rb_link_node(&ext->node, parent, new);
-+	rb_insert_color(&ext->node, &pos->root);
-+	pos->num_extents++;
-+	return 0;
-+}
-+
-+/**
-+ *	free_all_swap_pages - free swap pages allocated for saving image data.
-+ *	It also frees the extents used to register which swap entres had been
-+ *	allocated.
-+ */
-+
-+void hib_extents_clear(struct hib_extent_state *pos)
-+{
-+	struct rb_node *node;
-+
-+	if (hib_extents_empty(pos))
-+		return;
-+
-+	while ((node = pos->root.rb_node)) {
-+		struct hib_extent *ext;
-+
-+		ext = container_of(node, struct hib_extent, node);
-+		rb_erase(node, &pos->root);
-+		pos->num_extents--;
-+		kfree(ext);
-+	}
-+}
-diff --git a/kernel/power/extents.h b/kernel/power/extents.h
-new file mode 100644
-index 0000000..0b69b8e
---- /dev/null
-+++ b/kernel/power/extents.h
-@@ -0,0 +1,35 @@
-+/*
-+ * linux/kernel/power/extents.h
-+ *
-+ * Copyright (C) 2010 Nigel Cunningham <nigel@tuxonice.net>
-+ *
-+ * This file is released under the GPLv2.
-+ *
-+ */
-+
-+#include <linux/rbtree.h>
-+
-+struct hib_extent {
-+	struct rb_node node;
-+	unsigned long start;
-+	unsigned long end;
-+};
-+
-+struct hib_extent_state {
-+	/* Tree */
-+	struct rb_root root;
-+	int num_extents;
-+
-+	/* Current position */
-+	struct rb_node *node;
-+	struct hib_extent *cur_ext;
-+	unsigned long offset;
-+};
-+
-+
-+void hib_reset_extent_pos(struct hib_extent_state *pos);
-+unsigned long hib_extent_current(struct hib_extent_state *pos);
-+unsigned long hib_extent_next(struct hib_extent_state *pos);
-+int hib_extents_insert(struct hib_extent_state *pos, unsigned long value);
-+void hib_extents_clear(struct hib_extent_state *pos);
-+int hib_extents_empty(struct hib_extent_state *pos);
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 2ef2bad..da2439d 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -23,9 +23,9 @@
- #include <linux/swap.h>
- #include <linux/swapops.h>
- #include <linux/pm.h>
--#include <linux/slab.h>
- 
- #include "power.h"
-+#include "extents.h"
- 
- #define SWSUSP_SIG	"S1SUSPEND"
- 
-@@ -76,97 +76,14 @@ struct swsusp_header {
- 
- static struct swsusp_header *swsusp_header;
- 
--/**
-- *	The following functions are used for tracing the allocated
-- *	swap pages, so that they can be freed in case of an error.
-- */
--
--struct swsusp_extent {
--	struct rb_node node;
--	unsigned long start;
--	unsigned long end;
--};
--
--static struct rb_root swsusp_extents = RB_ROOT;
--
--struct storage_position {
--	struct rb_node *node;
--	struct swsusp_extent *cur_ext;
--	unsigned long offset;
--};
--
--static struct storage_position pos;
--
--static void reset_storage_pos(void)
--{
--	pos.node = rb_first(&swsusp_extents);
--
--	if (!pos.node) {
--		pos.cur_ext = NULL;
--		pos.offset = 0;
--		return;
--	}
--
--	pos.cur_ext = container_of(pos.node, struct swsusp_extent, node);
--	pos.offset = pos.cur_ext->start;
--}
-+static struct hib_extent_state swap_extents;
- 
- static sector_t next_swapdev_block(void)
- {
--	if (!pos.node)
--		return 0;
--
--	if (pos.cur_ext->end >= pos.offset)
--		return pos.offset++;
--
--	pos.node = rb_next(pos.node);
--	if (!pos.node)
--		return 0;
--
--	pos.cur_ext = container_of(pos.node, struct swsusp_extent, node);
--	pos.offset = pos.cur_ext->start;
--	return pos.offset;
--}
--
--static int swsusp_extents_insert(unsigned long swap_offset)
--{
--	struct rb_node **new = &(swsusp_extents.rb_node);
--	struct rb_node *parent = NULL;
--	struct swsusp_extent *ext;
--
--	/* Figure out where to put the new node */
--	while (*new) {
--		ext = container_of(*new, struct swsusp_extent, node);
--		parent = *new;
--		if (swap_offset < ext->start) {
--			/* Try to merge */
--			if (swap_offset == ext->start - 1) {
--				ext->start--;
--				return 0;
--			}
--			new = &((*new)->rb_left);
--		} else if (swap_offset > ext->end) {
--			/* Try to merge */
--			if (swap_offset == ext->end + 1) {
--				ext->end++;
--				return 0;
--			}
--			new = &((*new)->rb_right);
--		} else {
--			/* It already is in the tree */
--			return -EINVAL;
--		}
--	}
--	/* Add the new node and rebalance the tree. */
--	ext = kzalloc(sizeof(struct swsusp_extent), GFP_KERNEL);
--	if (!ext)
--		return -ENOMEM;
--
--	ext->start = swap_offset;
--	ext->end = swap_offset;
--	rb_link_node(&ext->node, parent, new);
--	rb_insert_color(&ext->node, &swsusp_extents);
--	return 0;
-+	unsigned long res = hib_extent_next(&swap_extents);
-+	if (res)
-+		res = swapdev_block(root_swap, res);
-+	return res;
- }
- 
- /**
-@@ -180,7 +97,7 @@ sector_t alloc_swapdev_block(int swap)
- 
- 	offset = swp_offset(get_swap_page_of_type(swap));
- 	if (offset) {
--		if (swsusp_extents_insert(offset))
-+		if (hib_extents_insert(&swap_extents, offset))
- 			swap_free(swp_entry(swap, offset));
- 		else
- 			return swapdev_block(swap, offset);
-@@ -224,7 +141,7 @@ static int allocate_swap(unsigned int nr_pages)
- 		return 0;
- 	}
- 
--	reset_storage_pos();
-+	hib_reset_extent_pos(&swap_extents);
- 	return 1;
- }
- 
-@@ -236,24 +153,18 @@ static int allocate_swap(unsigned int nr_pages)
- 
- void free_all_swap_pages(int swap)
- {
--	struct rb_node *node;
--
--	while ((node = swsusp_extents.rb_node)) {
--		struct swsusp_extent *ext;
--		unsigned long offset;
-+	unsigned long offset;
- 
--		ext = container_of(node, struct swsusp_extent, node);
--		rb_erase(node, &swsusp_extents);
--		for (offset = ext->start; offset <= ext->end; offset++)
--			swap_free(swp_entry(swap, offset));
-+	hib_reset_extent_pos(&swap_extents);
-+	while ((offset = hib_extent_next(&swap_extents)))
-+		swap_free(swp_entry(swap, offset));
- 
--		kfree(ext);
--	}
-+	hib_extents_clear(&swap_extents);
- }
- 
- int swsusp_swap_in_use(void)
- {
--	return (swsusp_extents.rb_node != NULL);
-+	return (!hib_extents_empty(&swap_extents));
- }
- 
- /*
--- 
-1.7.0.4
+Okay. I'm just a little weary because if everything I want to get in 
+gets in, we're going to then be changing this signature multiple times. 
+I want to eventually reach a situation where we have a 'proper' header 
+section to the image that stores (among other things) whether 
+compression is enabled and which cryptoapi algorithm is used, allowing a 
+person to en/disable compression at runtime without recompiling or 
+rebooting. I suppose if I seek to put that stuff in earlier rather than 
+later, that will simplify things.
 
+Oh, while I'm writing to you: let's not worry about getting my patches 
+in for 2.6.37. I won't be working on them much today, and want to put 
+the time into making sure they're right before they get merged. As you 
+said - let's seek to get things right first time.
+
+Regards,
+
+Nigel
