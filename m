@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PM / Runtime: Reduce code duplication in core
-	helper functions (was: Re: [PATCH] PM: add synchronous ...)
-Date: Sat, 2 Oct 2010 00:37:55 +0200
-Message-ID: <201010020037.55277.rjw__46321.0440394052$1285972856$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1010011011380.1813-100000@iolanthe.rowland.org>
-	<201010012314.38089.rjw@sisk.pl>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH 1/2] PERF(kernel): Cleanup power events
+Date: Sat, 2 Oct 2010 02:33:44 +0200
+Message-ID: <201010020233.45926.trenn__47380.4549001672$1285979704$gmane$org@suse.de>
+References: <1285945464-10884-1-git-send-email-trenn@suse.de>
+	<201010011829.53523.trenn@suse.de> <20101001164736.GE5338@nowhere>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201010012314.38089.rjw@sisk.pl>
+In-Reply-To: <20101001164736.GE5338@nowhere>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,238 +19,91 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, jean.pihet@newoldbits.com, Steven Rostedt <rostedt@goodmis.org>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, mingo@elte.hu
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, October 01, 2010, Rafael J. Wysocki wrote:
-> On Friday, October 01, 2010, Alan Stern wrote:
-> > On Fri, 1 Oct 2010, Rafael J. Wysocki wrote:
-> > 
-> > > On Thursday, September 30, 2010, Alan Stern wrote:
-> > > > This patch (as1431) adds a synchronous runtime-PM interface suitable
-> > > > for use in interrupt handlers.  Four new helper functions are defined:
-> > > > 
-> > > > 	pm_runtime_suspend_irq(), pm_runtime_resume_irq(),
-> > > > 	pm_runtime_get_sync_irq(), pm_runtime_put_sync_irq(),
-> > > > 
-> > > > together with pm_runtime_callbacks_in_irq(), which subsystems use to
-> > > > tell the PM core that the runtime callbacks should be invoked with
-> > > > interrupts disabled.
-> > > 
-> > > BTW, I like some changes made by your patch that aren't really related to
-> > > the issue at hand, so I think the patch below can be applied regardless of
-> > > the other changes, unless I made a mistake I can see now.
-> > 
-> > It looks like a good change, but you forgot to preserve the assignments 
-> > to dev->power.runtime_error.
-> 
-> That's correct and there's a difference betwee _idle and the other cases
-> because of that.  I'll send updated patch with a changelog shortly.
+On Friday 01 October 2010 06:47:39 pm Frederic Weisbecker wrote:
+> On Fri, Oct 01, 2010 at 06:29:53PM +0200, Thomas Renninger wrote:
+> > On Friday 01 October 2010 17:58:25 Frederic Weisbecker wrote:
+> >
+> > Please suggest another way to get this cleaned up then.
+>
+> I know you're going to beat me, but the older solution
+> that brought the new tracepoint and kept the old ones looked
+> better to me (although definetly ugly). 
+Not really ugly, the compatibility stuff can vanish after a deprecation time.
+If it is considered as a stable interface, there is not much that can be done 
+if something needs modification.
+Either the one or the other event subset is used and as tracepoints should 
+have zero/low overhead if disabled, it shouldn't be that bad to carry double
+events for some time.
 
-Appended as promised.
+> > > Yeah. I wish we can keep power_start and power_end events,
+> > > at least for some time.
+> >
+> > Try to document these events and their attributes.
+> > You will then see that the whole interfaces absolutely make
+> > no sense and you can't even put their meaning into words.
+>
+> May be, I'm not a power expert, but they seemed to make enough
+> sense to make perf timechart working.
+These are three events, with 1-3 attributes.
+Try to describe each with a sentence or two. You will quickly realize that
+that the _start/_end events do not make sense and the attributes as well.
+You cannot even document this, I mean you can like: Just ignore the type
+attribute, it does not make sense, it was never used and never will be.
 
-Thanks,
-Rafael
+Do you want to get this broken stuff get spread more and more?
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM / Runtime: Reduce code duplication in core helper functions
+> > I'd like to have a decision how this will get cleaned up!
+>
+> I know. Trace event are not supposed to be ABI, but once a
+> tool gets broken, the reality catches up.
+Not sure about how sever that would be.
+Reality is:
+The ordinary user would always have a matching kernel with
+compatible packages in his distribution.
 
-Reduce code duplication in rpm_idle(), rpm_suspend() and rpm_resume()
-by using local pointers to store callback addresses and moving some
-duplicated code into a separate function.
+This is about debugging/monitoring tools, or say if these tools
+are used for debugging/monitoring a newer kernel with uncompatible
+packages, the guy installed, probably compiled on his own, an
+unsupported test kernel on his system.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/power/runtime.c |  122 +++++++++++++++++++------------------------
- 1 file changed, 54 insertions(+), 68 deletions(-)
+If he can do above, he should be capable of downloading the latest
+adjusted userspace version and type a:
+make; make install
+and get this stuff compiled as well.
 
-Index: linux-2.6/drivers/base/power/runtime.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/runtime.c
-+++ linux-2.6/drivers/base/power/runtime.c
-@@ -153,7 +153,6 @@ static int rpm_check_suspend_allowed(str
- 	return retval;
- }
- 
--
- /**
-  * rpm_idle - Notify device bus type if the device can be suspended.
-  * @dev: Device to notify the bus type about.
-@@ -167,8 +166,8 @@ static int rpm_check_suspend_allowed(str
-  * This function must be called under dev->power.lock with interrupts disabled.
-  */
- static int rpm_idle(struct device *dev, int rpmflags)
--	__releases(&dev->power.lock) __acquires(&dev->power.lock)
- {
-+	int (*callback)(struct device *);
- 	int retval;
- 
- 	retval = rpm_check_suspend_allowed(dev);
-@@ -214,23 +213,19 @@ static int rpm_idle(struct device *dev, 
- 
- 	dev->power.idle_notification = true;
- 
--	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_idle) {
--		spin_unlock_irq(&dev->power.lock);
--
--		dev->bus->pm->runtime_idle(dev);
--
--		spin_lock_irq(&dev->power.lock);
--	} else if (dev->type && dev->type->pm && dev->type->pm->runtime_idle) {
--		spin_unlock_irq(&dev->power.lock);
--
--		dev->type->pm->runtime_idle(dev);
-+	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_idle)
-+		callback = dev->bus->pm->runtime_idle;
-+	else if (dev->type && dev->type->pm && dev->type->pm->runtime_idle)
-+		callback = dev->type->pm->runtime_idle;
-+	else if (dev->class && dev->class->pm)
-+		callback = dev->class->pm->runtime_idle;
-+	else
-+		callback = NULL;
- 
--		spin_lock_irq(&dev->power.lock);
--	} else if (dev->class && dev->class->pm
--	    && dev->class->pm->runtime_idle) {
-+	if (callback) {
- 		spin_unlock_irq(&dev->power.lock);
- 
--		dev->class->pm->runtime_idle(dev);
-+		callback(dev);
- 
- 		spin_lock_irq(&dev->power.lock);
- 	}
-@@ -243,6 +238,29 @@ static int rpm_idle(struct device *dev, 
- }
- 
- /**
-+ * rpm_callback - Run a given runtime PM callback for a given device.
-+ * @cb: Runtime PM callback to run.
-+ * @dev: Device to run the callback for.
-+ */
-+static int rpm_callback(int (*cb)(struct device *), struct device *dev)
-+	__releases(&dev->power.lock) __acquires(&dev->power.lock)
-+{
-+	int retval;
-+
-+	if (!cb)
-+		return -ENOSYS;
-+
-+	spin_unlock_irq(&dev->power.lock);
-+
-+	retval = cb(dev);
-+
-+	spin_lock_irq(&dev->power.lock);
-+	dev->power.runtime_error = retval;
-+
-+	return retval;
-+}
-+
-+/**
-  * rpm_suspend - Carry out run-time suspend of given device.
-  * @dev: Device to suspend.
-  * @rpmflags: Flag bits.
-@@ -261,6 +279,7 @@ static int rpm_idle(struct device *dev, 
- static int rpm_suspend(struct device *dev, int rpmflags)
- 	__releases(&dev->power.lock) __acquires(&dev->power.lock)
- {
-+	int (*callback)(struct device *);
- 	struct device *parent = NULL;
- 	bool notify = false;
- 	int retval;
-@@ -351,33 +370,16 @@ static int rpm_suspend(struct device *de
- 
- 	__update_runtime_status(dev, RPM_SUSPENDING);
- 
--	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend) {
--		spin_unlock_irq(&dev->power.lock);
--
--		retval = dev->bus->pm->runtime_suspend(dev);
--
--		spin_lock_irq(&dev->power.lock);
--		dev->power.runtime_error = retval;
--	} else if (dev->type && dev->type->pm
--	    && dev->type->pm->runtime_suspend) {
--		spin_unlock_irq(&dev->power.lock);
--
--		retval = dev->type->pm->runtime_suspend(dev);
--
--		spin_lock_irq(&dev->power.lock);
--		dev->power.runtime_error = retval;
--	} else if (dev->class && dev->class->pm
--	    && dev->class->pm->runtime_suspend) {
--		spin_unlock_irq(&dev->power.lock);
--
--		retval = dev->class->pm->runtime_suspend(dev);
--
--		spin_lock_irq(&dev->power.lock);
--		dev->power.runtime_error = retval;
--	} else {
--		retval = -ENOSYS;
--	}
-+	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend)
-+		callback = dev->bus->pm->runtime_suspend;
-+	else if (dev->type && dev->type->pm && dev->type->pm->runtime_suspend)
-+		callback = dev->type->pm->runtime_suspend;
-+	else if (dev->class && dev->class->pm)
-+		callback = dev->class->pm->runtime_suspend;
-+	else
-+		callback = NULL;
- 
-+	retval = rpm_callback(callback, dev);
- 	if (retval) {
- 		__update_runtime_status(dev, RPM_ACTIVE);
- 		dev->power.deferred_resume = 0;
-@@ -443,6 +445,7 @@ static int rpm_suspend(struct device *de
- static int rpm_resume(struct device *dev, int rpmflags)
- 	__releases(&dev->power.lock) __acquires(&dev->power.lock)
- {
-+	int (*callback)(struct device *);
- 	struct device *parent = NULL;
- 	int retval = 0;
- 
-@@ -563,33 +566,16 @@ static int rpm_resume(struct device *dev
- 
- 	__update_runtime_status(dev, RPM_RESUMING);
- 
--	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_resume) {
--		spin_unlock_irq(&dev->power.lock);
--
--		retval = dev->bus->pm->runtime_resume(dev);
--
--		spin_lock_irq(&dev->power.lock);
--		dev->power.runtime_error = retval;
--	} else if (dev->type && dev->type->pm
--	    && dev->type->pm->runtime_resume) {
--		spin_unlock_irq(&dev->power.lock);
--
--		retval = dev->type->pm->runtime_resume(dev);
--
--		spin_lock_irq(&dev->power.lock);
--		dev->power.runtime_error = retval;
--	} else if (dev->class && dev->class->pm
--	    && dev->class->pm->runtime_resume) {
--		spin_unlock_irq(&dev->power.lock);
--
--		retval = dev->class->pm->runtime_resume(dev);
--
--		spin_lock_irq(&dev->power.lock);
--		dev->power.runtime_error = retval;
--	} else {
--		retval = -ENOSYS;
--	}
-+	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_resume)
-+		callback = dev->bus->pm->runtime_resume;
-+	else if (dev->type && dev->type->pm && dev->type->pm->runtime_resume)
-+		callback = dev->type->pm->runtime_resume;
-+	else if (dev->class && dev->class->pm)
-+		callback = dev->class->pm->runtime_resume;
-+	else
-+		callback = NULL;
- 
-+	retval = rpm_callback(callback, dev);
- 	if (retval) {
- 		__update_runtime_status(dev, RPM_SUSPENDED);
- 		pm_runtime_cancel_pending(dev);
+> So my personal opinion is: we should keep both tracepoints
+> versions and schedule the older for obsolescence in several
+> releases.
+I do not have a personal opinion how this should get done.
+My opinion is: This cleanup should be done asap, before the broken
+interface is widely used.
+
+> > As ARM is going to make use of this stuff, there may show up
+> > some more tools and they should not make use of an insane interface.
+>
+> OTOH, you don't need to provide the insane tracepoints on archs
+> that did not have them before, because there is nothing to break
+> there.
+Correct, they can already use the new interface.
+That is my point why the change has to be done now.
+
+Also Jean has put quite some time into this and it would be great if this
+discussion comes to a conclusion, a decision is made and this worthful
+work finally is picked up in the one way or the other.
+
+> > So can someone who is going to merge this then, telling me how
+> > the cleanup will be done.
+> >
+> > I'd prefer this approach over the one I posted before which allows
+> > compatibility with old userspace apps.
+>
+> How this new version is backward compatible?
+Why exactly do you need it?
+In a distribition your packages will fit to the kernel.
+If you get  a newer kernel, you also have to compile the tools to debug it.
+
+       Thomas
