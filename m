@@ -1,14 +1,18 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 12/23] Hibernation: Move block i/o fns to
-	block_io.c
-Date: Mon, 27 Sep 2010 15:43:47 +1000
-Message-ID: <1285566238-10966-13-git-send-email-nigel__32953.7984719083$1286067291$gmane$org@tuxonice.net>
-References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
+From: Tiago Marques <tiagomnm@gmail.com>
+Subject: Re: [Discuss] Speedstep on Celeron SU2300 - 20% more
+ battery lifetime on Windows
+Date: Sun, 3 Oct 2010 16:01:41 +0100
+Message-ID: <AANLkTin5Kjiw+Z4F8Y+h+c0Qb_tu1o0SuwHEJ=R3iu40__36588.8184089728$1286118215$gmane$org@mail.gmail.com>
+References: <AANLkTiktJ5Xgnsmq2je7T3Yc5Sf53Bu8vWMM1XT1V_vm@mail.gmail.com>
+	<201009020152.37466.trenn@suse.de>
+	<AANLkTi=WDEA+prG26g5R9oG1uZ7cNgaMrYDtug_LM7bY@mail.gmail.com>
+	<201009061035.03727.trenn@suse.de> <4C850D10.2050801@linux.intel.com>
+	<AANLkTik0oTMzTCyNwS6X-CeQK_cJLs90=eU7o9_Rn1XE@mail.gmail.com>
+	<4C85790A.50005@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0174089445676219561=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
+In-Reply-To: <4C85790A.50005@linux.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,584 +20,137 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: discuss@lesswatts.org, linux-pm@lists.linux-foundation.org, cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Move the functions that specifically deal with submitting I/O
-to block_io.c. This helps us in working towards having a clean
-separation between swap specific functions (which will be all
-that will be in swap.c eventually) and low level block i/o
-functions (block_io.c) that are/will be agnostic with regard to
-the source of the storage. The block_io.c functions will thus
-also be useable when support for storing an image in a generic
-file (non swap) is added later.
+--===============0174089445676219561==
+Content-Type: multipart/alternative; boundary=e0cb4e887547d300200491b7b58b
 
-Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
----
- kernel/power/block_io.c |  199 ++++++++++++++++++++++++++++++++++++++++++++++
- kernel/power/block_io.h |   23 ++++++
- kernel/power/compress.c |    2 +-
- kernel/power/swap.c     |  203 +++--------------------------------------------
- kernel/power/swap.h     |   14 ---
- 5 files changed, 236 insertions(+), 205 deletions(-)
- create mode 100644 kernel/power/block_io.h
- delete mode 100644 kernel/power/swap.h
+--e0cb4e887547d300200491b7b58b
+Content-Type: text/plain; charset=UTF-8
 
-diff --git a/kernel/power/block_io.c b/kernel/power/block_io.c
-index aa239a2..5edcb08 100644
---- a/kernel/power/block_io.c
-+++ b/kernel/power/block_io.c
-@@ -13,6 +13,7 @@
- #include <linux/swap.h>
- 
- #include "power.h"
-+#include "extents.h"
- 
- static struct bio *bio_chain;
- 
-@@ -102,3 +103,201 @@ int hib_wait_on_bio_chain(void)
- 	bio_chain = NULL;
- 	return ret;
- }
-+
-+/*
-+ *	The swap map is a data structure used for keeping track of each page
-+ *	written to a swap partition.  It consists of many swap_map_page
-+ *	structures that contain each an array of MAP_PAGE_SIZE swap entries.
-+ *	These structures are stored on the swap and linked together with the
-+ *	help of the .next_swap member.
-+ *
-+ *	The swap map is created during suspend.  The swap map pages are
-+ *	allocated and populated one at a time, so we only need one memory
-+ *	page to set up the entire structure.
-+ *
-+ *	During resume we also only need to use one swap_map_page structure
-+ *	at a time.
-+ */
-+
-+#define MAP_PAGE_ENTRIES	(PAGE_SIZE / sizeof(sector_t) - 1)
-+
-+struct swap_map_page {
-+	sector_t entries[MAP_PAGE_ENTRIES];
-+	sector_t next_swap;
-+};
-+
-+/**
-+ *	The swap_map_handle structure is used for handling swap in
-+ *	a file-alike way
-+ */
-+
-+struct swap_map_handle {
-+	struct swap_map_page *cur;
-+	sector_t cur_swap;
-+	sector_t first_sector;
-+	unsigned int k;
-+};
-+
-+static struct swap_map_handle handle;
-+
-+extern struct hib_extent_state sector_extents;
-+
-+/* Calculate the overhead needed for storing n pages */
-+unsigned int hib_bio_overhead(unsigned int nr_pages)
-+{
-+	return DIV_ROUND_UP(nr_pages, MAP_PAGE_ENTRIES);
-+}
-+
-+/* Get the first sector of the image proper, for storing in the signature */
-+sector_t hib_get_first_sector(void)
-+{
-+	return handle.first_sector;
-+}
-+
-+/**
-+ *	write_page - Write one page to given swap location.
-+ *	@buf:		Address we're writing.
-+ *	@offset:	Offset of the swap page we're writing to.
-+ *	@sync:		Whether to force synchronous i/o.
-+ */
-+
-+static int write_page(void *buf, sector_t offset, int sync)
-+{
-+	void *src;
-+
-+	if (!offset)
-+		return -ENOSPC;
-+
-+	if (!sync) {
-+		src = (void *)__get_free_page(__GFP_WAIT | __GFP_HIGH);
-+		if (src) {
-+			memcpy(src, buf, PAGE_SIZE);
-+		} else {
-+			WARN_ON_ONCE(1);
-+			sync = 1;	/* Go synchronous */
-+			src = buf;
-+		}
-+	} else {
-+		src = buf;
-+	}
-+	return hib_bio_write_page(offset, src, sync);
-+}
-+
-+void release_swap_writer(void)
-+{
-+	if (handle.cur)
-+		free_page((unsigned long)handle.cur);
-+	handle.cur = NULL;
-+}
-+
-+int hib_bio_prepare_write(void)
-+{
-+	handle.cur = (struct swap_map_page *)get_zeroed_page(GFP_KERNEL);
-+
-+	if (!handle.cur)
-+		return -ENOMEM;
-+
-+	handle.cur_swap = hib_extent_next(&sector_extents);
-+
-+	if (!handle.cur_swap) {
-+		release_swap_writer();
-+		return -ENOSPC;
-+	}
-+
-+	handle.k = 0;
-+	handle.first_sector = handle.cur_swap;
-+	return 0;
-+}
-+
-+int swap_write_page(void *buf, int sync)
-+{
-+	int error = 0;
-+	sector_t offset;
-+
-+	if (!handle.cur)
-+		return -EINVAL;
-+	offset = hib_extent_next(&sector_extents);
-+	error = write_page(buf, offset, sync);
-+	if (error)
-+		return error;
-+	handle.cur->entries[handle.k++] = offset;
-+	if (handle.k >= MAP_PAGE_ENTRIES) {
-+		error = hib_wait_on_bio_chain();
-+		if (error)
-+			goto out;
-+		offset = hib_extent_next(&sector_extents);
-+		if (!offset)
-+			return -ENOSPC;
-+		handle.cur->next_swap = offset;
-+		error = write_page(handle.cur, handle.cur_swap, 1);
-+		if (error)
-+			goto out;
-+		memset(handle.cur, 0, PAGE_SIZE);
-+		handle.cur_swap = offset;
-+		handle.k = 0;
-+	}
-+ out:
-+	return error;
-+}
-+
-+int flush_swap_writer(void)
-+{
-+	if (handle.cur && handle.cur_swap)
-+		return write_page(handle.cur, handle.cur_swap, 1);
-+	else
-+		return -EINVAL;
-+}
-+
-+/**
-+ *	The following functions allow us to read data using a swap map
-+ *	in a file-alike way
-+ */
-+
-+void release_swap_reader(void)
-+{
-+	if (handle.cur)
-+		free_page((unsigned long)handle.cur);
-+	handle.cur = NULL;
-+}
-+
-+int get_swap_reader(unsigned int *flags_p, sector_t first_page)
-+{
-+	int error;
-+
-+	handle.cur = (struct swap_map_page *)get_zeroed_page(__GFP_WAIT | __GFP_HIGH);
-+	if (!handle.cur)
-+		return -ENOMEM;
-+
-+	error = hib_bio_read_page(first_page, handle.cur, 1);
-+	if (error) {
-+		release_swap_reader();
-+		return error;
-+	}
-+	handle.k = 0;
-+	return 0;
-+}
-+
-+int swap_read_page(void *buf, int sync)
-+{
-+	sector_t offset;
-+	int error;
-+
-+	if (!handle.cur)
-+		return -EINVAL;
-+	offset = handle.cur->entries[handle.k];
-+	if (!offset)
-+		return -EFAULT;
-+	error = hib_bio_read_page(offset, buf, sync);
-+	if (error)
-+		return error;
-+	if (++handle.k >= MAP_PAGE_ENTRIES) {
-+		error = hib_wait_on_bio_chain();
-+		handle.k = 0;
-+		offset = handle.cur->next_swap;
-+		if (!offset)
-+			release_swap_reader();
-+		else if (!error)
-+			error = hib_bio_read_page(offset, handle.cur, 1);
-+	}
-+	return error;
-+}
-diff --git a/kernel/power/block_io.h b/kernel/power/block_io.h
-new file mode 100644
-index 0000000..2f91d6d
---- /dev/null
-+++ b/kernel/power/block_io.h
-@@ -0,0 +1,23 @@
-+/*
-+ * Copyright (C) 1998,2001-2005 Pavel Machek <pavel@ucw.cz>
-+ * Copyright (C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
-+ * Copyright (C) 2010 Nigel Cunningham <nigel@tuxonice.net>
-+ *
-+ * This file is released under the GPLv2.
-+ */
-+
-+/* Low level routines */
-+int hib_bio_read_page(pgoff_t page_off, void *addr, int sync);
-+int hib_bio_write_page(pgoff_t page_off, void *addr, int sync);
-+int hib_wait_on_bio_chain(void);
-+
-+unsigned int hib_bio_overhead(unsigned int nr_pages);
-+sector_t hib_get_first_sector(void);
-+extern struct hib_extent_state sector_extents;
-+void release_swap_writer(void);
-+int hib_bio_prepare_write(void);
-+int flush_swap_writer(void);
-+int swap_write_page(void *buf, int sync);
-+int get_swap_reader(unsigned int *flags_p, sector_t first_page);
-+void release_swap_reader(void);
-+int swap_read_page(void *buf, int sync);
-diff --git a/kernel/power/compress.c b/kernel/power/compress.c
-index bb9b9ab..773f8d8 100644
---- a/kernel/power/compress.c
-+++ b/kernel/power/compress.c
-@@ -15,7 +15,7 @@
- #include <linux/vmalloc.h>
- 
- #include "power.h"
--#include "swap.h"
-+#include "block_io.h"
- 
- /* We need to remember how much compressed data we need to read. */
- #define LZO_HEADER	sizeof(size_t)
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index d828fe9..178fd31 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -17,47 +17,11 @@
- 
- #include "power.h"
- #include "compress.h"
--#include "swap.h"
- #include "extents.h"
-+#include "block_io.h"
- 
- #define SWSUSP_SIG	"S1SUSPEND"
- 
--/*
-- *	The swap map is a data structure used for keeping track of each page
-- *	written to a swap partition.  It consists of many swap_map_page
-- *	structures that contain each an array of MAP_PAGE_ENTRIES swap entries.
-- *	These structures are stored on the swap and linked together with the
-- *	help of the .next_swap member.
-- *
-- *	The swap map is created during suspend.  The swap map pages are
-- *	allocated and populated one at a time, so we only need one memory
-- *	page to set up the entire structure.
-- *
-- *	During resume we also only need to use one swap_map_page structure
-- *	at a time.
-- */
--
--#define MAP_PAGE_ENTRIES	(PAGE_SIZE / sizeof(sector_t) - 1)
--
--struct swap_map_page {
--	sector_t entries[MAP_PAGE_ENTRIES];
--	sector_t next_swap;
--};
--
--/**
-- *	The swap_map_handle structure is used for handling swap in
-- *	a file-alike way
-- */
--
--struct swap_map_handle {
--	struct swap_map_page *cur;
--	sector_t cur_swap;
--	sector_t first_sector;
--	unsigned int k;
--};
--
--static struct swap_map_handle handle;
--
- static unsigned short root_swap = 0xffff;
- 
- struct swsusp_header {
-@@ -72,7 +36,7 @@ struct swsusp_header {
- static struct swsusp_header *swsusp_header;
- 
- static struct hib_extent_state swap_extents;
--static struct hib_extent_state sector_extents;
-+struct hib_extent_state sector_extents;
- 
- /**
-  *	alloc_swapdev_block - allocate a swap page and register that it has
-@@ -121,7 +85,7 @@ static int allocate_swap(unsigned int nr_pages, unsigned int flags)
- 	unsigned int free_swap = count_swap_pages(root_swap, 1);
- 
- 	nr_pages += compress_extra_pages(nr_pages, flags);
--	nr_pages += DIV_ROUND_UP(nr_pages, MAP_PAGE_ENTRIES);
-+	nr_pages += hib_bio_overhead(nr_pages);
- 
- 	pr_debug("PM: Free swap pages: %u\n", free_swap);
- 	if (free_swap < nr_pages)
-@@ -179,7 +143,7 @@ static int mark_swapfiles(unsigned int flags)
- 		memcpy(swsusp_header->orig_sig,swsusp_header->sig, 10);
- 		memcpy(swsusp_header->sig,SWSUSP_SIG, 10);
- 		swsusp_header->write_speed = write_speed;
--		swsusp_header->image = handle.first_sector;
-+		swsusp_header->image = hib_get_first_sector();
- 		swsusp_header->flags = flags;
- 		error = hib_bio_write_page(swsusp_resume_block,
- 					swsusp_header, 1);
-@@ -217,42 +181,6 @@ static int swsusp_swap_check(void)
- 	return res;
- }
- 
--/**
-- *	write_page - Write one page to given swap location.
-- *	@buf:		Address we're writing.
-- *	@offset:	Offset of the swap page we're writing to.
-- *	@sync:		Whether to force synchronous i/o.
-- */
--
--static int write_page(void *buf, sector_t offset, int sync)
--{
--	void *src;
--
--	if (!offset)
--		return -ENOSPC;
--
--	if (!sync) {
--		src = (void *)__get_free_page(__GFP_WAIT | __GFP_HIGH);
--		if (src) {
--			memcpy(src, buf, PAGE_SIZE);
--		} else {
--			WARN_ON_ONCE(1);
--			sync = 1;	/* Go synchronous */
--			src = buf;
--		}
--	} else {
--		src = buf;
--	}
--	return hib_bio_write_page(offset, src, sync);
--}
--
--static void release_swap_writer(void)
--{
--	if (handle.cur)
--		free_page((unsigned long)handle.cur);
--	handle.cur = NULL;
--}
--
- static int get_swap_writer(unsigned long pages, unsigned int flags)
- {
- 	int ret;
-@@ -264,70 +192,19 @@ static int get_swap_writer(unsigned long pages, unsigned int flags)
- 					"swapon -a.\n");
- 		return ret;
- 	}
--	handle.cur = (struct swap_map_page *)get_zeroed_page(GFP_KERNEL);
--	if (!handle.cur) {
--		ret = -ENOMEM;
--		goto err_close;
--	}
- 	if (!allocate_swap(pages, flags)) {
- 		printk(KERN_ERR "PM: Not enough free swap\n");
- 		ret = -ENOSPC;
- 		goto err_close;
- 	}
--	handle.cur_swap = hib_extent_next(&sector_extents);
--	if (!handle.cur_swap) {
--		ret = -ENOSPC;
--		goto err_rel;
--	}
--	handle.k = 0;
--	handle.first_sector = handle.cur_swap;
--	return 0;
--err_rel:
--	release_swap_writer();
-+	ret = hib_bio_prepare_write();
-+	if (!ret)
-+		return 0;
- err_close:
- 	swsusp_close(FMODE_WRITE);
- 	return ret;
- }
- 
--int swap_write_page(void *buf, int sync)
--{
--	int error = 0;
--	sector_t offset;
--
--	if (!handle.cur)
--		return -EINVAL;
--	offset = hib_extent_next(&sector_extents);
--	error = write_page(buf, offset, sync);
--	if (error)
--		return error;
--	handle.cur->entries[handle.k++] = offset;
--	if (handle.k >= MAP_PAGE_ENTRIES) {
--		error = hib_wait_on_bio_chain();
--		if (error)
--			goto out;
--		offset = hib_extent_next(&sector_extents);
--		if (!offset)
--			return -ENOSPC;
--		handle.cur->next_swap = offset;
--		error = write_page(handle.cur, handle.cur_swap, 1);
--		if (error)
--			goto out;
--		memset(handle.cur, 0, PAGE_SIZE);
--		handle.cur_swap = offset;
--		handle.k = 0;
--	}
-- out:
--	return error;
--}
--
--static int flush_swap_writer(void)
--{
--	if (handle.cur && handle.cur_swap)
--		return write_page(handle.cur, handle.cur_swap, 1);
--	else
--		return -EINVAL;
--}
--
- static int swap_writer_finish(unsigned int flags, int error)
- {
- 	if (!error) {
-@@ -441,65 +318,6 @@ out_finish:
- 	return error;
- }
- 
--/**
-- *	The following functions allow us to read data using a swap map
-- *	in a file-alike way
-- */
--
--static void release_swap_reader(void)
--{
--	if (handle.cur)
--		free_page((unsigned long)handle.cur);
--	handle.cur = NULL;
--}
--
--static int get_swap_reader(unsigned int *flags_p)
--{
--	int error;
--
--	*flags_p = swsusp_header->flags;
--
--	if (!swsusp_header->image) /* how can this happen? */
--		return -EINVAL;
--
--	handle.cur = (struct swap_map_page *)get_zeroed_page(__GFP_WAIT | __GFP_HIGH);
--	if (!handle.cur)
--		return -ENOMEM;
--
--	error = hib_bio_read_page(swsusp_header->image, handle.cur, 1);
--	if (error) {
--		release_swap_reader();
--		return error;
--	}
--	handle.k = 0;
--	return 0;
--}
--
--int swap_read_page(void *buf, int sync)
--{
--	sector_t offset;
--	int error;
--
--	if (!handle.cur)
--		return -EINVAL;
--	offset = handle.cur->entries[handle.k];
--	if (!offset)
--		return -EFAULT;
--	error = hib_bio_read_page(offset, buf, sync);
--	if (error)
--		return error;
--	if (++handle.k >= MAP_PAGE_ENTRIES) {
--		error = hib_wait_on_bio_chain();
--		handle.k = 0;
--		offset = handle.cur->next_swap;
--		if (!offset)
--			release_swap_reader();
--		else if (!error)
--			error = hib_bio_read_page(offset, handle.cur, 1);
--	}
--	return error;
--}
--
- static int swap_reader_finish(void)
- {
- 	release_swap_reader();
-@@ -586,7 +404,12 @@ int swsusp_read(unsigned int *flags_p)
- 		return error < 0 ? error : -EFAULT;
- 	}
- 	header = (struct swsusp_info *)data_of(snapshot);
--	error = get_swap_reader(flags_p);
-+	*flags_p = swsusp_header->flags;
-+	if (!swsusp_header->image) { /* how can this happen? */
-+		error = -EINVAL;
-+		goto end;
-+	}
-+	error = get_swap_reader(flags_p, swsusp_header->image);
- 	if (error)
- 		goto end;
- 	if (!error)
-diff --git a/kernel/power/swap.h b/kernel/power/swap.h
-deleted file mode 100644
-index 8e2eed4..0000000
---- a/kernel/power/swap.h
-+++ /dev/null
-@@ -1,14 +0,0 @@
--/*
-- * linux/kernel/power/swap.h
-- *
-- * This file provides declarations for functions and structures from
-- * kernel/power/swap.c.
-- *
-- * Copyright (C) 2010 Nigel Cunningham <nigel@tuxonice.net>
-- *
-- * This file is released under the GPLv2.
-- *
-- */
--
--int swap_write_page(void *buf, int sync);
--int swap_read_page(void *buf, int sync);
--- 
-1.7.0.4
+I see. Thanks. It seems that intel_idle isn't supported on Core 2 based
+Celerons.
 
+Best regards
+
+On Tue, Sep 7, 2010 at 12:28 AM, Arjan van de Ven <arjan@linux.intel.com>wrote:
+
+>  On 9/6/2010 3:03 PM, Tiago Marques wrote:
+>
+>> On Mon, Sep 6, 2010 at 4:47 PM, Arjan van de Ven<arjan@linux.intel.com>
+>>  wrote:
+>>
+>>>  On 9/6/2010 1:35 AM, Thomas Renninger wrote:
+>>>
+>>>> Hi,
+>>>>
+>>>> I am adding lesswatts.org and linux-pm list.
+>>>> I expect you found out why you do not get frequency/P- states and it
+>>>> seem to be correct. On these lists, people can help you further
+>>>> to find out Linux vs Windows battery drain differences.
+>>>>
+>>>> If you have the same backlight settings, I expect C-state or graphics
+>>>> card must be the reason. There is nothing else than CPU or GPU
+>>>> that drains so much energy for being the reason of
+>>>> 20% more battery life time.
+>>>> Which graphics card and driver do you use (for nvidia/ati, trying the
+>>>> binary one for comparison, might show a big difference on a recent
+>>>> card)?
+>>>> Which C-state driver do you use (there is an acpi and intel_idle one
+>>>> with latest kernels):
+>>>> cat /sys/devices/system/cpu/cpuidle/current_driver
+>>>> I hope to be able to provide a c-state tool soon, for now you have to
+>>>> go through:
+>>>> cat /sys/devices/system/cpu/cpu*/cpuidle/state*
+>>>> to check which and how often/efficient C-states are used.
+>>>>
+>>> powertop will tell you exactly this
+>>>
+>>>  Thank you. Please see my previous e-mail. C0, C1 and C4. Do you know
+>> of any way to force the intermediate ones for debugging?
+>>
+>
+> intel_idle driver is the only way that's reasonable in amount of work.
+>
+> for anything else you depend on the grace of the bios.
+>
+>
+
+--e0cb4e887547d300200491b7b58b
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+I see. Thanks. It seems that intel_idle isn&#39;t supported on Core 2 based=
+ Celerons.<div><br><div>Best regards<br><br><div class=3D"gmail_quote">On T=
+ue, Sep 7, 2010 at 12:28 AM, Arjan van de Ven <span dir=3D"ltr">&lt;<a href=
+=3D"mailto:arjan@linux.intel.com" target=3D"_blank">arjan@linux.intel.com</=
+a>&gt;</span> wrote:<br>
+
+
+
+<blockquote class=3D"gmail_quote" style=3D"margin:0pt 0pt 0pt 0.8ex;border-=
+left:1px solid rgb(204, 204, 204);padding-left:1ex">
+<div><div></div><div>=C2=A0On 9/6/2010 3:03 PM, Tiago Marques wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0pt 0pt 0pt 0.8ex;border-=
+left:1px solid rgb(204, 204, 204);padding-left:1ex">
+On Mon, Sep 6, 2010 at 4:47 PM, Arjan van de Ven&lt;<a href=3D"mailto:arjan=
+@linux.intel.com" target=3D"_blank">arjan@linux.intel.com</a>&gt; =C2=A0wro=
+te:<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0pt 0pt 0pt 0.8ex;border-=
+left:1px solid rgb(204, 204, 204);padding-left:1ex">
+ =C2=A0On 9/6/2010 1:35 AM, Thomas Renninger wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0pt 0pt 0pt 0.8ex;border-=
+left:1px solid rgb(204, 204, 204);padding-left:1ex">
+Hi,<br>
+<br>
+I am adding <a href=3D"http://lesswatts.org" target=3D"_blank">lesswatts.or=
+g</a> and linux-pm list.<br>
+I expect you found out why you do not get frequency/P- states and it<br>
+seem to be correct. On these lists, people can help you further<br>
+to find out Linux vs Windows battery drain differences.<br>
+<br>
+If you have the same backlight settings, I expect C-state or graphics<br>
+card must be the reason. There is nothing else than CPU or GPU<br>
+that drains so much energy for being the reason of<br>
+20% more battery life time.<br>
+Which graphics card and driver do you use (for nvidia/ati, trying the<br>
+binary one for comparison, might show a big difference on a recent<br>
+card)?<br>
+Which C-state driver do you use (there is an acpi and intel_idle one<br>
+with latest kernels):<br>
+cat /sys/devices/system/cpu/cpuidle/current_driver<br>
+I hope to be able to provide a c-state tool soon, for now you have to<br>
+go through:<br>
+cat /sys/devices/system/cpu/cpu*/cpuidle/state*<br>
+to check which and how often/efficient C-states are used.<br>
+</blockquote>
+powertop will tell you exactly this<br>
+<br>
+</blockquote>
+Thank you. Please see my previous e-mail. C0, C1 and C4. Do you know<br>
+of any way to force the intermediate ones for debugging?<br>
+</blockquote>
+<br></div></div>
+intel_idle driver is the only way that&#39;s reasonable in amount of work.<=
+br>
+<br>
+for anything else you depend on the grace of the bios.<br>
+<br>
+</blockquote></div><br>
+</div></div>
+
+--e0cb4e887547d300200491b7b58b--
+
+--===============0174089445676219561==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============0174089445676219561==--
