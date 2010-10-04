@@ -1,15 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 03/23] Hibernation: Swap iteration functions.
-Date: Mon, 4 Oct 2010 19:54:58 +0200
-Message-ID: <20101004175457.GC1518__8319.17353575609$1286217276$gmane$org@ucw.cz>
-References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
-	<1285566238-10966-4-git-send-email-nigel@tuxonice.net>
+Subject: Re: [PATCH] tracing, perf: add more power related events
+Date: Mon, 4 Oct 2010 19:55:36 +0200
+Message-ID: <20101004175536.GD1518__13625.1830881976$1286217291$gmane$org@ucw.cz>
+References: <AANLkTinUmbSUUuxUzc8++pcb9gd1CZFdyTQFrveTBXyV@mail.gmail.com>
+	<201009222049.18154.rjw@sisk.pl>
+	<AANLkTinJU5+s_1S6i4GpRuiOfsAPiL9UFtrxCCbtoumt@mail.gmail.com>
+	<201009282322.16291.rjw@sisk.pl> <4CA261F4.5070803@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1285566238-10966-4-git-send-email-nigel@tuxonice.net>
+In-Reply-To: <4CA261F4.5070803@linux.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,21 +21,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@tuxonice.net>
-Cc: Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Len Brown <len.brown@intel.com>, Peter Zijlstra <peterz@infradead.org>, linux-perf-users@vger.kernel.org, Jean Pihet <jean.pihet@newoldbits.com>, linux-kernel@vger.kernel.org, linux-trace-users@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, arjan@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2010-09-27 15:43:38, Nigel Cunningham wrote:
-> Add the data structure 'storage_position' and routines that allow
-> a caller to iterate over swap in sector order. Note that calling
-> reset_storage_pos only resets the position. next_swapdev_block
-> must also be called to get the address of the first (and subsequent
-> sectors).
-> 
-> Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
+Hi!
 
-Merge this with 8/23? AFAICT, this creates unused functions here only
-to move them in later patch.
+> >> Here is what I am proposing, in reply to all your comments:
+> >>
+> >> 1) rename the events to match Thomas's proposal:
+> >>     power:power_cpu_cstate
+> >>     power:power_cpu_pstate
+> >>     power:power_cpu_sstate
+> > If that sstate thing is going to mean "suspend", then please drop it.
+> > "Suspend" is not a state, let alone a CPU state.  It is a procedure by which
+> > the (entire) system is put into a sleep state (that is not confined to CPUs).
+> 
+> there are also non-suspend S states, like S0i1 and S0i3 (supported in 
+> the current Intel "Moorestown" platform)
+
+Where can one learn more?
+								Pavel
+
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
