@@ -1,14 +1,16 @@
-From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: [PATCH 4/4] perf: provide a DEPRECTAED power trace API
-	to user space
-Date: Mon,  4 Oct 2010 17:21:01 +0200
-Message-ID: <1286205661-24448-5-git-send-email-jean.pihet__14373.3080629774$1286206386$gmane$org@newoldbits.com>
+From: "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [PATCH 4/4] perf: provide a DEPRECTAED power trace
+	API to user space
+Date: Mon, 4 Oct 2010 12:10:51 -0400
+Message-ID: <20101004161051.GF16489__1261.4875719466$1286208722$gmane$org@redhat.com>
 References: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
+	<1286205661-24448-5-git-send-email-jean.pihet@newoldbits.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
+Content-Disposition: inline
+In-Reply-To: <1286205661-24448-5-git-send-email-jean.pihet@newoldbits.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,167 +20,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-trace-users@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-perf-users@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com, rjw@sisk.pl, linux-omap@vg
-Cc: Peter Zijlstra <peterz@infradead.org>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, Frank Eigler <fche@redhat.com>, mathieu.desnoyers@efficios.com, Jean Pihet <j-pihet@ti.com>
+To: Jean Pihet <jean.pihet@newoldbits.com>
+Cc: Jean Pihet <j-pihet@ti.com>, Peter Zijlstra <peterz@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, mathieu.desnoyers@efficios.com, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, arjan@linux.intel.com, mingo@elte.hu
 List-Id: linux-pm@vger.kernel.org
 
-Provide a CONFIG_DEPRECATED_POWER_EVENT_TRACING  option in order
-to provide backward compatibility with the user space tracing tools.
+Hi -
 
-To be removed as soon as the tools are in sync with the new API.
-Note: only the old events are mapped to.
+> Provide a CONFIG_DEPRECATED_POWER_EVENT_TRACING  option in order
+> to provide backward compatibility with the user space tracing tools.
 
-Signed-off-by: Jean Pihet <j-pihet@ti.com>
-CC: Thomas Renninger <trenn@suse.de>
----
- include/trace/events/power.h |   98 ++++++++++++++++++++++++++++++++++++++++++
- kernel/trace/Kconfig         |    4 ++
- kernel/trace/power-traces.c  |    4 ++
- 3 files changed, 106 insertions(+), 0 deletions(-)
+This is clever:
 
-diff --git a/include/trace/events/power.h b/include/trace/events/power.h
-index 00bf175..dd00512 100644
---- a/include/trace/events/power.h
-+++ b/include/trace/events/power.h
-@@ -7,6 +7,103 @@
- #include <linux/ktime.h>
- #include <linux/tracepoint.h>
- 
-+
-+#ifdef CONFIG_DEPRECATED_POWER_EVENT_TRACING
-+/*
-+ * Keep the old power API for user space tools backward compatibility.
-+ * To be removed as soon as the tools are in sync with the new API.
-+ *
-+ * Note: only the old events are mapped to.
-+ *
-+ * The mapping is as follows:
-+ *  - trace_processor_idle(state != 0, cpu_id) =>
-+ *	trace_power_start(POWER_CSTATE, state, cpu_id)
-+ *  - trace_processor_idle(state == 0, cpu_id) =>
-+ *	trace_power_end(cpu_id)
-+ *  - trace_processor_frequency(frequency, cpu_id) =>
-+ *	trace_power_frequency(POWER_PSTATE, frequency, cpu_id)
-+ *
-+ */
-+
-+/* Define old API events */
-+#ifndef _TRACE_POWER_OLD_API_
-+#define _TRACE_POWER_OLD_API_
-+enum {
-+	POWER_NONE = 0,
-+	POWER_CSTATE = 1,
-+	POWER_PSTATE = 2,
-+};
-+#endif /* _TRACE_POWER_OLD_API_ */
-+
-+DECLARE_EVENT_CLASS(power,
-+
-+	TP_PROTO(unsigned int type, unsigned int state, unsigned int cpu_id),
-+
-+	TP_ARGS(type, state, cpu_id),
-+
-+	TP_STRUCT__entry(
-+		__field(	u64,		type		)
-+		__field(	u64,		state		)
-+		__field(	u64,		cpu_id		)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->type = type;
-+		__entry->state = state;
-+		__entry->cpu_id = cpu_id;
-+	),
-+
-+	TP_printk("type=%lu state=%lu cpu_id=%lu", (unsigned long)__entry->type,
-+		(unsigned long)__entry->state, (unsigned long)__entry->cpu_id)
-+);
-+
-+DEFINE_EVENT(power, power_start,
-+
-+	TP_PROTO(unsigned int type, unsigned int state, unsigned int cpu_id),
-+
-+	TP_ARGS(type, state, cpu_id)
-+);
-+
-+DEFINE_EVENT(power, power_frequency,
-+
-+	TP_PROTO(unsigned int type, unsigned int state, unsigned int cpu_id),
-+
-+	TP_ARGS(type, state, cpu_id)
-+);
-+
-+TRACE_EVENT(power_end,
-+
-+	TP_PROTO(unsigned int cpu_id),
-+
-+	TP_ARGS(cpu_id),
-+
-+	TP_STRUCT__entry(
-+		__field(	u64,		cpu_id		)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->cpu_id = cpu_id;
-+	),
-+
-+	TP_printk("cpu_id=%lu", (unsigned long)__entry->cpu_id)
-+);
-+
-+/* Map new events trace points calls to old ones */
-+#define trace_processor_idle(state, cpu_id)				\
-+	do {								\
-+		if (state != 0)						\
-+			trace_power_start(POWER_CSTATE, state, cpu_id);	\
-+		else							\
-+			trace_power_end(cpu_id);			\
-+	} while (0)
-+
-+#define trace_processor_frequency(frequency, cpu_id)			\
-+	do {								\
-+		trace_power_frequency(POWER_PSTATE, frequency, cpu_id);	\
-+	} while (0)
-+
-+#else /* CONFIG_DEPRECATED_POWER_EVENT_TRACING */
-+
- /*
-  * The processor events class is used for cpuidle (processor_idle) and
-  *  for cpufreq (processor_frequency)
-@@ -44,6 +141,7 @@ DEFINE_EVENT(processor, processor_frequency,
- 
- 	TP_ARGS(frequency, cpu_id)
- );
-+#endif /* CONFIG_DEPRECATED_POWER_EVENT_TRACING */
- 
- /*
-  * The machine_suspend event is used for system suspend (machine_suspend)
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 538501c..dab2bc1 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -64,6 +64,10 @@ config EVENT_TRACING
- 	select CONTEXT_SWITCH_TRACER
- 	bool
- 
-+config DEPRECATED_POWER_EVENT_TRACING
-+	bool "Use the deprecated power trace API"
-+	default n
-+
- config CONTEXT_SWITCH_TRACER
- 	bool
- 
-diff --git a/kernel/trace/power-traces.c b/kernel/trace/power-traces.c
-index a5555be..3a95670 100644
---- a/kernel/trace/power-traces.c
-+++ b/kernel/trace/power-traces.c
-@@ -13,4 +13,8 @@
- #define CREATE_TRACE_POINTS
- #include <trace/events/power.h>
- 
-+#ifdef CONFIG_DEPRECATED_POWER_EVENT_TRACING
-+EXPORT_TRACEPOINT_SYMBOL_GPL(power_start);
-+#else
- EXPORT_TRACEPOINT_SYMBOL_GPL(processor_idle);
-+#endif
--- 
-1.7.1
+> +/* Map new events trace points calls to old ones */
+> +#define trace_processor_idle(state, cpu_id)				\
+> +	do {								\
+> +		if (state != 0)						\
+> +			trace_power_start(POWER_CSTATE, state, cpu_id);	\
+> +		else							\
+> +			trace_power_end(cpu_id);			\
+> +	} while (0)
+
+but with this code, are the new tracepoints firing at all?  In other
+words, does this backward-compatibility config option effectively
+disable the newer ones?  If so, this is probably avoidable.
+
+Instead of redirecting the new tracepoint calls to these macros, an
+alternative may intercept (un)registration for the old tracepoint
+names, and map them to (un)registration of the real tracepoints.  See
+how syscall tracepoints map to a special (un)registration callback in
+include/trace/events/syscalls.h (syscall_*regfunc).  Instead of
+setting a TIF flag, the new functions can call
+register_processor_idle() et al., and their respective callbacks can
+call the backward-compatibility tracepoints.
+
+The starting point would be to recast the power_start, power_end,
+power_frequency tracepoints via TRACE_EVENT_FN() instead of
+TRACE_EVENT().
+
+- FChE
