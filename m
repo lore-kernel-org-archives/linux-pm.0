@@ -1,16 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH] PM / Hibernate: Modify signature used
-	to mark swap
-Date: Mon, 4 Oct 2010 19:56:00 +0200
-Message-ID: <20101004175600.GE1518__32072.4093392075$1286217295$gmane$org@ucw.cz>
-References: <201009292313.23601.rjw@sisk.pl> <4CA3ADED.6090908@tuxonice.net>
-	<201009300002.03412.rjw@sisk.pl>
+Subject: Re: [PATCH 1/2] PM / Hibernate: Improve comments in
+ hibernate_preallocate_memory()
+Date: Mon, 4 Oct 2010 19:56:18 +0200
+Message-ID: <20101004175618.GF1518__26626.1618504815$1286217306$gmane$org@ucw.cz>
+References: <201009150021.45101.rjw@sisk.pl> <201009150022.30031.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201009300002.03412.rjw@sisk.pl>
+In-Reply-To: <201009150022.30031.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,42 +23,49 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-> > > Index: linux-2.6/kernel/power/swap.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/kernel/power/swap.c
-> > > +++ linux-2.6/kernel/power/swap.c
-> > > @@ -29,7 +29,7 @@
-> > >
-> > >   #include "power.h"
-> > >
-> > > -#define SWSUSP_SIG	"S1SUSPEND"
-> > > +#define HIBERNATE_SIG	"LINHIB0001"
-> > >
-> > >   /*
-> > >    *	The swap map is a data structure used for keeping track of each page
-> > > @@ -195,7 +195,7 @@ static int mark_swapfiles(struct swap_ma
-> > >   	if (!memcmp("SWAP-SPACE",swsusp_header->sig, 10) ||
-> > >   	    !memcmp("SWAPSPACE2",swsusp_header->sig, 10)) {
-> > >   		memcpy(swsusp_header->orig_sig,swsusp_header->sig, 10);
-> > 
-> > if no compression
-> > 
-> > > -		memcpy(swsusp_header->sig,SWSUSP_SIG, 10);
-> > 
-> > else
-> > 
-> > > +		memcpy(swsusp_header->sig, HIBERNATE_SIG, 10);
-> > 
-> > ??
+On Wed 2010-09-15 00:22:29, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: PM / Hibernate: Improve comments in hibernate_preallocate_memory()
 > 
-> I thought about that, but we'll need to drop the old signature when the image
-> format changes (I think it will after your patch series) anyway.  And the
-> benefit is not really worth it IMO (it only affects people using the in-kernel
-> hibernation on x86-64).
+> One comment in hibernate_preallocate_memory() is wrong, so fix it and
+> add one more comment to clarify the meaning of the fixed one.
 > 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-ACK. Lets keep this simple.
+ACK.
+
+
+> ---
+>  kernel/power/snapshot.c |    6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/kernel/power/snapshot.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/power/snapshot.c
+> +++ linux-2.6/kernel/power/snapshot.c
+> @@ -1318,12 +1318,14 @@ int hibernate_preallocate_memory(void)
+>  
+>  	/* Compute the maximum number of saveable pages to leave in memory. */
+>  	max_size = (count - (size + PAGES_FOR_IO)) / 2 - 2 * SPARE_PAGES;
+> +	/* Compute the desired number of image pages specified by image_size. */
+>  	size = DIV_ROUND_UP(image_size, PAGE_SIZE);
+>  	if (size > max_size)
+>  		size = max_size;
+>  	/*
+> -	 * If the maximum is not less than the current number of saveable pages
+> -	 * in memory, allocate page frames for the image and we're done.
+> +	 * If the desired number of image pages is at least as large as the
+> +	 * current number of saveable pages in memory, allocate page frames for
+> +	 * the image and we're done.
+>  	 */
+>  	if (size >= saveable) {
+>  		pages = preallocate_image_highmem(save_highmem);
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
