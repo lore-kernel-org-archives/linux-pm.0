@@ -1,33 +1,30 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: wacom + runtime PM = AA deadlock
-Date: Tue, 5 Oct 2010 07:54:21 +0200
-Message-ID: <201010050754.21158.oliver__13796.8704257675$1286258044$gmane$org@neukum.org>
-References: <4C8E180D.4020309@suse.cz> <201010042124.24253.oliver@neukum.org>
-	<20101005054139.GC15355@core.coreip.homeip.net>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] intel_idle: PCI quirk to prevent Lenovo Ideapad s10-3
+	boot hang
+Date: Tue, 5 Oct 2010 12:40:47 +0100
+Message-ID: <20101005114047.GA29495@srcf.ucam.org>
+References: <alpine.LFD.2.00.1009242122390.8641@localhost.localdomain> <20100927135735.GA856@srcf.ucam.org> <alpine.LFD.2.00.1009301810380.7033@localhost.localdomain> <20100930222946.GB23084@srcf.ucam.org> <alpine.LFD.2.00.1010050104450.23209@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101005054139.GC15355@core.coreip.homeip.net>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-input@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, pingc@wacom.com, Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1010050104450.23209@localhost.localdomain>
+Sender: linux-pci-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>, linux-pci@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Dienstag, 5. Oktober 2010, 07:41:40 schrieb Dmitry Torokhov:
+On Tue, Oct 05, 2010 at 01:06:15AM -0400, Len Brown wrote:
+> > > we check (and clear) that bit only if the acpi tables
+> > > tell us to do so.
+> > 
+> > Do the tables tell us to do so on this platform?
+> 
+> In this configuration, yes, otherwise acpi_idle
+> would have failed in exactly the same way.
 
-> Thanks Oliver. And the patch below is for .37 properly enabling runtime
-> PM for wacom.
+So why is intel_idle not paying attention to what the platform is 
+requesting?
 
-Acked-by: Oliver Neukum <oneukum@suse.de>
-
-	Regards
-		Oliver
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
