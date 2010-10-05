@@ -1,15 +1,15 @@
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [PATCH] PM: add synchronous runtime interface for
-	interrupt handlers
-Date: Tue, 05 Oct 2010 14:44:45 -0700
-Message-ID: <878w2cnwky.fsf__43543.3671148077$1286315226$gmane$org@deeprootsystems.com>
-References: <Pine.LNX.4.44L0.1010021004150.15874-100000@netrider.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Question about hibernation
+Date: Wed, 6 Oct 2010 00:43:30 +0200
+Message-ID: <201010060043.30489.rjw@sisk.pl>
+References: <BLU102-W1030ED196ED7B94722F2A7EB830@phx.gbl>
+	<BLU102-W16DEFB6CCB93D518FD5745EB7C0@phx.gbl>
+	<BLU102-W27AEE84EC4B31E9F85FF13EB6D0@phx.gbl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1010021004150.15874-100000@netrider.rowland.org>
-	(Alan Stern's message of "Sat, 2 Oct 2010 10:12:10 -0400 (EDT)")
+In-Reply-To: <BLU102-W27AEE84EC4B31E9F85FF13EB6D0@phx.gbl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,42 +19,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+On Tuesday, October 05, 2010, Raj Kumar wrote:
+> 
+> Hi Alan,
+>  
+> I have question regarding the hibernation mode in linux. 
+>  
+> 1) In normal suspend to ram, is freezing of tasks necessary while suspend to ram in current linux power management core?
 
-> On Fri, 1 Oct 2010, Rafael J. Wysocki wrote:
->
->> > > In my opinion the _irq operations should really be one-shot, without
->> > > any looping, waking up parents etc.  I mean, if the parent is not RPM_ACTIVE,
->> > > the _irq resume should immediately fail and analogously for the _irq
->> > > suspend.  And so on.  As simple as reasonably possible.
->> > 
->> > But what if the device's own status is currently SUSPENDING or
->> > RESUMING?  Do you want to fail when that happens, instead of waiting
->> > for the concurrent operation to finish?
->> 
->> Yes.  IMO an _irq() suspend should only be allowed if the status is RPM_ACTIVE
->> and an _irq() resume should fail if the status is not RPM_SUSPENDED.  The
->> error code returned should depend on the situation, though.
->> 
->> > There's no way to prevent this
->> > on SMP systems, because a wakeup request can arrive while a
->> > software-initiated resume is in progress.
->> 
->> I know that. :-)
->
-> I suspect Kevin will not want to live with this restriction, but I'd
-> like to hear from him.  Kevin?
+Yes, it is.
 
-[ Apologies for the delays... I've been running around preparing OMAP PM
-  stuff for the upcoming merge window. ]
+> 2) In hibernation mode, is freezing of tasks done before normal suspend/resumes in order to that hibernation image is in sync?
 
-I think I can live with the above restrictions (the _irq methods failing
-unless they can immediately run.)  For the rare corner cases I've
-currently run into, this will work fine as they happen because of a
-wakeup IRQ, where we know the device is RPM_SUSPENDED.
+That depends on what you mean by normal "suspend/resumes".  Generally speaking,
+the hibernate code freezes tasks before preallocating image memory.
 
-Kevin
+> My issue is because it might be possible that there is some part of device driver which is user space and another part is kernel space
+> then in suspend to ram and hibernation mode is freezing of all user space part is done before kernel side or it differs while
+> suspend to ram and hibernation mode?
+
+User space is always frozen before suspend and hibernation.
+
+Thanks,
+Rafael
