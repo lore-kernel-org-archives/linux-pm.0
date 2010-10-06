@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Question about hibernation
-Date: Wed, 6 Oct 2010 00:43:30 +0200
-Message-ID: <201010060043.30489.rjw@sisk.pl>
-References: <BLU102-W1030ED196ED7B94722F2A7EB830@phx.gbl>
-	<BLU102-W16DEFB6CCB93D518FD5745EB7C0@phx.gbl>
-	<BLU102-W27AEE84EC4B31E9F85FF13EB6D0@phx.gbl>
+From: Nigel Cunningham <nigel@tuxonice.net>
+Subject: Re: [PATCH 08/23] Hibernation: Generic extents support.
+Date: Wed, 06 Oct 2010 12:21:29 +1100
+Message-ID: <4CABCF19.60902__42829.8493418426$1286328241$gmane$org@tuxonice.net>
+References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
+	<1285566238-10966-9-git-send-email-nigel@tuxonice.net>
+	<20101004175122.GB1518@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BLU102-W27AEE84EC4B31E9F85FF13EB6D0@phx.gbl>
+In-Reply-To: <20101004175122.GB1518@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,29 +19,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, October 05, 2010, Raj Kumar wrote:
-> 
-> Hi Alan,
->  
-> I have question regarding the hibernation mode in linux. 
->  
-> 1) In normal suspend to ram, is freezing of tasks necessary while suspend to ram in current linux power management core?
+Hi.
 
-Yes, it is.
+On 05/10/10 04:51, Pavel Machek wrote:
+> Hi!
+>
+>> Separate out the extent storage and manipulation into a separate
+>> file and make them more generic, so we can also use extents for
+>> recording what sectors are used and (later) support multiple
+>> storage devices more easily.
+>>
+>> Signed-off-by: Nigel Cunningham<nigel@tuxonice.net>
+>
+>> @@ -0,0 +1,125 @@
+>> +/*
+>> + * linux/kernel/power/extents.c
+>> + *
+>> + * This file provides functions for storing and using a series of
+>> + * extents.
+>> + *
+>> + * Copyright (C) 1998,2001-2005 Pavel Machek<pavel@suse.cz>
+>
+> That address is no longer valid :-(. Jiri Kosina should already have
+> patches to remove it elsewhere in the tree.
 
-> 2) In hibernation mode, is freezing of tasks done before normal suspend/resumes in order to that hibernation image is in sync?
+Okay. You want ucw.cz or something else?
 
-That depends on what you mean by normal "suspend/resumes".  Generally speaking,
-the hibernate code freezes tasks before preallocating image memory.
+>> +/**
+>> + *	free_all_swap_pages - free swap pages allocated for saving image data.
+>> + *	It also frees the extents used to register which swap entres had been
+>> + *	allocated.
+>> + */
+>> +
+>> +void hib_extents_clear(struct hib_extent_state *pos)
+>
+> Comment does not match function.
 
-> My issue is because it might be possible that there is some part of device driver which is user space and another part is kernel space
-> then in suspend to ram and hibernation mode is freezing of all user space part is done before kernel side or it differs while
-> suspend to ram and hibernation mode?
+Thanks.
 
-User space is always frozen before suspend and hibernation.
-
-Thanks,
-Rafael
+Nigel
