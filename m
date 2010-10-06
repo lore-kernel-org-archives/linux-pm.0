@@ -1,12 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ACPI / PM: Fix problems with
-	acpi_pm_device_sleep_state()
-Date: Thu, 7 Oct 2010 00:48:20 +0200
-Message-ID: <201010070048.20890.rjw__25596.4249292903$1286405554$gmane$org@sisk.pl>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH] PM: add synchronous runtime interface for
+	interrupt handlers
+Date: Wed, 06 Oct 2010 16:51:47 -0700
+Message-ID: <87hbgyg9rg.fsf__22301.9980396659$1286409187$gmane$org@deeprootsystems.com>
+References: <Pine.LNX.4.44L0.1010061609060.2047-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.1010061609060.2047-100000@iolanthe.rowland.org>
+	(Alan Stern's message of "Wed, 6 Oct 2010 16:28:19 -0400 (EDT)")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,130 +19,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: ACPI / PM: Fix problems with acpi_pm_device_sleep_state()
+Alan Stern <stern@rowland.harvard.edu> writes:
 
-There is a number of problems with acpi_pm_device_sleep_state() now.
-First, if _S0W is not defined, it prevents devices from being put
-into D3 by PCI runtime PM, which shouldn't happen.  Second, it
-shouldn't use adev->wakeup.state.enabled, because if it's set, it
-only means that either the device is permanently enabled to wake up
-the system, or that it has been enabled to do that through
-/proc/acpi/wakeup.  Finally, it should be compiled if CONFIG_PM_SLEEP
-is not set, so that PCI runtime PM works correctly in that case.
-Fix these problems.
+> On Wed, 6 Oct 2010, Kevin Hilman wrote:
+>
+>> >> I think I can live with the above restrictions (the _irq methods failing
+>> >> unless they can immediately run.)  For the rare corner cases I've
+>> >> currently run into, this will work fine as they happen because of a
+>> >> wakeup IRQ, where we know the device is RPM_SUSPENDED.
+>> >
+>> > Then what will the driver do if it gets a wakeup IRQ but it can't
+>> > resume the device because some other thread is in the middle of a
+>> > suspend or resume?
+>> 
+>> In those cases, I guess it will have to return IRQ_NONE, and print some
+>> sort of error.
+>
+> Without handling the IRQ?  I guess if the transient state (SUSPENDING
+> or RESUMING) ends quickly enough then the kernel won't permanently
+> disable the IRQ line (although getting hundreds of repeated error
+> messages in the system log might prove daunting).  Would you want to 
+> rely on that?
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/sleep.c    |   16 ++++++++++------
- include/acpi/acpi_bus.h |   12 ++++++++----
- 2 files changed, 18 insertions(+), 10 deletions(-)
+Probably not, I think the delayed approach is better.
 
-Index: linux-2.6/drivers/acpi/sleep.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep.c
-+++ linux-2.6/drivers/acpi/sleep.c
-@@ -27,6 +27,8 @@
- 
- u8 sleep_states[ACPI_S_STATE_COUNT];
- 
-+static u32 acpi_target_sleep_state = ACPI_STATE_S0;
-+
- static void acpi_sleep_tts_switch(u32 acpi_state)
- {
- 	union acpi_object in_arg = { ACPI_TYPE_INTEGER };
-@@ -79,8 +81,6 @@ static int acpi_sleep_prepare(u32 acpi_s
- }
- 
- #ifdef CONFIG_ACPI_SLEEP
--static u32 acpi_target_sleep_state = ACPI_STATE_S0;
--
- /*
-  * The ACPI specification wants us to save NVS memory regions during hibernation
-  * and to restore them during the subsequent resume.  Windows does that also for
-@@ -562,7 +562,7 @@ int acpi_suspend(u32 acpi_state)
- 	return -EINVAL;
- }
- 
--#ifdef CONFIG_PM_SLEEP
-+#ifdef CONFIG_PM_OPS
- /**
-  *	acpi_pm_device_sleep_state - return preferred power state of ACPI device
-  *		in the system sleep state given by %acpi_target_sleep_state
-@@ -624,7 +624,7 @@ int acpi_pm_device_sleep_state(struct de
- 	 * can wake the system.  _S0W may be valid, too.
- 	 */
- 	if (acpi_target_sleep_state == ACPI_STATE_S0 ||
--	    (device_may_wakeup(dev) && adev->wakeup.state.enabled &&
-+	    (device_may_wakeup(dev) &&
- 	     adev->wakeup.sleep_state <= acpi_target_sleep_state)) {
- 		acpi_status status;
- 
-@@ -632,7 +632,9 @@ int acpi_pm_device_sleep_state(struct de
- 		status = acpi_evaluate_integer(handle, acpi_method, NULL,
- 						&d_max);
- 		if (ACPI_FAILURE(status)) {
--			d_max = d_min;
-+			if (acpi_target_sleep_state != ACPI_STATE_S0 ||
-+			    status != AE_NOT_FOUND)
-+				d_max = d_min;
- 		} else if (d_max < d_min) {
- 			/* Warn the user of the broken DSDT */
- 			printk(KERN_WARNING "ACPI: Wrong value from %s\n",
-@@ -646,7 +648,9 @@ int acpi_pm_device_sleep_state(struct de
- 		*d_min_p = d_min;
- 	return d_max;
- }
-+#endif /* CONFIG_PM_OPS */
- 
-+#ifdef CONFIG_PM_SLEEP
- /**
-  *	acpi_pm_device_sleep_wake - enable or disable the system wake-up
-  *                                  capability of given device
-@@ -677,7 +681,7 @@ int acpi_pm_device_sleep_wake(struct dev
- 
- 	return error;
- }
--#endif
-+#endif  /* CONFIG_PM_SLEEP */
- 
- static void acpi_power_off_prepare(void)
- {
-Index: linux-2.6/include/acpi/acpi_bus.h
-===================================================================
---- linux-2.6.orig/include/acpi/acpi_bus.h
-+++ linux-2.6/include/acpi/acpi_bus.h
-@@ -389,21 +389,25 @@ struct acpi_pci_root *acpi_pci_find_root
- int acpi_enable_wakeup_device_power(struct acpi_device *dev, int state);
- int acpi_disable_wakeup_device_power(struct acpi_device *dev);
- 
--#ifdef CONFIG_PM_SLEEP
-+#ifdef CONFIG_PM_OPS
- int acpi_pm_device_sleep_state(struct device *, int *);
--int acpi_pm_device_sleep_wake(struct device *, bool);
--#else /* !CONFIG_PM_SLEEP */
-+#else
- static inline int acpi_pm_device_sleep_state(struct device *d, int *p)
- {
- 	if (p)
- 		*p = ACPI_STATE_D0;
- 	return ACPI_STATE_D3;
- }
-+#endif
-+
-+#ifdef CONFIG_PM_SLEEP
-+int acpi_pm_device_sleep_wake(struct device *, bool);
-+#else
- static inline int acpi_pm_device_sleep_wake(struct device *dev, bool enable)
- {
- 	return -ENODEV;
- }
--#endif /* !CONFIG_PM_SLEEP */
-+#endif
- 
- #endif				/* CONFIG_ACPI */
- 
+>>  Alternatively, it could fall back to the high-latency
+>> case of masking the IRQ and doing an asynchronous call then call the ISR
+>> in the runtime_resume callback.
+>
+> Yes, this probably would be acceptable since it wouldn't happen very 
+> often.  Still, having two different pathways (one of which is very low 
+> probability) usually isn't a good idea.
+
+>> For the corner cases that I've run into, other transitions will not be
+>> in progress because system has just woken up (so no threads are in the
+>> middle of suspends or resumes) and the IRQ fires as soon as pm_idle
+>> enables interrupts, and before there's a chance to schedule anything
+>> else.
+>
+> Ah, but once you integrate the runtime PM framework into your driver, 
+> you run the risk of resumes occurring for reasons that aren't under 
+> your control.  For example, the user can force a runtime-suspended 
+> device to resume by writing "on" to the device's power/control sysfs 
+> attribute.  What would happen if a wakeup IRQ arrived just as the 
+> resume was starting?
+
+I guess the "mask-IRQ, pm_runtime_get(), return" approach would work
+here too.  But I agree with you about the drivers having to handle both
+of these cases is not the greatest.
+
+> (Actually, this particular failure mode shouldn't concern you very much
+> since it applies only to SMP systems.  But it's important to think of
+> the future -- I can imagine SMP OMAPs coming out before too long.)
+
+It already concerns me since I'm working on SMP OMAPs too.  The OMAP4 is
+a dual ARM Cortex A9[1].
+
+> On the whole, I don't see any striking reason for the PM core not to
+> busy-wait during a concurrent state change.  Refusing to wake up a
+> suspended parent ... okay, maybe that's a little more defensible.
+> Especially since in many or most cases the parent (if there is one)
+> will probably be runtime-PM-disabled anyway.
+
+Not sure I follow where you're going with this last paragraph.  Of
+course, calls from ISR context cannot busy wait.
+
+Kevin
+
+
+[1] http://focus.ti.com/general/docs/wtbu/wtbuproductcontent.tsp?templateId=6123&navigationId=12842&contentId=53247
