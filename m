@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC] input: syfs switches for SKE keypad
-Date: Wed, 6 Oct 2010 21:08:00 +0200
-Message-ID: <201010062108.00366.rjw__30599.5752838955$1286392270$gmane$org@sisk.pl>
-References: <201010061018.14714.dmitry.torokhov@gmail.com>
-	<Pine.LNX.4.44L0.1010061417410.2047-100000@iolanthe.rowland.org>
-	<20101006182647.GA5794@core.coreip.homeip.net>
+Subject: Re: [PATCH] PM: add synchronous runtime interface for
+	interrupt handlers
+Date: Wed, 6 Oct 2010 21:33:10 +0200
+Message-ID: <201010062133.10387.rjw__15480.8956700892$1286393812$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1010061156460.2047-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101006182647.GA5794@core.coreip.homeip.net>
+In-Reply-To: <Pine.LNX.4.44L0.1010061156460.2047-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,55 +18,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
-Cc: samu.p.onkalo@nokia.com, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>, ext Sundar R IYER <sundar.iyer@stericsson.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, October 06, 2010, Dmitry Torokhov wrote:
-> On Wed, Oct 06, 2010 at 02:19:03PM -0400, Alan Stern wrote:
-> > On Wed, 6 Oct 2010, Dmitry Torokhov wrote:
-> > 
-> > > > > I think last time Rafael mentioned that runtime PM did not allow for
-> > > > > forcing power state from userspace but I wonder if it would be possible
-> > > > > for userspace to signal and "accelerate" the idle state for a device and
-> > > > > then standard runtime PM framework would kick in...
-> > > > 
-> > > > Yes; drivers can implement their runtime power policy any way they
-> > > > want.  For example, a driver could create a sysfs attribute file which
-> > > > userspace could use to ask for changes in the power state.
-> > > > 
-> > > > The real question is whether the driver is platform-specific.  If it is
-> > > > then fine, it can do whatever it wants.  If it isn't then it should
-> > > > try to avoid doing things that are tied to a specific platform.
-> > > >
-> > > 
-> > > No, I really think it is wrong. This what leads us to the situation we
-> > > are in at the moment. Every device [re]implements  its own little knobs
-> > > to do power management. Accelerometers export their (often tailored to a
-> > > specific platform) attributes in sysfs in nonstandard way. And so on,
-> > > and so forth.
-> > > 
-> > > Here I'd like to see these (PM) hooks done on device core level, i.e.
-> > > the knobs should be unified and live in /sys/devices/.../deviceX/power/
-> > 
-> > I haven't followed this thread in detail.  What sort of knobs are you 
-> > talking about?  That is, what needs to be done?  Maybe the PM core 
-> > already provides these features.
-> > 
+On Wednesday, October 06, 2010, Alan Stern wrote:
+> On Tue, 5 Oct 2010, Kevin Hilman wrote:
 > 
-> Mobile folks wish to power down some devices (most often input -
-> touchscreen, keypad) under certain circumstances to save power.
-> So far they were doing that by adding "disable" hook to individual
-> drivers and while I did allow that in for some devices I feel that we
-> need more standardised solution, preferably one that could re-use
-> existing PM hooks in drivers.
+> > Alan Stern <stern@rowland.harvard.edu> writes:
+> > 
+> > > On Fri, 1 Oct 2010, Rafael J. Wysocki wrote:
+> > >
+> > >> > > In my opinion the _irq operations should really be one-shot, without
+> > >> > > any looping, waking up parents etc.  I mean, if the parent is not RPM_ACTIVE,
+> > >> > > the _irq resume should immediately fail and analogously for the _irq
+> > >> > > suspend.  And so on.  As simple as reasonably possible.
+> > >> > 
+> > >> > But what if the device's own status is currently SUSPENDING or
+> > >> > RESUMING?  Do you want to fail when that happens, instead of waiting
+> > >> > for the concurrent operation to finish?
+> > >> 
+> > >> Yes.  IMO an _irq() suspend should only be allowed if the status is RPM_ACTIVE
+> > >> and an _irq() resume should fail if the status is not RPM_SUSPENDED.  The
+> > >> error code returned should depend on the situation, though.
+> > >> 
+> > >> > There's no way to prevent this
+> > >> > on SMP systems, because a wakeup request can arrive while a
+> > >> > software-initiated resume is in progress.
+> > >> 
+> > >> I know that. :-)
+> > >
+> > > I suspect Kevin will not want to live with this restriction, but I'd
+> > > like to hear from him.  Kevin?
+> > 
+> > [ Apologies for the delays... I've been running around preparing OMAP PM
+> >   stuff for the upcoming merge window. ]
+> > 
+> > I think I can live with the above restrictions (the _irq methods failing
+> > unless they can immediately run.)  For the rare corner cases I've
+> > currently run into, this will work fine as they happen because of a
+> > wakeup IRQ, where we know the device is RPM_SUSPENDED.
+> 
+> Then what will the driver do if it gets a wakeup IRQ but it can't
+> resume the device because some other thread is in the middle of a
+> suspend or resume?
 
-There's no interface for that at the PM core level, but I think we should
-add it, perhaps in analogy to the autosuspend one.  Namely, we can add a
-flag for drivers who want to make their suspend/resume callbacks to be
-reachable directly from user space.  Setting that flag would enable a sysfs
-attribute in /sys/devices/.../power/ allowing user space to invoke
-pm_runtime_suspend() and pm_runtime_resume() for the given device.
+Queue up a resume request and return.
 
 Thanks,
 Rafael
