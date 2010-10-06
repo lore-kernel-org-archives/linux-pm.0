@@ -1,46 +1,52 @@
-From: Nigel Cunningham <nigel@tuxonice.net>
-Subject: Re: [PATCH 03/23] Hibernation: Swap iteration functions.
-Date: Wed, 06 Oct 2010 12:22:32 +1100
-Message-ID: <4CABCF58.1090903__11302.9555338018$1286328373$gmane$org@tuxonice.net>
-References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
-	<1285566238-10966-4-git-send-email-nigel@tuxonice.net>
-	<20101004175457.GC1518@ucw.cz>
+From: Trilok Soni <tsoni@codeaurora.org>
+Subject: Re: [RFC] input: syfs switches for SKE keypad
+Date: Wed, 06 Oct 2010 14:02:11 +0530
+Message-ID: <4CAC340B.90207@codeaurora.org>
+References: <33A307AF30D7BF4F811B1568FE7A9B180460D32FE2@EXDCVYMBSTM006.EQ1STM.local> <20101005174106.GA21399@core.coreip.homeip.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101004175457.GC1518@ucw.cz>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <20101005174106.GA21399@core.coreip.homeip.net>
+Sender: linux-input-owner@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Sundar R IYER <sundar.iyer@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, Linus WALLEIJ <linus.walleij@stericsson.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.osdl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi.
+Hi Sundar,
 
-On 05/10/10 04:54, Pavel Machek wrote:
-> On Mon 2010-09-27 15:43:38, Nigel Cunningham wrote:
->> Add the data structure 'storage_position' and routines that allow
->> a caller to iterate over swap in sector order. Note that calling
->> reset_storage_pos only resets the position. next_swapdev_block
->> must also be called to get the address of the first (and subsequent
->> sectors).
+On 10/5/2010 11:11 PM, Dmitry Torokhov wrote:
+> Hi Sundar,
+> 
+> On Tue, Oct 05, 2010 at 06:54:42PM +0200, Sundar R IYER wrote:
+>> Hi Dmitry,
 >>
->> Signed-off-by: Nigel Cunningham<nigel@tuxonice.net>
->
-> Merge this with 8/23? AFAICT, this creates unused functions here only
-> to move them in later patch.
+>> Meego folks have a requirement for dynamic sysfs switches
+>> for input drivers. I saw a patch from Samu (Nokia) for the same but which
+>> lost its way out.  Here is a small modified patch set for the SKE
+>> driver *only* which completes this requirement and hence a question for
+>> you. (The idea is only a sysfs implemention; its not yet synced in with the
+>> mainline code)
+>>
+>> Would you be okay to accept a stand-alone patch like the below for all the
+>> input drivers that we would be pushing in or do you have some comments
+>> or improvements suggested to be folded in the original patch set from Nokia,
+>> so that it can get through into the generic tree?
+> 
+> I am not the biggest fan of such solution and I would prefer having this
+> facility on a more generic level, maybe tied in with a special for of PM
+> (something like user-controlled)?  Then most of the devices would simply
+> reuse existing suspend/resume hooks without the need to add more and
+> more pretty much duplicate code.
 
-Okay. I've merged a couple of the others together too. I hope to send a 
-new set in a while.
+I agree with Dmitry. Meego people or you should explain the real end-to-end
+usecase first. Why it can't fit anywhere else?
 
-Regards,
+We should not fill in features very specific to userspace frameworks. I see lately
+lot of Android and Meego specific bits into TS and Keypad drivers from many folks.
 
-Nigel
+---Trilok Soni
+
+-- 
+Sent by a consultant of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
