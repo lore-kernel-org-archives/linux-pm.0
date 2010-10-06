@@ -1,65 +1,34 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: add synchronous runtime interface for
- interrupt handlers
-Date: Wed, 6 Oct 2010 11:58:35 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1010061156460.2047-100000__34536.308857105$1286380755$gmane$org@iolanthe.rowland.org>
-References: <878w2cnwky.fsf@deeprootsystems.com>
+Subject: Re: [linux-pm] [RFC] input: syfs switches for SKE keypad
+Date: Wed, 6 Oct 2010 12:19:13 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1010061214070.2047-100000@iolanthe.rowland.org>
+References: <20101006154331.GA28913@core.coreip.homeip.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <878w2cnwky.fsf@deeprootsystems.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <20101006154331.GA28913@core.coreip.homeip.net>
+Sender: linux-input-owner@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Trilok Soni <tsoni@codeaurora.org>, samu.p.onkalo@nokia.com, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>, ext Sundar R IYER <sundar.iyer@stericsson.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 5 Oct 2010, Kevin Hilman wrote:
+On Wed, 6 Oct 2010, Dmitry Torokhov wrote:
 
-> Alan Stern <stern@rowland.harvard.edu> writes:
+> > I think this can be solved with pm_runtime, isn't it? Though I am not expert
+> > at pm_runtime, but this framework can be explored to enable these features.
 > 
-> > On Fri, 1 Oct 2010, Rafael J. Wysocki wrote:
-> >
-> >> > > In my opinion the _irq operations should really be one-shot, without
-> >> > > any looping, waking up parents etc.  I mean, if the parent is not RPM_ACTIVE,
-> >> > > the _irq resume should immediately fail and analogously for the _irq
-> >> > > suspend.  And so on.  As simple as reasonably possible.
-> >> > 
-> >> > But what if the device's own status is currently SUSPENDING or
-> >> > RESUMING?  Do you want to fail when that happens, instead of waiting
-> >> > for the concurrent operation to finish?
-> >> 
-> >> Yes.  IMO an _irq() suspend should only be allowed if the status is RPM_ACTIVE
-> >> and an _irq() resume should fail if the status is not RPM_SUSPENDED.  The
-> >> error code returned should depend on the situation, though.
-> >> 
-> >> > There's no way to prevent this
-> >> > on SMP systems, because a wakeup request can arrive while a
-> >> > software-initiated resume is in progress.
-> >> 
-> >> I know that. :-)
-> >
-> > I suspect Kevin will not want to live with this restriction, but I'd
-> > like to hear from him.  Kevin?
-> 
-> [ Apologies for the delays... I've been running around preparing OMAP PM
->   stuff for the upcoming merge window. ]
-> 
-> I think I can live with the above restrictions (the _irq methods failing
-> unless they can immediately run.)  For the rare corner cases I've
-> currently run into, this will work fine as they happen because of a
-> wakeup IRQ, where we know the device is RPM_SUSPENDED.
+> I think last time Rafael mentioned that runtime PM did not allow for
+> forcing power state from userspace but I wonder if it would be possible
+> for userspace to signal and "accelerate" the idle state for a device and
+> then standard runtime PM framework would kick in...
 
-Then what will the driver do if it gets a wakeup IRQ but it can't
-resume the device because some other thread is in the middle of a
-suspend or resume?
+Yes; drivers can implement their runtime power policy any way they
+want.  For example, a driver could create a sysfs attribute file which
+userspace could use to ask for changes in the power state.
+
+The real question is whether the driver is platform-specific.  If it is 
+then fine, it can do whatever it wants.  If it isn't then it should 
+try to avoid doing things that are tied to a specific platform.
 
 Alan Stern
+
