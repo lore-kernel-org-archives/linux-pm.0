@@ -1,92 +1,65 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [RFC] input: syfs switches for SKE keypad
-Date: Wed, 6 Oct 2010 08:43:32 -0700
-Message-ID: <20101006154331.GA28913@core.coreip.homeip.net>
-References: <33A307AF30D7BF4F811B1568FE7A9B180460D32FE2@EXDCVYMBSTM006.EQ1STM.local>
- <20101005174106.GA21399@core.coreip.homeip.net>
- <4CAC340B.90207@codeaurora.org>
- <33A307AF30D7BF4F811B1568FE7A9B180461062FE6@EXDCVYMBSTM006.EQ1STM.local>
- <1286358518.26914.23.camel@4fid08082>
- <4CAC6053.5020000@codeaurora.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: add synchronous runtime interface for
+ interrupt handlers
+Date: Wed, 6 Oct 2010 11:58:35 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1010061156460.2047-100000__34536.308857105$1286380755$gmane$org@iolanthe.rowland.org>
+References: <878w2cnwky.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-input-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4CAC6053.5020000@codeaurora.org>
-Sender: linux-input-owner@vger.kernel.org
-To: Trilok Soni <tsoni@codeaurora.org>
-Cc: samu.p.onkalo@nokia.com, ext Sundar R IYER <sundar.iyer@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, Linus WALLEIJ <linus.walleij@stericsson.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <878w2cnwky.fsf@deeprootsystems.com>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Oct 06, 2010 at 05:11:07PM +0530, Trilok Soni wrote:
-> Hi Samu,
+On Tue, 5 Oct 2010, Kevin Hilman wrote:
+
+> Alan Stern <stern@rowland.harvard.edu> writes:
 > 
-> On 10/6/2010 3:18 PM, Onkalo Samu wrote:
-> > On Wed, 2010-10-06 at 10:56 +0200, ext Sundar R IYER wrote:
-> >> Hi,
-> >>
-> >>> -----Original Message-----
-> >>> From: Trilok Soni [mailto:tsoni@codeaurora.org]
-> >>> Sent: Wednesday, October 06, 2010 2:02 PM
-> >>>
-> >>> I agree with Dmitry. Meego people or you should explain the real end-to-end
-> >>> usecase first. Why it can't fit anywhere else?
-> >>
-> >> I don't know the full details; but what I can think of (or did I read it somewhere?)
-> >> is events like phones with slider keypad; you can power save keypad controller
-> >> when the keypad is not active. And these events are probably issued from the user
-> >> space to the kernel and that's why the requirement probably. And I do remember
-> >> Samu mentioning about unwanted wakeup events which were avoided via these switches.
-> >>
-> >> Adding Samu who can explain more on this.
-> > 
-> > This is how I see this issue
-> > 
-> > I tried to push enable / disable entries to generic input layer to avoid
-> > driver specific controls. That was not accepted.
-> > 
-> > The need for keypad locking is not following any global PM transition.
-> > In phones (like N900), global suspend / resume is not used at all. Phone
-> > is running all the time. For example phone must be able to handle
-> > incoming calls all the time. Instead suspend / resume, system is in deep
-> > idle state as much as possible. Wake up from that takes couple of
-> > milliseconds and everything is running again. Powers, clocks and any
-> > extra activity must be turned off when ever possile depending on the
-> > overall system state.
-> > 
-> > For input devices this means that keypad, touch controller etc. are
-> > turned off or partially disabled for example when the screen is blanked.
-> > Meanwhile system may still have other activity ongoing like mp3
-> > playback. When the screen is off, there must be some way to tell to
-> > touch controller that please turn off and save some power.
-
-So exactly like I was saying it is all about the PM and thus input layer
-is really the wrong place to solve this.
-
-> >  This not
-> > following pm transitions.
-
-What do you mean? It may not follow system-whide PM transtitions but it
-is per-device PM transition that I believe everyone wants to have
-support for. You shut off devices individually and in subtrees when they
-are not in use/needed.
-
-> >  On the other hand, disable entry may trig
-> > pm_runtime suspend transifion for that device.
-> > 
+> > On Fri, 1 Oct 2010, Rafael J. Wysocki wrote:
+> >
+> >> > > In my opinion the _irq operations should really be one-shot, without
+> >> > > any looping, waking up parents etc.  I mean, if the parent is not RPM_ACTIVE,
+> >> > > the _irq resume should immediately fail and analogously for the _irq
+> >> > > suspend.  And so on.  As simple as reasonably possible.
+> >> > 
+> >> > But what if the device's own status is currently SUSPENDING or
+> >> > RESUMING?  Do you want to fail when that happens, instead of waiting
+> >> > for the concurrent operation to finish?
+> >> 
+> >> Yes.  IMO an _irq() suspend should only be allowed if the status is RPM_ACTIVE
+> >> and an _irq() resume should fail if the status is not RPM_SUSPENDED.  The
+> >> error code returned should depend on the situation, though.
+> >> 
+> >> > There's no way to prevent this
+> >> > on SMP systems, because a wakeup request can arrive while a
+> >> > software-initiated resume is in progress.
+> >> 
+> >> I know that. :-)
+> >
+> > I suspect Kevin will not want to live with this restriction, but I'd
+> > like to hear from him.  Kevin?
 > 
-> I think what you are referring is similar to Android specific early suspend/resume
-> framework. For example, what is the use of TS (if not used as wakeup) resources
-> when the screen goes blank, so better to early suspend it rather than waiting
-> upto the platform suspend to happen.
+> [ Apologies for the delays... I've been running around preparing OMAP PM
+>   stuff for the upcoming merge window. ]
 > 
-> I think this can be solved with pm_runtime, isn't it? Though I am not expert
-> at pm_runtime, but this framework can be explored to enable these features.
+> I think I can live with the above restrictions (the _irq methods failing
+> unless they can immediately run.)  For the rare corner cases I've
+> currently run into, this will work fine as they happen because of a
+> wakeup IRQ, where we know the device is RPM_SUSPENDED.
 
-I think last time Rafael mentioned that runtime PM did not allow for
-forcing power state from userspace but I wonder if it would be possible
-for userspace to signal and "accelerate" the idle state for a device and
-then standard runtime PM framework would kick in...
+Then what will the driver do if it gets a wakeup IRQ but it can't
+resume the device because some other thread is in the middle of a
+suspend or resume?
 
--- 
-Dmitry
+Alan Stern
