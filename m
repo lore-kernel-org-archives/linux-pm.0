@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: add synchronous runtime interface for
- interrupt handlers
-Date: Thu, 7 Oct 2010 11:26:55 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1010071048100.1753-100000__21769.7534281344$1286465550$gmane$org@iolanthe.rowland.org>
-References: <201010062347.18232.rjw@sisk.pl>
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: PATCH [0/4] perf: clean-up of power events API
+Date: Thu, 07 Oct 2010 11:45:22 -0400
+Message-ID: <1286466322.6661.12.camel__8315.88562946326$1286466501$gmane$org@gandalf.stny.rr.com>
+References: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
+	<201010062334.46971.trenn@suse.de> <20101007150825.GB12581@Krystal>
+	<AANLkTikT4xsh7iCQDX8ksewJwC-BeFov=Ab7iYo+hDmO@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201010062347.18232.rjw@sisk.pl>
+In-Reply-To: <AANLkTikT4xsh7iCQDX8ksewJwC-BeFov=Ab7iYo+hDmO@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,52 +19,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+To: Pierre Tardy <tardyp@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, Frank@smtp1.linux-foundation.org, mingo@elte.hu, Jean Pihet <jean.pihet@newoldbits.com>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Eigler <fche@redhat.com>, Linus Torvalds <torvalds@linux-foundation.org>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Frederic Weisbecker <fweisbec@gmail.com>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, arjan@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 6 Oct 2010, Rafael J. Wysocki wrote:
+On Thu, 2010-10-07 at 17:23 +0200, Pierre Tardy wrote:
 
-> Defer the resume.  That's the only thing you can do in any case, whether you're
-> going to busy loop or just use a workqueue.
-
-They are not the same.  With a busy-wait you handle the device as soon
-as possible, before the interrupt routine returns.  With a workqueue
-you have to mask the entire IRQ line, possibly losing interrupt
-requests from other devices, until the workqueue routine can run.
-
-> > On the whole, I don't see any striking reason for the PM core not to 
-> > busy-wait during a concurrent state change.
 > 
-> I do.  That shouldn't happen in a fast path and we're talking about one,
-> aren't we?  Besides, I don't like busy waiting as a rule.
+> actually, over all the events pytimechart supports, only power traces
+> are stable...
 
-On Wed, 6 Oct 2010, Kevin Hilman wrote:
+Let me rephrase that for you...
 
-> Not sure I follow where you're going with this last paragraph.  Of
-> course, calls from ISR context cannot busy wait.
+"actually, over all the events pytimechart supports, only power traces
+are inflexible..."
 
-What do you guys think spin_lock() does?  It busy-waits until the lock 
-is free!  If you don't like busy-waiting then you don't like spinlocks, 
-and if you believe ISR's can't busy-wait then you believe they can't 
-acquire spinlocks.  :-)
 
-Really, what I'm talking about is not much different from continuing to
-hold dev->power.lock across the runtime_resume and runtime_suspend
-callbacks.  Would you prefer to do that instead of explicitly
-busy-waiting?  There would be two disadvantages.  First, the
-runtime_suspend routine would not be able to call pm_request_idle() or
-pm_schedule_suspend() and then return -EBUSY.  Second, if the driver
-uses a private lock then the callback routines might not be able to
-acquire it.
-
-On Wed, 6 Oct 2010, Rafael J. Wysocki wrote:
-
-> Overall, we seem to have a corner case to cover and we're considering doing
-> intrusive changes to the framework because of that, even though that changes
-> may not be really necessary in practice.  I think we should focus more on the
-> corner case instead.
-
-I'm not sure what you mean.
-
-Alan Stern
+-- Steve
