@@ -1,7 +1,7 @@
 From: Pierre Tardy <tardyp@gmail.com>
 Subject: Re: PATCH [0/4] perf: clean-up of power events API
 Date: Thu, 7 Oct 2010 17:23:43 +0200
-Message-ID: <AANLkTikT4xsh7iCQDX8ksewJwC-BeFov=Ab7iYo+hDmO__25391.3039494821$1286467021$gmane$org@mail.gmail.com>
+Message-ID: <AANLkTikT4xsh7iCQDX8ksewJwC-BeFov=Ab7iYo+hDmO__36645.0804788203$1286467143$gmane$org@mail.gmail.com>
 References: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
 	<201010062334.46971.trenn@suse.de> <20101007150825.GB12581@Krystal>
 Mime-Version: 1.0
