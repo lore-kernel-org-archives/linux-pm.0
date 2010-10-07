@@ -1,15 +1,14 @@
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Subject: Re: PATCH [0/4] perf: clean-up of power events API
-Date: Thu, 7 Oct 2010 11:08:25 -0400
-Message-ID: <20101007150825.GB12581__34283.1966969699$1286465321$gmane$org@Krystal>
-References: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
-	<201010062334.46971.trenn@suse.de>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: add synchronous runtime interface for
+ interrupt handlers
+Date: Thu, 7 Oct 2010 11:26:55 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1010071048100.1753-100000__21769.7534281344$1286465550$gmane$org@iolanthe.rowland.org>
+References: <201010062347.18232.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201010062334.46971.trenn@suse.de>
+In-Reply-To: <201010062347.18232.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,105 +18,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, arjan@linux.intel.com, mingo@elte.hu
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-[ Adding a few more CCs, since this discussion is about a tracepoint
-  userspace ABI policy, which is a topic of general interest. ]
+On Wed, 6 Oct 2010, Rafael J. Wysocki wrote:
 
-* Thomas Renninger (trenn@suse.de) wrote:
-> Hi,
+> Defer the resume.  That's the only thing you can do in any case, whether you're
+> going to busy loop or just use a workqueue.
+
+They are not the same.  With a busy-wait you handle the device as soon
+as possible, before the interrupt routine returns.  With a workqueue
+you have to mask the entire IRQ line, possibly losing interrupt
+requests from other devices, until the workqueue routine can run.
+
+> > On the whole, I don't see any striking reason for the PM core not to 
+> > busy-wait during a concurrent state change.
 > 
-> On Monday 04 October 2010 17:20:57 Jean Pihet wrote:
-> > Here is a re-spin of the patches after discussion.
-> 
-> what is going to happen here now?
-> 
-> Is this supposed to go through Ingo's tree?
-> 
-> Ingo: do you mind commenting on this.
+> I do.  That shouldn't happen in a fast path and we're talking about one,
+> aren't we?  Besides, I don't like busy waiting as a rule.
 
-Meanwhile, here are some ideas...
+On Wed, 6 Oct 2010, Kevin Hilman wrote:
 
+> Not sure I follow where you're going with this last paragraph.  Of
+> course, calls from ISR context cannot busy wait.
 
-> I see 3 possibilities:
->   1) Power (or all) perf events are never going to change.
+What do you guys think spin_lock() does?  It busy-waits until the lock 
+is free!  If you don't like busy-waiting then you don't like spinlocks, 
+and if you believe ISR's can't busy-wait then you believe they can't 
+acquire spinlocks.  :-)
 
-Persisting with bad interfaces (which were never meant to be stable, and were
-actually explicitely said to be non-stable) for the sake of poorly written
-proprietary userspace apps does not seem like viable to me. Since when did we
-start designing kernel code for broken proprierary apps ? (see below for
-solutions on how to fix the apps)
+Really, what I'm talking about is not much different from continuing to
+hold dev->power.lock across the runtime_resume and runtime_suspend
+callbacks.  Would you prefer to do that instead of explicitly
+busy-waiting?  There would be two disadvantages.  First, the
+runtime_suspend routine would not be able to call pm_request_idle() or
+pm_schedule_suspend() and then return -EBUSY.  Second, if the driver
+uses a private lock then the callback routines might not be able to
+acquire it.
 
-The only reason we have these tracepoints in there is because they can follow
-kernel code changes, thanks to their flexible nature. Being stucked with
-badly named tracepoints because of some monolithic analyzer app is just insane.
+On Wed, 6 Oct 2010, Rafael J. Wysocki wrote:
 
->   If they are going to change, then now is the right time and
->   2) Backward compatibility is provided in some way for some time.
+> Overall, we seem to have a corner case to cover and we're considering doing
+> intrusive changes to the framework because of that, even though that changes
+> may not be really necessary in practice.  I think we should focus more on the
+> corner case instead.
 
-I've looked at the resulting code, and, honestly, it's ugly and it complexifies
-the test matrix. I would really prefer to move this compatibility crap out of
-the kernel out into userspace libraries, where it belongs. It should have got
-there in the first place when the developers of these propritary
-tracepoint-consumers got the hint that those were going to change. Then you have
-a sane design:
+I'm not sure what you mean.
 
-1) The kernel, providing a tracepoint ABI that *can change over time*, because
-   tracepoints are too tied to kernel code to afford not being changed.
-2) Adapdation libraries, some which could be provided with the perf userspace
-   libraries, some which could be provided along with the tracepoint consumer
-   application, so the proprietary application can link on an open-source
-   library that can be upgraded when needed.
-3) The trace analyzer. So if the analyzer is open source, then it's fine, it
-   could follow the rare ABI breakups that are needed by a simple upgrade.
-   Ideally we might want to keep backward compatibility code in there too, but
-   it's OK to require users to upgrade their tools if the kernel is upgraded.
-   If the analyzer is closed-source, then it should interact with an open source
-   library rather than with the kernel tracepoints ABI.
-
-So, given that I don't want to uglify kernel code based on some badly written
-proprietary userspace tools, and given we've given all possible warnings telling
-that the tracepoint ABI might change, I really don't see why we should bother
-bloating the kernel with this. The analyzers should be changed to use adaptation
-libraries instead.
-
->   3) The power events get cleaned up without compatibility to
->      former kernels versions.
-> 
-> There are patches for 2. and 3., for 1. there obviously are no
-> needed.
-> For 2., the patches (mine or Jeans), need some polishing. IMO
-> these double events inside of general code aren't that bad.
-> I trust Jean, that it's not that easy with all the include magic
-> and macros, partly realized that myself already and it's not worth
-> it to dig further for a temporary solution.
-> 
-> Votes so far:
-> 1. Arjan
-> 2. Myself, Jean
-> 3. Peter Zijlstra and Mathieu Desnoyers
-> 
-> Jean's work got successfully blocked for weeks now.
-> If there would be a final decision by a maintainer who is going to
-> merge Jean's work, that would be great and it would finally be worth
-> to send updated patches again which hopefully some day find their way into
-> a linux-next kernel...
-
-Yes, sadly this debate running in circles hurts contributors.
-
-Thanks for the summary!
-
-Mathieu
-
-> 
-> Thanks,
-> 
->       Thomas
-
--- 
-Mathieu Desnoyers
-Operating System Efficiency R&D Consultant
-EfficiOS Inc.
-http://www.efficios.com
+Alan Stern
