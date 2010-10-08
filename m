@@ -1,19 +1,14 @@
-From: "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: PATCH [0/4] perf: clean-up of power events API
-Date: Fri, 8 Oct 2010 13:49:14 -0400
-Message-ID: <20101008174914.GD17865__43683.7813504555$1286563796$gmane$org@redhat.com>
-References: <201010062334.46971.trenn@suse.de> <20101007150825.GB12581@Krystal>
-	<AANLkTikT4xsh7iCQDX8ksewJwC-BeFov=Ab7iYo+hDmO@mail.gmail.com>
-	<20101007155816.GA5351@nowhere> <4CAED2F0.9080801@kernel.org>
-	<20101008083819.GA22385@elte.hu> <4CAF19E7.3070103@linux.intel.com>
-	<20101008134156.GA28724@Krystal> <4CAF4554.7070303@linux.intel.com>
-	<1286558495.6661.822.camel@gandalf.stny.rr.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Question about hibernation
+Date: Fri, 8 Oct 2010 21:31:48 +0200
+Message-ID: <201010082131.48152.rjw@sisk.pl>
+References: <mailman.23.1286318684.6175.linux-pm@lists.linux-foundation.org>
+	<BLU102-W129B9481B0793898EF998EB500@phx.gbl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1286558495.6661.822.camel@gandalf.stny.rr.com>
+In-Reply-To: <BLU102-W129B9481B0793898EF998EB500@phx.gbl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,29 +18,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Linus Torvalds <torvalds@linux-foundation.org>, Jean Pihet <jean.pihet@newoldbits.com>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, linux-pm@lists.linux-foundation.org, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
+To: Raj Kumar <rajkumar278@hotmail.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi -
+On Friday, October 08, 2010, you wrote:
+> 
+> Hi Rafael,
 
-On Fri, Oct 08, 2010 at 01:21:35PM -0400, Steven Rostedt wrote:
-> [...]
-> Perhaps we should have "make install" of a kernel also install this
-> library?
-> [...]
-> The app only needs to worry about loading the generic library. The
-> generic library can test for compatible libraries for the kernel.
-> [...]
+Hi,
 
-If this library were to be distributed with the kernel, what would
-make the generic side of the interface any less permanent than a
-kernel ABI?  That is, if there is a libkernel-internals.so built from
-kernel sources, wouldn't its ABI become necessarily as fixed as any
-old syscall or procfs file?
+> I am working on device driver whose some part is user space and some part is kernel space. So the user space part
+> of the driver provides interface to user space applications. 
+> 1) Now, Suppose some user space is application is going on which is accessing the user space driver and user space driver
+> scheduled some jobs to kernel space, Now suppose system hibernation start, since it freezes all the user space processes
+> so suppose jobs are not completed yet which are scheduled to kernel space by user space.
+>  
+> when the kernel space device driver completes the jobs and gives the notification to user space driver, since user space
+> process is already frozen, so there will be problem if we suspend the driver using suspend and resume.
+>  
+> right?
 
-One can have some backward compatibility with symbol versioning et
-al., but would that be sufficiently powerful to avoid handcuffing
-kernel developers' inclinations to make random future changes?
+Yes, there's going to be a problem if the driver is not prepared to handle such situations.
 
-- FChE
+Depending of the particular case, one possible approach is to use a PM notifier
+as described in Documentation/power/notifiers.txt.
+
+> 2) The other point I was seeing, when the power management core freezes all the processes before suspending and resuming
+> devices, it will take some time for freezing and after that if some device driver refuses to suspend, then it will again resume
+> the whole processes, so latency time be more. right?
+
+Yes, it works as described.
+
+> 3) Next question is regarding the kernel space threads, when these are frozen during suspend/hibernation?
+
+They are frozen immediately after user space has been frozen, but only a
+handful of kernel threads are frozen.
+
+Thanks,
+Rafael
