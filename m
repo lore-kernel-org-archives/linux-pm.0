@@ -1,16 +1,17 @@
-From: Tejun Heo <tj@kernel.org>
+From: Ingo Molnar <mingo@elte.hu>
 Subject: Re: PATCH [0/4] perf: clean-up of power events API
-Date: Fri, 08 Oct 2010 10:14:40 +0200
-Message-ID: <4CAED2F0.9080801__21438.0482714207$1286525858$gmane$org@kernel.org>
+Date: Fri, 8 Oct 2010 10:38:19 +0200
+Message-ID: <20101008083819.GA22385__33593.8772107058$1286527183$gmane$org@elte.hu>
 References: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
 	<201010062334.46971.trenn@suse.de> <20101007150825.GB12581@Krystal>
 	<AANLkTikT4xsh7iCQDX8ksewJwC-BeFov=Ab7iYo+hDmO@mail.gmail.com>
-	<20101007155816.GA5351@nowhere>
+	<20101007155816.GA5351@nowhere> <4CAED2F0.9080801@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101007155816.GA5351@nowhere>
+Content-Disposition: inline
+In-Reply-To: <4CAED2F0.9080801@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,28 +21,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, arjan@linux.intel.com
+To: Tejun Heo <tj@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, arjan@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
 
-On 10/07/2010 05:58 PM, Frederic Weisbecker wrote:
-> I really feel uncomfortable with this tracepoint/ABI problem....
-> Mathieu suggested we start a user library that could handle these
-> changes when they are really necessary.
+* Tejun Heo <tj@kernel.org> wrote:
+
+> Hello,
 > 
-> Thoughts?
+> On 10/07/2010 05:58 PM, Frederic Weisbecker wrote:
+> > I really feel uncomfortable with this tracepoint/ABI problem....
+> > Mathieu suggested we start a user library that could handle these
+> > changes when they are really necessary.
+> > 
+> > Thoughts?
+> > 
+> > (Adding Tejun in Cc).
 > 
-> (Adding Tejun in Cc).
+> Given that tracepoints are supposed to make internal operation 
+> visible.  I don't think it's a good idea to make it part of fixed ABI.
 
-Given that tracepoints are supposed to make internal operation
-visible.  I don't think it's a good idea to make it part of fixed ABI.
-Maybe some core part can be put in stone but I think things like
-internal workqueue implementation should be changeable without
-worrying about ABI issues.
+Yep, exactly.
 
-Thanks.
+OTOH since it exports information we can do disciplined versioning and 
+extensions only - i.e. leave the old power events around, add the new 
+ones with new distinct names, and phase out the old ones in a kernel 
+cycle or two. It's not hard to do.
 
--- 
-tejun
+That way apps can support old kernels too (if they want to), but new 
+events as well - and all in a controlled, non-disruptive manner.
+
+More importantly, the kernel wont have cruft and will have no ABI 
+restrictions - the only 'restriction' is to treat information in an 
+append-only manner (i.e. change the event name if you change it 
+materially) - and that's not a big deal here.
+
+The fundamental thing about tracing/instrumentation is that there are no 
+deep ABI needs: it's all about analyzing development kernels (and a few 
+select versions that get the enterprise treatment) but otherwise the 
+half-life of this kind of information is very short.
+
+So we dont want to tie ourselves down with excessive ABIs.
+
+> Maybe some core part can be put in stone but I think things like 
+> internal workqueue implementation should be changeable without 
+> worrying about ABI issues.
+
+That's most definitely so! There is and will be zero back-coupling from 
+workqueue tracepoints to workqueue internals. Dont worry about this.
+
+	Ingo
