@@ -1,17 +1,18 @@
-From: Steven Rostedt <rostedt@goodmis.org>
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 Subject: Re: PATCH [0/4] perf: clean-up of power events API
-Date: Fri, 08 Oct 2010 13:21:35 -0400
-Message-ID: <1286558495.6661.822.camel__48583.1052101732$1286558655$gmane$org@gandalf.stny.rr.com>
+Date: Fri, 8 Oct 2010 13:32:17 -0400
+Message-ID: <20101008173217.GA16475__48328.3099289567$1286559277$gmane$org@Krystal>
 References: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
 	<201010062334.46971.trenn@suse.de> <20101007150825.GB12581@Krystal>
 	<AANLkTikT4xsh7iCQDX8ksewJwC-BeFov=Ab7iYo+hDmO@mail.gmail.com>
 	<20101007155816.GA5351@nowhere> <4CAED2F0.9080801@kernel.org>
 	<20101008083819.GA22385@elte.hu> <4CAF19E7.3070103@linux.intel.com>
-	<20101008134156.GA28724@Krystal>  <4CAF4554.7070303@linux.intel.com>
+	<20101008134156.GA28724@Krystal> <4CAF4554.7070303@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 In-Reply-To: <4CAF4554.7070303@linux.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -23,39 +24,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Torvalds <torvalds@linux-foundation.org>, Jean Pihet <jean.pihet@newoldbits.com>, Masami@smtp1.linux-foundation.org, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, linux-pm@lists.linux-foundation.org, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Linus@smtp1.linux-foundation.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2010-10-08 at 09:22 -0700, Arjan van de Ven wrote:
-> On 10/8/2010 6:41 AM, Mathieu Desnoyers wrote:
-
-> because that is not workable... at least nobody has shown to be able to 
+* Arjan van de Ven (arjan@linux.intel.com) wrote:
+>  On 10/8/2010 6:41 AM, Mathieu Desnoyers wrote:
+>> * Arjan van de Ven (arjan@linux.intel.com) wrote:
+>>>   On 10/8/2010 1:38 AM, Ingo Molnar wrote:
+>>>> The fundamental thing about tracing/instrumentation is that there are no
+>>>> deep ABI needs: it's all about analyzing development kernels (and a few
+>>>> select versions that get the enterprise treatment) but otherwise the
+>>>> half-life of this kind of information is very short.
+>>>>
+>>>> So we dont want to tie ourselves down with excessive ABIs.
+>>>>
+>>> ok I'll start working on a second mechanism then to export information
+>>> that applications need ;-(
+>>> it'll look a lot like tracing I suppose ;-(
+>> What's wrong with doing the compatibility layer in a LGPL library shipped with
+>> the kernel tree under tools/ ?
+>
+> because that is not workable... at least nobody has shown to be able to  
 > make this work.
-> libraries (after compilation) live in /lib or /usr/lib (or lib64 I 
+> libraries (after compilation) live in /lib or /usr/lib (or lib64 I  
 > suppose).....
-> what mechanism ensures that a user who compiles his kernel gets a 
+> what mechanism ensures that a user who compiles his kernel gets a  
 > library compatible with that kernel in /usr/lib?
+
+I don't think the perf tools/ do it right at the moment, but here is my
+proposal:
+
+Currently, we need to do make install from the tools/ directory. Since kernel
+developers are lazy, I would propose a CONFIG_INSTALL_TOOLS default N config
+option that would let make install from the root of the kernel tree install the
+tools too. (looking at my inbox..) As Steven just beat me to it, see his lib
+versioning proposal. ;)
+
+The library would present an API to the application that would let apps consume
+specific events of interest. Translation of fixed event names/fields into the
+current kernel version tracepoint names/fields would be performed by the lib,
+and the library would also deal with reading the perf events through the perf
+ABI and would act as a middle-man to make sure they are always perceived by the
+application in the same way.
+
 > and can said library deal with older kernels too? And distro kernels?
 
-Perhaps we should have "make install" of a kernel also install this
-library?
+Steven's proposal should work.
 
-Have two libraries? One that is linked to the app, the other that can
-search for another library to link on load too (like a kernel.ld.so)
+>
+>> Why does everything *have* to be done in
+>> kernel-space
+> it doesn't. but the alternative must be workable.
+>>   Why are you so focused on making your application interact
+>> directly with kernel ABIs ?
+>>
+>> I'm being direct because there are trivial solutions to your problem that you
+>> are rejecting without due consideration. (and also I just had one coffee too
+>> many) ;-)
+>
+> since you seem to think that dealing with such a library is trivial...  
+> how about you do it for one function even, to
+> show that the deployment/use-in-an-app is workable.
+> I'd be more than happy to use it if it's workable and the API is at  
+> least halfway sane.
 
-Then we could see the kernel version, and search for a library that is
-compatible, and load that one.
+I currently have a lot on my plate with trace format and ring buffer, but if
+anyone is interested in trying to implement this, I can look at it and provide
+feedback/hints.
 
-The app only needs to worry about loading the generic library. The
-generic library can test for compatible libraries for the kernel.
+Thanks,
 
-Could just be..
+Mathieu
 
-  libkernel.ld.so  which then loads..
-
-  /lib/modules/2.6.36/libkernel.so
-
-
-Just a little brain storming.
-
--- Steve
+-- 
+Mathieu Desnoyers
+Operating System Efficiency R&D Consultant
+EfficiOS Inc.
+http://www.efficios.com
