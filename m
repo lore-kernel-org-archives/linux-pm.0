@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Question about hibernation
-Date: Fri, 8 Oct 2010 21:31:48 +0200
-Message-ID: <201010082131.48152.rjw@sisk.pl>
-References: <mailman.23.1286318684.6175.linux-pm@lists.linux-foundation.org>
-	<BLU102-W129B9481B0793898EF998EB500@phx.gbl>
+Subject: Re: [PATCH] PM: add synchronous runtime interface for
+	interrupt handlers
+Date: Fri, 8 Oct 2010 21:53:35 +0200
+Message-ID: <201010082153.35192.rjw__38657.5632416227$1286567784$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1010081200200.27105-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BLU102-W129B9481B0793898EF998EB500@phx.gbl>
+In-Reply-To: <Pine.LNX.4.44L0.1010081200200.27105-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,42 +18,94 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Raj Kumar <rajkumar278@hotmail.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, October 08, 2010, you wrote:
+On Friday, October 08, 2010, Alan Stern wrote:
+> On Thu, 7 Oct 2010, Rafael J. Wysocki wrote:
 > 
-> Hi Rafael,
+> > > 	If the PM core simply avoids releasing dev->power.lock before
+> > > 	invoking the runtime_suspend or runtime_resume callback, the
+> > > 	end result is almost the same as with busy-waiting.
+> > 
+> > This is slightly more complicated, because suspend is a bit different from
+> > resume.  I think it's generally acceptable to refuse to do a "fast path" suspend
+> > if the device state is not RPM_ACTIVE at the moment, but refusing to do
+> > a "fast path" resume may be more problematic (more on that later).
+> 
+> That's what I thought too, but Kevin has suggested this might not be 
+> so.
+> 
+> > The particular case we need to handle (I think) is that some devices need to be
+> > resumed "atomically" as a part of bringing a CPU package out of a C-like-state
+> > (Kevin, is that correct?).  In that case not only we can't defer the resume (by
+> > using a workqueue), but also we have to finish the resume within strict time
+> > constraints (the time to leave the given C-like-state is one of the parameters
+> > used by cpuidle governors to decide which state to choose).
+> 
+> To what extent can this really happen?  If the CPU was previously in a 
+> C-like state then it couldn't be in the middle of changing the device's 
+> power state.  Maybe a different CPU was suspending or resuming the 
+> device, but if that's so then why would this CPU need to resume it as 
+> part of bringing the package out of the C-like state?
 
-Hi,
+That's the case when user space writes to /sys/devices/.../power/control on
+another CPU.
 
-> I am working on device driver whose some part is user space and some part is kernel space. So the user space part
-> of the driver provides interface to user space applications. 
-> 1) Now, Suppose some user space is application is going on which is accessing the user space driver and user space driver
-> scheduled some jobs to kernel space, Now suppose system hibernation start, since it freezes all the user space processes
-> so suppose jobs are not completed yet which are scheduled to kernel space by user space.
->  
-> when the kernel space device driver completes the jobs and gives the notification to user space driver, since user space
-> process is already frozen, so there will be problem if we suspend the driver using suspend and resume.
->  
-> right?
+> > On the other hand, busy waiting (by looping) in the case the state is
+> > RPM_RESUMING is as though the callbacks were executed under a spinlock and we
+> > happened to wait on it.  I'd prefer to avoid that.  Moreover, if the state is
+> > RPM_SUSPENDING at the time a "fast path" resume is started, we are almost
+> > guaranteed to violate the time constraints (by busy waiting for the suspend to
+> > complete and carrying out the resume).
+> 
+> I'm not convinced that the time constraints are all that hard.  At 
+> least, I can't think of a situation where we do face a hard time limit 
+> and also the device might be in the middle of a transition when we need 
+> to resume it.
 
-Yes, there's going to be a problem if the driver is not prepared to handle such situations.
+Now that I think of it, you seem to be right.
 
-Depending of the particular case, one possible approach is to use a PM notifier
-as described in Documentation/power/notifiers.txt.
+> > So, here's an idea:
+> > 
+> > First, let's introduce two flags in struct dev_pm_info, irq_safe and
+> > fast_resume.  The former has to be set so that the things above work.
+> > 
+> > Second, let's add a new flag to pass to __pm_runtime_{suspend|resume}(),
+> > RPM_FAST_RESUME such that if it is passed to __pm_runtime_suspend(), it
+> > causes fast_resume to be set for the given device (if the status is already
+> > RPM_SUSPENDED, it just sets the flag, otherwise it suspends the device
+> > normally and then sets the flag).  Now, if fast_resume is set,
+> > __pm_runtime_resume() has to be passed RPM_FAST_RESUME, or it will
+> > fail (it also will fail if passed RPM_FAST_RESUME and fast_resume isn't
+> > set).  In that case the status has to be RPM_SUSPENDED or RPM_RESUMING
+> > (otherwise fast_resume won't be set)
+> 
+> Why not?  Does fast_resume ever get cleared?
 
-> 2) The other point I was seeing, when the power management core freezes all the processes before suspending and resuming
-> devices, it will take some time for freezing and after that if some device driver refuses to suspend, then it will again resume
-> the whole processes, so latency time be more. right?
+Yes, when the "fast resume" has completed.
 
-Yes, it works as described.
+> >  and if it is RPM_RESUMING, this means
+> > that the other resume has been called with RPM_FAST_RESUME too (it would
+> > fail otherwise), so it's fine to busy loop until the status is RPM_SUSPENDED
+> > (it's the caller's problem to avoid that).  RPM_FAST_RESUME causes
+> > __pm_runtime_resume() to avod turning interrupts on.
+> > 
+> > If necessary, there may be a flag for __pm_runtime_suspend() that will
+> > carry out "atomic" suspend, but I'm not sure if that's necessary.  Kevin?
+> 
+> This seems much more complicated than we need.  Why not require for any
+> particular device that all resumes and suspends are either always fast
+> or always normal (i.e., always done with interrupts disabled or always
+> done with interrupts enabled)?  That's what the original patch does.
+>
+> Sure, maybe some devices don't need to have fast suspend all the time.  
+> But we don't lose anything by requiring them to always use it in order
+> to gain the benefit of fast resume.
 
-> 3) Next question is regarding the kernel space threads, when these are frozen during suspend/hibernation?
-
-They are frozen immediately after user space has been frozen, but only a
-handful of kernel threads are frozen.
+I think we should avoid turning interrupts off for the whole suspend/resume
+time if not strictly necessary.
 
 Thanks,
 Rafael
