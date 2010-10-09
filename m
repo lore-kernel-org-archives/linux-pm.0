@@ -1,19 +1,14 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: PATCH [0/4] perf: clean-up of power events API
-Date: Sat, 09 Oct 2010 17:34:58 -0400
-Message-ID: <1286660098.23994.3413.camel__47152.8898030103$1286660247$gmane$org@gandalf.stny.rr.com>
-References: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
-	<201010062334.46971.trenn@suse.de> <20101007150825.GB12581@Krystal>
-	<AANLkTikT4xsh7iCQDX8ksewJwC-BeFov=Ab7iYo+hDmO@mail.gmail.com>
-	<20101007155816.GA5351@nowhere> <4CAED2F0.9080801@kernel.org>
-	<20101008083819.GA22385@elte.hu> <4CAF19E7.3070103@linux.intel.com>
-	<20101008134156.GA28724@Krystal> <20101009062836.GB5517@elte.hu>
-	<4CB095FA.8060803@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/2] pm_trace: Lock pm device list mutex.
+Date: Sun, 10 Oct 2010 00:43:47 +0200
+Message-ID: <201010100043.47397.rjw__12232.7820085504$1286664347$gmane$org@sisk.pl>
+References: <201010092334.27808.james@albanarts.com>
+	<201010092336.11548.james@albanarts.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4CB095FA.8060803@linux.intel.com>
+In-Reply-To: <201010092336.11548.james@albanarts.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,33 +18,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Weisbecker <fweisbec@gmail.com>, Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Frederic@smtp1.linux-foundation.org, Masami@smtp1.linux-foundation.org, Peter Zijlstra <peterz@infradead.org>, Frank Eigler <fche@redhat.com>, linux-pm@lists.linux-foundation.org, Jean Pihet <jean.pihet@newoldbits.com>, linux-trace-users@vger.kernel.org, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, Thomas@smtp1.linux-foundation.org, Pierre Tardy <tardyp@gmail.com>, Torvalds <torvalds@linux-foundation.org>, linux-perf-users@vger.kernel.org, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus@smtp1.linux-foundation.org
+To: James Hogan <james@albanarts.com>
+Cc: Len Brown <len.brown@intel.com>, markgross <markgross@thegnar.org>, linux-doc@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2010-10-09 at 09:19 -0700, Arjan van de Ven wrote:
-
-> > I.e. it's not an ABI in the classic sense - we do not (because we
-> > cannot) guarantee the infinite availability of these events. But we can
-> > guarantee that the fields do not change in some stupid, avoidable way.
+On Sunday, October 10, 2010, James Hogan wrote:
+> Lock the pm device list mutex using device_pm_lock() and
+> device_pm_unlock() around the list iteration in show_dev_hash().
 > 
-> also I have to say that some events are more likely to change than others
+> show_dev_hash() was reverse iterating dpm_list without first locking the
+> mutex that the functions in drivers/base/power/main.c lock. I assume
+> this was unintentional since there is no comment suggesting why the lock
+> might not be necessary.
 > 
-> "function foo in the kernel called" is more likely to change than "the 
-> processor went to THIS frequency".
-> The concept of CPU frequencies has been with us fora long time and is 
-> going to be there for a long time as well ......
+> Signed-off-by: James Hogan <james@albanarts.com>
 
-Perhaps for basic concepts, we need a standard trace-event. Are people
-willing to have a TRACE_EVENT_ABI() (it's trivial to write), and we can
-mark those events with that macro that we know tools depend on.
+Looks good.
 
-These events can be exposed in a /sys/kernel/events/... directory, to
-let tools know what what events they can rely on.
-
-We've talked about doing this before, I've just been waiting to hear a
-consensus on if we should. I know Peter Zijlstra was against the idea,
-and too bad he's off gallivanting to share his input now.
-
--- Steve
- 
+> ---
+>  drivers/base/power/trace.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
+> index 0a1a2c4..17e24e3 100644
+> --- a/drivers/base/power/trace.c
+> +++ b/drivers/base/power/trace.c
+> @@ -188,8 +188,10 @@ static int show_file_hash(unsigned int value)
+>  static int show_dev_hash(unsigned int value)
+>  {
+>  	int match = 0;
+> -	struct list_head *entry = dpm_list.prev;
+> +	struct list_head *entry;
+>  
+> +	device_pm_lock();
+> +	entry = dpm_list.prev;
+>  	while (entry != &dpm_list) {
+>  		struct device * dev = to_device(entry);
+>  		unsigned int hash = hash_string(DEVSEED, dev_name(dev), DEVHASH);
+> @@ -199,6 +201,7 @@ static int show_dev_hash(unsigned int value)
+>  		}
+>  		entry = entry->prev;
+>  	}
+> +	device_pm_unlock();
+>  	return match;
+>  }
+>  
+> 
