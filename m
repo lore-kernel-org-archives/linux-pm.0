@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] pm_trace: Add sysfs attr for rechecking
-	dev hash.
-Date: Sun, 10 Oct 2010 00:49:15 +0200
-Message-ID: <201010100049.16054.rjw__49134.7116105773$1286664647$gmane$org@sisk.pl>
-References: <201010092334.27808.james@albanarts.com>
-	<201010092337.47821.james@albanarts.com>
+Subject: Re: [PATCH v7] power: introduce library for
+	device-specific OPPs
+Date: Sun, 10 Oct 2010 00:59:20 +0200
+Message-ID: <201010100059.20964.rjw__32104.8191901811$1286665352$gmane$org@sisk.pl>
+References: <[PATCH] power: introduce library for device-specific OPPs>
+	<1286506969-20651-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201010092337.47821.james@albanarts.com>
+In-Reply-To: <1286506969-20651-1-git-send-email-nm@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,94 +19,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Hogan <james@albanarts.com>
-Cc: Len Brown <len.brown@intel.com>, markgross <markgross@thegnar.org>, linux-doc@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pm@lists.linux-foundation.org
+To: Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Paul <paulmck@linux.vnet.ibm.com>, linux-pm <linux-pm@lists.linux-foundation.org>, l-o <linux-omap@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, l-a <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, October 10, 2010, James Hogan wrote:
-> If the device which fails to resume is part of a loadable kernel module
-> it won't be checked at startup against the magic number stored in the
-> RTC.
+On Friday, October 08, 2010, Nishanth Menon wrote:
+> SoCs have a standard set of tuples consisting of frequency and
+> voltage pairs that the device will support per voltage domain. These
+> are called Operating Performance Points or OPPs. The actual
+> definitions of OPP varies over silicon versions. For a specific domain,
+> we can have a set of {frequency, voltage} pairs. As the kernel boots
+> and more information is available, a default set of these are activated
+> based on the precise nature of device. Further on operation, based on
+> conditions prevailing in the system (such as temperature), some OPP
+> availability may be temporarily controlled by the SoC frameworks.
 > 
-> Add a read-only sysfs attribute /sys/power/pm_trace_dev_hash which
-> contains a list of newline separated devices (usually just the one)
-> which currently match the last magic number. This allows the device
-> which is failing to resume to be found after the modules are loaded
-> again.
+> To implement an OPP, some sort of power management support is necessary
+> hence this library depends on CONFIG_PM.
 > 
-> Signed-off-by: James Hogan <james@albanarts.com>
-> ---
->  Documentation/power/s2ram.txt |    7 +++++++
->  drivers/base/power/trace.c    |   27 +++++++++++++++++++++++++++
->  include/linux/resume-trace.h  |    2 ++
->  kernel/power/main.c           |   18 ++++++++++++++++++
->  4 files changed, 54 insertions(+), 0 deletions(-)
+> Contributions include:
+> Sanjeev Premi for the initial concept:
+> 	http://patchwork.kernel.org/patch/50998/
+> Kevin Hilman for converting original design to device-based
+> Kevin Hilman and Paul Walmsey for cleaning up many of the function
+> abstractions, improvements and data structure handling
+> Romit Dasgupta for using enums instead of opp pointers
+> Thara Gopinath, Eduardo Valentin and Vishwanath BS for fixes and
+> cleanups.
+> Linus Walleij for recommending this layer be made generic for usage
+> in other architectures beyond OMAP and ARM.
+> Mark Brown, Andrew Morton, Rafael J Wysocki, Paul E McKenney for valuable
+> improvements.
 > 
-> diff --git a/Documentation/power/s2ram.txt b/Documentation/power/s2ram.txt
-> index 514b94f..3a2801a 100644
-> --- a/Documentation/power/s2ram.txt
-> +++ b/Documentation/power/s2ram.txt
-> @@ -49,6 +49,13 @@ machine that doesn't boot) is:
->     device (lspci and /sys/devices/pci* is your friend), and see if you can
->     fix it, disable it, or trace into its resume function.
->  
-> +   If no device matches the hash, it may be a device from a loadable kernel
-> +   module that is not loaded until after the hash is checked. You can check
-> +   the hash against the current devices again after more modules are loaded
-> +   using sysfs:
-> +
-> +	cat /sys/power/pm_trace_dev_hash
-> +
+> Discussions and comments from:
+> http://marc.info/?l=linux-omap&m=126033945313269&w=2
+> http://marc.info/?l=linux-omap&m=125482970102327&w=2
+> http://marc.info/?t=125809247500002&r=1&w=2
+> http://marc.info/?l=linux-omap&m=126025973426007&w=2
+> http://marc.info/?t=128152609200064&r=1&w=2
+> http://marc.info/?t=128468723000002&r=1&w=2
+> incorporated.
+> 
+> Cc: Benoit Cousson <b-cousson@ti.com>
+> Cc: Madhusudhan Chikkature Rajashekar <madhu.cr@ti.com>
+> Cc: Phil Carmody <ext-phil.2.carmody@nokia.com>
+> Cc: Roberto Granados Dorado <x0095451@ti.com>
+> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Cc: Sergio Alberto Aguirre Rodriguez <saaguirre@ti.com>
+> Cc: Tero Kristo <Tero.Kristo@nokia.com>
+> Cc: Eduardo Valentin <eduardo.valentin@nokia.com>
+> Cc: Paul Walmsley <paul@pwsan.com>
+> Cc: Sanjeev Premi <premi@ti.com>
+> Cc: Thara Gopinath <thara@ti.com>
+> Cc: Vishwanath BS <vishwanath.bs@ti.com>
+> Cc: Linus Walleij <linus.walleij@stericsson.com>
+> Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> 
+> Signed-off-by: Nishanth Menon <nm@ti.com>
 
-/sys/power/pm_trace_match perhaps?
+OK
 
-How do we ensure it prints things that make sense when the last resume was
-successful or the system hasn't suspended at all?
+Your error messages are a bit inconsistent (e.g. some of them print the
+error code while others don't), but I guess I can fix that up.
 
->  For example, the above happens to be the VGA device on my EVO, which I
->  used to run with "radeonfb" (it's an ATI Radeon mobility). It turns out
->  that "radeonfb" simply cannot resume that device - it tries to set the
-> diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
-> index 17e24e3..e0cdba1 100644
-> --- a/drivers/base/power/trace.c
-> +++ b/drivers/base/power/trace.c
-> @@ -207,6 +207,33 @@ static int show_dev_hash(unsigned int value)
->  
->  static unsigned int hash_value_early_read;
->  
-> +int snprint_trace_dev_hash(char *buf, size_t size)
-> +{
-> +	unsigned int value = hash_value_early_read / (USERHASH * FILEHASH);
-> +	int ret = 0;
-> +	struct list_head *entry;
-> +
-> +	device_pm_lock();
-> +	entry = dpm_list.prev;
-> +	while (size && entry != &dpm_list) {
-> +		struct device *dev = to_device(entry);
-> +		unsigned int hash = hash_string(DEVSEED, dev_name(dev),
-> +						DEVHASH);
-> +		if (hash == value) {
-> +			int len = snprintf(buf, size, "%s\n",
-> +					    dev_driver_string(dev));
-> +			if (len > size)
-> +				len = size;
-> +			buf += len;
-> +			ret += len;
-> +			size -= len;
+Still, to apply the patch I need a copyright notice for the doc too.
 
-Don't we want to break; here and if so then why?
+> Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
 
-> +		}
-> +		entry = entry->prev;
-> +	}
-> +	device_pm_unlock();
-> +	return ret;
-> +}
-> +
->  static int early_resume_init(void)
->  {
->  	hash_value_early_read = read_magic_time();
+Kevin, your sign-off here means you endorse the patch as the maintainer.
+Is that correct?
 
 Thanks,
 Rafael
