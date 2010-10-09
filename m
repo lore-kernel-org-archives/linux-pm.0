@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/2] pm_trace: Lock pm device list mutex.
-Date: Sun, 10 Oct 2010 00:43:47 +0200
-Message-ID: <201010100043.47397.rjw__12232.7820085504$1286664347$gmane$org@sisk.pl>
-References: <201010092334.27808.james@albanarts.com>
-	<201010092336.11548.james@albanarts.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] input: syfs switches for SKE keypad
+Date: Sat, 9 Oct 2010 18:46:02 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1010091834420.21785-100000__39999.8766523369$1286664410$gmane$org@netrider.rowland.org>
+References: <201010091252.18184.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201010092336.11548.james@albanarts.com>
+In-Reply-To: <201010091252.18184.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,49 +17,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Hogan <james@albanarts.com>
-Cc: Len Brown <len.brown@intel.com>, markgross <markgross@thegnar.org>, linux-doc@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: samu.p.onkalo@nokia.com, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>, ext Sundar R IYER <sundar.iyer@stericsson.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, October 10, 2010, James Hogan wrote:
-> Lock the pm device list mutex using device_pm_lock() and
-> device_pm_unlock() around the list iteration in show_dev_hash().
-> 
-> show_dev_hash() was reverse iterating dpm_list without first locking the
-> mutex that the functions in drivers/base/power/main.c lock. I assume
-> this was unintentional since there is no comment suggesting why the lock
-> might not be necessary.
-> 
-> Signed-off-by: James Hogan <james@albanarts.com>
+On Sat, 9 Oct 2010, Rafael J. Wysocki wrote:
 
-Looks good.
+> On Wednesday, October 06, 2010, Alan Stern wrote:
+> > On Wed, 6 Oct 2010, Rafael J. Wysocki wrote:
+> > 
+> > > > Mobile folks wish to power down some devices (most often input -
+> > > > touchscreen, keypad) under certain circumstances to save power.
+> > > > So far they were doing that by adding "disable" hook to individual
+> > > > drivers and while I did allow that in for some devices I feel that we
+> > > > need more standardised solution, preferably one that could re-use
+> > > > existing PM hooks in drivers.
+> > > 
+> > > There's no interface for that at the PM core level, but I think we should
+> > > add it, perhaps in analogy to the autosuspend one.  Namely, we can add a
+> > > flag for drivers who want to make their suspend/resume callbacks to be
+> > > reachable directly from user space.  Setting that flag would enable a sysfs
+> > > attribute in /sys/devices/.../power/ allowing user space to invoke
+> > > pm_runtime_suspend() and pm_runtime_resume() for the given device.
+> > 
+> > We already have power/control.  If the subsystem sets it to "on" by 
+> > default and the driver suspends the device whenever it is idle, then 
+> > userspace can control the power level by writing "auto" or "on" to 
+> > power/control.
+> 
+> The problem is that with the 'auto' setting the driver decides when to suspend
+> and the driver need not know it's the right time.
+> 
+> Suspending a graphics adapter when the user presses a "turn screen off"
+> button it a good example of this.  The graphics driver may not know the button
+> was pressed and it has to be told about that.  OTOH the button driver need
+> not know what exactly should be done when it is pressed.  There may be a user
+> space component in between that processes the button event and should be able
+> to tell the graphics driver to suspend.
 
-> ---
->  drivers/base/power/trace.c |    5 ++++-
->  1 files changed, 4 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
-> index 0a1a2c4..17e24e3 100644
-> --- a/drivers/base/power/trace.c
-> +++ b/drivers/base/power/trace.c
-> @@ -188,8 +188,10 @@ static int show_file_hash(unsigned int value)
->  static int show_dev_hash(unsigned int value)
->  {
->  	int match = 0;
-> -	struct list_head *entry = dpm_list.prev;
-> +	struct list_head *entry;
->  
-> +	device_pm_lock();
-> +	entry = dpm_list.prev;
->  	while (entry != &dpm_list) {
->  		struct device * dev = to_device(entry);
->  		unsigned int hash = hash_string(DEVSEED, dev_name(dev), DEVHASH);
-> @@ -199,6 +201,7 @@ static int show_dev_hash(unsigned int value)
->  		}
->  		entry = entry->prev;
->  	}
-> +	device_pm_unlock();
->  	return match;
->  }
->  
-> 
+You are clearly right; userspace has to tell the driver when it is okay
+to suspend.  My point was that we already have a mechanism in the PM
+core for doing this -- assuming the driver is written appropriately (to 
+assume that it should try to suspend whenever possible).  We shouldn't 
+need to add another mechanism.
+
+Alan Stern
