@@ -1,11 +1,19 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH] intel_idle: enable Atom C6
-Date: Fri, 08 Oct 2010 22:23:22 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.1010082221590.3961@localhost.localdomain>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: PATCH [0/4] perf: clean-up of power events API
+Date: Sat, 9 Oct 2010 08:28:36 +0200
+Message-ID: <20101009062836.GB5517__17057.1821662181$1286605808$gmane$org@elte.hu>
+References: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
+	<201010062334.46971.trenn@suse.de> <20101007150825.GB12581@Krystal>
+	<AANLkTikT4xsh7iCQDX8ksewJwC-BeFov=Ab7iYo+hDmO@mail.gmail.com>
+	<20101007155816.GA5351@nowhere> <4CAED2F0.9080801@kernel.org>
+	<20101008083819.GA22385@elte.hu> <4CAF19E7.3070103@linux.intel.com>
+	<20101008134156.GA28724@Krystal>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <20101008134156.GA28724@Krystal>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,43 +23,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux Power Management List <linux-pm@lists.osdl.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Linus Torvalds <torvalds@linux-foundation.org>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
 
-ATM-C6 was commented out, pending public documentation.
+* Mathieu Desnoyers <mathieu.desnoyers@efficios.com> wrote:
 
-https://bugzilla.kernel.org/show_bug.cgi?id=19762
+> * Arjan van de Ven (arjan@linux.intel.com) wrote:
+> >  On 10/8/2010 1:38 AM, Ingo Molnar wrote:
+> >>
+> >> The fundamental thing about tracing/instrumentation is that there 
+> >> are no deep ABI needs: it's all about analyzing development kernels 
+> >> (and a few select versions that get the enterprise treatment) but 
+> >> otherwise the half-life of this kind of information is very short.
+> >>
+> >> So we dont want to tie ourselves down with excessive ABIs.
+> >
+> > ok I'll start working on a second mechanism then to export 
+> > information that applications need ;-( it'll look a lot like tracing 
+> > I suppose ;-(
+> 
+> What's wrong with doing the compatibility layer in a LGPL library 
+> shipped with the kernel tree under tools/ ? Why does everything *have* 
+> to be done in kernel-space ? Why are you so focused on making your 
+> application interact directly with kernel ABIs ?
 
-Tested-by: Dennis Jansen <Dennis.Jansen@...>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/idle/intel_idle.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+The thing is, Arjan is 100% right that a library for this is not a 
+'solution', it's an unnecessary complication.
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 0906fc5..c37ef64 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -157,13 +157,13 @@ static struct cpuidle_state atom_cstates[MWAIT_MAX_NUM_CSTATES] = {
- 	{ /* MWAIT C5 */ },
- 	{ /* MWAIT C6 */
- 		.name = "ATM-C6",
--		.desc = "MWAIT 0x40",
--		.driver_data = (void *) 0x40,
-+		.desc = "MWAIT 0x52",
-+		.driver_data = (void *) 0x52,
- 		.flags = CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
--		.exit_latency = 200,
-+		.exit_latency = 140,
- 		.power_usage = 150,
--		.target_residency = 800,
--		.enter = NULL },	/* disabled */
-+		.target_residency = 560,
-+		.enter = &intel_idle },
- };
- 
- /**
--- 
-1.7.3.1.104.gc752e
+What i suggested in my mail was to _keep existing events_. I.e. do not 
+break powertop. We are 100% happy that we _have_ such apps, and we 
+should do reasonable things to not break them.
+
+If we need to change events, we can add a new event. The old events will 
+lose their relevance without us having to do much - and without us 
+having to break powertop, pytimechart, etc. We can even have periods of 
+overlap when both events are available - to give instrumentation apps 
+time to learn the new events.
+
+I.e. it's not an ABI in the classic sense - we do not (because we 
+cannot) guarantee the infinite availability of these events. But we can 
+guarantee that the fields do not change in some stupid, avoidable way.
+
+Changing an existing event in some non-append way is just sloppy and we 
+can do better.
+
+Arjan, Pierre, does that sound OK to you?
+
+	Ingo
