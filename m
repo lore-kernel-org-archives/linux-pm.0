@@ -2,7 +2,7 @@ From: James Hogan <james@albanarts.com>
 Subject: Re: [PATCH 2/2] pm_trace: Add sysfs attr for rechecking
 	dev hash.
 Date: Sun, 10 Oct 2010 00:13:13 +0100
-Message-ID: <201010100013.14142.james__5489.12419840253$1286896497$gmane$org@albanarts.com>
+Message-ID: <201010100013.14142.james__33716.0643459812$1286896501$gmane$org@albanarts.com>
 References: <201010092334.27808.james@albanarts.com>
 	<201010092337.47821.james@albanarts.com>
 	<201010100049.16054.rjw@sisk.pl>
