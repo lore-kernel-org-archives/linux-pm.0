@@ -1,15 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: add synchronous runtime interface for
-	interrupt handlers
-Date: Sat, 9 Oct 2010 13:09:18 +0200
-Message-ID: <201010091309.18552.rjw__36590.1833436967$1286622743$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1010081200200.27105-100000@netrider.rowland.org>
-	<201010082153.35192.rjw@sisk.pl>
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: PATCH [0/4] perf: clean-up of power events API
+Date: Sat, 09 Oct 2010 09:19:06 -0700
+Message-ID: <4CB095FA.8060803__20186.8386161097$1286641229$gmane$org@linux.intel.com>
+References: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
+	<201010062334.46971.trenn@suse.de> <20101007150825.GB12581@Krystal>
+	<AANLkTikT4xsh7iCQDX8ksewJwC-BeFov=Ab7iYo+hDmO@mail.gmail.com>
+	<20101007155816.GA5351@nowhere> <4CAED2F0.9080801@kernel.org>
+	<20101008083819.GA22385@elte.hu> <4CAF19E7.3070103@linux.intel.com>
+	<20101008134156.GA28724@Krystal> <20101009062836.GB5517@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201010082153.35192.rjw@sisk.pl>
+In-Reply-To: <20101009062836.GB5517@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,89 +22,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, October 08, 2010, Rafael J. Wysocki wrote:
-> On Friday, October 08, 2010, Alan Stern wrote:
-> > On Thu, 7 Oct 2010, Rafael J. Wysocki wrote:
-> > 
-> > > > 	If the PM core simply avoids releasing dev->power.lock before
-> > > > 	invoking the runtime_suspend or runtime_resume callback, the
-> > > > 	end result is almost the same as with busy-waiting.
-> > > 
-> > > This is slightly more complicated, because suspend is a bit different from
-> > > resume.  I think it's generally acceptable to refuse to do a "fast path" suspend
-> > > if the device state is not RPM_ACTIVE at the moment, but refusing to do
-> > > a "fast path" resume may be more problematic (more on that later).
-> > 
-> > That's what I thought too, but Kevin has suggested this might not be 
-> > so.
-> > 
-> > > The particular case we need to handle (I think) is that some devices need to be
-> > > resumed "atomically" as a part of bringing a CPU package out of a C-like-state
-> > > (Kevin, is that correct?).  In that case not only we can't defer the resume (by
-> > > using a workqueue), but also we have to finish the resume within strict time
-> > > constraints (the time to leave the given C-like-state is one of the parameters
-> > > used by cpuidle governors to decide which state to choose).
-> > 
-> > To what extent can this really happen?  If the CPU was previously in a 
-> > C-like state then it couldn't be in the middle of changing the device's 
-> > power state.  Maybe a different CPU was suspending or resuming the 
-> > device, but if that's so then why would this CPU need to resume it as 
-> > part of bringing the package out of the C-like state?
-> 
-> That's the case when user space writes to /sys/devices/.../power/control on
-> another CPU.
-> 
-> > > On the other hand, busy waiting (by looping) in the case the state is
-> > > RPM_RESUMING is as though the callbacks were executed under a spinlock and we
-> > > happened to wait on it.  I'd prefer to avoid that.  Moreover, if the state is
-> > > RPM_SUSPENDING at the time a "fast path" resume is started, we are almost
-> > > guaranteed to violate the time constraints (by busy waiting for the suspend to
-> > > complete and carrying out the resume).
-> > 
-> > I'm not convinced that the time constraints are all that hard.  At 
-> > least, I can't think of a situation where we do face a hard time limit 
-> > and also the device might be in the middle of a transition when we need 
-> > to resume it.
-> 
-> Now that I think of it, you seem to be right.
+  On 10/8/2010 11:28 PM, Ingo Molnar wrote:
+> * Mathieu Desnoyers<mathieu.desnoyers@efficios.com>  wrote:
+>
+>> * Arjan van de Ven (arjan@linux.intel.com) wrote:
+>>>   On 10/8/2010 1:38 AM, Ingo Molnar wrote:
+>>>> The fundamental thing about tracing/instrumentation is that there
+>>>> are no deep ABI needs: it's all about analyzing development kernels
+>>>> (and a few select versions that get the enterprise treatment) but
+>>>> otherwise the half-life of this kind of information is very short.
+>>>>
+>>>> So we dont want to tie ourselves down with excessive ABIs.
+>>> ok I'll start working on a second mechanism then to export
+>>> information that applications need ;-( it'll look a lot like tracing
+>>> I suppose ;-(
+>> What's wrong with doing the compatibility layer in a LGPL library
+>> shipped with the kernel tree under tools/ ? Why does everything *have*
+>> to be done in kernel-space ? Why are you so focused on making your
+>> application interact directly with kernel ABIs ?
+> The thing is, Arjan is 100% right that a library for this is not a
+> 'solution', it's an unnecessary complication.
+>
+> What i suggested in my mail was to _keep existing events_. I.e. do not
+> break powertop. We are 100% happy that we _have_ such apps, and we
+> should do reasonable things to not break them.
+>
+> If we need to change events, we can add a new event. The old events will
+> lose their relevance without us having to do much - and without us
+> having to break powertop, pytimechart, etc. We can even have periods of
+> overlap when both events are available - to give instrumentation apps
+> time to learn the new events.
+>
+> I.e. it's not an ABI in the classic sense - we do not (because we
+> cannot) guarantee the infinite availability of these events. But we can
+> guarantee that the fields do not change in some stupid, avoidable way.
 
-However, there's the following scenario (I don't know how realistic it is, though).
-It is not related to the cpuidle case, it is related to the case when the device
-is woken up by its own IRQ.  Namely, in that case it is perfectly possible that
-the IRQ appears exactly when the device is suspending, so if there's a "fast
-resume" in the interrupt handler, it will have to wait for the suspend to
-complete (or fail).  That in theory may lead to a violation of time constraints
-(if there are any).
+also I have to say that some events are more likely to change than others
 
-...
-> > This seems much more complicated than we need.  Why not require for any
-> > particular device that all resumes and suspends are either always fast
-> > or always normal (i.e., always done with interrupts disabled or always
-> > done with interrupts enabled)?  That's what the original patch does.
-> >
-> > Sure, maybe some devices don't need to have fast suspend all the time.  
-> > But we don't lose anything by requiring them to always use it in order
-> > to gain the benefit of fast resume.
-> 
-> I think we should avoid turning interrupts off for the whole suspend/resume
-> time if not strictly necessary.
-
-Well, perhaps that's not a problem.
-
-I wonder if we can do the "fast suspend" and "fast resume" under the
-power.lock spinlock.  That would allow us to avoid some complications
-related to RPM_RESUMING and RPM_SUSPENDING.  Namely,
-if the device is flagged as "power.irq_safe", it will always suspend and
-resume "atomically" under its power.lock spinlock.  Then, the status will
-always be either RPM_ACTIVE or RPM_SUSPENDED (or RPM_ERROR,
-which is uninteresting).  Also, if "fast suspend" doesn't change the device
-parent's power.child_count, we won't need to worry about parents any more.
-
-I'm still not sure what to do with _idle() in that case.
-
-Thanks,
-Rafael
+"function foo in the kernel called" is more likely to change than "the 
+processor went to THIS frequency".
+The concept of CPU frequencies has been with us fora long time and is 
+going to be there for a long time as well ......
