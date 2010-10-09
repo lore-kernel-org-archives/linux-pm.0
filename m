@@ -1,105 +1,59 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: PATCH: PM / Runtime: Remove idle notification after
-	failing suspend (was: Re: [PATCH] PM: add synchronous ...)
-Date: Sat, 9 Oct 2010 01:24:56 +0200
-Message-ID: <201010090124.56493.rjw__23669.163863133$1286580441$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1010021004150.15874-100000@netrider.rowland.org>
-	<201010030006.33454.rjw@sisk.pl>
+From: Len Brown <lenb@kernel.org>
+Subject: [git pull request] idle patch for Linux-2.6.36-rc7
+Date: Fri, 08 Oct 2010 22:51:33 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1010082247110.3961@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201010030006.33454.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Power Management List <linux-pm@lists.osdl.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, October 03, 2010, Rafael J. Wysocki wrote:
-> On Saturday, October 02, 2010, Alan Stern wrote:
-> > On Fri, 1 Oct 2010, Rafael J. Wysocki wrote:
-> ...
-> 
-> > > If we removed the immediate idle notification after a successful resume, it
-> > > might need to be reworked slightly.
-> > 
-> > My suggestion was that we remove the idle notification after a failed 
-> > suspend, not the notification after a successful resume.
-> 
-> And I said I was fine with that.
+Hi Linus,
 
-Actaully, I think we can do that right away.
+please pull from: 
 
-Thanks,
-Rafael
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.git idle-release
+
+This fixes a 'regression' seen by those switching to
+2.6.35's new intel_idle driver from 2.6.34's acpi_idle driver
+if they are running on some Atom Z-series.
+
+I had disabled ATM-C6 in Atom pending public documentation.
+
+This will update the files shown below.
+
+thanks!
+
+--
+Len Brown
+Intel Open Source Technology Center
 
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM / Runtime: Remove idle notification after failing suspend
+ps. individual patches are available on linux-pm@lists.linux-foundation.org
+and a consolidated plain patch is available here:
+http://ftp.kernel.org/pub/linux/kernel/people/lenb/idle/patches/2.6.36/idle-release-2.6.36-rc7.diff.gz
 
-If runtime suspend of a device fails returning -EAGAIN or -EBUSY,
-which means that it's safe to try to suspend it again, the PM core
-runs the runtime idle helper function for it.  Unfortunately this may
-lead to problems, for example for PCI devices whose drivers don't
-implement the ->runtime_idle() callback, because in that case the
-PCI bus type's ->runtime_idle() always calls pm_runtime_suspend()
-for the given device.  Thus, if it is automatically called by a
-driver's ->runtime_suspend() returning -EAGAIN or -EBUSY, it will
-cause the suspend to happen again possibly causing a busy loop to
-appear.  To avoid that, remove the idle notification after failing
-runtime suspend of a device altogether and let the callers of
-pm_runtime_suspend() repeat the operation if need be.
+ drivers/idle/intel_idle.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-Reported-by: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/power/runtime.c |   11 ++---------
- 1 file changed, 2 insertions(+), 9 deletions(-)
+through these commits:
 
-Index: linux-2.6/drivers/base/power/runtime.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/runtime.c
-+++ linux-2.6/drivers/base/power/runtime.c
-@@ -281,7 +281,6 @@ static int rpm_suspend(struct device *de
- {
- 	int (*callback)(struct device *);
- 	struct device *parent = NULL;
--	bool notify = false;
- 	int retval;
- 
- 	dev_dbg(dev, "%s flags 0x%x\n", __func__, rpmflags);
-@@ -383,13 +382,10 @@ static int rpm_suspend(struct device *de
- 	if (retval) {
- 		__update_runtime_status(dev, RPM_ACTIVE);
- 		dev->power.deferred_resume = 0;
--		if (retval == -EAGAIN || retval == -EBUSY) {
--			if (dev->power.timer_expires == 0)
--				notify = true;
-+		if (retval == -EAGAIN || retval == -EBUSY)
- 			dev->power.runtime_error = 0;
--		} else {
-+		else
- 			pm_runtime_cancel_pending(dev);
--		}
- 	} else {
-  no_callback:
- 		__update_runtime_status(dev, RPM_SUSPENDED);
-@@ -408,9 +404,6 @@ static int rpm_suspend(struct device *de
- 		goto out;
- 	}
- 
--	if (notify)
--		rpm_idle(dev, 0);
--
- 	if (parent && !parent->power.ignore_children) {
- 		spin_unlock_irq(&dev->power.lock);
- 
+Len Brown (1):
+      intel_idle: enable Atom C6
+
+with this log:
+
+commit c7d96d8ee49e5020e4c5e73687c068dbdca2a4e8
+Author: Len Brown <len.brown@intel.com>
+Date:   Tue Oct 5 13:43:14 2010 -0400
+
+    intel_idle: enable Atom C6
+    
+    ATM-C6 was commented out, pending public documentation.
+    
+    https://bugzilla.kernel.org/show_bug.cgi?id=19762
+    
+    Tested-by: Dennis Jansen <Dennis.Jansen@...>
+    Signed-off-by: Len Brown <len.brown@intel.com>
