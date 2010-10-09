@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC] input: syfs switches for SKE keypad
-Date: Sat, 9 Oct 2010 12:52:17 +0200
-Message-ID: <201010091252.18184.rjw__19892.9743994542$1286621669$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1010061606330.2047-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH] PM: add synchronous runtime interface for
+	interrupt handlers
+Date: Sat, 9 Oct 2010 13:09:18 +0200
+Message-ID: <201010091309.18552.rjw__36590.1833436967$1286622743$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1010081200200.27105-100000@netrider.rowland.org>
+	<201010082153.35192.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1010061606330.2047-100000@iolanthe.rowland.org>
+In-Reply-To: <201010082153.35192.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,40 +20,88 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: samu.p.onkalo@nokia.com, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>, ext Sundar R IYER <sundar.iyer@stericsson.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, October 06, 2010, Alan Stern wrote:
-> On Wed, 6 Oct 2010, Rafael J. Wysocki wrote:
-> 
-> > > Mobile folks wish to power down some devices (most often input -
-> > > touchscreen, keypad) under certain circumstances to save power.
-> > > So far they were doing that by adding "disable" hook to individual
-> > > drivers and while I did allow that in for some devices I feel that we
-> > > need more standardised solution, preferably one that could re-use
-> > > existing PM hooks in drivers.
+On Friday, October 08, 2010, Rafael J. Wysocki wrote:
+> On Friday, October 08, 2010, Alan Stern wrote:
+> > On Thu, 7 Oct 2010, Rafael J. Wysocki wrote:
 > > 
-> > There's no interface for that at the PM core level, but I think we should
-> > add it, perhaps in analogy to the autosuspend one.  Namely, we can add a
-> > flag for drivers who want to make their suspend/resume callbacks to be
-> > reachable directly from user space.  Setting that flag would enable a sysfs
-> > attribute in /sys/devices/.../power/ allowing user space to invoke
-> > pm_runtime_suspend() and pm_runtime_resume() for the given device.
+> > > > 	If the PM core simply avoids releasing dev->power.lock before
+> > > > 	invoking the runtime_suspend or runtime_resume callback, the
+> > > > 	end result is almost the same as with busy-waiting.
+> > > 
+> > > This is slightly more complicated, because suspend is a bit different from
+> > > resume.  I think it's generally acceptable to refuse to do a "fast path" suspend
+> > > if the device state is not RPM_ACTIVE at the moment, but refusing to do
+> > > a "fast path" resume may be more problematic (more on that later).
+> > 
+> > That's what I thought too, but Kevin has suggested this might not be 
+> > so.
+> > 
+> > > The particular case we need to handle (I think) is that some devices need to be
+> > > resumed "atomically" as a part of bringing a CPU package out of a C-like-state
+> > > (Kevin, is that correct?).  In that case not only we can't defer the resume (by
+> > > using a workqueue), but also we have to finish the resume within strict time
+> > > constraints (the time to leave the given C-like-state is one of the parameters
+> > > used by cpuidle governors to decide which state to choose).
+> > 
+> > To what extent can this really happen?  If the CPU was previously in a 
+> > C-like state then it couldn't be in the middle of changing the device's 
+> > power state.  Maybe a different CPU was suspending or resuming the 
+> > device, but if that's so then why would this CPU need to resume it as 
+> > part of bringing the package out of the C-like state?
 > 
-> We already have power/control.  If the subsystem sets it to "on" by 
-> default and the driver suspends the device whenever it is idle, then 
-> userspace can control the power level by writing "auto" or "on" to 
-> power/control.
+> That's the case when user space writes to /sys/devices/.../power/control on
+> another CPU.
+> 
+> > > On the other hand, busy waiting (by looping) in the case the state is
+> > > RPM_RESUMING is as though the callbacks were executed under a spinlock and we
+> > > happened to wait on it.  I'd prefer to avoid that.  Moreover, if the state is
+> > > RPM_SUSPENDING at the time a "fast path" resume is started, we are almost
+> > > guaranteed to violate the time constraints (by busy waiting for the suspend to
+> > > complete and carrying out the resume).
+> > 
+> > I'm not convinced that the time constraints are all that hard.  At 
+> > least, I can't think of a situation where we do face a hard time limit 
+> > and also the device might be in the middle of a transition when we need 
+> > to resume it.
+> 
+> Now that I think of it, you seem to be right.
 
-The problem is that with the 'auto' setting the driver decides when to suspend
-and the driver need not know it's the right time.
+However, there's the following scenario (I don't know how realistic it is, though).
+It is not related to the cpuidle case, it is related to the case when the device
+is woken up by its own IRQ.  Namely, in that case it is perfectly possible that
+the IRQ appears exactly when the device is suspending, so if there's a "fast
+resume" in the interrupt handler, it will have to wait for the suspend to
+complete (or fail).  That in theory may lead to a violation of time constraints
+(if there are any).
 
-Suspending a graphics adapter when the user presses a "turn screen off"
-button it a good example of this.  The graphics driver may not know the button
-was pressed and it has to be told about that.  OTOH the button driver need
-not know what exactly should be done when it is pressed.  There may be a user
-space component in between that processes the button event and should be able
-to tell the graphics driver to suspend.
+...
+> > This seems much more complicated than we need.  Why not require for any
+> > particular device that all resumes and suspends are either always fast
+> > or always normal (i.e., always done with interrupts disabled or always
+> > done with interrupts enabled)?  That's what the original patch does.
+> >
+> > Sure, maybe some devices don't need to have fast suspend all the time.  
+> > But we don't lose anything by requiring them to always use it in order
+> > to gain the benefit of fast resume.
+> 
+> I think we should avoid turning interrupts off for the whole suspend/resume
+> time if not strictly necessary.
+
+Well, perhaps that's not a problem.
+
+I wonder if we can do the "fast suspend" and "fast resume" under the
+power.lock spinlock.  That would allow us to avoid some complications
+related to RPM_RESUMING and RPM_SUSPENDING.  Namely,
+if the device is flagged as "power.irq_safe", it will always suspend and
+resume "atomically" under its power.lock spinlock.  Then, the status will
+always be either RPM_ACTIVE or RPM_SUSPENDED (or RPM_ERROR,
+which is uninteresting).  Also, if "fast suspend" doesn't change the device
+parent's power.child_count, we won't need to worry about parents any more.
+
+I'm still not sure what to do with _idle() in that case.
 
 Thanks,
 Rafael
