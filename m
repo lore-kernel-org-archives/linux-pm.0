@@ -1,16 +1,22 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] pm_trace: Add sysfs attr for rechecking
-	dev hash.
-Date: Sun, 10 Oct 2010 01:30:47 +0200
-Message-ID: <201010100130.47448.rjw__44700.0137567104$1286667238$gmane$org@sisk.pl>
-References: <201010092334.27808.james@albanarts.com>
-	<201010100049.16054.rjw@sisk.pl>
-	<201010100013.14142.james@albanarts.com>
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: PATCH [0/4] perf: clean-up of power events API
+Date: Sat, 09 Oct 2010 21:39:28 -0400
+Message-ID: <1286674768.23994.3915.camel__12021.5759416626$1286674928$gmane$org@gandalf.stny.rr.com>
+References: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
+	<201010062334.46971.trenn@suse.de> <20101007150825.GB12581@Krystal>
+	<AANLkTikT4xsh7iCQDX8ksewJwC-BeFov=Ab7iYo+hDmO@mail.gmail.com>
+	<20101007155816.GA5351@nowhere> <4CAED2F0.9080801@kernel.org>
+	<20101008083819.GA22385@elte.hu> <4CAF19E7.3070103@linux.intel.com>
+	<20101008134156.GA28724@Krystal> <20101009062836.GB5517@elte.hu>
+	<AANLkTik6nO4i6xTuVYA9kBGFNpxYb70qimNcHPQKqTJ8@mail.gmail.com>
+	<AANLkTimT5Or7gLDMnmLqSzmUoPux0pXrPxUZQpFon+6_@mail.gmail.com>
+	<1286658935.23994.3366.camel@gandalf.stny.rr.com>
+	<AANLkTik8BocxyidcdmWMh2FV2LoEo_HGYGwaawasRH-O@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201010100013.14142.james@albanarts.com>
+In-Reply-To: <AANLkTik8BocxyidcdmWMh2FV2LoEo_HGYGwaawasRH-O@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,125 +26,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Hogan <james@albanarts.com>
-Cc: Len Brown <len.brown@intel.com>, markgross <markgross@thegnar.org>, linux-doc@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pm@lists.linux-foundation.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mathieu@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Jean Pihet <jean.pihet@newoldbits.com>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Eigler <fche@redhat.com>, Frank@smtp1.linux-foundation.org, Desnoyers <mathieu.desnoyers@efficios.com>, linux-pm@lists.linux-foundation.org, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, October 10, 2010, James Hogan wrote:
-> Thanks for taking a look...
+On Sat, 2010-10-09 at 16:20 -0700, Linus Torvalds wrote:
+> On Sat, Oct 9, 2010 at 2:15 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> >
+> > The difference here compared to all other user interfaces, is that this
+> > interface has the sole purpose of showing what is happening inside the
+> > kernel.
 > 
-> On Saturday 09 October 2010 23:49:15 Rafael J. Wysocki wrote:
-> > On Sunday, October 10, 2010, James Hogan wrote:
-> > > If the device which fails to resume is part of a loadable kernel module
-> > > it won't be checked at startup against the magic number stored in the
-> > > RTC.
-> > > 
-> > > Add a read-only sysfs attribute /sys/power/pm_trace_dev_hash which
-> > > contains a list of newline separated devices (usually just the one)
-> > > which currently match the last magic number. This allows the device
-> > > which is failing to resume to be found after the modules are loaded
-> > > again.
-> > > 
-> > > Signed-off-by: James Hogan <james@albanarts.com>
-> > > ---
-> > > 
-> > >  Documentation/power/s2ram.txt |    7 +++++++
-> > >  drivers/base/power/trace.c    |   27 +++++++++++++++++++++++++++
-> > >  include/linux/resume-trace.h  |    2 ++
-> > >  kernel/power/main.c           |   18 ++++++++++++++++++
-> > >  4 files changed, 54 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/Documentation/power/s2ram.txt
-> > > b/Documentation/power/s2ram.txt index 514b94f..3a2801a 100644
-> > > --- a/Documentation/power/s2ram.txt
-> > > +++ b/Documentation/power/s2ram.txt
-> > > 
-> > > @@ -49,6 +49,13 @@ machine that doesn't boot) is:
-> > >     device (lspci and /sys/devices/pci* is your friend), and see if you
-> > >     can fix it, disable it, or trace into its resume function.
-> > > 
-> > > +   If no device matches the hash, it may be a device from a loadable
-> > > kernel +   module that is not loaded until after the hash is checked.
-> > > You can check +   the hash against the current devices again after more
-> > > modules are loaded +   using sysfs:
-> > > +
-> > > +	cat /sys/power/pm_trace_dev_hash
-> > > +
-> > 
-> > /sys/power/pm_trace_match perhaps?
+> Bogus and dishonest argument.
 > 
-> The magic number stores 1 "user" number (given in a RESUME_TRACE call) and 2 
-> hashes (representing source file/line and device) in the RTC, but this sysfs 
-> attribute only returns the matches for the device part, so I think it's 
-> important to have dev or device in there in case we want attributes for 
-> file/line (which doesn't work with modules at the moment either, but the 
-> "user" number can be used as that's printed at boot directly), but I agree 
-> that match is better than hash so I'm happy to change it to pm_trace_dev_match 
-> or pm_trace_dev_matches.
-
-I'd prefer pm_trace_dev_match.
-
-> > 
-> > How do we ensure it prints things that make sense when the last resume was
-> > successful or the system hasn't suspended at all?
+> Listen to yourself, and read this thread again.
 > 
-> If the last resume was successful, then the stored magic number won't have 
-> changed since the original boot, since it is read from the RTC in a 
-> core_initcall function (early_resume_init()).
+> The thread was about doing some kind of open-source library to allow
+> non-open-source access to these events, and keeping backwards
+> compatibility in user space. In fact, that is what you yourself said.
 > 
-> The case of when pm_trace wasn't in use before boot is impossible to avoid 
-> when using the RTC. There is a chance that a genuine RTC value will not match 
-> any of the device hashes (there are 1009 possible device hash values), in 
-> which case nothing will be output, but the same thing happens at boot when it 
-> does it's first comparison against the devices and printk's any matches.
-
-OK
-
-I think it would make sense to document that this somehow.  Like for example
-in Documentation/ABI/testing/sysfs-power (you should add the new attribute to
-the list in there anyway).
-
-> > 
-> > >  For example, the above happens to be the VGA device on my EVO, which I
-> > >  used to run with "radeonfb" (it's an ATI Radeon mobility). It turns out
-> > >  that "radeonfb" simply cannot resume that device - it tries to set the
-> > > 
-> > > diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
-> > > index 17e24e3..e0cdba1 100644
-> > > --- a/drivers/base/power/trace.c
-> > > +++ b/drivers/base/power/trace.c
-> > > @@ -207,6 +207,33 @@ static int show_dev_hash(unsigned int value)
-> > > 
-> > >  static unsigned int hash_value_early_read;
-> > > 
-> > > +int snprint_trace_dev_hash(char *buf, size_t size)
-> > > +{
-> > > +	unsigned int value = hash_value_early_read / (USERHASH * FILEHASH);
-> > > +	int ret = 0;
-> > > +	struct list_head *entry;
-> > > +
-> > > +	device_pm_lock();
-> > > +	entry = dpm_list.prev;
-> > > +	while (size && entry != &dpm_list) {
-> > > +		struct device *dev = to_device(entry);
-> > > +		unsigned int hash = hash_string(DEVSEED, dev_name(dev),
-> > > +						DEVHASH);
-> > > +		if (hash == value) {
-> > > +			int len = snprintf(buf, size, "%s\n",
-> > > +					    dev_driver_string(dev));
-> > > +			if (len > size)
-> > > +				len = size;
-> > > +			buf += len;
-> > > +			ret += len;
-> > > +			size -= len;
-> > 
-> > Don't we want to break; here and if so then why?
+> So you claimed it could be backwards-compatible. If that's the case,
+> then there is no excuse for not being so in the kernel.
 > 
-> No, because it's possible that two devices will hash to the same value, in 
-> which case it is better to print both out so we know that the problem could be 
-> in either one of them. I'll add a comment to that effect.
+> You can't have it both ways. Stop the f*cking waffling.
 
-OK
+Let me rephrase it then, and lets forget about the library. I was just
+brain storming ideas.
 
-Thanks,
-Rafael
+I'm all for labeling specific trace points as "ABI", such that, these
+trace points have had sufficient thought and are not expected to change
+in the near future. But I'm against the idea that any tracepoint that
+has been shown to userspace can be considered stable.
+
+With or without libraries, I'm for two kinds of interfaces: One that is
+stable and has been thoroughly thought through, and one that is free for
+the maintainers to have an interface to let them see what is happening
+in the kernel, even on a production system, but be able to change them
+whenever they feel the need.
+
+That's the basis of my idea. A stable backward-compatible interface, and
+an interface that is unstable for developers. Whether we put the stable
+interface into a library (to keep the ugliness from developers, which
+you obviously do not like), or two, distinctly label the tracepoint as
+ABI, to let the developers and everyone else know what tracepoints an
+application can count on and what ones they should not.
+
+Thus my waffling is really wanting both, a stable ABI and an unstable
+one. I've been hesitant in the pass from doing the TRACE_EVENT_ABI()
+before, because Peter Zijlstra (who is currently MIA) has been strongly
+against it.
+
+-- Steve
+ 
