@@ -1,18 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 2/2] pm_trace: Add sysfs attr for rechecking
-	dev hash.
-Date: Sun, 10 Oct 2010 22:47:19 +0200
-Message-ID: <20101010204719.GA3388__2024.26372929967$1286743698$gmane$org@elf.ucw.cz>
-References: <201010092334.27808.james@albanarts.com>
-	<201010092337.47821.james@albanarts.com>
-	<20101010180400.GA19524@elf.ucw.cz>
-	<201010102047.01950.james@albanarts.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [RFC] input: syfs switches for SKE keypad
+Date: Sun, 10 Oct 2010 13:51:47 -0700
+Message-ID: <20101010205147.GA18455__46897.3404648297$1286743968$gmane$org@core.coreip.homeip.net>
+References: <201010100102.19862.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.1010101626550.30042-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201010102047.01950.james@albanarts.com>
+In-Reply-To: <Pine.LNX.4.44L0.1010101626550.30042-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,56 +19,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Hogan <james@albanarts.com>, Greg KH <greg@kroah.com>
-Cc: Len Brown <len.brown@intel.com>, markgross <markgross@thegnar.org>, linux-doc@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: samu.p.onkalo@nokia.com, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>, ext Sundar R IYER <sundar.iyer@stericsson.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun 2010-10-10 20:47:01, James Hogan wrote:
-> Hi Pavel,
+On Sun, Oct 10, 2010 at 04:34:38PM -0400, Alan Stern wrote:
+> On Sun, 10 Oct 2010, Rafael J. Wysocki wrote:
 > 
-> On Sunday 10 October 2010 19:04:00 Pavel Machek wrote:
-> > Hi!
-> > 
-> > > If the device which fails to resume is part of a loadable kernel module
-> > > it won't be checked at startup against the magic number stored in the
-> > > RTC.
-> > > 
-> > > Add a read-only sysfs attribute /sys/power/pm_trace_dev_hash which
-> > > contains a list of newline separated devices (usually just the one)
-> > > which currently match the last magic number. This allows the device
-> > > which is failing to resume to be found after the modules are loaded
-> > > again.
-> > > 
-> > > --- a/Documentation/power/s2ram.txt
-> > > +++ b/Documentation/power/s2ram.txt
-> > > 
-> > > @@ -49,6 +49,13 @@ machine that doesn't boot) is:
-> > >     device (lspci and /sys/devices/pci* is your friend), and see if you
-> > >     can fix it, disable it, or trace into its resume function.
-> > > 
-> > > +   If no device matches the hash, it may be a device from a loadable
-> > > kernel +   module that is not loaded until after the hash is checked.
-> > > You can check +   the hash against the current devices again after more
-> > > modules are loaded +   using sysfs:
-> > > +
-> > > +	cat /sys/power/pm_trace_dev_hash
-> > > +
-> > 
-> > Yep, but exact semantics of that sysfs file should probably be linked
-> > in the sysfs documentation...
-> > 								Pavel
+> > > > > > There's no interface for that at the PM core level, but I think we should
+> > > > > > add it, perhaps in analogy to the autosuspend one.  Namely, we can add a
+> > > > > > flag for drivers who want to make their suspend/resume callbacks to be
+> > > > > > reachable directly from user space.  Setting that flag would enable a sysfs
+> > > > > > attribute in /sys/devices/.../power/ allowing user space to invoke
+> > > > > > pm_runtime_suspend() and pm_runtime_resume() for the given device.
+> > > > > 
+> > > > > We already have power/control.  If the subsystem sets it to "on" by 
+> > > > > default and the driver suspends the device whenever it is idle, then 
+> > > > > userspace can control the power level by writing "auto" or "on" to 
+> > > > > power/control.
 > 
-> To clarify, do you mean I should link to Documentation/ABI/testing/sysfs-power 
-> from Documentation/power/s2ram.txt, or just make sure the syfs file is 
-> documented in Documentation/ABI/testing/sysfs-power (which is done in v2 of 
-> this patch)?
+> ...
+> 
+> > > You are clearly right; userspace has to tell the driver when it is okay
+> > > to suspend.  My point was that we already have a mechanism in the PM
+> > > core for doing this -- assuming the driver is written appropriately (to 
+> > > assume that it should try to suspend whenever possible).  We shouldn't 
+> > > need to add another mechanism.
+> > 
+> > OK, so how is a graphics driver going to figure out it should suspend when the
+> > button is pressed in the example above?
+> 
+> The graphics driver doesn't have to figure that out at all.  It merely
+> has to suspend the display whenever it can, i.e., whenever the usage
+> count drops to 0 (or equivalently, whenever the runtime_idle callback
+> runs).
 
-v2 of the patch is probably ok.
+That makes sense for drivers that do very agressive PM, but fails for
+cases when you have bigger timeouts. My phone shuts off its display
+automatically after 30 seconds or a minute but I have an option of
+pressing a button which causes it to shut off immediately.
 
-Also, sysfs should be one entry per file, and strictly speaking, this
-one is not. That may be fine... but as this is debugging facility,
-perhaps it should go to debugfs? Maybe cc gregkh...
-									Pavel
+> 
+> It's up to userspace to make sure that the display's usage count goes
+> to 0 at the proper time, i.e., when the button is pressed.  Contrary to
+> what you wrote above, we _do_ have an interface for this at the PM core
+> level: power/control.
+> 
+
+I think that while using power/control is a _very_ good option "auto"
+and "on" are not enough, we need 3 states: "on", "off" and "auto".
+
+Thanks.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Dmitry
