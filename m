@@ -1,19 +1,24 @@
-From: Ingo Molnar <mingo@elte.hu>
+From: Steven Rostedt <rostedt@goodmis.org>
 Subject: Re: PATCH [0/4] perf: clean-up of power events API
-Date: Sun, 10 Oct 2010 14:19:28 +0200
-Message-ID: <20101010121928.GA2688__15833.960104692$1286713355$gmane$org@elte.hu>
-References: <201010062334.46971.trenn@suse.de> <20101007150825.GB12581@Krystal>
+Date: Sun, 10 Oct 2010 11:11:38 -0400
+Message-ID: <1286723498.19688.15.camel__27287.1837173172$1286723659$gmane$org@gandalf.stny.rr.com>
+References: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
+	<201010062334.46971.trenn@suse.de> <20101007150825.GB12581@Krystal>
 	<AANLkTikT4xsh7iCQDX8ksewJwC-BeFov=Ab7iYo+hDmO@mail.gmail.com>
 	<20101007155816.GA5351@nowhere> <4CAED2F0.9080801@kernel.org>
 	<20101008083819.GA22385@elte.hu> <4CAF19E7.3070103@linux.intel.com>
 	<20101008134156.GA28724@Krystal> <20101009062836.GB5517@elte.hu>
-	<4CB095FA.8060803@linux.intel.com>
+	<AANLkTik6nO4i6xTuVYA9kBGFNpxYb70qimNcHPQKqTJ8@mail.gmail.com>
+	<AANLkTimT5Or7gLDMnmLqSzmUoPux0pXrPxUZQpFon+6_@mail.gmail.com>
+	<1286658935.23994.3366.camel@gandalf.stny.rr.com>
+	<AANLkTik8BocxyidcdmWMh2FV2LoEo_HGYGwaawasRH-O@mail.gmail.com>
+	<1286674768.23994.3915.camel@gandalf.stny.rr.com>
+	<1286692881.1998.10.camel@laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4CB095FA.8060803@linux.intel.com>
+In-Reply-To: <1286692881.1998.10.camel@laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,59 +28,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jean Pihet <jean.pihet@newoldbits.com>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Frederic Weisbecker <fweisbec@gmail.com>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
 List-Id: linux-pm@vger.kernel.org
 
-
-* Arjan van de Ven <arjan@linux.intel.com> wrote:
-
->  On 10/8/2010 11:28 PM, Ingo Molnar wrote:
-> >* Mathieu Desnoyers<mathieu.desnoyers@efficios.com>  wrote:
-> >
-> >>* Arjan van de Ven (arjan@linux.intel.com) wrote:
-> >>>  On 10/8/2010 1:38 AM, Ingo Molnar wrote:
-> >>>>The fundamental thing about tracing/instrumentation is that there
-> >>>>are no deep ABI needs: it's all about analyzing development kernels
-> >>>>(and a few select versions that get the enterprise treatment) but
-> >>>>otherwise the half-life of this kind of information is very short.
-> >>>>
-> >>>>So we dont want to tie ourselves down with excessive ABIs.
-> >>>ok I'll start working on a second mechanism then to export
-> >>>information that applications need ;-( it'll look a lot like tracing
-> >>>I suppose ;-(
-> >>What's wrong with doing the compatibility layer in a LGPL library
-> >>shipped with the kernel tree under tools/ ? Why does everything *have*
-> >>to be done in kernel-space ? Why are you so focused on making your
-> >>application interact directly with kernel ABIs ?
-> >The thing is, Arjan is 100% right that a library for this is not a
-> >'solution', it's an unnecessary complication.
-> >
-> >What i suggested in my mail was to _keep existing events_. I.e. do not
-> >break powertop. We are 100% happy that we _have_ such apps, and we
-> >should do reasonable things to not break them.
-> >
-> >If we need to change events, we can add a new event. The old events will
-> >lose their relevance without us having to do much - and without us
-> >having to break powertop, pytimechart, etc. We can even have periods of
-> >overlap when both events are available - to give instrumentation apps
-> >time to learn the new events.
-> >
-> >I.e. it's not an ABI in the classic sense - we do not (because we
-> >cannot) guarantee the infinite availability of these events. But we can
-> >guarantee that the fields do not change in some stupid, avoidable way.
+On Sun, 2010-10-10 at 08:41 +0200, Peter Zijlstra wrote:
+> On Sat, 2010-10-09 at 21:39 -0400, Steven Rostedt wrote:
+> > I've been hesitant in the pass from doing the TRACE_EVENT_ABI()
+> > before, because Peter Zijlstra (who is currently MIA) has been strongly
+> > against it. 
 > 
-> also I have to say that some events are more likely to change than others
+> I see no point in the TRACE_EVENT_ABI() because if I need to change such
+> a tracepoint to reflect changes in the kernel then I will freely do so.
 > 
-> "function foo in the kernel called" is more likely to change than "the 
-> processor went to THIS frequency". The concept of CPU frequencies has 
-> been with us fora long time and is going to be there for a long time 
-> as well ......
+> Even seemingly stable points like sched_switch(), which we all agree
+> will stay around forever (gotta have context switches on a multi-tasking
+> OS) will not stay stable when we add/change scheduling policies.
+> 
+> Sure, the prev and next task thing will stay the same, but the meaning
+> and interpretation of things like the prio field will not, esp when we
+> go add something like a deadline scheduler that isn't priority based.
+> 
+> So one possibility is to simply remove all that information from the
+> tracepoints, remove the prio and state fields, but how useful is that?
+> 
+> I guess what I'm saying is that even if we were to provide _ABI I see us
+> getting into this very same argument over and over again, making me want
+> to remove all this trace event muck right now before it gets worse.
 
-Most definitely. It's no accident that it took such a long time for this 
-issue to be raised in the first place. It's a rare occurance - and then 
-we can deal with it intelligently, without breaking stuff unnecessarily.
+Then how's this as a compromise. We do not add a TRACE_EVENT_ABI(), but
+instead manually add the ABI interface to existing tracepoints. Let's
+use the sched example you shown above.
 
-Thanks,
+We can connect to the sched_switch() tracepoint manually in something
+perhaps called kernel/abi_trace.c or trace_abi.c (whatever).
 
-	Ingo
+Here we create the directories manually there:
+
+	/sys/kernel/event/sched/sched_switch/
+
+But this sched_switch will only include the prev and next pids, comms,
+and perhaps even run state. But not the prio (since we see that
+changing).
+
+It would then need the code to enable the trace point with:
+
+	register_trace_sched_switch(sched_switch_abi_probe, NULL);
+
+Where we have
+
+	static void
+	sched_switch_abi_probe(void *ignore,
+				struct task_switch *prev,
+				struct task_struct *next)
+	{
+		/* code to grab just the ABI stuff */
+	}
+
+And this code can then record to what ever hooked to it.
+
+Making this a manual effort will make it easier to control what becomes
+an ABI. We can have long discussions and flames over what goes here. But
+that's good since debates before an ABI is created is much better than
+debates after one is created.
+
+I'm afraid that a easy macro called TRACE_EVENT_ABI() would have the
+same issue. ABIs may be created too quickly before they are thought
+through.
+
+Thoughts?
+
+-- Steve
