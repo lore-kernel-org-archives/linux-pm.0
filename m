@@ -1,7 +1,7 @@
-From: Steven Rostedt <rostedt@goodmis.org>
+From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: PATCH [0/4] perf: clean-up of power events API
-Date: Sat, 09 Oct 2010 21:39:28 -0400
-Message-ID: <1286674768.23994.3915.camel__12021.5759416626$1286674928$gmane$org@gandalf.stny.rr.com>
+Date: Sun, 10 Oct 2010 08:41:21 +0200
+Message-ID: <1286692881.1998.10.camel__39886.8870609023$1286692966$gmane$org@laptop>
 References: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
 	<201010062334.46971.trenn@suse.de> <20101007150825.GB12581@Krystal>
 	<AANLkTikT4xsh7iCQDX8ksewJwC-BeFov=Ab7iYo+hDmO@mail.gmail.com>
@@ -12,11 +12,12 @@ References: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
 	<AANLkTimT5Or7gLDMnmLqSzmUoPux0pXrPxUZQpFon+6_@mail.gmail.com>
 	<1286658935.23994.3366.camel@gandalf.stny.rr.com>
 	<AANLkTik8BocxyidcdmWMh2FV2LoEo_HGYGwaawasRH-O@mail.gmail.com>
+	<1286674768.23994.3915.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTik8BocxyidcdmWMh2FV2LoEo_HGYGwaawasRH-O@mail.gmail.com>
+In-Reply-To: <1286674768.23994.3915.camel@gandalf.stny.rr.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,55 +27,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mathieu@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Jean Pihet <jean.pihet@newoldbits.com>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Eigler <fche@redhat.com>, Frank@smtp1.linux-foundation.org, Desnoyers <mathieu.desnoyers@efficios.com>, linux-pm@lists.linux-foundation.org, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jean Pihet <jean.pihet@newoldbits.com>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Frederic Weisbecker <fweisbec@gmail.com>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2010-10-09 at 16:20 -0700, Linus Torvalds wrote:
-> On Sat, Oct 9, 2010 at 2:15 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> >
-> > The difference here compared to all other user interfaces, is that this
-> > interface has the sole purpose of showing what is happening inside the
-> > kernel.
-> 
-> Bogus and dishonest argument.
-> 
-> Listen to yourself, and read this thread again.
-> 
-> The thread was about doing some kind of open-source library to allow
-> non-open-source access to these events, and keeping backwards
-> compatibility in user space. In fact, that is what you yourself said.
-> 
-> So you claimed it could be backwards-compatible. If that's the case,
-> then there is no excuse for not being so in the kernel.
-> 
-> You can't have it both ways. Stop the f*cking waffling.
+On Sat, 2010-10-09 at 21:39 -0400, Steven Rostedt wrote:
+> I've been hesitant in the pass from doing the TRACE_EVENT_ABI()
+> before, because Peter Zijlstra (who is currently MIA) has been strongly
+> against it. 
 
-Let me rephrase it then, and lets forget about the library. I was just
-brain storming ideas.
+I see no point in the TRACE_EVENT_ABI() because if I need to change such
+a tracepoint to reflect changes in the kernel then I will freely do so.
 
-I'm all for labeling specific trace points as "ABI", such that, these
-trace points have had sufficient thought and are not expected to change
-in the near future. But I'm against the idea that any tracepoint that
-has been shown to userspace can be considered stable.
+Even seemingly stable points like sched_switch(), which we all agree
+will stay around forever (gotta have context switches on a multi-tasking
+OS) will not stay stable when we add/change scheduling policies.
 
-With or without libraries, I'm for two kinds of interfaces: One that is
-stable and has been thoroughly thought through, and one that is free for
-the maintainers to have an interface to let them see what is happening
-in the kernel, even on a production system, but be able to change them
-whenever they feel the need.
+Sure, the prev and next task thing will stay the same, but the meaning
+and interpretation of things like the prio field will not, esp when we
+go add something like a deadline scheduler that isn't priority based.
 
-That's the basis of my idea. A stable backward-compatible interface, and
-an interface that is unstable for developers. Whether we put the stable
-interface into a library (to keep the ugliness from developers, which
-you obviously do not like), or two, distinctly label the tracepoint as
-ABI, to let the developers and everyone else know what tracepoints an
-application can count on and what ones they should not.
+So one possibility is to simply remove all that information from the
+tracepoints, remove the prio and state fields, but how useful is that?
 
-Thus my waffling is really wanting both, a stable ABI and an unstable
-one. I've been hesitant in the pass from doing the TRACE_EVENT_ABI()
-before, because Peter Zijlstra (who is currently MIA) has been strongly
-against it.
-
--- Steve
- 
+I guess what I'm saying is that even if we were to provide _ABI I see us
+getting into this very same argument over and over again, making me want
+to remove all this trace event muck right now before it gets worse.
