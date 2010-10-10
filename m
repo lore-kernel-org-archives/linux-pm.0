@@ -1,24 +1,12 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: PATCH [0/4] perf: clean-up of power events API
-Date: Sun, 10 Oct 2010 11:11:38 -0400
-Message-ID: <1286723498.19688.15.camel__27287.1837173172$1286723659$gmane$org@gandalf.stny.rr.com>
-References: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
-	<201010062334.46971.trenn@suse.de> <20101007150825.GB12581@Krystal>
-	<AANLkTikT4xsh7iCQDX8ksewJwC-BeFov=Ab7iYo+hDmO@mail.gmail.com>
-	<20101007155816.GA5351@nowhere> <4CAED2F0.9080801@kernel.org>
-	<20101008083819.GA22385@elte.hu> <4CAF19E7.3070103@linux.intel.com>
-	<20101008134156.GA28724@Krystal> <20101009062836.GB5517@elte.hu>
-	<AANLkTik6nO4i6xTuVYA9kBGFNpxYb70qimNcHPQKqTJ8@mail.gmail.com>
-	<AANLkTimT5Or7gLDMnmLqSzmUoPux0pXrPxUZQpFon+6_@mail.gmail.com>
-	<1286658935.23994.3366.camel@gandalf.stny.rr.com>
-	<AANLkTik8BocxyidcdmWMh2FV2LoEo_HGYGwaawasRH-O@mail.gmail.com>
-	<1286674768.23994.3915.camel@gandalf.stny.rr.com>
-	<1286692881.1998.10.camel@laptop>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: 2.6.36-rc7-git2: Reported regressions from 2.6.35
+Date: Sun, 10 Oct 2010 19:46:14 +0200 (CEST)
+Message-ID: <v0Rsc8XZnFC.A.-xF.oqfsMB__176.417912780558$1286733107$gmane$org@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1286692881.1998.10.camel@laptop>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,74 +16,173 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas@smtp1.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Jean Pihet <jean.pihet@newoldbits.com>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Frederic Weisbecker <fweisbec@gmail.com>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2010-10-10 at 08:41 +0200, Peter Zijlstra wrote:
-> On Sat, 2010-10-09 at 21:39 -0400, Steven Rostedt wrote:
-> > I've been hesitant in the pass from doing the TRACE_EVENT_ABI()
-> > before, because Peter Zijlstra (who is currently MIA) has been strongly
-> > against it. 
-> 
-> I see no point in the TRACE_EVENT_ABI() because if I need to change such
-> a tracepoint to reflect changes in the kernel then I will freely do so.
-> 
-> Even seemingly stable points like sched_switch(), which we all agree
-> will stay around forever (gotta have context switches on a multi-tasking
-> OS) will not stay stable when we add/change scheduling policies.
-> 
-> Sure, the prev and next task thing will stay the same, but the meaning
-> and interpretation of things like the prio field will not, esp when we
-> go add something like a deadline scheduler that isn't priority based.
-> 
-> So one possibility is to simply remove all that information from the
-> tracepoints, remove the prio and state fields, but how useful is that?
-> 
-> I guess what I'm saying is that even if we were to provide _ABI I see us
-> getting into this very same argument over and over again, making me want
-> to remove all this trace event muck right now before it gets worse.
+This message contains a list of some regressions from 2.6.35,
+for which there are no fixes in the mainline known to the tracking team.
+If any of them have been fixed already, please let us know.
 
-Then how's this as a compromise. We do not add a TRACE_EVENT_ABI(), but
-instead manually add the ABI interface to existing tracepoints. Let's
-use the sched example you shown above.
+If you know of any other unresolved regressions from 2.6.35, please let us
+know either and we'll add them to the list.  Also, please let us know
+if any of the entries below are invalid.
 
-We can connect to the sched_switch() tracepoint manually in something
-perhaps called kernel/abi_trace.c or trace_abi.c (whatever).
+Each entry from the list will be sent additionally in an automatic reply
+to this message with CCs to the people involved in reporting and handling
+the issue.
 
-Here we create the directories manually there:
 
-	/sys/kernel/event/sched/sched_switch/
+Listed regressions statistics:
 
-But this sched_switch will only include the prev and next pids, comms,
-and perhaps even run state. But not the prio (since we see that
-changing).
+  Date          Total  Pending  Unresolved
+  ----------------------------------------
+  2010-10-10       56       16          15
+  2010-10-03       52       16          14
+  2010-09-26       46       15          13
+  2010-09-20       38       15          15
+  2010-09-12       28       14          13
+  2010-08-30       21       16          15
 
-It would then need the code to enable the trace point with:
 
-	register_trace_sched_switch(sched_switch_abi_probe, NULL);
+Unresolved regressions
+----------------------
 
-Where we have
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=19862
+Subject		: [REGRESSION] no sound on T60 laptop (HDA Intel)
+Submitter	: Miklos Szeredi <miklos@szeredi.hu>
+Date		: 2010-10-05 9:25 (6 days old)
+Message-ID	: <E1P33mT-0003qa-Fv@pomaz-ex.szeredi.hu>
+References	: http://marc.info/?l=linux-kernel&m=128627079921512&w=2
 
-	static void
-	sched_switch_abi_probe(void *ignore,
-				struct task_switch *prev,
-				struct task_struct *next)
-	{
-		/* code to grab just the ABI stuff */
-	}
 
-And this code can then record to what ever hooked to it.
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=19802
+Subject		: [drm:init_ring_common] *ERROR* render ring head not reset to zero
+Submitter	: Thomas Meyer <thomas@m3y3r.de>
+Date		: 2010-10-04 20:31 (7 days old)
+Message-ID	: <201010042231.20320.thomas@m3y3r.de>
+References	: http://marc.info/?l=linux-kernel&m=128622441331199&w=2
 
-Making this a manual effort will make it easier to control what becomes
-an ABI. We can have long discussions and flames over what goes here. But
-that's good since debates before an ABI is created is much better than
-debates after one is created.
 
-I'm afraid that a easy macro called TRACE_EVENT_ABI() would have the
-same issue. ABIs may be created too quickly before they are thought
-through.
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=19782
+Subject		: 2.6.36-rc6-git2 -- BUG dentry: Poison overwritten (after resume from hibernation)
+Submitter	: Miles Lane <miles.lane@gmail.com>
+Date		: 2010-10-03 3:54 (8 days old)
+Message-ID	: <AANLkTimrqtzBHAZSuDhEs_3CKA6pCbM35b1BtKH=MvC_@mail.gmail.com>
+References	: http://marc.info/?l=linux-kernel&m=128607809314079&w=2
 
-Thoughts?
 
--- Steve
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=19632
+Subject		: 2.6.36-rc6: modprobe Not tainted warning
+Submitter	: Heinz Diehl <htd@fritha.org>
+Date		: 2010-09-30 18:25 (11 days old)
+Message-ID	: <20100930182516.GA15089@fritha.org>
+References	: http://marc.info/?l=linux-kernel&m=128587114004680&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=19392
+Subject		: WARNING: at drivers/net/wireless/ath/ath5k/base.c:3475 ath5k_bss_info_changed+0x44/0x168 [ath5k]()
+Submitter	: Justin Mattock <justinmattock@gmail.com>
+Date		: 2010-09-28 22:30 (13 days old)
+Message-ID	: <AANLkTim5WCGKPvEkOkO_YnMF9pg8mvLfQoFBNUFpfa_k@mail.gmail.com>
+References	: http://marc.info/?l=linux-kernel&m=128571307018635&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=19372
+Subject		: 2.6.36-rc6: WARNING: at drivers/gpu/drm/radeon/radeon_fence.c:235 radeon_fence_wait+0x35a/0x3c0
+Submitter	: Alexey Dobriyan <adobriyan@gmail.com>
+Date		: 2010-09-29 21:29 (12 days old)
+Message-ID	: <20100929212923.GA5578@core2.telecom.by>
+References	: http://marc.info/?l=linux-kernel&m=128579579400315&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=19142
+Subject		: Screen flickers when switching from the console to X
+Submitter	: Andrey Rahmatullin <wrar@altlinux.org>
+Date		: 2010-09-27 12:05 (14 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=19072
+Subject		: [2.6.36-rc regression] occasional complete system hangs on sparc64 SMP
+Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+Date		: 2010-09-23 17:02 (18 days old)
+Message-ID	: <19611.34846.813757.309183@pilspetsen.it.uu.se>
+References	: http://marc.info/?l=linux-kernel&m=128526136531048&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=19052
+Subject		: 2.6.36-rc5-git1 -- [drm:i915_report_and_clear_eir] *ERROR* EIR stuck: 0x00000010, masking
+Submitter	: Miles Lane <miles.lane@gmail.com>
+Date		: 2010-09-22 23:47 (19 days old)
+Message-ID	: <AANLkTikWQjUQjFJU9MO1+XbSLAEE-GARz+S+Dz2Fgu4h@mail.gmail.com>
+References	: http://marc.info/?l=linux-kernel&m=128519926626322&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=19002
+Subject		: Radeon rv730 AGP/KMS/DRM kernel lockup
+Submitter	: Duncan <1i5t5.duncan@cox.net>
+Date		: 2010-09-23 16:48 (18 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=17361
+Subject		: Random kmemcheck errors and kernel freeze on 2.6.36-rc*
+Submitter	: Christian Casteyde <casteyde.christian@free.fr>
+Date		: 2010-08-29 19:59 (43 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=17121
+Subject		: Two blank rectangles more than 10 cm long when booting
+Submitter	: Eric Valette <eric.valette@free.fr>
+Date		: 2010-08-26 17:24 (46 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=17061
+Subject		: 2.6.36-rc1 on zaurus: bluetooth regression
+Submitter	: Pavel Machek <pavel@ucw.cz>
+Date		: 2010-08-21 15:24 (51 days old)
+Message-ID	: <20100821152445.GA1536@ucw.cz>
+References	: http://marc.info/?l=linux-kernel&m=128240433828087&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=16971
+Subject		: qla4xxx compile failure on 32-bit PowerPC: missing readq and writeq
+Submitter	: Meelis Roos <mroos@linux.ee>
+Date		: 2010-08-19 21:03 (53 days old)
+Message-ID	: <alpine.SOC.1.00.1008192359310.19654@math.ut.ee>
+References	: http://marc.info/?l=linux-kernel&m=128225184900892&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=16951
+Subject		: hackbench regression with 2.6.36-rc1
+Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+Date		: 2010-08-18 6:18 (54 days old)
+Message-ID	: <1282112318.21202.8.camel@ymzhang.sh.intel.com>
+References	: http://marc.info/?l=linux-kernel&m=128211235904910&w=2
+
+
+Regressions with patches
+------------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=18742
+Subject		: PROBLEM: Kernel panic on 2.6.36-rc4 when loading intel_ips on Core i3 laptop
+Submitter	: infernix <infernix@infernix.net>
+Date		: 2010-09-15 14:35 (26 days old)
+Message-ID	: <4C90D998.6050103@infernix.net>
+References	: http://marc.info/?l=linux-kernel&m=128456187928496&w=2
+Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
+Patch		: https://bugzilla.kernel.org/attachment.cgi?id=31112
+
+
+For details, please visit the bug entries and follow the links given in
+references.
+
+As you can see, there is a Bugzilla entry for each of the listed regressions.
+There also is a Bugzilla entry used for tracking the regressions from 2.6.35,
+unresolved as well as resolved, at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=16444
+
+Please let the tracking team know if there are any Bugzilla entries that
+should be added to the list in there.
+
+Thanks!
