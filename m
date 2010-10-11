@@ -1,15 +1,14 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [RFC] input: syfs switches for SKE keypad
-Date: Mon, 11 Oct 2010 15:08:46 -0700
-Message-ID: <20101011220846.GA28611__46848.3102777556$1286835197$gmane$org@core.coreip.homeip.net>
-References: <20101011170733.GA27304@core.coreip.homeip.net>
-	<Pine.LNX.4.44L0.1010111739580.16765-100000@netrider.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM: add synchronous runtime interface for
+	interrupt handlers
+Date: Tue, 12 Oct 2010 00:30:36 +0200
+Message-ID: <201010120030.36393.rjw__21723.9200640053$1286836328$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1010111254430.2339-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1010111739580.16765-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1010111254430.2339-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,79 +19,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: samu.p.onkalo@nokia.com, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>, ext Sundar R IYER <sundar.iyer@stericsson.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 11, 2010 at 05:54:27PM -0400, Alan Stern wrote:
-> On Mon, 11 Oct 2010, Dmitry Torokhov wrote:
+On Monday, October 11, 2010, Alan Stern wrote:
+> On Sat, 9 Oct 2010, Rafael J. Wysocki wrote:
 > 
-> > > > > Can you give any examples where "sticky off" is really useful (other
-> > > > > than just for debugging)?
-> > > > > 
-> > > > 
-> > > > A mobile device might have a set of keys that, once device is put into
-> > > > lower power mode, should not bring the device out of that mode. This I
-> > > > would call a "sticky off" case.
-> > > 
-> > > But here the "sticky off" refers to the entire mobile device, not to 
-> > > any particular driver.
-> > 
-> > Where did I say that?
+> > I wonder if we can do the "fast suspend" and "fast resume" under the
+> > power.lock spinlock.  That would allow us to avoid some complications
+> > related to RPM_RESUMING and RPM_SUSPENDING.  Namely,
+> > if the device is flagged as "power.irq_safe", it will always suspend and
+> > resume "atomically" under its power.lock spinlock.  Then, the status will
+> > always be either RPM_ACTIVE or RPM_SUSPENDED (or RPM_ERROR,
+> > which is uninteresting).
 > 
-> Just above.
-
-Hm, indeed I did ;)
-
->  The difficulty here is caused by the fact that you used
-> the word "device" instead of "system".  You wrote "... should not bring
-> the device out of that mode", with the word "device" referring back to
-> "a mobile device" -- which is the entire system.  That is, we have the
-> mobile system and we have the keypad device; calling the mobile system
-> a "device" leads to confusion.
-
-Right. I guess the scenario I wanted to describe is when we press a key
-to put mobile sysem in a lower power mode (shut of screen, block
-certain keys, and so on) but that not necessarily means that entire
-system is sleeping.
-
+> We could do this.  It has some disadvantages but they aren't terrible.
 > 
-> >  The device is still running, playing your favorite
-> > song collection for example. Still you probably do not want your car
-> > keys compose and e-mail for you while you are jogging, thus the main
-> > keypad would be forced off.
+> >  Also, if "fast suspend" doesn't change the device
+> > parent's power.child_count, we won't need to worry about parents any more.
 > 
-> Then I can't answer this question without knowing more about how the 
-> keypad works.
+> I don't know about that.  If the parent's child_count doesn't change 
+> then the parent can never suspend.  Of course, if there is no parent or 
+> the parent is disabled for runtime PM then this doesn't matter.
+
+I think the recursive resuming of the parents is inherently nonatomic and
+it shouldn't be done in the "fast suspend/resume" case.  So, I think it might
+make sense to prevent the parent from ever suspending if children are supposed
+to use the "fast" ops.
+
+> > I'm still not sure what to do with _idle() in that case.
 > 
-> 	Does suspending the keypad truly put it in low-power mode?
+> Clearly we should not hold the spinlock while running the runtime_idle
+> callback.  That would make it impossible for the callback to ask for a
+> suspend.
 
-Could be, it depends.
+That's correct.
 
-> 
-> 	What happens if a key is pressed while the keypad is suspended?
-
-It may or it may not wake up the device and/or system.
-
-> 
-> 	Do you want to prevent all the keys from working or just some 
-> 	of them?
-
-It depends.
-
-> 
-> 	How would the user un-suspend the keypad if the system no 
-> 	longer responds to keystrokes?
-
-I do not believe there is a generic answer - different devices,
-different options. For example I could see buttons split into 2 groups -
-"important" ones that bring the system from sleep or "stupor" and "not
-so important" that gets to be ignored. Or user woudl need to "flick"
-the screen. Or toss the phone into a corner cussing :)
-
-The point is that there seems to be a need for kicking devices into low
-power mode and I woudl like to have generic interface for that,
-preferrably reusing (as far as kernel drivers go) existing PM
-infrastructure.
-
--- 
-Dmitry
+Thanks,
+Rafael
