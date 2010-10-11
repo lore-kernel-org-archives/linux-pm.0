@@ -1,16 +1,13 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH v7] power: introduce library for
-	device-specific OPPs
-Date: Mon, 11 Oct 2010 10:00:05 -0500
-Message-ID: <4CB32675.1090205__37412.455774802$1286809266$gmane$org@ti.com>
-References: <[PATCH] power: introduce library for device-specific OPPs>
-	<1286506969-20651-1-git-send-email-nm@ti.com>
-	<201010100059.20964.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] input: syfs switches for SKE keypad
+Date: Mon, 11 Oct 2010 11:56:24 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1010111140040.2339-100000__14719.6491169327$1286812649$gmane$org@netrider.rowland.org>
+References: <201010110024.25955.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201010100059.20964.rjw@sisk.pl>
+In-Reply-To: <201010110024.25955.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,25 +18,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: l-o <linux-omap@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Paul <paulmck@linux.vnet.ibm.com>, l-a <linux-arm-kernel@lists.infradead.org>
+Cc: samu.p.onkalo@nokia.com, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>, ext Sundar R IYER <sundar.iyer@stericsson.com>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki had written, on 10/09/2010 05:59 PM, the following:
-[...]
->>
->> Signed-off-by: Nishanth Menon <nm@ti.com>
-> 
-> OK
-> 
-> Your error messages are a bit inconsistent (e.g. some of them print the
-> error code while others don't), but I guess I can fix that up.
-Thanks a bunch.
-> 
-> Still, to apply the patch I need a copyright notice for the doc too.
-oops..
-(C) 2009-2010 Nishanth Menon <nm@ti.com>, Texas Instruments Incorporated
-Does this help? or would you like me to post a v8 as well?
+On Mon, 11 Oct 2010, Rafael J. Wysocki wrote:
 
--- 
-Regards,
-Nishanth Menon
+> On Sunday, October 10, 2010, Alan Stern wrote:
+> > On Sun, 10 Oct 2010, Dmitry Torokhov wrote:
+> ... 
+> > > > 
+> > > > It's up to userspace to make sure that the display's usage count goes
+> > > > to 0 at the proper time, i.e., when the button is pressed.  Contrary to
+> > > > what you wrote above, we _do_ have an interface for this at the PM core
+> > > > level: power/control.
+> 
+> I think that power/control is not sufficient, because drivers may generally not
+> have enough information to make a decision to suspend the device.  What you're
+> saying basically means that for every driver there should be an interface for
+> user space to tell it when the device is not used (and therefore may be
+> suspended), which is pretty much what I'm saying.  The difference seems to be
+> that I think it's better to put this interface into /sys/devices/.../power/,
+> while your opinion seems to be that the interface should be driver-specific.
+
+This has to depend on how the device is going to be used.  Will there
+be multiple user processes, each using it independently?  In that case
+a single attribute value won't work; some sort of counter will be
+needed.  Will all access funnel through a single process?  Then a
+single attribute value will work, and that attribute might as well be
+power/control.
+
+I'm not fully convinced that we are yet in a good position to do
+anything along these lines.  A driver can generally tell when it is
+being used easily enough: If there are I/O calls then it is in use.  
+Of course there are exceptions, like a display screen that is in use
+when the user is looking at it, not when the display is being updated.
+
+To the extent that drivers can tell what's going on just by monitoring
+their own activities, we don't need a new interface.  For anything
+beyond that, it seems likely that the situation will vary considerably
+from one device to another.  At this point we don't have enough
+experience to specify a single approach that will work everywhere.
+
+Especially since I haven't seen any scenarios so far that can't be
+solved using the existing interfaces under power/.
+
+> > I don't like the idea of having an "off" setting in power/control.  
+> > What happens if the user turns a disk drive controller "off" and the 
+> > system needs to read or write something on that disk drive?
+> 
+> That's why I said about a new flag that will only be set by drivers
+> _knowing_ that they can suspend "on demand".
+
+For such drivers, the only question is "Does userspace want me to
+suspend now?"  This question can be answered by
+power/autosuspend_delay_ms or by power/control.  Why is a new flag
+needed?
+
+Alan Stern
