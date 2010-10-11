@@ -1,15 +1,16 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [RFC] input: syfs switches for SKE keypad
-Date: Sun, 10 Oct 2010 20:16:13 -0700
-Message-ID: <20101011031613.GA4470__30108.8250628256$1286767050$gmane$org@core.coreip.homeip.net>
-References: <20101010205147.GA18455@core.coreip.homeip.net>
-	<Pine.LNX.4.44L0.1010101700100.30042-100000@netrider.rowland.org>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH v7] power: introduce library for
+	device-specific OPPs
+Date: Mon, 11 Oct 2010 07:43:45 -0700
+Message-ID: <878w24u6vy.fsf__46428.8957686678$1286808405$gmane$org@deeprootsystems.com>
+References: <1286506969-20651-1-git-send-email-nm@ti.com>
+	<201010100059.20964.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1010101700100.30042-100000@netrider.rowland.org>
+In-Reply-To: <201010100059.20964.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Sun, 10 Oct 2010 00:59:20 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,60 +20,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: samu.p.onkalo@nokia.com, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>, ext Sundar R IYER <sundar.iyer@stericsson.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nishanth Menon <nm@ti.com>, l-o <linux-omap@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Paul <paulmck@linux.vnet.ibm.com>, l-a <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Oct 10, 2010 at 05:09:09PM -0400, Alan Stern wrote:
-> On Sun, 10 Oct 2010, Dmitry Torokhov wrote:
-> 
-> > > > OK, so how is a graphics driver going to figure out it should suspend when the
-> > > > button is pressed in the example above?
-> > > 
-> > > The graphics driver doesn't have to figure that out at all.  It merely
-> > > has to suspend the display whenever it can, i.e., whenever the usage
-> > > count drops to 0 (or equivalently, whenever the runtime_idle callback
-> > > runs).
-> > 
-> > That makes sense for drivers that do very agressive PM, but fails for
-> > cases when you have bigger timeouts. My phone shuts off its display
-> > automatically after 30 seconds or a minute but I have an option of
-> > pressing a button which causes it to shut off immediately.
-> > 
-> > > 
-> > > It's up to userspace to make sure that the display's usage count goes
-> > > to 0 at the proper time, i.e., when the button is pressed.  Contrary to
-> > > what you wrote above, we _do_ have an interface for this at the PM core
-> > > level: power/control.
-> > > 
-> > 
-> > I think that while using power/control is a _very_ good option "auto"
-> > and "on" are not enough, we need 3 states: "on", "off" and "auto".
-> 
-> Will the driver use autosuspend for the 30-second delay?  Then all you
-> have to do is this: When the button is pressed, write 0 to
-> power/autosuspend_delay_ms, causing an immediate runtime suspend.  
-> Then before turning the display back on, write 30000 to set the delay
-> to 30 seconds again.  You can leave power/control set to "auto" the
-> whole time.
-> 
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-This means messing up with the currently set timeout. If userspace could
-have an option of "accelerating" expiring of the current timeout that
-would be better.
+> On Friday, October 08, 2010, Nishanth Menon wrote:
+>> SoCs have a standard set of tuples consisting of frequency and
+>> voltage pairs that the device will support per voltage domain. These
+>> are called Operating Performance Points or OPPs. The actual
+>> definitions of OPP varies over silicon versions. For a specific domain,
+>> we can have a set of {frequency, voltage} pairs. As the kernel boots
+>> and more information is available, a default set of these are activated
+>> based on the precise nature of device. Further on operation, based on
+>> conditions prevailing in the system (such as temperature), some OPP
+>> availability may be temporarily controlled by the SoC frameworks.
+>> 
+>> To implement an OPP, some sort of power management support is necessary
+>> hence this library depends on CONFIG_PM.
+>> 
+>> Contributions include:
+>> Sanjeev Premi for the initial concept:
+>> 	http://patchwork.kernel.org/patch/50998/
+>> Kevin Hilman for converting original design to device-based
+>> Kevin Hilman and Paul Walmsey for cleaning up many of the function
+>> abstractions, improvements and data structure handling
+>> Romit Dasgupta for using enums instead of opp pointers
+>> Thara Gopinath, Eduardo Valentin and Vishwanath BS for fixes and
+>> cleanups.
+>> Linus Walleij for recommending this layer be made generic for usage
+>> in other architectures beyond OMAP and ARM.
+>> Mark Brown, Andrew Morton, Rafael J Wysocki, Paul E McKenney for valuable
+>> improvements.
+>> 
+>> Discussions and comments from:
+>> http://marc.info/?l=linux-omap&m=126033945313269&w=2
+>> http://marc.info/?l=linux-omap&m=125482970102327&w=2
+>> http://marc.info/?t=125809247500002&r=1&w=2
+>> http://marc.info/?l=linux-omap&m=126025973426007&w=2
+>> http://marc.info/?t=128152609200064&r=1&w=2
+>> http://marc.info/?t=128468723000002&r=1&w=2
+>> incorporated.
+>> 
+>> Cc: Benoit Cousson <b-cousson@ti.com>
+>> Cc: Madhusudhan Chikkature Rajashekar <madhu.cr@ti.com>
+>> Cc: Phil Carmody <ext-phil.2.carmody@nokia.com>
+>> Cc: Roberto Granados Dorado <x0095451@ti.com>
+>> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+>> Cc: Sergio Alberto Aguirre Rodriguez <saaguirre@ti.com>
+>> Cc: Tero Kristo <Tero.Kristo@nokia.com>
+>> Cc: Eduardo Valentin <eduardo.valentin@nokia.com>
+>> Cc: Paul Walmsley <paul@pwsan.com>
+>> Cc: Sanjeev Premi <premi@ti.com>
+>> Cc: Thara Gopinath <thara@ti.com>
+>> Cc: Vishwanath BS <vishwanath.bs@ti.com>
+>> Cc: Linus Walleij <linus.walleij@stericsson.com>
+>> Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+>> Cc: Andrew Morton <akpm@linux-foundation.org>
+>> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+>> Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+>> 
+>> Signed-off-by: Nishanth Menon <nm@ti.com>
+>
+> OK
+>
+> Your error messages are a bit inconsistent (e.g. some of them print the
+> error code while others don't), but I guess I can fix that up.
+>
+> Still, to apply the patch I need a copyright notice for the doc too.
+>
+>> Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
+>
+> Kevin, your sign-off here means you endorse the patch as the maintainer.
+> Is that correct?
 
-> I don't like the idea of having an "off" setting in power/control.  
-> What happens if the user turns a disk drive controller "off" and the 
-> system needs to read or write something on that disk drive?
-> 
+Correct.
 
-I see. Well, for some devices "sicky off" maybe the one that makes most
-sense. For others we may need an option that would put them into low
-power mode while allowing bringing them back if they are needed.
+Thanks,
 
-In case of touchscreens/keypads they are most likely configured as
-wakeup sources so when user actually tried to use the device they'll be
-brought online.
-
--- 
-Dmitry
+Kevin
