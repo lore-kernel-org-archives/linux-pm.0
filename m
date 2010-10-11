@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v7] power: introduce library for
-	device-specific OPPs
-Date: Tue, 12 Oct 2010 00:08:16 +0200
-Message-ID: <201010120008.16388.rjw__14521.6462239206$1286835072$gmane$org@sisk.pl>
-References: <[PATCH] power: introduce library for device-specific OPPs>
-	<201010100059.20964.rjw@sisk.pl> <4CB32675.1090205@ti.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [RFC] input: syfs switches for SKE keypad
+Date: Mon, 11 Oct 2010 15:08:46 -0700
+Message-ID: <20101011220846.GA28611__46848.3102777556$1286835197$gmane$org@core.coreip.homeip.net>
+References: <20101011170733.GA27304@core.coreip.homeip.net>
+	<Pine.LNX.4.44L0.1010111739580.16765-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4CB32675.1090205@ti.com>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1010111739580.16765-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,32 +19,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nishanth Menon <nm@ti.com>
-Cc: l-o <linux-omap@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Paul <paulmck@linux.vnet.ibm.com>, l-a <linux-arm-kernel@lists.infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: samu.p.onkalo@nokia.com, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>, ext Sundar R IYER <sundar.iyer@stericsson.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, October 11, 2010, Nishanth Menon wrote:
-> Rafael J. Wysocki had written, on 10/09/2010 05:59 PM, the following:
-> [...]
-> >>
-> >> Signed-off-by: Nishanth Menon <nm@ti.com>
+On Mon, Oct 11, 2010 at 05:54:27PM -0400, Alan Stern wrote:
+> On Mon, 11 Oct 2010, Dmitry Torokhov wrote:
+> 
+> > > > > Can you give any examples where "sticky off" is really useful (other
+> > > > > than just for debugging)?
+> > > > > 
+> > > > 
+> > > > A mobile device might have a set of keys that, once device is put into
+> > > > lower power mode, should not bring the device out of that mode. This I
+> > > > would call a "sticky off" case.
+> > > 
+> > > But here the "sticky off" refers to the entire mobile device, not to 
+> > > any particular driver.
 > > 
-> > OK
-> > 
-> > Your error messages are a bit inconsistent (e.g. some of them print the
-> > error code while others don't), but I guess I can fix that up.
-> Thanks a bunch.
-> > 
-> > Still, to apply the patch I need a copyright notice for the doc too.
-> oops..
-> (C) 2009-2010 Nishanth Menon <nm@ti.com>, Texas Instruments Incorporated
-> Does this help?
+> > Where did I say that?
+> 
+> Just above.
 
-Yes, it does.
+Hm, indeed I did ;)
 
-> or would you like me to post a v8 as well?
+>  The difficulty here is caused by the fact that you used
+> the word "device" instead of "system".  You wrote "... should not bring
+> the device out of that mode", with the word "device" referring back to
+> "a mobile device" -- which is the entire system.  That is, we have the
+> mobile system and we have the keypad device; calling the mobile system
+> a "device" leads to confusion.
 
-That shouldn't be necessary.
+Right. I guess the scenario I wanted to describe is when we press a key
+to put mobile sysem in a lower power mode (shut of screen, block
+certain keys, and so on) but that not necessarily means that entire
+system is sleeping.
 
-Thanks,
-Rafael
+> 
+> >  The device is still running, playing your favorite
+> > song collection for example. Still you probably do not want your car
+> > keys compose and e-mail for you while you are jogging, thus the main
+> > keypad would be forced off.
+> 
+> Then I can't answer this question without knowing more about how the 
+> keypad works.
+> 
+> 	Does suspending the keypad truly put it in low-power mode?
+
+Could be, it depends.
+
+> 
+> 	What happens if a key is pressed while the keypad is suspended?
+
+It may or it may not wake up the device and/or system.
+
+> 
+> 	Do you want to prevent all the keys from working or just some 
+> 	of them?
+
+It depends.
+
+> 
+> 	How would the user un-suspend the keypad if the system no 
+> 	longer responds to keystrokes?
+
+I do not believe there is a generic answer - different devices,
+different options. For example I could see buttons split into 2 groups -
+"important" ones that bring the system from sleep or "stupor" and "not
+so important" that gets to be ignored. Or user woudl need to "flick"
+the screen. Or toss the phone into a corner cussing :)
+
+The point is that there seems to be a need for kicking devices into low
+power mode and I woudl like to have generic interface for that,
+preferrably reusing (as far as kernel drivers go) existing PM
+infrastructure.
+
+-- 
+Dmitry
