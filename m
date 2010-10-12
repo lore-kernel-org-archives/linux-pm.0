@@ -1,13 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Sundar R IYER <sundar.iyer@stericsson.com>
 Subject: Re: [RFC] input: syfs switches for SKE keypad
-Date: Mon, 11 Oct 2010 20:08:57 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1010111958400.21557-100000__33273.0072936558$1286842244$gmane$org@netrider.rowland.org>
-References: <201010120033.07695.rjw@sisk.pl>
+Date: Tue, 12 Oct 2010 09:25:48 +0200
+Message-ID: <33A307AF30D7BF4F811B1568FE7A9B180468726AB4__37746.1858945482$1286868439$gmane$org@EXDCVYMBSTM006.EQ1STM.local>
+References: <20101011170733.GA27304@core.coreip.homeip.net>
+	<Pine.LNX.4.44L0.1010111739580.16765-100000@netrider.rowland.org>
+	<20101011220846.GA28611@core.coreip.homeip.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201010120033.07695.rjw@sisk.pl>
+In-Reply-To: <20101011220846.GA28611@core.coreip.homeip.net>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,32 +20,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Alan Stern <stern@rowland.harvard.edu>
+Cc: "samu.p.onkalo@nokia.com" <samu.p.onkalo@nokia.com>, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 12 Oct 2010, Rafael J. Wysocki wrote:
+Hi,
 
-> It seems to me that for some devices it might be more convenient to have
-> an "execute pm_runtime_idle() for this device right now" sysfs trigger
-> (and analogously for resume).
+Sorry to be jumping in late. My few comments dispersed with
+individual replies
 
-Indeed, or even "execute pm_runtime_suspend()".  If the driver uses
-autosuspend then the runtime_idle callback will call
-pm_runtime_autosuspend, which won't do what you want.
+>-----Original Message-----
+>From: Dmitry Torokhov [mailto:dmitry.torokhov@gmail.com]
+>Sent: Tuesday, October 12, 2010 3:39 AM
+>
+>
+>I do not believe there is a generic answer - different devices,
+>different options. For example I could see buttons split into 2 groups -
+>"important" ones that bring the system from sleep or "stupor" and "not
+>so important" that gets to be ignored. Or user woudl need to "flick"
+>the screen. Or toss the phone into a corner cussing :)
+>
 
-> Anyway, please note that the scenario in which the driver detects inactivity
-> and suspends the device in response is not the only one possible.  The other
-> one is that the driver is told to suspend the device and then blocks apps
-> wanting to access it until resumed.
+Yes. At least on the U8500 (and couple of OMAPs as well), it is the 
+always-on power button on AB8500/TWLs that is the necessary event 
+to turn off the display/keypad. The entire display/keypad themselves
+cannot wakeup the system. But on the older phones, we generally had
+to have the menu + star combination to unlock the phone, which falls into
+the main keypad.
 
-But it initiates a resume as soon as an app tries to use the device, 
-right?  Otherwise you've got a "sticky off", as Dmitry would say.
+>The point is that there seems to be a need for kicking devices into low
+>power mode and I woudl like to have generic interface for that,
+>preferrably reusing (as far as kernel drivers go) existing PM
+>infrastructure.
 
->  Right now we have interfaces for the
-> former, but not for the latter.
+Coming in late, I would just like to summarize some of the points; please
+correct if I am wrong:
 
-If it's not a "sticky off", power/control implements the latter 
-interface.
+- user space intervention is required to communicate specific events
+  to individual devices to put them into an appropriate power state.
 
-Alan Stern
+- auto suspend isn't the correct choice for input devices as they may
+  conflict with system suspend (touch screen off/idle needs to be sync'ed
+  with system suspend as with a lock switch)
+
+- PM ATM doesn't provide a sysfs attribute for enabling/disabling or forcing
+  an individual device into low power mode unlike for platform. However a new
+  "suspend_ondemand" flag can enable such devices to be put into appropriate
+  states via a /sys/devices/.../power/ by the user space.
+
+If my above summarization is correct, I personally feel the on demand flag is a clean
+option for the current requirement.
+
+Cheers!
+Sundar
