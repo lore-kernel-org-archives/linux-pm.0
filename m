@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC] input: syfs switches for SKE keypad
-Date: Tue, 12 Oct 2010 20:46:46 +0200
-Message-ID: <201010122046.46562.rjw__44247.5751195618$1286909304$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1010111958400.21557-100000@netrider.rowland.org>
+Subject: Re: [PATCH v7] power: introduce library for
+	device-specific OPPs
+Date: Wed, 13 Oct 2010 01:25:14 +0200
+Message-ID: <201010130125.14604.rjw__32237.9714264118$1286926039$gmane$org@sisk.pl>
+References: <[PATCH] power: introduce library for device-specific OPPs>
+	<4CB32675.1090205@ti.com> <201010120008.16388.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1010111958400.21557-100000@netrider.rowland.org>
+In-Reply-To: <201010120008.16388.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,29 +19,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+To: Nishanth Menon <nm@ti.com>
+Cc: l-o <linux-omap@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, Paul <paulmck@linux.vnet.ibm.com>, l-a <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, October 12, 2010, Alan Stern wrote:
-> On Tue, 12 Oct 2010, Rafael J. Wysocki wrote:
+On Tuesday, October 12, 2010, Rafael J. Wysocki wrote:
+> On Monday, October 11, 2010, Nishanth Menon wrote:
+> > Rafael J. Wysocki had written, on 10/09/2010 05:59 PM, the following:
+> > [...]
+> > >>
+> > >> Signed-off-by: Nishanth Menon <nm@ti.com>
+> > > 
+> > > OK
+> > > 
+> > > Your error messages are a bit inconsistent (e.g. some of them print the
+> > > error code while others don't), but I guess I can fix that up.
+> > Thanks a bunch.
+> > > 
+> > > Still, to apply the patch I need a copyright notice for the doc too.
+> > oops..
+> > (C) 2009-2010 Nishanth Menon <nm@ti.com>, Texas Instruments Incorporated
+> > Does this help?
 > 
-> > It seems to me that for some devices it might be more convenient to have
-> > an "execute pm_runtime_idle() for this device right now" sysfs trigger
-> > (and analogously for resume).
+> Yes, it does.
 > 
-> Indeed, or even "execute pm_runtime_suspend()".  If the driver uses
-> autosuspend then the runtime_idle callback will call
-> pm_runtime_autosuspend, which won't do what you want.
+> > or would you like me to post a v8 as well?
 > 
-> > Anyway, please note that the scenario in which the driver detects inactivity
-> > and suspends the device in response is not the only one possible.  The other
-> > one is that the driver is told to suspend the device and then blocks apps
-> > wanting to access it until resumed.
-> 
-> But it initiates a resume as soon as an app tries to use the device, 
-> right?  Otherwise you've got a "sticky off", as Dmitry would say.
+> That shouldn't be necessary.
 
-Yes, that's the "sticky off" thing.
+The patch has been applied to suspend-2.6/linux-next at:
 
+http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=commit;h=56149b574181d98aedf97f1f2d91d05ab261db41
+
+with minor changes around the error messages.  Please double check if everything
+is correct.
+
+Thanks,
 Rafael
