@@ -1,18 +1,13 @@
-From: Ferenc Wagner <wferi@niif.hu>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC] input: syfs switches for SKE keypad
-Date: Wed, 13 Oct 2010 19:35:49 +0200
-Message-ID: <87tykqc7wq.fsf@tac.ki.iif.hu>
-References: <33A307AF30D7BF4F811B1568FE7A9B180460D32FE2@EXDCVYMBSTM006.EQ1STM.local>
-	<20101005174106.GA21399@core.coreip.homeip.net>
-	<4CAC340B.90207@codeaurora.org>
-	<33A307AF30D7BF4F811B1568FE7A9B180461062FE6@EXDCVYMBSTM006.EQ1STM.local>
-	<1286358518.26914.23.camel@4fid08082> <20101013071106.GC1610@ucw.cz>
+Date: Wed, 13 Oct 2010 13:37:54 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1010131335580.2311-100000__6262.66055410287$1286991577$gmane$org@iolanthe.rowland.org>
+References: <AANLkTi=ouKDuPgUgLOwfBPhWKM=RCoh8hb0tY3h53i2r@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101013071106.GC1610@ucw.cz> (Pavel Machek's message of "Wed,
-	13 Oct 2010 09:11:06 +0200")
+In-Reply-To: <AANLkTi=ouKDuPgUgLOwfBPhWKM=RCoh8hb0tY3h53i2r@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,40 +17,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Onkalo Samu <samu.p.onkalo@nokia.com>, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>, ext Sundar R IYER <sundar.iyer@stericsson.com>
+To: Sundar <sunder.svit@gmail.com>
+Cc: "samu.p.onkalo@nokia.com" <samu.p.onkalo@nokia.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>, Sundar R IYER <sundar.iyer@stericsson.com>
 List-Id: linux-pm@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> writes:
+On Wed, 13 Oct 2010, Sundar wrote:
 
->> For mobile devices it is not acceptable to filter events away at some
->> upper SW layer depending on the system state. The HW which generates
->> those events may not generate events at all to allow longer CPU sleep
->> periods.
->
-> Ok.
->
->> In ideal world it would be nice to control device states based on for
->> example user count. However, there are several listeners for input
->> devices and it is hard or impossible to have them all to follow overall
->> state transition (screen blanked etc.). Instead, there is some
->> system
->
-> So you have mobile device; why is it impossible to just close the
-> device when you do not want the events? I guess it is hard for generic
-> distros, but on your phone, you should be able to modify Xserver to
-> close touchscreen/keypad device when it is not needed... right?
+> On Wed, Oct 13, 2010 at 7:40 PM, Alan Stern <stern@rowland.harvard.edu> w=
+rote:
+> >
+> > Absolutely. =A0Another point worth mentioning is that a device in
+> > runtime-suspend can be resumed at any time, for a variety of reasons
+> > unconnected with anything the user does. =A0While it is back at full
+> > power, there is nothing to stop it from generating events.
+> >
+> =
 
-We'd had this discussion before... cf. eg.
-http://thread.gmane.org/gmane.linux.kernel.input/9266/focus=9767
+> Well, so are you still aligned that we can support low power or enable/di=
+sable
+> switches for devices via the standard PM helpers; even if it is the "acce=
+lerated
+> suspend" way ( if Rafael thinks otherwise)
 
-The problem was that several processes may have a device open, while
-another process should be able to control the state of the device.
-Maybe this could be solved by making the controlling process a proxy,
-and having all "user" processes going though it.  Then the controlling
-(proxy) process could open/close the device as it wants, letting the
-runtime PM do its job.  But this would mean duplicating some kernel
-functionality (at least multiplexing) in user space.
--- 
-Regards,
-Feri.
+Sorry, I don't quite understand your question.  I think it would be
+okay to add an interface for userspace to cut short a runtime-suspend
+delay, but I don't think anything more is needed.
+
+Alan Stern
