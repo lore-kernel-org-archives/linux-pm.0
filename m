@@ -1,42 +1,58 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] [RFC] input: syfs switches for SKE keypad
-Date: Wed, 13 Oct 2010 09:11:06 +0200
-Message-ID: <20101013071106.GC1610@ucw.cz>
-References: <33A307AF30D7BF4F811B1568FE7A9B180460D32FE2@EXDCVYMBSTM006.EQ1STM.local>
- <20101005174106.GA21399@core.coreip.homeip.net>
- <4CAC340B.90207@codeaurora.org>
- <33A307AF30D7BF4F811B1568FE7A9B180461062FE6@EXDCVYMBSTM006.EQ1STM.local>
- <1286358518.26914.23.camel@4fid08082>
+Subject: Re: [PATCH 13/23] Hibernation: Partial page I/O support.
+Date: Wed, 13 Oct 2010 09:10:08 +0200
+Message-ID: <20101013071008.GA1610__42551.618620246$1286975277$gmane$org@ucw.cz>
+References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
+	<1285566238-10966-14-git-send-email-nigel@tuxonice.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-input-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1286358518.26914.23.camel@4fid08082>
-Sender: linux-input-owner@vger.kernel.org
-To: Onkalo Samu <samu.p.onkalo@nokia.com>
-Cc: ext Sundar R IYER <sundar.iyer@stericsson.com>, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>
+In-Reply-To: <1285566238-10966-14-git-send-email-nigel@tuxonice.net>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Nigel Cunningham <nigel@tuxonice.net>
+Cc: Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
- 
-> For mobile devices it is not acceptable to filter events away at some
-> upper SW layer depending on the system state. The HW which generates
-> those events may not generate events at all to allow longer CPU sleep
-> periods.
 
-Ok.
+> Add functions that can be used for coalescing and splitting buffers
+> that are smaller than PAGE_SIZE. These functions provide no method
+> of determining where the boundaries of the smaller buffers are to
+> be found - that is the caller's problem.
 
-> In ideal world it would be nice to control device states based on for
-> example user count. However, there are several listeners for input
-> devices and it is hard or impossible to have them all to follow overall
-> state transition (screen blanked etc.). Instead, there is some
-> system
+I don't get it; why do we need that support?
 
-So you have mobile device; why is it impossible to just close the
-device when you do not want the events? I guess it is hard for generic
-distros, but on your phone, you should be able to modify Xserver to
-close touchscreen/keypad device when it is not needed... right?
 
+> +int hib_write_buffer(char *buffer, int buffer_size)
+> +{
+> +	int bytes_left = buffer_size, result = 0;
+> +
+> +	while (bytes_left) {
+> +		char *from = buffer + buffer_size - bytes_left;
+> +		char *to = hib_ppio_buffer + hib_ppio_buffer_posn;
+> +		int capacity = PAGE_SIZE - hib_ppio_buffer_posn;
+> +
+> +		if (bytes_left <= capacity) {
+> +			memcpy(to, from, bytes_left);
+> +			hib_ppio_buffer_posn += bytes_left;
+> +			return 0;
+> +		}
+> +
+> +		/* Complete this page and start a new one */
+> +		memcpy(to, from, capacity);
+> +		bytes_left -= capacity;
+
+If this copy happens too often, it will slow stuff down...
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
