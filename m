@@ -1,66 +1,52 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [linux-pm] [RFC] input: syfs switches for SKE keypad
-Date: Wed, 13 Oct 2010 21:20:59 +0200
-Message-ID: <20101013192059.GA24465@elf.ucw.cz>
-References: <33A307AF30D7BF4F811B1568FE7A9B180460D32FE2@EXDCVYMBSTM006.EQ1STM.local>
- <20101005174106.GA21399@core.coreip.homeip.net>
- <4CAC340B.90207@codeaurora.org>
- <33A307AF30D7BF4F811B1568FE7A9B180461062FE6@EXDCVYMBSTM006.EQ1STM.local>
- <1286358518.26914.23.camel@4fid08082>
- <20101013071106.GC1610@ucw.cz>
- <87tykqc7wq.fsf@tac.ki.iif.hu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC] input: syfs switches for SKE keypad
+Date: Wed, 13 Oct 2010 22:26:02 +0200
+Message-ID: <201010132226.02933.rjw__40737.1440007866$1287001771$gmane$org@sisk.pl>
+References: <AANLkTi=ouKDuPgUgLOwfBPhWKM=RCoh8hb0tY3h53i2r@mail.gmail.com>
+	<AANLkTikqNNY=gNC96ZEo5ar+Adw80h=M3_XGe3A--unu@mail.gmail.com>
+	<AANLkTin0cLmmCyWuQS=OyrOVp-wTEmW65PRqR7S_ez4b@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-input-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <87tykqc7wq.fsf@tac.ki.iif.hu>
-Sender: linux-input-owner@vger.kernel.org
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: Onkalo Samu <samu.p.onkalo@nokia.com>, ext Sundar R IYER <sundar.iyer@stericsson.com>, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-pm@lists.osdl.org" <linux-pm@lists.osdl.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <AANLkTin0cLmmCyWuQS=OyrOVp-wTEmW65PRqR7S_ez4b@mail.gmail.com>
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Sundar <sunder.svit@gmail.com>, Alan Stern <stern@rowland.harvard.edu>
+Cc: "samu.p.onkalo@nokia.com" <samu.p.onkalo@nokia.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>, Sundar R IYER <sundar.iyer@stericsson.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Wednesday, October 13, 2010, Sundar wrote:
+> On Wed, Oct 13, 2010 at 11:12 PM, Sundar <sunder.svit@gmail.com> wrote:
+> > On Wed, Oct 13, 2010 at 11:07 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> >>
+> >> Sorry, I don't quite understand your question.  I think it would be
+> >> okay to add an interface for userspace to cut short a runtime-suspend
+> >> delay, but I don't think anything more is needed.
 
-On Wed 2010-10-13 19:35:49, Ferenc Wagner wrote:
-> Pavel Machek <pavel@ucw.cz> writes:
-> 
-> >> For mobile devices it is not acceptable to filter events away at some
-> >> upper SW layer depending on the system state. The HW which generates
-> >> those events may not generate events at all to allow longer CPU sleep
-> >> periods.
+I'm not 100% sure how that interface is supposed to work.  Can you elaborate
+a bit, please?
 
-Actually, I question this, too.
-
-Obviously, touchscreen needs to be turned off, but how common are
-accidental button presses?
-
-> >> In ideal world it would be nice to control device states based on for
-> >> example user count. However, there are several listeners for input
-> >> devices and it is hard or impossible to have them all to follow overall
-> >> state transition (screen blanked etc.). Instead, there is some
-> >> system
+> > I was just confirming that it is agreed by all that we can definitely wrap
+> > this up via the standard PM helpers; through the accelerated suspend
+> > if no one has any other reservations.
 > >
-> > So you have mobile device; why is it impossible to just close the
-> > device when you do not want the events? I guess it is hard for generic
-> > distros, but on your phone, you should be able to modify Xserver to
-> > close touchscreen/keypad device when it is not needed... right?
 > 
-> We'd had this discussion before... cf. eg.
-> http://thread.gmane.org/gmane.linux.kernel.input/9266/focus=9767
-> 
-> The problem was that several processes may have a device open, while
-> another process should be able to control the state of the device.
-> Maybe this could be solved by making the controlling process a proxy,
-> and having all "user" processes going though it.  Then the
+> And I forgot one more point. Since this switch feature was one of the
+> requirements for the Meego framework, wouldnt it be nice if the Meego
+> people also put out their opinions on this newer solution?
 
-Yes, and the proxy is normally called "X server". We already have it.
+Yes, it would.
 
-> (proxy) process could open/close the device as it wants, letting the
-> runtime PM do its job.  But this would mean duplicating some kernel
-> functionality (at least multiplexing) in user space.
+There's a PM track at the Linux Plumbers conference in a few weeks and I think
+it would be good to discuss the issue in there.
 
-Yes. We already do that.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks,
+Rafael
