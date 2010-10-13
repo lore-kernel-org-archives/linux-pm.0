@@ -1,15 +1,13 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 13/23] Hibernation: Partial page I/O support.
-Date: Wed, 13 Oct 2010 09:10:08 +0200
-Message-ID: <20101013071008.GA1610__42551.618620246$1286975277$gmane$org@ucw.cz>
-References: <1285566238-10966-1-git-send-email-nigel@tuxonice.net>
-	<1285566238-10966-14-git-send-email-nigel@tuxonice.net>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] input: syfs switches for SKE keypad
+Date: Wed, 13 Oct 2010 10:10:00 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1010131007310.2311-100000__37829.9304437407$1286979431$gmane$org@iolanthe.rowland.org>
+References: <20101013095737.GI6424@rakim.wolfsonmicro.main>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1285566238-10966-14-git-send-email-nigel@tuxonice.net>
+In-Reply-To: <20101013095737.GI6424@rakim.wolfsonmicro.main>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +17,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@tuxonice.net>
-Cc: Linux PM <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, TuxOnIce-devel <tuxonice-devel@tuxonice.net>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: "samu.p.onkalo@nokia.com" <samu.p.onkalo@nokia.com>, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>, Sundar R IYER <sundar.iyer@stericsson.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Wed, 13 Oct 2010, Mark Brown wrote:
 
-> Add functions that can be used for coalescing and splitting buffers
-> that are smaller than PAGE_SIZE. These functions provide no method
-> of determining where the boundaries of the smaller buffers are to
-> be found - that is the caller's problem.
+> On Wed, Oct 13, 2010 at 08:16:20AM +0200, Sundar R IYER wrote:
+> 
+> > >> This isn't *really* about saving power in the individual device; it's
+> > >> more about stopping the device generating events that disrupt the rest
+> > >> of the system.  Suspending the device can be one way of doing that and
+> > >> is useful if it can be done but is not really the immediate goal here.
+> 
+> > >Runtime PM is _not_ a reliable way of preventing a device from
+> > >generating events.  It is meant for saving energy, nothing else.
+> 
+> > >If that's what this is about, then the answer is simple: Don't use
+> > >runtime PM to try to suppress events.
+> 
+> > I think it is unfair to discriminate here about saving power and turning off
+> > events. I believe putting the device into power save leads to, if device permits
+> > preventing generating events is valid to hook up run time PM.
+> 
+> This is the opposite way around to expectations - the expectation is
+> that runtime power management will flow from the device becoming idle
+> enough to turn off rather than the other way around.
 
-I don't get it; why do we need that support?
+Absolutely.  Another point worth mentioning is that a device in
+runtime-suspend can be resumed at any time, for a variety of reasons
+unconnected with anything the user does.  While it is back at full
+power, there is nothing to stop it from generating events.
 
-
-> +int hib_write_buffer(char *buffer, int buffer_size)
-> +{
-> +	int bytes_left = buffer_size, result = 0;
-> +
-> +	while (bytes_left) {
-> +		char *from = buffer + buffer_size - bytes_left;
-> +		char *to = hib_ppio_buffer + hib_ppio_buffer_posn;
-> +		int capacity = PAGE_SIZE - hib_ppio_buffer_posn;
-> +
-> +		if (bytes_left <= capacity) {
-> +			memcpy(to, from, bytes_left);
-> +			hib_ppio_buffer_posn += bytes_left;
-> +			return 0;
-> +		}
-> +
-> +		/* Complete this page and start a new one */
-> +		memcpy(to, from, capacity);
-> +		bytes_left -= capacity;
-
-If this copy happens too often, it will slow stuff down...
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Alan Stern
