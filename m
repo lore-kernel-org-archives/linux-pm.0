@@ -1,15 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Question about hibernation
-Date: Thu, 14 Oct 2010 20:59:26 +0200
-Message-ID: <201010142059.26869.rjw@sisk.pl>
-References: <mailman.23.1286318684.6175.linux-pm@lists.linux-foundation.org>
-	<201010141151.05297.rjw@sisk.pl>
-	<BLU102-W13CE4234FF4484062541F8EB560@phx.gbl>
+Subject: Re: [RFC] input: syfs switches for SKE keypad
+Date: Thu, 14 Oct 2010 21:00:58 +0200
+Message-ID: <201010142100.58496.rjw__10367.7204963335$1287083003$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1010140946030.1645-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BLU102-W13CE4234FF4484062541F8EB560@phx.gbl>
+In-Reply-To: <Pine.LNX.4.44L0.1010140946030.1645-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,59 +17,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Raj Kumar <rajkumar278@hotmail.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "samu.p.onkalo@nokia.com" <samu.p.onkalo@nokia.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linus WALLEIJ <linus.walleij@stericsson.com>, Naveen Kumar GADDIPATI <naveen.gaddipati@stericsson.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Jayeeta BANDYOPADHYAY <jayeeta.banerjee@stericsson.com>, Sundar R IYER <sundar.iyer@stericsson.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, October 14, 2010, Raj Kumar wrote:
+On Thursday, October 14, 2010, Alan Stern wrote:
+> On Wed, 13 Oct 2010, Rafael J. Wysocki wrote:
 > 
-> Hi Rafael,
+> > On Wednesday, October 13, 2010, Sundar wrote:
+> > > On Wed, Oct 13, 2010 at 11:12 PM, Sundar <sunder.svit@gmail.com> wrote:
+> > > > On Wed, Oct 13, 2010 at 11:07 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > > >>
+> > > >> Sorry, I don't quite understand your question.  I think it would be
+> > > >> okay to add an interface for userspace to cut short a runtime-suspend
+> > > >> delay, but I don't think anything more is needed.
+> > 
+> > I'm not 100% sure how that interface is supposed to work.  Can you elaborate
+> > a bit, please?
+> 
+> There could be a new attribute file, or we could use a blank line
+> written to autosuspend_delay_ms for this purpose.  Either way, the
+> result would be to call pm_runtime_suspend.  If the device is idle,
+> merely awaiting the timer expiration for a scheduled suspend or
+> autosuspend, this would cause it to suspend immediately.
 
-Hi,
+That sounds reasonable.
 
-> Thanks for your quick reply.  
->  
-> 1) I already implemented this with dev_pm_ops. I used suspend and resume callbacks
-> whose prototype is like
->  
-> struct dev_pm_ops power_mgmt_ops
-> {
->    .suspend =  powermanagement_suspend,
->    .resume =  powermanagement_resume
->  
-> }
->  
-> int powermanagement_suspend(device *dev)
-> {
->  
-> }
->  
-> In normal suspend to ram mode it will work. But will it work in case of hibernation also?
-
-It may be sufficient to point hibernate-specific callback pointers to your
-suspend/resume routines:
-  
- struct dev_pm_ops power_mgmt_ops
- {
-    .suspend =  powermanagement_suspend,
-    .resume =  powermanagement_resume,
-    .freeze =  powermanagement_suspend,
-    .thaw =  powermanagement_resume,
-    .poweroff =  powermanagement_suspend,
-    .restore =  powermanagement_resume,
- }
-
-depending on the particular needs of your driver.
-
-> if yes, since in suspend and resume call backs, only the device structure is provided, so how can
-> then person can identify it is suspend to ram or hibernation?
-
-See above.
-
-> or for hibernation, poweroff  and restore function should be implemented which is similar
-> to suspend and resume call backs in case of suspend to ram?
-
-Yes.
+I wonder what the interested people think about it.
 
 Thanks,
 Rafael
