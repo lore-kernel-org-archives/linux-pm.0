@@ -1,11 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ath9k: Convert to new PCI PM framework
-Date: Sat, 16 Oct 2010 00:36:17 +0200
-Message-ID: <201010160036.17653.rjw__37036.7977688604$1287182437$gmane$org@sisk.pl>
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: Re: [PATCH] ath9k: Convert to new PCI PM framework
+Date: Fri, 15 Oct 2010 16:54:29 -0700
+Message-ID: <AANLkTimdatos1psRnp_Es=q8iOe9aQE_aVARLpm18efb__10808.6991859183$1287186963$gmane$org@mail.gmail.com>
+References: <201010160036.17653.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201010160036.17653.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,100 +17,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, ath9k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-The ath9k driver uses the legacy PCI power management (suspend
-and resume) callbacks that apparently cause intermittent problems
-to happen (the adapter sometimes doesn't resume correctly on my
-Acer Ferrari One).  Make it use the new PCI PM and let the PCI core
-code handle the PCI-specific details of power transitions.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/net/wireless/ath/ath9k/pci.c |   40 +++++++++++++++++++----------------
- 1 file changed, 22 insertions(+), 18 deletions(-)
-
-Index: linux-2.6/drivers/net/wireless/ath/ath9k/pci.c
-===================================================================
---- linux-2.6.orig/drivers/net/wireless/ath/ath9k/pci.c
-+++ linux-2.6/drivers/net/wireless/ath/ath9k/pci.c
-@@ -247,34 +247,25 @@ static void ath_pci_remove(struct pci_de
- 
- #ifdef CONFIG_PM
- 
--static int ath_pci_suspend(struct pci_dev *pdev, pm_message_t state)
-+static int ath_pci_suspend(struct device *device)
- {
-+	struct pci_dev *pdev = to_pci_dev(device);
- 	struct ieee80211_hw *hw = pci_get_drvdata(pdev);
- 	struct ath_wiphy *aphy = hw->priv;
- 	struct ath_softc *sc = aphy->sc;
- 
- 	ath9k_hw_set_gpio(sc->sc_ah, sc->sc_ah->led_pin, 1);
- 
--	pci_save_state(pdev);
--	pci_disable_device(pdev);
--	pci_set_power_state(pdev, PCI_D3hot);
--
- 	return 0;
- }
- 
--static int ath_pci_resume(struct pci_dev *pdev)
-+static int ath_pci_resume(struct device *device)
- {
-+	struct pci_dev *pdev = to_pci_dev(device);
- 	struct ieee80211_hw *hw = pci_get_drvdata(pdev);
- 	struct ath_wiphy *aphy = hw->priv;
- 	struct ath_softc *sc = aphy->sc;
- 	u32 val;
--	int err;
--
--	pci_restore_state(pdev);
--
--	err = pci_enable_device(pdev);
--	if (err)
--		return err;
- 
- 	/*
- 	 * Suspend/Resume resets the PCI configuration space, so we have to
-@@ -293,7 +284,23 @@ static int ath_pci_resume(struct pci_dev
- 	return 0;
- }
- 
--#endif /* CONFIG_PM */
-+static const struct dev_pm_ops ath9k_pm_ops = {
-+	.suspend = ath_pci_suspend,
-+	.resume = ath_pci_resume,
-+	.freeze = ath_pci_suspend,
-+	.thaw = ath_pci_resume,
-+	.poweroff = ath_pci_suspend,
-+	.restore = ath_pci_resume,
-+};
-+
-+#define ATH9K_PM_OPS	(&ath9k_pm_ops)
-+
-+#else /* !CONFIG_PM */
-+
-+#define ATH9K_PM_OPS	NULL
-+
-+#endif /* !CONFIG_PM */
-+
- 
- MODULE_DEVICE_TABLE(pci, ath_pci_id_table);
- 
-@@ -302,10 +309,7 @@ static struct pci_driver ath_pci_driver 
- 	.id_table   = ath_pci_id_table,
- 	.probe      = ath_pci_probe,
- 	.remove     = ath_pci_remove,
--#ifdef CONFIG_PM
--	.suspend    = ath_pci_suspend,
--	.resume     = ath_pci_resume,
--#endif /* CONFIG_PM */
-+	.driver.pm  = ATH9K_PM_OPS,
- };
- 
- int ath_pci_init(void)
+T24gRnJpLCBPY3QgMTUsIDIwMTAgYXQgMzozNiBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0Bz
+aXNrLnBsPiB3cm90ZToKPiBGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+Cj4K
+PiBUaGUgYXRoOWsgZHJpdmVyIHVzZXMgdGhlIGxlZ2FjeSBQQ0kgcG93ZXIgbWFuYWdlbWVudCAo
+c3VzcGVuZAo+IGFuZCByZXN1bWUpIGNhbGxiYWNrcyB0aGF0IGFwcGFyZW50bHkgY2F1c2UgaW50
+ZXJtaXR0ZW50IHByb2JsZW1zCj4gdG8gaGFwcGVuICh0aGUgYWRhcHRlciBzb21ldGltZXMgZG9l
+c24ndCByZXN1bWUgY29ycmVjdGx5IG9uIG15Cj4gQWNlciBGZXJyYXJpIE9uZSkuIMKgTWFrZSBp
+dCB1c2UgdGhlIG5ldyBQQ0kgUE0gYW5kIGxldCB0aGUgUENJIGNvcmUKPiBjb2RlIGhhbmRsZSB0
+aGUgUENJLXNwZWNpZmljIGRldGFpbHMgb2YgcG93ZXIgdHJhbnNpdGlvbnMuCj4KPiBTaWduZWQt
+b2ZmLWJ5OiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+CgpEbyB5b3Uga25vdyB3aGVu
+IHRoZXNlIGhvb2tzIHdlcmUgYWRkZWQ/IElmIGl0IGZpeGVzIGFuIGlzc3VlIHNob3VsZAp0aGlz
+IGdvIGZvciBzdGFibGU/CgogTHVpcwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgt
+Zm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFu
+L2xpc3RpbmZvL2xpbnV4LXBt
