@@ -1,16 +1,14 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 3/3] acpi_idle: delete bogus data from
-	cpuidle_state.power_usage
-Date: Fri, 15 Oct 2010 21:45:45 -0400
-Message-ID: <0f3f164d9794f57d8afb033819f508a486c1304d.1287193487.git.len.brown@intel.com>
-References: <1287193545-11655-1-git-send-email-lenb@kernel.org>
+Subject: Re: [PATCH] intel_idle: Set dev->power_specified
+Date: Sat, 16 Oct 2010 04:14:51 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1010160407420.2238@localhost.localdomain>
+References: <20101008174445.353eb83e@endymion.delvare>
+	<20101009230106.5bb84133@endymion.delvare>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1287193545-11655-1-git-send-email-lenb@kernel.org>
-In-reply-to: <c8381cc3d8a9cc6c80f65bf60863c776651f245c.1287193487.git.len.brown@intel.com>
-References: <c8381cc3d8a9cc6c80f65bf60863c776651f245c.1287193487.git.len.brown@intel.com>
+In-reply-to: <20101009230106.5bb84133@endymion.delvare>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,36 +18,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+> On Fri, 8 Oct 2010 17:44:45 +0200, Jean Delvare wrote:
+> > The intel_idle driver defines power consumption for all states, but
+> > they can't be seen in sysfs because the driver doesn't set
+> > dev->power_specified, while the idle code expects that.
+> > 
+> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> > Cc: Len Brown <lenb@kernel.org>
+> > ---
+> > This is the simple fix. But in all honesty, I don't get the point of
+> > dev->power_specified. It should be equally easy to check if the first
+> > state's .power has a non-zero value, and at least this doesn't require
+> > any cooperation from the driver. As it stands, I expect that future
+> > drivers will have the same problem intel_idle had, i.e. they will
+> > forget to set dev->power_specified and power consumption values
+> > won't be visible in syfs.
+> 
+> Apparently I couldn't be more right: the acpi/processor_idle driver
+> also doesn't set dev->power_specified even if power consumption values
+> are available. Grepping the whole kernel source tree, it appears that
+> none of the cpuidle drivers sets dev->power_specified, so I'm not sure
+> if that code path was even tested (at least it works for me...)
+> 
+> Good news is that it means that getting rid of that flag should be
+> easy, if you agree with that approach.
 
-The mW data in this field comes from AML _CST,
-which was typed in by a BIOS writer, and is thus
-considered unreliable.
+Sorry I didn't notice your e-mail until today -- for this afternoon
+I noticed the same problem you did.
 
-Linux does not use it for making any decisions.
-We do display it in sysfs where somebody might
-read it and assume it is meaningful, so delete it.
+The power_specified flag was added in 2.6.36-rc, and intel_idle,
+acpi_idle, and sh_idle do not know about it and so they get these
+crazy negative-shown-as-large-positive numbers in sysfs now.
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/acpi/processor_idle.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+But I was actually planning to delete all the power_usage numbers
+in these drivers anyway, because they are bogus, and I sent
+a patch to do that to intel_idle and acpi_idle this afternoon.
 
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index f4428e8..07a8bb6 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -1013,7 +1013,6 @@ static int acpi_processor_setup_cpuidle(struct acpi_processor *pr)
- 		strncpy(state->desc, cx->desc, CPUIDLE_DESC_LEN);
- 		state->exit_latency = cx->latency;
- 		state->target_residency = cx->latency * latency_factor;
--		state->power_usage = cx->power;
- 
- 		state->flags = 0;
- 		switch (cx->type) {
--- 
-1.7.3.1.120.g38a18
+Unfortunately, the power_specified patch makes power_usage significant
+for the first time, apparently because the out of tree ARM stuff
+is doing that.  I'm not immediately excited about it...
+
+thanks,
+Len Brown, Intel Open Source Technology Center
+
+> > 
+> > Am I missing any obvious problem? If not, I'll be happy to provide an
+> > alternative patch dropping dev->power_specified altogether.
+> > 
+> >  drivers/idle/intel_idle.c |    1 +
+> >  1 file changed, 1 insertion(+)
+> > 
+> > --- linux-2.6.36-rc7.orig/drivers/idle/intel_idle.c	2010-10-07 08:53:05.000000000 +0200
+> > +++ linux-2.6.36-rc7/drivers/idle/intel_idle.c	2010-10-08 16:16:41.000000000 +0200
+> > @@ -369,6 +369,7 @@ static int intel_idle_cpuidle_devices_in
+> >  			dev->state_count += 1;
+> >  		}
+> >  
+> > +		dev->power_specified = 1;
+> >  		dev->cpu = i;
+> >  		if (cpuidle_register_device(dev)) {
+> >  			pr_debug(PREFIX "cpuidle_register_device %d failed!\n",
+> 
+> -- 
+> Jean Delvare
+> 
