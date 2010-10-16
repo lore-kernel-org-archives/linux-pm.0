@@ -1,88 +1,50 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] intel_idle: Set dev->power_specified
-Date: Sat, 16 Oct 2010 04:14:51 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.1010160407420.2238@localhost.localdomain>
-References: <20101008174445.353eb83e@endymion.delvare>
-	<20101009230106.5bb84133@endymion.delvare>
+Subject: Re: [PATCH] intel_idle: PCI quirk to prevent Lenovo Ideapad s10-3 boot
+ hang
+Date: Sat, 16 Oct 2010 04:25:59 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1010160416340.2238@localhost.localdomain>
+References: <alpine.LFD.2.00.1009242122390.8641@localhost.localdomain>
+ <20100927135735.GA856@srcf.ucam.org>
+ <alpine.LFD.2.00.1009301810380.7033@localhost.localdomain>
+ <20100930222946.GB23084@srcf.ucam.org>
+ <alpine.LFD.2.00.1010050104450.23209@localhost.localdomain>
+ <20101005114047.GA29495@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <20101009230106.5bb84133@endymion.delvare>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jean Delvare <khali@linux-fr.org>
-Cc: linux-pm@lists.linux-foundation.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-reply-to: <20101005114047.GA29495@srcf.ucam.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>, linux-pci@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-> On Fri, 8 Oct 2010 17:44:45 +0200, Jean Delvare wrote:
-> > The intel_idle driver defines power consumption for all states, but
-> > they can't be seen in sysfs because the driver doesn't set
-> > dev->power_specified, while the idle code expects that.
+
+> > > > we check (and clear) that bit only if the acpi tables
+> > > > tell us to do so.
+> > > 
+> > > Do the tables tell us to do so on this platform?
 > > 
-> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> > Cc: Len Brown <lenb@kernel.org>
-> > ---
-> > This is the simple fix. But in all honesty, I don't get the point of
-> > dev->power_specified. It should be equally easy to check if the first
-> > state's .power has a non-zero value, and at least this doesn't require
-> > any cooperation from the driver. As it stands, I expect that future
-> > drivers will have the same problem intel_idle had, i.e. they will
-> > forget to set dev->power_specified and power consumption values
-> > won't be visible in syfs.
+> > In this configuration, yes, otherwise acpi_idle
+> > would have failed in exactly the same way.
 > 
-> Apparently I couldn't be more right: the acpi/processor_idle driver
-> also doesn't set dev->power_specified even if power consumption values
-> are available. Grepping the whole kernel source tree, it appears that
-> none of the cpuidle drivers sets dev->power_specified, so I'm not sure
-> if that code path was even tested (at least it works for me...)
-> 
-> Good news is that it means that getting rid of that flag should be
-> easy, if you agree with that approach.
+> So why is intel_idle not paying attention to what the platform is 
+> requesting?
 
-Sorry I didn't notice your e-mail until today -- for this afternoon
-I noticed the same problem you did.
+ACPI's BM_STS mechanism is obsolete, and is fundmentally
+incompatible with a tickless OS.  The status bit is a NO-OP
+on most modern chip-sets under normal conditions.
+However, even when not a NO-OP, it is supposed to
+be just an indicator and clearing it should have
+no functional effect on the hardware except to
+re-arm the hardware that looks for BM_STS.
 
-The power_specified flag was added in 2.6.36-rc, and intel_idle,
-acpi_idle, and sh_idle do not know about it and so they get these
-crazy negative-shown-as-large-positive numbers in sysfs now.
+Clearing BM_STS on the NM10 chipset at boot-time to
+make the system boot has nothing to do with
+"what the platform is requesting".
+It is a workaround for a platform bug that is randomly
+masked by how the behaviour of the legacy ACPI OS.
 
-But I was actually planning to delete all the power_usage numbers
-in these drivers anyway, because they are bogus, and I sent
-a patch to do that to intel_idle and acpi_idle this afternoon.
-
-Unfortunately, the power_specified patch makes power_usage significant
-for the first time, apparently because the out of tree ARM stuff
-is doing that.  I'm not immediately excited about it...
+intel_idle it knows nothing about ACPI, and it never will.
 
 thanks,
 Len Brown, Intel Open Source Technology Center
-
-> > 
-> > Am I missing any obvious problem? If not, I'll be happy to provide an
-> > alternative patch dropping dev->power_specified altogether.
-> > 
-> >  drivers/idle/intel_idle.c |    1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > --- linux-2.6.36-rc7.orig/drivers/idle/intel_idle.c	2010-10-07 08:53:05.000000000 +0200
-> > +++ linux-2.6.36-rc7/drivers/idle/intel_idle.c	2010-10-08 16:16:41.000000000 +0200
-> > @@ -369,6 +369,7 @@ static int intel_idle_cpuidle_devices_in
-> >  			dev->state_count += 1;
-> >  		}
-> >  
-> > +		dev->power_specified = 1;
-> >  		dev->cpu = i;
-> >  		if (cpuidle_register_device(dev)) {
-> >  			pr_debug(PREFIX "cpuidle_register_device %d failed!\n",
-> 
-> -- 
-> Jean Delvare
-> 
