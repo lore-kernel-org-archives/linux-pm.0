@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/3] intel_idle: delete bogus data from
- cpuidle_state.power_usage
-Date: Fri, 15 Oct 2010 21:45:44 -0400
-Message-ID: <dea44c6b7df7f8bb67cb059b4c14b24288c4cd04.1287193487.git.len.brown@intel.com>
+Subject: [PATCH 3/3] acpi_idle: delete bogus data from
+	cpuidle_state.power_usage
+Date: Fri, 15 Oct 2010 21:45:45 -0400
+Message-ID: <0f3f164d9794f57d8afb033819f508a486c1304d.1287193487.git.len.brown@intel.com>
 References: <1287193545-11655-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,74 +26,30 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-The mW data in this field is a total fabrication
-and serves no purpose other than to mislead
-those who might see it in sysfs.  Delete it.
+The mW data in this field comes from AML _CST,
+which was typed in by a BIOS writer, and is thus
+considered unreliable.
+
+Linux does not use it for making any decisions.
+We do display it in sysfs where somebody might
+read it and assume it is meaningful, so delete it.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/idle/intel_idle.c |    7 -------
- 1 files changed, 0 insertions(+), 7 deletions(-)
+ drivers/acpi/processor_idle.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index ad0fb01..8e35c89 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -101,7 +101,6 @@ static struct cpuidle_state nehalem_cstates[MWAIT_MAX_NUM_CSTATES] = {
- 		.driver_data = (void *) 0x00,
- 		.flags = CPUIDLE_FLAG_TIME_VALID,
- 		.exit_latency = 3,
--		.power_usage = 1000,
- 		.target_residency = 6,
- 		.enter = &intel_idle },
- 	{ /* MWAIT C2 */
-@@ -110,7 +109,6 @@ static struct cpuidle_state nehalem_cstates[MWAIT_MAX_NUM_CSTATES] = {
- 		.driver_data = (void *) 0x10,
- 		.flags = CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 20,
--		.power_usage = 500,
- 		.target_residency = 80,
- 		.enter = &intel_idle },
- 	{ /* MWAIT C3 */
-@@ -119,7 +117,6 @@ static struct cpuidle_state nehalem_cstates[MWAIT_MAX_NUM_CSTATES] = {
- 		.driver_data = (void *) 0x20,
- 		.flags = CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 200,
--		.power_usage = 350,
- 		.target_residency = 800,
- 		.enter = &intel_idle },
- };
-@@ -132,7 +129,6 @@ static struct cpuidle_state atom_cstates[MWAIT_MAX_NUM_CSTATES] = {
- 		.driver_data = (void *) 0x00,
- 		.flags = CPUIDLE_FLAG_TIME_VALID,
- 		.exit_latency = 1,
--		.power_usage = 1000,
- 		.target_residency = 4,
- 		.enter = &intel_idle },
- 	{ /* MWAIT C2 */
-@@ -141,7 +137,6 @@ static struct cpuidle_state atom_cstates[MWAIT_MAX_NUM_CSTATES] = {
- 		.driver_data = (void *) 0x10,
- 		.flags = CPUIDLE_FLAG_TIME_VALID,
- 		.exit_latency = 20,
--		.power_usage = 500,
- 		.target_residency = 80,
- 		.enter = &intel_idle },
- 	{ /* MWAIT C3 */ },
-@@ -151,7 +146,6 @@ static struct cpuidle_state atom_cstates[MWAIT_MAX_NUM_CSTATES] = {
- 		.driver_data = (void *) 0x30,
- 		.flags = CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 100,
--		.power_usage = 250,
- 		.target_residency = 400,
- 		.enter = &intel_idle },
- 	{ /* MWAIT C5 */ },
-@@ -161,7 +155,6 @@ static struct cpuidle_state atom_cstates[MWAIT_MAX_NUM_CSTATES] = {
- 		.driver_data = (void *) 0x52,
- 		.flags = CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
- 		.exit_latency = 140,
--		.power_usage = 150,
- 		.target_residency = 560,
- 		.enter = &intel_idle },
- };
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index f4428e8..07a8bb6 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -1013,7 +1013,6 @@ static int acpi_processor_setup_cpuidle(struct acpi_processor *pr)
+ 		strncpy(state->desc, cx->desc, CPUIDLE_DESC_LEN);
+ 		state->exit_latency = cx->latency;
+ 		state->target_residency = cx->latency * latency_factor;
+-		state->power_usage = cx->power;
+ 
+ 		state->flags = 0;
+ 		switch (cx->type) {
 -- 
 1.7.3.1.120.g38a18
