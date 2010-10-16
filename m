@@ -1,13 +1,12 @@
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [PATCH] ath9k: Convert to new PCI PM framework
-Date: Fri, 15 Oct 2010 16:54:29 -0700
-Message-ID: <AANLkTimdatos1psRnp_Es=q8iOe9aQE_aVARLpm18efb__10808.6991859183$1287186963$gmane$org@mail.gmail.com>
-References: <201010160036.17653.rjw@sisk.pl>
+From: Len Brown <lenb@kernel.org>
+Subject: cpuidle_state.power_usage and
+	cpuidle_device.power_specified
+Date: Fri, 15 Oct 2010 21:22:34 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1010152054060.2971@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201010160036.17653.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,21 +16,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, ath9k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: Ai Li <aili@codeaurora.org>
+Cc: linux-pm@lists.linux-foundation.org, Magnus Damm <damm@opensource.se>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBPY3QgMTUsIDIwMTAgYXQgMzozNiBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0Bz
-aXNrLnBsPiB3cm90ZToKPiBGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+Cj4K
-PiBUaGUgYXRoOWsgZHJpdmVyIHVzZXMgdGhlIGxlZ2FjeSBQQ0kgcG93ZXIgbWFuYWdlbWVudCAo
-c3VzcGVuZAo+IGFuZCByZXN1bWUpIGNhbGxiYWNrcyB0aGF0IGFwcGFyZW50bHkgY2F1c2UgaW50
-ZXJtaXR0ZW50IHByb2JsZW1zCj4gdG8gaGFwcGVuICh0aGUgYWRhcHRlciBzb21ldGltZXMgZG9l
-c24ndCByZXN1bWUgY29ycmVjdGx5IG9uIG15Cj4gQWNlciBGZXJyYXJpIE9uZSkuIMKgTWFrZSBp
-dCB1c2UgdGhlIG5ldyBQQ0kgUE0gYW5kIGxldCB0aGUgUENJIGNvcmUKPiBjb2RlIGhhbmRsZSB0
-aGUgUENJLXNwZWNpZmljIGRldGFpbHMgb2YgcG93ZXIgdHJhbnNpdGlvbnMuCj4KPiBTaWduZWQt
-b2ZmLWJ5OiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+CgpEbyB5b3Uga25vdyB3aGVu
-IHRoZXNlIGhvb2tzIHdlcmUgYWRkZWQ/IElmIGl0IGZpeGVzIGFuIGlzc3VlIHNob3VsZAp0aGlz
-IGdvIGZvciBzdGFibGU/CgogTHVpcwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgt
-Zm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFu
-L2xpc3RpbmZvL2xpbnV4LXBt
+Ai,
+
+With the introduction of cpuidle_device.power_specified in
+
+commit 71abbbf856a0e70ca478782505c800891260ba84
+(cpuidle: extend cpuidle and menu governor to handle dynamic states)
+
+large positive numbers are now shown in sysfs
+rather than the power numbers specified by
+acpi_idle, intel_idle, and sh_idle.
+
+I expect the intent of the patch was actually to set the default
+to power_specified=1 for the drivers where really do specify
+power_usage rather than to override every driver, yes?
+
+But it has been on my clean-up list to delete power_usage from
+both intel_idle and acpi_idle anyway -- and I'd offer the same
+change to sh_idle, since it appears to be of no value there
+either.  I planned to then to delete power_usage from
+cpuidle itself.
+
+But you have changed menu_select from assuming
+that states are in order of increasing power savings,
+to doing an exhaustive search of all states to find
+the one with the lowest power_usage that satisfies constraints.
+
+Does your platform set cpuidle_device.power_specified,
+or is it using the small negative integers for power_usage
+that you have bestowed upon the other architectures?
+
+Do you intend to modify power_usage at run-time, even
+when the new CPUIDLE_FLAG_IGNORE flag is available?
+
+thanks,
+Len Brown, Intel Open Source Technology Center
