@@ -1,14 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] ath9k: Convert to new PCI PM framework
-Date: Sat, 16 Oct 2010 22:02:52 +0200
-Message-ID: <201010162202.52766.rjw__17762.5144286596$1287274083$gmane$org@sisk.pl>
-References: <201010160036.17653.rjw@sisk.pl>
-	<AANLkTimdatos1psRnp_Es=q8iOe9aQE_aVARLpm18efb@mail.gmail.com>
+Subject: [PATCH] ACPI / PM: Blacklist another machine that needs
+	acpi_sleep=nonvs
+Date: Sun, 17 Oct 2010 21:01:21 +0200
+Message-ID: <201010172101.21576.rjw__29844.8504102$1287342229$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTimdatos1psRnp_Es=q8iOe9aQE_aVARLpm18efb@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,37 +16,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, ath9k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Emanuele Bigiarini <pulmro@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, October 16, 2010, Luis R. Rodriguez wrote:
-> On Fri, Oct 15, 2010 at 3:36 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> >
-> > The ath9k driver uses the legacy PCI power management (suspend
-> > and resume) callbacks that apparently cause intermittent problems
-> > to happen (the adapter sometimes doesn't resume correctly on my
-> > Acer Ferrari One).  Make it use the new PCI PM and let the PCI core
-> > code handle the PCI-specific details of power transitions.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Do you know when these hooks were added?
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Well, which ones?  If you're asking about the new framework, it's been there
-since 2.6.29 and is a recommended way of implementing PM hooks now.
+Sony Vaio VPCEB1Z1E is reported to require acpi_sleep=nonvs for
+suspend/resume to work on it correctly, so blacklist it.
 
-Please have a look at Documentation/power/pci.txt. :-)
+Reported-by: Emanuele Bigiarini <pulmro@gmail.com>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/sleep.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-> If it fixes an issue should this go for stable?
-
-I'm not 100% sure it fixes everything yet, although I hasn't been able to
-reproduce the problem with it applied, so far.
-
-So, I don't think it's -stable material at this point.  However, it should be
-done anyway at one point, so it very well can be done right now, given that I
-have the hardware to test it. :-)
-
-Thanks,
-Rafael
+Index: linux-2.6/drivers/acpi/sleep.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep.c
++++ linux-2.6/drivers/acpi/sleep.c
+@@ -419,6 +419,14 @@ static struct dmi_system_id __initdata a
+ 		DMI_MATCH(DMI_PRODUCT_NAME, "Everex StepNote Series"),
+ 		},
+ 	},
++	{
++	.callback = init_nvs_nosave,
++	.ident = "Sony Vaio VPCEB1Z1E",
++	.matches = {
++		DMI_MATCH(DMI_SYS_VENDOR, "Sony Corporation"),
++		DMI_MATCH(DMI_PRODUCT_NAME, "VPCEB1Z1E"),
++		},
++	},
+ 	{},
+ };
+ #endif /* CONFIG_SUSPEND */
