@@ -1,12 +1,20 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PM / Wakeup: Show wakeup sources statistics in
-	debugfs
-Date: Mon, 18 Oct 2010 01:22:35 +0200
-Message-ID: <201010180122.35382.rjw__41878.2491623007$1287358049$gmane$org@sisk.pl>
+From: Jean Pihet <jean.pihet@newoldbits.com>
+Subject: Re: PATCH [0/4] perf: clean-up of power events API
+Date: Mon, 18 Oct 2010 14:15:13 +0200
+Message-ID: <AANLkTimpNgBpm3onz1MNCMgo4GfJ=g18oiV2qvJB7QPC__138.483910314058$1287404192$gmane$org@mail.gmail.com>
+References: <1286205661-24448-1-git-send-email-jean.pihet@newoldbits.com>
+	<201010062334.46971.trenn@suse.de> <20101007150825.GB12581@Krystal>
+	<AANLkTikT4xsh7iCQDX8ksewJwC-BeFov=Ab7iYo+hDmO@mail.gmail.com>
+	<20101007155816.GA5351@nowhere> <4CAED2F0.9080801@kernel.org>
+	<20101008083819.GA22385@elte.hu> <4CAF19E7.3070103@linux.intel.com>
+	<20101008134156.GA28724@Krystal> <20101009062836.GB5517@elte.hu>
+	<AANLkTik6nO4i6xTuVYA9kBGFNpxYb70qimNcHPQKqTJ8@mail.gmail.com>
+	<AANLkTimT5Or7gLDMnmLqSzmUoPux0pXrPxUZQpFon+6_@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <AANLkTimT5Or7gLDMnmLqSzmUoPux0pXrPxUZQpFon+6_@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,128 +24,79 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Steven Rostedt <rostedt@goodmis.org>, linux-perf-users@vger.kernel.org, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, linux-pm@lists.linux-foundation.org, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Sat, Oct 9, 2010 at 8:36 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+> On Sat, Oct 9, 2010 at 1:14 AM, Pierre Tardy <tardyp@gmail.com> wrote:
+>> On Sat, Oct 9, 2010 at 8:28 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>>>
+>>
+>>> The thing is, Arjan is 100% right that a library for this is not a
+>>> 'solution', it's an unnecessary complication.
+>> Yes. sounds like overengineering.
+>
+> I also want to remind people that backwards compatibility should
+> always absolutely be the #1 priority. Using libraries to "hide"
+> differences is a totally moronic thing to do, because if you can do a
+> compatibility library with good interfaces, then damn it, the kernel
+> interface should already _be_ that good interface.
+Agree on that. The idea is to have the kernel interfaces cleaned up
+and so have better user space apps in the end.
 
-There may be wakeup sources that aren't associated with any devices
-and their statistics information won't be available from sysfs. Also,
-for debugging purposes it is convenient to have all of the wakeup
-sources statistics available from one place.  For these reasons,
-introduce new file "wakeup_sources" in debugfs containing those
-statistics.
+> And no, even if you interact purely with open source programs, the
+> backwards compatibility requirement doesn't go away. It's a damn pain
+> in the ass to have to recompile, and it means that you have a much
+> harder time mixing and matching, and just updating the kernel on top
+> of a standard distribution.
+>
+> So changing kernel interfaces that get exported to user space is
+> always a disaster. Anybody who _designs_ for that kind of disaster
+> shouldn't be participating in kernel development, because they've
+> shown themselves to be unable to understand the pain and suffering.
+>
+> Yes, we do it. Sometimes we change interfaces because not changing
+> them is too damn painful. But it should absolutely not be the design
+> model.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
+So what is the best way to have the power tracing events elegantly cleaned up?
+The proposed patch 4/4 [1] introduces a new Kconfig option
+CONFIG_DEPRECATED_POWER_EVENT_TRACING which allows to select to map
+the trace points to the old _OR_ to the new events API, only for the
+already existing events. This gives some time for the adaptation of
+the user space apps.
 
-The patch is on top of suspend-2.6/linux-next.
+I understand this could require a kernel re-compilation in order to
+use the old events API but I really want to avoid to duplicate the
+trace points in the code to instrument, e.g.:
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 199dcb9..013c274 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -354,5 +354,7 @@ void cpufreq_notify_transition(struct
+cpufreq_freqs *freqs, unsigned int state)
+ 		adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
+ 		dprintk("FREQ: %lu - CPU: %lu", (unsigned long)freqs->new,
+ 			(unsigned long)freqs->cpu);
+		trace_power_frequency(POWER_PSTATE, freqs->new, freqs->cpu);
++		trace_power_switch_state(POWER_PSTATE, freqs->new, freqs->cpu,
++					 smp_processor_id());
+
+The proposed patch only changes the power tracing events API
+definition files, not the code to instrument.
+
+I am OK to re-spin the patches, only if a compromise is agreed on.
+As said before the kernel Documentation and pytimechart user space
+tools patches will be provided as well.
+
+>
+>                            Linus
+>
 
 Thanks,
-Rafael
+Jean
 
----
- drivers/base/power/wakeup.c |   85 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 85 insertions(+)
-
-Index: linux-2.6/drivers/base/power/wakeup.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/wakeup.c
-+++ linux-2.6/drivers/base/power/wakeup.c
-@@ -11,6 +11,8 @@
- #include <linux/sched.h>
- #include <linux/capability.h>
- #include <linux/suspend.h>
-+#include <linux/seq_file.h>
-+#include <linux/debugfs.h>
- 
- #include "power.h"
- 
-@@ -617,3 +619,86 @@ bool pm_save_wakeup_count(unsigned int c
- 		pm_wakeup_update_hit_counts();
- 	return ret;
- }
-+
-+static struct dentry *wakeup_sources_stats_dentry;
-+
-+/**
-+ * print_wakeup_source_stats - Print wakeup source statistics information.
-+ * @m: seq_file to print the statistics into.
-+ * @ws: Wakeup source object to print the statistics for.
-+ */
-+static int print_wakeup_source_stats(struct seq_file *m,
-+				     struct wakeup_source *ws)
-+{
-+	unsigned long flags;
-+	ktime_t total_time;
-+	ktime_t max_time;
-+	unsigned long active_count;
-+	ktime_t active_time;
-+	int ret;
-+
-+	spin_lock_irqsave(&ws->lock, flags);
-+
-+	total_time = ws->total_time;
-+	max_time = ws->max_time;
-+	active_count = ws->active_count;
-+	if (ws->active) {
-+		active_time = ktime_sub(ktime_get(), ws->last_time);
-+		total_time = ktime_add(total_time, active_time);
-+		if (active_time.tv64 > max_time.tv64)
-+			max_time = active_time;
-+	} else {
-+		active_time = ktime_set(0, 0);
-+	}
-+
-+	ret = seq_printf(m, "%-12s\t%lu\t\t%lu\t\t%lu\t\t"
-+			"%lld\t\t%lld\t\t%lld\t\t%lld\n",
-+			ws->name, active_count, ws->event_count, ws->hit_count,
-+			ktime_to_ms(active_time), ktime_to_ms(total_time),
-+			ktime_to_ms(max_time), ktime_to_ms(ws->last_time));
-+
-+	spin_unlock_irqrestore(&ws->lock, flags);
-+
-+	return ret;
-+}
-+
-+/**
-+ * wakeup_sources_stats_show - Print wakeup sources statistics information.
-+ * @m: seq_file to print the statistics into.
-+ */
-+static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
-+{
-+	struct wakeup_source *ws;
-+
-+	seq_puts(m, "name\t\tactive_count\tevent_count\thit_count\t"
-+		"active_since\ttotal_time\tmax_time\tlast_change\n");
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(ws, &wakeup_sources, entry)
-+		print_wakeup_source_stats(m, ws);
-+	rcu_read_unlock();
-+
-+	return 0;
-+}
-+
-+static int wakeup_sources_stats_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, wakeup_sources_stats_show, NULL);
-+}
-+
-+static const struct file_operations wakeup_sources_stats_fops = {
-+	.owner = THIS_MODULE,
-+	.open = wakeup_sources_stats_open,
-+	.read = seq_read,
-+	.llseek = seq_lseek,
-+	.release = single_release,
-+};
-+
-+static int __init wakeup_sources_debugfs_init(void)
-+{
-+	wakeup_sources_stats_dentry = debugfs_create_file("wakeup_sources",
-+			S_IRUGO, NULL, NULL, &wakeup_sources_stats_fops);
-+	return 0;
-+}
-+
-+postcore_initcall(wakeup_sources_debugfs_init);
+[1] http://marc.info/?l=linux-omap&m=128620575900689&w=2
