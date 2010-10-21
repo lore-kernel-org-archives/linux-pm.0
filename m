@@ -1,15 +1,11 @@
-From: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH] PM / Wakeup: Show wakeup sources statistics
-	in debugfs
-Date: Tue, 19 Oct 2010 08:03:58 -0700
-Message-ID: <20101019150358.GB10625__44784.5654598952$1287501530$gmane$org@suse.de>
-References: <201010180122.35382.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] apds9802als: add runtime PM support
+Date: Thu, 21 Oct 2010 14:34:18 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1010211418520.1718-100000__15024.2946380333$1287689108$gmane$org@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201010180122.35382.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,20 +15,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Hong Liu <hong.liu@intel.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Alan Cox <alan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 18, 2010 at 01:22:35AM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> There may be wakeup sources that aren't associated with any devices
-> and their statistics information won't be available from sysfs. Also,
-> for debugging purposes it is convenient to have all of the wakeup
-> sources statistics available from one place.  For these reasons,
-> introduce new file "wakeup_sources" in debugfs containing those
-> statistics.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+On Fri, 15 Oct 2010, Alan Cox wrote:
 
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> From: Hong Liu <hong.liu@intel.com>
+> 
+> 
+>     Update the driver for the needed runtime power features. Remove the old
+>     user controlled power functions.
+> 
+>     Signed-off-by: Hong Liu <hong.liu@intel.com>
+>     Signed-off-by: Alan Cox <alan@linux.intel.com>
+
+> diff --git a/drivers/misc/apds9802als.c b/drivers/misc/apds9802als.c
+> index fbe4960..15f9436 100644
+> --- a/drivers/misc/apds9802als.c
+> +++ b/drivers/misc/apds9802als.c
+
+> @@ -265,13 +274,34 @@ static int apds9802als_suspend(struct i2c_client *client, pm_message_t mesg)
+>  
+>  static int apds9802als_resume(struct i2c_client *client)
+>  {
+> -	struct als_data *data = i2c_get_clientdata(client);
+> +	als_set_default_config(client);
+> +
+> +	pm_runtime_get(&client->dev);
+> +	pm_runtime_put(&client->dev);
+> +	return 0;
+> +}
+
+This almost certainly does not do what you think.
+
+pm_runtime_get() will increment the device's usage count and queue an 
+asynchronous resume request.  However, since the PM workqueue is frozen 
+during system sleep transitions, the device will remain suspended.
+
+The pm_runtime_put() will decrement the usage count again, but since
+there is already an async resume on the queue it will not queue an
+async suspend.  The final result will be that when tasks are unfrozen,
+the device will finally be resumed -- long after it should have been.
+
+It looks like what you want to do here is simply call
+apds9802als_runtime_resume() directly.  And according to the advice in
+Documentation/power/runtime_pm.txt section 6, you should also call
+
+	pm_runtime_disable(dev);
+	pm_runtime_set_active(dev);
+	pm_runtime_enable(dev);
+
+You probably also do not want the asynchronous calls to 
+pm_runtime_get() and pm_runtime_put() in apds9802als_probe().  A more 
+common sequence is:
+
+	pm_runtime_set_active(dev);
+	pm_runtime_enable(dev);
+
+Alan Stern
