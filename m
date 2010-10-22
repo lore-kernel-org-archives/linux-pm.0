@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] Power management updates for 2.6.37
-Date: Thu, 21 Oct 2010 23:50:15 +0200
-Message-ID: <201010212350.15409.rjw__23741.4752402858$1287697949$gmane$org@sisk.pl>
+Subject: [PATCH] ACPI / PM: Fix reference counting of power
+	resources
+Date: Fri, 22 Oct 2010 02:35:54 +0200
+Message-ID: <201010220235.55050.rjw__28395.8246735439$1287709302$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,108 +16,325 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Please pull power management updates for 2.6.37 from:
+The reference counting of ACPI power resources is currently broken
+for a few reasons.  First, instead of using a simple reference
+counter per power resource it uses a list of objects representing
+refereces to the given power resource from devices.  This leads to
+the second breakage, because it prevents power resources from
+being referenced more than once by one device, which is necessary
+if the device is configured to signal wakeup.  Namely, when putting
+the device into a low power state we first call
+acpi_enable_wakeup_device_power() that should reference count power
+resources needed for signaling wakeup and then we call
+acpi_power_transition() to power off the device.  The latter call
+drops references to the device's power resources, possibly including
+the ones added by acpi_enable_wakeup_device_power(), so the device
+can't signal wakeup as a result.  Apart from this, the locking
+in acpi_power_on() and acpi_power_off_device() doesn't prevent
+all possible races from happening, which may be problematic for
+runtime PM and asynchronous suspend and resume.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
+Fix the problem by using a counter for power resources reference
+counting and putting the evaluation of ACPI _ON and _OFF methods
+under the power resource mutex.
 
-They include:
+Reported-by: Matthew Garrett <mjg@redhat.com>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/power.c |  167 +++++++++++++++++++++------------------------------
+ 1 file changed, 70 insertions(+), 97 deletions(-)
 
- * Runtime PM framework updates from Alan Stern and me.  The autosuspend
-   feature is now available at the core level to drivers wanting to use it.
-
- * Hibernate image compression from Bojan Smojver.
-
- * Operating Performance Points framework from Nishanth Menon.
-
- * Hibernate improvements and fixes.
-
- * sysfs attribute for checking pm_trace device matches from James Hogan.
-
- * Extension of the wakeup events code for collecting wakeup sources
-   statistics.
-
-
- Documentation/ABI/testing/sysfs-devices-power |   88 +++
- Documentation/ABI/testing/sysfs-power         |   29 +
- Documentation/kernel-parameters.txt           |    5 +
- Documentation/power/00-INDEX                  |    2 +
- Documentation/power/interface.txt             |    2 +-
- Documentation/power/opp.txt                   |  375 ++++++++++
- Documentation/power/runtime_pm.txt            |  227 ++++++-
- Documentation/power/s2ram.txt                 |    7 +
- Documentation/power/swsusp.txt                |    3 +-
- drivers/base/power/Makefile                   |    1 +
- drivers/base/power/generic_ops.c              |    4 +-
- drivers/base/power/main.c                     |   21 +-
- drivers/base/power/opp.c                      |  628 ++++++++++++++++
- drivers/base/power/power.h                    |    2 +
- drivers/base/power/runtime.c                  |  944 +++++++++++++------------
- drivers/base/power/sysfs.c                    |  217 ++++++-
- drivers/base/power/trace.c                    |   36 +-
- drivers/base/power/wakeup.c                   |  613 ++++++++++++++--
- fs/sysfs/group.c                              |   59 ++
- include/linux/opp.h                           |  105 +++
- include/linux/pm.h                            |   38 +-
- include/linux/pm_runtime.h                    |  121 +++-
- include/linux/pm_wakeup.h                     |  127 +++-
- include/linux/resume-trace.h                  |    2 +
- include/linux/suspend.h                       |    6 +-
- include/linux/sysfs.h                         |   15 +
- kernel/power/Kconfig                          |   17 +
- kernel/power/hibernate.c                      |   25 +-
- kernel/power/main.c                           |   29 +-
- kernel/power/power.h                          |   10 +-
- kernel/power/process.c                        |   11 +-
- kernel/power/snapshot.c                       |   13 +-
- kernel/power/swap.c                           |  300 ++++++++-
- 33 files changed, 3447 insertions(+), 635 deletions(-)
-
----------------
-
-Alan Stern (7):
-      sysfs: Add sysfs_merge_group() and sysfs_unmerge_group()
-      PM / Runtime: Move code in drivers/base/power/runtime.c
-      PM / Runtime: Replace boolean arguments with bitflags
-      PM / Runtime: Merge synchronous and async runtime routines
-      PM / Runtime: Combine runtime PM entry points
-      PM / Runtime: Add no_callbacks flag
-      PM / Runtime: Implement autosuspend support
-
-Bojan Smojver (1):
-      PM / Hibernate: Compress hibernation image with LZO
-
-James Hogan (2):
-      PM: Lock PM device list mutex in show_dev_hash()
-      PM: Add sysfs attr for rechecking dev hash from PM trace
-
-Kevin Cernekee (1):
-      PM: Fix signed/unsigned warning in dpm_show_time()
-
-Ming Lei (1):
-      PM: runtime: add missed pm_request_autosuspend
-
-Nishanth Menon (1):
-      PM: Introduce library for device-specific OPPs (v7)
-
-Ohad Ben-Cohen (1):
-      PM / Runtime: Lenient generic runtime pm callbacks
-
-Rafael J. Wysocki (12):
-      PM: Fix unmet dependency warning from kconfig
-      PM / Runtime: Use alloc_workqueue() for creating the PM workqueue
-      PM / Hibernate: Improve comments in hibernate_preallocate_memory()
-      PM / Hibernate: Make default image size depend on total RAM size
-      PM / Wakeup: Introduce wakeup source objects and event statistics (v3)
-      PM: Fix potential issue with failing asynchronous suspend
-      PM / Hibernate: Make some boot messages look less scary
-      PM: Allow wakeup events to abort freezing of tasks
-      PM / Runtime: Reduce code duplication in core helper functions
-      PM / Hibernate: Modify signature used to mark swap
-      PM / Runtime: Remove idle notification after failing suspend
-      PM / Wakeup: Show wakeup sources statistics in debugfs
+Index: linux-2.6/drivers/acpi/power.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/power.c
++++ linux-2.6/drivers/acpi/power.c
+@@ -80,18 +80,13 @@ static struct acpi_driver acpi_power_dri
+ 		},
+ };
+ 
+-struct acpi_power_reference {
+-	struct list_head node;
+-	struct acpi_device *device;
+-};
+-
+ struct acpi_power_resource {
+ 	struct acpi_device * device;
+ 	acpi_bus_id name;
+ 	u32 system_level;
+ 	u32 order;
++	unsigned int ref_count;
+ 	struct mutex resource_lock;
+-	struct list_head reference;
+ };
+ 
+ static struct list_head acpi_power_resource_list;
+@@ -184,101 +179,89 @@ static int acpi_power_get_list_state(str
+ 	return result;
+ }
+ 
+-static int acpi_power_on(acpi_handle handle, struct acpi_device *dev)
++static int __acpi_power_on(struct acpi_power_resource *resource)
+ {
+-	int result = 0;
+-	int found = 0;
+ 	acpi_status status = AE_OK;
+-	struct acpi_power_resource *resource = NULL;
+-	struct list_head *node, *next;
+-	struct acpi_power_reference *ref;
+ 
++	status = acpi_evaluate_object(resource->device->handle, "_ON", NULL, NULL);
++	if (ACPI_FAILURE(status))
++		return -ENODEV;
++
++	/* Update the power resource's _device_ power state */
++	resource->device->power.state = ACPI_STATE_D0;
++
++	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Power resource [%s] turned on\n",
++			  resource->name));
++
++	return 0;
++}
++
++static int acpi_power_on(acpi_handle handle)
++{
++	int result = 0;
++	struct acpi_power_resource *resource = NULL;
+ 
+ 	result = acpi_power_get_context(handle, &resource);
+ 	if (result)
+ 		return result;
+ 
+ 	mutex_lock(&resource->resource_lock);
+-	list_for_each_safe(node, next, &resource->reference) {
+-		ref = container_of(node, struct acpi_power_reference, node);
+-		if (dev->handle == ref->device->handle) {
+-			ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device [%s] already referenced by resource [%s]\n",
+-				  dev->pnp.bus_id, resource->name));
+-			found = 1;
+-			break;
+-		}
+-	}
+ 
+-	if (!found) {
+-		ref = kmalloc(sizeof (struct acpi_power_reference),
+-		    irqs_disabled() ? GFP_ATOMIC : GFP_KERNEL);
+-		if (!ref) {
+-			ACPI_DEBUG_PRINT((ACPI_DB_INFO, "kmalloc() failed\n"));
+-			mutex_unlock(&resource->resource_lock);
+-			return -ENOMEM;
+-		}
+-		list_add_tail(&ref->node, &resource->reference);
+-		ref->device = dev;
+-		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device [%s] added to resource [%s] references\n",
+-			  dev->pnp.bus_id, resource->name));
++	if (resource->ref_count++) {
++		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
++				  "Power resource [%s] already on",
++				  resource->name));
++	} else {
++		result = __acpi_power_on(resource);
+ 	}
+-	mutex_unlock(&resource->resource_lock);
+ 
+-	status = acpi_evaluate_object(resource->device->handle, "_ON", NULL, NULL);
+-	if (ACPI_FAILURE(status))
+-		return -ENODEV;
+-
+-	/* Update the power resource's _device_ power state */
+-	resource->device->power.state = ACPI_STATE_D0;
++	mutex_unlock(&resource->resource_lock);
+ 
+-	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Resource [%s] turned on\n",
+-			  resource->name));
+ 	return 0;
+ }
+ 
+-static int acpi_power_off_device(acpi_handle handle, struct acpi_device *dev)
++static int acpi_power_off_device(acpi_handle handle)
+ {
+ 	int result = 0;
+ 	acpi_status status = AE_OK;
+ 	struct acpi_power_resource *resource = NULL;
+-	struct list_head *node, *next;
+-	struct acpi_power_reference *ref;
+ 
+ 	result = acpi_power_get_context(handle, &resource);
+ 	if (result)
+ 		return result;
+ 
+ 	mutex_lock(&resource->resource_lock);
+-	list_for_each_safe(node, next, &resource->reference) {
+-		ref = container_of(node, struct acpi_power_reference, node);
+-		if (dev->handle == ref->device->handle) {
+-			list_del(&ref->node);
+-			kfree(ref);
+-			ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device [%s] removed from resource [%s] references\n",
+-			    dev->pnp.bus_id, resource->name));
+-			break;
+-		}
++
++	if (!resource->ref_count) {
++		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
++				  "Power resource [%s] already off",
++				  resource->name));
++		goto unlock;
+ 	}
+ 
+-	if (!list_empty(&resource->reference)) {
+-		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Cannot turn resource [%s] off - resource is in use\n",
+-		    resource->name));
+-		mutex_unlock(&resource->resource_lock);
+-		return 0;
++	if (--resource->ref_count) {
++		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
++				  "Power resource [%s] still in use\n",
++				  resource->name));
++		goto unlock;
+ 	}
+-	mutex_unlock(&resource->resource_lock);
+ 
+ 	status = acpi_evaluate_object(resource->device->handle, "_OFF", NULL, NULL);
+-	if (ACPI_FAILURE(status))
+-		return -ENODEV;
++	if (ACPI_FAILURE(status)) {
++		result = -ENODEV;
++	} else {
++		/* Update the power resource's _device_ power state */
++		resource->device->power.state = ACPI_STATE_D3;
+ 
+-	/* Update the power resource's _device_ power state */
+-	resource->device->power.state = ACPI_STATE_D3;
++		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
++				  "Power resource [%s] turned off\n",
++				  resource->name));
++	}
+ 
+-	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Resource [%s] turned off\n",
+-			  resource->name));
++ unlock:
++	mutex_unlock(&resource->resource_lock);
+ 
+-	return 0;
++	return result;
+ }
+ 
+ /**
+@@ -364,7 +347,7 @@ int acpi_enable_wakeup_device_power(stru
+ 
+ 	/* Open power resource */
+ 	for (i = 0; i < dev->wakeup.resources.count; i++) {
+-		int ret = acpi_power_on(dev->wakeup.resources.handles[i], dev);
++		int ret = acpi_power_on(dev->wakeup.resources.handles[i]);
+ 		if (ret) {
+ 			printk(KERN_ERR PREFIX "Transition power state\n");
+ 			dev->wakeup.flags.valid = 0;
+@@ -420,7 +403,7 @@ int acpi_disable_wakeup_device_power(str
+ 	/* Close power resource */
+ 	for (i = 0; i < dev->wakeup.resources.count; i++) {
+ 		int ret = acpi_power_off_device(
+-				dev->wakeup.resources.handles[i], dev);
++				dev->wakeup.resources.handles[i]);
+ 		if (ret) {
+ 			printk(KERN_ERR PREFIX "Transition power state\n");
+ 			dev->wakeup.flags.valid = 0;
+@@ -500,7 +483,7 @@ int acpi_power_transition(struct acpi_de
+ 	 * (e.g. so the device doesn't lose power while transitioning).
+ 	 */
+ 	for (i = 0; i < tl->count; i++) {
+-		result = acpi_power_on(tl->handles[i], device);
++		result = acpi_power_on(tl->handles[i]);
+ 		if (result)
+ 			goto end;
+ 	}
+@@ -513,7 +496,7 @@ int acpi_power_transition(struct acpi_de
+ 	 * Then we dereference all power resources used in the current list.
+ 	 */
+ 	for (i = 0; i < cl->count; i++) {
+-		result = acpi_power_off_device(cl->handles[i], device);
++		result = acpi_power_off_device(cl->handles[i]);
+ 		if (result)
+ 			goto end;
+ 	}
+@@ -551,7 +534,6 @@ static int acpi_power_add(struct acpi_de
+ 
+ 	resource->device = device;
+ 	mutex_init(&resource->resource_lock);
+-	INIT_LIST_HEAD(&resource->reference);
+ 	strcpy(resource->name, device->pnp.bus_id);
+ 	strcpy(acpi_device_name(device), ACPI_POWER_DEVICE_NAME);
+ 	strcpy(acpi_device_class(device), ACPI_POWER_CLASS);
+@@ -594,22 +576,14 @@ static int acpi_power_add(struct acpi_de
+ 
+ static int acpi_power_remove(struct acpi_device *device, int type)
+ {
+-	struct acpi_power_resource *resource = NULL;
+-	struct list_head *node, *next;
++	struct acpi_power_resource *resource;
+ 
+-
+-	if (!device || !acpi_driver_data(device))
++	if (!device)
+ 		return -EINVAL;
+ 
+ 	resource = acpi_driver_data(device);
+-
+-	mutex_lock(&resource->resource_lock);
+-	list_for_each_safe(node, next, &resource->reference) {
+-		struct acpi_power_reference *ref = container_of(node, struct acpi_power_reference, node);
+-		list_del(&ref->node);
+-		kfree(ref);
+-	}
+-	mutex_unlock(&resource->resource_lock);
++	if (!resource)
++		return -EINVAL;
+ 
+ 	kfree(resource);
+ 
+@@ -619,29 +593,28 @@ static int acpi_power_remove(struct acpi
+ static int acpi_power_resume(struct acpi_device *device)
+ {
+ 	int result = 0, state;
+-	struct acpi_power_resource *resource = NULL;
+-	struct acpi_power_reference *ref;
++	struct acpi_power_resource *resource;
+ 
+-	if (!device || !acpi_driver_data(device))
++	if (!device)
+ 		return -EINVAL;
+ 
+ 	resource = acpi_driver_data(device);
++	if (!resource)
++		return -EINVAL;
++
++	mutex_lock(&resource->resource_lock);
+ 
+ 	result = acpi_power_get_state(device->handle, &state);
+ 	if (result)
+-		return result;
++		goto unlock;
+ 
+-	mutex_lock(&resource->resource_lock);
+-	if (state == ACPI_POWER_RESOURCE_STATE_OFF &&
+-	    !list_empty(&resource->reference)) {
+-		ref = container_of(resource->reference.next, struct acpi_power_reference, node);
+-		mutex_unlock(&resource->resource_lock);
+-		result = acpi_power_on(device->handle, ref->device);
+-		return result;
+-	}
++	if (state == ACPI_POWER_RESOURCE_STATE_OFF && resource->ref_count)
++		result = __acpi_power_on(resource);
+ 
++ unlock:
+ 	mutex_unlock(&resource->resource_lock);
+-	return 0;
++
++	return result;
+ }
+ 
+ int __init acpi_power_init(void)
