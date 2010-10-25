@@ -1,7 +1,7 @@
 From: Arjan van de Ven <arjan@linux.intel.com>
 Subject: Re: [PATCH 2/3] PERF(kernel): Cleanup power events
-Date: Sun, 24 Oct 2010 23:54:34 -0700
-Message-ID: <4CC529AA.9070804__48422.0317834572$1287989804$gmane$org@linux.intel.com>
+Date: Sun, 24 Oct 2010 23:58:00 -0700
+Message-ID: <4CC52A78.7060407__40708.7182546549$1287989948$gmane$org@linux.intel.com>
 References: <1287488171-25303-1-git-send-email-trenn@suse.de>
 	<1287488171-25303-3-git-send-email-trenn@suse.de>
 Mime-Version: 1.0
@@ -23,13 +23,23 @@ Cc: linux-trace-users@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
 List-Id: linux-pm@vger.kernel.org
 
 On 10/19/2010 4:36 AM, Thomas Renninger wrote:
->   static void poll_idle(void)
->   {
-> -	trace_power_start(POWER_CSTATE, 0, smp_processor_id());
->   	local_irq_enable();
->   	while (!need_resched())
->   		cpu_relax();
-> -	trace_power_end(0);
->   }
+> New power trace events:
+> power:processor_idle
+> power:processor_frequency
+> power:machine_suspend
+>
+>
+> C-state/idle accounting events:
+>    power:power_start
+>    power:power_end
+> are replaced with:
+>    power:processor_idle
+>
+I think you need two trace points for this
+one to enter idle
+one to exit
 
-why did you remove the idle tracepoints from this one ???
+because using magic encoding games to encode "exit"is a mistake; as can 
+be seen in this patch.
+You're currently trying to use "0" to signal "end of idle", but "0" is 
+also a valid idle state (namely that of polling)
