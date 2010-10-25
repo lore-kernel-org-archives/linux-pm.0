@@ -1,15 +1,12 @@
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [PATCH 2/3] PERF(kernel): Cleanup power events
-Date: Mon, 25 Oct 2010 09:00:17 -0700
-Message-ID: <4CC5A991.5090109__2784.00621978125$1288022488$gmane$org@linux.intel.com>
-References: <1287488171-25303-1-git-send-email-trenn@suse.de>
-	<4CC597FA.7080606@linux.intel.com> <20101025145604.GB16397@elte.hu>
-	<201010251748.59218.trenn@suse.de>
+From: Raj Kumar <rajkumar278@hotmail.com>
+Subject: Run time power management
+Date: Tue, 26 Oct 2010 01:10:45 +0530
+Message-ID: <BLU102-W274185CFA6E3243A728858EB410@phx.gbl>
+References: <201010212350.15409.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0210072987897883667=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201010251748.59218.trenn@suse.de>
+In-Reply-To: <201010212350.15409.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,41 +14,99 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: linux-trace-users@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>, Pierre Tardy <tardyp@gmail.com>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Frank Eigler <fche@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On 10/25/2010 8:48 AM, Thomas Renninger wrote:
-> On Monday 25 October 2010 16:56:04 Ingo Molnar wrote:
->> * Arjan van de Ven<arjan@linux.intel.com>  wrote:
->>> On 10/25/2010 7:36 AM, Thomas Renninger wrote:
->>> ok so we have
->>>
->>> "C0 idle"
-> Ideally this should not be called C0, but expressed
-> as (#define) POLL_IDLE wherever possible.
->
-> In all documentations/specs/white papers about other OSes
-> C0 is refered to as not being idle.
-> Linux mis-uses it as a self-defined idle state which
-> is really confusing.
+--===============0210072987897883667==
+Content-Type: multipart/alternative;
+	boundary="_8b069bed-709b-4752-9010-6902f026eb2b_"
 
-sure naming is one thing
->>> and
->>> "C0 no longer idle"
->>>
->>> I'd propose using the number 0 for the first one (it makes the most
->>> logical sense, it's the least deep idle state etc etc)
-> I would use a special number for the "Linux only" state.
-
-that special number is 0 though..
-it makes sense in ordering, 0 < 1, 1 < 2 etc
+--_8b069bed-709b-4752-9010-6902f026eb2b_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
 
+=20
+Hi=2C
+=20
+I have one more question regarding the run time power management.  Suppose =
+a peripheral
+has two parts where each part is managed under two power domains. Since run=
+ time power
+management is based on device node.=20
+=20
+So in this case=2C there are two power domains. Since power of each part is=
+ suspended/resumed
+independent of each other.
+=20
+So In this case should the driver of such peripheral  create two device nod=
+es? Since when=20
+it issues suspend/resume  requests to run time power management core where =
+each part
+falls under one device node and also run time power management works on ind=
+ividual device node.
+=20
+So shall device driver create two device nodes in such use cases?
+=20
+regards
+raj  		 	   		  =
 
-0 makes for a really bad special number for the exit marker; not just here,
-but also for your suspend hook, that one definitely needs to change
-(since current commercially available SOCs already reuse 0 for this for 
-standby level states)
+--_8b069bed-709b-4752-9010-6902f026eb2b_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style><!--
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Tahoma
+}
+--></style>
+</head>
+<body class=3D'hmmessage'>
+&nbsp=3B<BR>
+Hi=2C<BR>
+&nbsp=3B<BR>
+I have one more question regarding the run time power management.&nbsp=3B S=
+uppose a peripheral<BR>
+has two parts where each part is managed under two power domains. Since run=
+ time power<BR>
+management is based on device node. <BR>
+&nbsp=3B<BR>
+So in this case=2C there are two power domains. Since power of each part is=
+ suspended/resumed<BR>
+independent of each other.<BR>
+&nbsp=3B<BR>
+So In this case should the driver of such peripheral&nbsp=3B create two dev=
+ice nodes? Since when <BR>
+it issues suspend/resume &nbsp=3Brequests to run time power management core=
+ where each part<BR>
+falls under one device node and also run time power management works on ind=
+ividual device node.<BR>
+&nbsp=3B<BR>
+So shall device driver create two device nodes in such use cases?<BR>
+&nbsp=3B<BR>
+regards<BR>
+raj&nbsp=3B<BR> 		 	   		  </body>
+</html>=
+
+--_8b069bed-709b-4752-9010-6902f026eb2b_--
+
+--===============0210072987897883667==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============0210072987897883667==--
