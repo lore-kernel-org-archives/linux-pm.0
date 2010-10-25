@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Thomas Renninger <trenn@suse.de>
 Subject: Re: [PATCH 2/3] PERF(kernel): Cleanup power events
-Date: Mon, 25 Oct 2010 22:33:23 +0200
-Message-ID: <201010252233.23960.rjw__28793.0309227251$1288038991$gmane$org@sisk.pl>
+Date: Tue, 26 Oct 2010 01:32:02 +0200
+Message-ID: <201010260132.03816.trenn__21686.234282288$1288049648$gmane$org@suse.de>
 References: <1287488171-25303-1-git-send-email-trenn@suse.de>
-	<201010251303.04019.trenn@suse.de>
-	<4CC58CEE.9080507@linux.intel.com>
+	<201010251748.59218.trenn@suse.de>
+	<4CC5A991.5090109@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4CC58CEE.9080507@linux.intel.com>
+In-Reply-To: <4CC5A991.5090109@linux.intel.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,66 +21,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-trace-users@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>, Pierre Tardy <tardyp@gmail.com>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Frank Eigler <fche@redhat.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, linux-pm@lists.linux-foundation.org, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-trace-users@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>, Pierre Tardy <tardyp@gmail.com>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Frank Eigler <fche@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, October 25, 2010, Arjan van de Ven wrote:
-> On 10/25/2010 4:03 AM, Thomas Renninger wrote:
-> > On Monday 25 October 2010 12:04:28 Ingo Molnar wrote:
-> >> * Thomas Renninger<trenn@suse.de>  wrote:
-> >>
-> >>> New power trace events:
-> >>> power:processor_idle
-> >>> power:processor_frequency
-> >>> power:machine_suspend
-> >>>
-> >>>
-> >>> C-state/idle accounting events:
-> >>>    power:power_start
-> >>>    power:power_end
-> >>> are replaced with:
-> >>>    power:processor_idle
-> >> Well, most power saving hw models (and the code implementing them) have this kind of
-> >> model:
-> >>
-> >>   enter power saving mode X
-> >>   exit power saving mode
-> >>
-> >> Where X is some sort of 'power saving deepness' attribute, right?
-> > Sure.
-> > But ACPI and afaik this model got picked up for PCI and other (sub-)archs
-> > as well, defines state 0 as the non-power saving mode.
+@Ingo: Can you queue up 1/3, it's an independent fix.
+
+On Monday 25 October 2010 06:00:17 pm Arjan van de Ven wrote:
+> On 10/25/2010 8:48 AM, Thomas Renninger wrote:
 > 
-> correct ,... "C0" is not power efficient... but it's still a valid OS 
-> idle state!
-> Also tracking processor_idle_{start,end} as a separate event!
+> sure naming is one thing
+Yes it should get renamed to not show:
+cat /sys/devices/system/cpu/cpu0/cpuidle/state0/name
+C0
+This is wrong and confusing
+
+> >>> and
+> >>> "C0 no longer idle"
+> >>>
+> >>> I'd propose using the number 0 for the first one (it makes the most
+> >>> logical sense, it's the least deep idle state etc etc)
+> > I would use a special number for the "Linux only" state.
 > 
-> same for "S0"... S0 as standby state is still valid... sure it doesn't 
-> save you much power... but that does not mean it's not valid.
+> that special number is 0 though..
+> it makes sense in ordering, 0 < 1, 1 < 2 etc
+As long as it stays a kernel and perf processor_idle internal number
+it does not hurt.
+But userspace tools catching the perf idle event of state 0 should never
+refer to it as processor idle state 0 (or even worse C0).
+Instead they should try to get the name/description of:
+/sys/../state0/name
+or directly refer to it as "poll idle" state.
 
-If you mean ACPI S0, it is not a standby state.  It actually is the full-power
-state.
+Processor idle state C0 is not only defined as "not being idle" in the
+specs, also turbostat and cpufreq-aperf use it correctly and refer to C0 when 
+they show accounted "not idle" time.
 
-> (as indication, the Intel Moorestown platform, which is currently in 
-> production and available to OEMs, has such a S0 standby state)
+Encouraged by your suggestions I send another version.
+It's not a big deal to send 0xFFFFFFFF instead of 0 as "non power saving" 
+state. If you can handle compatibility with it in powertop, it doesn't make 
+things more complicated in kernel and perf timechart as I first thought it 
+does.
 
-Another naming confusion.  How smart.
-
-> > makes no sense and there is no need to introduce:
-> > processor_idle_start/processor_idle_end
-> > machine_suspend_start/machine_suspend_end
-> > device_power_mode_start/device_power_mode_end
-> > events.
-> > Using state 0 as "exit/end", is much nicer for kernel/
-> > userspace implementations/code and the user.
-> actually no; having written a few of these in userspace so far, having a 
-> separate end event is easier to deal with;
-> the actions you take on entry and exit are complete separate code paths.
-
-That's correct, unless you go directly from one low-power state to another
-(which is possible for example for PCI).  We don't do that at the moment,
-but it's possible in principle and we may want to start doing that at one
-point.
-
-Thanks,
-Rafael
+      Thomas
