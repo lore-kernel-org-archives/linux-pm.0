@@ -1,12 +1,14 @@
-From: Raj Kumar <rajkumar278@hotmail.com>
-Subject: Run time power management
-Date: Tue, 26 Oct 2010 01:10:45 +0530
-Message-ID: <BLU102-W274185CFA6E3243A728858EB410@phx.gbl>
-References: <201010212350.15409.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/3] PERF(kernel): Cleanup power events
+Date: Mon, 25 Oct 2010 22:29:49 +0200
+Message-ID: <201010252229.50404.rjw__16593.9401406378$1288038703$gmane$org@sisk.pl>
+References: <1287488171-25303-1-git-send-email-trenn@suse.de>
+	<20101025115525.GB2237@elte.hu> <20101025125844.GB31188@Krystal>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0210072987897883667=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201010212350.15409.rjw@sisk.pl>
+In-Reply-To: <20101025125844.GB31188@Krystal>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,99 +16,113 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-trace-users@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>, Pierre Tardy <tardyp@gmail.com>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Frank Eigler <fche@redhat.com>, Arjan van de Ven <arjan@linux.intel.com>, linux-pm@lists.linux-foundation.org, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
---===============0210072987897883667==
-Content-Type: multipart/alternative;
-	boundary="_8b069bed-709b-4752-9010-6902f026eb2b_"
+On Monday, October 25, 2010, Mathieu Desnoyers wrote:
+> * Ingo Molnar (mingo@elte.hu) wrote:
+> > 
+> > * Thomas Renninger <trenn@suse.de> wrote:
+> > 
+> > > On Monday 25 October 2010 12:04:28 Ingo Molnar wrote:
+> > > > 
+> > > > * Thomas Renninger <trenn@suse.de> wrote:
+> > > > 
+> > > > > New power trace events:
+> > > > > power:processor_idle
+> > > > > power:processor_frequency
+> > > > > power:machine_suspend
+> > > > > 
+> > > > > 
+> > > > > C-state/idle accounting events:
+> > > > >   power:power_start
+> > > > >   power:power_end
+> > > > > are replaced with:
+> > > > >   power:processor_idle
+> > > > 
+> > > > Well, most power saving hw models (and the code implementing them) have this kind of 
+> > > > model:
+> > > > 
+> > > >  enter power saving mode X
+> > > >  exit power saving mode
+> > > > 
+> > > > Where X is some sort of 'power saving deepness' attribute, right?
+> > >
+> > > Sure.
+> > 
+> > Which is is the 'saner' model?
+> > 
+> > > But ACPI and afaik this model got picked up for PCI and other (sub-)archs as well, 
+> > > defines state 0 as the non-power saving mode.
+> > 
+> > But the actual code does not actually deal with any 'state 0', does it? It enters an 
+> > idle function and then exits it, right?
+> > 
+> > 'power state' might be what is used for devices - but even there, we have:
+> > 
+> >   - enter power state X
+> >   - exit power state
+> > 
+> > right?
+> > 
+> > > Same as done here with machine suspend state (S0 is back from suspend) and
+> > > this model should get picked up when device sleep states get tracked at
+> > > some time.
+> > >
+> > > It's consistent and applies to some well known specifications.
+> > 
+> > What we want it to be is for it to be the nicest, most understandable, most logical 
+> > model - not one matching random hardware specifications.
+> > 
+> > ( Hardware specifications only matter in so far that it should be possible to 
+> >   express all the known hardware state transitions via these events efficiently. )
+> > 
+> > > Also tracking processor_idle_{start,end} as a separate event makes no sense and 
+> > > there is no need to introduce: processor_idle_start/processor_idle_end 
+> > > machine_suspend_start/machine_suspend_end 
+> > > device_power_mode_start/device_power_mode_end events.
+> > 
+> > What do you mean by "makes no sense"?
+> > 
+> > Are they superfluous? Inefficient? Illogical?
+> 
+> I think it would require deep understanding of specific power modes of each
+> architecture to split into this topology. On the bright side, it would bring
+> clear understanding of which HW resource is being put to sleep, which would make
+> automated analysis much easier to do. But maybe it's too much pain compared to
+> the benefit. The related question is also: where is it best to put this logic ?
+> In the kernel code ? In per-arch TRACE_EVENT() handlers or in external trace
+> analysis plugins ?
+> 
+> > 
+> > > Using state 0 as "exit/end", is much nicer for kernel/ userspace 
+> > > implementations/code and the user.
+> > 
+> > By that argument we should not have separate fork() and exit() syscalls either, but 
+> > a set_process_state(1) and set_process_state(0) interface?
+> 
+> I'm by no mean expert on power saving hardware specs, but if it is possible for
+> hardware to switch between two power saving states without passing through power
+> state 0, then using a "set state" rather than an enter/exit would be more
+> appropriate; even if we go for a scheme introducing
+> 
+> processor_idle_start/processor_idle_end,
+> machine_suspend_start/machine_suspend_end,
+> device_power_mode_start/device_power_mode_end.
+> 
+> I must defer to you guys to figure out if some hardware actually do that for
+> either of CPU idle, suspend or device power modes.
 
---_8b069bed-709b-4752-9010-6902f026eb2b_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Yes, you can go directly from PCI_D1 to PCI_D2, for one example.
 
+Apart from this, attempting to put system suspend to the same bag as cpuidle
+is not going to work in the long run.  They are _fundamentally_ different things
+event though the power state we get into as a result of suspend is approximately
+the same as we can get into via cpuidle (even in that case the energy savings
+will generally be different in both cases due to wakeup events).
 
-=20
-Hi=2C
-=20
-I have one more question regarding the run time power management.  Suppose =
-a peripheral
-has two parts where each part is managed under two power domains. Since run=
- time power
-management is based on device node.=20
-=20
-So in this case=2C there are two power domains. Since power of each part is=
- suspended/resumed
-independent of each other.
-=20
-So In this case should the driver of such peripheral  create two device nod=
-es? Since when=20
-it issues suspend/resume  requests to run time power management core where =
-each part
-falls under one device node and also run time power management works on ind=
-ividual device node.
-=20
-So shall device driver create two device nodes in such use cases?
-=20
-regards
-raj  		 	   		  =
-
---_8b069bed-709b-4752-9010-6902f026eb2b_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<style><!--
-.hmmessage P
-{
-margin:0px=3B
-padding:0px
-}
-body.hmmessage
-{
-font-size: 10pt=3B
-font-family:Tahoma
-}
---></style>
-</head>
-<body class=3D'hmmessage'>
-&nbsp=3B<BR>
-Hi=2C<BR>
-&nbsp=3B<BR>
-I have one more question regarding the run time power management.&nbsp=3B S=
-uppose a peripheral<BR>
-has two parts where each part is managed under two power domains. Since run=
- time power<BR>
-management is based on device node. <BR>
-&nbsp=3B<BR>
-So in this case=2C there are two power domains. Since power of each part is=
- suspended/resumed<BR>
-independent of each other.<BR>
-&nbsp=3B<BR>
-So In this case should the driver of such peripheral&nbsp=3B create two dev=
-ice nodes? Since when <BR>
-it issues suspend/resume &nbsp=3Brequests to run time power management core=
- where each part<BR>
-falls under one device node and also run time power management works on ind=
-ividual device node.<BR>
-&nbsp=3B<BR>
-So shall device driver create two device nodes in such use cases?<BR>
-&nbsp=3B<BR>
-regards<BR>
-raj&nbsp=3B<BR> 		 	   		  </body>
-</html>=
-
---_8b069bed-709b-4752-9010-6902f026eb2b_--
-
---===============0210072987897883667==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============0210072987897883667==--
+Thanks,
+Rafael
