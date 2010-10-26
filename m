@@ -1,11 +1,18 @@
-From: "Chidambaram, Praveen" <pchidamb@codeaurora.org>
-Subject: RFC: Deadlock in Hotplug and CPUFreq interaction.
-Date: Tue, 26 Oct 2010 11:17:56 -0600 (MDT)
-Message-ID: <alpine.DEB.2.00.1010260944550.9583@pchidamb-lnx.qualcomm.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] PERF(kernel): Cleanup power events V2
+Date: Tue, 26 Oct 2010 19:58:14 +0200
+Message-ID: <1288115894.3673.12.camel__20729.1508712389$1288116120$gmane$org@laptop>
+References: <1287488171-25303-3-git-send-email-trenn@suse.de>
+	<1288049630-10947-1-git-send-email-trenn@suse.de>
+	<20101026071020.GC13036@elte.hu>
+	<AANLkTikWCLTgAGJJ_eH0e016kPfB2K8LtR9g25wbPJXF@mail.gmail.com>
+	<4CC6FC03.708@linux.intel.com>
+	<AANLkTinrmhBkjnXE+xQGgrsv_OR_ckz=dyH4EoDB59X_@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <AANLkTinrmhBkjnXE+xQGgrsv_OR_ckz=dyH4EoDB59X_@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,37 +22,13 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Pierre Tardy <tardyp@gmail.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, linux-pm@lists.linux-foundation.org, Jean Pihet <jean.pihet@newoldbits.com>, Rostedt <rostedt@goodmis.org>, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Steven@smtp1.linux-foundation.org, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Tue, 2010-10-26 at 11:56 -0500, Pierre Tardy wrote:
+> 
+> +       trace_runtime_pm_usage(dev, atomic_read(&dev->power.usage_count)+1);
+>         atomic_inc(&dev->power.usage_count); 
 
-I am running into a deadlock situation with hotplug and CPUFreq. I 
-need to be able to prevent hotplug when changing the cpu frequency of 
-my CPU to ensure that the workqueue I post to, doesnt get migrated 
-during the cpu frequency change in the target function. I cannot 
-change frequency in the interrupt context as it involves mutexes (in 
-the clk_set_rate function and also in the regulator functions).
-
-When the CPU is hotplugged, the hotplug notifications of CPU_PREPARE, 
-CPU_UP are handled by CPUFreq to engage the sysfs nodes and also 
-initialize the governor. The governor mutex is held before the target 
-function is called. Now, if there was another thread, changing the 
-frequency of another CPU, it will hold the governor mutex and then 
-call the target function and will wait on the hotplug lock.
-
-Thread1 : Change cpu freq core0 > holds governor mutex > calls target 
-function > waits on get_online_cpus()
-
-Thread2 : Hotplug core1 > calls get_online_cpus() holds hotplug mutex 
-> calls notifiers > Calls CPUFreq notification handlers > waits on 
-governor mutex.
-
-I would like to suggest an try_get_online_cpus() that does a 
-mutex_trylock(). Are there better ways to overcome this issue?
-
-Thanks,
-Praveen
-
-Sent by an employee of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+That's terribly racy..
