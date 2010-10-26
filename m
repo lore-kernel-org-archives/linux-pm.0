@@ -1,13 +1,16 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 1/5] intel_idle: simplify test for leave_mm()
-Date: Tue, 26 Oct 2010 17:07:30 -0400
-Message-ID: <c8381cc3d8a9cc6c80f65bf60863c776651f245c.1288127069.git.len.brown@intel.com>
+Subject: [PATCH 3/5] acpi_idle: delete bogus data from
+	cpuidle_state.power_usage
+Date: Tue, 26 Oct 2010 17:07:32 -0400
+Message-ID: <0f3f164d9794f57d8afb033819f508a486c1304d.1288127069.git.len.brown@intel.com>
 References: <1288127254-3306-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-reply-to: <1288127254-3306-1-git-send-email-lenb@kernel.org>
+In-reply-to: <c8381cc3d8a9cc6c80f65bf60863c776651f245c.1288127069.git.len.brown@intel.com>
+References: <c8381cc3d8a9cc6c80f65bf60863c776651f245c.1288127069.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,35 +26,30 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-A run-time test to invoke leave_mm() for the deepest
-supported C-state is redundant, since the appropriate
-C-states already have flags with CPUIDLE_FLAG_TLB_FLUSHED set.
+The mW data in this field comes from AML _CST,
+which was typed in by a BIOS writer, and is thus
+considered unreliable.
+
+Linux does not use it for making any decisions.
+We do display it in sysfs where somebody might
+read it and assume it is meaningful, so delete it.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/idle/intel_idle.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
+ drivers/acpi/processor_idle.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index c37ef64..ad0fb01 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -186,13 +186,10 @@ static int intel_idle(struct cpuidle_device *dev, struct cpuidle_state *state)
- 	local_irq_disable();
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index f4428e8..07a8bb6 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -1013,7 +1013,6 @@ static int acpi_processor_setup_cpuidle(struct acpi_processor *pr)
+ 		strncpy(state->desc, cx->desc, CPUIDLE_DESC_LEN);
+ 		state->exit_latency = cx->latency;
+ 		state->target_residency = cx->latency * latency_factor;
+-		state->power_usage = cx->power;
  
- 	/*
--	 * If the state flag indicates that the TLB will be flushed or if this
--	 * is the deepest c-state supported, do a voluntary leave mm to avoid
--	 * costly and mostly unnecessary wakeups for flushing the user TLB's
--	 * associated with the active mm.
-+	 * leave_mm() to avoid costly and often unnecessary wakeups
-+	 * for flushing the user TLB's associated with the active mm.
- 	 */
--	if (state->flags & CPUIDLE_FLAG_TLB_FLUSHED ||
--	    (&dev->states[dev->state_count - 1] == state))
-+	if (state->flags & CPUIDLE_FLAG_TLB_FLUSHED)
- 		leave_mm(cpu);
- 
- 	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+ 		state->flags = 0;
+ 		switch (cx->type) {
 -- 
 1.7.3.2.90.gd4c43
