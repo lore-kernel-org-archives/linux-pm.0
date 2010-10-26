@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] PERF(kernel): Cleanup power events V2
-Date: Wed, 27 Oct 2010 00:20:35 +0200
-Message-ID: <201010270020.35941.rjw__38356.6603450619$1288131776$gmane$org@sisk.pl>
-References: <20101026181421.GA30090@Krystal>
-	<Pine.LNX.4.44L0.1010261447090.1634-100000@iolanthe.rowland.org>
-	<20101026213356.GA21495@Krystal>
+Date: Wed, 27 Oct 2010 00:22:55 +0200
+Message-ID: <201010270022.56298.rjw__9755.24463360689$1288131954$gmane$org@sisk.pl>
+References: <1287488171-25303-3-git-send-email-trenn@suse.de>
+	<201010262104.21851.rjw@sisk.pl> <20101026213817.GB21495@Krystal>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101026213356.GA21495@Krystal>
+In-Reply-To: <20101026213817.GB21495@Krystal>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,14 +18,13 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Ingo Molnar <mingo@elte.hu>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <tj@kernel.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, linux-trace-users@vger.kernel.org, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, Frederic Weisbecker <fweisbec@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Frank Eigler <fche@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 On Tuesday, October 26, 2010, Mathieu Desnoyers wrote:
-> * Alan Stern (stern@rowland.harvard.edu) wrote:
-> > On Tue, 26 Oct 2010, Mathieu Desnoyers wrote:
-> > 
+> * Rafael J. Wysocki (rjw@sisk.pl) wrote:
+> > On Tuesday, October 26, 2010, Mathieu Desnoyers wrote:
 > > > * Peter Zijlstra (peterz@infradead.org) wrote:
 > > > > On Tue, 2010-10-26 at 11:56 -0500, Pierre Tardy wrote:
 > > > > > 
@@ -51,68 +49,21 @@ On Tuesday, October 26, 2010, Mathieu Desnoyers wrote:
 > > > why atomic operations are used at all, or it's a racy mess. (I vote for the
 > > > second option)
 > > 
-> > I don't understand.  What's the problem?  The inc/dec are atomic 
-> > because they are not protected by spinlocks, but everything else is 
-> > (aside from the tracepoint, which is new).
+> > No, it isn't.
 > > 
 > > > kref should certainly be used there.
 > > 
-> > What for?
+> > No, it shouldn't.
+> > 
+> > Please try to understand the code you're commenting on first.
 > 
-> kref has the following "get":
+> Please see my reply to Alan Stern:
 > 
->         atomic_inc(&kref->refcount);
->         smp_mb__after_atomic_inc();
-> 
-> What seems to be missing in __pm_runtime_get() and pm_runtime_get_noresume() is
-> the memory barrier after the atomic increment. The atomic increment is free to
-> be reordered into the following spinlock (within pm_request_resume or pm_request
-> resume execution) because taking a spinlock only acts as a memory barrier with
-> acquire semantic, not a full memory barrier.
->
-> So AFAIU, the failure scenario would be as follows (sorry for the 80+ columns):
-> 
-> initial conditions: usage_count = 1
-> 
-> CPU A                                                       CPU B
-> 1) __pm_runtime_get() (sync = true)
-> 2)   atomic_inc(&usage_count) (not committed to memory yet)
-> 3)   pm_runtime_resume()
-> 4)     spin_lock_irqsave(&dev->power.lock, flags);
-> 5)     retval = __pm_request_resume(dev);
+> http://www.spinics.net/lists/linux-omap/msg39382.html
 
-If sync = true this is
-           retval = __pm_runtime_resume(dev);
-which drops and reacquires the spinlock.  In the meantime it sets
-->power.runtime_status so that __pm_runtime_idle() will fail if run at this
-point.
+I have and I'm still unimpressed. :-)
 
-> 6)     (execute the body of __pm_request_resume and return)
-> 7)                                                          __pm_runtime_put() (sync = true) 
-> 8)                                                          if (atomic_dec_and_test(&dev->power.usage_count))
->                                                               (still see usage_count == 1 before decrement,
->                                                                thus decrement to 0)
-> 9)                                                             pm_runtime_idle()
-> 10)  spin_unlock_irqrestore(&dev->power.lock, flags)
-> 11)                                                            spin_lock_irq(&dev->power.lock);
-> 12)                                                            retval = __pm_runtime_idle(dev);
-
-Moreover, __pm_runtime_idle() checks ->power.usage_count under the spinlock,
-so it will see it's been incremented in the meantime and it will back off.
-
-> 13)                                                            spin_unlock_irq(&dev->power.lock);
-> 
-> So we end up in a situation where CPU A expects the device to be resumed, but
-> the last action performed has been to bring it to idle.
->
-> A smp_mb__after_atomic_inc() between lines 2 and 3 would fix this.
-
-I don't think this particular race is possible.  However, there is another one
-that seems to be possible (in a different function) that an explicit barrier
-will prevent from happening.
-
-It's related to pm_runtime_get_noresume(), but I think it's better to put the
-barrier where it's necessary rather than into pm_runtime_get_noresume() itself.
+Please see my reply to that message.
 
 Thanks,
 Rafael
