@@ -1,14 +1,13 @@
-From: Ingo Molnar <mingo@elte.hu>
+From: Jean Pihet <jean.pihet@newoldbits.com>
 Subject: Re: [PATCH] PERF(kernel): Cleanup power events V2
-Date: Tue, 26 Oct 2010 09:10:20 +0200
-Message-ID: <20101026071020.GC13036__11580.7108734318$1288077198$gmane$org@elte.hu>
+Date: Tue, 26 Oct 2010 09:59:24 +0200
+Message-ID: <AANLkTikf8QXwbmz6=Pv_onHOb3trUtaz1D5kmsHCPqy+__45705.4572100334$1288080085$gmane$org@mail.gmail.com>
 References: <1287488171-25303-3-git-send-email-trenn@suse.de>
 	<1288049630-10947-1-git-send-email-trenn@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <1288049630-10947-1-git-send-email-trenn@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -20,132 +19,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Thomas Renninger <trenn@suse.de>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, linux-trace-users@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>, Pierre Tardy <tardyp@gmail.com>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Frank Eigler <fche@redhat.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, linux-pm@lists.linux-foundation.org, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, linux-trace-users@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>, Pierre Tardy <tardyp@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Frank Eigler <fche@redhat.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-
-* Thomas Renninger <trenn@suse.de> wrote:
-
+On Tue, Oct 26, 2010 at 1:33 AM, Thomas Renninger <trenn@suse.de> wrote:
 > Changes in V2:
->   - Introduce PWR_EVENT_EXIT instead of 0 to mark non-power state
->   - Use u32 instead of u64 for cpuid, state which is by far enough
-> 
+> =A0- Introduce PWR_EVENT_EXIT instead of 0 to mark non-power state
+> =A0- Use u32 instead of u64 for cpuid, state which is by far enough
+>
 > New power trace events:
 > power:processor_idle
 > power:processor_frequency
 > power:machine_suspend
-> 
-> 
-> C-state/idle accounting events:
->   power:power_start
->   power:power_end
-> are replaced with:
->   power:processor_idle
-> 
-> and
->   power:power_frequency
-> is replaced with:
->   power:processor_frequency
-
-Could you please name it power:cpu_idle and power:cpu_frequency instead, for 
-shortness? We generally use 'cpu' in the kernel and for events.
-
-> power:machine_suspend
-
-How will future PCI (or other device) power saving tracepoints be called?
-
-Might be more consistent to use:
-
-  power:cpu_idle
-  power:machine_idle
-  power:device_idle
-
-Where machine_idle is the suspend event.
-
-> the type= field got removed from both, it was never
-> used and the type is differed by the event type itself.
 >
-> +#define PWR_EVENT_EXIT 0xFFFFFFFF
+>
+> C-state/idle accounting events:
+> =A0power:power_start
+> =A0power:power_end
+> are replaced with:
+> =A0power:processor_idle
+>
+> and
+> =A0power:power_frequency
+> is replaced with:
+> =A0power:processor_frequency
+>
+> power:machine_suspend
+> is newly introduced, a first implementation
+> comes from the ARM side, but it's easy to add these events
+> in X86 as well if needed.
+This will come as a separate patch, which fits all platforms. Cf.
+http://marc.info/?l=3Dlinux-omap&m=3D128620575300682&w=3D2.
 
-Shouldnt this be part of the POWER_ enum? (and you can write -1 there)
+...
 
-> +#ifndef _TRACE_POWER_ENUM_
-> +#define _TRACE_POWER_ENUM_
-> +enum {
-> +	POWER_NONE = 0,
-> +	POWER_CSTATE = 1,
-> +	POWER_PSTATE = 2,
-> +};
-> +#endif
+> @@ -481,10 +484,12 @@ static void mwait_idle(void)
+> =A0static void poll_idle(void)
+> =A0{
+> =A0 =A0 =A0 =A0trace_power_start(POWER_CSTATE, 0, smp_processor_id());
+> +       trace_processor_idle(1, smp_processor_id());
 
-Since we are cleaning up all these events, those enum definitions dont really look 
-logical. For example, what is 'POWER_NONE'? Can a CPU have 'no power'?
+Should that be:
++       trace_processor_idle(0, smp_processor_id());
+instead?
+Since state '0' is for the CPU active in polling mode and
+PWR_EVENT_EXIT means 'exit from any idle state'.
 
-Plus:
+> =A0 =A0 =A0 =A0local_irq_enable();
+> =A0 =A0 =A0 =A0while (!need_resched())
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0cpu_relax();
+> - =A0 =A0 =A0 trace_power_end(0);
+> + =A0 =A0 =A0 trace_power_end(smp_processor_id());
+> + =A0 =A0 =A0 trace_processor_idle(PWR_EVENT_EXIT, smp_processor_id());
+> =A0}
+>
+> =A0/*
 
-> +DECLARE_EVENT_CLASS(processor,
-> +
-> +	TP_PROTO(unsigned int state, unsigned int cpu_id),
-> +
-> +	TP_ARGS(state, cpu_id),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(	u32,		state		)
-> +		__field(	u32,		cpu_id		)
+...
 
-Trace entries can carry a cpu_id of the current processor already. Can this cpu_id 
-ever be different from that CPU id?
+> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+...
 
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->state = state;
-> +		__entry->cpu_id = cpu_id;
-> +	),
-> +
-> +	TP_printk("state=%lu cpu_id=%lu", (unsigned long)__entry->state,
-> +		  (unsigned long)__entry->cpu_id)
-> +);
-> +
-> +DEFINE_EVENT(processor, processor_idle,
-> +
-> +	TP_PROTO(unsigned int state, unsigned int cpu_id),
-> +
-> +	     TP_ARGS(state, cpu_id)
-> +);
-> +
-> +#define PWR_EVENT_EXIT 0xFFFFFFFF
-> +
-> +DEFINE_EVENT(processor, processor_frequency,
-> +
-> +	TP_PROTO(unsigned int frequency, unsigned int cpu_id),
-> +
-> +	TP_ARGS(frequency, cpu_id)
-> +);
-
-So, we have a 'state' field in the class, which is used as 'state' by the 
-power::cpu_idle event, and as 'frequency' by the power::cpu_freq event?
-
-Are there any architectures that track frequency in Hz, not in kHz? If yes, might 
-there ever be a need for the frequency value to be larger than 4.29 GHz? If yes, 
-then it wont fit into u32.
-
-Also, might there be a future need to express different types of frequencies? For 
-example, should we decide to track turbo frequencies in Intel CPUs, how would that 
-be expressed via these events? Are there any architectures and CPUs that somehow 
-have some extra attribute to the frequency value?
-
-> +TRACE_EVENT(machine_suspend,
-> +
-> +	TP_PROTO(unsigned int state),
-> +
-> +	TP_ARGS(state),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(	u32,		state		)
-> +	),
-
-Hm, this event is not used anywhere in the submitted patches. Where is the patch 
-that adds usage, and what are the possible values for 'state'?
-
-	Ingo
+Regards,
+Jean
