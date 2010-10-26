@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] ACPI / PM: Blacklist another machine that
-	needs acpi_sleep=nonvs
-Date: Tue, 26 Oct 2010 20:49:21 +0200
-Message-ID: <201010262049.21424.rjw__20751.8172836446$1288119316$gmane$org@sisk.pl>
-References: <201010172101.21576.rjw@sisk.pl>
-	<alpine.LFD.2.00.1010252013270.18670@localhost.localdomain>
-	<20101026131948.GA9221@srcf.ucam.org>
+Subject: Re: [PATCH] PERF(kernel): Cleanup power events V2
+Date: Tue, 26 Oct 2010 20:52:18 +0200
+Message-ID: <201010262052.19107.rjw__28205.1790309653$1288119388$gmane$org@sisk.pl>
+References: <1287488171-25303-3-git-send-email-trenn@suse.de>
+	<1288049630-10947-1-git-send-email-trenn@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101026131948.GA9221@srcf.ucam.org>
+In-Reply-To: <1288049630-10947-1-git-send-email-trenn@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,22 +18,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Emanuele Bigiarini <pulmro@gmail.com>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, linux-trace-users@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>, Pierre Tardy <tardyp@gmail.com>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Frank Eigler <fche@redhat.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, October 26, 2010, Matthew Garrett wrote:
-> On Mon, Oct 25, 2010 at 08:14:42PM -0400, Len Brown wrote:
-> > Rather than a black list of machines that can not survive saving NVS,
-> > I wonder how long a white list of machines requiring NVS save would be?
+On Tuesday, October 26, 2010, Thomas Renninger wrote:
+> Changes in V2:
+>   - Introduce PWR_EVENT_EXIT instead of 0 to mark non-power state
+>   - Use u32 instead of u64 for cpuid, state which is by far enough
 > 
-> Windows saves the NVS area in my testing. Either there's something that 
-> indicates the choices of one behaviour over the other, or the machines 
-> that are broken by NVS saving are actually tripping some other bug.
+> New power trace events:
+> power:processor_idle
+> power:processor_frequency
+> power:machine_suspend
+> 
+> 
+> C-state/idle accounting events:
+>   power:power_start
+>   power:power_end
+> are replaced with:
+>   power:processor_idle
+> 
+> and
+>   power:power_frequency
+> is replaced with:
+>   power:processor_frequency
+> 
+> power:machine_suspend
+> is newly introduced, a first implementation
+> comes from the ARM side, but it's easy to add these events
+> in X86 as well if needed.
 
-Since we're claiming Windows compatibility through _OSI, we should follow
-Windows except for on machines that are blacklisted as not being
-Windows-compatible.
+As I said already somewhere else, I think this one should be done at the
+core level rather than in arch-specific code.
 
 Thanks,
 Rafael
