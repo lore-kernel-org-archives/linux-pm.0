@@ -1,7 +1,7 @@
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+From: Pierre Tardy <tardyp@gmail.com>
 Subject: Re: [PATCH] PERF(kernel): Cleanup power events V2
-Date: Tue, 26 Oct 2010 14:14:21 -0400
-Message-ID: <20101026181421.GA30090__28677.7963083752$1288116973$gmane$org@Krystal>
+Date: Tue, 26 Oct 2010 13:15:31 -0500
+Message-ID: <AANLkTikAGsdm7HS7Au-6CHw5n0OC1c1L_j2AJgZKE_=K__27821.9091509984$1288117095$gmane$org@mail.gmail.com>
 References: <1287488171-25303-3-git-send-email-trenn@suse.de>
 	<1288049630-10947-1-git-send-email-trenn@suse.de>
 	<20101026071020.GC13036@elte.hu>
@@ -10,10 +10,9 @@ References: <1287488171-25303-3-git-send-email-trenn@suse.de>
 	<AANLkTinrmhBkjnXE+xQGgrsv_OR_ckz=dyH4EoDB59X_@mail.gmail.com>
 	<1288115894.3673.12.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <1288115894.3673.12.camel@laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -24,48 +23,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <peterz@infradead.org>, Greg Kroah-Hartman <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Arjan van de Ven <arjan@linux.intel.com>, Frederic Weisbecker <fweisbec@gmail.com>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, Frederic Weisbecker <fweisbec@gmail.com>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, linux-pm@lists.linux-foundation.org, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
+On Tue, Oct 26, 2010 at 12:58 PM, Peter Zijlstra <peterz@infradead.org> wro=
+te:
 > On Tue, 2010-10-26 at 11:56 -0500, Pierre Tardy wrote:
-> > 
-> > +       trace_runtime_pm_usage(dev, atomic_read(&dev->power.usage_count)+1);
-> >         atomic_inc(&dev->power.usage_count); 
-> 
+>>
+>> + =A0 =A0 =A0 trace_runtime_pm_usage(dev, atomic_read(&dev->power.usage_=
+count)+1);
+>> =A0 =A0 =A0 =A0 atomic_inc(&dev->power.usage_count);
+>
 > That's terribly racy..
+>
+I know. I'm not proud of this.. As I said, this is preliminary patch.
+We dont really need to have this prev_usage. This is just for debug.
+It mayprobably endup with something like:
 
-Looking at the original code, it looks racy even without considering the
-tracepoint:
+         atomic_inc(&dev->power.usage_count);
++       trace_power_device_usage(dev);
 
-int __pm_runtime_get(struct device *dev, bool sync)
- {
-        int retval;
+-- =
 
-+       trace_runtime_pm_usage(dev, atomic_read(&dev->power.usage_count)+1);
-        atomic_inc(&dev->power.usage_count);
-        retval = sync ? pm_runtime_resume(dev) : pm_request_resume(dev);
-
-There is no implied memory barrier after "atomic_inc". So either all these
-inc/dec are protected with mutexes or spinlocks, in which case one might wonder
-why atomic operations are used at all, or it's a racy mess. (I vote for the
-second option)
-
-kref should certainly be used there.
-
-About the instrumentation, well... the only way to have something that's not
-racy would be to instrument kref directly, and use atomic_add_return() in both
-the get/put paths. But I fear that the performance impact on many architectures
-might be significant (turning atomic_add + smp_mb() into a cmpxchg()). Maybe it
-could be acceptable as a kernel debug option.
-
-Thanks,
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Operating System Efficiency R&D Consultant
-EfficiOS Inc.
-http://www.efficios.com
+Pierre
