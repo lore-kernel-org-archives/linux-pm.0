@@ -1,14 +1,13 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] PERF(kernel): Cleanup power events V2
-Date: Tue, 26 Oct 2010 15:35:16 +0200
-Message-ID: <201010261535.17240.trenn__44411.4891965457$1288100240$gmane$org@suse.de>
-References: <1287488171-25303-3-git-send-email-trenn@suse.de>
-	<20101026115422.GA2942@elte.hu> <201010261517.44417.trenn@suse.de>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] apds9802als: add runtime PM support
+Date: Tue, 26 Oct 2010 09:51:45 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1010260944270.1634-100000__22524.1453889341$1288101200$gmane$org@iolanthe.rowland.org>
+References: <1288073117.19329.392.camel@hongdev>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201010261517.44417.trenn@suse.de>
+In-Reply-To: <1288073117.19329.392.camel@hongdev>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,36 +17,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, linux-trace-users@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>, Pierre Tardy <tardyp@gmail.com>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Frank Eigler <fche@redhat.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, linux-pm@lists.linux-foundation.org, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Hong Liu <hong.liu@intel.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Alan Cox <alan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 26 October 2010 15:17:43 Thomas Renninger wrote:
-> On Tuesday 26 October 2010 13:54:22 Ingo Molnar wrote:
+On Tue, 26 Oct 2010, Hong Liu wrote:
+
+> > > diff --git a/drivers/misc/apds9802als.c b/drivers/misc/apds9802als.c
+> > > index fbe4960..15f9436 100644
+> > > --- a/drivers/misc/apds9802als.c
+> > > +++ b/drivers/misc/apds9802als.c
 > > 
-> > * Thomas Renninger <trenn@suse.de> wrote:
-...
-> If cpuidle is not registered, the events you get are arch specific.
-> I mean they are arch specific anyway, but with cpuidle you can
-> build up an arch independent userspace framework nicely by looking
-> up name/desc/power/... of an cpu_idle event in cpuidle sysfs as
-> described above.
-About cpuidle and cpu_idle events:
-There is some oddness that:
-arch specific code which registers for cpuidle has to
-throw the cpu_idle enter sleep state X event
-and the generic cpuidle framework triggers the "exit" event.
+> > > @@ -265,13 +274,34 @@ static int apds9802als_suspend(struct i2c_client *client, pm_message_t mesg)
+> > >  
+> > >  static int apds9802als_resume(struct i2c_client *client)
+> > >  {
+> > > -	struct als_data *data = i2c_get_clientdata(client);
+> > > +	als_set_default_config(client);
+> > > +
+> > > +	pm_runtime_get(&client->dev);
+> > > +	pm_runtime_put(&client->dev);
+> > > +	return 0;
+> > > +}
+> > 
+> 
+> Hi, Alan
+> 
+> Thanks for your review.
+> 
+> > This almost certainly does not do what you think.
+> > 
+> > pm_runtime_get() will increment the device's usage count and queue an 
+> > asynchronous resume request.  However, since the PM workqueue is frozen 
+> > during system sleep transitions, the device will remain suspended.
+> > 
+> > The pm_runtime_put() will decrement the usage count again, but since
+> > there is already an async resume on the queue it will not queue an
+> > async suspend.  The final result will be that when tasks are unfrozen,
+> > the device will finally be resumed -- long after it should have been.
+> > 
+> > It looks like what you want to do here is simply call
+> > apds9802als_runtime_resume() directly.  
+> 
+> You mean apds9802als_runtime_suspend()?
 
-So as there are only cpu_idle events in drivers/idle/intel_idle.c,
-but not in drivers/acpi/processor_idle.c, I expect that processor.ko
-idle driver is broken and only exit states are sent.
-Ideally all cpuidle events should be thrown in cpuidle.c like this:
+This is about the function listed above: apds9802als_resume().  It
+should call apds9802als_runtime_resume() directly.  I don't see any
+reason why you would want it to call apds9802als_runtime_suspend() --
+having a resume function that actually suspends the device doesn't make
+any sense.
 
-        trace_processor_idle(target_state, smp_processor_id());
-        dev->last_residency = target_state->enter(dev, target_state);                                                                     
-        trace_processor_idle(PWR_EVENT_EXIT, smp_processor_id());
+> I want to put the device into
+> runtime suspended state, can I just call pm_runtime_suspend() directly?
 
-My patches do not touch this behavior. If, it was broken before.
-I'll look at it separately.
+Why do you want apds9802als_resume() to put the device into a suspended 
+state?  Shouldn't it _resume_ the device?
 
-      Thomas
+> > And according to the advice in
+> > Documentation/power/runtime_pm.txt section 6, you should also call
+
+Have you read that document?
+
+> > 	pm_runtime_disable(dev);
+> > 	pm_runtime_set_active(dev);
+> > 	pm_runtime_enable(dev);
+> > 
+> > You probably also do not want the asynchronous calls to 
+> > pm_runtime_get() and pm_runtime_put() in apds9802als_probe().  A more 
+> > common sequence is:
+> > 
+> > 	pm_runtime_set_active(dev);
+> > 	pm_runtime_enable(dev);
+> 
+> I want to put the device into runtime suspend state after probe, so
+> pm_runtime_suspend() after these two calls is OK?
+
+No.  Try doing what I said.  You should find that the device _does_ get
+runtime-suspended when the probe function returns.  Assuming you have
+defined a proper apds9802als_runtime_idle() function.
+
+Alan Stern
