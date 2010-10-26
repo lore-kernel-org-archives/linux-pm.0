@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 3/5] acpi_idle: delete bogus data from
-	cpuidle_state.power_usage
-Date: Tue, 26 Oct 2010 17:07:32 -0400
-Message-ID: <0f3f164d9794f57d8afb033819f508a486c1304d.1288127069.git.len.brown@intel.com>
+Subject: [PATCH 5/5] intel_idle: do not use the LAPIC timer for
+	ATOM C2
+Date: Tue, 26 Oct 2010 17:07:34 -0400
+Message-ID: <c25d29952b2a8c9aaf00e081c9162a0e383030cd.1288127069.git.len.brown@intel.com>
 References: <1288127254-3306-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,30 +26,28 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-The mW data in this field comes from AML _CST,
-which was typed in by a BIOS writer, and is thus
-considered unreliable.
+If we use the LAPIC timer during ATOM C2 on
+some nvidia chisets, the system stalls.
 
-Linux does not use it for making any decisions.
-We do display it in sysfs where somebody might
-read it and assume it is meaningful, so delete it.
+https://bugzilla.kernel.org/show_bug.cgi?id=21032
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/processor_idle.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ drivers/idle/intel_idle.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index f4428e8..07a8bb6 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -1013,7 +1013,6 @@ static int acpi_processor_setup_cpuidle(struct acpi_processor *pr)
- 		strncpy(state->desc, cx->desc, CPUIDLE_DESC_LEN);
- 		state->exit_latency = cx->latency;
- 		state->target_residency = cx->latency * latency_factor;
--		state->power_usage = cx->power;
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index d310590..b68d594 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -302,7 +302,7 @@ static int intel_idle_probe(void)
  
- 		state->flags = 0;
- 		switch (cx->type) {
+ 	case 0x1C:	/* 28 - Atom Processor */
+ 	case 0x26:	/* 38 - Lincroft Atom Processor */
+-		lapic_timer_reliable_states = (1 << 2) | (1 << 1); /* C2, C1 */
++		lapic_timer_reliable_states = (1 << 1); /* C1 */
+ 		cpuidle_state_table = atom_cstates;
+ 		break;
+ 
 -- 
 1.7.3.2.90.gd4c43
