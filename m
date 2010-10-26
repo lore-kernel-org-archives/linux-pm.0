@@ -1,14 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 Subject: Re: [PATCH] PERF(kernel): Cleanup power events V2
-Date: Tue, 26 Oct 2010 23:17:24 +0200
-Message-ID: <201010262317.24766.rjw__45957.1710708134$1288128029$gmane$org@sisk.pl>
-References: <1287488171-25303-3-git-send-email-trenn@suse.de>
-	<201010262238.42536.rjw@sisk.pl> <4CC73F70.3030309@linux.intel.com>
+Date: Tue, 26 Oct 2010 17:33:56 -0400
+Message-ID: <20101026213356.GA21495__43027.9144006365$1288128894$gmane$org@Krystal>
+References: <20101026181421.GA30090@Krystal>
+	<Pine.LNX.4.44L0.1010261447090.1634-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4CC73F70.3030309@linux.intel.com>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1010261447090.1634-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,61 +19,88 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, linux-trace-users@vger.kernel.org, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, Frank Eigler <fche@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Linus Torvalds <torvalds@linux-foundation.org>, Frederic Weisbecker <fweisbec@gmail.com>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, October 26, 2010, Arjan van de Ven wrote:
-> On 10/26/2010 1:38 PM, Rafael J. Wysocki wrote:
-> > On Tuesday, October 26, 2010, Pierre Tardy wrote:
-> >> On Tue, Oct 26, 2010 at 2:08 PM, Rafael J. Wysocki<rjw@sisk.pl>  wrote:
-> >>> On Tuesday, October 26, 2010, Pierre Tardy wrote:
-> >>>> On Tue, Oct 26, 2010 at 12:58 PM, Peter Zijlstra<peterz@infradead.org>  wrote:
-> >>>>> On Tue, 2010-10-26 at 11:56 -0500, Pierre Tardy wrote:
-> >>>>>> +       trace_runtime_pm_usage(dev, atomic_read(&dev->power.usage_count)+1);
-> >>>>>>          atomic_inc(&dev->power.usage_count);
-> >>>>> That's terribly racy..
-> >>>>>
-> >>>> I know. I'm not proud of this.. As I said, this is preliminary patch.
-> >>>> We dont really need to have this prev_usage. This is just for debug.
-> >>>> It mayprobably endup with something like:
-> >>>>
-> >>>>           atomic_inc(&dev->power.usage_count);
-> >>>> +       trace_power_device_usage(dev);
-> >>> Well, please tell me what you're trying to achieve.
-> >> Please see attached the kind of pytimechart output I'm trying to
-> >> achieve (yes, this chart is not coherent, seems I'm still missing some
-> >> traces)
-> >>
-> >> We basically want to have a trace point eachtime the usage_counter
-> >> changes, so that I can display nice timecharts, and Arjan can have the
-> >> comm of the process that eventually generated the rpm_get, in order to
-> >> pinpoint it in powertop.
-> >>
-> >> What you dont see in the above two lines is that
-> >> trace_power_device_usage(dev); actually reads the usage_count, as well
-> >> as the driver and device name.
-> > I'm afraid that for this to really work you'd need to put usage_count under a
-> > spinlock along with your trace point, which I'm not really sure I like.
-> >
-> > Besides, I'm not really sure the manipulations of usage_count are worth
-> > tracing.
+* Alan Stern (stern@rowland.harvard.edu) wrote:
+> On Tue, 26 Oct 2010, Mathieu Desnoyers wrote:
 > 
-> what's most interesting is the 0->1  and 1->0 transitions.
+> > * Peter Zijlstra (peterz@infradead.org) wrote:
+> > > On Tue, 2010-10-26 at 11:56 -0500, Pierre Tardy wrote:
+> > > > 
+> > > > +       trace_runtime_pm_usage(dev, atomic_read(&dev->power.usage_count)+1);
+> > > >         atomic_inc(&dev->power.usage_count); 
+> > > 
+> > > That's terribly racy..
+> > 
+> > Looking at the original code, it looks racy even without considering the
+> > tracepoint:
+> > 
+> > int __pm_runtime_get(struct device *dev, bool sync)
+> >  {
+> >         int retval;
+> > 
+> > +       trace_runtime_pm_usage(dev, atomic_read(&dev->power.usage_count)+1);
+> >         atomic_inc(&dev->power.usage_count);
+> >         retval = sync ? pm_runtime_resume(dev) : pm_request_resume(dev);
+> > 
+> > There is no implied memory barrier after "atomic_inc". So either all these
+> > inc/dec are protected with mutexes or spinlocks, in which case one might wonder
+> > why atomic operations are used at all, or it's a racy mess. (I vote for the
+> > second option)
+> 
+> I don't understand.  What's the problem?  The inc/dec are atomic 
+> because they are not protected by spinlocks, but everything else is 
+> (aside from the tracepoint, which is new).
+> 
+> > kref should certainly be used there.
+> 
+> What for?
 
-But they are only meaningful in specific situations.  For example, if someone
-does pm_runtime_get_noresume() when the device is active, there may be
-a device suspend already under way at the same time.  So IMO what really
-is interesting is when rpm_resume() is called with usage_count > 0 and then
-perhaps when rpm_idle() or rpm_suspend() is called after usage_count drops
-back to 0.
+kref has the following "get":
 
-There are some other interesting cases, but they all need to be checked under
-->power.lock and you need to do that cleverly, so that the _functionality_ is
-not harmed.
+        atomic_inc(&kref->refcount);
+        smp_mb__after_atomic_inc();
 
-Overall, I think that adding tracepoints to the runtime PM core code is really
-premature at this point, given that we've just reworked it quite a bit recently.
+What seems to be missing in __pm_runtime_get() and pm_runtime_get_noresume() is
+the memory barrier after the atomic increment. The atomic increment is free to
+be reordered into the following spinlock (within pm_request_resume or pm_request
+resume execution) because taking a spinlock only acts as a memory barrier with
+acquire semantic, not a full memory barrier.
+
+So AFAIU, the failure scenario would be as follows (sorry for the 80+ columns):
+
+initial conditions: usage_count = 1
+
+CPU A                                                       CPU B
+1) __pm_runtime_get() (sync = true)
+2)   atomic_inc(&usage_count) (not committed to memory yet)
+3)   pm_runtime_resume()
+4)     spin_lock_irqsave(&dev->power.lock, flags);
+5)     retval = __pm_request_resume(dev);
+6)     (execute the body of __pm_request_resume and return)
+7)                                                          __pm_runtime_put() (sync = true) 
+8)                                                          if (atomic_dec_and_test(&dev->power.usage_count))
+                                                              (still see usage_count == 1 before decrement,
+                                                               thus decrement to 0)
+9)                                                             pm_runtime_idle()
+10)  spin_unlock_irqrestore(&dev->power.lock, flags)
+11)                                                            spin_lock_irq(&dev->power.lock);
+12)                                                            retval = __pm_runtime_idle(dev);
+13)                                                            spin_unlock_irq(&dev->power.lock);
+
+So we end up in a situation where CPU A expects the device to be resumed, but
+the last action performed has been to bring it to idle.
+
+A smp_mb__after_atomic_inc() between lines 2 and 3 would fix this.
 
 Thanks,
-Rafael
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Operating System Efficiency R&D Consultant
+EfficiOS Inc.
+http://www.efficios.com
