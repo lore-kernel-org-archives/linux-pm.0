@@ -1,14 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PERF(kernel): Cleanup power events V2
-Date: Tue, 26 Oct 2010 21:04:21 +0200
-Message-ID: <201010262104.21851.rjw__11882.0031676025$1288121349$gmane$org@sisk.pl>
-References: <1287488171-25303-3-git-send-email-trenn@suse.de>
-	<1288115894.3673.12.camel@laptop> <20101026181421.GA30090@Krystal>
+From: Len Brown <lenb@kernel.org>
+Subject: [git pull request] idle patches for 2.6.37-merge
+Date: Tue, 26 Oct 2010 15:52:41 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1010261551090.14156__38530.4979900413$1288122915$gmane$org@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101026181421.GA30090@Krystal>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,42 +15,110 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, linux-trace-users@vger.kernel.org, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, Frederic Weisbecker <fweisbec@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Frank Eigler <fche@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, October 26, 2010, Mathieu Desnoyers wrote:
-> * Peter Zijlstra (peterz@infradead.org) wrote:
-> > On Tue, 2010-10-26 at 11:56 -0500, Pierre Tardy wrote:
-> > > 
-> > > +       trace_runtime_pm_usage(dev, atomic_read(&dev->power.usage_count)+1);
-> > >         atomic_inc(&dev->power.usage_count); 
-> > 
-> > That's terribly racy..
-> 
-> Looking at the original code, it looks racy even without considering the
-> tracepoint:
-> 
-> int __pm_runtime_get(struct device *dev, bool sync)
->  {
->         int retval;
-> 
-> +       trace_runtime_pm_usage(dev, atomic_read(&dev->power.usage_count)+1);
->         atomic_inc(&dev->power.usage_count);
->         retval = sync ? pm_runtime_resume(dev) : pm_request_resume(dev);
-> 
-> There is no implied memory barrier after "atomic_inc". So either all these
-> inc/dec are protected with mutexes or spinlocks, in which case one might wonder
-> why atomic operations are used at all, or it's a racy mess. (I vote for the
-> second option)
+Hi Linus,
 
-No, it isn't.
+please pull from: 
 
-> kref should certainly be used there.
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.git idle-release
 
-No, it shouldn't.
+This will update the files shown below.
 
-Please try to understand the code you're commenting on first.
+thanks!
 
-Thanks,
-Rafael
+--
+Len Brown
+Intel Open Source Technology Center
+
+
+ps. individual patches are available on linux-pm@lists.linux-foundation.org
+and a consolidated plain patch is available here:
+http://ftp.kernel.org/pub/linux/kernel/people/lenb/idle/patches/2.6.36/idle-release-2.6.36-rc8.diff.gz
+
+ drivers/acpi/processor_idle.c |    1 -
+ drivers/idle/intel_idle.c     |   61 +++++++++++++++++++++++++++++++----------
+ 2 files changed, 46 insertions(+), 16 deletions(-)
+
+through these commits:
+
+Len Brown (5):
+      intel_idle: simplify test for leave_mm()
+      intel_idle: delete bogus data from cpuidle_state.power_usage
+      acpi_idle: delete bogus data from cpuidle_state.power_usage
+      intel_idle: add initial Sandy Bridge support
+      intel_idle: do not use the LAPIC timer for ATOM C2
+
+with this log:
+
+commit c25d29952b2a8c9aaf00e081c9162a0e383030cd
+Author: Len Brown <len.brown@intel.com>
+Date:   Sat Oct 23 23:25:53 2010 -0400
+
+    intel_idle: do not use the LAPIC timer for ATOM C2
+    
+    If we use the LAPIC timer during ATOM C2 on
+    some nvidia chisets, the system stalls.
+    
+    https://bugzilla.kernel.org/show_bug.cgi?id=21032
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 00527cc6bbcac05ab7d54c40bda1ff2a0625ab10
+Merge: 0f3f164 d13780d
+Author: Len Brown <len.brown@intel.com>
+Date:   Sat Oct 23 02:33:50 2010 -0400
+
+    Merge branch 'intel_idle+snb' into idle-release
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit d13780d439d08a57c87c1a07b6e76ddde61da1aa
+Author: Len Brown <len.brown@intel.com>
+Date:   Wed Jul 7 00:12:03 2010 -0400
+
+    intel_idle: add initial Sandy Bridge support
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit 0f3f164d9794f57d8afb033819f508a486c1304d
+Author: Len Brown <len.brown@intel.com>
+Date:   Fri Oct 15 21:25:02 2010 -0400
+
+    acpi_idle: delete bogus data from cpuidle_state.power_usage
+    
+    The mW data in this field comes from AML _CST,
+    which was typed in by a BIOS writer, and is thus
+    considered unreliable.
+    
+    Linux does not use it for making any decisions.
+    We do display it in sysfs where somebody might
+    read it and assume it is meaningful, so delete it.
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit dea44c6b7df7f8bb67cb059b4c14b24288c4cd04
+Author: Len Brown <len.brown@intel.com>
+Date:   Fri Oct 15 21:23:25 2010 -0400
+
+    intel_idle: delete bogus data from cpuidle_state.power_usage
+    
+    The mW data in this field is a total fabrication
+    and serves no purpose other than to mislead
+    those who might see it in sysfs.  Delete it.
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit c8381cc3d8a9cc6c80f65bf60863c776651f245c
+Author: Len Brown <len.brown@intel.com>
+Date:   Fri Oct 15 20:43:06 2010 -0400
+
+    intel_idle: simplify test for leave_mm()
+    
+    A run-time test to invoke leave_mm() for the deepest
+    supported C-state is redundant, since the appropriate
+    C-states already have flags with CPUIDLE_FLAG_TLB_FLUSHED set.
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
