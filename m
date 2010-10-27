@@ -1,13 +1,19 @@
-From: Hong Liu <hong.liu@intel.com>
-Subject: Re: [PATCH] apds9802als: add runtime PM support
-Date: Wed, 27 Oct 2010 08:39:21 +0800
-Message-ID: <1288139961.19329.401.camel__31705.5536354475$1288192795$gmane$org@hongdev>
-References: <Pine.LNX.4.44L0.1010260944270.1634-100000@iolanthe.rowland.org>
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [PATCH] tools: add x86_energy_perf_policy to
+	program	MSR_IA32_ENERGY_PERF_BIAS
+Date: Wed, 27 Oct 2010 09:43:11 -0200
+Message-ID: <20101027114310.GO3826__42272.4980199293$1288192907$gmane$org@ghostprotocols.net>
+References: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
+	<alpine.LFD.2.00.1009281143070.14962@localhost.localdomain>
+	<alpine.LFD.2.00.1010230035360.29399@localhost.localdomain>
+	<20101026202307.c028e26c.akpm@linux-foundation.org>
+	<20101027060139.GB5603@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1010260944270.1634-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <20101027060139.GB5603@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,103 +23,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Alan Cox <alan@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2010-10-26 at 21:51 +0800, Alan Stern wrote:
-> On Tue, 26 Oct 2010, Hong Liu wrote:
+Em Wed, Oct 27, 2010 at 08:01:39AM +0200, Ingo Molnar escreveu:
 > 
-> > > > diff --git a/drivers/misc/apds9802als.c b/drivers/misc/apds9802als.c
-> > > > index fbe4960..15f9436 100644
-> > > > --- a/drivers/misc/apds9802als.c
-> > > > +++ b/drivers/misc/apds9802als.c
-> > > 
-> > > > @@ -265,13 +274,34 @@ static int apds9802als_suspend(struct i2c_client *client, pm_message_t mesg)
-> > > >  
-> > > >  static int apds9802als_resume(struct i2c_client *client)
-> > > >  {
-> > > > -	struct als_data *data = i2c_get_clientdata(client);
-> > > > +	als_set_default_config(client);
-> > > > +
-> > > > +	pm_runtime_get(&client->dev);
-> > > > +	pm_runtime_put(&client->dev);
-> > > > +	return 0;
-> > > > +}
-> > > 
-> > 
-> > Hi, Alan
-> > 
-> > Thanks for your review.
-> > 
-> > > This almost certainly does not do what you think.
-> > > 
-> > > pm_runtime_get() will increment the device's usage count and queue an 
-> > > asynchronous resume request.  However, since the PM workqueue is frozen 
-> > > during system sleep transitions, the device will remain suspended.
-> > > 
-> > > The pm_runtime_put() will decrement the usage count again, but since
-> > > there is already an async resume on the queue it will not queue an
-> > > async suspend.  The final result will be that when tasks are unfrozen,
-> > > the device will finally be resumed -- long after it should have been.
-> > > 
-> > > It looks like what you want to do here is simply call
-> > > apds9802als_runtime_resume() directly.  
-> > 
-> > You mean apds9802als_runtime_suspend()?
-> 
-> This is about the function listed above: apds9802als_resume().  It
-> should call apds9802als_runtime_resume() directly.  I don't see any
-> reason why you would want it to call apds9802als_runtime_suspend() --
-> having a resume function that actually suspends the device doesn't make
-> any sense.
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Sat, 23 Oct 2010 00:40:18 -0400 (EDT) Len Brown <lenb@kernel.org> wrote:
+> > tools/power/x86, eh?  It seems a better place than under
+> > Documentation/, where such things have thus far landed!
 
-In apds9802als_resume, I just want to power up the device, do some
-configuration, and then runtime_suspend the device.
+> > I looked briefly, wondering about the kbuild situation.  It doesn't
+> > appear to be wired up, so one has to manually enter that directory
+> > and type `make'?
 
-We don't have runtime_idle() implemented, the driver exported sysfs
-entries to user space for data reading, and we do runtime_resume,
-measaure data, runtime_suspend in the read/write funciton of those sysfs
-entries. This is why I want to put the device into runtime suspend
-manually whenever possible.
+> > I guess that's OK as an interim thing but longer-term I suppose we
+> > should have some more complete build and deployment system.  So
+> > (thinking out loud) a `make' would invoke a `make tools', and that
+> > `make tools' would build the tools which are specific to the target
+> > arch[*], and any generic ones.  And a `make tools_install' would
+> > install those tools in, I guess, /lib/modules/$(uname -r)/bin.
+ 
+> In terms of build and documentation environment, tools/perf/ has one
+> cloned/inherited from Git, which is rather good and functional.
+ 
+> Sharing it with the kernel's build system depends on the kbuild
+> developers being interested in it.
 
+Yes, that is how it is today, I glued it to the main makefile in at
+least one case:
 
-> 
-> > I want to put the device into
-> > runtime suspended state, can I just call pm_runtime_suspend() directly?
-> 
-> Why do you want apds9802als_resume() to put the device into a suspended 
-> state?  Shouldn't it _resume_ the device?
-> 
-> > > And according to the advice in
-> > > Documentation/power/runtime_pm.txt section 6, you should also call
-> 
-> Have you read that document?
-> 
-> > > 	pm_runtime_disable(dev);
-> > > 	pm_runtime_set_active(dev);
-> > > 	pm_runtime_enable(dev);
-> > > 
-> > > You probably also do not want the asynchronous calls to 
-> > > pm_runtime_get() and pm_runtime_put() in apds9802als_probe().  A more 
-> > > common sequence is:
-> > > 
-> > > 	pm_runtime_set_active(dev);
-> > > 	pm_runtime_enable(dev);
-> > 
-> > I want to put the device into runtime suspend state after probe, so
-> > pm_runtime_suspend() after these two calls is OK?
-> 
-> No.  Try doing what I said.  You should find that the device _does_ get
-> runtime-suspended when the probe function returns.  Assuming you have
-> defined a proper apds9802als_runtime_idle() function.
+[acme@doppio linux]$ make help | grep perf
+  perf-tar-src-pkg    - Build perf-2.6.36-rc7.tar source tarball
+  perf-targz-src-pkg  - Build perf-2.6.36-rc7.tar.gz source tarball
+  perf-tarbz2-src-pkg - Build perf-2.6.36-rc7.tar.bz2 source tarball
+[acme@doppio linux]$
 
-We don't have runtime_idle() implemented, so I have to manually put the
-device into runtime suspend.
+I'd love to glue it some more, even using Kconfig and 'make toolsconfig'
+for configuring the tools:
 
-Thanks,
-Hong
+	. Want the TUI?
+        . Want to link with DWARF? Needed for features x, y and z
 
-> 
-> Alan Stern
-> 
+Getting it done this way will provide examples that hopefully would lead
+to more kernel coding practices and infrastructure being adopted by
+(hell is freezing) userland programmers.
+
+This is specially important now that there are more kernel programmers
+writing userland code, lets hope that at least them continue to use
+those practices and infrastructures ;-)
+
+- Arnaldo
