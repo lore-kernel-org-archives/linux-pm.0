@@ -1,15 +1,14 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH 4/4] PERF: fix power:cpu_idle double end
-	events
-Date: Wed, 27 Oct 2010 17:42:04 +0200
-Message-ID: <201010271742.04545.trenn__16637.8717557111$1288194186$gmane$org@suse.de>
-References: <1288136605-10526-1-git-send-email-trenn@suse.de>
-	<1288136605-10526-5-git-send-email-trenn@suse.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PERF(kernel): Cleanup power events V2
+Date: Wed, 27 Oct 2010 23:43:20 +0200
+Message-ID: <201010272343.20968.rjw__35161.8394758136$1288216037$gmane$org@sisk.pl>
+References: <20101026181421.GA30090@Krystal> <201010271222.08921.rjw@sisk.pl>
+	<20101027122115.GA10722@Krystal>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1288136605-10526-5-git-send-email-trenn@suse.de>
+In-Reply-To: <20101027122115.GA10722@Krystal>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,70 +18,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: arjan@linux.intel.com
-Cc: jean.pihet@newoldbits.com, Robert Schoene <robert.schoene@tu-dresden.de>, linux-trace-users@vger.kernel.org, mingo@elte.hu, linux-omap@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Pierre Tardy <tardyp@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <fweisbec@gmail.com>, Jean Pihet <jean.pihet@newoldbits.com>, Steven Rostedt <rostedt@goodmis.org>, linux-trace-users@vger.kernel.org, Frank Eigler <fche@redhat.com>, Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 27 October 2010 01:43:25 Thomas Renninger wrote:
-> cpu_idle events (transition into sleep state and exiting) are
-> both fired in pm_idle().
+On Wednesday, October 27, 2010, Mathieu Desnoyers wrote:
+> * Rafael J. Wysocki (rjw@sisk.pl) wrote:
+...
 > 
-> Entering sleep state and exiting should always get fired inside
-> pm_idle() already.
+> Hrm, then why export pm_runtime_get_noresume() at all ?
+
+Basically, the PM core needs it for some obscure stuff.  Beyond that people
+really should use it with care (preferably avoid using it at all).
+
+> I don't feel comfortable with some of the pm_runtime_get_noresume() callers.
 > 
-> This is a revert of commit c882e0feb937af4e5b991cbd1c
-Robert: I expect you tested this on a machine with no cpuidle
-driver registered?
+> > 
+> > So if you don't want to resume the device immediately after increasing its
+> > usage_count (in which case it's better to use pm_runtime_get_sync()), you
+> > should do something like this:
+> > 
+> > 1) pm_runtime_get_noresume(dev);
+> > 1a) pm_runtime_barrier(dev);  // That takes care of all pending requests etc.
+> > 
+> > 2) ...
+> >  
+> > 3) pm_runtime_put_noidle(dev);
+> > 
+> > [The meaning of pm_runtime_barrier() is that all of the runtime PM activity
+> > started before the barrier has been completed when it returns.]
+> > 
+> > There's one place in the PM core where that really is necessary, but I wouldn't
+> > recommend anyone doing anything like it in a driver.
+> 
+> grep -r pm_runtime_get_noresume drivers/    hands out very interesting info.
+> 
+> e.g.:
+> 
+> drivers/usb/core/drivers.c: usb_autopm_get_interface_async()
+> 
+>         pm_runtime_get_noresume(&intf->dev);
+>         s = ACCESS_ONCE(intf->dev.power.runtime_status);
+>         if (s == RPM_SUSPENDING || s == RPM_SUSPENDED)
+>                 status = pm_request_resume(&intf->dev);
+> 
+> How is this supposed to work ?
+> 
+> If the ACCESS_ONCE can be reordered before the atomic_inc(), then I fear the
+> device can be suspended even after the check.
+> 
+> My point is that a get/put semantic should imply memory barriers, especially if
+> these are exported APIs.
 
-I should have had a deeper look at this at once, done so now:
+Well, IMO adding a memory barrier to pm_runtime_get_noresume() wouldn't really
+change a lot (it still would be racy with respect to some other runtime PM helper
+funtions).  That said I guess we should put a "handle with care" sticker on it.
 
-Current cpu_idle, power_start/end (same before my changes) behavior
-on X86 is rather weird (without this patch):
-
-if pm_idle is:
-   poll_idle -> should throw double end events
-
-   default_idle -> only throws power_start, your patch
-                   fixed that, but in the generic cpu_idle
-                   thread function which always gets executed
-                   also if pm_idle != default_idle
-                   So Robert fixed this case, but at the wrong place.
-
-   cpuidle_idle_call -> depends whether intel_idle or acpi_idle
-                        driver registered:
-
-        intel_idle -> throws a cpu idle state event, still double end
-                      events (one from cpuidle, one from
-                      process_{32,64}.c, due to Robert's patch
-
-        acpi_idle  -> whether a power_start event is thrown at all
-                      depends on (cmp with acpi_idle_do_entry()):
-                      cx->entry_method == ACPI_CSTATE_FFH
-                      will end up in a power_start event via:
-                      acpi_processor_ffh_cstate_enter(cx)
-                           mwait_idle_with_hints()
-                      but it will not in case of:
-                      cx->entry_method == ACPI_CSTATE_HALT
-                      or IO based switching (the else path there):
-                      /* IO port based C-state */
-                      
-
-Again without this(my) patch you get:
-   poll_idle                  -> double end events
-   default_idle               -> all is fine (with your patch)
-   cpuidle_idle_call
-        intel_idle registered -> double end events
-        acpi_idle registered  -> double end events
-                                 start events may not be thrown
-                                 at all.
-
-perf timechart can handle double end events, this may be
-the reason this was overseen.
-
-Argh, I tried to come up with patches, but run out of
-time. I will send something soon.
-I also found a bug in my userspace stuff: I forgot to convert
-u64 to u32..., sorry about that.
-I try to resend everything tomorrow.
-
-     Thomas
+Thanks,
+Rafael
