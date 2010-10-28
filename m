@@ -1,13 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] apds9802als: add runtime PM support
-Date: Wed, 27 Oct 2010 10:13:53 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1010271010170.1650-100000__9134.99724488265$1288254815$gmane$org@iolanthe.rowland.org>
-References: <1288139961.19329.401.camel@hongdev>
+From: Thomas Renninger <trenn@suse.de>
+Subject: [PATCH 1/3] PERF: Do not export power_frequency,
+	but power_start event
+Date: Thu, 28 Oct 2010 11:02:57 +0200
+Message-ID: <1288256579-22957-2-git-send-email-trenn__48627.7921744206$1288256638$gmane$org@suse.de>
+References: <1288256579-22957-1-git-send-email-trenn@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1288139961.19329.401.camel@hongdev>
+In-Reply-To: <1288256579-22957-1-git-send-email-trenn@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,42 +18,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Hong Liu <hong.liu@intel.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Kernel development list <linux-kernel@vger.kernel.org>, Alan Cox <alan@linux.intel.com>
+To: trenn@suse.de, linux-omap@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-trace-users@vger.kernel.org, jean.pihet@newoldbits.com, arjan@linux.intel.com, mingo
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyNyBPY3QgMjAxMCwgSG9uZyBMaXUgd3JvdGU6Cgo+IEluIGFwZHM5ODAyYWxzX3Jl
-c3VtZSwgSSBqdXN0IHdhbnQgdG8gcG93ZXIgdXAgdGhlIGRldmljZSwgZG8gc29tZQo+IGNvbmZp
-Z3VyYXRpb24sIGFuZCB0aGVuIHJ1bnRpbWVfc3VzcGVuZCB0aGUgZGV2aWNlLgoKVGhlbiB5b3Ug
-c2hvdWxkIGNoYW5nZSB0aGUgZnVuY3Rpb24gdGhlIHdheSBJIHN1Z2dlc3RlZC4gIFRoZSBQTSBj
-b3JlCndpbGwgYXV0b21hdGljYWxseSBkbyBhIHJ1bnRpbWUgc3VzcGVuZCBhZnRlciB0aGUgc3lz
-dGVtIGhhcyBmdWxseQp3b2tlbiB1cC4KCj4gV2UgZG9uJ3QgaGF2ZSBydW50aW1lX2lkbGUoKSBp
-bXBsZW1lbnRlZCwgdGhlIGRyaXZlciBleHBvcnRlZCBzeXNmcwo+IGVudHJpZXMgdG8gdXNlciBz
-cGFjZSBmb3IgZGF0YSByZWFkaW5nLCBhbmQgd2UgZG8gcnVudGltZV9yZXN1bWUsCj4gbWVhc2F1
-cmUgZGF0YSwgcnVudGltZV9zdXNwZW5kIGluIHRoZSByZWFkL3dyaXRlIGZ1bmNpdG9uIG9mIHRo
-b3NlIHN5c2ZzCj4gZW50cmllcy4gVGhpcyBpcyB3aHkgSSB3YW50IHRvIHB1dCB0aGUgZGV2aWNl
-IGludG8gcnVudGltZSBzdXNwZW5kCj4gbWFudWFsbHkgd2hlbmV2ZXIgcG9zc2libGUuCgpZb3Vy
-IGFwcHJvYWNoIHdpbGwgbm90IHdvcmsuICBZb3UgX211c3RfIGRlZmluZSBydW50aW1lX2lkbGUo
-KSBpZiB5b3UgCndhbnQgeW91ciBkcml2ZXIgdG8gc3VzcGVuZCBjb3JyZWN0bHkuICBJdCBkb2Vz
-bid0IGhhdmUgdG8gYmUgCmNvbXBsaWNhdGVkOyBqdXN0IG1ha2UgaXQgY2FsbCBwbV9ydW50aW1l
-X3N1c3BlbmQoKS4KCi4uCgo+IFdlIGRvbid0IGhhdmUgcnVudGltZV9pZGxlKCkgaW1wbGVtZW50
-ZWQsIHNvIEkgaGF2ZSB0byBtYW51YWxseSBwdXQgdGhlCj4gZGV2aWNlIGludG8gcnVudGltZSBz
-dXNwZW5kLgoKVGhlIHByb2JsZW0gaXMgdGhhdCB0aGUgZGV2aWNlIGNhbiBiZSBydW50aW1lLXJl
-c3VtZWQgYnkgY29kZSBvdGhlciAKdGhhbiB5b3VyIG93biwgYW5kIHRoYXQgb3RoZXIgY29kZSB3
-aWxsIG5vdCBhbHdheXMgZG8gYSBydW50aW1lLXN1c3BlbmQgCmFmdGVyd2FyZCAtLSBpdCB3aWxs
-IGRvIGEgcnVudGltZS1pZGxlLiAgVGhhdCdzIHdoeSB5b3UgbmVlZCB0byBkZWZpbmUgCmEgcnVu
-dGltZV9pZGxlKCkgY2FsbGJhY2suCgpBbGFuIFN0ZXJuCgotLQpUbyB1bnN1YnNjcmliZSBmcm9t
-IHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgta2VybmVsIiBpbgp0
-aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZwpNb3JlIG1h
-am9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0
-bWwKUGxlYXNlIHJlYWQgdGhlIEZBUSBhdCAgaHR0cDovL3d3dy50dXgub3JnL2xrbWwvCgoKR2Vz
-Y2jDpGZ0c2bDvGhyZW5kZXIgR2VzZWxsc2NoYWZ0ZXI6IFRqYXJrIEF1ZXJiYWNoClNpdHogZGVy
-IEdlc2VsbHNjaGFmdDogVGV0dG5hbmcKSGFuZGVsc3JlZ2lzdGVyOiBBbXRzZ2VyaWNodCBVbG0s
-IEhSQiA2MzA5OTIKQUxMR0VNRUlORSBHRVNDSMOERlRTQkVESU5HVU5HRU4KRXMgZ2VsdGVuIHVu
-c2VyZSBBbGxnZW1laW5lbiBHZXNjaMOkZnRzYmVkaW5ndW5nZW4KKEFHQikuIFNpZSBmaW5kZW4g
-c2llIGluIGRlciBqZXdlaWxzIGfDvGx0aWdlbiBGYXNzdW5nCmltIEludGVybmV0IHVudGVyIGh0
-dHA6Ly93d3cuYXZpcmEuY29tL2RlL3N0YW5kYXJkLXRlcm1zLWNvbmRpdGlvbnMtYnVzaW5lc3Mt
-ZGUKKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqCl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1h
-aWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xp
-c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+power_frequency moved to drivers/cpufreq/cpufreq.c which has
+to be compiled in, no need to export it.
+
+intel_idle can a be module though...
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+CC: linux-omap@vger.kernel.org
+CC: linux-pm@lists.linux-foundation.org
+CC: linux-trace-users@vger.kernel.org
+CC: Jean Pihet <jean.pihet@newoldbits.com>
+CC: Arjan van de Ven <arjan@linux.intel.com>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: rjw@sisk.pl
+---
+ drivers/idle/intel_idle.c   |    2 --
+ kernel/trace/power-traces.c |    2 +-
+ 2 files changed, 1 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index c37ef64..21ac077 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -201,9 +201,7 @@ static int intel_idle(struct cpuidle_device *dev, struct cpuidle_state *state)
+ 	kt_before = ktime_get_real();
+ 
+ 	stop_critical_timings();
+-#ifndef MODULE
+ 	trace_power_start(POWER_CSTATE, (eax >> 4) + 1, cpu);
+-#endif
+ 	if (!need_resched()) {
+ 
+ 		__monitor((void *)&current_thread_info()->flags, 0, 0);
+diff --git a/kernel/trace/power-traces.c b/kernel/trace/power-traces.c
+index a22582a..0e0497d 100644
+--- a/kernel/trace/power-traces.c
++++ b/kernel/trace/power-traces.c
+@@ -13,5 +13,5 @@
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/power.h>
+ 
+-EXPORT_TRACEPOINT_SYMBOL_GPL(power_frequency);
++EXPORT_TRACEPOINT_SYMBOL_GPL(power_start);
+ 
+-- 
+1.6.3
