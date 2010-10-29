@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH] power: Fix typo in status comparison causing
 	warning
-Date: Fri, 29 Oct 2010 09:49:11 +0200
-Message-ID: <201010290949.11833.rjw__47513.2839674645$1288338807$gmane$org@sisk.pl>
-References: <1288312192-28909-1-git-send-email-kjwinchester@gmail.com>
+Date: Fri, 29 Oct 2010 10:08:54 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1010291006340.1588-100000__5243.83036322451$1288361536$gmane$org@iolanthe.rowland.org>
+References: <201010290949.11833.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1288312192-28909-1-git-send-email-kjwinchester@gmail.com>
+In-Reply-To: <201010290949.11833.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,33 +18,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Winchester <kjwinchester@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kevin Winchester <kjwinchester@gmail.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpZGF5LCBPY3RvYmVyIDI5LCAyMDEwLCBLZXZpbiBXaW5jaGVzdGVyIHdyb3RlOgo+IEdD
-QyB2ZXJzaW9uIDQuNS4xIGdpdmVzIHRoZSBmb2xsb3dpbmcgd2FybmluZzoKPiAKPiAJZHJpdmVy
-cy9iYXNlL3Bvd2VyL3J1bnRpbWUuYzogSW4gZnVuY3Rpb24g4oCYcnBtX2NoZWNrX3N1c3BlbmRf
-YWxsb3dlZOKAmToKPiAJZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYzoxNDY6MjU6IHdhcm5p
-bmc6IGNvbXBhcmlzb24gYmV0d2VlbiDigJhlbnVtIGRwbV9zdGF0ZeKAmSBhbmQg4oCYZW51bSBy
-cG1fc3RhdHVz4oCZCj4gCj4gd2hpY2ggc2VlbXMgdG8gYmUgYSB0eXBvIGluIHRoYXQgZGV2LT5w
-b3dlci5ydW50aW1lX3N0YXR1cwo+IHNob3VsZCBiZSBjb21wYXJlZCBpbnN0ZWFkIG9mIGRldi0+
-cG93ZXIuc3RhdHVzLgo+IAo+IFNpZ25lZC1vZmYtYnk6IEtldmluIFdpbmNoZXN0ZXIgPGtqd2lu
-Y2hlc3RlckBnbWFpbC5jb20+Cj4gLS0tCj4gIGRyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1lLmMg
-fCAgICAyICstCj4gIDEgZmlsZXMgY2hhbmdlZCwgMSBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9u
-cygtKQo+IAo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jIGIvZHJp
-dmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwo+IGluZGV4IDEyNmNhNDkuLjAyYzY1MmIgMTAwNjQ0
-Cj4gLS0tIGEvZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwo+ICsrKyBiL2RyaXZlcnMvYmFz
-ZS9wb3dlci9ydW50aW1lLmMKPiBAQCAtMTQzLDcgKzE0Myw3IEBAIHN0YXRpYyBpbnQgcnBtX2No
-ZWNrX3N1c3BlbmRfYWxsb3dlZChzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gIAo+ICAJLyogUGVuZGlu
-ZyByZXN1bWUgcmVxdWVzdHMgdGFrZSBwcmVjZWRlbmNlIG92ZXIgc3VzcGVuZHMuICovCj4gIAll
-bHNlIGlmICgoZGV2LT5wb3dlci5kZWZlcnJlZF9yZXN1bWUKPiAtCQkJJiYgZGV2LT5wb3dlci5z
-dGF0dXMgPT0gUlBNX1NVU1BFTkRJTkcpCj4gKwkJCSYmIGRldi0+cG93ZXIucnVudGltZV9zdGF0
-dXMgPT0gUlBNX1NVU1BFTkRJTkcpCj4gIAkgICAgfHwgKGRldi0+cG93ZXIucmVxdWVzdF9wZW5k
-aW5nCj4gIAkJCSYmIGRldi0+cG93ZXIucmVxdWVzdCA9PSBSUE1fUkVRX1JFU1VNRSkpCj4gIAkJ
-cmV0dmFsID0gLUVBR0FJTjsKCk91Y2gsIHRoaXMgYWN0dWFsbHkgaXMgYSBzZXJpb3VzIGJ1Zy4K
-ClRoYW5rcyBhIGxvdCBmb3IgdGhlIGZpeCwgd2lsbCBwdXNoIHRvIExpbnVzIHNob3J0bHkuCgpS
-YWZhZWwKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxp
-bnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpo
-dHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgt
-cG0=
+On Fri, 29 Oct 2010, Rafael J. Wysocki wrote:
+
+> On Friday, October 29, 2010, Kevin Winchester wrote:
+> > GCC version 4.5.1 gives the following warning:
+> > =
+
+> > 	drivers/base/power/runtime.c: In function =E2=80=98rpm_check_suspend_a=
+llowed=E2=80=99:
+> > 	drivers/base/power/runtime.c:146:25: warning: comparison between =E2=
+=80=98enum dpm_state=E2=80=99 and =E2=80=98enum rpm_status=E2=80=99
+> > =
+
+> > which seems to be a typo in that dev->power.runtime_status
+> > should be compared instead of dev->power.status.
+> > =
+
+> > Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
+> > ---
+> >  drivers/base/power/runtime.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > =
+
+> > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > index 126ca49..02c652b 100644
+> > --- a/drivers/base/power/runtime.c
+> > +++ b/drivers/base/power/runtime.c
+> > @@ -143,7 +143,7 @@ static int rpm_check_suspend_allowed(struct device =
+*dev)
+> >  =
+
+> >  	/* Pending resume requests take precedence over suspends. */
+> >  	else if ((dev->power.deferred_resume
+> > -			&& dev->power.status =3D=3D RPM_SUSPENDING)
+> > +			&& dev->power.runtime_status =3D=3D RPM_SUSPENDING)
+> >  	    || (dev->power.request_pending
+> >  			&& dev->power.request =3D=3D RPM_REQ_RESUME))
+> >  		retval =3D -EAGAIN;
+> =
+
+> Ouch, this actually is a serious bug.
+
+Yes indeed.  I should have caught it while reviewing the patch.  A =
+
+quick check shows there are no other similar typos.
+
+> Thanks a lot for the fix, will push to Linus shortly.
+> =
+
+> Rafael
+
+Alan Stern
