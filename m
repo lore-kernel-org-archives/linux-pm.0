@@ -1,11 +1,13 @@
 From: Joe Perches <joe@perches.com>
-Subject: [PATCH 00/39] Cleanup WARN #defines
-Date: Sat, 30 Oct 2010 14:08:17 -0700
-Message-ID: <cover.1288471897.git.joe__28664.0781480402$1288473045$gmane$org@perches.com>
+Subject: [PATCH 05/39] arch/x86: Update WARN uses
+Date: Sat, 30 Oct 2010 14:08:22 -0700
+Message-ID: <9c86643277c2e832de6d97fb79be5e30b5fe2e48.1288471898.git.joe@perches.com>
+References: <cover.1288471897.git.joe@perches.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <cover.1288471897.git.joe@perches.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,166 +18,191 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Jiri Kosina <trivial@kernel.org>
-Cc: linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, socketcan-core@lists.berlios.de, linux-mm@kvack.org, devel@open-fcoe.org, linux1394-devel@lists.sourceforge.net, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-media@vger.kernel.org, linux-arch@vger.kernel.org, intel-gfx@lists.freedesktop.org, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, discuss@x86-64.org, linux-nfs@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Muli Ben-Yehuda <muli@il.ibm.com>, Len Brown <len.brown@intel.com>, Arnaldo Carvalho de Melo <acme@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, discuss@x86-64.org, x86@kernel.org, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, "Jon D. Mason" <jdmason@kudzu.us>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-WARN uses sometimes use KERN_<level> but mostly don't
-have any prefix.
+Coalesce long formats.
+Align arguments.
+Add missing newlines.
+Remove KERN_<level>.
 
-Change the WARN macros and the warn_slowpath function to preface
-KERN_WARNING and remove all the KERN_<level> uses from WARN sites.
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ arch/x86/kernel/acpi/boot.c      |    2 +-
+ arch/x86/kernel/apic/apic.c      |    2 +-
+ arch/x86/kernel/apic/es7000_32.c |    2 +-
+ arch/x86/kernel/cpu/perf_event.c |    4 ++--
+ arch/x86/kernel/pci-calgary_64.c |    4 ++--
+ arch/x86/kernel/tsc_sync.c       |    4 ++--
+ arch/x86/kernel/xsave.c          |    2 +-
+ arch/x86/mm/ioremap.c            |    5 ++---
+ arch/x86/mm/pageattr-test.c      |    2 +-
+ arch/x86/mm/pageattr.c           |    5 ++---
+ arch/x86/platform/sfi/sfi.c      |    4 ++--
+ 11 files changed, 17 insertions(+), 19 deletions(-)
 
-Neatening clean up of include/asm-generic/bug.h
-
-Update WARN macros
-Add KERN_WARNING to WARN output
-Remove any KERN_<level> from WARN uses
-Coalesce formats
-Align WARN arguments
-Add some missing newlines to WARN uses
-Add some missing first test argument (1, fmt, args) to WARN uses
-
-Joe Perches (39):
-  include/asm-generic/bug.h: Update WARN macros
-  arch/alpha: Update WARN uses
-  arch/arm: Update WARN uses
-  arch/powerpc: Update WARN uses
-  arch/x86: Update WARN uses
-  drivers/acpi: Update WARN uses
-  drivers/base: Update WARN uses
-  drivers/block: Update WARN uses
-  drivers/cpuidle: Update WARN uses
-  drivers/firewire: Update WARN uses
-  drivers/firmware: Update WARN uses
-  drivers/gpio: Update WARN uses
-  drivers/gpu/drm: Update WARN uses
-  drivers/media/video: Update WARN uses
-  drivers/mfd: Update WARN uses
-  drivers/net/can: Update WARN uses
-  drivers/net/usb: Update WARN uses
-  drivers/net/wireless/iwlwifi: Update WARN uses
-  drivers/regulator: Update WARN uses
-  drivers/scsi/fcoe: Update WARN uses
-  drivers/staging: Update WARN uses
-  drivers/usb/musb: Update WARN uses
-  drivers/video/omap2/dss: Update WARN uses
-  fs/nfsd: Update WARN uses
-  fs/notify/inotify: Update WARN uses
-  fs/sysfs: Update WARN uses
-  fs/proc: Update WARN uses
-  fs: Update WARN uses
-  include/linux/device.h: Update WARN uses
-  kernel/irq: Update WARN uses
-  kernel/panic.c: Update warn_slowpath to use %pV
-  kernel: Update WARN uses
-  lib: Update WARN uses
-  mm: Update WARN uses
-  net/core/dev.c: Update WARN uses
-  net/ipv4/tcp.c: Update WARN uses
-  net/mac80211: Update WARN uses
-  net/rfkill/input.c: Update WARN uses
-  sound/soc/codecs/wm_hubs.c: Update WARN uses
-
- arch/alpha/kernel/pci-sysfs.c                |   14 ++--
- arch/arm/mach-davinci/clock.c                |    4 +-
- arch/arm/mach-davinci/da830.c                |    2 +-
- arch/arm/mach-davinci/da850.c                |   12 ++--
- arch/arm/mach-omap2/clkt_clksel.c            |   12 ++--
- arch/arm/mach-omap2/clock.c                  |   16 ++--
- arch/arm/mach-omap2/devices.c                |    4 +-
- arch/arm/mach-omap2/omap_hwmod.c             |   47 +++++++-----
- arch/arm/mach-omap2/pm34xx.c                 |    7 +-
- arch/arm/mach-omap2/serial.c                 |    2 +-
- arch/arm/mach-omap2/timer-gp.c               |    3 +-
- arch/arm/mach-tegra/clock.c                  |    3 +-
- arch/arm/mach-tegra/timer.c                  |    2 +-
- arch/arm/mach-u300/padmux.c                  |   14 +---
- arch/arm/plat-omap/omap-pm-noop.c            |   10 ++--
- arch/powerpc/kernel/hw_breakpoint.c          |    4 +-
- arch/x86/kernel/acpi/boot.c                  |    2 +-
- arch/x86/kernel/apic/apic.c                  |    2 +-
- arch/x86/kernel/apic/es7000_32.c             |    2 +-
- arch/x86/kernel/cpu/perf_event.c             |    4 +-
- arch/x86/kernel/pci-calgary_64.c             |    4 +-
- arch/x86/kernel/tsc_sync.c                   |    4 +-
- arch/x86/kernel/xsave.c                      |    2 +-
- arch/x86/mm/ioremap.c                        |    5 +-
- arch/x86/mm/pageattr-test.c                  |    2 +-
- arch/x86/mm/pageattr.c                       |    5 +-
- arch/x86/platform/sfi/sfi.c                  |    4 +-
- drivers/acpi/ec.c                            |    4 +-
- drivers/base/class.c                         |    4 +-
- drivers/base/core.c                          |    5 +-
- drivers/base/memory.c                        |    4 +-
- drivers/base/sys.c                           |   10 +--
- drivers/block/floppy.c                       |    2 +-
- drivers/cpuidle/driver.c                     |    2 +-
- drivers/firewire/core-transaction.c          |    6 +-
- drivers/firmware/dmi_scan.c                  |    2 +-
- drivers/gpio/gpiolib.c                       |    4 +-
- drivers/gpio/it8761e_gpio.c                  |    2 +-
- drivers/gpu/drm/drm_crtc_helper.c            |    2 +-
- drivers/gpu/drm/i915/i915_gem.c              |    3 +-
- drivers/gpu/drm/radeon/evergreen.c           |    2 +-
- drivers/gpu/drm/radeon/r100.c                |    4 +-
- drivers/gpu/drm/radeon/r300.c                |    2 +-
- drivers/gpu/drm/radeon/r600.c                |    4 +-
- drivers/gpu/drm/radeon/radeon_fence.c        |    3 +-
- drivers/gpu/drm/radeon/radeon_ttm.c          |    3 +-
- drivers/gpu/drm/radeon/rs400.c               |    2 +-
- drivers/gpu/drm/radeon/rs600.c               |    4 +-
- drivers/media/video/s5p-fimc/fimc-core.c     |    2 +-
- drivers/media/video/sr030pc30.c              |    2 +-
- drivers/mfd/ezx-pcap.c                       |    5 +-
- drivers/net/can/mscan/mscan.c                |    2 +-
- drivers/net/usb/ipheth.c                     |    2 +-
- drivers/net/wireless/iwlwifi/iwl-agn-lib.c   |    3 +-
- drivers/net/wireless/iwlwifi/iwl-agn-sta.c   |    6 +-
- drivers/net/wireless/iwlwifi/iwl-tx.c        |    6 +-
- drivers/net/wireless/iwlwifi/iwl3945-base.c  |    2 +-
- drivers/regulator/core.c                     |    3 +-
- drivers/scsi/fcoe/libfcoe.c                  |    2 +-
- drivers/staging/memrar/memrar_allocator.c    |    2 +-
- drivers/staging/solo6x10/solo6010-v4l2-enc.c |    2 +-
- drivers/usb/musb/musb_host.c                 |    6 +-
- drivers/video/omap2/dss/core.c               |    3 +-
- fs/bio.c                                     |    2 +-
- fs/buffer.c                                  |    2 +-
- fs/nfsd/nfs4state.c                          |    3 +-
- fs/notify/inotify/inotify_fsnotify.c         |    4 +-
- fs/proc/generic.c                            |    9 +--
- fs/super.c                                   |    5 +-
- fs/sysfs/dir.c                               |    3 +-
- fs/sysfs/file.c                              |    4 +-
- fs/sysfs/group.c                             |    4 +-
- fs/sysfs/symlink.c                           |   10 +--
- include/asm-generic/bug.h                    |  101 ++++++++++++++++----------
- include/linux/device.h                       |    2 +-
- kernel/irq/chip.c                            |    2 +-
- kernel/irq/manage.c                          |    2 +-
- kernel/notifier.c                            |    2 +-
- kernel/panic.c                               |   40 +++++------
- kernel/pm_qos_params.c                       |    6 +-
- lib/debugobjects.c                           |   21 +++---
- lib/iomap.c                                  |    2 +-
- lib/kobject.c                                |    9 +--
- lib/kobject_uevent.c                         |    4 +-
- lib/list_debug.c                             |   24 +++----
- lib/plist.c                                  |   12 ++--
- mm/percpu.c                                  |    4 +-
- mm/vmalloc.c                                 |    5 +-
- net/core/dev.c                               |    3 +-
- net/ipv4/tcp.c                               |   16 ++---
- net/mac80211/agg-tx.c                        |    5 +-
- net/mac80211/iface.c                         |    4 +-
- net/mac80211/mlme.c                          |    2 +-
- net/mac80211/rx.c                            |    4 +-
- net/mac80211/tx.c                            |    4 +-
- net/mac80211/util.c                          |    4 +-
- net/mac80211/work.c                          |    4 +-
- net/rfkill/input.c                           |    5 +-
- sound/soc/codecs/wm_hubs.c                   |    2 +-
- 99 files changed, 319 insertions(+), 330 deletions(-)
-
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 71232b9..e005970 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -1368,7 +1368,7 @@ static int __init dmi_ignore_irq0_timer_override(const struct dmi_system_id *d)
+ 	 * the acpi_skip_timer_override flag already:
+ 	 */
+ 	if (!acpi_skip_timer_override) {
+-		WARN(1, KERN_ERR "ati_ixp4x0 quirk not complete.\n");
++		WARN(1, "ati_ixp4x0 quirk not complete\n");
+ 		pr_notice("%s detected: Ignoring BIOS IRQ0 pin2 override\n",
+ 			d->ident);
+ 		acpi_skip_timer_override = 1;
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 850657d..86d8a50 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -2079,7 +2079,7 @@ static int lapic_resume(struct sys_device *dev)
+ 	if (intr_remapping_enabled) {
+ 		ioapic_entries = alloc_ioapic_entries();
+ 		if (!ioapic_entries) {
+-			WARN(1, "Alloc ioapic_entries in lapic resume failed.");
++			WARN(1, "Alloc ioapic_entries in lapic resume failed\n");
+ 			ret = -ENOMEM;
+ 			goto restore;
+ 		}
+diff --git a/arch/x86/kernel/apic/es7000_32.c b/arch/x86/kernel/apic/es7000_32.c
+index 8593582..a30bc9b 100644
+--- a/arch/x86/kernel/apic/es7000_32.c
++++ b/arch/x86/kernel/apic/es7000_32.c
+@@ -564,7 +564,7 @@ static unsigned int es7000_cpu_mask_to_apicid(const struct cpumask *cpumask)
+ 		int new_apicid = es7000_cpu_to_logical_apicid(cpu);
+ 
+ 		if (round && APIC_CLUSTER(apicid) != APIC_CLUSTER(new_apicid)) {
+-			WARN(1, "Not a valid mask!");
++			WARN(1, "Not a valid mask!\n");
+ 
+ 			return BAD_APICID;
+ 		}
+diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
+index ed63101..564444d 100644
+--- a/arch/x86/kernel/cpu/perf_event.c
++++ b/arch/x86/kernel/cpu/perf_event.c
+@@ -1378,14 +1378,14 @@ void __init init_hw_perf_events(void)
+ 		x86_pmu.quirks();
+ 
+ 	if (x86_pmu.num_counters > X86_PMC_MAX_GENERIC) {
+-		WARN(1, KERN_ERR "hw perf events %d > max(%d), clipping!",
++		WARN(1, "hw perf events %d > max(%d), clipping!\n",
+ 		     x86_pmu.num_counters, X86_PMC_MAX_GENERIC);
+ 		x86_pmu.num_counters = X86_PMC_MAX_GENERIC;
+ 	}
+ 	x86_pmu.intel_ctrl = (1 << x86_pmu.num_counters) - 1;
+ 
+ 	if (x86_pmu.num_counters_fixed > X86_PMC_MAX_FIXED) {
+-		WARN(1, KERN_ERR "hw perf events fixed %d > max(%d), clipping!",
++		WARN(1, "hw perf events fixed %d > max(%d), clipping!\n",
+ 		     x86_pmu.num_counters_fixed, X86_PMC_MAX_FIXED);
+ 		x86_pmu.num_counters_fixed = X86_PMC_MAX_FIXED;
+ 	}
+diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
+index f56a117..f179747 100644
+--- a/arch/x86/kernel/pci-calgary_64.c
++++ b/arch/x86/kernel/pci-calgary_64.c
+@@ -296,8 +296,8 @@ static void iommu_free(struct iommu_table *tbl, dma_addr_t dma_addr,
+ 	/* were we called with bad_dma_address? */
+ 	badend = DMA_ERROR_CODE + (EMERGENCY_PAGES * PAGE_SIZE);
+ 	if (unlikely((dma_addr >= DMA_ERROR_CODE) && (dma_addr < badend))) {
+-		WARN(1, KERN_ERR "Calgary: driver tried unmapping bad DMA "
+-		       "address 0x%Lx\n", dma_addr);
++		WARN(1, "Calgary: driver tried unmapping bad DMA address 0x%llx\n",
++		     dma_addr);
+ 		return;
+ 	}
+ 
+diff --git a/arch/x86/kernel/tsc_sync.c b/arch/x86/kernel/tsc_sync.c
+index 0aa5fed8..cf11d51 100644
+--- a/arch/x86/kernel/tsc_sync.c
++++ b/arch/x86/kernel/tsc_sync.c
+@@ -94,8 +94,8 @@ static __cpuinit void check_tsc_warp(void)
+ 		}
+ 	}
+ 	WARN(!(now-start),
+-		"Warning: zero tsc calibration delta: %Ld [max: %Ld]\n",
+-			now-start, end-start);
++	     "Warning: zero tsc calibration delta: %lld [max: %lld]\n",
++	     now-start, end-start);
+ }
+ 
+ /*
+diff --git a/arch/x86/kernel/xsave.c b/arch/x86/kernel/xsave.c
+index 9c253bd..b499aa8 100644
+--- a/arch/x86/kernel/xsave.c
++++ b/arch/x86/kernel/xsave.c
+@@ -418,7 +418,7 @@ static void __init xstate_enable_boot_cpu(void)
+ 	unsigned int eax, ebx, ecx, edx;
+ 
+ 	if (boot_cpu_data.cpuid_level < XSTATE_CPUID) {
+-		WARN(1, KERN_ERR "XSTATE_CPUID missing\n");
++		WARN(1, "XSTATE_CPUID missing\n");
+ 		return;
+ 	}
+ 
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index 0369843..841ae72 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -476,9 +476,8 @@ static int __init check_early_ioremap_leak(void)
+ 
+ 	if (!count)
+ 		return 0;
+-	WARN(1, KERN_WARNING
+-	       "Debug warning: early ioremap leak of %d areas detected.\n",
+-		count);
++	WARN(1, "Debug warning: early ioremap leak of %d areas detected\n",
++	     count);
+ 	printk(KERN_WARNING
+ 		"please boot with early_ioremap_debug and report the dmesg.\n");
+ 
+diff --git a/arch/x86/mm/pageattr-test.c b/arch/x86/mm/pageattr-test.c
+index e1d1069..15d3536 100644
+--- a/arch/x86/mm/pageattr-test.c
++++ b/arch/x86/mm/pageattr-test.c
+@@ -224,7 +224,7 @@ static int pageattr_test(void)
+ 	failed += print_split(&sc);
+ 
+ 	if (failed) {
+-		WARN(1, KERN_ERR "NOT PASSED. Please report.\n");
++		WARN(1, "NOT PASSED. Please report.\n");
+ 		return -EINVAL;
+ 	} else {
+ 		if (print)
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index 532e793..0c97354 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -615,9 +615,8 @@ static int __cpa_process_fault(struct cpa_data *cpa, unsigned long vaddr,
+ 		cpa->pfn = __pa(vaddr) >> PAGE_SHIFT;
+ 		return 0;
+ 	} else {
+-		WARN(1, KERN_WARNING "CPA: called for zero pte. "
+-			"vaddr = %lx cpa->vaddr = %lx\n", vaddr,
+-			*cpa->vaddr);
++		WARN(1, "CPA: called for zero pte. vaddr = %lx cpa->vaddr = %lx\n",
++		     vaddr, *cpa->vaddr);
+ 
+ 		return -EFAULT;
+ 	}
+diff --git a/arch/x86/platform/sfi/sfi.c b/arch/x86/platform/sfi/sfi.c
+index dd4c281..f66fabc 100644
+--- a/arch/x86/platform/sfi/sfi.c
++++ b/arch/x86/platform/sfi/sfi.c
+@@ -97,8 +97,8 @@ static int __init sfi_parse_ioapic(struct sfi_table_header *table)
+ 		pentry++;
+ 	}
+ 
+-	WARN(pic_mode, KERN_WARNING
+-		"SFI: pic_mod shouldn't be 1 when IOAPIC table is present\n");
++	WARN(pic_mode,
++	     "SFI: pic_mod shouldn't be 1 when IOAPIC table is present\n");
+ 	pic_mode = 0;
+ 	return 0;
+ }
 -- 
 1.7.3.1.g432b3.dirty
