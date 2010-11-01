@@ -1,14 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 05/39] arch/x86: Update WARN uses
-Date: Sun, 31 Oct 2010 02:38:24 +0100
-Message-ID: <201010310238.25137.rjw__35551.4276227497$1288489256$gmane$org@sisk.pl>
-References: <cover.1288471897.git.joe@perches.com>
-	<9c86643277c2e832de6d97fb79be5e30b5fe2e48.1288471898.git.joe@perches.com>
+From: Robert =?ISO-8859-1?Q?Sch=F6ne?= <robert.schoene@tu-dresden.de>
+Subject: Re: [PATCH 4/4] PERF: fix power:cpu_idle double end
+	events
+Date: Mon, 01 Nov 2010 09:11:28 +0100
+Message-ID: <1288599088.2712.47.camel__40571.3583961644$1288627560$gmane$org@localhost>
+References: <1288136605-10526-1-git-send-email-trenn@suse.de>
+	<1288136605-10526-5-git-send-email-trenn@suse.de>
+	<201010271742.04545.trenn@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <9c86643277c2e832de6d97fb79be5e30b5fe2e48.1288471898.git.joe@perches.com>
+In-Reply-To: <201010271742.04545.trenn@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,197 +20,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Joe Perches <joe@perches.com>
-Cc: Muli Ben-Yehuda <muli@il.ibm.com>, Len Brown <len.brown@intel.com>, Jiri Kosina <trivial@kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, discuss@x86-64.org, x86@kernel.org, linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>, Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, "Jon D. Mason" <jdmason@kudzu.us>, linux-pm@lists.linux-foundation.org
+To: Thomas Renninger <trenn@suse.de>
+Cc: jean.pihet@newoldbits.com, linux-trace-users@vger.kernel.org, mingo@elte.hu, linux-omap@vger.kernel.org, arjan@linux.intel.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, October 30, 2010, Joe Perches wrote:
-> Coalesce long formats.
-> Align arguments.
-> Add missing newlines.
-> Remove KERN_<level>.
+Am Mittwoch, den 27.10.2010, 17:42 +0200 schrieb Thomas Renninger:
 
-I don't have objections.
+> Robert: I expect you tested this on a machine with no cpuidle
+> driver registered?
 
-Rafael
+You're right, there was no idle driver, but the idle process from
+process_64.c which called the idle routine.
+I reported my thoughts on this on 14th of May this year 2010, mostly
+claiming for a standard on where to report these events.
 
+You're also missing the other idle routines from x86/kernel/process.c
+mwait_idle_with_hints and mwait_idle only throw start events, so they
+should behave like default_idle. poll_idle on the other hand reports the
+end event itself.
 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  arch/x86/kernel/acpi/boot.c      |    2 +-
->  arch/x86/kernel/apic/apic.c      |    2 +-
->  arch/x86/kernel/apic/es7000_32.c |    2 +-
->  arch/x86/kernel/cpu/perf_event.c |    4 ++--
->  arch/x86/kernel/pci-calgary_64.c |    4 ++--
->  arch/x86/kernel/tsc_sync.c       |    4 ++--
->  arch/x86/kernel/xsave.c          |    2 +-
->  arch/x86/mm/ioremap.c            |    5 ++---
->  arch/x86/mm/pageattr-test.c      |    2 +-
->  arch/x86/mm/pageattr.c           |    5 ++---
->  arch/x86/platform/sfi/sfi.c      |    4 ++--
->  11 files changed, 17 insertions(+), 19 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-> index 71232b9..e005970 100644
-> --- a/arch/x86/kernel/acpi/boot.c
-> +++ b/arch/x86/kernel/acpi/boot.c
-> @@ -1368,7 +1368,7 @@ static int __init dmi_ignore_irq0_timer_override(const struct dmi_system_id *d)
->  	 * the acpi_skip_timer_override flag already:
->  	 */
->  	if (!acpi_skip_timer_override) {
-> -		WARN(1, KERN_ERR "ati_ixp4x0 quirk not complete.\n");
-> +		WARN(1, "ati_ixp4x0 quirk not complete\n");
->  		pr_notice("%s detected: Ignoring BIOS IRQ0 pin2 override\n",
->  			d->ident);
->  		acpi_skip_timer_override = 1;
-> diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-> index 850657d..86d8a50 100644
-> --- a/arch/x86/kernel/apic/apic.c
-> +++ b/arch/x86/kernel/apic/apic.c
-> @@ -2079,7 +2079,7 @@ static int lapic_resume(struct sys_device *dev)
->  	if (intr_remapping_enabled) {
->  		ioapic_entries = alloc_ioapic_entries();
->  		if (!ioapic_entries) {
-> -			WARN(1, "Alloc ioapic_entries in lapic resume failed.");
-> +			WARN(1, "Alloc ioapic_entries in lapic resume failed\n");
->  			ret = -ENOMEM;
->  			goto restore;
->  		}
-> diff --git a/arch/x86/kernel/apic/es7000_32.c b/arch/x86/kernel/apic/es7000_32.c
-> index 8593582..a30bc9b 100644
-> --- a/arch/x86/kernel/apic/es7000_32.c
-> +++ b/arch/x86/kernel/apic/es7000_32.c
-> @@ -564,7 +564,7 @@ static unsigned int es7000_cpu_mask_to_apicid(const struct cpumask *cpumask)
->  		int new_apicid = es7000_cpu_to_logical_apicid(cpu);
->  
->  		if (round && APIC_CLUSTER(apicid) != APIC_CLUSTER(new_apicid)) {
-> -			WARN(1, "Not a valid mask!");
-> +			WARN(1, "Not a valid mask!\n");
->  
->  			return BAD_APICID;
->  		}
-> diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-> index ed63101..564444d 100644
-> --- a/arch/x86/kernel/cpu/perf_event.c
-> +++ b/arch/x86/kernel/cpu/perf_event.c
-> @@ -1378,14 +1378,14 @@ void __init init_hw_perf_events(void)
->  		x86_pmu.quirks();
->  
->  	if (x86_pmu.num_counters > X86_PMC_MAX_GENERIC) {
-> -		WARN(1, KERN_ERR "hw perf events %d > max(%d), clipping!",
-> +		WARN(1, "hw perf events %d > max(%d), clipping!\n",
->  		     x86_pmu.num_counters, X86_PMC_MAX_GENERIC);
->  		x86_pmu.num_counters = X86_PMC_MAX_GENERIC;
->  	}
->  	x86_pmu.intel_ctrl = (1 << x86_pmu.num_counters) - 1;
->  
->  	if (x86_pmu.num_counters_fixed > X86_PMC_MAX_FIXED) {
-> -		WARN(1, KERN_ERR "hw perf events fixed %d > max(%d), clipping!",
-> +		WARN(1, "hw perf events fixed %d > max(%d), clipping!\n",
->  		     x86_pmu.num_counters_fixed, X86_PMC_MAX_FIXED);
->  		x86_pmu.num_counters_fixed = X86_PMC_MAX_FIXED;
->  	}
-> diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
-> index f56a117..f179747 100644
-> --- a/arch/x86/kernel/pci-calgary_64.c
-> +++ b/arch/x86/kernel/pci-calgary_64.c
-> @@ -296,8 +296,8 @@ static void iommu_free(struct iommu_table *tbl, dma_addr_t dma_addr,
->  	/* were we called with bad_dma_address? */
->  	badend = DMA_ERROR_CODE + (EMERGENCY_PAGES * PAGE_SIZE);
->  	if (unlikely((dma_addr >= DMA_ERROR_CODE) && (dma_addr < badend))) {
-> -		WARN(1, KERN_ERR "Calgary: driver tried unmapping bad DMA "
-> -		       "address 0x%Lx\n", dma_addr);
-> +		WARN(1, "Calgary: driver tried unmapping bad DMA address 0x%llx\n",
-> +		     dma_addr);
->  		return;
->  	}
->  
-> diff --git a/arch/x86/kernel/tsc_sync.c b/arch/x86/kernel/tsc_sync.c
-> index 0aa5fed8..cf11d51 100644
-> --- a/arch/x86/kernel/tsc_sync.c
-> +++ b/arch/x86/kernel/tsc_sync.c
-> @@ -94,8 +94,8 @@ static __cpuinit void check_tsc_warp(void)
->  		}
->  	}
->  	WARN(!(now-start),
-> -		"Warning: zero tsc calibration delta: %Ld [max: %Ld]\n",
-> -			now-start, end-start);
-> +	     "Warning: zero tsc calibration delta: %lld [max: %lld]\n",
-> +	     now-start, end-start);
->  }
->  
->  /*
-> diff --git a/arch/x86/kernel/xsave.c b/arch/x86/kernel/xsave.c
-> index 9c253bd..b499aa8 100644
-> --- a/arch/x86/kernel/xsave.c
-> +++ b/arch/x86/kernel/xsave.c
-> @@ -418,7 +418,7 @@ static void __init xstate_enable_boot_cpu(void)
->  	unsigned int eax, ebx, ecx, edx;
->  
->  	if (boot_cpu_data.cpuid_level < XSTATE_CPUID) {
-> -		WARN(1, KERN_ERR "XSTATE_CPUID missing\n");
-> +		WARN(1, "XSTATE_CPUID missing\n");
->  		return;
->  	}
->  
-> diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-> index 0369843..841ae72 100644
-> --- a/arch/x86/mm/ioremap.c
-> +++ b/arch/x86/mm/ioremap.c
-> @@ -476,9 +476,8 @@ static int __init check_early_ioremap_leak(void)
->  
->  	if (!count)
->  		return 0;
-> -	WARN(1, KERN_WARNING
-> -	       "Debug warning: early ioremap leak of %d areas detected.\n",
-> -		count);
-> +	WARN(1, "Debug warning: early ioremap leak of %d areas detected\n",
-> +	     count);
->  	printk(KERN_WARNING
->  		"please boot with early_ioremap_debug and report the dmesg.\n");
->  
-> diff --git a/arch/x86/mm/pageattr-test.c b/arch/x86/mm/pageattr-test.c
-> index e1d1069..15d3536 100644
-> --- a/arch/x86/mm/pageattr-test.c
-> +++ b/arch/x86/mm/pageattr-test.c
-> @@ -224,7 +224,7 @@ static int pageattr_test(void)
->  	failed += print_split(&sc);
->  
->  	if (failed) {
-> -		WARN(1, KERN_ERR "NOT PASSED. Please report.\n");
-> +		WARN(1, "NOT PASSED. Please report.\n");
->  		return -EINVAL;
->  	} else {
->  		if (print)
-> diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-> index 532e793..0c97354 100644
-> --- a/arch/x86/mm/pageattr.c
-> +++ b/arch/x86/mm/pageattr.c
-> @@ -615,9 +615,8 @@ static int __cpa_process_fault(struct cpa_data *cpa, unsigned long vaddr,
->  		cpa->pfn = __pa(vaddr) >> PAGE_SHIFT;
->  		return 0;
->  	} else {
-> -		WARN(1, KERN_WARNING "CPA: called for zero pte. "
-> -			"vaddr = %lx cpa->vaddr = %lx\n", vaddr,
-> -			*cpa->vaddr);
-> +		WARN(1, "CPA: called for zero pte. vaddr = %lx cpa->vaddr = %lx\n",
-> +		     vaddr, *cpa->vaddr);
->  
->  		return -EFAULT;
->  	}
-> diff --git a/arch/x86/platform/sfi/sfi.c b/arch/x86/platform/sfi/sfi.c
-> index dd4c281..f66fabc 100644
-> --- a/arch/x86/platform/sfi/sfi.c
-> +++ b/arch/x86/platform/sfi/sfi.c
-> @@ -97,8 +97,8 @@ static int __init sfi_parse_ioapic(struct sfi_table_header *table)
->  		pentry++;
->  	}
->  
-> -	WARN(pic_mode, KERN_WARNING
-> -		"SFI: pic_mod shouldn't be 1 when IOAPIC table is present\n");
-> +	WARN(pic_mode,
-> +	     "SFI: pic_mod shouldn't be 1 when IOAPIC table is present\n");
->  	pic_mode = 0;
->  	return 0;
->  }
-> 
+Robert
