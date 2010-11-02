@@ -1,14 +1,16 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] intel_idle: Do not load if user overrides
- idle function via idle= boot param
-Date: Wed, 03 Nov 2010 02:33:54 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.1011030150560.3378__4249.8582428836$1288766094$gmane$org@localhost.localdomain>
-References: <201011021441.09258.trenn@suse.de>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 5/5] intel_idle: do not use the LAPIC timer
+ for ATOM C2
+Date: Tue, 2 Nov 2010 02:21:09 +0100
+Message-ID: <20101102011956.GA2648@ucw.cz>
+References: <c8381cc3d8a9cc6c80f65bf60863c776651f245c.1288127069.git.len.brown@intel.com>
+	<c25d29952b2a8c9aaf00e081c9162a0e383030cd.1288127069.git.len.brown@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <201011021441.09258.trenn@suse.de>
+Content-Disposition: inline
+In-Reply-To: <c25d29952b2a8c9aaf00e081c9162a0e383030cd.1288127069.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,57 +20,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, stable@kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2 Nov 2010, Thomas Renninger wrote:
+On Tue 2010-10-26 17:07:34, Len Brown wrote:
+> From: Len Brown <len.brown@intel.com>
 > 
-> if idle= boot param is passed, cpuidle drivers should not register
-> and only arch specific idle routines should get active.
+> If we use the LAPIC timer during ATOM C2 on
+> some nvidia chisets, the system stalls.
 > 
-> Ideally cpuidle subsystem would be made aware of this.
-> But acpi parses sleep state tables before registering for cpuidle
-> which should not happen if idle= is passed.
-> 
-> -> Check for boot_option_idle_override in cpuidle drivers, not
-> cpuidle subsystem.
-> 
-> Compare with:
-> arch/x86/kernel/process.c
-> and
-> drivers/acpi/processor_idle.c
+> https://bugzilla.kernel.org/show_bug.cgi?id=21032
 
-idle=halt and idle=nomwait will not
-set boot_option_idle_override,
-so checking that option in intel_idle
-is a NOP for those incantations.
-
-idle_setup() is a confusing mess.
-That function and all these idle workaround flags
-need to be re-whacked.
-
-thanks,
--Len Brown, Intel Open Source Technology Center
-
-> Signed-off-by: Thomas Renninger <trenn@suse.de>
-> CC: lenb@kernel.org
-> CC: linux-acpi@vger.kernel.org
-> CC: stable@kernel.org
-> CC: linux-pm@lists.linux-foundation.org                                                                                                                               
+> @@ -302,7 +302,7 @@ static int intel_idle_probe(void)
 >  
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index 41665d2..e50389b 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -410,6 +410,9 @@ static int __init intel_idle_init(void)
->  {
->  	int retval;
->  
-> +	if (boot_option_idle_override)
-> +		return -ENODEV;
-> +
->  	retval = intel_idle_probe();
->  	if (retval)
->  		return retval;
-> 
+>  	case 0x1C:	/* 28 - Atom Processor */
+>  	case 0x26:	/* 38 - Lincroft Atom Processor */
+> -		lapic_timer_reliable_states = (1 << 2) | (1 << 1); /* C2, C1 */
+> +		lapic_timer_reliable_states = (1 << 1); /* C1 */
+>  		cpuidle_state_table = atom_cstates;
+
+That comment should probably go here, along with list of chipsets.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
