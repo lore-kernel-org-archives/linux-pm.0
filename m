@@ -1,11 +1,9 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH] intel_idle: Do not load if user overrides idle
-	function via idle= boot param
-Date: Tue, 2 Nov 2010 14:41:08 +0100
-Message-ID: <201011021441.09258.trenn__31708.4984657869$1288705457$gmane$org@suse.de>
+From: Raj Kumar <rajkumar278@hotmail.com>
+Subject: One issue regarding the run time power management
+Date: Wed, 3 Nov 2010 02:08:57 +0530
+Message-ID: <BLU102-W6F8402163EAD81AFBF321EB490@phx.gbl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============7758863283981457435=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -14,55 +12,117 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, stable@kernel.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Len,
+--===============7758863283981457435==
+Content-Type: multipart/alternative;
+	boundary="_80aa1468-e860-42f6-b301-3ba6beb7f44b_"
 
-I found that by review, it's compile tested only.
-Could you give this a review and apply if appropriate.
+--_80aa1468-e860-42f6-b301-3ba6beb7f44b_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
 
-     Thomas
+=20
+Hi=2C
+=20
+There is a one issue coming regarding the run time power management during =
+system suspend=2C Suppose
+system suspend is going on and before the suspend callback of driver is exe=
+cuted=2C driver issues a runtime resume to run time power management core b=
+efore it gets
+the system suspend call back but System suspend is going on then how the ru=
+n time power management prevents this condition?
+=20
+As I saw the code during dpm_prepare=2C power usage count is incremented by=
+ 1 by calling pm_runtime_get_noresume(dev) and then it calls
+pm_runtime_barrier=2C
+=20
+Since During System suspend=2C driver calls pm_runtime_get which will invok=
+e=20
+=20
+atomic_inc(&dev->power.usage_count)=3B
+=20
+which increments the power usage count and calls pm_request_resume which do=
+es not have any check on power usage count=2C
+=20
+So when System suspend is going on and it has not reached suspend call back=
+ of driver and driver submits run time resume request (if
+the device is suspended at runtime earlier)
+=20
+Then How run time power management prevents device run time resume when the=
+ system suspend is going on as it does not
+check for power usage count?
+=20
+Regards
+Raj  		 	   		  =
 
-----
+--_80aa1468-e860-42f6-b301-3ba6beb7f44b_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-if idle= boot param is passed, cpuidle drivers should not register
-and only arch specific idle routines should get active.
+<html>
+<head>
+<style><!--
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Tahoma
+}
+--></style>
+</head>
+<body class=3D'hmmessage'>
+&nbsp=3B<BR>
+Hi=2C<BR>
+&nbsp=3B<BR>
+There is a one issue coming regarding the run time power management during =
+system suspend=2C Suppose<BR>
+system suspend is going on and before the suspend callback of driver is exe=
+cuted=2C driver issues a runtime resume to run time power management core b=
+efore it gets<BR>
+the system suspend call back but System suspend is going on then how the ru=
+n time power management prevents this condition?<BR>
+&nbsp=3B<BR>
+As I saw the code during dpm_prepare=2C power usage count is incremented by=
+ 1 by calling pm_runtime_get_noresume(dev) and then it calls<BR>
+pm_runtime_barrier=2C<BR>
+&nbsp=3B<BR>
+Since During System suspend=2C driver calls pm_runtime_get which will invok=
+e <BR>
+&nbsp=3B<BR>
+atomic_inc(&amp=3Bdev-&gt=3Bpower.usage_count)=3B<BR>
+&nbsp=3B<BR>
+which increments the power usage count and calls pm_request_resume which do=
+es not have any check on power usage count=2C<BR>
+&nbsp=3B<BR>
+So when System suspend is going on and it has not reached suspend call back=
+ of driver and driver submits run time resume request (if<BR>
+the device is suspended at runtime earlier)<BR>
+&nbsp=3B<BR>
+Then How run time power management prevents device run time resume when the=
+ system suspend is going on as it does not<BR>
+check for power usage count?<BR>
+&nbsp=3B<BR>
+Regards<BR>
+Raj&nbsp=3B<BR> 		 	   		  </body>
+</html>=
 
-Ideally cpuidle subsystem would be made aware of this.
-But acpi parses sleep state tables before registering for cpuidle
-which should not happen if idle= is passed.
+--_80aa1468-e860-42f6-b301-3ba6beb7f44b_--
 
--> Check for boot_option_idle_override in cpuidle drivers, not
-cpuidle subsystem.
+--===============7758863283981457435==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Compare with:
-arch/x86/kernel/process.c
-and
-drivers/acpi/processor_idle.c
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-CC: lenb@kernel.org
-CC: linux-acpi@vger.kernel.org
-CC: stable@kernel.org
-CC: linux-pm@lists.linux-foundation.org                                                                                                                               
- 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 41665d2..e50389b 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -410,6 +410,9 @@ static int __init intel_idle_init(void)
- {
- 	int retval;
- 
-+	if (boot_option_idle_override)
-+		return -ENODEV;
-+
- 	retval = intel_idle_probe();
- 	if (retval)
- 		return retval;
+--===============7758863283981457435==--
