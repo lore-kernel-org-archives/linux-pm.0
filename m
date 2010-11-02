@@ -1,7 +1,8 @@
-From: Hong Liu <hong.liu@intel.com>
-Subject: [PATCH] drivers/misc/apds9802als.c: fix runtime PM errors
-Date: Tue, 02 Nov 2010 14:38:55 +0800
-Message-ID: <1288679935.2369.52.camel__7494.20007127828$1288679881$gmane$org@hongdev>
+From: Thomas Renninger <trenn@suse.de>
+Subject: [PATCH] intel_idle: Do not load if user overrides idle
+	function via idle= boot param
+Date: Tue, 2 Nov 2010 14:41:08 +0100
+Message-ID: <201011021441.09258.trenn__31708.4984657869$1288705457$gmane$org@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,73 +16,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Alan Cox <alan@linux.intel.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, stable@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Putting the device into runtime suspend after resume()/probe() is handled
-by the PM core and the device core code. No need to manually add them in
-each single driver. And correct the runtime state in remove().
+Hi Len,
 
-Signed-off-by: Hong Liu <hong.liu@intel.com>
----
- drivers/misc/apds9802als.c |   17 ++++++++++-------
- 1 files changed, 10 insertions(+), 7 deletions(-)
+I found that by review, it's compile tested only.
+Could you give this a review and apply if appropriate.
 
-diff --git a/drivers/misc/apds9802als.c b/drivers/misc/apds9802als.c
-index f9b91ba..19c5b97 100644
---- a/drivers/misc/apds9802als.c
-+++ b/drivers/misc/apds9802als.c
-@@ -245,9 +245,8 @@ static int apds9802als_probe(struct i2c_client *client,
- 	als_set_default_config(client);
- 	mutex_init(&data->mutex);
+Thanks,
+
+     Thomas
+
+----
+
+if idle= boot param is passed, cpuidle drivers should not register
+and only arch specific idle routines should get active.
+
+Ideally cpuidle subsystem would be made aware of this.
+But acpi parses sleep state tables before registering for cpuidle
+which should not happen if idle= is passed.
+
+-> Check for boot_option_idle_override in cpuidle drivers, not
+cpuidle subsystem.
+
+Compare with:
+arch/x86/kernel/process.c
+and
+drivers/acpi/processor_idle.c
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+CC: lenb@kernel.org
+CC: linux-acpi@vger.kernel.org
+CC: stable@kernel.org
+CC: linux-pm@lists.linux-foundation.org                                                                                                                               
  
-+	pm_runtime_set_active(&client->dev);
- 	pm_runtime_enable(&client->dev);
--	pm_runtime_get(&client->dev);
--	pm_runtime_put(&client->dev);
- 
- 	return res;
- als_error1:
-@@ -256,12 +255,19 @@ als_error1:
- 	return res;
- }
- 
--static int apds9802als_remove(struct i2c_client *client)
-+static int __devexit apds9802als_remove(struct i2c_client *client)
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 41665d2..e50389b 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -410,6 +410,9 @@ static int __init intel_idle_init(void)
  {
- 	struct als_data *data = i2c_get_clientdata(client);
+ 	int retval;
  
-+	pm_runtime_get_sync(&client->dev);
++	if (boot_option_idle_override)
++		return -ENODEV;
 +
- 	als_set_power_state(client, false);
- 	sysfs_remove_group(&client->dev.kobj, &m_als_gr);
-+
-+	pm_runtime_disable(&client->dev);
-+	pm_runtime_set_suspended(&client->dev);
-+	pm_runtime_put_noidle(&client->dev);
-+
- 	kfree(data);
- 	return 0;
- }
-@@ -276,9 +282,6 @@ static int apds9802als_suspend(struct i2c_client *client, pm_message_t mesg)
- static int apds9802als_resume(struct i2c_client *client)
- {
- 	als_set_default_config(client);
--
--	pm_runtime_get(&client->dev);
--	pm_runtime_put(&client->dev);
- 	return 0;
- }
- 
-@@ -324,7 +327,7 @@ static struct i2c_driver apds9802als_driver = {
- 		.pm = APDS9802ALS_PM_OPS,
- 	},
- 	.probe = apds9802als_probe,
--	.remove = apds9802als_remove,
-+	.remove = __devexit_p(apds9802als_remove),
- 	.suspend = apds9802als_suspend,
- 	.resume = apds9802als_resume,
- 	.id_table = apds9802als_id,
--- 
-1.7.2.3
+ 	retval = intel_idle_probe();
+ 	if (retval)
+ 		return retval;
