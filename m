@@ -1,15 +1,14 @@
-From: mark gross <markgross@thegnar.org>
-Subject: Re: [PATCH] pm_qos: Fix reversed min and max
-Date: Thu, 4 Nov 2010 14:01:07 -0400
-Message-ID: <20101104180107.GA20826__2141.39139648086$1288893839$gmane$org@gvim.org>
-References: <1288852803-12356-1-git-send-email-ccross@android.com>
-Reply-To: markgross@thegnar.org
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [GIT PULL] One more power management fix for 2.6.37
+Date: Thu, 4 Nov 2010 20:55:31 +0100
+Message-ID: <201011042055.31779.rjw__11817.6227006645$1288900728$gmane$org@sisk.pl>
+References: <201010292358.27975.rjw@sisk.pl> <201011041424.44215.rjw@sisk.pl>
+	<AANLkTikfGJOMpnvwJ4tTW3EXVGayyT=3s5iyhGbhKz8_@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1288852803-12356-1-git-send-email-ccross@android.com>
+In-Reply-To: <AANLkTikfGJOMpnvwJ4tTW3EXVGayyT=3s5iyhGbhKz8_@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,47 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@android.com>
-Cc: mark gross <markgross@thegnar.org>, linux-kernel@vger.kernel.org, James Bottomley <James.Bottomley@suse.de>, linux-pm@lists.linux-foundation.org, stable <stable@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 03, 2010 at 11:40:03PM -0700, Colin Cross wrote:
-> pm_qos_get_value had min and max reversed, causing all pm_qos
-> requests to have no effect.
-sorry.
-
-Acked-by : mark <markgross@thegnar.org>
- 
-
---mgross
- 
-> Change-Id: I252c764821eac8d94de57eb482c05bf6afcea15b
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Cc: mark gross <markgross@thegnar.org>
-> Cc: James Bottomley <James.Bottomley@suse.de>
-> Cc: stable <stable@kernel.org>
-> Signed-off-by: Colin Cross <ccross@android.com>
-> ---
->  kernel/pm_qos_params.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+On Thursday, November 04, 2010, Linus Torvalds wrote:
+> On Thu, Nov 4, 2010 at 9:24 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >
+> > OK, so I think we can relax the locking in dpm_[suspend/resume]_noirq() to
+> > avoid executing callbacks under dpm_list_mtx, like in the (untested) patch
+> > below.
 > 
-> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> index 645e541..0da2837 100644
-> --- a/kernel/pm_qos_params.c
-> +++ b/kernel/pm_qos_params.c
-> @@ -120,10 +120,10 @@ static inline int pm_qos_get_value(struct pm_qos_object *o)
->  
->  	switch (o->type) {
->  	case PM_QOS_MIN:
-> -		return plist_last(&o->requests)->prio;
-> +		return plist_first(&o->requests)->prio;
->  
->  	case PM_QOS_MAX:
-> -		return plist_first(&o->requests)->prio;
-> +		return plist_last(&o->requests)->prio;
->  
->  	default:
->  		/* runtime check for not using enum */
-> -- 
-> 1.7.3.1
+> ABSOLUTELY NOT.
 > 
+> If you drop the lock in the middle of the loop, you should remove the
+> lock around the loop entirely. There is absolutely no difference
+> between "drop lock in the middle" and "don't take lock at all".
+> 
+> Either that list traversal needs the lock or it does not. There is no
+> "it needs the lock, but not while doing random crap X in the middle of
+> traversal".
+
+Your're right,  it only makes sense to either leave it or remove it entirely.
+
+> If nothing can possibly change the list while calling the device, then
+> you don't need the lock. And if something _can_ change the list,
+> dropping the lock means that the list is no longer trustworthy and you
+> can't just continue in the middle.
+
+At this point, if everyone does everything right, there should be nothing
+running in parallel with us that will attempt to modify the list.  So, I'd say
+let's drop the lock completely.
+
+Thanks,
+Rafael
