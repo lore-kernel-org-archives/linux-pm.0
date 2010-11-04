@@ -1,18 +1,15 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [GIT PULL] One more power management fix for 2.6.37
-Date: Wed, 3 Nov 2010 22:18:55 +0100
-Message-ID: <20101103211855.GA29721__36573.866432491$1288819387$gmane$org@isilmar-3.linta.de>
+Date: Thu, 4 Nov 2010 06:04:05 +0100
+Message-ID: <201011040604.05183.rjw__48259.5876943835$1288847165$gmane$org@sisk.pl>
 References: <201010292358.27975.rjw@sisk.pl>
-	<AANLkTikF+8VsxyjmXUc_6Epd923g5DCxneNArFNTGrZ_@mail.gmail.com>
-	<201011030356.13878.rjw@sisk.pl>
-	<AANLkTikHRGkTGjBHQPt7-__XEWLYKLcSZgeXgicwOv8H@mail.gmail.com>
 	<AANLkTikrDoKDWPMtSjJ0EjKXO7ddQZPkZ5ZvwoivkbnZ@mail.gmail.com>
+	<20101103211855.GA29721@isilmar-3.linta.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTikrDoKDWPMtSjJ0EjKXO7ddQZPkZ5ZvwoivkbnZ@mail.gmail.com>
+In-Reply-To: <20101103211855.GA29721@isilmar-3.linta.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,27 +19,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-> There's apparently an ordering problem with dpm_list_mtx and
-> socket->skt_mutex. Lockdep details appended.
+On Wednesday, November 03, 2010, Dominik Brodowski wrote:
+> > There's apparently an ordering problem with dpm_list_mtx and
+> > socket->skt_mutex. Lockdep details appended.
+> > 
+> > Dominik, Rafael? What's the proper locking order here, and
+> > how do we fix this?
 > 
-> Dominik, Rafael? What's the proper locking order here, and
-> how do we fix this?
+> Thanks for noting this; let's see:
+> 
+> - We add a PCMCIA device holding skt_mutex, therefore we have the ordering
+>   (1) skt_mutex -> (2) dpm_list_mtx
+> 
+> - If we're suspending, dpm_list_mtx is held, but we need to acquire
+>   skt_mutex as we modify some data being protected by skt_mutex
+>   (1) dpm_list_mtx -> (2) skt_mutex
+> 
+> Rafael, any idea on how to solve this? How do other subsystems handle such
+> an issue? Do they call device_add() with no locks held at all?
 
-Thanks for noting this; let's see:
+They usually do from what I can tell.
 
-- We add a PCMCIA device holding skt_mutex, therefore we have the ordering
-  (1) skt_mutex -> (2) dpm_list_mtx
+Also only a few of them implement the ->suspend_noirq() callback, which is the
+one executed under dpm_list_mtx.
 
-- If we're suspending, dpm_list_mtx is held, but we need to acquire
-  skt_mutex as we modify some data being protected by skt_mutex
-  (1) dpm_list_mtx -> (2) skt_mutex
+What exactly is protected by skt_mutex ?
 
-Rafael, any idea on how to solve this? How do other subsystems handle such
-an issue? Do they call device_add() with no locks held at all?
-
-Best,
-	Dominik
+Rafael
