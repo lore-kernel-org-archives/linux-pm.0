@@ -1,16 +1,14 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH 4/4] PERF: fix power:cpu_idle double end
-	events
-Date: Thu, 4 Nov 2010 09:57:35 +0100
-Message-ID: <201011040957.35611.trenn__39126.2912577533$1288861129$gmane$org@suse.de>
-References: <1288136605-10526-1-git-send-email-trenn@suse.de>
-	<201010271742.04545.trenn@suse.de>
-	<1288599088.2712.47.camel@localhost>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [GIT PULL] One more power management fix for 2.6.37
+Date: Thu, 4 Nov 2010 14:24:44 +0100
+Message-ID: <201011041424.44215.rjw__7318.42281898043$1288877311$gmane$org@sisk.pl>
+References: <201010292358.27975.rjw@sisk.pl> <201011040604.05183.rjw@sisk.pl>
+	<20101104062709.GA3118@isilmar-3.linta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1288599088.2712.47.camel@localhost>
+In-Reply-To: <20101104062709.GA3118@isilmar-3.linta.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,28 +18,108 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Robert =?utf-8?q?Sch=C3=B6ne?= <robert.schoene@tu-dresden.de>
-Cc: jean.pihet@newoldbits.com, linux-trace-users@vger.kernel.org, mingo@elte.hu, linux-omap@vger.kernel.org, arjan@linux.intel.com, linux-pm@lists.linux-foundation.org
+To: Dominik Brodowski <linux@dominikbrodowski.net>, Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgUm9iZXJ0LAoKT24gTW9uZGF5IDAxIE5vdmVtYmVyIDIwMTAgMDk6MTE6MjggUm9iZXJ0IFNj
-aMO2bmUgd3JvdGU6Cj4gQW0gTWl0dHdvY2gsIGRlbiAyNy4xMC4yMDEwLCAxNzo0MiArMDIwMCBz
-Y2hyaWViIFRob21hcyBSZW5uaW5nZXI6Cj4gCj4gPiBSb2JlcnQ6IEkgZXhwZWN0IHlvdSB0ZXN0
-ZWQgdGhpcyBvbiBhIG1hY2hpbmUgd2l0aCBubyBjcHVpZGxlCj4gPiBkcml2ZXIgcmVnaXN0ZXJl
-ZD8KPiAKPiBZb3UncmUgcmlnaHQsIHRoZXJlIHdhcyBubyBpZGxlIGRyaXZlciwgYnV0IHRoZSBp
-ZGxlIHByb2Nlc3MgZnJvbQo+IHByb2Nlc3NfNjQuYyB3aGljaCBjYWxsZWQgdGhlIGlkbGUgcm91
-dGluZS4KPiBJIHJlcG9ydGVkIG15IHRob3VnaHRzIG9uIHRoaXMgb24gMTR0aCBvZiBNYXkgdGhp
-cyB5ZWFyIDIwMTAsIG1vc3RseQo+IGNsYWltaW5nIGZvciBhIHN0YW5kYXJkIG9uIHdoZXJlIHRv
-IHJlcG9ydCB0aGVzZSBldmVudHMuCj4gCj4gWW91J3JlIGFsc28gbWlzc2luZyB0aGUgb3RoZXIg
-aWRsZSByb3V0aW5lcyBmcm9tIHg4Ni9rZXJuZWwvcHJvY2Vzcy5jCj4gbXdhaXRfaWRsZV93aXRo
-X2hpbnRzIGFuZCBtd2FpdF9pZGxlIG9ubHkgdGhyb3cgc3RhcnQgZXZlbnRzLCBzbyB0aGV5Cj4g
-c2hvdWxkIGJlaGF2ZSBsaWtlIGRlZmF1bHRfaWRsZS4gcG9sbF9pZGxlIG9uIHRoZSBvdGhlciBo
-YW5kIHJlcG9ydHMKPiB0aGUgZW5kIGV2ZW50IGl0c2VsZi4KSSBhZGRlZCB5b3UgdG8gQ0Mgb2Yg
-YSBwYXRjaCB0aGF0IGZpeGVzIHRoZSBpc3N1ZSAoYW5kIGFsbCBvdGhlciBkb3VibGUgCm9yIG1p
-c3NpbmcgKGZvciBhY3BpX2lkbGUgZHJpdmVyKSBldmVudHMpIGluIGEgbmljZSBnZW5lcmljIHdh
-eS4KSXQgbmVlZHMgZnVydGhlciB1c2Vyc3BhY2UgYWRqdXN0aW5ncyBhbmQgSSBzdGlsbCB3YWl0
-IGZvciB0aGlzCnNlcGFyYXRlIHBhdGNoIHNlcmllcyB0byBnbyBpbnRvIHNvbWUgYnJhbmNoLgoK
-VGhhbmtzLAoKICAgVGhvbWFzCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZv
-dW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9s
-aXN0aW5mby9saW51eC1wbQ==
+On Thursday, November 04, 2010, Dominik Brodowski wrote:
+> On Thu, Nov 04, 2010 at 06:04:05AM +0100, Rafael J. Wysocki wrote:
+> > On Wednesday, November 03, 2010, Dominik Brodowski wrote:
+> > > > There's apparently an ordering problem with dpm_list_mtx and
+> > > > socket->skt_mutex. Lockdep details appended.
+> > > > 
+> > > > Dominik, Rafael? What's the proper locking order here, and
+> > > > how do we fix this?
+> > > 
+> > > Thanks for noting this; let's see:
+> > > 
+> > > - We add a PCMCIA device holding skt_mutex, therefore we have the ordering
+> > >   (1) skt_mutex -> (2) dpm_list_mtx
+> > > 
+> > > - If we're suspending, dpm_list_mtx is held, but we need to acquire
+> > >   skt_mutex as we modify some data being protected by skt_mutex
+> > >   (1) dpm_list_mtx -> (2) skt_mutex
+> > > 
+> > > Rafael, any idea on how to solve this? How do other subsystems handle such
+> > > an issue? Do they call device_add() with no locks held at all?
+> > 
+> > They usually do from what I can tell.
+> > 
+> > Also only a few of them implement the ->suspend_noirq() callback, which is the
+> > one executed under dpm_list_mtx.
+> > 
+> > What exactly is protected by skt_mutex ?
+> 
+> e.g.
+> struct pcmcia_socket {
+> 	...
+>         u_int                   suspended_state;
+>         int                     resume_status;
+> 	...
+> }
+> 
+> Furthermore, one has to acquire skt_mutex first before obtaining ops_mutex,
+> which protects many more fields (and asserts exclusion for some code paths),
+> see Documentation/pcmcia/locking.txt for details.
+
+OK, so I think we can relax the locking in dpm_[suspend/resume]_noirq() to
+avoid executing callbacks under dpm_list_mtx, like in the (untested) patch
+below.
+
+Alan, do you see any immediate problem with that?
+
+Rafael
+
+---
+ drivers/base/power/main.c |   17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -480,15 +480,23 @@ void dpm_resume_noirq(pm_message_t state
+ 
+ 	mutex_lock(&dpm_list_mtx);
+ 	transition_started = false;
+-	list_for_each_entry(dev, &dpm_list, power.entry)
++	list_for_each_entry(dev, &dpm_list, power.entry) {
++		get_device(dev);
+ 		if (dev->power.status > DPM_OFF) {
+ 			int error;
+ 
+ 			dev->power.status = DPM_OFF;
++
++			mutex_unlock(&dpm_list_mtx);
++
+ 			error = device_resume_noirq(dev, state);
++
++			mutex_lock(&dpm_list_mtx);
+ 			if (error)
+ 				pm_dev_err(dev, state, " early", error);
+ 		}
++		put_device(dev);
++	}
+ 	mutex_unlock(&dpm_list_mtx);
+ 	dpm_show_time(starttime, state, "early");
+ 	resume_device_irqs();
+@@ -796,12 +804,19 @@ int dpm_suspend_noirq(pm_message_t state
+ 	suspend_device_irqs();
+ 	mutex_lock(&dpm_list_mtx);
+ 	list_for_each_entry_reverse(dev, &dpm_list, power.entry) {
++		get_device(dev);
++		mutex_unlock(&dpm_list_mtx);
++
+ 		error = device_suspend_noirq(dev, state);
++
++		mutex_lock(&dpm_list_mtx);
+ 		if (error) {
+ 			pm_dev_err(dev, state, " late", error);
++			put_device(dev);
+ 			break;
+ 		}
+ 		dev->power.status = DPM_OFF_IRQ;
++		put_device(dev);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+ 	if (error)
