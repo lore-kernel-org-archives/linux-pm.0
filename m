@@ -1,12 +1,16 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: HCD polling root hub status before controller is
-	brought out of suspend
-Date: Thu, 4 Nov 2010 16:53:54 -0700 (PDT)
-Message-ID: <891479.65425.qm@web180316.mail.gq1.yahoo.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] X86: Cleanup idle= internal variables by
+	getting rid of idle_halt idle_nomwait
+Date: Fri, 5 Nov 2010 11:24:49 +0100
+Message-ID: <201011051124.49973.trenn__5328.33920228786$1288952802$gmane$org@suse.de>
+References: <201011021441.09258.trenn@suse.de>
+	<alpine.LFD.2.00.1011030150560.3378@localhost.localdomain>
+	<201011031706.15248.trenn@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201011031706.15248.trenn@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,25 +20,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, Maksim Rayskiy <maksim.rayskiy@gmail.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, stable@kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Len,
 
---- On Thu, 11/4/10, Maksim Rayskiy <maksim.rayskiy@gmail.com> wrote:
+On Wednesday 03 November 2010 17:06:14 Thomas Renninger wrote:
+> On Wednesday 03 November 2010 07:33:54 Len Brown wrote:
+...
+> > That function and all these idle workaround flags
+> > need to be re-whacked.
+> Whatabout this (compile tested (on x86_64/ia64)).
+> Adding lkml as this affects x86 core code.
+as this mostly affects intel_idle and acpi processor driver,
+can you apply this one to your acpi test branch if you are
+ok with it.
 
+Thanks,
 
-I am running into a crash on 2.6.36-rc7 kernel when I am bringing ohci cont=
-roller out of suspend. Our suspend gates the clocks, so any access to the o=
-hci registers becomes a bus error.
-
-The original model was that the OHCI suspend and
-resume methods would gate and un-gate clocks
-(respectively).=A0 Don't know if someone changed that;
-it can be awkward to enforce on some silicon.
-
-
-But I'd expect that model would still work.=A0 (It makes no
-sense to poll a suspended controller, either...)
-
-
-- Dave
+     Thomas
