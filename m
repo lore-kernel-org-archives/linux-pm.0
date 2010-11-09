@@ -1,14 +1,15 @@
-From: Nishanth Menon <nm@ti.com>
+From: Kevin Hilman <khilman@deeprootsystems.com>
 Subject: Re: [PATCH] PM: Hide OPP configuration when SoCs do not
- provide an implementation
-Date: Tue, 09 Nov 2010 13:04:17 -0600
-Message-ID: <4CD99B31.7020505@ti.com>
+	provide an implementation
+Date: Tue, 09 Nov 2010 11:17:50 -0800
+Message-ID: <87fwvaqpb5.fsf__39883.8574802086$1289330337$gmane$org@deeprootsystems.com>
 References: <1289327056-27950-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <1289327056-27950-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	(Mark Brown's message of "Tue, 9 Nov 2010 18:24:16 +0000")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,26 +20,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Len Brown <len.brown@intel.com>, patches@opensource.wolfsonmicro.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, patches@opensource.wolfsonmicro.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Mark Brown had written, on 11/09/2010 12:24 PM, the following:
+Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
+
 > Since the OPP API is only useful with an appropraite SoC-specific
 > implementation there is no point in offering the ability to enable
 > the API on general systems. Provide an ARCH_HAS OPP Kconfig symbol
 > which masks out the option unless selected by an implementation.
-Thanks. yep, this is a good change to have.
-
-> 
+>
 > Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-Acked-by: Nishanth Menon <nm@ti.com>
+Acked-by: Kevin Hilman <khilman@deeprootsystems.com>
 
 > ---
 >  Documentation/power/opp.txt |    3 +++
 >  kernel/power/Kconfig        |    4 ++++
 >  2 files changed, 7 insertions(+), 0 deletions(-)
-> 
+>
 > diff --git a/Documentation/power/opp.txt b/Documentation/power/opp.txt
 > index 44d87ad..cd44558 100644
 > --- a/Documentation/power/opp.txt
@@ -71,8 +71,3 @@ Acked-by: Nishanth Menon <nm@ti.com>
 >  	---help---
 >  	  SOCs have a standard set of tuples consisting of frequency and
 >  	  voltage pairs that the device will support per voltage domain. This
-
-
--- 
-Regards,
-Nishanth Menon
