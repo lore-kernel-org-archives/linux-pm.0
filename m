@@ -1,13 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [GIT PULL] One more power management fix for 2.6.37
-Date: Wed, 10 Nov 2010 00:39:17 +0100
-Message-ID: <201011100039.17689.rjw__30835.9920200475$1289346139$gmane$org@sisk.pl>
+Date: Tue, 9 Nov 2010 16:49:49 -0800
+Message-ID: <AANLkTik3ufjfFRKk6Yu39h-E314+ds0iAy1dfFoZSeVN__37029.6000656255$1289350289$gmane$org@mail.gmail.com>
 References: <Pine.LNX.4.44L0.1011041045350.2522-100000@netrider.rowland.org>
+	<201011100039.17689.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1011041045350.2522-100000@netrider.rowland.org>
+In-Reply-To: <201011100039.17689.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,103 +18,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, November 04, 2010, Alan Stern wrote:
-> On Thu, 4 Nov 2010, Rafael J. Wysocki wrote:
-...
-> This won't work if the callback tries to unregister the device, but of
-> course the old code wouldn't work in that case either.  We should
-> document this requirement.
+On Tue, Nov 9, 2010 at 3:39 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>
+> So, what about the patch below?
 
-As per our discussion in Boston I think we may actually allow
-devices to be unregistered during the late and early phases and
-avoid the locking problem with PCMCIA at the same time.
+I think it looks saner, but I also think that it would be saner yet to
+have a separate list entirely, and *not* do this crazy "move things
+back and forth between 'dpm_list'" thing.
 
-So, what about the patch below?
+So I would seriously suggest that the design should aim for each
+suspend event to move things between two lists, and as devices go
+through the suspend phases, they'd move to/from lists that also
+indicate which suspend level they are at.
 
-Rafael
+So why not introduce a new list called "dpm_list_suspended", and in
+"dpm_suspend_noirq()" you move devices one at a time from the
+"dpm_list" to the "dmp_list_suspended".
 
----
- drivers/base/power/main.c |   36 +++++++++++++++++++++++++++++++-----
- 1 file changed, 31 insertions(+), 5 deletions(-)
+And then in "dpm_resume_noirq()" you move them back.
 
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -475,20 +475,33 @@ End:
-  */
- void dpm_resume_noirq(pm_message_t state)
- {
--	struct device *dev;
-+	struct list_head list;
- 	ktime_t starttime = ktime_get();
- 
-+	INIT_LIST_HEAD(&list);
- 	mutex_lock(&dpm_list_mtx);
--	transition_started = false;
--	list_for_each_entry(dev, &dpm_list, power.entry)
-+	while (!list_empty(&dpm_list)) {
-+		struct device *dev = to_device(dpm_list.next);
-+
-+		get_device(dev);
- 		if (dev->power.status > DPM_OFF) {
- 			int error;
- 
- 			dev->power.status = DPM_OFF;
-+			mutex_unlock(&dpm_list_mtx);
-+
- 			error = device_resume_noirq(dev, state);
-+
-+			mutex_lock(&dpm_list_mtx);
- 			if (error)
- 				pm_dev_err(dev, state, " early", error);
- 		}
-+		if (!list_empty(&dev->power.entry))
-+			list_move_tail(&dev->power.entry, &list);
-+		put_device(dev);
-+	}
-+	list_splice(&list, &dpm_list);
-+	transition_started = false;
- 	mutex_unlock(&dpm_list_mtx);
- 	dpm_show_time(starttime, state, "early");
- 	resume_device_irqs();
-@@ -789,20 +802,33 @@ End:
-  */
- int dpm_suspend_noirq(pm_message_t state)
- {
--	struct device *dev;
-+	struct list_head list;
- 	ktime_t starttime = ktime_get();
- 	int error = 0;
- 
-+	INIT_LIST_HEAD(&list);
- 	suspend_device_irqs();
- 	mutex_lock(&dpm_list_mtx);
--	list_for_each_entry_reverse(dev, &dpm_list, power.entry) {
-+	while (!list_empty(&dpm_list)) {
-+		struct device *dev = to_device(dpm_list.prev);
-+
-+		get_device(dev);
-+		mutex_unlock(&dpm_list_mtx);
-+
- 		error = device_suspend_noirq(dev, state);
-+
-+		mutex_lock(&dpm_list_mtx);
- 		if (error) {
- 			pm_dev_err(dev, state, " late", error);
-+			put_device(dev);
- 			break;
- 		}
- 		dev->power.status = DPM_OFF_IRQ;
-+		if (!list_empty(&dev->power.entry))
-+			list_move(&dev->power.entry, &list);
-+		put_device(dev);
- 	}
-+	list_splice_tail(&list, &dpm_list);
- 	mutex_unlock(&dpm_list_mtx);
- 	if (error)
- 		dpm_resume_noirq(resume_event(state));
+Wouldn't that be nice?
+
+(Optimally, you'd have separate lists for "active", "suspended", and
+"irq-suspended")
+
+But regardless, your patch does seem to at least match what we
+currently do in the regular suspend/resume code (ie the
+non-irq's-disabled case). So I don't mind it. I just think that it
+would be cleaner to not take things off one list only to put them back
+on the same list again.
+
+In particular, _if_ device add events can happen concurrently with
+this, I don't understand how that would maintain the depth-first order
+of the list. In contrast, if you do it with separate lists, then you
+know that if a device is on the "suspended" list, then it by
+definition has to be "after" all devices that are on the non-suspended
+list, since you cannot have a non-suspended device that depends on a
+suspended one.
+
+So having separate lists with state should also be very sensible from
+a device topology standpoint - while doing that "list_splice()" back
+on the same list is _not_ at all obviously correct from a topological
+standpoint (I'm not sure I'm explaining this well).
+
+                 Linus
