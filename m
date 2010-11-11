@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] pm_qos: Fix reversed min and max
-Date: Thu, 11 Nov 2010 01:52:34 +0100
-Message-ID: <201011110152.34547.rjw__17336.8215132088$1289437830$gmane$org@sisk.pl>
-References: <1288852803-12356-1-git-send-email-ccross@android.com>
-	<20101104180107.GA20826@gvim.org>
+Subject: Re: [PATCH] PM: Hide OPP configuration when SoCs do not
+	provide an implementation
+Date: Thu, 11 Nov 2010 01:52:55 +0100
+Message-ID: <201011110152.55311.rjw__20624.0751584575$1289437842$gmane$org@sisk.pl>
+References: <1289327056-27950-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<87fwvaqpb5.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101104180107.GA20826@gvim.org>
+In-Reply-To: <87fwvaqpb5.fsf@deeprootsystems.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,51 +19,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: stable <stable@kernel.org>, linux-pm@lists.linux-foundation.org, James Bottomley <James.Bottomley@suse.de>, linux-kernel@vger.kernel.org, Colin Cross <ccross@android.com>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, patches@opensource.wolfsonmicro.com, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, November 04, 2010, mark gross wrote:
-> On Wed, Nov 03, 2010 at 11:40:03PM -0700, Colin Cross wrote:
-> > pm_qos_get_value had min and max reversed, causing all pm_qos
-> > requests to have no effect.
-> sorry.
+On Tuesday, November 09, 2010, Kevin Hilman wrote:
+> Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
 > 
-> Acked-by : mark <markgross@thegnar.org>
+> > Since the OPP API is only useful with an appropraite SoC-specific
+> > implementation there is no point in offering the ability to enable
+> > the API on general systems. Provide an ARCH_HAS OPP Kconfig symbol
+> > which masks out the option unless selected by an implementation.
+> >
+> > Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> 
+> Acked-by: Kevin Hilman <khilman@deeprootsystems.com>
 
 Applied to suspend-2.6/linux-next, will push to Linus next week.
 
 Thanks,
 Rafael
 
-  
-> > Change-Id: I252c764821eac8d94de57eb482c05bf6afcea15b
-> > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> > Cc: mark gross <markgross@thegnar.org>
-> > Cc: James Bottomley <James.Bottomley@suse.de>
-> > Cc: stable <stable@kernel.org>
-> > Signed-off-by: Colin Cross <ccross@android.com>
+
 > > ---
-> >  kernel/pm_qos_params.c |    4 ++--
-> >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> > index 645e541..0da2837 100644
-> > --- a/kernel/pm_qos_params.c
-> > +++ b/kernel/pm_qos_params.c
-> > @@ -120,10 +120,10 @@ static inline int pm_qos_get_value(struct pm_qos_object *o)
+> >  Documentation/power/opp.txt |    3 +++
+> >  kernel/power/Kconfig        |    4 ++++
+> >  2 files changed, 7 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/Documentation/power/opp.txt b/Documentation/power/opp.txt
+> > index 44d87ad..cd44558 100644
+> > --- a/Documentation/power/opp.txt
+> > +++ b/Documentation/power/opp.txt
+> > @@ -37,6 +37,9 @@ Typical usage of the OPP library is as follows:
+> >  SoC framework	-> modifies on required cases certain OPPs	-> OPP layer
+> >  		-> queries to search/retrieve information	->
 > >  
-> >  	switch (o->type) {
-> >  	case PM_QOS_MIN:
-> > -		return plist_last(&o->requests)->prio;
-> > +		return plist_first(&o->requests)->prio;
+> > +Architectures that provide a SoC framework for OPP should select ARCH_HAS_OPP
+> > +to make the OPP layer available.
+> > +
+> >  OPP layer expects each domain to be represented by a unique device pointer. SoC
+> >  framework registers a set of initial OPPs per device with the OPP layer. This
+> >  list is expected to be an optimally small number typically around 5 per device.
+> > diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+> > index 29bff61..a5aff3e 100644
+> > --- a/kernel/power/Kconfig
+> > +++ b/kernel/power/Kconfig
+> > @@ -246,9 +246,13 @@ config PM_OPS
+> >  	depends on PM_SLEEP || PM_RUNTIME
+> >  	default y
 > >  
-> >  	case PM_QOS_MAX:
-> > -		return plist_first(&o->requests)->prio;
-> > +		return plist_last(&o->requests)->prio;
-> >  
-> >  	default:
-> >  		/* runtime check for not using enum */
+> > +config ARCH_HAS_OPP
+> > +	bool
+> > +
+> >  config PM_OPP
+> >  	bool "Operating Performance Point (OPP) Layer library"
+> >  	depends on PM
+> > +	depends on ARCH_HAS_OPP
+> >  	---help---
+> >  	  SOCs have a standard set of tuples consisting of frequency and
+> >  	  voltage pairs that the device will support per voltage domain. This
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
