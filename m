@@ -1,16 +1,15 @@
-From: Andreas Herrmann <herrmann.der.user@googlemail.com>
+From: Otavio Salvador <otavio@ossystems.com.br>
 Subject: Re: [PATCH RESEND] tools: add power/x86/turbostat - v2
-Date: Tue, 16 Nov 2010 11:29:16 +0100
-Message-ID: <20101116102916.GA4305__49334.0956898921$1289903459$gmane$org@alberich.amd.com>
+Date: Mon, 15 Nov 2010 15:16:47 -0200
+Message-ID: <AANLkTi=FK0em5qYV0wf_SMpbC_SrOYYB0i0w1L5WS+Ec__9226.8810178668$1289922492$gmane$org@mail.gmail.com>
 References: <alpine.LFD.2.00.1010230116590.29399@localhost.localdomain>
 	<alpine.LFD.2.00.1010240004180.23060@localhost.localdomain>
 	<alpine.LFD.2.00.1010262312090.3209@localhost.localdomain>
 	<alpine.LFD.2.00.1011151056380.2939@x980>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <alpine.LFD.2.00.1011151056380.2939@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,59 +24,26 @@ To: Len Brown <lenb@kernel.org>
 Cc: linux-pm@lists.linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>, x86@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBOb3YgMTUsIDIwMTAgYXQgMTE6MDE6MDVBTSAtMDUwMCwgTGVuIEJyb3duIHdyb3Rl
-Ogo+IEZyb206IExlbiBCcm93biA8bGVuLmJyb3duQGludGVsLmNvbT4KPiAKPiB0dXJib3N0YXQg
-ZGlzcGxheXMgYWN0dWFsIHByb2Nlc3NvciBmcmVxdWVuY3kgb24gbW9kZXJuCj4gSW50ZWwgcHJv
-Y2Vzc29ycy4gIE5vdGUgdGhhdCB0aGlzIGNhcGFiaWxpdHkgZGVwZW5kcyBvbiBmcmVlLXJ1bm5p
-bmcKPiBBUEVSRiBhbmQgTVBFUkYgTVNScywgd2hpY2ggd2VyZSBjbGVhcmVkIGJ5IHRoZSBhY3Bp
-X2NwdWZyZXEKPiBkcml2ZXIgdXAgdGhyb3VnaCBMaW51eC0yLjYuMjkuCgpXaHkgaXNuJ3QgY3B1
-ZnJlcS1hcGVyZiBzdWZmaWNpZW50IGZvciBzaG93aW5nIHRoZSBhY3R1YWwgZnJlcXVlbmN5PwpU
-aGUgdG9vbCBjYW4gaGFuZGxlIGJvdGggQU1EIGFuZCBJbnRlbCBDUFVzLgoKVGhlcmUgaXMgYSBD
-UFVJRCBmbGFnIHdoaWNoIGNhbiBiZSBjaGVja2VkIGZvciBBUEVSRi9NUEVSRiBleGlzdGVuY2Us
-Cm5vIG5lZWQgdG8gZW5mb3JjZSBhIGdlbmVyYWwgdmVuZG9yIGNoZWNrIGxpa2UgdGhpczoKCiAg
-JCAuL3R1cmJvc3RhdAogIENQVUlEOiBBdXRoZW50aWNBTUQgIT0gR2VudWluZUludGVsCgo+IE9u
-IEludGVsIENvcmUgaTMvaTUvaTcgKE5laGFsZW0pIGFuZCBuZXdlciBwcm9jZXNzb3JzLAo+IHR1
-cmJvc3RhdCBkaXNwbGF5cyByZXNpZGVuY3kgaW4gaWRsZSBwb3dlciBzYXZpbmcgc3RhdGVzLgoK
-Q2FuJ3QgdGhpcyBiZSBhZGRlZCB0byBjcHVpZGxlLWluZm8gKHNlZSBicmFuY2ggY3B1cG93ZXJ1
-dGlscyBpbgpnaXQ6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL3V0aWxzL2tlcm5lbC9jcHVmcmVx
-L2NwdWZyZXF1dGlscy5naXQpPwoKQlRXLCBnY2MgdjQuNCB0aHJvd3Mgc2V2ZXJhbCB3YXJuaW5n
-cyB3aGVuIGNvbXBpbGluZyB5b3VyCmNvZGU6CgpsaW51eC0yLjYvdG9vbHMvcG93ZXIveDg2L3R1
-cmJvc3RhdCAkIG1ha2UKY2MgLVdhbGwgICAgdHVyYm9zdGF0LmMgICAtbyB0dXJib3N0YXQKdHVy
-Ym9zdGF0LmM6IEluIGZ1bmN0aW9uIOKAmGdldF9tc3LigJk6CnR1cmJvc3RhdC5jOjIzNDogd2Fy
-bmluZzogaW1wbGljaXQgZGVjbGFyYXRpb24gb2YgZnVuY3Rpb24g4oCYcHJlYWTigJkKdHVyYm9z
-dGF0LmM6MjM3OiB3YXJuaW5nOiBmb3JtYXQg4oCYJXjigJkgZXhwZWN0cyB0eXBlIOKAmHVuc2ln
-bmVkIGludOKAmSwgYnV0IGFyZ3VtZW50IDQgaGFzIHR5cGUg4oCYb2ZmX3TigJkKdHVyYm9zdGF0
-LmM6MjM3OiB3YXJuaW5nOiBmb3JtYXQg4oCYJWTigJkgZXhwZWN0cyB0eXBlIOKAmGludOKAmSwg
-YnV0IGFyZ3VtZW50IDUgaGFzIHR5cGUg4oCYc3NpemVfdOKAmQp0dXJib3N0YXQuYzogSW4gZnVu
-Y3Rpb24g4oCYcHJpbnRfY291bnRlcnPigJk6CnR1cmJvc3RhdC5jOjM2ODogd2FybmluZzogdW51
-c2VkIHZhcmlhYmxlIOKAmGnigJkKdHVyYm9zdGF0LmM6IEluIGZ1bmN0aW9uIOKAmGNvbXB1dGVf
-YXZlcmFnZeKAmToKdHVyYm9zdGF0LmM6NTA4OiB3YXJuaW5nOiB1bnVzZWQgdmFyaWFibGUg4oCY
-aeKAmQp0dXJib3N0YXQuYzogSW4gZnVuY3Rpb24g4oCYaW5zZXJ0X2NwdV9jb3VudGVyc+KAmToK
-dHVyYm9zdGF0LmM6NjQyOiB3YXJuaW5nOiB1bnVzZWQgdmFyaWFibGUg4oCYbmV4dOKAmQp0dXJi
-b3N0YXQuYzogSW4gZnVuY3Rpb24g4oCYcmVfaW5pdGlhbGl6ZeKAmToKdHVyYm9zdGF0LmM6NzQ3
-OiB3YXJuaW5nOiBpbXBsaWNpdCBkZWNsYXJhdGlvbiBvZiBmdW5jdGlvbiDigJhmb3JfYWxsX2Nw
-dXPigJkKdHVyYm9zdGF0LmM6IEluIGZ1bmN0aW9uIOKAmHR1cmJvc3RhdF9sb29w4oCZOgp0dXJi
-b3N0YXQuYzo3Nzk6IHdhcm5pbmc6IHVudXNlZCB2YXJpYWJsZSDigJhyZXR2YWzigJkKdHVyYm9z
-dGF0LmM6IEluIGZ1bmN0aW9uIOKAmGNoZWNrX2NwdWlk4oCZOgp0dXJib3N0YXQuYzo4Njg6IHdh
-cm5pbmc6IGZvcm1hdCDigJglLjRz4oCZIGV4cGVjdHMgdHlwZSDigJhjaGFyICrigJksIGJ1dCBh
-cmd1bWVudCAzIGhhcyB0eXBlIOKAmHVuc2lnbmVkIGludCAq4oCZCnR1cmJvc3RhdC5jOjg2ODog
-d2FybmluZzogZm9ybWF0IOKAmCUuNHPigJkgZXhwZWN0cyB0eXBlIOKAmGNoYXIgKuKAmSwgYnV0
-IGFyZ3VtZW50IDQgaGFzIHR5cGUg4oCYdW5zaWduZWQgaW50ICrigJkKdHVyYm9zdGF0LmM6ODY4
-OiB3YXJuaW5nOiBmb3JtYXQg4oCYJS40c+KAmSBleHBlY3RzIHR5cGUg4oCYY2hhciAq4oCZLCBi
-dXQgYXJndW1lbnQgNSBoYXMgdHlwZSDigJh1bnNpZ25lZCBpbnQgKuKAmQp0dXJib3N0YXQuYzo4
-NzA6IHdhcm5pbmc6IGltcGxpY2l0IGRlY2xhcmF0aW9uIG9mIGZ1bmN0aW9uIOKAmHN0cm5jbXDi
-gJkKdHVyYm9zdGF0LmM6IEF0IHRvcCBsZXZlbDoKdHVyYm9zdGF0LmM6OTEyOiB3YXJuaW5nOiBy
-ZXR1cm4gdHlwZSBkZWZhdWx0cyB0byDigJhpbnTigJkKdHVyYm9zdGF0LmM6IEluIGZ1bmN0aW9u
-IOKAmGRpcl9maWx0ZXLigJk6CnR1cmJvc3RhdC5jOjk1Nzogd2FybmluZzogaW1wbGljaXQgZGVj
-bGFyYXRpb24gb2YgZnVuY3Rpb24g4oCYaXNkaWdpdOKAmQp0dXJib3N0YXQuYzogSW4gZnVuY3Rp
-b24g4oCYdHVyYm9zdGF0X2luaXTigJk6CnR1cmJvc3RhdC5jOjEwMDQ6IHdhcm5pbmc6IHVudXNl
-ZCB2YXJpYWJsZSDigJhp4oCZCnR1cmJvc3RhdC5jOiBJbiBmdW5jdGlvbiDigJhmb3JrX2l04oCZ
-Ogp0dXJib3N0YXQuYzoxMDM4OiB3YXJuaW5nOiBpbXBsaWNpdCBkZWNsYXJhdGlvbiBvZiBmdW5j
-dGlvbiDigJh3YWl0cGlk4oCZCnR1cmJvc3RhdC5jOiBJbiBmdW5jdGlvbiDigJh1c2FnZeKAmToK
-dHVyYm9zdGF0LmM6OTE1OiB3YXJuaW5nOiBjb250cm9sIHJlYWNoZXMgZW5kIG9mIG5vbi12b2lk
-IGZ1bmN0aW9uCnR1cmJvc3RhdC5jOiBJbiBmdW5jdGlvbiDigJhjb21wdXRlX2RlbHRh4oCZOgp0
-dXJib3N0YXQuYzo0MDE6IHdhcm5pbmc6IOKAmGnigJkgbWF5IGJlIHVzZWQgdW5pbml0aWFsaXpl
-ZCBpbiB0aGlzIGZ1bmN0aW9uCgoKUmVnYXJkcywKQW5kcmVhcwpfX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgt
-cG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0
-aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Mon, Nov 15, 2010 at 2:01 PM, Len Brown <lenb@kernel.org> wrote:
+> From: Len Brown <len.brown@intel.com>
+>
+> turbostat displays actual processor frequency on modern
+> Intel processors. =A0Note that this capability depends on free-running
+> APERF and MPERF MSRs, which were cleared by the acpi_cpufreq
+> driver up through Linux-2.6.29.
+>
+> On Intel Core i3/i5/i7 (Nehalem) and newer processors,
+> turbostat displays residency in idle power saving states.
+>
+> See the comments in the source code for example usage.
+>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> Reviewed-by: Otavio Salvador
+
+Reviewed-by: Otavio Salvador <otavio@ossystems.com.br>
+
+-- =
+
+Otavio Salvador=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 O.S. Systems
+E-mail: otavio@ossystems.com.br=A0 http://www.ossystems.com.br
+Mobile: +55 53 9981-7854=A0 =A0 =A0 =A0=A0 http://projetos.ossystems.com.br
