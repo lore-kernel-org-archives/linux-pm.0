@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: 2.6.37-rc1+: hibernate regression,
 	claims not enough swap space
-Date: Tue, 16 Nov 2010 23:27:27 +0100
-Message-ID: <201011162327.27454.rjw__2112.34413222901$1289946555$gmane$org@sisk.pl>
-References: <20101114052138.GB2189@elf.ucw.cz> <201011152326.44357.rjw@sisk.pl>
+Date: Tue, 16 Nov 2010 23:28:35 +0100
+Message-ID: <201011162328.35599.rjw__27187.8769076013$1289946612$gmane$org@sisk.pl>
+References: <20101114052138.GB2189@elf.ucw.cz>
 	<20101116052634.GA30449@elf.ucw.cz>
+	<20101116053236.GA30605@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101116052634.GA30449@elf.ucw.cz>
+In-Reply-To: <20101116053236.GA30605@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,68 +25,30 @@ Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, kernel list <li
 List-Id: linux-pm@vger.kernel.org
 
 On Tuesday, November 16, 2010, Pavel Machek wrote:
-> Hi!
-> 
-> > > ...but there's enough -- or at least it was enough to fit previous
-> > > versions. 32-bit machine, so it has highmem.
-> > > 
-> > > System is in console mode, very lightly loaded.
-> > > 
-> > > Mem:   2054716k total,   736548k used,  1318168k free,    15368k buffers
-> > > Swap:   779148k total,     2360k used,   776788k free,   546388k cached
+> On Tue 2010-11-16 06:26:34, Pavel Machek wrote:
+> > Hi!
 > > 
-> > Well, the swap is rather in short supply.  Below the 50% of RAM recommendation.
-> 
-> Well, but the biggest image we can write is not 50% of RAM, but 50% of
-> lowmem... 
-
-No, it is not.  It's been 50% of RAM for a couple of years now. :-)
-
-> and swap is nearly as big as lowmem in this case -- so this
-> machine is not misconfigured.
-> 
-> root@amd:/# cat /proc/meminfo 
-> MemTotal:        2054716 kB
-> MemFree:          192048 kB
-> Buffers:           97628 kB
-> Cached:          1427088 kB
-> SwapCached:            0 kB
-> Active:           547580 kB
-> Inactive:        1091744 kB
-> Active(anon):      57060 kB
-> Inactive(anon):    58908 kB
-> Active(file):     490520 kB
-> Inactive(file):  1032836 kB
-> Unevictable:           0 kB
-> Mlocked:               0 kB
-> HighTotal:       1178440 kB
-> HighFree:         128092 kB
-> LowTotal:         876276 kB
-> LowFree:           63956 kB
-> SwapTotal:        779148 kB
-> SwapFree:         779148 kB
-> 
-> > > thinkpad_acpi: ACPI backlight control delay disabled
-> > > PM: thaw of devices complete after 539.577 msecs
-> > > PM: writing image.
-> > > PM: Free swap pages: 194166
-> > > PM: Not enough free swap
-> > > Restarting tasks ...
+> > > > ...but there's enough -- or at least it was enough to fit previous
+> > > > versions. 32-bit machine, so it has highmem.
+> > > > 
+> > > > System is in console mode, very lightly loaded.
+> > > > 
+> > > > Mem:   2054716k total,   736548k used,  1318168k free,    15368k buffers
+> > > > Swap:   779148k total,     2360k used,   776788k free,   546388k cached
 > > > 
-> > > Aha, and it is the new default /sys/power/image_size .. setting it to
-> > > 0 lets machine hibernate. I guess the new default is very wrong for
-> > > highmem machine...
+> > > Well, the swap is rather in short supply.  Below the 50% of RAM recommendation.
 > > 
-> > The old default did the wrong thing for everyone with sufficient swap (it made
-> > the OOM code trigger every time while preparing to create an image), so I think
-> > the new one it's better overall.
+> > Well, but the biggest image we can write is not 50% of RAM, but 50% of
+> > lowmem... and swap is nearly as big as lowmem in this case -- so this
+> > machine is not misconfigured.
 > 
-> OOM? No... image_size of 0 should have written "as small image as
-> possible"; slow, but should not OOM.
+> BTW swsusp.txt may need updating, it says:
+> 
+> echo N > /sys/power/image_size
+> 
+> before suspend (it is limited to 500 MB by default).
 
-This is not how it works now.  We preallocate memory to create memory pressure,
-so if image_size is 0, we need to preallocate until we run out of pages that
-can be freed, which means OOM.
+Yes, this needs to be updated.
 
 Thanks,
 Rafael
