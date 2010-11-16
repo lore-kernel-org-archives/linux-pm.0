@@ -1,10 +1,15 @@
-From: Martin Steigerwald <Martin@lichtvoll.de>
-Subject: Any news regarding your suspend-next kernel patches?
-Date: Tue, 16 Nov 2010 23:20:23 +0100
-Message-ID: <201011162320.44448.Martin__38419.3309503191$1289946109$gmane$org@lichtvoll.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.37-rc1+: hibernate regression,
+	claims not enough swap space
+Date: Tue, 16 Nov 2010 23:27:27 +0100
+Message-ID: <201011162327.27454.rjw__2112.34413222901$1289946555$gmane$org@sisk.pl>
+References: <20101114052138.GB2189@elf.ucw.cz> <201011152326.44357.rjw@sisk.pl>
+	<20101116052634.GA30449@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7688846047635887741=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20101116052634.GA30449@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,64 +17,75 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigelc@hera.kernel.org>, Nigel Cunningham <nigel@tuxonice.net>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, kernel list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============7688846047635887741==
-Content-Type: multipart/signed;
-  boundary="nextPart14023160.zFHSgEg9yN";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+On Tuesday, November 16, 2010, Pavel Machek wrote:
+> Hi!
+> 
+> > > ...but there's enough -- or at least it was enough to fit previous
+> > > versions. 32-bit machine, so it has highmem.
+> > > 
+> > > System is in console mode, very lightly loaded.
+> > > 
+> > > Mem:   2054716k total,   736548k used,  1318168k free,    15368k buffers
+> > > Swap:   779148k total,     2360k used,   776788k free,   546388k cached
+> > 
+> > Well, the swap is rather in short supply.  Below the 50% of RAM recommendation.
+> 
+> Well, but the biggest image we can write is not 50% of RAM, but 50% of
+> lowmem... 
 
---nextPart14023160.zFHSgEg9yN
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+No, it is not.  It's been 50% of RAM for a couple of years now. :-)
 
-Resent due to typo in address of linux-pm mailing list.
+> and swap is nearly as big as lowmem in this case -- so this
+> machine is not misconfigured.
+> 
+> root@amd:/# cat /proc/meminfo 
+> MemTotal:        2054716 kB
+> MemFree:          192048 kB
+> Buffers:           97628 kB
+> Cached:          1427088 kB
+> SwapCached:            0 kB
+> Active:           547580 kB
+> Inactive:        1091744 kB
+> Active(anon):      57060 kB
+> Inactive(anon):    58908 kB
+> Active(file):     490520 kB
+> Inactive(file):  1032836 kB
+> Unevictable:           0 kB
+> Mlocked:               0 kB
+> HighTotal:       1178440 kB
+> HighFree:         128092 kB
+> LowTotal:         876276 kB
+> LowFree:           63956 kB
+> SwapTotal:        779148 kB
+> SwapFree:         779148 kB
+> 
+> > > thinkpad_acpi: ACPI backlight control delay disabled
+> > > PM: thaw of devices complete after 539.577 msecs
+> > > PM: writing image.
+> > > PM: Free swap pages: 194166
+> > > PM: Not enough free swap
+> > > Restarting tasks ...
+> > > 
+> > > Aha, and it is the new default /sys/power/image_size .. setting it to
+> > > 0 lets machine hibernate. I guess the new default is very wrong for
+> > > highmem machine...
+> > 
+> > The old default did the wrong thing for everyone with sufficient swap (it made
+> > the OOM code trigger every time while preparing to create an image), so I think
+> > the new one it's better overall.
+> 
+> OOM? No... image_size of 0 should have written "as small image as
+> possible"; slow, but should not OOM.
 
-Hi Nigel!
+This is not how it works now.  We preallocate memory to create memory pressure,
+so if image_size is 0, we need to preallocate until we run out of pages that
+can be freed, which means OOM.
 
-Any news regarding your suspend-next kernel patches?
-
-I am running 2.6.36 with in kernel suspend to disk on my ThinkPad T42, my=20
-T23 and my Dell Workstation at work quite successfully. Thus I can say its=
-=20
-stable and I have a good testing base for any updated patches you come up=20
-with.
-
-I didn't yet test in kernel suspend of 2.6.37 which AFAIK sports LZO=20
-compression yet.
-
-CIao,
-=2D-=20
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
-
---nextPart14023160.zFHSgEg9yN
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEABECAAYFAkzjA6gACgkQmRvqrKWZhMcj7wCgogN1faP1pOVD+lkOTeqy5ZBH
-U4IAn1k3HTL4meFCITt1t7Bjts02TH6g
-=VB1l
------END PGP SIGNATURE-----
-
---nextPart14023160.zFHSgEg9yN--
-
---===============7688846047635887741==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============7688846047635887741==--
+Thanks,
+Rafael
