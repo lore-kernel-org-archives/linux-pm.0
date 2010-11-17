@@ -1,14 +1,14 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [git 2.6.32.stable] intel_idle driver for
-	2.6.32.stable
-Date: Wed, 17 Nov 2010 03:21:19 -0500 (EST)
-Message-ID: <alpine.LFD.2.00.1011170315050.24426__26443.1662777953$1289982165$gmane$org@x980>
-References: <alpine.LFD.2.00.1011030138010.3378@localhost.localdomain>
+Subject: Re: [git pull 2.6.36.stable] intel_idle patches for
+	2.6.36.stable
+Date: Wed, 17 Nov 2010 03:28:24 -0500 (EST)
+Message-ID: <alpine.LFD.2.00.1011170322270.24426__19441.727634012$1289982584$gmane$org@x980>
+References: <alpine.LFD.2.00.1011151227190.2939@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <alpine.LFD.2.00.1011030138010.3378@localhost.localdomain>
+In-reply-to: <alpine.LFD.2.00.1011151227190.2939@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,46 +18,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+To: stable@kernel.org
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-I've added the upstream commit id's to each patch,
-but the idle-release branch is otherwise unchanged.
+Hi Greg,
 
-cheers,
--Len Brown, Intel Open Source Technology Center.
+I've added upstream commit id's to each commit comment in this series.
+If that is enough to make -stable happy, then we're done.
 
+If you would rather not pull this series because it
+does not exclude the intermediate syntax patches that
+are upstream, then I understand that viewpoint too.
 
-intel_idle for 2.6.32.stable is available in git:
+thanks,
+-Len Brown, Intel Open Source Technology Center
+---
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.32.y.git 
-idle-release
+please pull from: 
 
-and also as a plain patch:
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.36.git idle-release
 
-http://ftp.kernel.org/pub/linux/kernel/people/lenb/idle/patches/2.6.32/idle-release-2.6.32.25.diff.gz
+to sync 2.6.36.y with upstream changes to the intel_idle driver.
 
-The patch series is summarized below.
+After applying this series, 2.6.36.y and upstream intel_idle.c
+are identical.
 
- MAINTAINERS                      |    7 +
- arch/x86/include/asm/mwait.h     |   15 ++
- arch/x86/kernel/acpi/cstate.c    |   11 +-
- drivers/Makefile                 |    2 +-
- drivers/acpi/acpi_pad.c          |    7 +-
- drivers/acpi/processor_core.c    |   15 +-
- drivers/cpuidle/cpuidle.c        |   43 ++++-
- drivers/cpuidle/cpuidle.h        |    1 -
- drivers/cpuidle/driver.c         |   16 ++-
- drivers/cpuidle/governors/menu.c |   23 ++-
- drivers/cpuidle/sysfs.c          |    5 +-
- drivers/idle/Kconfig             |   10 +
- drivers/idle/Makefile            |    1 +
- drivers/idle/intel_idle.c        |  448 ++++++++++++++++++++++++++++++++++++++
- include/linux/cpuidle.h          |   13 +-
- 15 files changed, 575 insertions(+), 42 deletions(-)
+This will update the files shown below.
+
+ps. a consolidated plain patch is available here:
+http://ftp.kernel.org/pub/linux/kernel/people/lenb/idle/patches/2.6.35/idle-release-2.6.35.8.diff.gz
+
+ arch/x86/include/asm/mwait.h     |   15 ++++
+ arch/x86/kernel/acpi/cstate.c    |   11 +---
+ drivers/acpi/acpi_pad.c          |    7 +--
+ drivers/cpuidle/cpuidle.c        |   31 ++++++++
+ drivers/cpuidle/governors/menu.c |   23 ++++--
+ drivers/idle/intel_idle.c        |  149 +++++++++++++++++---------------------
+ include/linux/cpuidle.h          |    5 ++
+ 7 files changed, 137 insertions(+), 104 deletions(-)
  create mode 100644 arch/x86/include/asm/mwait.h
- create mode 100644 drivers/idle/intel_idle.c
+ mode change 100755 => 100644 drivers/idle/intel_idle.c
 
 through these commits:
 
@@ -70,22 +71,18 @@ Arjan van de Ven (1):
 H. Peter Anvin (1):
       x86, mwait: Move mwait constants to a common header file
 
-Len Brown (15):
-      cpuidle: fail to register if !CONFIG_CPU_IDLE
-      cpuidle: add cpuidle_unregister_driver() error check
-      cpuidle: make cpuidle_curr_driver static
-      ACPI: allow a native cpuidle driver to displace ACPI
-      intel_idle: native hardware cpuidle driver for latest Intel processors
+Len Brown (8):
       intel_idle: delete substates DEBUG modparam
       intel_idle: delete power_policy modparam, and choose substate functions
       intel_idle: add support for Westmere-EX
-      intel_idle: disable module support
-      intel_idle: no longer EXPERIMENTAL
       intel_idle: enable Atom C6
       intel_idle: simplify test for leave_mm()
       intel_idle: delete bogus data from cpuidle_state.power_usage
       intel_idle: add initial Sandy Bridge support
       intel_idle: do not use the LAPIC timer for ATOM C2
+
+Namhyung Kim (1):
+      intel_idle: add missing __percpu markup
 
 Suresh Siddha (1):
       intel_idle: Voluntary leave_mm before entering deeper
@@ -95,7 +92,7 @@ Thomas Weber (1):
 
 with this log:
 
-commit 97e3bcac24f55fa6c3224f1bc39d08db73495cfb
+commit 6a059cb9befbfa7bd6679d979aa1594a1d101711
 Author: Len Brown <len.brown@intel.com>
 Date:   Sat Oct 23 23:25:53 2010 -0400
 
@@ -110,7 +107,7 @@ Date:   Sat Oct 23 23:25:53 2010 -0400
     
     Signed-off-by: Len Brown <len.brown@intel.com>
 
-commit 3f371943e54e8cbc8cdea3e543656d8e62f6b8a9
+commit 5561b5a10961288f8748feeb750d6aec3579431f
 Author: Len Brown <len.brown@intel.com>
 Date:   Wed Jul 7 00:12:03 2010 -0400
 
@@ -120,7 +117,7 @@ Date:   Wed Jul 7 00:12:03 2010 -0400
     
     Signed-off-by: Len Brown <len.brown@intel.com>
 
-commit 263d2d9ba1fd6f8baa2003d46ff1b32733585903
+commit 0b60f7ae3ae18c5092d238746b6bdd07146fa985
 Author: Len Brown <len.brown@intel.com>
 Date:   Fri Oct 15 21:23:25 2010 -0400
 
@@ -134,7 +131,7 @@ Date:   Fri Oct 15 21:23:25 2010 -0400
     
     Signed-off-by: Len Brown <len.brown@intel.com>
 
-commit 731dafe015fc308b40eaf9cc1838739d74554a72
+commit 8e4bdfd5583a2cd7ef8147d68ba14ed9012c3c85
 Author: Len Brown <len.brown@intel.com>
 Date:   Fri Oct 15 20:43:06 2010 -0400
 
@@ -148,24 +145,7 @@ Date:   Fri Oct 15 20:43:06 2010 -0400
     
     Signed-off-by: Len Brown <len.brown@intel.com>
 
-commit 0d377ee9506d73b26852a9f2a03e87412532a83a
-Author: H. Peter Anvin <hpa@linux.intel.com>
-Date:   Fri Sep 17 15:36:40 2010 -0700
-
-    x86, mwait: Move mwait constants to a common header file
-    
-    upstream: bc83cccc761953f878088cdfa682de0970b5561f
-    
-    We have MWAIT constants spread across three different .c files, for no
-    good reason.  Move them all into a common header file.
-    
-    Signed-off-by: H. Peter Anvin <hpa@linux.intel.com>
-    Reviewed-by: Arjan van de Ven <arjan@linux.intel.com>
-    Cc: Len Brown <lenb@kernel.org>
-    LKML-Reference: <tip-*@git.kernel.org>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit b302246d3ba6e822e23193516385bd82c3e1d957
+commit f22be1a8995b4150efd3ecd411081b3aabda56b9
 Author: Len Brown <len.brown@intel.com>
 Date:   Tue Oct 5 13:43:14 2010 -0400
 
@@ -180,7 +160,7 @@ Date:   Tue Oct 5 13:43:14 2010 -0400
     Tested-by: Dennis Jansen <Dennis.Jansen@...>
     Signed-off-by: Len Brown <len.brown@intel.com>
 
-commit 13fec6ba1116ea16dd28d54cc92a5f19fa1460f5
+commit b58d00fe466fa87a70b45c9dd7a96c35f2059d46
 Author: Suresh Siddha <suresh.b.siddha@intel.com>
 Date:   Thu Sep 30 21:19:07 2010 -0400
 
@@ -199,13 +179,13 @@ Date:   Thu Sep 30 21:19:07 2010 -0400
     Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
     Signed-off-by: Len Brown <len.brown@intel.com>
 
-commit 1b4cde4b819b532319b4972355968ea48ad06157
+commit a75baccab28d82e0df59bff8d71abcbebf00f1bf
 Author: Ai Li <aili@codeaurora.org>
 Date:   Mon Aug 9 17:20:13 2010 -0700
 
     cpuidle: extend cpuidle and menu governor to handle dynamic states
     
-    cpuidle: 71abbbf856a0e70ca478782505c800891260ba84
+    upstream: 71abbbf856a0e70ca478782505c800891260ba84
     
     On some SoC chips, HW resources may be in use during any particular idle
     period.  As a consequence, the cpuidle states that the SoC is safe to
@@ -261,9 +241,23 @@ Date:   Mon Aug 9 17:20:13 2010 -0700
     Cc: Venkatesh Pallipadi <venki@google.com>
     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+commit b9f18c200c48d2cd851763843eeaecc22b932959
+Author: Namhyung Kim <namhyung@gmail.com>
+Date:   Sun Aug 8 03:10:03 2010 +0900
+
+    intel_idle: add missing __percpu markup
+    
+    upstream: 3265eba0bed7645cacd5e2cb3614d504b5ac29e6
+    
+    intel_idle_cpuidle_devices is a percpu pointer
+    but was missing __percpu markup.
+    
+    Signed-off-by: Namhyung Kim <namhyung@gmail.com>
+    Acked-by: Tejun Heo <tj@kernel.org>
     Signed-off-by: Len Brown <len.brown@intel.com>
 
-commit bb55febc2a2b41014e8c34ea312848574ac96f5e
+commit 22bef8cef0e24982c49be2080f15b2acac471023
 Author: Thomas Weber <weber@corscience.de>
 Date:   Mon Jul 12 08:56:43 2010 +0200
 
@@ -276,7 +270,23 @@ Date:   Mon Jul 12 08:56:43 2010 +0200
     Signed-off-by: Thomas Weber <weber@corscience.de>
     Signed-off-by: Len Brown <len.brown@intel.com>
 
-commit 1d9ce17be4700a0115bf283c7ff1e67263cfc17a
+commit 3ed9263fe2db73b82909b93d7995f4f402e50959
+Author: H. Peter Anvin <hpa@linux.intel.com>
+Date:   Fri Sep 17 15:36:40 2010 -0700
+
+    x86, mwait: Move mwait constants to a common header file
+    
+    upstream: bc83cccc761953f878088cdfa682de0970b5561f
+    
+    We have MWAIT constants spread across three different .c files, for no
+    good reason.  Move them all into a common header file.
+    
+    Signed-off-by: H. Peter Anvin <hpa@linux.intel.com>
+    Reviewed-by: Arjan van de Ven <arjan@linux.intel.com>
+    Cc: Len Brown <lenb@kernel.org>
+    LKML-Reference: <tip-*@git.kernel.org>
+
+commit 0b4281f91f5651f818fa8a0ae89e90ffcafb394b
 Author: Arjan van de Ven <arjan@linux.intel.com>
 Date:   Wed Jul 21 23:42:25 2010 -0400
 
@@ -287,38 +297,7 @@ Date:   Wed Jul 21 23:42:25 2010 -0400
     Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
     Signed-off-by: Len Brown <len.brown@intel.com>
 
-commit 96076984bc88598023b7fdc823659c4a3ed444e3
-Author: Len Brown <len.brown@intel.com>
-Date:   Sat Aug 14 14:44:08 2010 -0400
-
-    intel_idle: no longer EXPERIMENTAL
-    
-    upstream: 5a5e28daea69652505ac07eb5fbda4d7f0534926
-    
-    This is a fully supported driver.
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 6e6c0dae2b32736f270c03f853a166c8b11567a0
-Author: Len Brown <len.brown@intel.com>
-Date:   Sat Aug 14 14:40:36 2010 -0400
-
-    intel_idle: disable module support
-    
-    upstream: 6ce9cd8669fa1195fdc21643370e34523c7ac988
-    
-    Right now the module capability is cauing more trouble
-    than it is worth.  At least one distro built intel_idle as a module
-    where it lost the init race with ACPI, making it useless.
-    
-    Make intel_idle bool so that if you select it, you will use it.
-    
-    We can restore module capability after cpuidle is enhanced
-    to handle run-time changing of idle drivers.
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit e361b2321279f6c44392bc3e89b4895d68594b67
+commit 2eef191712247f3924ac6396e763aad2009d42dd
 Author: Len Brown <len.brown@intel.com>
 Date:   Mon Jul 26 23:40:19 2010 -0400
 
@@ -328,7 +307,7 @@ Date:   Mon Jul 26 23:40:19 2010 -0400
     
     Signed-off-by: Len Brown <len.brown@intel.com>
 
-commit 50ce5830e037e9bf934e3dfaeafb56f2be3f6bb1
+commit b8dc00bc475902f33408ffe61301e7e2947ef813
 Author: Len Brown <len.brown@intel.com>
 Date:   Fri Jul 23 16:04:46 2010 -0400
 
@@ -350,7 +329,7 @@ Date:   Fri Jul 23 16:04:46 2010 -0400
     
     Signed-off-by: Len Brown <len.brown@intel.com>
 
-commit 7b6d47c455d6c9388447ea466881e85864496636
+commit 313d1cff4a3d0fcf03e39147b3052bb4d0af4bc9
 Author: Len Brown <len.brown@intel.com>
 Date:   Fri May 28 02:22:03 2010 -0400
 
@@ -359,95 +338,5 @@ Date:   Fri May 28 02:22:03 2010 -0400
     upstream: c4236282e5921a410e8f074fec795b6ca0af36d5
     
     it isn't useful anymore
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 08479e73c90ed7714ac733434539196025909544
-Author: Len Brown <len.brown@intel.com>
-Date:   Mon Mar 8 14:07:30 2010 -0500
-
-    intel_idle: native hardware cpuidle driver for latest Intel processors
-    
-    upstream: 2671717265ae6e720a9ba5f13fbec3a718983b65
-    
-    This EXPERIMENTAL driver supersedes acpi_idle on
-    Intel Atom Processors, Intel Core i3/i5/i7 Processors
-    and associated Intel Xeon processors.
-    
-    It does not support the Intel Core2 processor or earlier.
-    
-    For kernels configured with ACPI, CONFIG_INTEL_IDLE=y
-    allows intel_idle to probe before the ACPI processor driver.
-    Booting with "intel_idle.max_cstate=0" disables intel_idle
-    and the system will fall back on ACPI's "acpi_idle".
-    
-    Typical Linux distributions load ACPI processor module early,
-    making CONFIG_INTEL_IDLE=m not easily useful on ACPI platforms.
-    
-    intel_idle probes all processors at module_init time.
-    Processors that are hot-added later will be limited
-    to using C1 in idle.
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 86741cac7bbc7e9a9f20d3999a172a835d4cd152
-Author: Len Brown <len.brown@intel.com>
-Date:   Sat May 22 17:03:29 2010 -0400
-
-    ACPI: allow a native cpuidle driver to displace ACPI
-    
-    upstream: 541adf7cd937b3895c7645406a9b060504df453b
-    
-    The ACPI driver would fail probe when it found that
-    another driver had previously registered with cpuidle.
-    
-    But this is a natural situation, as a native hardware
-    cpuidle driver should be able to bind instead of ACPI,
-    and the ACPI processor driver should be able to handle
-    yielding control of C-states while still handling
-    P-states and T-states.
-    
-    Add a KERN_DEBUG line showing when acpi_idle
-    does successfully register.
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 0f4465d44e93651c90813923268a8e9abcf89b58
-Author: Len Brown <len.brown@intel.com>
-Date:   Sat May 22 16:57:26 2010 -0400
-
-    cpuidle: make cpuidle_curr_driver static
-    
-    upstream: 752138df0dc2daaae09379c754caeb08c97905dc
-    
-    cpuidle_register_driver() sets cpuidle_curr_driver
-    cpuidle_unregister_driver() clears cpuidle_curr_driver
-    
-    We should't expose cpuidle_curr_driver to
-    potential modification except via these interfaces.
-    So make it static and create cpuidle_get_driver() to observe it.
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 329dc1a14c6ddfd71b0ecff1e2458f50258106cf
-Author: Len Brown <len.brown@intel.com>
-Date:   Sat May 22 16:34:10 2010 -0400
-
-    cpuidle: add cpuidle_unregister_driver() error check
-    
-    upstream: c0d64cb031c21f163a0ec15cf10844bcf0ceedcf
-    
-    Assure that cpuidle_unregister_driver() will not clobber
-    the registered driver if unregistered by somebody else.
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 5991bb561038bc6b7b0a1dbea741a64e499ae118
-Author: Len Brown <len.brown@intel.com>
-Date:   Tue May 11 16:50:52 2010 -0400
-
-    cpuidle: fail to register if !CONFIG_CPU_IDLE
-    
-    upstream: 6b2c676bf32be91f43215d5874c07c1becaba013
     
     Signed-off-by: Len Brown <len.brown@intel.com>
