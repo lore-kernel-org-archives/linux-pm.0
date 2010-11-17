@@ -1,14 +1,14 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [git pull 2.6.36.stable] intel_idle patches for
-	2.6.36.stable
-Date: Wed, 17 Nov 2010 03:28:24 -0500 (EST)
-Message-ID: <alpine.LFD.2.00.1011170322270.24426__19441.727634012$1289982584$gmane$org@x980>
-References: <alpine.LFD.2.00.1011151227190.2939@x980>
+Subject: Re: [git pull 2.6.35.stable] intel_idle patches for
+	2.6.35.stable
+Date: Wed, 17 Nov 2010 03:30:41 -0500 (EST)
+Message-ID: <alpine.LFD.2.00.1011170330020.24426__9515.56646400622$1289982726$gmane$org@x980>
+References: <alpine.LFD.2.00.1011151221420.2939@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <alpine.LFD.2.00.1011151227190.2939@x980>
+In-reply-to: <alpine.LFD.2.00.1011151221420.2939@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,28 +23,26 @@ Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi Greg,
-
+      
 I've added upstream commit id's to each commit comment in this series.
 If that is enough to make -stable happy, then we're done.
 
-If you would rather not pull this series because it
-does not exclude the intermediate syntax patches that
-are upstream, then I understand that viewpoint too.
+If you would rather not pull this series because it 
+does not exclude the intermediate syntax patches that 
+are upstream, then I understand that viewpoint too. 
 
 thanks,
 -Len Brown, Intel Open Source Technology Center
----
+
+Hi Linus,
 
 please pull from: 
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.36.git idle-release
-
-to sync 2.6.36.y with upstream changes to the intel_idle driver.
-
-After applying this series, 2.6.36.y and upstream intel_idle.c
-are identical.
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.git idle-release
 
 This will update the files shown below.
+
+thanks!
 
 ps. a consolidated plain patch is available here:
 http://ftp.kernel.org/pub/linux/kernel/people/lenb/idle/patches/2.6.35/idle-release-2.6.35.8.diff.gz
