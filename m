@@ -1,15 +1,19 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [git pull 2.6.36.stable] intel_idle patches for
-	2.6.36.stable
-Date: Wed, 17 Nov 2010 03:33:47 -0500 (EST)
-Message-ID: <alpine.LFD.2.00.1011170331150.24426__25830.6050593548$1289982902$gmane$org@x980>
-References: <alpine.LFD.2.00.1011151227190.2939@x980>
-	<alpine.LFD.2.00.1011170322270.24426@x980>
+From: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH RESEND] tools: add
+	power/x86/x86_energy_perf_policy to program
+	MSR_IA32_ENERGY_PERF_BIAS
+Date: Wed, 17 Nov 2010 12:35:52 +0100
+Message-ID: <8739r0rxlz.fsf__15254.1659925648$1289998185$gmane$org@basil.nowhere.org>
+References: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
+	<alpine.LFD.2.00.1009281143070.14962@localhost.localdomain>
+	<alpine.LFD.2.00.1010230035360.29399@localhost.localdomain>
+	<alpine.LFD.2.00.1011151103280.2939@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <alpine.LFD.2.00.1011170322270.24426@x980>
+In-Reply-To: <alpine.LFD.2.00.1011151103280.2939@x980> (Len Brown's message of
+	"Mon, 15 Nov 2010 11:07:04 -0500 (EST)")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,121 +23,140 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: stable@kernel.org
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, x86@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Greg,
+Len Brown <lenb@kernel.org> writes:
+> @@ -0,0 +1,7 @@
+> +x86_energy_perf_policy : x86_energy_perf_policy.c
+> +
+> +clean :
+> +	rm -f x86_energy_perf_policy
+> +
+> +install :
+> +	install x86_energy_perf_policy /usr/bin/x86_energy_perf_policy
 
-Please disregard the previous commit log on this thread,
-for it was the 2.6.35.y log, while the (smaller) 2.6.36.y log is below.
-      
-I've added upstream commit id's to each commit comment in this series.
-If that is enough to make -stable happy, then we're done.
+It's not clear to me how this Makefile ensures it's only
+build on x86. 
 
-If you would rather not pull this series because it 
-does not exclude the intermediate syntax patches that 
-are upstream, then I understand that viewpoint too. 
+If someone on another architecture does a full tools build
+in the future (I think that is not wired up yet, but should
+eventually) such a mechanism would be needed.
 
-thanks,
--Len Brown, Intel Open Source Technology Center
 
-please pull from: 
+> +
+> +/*
+> + * Usage:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.git idle-release
+...
 
-This will update the files shown below.
+This full comment and parts of the following comments describing the
+semantics need to be available somewhere to the user who may not have
+easy access to the source. Can you make it display in usage or convert
+it to a manpage? I would prefer a manpage
 
-thanks!
+> +
+> +cmdline(int argc, char **argv) {
 
-ps. a consolidated plain patch is available here:
-http://ftp.kernel.org/pub/linux/kernel/people/lenb/idle/patches/2.6.36/idle-release-2.6.36.diff.gz
+No type?
 
- arch/x86/include/asm/mwait.h  |   15 +++++++++
- arch/x86/kernel/acpi/cstate.c |   11 +------
- drivers/acpi/acpi_pad.c       |    7 +---
- drivers/idle/intel_idle.c     |   70 +++++++++++++++++++++++++++-------------
- 4 files changed, 64 insertions(+), 39 deletions(-)
- create mode 100644 arch/x86/include/asm/mwait.h
+> +	int opt;
+> +
+> +	progname = argv[0];
+> +
+> +	while ((opt = getopt(argc, argv, "+rvc:")) != -1) {
 
-through these commits:
+Maybe it's me, but I prefer having long options too (getopt_long)
+These are easier to memorize.
 
-H. Peter Anvin (1):
-      x86, mwait: Move mwait constants to a common header file
+> +
+> +	/*
+> +	 * if no -r , then must be one additional optind
+> +	 */
+> +	if (!read_only) {
+> +
+> +		if (argc != optind + 1) {
+> +			printf("must supply -r or policy param\n");
+> +			usage();
+> +			exit(-1);
 
-Len Brown (4):
-      intel_idle: simplify test for leave_mm()
-      intel_idle: delete bogus data from cpuidle_state.power_usage
-      intel_idle: add initial Sandy Bridge support
-      intel_idle: do not use the LAPIC timer for ATOM C2
+-1 is an unusual exit code. Better use 1.
 
-with this log:
+An obvious improvement would be to put the exit() into usage()
 
-commit 7f3ea665c65b960fe5a2ea1e445e0df6e812008e
-Author: Len Brown <len.brown@intel.com>
-Date:   Sat Oct 23 23:25:53 2010 -0400
+> +			}
+> +
+> +		if (!strcmp("performance", argv[optind])) {
+> +			new_bias = BIAS_PERFORMANCE;
+> +		} else if (!strcmp("normal", argv[optind])) {
+> +			new_bias = BIAS_BALANCE;
+> +		} else if (!strcmp("powersave", argv[optind])) {
+> +			new_bias = BIAS_POWERSAVE;
+> +		} else {
+> +			new_bias = atoll(argv[optind]);
 
-    intel_idle: do not use the LAPIC timer for ATOM C2
-    
-    upstream: c25d29952b2a8c9aaf00e081c9162a0e383030cd
-    
-    If we use the LAPIC timer during ATOM C2 on
-    some nvidia chisets, the system stalls.
-    
-    https://bugzilla.kernel.org/show_bug.cgi?id=21032
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
+If you used strtoull() you could actually check if the input
+is really a number (end == argv[optind])
 
-commit 46a9d923c69249ee31cdf1ca9acf5fb7b9c63e6a
-Author: Len Brown <len.brown@intel.com>
-Date:   Wed Jul 7 00:12:03 2010 -0400
+> +	eax = ebx = ecx = edx = 0;
+> +
+> +	asm("cpuid" : "=a" (max_level), "=b" (ebx), "=c" (ecx),
+> +		"=d" (edx) : "a" (0));
 
-    intel_idle: add initial Sandy Bridge support
-    
-    upstream: d13780d439d08a57c87c1a07b6e76ddde61da1aa
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
+Strictly for 386/early 486 you would need to check if cpuid
+is available using pushf too. Perhaps it's safer to use cpuinfo
 
-commit a040a61b60cb03ffdfaeaa208a2fcf25f0e11727
-Author: Len Brown <len.brown@intel.com>
-Date:   Fri Oct 15 21:23:25 2010 -0400
+> +
+> +check_dev_msr() {
 
-    intel_idle: delete bogus data from cpuidle_state.power_usage
-    
-    upstream: dea44c6b7df7f8bb67cb059b4c14b24288c4cd04
-    
-    The mW data in this field is a total fabrication
-    and serves no purpose other than to mislead
-    those who might see it in sysfs.  Delete it.
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
+Return type missing again
 
-commit bd592a79c7eb1c52b812933dc64a37452b2e9047
-Author: Len Brown <len.brown@intel.com>
-Date:   Fri Oct 15 20:43:06 2010 -0400
+> +	struct stat sb;
+> +
+> +	if (stat("/dev/cpu/0/msr", &sb)) {
+> +		printf("no /dev/cpu/0/msr\n");
 
-    intel_idle: simplify test for leave_mm()
-    
-    upstream: c8381cc3d8a9cc6c80f65bf60863c776651f245c
-    
-    A run-time test to invoke leave_mm() for the deepest
-    supported C-state is redundant, since the appropriate
-    C-states already have flags with CPUIDLE_FLAG_TLB_FLUSHED set.
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
+This will fail if we eventually implement cpu 0 hotplug...
+Better readdir or similar.
 
-commit b53be4ee844a7528565352e0cdab8ff9095a9f8f
-Author: H. Peter Anvin <hpa@linux.intel.com>
-Date:   Fri Sep 17 15:36:40 2010 -0700
+> +		printf("Try \"# modprobe msr\"\n");
+> +		exit(-5);
 
-    x86, mwait: Move mwait constants to a common header file
-    
-    upstream: bc83cccc761953f878088cdfa682de0970b5561f
-    
-    We have MWAIT constants spread across three different .c files, for no
-    good reason.  Move them all into a common header file.
-    
-    Signed-off-by: H. Peter Anvin <hpa@linux.intel.com>
-    Reviewed-by: Arjan van de Ven <arjan@linux.intel.com>
-    Cc: Len Brown <lenb@kernel.org>
-    LKML-Reference: <tip-*@git.kernel.org>
+Again -5 is unusual.
+
+
+> +	char msr_path[32];
+> +	int retval;
+> +	int fd;
+> +
+> +	sprintf(msr_path, "/dev/cpu/%d/msr", cpu);
+> +	fd = open(msr_path, O_RDONLY);
+> +	if (fd < 0) {
+> +		perror(msr_path);
+> +		exit(-1);
+
+This should be a soft error because the CPU can go away
+any time.
+
+
+> +/*
+> + * run func() on every cpu in /dev/cpu
+> + */
+> +void for_every_cpu(void (func)(int))
+> +{
+> +	FILE *fp;
+> +	int cpu_count;
+> +	int retval;
+> +
+> +	fp = fopen(proc_stat, "r");
+
+Using /proc/stat to get the number of CPUs is unusual
+and you don't handle holes in the cpu numbers which
+can happen due to hotplug.
+
+I would just readdir or fnmatch the MSR /dev/cpu/* directories.
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
