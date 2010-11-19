@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH ver. 2] PM: add synchronous runtime interface for
- interrupt handlers
-Date: Fri, 19 Nov 2010 10:45:48 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1011191044400.1344-100000__32659.8797612407$1290181721$gmane$org@iolanthe.rowland.org>
-References: <201010062347.18232.rjw@sisk.pl>
+From: Alex Deucher <alexdeucher@gmail.com>
+Subject: Re: 2.6.37-rc2-git4: Reported regressions 2.6.35 ->
+	2.6.36
+Date: Fri, 19 Nov 2010 11:39:26 -0500
+Message-ID: <AANLkTi=8G7pNA7QTxaXDWKrWrCERPfmKU+nLJWCA=JUH__4452.08764072067$1290185038$gmane$org@mail.gmail.com>
+References: <tTUH_XeInOH.A.dMF.c3b5MB@chimera> <4CE5C919.7090504@teksavvy.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201010062347.18232.rjw@sisk.pl>
+In-Reply-To: <4CE5C919.7090504@teksavvy.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,250 +18,79 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+To: Mark Lord <kernel@teksavvy.com>
+Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch (as1431b) makes the synchronous runtime-PM interface
-suitable for use in interrupt handlers.  Subsystems can call the new
-pm_runtime_irq_safe() function to tell the PM core that a device's
-runtime-PM callbacks should be invoked with interrupts disabled
-(runtime_suspend and runtime_resume callbacks will be invoked with the
-spinlock held as well).  This permits the pm_runtime_get_sync() and
-pm_runtime_put_sync() routines to be called from within interrupt
-handlers.
+On Thu, Nov 18, 2010 at 7:47 PM, Mark Lord <kernel@teksavvy.com> wrote:
+> On 10-11-18 06:50 PM, Rafael J. Wysocki wrote:
+>>
+>> This message contains a list of some post-2.6.35 regressions introduced
+>> before
+>> 2.6.36, for which there are no fixes in the mainline known to the tracki=
+ng
+>> team.
+>> If any of them have been fixed already, please let us know.
+>>
+>> If you know of any other unresolved post-2.6.35 regressions, please let =
+us
+>> know
+>> either and we'll add them to the list. =A0Also, please let us know if any
+>> of the entries below are invalid.
+>
+>> Bug-Entry =A0 =A0 =A0 : http://bugzilla.kernel.org/show_bug.cgi?id=3D216=
+52
+>> Subject =A0 =A0 =A0 =A0 : several problems with intel graphics since 2.6=
+.36
+>> Submitter =A0 =A0 =A0 : Norbert Preining<preining@logic.at>
+>> Date =A0 =A0 =A0 =A0 =A0 =A0: 2010-10-27 14:32 (23 days old)
+>> Message-ID =A0 =A0 =A0:<20101027143252.GA8676@gamma.logic.tuwien.ac.at>
+>> References =A0 =A0 =A0: http://marc.info/?l=3Dlinux-kernel&m=3D128818998=
+630241&w=3D2
+>
+> That one is interesting to me.. I suspect it may be the same cause
+> as for https://bugzilla.kernel.org/show_bug.cgi?id=3D21952
+>
+> I have one of those Samsung (N210) Netbooks here: works fine with 2.6.34 =
+and
+> earlier,
+> but fails to come out of suspend on 2.6.35/2.6.36 (haven't tried 2.6.37).
+>
+> So perhaps add 21952 to the list, or link it to the 21652
+> (kind of amusing how similar the bug numbers are..).
+>
+>
+> My non-Intel graphics notebook (has ATI X1400 graphics) also has a resume
+> regression with 2.6.36. =A0But it does work fine with 2.6.35 (and earlier,
+> back many years). =A0As a result, I'm stuck with 2.6.35 for the time bein=
+g,
+> and lack the time for a concerted debug effort on 2.6.36+ right now.
+>
 
-When a device is declared irq-safe in this way, the PM core increments
-the parent's usage count, so the parent will never be runtime
-suspended.  This prevents difficult situations in which an irq-safe
-device can't resume because it is forced to wait for its non-irq-safe
-parent.
+Can you bisect?  Does this patch help?
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+diff --git a/drivers/gpu/drm/radeon/atom.c b/drivers/gpu/drm/radeon/atom.c
+index 8e421f6..05efb5b 100644
+--- a/drivers/gpu/drm/radeon/atom.c
++++ b/drivers/gpu/drm/radeon/atom.c
+@@ -112,6 +112,7 @@ static uint32_t atom_iio_execute(struct
+atom_context *ctx, int base,
+                        base +=3D 3;
+                        break;
+                case ATOM_IIO_WRITE:
++                       (void)ctx->card->ioreg_read(ctx->card, CU16(base + =
+1));
+                        ctx->card->ioreg_write(ctx->card, CU16(base + 1), t=
+emp);
+                        base +=3D 3;
+                        break;
 
----
 
-Index: usb-2.6/include/linux/pm.h
-===================================================================
---- usb-2.6.orig/include/linux/pm.h
-+++ usb-2.6/include/linux/pm.h
-@@ -486,6 +486,7 @@ struct dev_pm_info {
- 	unsigned int		run_wake:1;
- 	unsigned int		runtime_auto:1;
- 	unsigned int		no_callbacks:1;
-+	unsigned int		irq_safe:1;
- 	unsigned int		use_autosuspend:1;
- 	unsigned int		timer_autosuspends:1;
- 	enum rpm_request	request;
-Index: usb-2.6/include/linux/pm_runtime.h
-===================================================================
---- usb-2.6.orig/include/linux/pm_runtime.h
-+++ usb-2.6/include/linux/pm_runtime.h
-@@ -40,6 +40,7 @@ extern int pm_generic_runtime_idle(struc
- extern int pm_generic_runtime_suspend(struct device *dev);
- extern int pm_generic_runtime_resume(struct device *dev);
- extern void pm_runtime_no_callbacks(struct device *dev);
-+extern void pm_runtime_irq_safe(struct device *dev);
- extern void __pm_runtime_use_autosuspend(struct device *dev, bool use);
- extern void pm_runtime_set_autosuspend_delay(struct device *dev, int delay);
- extern unsigned long pm_runtime_autosuspend_expiration(struct device *dev);
-@@ -123,6 +124,7 @@ static inline int pm_generic_runtime_idl
- static inline int pm_generic_runtime_suspend(struct device *dev) { return 0; }
- static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
- static inline void pm_runtime_no_callbacks(struct device *dev) {}
-+static inline void pm_runtime_irq_safe(struct device *dev) {}
- 
- static inline void pm_runtime_mark_last_busy(struct device *dev) {}
- static inline void __pm_runtime_use_autosuspend(struct device *dev,
-Index: usb-2.6/drivers/base/power/runtime.c
-===================================================================
---- usb-2.6.orig/drivers/base/power/runtime.c
-+++ usb-2.6/drivers/base/power/runtime.c
-@@ -223,11 +223,19 @@ static int rpm_idle(struct device *dev, 
- 		callback = NULL;
- 
- 	if (callback) {
--		spin_unlock_irq(&dev->power.lock);
-+		if (dev->power.irq_safe) {
-+			spin_unlock(&dev->power.lock);
- 
--		callback(dev);
-+			callback(dev);
- 
--		spin_lock_irq(&dev->power.lock);
-+			spin_lock(&dev->power.lock);
-+		} else {
-+			spin_unlock_irq(&dev->power.lock);
-+
-+			callback(dev);
-+
-+			spin_lock_irq(&dev->power.lock);
-+		}
- 	}
- 
- 	dev->power.idle_notification = false;
-@@ -250,13 +258,16 @@ static int rpm_callback(int (*cb)(struct
- 	if (!cb)
- 		return -ENOSYS;
- 
--	spin_unlock_irq(&dev->power.lock);
-+	if (dev->power.irq_safe) {
-+		retval = cb(dev);
-+	} else {
-+		spin_unlock_irq(&dev->power.lock);
- 
--	retval = cb(dev);
-+		retval = cb(dev);
- 
--	spin_lock_irq(&dev->power.lock);
-+		spin_lock_irq(&dev->power.lock);
-+	}
- 	dev->power.runtime_error = retval;
--
- 	return retval;
- }
- 
-@@ -404,7 +415,7 @@ static int rpm_suspend(struct device *de
- 		goto out;
- 	}
- 
--	if (parent && !parent->power.ignore_children) {
-+	if (parent && !parent->power.ignore_children && !dev->power.irq_safe) {
- 		spin_unlock_irq(&dev->power.lock);
- 
- 		pm_request_idle(parent);
-@@ -527,10 +538,13 @@ static int rpm_resume(struct device *dev
- 
- 	if (!parent && dev->parent) {
- 		/*
--		 * Increment the parent's resume counter and resume it if
--		 * necessary.
-+		 * Increment the parent's usage counter and resume it if
-+		 * necessary.  Not needed if dev is irq-safe; then the
-+		 * parent is permanently resumed.
- 		 */
- 		parent = dev->parent;
-+		if (dev->power.irq_safe)
-+			goto skip_parent;
- 		spin_unlock(&dev->power.lock);
- 
- 		pm_runtime_get_noresume(parent);
-@@ -553,6 +567,7 @@ static int rpm_resume(struct device *dev
- 			goto out;
- 		goto repeat;
- 	}
-+ skip_parent:
- 
- 	if (dev->power.no_callbacks)
- 		goto no_callback;	/* Assume success. */
-@@ -584,7 +599,7 @@ static int rpm_resume(struct device *dev
- 		rpm_idle(dev, RPM_ASYNC);
- 
-  out:
--	if (parent) {
-+	if (parent && !dev->power.irq_safe) {
- 		spin_unlock_irq(&dev->power.lock);
- 
- 		pm_runtime_put(parent);
-@@ -1065,7 +1080,6 @@ EXPORT_SYMBOL_GPL(pm_runtime_allow);
-  * Set the power.no_callbacks flag, which tells the PM core that this
-  * device is power-managed through its parent and has no run-time PM
-  * callbacks of its own.  The run-time sysfs attributes will be removed.
-- *
-  */
- void pm_runtime_no_callbacks(struct device *dev)
- {
-@@ -1078,6 +1092,28 @@ void pm_runtime_no_callbacks(struct devi
- EXPORT_SYMBOL_GPL(pm_runtime_no_callbacks);
- 
- /**
-+ * pm_runtime_irq_safe - Leave interrupts disabled during callbacks.
-+ * @dev: Device to handle
-+ *
-+ * Set the power.irq_safe flag, which tells the PM core that the
-+ * ->runtime_suspend() and ->runtime_resume() callbacks for this device should
-+ * always be invoked with the spinlock held, and all three callbacks should
-+ * always be invoked with interrupts disabled.  It also causes the parent's
-+ * usage counter to be permanently incremented, preventing the parent from
-+ * runtime suspending -- otherwise an irq-safe child might have to wait for a
-+ * non-irq-safe parent.
-+ */
-+void pm_runtime_irq_safe(struct device *dev)
-+{
-+	if (dev->parent)
-+		pm_runtime_get_sync(dev->parent);
-+	spin_lock_irq(&dev->power.lock);
-+	dev->power.irq_safe = 1;
-+	spin_unlock_irq(&dev->power.lock);
-+}
-+EXPORT_SYMBOL_GPL(pm_runtime_irq_safe);
-+
-+/**
-  * update_autosuspend - Handle a change to a device's autosuspend settings.
-  * @dev: Device to handle.
-  * @old_delay: The former autosuspend_delay value.
-@@ -1199,4 +1235,6 @@ void pm_runtime_remove(struct device *de
- 	/* Change the status back to 'suspended' to match the initial status. */
- 	if (dev->power.runtime_status == RPM_ACTIVE)
- 		pm_runtime_set_suspended(dev);
-+	if (dev->power.irq_safe && dev->parent)
-+		pm_runtime_put_sync(dev->parent);
- }
-Index: usb-2.6/Documentation/power/runtime_pm.txt
-===================================================================
---- usb-2.6.orig/Documentation/power/runtime_pm.txt
-+++ usb-2.6/Documentation/power/runtime_pm.txt
-@@ -50,6 +50,13 @@ type's callbacks are not defined) of giv
- and device class callbacks are referred to as subsystem-level callbacks in what
- follows.
- 
-+By default, the callbacks are always invoked in process context with interrupts
-+enabled.  However subsystems can use the pm_runtime_irq_safe() helper function
-+to tell the PM core that a device's callbacks should always be invoked with
-+interrupts disabled.  This implies that the callback routines must not block
-+or sleep, but it also means that the synchronous helper functions listed at the
-+end of Section 4 can be used from within an interrupt handler.
-+
- The subsystem-level suspend callback is _entirely_ _responsible_ for handling
- the suspend of the device as appropriate, which may, but need not include
- executing the device driver's own ->runtime_suspend() callback (from the
-@@ -237,6 +244,11 @@ defined in include/linux/pm.h:
-       Section 8); it may be modified only by the pm_runtime_no_callbacks()
-       helper function
- 
-+  unsigned int irq_safe;
-+    - indicates that the runtime-PM callbacks should be invoked with interrupts
-+      disabled; the ->runtime_suspend() and ->runtime_resume() callbacks will
-+      be made with the spinlock held as well
-+
-   unsigned int use_autosuspend;
-     - indicates that the device's driver supports delayed autosuspend (see
-       Section 9); it may be modified only by the
-@@ -397,6 +409,10 @@ drivers/base/power/runtime.c and include
-       PM attributes from /sys/devices/.../power (or prevent them from being
-       added when the device is registered)
- 
-+  void pm_runtime_irq_safe(struct device *dev);
-+    - set the power.irq_safe flag for the device, causing the runtime-PM
-+      callbacks to be invoked with interrupts disabled
-+
-   void pm_runtime_mark_last_busy(struct device *dev);
-     - set the power.last_busy field to the current time
- 
-@@ -438,6 +454,16 @@ pm_runtime_suspended()
- pm_runtime_mark_last_busy()
- pm_runtime_autosuspend_expiration()
- 
-+If pm_runtime_irq_safe() has been called for a device then the following helper
-+functions may also be called in interrupt context:
-+
-+pm_runtime_idle()
-+pm_runtime_suspend()
-+pm_runtime_autosuspend()
-+pm_runtime_resume()
-+pm_runtime_get_sync()
-+pm_runtime_put_sync()
-+
- 5. Run-time PM Initialization, Device Probing and Removal
- 
- Initially, the run-time PM is disabled for all devices, which means that the
+Alex
+
+> Cheers
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> http://lists.freedesktop.org/mailman/listinfo/dri-devel
+>
