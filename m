@@ -1,14 +1,11 @@
-From: Jesse Gross <jesse@nicira.com>
-Subject: Re: 2.6.37-rc2-git4: Reported regressions 2.6.35 ->
-	2.6.36
-Date: Thu, 18 Nov 2010 16:36:54 -0800
-Message-ID: <AANLkTinzHyWcfS++R_d+yqR9JQu7W51h0XRr-ikd_6y1__40082.9009748579$1290188042$gmane$org@mail.gmail.com>
-References: <tTUH_XeInOH.A.dMF.c3b5MB@chimera>
+From: Aaro Koskinen <aaro.koskinen@nokia.com>
+Subject: [PATCH] pm: fix comments to match runtime callback code
+Date: Fri, 19 Nov 2010 17:48:52 +0200
+Message-ID: <1290181732-9124-1-git-send-email-aaro.koskinen__12468.7454001561$1290188052$gmane$org@nokia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <tTUH_XeInOH.A.dMF.c3b5MB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,18 +15,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: linux-pm@lists.linux-foundation.org, rjw@sisk.pl, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Nov 18, 2010 at 3:50 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Bug-Entry =A0 =A0 =A0 : http://bugzilla.kernel.org/show_bug.cgi?id=3D20462
-> Subject =A0 =A0 =A0 =A0 : 2.6.36-rc7-git2 - panic/GPF: e1000e/vlans?
-> Submitter =A0 =A0 =A0 : Nikola Ciprich <extmaillist@linuxbox.cz>
-> Date =A0 =A0 =A0 =A0 =A0 =A0: 2010-10-15 7:10 (35 days old)
-> Message-ID =A0 =A0 =A0: <20101015071008.GA8714@pcnci.linuxbox.cz>
-> References =A0 =A0 =A0: http://marc.info/?l=3Dlinux-kernel&m=3D1287129848=
-31303&w=3D2
+Commit 05aa55dddb9ee4045c320661068bea78dad6a6e5 changed routines to
+succeed if the driver handler is not defined. Comments were not updated.
 
-A fix for this has been sent to -stable:
-http://www.spinics.net/lists/netdev/msg146227.html
+Signed-off-by: Aaro Koskinen <aaro.koskinen@nokia.com>
+---
+ drivers/base/power/generic_ops.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
+index 81f2c84..3d2c350 100644
+--- a/drivers/base/power/generic_ops.c
++++ b/drivers/base/power/generic_ops.c
+@@ -39,7 +39,7 @@ EXPORT_SYMBOL_GPL(pm_generic_runtime_idle);
+  *
+  * If PM operations are defined for the @dev's driver and they include
+  * ->runtime_suspend(), execute it and return its error code.  Otherwise,
+- * return -EINVAL.
++ * return 0.
+  */
+ int pm_generic_runtime_suspend(struct device *dev)
+ {
+@@ -58,7 +58,7 @@ EXPORT_SYMBOL_GPL(pm_generic_runtime_suspend);
+  *
+  * If PM operations are defined for the @dev's driver and they include
+  * ->runtime_resume(), execute it and return its error code.  Otherwise,
+- * return -EINVAL.
++ * return 0.
+  */
+ int pm_generic_runtime_resume(struct device *dev)
+ {
+-- 
+1.5.6.5
