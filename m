@@ -1,14 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.37-rc2-git4: Reported regressions from 2.6.36
-Date: Fri, 19 Nov 2010 21:37:02 +0100
-Message-ID: <201011192137.02426.rjw__20750.7844818339$1290199197$gmane$org@sisk.pl>
-References: <sKkKYVppECN.A.KhC.Phb5MB@chimera>
-	<AANLkTimBJAKUEe3POB49DFSxqZzQAd03e_3Rn-0mP4wY@mail.gmail.com>
+From: Mark Lord <kernel@teksavvy.com>
+Subject: Re: 2.6.37-rc2-git4: Reported regressions 2.6.35 ->
+	2.6.36
+Date: Fri, 19 Nov 2010 17:55:42 -0500
+Message-ID: <4CE7006E.4040102__48260.1513657302$1290207505$gmane$org@teksavvy.com>
+References: <tTUH_XeInOH.A.dMF.c3b5MB@chimera>	<4CE5C919.7090504@teksavvy.com>
+	<AANLkTi=8G7pNA7QTxaXDWKrWrCERPfmKU+nLJWCA=JUH@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTimBJAKUEe3POB49DFSxqZzQAd03e_3Rn-0mP4wY@mail.gmail.com>
+In-Reply-To: <AANLkTi=8G7pNA7QTxaXDWKrWrCERPfmKU+nLJWCA=JUH@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,43 +23,57 @@ To: Alex Deucher <alexdeucher@gmail.com>
 Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, November 19, 2010, Alex Deucher wrote:
-> On Thu, Nov 18, 2010 at 6:23 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > This message contains a list of some regressions from 2.6.36,
-> > for which there are no fixes in the mainline known to the tracking team.
-> > If any of them have been fixed already, please let us know.
-> >
-> > If you know of any other unresolved regressions from 2.6.36, please let=
- us
-> > know either and we'll add them to the list.  Also, please let us know
-> > if any of the entries below are invalid.
-> >
-> > Each entry from the list will be sent additionally in an automatic reply
-> > to this message with CCs to the people involved in reporting and handli=
-ng
-> > the issue.
-> >
-> >
-> > Listed regressions statistics:
-> >
-> >  Date          Total  Pending  Unresolved
-> >  ----------------------------------------
-> >  2010-11-19       39       29          25
-> >
-> >
-> > Unresolved regressions
-> > ----------------------
-> >
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=3D23222
-> > Subject         : 2.6.36 radeon KMS: [drm] Cannot find any crtc or sizes
-> > Submitter       : J=E1n Bedn=E1r <jan.bednar@gmail.com>
-> > Date            : 2010-11-18 15:33 (1 days old)
-> >
-> =
+On 10-11-19 11:39 AM, Alex Deucher wrote:
+> On Thu, Nov 18, 2010 at 7:47 PM, Mark Lord<kernel@teksavvy.com>  wrote:
+>
+>> My non-Intel graphics notebook (has ATI X1400 graphics) also has a resume
+>> regression with 2.6.36.  But it does work fine with 2.6.35 (and earlier,
+>> back many years).  As a result, I'm stuck with 2.6.35 for the time being,
+>> and lack the time for a concerted debug effort on 2.6.36+ right now.
+>>
+>
+> Can you bisect?  Does this patch help?
+>
+> diff --git a/drivers/gpu/drm/radeon/atom.c b/drivers/gpu/drm/radeon/atom.c
+> index 8e421f6..05efb5b 100644
+> --- a/drivers/gpu/drm/radeon/atom.c
+> +++ b/drivers/gpu/drm/radeon/atom.c
+> @@ -112,6 +112,7 @@ static uint32_t atom_iio_execute(struct
+> atom_context *ctx, int base,
+>                          base += 3;
+>                          break;
+>                  case ATOM_IIO_WRITE:
+> +                       (void)ctx->card->ioreg_read(ctx->card, CU16(base + 1));
+>                          ctx->card->ioreg_write(ctx->card, CU16(base + 1), temp);
+>                          base += 3;
+>                          break;
 
-> I've added a fix to that bug.
+It now comes back at resume time.
 
-It doesn't seem to have helped, though.
+But suffers long delays (also sometimes with 2.6.35) doing this:
 
-Thanks,
-Rafael
+[drm:atom_op_jump] *ERROR* atombios stuck in loop for more than 5secs aborting
+[drm:atom_execute_table_locked] *ERROR* atombios stuck executing E576 (len 105, 
+WS 12, PS 8) @ 0xE5C4
+[drm:atom_op_jump] *ERROR* atombios stuck in loop for more than 5secs aborting
+[drm:atom_execute_table_locked] *ERROR* atombios stuck executing ECD2 (len 86, 
+WS 4, PS 0) @ 0xED05
+[drm:atom_op_jump] *ERROR* atombios stuck in loop for more than 5secs aborting
+[drm:atom_execute_table_locked] *ERROR* atombios stuck executing E576 (len 105, 
+WS 12, PS 8) @ 0xE5C4
+PM: resume of devices complete after 15718.253 msecs
+
+So I did this (local hack only, obviously NOT for mainline) to work around that 
+issue:
+
+--- linux-2.6.36/drivers/gpu/drm/radeon/atom.c  2010-10-20 16:30:22.000000000 -0400
++++ linux/drivers/gpu/drm/radeon/atom.c 2010-11-19 17:14:21.141807003 -0500
+@@ -1150,6 +1151,7 @@
+
+         if (!base)
+                 return -EINVAL;
++       if (base == 0xe576 || base == 0xecd2) return 0;  /* prevent freezes on 
+Dell i9400 w/X1400 */
+
+         len = CU16(base + ATOM_CT_SIZE_PTR);
+         ws = CU8(base + ATOM_CT_WS_PTR);
