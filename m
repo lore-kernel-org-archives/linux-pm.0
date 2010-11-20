@@ -1,18 +1,14 @@
-From: Alex Deucher <alexdeucher@gmail.com>
-Subject: Re: 2.6.37-rc2-git4: Reported regressions 2.6.35 ->
-	2.6.36
-Date: Fri, 19 Nov 2010 18:17:54 -0500
-Message-ID: <AANLkTi==0+pNswCwfgo5v5tKA+Qkq7UfRdH4ftEqx7rf__11632.5130839416$1290208729$gmane$org@mail.gmail.com>
-References: <tTUH_XeInOH.A.dMF.c3b5MB@chimera> <4CE5C919.7090504@teksavvy.com>
-	<AANLkTi=8G7pNA7QTxaXDWKrWrCERPfmKU+nLJWCA=JUH@mail.gmail.com>
-	<4CE7006E.4040102@teksavvy.com>
-	<AANLkTim9aXi1_EJyh2f-+X4HnNWJ3uk2z=P6m1hQso5a@mail.gmail.com>
-	<4CE70543.2000206@teksavvy.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH ver. 2] PM: add synchronous runtime interface
+	for interrupt handlers
+Date: Sat, 20 Nov 2010 13:56:11 +0100
+Message-ID: <201011201356.11782.rjw__775.898507754569$1290258019$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1011191044400.1344-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4CE70543.2000206@teksavvy.com>
+In-Reply-To: <Pine.LNX.4.44L0.1011191044400.1344-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,50 +18,92 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Lord <kernel@teksavvy.com>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Nov 19, 2010 at 6:16 PM, Mark Lord <kernel@teksavvy.com> wrote:
-> On 10-11-19 05:58 PM, Alex Deucher wrote:
->>
->> On Fri, Nov 19, 2010 at 5:55 PM, Mark Lord<kernel@teksavvy.com> =A0wrote:
->>
->>> It now comes back at resume time.
->>
->> So that patch helped?
->
-> I think so. =A0It didn't used to resume from suspend with 2.6.36, and now=
- it
-> does.
->
->>> But suffers long delays (also sometimes with 2.6.35) doing this:
->>>
->>> [drm:atom_op_jump] *ERROR* atombios stuck in loop for more than 5secs
->>> aborting
->>> [drm:atom_execute_table_locked] *ERROR* atombios stuck executing E576
->>> (len
->>> 105, WS 12, PS 8) @ 0xE5C4
->>> [drm:atom_op_jump] *ERROR* atombios stuck in loop for more than 5secs
->>> aborting
->>> [drm:atom_execute_table_locked] *ERROR* atombios stuck executing ECD2
->>> (len
->>> 86, WS 4, PS 0) @ 0xED05
->>> [drm:atom_op_jump] *ERROR* atombios stuck in loop for more than 5secs
->>> aborting
->>> [drm:atom_execute_table_locked] *ERROR* atombios stuck executing E576
->>> (len
->>> 105, WS 12, PS 8) @ 0xE5C4
->>> PM: resume of devices complete after 15718.253 msecs
->>>
->>
->> It's be nice if you could bisect to track down when those started.
->
-> It'd be even nicer if they hadn't started. =A0:)
->
-> What kernel release first had that atom/ops table in it? =A0I'll try that.
->
+On Friday, November 19, 2010, Alan Stern wrote:
+> This patch (as1431b) makes the synchronous runtime-PM interface
+> suitable for use in interrupt handlers.  Subsystems can call the new
+> pm_runtime_irq_safe() function to tell the PM core that a device's
+> runtime-PM callbacks should be invoked with interrupts disabled
+> (runtime_suspend and runtime_resume callbacks will be invoked with the
+> spinlock held as well).  This permits the pm_runtime_get_sync() and
+> pm_runtime_put_sync() routines to be called from within interrupt
+> handlers.
+> 
+> When a device is declared irq-safe in this way, the PM core increments
+> the parent's usage count, so the parent will never be runtime
+> suspended.  This prevents difficult situations in which an irq-safe
+> device can't resume because it is forced to wait for its non-irq-safe
+> parent.
+> 
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> 
+> ---
+> 
+> Index: usb-2.6/include/linux/pm.h
+> ===================================================================
+> --- usb-2.6.orig/include/linux/pm.h
+> +++ usb-2.6/include/linux/pm.h
+> @@ -486,6 +486,7 @@ struct dev_pm_info {
+>  	unsigned int		run_wake:1;
+>  	unsigned int		runtime_auto:1;
+>  	unsigned int		no_callbacks:1;
+> +	unsigned int		irq_safe:1;
+>  	unsigned int		use_autosuspend:1;
+>  	unsigned int		timer_autosuspends:1;
+>  	enum rpm_request	request;
+> Index: usb-2.6/include/linux/pm_runtime.h
+> ===================================================================
+> --- usb-2.6.orig/include/linux/pm_runtime.h
+> +++ usb-2.6/include/linux/pm_runtime.h
+> @@ -40,6 +40,7 @@ extern int pm_generic_runtime_idle(struc
+>  extern int pm_generic_runtime_suspend(struct device *dev);
+>  extern int pm_generic_runtime_resume(struct device *dev);
+>  extern void pm_runtime_no_callbacks(struct device *dev);
+> +extern void pm_runtime_irq_safe(struct device *dev);
+>  extern void __pm_runtime_use_autosuspend(struct device *dev, bool use);
+>  extern void pm_runtime_set_autosuspend_delay(struct device *dev, int delay);
+>  extern unsigned long pm_runtime_autosuspend_expiration(struct device *dev);
+> @@ -123,6 +124,7 @@ static inline int pm_generic_runtime_idl
+>  static inline int pm_generic_runtime_suspend(struct device *dev) { return 0; }
+>  static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
+>  static inline void pm_runtime_no_callbacks(struct device *dev) {}
+> +static inline void pm_runtime_irq_safe(struct device *dev) {}
+>  
+>  static inline void pm_runtime_mark_last_busy(struct device *dev) {}
+>  static inline void __pm_runtime_use_autosuspend(struct device *dev,
+> Index: usb-2.6/drivers/base/power/runtime.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/base/power/runtime.c
+> +++ usb-2.6/drivers/base/power/runtime.c
+> @@ -223,11 +223,19 @@ static int rpm_idle(struct device *dev, 
+>  		callback = NULL;
+>  
+>  	if (callback) {
+> -		spin_unlock_irq(&dev->power.lock);
+> +		if (dev->power.irq_safe) {
+> +			spin_unlock(&dev->power.lock);
+>  
+> -		callback(dev);
+> +			callback(dev);
+>  
+> -		spin_lock_irq(&dev->power.lock);
+> +			spin_lock(&dev->power.lock);
+> +		} else {
+> +			spin_unlock_irq(&dev->power.lock);
+> +
+> +			callback(dev);
+> +
+> +			spin_lock_irq(&dev->power.lock);
+> +		}
+>  	}
 
-2.6.31 or 32 was when radeon kms got merged IIRC.
+I didn't like this change before and I still don't like it.  Quite frankly, I'm
+not sure I can convince Linus to pull it. :-)
 
-Alex
+Why don't we simply execute the callback under the spinlock in the
+IRQ safe case?
+
+Rafael
