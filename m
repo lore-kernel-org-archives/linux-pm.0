@@ -1,8 +1,8 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH ver. 2] PM: add synchronous runtime interface
- for interrupt handlers
-Date: Sat, 20 Nov 2010 14:41:00 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1011201437450.8483-100000__28868.8660752543$1290282170$gmane$org@netrider.rowland.org>
+	for interrupt handlers
+Date: Mon, 22 Nov 2010 00:41:06 +0100
+Message-ID: <201011220041.06440.rjw__47972.7070116953$1290383003$gmane$org@sisk.pl>
 References: <Pine.LNX.4.44L0.1011201152210.5871-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,12 +18,11 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 20 Nov 2010, Alan Stern wrote:
-
+On Saturday, November 20, 2010, Alan Stern wrote:
 > On Sat, 20 Nov 2010, Rafael J. Wysocki wrote:
 > 
 > > On Friday, November 19, 2010, Alan Stern wrote:
@@ -78,15 +77,16 @@ On Sat, 20 Nov 2010, Alan Stern wrote:
 > call pm_runtime_suspend when needed.  But if the callback runs under
 > the spinlock then pm_runtime_suspend would hang when it tries to grab
 > the lock.
-> 
-> I don't think Linus will object to this.  What he doesn't like is when
-> some code drops a lock, reacquires it, and then behaves as though the
-> lock had been held all along.  That's not the case here; rpm_idle()  
-> does not depend on any state remaining unchanged across the callback.
 
-One other thing I forgot to mention...  If Linus doesn't like the way
-the new code drops the spinlock and then reacquires it, then he must
-also not like the existing code, which does the same thing.  The only
-difference lies in whether or not interrupts are re-enabled.
+Yes, in the _idle case.  I actually should have put my comment under
+the change in rpm_callback(), which is what I really meant.
 
-Alan Stern
+Moreover, I'm not sure if we need an "IRQ safe" version of _idle.  Why do
+we need it, exactly?
+
+> I don't think Linus will object to this.
+
+Well, I guess we'll see. :-)
+
+Thanks,
+Rafael
