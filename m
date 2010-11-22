@@ -1,18 +1,18 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [stable] [git pull 2.6.36.stable] intel_idle patches
- for 2.6.36.stable
-Date: Mon, 22 Nov 2010 10:45:59 -0800
-Message-ID: <20101122184559.GA10879__18371.5929896154$1290451726$gmane$org@kroah.com>
-References: <alpine.LFD.2.00.1011151227190.2939@x980>
-	<alpine.LFD.2.00.1011170322270.24426@x980>
-	<alpine.LFD.2.00.1011170331150.24426@x980>
-	<alpine.LFD.2.00.1011221318230.19247@x980>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH RESEND] tools: add
+ power/x86/x86_energy_perf_policy to program MSR_IA32_ENERGY_PERF_BIAS
+Date: Mon, 22 Nov 2010 15:13:24 -0500 (EST)
+Message-ID: <alpine.LFD.2.00.1011221348200.19247__29233.5298764103$1290456913$gmane$org@x980>
+References: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
+	<alpine.LFD.2.00.1009281143070.14962@localhost.localdomain>
+	<alpine.LFD.2.00.1010230035360.29399@localhost.localdomain>
+	<alpine.LFD.2.00.1011151103280.2939@x980>
+	<8739r0rxlz.fsf@basil.nowhere.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1011221318230.19247@x980>
+In-reply-to: <8739r0rxlz.fsf@basil.nowhere.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,36 +22,139 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@lists.linux-foundation.org, stable@kernel.org, linux-kernel@vger.kernel.org
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, x86@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Nov 22, 2010 at 01:36:31PM -0500, Len Brown wrote:
-> Hi Greg,
-> 
-> I retract my intel_idle pull requests for .stable
-> 
-> The idle-release branches in...
-> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/
-> 	linux-idle-2.6.32.git
-> 	linux-idle-2.6.35.git
-> 	linux-idle-2.6.36.git
-> 
-> are for distros and others that want to run the latest intel_idle
-> driver on the specified release.  The backports in these trees
-> contain every upstream patch that touch the driver, including new
-> platform support and any dependent cosmetic patches.
-> 
-> So they are optimized for the maintenance task of comparing
-> the backport versus the upstream driver to verify the release
-> includes everything that is upstream.
-> However, as it does not exclude cosmetic or trivial patches,
-> the backports do not qualify for inclusion in .stable.
-> 
-> Sorry to bother you.
+Hi Andy,
 
-No problem at all, glad to see you change your mind :)
+Thank you for the review!
+
+responses below.
+
+> > +install :
+> > +	install x86_energy_perf_policy /usr/bin/x86_energy_perf_policy
+> 
+> It's not clear to me how this Makefile ensures it's only
+> build on x86. 
+> 
+> If someone on another architecture does a full tools build
+> in the future (I think that is not wired up yet, but should
+> eventually) such a mechanism would be needed.
+
+Per the comments from Andrew and others, the concept of a
+"full tools build" doesn't actually exit (yet).
+
+So I guess the only assurance that somebody not on x86 would run
+make in this directory this utility lives in tools/power/x86/
+
+Note that there are other utilities under tools
+which have no Makefile at all...
+
+> ...I would prefer a manpage
+
+I'll be happy to write a manpage.
+Is there good example I should follow?
+
+> > +cmdline(int argc, char **argv) {
+> 
+> No type?
+
+okay,  now void.
+
+> > +	while ((opt = getopt(argc, argv, "+rvc:")) != -1) {
+> 
+> Maybe it's me, but I prefer having long options too (getopt_long)
+> These are easier to memorize.
+
+I'm not inclined to bother, as the use-case for this utility
+is to be invoked by another program, and the options available
+are really there just for verification/debugging, and don't
+really merit being memorized by a human after that task.
+
+> An obvious improvement would be to put the exit() into usage()
+
+done.
+
+> > +			new_bias = atoll(argv[optind]);
+> 
+> If you used strtoull() you could actually check if the input
+> is really a number (end == argv[optind])
+
+done.
+
+> > +	asm("cpuid" : "=a" (max_level), "=b" (ebx), "=c" (ecx),
+> > +		"=d" (edx) : "a" (0));
+> 
+> Strictly for 386/early 486 you would need to check if cpuid
+> is available using pushf too. Perhaps it's safer to use cpuinfo
+
+Meh, maybe simpler to crash on 486 and earlier?:-)
+I'm not fond of parsing /proc/cpuinfo.
+
+> > +check_dev_msr() {
+> 
+> Return type missing again
+
+routine deleted.
+
+> > +	struct stat sb;
+> > +
+> > +	if (stat("/dev/cpu/0/msr", &sb)) {
+> > +		printf("no /dev/cpu/0/msr\n");
+> 
+> This will fail if we eventually implement cpu 0 hotplug...
+> Better readdir or similar.
+
+simpler to delete check_dev_msr() and stumble forward
+assuming /dev/cpu/*/msr exists, and print a message and
+exit if it doesn't.
+
+> > +		printf("Try \"# modprobe msr\"\n");
+> > +		exit(-5);
+> 
+> Again -5 is unusual.
+
+okay, I canged all the exits to 1.
+
+> > +	sprintf(msr_path, "/dev/cpu/%d/msr", cpu);
+> > +	fd = open(msr_path, O_RDONLY);
+> > +	if (fd < 0) {
+> > +		perror(msr_path);
+> > +		exit(-1);
+> 
+> This should be a soft error because the CPU can go away
+> any time.
+
+In the highly unlikely scenario that somebody uses
+the -r option to excerise the read-only code,
+and simultaneously invokes and completes a cpu hot remove
+during the execution of this utility,
+I think the utility exiting is just as useful,
+and less complicated, than handling soft error.
+Since in either case, the user would probably
+simply re-invoke the utility to see what the
+current state of the settled machine is.
+
+> > +/*
+> > + * run func() on every cpu in /dev/cpu
+> > + */
+...
+> > +	fp = fopen(proc_stat, "r");
+> 
+> Using /proc/stat to get the number of CPUs is unusual
+> and you don't handle holes in the cpu numbers which
+> can happen due to hotplug.
+
+The code does handle holes in cpu number namespace.
+
+The "num_cpus" variable was a hold-over from
+an older version that did not, and so I've deleted it.
+
+> I would just readdir or fnmatch the MSR /dev/cpu/* directories.
+
+I used to do that, but Arjan convinced me to use /proc/stat.
+turbostat, rdmsr, and wrmsr all use /proc/stat.
 
 thanks,
-
-greg k-h
+-Len Brown, Intel Open Source Technology Center
