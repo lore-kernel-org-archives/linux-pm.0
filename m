@@ -1,20 +1,14 @@
-From: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH RESEND] tools: add
- power/x86/x86_energy_perf_policy to program MSR_IA32_ENERGY_PERF_BIAS
-Date: Mon, 22 Nov 2010 21:33:59 +0100
-Message-ID: <20101122203359.GD21836__33508.4821483635$1290458099$gmane$org@basil.fritz.box>
-References: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
-	<alpine.LFD.2.00.1009281143070.14962@localhost.localdomain>
-	<alpine.LFD.2.00.1010230035360.29399@localhost.localdomain>
-	<alpine.LFD.2.00.1011151103280.2939@x980>
-	<8739r0rxlz.fsf@basil.nowhere.org>
-	<alpine.LFD.2.00.1011221348200.19247@x980>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH ver. 2] PM: add synchronous runtime interface
+	for interrupt handlers
+Date: Tue, 23 Nov 2010 00:01:20 +0100
+Message-ID: <201011230001.20241.rjw__5279.71275519139$1290467009$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1011221027120.1758-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1011221348200.19247@x980>
+In-Reply-To: <Pine.LNX.4.44L0.1011221027120.1758-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,51 +18,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: x86@kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Andi Kleen <andi@firstfloor.org>, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Nov 22, 2010 at 03:13:24PM -0500, Len Brown wrote:
-> Per the comments from Andrew and others, the concept of a
-> "full tools build" doesn't actually exit (yet).
+On Monday, November 22, 2010, Alan Stern wrote:
+> On Mon, 22 Nov 2010, Rafael J. Wysocki wrote:
 > 
-> So I guess the only assurance that somebody not on x86 would run
-> make in this directory this utility lives in tools/power/x86/
+> > > > I didn't like this change before and I still don't like it.  Quite frankly, I'm
+> > > > not sure I can convince Linus to pull it. :-)
+> > > > 
+> > > > Why don't we simply execute the callback under the spinlock in the
+> > > > IRQ safe case?
+> > > 
+> > > Because it wouldn't work.  The job of the runtime_idle callback is to
+> > > call pm_runtime_suspend when needed.  But if the callback runs under
+> > > the spinlock then pm_runtime_suspend would hang when it tries to grab
+> > > the lock.
+> > 
+> > Yes, in the _idle case.  I actually should have put my comment under
+> > the change in rpm_callback(), which is what I really meant.
 > 
-> Note that there are other utilities under tools
-> which have no Makefile at all...
+> But the new rpm_callback() _does_ simply execute the callback under the
+> spinlock in the irq-safe case.  So I don't understand what you mean
+> here.
 
-I suspect this will need to be fixed at some point.
+OK, sorry, I confused things.  I have no objections to this part, then, let's
+focus on the _idle case.
 
-e.g. kernel rpms probably don't want to hard code all of this
-but just call some standard make file target. And the kernel
-eventually needs a make install_user or similar.
-
+> > Moreover, I'm not sure if we need an "IRQ safe" version of _idle.  Why do
+> > we need it, exactly?
 > 
-> > ...I would prefer a manpage
+> Because pm_runtime_put_sync() calls rpm_idle().  If there were no 
+> irq-safe version of rpm_idle() then drivers wouldn't be able to call 
+> pm_runtime_put_sync() from within an interrupt handler.
+
+Right.  Which they can't do now, can they?
+
+Why do you think we should allow them to do that?
+
+> > The problem I have with this change is that switching interrupts off really is
+> > a part of the locking operation, so using spin_unlock() after spin_lock_irq...()
+> > is kind of like releasing the lock partially, which I don't think is valid
+> > (even if we're going to reacquire the lock immediately).
 > 
-> I'll be happy to write a manpage.
-> Is there good example I should follow?
+> On the contrary; spin_unlock() after spin_lock_irq() doesn't partially
+> release the lock -- it releases the lock _entirely_!  :-)
 
-Just pick one from /usr/share/man.  You can grep for my 
-name if you want one written by me, but I don't claim they are
-necessarily better than others @)
+Well, not really, as far as I understand it.  The semantics of spin_lock_irq()
+is "turn interrupts off to prevent interrupt handlers running on _this_ CPU
+from racing with us and acquire the lock to prevent _other_ CPUs from racing
+with us".  If you build the code for non-SMP it becomes the first part only.
+So IMO the "turn interrupts on/off" thing is a part of the full synchronization
+mechanism in this case.
 
-> I'm not inclined to bother, as the use-case for this utility
-> is to be invoked by another program, and the options available
+Anyway, though, if the only reason of doing this is to allow interrupt handlers
+to call pm_runtime_put_sync(), then I rather wouldn't do it at all.
 
-What other program?
-
-I could well imagine administrators sticking this 
-into their boot.locals to set the policy they want.
-
-> In the highly unlikely scenario that somebody uses
-> the -r option to excerise the read-only code,
-> and simultaneously invokes and completes a cpu hot remove
-
-FWIW there are setups where core offlining can happen
-automatically in response to an error.
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Thanks,
+Rafael
