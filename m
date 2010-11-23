@@ -1,14 +1,20 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH ver. 2] PM: add synchronous runtime interface
- for interrupt handlers
-Date: Mon, 22 Nov 2010 22:19:22 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1011222204440.26293-100000__7035.64687069065$1290482464$gmane$org@netrider.rowland.org>
-References: <201011230001.20241.rjw@sisk.pl>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH RESEND] tools: add
+ power/x86/x86_energy_perf_policy to program MSR_IA32_ENERGY_PERF_BIAS
+Date: Mon, 22 Nov 2010 23:48:26 -0500 (EST)
+Message-ID: <alpine.LFD.2.00.1011222343140.19247__31908.4952389405$1290487804$gmane$org@x980>
+References: <alpine.LFD.2.00.1006161659140.24913@localhost.localdomain>
+	<alpine.LFD.2.00.1009281143070.14962@localhost.localdomain>
+	<alpine.LFD.2.00.1010230035360.29399@localhost.localdomain>
+	<alpine.LFD.2.00.1011151103280.2939@x980>
+	<8739r0rxlz.fsf@basil.nowhere.org>
+	<alpine.LFD.2.00.1011221348200.19247@x980>
+	<20101122203359.GD21836@basil.fritz.box>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201011230001.20241.rjw@sisk.pl>
+In-reply-to: <20101122203359.GD21836@basil.fritz.box>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,57 +24,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, x86@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 23 Nov 2010, Rafael J. Wysocki wrote:
+On Mon, 22 Nov 2010, Andi Kleen wrote:
 
-> > > Moreover, I'm not sure if we need an "IRQ safe" version of _idle.  Why do
-> > > we need it, exactly?
+> On Mon, Nov 22, 2010 at 03:13:24PM -0500, Len Brown wrote:
+> > Per the comments from Andrew and others, the concept of a
+> > "full tools build" doesn't actually exit (yet).
 > > 
-> > Because pm_runtime_put_sync() calls rpm_idle().  If there were no 
-> > irq-safe version of rpm_idle() then drivers wouldn't be able to call 
-> > pm_runtime_put_sync() from within an interrupt handler.
+> > So I guess the only assurance that somebody not on x86 would run
+> > make in this directory this utility lives in tools/power/x86/
+> > 
+> > Note that there are other utilities under tools
+> > which have no Makefile at all...
 > 
-> Right.  Which they can't do now, can they?
+> I suspect this will need to be fixed at some point.
+> 
+> e.g. kernel rpms probably don't want to hard code all of this
+> but just call some standard make file target. And the kernel
+> eventually needs a make install_user or similar.
 
-True.  That was the point of this patch -- to allow interrupt handlers
-to do runtime PM, which they can't do now.
+I agree, but I don't volunteer to set up such
+a build system as part of this particular patch.
+As I mentioned, supplying any Makefile is
+a step better than some of the peers...
 
-> Why do you think we should allow them to do that?
+> > I'm not inclined to bother, as the use-case for this utility
+> > is to be invoked by another program, and the options available
+> 
+> What other program?
+> 
+> I could well imagine administrators sticking this 
+> into their boot.locals to set the policy they want.
 
-Are you suggesting that interrupt handlers stick to pm_runtime_suspend 
-and pm_runtime_resume, and ignore pm_runtime_get_sync and 
-pm_runtime_put_sync?
+right, and that would be a program.
+It is unlikely that users are going to be typing this
+command, except into an admin script.
 
-Recall that after probing is finished, the driver core does a
-pm_runtime_put_sync.  That might happen while an interrupt handler is
-running on another CPU.  If the interrupt handler didn't increment the
-usage_count, the driver core could cause the device to suspend while
-the interrupt handler was still using it.
+> > In the highly unlikely scenario that somebody uses
+> > the -r option to excerise the read-only code,
+> > and simultaneously invokes and completes a cpu hot remove
+> 
+> FWIW there are setups where core offlining can happen
+> automatically in response to an error.
 
-Or are you suggesting that interrupt handlers use pm_runtime_get_sync 
-and implement a poor-man's version of pm_runtime_put_sync by doing:
+Understood.  I think it is fine if this utility
+simply exits if that error occurs while it is running.
 
-	pm_runtime_put_no_idle();
-	pm_runtime_suspend();
+(turbostat, OTOH, may be long running, and it treats
+ vanishing processors as a recoverable error)
 
-Is there some particular reason for denying interrupt handlers the
-ability to use pm_runtime_put_sync?  It seems odd to disallow that 
-while allowing pm_runtime_get_sync.
-
-Or maybe you think that when pm_runtime_put_sync detects the 
-usage_count has decremented to 0 and the device is irq-safe, it should 
-call rpm_suspend directly instead of calling rpm_idle?
-
-In short, I don't see any reason not to present the same API to
-interrupt handlers for irq-safe devices as we present to
-process-context drivers for ordinary devices.
-
-> Anyway, though, if the only reason of doing this is to allow interrupt handlers
-> to call pm_runtime_put_sync(), then I rather wouldn't do it at all.
-
-Why not?
-
-Alan Stern
+thanks,
+-Len Brown, Intel Open Source Technology Center
