@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH ver. 2] PM: add synchronous runtime interface
-	for interrupt handlers
-Date: Tue, 23 Nov 2010 00:01:20 +0100
-Message-ID: <201011230001.20241.rjw__5279.71275519139$1290467009$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1011221027120.1758-100000@iolanthe.rowland.org>
+ for interrupt handlers
+Date: Mon, 22 Nov 2010 22:19:22 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1011222204440.26293-100000__7035.64687069065$1290482464$gmane$org@netrider.rowland.org>
+References: <201011230001.20241.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1011221027120.1758-100000@iolanthe.rowland.org>
+In-Reply-To: <201011230001.20241.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,62 +18,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, November 22, 2010, Alan Stern wrote:
-> On Mon, 22 Nov 2010, Rafael J. Wysocki wrote:
-> 
-> > > > I didn't like this change before and I still don't like it.  Quite frankly, I'm
-> > > > not sure I can convince Linus to pull it. :-)
-> > > > 
-> > > > Why don't we simply execute the callback under the spinlock in the
-> > > > IRQ safe case?
-> > > 
-> > > Because it wouldn't work.  The job of the runtime_idle callback is to
-> > > call pm_runtime_suspend when needed.  But if the callback runs under
-> > > the spinlock then pm_runtime_suspend would hang when it tries to grab
-> > > the lock.
+On Tue, 23 Nov 2010, Rafael J. Wysocki wrote:
+
+> > > Moreover, I'm not sure if we need an "IRQ safe" version of _idle.  Why do
+> > > we need it, exactly?
 > > 
-> > Yes, in the _idle case.  I actually should have put my comment under
-> > the change in rpm_callback(), which is what I really meant.
+> > Because pm_runtime_put_sync() calls rpm_idle().  If there were no 
+> > irq-safe version of rpm_idle() then drivers wouldn't be able to call 
+> > pm_runtime_put_sync() from within an interrupt handler.
 > 
-> But the new rpm_callback() _does_ simply execute the callback under the
-> spinlock in the irq-safe case.  So I don't understand what you mean
-> here.
+> Right.  Which they can't do now, can they?
 
-OK, sorry, I confused things.  I have no objections to this part, then, let's
-focus on the _idle case.
+True.  That was the point of this patch -- to allow interrupt handlers
+to do runtime PM, which they can't do now.
 
-> > Moreover, I'm not sure if we need an "IRQ safe" version of _idle.  Why do
-> > we need it, exactly?
-> 
-> Because pm_runtime_put_sync() calls rpm_idle().  If there were no 
-> irq-safe version of rpm_idle() then drivers wouldn't be able to call 
-> pm_runtime_put_sync() from within an interrupt handler.
+> Why do you think we should allow them to do that?
 
-Right.  Which they can't do now, can they?
+Are you suggesting that interrupt handlers stick to pm_runtime_suspend 
+and pm_runtime_resume, and ignore pm_runtime_get_sync and 
+pm_runtime_put_sync?
 
-Why do you think we should allow them to do that?
+Recall that after probing is finished, the driver core does a
+pm_runtime_put_sync.  That might happen while an interrupt handler is
+running on another CPU.  If the interrupt handler didn't increment the
+usage_count, the driver core could cause the device to suspend while
+the interrupt handler was still using it.
 
-> > The problem I have with this change is that switching interrupts off really is
-> > a part of the locking operation, so using spin_unlock() after spin_lock_irq...()
-> > is kind of like releasing the lock partially, which I don't think is valid
-> > (even if we're going to reacquire the lock immediately).
-> 
-> On the contrary; spin_unlock() after spin_lock_irq() doesn't partially
-> release the lock -- it releases the lock _entirely_!  :-)
+Or are you suggesting that interrupt handlers use pm_runtime_get_sync 
+and implement a poor-man's version of pm_runtime_put_sync by doing:
 
-Well, not really, as far as I understand it.  The semantics of spin_lock_irq()
-is "turn interrupts off to prevent interrupt handlers running on _this_ CPU
-from racing with us and acquire the lock to prevent _other_ CPUs from racing
-with us".  If you build the code for non-SMP it becomes the first part only.
-So IMO the "turn interrupts on/off" thing is a part of the full synchronization
-mechanism in this case.
+	pm_runtime_put_no_idle();
+	pm_runtime_suspend();
 
-Anyway, though, if the only reason of doing this is to allow interrupt handlers
-to call pm_runtime_put_sync(), then I rather wouldn't do it at all.
+Is there some particular reason for denying interrupt handlers the
+ability to use pm_runtime_put_sync?  It seems odd to disallow that 
+while allowing pm_runtime_get_sync.
 
-Thanks,
-Rafael
+Or maybe you think that when pm_runtime_put_sync detects the 
+usage_count has decremented to 0 and the device is irq-safe, it should 
+call rpm_suspend directly instead of calling rpm_idle?
+
+In short, I don't see any reason not to present the same API to
+interrupt handlers for irq-safe devices as we present to
+process-context drivers for ordinary devices.
+
+> Anyway, though, if the only reason of doing this is to allow interrupt handlers
+> to call pm_runtime_put_sync(), then I rather wouldn't do it at all.
+
+Why not?
+
+Alan Stern
