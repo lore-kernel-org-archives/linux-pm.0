@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 6/13] ACPI / PM: Introduce __acpi_bus_get_power()
-Date: Thu, 25 Nov 2010 00:07:56 +0100
-Message-ID: <201011250007.56895.rjw@sisk.pl>
+Subject: [PATCH 9/13] ACPI / PM: Register acpi_power_driver early
+Date: Thu, 25 Nov 2010 00:10:02 +0100
+Message-ID: <201011250010.02778.rjw__15959.1603246101$1290640715$gmane$org@sisk.pl>
 References: <201011250001.11297.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,105 +23,50 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-It sometimes is necessary to get the power state of an ACPI device
-without updating its device->power.state field, for example to
-avoid inconsistencies between device->power.state and the reference
-counters of the device's power resources.  For this purpose introduce
-__acpi_bus_get_power() that will return the given device's power
-state via a pointer (instead of modifying device->power.state)
-and make acpi_bus_get_power() use it.
+The ACPI device driver used for handling power resources,
+acpi_power_driver, creates a struct acpi_power_resource object for
+each ACPI device representing a power resource.  These objects are
+then used when setting and reading the power states of devices using
+the corresponding power resources.  Unfortunately, acpi_power_driver
+is registered after acpi_scan_init() that may add devices using the
+power resources before acpi_power_driver has a chance to create
+struct acpi_power_resource objects for them (specifically, the power
+resources may be referred to during the scanning process through
+acpi_bus_get_power() before they have been initialized).
+
+As the first step towards fixing this issue, move the registration
+of acpi_power_driver into acpi_scan_init() so that power resource
+devices can be initialized by it as soon as they have been found in
+the namespace.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/bus.c |   48 +++++++++++++++++++++++++++++-------------------
- 1 file changed, 29 insertions(+), 19 deletions(-)
+ drivers/acpi/bus.c  |    1 -
+ drivers/acpi/scan.c |    2 ++
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
 Index: linux-2.6/drivers/acpi/bus.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/bus.c
 +++ linux-2.6/drivers/acpi/bus.c
-@@ -196,34 +196,24 @@ EXPORT_SYMBOL(acpi_bus_get_private_data)
-                                  Power Management
-    -------------------------------------------------------------------------- */
+@@ -1099,7 +1099,6 @@ static int __init acpi_init(void)
  
--int acpi_bus_get_power(acpi_handle handle, int *state)
-+static int __acpi_bus_get_power(struct acpi_device *device, int *state)
- {
- 	int result = 0;
- 	acpi_status status = 0;
--	struct acpi_device *device = NULL;
- 	unsigned long long psc = 0;
- 
--
--	result = acpi_bus_get_device(handle, &device);
--	if (result)
--		return result;
-+	if (!device || !state)
-+		return -EINVAL;
- 
- 	*state = ACPI_STATE_UNKNOWN;
- 
--	if (!device->flags.power_manageable) {
--		/* TBD: Non-recursive algorithm for walking up hierarchy */
--		if (device->parent)
--			*state = device->parent->power.state;
--		else
--			*state = ACPI_STATE_D0;
--	} else {
-+	if (device->flags.power_manageable) {
- 		/*
- 		 * Get the device's power state either directly (via _PSC) or
- 		 * indirectly (via power resources).
- 		 */
- 		if (device->power.flags.power_resources) {
--			result = acpi_power_get_inferred_state(device,
--							&device->power.state);
-+			result = acpi_power_get_inferred_state(device, state);
- 			if (result)
- 				return result;
- 		} else if (device->power.flags.explicit_get) {
-@@ -231,20 +221,40 @@ int acpi_bus_get_power(acpi_handle handl
- 						       NULL, &psc);
- 			if (ACPI_FAILURE(status))
- 				return -ENODEV;
--			device->power.state = (int)psc;
-+			*state = (int)psc;
- 		}
--
--		*state = device->power.state;
-+	} else {
-+		/* TBD: Non-recursive algorithm for walking up hierarchy. */
-+		*state = device->parent ?
-+			device->parent->power.state : ACPI_STATE_D0;
+ 	acpi_scan_init();
+ 	acpi_ec_init();
+-	acpi_power_init();
+ 	acpi_debugfs_init();
+ 	acpi_sleep_proc_init();
+ 	acpi_wakeup_device_init();
+Index: linux-2.6/drivers/acpi/scan.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/scan.c
++++ linux-2.6/drivers/acpi/scan.c
+@@ -1547,6 +1547,8 @@ int __init acpi_scan_init(void)
+ 		printk(KERN_ERR PREFIX "Could not register bus type\n");
  	}
  
- 	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device [%s] power state is D%d\n",
--			  device->pnp.bus_id, device->power.state));
-+			  device->pnp.bus_id, *state));
- 
- 	return 0;
- }
- 
++	acpi_power_init();
 +
-+int acpi_bus_get_power(acpi_handle handle, int *state)
-+{
-+	struct acpi_device *device;
-+	int result;
-+
-+	result = acpi_bus_get_device(handle, &device);
-+	if (result)
-+		return result;
-+
-+	result = __acpi_bus_get_power(device, state);
-+	if (result)
-+		return result;
-+
-+	device->power.state = *state;
-+	return 0;
-+}
- EXPORT_SYMBOL(acpi_bus_get_power);
- 
-+
- int acpi_bus_set_power(acpi_handle handle, int state)
- {
- 	int result = 0;
+ 	/*
+ 	 * Enumerate devices in the ACPI namespace.
+ 	 */
