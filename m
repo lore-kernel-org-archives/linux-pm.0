@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 7/13] ACPI / PM: Add function for device power
-	state initialization
-Date: Thu, 25 Nov 2010 00:08:36 +0100
-Message-ID: <201011250008.36676.rjw__2573.66161463342$1290643057$gmane$org@sisk.pl>
+Subject: [PATCH 12/13] ACPI / PM: Drop acpi_bus_get_power()
+Date: Thu, 25 Nov 2010 00:12:05 +0100
+Message-ID: <201011250012.06151.rjw__9472.4703849808$1290643176$gmane$org@sisk.pl>
 References: <201011250001.11297.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,82 +23,57 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Add function acpi_bus_init_power() for getting the initial power
-state of an ACPI device and reference counting its power resources
-as appropriate.
-
-Make acpi_bus_get_power_flags() use the new function instead of
-acpi_bus_get_power() that updates device->power.state without
-reference counting the device's power resources.
+There are no more users of acpi_bus_get_power(), so it can be
+dropped.  Moreover, it should be dropped, because it modifies
+the device->power.state field of an ACPI device without updating
+the reference counters of the device's power resources, which is
+wrong.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/bus.c      |   25 +++++++++++++++++++++++++
- drivers/acpi/internal.h |    1 +
- drivers/acpi/scan.c     |    5 +----
- 3 files changed, 27 insertions(+), 4 deletions(-)
+ drivers/acpi/bus.c      |   19 -------------------
+ include/acpi/acpi_bus.h |    1 -
+ 2 files changed, 20 deletions(-)
 
 Index: linux-2.6/drivers/acpi/bus.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/bus.c
 +++ linux-2.6/drivers/acpi/bus.c
-@@ -364,6 +364,31 @@ int acpi_bus_set_power(acpi_handle handl
- 
- EXPORT_SYMBOL(acpi_bus_set_power);
- 
-+
-+int acpi_bus_init_power(struct acpi_device *device)
-+{
-+	int state;
-+	int result;
-+
-+	if (!device)
-+		return -EINVAL;
-+
-+	device->power.state = ACPI_STATE_UNKNOWN;
-+
-+	result = __acpi_bus_get_power(device, &state);
-+	if (result)
-+		return result;
-+
-+	if (device->power.flags.power_resources)
-+		result = acpi_power_on_resources(device, state);
-+
-+	if (!result)
-+		device->power.state = state;
-+
-+	return result;
-+}
-+
-+
- bool acpi_bus_power_manageable(acpi_handle handle)
- {
- 	struct acpi_device *device;
-Index: linux-2.6/drivers/acpi/scan.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/scan.c
-+++ linux-2.6/drivers/acpi/scan.c
-@@ -881,10 +881,7 @@ static int acpi_bus_get_power_flags(stru
- 	device->power.states[ACPI_STATE_D3].flags.valid = 1;
- 	device->power.states[ACPI_STATE_D3].power = 0;
- 
--	/* TBD: System wake support and resource requirements. */
--
--	device->power.state = ACPI_STATE_UNKNOWN;
--	acpi_bus_get_power(device->handle, &(device->power.state));
-+	acpi_bus_init_power(device);
- 
- 	return 0;
+@@ -236,25 +236,6 @@ static int __acpi_bus_get_power(struct a
  }
-Index: linux-2.6/drivers/acpi/internal.h
-===================================================================
---- linux-2.6.orig/drivers/acpi/internal.h
-+++ linux-2.6/drivers/acpi/internal.h
-@@ -44,6 +44,7 @@ int acpi_device_sleep_wake(struct acpi_d
- int acpi_power_get_inferred_state(struct acpi_device *device, int *state);
- int acpi_power_on_resources(struct acpi_device *device, int state);
- int acpi_power_transition(struct acpi_device *device, int state);
-+int acpi_bus_init_power(struct acpi_device *device);
- extern int acpi_power_nocheck;
  
- int acpi_wakeup_device_init(void);
+ 
+-int acpi_bus_get_power(acpi_handle handle, int *state)
+-{
+-	struct acpi_device *device;
+-	int result;
+-
+-	result = acpi_bus_get_device(handle, &device);
+-	if (result)
+-		return result;
+-
+-	result = __acpi_bus_get_power(device, state);
+-	if (result)
+-		return result;
+-
+-	device->power.state = *state;
+-	return 0;
+-}
+-EXPORT_SYMBOL(acpi_bus_get_power);
+-
+-
+ static int __acpi_bus_set_power(struct acpi_device *device, int state)
+ {
+ 	int result = 0;
+Index: linux-2.6/include/acpi/acpi_bus.h
+===================================================================
+--- linux-2.6.orig/include/acpi/acpi_bus.h
++++ linux-2.6/include/acpi/acpi_bus.h
+@@ -327,7 +327,6 @@ void acpi_bus_data_handler(acpi_handle h
+ acpi_status acpi_bus_get_status_handle(acpi_handle handle,
+ 				       unsigned long long *sta);
+ int acpi_bus_get_status(struct acpi_device *device);
+-int acpi_bus_get_power(acpi_handle handle, int *state);
+ int acpi_bus_set_power(acpi_handle handle, int state);
+ int acpi_bus_update_power(acpi_handle handle, int *state_p);
+ bool acpi_bus_power_manageable(acpi_handle handle);
