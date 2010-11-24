@@ -1,14 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH ver. 2] PM: add synchronous runtime interface
-	for interrupt handlers
-Date: Wed, 24 Nov 2010 21:33:56 +0100
-Message-ID: <201011242133.56304.rjw__48264.0828741298$1290630932$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1011240950220.1513-100000@iolanthe.rowland.org>
+Subject: [PATCH 0/13] ACPI / PM: Rework power resources management
+Date: Thu, 25 Nov 2010 00:01:11 +0100
+Message-ID: <201011250001.11297.rjw__35276.6085452915$1290640668$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1011240950220.1513-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,31 +15,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, November 24, 2010, Alan Stern wrote:
-> On Tue, 23 Nov 2010, Rafael J. Wysocki wrote:
-> 
-> > > Or maybe you think that when pm_runtime_put_sync detects the 
-> > > usage_count has decremented to 0 and the device is irq-safe, it should 
-> > > call rpm_suspend directly instead of calling rpm_idle?
-> > 
-> > That also would work for me, actually.
-> 
-> Okay, then consider this proposal.  I'll introduce a new
-> pm_runtime_put_sync_suspend() function which decrements the usage_count
-> and calls rpm_suspend directly if the count drops to 0.  Then interrupt
-> handlers could use this function in place of pm_runtime_put_sync(),
-> provided the device was irq-safe.
-> 
-> Not only that, pm_runtime_put_sync_suspend() would be available for
-> anyone to use.  It must be reasonably common for runtime_idle routines
-> to do nothing but call pm_runtime_suspend().  The new API call would
-> save a little overhead.
+Hi,
 
-Fine by me.
+Unfortunately there are a few problems with ACPI power resources management
+that should be fixed by the following series of patches.
+
+Patch [1/13] is necessary to fix a recent regression in the mainline kernel and
+patch [2/13] also should go into 2.6.37 IMO.  The remaining patches are not so
+urgent, but they all are necessary.
+
+[1/13] - Fix regression if fan resume resulting from the rework of power
+         resources reference counting.
+
+[2/13] - Do not reference count power resources that can't be turned on.
+
+[3/13] - Rework acpi_power_get_inferred_state() so that it doesn't update
+         device->power.state behind the caller's back.
+
+[4/13] - Introduce functions for handling lists of power resources.
+
+[5/13] - Introduce helper function for reference counting power resources
+         for a given device and power state.
+
+[6/13] - Introduce function for reading device power state without modifying
+         the device object.
+
+[7/13] - Add function for device power state initialization.
+
+[8/13] - Add function for updating device power state in a consistent way.
+
+[9/13] - Register acpi_power_driver before scanning the root of the namespace.
+
+[10/13] - Add power resource ACPI device objects as soon as they are needed.
+
+[11/13] - Rework the management of ACPI power resources in the ACPI fan driver.
+
+[12/13] - Drop acpi_bus_get_power() that has no users now.
+
+[13/13] - Drop acpi_power_nocheck which isn't necessary any more.
+
+The patches have been tested on my HP nx6325 (which is the only machine using
+ACPI power resources I have) and a combo patch functionally equivalen to this
+series has been tested by Maciej Rutecki.
+
+Please apply.
 
 Thanks,
 Rafael
