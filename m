@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 4/13] ACPI / PM: Add functions for manipulating
-	lists of power resources
-Date: Thu, 25 Nov 2010 00:06:09 +0100
-Message-ID: <201011250006.09337.rjw__21094.3174818114$1290642937$gmane$org@sisk.pl>
+Subject: [PATCH 7/13] ACPI / PM: Add function for device power
+	state initialization
+Date: Thu, 25 Nov 2010 00:08:36 +0100
+Message-ID: <201011250008.36676.rjw__2573.66161463342$1290643057$gmane$org@sisk.pl>
 References: <201011250001.11297.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,115 +24,82 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-ACPI device power resources should be reference counted during
-device initialization, so that their reference counters are always
-up to date.  It is convenient to do that with the help of a function
-that will reference count and possibly turn on power resources in
-a given list, so introduce that function, acpi_power_on_list().
-For symmetry, introduce acpi_power_off_list() for performing the
-reverse operation and use the both of them to simplify
-acpi_power_transition().
+Add function acpi_bus_init_power() for getting the initial power
+state of an ACPI device and reference counting its power resources
+as appropriate.
+
+Make acpi_bus_get_power_flags() use the new function instead of
+acpi_bus_get_power() that updates device->power.state without
+reference counting the device's power resources.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/power.c |   67 ++++++++++++++++++++++++++++-----------------------
- 1 file changed, 38 insertions(+), 29 deletions(-)
+ drivers/acpi/bus.c      |   25 +++++++++++++++++++++++++
+ drivers/acpi/internal.h |    1 +
+ drivers/acpi/scan.c     |    5 +----
+ 3 files changed, 27 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/drivers/acpi/power.c
+Index: linux-2.6/drivers/acpi/bus.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/power.c
-+++ linux-2.6/drivers/acpi/power.c
-@@ -266,6 +266,35 @@ static int acpi_power_off_device(acpi_ha
- 	return result;
- }
+--- linux-2.6.orig/drivers/acpi/bus.c
++++ linux-2.6/drivers/acpi/bus.c
+@@ -364,6 +364,31 @@ int acpi_bus_set_power(acpi_handle handl
  
-+static void __acpi_power_off_list(struct acpi_handle_list *list, int num_res)
+ EXPORT_SYMBOL(acpi_bus_set_power);
+ 
++
++int acpi_bus_init_power(struct acpi_device *device)
 +{
-+	int i;
++	int state;
++	int result;
 +
-+	for (i = num_res - 1; i >= 0 ; i--)
-+		acpi_power_off_device(list->handles[i]);
-+}
++	if (!device)
++		return -EINVAL;
 +
-+static void acpi_power_off_list(struct acpi_handle_list *list)
-+{
-+	__acpi_power_off_list(list, list->count);
-+}
++	device->power.state = ACPI_STATE_UNKNOWN;
 +
-+static int acpi_power_on_list(struct acpi_handle_list *list)
-+{
-+	int result = 0;
-+	int i;
++	result = __acpi_bus_get_power(device, &state);
++	if (result)
++		return result;
 +
-+	for (i = 0; i < list->count; i++) {
-+		result = acpi_power_on(list->handles[i]);
-+		if (result) {
-+			__acpi_power_off_list(list, i);
-+			break;
-+		}
-+	}
++	if (device->power.flags.power_resources)
++		result = acpi_power_on_resources(device, state);
++
++	if (!result)
++		device->power.state = state;
 +
 +	return result;
 +}
 +
- /**
-  * acpi_device_sleep_wake - execute _DSW (Device Sleep Wake) or (deprecated in
-  *                          ACPI 3.0) _PSW (Power State Wake)
-@@ -458,10 +487,7 @@ int acpi_power_get_inferred_state(struct
- 
- int acpi_power_transition(struct acpi_device *device, int state)
++
+ bool acpi_bus_power_manageable(acpi_handle handle)
  {
--	int result = 0;
--	struct acpi_handle_list *cl = NULL;	/* Current Resources */
--	struct acpi_handle_list *tl = NULL;	/* Target Resources */
--	int i = 0;
-+	int result;
+ 	struct acpi_device *device;
+Index: linux-2.6/drivers/acpi/scan.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/scan.c
++++ linux-2.6/drivers/acpi/scan.c
+@@ -881,10 +881,7 @@ static int acpi_bus_get_power_flags(stru
+ 	device->power.states[ACPI_STATE_D3].flags.valid = 1;
+ 	device->power.states[ACPI_STATE_D3].power = 0;
  
- 	if (!device || (state < ACPI_STATE_D0) || (state > ACPI_STATE_D3))
- 		return -EINVAL;
-@@ -473,37 +499,20 @@ int acpi_power_transition(struct acpi_de
- 	    || (device->power.state > ACPI_STATE_D3))
- 		return -ENODEV;
- 
--	cl = &device->power.states[device->power.state].resources;
--	tl = &device->power.states[state].resources;
+-	/* TBD: System wake support and resource requirements. */
 -
- 	/* TBD: Resources must be ordered. */
+-	device->power.state = ACPI_STATE_UNKNOWN;
+-	acpi_bus_get_power(device->handle, &(device->power.state));
++	acpi_bus_init_power(device);
  
- 	/*
- 	 * First we reference all power resources required in the target list
--	 * (e.g. so the device doesn't lose power while transitioning).
--	 */
--	for (i = 0; i < tl->count; i++) {
--		result = acpi_power_on(tl->handles[i]);
--		if (result)
--			goto end;
--	}
--
--	/*
--	 * Then we dereference all power resources used in the current list.
-+	 * (e.g. so the device doesn't lose power while transitioning).  Then,
-+	 * we dereference all power resources used in the current list.
- 	 */
--	for (i = 0; i < cl->count; i++) {
--		result = acpi_power_off_device(cl->handles[i]);
--		if (result)
--			goto end;
--	}
-+	result = acpi_power_on_list(&device->power.states[state].resources);
-+	if (!result)
-+		acpi_power_off_list(
-+			&device->power.states[device->power.state].resources);
- 
--     end:
--	if (result)
--		device->power.state = ACPI_STATE_UNKNOWN;
--	else {
--	/* We shouldn't change the state till all above operations succeed */
--		device->power.state = state;
--	}
-+	/* We shouldn't change the state unless the above operations succeed. */
-+	device->power.state = result ? ACPI_STATE_UNKNOWN : state;
- 
- 	return result;
+ 	return 0;
  }
+Index: linux-2.6/drivers/acpi/internal.h
+===================================================================
+--- linux-2.6.orig/drivers/acpi/internal.h
++++ linux-2.6/drivers/acpi/internal.h
+@@ -44,6 +44,7 @@ int acpi_device_sleep_wake(struct acpi_d
+ int acpi_power_get_inferred_state(struct acpi_device *device, int *state);
+ int acpi_power_on_resources(struct acpi_device *device, int state);
+ int acpi_power_transition(struct acpi_device *device, int state);
++int acpi_bus_init_power(struct acpi_device *device);
+ extern int acpi_power_nocheck;
+ 
+ int acpi_wakeup_device_init(void);
