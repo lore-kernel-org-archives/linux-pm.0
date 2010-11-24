@@ -1,9 +1,9 @@
 From: Thomas Kahle <tomka@gentoo.org>
-Subject: Freezes on resume from S2R
-Date: Wed, 24 Nov 2010 10:56:18 +0100
-Message-ID: <20101124095618.GC5982@denkmatte.mittag-leffler.se>
+Subject: possible regression in merge window of 2.6.36
+Date: Wed, 24 Nov 2010 01:02:29 +0100
+Message-ID: <20101124000229.GA2911@denkmatte.mittag-leffler.se>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8575277022313858645=="
+Content-Type: multipart/mixed; boundary="===============6447870400483754651=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,20 +19,21 @@ To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 
---===============8575277022313858645==
+--===============6447870400483754651==
 Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="UFHRwCdBEJvubb2X"
+	protocol="application/pgp-signature"; boundary="SkvwRMAIpAhPCcCJ"
 Content-Disposition: inline
 
 
---UFHRwCdBEJvubb2X
-Content-Type: multipart/mixed; boundary="cmJC7u66zC7hs+87"
+--SkvwRMAIpAhPCcCJ
+Content-Type: multipart/mixed; boundary="9jxsPFA5p3P2qPhR"
 Content-Disposition: inline
 
 
---cmJC7u66zC7hs+87
+--9jxsPFA5p3P2qPhR
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
@@ -52,33 +53,32 @@ started testing with mainline) I was able to ssh into the system and
 found spurious things in the log.  Please see the attachad file
 'messages'.  On 12:08:33 I connect via ssh as root.  I see the process X
 occupying 100% CPU and it cannot be killed (kill -9 has no effect).  I
-tried to reboot the machine with init x6, but this failed.  Browsing the
-list archive it might be related to what Linus reported here:
-
-https://lists.linux-foundation.org/pipermail/linux-pm/2010-November/029299.html
+tried to reboot the machine with init 6, but this failed.
 
 These problems appear to me as a regression since everything is
-reproducibly fine with kernels <=2.6.34, and 2.6.35 seems to be fine too
+reproducibly fine with kernels <=3D2.6.34, and 2.6.35 seems to be fine too
 (although I have tested that less).  I started a bisect, see below.
 
-I'm happy to provide any additional information.  For now I'm attaching
+I hope this is the correct mailing list to report this bug.  Since I am
+not subsribed, please CC me on reply.  This is also my first kernel bug
+report, I'm happy to provide any additional information.  I'm attaching
 the following information in the hope that it is useful:
 
 -) Output of dmidecode
 -) Output of lspci -vvv
--) Messages
+-) Messages=20
 -) log of a bisect I started.  I will take some days to finish probably
  and I'm running into 'skips' now.
 
-Regards,
+Regards,=20
 Thomas
 
---
+
+--=20
 Thomas Kahle
 http://dev.gentoo.org/~tomka/
 
-
---cmJC7u66zC7hs+87
+--9jxsPFA5p3P2qPhR
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: attachment; filename=bisect-log
 
@@ -108,7 +108,7 @@ git bisect skip 9e0ba741aabdf129d561e62d207c75146adef5e8
 # skip: [6b8e8282611ea35845dcff0cb321a7d735fc3155] drivers/hwmon/coretemp.c: remove unneeded #ifdef CONFIG_HOTPLUG_CPU
 git bisect skip 6b8e8282611ea35845dcff0cb321a7d735fc3155
 
---cmJC7u66zC7hs+87
+--9jxsPFA5p3P2qPhR
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: attachment; filename=dmidecode
 
@@ -694,7 +694,7 @@ Handle 0x003E, DMI type 127, 4 bytes
 End Of Table
 
 
---cmJC7u66zC7hs+87
+--9jxsPFA5p3P2qPhR
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: attachment; filename=lspci-vvv
 
@@ -1072,7 +1072,7 @@ Content-Disposition: attachment; filename=lspci-vvv
 	Kernel modules: sdhci-pci
 
 
---cmJC7u66zC7hs+87
+--9jxsPFA5p3P2qPhR
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: attachment; filename=messages
 
@@ -1241,29 +1241,29 @@ Nov 23 12:11:50 denkmatte /etc/init.d/xdm[2467]: start-stop-daemon: 1 process re
 Nov 23 12:11:50 denkmatte /etc/init.d/xdm[2449]: ERROR: xdm failed to stop
 Nov 23 12:12:01 denkmatte cron[2557]: (tom) CMD (source ~/.Xdbus; /home/tom/bin/offlineimapdaemon.sh)
 
---cmJC7u66zC7hs+87--
+--9jxsPFA5p3P2qPhR--
 
---UFHRwCdBEJvubb2X
+--SkvwRMAIpAhPCcCJ
 Content-Type: application/pgp-signature
 Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.16 (GNU/Linux)
 
-iJwEAQEIAAYFAkzs4UIACgkQQYXt1pFHaaGihQQAwGliqsDkzWaIX/refExQ1Wu6
-mmi+hso7V+20m3gqwtAd8gINts1l5VZ3c5QjuQGF7WB3AXB7+IiOX5mKKXPOKa3D
-dd/9My0lmOVkIAPa/5irvd7wilJgS6MMW3Mw4ONXS/y8BWFG8EQCLD29ti93s/uU
-OXENACZNOoVsl/kqWRI=
-=peKA
+iJwEAQEIAAYFAkzsVhUACgkQQYXt1pFHaaFqrgP+JXh8riiENqN255BvKZ9iMZFV
+q3WLgCatYKqvWZ+8XA2znr6lCIzBhQ59i9OhHLbdeguGeQkA9OBUwrWQl97g2bJ0
+pUvtkk/zPCluDz7IQeptDscUv70gZYVF/8znJg7NGo7+KPul9T0gcGa0arCBtssi
+4u9njug64dmMlndl4Qs=
+=EwVo
 -----END PGP SIGNATURE-----
 
---UFHRwCdBEJvubb2X--
+--SkvwRMAIpAhPCcCJ--
 
---===============8575277022313858645==
+--===============6447870400483754651==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============8575277022313858645==--
+--===============6447870400483754651==--
