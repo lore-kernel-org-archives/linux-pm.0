@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH ver. 3] PM: add synchronous runtime interface
-	for interrupt handlers
-Date: Thu, 25 Nov 2010 21:03:29 +0100
-Message-ID: <201011252103.29401.rjw__38555.7297537618$1290715500$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1011251052010.22247-100000@netrider.rowland.org>
-	<201011251958.49249.oliver@neukum.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] Power Hibernate: hibernation_ops->leave
+ should be checked as well.
+Date: Fri, 26 Nov 2010 06:41:36 +0100
+Message-ID: <20101126054135.GA1939@elf.ucw.cz>
+References: <1290748003-26125-1-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201011251958.49249.oliver@neukum.org>
+Content-Disposition: inline
+In-Reply-To: <1290748003-26125-1-git-send-email-myungjoo.ham@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,25 +19,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Partha Basak <p-basak2@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Len Brown <len.brown@intel.com>, kyungmin.park@samsung.com, myungjoo.ham@gmail.com, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, November 25, 2010, Oliver Neukum wrote:
-> Am Donnerstag, 25. November 2010, 16:52:39 schrieb Alan Stern:
-> > When a device is declared irq-safe in this way, the PM core increments
-> > the parent's usage count, so the parent will never be runtime
-> > suspended.  This prevents difficult situations in which an irq-safe
-> > device can't resume because it is forced to wait for its non-irq-safe
-> > parent.
+On Fri 2010-11-26 14:06:43, MyungJoo Ham wrote:
+> Because hibernate calls hibernation_ops->leave() without checking
+> whether hibernation_ops->leave is NULL or not, hiberantion_set_ops
+> should WARN_ON if hibernation_ops->leave is NULL.
 > 
-> Shouldn't you walk further up the tree if the parent itself is irq-safe?
-> It seems like a waste of power to not suspend a paren, that can be
-> woken in irq.
+> This patch added one more condition to check hibernation_ops->leave.
+> 
+> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 
-Then we should walk up the tree if the parent's parent is irq-safe and so
-on, which would make us spend uncertain amount of time in the ISR (or generally
-with interrupts off).  I think it's safer not to do that.
+ACK.
 
-Thanks,
-Rafael
+> ---
+>  kernel/power/hibernate.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index 8dc31e0..e6c498d 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -61,7 +61,7 @@ void hibernation_set_ops(struct platform_hibernation_ops *ops)
+>  {
+>  	if (ops && !(ops->begin && ops->end &&  ops->pre_snapshot
+>  	    && ops->prepare && ops->finish && ops->enter && ops->pre_restore
+> -	    && ops->restore_cleanup)) {
+> +	    && ops->restore_cleanup && ops->leave)) {
+>  		WARN_ON(1);
+>  		return;
+>  	}
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
