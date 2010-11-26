@@ -1,15 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] Power Hibernate: hibernation_ops->leave
- should be checked as well.
-Date: Fri, 26 Nov 2010 06:41:36 +0100
-Message-ID: <20101126054135.GA1939@elf.ucw.cz>
-References: <1290748003-26125-1-git-send-email-myungjoo.ham@samsung.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] Platform / x86: Make fujitsu_laptop use
+	acpi_bus_update_power()
+Date: Fri, 26 Nov 2010 22:55:20 +0100
+Message-ID: <201011262255.20848.rjw__15555.1640470096$1290808706$gmane$org@sisk.pl>
+References: <201011250001.11297.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1290748003-26125-1-git-send-email-myungjoo.ham@samsung.com>
+In-Reply-To: <201011250001.11297.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +18,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Len Brown <len.brown@intel.com>, kyungmin.park@samsung.com, myungjoo.ham@gmail.com, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2010-11-26 14:06:43, MyungJoo Ham wrote:
-> Because hibernate calls hibernation_ops->leave() without checking
-> whether hibernation_ops->leave is NULL or not, hiberantion_set_ops
-> should WARN_ON if hibernation_ops->leave is NULL.
-> 
-> This patch added one more condition to check hibernation_ops->leave.
-> 
-> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-ACK.
+Use the new function acpi_bus_update_power(), which is safer than
+acpi_bus_get_power(), for getting device power state in
+acpi_fujitsu_add().
 
-> ---
->  kernel/power/hibernate.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index 8dc31e0..e6c498d 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -61,7 +61,7 @@ void hibernation_set_ops(struct platform_hibernation_ops *ops)
->  {
->  	if (ops && !(ops->begin && ops->end &&  ops->pre_snapshot
->  	    && ops->prepare && ops->finish && ops->enter && ops->pre_restore
-> -	    && ops->restore_cleanup)) {
-> +	    && ops->restore_cleanup && ops->leave)) {
->  		WARN_ON(1);
->  		return;
->  	}
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-and-Tested-by: Sedat Dilek <sedat.dilek@gmail.com>
+---
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Hi Len,
+
+This patch should go after [11/13] in the "ACPI / PM: Rework power resources
+management" series.  I hope Matthew won't mind if it goes in through your tree.
+
+Thanks,
+Rafael
+
+---
+ drivers/platform/x86/fujitsu-laptop.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/drivers/platform/x86/fujitsu-laptop.c
+===================================================================
+--- linux-2.6.orig/drivers/platform/x86/fujitsu-laptop.c
++++ linux-2.6/drivers/platform/x86/fujitsu-laptop.c
+@@ -689,7 +689,7 @@ static int acpi_fujitsu_add(struct acpi_
+ 	if (error)
+ 		goto err_free_input_dev;
+ 
+-	result = acpi_bus_get_power(fujitsu->acpi_handle, &state);
++	result = acpi_bus_update_power(fujitsu->acpi_handle, &state);
+ 	if (result) {
+ 		printk(KERN_ERR "Error reading power state\n");
+ 		goto err_unregister_input_dev;
+@@ -857,7 +857,7 @@ static int acpi_fujitsu_hotkey_add(struc
+ 	if (error)
+ 		goto err_free_input_dev;
+ 
+-	result = acpi_bus_get_power(fujitsu_hotkey->acpi_handle, &state);
++	result = acpi_bus_update_power(fujitsu_hotkey->acpi_handle, &state);
+ 	if (result) {
+ 		printk(KERN_ERR "Error reading power state\n");
+ 		goto err_unregister_input_dev;
