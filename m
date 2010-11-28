@@ -1,13 +1,12 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: can't use usb serial
-Date: Sat, 27 Nov 2010 22:38:39 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1011272234340.31337-100000@netrider.rowland.org>
-References: <AANLkTim6sqfwQwLUpwe8b+-pTPyRatE3DScRr0RvG=uK@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] PM: Prevent dpm_prepare() from returning errors
+	unnecessarily
+Date: Sun, 28 Nov 2010 13:12:49 +0100
+Message-ID: <201011281312.49949.rjw__30647.9714498439$1290946502$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTim6sqfwQwLUpwe8b+-pTPyRatE3DScRr0RvG=uK@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,42 +16,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matteo Croce <matteo@openwrt.org>
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>
+To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 28 Nov 2010, Matteo Croce wrote:
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-> Hi,
-> I can't use my usb serial cable with any program, any access fails with -EAGAIN
-> I did a git bisect and I found that commit
-> 1bfee5bc86fdaecc912e06080583eddab7263df2 broke it.
-> I got the email addresses from the MAINTAINERS file, if I bothered
-> anyone not involved please discard this mail
+Currently dpm_prepare() returns error code if it finds that a device
+being suspended has a pending runtime resume request.  However, it
+should not do that if the checking for wakeup events is not enabled.
+On the other hand, if the checking for wakeup events is enabled, it
+can return error when a wakeup event is detected, regardless of its
+source.
 
-Does the patch below fix the problem?
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/main.c |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-Alan Stern
-
-
-Index: usb-2.6/drivers/usb/serial/usb-serial.c
+Index: linux-2.6/drivers/base/power/main.c
 ===================================================================
---- usb-2.6.orig/drivers/usb/serial/usb-serial.c
-+++ usb-2.6/drivers/usb/serial/usb-serial.c
-@@ -52,6 +52,7 @@ static struct usb_driver usb_serial_driv
- 	.suspend =	usb_serial_suspend,
- 	.resume =	usb_serial_resume,
- 	.no_dynamic_id = 	1,
-+	.supports_autosuspend =	1,
- };
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -26,6 +26,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/sched.h>
+ #include <linux/async.h>
++#include <linux/suspend.h>
  
- /* There is no MODULE_DEVICE_TABLE for usbserial.c.  Instead
-@@ -1344,6 +1345,8 @@ int usb_serial_register(struct usb_seria
- 		return -ENODEV;
+ #include "../base.h"
+ #include "power.h"
+@@ -1052,8 +1053,10 @@ static int dpm_prepare(pm_message_t stat
+ 		mutex_unlock(&dpm_list_mtx);
  
- 	fixup_generic(driver);
-+	if (driver->usb_driver)
-+		driver->usb_driver->supports_autosuspend = 1;
- 
- 	if (!driver->description)
- 		driver->description = driver->driver.name;
+ 		pm_runtime_get_noresume(dev);
+-		if (pm_runtime_barrier(dev) && device_may_wakeup(dev)) {
+-			/* Wake-up requested during system sleep transition. */
++		if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
++			pm_wakeup_event(dev, 0);
++
++		if (pm_check_wakeup_events()) {
+ 			pm_runtime_put_sync(dev);
+ 			error = -EBUSY;
+ 		} else {
+@@ -1068,8 +1071,8 @@ static int dpm_prepare(pm_message_t stat
+ 				error = 0;
+ 				continue;
+ 			}
+-			printk(KERN_ERR "PM: Failed to prepare device %s "
+-				"for power transition: error %d\n",
++			printk(KERN_INFO "PM: Device %s not prepared "
++				"for power transition: code %d\n",
+ 				kobject_name(&dev->kobj), error);
+ 			put_device(dev);
+ 			break;
