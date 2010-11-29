@@ -1,14 +1,14 @@
-From: Matteo Croce <matteo@openwrt.org>
-Subject: Re: can't use usb serial
-Date: Sun, 28 Nov 2010 05:41:08 +0100
-Message-ID: <AANLkTin5VdE5hHTEVG+drm-xN3r-6wvP8f+ebok0HRP6@mail.gmail.com>
-References: <AANLkTim6sqfwQwLUpwe8b+-pTPyRatE3DScRr0RvG=uK@mail.gmail.com>
-	<Pine.LNX.4.44L0.1011272234340.31337-100000@netrider.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM: Prevent dpm_prepare() from returning
+	errors unnecessarily
+Date: Mon, 29 Nov 2010 23:04:11 +0100
+Message-ID: <201011292304.11856.rjw__45349.9888223179$1291068477$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1011282153560.3447-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1011272234340.31337-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1011282153560.3447-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,45 +19,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuLCBOb3YgMjgsIDIwMTAgYXQgNDozOCBBTSwgQWxhbiBTdGVybiA8c3Rlcm5Acm93bGFu
-ZC5oYXJ2YXJkLmVkdT4gd3JvdGU6Cj4gT24gU3VuLCAyOCBOb3YgMjAxMCwgTWF0dGVvIENyb2Nl
-IHdyb3RlOgo+Cj4+IEhpLAo+PiBJIGNhbid0IHVzZSBteSB1c2Igc2VyaWFsIGNhYmxlIHdpdGgg
-YW55IHByb2dyYW0sIGFueSBhY2Nlc3MgZmFpbHMgd2l0aCAtRUFHQUlOCj4+IEkgZGlkIGEgZ2l0
-IGJpc2VjdCBhbmQgSSBmb3VuZCB0aGF0IGNvbW1pdAo+PiAxYmZlZTViYzg2ZmRhZWNjOTEyZTA2
-MDgwNTgzZWRkYWI3MjYzZGYyIGJyb2tlIGl0Lgo+PiBJIGdvdCB0aGUgZW1haWwgYWRkcmVzc2Vz
-IGZyb20gdGhlIE1BSU5UQUlORVJTIGZpbGUsIGlmIEkgYm90aGVyZWQKPj4gYW55b25lIG5vdCBp
-bnZvbHZlZCBwbGVhc2UgZGlzY2FyZCB0aGlzIG1haWwKPgo+IERvZXMgdGhlIHBhdGNoIGJlbG93
-IGZpeCB0aGUgcHJvYmxlbT8KPgo+IEFsYW4gU3Rlcm4KPgo+Cj4gSW5kZXg6IHVzYi0yLjYvZHJp
-dmVycy91c2Ivc2VyaWFsL3VzYi1zZXJpYWwuYwo+ID09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KPiAtLS0gdXNiLTIuNi5v
-cmlnL2RyaXZlcnMvdXNiL3NlcmlhbC91c2Itc2VyaWFsLmMKPiArKysgdXNiLTIuNi9kcml2ZXJz
-L3VzYi9zZXJpYWwvdXNiLXNlcmlhbC5jCj4gQEAgLTUyLDYgKzUyLDcgQEAgc3RhdGljIHN0cnVj
-dCB1c2JfZHJpdmVyIHVzYl9zZXJpYWxfZHJpdgo+IMKgIMKgIMKgIMKgLnN1c3BlbmQgPSDCoCDC
-oCDCoHVzYl9zZXJpYWxfc3VzcGVuZCwKPiDCoCDCoCDCoCDCoC5yZXN1bWUgPSDCoCDCoCDCoCB1
-c2Jfc2VyaWFsX3Jlc3VtZSwKPiDCoCDCoCDCoCDCoC5ub19keW5hbWljX2lkID0gwqAgwqAgwqAg
-wqAxLAo+ICsgwqAgwqAgwqAgLnN1cHBvcnRzX2F1dG9zdXNwZW5kID0gMSwKPiDCoH07Cj4KPiDC
-oC8qIFRoZXJlIGlzIG5vIE1PRFVMRV9ERVZJQ0VfVEFCTEUgZm9yIHVzYnNlcmlhbC5jLiDCoElu
-c3RlYWQKPiBAQCAtMTM0NCw2ICsxMzQ1LDggQEAgaW50IHVzYl9zZXJpYWxfcmVnaXN0ZXIoc3Ry
-dWN0IHVzYl9zZXJpYQo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgcmV0dXJuIC1FTk9ERVY7Cj4K
-PiDCoCDCoCDCoCDCoGZpeHVwX2dlbmVyaWMoZHJpdmVyKTsKPiArIMKgIMKgIMKgIGlmIChkcml2
-ZXItPnVzYl9kcml2ZXIpCj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCBkcml2ZXItPnVzYl9kcml2
-ZXItPnN1cHBvcnRzX2F1dG9zdXNwZW5kID0gMTsKPgo+IMKgIMKgIMKgIMKgaWYgKCFkcml2ZXIt
-PmRlc2NyaXB0aW9uKQo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgZHJpdmVyLT5kZXNjcmlwdGlv
-biA9IGRyaXZlci0+ZHJpdmVyLm5hbWU7Cj4KPgo+Cj4KClllcyBpdCBkb2VzLCBwbGVhc2UgYXBw
-bHkKClJlZ2FyZHMsCi0tIApNYXR0ZW8gQ3JvY2UKT3BlbldydCBkZXZlbG9wZXIKwqAgX19fX19f
-X8KgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgwqAgX19fX19fX1/CoCDCoCDCoCDCoCBfXwrC
-oHzCoCDCoCDCoMKgIHwuLS0tLS0uLS0tLS0uLS0tLS0ufMKgIHzCoCB8wqAgfC4tLS0tLnzCoCB8
-XwrCoHzCoMKgIC3CoMKgIHx8wqAgX8KgIHzCoCAtX198wqAgwqDCoCB8fMKgIHzCoCB8wqAgfHzC
-oMKgIF98fMKgwqAgX3wKwqB8X19fX19fX3x8wqDCoCBfX3xfX19fX3xfX3xfX3x8X19fX19fX198
-fF9ffMKgIHxfX19ffArCoCDCoCDCoCDCoCDCoCB8X198IFcgSSBSIEUgTCBFIFMgU8KgwqAgRiBS
-IEUgRSBEIE8gTQrCoEtBTUlLQVpFIChibGVlZGluZyBlZGdlKSAtLS0tLS0tLS0tLS0tLS0tLS0K
-wqAgKiAxMCBveiBWb2RrYcKgIMKgIMKgwqAgU2hha2Ugd2VsbCB3aXRoIGljZSBhbmQgc3RyYWlu
-CsKgICogMTAgb3ogVHJpcGxlIHNlY8KgIG1peHR1cmUgaW50byAxMCBzaG90IGdsYXNzZXMuCsKg
-ICogMTAgb3ogbGltZSBqdWljZcKgIFNhbHV0ZSEKwqAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxp
-bnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFp
-bG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Monday, November 29, 2010, Alan Stern wrote:
+> On Sun, 28 Nov 2010, Rafael J. Wysocki wrote:
+> 
+> > On Sunday, November 28, 2010, Alan Stern wrote:
+> > > On Sun, 28 Nov 2010, Rafael J. Wysocki wrote:
+> > > 
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > 
+> > > > Currently dpm_prepare() returns error code if it finds that a device
+> > > > being suspended has a pending runtime resume request.  However, it
+> > > > should not do that if the checking for wakeup events is not enabled.
+> > > 
+> > > It doesn't.  The line you changed _does_ check device_may_wakeup().
+> > 
+> > That's not the point.  The problem is that it shouldn't abort suspend
+> > when events_check_enabled is unset.
+> 
+> Oh, I see.  This is a tricky issue.  Every driver for a device that can
+> have wakeup-enabled children needs to worry about the race between
+> suspending the device and receiving a wakeup request from a child.  
+> For example, in drivers/usb/core/hcd-pci.c, the suspend_common()
+> routine goes out of its way to return -EBUSY if device_may_wakeup() is
+> true and the controller's root hub has a pending wakeup request.
+> 
+> How should drivers handle this in general?  Should we make an effort to
+> convert them to use the wakeup framework so they they can let the PM
+> core take care of these races?
+
+I think so.
+
+We also need to put a pm_check_wakeup_events() check into dpm_suspend() IMO,
+so that we abort the suspending of devices as soon as a wakeup event is
+reported.
+
+> Do we have to consider similar races during runtime suspend?
+
+Ideally, yes, but I'm not sure if that's generally possible.  IMO, it won't be
+a big deal if a parent device is suspended and immediately resumed occasionally
+due to a pending wakeup signal from one of its children.  It may be a problem
+if that happens too often, though.
+
+> > > > On the other hand, if the checking for wakeup events is enabled, it
+> > > > can return error when a wakeup event is detected, regardless of its
+> > > > source.
+> > > 
+> > > Will adding this call to pm_wakeup_event() end up double-counting some 
+> > > events?
+> > 
+> > Yes, it will, if the event has already been reported by the subsystem or driver.
+> > 
+> > I don't think it's a very big issue and I'm not sure trying to avoid it is
+> > worth the effort (we can check if the device's wakeup source object is active
+> > and skip reporting the wakeup event in that case, but that doesn't guarantee
+> > that the event won't be counted twice anyway).
+> 
+> I agree that it's not a big issue.  Wakeups reported twice because they 
+> occur just before a system sleep won't cause serious accounting 
+> problems and probably won't happen very often anyway.  I just wanted to 
+> make sure that the issue wasn't being ignored by mistake.
+
+OK
+
+Does it mean you're fine with the patch?
+
+Rafael
