@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: Prevent dpm_prepare() from returning
-	errors unnecessarily
-Date: Mon, 29 Nov 2010 23:04:11 +0100
-Message-ID: <201011292304.11856.rjw__45349.9888223179$1291068477$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1011282153560.3447-100000@netrider.rowland.org>
+From: Greg KH <gregkh@suse.de>
+Subject: Re: BUG, regression. usb-serial adapter broken by PM?
+Date: Mon, 29 Nov 2010 19:26:25 -0800
+Message-ID: <20101130032625.GB12851__7445.84128628976$1291087732$gmane$org@suse.de>
+References: <4CF458CE.2050603@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1011282153560.3447-100000@netrider.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <4CF458CE.2050603@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,72 +18,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Benjamin Poirier <benjamin.poirier@gmail.com>
+Cc: Len Brown <len.brown@intel.com>, Johan Hovold <jhovold@gmail.com>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, Andreas Mohr <andi@lisas.de>, Daniel Sangorrin <daniel.sangorrin@gmail.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, November 29, 2010, Alan Stern wrote:
-> On Sun, 28 Nov 2010, Rafael J. Wysocki wrote:
+On Mon, Nov 29, 2010 at 08:52:14PM -0500, Benjamin Poirier wrote:
+> Hello,
 > 
-> > On Sunday, November 28, 2010, Alan Stern wrote:
-> > > On Sun, 28 Nov 2010, Rafael J. Wysocki wrote:
-> > > 
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > Currently dpm_prepare() returns error code if it finds that a device
-> > > > being suspended has a pending runtime resume request.  However, it
-> > > > should not do that if the checking for wakeup events is not enabled.
-> > > 
-> > > It doesn't.  The line you changed _does_ check device_may_wakeup().
-> > 
-> > That's not the point.  The problem is that it shouldn't abort suspend
-> > when events_check_enabled is unset.
+> Recently, my usb-serial converter has become unusable. Attempts to open
+> the device always fail with:
+> open("/dev/ttyUSB0", O_RDONLY)          = -1 EAGAIN (Resource temporarily unavailable)
 > 
-> Oh, I see.  This is a tricky issue.  Every driver for a device that can
-> have wakeup-enabled children needs to worry about the race between
-> suspending the device and receiving a wakeup request from a child.  
-> For example, in drivers/usb/core/hcd-pci.c, the suspend_common()
-> routine goes out of its way to return -EBUSY if device_may_wakeup() is
-> true and the controller's root hub has a pending wakeup request.
+> The device is a:
+> ID 0c52:2101 Sealevel Systems, Inc. Serial Converter
+> and uses the ftdi_sio driver.
 > 
-> How should drivers handle this in general?  Should we make an effort to
-> convert them to use the wakeup framework so they they can let the PM
-> core take care of these races?
-
-I think so.
-
-We also need to put a pm_check_wakeup_events() check into dpm_suspend() IMO,
-so that we abort the suspending of devices as soon as a wakeup event is
-reported.
-
-> Do we have to consider similar races during runtime suspend?
-
-Ideally, yes, but I'm not sure if that's generally possible.  IMO, it won't be
-a big deal if a parent device is suspended and immediately resumed occasionally
-due to a pending wakeup signal from one of its children.  It may be a problem
-if that happens too often, though.
-
-> > > > On the other hand, if the checking for wakeup events is enabled, it
-> > > > can return error when a wakeup event is detected, regardless of its
-> > > > source.
-> > > 
-> > > Will adding this call to pm_wakeup_event() end up double-counting some 
-> > > events?
-> > 
-> > Yes, it will, if the event has already been reported by the subsystem or driver.
-> > 
-> > I don't think it's a very big issue and I'm not sure trying to avoid it is
-> > worth the effort (we can check if the device's wakeup source object is active
-> > and skip reporting the wakeup event in that case, but that doesn't guarantee
-> > that the event won't be counted twice anyway).
+> I've bisected this problem to
+> commit 1bfee5bc86fdaecc912e06080583eddab7263df2
+> Author: Alan Stern <stern@rowland.harvard.edu>
+> Date:   Sat Sep 25 23:35:00 2010 +0200
 > 
-> I agree that it's not a big issue.  Wakeups reported twice because they 
-> occur just before a system sleep won't cause serious accounting 
-> problems and probably won't happen very often anyway.  I just wanted to 
-> make sure that the issue wasn't being ignored by mistake.
+>     PM / Runtime: Merge synchronous and async runtime routines
+> 
+> I have other usb-serial converters that use other drivers and that are
+> unaffected. I have noticed the problem on a x86_64 machine (.config
+> here: http://pastebin.ca/2006414) and can reproduce it in kvm (with usb
+> passthrough, .config here: http://pastebin.ca/2006416).
+> 
+> I'll be glad to provide more info or try patches.
 
-OK
+A patch to resolve this was sent to linux-usb@vger.kernel.org yesterday,
+can you try that one out (sorry, can't dig it out at the moment...)
 
-Does it mean you're fine with the patch?
+thanks,
 
-Rafael
+greg k-h
