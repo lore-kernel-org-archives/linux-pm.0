@@ -1,14 +1,14 @@
-From: Greg KH <gregkh@suse.de>
-Subject: Re: BUG, regression. usb-serial adapter broken by PM?
-Date: Mon, 29 Nov 2010 19:26:25 -0800
-Message-ID: <20101130032625.GB12851__7445.84128628976$1291087732$gmane$org@suse.de>
-References: <4CF458CE.2050603@gmail.com>
+From: Ming Lei <tom.leiming@gmail.com>
+Subject: Re: [PATCH] PM: Prevent dpm_prepare() from returning
+	errors unnecessarily
+Date: Tue, 30 Nov 2010 21:07:58 +0800
+Message-ID: <AANLkTi=tgEug5EUpqV1-GLFh9rsD5obAyExe+V=CjsbO__39532.8127932318$1291122594$gmane$org@mail.gmail.com>
+References: <201011281312.49949.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4CF458CE.2050603@gmail.com>
+In-Reply-To: <201011281312.49949.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,38 +18,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Poirier <benjamin.poirier@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, Johan Hovold <jhovold@gmail.com>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, Andreas Mohr <andi@lisas.de>, Daniel Sangorrin <daniel.sangorrin@gmail.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Nov 29, 2010 at 08:52:14PM -0500, Benjamin Poirier wrote:
-> Hello,
-> 
-> Recently, my usb-serial converter has become unusable. Attempts to open
-> the device always fail with:
-> open("/dev/ttyUSB0", O_RDONLY)          = -1 EAGAIN (Resource temporarily unavailable)
-> 
-> The device is a:
-> ID 0c52:2101 Sealevel Systems, Inc. Serial Converter
-> and uses the ftdi_sio driver.
-> 
-> I've bisected this problem to
-> commit 1bfee5bc86fdaecc912e06080583eddab7263df2
-> Author: Alan Stern <stern@rowland.harvard.edu>
-> Date:   Sat Sep 25 23:35:00 2010 +0200
-> 
->     PM / Runtime: Merge synchronous and async runtime routines
-> 
-> I have other usb-serial converters that use other drivers and that are
-> unaffected. I have noticed the problem on a x86_64 machine (.config
-> here: http://pastebin.ca/2006414) and can reproduce it in kvm (with usb
-> passthrough, .config here: http://pastebin.ca/2006416).
-> 
-> I'll be glad to provide more info or try patches.
+2010/11/28 Rafael J. Wysocki <rjw@sisk.pl>:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> Currently dpm_prepare() returns error code if it finds that a device
+> being suspended has a pending runtime resume request. =A0However, it
+> should not do that if the checking for wakeup events is not enabled.
+> On the other hand, if the checking for wakeup events is enabled, it
+> can return error when a wakeup event is detected, regardless of its
+> source.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+> =A0drivers/base/power/main.c | =A0 11 +++++++----
+> =A01 file changed, 7 insertions(+), 4 deletions(-)
+>
+> Index: linux-2.6/drivers/base/power/main.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.orig/drivers/base/power/main.c
+> +++ linux-2.6/drivers/base/power/main.c
+> @@ -26,6 +26,7 @@
+> =A0#include <linux/interrupt.h>
+> =A0#include <linux/sched.h>
+> =A0#include <linux/async.h>
+> +#include <linux/suspend.h>
+>
+> =A0#include "../base.h"
+> =A0#include "power.h"
+> @@ -1052,8 +1053,10 @@ static int dpm_prepare(pm_message_t stat
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0mutex_unlock(&dpm_list_mtx);
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pm_runtime_get_noresume(dev);
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (pm_runtime_barrier(dev) && device_may_w=
+akeup(dev)) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Wake-up requested during=
+ system sleep transition. */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (pm_runtime_barrier(dev) && device_may_w=
+akeup(dev))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm_wakeup_event(dev, 0);
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (pm_check_wakeup_events()) {
 
-A patch to resolve this was sent to linux-usb@vger.kernel.org yesterday,
-can you try that one out (sorry, can't dig it out at the moment...)
+If pm_check_wakeup_events returns true, it means there is no wakeup event
+coming, so seems should handle normal suspend prepare, but why
+abort the suspend here?
+
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pm_runtime_put_sync(dev);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0error =3D -EBUSY;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0} else {
+
+
 
 thanks,
+-- =
 
-greg k-h
+Lei Ming
