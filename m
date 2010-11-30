@@ -1,14 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: Prevent dpm_prepare() from returning
- errors unnecessarily
-Date: Tue, 30 Nov 2010 10:13:43 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1011301008110.1686-100000__3977.15575895763$1291130253$gmane$org@iolanthe.rowland.org>
-References: <201011292304.11856.rjw@sisk.pl>
+From: Benjamin Poirier <benjamin.poirier@gmail.com>
+Subject: BUG, regression. usb-serial adapter broken by PM?
+Date: Mon, 29 Nov 2010 20:52:14 -0500
+Message-ID: <4CF458CE.2050603__30245.2516895302$1291131683$gmane$org@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201011292304.11856.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,45 +15,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>, Johan Hovold <jhovold@gmail.com>
+Cc: Len Brown <len.brown@intel.com>, linux-usb@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Andreas Mohr <andi@lisas.de>, Daniel Sangorrin <daniel.sangorrin@gmail.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 29 Nov 2010, Rafael J. Wysocki wrote:
+Hello,
 
-> > Oh, I see.  This is a tricky issue.  Every driver for a device that can
-> > have wakeup-enabled children needs to worry about the race between
-> > suspending the device and receiving a wakeup request from a child.  
-> > For example, in drivers/usb/core/hcd-pci.c, the suspend_common()
-> > routine goes out of its way to return -EBUSY if device_may_wakeup() is
-> > true and the controller's root hub has a pending wakeup request.
-> > 
-> > How should drivers handle this in general?  Should we make an effort to
-> > convert them to use the wakeup framework so they they can let the PM
-> > core take care of these races?
-> 
-> I think so.
-> 
-> We also need to put a pm_check_wakeup_events() check into dpm_suspend() IMO,
-> so that we abort the suspending of devices as soon as a wakeup event is
-> reported.
+Recently, my usb-serial converter has become unusable. Attempts to open
+the device always fail with:
+open("/dev/ttyUSB0", O_RDONLY)          = -1 EAGAIN (Resource temporarily unavailable)
 
-You might as well add that into this patch.
+The device is a:
+ID 0c52:2101 Sealevel Systems, Inc. Serial Converter
+and uses the ftdi_sio driver.
 
-> > Do we have to consider similar races during runtime suspend?
-> 
-> Ideally, yes, but I'm not sure if that's generally possible.  IMO, it won't be
-> a big deal if a parent device is suspended and immediately resumed occasionally
-> due to a pending wakeup signal from one of its children.  It may be a problem
-> if that happens too often, though.
+I've bisected this problem to
+commit 1bfee5bc86fdaecc912e06080583eddab7263df2
+Author: Alan Stern <stern@rowland.harvard.edu>
+Date:   Sat Sep 25 23:35:00 2010 +0200
 
-Okay.
+    PM / Runtime: Merge synchronous and async runtime routines
 
-> Does it mean you're fine with the patch?
+I have other usb-serial converters that use other drivers and that are
+unaffected. I have noticed the problem on a x86_64 machine (.config
+here: http://pastebin.ca/2006414) and can reproduce it in kvm (with usb
+passthrough, .config here: http://pastebin.ca/2006416).
 
-Provided you repair the error that Lei Ming pointed out.  That's the 
-problem with functions that return Boolean values -- you have to name 
-them very carefully.  Ideally the name should be a predicate or a
-question.
+I'll be glad to provide more info or try patches.
 
-Alan Stern
+Thanks,
+-Ben
