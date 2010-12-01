@@ -1,12 +1,14 @@
-From: Len Brown <lenb@kernel.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 12/13] ACPI / PM: Drop acpi_bus_get_power()
-Date: Wed, 01 Dec 2010 17:02:37 -0500 (EST)
-Message-ID: <alpine.LFD.2.00.1012011702210.2314__18441.6969227188$1291241743$gmane$org@x980>
+Date: Wed, 1 Dec 2010 23:07:30 +0100
+Message-ID: <201012012307.30539.rjw__5164.36751136116$1291241778$gmane$org@sisk.pl>
 References: <201011250001.11297.rjw@sisk.pl> <201011250012.06151.rjw@sisk.pl>
+	<alpine.LFD.2.00.1012011702210.2314@x980>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1586859742-1291240960=:2314"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <201011250012.06151.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.2.00.1012011702210.2314@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,30 +18,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---8323328-1586859742-1291240960=:2314
-Content-Type: TEXT/PLAIN; charset=ISO-8859-7
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id oB1MEUFx012625
-
-  CC [M]  drivers/platform/x86/fujitsu-laptop.o
-drivers/platform/x86/fujitsu-laptop.c: In function =A1acpi_fujitsu_add=A2=
-:
-drivers/platform/x86/fujitsu-laptop.c:692: error: implicit declaration of=
-=20
-function =A1acpi_bus_get_power=A2
-
---8323328-1586859742-1291240960=:2314
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-
---8323328-1586859742-1291240960=:2314--
+T24gV2VkbmVzZGF5LCBEZWNlbWJlciAwMSwgMjAxMCwgTGVuIEJyb3duIHdyb3RlOgo+ICAgQ0Mg
+W01dICBkcml2ZXJzL3BsYXRmb3JtL3g4Ni9mdWppdHN1LWxhcHRvcC5vCj4gZHJpdmVycy9wbGF0
+Zm9ybS94ODYvZnVqaXRzdS1sYXB0b3AuYzogSW4gZnVuY3Rpb24g4oCYYWNwaV9mdWppdHN1X2Fk
+ZOKAmToKPiBkcml2ZXJzL3BsYXRmb3JtL3g4Ni9mdWppdHN1LWxhcHRvcC5jOjY5MjogZXJyb3I6
+IGltcGxpY2l0IGRlY2xhcmF0aW9uIG9mIAo+IGZ1bmN0aW9uIOKAmGFjcGlfYnVzX2dldF9wb3dl
+cuKAmQoKUGxlYXNlIHNlZToKCmh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvMzYw
+MDIyLwoKVGhhbmtzLApSYWZhZWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZv
+dW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9s
+aXN0aW5mby9saW51eC1wbQ==
