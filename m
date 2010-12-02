@@ -1,12 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 2.6.37-rc4-git1: Reported regressions from 2.6.36
-Date: Fri,  3 Dec 2010 00:35:49 +0100 (CET)
-Message-ID: <1OMp3vU_qjP.A.JXG.uxC-MB__49216.8389530436$1291333106$gmane$org@chimera>
+Subject: [PATCH] PM / Hibernate: Fix memory corruption related to
+	swap
+Date: Fri, 3 Dec 2010 00:40:36 +0100
+Message-ID: <201012030040.37273.rjw__32330.6577200585$1291333333$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,247 +16,243 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ondrej Zary <linux@rainbow-software.org>, Hugh Dickins <hughd@google.com>, Kernel development list <linux-kernel@vger.kernel.org>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: linux-pm@vger.kernel.org
 
-This message contains a list of some regressions from 2.6.36,
-for which there are no fixes in the mainline known to the tracking team.
-If any of them have been fixed already, please let us know.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-If you know of any other unresolved regressions from 2.6.36, please let us
-know either and we'll add them to the list.  Also, please let us know
-if any of the entries below are invalid.
+There is a problem that swap pages allocated before the creation of
+a hibernation image can be released and used for storing the contents
+of different memory pages while the image is being saved.  Since the
+kernel stored in the image doesn't know of that, it causes memory
+corruption to occur after resume from hibernation, especially on
+systems with relatively small RAM that need to swap often.
 
-Each entry from the list will be sent additionally in an automatic reply
-to this message with CCs to the people involved in reporting and handling
-the issue.
+This issue can be addressed by keeping the GFP_IOFS bits clear
+in gfp_allowed_mask during the entire hibernation, including the
+saving of the image, until the system is finally turned off or
+the hibernation is aborted.  Unfortunately, for this purpose
+it's necessary to rework the way in which the hibernate and
+suspend code manipulates gfp_allowed_mask.
 
+This change is based on an earlier patch from Hugh Dickins.
 
-Listed regressions statistics:
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-by: Ondrej Zary <linux@rainbow-software.org>
+Acked-by: Hugh Dickins <hughd@google.com>
+---
 
-  Date          Total  Pending  Unresolved
-  ----------------------------------------
-  2010-12-03       55       25          19
-  2010-11-19       39       29          25
+Hi,
 
+This patch is a fix for a regression and nasty memory corruption, so I'd like
+to push it to Linus for 2.6.37 if there are no objections.
 
-Unresolved regressions
-----------------------
+Thanks,
+Rafael
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=24142
-Subject		: No more bt848 driver in 2.6.37-rc*
-Submitter	: Christian Casteyde <casteyde.christian@free.fr>
-Date		: 2010-11-30 20:50 (3 days old)
+---
+ include/linux/gfp.h      |    4 ++--
+ kernel/power/hibernate.c |   22 ++++++++++++----------
+ kernel/power/suspend.c   |    5 ++---
+ kernel/power/user.c      |    2 ++
+ mm/page_alloc.c          |   19 ++++++++++++-------
+ 5 files changed, 30 insertions(+), 22 deletions(-)
 
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=23902
-Subject		: [BUG] 2.6.37-rc3 massive interactivity regression on ARM
-Submitter	: Mikael Pettersson <mikpe@it.uu.se>
-Date		: 2010-11-27 15:16 (6 days old)
-Message-ID	: <19697.8378.717761.236202@pilspetsen.it.uu.se>
-References	: http://marc.info/?l=linux-kernel&m=129087098911837&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=23762
-Subject		: kernel 2.6.37-rc2 breaks i915 graphics
-Submitter	: Chris Vine <chris@cvine.freeserve.co.uk>
-Date		: 2010-11-21 10:23 (12 days old)
-Message-ID	: <20101121102344.7c590b99@laptop.homenet>
-References	: http://marc.info/?l=linux-kernel&m=129033505414671&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=23542
-Subject		: HP 2530p accelerated graphics causes spontaneous power off/on
-Submitter	: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Date		: 2010-11-22 17:12 (11 days old)
-References	: https://patchwork.kernel.org/patch/365092/
-Handled-By	: Bjorn Helgaas <bjorn.helgaas@hp.com>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=23462
-Subject		: DVI/EDID broken with Intel i945 graphics and 2.6.37-rc2
-Submitter	: Tino Keitel <tino.keitel@tikei.de>
-Date		: 2010-11-16 18:49 (17 days old)
-Message-ID	: <20101116184914.GA15794@mac.home>
-References	: http://marc.info/?l=linux-kernel&m=128993389113001&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=23432
-Subject		: resume from suspend hangs on everex stepnote sa2053
-Submitter	: tomas m <tmezzadra@gmail.com>
-Date		: 2010-11-21 13:32 (12 days old)
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=23332
-Subject		: Boot failure on HP nx6325
-Submitter	: Rafael J. Wysocki <rjw@sisk.pl>
-Date		: 2010-11-20 00:57 (13 days old)
-First-Bad-Commit: http://git.kernel.org/linus/1af3c2e45e7a641e774bbb84fa428f2f0bf2d9c9
-Handled-By	: Bjorn Helgaas <bjorn.helgaas@hp.com>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=23142
-Subject		: autofs4 hang in 2.6.37-rc1
-Submitter	: Avi Kivity <avi@redhat.com>
-Date		: 2010-11-14 12:55 (19 days old)
-Message-ID	: <4CDFDC2B.6040205@redhat.com>
-References	: http://marc.info/?l=linux-kernel&m=128973936026185&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=23102
-Subject		: [bisected] i915 regression in post 2.6.36 kernels
-Submitter	: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
-Date		: 2010-11-10 7:02 (23 days old)
-Message-ID	: <201011100802.20332.johannes.hirte@fem.tu-ilmenau.de>
-References	: http://marc.info/?l=linux-kernel&m=128937310017057&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22942
-Subject		: [2.6.37-rc1, OOM] virtblk: OOM in do_virtblk_request()
-Submitter	: Dave Chinner <david@fromorbit.com>
-Date		: 2010-11-05 1:30 (28 days old)
-Message-ID	: <20101105013003.GE13830@dastard>
-References	: http://marc.info/?l=linux-kernel&m=128892062917641&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22912
-Subject		: spi_lm70llp module crash on unload (2.6.37-rc1)
-Submitter	: Randy Dunlap <randy.dunlap@oracle.com>
-Date		: 2010-11-05 0:16 (28 days old)
-Message-ID	: <20101104171620.00d8c95d.randy.dunlap@oracle.com>
-References	: http://marc.info/?l=linux-kernel&m=128891627913647&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22882
-Subject		: (2.6.37-rc1) amd64-agp module crashed on second load
-Submitter	: Randy Dunlap <randy.dunlap@oracle.com>
-Date		: 2010-11-05 0:13 (28 days old)
-Message-ID	: <20101104171333.fea1f498.randy.dunlap@oracle.com>
-References	: http://marc.info/?l=linux-kernel&m=128891605213447&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22812
-Subject		: kernel oops on 2.6.37-rc1
-Submitter	: Andrew <atswartz@gmail.com>
-Date		: 2010-11-12 16:05 (21 days old)
-First-Bad-Commit: http://git.kernel.org/linus/a68c439b1966c91f0ef474e2bf275d6792312726
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22672
-Subject		: Regression in 2.6.37-rc1 for Intel 945 Graphics Adapter - bisected to commit e9e331a
-Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
-Date		: 2010-11-11 01:56 (22 days old)
-References	: https://bugs.freedesktop.org/show_bug.cgi?id=31803
-		  http://marc.info/?l=linux-kernel&m=128944001311444&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22642
-Subject		: 2.6.37-rc1: Disk takes 10 seconds to resume - MacBook2,1
-Submitter	: Tobias <devnull@plzk.org>
-Date		: 2010-11-10 19:33 (23 days old)
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22562
-Subject		: Regression in 2.6.37-rc1 - logs spammed with "unable to enumerate USB port" - bisected to commit 3df7169e
-Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
-Date		: 2010-11-02 22:32 (31 days old)
-First-Bad-Commit: http://git.kernel.org/linus/3df7169e73fc1d71a39cffeacc969f6840cdf52b
-Message-ID	: <4CD09166.4060202@lwfinger.net>
-References	: http://marc.info/?l=linux-kernel&m=128873713207906&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22542
-Subject		: [2.6.37-rc1] drm:i195 errors
-Submitter	: Paul Rolland <rol@witbe.net>
-Date		: 2010-11-02 14:58 (31 days old)
-Message-ID	: <20101102155813.09cb2c6e@tux.DEF.witbe.net>
-References	: http://marc.info/?l=linux-kernel&m=128870991628970&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22532
-Subject		: 2.6.37-rc1: BUG: scheduling while atomic (kvm_init)
-Submitter	: Thomas Meyer <thomas@m3y3r.de>
-Date		: 2010-11-02 19:06 (31 days old)
-Message-ID	: <50AA24C585B14210A44AB599605C7CBD@hugo>
-References	: http://marc.info/?l=linux-kernel&m=128872479921559&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22472
-Subject		: vga_switcheroo fails to switch from intel to ati
-Submitter	: Radu Andries <admiral0@tuxfamily.org>
-Date		: 2010-11-08 16:46 (25 days old)
-
-
-Regressions with patches
-------------------------
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=24012
-Subject		: Commit g18733b0 hangs my LVM+raid10 system
-Submitter	: Giacomo Catenazzi <cate@cateee.net>
-Date		: 2010-11-29 19:48 (4 days old)
-Handled-By	: Neil Brown <neilb@suse.de>
-Patch		: https://bugzilla.kernel.org/show_bug.cgi?id=24012#c16
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=23452
-Subject		: 5ada28bf76752 causes compilation error if !CONFIG_LEDS_CLASS
-Submitter	: Michal Hocko <mhocko@suse.cz>
-Date		: 2010-11-16 14:20 (17 days old)
-Message-ID	: <20101116142027.GC19247@tiehlicka.suse.cz>
-References	: http://marc.info/?l=linux-kernel&m=128991726220668&w=2
-Handled-By	: Johannes Berg <johannes.berg@intel.com>
-Patch		: https://patchwork.kernel.org/patch/365582/
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=23012
-Subject		: ftdi_sio /dev/ttyUSB error:  "Resource Temporarily Unavailable"
-Submitter	: Kevin Smith <thirdwiggin@gmail.com>
-Date		: 2010-11-16 06:25 (17 days old)
-Handled-By	: Alan Stern <stern@rowland.harvard.edu>
-Patch		: https://bugzilla.kernel.org/attachment.cgi?id=38372
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22932
-Subject		: [REGRESSION] [2.6.37-rc1] Fan noise after suspend to ram/disk
-Submitter	: Maciej Rutecki <maciej.rutecki@gmail.com>
-Date		: 2010-11-04 16:06 (29 days old)
-First-Bad-Commit: http://git.kernel.org/linus/3e384ee6c687cb397581ee8f9440fc8220cfac80
-Message-ID	: <201011041706.59046.maciej.rutecki@gmail.com>
-References	: http://marc.info/?l=linux-kernel&m=128888684308982&w=2
-Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
-Patch		: https://patchwork.kernel.org/patch/354682/
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22662
-Subject		: divide error in select_task_rq_fair()
-Submitter	: Myron Stowe <myron.stowe@hp.com>
-Date		: 2010-11-10 23:58 (23 days old)
-Patch		: http://lkml.org/lkml/2010/11/13/176
-		  http://lkml.org/lkml/2010/11/13/181
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22572
-Subject		: Linux 2.6.37-rc1 (acpi_video)
-Submitter	: Randy Dunlap <randy.dunlap@oracle.com>
-Date		: 2010-11-02 18:51 (31 days old)
-Message-ID	: <20101102115106.bac57d21.randy.dunlap@oracle.com>
-References	: http://marc.info/?l=linux-kernel&m=128872403920449&w=2
-		  http://marc.info/?l=linux-acpi&m=128874714517914&w=2
-Handled-By	: Zhang Rui <rui.zhang@intel.com>
-Patch		: https://bugzilla.kernel.org/attachment.cgi?id=36992
-
-
-For details, please visit the bug entries and follow the links given in
-references.
-
-As you can see, there is a Bugzilla entry for each of the listed regressions.
-There also is a Bugzilla entry used for tracking the regressions from 2.6.36,
-unresolved as well as resolved, at:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=21782
-
-Please let the tracking team know if there are any Bugzilla entries that
-should be added to the list in there.
-
-Thanks!
+Index: linux-2.6/kernel/power/hibernate.c
+===================================================================
+--- linux-2.6.orig/kernel/power/hibernate.c
++++ linux-2.6/kernel/power/hibernate.c
+@@ -327,7 +327,6 @@ static int create_image(int platform_mod
+ int hibernation_snapshot(int platform_mode)
+ {
+ 	int error;
+-	gfp_t saved_mask;
+ 
+ 	error = platform_begin(platform_mode);
+ 	if (error)
+@@ -339,7 +338,7 @@ int hibernation_snapshot(int platform_mo
+ 		goto Close;
+ 
+ 	suspend_console();
+-	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
++	pm_restrict_gfp_mask();
+ 	error = dpm_suspend_start(PMSG_FREEZE);
+ 	if (error)
+ 		goto Recover_platform;
+@@ -348,7 +347,10 @@ int hibernation_snapshot(int platform_mo
+ 		goto Recover_platform;
+ 
+ 	error = create_image(platform_mode);
+-	/* Control returns here after successful restore */
++	/*
++	 * Control returns here (1) after the image has been created or the
++	 * image creation has failed and (2) after a successful restore.
++	 */
+ 
+  Resume_devices:
+ 	/* We may need to release the preallocated image pages here. */
+@@ -357,7 +359,10 @@ int hibernation_snapshot(int platform_mo
+ 
+ 	dpm_resume_end(in_suspend ?
+ 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
+-	set_gfp_allowed_mask(saved_mask);
++
++	if (error || !in_suspend)
++		pm_restore_gfp_mask();
++
+ 	resume_console();
+  Close:
+ 	platform_end(platform_mode);
+@@ -452,17 +457,16 @@ static int resume_target_kernel(bool pla
+ int hibernation_restore(int platform_mode)
+ {
+ 	int error;
+-	gfp_t saved_mask;
+ 
+ 	pm_prepare_console();
+ 	suspend_console();
+-	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
++	pm_restrict_gfp_mask();
+ 	error = dpm_suspend_start(PMSG_QUIESCE);
+ 	if (!error) {
+ 		error = resume_target_kernel(platform_mode);
+ 		dpm_resume_end(PMSG_RECOVER);
+ 	}
+-	set_gfp_allowed_mask(saved_mask);
++	pm_restore_gfp_mask();
+ 	resume_console();
+ 	pm_restore_console();
+ 	return error;
+@@ -476,7 +480,6 @@ int hibernation_restore(int platform_mod
+ int hibernation_platform_enter(void)
+ {
+ 	int error;
+-	gfp_t saved_mask;
+ 
+ 	if (!hibernation_ops)
+ 		return -ENOSYS;
+@@ -492,7 +495,6 @@ int hibernation_platform_enter(void)
+ 
+ 	entering_platform_hibernation = true;
+ 	suspend_console();
+-	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
+ 	error = dpm_suspend_start(PMSG_HIBERNATE);
+ 	if (error) {
+ 		if (hibernation_ops->recover)
+@@ -536,7 +538,6 @@ int hibernation_platform_enter(void)
+  Resume_devices:
+ 	entering_platform_hibernation = false;
+ 	dpm_resume_end(PMSG_RESTORE);
+-	set_gfp_allowed_mask(saved_mask);
+ 	resume_console();
+ 
+  Close:
+@@ -647,6 +648,7 @@ int hibernate(void)
+ 		if (!error)
+ 			power_down();
+ 		in_suspend = 0;
++		pm_restore_gfp_mask();
+ 	} else {
+ 		pr_debug("PM: Image restored successfully.\n");
+ 	}
+Index: linux-2.6/kernel/power/user.c
+===================================================================
+--- linux-2.6.orig/kernel/power/user.c
++++ linux-2.6/kernel/power/user.c
+@@ -263,6 +263,7 @@ static long snapshot_ioctl(struct file *
+ 	case SNAPSHOT_UNFREEZE:
+ 		if (!data->frozen || data->ready)
+ 			break;
++		pm_restore_gfp_mask();
+ 		thaw_processes();
+ 		usermodehelper_enable();
+ 		data->frozen = 0;
+@@ -275,6 +276,7 @@ static long snapshot_ioctl(struct file *
+ 			error = -EPERM;
+ 			break;
+ 		}
++		pm_restore_gfp_mask();
+ 		error = hibernation_snapshot(data->platform_support);
+ 		if (!error)
+ 			error = put_user(in_suspend, (int __user *)arg);
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -104,19 +104,24 @@ gfp_t gfp_allowed_mask __read_mostly = G
+  * only be modified with pm_mutex held, unless the suspend/hibernate code is
+  * guaranteed not to run in parallel with that modification).
+  */
+-void set_gfp_allowed_mask(gfp_t mask)
++
++static gfp_t saved_gfp_mask;
++
++void pm_restore_gfp_mask(void)
+ {
+ 	WARN_ON(!mutex_is_locked(&pm_mutex));
+-	gfp_allowed_mask = mask;
++	if (saved_gfp_mask) {
++		gfp_allowed_mask = saved_gfp_mask;
++		saved_gfp_mask = 0;
++	}
+ }
+ 
+-gfp_t clear_gfp_allowed_mask(gfp_t mask)
++void pm_restrict_gfp_mask(void)
+ {
+-	gfp_t ret = gfp_allowed_mask;
+-
+ 	WARN_ON(!mutex_is_locked(&pm_mutex));
+-	gfp_allowed_mask &= ~mask;
+-	return ret;
++	WARN_ON(saved_gfp_mask);
++	saved_gfp_mask = gfp_allowed_mask;
++	gfp_allowed_mask &= ~GFP_IOFS;
+ }
+ #endif /* CONFIG_PM_SLEEP */
+ 
+Index: linux-2.6/include/linux/gfp.h
+===================================================================
+--- linux-2.6.orig/include/linux/gfp.h
++++ linux-2.6/include/linux/gfp.h
+@@ -360,7 +360,7 @@ void drain_local_pages(void *dummy);
+ 
+ extern gfp_t gfp_allowed_mask;
+ 
+-extern void set_gfp_allowed_mask(gfp_t mask);
+-extern gfp_t clear_gfp_allowed_mask(gfp_t mask);
++extern void pm_restrict_gfp_mask(void);
++extern void pm_restore_gfp_mask(void);
+ 
+ #endif /* __LINUX_GFP_H */
+Index: linux-2.6/kernel/power/suspend.c
+===================================================================
+--- linux-2.6.orig/kernel/power/suspend.c
++++ linux-2.6/kernel/power/suspend.c
+@@ -206,7 +206,6 @@ static int suspend_enter(suspend_state_t
+ int suspend_devices_and_enter(suspend_state_t state)
+ {
+ 	int error;
+-	gfp_t saved_mask;
+ 
+ 	if (!suspend_ops)
+ 		return -ENOSYS;
+@@ -217,7 +216,7 @@ int suspend_devices_and_enter(suspend_st
+ 			goto Close;
+ 	}
+ 	suspend_console();
+-	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
++	pm_restrict_gfp_mask();
+ 	suspend_test_start();
+ 	error = dpm_suspend_start(PMSG_SUSPEND);
+ 	if (error) {
+@@ -234,7 +233,7 @@ int suspend_devices_and_enter(suspend_st
+ 	suspend_test_start();
+ 	dpm_resume_end(PMSG_RESUME);
+ 	suspend_test_finish("resume devices");
+-	set_gfp_allowed_mask(saved_mask);
++	pm_restore_gfp_mask();
+ 	resume_console();
+  Close:
+ 	if (suspend_ops->end)
