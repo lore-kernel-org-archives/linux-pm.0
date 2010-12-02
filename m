@@ -1,14 +1,19 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: Prevent dpm_prepare() from returning
- errors unnecessarily
-Date: Thu, 2 Dec 2010 10:38:51 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1012021038040.1921-100000__8534.286710392$1291304501$gmane$org@iolanthe.rowland.org>
-References: <201012020050.31171.rjw@sisk.pl>
+From: Thomas Renninger <trenn@suse.de>
+Subject: [PATCH 6/8] acpi: processor->cpuidle: Only set cpuidle
+	check_bm flag if pr->flags.bm_check is set
+Date: Thu,  2 Dec 2010 17:42:26 +0100
+Message-ID: <1291308148-28628-7-git-send-email-trenn__3597.03278304568$1291308372$gmane$org@suse.de>
+References: <1291308148-28628-1-git-send-email-trenn@suse.de>
+	<1291308148-28628-2-git-send-email-trenn@suse.de>
+	<1291308148-28628-3-git-send-email-trenn@suse.de>
+	<1291308148-28628-4-git-send-email-trenn@suse.de>
+	<1291308148-28628-5-git-send-email-trenn@suse.de>
+	<1291308148-28628-6-git-send-email-trenn@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201012020050.31171.rjw@sisk.pl>
+In-Reply-To: <1291308148-28628-6-git-send-email-trenn@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,37 +23,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2 Dec 2010, Rafael J. Wysocki wrote:
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+CC: lenb@kernel.org
+CC: linux-acpi@vger.kernel.org
+CC: linux-pm@lists.linux-foundation.org
+CC: Arjan van de Ven <arjan@linux.intel.com>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org
+---
+ drivers/acpi/processor_idle.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-> OK, so please let me know what you think of the appended patch (on top of the
-> previous one).
-> 
-> Thanks,
-> Rafael
-> Index: linux-2.6/include/linux/suspend.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/suspend.h
-> +++ linux-2.6/include/linux/suspend.h
-> @@ -292,7 +292,7 @@ extern int unregister_pm_notifier(struct
->  /* drivers/base/power/wakeup.c */
->  extern bool events_check_enabled;
->  
-> -extern bool pm_check_wakeup_events(void);
-> +extern bool pm_wakeup_pending(void);
->  extern bool pm_get_wakeup_count(unsigned int *count);
->  extern bool pm_save_wakeup_count(unsigned int count);
->  #else /* !CONFIG_PM_SLEEP */
-> @@ -309,7 +309,7 @@ static inline int unregister_pm_notifier
->  
->  #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
->  
-> -static inline bool pm_check_wakeup_events(void) { return true; }
-> +static inline bool pm_wakeup_pending(void) { return true; }
-
-Shouldn't this return false?
-
-Alan Stern
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index e74f72c..d4d2c5d 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -1046,7 +1046,8 @@ static int acpi_processor_setup_cpuidle(struct acpi_processor *pr)
+ 			snprintf(state->abbr, CPUIDLE_ABBR_LEN, "C3");
+ 			state->flags |= CPUIDLE_FLAG_DEEP;
+ 			state->flags |= CPUIDLE_FLAG_TIME_VALID;
+-			state->flags |= CPUIDLE_FLAG_CHECK_BM;
++			if (pr->flags.bm_check)
++				state->flags |= CPUIDLE_FLAG_CHECK_BM;
+ 			state->enter = pr->flags.bm_check ?
+ 					acpi_idle_enter_bm :
+ 					acpi_idle_enter_simple;
+-- 
+1.6.0.2
