@@ -1,14 +1,11 @@
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] PM / Hibernate: Fix memory corruption
-	related to swap
-Date: Fri, 3 Dec 2010 09:15:08 +0900
-Message-ID: <20101203091508.9fabf04d.kamezawa.hiroyu__34759.8559376367$1291335801$gmane$org@jp.fujitsu.com>
-References: <201012030040.37273.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 0/3] PM: Changes related to wakeup events
+Date: Fri, 3 Dec 2010 01:18:30 +0100
+Message-ID: <201012030118.30603.rjw__41187.4187332161$1291336239$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201012030040.37273.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,35 +15,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ondrej Zary <linux@rainbow-software.org>, Hugh Dickins <hughd@google.com>, Kernel development list <linux-kernel@vger.kernel.org>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 3 Dec 2010 00:40:36 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Hi,
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> There is a problem that swap pages allocated before the creation of
-> a hibernation image can be released and used for storing the contents
-> of different memory pages while the image is being saved.  Since the
-> kernel stored in the image doesn't know of that, it causes memory
-> corruption to occur after resume from hibernation, especially on
-> systems with relatively small RAM that need to swap often.
-> 
-> This issue can be addressed by keeping the GFP_IOFS bits clear
-> in gfp_allowed_mask during the entire hibernation, including the
-> saving of the image, until the system is finally turned off or
-> the hibernation is aborted.  Unfortunately, for this purpose
-> it's necessary to rework the way in which the hibernate and
-> suspend code manipulates gfp_allowed_mask.
-> 
-> This change is based on an earlier patch from Hugh Dickins.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Reported-by: Ondrej Zary <linux@rainbow-software.org>
-> Acked-by: Hugh Dickins <hughd@google.com>
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+The following three patches change the way in which wakeup events are taken
+into account by dpm_prepare() and dpm_suspend().
+
+[1/3] - Prevent dpm_prepare() from aborting suspend if events_check_enabled is
+        unset.
+
+[2/3] - Replace pm_check_wakeup_events() with pm_wakeup_pending() to avoid
+        confision with the return value.
+
+[3/3] - Check pm_wakeup_pending() in device_suspend().
+
+If there are no objections, I'm going to queue them up for 2.6.38.
 
 Thanks,
--Kame
+Rafael
