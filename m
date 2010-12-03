@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 3/3] PM: Use pm_wakeup_pending() in
-	device_suspend()
-Date: Fri, 3 Dec 2010 10:26:10 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1012031024020.1682-100000__5012.75906940481$1291390148$gmane$org@iolanthe.rowland.org>
-References: <201012030123.43786.rjw@sisk.pl>
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: [PATCH] regulator: Take into account the
+ requirements of all consumers
+Date: Fri, 03 Dec 2010 18:12:27 +0000
+Message-ID: <1291399947.3271.146.camel@odin>
+References: <1291372267-23221-1-git-send-email-thomas.petazzoni@free-electrons.com>
+	<1291372267-23221-2-git-send-email-thomas.petazzoni@free-electrons.com>
+	<20101203110930.GO859@rakim.wolfsonmicro.main>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201012030123.43786.rjw@sisk.pl>
+In-Reply-To: <20101203110930.GO859@rakim.wolfsonmicro.main>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,42 +20,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-pm@lists.linux-foundation.org, Thomas Petazzoni <t-petazzoni@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 3 Dec 2010, Rafael J. Wysocki wrote:
-
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Fri, 2010-12-03 at 11:09 +0000, Mark Brown wrote:
+> On Fri, Dec 03, 2010 at 11:31:07AM +0100, Thomas Petazzoni wrote:
 > 
-> Before starting to suspend a device in device_suspend() check if
-> there's a request to abort the power transition and return -EBUSY
-> in that case.
+> > Extend the regulator_set_voltage() function to take into account the
+> > voltage requirements of all consumers of the regulator being changed,
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/base/power/main.c |    5 +++++
->  1 file changed, 5 insertions(+)
+> Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 > 
-> Index: linux-2.6/drivers/base/power/main.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/power/main.c
-> +++ linux-2.6/drivers/base/power/main.c
-> @@ -935,6 +935,11 @@ static void async_suspend(void *data, as
->  
->  static int device_suspend(struct device *dev)
->  {
-> +	if (pm_wakeup_pending()) {
-> +		async_error = -EBUSY;
-> +		return async_error;
-> +	}
-> +
->  	INIT_COMPLETION(dev->power.completion);
->  
->  	if (pm_async_enabled && dev->power.async_suspend) {
+> Style nit:
+> 
+> > +	list_for_each_entry(regulator, &rdev->consumer_list, list)
+> > +	{
+> 
+> The { should be on the previous line.
 
-Is a similar test needed in async_suspend()?  What happens if 
-dpm_suspend() runs through the entire device list okay, but a wakeup 
-event occurs in the middle of the async_synchronize_full() delay?
+Applied and fixed the style.
 
-Alan Stern
+Thanks
+
+Liam
+-- 
+Freelance Developer, SlimLogic Ltd
+ASoC and Voltage Regulator Maintainer.
+http://www.slimlogic.co.uk
