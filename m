@@ -1,8 +1,7 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH,
-	post-2.6.36 regression fix] r8169: Fix runtime power management
-Date: Thu, 9 Dec 2010 02:32:14 +0100
-Message-ID: <201012090232.14375.rjw__28185.4517911144$1291858577$gmane$org@sisk.pl>
+From: Sundar <sunder.svit@gmail.com>
+Subject: runtime PM and autosuspend
+Date: Fri, 10 Dec 2010 00:48:05 +0530
+Message-ID: <AANLkTinzZiPzz2OQr_n_gy0f9qcAq02mu74Rd6npsYCK@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,92 +15,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>, LKML <linux-kernel@vger.kernel.org>, Francois Romieu <romieu@fr.zoreil.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: r8169: Fix runtime power management
+Hi Alan,
 
-I noticed that one of the post-2.6.36 patches broke runtime PM of the
-r8169 on my MSI Wind test machine in such a way that the link was not
-brought up after reconnecting the network cable.
+i want to clarify some of my doubts for the auto suspend PM run time.
 
-In the process of debugging the issue I realized that we only should
-invoke the runtime PM functions in rtl8169_check_link_status() when
-link change is reported and if we do so, the problem goes away.
-Moreover, this allows rtl8169_runtime_idle() to be simplified quite
-a bit.
+The runtime PM documentation mentions the variable timer_autosuspends
+indicating the core to carry out timer based suspends rather than a
+normal suspend. For most of the devices, shouldn't I be using the
+timer based suspends more? But a quick glance shows me that there isnt
+a API to allow the user to explicitly set this mode. Or is it expected
+to set this variable in my driver code to signal the PM core to
+suspend my device based on a timer?
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/net/r8169.c |   26 ++++++++++++++++----------
- 1 file changed, 16 insertions(+), 10 deletions(-)
+My interest stems from trying to implement the auto suspends for the
+input layer which as discussed previously can be used in lieu of
+custom sysfs switches to disable/enable input devices. My
+understanding goes for like this:
+1. Enable run time PM in the driver initialization.
+2. Use pm_runtime_get() in the entry of the ISR to signal resource grab;
+3. Use pm_runtime_put() whilst exiting the ISR to decrement usage
+count. Once the usage count drops to zero, the PM core on the
+expiration of the suspend timer will initiate the suspend. Is this
+correct?
 
-Index: linux-2.6/drivers/net/r8169.c
-===================================================================
---- linux-2.6.orig/drivers/net/r8169.c
-+++ linux-2.6/drivers/net/r8169.c
-@@ -744,26 +744,36 @@ static void rtl8169_xmii_reset_enable(vo
- 	mdio_write(ioaddr, MII_BMCR, val & 0xffff);
- }
- 
--static void rtl8169_check_link_status(struct net_device *dev,
-+static void __rtl8169_check_link_status(struct net_device *dev,
- 				      struct rtl8169_private *tp,
--				      void __iomem *ioaddr)
-+				      void __iomem *ioaddr,
-+				      bool pm)
- {
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&tp->lock, flags);
- 	if (tp->link_ok(ioaddr)) {
- 		/* This is to cancel a scheduled suspend if there's one. */
--		pm_request_resume(&tp->pci_dev->dev);
-+		if (pm)
-+			pm_request_resume(&tp->pci_dev->dev);
- 		netif_carrier_on(dev);
- 		netif_info(tp, ifup, dev, "link up\n");
- 	} else {
- 		netif_carrier_off(dev);
- 		netif_info(tp, ifdown, dev, "link down\n");
--		pm_schedule_suspend(&tp->pci_dev->dev, 100);
-+		if (pm)
-+			pm_schedule_suspend(&tp->pci_dev->dev, 100);
- 	}
- 	spin_unlock_irqrestore(&tp->lock, flags);
- }
- 
-+static void rtl8169_check_link_status(struct net_device *dev,
-+				      struct rtl8169_private *tp,
-+				      void __iomem *ioaddr)
-+{
-+	__rtl8169_check_link_status(dev, tp, ioaddr, false);
-+}
-+
- #define WAKE_ANY (WAKE_PHY | WAKE_MAGIC | WAKE_UCAST | WAKE_BCAST | WAKE_MCAST)
- 
- static u32 __rtl8169_get_wol(struct rtl8169_private *tp)
-@@ -4600,7 +4610,7 @@ static irqreturn_t rtl8169_interrupt(int
- 		}
- 
- 		if (status & LinkChg)
--			rtl8169_check_link_status(dev, tp, ioaddr);
-+			__rtl8169_check_link_status(dev, tp, ioaddr, true);
- 
- 		/* We need to see the lastest version of tp->intr_mask to
- 		 * avoid ignoring an MSI interrupt and having to wait for
-@@ -4890,11 +4900,7 @@ static int rtl8169_runtime_idle(struct d
- 	struct net_device *dev = pci_get_drvdata(pdev);
- 	struct rtl8169_private *tp = netdev_priv(dev);
- 
--	if (!tp->TxDescArray)
--		return 0;
--
--	rtl8169_check_link_status(dev, tp, tp->mmio_addr);
--	return -EBUSY;
-+	return tp->TxDescArray ? -EBUSY : 0;
- }
- 
- static const struct dev_pm_ops rtl8169_pm_ops = {
+Also one more doubt: In order to be available for wakeup via a input
+device, I cannot completely put the keypad controller in the lowest
+possible state. Does this mean that my driver's suspend call back
+would only be effective when I dont want to wakeup via the keypad and
+thus can turn off the controller completely? Also, in such a auto
+suspend timer initiated suspend, will the device interrupt be the sole
+reason for triggering the resume()?
+
+Thanx for the patience to read through the queries.
+
+Cheers!
+
+-- 
+---------
+The views expressed in this email are personal and do not necessarily
+echo my employers'.
