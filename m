@@ -1,13 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Fri, 10 Dec 2010 01:00:58 +0100
-Message-ID: <201012100100.58224.rjw__32144.4285953932$1291939348$gmane$org@sisk.pl>
-References: <AANLkTi=6fUeDAJut5tZmB+h9qmEt7gZ13UaOqhAW3XE1@mail.gmail.com>
+From: Francois Romieu <romieu@fr.zoreil.com>
+Subject: Re: [PATCH,
+	post-2.6.36 regression fix] r8169: Fix runtime power management
+Date: Thu, 9 Dec 2010 10:28:04 +0100
+Message-ID: <20101209092804.GA4113__39246.9370076016$1291995925$gmane$org@electric-eye.fr.zoreil.com>
+References: <201012090232.14375.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=6fUeDAJut5tZmB+h9qmEt7gZ13UaOqhAW3XE1@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <201012090232.14375.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,82 +19,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ohad Ben-Cohen <ohad@wizery.com>, Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: netdev@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, December 10, 2010, Ohad Ben-Cohen wrote:
-> When pm_runtime_put_sync() returns, the _put operation is completed,
-> and if needed (zero usage_count, children are ignored or their count
-> is zero, ->runtime_idle() called pm_runtime_suspend(), no
-> runtime_error, no disable_depth, etc...) the device is powered down.
+Rafael J. Wysocki <rjw@sisk.pl> :
+[...]
+> I noticed that one of the post-2.6.36 patches broke runtime PM of the
+> r8169 on my MSI Wind test machine in such a way that the link was not
+> brought up after reconnecting the network cable.
 > 
-> This behavior is sometimes desirable and even required: drivers may
-> call pm_runtime_put_sync() and rely on PM core to synchronously power
-> down the device.
->
-> This is usually all good, but when we combine this requirement with
-> logical sub-devices that cannot be power-managed on their own (e.g.
-> SDIO functions), things get a bit racy, since their parent is not
-> suspended synchronously (the sub-device is rpm_suspend()'ed
-> synchronously, but its parent is pm_request_idle()ed, which is
-> asynchronous in nature).
+> In the process of debugging the issue I realized that we only should
+> invoke the runtime PM functions in rtl8169_check_link_status() when
+> link change is reported and if we do so, the problem goes away.
+> Moreover, this allows rtl8169_runtime_idle() to be simplified quite
+> a bit.
 > 
-> Since drivers might rely on pm_runtime_put_sync() to synchronously
-> power down the device, if that doesn't happen, a rapid subsequent
-> pm_runtime_get{_sync} might cancel the suspend. This can lead the
-> driver, e.g., to reinitialize a device that wasn't powered down, and
-> the results can be fatal.
-> 
-> One possible solution is to call pm_runtime_idle(parent), instead of
-> pm_request_idle(parent), when a no_callbacks device is suspended:
-> 
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 02c652b..d7659d3 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -407,7 +407,10 @@ static int rpm_suspend(struct device *dev, int rpmflags)
->         if (parent && !parent->power.ignore_children) {
->                 spin_unlock_irq(&dev->power.lock);
-> 
-> -               pm_request_idle(parent);
-> +               if (dev->power.no_callbacks)
-> +                       pm_runtime_idle(parent);
-> +               else
-> +                       pm_request_idle(parent);
-> 
->                 spin_lock_irq(&dev->power.lock);
->         }
-> 
-> This solution assumes that such sub-devices don't really need to have
-> callbacks of their own. It would work for SDIO, since we are
-> effectively no_callbacks devices anyway, and it only seems reasonable
-> to set SDIO functions as no_callbacks devices.
-> 
-> A different, bolder solution, will always call pm_runtime_idle instead
-> of pm_request_idle (see below): when a device is runtime suspended, it
-> can't be too bad to immediately send idle notification to its parent,
-> too. I'm aware this might not always be desirable, but I'm bringing
-> this up even just for the sake of discussion:
-> 
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 02c652b..9719811 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -407,7 +407,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
->         if (parent && !parent->power.ignore_children) {
->                 spin_unlock_irq(&dev->power.lock);
-> 
-> -               pm_request_idle(parent);
-> +               pm_runtime_idle(parent);
-> 
->                 spin_lock_irq(&dev->power.lock);
->         }
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-I acutally think we can do that.  If the parent cannot be suspended,
-pm_runtime_idle() will just return, which is fine.  Right now I don't see
-any big drawback of this.
+Acked-by: Francois Romieu <romieu@fr.zoreil.com>
 
-Alan, what do you think?
-
-Rafael
+-- 
+Ueimor
