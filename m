@@ -1,15 +1,11 @@
-From: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH,
- post-2.6.36 regression fix] r8169: Fix runtime power management
-Date: Fri, 10 Dec 2010 11:09:46 -0800 (PST)
-Message-ID: <20101210.110946.260074147.davem__46125.5179172896$1292008248$gmane$org@davemloft.net>
-References: <201012090232.14375.rjw@sisk.pl>
-	<20101209092804.GA4113@electric-eye.fr.zoreil.com>
+From: jean.pihet@newoldbits.com
+Subject: [PATCH 0/3] perf, tools: new power trace API
+Date: Fri, 10 Dec 2010 20:51:58 +0100
+Message-ID: <1292010721-17426-1-git-send-email-j-pihet__41743.7888718725$1292010859$gmane$org@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101209092804.GA4113@electric-eye.fr.zoreil.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,27 +15,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: romieu@fr.zoreil.com
-Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, mjg@redhat.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Francois Romieu <romieu@fr.zoreil.com>
-Date: Thu, 9 Dec 2010 10:28:04 +0100
+From: Jean Pihet <j-pihet@ti.com>
 
-> Rafael J. Wysocki <rjw@sisk.pl> :
-> [...]
->> I noticed that one of the post-2.6.36 patches broke runtime PM of the
->> r8169 on my MSI Wind test machine in such a way that the link was not
->> brought up after reconnecting the network cable.
->> 
->> In the process of debugging the issue I realized that we only should
->> invoke the runtime PM functions in rtl8169_check_link_status() when
->> link change is reported and if we do so, the problem goes away.
->> Moreover, this allows rtl8169_runtime_idle() to be simplified quite
->> a bit.
->> 
->> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Acked-by: Francois Romieu <romieu@fr.zoreil.com>
+Provides:
+. calls to machine_suspend trace point,
+. OMAP support,
+. API Documentation
 
-Applied, thanks.
+Applies on top of Thomas's 8 latest power trace API patches, cf.
+http://marc.info/?l=linux-kernel&m=129130827309354&w=2
+
+Jean Pihet (3):
+  perf: add calls to suspend trace point
+  perf: add OMAP support for the new power events
+  tools, perf: Documentation for the power events API
+
+ Documentation/trace/events-power.txt |   90 ++++++++++++++++++++++++++++++++++
+ arch/arm/mach-omap2/pm34xx.c         |    7 +++
+ arch/arm/mach-omap2/powerdomain.c    |    3 +
+ arch/arm/plat-omap/clock.c           |   13 ++++-
+ kernel/power/suspend.c               |    3 +
+ 5 files changed, 113 insertions(+), 3 deletions(-)
+ create mode 100644 Documentation/trace/events-power.txt
+
+-- 
+1.7.2.3
