@@ -1,14 +1,13 @@
-From: jean.pihet@newoldbits.com
-Subject: [PATCH 3/3] tools,
-	perf: Documentation for the power events API
-Date: Fri, 10 Dec 2010 20:52:01 +0100
-Message-ID: <1292010721-17426-4-git-send-email-j-pihet__39717.0508084402$1292011409$gmane$org@ti.com>
-References: <1292010721-17426-1-git-send-email-j-pihet@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: subtle pm_runtime_put_sync race and sdio functions
+Date: Fri, 10 Dec 2010 23:01:06 +0100
+Message-ID: <201012102301.06772.rjw__18984.4171786264$1292018591$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1012101202040.2521-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1292010721-17426-1-git-send-email-j-pihet@ti.com>
+In-Reply-To: <Pine.LNX.4.44L0.1012101202040.2521-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,118 +17,133 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, Jean Pihet <j-pihet@ti.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Jean Pihet <j-pihet@ti.com>
+On Friday, December 10, 2010, Alan Stern wrote:
+> On Fri, 10 Dec 2010, Rafael J. Wysocki wrote:
+> 
+> > On Friday, December 10, 2010, Ohad Ben-Cohen wrote:
+> > > When pm_runtime_put_sync() returns, the _put operation is completed,
+> > > and if needed (zero usage_count, children are ignored or their count
+> > > is zero, ->runtime_idle() called pm_runtime_suspend(), no
+> > > runtime_error, no disable_depth, etc...) the device is powered down.
+> > > 
+> > > This behavior is sometimes desirable and even required: drivers may
+> > > call pm_runtime_put_sync() and rely on PM core to synchronously power
+> > > down the device.
+> 
+> That would be a mistake.  The "sync" in pm_runtime_put_sync means that
+> _if_ a runtime_suspend call occurs, the call will occur synchronously.  
+> It does not guarantee that a runtime_suspend call will occur.
+> 
+> > > This is usually all good, but when we combine this requirement with
+> > > logical sub-devices that cannot be power-managed on their own (e.g.
+> > > SDIO functions), things get a bit racy, since their parent is not
+> > > suspended synchronously (the sub-device is rpm_suspend()'ed
+> > > synchronously, but its parent is pm_request_idle()ed, which is
+> > > asynchronous in nature).
+> > > 
+> > > Since drivers might rely on pm_runtime_put_sync() to synchronously
+> > > power down the device,
+> 
+> Drivers should never do this.
+> 
+> > >  if that doesn't happen, a rapid subsequent
+> > > pm_runtime_get{_sync} might cancel the suspend. This can lead the
+> > > driver, e.g., to reinitialize a device that wasn't powered down, and
+> > > the results can be fatal.
+> 
+> What if the device's usage_count was larger than 1?  Then 
+> pm_runtime_put_sync() wouldn't cause a suspend in any case.
+> 
+> It sounds like the reinitialization is done at the wrong time.  It
+> should occur when the parent is resumed, since we are assuming the
+> parent controls the device's power.  Then if the device doesn't get
+> powered down because the parent's suspend was cancelled, there would be
+> no reinitialization and nothing would go wrong.
+> 
+> > > One possible solution is to call pm_runtime_idle(parent), instead of
+> > > pm_request_idle(parent), when a no_callbacks device is suspended:
+> 
+> What if something else has incremented the parent's usage_count?  Then 
+> the driver will get into trouble regardless of which idle call is made 
+> for the parent.  The real issue here is that the driver is making a bad 
+> assumption.
+> 
+> > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > > index 02c652b..d7659d3 100644
+> > > --- a/drivers/base/power/runtime.c
+> > > +++ b/drivers/base/power/runtime.c
+> > > @@ -407,7 +407,10 @@ static int rpm_suspend(struct device *dev, int rpmflags)
+> > >         if (parent && !parent->power.ignore_children) {
+> > >                 spin_unlock_irq(&dev->power.lock);
+> > > 
+> > > -               pm_request_idle(parent);
+> > > +               if (dev->power.no_callbacks)
+> > > +                       pm_runtime_idle(parent);
+> > > +               else
+> > > +                       pm_request_idle(parent);
+> > > 
+> > >                 spin_lock_irq(&dev->power.lock);
+> > >         }
+> 
+> I'm okay with this change.  It makes sense, even though it's not the 
+> proper solution to the problem described above.
 
-Provides documentation for the following:
-- the new power trace API,
-- the old (legacy) power trace API,
-- the DEPRECATED Kconfig option usage..
+I agree.
 
-Signed-off-by: Jean Pihet <j-pihet@ti.com>
----
- Documentation/trace/events-power.txt |   90 ++++++++++++++++++++++++++++++++++
- 1 files changed, 90 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/trace/events-power.txt
+> > > This solution assumes that such sub-devices don't really need to have
+> > > callbacks of their own. It would work for SDIO, since we are
+> > > effectively no_callbacks devices anyway, and it only seems reasonable
+> > > to set SDIO functions as no_callbacks devices.
+> > > 
+> > > A different, bolder solution, will always call pm_runtime_idle instead
+> > > of pm_request_idle (see below): when a device is runtime suspended, it
+> > > can't be too bad to immediately send idle notification to its parent,
+> > > too. I'm aware this might not always be desirable, but I'm bringing
+> > > this up even just for the sake of discussion:
+> > > 
+> > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > > index 02c652b..9719811 100644
+> > > --- a/drivers/base/power/runtime.c
+> > > +++ b/drivers/base/power/runtime.c
+> > > @@ -407,7 +407,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
+> > >         if (parent && !parent->power.ignore_children) {
+> > >                 spin_unlock_irq(&dev->power.lock);
+> > > 
+> > > -               pm_request_idle(parent);
+> > > +               pm_runtime_idle(parent);
+> > > 
+> > >                 spin_lock_irq(&dev->power.lock);
+> > >         }
+> > 
+> > I acutally think we can do that.  If the parent cannot be suspended,
+> > pm_runtime_idle() will just return, which is fine.  Right now I don't see
+> > any big drawback of this.
+> > 
+> > Alan, what do you think?
+> 
+> I don't like this change quite so much.  It can give rise to unbounded
+> nested suspend sequences: we suspend the device, then call the parent's
+> runtime_idle routine which suspends the parent, then we call the
+> grandparent's runtime_idle routine, etc.
+> 
+> Of course, we already do the same thing with nested resumes, so this
+> wouldn't be awful.  I won't NAK it.
 
-diff --git a/Documentation/trace/events-power.txt b/Documentation/trace/events-power.txt
-new file mode 100644
-index 0000000..8a50653
---- /dev/null
-+++ b/Documentation/trace/events-power.txt
-@@ -0,0 +1,90 @@
-+
-+			Subsystem Trace Points: power
-+
-+The power tracing system captures events related to power transitions
-+within the kernel. Broadly speaking there are three major subheadings:
-+
-+  o Power state switch which reports events related to suspend (S-states),
-+     cpuidle (C-states) and cpufreq (P-states)
-+  o System clock related changes
-+  o Power domains related changes and transitions
-+
-+This document describes what each of the tracepoints is and why they
-+might be useful.
-+
-+Cf. include/trace/events/power.h for the events definitions.
-+
-+1. Power state switch events
-+============================
-+
-+1.1 New trace API
-+-----------------
-+
-+A 'cpu' event class gathers the CPU-related events: cpuidle and
-+cpufreq.
-+
-+cpu_idle		"state=%lu cpu_id=%lu"
-+cpu_frequency		"state=%lu cpu_id=%lu"
-+
-+A suspend event is used to indicate the system going in and out of the
-+suspend mode:
-+
-+machine_suspend		"state=%lu"
-+
-+
-+Note: the value of '-1' or '4294967295' for state means an exit from the current state,
-+i.e. trace_cpu_idle(4, smp_processor_id()) means that the system
-+enters the idle state 4, while trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id())
-+means that the system exits the previous idle state.
-+
-+The event which has 'state=4294967295' in the trace is very important to the user
-+space tools which are using it to detect the end of the current state, and so to
-+correctly draw the states diagrams and to calculate accurate statistics etc.
-+
-+1.2 DEPRECATED trace API
-+------------------------
-+
-+A new Kconfig option CONFIG_EVENT_POWER_TRACING_DEPRECATED with the default value of
-+'y' has been created. This allows the legacy trace power API to be used conjointly
-+with the new trace API.
-+The Kconfig option, the old trace API (in include/trace/events/power.h) and the
-+old trace points will disappear in a future release (namely 2.6.41).
-+
-+power_start		"type=%lu state=%lu cpu_id=%lu"
-+power_frequency		"type=%lu state=%lu cpu_id=%lu"
-+power_end		"cpu_id=%lu"
-+
-+The 'type' parameter takes one of those macros:
-+ . POWER_NONE	= 0,
-+ . POWER_CSTATE	= 1,	/* C-State */
-+ . POWER_PSTATE	= 2,	/* Fequency change or DVFS */
-+
-+The 'state' parameter is set depending on the type:
-+ . Target C-state for type=POWER_CSTATE,
-+ . Target frequency for type=POWER_PSTATE,
-+
-+power_end is used to indicate the exit of a state, corresponding to the latest
-+power_start event.
-+
-+2. Clocks events
-+================
-+The clock events are used for clock enable/disable and for
-+clock rate change.
-+
-+clock_enable		"%s state=%lu cpu_id=%lu"
-+clock_disable		"%s state=%lu cpu_id=%lu"
-+clock_set_rate		"%s state=%lu cpu_id=%lu"
-+
-+The first parameter gives the clock name (e.g. "gpio1_iclk").
-+The second parameter is '1' for enable, '0' for disable, the target
-+clock rate for set_rate.
-+
-+3. Power domains events
-+=======================
-+The power domain events are used for power domains transitions
-+
-+power_domain_target	"%s state=%lu cpu_id=%lu"
-+
-+The first parameter gives the power domain name (e.g. "mpu_pwrdm").
-+The second parameter is the power domain target state.
-+
--- 
-1.7.2.3
+OK.  I thought it would be kind of symmetrical with the resume case, but we
+really need to do that for the resume and for suspend it would be a little
+artificial.
+
+I prefer the first patch, so Ohad, if you want it merged, please resend with
+a sign-off etc.
+
+> On the other hand, neither of these patches really addresses Ohad's 
+> underlying problem.  That can be fixed only by changing the driver.
+
+Agreed.
+
+Thanks,
+Rafael
