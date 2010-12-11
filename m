@@ -1,15 +1,12 @@
-From: Ohad Ben-Cohen <ohad@wizery.com>
-Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Sat, 11 Dec 2010 03:17:14 +0200
-Message-ID: <AANLkTi=67vtfiQMQHTijx6DMo2y2-b9BfOq1nx-zG7TU__17131.569205276$1292030313$gmane$org@mail.gmail.com>
-References: <201012100100.58224.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.1012101202040.2521-100000@iolanthe.rowland.org>
-	<AANLkTikJr+0kVPE4aSwPjZWRfA3gRSNgGwzQdSwRpo_5@mail.gmail.com>
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 2.6.36.stable] x86,
+ hotplug: Use mwait to offline a processor, fix the legacy case
+Date: Fri, 10 Dec 2010 23:55:22 -0500 (EST)
+Message-ID: <alpine.LFD.2.00.1012102353270.7564__30003.4709311605$1292043498$gmane$org@x980>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikJr+0kVPE4aSwPjZWRfA3gRSNgGwzQdSwRpo_5@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,61 +16,163 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>
+To: stable@kernel.org
+Cc: linux-pm@lists.linux-foundation.org, x86@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Dec 11, 2010 at 12:59 AM, Ohad Ben-Cohen <ohad@wizery.com> wrote:
->>> > A different, bolder solution, will always call pm_runtime_idle instead
->>> > of pm_request_idle (see below): when a device is runtime suspended, it
->>> > can't be too bad to immediately send idle notification to its parent,
->>> > too. I'm aware this might not always be desirable, but I'm bringing
->>> > this up even just for the sake of discussion:
->>> >
->>> > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtim=
-e.c
->>> > index 02c652b..9719811 100644
->>> > --- a/drivers/base/power/runtime.c
->>> > +++ b/drivers/base/power/runtime.c
->>> > @@ -407,7 +407,7 @@ static int rpm_suspend(struct device *dev, int rp=
-mflags)
->>> > =A0 =A0 =A0 =A0 if (parent && !parent->power.ignore_children) {
->>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 spin_unlock_irq(&dev->power.lock);
->>> >
->>> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm_request_idle(parent);
->>> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm_runtime_idle(parent);
->>> >
->>> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 spin_lock_irq(&dev->power.lock);
->>> > =A0 =A0 =A0 =A0 }
->>>
->>> I acutally think we can do that. =A0If the parent cannot be suspended,
->>> pm_runtime_idle() will just return, which is fine. =A0Right now I don't=
- see
->>> any big drawback of this.
->>>
->>> Alan, what do you think?
->>
->> I don't like this change quite so much. =A0It can give rise to unbounded
->> nested suspend sequences: we suspend the device, then call the parent's
->> runtime_idle routine which suspends the parent, then we call the
->> grandparent's runtime_idle routine, etc.
->
-> Yes, that's why I thought this might not be desirable, but I wasn't
-> quite sure why would it be wrong; if a context is willing to
-> synchronously suspend a device (either a driver using put_sync() or
-> the PM worker), what do we gain by deferring the idling of the parent
-> and not synchronously suspending as much ancestors as possible in the
-> same context ?
+From: H. Peter Anvin <hpa@linux.intel.com>
 
-By allowing nested suspend sequences we even squeeze some more power
-by suspending devices earlier, and saving some CPU cycles (due to the
-avoided context switches), so it sounds like a win-win...
+upstream ea53069231f9317062910d6e772cca4ce93de8c8
+x86, hotplug: Use mwait to offline a processor, fix the legacy case
 
-But of course I may be overlooking a real problem this may pose.. I
-haven't spotted any, but it does feel like a significant behavior
-change, hence the cautious approach :)
+Here included also some small follow-on patches to the same code:
 
-Thanks,
-Ohad.
+upstream a68e5c94f7d3dd64fef34dd5d97e365cae4bb42a
+x86, hotplug: Move WBINVD back outside the play_dead loop
 
->
+upstream ce5f68246bf2385d6174856708d0b746dc378f20
+x86, hotplug: In the MWAIT case of play_dead, CLFLUSH the cache line
+
+https://bugzilla.kernel.org/show_bug.cgi?id=5471
+
+Signed-off-by: H. Peter Anvin <hpa@linux.intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ arch/x86/include/asm/processor.h |   23 ----------
+ arch/x86/kernel/smpboot.c        |   85 +++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 84 insertions(+), 24 deletions(-)
+
+Index: linux-2.6.36.y/arch/x86/include/asm/processor.h
+===================================================================
+--- linux-2.6.36.y.orig/arch/x86/include/asm/processor.h
++++ linux-2.6.36.y/arch/x86/include/asm/processor.h
+@@ -764,29 +764,6 @@ extern unsigned long		idle_halt;
+ extern unsigned long		idle_nomwait;
+ extern bool			c1e_detected;
+ 
+-/*
+- * on systems with caches, caches must be flashed as the absolute
+- * last instruction before going into a suspended halt.  Otherwise,
+- * dirty data can linger in the cache and become stale on resume,
+- * leading to strange errors.
+- *
+- * perform a variety of operations to guarantee that the compiler
+- * will not reorder instructions.  wbinvd itself is serializing
+- * so the processor will not reorder.
+- *
+- * Systems without cache can just go into halt.
+- */
+-static inline void wbinvd_halt(void)
+-{
+-	mb();
+-	/* check for clflush to determine if wbinvd is legal */
+-	if (cpu_has_clflush)
+-		asm volatile("cli; wbinvd; 1: hlt; jmp 1b" : : : "memory");
+-	else
+-		while (1)
+-			halt();
+-}
+-
+ extern void enable_sep_cpu(void);
+ extern int sysenter_setup(void);
+ 
+Index: linux-2.6.36.y/arch/x86/kernel/smpboot.c
+===================================================================
+--- linux-2.6.36.y.orig/arch/x86/kernel/smpboot.c
++++ linux-2.6.36.y/arch/x86/kernel/smpboot.c
+@@ -1383,11 +1383,94 @@ void play_dead_common(void)
+ 	local_irq_disable();
+ }
+ 
++#define MWAIT_SUBSTATE_MASK		0xf
++#define MWAIT_SUBSTATE_SIZE		4
++
++#define CPUID_MWAIT_LEAF		5
++#define CPUID5_ECX_EXTENSIONS_SUPPORTED 0x1
++
++/*
++ * We need to flush the caches before going to sleep, lest we have
++ * dirty data in our caches when we come back up.
++ */
++static inline void mwait_play_dead(void)
++{
++	unsigned int eax, ebx, ecx, edx;
++	unsigned int highest_cstate = 0;
++	unsigned int highest_subcstate = 0;
++	int i;
++	void *mwait_ptr;
++
++	if (!cpu_has(&current_cpu_data, X86_FEATURE_MWAIT))
++		return;
++	if (!cpu_has(&current_cpu_data, X86_FEATURE_CLFLSH))
++		return;
++	if (current_cpu_data.cpuid_level < CPUID_MWAIT_LEAF)
++		return;
++
++	eax = CPUID_MWAIT_LEAF;
++	ecx = 0;
++	native_cpuid(&eax, &ebx, &ecx, &edx);
++
++	/*
++	 * eax will be 0 if EDX enumeration is not valid.
++	 * Initialized below to cstate, sub_cstate value when EDX is valid.
++	 */
++	if (!(ecx & CPUID5_ECX_EXTENSIONS_SUPPORTED)) {
++		eax = 0;
++	} else {
++		edx >>= MWAIT_SUBSTATE_SIZE;
++		for (i = 0; i < 7 && edx; i++, edx >>= MWAIT_SUBSTATE_SIZE) {
++			if (edx & MWAIT_SUBSTATE_MASK) {
++				highest_cstate = i;
++				highest_subcstate = edx & MWAIT_SUBSTATE_MASK;
++			}
++		}
++		eax = (highest_cstate << MWAIT_SUBSTATE_SIZE) |
++			(highest_subcstate - 1);
++	}
++
++	/*
++	 * This should be a memory location in a cache line which is
++	 * unlikely to be touched by other processors.  The actual
++	 * content is immaterial as it is not actually modified in any way.
++	 */
++	mwait_ptr = &current_thread_info()->flags;
++
++	wbinvd();
++
++	while (1) {
++		/*
++		 * The CLFLUSH is a workaround for erratum AAI65 for
++		 * the Xeon 7400 series.  It's not clear it is actually
++		 * needed, but it should be harmless in either case.
++		 * The WBINVD is insufficient due to the spurious-wakeup
++		 * case where we return around the loop.
++		 */
++		clflush(mwait_ptr);
++		__monitor(mwait_ptr, 0, 0);
++		mb();
++		__mwait(eax, 0);
++	}
++}
++
++static inline void hlt_play_dead(void)
++{
++	if (current_cpu_data.x86 >= 4)
++		wbinvd();
++
++	while (1) {
++		native_halt();
++	}
++}
++
+ void native_play_dead(void)
+ {
+ 	play_dead_common();
+ 	tboot_shutdown(TB_SHUTDOWN_WFS);
+-	wbinvd_halt();
++
++	mwait_play_dead();	/* Only returns on failure */
++	hlt_play_dead();
+ }
+ 
+ #else /* ... !CONFIG_HOTPLUG_CPU */
