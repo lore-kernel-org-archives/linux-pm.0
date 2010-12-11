@@ -1,16 +1,11 @@
-From: Bojan Smojver <bojan@rexursive.com>
-Subject: Re: [PATCH] PM / Hibernate: Restore old swap signature
- to avoid user space breakage
-Date: Sun, 12 Dec 2010 08:10:27 +1100
-Message-ID: <1292101827.1630.13.camel__1568.53990997678$1292101967$gmane$org@shrek.rexursive.com>
-References: <201012052324.30231.rjw@sisk.pl> <201012112136.23543.rjw@sisk.pl>
-	<1292100440.1630.11.camel@shrek.rexursive.com>
-	<201012112149.27399.rwys@fuw.edu.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Wrong commit in the ACPI release branch
+Date: Sat, 11 Dec 2010 23:29:34 +0100
+Message-ID: <201012112329.35080.rjw__25517.0173397802$1292106705$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201012112149.27399.rwys@fuw.edu.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,14 +15,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Karel Zak <kzak@redhat.com>, LKML <linux-kernel@vger.kernel.org>, "Dr. David Alan Gilbert" <linux@treblig.org>
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jan Beulich <jbeulich@novell.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2010-12-11 at 21:49 +0100, R. J. Wysocki wrote:
-> Then we can change the signature, no earlier.
+Hi Len,
 
-OK, no skin off my back :-)
+The following commit:
 
--- 
-Bojan
+http://git.kernel.org/?p=linux/kernel/git/lenb/linux-acpi-2.6.git;a=commit;h=091aad6af4ab29af693ced5d6970ceee9d5981c8
+
+(ACPI: eliminate unused variable warning for !ACPI_SLEEP)
+is actually wrong, because it's going to break compilation for
+(!CONFIG_PM_SLEEP && CONFIG_PM_RUNTIME).
+
+I haven't seen it before, let alone acking it or something like this, so I wonder
+why it's being pushed directly to Linus?
+
+Thanks,
+Rafael
