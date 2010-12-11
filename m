@@ -1,13 +1,13 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Sat, 11 Dec 2010 09:53:04 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1012110950210.10743-100000@netrider.rowland.org>
-References: <AANLkTi=67vtfiQMQHTijx6DMo2y2-b9BfOq1nx-zG7TU@mail.gmail.com>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: 2.6.37-rc5, pata_atiixp,
+ DVD-ROM: kernel log flooded with "rpm_resume flags 0x4",
+ "rpm_resume returns 1"
+Date: Sat, 11 Dec 2010 17:32:34 +0100
+Message-ID: <20101211173234.77617d3a@stein>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=67vtfiQMQHTijx6DMo2y2-b9BfOq1nx-zG7TU@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,23 +17,87 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ohad Ben-Cohen <ohad@wizery.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>
+To: linux-pm@lists.linux-foundation.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 11 Dec 2010, Ohad Ben-Cohen wrote:
+Hi,
 
-> By allowing nested suspend sequences we even squeeze some more power
-> by suspending devices earlier, and saving some CPU cycles (due to the
-> avoided context switches), so it sounds like a win-win...
+I just booted from 2.6.36 (without PM debugging configured) into
+2.6.37-rc5 (with PM debugging enabled).  There is endless log spam like
+this:
 
-There's a trade-off, and it's not clear which approach is best.
+Dec 11 17:11:31 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:31 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:31 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:31 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:31 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:31 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:33 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:33 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:33 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:33 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:33 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:33 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:33 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:33 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:33 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:33 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:33 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:33 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:35 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:35 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:35 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:35 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:35 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:35 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:35 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:35 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:35 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:35 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:35 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:35 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:37 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:37 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:37 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:37 stein kernel: scsi host6: rpm_resume returns 1
+Dec 11 17:11:37 stein kernel: scsi host6: rpm_resume flags 0x4
+Dec 11 17:11:37 stein kernel: scsi host6: rpm_resume returns 1
 
-> But of course I may be overlooking a real problem this may pose.. I
-> haven't spotted any, but it does feel like a significant behavior
-> change, hence the cautious approach :)
+Why is rpm_resume performed 6 times every two seconds?
 
-I don't think there would be any real problems.  Hard to know for sure 
-without trying it...
+host6 is pata_atiixp with an:
 
-Alan Stern
+00:14.1 IDE interface: ATI Technologies Inc SB700/SB800 IDE Controller
+(prog-if 8a [Master SecP PriP])
+
+# grep . /sys/class/scsi_host/host6/power/*
+/sys/class/scsi_host/host6/power/async:enabled
+grep: /sys/class/scsi_host/host6/power/autosuspend_delay_ms: Input/output error
+/sys/class/scsi_host/host6/power/control:auto
+/sys/class/scsi_host/host6/power/runtime_active_kids:0
+/sys/class/scsi_host/host6/power/runtime_active_time:0
+/sys/class/scsi_host/host6/power/runtime_enabled:disabled
+/sys/class/scsi_host/host6/power/runtime_status:unsupported
+/sys/class/scsi_host/host6/power/runtime_suspended_time:0
+/sys/class/scsi_host/host6/power/runtime_usage:0
+
+Attached to it is one device:
+
+Host: scsi6 Channel: 00 Id: 00 Lun: 00
+  Vendor: PLEXTOR  Model: DVD-ROM PX-130A  Rev: 1.01
+  Type:   CD-ROM                           ANSI  SCSI revision: 05
+
+# grep . /sys/class/scsi_host/host6/device/target6\:0\:0/6\:0\:0\:0/power/*
+/sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/async:enabled
+grep: /sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/autosuspend_delay_ms: Input/output error
+/sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/control:on
+/sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/runtime_active_kids:0
+/sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/runtime_active_time:2689146
+/sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/runtime_enabled:forbidden
+/sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/runtime_status:active
+/sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/runtime_suspended_time:0
+/sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/runtime_usage:2
+-- 
+Stefan Richter
+-=====-==-=- ==-- -=-==
+http://arcgraph.de/sr/
