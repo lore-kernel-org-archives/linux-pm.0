@@ -1,15 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: 2.6.37-rc5, pata_atiixp,
- DVD-ROM: kernel log flooded with "rpm_resume flags 0x4",
- "rpm_resume returns 1"
-Date: Sat, 11 Dec 2010 14:38:16 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1012111425520.14704-100000__28988.4585574784$1292096344$gmane$org@netrider.rowland.org>
-References: <20101211173234.77617d3a@stein>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM / Hibernate: Restore old swap signature
+	to avoid user space breakage
+Date: Sat, 11 Dec 2010 20:58:09 +0100
+Message-ID: <201012112058.09689.rjw__42140.1975713254$1292097575$gmane$org@sisk.pl>
+References: <201012052324.30231.rjw@sisk.pl>
+	<1291592215.2866.3.camel@shrek.rexursive.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101211173234.77617d3a@stein>
+In-Reply-To: <1291592215.2866.3.camel@shrek.rexursive.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,70 +19,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: linux-ide@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Bojan Smojver <bojan@rexursive.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Karel Zak <kzak@redhat.com>, LKML <linux-kernel@vger.kernel.org>, "Dr. David Alan Gilbert" <linux@treblig.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 11 Dec 2010, Stefan Richter wrote:
-
-> Hi,
+On Monday, December 06, 2010, Bojan Smojver wrote:
+> On Sun, 2010-12-05 at 23:24 +0100, Rafael J. Wysocki wrote:
+> > Commit 3624eb0 (PM / Hibernate: Modify signature used to mark swap)
+> > modified hibernate signature used to mark swap partitions containing
+> > hibernation images, but that turns out to have caused problems in
+> > libblkid on recent Ubuntu.  Restore the old signature to avoid those
+> > problems. 
 > 
-> I just booted from 2.6.36 (without PM debugging configured) into
-> 2.6.37-rc5 (with PM debugging enabled).  There is endless log spam like
-> this:
+> Don't quite understand this change (sorry, probably just being obtuse).
 > 
-> Dec 11 17:11:31 stein kernel: scsi host6: rpm_resume flags 0x4
-> Dec 11 17:11:31 stein kernel: scsi host6: rpm_resume returns 1
-> Dec 11 17:11:31 stein kernel: scsi host6: rpm_resume flags 0x4
-> Dec 11 17:11:31 stein kernel: scsi host6: rpm_resume returns 1
-...
-
-> Why is rpm_resume performed 6 times every two seconds?
-
-This is probably because hal probes the DVD drive every two seconds
-looking for media changes.  However that's not supposed to cause
-rpm_resume to be called for the host unless runtime PM is allowed for
-the DVD drive, which it isn't according to your listings below.  So
-there's a bug somewhere.
-
-> host6 is pata_atiixp with an:
+> The signature was changed to make sure older kernels don't handle
+> compressed images by accident, right? If so, this would seem like a bad
+> idea, because this is what can actually happen now.
 > 
-> 00:14.1 IDE interface: ATI Technologies Inc SB700/SB800 IDE Controller
-> (prog-if 8a [Master SecP PriP])
-> 
-> # grep . /sys/class/scsi_host/host6/power/*
-> /sys/class/scsi_host/host6/power/async:enabled
-> grep: /sys/class/scsi_host/host6/power/autosuspend_delay_ms: Input/output error
-> /sys/class/scsi_host/host6/power/control:auto
-> /sys/class/scsi_host/host6/power/runtime_active_kids:0
-> /sys/class/scsi_host/host6/power/runtime_active_time:0
-> /sys/class/scsi_host/host6/power/runtime_enabled:disabled
-> /sys/class/scsi_host/host6/power/runtime_status:unsupported
-> /sys/class/scsi_host/host6/power/runtime_suspended_time:0
-> /sys/class/scsi_host/host6/power/runtime_usage:0
+> Shouldn't user space learn how to handle both signatures instead?
 
-This is the wrong directory (the class device, not the device itself).  
-You should look at /sys/class/scsi_host/host6/device/power instead.  
-And also /sys/class/scsi_host/host6/device/target6:0:0/power.
+I'm afraid I'll have to push this patch to Linus.  Turns out that Fedora 14
+doesn't pass the resume= argument to the kernel and tries to trigger the resume
+from initramfs.  Since the signature changed, it can't find the image and the
+resume fails, even if both the resume and image kernels are the same.
 
-> Attached to it is one device:
-> 
-> Host: scsi6 Channel: 00 Id: 00 Lun: 00
->   Vendor: PLEXTOR  Model: DVD-ROM PX-130A  Rev: 1.01
->   Type:   CD-ROM                           ANSI  SCSI revision: 05
-> 
-> # grep . /sys/class/scsi_host/host6/device/target6\:0\:0/6\:0\:0\:0/power/*
-> /sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/async:enabled
-> grep: /sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/autosuspend_delay_ms: Input/output error
-> /sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/control:on
-> /sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/runtime_active_kids:0
-> /sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/runtime_active_time:2689146
-> /sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/runtime_enabled:forbidden
-> /sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/runtime_status:active
-> /sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/runtime_suspended_time:0
-> /sys/class/scsi_host/host6/device/target6:0:0/6:0:0:0/power/runtime_usage:2
-
-These values are correct; they show that the DVD drive is forbidden 
-from doing a runtime suspend.
-
-Alan Stern
+Thanks,
+Rafael
