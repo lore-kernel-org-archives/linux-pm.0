@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Resend][PATCH 3/3] ACPI / PM: Drop acpi_power_nocheck
-Date: Sat, 11 Dec 2010 23:45:30 +0100
-Message-ID: <201012112345.30224.rjw__40541.5673660629$1292107638$gmane$org@sisk.pl>
+Subject: [Resend][PATCH 2/3] ACPI / PM: Drop acpi_bus_get_power()
+Date: Sat, 11 Dec 2010 23:44:39 +0100
+Message-ID: <201012112344.39592.rjw__377.480095676397$1292107655$gmane$org@sisk.pl>
 References: <201012112339.53105.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,108 +23,57 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Since acpi_bus_set_power() should not use __acpi_bus_get_power() to
-update the device's device->power.state field before changing its
-power state (this may cause device->power.state to be inconsistent
-with the device power resources' reference counters), remove this
-call from it.  In consequence, the acpi_power_nocheck variable is not
-necessary any more, so it can be dropped along with the DMI table
-used for setting that variable for HP Pavilion 05.
+There are no more users of acpi_bus_get_power(), so it can be
+dropped.  Moreover, it should be dropped, because it modifies
+the device->power.state field of an ACPI device without updating
+the reference counters of the device's power resources, which is
+wrong.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/bus.c      |   39 ---------------------------------------
- drivers/acpi/internal.h |    1 -
- drivers/acpi/power.c    |    3 ---
- 3 files changed, 43 deletions(-)
+ drivers/acpi/bus.c      |   19 -------------------
+ include/acpi/acpi_bus.h |    1 -
+ 2 files changed, 20 deletions(-)
 
 Index: linux-2.6/drivers/acpi/bus.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/bus.c
 +++ linux-2.6/drivers/acpi/bus.c
-@@ -52,22 +52,6 @@ EXPORT_SYMBOL(acpi_root_dir);
+@@ -236,25 +236,6 @@ static int __acpi_bus_get_power(struct a
+ }
  
- #define STRUCT_TO_INT(s)	(*((int*)&s))
  
--static int set_power_nocheck(const struct dmi_system_id *id)
+-int acpi_bus_get_power(acpi_handle handle, int *state)
 -{
--	printk(KERN_NOTICE PREFIX "%s detected - "
--		"disable power check in power transition\n", id->ident);
--	acpi_power_nocheck = 1;
+-	struct acpi_device *device;
+-	int result;
+-
+-	result = acpi_bus_get_device(handle, &device);
+-	if (result)
+-		return result;
+-
+-	result = __acpi_bus_get_power(device, state);
+-	if (result)
+-		return result;
+-
+-	device->power.state = *state;
 -	return 0;
 -}
--static struct dmi_system_id __cpuinitdata power_nocheck_dmi_table[] = {
--	{
--	set_power_nocheck, "HP Pavilion 05", {
--	DMI_MATCH(DMI_BIOS_VENDOR, "Phoenix Technologies LTD"),
--	DMI_MATCH(DMI_SYS_VENDOR, "HP Pavilion 05"),
--	DMI_MATCH(DMI_PRODUCT_VERSION, "2001211RE101GLEND") }, NULL},
--	{},
--};
+-EXPORT_SYMBOL(acpi_bus_get_power);
 -
- 
- #ifdef CONFIG_X86
- static int set_copy_dsdt(const struct dmi_system_id *id)
-@@ -333,23 +317,6 @@ int acpi_bus_set_power(acpi_handle handl
- 		return -ENODEV;
- 	}
- 
--	/*
--	 * Get device's current power state
--	 */
--	if (!acpi_power_nocheck) {
--		/*
--		 * Maybe the incorrect power state is returned on the bogus
--		 * bios, which is different with the real power state.
--		 * For example: the bios returns D0 state and the real power
--		 * state is D3. OS expects to set the device to D0 state. In
--		 * such case if OS uses the power state returned by the BIOS,
--		 * the device can't be transisted to the correct power state.
--		 * So if the acpi_power_nocheck is set, it is unnecessary to
--		 * get the power state by calling acpi_bus_get_power.
--		 */
--		__acpi_bus_get_power(device, &device->power.state);
--	}
 -
- 	return __acpi_bus_set_power(device, state);
- }
- EXPORT_SYMBOL(acpi_bus_set_power);
-@@ -1072,12 +1039,6 @@ static int __init acpi_init(void)
- 	if (acpi_disabled)
- 		return result;
- 
--	/*
--	 * If the laptop falls into the DMI check table, the power state check
--	 * will be disabled in the course of device power transition.
--	 */
--	dmi_check_system(power_nocheck_dmi_table);
--
- 	acpi_scan_init();
- 	acpi_ec_init();
- 	acpi_debugfs_init();
-Index: linux-2.6/drivers/acpi/internal.h
+ static int __acpi_bus_set_power(struct acpi_device *device, int state)
+ {
+ 	int result = 0;
+Index: linux-2.6/include/acpi/acpi_bus.h
 ===================================================================
---- linux-2.6.orig/drivers/acpi/internal.h
-+++ linux-2.6/drivers/acpi/internal.h
-@@ -45,7 +45,6 @@ int acpi_power_get_inferred_state(struct
- int acpi_power_on_resources(struct acpi_device *device, int state);
- int acpi_power_transition(struct acpi_device *device, int state);
- int acpi_bus_init_power(struct acpi_device *device);
--extern int acpi_power_nocheck;
- 
- int acpi_wakeup_device_init(void);
- void acpi_early_processor_set_pdc(void);
-Index: linux-2.6/drivers/acpi/power.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/power.c
-+++ linux-2.6/drivers/acpi/power.c
-@@ -56,9 +56,6 @@ ACPI_MODULE_NAME("power");
- #define ACPI_POWER_RESOURCE_STATE_ON	0x01
- #define ACPI_POWER_RESOURCE_STATE_UNKNOWN 0xFF
- 
--int acpi_power_nocheck;
--module_param_named(power_nocheck, acpi_power_nocheck, bool, 000);
--
- static int acpi_power_add(struct acpi_device *device);
- static int acpi_power_remove(struct acpi_device *device, int type);
- static int acpi_power_resume(struct acpi_device *device);
+--- linux-2.6.orig/include/acpi/acpi_bus.h
++++ linux-2.6/include/acpi/acpi_bus.h
+@@ -327,7 +327,6 @@ void acpi_bus_data_handler(acpi_handle h
+ acpi_status acpi_bus_get_status_handle(acpi_handle handle,
+ 				       unsigned long long *sta);
+ int acpi_bus_get_status(struct acpi_device *device);
+-int acpi_bus_get_power(acpi_handle handle, int *state);
+ int acpi_bus_set_power(acpi_handle handle, int state);
+ int acpi_bus_update_power(acpi_handle handle, int *state_p);
+ bool acpi_bus_power_manageable(acpi_handle handle);
