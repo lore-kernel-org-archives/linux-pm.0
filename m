@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2.6.36.stable] x86,
+Subject: [PATCH 2.6.32.stable] x86,
  hotplug: Use mwait to offline a processor, fix the legacy case
-Date: Fri, 10 Dec 2010 23:55:22 -0500 (EST)
-Message-ID: <alpine.LFD.2.00.1012102353270.7564__30003.4709311605$1292043498$gmane$org@x980>
+Date: Fri, 10 Dec 2010 23:57:04 -0500 (EST)
+Message-ID: <alpine.LFD.2.00.1012102355260.7564__27674.6478783481$1292043530$gmane$org@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -42,13 +42,13 @@ Signed-off-by: Len Brown <len.brown@intel.com>
  arch/x86/kernel/smpboot.c        |   85 +++++++++++++++++++++++++++++++++++++-
  2 files changed, 84 insertions(+), 24 deletions(-)
 
-Index: linux-2.6.36.y/arch/x86/include/asm/processor.h
+Index: linux-2.6.32.y/arch/x86/include/asm/processor.h
 ===================================================================
---- linux-2.6.36.y.orig/arch/x86/include/asm/processor.h
-+++ linux-2.6.36.y/arch/x86/include/asm/processor.h
-@@ -764,29 +764,6 @@ extern unsigned long		idle_halt;
+--- linux-2.6.32.y.orig/arch/x86/include/asm/processor.h
++++ linux-2.6.32.y/arch/x86/include/asm/processor.h
+@@ -765,29 +765,6 @@ extern unsigned long		boot_option_idle_o
+ extern unsigned long		idle_halt;
  extern unsigned long		idle_nomwait;
- extern bool			c1e_detected;
  
 -/*
 - * on systems with caches, caches must be flashed as the absolute
@@ -76,11 +76,11 @@ Index: linux-2.6.36.y/arch/x86/include/asm/processor.h
  extern void enable_sep_cpu(void);
  extern int sysenter_setup(void);
  
-Index: linux-2.6.36.y/arch/x86/kernel/smpboot.c
+Index: linux-2.6.32.y/arch/x86/kernel/smpboot.c
 ===================================================================
---- linux-2.6.36.y.orig/arch/x86/kernel/smpboot.c
-+++ linux-2.6.36.y/arch/x86/kernel/smpboot.c
-@@ -1383,11 +1383,94 @@ void play_dead_common(void)
+--- linux-2.6.32.y.orig/arch/x86/kernel/smpboot.c
++++ linux-2.6.32.y/arch/x86/kernel/smpboot.c
+@@ -1338,11 +1338,94 @@ void play_dead_common(void)
  	local_irq_disable();
  }
  
