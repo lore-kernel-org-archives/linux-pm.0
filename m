@@ -1,7 +1,8 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PULL] Please pull xyzzy fixes
-Date: Sat, 11 Dec 2010 19:22:16 -0800
-Message-ID: <AANLkTim4Y+gG+tRdAivZMJ93e2hESvJed5vjkuzv63Rh__13380.6191305213$1292124247$gmane$org@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] ACPI / PM: Do not save/restore NVS on Sony Vaio
+	VGN-NW130D
+Date: Sun, 12 Dec 2010 21:10:42 +0100
+Message-ID: <201012122110.42717.rjw__40927.3489997306$1292184792$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,27 +16,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Trond Myklebust <Trond.Myklebust@netapp.com>, Len Brown <lenb@kernel.org>, Liam Girdwood <lrg@slimlogic.co.uk>, Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-cifs@vger.kernel.org, linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org, xfs@oss.sgi.com, ceph-devel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Adriano <adriano.vilela@yahoo.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 10, 2010 at 10:05 AM, Trond Myklebust
-<Trond.Myklebust@netapp.com> wrote:
-> Resending pull request after appending Chuck's fix for the nfs_umount() panic.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-[ .. and other people have other similar pull requests - acpi, ceph,
-cifs, xfs etc ]
+The saving of the NVS memory area during suspend and restoring it
+during resume causes problems to appear on Sony Vaio VGN-NW130D, so
+blacklist that machine to avoid those problems.
 
-Right now I'm traveling without access to my laptop to actually do
-pulls. That was unintentional, but my laptop got co-opted for more
-important stuff (child needed it for school an my other laptop has a
-broken harddisk), so I've just been reading email with my cellphone.
-That allows me to keep up-to-date and mark the stuff that I'm
-scheduling for pulling, but I end up not replying a lot because typing
-is so painful and it does that silly html email thing.
+Addresses https://bugzilla.kernel.org/show_bug.cgi?id=23002
 
-Anyway, this is just a reply to say that I've not lost your emails,
-I'm just effectively partly offline until Monday. I just stole Dirk's
-laptop just to write a reply-to-all (or at least a "reply-to-most").
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-and-tested-by: Adriano <adriano.vilela@yahoo.com>
+---
 
-                                         Linus
+Hi Len,
+
+Another Vaio needing acpi_sleep=nonvs, please apply.
+
+Thanks,
+Rafael
+
+---
+ drivers/acpi/sleep.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+Index: linux-2.6/drivers/acpi/sleep.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep.c
++++ linux-2.6/drivers/acpi/sleep.c
+@@ -427,6 +427,14 @@ static struct dmi_system_id __initdata a
+ 		DMI_MATCH(DMI_PRODUCT_NAME, "VPCEB1Z1E"),
+ 		},
+ 	},
++	{
++	.callback = init_nvs_nosave,
++	.ident = "Sony Vaio VGN-NW130D",
++	.matches = {
++		DMI_MATCH(DMI_SYS_VENDOR, "Sony Corporation"),
++		DMI_MATCH(DMI_PRODUCT_NAME, "VGN-NW130D"),
++		},
++	},
+ 	{},
+ };
+ #endif /* CONFIG_SUSPEND */
