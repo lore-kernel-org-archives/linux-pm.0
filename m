@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 4/4] PM: Permit registrarion of
- parentless devices during system suspend
-Date: Sun, 12 Dec 2010 23:09:13 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1012122253120.4379-100000__34374.3901736618$1292213399$gmane$org@netrider.rowland.org>
-References: <201012130133.52072.rjw@sisk.pl>
+From: ykzhao <yakui.zhao@intel.com>
+Subject: Re: [Resend][PATCH 0/3] ACPI / PM: Patches missing
+	from	linux-acpi-2.6/test
+Date: Mon, 13 Dec 2010 16:35:22 +0800
+Message-ID: <1292229322.3983.29.camel__10876.6663274311$1292229738$gmane$org@localhost.localdomain>
+References: <201012112339.53105.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201012130133.52072.rjw@sisk.pl>
+In-Reply-To: <201012112339.53105.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,36 +19,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 13 Dec 2010, Rafael J. Wysocki wrote:
-
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> The registration of a new parentless device during system suspend
-> will not lead to any complications affecting the PM core (the device
-> will be effectively seen after the subsequent resume has completed),
-> so remove the code used for detection of such events.
-
-Actually the tests you're changing were never as strong as they should
-have been.  Drivers are supposed to avoid registering new children
-beneath a device as soon as the device has gone through the "prepare"
-stage, not just after the device is suspended.  Should there be a 
-"prepared" bitflag to help implement this stronger test?
-
-In principle the same idea applies to parentless devices, since they
-can be considered children of the "system device" (a fictitious node at
-the root of the device tree).  The "system" goes into the prepared
-state before all the real devices; that's what the transition_started
-variable was all about.  It's nothing more than the "prepared" bitflag
-for the "system device".
-
-I guess it's okay to be lenient and not check for this.  But should we
-then change the documentation to match?  (Note that the warning won't
-be triggered if a new child is registered _as_ the parent is
-suspending.  Not to mention the possibilities for mischief when devices
-are suspended asynchronously.  But as you say, these complications
-don't affect the PM core.)
-
-Alan Stern
+T24gU3VuLCAyMDEwLTEyLTEyIGF0IDA2OjM5ICswODAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
+ZToKPiBIaSBMZW4sCj4gCj4gVGhlIGZvbGxvd2luZyB0aHJlZSBwYXRjaGVzIHNlZW0gdG8gaGF2
+ZSBiZWVuIGRyb3BwZWQgZnJvbSB5b3VyICd0ZXN0JyBicmFuY2guCj4gCj4gSWYgdGhhdCBoYXBw
+ZW5lZCBieSBhY2NpZGVudCwgcGxlYXNlIHJlYXBwbHkuICBPdGhlcndpc2UsIHBsZWFzZSBsZXQg
+bWUga25vdwo+IHdoYXQncyB3cm9uZyB3aXRoIHRoZSBwYXRjaGVzIHNvIHRoYXQgSSBjYW4gZml4
+IHRoZW0uCj4gCj4gWzEvM10gLSBNYWtlIGZ1aml0c3VfbGFwdG9wIHVzZSBhY3BpX2J1c191cGRh
+dGVfcG93ZXIoKSBpbnN0ZWFkIG9mCj4gICAgICAgICBhY3BpX2J1c19nZXRfcG93ZXIoKSB3aGlj
+aCBpcyB1bnNhZmUuCgrvu79JdCBzZWVtcyB0aGF0IHRoZSBmdW5jdGlvbiBvZiBhY3BpX2J1c191
+cGRhdGVfcG93ZXIgbm90IG9ubHkgb2J0YWlucwp0aGUgY3VycmVudCBwb3dlciBzdGF0ZSwgYnV0
+IGFsc28gc2V0IHRoZSBjb3JyZXNwb25kaW5nIHBvd2VyIHN0YXRlLgpSaWdodD8KCklmIHRoZSBk
+ZXZpY2UgcmVwb3J0cyB0aGUgYm9ndXMgcG93ZXIgc3RhdGUsIG1heWJlIHdlIHdpbGwgc2V0IHRo
+ZQppbmNvcnJlY3QgcG93ZXIgc3RhdGUgZm9yIHRoZSBjb3JyZXNwb25kaW5nIGRldmljZSB3aGVu
+IHVzaW5nIHRoZQpmdW5jdGlvbiBvZiBhY3BpX2J1c191cGRhdGVfcG93ZXIgaW5zdGVhZCBvZiBh
+Y3BpX2J1c19nZXRfcG93ZXIuIEluIHN1Y2gKY2FzZSBtYXliZSB0aGUgZGV2aWNlIGNhbid0IHdv
+cmsgd2VsbC4gCgpUaGUgYm9ndXMgcG93ZXIgc3RhdGUgaXMgcmVwb3J0ZWQgZm9yIHNvbWUgZGV2
+aWNlcyBvbiBzb21lIGxhcHRvcHMuIEZvcgpleGFtcGxlOiAKICAgIGh0dHA6Ly9idWd6aWxsYS5r
+ZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD04MDQ5CiAgICBodHRwOi8vYnVnemlsbGEua2VybmVs
+Lm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTEwMDAKClRoYW5rcy4KICAgICBZYWt1aQoKPiAKPiBbMi8z
+XSAtIERyb3AgYWNwaV9idXNfZ2V0X3Bvd2VyKCkgd2hpY2ggaXMgdW5zYWZlIGFuZCBoYXMgbm8g
+dXNlcnMuCj4gCj4gWzMvM10gLSBEbyBub3QgY2FsbCBfX2FjcGlfYnVzX2dldF9wb3dlcigpIGZy
+b20gYWNwaV9idXNfc2V0X3Bvd2VyKCkKPiAgICAgICAgIGFuZCByZW1vdmUgYWNwaV9wb3dlcl9u
+b2NoZWNrIHRoYXQgaXMgbm90IG5lY2Vzc2FyeSBhbnkgbW9yZS4gICAgICAKPiAKPiBXaXRob3V0
+IHRoZXNlIHBhdGNoZXMgdGhlIHBvd2VyIHJlc291cmNlcyBoYW5kbGluZyByZXdvcmsgaXMgaW5j
+b21wbGV0ZSBhbmQKPiB0aGUgY29kZSB3aWxsIG5vdCB3b3JrIGNvcnJlY3RseSBpbiBzb21lIHNp
+dHVhdGlvbnMuIAo+IAo+IFRoYW5rcywKPiBSYWZhZWwKPiAKPiAtLQo+IFRvIHVuc3Vic2NyaWJl
+IGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1hY3BpIiBp
+bgo+IHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnCj4g
+TW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8t
+aW5mby5odG1sCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+XwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5v
+cmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xp
+bnV4LXBt
