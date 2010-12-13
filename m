@@ -1,14 +1,14 @@
-From: ykzhao <yakui.zhao@intel.com>
-Subject: Re: [Resend][PATCH 0/3] ACPI / PM: Patches missing
-	from	linux-acpi-2.6/test
-Date: Mon, 13 Dec 2010 16:35:22 +0800
-Message-ID: <1292229322.3983.29.camel__10876.6663274311$1292229738$gmane$org@localhost.localdomain>
-References: <201012112339.53105.rjw@sisk.pl>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: Resume hangs [was: mmotm 2010-12-02-16-34 uploaded]
+Date: Mon, 13 Dec 2010 11:04:34 +0100
+Message-ID: <4D05EFB2.3050703__3623.2978025966$1292234838$gmane$org@gmail.com>
+References: <201012030107.oB317ZSW019223@imap1.linux-foundation.org>
+	<4CFB4C66.1090106@gmail.com> <201012051408.27730.rjw@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201012112339.53105.rjw@sisk.pl>
+In-Reply-To: <201012051408.27730.rjw@suse.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,39 +18,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@suse.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuLCAyMDEwLTEyLTEyIGF0IDA2OjM5ICswODAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
-ZToKPiBIaSBMZW4sCj4gCj4gVGhlIGZvbGxvd2luZyB0aHJlZSBwYXRjaGVzIHNlZW0gdG8gaGF2
-ZSBiZWVuIGRyb3BwZWQgZnJvbSB5b3VyICd0ZXN0JyBicmFuY2guCj4gCj4gSWYgdGhhdCBoYXBw
-ZW5lZCBieSBhY2NpZGVudCwgcGxlYXNlIHJlYXBwbHkuICBPdGhlcndpc2UsIHBsZWFzZSBsZXQg
-bWUga25vdwo+IHdoYXQncyB3cm9uZyB3aXRoIHRoZSBwYXRjaGVzIHNvIHRoYXQgSSBjYW4gZml4
-IHRoZW0uCj4gCj4gWzEvM10gLSBNYWtlIGZ1aml0c3VfbGFwdG9wIHVzZSBhY3BpX2J1c191cGRh
-dGVfcG93ZXIoKSBpbnN0ZWFkIG9mCj4gICAgICAgICBhY3BpX2J1c19nZXRfcG93ZXIoKSB3aGlj
-aCBpcyB1bnNhZmUuCgrvu79JdCBzZWVtcyB0aGF0IHRoZSBmdW5jdGlvbiBvZiBhY3BpX2J1c191
-cGRhdGVfcG93ZXIgbm90IG9ubHkgb2J0YWlucwp0aGUgY3VycmVudCBwb3dlciBzdGF0ZSwgYnV0
-IGFsc28gc2V0IHRoZSBjb3JyZXNwb25kaW5nIHBvd2VyIHN0YXRlLgpSaWdodD8KCklmIHRoZSBk
-ZXZpY2UgcmVwb3J0cyB0aGUgYm9ndXMgcG93ZXIgc3RhdGUsIG1heWJlIHdlIHdpbGwgc2V0IHRo
-ZQppbmNvcnJlY3QgcG93ZXIgc3RhdGUgZm9yIHRoZSBjb3JyZXNwb25kaW5nIGRldmljZSB3aGVu
-IHVzaW5nIHRoZQpmdW5jdGlvbiBvZiBhY3BpX2J1c191cGRhdGVfcG93ZXIgaW5zdGVhZCBvZiBh
-Y3BpX2J1c19nZXRfcG93ZXIuIEluIHN1Y2gKY2FzZSBtYXliZSB0aGUgZGV2aWNlIGNhbid0IHdv
-cmsgd2VsbC4gCgpUaGUgYm9ndXMgcG93ZXIgc3RhdGUgaXMgcmVwb3J0ZWQgZm9yIHNvbWUgZGV2
-aWNlcyBvbiBzb21lIGxhcHRvcHMuIEZvcgpleGFtcGxlOiAKICAgIGh0dHA6Ly9idWd6aWxsYS5r
-ZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD04MDQ5CiAgICBodHRwOi8vYnVnemlsbGEua2VybmVs
-Lm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTEwMDAKClRoYW5rcy4KICAgICBZYWt1aQoKPiAKPiBbMi8z
-XSAtIERyb3AgYWNwaV9idXNfZ2V0X3Bvd2VyKCkgd2hpY2ggaXMgdW5zYWZlIGFuZCBoYXMgbm8g
-dXNlcnMuCj4gCj4gWzMvM10gLSBEbyBub3QgY2FsbCBfX2FjcGlfYnVzX2dldF9wb3dlcigpIGZy
-b20gYWNwaV9idXNfc2V0X3Bvd2VyKCkKPiAgICAgICAgIGFuZCByZW1vdmUgYWNwaV9wb3dlcl9u
-b2NoZWNrIHRoYXQgaXMgbm90IG5lY2Vzc2FyeSBhbnkgbW9yZS4gICAgICAKPiAKPiBXaXRob3V0
-IHRoZXNlIHBhdGNoZXMgdGhlIHBvd2VyIHJlc291cmNlcyBoYW5kbGluZyByZXdvcmsgaXMgaW5j
-b21wbGV0ZSBhbmQKPiB0aGUgY29kZSB3aWxsIG5vdCB3b3JrIGNvcnJlY3RseSBpbiBzb21lIHNp
-dHVhdGlvbnMuIAo+IAo+IFRoYW5rcywKPiBSYWZhZWwKPiAKPiAtLQo+IFRvIHVuc3Vic2NyaWJl
-IGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1hY3BpIiBp
-bgo+IHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnCj4g
-TW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8t
-aW5mby5odG1sCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-XwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5v
-cmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xp
-bnV4LXBt
+On 12/05/2010 02:08 PM, Rafael J. Wysocki wrote:
+> On Sunday, December 05, 2010, Jiri Slaby wrote:
+>> On 12/03/2010 01:34 AM, akpm@linux-foundation.org wrote:
+>>> The mm-of-the-moment snapshot 2010-12-02-16-34 has been uploaded to
+>>
+>> Hi, this kernel regresses with respect to resume. It doesn't wake up,
+>> the screen is black with blinking cursor at position [1, 1].
+>> 2010-11-23-16-12 seemed to be OK. In this one it is 100% reproducible so
+>> far.
+>>
+>> I'm using pm-suspend, any ideas what to test before I start to find the
+>> reason on my own?
+> 
+> Please try the pm_test tests for core, processors and devices, eg.:
+
+Hmm, I haven't seen the issues since then. So it had to be some kind of
+coincidence -- I see the issue occasionally for some time already. Now
+it triggered twice in a row after I updated the kernel.
+
+regards,
+-- 
+js
