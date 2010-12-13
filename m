@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 4/4] PM: Permit registrarion of parentless
-	devices during system suspend
-Date: Mon, 13 Dec 2010 01:33:51 +0100
-Message-ID: <201012130133.52072.rjw__39981.539551127$1292201047$gmane$org@sisk.pl>
-References: <201012130128.31243.rjw@sisk.pl>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH 2/4] PM: Remove redundant checks from
+ core device resume routines
+Date: Sun, 12 Dec 2010 17:34:12 -0800
+Message-ID: <AANLkTi=UVOQb15EdpfSeD+Qh8x779pJpsSCTyGvf-gxG__1171.12620869211$1292204218$gmane$org@mail.gmail.com>
+References: <201012130128.31243.rjw@sisk.pl> <201012130131.24970.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201012130128.31243.rjw@sisk.pl>
+In-Reply-To: <201012130131.24970.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,83 +18,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+So I really like this series not only because it implements what I
+suggested, but also because each patch seems to remove more lines than
+it adds. That's always nice, and much too unusual.
 
-The registration of a new parentless device during system suspend
-will not lead to any complications affecting the PM core (the device
-will be effectively seen after the subsequent resume has completed),
-so remove the code used for detection of such events.
+But in this one, I really think you should simplify/clarify things further:
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/power/main.c |   25 +++----------------------
- 1 file changed, 3 insertions(+), 22 deletions(-)
+On Sun, Dec 12, 2010 at 4:31 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>
+> +++ linux-2.6/drivers/base/power/main.c
+> @@ -485,20 +485,17 @@ void dpm_resume_noirq(pm_message_t state
+> =A0 =A0 =A0 =A0transition_started =3D false;
+> =A0 =A0 =A0 =A0while (!list_empty(&dpm_noirq_list)) {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct device *dev =3D to_device(dpm_noirq=
+_list.next);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 int error;
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0get_device(dev);
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (dev->power.status > DPM_OFF) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 int error;
+> -
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev->power.status =3D DPM_O=
+FF;
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mutex_unlock(&dpm_list_mtx);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev->power.status =3D DPM_OFF;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mutex_unlock(&dpm_list_mtx);
 
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -49,12 +49,6 @@ LIST_HEAD(dpm_noirq_list);
- static DEFINE_MUTEX(dpm_list_mtx);
- static pm_message_t pm_transition;
- 
--/*
-- * Set once the preparation of devices for a PM transition has started, reset
-- * before starting to resume devices.  Protected by dpm_list_mtx.
-- */
--static bool transition_started;
--
- static int async_error;
- 
- /**
-@@ -97,19 +91,9 @@ void device_pm_add(struct device *dev)
- 		 dev->bus ? dev->bus->name : "No Bus",
- 		 kobject_name(&dev->kobj));
- 	mutex_lock(&dpm_list_mtx);
--	if (dev->parent) {
--		if (dev->parent->power.in_suspend)
--			dev_warn(dev, "parent %s should not be sleeping\n",
--				 dev_name(dev->parent));
--	} else if (transition_started) {
--		/*
--		 * We refuse to register parentless devices while a PM
--		 * transition is in progress in order to avoid leaving them
--		 * unhandled down the road
--		 */
--		dev_WARN(dev, "Parentless device registered during a PM transaction\n");
--	}
--
-+	if (dev->parent && dev->parent->power.in_suspend)
-+		dev_warn(dev, "parent %s should not be sleeping\n",
-+			dev_name(dev->parent));
- 	list_add_tail(&dev->power.entry, &dpm_list);
- 	mutex_unlock(&dpm_list_mtx);
- }
-@@ -482,7 +466,6 @@ void dpm_resume_noirq(pm_message_t state
- 	ktime_t starttime = ktime_get();
- 
- 	mutex_lock(&dpm_list_mtx);
--	transition_started = false;
- 	while (!list_empty(&dpm_noirq_list)) {
- 		struct device *dev = to_device(dpm_noirq_list.next);
- 		int error;
-@@ -683,7 +666,6 @@ static void dpm_complete(pm_message_t st
- 
- 	INIT_LIST_HEAD(&list);
- 	mutex_lock(&dpm_list_mtx);
--	transition_started = false;
- 	while (!list_empty(&dpm_prepared_list)) {
- 		struct device *dev = to_device(dpm_prepared_list.prev);
- 
-@@ -1020,7 +1002,6 @@ static int dpm_prepare(pm_message_t stat
- 	int error = 0;
- 
- 	mutex_lock(&dpm_list_mtx);
--	transition_started = true;
- 	while (!list_empty(&dpm_list)) {
- 		struct device *dev = to_device(dpm_list.next);
- 
+I think you should move the device to the dpm_suspended list _here_,
+before dropping the mutex. That way the power.status thing matches the
+list.
+
+So then you'd just remove the crazy conditional "if it's still on a
+list, move it to the right list" thing, and these two lines:
+
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (!list_empty(&dev->power.entry))
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0list_move_tail(&dev->power=
+.entry, &dpm_suspended_list);
+
+Would just be that plain
+
+        list_move_tail(&dev->power.entry, &dpm_suspended_list);
+
+before you even drop the lock. That look much simpler, and the list
+movement seems a lot more obvious, no?
+
+If an unregister event (or whatever) happens while you had the mutex
+unlocked, it will just remove it from the new list (the one that
+matches the power state). So no need for that whole complexity with
+"what happens with the list if somebody removed the device while we
+were busy suspending/resuming it".
+
+Or am I missing something?
+
+(And same comment for that other identical case in dpm_complete())
+
+                 Linus
