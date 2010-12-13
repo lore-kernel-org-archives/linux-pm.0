@@ -1,14 +1,14 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC][PATCH 0/4] PM: Use separate lists of devices
- at each stage of suspend/resume
-Date: Sun, 12 Dec 2010 17:35:41 -0800
-Message-ID: <AANLkTimKALTwMF4KD=aaW76r5+_xR9SoZGUPaM+YfmUd__12078.9420711391$1292204622$gmane$org@mail.gmail.com>
-References: <201012130128.31243.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 1/4] PM: Use a different list of devices
+ for each stage of device suspend
+Date: Sun, 12 Dec 2010 22:40:10 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1012122237360.4379-100000__32521.3020937101$1292211670$gmane$org@netrider.rowland.org>
+References: <201012130129.55483.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201012130128.31243.rjw@sisk.pl>
+In-Reply-To: <201012130129.55483.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,14 +19,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Dec 12, 2010 at 4:28 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->
-> Please let me know what you think.
+On Mon, 13 Dec 2010, Rafael J. Wysocki wrote:
 
-All looks A-ok to me, with the small simplification suggestion posted
-separately.
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Instead of keeping all devices in the same list during system suspend
+> and resume, regardless of what suspend-resume callbacks have been
+> executed for them already, use separate lists of devices that have
+> had their ->prepare(), ->suspend() and ->suspend_noirq() callbacks
+> executed.  This will allow us to simplify the core device suspend and
+> resume routines.
 
-          Linus
+Okay in principle.  But there's one mistake...
+
+> @@ -699,8 +693,8 @@ static void dpm_complete(pm_message_t st
+>  	INIT_LIST_HEAD(&list);
+>  	mutex_lock(&dpm_list_mtx);
+>  	transition_started = false;
+> -	while (!list_empty(&dpm_list)) {
+> -		struct device *dev = to_device(dpm_list.prev);
+> +	while (!list_empty(&dpm_prepared_list)) {
+> +		struct device *dev = to_device(dpm_prepared_list.prev);
+>  
+>  		get_device(dev);
+>  		if (dev->power.status > DPM_ON) {
+
+The parts about getting rid of "list" and putting dev back onto
+dpm_list got left out.
+
+Alan Stern
