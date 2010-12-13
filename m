@@ -1,14 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 1/4] PM: Use a different list of devices
- for each stage of device suspend
-Date: Sun, 12 Dec 2010 22:46:24 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1012122245040.4379-100000__8083.91275718368$1292212045$gmane$org@netrider.rowland.org>
-References: <Pine.LNX.4.44L0.1012122237360.4379-100000@netrider.rowland.org>
+Subject: Re: [RFC][PATCH 4/4] PM: Permit registrarion of
+ parentless devices during system suspend
+Date: Sun, 12 Dec 2010 23:09:13 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1012122253120.4379-100000__34374.3901736618$1292213399$gmane$org@netrider.rowland.org>
+References: <201012130133.52072.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1012122237360.4379-100000@netrider.rowland.org>
+In-Reply-To: <201012130133.52072.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,38 +22,33 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 12 Dec 2010, Alan Stern wrote:
+On Mon, 13 Dec 2010, Rafael J. Wysocki wrote:
 
-> On Mon, 13 Dec 2010, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Instead of keeping all devices in the same list during system suspend
-> > and resume, regardless of what suspend-resume callbacks have been
-> > executed for them already, use separate lists of devices that have
-> > had their ->prepare(), ->suspend() and ->suspend_noirq() callbacks
-> > executed.  This will allow us to simplify the core device suspend and
-> > resume routines.
-> 
-> Okay in principle.  But there's one mistake...
-> 
-> > @@ -699,8 +693,8 @@ static void dpm_complete(pm_message_t st
-> >  	INIT_LIST_HEAD(&list);
-> >  	mutex_lock(&dpm_list_mtx);
-> >  	transition_started = false;
-> > -	while (!list_empty(&dpm_list)) {
-> > -		struct device *dev = to_device(dpm_list.prev);
-> > +	while (!list_empty(&dpm_prepared_list)) {
-> > +		struct device *dev = to_device(dpm_prepared_list.prev);
-> >  
-> >  		get_device(dev);
-> >  		if (dev->power.status > DPM_ON) {
-> 
-> The parts about getting rid of "list" and putting dev back onto
-> dpm_list got left out.
+> The registration of a new parentless device during system suspend
+> will not lead to any complications affecting the PM core (the device
+> will be effectively seen after the subsequent resume has completed),
+> so remove the code used for detection of such events.
 
-Never mind.  I forgot that we need to keep using the intermediate list
-in order to handle new devices being registered while the resumes are
-taking place.
+Actually the tests you're changing were never as strong as they should
+have been.  Drivers are supposed to avoid registering new children
+beneath a device as soon as the device has gone through the "prepare"
+stage, not just after the device is suspended.  Should there be a 
+"prepared" bitflag to help implement this stronger test?
+
+In principle the same idea applies to parentless devices, since they
+can be considered children of the "system device" (a fictitious node at
+the root of the device tree).  The "system" goes into the prepared
+state before all the real devices; that's what the transition_started
+variable was all about.  It's nothing more than the "prepared" bitflag
+for the "system device".
+
+I guess it's okay to be lenient and not check for this.  But should we
+then change the documentation to match?  (Note that the warning won't
+be triggered if a new child is registered _as_ the parent is
+suspending.  Not to mention the possibilities for mischief when devices
+are suspended asynchronously.  But as you say, these complications
+don't affect the PM core.)
 
 Alan Stern
