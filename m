@@ -1,14 +1,14 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [Resend][PATCH 0/3] ACPI / PM: Patches missing from
- linux-acpi-2.6/test
-Date: Mon, 13 Dec 2010 15:31:19 -0500 (EST)
-Message-ID: <alpine.LFD.2.00.1012131523320.16730__42481.8864012652$1292272468$gmane$org@x980>
-References: <201012112339.53105.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Wrong commit in the ACPI release branch
+Date: Mon, 13 Dec 2010 22:09:16 +0100
+Message-ID: <201012132209.17173.rjw__27531.2249701985$1292274840$gmane$org@sisk.pl>
+References: <201012112329.35080.rjw@sisk.pl>
+	<4D05E1E502000078000277B6@vpn.id2.novell.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <201012112339.53105.rjw@sisk.pl>
+In-Reply-To: <4D05E1E502000078000277B6@vpn.id2.novell.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,38 +18,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jan Beulich <JBeulich@novell.com>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> Hi Len,
+On Monday, December 13, 2010, Jan Beulich wrote:
+> >>> On 11.12.10 at 23:29, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > The following commit:
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/lenb/linux-acpi-2.6.git;a=commit;h 
+> > =091aad6af4ab29af693ced5d6970ceee9d5981c8
+> > 
+> > (ACPI: eliminate unused variable warning for !ACPI_SLEEP)
+> > is actually wrong, because it's going to break compilation for
+> > (!CONFIG_PM_SLEEP && CONFIG_PM_RUNTIME).
 > 
-> The following three patches seem to have been dropped from your 'test' branch.
+> How would this break compilation in *any* configuration? The
+> variable definition got moved into an #ifdef the #else of which
+> has
 > 
-> If that happened by accident, please reapply.  Otherwise, please let me know
-> what's wrong with the patches so that I can fix them.
-> 
-> [1/3] - Make fujitsu_laptop use acpi_bus_update_power() instead of
->         acpi_bus_get_power() which is unsafe.
-> 
-> [2/3] - Drop acpi_bus_get_power() which is unsafe and has no users.
-> 
-> [3/3] - Do not call __acpi_bus_get_power() from acpi_bus_set_power()
->         and remove acpi_power_nocheck that is not necessary any more.
-> 
-> Without these patches the power resources handling rework is incomplete and
-> the code will not work correctly in some situations. 
+> #define acpi_target_sleep_state	ACPI_STATE_S0
 
-Looks like my screw-up.
+OK, I seem to haven't looked at the patch carefully enough, sorry for the
+noise.
 
-I recall inserting the fujitsu patch to fix the 
-build before what were originally 12/13 and 13/13 of this series,
-but apparently I kept the baseline branch and deleted the fix on top of it.
-
-Yes, in general, I do squawk when I drop patches from acpi-test,
-even if it is a temporary drop due to a time-consuming manual merge.
-
-So thanks for noticing, I'll look at these again now.
-
-Len Brown
-Intel Open Source Technology Center
+Rafael
