@@ -1,14 +1,16 @@
-From: Dan Smith <danms@us.ibm.com>
-Subject: [PATCH 03/19] cgroup freezer: Add CHECKPOINTING state to
-	safeguard container checkpoint
-Date: Tue, 14 Dec 2010 08:14:51 -0800
-Message-ID: <1292343307-7870-3-git-send-email-danms@us.ibm.com>
-References: <1292343307-7870-1-git-send-email-danms@us.ibm.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: pm_runtime_suspended() and non-pm_runtime-using
+ (i2c) drivers
+Date: Tue, 14 Dec 2010 18:09:42 +0000
+Message-ID: <20101214180941.GB13644__31057.9270161272$1292350242$gmane$org@rakim.wolfsonmicro.main>
+References: <20101214164059.GE5723@sirena.org.uk>
+	<Pine.LNX.4.44L0.1012141236530.2087-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1292343307-7870-1-git-send-email-danms@us.ibm.com>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1012141236530.2087-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,268 +20,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: danms@us.ibm.com
-Cc: Cedric Le Goater <legoater@free.fr>, Oren Laadan <orenl@cs.columbia.edu>, Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Matt Helsley <matthltc@us.ibm.com>
+On Tue, Dec 14, 2010 at 12:44:24PM -0500, Alan Stern wrote:
+> On Tue, 14 Dec 2010, Mark Brown wrote:
+> > On Tue, Dec 14, 2010 at 11:16:45AM -0500, Alan Stern wrote:
 
-The CHECKPOINTING state prevents userspace from unfreezing tasks until
-sys_checkpoint() is finished. When doing container checkpoint userspace
-will do:
+> > > I'm not familiar with the details of how the i2c subsystem works.  But
+> > > in general, the subsystem code should call pm_runtime_set_active()  
+> > > for every device before registering it.  Then if a driver doesn't use
+> > > any runtime-PM functions, pm_runtime_suspended() will return false.
 
-	echo FROZEN > /cgroups/my_container/freezer.state
-	...
-	rc = sys_checkpoint( <pid of container root> );
+> > Hrm, if that's the case then we also need to update at least the
+> > platform and SPI buses.  Though looking at the documentation this is
+> > going to get a bit interesting as there's a requirement that the parent
+> > has runtime PM enabled on it...
 
-To ensure a consistent checkpoint image userspace should not be allowed
-to thaw the cgroup (echo THAWED > /cgroups/my_container/freezer.state)
-during checkpoint.
+> The parent can either be set to the active state or set to ignore its 
+> children.  The parent does not have to be enabled for runtime PM.
 
-"CHECKPOINTING" can only be set on a "FROZEN" cgroup using the checkpoint
-system call. Once in the "CHECKPOINTING" state, the cgroup may not leave until
-the checkpoint system call is finished and ready to return. Then the
-freezer state returns to "FROZEN". Writing any new state to freezer.state while
-checkpointing will return EBUSY. These semantics ensure that userspace cannot
-unfreeze the cgroup midway through the checkpoint system call.
+Both of those require that the parent is set up to know something about
+runtime PM to some extent - in the case of buses like I2C the parent is
+a largely unrelated thing on a different bus which may or may not have
+runtime PM implemented.
 
-The cgroup_freezer_begin_checkpoint() and cgroup_freezer_end_checkpoint()
-make relatively few assumptions about the task that is passed in. However the
-way they are called in do_checkpoint() assumes that the root of the container
-is in the same freezer cgroup as all the other tasks that will be
-checkpointed.
+> >  It's certainly not terribly apparent
+> > from the documentation.
 
-Notes:
-        As a side-effect this prevents the multiple tasks from entering the
-        CHECKPOINTING state simultaneously. All but one will get -EBUSY.
+> What part isn't clear from the documentation?  I think the description 
+> of pm_runtime_set_active() in Documentation/power/runtime_pm.txt is 
+> pretty straightforward.
 
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
-Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-Cc: Cedric Le Goater <legoater@free.fr>
-Cc: Paul Menage <menage@google.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
----
- Documentation/cgroups/freezer-subsystem.txt |   10 ++
- include/linux/freezer.h                     |    8 ++
- kernel/cgroup_freezer.c                     |  129 ++++++++++++++++++++++++++-
- 3 files changed, 144 insertions(+), 3 deletions(-)
+It's not clear to me that one needs to do this in order to avoid
+breaking the suspend and resume calls of drivers that aren't doing
+anything with runtime PM.  It's clear what it does, but it's less clear
+that the bus should do it or that not doing it will have an impact on
+stuff that isn't using runtime PM.
 
-diff --git a/Documentation/cgroups/freezer-subsystem.txt b/Documentation/cgroups/freezer-subsystem.txt
-index 41f37fe..92b68e6 100644
---- a/Documentation/cgroups/freezer-subsystem.txt
-+++ b/Documentation/cgroups/freezer-subsystem.txt
-@@ -100,3 +100,13 @@ things happens:
- 		and returns EINVAL)
- 	3) The tasks that blocked the cgroup from entering the "FROZEN"
- 		state disappear from the cgroup's set of tasks.
-+
-+When the cgroup freezer is used to guard container checkpoint operations the
-+freezer.state may be "CHECKPOINTING". "CHECKPOINTING" can only be set on a
-+"FROZEN" cgroup using the checkpoint system call. Once in the "CHECKPOINTING"
-+state, the cgroup may not leave until the checkpoint system call returns the
-+freezer state to "FROZEN". Writing any new state to freezer.state while
-+checkpointing will return EBUSY. These semantics ensure that userspace cannot
-+unfreeze the cgroup midway through the checkpoint system call. Note that,
-+unlike "FROZEN" and "FREEZING", there is no corresponding "CHECKPOINTED"
-+state.
-diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-index da7e52b..3d32641 100644
---- a/include/linux/freezer.h
-+++ b/include/linux/freezer.h
-@@ -65,11 +65,19 @@ extern void cancel_freezing(struct task_struct *p);
- 
- #ifdef CONFIG_CGROUP_FREEZER
- extern int cgroup_freezing_or_frozen(struct task_struct *task);
-+extern int in_same_cgroup_freezer(struct task_struct *p, struct task_struct *q);
-+extern int cgroup_freezer_begin_checkpoint(struct task_struct *task);
-+extern void cgroup_freezer_end_checkpoint(struct task_struct *task);
- #else /* !CONFIG_CGROUP_FREEZER */
- static inline int cgroup_freezing_or_frozen(struct task_struct *task)
- {
- 	return 0;
- }
-+static inline int in_same_cgroup_freezer(struct task_struct *p,
-+					 struct task_struct *q)
-+{
-+	return 0;
-+}
- #endif /* !CONFIG_CGROUP_FREEZER */
- 
- /*
-diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
-index e7bebb7..09918d9 100644
---- a/kernel/cgroup_freezer.c
-+++ b/kernel/cgroup_freezer.c
-@@ -26,6 +26,7 @@ enum freezer_state {
- 	CGROUP_THAWED = 0,
- 	CGROUP_FREEZING,
- 	CGROUP_FROZEN,
-+	CGROUP_CHECKPOINTING,
- };
- 
- struct freezer {
-@@ -63,6 +64,44 @@ int cgroup_freezing_or_frozen(struct task_struct *task)
- 	return result;
- }
- 
-+/* Task is frozen or will freeze immediately when next it gets woken */
-+static bool is_task_frozen_enough(struct task_struct *task)
-+{
-+	return frozen(task) ||
-+		(task_is_stopped_or_traced(task) && freezing(task));
-+}
-+
-+/*
-+ * caller must hold freezer->lock
-+ */
-+static void update_freezer_state(struct cgroup *cgroup,
-+				 struct freezer *freezer)
-+{
-+	struct cgroup_iter it;
-+	struct task_struct *task;
-+	unsigned int nfrozen = 0, ntotal = 0;
-+
-+	cgroup_iter_start(cgroup, &it);
-+	while ((task = cgroup_iter_next(cgroup, &it))) {
-+		ntotal++;
-+		if (is_task_frozen_enough(task))
-+			nfrozen++;
-+	}
-+
-+	/*
-+	 * Transition to FROZEN when no new tasks can be added ensures
-+	 * that we never exist in the FROZEN state while there are unfrozen
-+	 * tasks.
-+	 */
-+	if (nfrozen == ntotal)
-+		freezer->state = CGROUP_FROZEN;
-+	else if (nfrozen > 0)
-+		freezer->state = CGROUP_FREEZING;
-+	else
-+		freezer->state = CGROUP_THAWED;
-+	cgroup_iter_end(cgroup, &it);
-+}
-+
- /*
-  * cgroups_write_string() limits the size of freezer state strings to
-  * CGROUP_LOCAL_BUFFER_SIZE
-@@ -71,6 +110,7 @@ static const char *freezer_state_strs[] = {
- 	"THAWED",
- 	"FREEZING",
- 	"FROZEN",
-+	"CHECKPOINTING",
- };
- 
- /*
-@@ -78,9 +118,9 @@ static const char *freezer_state_strs[] = {
-  * Transitions are caused by userspace writes to the freezer.state file.
-  * The values in parenthesis are state labels. The rest are edge labels.
-  *
-- * (THAWED) --FROZEN--> (FREEZING) --FROZEN--> (FROZEN)
-- *    ^ ^                    |                     |
-- *    | \_______THAWED_______/                     |
-+ * (THAWED) --FROZEN--> (FREEZING) --FROZEN--> (FROZEN) --> (CHECKPOINTING)
-+ *    ^ ^                    |                     | ^             |
-+ *    | \_______THAWED_______/                     | \_____________/
-  *    \__________________________THAWED____________/
-  */
- 
-@@ -327,7 +367,13 @@ static int freezer_change_state(struct cgroup *cgroup,
- 
- 	spin_lock_irq(&freezer->lock);
- 
-+	if (freezer->state == CGROUP_CHECKPOINTING) {
-+		retval = -EBUSY;
-+		goto out;
-+	}
-+
- 	update_if_frozen(cgroup, freezer);
-+
- 	if (goal_state == freezer->state)
- 		goto out;
- 
-@@ -394,3 +440,80 @@ struct cgroup_subsys freezer_subsys = {
- 	.fork		= freezer_fork,
- 	.exit		= NULL,
- };
-+
-+#ifdef CONFIG_CHECKPOINT
-+/*
-+ * Caller is expected to ensure that neither @p nor @q may change its
-+ * freezer cgroup during this test in a way that may affect the result.
-+ * E.g., when called form c/r, @p must be in CHECKPOINTING cgroup, so
-+ * may not change cgroup, and either @q is also there, or is not there
-+ * and may not join.
-+ */
-+int in_same_cgroup_freezer(struct task_struct *p, struct task_struct *q)
-+{
-+	struct cgroup_subsys_state *p_css, *q_css;
-+
-+	task_lock(p);
-+	p_css = task_subsys_state(p, freezer_subsys_id);
-+	task_unlock(p);
-+
-+	task_lock(q);
-+	q_css = task_subsys_state(q, freezer_subsys_id);
-+	task_unlock(q);
-+
-+	return (p_css == q_css);
-+}
-+
-+/*
-+ * cgroup freezer state changes made without the aid of the cgroup filesystem
-+ * must go through this function to ensure proper locking is observed.
-+ */
-+static int freezer_checkpointing(struct task_struct *task,
-+				 enum freezer_state next_state)
-+{
-+	struct freezer *freezer;
-+	struct cgroup_subsys_state *css;
-+	enum freezer_state state;
-+
-+	task_lock(task);
-+	css = task_subsys_state(task, freezer_subsys_id);
-+	css_get(css); /* make sure freezer doesn't go away */
-+	freezer = container_of(css, struct freezer, css);
-+	task_unlock(task);
-+
-+	if (freezer->state == CGROUP_FREEZING) {
-+		/* May be in middle of a lazy FREEZING -> FROZEN transition */
-+		if (cgroup_lock_live_group(css->cgroup)) {
-+			spin_lock_irq(&freezer->lock);
-+			update_freezer_state(css->cgroup, freezer);
-+			spin_unlock_irq(&freezer->lock);
-+			cgroup_unlock();
-+		}
-+	}
-+
-+	spin_lock_irq(&freezer->lock);
-+	state = freezer->state;
-+	if ((state == CGROUP_FROZEN && next_state == CGROUP_CHECKPOINTING) ||
-+	    (state == CGROUP_CHECKPOINTING && next_state == CGROUP_FROZEN))
-+		freezer->state = next_state;
-+	spin_unlock_irq(&freezer->lock);
-+	css_put(css);
-+	return state;
-+}
-+
-+int cgroup_freezer_begin_checkpoint(struct task_struct *task)
-+{
-+	if (freezer_checkpointing(task, CGROUP_CHECKPOINTING) != CGROUP_FROZEN)
-+		return -EBUSY;
-+	return 0;
-+}
-+
-+void cgroup_freezer_end_checkpoint(struct task_struct *task)
-+{
-+	/*
-+	 * If we weren't in CHECKPOINTING state then userspace could have
-+	 * unfrozen a task and given us an inconsistent checkpoint image
-+	 */
-+	WARN_ON(freezer_checkpointing(task, CGROUP_FROZEN) != CGROUP_CHECKPOINTING);
-+}
-+#endif /* CONFIG_CHECKPOINT */
--- 
-1.7.2.2
+> > It'd be really helpful if it were clearer what noop buses like this were
+> > supposed to do to get runtime PM working.
+
+> I'm a little confused.  When you say this is a "noop" bus, do you mean
+> that it can't do any power management?  If so, why does it need to get
+> runtime PM working?
+
+The bus as a whole may not be able to do anything useful with runtime PM
+but individual devices on it may be able to do so - for example, a multi
+function device provides a parent device and a bunch of children for
+that device.  Runtime PM provides a nice way for the children to
+individually suspend themselves and let the parent implement extra power
+savings if all the children suspend.  It also provides a userspace API
+for controlling runtime suspend behaviour which drivers may find useful,
+and stuff like the autosuspend delays might be useful to some.
