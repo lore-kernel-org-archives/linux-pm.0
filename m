@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: pm_runtime_suspended() and non-pm_runtime-using
- (i2c) drivers
-Date: Tue, 14 Dec 2010 14:10:58 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1012141406500.2087-100000__14332.2647003972$1292354103$gmane$org@iolanthe.rowland.org>
-References: <20101214180941.GB13644@rakim.wolfsonmicro.main>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 2/4] PM: Remove redundant checks from
+	core device resume routines
+Date: Tue, 14 Dec 2010 20:58:04 +0100
+Message-ID: <201012142058.04469.rjw__12260.5637800463$1292356804$gmane$org@sisk.pl>
+References: <201012130128.31243.rjw@sisk.pl>
+	<AANLkTi=UVOQb15EdpfSeD+Qh8x779pJpsSCTyGvf-gxG@mail.gmail.com>
+	<AANLkTim+UoR+GeEK8T1_jgie3gwq6Pdt_=sRiSf8qx6K@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101214180941.GB13644@rakim.wolfsonmicro.main>
+In-Reply-To: <AANLkTim+UoR+GeEK8T1_jgie3gwq6Pdt_=sRiSf8qx6K@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,67 +20,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-i2c@vger.kernel.org
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 14 Dec 2010, Mark Brown wrote:
+On Tuesday, December 14, 2010, Ming Lei wrote:
+> 2010/12/13 Linus Torvalds <torvalds@linux-foundation.org>:
+> > So I really like this series not only because it implements what I
+> > suggested, but also because each patch seems to remove more lines than
+> > it adds. That's always nice, and much too unusual.
+> >
+> > But in this one, I really think you should simplify/clarify things further:
+> >
+> > On Sun, Dec 12, 2010 at 4:31 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >>
+> >> +++ linux-2.6/drivers/base/power/main.c
+> >> @@ -485,20 +485,17 @@ void dpm_resume_noirq(pm_message_t state
+> >>        transition_started = false;
+> >>        while (!list_empty(&dpm_noirq_list)) {
+> >>                struct device *dev = to_device(dpm_noirq_list.next);
+> >> +               int error;
+> >>
+> >>                get_device(dev);
+> >> -               if (dev->power.status > DPM_OFF) {
+> >> -                       int error;
+> >> -
+> >> -                       dev->power.status = DPM_OFF;
+> >> -                       mutex_unlock(&dpm_list_mtx);
+> >> +               dev->power.status = DPM_OFF;
+> >> +               mutex_unlock(&dpm_list_mtx);
+> >
+> > I think you should move the device to the dpm_suspended list _here_,
+> > before dropping the mutex. That way the power.status thing matches the
+> > list.
+> >
+> > So then you'd just remove the crazy conditional "if it's still on a
+> > list, move it to the right list" thing, and these two lines:
+> >
+> >>                if (!list_empty(&dev->power.entry))
+> >>                        list_move_tail(&dev->power.entry, &dpm_suspended_list);
+> >
+> > Would just be that plain
+> >
+> >        list_move_tail(&dev->power.entry, &dpm_suspended_list);
+> >
+> > before you even drop the lock. That look much simpler, and the list
+> > movement seems a lot more obvious, no?
+> >
+> > If an unregister event (or whatever) happens while you had the mutex
+> > unlocked, it will just remove it from the new list (the one that
+> > matches the power state). So no need for that whole complexity with
+> > "what happens with the list if somebody removed the device while we
+> > were busy suspending/resuming it".
+> >
+> > Or am I missing something?
+> >
+> > (And same comment for that other identical case in dpm_complete())
+> 
+> Seems it may apply in other cases(dpm_prepare/dpm_suspend
+> /dpm_suspend_noirq) too?
 
-> On Tue, Dec 14, 2010 at 12:44:24PM -0500, Alan Stern wrote:
-> > On Tue, 14 Dec 2010, Mark Brown wrote:
-> > > On Tue, Dec 14, 2010 at 11:16:45AM -0500, Alan Stern wrote:
-> 
-> > > > I'm not familiar with the details of how the i2c subsystem works.  But
-> > > > in general, the subsystem code should call pm_runtime_set_active()  
-> > > > for every device before registering it.  Then if a driver doesn't use
-> > > > any runtime-PM functions, pm_runtime_suspended() will return false.
-> 
-> > > Hrm, if that's the case then we also need to update at least the
-> > > platform and SPI buses.  Though looking at the documentation this is
-> > > going to get a bit interesting as there's a requirement that the parent
-> > > has runtime PM enabled on it...
-> 
-> > The parent can either be set to the active state or set to ignore its 
-> > children.  The parent does not have to be enabled for runtime PM.
-> 
-> Both of those require that the parent is set up to know something about
-> runtime PM to some extent - in the case of buses like I2C the parent is
-> a largely unrelated thing on a different bus which may or may not have
-> runtime PM implemented.
-> 
-> > >  It's certainly not terribly apparent
-> > > from the documentation.
-> 
-> > What part isn't clear from the documentation?  I think the description 
-> > of pm_runtime_set_active() in Documentation/power/runtime_pm.txt is 
-> > pretty straightforward.
-> 
-> It's not clear to me that one needs to do this in order to avoid
-> breaking the suspend and resume calls of drivers that aren't doing
-> anything with runtime PM.  It's clear what it does, but it's less clear
-> that the bus should do it or that not doing it will have an impact on
-> stuff that isn't using runtime PM.
-> 
-> > > It'd be really helpful if it were clearer what noop buses like this were
-> > > supposed to do to get runtime PM working.
-> 
-> > I'm a little confused.  When you say this is a "noop" bus, do you mean
-> > that it can't do any power management?  If so, why does it need to get
-> > runtime PM working?
-> 
-> The bus as a whole may not be able to do anything useful with runtime PM
-> but individual devices on it may be able to do so - for example, a multi
-> function device provides a parent device and a bunch of children for
-> that device.  Runtime PM provides a nice way for the children to
-> individually suspend themselves and let the parent implement extra power
-> savings if all the children suspend.  It also provides a userspace API
-> for controlling runtime suspend behaviour which drivers may find useful,
-> and stuff like the autosuspend delays might be useful to some.
+I thought about that, but in these cases the status is changed after the
+callback has returned and only if it's succeeded.  Moreover, if the callback
+hasn't been successful, the device is not moved to the new list, so I think
+it's better to leave that as is.
 
-I see.  It sounds like you're really saying that new devices default to 
-the wrong runtime state.  If pm_runtime_init() would set new devices to 
-RPM_ACTIVE instead of RPM_SUSPENDED then this problem wouldn't arise.  
-Children could do whatever they want, and even if the parent's driver 
-was totally ignorant of runtime PM, it would work out.
-
-Alan Stern
+Thanks,
+Rafael
