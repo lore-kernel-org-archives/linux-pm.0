@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 2/4] PM: Remove redundant checks from
-	core device resume routines
-Date: Tue, 14 Dec 2010 20:58:04 +0100
-Message-ID: <201012142058.04469.rjw__12260.5637800463$1292356804$gmane$org@sisk.pl>
-References: <201012130128.31243.rjw@sisk.pl>
-	<AANLkTi=UVOQb15EdpfSeD+Qh8x779pJpsSCTyGvf-gxG@mail.gmail.com>
-	<AANLkTim+UoR+GeEK8T1_jgie3gwq6Pdt_=sRiSf8qx6K@mail.gmail.com>
+Subject: Re: [RFC][PATCH 4/4] PM: Permit registrarion of
+	parentless devices during system suspend
+Date: Tue, 14 Dec 2010 21:02:07 +0100
+Message-ID: <201012142102.07804.rjw__14570.1809357435$1292357017$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1012132205000.28712-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTim+UoR+GeEK8T1_jgie3gwq6Pdt_=sRiSf8qx6K@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.1012132205000.28712-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,70 +18,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ming Lei <tom.leiming@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, December 14, 2010, Ming Lei wrote:
-> 2010/12/13 Linus Torvalds <torvalds@linux-foundation.org>:
-> > So I really like this series not only because it implements what I
-> > suggested, but also because each patch seems to remove more lines than
-> > it adds. That's always nice, and much too unusual.
-> >
-> > But in this one, I really think you should simplify/clarify things further:
-> >
-> > On Sun, Dec 12, 2010 at 4:31 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >>
-> >> +++ linux-2.6/drivers/base/power/main.c
-> >> @@ -485,20 +485,17 @@ void dpm_resume_noirq(pm_message_t state
-> >>        transition_started = false;
-> >>        while (!list_empty(&dpm_noirq_list)) {
-> >>                struct device *dev = to_device(dpm_noirq_list.next);
-> >> +               int error;
-> >>
-> >>                get_device(dev);
-> >> -               if (dev->power.status > DPM_OFF) {
-> >> -                       int error;
-> >> -
-> >> -                       dev->power.status = DPM_OFF;
-> >> -                       mutex_unlock(&dpm_list_mtx);
-> >> +               dev->power.status = DPM_OFF;
-> >> +               mutex_unlock(&dpm_list_mtx);
-> >
-> > I think you should move the device to the dpm_suspended list _here_,
-> > before dropping the mutex. That way the power.status thing matches the
-> > list.
-> >
-> > So then you'd just remove the crazy conditional "if it's still on a
-> > list, move it to the right list" thing, and these two lines:
-> >
-> >>                if (!list_empty(&dev->power.entry))
-> >>                        list_move_tail(&dev->power.entry, &dpm_suspended_list);
-> >
-> > Would just be that plain
-> >
-> >        list_move_tail(&dev->power.entry, &dpm_suspended_list);
-> >
-> > before you even drop the lock. That look much simpler, and the list
-> > movement seems a lot more obvious, no?
-> >
-> > If an unregister event (or whatever) happens while you had the mutex
-> > unlocked, it will just remove it from the new list (the one that
-> > matches the power state). So no need for that whole complexity with
-> > "what happens with the list if somebody removed the device while we
-> > were busy suspending/resuming it".
-> >
-> > Or am I missing something?
-> >
-> > (And same comment for that other identical case in dpm_complete())
+On Tuesday, December 14, 2010, Alan Stern wrote:
+> On Tue, 14 Dec 2010, Rafael J. Wysocki wrote:
 > 
-> Seems it may apply in other cases(dpm_prepare/dpm_suspend
-> /dpm_suspend_noirq) too?
+> > On Monday, December 13, 2010, Alan Stern wrote:
+> > > On Mon, 13 Dec 2010, Rafael J. Wysocki wrote:
+> > > 
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > 
+> > > > The registration of a new parentless device during system suspend
+> > > > will not lead to any complications affecting the PM core (the device
+> > > > will be effectively seen after the subsequent resume has completed),
+> > > > so remove the code used for detection of such events.
+> > > 
+> > > Actually the tests you're changing were never as strong as they should
+> > > have been.  Drivers are supposed to avoid registering new children
+> > > beneath a device as soon as the device has gone through the "prepare"
+> > > stage, not just after the device is suspended.  Should there be a 
+> > > "prepared" bitflag to help implement this stronger test?
+> > 
+> > The in_suspend flag introduced by [3/4] works like this, actually.
+> 
+> Not entirely, because it doesn't get set until the device has gone 
+> through the "suspend" stage.
+> 
+> > > In principle the same idea applies to parentless devices, since they
+> > > can be considered children of the "system device" (a fictitious node at
+> > > the root of the device tree).  The "system" goes into the prepared
+> > > state before all the real devices; that's what the transition_started
+> > > variable was all about.  It's nothing more than the "prepared" bitflag
+> > > for the "system device".
+> > 
+> > It has never worked like this, because it was cleared as early as at the
+> > _noirq() stage.
+> 
+> That was part of our lenient approach, allowing devices to be 
+> registered during system resume earlier than the documentation says 
+> they should be.
+> 
+> > Hmm.  It looks like I should modify [3/4] to clear the in_suspend flag earlier
+> > to follow the current behavior (if a device is DPM_RESUMING, registration of
+> > new children doesn't trigger the warning).
+> 
+> You could clear in_suspend at the start of device_resume.
+> 
+> In the end, it's a question of what are we trying to accomplish.  The
+> warnings catch the most egregious violations of the documented
+> requirements.  Is the purpose to let people know about the violations,
+> or is it to warn about actions that appear genuinely dangerous?
 
-I thought about that, but in these cases the status is changed after the
-callback has returned and only if it's succeeded.  Moreover, if the callback
-hasn't been successful, the device is not moved to the new list, so I think
-it's better to leave that as is.
+I'd say the latter, like trying to register a device (child) under a suspended
+controller (parent).  However, I think the new code shouldn't trigger the
+warning when the old code didin't or people will report that as an apparent
+issue.
 
 Thanks,
 Rafael
