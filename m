@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 4/4] PM: Permit registrarion of
-	parentless devices during system suspend
-Date: Tue, 14 Dec 2010 21:02:07 +0100
-Message-ID: <201012142102.07804.rjw__14570.1809357435$1292357017$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1012132205000.28712-100000@netrider.rowland.org>
+Subject: Re: [Resend][PATCH 0/3] ACPI / PM: Patches missing from
+	linux-acpi-2.6/test
+Date: Tue, 14 Dec 2010 21:24:37 +0100
+Message-ID: <201012142124.37270.rjw__21360.4553988718$1292358377$gmane$org@sisk.pl>
+References: <201012112339.53105.rjw@sisk.pl> <201012132225.05149.rjw@sisk.pl>
+	<1292289696.3983.60.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1012132205000.28712-100000@netrider.rowland.org>
+In-Reply-To: <1292289696.3983.60.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,63 +19,96 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: ykzhao <yakui.zhao@intel.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, December 14, 2010, Alan Stern wrote:
-> On Tue, 14 Dec 2010, Rafael J. Wysocki wrote:
-> 
-> > On Monday, December 13, 2010, Alan Stern wrote:
-> > > On Mon, 13 Dec 2010, Rafael J. Wysocki wrote:
-> > > 
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > The registration of a new parentless device during system suspend
-> > > > will not lead to any complications affecting the PM core (the device
-> > > > will be effectively seen after the subsequent resume has completed),
-> > > > so remove the code used for detection of such events.
-> > > 
-> > > Actually the tests you're changing were never as strong as they should
-> > > have been.  Drivers are supposed to avoid registering new children
-> > > beneath a device as soon as the device has gone through the "prepare"
-> > > stage, not just after the device is suspended.  Should there be a 
-> > > "prepared" bitflag to help implement this stronger test?
-> > 
-> > The in_suspend flag introduced by [3/4] works like this, actually.
-> 
-> Not entirely, because it doesn't get set until the device has gone 
-> through the "suspend" stage.
-> 
-> > > In principle the same idea applies to parentless devices, since they
-> > > can be considered children of the "system device" (a fictitious node at
-> > > the root of the device tree).  The "system" goes into the prepared
-> > > state before all the real devices; that's what the transition_started
-> > > variable was all about.  It's nothing more than the "prepared" bitflag
-> > > for the "system device".
-> > 
-> > It has never worked like this, because it was cleared as early as at the
-> > _noirq() stage.
-> 
-> That was part of our lenient approach, allowing devices to be 
-> registered during system resume earlier than the documentation says 
-> they should be.
-> 
-> > Hmm.  It looks like I should modify [3/4] to clear the in_suspend flag earlier
-> > to follow the current behavior (if a device is DPM_RESUMING, registration of
-> > new children doesn't trigger the warning).
-> 
-> You could clear in_suspend at the start of device_resume.
-> 
-> In the end, it's a question of what are we trying to accomplish.  The
-> warnings catch the most egregious violations of the documented
-> requirements.  Is the purpose to let people know about the violations,
-> or is it to warn about actions that appear genuinely dangerous?
-
-I'd say the latter, like trying to register a device (child) under a suspended
-controller (parent).  However, I think the new code shouldn't trigger the
-warning when the old code didin't or people will report that as an apparent
-issue.
-
-Thanks,
-Rafael
+T24gVHVlc2RheSwgRGVjZW1iZXIgMTQsIDIwMTAsIHlremhhbyB3cm90ZToKPiBPbiBUdWUsIDIw
+MTAtMTItMTQgYXQgMDU6MjUgKzA4MDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+ID4gT24g
+TW9uZGF5LCBEZWNlbWJlciAxMywgMjAxMCwgeWt6aGFvIHdyb3RlOgo+ID4gPiBPbiBTdW4sIDIw
+MTAtMTItMTIgYXQgMDY6MzkgKzA4MDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+ID4gPiA+
+IEhpIExlbiwKPiA+ID4gPiAKPiA+ID4gPiBUaGUgZm9sbG93aW5nIHRocmVlIHBhdGNoZXMgc2Vl
+bSB0byBoYXZlIGJlZW4gZHJvcHBlZCBmcm9tIHlvdXIgJ3Rlc3QnIGJyYW5jaC4KPiA+ID4gPiAK
+PiA+ID4gPiBJZiB0aGF0IGhhcHBlbmVkIGJ5IGFjY2lkZW50LCBwbGVhc2UgcmVhcHBseS4gIE90
+aGVyd2lzZSwgcGxlYXNlIGxldCBtZSBrbm93Cj4gPiA+ID4gd2hhdCdzIHdyb25nIHdpdGggdGhl
+IHBhdGNoZXMgc28gdGhhdCBJIGNhbiBmaXggdGhlbS4KPiA+ID4gPiAKPiA+ID4gPiBbMS8zXSAt
+IE1ha2UgZnVqaXRzdV9sYXB0b3AgdXNlIGFjcGlfYnVzX3VwZGF0ZV9wb3dlcigpIGluc3RlYWQg
+b2YKPiA+ID4gPiAgICAgICAgIGFjcGlfYnVzX2dldF9wb3dlcigpIHdoaWNoIGlzIHVuc2FmZS4K
+PiA+ID4gCj4gPiA+IO+7v0l0IHNlZW1zIHRoYXQgdGhlIGZ1bmN0aW9uIG9mIGFjcGlfYnVzX3Vw
+ZGF0ZV9wb3dlciBub3Qgb25seSBvYnRhaW5zCj4gPiA+IHRoZSBjdXJyZW50IHBvd2VyIHN0YXRl
+LCBidXQgYWxzbyBzZXQgdGhlIGNvcnJlc3BvbmRpbmcgcG93ZXIgc3RhdGUuCj4gPiA+IFJpZ2h0
+Pwo+ID4gCj4gPiBZZXMsIGl0IGRvZXMuCj4gPiAKPiA+ID4gSWYgdGhlIGRldmljZSByZXBvcnRz
+IHRoZSBib2d1cyBwb3dlciBzdGF0ZSwgbWF5YmUgd2Ugd2lsbCBzZXQgdGhlCj4gPiA+IGluY29y
+cmVjdCBwb3dlciBzdGF0ZSBmb3IgdGhlIGNvcnJlc3BvbmRpbmcgZGV2aWNlIHdoZW4gdXNpbmcg
+dGhlCj4gPiA+IGZ1bmN0aW9uIG9mIGFjcGlfYnVzX3VwZGF0ZV9wb3dlciBpbnN0ZWFkIG9mIGFj
+cGlfYnVzX2dldF9wb3dlci4KPiA+IAo+ID4gUGxlYXNlIGFjdHVhbGx5IGxvb2sgYXQgYWNwaV9i
+dXNfZ2V0X3Bvd2VyKCkgKGJlaW5nIHJlbW92ZWQgYnkgWzIvM10pIGFuZCBub3RlCj4gPiB0aGF0
+IGl0IF9hbHNvXyBtb2RpZmllcyBkZXZpY2UtPnBvd2VyLnN0YXRlIChpdCBkb2Vzbid0IHJldHVy
+biB0aGUgc3RhdGUsIGFjdHVhbGx5KSwKPiA+IHNvIGlmIHRoZSByZXR1cm5lZCBzdGF0ZSBpcyBy
+ZWFsbHkgYm9ndXMsIHdlJ2xsIGhhdmUgYSBtaXNtYXRjaCBiZXR3ZWVuCj4gPiBkZXZpY2UtPnBv
+d2VyLnN0YXRlIGFuZCB0aGUgcmVhbCBzdGF0ZSBvZiB0aGUgZGV2aWNlLiAgVGhpcyBjYW5ub3Qg
+YmUgZ29vZC4KPiAKPiBUaGUgZGV2aWNlLT5wb3dlci5zdGF0ZSBpcyBhbHNvIHVwZGF0ZWQgaW4g
+dGhlIGZ1bmN0aW9uIG9mCj4gYWNwaV9idXNfZ2V0X3Bvd2VyLiBCdXQgaXQgd29uJ3QgdHJ5IHRv
+IGNhbGwgdGhlIF9QU0Mgb3IgX09OL09GRiBtZXRob2QKPiB0byByZWFsbHkgY2hhbmdlIHRoZSBj
+b3JyZXNwb25kaW5nIHBvd2VyIHN0YXRlLiBJdCBvbmx5IHJlcG9ydHMgdGhlCj4gY29ycmVzcG9u
+ZGluZyBwb3dlciBzdGF0ZS4gCj4gCj4gPiBJbiB0aGUgY2FzZSBvZiBhY3BpX2J1c191cGRhdGVf
+cG93ZXIoKSB3ZSBhdCBsZWFzdCBfdHJ5XyB0byBrZWVwIHRoZSB0d28gdGhpbmdzCj4gPiBpbiBz
+eW5jLgo+IAo+IFllcy4gSSBhZ3JlZSB0aGF0IHRoZSBhY3BpX2J1c191cGRhdGVfcG93ZXIgY2Fu
+IGFsd2F5cyBhc3N1cmUgdGhhdCB0aGUKPiB0d28gdGhpbmdzIGFyZSBpbiBzeW5jIHN0YXRlLiBC
+dXQg77u/c29tZSBzeXN0ZW1zIHdpbGwgcmVwb3J0IHRoZSBib2d1cwo+IHBvd2VyIHN0YXRlIGFs
+dGhvdWdoIHdlIGFscmVhZHkgc2V0IGFub3RoZXIgcG93ZXIgc3RhdGUoRm9yIGV4YW1wbGU6Cj4g
+TWF5YmUgaXQgcmVwb3J0cyB0aGF0IGl0IGlzIGluIEQzIHN0YXRlIGJlY2F1c2Ugb2YgYm9ndXMg
+QklPUyBjb2RlKS4gSW4KPiBzdWNoIGNhc2UgaWYgd2UgdHJ5IHRvIHR1cm4gb2ZmIHRoZSBjb3Jy
+ZXNwb25kaW5nIHBvd2VyIHJlc291cmNlIGJ5Cj4gdXNpbmcgX1BTQy9fT04vX09GRiBtZXRob2Qs
+IG1heWJlIHdlIHdpbGwgY3V0IG9mZiB0aGUgcG93ZXIgc3VwcGx5IGZvcgo+IHRoZXNlIGRldmlj
+ZXMuCgpJZiB5b3UgcHV0IGEgZGV2aWNlIGludG8gRDAgYW5kIF9fYWNwaV9idXNfZ2V0X3Bvd2Vy
+KCkgc2VlcyBpdCBpbiBEMywgeW91IG5ldmVyCmtub3cgd2h5IHRoYXQgaXMgc28uICBFaXRoZXIg
+dGhlIGRldmljZSByZWZ1c2VkIHRvIGNoYW5nZSB0aGUgc3RhdGUsIGluIHdoaWNoCmNhc2UgdGhl
+IHJlcG9ydGVkIHZhbHVlIGlzIHZhbGlkLCBvciBpdCByZXBvcnRzIGEgd3JvbmcgdmFsdWUsIGJ1
+dCB0aGVyZSdzIG5vCndheSB0byB0ZWxsIHdoaWNoIHRoZSBjYXNlIHJlYWxseSBpcy4gIEFzc3Vt
+aW5nIHRoYXQgdGhlIHJlcG9ydGVkIHZhbHVlIGlzCnBvc3NpYmx5IHdyb25nLCB3ZSBtaXNoYW5k
+bGUgdGhlIGNhc2Ugd2hlbiBpdCdzIGFjdHVhbGx5IGNvcnJlY3QuICBBc3N1bWluZwp0aGF0IHRo
+ZSByZXBvcnRlZCB2YWx1ZSBpcyBjb3JyZWN0IHdlIG1heSBlbmQgdXAgcHV0dGluZyB0aGUgZGV2
+aWNlIGludG8gdGhlCnN0YXRlIGNvcnJlc3BvbmRpbmcgdG8gdGhlIHJlcG9ydGVkIHZhbHVlLCB3
+aGljaCBlZmZlY3RpdmVseSBwcmV2ZW50cyBpdCBmcm9tCmdvaW5nIGludG8gRDAuICBJbiB0aGlz
+IGNhc2UsIHRob3VnaCwgb3VyIGtub3dsZWRnZSBvZiB0aGUgZGV2aWNlIHN0YXRlIGlzCmNvbnNp
+c3RlbnQgd2l0aCB0aGUgcmVwb3J0ZWQgc3RhdGUsIHdoaWNoIEkgdGhpbmsgaXMgYmV0dGVyLgoK
+QW55d2F5LCBJTU8gdGhlIG9ubHkgcGxhY2Ugd2hlcmUgYWNwaV9idXNfdXBkYXRlX3Bvd2VyKCkg
+bWF5IHBvc3NpYmx5IGNhdXNlCnByb2JsZW1zIHRvIGhhcHBlbiBvbiBicm9rZW4gaGFyZHdhcmUg
+aXMgZmFuX2dldF9jdXJfc3RhdGUoKSwgYnV0IEknbGwgb25seQpjaGFuZ2UgdGhhdCBpZiBhbnlv
+bmUgcmVwb3J0cyBhIHByb2JsZW0gd2l0aCBpdC4gIFRoZSBvdGhlciB1c2FnZSBjYXNlcyBhcmUg
+KGEpCmluaXRpYWxpemF0aW9uIGFuZCAoYikgcmVzdW1lIHdoZXJlIHdlIGhhdmUgbm8gcmVhbCBj
+aG9pY2UgYnV0IHRvIGFjdHVhbGx5CnRydXN0IHRoZSBzdGF0ZSByZXBvcnRlZCBBQ1BJIGNvbnRy
+b2wgbWV0aG9kcyAoYmVjYXVzZSB3ZSBkb24ndCBrbm93IHdoYXQKaXQgaXMgaW4gdGhlIGZpcnN0
+IHBsYWNlKS4KCj4gPiBOb3RlLCB0aGlzIGlzIF9lc3NlbnRpYWxseV8gaW1wb3J0YW50IGZvciBw
+b3dlciByZXNvdXJjZXMgKGlmCj4gPiBhY3BpX2J1c19nZXRfcG93ZXIoKSBpcyB1c2VkLCB0aGUg
+cmVmY291bnRzIGFyZSBfZ3VhcmFudGVlZF8gbm90IHRvIGJlIGluIHN5bmMKPiA+IHdpdGggZGV2
+aWNlLT5wb3dlci5zdGF0ZSBpbiBzb21lIHNpdHVhdGlvbnMpLgo+ID4gCj4gPiA+IEluIHN1Y2gg
+Y2FzZSBtYXliZSB0aGUgZGV2aWNlIGNhbid0IHdvcmsgd2VsbC4gCj4gPiA+IAo+ID4gPiBUaGUg
+Ym9ndXMgcG93ZXIgc3RhdGUgaXMgcmVwb3J0ZWQgZm9yIHNvbWUgZGV2aWNlcyBvbiBzb21lIGxh
+cHRvcHMuIEZvcgo+ID4gPiBleGFtcGxlOiAKPiA+ID4gICAgIGh0dHA6Ly9idWd6aWxsYS5rZXJu
+ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD04MDQ5Cj4gPiA+ICAgICBodHRwOi8vYnVnemlsbGEua2Vy
+bmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTEwMDAKPiA+IAo+ID4gVGhlc2UgYnVncyBhcmUgYWJv
+dXQgYWNwaV9idXNfc2V0X3Bvd2VyKCkgZG9pbmcgdGhlIGFjcGlfYnVzX2dldF9wb3dlcigpCj4g
+PiBiZWZvcmUgc2V0dGluZyB0aGUgc3RhdGUsIHdoaWNoIGlzIHdyb25nIGFuZCBpcyBiZWluZyBy
+ZW1vdmVkIGJ5IG15IHByZXZpb3VzCj4gPiBwYXRjaGVzIChub3cgaW4gdGhlIExlbidzIHRyZWUp
+Lgo+IAo+IEl0IHNlZW1zIHRoYXQgYW5vdGhlciBwb2ludCBpcyBtaXNzZWQgaW4gcHJldmlvdXMg
+cGF0Y2guIAo+ICAgIEJlZm9yZSB0aGUgcmV3b3JraW5nIHBhdGNoIG9mIHBvd2VyIHJlc291cmNl
+LCB0aGUgZm9yY2VfcG93ZXJfc3RhdGUKPiBmbGFnIGlzIHVzZWQgd2hlbiBzZXR0aW5nIHRoZSBj
+b3JyZXNwb25kaW5nIHBvd2VyIHN0YXRlIGZvciBzb21lIEFDUEkKPiBkZXZpY2VzKEZvciBleGFt
+cGxlOiBGYW4pLiBUaGlzIGZsYWcgd2lsbCBzdGlsbCBmb3JjZSB0byBjYWxsIHRoZQo+IF9QU0Mv
+X09OL19PRkYgbWV0aG9kIGV2ZW4gd2hlbiBpdCBpcyBhbHJlYWR5IHRoZSBzYW1lIGFzIHRoZSB0
+YXJnZXQKPiBzdGF0ZS4gTWF5YmUgdGhpcyBpcyB0byB3b3JrYXJvdW5kIHRoZSBCSU9TIGlzc3Vl
+IHRoYXQgdGhlIHBvd2VyIHN0YXRlCj4gaXMgbm90IHJlcG9ydGVkIGNvcnJlY3RseSBmaXJzdCB0
+aW1lLgo+IAo+ICAgIE5vdCBzdXJlIHdoZXRoZXIgbXkgYWJvdmUgdW5kZXJzdGFuZGluZyBpcyBy
+ZWFzb25hYmxlLgoKVGhlIGZvcmNlX3Bvd2VyX3N0YXRlIHdhcyBfb25seV8gYSB3b3JrYXJvdW5k
+IGZvciB0aGUgY2FzZSB3aGVuCmFjcGlfYnVzX3NldF9wb3dlcigpIGNhbGxlZCBhY3BpX2J1c19n
+ZXRfcG93ZXIoKSBhbmQgYXBwYXJlbnRseSByZWNlaXZlZAphIHdyb25nIHZhbHVlIGZyb20gaXQg
+b24gc29tZSBzeXN0ZW1zICh0d28gb2YgdGhlbSBoYWQgYmVlbiBpZGVudGlmaWVkLCBvbmUgd2Fz
+CmJsYWNrbGlzdGVkIGluIHRoZSBlbmQpLiAgSG93ZXZlciwgYWZ0ZXIgbXkgY2hhbmdlcyBhY3Bp
+X2J1c19zZXRfcG93ZXIoKQpkb2Vzbid0IGNhbGwgYWNwaV9idXNfZ2V0X3Bvd2VyKCkgKG9yIGFu
+eSBlcXVpdmFsZW50KSBhbnkgbW9yZSwgc28gdGhpcwp3b3JrYXJvdW5kIGlzbid0IG5lY2Vzc2Fy
+eSBhbnkgbW9yZSBlaXRoZXIuCgpUaGFua3MsClJhZmFlbApfX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1A
+bGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9u
+Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
