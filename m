@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: pm_runtime_suspended() and non-pm_runtime-using
- (i2c) drivers
-Date: Tue, 14 Dec 2010 12:44:24 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1012141236530.2087-100000__30221.53550196$1292349288$gmane$org@iolanthe.rowland.org>
-References: <20101214164059.GE5723@sirena.org.uk>
+From: Dan Smith <danms@us.ibm.com>
+Subject: Re: [PATCH 03/19] cgroup freezer: Add CHECKPOINTING
+	state to safeguard container checkpoint
+Date: Tue, 14 Dec 2010 08:41:32 -0800
+Message-ID: <87zks8s3wj.fsf@localhost6.localdomain6>
+References: <1292343307-7870-1-git-send-email-danms@us.ibm.com>
+	<1292343307-7870-3-git-send-email-danms@us.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101214164059.GE5723@sirena.org.uk>
+In-Reply-To: <1292343307-7870-3-git-send-email-danms@us.ibm.com> (Dan Smith's
+	message of "Tue\, 14 Dec 2010 08\:14\:51 -0800")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,39 +20,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-i2c@vger.kernel.org
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>, Cedric Le Goater <legoater@free.fr>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 14 Dec 2010, Mark Brown wrote:
+DS> Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+DS> Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+DS> Cc: Cedric Le Goater <legoater@free.fr>
+DS> Cc: Paul Menage <menage@google.com>
+DS> Cc: Li Zefan <lizf@cn.fujitsu.com>
+DS> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+DS> Cc: linux-pm@lists.linux-foundation.org
 
-> On Tue, Dec 14, 2010 at 11:16:45AM -0500, Alan Stern wrote:
-> 
-> > I'm not familiar with the details of how the i2c subsystem works.  But
-> > in general, the subsystem code should call pm_runtime_set_active()  
-> > for every device before registering it.  Then if a driver doesn't use
-> > any runtime-PM functions, pm_runtime_suspended() will return false.
-> 
-> Hrm, if that's the case then we also need to update at least the
-> platform and SPI buses.  Though looking at the documentation this is
-> going to get a bit interesting as there's a requirement that the parent
-> has runtime PM enabled on it...
+My apologies to the above-mentioned people.  I didn't intend to send
+it out at all.
 
-The parent can either be set to the active state or set to ignore its 
-children.  The parent does not have to be enabled for runtime PM.
-
->  It's certainly not terribly apparent
-> from the documentation.
-
-What part isn't clear from the documentation?  I think the description 
-of pm_runtime_set_active() in Documentation/power/runtime_pm.txt is 
-pretty straightforward.
-
-> It'd be really helpful if it were clearer what noop buses like this were
-> supposed to do to get runtime PM working.
-
-I'm a little confused.  When you say this is a "noop" bus, do you mean
-that it can't do any power management?  If so, why does it need to get
-runtime PM working?
-
-Alan Stern
+-- 
+Dan Smith
+IBM Linux Technology Center
+email: danms@us.ibm.com
