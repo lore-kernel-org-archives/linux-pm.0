@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: pm_runtime_suspended() and non-pm_runtime-using
-	(i2c) drivers
-Date: Wed, 15 Dec 2010 01:19:59 +0100
-Message-ID: <201012150119.59801.rjw__33247.8732023903$1292373065$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1012141114150.2087-100000@iolanthe.rowland.org>
-	<201012150028.07938.rjw@sisk.pl> <201012150057.31237.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 4/4] PM: Permit registrarion of
+	parentless devices during system suspend
+Date: Wed, 15 Dec 2010 01:34:27 +0100
+Message-ID: <201012150134.27858.rjw__2263.05170585892$1292373450$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1012132205000.28712-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201012150057.31237.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1012132205000.28712-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,78 +18,281 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-i2c@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, December 15, 2010, Rafael J. Wysocki wrote:
-> On Wednesday, December 15, 2010, Rafael J. Wysocki wrote:
-> > On Tuesday, December 14, 2010, Alan Stern wrote:
-> > > On Tue, 14 Dec 2010, Rabin Vincent wrote:
-> > > 
-> > > > Hello,
-> > > > 
-> > > > If an i2c driver uses dev_pm_ops and pm_runtime_suspended() returns true
-> > > > for the device,  the i2c core will not call the driver's pm->suspend()
-> > > > routine.  Similar behaviour (except for the if dev_pm_ops check) is
-> > > > present in the generic PM ops provided in
-> > > > drivers/base/power/generic_ops.c.
-> > > > 
-> > > > Since pm_runtime_suspended() returns true if the relevant driver did not
-> > > > call any pm_runtime functions, this means that any driver which does not
-> > > > use pm_runtime APIs will not get its pm->suspend() callback called
-> > > > during system sleep, if CONFIG_PM_RUNTIME is enabled.
-> > > > 
-> > > > For the i2c case, there are several such drivers (in drivers/input/*,
-> > > > etc) lacking these calls.  How is this to be handled?  Do all of these
-> > > > drivers need to be patched to use the pm_runtime API if they are to be
-> > > > used on a kernel with PM_RUNTIME enabled?
-> > > 
-> > > I'm not familiar with the details of how the i2c subsystem works.  But
-> > > in general, the subsystem code should call pm_runtime_set_active()  
-> > > for every device before registering it.  Then if a driver doesn't use
-> > > any runtime-PM functions, pm_runtime_suspended() will return false.
-> > 
-> > I rather think that our current definition of pm_runtime_suspended() is
-> > not really adequate.
-> > 
-> > Namely, it shouldn't really return true if runtime PM is not enabled
-> > (ie. power.disable_depth > 1).
+On Tuesday, December 14, 2010, Alan Stern wrote:
+> On Tue, 14 Dec 2010, Rafael J. Wysocki wrote:
 > 
-> That should have been power.disable_depth > 0, of course.  Sorry.
+> > On Monday, December 13, 2010, Alan Stern wrote:
+> > > On Mon, 13 Dec 2010, Rafael J. Wysocki wrote:
+> > > 
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > 
+> > > > The registration of a new parentless device during system suspend
+> > > > will not lead to any complications affecting the PM core (the device
+> > > > will be effectively seen after the subsequent resume has completed),
+> > > > so remove the code used for detection of such events.
+> > > 
+> > > Actually the tests you're changing were never as strong as they should
+> > > have been.  Drivers are supposed to avoid registering new children
+> > > beneath a device as soon as the device has gone through the "prepare"
+> > > stage, not just after the device is suspended.  Should there be a 
+> > > "prepared" bitflag to help implement this stronger test?
+> > 
+> > The in_suspend flag introduced by [3/4] works like this, actually.
 > 
-> > That change would fix the issue at hand,  wouldn't it?
+> Not entirely, because it doesn't get set until the device has gone 
+> through the "suspend" stage.
+> 
+> > > In principle the same idea applies to parentless devices, since they
+> > > can be considered children of the "system device" (a fictitious node at
+> > > the root of the device tree).  The "system" goes into the prepared
+> > > state before all the real devices; that's what the transition_started
+> > > variable was all about.  It's nothing more than the "prepared" bitflag
+> > > for the "system device".
+> > 
+> > It has never worked like this, because it was cleared as early as at the
+> > _noirq() stage.
+> 
+> That was part of our lenient approach, allowing devices to be 
+> registered during system resume earlier than the documentation says 
+> they should be.
+> 
+> > Hmm.  It looks like I should modify [3/4] to clear the in_suspend flag earlier
+> > to follow the current behavior (if a device is DPM_RESUMING, registration of
+> > new children doesn't trigger the warning).
+> 
+> You could clear in_suspend at the start of device_resume.
 
-Below is a patch.  I don't think it needs to be done under the lock at
-the moment if the callers of pm_runtime_enable() always remember to set
-the appropriate device status before calling it.
+The patch below (replacing [3/4]) does that (the second clearing is for
+devices whose ->suspend() methods have not been called, which can happen if
+there's a suspend error).
+
+I hope the USB part is still valid?
 
 Thanks,
 Rafael
 
 ---
 From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM / Runtime: Fix pm_runtime_suspended()
+Subject: PM: Replace the device power.status field with a bit field
 
-pm_runtime_suspended() shouldn't return true if the runtime PM of the
-given device is disabled.
+The device power.status field is too complicated for its purpose
+(storing the information about whether or not the device is in the
+"active" state from the PM core's point of view), so replace it with
+a bit field and modify all of its users accordingly.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- include/linux/pm_runtime.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/base/power/main.c |   17 +++++------------
+ drivers/usb/core/driver.c |    7 +++----
+ include/linux/device.h    |    4 ++--
+ include/linux/pm.h        |   43 ++-----------------------------------------
+ 4 files changed, 12 insertions(+), 59 deletions(-)
 
-Index: linux-2.6/include/linux/pm_runtime.h
+Index: linux-2.6/include/linux/device.h
 ===================================================================
---- linux-2.6.orig/include/linux/pm_runtime.h
-+++ linux-2.6/include/linux/pm_runtime.h
-@@ -78,7 +78,8 @@ static inline void device_set_run_wake(s
+--- linux-2.6.orig/include/linux/device.h
++++ linux-2.6/include/linux/device.h
+@@ -508,13 +508,13 @@ static inline int device_is_registered(s
  
- static inline bool pm_runtime_suspended(struct device *dev)
+ static inline void device_enable_async_suspend(struct device *dev)
  {
--	return dev->power.runtime_status == RPM_SUSPENDED;
-+	return dev->power.runtime_status == RPM_SUSPENDED
-+		&& !dev->power.disable_depth;
+-	if (dev->power.status == DPM_ON)
++	if (!dev->power.in_suspend)
+ 		dev->power.async_suspend = true;
  }
  
- static inline void pm_runtime_mark_last_busy(struct device *dev)
+ static inline void device_disable_async_suspend(struct device *dev)
+ {
+-	if (dev->power.status == DPM_ON)
++	if (!dev->power.in_suspend)
+ 		dev->power.async_suspend = false;
+ }
+ 
+Index: linux-2.6/include/linux/pm.h
+===================================================================
+--- linux-2.6.orig/include/linux/pm.h
++++ linux-2.6/include/linux/pm.h
+@@ -367,45 +367,6 @@ extern struct dev_pm_ops generic_subsys_
+ 					{ .event = PM_EVENT_AUTO_RESUME, })
+ 
+ /**
+- * Device power management states
+- *
+- * These state labels are used internally by the PM core to indicate the current
+- * status of a device with respect to the PM core operations.
+- *
+- * DPM_ON		Device is regarded as operational.  Set this way
+- *			initially and when ->complete() is about to be called.
+- *			Also set when ->prepare() fails.
+- *
+- * DPM_PREPARING	Device is going to be prepared for a PM transition.  Set
+- *			when ->prepare() is about to be called.
+- *
+- * DPM_RESUMING		Device is going to be resumed.  Set when ->resume(),
+- *			->thaw(), or ->restore() is about to be called.
+- *
+- * DPM_SUSPENDING	Device has been prepared for a power transition.  Set
+- *			when ->prepare() has just succeeded.
+- *
+- * DPM_OFF		Device is regarded as inactive.  Set immediately after
+- *			->suspend(), ->freeze(), or ->poweroff() has succeeded.
+- *			Also set when ->resume()_noirq, ->thaw_noirq(), or
+- *			->restore_noirq() is about to be called.
+- *
+- * DPM_OFF_IRQ		Device is in a "deep sleep".  Set immediately after
+- *			->suspend_noirq(), ->freeze_noirq(), or
+- *			->poweroff_noirq() has just succeeded.
+- */
+-
+-enum dpm_state {
+-	DPM_INVALID,
+-	DPM_ON,
+-	DPM_PREPARING,
+-	DPM_RESUMING,
+-	DPM_SUSPENDING,
+-	DPM_OFF,
+-	DPM_OFF_IRQ,
+-};
+-
+-/**
+  * Device run-time power management status.
+  *
+  * These status labels are used internally by the PM core to indicate the
+@@ -463,8 +424,8 @@ struct wakeup_source;
+ struct dev_pm_info {
+ 	pm_message_t		power_state;
+ 	unsigned int		can_wakeup:1;
+-	unsigned		async_suspend:1;
+-	enum dpm_state		status;		/* Owned by the PM core */
++	unsigned int		async_suspend:1;
++	unsigned int		in_suspend:1;	/* Owned by the PM core */
+ 	spinlock_t		lock;
+ #ifdef CONFIG_PM_SLEEP
+ 	struct list_head	entry;
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -63,7 +63,7 @@ static int async_error;
+  */
+ void device_pm_init(struct device *dev)
+ {
+-	dev->power.status = DPM_ON;
++	dev->power.in_suspend = false;
+ 	init_completion(&dev->power.completion);
+ 	complete_all(&dev->power.completion);
+ 	dev->power.wakeup = NULL;
+@@ -98,7 +98,7 @@ void device_pm_add(struct device *dev)
+ 		 kobject_name(&dev->kobj));
+ 	mutex_lock(&dpm_list_mtx);
+ 	if (dev->parent) {
+-		if (dev->parent->power.status >= DPM_SUSPENDING)
++		if (dev->parent->power.in_suspend)
+ 			dev_warn(dev, "parent %s should not be sleeping\n",
+ 				 dev_name(dev->parent));
+ 	} else if (transition_started) {
+@@ -488,7 +488,6 @@ void dpm_resume_noirq(pm_message_t state
+ 		int error;
+ 
+ 		get_device(dev);
+-		dev->power.status = DPM_OFF;
+ 		list_move_tail(&dev->power.entry, &dpm_suspended_list);
+ 		mutex_unlock(&dpm_list_mtx);
+ 
+@@ -541,7 +540,7 @@ static int device_resume(struct device *
+ 	dpm_wait(dev->parent, async);
+ 	device_lock(dev);
+ 
+-	dev->power.status = DPM_RESUMING;
++	dev->power.in_suspend = false;
+ 
+ 	if (dev->bus) {
+ 		if (dev->bus->pm) {
+@@ -690,7 +689,7 @@ static void dpm_complete(pm_message_t st
+ 		struct device *dev = to_device(dpm_prepared_list.prev);
+ 
+ 		get_device(dev);
+-		dev->power.status = DPM_ON;
++		dev->power.in_suspend = false;
+ 		list_move(&dev->power.entry, &list);
+ 		mutex_unlock(&dpm_list_mtx);
+ 
+@@ -806,7 +805,6 @@ int dpm_suspend_noirq(pm_message_t state
+ 			put_device(dev);
+ 			break;
+ 		}
+-		dev->power.status = DPM_OFF_IRQ;
+ 		if (!list_empty(&dev->power.entry))
+ 			list_move(&dev->power.entry, &dpm_noirq_list);
+ 		put_device(dev);
+@@ -894,9 +892,6 @@ static int __device_suspend(struct devic
+ 		}
+ 	}
+ 
+-	if (!error)
+-		dev->power.status = DPM_OFF;
+-
+  End:
+ 	device_unlock(dev);
+ 	complete_all(&dev->power.completion);
+@@ -1030,7 +1025,6 @@ static int dpm_prepare(pm_message_t stat
+ 		struct device *dev = to_device(dpm_list.next);
+ 
+ 		get_device(dev);
+-		dev->power.status = DPM_PREPARING;
+ 		mutex_unlock(&dpm_list_mtx);
+ 
+ 		pm_runtime_get_noresume(dev);
+@@ -1046,7 +1040,6 @@ static int dpm_prepare(pm_message_t stat
+ 
+ 		mutex_lock(&dpm_list_mtx);
+ 		if (error) {
+-			dev->power.status = DPM_ON;
+ 			if (error == -EAGAIN) {
+ 				put_device(dev);
+ 				error = 0;
+@@ -1058,7 +1051,7 @@ static int dpm_prepare(pm_message_t stat
+ 			put_device(dev);
+ 			break;
+ 		}
+-		dev->power.status = DPM_SUSPENDING;
++		dev->power.in_suspend = true;
+ 		if (!list_empty(&dev->power.entry))
+ 			list_move_tail(&dev->power.entry, &dpm_prepared_list);
+ 		put_device(dev);
+Index: linux-2.6/drivers/usb/core/driver.c
+===================================================================
+--- linux-2.6.orig/drivers/usb/core/driver.c
++++ linux-2.6/drivers/usb/core/driver.c
+@@ -376,7 +376,7 @@ static int usb_unbind_interface(struct d
+ 		 * Just re-enable it without affecting the endpoint toggles.
+ 		 */
+ 		usb_enable_interface(udev, intf, false);
+-	} else if (!error && intf->dev.power.status == DPM_ON) {
++	} else if (!error && !intf->dev.power.in_suspend) {
+ 		r = usb_set_interface(udev, intf->altsetting[0].
+ 				desc.bInterfaceNumber, 0);
+ 		if (r < 0)
+@@ -961,7 +961,7 @@ void usb_rebind_intf(struct usb_interfac
+ 	}
+ 
+ 	/* Try to rebind the interface */
+-	if (intf->dev.power.status == DPM_ON) {
++	if (!intf->dev.power.in_suspend) {
+ 		intf->needs_binding = 0;
+ 		rc = device_attach(&intf->dev);
+ 		if (rc < 0)
+@@ -1108,8 +1108,7 @@ static int usb_resume_interface(struct u
+ 	if (intf->condition == USB_INTERFACE_UNBOUND) {
+ 
+ 		/* Carry out a deferred switch to altsetting 0 */
+-		if (intf->needs_altsetting0 &&
+-				intf->dev.power.status == DPM_ON) {
++		if (intf->needs_altsetting0 && !intf->dev.power.in_suspend) {
+ 			usb_set_interface(udev, intf->altsetting[0].
+ 					desc.bInterfaceNumber, 0);
+ 			intf->needs_altsetting0 = 0;
