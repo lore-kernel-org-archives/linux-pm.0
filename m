@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: pm_runtime_suspended() and non-pm_runtime-using
-	(i2c) drivers
-Date: Wed, 15 Dec 2010 23:01:18 +0100
-Message-ID: <201012152301.18700.rjw__43350.6703157493$1292453154$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1012151530590.2171-100000@iolanthe.rowland.org>
+Subject: Re: Trying to understand new wakeup events architecture
+Date: Wed, 15 Dec 2010 23:33:43 +0100
+Message-ID: <201012152333.43644.rjw@sisk.pl>
+References: <AANLkTik0y2O4GTvoFkm-94iSWdWUG8juZ0cBNWXDas8Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1012151530590.2171-100000@iolanthe.rowland.org>
+In-Reply-To: <AANLkTik0y2O4GTvoFkm-94iSWdWUG8juZ0cBNWXDas8Q@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,51 +17,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-i2c@vger.kernel.org
+To: Daniel Drake <dsd@laptop.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, December 15, 2010, Alan Stern wrote:
-> On Wed, 15 Dec 2010, Rafael J. Wysocki wrote:
+On Tuesday, December 14, 2010, Daniel Drake wrote:
+> Hi,
 > 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > Subject: PM / Runtime: Fix pm_runtime_suspended()
-> > 
-> > pm_runtime_suspended() shouldn't return true if the runtime PM of the
-> > given device is disabled.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  include/linux/pm_runtime.h |    3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6/include/linux/pm_runtime.h
-> > ===================================================================
-> > --- linux-2.6.orig/include/linux/pm_runtime.h
-> > +++ linux-2.6/include/linux/pm_runtime.h
-> > @@ -78,7 +78,8 @@ static inline void device_set_run_wake(s
-> >  
-> >  static inline bool pm_runtime_suspended(struct device *dev)
-> >  {
-> > -	return dev->power.runtime_status == RPM_SUSPENDED;
-> > +	return dev->power.runtime_status == RPM_SUSPENDED
-> > +		&& !dev->power.disable_depth;
-> >  }
+> The OLPC XO laptop suspends a lot. It suspends with the screen on as
+> if it is still running. It can be woken up in a variety of ways:
+> keyboard, mouse, WLAN, ...
 > 
-> You need to update the documentation entry for pm_runtime_suspended as 
-> well.
-
-Yes, I also need to rework the changelog to explain what exactly the problem is.
-
-> I think this is okay.  If a driver or subsystem uses
-> pm_runtime_suspended() then it must be runtime-PM-aware, so it wouldn't
-> leave a device disabled for runtime PM.
+> While upstreaming OLPC's power management code I'm facing the
+> requirement that our userspace power manager needs to know the reason
+> for system wakeup. For example, if it was a WLAN packet then we can go
+> back to sleep pretty quickly, without restoring screen brightness (the
+> screen gets dimmed after a few mins of inactivity on the
+> keyboard/mouse front). But if the system was woken up with the
+> keyboard we want to restore screen brightness immediately and stay
+> awake for a longer time before going back into suspend.
 > 
-> So in theory the only place this would matter is if the function is
-> called in a generic setting, and AFAICT the only place that happens is
-> in generic_ops.c, where the change is correct.
+> We used to do this (outside of mainline) with a /proc node storing the
+> "wakeup reason" but I'm now wondering what the most upstream-suitable
+> approach is.
+> 
+> I saw this patch:
+> 
+> commit 074037ec79bea73edf1b1ec72fef1010e83e3cc5
+> Author: Rafael J. Wysocki <rjw@sisk.pl>
+> Date:   Wed Sep 22 22:09:10 2010 +0200
+> 
+>     PM / Wakeup: Introduce wakeup source objects and event statistics
+> 
+> But I'm unable to find any documentation of what it's for or how to use it.
+> 
+> Does it solve my problem?
+> If so, are there any examples of drivers adapted to use this
+> functionality? Or documentation?
+> 
+> I suspect the reason I don't understand it well is because I haven't
+> read 17 long threads about android...And I'd rather not, if it can be
+> avoided :)
 
-Indeed.
+I guess it's sufficient to read the article at http://lwn.net/Articles/416690/
+(or the PDF linked from there is that's not enough :-)).
+
+I don't really think it solves your problem right now, because it's only a
+high-level framework and it's missing some mechanics for this purpose.
+
+In principle you could compare device wakeup counters before suspend
+and after resume and figure out what devices reported wakeup in the
+meantime from that.  For devices, the counters may be read from sysfs.
+For "raw" wakeup sources it's necessary to read the wakeup_sources file in
+debugfs.
+
+Still, you need your subsystems to call pm_wakeup_event() or pm_stay_awake()
+during resume to actually report the events. 
 
 Thanks,
 Rafael
