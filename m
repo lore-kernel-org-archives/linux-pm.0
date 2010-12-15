@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: pm_runtime_suspended() and non-pm_runtime-using
 	(i2c) drivers
-Date: Wed, 15 Dec 2010 01:15:52 +0100
-Message-ID: <201012150115.52545.rjw__21067.1815941625$1292372332$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1012141406500.2087-100000@iolanthe.rowland.org>
+Date: Wed, 15 Dec 2010 01:19:59 +0100
+Message-ID: <201012150119.59801.rjw__33247.8732023903$1292373065$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1012141114150.2087-100000@iolanthe.rowland.org>
+	<201012150028.07938.rjw@sisk.pl> <201012150057.31237.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1012141406500.2087-100000@iolanthe.rowland.org>
+In-Reply-To: <201012150057.31237.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,75 +19,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-i2c@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, December 14, 2010, Alan Stern wrote:
-> On Tue, 14 Dec 2010, Mark Brown wrote:
+On Wednesday, December 15, 2010, Rafael J. Wysocki wrote:
+> On Wednesday, December 15, 2010, Rafael J. Wysocki wrote:
+> > On Tuesday, December 14, 2010, Alan Stern wrote:
+> > > On Tue, 14 Dec 2010, Rabin Vincent wrote:
+> > > 
+> > > > Hello,
+> > > > 
+> > > > If an i2c driver uses dev_pm_ops and pm_runtime_suspended() returns true
+> > > > for the device,  the i2c core will not call the driver's pm->suspend()
+> > > > routine.  Similar behaviour (except for the if dev_pm_ops check) is
+> > > > present in the generic PM ops provided in
+> > > > drivers/base/power/generic_ops.c.
+> > > > 
+> > > > Since pm_runtime_suspended() returns true if the relevant driver did not
+> > > > call any pm_runtime functions, this means that any driver which does not
+> > > > use pm_runtime APIs will not get its pm->suspend() callback called
+> > > > during system sleep, if CONFIG_PM_RUNTIME is enabled.
+> > > > 
+> > > > For the i2c case, there are several such drivers (in drivers/input/*,
+> > > > etc) lacking these calls.  How is this to be handled?  Do all of these
+> > > > drivers need to be patched to use the pm_runtime API if they are to be
+> > > > used on a kernel with PM_RUNTIME enabled?
+> > > 
+> > > I'm not familiar with the details of how the i2c subsystem works.  But
+> > > in general, the subsystem code should call pm_runtime_set_active()  
+> > > for every device before registering it.  Then if a driver doesn't use
+> > > any runtime-PM functions, pm_runtime_suspended() will return false.
+> > 
+> > I rather think that our current definition of pm_runtime_suspended() is
+> > not really adequate.
+> > 
+> > Namely, it shouldn't really return true if runtime PM is not enabled
+> > (ie. power.disable_depth > 1).
 > 
-> > On Tue, Dec 14, 2010 at 12:44:24PM -0500, Alan Stern wrote:
-> > > On Tue, 14 Dec 2010, Mark Brown wrote:
-> > > > On Tue, Dec 14, 2010 at 11:16:45AM -0500, Alan Stern wrote:
-> > 
-> > > > > I'm not familiar with the details of how the i2c subsystem works.  But
-> > > > > in general, the subsystem code should call pm_runtime_set_active()  
-> > > > > for every device before registering it.  Then if a driver doesn't use
-> > > > > any runtime-PM functions, pm_runtime_suspended() will return false.
-> > 
-> > > > Hrm, if that's the case then we also need to update at least the
-> > > > platform and SPI buses.  Though looking at the documentation this is
-> > > > going to get a bit interesting as there's a requirement that the parent
-> > > > has runtime PM enabled on it...
-> > 
-> > > The parent can either be set to the active state or set to ignore its 
-> > > children.  The parent does not have to be enabled for runtime PM.
-> > 
-> > Both of those require that the parent is set up to know something about
-> > runtime PM to some extent - in the case of buses like I2C the parent is
-> > a largely unrelated thing on a different bus which may or may not have
-> > runtime PM implemented.
-> > 
-> > > >  It's certainly not terribly apparent
-> > > > from the documentation.
-> > 
-> > > What part isn't clear from the documentation?  I think the description 
-> > > of pm_runtime_set_active() in Documentation/power/runtime_pm.txt is 
-> > > pretty straightforward.
-> > 
-> > It's not clear to me that one needs to do this in order to avoid
-> > breaking the suspend and resume calls of drivers that aren't doing
-> > anything with runtime PM.  It's clear what it does, but it's less clear
-> > that the bus should do it or that not doing it will have an impact on
-> > stuff that isn't using runtime PM.
-> > 
-> > > > It'd be really helpful if it were clearer what noop buses like this were
-> > > > supposed to do to get runtime PM working.
-> > 
-> > > I'm a little confused.  When you say this is a "noop" bus, do you mean
-> > > that it can't do any power management?  If so, why does it need to get
-> > > runtime PM working?
-> > 
-> > The bus as a whole may not be able to do anything useful with runtime PM
-> > but individual devices on it may be able to do so - for example, a multi
-> > function device provides a parent device and a bunch of children for
-> > that device.  Runtime PM provides a nice way for the children to
-> > individually suspend themselves and let the parent implement extra power
-> > savings if all the children suspend.  It also provides a userspace API
-> > for controlling runtime suspend behaviour which drivers may find useful,
-> > and stuff like the autosuspend delays might be useful to some.
+> That should have been power.disable_depth > 0, of course.  Sorry.
 > 
-> I see.  It sounds like you're really saying that new devices default to 
-> the wrong runtime state.  If pm_runtime_init() would set new devices to 
-> RPM_ACTIVE instead of RPM_SUSPENDED then this problem wouldn't arise.  
-> Children could do whatever they want, and even if the parent's driver 
-> was totally ignorant of runtime PM, it would work out.
+> > That change would fix the issue at hand,  wouldn't it?
 
-Actaully, pm_runtime_init() also sets power.disable_depth to 1, which disables
-runtime PM and (with the pm_runtime_suspended() change I proposed earlier)
-that should be sufficient, unless someone blindly calls pm_runtime_enable()
-for the device without changing its status as appropriate beforehand.  That,
-however, is a bug in the code doing this IMnsHO.
+Below is a patch.  I don't think it needs to be done under the lock at
+the moment if the callers of pm_runtime_enable() always remember to set
+the appropriate device status before calling it.
 
 Thanks,
 Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM / Runtime: Fix pm_runtime_suspended()
+
+pm_runtime_suspended() shouldn't return true if the runtime PM of the
+given device is disabled.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ include/linux/pm_runtime.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/include/linux/pm_runtime.h
+===================================================================
+--- linux-2.6.orig/include/linux/pm_runtime.h
++++ linux-2.6/include/linux/pm_runtime.h
+@@ -78,7 +78,8 @@ static inline void device_set_run_wake(s
+ 
+ static inline bool pm_runtime_suspended(struct device *dev)
+ {
+-	return dev->power.runtime_status == RPM_SUSPENDED;
++	return dev->power.runtime_status == RPM_SUSPENDED
++		&& !dev->power.disable_depth;
+ }
+ 
+ static inline void pm_runtime_mark_last_busy(struct device *dev)
