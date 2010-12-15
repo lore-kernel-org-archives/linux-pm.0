@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Trying to understand new wakeup events architecture
-Date: Wed, 15 Dec 2010 23:33:43 +0100
-Message-ID: <201012152333.43644.rjw@sisk.pl>
-References: <AANLkTik0y2O4GTvoFkm-94iSWdWUG8juZ0cBNWXDas8Q@mail.gmail.com>
+Subject: Re: [Resend][PATCH 0/3] ACPI / PM: Patches missing from
+	linux-acpi-2.6/test
+Date: Wed, 15 Dec 2010 23:20:09 +0100
+Message-ID: <201012152320.09384.rjw__21047.9290377863$1292453197$gmane$org@sisk.pl>
+References: <201012112339.53105.rjw@sisk.pl> <201012142124.37270.rjw@sisk.pl>
+	<1292379455.3983.129.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTik0y2O4GTvoFkm-94iSWdWUG8juZ0cBNWXDas8Q@mail.gmail.com>
+In-Reply-To: <1292379455.3983.129.camel@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,62 +19,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Drake <dsd@laptop.org>
-Cc: linux-pm@lists.linux-foundation.org
+To: ykzhao <yakui.zhao@intel.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, December 14, 2010, Daniel Drake wrote:
-> Hi,
+On Wednesday, December 15, 2010, ykzhao wrote:
+> On Wed, 2010-12-15 at 04:24 +0800, Rafael J. Wysocki wrote:
+> > On Tuesday, December 14, 2010, ykzhao wrote:
+> > > On Tue, 2010-12-14 at 05:25 +0800, Rafael J. Wysocki wrote:
+> > > > On Monday, December 13, 2010, ykzhao wrote:
+> > > > > On Sun, 2010-12-12 at 06:39 +0800, Rafael J. Wysocki wrote:
+...
+> > 
+> > The force_power_state was _only_ a workaround for the case when
+> > acpi_bus_set_power() called acpi_bus_get_power() and apparently received
+> > a wrong value from it on some systems (two of them had been identified, one was
+> > blacklisted in the end).  However, after my changes acpi_bus_set_power()
+> > doesn't call acpi_bus_get_power() (or any equivalent) any more, so this
+> > workaround isn't necessary any more either.
 > 
-> The OLPC XO laptop suspends a lot. It suspends with the screen on as
-> if it is still running. It can be woken up in a variety of ways:
-> keyboard, mouse, WLAN, ...
-> 
-> While upstreaming OLPC's power management code I'm facing the
-> requirement that our userspace power manager needs to know the reason
-> for system wakeup. For example, if it was a WLAN packet then we can go
-> back to sleep pretty quickly, without restoring screen brightness (the
-> screen gets dimmed after a few mins of inactivity on the
-> keyboard/mouse front). But if the system was woken up with the
-> keyboard we want to restore screen brightness immediately and stay
-> awake for a longer time before going back into suspend.
-> 
-> We used to do this (outside of mainline) with a /proc node storing the
-> "wakeup reason" but I'm now wondering what the most upstream-suitable
-> approach is.
-> 
-> I saw this patch:
-> 
-> commit 074037ec79bea73edf1b1ec72fef1010e83e3cc5
-> Author: Rafael J. Wysocki <rjw@sisk.pl>
-> Date:   Wed Sep 22 22:09:10 2010 +0200
-> 
->     PM / Wakeup: Introduce wakeup source objects and event statistics
-> 
-> But I'm unable to find any documentation of what it's for or how to use it.
-> 
-> Does it solve my problem?
-> If so, are there any examples of drivers adapted to use this
-> functionality? Or documentation?
-> 
-> I suspect the reason I don't understand it well is because I haven't
-> read 17 long threads about android...And I'd rather not, if it can be
-> avoided :)
+> The flag of force_power_state will force it to do the transition of
+> power state even when the target state is already the same as the
+> current power state. Without this flag, it will skip the power
+> transition if the two states are consistent. This is useful under the
+> following cases: (The FAN device is used as an example)
+>     1. The initial state is reported as D0 state (But we don't know
+> whether the FAN device is really turned on)
+>     2. If we expect to turn on the corresponding FAN device for the
+> first time(put it into D0 state),  it will skip the power transition as
+> the check of "state == device->power.state". In such case it will be
+> better that the power transition is forced in order to assure that the
+> FAN device is turned on by calling the _PSC/_ON object. 
 
-I guess it's sufficient to read the article at http://lwn.net/Articles/416690/
-(or the PDF linked from there is that's not enough :-)).
-
-I don't really think it solves your problem right now, because it's only a
-high-level framework and it's missing some mechanics for this purpose.
-
-In principle you could compare device wakeup counters before suspend
-and after resume and figure out what devices reported wakeup in the
-meantime from that.  For devices, the counters may be read from sysfs.
-For "raw" wakeup sources it's necessary to read the wakeup_sources file in
-debugfs.
-
-Still, you need your subsystems to call pm_wakeup_event() or pm_stay_awake()
-during resume to actually report the events. 
+Before my changes the force_power_state device flag was used only by the fan
+driver in two places: in acpi_fan_add() (ie. during fan initialization) and in
+acpi_fan_resume().  In both cases it was used to make acpi_bus_set_power()
+accept the state read by acpi_bus_get_power().  In both cases
+acpi_bus_update_power() can be used to obtain _exactly_ the same result,
+so the flag is not necessary any more.
 
 Thanks,
 Rafael
