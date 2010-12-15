@@ -1,11 +1,14 @@
-From: Daniel Drake <dsd@laptop.org>
-Subject: Trying to understand new wakeup events architecture
-Date: Tue, 14 Dec 2010 17:57:20 +0000
-Message-ID: <AANLkTik0y2O4GTvoFkm-94iSWdWUG8juZ0cBNWXDas8Q@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: pm_runtime_suspended() and non-pm_runtime-using
+ (i2c) drivers
+Date: Wed, 15 Dec 2010 15:38:00 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1012151530590.2171-100000__1990.48152794621$1292452015$gmane$org@iolanthe.rowland.org>
+References: <201012150119.59801.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201012150119.59801.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,45 +18,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Wed, 15 Dec 2010, Rafael J. Wysocki wrote:
 
-The OLPC XO laptop suspends a lot. It suspends with the screen on as
-if it is still running. It can be woken up in a variety of ways:
-keyboard, mouse, WLAN, ...
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: PM / Runtime: Fix pm_runtime_suspended()
+> 
+> pm_runtime_suspended() shouldn't return true if the runtime PM of the
+> given device is disabled.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  include/linux/pm_runtime.h |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/include/linux/pm_runtime.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/pm_runtime.h
+> +++ linux-2.6/include/linux/pm_runtime.h
+> @@ -78,7 +78,8 @@ static inline void device_set_run_wake(s
+>  
+>  static inline bool pm_runtime_suspended(struct device *dev)
+>  {
+> -	return dev->power.runtime_status == RPM_SUSPENDED;
+> +	return dev->power.runtime_status == RPM_SUSPENDED
+> +		&& !dev->power.disable_depth;
+>  }
 
-While upstreaming OLPC's power management code I'm facing the
-requirement that our userspace power manager needs to know the reason
-for system wakeup. For example, if it was a WLAN packet then we can go
-back to sleep pretty quickly, without restoring screen brightness (the
-screen gets dimmed after a few mins of inactivity on the
-keyboard/mouse front). But if the system was woken up with the
-keyboard we want to restore screen brightness immediately and stay
-awake for a longer time before going back into suspend.
+You need to update the documentation entry for pm_runtime_suspended as 
+well.
 
-We used to do this (outside of mainline) with a /proc node storing the
-"wakeup reason" but I'm now wondering what the most upstream-suitable
-approach is.
+I think this is okay.  If a driver or subsystem uses
+pm_runtime_suspended() then it must be runtime-PM-aware, so it wouldn't
+leave a device disabled for runtime PM.
 
-I saw this patch:
+So in theory the only place this would matter is if the function is
+called in a generic setting, and AFAICT the only place that happens is
+in generic_ops.c, where the change is correct.
 
-commit 074037ec79bea73edf1b1ec72fef1010e83e3cc5
-Author: Rafael J. Wysocki <rjw@sisk.pl>
-Date:   Wed Sep 22 22:09:10 2010 +0200
-
-    PM / Wakeup: Introduce wakeup source objects and event statistics
-
-But I'm unable to find any documentation of what it's for or how to use it.
-
-Does it solve my problem?
-If so, are there any examples of drivers adapted to use this
-functionality? Or documentation?
-
-I suspect the reason I don't understand it well is because I haven't
-read 17 long threads about android...And I'd rather not, if it can be
-avoided :)
-
-Thanks,
-Daniel
+Alan Stern
