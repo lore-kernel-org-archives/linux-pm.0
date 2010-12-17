@@ -1,15 +1,16 @@
-From: "Xu, Andiry" <Andiry.Xu@amd.com>
-Subject: Re: Scary warnings from xhci_hcd on rmmod and during
-	shutdown/suspend/resume
-Date: Fri, 17 Dec 2010 16:26:09 +0800
-Message-ID: <2DEEA3AB13739D45A22ADDB5086AEA0BC080D3__6451.0176693604$1292600669$gmane$org@sshaexmb1.amd.com>
-References: <201012170039.16185.rjw@sisk.pl>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: 2.6.37-rc5, pata_atiixp,
+ DVD-ROM: kernel log flooded with "rpm_resume flags 0x4",
+ "rpm_resume returns 1"
+Date: Fri, 17 Dec 2010 21:15:56 +0100
+Message-ID: <20101217211556.2789cb80__4928.72562394968$1292617117$gmane$org@stein>
+References: <20101211173234.77617d3a@stein>
+	<Pine.LNX.4.44L0.1012111425520.14704-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Class: urn:content-classes:message
-In-Reply-To: <201012170039.16185.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1012111425520.14704-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,98 +20,154 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Sarah Sharp <sarah.a.sharp@linux.intel.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Matthew Garrett <mjg@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-ide@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Dec 11 Alan Stern wrote:
+> On Sat, 11 Dec 2010, Stefan Richter wrote:
 > 
-> and during shutdown (I believe the warnings are the same or analogous
-to
-> the
-> above).
+> > Hi,
+> > 
+> > I just booted from 2.6.36 (without PM debugging configured) into
+> > 2.6.37-rc5 (with PM debugging enabled).  There is endless log spam like
+> > this:
+> > 
+> > Dec 11 17:11:31 stein kernel: scsi host6: rpm_resume flags 0x4
+> > Dec 11 17:11:31 stein kernel: scsi host6: rpm_resume returns 1
+> > Dec 11 17:11:31 stein kernel: scsi host6: rpm_resume flags 0x4
+> > Dec 11 17:11:31 stein kernel: scsi host6: rpm_resume returns 1
+> ...
 > 
-> I tested with the attached patch from Andiry applied and I got the
-> following
-> BUG during resume:
+> > Why is rpm_resume performed 6 times every two seconds?
+> 
+> This is probably because hal probes the DVD drive every two seconds
+> looking for media changes.  However that's not supposed to cause
+> rpm_resume to be called for the host unless runtime PM is allowed for
+> the DVD drive, which it isn't according to your listings below.  So
+> there's a bug somewhere.
 
-Does this bug occurs without the synchronize irq patch? Seems the rmmod,
-shutdown and resume bugs are caused by xhci_cleanup_msix().
+I had 2.6.36 running since then and have now booted into 2.6.37-rc6.
 
-> 
-> [   91.703778] sd 0:0:0:0: [sda] Starting disk
-> [   91.704054] sd 2:0:0:0: [sdb] Starting disk
-> [   91.703680] xhci_hcd 0000:04:00.0: Host controller not halted,
-aborting
-> reset.
-> [   91.703680] BUG: sleeping function called from invalid context at
-> /home/rafael/src/linux-2.6/kernel/mutex.c:278
-> [   91.703680] in_atomic(): 1, irqs_disabled(): 1, pid: 1234, name:
-> kworker/u:6
-> [   91.703680] INFO: lockdep is turned off.
-> [   91.703680] irq event stamp: 24060
-> [   91.703680] hardirqs last  enabled at (24059): [<ffffffff810aa071>]
-> rcu_note_context_switch+0xa1/0x1c0
-> [   91.703680] hardirqs last disabled at (24060): [<ffffffff81494e92>]
-> _raw_spin_lock_irq+0x12/0x50
-> [   91.703680] softirqs last  enabled at (20026): [<ffffffff8105056e>]
-> __do_softirq+0x11e/0x160
-> [   91.703680] softirqs last disabled at (20011): [<ffffffff8100368c>]
-> call_softirq+0x1c/0x30
-> [   91.703680] Pid: 1234, comm: kworker/u:6 Tainted: G        W
-2.6.37-
-> rc6+ #12
-> [   91.703680] Call Trace:
-> [   91.703680]  [<ffffffff81079290>] ? print_irqtrace_events+0xd0/0xe0
-> [   91.703680]  [<ffffffff81036783>] __might_sleep+0x103/0x130
-> [   91.703680]  [<ffffffff81492f73>] mutex_lock_nested+0x33/0x380
-> [   91.703680]  [<ffffffff81495727>] ?
-> _raw_spin_unlock_irqrestore+0x67/0x70
-> [   91.703680]  [<ffffffff810a39de>] ? dynamic_irq_cleanup+0xde/0x100
-> [   91.703680]  [<ffffffff810a3a58>] irq_free_descs+0x58/0x90
-> [   91.703680]  [<ffffffff81022008>] destroy_irq+0x78/0x90
-> [   91.703680]  [<ffffffff810222c9>] native_teardown_msi_irq+0x9/0x10
-> [   91.703680]  [<ffffffff811ee0b0>]
-default_teardown_msi_irqs+0x70/0xa0
-> [   91.703680]  [<ffffffff811edb41>] free_msi_irqs+0xa1/0x110
-> [   91.703680]  [<ffffffff811eec1d>] pci_disable_msix+0x3d/0x50
-> [   91.703680]  [<ffffffffa03f0609>] xhci_cleanup_msix+0x39/0x80
-[xhci_hcd]
-> [   91.703680]  [<ffffffffa03f111c>] xhci_resume+0x1ac/0x250
-[xhci_hcd]
-> [   91.703680]  [<ffffffffa03f65c4>] xhci_pci_resume+0x14/0x20
-[xhci_hcd]
-> [   91.703680]  [<ffffffff8138996b>] resume_common+0xbb/0x140
-> [   91.703680]  [<ffffffff81389a5e>] hcd_pci_restore+0xe/0x10
-> [   91.703680]  [<ffffffff811e36f3>] pci_pm_restore+0x63/0xb0
-> [   91.703680]  [<ffffffff813334bd>] pm_op+0x19d/0x1c0
-> [   91.703680]  [<ffffffff81333be4>] device_resume+0x94/0x220
-> [   91.703680]  [<ffffffff81333d8c>] async_resume+0x1c/0x50
-> [   91.703680]  [<ffffffff8106e6e6>] async_run_entry_fn+0x86/0x160
-> [   91.703680]  [<ffffffff81060672>] process_one_work+0x1a2/0x450
-> [   91.703680]  [<ffffffff81060614>] ? process_one_work+0x144/0x450
-> [   91.703680]  [<ffffffff811d2704>] ? do_raw_spin_lock+0x104/0x170
-> [   91.703680]  [<ffffffff8106e660>] ? async_run_entry_fn+0x0/0x160
-> [   91.703680]  [<ffffffff81061e32>] worker_thread+0x162/0x340
-> [   91.703680]  [<ffffffff81061cd0>] ? worker_thread+0x0/0x340
-> [   91.703680]  [<ffffffff81066836>] kthread+0x96/0xa0
-> [   91.703680]  [<ffffffff81003594>] kernel_thread_helper+0x4/0x10
-> [   91.703680]  [<ffffffff81036fdb>] ? finish_task_switch+0x7b/0xe0
-> [   91.703680]  [<ffffffff81495d00>] ? restore_args+0x0/0x30
-> [   91.703680]  [<ffffffff810667a0>] ? kthread+0x0/0xa0
-> [   91.703680]  [<ffffffff81003590>] ? kernel_thread_helper+0x0/0x10
-> [   91.706248] xhci_hcd 0000:04:00.0: irq 81 for MSI/MSI-X
-> [   91.706251] xhci_hcd 0000:04:00.0: irq 82 for MSI/MSI-X
-> [   91.706253] xhci_hcd 0000:04:00.0: irq 83 for MSI/MSI-X
-> [   91.706256] xhci_hcd 0000:04:00.0: irq 84 for MSI/MSI-X
-> [   91.706258] xhci_hcd 0000:04:00.0: irq 85 for MSI/MSI-X
-> [   91.706260] xhci_hcd 0000:04:00.0: irq 86 for MSI/MSI-X
-> [   91.706262] xhci_hcd 0000:04:00.0: irq 87 for MSI/MSI-X
-> 
-> The issues appear to be 100% reproducible.
-> 
+Yes, it is hal indeed.  Shutting hal down avoids this logging activity.
 
-I'm not able to reproduce the issue. Can you specify your kernel version
-and attach your .config?
+> > host6 is pata_atiixp with an:
+> > 
+> > 00:14.1 IDE interface: ATI Technologies Inc SB700/SB800 IDE Controller
+> > (prog-if 8a [Master SecP PriP])
+> > 
+> > # grep . /sys/class/scsi_host/host6/power/*
+> > /sys/class/scsi_host/host6/power/async:enabled
+> > grep: /sys/class/scsi_host/host6/power/autosuspend_delay_ms: Input/output error
+> > /sys/class/scsi_host/host6/power/control:auto
+> > /sys/class/scsi_host/host6/power/runtime_active_kids:0
+> > /sys/class/scsi_host/host6/power/runtime_active_time:0
+> > /sys/class/scsi_host/host6/power/runtime_enabled:disabled
+> > /sys/class/scsi_host/host6/power/runtime_status:unsupported
+> > /sys/class/scsi_host/host6/power/runtime_suspended_time:0
+> > /sys/class/scsi_host/host6/power/runtime_usage:0
+> 
+> This is the wrong directory (the class device, not the device itself).  
+> You should look at /sys/class/scsi_host/host6/device/power instead.  
+> And also /sys/class/scsi_host/host6/device/target6:0:0/power.
 
-Thanks,
-Andiry
+OK, correct directory follows below.
+
+Actually, this time I see once every two seconds a message about
+logical unit 6:0:0:0 and 6 times every two seconds a message about
+host7:
+
+Dec 17 20:22:08 stein kernel: sd 6:0:0:0: rpm_resume flags 0x4
+Dec 17 20:22:08 stein kernel: sd 6:0:0:0: rpm_resume returns 1
+Dec 17 20:22:08 stein kernel: scsi host7: rpm_resume flags 0x4
+Dec 17 20:22:08 stein kernel: scsi host7: rpm_resume returns 1
+Dec 17 20:22:08 stein kernel: scsi host7: rpm_resume flags 0x4
+Dec 17 20:22:08 stein kernel: scsi host7: rpm_resume returns 1
+Dec 17 20:22:08 stein kernel: scsi host7: rpm_resume flags 0x4
+Dec 17 20:22:08 stein kernel: scsi host7: rpm_resume returns 1
+Dec 17 20:22:08 stein kernel: scsi host7: rpm_resume flags 0x4
+Dec 17 20:22:08 stein kernel: scsi host7: rpm_resume returns 1
+Dec 17 20:22:08 stein kernel: scsi host7: rpm_resume flags 0x4
+Dec 17 20:22:08 stein kernel: scsi host7: rpm_resume returns 1
+Dec 17 20:22:08 stein kernel: scsi host7: rpm_resume flags 0x4
+Dec 17 20:22:08 stein kernel: scsi host7: rpm_resume returns 1
+Dec 17 20:22:10 stein kernel: sd 6:0:0:0: rpm_resume flags 0x4
+Dec 17 20:22:10 stein kernel: sd 6:0:0:0: rpm_resume returns 1
+Dec 17 20:22:10 stein kernel: scsi host7: rpm_resume flags 0x4
+Dec 17 20:22:10 stein kernel: scsi host7: rpm_resume returns 1
+Dec 17 20:22:10 stein kernel: scsi host7: rpm_resume flags 0x4
+Dec 17 20:22:10 stein kernel: scsi host7: rpm_resume returns 1
+Dec 17 20:22:10 stein kernel: scsi host7: rpm_resume flags 0x4
+Dec 17 20:22:10 stein kernel: scsi host7: rpm_resume returns 1
+Dec 17 20:22:10 stein kernel: scsi host7: rpm_resume flags 0x4
+Dec 17 20:22:10 stein kernel: scsi host7: rpm_resume returns 1
+Dec 17 20:22:10 stein kernel: scsi host7: rpm_resume flags 0x4
+Dec 17 20:22:10 stein kernel: scsi host7: rpm_resume returns 1
+Dec 17 20:22:10 stein kernel: scsi host7: rpm_resume flags 0x4
+Dec 17 20:22:10 stein kernel: scsi host7: rpm_resume returns 1
+
+sd 6:0:0:0 is a USB card reader built into a monitor:
+Host: scsi6 Channel: 00 Id: 00 Lun: 00
+  Vendor: Generic  Model: Ultra HS-SD/MMC  Rev: 1.88
+  Type:   Direct-Access                    ANSI  SCSI revision: 00
+
+This is from the power/ directory of the "6:0:0:0" device which is
+bound to driver sd:
+
+/sys/devices/pci0000:00/0000:00:12.2/usb1/1-1/1-1.1/1-1.1.1/1-1.1.1:1.0/host6/target6:0:0/6:0:0:0/power/async:enabled
+/sys/devices/pci0000:00/0000:00:12.2/usb1/1-1/1-1.1/1-1.1.1/1-1.1.1:1.0/host6/target6:0:0/6:0:0:0/power/control:on
+/sys/devices/pci0000:00/0000:00:12.2/usb1/1-1/1-1.1/1-1.1.1/1-1.1.1:1.0/host6/target6:0:0/6:0:0:0/power/runtime_active_kids:0
+/sys/devices/pci0000:00/0000:00:12.2/usb1/1-1/1-1.1/1-1.1.1/1-1.1.1:1.0/host6/target6:0:0/6:0:0:0/power/runtime_active_time:1650131
+/sys/devices/pci0000:00/0000:00:12.2/usb1/1-1/1-1.1/1-1.1.1/1-1.1.1:1.0/host6/target6:0:0/6:0:0:0/power/runtime_enabled:forbidden
+/sys/devices/pci0000:00/0000:00:12.2/usb1/1-1/1-1.1/1-1.1.1/1-1.1.1:1.0/host6/target6:0:0/6:0:0:0/power/runtime_status:active
+/sys/devices/pci0000:00/0000:00:12.2/usb1/1-1/1-1.1/1-1.1.1/1-1.1.1:1.0/host6/target6:0:0/6:0:0:0/power/runtime_suspended_time:0
+/sys/devices/pci0000:00/0000:00:12.2/usb1/1-1/1-1.1/1-1.1.1/1-1.1.1:1.0/host6/target6:0:0/6:0:0:0/power/runtime_usage:1
+
+host7 is the mentioned ATI SB700/SB800 IDE controller.  Here is the
+power/ directory of the scsi_host device (rather than scsi_host class
+device):
+
+/sys/devices/pci0000:00/0000:00:14.1/host7/power/async:enabled
+/sys/devices/pci0000:00/0000:00:14.1/host7/power/control:auto
+/sys/devices/pci0000:00/0000:00:14.1/host7/power/runtime_active_kids:1
+/sys/devices/pci0000:00/0000:00:14.1/host7/power/runtime_active_time:1935478
+/sys/devices/pci0000:00/0000:00:14.1/host7/power/runtime_enabled:enabled
+/sys/devices/pci0000:00/0000:00:14.1/host7/power/runtime_status:active
+/sys/devices/pci0000:00/0000:00:14.1/host7/power/runtime_suspended_time:0
+/sys/devices/pci0000:00/0000:00:14.1/host7/power/runtime_usage:0
+
+The parent device 0000:00:14.1 is bound to the mentioned pata_atiixp,
+if this is of any importance at all.
+
+>From the child device:
+
+/sys/devices/pci0000:00/0000:00:14.1/host7/target7:0:0/power/async:enabled
+/sys/devices/pci0000:00/0000:00:14.1/host7/target7:0:0/power/control:auto
+/sys/devices/pci0000:00/0000:00:14.1/host7/target7:0:0/power/runtime_active_kids:1
+/sys/devices/pci0000:00/0000:00:14.1/host7/target7:0:0/power/runtime_active_time:2402125
+/sys/devices/pci0000:00/0000:00:14.1/host7/target7:0:0/power/runtime_enabled:enabled
+/sys/devices/pci0000:00/0000:00:14.1/host7/target7:0:0/power/runtime_status:active
+/sys/devices/pci0000:00/0000:00:14.1/host7/target7:0:0/power/runtime_suspended_time:0
+/sys/devices/pci0000:00/0000:00:14.1/host7/target7:0:0/power/runtime_usage:0
+
+--------
+
+On Dec 11 Rafael J. Wysocki wrote:
+> On Saturday, December 11, 2010, Stefan Richter wrote:
+> > Hi,
+> > 
+> > I just booted from 2.6.36 (without PM debugging configured) into
+> > 2.6.37-rc5 (with PM debugging enabled).  There is endless log spam like
+> > this:
+> 
+> I guess you have either CONFIG_PM_VERBOSE set or CONFIG_PM_DEBUG unset.
+> 
+> Which is the case?
+
+I have both options off on 2.6.36 and older kernels.  I have both
+options on on 2.6.37-rc5/-rc6 (because I wanted to check something
+unrelated on 2.6.37).
+-- 
+Stefan Richter
+-=====-==-=- ==-- =---=
+http://arcgraph.de/sr/
